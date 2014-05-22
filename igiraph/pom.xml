@@ -58,8 +58,8 @@
                     <skipTests>true</skipTests>
                 </configuration>
             </plugin>-->
-            <plugin>
-                <!--add if you don't have any test to run-->
+            <!--<plugin>
+                &lt;!&ndash;add if you don't have any test to run&ndash;&gt;
                 <groupId>org.scoverage</groupId>
                 <artifactId>maven-scoverage-plugin</artifactId>
                 <version>${scoverage.version}</version>
@@ -69,7 +69,7 @@
                         <phase/>
                     </execution>
                 </executions>
-            </plugin>
+            </plugin>-->
         </plugins>
     </build>
 
