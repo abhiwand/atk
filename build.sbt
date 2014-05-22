@@ -23,6 +23,7 @@ libraryDependencies in ThisBuild ++= {
     "org.specs2"          %%  "specs2-mock"       % "2.3.10"  % "test",
     "org.specs2"          %%  "specs2-html"       % "2.3.10"  % "test",
     "org.specs2"          %%  "specs2-scalacheck" % "2.3.10"  % "test",
+    "org.scalatest"       %   "scalatest_2.10"    % "2.1.5"   % "test",
     "org.mockito"         %   "mockito-core"      % "1.9.5"   % "test",
     "org.specs2"	%% 	"specs2"	 % "2.3.10"   % "test",
 //    ("com.intel.hadoop"    %   "event"             % "1.0-SNAPSHOT")
@@ -32,7 +33,8 @@ libraryDependencies in ThisBuild ++= {
     "ch.qos.logback"      %   "logback-classic"   % "1.1.1",
     "org.slf4j"           %   "slf4j-api"         % "1.7.5",
     "com.jsuereth"        %%  "scala-arm"         % "1.3",
-    "joda-time"           %   "joda-time"         % "2.3"
+    "joda-time"           %   "joda-time"         % "2.3",
+    "org.joda"            %   "joda-convert"      % "1.2"
   )
 }
 
