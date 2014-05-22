@@ -147,7 +147,7 @@
                             <configuration>
                                 <jvmArgs>
                                     <jvmArg>-Xms64m</jvmArg>
-                                    <jvmArg>-Xmx1024m</jvmArg>
+                                    <jvmArg>-Xmx4096m</jvmArg>
                                 </jvmArgs>
                                 <compilerPlugins>
                                     <compilerPlugin>
