@@ -32,14 +32,19 @@
   <url>http://maven.apache.org</url>
 
  <parent>
-	<groupId>com.intel.hadoop</groupId>
+	<groupId>com.intel</groupId>
 	<artifactId>IntelAnalytics</artifactId>
 	<relativePath>../pom.xml</relativePath>  
-	<version>0.8-SNAPSHOT</version>
+	<version>0.8.0-SNAPSHOT</version>
   </parent>
 <build>
   <plugins>
-	<plugin>
+      <plugin>
+          <!--add to Create covergage results-->
+          <groupId>org.scoverage</groupId>
+          <artifactId>maven-scoverage-plugin</artifactId>
+      </plugin>
+	<!--<plugin>
 	  <artifactId>exec-maven-plugin</artifactId>
 	  <groupId>org.codehaus.mojo</groupId>
 	  <version>1.2.1</version>
@@ -85,7 +90,14 @@
 	      </configuration>
             </execution>
           </executions>
-	</plugin>
+	</plugin>-->
   </plugins>
 </build>
+    <dependencies>
+        <dependency>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-mllib_2.10</artifactId>
+            <version>0.9.0-incubating</version>
+        </dependency>
+    </dependencies>
 </project>
