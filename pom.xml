@@ -36,10 +36,8 @@
     <inceptionYear>2013</inceptionYear>
 
     <modules>
-        <!-- commented until we can figure out how to run without invoking sbt on them
-        <module>igiraph</module>
-        <module>imllib</module>-->
-        <!--module>IntelAnalytics-web</module-->
+        <!-- commented until we can figure out how to run without invoking sbt on them-->
+
         <module>ititan</module>
         <module>event</module>
         <module>ispark-deps</module>
