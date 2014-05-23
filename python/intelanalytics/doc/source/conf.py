@@ -39,7 +39,11 @@ extensions = [
     'sphinx.ext.ifconfig',
     'sphinx.ext.autosummary',
     'numpydoc',
+    'todo',
 ]
+
+# This is a flag to print out To-Do items
+todo_include_todos = False
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -128,11 +132,12 @@ internal_docs = False
 #html_theme = 'scipy'
 #html_theme = 'basic'
 #html_theme = 'epub'
-html_theme = 'haiku'
+#html_theme = 'haiku'
 #html_theme = 'pyramid'
 #html_theme = 'scrolls'
 #html_theme = 'sphinxdoc'
 #html_theme = 'traditional'
+html_theme = 'aldrich'
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
