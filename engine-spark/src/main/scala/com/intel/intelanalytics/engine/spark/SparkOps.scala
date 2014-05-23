@@ -33,7 +33,11 @@ import spray.json.JsObject
 /**
  * This object exists to avoid having to serialize the entire engine in order to use spark
  */
+
+case class RDDJoinParam(rdd: RDD[(Any, Array[Any])], columnCount: Int)
+
 private[spark] object SparkOps extends Serializable {
+
   def getRows(rdd: RDD[Row], offset: Long, count: Int): Seq[Row] = {
     val counts = rdd.mapPartitionsWithIndex(
       (i: Int, rows: Iterator[Row]) => Iterator.single((i, rows.size)))
@@ -85,24 +89,28 @@ private[spark] object SparkOps extends Serializable {
     (data(joinIndex), data)
   }
 
-  def joinRDDs(left: RDD[(Any, Array[Any])], right: RDD[(Any, Array[Any])], how: String = "inner"): RDD[Array[Any]] = {
+  def joinRDDs(left: RDDJoinParam, right: RDDJoinParam, how: String = "inner"): RDD[Array[Any]] = {
 
     val result = how match {
-      case "left" => left.leftOuterJoin(right).map(t => {
+      case "left" => left.rdd.leftOuterJoin(right.rdd).map(t => {
         t._2._2 match {
           case s: Some[Array[Any]] => t._2._1 ++ s.get
-          case None => t._2._1
+          case None => t._2._1 ++ (1 to right.columnCount).map(i => None)
         }
       })
 
-      case "right" => left.rightOuterJoin(right).map(t => {
+      case "right" => left.rdd.rightOuterJoin(right.rdd).map(t => {
         t._2._1 match {
           case s: Some[Array[Any]] => s.get ++ t._2._2
-          case None => t._2._2
+          case None => {
+            var array: Array[Any] = t._2._2
+            (1 to left.columnCount).foreach(i => array = None +: array)
+            array
+          }
         }
       })
 
-      case _ => left.join(right).map(t => t._2._1 ++ t._2._2)
+      case _ => left.rdd.join(right.rdd).map(t => t._2._1 ++ t._2._2)
     }
 
     result.asInstanceOf[RDD[Array[Any]]]

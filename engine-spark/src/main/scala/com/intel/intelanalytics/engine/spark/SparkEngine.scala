@@ -318,7 +318,7 @@ class SparkComponent extends EngineComponent
             withContext("se.join.future") {
 
               /* create a new dataframe */
-              val allColumns = argument.joinFrames.flatMap {
+              val allColumns = argument.joinFrames.map {
                 frame =>
                   {
                     val realFrame = frames.lookup(frame._1).getOrElse(
@@ -329,13 +329,13 @@ class SparkComponent extends EngineComponent
               }
 
               /* create a dataframe should take very little time, much less than 10 minutes */
-              val newJoinFrame = Await.result(create(DataFrameTemplate(argument.name, Schema(allColumns))), 10 minutes)
+              val newJoinFrame = Await.result(create(DataFrameTemplate(argument.name, Schema(allColumns.flatten))), 10 minutes)
 
               withCommand(command) {
                 val ctx = context(user).sparkContext
                 val pairRdds = createPairRddForJoin(argument, ctx)
 
-                val joinResultRDD = SparkOps.joinRDDs(pairRdds(0), pairRdds(1))
+                val joinResultRDD = SparkOps.joinRDDs(RDDJoinParam(pairRdds(0), allColumns(0).length), RDDJoinParam(pairRdds(1), allColumns(1).length))
                 joinResultRDD.saveAsObjectFile(fsRoot + frames.getFrameDataFile(newJoinFrame.id))
                 newJoinFrame.toJson.asJsObject
               }

@@ -13,7 +13,7 @@ class SparkJoinITest extends FlatSpec with Matchers with BeforeAndAfterEach with
     val countryCode = sc.parallelize(id_country_codes).map(t => SparkOps.create2TupleForJoin(t, 0))
     val countryNames = sc.parallelize(id_country_names).map(t => SparkOps.create2TupleForJoin(t, 0))
 
-    val result = SparkOps.joinRDDs(countryCode, countryNames, "inner")
+    val result = SparkOps.joinRDDs(RDDJoinParam(countryCode, 2), RDDJoinParam(countryNames, 2), "inner")
     val sortable = result.map(t => SparkOps.create2TupleForJoin(t, 0)).asInstanceOf[RDD[(Int, Array[Any])]]
     val sorted = sortable.sortByKey(true)
 
@@ -31,7 +31,7 @@ class SparkJoinITest extends FlatSpec with Matchers with BeforeAndAfterEach with
     val countryCode = sc.parallelize(id_country_codes).map(t => SparkOps.create2TupleForJoin(t, 0))
     val countryNames = sc.parallelize(id_country_names).map(t => SparkOps.create2TupleForJoin(t, 0))
 
-    val result = SparkOps.joinRDDs(countryCode, countryNames, "left")
+    val result = SparkOps.joinRDDs(RDDJoinParam(countryCode, 2), RDDJoinParam(countryNames, 2), "left")
     val sortable = result.map(t => SparkOps.create2TupleForJoin(t, 0)).asInstanceOf[RDD[(Int, Array[Any])]]
     val sorted = sortable.sortByKey(true)
 
@@ -39,7 +39,7 @@ class SparkJoinITest extends FlatSpec with Matchers with BeforeAndAfterEach with
     data(0)._2 shouldBe Array(1, 354, 1, "Iceland")
     data(1)._2 shouldBe Array(2, 91, 2, "India")
     data(2)._2 shouldBe Array(3, 47, 3, "Norway")
-    data(3)._2 shouldBe Array(4, 968)
+    data(3)._2 shouldBe Array(4, 968, None, None)
   }
 
   "joinRDDs" should "join two RDD with right join" in {
@@ -49,15 +49,16 @@ class SparkJoinITest extends FlatSpec with Matchers with BeforeAndAfterEach with
     val countryCode = sc.parallelize(id_country_codes).map(t => SparkOps.create2TupleForJoin(t, 0))
     val countryNames = sc.parallelize(id_country_names).map(t => SparkOps.create2TupleForJoin(t, 0))
 
-    val result = SparkOps.joinRDDs(countryCode, countryNames, "right")
-    val sortable = result.map(t => SparkOps.create2TupleForJoin(t, 0)).asInstanceOf[RDD[(Int, Array[Any])]]
+    val result = SparkOps.joinRDDs(RDDJoinParam(countryCode, 2), RDDJoinParam(countryNames, 2), "right")
+    val sortable = result.map(t => SparkOps.create2TupleForJoin(t, 2)).asInstanceOf[RDD[(Int, Array[Any])]]
     val sorted = sortable.sortByKey(true)
 
     val data = sorted.take(4)
+
     data(0)._2 shouldBe Array(1, 354, 1, "Iceland")
     data(1)._2 shouldBe Array(2, 91, 2, "India")
     data(2)._2 shouldBe Array(3, 47, 3, "Norway")
-    data(3)._2 shouldBe Array(4, "Oman")
+    data(3)._2 shouldBe Array(None, None, 4, "Oman")
   }
 
 }
