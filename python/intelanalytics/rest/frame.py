@@ -143,14 +143,10 @@ class FrameBackendRest(object):
         pickled_predicate = pickle_function(func)
         http_ready_predicate = encode_bytes_for_http(pickled_predicate)
 
-        # TODO - put the frame uri in the frame, as received from create response
-        frame_uri = "%sdataframes/%d" % (http.base_uri, frame._id)
-        # TODO - abstraction for payload construction
-        payload = {'name': 'dataframe/filter',
-                   'arguments': {'frame': frame_uri,
-                                 'predicate': http_ready_predicate}}
-        r = http.post('commands', payload)
-        return r
+        arguments = {'frame': frame.uri, 'predicate': http_ready_predicate}
+        command = CommandRequest(name="dataframe/filter", arguments=arguments)
+        executor.issue(command)
+
 
     def remove_column(self, frame, name):
         frame_uri = "%sdataframes/%d" % (http.base_uri, frame._id)
