@@ -29,11 +29,12 @@ package com.intel.intelanalytics.domain
 case class Als[GraphRef](graph: GraphRef, lambda: Double, max_supersteps: Option[Int],
                          converge_threshold: Option[Int], feature_dimension: Option[Int])
 
-case class LoadLines[+Arguments, FrameRef](source: String, destination: FrameRef, skipRows: Option[Int], lineParser: Partial[Arguments]) {
+case class LoadLines[+Arguments, FrameRef](source: String, destination: FrameRef, skipRows: Option[Int], lineParser: Partial[Arguments], schema: Schema) {
   require(source != null, "source is required")
   require(destination != null, "destination is required")
   require(skipRows.isEmpty || skipRows.get >= 0, "cannot skip negative number of rows")
   require(lineParser != null, "lineParser is required")
+  require(schema != null, "schema is required")
 }
 
 case class FilterPredicate[+Arguments, FrameRef](frame: FrameRef, predicate: String) {

@@ -186,7 +186,7 @@ class SparkComponent extends EngineComponent
                 val frameId = arguments.destination
                 val parserFunction = getLineParser(arguments.lineParser)
                 val location = fsRoot + frames.getFrameDataFile(frameId)
-                val schema = realFrame.schema
+                val schema = arguments.schema
                 val converter = DataTypes.parseMany(schema.columns.map(_._2).toArray)(_)
                 val ctx = context(user)
                 SparkOps.loadLines(ctx.sparkContext, fsRoot + "/" + arguments.source, location, arguments, parserFunction, converter)
@@ -656,7 +656,7 @@ class SparkComponent extends EngineComponent
 
     override def create(frame: DataFrameTemplate): DataFrame = withContext("frame.create") {
       val id = nextFrameId()
-      val frame2 = new DataFrame(id = id, name = frame.name, schema = frame.schema)
+      val frame2 = new DataFrame(id = id, name = frame.name)
       val meta = File(Paths.get(getFrameMetaDataFile(id)))
       info(s"Saving metadata to $meta")
       val f = files.write(meta)

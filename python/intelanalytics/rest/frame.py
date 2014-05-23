@@ -81,16 +81,7 @@ class FrameBackendRest(object):
 
     def create(self, frame):
         logger.info("REST Backend: create frame: " + frame.name)
-        # hack, steal schema early if possible...
-        columns = [[n, supported_types.get_type_string(t)]
-                   for n, t in frame.schema.items()]
-        if not len(columns):
-            try:
-                if isinstance(frame._original_source, CsvFile):
-                    columns = frame._original_source._schema_to_json()
-            except:
-                pass
-        payload = {'name': frame.name, 'schema': {"columns": columns}}
+        payload = {'name': frame.name }
         r = self.rest_http.post('dataframes', payload)
         logger.info("REST Backend: create frame response: " + r.text)
         payload = r.json()
@@ -132,6 +123,7 @@ class FrameBackendRest(object):
         if isinstance(data, CsvFile):
             return {'source': data.file_name,
                     'destination': frame.uri,
+                    'schema': { 'columns': data._schema_to_json() },
                     'lineParser': {'operation': {'name': 'builtin/line/separator'},
                                    'arguments': {'separator': data.delimiter,
                                                  'skipRows': data.skip_header_lines}}}

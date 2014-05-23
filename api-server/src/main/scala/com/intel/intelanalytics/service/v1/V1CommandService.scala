@@ -133,7 +133,7 @@ trait V1CommandService extends V1Service {
             for {
               frame <- engine.getFrame(id)
               (c, f) = engine.load(LoadLines[JsObject, Long](args.source, id,
-                skipRows = args.skipRows, lineParser = args.lineParser))
+                skipRows = args.skipRows, lineParser = args.lineParser, schema = args.schema))
             } yield c) {
               case Success(c) => complete(decorate(uri + "/" + c.id, c))
               case Failure(ex) => throw ex

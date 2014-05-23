@@ -66,9 +66,6 @@ class BigFrame(object):
             self._backend = _get_backend()
         self._name = name or self._get_new_frame_name(source)
 
-        # TODO: remove this schema hack for frame creation w/ current REST API
-        self._original_source = source  # hold on to original source,
-
         self._backend.create(self)
         if source:
             self.append(source)
