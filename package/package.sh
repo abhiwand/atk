@@ -11,12 +11,12 @@
 source common.sh 
 pwd
 
-TEMP=`getopt -o p:b:t::v: --long package-name:,build:,tar:,version: -n 'package.sh' -- "$@"`
+TEMP=`getopt -o p:b:t:v: --long package-name:,build:,tar:,version: -n 'package.sh' -- "$@"`
 
 if [ $? != 0 ]; then echo "Terminating .." >&2 ; exit 1; fi
 
 eval set -- "$TEMP"
-
+echo "$@"
 config="config"
 packages="deb rpm"
 #version="0.8.0"

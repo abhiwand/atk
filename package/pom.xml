@@ -26,8 +26,10 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
+    <groupId>package</groupId>
     <artifactId>package</artifactId>
     <name>package</name>
+    <version>1</version>
 
     <parent>
         <groupId>com.intel.hadoop</groupId>
@@ -36,68 +38,121 @@
         <version>0.8-SNAPSHOT</version>
     </parent>
 
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>exec-maven-plugin</artifactId>
-                <version>1.2.1</version>
-                <executions>
-                    <execution>
-                        <id>chmod-shellscripts</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>exec</goal>
-                        </goals>
-                        <configuration>
-                            <executable>chmod</executable>
-                            <arguments>
-                                <argument>-R</argument>
-                                <argument>+x</argument>
-                                <argument>${basedir}/../package</argument>
-                            </arguments>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>build-spark</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>exec</goal>
-                        </goals>
-                        <configuration>
-                            <executable>/bin/bash</executable>
-                            <workingDirectory>${basedir}</workingDirectory>
-                            <arguments>
-                                <argument>package_sbt.sh</argument>
-                            </arguments>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>package</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>exec</goal>
-                        </goals>
-                        <configuration>
-                            <executable>bash</executable>
-                            <workingDirectory>${basedir}</workingDirectory>
-                            <arguments>
-                                <argument>package.sh</argument>
-			        <argument>-p</argument>
-				<argument> intelanalytics</argument>
-                                <argument>-b</argument>
-				<argument>${env.BUILD_NUMBER}</argument>
-                                <argument>-t </argument>
-				<argument>${basedir}/source.tar.gz</argument>
-                                <argument>-v</argument>
-				<argument>0.8.0</argument>
-                            </arguments>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
-    </build>
+    <properties>
+    <pkg.version>0.8.${env.BUILD_NUMBER}</pkg.version>
+    </properties>
+    <profiles>
+        <profile>
+            <id>package</id>
+            <activation>
+                <property>
+                    <name>env.BUILD_NUMBER</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>exec-maven-plugin</artifactId>
+
+                        <executions>
+                            <execution>
+                                <id>chmod-shellscripts</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>exec</goal>
+                                </goals>
+                                <configuration>
+                                    <executable>chmod</executable>
+
+                                    <arguments>
+                                        <argument>-R</argument>
+                                        <argument>+x</argument>
+                                        <argument>${basedir}</argument>
+                                    </arguments>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>zip-rest-server</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>exec</goal>
+                                </goals>
+                                <configuration>
+                                    <executable>bash</executable>
+                                    <workingDirectory>${basedir}</workingDirectory>
+                                    <arguments>
+                                        <argument>package-rest-server.sh</argument>
+                                    </arguments>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>package-rest-server</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>exec</goal>
+                                </goals>
+                                <configuration>
+                                    <executable>bash</executable>
+                                    <workingDirectory>${basedir}</workingDirectory>
+                                    <arguments>
+                                        <argument>package.sh</argument>
+                                        <argument>-p</argument>
+                                        <argument>intelanalytics-rest-server</argument>
+                                        <argument>-b</argument>
+                                        <argument>${env.BUILD_NUMBER}</argument>
+                                        <argument>-v</argument>
+                                        <argument>${pkg.version}</argument>
+                                        <argument>-t</argument>
+                                        <argument>${basedir}/intelanalytics-rest-server-source.tar.gz</argument>
+                                    </arguments>
+                                </configuration>
+                            </execution>
+
+                            <execution>
+                                <id>zip-python-rest-client</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>exec</goal>
+                                </goals>
+                                <configuration>
+                                    <executable>bash</executable>
+                                    <workingDirectory>${basedir}</workingDirectory>
+                                    <arguments>
+                                        <argument>package-python-rest-client.sh</argument>
+                                    </arguments>
+                                </configuration>
+                            </execution>
+
+                            <execution>
+                                <id>package-python-rest-client</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>exec</goal>
+                                </goals>
+                                <configuration>
+                                    <executable>bash</executable>
+                                    <workingDirectory>${basedir}</workingDirectory>
+                                    <arguments>
+                                        <argument>package.sh</argument>
+                                        <argument>-p</argument>
+                                        <argument>intelanalytics-python-rest-client</argument>
+                                        <argument>-b</argument>
+                                        <argument>${env.BUILD_NUMBER}</argument>
+                                        <argument>-v</argument>
+                                        <argument>${pkg.version}</argument>
+                                        <argument>-t</argument>
+                                        <argument>${basedir}/intelanalytics-python-rest-client-source.tar.gz</argument>
+                                    </arguments>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+
 
 
 </project>

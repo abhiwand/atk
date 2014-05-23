@@ -118,10 +118,22 @@
     <dep.zookeeper.version>3.3.3</dep.zookeeper.version>
     <dep.pig.version>0.12.0-cdh5.0.0</dep.pig.version>
   </properties>
-
+<profiles>
+    <profile>
+        <id>package</id>
+        <activation>
+            <property><name>${env.BUILD_NUMBER}</name></property>
+        </activation>
+    </profile>
+</profiles>
 <build>
     <pluginManagement>
       <plugins>
+          <plugin>
+              <groupId>net.alchim31.maven</groupId>
+              <artifactId>scala-maven-plugin</artifactId>
+              <version>3.1.6</version>
+          </plugin>
         <plugin>
           <groupId>com.github.koraktor</groupId>
           <artifactId>mavanagaiata</artifactId>
@@ -400,21 +412,36 @@
       </plugins>
     </pluginManagement>
     <plugins>
-      <plugin>
-        <groupId>com.github.koraktor</groupId>
-        <artifactId>mavanagaiata</artifactId>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-checkstyle-plugin</artifactId>
-      </plugin>
-
+        <plugin>
+            <groupId>net.alchim31.maven</groupId>
+            <artifactId>scala-maven-plugin</artifactId>
+            <version>3.1.6</version>
+            <executions>
+                <execution>
+                    <id>scala-compile-first</id>
+                    <phase>process-resources</phase>
+                    <goals>
+                        <goal>add-source</goal>
+                        <goal>compile</goal>
+                    </goals>
+                </execution>
+            </executions>
+        </plugin>
+        <plugin>
+            <groupId>com.github.koraktor</groupId>
+            <artifactId>mavanagaiata</artifactId>
+        </plugin>
+        <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-checkstyle-plugin</artifactId>
+        </plugin>
                 <plugin>
+                    <inherited>false</inherited>
                     <artifactId>exec-maven-plugin</artifactId>
                     <groupId>org.codehaus.mojo</groupId>
                     <version>1.2.1</version>
                     <executions>
-                        <execution>
+                       <execution>
                             <id>sbt-compile</id>
                             <phase>compile</phase>
                             <goals>
@@ -455,7 +482,7 @@
                             </configuration>
                         </execution>
                         <execution>
-                            <!-- for modules without scala -->
+
                             <id>sbt-test</id>
                             <phase>test</phase>
                             <goals>
@@ -482,83 +509,6 @@
                                 </arguments>
                             </configuration>
                         </execution>
-			
-			<execution>
-				<id>zip-rest-server</id>
-				<phase>package</phase>
-				<goals>
-					<goal>exec</goal>
-				</goals>
-				<configuration>
-					<executable>bash</executable>
-					<workingDirectory>${basedir}</workingDirectory>
-					<arguments>
-						<argument>package/package-rest-server.sh</argument>
-					</arguments>
-				</configuration>
-			</execution>
-			<execution>
-				<id>package-rest-server</id>
-				<phase>package</phase>
-				<goals>
-					<goal>exec</goal>
-				</goals>
-				<configuration>
-					<executable>bash</executable>
-					<workingDirectory>${basedir}/package</workingDirectory>
-					<arguments>
-						<argument>package.sh</argument>
-						<argument>-p</argument>
-						<argument>intelanalytics-rest-server</argument>
-						<argument>-b</argument>
-						<argument>${env.BUILD_NUMBER}</argument>
-						 <argument>-v</argument>
-                                                <argument>${pkg.version}</argument>
-						<argument>--tar</argument>
-						<argument>${basedir}/package/intelanalytics-rest-server-source.tar.gz</argument>
-					</arguments>
-				</configuration>
-			</execution>
-
-			<execution>
-				<id>zip-python-rest-client</id>
-				<phase>package</phase>
-				<goals>
-					<goal>exec</goal>
-				</goals>
-				<configuration>
-					<executable>bash</executable>
-					<workingDirectory>${basedir}</workingDirectory>
-					<arguments>
-                                                <argument>package/package-python-rest-client.sh</argument>
-                                        </arguments>
-				</configuration>
-			</execution>		
-			
-			 <execution>
-                                <id>package-python-rest-client</id>
-                                <phase>package</phase>
-                                <goals>
-                                        <goal>exec</goal>
-                                </goals>
-                                <configuration>
-                                        <executable>bash</executable>
-                                        <workingDirectory>${basedir}/package</workingDirectory>
-                                        <arguments>
-                                                <argument>package.sh</argument>
-                                                <argument>-p</argument>
-                                                <argument>intelanalytics-python-rest-client</argument>
-                                                <argument>-b</argument>
-                                                <argument>${env.BUILD_NUMBER}</argument>
-						 <argument>-v</argument>
-                                                <argument>${pkg.version}</argument>
-                                                <argument>--tar</argument>
-                                                <argument>${basedir}/package/intelanalytics-python-rest-client-source.tar.gz</argument>
-                                        </arguments>
-                                </configuration>
-                        </execution>
-			
-
                     </executions>
                 </plugin>
             </plugins>
@@ -792,13 +742,14 @@
     </dependency>
     </dependencies>
   </dependencyManagement>
-  <modules>
+    <modules>
       <!-- commented until we can figure out how to run without invoking sbt on them
     <module>imahout</module>
-    <module>igiraph</module> 
+    <module>igiraph</module>
     <module>imllib</module>
     -->
     <!--module>IntelAnalytics-web</module-->
-    <module>ititan</module>
-  </modules>
+        <module>ititan</module>
+        <module>package</module>
+</modules>
 </project>
