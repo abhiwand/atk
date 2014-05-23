@@ -13,7 +13,7 @@ class SparkJoinITest extends FlatSpec with Matchers with BeforeAndAfterEach with
     val countryCode = sc.parallelize(id_country_codes).map(t => SparkOps.create2TupleForJoin(t, 0))
     val countryNames = sc.parallelize(id_country_names).map(t => SparkOps.create2TupleForJoin(t, 0))
 
-    val result = SparkOps.joinRDDs(countryCode, countryNames)
+    val result = SparkOps.joinRDDs(countryCode, countryNames, "inner")
     val sortable = result.map(t => SparkOps.create2TupleForJoin(t, 0)).asInstanceOf[RDD[(Int, Array[Any])]]
     val sorted = sortable.sortByKey(true)
 
