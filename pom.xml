@@ -262,7 +262,8 @@
                         </execution>
                     </executions>
                     <configuration>
-
+                        <finalName>${project.artifactId}</finalName>
+                        <appendAssemblyId>false</appendAssemblyId>
                         <descriptorRefs>
                             <descriptorRef>jar-with-dependencies</descriptorRef>
                         </descriptorRefs>
@@ -449,7 +450,7 @@
                         </execution>
                     </executions>
                 </plugin>
-                <plugin>
+                <!--<plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-site-plugin</artifactId>
                     <version>3.3</version>
@@ -515,7 +516,7 @@
                             </plugin>
                         </reportPlugins>
                     </configuration>
-                </plugin>
+                </plugin>-->
 
                 <!--<plugin>
                     <groupId>org.codehaus.mojo</groupId>
