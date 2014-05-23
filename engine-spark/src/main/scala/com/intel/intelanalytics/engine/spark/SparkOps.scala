@@ -89,7 +89,7 @@ private[spark] object SparkOps extends Serializable {
     (data(joinIndex), data)
   }
 
-  def joinRDDs(left: RDDJoinParam, right: RDDJoinParam, how: String = "inner"): RDD[Array[Any]] = {
+  def joinRDDs(left: RDDJoinParam, right: RDDJoinParam, how: String): RDD[Array[Any]] = {
 
     val result = how match {
       case "left" => left.rdd.leftOuterJoin(right.rdd).map(t => {
