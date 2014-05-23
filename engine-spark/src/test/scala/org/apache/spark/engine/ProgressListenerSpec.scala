@@ -33,7 +33,6 @@ import org.apache.spark.scheduler.SparkListenerStageCompleted
 import org.apache.spark.scheduler.SparkListenerJobStart
 import org.apache.spark.{ TaskContext, Success }
 import scala.concurrent._
-import scala.concurrent.ExecutionContext.Implicits.global
 
 class ProgressListenerSpec extends Specification with Mockito {
 

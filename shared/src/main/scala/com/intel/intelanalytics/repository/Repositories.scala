@@ -22,7 +22,7 @@ trait ReadRepository[Session, Entity <: HasId] {
    *
    * @param offset for pagination, start at '0' and increment
    * @param count number of rows to return
-    */
+   */
   def scan(offset: Int = 0, count: Int = defaultScanCount)(implicit session: Session): Seq[Entity]
 }
 

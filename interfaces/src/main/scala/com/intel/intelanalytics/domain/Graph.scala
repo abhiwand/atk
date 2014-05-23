@@ -17,9 +17,7 @@ case class GraphTemplate(name: String,
                          bidirectional: Boolean) {
   require(name != null)
   require(name.trim.length > 0)
-
   require(dataFrameId != null)
-
   require(outputConfig != null)
 }
 
