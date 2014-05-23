@@ -335,7 +335,7 @@ class SparkComponent extends EngineComponent
                 val ctx = context(user).sparkContext
                 val pairRdds = createPairRddForJoin(argument, ctx)
 
-                val joinResultRDD = SparkOps.joinRDDs(RDDJoinParam(pairRdds(0), allColumns(0).length), RDDJoinParam(pairRdds(1), allColumns(1).length))
+                val joinResultRDD = SparkOps.joinRDDs(RDDJoinParam(pairRdds(0), allColumns(0).length), RDDJoinParam(pairRdds(1), allColumns(1).length), argument.how)
                 joinResultRDD.saveAsObjectFile(fsRoot + frames.getFrameDataFile(newJoinFrame.id))
                 newJoinFrame.toJson.asJsObject
               }
