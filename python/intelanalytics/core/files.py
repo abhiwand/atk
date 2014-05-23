@@ -45,7 +45,7 @@ class CsvFile(DataFile):
         (See supported_types from the types module)
         The type 'ignore' may also be used if the field should be ignored
         on loads
-    delimiter : string
+    delimiter : string (optional)
         string indicator of the delimiter for the fields, the comma character is the default
     skip_header_lines : int32, optional
         indicates numbers of lines to skip before parsing records

@@ -1,8 +1,3 @@
-.. PythonAPI documentation master file, created by
-   sphinx-quickstart on Tue Apr  8 15:19:15 2014.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
-
 Intel® Big Data Platform: Analytics Toolkit
 ===========================================
 
@@ -11,7 +6,7 @@ Contents:
 .. toctree::
    :maxdepth: 1
 
-   intro
+   ia_intr
    ad_over
    ds_over
 
@@ -20,7 +15,7 @@ References
 .. toctree::
    :maxdepth: 1
 
-* :ref:`glossary`
+* :doc:`ia_glos`
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
