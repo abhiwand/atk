@@ -27,6 +27,8 @@ import com.intel.graphbuilder.graph.GraphConnector
 import com.thinkaurelius.titan.core.{ TitanGraph, TitanFactory }
 import java.io.File
 import org.apache.commons.configuration.{ PropertiesConfiguration, Configuration }
+import com.thinkaurelius.titan.graphdb.database.StandardTitanGraph
+import com.thinkaurelius.titan.graphdb.configuration.GraphDatabaseConfiguration
 
 /**
  * Get a connection to Titan.
@@ -49,6 +51,13 @@ class TitanGraphConnector(config: Configuration) extends GraphConnector with Ser
    */
   override def connect(): TitanGraph = {
     TitanFactory.open(config)
+  }
+
+  /**
+   * Get a connection to a standard Titan graph database
+   */
+  def connectToStandardGraph(): StandardTitanGraph = {
+    new StandardTitanGraph(new GraphDatabaseConfiguration(config))
   }
 
 }
