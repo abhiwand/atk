@@ -1,9 +1,8 @@
 package com.intel.intelanalytics.engine.spark
 import org.scalatest.{ BeforeAndAfterEach, Matchers, FlatSpec }
-
-import org.apache.spark.SparkContext
-import java.util.Date
 import com.intel.intelanalytics.engine.TestingSparkContext
+import org.apache.spark.SparkContext._
+import org.apache.spark.rdd.RDD
 
 class SparkJoinITest extends FlatSpec with Matchers with BeforeAndAfterEach with TestingSparkContext {
 
@@ -13,10 +12,16 @@ class SparkJoinITest extends FlatSpec with Matchers with BeforeAndAfterEach with
 
     val countryCode = sc.parallelize(id_country_codes).map(t => SparkOps.create2TupleForJoin(t, 0))
     val countryNames = sc.parallelize(id_country_names).map(t => SparkOps.create2TupleForJoin(t, 0))
+
     val result = SparkOps.joinRDDs(countryCode, countryNames)
-    val data = result.take(4)
-    val first = data(0)
-    first shouldBe Array(4, 968, 4, "Oman")
+    val sortable = result.map(t => SparkOps.create2TupleForJoin(t, 0)).asInstanceOf[RDD[(Int, Array[Any])]]
+    val sorted = sortable.sortByKey(true)
+
+    val data = sorted.take(4)
+    data(0)._2 shouldBe Array(1, 354, 1, "Iceland")
+    data(1)._2 shouldBe Array(2, 91, 2, "India")
+    data(2)._2 shouldBe Array(3, 47, 3, "Norway")
+    data(3)._2 shouldBe Array(4, 968, 4, "Oman")
   }
 
 }
