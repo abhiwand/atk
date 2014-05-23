@@ -51,4 +51,15 @@ case class FrameAddColumn[+Arguments, FrameRef](frame: FrameRef, columnname: Str
   require(expression != null, "expression is required")
 }
 
+case class FrameProject[+Arguments, FrameRef](frame: FrameRef, originalframe: FrameRef, column: String) {
+  require(frame != null, "frame is required")
+  require(originalframe != null, "original frame is required")
+  require(column != null, "column is required")
+}
+case class FrameRenameColumn[+Arguments, FrameRef](frame: FrameRef, originalcolumn: String, renamedcolumn: String) {
+  require(frame != null, "frame is required")
+  require(originalcolumn != null, "original column is required")
+  require(renamedcolumn != null, "renamed column is required")
+}
+
 case class SeparatorArgs(separator: Char)
