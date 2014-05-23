@@ -39,17 +39,64 @@ def _get_backend():
 
 
 def get_frame_names():
-    """Gets the names of BigFrame objects available for retrieval"""
+    """
+    Gets the names of BigFrame objects available for retrieval.
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+    String : Name
+        Name of the active BigFrame object
+
+    Examples
+    --------
+    >>>
+
+    """
     return _get_backend().get_frame_names()
 
 
 def get_frame(name):
-    """Retrieves the named BigFrame object"""
+    """
+    Retrieves the named BigFrame object.
+    
+    Parameters
+    ----------
+    name : str
+        String containing the name of the BigFrame object
+
+    Returns
+    -------
+    Frame : BigFrame
+        Named object
+
+    Examples
+    --------
+    >>> 
+
+    """
     return _get_backend().get_frame(name)
 
 
 def delete_frame(name):
-    """Deletes the frame from backing store"""
+    """
+    Deletes the frame from backing store.
+    
+    Parameters
+    ----------
+    name
+    
+    Returns
+    -------
+    String : str
+        The name of the deleted frame
+
+    Examples
+    --------
+    >>> 
+    """
     return _get_backend().delete_frame(name)
 
 
@@ -177,7 +224,7 @@ class BigFrame(object):
 
     def add_column(self, func, type=str, name=""):
         """
-        Adds a new column to the frame by evaluating the given func on each row
+        Adds a new column to the frame by evaluating the given func on each row.
 
         Parameters
         ----------
@@ -200,7 +247,7 @@ class BigFrame(object):
 
     def add_columns(self, func, names=None, ):
         """
-        Adds new columns to the frame by evaluating the given func on each row
+        Adds new columns to the frame by evaluating the given func on each row.
 
         Parameters
         ----------
@@ -218,7 +265,7 @@ class BigFrame(object):
 
     def filter(self, predicate):
         """
-        Select all rows which satisfy a predicate
+        Select all rows which satisfy a predicate.
 
         Parameters
         ----------
@@ -236,8 +283,16 @@ class BigFrame(object):
 
         Parameters
         ----------
-        name: string or list of strings
-            column name or list of column names to be removed from the frame
+        name : str OR list of str
+            column name OR list of column names to be removed from the frame
+
+        Notes
+        -----
+        This function will retain a single column.
+
+        Examples
+        --------
+        >>> 
         """
         self._backend.remove_column(self, name)
         if isinstance(name, basestring):
@@ -250,15 +305,20 @@ class BigFrame(object):
 
     def dropna(self, how=any, column_subset=None):
         """
-        Drops all rows which have NA values
+        Drops all rows which have NA values.
 
         Parameters
         ----------
-        how : any, all, or column name, optional  any or all
-            any - if any column has an NA value, drop row
-            all - if all the columns have an NA value, drop row
-        column_subset : str or list of str, optional
-            if not None, only the given columns are considered
+        how : any, all, or column name, optional
+            any: if any column has an NA value, drop row
+            all: if all the columns have an NA value, drop row
+            column name: if named column has an NA value, drop row
+        column_subset : str OR list of str (optional)
+            if not "None", only the given columns are considered
+
+        Examples
+        --------
+        >>> 
         """
         self._backend.dropna(self, how, column_subset)
 
@@ -298,7 +358,45 @@ class BigFrame(object):
     #         raise ValueError("A value for right must be specified")
     #     return operations.BigOperationBinary("join", {BigFrame: {bool: None}}, self, predicate)
 
+    def add_column(self, column_name, func):
+        """
+        Add a column to a frame.
+
+        Parameters
+        ----------
+        column_name : str
+            The name of the new column. Must not already exist.
+        func : blob
+            A blob defining what type of data the column will hold
+
+        Returns
+        -------
+        
+        Examples
+        --------
+        >>>
+        """
+        return self._backend.add_column(self, column_name, func)
+
+
     def rename_column(self, column_name, new_name):
+        """
+        Rename a column to a frame.
+
+        Parameters
+        ----------
+        column_name : str
+            The name of the existing column.
+        new_name : str
+            The new name for the column. Must not already exist.
+
+        Returns
+        -------
+        
+        Examples
+        --------
+        >>>
+        """
         if isinstance(column_name, basestring) and isinstance(new_name, basestring):
             column_name = [column_name]
             new_name = [new_name]
@@ -318,15 +416,41 @@ class BigFrame(object):
         self._columns = OrderedDict([(v.name, v) for v in values])
 
     def save(self, name=None):
+        """
+        Saves all current data in the frame to disk.
+
+        Parameters
+        ----------
+        name : str (optional)
+            The name of a new file where the frame will be saved
+
+        Examples
+        --------
+        >>>
+        """
         self._backend.save(self, name)
 
     def take(self, n, offset=0):
+        """
+        ?
+
+        Parameters
+        ----------
+        n : int
+            ?
+        offset : int (optional)
+            ?
+
+        Examples
+        --------
+        >>>
+        """
         return self._backend.take(self, n, offset)
 
 
 class FrameSchema(OrderedDict):
     """
-    Ordered key-value pairs of column name -> data type
+    Ordered key-value pairs of column name -> data type.
     """
 
     def __init__(self, source=None):
@@ -366,12 +490,42 @@ class FrameSchema(OrderedDict):
         return map(lambda v: supported_types.get_type_string(v), self.values())
 
     def drop(self, victim_column_names):
+        """
+        Remove particular columns.
+
+        Parameters
+        ----------
+        victim_column_names : str OR list of str
+            Name(s) of the columns to drop
+
+        Examples
+        --------
+        >>> 
+        """
         if isinstance(victim_column_names, basestring):
             victim_column_names = [victim_column_names]
         for v in victim_column_names:
             del self[v]
 
     def append(self, new_columns):
+        """
+        Add new columns.
+
+        Parameters
+        ----------
+        new_columns : structure
+            The column(s) to add              Not optional
+            .keys = str       
+            .items = structure
+            == int             The new column number
+            == value           The new column value
+
+        Examples
+        --------
+        >>> 
+
+        Should the new column be named?
+        """
         for f in new_columns.keys():
             if f in self:
                 raise KeyError('Schema already contains column ' + f)

@@ -28,12 +28,24 @@ import com.intel.intelanalytics.domain.{ DataFrameTemplate, CommandTemplate, Com
 trait MetaStoreComponent {
   val metaStore: MetaStore
 
+  /**
+   * The MetaStore gives access to Repositories. Repositories are how you
+   * modify and query underlying tables (frames, graphs, users, etc).
+   */
   trait MetaStore {
     type Session
     def withSession[T](name: String)(f: Session => T): T
+
+    /** Repository for CRUD on 'frame' table */
     def frameRepo: Repository[Session, DataFrameTemplate, DataFrame]
+
+    /** Repository for CRUD on 'command' table */
     def commandRepo: Repository[Session, CommandTemplate, Command]
+
+    /** Repository for CRUD on 'user' table */
     def userRepo: Repository[Session, UserTemplate, User] with Queryable[Session, User]
+
+    /** Create the underlying tables */
     def create(): Unit
   }
 }
