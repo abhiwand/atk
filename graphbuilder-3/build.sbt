@@ -23,7 +23,8 @@ libraryDependencies := {
     "org.apache.hbase" % "hbase-server" % "0.96.1.1-cdh5.0.0" exclude("org.eclipse.jdt", "core"),
     "org.apache.spark" % "spark-core_2.10" % "0.9.0-cdh5.0.0",
     "org.specs2" %% "specs2" % "2.3.10" % "test",
-    "org.scalacheck" %% "scalacheck" % "1.11.3" % "test"//,
+    "org.scalacheck" %% "scalacheck" % "1.11.3" % "test",
+    "org.scalatest" %% "scalatest" % "2.1.4"  % "test"
     //"com.thinkaurelius.titan" % "titan-core" % "0.4.5-SNAPSHOT" % "provided"  exclude("org.slf4j", "slf4j-log4j12") intransitive(),
     //"org.apache.hbase" % "hbase-protocol" % "0.96.1.1-cdh5.0.0" % "provided" intransitive()
   )

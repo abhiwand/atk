@@ -4,9 +4,7 @@ import scala.collection.mutable.ListBuffer
 import com.intel.graphbuilder.elements.{ Edge, Vertex, Property, GraphElement }
 import com.tinkerpop.blueprints.Direction
 import com.thinkaurelius.titan.core.TitanType
-import com.thinkaurelius.titan.graphdb.types.system.{ SystemType, SystemKey }
-//import scala.collection.JavaConversions._
-import scala.collection.immutable.HashMap
+import com.thinkaurelius.titan.graphdb.types.system.SystemType
 
 /**
  * Used by Titan to deserialize a single row in a key-value store. Titan stores a vertex and its adjacent
@@ -22,48 +20,67 @@ class TitanRelationFactory(vertexId: Long) extends com.thinkaurelius.titan.graph
   val edgeList = new ListBuffer[GraphElement]
   val vertexProperties = new ListBuffer[Property]
 
-  var properties  = Map[String, Any]()
+  private var properties = Map[String, Any]()
   private var direction: Direction = null
   private var titanType: TitanType = null
   private var relationID: Long = 0
   private var otherVertexID: Long = 0
   private var value: Object = null
-  private var isSystemType = false
 
+  /**
+   * Get Titan's physical ID for vertex
+   */
   override def getVertexID(): Long = vertexId
 
+  /**
+   * Set direction of edge
+   */
   override def setDirection(newDirection: Direction) = {
     direction = newDirection
   }
 
-  override def setType(newTitanType: com.thinkaurelius.titan.core.TitanType) = {
-    if (titanType == SystemKey.TypeClass) {
-      isSystemType = true
-    }
+  /**
+   * Set the type of the graph element to distinguish between vertices, edges, and system types
+   */
+  override def setType(newTitanType: TitanType) = {
     titanType = newTitanType
   }
 
+  /**
+   * Set Titan's physical ID for edges
+   */
   override def setRelationID(newRelationID: Long) = {
     relationID = newRelationID
   }
 
+  /**
+   * Set ID of adjacent vertex in an edge
+   */
   override def setOtherVertexID(newOtherVertexID: Long) = {
     otherVertexID = newOtherVertexID
   }
 
+  /**
+   * Set the value of vertex properties
+   * @param newValue
+   */
   override def setValue(newValue: Object) {
     value = newValue
   }
 
+  /**
+   * Add vertex and edge properties
+   */
   override def addProperty(newTitanType: TitanType, newValue: Object) {
     properties += (newTitanType.getName() -> newValue)
   }
 
   /**
-   * Extracts a vertex property or edge from a column entry, and updates adjacency list
+   * Extracts a vertex property or an edge from a column entry, and updates the corresponding
+   * vertex property or edge list
    */
   def build() = {
-    if (!titanType.isInstanceOf[SystemType]) {
+    if (!isTitanSystemType(titanType)) {
       if (titanType.isPropertyKey()) {
         vertexProperties += new Property(titanType.getName(), value)
       }
@@ -72,6 +89,7 @@ class TitanRelationFactory(vertexId: Long) extends com.thinkaurelius.titan.graph
         edgeList += createEdge(vertexId, otherVertexID, direction, titanType.getName(), properties)
       }
     }
+    properties = Map[String, Any]()
   }
 
   /**
@@ -79,8 +97,13 @@ class TitanRelationFactory(vertexId: Long) extends com.thinkaurelius.titan.graph
    *
    * @return GraphBuilder vertex
    */
-  def createVertex(): Vertex = {
-    new Vertex(vertexId, Property(gbId, vertexId), vertexProperties.toSeq)
+  def createVertex(): Option[Vertex] = {
+    if (vertexProperties.isEmpty) {
+      None
+    }
+    else {
+      Option(new Vertex(vertexId, Property(gbId, vertexId), vertexProperties.toSeq))
+    }
   }
 
   /**
@@ -106,4 +129,10 @@ class TitanRelationFactory(vertexId: Long) extends com.thinkaurelius.titan.graph
 
     new Edge(srcVertexId, destVertexId, Property(gbId, srcVertexId), Property(gbId, destVertexId), edgeLabel, edgeProperties)
   }
+
+  /**
+   * Check if the element is a Titan system element. Titan system elements are omitted during deserialization.
+   */
+  private def isTitanSystemType(newTitanType: TitanType): Boolean = newTitanType.isInstanceOf[SystemType]
+
 }
