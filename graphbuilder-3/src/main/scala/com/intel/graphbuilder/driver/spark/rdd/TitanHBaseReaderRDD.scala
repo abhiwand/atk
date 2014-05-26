@@ -5,12 +5,12 @@ import org.apache.hadoop.hbase.io.ImmutableBytesWritable
 import org.apache.hadoop.hbase.client.Result
 import org.apache.commons.configuration.Configuration
 import com.intel.graphbuilder.elements.GraphElement
-import org.apache.spark.{TaskContext, Partition}
+import org.apache.spark.{ TaskContext, Partition }
 import com.intel.graphbuilder.graph.titan.TitanGraphConnector
-import com.thinkaurelius.titan.diskstorage.util.{StaticArrayBuffer, StaticByteBuffer}
+import com.thinkaurelius.titan.diskstorage.util.{ StaticArrayBuffer, StaticByteBuffer }
 import com.thinkaurelius.titan.diskstorage.keycolumnvalue.StaticBufferEntry
 import scala.collection.mutable.ListBuffer
-import com.intel.graphbuilder.driver.spark.titan.reader.{TitanRow, TitanRowParser}
+import com.intel.graphbuilder.driver.spark.titan.reader.{ TitanRow, TitanRowParser }
 import scala.collection.JavaConversions._
 
 class TitanHBaseReaderRDD(hBaseRDD: RDD[(ImmutableBytesWritable, Result)], titanConfig: Configuration) extends RDD[GraphElement](hBaseRDD) {
@@ -46,7 +46,7 @@ class TitanHBaseReaderRDD(hBaseRDD: RDD[(ImmutableBytesWritable, Result)], titan
   private def getSerializedTitanRow(rowKey: StaticByteBuffer, result: Result): TitanRow = {
     val titanColumnFamilyName = com.thinkaurelius.titan.diskstorage.Backend.EDGESTORE_NAME.getBytes();
     val titanColumnFamilyMap = result.getFamilyMap(titanColumnFamilyName);
-       titanColumnFamilyMap
+
     val serializedEntries = titanColumnFamilyMap.entrySet().map(entry =>
       StaticBufferEntry.of(new StaticArrayBuffer(entry.getKey), new StaticArrayBuffer(entry.getValue))
     ).toSeq

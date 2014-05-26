@@ -9,19 +9,21 @@ import com.intel.graphbuilder.elements.{ GraphElement, Property }
 case class TitanRowParser(titanRow: TitanRow, titanEdgeSerializer: EdgeSerializer, titanTransaction: StandardTitanTx) {
 
   val vertexId = IDHandler.getKeyID(titanRow.rowKey)
-
   val vertexProperties = new ListBuffer[Property]
   val edgeList = new ListBuffer[GraphElement]
 
   def parse(): Seq[GraphElement] = {
-
     val titanRelationFactory = new TitanRelationFactory(vertexId)
     deserializeTitanRow(titanRelationFactory)
 
     val vertex = titanRelationFactory.createVertex()
     val edgeList = titanRelationFactory.edgeList
-    val graphElements: Seq[GraphElement] = edgeList :+ vertex
-    graphElements
+    if (vertex.isDefined) {
+      titanRelationFactory.edgeList :+ vertex.get
+    }
+    else {
+      edgeList
+    }
   }
 
   /**
