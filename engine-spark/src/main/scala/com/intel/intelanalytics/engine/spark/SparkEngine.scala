@@ -99,9 +99,8 @@ import com.thinkaurelius.titan.graphdb.query.TitanPredicate
 import com.intel.graphbuilder.util.SerializableBaseConfiguration
 import org.apache.hadoop.hbase.HBaseConfiguration
 import org.apache.hadoop.hbase.client.HBaseAdmin
-import com.intel.intelanalytics.engine.spark.graph.{SparkGraphStorage, SparkGraphHBaseBackend}
+import com.intel.intelanalytics.engine.spark.graph.{ SparkGraphStorage, SparkGraphHBaseBackend }
 
-s
 import scala.util.Failure
 import scala.Some
 import scala.collection.JavaConverters._
@@ -122,7 +121,6 @@ import com.intel.intelanalytics.domain.CommandTemplate
 import com.intel.intelanalytics.domain.Error
 import com.intel.intelanalytics.domain.Als
 import com.intel.intelanalytics.engine.spark.graph.{ SparkGraphStorage, SparkGraphHBaseBackend }
-
 
 //TODO documentation
 //TODO progress notification
@@ -458,13 +456,38 @@ class SparkComponent extends EngineComponent
         }
       }
 
-    def createGraph(graph: GraphTemplate)(implicit user: UserPrincipal): Future[Graph] = {
+    def createGraph(graph: GraphTemplate)(implicit user: UserPrincipal) = {
       future {
         withMyClassLoader {
           graphs.createGraph(graph)
         }
       }
     }
+
+    def loadGraph(arguments: GraphLoad[JsObject, Long, Long])(implicit user: UserPrincipal): (Command, Future[Command]) =
+      withContext("se.load") {
+        require(arguments != null, "arguments are required")
+        import spray.json._
+        import DomainJsonProtocol._
+        val command: Command = commands.create(new CommandTemplate("graphLoad", Some(arguments.toJson.asJsObject)))
+        val result: Future[Command] = future {
+          withMyClassLoader {
+            withContext("se.graphLoad.future") {
+              withCommand(command) {
+
+                // not sure if we really need this...
+                val realFrame = frames.lookup(arguments.sourceFrameURI).getOrElse(
+                  throw new IllegalArgumentException(s"No such data frame: ${arguments.sourceFrameURI}"))
+
+                graphs.loadGraph(arguments)(user)
+              }
+
+              commands.lookup(command.id).get
+            }
+          }
+        }
+        (command, result)
+      }
 
     def getGraph(id: SparkComponent.this.Identifier): Future[Graph] = {
       future {
@@ -1061,9 +1084,6 @@ def calculateScore(list1, list2, biasOn, featureDimension) {
     }
 
   }
-
-
-
 
   val graphs = new SparkGraphStorage(engine.context(_), metaStore, new SparkGraphHBaseBackend(), frames)
 

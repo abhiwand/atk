@@ -153,11 +153,11 @@ trait EngineComponent {
     def delete(frame: DataFrame): Future[Unit]
     def getFrames(offset: Int, count: Int)(implicit p: UserPrincipal): Future[Seq[DataFrame]]
     def shutdown: Unit
+
     def getGraph(id: Identifier): Future[Graph]
     def getGraphs(offset: Int, count: Int)(implicit user: UserPrincipal): Future[Seq[Graph]]
-
-    // def createGraph(graph: GraphTemplate)(implicit user: UserPrincipal): Future[Graph]
-    def createGraph(graph: GraphLoad[JsObject, Long])(implicit user: UserPrincipal): Future[Graph]
+    def createGraph(graph: GraphTemplate)(implicit user: UserPrincipal): Future[Graph]
+    def loadGraph(graph: GraphLoad[JsObject, Long, Long])(implicit user: UserPrincipal): (Command, Future[Command])
 
     def deleteGraph(graph: Graph): Future[Unit]
     //NOTE: we do /not/ expect to have a separate method for every single algorithm, this will move to a plugin
@@ -192,9 +192,9 @@ abstract class GraphStorage(val backendStorage: GraphBackendStorage, val frameSt
 
   def lookup(id: Long): Option[Graph]
 
-  // def createGraph(graph: GraphTemplate)(implicit user: UserPrincipal): Graph
-  def createGraph(graph: GraphLoad[JsObject, Long])(implicit user: UserPrincipal): Future[Graph]
-  
+  def createGraph(graph: GraphTemplate)(implicit user: UserPrincipal): Graph
+  def loadGraph(graph: GraphLoad[JsObject, Long, Long])(implicit user: UserPrincipal): Graph
+
   def drop(graph: Graph)
   def getGraphs(offset: Int, count: Int)(implicit user: UserPrincipal): Seq[Graph]
 

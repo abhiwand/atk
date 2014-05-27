@@ -1,6 +1,6 @@
 package com.intel.intelanalytics.engine.spark.graph
 
-import com.intel.intelanalytics.domain.{GraphLoad, DataFrame, GraphTemplate, Graph}
+import com.intel.intelanalytics.domain.{ GraphLoad, DataFrame, GraphTemplate, Graph }
 import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.engine.{ FrameComponent, Rows, GraphBackendStorage, GraphStorage }
 import java.util.concurrent.atomic.AtomicLong
@@ -15,12 +15,13 @@ import com.intel.intelanalytics.engine.spark.{ Context, SparkComponent }
 import org.apache.spark.SparkContext
 import com.intel.intelanalytics.repository.{ MetaStoreComponent, Repository }
 import scala.concurrent.Future
+import com.intel.intelanalytics.shared.EventLogging
 
 class SparkGraphStorage(context: (UserPrincipal) => Context,
                         metaStore: MetaStoreComponent#MetaStore,
                         backendStorage: GraphBackendStorage,
                         frameStorage: SparkComponent#SparkFrameStorage)
-    extends GraphStorage(backendStorage, frameStorage) {
+    extends GraphStorage(backendStorage, frameStorage) with EventLogging {
 
   val graphStorageBackend: GraphBackendStorage = new SparkGraphHBaseBackend {}
 
@@ -41,28 +42,42 @@ class SparkGraphStorage(context: (UserPrincipal) => Context,
     }
   }
 
-  // override def createGraph(graph: GraphTemplate)(implicit user: UserPrincipal): Graph = {
-  override def createGraph(graphLoad: GraphLoad[JsObject, Long])(implicit user: UserPrincipal): Future[Graph] = {
-    metaStore.withSession("spark.graphstorage.createGraph") {
+  override def createGraph(graph: GraphTemplate)(implicit user: UserPrincipal): Graph = {
+    metaStore.withSession("spark.graphstorage.drop") {
       implicit session =>
         {
-
-          val sparkContext = context(user).sparkContext
-
-          val dataFrame = frameStorage.lookup(graphLoad.sourceFrame)
-          val gbConfigFactory = new GraphBuilderConfigFactory(dataFrame.get.schema, graphLoad)
-
-          val graphBuilder = new GraphBuilder(gbConfigFactory.graphConfig)
-
-          // Setup data in Spark
-          val inputRowsRdd: RDD[Rows.Row] = frameStorage.getFrameRdd(sparkContext, graphLoad.dataFrameId)
-
-          val inputRdd: RDD[Seq[_]] = inputRowsRdd.map(x => x.toSeq)
-
-          graphBuilder.build(inputRdd)
-
-          metaStore.graphRepo.insert(graphLoad).get
+          metaStore.graphRepo.insert(graph).get
         }
+    }
+  }
+
+  override def loadGraph(graphLoad: GraphLoad[JsObject, Long, Long])(implicit user: UserPrincipal): Graph = {
+    withContext("se.runAls") {
+      metaStore.withSession("spark.graphstorage.createGraph") {
+        implicit session =>
+          {
+            val sparkContext = context(user).sparkContext
+
+            val sourceFrameID = graphLoad.sourceFrameURI
+
+            val dataFrame = frameStorage.lookup(sourceFrameID)
+
+            val graph = lookup(graphLoad.graphURI).get
+
+            val gbConfigFactory = new GraphBuilderConfigFactory(dataFrame.get.schema, graphLoad, graph)
+
+            val graphBuilder = new GraphBuilder(gbConfigFactory.graphConfig)
+
+            // Setup data in Spark
+            val inputRowsRdd: RDD[Rows.Row] = frameStorage.getFrameRdd(sparkContext, sourceFrameID)
+
+            val inputRdd: RDD[Seq[_]] = inputRowsRdd.map(x => x.toSeq)
+
+            graphBuilder.build(inputRdd)
+
+            graph
+          }
+      }
     }
   }
 
