@@ -33,6 +33,7 @@ import com.intel.intelanalytics.domain.DataFrame
 import com.intel.intelanalytics.domain.Schema
 import com.intel.intelanalytics.domain.Command
 import com.intel.intelanalytics.repository.Repository
+import com.intel.intelanalytics.domain.graphconstruction.OutputConfiguration
 
 trait DbProfileComponent {
 
@@ -74,7 +75,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
      */
     override def create(): Unit = {
 
-    /** Repository for CRUD on 'frame' table */
+      /** Repository for CRUD on 'frame' table */
 
       withSession("Creating tables") { implicit session =>
         info("creating")
@@ -329,7 +330,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
 
       def * = (id, name) <>
         ((t: (Long, String)) => t match {
-          case (i: Long, n: String) => Graph.tupled((i, n))
+          case (id: Long, name: String) => Graph.tupled((id, name))
         },
           (graph: Graph) => Graph.unapply(graph) map { case (i, n) => (i, n) })
     }
@@ -339,7 +340,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
     protected val graphsAutoInc = graphs returning graphs.map(_.id) into { case (graph, id) => graph.copy(id = id) }
 
     def _insertGraph(graph: GraphTemplate)(implicit session: Session) = {
-      val g = Graph(1, graph.graphName)
+      val g = Graph(1, graph.name)
       graphsAutoInc.insert(g)
     }
 

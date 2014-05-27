@@ -142,26 +142,40 @@ trait V1CommandService extends V1Service {
     }
   }
 
-  def runGraphLoad(uri: Uri, transform: JsonTransform): Route = {
+  def runGraphLoad(uri: Uri, transform: JsonTransform)(implicit user: UserPrincipal): Route = {
     val test = Try {
       import DomainJsonProtocol._
-      transform.arguments.get.convertTo[GraphLoad[JsObject, String]]
+      transform.arguments.get.convertTo[GraphLoad[JsObject, String, String]]
     }
-    val idOpt = test.toOption.flatMap(args => getFrameId(args.sourceFrame))
+    val frameIDOpt = test.toOption.flatMap(args => getFrameId(args.sourceFrameURI))
+    val graphIDOpt = test.toOption.flatMap(args => getGraphId(args.graphURI))
 
     (validate(test.isSuccess, "Failed to parse graph load descriptor: " + getErrorMessage(test))
-      & validate(idOpt.isDefined, "Source dataframe is not a valid data frame URL")) {
-      val args = test.get
-      val id = idOpt.get
-      onComplete(
-        for {
-          frame <- engine.getFrame(id)
-          (c, f) = engine.createGraph(GraphLoad[JsObject, Long](args.copy[Long](graph = graph.id)))
-        } yield c) {
-        case Success(c) => complete(decorate(uri + "/" + c.id, c))
-        case Failure(ex) => throw ex
+      & validate(frameIDOpt.isDefined, "Source dataframe is not a valid data frame URL")
+      & validate(graphIDOpt.isDefined, "Target graph is not a valid graph URL")) {
+
+        val args = test.get
+        val sourceFrameID = frameIDOpt.get
+        val graphID = graphIDOpt.get
+
+        val graphLoad = GraphLoad(graphID,
+          sourceFrameID,
+          args.outputConfig,
+          args.vertexRules,
+          args.edgeRules,
+          args.retainDanglingEdges,
+          args.bidirectional)
+
+        onComplete(
+          for {
+            frame <- engine.getFrame(sourceFrameID)
+            graph <- engine.getGraph(graphID)
+            (c, f) = engine.loadGraph(graphLoad)
+          } yield c) {
+            case Success(c) => complete(decorate(uri + "/" + c.id, c))
+            case Failure(ex) => throw ex
+          }
       }
-    }
   }
 
   def runAls(uri: Uri, transform: JsonTransform)(implicit user: UserPrincipal): Route = {

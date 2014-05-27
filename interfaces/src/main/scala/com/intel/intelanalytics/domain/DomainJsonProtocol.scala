@@ -74,8 +74,11 @@ object DomainJsonProtocol extends DefaultJsonProtocol {
   implicit val edgeRuleFormat = jsonFormat4(EdgeRule)
   implicit val vertexRuleFormat = jsonFormat2(VertexRule)
 
-  implicit val graphTemplateFormat = jsonFormat7(GraphTemplate)
+  implicit val graphTemplateFormat = jsonFormat1(GraphTemplate)
   implicit val graphFormat = jsonFormat2(Graph)
+
+  implicit val graphLoadLongs = jsonFormat7(GraphLoad[JsObject, Long, Long])
+  implicit val graphLoadStrings = jsonFormat7(GraphLoad[JsObject, String, String])
 
   implicit object DataTypeJsonFormat extends JsonFormat[Any] {
     override def write(obj: Any): JsValue = {

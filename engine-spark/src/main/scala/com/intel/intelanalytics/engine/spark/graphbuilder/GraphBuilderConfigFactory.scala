@@ -1,6 +1,6 @@
 package com.intel.intelanalytics.engine.spark.graphbuilder
 
-import com.intel.intelanalytics.domain.{ Schema, GraphTemplate, DataTypes }
+import com.intel.intelanalytics.domain._
 import com.intel.graphbuilder.driver.spark.titan.GraphBuilderConfig
 import com.intel.intelanalytics.domain.graphconstruction._
 import com.intel.graphbuilder.util.SerializableBaseConfiguration
@@ -11,16 +11,29 @@ import scala.collection.mutable.ListBuffer
 import com.intel.graphbuilder.parser.rule.ParsedValue
 import com.intel.intelanalytics.domain.graphconstruction.OutputConfiguration
 import com.intel.graphbuilder.parser.InputSchema
-import com.intel.intelanalytics.domain.GraphTemplate
-import com.intel.intelanalytics.domain.Schema
 import com.intel.graphbuilder.parser.rule.ConstantValue
 import com.intel.graphbuilder.parser.ColumnDef
 import com.intel.graphbuilder.driver.spark.titan.GraphBuilderConfig
 import com.intel.intelanalytics.domain.graphconstruction.VertexRule
 import com.intel.intelanalytics.domain.graphconstruction.Property
 import com.intel.graphbuilder.driver.spark.titan.examples.ExamplesUtils
+import com.intel.graphbuilder.parser.rule.ConstantValue
+import com.intel.graphbuilder.driver.spark.titan.GraphBuilderConfig
+import com.intel.graphbuilder.parser.rule.ParsedValue
+import com.intel.intelanalytics.domain.graphconstruction.Value
 
-class GraphBuilderConfigFactory(val schema: Schema, val graphTemplate: GraphTemplate) {
+import com.intel.intelanalytics.domain.graphconstruction.OutputConfiguration
+import com.intel.graphbuilder.parser.InputSchema
+import com.intel.intelanalytics.domain.GraphTemplate
+import com.intel.intelanalytics.domain.Schema
+import com.intel.intelanalytics.domain.graphconstruction.EdgeRule
+import com.intel.graphbuilder.parser.ColumnDef
+import com.intel.intelanalytics.domain.graphconstruction.VertexRule
+import com.intel.intelanalytics.domain.graphconstruction.Property
+import spray.json.JsObject
+import com.intel.intelanalytics.engine.spark.graph.BackendGraphName
+
+class GraphBuilderConfigFactory(val schema: Schema, val graphLoad: GraphLoad[JsObject, Long, Long], graph: Graph) {
 
   def getInputSchema(schema: Schema): InputSchema = {
     val columns = new ListBuffer[ColumnDef]()
@@ -41,7 +54,7 @@ class GraphBuilderConfigFactory(val schema: Schema, val graphTemplate: GraphTemp
     var titanConfiguration = new SerializableBaseConfiguration
 
     titanConfiguration.setProperty("storage.backend", "hbase")
-    titanConfiguration.setProperty("storage.tablename", graphName + "_titan_hbase")
+    titanConfiguration.setProperty("storage.tablename", BackendGraphName(graphName))
 
     titanConfiguration.setProperty("storage.hostname", ExamplesUtils.storageHostname)
     titanConfiguration.setProperty("storage.batch-loading", "true")
@@ -94,12 +107,12 @@ class GraphBuilderConfigFactory(val schema: Schema, val graphTemplate: GraphTemp
 
   val graphConfig: GraphBuilderConfig = {
     new GraphBuilderConfig(getInputSchema(schema),
-      getGBVertexRules(graphTemplate.vertexRules),
-      getGBEdgeRules(graphTemplate.edgeRules),
-      getTitanConfiguration(graphTemplate.graphName, graphTemplate.outputConfig),
-      biDirectional = graphTemplate.bidirectional,
+      getGBVertexRules(graphLoad.vertexRules),
+      getGBEdgeRules(graphLoad.edgeRules),
+      getTitanConfiguration(graph.name, graphLoad.outputConfig),
+      biDirectional = graphLoad.bidirectional,
       append = false,
-      retainDanglingEdges = graphTemplate.retainDanglingEdges,
+      retainDanglingEdges = graphLoad.retainDanglingEdges,
       inferSchema = true,
       broadcastVertexIds = false)
   }

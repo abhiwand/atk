@@ -23,7 +23,7 @@
 
 package com.intel.intelanalytics.domain
 
-import com.intel.intelanalytics.domain.graphconstruction.{EdgeRule, VertexRule, OutputConfiguration}
+import com.intel.intelanalytics.domain.graphconstruction.{ EdgeRule, VertexRule, OutputConfiguration }
 
 //TODO: Many of these classes will go away in the future, replaced with something more generic.
 
@@ -55,17 +55,26 @@ case class FrameAddColumn[+Arguments, FrameRef](frame: FrameRef, columnname: Str
 
 case class SeparatorArgs(separator: Char)
 
-case class GraphLoad[+Arguments, FrameRef](graphName: String,
-                         sourceFrame: FrameRef,
-                         outputConfig: OutputConfiguration,
-                         vertexRules: List[VertexRule],
-                         edgeRules: List[EdgeRule],
-                         retainDanglingEdges: Boolean,
-                         bidirectional: Boolean) {
-  require(graphName != null)
-  require(graphName.trim.length > 0)
+case class GraphLoad[+Arguments, GraphRef, FrameRef](graphURI: GraphRef,
+                                                     sourceFrameURI: FrameRef,
+                                                     outputConfig: OutputConfiguration,
+                                                     vertexRules: List[VertexRule],
+                                                     edgeRules: List[EdgeRule],
+                                                     retainDanglingEdges: Boolean,
+                                                     bidirectional: Boolean) {
+  require(graphURI != null)
+  require(sourceFrameURI != null)
+  require(outputConfig != null)
+}
 
-  require(sourceFrame != null)
-
+case class DeleteGraph[+Arguments, GraphRef, FrameRef](graphURI: GraphRef,
+                                                     sourceFrameURI: FrameRef,
+                                                     outputConfig: OutputConfiguration,
+                                                     vertexRules: List[VertexRule],
+                                                     edgeRules: List[EdgeRule],
+                                                     retainDanglingEdges: Boolean,
+                                                     bidirectional: Boolean) {
+  require(graphURI != null)
+  require(sourceFrameURI != null)
   require(outputConfig != null)
 }
