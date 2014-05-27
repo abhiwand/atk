@@ -574,8 +574,10 @@ class SparkComponent extends EngineComponent
       }
 
     def deleteGraph(graph: Graph): Future[Unit] = {
-      future {
-        graphs.drop(graph)
+      withContext("se.deletegraph") {
+        future {
+          graphs.drop(graph)
+        }
       }
     }
 

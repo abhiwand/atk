@@ -16,6 +16,8 @@ import org.apache.spark.SparkContext
 import com.intel.intelanalytics.repository.{ MetaStoreComponent, Repository }
 import scala.concurrent.Future
 import com.intel.intelanalytics.shared.EventLogging
+import scala.concurrent._
+import ExecutionContext.Implicits.global
 
 class SparkGraphStorage(context: (UserPrincipal) => Context,
                         metaStore: MetaStoreComponent#MetaStore,
@@ -33,8 +35,10 @@ class SparkGraphStorage(context: (UserPrincipal) => Context,
     metaStore.withSession("spark.graphstorage.drop") {
       implicit session =>
         {
+          future {
+            backendStorage.deleteTable(graph.name)
+          }
 
-          backendStorage.deleteTable(graph.name)
           metaStore.graphRepo.delete(graph.id)
 
           Unit
@@ -52,7 +56,7 @@ class SparkGraphStorage(context: (UserPrincipal) => Context,
   }
 
   override def loadGraph(graphLoad: GraphLoad[JsObject, Long, Long])(implicit user: UserPrincipal): Graph = {
-    withContext("se.runAls") {
+    withContext("se.loadgraph") {
       metaStore.withSession("spark.graphstorage.createGraph") {
         implicit session =>
           {
