@@ -19,6 +19,3 @@ References
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
-
-:todo: Test the function
-

@@ -6,7 +6,7 @@ Contents:
 ..  toctree::
     :maxdepth: 2
 
-    intel_legal
+    ia_legl
     ds_strt
     ds_db
     ds_dflw
