@@ -133,7 +133,7 @@ trait V1CommandService extends V1Service {
             for {
               frame <- engine.getFrame(id)
               (c, f) = engine.load(LoadLines[JsObject, Long](args.source, id,
-                skipRows = args.skipRows, lineParser = args.lineParser))
+                skipRows = args.skipRows, overwrite = args.overwrite, lineParser = args.lineParser))
             } yield c) {
               case Success(c) => complete(decorate(uri + "/" + c.id, c))
               case Failure(ex) => throw ex
@@ -185,17 +185,19 @@ trait V1CommandService extends V1Service {
     }
     val idOpt = test.toOption.flatMap(args => getGraphId(args.graph))
     (validate(test.isSuccess, "Failed to parse file load descriptor: " + getErrorMessage(test))
-      & validate(idOpt.isDefined, "Destination is not a valid data frame URL")) {
+      & validate( /*idOpt.isDefined*/ true, "Destination is not a valid graph URL")) {
         val args = test.get
-        val id = idOpt.get
-        onComplete(
-          for {
-            graph <- engine.getGraph(id)
-            (c, f) = engine.runAls(args.copy[Long](graph = graph.id))
-          } yield c) {
-            case Success(c) => complete(decorate(uri + "/" + c.id, c))
-            case Failure(ex) => throw ex
-          }
+        val id = 1 //idOpt.get
+        val (c, f) = engine.runAls(args.copy[Long](graph = 1))
+        complete(decorate(uri + "/" + c.id, c))
+        //      onComplete(
+        //          for {
+        //            graph <- engine.getGraph(id)
+        //            (c, f) = engine.runAls(args.copy[Long](graph = graph.id))
+        //          } yield c) {
+        //            case Success(c) => complete(decorate(uri + "/" + c.id, c))
+        //            case Failure(ex) => throw ex
+        //          }
       }
   }
 
