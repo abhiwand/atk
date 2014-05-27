@@ -36,15 +36,16 @@ object Boot extends App {
     final def option[A](a: => A): Option[A] = if (b) Some(a) else None
   }
 
-  val loaders = new mutable.HashMap[String, ClassLoader] with mutable.SynchronizedMap[String, ClassLoader] {}
+  var loaders: Map[String, ClassLoader] = Map.empty
 
-  val archives = new mutable.HashMap[String, Archive] with mutable.SynchronizedMap[String, Archive] {}
+  var archives: Map[String, Archive] = Map.empty
 
   def buildArchive(archive: String, className: String): Archive = {
     val loader = getClassLoader(archive)
     val klass = loader.loadClass(className)
     val thread = Thread.currentThread()
     val prior = thread.getContextClassLoader
+
     try {
       thread.setContextClassLoader(loader)
       val instance = klass.newInstance().asInstanceOf[Archive]
@@ -84,10 +85,12 @@ object Boot extends App {
         println(s"Found jar at $deployedJar")
         deployedJar.toURL
       }).flatten
-    urls match {
+    val loader = urls match {
       case u if u.length > 0 => new URLClassLoader(u, parent)
       case _ => throw new Exception(s"Could not locate archive $archive")
     }
+    loaders += (archive -> loader)
+    loader
   }
 
   lazy val interfaces = buildClassLoader("interfaces", getClass.getClassLoader)

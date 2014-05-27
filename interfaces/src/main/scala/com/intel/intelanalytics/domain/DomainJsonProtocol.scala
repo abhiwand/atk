@@ -59,6 +59,10 @@ object DomainJsonProtocol extends DefaultJsonProtocol {
   implicit val removeColumnLongFormat = jsonFormat2(FrameRemoveColumn[JsObject, Long])
   implicit val addColumnFormat = jsonFormat4(FrameAddColumn[JsObject, String])
   implicit val addColumnLongFormat = jsonFormat4(FrameAddColumn[JsObject, Long])
+  implicit val projectColumnFormat = jsonFormat3(FrameProject[JsObject, String])
+  implicit val projectColumnLongFormat = jsonFormat3(FrameProject[JsObject, Long])
+  implicit val renameColumnFormat = jsonFormat3(FrameRenameColumn[JsObject, String])
+  implicit val renameColumnLongFormat = jsonFormat3(FrameRenameColumn[JsObject, Long])
 
   implicit val alsFormatString = jsonFormat5(Als[String])
   implicit val alsFormatLong = jsonFormat5(Als[Long])
