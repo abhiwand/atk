@@ -27,6 +27,7 @@ from collections import OrderedDict
 import json
 
 from intelanalytics.core.types import supported_types
+from intelanalytics.core.column import BigColumn
 
 import logging
 logger = logging.getLogger(__name__)
@@ -105,7 +106,7 @@ class BigFrame(object):
     Proxy for a large 2D container to work with table data at scale.
     """
 
-    def __init__(self, source=None, name=None):
+    def __init__(self, source=None, name=None, **kwargs):
         self._columns = OrderedDict()  # self._columns must be the first attribute to be assigned (see __setattr__)
         self._id = 0
         self._uri = ""
@@ -118,7 +119,15 @@ class BigFrame(object):
 
         self._backend.create(self)
         if source:
-            self.append(source)
+            if isinstance(source, BigColumn) or (isinstance(source, list) and all(isinstance(iter, BigColumn) for iter in source)):
+                self.project(source)
+                column_names = kwargs.get('rename', None)
+                if isinstance(column_names, list):
+                    self.rename_column(self._columns.keys(), column_names)
+                elif isinstance(column_names, dict):
+                    self.rename_column([i.name if isinstance(i, BigColumn) else i for i in column_names.keys()], column_names.values())
+            else:
+                self.append(source)
         logger.info('Created new frame "%s"', self._name)
 
     def __getattr__(self, name):
@@ -271,6 +280,9 @@ class BigFrame(object):
     def append(self, *data):
         self._backend.append(self, *data)
 
+    def project(self, *data):
+        self._backend.project(self, *data)
+
     def filter(self, predicate):
         """
         Select all rows which satisfy a predicate.
@@ -365,27 +377,6 @@ class BigFrame(object):
     #     if not right:
     #         raise ValueError("A value for right must be specified")
     #     return operations.BigOperationBinary("join", {BigFrame: {bool: None}}, self, predicate)
-
-    def add_column(self, column_name, func):
-        """
-        Add a column to a frame.
-
-        Parameters
-        ----------
-        column_name : str
-            The name of the new column. Must not already exist.
-        func : blob
-            A blob defining what type of data the column will hold
-
-        Returns
-        -------
-        
-        Examples
-        --------
-        >>>
-        """
-        return self._backend.add_column(self, column_name, func)
-
 
     def rename_column(self, column_name, new_name):
         """
