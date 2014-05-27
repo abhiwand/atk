@@ -95,7 +95,7 @@ private[spark] object SparkOps extends Serializable {
       case "left" => left.rdd.leftOuterJoin(right.rdd).map(t => {
         t._2._2 match {
           case s: Some[Array[Any]] => t._2._1 ++ s.get
-          case None => t._2._1 ++ (1 to right.columnCount).map(i => None)
+          case None => t._2._1 ++ (1 to right.columnCount).map(i => null)
         }
       })
 
@@ -104,7 +104,7 @@ private[spark] object SparkOps extends Serializable {
           case s: Some[Array[Any]] => s.get ++ t._2._2
           case None => {
             var array: Array[Any] = t._2._2
-            (1 to left.columnCount).foreach(i => array = None +: array)
+            (1 to left.columnCount).foreach(i => array = null +: array)
             array
           }
         }
