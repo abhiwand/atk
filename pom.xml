@@ -113,9 +113,9 @@
         <spray-json.version>1.2.5</spray-json.version>
         <slick.version>2.0.1</slick.version>
 
-        <scoverage-plugin.version>0.98.2</scoverage-plugin.version>
-        <scoverage.version>0.98.2</scoverage.version>
-        <maven.plugin.scoverage.version>0.98.2</maven.plugin.scoverage.version>
+        <scoverage-plugin.version>0.99.2</scoverage-plugin.version>
+        <scoverage.version>0.99.2</scoverage.version>
+        <maven.plugin.scoverage.version>0.99.2</maven.plugin.scoverage.version>
     </properties>
     <profiles>
         <profile>
@@ -147,18 +147,20 @@
                                 <jvmArgs>
                                     <jvmArg>-Xms1024m</jvmArg>
                                     <jvmArg>-Xmx2048m</jvmArg>
-                                    <!--<jvmArg>-XX:MaxPermSize=5120m</jvmArg>
-                                    <jvmArg>-XX:PermSize=4096m</jvmArg>
-                                    <jvmArg>-XX:+UseConcMarkSweepGC</jvmArg>
-                                    <jvmArg>-XX:+CMSPermGenSweepingEnabled</jvmArg>
-                                    <jvmArg>-XX:+CMSClassUnloadingEnabled</jvmArg>-->
                                 </jvmArgs>
-                                <compilerPlugins>
-                                    <compilerPlugin>
+								<!--<dependencies>
+                                    <dependency>
                                         <groupId>org.scoverage</groupId>
                                         <artifactId>scalac-scoverage-plugin_${scala.short.version}</artifactId>
                                         <version>${scoverage-plugin.version}</version>
-                                    </compilerPlugin>
+                                    </dependency>
+                                </dependencies>-->
+                                <compilerPlugins>
+                                    <!--<compilerPlugin>
+                                        <groupId>org.scoverage</groupId>
+                                        <artifactId>scalac-scoverage-plugin_${scala.short.version}</artifactId>
+                                        <version>${scoverage-plugin.version}</version>
+                                    </compilerPlugin>-->
                                     <compilerPlugin>
                                             <groupId>com.mmakowski</groupId>
                                             <artifactId>maven-specs2-plugin</artifactId>
@@ -168,7 +170,7 @@
                                 <args>
                                     <arg>-g:vars</arg>
                                     <arg>-Yrangepos</arg>
-                                    <arg>-P:scoverage:dataDir:${project.build.outputDirectory}</arg>
+                                    <!--<arg>-P:scoverage:dataDir:${project.build.directory}</arg>-->
                                 </args>
                             </configuration>
                         </execution>
@@ -224,7 +226,7 @@
                         </execution>
                     </executions>
                 </plugin>
-                <plugin>
+                <!--<plugin>
                     <inherited>true</inherited>
                     <groupId>org.scoverage</groupId>
                     <artifactId>maven-scoverage-plugin</artifactId>
@@ -241,7 +243,7 @@
                         </execution>
 
                     </executions>
-                </plugin>
+                </plugin>-->
                 <!--END DO NOT TOUCH-->
 
                 <plugin>
@@ -360,7 +362,7 @@
 
 
 
-               <plugin>
+               <!--<plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-jar-plugin</artifactId>
                     <version>2.3.2</version>
@@ -392,27 +394,9 @@
                             </goals>
                         </execution>
                     </executions>
-                </plugin>
-               <!-- <plugin>
-                    <artifactId>maven-assembly-plugin</artifactId>
-                    <executions>
-                        <execution>
-                            <id>jar-with-deps</id>
-                            <phase>package</phase>
-                            <goals>
-                                <goal>single</goal>
-                            </goals>
-                        </execution>
-                    </executions>
-                    <configuration>
-                        <finalName>${project.artifactId}</finalName>
-                        <appendAssemblyId>false</appendAssemblyId>
-
-                        <descriptorRefs>
-                            <descriptorRef>jar-with-dependencies</descriptorRef>
-                        </descriptorRefs>
-                    </configuration>
                 </plugin>-->
+               
+				
                 <plugin>
                     <inherited>true</inherited>
                     <groupId>org.apache.maven.plugins</groupId>
@@ -425,19 +409,21 @@
                                 <goal>shade</goal>
                             </goals>
                             <configuration>
+								
                                 <finalName>${project.artifactId}</finalName>
-                                <shadedArtifactAttached>true</shadedArtifactAttached>
-                                <shadedClassifierName>allinone</shadedClassifierName>
+                                <shadedArtifactAttached>false</shadedArtifactAttached>
+                                <shadedClassifierName>${project.artifactId}</shadedClassifierName>
                                 <artifactSet>
-                                    <includes>
-                                        <include>*:*</include>
-                                    </includes>
-                                </artifactSet>
+									<excludes>
+										<exclude>org.scoverage:scalac-scoverage-plugin_${scala.short.version}</exclude>
+									</excludes>
+								</artifactSet>
                                 <filters>
                                     <filter>
                                         <artifact>*:*</artifact>
                                         <excludes>
-                                            <exclude>META-INF/*.SF</exclude>
+                                            <exclude>*.html</exclude>
+											 <exclude>META-INF/*.SF</exclude>
                                             <exclude>META-INF/*.DSA</exclude>
                                             <exclude>META-INF/*.RSA</exclude>
                                         </excludes>
@@ -452,8 +438,8 @@
                                     </transformer>
                                     <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
                                         <resource>META-INF/spring.schemas</resource>
-                                    </transformer>-->
-                                    <!--<transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                    </transformer>
+                                    <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                                         <manifestEntries>
                                             <Main-Class>com.echoed.chamber.Main</Main-Class>
                                         </manifestEntries>
@@ -463,6 +449,27 @@
                         </execution>
                     </executions>
                 </plugin>
+				<!--<plugin>
+                    <artifactId>maven-assembly-plugin</artifactId>
+                    <executions>
+                        <execution>
+                            <id>jar-with-deps</id>
+                            <phase>package</phase>
+                            <goals>
+                                <goal>single</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                    <configuration>
+                        <finalName>${project.artifactId}</finalName>
+                        <appendAssemblyId>false</appendAssemblyId>
+						
+                        <descriptorRefs>
+                            <descriptorRef>jar-with-dependencies</descriptorRef>
+                        </descriptorRefs>
+                    </configuration>
+                </plugin>-->
+				
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-javadoc-plugin</artifactId>
@@ -741,19 +748,21 @@
             </plugin>-->
             <plugin>
 
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-shade-plugin</artifactId>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-shade-plugin</artifactId>
+				<version>2.3</version>
             </plugin>
         </plugins>
     </build>
 
     <dependencyManagement>
         <dependencies>
-            <dependency>
+            <!--<dependency>
                 <groupId>org.scoverage</groupId>
                 <artifactId>scalac-scoverage-plugin_${scala.short.version}</artifactId>
                 <version>${scoverage-plugin.version}</version>
-            </dependency>
+				
+            </dependency>-->
             <dependency>
                 <groupId>org.scalatest</groupId>
                 <artifactId>scalatest_${scala.short.version}</artifactId>
@@ -771,6 +780,7 @@
                 <artifactId>scala-library</artifactId>
                 <version>${scala.long.version}</version>
             </dependency>
+			
             <!-- <dependency>
                  <groupId>org.apache.hadoop</groupId>
                  <artifactId>hadoop-common</artifactId>
@@ -998,22 +1008,27 @@
     </dependencyManagement>
 
     <dependencies>
-        <dependency>
+        <!--<dependency>
             <groupId>org.scoverage</groupId>
             <artifactId>scalac-scoverage-plugin_${scala.short.version}</artifactId>
-        </dependency>
+			
+        </dependency>-->
         <dependency>
                 <groupId>org.scalatest</groupId>
                 <artifactId>scalatest_2.10</artifactId>
+				<scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.specs2</groupId>
             <artifactId>specs2_${scala.short.version}</artifactId>
+			<scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.scala-lang</groupId>
             <artifactId>scala-library</artifactId>
         </dependency>
+		
+		
     </dependencies>
 
     <pluginRepositories>
@@ -1021,6 +1036,10 @@
         	                        <id>onejar-maven-plugin.googlecode.com</id>
         	                        <url>http://onejar-maven-plugin.googlecode.com/svn/mavenrepo-snapshot</url>
         	                </pluginRepository>
+							<pluginRepository>
+      <id>beardedgeeks-releases</id>
+      <url>http://beardedgeeks.googlecode.com/svn/repository/releases</url>
+    </pluginRepository>	
                </pluginRepositories>
     <repositories>
         <repository>

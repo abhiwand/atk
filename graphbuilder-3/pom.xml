@@ -41,11 +41,10 @@
                 <groupId>com.mmakowski</groupId>
                 <artifactId>maven-specs2-plugin</artifactId>
             </plugin>
-            <plugin>
-                <!--add to Create covergage results-->
+            <!--<plugin>
                 <groupId>org.scoverage</groupId>
                 <artifactId>maven-scoverage-plugin</artifactId>
-            </plugin>
+            </plugin>-->
         </plugins>
     </build>
     <dependencies>

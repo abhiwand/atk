@@ -1,11 +1,11 @@
 #!/bin/bash
-set -o errexit
+#set -o errexit
 DIR="$( cd "$( dirname "$0" )" && pwd )"
 
 echo $DIR
 
-pushd $DIR/..
-jars="engine-spark*-with-dependencies.jar api-server*-with-dependencies.jar engine-0*-with-dependencies.jar interfaces*-with-dependencies.jar "
+#jars="engine-spark*-jar*.jar api-server-*jar*.jar engine-jar*.jar interfaces*-jar*.jar "
+jars="engine-spark.jar api-server.jar engine.jar interfaces.jar "
 
 if [ "$DIR/stage" != "" ]; then
 	rm -rf $DIR/stage
@@ -13,24 +13,33 @@ fi
 
 mkdir -p $DIR/stage/lib
 
+pushd $DIR/..
 for jar in $jars
 do 
-	jarPath=$(find .  $DIR/../package -path $DIR -prune -o -name $jar -print )
+	jarPath=$(find .  -path ./package -prune -o -name $jar -print )
 	echo $jarPath
 	cp -v $jarPath $DIR/stage/lib/
+	#oldName=`basename $jarPath`
+	#newName=`basename $jarPath | sed "s/-jar-with-dependencies//g"`
+	#echo $oldName
+	#echo $newName
+	#mv $DIR/stage/lib/$oldName $DIR/stage/lib/$newName
 done
-	jarPath=$(find . -path $DIR/../package -path $DIR -prune -o -name launcher*-with-dependencies.jar -print)
+	jarPath=$(find . -path ./package -prune -o -name launcher.jar -print)
 	echo $jarPath
-	cp -v $jarPath $DIR/stage
-	cp -v $jarPath $DIR/stage/lib/
+	cp -v $jarPath $DIR/stage/launcher.jar
+	cp -v $jarPath $DIR/stage/lib/launcher.jar
 
+popd
 
-if [[ -f $DIR/stage/launcher-0.8.0-SNAPSHOT-jar-with-dependencies.jar ]]
-then
-    LAUNCHER=$DIR/stage/launcher-0.8.0-SNAPSHOT-jar-with-dependencies.jar
+if [[ -f $DIR/stage/launcher.jar ]]; then
+    LAUNCHER=$DIR/stage/launcher.jar
     CONFDIR=$DIR/../api-server/src/main/resources
-else
-    echo "else"
+fi
+
+if [[ -f $DIR/../launcher/target/launcher.jar ]]; then
+    LAUNCHER=$DIR/../launcher/target/launcher.jar
+    CONFDIR=$DIR/../api-server/src/main/resources
 fi
 
 if [[ -n "$EXTRA_CONF" ]]
@@ -39,5 +48,10 @@ if [[ -n "$EXTRA_CONF" ]]
 else
     CONF="$CONFDIR"
 fi
+pushd $DIR/stage
+pwd
 
+echo java $@ -cp "$CONF:$LAUNCHER" com.intel.intelanalytics.component.Boot api-server com.intel.intelanalytics.service.ServiceApplication
 java $@ -cp "$CONF:$LAUNCHER" com.intel.intelanalytics.component.Boot api-server com.intel.intelanalytics.service.ServiceApplication
+
+popd
