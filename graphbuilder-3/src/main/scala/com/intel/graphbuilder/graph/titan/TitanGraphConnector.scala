@@ -36,7 +36,7 @@ import com.thinkaurelius.titan.graphdb.configuration.GraphDatabaseConfiguration
  * This was needed because a 'Connector' can be serialized across the network, whereas a live connection can't.
  * </p>
  */
-class TitanGraphConnector(config: Configuration) extends GraphConnector with Serializable {
+case class TitanGraphConnector(config: Configuration) extends GraphConnector with Serializable {
 
   /**
    * Initialize using a properties configuration file.
