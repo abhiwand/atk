@@ -244,7 +244,9 @@ class BigGraph(object):
         if not hasattr(self, '_backend'):
             self._backend = _get_backend()
         self._name = name or self._get_new_graph_name()
+        self._uri = ""
         self._backend.create(self, rules)
+        self.ml = GraphMachineLearning(self)
         logger.info('Created new graph "%s"', self._name)
 
     @property
@@ -255,6 +257,10 @@ class BigGraph(object):
     def name(self, value):
         self._backend.set_name(value)
 
+    @property
+    def uri(self):
+        return self._uri
+
     def _get_new_graph_name(self):
         return "graph_" + uuid.uuid4().hex
 
@@ -263,3 +269,26 @@ class BigGraph(object):
     #def remove(self, rules)
     #def add_props(self, rules)
     #def remove_props(self, rules)
+
+
+class GraphMachineLearning(object):
+    def __init__(self, graph):
+        self.graph = graph
+        if not hasattr(self, '_backend'):
+            self._backend = _get_backend()
+
+    def als(self,
+            input_edge_property_list,
+            input_edge_label,
+            output_vertex_property_list,
+            vertex_type,
+            edge_type):
+        self._backend.als(self.graph,
+                          input_edge_property_list,
+                          input_edge_label,
+                          output_vertex_property_list,
+                          vertex_type,
+                          edge_type)
+
+    def recommend(self, vertex_id):
+        return self._backend.recommend(self.graph, vertex_id)

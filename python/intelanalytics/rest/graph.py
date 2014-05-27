@@ -65,9 +65,64 @@ class GraphBackendRest(object):
         logger.info("REST Backend: create response: " + r.text)
         payload = r.json()
         graph._id = payload['id']
+        graph._uri = "%s/%d" % (self._get_uri(payload), graph._id)
+
+    def _get_uri(self, payload):
+        links = payload['links']
+        for link in links:
+            if link['rel'] == 'self':
+                return link['uri']
+        return "we don't know"
+        # TODO - bring exception back
+        #raise Exception('Unable to find uri for graph')
+
+    def als(self, graph, *args, **kwargs):
+        logger.info("REST Backend: run als on graph " + graph.name)
+        payload = JsonAlsPayload(graph, *args, **kwargs)
+        if logger.level == logging.DEBUG:
+            import json
+            payload_json =  json.dumps(payload, indent=2, sort_keys=True)
+            logger.debug("REST Backend: run als payload: " + payload_json)
+        r = rest_http.post('commands', payload)
+        logger.debug("REST Backend: run als response: " + r.text)
+
+    def recommend(self, graph, vertex_id):
+        logger.info("REST Backend: als query on graph " + graph.name)
+        cmd_format ='graphs/{0}/vertices?qname=ALSQuery&offset=0&count=10&vertexID={1}'
+        cmd = cmd_format.format(graph._id, vertex_id)
+        logger.debug("REST Backend: als query cmd: " + cmd)
+        r = rest_http.get(cmd)
+        json = r.json()
+        logger.debug("REST Backend: run als response: " + json)
+        return json
 
 
-# JSON Payload objects:
+class JsonAlsPayload(object):
+    def __new__(cls,
+                graph,
+                input_edge_property_list,
+                input_edge_label,
+                output_vertex_property_list,
+                vertex_type,
+                edge_type):
+        return {
+            "name": "graph/ml/als",
+            "arguments" : {
+                "graph": graph.uri,
+                "lambda": 0.1,
+                "max_supersteps": 20,
+                "converge_threshold": 0,
+                "feature_dimension": 1,
+                "input_edge_property_list": input_edge_property_list,
+                "input_edge_label": input_edge_label,
+                "output_vertex_property_list": output_vertex_property_list,
+                "vertex_type": vertex_type,
+                "edge_type": edge_type,
+            }
+        }
+
+
+# GB JSON Payload objects:
 
 class JsonValue(object):
     def __new__(cls, value):
@@ -137,4 +192,6 @@ class JsonPayload(object):
             frame = JsonFrame(uri)
             frames_dict[uri] = frame
         return frame
+
+
 
