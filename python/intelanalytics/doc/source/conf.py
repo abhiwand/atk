@@ -129,7 +129,7 @@ internal_docs = False
 #html_theme = 'default'
 #html_theme = 'nature'
 #html_theme = 'agogo'
-#html_theme = 'scipy'
+html_theme = 'scipy'
 #html_theme = 'basic'
 #html_theme = 'epub'
 #html_theme = 'haiku'
@@ -137,7 +137,7 @@ internal_docs = False
 #html_theme = 'scrolls'
 #html_theme = 'sphinxdoc'
 #html_theme = 'traditional'
-html_theme = 'aldrich'
+#html_theme = 'aldrich'
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the

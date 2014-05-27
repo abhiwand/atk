@@ -189,6 +189,8 @@ Gremlin is a graph query language, akin to SQL, that enables users to manipulate
 Gremlin works with the Titan Graph Database, though it is made by a different company.
 See https://github.com/tinkerpop/gremlin/wiki.
 
+.. _glossary_Ising_Smoothing_Parameter:
+   
 Ising Smoothing Parameter
 -------------------------
 
@@ -208,6 +210,8 @@ See: http://en.wikipedia.org/wiki/Machine_learning#Algorithm_types.
 
 Many machine-learning researchers have found that unlabeled data, when used in conjunction with a small amount of labeled data, can produce considerable improvement in learning accuracy.
 See http://en.wikipedia.org/wiki/Semi-supervised_learning.
+
+.. _glossary_lambda:
 
 Lambda
 ------
