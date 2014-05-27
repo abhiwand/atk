@@ -74,13 +74,15 @@ import com.intel.intelanalytics.domain.DataTypes.DataType
 //TODO documentation
 //TODO progress notification
 //TODO event notification
-class SparkComponent(configuration: SparkEngineConfiguration = new SparkEngineConfiguration()) extends EngineComponent
+class SparkComponent extends EngineComponent
     with FrameComponent
     with CommandComponent
     with FileComponent
     with DbProfileComponent
     with SlickMetaStoreComponent
     with EventLogging {
+
+  lazy val configuration: SparkEngineConfiguration = new SparkEngineConfiguration()
 
   val engine = new SparkEngine {}
 
