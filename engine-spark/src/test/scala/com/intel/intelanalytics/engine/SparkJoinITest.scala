@@ -39,7 +39,7 @@ class SparkJoinITest extends FlatSpec with Matchers with BeforeAndAfterEach with
     data(0)._2 shouldBe Array(1, 354, 1, "Iceland")
     data(1)._2 shouldBe Array(2, 91, 2, "India")
     data(2)._2 shouldBe Array(3, 47, 3, "Norway")
-    data(3)._2 shouldBe Array(4, 968, None, None)
+    data(3)._2 shouldBe Array(4, 968, null, null)
   }
 
   "joinRDDs" should "join two RDD with right join" in {
@@ -58,7 +58,7 @@ class SparkJoinITest extends FlatSpec with Matchers with BeforeAndAfterEach with
     data(0)._2 shouldBe Array(1, 354, 1, "Iceland")
     data(1)._2 shouldBe Array(2, 91, 2, "India")
     data(2)._2 shouldBe Array(3, 47, 3, "Norway")
-    data(3)._2 shouldBe Array(None, None, 4, "Oman")
+    data(3)._2 shouldBe Array(null, null, 4, "Oman")
   }
 
 }
