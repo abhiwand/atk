@@ -30,7 +30,7 @@ The order of the columns must match the order of the data.
 This will create the schema called ``my_schema``, with two columns identified, ``name`` as a string and ``id`` as an int64.
 Valid types can be found by polling the types file.
 
->>> from intelanalytics.core.types import *
+>>> from intelanalytics.core.types import supported_types
     print supported_types
 
 Now we define an object to hold the data.
@@ -42,30 +42,30 @@ JSON File
 ~~~~~~~~~
 Example:
 
->>> | {
-    |    "firstName": "John",
-    |    "lastName": "Smith",
-    |    "age": 25,
-    |    "address": {
-    |        "streetAddress": "21 2nd Street",
-    |        "city": "New York",
-    |        "state": "NY",
-    |        "postalCode": "10021"
-    |    },
-    |    "phoneNumber": [
-    |        {
-    |            "type": "home",
-    |            "number": "212 555-1239"
-    |        },
-    |        {
-    |            "type": "fax",
-    |            "number": "646 555-4567"
-    |        }
-    |    ],
-    |    "gender":{
-    |         "type":"male"
-    |    }
-    | }
+>>> {
+       "firstName": "John",
+       "lastName": "Smith",
+       "age": 25,
+       "address": {
+           "streetAddress": "21 2nd Street",
+           "city": "New York",
+           "state": "NY",
+           "postalCode": "10021"
+       },
+       "phoneNumber": [
+           {
+               "type": "home",
+               "number": "212 555-1239"
+           },
+           {
+               "type": "fax",
+               "number": "646 555-4567"
+           }
+       ],
+       "gender":{
+            "type":"male"
+       }
+    }
 
 Since the raw data has the data descriptors built in, the only things we have to do is define an object to hold the data.
 
@@ -76,35 +76,35 @@ XML File
 ~~~~~~~~
 Example:
 
->>> | <person>
-    |   <firstName>John</firstName>
-    |   <lastName>Smith</lastName>
-    |   <age>25</age>
-    |   <address>
-    |     <streetAddress>21 2nd Street</streetAddress>
-    |     <city>New York</city>
-    |     <state>NY</state>
-    |     <postalCode>10021</postalCode>
-    |   </address>
-    |   <phoneNumbers>
-    |     <phoneNumber type="home">212 555-1234</phoneNumber>
-    |     <phoneNumber type="fax">646 555-4567</phoneNumber>
-    |   </phoneNumbers>
-    |   <gender>
-    |     <type>male</type>
-    |   </gender>
-    | </person>
+>>> <person>
+      <firstName>John</firstName>
+      <lastName>Smith</lastName>
+      <age>25</age>
+      <address>
+        <streetAddress>21 2nd Street</streetAddress>
+        <city>New York</city>
+        <state>NY</state>
+        <postalCode>10021</postalCode>
+      </address>
+      <phoneNumbers>
+        <phoneNumber type="home">212 555-1234</phoneNumber>
+        <phoneNumber type="fax">646 555-4567</phoneNumber>
+      </phoneNumbers>
+      <gender>
+        <type>male</type>
+      </gender>
+    </person>
 
 The primitive values can also get encoded using attributes instead of tags:
 
->>> | <person firstName="John" lastName="Smith" age="25">
-    |   <address streetAddress="21 2nd Street" city="New York" state="NY" postalCode="10021" />
-    |   <phoneNumbers>
-    |      <phoneNumber type="home" number="212 555-1234"/>
-    |      <phoneNumber type="fax"  number="646 555-4567"/>
-    |   </phoneNumbers>
-    |   <gender type="male"/>
-    | </person>
+>>> <person firstName="John" lastName="Smith" age="25">
+      <address streetAddress="21 2nd Street" city="New York" state="NY" postalCode="10021" />
+      <phoneNumbers>
+         <phoneNumber type="home" number="212 555-1234"/>
+         <phoneNumber type="fax"  number="646 555-4567"/>
+      </phoneNumbers>
+      <gender type="male"/>
+    </person>
 
 Since the raw data has the data descriptors built in, the only things we have to do is define an object to hold the data.
 

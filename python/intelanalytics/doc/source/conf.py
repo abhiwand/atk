@@ -39,7 +39,7 @@ extensions = [
     'sphinx.ext.ifconfig',
     'sphinx.ext.autosummary',
     'numpydoc',
-    'todo',
+    'sphinx.ext.todo',
 ]
 
 # This is a flag to print out To-Do items
