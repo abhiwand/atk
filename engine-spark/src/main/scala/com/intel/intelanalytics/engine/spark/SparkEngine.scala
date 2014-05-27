@@ -70,11 +70,32 @@ import com.typesafe.config.ConfigFactory
 import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.shared.EventLogging
 import spray.json._
+import com.intel.intelanalytics.domain.DataTypes.DataType
 
 //TODO documentation
 //TODO progress notification
 //TODO event notification
 //TODO pass current user info
+
+object SparkEngine {
+  def resolveSchemaNamingConflicts(leftColumns: List[(String, DataType)], rightColumns: List[(String, DataType)]): (List[(String, DataType)], List[(String, DataType)]) = {
+
+    val funcAppendLetterForConflictingNames = (left: List[(String, DataType)], right: List[(String, DataType)], appendLetter: String) => {
+      left.map(r =>
+        if (right.map(i => i._1).contains(r._1))
+          (r._1 + "_" + appendLetter, r._2)
+        else
+          r
+      )
+    }
+
+    val left = funcAppendLetterForConflictingNames(leftColumns, rightColumns, "l")
+    val right = funcAppendLetterForConflictingNames(rightColumns, leftColumns, "r")
+
+    (left, right)
+  }
+}
+
 class SparkComponent extends EngineComponent
     with FrameComponent
     with CommandComponent
@@ -318,7 +339,7 @@ class SparkComponent extends EngineComponent
             withContext("se.join.future") {
 
               /* create a new dataframe */
-              val allColumns = argument.joinFrames.map {
+              val originalColumns = argument.joinFrames.map {
                 frame =>
                   {
                     val realFrame = frames.lookup(frame._1).getOrElse(
@@ -327,6 +348,9 @@ class SparkComponent extends EngineComponent
                     realFrame.schema.columns
                   }
               }
+
+              val nameConflictResolved = SparkEngine.resolveSchemaNamingConflicts(originalColumns(0), originalColumns(1))
+              val allColumns = List(nameConflictResolved._1, nameConflictResolved._2)
 
               /* create a dataframe should take very little time, much less than 10 minutes */
               val newJoinFrame = Await.result(create(DataFrameTemplate(argument.name, Schema(allColumns.flatten))), 10 minutes)
