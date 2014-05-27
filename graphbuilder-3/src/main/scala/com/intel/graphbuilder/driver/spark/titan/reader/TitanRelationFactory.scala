@@ -1,10 +1,11 @@
 package com.intel.graphbuilder.driver.spark.titan.reader
 
-import scala.collection.mutable.ListBuffer
-import com.intel.graphbuilder.elements.{ Edge, Vertex, Property, GraphElement }
+import com.intel.graphbuilder.elements.{Edge, Vertex, Property, GraphElement}
 import com.tinkerpop.blueprints.Direction
 import com.thinkaurelius.titan.core.TitanType
 import com.thinkaurelius.titan.graphdb.types.system.SystemType
+import scala.collection.mutable.ListBuffer
+import TitanReaderConstants.TITAN_READER_GB_ID
 
 /**
  * Used by Titan to deserialize a single row in a key-value store. Titan stores a vertex and its adjacent
@@ -16,7 +17,9 @@ import com.thinkaurelius.titan.graphdb.types.system.SystemType
 
 class TitanRelationFactory(vertexId: Long) extends com.thinkaurelius.titan.graphdb.database.RelationFactory {
 
-  val gbId = "titanPhysicalId"
+  require(vertexId > 0)
+
+  val gbId = TITAN_READER_GB_ID
   val edgeList = new ListBuffer[GraphElement]
   val vertexProperties = new ListBuffer[Property]
 

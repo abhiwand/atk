@@ -1,14 +1,11 @@
-package com.intel.graphbuilder.driver.spark.reader
+package com.intel.graphbuilder.driver.spark.titan.reader
 
-import org.scalatest.WordSpec
-import org.scalatest.Matchers
-import com.intel.graphbuilder.driver.spark.titan.reader.TitanRelationFactory
-import com.thinkaurelius.titan.graphdb.types.system.{SystemKey, SystemType}
-import org.specs2.mock.Mockito
-
-import com.thinkaurelius.titan.graphdb.types.vertices.{TitanLabelVertex, TitanKeyVertex}
-import com.intel.graphbuilder.elements.{Edge, Property, Vertex}
+import com.intel.graphbuilder.elements.{ Edge, Property, Vertex }
+import com.thinkaurelius.titan.graphdb.types.system.SystemKey
+import com.thinkaurelius.titan.graphdb.types.vertices.{ TitanLabelVertex, TitanKeyVertex }
 import com.tinkerpop.blueprints.Direction
+import org.scalatest.{ WordSpec, Matchers }
+import org.specs2.mock.Mockito
 
 class TitanRelationFactoryTest extends WordSpec with Matchers with Mockito {
 
@@ -63,7 +60,7 @@ class TitanRelationFactoryTest extends WordSpec with Matchers with Mockito {
       val factory = new TitanRelationFactory(srcVertexID)
       val srcGbID = Property(factory.gbId, srcVertexID)
       val destGbID = Property(factory.gbId, destVertexID)
-      val edge = new Edge(srcVertexID,destVertexID, srcGbID, destGbID, edgeLabel.getName(), List(timeProperty))
+      val edge = new Edge(srcVertexID, destVertexID, srcGbID, destGbID, edgeLabel.getName(), List(timeProperty))
 
       factory.setRelationID(edgeID)
       factory.setType(edgeLabel)
@@ -75,5 +72,4 @@ class TitanRelationFactoryTest extends WordSpec with Matchers with Mockito {
 
     }
   }
-
 }
