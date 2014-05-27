@@ -70,6 +70,7 @@ import org.apache.spark.engine.{ SparkProgressListener, ProgressPrinter }
 import com.typesafe.config.ConfigFactory
 import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.shared.EventLogging
+
 import com.intel.graphbuilder.driver.spark.titan.{ GraphBuilderConfig, GraphBuilder }
 import com.intel.intelanalytics.engine.spark.graphbuilder.GraphBuilderConfigFactory
 import com.intel.graphbuilder.driver.spark.titan.examples.ExamplesUtils
@@ -102,6 +103,8 @@ import org.apache.hadoop.hbase.HBaseConfiguration
 import org.apache.hadoop.hbase.client.HBaseAdmin
 import com.intel.intelanalytics.engine.spark.graph.{ SparkGraphStorage, SparkGraphHBaseBackend }
 
+import com.intel.intelanalytics.domain.DataTypes.DataType
+
 import scala.util.Failure
 import scala.Some
 import scala.collection.JavaConverters._
@@ -128,7 +131,6 @@ import org.apache.hadoop.mapreduce.Job
 //TODO documentation
 //TODO progress notification
 //TODO event notification
-//TODO pass current user info
 
 class SparkComponent extends EngineComponent
     with FrameComponent
@@ -138,26 +140,18 @@ class SparkComponent extends EngineComponent
     with SlickMetaStoreComponent
     with EventLogging {
 
+  lazy val configuration: SparkEngineConfiguration = new SparkEngineConfiguration()
+
   val engine = new SparkEngine {}
-  lazy val conf = ConfigFactory.load()
-  lazy val sparkHome = conf.getString("intel.analytics.spark.home")
-  lazy val sparkMaster = conf.getString("intel.analytics.spark.master")
-  lazy val defaultTimeout = conf.getInt("intel.analytics.engine.defaultTimeout").seconds
-  lazy val connectionString = conf.getString("intel.analytics.metastore.connection.url") match {
-    case "" | null => throw new Exception("No metastore connection url specified in configuration")
-    case u => u
-  }
-  lazy val driver = conf.getString("intel.analytics.metastore.connection.driver") match {
-    case "" | null => throw new Exception("No metastore driver specified in configuration")
-    case d => d
-  }
 
   //TODO: choose database profile driver class from config
   override lazy val profile = withContext("engine connecting to metastore") {
-    new Profile(H2Driver, connectionString = connectionString, driver = driver)
+    new Profile(H2Driver, connectionString = configuration.connectionString, driver = configuration.driver)
   }
 
-  val sparkContextManager = new SparkContextManager(conf, new SparkContextFactory)
+  lazy val fsRoot = configuration.fsRoot
+
+  val sparkContextManager = new SparkContextManager(configuration.config, new SparkContextFactory)
 
   //TODO: only create if the datatabase doesn't already exist. So far this is in-memory only,
   //but when we want to use postgresql or mysql or something, we won't usually be creating tables here.
@@ -281,6 +275,80 @@ class SparkComponent extends EngineComponent
         frames.getFrames(offset, count)
       }
     }
+
+    def renameColumn(arguments: FrameRenameColumn[JsObject, Long])(implicit user: UserPrincipal): (Command, Future[Command]) =
+      withContext("se.renamecolumn") {
+        require(arguments != null, "arguments are required")
+        import DomainJsonProtocol._
+        val command: Command = commands.create(new CommandTemplate("renamecolumn", Some(arguments.toJson.asJsObject)))
+        val result: Future[Command] = future {
+          withMyClassLoader {
+            withContext("se.renamecolumn.future") {
+              withCommand(command) {
+
+                val frameID = arguments.frame
+
+                val frame = frames.lookup(frameID).getOrElse(
+                  throw new IllegalArgumentException(s"No such data frame: $frameID"))
+
+                val originalcolumns = arguments.originalcolumn.split(",")
+                val renamedcolumns = arguments.renamedcolumn.split(",")
+
+                if (originalcolumns.length != renamedcolumns.length)
+                  throw new IllegalArgumentException(s"Invalid list of columns: " +
+                    s"Lengths of Original and Renamed Columns do not match")
+
+                frames.renameColumn(frame, originalcolumns.zip(renamedcolumns))
+              }
+              commands.lookup(command.id).get
+            }
+          }
+        }
+        (command, result)
+      }
+
+    def project(arguments: FrameProject[JsObject, Long])(implicit user: UserPrincipal): (Command, Future[Command]) =
+      withContext("se.project") {
+        require(arguments != null, "arguments are required")
+        import DomainJsonProtocol._
+        val command: Command = commands.create(new CommandTemplate("project", Some(arguments.toJson.asJsObject)))
+        val result: Future[Command] = future {
+          withMyClassLoader {
+            withContext("se.project.future") {
+              withCommand(command) {
+
+                val originalFrameID = arguments.originalframe
+                val projectedFrameID = arguments.frame
+
+                val originalFrame = frames.lookup(originalFrameID).getOrElse(
+                  throw new IllegalArgumentException(s"No such data frame: $originalFrameID"))
+
+                val ctx = context(user).sparkContext
+                val columns = arguments.column.split(",")
+
+                val schema = originalFrame.schema
+                val location = fsRoot + frames.getFrameDataFile(projectedFrameID)
+
+                val columnIndices = for {
+                  col <- columns
+                  columnIndex = schema.columns.indexWhere(columnTuple => columnTuple._1 == col)
+                } yield columnIndex
+
+                columnIndices match {
+                  case invalidColumns if invalidColumns.contains(-1) =>
+                    throw new IllegalArgumentException(s"Invalid list of columns: ${arguments.column}")
+                  case _ => frames.getFrameRdd(ctx, originalFrameID)
+                    .map(row => { for { i <- columnIndices } yield row(i) }.toArray)
+                    .saveAsObjectFile(location)
+                }
+
+              }
+              commands.lookup(command.id).get
+            }
+          }
+        }
+        (command, result)
+      }
 
     def decodePythonBase64EncodedStrToBytes(byteStr: String): Array[Byte] = {
       // Python uses different RFC than Java, must correct a couple characters
@@ -819,8 +887,6 @@ def calculateScore(list1, list2, biasOn, featureDimension) {
 
   val files = new HdfsFileStorage {}
 
-  val fsRoot = conf.getString("intel.analytics.fs.root")
-
   trait HdfsFileStorage extends FileStorage with EventLogging {
 
     val configuration = {
@@ -960,6 +1026,36 @@ def calculateScore(list1, list2, biasOn, featureDimension) {
     override def addColumnWithValue[T](frame: DataFrame, column: Column[T], default: T): Unit =
       withContext("frame.addColumnWithValue") {
         ???
+      }
+    override def renameColumn[T](frame: DataFrame, name_pairs: Seq[(String, String)]): Unit =
+      withContext("frame.renameColumn") {
+        val columnsToRename: Seq[String] = name_pairs.map(_._1)
+        val newColumnNames: Seq[String] = name_pairs.map(_._2)
+
+        def generateNewColumnTuple(oldColumn: String, columnsToRename: Seq[String], newColumnNames: Seq[String]): String = {
+          val columnIndex: Int = columnsToRename.indexOf(oldColumn)
+          if (columnIndex > 0)
+            return newColumnNames(columnIndex)
+          else return oldColumn
+        }
+
+        val newColumns = frame.schema.columns.map(col => (generateNewColumnTuple(col._1, columnsToRename, newColumnNames), col._2))
+
+        val newSchema = frame.schema.copy(columns = newColumns)
+        val newFrame = frame.copy(schema = newSchema)
+
+        val meta = File(Paths.get(getFrameMetaDataFile(frame.id)))
+        info(s"Saving metadata to $meta")
+        val f = files.write(meta)
+        try {
+          val json: String = newFrame.toJson.prettyPrint
+          debug(json)
+          f.write(json.getBytes(Codec.UTF8.name))
+        }
+        finally {
+          f.close()
+        }
+        newFrame
       }
 
     override def addColumn[T](frame: DataFrame, column: Column[T], columnType: DataTypes.DataType): DataFrame =
