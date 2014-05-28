@@ -37,7 +37,7 @@ class CsvFile(DataFile):
     Parameters
     ----------
     file_name : string
-        name of file
+        name of data input file
     schema : list of tuples of the form (string, type)
         schema description of the fields for a given line.  It is a list of
         tuples which describe each field, (field name, field type), where
@@ -56,9 +56,9 @@ class CsvFile(DataFile):
 
     Examples
     --------
-    >>> csv1 = CsvFile("my_csv_data.txt", [('A', int32), ('B', string)])
+    >>> csv1 = CsvFile("my_csv_data.csv", [('A', int32), ('B', string)])
     >>>
-    >>> csv2 = CsvFile("other_data.txt", [('X', float32), ('', ignore), ('Y', int64)])
+    >>> csv2 = CsvFile("other_data.csv", [('X', float32), ('', ignore), ('Y', int64)])
     >>> f = BigFrame(csv2)
     >>> csv2 = JsonFile("other_data.json", [('X', 'path/to/x', float32), ('', ignore), ('Y', int64)])
     

@@ -40,6 +40,7 @@ extensions = [
     'sphinx.ext.autosummary',
     'numpydoc',
     'sphinx.ext.todo',
+    'sphinx.ext.doctest',
 ]
 
 # This is a flag to print out To-Do items
