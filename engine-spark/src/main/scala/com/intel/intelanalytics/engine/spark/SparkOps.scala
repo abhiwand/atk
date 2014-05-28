@@ -29,6 +29,9 @@ import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
 import com.intel.intelanalytics.domain.LoadLines
 import spray.json.JsObject
+import scala.Some
+import com.intel.intelanalytics.engine.spark.RDDJoinParam
+import com.intel.intelanalytics.domain.LoadLines
 
 /**
  * This object exists to avoid having to serialize the entire engine in order to use spark
@@ -122,5 +125,9 @@ private[spark] object SparkOps extends Serializable {
       r(index) = s
       r
     })
+  }
+
+  def flattenRddByColumnIndex(index: Int, separator: String, rdd: RDD[Row]): RDD[Row] = {
+    rdd.flatMap(r => SparkOps.flattenColumnByIndex(index, r, separator))
   }
 }
