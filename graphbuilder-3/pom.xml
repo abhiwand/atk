@@ -41,10 +41,10 @@
                 <groupId>com.mmakowski</groupId>
                 <artifactId>maven-specs2-plugin</artifactId>
             </plugin>
-            <!--<plugin>
+            <plugin>
                 <groupId>org.scoverage</groupId>
                 <artifactId>maven-scoverage-plugin</artifactId>
-            </plugin>-->
+            </plugin>
         </plugins>
     </build>
     <dependencies>
