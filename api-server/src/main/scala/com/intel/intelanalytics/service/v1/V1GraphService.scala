@@ -23,51 +23,45 @@
 
 package com.intel.intelanalytics.service.v1
 
-import spray.routing._
-import com.intel.intelanalytics._
-import com.intel.intelanalytics.domain._
-import akka.event.Logging
 import spray.json._
-import spray.http.{ Uri, StatusCodes, MediaTypes }
-import scala.Some
-import com.intel.intelanalytics.domain.DataFrame
+import spray.http.Uri
 import com.intel.intelanalytics.repository.MetaStoreComponent
-import com.intel.intelanalytics.repository.Repository
-import com.intel.intelanalytics.repository.{ MetaStoreComponent, Repository }
-import com.intel.intelanalytics.service.EventLoggingDirectives
 import com.intel.intelanalytics.service.v1.viewmodels._
 import com.intel.intelanalytics.engine.EngineComponent
-import com.intel.intelanalytics.engine.{ EngineComponent }
-import scala.util._
 import scala.concurrent.ExecutionContext
-import spray.util.LoggingContext
 import scala.util.Failure
-import com.intel.intelanalytics.domain.DataFrameTemplate
 import scala.util.Success
-import com.intel.intelanalytics.domain.DataFrame
-import com.intel.intelanalytics.service.v1.viewmodels.JsonTransform
-import com.intel.intelanalytics.service.v1.viewmodels.DecoratedDataFrame
 import com.intel.intelanalytics.service.v1.viewmodels.ViewModelJsonProtocol
-import com.intel.intelanalytics.domain.DataFrame
-import com.intel.intelanalytics.service.v1.viewmodels.DecoratedDataFrame
 import com.intel.intelanalytics.service.v1.viewmodels.Rel
 import com.intel.intelanalytics.domain.DomainJsonProtocol
-import com.intel.intelanalytics.domain.DataFrameTemplate
 import com.intel.intelanalytics.domain.GraphTemplate
 import com.intel.intelanalytics.domain.Graph
-import com.intel.intelanalytics.service.v1.viewmodels.JsonTransform
 import com.intel.intelanalytics.security.UserPrincipal
 
 //TODO: Is this right execution context for us?
+
 import ExecutionContext.Implicits.global
+
+/**
+ * Trait for classes that implement the Intel Analytics V1 REST API Graph Service
+ */
 
 trait V1GraphService extends V1Service {
   this: V1Service with MetaStoreComponent with EngineComponent =>
 
+  /**
+   * The spray routes defining the Graph service.
+   */
   def graphRoutes() = {
     import ViewModelJsonProtocol._
     val prefix = "graphs"
 
+    /**
+     * Creates "decorated graph" for return on HTTP protocol
+     * @param uri handle of graph
+     * @param graph graph metadata
+     * @return Decorated graph for HTTP protocol return
+     */
     def decorate(uri: Uri, graph: Graph): DecoratedGraph = {
       //TODO: add other relevant links
       val links = List(Rel.self(uri.toString))
@@ -78,6 +72,9 @@ trait V1GraphService extends V1Service {
     //using futures, but they keep the client on the phone the whole time while they're waiting
     //for the engine work to complete. Needs to be updated to a) register running jobs in the metastore
     //so they can be queried, and b) support the web hooks.
+    // note: delete is partly asynchronous - it wraps its backend delete in a future but blocks on deleting the graph
+    // from the metastore
+
     std(prefix) { implicit userProfile: UserPrincipal =>
       (path(prefix) & pathEnd) {
         requestUri { uri =>
