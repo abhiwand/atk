@@ -44,7 +44,7 @@ import org.apache.hadoop.fs.{ LocalFileSystem, FileSystem }
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.hdfs.DistributedFileSystem
 import java.nio.file.Path
-import spray.json.{ JsObject, JsonParser }
+import spray.json.{ JsonWriter, JsObject, JsonParser }
 import scala.io.{ Codec, Source }
 import scala.collection.mutable.{ HashSet, ListBuffer, ArrayBuffer, HashMap }
 import scala.io.{ Codec, Source }
@@ -356,35 +356,38 @@ class SparkComponent extends EngineComponent
       }
     }
 
-        def flattenColumn(argument: FlattenColumn[Long])(implicit user: UserPrincipal): (Command, Future[Command]) =
-          withContext("se.flattenColumn") {
-            val command: Command = commands.create(new CommandTemplate("flattenColumn", Some(argument.toJson.asJsObject)))
-            val result: Future[Command] = future {
-              withMyClassLoader {
-                withContext("se.flattenColumn.future") {
-                  val frameId: Long = argument.frame
-                  val realFrame = frames.lookup(frameId).getOrElse(
-                    throw new IllegalArgumentException(s"No such data frame: ${frameId}"))
+    override def flattenColumn(argument: FlattenColumn[Long])(implicit user: UserPrincipal): (Command, Future[Command]) =
+      withContext("se.flattenColumn") {
+        import DomainJsonProtocol._
+        val command: Command = commands.create(new CommandTemplate("flattenColumn", Some(argument.toJson.asJsObject)))
+        val result: Future[Command] = future {
+          withMyClassLoader {
+            withContext("se.flattenColumn.future") {
+              val frameId: Long = argument.frame
+              val realFrame = frames.lookup(frameId).getOrElse(
+                throw new IllegalArgumentException(s"No such data frame: ${frameId}"))
 
-                  val ctx = context(user).sparkContext
+              withCommand(command) {
+                val ctx = context(user).sparkContext
 
-                  /* create a dataframe should take very little time, much less than 10 minutes */
-                  val newFrame = Await.result(create(DataFrameTemplate(argument.name, Schema(realFrame.schema.columns))), 10 minutes)
-                  val rdd = frames.getFrameRdd(ctx, frameId)
+                /* create a dataframe should take very little time, much less than 10 minutes */
+                val newFrame = Await.result(create(DataFrameTemplate(argument.name, Schema(realFrame.schema.columns))), 10 minutes)
+                val rdd = frames.getFrameRdd(ctx, frameId)
 
-                  val columnIndex = realFrame.schema.columns.indexWhere(columnTuple => columnTuple._1 == argument.name)
+                val columnIndex = realFrame.schema.columns.indexWhere(columnTuple => columnTuple._1 == argument.column)
 
-                  val flattenedRDD = rdd.flatMap(r => SparkOps.flattenColumnByIndex(columnIndex, r, argument.separator))
+                val flattenedRDD = SparkOps.flattenRddByColumnIndex(columnIndex, argument.separator, rdd)
 
-                  flattenedRDD.saveAsObjectFile(fsRoot + frames.getFrameDataFile(newFrame.id))
-                  flattenedRDD.toJson.asJsObject
-                }
+                flattenedRDD.saveAsObjectFile(fsRoot + frames.getFrameDataFile(newFrame.id))
+                newFrame.toJson.asJsObject
               }
-              commands.lookup(command.id).get
             }
-
-            (command, result)
           }
+          commands.lookup(command.id).get
+        }
+
+        (command, result)
+      }
 
     def filter(arguments: FilterPredicate[JsObject, Long])(implicit user: UserPrincipal): (Command, Future[Command]) =
       withContext("se.filter") {
@@ -992,7 +995,7 @@ class SparkComponent extends EngineComponent
           //TODO: Update dates
           val changed = result match {
             case Failure(ex) => command.copy(complete = true, error = Some(ex: Error))
-            case Success(_) => command.copy(complete = true)
+            case Success(r) => command.copy(complete = true, result = Some(r.asInstanceOf[JsObject]))
           }
           repo.update(changed)
       }
