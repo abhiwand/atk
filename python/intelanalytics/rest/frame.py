@@ -87,6 +87,12 @@ class FrameBackendRest(object):
             try:
                 if isinstance(frame._original_source,CsvFile):
                     columns = frame._original_source._schema_to_json()
+                elif isinstance(frame._original_source, BigColumn):
+                    col = frame._original_source
+                    columns = [(col.name, supported_types.get_type_string(col.data_type))]
+                elif all(isinstance(elem, BigColumn) for elem in frame._original_source):
+                    columns = [(col.name, supported_types.get_type_string(col.data_type)) for col in frame._original_source]
+
             except:
                 pass
         payload = {'name': frame.name, 'schema': {"columns": columns}}
@@ -156,6 +162,38 @@ class FrameBackendRest(object):
                                  'predicate': http_ready_predicate}}
         r = rest_http.post('commands', payload)
         return r
+
+    def project(self, frame, columns):
+        frame_uri = "%sdataframes/%d" % (rest_http.base_uri, frame._id)
+        iter_cols = [columns] if isinstance(columns, BigColumn) else columns
+        original_frame_id = iter_cols[0].frame._id
+        original_frame_uri = "%sdataframes/%d" % (rest_http.base_uri, original_frame_id)
+        # TODO - abstraction for payload construction
+        column_names = ",".join([col.name for col in iter_cols])
+        payload = {'name': 'dataframe/project',
+                   'arguments': {'frame': frame_uri,
+                                 'originalframe' : original_frame_uri,
+                                 'column': column_names}}
+        r = rest_http.post('commands', payload)
+
+
+        for col in iter_cols:
+            if col.data_type is not ignore:
+                self._accept_column(frame, BigColumn(col.name, col.data_type))
+
+        return r
+
+    def rename_columns(self, frame, name_pairs):
+        frame_uri = "%sdataframes/%d" % (rest_http.base_uri, frame._id)
+        # TODO - abstraction for payload construction
+        originalcolumns, renamedcolumns = ",".join(zip(*name_pairs)[0]), ",".join(zip(*name_pairs)[1])
+        payload = {'name': 'dataframe/renamecolumn',
+                   'arguments': {'frame': frame_uri,
+                                 'originalcolumn': originalcolumns,
+                                 'renamedcolumn': renamedcolumns}}
+        r = rest_http.post('commands', payload)
+        return r
+
 
     def remove_column(self, frame, name):
         frame_uri = "%sdataframes/%d" % (rest_http.base_uri, frame._id)

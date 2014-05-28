@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2013 Intel Corporation All Rights Reserved.
+// Copyright 2014 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -21,32 +21,19 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.repository
+package com.intel.intelanalytics.component
 
-import com.intel.intelanalytics.domain.{ DataFrameTemplate, CommandTemplate, Command, DataFrame, User, UserTemplate }
+import org.scalatest.{FlatSpec, Matchers}
 
-trait MetaStoreComponent {
-  val metaStore: MetaStore
+class BootSpec extends FlatSpec with Matchers {
 
-  /**
-   * The MetaStore gives access to Repositories. Repositories are how you
-   * modify and query underlying tables (frames, graphs, users, etc).
-   */
-  trait MetaStore {
-    type Session
-    def withSession[T](name: String)(f: Session => T): T
+  "An empty Set" should "have size 0" in {
+      assert(Set.empty.size == 0)
+  }
 
-    /** Repository for CRUD on 'frame' table */
-    def frameRepo: Repository[Session, DataFrameTemplate, DataFrame]
-
-    /** Repository for CRUD on 'command' table */
-    def commandRepo: Repository[Session, CommandTemplate, Command]
-
-    /** Repository for CRUD on 'user' table */
-    def userRepo: Repository[Session, UserTemplate, User] with Queryable[Session, User]
-
-    /** Create the underlying tables */
-    def create(): Unit
+  it should "produce NoSuchElementException when head is invoked" in {
+    intercept[NoSuchElementException] {
+      Set.empty.head
+    }
   }
 }
-

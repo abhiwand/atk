@@ -26,8 +26,10 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
+    <groupId>package</groupId>
     <artifactId>package</artifactId>
     <name>package</name>
+    <version>1</version>
 
     <parent>
         <groupId>com.intel.hadoop</groupId>
@@ -35,12 +37,16 @@
         <relativePath>../pom.xml</relativePath>
         <version>0.8-SNAPSHOT</version>
     </parent>
+
+    <properties>
+    <pkg.version>0.8.${env.BUILD_NUMBER}</pkg.version>
+    </properties>
     <profiles>
         <profile>
             <id>package</id>
             <activation>
                 <property>
-                    <name>${env.BUILD_NUMBER}</name>
+                    <name>env.BUILD_NUMBER</name>
                 </property>
             </activation>
             <build>
@@ -48,7 +54,7 @@
                     <plugin>
                         <groupId>org.codehaus.mojo</groupId>
                         <artifactId>exec-maven-plugin</artifactId>
-                        <version>1.2.1</version>
+
                         <executions>
                             <execution>
                                 <id>chmod-shellscripts</id>
@@ -58,10 +64,11 @@
                                 </goals>
                                 <configuration>
                                     <executable>chmod</executable>
+
                                     <arguments>
                                         <argument>-R</argument>
                                         <argument>+x</argument>
-                                        <argument>${basedir}/../package</argument>
+                                        <argument>${basedir}</argument>
                                     </arguments>
                                 </configuration>
                             </execution>
@@ -75,7 +82,7 @@
                                     <executable>bash</executable>
                                     <workingDirectory>${basedir}</workingDirectory>
                                     <arguments>
-                                        <argument>package/package-rest-server.sh</argument>
+                                        <argument>package-rest-server.sh</argument>
                                     </arguments>
                                 </configuration>
                             </execution>
@@ -87,7 +94,7 @@
                                 </goals>
                                 <configuration>
                                     <executable>bash</executable>
-                                    <workingDirectory>${basedir}/package</workingDirectory>
+                                    <workingDirectory>${basedir}</workingDirectory>
                                     <arguments>
                                         <argument>package.sh</argument>
                                         <argument>-p</argument>
@@ -96,8 +103,8 @@
                                         <argument>${env.BUILD_NUMBER}</argument>
                                         <argument>-v</argument>
                                         <argument>${pkg.version}</argument>
-                                        <argument>--tar</argument>
-                                        <argument>${basedir}/package/intelanalytics-rest-server-source.tar.gz</argument>
+                                        <argument>-t</argument>
+                                        <argument>${basedir}/intelanalytics-rest-server-source.tar.gz</argument>
                                     </arguments>
                                 </configuration>
                             </execution>
@@ -112,7 +119,7 @@
                                     <executable>bash</executable>
                                     <workingDirectory>${basedir}</workingDirectory>
                                     <arguments>
-                                        <argument>package/package-python-rest-client.sh</argument>
+                                        <argument>package-python-rest-client.sh</argument>
                                     </arguments>
                                 </configuration>
                             </execution>
@@ -125,7 +132,7 @@
                                 </goals>
                                 <configuration>
                                     <executable>bash</executable>
-                                    <workingDirectory>${basedir}/package</workingDirectory>
+                                    <workingDirectory>${basedir}</workingDirectory>
                                     <arguments>
                                         <argument>package.sh</argument>
                                         <argument>-p</argument>
@@ -134,8 +141,8 @@
                                         <argument>${env.BUILD_NUMBER}</argument>
                                         <argument>-v</argument>
                                         <argument>${pkg.version}</argument>
-                                        <argument>--tar</argument>
-                                        <argument>${basedir}/package/intelanalytics-python-rest-client-source.tar.gz</argument>
+                                        <argument>-t</argument>
+                                        <argument>${basedir}/intelanalytics-python-rest-client-source.tar.gz</argument>
                                     </arguments>
                                 </configuration>
                             </execution>
