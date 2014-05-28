@@ -1,6 +1,8 @@
 Yum Repo
 ========
 
+Configure File Installation Software
+------------------------------------
 First add the epel RHEL/Centos
 
 >>> wget http://download.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
@@ -58,8 +60,8 @@ The normal yum security plugin conflicts with the yum-s3 plugin so, for now, dis
 The yum security plugin configuration can be found in ``/etc/yum/pluginconf.d/security.conf``.
 Edit the file and change the "enabled" value to 0.
 
-Test
-----
+Installing the Intel® Analytics Package
+---------------------------------------
 
 >>> sudo yum search intelanalytics
 
@@ -98,3 +100,7 @@ Install the Intel® Analytics package
 >>> sudo yum install intelanalytics*
 
 Congratulations, you have installed the Intel® Analytics package.
+
+Results
+-------
+
