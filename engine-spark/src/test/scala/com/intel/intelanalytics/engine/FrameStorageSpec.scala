@@ -21,10 +21,11 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
+/*
 package com.intel.intelanalytics.engine
 
 import org.scalatest.{FlatSpec, Matchers}
 
 class FrameStorageSpec extends FlatSpec with Matchers {
 
-}
+}*/
