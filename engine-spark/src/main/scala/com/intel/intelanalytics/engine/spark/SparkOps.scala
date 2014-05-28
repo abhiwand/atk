@@ -115,7 +115,12 @@ private[spark] object SparkOps extends Serializable {
     result.asInstanceOf[RDD[Array[Any]]]
   }
 
-  def flattenColumnByIndex(index: Int, row: Array[Any]): Array[Array[Any]] = {
-
+  def flattenColumnByIndex(index: Int, row: Array[Any], separator: String): Array[Array[Any]] = {
+    val splitted = row(index).asInstanceOf[String].split(separator)
+    splitted.map(s => {
+      val r = row.clone()
+      r(index) = s
+      r
+    })
   }
 }
