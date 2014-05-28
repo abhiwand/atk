@@ -74,7 +74,7 @@ public class TestJsonPropertyGraph4GBPOutputFormat extends JsonPropertyGraph4GBP
         Vertex vertex = mock(Vertex.class);
         when(vertex.getId()).thenReturn(new LongWritable(1L));
         when(vertex.getValue()).thenReturn(new VertexData4GBPWritable(new GaussianDistWritable(2.0, 3.0),
-            new GaussianDistWritable(4.0, 5.0)));
+            new GaussianDistWritable(4.0, 5.0), new GaussianDistWritable(2.0, 3.0), 2.0));
 
         // Create empty iterator == no edges
         when(vertex.getEdges()).thenReturn(new ArrayList<Text>());
