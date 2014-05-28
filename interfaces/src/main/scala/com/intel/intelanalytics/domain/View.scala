@@ -33,7 +33,7 @@ import spray.json.JsObject
  *                  ML algorithm, the parameters are used to execute the function directly.
  *
  */
-case class Command(id: Long, name: String, arguments: Option[JsObject], error: Option[Error], complete: Boolean) extends HasId
+case class Command(id: Long, name: String, arguments: Option[JsObject], error: Option[Error], complete: Boolean, result: Option[JsObject] = None) extends HasId
 case class CommandTemplate(name: String, arguments: Option[JsObject])
 case class Definition(language: String, serialization: String, data: String)
 case class Operation(name: String, definition: Option[Definition])

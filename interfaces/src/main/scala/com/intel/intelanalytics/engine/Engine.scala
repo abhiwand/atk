@@ -30,17 +30,22 @@ import com.intel.intelanalytics.domain._
 import scala.concurrent.Future
 import java.io.{ OutputStream, InputStream }
 import com.intel.intelanalytics.engine.Rows.Row
-import com.intel.intelanalytics.domain.Partial
-import com.intel.intelanalytics.domain.DataFrame
-import com.intel.intelanalytics.domain.Schema
-import com.intel.intelanalytics.domain.DataFrameTemplate
 import spray.json.JsObject
 import scala.util.Try
 import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.domain.Graph
+import com.intel.intelanalytics.domain.CommandTemplate
+import com.intel.intelanalytics.domain.FilterPredicate
+import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.domain.DataFrame
+import com.intel.intelanalytics.domain.FrameRemoveColumn
 import com.intel.intelanalytics.domain.Schema
+import com.intel.intelanalytics.domain.GraphTemplate
+import com.intel.intelanalytics.domain.LoadLines
+import com.intel.intelanalytics.domain.Command
 import com.intel.intelanalytics.domain.DataFrameTemplate
+import com.intel.intelanalytics.domain.FrameAddColumn
+import com.intel.intelanalytics.domain.Als
 
 object Rows {
   type Row = Array[Any] //TODO: Can we constrain this better?
@@ -158,6 +163,8 @@ trait EngineComponent {
     def addColumn(arguments: FrameAddColumn[JsObject, Long])(implicit user: UserPrincipal): (Command, Future[Command])
     def alter(frame: DataFrame, changes: Seq[Alteration])
     def delete(frame: DataFrame): Future[Unit]
+    def join(argument: FrameJoin[Long])(implicit user: UserPrincipal): (Command, Future[Command])
+
     def getFrames(offset: Int, count: Int)(implicit p: UserPrincipal): Future[Seq[DataFrame]]
     def shutdown: Unit
     def getGraph(id: Identifier): Future[Graph]
@@ -178,7 +185,7 @@ trait CommandComponent {
     def create(frame: CommandTemplate): Command
     def scan(offset: Int, count: Int): Seq[Command]
     def start(id: Long): Unit
-    def complete(id: Long, result: Try[Unit]): Unit
+    def complete(id: Long, result: Try[Any]): Unit
   }
 
 }

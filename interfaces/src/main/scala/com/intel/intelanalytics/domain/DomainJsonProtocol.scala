@@ -63,6 +63,7 @@ object DomainJsonProtocol extends DefaultJsonProtocol {
   implicit val projectColumnLongFormat = jsonFormat3(FrameProject[JsObject, Long])
   implicit val renameColumnFormat = jsonFormat3(FrameRenameColumn[JsObject, String])
   implicit val renameColumnLongFormat = jsonFormat3(FrameRenameColumn[JsObject, Long])
+  implicit val joinFrameLongFormat = jsonFormat3(FrameJoin[Long])
 
   implicit val alsFormatString = jsonFormat5(Als[String])
   implicit val alsFormatLong = jsonFormat5(Als[Long])

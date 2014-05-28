@@ -64,4 +64,9 @@ case class FrameRenameColumn[+Arguments, FrameRef](frame: FrameRef, originalcolu
 
 case class FlattenColumn[FrameRef](name:String, frame: FrameRef, column: String, separator: String)
 
+case class FrameJoin[FrameRef](name: String, joinFrames: List[(FrameRef, String)], how: String) {
+  require(joinFrames != null, "frame is required")
+  require(joinFrames.length == 2, "Two frames are required for the join operation")
+}
+
 case class SeparatorArgs(separator: Char)
