@@ -23,17 +23,17 @@
 
 package com.intel.intelanalytics.engine.spark
 
-import org.apache.spark.{ ExceptionFailure, SparkContext, SparkConf, Accumulator }
+import org.apache.spark.{ ExceptionFailure, SparkContext }
 import org.apache.spark.api.python._
 import java.util.{ List => JList, ArrayList => JArrayList, Map => JMap }
 import org.apache.spark.broadcast.Broadcast
-import scala.collection.{ mutable, Set }
+import scala.collection.mutable
 import com.intel.intelanalytics.domain._
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.{ RDD, EmptyRDD }
 import com.intel.intelanalytics.engine._
-import com.intel.intelanalytics.domain.{ User, DataFrameTemplate, DataFrame }
-import com.intel.intelanalytics.domain.{ GraphTemplate, Graph, DataFrameTemplate, DataFrame }
+import com.intel.intelanalytics.domain.{ User, DataFrameTemplate }
+import com.intel.intelanalytics.domain.{ GraphTemplate, Graph, DataFrame }
 import scala.concurrent._
 import ExecutionContext.Implicits.global
 import java.nio.file.{ Paths, Path, Files }
@@ -46,10 +46,9 @@ import org.apache.hadoop.hdfs.DistributedFileSystem
 import java.nio.file.Path
 import spray.json.{ JsObject, JsonParser }
 import scala.io.{ Codec, Source }
-import scala.collection.mutable.{ HashSet, ListBuffer, ArrayBuffer, HashMap }
+import scala.collection.mutable.ArrayBuffer
 import scala.io.{ Codec, Source }
 import org.apache.hadoop.fs.{ Path => HPath }
-import scala.Some
 import com.intel.intelanalytics.engine.RowParser
 
 import scala.util.matching.Regex
@@ -60,48 +59,39 @@ import com.intel.intelanalytics.domain.Partial
 import com.intel.intelanalytics.repository.{ SlickMetaStoreComponent, DbProfileComponent, MetaStoreComponent }
 import scala.slick.driver.H2Driver
 import scala.util.{ Success, Failure, Try }
-import org.apache.spark.scheduler._
 import org.apache.spark.scheduler.SparkListenerStageCompleted
 import scala.Some
-import com.intel.intelanalytics.domain.DataFrameTemplate
 import com.intel.intelanalytics.domain.DataFrame
 import org.apache.spark.scheduler.SparkListenerJobStart
-import org.apache.spark.engine.{ SparkProgressListener, ProgressPrinter }
+import org.apache.spark.engine.ProgressPrinter
 import com.typesafe.config.ConfigFactory
 import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.shared.EventLogging
 
 import com.intel.graphbuilder.driver.spark.titan.{ GraphBuilderConfig, GraphBuilder }
-import com.intel.intelanalytics.engine.spark.graphbuilder.GraphBuilderConfigFactory
 import com.intel.graphbuilder.driver.spark.titan.examples.ExamplesUtils
 import scala.util.Failure
 import scala.Some
 import scala.collection.JavaConverters._
 import com.intel.intelanalytics.domain.LoadLines
 import com.intel.intelanalytics.domain.Graph
-import com.intel.intelanalytics.domain.FilterPredicate
-import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.domain.FrameRemoveColumn
-import com.intel.intelanalytics.domain.GraphTemplate
 import com.intel.intelanalytics.domain.DataFrameTemplate
 import com.intel.intelanalytics.domain.FrameAddColumn
 import scala.util.Success
 import com.intel.intelanalytics.domain.DataFrame
-import com.intel.intelanalytics.domain.Command
 import com.intel.intelanalytics.domain.Partial
 import com.intel.intelanalytics.domain.SeparatorArgs
 import com.intel.intelanalytics.domain.CommandTemplate
 import com.intel.intelanalytics.domain.Error
-import com.intel.intelanalytics.domain.Als
 import com.thinkaurelius.titan.core.{ TitanGraph, TitanFactory }
-import org.apache.commons.configuration.BaseConfiguration
 import com.tinkerpop.blueprints.{ Direction, Vertex }
 import com.thinkaurelius.titan.graphdb.query.TitanPredicate
 import com.intel.graphbuilder.util.SerializableBaseConfiguration
 
 import org.apache.hadoop.hbase.HBaseConfiguration
 import org.apache.hadoop.hbase.client.HBaseAdmin
-import com.intel.intelanalytics.engine.spark.graph.{ SparkGraphStorage, SparkGraphHBaseBackend }
+import com.intel.intelanalytics.engine.spark.graph.SparkGraphHBaseBackend
 
 import com.intel.intelanalytics.domain.DataTypes.DataType
 
@@ -156,6 +146,12 @@ class SparkComponent extends EngineComponent
   //TODO: only create if the datatabase doesn't already exist. So far this is in-memory only,
   //but when we want to use postgresql or mysql or something, we won't usually be creating tables here.
   metaStore.create()
+
+  val graphStorage: GraphStorage =
+    new SparkGraphStorage(engine.context(_),
+      metaStore,
+      new SparkGraphHBaseBackend(new HBaseAdmin(HBaseConfiguration.create())),
+      frames)
 
   class SparkEngine extends Engine {
 
@@ -338,7 +334,9 @@ class SparkComponent extends EngineComponent
                   case invalidColumns if invalidColumns.contains(-1) =>
                     throw new IllegalArgumentException(s"Invalid list of columns: ${arguments.column}")
                   case _ => frames.getFrameRdd(ctx, originalFrameID)
-                    .map(row => { for { i <- columnIndices } yield row(i) }.toArray)
+                    .map(row => {
+                      for { i <- columnIndices } yield row(i)
+                    }.toArray)
                     .saveAsObjectFile(location)
                 }
 
@@ -527,14 +525,26 @@ class SparkComponent extends EngineComponent
         }
       }
 
+    /**
+     * Register a graph name with the metadata store.
+     * @param graph Metadata for graph creation.
+     * @param user IMPLICIT. The user creating the graph.
+     * @return
+     */
     def createGraph(graph: GraphTemplate)(implicit user: UserPrincipal) = {
       future {
         withMyClassLoader {
-          graphs.createGraph(graph)
+          graphStorage.createGraph(graph)
         }
       }
     }
 
+    /**
+     * Loads graph data into a graph in the database. The source is tabular data interpreted by user-specified  rules.
+     * @param arguments Graph construction
+     * @param user IMPLICIT. The user loading the graph
+     * @return
+     */
     def loadGraph(arguments: GraphLoad[JsObject, Long, Long])(implicit user: UserPrincipal): (Command, Future[Command]) =
       withContext("se.load") {
         require(arguments != null, "arguments are required")
@@ -550,7 +560,7 @@ class SparkComponent extends EngineComponent
                 val realFrame = frames.lookup(arguments.sourceFrameURI).getOrElse(
                   throw new IllegalArgumentException(s"No such data frame: ${arguments.sourceFrameURI}"))
 
-                graphs.loadGraph(arguments)(user)
+                graphStorage.loadGraph(arguments)(user)
               }
 
               commands.lookup(command.id).get
@@ -560,23 +570,40 @@ class SparkComponent extends EngineComponent
         (command, result)
       }
 
+    /**
+     * Obtains a graph's metadata from its identifier.
+     * @param id Unique identifier for the graph provided by the metastore.
+     * @return A future of the graph.
+     */
     def getGraph(id: SparkComponent.this.Identifier): Future[Graph] = {
       future {
-        graphs.lookup(id).get
+        graphStorage.lookup(id).get
       }
     }
 
+    /**
+     * Get the metadata for a range of graph identifiers.
+     * @param offset First graph to obtain.
+     * @param count Number of graphs to obtain.
+     * @param user IMPLICIT. User listing the graphs.
+     * @return Future of a sequence of graphs.
+     */
     def getGraphs(offset: Int, count: Int)(implicit user: UserPrincipal): Future[Seq[Graph]] =
       withContext("se.getGraphs") {
         future {
-          graphs.getGraphs(offset, count)
+          graphStorage.getGraphs(offset, count)
         }
       }
 
+    /**
+     * Delete a graph from the graph database.
+     * @param graph The graph to be deleted.
+     * @return
+     */
     def deleteGraph(graph: Graph): Future[Unit] = {
       withContext("se.deletegraph") {
         future {
-          graphs.drop(graph)
+          graphStorage.drop(graph)
         }
       }
     }
@@ -738,7 +765,12 @@ class SparkComponent extends EngineComponent
       //    comments = [(leftTypeStr):commonStr + leftName + ': ', (rightTypeStr):commonStr + rightName + ': ']
       //    //vertexType = v.getProperty(key4VertexType)
 
-      val recommendType = if (vertexType == rightType) { leftType } else { rightType }
+      val recommendType = if (vertexType == rightType) {
+        leftType
+      }
+      else {
+        rightType
+      }
 
       //    recommendType = rightTypeStr
       //    if (vertexType == rightTypeStr) {
@@ -760,12 +792,22 @@ class SparkComponent extends EngineComponent
           throw new IllegalArgumentException("wrong property length provided for ML result!")
         }
 
-        val bias = if (biasOn) { Some(v.getProperty[Double](propertyList.last)) } else { None }
+        val bias = if (biasOn) {
+          Some(v.getProperty[Double](propertyList.last))
+        }
+        else {
+          None
+        }
         val properties = if (vectorValue) {
           commasAndWhiteSpace.split(v.getProperty(propertyList.head)).map(_.toDouble)
         }
         else {
-          val valueLength = if (biasOn) { length - 1 } else { length }
+          val valueLength = if (biasOn) {
+            length - 1
+          }
+          else {
+            length
+          }
           propertyList.take(valueLength).map(p => v.getProperty[Double](p))
         }
         (bias ++ properties).toList
@@ -1029,6 +1071,7 @@ def calculateScore(list1, list2, biasOn, featureDimension) {
       withContext("frame.addColumnWithValue") {
         ???
       }
+
     override def renameColumn[T](frame: DataFrame, name_pairs: Seq[(String, String)]): Unit =
       withContext("frame.renameColumn") {
         val columnsToRename: Seq[String] = name_pairs.map(_._1)
@@ -1226,8 +1269,6 @@ def calculateScore(list1, list2, biasOn, featureDimension) {
     }
 
   }
-
-  val graphs = new SparkGraphStorage(engine.context(_), metaStore, new SparkGraphHBaseBackend(), frames)
 
 }
 

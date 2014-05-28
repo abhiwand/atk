@@ -23,17 +23,11 @@
 
 package com.intel.intelanalytics.engine
 
-import scala.xml.persistent.CachedFileStorage
 import java.nio.file.Path
-import PartialFunction._
 import com.intel.intelanalytics.domain._
 import scala.concurrent.Future
 import java.io.{ OutputStream, InputStream }
 import com.intel.intelanalytics.engine.Rows.Row
-import com.intel.intelanalytics.domain.Partial
-import com.intel.intelanalytics.domain.DataFrame
-import com.intel.intelanalytics.domain.Schema
-import com.intel.intelanalytics.domain.DataFrameTemplate
 import spray.json.JsObject
 import scala.util.Try
 import com.intel.intelanalytics.security.UserPrincipal
@@ -43,9 +37,12 @@ import com.intel.intelanalytics.domain.Schema
 import com.intel.intelanalytics.domain.DataFrameTemplate
 
 object Rows {
-  type Row = Array[Any] //TODO: Can we constrain this better?
+  type Row = Array[Any]
+
+  //TODO: Can we constrain this better?
   trait RowSource {
     def schema: Schema
+
     def rows: Iterable[Row]
   }
 
@@ -61,10 +58,13 @@ object Rows {
 sealed abstract class Alteration {}
 
 case class AddColumn[T](name: String, value: Option[T], generator: Row => T) extends Alteration
+
 case class RemoveColumn[T](name: String) extends Alteration
 
 trait FrameComponent {
+
   import Rows.Row
+
   def frames: FrameStorage
 
   type View <: DataView
@@ -79,14 +79,23 @@ trait FrameComponent {
 
   trait FrameStorage {
     def lookup(id: Long): Option[DataFrame]
+
     def create(frame: DataFrameTemplate): DataFrame
+
     def addColumn[T](frame: DataFrame, column: Column[T], columnType: DataTypes.DataType): DataFrame
+
     def addColumnWithValue[T](frame: DataFrame, column: Column[T], default: T): Unit
+
     def removeColumn(frame: DataFrame, columnIndex: Seq[Int]): Unit
+
     def renameColumn[T](frame: DataFrame, name_pairs: Seq[(String, String)]): Unit
+
     def removeRows(frame: DataFrame, predicate: Row => Boolean)
+
     def appendRows(startWith: DataFrame, append: Iterable[Row])
+
     def getRows(frame: DataFrame, offset: Long, count: Int)(implicit user: UserPrincipal): Iterable[Row]
+
     def drop(frame: DataFrame)
   }
 
@@ -113,24 +122,36 @@ trait FileComponent {
 
   trait FileStorage {
     def createDirectory(name: Path): Directory
+
     def create(name: Path)
+
     def delete(path: Path)
+
     def getMetaData(path: Path): Option[Entry]
+
     def move(source: Path, destination: Path)
+
     def copy(source: Path, destination: Path)
+
     def read(source: File): InputStream
+
     def list(source: Directory): Seq[Entry]
+
     def readRows(source: File, rowGenerator: InputStream => Rows.RowSource, offsetBytes: Long = 0, readBytes: Long = -1)
+
     def write(sink: File, append: Boolean = false): OutputStream
   }
+
 }
 
 trait EngineComponent {
 
   import Rows.Row
+
   type Identifier = Long //TODO: make more generic?
 
   def engine: Engine
+
   //TODO: make these all use Try instead?
   //TODO: make as many of these as possible use id instead of dataframe as the first argument?
   //TODO: distinguish between DataFrame and DataFrameSpec,
@@ -140,33 +161,53 @@ trait EngineComponent {
     def getVertices(graph: Identifier, offset: Int, count: Int, queryName: String, parameters: Map[String, String]): Future[Iterable[Row]]
 
     def getCommands(offset: Int, count: Int): Future[Seq[Command]]
+
     def getCommand(id: Identifier): Future[Option[Command]]
+
     def getFrame(id: Identifier): Future[Option[DataFrame]]
+
     def getRows(id: Identifier, offset: Long, count: Int)(implicit user: UserPrincipal): Future[Iterable[Row]]
+
     def create(frame: DataFrameTemplate): Future[DataFrame]
+
     def clear(frame: DataFrame): Future[DataFrame]
+
     def load(arguments: LoadLines[JsObject, Long])(implicit user: UserPrincipal): (Command, Future[Command])
+
     def filter(arguments: FilterPredicate[JsObject, Long])(implicit user: UserPrincipal): (Command, Future[Command])
+
     def project(arguments: FrameProject[JsObject, Long])(implicit user: UserPrincipal): (Command, Future[Command])
+
     def renameColumn(arguments: FrameRenameColumn[JsObject, Long])(implicit user: UserPrincipal): (Command, Future[Command])
+
     //  Should predicate be Partial[Any]  def filter(frame: DataFrame, predicate: Partial[Any])(implicit user: UserPrincipal): Future[DataFrame]
     def removeColumn(arguments: FrameRemoveColumn[JsObject, Long])(implicit user: UserPrincipal): (Command, Future[Command])
+
     def addColumn(arguments: FrameAddColumn[JsObject, Long])(implicit user: UserPrincipal): (Command, Future[Command])
+
     def alter(frame: DataFrame, changes: Seq[Alteration])
+
     def delete(frame: DataFrame): Future[Unit]
+
     def getFrames(offset: Int, count: Int)(implicit p: UserPrincipal): Future[Seq[DataFrame]]
+
     def shutdown: Unit
 
     def getGraph(id: Identifier): Future[Graph]
+
     def getGraphs(offset: Int, count: Int)(implicit user: UserPrincipal): Future[Seq[Graph]]
+
     def createGraph(graph: GraphTemplate)(implicit user: UserPrincipal): Future[Graph]
+
     def loadGraph(graph: GraphLoad[JsObject, Long, Long])(implicit user: UserPrincipal): (Command, Future[Command])
 
     def deleteGraph(graph: Graph): Future[Unit]
+
     //NOTE: we do /not/ expect to have a separate method for every single algorithm, this will move to a plugin
     //system soon
     def runAls(als: Als[Long]): (Command, Future[Command])
   }
+
 }
 
 trait CommandComponent {
@@ -174,31 +215,44 @@ trait CommandComponent {
 
   trait CommandStorage {
     def lookup(id: Long): Option[Command]
+
     def create(frame: CommandTemplate): Command
+
     def scan(offset: Int, count: Int): Seq[Command]
+
     def start(id: Long): Unit
+
     def complete(id: Long, result: Try[Unit]): Unit
   }
 
 }
 
-// THE CAKE IS A LIE!!!
+// TODO: Move classes from cake to dependency injection.
 
+/**
+ * This manages the backend storage for graphs, underneath the graph database.
+ *
+ * The reason that we have to do this is because Titan doesn't provide graph management as part of their interface.
+ * So our {@code GraphStorage} component has to know about Titan's backend to clean up the stuff that
+ * Titan can not or will not.
+ */
 trait GraphBackendStorage {
-
-  def deleteTable(name: String)
-  def listTables(): Seq[String]
-
+  def deleteUnderlyingTable(graphName: String)
 }
 
-abstract class GraphStorage(val backendStorage: GraphBackendStorage, val frameStorage: FrameComponent#FrameStorage) {
+/**
+ * Manages multiple graphs in the underlying graph database.
+ */
+trait GraphStorage {
 
   def lookup(id: Long): Option[Graph]
 
   def createGraph(graph: GraphTemplate)(implicit user: UserPrincipal): Graph
+
   def loadGraph(graph: GraphLoad[JsObject, Long, Long])(implicit user: UserPrincipal): Graph
 
   def drop(graph: Graph)
+
   def getGraphs(offset: Int, count: Int)(implicit user: UserPrincipal): Seq[Graph]
 
 }

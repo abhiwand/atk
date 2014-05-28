@@ -23,8 +23,8 @@
 
 package com.intel.intelanalytics.service.v1
 
-import com.intel.intelanalytics.service.v1.viewmodels.{ DecoratedCommand, Rel, DecoratedDataFrame, JsonTransform }
-import scala.util.{ Failure, Success, Try }
+import com.intel.intelanalytics.service.v1.viewmodels.Rel
+import scala.util.Try
 import com.intel.intelanalytics.domain._
 import spray.json.JsObject
 import com.intel.intelanalytics.repository.MetaStoreComponent
@@ -32,13 +32,7 @@ import com.intel.intelanalytics.engine.EngineComponent
 import com.intel.intelanalytics.service.v1.viewmodels.ViewModelJsonProtocol._
 import scala.concurrent._
 import spray.http.Uri
-import com.typesafe.config.{ ConfigFactory, Config }
-import com.intel.intelanalytics.service.v1.viewmodels.DecoratedCommand
-import scala.util.Failure
-import scala.Some
-import scala.util.Success
-import com.intel.intelanalytics.service.v1.viewmodels.JsonTransform
-import com.intel.intelanalytics.security.UserPrincipal
+import com.typesafe.config.Config
 import spray.routing.Route
 import com.intel.intelanalytics.service.v1.viewmodels.DecoratedCommand
 import scala.util.Failure
@@ -53,15 +47,29 @@ import com.intel.intelanalytics.domain.Command
 
 import ExecutionContext.Implicits.global
 
+/**
+ * Trait for classes that implement the Intel Analytics V1 REST API Command Service
+ */
+
 trait V1CommandService extends V1Service {
   this: V1Service with MetaStoreComponent with EngineComponent =>
 
+  /**
+   * Creates "decorated command" for return on HTTP protocol
+   *
+   * @param uri
+   * @param command
+   * @return
+   */
   def decorate(uri: Uri, command: Command): DecoratedCommand = {
     //TODO: add other relevant links
     val links = List(Rel.self(uri.toString()))
     CommandDecorator.decorateEntity(uri.toString(), links, command)
   }
 
+  /**
+   * The spray routes defining the command service.
+   */
   def commandRoutes() = {
     std("commands") { implicit principal: UserPrincipal =>
       pathPrefix("commands" / LongNumber) {
@@ -105,6 +113,13 @@ trait V1CommandService extends V1Service {
   }
 
   //TODO: disentangle the command dispatch from the routing
+  /**
+   * Command dispatcher that translates from HTTP pathname to command invocation
+   * @param uri Path of command.
+   * @param xform Argument parser.
+   * @param user
+   * @return Spray Route for command invocation
+   */
   def runCommand(uri: Uri, xform: JsonTransform)(implicit user: UserPrincipal): Route = {
     xform.name match {
       //TODO: genericize function resolution and invocation
@@ -144,6 +159,13 @@ trait V1CommandService extends V1Service {
     }
   }
 
+  /**
+   * Translates tabular data into graph form and load it into a graph database.
+   * @param uri Command path.
+   * @param transform Translates arguments from HTTP/JSon to internal case classes.
+   * @param user The user
+   * @return A Spray route.
+   */
   def runGraphLoad(uri: Uri, transform: JsonTransform)(implicit user: UserPrincipal): Route = {
     val test = Try {
       import DomainJsonProtocol._

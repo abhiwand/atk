@@ -69,18 +69,18 @@ object DomainJsonProtocol extends DefaultJsonProtocol {
   implicit val errorFormat = jsonFormat5(Error)
   implicit val userFormat = jsonFormat2(User)
 
-  // graph
-
-  implicit val outputConfigurationFormat = jsonFormat2(OutputConfiguration)
-
-  implicit val valueFormat = jsonFormat2(Value)
-  implicit val propertyFormat = jsonFormat2(Property)
-  implicit val edgeRuleFormat = jsonFormat4(EdgeRule)
-  implicit val vertexRuleFormat = jsonFormat2(VertexRule)
+  // graph service formats
 
   implicit val graphTemplateFormat = jsonFormat1(GraphTemplate)
   implicit val graphFormat = jsonFormat2(Graph)
 
+  // graph loading formats for specifying graphbuilder and graphload rules
+
+  implicit val outputConfigurationFormat = jsonFormat2(OutputConfiguration)
+  implicit val valueFormat = jsonFormat2(Value)
+  implicit val propertyFormat = jsonFormat2(Property)
+  implicit val edgeRuleFormat = jsonFormat4(EdgeRule)
+  implicit val vertexRuleFormat = jsonFormat2(VertexRule)
   implicit val graphLoadLongs = jsonFormat7(GraphLoad[JsObject, Long, Long])
   implicit val graphLoadStrings = jsonFormat7(GraphLoad[JsObject, String, String])
 
