@@ -33,6 +33,7 @@ import org.apache.giraph.conf.GiraphConfiguration;
 import org.apache.giraph.utils.InternalVertexRunner;
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.util.HashMap;
@@ -42,46 +43,124 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 public class GaussianBeliefPropagationComputationTest {
-
+    protected final GiraphConfiguration conf = new GiraphConfiguration();
     /**
-     * A local test on toy data
+     * set up GiraphConfiguration for different test cases
      */
-    @Test
-    public void testToyData() throws Exception {
-        // a small five-vertex graph
-        String[] graph = new String[] {
-            "[0,[-6,1],[[1,-2],[2,3]]]",
-            "[1,[0,1],[[0,-2]]]",
-            "[2,[2,1],[[0,3]]]"
-        };
-
-        HashMap<Long, Double[]> expectedValues = new HashMap<Long, Double[]>();
-        expectedValues.put(0L, new Double[]{-6.0, 1.0,  1.0, -12.0});
-        expectedValues.put(1L, new Double[]{ 0.0, 1.0,  2.0,  1.5});
-        expectedValues.put(2L, new Double[]{ 2.0, 1.0, -1.0,  4.0});
-
-        GiraphConfiguration conf = new GiraphConfiguration();
+    @Before
+    public void setConf() throws Exception {
         conf.setComputationClass(GaussianBeliefPropagationComputation.class);
         conf.setMasterComputeClass(GaussianBeliefPropagationMasterCompute.class);
         conf.setAggregatorWriterClass(GaussianBeliefPropagationAggregatorWriter.class);
         conf.setVertexInputFormatClass(JsonPropertyGraph4GBPInputFormat.class);
         conf.setVertexOutputFormatClass(JsonPropertyGraph4GBPOutputFormat.class);
-        conf.set("gbp.maxSupersteps", "20");
-        conf.set("gbp.convergenceThreshold", "0.001");
+        conf.set("gbp.maxSupersteps", "119");
+        conf.set("gbp.convergenceThreshold", "0.007");
         conf.set("gbp.bidirectionalCheck", "true");
+        conf.set("gbp.outerLoop", "true");
+        conf.set("giraph.useSuperstepCounters", "false");
+    }
 
+    /**
+     * Test 3x3 symmetric matrix
+     *  3*x1 + 2*x2 +  x3  = 10
+     *  2*x1 + 4*x2        = 10
+     *    x1        + 5*x3 = 16
+     */
+    @Test
+    public void testSymmetricCase1() throws Exception {
+        int graphSize = 3;
+        HashMap<Long, Double[]> expectedValues = new HashMap<Long, Double[]>();
+        String[] graph = new String[] {
+            "[0,[10,3],[[1,2],[2,1]]]",
+            "[1,[10,4],[[0,2]]]",
+            "[2,[16,5],[[0,1]]]"
+        };
+        expectedValues.put(0L, new Double[]{ 10.0, 3.0, 1.0, 0.330});
+        expectedValues.put(1L, new Double[]{ 10.0, 4.0, 2.0, 0.25});
+        expectedValues.put(2L, new Double[]{ 16.0, 5.0, 3.0, 0.174});
+        conf.set("gbp.convergenceThreshold", "0.005");
+        runTest(conf, graph, graphSize, expectedValues);
+    }
+
+    /**
+     * Test another 3x3 symmetric matrix
+     *
+     *    x1 - 2*x2 + 3*x3 = -6
+     * -2*x1 +   x2        =  0
+     *  3*x1        +   x3 =  2
+     */
+    @Test
+    public void testSymmetricCase2() throws Exception {
+        int graphSize = 3;
+        HashMap<Long, Double[]> expectedValues = new HashMap<Long, Double[]>();
+
+        String[] graph = new String[] {
+            "[0,[-6,1],[[1,-2],[2,3]]]",
+            "[1,[0,1],[[0,-2]]]",
+            "[2,[2,1],[[0,3]]]"
+        };
+        expectedValues.put(0L, new Double[]{-6.0, 1.0,  1.0, -0.08333});
+        expectedValues.put(1L, new Double[]{ 0.0, 1.0,  2.0,  0.66667});
+        expectedValues.put(2L, new Double[]{ 2.0, 1.0, -1.0,  0.25});
+        conf.set("gbp.outerLoop", "false");
+        conf.set("gbp.convergenceThreshold", "0.001");
+        runTest(conf, graph, graphSize, expectedValues);
+    }
+
+    /**
+     * Test 3x3 asymmetric matrix
+     *  5*x1 - 2*x2 + 3*x3 = -1
+     * -3*x1 + 9*x2 + x3   =  2
+     *  2*x1 -   x2 - 7*x3 =  3
+     */
+    @Test
+    public void testAsymmetricCase1() throws Exception {
+        int graphSize = 3;
+        HashMap<Long, Double[]> expectedValues = new HashMap<Long, Double[]>();
+        String[] graph = new String[] {
+            "[0,[-1,5],[[1,-2,-3],[2,3,2]]]",
+            "[1,[2,9],[[0,-3,-2],[2,1,-1]]]",
+            "[2,[3,-7],[[0,2,3],[1,-1,1]]]"
+        };
+        expectedValues.put(0L, new Double[]{-1.0, 5.0,  0.182, 0.1108});
+        expectedValues.put(1L, new Double[]{ 2.0, 9.0,  0.330, 0.0896});
+        expectedValues.put(2L, new Double[]{ 3.0, -7.0, -0.407,-0.2122});
+        runTest(conf, graph, graphSize, expectedValues);
+    }
+
+
+    /**
+     * Test 2x2 asymmetric matrix
+     *  7*x1 -   x2 =  6
+     *    x1 - 5*x2 = -4
+     */
+    @Test
+    public void testAsymmetricCase2() throws Exception {
+        int graphSize = 2;
+        HashMap<Long, Double[]> expectedValues = new HashMap<Long, Double[]>();
+        String[] graph = new String[] {
+            "[0,[6,7],[[1,-1,1]]]",
+            "[1,[-4,-5],[[0,1,-1]]]"
+        };
+        expectedValues.put(0L, new Double[]{6.0, 7.0,  1.0, 0.129});
+        expectedValues.put(1L, new Double[]{-4.0, -5.0,  1.0,  -0.258});
+        runTest(conf, graph, graphSize, expectedValues);
+    }
+
+
+    public void runTest(GiraphConfiguration conf, String[] graph, int graphSize, HashMap<Long, Double[]> expectedValues) throws Exception {
         // run internally
         Iterable<String> results = InternalVertexRunner.run(conf, graph);
-
         Map<Long, Double[]> vertexValues = parseVertexValues(results);
 
         // verify results
         assertNotNull(vertexValues);
-        assertEquals(3, vertexValues.size());
+        assertEquals(graphSize, vertexValues.size());
         for (Map.Entry<Long, Double[]> entry : vertexValues.entrySet()) {
             assertEquals(4, entry.getValue().length);
             for (int j = 0; j < 4; j++) {
-                assertEquals(expectedValues.get(entry.getKey())[j], entry.getValue()[j], 0.01d);    
+                assertEquals(expectedValues.get(entry.getKey())[j], entry.getValue()[j], 0.03d);
             }
         }
     }
