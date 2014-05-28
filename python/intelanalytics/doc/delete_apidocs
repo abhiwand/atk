@@ -1,7 +1,0 @@
-# Delete previously automatically built files
-if [[ -f source/intelanalytics.rst ]]; then
-	rm source/intelanalytics*
-fi
-if [[ -f source/modules.rst ]]; then
-	rm source/modules.rst
-fi
