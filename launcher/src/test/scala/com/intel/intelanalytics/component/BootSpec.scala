@@ -23,12 +23,12 @@
 
 package com.intel.intelanalytics.component
 
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.{ FlatSpec, Matchers }
 
 class BootSpec extends FlatSpec with Matchers {
 
   "An empty Set" should "have size 0" in {
-      assert(Set.empty.size == 0)
+    assert(Set.empty.size == 0)
   }
 
   it should "produce NoSuchElementException when head is invoked" in {
