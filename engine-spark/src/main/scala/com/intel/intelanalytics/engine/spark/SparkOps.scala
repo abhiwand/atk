@@ -79,4 +79,8 @@ private[spark] object SparkOps extends Serializable {
       .map(converter)
       .saveAsObjectFile(location)
   }
+
+  def flattenColumnByIndex(index: Int, row: Array[Any]): Array[Array[Any]] = {
+
+  }
 }

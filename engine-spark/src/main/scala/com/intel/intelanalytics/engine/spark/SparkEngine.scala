@@ -69,11 +69,13 @@ import org.apache.spark.engine.{ SparkProgressListener, ProgressPrinter }
 import com.typesafe.config.ConfigFactory
 import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.shared.EventLogging
+import spray.json._
 import com.intel.intelanalytics.domain.DataTypes.DataType
 
 //TODO documentation
 //TODO progress notification
 //TODO event notification
+
 class SparkComponent extends EngineComponent
     with FrameComponent
     with CommandComponent
@@ -333,6 +335,43 @@ class SparkComponent extends EngineComponent
         pyRdd.map(s => new String(s).split(",")).map(converter).saveAsObjectFile(location)
       }
     }
+
+    def flattenColumn(argument: FlattenColumn[Long])(implicit user: UserPrincipal): (Command, Future[Command]) =
+      withContext("se.flattenColumn") {
+        val command: Command = commands.create(new CommandTemplate("flattenColumn", Some(argument.toJson.asJsObject)))
+        val result: Future[Command] = future {
+          withMyClassLoader {
+            withContext("se.flattenColumn.future") {
+              val frameId: Long = argument.frame
+              val realFrame = frames.lookup(frameId).getOrElse(
+                throw new IllegalArgumentException(s"No such data frame: ${frameId}"))
+
+              val ctx = context(user).sparkContext
+
+              /* create a dataframe should take very little time, much less than 10 minutes */
+              val newFrame = Await.result(create(DataFrameTemplate(argument.name, Schema(realFrame.schema.columns))), 10 minutes)
+              val rdd = frames.getFrameRdd(ctx, frameId)
+
+              val columnIndex = realFrame.schema.columns.indexWhere(columnTuple => columnTuple._1 == argument.name)
+
+              val flattenedRDD = rdd.flatMap(r => {
+                val splitted = r(columnIndex).asInstanceOf[String].split(argument.separator)
+                splitted.map(s => {
+                  r(columnIndex) = s
+                  r
+                })
+              }
+              )
+
+              flattenedRDD.saveAsObjectFile(fsRoot + frames.getFrameDataFile(newFrame.id))
+              flattenedRDD.toJson.asJsObject
+            }
+          }
+          commands.lookup(command.id).get
+        }
+
+        (command, result)
+      }
 
     def filter(arguments: FilterPredicate[JsObject, Long])(implicit user: UserPrincipal): (Command, Future[Command]) =
       withContext("se.filter") {

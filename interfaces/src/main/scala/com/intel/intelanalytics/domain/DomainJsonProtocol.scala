@@ -68,6 +68,7 @@ object DomainJsonProtocol extends DefaultJsonProtocol {
   implicit val alsFormatLong = jsonFormat5(Als[Long])
   implicit val errorFormat = jsonFormat5(Error)
   implicit val userFormat = jsonFormat2(User)
+  implicit val flattenColumnLongFormat = jsonFormat4(FlattenColumn[Long])
 
   // graph
 

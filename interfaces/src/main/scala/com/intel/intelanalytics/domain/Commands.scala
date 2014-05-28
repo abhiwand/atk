@@ -62,4 +62,6 @@ case class FrameRenameColumn[+Arguments, FrameRef](frame: FrameRef, originalcolu
   require(renamedcolumn != null, "renamed column is required")
 }
 
+case class FlattenColumn[FrameRef](name:String, frame: FrameRef, column: String, separator: String)
+
 case class SeparatorArgs(separator: Char)
