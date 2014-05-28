@@ -48,7 +48,7 @@
         </plugins>
     </build>
     <dependencies>
-       <!-- <dependency>
+        <!--<dependency>
             <groupId>org.scalatest</groupId>
             <artifactId>scalatest_2.10</artifactId>
         </dependency>-->
