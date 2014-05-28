@@ -35,12 +35,10 @@ popd
 if [[ -f $DIR/stage/launcher.jar ]]; then
     LAUNCHER=$DIR/stage/launcher.jar
     CONFDIR=$DIR/../api-server/src/main/resources
+else
+	exit 1
 fi
 
-if [[ -f $DIR/../launcher/target/launcher.jar ]]; then
-    LAUNCHER=$DIR/../launcher/target/launcher.jar
-    CONFDIR=$DIR/../api-server/src/main/resources
-fi
 
 if [[ -n "$EXTRA_CONF" ]]
  then

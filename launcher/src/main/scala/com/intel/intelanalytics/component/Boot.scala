@@ -69,7 +69,7 @@ object Boot extends App {
   def buildClassLoader(archive: String, parent: ClassLoader): ClassLoader = {
     //TODO: Allow directory to be passed in, or otherwise abstracted?
     //TODO: Make sensitive to actual scala version rather than hard coding.
-    val classDirectory: Path = Directory.Current.get / archive / "target" /  "classes"
+    val classDirectory: Path = Directory.Current.get / archive / "target" / "classes"
     val developmentJar: Path = Directory.Current.get / archive / "target" / (archive + ".jar")
     val deployedJar: Path = Directory.Current.get / "lib" / (archive + ".jar")
     val urls = Array(

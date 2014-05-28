@@ -31,7 +31,7 @@
     <description>IntelAnalytics iGiraph : Large Scale Graph Processing on Hadoop</description>
     <inceptionYear>2013</inceptionYear>
     <artifactId>IntelAnalytics-igiraph</artifactId>
-    <groupId>com.intel.hadoop</groupId>
+    <groupId>com.intel</groupId>
     <version>0.8.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
