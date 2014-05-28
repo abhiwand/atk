@@ -44,3 +44,9 @@ fi
 
 # We assume we are running from the doc directory. Ignore all toctree warnings.
 make -B html 2>&1 | grep -v -f toctreeWarnings
+
+# Make a zip file of that which was just built
+if [[ -d build ]]; then
+    zip -rq intel_analytics_docs.zip build
+fi
+

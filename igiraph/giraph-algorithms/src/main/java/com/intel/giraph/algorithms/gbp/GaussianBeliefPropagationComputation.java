@@ -26,8 +26,10 @@ package com.intel.giraph.algorithms.gbp;
 import com.intel.giraph.io.GaussianDistWritable;
 import com.intel.giraph.io.MessageData4GBPWritable;
 import com.intel.giraph.io.VertexData4GBPWritable;
+import com.intel.giraph.io.EdgeData4GBPWritable;
 import org.apache.giraph.Algorithm;
 import org.apache.giraph.aggregators.AggregatorWriter;
+import org.apache.giraph.aggregators.DoubleMaxAggregator;
 import org.apache.giraph.aggregators.DoubleSumAggregator;
 import org.apache.giraph.conf.DefaultImmutableClassesGiraphConfigurable;
 import org.apache.giraph.counters.GiraphStats;
@@ -51,12 +53,17 @@ import java.util.Map.Entry;
 
 /**
  * Gaussian belief propagation on MRF
+ * Algorithm is described in the paper:
+ * "Fixing convergence of Gaussian belief propagation" by
+ * J. K. Johnson, D. Bickson and D. Dolev
+ * In ISIT 2009
+ * http://arxiv.org/abs/0901.4192
  */
 @Algorithm(
     name = "Gaussian belief propagation on MRF"
 )
 public class GaussianBeliefPropagationComputation extends BasicComputation<LongWritable, VertexData4GBPWritable,
-    DoubleWritable, MessageData4GBPWritable> {
+    EdgeData4GBPWritable, MessageData4GBPWritable> {
 
     /** Custom argument for number of super steps */
     public static final String MAX_SUPERSTEPS = "gbp.maxSupersteps";
@@ -64,22 +71,116 @@ public class GaussianBeliefPropagationComputation extends BasicComputation<LongW
     public static final String CONVERGENCE_THRESHOLD = "gbp.convergenceThreshold";
     /** Custom argument for checking bi-directional edge or not (default: false) */
     public static final String BIDIRECTIONAL_CHECK = "gbp.bidirectionalCheck";
+    /** enable outer loop for convergence */
+    public static final String OUTER_LOOP = "gbp.outerLoop";
+
 
     /** Aggregator name for sum of delta for convergence monitoring */
     private static final String SUM_DELTA = "delta";
     /** Average delta value on validation data of previous super step for convergence monitoring */
     private static final String PREV_AVG_DELTA = "prev_avg_delta";
+    /** Aggregator name for max(sum(abs(A)) */
+    private static final String MAX_SUM = "max_sum";
+    /** Aggregator name for max(diag(A))) */
+    private static final String MAX_DIAG = "max_diagonal";
+    /** GBP execution stage */
+    private static final String STAGE = "gbp_stage";
+    /** diagonal loading value */
+    private static final String DIAG_LOADING = "diag_oading";
+    /** enable outer loop for convergence */
+    private static final String FIRST_OUTER = "first_outer";
 
     /** Number of super steps */
     private int maxSupersteps = 10;
     /** Turning on/off bi-directional edge check */
     private boolean bidirectionalCheck = false;
+    /** Execution stage */
+    private int stage = 0;
+    /** whether it is the first iteration of outer loop */
+    private boolean firstOuter = true;
 
     @Override
     public void preSuperstep() {
         // set custom parameters
         maxSupersteps = getConf().getInt(MAX_SUPERSTEPS, 10);
         bidirectionalCheck = getConf().getBoolean(BIDIRECTIONAL_CHECK, false);
+        stage = getConf().getInt(STAGE, 0);
+        firstOuter = getConf().getBoolean(FIRST_OUTER, true);
+    }
+
+    /**
+     * Calculate diagonal Loading
+     *
+     * @param vertex of the graph
+     */
+    private void diagonalLoading(Vertex<LongWritable, VertexData4GBPWritable, EdgeData4GBPWritable> vertex) {
+        //initialize posterior
+        GaussianDistWritable prior = vertex.getValue().getPrior();
+        GaussianDistWritable posterior = vertex.getValue().getPosterior();
+        posterior.set(prior);
+        double sum = vertex.getValue().getPrior().getPrecision();
+        aggregate(MAX_DIAG, new DoubleWritable(sum));
+        sum = Math.abs(sum);
+        for (Edge<LongWritable, EdgeData4GBPWritable> edge : vertex.getEdges()) {
+            sum += Math.abs(edge.getValue().getReverseWeight());
+        }
+        aggregate(MAX_SUM, new DoubleWritable(sum));
+    }
+
+    /**
+     * Update diagonal value
+     *
+     * @param vertex of the graph
+     */
+    private void updateDiagonal(Vertex<LongWritable, VertexData4GBPWritable, EdgeData4GBPWritable> vertex) {
+        double diagLoading = getConf().getDouble(DIAG_LOADING, 0d);
+        GaussianDistWritable intermediate = vertex.getValue().getIntermediate();
+        double oldValue = intermediate.getPrecision();
+        intermediate.setPrecision(oldValue + diagLoading);
+    }
+
+    /**
+     * Send messages for calculating A*xj
+     *
+     * @param vertex of the graph
+     */
+    private void sendMeanMsg(Vertex<LongWritable, VertexData4GBPWritable, EdgeData4GBPWritable> vertex) {
+        GaussianDistWritable posterior = vertex.getValue().getPosterior();
+        double meanIi = posterior.getMean();
+        vertex.getValue().setPrevMean(meanIi);
+
+        // calculate messages
+        MessageData4GBPWritable newMessage = new MessageData4GBPWritable();
+        newMessage.setId(vertex.getId().get());
+        GaussianDistWritable gauss = new GaussianDistWritable();
+        for (Edge<LongWritable, EdgeData4GBPWritable> edge : vertex.getEdges()) {
+            double precisionIj = edge.getValue().getReverseWeight();
+            gauss.setMean(meanIi);
+            gauss.setPrecision(precisionIj);
+            // send out messages
+            newMessage.setGauss(gauss);
+            sendMessage(edge.getTargetVertexId(), newMessage);
+        }
+    }
+
+    /**
+     * Update mean to b = b - A*xj
+     *
+     * @param vertex of the graph
+     * @param messages to out edges
+     */
+    private void updateMean(Vertex<LongWritable, VertexData4GBPWritable, EdgeData4GBPWritable> vertex,
+                            Iterable<MessageData4GBPWritable> messages) throws IOException {
+        GaussianDistWritable prior = vertex.getValue().getPrior();
+        GaussianDistWritable posterior = vertex.getValue().getPosterior();
+        GaussianDistWritable intermediate = vertex.getValue().getIntermediate();
+        double sum = prior.getMean() - posterior.getMean() * prior.getPrecision();
+        for (MessageData4GBPWritable message : messages) {
+            double meanKi = message.getGauss().getMean();
+            double precisionKi = message.getGauss().getPrecision();
+            sum -= precisionKi * meanKi;
+        }
+        intermediate.setMean(sum);
     }
 
     /**
@@ -87,124 +188,195 @@ public class GaussianBeliefPropagationComputation extends BasicComputation<LongW
      *
      * @param vertex of the graph
      */
-    private void initializeVertex(Vertex<LongWritable, VertexData4GBPWritable, DoubleWritable> vertex) {
+    private void initializeInnerLoop(Vertex<LongWritable, VertexData4GBPWritable, EdgeData4GBPWritable> vertex) {
         // normalize prior and posterior
-        GaussianDistWritable prior = vertex.getValue().getPrior();
+        GaussianDistWritable intermediate = vertex.getValue().getIntermediate();
         GaussianDistWritable posterior = vertex.getValue().getPosterior();
-        double pii = prior.getPrecision();
-        if (pii == 0d) {
-            throw new IllegalArgumentException("Vertex: " + vertex.getId() +
-                " has precision value 0, which is invalid.");
-        }
-        double uii = prior.getMean() / pii;
-        prior.setMean(uii);
-        prior.setPrecision(pii);
-        posterior.set(prior);
+        double precisionIi = intermediate.getPrecision();
+        double meanIi = intermediate.getMean();
+        posterior.setMean(meanIi);
+        posterior.setPrecision(precisionIi);
 
         // calculate messages
         MessageData4GBPWritable newMessage = new MessageData4GBPWritable();
         newMessage.setId(vertex.getId().get());
 
         GaussianDistWritable gauss = new GaussianDistWritable();
-        for (Edge<LongWritable, DoubleWritable> edge : vertex.getEdges()) {
-            double weight = edge.getValue().get();
-            if (weight == 0d) {
+        for (Edge<LongWritable, EdgeData4GBPWritable> edge : vertex.getEdges()) {
+            double weightIj = edge.getValue().getWeight();
+            double weightJi = edge.getValue().getReverseWeight();
+
+            if (weightIj == 0d && weightJi == 0d) {
                 throw new IllegalArgumentException("Vertex: " + vertex.getId() +
-                    " has an edge with weight value 0. This edge should be removed from the graph.");
+                    " has empty edge weights on both directions to vertex " + edge.getTargetVertexId());
             }
-            double uij = pii * uii / weight;
-            double pij = - weight * weight / pii;
-            gauss.setMean(uij);
-            gauss.setPrecision(pij);
-            // send out messages
-            newMessage.setGauss(gauss);
-            sendMessage(edge.getTargetVertexId(), newMessage);
+
+            if (precisionIi != 0d) {
+                double meanIj = - weightJi * meanIi / precisionIi;
+                double precisionIj = - weightIj * weightJi / precisionIi;
+                gauss.setMean(meanIj);
+                gauss.setPrecision(precisionIj);
+                // send out messages
+                newMessage.setGauss(gauss);
+                sendMessage(edge.getTargetVertexId(), newMessage);
+            }
         }
     }
 
-    @Override
-    public void compute(Vertex<LongWritable, VertexData4GBPWritable, DoubleWritable> vertex,
-        Iterable<MessageData4GBPWritable> messages) throws IOException {
 
-        long step = getSuperstep();
-        if (step == 0) {
-            initializeVertex(vertex);
-            vertex.voteToHalt();
-            return;
-        }
-
+    /**
+     * Inner Loop to calculate [direc,J,r1] = asynch_GBP(Minc, b - A*xj, max_iter, epsilon)
+     *
+     * @param vertex of the graph
+     * @param messages to out edges
+     */
+    private void innerLoop(Vertex<LongWritable, VertexData4GBPWritable, EdgeData4GBPWritable> vertex,
+                            Iterable<MessageData4GBPWritable> messages) throws IOException {
+        // update posterior according to prior and messages
+        VertexData4GBPWritable vertexValue = vertex.getValue();
+        GaussianDistWritable intermediate = vertexValue.getIntermediate();
+        // sum of prior and messages
+        double sum4Mean = intermediate.getMean();
+        double sum4Precision = intermediate.getPrecision();
         // collect messages sent to this vertex
         HashMap<Long, List<Double>> map = new HashMap<Long, List<Double>>();
         for (MessageData4GBPWritable message : messages) {
-            List<Double> paras = new ArrayList<Double>();
-            paras.add(message.getGauss().getMean());
-            paras.add(message.getGauss().getPrecision());
+            double meanKi = message.getGauss().getMean();
+            double precisionKi = message.getGauss().getPrecision();
+            List<Double> paras = new ArrayList<>();
+            paras.add(meanKi);
+            paras.add(precisionKi);
             map.put(message.getId(), paras);
+
+            sum4Mean += meanKi;
+            sum4Precision += precisionKi;
         }
+
         if (bidirectionalCheck) {
             if (map.size() != vertex.getNumEdges()) {
                 throw new IllegalArgumentException(String.format("Vertex ID %d: Number of received messages (%d)" +
-                    " isn't equal to number of edges (%d).", vertex.getId().get(),
+                        " isn't equal to number of edges (%d).", vertex.getId().get(),
                     map.size(), vertex.getNumEdges()));
             }
         }
 
-        // update posterior according to prior and messages
-        VertexData4GBPWritable vertexValue = vertex.getValue();
-        GaussianDistWritable prior = vertexValue.getPrior();
-        // sum of prior and messages
-        double uii = prior.getMean();
-        double pii = prior.getPrecision();
-        double sum4Mean = uii * pii;
-        double sum4Precision = pii;
-        for (MessageData4GBPWritable message : messages) {
-            double uki = message.getGauss().getMean();
-            double pki = message.getGauss().getPrecision();
-            sum4Mean += uki * pki;
-            sum4Precision += pki;
-        }
-
         GaussianDistWritable posterior = new GaussianDistWritable();
-        double u = sum4Mean / sum4Precision;
-        double p = sum4Precision;
-        posterior.setMean(u);
-        posterior.setPrecision(p);
+        double precision = 1.0 / sum4Precision;
+        posterior.setPrecision(precision);
+        double mean = sum4Mean * precision;
+        posterior.setMean(mean);
         // aggregate deltas for convergence monitoring
         GaussianDistWritable oldPosterior = vertexValue.getPosterior();
-        double u0 = oldPosterior.getMean();
-        double delta = Math.abs(u - u0);
+        double oldMean = oldPosterior.getMean();
+        double delta = Math.abs(mean - oldMean);
         aggregate(SUM_DELTA, new DoubleWritable(delta));
         // update posterior
         vertexValue.setPosterior(posterior);
 
-        if (step < maxSupersteps) {
+        if (getSuperstep() < maxSupersteps) {
             MessageData4GBPWritable newMessage = new MessageData4GBPWritable();
             newMessage.setId(vertex.getId().get());
             // update belief
             GaussianDistWritable gauss = new GaussianDistWritable();
-            for (Edge<LongWritable, DoubleWritable> edge : vertex.getEdges()) {
-                double weight = edge.getValue().get();
+            for (Edge<LongWritable, EdgeData4GBPWritable> edge : vertex.getEdges()) {
+                double weightIj = edge.getValue().getWeight();
+                double weightJi = edge.getValue().getReverseWeight();
                 long id = edge.getTargetVertexId().get();
                 double tempMean = sum4Mean;
                 double tempPrecision = sum4Precision;
                 if (map.containsKey(id)) {
                     tempPrecision = sum4Precision - map.get(id).get(1);
-                    tempMean = sum4Mean - map.get(id).get(0) * map.get(id).get(1);
-                } else {
-                    throw new IllegalArgumentException(String.format("Vertex ID %d: A message is mis-matched",
-                        vertex.getId().get()));
+                    tempMean = sum4Mean - map.get(id).get(0);
                 }
                 // send out messages
-                double uij = tempMean / weight;
-                double pij = - weight * weight / tempPrecision;
-                gauss.setMean(uij);
-                gauss.setPrecision(pij);
+                double meanIj = - weightJi * tempMean / tempPrecision;
+                double precisionIj = - weightIj * weightJi / tempPrecision;
+                gauss.setMean(meanIj);
+                gauss.setPrecision(precisionIj);
                 newMessage.setGauss(gauss);
                 sendMessage(edge.getTargetVertexId(), newMessage);
             }
         }
+    }
 
-        vertex.voteToHalt();
+    /**
+     * Update posterior mean
+     *
+     * @param vertex of the graph
+     */
+    private void updatePosteirorMean(Vertex<LongWritable, VertexData4GBPWritable, EdgeData4GBPWritable> vertex) {
+        GaussianDistWritable posterior = vertex.getValue().getPosterior();
+        double meanIi = vertex.getValue().getPrevMean();
+        double newMeanIi = meanIi + posterior.getMean();
+        double delta;
+        //in first outer iteration old_xj=0
+        //delta is norm(old_xj - xj) = norm(posterior.getMean())
+        if (firstOuter) {
+            delta = Math.abs(newMeanIi);
+            getConf().setBoolean(FIRST_OUTER, false);
+        } else {
+            delta = Math.abs(posterior.getMean());
+        }
+        aggregate(SUM_DELTA, new DoubleWritable(delta));
+        posterior.setMean(newMeanIi);
+    }
+
+    @Override
+    public void compute(Vertex<LongWritable, VertexData4GBPWritable, EdgeData4GBPWritable> vertex,
+        Iterable<MessageData4GBPWritable> messages) throws IOException {
+        long step = getSuperstep();
+        boolean outerLoop = getConf().getBoolean(OUTER_LOOP, false);
+
+        if (step == 0) {
+            if (!outerLoop) {
+                initializeInnerLoop(vertex);
+                getConf().setInt(STAGE, 5);
+                vertex.voteToHalt();
+            } else {
+                diagonalLoading(vertex);
+            }
+            return;
+        }
+
+        if (stage == 8) {
+            vertex.voteToHalt();
+            return;
+        }
+
+        if (step < maxSupersteps) {
+            switch(stage) {
+            case 1:
+                updateDiagonal(vertex);
+                getConf().setInt(STAGE, 2);
+                return;
+            case 2:
+                sendMeanMsg(vertex);
+                getConf().setInt(STAGE, 3);
+                vertex.voteToHalt();
+                return;
+            case 3:
+                updateMean(vertex, messages);
+                getConf().setInt(STAGE, 4);
+                return;
+            case 4:
+                initializeInnerLoop(vertex);
+                getConf().setInt(STAGE, 5);
+                vertex.voteToHalt();
+                return;
+            case 5:
+            case 6:
+                innerLoop(vertex, messages);
+                getConf().setInt(STAGE, 6);
+                vertex.voteToHalt();
+                return;
+            case 7:
+                updatePosteirorMean(vertex);
+                getConf().setInt(STAGE, 2);
+                return;
+            default:
+                break;
+            }
+        }
     }
 
     /**
@@ -214,27 +386,69 @@ public class GaussianBeliefPropagationComputation extends BasicComputation<LongW
         @Override
         public void initialize() throws InstantiationException, IllegalAccessException {
             registerAggregator(SUM_DELTA, DoubleSumAggregator.class);
+            registerAggregator(MAX_SUM, DoubleMaxAggregator.class);
+            registerAggregator(MAX_DIAG, DoubleMaxAggregator.class);
+        }
+
+        /**
+         * Examine diagLoading result and update control flow based on the result
+         */
+        private void diagLoadingResult() {
+            DoubleWritable maxSumValue = getAggregatedValue(MAX_SUM);
+            double maxSum = maxSumValue.get();
+            DoubleWritable maxDiagValue = getAggregatedValue(MAX_DIAG);
+            double maxDiag = maxDiagValue.get();
+            double diagLoading = maxSum - maxDiag;
+
+            if (diagLoading == 0d) {
+                getConf().setBoolean(OUTER_LOOP, false);
+                getConf().setInt(STAGE, 4);
+            } else {
+                getConf().setBoolean(OUTER_LOOP, true);
+                getConf().setInt(STAGE, 1);
+                getConf().setDouble(DIAG_LOADING, diagLoading);
+            }
+        }
+
+        /**
+         * Evaluate convergence conditions and update control flow based on the result
+         *
+         * @param stage of type int
+         */
+        private void evaluateConvergence(int stage) {
+            // calculate average delta
+            DoubleWritable sumDelta = getAggregatedValue(SUM_DELTA);
+            double avgDelta = sumDelta.get() / getTotalNumVertices();
+            float threshold = getConf().getFloat(CONVERGENCE_THRESHOLD, 0.001f);
+            float prevAvgDelta = getConf().getFloat(PREV_AVG_DELTA, 0f);
+            boolean outerLoop = getConf().getBoolean(OUTER_LOOP, false);
+            sumDelta.set(avgDelta);
+            //evaluate convergence condition
+            double normalizedDelta =  Math.abs(prevAvgDelta - avgDelta);
+            double delta = Math.abs(sumDelta.get()) / getTotalNumVertices();
+            if ((stage == 6) && outerLoop && (normalizedDelta < threshold)) {
+                getConf().setInt(STAGE, 7);
+            }
+
+            if (((stage == 6) && !outerLoop && (normalizedDelta < threshold)) ||
+                ((stage == 2) && (delta < threshold))) {
+                getConf().setInt(STAGE, 8);
+            }
+            getConf().setFloat(PREV_AVG_DELTA, (float) avgDelta);
         }
 
         @Override
         public void compute() {
             long step = getSuperstep();
-            if (step <= 0) {
+            int stage = getConf().getInt(STAGE, 0);
+            if (step < 0) {
                 return;
             }
 
-            if (step != 1) {
-                // calculate average delta
-                DoubleWritable sumDelta = getAggregatedValue(SUM_DELTA);
-                double avgDelta = sumDelta.get() / getTotalNumVertices();
-                sumDelta.set(avgDelta);
-                // evaluate convergence condition
-                float threshold = getConf().getFloat(CONVERGENCE_THRESHOLD, 0.001f);
-                float prevAvgDelta = getConf().getFloat(PREV_AVG_DELTA, 0f);
-                if (Math.abs(prevAvgDelta - avgDelta) < threshold) {
-                    getConf().setInt(MAX_SUPERSTEPS, (int) step);
-                }
-                getConf().setFloat(PREV_AVG_DELTA, (float) avgDelta);
+            if (step == 1) {
+                diagLoadingResult();
+            } else if ((stage == 6 || stage == 2) && step > 5)  {
+                evaluateConvergence(stage);
             }
         }
     }
@@ -284,7 +498,7 @@ public class GaussianBeliefPropagationComputation extends BasicComputation<LongW
             long realStep = lastStep;
 
             // collect aggregator data
-            HashMap<String, String> map = new HashMap<String, String>();
+            HashMap<String, String> map = new HashMap<>();
             for (Entry<String, Writable> entry : aggregatorMap) {
                 map.put(entry.getKey(), entry.getValue().toString());
             }
@@ -301,10 +515,12 @@ public class GaussianBeliefPropagationComputation extends BasicComputation<LongW
                 int maxSupersteps = getConf().getInt(MAX_SUPERSTEPS, 10);
                 float convergenceThreshold = getConf().getFloat(CONVERGENCE_THRESHOLD, 0.001f);
                 boolean bidirectionalCheck = getConf().getBoolean(BIDIRECTIONAL_CHECK, false);
+                boolean outerLoop = getConf().getBoolean(OUTER_LOOP, true);
                 output.writeBytes("======GBP Configuration======\n");
                 output.writeBytes(String.format("maxSupersteps: %d%n", maxSupersteps));
                 output.writeBytes(String.format("convergenceThreshold: %f%n", convergenceThreshold));
                 output.writeBytes(String.format("bidirectionalCheck: %b%n", bidirectionalCheck));
+                output.writeBytes(String.format("outerLoop: %b%n", outerLoop));
                 output.writeBytes("\n");
                 output.writeBytes("======Learning Progress======\n");
             } else if (realStep > 0) {
