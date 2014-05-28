@@ -54,11 +54,9 @@ public class GaussianBeliefPropagationComputationTest {
         conf.setAggregatorWriterClass(GaussianBeliefPropagationAggregatorWriter.class);
         conf.setVertexInputFormatClass(JsonPropertyGraph4GBPInputFormat.class);
         conf.setVertexOutputFormatClass(JsonPropertyGraph4GBPOutputFormat.class);
-        conf.set("gbp.maxSupersteps", "119");
-        conf.set("gbp.convergenceThreshold", "0.007");
-        conf.set("gbp.bidirectionalCheck", "true");
-        conf.set("gbp.outerLoop", "true");
         conf.set("giraph.useSuperstepCounters", "false");
+        conf.set("gbp.maxSupersteps", "119");
+        conf.set("gbp.bidirectionalCheck", "true");
     }
 
     /**
@@ -80,6 +78,7 @@ public class GaussianBeliefPropagationComputationTest {
         expectedValues.put(1L, new Double[]{ 10.0, 4.0, 2.0, 0.25});
         expectedValues.put(2L, new Double[]{ 16.0, 5.0, 3.0, 0.174});
         conf.set("gbp.convergenceThreshold", "0.005");
+        conf.set("gbp.outerLoop", "true");
         runTest(conf, graph, graphSize, expectedValues);
     }
 
@@ -103,8 +102,8 @@ public class GaussianBeliefPropagationComputationTest {
         expectedValues.put(0L, new Double[]{-6.0, 1.0,  1.0, -0.08333});
         expectedValues.put(1L, new Double[]{ 0.0, 1.0,  2.0,  0.66667});
         expectedValues.put(2L, new Double[]{ 2.0, 1.0, -1.0,  0.25});
-        conf.set("gbp.outerLoop", "false");
         conf.set("gbp.convergenceThreshold", "0.001");
+        conf.set("gbp.outerLoop", "false");
         runTest(conf, graph, graphSize, expectedValues);
     }
 
@@ -126,6 +125,8 @@ public class GaussianBeliefPropagationComputationTest {
         expectedValues.put(0L, new Double[]{-1.0, 5.0,  0.182, 0.1108});
         expectedValues.put(1L, new Double[]{ 2.0, 9.0,  0.330, 0.0896});
         expectedValues.put(2L, new Double[]{ 3.0, -7.0, -0.407,-0.2122});
+        conf.set("gbp.convergenceThreshold", "0.007");
+        conf.set("gbp.outerLoop", "true");
         runTest(conf, graph, graphSize, expectedValues);
     }
 
@@ -145,6 +146,8 @@ public class GaussianBeliefPropagationComputationTest {
         };
         expectedValues.put(0L, new Double[]{6.0, 7.0,  1.0, 0.129});
         expectedValues.put(1L, new Double[]{-4.0, -5.0,  1.0,  -0.258});
+        conf.set("gbp.convergenceThreshold", "0.007");
+        conf.set("gbp.outerLoop", "true");
         runTest(conf, graph, graphSize, expectedValues);
     }
 
