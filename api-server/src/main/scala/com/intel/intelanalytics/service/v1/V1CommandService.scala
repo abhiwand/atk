@@ -235,6 +235,9 @@ trait V1CommandService extends V1Service {
     }
   }
 
+  /**
+   * Perform the join operation and return the submitted command to the client
+   */
   def runJoinFrames(uri: Uri, xform: JsonTransform)(implicit user: UserPrincipal): Route = {
     val test = Try {
       import DomainJsonProtocol._
