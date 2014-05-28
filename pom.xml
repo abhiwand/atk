@@ -148,19 +148,12 @@
                                     <jvmArg>-Xms1024m</jvmArg>
                                     <jvmArg>-Xmx2048m</jvmArg>
                                 </jvmArgs>
-								<!--<dependencies>
-                                    <dependency>
-                                        <groupId>org.scoverage</groupId>
-                                        <artifactId>scalac-scoverage-plugin_${scala.short.version}</artifactId>
-                                        <version>${scoverage-plugin.version}</version>
-                                    </dependency>
-                                </dependencies>-->
                                 <compilerPlugins>
-                                    <!--<compilerPlugin>
+                                    <compilerPlugin>
                                         <groupId>org.scoverage</groupId>
                                         <artifactId>scalac-scoverage-plugin_${scala.short.version}</artifactId>
                                         <version>${scoverage-plugin.version}</version>
-                                    </compilerPlugin>-->
+                                    </compilerPlugin>
                                     <compilerPlugin>
                                             <groupId>com.mmakowski</groupId>
                                             <artifactId>maven-specs2-plugin</artifactId>
@@ -170,7 +163,7 @@
                                 <args>
                                     <arg>-g:vars</arg>
                                     <arg>-Yrangepos</arg>
-                                    <!--<arg>-P:scoverage:dataDir:${project.build.directory}</arg>-->
+                                    <arg>-P:scoverage:dataDir:${project.build.directory}</arg>
                                 </args>
                             </configuration>
                         </execution>
@@ -226,12 +219,11 @@
                         </execution>
                     </executions>
                 </plugin>
-                <!--<plugin>
+                <plugin>
                     <inherited>true</inherited>
                     <groupId>org.scoverage</groupId>
                     <artifactId>maven-scoverage-plugin</artifactId>
                     <version>${scoverage.version}</version>
-
                     <executions>
                         <execution>
 
@@ -243,7 +235,7 @@
                         </execution>
 
                     </executions>
-                </plugin>-->
+                </plugin>
                 <!--END DO NOT TOUCH-->
 
                 <plugin>
@@ -396,7 +388,7 @@
                     </executions>
                 </plugin>-->
                
-				
+				<!--Create our jars-->
                 <plugin>
                     <inherited>true</inherited>
                     <groupId>org.apache.maven.plugins</groupId>
@@ -413,11 +405,11 @@
                                 <finalName>${project.artifactId}</finalName>
                                 <shadedArtifactAttached>false</shadedArtifactAttached>
                                 <shadedClassifierName>${project.artifactId}</shadedClassifierName>
-                                <artifactSet>
+                                <!--<artifactSet>
 									<excludes>
 										<exclude>org.scoverage:scalac-scoverage-plugin_${scala.short.version}</exclude>
 									</excludes>
-								</artifactSet>
+								</artifactSet>-->
                                 <filters>
                                     <filter>
                                         <artifact>*:*</artifact>
@@ -636,8 +628,8 @@
                 <groupId>com.mmakowski</groupId>
                 <artifactId>maven-specs2-plugin</artifactId>
             </plugin>-->
-
-            <!--<plugin>
+<!--
+            <plugin>
                 <groupId>org.scoverage</groupId>
                 <artifactId>maven-scoverage-plugin</artifactId>
             </plugin>-->
@@ -757,12 +749,12 @@
 
     <dependencyManagement>
         <dependencies>
-            <!--<dependency>
+            <dependency>
                 <groupId>org.scoverage</groupId>
                 <artifactId>scalac-scoverage-plugin_${scala.short.version}</artifactId>
                 <version>${scoverage-plugin.version}</version>
 				
-            </dependency>-->
+            </dependency>
             <dependency>
                 <groupId>org.scalatest</groupId>
                 <artifactId>scalatest_${scala.short.version}</artifactId>
@@ -1008,11 +1000,11 @@
     </dependencyManagement>
 
     <dependencies>
-        <!--<dependency>
+        <dependency>
             <groupId>org.scoverage</groupId>
             <artifactId>scalac-scoverage-plugin_${scala.short.version}</artifactId>
 			
-        </dependency>-->
+        </dependency>
         <dependency>
                 <groupId>org.scalatest</groupId>
                 <artifactId>scalatest_2.10</artifactId>

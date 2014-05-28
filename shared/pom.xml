@@ -46,11 +46,11 @@
                 </configuration>
             </plugin>
 
-            <!--<plugin>
-                &lt;!&ndash;add to Create covergage results&ndash;&gt;
+            <plugin>
+                <!--add to Create covergage results-->
                 <groupId>org.scoverage</groupId>
                 <artifactId>maven-scoverage-plugin</artifactId>
-            </plugin>-->
+            </plugin>
         </plugins>
     </build>
 
