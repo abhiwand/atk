@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2013 Intel Corporation All Rights Reserved.
+// Copyright 2014 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -21,12 +21,10 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.domain
+package com.intel.intelanalytics.engine
 
-import com.intel.intelanalytics.domain.HasId
+import org.scalatest.{FlatSpec, Matchers}
 
-case class Cluster(id: Long, name: String) extends HasId {
-  require(id > 0)
-  require(name != null)
-  require(name.trim.length > 0)
+class FrameStorageSpec extends FlatSpec with Matchers {
+
 }

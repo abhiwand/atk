@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2013 Intel Corporation All Rights Reserved.
+// Copyright 2014 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -21,32 +21,24 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.repository
+package com.intel.intelanalytics.engine.spark
 
-import com.intel.intelanalytics.domain.{ DataFrameTemplate, CommandTemplate, Command, DataFrame, User, UserTemplate }
+import com.typesafe.config.{ Config, ConfigFactory }
+import scala.concurrent.duration._
 
-trait MetaStoreComponent {
-  val metaStore: MetaStore
-
-  /**
-   * The MetaStore gives access to Repositories. Repositories are how you
-   * modify and query underlying tables (frames, graphs, users, etc).
-   */
-  trait MetaStore {
-    type Session
-    def withSession[T](name: String)(f: Session => T): T
-
-    /** Repository for CRUD on 'frame' table */
-    def frameRepo: Repository[Session, DataFrameTemplate, DataFrame]
-
-    /** Repository for CRUD on 'command' table */
-    def commandRepo: Repository[Session, CommandTemplate, Command]
-
-    /** Repository for CRUD on 'user' table */
-    def userRepo: Repository[Session, UserTemplate, User] with Queryable[Session, User]
-
-    /** Create the underlying tables */
-    def create(): Unit
+class SparkEngineConfiguration(conf: => Config = ConfigFactory.load()) {
+  lazy val config = conf
+  lazy val sparkHome = conf.getString("intel.analytics.spark.home")
+  lazy val sparkMaster = conf.getString("intel.analytics.spark.master")
+  lazy val defaultTimeout = conf.getInt("intel.analytics.engine.defaultTimeout").seconds
+  lazy val connectionString = conf.getString("intel.analytics.metastore.connection.url") match {
+    case "" | null => throw new Exception("No metastore connection url specified in configuration")
+    case u => u
   }
-}
+  lazy val driver = conf.getString("intel.analytics.metastore.connection.driver") match {
+    case "" | null => throw new Exception("No metastore driver specified in configuration")
+    case d => d
+  }
 
+  lazy val fsRoot = conf.getString("intel.analytics.fs.root")
+}
