@@ -53,6 +53,7 @@ public class VertexData4GBPWritable implements Writable {
      * @param prior of type GaussianDistWritable
      * @param posterior of type GaussianDistWritable
      * @param intermediate of type GaussianDistWritable
+     * @param prevMean of type double
      */
     public VertexData4GBPWritable(GaussianDistWritable prior, GaussianDistWritable posterior,
                                   GaussianDistWritable intermediate, double prevMean) {
