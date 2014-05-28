@@ -26,12 +26,16 @@ package com.intel.intelanalytics.engine.spark
 import com.intel.intelanalytics.engine.Rows._
 import org.apache.spark.rdd.RDD
 import org.apache.spark.SparkContext
+import org.apache.spark.SparkContext._
 import com.intel.intelanalytics.domain.LoadLines
 import spray.json.JsObject
 
 /**
  * This object exists to avoid having to serialize the entire engine in order to use spark
  */
+
+case class RDDJoinParam(rdd: RDD[(Any, Array[Any])], columnCount: Int)
+
 private[spark] object SparkOps extends Serializable {
   def getRows(rdd: RDD[Row], offset: Long, count: Int): Seq[Row] = {
     val counts = rdd.mapPartitionsWithIndex(
@@ -78,6 +82,37 @@ private[spark] object SparkOps extends Serializable {
       }
       .map(converter)
       .saveAsObjectFile(location)
+  }
+
+  def create2TupleForJoin(data: Array[Any], joinIndex: Int): (Any, Array[Any]) = {
+    (data(joinIndex), data)
+  }
+
+  def joinRDDs(left: RDDJoinParam, right: RDDJoinParam, how: String): RDD[Array[Any]] = {
+
+    val result = how match {
+      case "left" => left.rdd.leftOuterJoin(right.rdd).map(t => {
+        t._2._2 match {
+          case s: Some[Array[Any]] => t._2._1 ++ s.get
+          case None => t._2._1 ++ (1 to right.columnCount).map(i => null)
+        }
+      })
+
+      case "right" => left.rdd.rightOuterJoin(right.rdd).map(t => {
+        t._2._1 match {
+          case s: Some[Array[Any]] => s.get ++ t._2._2
+          case None => {
+            var array: Array[Any] = t._2._2
+            (1 to left.columnCount).foreach(i => array = null +: array)
+            array
+          }
+        }
+      })
+
+      case _ => left.rdd.join(right.rdd).map(t => t._2._1 ++ t._2._2)
+    }
+
+    result.asInstanceOf[RDD[Array[Any]]]
   }
 
   def flattenColumnByIndex(index: Int, row: Array[Any]): Array[Array[Any]] = {

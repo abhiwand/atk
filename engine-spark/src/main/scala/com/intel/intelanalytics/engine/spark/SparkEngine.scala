@@ -75,6 +75,26 @@ import com.intel.intelanalytics.domain.DataTypes.DataType
 //TODO documentation
 //TODO progress notification
 //TODO event notification
+//TODO pass current user info
+
+object SparkEngine {
+  def resolveSchemaNamingConflicts(leftColumns: List[(String, DataType)], rightColumns: List[(String, DataType)]): (List[(String, DataType)], List[(String, DataType)]) = {
+
+    val funcAppendLetterForConflictingNames = (left: List[(String, DataType)], right: List[(String, DataType)], appendLetter: String) => {
+      left.map(r =>
+        if (right.map(i => i._1).contains(r._1))
+          (r._1 + "_" + appendLetter, r._2)
+        else
+          r
+      )
+    }
+
+    val left = funcAppendLetterForConflictingNames(leftColumns, rightColumns, "l")
+    val right = funcAppendLetterForConflictingNames(rightColumns, leftColumns, "r")
+
+    (left, right)
+  }
+}
 
 class SparkComponent extends EngineComponent
     with FrameComponent
@@ -157,8 +177,8 @@ class SparkComponent extends EngineComponent
             case x => throw new IllegalArgumentException(
               "Could not convert instance of " + x.getClass.getName + " to  arguments for builtin/line/separator")
           }
-          val rowParser = new RowParser(args.separator)
-          s => rowParser(s)
+          val row = new Row(args.separator)
+          s => row(s)
         }
         case x => throw new Exception("Unsupported parser: " + x)
       }
@@ -218,80 +238,6 @@ class SparkComponent extends EngineComponent
       }
     }
 
-    def renameColumn(arguments: FrameRenameColumn[JsObject, Long])(implicit user: UserPrincipal): (Command, Future[Command]) =
-      withContext("se.renamecolumn") {
-        require(arguments != null, "arguments are required")
-        import DomainJsonProtocol._
-        val command: Command = commands.create(new CommandTemplate("renamecolumn", Some(arguments.toJson.asJsObject)))
-        val result: Future[Command] = future {
-          withMyClassLoader {
-            withContext("se.renamecolumn.future") {
-              withCommand(command) {
-
-                val frameID = arguments.frame
-
-                val frame = frames.lookup(frameID).getOrElse(
-                  throw new IllegalArgumentException(s"No such data frame: $frameID"))
-
-                val originalcolumns = arguments.originalcolumn.split(",")
-                val renamedcolumns = arguments.renamedcolumn.split(",")
-
-                if (originalcolumns.length != renamedcolumns.length)
-                  throw new IllegalArgumentException(s"Invalid list of columns: " +
-                    s"Lengths of Original and Renamed Columns do not match")
-
-                frames.renameColumn(frame, originalcolumns.zip(renamedcolumns))
-              }
-              commands.lookup(command.id).get
-            }
-          }
-        }
-        (command, result)
-      }
-
-    def project(arguments: FrameProject[JsObject, Long])(implicit user: UserPrincipal): (Command, Future[Command]) =
-      withContext("se.project") {
-        require(arguments != null, "arguments are required")
-        import DomainJsonProtocol._
-        val command: Command = commands.create(new CommandTemplate("project", Some(arguments.toJson.asJsObject)))
-        val result: Future[Command] = future {
-          withMyClassLoader {
-            withContext("se.project.future") {
-              withCommand(command) {
-
-                val originalFrameID = arguments.originalframe
-                val projectedFrameID = arguments.frame
-
-                val originalFrame = frames.lookup(originalFrameID).getOrElse(
-                  throw new IllegalArgumentException(s"No such data frame: $originalFrameID"))
-
-                val ctx = context(user).sparkContext
-                val columns = arguments.column.split(",")
-
-                val schema = originalFrame.schema
-                val location = fsRoot + frames.getFrameDataFile(projectedFrameID)
-
-                val columnIndices = for {
-                  col <- columns
-                  columnIndex = schema.columns.indexWhere(columnTuple => columnTuple._1 == col)
-                } yield columnIndex
-
-                columnIndices match {
-                  case invalidColumns if invalidColumns.contains(-1) =>
-                    throw new IllegalArgumentException(s"Invalid list of columns: ${arguments.column}")
-                  case _ => frames.getFrameRdd(ctx, originalFrameID)
-                    .map(row => { for { i <- columnIndices } yield row(i) }.toArray)
-                    .saveAsObjectFile(location)
-                }
-
-              }
-              commands.lookup(command.id).get
-            }
-          }
-        }
-        (command, result)
-      }
-
     def decodePythonBase64EncodedStrToBytes(byteStr: String): Array[Byte] = {
       // Python uses different RFC than Java, must correct a couple characters
       // http://stackoverflow.com/questions/21318601/how-to-decode-a-base64-string-in-scala-or-java00
@@ -299,20 +245,13 @@ class SparkComponent extends EngineComponent
       new sun.misc.BASE64Decoder().decodeBuffer(corrected)
     }
 
-    /**
-     * Create a Python RDD
-     * @param frameId source frame for the parent RDD
-     * @param py_expression Python expression encoded in Python's Base64 encoding (different than Java's)
-     * @param user current user
-     * @return the RDD
-     */
     private def createPythonRDD(frameId: Long, py_expression: String)(implicit user: UserPrincipal): EnginePythonRDD[String] = {
       withMyClassLoader {
         val ctx = context(user).sparkContext
         val predicateInBytes = decodePythonBase64EncodedStrToBytes(py_expression)
 
         val baseRdd: RDD[String] = frames.getFrameRdd(ctx, frameId)
-          .map(x => x.map(t => t.toString()).mkString(",")) // TODO: we're assuming no commas in the values, isn't this going to cause issues?
+          .map(x => x.map(t => t.toString()).mkString(","))
 
         val pythonExec = "python2.7" //TODO: take from env var or config
         val environment = new java.util.HashMap[String, String]()
@@ -335,43 +274,6 @@ class SparkComponent extends EngineComponent
         pyRdd.map(s => new String(s).split(",")).map(converter).saveAsObjectFile(location)
       }
     }
-
-    def flattenColumn(argument: FlattenColumn[Long])(implicit user: UserPrincipal): (Command, Future[Command]) =
-      withContext("se.flattenColumn") {
-        val command: Command = commands.create(new CommandTemplate("flattenColumn", Some(argument.toJson.asJsObject)))
-        val result: Future[Command] = future {
-          withMyClassLoader {
-            withContext("se.flattenColumn.future") {
-              val frameId: Long = argument.frame
-              val realFrame = frames.lookup(frameId).getOrElse(
-                throw new IllegalArgumentException(s"No such data frame: ${frameId}"))
-
-              val ctx = context(user).sparkContext
-
-              /* create a dataframe should take very little time, much less than 10 minutes */
-              val newFrame = Await.result(create(DataFrameTemplate(argument.name, Schema(realFrame.schema.columns))), 10 minutes)
-              val rdd = frames.getFrameRdd(ctx, frameId)
-
-              val columnIndex = realFrame.schema.columns.indexWhere(columnTuple => columnTuple._1 == argument.name)
-
-              val flattenedRDD = rdd.flatMap(r => {
-                val splitted = r(columnIndex).asInstanceOf[String].split(argument.separator)
-                splitted.map(s => {
-                  r(columnIndex) = s
-                  r
-                })
-              }
-              )
-
-              flattenedRDD.saveAsObjectFile(fsRoot + frames.getFrameDataFile(newFrame.id))
-              flattenedRDD.toJson.asJsObject
-            }
-          }
-          commands.lookup(command.id).get
-        }
-
-        (command, result)
-      }
 
     def filter(arguments: FilterPredicate[JsObject, Long])(implicit user: UserPrincipal): (Command, Future[Command]) =
       withContext("se.filter") {
@@ -397,6 +299,72 @@ class SparkComponent extends EngineComponent
             }
           }
         }
+        (command, result)
+      }
+
+    override def join(argument: FrameJoin[Long])(implicit user: UserPrincipal): (Command, Future[Command]) =
+      withContext("se.join") {
+
+        def createPairRddForJoin(argument: FrameJoin[Long], ctx: SparkContext): List[RDD[(Any, Array[Any])]] = {
+          val pairRdds = argument.joinFrames.map {
+            frame =>
+              {
+                val realFrame = frames.lookup(frame._1).getOrElse(
+                  throw new IllegalArgumentException(s"No such data frame"))
+
+                val frameSchema = realFrame.schema
+                val rdd = frames.getFrameRdd(ctx, frame._1)
+                val columnIndex = frameSchema.columns.indexWhere(columnTuple => columnTuple._1 == frame._2)
+                (rdd, columnIndex)
+              }
+          }.map {
+            t =>
+              val rdd = t._1
+              val columnIndex = t._2
+              rdd.map(p => SparkOps.create2TupleForJoin(p, columnIndex))
+          }
+
+          pairRdds
+        }
+
+        import DomainJsonProtocol._
+        val command: Command = commands.create(new CommandTemplate("join", Some(argument.toJson.asJsObject)))
+
+        val result: Future[Command] = future {
+          withMyClassLoader {
+            withContext("se.join.future") {
+
+              /* create a new dataframe */
+              val originalColumns = argument.joinFrames.map {
+                frame =>
+                  {
+                    val realFrame = frames.lookup(frame._1).getOrElse(
+                      throw new IllegalArgumentException(s"No such data frame"))
+
+                    realFrame.schema.columns
+                  }
+              }
+
+              val nameConflictResolved = SparkEngine.resolveSchemaNamingConflicts(originalColumns(0), originalColumns(1))
+              val allColumns = List(nameConflictResolved._1, nameConflictResolved._2)
+
+              /* create a dataframe should take very little time, much less than 10 minutes */
+              val newJoinFrame = Await.result(create(DataFrameTemplate(argument.name, Schema(allColumns.flatten))), 10 minutes)
+
+              withCommand(command) {
+                val ctx = context(user).sparkContext
+                val pairRdds = createPairRddForJoin(argument, ctx)
+
+                val joinResultRDD = SparkOps.joinRDDs(RDDJoinParam(pairRdds(0), allColumns(0).length), RDDJoinParam(pairRdds(1), allColumns(1).length), argument.how)
+                joinResultRDD.saveAsObjectFile(fsRoot + frames.getFrameDataFile(newJoinFrame.id))
+                newJoinFrame.toJson.asJsObject
+              }
+
+              commands.lookup(command.id).get
+            }
+          }
+        }
+
         (command, result)
       }
 
@@ -583,6 +551,8 @@ class SparkComponent extends EngineComponent
 
   val files = new HdfsFileStorage {}
 
+  val fsRoot = conf.getString("intel.analytics.fs.root")
+
   trait HdfsFileStorage extends FileStorage with EventLogging {
 
     val configuration = {
@@ -723,36 +693,6 @@ class SparkComponent extends EngineComponent
       withContext("frame.addColumnWithValue") {
         ???
       }
-    override def renameColumn[T](frame: DataFrame, name_pairs: Seq[(String, String)]): Unit =
-      withContext("frame.renameColumn") {
-        val columnsToRename: Seq[String] = name_pairs.map(_._1)
-        val newColumnNames: Seq[String] = name_pairs.map(_._2)
-
-        def generateNewColumnTuple(oldColumn: String, columnsToRename: Seq[String], newColumnNames: Seq[String]): String = {
-          val columnIndex: Int = columnsToRename.indexOf(oldColumn)
-          if (columnIndex > 0)
-            return newColumnNames(columnIndex)
-          else return oldColumn
-        }
-
-        val newColumns = frame.schema.columns.map(col => (generateNewColumnTuple(col._1, columnsToRename, newColumnNames), col._2))
-
-        val newSchema = frame.schema.copy(columns = newColumns)
-        val newFrame = frame.copy(schema = newSchema)
-
-        val meta = File(Paths.get(getFrameMetaDataFile(frame.id)))
-        info(s"Saving metadata to $meta")
-        val f = files.write(meta)
-        try {
-          val json: String = newFrame.toJson.prettyPrint
-          debug(json)
-          f.write(json.getBytes(Codec.UTF8.name))
-        }
-        finally {
-          f.close()
-        }
-        newFrame
-      }
 
     override def addColumn[T](frame: DataFrame, column: Column[T], columnType: DataTypes.DataType): DataFrame =
       withContext("frame.addColumn") {
@@ -785,14 +725,8 @@ class SparkComponent extends EngineComponent
         rows
       }
 
-    /**
-     * Create an RDD from a frame data file.
-     * @param ctx spark context
-     * @param frameId primary key of the frame record
-     * @return the newly created RDD
-     */
-    def getFrameRdd(ctx: SparkContext, frameId: Long): RDD[Row] = {
-      ctx.objectFile[Row](fsRoot + getFrameDataFile(frameId))
+    def getFrameRdd(ctx: SparkContext, id: Long): RDD[Row] = {
+      ctx.objectFile[Row](fsRoot + getFrameDataFile(id))
     }
 
     def getOrCreateDirectory(name: String): Directory = {
@@ -901,7 +835,7 @@ class SparkComponent extends EngineComponent
       //TODO: set start date
     }
 
-    override def complete(id: Long, result: Try[Unit]): Unit = {
+    override def complete(id: Long, result: Try[Any]): Unit = {
       require(id > 0, "invalid ID")
       require(result != null)
       metaStore.withSession("se.command.complete") {
@@ -913,7 +847,7 @@ class SparkComponent extends EngineComponent
           //TODO: Update dates
           val changed = result match {
             case Failure(ex) => command.copy(complete = true, error = Some(ex: Error))
-            case Success(_) => command.copy(complete = true)
+            case Success(r) => command.copy(complete = true, result = Some(r.asInstanceOf[JsObject]))
           }
           repo.update(changed)
       }

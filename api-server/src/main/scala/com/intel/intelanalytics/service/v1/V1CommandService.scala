@@ -116,6 +116,7 @@ trait V1CommandService extends V1Service {
       case ("dataframe/addcolumn") => runFrameAddColumn(uri, xform)
       case ("dataframe/project") => runFrameProject(uri, xform)
       case ("dataframe/renamecolumn") => runFrameRenameColumn(uri, xform)
+      case ("dataframe/join") => runJoinFrames(uri, xform)
       case _ => ???
     }
   }
@@ -257,6 +258,21 @@ trait V1CommandService extends V1Service {
             }
         }
     }
+  }
+
+  def runJoinFrames(uri: Uri, xform: JsonTransform)(implicit user: UserPrincipal): Route = {
+    val test = Try {
+      import DomainJsonProtocol._
+      xform.arguments.get.convertTo[FrameJoin[Long]]
+    }
+
+    (validate(test.isSuccess, "Failed to parse file load descriptor: " + getErrorMessage(test))) {
+      val args = test.get
+      val result = engine.join(args)
+      val command: Command = result._1
+      complete(decorate(uri + "/" + command.id, command))
+    }
+
   }
 
   def runFrameProject(uri: Uri, xform: JsonTransform)(implicit user: UserPrincipal) = {
