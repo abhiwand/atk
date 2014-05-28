@@ -356,6 +356,11 @@ class SparkComponent extends EngineComponent
       }
     }
 
+    /**
+     * flatten rdd by the specified column
+     * @param argument input specification for column flattening
+     * @param user current user
+     */
     override def flattenColumn(argument: FlattenColumn[Long])(implicit user: UserPrincipal): (Command, Future[Command]) =
       withContext("se.flattenColumn") {
         import DomainJsonProtocol._

@@ -118,6 +118,13 @@ private[spark] object SparkOps extends Serializable {
     result.asInstanceOf[RDD[Array[Any]]]
   }
 
+  /**
+   * flatten a row by the column with specified column index
+   * @param index column index
+   * @param row row data
+   * @param separator separator for splitting
+   * @return flattened out row/rows
+   */
   def flattenColumnByIndex(index: Int, row: Array[Any], separator: String): Array[Array[Any]] = {
     val splitted = row(index).asInstanceOf[String].split(separator)
     splitted.map(s => {
@@ -127,6 +134,13 @@ private[spark] object SparkOps extends Serializable {
     })
   }
 
+  /**
+   * Flatten RDD by the column with specified column index
+   * @param index column index
+   * @param separator separator for splitting
+   * @param rdd RDD for flattening
+   * @return new RDD with column flattened
+   */
   def flattenRddByColumnIndex(index: Int, separator: String, rdd: RDD[Row]): RDD[Row] = {
     rdd.flatMap(r => SparkOps.flattenColumnByIndex(index, r, separator))
   }
