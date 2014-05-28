@@ -592,16 +592,6 @@ class BigFrame(object):
     #         raise ValueError("A value for right must be specified")
     #     return operations.BigOperationBinary("join", {BigFrame: {bool: None}}, self, predicate)
 
-        # TODO - Function add_column has 2 definitions
-        func : function
-            A function defining what the value should be for each entry in the new column.
-        str
-            The name of the new column
-        >>> Scott = BigFrame()
-        >>> Scott.add_column( "Column_10", Column_9 * Column_8 )
-        >>> Scott would now have a column named Column_10 which contains the product of Column_8 and Column_9
-
-        # TODO - Review docstring
     def rename_column(self, column_name, new_name):
         """
         Rename a column in a frame.
