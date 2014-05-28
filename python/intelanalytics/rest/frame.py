@@ -147,16 +147,32 @@ class FrameBackendRest(object):
         command = CommandRequest(name="dataframe/filter", arguments=arguments)
         executor.issue(command)
 
+    def project(self, frame, columns):
+        iter_cols = [columns] if isinstance(columns, BigColumn) else columns
+        column_names = ",".join([col.name for col in iter_cols])
+        original_frame_uri = iter_cols[0].frame.uri
+        arguments = {'frame': frame.uri, 'originalframe': original_frame_uri, 'column': column_names}
+        command = CommandRequest("dataframe/project", arguments)
+        command_info = executor.issue(command)
+
+        for col in iter_cols:
+            if col.data_type is not ignore:
+                self._accept_column(frame, BigColumn(col.name, col.data_type))
+
+        return command_info
+
+    def rename_columns(self, frame, name_pairs):
+        originalcolumns, renamedcolumns = ",".join(zip(*name_pairs)[0]), ",".join(zip(*name_pairs)[1])
+        arguments = {'frame': frame.uri, "originalcolumn": originalcolumns, "renamedcolumn": renamedcolumns}
+        command = CommandRequest("dataframe/renamecolumn", arguments)
+        return executor.issue(command)
+
 
     def remove_column(self, frame, name):
-        frame_uri = "%sdataframes/%d" % (http.base_uri, frame._id)
-        # TODO - abstraction for payload construction
         columns = ",".join(name) if isinstance(name, list) else name
-        payload = {'name': 'dataframe/removecolumn',
-                   'arguments': {'frame': frame_uri,
-                                 'column': columns}}
-        r = http.post('commands', payload)
-        return r
+        arguments = {'frame': frame.uri, 'column': columns}
+        command = CommandRequest("dataframe/removecolumn", arguments)
+        return executor.issue(command)
 
     def add_column(self, frame, expression, name, type):
         frame_uri = "%sdataframes/%d" % (http.base_uri, frame._id)
@@ -173,20 +189,17 @@ class FrameBackendRest(object):
         pickled_predicate = pickle_function(func)
         http_ready_predicate = encode_bytes_for_http(pickled_predicate)
 
-        # TODO - put the frame uri in the frame, as received from create response
-        frame_uri = "%sdataframes/%d" % (http.base_uri, frame._id)
-        # TODO - abstraction for payload construction
-        payload = {'name': 'dataframe/addcolumn',
-                   'arguments': {'frame': frame_uri,
-                                 'columnname': name,
-                                 'columntype': supported_types.get_type_string(type),
-                                 'expression': http_ready_predicate}}
-        r = http.post('commands', payload)
+        arguments = {'frame': frame.uri,
+                     'columnname': name,
+                     'columntype': supported_types.get_type_string(type),
+                     'expression': http_ready_predicate}
+        command = CommandRequest('dataframe/addcolumn', arguments)
+        command_info = executor.issue(command)
 
         # todo - this info should come back from the engine
         self._accept_column(frame, BigColumn(name, type))
 
-        return r
+        return command_info
 
     class InspectionTable(object):
         _align = defaultdict(lambda: 'c')  # 'l', 'c', 'r'

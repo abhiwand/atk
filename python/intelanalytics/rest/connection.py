@@ -33,7 +33,7 @@ __all__ = ['Server', 'HttpMethods']
 
 # default connection config
 _host = "localhost"
-_port = 8090
+_port = 9099
 _scheme = "http"
 _version = "v1"
 _headers = {'Content-type': 'application/json', 'Accept': 'application/json'}
