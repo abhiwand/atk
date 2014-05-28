@@ -31,7 +31,7 @@
   <name>IntelAnalytics iGiraph Algorithms</name>
 
   <parent>
-  	<groupId>com.intel.hadoop</groupId>
+  	<groupId>com.intel</groupId>
   	<artifactId>IntelAnalytics-igiraph</artifactId>
   	<relativePath>../pom.xml</relativePath>  
   	<version>0.8.0-SNAPSHOT</version>
