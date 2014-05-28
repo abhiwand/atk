@@ -73,21 +73,30 @@ public class JsonPropertyGraph4GBPInputFormat extends TextVertexInputFormat<Long
      */
     class JsonPropertyGraph4GBPReader extends
         TextVertexReaderFromEachLineProcessedHandlingExceptions<JSONArray, JSONException> {
-        private static final int vertexIdIdx = 0;
-        private static final int vertexValueIdx = 1;
-        private static final int edgeArrayIdx = 2;
-
-        private static final int meanIdx = 0;
-        private static final int precisionIdx = 1;
-        private static final int vertexValueLength = 2;
-
-        private static final int targetIdIdx = 0;
-        private static final int weightIdx = 1;
-        private static final int reverseWeightIdx = 2;
-        private static final int minEdgeValueLength = 2;
-        private static final int maxEdgeValueLength = 3;
-
-        private static final double defaultMean = 0d;
+        /** index for vertex id */
+        private static final int VERTEX_ID_IDX = 0;
+        /** index for vertex value vector */
+        private static final int VERTEX_VALUE_IDX = 1;
+        /** index for edge array */
+        private static final int EDGE_ARRAY_IDX = 2;
+        /** index for mean */
+        private static final int MEAN_IDX = 0;
+        /** index for precision */
+        private static final int PRECISION_IDX = 1;
+        /** length of vertex value vector */
+        private static final int VERTEX_VALUE_LENGTH = 2;
+        /** index for target id */
+        private static final int TARGET_ID_IDX = 0;
+        /** index for weight */
+        private static final int WEIGHT_IDX = 1;
+        /** index for reverse weight */
+        private static final int REVERSE_WEIGHT_IDX = 2;
+        /** minimal length of edge value vector */
+        private static final int MIN_EDGE_VALUE_LENGTH = 2;
+        /** maximum length of edge value vector */
+        private static final int MAX_EDGE_VALUE_LENGTH = 3;
+        /** default mean */
+        private static final double DEFAULT_MEAN = 0d;
 
         @Override
         protected JSONArray preprocessLine(Text line) throws JSONException {
@@ -96,43 +105,43 @@ public class JsonPropertyGraph4GBPInputFormat extends TextVertexInputFormat<Long
 
         @Override
         protected LongWritable getId(JSONArray jsonVertex) throws JSONException, IOException {
-            return new LongWritable(jsonVertex.getLong(vertexIdIdx));
+            return new LongWritable(jsonVertex.getLong(VERTEX_ID_IDX));
         }
 
         @Override
         protected VertexData4GBPWritable getValue(JSONArray jsonVertex) throws JSONException, IOException {
-            JSONArray vector = jsonVertex.getJSONArray(vertexValueIdx);
-            if (vector.length() != vertexValueLength) {
+            JSONArray vector = jsonVertex.getJSONArray(VERTEX_VALUE_IDX);
+            if (vector.length() != VERTEX_VALUE_LENGTH) {
                 throw new IllegalArgumentException("Error in vertex data: mean and precision are needed!");
             }
             GaussianDistWritable prior = new GaussianDistWritable();
             GaussianDistWritable posterior = new GaussianDistWritable();
             GaussianDistWritable itermediate = new GaussianDistWritable();
-            prior.setMean(vector.getDouble(meanIdx));
-            prior.setPrecision(vector.getDouble(precisionIdx));
-            itermediate.setMean(vector.getDouble(meanIdx));
-            itermediate.setPrecision(vector.getDouble(precisionIdx));
-            return new VertexData4GBPWritable(prior, posterior, itermediate, defaultMean);
+            prior.setMean(vector.getDouble(MEAN_IDX));
+            prior.setPrecision(vector.getDouble(PRECISION_IDX));
+            itermediate.setMean(vector.getDouble(MEAN_IDX));
+            itermediate.setPrecision(vector.getDouble(PRECISION_IDX));
+            return new VertexData4GBPWritable(prior, posterior, itermediate, DEFAULT_MEAN);
         }
 
         @Override
         protected Iterable<Edge<LongWritable, EdgeData4GBPWritable>> getEdges(JSONArray jsonVertex)
             throws JSONException, IOException {
-            JSONArray jsonEdgeArray = jsonVertex.getJSONArray(edgeArrayIdx);
+            JSONArray jsonEdgeArray = jsonVertex.getJSONArray(EDGE_ARRAY_IDX);
             List<Edge<LongWritable, EdgeData4GBPWritable>> edges =
                 Lists.newArrayListWithCapacity(jsonEdgeArray.length());
             for (int i = 0; i < jsonEdgeArray.length(); ++i) {
                 JSONArray jsonEdge = jsonEdgeArray.getJSONArray(i);
                 double reverseWeight;
-                if (jsonEdge.length() == maxEdgeValueLength){
-                    reverseWeight = jsonEdge.getDouble(reverseWeightIdx);
-                } else if (jsonEdge.length() == minEdgeValueLength) {
-                    reverseWeight = jsonEdge.getDouble(weightIdx);
+                if (jsonEdge.length() == MAX_EDGE_VALUE_LENGTH) {
+                    reverseWeight = jsonEdge.getDouble(REVERSE_WEIGHT_IDX);
+                } else if (jsonEdge.length() == MIN_EDGE_VALUE_LENGTH) {
+                    reverseWeight = jsonEdge.getDouble(WEIGHT_IDX);
                 } else {
                     throw new IllegalArgumentException("at least target ID and edge value are needed.");
                 }
-                edges.add(EdgeFactory.create(new LongWritable(jsonEdge.getLong(targetIdIdx)),
-                    new EdgeData4GBPWritable(jsonEdge.getDouble(weightIdx), reverseWeight)));
+                edges.add(EdgeFactory.create(new LongWritable(jsonEdge.getLong(TARGET_ID_IDX)),
+                    new EdgeData4GBPWritable(jsonEdge.getDouble(WEIGHT_IDX), reverseWeight)));
             }
             return edges;
         }
