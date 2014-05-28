@@ -68,7 +68,7 @@ public class GaussianBeliefPropagationComputationTest {
     @Test
     public void testSymmetricCase1() throws Exception {
         int graphSize = 3;
-        HashMap<Long, Double[]> expectedValues = new HashMap<Long, Double[]>();
+        HashMap<Long, Double[]> expectedValues = new HashMap<>();
         String[] graph = new String[] {
             "[0,[10,3],[[1,2],[2,1]]]",
             "[1,[10,4],[[0,2]]]",
@@ -92,7 +92,7 @@ public class GaussianBeliefPropagationComputationTest {
     @Test
     public void testSymmetricCase2() throws Exception {
         int graphSize = 3;
-        HashMap<Long, Double[]> expectedValues = new HashMap<Long, Double[]>();
+        HashMap<Long, Double[]> expectedValues = new HashMap<>();
 
         String[] graph = new String[] {
             "[0,[-6,1],[[1,-2],[2,3]]]",
@@ -116,7 +116,7 @@ public class GaussianBeliefPropagationComputationTest {
     @Test
     public void testAsymmetricCase1() throws Exception {
         int graphSize = 3;
-        HashMap<Long, Double[]> expectedValues = new HashMap<Long, Double[]>();
+        HashMap<Long, Double[]> expectedValues = new HashMap<>();
         String[] graph = new String[] {
             "[0,[-1,5],[[1,-2,-3],[2,3,2]]]",
             "[1,[2,9],[[0,-3,-2],[2,1,-1]]]",
@@ -139,7 +139,7 @@ public class GaussianBeliefPropagationComputationTest {
     @Test
     public void testAsymmetricCase2() throws Exception {
         int graphSize = 2;
-        HashMap<Long, Double[]> expectedValues = new HashMap<Long, Double[]>();
+        HashMap<Long, Double[]> expectedValues = new HashMap<>();
         String[] graph = new String[] {
             "[0,[6,7],[[1,-1,1]]]",
             "[1,[-4,-5],[[0,1,-1]]]"
