@@ -78,6 +78,13 @@ import com.intel.intelanalytics.domain.DataTypes.DataType
 //TODO pass current user info
 
 object SparkEngine {
+
+  /**
+   * Resolve naming conflicts when both left and right side of join operation have same column names
+   * @param leftColumns columns for the left side of join operation
+   * @param rightColumns columns for the right side of join operation
+   * @return
+   */
   def resolveSchemaNamingConflicts(leftColumns: List[(String, DataType)], rightColumns: List[(String, DataType)]): (List[(String, DataType)], List[(String, DataType)]) = {
 
     val funcAppendLetterForConflictingNames = (left: List[(String, DataType)], right: List[(String, DataType)], appendLetter: String) => {
@@ -306,6 +313,11 @@ class SparkComponent extends EngineComponent
         (command, result)
       }
 
+    /**
+     * join two data frames
+     * @param argument parameter contains information for the join operation
+     * @param user current user
+     */
     override def join(argument: FrameJoin[Long])(implicit user: UserPrincipal): (Command, Future[Command]) =
       withContext("se.join") {
 
