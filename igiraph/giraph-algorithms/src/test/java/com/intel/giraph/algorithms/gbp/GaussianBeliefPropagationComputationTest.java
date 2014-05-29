@@ -55,7 +55,7 @@ public class GaussianBeliefPropagationComputationTest {
         conf.setVertexInputFormatClass(JsonPropertyGraph4GBPInputFormat.class);
         conf.setVertexOutputFormatClass(JsonPropertyGraph4GBPOutputFormat.class);
         conf.set("giraph.useSuperstepCounters", "false");
-        conf.set("gbp.maxSupersteps", "119");
+        conf.set("gbp.maxSupersteps", "2000");
         conf.set("gbp.bidirectionalCheck", "true");
     }
 
