@@ -25,15 +25,13 @@ class SparkJoinSpec extends FlatSpec with Matchers {
     val leftCols: List[(String, DataType)] = List(("a", int32), ("b", string))
     val rightCols: List[(String, DataType)] = List(("c", int32), ("d", string))
     val result = SparkEngine.resolveSchemaNamingConflicts(leftCols, rightCols)
-    leftCols shouldBe result._1
-    rightCols shouldBe result._2
+    List(("a", int32), ("b", string), ("c", int32), ("d", string)) shouldBe result
   }
 
   "join schema" should "append l to the field from left and r to the field from right if field names conflict" in {
     val leftCols: List[(String, DataType)] = List(("a", int32), ("b", string), ("c", string))
     val rightCols: List[(String, DataType)] = List(("a", int32), ("c", string), ("d", string))
     val result = SparkEngine.resolveSchemaNamingConflicts(leftCols, rightCols)
-    List(("a_l", int32), ("b", string), ("c_l", string)) shouldBe result._1
-    List(("a_r", int32), ("c_r", string), ("d", string)) shouldBe result._2
+    List(("a_l", int32), ("b", string), ("c_l", string), ("a_r", int32), ("c_r", string), ("d", string)) shouldBe result
   }
 }
