@@ -79,7 +79,7 @@ object SparkEngine {
    * @param rightColumns columns for the right side of join operation
    * @return
    */
-  def resolveSchemaNamingConflicts(leftColumns: List[(String, DataType)], rightColumns: List[(String, DataType)]): (List[(String, DataType)], List[(String, DataType)]) = {
+  def resolveSchemaNamingConflicts(leftColumns: List[(String, DataType)], rightColumns: List[(String, DataType)]): List[(String, DataType)] = {
 
     val funcAppendLetterForConflictingNames = (left: List[(String, DataType)], right: List[(String, DataType)], appendLetter: String) => {
       left.map(r =>
@@ -93,7 +93,7 @@ object SparkEngine {
     val left = funcAppendLetterForConflictingNames(leftColumns, rightColumns, "l")
     val right = funcAppendLetterForConflictingNames(rightColumns, leftColumns, "r")
 
-    (left, right)
+    left ++ right
   }
 }
 
@@ -358,17 +358,16 @@ class SparkComponent extends EngineComponent
                   }
               }
 
-              val nameConflictResolved = SparkEngine.resolveSchemaNamingConflicts(originalColumns(0), originalColumns(1))
-              val allColumns = List(nameConflictResolved._1, nameConflictResolved._2)
+              val allColumns = SparkEngine.resolveSchemaNamingConflicts(originalColumns(0), originalColumns(1))
 
               /* create a dataframe should take very little time, much less than 10 minutes */
-              val newJoinFrame = Await.result(create(DataFrameTemplate(joinCommand.name, Schema(allColumns.flatten))), 10 minutes)
+              val newJoinFrame = Await.result(create(DataFrameTemplate(joinCommand.name, Schema(allColumns))), 10 minutes)
 
               withCommand(command) {
                 val ctx = context(user).sparkContext
                 val pairRdds = createPairRddForJoin(joinCommand, ctx)
 
-                val joinResultRDD = SparkOps.joinRDDs(RDDJoinParam(pairRdds(0), allColumns(0).length), RDDJoinParam(pairRdds(1), allColumns(1).length), joinCommand.how)
+                val joinResultRDD = SparkOps.joinRDDs(RDDJoinParam(pairRdds(0), originalColumns(0).length), RDDJoinParam(pairRdds(1), originalColumns(1).length), joinCommand.how)
                 joinResultRDD.saveAsObjectFile(fsRoot + frames.getFrameDataFile(newJoinFrame.id))
                 newJoinFrame.toJson.asJsObject
               }
