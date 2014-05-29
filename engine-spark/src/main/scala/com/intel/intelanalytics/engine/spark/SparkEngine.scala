@@ -848,7 +848,7 @@ class SparkComponent extends EngineComponent
       //TODO: set start date
     }
 
-    override def complete(id: Long, result: Try[Any]): Unit = {
+    override def complete(id: Long, result: Try[JsObject]): Unit = {
       require(id > 0, "invalid ID")
       require(result != null)
       metaStore.withSession("se.command.complete") {
@@ -860,7 +860,7 @@ class SparkComponent extends EngineComponent
           //TODO: Update dates
           val changed = result match {
             case Failure(ex) => command.copy(complete = true, error = Some(ex: Error))
-            case Success(r) => command.copy(complete = true, result = Some(r.asInstanceOf[JsObject]))
+            case Success(r) => command.copy(complete = true, result = Some(r))
           }
           repo.update(changed)
       }
