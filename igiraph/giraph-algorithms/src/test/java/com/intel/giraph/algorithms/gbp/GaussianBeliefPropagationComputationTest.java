@@ -55,7 +55,7 @@ public class GaussianBeliefPropagationComputationTest {
         conf.setVertexInputFormatClass(JsonPropertyGraph4GBPInputFormat.class);
         conf.setVertexOutputFormatClass(JsonPropertyGraph4GBPOutputFormat.class);
         conf.set("giraph.useSuperstepCounters", "false");
-        conf.set("gbp.maxSupersteps", "119");
+        conf.set("gbp.maxSupersteps", "2000");
         conf.set("gbp.bidirectionalCheck", "true");
     }
 
@@ -74,9 +74,9 @@ public class GaussianBeliefPropagationComputationTest {
             "[1,[10,4],[[0,2]]]",
             "[2,[16,5],[[0,1]]]"
         };
-        expectedValues.put(0L, new Double[]{ 10.0, 3.0, 1.0, 0.330});
-        expectedValues.put(1L, new Double[]{ 10.0, 4.0, 2.0, 0.25});
-        expectedValues.put(2L, new Double[]{ 16.0, 5.0, 3.0, 0.174});
+        expectedValues.put(0L, new Double[]{ 10.0, 3.0, 1.0});
+        expectedValues.put(1L, new Double[]{ 10.0, 4.0, 2.0});
+        expectedValues.put(2L, new Double[]{ 16.0, 5.0, 3.0});
         conf.set("gbp.convergenceThreshold", "0.005");
         conf.set("gbp.outerLoop", "true");
         runTest(conf, graph, graphSize, expectedValues);
@@ -99,9 +99,9 @@ public class GaussianBeliefPropagationComputationTest {
             "[1,[0,1],[[0,-2]]]",
             "[2,[2,1],[[0,3]]]"
         };
-        expectedValues.put(0L, new Double[]{-6.0, 1.0,  1.0, -0.08333});
-        expectedValues.put(1L, new Double[]{ 0.0, 1.0,  2.0,  0.66667});
-        expectedValues.put(2L, new Double[]{ 2.0, 1.0, -1.0,  0.25});
+        expectedValues.put(0L, new Double[]{-6.0, 1.0,  1.0});
+        expectedValues.put(1L, new Double[]{ 0.0, 1.0,  2.0});
+        expectedValues.put(2L, new Double[]{ 2.0, 1.0, -1.0});
         conf.set("gbp.convergenceThreshold", "0.001");
         conf.set("gbp.outerLoop", "false");
         runTest(conf, graph, graphSize, expectedValues);
@@ -122,9 +122,9 @@ public class GaussianBeliefPropagationComputationTest {
             "[1,[2,9],[[0,-3,-2],[2,1,-1]]]",
             "[2,[3,-7],[[0,2,3],[1,-1,1]]]"
         };
-        expectedValues.put(0L, new Double[]{-1.0, 5.0,  0.182, 0.1108});
-        expectedValues.put(1L, new Double[]{ 2.0, 9.0,  0.330, 0.0896});
-        expectedValues.put(2L, new Double[]{ 3.0, -7.0, -0.407,-0.2122});
+        expectedValues.put(0L, new Double[]{-1.0, 5.0,  0.182});
+        expectedValues.put(1L, new Double[]{ 2.0, 9.0,  0.330});
+        expectedValues.put(2L, new Double[]{ 3.0, -7.0, -0.407});
         conf.set("gbp.convergenceThreshold", "0.007");
         conf.set("gbp.outerLoop", "true");
         runTest(conf, graph, graphSize, expectedValues);
@@ -144,8 +144,8 @@ public class GaussianBeliefPropagationComputationTest {
             "[0,[6,7],[[1,-1,1]]]",
             "[1,[-4,-5],[[0,1,-1]]]"
         };
-        expectedValues.put(0L, new Double[]{6.0, 7.0,  1.0, 0.129});
-        expectedValues.put(1L, new Double[]{-4.0, -5.0,  1.0,  -0.258});
+        expectedValues.put(0L, new Double[]{6.0, 7.0,  1.0});
+        expectedValues.put(1L, new Double[]{-4.0, -5.0,  1.0});
         conf.set("gbp.convergenceThreshold", "0.007");
         conf.set("gbp.outerLoop", "true");
         runTest(conf, graph, graphSize, expectedValues);
@@ -161,8 +161,8 @@ public class GaussianBeliefPropagationComputationTest {
         assertNotNull(vertexValues);
         assertEquals(graphSize, vertexValues.size());
         for (Map.Entry<Long, Double[]> entry : vertexValues.entrySet()) {
-            assertEquals(4, entry.getValue().length);
-            for (int j = 0; j < 4; j++) {
+            assertEquals(3, entry.getValue().length);
+            for (int j = 0; j < 3; j++) {
                 assertEquals(expectedValues.get(entry.getKey())[j], entry.getValue()[j], 0.03d);
             }
         }
@@ -183,18 +183,12 @@ public class GaussianBeliefPropagationComputationTest {
                 if (priorArray.length() != 2) {
                     throw new IllegalArgumentException("Wrong vertex prior output value format!");
                 }
-                Double[] values = new Double[4];
+                Double[] values = new Double[3];
                 for (int i = 0; i < 2; i++) {
                     values[i] = priorArray.getDouble(i);
                 }
-                // get posterior
-                JSONArray posteriorArray = jsonVertex.getJSONArray(2);
-                if (posteriorArray.length() != 2) {
-                    throw new IllegalArgumentException("Wrong vertex posterior output value format!");
-                }
-                for (int i = 2; i < 4; i++) {
-                    values[i] = posteriorArray.getDouble(i - 2);
-                }
+                // get posterior mean
+                values[2] = jsonVertex.getDouble(2);
                 vertexValues.put(id, values);
                 } catch (JSONException e) {
                     throw new IllegalArgumentException("Couldn't get vertex from line " + line, e);

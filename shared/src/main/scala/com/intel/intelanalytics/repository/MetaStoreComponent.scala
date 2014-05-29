@@ -23,7 +23,7 @@
 
 package com.intel.intelanalytics.repository
 
-import com.intel.intelanalytics.domain.{ DataFrameTemplate, CommandTemplate, DataFrame, User, UserTemplate, Command }
+import com.intel.intelanalytics.domain.{ DataFrameTemplate, CommandTemplate, Command, DataFrame, User, UserTemplate }
 
 trait MetaStoreComponent {
   val metaStore: MetaStore
@@ -40,6 +40,9 @@ trait MetaStoreComponent {
     def frameRepo: Repository[Session, DataFrameTemplate, DataFrame]
 
     /** Repository for CRUD on 'command' table */
+
+    def graphRepo: Repository[Session, GraphTemplate, Graph]
+
     def commandRepo: Repository[Session, CommandTemplate, Command]
 
     /** Repository for CRUD on 'user' table */

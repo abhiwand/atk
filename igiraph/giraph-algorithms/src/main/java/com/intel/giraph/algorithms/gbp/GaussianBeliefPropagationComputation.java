@@ -98,6 +98,10 @@ public class GaussianBeliefPropagationComputation extends BasicComputation<LongW
     private int stage = 0;
     /** whether it is the first iteration of outer loop */
     private boolean firstOuter = true;
+    /** current super step */
+    private int step = 0;
+    /** whether outer loop is enabled */
+    private boolean outerLoop = true;
 
     @Override
     public void preSuperstep() {
@@ -106,6 +110,8 @@ public class GaussianBeliefPropagationComputation extends BasicComputation<LongW
         bidirectionalCheck = getConf().getBoolean(BIDIRECTIONAL_CHECK, false);
         stage = getConf().getInt(STAGE, 0);
         firstOuter = getConf().getBoolean(FIRST_OUTER, true);
+        step = (int) getSuperstep();
+        outerLoop = getConf().getBoolean(OUTER_LOOP, true);
     }
 
     /**
@@ -196,7 +202,6 @@ public class GaussianBeliefPropagationComputation extends BasicComputation<LongW
         double meanIi = intermediate.getMean();
         posterior.setMean(meanIi);
         posterior.setPrecision(precisionIi);
-
         // calculate messages
         MessageData4GBPWritable newMessage = new MessageData4GBPWritable();
         newMessage.setId(vertex.getId().get());
@@ -211,15 +216,17 @@ public class GaussianBeliefPropagationComputation extends BasicComputation<LongW
                     " has empty edge weights on both directions to vertex " + edge.getTargetVertexId());
             }
 
-            if (precisionIi != 0d) {
-                double meanIj = - weightJi * meanIi / precisionIi;
-                double precisionIj = - weightIj * weightJi / precisionIi;
-                gauss.setMean(meanIj);
-                gauss.setPrecision(precisionIj);
-                // send out messages
-                newMessage.setGauss(gauss);
-                sendMessage(edge.getTargetVertexId(), newMessage);
+            if (precisionIi == 0d) {
+                throw new IllegalArgumentException("Vertex: " + vertex.getId() + " has zero diagonal value!");
             }
+
+            double meanIj = - weightJi * meanIi / precisionIi;
+            double precisionIj = - weightIj * weightJi / precisionIi;
+            gauss.setMean(meanIj);
+            gauss.setPrecision(precisionIj);
+            // send out messages
+            newMessage.setGauss(gauss);
+            sendMessage(edge.getTargetVertexId(), newMessage);
         }
     }
 
@@ -273,7 +280,7 @@ public class GaussianBeliefPropagationComputation extends BasicComputation<LongW
         // update posterior
         vertexValue.setPosterior(posterior);
 
-        if (getSuperstep() < maxSupersteps) {
+        if (maxSupersteps > getSuperstep()) {
             MessageData4GBPWritable newMessage = new MessageData4GBPWritable();
             newMessage.setId(vertex.getId().get());
             // update belief
@@ -288,6 +295,12 @@ public class GaussianBeliefPropagationComputation extends BasicComputation<LongW
                     tempPrecision = sum4Precision - map.get(id).get(1);
                     tempMean = sum4Mean - map.get(id).get(0);
                 }
+
+                if (tempPrecision == 0d) {
+                    throw new IllegalArgumentException("Vertex: " + vertex.getId() +
+                        " get zero precision to target " + edge.getTargetVertexId());
+                }
+
                 // send out messages
                 double meanIj = - weightJi * tempMean / tempPrecision;
                 double precisionIj = - weightIj * weightJi / tempPrecision;
@@ -324,9 +337,6 @@ public class GaussianBeliefPropagationComputation extends BasicComputation<LongW
     @Override
     public void compute(Vertex<LongWritable, VertexData4GBPWritable, EdgeData4GBPWritable> vertex,
         Iterable<MessageData4GBPWritable> messages) throws IOException {
-        long step = getSuperstep();
-        boolean outerLoop = getConf().getBoolean(OUTER_LOOP, false);
-
         if (step == 0) {
             if (!outerLoop) {
                 initializeInnerLoop(vertex);
@@ -338,44 +348,46 @@ public class GaussianBeliefPropagationComputation extends BasicComputation<LongW
             return;
         }
 
-        if (stage == 8) {
+        if (outerLoop && maxSupersteps == step) {
+            updatePosteirorMean(vertex);
             vertex.voteToHalt();
             return;
         }
 
-        if (step < maxSupersteps) {
-            switch(stage) {
-            case 1:
-                updateDiagonal(vertex);
-                getConf().setInt(STAGE, 2);
-                return;
-            case 2:
-                sendMeanMsg(vertex);
-                getConf().setInt(STAGE, 3);
-                vertex.voteToHalt();
-                return;
-            case 3:
-                updateMean(vertex, messages);
-                getConf().setInt(STAGE, 4);
-                return;
-            case 4:
-                initializeInnerLoop(vertex);
-                getConf().setInt(STAGE, 5);
-                vertex.voteToHalt();
-                return;
-            case 5:
-            case 6:
-                innerLoop(vertex, messages);
-                getConf().setInt(STAGE, 6);
-                vertex.voteToHalt();
-                return;
-            case 7:
-                updatePosteirorMean(vertex);
-                getConf().setInt(STAGE, 2);
-                return;
-            default:
-                break;
-            }
+        switch(stage) {
+        case 1:
+            updateDiagonal(vertex);
+            getConf().setInt(STAGE, 2);
+            return;
+        case 2:
+            sendMeanMsg(vertex);
+            getConf().setInt(STAGE, 3);
+            vertex.voteToHalt();
+            return;
+        case 3:
+            updateMean(vertex, messages);
+            getConf().setInt(STAGE, 4);
+            return;
+        case 4:
+            initializeInnerLoop(vertex);
+            getConf().setInt(STAGE, 5);
+            vertex.voteToHalt();
+            return;
+        case 5:
+        case 6:
+            innerLoop(vertex, messages);
+            getConf().setInt(STAGE, 6);
+            vertex.voteToHalt();
+            return;
+        case 7:
+            updatePosteirorMean(vertex);
+            getConf().setInt(STAGE, 2);
+            return;
+        case 8:
+            vertex.voteToHalt();
+            return;
+        default:
+            break;
         }
     }
 
@@ -422,10 +434,9 @@ public class GaussianBeliefPropagationComputation extends BasicComputation<LongW
             float threshold = getConf().getFloat(CONVERGENCE_THRESHOLD, 0.001f);
             float prevAvgDelta = getConf().getFloat(PREV_AVG_DELTA, 0f);
             boolean outerLoop = getConf().getBoolean(OUTER_LOOP, false);
-            sumDelta.set(avgDelta);
             //evaluate convergence condition
             double normalizedDelta =  Math.abs(prevAvgDelta - avgDelta);
-            double delta = Math.abs(sumDelta.get()) / getTotalNumVertices();
+            double delta = Math.abs(avgDelta);
             if ((stage == 6) && outerLoop && (normalizedDelta < threshold)) {
                 getConf().setInt(STAGE, 7);
             }
@@ -434,6 +445,7 @@ public class GaussianBeliefPropagationComputation extends BasicComputation<LongW
                 ((stage == 2) && (delta < threshold))) {
                 getConf().setInt(STAGE, 8);
             }
+            sumDelta.set(avgDelta);
             getConf().setFloat(PREV_AVG_DELTA, (float) avgDelta);
         }
 
@@ -441,13 +453,15 @@ public class GaussianBeliefPropagationComputation extends BasicComputation<LongW
         public void compute() {
             long step = getSuperstep();
             int stage = getConf().getInt(STAGE, 0);
+            boolean outerLoop = getConf().getBoolean(OUTER_LOOP, false);
             if (step < 0) {
                 return;
             }
 
-            if (step == 1) {
+            if (step == 1 && outerLoop) {
                 diagLoadingResult();
-            } else if ((stage == 6 || stage == 2) && step > 5)  {
+            } else if ((step > 1 && !outerLoop) ||
+                ((stage == 6 || stage == 2) && step > 5))  {
                 evaluateConvergence(stage);
             }
         }

@@ -51,8 +51,8 @@ object DomainJsonProtocol extends DefaultJsonProtocol {
   implicit val definitionFormat = jsonFormat3(Definition)
   implicit val operationFormat = jsonFormat2(Operation)
   implicit val partialJsFormat = jsonFormat2(Partial[JsObject])
-  implicit val loadLinesFormat = jsonFormat4(LoadLines[JsObject, String])
-  implicit val loadLinesLongFormat = jsonFormat4(LoadLines[JsObject, Long])
+  implicit val loadLinesFormat = jsonFormat5(LoadLines[JsObject, String])
+  implicit val loadLinesLongFormat = jsonFormat5(LoadLines[JsObject, Long])
   implicit val filterPredicateFormat = jsonFormat2(FilterPredicate[JsObject, String])
   implicit val filterPredicateLongFormat = jsonFormat2(FilterPredicate[JsObject, Long])
   implicit val removeColumnFormat = jsonFormat2(FrameRemoveColumn[JsObject, String])
@@ -69,17 +69,20 @@ object DomainJsonProtocol extends DefaultJsonProtocol {
   implicit val errorFormat = jsonFormat5(Error)
   implicit val userFormat = jsonFormat2(User)
 
-  // graph
+  // graph service formats
+
+  implicit val graphTemplateFormat = jsonFormat1(GraphTemplate)
+  implicit val graphFormat = jsonFormat2(Graph)
+
+  // graph loading formats for specifying graphbuilder and graphload rules
 
   implicit val outputConfigurationFormat = jsonFormat2(OutputConfiguration)
-
   implicit val valueFormat = jsonFormat2(Value)
   implicit val propertyFormat = jsonFormat2(Property)
   implicit val edgeRuleFormat = jsonFormat4(EdgeRule)
   implicit val vertexRuleFormat = jsonFormat2(VertexRule)
-
-  implicit val graphTemplateFormat = jsonFormat7(GraphTemplate)
-  implicit val graphFormat = jsonFormat2(Graph)
+  implicit val graphLoadLongs = jsonFormat7(GraphLoad[JsObject, Long, Long])
+  implicit val graphLoadStrings = jsonFormat7(GraphLoad[JsObject, String, String])
 
   implicit object DataTypeJsonFormat extends JsonFormat[Any] {
     override def write(obj: Any): JsValue = {

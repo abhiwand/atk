@@ -116,12 +116,9 @@ public class JsonPropertyGraph4GBPInputFormat extends TextVertexInputFormat<Long
             }
             GaussianDistWritable prior = new GaussianDistWritable();
             GaussianDistWritable posterior = new GaussianDistWritable();
-            GaussianDistWritable itermediate = new GaussianDistWritable();
             prior.setMean(vector.getDouble(MEAN_IDX));
             prior.setPrecision(vector.getDouble(PRECISION_IDX));
-            itermediate.setMean(vector.getDouble(MEAN_IDX));
-            itermediate.setPrecision(vector.getDouble(PRECISION_IDX));
-            return new VertexData4GBPWritable(prior, posterior, itermediate, DEFAULT_MEAN);
+            return new VertexData4GBPWritable(prior, posterior, prior, DEFAULT_MEAN);
         }
 
         @Override
