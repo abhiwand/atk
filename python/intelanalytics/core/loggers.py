@@ -44,7 +44,9 @@ class Loggers(object):
     _line_format = '%(asctime)s|%(name)s|%(levelname)-5s|%(message)s'
 
     # table of aliased loggers for easy reference in REPL
+
     _aliased_loggers_map = {'http': 'intelanalytics.rest.connection',}
+
     # map first character of level to actual level setting, for convenience
     _level_map = {'c': logging.CRITICAL,
                   'f': logging.FATAL,
@@ -67,6 +69,7 @@ class Loggers(object):
         for name in self._user_logger_names:
             entries.append(self._get_repr_line(name, None))
         return "\n".join(header + entries)
+
 
     @staticmethod
     def _get_repr_line(name, alias):
@@ -95,7 +98,9 @@ class Loggers(object):
         Creates set methods for aliased loggers and puts them in self.__dict__
         """
         for alias, name in self._aliased_loggers_map.items():
+
            self.__dict__["set_" + alias] = self._create_alias_set_function(alias, name)
+
 
     def set(self, level=logging.DEBUG, logger_name=''):
         """

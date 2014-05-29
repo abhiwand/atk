@@ -82,7 +82,7 @@ public class EventMapRedTest {
     }
 
     @Test
-    public void mapper_captures_event() {
+    public void mapper_captures_event() throws IOException {
 
         driver.withInput(new IntWritable(1), new IntWritable(2));
         driver.withOutput(new IntWritable(2), new IntWritable(1));
@@ -92,7 +92,7 @@ public class EventMapRedTest {
     }
 
     @Test
-    public void mapper_event_includes_callers_context() {
+    public void mapper_event_includes_callers_context() throws IOException {
 
         EventContext ctx = new EventContext("Ctx");
         driver.withInput(new IntWritable(1), new IntWritable(2));
@@ -113,7 +113,11 @@ public class EventMapRedTest {
         Thread thread = new Thread(new Runnable() {
             @Override
             public void run() {
-                driv.runTest();
+                try {
+                    driv.runTest();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         });
         thread.start();
@@ -141,7 +145,11 @@ public class EventMapRedTest {
         Thread thread = new Thread(new Runnable() {
             @Override
             public void run() {
-                driv.runTest();
+                try {
+                    driv.runTest();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         });
         thread.start();
