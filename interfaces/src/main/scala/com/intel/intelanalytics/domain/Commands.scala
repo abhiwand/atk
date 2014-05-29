@@ -23,7 +23,7 @@
 
 package com.intel.intelanalytics.domain
 
-import com.intel.intelanalytics.domain.graphconstruction.{EdgeRule, VertexRule, OutputConfiguration}
+import com.intel.intelanalytics.domain.graphconstruction.{ EdgeRule, VertexRule, OutputConfiguration }
 
 //TODO: Many of these classes will go away in the future, replaced with something more generic.
 
@@ -31,7 +31,8 @@ import com.intel.intelanalytics.domain.graphconstruction.{EdgeRule, VertexRule, 
 case class Als[GraphRef](graph: GraphRef, lambda: Double, max_supersteps: Option[Int],
                          converge_threshold: Option[Int], feature_dimension: Option[Int])
 
-case class LoadLines[+Arguments, FrameRef](source: String, destination: FrameRef, skipRows: Option[Int], lineParser: Partial[Arguments]) {
+case class LoadLines[+Arguments, FrameRef](source: String, destination: FrameRef, skipRows: Option[Int],
+                                           overwrite: Option[Boolean], lineParser: Partial[Arguments]) {
   require(source != null, "source is required")
   require(destination != null, "destination is required")
   require(skipRows.isEmpty || skipRows.get >= 0, "cannot skip negative number of rows")
@@ -42,10 +43,12 @@ case class FilterPredicate[+Arguments, FrameRef](frame: FrameRef, predicate: Str
   require(frame != null, "frame is required")
   require(predicate != null, "predicate is required")
 }
+
 case class FrameRemoveColumn[+Arguments, FrameRef](frame: FrameRef, column: String) {
   require(frame != null, "frame is required")
   require(column != null, "column is required")
 }
+
 case class FrameAddColumn[+Arguments, FrameRef](frame: FrameRef, columnname: String, columntype: String, expression: String) {
   require(frame != null, "frame is required")
   require(columnname != null, "column name is required")
@@ -58,6 +61,7 @@ case class FrameProject[+Arguments, FrameRef](frame: FrameRef, originalframe: Fr
   require(originalframe != null, "original frame is required")
   require(column != null, "column is required")
 }
+
 case class FrameRenameColumn[+Arguments, FrameRef](frame: FrameRef, originalcolumn: String, renamedcolumn: String) {
   require(frame != null, "frame is required")
   require(originalcolumn != null, "original column is required")
@@ -66,17 +70,29 @@ case class FrameRenameColumn[+Arguments, FrameRef](frame: FrameRef, originalcolu
 
 case class SeparatorArgs(separator: Char)
 
-case class GraphLoad[+Arguments, FrameRef](graphName: String,
-                         sourceFrame: FrameRef,
-                         outputConfig: OutputConfiguration,
-                         vertexRules: List[VertexRule],
-                         edgeRules: List[EdgeRule],
-                         retainDanglingEdges: Boolean,
-                         bidirectional: Boolean) {
-  require(graphName != null)
-  require(graphName.trim.length > 0)
-
-  require(sourceFrame != null)
-
+/**
+ * Command for loading  graph data into existing graph in the graph database. Source is tabular data from a dataframe
+ * and it is converted into graph data using the graphbuilder3 graph construction rules.
+ * @param graphRef Handle to the graph to be written to.
+ * @param sourceFrameRef Handle to the dataframe to be used as a data source.
+ * @param outputConfig The configuration rules specifying how the graph database will be written to.
+ * @param vertexRules Specification of how tabular data will be interpreted as vertices.
+ * @param edgeRules Specification of how tabular data will be interpreted as edge.
+ * @param retainDanglingEdges
+ * @param bidirectional Are edges bidirectional or unidirectional? (equivalently, undirected or directed?)
+ * @tparam Arguments Type of the command packed provided by the caller.
+ * @tparam GraphRef Type of the reference to the graph being written to.
+ * @tparam FrameRef Type of the reference to the source frame being read from.
+ */
+case class GraphLoad[+Arguments, GraphRef, FrameRef](graphRef: GraphRef,
+                                                     sourceFrameRef: FrameRef,
+                                                     outputConfig: OutputConfiguration,
+                                                     vertexRules: List[VertexRule],
+                                                     edgeRules: List[EdgeRule],
+                                                     retainDanglingEdges: Boolean,
+                                                     bidirectional: Boolean) {
+  require(graphRef != null)
+  require(sourceFrameRef != null)
   require(outputConfig != null)
 }
+
