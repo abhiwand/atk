@@ -61,7 +61,7 @@ public class TestJsonPropertyGraph4GBPOutputFormat extends JsonPropertyGraph4GBP
 
     @Test
     public void testOuputFormat() throws IOException, InterruptedException {
-        Text expected = new Text("[1,[2,3],4]");
+        Text expected = new Text("[1,4]");
 
         JsonPropertyGraph4GBPOutputFormatTestWorker(expected);
     }
