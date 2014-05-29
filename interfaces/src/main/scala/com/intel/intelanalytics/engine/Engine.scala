@@ -82,8 +82,6 @@ trait FrameComponent {
     def create(frame: DataFrameTemplate): DataFrame
     def addColumn[T](frame: DataFrame, column: Column[T], columnType: DataTypes.DataType): DataFrame
     def addColumnWithValue[T](frame: DataFrame, column: Column[T], default: T): Unit
-    def load(frame: DataFrame, schema: Schema): Unit
-
     def removeColumn(frame: DataFrame, columnIndex: Seq[Int]): Unit
     def renameColumn[T](frame: DataFrame, name_pairs: Seq[(String, String)]): Unit
     def removeRows(frame: DataFrame, predicate: Row => Boolean)
