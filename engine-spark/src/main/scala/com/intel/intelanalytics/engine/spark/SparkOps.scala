@@ -85,8 +85,13 @@ private[spark] object SparkOps extends Serializable {
       .saveAsObjectFile(location)
   }
 
-  def create2TupleForJoin(data: Array[Any], joinIndex: Int): (Any, Array[Any]) = {
-    (data(joinIndex), data)
+  /**
+   * generate 2 tuple instance in order to invoke pairRDD functions
+   * @param data row data
+   * @param keyIndex index of the key column
+   */
+  def create2TupleForJoin(data: Array[Any], keyIndex: Int): (Any, Array[Any]) = {
+    (data(keyIndex), data)
   }
 
   def joinRDDs(left: RDDJoinParam, right: RDDJoinParam, how: String): RDD[Array[Any]] = {
