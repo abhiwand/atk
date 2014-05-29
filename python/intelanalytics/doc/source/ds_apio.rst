@@ -130,7 +130,7 @@ them.  All of the dropped rows will be appended to that frame.
 
 That effectively splits frame ``f`` in two.
 
-See :doc:`rowfunc`
+See :doc:`ds_apir`
 
 ``drop_duplicates`` performs row uniqueness comparisons across the whole table.
 
