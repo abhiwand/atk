@@ -7,7 +7,7 @@ class ConvertGraphUserNameToBackendNameSpec extends Specification {
   "ConvertGraphUserNameToBackendName" should {
     "preface user name with expected string" in {
       val userName = "Graph of the Gods"
-      GraphName.ConvertGraphUserNameToBackendName(userName) shouldEqual
+      GraphName.convertGraphUserNameToBackendName(userName) shouldEqual
         GraphName.iatGraphTablePrefix + userName
     }
   }
@@ -16,7 +16,7 @@ class ConvertGraphUserNameToBackendNameSpec extends Specification {
     "strip expected string from the backend name" in {
       val userName = "VALHALLA! I AM COMING!!!"
       val backendName = GraphName.iatGraphTablePrefix + userName
-      GraphName.ConvertGraphBackendNameToUserName(backendName) shouldEqual userName
+      GraphName.convertGraphBackendNameToUserName(backendName) shouldEqual userName
     }
   }
 }
