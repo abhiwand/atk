@@ -147,12 +147,6 @@ class SparkComponent extends EngineComponent
   //but when we want to use postgresql or mysql or something, we won't usually be creating tables here.
   metaStore.create()
 
-  val graphStorage: GraphStorage =
-    new SparkGraphStorage(engine.context(_),
-      metaStore,
-      new SparkGraphHBaseBackend(new HBaseAdmin(HBaseConfiguration.create())),
-      frames)
-
   class SparkEngine extends Engine {
 
     def context(implicit user: UserPrincipal): Context = {
@@ -534,7 +528,7 @@ class SparkComponent extends EngineComponent
     def createGraph(graph: GraphTemplate)(implicit user: UserPrincipal) = {
       future {
         withMyClassLoader {
-          graphStorage.createGraph(graph)
+          graphs.createGraph(graph)
         }
       }
     }
@@ -557,10 +551,10 @@ class SparkComponent extends EngineComponent
               withCommand(command) {
 
                 // not sure if we really need this...
-                val realFrame = frames.lookup(arguments.sourceFrameURI).getOrElse(
-                  throw new IllegalArgumentException(s"No such data frame: ${arguments.sourceFrameURI}"))
+                val realFrame = frames.lookup(arguments.sourceFrameRef).getOrElse(
+                  throw new IllegalArgumentException(s"No such data frame: ${arguments.sourceFrameRef}"))
 
-                graphStorage.loadGraph(arguments)(user)
+                graphs.loadGraph(arguments)(user)
               }
 
               commands.lookup(command.id).get
@@ -577,7 +571,7 @@ class SparkComponent extends EngineComponent
      */
     def getGraph(id: SparkComponent.this.Identifier): Future[Graph] = {
       future {
-        graphStorage.lookup(id).get
+        graphs.lookup(id).get
       }
     }
 
@@ -591,7 +585,7 @@ class SparkComponent extends EngineComponent
     def getGraphs(offset: Int, count: Int)(implicit user: UserPrincipal): Future[Seq[Graph]] =
       withContext("se.getGraphs") {
         future {
-          graphStorage.getGraphs(offset, count)
+          graphs.getGraphs(offset, count)
         }
       }
 
@@ -603,7 +597,7 @@ class SparkComponent extends EngineComponent
     def deleteGraph(graph: Graph): Future[Unit] = {
       withContext("se.deletegraph") {
         future {
-          graphStorage.drop(graph)
+          graphs.drop(graph)
         }
       }
     }
@@ -1221,6 +1215,12 @@ def calculateScore(list1, list2, biasOn, featureDimension) {
       getFrameDirectory(id) + "/meta"
     }
   }
+
+  val graphs: GraphStorage =
+    new SparkGraphStorage(engine.context(_),
+      metaStore,
+      new SparkGraphHBaseBackend(new HBaseAdmin(HBaseConfiguration.create())),
+      frames)
 
   val commands = new SparkCommandStorage {}
 

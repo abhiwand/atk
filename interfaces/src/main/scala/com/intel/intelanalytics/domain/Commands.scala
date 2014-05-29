@@ -73,8 +73,8 @@ case class SeparatorArgs(separator: Char)
 /**
  * Command for loading  graph data into existing graph in the graph database. Source is tabular data from a dataframe
  * and it is converted into graph data using the graphbuilder3 graph construction rules.
- * @param graphURI The graph to be written to.
- * @param sourceFrameURI The dataframe to be used as a data source.
+ * @param graphRef Handle to the graph to be written to.
+ * @param sourceFrameRef Handle to the dataframe to be used as a data source.
  * @param outputConfig The configuration rules specifying how the graph database will be written to.
  * @param vertexRules Specification of how tabular data will be interpreted as vertices.
  * @param edgeRules Specification of how tabular data will be interpreted as edge.
@@ -84,15 +84,15 @@ case class SeparatorArgs(separator: Char)
  * @tparam GraphRef Type of the reference to the graph being written to.
  * @tparam FrameRef Type of the reference to the source frame being read from.
  */
-case class GraphLoad[+Arguments, GraphRef, FrameRef](graphURI: GraphRef,
-                                                     sourceFrameURI: FrameRef,
+case class GraphLoad[+Arguments, GraphRef, FrameRef](graphRef: GraphRef,
+                                                     sourceFrameRef: FrameRef,
                                                      outputConfig: OutputConfiguration,
                                                      vertexRules: List[VertexRule],
                                                      edgeRules: List[EdgeRule],
                                                      retainDanglingEdges: Boolean,
                                                      bidirectional: Boolean) {
-  require(graphURI != null)
-  require(sourceFrameURI != null)
+  require(graphRef != null)
+  require(sourceFrameRef != null)
   require(outputConfig != null)
 }
 
