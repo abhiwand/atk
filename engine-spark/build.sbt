@@ -15,6 +15,7 @@ resolvers ++= Seq(
 //default ones from the parent for this module.
 libraryDependencies := {
   Seq("org.scala-lang" % "scala-library" % scalaVersion.value,
+// graphbuilder likes this version of spark-core
       ("org.apache.spark" %% "spark-core" % "0.9.0-cdh5.0.0").
 //        exclude("org.mortbay.jetty", "servlet-api").
 //        exclude("commons-beanutils", "commons-beanutils-core").
