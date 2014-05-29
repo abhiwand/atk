@@ -90,7 +90,7 @@ case class GraphHeader(id: Long, name: String, url: String) {
 
 object ViewModelJsonProtocol extends DefaultJsonProtocol with SprayJsonSupport {
 
-  import com.intel.intelanalytics.domain.DomainJsonProtocol._   //this is needed for implicits
+  import com.intel.intelanalytics.domain.DomainJsonProtocol._ //this is needed for implicits
 
   implicit val relLinkFormat = jsonFormat3(RelLink)
   implicit val dataFrameHeaderFormat = jsonFormat3(DataFrameHeader)
