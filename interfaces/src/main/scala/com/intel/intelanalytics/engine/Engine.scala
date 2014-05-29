@@ -161,8 +161,15 @@ trait EngineComponent {
     def getFrames(offset: Int, count: Int)(implicit p: UserPrincipal): Future[Seq[DataFrame]]
     def shutdown: Unit
     def getGraph(id: Identifier): Future[Graph]
+
     def getGraphs(offset: Int, count: Int): Future[Seq[Graph]]
     def createGraph(graph: GraphTemplate): Future[Graph]
+
+    def getGraphs(offset: Int, count: Int)(implicit user: UserPrincipal): Future[Seq[Graph]]
+
+    // def createGraph(graph: GraphTemplate)(implicit user: UserPrincipal): Future[Graph]
+    def createGraph(graph: GraphLoad[JsObject, Long])(implicit user: UserPrincipal): Future[Graph]
+
     def deleteGraph(graph: Graph): Future[Unit]
     //NOTE: we do /not/ expect to have a separate method for every single algorithm, this will move to a plugin
     //system soon
@@ -182,3 +189,26 @@ trait CommandComponent {
   }
 
 }
+
+
+// THE CAKE IS A LIE!!!
+
+trait GraphBackendStorage {
+
+  def deleteTable(name: String)
+  def listTables(): Seq[String]
+
+}
+
+abstract class GraphStorage(val backendStorage: GraphBackendStorage, val frameStorage: FrameComponent#FrameStorage) {
+
+  def lookup(id: Long): Option[Graph]
+
+  // def createGraph(graph: GraphTemplate)(implicit user: UserPrincipal): Graph
+  def createGraph(graph: GraphLoad[JsObject, Long])(implicit user: UserPrincipal): Future[Graph]
+
+  def drop(graph: Graph)
+  def getGraphs(offset: Int, count: Int)(implicit user: UserPrincipal): Seq[Graph]
+
+}
+

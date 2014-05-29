@@ -32,6 +32,7 @@ import com.intel.intelanalytics.domain.CommandTemplate
 import com.intel.intelanalytics.domain.DataFrame
 import com.intel.intelanalytics.domain.Schema
 import com.intel.intelanalytics.domain.Command
+import com.intel.intelanalytics.repository.Repository
 
 trait DbProfileComponent {
 
@@ -72,17 +73,21 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
      * Create the underlying tables
      */
     override def create(): Unit = {
-      withSession("Creating tables") {
-        implicit session =>
-          info("creating")
-          frameRepo.asInstanceOf[SlickFrameRepository].create
-          commandRepo.asInstanceOf[SlickCommandRepository].create
-          userRepo.asInstanceOf[SlickUserRepository].create
-          info("tables created")
+
+    /** Repository for CRUD on 'frame' table */
+
+      withSession("Creating tables") { implicit session =>
+        info("creating")
+        frameRepo.asInstanceOf[SlickFrameRepository].create
+        commandRepo.asInstanceOf[SlickCommandRepository].create
+        userRepo.asInstanceOf[SlickUserRepository].create
+        graphRepo.asInstanceOf[SlickGraphRepository].create
+        info("tables created")
       }
     }
 
-    /** Repository for CRUD on 'frame' table */
+    override lazy val graphRepo: Repository[Session, GraphTemplate, Graph] = new SlickGraphRepository
+
     override lazy val frameRepo: Repository[Session, DataFrameTemplate, DataFrame] = new SlickFrameRepository
 
     /** Repository for CRUD on 'command' table */
@@ -306,6 +311,63 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
     def create(implicit session: Session) = {
       commands.ddl.create
     }
+  }
+
+  /**
+   * Stores metadata for graphs.
+   *
+   * Currently graph metadata consists only of an (id, name) pair. We could add the schema information if people
+   * think that would be helpful but beware: That sort of thing mutates.
+   */
+  class SlickGraphRepository extends Repository[Session, GraphTemplate, Graph]
+      with EventLogging { this: Repository[Session, GraphTemplate, Graph] =>
+
+    class SlickGraph(tag: Tag) extends Table[Graph](tag, "graph") {
+      def id = column[Long]("id", O.PrimaryKey, O.AutoInc)
+
+      def name = column[String]("name")
+
+      def * = (id, name) <>
+        ((t: (Long, String)) => t match {
+          case (i: Long, n: String) => Graph.tupled((i, n))
+        },
+          (graph: Graph) => Graph.unapply(graph) map { case (i, n) => (i, n) })
+    }
+
+    val graphs = TableQuery[SlickGraph]
+
+    protected val graphsAutoInc = graphs returning graphs.map(_.id) into { case (graph, id) => graph.copy(id = id) }
+
+    def _insertGraph(graph: GraphTemplate)(implicit session: Session) = {
+      val g = Graph(1, graph.graphName)
+      graphsAutoInc.insert(g)
+    }
+
+    override def delete(id: Long)(implicit session: Session): Try[Unit] = Try {
+      graphs.where(_.id === id).mutate(f => f.delete())
+    }
+
+    override def update(graph: Graph)(implicit session: Session): Try[Graph] = Try {
+      graphs.where(_.id === graph.id).update(graph)
+      graph
+    }
+
+    override def insert(graph: GraphTemplate)(implicit session: Session): Try[Graph] = Try {
+      _insertGraph(graph)(session)
+    }
+
+    override def scan(offset: Int = 0, count: Int = defaultScanCount)(implicit session: Session): Seq[Graph] = {
+      graphs.drop(offset).take(count).list
+    }
+
+    override def lookup(id: Long)(implicit session: Session): Option[Graph] = {
+      graphs.where(_.id === id).firstOption
+    }
+
+    def create(implicit session: Session) = {
+      graphs.ddl.create
+    }
+
   }
 
 }
