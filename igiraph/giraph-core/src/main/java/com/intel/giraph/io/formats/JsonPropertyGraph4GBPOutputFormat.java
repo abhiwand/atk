@@ -39,7 +39,7 @@ import java.io.IOException;
 /**
  * VertexOutputFormat that supports JSON encoded vertices featuring
  * <code>Long</code> id and <code>VertexData4GBP</code> values. Both prior
- * and posterior are output.
+ * and posterior mean are output.
  */
 public class JsonPropertyGraph4GBPOutputFormat extends TextVertexOutputFormat<LongWritable,
     VertexData4GBPWritable, Writable> {
@@ -67,12 +67,9 @@ public class JsonPropertyGraph4GBPOutputFormat extends TextVertexOutputFormat<Lo
                 jsonPriorArray.put(prior.getMean());
                 jsonPriorArray.put(prior.getPrecision());
                 jsonVertex.put(jsonPriorArray);
-                // add posterior
-                JSONArray jsonPosteriorArray = new JSONArray();
+                // add posterior mean
                 GaussianDistWritable posterior = vertex.getValue().getPosterior();
-                jsonPosteriorArray.put(posterior.getMean());
-                jsonPosteriorArray.put(posterior.getPrecision());
-                jsonVertex.put(jsonPosteriorArray);
+                jsonVertex.put(posterior.getMean());
             } catch (JSONException e) {
                 throw new IllegalArgumentException("writeVertex: Couldn't write vertex " + vertex);
             }
