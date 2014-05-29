@@ -186,7 +186,7 @@ class SparkComponent extends EngineComponent
                 val converter = DataTypes.parseMany(schema.columns.map(_._2).toArray)(_)
                 val ctx = context(user)
                 SparkOps.loadLines(ctx.sparkContext, fsRoot + "/" + arguments.source, location, arguments, parserFunction, converter)
-                frames.load(realFrame, schema)
+                frames.updateSchema(realFrame, schema.columns)
               }
               commands.lookup(command.id).get
             }
@@ -270,6 +270,8 @@ class SparkComponent extends EngineComponent
 
                 val originalFrame = frames.lookup(originalFrameID).getOrElse(
                   throw new IllegalArgumentException(s"No such data frame: $originalFrameID"))
+                val projectedFrame = frames.lookup(projectedFrameID).getOrElse(
+                  throw new IllegalArgumentException(s"No such data frame: $projectedFrameID"))
 
                 val ctx = context(user).sparkContext
                 val columns = arguments.column.split(",")
@@ -285,9 +287,14 @@ class SparkComponent extends EngineComponent
                 columnIndices match {
                   case invalidColumns if invalidColumns.contains(-1) =>
                     throw new IllegalArgumentException(s"Invalid list of columns: ${arguments.column}")
-                  case _ => frames.getFrameRdd(ctx, originalFrameID)
-                    .map(row => { for { i <- columnIndices } yield row(i) }.toArray)
-                    .saveAsObjectFile(location)
+                  case _ => {
+                    frames.getFrameRdd(ctx, originalFrameID)
+                      .map(row => { for { i <- columnIndices } yield row(i) }.toArray)
+                      .saveAsObjectFile(location)
+                    val projectedColumns = for { i <- columnIndices } yield { schema.columns(i) }
+                    frames.updateSchema(projectedFrame, projectedColumns.toList)
+                  }
+
                 }
 
               }
@@ -647,7 +654,7 @@ class SparkComponent extends EngineComponent
 
     import com.intel.intelanalytics.domain.DomainJsonProtocol._
 
-    private def getFrameWithUpdatedSchema(frame: DataFrame, columns: List[(String, DataType)]): DataFrame = {
+    def updateSchema(frame: DataFrame, columns: List[(String, DataType)]): DataFrame = {
       val newSchema = frame.schema.copy(columns = columns)
       val newFrame = frame.copy(schema = newSchema)
 
@@ -674,11 +681,6 @@ class SparkComponent extends EngineComponent
         ???
       }
 
-    override def load(frame: DataFrame, schema: Schema): Unit =
-      withContext("frame.appendRows") {
-        getFrameWithUpdatedSchema(frame, schema.columns)
-      }
-
     override def removeRows(frame: DataFrame, predicate: (Row) => Boolean): Unit =
       withContext("frame.removeRows") {
         ???
@@ -695,7 +697,7 @@ class SparkComponent extends EngineComponent
               frame.schema.columns.zipWithIndex.filter(elem => columnIndex.contains(elem._2) == false).map(_._1)
           }
         }
-        getFrameWithUpdatedSchema(frame, remainingColumns)
+        updateSchema(frame, remainingColumns)
       }
 
     override def addColumnWithValue[T](frame: DataFrame, column: Column[T], default: T): Unit =
@@ -716,13 +718,13 @@ class SparkComponent extends EngineComponent
         }
 
         val newColumns = frame.schema.columns.map(col => (generateNewColumnTuple(col._1, columnsToRename, newColumnNames), col._2))
-        getFrameWithUpdatedSchema(frame, newColumns)
+        updateSchema(frame, newColumns)
       }
 
     override def addColumn[T](frame: DataFrame, column: Column[T], columnType: DataTypes.DataType): DataFrame =
       withContext("frame.addColumn") {
         val newColumns = frame.schema.columns :+ (column.name, columnType)
-        getFrameWithUpdatedSchema(frame, newColumns)
+        updateSchema(frame, newColumns)
       }
 
     override def getRows(frame: DataFrame, offset: Long, count: Int)(implicit user: UserPrincipal): Iterable[Row] =
