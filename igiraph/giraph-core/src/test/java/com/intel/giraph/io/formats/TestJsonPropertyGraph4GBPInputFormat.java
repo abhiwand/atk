@@ -28,7 +28,7 @@ import org.apache.giraph.conf.GiraphConfiguration;
 import org.apache.giraph.conf.ImmutableClassesGiraphConfiguration;
 import org.apache.giraph.graph.Vertex;
 import org.apache.giraph.utils.NoOpComputation;
-import org.apache.hadoop.io.DoubleWritable;
+import com.intel.giraph.io.EdgeData4GBPWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
@@ -47,7 +47,7 @@ import static org.mockito.Mockito.when;
 public class TestJsonPropertyGraph4GBPInputFormat extends JsonPropertyGraph4GBPInputFormat {
 
     private RecordReader<LongWritable, Text> rr;
-    private ImmutableClassesGiraphConfiguration<LongWritable, VertexData4GBPWritable, DoubleWritable> conf;
+    private ImmutableClassesGiraphConfiguration<LongWritable, VertexData4GBPWritable, EdgeData4GBPWritable> conf;
     private TaskAttemptContext tac;
 
     @Before
@@ -57,7 +57,7 @@ public class TestJsonPropertyGraph4GBPInputFormat extends JsonPropertyGraph4GBPI
         GiraphConfiguration giraphConf = new GiraphConfiguration();
         giraphConf.setComputationClass(DummyComputation.class);
         conf = new ImmutableClassesGiraphConfiguration<LongWritable, VertexData4GBPWritable,
-            DoubleWritable>(giraphConf);
+            EdgeData4GBPWritable>(giraphConf);
         tac = mock(TaskAttemptContext.class);
         when(tac.getConfiguration()).thenReturn(conf);
     }
@@ -66,9 +66,9 @@ public class TestJsonPropertyGraph4GBPInputFormat extends JsonPropertyGraph4GBPI
         return new JsonPropertyGraph4GBPReader() {
             @Override
             protected RecordReader<LongWritable, Text> createLineRecordReader(InputSplit inputSplit,
-                TaskAttemptContext context) throws IOException, InterruptedException {
-                    return rr;
-                }
+                                                                              TaskAttemptContext context) throws IOException, InterruptedException {
+                return rr;
+            }
         };
     }
 
@@ -82,17 +82,20 @@ public class TestJsonPropertyGraph4GBPInputFormat extends JsonPropertyGraph4GBPI
         vr.initialize(null, tac);
 
         assertTrue("Should have been able to read vertex", vr.nextVertex());
-        Vertex<LongWritable, VertexData4GBPWritable, DoubleWritable> vertex = vr.getCurrentVertex();
+        Vertex<LongWritable, VertexData4GBPWritable, EdgeData4GBPWritable> vertex = vr.getCurrentVertex();
         assertEquals(vertex.getNumEdges(), 3);
         assertEquals(1L, vertex.getId().get());
         assertEquals(0.2, vertex.getValue().getPrior().getMean(), 0d);
         assertEquals(2.0, vertex.getValue().getPrior().getPrecision(), 0d);
-        assertEquals(1.0, vertex.getEdgeValue(new LongWritable(0L)).get(), 0d);
-        assertEquals(2.0, vertex.getEdgeValue(new LongWritable(2L)).get(), 0d);
-        assertEquals(1.0, vertex.getEdgeValue(new LongWritable(3L)).get(), 0d);
+        assertEquals(1.0, vertex.getEdgeValue(new LongWritable(0L)).getWeight(), 0d);
+        assertEquals(2.0, vertex.getEdgeValue(new LongWritable(2L)).getWeight(), 0d);
+        assertEquals(1.0, vertex.getEdgeValue(new LongWritable(3L)).getWeight(), 0d);
+        assertEquals(1.0, vertex.getEdgeValue(new LongWritable(0L)).getReverseWeight(), 0d);
+        assertEquals(2.0, vertex.getEdgeValue(new LongWritable(2L)).getReverseWeight(), 0d);
+        assertEquals(1.0, vertex.getEdgeValue(new LongWritable(3L)).getReverseWeight(), 0d);
     }
 
     public static class DummyComputation extends NoOpComputation<LongWritable, VertexData4GBPWritable,
-        DoubleWritable, Writable> { }
+        EdgeData4GBPWritable, Writable> { }
 
 }
