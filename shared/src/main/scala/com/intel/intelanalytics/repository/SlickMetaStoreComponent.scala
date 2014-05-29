@@ -32,7 +32,6 @@ import com.intel.intelanalytics.domain.CommandTemplate
 import com.intel.intelanalytics.domain.DataFrame
 import com.intel.intelanalytics.domain.Schema
 import com.intel.intelanalytics.domain.Command
-import com.intel.intelanalytics.repository.Repository
 
 trait DbProfileComponent {
 
@@ -74,7 +73,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
      */
     override def create(): Unit = {
 
-    /** Repository for CRUD on 'frame' table */
+      /** Repository for CRUD on 'frame' table */
 
       withSession("Creating tables") { implicit session =>
         info("creating")
@@ -314,13 +313,15 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
   }
 
   /**
-   * Stores metadata for graphs.
+   * A slick implementation of the graph repository. It stores metadata for graphs.
    *
    * Currently graph metadata consists only of an (id, name) pair. We could add the schema information if people
-   * think that would be helpful but beware: That sort of thing mutates.
+   * think that would be helpful but beware: That sort of thing mutates as the graph evolves so keeping it current
+   * will require tracking.
    */
   class SlickGraphRepository extends Repository[Session, GraphTemplate, Graph]
-      with EventLogging { this: Repository[Session, GraphTemplate, Graph] =>
+      with EventLogging {
+    this: Repository[Session, GraphTemplate, Graph] =>
 
     class SlickGraph(tag: Tag) extends Table[Graph](tag, "graph") {
       def id = column[Long]("id", O.PrimaryKey, O.AutoInc)
@@ -329,7 +330,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
 
       def * = (id, name) <>
         ((t: (Long, String)) => t match {
-          case (i: Long, n: String) => Graph.tupled((i, n))
+          case (id: Long, name: String) => Graph.tupled((id, name))
         },
           (graph: Graph) => Graph.unapply(graph) map { case (i, n) => (i, n) })
     }
@@ -339,7 +340,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
     protected val graphsAutoInc = graphs returning graphs.map(_.id) into { case (graph, id) => graph.copy(id = id) }
 
     def _insertGraph(graph: GraphTemplate)(implicit session: Session) = {
-      val g = Graph(1, graph.graphName)
+      val g = Graph(1, graph.name)
       graphsAutoInc.insert(g)
     }
 
@@ -369,5 +370,4 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
     }
 
   }
-
 }
