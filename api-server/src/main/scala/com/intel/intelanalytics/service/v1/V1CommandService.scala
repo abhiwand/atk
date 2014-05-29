@@ -171,8 +171,8 @@ trait V1CommandService extends V1Service {
       import DomainJsonProtocol._
       transform.arguments.get.convertTo[GraphLoad[JsObject, String, String]]
     }
-    val frameIDOpt = test.toOption.flatMap(args => getFrameId(args.sourceFrameURI))
-    val graphIDOpt = test.toOption.flatMap(args => getGraphId(args.graphURI))
+    val frameIDOpt = test.toOption.flatMap(args => getFrameId(args.sourceFrameRef))
+    val graphIDOpt = test.toOption.flatMap(args => getGraphId(args.graphRef))
 
     (validate(test.isSuccess, "Failed to parse graph load descriptor: " + getErrorMessage(test))
       & validate(frameIDOpt.isDefined, "Source dataframe is not a valid data frame URL")

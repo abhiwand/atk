@@ -75,11 +75,11 @@ class SparkGraphStorage(context: (UserPrincipal) => Context,
           {
             val sparkContext = context(user).sparkContext
 
-            val sourceFrameID = graphLoad.sourceFrameURI
+            val sourceFrameID = graphLoad.sourceFrameRef
 
             val dataFrame = frameStorage.lookup(sourceFrameID)
 
-            val graph = lookup(graphLoad.graphURI).get
+            val graph = lookup(graphLoad.graphRef).get
 
             val gbConfigFactory = new GraphBuilderConfigFactory(dataFrame.get.schema, graphLoad, graph)
 
