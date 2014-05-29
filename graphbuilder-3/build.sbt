@@ -14,14 +14,24 @@ libraryDependencies := {
     // ispark-deps provides hbase-protocol
     "com.intel.bda" % "ititan-core" % "0.4.5-SNAPSHOT", // Titan core to get around Kryo ClassLoader issue
     "com.thinkaurelius.titan" % "titan-berkeleyje" % "0.4.5-SNAPSHOT" exclude("com.thinkaurelius.titan", "titan-core"),
-    "com.thinkaurelius.titan" % "titan-cassandra" % "0.4.5-SNAPSHOT" excludeAll ExclusionRule(organization = "org.jboss.netty") exclude("com.thinkaurelius.titan", "titan-core"),
-    "com.thinkaurelius.titan" % "titan-hbase" % "0.4.5-SNAPSHOT" excludeAll ExclusionRule(organization = "org.apache.hbase") exclude("com.thinkaurelius.titan", "titan-core") exclude("javax.servlet.jsp", "jsp-api"),
+    "com.thinkaurelius.titan" % "titan-cassandra" % "0.4.5-SNAPSHOT" excludeAll(
+      ExclusionRule(organization = "org.jboss.netty"),
+      ExclusionRule("com.thinkaurelius.titan", "titan-core"),
+      ExclusionRule("org.slf4j", "slf4j-log4j12")),
+    ("com.thinkaurelius.titan" % "titan-hbase" % "0.4.5-SNAPSHOT") excludeAll (
+      ExclusionRule(organization = "org.apache.hbase"),
+      ExclusionRule("com.thinkaurelius.titan", "titan-core"),
+      ExclusionRule("javax.servlet.jsp", "jsp-api"),
+      ExclusionRule("org.slf4j", "slf4j-log4j12")),
     "org.apache.commons" % "commons-lang3" % "3.3.1",
-    "org.apache.hadoop" % "hadoop-mapreduce-client-app" % "2.3.0-cdh5.0.0",
-    "org.apache.hbase" % "hbase-client" % "0.96.1.1-cdh5.0.0",
+    "org.apache.hadoop" % "hadoop-mapreduce-client-app" % "2.3.0-cdh5.0.0" excludeAll (
+      ExclusionRule("org.slf4j", "slf4j-log4j12")),
+    "org.apache.hbase" % "hbase-client" % "0.96.1.1-cdh5.0.0"  excludeAll (
+      ExclusionRule("org.slf4j", "slf4j-log4j12")),
     "org.apache.hbase" % "hbase-common" % "0.96.1.1-cdh5.0.0",
-    "org.apache.hbase" % "hbase-server" % "0.96.1.1-cdh5.0.0" exclude("org.eclipse.jdt", "core"),
-    "org.apache.spark" % "spark-core_2.10" % "0.9.0-cdh5.0.0",
+    // "org.apache.hbase" % "hbase-server" % "0.96.1.1-cdh5.0.0" exclude("org.eclipse.jdt", "core"),
+    "org.apache.spark" %% "spark-core" % "0.9.0-cdh5.0.0" excludeAll (
+      ExclusionRule("org.slf4j", "slf4j-log4j12")),
     "org.specs2" %% "specs2" % "2.3.10" % "test",
     "org.scalacheck" %% "scalacheck" % "1.11.3" % "test"//,
     //"com.thinkaurelius.titan" % "titan-core" % "0.4.5-SNAPSHOT" % "provided"  exclude("org.slf4j", "slf4j-log4j12") intransitive(),

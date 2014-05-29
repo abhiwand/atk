@@ -4,6 +4,7 @@ libraryDependencies ++= {
   Seq(("org.apache.hadoop"          %   "hadoop-core"             % "1.0.4" % "provided"),
       "com.google.guava"            %   "guava"                   % "11.0.2",
       "commons-httpclient"          %   "commons-httpclient"      % "3.1",
+      "commons-lang"                %   "commons-lang"            % "2.6",
       "com.googlecode.json-simple"  %   "json-simple"             % "1.1.1",
       "org.powermock"               %   "powermock-module-junit4" % "1.5.1" % "test",
       "org.powermock"               %   "powermock-api-mockito"   % "1.5.1" % "test",
