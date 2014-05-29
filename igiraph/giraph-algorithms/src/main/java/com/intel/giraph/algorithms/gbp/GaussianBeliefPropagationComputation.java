@@ -98,6 +98,10 @@ public class GaussianBeliefPropagationComputation extends BasicComputation<LongW
     private int stage = 0;
     /** whether it is the first iteration of outer loop */
     private boolean firstOuter = true;
+    /** current super step */
+    private int step = 0;
+    /** whether outer loop is enabled */
+    private boolean outerLoop = true;
 
     @Override
     public void preSuperstep() {
@@ -106,6 +110,8 @@ public class GaussianBeliefPropagationComputation extends BasicComputation<LongW
         bidirectionalCheck = getConf().getBoolean(BIDIRECTIONAL_CHECK, false);
         stage = getConf().getInt(STAGE, 0);
         firstOuter = getConf().getBoolean(FIRST_OUTER, true);
+        step = (int) getSuperstep();
+        outerLoop = getConf().getBoolean(OUTER_LOOP, true);
     }
 
     /**
@@ -331,9 +337,6 @@ public class GaussianBeliefPropagationComputation extends BasicComputation<LongW
     @Override
     public void compute(Vertex<LongWritable, VertexData4GBPWritable, EdgeData4GBPWritable> vertex,
         Iterable<MessageData4GBPWritable> messages) throws IOException {
-        int step = (int) getSuperstep();
-        boolean outerLoop = getConf().getBoolean(OUTER_LOOP, false);
-
         if (step == 0) {
             if (!outerLoop) {
                 initializeInnerLoop(vertex);
