@@ -3,21 +3,20 @@ package com.intel.intelanalytics.engine.spark.graph
 import com.intel.intelanalytics.shared.EventLogging
 import org.apache.hadoop.hbase.HBaseConfiguration
 import org.apache.hadoop.hbase.client.HBaseAdmin
-import com.intel.intelanalytics.engine.{ GraphBackendStorage, GraphStorage }
+import com.intel.intelanalytics.engine.GraphBackendStorage
 
 /**
- * This is kind of hacky, but no more so than Titan is kind of hacky.
+ * Implements graph backend storage in HBase for Spark.
  */
-class SparkGraphHBaseBackend extends GraphBackendStorage with EventLogging {
+class SparkGraphHBaseBackend(val hbaseAdmin: HBaseAdmin) extends GraphBackendStorage with EventLogging {
 
-  val conf = new HBaseConfiguration()
-  val hbaseAdmin = new HBaseAdmin(conf)
+  /**
+   * Deletes a graph's underlying table from HBase.
+   * @param graphName The user's name for the graph.
+   */
+  override def deleteUnderlyingTable(graphName: String): Unit = {
 
-  val iatGraphTablePrefix: String = "titan_graph_"
-
-  override def deleteTable(name: String): Unit = {
-
-    val tableName: String = iatGraphTablePrefix + name
+    val tableName: String = ConvertGraphUserNameToBackendName(graphName)
 
     if (hbaseAdmin.tableExists(tableName)) {
       hbaseAdmin.disableTable(tableName)
@@ -29,11 +28,5 @@ class SparkGraphHBaseBackend extends GraphBackendStorage with EventLogging {
     }
 
     Unit
-  }
-
-  override def listTables(): Seq[String] = {
-
-    val graphTableNames = hbaseAdmin.listTables().map(x => x.toString()).filter(x => x.startsWith(iatGraphTablePrefix))
-    graphTableNames.map(x => x.stripPrefix(iatGraphTablePrefix))
   }
 }

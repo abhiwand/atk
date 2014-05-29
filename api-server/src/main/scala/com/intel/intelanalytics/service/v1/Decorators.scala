@@ -82,8 +82,7 @@ object GraphDecorator extends EntityDecorator[Graph, GraphHeader, DecoratedGraph
   }
 
   override def decorateForIndex(uri: String, entities: Seq[Graph]): List[GraphHeader] = {
-    // nls test
-    println("*** DECORATE FOR INDEX, RECEIVED " + entities.size + " many graphs")
+
     entities.map(graph => new GraphHeader(id = graph.id,
       name = graph.name,
       url = uri + "/" + graph.id)).toList

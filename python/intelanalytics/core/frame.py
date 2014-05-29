@@ -309,6 +309,11 @@ class BigFrame(object):
         # TODO - Review Docstring
         return self._name
 
+    # TODO - add name setter call to backend
+    #@name.setter
+    #def name(self, value):
+    #    self._backend.set_name(value)
+
     @property
     def schema(self):
         """

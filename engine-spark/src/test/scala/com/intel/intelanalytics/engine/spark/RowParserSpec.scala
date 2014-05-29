@@ -54,11 +54,12 @@ class RowParserSpec extends Specification {
     }
   }
   val trow = new RowParser('\t')
+
   "RowParser" should {
+
     "parse a tab separated string" in {
       trow.apply("foo\tbar\tbaz") shouldEqual Array("foo", "bar", "baz")
     }
   }
-
 }
 
