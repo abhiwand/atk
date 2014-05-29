@@ -182,7 +182,7 @@ trait CommandComponent {
     def create(frame: CommandTemplate): Command
     def scan(offset: Int, count: Int): Seq[Command]
     def start(id: Long): Unit
-    def complete(id: Long, result: Try[JsObject]): Unit
+    def complete(id: Long, result: Try[Any]): Unit
   }
 
 }

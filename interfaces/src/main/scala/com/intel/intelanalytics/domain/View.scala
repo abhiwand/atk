@@ -24,7 +24,6 @@ package com.intel.intelanalytics.domain
 
 import spray.json.JsObject
 
-
 /**
  * An invocation of a function defined on the server.
  * @param id

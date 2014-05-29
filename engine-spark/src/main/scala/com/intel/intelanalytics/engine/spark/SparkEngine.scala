@@ -26,15 +26,16 @@ package com.intel.intelanalytics.engine.spark
 import org.apache.spark.api.python._
 import java.util.{ List => JList, ArrayList => JArrayList, Map => JMap }
 import org.apache.spark.broadcast.Broadcast
+import scala.collection.mutable
 import com.intel.intelanalytics.domain._
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import com.intel.intelanalytics.engine._
 import com.intel.intelanalytics.domain.User
-import com.intel.intelanalytics.domain.Graph
+import com.intel.intelanalytics.domain.{ GraphTemplate, Graph }
 import scala.concurrent._
 import ExecutionContext.Implicits.global
-import java.nio.file.Paths
+import java.nio.file.{ Paths, Path }
 import java.io._
 import com.intel.intelanalytics.engine.Rows.RowSource
 import java.util.concurrent.atomic.AtomicLong
@@ -43,47 +44,28 @@ import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.hdfs.DistributedFileSystem
 import java.nio.file.Path
 import scala.io.Source
-import scala.collection.mutable.HashMap
+import scala.collection.mutable.HashSet
 import scala.io.{ Codec, Source }
 import org.apache.hadoop.fs.{ Path => HPath }
 import scala.Some
+import com.intel.intelanalytics.engine.Row
 import scala.util.matching.Regex
+import com.typesafe.config.ConfigResolveOptions
 import com.intel.event.EventContext
 import scala.concurrent.duration._
+import com.intel.intelanalytics.domain.Partial
 import com.intel.intelanalytics.repository.{ SlickMetaStoreComponent, DbProfileComponent }
 import scala.slick.driver.H2Driver
-import scala.util.Try
+import scala.util.{ Success, Failure, Try }
 import scala.Some
+import com.intel.intelanalytics.domain.DataFrameTemplate
 import com.intel.intelanalytics.domain.DataFrame
 import org.apache.spark.scheduler.SparkListenerJobStart
-import org.apache.spark.engine.SparkProgressListener
 import com.typesafe.config.ConfigFactory
+import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.shared.EventLogging
 import spray.json._
 import com.intel.intelanalytics.domain.DataTypes.DataType
-import scala.util.Failure
-import scala.Some
-import com.intel.intelanalytics.domain.Schema
-import com.intel.intelanalytics.domain.LoadLines
-import com.intel.intelanalytics.domain.Graph
-import com.intel.intelanalytics.domain.FilterPredicate
-import com.intel.intelanalytics.security.UserPrincipal
-import com.intel.intelanalytics.domain.FrameRemoveColumn
-import com.intel.intelanalytics.engine.spark.RDDJoinParam
-import com.intel.intelanalytics.domain.GraphTemplate
-import com.intel.intelanalytics.domain.DataFrameTemplate
-import com.intel.intelanalytics.domain.FrameAddColumn
-import scala.util.Success
-import com.intel.intelanalytics.domain.DataFrame
-import com.intel.intelanalytics.engine.spark.Context
-import com.intel.intelanalytics.domain.Command
-import com.intel.intelanalytics.domain.Partial
-import com.intel.intelanalytics.domain.SeparatorArgs
-import com.intel.intelanalytics.domain.CommandTemplate
-import com.intel.intelanalytics.domain.Error
-import com.intel.intelanalytics.domain.FrameJoin
-import com.intel.intelanalytics.domain.Als
-
 //TODO documentation
 //TODO progress notification
 //TODO event notification
@@ -123,6 +105,7 @@ class SparkComponent extends EngineComponent
     with SlickMetaStoreComponent
     with EventLogging {
 
+  import DomainJsonProtocol._
   val engine = new SparkEngine {}
   lazy val conf = ConfigFactory.load()
   lazy val sparkHome = conf.getString("intel.analytics.spark.home")
@@ -192,6 +175,7 @@ class SparkComponent extends EngineComponent
       parser.operation.name match {
         //TODO: look functions up in a table rather than switching on names
         case "builtin/line/separator" => {
+
           val args = parser.arguments match {
             //TODO: genericize this argument conversion
             case a: JsObject => a.convertTo[SeparatorArgs]
@@ -215,6 +199,7 @@ class SparkComponent extends EngineComponent
     def load(arguments: LoadLines[JsObject, Long])(implicit user: UserPrincipal): (Command, Future[Command]) =
       withContext("se.load") {
         require(arguments != null, "arguments are required")
+        import DomainJsonProtocol._
         val command: Command = commands.create(new CommandTemplate("load", Some(arguments.toJson.asJsObject)))
         val result: Future[Command] = future {
           withMyClassLoader {
@@ -333,15 +318,16 @@ class SparkComponent extends EngineComponent
 
         def createPairRddForJoin(argument: FrameJoin, ctx: SparkContext): List[RDD[(Any, Array[Any])]] = {
           val tupleRddColumnIndex: List[(RDD[Rows.Row], Int)] = argument.joinFrames.map {
-            frame => {
-              val realFrame = frames.lookup(frame._1).getOrElse(
-                throw new IllegalArgumentException(s"No such data frame"))
+            frame =>
+              {
+                val realFrame = frames.lookup(frame._1).getOrElse(
+                  throw new IllegalArgumentException(s"No such data frame"))
 
-              val frameSchema = realFrame.schema
-              val rdd = frames.getFrameRdd(ctx, frame._1)
-              val columnIndex = frameSchema.columns.indexWhere(columnTuple => columnTuple._1 == frame._2)
-              (rdd, columnIndex)
-            }
+                val frameSchema = realFrame.schema
+                val rdd = frames.getFrameRdd(ctx, frame._1)
+                val columnIndex = frameSchema.columns.indexWhere(columnTuple => columnTuple._1 == frame._2)
+                (rdd, columnIndex)
+              }
           }
 
           val pairRdds = tupleRddColumnIndex.map {
@@ -863,7 +849,7 @@ class SparkComponent extends EngineComponent
       //TODO: set start date
     }
 
-    override def complete(id: Long, result: Try[JsObject]): Unit = {
+    override def complete(id: Long, result: Try[Any]): Unit = {
       require(id > 0, "invalid ID")
       require(result != null)
       metaStore.withSession("se.command.complete") {
@@ -875,7 +861,7 @@ class SparkComponent extends EngineComponent
           //TODO: Update dates
           val changed = result match {
             case Failure(ex) => command.copy(complete = true, error = Some(ex: Error))
-            case Success(r) => command.copy(complete = true, result = Some(r))
+            case Success(r) => command.copy(complete = true, result = Some(r.asInstanceOf[JsObject]))
           }
           repo.update(changed)
       }
@@ -885,7 +871,6 @@ class SparkComponent extends EngineComponent
   val graphs = new SparkGraphStorage {}
 
   trait SparkGraphStorage extends GraphStorage {
-
 
     //
     // we can't actually use graph builder right now without breaking the build
