@@ -331,7 +331,7 @@ public class GaussianBeliefPropagationComputation extends BasicComputation<LongW
     @Override
     public void compute(Vertex<LongWritable, VertexData4GBPWritable, EdgeData4GBPWritable> vertex,
         Iterable<MessageData4GBPWritable> messages) throws IOException {
-        int step = (int)getSuperstep();
+        int step = (int) getSuperstep();
         boolean outerLoop = getConf().getBoolean(OUTER_LOOP, false);
 
         if (step == 0) {
