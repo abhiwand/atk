@@ -232,12 +232,19 @@ class SparkComponent extends EngineComponent
                 val frame = frames.lookup(frameID).getOrElse(
                   throw new IllegalArgumentException(s"No such data frame: $frameID"))
 
+                println("Thursday original columns")
+                println(arguments.originalcolumn)
+                println("Thursday renamed columns")
+                println(arguments.renamedcolumn)
+
                 val originalcolumns = arguments.originalcolumn.split(",")
                 val renamedcolumns = arguments.renamedcolumn.split(",")
 
-                if (originalcolumns.length != renamedcolumns.length)
-                  throw new IllegalArgumentException(s"Invalid list of columns: " +
-                    s"Lengths of Original and Renamed Columns do not match")
+                //if (originalcolumns.length != renamedcolumns.length)
+                //  throw new IllegalArgumentException(s"Invalid list of columns: " +
+                //    s"Lengths of Original and Renamed Columns do not match")
+
+                println("Thursday after exception!")
 
                 frames.renameColumn(frame, originalcolumns.zip(renamedcolumns))
               }
@@ -701,10 +708,11 @@ class SparkComponent extends EngineComponent
         val newColumnNames: Seq[String] = name_pairs.map(_._2)
 
         def generateNewColumnTuple(oldColumn: String, columnsToRename: Seq[String], newColumnNames: Seq[String]): String = {
-          val columnIndex: Int = columnsToRename.indexOf(oldColumn)
-          if (columnIndex > 0)
-            return newColumnNames(columnIndex)
-          else return oldColumn
+          val result = columnsToRename.indexOf(oldColumn) match {
+            case notFound if notFound < 0 => oldColumn
+            case found => newColumnNames(found)
+          }
+          result
         }
 
         val newColumns = frame.schema.columns.map(col => (generateNewColumnTuple(col._1, columnsToRename, newColumnNames), col._2))
