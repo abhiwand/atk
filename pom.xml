@@ -405,11 +405,11 @@
                                 <finalName>${project.artifactId}</finalName>
                                 <shadedArtifactAttached>false</shadedArtifactAttached>
                                 <shadedClassifierName>${project.artifactId}</shadedClassifierName>
-                                <!--<artifactSet>
+                                <artifactSet>
 									<excludes>
-										<exclude>org.scoverage:scalac-scoverage-plugin_${scala.short.version}</exclude>
+										<exclude>org.apache.maven:*</exclude>
 									</excludes>
-								</artifactSet>-->
+								</artifactSet>
                                 <filters>
                                     <filter>
                                         <artifact>*:*</artifact>
@@ -425,42 +425,11 @@
                                     <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
                                         <resource>reference.conf</resource>
                                     </transformer>
-                                    <!--<transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
-                                        <resource>META-INF/spring.handlers</resource>
-                                    </transformer>
-                                    <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
-                                        <resource>META-INF/spring.schemas</resource>
-                                    </transformer>
-                                    <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                                        <manifestEntries>
-                                            <Main-Class>com.echoed.chamber.Main</Main-Class>
-                                        </manifestEntries>
-                                    </transformer>-->
                                 </transformers>
                             </configuration>
                         </execution>
                     </executions>
                 </plugin>
-				<!--<plugin>
-                    <artifactId>maven-assembly-plugin</artifactId>
-                    <executions>
-                        <execution>
-                            <id>jar-with-deps</id>
-                            <phase>package</phase>
-                            <goals>
-                                <goal>single</goal>
-                            </goals>
-                        </execution>
-                    </executions>
-                    <configuration>
-                        <finalName>${project.artifactId}</finalName>
-                        <appendAssemblyId>false</appendAssemblyId>
-						
-                        <descriptorRefs>
-                            <descriptorRef>jar-with-dependencies</descriptorRef>
-                        </descriptorRefs>
-                    </configuration>
-                </plugin>-->
 				
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
@@ -588,7 +557,7 @@
                         </execution>
                     </executions>
                 </plugin>-->
-                <plugin>
+                <!--<plugin>
                     <groupId>org.sonatype.plugins</groupId>
                     <artifactId>munge-maven-plugin</artifactId>
                     <version>1.0</version>
@@ -604,7 +573,7 @@
                             </configuration>
                         </execution>
                     </executions>
-                </plugin>
+                </plugin>-->
             </plugins>
         </pluginManagement>
 
@@ -614,10 +583,9 @@
                 <groupId>net.alchim31.maven</groupId>
                 <artifactId>scala-maven-plugin</artifactId>
             </plugin>
-            <plugin>
+            <!--<plugin>
                 <artifactId>maven-assembly-plugin</artifactId>
-
-            </plugin>
+            </plugin>-->
             <!--
             <plugin>
                 <groupId>org.scalatest</groupId>
@@ -739,10 +707,8 @@
                 </executions>
             </plugin>-->
             <plugin>
-
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-shade-plugin</artifactId>
-				<version>2.3</version>
             </plugin>
         </plugins>
     </build>
@@ -1008,12 +974,12 @@
         <dependency>
                 <groupId>org.scalatest</groupId>
                 <artifactId>scalatest_2.10</artifactId>
-				<scope>test</scope>
+			
         </dependency>
         <dependency>
             <groupId>org.specs2</groupId>
             <artifactId>specs2_${scala.short.version}</artifactId>
-			<scope>test</scope>
+			
         </dependency>
         <dependency>
             <groupId>org.scala-lang</groupId>

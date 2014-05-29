@@ -210,17 +210,19 @@
             <artifactId>mahout-core</artifactId>
             <version>${dep.mahout.version}</version>
         </dependency>
-
-        <!--<dependency>
-            <groupId>org.apache.giraph</groupId>
-            <artifactId>giraph-core</artifactId>
-
-        </dependency>
-        <dependency>
-            <groupId>org.apache.giraph</groupId>
-            <artifactId>giraph-hbase</artifactId>
-        </dependency>-->
-
+		
+		 <dependency>
+      <groupId>org.apache.giraph</groupId>
+      <artifactId>giraph-core</artifactId>
+      <version>${dep.giraph-core.version}</version>
+      <type>test-jar</type>
+    </dependency>
+    <dependency>
+       <groupId>org.apache.giraph</groupId>
+       <artifactId>giraph-hbase</artifactId>
+       <version>${dep.giraph-hbase.version}</version>
+       <type>test-jar</type>
+     </dependency>
 
         <!-- test dependencies. sorted lexicographically. -->
         <dependency>
