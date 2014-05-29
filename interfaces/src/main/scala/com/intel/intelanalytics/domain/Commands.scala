@@ -51,7 +51,7 @@ case class FrameAddColumn[+Arguments, FrameRef](frame: FrameRef, columnname: Str
   require(expression != null, "expression is required")
 }
 
-case class FrameJoin[FrameRef](name: String, joinFrames: List[(FrameRef, String)], how: String) {
+case class FrameJoin(name: String, joinFrames: List[(Long, String)], how: String) {
   require(joinFrames != null, "frame is required")
   require(joinFrames.length == 2, "Two frames are required for the join operation")
 }

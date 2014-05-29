@@ -160,7 +160,7 @@ trait EngineComponent {
     def addColumn(arguments: FrameAddColumn[JsObject, Long])(implicit user: UserPrincipal): (Command, Future[Command])
     def alter(frame: DataFrame, changes: Seq[Alteration])
     def delete(frame: DataFrame): Future[Unit]
-    def join(argument: FrameJoin[Long])(implicit user: UserPrincipal): (Command, Future[Command])
+    def join(argument: FrameJoin)(implicit user: UserPrincipal): (Command, Future[Command])
 
     def getFrames(offset: Int, count: Int)(implicit p: UserPrincipal): Future[Seq[DataFrame]]
     def shutdown: Unit

@@ -241,7 +241,7 @@ trait V1CommandService extends V1Service {
   def runJoinFrames(uri: Uri, xform: JsonTransform)(implicit user: UserPrincipal): Route = {
     val test = Try {
       import DomainJsonProtocol._
-      xform.arguments.get.convertTo[FrameJoin[Long]]
+      xform.arguments.get.convertTo[FrameJoin]
     }
 
     (validate(test.isSuccess, "Failed to parse file load descriptor: " + getErrorMessage(test))) {
