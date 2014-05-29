@@ -23,7 +23,7 @@
 //////////////////////////////////////////////////////////////////////////////
 -->
 <!--
-if you do a maven build from the parent you will most likely have to increase your memory options this has worked for me
+if you do a maven build from the parent you will most likely have to increase your memory footprint this has worked for me
 in the past
 export MAVEN_OPTS="-Xms2048m -Xmx4096m -XX:MaxPermSize=4096m -XX:PermSize=2048m"
 -->
@@ -1044,6 +1044,16 @@ export MAVEN_OPTS="-Xms2048m -Xmx4096m -XX:MaxPermSize=4096m -XX:PermSize=2048m"
         <repository>
             <id>gaomaven</id>
             <url>http://gaomaven.jf.intel.com:8081/nexus/content/repositories/releases</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+		<repository>
+            <id>gaomaven-all</id>
+            <url>http://gaomaven.jf.intel.com:8081/nexus/content/repositories</url>
             <releases>
                 <enabled>true</enabled>
             </releases>
