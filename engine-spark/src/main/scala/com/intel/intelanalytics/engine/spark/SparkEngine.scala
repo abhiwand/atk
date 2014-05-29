@@ -25,38 +25,38 @@ package com.intel.intelanalytics.engine.spark
 
 import org.apache.spark.SparkContext
 import org.apache.spark.api.python._
-import java.util.{List => JList, ArrayList => JArrayList, Map => JMap}
+import java.util.{ List => JList, ArrayList => JArrayList, Map => JMap }
 import org.apache.spark.broadcast.Broadcast
 import scala.collection.mutable
 import com.intel.intelanalytics.domain._
 import org.apache.spark.SparkContext
-import org.apache.spark.rdd.{RDD, EmptyRDD}
+import org.apache.spark.rdd.{ RDD, EmptyRDD }
 import com.intel.intelanalytics.engine._
 import com.intel.intelanalytics.domain.User
-import com.intel.intelanalytics.domain.{GraphTemplate, Graph}
+import com.intel.intelanalytics.domain.{ GraphTemplate, Graph }
 import scala.concurrent._
 import ExecutionContext.Implicits.global
-import java.nio.file.{Paths, Path, Files}
+import java.nio.file.{ Paths, Path, Files }
 import java.io._
 import com.intel.intelanalytics.engine.Rows._
 import java.util.concurrent.atomic.AtomicLong
-import org.apache.hadoop.fs.{LocalFileSystem, FileSystem}
+import org.apache.hadoop.fs.{ LocalFileSystem, FileSystem }
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.hdfs.DistributedFileSystem
 import java.nio.file.Path
 import spray.json.JsObject
 import scala.io.Codec
-import scala.io.{Codec, Source}
-import org.apache.hadoop.fs.{Path => HPath}
+import scala.io.{ Codec, Source }
+import org.apache.hadoop.fs.{ Path => HPath }
 import com.intel.intelanalytics.engine.RowParser
 
 import scala.util.matching.Regex
 import com.typesafe.config.ConfigResolveOptions
 import com.intel.event.EventContext
 import com.intel.intelanalytics.domain.Partial
-import com.intel.intelanalytics.repository.{SlickMetaStoreComponent, DbProfileComponent, MetaStoreComponent}
+import com.intel.intelanalytics.repository.{ SlickMetaStoreComponent, DbProfileComponent, MetaStoreComponent }
 import scala.slick.driver.H2Driver
-import scala.util.{Success, Try}
+import scala.util.{ Success, Try }
 import org.apache.spark.scheduler.SparkListenerStageCompleted
 import scala.Some
 import org.apache.spark.scheduler.SparkListenerJobStart
@@ -78,8 +78,8 @@ import com.intel.intelanalytics.domain.Partial
 import com.intel.intelanalytics.domain.SeparatorArgs
 import com.intel.intelanalytics.domain.CommandTemplate
 import com.intel.intelanalytics.domain.Error
-import com.thinkaurelius.titan.core.{TitanGraph, TitanFactory}
-import com.tinkerpop.blueprints.{Direction, Vertex}
+import com.thinkaurelius.titan.core.{ TitanGraph, TitanFactory }
+import com.tinkerpop.blueprints.{ Direction, Vertex }
 import com.intel.graphbuilder.util.SerializableBaseConfiguration
 
 import org.apache.hadoop.hbase.HBaseConfiguration
@@ -105,19 +105,19 @@ import com.intel.intelanalytics.domain.SeparatorArgs
 import com.intel.intelanalytics.domain.CommandTemplate
 import com.intel.intelanalytics.domain.Error
 import com.intel.intelanalytics.domain.Als
-import com.intel.intelanalytics.engine.spark.graph.{SparkGraphStorage, SparkGraphHBaseBackend}
+import com.intel.intelanalytics.engine.spark.graph.{ SparkGraphStorage, SparkGraphHBaseBackend }
 
 //TODO documentation
 //TODO progress notification
 //TODO event notification
 
 class SparkComponent extends EngineComponent
-with FrameComponent
-with CommandComponent
-with FileComponent
-with DbProfileComponent
-with SlickMetaStoreComponent
-with EventLogging {
+    with FrameComponent
+    with CommandComponent
+    with FileComponent
+    with DbProfileComponent
+    with SlickMetaStoreComponent
+    with EventLogging {
 
   lazy val configuration: SparkEngineConfiguration = new SparkEngineConfiguration()
 
@@ -318,8 +318,8 @@ with EventLogging {
                     throw new IllegalArgumentException(s"Invalid list of columns: ${arguments.column}")
                   case _ => frames.getFrameRdd(ctx, originalFrameID)
                     .map(row => {
-                    for {i <- columnIndices} yield row(i)
-                  }.toArray)
+                      for { i <- columnIndices } yield row(i)
+                    }.toArray)
                     .saveAsObjectFile(location)
                 }
 
@@ -334,7 +334,7 @@ with EventLogging {
     def decodePythonBase64EncodedStrToBytes(byteStr: String): Array[Byte] = {
       // Python uses different RFC than Java, must correct a couple characters
       // http://stackoverflow.com/questions/21318601/how-to-decode-a-base64-string-in-scala-or-java00
-      val corrected = byteStr.map { case '-' => '+'; case '_' => '/'; case c => c}
+      val corrected = byteStr.map { case '-' => '+'; case '_' => '/'; case c => c }
       new sun.misc.BASE64Decoder().decodeBuffer(corrected)
     }
 
@@ -810,12 +810,12 @@ with EventLogging {
       val res = g.query().has(vertexTypeProp).vertices().asScala
         .filter(_.getProperty(vertexTypeProp).toString.toUpperCase() == recommendType)
         .filter(_.getEdges(Direction.OUT).asScala.filter(
-        _.getProperty(edgeTypeProp).toString.toUpperCase() == train).isEmpty)
+          _.getProperty(edgeTypeProp).toString.toUpperCase() == train).isEmpty)
         .map(v2 => {
-        val list2 = results(v2)
-        val score = calculateScore(list2)
-        Array(v2.getProperty(idProp).toString, score)
-      })
+          val list2 = results(v2)
+          val score = calculateScore(list2)
+          Array(v2.getProperty(idProp).toString, score)
+        })
 
       res
 
@@ -948,10 +948,10 @@ def calculateScore(list1, list2, biasOn, featureDimension) {
     override def list(source: Directory): Seq[Entry] = withContext("file.list") {
       fs.listStatus(new HPath(fsRoot + frames.frameBase))
         .map {
-        case s if s.isDirectory => Directory(path = Paths.get(s.getPath.toString))
-        case f if f.isDirectory => File(path = Paths.get(f.getPath.toString), size = f.getLen)
-        case x => throw new IOException("Unknown object type in filesystem at " + x.getPath)
-      }
+          case s if s.isDirectory => Directory(path = Paths.get(s.getPath.toString))
+          case f if f.isDirectory => File(path = Paths.get(f.getPath.toString), size = f.getLen)
+          case x => throw new IOException("Unknown object type in filesystem at " + x.getPath)
+        }
     }
 
     override def read(source: File): InputStream = withContext("file.read") {
@@ -1088,7 +1088,7 @@ def calculateScore(list1, list2, biasOn, featureDimension) {
 
     override def addColumn[T](frame: DataFrame, column: Column[T], columnType: DataTypes.DataType): DataFrame =
       withContext("frame.addColumn") {
-        val newColumns = frame.schema.columns :+(column.name, columnType)
+        val newColumns = frame.schema.columns :+ (column.name, columnType)
         val newSchema = frame.schema.copy(columns = newColumns)
         val newFrame = frame.copy(schema = newSchema)
 
@@ -1175,9 +1175,9 @@ def calculateScore(list1, list2, biasOn, featureDimension) {
     def getFrames(offset: Int, count: Int): Seq[DataFrame] = withContext("frame.getFrames") {
       files.list(getOrCreateDirectory(frameBase))
         .flatMap {
-        case Directory(p) => Some(p.getName(p.getNameCount - 1).toString)
-        case _ => None
-      }
+          case Directory(p) => Some(p.getName(p.getNameCount - 1).toString)
+          case _ => None
+        }
         .filter(idRegex.findFirstMatchIn(_).isDefined) //may want to extract a method for this
         .flatMap(sid => frames.lookup(sid.toLong))
     }

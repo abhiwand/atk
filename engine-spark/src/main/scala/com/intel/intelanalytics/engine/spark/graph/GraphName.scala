@@ -10,14 +10,14 @@ object GraphName {
   /**
    * Converts the user's name for a graph into the name used by the underlying graph store.
    */
-  def ConvertGraphUserNameToBackendName(graphName: String) = {
+  def convertGraphUserNameToBackendName(graphName: String) = {
     iatGraphTablePrefix + graphName
   }
 
   /**
    * Converts the name for a graph used by the underlying graph store to the name seen by users.
    */
-  def ConvertGraphBackendNameToUserName(backendName: String) = {
+  def convertGraphBackendNameToUserName(backendName: String) = {
     backendName.stripPrefix(iatGraphTablePrefix)
   }
 

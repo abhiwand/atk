@@ -3,7 +3,7 @@ package com.intel.intelanalytics.engine.spark.graph
 import com.intel.intelanalytics.domain._
 import com.intel.intelanalytics.domain.graphconstruction._
 import com.intel.graphbuilder.util.SerializableBaseConfiguration
-import com.intel.graphbuilder.parser.rule.{Value => GBValue, VertexRule => GBVertexRule, EdgeRule => GBEdgeRule, PropertyRule => GBPropertyRule}
+import com.intel.graphbuilder.parser.rule.{ Value => GBValue, VertexRule => GBVertexRule, EdgeRule => GBEdgeRule, PropertyRule => GBPropertyRule }
 import com.intel.graphbuilder.parser.rule.ConstantValue
 import com.intel.graphbuilder.driver.spark.titan.GraphBuilderConfig
 import com.intel.graphbuilder.parser.rule.ParsedValue
@@ -50,11 +50,11 @@ class GraphBuilderConfigFactory(val schema: Schema, val graphLoad: GraphLoad[JsO
    */
   private def getInputSchema(schema: Schema): InputSchema = {
 
-    def schemaToColumnDef(name: String, dataType: DataType): ColumnDef = {
-      new ColumnDef(name, dataType.scalaType)
+    def schemaToColumnDef(column: (String, DataType)): ColumnDef = {
+      new ColumnDef(column._1, column._2.scalaType)
     }
 
-    val columns: List[ColumnDef] = schema.columns map (x => schemaToColumnDef(x._1, x._2))
+    val columns: List[ColumnDef] = schema.columns map (x => schemaToColumnDef(x))
     new InputSchema(columns)
   }
 
@@ -96,7 +96,7 @@ class GraphBuilderConfigFactory(val schema: Schema, val graphLoad: GraphLoad[JsO
       titanConfiguration.setProperty(v, engineConfiguration.getString(k))
     }
 
-    titanConfiguration.setProperty("storage.tablename", GraphName.ConvertGraphUserNameToBackendName(graphName))
+    titanConfiguration.setProperty("storage.tablename", GraphName.convertGraphUserNameToBackendName(graphName))
 
     for ((key, value) <- outputConfiguration.configuration) {
       titanConfiguration.addProperty(key, value)
