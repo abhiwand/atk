@@ -316,8 +316,8 @@ class SparkComponent extends EngineComponent
     override def join(joinCommand: FrameJoin)(implicit user: UserPrincipal): (Command, Future[Command]) =
       withContext("se.join") {
 
-        def createPairRddForJoin(argument: FrameJoin, ctx: SparkContext): List[RDD[(Any, Array[Any])]] = {
-          val tupleRddColumnIndex: List[(RDD[Rows.Row], Int)] = argument.joinFrames.map {
+        def createPairRddForJoin(joinCommand: FrameJoin, ctx: SparkContext): List[RDD[(Any, Array[Any])]] = {
+          val tupleRddColumnIndex: List[(RDD[Rows.Row], Int)] = joinCommand.frames.map {
             frame =>
               {
                 val realFrame = frames.lookup(frame._1).getOrElse(
@@ -348,7 +348,7 @@ class SparkComponent extends EngineComponent
             withContext("se.join.future") {
 
               //create a new dataframe
-              val originalColumns = joinCommand.joinFrames.map {
+              val originalColumns = joinCommand.frames.map {
                 frame =>
                   {
                     val realFrame = frames.lookup(frame._1).getOrElse(
