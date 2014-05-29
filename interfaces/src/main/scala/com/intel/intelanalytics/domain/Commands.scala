@@ -23,6 +23,8 @@
 
 package com.intel.intelanalytics.domain
 
+import com.intel.intelanalytics.domain.graphconstruction.{EdgeRule, VertexRule, OutputConfiguration}
+
 //TODO: Many of these classes will go away in the future, replaced with something more generic.
 
 //TODO: Add more parameters as appropriate
@@ -63,3 +65,18 @@ case class FrameRenameColumn[+Arguments, FrameRef](frame: FrameRef, originalcolu
 }
 
 case class SeparatorArgs(separator: Char)
+
+case class GraphLoad[+Arguments, FrameRef](graphName: String,
+                         sourceFrame: FrameRef,
+                         outputConfig: OutputConfiguration,
+                         vertexRules: List[VertexRule],
+                         edgeRules: List[EdgeRule],
+                         retainDanglingEdges: Boolean,
+                         bidirectional: Boolean) {
+  require(graphName != null)
+  require(graphName.trim.length > 0)
+
+  require(sourceFrame != null)
+
+  require(outputConfig != null)
+}
