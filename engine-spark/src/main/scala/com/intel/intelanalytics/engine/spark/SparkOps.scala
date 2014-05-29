@@ -95,6 +95,12 @@ private[spark] object SparkOps extends Serializable {
     (data(keyIndex), data)
   }
 
+  /**
+   * perform join operation
+   * @param left parameter regarding the first dataframe
+   * @param right parameter regarding the second dataframe
+   * @param how join method
+   */
   def joinRDDs(left: RDDJoinParam, right: RDDJoinParam, how: String): RDD[Array[Any]] = {
 
     val result = how match {
