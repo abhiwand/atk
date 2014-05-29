@@ -232,19 +232,12 @@ class SparkComponent extends EngineComponent
                 val frame = frames.lookup(frameID).getOrElse(
                   throw new IllegalArgumentException(s"No such data frame: $frameID"))
 
-                println("Thursday original columns")
-                println(arguments.originalcolumn)
-                println("Thursday renamed columns")
-                println(arguments.renamedcolumn)
-
                 val originalcolumns = arguments.originalcolumn.split(",")
                 val renamedcolumns = arguments.renamedcolumn.split(",")
 
-                //if (originalcolumns.length != renamedcolumns.length)
-                //  throw new IllegalArgumentException(s"Invalid list of columns: " +
-                //    s"Lengths of Original and Renamed Columns do not match")
-
-                println("Thursday after exception!")
+                if (originalcolumns.length != renamedcolumns.length)
+                  throw new IllegalArgumentException(s"Invalid list of columns: " +
+                    s"Lengths of Original and Renamed Columns do not match")
 
                 frames.renameColumn(frame, originalcolumns.zip(renamedcolumns))
               }
