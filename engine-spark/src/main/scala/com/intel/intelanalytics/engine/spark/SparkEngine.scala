@@ -23,20 +23,20 @@
 
 package com.intel.intelanalytics.engine.spark
 
-import org.apache.spark.{ ExceptionFailure, SparkContext, SparkConf, Accumulator }
+import org.apache.spark.SparkContext
 import org.apache.spark.api.python._
 import java.util.{ List => JList, ArrayList => JArrayList, Map => JMap }
 import org.apache.spark.broadcast.Broadcast
-import scala.collection.{ mutable, Set }
+import scala.collection.mutable
 import com.intel.intelanalytics.domain._
 import org.apache.spark.SparkContext
-import org.apache.spark.rdd.{ RDD, EmptyRDD }
+import org.apache.spark.rdd.RDD
 import com.intel.intelanalytics.engine._
-import com.intel.intelanalytics.domain.{ User, DataFrameTemplate, DataFrame }
-import com.intel.intelanalytics.domain.{ GraphTemplate, Graph, DataFrameTemplate, DataFrame }
+import com.intel.intelanalytics.domain.User
+import com.intel.intelanalytics.domain.{ GraphTemplate, Graph }
 import scala.concurrent._
 import ExecutionContext.Implicits.global
-import java.nio.file.{ Paths, Path, Files }
+import java.nio.file.{ Paths, Path }
 import java.io._
 import com.intel.intelanalytics.engine.Rows.RowSource
 import java.util.concurrent.atomic.AtomicLong
@@ -44,28 +44,25 @@ import org.apache.hadoop.fs.{ LocalFileSystem, FileSystem }
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.hdfs.DistributedFileSystem
 import java.nio.file.Path
-import spray.json.{ JsonWriter, JsObject, JsonParser }
-import scala.io.{ Codec, Source }
-import scala.collection.mutable.{ HashSet, ListBuffer, ArrayBuffer, HashMap }
+import scala.io.Source
+import scala.collection.mutable.{ HashSet, HashMap }
 import scala.io.{ Codec, Source }
 import org.apache.hadoop.fs.{ Path => HPath }
 import scala.Some
 import com.intel.intelanalytics.engine.Row
 import scala.util.matching.Regex
-import com.typesafe.config.{ ConfigResolveOptions, ConfigFactory }
+import com.typesafe.config.ConfigResolveOptions
 import com.intel.event.EventContext
 import scala.concurrent.duration._
 import com.intel.intelanalytics.domain.Partial
-import com.intel.intelanalytics.repository.{ SlickMetaStoreComponent, DbProfileComponent, MetaStoreComponent }
+import com.intel.intelanalytics.repository.{ SlickMetaStoreComponent, DbProfileComponent }
 import scala.slick.driver.H2Driver
 import scala.util.{ Success, Failure, Try }
-import org.apache.spark.scheduler._
-import org.apache.spark.scheduler.SparkListenerStageCompleted
 import scala.Some
 import com.intel.intelanalytics.domain.DataFrameTemplate
 import com.intel.intelanalytics.domain.DataFrame
 import org.apache.spark.scheduler.SparkListenerJobStart
-import org.apache.spark.engine.{ SparkProgressListener, ProgressPrinter }
+import org.apache.spark.engine.SparkProgressListener
 import com.typesafe.config.ConfigFactory
 import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.shared.EventLogging
@@ -180,7 +177,6 @@ class SparkComponent extends EngineComponent
       parser.operation.name match {
         //TODO: look functions up in a table rather than switching on names
         case "builtin/line/separator" => {
-          import DomainJsonProtocol.separatorArgsJsonFormat
           val args = parser.arguments match {
             //TODO: genericize this argument conversion
             case a: JsObject => a.convertTo[SeparatorArgs]
@@ -665,8 +661,6 @@ class SparkComponent extends EngineComponent
     import spray.json._
     import Rows.Row
 
-    import com.intel.intelanalytics.domain.DomainJsonProtocol._
-
     override def drop(frame: DataFrame): Unit = withContext("frame.drop") {
       files.delete(Paths.get(getFrameDirectory(frame.id)))
     }
@@ -877,9 +871,6 @@ class SparkComponent extends EngineComponent
 
   trait SparkGraphStorage extends GraphStorage {
 
-    import spray.json._
-
-    import com.intel.intelanalytics.domain.DomainJsonProtocol._
 
     //
     // we can't actually use graph builder right now without breaking the build
