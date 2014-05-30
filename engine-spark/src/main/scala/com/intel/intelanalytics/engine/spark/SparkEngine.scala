@@ -82,9 +82,18 @@ object SparkEngine {
   def resolveSchemaNamingConflicts(leftColumns: List[(String, DataType)], rightColumns: List[(String, DataType)]): List[(String, DataType)] = {
 
     val funcAppendLetterForConflictingNames = (left: List[(String, DataType)], right: List[(String, DataType)], appendLetter: String) => {
+
+      val leftColumnNames = left.map(r => r._1)
+
       left.map(r =>
-        if (right.map(i => i._1).contains(r._1))
-          (r._1 + "_" + appendLetter, r._2)
+        if (right.map(i => i._1).contains(r._1)) {
+          var name = r._1 + "_" + appendLetter
+          while (leftColumnNames.contains(name)) {
+            name = name + "_" + appendLetter
+          }
+
+          (name, r._2)
+        }
         else
           r
       )
