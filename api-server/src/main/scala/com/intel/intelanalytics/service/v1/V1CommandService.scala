@@ -265,18 +265,18 @@ trait V1CommandService extends V1Service {
         import DomainJsonProtocol._
         xform.arguments.get.convertTo[FrameProject[JsObject, String]]
       }
-      val idOpt = test.toOption.flatMap(args => getFrameId(args.frame))
-      val originalIdOpt = test.toOption.flatMap(args => getFrameId(args.originalframe))
-      (validate(test.isSuccess, "Failed to parse file load descriptor: " + getErrorMessage(test))
-        & validate(idOpt.isDefined, "Destination is not a valid data frame URL")) {
+      val sourceFrameIdOpt = test.toOption.flatMap(args => getFrameId(args.frame))
+      val projectedFrameIdOpt = test.toOption.flatMap(args => getFrameId(args.projected_frame))
+      (validate(test.isSuccess, "Failed to project command descriptor: " + getErrorMessage(test))
+        & validate(projectedFrameIdOpt.isDefined, "Destination is not a valid data frame")) {
           val args = test.get
-          val id = idOpt.get
-          val originalFrameID = originalIdOpt.get
+          val sourceFrameId = sourceFrameIdOpt.get
+          val projectedFrameId = projectedFrameIdOpt.get
           onComplete(
             for {
-              frame <- engine.getFrame(id)
-              originalFrame <- engine.getFrame(originalFrameID)
-              (c, f) = engine.project(FrameProject[JsObject, Long](id, originalFrameID, args.column))
+              projectFrame <- engine.getFrame(projectedFrameId)
+              sourceFrame <- engine.getFrame(sourceFrameId)
+              (c, f) = engine.project(FrameProject[JsObject, Long](sourceFrameId, projectedFrameId, args.columns, args.new_column_names))
             } yield c) {
               case Success(c) => complete(decorate(uri + "/" + c.id, c))
               case Failure(ex) => throw ex
