@@ -21,7 +21,6 @@ class SparkGraphHBaseBackendSpec extends Specification with Mockito {
     }
   }
 
-
   "Deleting a table that does exist" should {
     "cause table to be disabled and deleted" in {
       val userTableName = "mytable"

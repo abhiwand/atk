@@ -227,6 +227,7 @@ trait V1CommandService extends V1Service {
   def runFilter(uri: Uri, xform: JsonTransform)(implicit user: UserPrincipal) = {
     {
       val test = Try {
+        import DomainJsonProtocol._
         xform.arguments.get.convertTo[FilterPredicate[JsObject, String]]
       }
       val idOpt = test.toOption.flatMap(args => getFrameId(args.frame))
