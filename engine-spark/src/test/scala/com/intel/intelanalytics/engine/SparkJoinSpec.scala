@@ -36,9 +36,16 @@ class SparkJoinSpec extends FlatSpec with Matchers {
   }
 
   "join schema" should "append another l to the field from left if there is another field which will have a l added" in {
-    val leftCols: List[(String, DataType)] = List(("a", int32), ("a_l", string), ("c", string))
+    val leftCols: List[(String, DataType)] = List(("a", int32), ("a_l", string), ("c", string), ("a_l_l", string))
     val rightCols: List[(String, DataType)] = List(("a", int32), ("c", string), ("d", string))
     val result = SparkEngine.resolveSchemaNamingConflicts(leftCols, rightCols)
-    List(("a_l_l", int32), ("a_l", string), ("c_l", string), ("a_r", int32), ("c_r", string), ("d", string)) shouldBe result
+    List(("a_l_l_l", int32), ("a_l", string), ("c_l", string), ("a_l_l", string), ("a_r", int32), ("c_r", string), ("d", string)) shouldBe result
+  }
+
+  "join schema" should "keep appending l to the field from left until no conflict" in {
+    val leftCols: List[(String, DataType)] = List(("a", int32), ("a_l", string), ("c", string))
+    val rightCols: List[(String, DataType)] = List(("a", int32), ("a_l", string), ("c", string), ("d", string))
+    val result = SparkEngine.resolveSchemaNamingConflicts(leftCols, rightCols)
+    List(("a_l_l", int32), ("a_l_l_l", string), ("c_l", string), ("a_r", int32), ("a_l_r", string), ("c_r", string), ("d", string)) shouldBe result
   }
 }
