@@ -64,7 +64,29 @@
     </build>
 
     <dependencies>
-
+		<!--START BDA dependencies to our modules-->
+        <dependency>
+            <groupId>com.intel</groupId>
+            <artifactId>event</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>com.intel.intelanalytics</groupId>
+            <artifactId>interfaces</artifactId>
+            <version>0.8.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>com.intel</groupId>
+            <artifactId>launcher</artifactId>
+            <version>0.8.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>com.intel</groupId>
+            <artifactId>shared</artifactId>
+            <version>0.8.0-SNAPSHOT</version>
+        </dependency>
+        <!--END BDA dependencies to our modules-->
+		
         <dependency>
             <groupId>org.scala-lang</groupId>
             <artifactId>scala-reflect</artifactId>
@@ -128,28 +150,5 @@
             <artifactId>slf4j-api</artifactId>
             <version>${dep.slf4j.version}</version>
         </dependency>
-
-        <!--START BDA dependencies to our modules-->
-        <dependency>
-            <groupId>com.intel</groupId>
-            <artifactId>event</artifactId>
-            <version>1.0-SNAPSHOT</version>
-        </dependency>
-        <dependency>
-            <groupId>com.intel.intelanalytics</groupId>
-            <artifactId>interfaces</artifactId>
-            <version>0.8.0-SNAPSHOT</version>
-        </dependency>
-        <dependency>
-            <groupId>com.intel</groupId>
-            <artifactId>launcher</artifactId>
-            <version>0.8.0-SNAPSHOT</version>
-        </dependency>
-        <dependency>
-            <groupId>com.intel</groupId>
-            <artifactId>shared</artifactId>
-            <version>0.8.0-SNAPSHOT</version>
-        </dependency>
-        <!--END BDA dependencies to our modules-->
     </dependencies>
 </project>
