@@ -1392,41 +1392,9 @@ def calculateScore(list1, list2, biasOn, featureDimension) {
             case Success(r) => command.copy(complete = true, result = Some(r.asInstanceOf[JsObject]))
           }
           repo.update(changed)
-      }
     }
   }
 
-  val graphs = new SparkGraphStorage {}
-
-  trait SparkGraphStorage extends GraphStorage {
-
-    import spray.json._
-
-    import com.intel.intelanalytics.domain.DomainJsonProtocol._
-
-    //
-    // we can't actually use graph builder right now without breaking the build
-    // import com.intel.graphbuilder.driver.spark.titan.examples
-
-    override def drop(graph: Graph): Unit = {
-      println("DROPPING GRAPH: " + graph.name)
-      Unit
-    }
-
-    override def createGraph(graph: GraphTemplate): Graph = {
-      println("CREATING GRAPH " + graph.name)
-      new Graph(1, graph.name)
-    }
-
-    override def lookup(id: Long): Option[Graph] = {
-      println("DELETING GRAPH " + id)
-      None
-    }
-
-    def getGraphs(offset: Int, count: Int): Seq[Graph] = {
-      println("LISTING " + count + " GRAPHS FROM " + offset)
-      List[Graph]()
-    }
   }
 
 }
