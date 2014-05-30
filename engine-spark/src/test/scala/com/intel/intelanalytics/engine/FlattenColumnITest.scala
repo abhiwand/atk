@@ -31,7 +31,7 @@ class FlattenColumnITest extends FlatSpec with Matchers with BeforeAndAfterEach 
     val carOwnerShips = List(Array[Any]("Bob", "Mustang,Camry"), Array[Any]("Josh", "Neon,CLK"), Array[Any]("Alice", "PT Cruiser,Avalon,F-150"), Array[Any]("Tim", "Beatle"), Array[Any]("Becky", ""))
     val rdd = sc.parallelize(carOwnerShips)
     val flattened = SparkOps.flattenRddByColumnIndex(1, ",", rdd)
-    val result = flattened.take(8)
+    val result = flattened.take(9)
     result.apply(0) shouldBe Array[Any]("Bob", "Mustang")
     result.apply(1) shouldBe Array[Any]("Bob", "Camry")
     result.apply(2) shouldBe Array[Any]("Josh", "Neon")
