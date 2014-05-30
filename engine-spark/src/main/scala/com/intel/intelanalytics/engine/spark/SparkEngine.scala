@@ -23,7 +23,7 @@
 
 package com.intel.intelanalytics.engine.spark
 
-import org.apache.spark.{ ExceptionFailure, SparkContext, SparkConf, Accumulator }
+import org.apache.spark.{ ExceptionFailure, SparkContext }
 import org.apache.spark.api.python._
 import java.util.{ List => JList, ArrayList => JArrayList, Map => JMap }
 import org.apache.spark.broadcast.Broadcast
@@ -61,10 +61,9 @@ import scala.slick.driver.H2Driver
 import scala.util.{ Success, Failure, Try }
 import org.apache.spark.scheduler.SparkListenerStageCompleted
 import scala.Some
-import com.intel.intelanalytics.domain.DataFrameTemplate
 import com.intel.intelanalytics.domain.DataFrame
 import org.apache.spark.scheduler.SparkListenerJobStart
-import org.apache.spark.engine.{ SparkProgressListener, ProgressPrinter }
+import org.apache.spark.engine.ProgressPrinter
 import com.typesafe.config.ConfigFactory
 import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.shared.EventLogging
@@ -701,7 +700,6 @@ class SparkComponent extends EngineComponent
           graphs.getGraphs(offset, count)
         }
       }
-    }
 
     /**
      * Delete a graph from the graph database.
