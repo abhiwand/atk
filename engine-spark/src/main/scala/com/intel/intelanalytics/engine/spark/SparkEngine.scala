@@ -83,7 +83,7 @@ object SparkEngine {
 
     val funcAppendLetterForConflictingNames = (left: List[(String, DataType)], right: List[(String, DataType)], appendLetter: String) => {
 
-      val leftColumnNames = left.map(r => r._1)
+      var leftColumnNames = left.map(r => r._1)
 
       left.map(r =>
         if (right.map(i => i._1).contains(r._1)) {
@@ -91,7 +91,7 @@ object SparkEngine {
           while (leftColumnNames.contains(name)) {
             name = name + "_" + appendLetter
           }
-
+          leftColumnNames = leftColumnNames ++ List(name)
           (name, r._2)
         }
         else
