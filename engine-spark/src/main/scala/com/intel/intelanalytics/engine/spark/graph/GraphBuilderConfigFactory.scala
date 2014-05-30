@@ -50,8 +50,7 @@ class GraphBuilderConfigFactory(val schema: Schema, val graphLoad: GraphLoad[JsO
    */
   private def getInputSchema(schema: Schema): InputSchema = {
 
-    val columns: List[ColumnDef] = schema.columns map
-      { case (name: String, dataType: DataType) => new ColumnDef(name, dataType.scalaType) }
+    val columns: List[ColumnDef] = schema.columns map { case (name: String, dataType: DataType) => new ColumnDef(name, dataType.scalaType) }
 
     new InputSchema(columns)
   }
@@ -65,33 +64,17 @@ class GraphBuilderConfigFactory(val schema: Schema, val graphLoad: GraphLoad[JsO
    */
   private def getTitanConfiguration(graphName: String, outputConfiguration: OutputConfiguration): SerializableBaseConfiguration = {
 
-    // Only use this method when the store is Titan
+    // Use this method only when the store is Titan
     require(outputConfiguration.storeName.equalsIgnoreCase("Titan"))
 
-    var titanConfiguration = new SerializableBaseConfiguration
+    // load settings from titan.conf file...
+    // ... the configurations are Java objects and the conversion requires jumping through some hoops...
 
-    val engineConfiguration = ConfigFactory.load("engine.conf").getConfig("engine.graphbuilder.load")
-
-    //These parameters are set from engine config values
-
-    // TODO: hardwire defaults, should a key not be present in the conf file
-
-    val mapping = Seq(
-      "storage.backend" -> "storage.backend",
-      "storage.hostname" -> "storage.hostname",
-      "storage.batch-loading" -> "storage.batch-loading",
-      "autotype" -> "autotype",
-      "storage.buffer-size" -> "storage.buffer-size",
-      "storage.attempt-wait" -> "storage.attempt-wait",
-      "storage.lock-wait-time" -> "storage.lock-wait-time",
-      "storage.lock-retries" -> "storage.lock-retires",
-      "storage.idauthority-retries" -> "storage.idauthority-retries",
-      "storage.read-attempts" -> "storage.read-attempts",
-      "ids.block-size" -> "ids.block-size",
-      "ids.renew-timeout" -> "ids.renew-timeout")
-
-    for ((k, v) <- mapping) {
-      titanConfiguration.setProperty(v, engineConfiguration.getString(k))
+    import scala.collection.JavaConversions._
+    val titanConfiguration = new SerializableBaseConfiguration
+    val confFromFile = ConfigFactory.load("titan.conf").getConfig("titan.load")
+    for (entry <- confFromFile.entrySet()) {
+      titanConfiguration.addProperty(entry.getKey(), confFromFile.getString(entry.getKey()))
     }
 
     titanConfiguration.setProperty("storage.tablename", GraphName.convertGraphUserNameToBackendName(graphName))
