@@ -93,6 +93,17 @@ public class EdgeData4GBPWritable implements Writable {
         return weight;
     }
 
+    /**
+     * Get reverse edge data
+     * @return reverseEdgeData of type EdgeData4GBPWritalbe
+     */
+    public EdgeData4GBPWritable getReverseEdgeData() {
+        EdgeData4GBPWritable reverseEdgeData = new EdgeData4GBPWritable();
+        reverseEdgeData.setWeight(reverseWeight);
+        reverseEdgeData.setReverseWeight(weight);
+        return reverseEdgeData;
+    }
+
     @Override
     public void readFields(DataInput in) throws IOException {
         setWeight(in.readDouble());

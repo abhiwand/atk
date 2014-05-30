@@ -88,7 +88,9 @@ trait FrameComponent {
 
     def removeColumn(frame: DataFrame, columnIndex: Seq[Int]): Unit
 
-    def renameColumn[T](frame: DataFrame, name_pairs: Seq[(String, String)]): Unit
+    def renameFrame(frame: DataFrame, newName: String): Unit
+
+    def renameColumn(frame: DataFrame, name_pairs: Seq[(String, String)]): Unit
 
     def removeRows(frame: DataFrame, predicate: Row => Boolean)
 
@@ -177,6 +179,8 @@ trait EngineComponent {
     def filter(arguments: FilterPredicate[JsObject, Long])(implicit user: UserPrincipal): (Command, Future[Command])
 
     def project(arguments: FrameProject[JsObject, Long])(implicit user: UserPrincipal): (Command, Future[Command])
+
+    def renameFrame(arguments: FrameRenameFrame[JsObject, Long])(implicit user: UserPrincipal): (Command, Future[Command])
 
     def renameColumn(arguments: FrameRenameColumn[JsObject, Long])(implicit user: UserPrincipal): (Command, Future[Command])
 
