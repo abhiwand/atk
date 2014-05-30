@@ -36,6 +36,10 @@ public class VertexData4GBPWritable implements Writable {
     private GaussianDistWritable prior = new GaussianDistWritable();
     /** Gaussian posterior */
     private GaussianDistWritable posterior = new GaussianDistWritable();
+    /** Gaussian intermediate to iterative computation*/
+    private GaussianDistWritable intermediate = new GaussianDistWritable();
+    /** double mean from previous step */
+    private double prevMean = 0d;
 
     /**
      * Default constructor
@@ -48,10 +52,15 @@ public class VertexData4GBPWritable implements Writable {
      *
      * @param prior of type GaussianDistWritable
      * @param posterior of type GaussianDistWritable
+     * @param intermediate of type GaussianDistWritable
+     * @param prevMean of type double
      */
-    public VertexData4GBPWritable(GaussianDistWritable prior, GaussianDistWritable posterior) {
+    public VertexData4GBPWritable(GaussianDistWritable prior, GaussianDistWritable posterior,
+                                  GaussianDistWritable intermediate, double prevMean) {
         setPrior(prior);
         setPosterior(posterior);
+        setIntermediate(intermediate);
+        setPrevMean(prevMean);
     }
 
     /**
@@ -90,16 +99,56 @@ public class VertexData4GBPWritable implements Writable {
         this.posterior.set(posterior);
     }
 
+    /**
+     * Getter
+     *
+     * @return intermediate of type GaussianDistWritable
+     */
+    public GaussianDistWritable getIntermediate() {
+        return intermediate;
+    }
+
+    /**
+     * Setter
+     *
+     * @param intermediate of type GaussianDistWritable
+     */
+    public void setIntermediate(GaussianDistWritable intermediate) {
+        this.intermediate.set(intermediate);
+    }
+
+    /**
+     * Getter
+     *
+     * @return prevMean of type double
+     */
+    public double getPrevMean() {
+        return prevMean;
+    }
+
+    /**
+     * Setter
+     *
+     * @param prevMean of type double
+     */
+    public void setPrevMean(double prevMean) {
+        this.prevMean = prevMean;
+    }
+
     @Override
     public void readFields(DataInput in) throws IOException {
         prior.readFields(in);
         posterior.readFields(in);
+        intermediate.readFields(in);
+        setPrevMean(in.readDouble());
     }
 
     @Override
     public void write(DataOutput out) throws IOException {
         prior.write(out);
         posterior.write(out);
+        intermediate.write(out);
+        out.writeDouble(getPrevMean());
     }
 
     /**
@@ -121,11 +170,14 @@ public class VertexData4GBPWritable implements Writable {
      * @param out of type DataOutput
      * @param prior of type GaussianDistWritable
      * @param posterior of type GaussianDistWritable
+     * @param intermediate of type GaussianDistWritable
+     * @param prevMean of type double
      * @throws IOException
      */
     public static void write(DataOutput out, GaussianDistWritable prior,
-        GaussianDistWritable posterior) throws IOException {
-        new VertexData4GBPWritable(prior, posterior).write(out);
+        GaussianDistWritable posterior, GaussianDistWritable intermediate,
+        double prevMean) throws IOException {
+        new VertexData4GBPWritable(prior, posterior, intermediate, prevMean).write(out);
     }
 
 }
