@@ -276,6 +276,9 @@ trait V1CommandService extends V1Service {
 
   }
 
+  /**
+   * Receive column flattening request and executing flatten column command
+   */
   def runflattenColumn(uri: Uri, xform: JsonTransform)(implicit user: UserPrincipal) = {
     val test = Try {
       import DomainJsonProtocol._
