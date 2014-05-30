@@ -82,6 +82,7 @@ object GraphDecorator extends EntityDecorator[Graph, GraphHeader, DecoratedGraph
   }
 
   override def decorateForIndex(uri: String, entities: Seq[Graph]): List[GraphHeader] = {
+
     entities.map(graph => new GraphHeader(id = graph.id,
       name = graph.name,
       url = uri + "/" + graph.id)).toList
