@@ -46,6 +46,7 @@
                                     <include>ch.qos.*:*</include>
                                     <include>org.slf4j:slf4j-api</include>
                                     <include>com.intel*:*</include>
+									<include>org.jvnet.*:*</include>
                                     <!--<include>com.intel.intelanalytics:interfaces</include>
                                     <include>com.intel:launcher</include>
                                     <include>com.intel:shared</include>-->
