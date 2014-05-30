@@ -5,21 +5,20 @@ package com.intel.intelanalytics.engine.spark.graph
  */
 object GraphName {
 
-  val iatGraphTablePrefix: String = "iat_graph_"
+  private val iatGraphTablePrefix: String = "iat_graph_"
 
   /**
    * Converts the user's name for a graph into the name used by the underlying graph store.
    */
-  def convertGraphUserNameToBackendName(graphName: String) = {
+  def convertGraphUserNameToBackendName(graphName: String): String = {
     iatGraphTablePrefix + graphName
   }
 
   /**
    * Converts the name for a graph used by the underlying graph store to the name seen by users.
    */
-  def convertGraphBackendNameToUserName(backendName: String) = {
+  def convertGraphBackendNameToUserName(backendName: String): String = {
     backendName.stripPrefix(iatGraphTablePrefix)
   }
-
 }
 
