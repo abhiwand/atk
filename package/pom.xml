@@ -43,6 +43,7 @@
             <activation>
                 <property>
                     <name>env.BUILD_NUMBER</name>
+					<value>0</value>
                 </property>
             </activation>
             <build>
