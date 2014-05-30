@@ -28,4 +28,4 @@ from intelanalytics.core.files import CsvFile
 from intelanalytics.core.frame import BigFrame, get_frame, get_frame_names, delete_frame
 from intelanalytics.core.graph import BigGraph, get_graph, get_graph_names, delete_graph, VertexRule, EdgeRule
 from intelanalytics.core.loggers import loggers
-from intelanalytics.rest.connection import rest_connection as server
+from intelanalytics.rest.connection import server
