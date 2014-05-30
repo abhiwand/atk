@@ -27,11 +27,11 @@ import com.intel.graphbuilder.util.SerializableBaseConfiguration
 import com.intel.graphbuilder.driver.spark.titan.reader.TitanReader
 import com.intel.graphbuilder.graph.titan.TitanGraphConnector
 import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRDDImplicits._
-import org.apache.spark.{SparkConf, SparkContext}
+import org.apache.spark.{ SparkConf, SparkContext }
 import java.util.Date
 
 /**
- * Example of reading Titan graph in Spark
+ * Example of reading Titan graph in Spark.
  */
 object TitanReaderExample {
 
@@ -43,12 +43,13 @@ object TitanReaderExample {
       .setJars(List(ExamplesUtils.gbJar))
     conf.set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
     conf.set("spark.kryo.registrator", "com.intel.graphbuilder.driver.spark.titan.GraphBuilderKryoRegistrator")
+    conf.set("spark.kryoserializer.buffer.mb", "32")
 
     val sc = new SparkContext(conf)
 
     // Create graph connection
-    val tableName = "graphofgods"
-    val hBaseZookeeperQuorum = "localhost"
+    val tableName = "netflix"
+    val hBaseZookeeperQuorum = "10.10.68.157"
 
     val titanConfig = new SerializableBaseConfiguration()
     titanConfig.setProperty("storage.backend", "hbase")
@@ -60,9 +61,15 @@ object TitanReaderExample {
     // Read graph
     val titanReader = new TitanReader(sc, titanConnector)
     val titanReaderRDD = titanReader.read()
+
+    // Remember to import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRDDImplicits._ to access filter methods
     val vertexRDD = titanReaderRDD.filterVertices()
     val edgeRDD = titanReaderRDD.filterEdges()
 
+    // If you encounter the following error, "com.esotericsoftware.kryo.KryoException: Buffer overflow", because
+    // your results are too large, try:
+    // a) Increasing the size of the kryoserializer buffer, e.g., conf.set("spark.kryoserializer.buffer.mb", "32")
+    // b) Saving results to file instead of collect(), e.g.titanReaderRDD.saveToTextFile()
     val graphElements = titanReaderRDD.collect()
     val vertices = vertexRDD.collect()
     val edges = edgeRDD.collect()

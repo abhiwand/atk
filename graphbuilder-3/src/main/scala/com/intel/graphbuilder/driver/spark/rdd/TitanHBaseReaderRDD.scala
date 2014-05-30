@@ -1,15 +1,15 @@
 package com.intel.graphbuilder.driver.spark.rdd
 
-import com.intel.graphbuilder.driver.spark.titan.reader.{TitanRow, TitanRowParser}
+import com.intel.graphbuilder.driver.spark.titan.reader.{ TitanRow, TitanRowParser }
 import com.intel.graphbuilder.graph.titan.TitanGraphConnector
 import com.intel.graphbuilder.elements.GraphElement
-import com.thinkaurelius.titan.diskstorage.util.{StaticArrayBuffer, StaticByteBuffer}
+import com.thinkaurelius.titan.diskstorage.util.{ StaticArrayBuffer, StaticByteBuffer }
 import com.thinkaurelius.titan.diskstorage.keycolumnvalue.StaticBufferEntry
 import com.thinkaurelius.titan.diskstorage.StaticBuffer
 import org.apache.spark.rdd.RDD
 import org.apache.hadoop.hbase.io.ImmutableBytesWritable
 import org.apache.hadoop.hbase.client.Result
-import org.apache.spark.{TaskContext, Partition}
+import org.apache.spark.{ TaskContext, Partition }
 import scala.collection.mutable.ListBuffer
 import scala.collection.JavaConversions._
 
@@ -32,7 +32,7 @@ class TitanHBaseReaderRDD(hBaseRDD: RDD[(ImmutableBytesWritable, Result)],
    */
   override def compute(split: Partition, context: TaskContext): Iterator[GraphElement] = {
 
-    val titanGraph = titanConnector.connectToStandardGraph()
+    val titanGraph = titanConnector.connect()
     val titanEdgeSerializer = titanGraph.getEdgeSerializer()
     val titanTransaction = titanGraph.newTransaction(titanGraph.buildTransaction())
 
@@ -46,10 +46,12 @@ class TitanHBaseReaderRDD(hBaseRDD: RDD[(ImmutableBytesWritable, Result)],
       val titanRowParser = TitanRowParser(titanRow, titanEdgeSerializer, titanTransaction)
       val rowGraphElements = titanRowParser.parse()
 
-      rowGraphElements.foreach(element => graphElements += element)
+      graphElements ++= rowGraphElements
+
     })
 
     context.addOnCompleteCallback(() => {
+      titanTransaction.rollback()
       titanGraph.shutdown()
     })
 

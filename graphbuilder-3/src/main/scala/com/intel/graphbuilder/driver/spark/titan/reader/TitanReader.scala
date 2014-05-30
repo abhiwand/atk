@@ -4,22 +4,36 @@ import org.apache.spark.rdd.RDD
 import com.intel.graphbuilder.elements.GraphElement
 import com.intel.graphbuilder.graph.titan.TitanGraphConnector
 import org.apache.spark.SparkContext
-import TitanReaderConstants.TITAN_STORAGE_BACKEND
+import com.thinkaurelius.titan.graphdb.configuration.GraphDatabaseConfiguration
+
 
 /**
- * This is a TitanReader that runs on Spark, and reads a Titan graph from a storage backend..
+ * TitanReader constants.
+ */
+object TitanReader {
+  val TITAN_STORAGE_BACKEND = GraphDatabaseConfiguration.STORAGE_NAMESPACE + "." + GraphDatabaseConfiguration.STORAGE_BACKEND_KEY
+  val TITAN_READER_GB_ID = "titanPhysicalId" //TODO: Replace with a user-defined label
+}
+
+/**
+ * This is a TitanReader that runs on Spark, and reads a Titan graph from a storage backend.
  *
  * @param sparkContext Spark context
  * @param titanConnector connector to Titan
  */
 case class TitanReader(sparkContext: SparkContext, titanConnector: TitanGraphConnector) extends Serializable {
 
+  import TitanReader.TITAN_STORAGE_BACKEND
+
   val titanConfig = titanConnector.config
 
   /**
-   * Read Titan graph from storage backend into a Spark RDD of graph elements
+   * Read Titan graph from storage backend into a Spark RDD of graph elements,
    *
-   * @return RDD of GraphBuilder vertices and edges
+   * The RDD returns an iterable of both vertices and edges using GraphBuilder's GraphElement trait. The GraphElement
+   * trait is an interface implemented by both vertices and edges.
+   *
+   * @return RDD of GraphBuilder elements
    */
   def read(): RDD[GraphElement] = {
     val storageBackend = titanConfig.getString(TITAN_STORAGE_BACKEND)
@@ -34,6 +48,8 @@ case class TitanReader(sparkContext: SparkContext, titanConnector: TitanGraphCon
       }
     }
 
+    // Titan represents edges as an adjacency list so each edge gets stored twice. Once in the row containing the
+    // outgoing vertex, and again in the row containing the incoming vertex. distinct() removes these duplicates.
     titanReaderRDD.distinct()
   }
 }

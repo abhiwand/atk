@@ -9,23 +9,38 @@ import org.apache.hadoop.hbase.client.{Scan, HBaseAdmin}
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import java.lang.reflect.Method
-
-import TitanReaderConstants.{TITAN_STORAGE_HOSTNAME, TITAN_STORAGE_PORT, TITAN_STORAGE_TABLENAME}
+import com.thinkaurelius.titan.diskstorage.hbase.HBaseStoreManager
+import com.thinkaurelius.titan.graphdb.configuration.GraphDatabaseConfiguration
 
 /**
- * This is a TitanReader that runs on Spark, and reads a Titan graph from a HBase storage backend..
+ * TitanHBaseReader constants.
+ */
+object TitanHBaseReader {
+  val TITAN_STORAGE_HOSTNAME = GraphDatabaseConfiguration.STORAGE_NAMESPACE + "." + GraphDatabaseConfiguration.HOSTNAME_KEY
+  val TITAN_STORAGE_TABLENAME = GraphDatabaseConfiguration.STORAGE_NAMESPACE + "." + HBaseStoreManager.TABLE_NAME_KEY
+  val TITAN_STORAGE_PORT = GraphDatabaseConfiguration.STORAGE_NAMESPACE + "." + GraphDatabaseConfiguration.PORT_KEY
+}
+
+/**
+ * This is a TitanReader that runs on Spark, and reads a Titan graph from a HBase storage backend.
  *
  * @param sparkContext Spark context
- * @param titanConnector connector to Titan
+ * @param titanConnector Connector to Titan
  */
 class TitanHBaseReader(sparkContext: SparkContext, titanConnector: TitanGraphConnector) extends TitanReader(sparkContext, titanConnector) {
+
+  import TitanHBaseReader._
+
   require(titanConfig.containsKey(TITAN_STORAGE_HOSTNAME))
   require(titanConfig.containsKey(TITAN_STORAGE_TABLENAME))
 
   /**
-   * Read Titan graph from a HBase storage backend into a Spark RDD of graph elements
+   * Read Titan graph from a HBase storage backend into a Spark RDD of graph elements.
    *
-   * @return RDD of GraphBuilder vertices and edges
+   * The RDD returns an iterable of both vertices and edges using GraphBuilder's GraphElement trait. The GraphElement
+   * trait is an interface implemented by both vertices and edges.
+   *
+   * @return RDD of GraphBuilder elements
    */
   override def read(): RDD[GraphElement] = {
     val hBaseConfig = createHBaseConfiguration()
@@ -36,6 +51,7 @@ class TitanHBaseReader(sparkContext: SparkContext, titanConnector: TitanGraphCon
     val hBaseRDD = sparkContext.newAPIHadoopRDD(hBaseConfig, classOf[TableInputFormat],
       classOf[org.apache.hadoop.hbase.io.ImmutableBytesWritable],
       classOf[org.apache.hadoop.hbase.client.Result])
+
     new TitanHBaseReaderRDD(hBaseRDD, titanConnector)
   }
 
@@ -58,12 +74,11 @@ class TitanHBaseReader(sparkContext: SparkContext, titanConnector: TitanGraphCon
     hBaseConfig
   }
 
-
   /**
    * Configure HBase scanner to filter for Titan's edge store column family.
    *
    * TODO:  consider adding support for scanner optimizations in http://hbase.apache.org/apidocs/org/apache/hadoop/hbase/client/Scan.html
-   * @param hBaseConfig
+   * @param hBaseConfig HBase configuration
    */
   private def configureHBaseScanner(hBaseConfig: org.apache.hadoop.conf.Configuration) = {
     val scanner: Scan = new Scan
@@ -83,10 +98,16 @@ class TitanHBaseReader(sparkContext: SparkContext, titanConnector: TitanGraphCon
     }
   }
 
+  /**
+   * Throw an exception if the HBase table does not exist.
+   *
+   * @param hBaseConfig HBase configuration
+   * @param tableName HBase table name
+   */
   private def checkTableExists(hBaseConfig: org.apache.hadoop.conf.Configuration, tableName: String) = {
     val admin = new HBaseAdmin(hBaseConfig)
     if (!admin.isTableAvailable(tableName)) {
-      throw new RuntimeException("Table does not exist.")
+      throw new RuntimeException("Table does not exist:" + tableName)
     }
   }
 }

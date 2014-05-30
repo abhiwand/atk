@@ -47,16 +47,12 @@ case class TitanGraphConnector(config: Configuration) extends GraphConnector wit
   }
 
   /**
-   * Get a connection to a graph database
+   * Get a connection to a graph database.
+   *
+   * Returns a StandardTitanGraph which is a superset of TitanGraph. StandardTitanGraph implements additional
+   * methods required to load graphs from Titan.
    */
-  override def connect(): TitanGraph = {
-    TitanFactory.open(config)
-  }
-
-  /**
-   * Get a connection to a standard Titan graph database
-   */
-  def connectToStandardGraph(): StandardTitanGraph = {
+  override def connect(): StandardTitanGraph = {
     new StandardTitanGraph(new GraphDatabaseConfiguration(config))
   }
 
