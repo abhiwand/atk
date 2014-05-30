@@ -41,6 +41,7 @@ import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.service.v1.viewmodels.JsonTransform
 import com.intel.intelanalytics.domain.LoadLines
 import com.intel.intelanalytics.domain.Command
+import com.intel.intelanalytics.domain.graphconstruction.FrameRule
 
 //TODO: Is this right execution context for us?
 
@@ -170,33 +171,36 @@ trait V1CommandService extends V1Service {
       import DomainJsonProtocol._
       transform.arguments.get.convertTo[GraphLoad[JsObject, String, String]]
     }
-    val frameIDOpt = test.toOption.flatMap(args => getFrameId(args.sourceFrameRef))
-    val graphIDOpt = test.toOption.flatMap(args => getGraphId(args.graphRef))
+
+    val frameIDsOpt: Option[List[Option[Long]]] =
+      test.toOption.map(args => (args.frame_rules map (frule => getFrameId(frule.frame))))
+
+    val graphIDOpt = test.toOption.flatMap(args => getGraphId(args.graph))
 
     (validate(test.isSuccess, "Failed to parse graph load descriptor: " + getErrorMessage(test))
-      & validate(frameIDOpt.isDefined, "Source dataframe is not a valid data frame URL")
       & validate(graphIDOpt.isDefined, "Target graph is not a valid graph URL")) {
 
-        val args = test.get
-        val sourceFrameID = frameIDOpt.get
-        val graphID = graphIDOpt.get
+        (validate(frameIDsOpt.isDefined, "Error parsing per-frame graph construction rules")
+          & validate(frameIDsOpt.get.forall(x => x.isDefined), "Invalid URL provided for source dataframe")) {
+            val args = test.get
+            val sourceFrameIDs = frameIDsOpt.get.map(x => x.get)
 
-        val graphLoad = GraphLoad(graphID,
-          sourceFrameID,
-          args.outputConfig,
-          args.vertexRules,
-          args.edgeRules,
-          args.retainDanglingEdges,
-          args.bidirectional)
+            val frameRulesUsingIDs = (sourceFrameIDs, args.frame_rules).zipped.toList.map { case (id: Long, frule: FrameRule[String]) => new FrameRule[Long](id, frule.vertex_rules, frule.edge_rules) }
 
-        onComplete(
-          for {
-            frame <- engine.getFrame(sourceFrameID)
-            graph <- engine.getGraph(graphID)
-            (c, f) = engine.loadGraph(graphLoad)
-          } yield c) {
-            case Success(c) => complete(decorate(uri + "/" + c.id, c))
-            case Failure(ex) => throw ex
+            val graphID = graphIDOpt.get
+
+            val graphLoad = GraphLoad(graphID,
+              frameRulesUsingIDs,
+              args.retain_dangling_edges)
+
+            onComplete(
+              for {
+                graph <- engine.getGraph(graphID)
+                (c, f) = engine.loadGraph(graphLoad)
+              } yield c) {
+                case Success(c) => complete(decorate(uri + "/" + c.id, c))
+                case Failure(ex) => throw ex
+              }
           }
       }
   }

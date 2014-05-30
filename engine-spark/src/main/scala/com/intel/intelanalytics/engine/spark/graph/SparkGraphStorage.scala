@@ -75,18 +75,22 @@ class SparkGraphStorage(context: (UserPrincipal) => Context,
           {
             val sparkContext = context(user).sparkContext
 
-            val sourceFrameID = graphLoad.sourceFrameRef
+            val frameRules = graphLoad.frame_rules
 
-            val dataFrame = frameStorage.lookup(sourceFrameID)
+            // TODO graphbuilder only supports one input frame at present
+            require(frameRules.size == 1)
+            val theOnlySourceFrameID = frameRules.head.frame
 
-            val graph = lookup(graphLoad.graphRef).get
+            val dataFrame = frameStorage.lookup(theOnlySourceFrameID)
+
+            val graph = lookup(graphLoad.graph).get
 
             val gbConfigFactory = new GraphBuilderConfigFactory(dataFrame.get.schema, graphLoad, graph)
 
             val graphBuilder = new GraphBuilder(gbConfigFactory.graphConfig)
 
             // Setup data in Spark
-            val inputRowsRdd: RDD[Rows.Row] = frameStorage.getFrameRdd(sparkContext, sourceFrameID)
+            val inputRowsRdd: RDD[Rows.Row] = frameStorage.getFrameRdd(sparkContext, theOnlySourceFrameID)
 
             val inputRdd: RDD[Seq[_]] = inputRowsRdd.map(x => x.toSeq)
 

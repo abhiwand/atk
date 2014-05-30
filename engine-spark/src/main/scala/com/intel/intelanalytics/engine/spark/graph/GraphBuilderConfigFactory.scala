@@ -9,7 +9,6 @@ import com.intel.graphbuilder.driver.spark.titan.GraphBuilderConfig
 import com.intel.graphbuilder.parser.rule.ParsedValue
 import com.intel.intelanalytics.domain.graphconstruction.ValueRule
 
-import com.intel.intelanalytics.domain.graphconstruction.OutputConfiguration
 import com.intel.graphbuilder.parser.InputSchema
 import com.intel.intelanalytics.domain.Schema
 import com.intel.intelanalytics.domain.graphconstruction.EdgeRule
@@ -31,14 +30,28 @@ import com.typesafe.config.ConfigFactory
  */
 class GraphBuilderConfigFactory(val schema: Schema, val graphLoad: GraphLoad[JsObject, Long, Long], graph: Graph) {
 
+  // TODO graphbuilder does not yet support taking multiple frames as input
+  require(graphLoad.frame_rules.size == 1)
+
+  val theOnlyFrameRule = graphLoad.frame_rules.head
+
+  // TODO graphbuilder does not yet support per-edge bidirectionality
+  require((theOnlyFrameRule.edge_rules.forall(erule => (erule.bidirectional == true))) ||
+    (theOnlyFrameRule.edge_rules.forall(erule => (erule.bidirectional == false))))
+
+  val theOnlyBidirctionalityBit = if (theOnlyFrameRule.edge_rules.size == 0) {
+    true
+  }
+  else { theOnlyFrameRule.edge_rules.head.bidirectional }
+
   val graphConfig: GraphBuilderConfig = {
     new GraphBuilderConfig(getInputSchema(schema),
-      getGBVertexRules(graphLoad.vertexRules),
-      getGBEdgeRules(graphLoad.edgeRules),
-      getTitanConfiguration(graph.name, graphLoad.outputConfig),
-      biDirectional = graphLoad.bidirectional,
+      getGBVertexRules(theOnlyFrameRule.vertex_rules),
+      getGBEdgeRules(theOnlyFrameRule.edge_rules),
+      getTitanConfiguration(graph.name),
+      biDirectional = theOnlyBidirctionalityBit,
       append = false,
-      retainDanglingEdges = graphLoad.retainDanglingEdges,
+      retainDanglingEdges = graphLoad.retain_dangling_edges,
       inferSchema = true,
       broadcastVertexIds = false)
   }
@@ -59,13 +72,9 @@ class GraphBuilderConfigFactory(val schema: Schema, val graphLoad: GraphLoad[JsO
    * Produces graphbuilder3 consumable com.intel.graphbuilder.util.SerializableBaseConfiguration from
    * a graph name and a com.intel.intelanalytics.domain.graphconstruction.outputConfiguration
    * @param graphName Name of the graph to be written to.
-   * @param outputConfiguration Output configuration from engine command.
    * @return GraphBuilder3 consumable com.intel.graphbuilder.util.SerializableBaseConfiguration
    */
-  private def getTitanConfiguration(graphName: String, outputConfiguration: OutputConfiguration): SerializableBaseConfiguration = {
-
-    // Use this method only when the store is Titan
-    require(outputConfiguration.storeName.equalsIgnoreCase("Titan"))
+  private def getTitanConfiguration(graphName: String): SerializableBaseConfiguration = {
 
     // load settings from titan.conf file...
     // ... the configurations are Java objects and the conversion requires jumping through some hoops...
@@ -78,10 +87,6 @@ class GraphBuilderConfigFactory(val schema: Schema, val graphLoad: GraphLoad[JsO
     }
 
     titanConfiguration.setProperty("storage.tablename", GraphName.convertGraphUserNameToBackendName(graphName))
-
-    for ((key, value) <- outputConfiguration.configuration) {
-      titanConfiguration.addProperty(key, value)
-    }
 
     titanConfiguration
   }
