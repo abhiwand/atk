@@ -6,14 +6,14 @@ Contents:
 ..  toctree::
     :maxdepth: 2
 
-    intel_legal
+    ia_legl
     ds_strt
     ds_db
     ds_dflw
     ds_samp
     ds_ml
     ds_mlal
-    ds_api
+    ds_apim
     ds_misc
 
 ..   ds_supp # Supplemental

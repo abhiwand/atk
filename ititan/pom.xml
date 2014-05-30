@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <!--parent>
         <groupId>org.sonatype.oss</groupId>
@@ -77,10 +78,11 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <titan.testdir>${project.build.directory}/titan-test</titan.testdir>
         <gpg.skip>false</gpg.skip>
-        <perf.jvm.opts />
-        <default.test.jvm.opts>-Xms256m -Xmx768m -XX:+HeapDumpOnOutOfMemoryError -ea ${test.extra.jvm.opts}</default.test.jvm.opts>
+        <perf.jvm.opts/>
+        <default.test.jvm.opts>-Xms256m -Xmx768m -XX:+HeapDumpOnOutOfMemoryError -ea ${test.extra.jvm.opts}
+        </default.test.jvm.opts>
         <mem.jvm.opts>-Xms256m -Xmx256m -ea -XX:+HeapDumpOnOutOfMemoryError ${test.extra.jvm.opts}</mem.jvm.opts>
-        <test.extra.jvm.opts />
+        <test.extra.jvm.opts/>
         <test.skip.default>true</test.skip.default>
         <test.skip.ordered>${test.skip.default}</test.skip.ordered>
         <test.skip.unordered>${test.skip.default}</test.skip.unordered>
@@ -88,49 +90,48 @@
         <top.level.basedir>${basedir}</top.level.basedir>
         <compiler.source>1.6</compiler.source>
         <compiler.target>1.7</compiler.target>
-        <compiler.args />
+        <compiler.args/>
     </properties>
 
-      <repositories>
-    <repository>
-      <id>central</id>
-      <url>http://repo1.maven.org/maven2</url>
-      <releases>
-        <enabled>true</enabled>
-      </releases>
-    </repository>
-    <repository>
-      <id>cloudera cdh</id>
-      <url>https://repository.cloudera.com/artifactory/cloudera-repos</url>
-      <releases>
-        <enabled>true</enabled>
-      </releases>
-      <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
-    </repository>
-    <repository>
-      <id>apache</id>
-      <url>https://repository.apache.org/content/groups/public/</url>
-      <snapshots>
-        <enabled>true</enabled>
-      </snapshots>
-      <releases>
-        <enabled>true</enabled>
-      </releases>
-    </repository>
-    <!--repository>
-      <id>sonatype</id>
-      <url>https://oss.sonatype.org/content/groups/public/</url>
-      <snapshots>
-        <enabled>true</enabled>
-      </snapshots>
-      <releases>
-        <enabled>true</enabled>
-      </releases>
-    </repository-->
-  </repositories>
-
+    <repositories>
+        <repository>
+            <id>central</id>
+            <url>http://repo1.maven.org/maven2</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+        </repository>
+        <repository>
+            <id>cloudera cdh</id>
+            <url>https://repository.cloudera.com/artifactory/cloudera-repos</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>apache</id>
+            <url>https://repository.apache.org/content/groups/public/</url>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+        </repository>
+        <!--repository>
+          <id>sonatype</id>
+          <url>https://oss.sonatype.org/content/groups/public/</url>
+          <snapshots>
+            <enabled>true</enabled>
+          </snapshots>
+          <releases>
+            <enabled>true</enabled>
+          </releases>
+        </repository-->
+    </repositories>
 
 
     <modules>
@@ -162,7 +163,7 @@
                         </goals>
                         <configuration>
                             <rules>
-                                <DependencyConvergence />
+                                <DependencyConvergence/>
                             </rules>
                         </configuration>
                     </execution>
@@ -972,7 +973,7 @@
                                     <goal>unpack-dependencies</goal>
                                 </goals>
                                 <configuration>
-                                    <classifier />
+                                    <classifier/>
                                     <!-- empty classifier requests the artifact containing classes -->
                                     <outputDirectory>${project.build.directory}/jacoco-classes</outputDirectory>
                                     <includeGroupIds>${project.groupId}</includeGroupIds>
@@ -1015,21 +1016,22 @@
                                 </goals>
                                 <configuration>
                                     <target>
-                                        <taskdef name="report" classname="org.jacoco.ant.ReportTask" classpathref="maven.plugin.classpath" />
+                                        <taskdef name="report" classname="org.jacoco.ant.ReportTask"
+                                                 classpathref="maven.plugin.classpath"/>
                                         <report>
                                             <executiondata>
-                                                <file file="../target/jacoco-combined.exec" />
+                                                <file file="../target/jacoco-combined.exec"/>
                                             </executiondata>
                                             <structure name="Integration test coverage">
                                                 <classfiles>
-                                                    <fileset dir="${project.build.directory}/jacoco-classes" />
+                                                    <fileset dir="${project.build.directory}/jacoco-classes"/>
                                                     u
                                                 </classfiles>
                                                 <sourcefiles encoding="UTF-8">
-                                                    <fileset dir="${project.build.directory}/jacoco-sources" />
+                                                    <fileset dir="${project.build.directory}/jacoco-sources"/>
                                                 </sourcefiles>
                                             </structure>
-                                            <html destdir="${project.build.directory}/jacoco-report" />
+                                            <html destdir="${project.build.directory}/jacoco-report"/>
                                         </report>
                                     </target>
                                 </configuration>
@@ -1075,7 +1077,7 @@
                                     <perCoreThreadCount>false</perCoreThreadCount>
                                     <runOrder>alphabetical</runOrder>
                                     <groups>com.thinkaurelius.titan.testcategory.MemoryTests</groups>
-                                    <excludedGroups />
+                                    <excludedGroups/>
                                 </configuration>
                             </execution>
                         </executions>
@@ -1112,7 +1114,7 @@
                                     <perCoreThreadCount>false</perCoreThreadCount>
                                     <runOrder>alphabetical</runOrder>
                                     <groups>com.thinkaurelius.titan.testcategory.PerformanceTests</groups>
-                                    <excludedGroups />
+                                    <excludedGroups/>
                                 </configuration>
                             </execution>
                         </executions>
@@ -1155,8 +1157,8 @@
                 <module>titan-dist/titan-dist-parent</module>
             </modules>
         </profile>
-        
-        
+
+
         <profile>
             <id>target-jre6</id>
             <activation>
