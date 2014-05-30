@@ -106,25 +106,24 @@ class BigFrame(object):
     Proxy for a large 2D container to work with table data at scale.
     """
 
-    def __init__(self, source=None, name=None, **kwargs):
+    def __init__(self, source=None, name=None):
         self._columns = OrderedDict()  # self._columns must be the first attribute to be assigned (see __setattr__)
         self._id = 0
         self._uri = ""
         if not hasattr(self, '_backend'):  # if a subclass has not already set the _backend
             self._backend = _get_backend()
-        self._name = name or self._get_new_frame_name(source)
 
-        self._backend.create(self)
-        if source:
-            if isinstance(source, BigColumn) or (isinstance(source, list) and all(isinstance(iter, BigColumn) for iter in source)):
-                self._backend.project(self, source)
-                column_names = kwargs.get('rename', None)
-                if isinstance(column_names, list):
-                    self.rename_column(self._columns.keys(), column_names)
-                elif isinstance(column_names, dict):
-                    self.rename_column([i.name if isinstance(i, BigColumn) else i for i in column_names.keys()], column_names.values())
-            else:
+        if isinstance(source, BigColumn):
+            self._become(source.frame.project(source.name))
+        elif (isinstance(source, list) and all(isinstance(iter, BigColumn) for iter in source)):
+            self._become(source[0].frame.project([c.name for c in source]))
+        else:
+            self._name = name or self._get_new_frame_name(source)
+            self._backend.create(self)
+            if source:
                 self.append(source)
+        if name and name != self._name:
+            self.name = name
         logger.info('Created new frame "%s"', self._name)
 
     def __getattr__(self, name):
@@ -217,6 +216,10 @@ class BigFrame(object):
     def name(self):
         return self._name
 
+    @name.setter
+    def name(self, value):
+        self._backend.rename_frame(self, value)
+
     @property
     def schema(self):
         return FrameSchema(zip(self._columns.keys(),
@@ -283,32 +286,6 @@ class BigFrame(object):
         """
         self._backend.filter(self, predicate)
 
-    def count(self):
-        return self._backend.count(self)
-
-    def remove_column(self, name):
-        """
-        Remove columns
-
-        Parameters
-        ----------
-        name : str OR list of str
-            column name OR list of column names to be removed from the frame
-
-        Notes
-        -----
-        This function will retain a single column.
-
-        Examples
-        --------
-        >>> 
-        """
-        self._backend.remove_column(self, name)
-        if isinstance(name, basestring):
-            name = [name]
-        for victim in name:
-            del self._columns[victim]
-
     def drop(self, predicate):
         self._backend.drop(self, predicate)
 
@@ -366,6 +343,49 @@ class BigFrame(object):
     #     if not right:
     #         raise ValueError("A value for right must be specified")
     #     return operations.BigOperationBinary("join", {BigFrame: {bool: None}}, self, predicate)
+
+    def project_columns(self, column_names, new_names=None):
+        """
+        Copies specified columns into a new BigFrame object, optionally renaming them
+
+        Parameters
+        ----------
+        column_names : str OR list of str
+            column name OR list of column names to be removed from the frame
+        new_names : str OR list of str
+            The new name(s) for the column(s)
+
+        Returns
+        -------
+        frame : BigFrame
+            A new frame object containing copies of the specified columns
+        """
+        projected_frame = BigFrame()
+        self._backend.project_columns(self, projected_frame, column_names, new_names)
+        return projected_frame
+
+    def remove_column(self, name):
+        """
+        Remove columns
+
+        Parameters
+        ----------
+        name : str OR list of str
+            column name OR list of column names to be removed from the frame
+
+        Notes
+        -----
+        This function will retain a single column.
+
+        Examples
+        --------
+        >>>
+        """
+        self._backend.remove_column(self, name)
+        if isinstance(name, basestring):
+            name = [name]
+        for victim in name:
+            del self._columns[victim]
 
     def rename_column(self, column_name, new_name):
         """

@@ -86,7 +86,7 @@ class FrameBackendRest(object):
         logger.info("REST Backend: create frame response: " + r.text)
         payload = r.json()
         frame._id = payload['id']
-        frame._uri = "%s/%d" % (self._get_uri(payload), frame._id)
+        frame._uri = self._get_uri(payload)
 
     @staticmethod
     def _get_uri(payload):
@@ -147,19 +147,28 @@ class FrameBackendRest(object):
         command = CommandRequest(name="dataframe/filter", arguments=arguments)
         executor.issue(command)
 
-    def project(self, frame, columns):
-        iter_cols = [columns] if isinstance(columns, BigColumn) else columns
-        column_names = ",".join([col.name for col in iter_cols])
-        original_frame_uri = iter_cols[0].frame.uri
-        arguments = {'frame': frame.uri, 'originalframe': original_frame_uri, 'column': column_names}
+    def project_columns(self, frame, projected_frame, columns, new_names=None):
+        if isinstance(columns, basestring):
+            columns = [columns]
+        # TODO - fix REST server to accept nulls, for now we'll pass an empty list
+        if new_names is None:
+            new_names = []
+        arguments = {'frame': frame.uri, 'projected_frame': projected_frame.uri, 'columns': columns, "new_column_names": new_names}
         command = CommandRequest("dataframe/project", arguments)
         command_info = executor.issue(command)
 
-        for col in iter_cols:
-            if col.data_type is not ignore:
-                self._accept_column(frame, BigColumn(col.name, col.data_type))
+        # TODO - refresh from command_info instead of predicting what happened
+        for i in xrange(len(columns)):
+            name = columns[i]
+            dtype = frame.schema[name] if not new_names else new_names[i]
+            self._accept_column(projected_frame, BigColumn(name, dtype))
 
         return command_info
+
+    def rename_frame(self, frame, name):
+        arguments = {'frame': frame.uri, "name": name}
+        command = CommandRequest("dataframe/rename_frame", arguments)
+        return executor.issue(command)
 
     def rename_columns(self, frame, name_pairs):
         originalcolumns, renamedcolumns = ",".join(zip(*name_pairs)[0]), ",".join(zip(*name_pairs)[1])

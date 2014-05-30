@@ -258,18 +258,18 @@ class SparkComponent extends EngineComponent
             withContext("se.project.future") {
               withCommand(command) {
 
-                val originalFrameID = arguments.originalframe
-                val projectedFrameID = arguments.frame
+                val sourceFrameID = arguments.frame
+                val sourceFrame = frames.lookup(sourceFrameID).getOrElse(
+                  throw new IllegalArgumentException(s"No such data frame: $sourceFrameID"))
 
-                val originalFrame = frames.lookup(originalFrameID).getOrElse(
-                  throw new IllegalArgumentException(s"No such data frame: $originalFrameID"))
+                val projectedFrameID = arguments.projected_frame
                 val projectedFrame = frames.lookup(projectedFrameID).getOrElse(
                   throw new IllegalArgumentException(s"No such data frame: $projectedFrameID"))
 
                 val ctx = context(user).sparkContext
-                val columns = arguments.column.split(",")
+                val columns = arguments.columns
 
-                val schema = originalFrame.schema
+                val schema = sourceFrame.schema
                 val location = fsRoot + frames.getFrameDataFile(projectedFrameID)
 
                 val columnIndices = for {
@@ -277,19 +277,19 @@ class SparkComponent extends EngineComponent
                   columnIndex = schema.columns.indexWhere(columnTuple => columnTuple._1 == col)
                 } yield columnIndex
 
-                columnIndices match {
-                  case invalidColumns if invalidColumns.contains(-1) =>
-                    throw new IllegalArgumentException(s"Invalid list of columns: ${arguments.column}")
-                  case _ => {
-                    frames.getFrameRdd(ctx, originalFrameID)
-                      .map(row => { for { i <- columnIndices } yield row(i) }.toArray)
-                      .saveAsObjectFile(location)
-                    val projectedColumns = for { i <- columnIndices } yield { schema.columns(i) }
-                    frames.updateSchema(projectedFrame, projectedColumns.toList)
-                  }
-
+                if (columnIndices.contains(-1)) {
+                  throw new IllegalArgumentException(s"Invalid list of columns: ${arguments.columns.toString()}")
                 }
 
+                frames.getFrameRdd(ctx, sourceFrameID)
+                  .map(row => { for { i <- columnIndices } yield row(i) }.toArray)
+                  .saveAsObjectFile(location)
+
+                val projectedColumns = arguments.new_column_names match {
+                  case x if x.size == 0 => for { i <- columnIndices } yield schema.columns(i)
+                  case _ => for { i <- columnIndices } yield (arguments.new_column_names(i), schema.columns(i)._2)
+                }
+                frames.updateSchema(projectedFrame, projectedColumns.toList)
               }
               commands.lookup(command.id).get
             }
