@@ -112,18 +112,18 @@ class BigFrame(object):
         self._uri = ""
         if not hasattr(self, '_backend'):  # if a subclass has not already set the _backend
             self._backend = _get_backend()
+        self._name = name or self._get_new_frame_name(source)
+        self._backend.create(self)
 
-        if isinstance(source, BigColumn):
-            self._become(source.frame.project(source.name))
+        if isinstance(source, BigFrame):
+            self._backend.project_columns(source, self, source.column_names)
+        elif isinstance(source, BigColumn):
+            self._backend.project_columns(source.frame, self, source.name)
         elif (isinstance(source, list) and all(isinstance(iter, BigColumn) for iter in source)):
-            self._become(source[0].frame.project([c.name for c in source]))
+            self._backend.project_columns(source[0].frame, self, [s.name for s in source])
         else:
-            self._name = name or self._get_new_frame_name(source)
-            self._backend.create(self)
             if source:
                 self.append(source)
-        if name and name != self._name:
-            self.name = name
         logger.info('Created new frame "%s"', self._name)
 
     def __getattr__(self, name):
@@ -275,6 +275,19 @@ class BigFrame(object):
     def append(self, *data):
         self._backend.append(self, *data)
 
+    def copy(self):
+        """
+        Creates a full copy of the current frame
+
+        Returns
+        -------
+        frame : BigFrame
+            A new frame object which is a copy of this frame
+        """
+        copied_frame = BigFrame()
+        self._backend.project_columns(self, copied_frame, self.column_names)
+        return copied_frame
+
     def filter(self, predicate):
         """
         Select all rows which satisfy a predicate.
@@ -360,6 +373,14 @@ class BigFrame(object):
         frame : BigFrame
             A new frame object containing copies of the specified columns
         """
+        if isinstance(column_names, basestring):
+            column_names = [column_names]
+        if new_names is not None:
+            if isinstance(new_names, basestring):
+                new_names = [new_names]
+            if len(column_names) != len(new_names):
+                raise ValueError("new_names list argument must be the same length as the column_names")
+        # TODO - create a general method to validate lists of column names, such that they exist, are all from the same frame, and not duplicated
         projected_frame = BigFrame()
         self._backend.project_columns(self, projected_frame, column_names, new_names)
         return projected_frame
