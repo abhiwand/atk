@@ -120,6 +120,7 @@ private[spark] object SparkOps extends Serializable {
 
   /**
    * flatten a row by the column with specified column index
+   * Eg. for row (1, "dog,cat"), flatten by second column will yield (1,"dog") and (1,"cat")
    * @param index column index
    * @param row row data
    * @param separator separator for splitting
@@ -142,6 +143,6 @@ private[spark] object SparkOps extends Serializable {
    * @return new RDD with column flattened
    */
   def flattenRddByColumnIndex(index: Int, separator: String, rdd: RDD[Row]): RDD[Row] = {
-    rdd.flatMap(r => SparkOps.flattenColumnByIndex(index, r, separator))
+    rdd.flatMap(row => SparkOps.flattenColumnByIndex(index, row, separator))
   }
 }
