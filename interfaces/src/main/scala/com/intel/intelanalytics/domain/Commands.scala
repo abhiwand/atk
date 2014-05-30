@@ -31,12 +31,12 @@ import com.intel.intelanalytics.domain.graphconstruction.{ EdgeRule, VertexRule,
 case class Als[GraphRef](graph: GraphRef, lambda: Double, max_supersteps: Option[Int],
                          converge_threshold: Option[Int], feature_dimension: Option[Int])
 
-case class LoadLines[+Arguments, FrameRef](source: String, destination: FrameRef, skipRows: Option[Int],
-                                           overwrite: Option[Boolean], lineParser: Partial[Arguments]) {
+case class LoadLines[+Arguments, FrameRef](source: String, destination: FrameRef, skipRows: Option[Int], overwrite: Option[Boolean], lineParser: Partial[Arguments], schema: Schema) {
   require(source != null, "source is required")
   require(destination != null, "destination is required")
   require(skipRows.isEmpty || skipRows.get >= 0, "cannot skip negative number of rows")
   require(lineParser != null, "lineParser is required")
+  require(schema != null, "schema is required")
 }
 
 case class FilterPredicate[+Arguments, FrameRef](frame: FrameRef, predicate: String) {
@@ -48,7 +48,10 @@ case class FrameRemoveColumn[+Arguments, FrameRef](frame: FrameRef, column: Stri
   require(frame != null, "frame is required")
   require(column != null, "column is required")
 }
-
+case class FrameRenameFrame[+Arguments, FrameRef](frame: FrameRef, new_name: String) {
+  require(frame != null, "frame is required")
+  require(new_name != null && new_name.size > 0, "new_name is required")
+}
 case class FrameAddColumn[+Arguments, FrameRef](frame: FrameRef, columnname: String, columntype: String, expression: String) {
   require(frame != null, "frame is required")
   require(columnname != null, "column name is required")
@@ -56,10 +59,16 @@ case class FrameAddColumn[+Arguments, FrameRef](frame: FrameRef, columnname: Str
   require(expression != null, "expression is required")
 }
 
-case class FrameProject[+Arguments, FrameRef](frame: FrameRef, originalframe: FrameRef, column: String) {
+case class FrameProject[+Arguments, FrameRef](frame: FrameRef, projected_frame: FrameRef, columns: List[String], new_column_names: List[String]) {
   require(frame != null, "frame is required")
-  require(originalframe != null, "original frame is required")
-  require(column != null, "column is required")
+  require(projected_frame != null, "projected frame is required")
+  require(columns != null && columns.size > 0, "column is required")
+  if (new_column_names != null && new_column_names.size > 0) {
+    // TODO - accept a null Json deserialization... for now Python is passing an empty list rather than null
+    require(columns.size == new_column_names.size, "number of renamed columns must equal number of columns")
+    // TODO - ensure no duplicate names in columns
+    // TODO - ensure no duplicate names in renamed_columns
+  }
 }
 
 case class FrameRenameColumn[+Arguments, FrameRef](frame: FrameRef, originalcolumn: String, renamedcolumn: String) {

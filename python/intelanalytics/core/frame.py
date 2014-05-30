@@ -126,27 +126,23 @@ class BigFrame(object):
     # TODO - Review Parameters, Examples
     
 
-    def __init__(self, source=None, name=None, **kwargs):
+    def __init__(self, source=None, name=None):
         self._columns = OrderedDict()  # self._columns must be the first attribute to be assigned (see __setattr__)
         self._id = 0
         self._uri = ""
         if not hasattr(self, '_backend'):  # if a subclass has not already set the _backend
             self._backend = _get_backend()
         self._name = name or self._get_new_frame_name(source)
-
-        # TODO: remove this schema hack for frame creation w/ current REST API
-        self._original_source = source  # hold on to original source,
-
         self._backend.create(self)
-        if source:
-            if isinstance(source, BigColumn) or (isinstance(source, list) and all(isinstance(iter, BigColumn) for iter in source)):
-                self.project(source)
-                column_names = kwargs.get('rename', None)
-                if isinstance(column_names, list):
-                    self.rename_column(self._columns.keys(), column_names)
-                elif isinstance(column_names, dict):
-                    self.rename_column([i.name if isinstance(i, BigColumn) else i for i in column_names.keys()], column_names.values())
-            else:
+
+        if isinstance(source, BigFrame):
+            self._backend.project_columns(source, self, source.column_names)
+        elif isinstance(source, BigColumn):
+            self._backend.project_columns(source.frame, self, source.name)
+        elif (isinstance(source, list) and all(isinstance(iter, BigColumn) for iter in source)):
+            self._backend.project_columns(source[0].frame, self, [s.name for s in source])
+        else:
+            if source:
                 self.append(source)
         logger.info('Created new frame "%s"', self._name)
 
@@ -309,10 +305,10 @@ class BigFrame(object):
         # TODO - Review Docstring
         return self._name
 
-    # TODO - add name setter call to backend
-    #@name.setter
-    #def name(self, value):
-    #    self._backend.set_name(value)
+    @name.setter
+    def name(self, value):
+        self._backend.rename_frame(self, value)
+        self._name = value  # TODO - update from backend
 
     @property
     def schema(self):
@@ -417,8 +413,18 @@ class BigFrame(object):
         # TODO - Review examples
         self._backend.append(self, *data)
 
-    def project(self, *data):
-        self._backend.project(self, *data)
+    def copy(self):
+        """
+        Creates a full copy of the current frame
+
+        Returns
+        -------
+        frame : BigFrame
+            A new frame object which is a copy of this frame
+        """
+        copied_frame = BigFrame()
+        self._backend.project_columns(self, copied_frame, self.column_names)
+        return copied_frame
 
     def filter(self, predicate):
         """
@@ -439,53 +445,6 @@ class BigFrame(object):
         """
         # TODO - Review docstring
         self._backend.filter(self, predicate)
-
-    def count(self):
-        """
-        Count the number of rows that exist in this object.
-        
-        Returns
-        -------
-        int32
-            The number of rows
-        
-        Examples
-        --------
-        >>> for this example, Chris is a BigFrame object with lots of data
-        >>> num_rows = Chris.count()
-        >>> num_rows is now the count of rows of data in Chris
-        
-        """
-        return self._backend.count(self)
-        # TODO - Review docstring
-        
-    def remove_column(self, name):
-        """
-        Remove columns.
-
-        Parameters
-        ----------
-        name : str OR list of str
-            column name OR list of column names to be removed from the frame
-
-        Notes
-        -----
-        Deleting a non-existant column raises a KeyError.
-        Deleting the last column in a frame leaves the frame empty.
-
-        Examples
-        --------
-        >>> For this example, Jonas is a BigFrame object with columns titled Mary, had_a, little, lamb and everywhere
-        >>> Jonas.remove_column( [ "had_a", "everywhere" ] )
-        >>> now Jonas only has the columns named Mary, little, and lamb; the data in columns had_a and everywhere is gone
-
-        """
-        # TODO - Review examples
-        self._backend.remove_column(self, name)
-        if isinstance(name, basestring):
-            name = [name]
-        for victim in name:
-            del self._columns[victim]
 
     def drop(self, predicate):
         """
@@ -596,6 +555,57 @@ class BigFrame(object):
     #     if not right:
     #         raise ValueError("A value for right must be specified")
     #     return operations.BigOperationBinary("join", {BigFrame: {bool: None}}, self, predicate)
+
+    def project_columns(self, column_names, new_names=None):
+        """
+        Copies specified columns into a new BigFrame object, optionally renaming them
+
+        Parameters
+        ----------
+        column_names : str OR list of str
+            column name OR list of column names to be removed from the frame
+        new_names : str OR list of str
+            The new name(s) for the column(s)
+
+        Returns
+        -------
+        frame : BigFrame
+            A new frame object containing copies of the specified columns
+        """
+        if isinstance(column_names, basestring):
+            column_names = [column_names]
+        if new_names is not None:
+            if isinstance(new_names, basestring):
+                new_names = [new_names]
+            if len(column_names) != len(new_names):
+                raise ValueError("new_names list argument must be the same length as the column_names")
+        # TODO - create a general method to validate lists of column names, such that they exist, are all from the same frame, and not duplicated
+        projected_frame = BigFrame()
+        self._backend.project_columns(self, projected_frame, column_names, new_names)
+        return projected_frame
+
+    def remove_column(self, name):
+        """
+        Remove columns
+
+        Parameters
+        ----------
+        name : str OR list of str
+            column name OR list of column names to be removed from the frame
+
+        Notes
+        -----
+        This function will retain a single column.
+
+        Examples
+        --------
+        >>>
+        """
+        self._backend.remove_column(self, name)
+        if isinstance(name, basestring):
+            name = [name]
+        for victim in name:
+            del self._columns[victim]
 
     def rename_column(self, column_name, new_name):
         """
