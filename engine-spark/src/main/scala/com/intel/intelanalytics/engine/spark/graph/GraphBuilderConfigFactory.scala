@@ -50,11 +50,9 @@ class GraphBuilderConfigFactory(val schema: Schema, val graphLoad: GraphLoad[JsO
    */
   private def getInputSchema(schema: Schema): InputSchema = {
 
-    def schemaToColumnDef(column: (String, DataType)): ColumnDef = {
-      new ColumnDef(column._1, column._2.scalaType)
-    }
+    val columns: List[ColumnDef] = schema.columns map
+      { case (name: String, dataType: DataType) => new ColumnDef(name, dataType.scalaType) }
 
-    val columns: List[ColumnDef] = schema.columns map (x => schemaToColumnDef(x))
     new InputSchema(columns)
   }
 
