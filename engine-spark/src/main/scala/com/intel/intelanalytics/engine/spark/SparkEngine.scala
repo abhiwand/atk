@@ -539,9 +539,8 @@ class SparkComponent extends EngineComponent
             withContext("se.graphLoad.future") {
               withCommand(command) {
 
-                // not sure if we really need this...
-                val realFrame = frames.lookup(arguments.sourceFrameRef).getOrElse(
-                  throw new IllegalArgumentException(s"No such data frame: ${arguments.sourceFrameRef}"))
+                // validating frames
+                arguments.frame_rules.map(frule => frames.lookup(frule.frame).getOrElse(throw new IllegalArgumentException(s"No such data frame: ${frule.frame}")))
 
                 graphs.loadGraph(arguments)(user)
               }
