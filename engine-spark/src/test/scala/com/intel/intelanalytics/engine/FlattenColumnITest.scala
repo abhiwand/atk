@@ -28,7 +28,7 @@ import com.intel.intelanalytics.engine.TestingSparkContext
 
 class FlattenColumnITest extends FlatSpec with Matchers with BeforeAndAfterEach with TestingSparkContext {
   "flattenRddByColumnIndex" should "create separate rows when flattening entries" in {
-    val carOwnerShips = List(Array[Any]("Bob", "Mustang,Camry"), Array[Any]("Josh", "Neon,CLK"), Array[Any]("Alice", "PT Cruiser,Avalon,F-150"), Array[Any]("Tim", "Beatle"))
+    val carOwnerShips = List(Array[Any]("Bob", "Mustang,Camry"), Array[Any]("Josh", "Neon,CLK"), Array[Any]("Alice", "PT Cruiser,Avalon,F-150"), Array[Any]("Tim", "Beatle"), Array[Any]("Becky", ""))
     val rdd = sc.parallelize(carOwnerShips)
     val flattened = SparkOps.flattenRddByColumnIndex(1, ",", rdd)
     val result = flattened.take(8)
@@ -40,6 +40,7 @@ class FlattenColumnITest extends FlatSpec with Matchers with BeforeAndAfterEach 
     result.apply(5) shouldBe Array[Any]("Alice", "Avalon")
     result.apply(6) shouldBe Array[Any]("Alice", "F-150")
     result.apply(7) shouldBe Array[Any]("Tim", "Beatle")
+    result.apply(8) shouldBe Array[Any]("Becky", "")
 
   }
 
