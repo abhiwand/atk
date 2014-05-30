@@ -1,11 +1,11 @@
 
 package com.intel.graphbuilder.driver.spark.titan.reader
 
-import com.intel.graphbuilder.elements.{GraphElement, Property}
+import com.intel.graphbuilder.elements.GraphElement
 import com.thinkaurelius.titan.graphdb.database.EdgeSerializer
 import com.thinkaurelius.titan.graphdb.transaction.StandardTitanTx
 import com.thinkaurelius.titan.graphdb.database.idhandling.IDHandler
-import scala.collection.mutable.ListBuffer
+import com.thinkaurelius.titan.diskstorage.StaticBuffer
 
 /**
  * Parses a row in Titan's key-value store. Each row represents a vertex and its adjacent edges
@@ -16,26 +16,39 @@ import scala.collection.mutable.ListBuffer
  */
 case class TitanRowParser(titanRow: TitanRow, titanEdgeSerializer: EdgeSerializer, titanTransaction: StandardTitanTx) {
 
-  val vertexId = IDHandler.getKeyID(titanRow.rowKey)
-  val vertexProperties = new ListBuffer[Property]
-  val edgeList = new ListBuffer[GraphElement]
+  // Physical ID for Titan vertex
+  private val vertexId = getTitanVertexID(titanRow.rowKey)
 
   /**
-   * Parses a row in Titan's key-value store
+   * Parses a row in Titan's key-value store.
    *
    * @return Sequence of graph elements comprising of vertex and adjacent edges
    */
   def parse(): Seq[GraphElement] = {
     val titanRelationFactory = new TitanRelationFactory(vertexId)
-    deserializeTitanRow(titanRelationFactory)
 
-    val vertex = titanRelationFactory.createVertex()
-    val edgeList = titanRelationFactory.edgeList
-    if (vertex.isDefined) {
-      titanRelationFactory.edgeList :+ vertex.get
+    try {
+      deserializeTitanRow(titanRelationFactory)
+      titanRelationFactory.createGraphElements()
     }
-    else {
-      edgeList
+    catch {
+      case e: Exception => {
+        throw new RuntimeException("Unable to parse Titan row:" + titanRow, e)
+      }
+    }
+  }
+
+  /**
+   * Get the unique Physical ID for the Vertex from the row key.
+   */
+  private def getTitanVertexID(rowKey: StaticBuffer) = {
+    try {
+      IDHandler.getKeyID(titanRow.rowKey)
+    }
+    catch {
+      case e: Exception => {
+        throw new RuntimeException("Unable to extract Titan row key:" + rowKey, e)
+      }
     }
   }
 
@@ -51,3 +64,4 @@ case class TitanRowParser(titanRow: TitanRow, titanEdgeSerializer: EdgeSerialize
     })
   }
 }
+

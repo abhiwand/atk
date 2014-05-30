@@ -5,23 +5,29 @@ import com.tinkerpop.blueprints.Direction
 import com.thinkaurelius.titan.core.TitanType
 import com.thinkaurelius.titan.graphdb.types.system.SystemType
 import scala.collection.mutable.ListBuffer
-import TitanReaderConstants.TITAN_READER_GB_ID
 
 /**
- * Used by Titan to deserialize a single row in a key-value store. Titan stores a vertex and its adjacent
- * edges as a single row in the underlying key-value store. Each vertex property and edge is stored in a column.
- * The deserializer extracts vertex properties and the adjacent edges from the columns.
+ * Used by Titan to deserialize a single row in a key-value store.
+ *
+ * @see com.thinkaurelius.titan.graphdb.database.EdgeSerializer#readRelation
+ *      Titan stores a vertex and its adjacent edges as a single row in the key-value store.
+ *      Each vertex property and edge is stored in a distinct column. Titan's deserializer extracts vertex properties
+ *      and the adjacent edges from the row.
+ *
+ * @see com.intel.graphbuilder.driver.spark.titan.reader.TitanRowParser
+ *      Once Titan's deserializer extracts properties and edges, the build() method in this class is called to update
+ *      the vertex property list, and edge list.
+ *      Lastly, createGraphElements() returns a sequence of GraphElement type containing the vertex and its adjacent edges,
  *
  * @param vertexId Physical vertex ID from the underlying Graph storage layer
  */
 
 class TitanRelationFactory(vertexId: Long) extends com.thinkaurelius.titan.graphdb.database.RelationFactory {
+  require(vertexId > 0, "Vertex ID should be greater than zero")
 
-  require(vertexId > 0)
-
-  val gbId = TITAN_READER_GB_ID
-  val edgeList = new ListBuffer[GraphElement]
-  val vertexProperties = new ListBuffer[Property]
+  private val gbId = TitanReader.TITAN_READER_GB_ID
+  private val edgeList = new ListBuffer[GraphElement]
+  private val vertexProperties = new ListBuffer[Property]
 
   private var properties = Map[String, Any]()
   private var direction: Direction = null
@@ -43,7 +49,7 @@ class TitanRelationFactory(vertexId: Long) extends com.thinkaurelius.titan.graph
   }
 
   /**
-   * Set the type of the graph element to distinguish between vertices, edges, and system types
+   * Set the type of the graph element which distinguishes between vertices, edges, and system types
    */
   override def setType(newTitanType: TitanType) = {
     titanType = newTitanType
@@ -64,7 +70,7 @@ class TitanRelationFactory(vertexId: Long) extends com.thinkaurelius.titan.graph
   }
 
   /**
-   * Set the value of vertex properties
+   * Set the value of vertex property
    * @param newValue
    */
   override def setValue(newValue: Object) {
@@ -72,7 +78,7 @@ class TitanRelationFactory(vertexId: Long) extends com.thinkaurelius.titan.graph
   }
 
   /**
-   * Add vertex and edge properties
+   * Add edge property
    */
   override def addProperty(newTitanType: TitanType, newValue: Object) {
     properties += (newTitanType.getName() -> newValue)
@@ -82,13 +88,13 @@ class TitanRelationFactory(vertexId: Long) extends com.thinkaurelius.titan.graph
    * Extracts a vertex property or an edge from a column entry, and updates the corresponding
    * vertex property or edge list
    */
-  def build() = {
-    if (!isTitanSystemType(titanType)) {
+  def build(): Unit = {
+    if (titanType != null && !isTitanSystemType(titanType)) {
       if (titanType.isPropertyKey()) {
         vertexProperties += new Property(titanType.getName(), value)
       }
       else {
-        require(titanType.isEdgeLabel())
+        require(titanType.isEdgeLabel(), "Titan type should be an edge label or a vertex property")
         edgeList += createEdge(vertexId, otherVertexID, direction, titanType.getName(), properties)
       }
     }
@@ -96,11 +102,26 @@ class TitanRelationFactory(vertexId: Long) extends com.thinkaurelius.titan.graph
   }
 
   /**
+   * Create a sequence of GraphBuilder elements containing the vertex and its adjacent elements.
+   *
+   * This method is called after all the graph elements in the row of the key-value store have
+   * been extracted using build().
+   */
+  def createGraphElements(): Seq[GraphElement] = {
+    val vertex = createVertex()
+
+    vertex match {
+      case Some(v) => edgeList :+ v
+      case _ => edgeList
+    }
+  }
+
+  /**
    * Creates a GraphBuilder vertex from a deserialized Titan vertex
    *
    * @return GraphBuilder vertex
    */
-  def createVertex(): Option[Vertex] = {
+  private def createVertex(): Option[Vertex] = {
     if (vertexProperties.isEmpty) {
       None
     }
