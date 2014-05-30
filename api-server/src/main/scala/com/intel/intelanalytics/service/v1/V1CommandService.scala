@@ -113,6 +113,7 @@ trait V1CommandService extends V1Service {
       case ("graph/ml/als") => runAls(uri, xform)
       case ("dataframe/filter") => runFilter(uri, xform)
       case ("dataframe/removecolumn") => runFrameRemoveColumn(uri, xform)
+      case ("dataframe/rename_frame") => runFrameRenameFrame(uri, xform)
       case ("dataframe/addcolumn") => runFrameAddColumn(uri, xform)
       case ("dataframe/project") => runFrameProject(uri, xform)
       case ("dataframe/renamecolumn") => runFrameRenameColumn(uri, xform)
@@ -182,6 +183,29 @@ trait V1CommandService extends V1Service {
             for {
               frame <- engine.getFrame(id)
               (c, f) = engine.filter(FilterPredicate[JsObject, Long](id, args.predicate))
+            } yield c) {
+              case Success(c) => complete(decorate(uri + "/" + c.id, c))
+              case Failure(ex) => throw ex
+            }
+        }
+    }
+  }
+
+  def runFrameRenameFrame(uri: Uri, xform: JsonTransform)(implicit user: UserPrincipal) = {
+    {
+      val test = Try {
+        import DomainJsonProtocol._
+        xform.arguments.get.convertTo[FrameRenameFrame[JsObject, String]]
+      }
+      val idOpt = test.toOption.flatMap(args => getFrameId(args.frame))
+      (validate(test.isSuccess, "Failed to understand rename arguments: " + getErrorMessage(test))
+        & validate(idOpt.isDefined, "Frame must be a valid data frame URL")) {
+          val args = test.get
+          val id = idOpt.get
+          onComplete(
+            for {
+              frame <- engine.getFrame(id)
+              (c, f) = engine.renameFrame(FrameRenameFrame[JsObject, Long](id, args.new_name))
             } yield c) {
               case Success(c) => complete(decorate(uri + "/" + c.id, c))
               case Failure(ex) => throw ex
