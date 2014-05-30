@@ -148,8 +148,6 @@ class FrameBackendRest(object):
         executor.issue(command)
 
     def project_columns(self, frame, projected_frame, columns, new_names=None):
-        if isinstance(columns, basestring):
-            columns = [columns]
         # TODO - fix REST server to accept nulls, for now we'll pass an empty list
         if new_names is None:
             new_names = []
@@ -158,9 +156,10 @@ class FrameBackendRest(object):
         command_info = executor.issue(command)
 
         # TODO - refresh from command_info instead of predicting what happened
-        for i in xrange(len(columns)):
-            name = columns[i]
-            dtype = frame.schema[name] if not new_names else new_names[i]
+        for i, name in enumerate(columns):
+            dtype = frame.schema[name]
+            if new_names:
+                name = new_names[i]
             self._accept_column(projected_frame, BigColumn(name, dtype))
 
         return command_info

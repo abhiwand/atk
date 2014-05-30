@@ -286,8 +286,11 @@ class SparkComponent extends EngineComponent
                   .saveAsObjectFile(location)
 
                 val projectedColumns = arguments.new_column_names match {
-                  case x if x.size == 0 => for { i <- columnIndices } yield schema.columns(i)
-                  case _ => for { i <- columnIndices } yield (arguments.new_column_names(i), schema.columns(i)._2)
+                  case empty if empty.size == 0 => for { i <- columnIndices } yield schema.columns(i)
+                  case _ => {
+                    for { i <- 0 until columnIndices.size }
+                      yield (arguments.new_column_names(i), schema.columns(columnIndices(i))._2)
+                  }
                 }
                 frames.updateSchema(projectedFrame, projectedColumns.toList)
               }
