@@ -219,6 +219,7 @@ class BigFrame(object):
     @name.setter
     def name(self, value):
         self._backend.rename_frame(self, value)
+        self._name = value  # TODO - update from backend
 
     @property
     def schema(self):

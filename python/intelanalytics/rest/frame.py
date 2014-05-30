@@ -165,7 +165,7 @@ class FrameBackendRest(object):
         return command_info
 
     def rename_frame(self, frame, name):
-        arguments = {'frame': frame.uri, "name": name}
+        arguments = {'frame': frame.uri, "new_name": name}
         command = CommandRequest("dataframe/rename_frame", arguments)
         return executor.issue(command)
 
@@ -174,7 +174,6 @@ class FrameBackendRest(object):
         arguments = {'frame': frame.uri, "originalcolumn": originalcolumns, "renamedcolumn": renamedcolumns}
         command = CommandRequest("dataframe/renamecolumn", arguments)
         return executor.issue(command)
-
 
     def remove_column(self, frame, name):
         columns = ",".join(name) if isinstance(name, list) else name

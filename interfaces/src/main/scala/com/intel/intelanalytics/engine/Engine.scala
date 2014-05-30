@@ -83,6 +83,7 @@ trait FrameComponent {
     def addColumn[T](frame: DataFrame, column: Column[T], columnType: DataTypes.DataType): DataFrame
     def addColumnWithValue[T](frame: DataFrame, column: Column[T], default: T): Unit
     def removeColumn(frame: DataFrame, columnIndex: Seq[Int]): Unit
+    def renameFrame(frame: DataFrame, newName: String): Unit
     def renameColumn[T](frame: DataFrame, name_pairs: Seq[(String, String)]): Unit
     def removeRows(frame: DataFrame, predicate: Row => Boolean)
     def appendRows(startWith: DataFrame, append: Iterable[Row])
@@ -152,6 +153,7 @@ trait EngineComponent {
     def load(arguments: LoadLines[JsObject, Long])(implicit user: UserPrincipal): (Command, Future[Command])
     def filter(arguments: FilterPredicate[JsObject, Long])(implicit user: UserPrincipal): (Command, Future[Command])
     def project(arguments: FrameProject[JsObject, Long])(implicit user: UserPrincipal): (Command, Future[Command])
+    def renameFrame(arguments: FrameRenameFrame[JsObject, Long])(implicit user: UserPrincipal): (Command, Future[Command])
     def renameColumn(arguments: FrameRenameColumn[JsObject, Long])(implicit user: UserPrincipal): (Command, Future[Command])
     //  Should predicate be Partial[Any]  def filter(frame: DataFrame, predicate: Partial[Any])(implicit user: UserPrincipal): Future[DataFrame]
     def removeColumn(arguments: FrameRemoveColumn[JsObject, Long])(implicit user: UserPrincipal): (Command, Future[Command])

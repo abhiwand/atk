@@ -217,6 +217,31 @@ class SparkComponent extends EngineComponent
       }
     }
 
+    def renameFrame(arguments: FrameRenameFrame[JsObject, Long])(implicit user: UserPrincipal): (Command, Future[Command]) =
+      withContext("se.rename_frame") {
+        require(arguments != null, "arguments are required")
+        import DomainJsonProtocol._
+        val command: Command = commands.create(new CommandTemplate("rename_frame", Some(arguments.toJson.asJsObject)))
+        val result: Future[Command] = future {
+          withMyClassLoader {
+            withContext("se.rename_frame.future") {
+              withCommand(command) {
+
+                val frameID = arguments.frame
+
+                val frame = frames.lookup(frameID).getOrElse(
+                  throw new IllegalArgumentException(s"No such data frame: $frameID"))
+
+                val newName = arguments.new_name
+                frames.renameFrame(frame, newName)
+              }
+              commands.lookup(command.id).get
+            }
+          }
+        }
+        (command, result)
+      }
+
     def renameColumn(arguments: FrameRenameColumn[JsObject, Long])(implicit user: UserPrincipal): (Command, Future[Command]) =
       withContext("se.renamecolumn") {
         require(arguments != null, "arguments are required")
@@ -650,11 +675,19 @@ class SparkComponent extends EngineComponent
 
     import com.intel.intelanalytics.domain.DomainJsonProtocol._
 
+    def updateName(frame: DataFrame, newName: String): DataFrame = {
+      val newFrame = frame.copy(name = newName)
+      updateMeta(newFrame)
+    }
+
     def updateSchema(frame: DataFrame, columns: List[(String, DataType)]): DataFrame = {
       val newSchema = frame.schema.copy(columns = columns)
       val newFrame = frame.copy(schema = newSchema)
+      updateMeta(newFrame)
+    }
 
-      val meta = File(Paths.get(getFrameMetaDataFile(frame.id)))
+    private def updateMeta(newFrame: DataFrame): DataFrame = {
+      val meta = File(Paths.get(getFrameMetaDataFile(newFrame.id)))
       info(s"Saving metadata to $meta")
       val f = files.write(meta)
       try {
@@ -700,6 +733,12 @@ class SparkComponent extends EngineComponent
       withContext("frame.addColumnWithValue") {
         ???
       }
+
+    override def renameFrame(frame: DataFrame, newName: String): Unit =
+      withContext("frame.rename") {
+        updateName(frame, newName)
+      }
+
     override def renameColumn[T](frame: DataFrame, name_pairs: Seq[(String, String)]): Unit =
       withContext("frame.renameColumn") {
         val columnsToRename: Seq[String] = name_pairs.map(_._1)
