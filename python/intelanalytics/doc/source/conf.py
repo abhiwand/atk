@@ -39,7 +39,11 @@ extensions = [
     'sphinx.ext.ifconfig',
     'sphinx.ext.autosummary',
     'numpydoc',
+    'sphinx.ext.todo',
 ]
+
+# This is a flag to print out To-Do items
+todo_include_todos = False
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -112,8 +116,11 @@ html_use_modindex = False
 #        return False
 #    return skip
 #
-#def setup(app):
+def setup(app):
 #    app.connect("autodoc-skip-member", skip)
+    app.add_config_value('internal_docs', '', True)
+
+internal_docs = False
 
 # -- Options for HTML output ----------------------------------------------
 
@@ -123,6 +130,14 @@ html_use_modindex = False
 #html_theme = 'nature'
 #html_theme = 'agogo'
 html_theme = 'scipy'
+#html_theme = 'basic'
+#html_theme = 'epub'
+#html_theme = 'haiku'
+#html_theme = 'pyramid'
+#html_theme = 'scrolls'
+#html_theme = 'sphinxdoc'
+#html_theme = 'traditional'
+#html_theme = 'aldrich'
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the

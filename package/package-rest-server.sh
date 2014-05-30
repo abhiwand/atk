@@ -15,6 +15,7 @@ echo "$SCRIPTPATH"
 
 pushd $SCRIPTPATH
 
+rm -rf ../bin/stage
 rm -rf tarballs/$package
 rm $package-source.tar.gz
 
@@ -31,7 +32,7 @@ cp config/intelanalytics-rest-server/intelanalytics-rest-server tarballs/$packag
 
 cp -Rv  ../api-server/src/main/resources/* tarballs/$package/etc/intelanalytics/rest-server
 
-jars="engine-spark.jar launcher.jar api-server.jar engine.jar interfaces.jar "
+jars="engine-spark.jar api-server.jar engine.jar interfaces.jar "
 
 popd
 
@@ -42,8 +43,10 @@ do
 	echo $jarPath
 	cp -v $jarPath $SCRIPTPATH/tarballs/$package/usr/lib/intelanalytics/rest-server/lib/
 done
-	jarPath=$(find . -path ./package -prune -o -name launcher.jar -print)
-	cp -v $jarPath $SCRIPTPATH/tarballs/$package/usr/lib/intelanalytics/rest-server/
+	jarPath=$(find .  -path ./package -prune -o -name launcher.jar -print)
+	echo $jarPath
+	cp -v $jarPath $SCRIPTPATH/tarballs/$package/usr/lib/intelanalytics/rest-server/launcher.jar
+	cp -v $jarPath $SCRIPTPATH/tarballs/$package/usr/lib/intelanalytics/rest-server/lib/
 
 popd
 

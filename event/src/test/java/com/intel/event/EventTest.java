@@ -23,6 +23,7 @@ import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -155,6 +156,7 @@ public class EventTest {
         SOMETHING_HAPPENED
     }
 
+    @Ignore
     @Test
     public void Event_toString_includes_all_relevant_event_state() {
         EventContext ctx = new EventContext("Ctx");

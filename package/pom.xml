@@ -32,15 +32,11 @@
     <version>1</version>
 
     <parent>
-        <groupId>com.intel.hadoop</groupId>
+        <groupId>com.intel</groupId>
         <artifactId>IntelAnalytics</artifactId>
         <relativePath>../pom.xml</relativePath>
-        <version>0.8-SNAPSHOT</version>
+        <version>0.8.0-SNAPSHOT</version>
     </parent>
-
-    <properties>
-    <pkg.version>0.8.${env.BUILD_NUMBER}</pkg.version>
-    </properties>
     <profiles>
         <profile>
             <id>package</id>
@@ -64,7 +60,6 @@
                                 </goals>
                                 <configuration>
                                     <executable>chmod</executable>
-
                                     <arguments>
                                         <argument>-R</argument>
                                         <argument>+x</argument>
@@ -103,7 +98,7 @@
                                         <argument>${env.BUILD_NUMBER}</argument>
                                         <argument>-v</argument>
                                         <argument>${pkg.version}</argument>
-                                        <argument>-t</argument>
+                                        <argument>--tar</argument>
                                         <argument>${basedir}/intelanalytics-rest-server-source.tar.gz</argument>
                                     </arguments>
                                 </configuration>
@@ -141,7 +136,7 @@
                                         <argument>${env.BUILD_NUMBER}</argument>
                                         <argument>-v</argument>
                                         <argument>${pkg.version}</argument>
-                                        <argument>-t</argument>
+                                        <argument>--tar</argument>
                                         <argument>${basedir}/intelanalytics-python-rest-client-source.tar.gz</argument>
                                     </arguments>
                                 </configuration>
@@ -152,7 +147,6 @@
             </build>
         </profile>
     </profiles>
-
 
 
 </project>
