@@ -6,7 +6,7 @@ Administration includes:
 ..  toctree::
     :maxdepth: 2
 
-    intel_legal
+    ia_legl
     ad_reqs
     ad_inst
     ad_conf
