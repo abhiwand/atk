@@ -25,7 +25,7 @@
 <!--
 if you do a maven build from the parent you will most likely have to increase your memory footprint this has worked for me
 in the past
-export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
+export MAVEN_OPTS="-Xms2048m -Xmx4096m -XX:MaxPermSize=4096m -XX:PermSize=2048m"
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -148,20 +148,12 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                             </goals>
                             <configuration>
                                 <jvmArgs>
-                                    <jvmArg>-Xms1024m</jvmArg>
-                                    <jvmArg>-Xmx2048m</jvmArg>
+                                    <jvmArg>-Xms256m</jvmArg>
+                                    <jvmArg>-Xmx512m</jvmArg>
                                 </jvmArgs>
-								<!--<compilerPlugins>
-                                    <compilerPlugin>
-                                            <groupId>com.mmakowski</groupId>
-                                            <artifactId>maven-specs2-plugin</artifactId>
-                                            <version>0.4.2</version>
-                                    </compilerPlugin>
-                                </compilerPlugins>-->
                                 <args>
                                     <arg>-g:vars</arg>
                                     <arg>-Yrangepos</arg>
-                                    
                                 </args>
                             </configuration>
                         </execution>
@@ -209,53 +201,40 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                     <executions>
                         <execution>
                             <id>compile</id>
-                            <goals>
+                            <!--<goals>
                                 <goal>add-source</goal>
                                 <goal>compile</goal>
-                            </goals>
+                            </goals>-->
                             <configuration>
-                                <jvmArgs>
+                                <!--<jvmArgs>
                                     <jvmArg>-Xms1024m</jvmArg>
                                     <jvmArg>-Xmx2048m</jvmArg>
-                                </jvmArgs>
-								<dependencies>
-                                    <dependency>
-                                        <groupId>org.scoverage</groupId>
-                                        <artifactId>scalac-scoverage-plugin_${scala.short.version}</artifactId>
-                                        <version>${scoverage-plugin.version}</version>
-                                    </dependency>
-                                </dependencies>
+                                </jvmArgs>-->
                                 <compilerPlugins>
-                                    <compilerPlugin>
-                                        <groupId>org.scoverage</groupId>
-                                        <artifactId>scalac-scoverage-plugin_${scala.short.version}</artifactId>
-                                        <version>${scoverage-plugin.version}</version>
-                                    </compilerPlugin>
                                     <compilerPlugin>
                                             <groupId>com.mmakowski</groupId>
                                             <artifactId>maven-specs2-plugin</artifactId>
                                             <version>0.4.2</version>
                                     </compilerPlugin>
                                 </compilerPlugins>
-                                <args>
+                                <!--<args>
                                     <arg>-g:vars</arg>
                                     <arg>-Yrangepos</arg>
-                                    <arg>-P:scoverage:dataDir:${project.build.directory}</arg>
-                                </args>
+                                </args>-->
                             </configuration>
                         </execution>
-                        <execution>
+                        <!--<execution>
                             <id>test</id>
                             <goals>
                                 <goal>add-source</goal>
                                 <goal>testCompile</goal>
                             </goals>
-                        </execution>
+                        </execution>-->
                     </executions>
-                    <configuration>
+                    <!--<configuration>
                         <scalaVersion>${scala.long.version}</scalaVersion>
                         <checkMultipleScalaVersions>false</checkMultipleScalaVersions>
-                    </configuration>
+                    </configuration>-->
                 </plugin>
                 <plugin>
                     <inherited>true</inherited>
@@ -296,6 +275,110 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                         </execution>
                     </executions>
                 </plugin>
+                <!--END DO NOT TOUCH-->
+				</plugins>
+			</pluginManagement>
+			<plugins>
+				<plugin>
+					<groupId>net.alchim31.maven</groupId>
+					<artifactId>scala-maven-plugin</artifactId>
+				</plugin>
+			</plugins>
+			</build>
+			<dependencyManagement>
+				<dependencies>
+					<dependency>
+						<groupId>org.scalatest</groupId>
+						<artifactId>scalatest_${scala.short.version}</artifactId>
+						<version>2.1.6</version>
+						<scope>test</scope>
+					</dependency>
+					<dependency>
+						<groupId>org.specs2</groupId>
+						<artifactId>specs2_${scala.short.version}</artifactId>
+						<version>2.3.10</version>
+						<scope>test</scope>
+					</dependency>
+				</dependencies>
+			</dependencyManagement>
+			<dependencies>
+				<dependency>
+					<groupId>org.scalatest</groupId>
+					<artifactId>scalatest_2.10</artifactId>
+				</dependency>
+				<dependency>
+					<groupId>org.specs2</groupId>
+					<artifactId>specs2_${scala.short.version}</artifactId>
+				</dependency>
+			</dependencies>
+		</profile>
+		<profile>
+            <id>coverage</id>
+            <activation>
+                <property>
+                    <name>env.BUILD_NUMBER</name>
+                </property>
+            </activation>
+			<build>
+			<pluginManagement>
+			<plugins>
+			<!--START DO NOT TOUCH-->
+                <plugin>
+                    <inherited>true</inherited>
+                    <groupId>net.alchim31.maven</groupId>
+                    <artifactId>scala-maven-plugin</artifactId>
+                    <version>3.1.6</version>
+                    <executions>
+                        <execution>
+                            <id>compile</id>
+                            <!--<goals>
+                                <goal>add-source</goal>
+                                <goal>compile</goal>
+                            </goals>-->
+                            <configuration>
+                                <!--<jvmArgs>
+                                    <jvmArg>-Xms1024m</jvmArg>
+                                    <jvmArg>-Xmx2048m</jvmArg>
+                                </jvmArgs>-->
+								<dependencies>
+                                    <dependency>
+                                        <groupId>org.scoverage</groupId>
+                                        <artifactId>scalac-scoverage-plugin_${scala.short.version}</artifactId>
+                                        <version>${scoverage-plugin.version}</version>
+                                    </dependency>
+                                </dependencies>
+                                <compilerPlugins>
+                                    <compilerPlugin>
+                                        <groupId>org.scoverage</groupId>
+                                        <artifactId>scalac-scoverage-plugin_${scala.short.version}</artifactId>
+                                        <version>${scoverage-plugin.version}</version>
+                                    </compilerPlugin>
+                                    <compilerPlugin>
+                                            <groupId>com.mmakowski</groupId>
+                                            <artifactId>maven-specs2-plugin</artifactId>
+                                            <version>0.4.2</version>
+                                    </compilerPlugin>
+                                </compilerPlugins>
+                                <args>
+                                    <arg>-g:vars</arg>
+                                    <arg>-Yrangepos</arg>
+                                    <arg>-P:scoverage:dataDir:${project.build.directory}</arg>
+                                </args>
+                            </configuration>
+                        </execution>
+                        <!--<execution>
+                            <id>test</id>
+                            <goals>
+                                <goal>add-source</goal>
+                                <goal>testCompile</goal>
+                            </goals>
+                        </execution>-->
+                    </executions>
+                    <!--<configuration>
+                        <scalaVersion>${scala.long.version}</scalaVersion>
+                        <checkMultipleScalaVersions>false</checkMultipleScalaVersions>
+                    </configuration>-->
+                </plugin>
                 <plugin>
                     <inherited>true</inherited>
                     <groupId>org.scoverage</groupId>
@@ -303,26 +386,17 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                     <version>${scoverage.version}</version>
                     <executions>
                         <execution>
-
                             <id>scala-scoverage-report</id>
                             <phase>test</phase>
                             <goals>
                                 <goal>report</goal>
                             </goals>
                         </execution>
-
                     </executions>
                 </plugin>
                 <!--END DO NOT TOUCH-->
 				</plugins>
-			</pluginManagement>
-			<plugins>
-				<plugin>
-                <groupId>net.alchim31.maven</groupId>
-                <artifactId>scala-maven-plugin</artifactId>
-				</plugin>
-			</plugins>
-			
+				</pluginManagement>
 			</build>
 			<dependencyManagement>
 				<dependencies>
@@ -339,7 +413,7 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
 					<artifactId>scalac-scoverage-plugin_${scala.short.version}</artifactId>
 				</dependency>
 		</dependencies>
-		</profile>
+        </profile>
     </profiles>
     <build>
         <pluginManagement>
@@ -434,40 +508,6 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                         </execution>
                     </executions>
                 </plugin>
-
-               <!--<plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-jar-plugin</artifactId>
-                    <version>2.3.2</version>
-                    <configuration>
-
-                        <archive>
-                            <manifest>
-
-                                <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
-                                <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
-                            </manifest>
-                            <manifestEntries>
-                                <addClassPath>true</addClassPath>
-                                <Build-Jdk>${java.version}</Build-Jdk>
-                                <Build-Time>${maven.build.timestamp}</Build-Time>
-                                <Git-Commit-Branch>${mvngit.branch}</Git-Commit-Branch>
-                                <Git-Commit-Hash>${mvngit.commit.id}</Git-Commit-Hash>
-                                <Git-Commit-Date>${mvngit.commit.committer.date}</Git-Commit-Date>
-                                <Git-Committer-Email>${mvngit.commit.committer.email}</Git-Committer-Email>
-                                <Git-Committer-Name>${mvngit.commit.committer.name}</Git-Committer-Name>
-                            </manifestEntries>
-                        </archive>
-                    </configuration>
-                    <executions>
-                        <execution>
-                            <goals>
-                                <goal>jar</goal>
-                                <goal>test-jar</goal>
-                            </goals>
-                        </execution>
-                    </executions>
-                </plugin>-->
                
 				<!--Create our jars-->
                 <plugin>
@@ -803,18 +843,7 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
 				<scope>test</scope>
             </dependency>-->
             
-			<dependency>
-                <groupId>org.scalatest</groupId>
-                <artifactId>scalatest_${scala.short.version}</artifactId>
-                <version>2.1.6</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.specs2</groupId>
-                <artifactId>specs2_${scala.short.version}</artifactId>
-                <version>2.3.10</version>
-                <scope>test</scope>
-            </dependency>
+			
 			
             <dependency>
                 <groupId>org.scala-lang</groupId>
@@ -1055,16 +1084,7 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
 			
         </dependency>-->
 		
-        <dependency>
-                <groupId>org.scalatest</groupId>
-                <artifactId>scalatest_2.10</artifactId>
-			
-        </dependency>
-        <dependency>
-            <groupId>org.specs2</groupId>
-            <artifactId>specs2_${scala.short.version}</artifactId>
-			
-        </dependency>
+        
 		
         <dependency>
             <groupId>org.scala-lang</groupId>
