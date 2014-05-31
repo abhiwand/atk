@@ -540,7 +540,7 @@ class SparkComponent extends EngineComponent
               val allColumns = SparkEngine.resolveSchemaNamingConflicts(originalColumns(0), originalColumns(1))
 
               /* create a dataframe should take very little time, much less than 10 minutes */
-              val newJoinFrame = Await.result(create(DataFrameTemplate(joinCommand.name, Schema(allColumns))), 10 minutes)
+              val newJoinFrame = Await.result(create(DataFrameTemplate(joinCommand.name)), 10 minutes)
 
               withCommand(command) {
                 val ctx = context(user).sparkContext
@@ -548,6 +548,7 @@ class SparkComponent extends EngineComponent
 
                 val joinResultRDD = SparkOps.joinRDDs(RDDJoinParam(pairRdds(0), originalColumns(0).length), RDDJoinParam(pairRdds(1), originalColumns(1).length), joinCommand.how)
                 joinResultRDD.saveAsObjectFile(fsRoot + frames.getFrameDataFile(newJoinFrame.id))
+                frames.updateSchema(newJoinFrame, allColumns)
                 newJoinFrame.toJson.asJsObject
               }
 
