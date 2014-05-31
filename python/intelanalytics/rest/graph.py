@@ -30,8 +30,6 @@ from intelanalytics.core.graph import VertexRule, EdgeRule
 from intelanalytics.core.column import BigColumn
 from intelanalytics.rest.connection import rest_http
 
-# temp adaptor
-from intelanalytics.rest.tmp_gb_json import JsonPayloadAdaptor
 
 
 class GraphBackendRest(object):
@@ -55,17 +53,21 @@ class GraphBackendRest(object):
 
     def create(self, graph, rules):
         logger.info("REST Backend: create graph: " + graph.name)
-        #payload = JsonPayload(graph, rules)
-        payload = JsonPayloadAdaptor(graph, rules)
+
         if logger.level == logging.DEBUG:
             import json
             payload_json =  json.dumps(payload, indent=2, sort_keys=True)
             logger.debug("REST Backend: create graph payload: " + payload_json)
-        r = rest_http.post('graphs', payload)
+        r = rest_http.post('graphs', { 'name': graph.name })
         logger.info("REST Backend: create response: " + r.text)
         payload = r.json()
         graph._id = payload['id']
-        graph._uri = "%s/%d" % (self._get_uri(payload), graph._id)
+        graph._uri = "%s" % (self._get_uri(payload))
+        payload = JsonPayload(graph, rules)
+
+        r = rest_http.post('commands', {"name": "graph/load", "arguments": payload})
+        logger.info("REST Backend: load response: " + r.text)
+
 
     def _get_uri(self, payload):
         links = payload['links']
@@ -127,12 +129,12 @@ class JsonAlsPayload(object):
 class JsonValue(object):
     def __new__(cls, value):
         if isinstance(value, basestring):
-            t, v = "static", value
+            t, v = "CONSTANT", value
         elif isinstance(value, BigColumn):
-            t, v = "column", value.name
+            t, v = "VARYING", value.name
         else:
             raise TypeError("Bad graph element source type")
-        return {"type": t, "value": v}
+        return {"source": t, "value": v}
 
 
 class JsonProperty(object):
@@ -154,20 +156,21 @@ class JsonEdgeRule(object):
                 'head': JsonProperty(JsonValue(rule.head.id_key), JsonValue(rule.head.id_value)),
                 'properties': [JsonProperty(JsonValue(k), JsonValue(v))
                                for k, v in rule.properties.items()],
-                'is_directed': rule.is_directed}
+                'bidirectional': not rule.is_directed}
 
 
 class JsonFrame(object):
     def __new__(cls, frame_uri):
-        return {'frame_uri': frame_uri,
+        return {'frame': frame_uri,
                 'vertex_rules': [],
                 'edge_rules': []}
 
 
 class JsonPayload(object):
     def __new__(cls, graph, rules):
-        return {'name': graph.name,
-                'frames': JsonPayload._get_frames(rules)}
+        return {'graph': graph.uri,
+                'frame_rules': JsonPayload._get_frames(rules),
+                'retain_dangling_edges':False } # TODO
 
     @staticmethod
     def _get_frames(rules):

@@ -100,7 +100,7 @@ class FrameBackendRest(object):
         logger.info("REST Backend: create frame response: " + r.text)
         payload = r.json()
         frame._id = payload['id']
-        frame._uri = "%s/%d" % (self._get_uri(payload), frame._id)
+        frame._uri = "%s" % (self._get_uri(payload))
 
     def _get_uri(self, payload):
         links = payload['links']
