@@ -25,7 +25,7 @@ package com.intel.intelanalytics.engine.spark
 
 import org.scalatest.{ Matchers, FlatSpec }
 
-class FlattenColumnSpec extends FlatSpec with Matchers {
+class FlattenColumnTest extends FlatSpec with Matchers {
   "flatten column" should "create multiple rows by splitting a column" in {
     val row = Array(1, "dog,cat")
     val flattened = SparkOps.flattenColumnByIndex(1, row, ",")
