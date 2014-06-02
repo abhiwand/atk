@@ -61,7 +61,7 @@ case class FrameAddColumn[+Arguments, FrameRef](frame: FrameRef, columnname: Str
 
 /**
  * frame join command
- * @param name name of new dataframe to be created
+ * @param name name of new dataframe to be created, eg: result
  * @param frames input dataframes for the join operation
  * @param how methods of join. inner, left or right
  */
