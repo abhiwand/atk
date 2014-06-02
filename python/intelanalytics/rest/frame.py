@@ -249,3 +249,9 @@ class FrameBackendRest(object):
     def take(self, frame, n, offset):
         r = self.rest_http.get('dataframes/{0}/data?offset={2}&count={1}'.format(frame._id,n, offset))
         return r.json()
+
+    def join(self, leftFrame, rightframe, leftDataFrameJoinColumn, rightDataFrameJoinColumn, joinMethod, newFrameName):
+        arguments = {'name': newFrameName, "how": joinMethod, "frames": [[leftFrame._id, leftDataFrameJoinColumn], [rightframe._id, rightDataFrameJoinColumn]] }
+        command = CommandRequest("dataframe/join", arguments)
+        return executor.issue(command)
+
