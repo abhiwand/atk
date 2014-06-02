@@ -30,6 +30,7 @@ import com.intel.intelanalytics.domain.graphconstruction.Value
 import com.intel.intelanalytics.domain.graphconstruction.OutputConfiguration
 import com.intel.intelanalytics.domain.graphconstruction.EdgeRule
 import com.intel.intelanalytics.domain.graphconstruction.Property
+import org.joda.time.DateTime
 
 object DomainJsonProtocol extends DefaultJsonProtocol {
 
@@ -42,6 +43,18 @@ object DomainJsonProtocol extends DefaultJsonProtocol {
 
     override def write(obj: DataType): JsValue = new JsString(obj.toString)
   }
+
+  // TODO: this was added for Joda DateTimes - not sure this is right?
+  trait DateTimeJsonFormat extends JsonFormat[DateTime] {
+    private val dateTimeFmt = org.joda.time.format.ISODateTimeFormat.dateTime
+    def write(x: DateTime) = JsString(dateTimeFmt.print(x))
+    def read(value: JsValue) = value match {
+      case JsString(x) => dateTimeFmt.parseDateTime(x)
+      case x => deserializationError("Expected DateTime as JsString, but got " + x)
+    }
+  }
+
+  implicit val dateTimeFormat = new DateTimeJsonFormat {}
 
   implicit val schemaFormat = jsonFormat1(Schema)
 
@@ -67,7 +80,7 @@ object DomainJsonProtocol extends DefaultJsonProtocol {
   implicit val alsFormatString = jsonFormat5(Als[String])
   implicit val alsFormatLong = jsonFormat5(Als[Long])
   implicit val errorFormat = jsonFormat5(Error)
-  implicit val userFormat = jsonFormat2(User)
+  implicit val userFormat = jsonFormat5(User)
 
   // graph service formats
 

@@ -95,7 +95,7 @@ object ServiceHost {
       Await.ready(engine.getCommands(0, 1), 30 seconds)
 
       //TODO: Remove when connecting to an actual database server
-      metaStore.create()
+      metaStore.createAllTables()
 
       metaStore.withSession("Populating test users") {
         implicit session =>
