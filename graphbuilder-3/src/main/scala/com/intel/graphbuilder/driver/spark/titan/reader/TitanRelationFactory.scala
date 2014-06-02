@@ -1,23 +1,16 @@
 package com.intel.graphbuilder.driver.spark.titan.reader
 
-import com.intel.graphbuilder.elements.{Edge, Vertex, Property, GraphElement}
+import com.intel.graphbuilder.elements.{ Edge, Vertex, Property, GraphElement }
 import com.tinkerpop.blueprints.Direction
 import com.thinkaurelius.titan.core.TitanType
 import com.thinkaurelius.titan.graphdb.types.system.SystemType
+import com.thinkaurelius.titan.graphdb.database.EdgeSerializer
+import com.thinkaurelius.titan.graphdb.transaction.StandardTitanTx
 import scala.collection.mutable.ListBuffer
 
 /**
- * Used by Titan to deserialize a single row in a key-value store.
- *
- * @see com.thinkaurelius.titan.graphdb.database.EdgeSerializer#readRelation
- *      Titan stores a vertex and its adjacent edges as a single row in the key-value store.
- *      Each vertex property and edge is stored in a distinct column. Titan's deserializer extracts vertex properties
- *      and the adjacent edges from the row.
- *
- * @see com.intel.graphbuilder.driver.spark.titan.reader.TitanRowParser
- *      Once Titan's deserializer extracts properties and edges, the build() method in this class is called to update
- *      the vertex property list, and edge list.
- *      Lastly, createGraphElements() returns a sequence of GraphElement type containing the vertex and its adjacent edges,
+ * Uses Titan's internal methods to deserialize a single row in a key-value store, and
+ * extract a sequence of graph elements containing a vertex and its adjacent edges.
  *
  * @param vertexId Physical vertex ID from the underlying Graph storage layer
  */
@@ -25,9 +18,9 @@ import scala.collection.mutable.ListBuffer
 class TitanRelationFactory(vertexId: Long) extends com.thinkaurelius.titan.graphdb.database.RelationFactory {
   require(vertexId > 0, "Vertex ID should be greater than zero")
 
-  private val gbId = TitanReader.TITAN_READER_GB_ID
-  private val edgeList = new ListBuffer[GraphElement]
-  private val vertexProperties = new ListBuffer[Property]
+  val gbId = TitanReader.TITAN_READER_GB_ID
+  val edgeList = new ListBuffer[GraphElement]
+  val vertexProperties = new ListBuffer[Property]
 
   private var properties = Map[String, Any]()
   private var direction: Direction = null
@@ -85,6 +78,37 @@ class TitanRelationFactory(vertexId: Long) extends com.thinkaurelius.titan.graph
   }
 
   /**
+   * Deserializes a Titan row, and creates a sequence of GraphBuilder elements containing a vertex
+   * and its adjacent edges
+   *
+   * @see com.thinkaurelius.titan.graphdb.database.EdgeSerializer#readRelation
+   *      Titan stores a vertex and its adjacent edges as a single row in the key-value store.
+   *      Each vertex property and edge is stored in a distinct column. Titan's deserializer extracts vertex properties
+   *      and the adjacent edges from the row.
+   *
+   *      Once Titan's deserializer extracts properties and edges, the build() method updates
+   *      the vertex property list, and edge list.
+   *
+   * @param titanRow Serialized Titan row
+   * @param titanEdgeSerializer Titan's serializer/deserializer
+   * @param titanTransaction Titan transaction
+   *
+   * @return Sequence of graph elements containing vertex and its adjacent edges
+   */
+  def createGraphElements(titanRow: TitanRow, titanEdgeSerializer: EdgeSerializer, titanTransaction: StandardTitanTx): Seq[GraphElement] = {
+
+    titanRow.serializedEntries.map(entry => {
+      titanEdgeSerializer.readRelation(this, entry, titanTransaction);
+      build()
+    })
+
+    createVertex() match {
+      case Some(v) => edgeList :+ v
+      case _ => edgeList
+    }
+  }
+
+  /**
    * Extracts a vertex property or an edge from a column entry, and updates the corresponding
    * vertex property or edge list
    */
@@ -95,25 +119,11 @@ class TitanRelationFactory(vertexId: Long) extends com.thinkaurelius.titan.graph
       }
       else {
         require(titanType.isEdgeLabel(), "Titan type should be an edge label or a vertex property")
-        edgeList += createEdge(vertexId, otherVertexID, direction, titanType.getName(), properties)
+        val edge = createEdge(vertexId, otherVertexID, direction, titanType.getName(), properties)
+        if (edge.isDefined) edgeList += edge.get
       }
     }
     properties = Map[String, Any]()
-  }
-
-  /**
-   * Create a sequence of GraphBuilder elements containing the vertex and its adjacent elements.
-   *
-   * This method is called after all the graph elements in the row of the key-value store have
-   * been extracted using build().
-   */
-  def createGraphElements(): Seq[GraphElement] = {
-    val vertex = createVertex()
-
-    vertex match {
-      case Some(v) => edgeList :+ v
-      case _ => edgeList
-    }
   }
 
   /**
@@ -131,7 +141,11 @@ class TitanRelationFactory(vertexId: Long) extends com.thinkaurelius.titan.graph
   }
 
   /**
-   * Creates a GraphBuilder edge from a deserialized Titan edge
+   * Creates a GraphBuilder edge from a deserialized Titan edge.
+   *
+   * Titan represents edges as an adjacency list so each edge gets stored twice. Once in the row containing the
+   * outgoing vertex, and again in the row containing the incoming vertex.
+   * We limit reads to outgoing edges to prevent duplicates
    *
    * @param vertexId Physical vertex ID from the underlying Graph storage layer
    * @param otherVertexID Physical vertex ID for adjacent vertex in edge
@@ -141,17 +155,17 @@ class TitanRelationFactory(vertexId: Long) extends com.thinkaurelius.titan.graph
    *
    * @return GraphBuilder edge
    */
-  private def createEdge(vertexId: Long, otherVertexID: Long, direction: Direction, edgeLabel: String, properties: Map[String, Any]): Edge = {
-    // TODO: Determine how to handle Direction == BOTH since it is not supported by GraphBuilder.
-    // Currently returns edge with Direction.OUT
-    val srcVertexId = if (direction == Direction.IN) otherVertexID else vertexId
-    val destVertexId = if (direction == Direction.IN) vertexId else otherVertexID
+  private def createEdge(vertexId: Long, otherVertexID: Long, direction: Direction, edgeLabel: String, properties: Map[String, Any]): Option[Edge] = {
 
-    val edgeProperties = properties.map(entry =>
-      Property(entry._1, entry._2)
-    ).toSeq
+    direction match {
+      case Direction.OUT =>
+        val srcVertexId = vertexId
+        val destVertexId = otherVertexID
+        val edgeProperties = properties.map(entry => Property(entry._1, entry._2)).toSeq
 
-    new Edge(srcVertexId, destVertexId, Property(gbId, srcVertexId), Property(gbId, destVertexId), edgeLabel, edgeProperties)
+        Option(new Edge(srcVertexId, destVertexId, Property(gbId, srcVertexId), Property(gbId, destVertexId), edgeLabel, edgeProperties))
+      case _ => None
+    }
   }
 
   /**

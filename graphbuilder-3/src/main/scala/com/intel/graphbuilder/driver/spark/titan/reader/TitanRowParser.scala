@@ -28,8 +28,7 @@ case class TitanRowParser(titanRow: TitanRow, titanEdgeSerializer: EdgeSerialize
     val titanRelationFactory = new TitanRelationFactory(vertexId)
 
     try {
-      deserializeTitanRow(titanRelationFactory)
-      titanRelationFactory.createGraphElements()
+      titanRelationFactory.createGraphElements(titanRow, titanEdgeSerializer, titanTransaction)
     }
     catch {
       case e: Exception => {
@@ -50,18 +49,6 @@ case class TitanRowParser(titanRow: TitanRow, titanEdgeSerializer: EdgeSerialize
         throw new RuntimeException("Unable to extract Titan row key:" + rowKey, e)
       }
     }
-  }
-
-  /**
-   * Deserialize Titan row into vertex properties, and edges in the adjacency list
-   *
-   * @param titanRelationFactory Relation factory used by Titan to deserialize rows
-   */
-  private def deserializeTitanRow(titanRelationFactory: TitanRelationFactory) {
-    titanRow.serializedEntries.map(entry => {
-      titanEdgeSerializer.readRelation(titanRelationFactory, entry, titanTransaction);
-      titanRelationFactory.build()
-    })
   }
 }
 

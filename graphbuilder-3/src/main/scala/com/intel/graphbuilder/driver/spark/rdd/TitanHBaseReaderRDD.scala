@@ -51,7 +51,7 @@ class TitanHBaseReaderRDD(hBaseRDD: RDD[(ImmutableBytesWritable, Result)],
     })
 
     context.addOnCompleteCallback(() => {
-      titanTransaction.rollback()
+      titanTransaction.commit()
       titanGraph.shutdown()
     })
 

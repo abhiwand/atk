@@ -6,7 +6,6 @@ import com.intel.graphbuilder.graph.titan.TitanGraphConnector
 import org.apache.spark.SparkContext
 import com.thinkaurelius.titan.graphdb.configuration.GraphDatabaseConfiguration
 
-
 /**
  * TitanReader constants.
  */
@@ -23,7 +22,7 @@ object TitanReader {
  */
 case class TitanReader(sparkContext: SparkContext, titanConnector: TitanGraphConnector) extends Serializable {
 
-  import TitanReader.TITAN_STORAGE_BACKEND
+  import TitanReader._
 
   val titanConfig = titanConnector.config
 
@@ -48,8 +47,6 @@ case class TitanReader(sparkContext: SparkContext, titanConnector: TitanGraphCon
       }
     }
 
-    // Titan represents edges as an adjacency list so each edge gets stored twice. Once in the row containing the
-    // outgoing vertex, and again in the row containing the incoming vertex. distinct() removes these duplicates.
     titanReaderRDD.distinct()
   }
 }

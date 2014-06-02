@@ -1,12 +1,11 @@
-package com.intel.graphbuilder.testutils
+package com.intel.graphbuilder.driver.spark.titan.reader
 
-import com.thinkaurelius.titan.graphdb.database.{StandardTitanGraph, EdgeSerializer}
-import com.thinkaurelius.titan.core.{TitanProperty, TitanElement, TitanVertex}
+import com.thinkaurelius.titan.graphdb.database.{ StandardTitanGraph, EdgeSerializer }
+import com.thinkaurelius.titan.core.{ TitanProperty, TitanElement, TitanVertex }
 import com.thinkaurelius.titan.diskstorage.keycolumnvalue.Entry
 import com.thinkaurelius.titan.graphdb.internal.InternalRelation
-import com.intel.graphbuilder.driver.spark.titan.reader.TitanRow
 import com.thinkaurelius.titan.graphdb.database.idhandling.IDHandler
-import com.intel.graphbuilder.elements.Property
+import com.intel.graphbuilder.elements.{ Edge, GraphElement, Vertex, Property }
 import com.thinkaurelius.titan.diskstorage.StaticBuffer
 import org.apache.hadoop.hbase.CellUtil
 import org.apache.hadoop.hbase.io.ImmutableBytesWritable
@@ -14,7 +13,6 @@ import org.apache.hadoop.hbase.client.Result
 import scala.collection.mutable.ListBuffer
 import scala.collection.immutable.HashMap
 import scala.collection.JavaConversions._
-
 
 /**
  * Utility methods for creating test data for reading Titan graphs.
@@ -49,16 +47,16 @@ object TitanReaderUtils {
 
     graph.getVertices().foreach(vertex => {
       val titanVertex = vertex.asInstanceOf[TitanVertex]
-      val entryList = ListBuffer[Entry]()
 
-      titanVertex.getEdges().foreach(edge => {
-        entryList ++= serializeGraphElement(edgeSerializer, titanVertex, edge.asInstanceOf[TitanElement])
-      })
+      val propertyList = titanVertex.getProperties().flatMap(property => {
+        serializeGraphElement(edgeSerializer, titanVertex, property.asInstanceOf[TitanElement])
+      }).toList
 
-      titanVertex.getProperties().foreach(property => {
-        entryList ++= serializeGraphElement(edgeSerializer, titanVertex, property.asInstanceOf[TitanElement])
-      })
+      val edgeList = titanVertex.getEdges().flatMap(edge => {
+        serializeGraphElement(edgeSerializer, titanVertex, edge.asInstanceOf[TitanElement])
+      }).toList
 
+      val entryList = propertyList ++ edgeList
       val titanRow = new TitanRow(IDHandler.getKey(titanVertex.getID), entryList.toSeq)
       entryMap += (vertex.getProperty("name").toString() -> titanRow)
     })
@@ -80,7 +78,8 @@ object TitanReaderUtils {
     val entryList = ListBuffer[Entry]()
 
     for (pos <- 0 until relation.getLen()) {
-      if (relation.getVertex(pos) == titanVertex) { // Ensure that we are serializing properties for the right vertex
+      if (relation.getVertex(pos) == titanVertex) {
+        // Ensure that we are serializing properties for the right vertex
         entryList += titanEdgeSerializer.writeRelation(relation, pos, relation.tx())
       }
     }
@@ -93,8 +92,7 @@ object TitanReaderUtils {
    * @param titanRowMap Map of Titan rows
    * @return Map of HBase rows
    */
-  def createTestHBaseRows(titanRowMap: Map[String, TitanRow]): Map[org.apache.hadoop.hbase.io.ImmutableBytesWritable,
-    org.apache.hadoop.hbase.client.Result] = {
+  def createTestHBaseRows(titanRowMap: Map[String, TitanRow]): Map[org.apache.hadoop.hbase.io.ImmutableBytesWritable, org.apache.hadoop.hbase.client.Result] = {
 
     titanRowMap.map(row => {
       val titanRow: TitanRow = row._2
@@ -110,6 +108,28 @@ object TitanReaderUtils {
 
       (new ImmutableBytesWritable(rowKey), Result.create(hBaseCells))
 
+    })
+  }
+
+  /**
+   * Orders properties in GraphBuilder elements alphabetically using the property key.
+   *
+   * Needed to ensure to that comparison tests pass. Graphbuilder properties are represented
+   * as a sequence, so graph elements with different property orderings are not considered equal.
+   *
+   * @param graphElements Array of GraphBuilder elements
+   * @return  Array of GraphBuilder elements with sorted property lists
+   */
+  def sortGraphElementProperties(graphElements: Array[GraphElement]) = {
+    graphElements.map(element => {
+      element match {
+        case v: Vertex => {
+          new Vertex(v.physicalId, v.gbId, v.properties.sortBy(p => p.key)).asInstanceOf[GraphElement]
+        }
+        case e: Edge => {
+          new Edge(e.tailPhysicalId, e.headPhysicalId, e.tailVertexGbId, e.headVertexGbId, e.label, e.properties.sortBy(p => p.key)).asInstanceOf[GraphElement]
+        }
+      }
     })
   }
 }
