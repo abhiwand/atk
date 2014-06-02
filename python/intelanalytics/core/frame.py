@@ -686,6 +686,22 @@ class BigFrame(object):
         # TODO - Review and complete docstring
         return self._backend.take(self, n, offset)
 
+    def join(self, frame, leftDataFrameJoinColumn, rightDataFrameJoinColumn, joinMethod):
+        """
+        Parameters
+        ----------
+        frame : BigFrame
+
+        leftDataFrameJoinColumn : str
+        rightDataFrameJoinColumn : str
+        joinMethod : str
+
+        Examples
+        --------
+
+        """
+        return self._backend.join(self, frame, leftDataFrameJoinColumn, rightDataFrameJoinColumn, joinMethod)
+
 
 class FrameSchema(OrderedDict):
     """
