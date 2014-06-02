@@ -35,6 +35,10 @@ class NullHandler(logging.Handler):
 logging.getLogger('').addHandler(NullHandler())
 
 
+class InputError(RuntimeError):
+    def __init__(self, arg):
+        self.args = arg
+
 class Loggers(object):
     """
     Collection of loggers to stderr, wrapped for simplicity
@@ -92,7 +96,7 @@ class Loggers(object):
                 pass
             self.__dict__[alias + "_set"] = alias_set
 
-    def set(self, level=logging.DEBUG, logger_name=''):
+    def set(self, level=logging.DEBUG, logger_name='', file_name=None, stderr_flag=True):
         """
         Set the level of the logger going to stderr
 
@@ -106,16 +110,20 @@ class Loggers(object):
         logger_name: str, optional
             The name of the logger.  If empty string, then the intelanalytics
             root logger is set
-
+        file_name: str, optional
+            The name of the file to log to  If empty then assumed file logging is disabled
+        stderr_flag: str, optional
+            If true, logging to stderr is enabled. If empty or not true, then it is disabled
         Examples
         --------
-        >>> loggers.set('debug', 'intelanalytics.rest.connection')
+        >>> loggers.set('debug', 'intelanalytics.rest.connection','logOutput','true')
         """
         logger_name = logger_name if logger_name != 'root' else ''
         logger = logging.getLogger(logger_name)
+
         if level is None or level == '':
-            # turn logger OFF
-            logger.level = logging.CRITICAL
+        # Disbale logging since no level specified
+            logger.level= logging.CRITICAL
             for h in logger.handlers:
                 if h.name == 'stderr':
                     logger.removeHandler(h)
@@ -123,21 +131,31 @@ class Loggers(object):
                 self._user_logger_names.remove(logger_name)
             except ValueError:
                 pass
+
         else:
-            if isinstance(level, basestring):
-                c = str(level)[0].lower()  # only require first letter
-                level = self._level_map[c]
-            logger.setLevel(level)
-            if not logger.handlers or not [h.name for h in logger.handlers if h.name == 'stderr']:
-                # logger does not have a handler to stderr, so we'll add it
-                h = logging.StreamHandler()
-                h.name = 'stderr'
-                h.setLevel(logging.DEBUG)
+            if file_name =='' and stderr_flag =='false':
+                # Raise an exception since neither stderr nor file logging is enabled
+                raise InputError("Stderr and file logging are disabled!")
+
+            if file_name != '':
+                # Log to file with specified level
+                logger=logging.getLogger('file-logger')
+                logger.setLevel(level)
+                fileHandler = logging.FileHandler('logOutput')
+                fileHandler.setLevel(level)
+                formatter=logging.Formatter(self._line_format)
+                fileHandler.setFormatter(formatter)
+                logger.addHandler(fileHandler)
+
+            if stderr_flag == 'true':
+                # Log to stderr with DEBUG level
+                stdHandler=logging.StreamHandler()
+                stdHandler.name = 'stderr'
+                stdHandler.setLevel(logging.DEBUG)
                 formatter = logging.Formatter(self._line_format)
-                h.setFormatter(formatter)
-                logger.addHandler(h)
+                stdHandler.setFormatter(formatter)
+                logger.addHandler(stdHandler)
+
             if logger_name not in self._user_logger_names + self._aliased_loggers_map.values():
                 self._user_logger_names.append(logger_name)
-
-
 loggers = Loggers()
