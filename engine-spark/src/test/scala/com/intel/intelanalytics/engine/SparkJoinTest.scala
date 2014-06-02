@@ -1,12 +1,10 @@
 package com.intel.intelanalytics.engine.spark
 
 import org.scalatest._
-import org.apache.spark.SparkContext
-import java.util.Date
 import com.intel.intelanalytics.domain.DataTypes.{ string, int32, DataType }
 import com.intel.intelanalytics.domain.SchemaUtil
 
-class SparkJoinSpec extends FlatSpec with Matchers {
+class SparkJoinTest extends FlatSpec with Matchers {
 
   "create2TupleForJoin" should "put first column in first entry" in {
     val data = Array("1", "2", 3, 4, "5")
