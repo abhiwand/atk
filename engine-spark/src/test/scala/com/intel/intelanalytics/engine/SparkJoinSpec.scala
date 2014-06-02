@@ -4,6 +4,7 @@ import org.scalatest._
 import org.apache.spark.SparkContext
 import java.util.Date
 import com.intel.intelanalytics.domain.DataTypes.{ string, int32, DataType }
+import com.intel.intelanalytics.domain.SchemaUtil
 
 class SparkJoinSpec extends FlatSpec with Matchers {
 
@@ -24,28 +25,28 @@ class SparkJoinSpec extends FlatSpec with Matchers {
   "join schema" should "keep field name the same when there is not name conflicts" in {
     val leftCols: List[(String, DataType)] = List(("a", int32), ("b", string))
     val rightCols: List[(String, DataType)] = List(("c", int32), ("d", string))
-    val result = SparkEngine.resolveSchemaNamingConflicts(leftCols, rightCols)
+    val result = SchemaUtil.resolveSchemaNamingConflicts(leftCols, rightCols)
     List(("a", int32), ("b", string), ("c", int32), ("d", string)) shouldBe result
   }
 
   "join schema" should "append l to the field from left and r to the field from right if field names conflict" in {
     val leftCols: List[(String, DataType)] = List(("a", int32), ("b", string), ("c", string))
     val rightCols: List[(String, DataType)] = List(("a", int32), ("c", string), ("d", string))
-    val result = SparkEngine.resolveSchemaNamingConflicts(leftCols, rightCols)
+    val result = SchemaUtil.resolveSchemaNamingConflicts(leftCols, rightCols)
     List(("a_L", int32), ("b", string), ("c_L", string), ("a_R", int32), ("c_R", string), ("d", string)) shouldBe result
   }
 
   "join schema" should "append another l to the field from left if there is another field which will have a l added" in {
     val leftCols: List[(String, DataType)] = List(("a", int32), ("a_L", string), ("c", string), ("a_L_L", string))
     val rightCols: List[(String, DataType)] = List(("a", int32), ("c", string), ("d", string))
-    val result = SparkEngine.resolveSchemaNamingConflicts(leftCols, rightCols)
+    val result = SchemaUtil.resolveSchemaNamingConflicts(leftCols, rightCols)
     List(("a_L_L_L", int32), ("a_L", string), ("c_L", string), ("a_L_L", string), ("a_R", int32), ("c_R", string), ("d", string)) shouldBe result
   }
 
   "join schema" should "keep appending l to the field from left until no conflict" in {
     val leftCols: List[(String, DataType)] = List(("a", int32), ("a_L", string), ("c", string))
     val rightCols: List[(String, DataType)] = List(("a", int32), ("a_L", string), ("c", string), ("d", string))
-    val result = SparkEngine.resolveSchemaNamingConflicts(leftCols, rightCols)
+    val result = SchemaUtil.resolveSchemaNamingConflicts(leftCols, rightCols)
     List(("a_L_L", int32), ("a_L_L_L", string), ("c_L", string), ("a_R", int32), ("a_L_R", string), ("c_R", string), ("d", string)) shouldBe result
   }
 }
