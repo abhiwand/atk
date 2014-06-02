@@ -153,8 +153,8 @@ object SparkEngine {
       )
     }
 
-    val left = funcAppendLetterForConflictingNames(leftColumns, rightColumns, "l")
-    val right = funcAppendLetterForConflictingNames(rightColumns, leftColumns, "r")
+    val left = funcAppendLetterForConflictingNames(leftColumns, rightColumns, "L")
+    val right = funcAppendLetterForConflictingNames(rightColumns, leftColumns, "R")
 
     left ++ right
   }
