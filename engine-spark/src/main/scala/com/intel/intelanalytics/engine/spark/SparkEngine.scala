@@ -145,7 +145,7 @@ class SparkComponent extends EngineComponent
 
   //TODO: only create if the datatabase doesn't already exist. So far this is in-memory only,
   //but when we want to use postgresql or mysql or something, we won't usually be creating tables here.
-  metaStore.create()
+  metaStore.createAllTables()
 
   class SparkEngine extends Engine {
 
