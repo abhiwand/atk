@@ -32,20 +32,20 @@ class SparkJoinSpec extends FlatSpec with Matchers {
     val leftCols: List[(String, DataType)] = List(("a", int32), ("b", string), ("c", string))
     val rightCols: List[(String, DataType)] = List(("a", int32), ("c", string), ("d", string))
     val result = SparkEngine.resolveSchemaNamingConflicts(leftCols, rightCols)
-    List(("a_l", int32), ("b", string), ("c_l", string), ("a_r", int32), ("c_r", string), ("d", string)) shouldBe result
+    List(("a_L", int32), ("b", string), ("c_L", string), ("a_R", int32), ("c_R", string), ("d", string)) shouldBe result
   }
 
   "join schema" should "append another l to the field from left if there is another field which will have a l added" in {
-    val leftCols: List[(String, DataType)] = List(("a", int32), ("a_l", string), ("c", string), ("a_l_l", string))
+    val leftCols: List[(String, DataType)] = List(("a", int32), ("a_L", string), ("c", string), ("a_L_L", string))
     val rightCols: List[(String, DataType)] = List(("a", int32), ("c", string), ("d", string))
     val result = SparkEngine.resolveSchemaNamingConflicts(leftCols, rightCols)
-    List(("a_l_l_l", int32), ("a_l", string), ("c_l", string), ("a_l_l", string), ("a_r", int32), ("c_r", string), ("d", string)) shouldBe result
+    List(("a_L_L_L", int32), ("a_L", string), ("c_L", string), ("a_L_L", string), ("a_R", int32), ("c_R", string), ("d", string)) shouldBe result
   }
 
   "join schema" should "keep appending l to the field from left until no conflict" in {
-    val leftCols: List[(String, DataType)] = List(("a", int32), ("a_l", string), ("c", string))
-    val rightCols: List[(String, DataType)] = List(("a", int32), ("a_l", string), ("c", string), ("d", string))
+    val leftCols: List[(String, DataType)] = List(("a", int32), ("a_L", string), ("c", string))
+    val rightCols: List[(String, DataType)] = List(("a", int32), ("a_L", string), ("c", string), ("d", string))
     val result = SparkEngine.resolveSchemaNamingConflicts(leftCols, rightCols)
-    List(("a_l_l", int32), ("a_l_l_l", string), ("c_l", string), ("a_r", int32), ("a_l_r", string), ("c_r", string), ("d", string)) shouldBe result
+    List(("a_L_L", int32), ("a_L_L_L", string), ("c_L", string), ("a_R", int32), ("a_L_R", string), ("c_R", string), ("d", string)) shouldBe result
   }
 }
