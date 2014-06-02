@@ -143,5 +143,10 @@
             <artifactId>logback-classic</artifactId>
             <version>1.1.1</version>
         </dependency>
+		<dependency>
+            <groupId>commons-lang</groupId>
+            <artifactId>commons-lang</artifactId>
+            <version>${dep.commons.lang}</version>
+        </dependency>
     </dependencies>
 </project>

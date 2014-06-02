@@ -38,7 +38,77 @@ export MAVEN_OPTS="-Xms2048m -Xmx4096m -XX:MaxPermSize=4096m -XX:PermSize=2048m"
     <name>IntelAnalytics Parent</name>
     <description>IntelAnalytics : Large Scale Graph Analytics</description>
     <inceptionYear>2013</inceptionYear>
-
+	
+	    <pluginRepositories>
+        	                <pluginRepository>
+        	                        <id>onejar-maven-plugin.googlecode.com</id>
+        	                        <url>http://onejar-maven-plugin.googlecode.com/svn/mavenrepo-snapshot</url>
+        	                </pluginRepository>
+							<pluginRepository>
+      <id>beardedgeeks-releases</id>
+      <url>http://beardedgeeks.googlecode.com/svn/repository/releases</url>
+    </pluginRepository>	
+               </pluginRepositories>
+    <repositories>
+        <repository>
+            <id>central</id>
+            <url>http://repo1.maven.org/maven2</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+        </repository>
+        <repository>
+            <id>cloudera cdh</id>
+            <url>https://repository.cloudera.com/artifactory/cloudera-repos</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>apache</id>
+            <url>https://repository.apache.org/content/groups/public/</url>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+        </repository>
+        <repository>
+            <id>sonatype</id>
+            <url>https://oss.sonatype.org/content/groups/public/</url>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+        </repository>
+        <repository>
+            <id>gaomaven</id>
+            <url>http://gaomaven.jf.intel.com:8081/nexus/content/repositories/releases</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>gaomaven-snapshots</id>
+            <url>http://gaomaven.jf.intel.com:8081/nexus/content/repositories/snapshots</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
+	
     <modules>
         <!-- commented until we can figure out how to run without invoking sbt on them-->
 
@@ -103,7 +173,8 @@ export MAVEN_OPTS="-Xms2048m -Xmx4096m -XX:MaxPermSize=4096m -XX:PermSize=2048m"
         <dep.yourkit-api.version>9.5.6</dep.yourkit-api.version>
         <dep.zookeeper.version>3.3.3</dep.zookeeper.version>
         <dep.pig.version>0.12.0-cdh5.0.0</dep.pig.version>
-        <dep.org.apache.spark>0.9.1-cdh5.0.0</dep.org.apache.spark>
+        <dep.org.apache.spark>0.9.1</dep.org.apache.spark>
+		<dep.commons.lang>2.6</dep.commons.lang>
 
         <!--START GAO MAVEN -->
         <!-- these dependencies are from gaomaven.jf.intel.com -->
@@ -1093,74 +1164,4 @@ export MAVEN_OPTS="-Xms2048m -Xmx4096m -XX:MaxPermSize=4096m -XX:PermSize=2048m"
 		
 		
     </dependencies>
-
-    <pluginRepositories>
-        	                <pluginRepository>
-        	                        <id>onejar-maven-plugin.googlecode.com</id>
-        	                        <url>http://onejar-maven-plugin.googlecode.com/svn/mavenrepo-snapshot</url>
-        	                </pluginRepository>
-							<pluginRepository>
-      <id>beardedgeeks-releases</id>
-      <url>http://beardedgeeks.googlecode.com/svn/repository/releases</url>
-    </pluginRepository>	
-               </pluginRepositories>
-    <repositories>
-        <repository>
-            <id>central</id>
-            <url>http://repo1.maven.org/maven2</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-        </repository>
-        <repository>
-            <id>cloudera cdh</id>
-            <url>https://repository.cloudera.com/artifactory/cloudera-repos</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-        </repository>
-        <repository>
-            <id>apache</id>
-            <url>https://repository.apache.org/content/groups/public/</url>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-        </repository>
-        <repository>
-            <id>sonatype</id>
-            <url>https://oss.sonatype.org/content/groups/public/</url>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-        </repository>
-        <repository>
-            <id>gaomaven</id>
-            <url>http://gaomaven.jf.intel.com:8081/nexus/content/repositories/releases</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-        </repository>
-        <repository>
-            <id>gaomaven-snapshots</id>
-            <url>http://gaomaven.jf.intel.com:8081/nexus/content/repositories/snapshots</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-        </repository>
-    </repositories>
 </project>
