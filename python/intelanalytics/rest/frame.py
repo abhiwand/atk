@@ -123,10 +123,11 @@ class FrameBackendRest(object):
         if isinstance(data, CsvFile):
             return {'source': data.file_name,
                     'destination': frame.uri,
-                    'schema': { 'columns': data._schema_to_json() },
+                    'schema': {'columns': data._schema_to_json()},
+                    'skipRows': data.skip_header_lines,
                     'lineParser': {'operation': {'name': 'builtin/line/separator'},
-                                   'arguments': {'separator': data.delimiter,
-                                                 'skipRows': data.skip_header_lines}}}
+                                   'arguments': {'separator': data.delimiter
+                                   }}}
         raise TypeError("Unsupported data source " + type(data).__name__)
 
     @staticmethod
@@ -146,6 +147,12 @@ class FrameBackendRest(object):
         arguments = {'frame': frame.uri, 'predicate': http_ready_predicate}
         command = CommandRequest(name="dataframe/filter", arguments=arguments)
         executor.issue(command)
+
+    def join(self, left, right, left_on, right_on, how, name):
+        arguments = {'name': name, "how": how, "frames": [[left._id, left_on], [right._id, right_on]] }
+        command = CommandRequest("dataframe/join", arguments)
+        command_info = executor.issue(command)
+        command_info.result
 
     def project_columns(self, frame, projected_frame, columns, new_names=None):
         # TODO - fix REST server to accept nulls, for now we'll pass an empty list
@@ -250,8 +257,5 @@ class FrameBackendRest(object):
         r = self.rest_http.get('dataframes/{0}/data?offset={2}&count={1}'.format(frame._id,n, offset))
         return r.json()
 
-    def join(self, leftFrame, rightframe, leftDataFrameJoinColumn, rightDataFrameJoinColumn, joinMethod, newFrameName):
-        arguments = {'name': newFrameName, "how": joinMethod, "frames": [[leftFrame._id, leftDataFrameJoinColumn], [rightframe._id, rightDataFrameJoinColumn]] }
-        command = CommandRequest("dataframe/join", arguments)
-        return executor.issue(command)
+
 
