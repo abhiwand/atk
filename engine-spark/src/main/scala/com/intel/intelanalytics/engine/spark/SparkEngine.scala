@@ -242,7 +242,8 @@ class SparkComponent extends EngineComponent
                 val converter = DataTypes.parseMany(schema.columns.map(_._2).toArray)(_)
                 val ctx = context(user)
                 SparkOps.loadLines(ctx.sparkContext, fsRoot + "/" + arguments.source, location, arguments, parserFunction, converter)
-                frames.updateSchema(realFrame, schema.columns)
+                val frame = frames.updateSchema(realFrame, schema.columns)
+                frame.toJson.asJsObject
               }
               commands.lookup(command.id).get
             }
@@ -515,7 +516,7 @@ class SparkComponent extends EngineComponent
                 val joinResultRDD = SparkOps.joinRDDs(RDDJoinParam(pairRdds(0), originalColumns(0).length), RDDJoinParam(pairRdds(1), originalColumns(1).length), joinCommand.how)
                 joinResultRDD.saveAsObjectFile(fsRoot + frames.getFrameDataFile(newJoinFrame.id))
                 frames.updateSchema(newJoinFrame, allColumns)
-                newJoinFrame.toJson.asJsObject
+                newJoinFrame.copy(schema = Schema(allColumns)).toJson.asJsObject
               }
 
               commands.lookup(command.id).get
