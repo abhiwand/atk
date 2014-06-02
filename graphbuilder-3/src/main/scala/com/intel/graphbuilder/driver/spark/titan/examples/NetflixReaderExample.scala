@@ -33,22 +33,28 @@ import java.util.Date
 /**
  * Example of reading Titan graph in Spark.
  */
-object TitanReaderExample {
+object NetflixReaderExample {
 
   def main(args: Array[String]): Unit = {
     val conf = new SparkConf()
-      .setMaster("local")
+      .setMaster(ExamplesUtils.sparkMaster)
       .setAppName(this.getClass.getSimpleName + " " + new Date())
       .setSparkHome(ExamplesUtils.sparkHome)
       .setJars(List(ExamplesUtils.gbJar))
+    conf.set("spark.executor.memory", "6g")
+    conf.set("spark.cores.max", "8")
     conf.set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
     conf.set("spark.kryo.registrator", "com.intel.graphbuilder.driver.spark.titan.GraphBuilderKryoRegistrator")
-    conf.set("spark.kryoserializer.buffer.mb", "32")
 
     val sc = new SparkContext(conf)
 
+    // Set HDFS output directory
+    val resultsDir = ExamplesUtils.hdfsMaster + System.getProperty("MOVIE_RESULTS_DIR", "/user/spkavuly/netflix_reader_results")
+    val vertexResultsDir = resultsDir + "/vertices"
+    val edgeResultsDir = resultsDir + "/edges"
+
     // Create graph connection
-    val tableName = "graphofgods"
+    val tableName = "netflix"
     val hBaseZookeeperQuorum = "localhost"
 
     val titanConfig = new SerializableBaseConfiguration()
@@ -70,13 +76,9 @@ object TitanReaderExample {
     // your results are too large, try:
     // a) Increasing the size of the kryoserializer buffer, e.g., conf.set("spark.kryoserializer.buffer.mb", "32")
     // b) Saving results to file instead of collect(), e.g.titanReaderRDD.saveToTextFile()
-    val graphElements = titanReaderRDD.collect()
-    val vertices = vertexRDD.collect()
-    val edges = edgeRDD.collect()
+    vertexRDD.saveAsTextFile(vertexResultsDir)
+    edgeRDD.saveAsTextFile(edgeResultsDir)
 
-    println("Graph element count:" + graphElements.length)
-    println("Vertex count:" + vertices.length)
-    println("Edge count:" + edges.length)
     sc.stop()
   }
 }

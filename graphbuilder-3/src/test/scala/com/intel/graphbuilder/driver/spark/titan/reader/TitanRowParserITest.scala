@@ -1,12 +1,10 @@
 package com.intel.graphbuilder.driver.spark.titan.reader
 
-
 import com.intel.graphbuilder.elements.GraphElement
-import com.thinkaurelius.titan.diskstorage.keycolumnvalue.{StaticBufferEntry, Entry}
-import org.scalatest.{Matchers, WordSpec}
+import com.thinkaurelius.titan.diskstorage.keycolumnvalue.{ StaticBufferEntry, Entry }
 import com.thinkaurelius.titan.diskstorage.util.StaticArrayBuffer
 import com.thinkaurelius.titan.graphdb.database.idhandling.IDHandler
-import com.intel.graphbuilder.testutils.TitanReaderTestData
+import org.scalatest.{ Matchers, WordSpec }
 
 class TitanRowParserITest extends WordSpec with Matchers {
 
@@ -31,19 +29,19 @@ class TitanRowParserITest extends WordSpec with Matchers {
 
       graphElements shouldBe (Seq.empty[GraphElement])
     }
-    "create a GraphBuilder vertex 'neptune' and two adjacent edges" in {
+    "create a GraphBuilder vertex 'neptune' with two outgoing edges" in {
       val titanTransaction = graph.newTransaction(graph.buildTransaction())
       val titanRowParser = new TitanRowParser(titanRowMap.get("neptune").get, graph.getEdgeSerializer(), titanTransaction)
       val graphElements = titanRowParser.parse()
 
       graphElements should contain theSameElementsAs List[GraphElement](neptuneGbVertex, plutoGbEdge, seaGbEdge)
     }
-    "create a GraphBuilder vertex 'pluto' with one adjacent edge" in {
+    "create a GraphBuilder vertex 'pluto' with no outgoing edges" in {
       val titanTransaction = graph.newTransaction(graph.buildTransaction())
       val titanRowParser = new TitanRowParser(titanRowMap.get("pluto").get, graph.getEdgeSerializer(), titanTransaction)
       val graphElements = titanRowParser.parse()
 
-      graphElements should contain theSameElementsAs List[GraphElement](plutoGbVertex, plutoGbEdge)
+      graphElements should contain theSameElementsAs List[GraphElement](plutoGbVertex)
     }
 
   }

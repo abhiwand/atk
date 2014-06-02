@@ -1,31 +1,27 @@
 package com.intel.graphbuilder.driver.spark.titan.reader
 
-import org.scalatest.{Matchers, WordSpec}
-import org.apache.spark.{SparkException, SparkContext, SparkConf}
-import java.util.Date
-import com.intel.graphbuilder.driver.spark.titan.examples.ExamplesUtils
 import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRDDImplicits._
 import com.intel.graphbuilder.driver.spark.rdd.TitanHBaseReaderRDD
 import com.intel.graphbuilder.elements.GraphElement
+import TitanReaderUtils.sortGraphElementProperties
+import org.scalatest.{ Suite, BeforeAndAfterAll, Matchers, WordSpec }
+import org.apache.spark.{ SparkContext, SparkConf }
 import org.apache.hadoop.hbase.client.Result
 import org.apache.hadoop.hbase.io.ImmutableBytesWritable
 import org.apache.hadoop.hbase.CellUtil
 import scala.collection.JavaConversions._
-import com.intel.graphbuilder.testutils.TitanReaderTestData
+import scala.concurrent.Lock
+import java.util.Date
+import com.intel.graphbuilder.testutils.LogUtils
 
-class TitanReaderItest extends WordSpec with Matchers {
+/**
+ * End-to-end integration test for Titan reader
+ * @todo Use Stephen's TestingSparkContext class for scalatest
+ */
+class TitanReaderITest extends WordSpec with Matchers {
 
   import TitanReaderTestData._
-
-  val conf = new SparkConf()
-    .setMaster("local")
-    .setAppName(this.getClass.getSimpleName + " " + new Date())
-    .setSparkHome(ExamplesUtils.sparkHome)
-    .setJars(List(ExamplesUtils.gbJar))
-  conf.set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
-  conf.set("spark.kryo.registrator", "com.intel.graphbuilder.driver.spark.titan.GraphBuilderKryoRegistrator")
-
-  val sc = new SparkContext(conf)
+  import TitanReaderSparkContext._
 
   "Reading a Titan graph from HBase should" should {
     "return an empty list of graph elements if the HBase table is empty" in {
@@ -69,10 +65,51 @@ class TitanReaderItest extends WordSpec with Matchers {
       vertices.length shouldBe 3
       edges.length shouldBe 2
 
-      graphElements should contain theSameElementsAs List[GraphElement](plutoGbVertex, seaGbVertex, neptuneGbVertex, plutoGbEdge, seaGbEdge)
-      vertices should contain theSameElementsAs List[GraphElement](plutoGbVertex, seaGbVertex, neptuneGbVertex)
-      edges should contain theSameElementsAs List[GraphElement](plutoGbEdge, seaGbEdge)
+      val sortedGraphElements = sortGraphElementProperties(graphElements)
+      val sortedVertices = sortGraphElementProperties(vertices.asInstanceOf[Array[GraphElement]])
+      val sortedEdges = sortGraphElementProperties(edges.asInstanceOf[Array[GraphElement]])
+
+      sortedGraphElements should contain theSameElementsAs List[GraphElement](plutoGbVertex, seaGbVertex, neptuneGbVertex, plutoGbEdge, seaGbEdge)
+      sortedVertices should contain theSameElementsAs List[GraphElement](plutoGbVertex, seaGbVertex, neptuneGbVertex)
+      sortedEdges should contain theSameElementsAs List[GraphElement](plutoGbEdge, seaGbEdge)
     }
   }
-
 }
+
+object TitanReaderSparkContext extends Suite with BeforeAndAfterAll {
+  LogUtils.silenceSpark()
+  val lock = new Lock()
+  lock.acquire()
+
+  val conf = new SparkConf()
+    .setMaster("local")
+    .setAppName(this.getClass.getSimpleName + " " + new Date())
+  conf.set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
+  conf.set("spark.kryo.registrator", "com.intel.graphbuilder.driver.spark.titan.GraphBuilderKryoRegistrator")
+  val sc = new SparkContext(conf)
+
+  /**
+   * Clean up after the test is done
+   */
+  override def afterAll = {
+    cleanupSpark()
+  }
+
+  /**
+   * Shutdown spark and release the lock
+   */
+  def cleanupSpark(): Unit = {
+    try {
+      if (sc != null) {
+        sc.stop()
+      }
+    }
+    finally {
+      // To avoid Akka rebinding to the same port, since it doesn't unbind immediately on shutdown
+      System.clearProperty("spark.driver.port")
+
+      lock.release()
+    }
+  }
+}
+

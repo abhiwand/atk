@@ -3,9 +3,9 @@ package com.intel.graphbuilder.driver.spark.titan.reader
 import com.intel.graphbuilder.elements.GraphElement
 import com.intel.graphbuilder.driver.spark.rdd.TitanHBaseReaderRDD
 import com.intel.graphbuilder.graph.titan.TitanGraphConnector
-import org.apache.hadoop.hbase.{HConstants, HBaseConfiguration}
-import org.apache.hadoop.hbase.mapreduce.{TableMapReduceUtil, TableInputFormat}
-import org.apache.hadoop.hbase.client.{Scan, HBaseAdmin}
+import org.apache.hadoop.hbase.{ HConstants, HBaseConfiguration }
+import org.apache.hadoop.hbase.mapreduce.{ TableMapReduceUtil, TableInputFormat }
+import org.apache.hadoop.hbase.client.{ Scan, HBaseAdmin }
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import java.lang.reflect.Method
