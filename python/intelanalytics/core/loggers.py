@@ -116,7 +116,7 @@ class Loggers(object):
             If true, logging to stderr is enabled. If empty or not true, then it is disabled
         Examples
         --------
-        >>> loggers.set('debug', 'intelanalytics.rest.connection','logOutput','true')
+        >>> loggers.set('DEBUG', 'intelanalytics.rest.connection','logOutput','True')
         """
         logger_name = logger_name if logger_name != 'root' else ''
         logger = logging.getLogger(logger_name)
@@ -141,13 +141,13 @@ class Loggers(object):
                 # Log to file with specified level
                 logger=logging.getLogger('file-logger')
                 logger.setLevel(level)
-                fileHandler = logging.FileHandler('logOutput')
+                fileHandler = logging.FileHandler(file_name)
                 fileHandler.setLevel(level)
                 formatter=logging.Formatter(self._line_format)
                 fileHandler.setFormatter(formatter)
                 logger.addHandler(fileHandler)
 
-            if stderr_flag == 'true':
+            if stderr_flag == 'True':
                 # Log to stderr with DEBUG level
                 stdHandler=logging.StreamHandler()
                 stdHandler.name = 'stderr'
