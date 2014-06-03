@@ -32,18 +32,9 @@ import spray.json.JsObject
 import scala.util.Try
 import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.domain.Graph
-import com.intel.intelanalytics.domain.CommandTemplate
-import com.intel.intelanalytics.domain.FilterPredicate
-import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.domain.DataFrame
-import com.intel.intelanalytics.domain.FrameRemoveColumn
 import com.intel.intelanalytics.domain.Schema
-import com.intel.intelanalytics.domain.GraphTemplate
-import com.intel.intelanalytics.domain.LoadLines
-import com.intel.intelanalytics.domain.Command
 import com.intel.intelanalytics.domain.DataFrameTemplate
-import com.intel.intelanalytics.domain.FrameAddColumn
-import com.intel.intelanalytics.domain.Als
 
 object Rows {
   type Row = Array[Any]
@@ -97,7 +88,9 @@ trait FrameComponent {
 
     def removeColumn(frame: DataFrame, columnIndex: Seq[Int]): Unit
 
-    def renameColumn[T](frame: DataFrame, name_pairs: Seq[(String, String)]): Unit
+    def renameFrame(frame: DataFrame, newName: String): Unit
+
+    def renameColumn(frame: DataFrame, name_pairs: Seq[(String, String)]): Unit
 
     def removeRows(frame: DataFrame, predicate: Row => Boolean)
 
@@ -187,6 +180,8 @@ trait EngineComponent {
 
     def project(arguments: FrameProject[JsObject, Long])(implicit user: UserPrincipal): (Command, Future[Command])
 
+    def renameFrame(arguments: FrameRenameFrame[JsObject, Long])(implicit user: UserPrincipal): (Command, Future[Command])
+
     def renameColumn(arguments: FrameRenameColumn[JsObject, Long])(implicit user: UserPrincipal): (Command, Future[Command])
 
     //  Should predicate be Partial[Any]  def filter(frame: DataFrame, predicate: Partial[Any])(implicit user: UserPrincipal): Future[DataFrame]
@@ -197,6 +192,7 @@ trait EngineComponent {
     def alter(frame: DataFrame, changes: Seq[Alteration])
 
     def delete(frame: DataFrame): Future[Unit]
+    def join(argument: FrameJoin)(implicit user: UserPrincipal): (Command, Future[Command])
     def flattenColumn(argument: FlattenColumn[Long])(implicit user: UserPrincipal): (Command, Future[Command])
     def join(argument: FrameJoin[Long])(implicit user: UserPrincipal): (Command, Future[Command])
 
@@ -233,7 +229,6 @@ trait CommandComponent {
     def scan(offset: Int, count: Int): Seq[Command]
 
     def start(id: Long): Unit
-
     def complete(id: Long, result: Try[Any]): Unit
   }
 

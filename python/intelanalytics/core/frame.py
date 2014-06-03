@@ -29,7 +29,6 @@ from intelanalytics.core.column import BigColumn
 
 import logging
 logger = logging.getLogger(__name__)
-import uuid
 
 
 def _get_backend():
@@ -124,30 +123,16 @@ class BigFrame(object):
     >>> g.name would be "Bob"
     """
     # TODO - Review Parameters, Examples
-    
 
-    def __init__(self, source=None, name=None, **kwargs):
+
+    def __init__(self, source=None, name=None):
         self._columns = OrderedDict()  # self._columns must be the first attribute to be assigned (see __setattr__)
         self._id = 0
         self._uri = ""
+        self._name = ""
         if not hasattr(self, '_backend'):  # if a subclass has not already set the _backend
             self._backend = _get_backend()
-        self._name = name or self._get_new_frame_name(source)
-
-        # TODO: remove this schema hack for frame creation w/ current REST API
-        self._original_source = source  # hold on to original source,
-
-        self._backend.create(self)
-        if source:
-            if isinstance(source, BigColumn) or (isinstance(source, list) and all(isinstance(iter, BigColumn) for iter in source)):
-                self.project(source)
-                column_names = kwargs.get('rename', None)
-                if isinstance(column_names, list):
-                    self.rename_column(self._columns.keys(), column_names)
-                elif isinstance(column_names, dict):
-                    self.rename_column([i.name if isinstance(i, BigColumn) else i for i in column_names.keys()], column_names.values())
-            else:
-                self.append(source)
+        self._backend.create(self, source, name)
         logger.info('Created new frame "%s"', self._name)
 
     def __getattr__(self, name):
@@ -183,14 +168,6 @@ class BigFrame(object):
 
     def __contains__(self, key):
         return self._columns.__contains__(key)
-
-    @staticmethod
-    def _get_new_frame_name(source=None):
-        try:
-            annotation = "_" + source.annotation
-        except:
-            annotation = ''
-        return "frame_" + uuid.uuid4().hex + annotation
 
     def _validate_key(self, key):
         if key in dir(self) and key not in self._columns:
@@ -309,10 +286,10 @@ class BigFrame(object):
         # TODO - Review Docstring
         return self._name
 
-    # TODO - add name setter call to backend
-    #@name.setter
-    #def name(self, value):
-    #    self._backend.set_name(value)
+    @name.setter
+    def name(self, value):
+        self._backend.rename_frame(self, value)
+        self._name = value  # TODO - update from backend
 
     @property
     def schema(self):
@@ -397,28 +374,33 @@ class BigFrame(object):
         # Not implemented yet
         self._backend.add_columns(self, func, names)
 
-    def append(self, *data):
+    def append(self, data):
         """
         Adds more data to the BigFrame object.
 
         Parameters
         ----------
-        data : pointer
-            A pointer to the source of the data being added.
+        data : data source or list of data source
+            The source of the data being added.
 
         Examples
         --------
-        >>> Gene = BigFrame( Larry, "Gene")
-        >>> Gene is now a BigFrame object just like Larry
-        >>> Gene.append( &Moe )
-        >>> Gene now has the data from Moe as well
-        
         """
         # TODO - Review examples
-        self._backend.append(self, *data)
+        self._backend.append(self, data)
 
-    def project(self, *data):
-        self._backend.project(self, *data)
+    def copy(self):
+        """
+        Creates a full copy of the current frame
+
+        Returns
+        -------
+        frame : BigFrame
+            A new frame object which is a copy of this frame
+        """
+        copied_frame = BigFrame()
+        self._backend.project_columns(self, copied_frame, self.column_names)
+        return copied_frame
 
     def filter(self, predicate):
         """
@@ -439,53 +421,6 @@ class BigFrame(object):
         """
         # TODO - Review docstring
         self._backend.filter(self, predicate)
-
-    def count(self):
-        """
-        Count the number of rows that exist in this object.
-        
-        Returns
-        -------
-        int32
-            The number of rows
-        
-        Examples
-        --------
-        >>> for this example, Chris is a BigFrame object with lots of data
-        >>> num_rows = Chris.count()
-        >>> num_rows is now the count of rows of data in Chris
-        
-        """
-        return self._backend.count(self)
-        # TODO - Review docstring
-        
-    def remove_column(self, name):
-        """
-        Remove columns.
-
-        Parameters
-        ----------
-        name : str OR list of str
-            column name OR list of column names to be removed from the frame
-
-        Notes
-        -----
-        Deleting a non-existant column raises a KeyError.
-        Deleting the last column in a frame leaves the frame empty.
-
-        Examples
-        --------
-        >>> For this example, Jonas is a BigFrame object with columns titled Mary, had_a, little, lamb and everywhere
-        >>> Jonas.remove_column( [ "had_a", "everywhere" ] )
-        >>> now Jonas only has the columns named Mary, little, and lamb; the data in columns had_a and everywhere is gone
-
-        """
-        # TODO - Review examples
-        self._backend.remove_column(self, name)
-        if isinstance(name, basestring):
-            name = [name]
-        for victim in name:
-            del self._columns[victim]
 
     def drop(self, predicate):
         """
@@ -564,38 +499,87 @@ class BigFrame(object):
         # TODO - Review docstring
         return self._backend.inspect(self, n, offset)
 
-    # def join(self,
-    #          right=None,
-    #          how='left',
-    #          left_on=None,
-    #          right_on=None,
-    #          suffixes=None):
-    #     """
-    #     Perform SQL JOIN on BigDataFrame
-    #
-    #     Syntax is similar to pandas DataFrame.join.
-    #
-    #     Parameters
-    #     ----------
-    #     right   : BigDataFrame or list/tuple of BigDataFrame
-    #         Frames to be joined with
-    #     how     : Str
-    #         {'left', 'right', 'outer', 'inner'}, default 'inner'
-    #     left_on : Str
-    #         Columns selected to bed joined on from left frame
-    #     right_on: Str or list/tuple of Str
-    #         Columns selected to bed joined on from right frame(s)
-    #     suffixes: tuple of Str
-    #         Suffixes to apply to columns on the output frame
-    #
-    #     Returns
-    #     -------
-    #     joined : BigFrame
-    #         new BigFrame result
-    #     """
-    #     if not right:
-    #         raise ValueError("A value for right must be specified")
-    #     return operations.BigOperationBinary("join", {BigFrame: {bool: None}}, self, predicate)
+    def join(self, right, left_on, right_on=None, how='inner'):
+        """
+        Create a new BigFrame from a JOIN operation with another BigFrame
+
+        Parameters
+        ----------
+        right : BigFrame
+            Another frame to join with
+        left_on : str
+            Name of the column for the join in this (left) frame
+        right_on : str, optional
+            Name of the column for the join in the right frame.  If not
+            provided, then the value of left_on is used.
+        how : str, optional
+            {'left', 'right', 'outer', 'inner'}
+        suffixes: 2-ary tuple of str, optional
+            Suffixes to apply to overlapping column names in the output frame.
+            Default suffixes are ('_L', '_R')
+
+        Returns
+        -------
+        fraem : BigFrame
+            The new joined frame
+
+        Examples
+        --------
+        >>> joined_frame = frame1.join(frame2, 'a')  # left join on column 'a'
+        >>> joined_frame = frame2.join(frame2, left_on='b', right_on='book', how='outer')
+        """
+        return self._backend.join(self, right, left_on, right_on, how)
+
+    def project_columns(self, column_names, new_names=None):
+        """
+        Copies specified columns into a new BigFrame object, optionally renaming them
+
+        Parameters
+        ----------
+        column_names : str OR list of str
+            column name OR list of column names to be removed from the frame
+        new_names : str OR list of str
+            The new name(s) for the column(s)
+
+        Returns
+        -------
+        frame : BigFrame
+            A new frame object containing copies of the specified columns
+        """
+        if isinstance(column_names, basestring):
+            column_names = [column_names]
+        if new_names is not None:
+            if isinstance(new_names, basestring):
+                new_names = [new_names]
+            if len(column_names) != len(new_names):
+                raise ValueError("new_names list argument must be the same length as the column_names")
+        # TODO - create a general method to validate lists of column names, such that they exist, are all from the same frame, and not duplicated
+        projected_frame = BigFrame()
+        self._backend.project_columns(self, projected_frame, column_names, new_names)
+        return projected_frame
+
+    def remove_column(self, name):
+        """
+        Remove columns
+
+        Parameters
+        ----------
+        name : str OR list of str
+            column name OR list of column names to be removed from the frame
+
+        Notes
+        -----
+        This function will retain a single column.
+
+        Examples
+        --------
+        >>>
+        """
+        self._backend.remove_column(self, name)
+        if isinstance(name, basestring):
+            name = [name]
+        for victim in name:
+            del self._columns[victim]
 
     def rename_column(self, column_name, new_name):
         """
@@ -653,8 +637,9 @@ class BigFrame(object):
         >>> The entire object Nancy is saved to disk, even those parts which were in memory waiting to do something
 
         """
+        raise NotImplementedError()
         # TODO - Review docstring
-        self._backend.save(self, name)
+        #self._backend.save(self, name)
 
     def take(self, n, offset=0):
         """

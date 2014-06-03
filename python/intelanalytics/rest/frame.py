@@ -24,14 +24,18 @@
 REST backend for frames
 """
 import base64
+import uuid
 import logging
 logger = logging.getLogger(__name__)
 from collections import defaultdict, OrderedDict
+import json
 
+from intelanalytics.core.frame import BigFrame, FrameSchema
 from intelanalytics.core.column import BigColumn
 from intelanalytics.core.files import CsvFile
 from intelanalytics.core.types import *
-from intelanalytics.rest.connection import rest_http
+from intelanalytics.rest.connection import http
+from intelanalytics.rest.command import CommandRequest, executor
 from intelanalytics.rest.spark import RowWrapper, pickle_function
 
 
@@ -59,7 +63,7 @@ class FrameBackendRest(object):
     """REST plumbing for BigFrame"""
 
     def __init__(self, http_methods=None):
-        self.rest_http = http_methods or rest_http
+        self.rest_http = http_methods or http
         # use global connection, auth, etc.  This client does not support
         # multiple connection contexts
 
@@ -78,31 +82,53 @@ class FrameBackendRest(object):
         r = self.rest_http.delete("dataframes/" + str(frame._id))
         return r
 
-    def create(self, frame):
+    def create(self, frame, source, name):
         logger.info("REST Backend: create frame: " + frame.name)
-        # hack, steal schema early if possible...
-        columns = [[n, supported_types.get_type_string(t)]
-                  for n, t in frame.schema.items()]
-        if not len(columns):
-            try:
-                if isinstance(frame._original_source,CsvFile):
-                    columns = frame._original_source._schema_to_json()
-                elif isinstance(frame._original_source, BigColumn):
-                    col = frame._original_source
-                    columns = [(col.name, supported_types.get_type_string(col.data_type))]
-                elif all(isinstance(elem, BigColumn) for elem in frame._original_source):
-                    columns = [(col.name, supported_types.get_type_string(col.data_type)) for col in frame._original_source]
+        if isinstance(source, FrameInfo):
+            self._initialize_frame(frame, source)
+            return  # early exit here
 
-            except:
-                pass
-        payload = {'name': frame.name, 'schema': {"columns": columns}}
+        frame._name = name or self._get_new_frame_name(source)
+        self._create_new_frame(frame)
+
+        # TODO - change project such that server creates the new frame, instead of passing one in
+        if isinstance(source, BigFrame):
+            self.project_columns(source, frame, source.column_names)
+        elif isinstance(source, BigColumn):
+            self.project_columns(source.frame, frame, source.name)
+        elif (isinstance(source, list) and all(isinstance(iter, BigColumn) for iter in source)):
+            self.project_columns(source[0].frame, frame, [s.name for s in source])
+        else:
+            if source:
+                self.append(frame, source)
+
+    def _create_new_frame(self, frame):
+        payload = {'name': frame.name }
         r = self.rest_http.post('dataframes', payload)
         logger.info("REST Backend: create frame response: " + r.text)
         payload = r.json()
+        #TODO - call _initialize_frame instead
         frame._id = payload['id']
-        frame._uri = "%s/%d" % (self._get_uri(payload), frame._id)
+        frame._uri = self._get_uri(payload)
 
-    def _get_uri(self, payload):
+    def _initialize_frame(self, frame, frame_info):
+        """Initializes a frame according to given frame_info"""
+        frame._id = frame_info.id_number
+        frame._uri = frame_info.uri
+        frame._name = frame_info.name
+        for column in frame_info.columns:
+            self._accept_column(frame, column)
+
+    @staticmethod
+    def _get_new_frame_name(source=None):
+        try:
+            annotation = "_" + source.annotation
+        except:
+            annotation = ''
+        return "frame_" + uuid.uuid4().hex + annotation
+
+    @staticmethod
+    def _get_uri(payload):
         links = payload['links']
         for link in links:
             if link['rel'] == 'self':
@@ -110,25 +136,16 @@ class FrameBackendRest(object):
         raise Exception('Unable to find uri for frame')
 
     def append(self, frame, data):
-        logger.info("REST Backend: Appending data to frame {0}: {1}".format(frame.name, repr(data)))
+        logger.info("REST Backend: append data to frame {0}: {1}".format(frame.name, repr(data)))
         # for now, many data sources requires many calls to append
-        if isinstance(data, list):
+        if isinstance(data, list) or isinstance(data, tuple):
             for d in data:
                 self.append(frame, d)
             return
 
-        # TODO - put the frame uri in the frame, as received from create response
-        frame_uri = "%sdataframes/%d" % (rest_http.base_uri, frame._id)
-        # TODO - abstraction for payload construction
-        payload = {'name': 'dataframe/load',
-                   'arguments': {'source': data.file_name,
-                                 'destination': frame_uri,
-                                 'lineParser': { 'operation': { 'name':'builtin/line/separator' },
-                                                 'arguments': { 'separator': data.delimiter,
-                                                                'skipRows': data.skip_header_lines}}}}
-
-        r = rest_http.post('commands', payload)
-        logger.info("Response from REST server {0}".format(r.text))
+        arguments = self._get_load_arguments(frame, data)
+        command = CommandRequest(name="dataframe/load", arguments=arguments)
+        command_info = executor.issue(command)
 
         if isinstance(data, CsvFile):
             # update the Python object (set the columns)
@@ -139,6 +156,18 @@ class FrameBackendRest(object):
         else:
             raise TypeError("Unsupported append data type "
                             + data.__class__.__name__)
+
+    @staticmethod
+    def _get_load_arguments(frame, data):
+        if isinstance(data, CsvFile):
+            return {'source': data.file_name,
+                    'destination': frame.uri,
+                    'schema': {'columns': data._schema_to_json()},
+                    'skipRows': data.skip_header_lines,
+                    'lineParser': {'operation': {'name': 'builtin/line/separator'},
+                                   'arguments': {'separator': data.delimiter
+                                   }}}
+        raise TypeError("Unsupported data source " + type(data).__name__)
 
     @staticmethod
     def _accept_column(frame, column):
@@ -154,59 +183,54 @@ class FrameBackendRest(object):
         pickled_predicate = pickle_function(func)
         http_ready_predicate = encode_bytes_for_http(pickled_predicate)
 
-        # TODO - put the frame uri in the frame, as received from create response
-        frame_uri = "%sdataframes/%d" % (rest_http.base_uri, frame._id)
-        # TODO - abstraction for payload construction
-        payload = {'name': 'dataframe/filter',
-                   'arguments': {'frame': frame_uri,
-                                 'predicate': http_ready_predicate}}
-        r = rest_http.post('commands', payload)
-        return r
+        arguments = {'frame': frame.uri, 'predicate': http_ready_predicate}
+        command = CommandRequest(name="dataframe/filter", arguments=arguments)
+        executor.issue(command)
 
-    def project(self, frame, columns):
-        frame_uri = "%sdataframes/%d" % (rest_http.base_uri, frame._id)
-        iter_cols = [columns] if isinstance(columns, BigColumn) else columns
-        original_frame_id = iter_cols[0].frame._id
-        original_frame_uri = "%sdataframes/%d" % (rest_http.base_uri, original_frame_id)
-        # TODO - abstraction for payload construction
-        column_names = ",".join([col.name for col in iter_cols])
-        payload = {'name': 'dataframe/project',
-                   'arguments': {'frame': frame_uri,
-                                 'originalframe' : original_frame_uri,
-                                 'column': column_names}}
-        r = rest_http.post('commands', payload)
+    def join(self, left, right, left_on, right_on, how):
+        name = self._get_new_frame_name()
+        arguments = {'name': name, "how": how, "frames": [[left._id, left_on], [right._id, right_on]] }
+        command = CommandRequest("dataframe/join", arguments)
+        command_info = executor.issue(command)
+        frame_info = FrameInfo(command_info.result)
+        return BigFrame(frame_info)
 
+    def project_columns(self, frame, projected_frame, columns, new_names=None):
+        # TODO - fix REST server to accept nulls, for now we'll pass an empty list
+        if new_names is None:
+            new_names = []
+        arguments = {'frame': frame.uri, 'projected_frame': projected_frame.uri, 'columns': columns, "new_column_names": new_names}
+        command = CommandRequest("dataframe/project", arguments)
+        command_info = executor.issue(command)
 
-        for col in iter_cols:
-            if col.data_type is not ignore:
-                self._accept_column(frame, BigColumn(col.name, col.data_type))
+        # TODO - refresh from command_info instead of predicting what happened
+        for i, name in enumerate(columns):
+            dtype = frame.schema[name]
+            if new_names:
+                name = new_names[i]
+            self._accept_column(projected_frame, BigColumn(name, dtype))
 
-        return r
+        return command_info
+
+    def rename_frame(self, frame, name):
+        arguments = {'frame': frame.uri, "new_name": name}
+        command = CommandRequest("dataframe/rename_frame", arguments)
+        return executor.issue(command)
 
     def rename_columns(self, frame, name_pairs):
-        frame_uri = "%sdataframes/%d" % (rest_http.base_uri, frame._id)
-        # TODO - abstraction for payload construction
         originalcolumns, renamedcolumns = ",".join(zip(*name_pairs)[0]), ",".join(zip(*name_pairs)[1])
-        payload = {'name': 'dataframe/renamecolumn',
-                   'arguments': {'frame': frame_uri,
-                                 'originalcolumn': originalcolumns,
-                                 'renamedcolumn': renamedcolumns}}
-        r = rest_http.post('commands', payload)
-        return r
-
+        arguments = {'frame': frame.uri, "originalcolumn": originalcolumns, "renamedcolumn": renamedcolumns}
+        command = CommandRequest("dataframe/renamecolumn", arguments)
+        return executor.issue(command)
 
     def remove_column(self, frame, name):
-        frame_uri = "%sdataframes/%d" % (rest_http.base_uri, frame._id)
-        # TODO - abstraction for payload construction
         columns = ",".join(name) if isinstance(name, list) else name
-        payload = {'name': 'dataframe/removecolumn',
-                   'arguments': {'frame': frame_uri,
-                                 'column': columns}}
-        r = rest_http.post('commands', payload)
-        return r
+        arguments = {'frame': frame.uri, 'column': columns}
+        command = CommandRequest("dataframe/removecolumn", arguments)
+        return executor.issue(command)
 
     def add_column(self, frame, expression, name, type):
-        frame_uri = "%sdataframes/%d" % (rest_http.base_uri, frame._id)
+        frame_uri = "%sdataframes/%d" % (http.base_uri, frame._id)
 
         def addColumnLambda(row):
             row.data.append(unicode(supported_types.cast(expression(row),type)))
@@ -220,20 +244,17 @@ class FrameBackendRest(object):
         pickled_predicate = pickle_function(func)
         http_ready_predicate = encode_bytes_for_http(pickled_predicate)
 
-        # TODO - put the frame uri in the frame, as received from create response
-        frame_uri = "%sdataframes/%d" % (rest_http.base_uri, frame._id)
-        # TODO - abstraction for payload construction
-        payload = {'name': 'dataframe/addcolumn',
-                   'arguments': {'frame': frame_uri,
-                                 'columnname': name,
-                                 'columntype': supported_types.get_type_string(type),
-                                 'expression': http_ready_predicate}}
-        r = rest_http.post('commands', payload)
+        arguments = {'frame': frame.uri,
+                     'columnname': name,
+                     'columntype': supported_types.get_type_string(type),
+                     'expression': http_ready_predicate}
+        command = CommandRequest('dataframe/addcolumn', arguments)
+        command_info = executor.issue(command)
 
         # todo - this info should come back from the engine
         self._accept_column(frame, BigColumn(name, type))
 
-        return r
+        return command_info
 
     class InspectionTable(object):
         _align = defaultdict(lambda: 'c')  # 'l', 'c', 'r'
@@ -276,3 +297,46 @@ class FrameBackendRest(object):
     def take(self, frame, n, offset):
         r = self.rest_http.get('dataframes/{0}/data?offset={2}&count={1}'.format(frame._id,n, offset))
         return r.json()
+
+
+class FrameInfo(object):
+    """
+    JSON-based Server description of a BigFrame
+    """
+    def __init__(self, frame_json_payload):
+        self._payload = frame_json_payload
+
+    def __repr__(self):
+        return json.dumps(self._payload, indent=2, sort_keys=True)
+
+    def __str__(self):
+        return 'frames/%s "%s"' % (self.id_number, self.name)
+
+    @property
+    def id_number(self):
+        return self._payload['id']
+
+    @property
+    def name(self):
+        return self._payload['name']
+
+    @property
+    def uri(self):
+        try:
+            return self._payload['links'][0]['uri']
+        except KeyError:
+            return ""
+
+    @property
+    def columns(self):
+        return [BigColumn(pair[0], supported_types.get_type_from_string(pair[1]))
+                for pair in self._payload['schema']['columns']]
+
+    def update(self, payload):
+        if self._payload and self.id_number != payload['id']:
+            msg = "Invalid payload, frame ID mismatch %d when expecting %d" \
+                  % (payload['id'], self.id_number)
+            logger.error(msg)
+            raise RuntimeError(msg)
+        self._payload = payload
+

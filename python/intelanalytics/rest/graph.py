@@ -28,7 +28,7 @@ logger = logging.getLogger(__name__)
 
 from intelanalytics.core.graph import VertexRule, EdgeRule
 from intelanalytics.core.column import BigColumn
-from intelanalytics.rest.connection import rest_http
+from intelanalytics.rest.connection import http
 
 # temp adaptor
 from intelanalytics.rest.tmp_gb_json import JsonPayloadAdaptor
@@ -41,7 +41,7 @@ class GraphBackendRest(object):
 
     def get_graph_names(self):
         logger.info("REST Backend: get_graph_names")
-        r = rest_http.get('graphs')
+        r = http.get('graphs')
         payload = r.json()
         return [f['name'] for f in payload]
 
@@ -61,7 +61,7 @@ class GraphBackendRest(object):
             import json
             payload_json =  json.dumps(payload, indent=2, sort_keys=True)
             logger.debug("REST Backend: create graph payload: " + payload_json)
-        r = rest_http.post('graphs', payload)
+        r = http.post('graphs', payload)
         logger.info("REST Backend: create response: " + r.text)
         payload = r.json()
         graph._id = payload['id']

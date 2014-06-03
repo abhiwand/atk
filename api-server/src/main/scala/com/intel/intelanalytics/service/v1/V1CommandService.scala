@@ -128,9 +128,11 @@ trait V1CommandService extends V1Service {
       case ("graph/ml/als") => runAls(uri, xform)
       case ("dataframe/filter") => runFilter(uri, xform)
       case ("dataframe/removecolumn") => runFrameRemoveColumn(uri, xform)
+      case ("dataframe/rename_frame") => runFrameRenameFrame(uri, xform)
       case ("dataframe/addcolumn") => runFrameAddColumn(uri, xform)
       case ("dataframe/project") => runFrameProject(uri, xform)
       case ("dataframe/renamecolumn") => runFrameRenameColumn(uri, xform)
+      case ("dataframe/join") => runJoinFrames(uri, xform)
       case ("dataframe/join") => runJoinFrames(uri, xform)
       case ("dataframe/flattenColumn") => runflattenColumn(uri, xform)
       case _ => ???
@@ -250,6 +252,29 @@ trait V1CommandService extends V1Service {
     }
   }
 
+  def runFrameRenameFrame(uri: Uri, xform: JsonTransform)(implicit user: UserPrincipal) = {
+    {
+      val test = Try {
+        import DomainJsonProtocol._
+        xform.arguments.get.convertTo[FrameRenameFrame[JsObject, String]]
+      }
+      val idOpt = test.toOption.flatMap(args => getFrameId(args.frame))
+      (validate(test.isSuccess, "Failed to understand rename arguments: " + getErrorMessage(test))
+        & validate(idOpt.isDefined, "Frame must be a valid data frame URL")) {
+          val args = test.get
+          val id = idOpt.get
+          onComplete(
+            for {
+              frame <- engine.getFrame(id)
+              (c, f) = engine.renameFrame(FrameRenameFrame[JsObject, Long](id, args.new_name))
+            } yield c) {
+              case Success(c) => complete(decorate(uri + "/" + c.id, c))
+              case Failure(ex) => throw ex
+            }
+        }
+    }
+  }
+
   def runFrameRenameColumn(uri: Uri, xform: JsonTransform)(implicit user: UserPrincipal) = {
     {
       val test = Try {
@@ -319,10 +344,13 @@ trait V1CommandService extends V1Service {
     }
   }
 
+  /**
+   * Perform the join operation and return the submitted command to the client
+   */
   def runJoinFrames(uri: Uri, xform: JsonTransform)(implicit user: UserPrincipal): Route = {
     val test = Try {
       import DomainJsonProtocol._
-      xform.arguments.get.convertTo[FrameJoin[Long]]
+      xform.arguments.get.convertTo[FrameJoin]
     }
 
     (validate(test.isSuccess, "Failed to parse file load descriptor: " + getErrorMessage(test))) {
@@ -357,18 +385,18 @@ trait V1CommandService extends V1Service {
         import DomainJsonProtocol._
         xform.arguments.get.convertTo[FrameProject[JsObject, String]]
       }
-      val idOpt = test.toOption.flatMap(args => getFrameId(args.frame))
-      val originalIdOpt = test.toOption.flatMap(args => getFrameId(args.originalframe))
-      (validate(test.isSuccess, "Failed to parse file load descriptor: " + getErrorMessage(test))
-        & validate(idOpt.isDefined, "Destination is not a valid data frame URL")) {
+      val sourceFrameIdOpt = test.toOption.flatMap(args => getFrameId(args.frame))
+      val projectedFrameIdOpt = test.toOption.flatMap(args => getFrameId(args.projected_frame))
+      (validate(test.isSuccess, "Failed to project command descriptor: " + getErrorMessage(test))
+        & validate(projectedFrameIdOpt.isDefined, "Destination is not a valid data frame")) {
           val args = test.get
-          val id = idOpt.get
-          val originalFrameID = originalIdOpt.get
+          val sourceFrameId = sourceFrameIdOpt.get
+          val projectedFrameId = projectedFrameIdOpt.get
           onComplete(
             for {
-              frame <- engine.getFrame(id)
-              originalFrame <- engine.getFrame(originalFrameID)
-              (c, f) = engine.project(FrameProject[JsObject, Long](id, originalFrameID, args.column))
+              projectFrame <- engine.getFrame(projectedFrameId)
+              sourceFrame <- engine.getFrame(sourceFrameId)
+              (c, f) = engine.project(FrameProject[JsObject, Long](sourceFrameId, projectedFrameId, args.columns, args.new_column_names))
             } yield c) {
               case Success(c) => complete(decorate(uri + "/" + c.id, c))
               case Failure(ex) => throw ex
@@ -376,4 +404,5 @@ trait V1CommandService extends V1Service {
         }
     }
   }
+>>>>>>> Temporary merge branch 2
 }
