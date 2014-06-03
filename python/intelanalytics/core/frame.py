@@ -422,6 +422,26 @@ class BigFrame(object):
         # TODO - Review docstring
         self._backend.filter(self, predicate)
 
+    def flatten_column(self, column_name):
+        """
+        Flatten a column
+
+        Parameters
+        ----------
+        column_name : str
+            The column to be flattened
+
+        Returns
+        -------
+        frame : BigFrame
+            The new flattened frame
+
+        Examples
+        --------
+        >>> flattened_frame = frame1.flatten_column('a')
+        """
+        return self._backend.flatten_column(self, column_name)
+
     def drop(self, predicate):
         """
         Drop rows that match a requirement.
@@ -520,7 +540,7 @@ class BigFrame(object):
 
         Returns
         -------
-        fraem : BigFrame
+        frame : BigFrame
             The new joined frame
 
         Examples
