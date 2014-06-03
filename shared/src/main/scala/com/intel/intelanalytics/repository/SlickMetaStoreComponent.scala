@@ -23,7 +23,6 @@
 
 package com.intel.intelanalytics.repository
 
-
 import com.intel.intelanalytics.shared.EventLogging
 import scala.util.Try
 import spray.json._

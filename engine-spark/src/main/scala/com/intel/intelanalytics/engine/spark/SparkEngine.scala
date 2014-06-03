@@ -233,10 +233,11 @@ class SparkComponent extends EngineComponent
                 val frameId = arguments.destination
                 val parserFunction = getLineParser(arguments.lineParser)
                 val location = fsRoot + frames.getFrameDataFile(frameId)
-                val schema = realFrame.schema
+                val schema = arguments.schema
                 val converter = DataTypes.parseMany(schema.columns.map(_._2).toArray)(_)
                 val ctx = context(user)
                 SparkOps.loadLines(ctx.sparkContext, fsRoot + "/" + arguments.source, location, arguments, parserFunction, converter)
+                frames.updateSchema(realFrame, schema.columns)
               }
               commands.lookup(command.id).get
             }
@@ -266,6 +267,31 @@ class SparkComponent extends EngineComponent
         frames.getFrames(offset, count)
       }
     }
+
+    def renameFrame(arguments: FrameRenameFrame[JsObject, Long])(implicit user: UserPrincipal): (Command, Future[Command]) =
+      withContext("se.rename_frame") {
+        require(arguments != null, "arguments are required")
+        import DomainJsonProtocol._
+        val command: Command = commands.create(new CommandTemplate("rename_frame", Some(arguments.toJson.asJsObject)))
+        val result: Future[Command] = future {
+          withMyClassLoader {
+            withContext("se.rename_frame.future") {
+              withCommand(command) {
+
+                val frameID = arguments.frame
+
+                val frame = frames.lookup(frameID).getOrElse(
+                  throw new IllegalArgumentException(s"No such data frame: $frameID"))
+
+                val newName = arguments.new_name
+                frames.renameFrame(frame, newName)
+              }
+              commands.lookup(command.id).get
+            }
+          }
+        }
+        (command, result)
+      }
 
     def renameColumn(arguments: FrameRenameColumn[JsObject, Long])(implicit user: UserPrincipal): (Command, Future[Command]) =
       withContext("se.renamecolumn") {
@@ -308,16 +334,18 @@ class SparkComponent extends EngineComponent
             withContext("se.project.future") {
               withCommand(command) {
 
-                val originalFrameID = arguments.originalframe
-                val projectedFrameID = arguments.frame
+                val sourceFrameID = arguments.frame
+                val sourceFrame = frames.lookup(sourceFrameID).getOrElse(
+                  throw new IllegalArgumentException(s"No such data frame: $sourceFrameID"))
 
-                val originalFrame = frames.lookup(originalFrameID).getOrElse(
-                  throw new IllegalArgumentException(s"No such data frame: $originalFrameID"))
+                val projectedFrameID = arguments.projected_frame
+                val projectedFrame = frames.lookup(projectedFrameID).getOrElse(
+                  throw new IllegalArgumentException(s"No such data frame: $projectedFrameID"))
 
                 val ctx = context(user).sparkContext
-                val columns = arguments.column.split(",")
+                val columns = arguments.columns
 
-                val schema = originalFrame.schema
+                val schema = sourceFrame.schema
                 val location = fsRoot + frames.getFrameDataFile(projectedFrameID)
 
                 val columnIndices = for {
@@ -325,16 +353,22 @@ class SparkComponent extends EngineComponent
                   columnIndex = schema.columns.indexWhere(columnTuple => columnTuple._1 == col)
                 } yield columnIndex
 
-                columnIndices match {
-                  case invalidColumns if invalidColumns.contains(-1) =>
-                    throw new IllegalArgumentException(s"Invalid list of columns: ${arguments.column}")
-                  case _ => frames.getFrameRdd(ctx, originalFrameID)
-                    .map(row => {
-                      for { i <- columnIndices } yield row(i)
-                    }.toArray)
-                    .saveAsObjectFile(location)
+                if (columnIndices.contains(-1)) {
+                  throw new IllegalArgumentException(s"Invalid list of columns: ${arguments.columns.toString()}")
                 }
 
+                frames.getFrameRdd(ctx, sourceFrameID)
+                  .map(row => { for { i <- columnIndices } yield row(i) }.toArray)
+                  .saveAsObjectFile(location)
+
+                val projectedColumns = arguments.new_column_names match {
+                  case empty if empty.size == 0 => for { i <- columnIndices } yield schema.columns(i)
+                  case _ => {
+                    for { i <- 0 until columnIndices.size }
+                      yield (arguments.new_column_names(i), schema.columns(columnIndices(i))._2)
+                  }
+                }
+                frames.updateSchema(projectedFrame, projectedColumns.toList)
               }
               commands.lookup(command.id).get
             }
@@ -1022,6 +1056,32 @@ def calculateScore(list1, list2, biasOn, featureDimension) {
 
     import com.intel.intelanalytics.domain.DomainJsonProtocol._
 
+    def updateName(frame: DataFrame, newName: String): DataFrame = {
+      val newFrame = frame.copy(name = newName)
+      updateMeta(newFrame)
+    }
+
+    def updateSchema(frame: DataFrame, columns: List[(String, DataType)]): DataFrame = {
+      val newSchema = frame.schema.copy(columns = columns)
+      val newFrame = frame.copy(schema = newSchema)
+      updateMeta(newFrame)
+    }
+
+    private def updateMeta(newFrame: DataFrame): DataFrame = {
+      val meta = File(Paths.get(getFrameMetaDataFile(newFrame.id)))
+      info(s"Saving metadata to $meta")
+      val f = files.write(meta)
+      try {
+        val json: String = newFrame.toJson.prettyPrint
+        debug(json)
+        f.write(json.getBytes(Codec.UTF8.name))
+      }
+      finally {
+        f.close()
+      }
+      newFrame
+    }
+
     override def drop(frame: DataFrame): Unit = withContext("frame.drop") {
       files.delete(Paths.get(getFrameDirectory(frame.id)))
     }
@@ -1047,20 +1107,7 @@ def calculateScore(list1, list2, biasOn, featureDimension) {
               frame.schema.columns.zipWithIndex.filter(elem => columnIndex.contains(elem._2) == false).map(_._1)
           }
         }
-        val newSchema = frame.schema.copy(columns = remainingColumns)
-        val newFrame = frame.copy(schema = newSchema)
-
-        val meta = File(Paths.get(getFrameMetaDataFile(frame.id)))
-        info(s"Saving metadata to $meta")
-        val f = files.write(meta)
-        try {
-          val json: String = newFrame.toJson.prettyPrint
-          debug(json)
-          f.write(json.getBytes(Codec.UTF8.name))
-        }
-        finally {
-          f.close()
-        }
+        updateSchema(frame, remainingColumns)
       }
 
     override def addColumnWithValue[T](frame: DataFrame, column: Column[T], default: T): Unit =
@@ -1068,54 +1115,32 @@ def calculateScore(list1, list2, biasOn, featureDimension) {
         ???
       }
 
-    override def renameColumn[T](frame: DataFrame, name_pairs: Seq[(String, String)]): Unit =
+    override def renameFrame(frame: DataFrame, newName: String): Unit =
+      withContext("frame.rename") {
+        updateName(frame, newName)
+      }
+
+    override def renameColumn(frame: DataFrame, name_pairs: Seq[(String, String)]): Unit =
       withContext("frame.renameColumn") {
         val columnsToRename: Seq[String] = name_pairs.map(_._1)
         val newColumnNames: Seq[String] = name_pairs.map(_._2)
 
         def generateNewColumnTuple(oldColumn: String, columnsToRename: Seq[String], newColumnNames: Seq[String]): String = {
-          val columnIndex: Int = columnsToRename.indexOf(oldColumn)
-          if (columnIndex > 0) newColumnNames(columnIndex)
-          else oldColumn
+          val result = columnsToRename.indexOf(oldColumn) match {
+            case notFound if notFound < 0 => oldColumn
+            case found => newColumnNames(found)
+          }
+          result
         }
 
         val newColumns = frame.schema.columns.map(col => (generateNewColumnTuple(col._1, columnsToRename, newColumnNames), col._2))
-
-        val newSchema = frame.schema.copy(columns = newColumns)
-        val newFrame = frame.copy(schema = newSchema)
-
-        val meta = File(Paths.get(getFrameMetaDataFile(frame.id)))
-        info(s"Saving metadata to $meta")
-        val f = files.write(meta)
-        try {
-          val json: String = newFrame.toJson.prettyPrint
-          debug(json)
-          f.write(json.getBytes(Codec.UTF8.name))
-        }
-        finally {
-          f.close()
-        }
-        newFrame
+        updateSchema(frame, newColumns)
       }
 
     override def addColumn[T](frame: DataFrame, column: Column[T], columnType: DataTypes.DataType): DataFrame =
       withContext("frame.addColumn") {
         val newColumns = frame.schema.columns :+ (column.name, columnType)
-        val newSchema = frame.schema.copy(columns = newColumns)
-        val newFrame = frame.copy(schema = newSchema)
-
-        val meta = File(Paths.get(getFrameMetaDataFile(frame.id)))
-        info(s"Saving metadata to $meta")
-        val f = files.write(meta)
-        try {
-          val json: String = newFrame.toJson.prettyPrint
-          debug(json)
-          f.write(json.getBytes(Codec.UTF8.name))
-        }
-        finally {
-          f.close()
-        }
-        newFrame
+        updateSchema(frame, newColumns)
       }
 
     override def getRows(frame: DataFrame, offset: Long, count: Int)(implicit user: UserPrincipal): Iterable[Row] =
