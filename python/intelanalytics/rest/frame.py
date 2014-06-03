@@ -188,7 +188,7 @@ class FrameBackendRest(object):
 
     def join(self, left, right, left_on, right_on, how):
         name = self._get_new_frame_name()
-        arguments = {'name': name, "how": how, "frames": [[left.id_number, left_on], [right._id, right_on]] }
+        arguments = {'name': name, "how": how, "frames": [[left._id, left_on], [right._id, right_on]] }
         command = CommandRequest("dataframe/join", arguments)
         command_info = executor.issue(command)
         frame_info = FrameInfo(command_info.result)
@@ -328,7 +328,9 @@ class FrameInfo(object):
 
     @property
     def columns(self):
-        return OrderedDict(self._payload['columns'])
+        schemaDict = OrderedDict(self._payload['schema'])
+        columns = OrderedDict(schemaDict['columns'])
+        return columns
 
     def update(self, payload):
         if self._payload and self.id_number != payload['id']:
