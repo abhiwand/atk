@@ -117,6 +117,7 @@ import com.intel.intelanalytics.domain.Als
 import com.intel.intelanalytics.engine.spark.graph.{ SparkGraphStorage, SparkGraphHBaseBackend }
 
 import org.apache.hadoop.mapreduce.Job
+import org.joda.time.DateTime
 
 //TODO documentation
 //TODO progress notification
@@ -1074,9 +1075,8 @@ def calculateScore(list1, list2, biasOn, featureDimension) {
 
         def generateNewColumnTuple(oldColumn: String, columnsToRename: Seq[String], newColumnNames: Seq[String]): String = {
           val columnIndex: Int = columnsToRename.indexOf(oldColumn)
-          if (columnIndex > 0)
-            return newColumnNames(columnIndex)
-          else return oldColumn
+          if (columnIndex > 0) newColumnNames(columnIndex)
+          else oldColumn
         }
 
         val newColumns = frame.schema.columns.map(col => (generateNewColumnTuple(col._1, columnsToRename, newColumnNames), col._2))
@@ -1150,7 +1150,8 @@ def calculateScore(list1, list2, biasOn, featureDimension) {
 
     override def create(frame: DataFrameTemplate): DataFrame = withContext("frame.create") {
       val id = nextFrameId()
-      val frame2 = new DataFrame(id = id, name = frame.name, schema = frame.schema)
+      // TODO: wire this up better.  For example, status Id should be looked up, uri needs to be supplied, user supplied, etc.
+      val frame2 = new DataFrame(id = id, name = frame.name, description = frame.description, uri = "TODO", schema = frame.schema, status = 1L, new DateTime(), new DateTime(), None, None)
       val meta = File(Paths.get(getFrameMetaDataFile(id)))
       info(s"Saving metadata to $meta")
       val f = files.write(meta)

@@ -74,7 +74,7 @@ object ServiceHost {
       with EngineComponent {
 
     ///TODO: choose database profile driver class from config
-    override lazy val profile = {
+    override lazy val profile: Profile = {
       lazy val config = ConfigFactory.load()
 
       val connectionString = config.getString("intel.analytics.metastore.connection.url")

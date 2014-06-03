@@ -42,6 +42,9 @@ trait MetaStoreComponent {
     type Session
     def withSession[T](name: String)(f: Session => T): T
 
+    /** Repository for CRUD on 'status' table */
+    def statusRepo: Repository[Session, Status, Status]
+
     /** Repository for CRUD on 'frame' table */
     def frameRepo: Repository[Session, DataFrameTemplate, DataFrame]
 
