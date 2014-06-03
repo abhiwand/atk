@@ -1,5 +1,5 @@
-Yum Repo
-========
+Yum Repo (Red Hat & Similar Systems)
+====================================
 
 Configure File Installation Software
 ------------------------------------
@@ -101,6 +101,11 @@ Install the Intel® Analytics package
 
 Congratulations, you have installed the Intel® Analytics package.
 
-Results
--------
+Installing Patches
+------------------
+
+To install patches, simply update the packages:
+
+>>> yum update intelanalytics-rest-server
+>>> yum update intelanalytics-python-rest-client
 
