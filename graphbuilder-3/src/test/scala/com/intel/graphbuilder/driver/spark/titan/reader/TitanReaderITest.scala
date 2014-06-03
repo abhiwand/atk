@@ -1,31 +1,30 @@
 package com.intel.graphbuilder.driver.spark.titan.reader
 
+import com.intel.graphbuilder.testutils.{TestingSparkContext, LogUtils}
 import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRDDImplicits._
 import com.intel.graphbuilder.driver.spark.rdd.TitanHBaseReaderRDD
 import com.intel.graphbuilder.elements.GraphElement
-import TitanReaderUtils.sortGraphElementProperties
-import org.scalatest.{ Suite, BeforeAndAfterAll, Matchers, WordSpec }
-import org.apache.spark.{ SparkContext, SparkConf }
+import org.apache.spark.{SparkContext, SparkConf}
 import org.apache.hadoop.hbase.client.Result
 import org.apache.hadoop.hbase.io.ImmutableBytesWritable
 import org.apache.hadoop.hbase.CellUtil
+import org.scalatest.{WordSpec,Matchers,BeforeAndAfterAll}
 import scala.collection.JavaConversions._
-import scala.concurrent.Lock
 import java.util.Date
-import com.intel.graphbuilder.testutils.LogUtils
+
+import TitanReaderTestData._
+import TitanReaderUtils.sortGraphElementProperties
+
 
 /**
  * End-to-end integration test for Titan reader
  * @todo Use Stephen's TestingSparkContext class for scalatest
  */
-class TitanReaderITest extends WordSpec with Matchers {
-
-  import TitanReaderTestData._
-  import TitanReaderSparkContext._
+class TitanReaderITest extends WordSpec with Matchers with TitanReaderSparkContext {
 
   "Reading a Titan graph from HBase should" should {
     "return an empty list of graph elements if the HBase table is empty" in {
-      val hBaseRDD = sc.parallelize(Seq.empty[(ImmutableBytesWritable, Result)])
+      val hBaseRDD = sparkContext.parallelize(Seq.empty[(ImmutableBytesWritable, Result)])
       val titanReaderRDD = new TitanHBaseReaderRDD(hBaseRDD, titanConnector)
       val graphElements = titanReaderRDD.collect()
       graphElements.length shouldBe 0
@@ -43,15 +42,15 @@ class TitanReaderITest extends WordSpec with Matchers {
           dummyTimestamp, dummyType,
           "value".getBytes()))
 
-        val invalidHBaseRow = List((new ImmutableBytesWritable(rowKey), Result.create(invalidHBaseCell)))
-        val hBaseRDD = sc.parallelize(invalidHBaseRow)
+        val invalidHBaseRow = List((new ImmutableBytesWritable(rowKey), Result.create(invalidHBaseCell))).toSeq
+        val hBaseRDD = sparkContext.parallelize(invalidHBaseRow)
         val titanReaderRDD = new TitanHBaseReaderRDD(hBaseRDD, titanConnector)
 
         titanReaderRDD.collect()
       }
     }
     "return 3 GraphBuilder vertices and 2 GraphBuilder rows" in {
-      val hBaseRDD = sc.parallelize(hBaseRowMap.toSeq)
+      val hBaseRDD = sparkContext.parallelize(hBaseRowMap.toSeq)
 
       val titanReaderRDD = new TitanHBaseReaderRDD(hBaseRDD, titanConnector).distinct()
       val vertexRDD = titanReaderRDD.filterVertices()
@@ -76,17 +75,22 @@ class TitanReaderITest extends WordSpec with Matchers {
   }
 }
 
-object TitanReaderSparkContext extends Suite with BeforeAndAfterAll {
+trait TitanReaderSparkContext extends WordSpec with BeforeAndAfterAll {
   LogUtils.silenceSpark()
-  val lock = new Lock()
-  lock.acquire()
 
   val conf = new SparkConf()
     .setMaster("local")
     .setAppName(this.getClass.getSimpleName + " " + new Date())
   conf.set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
   conf.set("spark.kryo.registrator", "com.intel.graphbuilder.driver.spark.titan.GraphBuilderKryoRegistrator")
-  val sc = new SparkContext(conf)
+
+  var sparkContext: SparkContext = null
+
+  override def beforeAll = {
+    // Ensure only one Spark local context is running at a time
+    TestingSparkContext.lock.acquire()
+    sparkContext = new SparkContext(conf)
+  }
 
   /**
    * Clean up after the test is done
@@ -100,15 +104,14 @@ object TitanReaderSparkContext extends Suite with BeforeAndAfterAll {
    */
   def cleanupSpark(): Unit = {
     try {
-      if (sc != null) {
-        sc.stop()
+      if (sparkContext != null) {
+        sparkContext.stop()
       }
     }
     finally {
       // To avoid Akka rebinding to the same port, since it doesn't unbind immediately on shutdown
       System.clearProperty("spark.driver.port")
-
-      lock.release()
+      TestingSparkContext.lock.release()
     }
   }
 }
