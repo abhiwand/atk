@@ -8,6 +8,15 @@
     <groupId>com.intel</groupId>
     <packaging>jar</packaging>
 
+    <description>
+        This project is for dependencies that should be installed in Spark using SPARK_CLASSPATH.
+
+        The number of dependencies listed here should be minimized.
+
+        Some dependencies need to be installed via SPARK_CLASSPATH because of ClassLoader conflicts
+        when providing them via sparkContext.addJars("")
+    </description>
+
     <parent>
         <groupId>com.intel</groupId>
         <artifactId>IntelAnalytics</artifactId>
