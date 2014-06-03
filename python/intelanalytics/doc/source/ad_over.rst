@@ -4,7 +4,7 @@ Administration
 Administration includes:
 
 ..  toctree::
-    :maxdepth: 2
+    :maxdepth: 1
 
     ia_legl
     ad_reqs
