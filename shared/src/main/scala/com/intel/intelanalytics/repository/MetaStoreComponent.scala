@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2013 Intel Corporation All Rights Reserved.
+// Copyright 2014 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -23,17 +23,38 @@
 
 package com.intel.intelanalytics.repository
 
-import com.intel.intelanalytics.domain.{ DataFrameTemplate, CommandTemplate, Command, DataFrame, User, UserTemplate }
+import com.intel.intelanalytics.domain._
+import com.intel.intelanalytics.domain.DataFrame
+import com.intel.intelanalytics.domain.User
+import com.intel.intelanalytics.domain.Command
+import com.intel.intelanalytics.domain.DataFrameTemplate
+import com.intel.intelanalytics.domain.CommandTemplate
+import com.intel.intelanalytics.domain.UserTemplate
 
 trait MetaStoreComponent {
   val metaStore: MetaStore
 
+  /**
+   * The MetaStore gives access to Repositories. Repositories are how you
+   * modify and query underlying tables (frames, graphs, users, etc).
+   */
   trait MetaStore {
     type Session
     def withSession[T](name: String)(f: Session => T): T
+
+    /** Repository for CRUD on 'frame' table */
     def frameRepo: Repository[Session, DataFrameTemplate, DataFrame]
+
+    /** Repository for CRUD on 'command' table */
+
+    def graphRepo: Repository[Session, GraphTemplate, Graph]
+
     def commandRepo: Repository[Session, CommandTemplate, Command]
+
+    /** Repository for CRUD on 'user' table */
     def userRepo: Repository[Session, UserTemplate, User] with Queryable[Session, User]
+
+    /** Create the underlying tables */
     def create(): Unit
   }
 }

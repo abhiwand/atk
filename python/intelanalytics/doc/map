@@ -1,0 +1,32 @@
+index
+    intro: Introduction
+    ad_over: Overview
+        intel_legal: Legal
+        ad_reqs: Requirements
+        ad_inst: Installation
+            ad_yum: Procedures for systems using yum
+            ad_apt: Procedures for systems using apt-get (future)
+        ad_conf: Configuration
+        ad_mntc: Maintenance
+        ad_trbl: Troubleshooting
+    ds_over: Overview
+        intel_legal: Legal
+        ds_strt: Getting Started
+        ds_db: Databases
+        ds_dflw: Data Flow
+        ds_samp: Sampling
+        ds_ml: Machine Learning
+        ds_mlal: Machine Learning Algorithms
+        ds_apim: Python API
+            ds_apio: Python API Overview
+            ds_apic: Python API in Detail
+                intelanalytics.core.files
+                intelanalytics.core.frame
+                intelanalytics.core.graph
+        ds_supp: Supplemental (future)
+        ds_bkm: Best Known Methods (future)
+        ds_resc: Resources (future)
+    glossary: Glossary
+    genindex
+    modindex
+    search

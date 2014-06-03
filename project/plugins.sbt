@@ -24,3 +24,4 @@ addSbtPlugin("org.scoverage" %% "sbt-scoverage" % "0.98.0")
 addSbtPlugin("com.typesafe.sbt" % "sbt-scalariform" % "1.3.0")
 
 addSbtPlugin("com.gu" % "sbt-teamcity-test-reporting-plugin" % "1.5")
+

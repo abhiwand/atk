@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2013 Intel Corporation All Rights Reserved.
+// Copyright 2014 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -38,10 +38,10 @@ import java.io.IOException;
 import java.util.List;
 
 /**
- * Base class that wraps an HBase TableInputFormat and underlying Scan object to
- * help instantiate vertices from an HBase table. All the static
- * TableInputFormat properties necessary to configure an HBase job are
- * available.
+ * Abstract class that uses HBase TableInputFormat and its Scan object to
+ * instantiate vertices from an HBase table.
+ *
+ * Subclasses can configure TableInputFormat by using conf.set
  *
  * @param <I> Vertex index value
  * @param <V> Vertex value
@@ -56,10 +56,8 @@ public abstract class TitanHBaseVertexInputFormat<I extends WritableComparable, 
     protected static final TableInputFormat INPUT_FORMAT = new TableInputFormat();
 
     /**
-     * Takes an instance of RecordReader that supports HBase row-key, result
-     * records. Subclasses can focus on vertex instantiation details without
-     * worrying about connection semantics. Subclasses are expected to implement
-     * nextVertex() and getCurrentVertex()
+     * Create RecordReader to read HBase row-key, result records.
+     * Subclasses need to implement nextVertex() and getCurrentVertex()
      *
      * @param <I> Vertex index value
      * @param <V> Vertex value

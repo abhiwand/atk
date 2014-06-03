@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2013 Intel Corporation All Rights Reserved.
+// Copyright 2014 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -23,6 +23,7 @@
 
 package com.intel.event;
 
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
@@ -162,6 +163,10 @@ public class Event {
     private JSONArray toJsonArray(Object[] array) {
         JSONArray jsonArray = new JSONArray();
         for (Object anArray : array) {
+            if (anArray instanceof Throwable){
+                jsonArray.add(ExceptionUtils.getStackTrace((Throwable) anArray));
+
+            }
             //noinspection unchecked
             jsonArray.add(String.valueOf(anArray));
         }

@@ -2,7 +2,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2013 Intel Corporation All Rights Reserved.
+// Copyright 2014 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -24,38 +24,83 @@
 -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-  <artifactId>igiraph-core</artifactId>
-  <packaging>jar</packaging>
-  <name>IntelAnalytics iGiraph Core</name>
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <artifactId>igiraph-core</artifactId>
+    <groupId>com.intel</groupId>
+    <name>IntelAnalytics iGiraph Core</name>
+    <packaging>jar</packaging>
 
-  <parent>
-  	<groupId>com.intel.hadoop</groupId>
-  	<artifactId>IntelAnalytics-igiraph</artifactId>
-  	<relativePath>../pom.xml</relativePath>  
-  	<version>0.8-SNAPSHOT</version>
-  </parent>
-  <dependencies>
-    <dependency>
-        <groupId>${project.groupId}</groupId>
-        <artifactId>imahout</artifactId>
-        <version>${project.version}</version>
-    </dependency>
-    <dependency>
-        <groupId>org.apache.hbase</groupId>
-        <artifactId>hbase</artifactId>
-        <version>${dep.hbase.version}</version>
-    </dependency>
-    <dependency>
-        <groupId>org.apache.zookeeper</groupId>
-        <artifactId>zookeeper</artifactId>
-        <version>${dep.zookeeper.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.giraph</groupId>
-      <artifactId>giraph-core</artifactId>
-      <version>${dep.giraph-core.version}</version>
-    </dependency>
-  </dependencies>
+    <parent>
+        <groupId>com.intel</groupId>
+        <artifactId>IntelAnalytics-igiraph</artifactId>
+        <relativePath>../pom.xml</relativePath>
+        <version>0.8.0-SNAPSHOT</version>
+    </parent>
+    <dependencies>
+        <dependency>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-common</artifactId>
+            <version>${dep.hadoop2.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-mapreduce-client-common</artifactId>
+            <version>${dep.hadoop2.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-mapreduce-client-core</artifactId>
+            <version>${dep.hadoop2.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-yarn-common</artifactId>
+            <version>${dep.hadoop2.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-yarn-api</artifactId>
+            <version>${dep.hadoop2.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.intel</groupId>
+            <artifactId>imahout</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.hbase</groupId>
+            <artifactId>hbase-common</artifactId>
+            <version>${dep.hbase.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.hbase</groupId>
+            <artifactId>hbase-client</artifactId>
+            <version>${dep.hbase.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.zookeeper</groupId>
+            <artifactId>zookeeper</artifactId>
+            <version>${dep.zookeeper.version}</version>
+        </dependency>
+
+        <!--<dependency>
+          <groupId>org.apache.giraph</groupId>
+          <artifactId>giraph-core</artifactId>
+          <version>${dep.giraph-core.version}</version>
+        </dependency>-->
+        <dependency>
+            <groupId>org.apache.giraph</groupId>
+            <artifactId>giraph-core</artifactId>
+            <version>${dep.giraph-core.version}</version>
+            <type>test-jar</type>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.giraph</groupId>
+            <artifactId>giraph-hbase</artifactId>
+            <version>${dep.giraph-hbase.version}</version>
+            <type>test-jar</type>
+        </dependency>
+    </dependencies>
 </project>

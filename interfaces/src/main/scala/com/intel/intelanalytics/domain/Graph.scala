@@ -1,28 +1,20 @@
 package com.intel.intelanalytics.domain
 
-import com.intel.intelanalytics.domain.graphconstruction.{ EdgeRule, VertexRule, OutputConfiguration }
-
 /**
- * NLS TODO:   what are the required pieces of data in the graph interfaces?
- * so far, we just know that it has to have a name
- * @param name
+ * Arguments for creating the metadata entry for a graph.
+ * @param name The user's name for the graph.
  */
 
-case class GraphTemplate(name: String,
-                         dataFrameId: Long,
-                         outputConfig: OutputConfiguration,
-                         vertexRules: Seq[VertexRule],
-                         edgeRules: Seq[EdgeRule],
-                         retainDanglingEdges: Boolean,
-                         bidirectional: Boolean) {
+case class GraphTemplate(name: String) {
   require(name != null)
   require(name.trim.length > 0)
-
-  require(dataFrameId != null)
-
-  require(outputConfig != null)
 }
 
+/**
+ * The metadata entry for a graph.
+ * @param id The unique identifier of the graph.
+ * @param name The user's name for the graph.
+ */
 case class Graph(id: Long, name: String) extends HasId {
   require(id > 0)
   require(name != null)
