@@ -116,7 +116,8 @@ class FrameBackendRest(object):
         frame._id = frame_info.id_number
         frame._uri = frame_info.uri
         frame._name = frame_info.name
-        frame._columns = frame_info.columns
+        for column in frame_info.columns:
+            self._accept_column(frame, column)
 
     @staticmethod
     def _get_new_frame_name(source=None):
@@ -328,7 +329,8 @@ class FrameInfo(object):
 
     @property
     def columns(self):
-        return FrameSchema(self._payload['schema']['columns'])
+        return [BigColumn(pair[0], supported_types.get_type_from_string(pair[1]))
+                for pair in self._payload['schema']['columns']]
 
     def update(self, payload):
         if self._payload and self.id_number != payload['id']:
