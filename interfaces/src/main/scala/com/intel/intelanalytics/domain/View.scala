@@ -26,12 +26,15 @@ import spray.json.JsObject
 
 /**
  * An invocation of a function defined on the server.
+ * @param id
  * @param name the name of the command to be performed. In the case of a builtin command, this name is used to
  *             find the stored implementation. For a user command, this name is purely for descriptive purposes.
  * @param arguments the arguments to the function. In some cases, such as line parsers, the arguments are configuration
  *                  arguments that configure the parser before any input arrives. In other cases, such as training an
  *                  ML algorithm, the parameters are used to execute the function directly.
- *
+ * @param error error trace
+ * @param complete flag to indicate the completion of the command
+ * @param result result data for executing the command
  */
 case class Command(id: Long, name: String, arguments: Option[JsObject], error: Option[Error], complete: Boolean, result: Option[JsObject] = None) extends HasId
 case class CommandTemplate(name: String, arguments: Option[JsObject])

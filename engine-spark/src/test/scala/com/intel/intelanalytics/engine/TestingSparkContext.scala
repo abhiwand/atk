@@ -23,18 +23,40 @@
 
 package com.intel.intelanalytics.engine
 
-import org.apache.spark.SparkContext
 import java.util.Date
+import org.apache.spark.SparkContext
 import scala.concurrent.Lock
+import org.scalatest.{ FlatSpec, BeforeAndAfter }
+import org.apache.log4j.{ Logger, Level }
+import org.scalacheck.Prop.{ False, True }
 
-trait TestingSparkContext {
+trait TestingSparkContext extends FlatSpec with BeforeAndAfter {
 
-  lazy val sc = new SparkContext("local", "test " + new Date())
+  val useGlobalSparkContext: Boolean = System.getProperty("useGlobalSparkContext", "false").toBoolean
+
+  var sc: SparkContext = null
+
+  before {
+    if (useGlobalSparkContext) {
+      sc = TestingSparkContext.sc
+    }
+    else {
+      TestingSparkContext.lock.acquire()
+      sc = TestingSparkContext.createSparkContext
+    }
+  }
+
+  /**
+   * Clean up after the test is done
+   */
+  after {
+    if (!useGlobalSparkContext) cleanupSpark()
+  }
 
   /**
    * Shutdown spark and release the lock
    */
-  def cleanupSpark(): Unit = {
+  private def cleanupSpark(): Unit = {
     try {
       if (sc != null) {
         sc.stop()
@@ -47,9 +69,18 @@ trait TestingSparkContext {
       TestingSparkContext.lock.release()
     }
   }
-
 }
 
 object TestingSparkContext {
-  val lock = new Lock()
+  private val lock = new Lock()
+  private lazy val sc: SparkContext = createSparkContext
+
+  def createSparkContext: SparkContext = {
+    setLogLevels(Level.WARN, Seq("spark", "org.eclipse.jetty", "akka"))
+    new SparkContext("local", "test " + new Date())
+  }
+
+  private def setLogLevels(level: org.apache.log4j.Level, loggers: TraversableOnce[String]): Unit = {
+    loggers.foreach(loggerName => Logger.getLogger(loggerName).setLevel(level))
+  }
 }

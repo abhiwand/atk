@@ -27,7 +27,6 @@
                     <skipTests>true</skipTests>
                 </configuration>
             </plugin>
-
             <!-- <plugin>
                  <groupId>net.alchim31.maven</groupId>
                  <artifactId>scala-maven-plugin</artifactId>
@@ -41,10 +40,18 @@
                 <groupId>com.mmakowski</groupId>
                 <artifactId>maven-specs2-plugin</artifactId>
             </plugin>
+			
             <plugin>
                 <groupId>org.scoverage</groupId>
                 <artifactId>maven-scoverage-plugin</artifactId>
             </plugin>
+			<!--
+			<plugin>
+				<groupId>org.jacoco</groupId>
+				<artifactId>jacoco-maven-plugin</artifactId>
+				<version>0.7.2-SNAPSHOT</version>
+			</plugin>
+			-->
         </plugins>
     </build>
     <dependencies>
