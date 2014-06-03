@@ -493,7 +493,9 @@ class SparkComponent extends EngineComponent
           withMyClassLoader {
             withContext("se.join.future") {
 
-              //create a new dataframe
+
+
+
               val originalColumns = joinCommand.frames.map {
                 frame =>
                   {
@@ -504,16 +506,29 @@ class SparkComponent extends EngineComponent
                   }
               }
 
-              val allColumns = SchemaUtil.resolveSchemaNamingConflicts(originalColumns(0), originalColumns(1))
+              val leftColumns: List[(String, DataType)] = originalColumns(0)
+              val rightColumns: List[(String, DataType)] = originalColumns(1)
+              val allColumns = SchemaUtil.resolveSchemaNamingConflicts(leftColumns, rightColumns)
 
               /* create a dataframe should take very little time, much less than 10 minutes */
               val newJoinFrame = Await.result(create(DataFrameTemplate(joinCommand.name)), 10 minutes)
 
               withCommand(command) {
+
+                //first validate join columns are valid
+                val leftOn: String = joinCommand.frames(0)._2
+                val rightOn: String = joinCommand.frames(1)._2
+
+                val leftSchema = Schema(leftColumns)
+                val rightSchema = Schema(rightColumns)
+
+                require(leftSchema.columnIndex(leftOn) != -1, s"column $leftOn is invalid")
+                require(rightSchema.columnIndex(rightOn) != -1, s"column $rightOn is invalid")
+
                 val ctx = context(user).sparkContext
                 val pairRdds = createPairRddForJoin(joinCommand, ctx)
 
-                val joinResultRDD = SparkOps.joinRDDs(RDDJoinParam(pairRdds(0), originalColumns(0).length), RDDJoinParam(pairRdds(1), originalColumns(1).length), joinCommand.how)
+                val joinResultRDD = SparkOps.joinRDDs(RDDJoinParam(pairRdds(0), leftColumns.length), RDDJoinParam(pairRdds(1), rightColumns.length), joinCommand.how)
                 joinResultRDD.saveAsObjectFile(fsRoot + frames.getFrameDataFile(newJoinFrame.id))
                 frames.updateSchema(newJoinFrame, allColumns)
                 newJoinFrame.copy(schema = Schema(allColumns)).toJson.asJsObject

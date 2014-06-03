@@ -175,6 +175,12 @@ import DataTypes._
  */
 case class Schema(columns: List[(String, DataType)] = List[(String, DataType)]()) {
   require(columns != null)
+
+  /**
+   * get column index by column name
+   * @param columnName name of the column to find index
+   */
+  def columnIndex(columnName: String): Int = columns.indexWhere(columnTuple => columnTuple._1 == columnName)
 }
 
 object SchemaUtil {
