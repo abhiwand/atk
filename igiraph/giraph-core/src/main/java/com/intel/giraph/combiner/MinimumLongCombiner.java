@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2013 Intel Corporation All Rights Reserved.
+// Copyright 2014 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -23,13 +23,13 @@
 
 package com.intel.giraph.combiner;
 
-import org.apache.giraph.combiner.Combiner;
+import org.apache.giraph.combiner.MessageCombiner;
 import org.apache.hadoop.io.LongWritable;
 
 /**
  * Combiner which finds the minimum of {@link LongWritable}.
  */
-public class MinimumLongCombiner extends Combiner<LongWritable, LongWritable> {
+public class MinimumLongCombiner extends MessageCombiner<LongWritable, LongWritable> {
     @Override
     public void combine(LongWritable vertexIndex, LongWritable originalMessage,
         LongWritable messageToCombine) {

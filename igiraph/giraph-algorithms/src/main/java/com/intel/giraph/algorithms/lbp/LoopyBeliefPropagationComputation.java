@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2013 Intel Corporation All Rights Reserved.
+// Copyright 2014 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -26,6 +26,7 @@ package com.intel.giraph.algorithms.lbp;
 import com.intel.giraph.io.VertexData4LBPWritable;
 import com.intel.giraph.io.VertexData4LBPWritable.VertexType;
 import com.intel.mahout.math.IdWithVectorWritable;
+
 import org.apache.giraph.Algorithm;
 import org.apache.giraph.aggregators.AggregatorWriter;
 import org.apache.giraph.aggregators.DoubleSumAggregator;
@@ -58,6 +59,7 @@ import java.util.Map.Entry;
 )
 public class LoopyBeliefPropagationComputation extends BasicComputation<LongWritable, VertexData4LBPWritable,
     DoubleWritable, IdWithVectorWritable> {
+
     /** Custom argument for number of super steps */
     public static final String MAX_SUPERSTEPS = "lbp.maxSupersteps";
     /** Custom argument for the Ising smoothing parameter */
@@ -72,6 +74,16 @@ public class LoopyBeliefPropagationComputation extends BasicComputation<LongWrit
     public static final String ANCHOR_THRESHOLD = "lbp.anchorThreshold";
     /** Custom argument for checking bi-directional edge or not (default: false) */
     public static final String BIDIRECTIONAL_CHECK = "lbp.bidirectionalCheck";
+    /**
+     * Custom argument for ignoring vertex type or not (default: false)
+     * If true, all vertex will be treated as training data
+     */
+    public static final String IGNORE_VERTEX_TYPE = "lbp.ignoreVertexType";
+    /** Custom argument for using max-product or not (default: false) */
+    public static final String MAX_PRODUCT = "lbp.maxProduct";
+    /** Custom argument for power coefficient for power edge potential (default: 0) */
+    public static final String POWER = "lbp.power";
+
     /** Constant value for minimum prior value */
     public static final double MIN_PRIOR_VALUE = 0.001d;
     /** Aggregator name for sum of delta on training data */
@@ -97,20 +109,53 @@ public class LoopyBeliefPropagationComputation extends BasicComputation<LongWrit
     private float anchorThreshold = 1f;
     /**
      * Turning on/off bi-directional edge check;
-     * Setting it "true" only makes sense when all the vertices are labeled as training
-     * because all edges connecting to validation/test vertices will be treated as uni-directional
-     * even though they are defined as bi-directional in input file
+     * Setting it "true" only makes sense when all the vertices are labeled as training (or
+     * ignoreVertexType=true) because all edges connecting to validation/test vertices will
+     * be treated as uni-directional even though they are defined as bi-directional in input file
      */
     private boolean bidirectionalCheck = false;
+    /** Whether ignore vertex type or not */
+    private boolean ignoreVertexType = false;
+    /** Whether use max-product or not */
+    private boolean maxProduct = false;
+    /** Power coefficient of the power edge potential */
+    private float power = 0f;
 
     @Override
     public void preSuperstep() {
         // set custom parameters
         maxSupersteps = getConf().getInt(MAX_SUPERSTEPS, 10);
         smoothing = getConf().getFloat(SMOOTHING, 2f);
+        if (smoothing <= 0) {
+            throw new IllegalArgumentException("Smoothing value should be > 0.");
+        }
         anchorThreshold = getConf().getFloat(ANCHOR_THRESHOLD, 1f);
+        if (anchorThreshold <= 0) {
+            throw new IllegalArgumentException("anchorThreshold value should be > 0.");
+        }
         anchorThreshold = (float) Math.log(anchorThreshold);
         bidirectionalCheck = getConf().getBoolean(BIDIRECTIONAL_CHECK, false);
+        ignoreVertexType = getConf().getBoolean(IGNORE_VERTEX_TYPE, false);
+        maxProduct = getConf().getBoolean(MAX_PRODUCT, false);
+        power = getConf().getFloat(POWER, 0f);
+        if (power < 0) {
+            throw new IllegalArgumentException("Power coefficient should be >= 0.");
+        }
+    }
+
+    /**
+     * Edge potential function
+     *
+     * @param delta of type double
+     * @param weight of type double
+     * @return potential of type double
+     */
+    private double edgePotential(double delta, double weight) {
+        double potential = 0d;
+        if (delta > 1e-6 || power > 0) {
+            potential = - Math.pow(delta, power) * weight * smoothing;
+        }
+        return potential;
     }
 
     /**
@@ -122,8 +167,9 @@ public class LoopyBeliefPropagationComputation extends BasicComputation<LongWrit
         // normalize prior and posterior
         Vector prior = vertex.getValue().getPriorVector();
         Vector posterior = vertex.getValue().getPosteriorVector();
+        int nStates = prior.size();
         double sum = 0d;
-        for (int i = 0; i < prior.size(); i++) {
+        for (int i = 0; i < nStates; i++) {
             double v = prior.getQuick(i);
             if (v < 0d) {
                 throw new IllegalArgumentException("Vertex ID: " + vertex.getId() + " has negative prior value.");
@@ -133,12 +179,13 @@ public class LoopyBeliefPropagationComputation extends BasicComputation<LongWrit
             }
             sum += v;
         }
-        for (int i = 0; i < prior.size(); i++) {
+        for (int i = 0; i < nStates; i++) {
             posterior.setQuick(i, prior.getQuick(i) / sum);
             prior.setQuick(i, Math.log(posterior.getQuick(i)));
         }
         // collect graph statistics
         VertexType vt = vertex.getValue().getType();
+        vt = ignoreVertexType ? VertexType.TRAIN : vt;
         switch (vt) {
         case TRAIN:
             aggregate(SUM_TRAIN_VERTICES, new LongWritable(1));
@@ -154,7 +201,7 @@ public class LoopyBeliefPropagationComputation extends BasicComputation<LongWrit
         }
         // if it's not a training vertex, use uniform posterior and don't send out messages
         if (vt != VertexType.TRAIN) {
-            posterior.assign(1.0 / prior.size());
+            posterior.assign(1.0 / nStates);
             return;
         }
         // calculate messages
@@ -168,10 +215,16 @@ public class LoopyBeliefPropagationComputation extends BasicComputation<LongWrit
                 throw new IllegalArgumentException("Vertex ID: " + vertex.getId() +
                     " has an edge with negative or zero weight value " + weight);
             }
-            for (int i = 0; i < prior.size(); i++) {
+            for (int i = 0; i < nStates; i++) {
                 sum = 0d;
-                for (int j = 0; j < prior.size(); j++) {
-                    sum += Math.exp(prior.getQuick(j) + (i == j ? 0d : -(smoothing * weight)));
+                for (int j = 0; j < nStates; j++) {
+                    double msg = Math.exp(prior.getQuick(j) + edgePotential(Math.abs(i - j) /
+                        (double) (nStates - 1), weight));
+                    if (maxProduct) {
+                        sum = sum > msg ? sum : msg;
+                    } else {
+                        sum += msg;
+                    }
                 }
                 belief.setQuick(i, sum > 0d ? Math.log(sum) : Double.MIN_VALUE);
             }
@@ -206,10 +259,12 @@ public class LoopyBeliefPropagationComputation extends BasicComputation<LongWrit
         // update posterior according to prior and messages
         VertexData4LBPWritable vertexValue = vertex.getValue();
         VertexType vt = vertexValue.getType();
+        vt = ignoreVertexType ? VertexType.TRAIN : vt;
         Vector prior = vertexValue.getPriorVector();
+        double nStates = prior.size();
         if (vt != VertexType.TRAIN) {
             // assign a uniform prior for validate/test vertex
-            prior = prior.clone().assign(Math.log(1.0 / prior.size()));
+            prior = prior.clone().assign(Math.log(1.0 / nStates));
         }
         // sum of prior and messages
         Vector sumPosterior = prior;
@@ -262,10 +317,16 @@ public class LoopyBeliefPropagationComputation extends BasicComputation<LongWrit
                 //    throw new IllegalArgumentException(String.format("Vertex ID %d: A message is mis-matched",
                 //        vertex.getId().get()));
                 //}
-                for (int i = 0; i < tempVector.size(); i++) {
+                for (int i = 0; i < nStates; i++) {
                     double sum = 0d;
-                    for (int j = 0; j < tempVector.size(); j++) {
-                        sum += Math.exp(tempVector.getQuick(j) + (i == j ? 0d : -(smoothing * weight)));
+                    for (int j = 0; j < nStates; j++) {
+                        double msg = Math.exp(tempVector.getQuick(j) + edgePotential(Math.abs(i - j) /
+                            (double) (nStates - 1), weight));
+                        if (maxProduct) {
+                            sum = sum > msg ? sum : msg;
+                        } else {
+                            sum += msg;
+                        }
                     }
                     belief.setQuick(i, sum > 0d ? Math.log(sum) : Double.MIN_VALUE);
                 }
@@ -407,12 +468,18 @@ public class LoopyBeliefPropagationComputation extends BasicComputation<LongWrit
                 float anchorThreshold = getConf().getFloat(ANCHOR_THRESHOLD, 1f);
                 float smoothing = getConf().getFloat(SMOOTHING, 2f);
                 boolean bidirectionalCheck = getConf().getBoolean(BIDIRECTIONAL_CHECK, false);
+                boolean ignoreVertexType = getConf().getBoolean(IGNORE_VERTEX_TYPE, false);
+                boolean maxProduct = getConf().getBoolean(MAX_PRODUCT, false);
+                float power = getConf().getFloat(POWER, 0f);
                 output.writeBytes("======LBP Configuration======\n");
                 output.writeBytes(String.format("maxSupersteps: %d%n", maxSupersteps));
                 output.writeBytes(String.format("convergenceThreshold: %f%n", convergenceThreshold));
                 output.writeBytes(String.format("anchorThreshold: %f%n", anchorThreshold));
                 output.writeBytes(String.format("smoothing: %f%n", smoothing));
                 output.writeBytes(String.format("bidirectionalCheck: %b%n", bidirectionalCheck));
+                output.writeBytes(String.format("ignoreVertexType: %b%n", ignoreVertexType));
+                output.writeBytes(String.format("maxProduct: %b%n", maxProduct));
+                output.writeBytes(String.format("power: %f%n", power));
                 output.writeBytes("\n");
                 output.writeBytes("======Learning Progress======\n");
             } else if (realStep > 0) {

@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2013 Intel Corporation All Rights Reserved.
+// Copyright 2014 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -134,7 +134,7 @@ public class TitanVertexOutputFormatPropertyGraph4LBP<I extends LongWritable,
                             vertexValue = vertexValue + ",";
                         }
                     }
-                    LOG.info("LBP vertexValue:" + vertexValue);
+                    //LOG.info("LBP vertexValue:" + vertexValue);
                     bluePrintVertex.setProperty(vertexValuePropertyKeyList[0], vertexValue);
                 } else {
                     generateErrorMsg(1, vertex.getId().get());
