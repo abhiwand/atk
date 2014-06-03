@@ -173,7 +173,7 @@ import DataTypes._
  * Schema for a data frame. Contains the columns with names and data types.
  * @param columns the columns in the data frame
  */
-case class Schema(columns: List[(String, DataType)]) {
+case class Schema(columns: List[(String, DataType)] = List[(String, DataType)]()) {
   require(columns != null)
 
   /**
