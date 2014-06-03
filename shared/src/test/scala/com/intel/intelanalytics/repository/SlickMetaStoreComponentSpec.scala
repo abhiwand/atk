@@ -1,7 +1,6 @@
 package com.intel.intelanalytics.repository
 
 import org.scalatest.Matchers
-import com.intel.intelanalytics.domain.UserTemplate
 
 class SlickMetaStoreComponentSpec extends SlickMetaStoreH2Testing with Matchers {
 
@@ -11,21 +10,8 @@ class SlickMetaStoreComponentSpec extends SlickMetaStoreH2Testing with Matchers 
     while (results.next()) {
       count += 1
     }
-    count shouldEqual 4
+    count shouldEqual 5 // expected number of tables in the meta store
   }
 
-  "UserRepository" should "be able to create users" in {
-    val userRepo = slickMetaStoreComponent.metaStore.userRepo
 
-    slickMetaStoreComponent.metaStore.withSession("user-test") {
-      implicit session =>
-        val apiKey = "my-api-key-" + System.currentTimeMillis()
-
-        val user = userRepo.insert(new UserTemplate(apiKey))
-        user.get.api_key shouldBe apiKey
-
-        val user2 = userRepo.lookup(user.get.id)
-        user.get shouldBe user2.get
-    }
-  }
 }
