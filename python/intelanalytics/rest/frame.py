@@ -30,7 +30,7 @@ logger = logging.getLogger(__name__)
 from collections import defaultdict, OrderedDict
 import json
 
-from intelanalytics.core.frame import BigFrame
+from intelanalytics.core.frame import BigFrame, FrameSchema
 from intelanalytics.core.column import BigColumn
 from intelanalytics.core.files import CsvFile
 from intelanalytics.core.types import *
@@ -328,9 +328,7 @@ class FrameInfo(object):
 
     @property
     def columns(self):
-        schemaDict = OrderedDict(self._payload['schema'])
-        columns = OrderedDict(schemaDict['columns'])
-        return columns
+        return FrameSchema(self._payload['schema']['columns'])
 
     def update(self, payload):
         if self._payload and self.id_number != payload['id']:
