@@ -170,6 +170,20 @@
             <scope>test</scope>
         </dependency>-->
         <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>1.1.1</version>
+        </dependency>
+
+
+
+        <!--
+            =======================================================================================================
+             These are the direct dependencies for titan-core excluding Kryo to get around ClassLoader issue
+             See ititan project
+            =======================================================================================================
+        -->
+        <dependency>
             <groupId>com.tinkerpop.blueprints</groupId>
             <artifactId>blueprints-core</artifactId>
             <version>2.4.0</version>
@@ -239,10 +253,6 @@
             <artifactId>high-scale-lib</artifactId>
             <version>1.1.4</version>
         </dependency>
-        <dependency>
-            <groupId>ch.qos.logback</groupId>
-            <artifactId>logback-classic</artifactId>
-            <version>1.1.1</version>
-        </dependency>
+
     </dependencies>
 </project>
