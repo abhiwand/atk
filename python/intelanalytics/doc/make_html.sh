@@ -33,20 +33,22 @@ then
     fi
 fi
 
-# Delete previously automatically built files
-if [[ -d build ]]; then
-    rm -R build
+# Check for weird stuff first
+if 
+    weird=$( echo $1 | grep -ic "doctest" )
+then
+    make -B doctest 2>&1 | grep -v -f toctreeWarnings
+else
+    # Delete previously automatically built files
+    if [[ -d build ]]; then
+        rm -R build
+    fi
+
+    # We assume we are running from the doc directory. Ignore all toctree warnings.
+    make -B html 2>&1 | grep -v -f toctreeWarnings
+
+    # Make a zip file of that which was just built
+    if [[ -d build ]]; then
+        zip -rq intel_analytics_docs.zip build
+    fi
 fi
-
-# Build fresh API docs
-#delete_apidocs
-#sphinx-apidoc --force -o source/ ../../. ../doc/ ../tests/
-
-# We assume we are running from the doc directory. Ignore all toctree warnings.
-make -B html 2>&1 | grep -v -f toctreeWarnings
-
-# Make a zip file of that which was just built
-if [[ -d build ]]; then
-    zip -rq intel_analytics_docs.zip build
-fi
-
