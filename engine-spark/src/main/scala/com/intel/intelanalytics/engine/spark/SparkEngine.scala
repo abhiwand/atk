@@ -427,6 +427,44 @@ class SparkComponent extends EngineComponent
       }
     }
 
+    /**
+     * flatten rdd by the specified column
+     * @param flattenColumnCommand input specification for column flattening
+     * @param user current user
+     */
+    override def flattenColumn(flattenColumnCommand: FlattenColumn[Long])(implicit user: UserPrincipal): (Command, Future[Command]) =
+      withContext("se.flattenColumn") {
+        import DomainJsonProtocol._
+        val command: Command = commands.create(new CommandTemplate("flattenColumn", Some(flattenColumnCommand.toJson.asJsObject)))
+        val result: Future[Command] = future {
+          withMyClassLoader {
+            withContext("se.flattenColumn.future") {
+              val frameId: Long = flattenColumnCommand.frame
+              val realFrame = frames.lookup(frameId).getOrElse(
+                throw new IllegalArgumentException(s"No such data frame: ${frameId}"))
+
+              withCommand(command) {
+                val ctx = context(user).sparkContext
+
+                /* create a dataframe should take very little time, much less than 10 minutes */
+                val newFrame = Await.result(create(DataFrameTemplate(flattenColumnCommand.name)), 10 minutes)
+                val rdd = frames.getFrameRdd(ctx, frameId)
+
+                val columnIndex = realFrame.schema.columnIndex(flattenColumnCommand.column)
+
+                val flattenedRDD = SparkOps.flattenRddByColumnIndex(columnIndex, flattenColumnCommand.separator, rdd)
+
+                flattenedRDD.saveAsObjectFile(fsRoot + frames.getFrameDataFile(newFrame.id))
+                newFrame.copy(schema = realFrame.schema).toJson.asJsObject
+              }
+            }
+          }
+          commands.lookup(command.id).get
+        }
+
+        (command, result)
+    }
+
     def filter(arguments: FilterPredicate[JsObject, Long])(implicit user: UserPrincipal): (Command, Future[Command]) =
       withContext("se.filter") {
         require(arguments != null, "arguments are required")
