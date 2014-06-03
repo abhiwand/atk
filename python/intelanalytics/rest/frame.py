@@ -24,10 +24,13 @@
 REST backend for frames
 """
 import base64
+import uuid
 import logging
 logger = logging.getLogger(__name__)
 from collections import defaultdict, OrderedDict
+import json
 
+from intelanalytics.core.frame import BigFrame
 from intelanalytics.core.column import BigColumn
 from intelanalytics.core.files import CsvFile
 from intelanalytics.core.types import *
@@ -79,14 +82,49 @@ class FrameBackendRest(object):
         r = self.rest_http.delete("dataframes/" + str(frame._id))
         return r
 
-    def create(self, frame):
+    def create(self, frame, source, name):
         logger.info("REST Backend: create frame: " + frame.name)
+        if isinstance(source, FrameInfo):
+            self._initialize_frame(frame, source)
+            return  # early exit here
+
+        frame._name = name or self._get_new_frame_name(source)
+        self._create_new_frame(frame)
+
+        # TODO - change project such that server creates the new frame, instead of passing one in
+        if isinstance(source, BigFrame):
+            self.project_columns(source, frame, source.column_names)
+        elif isinstance(source, BigColumn):
+            self.project_columns(source.frame, frame, source.name)
+        elif (isinstance(source, list) and all(isinstance(iter, BigColumn) for iter in source)):
+            self.project_columns(source[0].frame, frame, [s.name for s in source])
+        else:
+            if source:
+                self.append(frame, source)
+
+    def _create_new_frame(self, frame):
         payload = {'name': frame.name }
         r = self.rest_http.post('dataframes', payload)
         logger.info("REST Backend: create frame response: " + r.text)
         payload = r.json()
+        #TODO - call _initialize_frame instead
         frame._id = payload['id']
         frame._uri = self._get_uri(payload)
+
+    def _initialize_frame(self, frame, frame_info):
+        """Initializes a frame according to given frame_info"""
+        frame._id = frame_info.id_number
+        frame._uri = frame_info.uri
+        frame._name = frame_info.name
+        frame._columns = frame_info.columns
+
+    @staticmethod
+    def _get_new_frame_name(source=None):
+        try:
+            annotation = "_" + source.annotation
+        except:
+            annotation = ''
+        return "frame_" + uuid.uuid4().hex + annotation
 
     @staticmethod
     def _get_uri(payload):
@@ -148,11 +186,13 @@ class FrameBackendRest(object):
         command = CommandRequest(name="dataframe/filter", arguments=arguments)
         executor.issue(command)
 
-    def join(self, left, right, left_on, right_on, how, name):
-        arguments = {'name': name, "how": how, "frames": [[left._id, left_on], [right._id, right_on]] }
+    def join(self, left, right, left_on, right_on, how):
+        name = self._get_new_frame_name()
+        arguments = {'name': name, "how": how, "frames": [[left.id_number, left_on], [right._id, right_on]] }
         command = CommandRequest("dataframe/join", arguments)
         command_info = executor.issue(command)
-        command_info.result
+        frame_info = FrameInfo(command_info.result)
+        return BigFrame(frame_info)
 
     def project_columns(self, frame, projected_frame, columns, new_names=None):
         # TODO - fix REST server to accept nulls, for now we'll pass an empty list
@@ -258,4 +298,43 @@ class FrameBackendRest(object):
         return r.json()
 
 
+class FrameInfo(object):
+    """
+    JSON-based Server description of a BigFrame
+    """
+    def __init__(self, frame_json_payload):
+        self._payload = frame_json_payload
+
+    def __repr__(self):
+        return json.dumps(self._payload, indent=2, sort_keys=True)
+
+    def __str__(self):
+        return 'frames/%s "%s"' % (self.id_number, self.name)
+
+    @property
+    def id_number(self):
+        return self._payload['id']
+
+    @property
+    def name(self):
+        return self._payload['name']
+
+    @property
+    def uri(self):
+        try:
+            return self._payload['links'][0]['uri']
+        except KeyError:
+            return ""
+
+    @property
+    def columns(self):
+        return OrderedDict(self._payload['columns'])
+
+    def update(self, payload):
+        if self._payload and self.id_number != payload['id']:
+            msg = "Invalid payload, frame ID mismatch %d when expecting %d" \
+                  % (payload['id'], self.id_number)
+            logger.error(msg)
+            raise RuntimeError(msg)
+        self._payload = payload
 
