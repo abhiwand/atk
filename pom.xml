@@ -157,6 +157,8 @@ export MAVEN_OPTS="-Xms2048m -Xmx4096m -XX:MaxPermSize=4096m -XX:PermSize=2048m"
 
         <dep.hadoop2.version>2.3.0-cdh5.0.0</dep.hadoop2.version>
         <dep.hadoop.core.version>2.3.0-mr1-cdh5.0.0</dep.hadoop.core.version>
+        <dep.hadoop.common.version>2.3.0-cdh5.0.0</dep.hadoop.common.version>
+        <dep.hadoop.client.version>2.3.0-cdh5.0.0</dep.hadoop.client.version>
         <dep.guava.version>12.0</dep.guava.version>
         <dep.hcatalog.version>0.5.0-incubating</dep.hcatalog.version>
         <dep.hive.version>0.11.0</dep.hive.version>
@@ -617,6 +619,7 @@ export MAVEN_OPTS="-Xms2048m -Xmx4096m -XX:MaxPermSize=4096m -XX:PermSize=2048m"
                                     <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
                                         <resource>reference.conf</resource>
                                     </transformer>
+									<transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
                                 </transformers>
                             </configuration>
                         </execution>
