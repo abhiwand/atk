@@ -204,7 +204,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
     }
 
     def _insertFrame(frame: DataFrameTemplate)(implicit session: Session) = {
-      val f = DataFrame(0, frame.name, frame.schema)
+      val f = DataFrame(0, frame.name)
       framesAutoInc.insert(f)
     }
 
