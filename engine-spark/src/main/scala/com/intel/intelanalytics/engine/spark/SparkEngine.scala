@@ -106,6 +106,7 @@ import com.intel.intelanalytics.domain.CommandTemplate
 import com.intel.intelanalytics.domain.Error
 import com.intel.intelanalytics.domain.Als
 import com.intel.intelanalytics.engine.spark.graph.{ SparkGraphStorage, SparkGraphHBaseBackend }
+import com.intel.intelanalytics.domain.DataTypes.DataType
 
 //TODO documentation
 //TODO progress notification
