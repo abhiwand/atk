@@ -34,6 +34,10 @@ logger = logging.getLogger(__name__)
 import uuid
 import sys
 
+def _handle_stacktrace():
+    exc=sys.exc_info()
+    get_stacktrace(exc)
+
 def _get_backend():
     from intelanalytics.core.config import get_frame_backend
     return get_frame_backend()
@@ -44,24 +48,21 @@ def get_frame_names():
     try:
         return _get_backend().get_frame_names()
     except:
-        exc_type,exc_value, exc_traceback = sys.exc_info()
-        get_stacktrace(exc_type,exc_value, exc_traceback)
+        _handle_stacktrace()
 
 def get_frame(name):
     """Retrieves the named BigFrame object"""
     try:
         return _get_backend().get_frame(name)
     except:
-        exc_type,exc_value, exc_traceback = sys.exc_info()
-        get_stacktrace(exc_type,exc_value, exc_traceback)
+        _handle_stacktrace()
 
 def delete_frame(name):
     """Deletes the frame from backing store"""
     try:
         return _get_backend().delete_frame(name)
     except:
-        exc_type,exc_value, exc_traceback = sys.exc_info()
-        get_stacktrace(exc_type,exc_value, exc_traceback)
+        _handle_stacktrace()
 
 class BigFrame(object):
     """
@@ -212,8 +213,7 @@ class BigFrame(object):
                         break
             self._backend.add_column(self, func, name, type)
         except:
-            exc_type,exc_value, exc_traceback = sys.exc_info()
-            get_stacktrace(exc_type,exc_value, exc_traceback)
+            _handle_stacktrace()
     def add_columns(self, func, names=None, ):
         """
         Adds new columns to the frame by evaluating the given func on each row
@@ -230,14 +230,12 @@ class BigFrame(object):
         try:
             self._backend.add_columns(self, func, names)
         except:
-            exc_type,exc_value, exc_traceback = sys.exc_info()
-            get_stacktrace(exc_type,exc_value, exc_traceback)
+            _handle_stacktrace()
     def append(self, *data):
         try:
             self._backend.append(self, *data)
         except:
-            exc_type,exc_value, exc_traceback = sys.exc_info()
-            get_stacktrace(exc_type,exc_value, exc_traceback)
+            _handle_stacktrace()
     def filter(self, predicate):
         """
         Select all rows which satisfy a predicate
@@ -250,14 +248,12 @@ class BigFrame(object):
         try:
             self._backend.filter(self, predicate)
         except:
-            exc_type,exc_value, exc_traceback = sys.exc_info()
-            get_stacktrace(exc_type,exc_value, exc_traceback)
+            _handle_stacktrace()
     def count(self):
         try:
             return self._backend.count(self)
         except:
-            exc_type,exc_value, exc_traceback = sys.exc_info()
-            get_stacktrace(exc_type,exc_value, exc_traceback)
+            _handle_stacktrace()
     def remove_column(self, name):
         """
         Remove columns
@@ -274,14 +270,12 @@ class BigFrame(object):
             for victim in name:
                 del self._columns[victim]
         except:
-            exc_type,exc_value, exc_traceback = sys.exc_info()
-            get_stacktrace(exc_type,exc_value, exc_traceback)
+            _handle_stacktrace()
     def drop(self, predicate):
         try:
             self._backend.drop(self, predicate)
         except:
-            exc_type,exc_value, exc_traceback = sys.exc_info()
-            get_stacktrace(exc_type,exc_value, exc_traceback)
+            _handle_stacktrace()
     def dropna(self, how=any, column_subset=None):
         """
         Drops all rows which have NA values
@@ -297,14 +291,12 @@ class BigFrame(object):
         try:
             self._backend.dropna(self, how, column_subset)
         except:
-            exc_type,exc_value, exc_traceback = sys.exc_info()
-            get_stacktrace(exc_type,exc_value, exc_traceback)
+            _handle_stacktrace()
     def inspect(self, n=10, offset=0):
         try:
             return self._backend.inspect(self, n, offset)
         except:
-            exc_type,exc_value, exc_traceback = sys.exc_info()
-            get_stacktrace(exc_type,exc_value, exc_traceback)
+            _handle_stacktrace()
     # def join(self,
     #          right=None,
     #          how='left',
@@ -358,20 +350,17 @@ class BigFrame(object):
                 self._columns[p[0]].name = p[1]
             self._columns = OrderedDict([(v.name, v) for v in values])
         except:
-            exc_type,exc_value, exc_traceback = sys.exc_info()
-            get_stacktrace(exc_type,exc_value, exc_traceback)
+            _handle_stacktrace()
     def save(self, name=None):
         try:
             self._backend.save(self, name)
         except:
-            exc_type,exc_value, exc_traceback = sys.exc_info()
-            get_stacktrace(exc_type,exc_value, exc_traceback)
+            _handle_stacktrace()
     def take(self, n, offset=0):
         try:
             return self._backend.take(self, n, offset)
         except:
-            exc_type,exc_value, exc_traceback = sys.exc_info()
-            get_stacktrace(exc_type,exc_value, exc_traceback)
+            _handle_stacktrace()
 
 class FrameSchema(OrderedDict):
     """
@@ -409,20 +398,17 @@ class FrameSchema(OrderedDict):
         try:
             return self.keys()
         except:
-            exc_type,exc_value, exc_traceback = sys.exc_info()
-            get_stacktrace(exc_type,exc_value, exc_traceback)
+            _handle_stacktrace()
     def get_column_data_types(self):
         try:
             return self.values()
         except:
-            exc_type,exc_value, exc_traceback = sys.exc_info()
-            get_stacktrace(exc_type,exc_value, exc_traceback)
+            _handle_stacktrace()
     def get_column_data_type_strings(self):
         try:
             return map(lambda v: supported_types.get_type_string(v), self.values())
         except:
-            exc_type,exc_value, exc_traceback = sys.exc_info()
-            get_stacktrace(exc_type,exc_value, exc_traceback)
+            _handle_stacktrace()
     def drop(self, victim_column_names):
         try:
             if isinstance(victim_column_names, basestring):
@@ -430,8 +416,7 @@ class FrameSchema(OrderedDict):
             for v in victim_column_names:
                 del self[v]
         except:
-            exc_type,exc_value, exc_traceback = sys.exc_info()
-            get_stacktrace(exc_type,exc_value, exc_traceback)
+            _handle_stacktrace()
     def append(self, new_columns):
         try:
             for f in new_columns.keys():
@@ -440,8 +425,7 @@ class FrameSchema(OrderedDict):
             for name, dtype in new_columns.items():
                 self[name] = dtype
         except:
-            exc_type,exc_value, exc_traceback = sys.exc_info()
-            get_stacktrace(exc_type,exc_value, exc_traceback)
+            _handle_stacktrace()
     def merge(self, schema):
         try:
             for name, dtype in schema.items():
@@ -451,5 +435,4 @@ class FrameSchema(OrderedDict):
                     raise ValueError('Schema merge collision: column being set to '
                                     'a different type')
         except:
-            exc_type,exc_value, exc_traceback = sys.exc_info()
-            get_stacktrace(exc_type,exc_value, exc_traceback)
+            _handle_stacktrace()
