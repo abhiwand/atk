@@ -19,10 +19,22 @@
 # delivery of the Materials, either expressly, by implication, inducement,
 # estoppel or otherwise. Any license under such intellectual property rights
 # must be express and approved by Intel in writing.
-##############################################################################
+#############################################################################
 import sys,traceback
+import logging
 
-def get_stacktrace(exc_type,exc_value, exc_traceback):
-    print "\n *** printing traceback: ***"
-    traceback.print_exception(exc_type, exc_value, exc_traceback, limit=None, file=sys.stdout)
+logger = logging.getLogger(__name__)
 
+#Set stack_flag to print the stack trace. If set to false, only the error message is printed.
+stack_flag=False
+
+def get_stacktrace(exc):
+    exc_type,exc_value,exc_traceback = exc
+    if stack_flag == True:
+        print "Test True"
+        logging.info("\n **** Printing the stack trace: ***")
+        logging.info(traceback.print_exception(exc_type, exc_value, exc_traceback, limit=None, file=sys.stdout))
+    else:
+        print "Test False"
+        logging.info("\n *** The error message is: ***")
+        logging.info(traceback.format_exc(limit=0))
