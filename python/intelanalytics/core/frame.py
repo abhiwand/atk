@@ -29,7 +29,6 @@ from intelanalytics.core.column import BigColumn
 
 import logging
 logger = logging.getLogger(__name__)
-import uuid
 
 
 def _get_backend():
@@ -143,26 +142,16 @@ class BigFrame(object):
 
     """
     # TODO - Review Parameters, Examples
-    
+
 
     def __init__(self, source=None, name=None):
         self._columns = OrderedDict()  # self._columns must be the first attribute to be assigned (see __setattr__)
         self._id = 0
         self._uri = ""
+        self._name = ""
         if not hasattr(self, '_backend'):  # if a subclass has not already set the _backend
             self._backend = _get_backend()
-        self._name = name or self._get_new_frame_name(source)
-        self._backend.create(self)
-
-        if isinstance(source, BigFrame):
-            self._backend.project_columns(source, self, source.column_names)
-        elif isinstance(source, BigColumn):
-            self._backend.project_columns(source.frame, self, source.name)
-        elif (isinstance(source, list) and all(isinstance(iter, BigColumn) for iter in source)):
-            self._backend.project_columns(source[0].frame, self, [s.name for s in source])
-        else:
-            if source:
-                self.append(source)
+        self._backend.create(self, source, name)
         logger.info('Created new frame "%s"', self._name)
 
     def __getattr__(self, name):
@@ -198,14 +187,6 @@ class BigFrame(object):
 
     def __contains__(self, key):
         return self._columns.__contains__(key)
-
-    @staticmethod
-    def _get_new_frame_name(source=None):
-        try:
-            annotation = "_" + source.annotation
-        except:
-            annotation = ''
-        return "frame_" + uuid.uuid4().hex + annotation
 
     def _validate_key(self, key):
         if key in dir(self) and key not in self._columns:
@@ -418,15 +399,13 @@ class BigFrame(object):
             self._backend.add_columns(self, func, names)
     """
 
-    def append(self, *data):
+    def append(self, data):
         """
         Adds more data to the BigFrame object.
 
         Parameters
         ----------
-
-        data : pointer
-            A pointer to the source of the data being added.
+            The source of the data being added.
 
         Examples
         --------
@@ -435,10 +414,9 @@ class BigFrame(object):
         >>> my_other_frame = BigFrame( p_raw_data, my_other_csv )
         >>> my_frame.append( &my_other_frame )
         my_frame now has the data from my_other_frame as well
-        
         """
         # TODO - Review examples
-        self._backend.append(self, *data)
+        self._backend.append(self, data)
 
     def copy(self):
         """
@@ -617,38 +595,36 @@ class BigFrame(object):
         # TODO - Review docstring
         return self._backend.inspect(self, n, offset)
 
-    # def join(self,
-    #          right=None,
-    #          how='left',
-    #          left_on=None,
-    #          right_on=None,
-    #          suffixes=None):
-    #     """
-    #     Perform SQL JOIN on BigDataFrame
-    #
-    #     Syntax is similar to pandas DataFrame.join.
-    #
-    #     Parameters
-    #     ----------
-    #     right   : BigDataFrame or list/tuple of BigDataFrame
-    #         Frames to be joined with
-    #     how     : Str
-    #         {'left', 'right', 'outer', 'inner'}, default 'inner'
-    #     left_on : Str
-    #         Columns selected to bed joined on from left frame
-    #     right_on: Str or list/tuple of Str
-    #         Columns selected to bed joined on from right frame(s)
-    #     suffixes: tuple of Str
-    #         Suffixes to apply to columns on the output frame
-    #
-    #     Returns
-    #     -------
-    #     joined : BigFrame
-    #         new BigFrame result
-    #     """
-    #     if not right:
-    #         raise ValueError("A value for right must be specified")
-    #     return operations.BigOperationBinary("join", {BigFrame: {bool: None}}, self, predicate)
+    def join(self, right, left_on, right_on=None, how='inner'):
+        """
+        Create a new BigFrame from a JOIN operation with another BigFrame
+
+        Parameters
+        ----------
+        right : BigFrame
+            Another frame to join with
+        left_on : str
+            Name of the column for the join in this (left) frame
+        right_on : str, optional
+            Name of the column for the join in the right frame.  If not
+            provided, then the value of left_on is used.
+        how : str, optional
+            {'left', 'right', 'inner'}
+
+        Returns
+        -------
+        frame : BigFrame
+            The new joined frame
+
+        Examples
+        --------
+        >>> joined_frame = frame1.join(frame2, 'a')
+        >>> joined_frame = frame2.join(frame2, left_on='b', right_on='book', how='inner')
+        """
+        if right_on is None:
+            right_on = left_on
+
+        return self._backend.join(self, right, left_on, right_on, how)
 
     def project_columns(self, column_names, new_names=None):
         """
@@ -745,8 +721,9 @@ class BigFrame(object):
         The object my_frame is saved to disk, even those parts which were in memory waiting to do something
 
         """
+        raise NotImplementedError()
         # TODO - Review docstring
-        self._backend.save(self, name)
+        #self._backend.save(self, name)
 
     def take(self, n, offset=0):
         """
