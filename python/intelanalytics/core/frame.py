@@ -513,21 +513,21 @@ class BigFrame(object):
             Name of the column for the join in the right frame.  If not
             provided, then the value of left_on is used.
         how : str, optional
-            {'left', 'right', 'outer', 'inner'}
-        suffixes: 2-ary tuple of str, optional
-            Suffixes to apply to overlapping column names in the output frame.
-            Default suffixes are ('_L', '_R')
+            {'left', 'right', 'inner'}
 
         Returns
         -------
-        fraem : BigFrame
+        frame : BigFrame
             The new joined frame
 
         Examples
         --------
-        >>> joined_frame = frame1.join(frame2, 'a')  # left join on column 'a'
-        >>> joined_frame = frame2.join(frame2, left_on='b', right_on='book', how='outer')
+        >>> joined_frame = frame1.join(frame2, 'a')
+        >>> joined_frame = frame2.join(frame2, left_on='b', right_on='book', how='inner')
         """
+        if right_on is None:
+            right_on = left_on
+
         return self._backend.join(self, right, left_on, right_on, how)
 
     def project_columns(self, column_names, new_names=None):
