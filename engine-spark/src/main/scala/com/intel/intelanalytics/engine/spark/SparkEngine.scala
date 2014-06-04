@@ -23,22 +23,22 @@
 
 package com.intel.intelanalytics.engine.spark
 
-import org.apache.spark.{ ExceptionFailure, SparkContext, SparkConf, Accumulator }
+import org.apache.spark.{ ExceptionFailure, SparkContext }
 import org.apache.spark.api.python._
 import java.util.{ List => JList, ArrayList => JArrayList, Map => JMap }
 import org.apache.spark.broadcast.Broadcast
-import scala.collection.{ mutable, Set }
+import scala.collection.mutable
 import com.intel.intelanalytics.domain._
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.{ RDD, EmptyRDD }
 import com.intel.intelanalytics.engine._
-import com.intel.intelanalytics.domain.{ User, DataFrameTemplate, DataFrame }
-import com.intel.intelanalytics.domain.{ GraphTemplate, Graph, DataFrameTemplate, DataFrame }
+import com.intel.intelanalytics.domain.{ User, DataFrameTemplate }
+import com.intel.intelanalytics.domain.{ GraphTemplate, Graph, DataFrame }
 import scala.concurrent._
 import ExecutionContext.Implicits.global
 import java.nio.file.{ Paths, Path, Files }
 import java.io._
-import com.intel.intelanalytics.engine.Rows.RowSource
+import com.intel.intelanalytics.engine.Rows._
 import java.util.concurrent.atomic.AtomicLong
 import org.apache.hadoop.fs.{ LocalFileSystem, FileSystem }
 import org.apache.hadoop.conf.Configuration
@@ -46,11 +46,11 @@ import org.apache.hadoop.hdfs.DistributedFileSystem
 import java.nio.file.Path
 import spray.json.{ JsObject, JsonParser }
 import scala.io.{ Codec, Source }
-import scala.collection.mutable.{ HashSet, ListBuffer, ArrayBuffer, HashMap }
+import scala.collection.mutable.ArrayBuffer
 import scala.io.{ Codec, Source }
 import org.apache.hadoop.fs.{ Path => HPath }
-import scala.Some
 import com.intel.intelanalytics.engine.RowParser
+
 import scala.util.matching.Regex
 import com.typesafe.config.{ ConfigResolveOptions, ConfigFactory }
 import com.intel.event.EventContext
@@ -59,21 +59,69 @@ import com.intel.intelanalytics.domain.Partial
 import com.intel.intelanalytics.repository.{ SlickMetaStoreComponent, DbProfileComponent, MetaStoreComponent }
 import scala.slick.driver.H2Driver
 import scala.util.{ Success, Failure, Try }
-import org.apache.spark.scheduler._
 import org.apache.spark.scheduler.SparkListenerStageCompleted
 import scala.Some
-import com.intel.intelanalytics.domain.DataFrameTemplate
 import com.intel.intelanalytics.domain.DataFrame
 import org.apache.spark.scheduler.SparkListenerJobStart
-import org.apache.spark.engine.{ SparkProgressListener, ProgressPrinter }
+import org.apache.spark.engine.ProgressPrinter
 import com.typesafe.config.ConfigFactory
 import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.shared.EventLogging
+
+import com.intel.graphbuilder.driver.spark.titan.{ GraphBuilderConfig, GraphBuilder }
+import com.intel.graphbuilder.driver.spark.titan.examples.ExamplesUtils
+import scala.util.Failure
+import scala.Some
+import scala.collection.JavaConverters._
+import com.intel.intelanalytics.domain.LoadLines
+import com.intel.intelanalytics.domain.Graph
+import com.intel.intelanalytics.domain.FrameRemoveColumn
+import com.intel.intelanalytics.domain.DataFrameTemplate
+import com.intel.intelanalytics.domain.FrameAddColumn
+import scala.util.Success
+import com.intel.intelanalytics.domain.DataFrame
+import com.intel.intelanalytics.domain.Partial
+import com.intel.intelanalytics.domain.SeparatorArgs
+import com.intel.intelanalytics.domain.CommandTemplate
+import com.intel.intelanalytics.domain.Error
+import com.thinkaurelius.titan.core.{ TitanGraph, TitanFactory }
+import com.tinkerpop.blueprints.{ Direction, Vertex }
+import com.thinkaurelius.titan.graphdb.query.TitanPredicate
+import com.intel.graphbuilder.util.SerializableBaseConfiguration
+
+import org.apache.hadoop.hbase.HBaseConfiguration
+import org.apache.hadoop.hbase.client.HBaseAdmin
+import com.intel.intelanalytics.engine.spark.graph.SparkGraphHBaseBackend
+
 import com.intel.intelanalytics.domain.DataTypes.DataType
+
+import scala.util.Failure
+import scala.Some
+import scala.collection.JavaConverters._
+import com.intel.intelanalytics.domain.LoadLines
+import com.intel.intelanalytics.domain.Graph
+import com.intel.intelanalytics.domain.FilterPredicate
+import com.intel.intelanalytics.security.UserPrincipal
+import com.intel.intelanalytics.domain.FrameRemoveColumn
+import com.intel.intelanalytics.domain.GraphTemplate
+import com.intel.intelanalytics.domain.DataFrameTemplate
+import com.intel.intelanalytics.domain.FrameAddColumn
+import scala.util.Success
+import com.intel.intelanalytics.domain.DataFrame
+import com.intel.intelanalytics.domain.Command
+import com.intel.intelanalytics.domain.Partial
+import com.intel.intelanalytics.domain.SeparatorArgs
+import com.intel.intelanalytics.domain.CommandTemplate
+import com.intel.intelanalytics.domain.Error
+import com.intel.intelanalytics.domain.Als
+import com.intel.intelanalytics.engine.spark.graph.{ SparkGraphStorage, SparkGraphHBaseBackend }
+
+import org.apache.hadoop.mapreduce.Job
 
 //TODO documentation
 //TODO progress notification
 //TODO event notification
+
 class SparkComponent extends EngineComponent
     with FrameComponent
     with CommandComponent
@@ -155,8 +203,10 @@ class SparkComponent extends EngineComponent
             case x => throw new IllegalArgumentException(
               "Could not convert instance of " + x.getClass.getName + " to  arguments for builtin/line/separator")
           }
+
           val rowParser = new RowParser(args.separator)
           s => rowParser(s)
+
         }
         case x => throw new Exception("Unsupported parser: " + x)
       }
@@ -182,10 +232,11 @@ class SparkComponent extends EngineComponent
                 val frameId = arguments.destination
                 val parserFunction = getLineParser(arguments.lineParser)
                 val location = fsRoot + frames.getFrameDataFile(frameId)
-                val schema = realFrame.schema
+                val schema = arguments.schema
                 val converter = DataTypes.parseMany(schema.columns.map(_._2).toArray)(_)
                 val ctx = context(user)
                 SparkOps.loadLines(ctx.sparkContext, fsRoot + "/" + arguments.source, location, arguments, parserFunction, converter)
+                frames.updateSchema(realFrame, schema.columns)
               }
               commands.lookup(command.id).get
             }
@@ -215,6 +266,31 @@ class SparkComponent extends EngineComponent
         frames.getFrames(offset, count)
       }
     }
+
+    def renameFrame(arguments: FrameRenameFrame[JsObject, Long])(implicit user: UserPrincipal): (Command, Future[Command]) =
+      withContext("se.rename_frame") {
+        require(arguments != null, "arguments are required")
+        import DomainJsonProtocol._
+        val command: Command = commands.create(new CommandTemplate("rename_frame", Some(arguments.toJson.asJsObject)))
+        val result: Future[Command] = future {
+          withMyClassLoader {
+            withContext("se.rename_frame.future") {
+              withCommand(command) {
+
+                val frameID = arguments.frame
+
+                val frame = frames.lookup(frameID).getOrElse(
+                  throw new IllegalArgumentException(s"No such data frame: $frameID"))
+
+                val newName = arguments.new_name
+                frames.renameFrame(frame, newName)
+              }
+              commands.lookup(command.id).get
+            }
+          }
+        }
+        (command, result)
+      }
 
     def renameColumn(arguments: FrameRenameColumn[JsObject, Long])(implicit user: UserPrincipal): (Command, Future[Command]) =
       withContext("se.renamecolumn") {
@@ -257,16 +333,18 @@ class SparkComponent extends EngineComponent
             withContext("se.project.future") {
               withCommand(command) {
 
-                val originalFrameID = arguments.originalframe
-                val projectedFrameID = arguments.frame
+                val sourceFrameID = arguments.frame
+                val sourceFrame = frames.lookup(sourceFrameID).getOrElse(
+                  throw new IllegalArgumentException(s"No such data frame: $sourceFrameID"))
 
-                val originalFrame = frames.lookup(originalFrameID).getOrElse(
-                  throw new IllegalArgumentException(s"No such data frame: $originalFrameID"))
+                val projectedFrameID = arguments.projected_frame
+                val projectedFrame = frames.lookup(projectedFrameID).getOrElse(
+                  throw new IllegalArgumentException(s"No such data frame: $projectedFrameID"))
 
                 val ctx = context(user).sparkContext
-                val columns = arguments.column.split(",")
+                val columns = arguments.columns
 
-                val schema = originalFrame.schema
+                val schema = sourceFrame.schema
                 val location = fsRoot + frames.getFrameDataFile(projectedFrameID)
 
                 val columnIndices = for {
@@ -274,14 +352,22 @@ class SparkComponent extends EngineComponent
                   columnIndex = schema.columns.indexWhere(columnTuple => columnTuple._1 == col)
                 } yield columnIndex
 
-                columnIndices match {
-                  case invalidColumns if invalidColumns.contains(-1) =>
-                    throw new IllegalArgumentException(s"Invalid list of columns: ${arguments.column}")
-                  case _ => frames.getFrameRdd(ctx, originalFrameID)
-                    .map(row => { for { i <- columnIndices } yield row(i) }.toArray)
-                    .saveAsObjectFile(location)
+                if (columnIndices.contains(-1)) {
+                  throw new IllegalArgumentException(s"Invalid list of columns: ${arguments.columns.toString()}")
                 }
 
+                frames.getFrameRdd(ctx, sourceFrameID)
+                  .map(row => { for { i <- columnIndices } yield row(i) }.toArray)
+                  .saveAsObjectFile(location)
+
+                val projectedColumns = arguments.new_column_names match {
+                  case empty if empty.size == 0 => for { i <- columnIndices } yield schema.columns(i)
+                  case _ => {
+                    for { i <- 0 until columnIndices.size }
+                      yield (arguments.new_column_names(i), schema.columns(columnIndices(i))._2)
+                  }
+                }
+                frames.updateSchema(projectedFrame, projectedColumns.toList)
               }
               commands.lookup(command.id).get
             }
@@ -467,27 +553,86 @@ class SparkComponent extends EngineComponent
         }
       }
 
-    def createGraph(graph: GraphTemplate): Future[Graph] = {
+    /**
+     * Register a graph name with the metadata store.
+     * @param graph Metadata for graph creation.
+     * @param user IMPLICIT. The user creating the graph.
+     * @return
+     */
+    def createGraph(graph: GraphTemplate)(implicit user: UserPrincipal) = {
       future {
-        graphs.createGraph(graph)
+        withMyClassLoader {
+          graphs.createGraph(graph)
+        }
       }
     }
 
+    /**
+     * Loads graph data into a graph in the database. The source is tabular data interpreted by user-specified  rules.
+     * @param arguments Graph construction
+     * @param user IMPLICIT. The user loading the graph
+     * @return
+     */
+    def loadGraph(arguments: GraphLoad[JsObject, Long, Long])(implicit user: UserPrincipal): (Command, Future[Command]) =
+      withContext("se.load") {
+        require(arguments != null, "arguments are required")
+        import spray.json._
+        import DomainJsonProtocol._
+        val command: Command = commands.create(new CommandTemplate("graphLoad", Some(arguments.toJson.asJsObject)))
+        val result: Future[Command] = future {
+          withMyClassLoader {
+            withContext("se.graphLoad.future") {
+              withCommand(command) {
+
+                // not sure if we really need this...
+                val realFrame = frames.lookup(arguments.sourceFrameRef).getOrElse(
+                  throw new IllegalArgumentException(s"No such data frame: ${arguments.sourceFrameRef}"))
+
+                graphs.loadGraph(arguments)(user)
+              }
+
+              commands.lookup(command.id).get
+            }
+          }
+        }
+        (command, result)
+      }
+
+    /**
+     * Obtains a graph's metadata from its identifier.
+     * @param id Unique identifier for the graph provided by the metastore.
+     * @return A future of the graph.
+     */
     def getGraph(id: SparkComponent.this.Identifier): Future[Graph] = {
       future {
         graphs.lookup(id).get
       }
     }
 
-    def getGraphs(offset: Int, count: Int): Future[Seq[Graph]] = {
-      future {
-        graphs.getGraphs(offset, count)
+    /**
+     * Get the metadata for a range of graph identifiers.
+     * @param offset First graph to obtain.
+     * @param count Number of graphs to obtain.
+     * @param user IMPLICIT. User listing the graphs.
+     * @return Future of a sequence of graphs.
+     */
+    def getGraphs(offset: Int, count: Int)(implicit user: UserPrincipal): Future[Seq[Graph]] =
+      withContext("se.getGraphs") {
+        future {
+          graphs.getGraphs(offset, count)
+        }
       }
-    }
 
+    /**
+     * Delete a graph from the graph database.
+     * @param graph The graph to be deleted.
+     * @return
+     */
     def deleteGraph(graph: Graph): Future[Unit] = {
-      future {
-        graphs.drop(graph)
+      withContext("se.deletegraph") {
+        future {
+          graphs.drop(graph)
+        }
       }
     }
 
@@ -497,11 +642,11 @@ class SparkComponent extends EngineComponent
       import spray.json._
       import DomainJsonProtocol._
       val command = commands.create(CommandTemplate("graph/ml/als", Some(als.toJson.asJsObject)))
-      withMyClassLoader {
-        withContext("se.runAls") {
+      withContext("se.runAls") {
+        withMyClassLoader {
           val result = future {
             withCommand(command) {
-              val graph = graphs.lookup(als.graph).getOrElse(throw new IllegalArgumentException("Graph does not exist"))
+              //val graph = graphs.lookup(als.graph).getOrElse(throw new IllegalArgumentException("Graph does not exist"))
               val eConf = ConfigFactory.load("engine.conf").getConfig("engine.algorithm.als")
               val hConf = new Configuration()
               def set[T](hadoopKey: String, arg: Option[T], configKey: String) = {
@@ -532,11 +677,281 @@ class SparkComponent extends EngineComponent
               set("als.featureDimension", als.feature_dimension, "feature-dimension")
 
               //TODO: invoke the giraph algorithm here.
+              //TODO: Use hadoop interfaces rather than subprocess call
+              //val job = Job.getInstance(hConf)
+              //job.setOutputKeyClass()
 
+              import scala.sys.process._
+              //
+              //// This uses ! to get the exit code
+              //def fileExists(name: String) = Seq("test", "-f", name).! == 0
+              //
+              //// This uses !! to get the whole result as a string
+              //val dirContents = "ls".!!
+              //
+              //// This "fire-and-forgets" the method, which can be lazily read through
+              //// a Stream[String]
+              //def sourceFilesAt(baseDir: String): Stream[String] = {
+              //  val cmd = Seq("find", baseDir, "-name", "*.scala", "-type", "f")
+              //    cmd.lines
+              //    }
+
+              info("launching process")
+              val cmd = Seq("echo", "hello from sub process!")
+              for (l <- cmd.lines) {
+                info("Received from process: " + l)
+              }
+              info("completed process")
+              //                Seq(
+              //                          "hadoop",
+              //                          "jar",
+              //                          "/home/ec2-user/cdh_tribeca/IntelAnalytics/target/IntelAnalytics-application-0.8-SNAPSHOT.jar",
+              //"org.apache.giraph.GiraphRunner -Dgiraph.zkList=ip-172-31-43-19.us-west-2.compute.internal",
+              //"-Dgiraph.SplitMasterWorker=false -Dmapreduce.jobtracker.address=ip-172-31-43-19.us-west-2.compute.internal",
+              //"-Dgiraph.titan.input.storage.backend=hbase -Dgiraph.titan.input.storage.hostname=ip-172-31-43-19.us-west-2.compute.internal",
+              //"-Dgiraph.titan.input.storage.tablename=netflix -Dgiraph.titan.input.storage.port=2181",
+              //"-Dgiraph.titan.input.storage.read-only=false -Dgiraph.titan.input.autotype=none -Dinput.edge.property.key.list=rating",
+              //"-Dinput.edge.label.list=rates -Doutput.vertex.property.key.list=als_result,bias -Dvertex.type.property.key=vertexType",
+              //"-Dedge.type.property.key=splits -Doutput.vertex.bias=true com.intel.giraph.algorithms.als.AlternatingLeastSquaresComputation",
+              //"-mc com.intel.giraph.algorithms.als.AlternatingLeastSquaresComputation$AlternatingLeastSquaresMasterCompute",
+              //"-aw com.intel.giraph.algorithms.als.AlternatingLeastSquaresComputation$AlternatingLeastSquaresAggregatorWriter",
+              //"-vif  com.intel.giraph.io.titan.hbase.TitanHBaseVertexInputFormatPropertyGraph4CF",
+              //"-vof com.intel.giraph.io.titan.TitanVertexOutputFormatPropertyGraph4CF -op hdfs:///user/ec2-user/als -w 1",
+              //"-ca als.maxSupersteps=10  -ca als.convergenceThreshold=0  -ca als.lambda=0.065  -ca als.featureDimension=3 -ca als.biasOn=true",
+              //)
             }
             commands.lookup(command.id).get
           }
           (command, result)
+        }
+      }
+    }
+
+    private var titanConnections: Map[Identifier, TitanGraph] = Map.empty
+
+    //TODO: Cleanup these connections at some point.
+    protected def connect(graphId: Identifier): TitanGraph = {
+      titanConnections.get(graphId) match {
+        case Some(g) => g
+        case None =>
+          //TODO: get these settings from engine.conf or another config
+          // Titan Settings
+          val titanConfig = new SerializableBaseConfiguration()
+          titanConfig.setProperty("storage.backend", "hbase")
+          titanConfig.setProperty("storage.tablename", "iagraph-" + graphId)
+          //titanConfig.setProperty("storage.backend", "cassandra")
+          //titanConfig.setProperty("storage.keyspace", "netflix")
+          titanConfig.setProperty("storage.hostname", ExamplesUtils.storageHostname)
+          //titanConfig.setProperty("storage.batch-loading", "true")
+          titanConfig.setProperty("autotype", "none")
+          titanConfig.setProperty("storage.buffer-size", "2048")
+          titanConfig.setProperty("storage.attempt-wait", "300")
+          titanConfig.setProperty("storage.lock-wait-time", "400")
+          titanConfig.setProperty("storage.lock-retries", "15")
+          titanConfig.setProperty("storage.idauthority-retries", "30")
+          titanConfig.setProperty("storage.write-attempts", "10")
+          titanConfig.setProperty("storage.read-attempts", "6")
+          titanConfig.setProperty("ids.block-size", "300000")
+          titanConfig.setProperty("ids.renew-timeout", "150000")
+          val g = TitanFactory.open(titanConfig)
+          synchronized {
+            titanConnections += (graphId -> g)
+          }
+          g
+      }
+    }
+
+    def alsQuery(graphId: Identifier, offset: Int, count: Int, map: Map[String, String]): Iterable[Row] = {
+
+      //TODO: Needs cleanup and verification.
+
+      val queryConf = ConfigFactory.load("engine.conf").getConfig("engine.query.ALSQuery")
+      def get(mapName: String, defaultName: String) = {
+        map.getOrElse(mapName, queryConf.getString(defaultName))
+      }
+      val g = connect(graphId)
+      val id = map("vertex_id")
+      val idProp = get("key_name", "key-name")
+      val vertexTypeProp = get("vtype_name", "vertex-type-name")
+      val vertexType = get("vtype", "vertex-type")
+      val biasOn = get("bias_on", "bias-on").toBoolean
+      val propertyList = get("props", "result-property-list").split(";")
+      val edgeTypeProp = get("etype_name", "edge-type-name")
+      val edgeType = get("edge_type", "edge")
+      val featureDimensions = get("feat_dims", "feature-dimensions")
+      val leftType = get("left_type", "left-type").toUpperCase
+      val rightType = get("right_type", "right-type").toUpperCase
+      val leftName = get("left_name", "left-name")
+      val rightName = get("right_name", "right-name")
+      val vectorValue = get("vector", "vector-value").toBoolean
+      val train = get("train", "train")
+
+      val start = g.query().has(idProp, id).has(vertexTypeProp, vertexType).vertices().iterator().next()
+
+      //      val entities = List((leftTypeStr):leftName + '  ', (rightTypeStr):rightName + '  ')
+      //    commonStr = 'Top 10 recommendations to '
+      //    comments = [(leftTypeStr):commonStr + leftName + ': ', (rightTypeStr):commonStr + rightName + ': ']
+      //    //vertexType = v.getProperty(key4VertexType)
+
+      val recommendType = if (vertexType == rightType) {
+        leftType
+      }
+      else {
+        rightType
+      }
+
+      //    recommendType = rightTypeStr
+      //    if (vertexType == rightTypeStr) {
+      //        recommendType = leftTypeStr
+      //    }
+      /*
+
+    println "================" + comments[vertexType] + vertexID + "================"
+    list1 = getResults(v, propertyList, vectorValue, biasOn)
+    println list1
+    */
+      val commasAndWhiteSpace = "[\\s,\\t]+".r
+      def results(v: Vertex): List[Double] = {
+        val length = propertyList.length
+        if (length == 0) {
+          throw new IllegalArgumentException("no property provided for ML result!")
+        }
+        else if (vectorValue && biasOn && length != 2) {
+          throw new IllegalArgumentException("wrong property length provided for ML result!")
+        }
+
+        val bias = if (biasOn) {
+          Some(v.getProperty[Double](propertyList.last))
+        }
+        else {
+          None
+        }
+        val properties = if (vectorValue) {
+          commasAndWhiteSpace.split(v.getProperty(propertyList.head)).map(_.toDouble)
+        }
+        else {
+          val valueLength = if (biasOn) {
+            length - 1
+          }
+          else {
+            length
+          }
+          propertyList.take(valueLength).map(p => v.getProperty[Double](p))
+        }
+        (bias ++ properties).toList
+      }
+
+      val list1 = results(start)
+
+      def calculateScore(list2: Seq[Double]) {
+        if (biasOn) {
+          list1(0) + list2(0) + (list1.drop(1), list2.drop(1)).zipped.map(_ * _).sum
+        }
+        else {
+          (list1, list2).zipped.map(_ * _).sum
+        }
+      }
+
+      val res = g.query().has(vertexTypeProp).vertices().asScala
+        .filter(_.getProperty(vertexTypeProp).toString.toUpperCase() == recommendType)
+        .filter(_.getEdges(Direction.OUT).asScala.filter(
+          _.getProperty(edgeTypeProp).toString.toUpperCase() == train).isEmpty)
+        .map(v2 => {
+          val list2 = results(v2)
+          val score = calculateScore(list2)
+          Array(v2.getProperty(idProp).toString, score)
+        })
+
+      res
+
+      /*
+
+    def list = []
+    for(Vertex v2 : g.V.filter{(it.getProperty(key4VertexType)).toUpperCase() == recommendType}) {
+        list2 = getResults(v2, propertyList, vectorValue, biasOn)
+        score = calculateScore(list1, list2, biasOn, featureDimension)
+        if (v2.outE.filter{it.getProperty(key4EdgeType).toUpperCase() != trainStr}){
+            list.add new recommendation(id:v2.getProperty(key4VertexID), rec:score)
+        }
+    }
+    listSize = list.size()
+    if (listSize > 0){
+        size = listSize >= 10? 10 : listSize
+        sortedlist = list.sort{a,b -> b.rec<=>a.rec}[0..<size]
+        (0..<size).each{
+            println entities[recommendType] + sortedlist[it].id + "  score " + sortedlist[it].rec
+        }
+    }
+    println 'complete execution'
+}
+
+
+class recommendation {
+   def id
+   def rec
+}
+
+def getResults(Vertex v, String[] propertyList, String vectorValue, String biasOn) {
+    def list = []
+    length = propertyList.length
+    valueLength = length
+    if(length == 0){
+      println "ERROR: no property provided for ML result!"
+    } else if (vectorValue == "true"  &&
+            biasOn == "true"  &&
+            length != 2){
+      println "ERROR: wrong property length provided for ML result!"
+    }
+
+    //firstly add bias
+    if(biasOn == "true"){
+      list.add v.getProperty(propertyList[length-1]).toDouble()
+      valueLength = length - 1
+    }
+
+    //then add the results
+    if(vectorValue == "true"){
+      values = v.getProperty(propertyList[0]).split("[\\s,\\t]+")
+        for(i in 0..<values.size()){
+            list.add values[i].toDouble()
+        }
+    } else {
+        for(i in 0..<valueLength){
+            list.add v.getProperty(propertyList[i]).toDouble()
+        }
+    }
+
+    return list
+}
+
+def calculateScore(list1, list2, biasOn, featureDimension) {
+    if(biasOn == "true"){
+        sum = list1[0] + list2[0]
+        (1..featureDimension).each {
+            sum += list1[it] * list2[it]
+        }
+    } else {
+        (0..<featureDimension).each {
+            sum = list1[it] * list2[it]
+        }
+    }
+
+    return sum
+}
+       */
+    }
+
+    //TODO: We'll probably return an Iterable[Vertex] instead of rows at some point.
+    override def getVertices(graph: Identifier,
+                             offset: Int,
+                             count: Int,
+                             queryName: String,
+                             parameters: Map[String, String]): Future[Iterable[Row]] = {
+      //TODO: these will come from a dynamically configured map rather than a match expression
+      future {
+        queryName match {
+          case "ALSQuery" => alsQuery(graph, offset, count, parameters)
+          case _ => throw new IllegalArgumentException("Unknown query: " + queryName)
         }
       }
     }
@@ -578,6 +993,7 @@ class SparkComponent extends EngineComponent
     override def list(source: Directory): Seq[Entry] = withContext("file.list") {
       fs.listStatus(new HPath(fsRoot + frames.frameBase))
         .map {
+          //case s if s.isDirectory => Directory(path = Paths.get(s.getPath.toString))
           case s if s.isDirectory => Directory(path = Paths.get(s.getPath.toString))
           case f if f.isDirectory => File(path = Paths.get(f.getPath.toString), size = f.getLen)
           case x => throw new IOException("Unknown object type in filesystem at " + x.getPath)
@@ -639,6 +1055,32 @@ class SparkComponent extends EngineComponent
 
     import com.intel.intelanalytics.domain.DomainJsonProtocol._
 
+    def updateName(frame: DataFrame, newName: String): DataFrame = {
+      val newFrame = frame.copy(name = newName)
+      updateMeta(newFrame)
+    }
+
+    def updateSchema(frame: DataFrame, columns: List[(String, DataType)]): DataFrame = {
+      val newSchema = frame.schema.copy(columns = columns)
+      val newFrame = frame.copy(schema = newSchema)
+      updateMeta(newFrame)
+    }
+
+    private def updateMeta(newFrame: DataFrame): DataFrame = {
+      val meta = File(Paths.get(getFrameMetaDataFile(newFrame.id)))
+      info(s"Saving metadata to $meta")
+      val f = files.write(meta)
+      try {
+        val json: String = newFrame.toJson.prettyPrint
+        debug(json)
+        f.write(json.getBytes(Codec.UTF8.name))
+      }
+      finally {
+        f.close()
+      }
+      newFrame
+    }
+
     override def drop(frame: DataFrame): Unit = withContext("frame.drop") {
       files.delete(Paths.get(getFrameDirectory(frame.id)))
     }
@@ -664,75 +1106,40 @@ class SparkComponent extends EngineComponent
               frame.schema.columns.zipWithIndex.filter(elem => columnIndex.contains(elem._2) == false).map(_._1)
           }
         }
-        val newSchema = frame.schema.copy(columns = remainingColumns)
-        val newFrame = frame.copy(schema = newSchema)
-
-        val meta = File(Paths.get(getFrameMetaDataFile(frame.id)))
-        info(s"Saving metadata to $meta")
-        val f = files.write(meta)
-        try {
-          val json: String = newFrame.toJson.prettyPrint
-          debug(json)
-          f.write(json.getBytes(Codec.UTF8.name))
-        }
-        finally {
-          f.close()
-        }
+        updateSchema(frame, remainingColumns)
       }
 
     override def addColumnWithValue[T](frame: DataFrame, column: Column[T], default: T): Unit =
       withContext("frame.addColumnWithValue") {
         ???
       }
-    override def renameColumn[T](frame: DataFrame, name_pairs: Seq[(String, String)]): Unit =
+
+    override def renameFrame(frame: DataFrame, newName: String): Unit =
+      withContext("frame.rename") {
+        updateName(frame, newName)
+      }
+
+    override def renameColumn(frame: DataFrame, name_pairs: Seq[(String, String)]): Unit =
       withContext("frame.renameColumn") {
         val columnsToRename: Seq[String] = name_pairs.map(_._1)
         val newColumnNames: Seq[String] = name_pairs.map(_._2)
 
         def generateNewColumnTuple(oldColumn: String, columnsToRename: Seq[String], newColumnNames: Seq[String]): String = {
-          val columnIndex: Int = columnsToRename.indexOf(oldColumn)
-          if (columnIndex > 0)
-            return newColumnNames(columnIndex)
-          else return oldColumn
+          val result = columnsToRename.indexOf(oldColumn) match {
+            case notFound if notFound < 0 => oldColumn
+            case found => newColumnNames(found)
+          }
+          result
         }
 
         val newColumns = frame.schema.columns.map(col => (generateNewColumnTuple(col._1, columnsToRename, newColumnNames), col._2))
-
-        val newSchema = frame.schema.copy(columns = newColumns)
-        val newFrame = frame.copy(schema = newSchema)
-
-        val meta = File(Paths.get(getFrameMetaDataFile(frame.id)))
-        info(s"Saving metadata to $meta")
-        val f = files.write(meta)
-        try {
-          val json: String = newFrame.toJson.prettyPrint
-          debug(json)
-          f.write(json.getBytes(Codec.UTF8.name))
-        }
-        finally {
-          f.close()
-        }
-        newFrame
+        updateSchema(frame, newColumns)
       }
 
     override def addColumn[T](frame: DataFrame, column: Column[T], columnType: DataTypes.DataType): DataFrame =
       withContext("frame.addColumn") {
         val newColumns = frame.schema.columns :+ (column.name, columnType)
-        val newSchema = frame.schema.copy(columns = newColumns)
-        val newFrame = frame.copy(schema = newSchema)
-
-        val meta = File(Paths.get(getFrameMetaDataFile(frame.id)))
-        info(s"Saving metadata to $meta")
-        val f = files.write(meta)
-        try {
-          val json: String = newFrame.toJson.prettyPrint
-          debug(json)
-          f.write(json.getBytes(Codec.UTF8.name))
-        }
-        finally {
-          f.close()
-        }
-        newFrame
+        updateSchema(frame, newColumns)
       }
 
     override def getRows(frame: DataFrame, offset: Long, count: Int)(implicit user: UserPrincipal): Iterable[Row] =
@@ -767,7 +1174,7 @@ class SparkComponent extends EngineComponent
 
     override def create(frame: DataFrameTemplate): DataFrame = withContext("frame.create") {
       val id = nextFrameId()
-      val frame2 = new DataFrame(id = id, name = frame.name, schema = frame.schema)
+      val frame2 = new DataFrame(id = id, name = frame.name)
       val meta = File(Paths.get(getFrameMetaDataFile(id)))
       info(s"Saving metadata to $meta")
       val f = files.write(meta)
@@ -834,6 +1241,12 @@ class SparkComponent extends EngineComponent
     }
   }
 
+  val graphs: GraphStorage =
+    new SparkGraphStorage(engine.context(_),
+      metaStore,
+      new SparkGraphHBaseBackend(new HBaseAdmin(HBaseConfiguration.create())),
+      frames)
+
   val commands = new SparkCommandStorage {}
 
   trait SparkCommandStorage extends CommandStorage {
@@ -879,39 +1292,7 @@ class SparkComponent extends EngineComponent
           repo.update(changed)
       }
     }
-  }
 
-  val graphs = new SparkGraphStorage {}
-
-  trait SparkGraphStorage extends GraphStorage {
-
-    import spray.json._
-
-    import com.intel.intelanalytics.domain.DomainJsonProtocol._
-
-    //
-    // we can't actually use graph builder right now without breaking the build
-    // import com.intel.graphbuilder.driver.spark.titan.examples
-
-    override def drop(graph: Graph): Unit = {
-      println("DROPPING GRAPH: " + graph.name)
-      Unit
-    }
-
-    override def createGraph(graph: GraphTemplate): Graph = {
-      println("CREATING GRAPH " + graph.name)
-      new Graph(1, graph.name)
-    }
-
-    override def lookup(id: Long): Option[Graph] = {
-      println("DELETING GRAPH " + id)
-      None
-    }
-
-    def getGraphs(offset: Int, count: Int): Seq[Graph] = {
-      println("LISTING " + count + " GRAPHS FROM " + offset)
-      List[Graph]()
-    }
   }
 
 }

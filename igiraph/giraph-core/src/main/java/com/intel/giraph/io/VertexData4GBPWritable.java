@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2013 Intel Corporation All Rights Reserved.
+// Copyright 2014 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -171,6 +171,7 @@ public class VertexData4GBPWritable implements Writable {
      * @param prior of type GaussianDistWritable
      * @param posterior of type GaussianDistWritable
      * @param intermediate of type GaussianDistWritable
+     * @param prevMean of type double
      * @throws IOException
      */
     public static void write(DataOutput out, GaussianDistWritable prior,

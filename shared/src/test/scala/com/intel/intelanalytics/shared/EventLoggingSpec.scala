@@ -23,7 +23,7 @@
 
 package com.intel.intelanalytics.shared
 
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.{ FlatSpec, Matchers }
 import com.intel.event._
 import org.scalatest.mock.MockitoSugar
 import org.mockito.Mockito._
@@ -32,7 +32,6 @@ import org.mockito.ArgumentMatcher
 class EventLoggingSpec extends FlatSpec with Matchers with MockitoSugar {
 
   val rawLogger = new EventLogging {}
-
 
   "A call to withContext" should "throw IllegalArgument when called with null context" in {
     intercept[IllegalArgumentException] {
@@ -52,7 +51,7 @@ class EventLoggingSpec extends FlatSpec with Matchers with MockitoSugar {
 
   it should "trim whitespace from the context argument" in {
     rawLogger.withContext(" hello   ") {
-      EventContext.getCurrent.getName should be( "hello")
+      EventContext.getCurrent.getName should be("hello")
     }
   }
 
@@ -73,7 +72,7 @@ class EventLoggingSpec extends FlatSpec with Matchers with MockitoSugar {
         messageCode should be(0)
         markers should be(Nil)
         substitutions should be(Nil)
-        exception shouldBe an [IllegalArgumentException]
+        exception shouldBe an[IllegalArgumentException]
         called = true
       }
 
@@ -114,7 +113,7 @@ class EventLoggingSpec extends FlatSpec with Matchers with MockitoSugar {
         messageCode should be(0)
         markers should be(Nil)
         substitutions should be(Nil)
-        exception shouldBe an [IllegalArgumentException]
+        exception shouldBe an[IllegalArgumentException]
         called = true
       }
 
@@ -137,7 +136,7 @@ class EventLoggingSpec extends FlatSpec with Matchers with MockitoSugar {
         messageCode should be(0)
         markers should be(Nil)
         substitutions should be(Nil)
-        exception shouldBe an [IllegalArgumentException]
+        exception shouldBe an[IllegalArgumentException]
         called = true
       }
 
@@ -160,7 +159,7 @@ class EventLoggingSpec extends FlatSpec with Matchers with MockitoSugar {
         messageCode should be(0)
         markers should be(Nil)
         substitutions should be(Nil)
-        exception shouldBe an [IllegalArgumentException]
+        exception shouldBe an[IllegalArgumentException]
         called = true
       }
 
@@ -179,11 +178,11 @@ class EventLoggingSpec extends FlatSpec with Matchers with MockitoSugar {
     }
   }
   "Calling warn" should "generate a WARN event" in {
-      val mockLog = mock[EventLog]
-      EventLogger.setImplementation(mockLog)
-      rawLogger.warn("Hey!")
-      verify(mockLog).log(eventWith(e => e.getSeverity == Severity.WARN))
-    }
+    val mockLog = mock[EventLog]
+    EventLogger.setImplementation(mockLog)
+    rawLogger.warn("Hey!")
+    verify(mockLog).log(eventWith(e => e.getSeverity == Severity.WARN))
+  }
 
   "Calling error" should "generate an ERROR event" in {
     val mockLog = mock[EventLog]
@@ -228,7 +227,8 @@ class EventLoggingSpec extends FlatSpec with Matchers with MockitoSugar {
     val ctx = rawLogger.enter("hello")
     try {
       ctx.getName should be("hello")
-    } finally {
+    }
+    finally {
       ctx.close()
     }
 
@@ -237,12 +237,12 @@ class EventLoggingSpec extends FlatSpec with Matchers with MockitoSugar {
   def eventWith(f: Event => Boolean) = {
 
     org.mockito.Matchers.argThat(
-    new ArgumentMatcher[Event] {
-      override def matches(argument: scala.Any): Boolean = {
-        val event = argument.asInstanceOf[Event]
-        f(event)
+      new ArgumentMatcher[Event] {
+        override def matches(argument: scala.Any): Boolean = {
+          val event = argument.asInstanceOf[Event]
+          f(event)
+        }
       }
-    }
     )
   }
 }

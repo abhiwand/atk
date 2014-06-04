@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2013 Intel Corporation All Rights Reserved.
+// Copyright 2014 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -23,14 +23,11 @@
 
 package com.intel.intelanalytics.service.v1.viewmodels
 
-import com.intel.intelanalytics.domain.{ Graph, GraphTemplate, DataFrame, Schema }
-import spray.json.{ JsValue, DefaultJsonProtocol }
-import spray.httpx.SprayJsonSupport
+import com.intel.intelanalytics.domain.Graph
+import spray.json.DefaultJsonProtocol
 import com.intel.intelanalytics.domain._
-import spray.json.{ JsObject, JsValue, DefaultJsonProtocol }
+import spray.json.{ JsObject, DefaultJsonProtocol }
 import spray.httpx.SprayJsonSupport
-import com.intel.intelanalytics.domain.Partial
-import com.intel.intelanalytics.domain.Operation
 import com.intel.intelanalytics.domain.Schema
 
 case class RelLink(rel: String, uri: String, method: String) {
@@ -76,6 +73,9 @@ case class JsonTransform(name: String, arguments: Option[JsObject]) {
   require(name != null, "Name is required")
 }
 
+/**
+ * Returned handle for a graph stored in the graph database.
+ */
 case class DecoratedGraph(id: Long, name: String, links: List[RelLink]) {
   require(id > 0)
   require(name != null)
@@ -89,7 +89,10 @@ case class GraphHeader(id: Long, name: String, url: String) {
 }
 
 object ViewModelJsonProtocol extends DefaultJsonProtocol with SprayJsonSupport {
-  import com.intel.intelanalytics.domain.DomainJsonProtocol._ //this is needed for implicits
+
+  import com.intel.intelanalytics.domain.DomainJsonProtocol._
+
+  //this is needed for implicits
   implicit val relLinkFormat = jsonFormat3(RelLink)
   implicit val dataFrameHeaderFormat = jsonFormat3(DataFrameHeader)
   implicit val decoratedDataFrameFormat = jsonFormat4(DecoratedDataFrame)
