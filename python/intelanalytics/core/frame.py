@@ -27,11 +27,12 @@ from collections import OrderedDict
 import json
 
 from intelanalytics.core.types import supported_types
+from intelanalytics.core.errorhandle import get_stacktrace
 
 import logging
 logger = logging.getLogger(__name__)
 import uuid
-
+import sys
 
 def _get_backend():
     from intelanalytics.core.config import get_frame_backend
@@ -40,18 +41,27 @@ def _get_backend():
 
 def get_frame_names():
     """Gets the names of BigFrame objects available for retrieval"""
-    return _get_backend().get_frame_names()
-
+    try:
+        return _get_backend().get_frame_names()
+    except:
+        exc_type,exc_value, exc_traceback = sys.exc_info()
+        get_stacktrace(exc_type,exc_value, exc_traceback)
 
 def get_frame(name):
     """Retrieves the named BigFrame object"""
-    return _get_backend().get_frame(name)
-
+    try:
+        return _get_backend().get_frame(name)
+    except:
+        exc_type,exc_value, exc_traceback = sys.exc_info()
+        get_stacktrace(exc_type,exc_value, exc_traceback)
 
 def delete_frame(name):
     """Deletes the frame from backing store"""
-    return _get_backend().delete_frame(name)
-
+    try:
+        return _get_backend().delete_frame(name)
+    except:
+        exc_type,exc_value, exc_traceback = sys.exc_info()
+        get_stacktrace(exc_type,exc_value, exc_traceback)
 
 class BigFrame(object):
     """
@@ -194,13 +204,16 @@ class BigFrame(object):
             specifies the name of the new column
         """
         # Generate a synthetic name
-        if not name:
-            for i in range(0,1000):
-                if self._columns.get('res%d' % i, None) is None:
-                    name = 'res%d' % i
-                    break
-        self._backend.add_column(self, func, name, type)
-
+        try:
+            if not name:
+                for i in range(0,1000):
+                    if self._columns.get('res%d' % i, None) is None:
+                        name = 'res%d' % i
+                        break
+            self._backend.add_column(self, func, name, type)
+        except:
+            exc_type,exc_value, exc_traceback = sys.exc_info()
+            get_stacktrace(exc_type,exc_value, exc_traceback)
     def add_columns(self, func, names=None, ):
         """
         Adds new columns to the frame by evaluating the given func on each row
@@ -214,11 +227,17 @@ class BigFrame(object):
         names: list or tuple of strings or tuples of string, data type
             specifies the name and data type of the new columns
         """
-        self._backend.add_columns(self, func, names)
-
+        try:
+            self._backend.add_columns(self, func, names)
+        except:
+            exc_type,exc_value, exc_traceback = sys.exc_info()
+            get_stacktrace(exc_type,exc_value, exc_traceback)
     def append(self, *data):
-        self._backend.append(self, *data)
-
+        try:
+            self._backend.append(self, *data)
+        except:
+            exc_type,exc_value, exc_traceback = sys.exc_info()
+            get_stacktrace(exc_type,exc_value, exc_traceback)
     def filter(self, predicate):
         """
         Select all rows which satisfy a predicate
@@ -228,11 +247,17 @@ class BigFrame(object):
         predicate: function
             function definition or lambda which evaluates to a boolean value
         """
-        self._backend.filter(self, predicate)
-
+        try:
+            self._backend.filter(self, predicate)
+        except:
+            exc_type,exc_value, exc_traceback = sys.exc_info()
+            get_stacktrace(exc_type,exc_value, exc_traceback)
     def count(self):
-        return self._backend.count(self)
-
+        try:
+            return self._backend.count(self)
+        except:
+            exc_type,exc_value, exc_traceback = sys.exc_info()
+            get_stacktrace(exc_type,exc_value, exc_traceback)
     def remove_column(self, name):
         """
         Remove columns
@@ -242,15 +267,21 @@ class BigFrame(object):
         name: string or list of strings
             column name or list of column names to be removed from the frame
         """
-        self._backend.remove_column(self, name)
-        if isinstance(name, basestring):
-            name = [name]
-        for victim in name:
-            del self._columns[victim]
-
+        try:
+            self._backend.remove_column(self, name)
+            if isinstance(name, basestring):
+                name = [name]
+            for victim in name:
+                del self._columns[victim]
+        except:
+            exc_type,exc_value, exc_traceback = sys.exc_info()
+            get_stacktrace(exc_type,exc_value, exc_traceback)
     def drop(self, predicate):
-        self._backend.drop(self, predicate)
-
+        try:
+            self._backend.drop(self, predicate)
+        except:
+            exc_type,exc_value, exc_traceback = sys.exc_info()
+            get_stacktrace(exc_type,exc_value, exc_traceback)
     def dropna(self, how=any, column_subset=None):
         """
         Drops all rows which have NA values
@@ -263,11 +294,17 @@ class BigFrame(object):
         column_subset : str or list of str, optional
             if not None, only the given columns are considered
         """
-        self._backend.dropna(self, how, column_subset)
-
+        try:
+            self._backend.dropna(self, how, column_subset)
+        except:
+            exc_type,exc_value, exc_traceback = sys.exc_info()
+            get_stacktrace(exc_type,exc_value, exc_traceback)
     def inspect(self, n=10, offset=0):
-        return self._backend.inspect(self, n, offset)
-
+        try:
+            return self._backend.inspect(self, n, offset)
+        except:
+            exc_type,exc_value, exc_traceback = sys.exc_info()
+            get_stacktrace(exc_type,exc_value, exc_traceback)
     # def join(self,
     #          right=None,
     #          how='left',
@@ -302,30 +339,39 @@ class BigFrame(object):
     #     return operations.BigOperationBinary("join", {BigFrame: {bool: None}}, self, predicate)
 
     def rename_column(self, column_name, new_name):
-        if isinstance(column_name, basestring) and isinstance(new_name, basestring):
-            column_name = [column_name]
-            new_name = [new_name]
-        if len(column_name) != len(new_name):
-            raise ValueError("rename requires name lists of equal length")
-        current_names = self._columns.keys()
-        for nn in new_name:
-            if nn in current_names:
-                raise ValueError("Cannot use rename to '{0}' because another column already exists with that name".format(nn))
-        name_pairs = zip(column_name, new_name)
+        try:
+            if isinstance(column_name, basestring) and isinstance(new_name, basestring):
+                column_name = [column_name]
+                new_name = [new_name]
+            if len(column_name) != len(new_name):
+                raise ValueError("rename requires name lists of equal length")
+            current_names = self._columns.keys()
+            for nn in new_name:
+                if nn in current_names:
+                    raise ValueError("Cannot use rename to '{0}' because another column already exists with that name".format(nn))
+            name_pairs = zip(column_name, new_name)
 
-        self._backend.rename_columns(self, name_pairs)
-        # rename on python side, here in the frame's local columns:
-        values = self._columns.values()  # must preserve order in OrderedDict
-        for p in name_pairs:
-            self._columns[p[0]].name = p[1]
-        self._columns = OrderedDict([(v.name, v) for v in values])
-
+            self._backend.rename_columns(self, name_pairs)
+            # rename on python side, here in the frame's local columns:
+            values = self._columns.values()  # must preserve order in OrderedDict
+            for p in name_pairs:
+                self._columns[p[0]].name = p[1]
+            self._columns = OrderedDict([(v.name, v) for v in values])
+        except:
+            exc_type,exc_value, exc_traceback = sys.exc_info()
+            get_stacktrace(exc_type,exc_value, exc_traceback)
     def save(self, name=None):
-        self._backend.save(self, name)
-
+        try:
+            self._backend.save(self, name)
+        except:
+            exc_type,exc_value, exc_traceback = sys.exc_info()
+            get_stacktrace(exc_type,exc_value, exc_traceback)
     def take(self, n, offset=0):
-        return self._backend.take(self, n, offset)
-
+        try:
+            return self._backend.take(self, n, offset)
+        except:
+            exc_type,exc_value, exc_traceback = sys.exc_info()
+            get_stacktrace(exc_type,exc_value, exc_traceback)
 
 class FrameSchema(OrderedDict):
     """
@@ -360,31 +406,50 @@ class FrameSchema(OrderedDict):
         self._init_from_tuples(json.loads(schema_string))
 
     def get_column_names(self):
-        return self.keys()
-
+        try:
+            return self.keys()
+        except:
+            exc_type,exc_value, exc_traceback = sys.exc_info()
+            get_stacktrace(exc_type,exc_value, exc_traceback)
     def get_column_data_types(self):
-        return self.values()
-
+        try:
+            return self.values()
+        except:
+            exc_type,exc_value, exc_traceback = sys.exc_info()
+            get_stacktrace(exc_type,exc_value, exc_traceback)
     def get_column_data_type_strings(self):
-        return map(lambda v: supported_types.get_type_string(v), self.values())
-
+        try:
+            return map(lambda v: supported_types.get_type_string(v), self.values())
+        except:
+            exc_type,exc_value, exc_traceback = sys.exc_info()
+            get_stacktrace(exc_type,exc_value, exc_traceback)
     def drop(self, victim_column_names):
-        if isinstance(victim_column_names, basestring):
-            victim_column_names = [victim_column_names]
-        for v in victim_column_names:
-            del self[v]
-
+        try:
+            if isinstance(victim_column_names, basestring):
+                victim_column_names = [victim_column_names]
+            for v in victim_column_names:
+                del self[v]
+        except:
+            exc_type,exc_value, exc_traceback = sys.exc_info()
+            get_stacktrace(exc_type,exc_value, exc_traceback)
     def append(self, new_columns):
-        for f in new_columns.keys():
-            if f in self:
-                raise KeyError('Schema already contains column ' + f)
-        for name, dtype in new_columns.items():
-            self[name] = dtype
-
-    def merge(self, schema):
-        for name, dtype in schema.items():
-            if name not in self:
+        try:
+            for f in new_columns.keys():
+                if f in self:
+                    raise KeyError('Schema already contains column ' + f)
+            for name, dtype in new_columns.items():
                 self[name] = dtype
-            elif self[name] != dtype:
-                raise ValueError('Schema merge collision: column being set to '
-                                 'a different type')
+        except:
+            exc_type,exc_value, exc_traceback = sys.exc_info()
+            get_stacktrace(exc_type,exc_value, exc_traceback)
+    def merge(self, schema):
+        try:
+            for name, dtype in schema.items():
+                if name not in self:
+                    self[name] = dtype
+                elif self[name] != dtype:
+                    raise ValueError('Schema merge collision: column being set to '
+                                    'a different type')
+        except:
+            exc_type,exc_value, exc_traceback = sys.exc_info()
+            get_stacktrace(exc_type,exc_value, exc_traceback)
