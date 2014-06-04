@@ -36,6 +36,7 @@ class CsvFile(DataFile):
 
     Parameters
     ----------
+
     file_name : string
         name of data input file
     schema : list of tuples of the form (string, type)
@@ -52,6 +53,7 @@ class CsvFile(DataFile):
 
     Raises
     ------
+
     ValueError
         "file_name must be a non-empty string": check for spurious leading comma in the parameters
         "schema must be non-empty list of tuples": check for spelling errors in the creation, building and application of the schema variable
@@ -68,9 +70,20 @@ class CsvFile(DataFile):
     <BLANKLINE>
     At this point create a schema that defines the data
     >>> csv_schema = []
-    >>> csv_schema.append(('sort_order', int64))
+    >>> csv_schema.append(("sort_order", string))
     >>> csv_schema.append(("common_name", string))
-    >>> ...
+    >>> csv_schema.append(("formal_name", string))
+    >>> csv_schema.append(("type", string))
+    >>> csv_schema.append(("sub_type", string))
+    >>> csv_schema.append(("sovereignty", string))
+    >>> csv_schema.append(("capital", string))
+    >>> csv_schema.append(("iso_4217_currency_code", string))
+    >>> csv_schema.append(("iso_4217_currency_name", string))
+    >>> csv_schema.append(("itu-t_telephone_code", string))
+    >>> csv_schema.append(("iso_3166-1_2_letter_code", string))
+    >>> csv_schema.append(("iso_3166-1_3_letter_code", string))
+    >>> csv_schema.append(("iso_3166-1_number", string))
+    >>> csv_schema.append(("iana_country_code_tld", string))
     <BLANKLINE>
     Now build a CsvFile object with this schema
     >>> csv_define = CsvFile("<path to>raw_data.csv", csv_schema)
@@ -79,7 +92,7 @@ class CsvFile(DataFile):
     >>> csv_data = CsvFile("<path to>raw_data.csv", csv_schema, ':')
     <BLANKLINE>
     If the raw data had some lines of information at the beginning of the file, for example, a descriptive header,we would have to tell the command how many lines to skip before valid data starts:
-    >>> csv_data = CsvFile("<path to>raw_data.csv", csv_schema,, 1)
+    >>> csv_data = CsvFile("<path to>raw_data.csv", csv_schema, skip_header_lines=1)
 
     .. TODO:: Put in valid test code
 
@@ -146,7 +159,7 @@ class CsvFile(DataFile):
         Returns
         -------
 
-        list :
+        list
             | string - Type of the file
             | string - File name
             | dictionary - JSON schema
@@ -158,7 +171,6 @@ class CsvFile(DataFile):
 
         >>> my_csv = CsvFile("my.dat", my_schema, ",", 10)
         >>> my_json = my_csv.as_json_obj()
-
         my_json is now ["csv_file", "raw_data.csv", "my_schema", ",", 10]
         
         """
@@ -215,14 +227,15 @@ class CsvFile(DataFile):
         
         Returns
         -------
+
         list of string
             Field names
         
         Examples
         --------
+
         >>> my_csv = CsvFile.from_json_obj(["csv_file", raw.data, schema.json])
         >>> my_fields = my_csv.field_names()
-        
         my_fields now is a list of strings like [ "Column_1", "Column_2", "This_column"]
         
         """
@@ -236,14 +249,15 @@ class CsvFile(DataFile):
         
         Returns
         -------
-        list of field types
+
+        list of types
             Field types
         
         Examples
         --------
+
         >>> my_csv = CsvFile.from_json_obj(["csv_file", raw.data, schema.json])
         >>> my_types = my_csv.field_types()
-        
         my_types is now a list of data types like [ string, int32, float64 ]
         
         """
@@ -256,23 +270,22 @@ class CsvFile(DataFile):
 
         Returns
         -------
-        
+
         Dictionary
             Ordered pairs of field names and field types
-            
+
         Raises
         ------
-        
+
         ValueError
 
         Examples
         --------
-        
-        for this example raw_data.csv is a csv file with the fields "col1" and "col2" of types int64 and string respectively
 
+        >>>
+        for this example raw_data.csv is a csv file with the fields "col1" and "col2" of types int64 and string respectively
         >>> my_csv = CsvFile("raw_data.csv", [("col1", int64), ("col2", string)])
         >>> my_dict = my_csv.to_ordered_dict
-        
         my_dict is now {("col1" : int64), ("col2" : string)}
         
         """
@@ -302,7 +315,7 @@ class CsvFile(DataFile):
     @staticmethod
     def parse_legacy_schema_string(schema_string):
         """
-        Converts the deprecated schema string format to the new dictionary format
+        Converts the deprecated schema string format to the new dictionary format.
 
         Parameters
         ----------
@@ -324,10 +337,9 @@ class CsvFile(DataFile):
         Examples
         --------
         
+        >>>
         my_old_string is an old format string equal to "dog:string,cat:string,frog:int32"
-
         >>> my_new_schema = CsvFiles.parse_legacy_schema_string( my_old_string )
-        
         my_new_string is now [("dog", string), ("cat", string), ("frog", int32)]
         
         """
@@ -360,7 +372,6 @@ class JsonFile(DataFile):
     --------
 
     >>> my_json = JsonFile( data.json )
-
     my_json is now a definition object for the json file
 
     """
@@ -394,7 +405,6 @@ class XmlFile(DataFile):
     --------
 
     >>> my_xml = XmlFile( data.xml, tags_names.dat )
-
     my_xml is now an XmlFile definition object
 
     """
