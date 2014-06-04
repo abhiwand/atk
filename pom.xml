@@ -125,6 +125,7 @@ export MAVEN_OPTS="-Xms2048m -Xmx4096m -XX:MaxPermSize=4096m -XX:PermSize=2048m"
         <module>imahout</module>
         <module>igiraph</module>
         <module>imllib</module>
+        <module>graphon</module>
         <module>package</module>
     </modules>
     <prerequisites>
@@ -196,7 +197,7 @@ export MAVEN_OPTS="-Xms2048m -Xmx4096m -XX:MaxPermSize=4096m -XX:PermSize=2048m"
     </properties>
     <profiles>
         <profile>
-            <id>package-jars</id>
+            <id>compile</id>
             <activation>
 			<activeByDefault>true</activeByDefault>
                 <property>
@@ -255,7 +256,7 @@ export MAVEN_OPTS="-Xms2048m -Xmx4096m -XX:MaxPermSize=4096m -XX:PermSize=2048m"
 			</build>
         </profile>
 		<profile>
-			<id>compile-test</id>
+			<id>test</id>
             <activation>
 			<activeByDefault>true</activeByDefault>
                 <property>
