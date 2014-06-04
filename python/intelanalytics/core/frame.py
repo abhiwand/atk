@@ -124,17 +124,23 @@ class BigFrame(object):
     Parameters
     ----------
 
-    source : pointer (optional)
+    source : file descriptor such as a CsvFile object (optional)
         A source of initial data
     name : string (optional)
         The name of the newly created BigFrame object
 
+    Notes
+    -----
+
+    If no name is provided for the BigFrame object, it will generate one.
+    If a data source *X* was specified, it will try to generate the frame name as *_X*.
+    If for some reason *_X* would be illegal
     Examples
     --------
 
     >>> g = BigFrame(None, "my_data")
-    
-    g.name would be "my_data"
+    A BigFrame object has been created and 'g' is it's proxy. It has no data, but it has the name "my_data".
+
     """
     # TODO - Review Parameters, Examples
     
@@ -361,7 +367,9 @@ class BigFrame(object):
 
     def add_column(self, func, type=str, name=""):
         """
-        Adds a new column to the frame by evaluating the given func on each row.
+        Adds a new column to the frame.
+        
+        This function accepts a *lambda* row function to figure out what should go into the new column.  It will also allow the selection of the type of variable and the name of the column.
 
         Parameters
         ----------
@@ -369,7 +377,7 @@ class BigFrame(object):
         func : row function
             function which takes the values in the row and produces a value for the new cell
         type : data type (optional)
-            specifies the type of the new column
+            specifies the data type of the new column
         name : string (optional)
             specifies the name of the new column
 
@@ -382,9 +390,14 @@ class BigFrame(object):
         --------
 
         >>> my_frame = BigFrame(data)
-        for this example my_frame is a BigFrame object with two columns named "column1" and "column2"
-        >>> my_frame.add_column(column1*column2, int32, "column3")
-        my_frame now has three columns, named "column1", "column2" and "column3"; column3's value is an int32, the product of column1 and column2
+        For this example my_frame is a BigFrame object with two int32 columns named "column1" and "column2".
+        We want to add a third column named "column3" as an int32 and fill it with the contents of column1 and column2 multiplied together
+        >>> my_frame.add_column(lambda row: row.column1*row.column2, int32, "column3")
+        The variable my_frame now has three columns, named "column1", "column2" and "column3". The type of column3 is an int32, and the value is the product of column1 and column2.
+        <BLANKLINE>
+        Now, we want to add another column, we don't care what it is called and it is going to be an empty string (the default).
+        >>> my_frame.add_column(lambda row: '')
+        The BigFrame object 'my_frame' now has four columns named "column1", "column2", "column3", and "res0000". The first three columns are int32 and the fourth column is string.  Column "res0000" has an empty string ('') in every row.
         
 
         """
@@ -397,9 +410,13 @@ class BigFrame(object):
                     break
         self._backend.add_column(self, func, name, type)
 
-    def add_columns(self, func, names=None, ):
-        # Not implemented yet
-        self._backend.add_columns(self, func, names)
+    """
+    .. TODO:: add_columns
+
+        def add_columns(self, func, names=None, ):
+            # Not implemented yet
+            self._backend.add_columns(self, func, names)
+    """
 
     def append(self, *data):
         """
@@ -483,7 +500,7 @@ class BigFrame(object):
         
     def remove_column(self, name):
         """
-        Remove columns.
+        Remove columns from the BigFrame object.
 
         Parameters
         ----------
@@ -635,10 +652,11 @@ class BigFrame(object):
 
     def project_columns(self, column_names, new_names=None):
         """
-        Copies specified columns into a new BigFrame object, optionally renaming them
+        Copies specified columns into a new BigFrame object, optionally renaming them.
 
         Parameters
         ----------
+
         column_names : str OR list of str
             column name OR list of column names to be removed from the frame
         new_names : str OR list of str
@@ -646,9 +664,18 @@ class BigFrame(object):
 
         Returns
         -------
+
         frame : BigFrame
             A new frame object containing copies of the specified columns
+
+        Examples
+        --------
+
+        >>>
+
         """
+        # TODO - need example in docstring
+
         if isinstance(column_names, basestring):
             column_names = [column_names]
         if new_names is not None:
@@ -660,29 +687,6 @@ class BigFrame(object):
         projected_frame = BigFrame()
         self._backend.project_columns(self, projected_frame, column_names, new_names)
         return projected_frame
-
-    def remove_column(self, name):
-        """
-        Remove columns
-
-        Parameters
-        ----------
-        name : str OR list of str
-            column name OR list of column names to be removed from the frame
-
-        Notes
-        -----
-        This function will retain a single column.
-
-        Examples
-        --------
-        >>>
-        """
-        self._backend.remove_column(self, name)
-        if isinstance(name, basestring):
-            name = [name]
-        for victim in name:
-            del self._columns[victim]
 
     def rename_column(self, column_name, new_name):
         """
@@ -950,7 +954,8 @@ class FrameSchema(OrderedDict):
         ----------
 
         schema : FrameSchema
-        
+
+
         Raises
         ------
 
