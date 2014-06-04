@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2013 Intel Corporation All Rights Reserved.
+// Copyright 2014 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -91,6 +91,17 @@ public class EdgeData4GBPWritable implements Writable {
      */
     public double getWeight() {
         return weight;
+    }
+
+    /**
+     * Get reverse edge data
+     * @return reverseEdgeData of type EdgeData4GBPWritalbe
+     */
+    public EdgeData4GBPWritable getReverseEdgeData() {
+        EdgeData4GBPWritable reverseEdgeData = new EdgeData4GBPWritable();
+        reverseEdgeData.setWeight(reverseWeight);
+        reverseEdgeData.setReverseWeight(weight);
+        return reverseEdgeData;
     }
 
     @Override

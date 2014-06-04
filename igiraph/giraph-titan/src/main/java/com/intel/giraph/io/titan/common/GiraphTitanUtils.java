@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2013 Intel Corporation All Rights Reserved.
+// Copyright 2014 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -28,9 +28,7 @@ import com.thinkaurelius.titan.core.TitanTransaction;
 import com.thinkaurelius.titan.diskstorage.Backend;
 import com.thinkaurelius.titan.graphdb.util.FakeLock;
 import org.apache.giraph.conf.ImmutableClassesGiraphConfiguration;
-import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.apache.hadoop.hbase.HConstants;
-import org.apache.hadoop.hbase.client.HBaseAdmin;
 import org.apache.hadoop.hbase.client.Scan;
 import org.apache.hadoop.hbase.mapreduce.TableInputFormat;
 import org.apache.hadoop.hbase.util.Base64;
@@ -47,11 +45,9 @@ import static com.intel.giraph.io.titan.common.GiraphTitanConstants.CONFIG_PREFI
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.CONFIG_TITAN;
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.CONFIG_VERTEX_PROPERTY;
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.CREATE_VERTEX_PROPERTY;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.DOUBLE_CHECK_CONFIG;
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.EDGE_TYPE_PROPERTY_KEY;
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.ENSURE_INPUT_FORMAT;
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.ENSURE_PORT;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.FAILED_CONNECT_HBASE_TABLE;
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.GIRAPH_TITAN_STORAGE_BACKEND;
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.GIRAPH_TITAN_STORAGE_HOSTNAME;
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.GIRAPH_TITAN_STORAGE_PORT;
@@ -104,24 +100,7 @@ public class GiraphTitanUtils {
         if (tableName.equals("")) {
             throw new IllegalArgumentException(CONFIG_TITAN + "table name" + CONFIG_PREFIX +
                 GIRAPH_TITAN_STORAGE_TABLENAME.getKey() + NO_VERTEX_READ);
-        }/* else {
-            try {
-                HBaseConfiguration config = new HBaseConfiguration();
-                HBaseAdmin hbaseAdmin = new HBaseAdmin(config);
-                if (!hbaseAdmin.tableExists(tableName)) {
-                    throw new IllegalArgumentException("HBase table " + tableName +
-                        " does not exist! " + DOUBLE_CHECK_CONFIG);
-                }
-
-                if (!hbaseAdmin.isTableAvailable(tableName)) {
-                    throw new IllegalArgumentException("HBase table " + tableName +
-                        " is not available! " + DOUBLE_CHECK_CONFIG);
-                }
-            } catch (IOException e) {
-                throw new IllegalArgumentException(FAILED_CONNECT_HBASE_TABLE + tableName);
-            }
-        }*/
-
+        }
 
         if (GIRAPH_TITAN_STORAGE_PORT.isDefaultValue(conf)) {
             LOG.info(GIRAPH_TITAN_STORAGE_PORT.getKey() + CONFIGURED_DEFAULT +
