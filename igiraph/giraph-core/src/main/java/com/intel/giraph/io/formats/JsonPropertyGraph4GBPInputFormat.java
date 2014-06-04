@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2013 Intel Corporation All Rights Reserved.
+// Copyright 2014 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -116,12 +116,9 @@ public class JsonPropertyGraph4GBPInputFormat extends TextVertexInputFormat<Long
             }
             GaussianDistWritable prior = new GaussianDistWritable();
             GaussianDistWritable posterior = new GaussianDistWritable();
-            GaussianDistWritable itermediate = new GaussianDistWritable();
             prior.setMean(vector.getDouble(MEAN_IDX));
             prior.setPrecision(vector.getDouble(PRECISION_IDX));
-            itermediate.setMean(vector.getDouble(MEAN_IDX));
-            itermediate.setPrecision(vector.getDouble(PRECISION_IDX));
-            return new VertexData4GBPWritable(prior, posterior, itermediate, DEFAULT_MEAN);
+            return new VertexData4GBPWritable(prior, posterior, prior, DEFAULT_MEAN);
         }
 
         @Override

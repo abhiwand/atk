@@ -24,7 +24,7 @@ libraryDependencies := {
         exclude("com.esotericsoftware.minlog", "minlog").
         exclude("org.slf4j", "slf4j-log4j12").
         exclude("ch.qos.logback", "logback-classic"),
-      "com.jsuereth"        %%  "scala-arm"         % "1.3",
+  "com.jsuereth"        %%  "scala-arm"         % "1.3",
 	"org.specs2"        %%	"specs2"         % "2.3.10"   % "test",
   "org.scalatest"     %%  "scalatest"      % "2.1.6"    % "test",
     ("org.apache.hadoop" % "hadoop-client" % "2.2.0")

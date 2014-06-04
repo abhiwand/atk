@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2013 Intel Corporation All Rights Reserved.
+// Copyright 2014 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -61,7 +61,7 @@ public class TestJsonPropertyGraph4GBPOutputFormat extends JsonPropertyGraph4GBP
 
     @Test
     public void testOuputFormat() throws IOException, InterruptedException {
-        Text expected = new Text("[1,[2,3],[4,5]]");
+        Text expected = new Text("[1,4]");
 
         JsonPropertyGraph4GBPOutputFormatTestWorker(expected);
     }

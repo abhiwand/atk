@@ -28,7 +28,7 @@ logger = logging.getLogger(__name__)
 
 from intelanalytics.core.graph import VertexRule, EdgeRule
 from intelanalytics.core.column import BigColumn
-from intelanalytics.rest.connection import rest_http
+from intelanalytics.rest.connection import http
 
 
 
@@ -39,7 +39,7 @@ class GraphBackendRest(object):
 
     def get_graph_names(self):
         logger.info("REST Backend: get_graph_names")
-        r = rest_http.get('graphs')
+        r = http.get('graphs')
         payload = r.json()
         return [f['name'] for f in payload]
 
@@ -54,18 +54,20 @@ class GraphBackendRest(object):
     def create(self, graph, rules):
         logger.info("REST Backend: create graph: " + graph.name)
 
-        if logger.level == logging.DEBUG:
-            import json
-            payload_json =  json.dumps(payload, indent=2, sort_keys=True)
-            logger.debug("REST Backend: create graph payload: " + payload_json)
-        r = rest_http.post('graphs', { 'name': graph.name })
+        r = http.post('graphs', { 'name': graph.name })
+
         logger.info("REST Backend: create response: " + r.text)
         payload = r.json()
         graph._id = payload['id']
         graph._uri = "%s" % (self._get_uri(payload))
         payload = JsonPayload(graph, rules)
 
-        r = rest_http.post('commands', {"name": "graph/load", "arguments": payload})
+        if logger.level == logging.DEBUG:
+            import json
+            payload_json =  json.dumps(payload, indent=2, sort_keys=True)
+            logger.debug("REST Backend: create graph payload: " + payload_json)
+
+        r = http.post('commands', {"name": "graph/load", "arguments": payload})
         logger.info("REST Backend: load response: " + r.text)
 
 
@@ -85,7 +87,7 @@ class GraphBackendRest(object):
             import json
             payload_json =  json.dumps(payload, indent=2, sort_keys=True)
             logger.debug("REST Backend: run als payload: " + payload_json)
-        r = rest_http.post('commands', payload)
+        r = http.post('commands', payload)
         logger.debug("REST Backend: run als response: " + r.text)
 
     def recommend(self, graph, vertex_id):
@@ -93,7 +95,7 @@ class GraphBackendRest(object):
         cmd_format ='graphs/{0}/vertices?qname=ALSQuery&offset=0&count=10&vertexID={1}'
         cmd = cmd_format.format(graph._id, vertex_id)
         logger.debug("REST Backend: als query cmd: " + cmd)
-        r = rest_http.get(cmd)
+        r = http.get(cmd)
         json = r.json()
         logger.debug("REST Backend: run als response: " + json)
         return json

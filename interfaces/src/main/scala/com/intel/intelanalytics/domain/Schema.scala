@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2013 Intel Corporation All Rights Reserved.
+// Copyright 2014 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -173,6 +173,6 @@ import DataTypes._
  * Schema for a data frame. Contains the columns with names and data types.
  * @param columns the columns in the data frame
  */
-case class Schema(columns: List[(String, DataType)]) {
+case class Schema(columns: List[(String, DataType)] = List[(String, DataType)]()) {
   require(columns != null)
 }
