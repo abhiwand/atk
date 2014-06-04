@@ -2,7 +2,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2013 Intel Corporation All Rights Reserved.
+// Copyright 2014 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -25,7 +25,7 @@
 <!--
 if you do a maven build from the parent you will most likely have to increase your memory footprint this has worked for me
 in the past
-export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
+export MAVEN_OPTS="-Xms2048m -Xmx4096m -XX:MaxPermSize=4096m -XX:PermSize=2048m"
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -38,7 +38,77 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
     <name>IntelAnalytics Parent</name>
     <description>IntelAnalytics : Large Scale Graph Analytics</description>
     <inceptionYear>2013</inceptionYear>
-
+	
+	    <pluginRepositories>
+        	                <pluginRepository>
+        	                        <id>onejar-maven-plugin.googlecode.com</id>
+        	                        <url>http://onejar-maven-plugin.googlecode.com/svn/mavenrepo-snapshot</url>
+        	                </pluginRepository>
+							<pluginRepository>
+      <id>beardedgeeks-releases</id>
+      <url>http://beardedgeeks.googlecode.com/svn/repository/releases</url>
+    </pluginRepository>	
+               </pluginRepositories>
+    <repositories>
+        <repository>
+            <id>central</id>
+            <url>http://repo1.maven.org/maven2</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+        </repository>
+        <repository>
+            <id>cloudera cdh</id>
+            <url>https://repository.cloudera.com/artifactory/cloudera-repos</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>apache</id>
+            <url>https://repository.apache.org/content/groups/public/</url>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+        </repository>
+        <repository>
+            <id>sonatype</id>
+            <url>https://oss.sonatype.org/content/groups/public/</url>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+        </repository>
+        <repository>
+            <id>gaomaven</id>
+            <url>http://gaomaven.jf.intel.com:8081/nexus/content/repositories/releases</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>gaomaven-snapshots</id>
+            <url>http://gaomaven.jf.intel.com:8081/nexus/content/repositories/snapshots</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
+	
     <modules>
         <!-- commented until we can figure out how to run without invoking sbt on them-->
 
@@ -55,6 +125,7 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
         <module>imahout</module>
         <module>igiraph</module>
         <module>imllib</module>
+        <module>graphon</module>
         <module>package</module>
     </modules>
     <prerequisites>
@@ -87,6 +158,8 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
 
         <dep.hadoop2.version>2.3.0-cdh5.0.0</dep.hadoop2.version>
         <dep.hadoop.core.version>2.3.0-mr1-cdh5.0.0</dep.hadoop.core.version>
+        <dep.hadoop.common.version>2.3.0-cdh5.0.0</dep.hadoop.common.version>
+        <dep.hadoop.client.version>2.3.0-cdh5.0.0</dep.hadoop.client.version>
         <dep.guava.version>12.0</dep.guava.version>
         <dep.hcatalog.version>0.5.0-incubating</dep.hcatalog.version>
         <dep.hive.version>0.11.0</dep.hive.version>
@@ -103,7 +176,8 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
         <dep.yourkit-api.version>9.5.6</dep.yourkit-api.version>
         <dep.zookeeper.version>3.3.3</dep.zookeeper.version>
         <dep.pig.version>0.12.0-cdh5.0.0</dep.pig.version>
-        <dep.org.apache.spark>0.9.0-cdh5.0.0</dep.org.apache.spark>
+        <dep.org.apache.spark>0.9.1</dep.org.apache.spark>
+		<dep.commons.lang>2.6</dep.commons.lang>
 
         <!--START GAO MAVEN -->
         <!-- these dependencies are from gaomaven.jf.intel.com -->
@@ -123,7 +197,7 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
     </properties>
     <profiles>
         <profile>
-            <id>package-jars</id>
+            <id>compile</id>
             <activation>
 			<activeByDefault>true</activeByDefault>
                 <property>
@@ -148,20 +222,12 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                             </goals>
                             <configuration>
                                 <jvmArgs>
-                                    <jvmArg>-Xms1024m</jvmArg>
-                                    <jvmArg>-Xmx2048m</jvmArg>
+                                    <jvmArg>-Xms256m</jvmArg>
+                                    <jvmArg>-Xmx512m</jvmArg>
                                 </jvmArgs>
-								<!--<compilerPlugins>
-                                    <compilerPlugin>
-                                            <groupId>com.mmakowski</groupId>
-                                            <artifactId>maven-specs2-plugin</artifactId>
-                                            <version>0.4.2</version>
-                                    </compilerPlugin>
-                                </compilerPlugins>-->
                                 <args>
                                     <arg>-g:vars</arg>
                                     <arg>-Yrangepos</arg>
-                                    
                                 </args>
                             </configuration>
                         </execution>
@@ -190,7 +256,7 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
 			</build>
         </profile>
 		<profile>
-			<id>compile-test</id>
+			<id>test</id>
             <activation>
 			<activeByDefault>true</activeByDefault>
                 <property>
@@ -209,53 +275,40 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                     <executions>
                         <execution>
                             <id>compile</id>
-                            <goals>
+                            <!--<goals>
                                 <goal>add-source</goal>
                                 <goal>compile</goal>
-                            </goals>
+                            </goals>-->
                             <configuration>
-                                <jvmArgs>
+                                <!--<jvmArgs>
                                     <jvmArg>-Xms1024m</jvmArg>
                                     <jvmArg>-Xmx2048m</jvmArg>
-                                </jvmArgs>
-								<dependencies>
-                                    <dependency>
-                                        <groupId>org.scoverage</groupId>
-                                        <artifactId>scalac-scoverage-plugin_${scala.short.version}</artifactId>
-                                        <version>${scoverage-plugin.version}</version>
-                                    </dependency>
-                                </dependencies>
+                                </jvmArgs>-->
                                 <compilerPlugins>
-                                    <compilerPlugin>
-                                        <groupId>org.scoverage</groupId>
-                                        <artifactId>scalac-scoverage-plugin_${scala.short.version}</artifactId>
-                                        <version>${scoverage-plugin.version}</version>
-                                    </compilerPlugin>
                                     <compilerPlugin>
                                             <groupId>com.mmakowski</groupId>
                                             <artifactId>maven-specs2-plugin</artifactId>
                                             <version>0.4.2</version>
                                     </compilerPlugin>
                                 </compilerPlugins>
-                                <args>
+                                <!--<args>
                                     <arg>-g:vars</arg>
                                     <arg>-Yrangepos</arg>
-                                    <arg>-P:scoverage:dataDir:${project.build.directory}</arg>
-                                </args>
+                                </args>-->
                             </configuration>
                         </execution>
-                        <execution>
+                        <!--<execution>
                             <id>test</id>
                             <goals>
                                 <goal>add-source</goal>
                                 <goal>testCompile</goal>
                             </goals>
-                        </execution>
+                        </execution>-->
                     </executions>
-                    <configuration>
+                    <!--<configuration>
                         <scalaVersion>${scala.long.version}</scalaVersion>
                         <checkMultipleScalaVersions>false</checkMultipleScalaVersions>
-                    </configuration>
+                    </configuration>-->
                 </plugin>
                 <plugin>
                     <inherited>true</inherited>
@@ -296,6 +349,110 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                         </execution>
                     </executions>
                 </plugin>
+                <!--END DO NOT TOUCH-->
+				</plugins>
+			</pluginManagement>
+			<plugins>
+				<plugin>
+					<groupId>net.alchim31.maven</groupId>
+					<artifactId>scala-maven-plugin</artifactId>
+				</plugin>
+			</plugins>
+			</build>
+			<dependencyManagement>
+				<dependencies>
+					<dependency>
+						<groupId>org.scalatest</groupId>
+						<artifactId>scalatest_${scala.short.version}</artifactId>
+						<version>2.1.6</version>
+						<scope>test</scope>
+					</dependency>
+					<dependency>
+						<groupId>org.specs2</groupId>
+						<artifactId>specs2_${scala.short.version}</artifactId>
+						<version>2.3.10</version>
+						<scope>test</scope>
+					</dependency>
+				</dependencies>
+			</dependencyManagement>
+			<dependencies>
+				<dependency>
+					<groupId>org.scalatest</groupId>
+					<artifactId>scalatest_2.10</artifactId>
+				</dependency>
+				<dependency>
+					<groupId>org.specs2</groupId>
+					<artifactId>specs2_${scala.short.version}</artifactId>
+				</dependency>
+			</dependencies>
+		</profile>
+		<profile>
+            <id>scala-coverage</id>
+            <activation>
+                <property>
+                    <name>env.BUILD_NUMBER</name>
+                </property>
+            </activation>
+			<build>
+			<pluginManagement>
+			<plugins>
+			<!--START DO NOT TOUCH-->
+                <plugin>
+                    <inherited>true</inherited>
+                    <groupId>net.alchim31.maven</groupId>
+                    <artifactId>scala-maven-plugin</artifactId>
+                    <version>3.1.6</version>
+                    <executions>
+                        <execution>
+                            <id>compile</id>
+                            <!--<goals>
+                                <goal>add-source</goal>
+                                <goal>compile</goal>
+                            </goals>-->
+                            <configuration>
+                                <!--<jvmArgs>
+                                    <jvmArg>-Xms1024m</jvmArg>
+                                    <jvmArg>-Xmx2048m</jvmArg>
+                                </jvmArgs>-->
+								<dependencies>
+                                    <dependency>
+                                        <groupId>org.scoverage</groupId>
+                                        <artifactId>scalac-scoverage-plugin_${scala.short.version}</artifactId>
+                                        <version>${scoverage-plugin.version}</version>
+                                    </dependency>
+                                </dependencies>
+                                <compilerPlugins>
+                                    <compilerPlugin>
+                                        <groupId>org.scoverage</groupId>
+                                        <artifactId>scalac-scoverage-plugin_${scala.short.version}</artifactId>
+                                        <version>${scoverage-plugin.version}</version>
+                                    </compilerPlugin>
+                                    <compilerPlugin>
+                                            <groupId>com.mmakowski</groupId>
+                                            <artifactId>maven-specs2-plugin</artifactId>
+                                            <version>0.4.2</version>
+                                    </compilerPlugin>
+                                </compilerPlugins>
+                                <args>
+                                    <arg>-g:vars</arg>
+                                    <arg>-Yrangepos</arg>
+                                    <arg>-P:scoverage:dataDir:${project.build.directory}</arg>
+                                </args>
+                            </configuration>
+                        </execution>
+                        <!--<execution>
+                            <id>test</id>
+                            <goals>
+                                <goal>add-source</goal>
+                                <goal>testCompile</goal>
+                            </goals>
+                        </execution>-->
+                    </executions>
+                    <!--<configuration>
+                        <scalaVersion>${scala.long.version}</scalaVersion>
+                        <checkMultipleScalaVersions>false</checkMultipleScalaVersions>
+                    </configuration>-->
+                </plugin>
                 <plugin>
                     <inherited>true</inherited>
                     <groupId>org.scoverage</groupId>
@@ -303,26 +460,17 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                     <version>${scoverage.version}</version>
                     <executions>
                         <execution>
-
                             <id>scala-scoverage-report</id>
                             <phase>test</phase>
                             <goals>
                                 <goal>report</goal>
                             </goals>
                         </execution>
-
                     </executions>
                 </plugin>
                 <!--END DO NOT TOUCH-->
 				</plugins>
-			</pluginManagement>
-			<plugins>
-				<plugin>
-                <groupId>net.alchim31.maven</groupId>
-                <artifactId>scala-maven-plugin</artifactId>
-				</plugin>
-			</plugins>
-			
+				</pluginManagement>
 			</build>
 			<dependencyManagement>
 				<dependencies>
@@ -339,7 +487,7 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
 					<artifactId>scalac-scoverage-plugin_${scala.short.version}</artifactId>
 				</dependency>
 		</dependencies>
-		</profile>
+        </profile>
     </profiles>
     <build>
         <pluginManagement>
@@ -434,40 +582,6 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                         </execution>
                     </executions>
                 </plugin>
-
-               <!--<plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-jar-plugin</artifactId>
-                    <version>2.3.2</version>
-                    <configuration>
-
-                        <archive>
-                            <manifest>
-
-                                <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
-                                <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
-                            </manifest>
-                            <manifestEntries>
-                                <addClassPath>true</addClassPath>
-                                <Build-Jdk>${java.version}</Build-Jdk>
-                                <Build-Time>${maven.build.timestamp}</Build-Time>
-                                <Git-Commit-Branch>${mvngit.branch}</Git-Commit-Branch>
-                                <Git-Commit-Hash>${mvngit.commit.id}</Git-Commit-Hash>
-                                <Git-Commit-Date>${mvngit.commit.committer.date}</Git-Commit-Date>
-                                <Git-Committer-Email>${mvngit.commit.committer.email}</Git-Committer-Email>
-                                <Git-Committer-Name>${mvngit.commit.committer.name}</Git-Committer-Name>
-                            </manifestEntries>
-                        </archive>
-                    </configuration>
-                    <executions>
-                        <execution>
-                            <goals>
-                                <goal>jar</goal>
-                                <goal>test-jar</goal>
-                            </goals>
-                        </execution>
-                    </executions>
-                </plugin>-->
                
 				<!--Create our jars-->
                 <plugin>
@@ -506,6 +620,7 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                                     <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
                                         <resource>reference.conf</resource>
                                     </transformer>
+									<transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
                                 </transformers>
                             </configuration>
                         </execution>
@@ -803,18 +918,7 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
 				<scope>test</scope>
             </dependency>-->
             
-			<dependency>
-                <groupId>org.scalatest</groupId>
-                <artifactId>scalatest_${scala.short.version}</artifactId>
-                <version>2.1.6</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.specs2</groupId>
-                <artifactId>specs2_${scala.short.version}</artifactId>
-                <version>2.3.10</version>
-                <scope>test</scope>
-            </dependency>
+			
 			
             <dependency>
                 <groupId>org.scala-lang</groupId>
@@ -1055,16 +1159,7 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
 			
         </dependency>-->
 		
-        <dependency>
-                <groupId>org.scalatest</groupId>
-                <artifactId>scalatest_2.10</artifactId>
-			
-        </dependency>
-        <dependency>
-            <groupId>org.specs2</groupId>
-            <artifactId>specs2_${scala.short.version}</artifactId>
-			
-        </dependency>
+        
 		
         <dependency>
             <groupId>org.scala-lang</groupId>
@@ -1073,74 +1168,4 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
 		
 		
     </dependencies>
-
-    <pluginRepositories>
-        	                <pluginRepository>
-        	                        <id>onejar-maven-plugin.googlecode.com</id>
-        	                        <url>http://onejar-maven-plugin.googlecode.com/svn/mavenrepo-snapshot</url>
-        	                </pluginRepository>
-							<pluginRepository>
-      <id>beardedgeeks-releases</id>
-      <url>http://beardedgeeks.googlecode.com/svn/repository/releases</url>
-    </pluginRepository>	
-               </pluginRepositories>
-    <repositories>
-        <repository>
-            <id>central</id>
-            <url>http://repo1.maven.org/maven2</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-        </repository>
-        <repository>
-            <id>cloudera cdh</id>
-            <url>https://repository.cloudera.com/artifactory/cloudera-repos</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-        </repository>
-        <repository>
-            <id>apache</id>
-            <url>https://repository.apache.org/content/groups/public/</url>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-        </repository>
-        <repository>
-            <id>sonatype</id>
-            <url>https://oss.sonatype.org/content/groups/public/</url>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-        </repository>
-        <repository>
-            <id>gaomaven</id>
-            <url>http://gaomaven.jf.intel.com:8081/nexus/content/repositories/releases</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-        </repository>
-        <repository>
-            <id>gaomaven-snapshots</id>
-            <url>http://gaomaven.jf.intel.com:8081/nexus/content/repositories/snapshots</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-        </repository>
-    </repositories>
 </project>
