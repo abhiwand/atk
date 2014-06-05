@@ -218,7 +218,7 @@ class SparkComponent extends EngineComponent
       }
     }
 
-    def withCommand[T](command: Command)(block: => T): Unit = {
+    def withCommand[T](command: Command)(block: => JsObject): Unit = {
       commands.complete(command.id, Try {
         block
       })
@@ -291,6 +291,7 @@ class SparkComponent extends EngineComponent
 
                 val newName = arguments.new_name
                 frames.renameFrame(frame, newName)
+                JsNull.asJsObject
               }
               commands.lookup(command.id).get
             }
@@ -322,6 +323,7 @@ class SparkComponent extends EngineComponent
                     s"Lengths of Original and Renamed Columns do not match")
 
                 frames.renameColumn(frame, originalcolumns.zip(renamedcolumns))
+                JsNull.asJsObject
               }
               commands.lookup(command.id).get
             }
@@ -375,6 +377,7 @@ class SparkComponent extends EngineComponent
                   }
                 }
                 frames.updateSchema(projectedFrame, projectedColumns.toList)
+                JsNull.asJsObject
               }
               commands.lookup(command.id).get
             }
@@ -446,6 +449,7 @@ class SparkComponent extends EngineComponent
                 val schema = realFrame.schema
                 val converter = DataTypes.parseMany(schema.columns.map(_._2).toArray)(_)
                 persistPythonRDD(pyRdd, converter, location)
+                JsNull.asJsObject
               }
               commands.lookup(command.id).get
             }
@@ -582,6 +586,7 @@ class SparkComponent extends EngineComponent
                 }
 
                 frames.removeColumn(realFrame, columnIndices)
+                JsNull.asJsObject
               }
               commands.lookup(command.id).get
             }
@@ -624,7 +629,7 @@ class SparkComponent extends EngineComponent
                 val pyRdd = createPythonRDD(frameId, expression)
                 val converter = DataTypes.parseMany(newFrame.schema.columns.map(_._2).toArray)(_)
                 persistPythonRDD(pyRdd, converter, location)
-
+                JsNull.asJsObject
               }
               commands.lookup(command.id).get
             }
@@ -684,6 +689,7 @@ class SparkComponent extends EngineComponent
                   throw new IllegalArgumentException(s"No such data frame: ${arguments.sourceFrameRef}"))
 
                 graphs.loadGraph(arguments)(user)
+                JsNull.asJsObject
               }
 
               commands.lookup(command.id).get
@@ -814,6 +820,7 @@ class SparkComponent extends EngineComponent
               //"-vof com.intel.giraph.io.titan.TitanVertexOutputFormatPropertyGraph4CF -op hdfs:///user/ec2-user/als -w 1",
               //"-ca als.maxSupersteps=10  -ca als.convergenceThreshold=0  -ca als.lambda=0.065  -ca als.featureDimension=3 -ca als.biasOn=true",
               //)
+              JsNull.asJsObject
             }
             commands.lookup(command.id).get
           }
@@ -1370,7 +1377,7 @@ def calculateScore(list1, list2, biasOn, featureDimension) {
       //TODO: set start date
     }
 
-    override def complete(id: Long, result: Try[Any]): Unit = {
+    override def complete(id: Long, result: Try[JsObject]): Unit = {
       require(id > 0, "invalid ID")
       require(result != null)
       metaStore.withSession("se.command.complete") {
@@ -1382,7 +1389,7 @@ def calculateScore(list1, list2, biasOn, featureDimension) {
           //TODO: Update dates
           val changed = result match {
             case Failure(ex) => command.copy(complete = true, error = Some(ex: Error))
-            case Success(r) => command.copy(complete = true, result = Some(r.asInstanceOf[JsObject]))
+            case Success(r) => command.copy(complete = true, result = Some(r))
           }
           repo.update(changed)
       }
