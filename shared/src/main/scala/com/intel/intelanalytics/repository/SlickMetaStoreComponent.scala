@@ -406,6 +406,8 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
 
       def complete = column[Boolean]("complete", O.Default(false))
 
+      def result = column[String]("result")
+
       def createdOn = column[DateTime]("created_on")
 
       def modifiedOn = column[DateTime]("modified_on")

@@ -36,11 +36,12 @@ import org.joda.time.DateTime
  *                  ML algorithm, the parameters are used to execute the function directly.
  * @param error StackTrace and/or other error text if it exists
  * @param complete True if this command is completed
+ * @param result result data for executing the command
  * @param createdOn date/time this record was created
  * @param modifiedOn date/time this record was last modified
  * @param createdById user who created this row
  */
-case class Command(id: Long, name: String, arguments: Option[JsObject], error: Option[Error], complete: Boolean, createdOn: DateTime, modifiedOn: DateTime, createdById: Option[Long]) extends HasId
+case class Command(id: Long, name: String, arguments: Option[JsObject], error: Option[Error], complete: Boolean, result: Option[JsObject] = None, createdOn: DateTime, modifiedOn: DateTime, createdById: Option[Long]) extends HasId
 case class CommandTemplate(name: String, arguments: Option[JsObject])
 case class Definition(language: String, serialization: String, data: String)
 case class Operation(name: String, definition: Option[Definition])
