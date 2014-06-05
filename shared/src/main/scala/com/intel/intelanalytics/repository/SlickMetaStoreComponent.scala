@@ -207,12 +207,12 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
 
     /** execute DDL to create the underlying table */
     def createTable()(implicit session: Session) = {
-      users.ddl.create
+
     }
 
     /** execute DDL to drop the underlying table - for unit testing */
     def dropTable()(implicit session: Session) = {
-      users.ddl.drop
+
     }
 
   }
@@ -345,7 +345,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
     }
 
     def _insertFrame(frame: DataFrameTemplate)(implicit session: Session) = {
-      val f = DataFrame(0, frame.name, frame.description, "TODO: supply uri", frame.schema, 1L, new DateTime(), new DateTime(), None, None)
+      val f = DataFrame(0, frame.name, frame.description, "TODO: supply uri", Schema(), 1L, new DateTime(), new DateTime(), None, None)
       framesAutoInc.insert(f)
     }
 
@@ -406,7 +406,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
 
       def complete = column[Boolean]("complete", O.Default(false))
 
-      def result = column[String]("result")
+      def result = column[Option[JsObject]]("result")
 
       def createdOn = column[DateTime]("created_on")
 
@@ -415,7 +415,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
       def createdById = column[Option[Long]]("created_by")
 
       /** projection to/from the database */
-      def * = (id, name, arguments, error, complete, createdOn, modifiedOn, createdById) <>(Command.tupled, Command.unapply)
+      def * = (id, name, arguments, error, complete, result, createdOn, modifiedOn, createdById) <>(Command.tupled, Command.unapply)
 
       def createdBy = foreignKey("command_created_by", createdById, users)(_.id)
     }
@@ -428,7 +428,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
 
     override def insert(command: CommandTemplate)(implicit session: Session): Try[Command] = Try {
       // TODO: add createdBy user id
-      val c = Command(0, command.name, command.arguments, None, false, new DateTime(), new DateTime(), None)
+      val c = Command(0, command.name, command.arguments, None, false, None, new DateTime(), new DateTime(), None)
       commandsAutoInc.insert(c)
     }
 

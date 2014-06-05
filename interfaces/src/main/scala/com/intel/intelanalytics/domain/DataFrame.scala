@@ -2,11 +2,9 @@ package com.intel.intelanalytics.domain
 
 import org.joda.time.DateTime
 
-case class DataFrameTemplate(name: String, description: Option[String], schema: Schema) {
+case class DataFrameTemplate(name: String, description: Option[String] = None) {
   require(name != null)
   require(name.trim.length > 0)
-  require(schema != null)
-  require(schema.columns.length > 0)
 }
 
 /**
@@ -22,7 +20,16 @@ case class DataFrameTemplate(name: String, description: Option[String], schema: 
  * @param createdBy user who created this row
  * @param modifiedBy user who last modified this row
  */
-case class DataFrame(id: Long, name: String, description: Option[String], uri: String, schema: Schema = Schema(), status: Long, createdOn: DateTime, modifiedOn: DateTime, createdBy: Option[Long], modifiedBy: Option[Long]) extends HasId {
+case class DataFrame(id: Long,
+                     name: String,
+                     description: Option[String] = None,
+                     uri: String,
+                     schema: Schema = Schema(),
+                     status: Long,
+                     createdOn: DateTime,
+                     modifiedOn: DateTime,
+                     createdBy: Option[Long],
+                     modifiedBy: Option[Long]) extends HasId {
   require(id >= 0)
   require(name != null)
   require(name.trim.length > 0)

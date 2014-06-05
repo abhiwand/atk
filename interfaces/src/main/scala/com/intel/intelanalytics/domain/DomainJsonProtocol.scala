@@ -61,7 +61,7 @@ object DomainJsonProtocol extends DefaultJsonProtocol {
   implicit val userFormat = jsonFormat5(User)
   implicit val statusFormat = jsonFormat5(Status)
   implicit val dataFrameFormat = jsonFormat10(DataFrame)
-  implicit val dataFrameTemplateFormat = jsonFormat3(DataFrameTemplate)
+  implicit val dataFrameTemplateFormat = jsonFormat2(DataFrameTemplate)
   implicit val separatorArgsJsonFormat = jsonFormat1(SeparatorArgs)
   implicit val definitionFormat = jsonFormat3(Definition)
   implicit val operationFormat = jsonFormat2(Operation)
