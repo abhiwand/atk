@@ -110,23 +110,21 @@ export MAVEN_OPTS="-Xms2048m -Xmx4096m -XX:MaxPermSize=4096m -XX:PermSize=2048m"
     </repositories>
 	
     <modules>
-        <!-- commented until we can figure out how to run without invoking sbt on them-->
-
-        <module>ititan</module>
+        <!--<module>ititan</module>
         <module>event</module>
         <module>ispark-deps</module>
-        <module>graphbuilder-3</module><!-- scoverage -->
+        <module>graphbuilder-3</module>&lt;!&ndash; scoverage &ndash;&gt;
         <module>interfaces</module>
-        <module>launcher</module><!-- scoverage -->
-        <module>shared</module><!-- scoverage -->
+        <module>launcher</module>&lt;!&ndash; scoverage &ndash;&gt;
+        <module>shared</module>&lt;!&ndash; scoverage &ndash;&gt;
         <module>api-server</module>
         <module>engine</module>
-        <module>engine-spark</module><!-- scoverage -->
+        <module>engine-spark</module>&lt;!&ndash; scoverage &ndash;&gt;
         <module>imahout</module>
         <module>igiraph</module>
         <module>imllib</module>
         <module>graphon</module>
-        <module>package</module>
+        <module>package</module>-->
     </modules>
     <prerequisites>
         <maven>3.0</maven>
@@ -196,6 +194,59 @@ export MAVEN_OPTS="-Xms2048m -Xmx4096m -XX:MaxPermSize=4096m -XX:PermSize=2048m"
         <maven.plugin.scoverage.version>0.99.2</maven.plugin.scoverage.version>
     </properties>
     <profiles>
+        <profile>
+            <id>modules-packaged</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+                <property>
+                    <name>env.build_number</name>
+                </property>
+            </activation>
+            <modules>
+                <!--<module>ititan</module>-->
+                <module>event</module>
+                <module>ispark-deps</module>
+                <module>graphbuilder-3</module><!-- scoverage -->
+                <module>interfaces</module>
+                <module>launcher</module><!-- scoverage -->
+                <module>shared</module><!-- scoverage -->
+                <module>api-server</module>
+                <module>engine</module>
+                <module>engine-spark</module><!-- scoverage -->
+                <!--<module>imahout</module>
+                <module>igiraph</module>
+                <module>imllib</module>
+                <module>graphon</module>-->
+                <module>package</module>
+            </modules>
+        </profile>
+        <profile>
+            <id>modules-all</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+                <property>
+                    <name>env.build_number</name>
+                </property>
+            </activation>
+            <modules>
+                <module>ititan</module>
+                <module>event</module>
+                <module>ispark-deps</module>
+                <module>graphbuilder-3</module><!-- scoverage -->
+                <module>interfaces</module>
+                <module>launcher</module><!-- scoverage -->
+                <module>shared</module><!-- scoverage -->
+                <module>api-server</module>
+                <module>engine</module>
+                <module>engine-spark</module><!-- scoverage -->
+                <module>imahout</module>
+                <module>igiraph</module>
+                <module>imllib</module>
+                <module>graphon</module>
+                <module>package</module>
+            </modules>
+        </profile>
+
         <profile>
             <id>compile</id>
             <activation>
