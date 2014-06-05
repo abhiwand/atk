@@ -211,7 +211,7 @@ trait EngineComponent {
 
     //NOTE: we do /not/ expect to have a separate method for every single algorithm, this will move to a plugin
     //system soon
-    def runAls(als: Als[Long]): (Command, Future[Command])
+    def runAls(als: Als[Long])(implicit user: UserPrincipal): (Command, Future[Command])
   }
 
 }
