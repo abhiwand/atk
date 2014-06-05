@@ -30,7 +30,6 @@ import akka.event.Logging
 import spray.json._
 import spray.http.{ Uri, StatusCodes, MediaTypes }
 import scala.Some
-import com.intel.intelanalytics.domain.DataFrame
 import com.intel.intelanalytics.repository.{ MetaStoreComponent, Repository }
 import com.intel.intelanalytics.service.EventLoggingDirectives
 import com.intel.intelanalytics.service.v1.viewmodels._
@@ -39,13 +38,13 @@ import scala.util._
 import scala.concurrent._
 import spray.util.LoggingContext
 import scala.util.Failure
-import com.intel.intelanalytics.domain.DataFrameTemplate
 import scala.util.Success
-import com.intel.intelanalytics.domain.DataFrame
 import com.intel.intelanalytics.service.v1.viewmodels.JsonTransform
 import com.intel.intelanalytics.service.v1.viewmodels.DecoratedDataFrame
 import com.intel.intelanalytics.shared.EventLogging
 import com.intel.intelanalytics.security.UserPrincipal
+import com.intel.intelanalytics.domain.frame.{DataFrame, DataFrameTemplate}
+import com.intel.intelanalytics.domain.frame.DataFrame
 
 //TODO: Is this right execution context for us?
 import ExecutionContext.Implicits.global

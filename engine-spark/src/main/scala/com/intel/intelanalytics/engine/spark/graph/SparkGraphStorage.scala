@@ -1,6 +1,6 @@
 package com.intel.intelanalytics.engine.spark.graph
 
-import com.intel.intelanalytics.domain.{ GraphLoad, GraphTemplate, Graph }
+import com.intel.intelanalytics.domain.GraphTemplate
 import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.engine.{ Rows, GraphBackendStorage, GraphStorage }
 import com.intel.graphbuilder.driver.spark.titan.GraphBuilder
@@ -10,6 +10,7 @@ import com.intel.intelanalytics.repository.MetaStoreComponent
 import com.intel.intelanalytics.shared.EventLogging
 import scala.concurrent._
 import ExecutionContext.Implicits.global
+import com.intel.intelanalytics.domain.graph.{GraphLoad, GraphTemplate, Graph}
 
 /**
  * Front end for Spark to create and manage graphs using GraphBuilder3

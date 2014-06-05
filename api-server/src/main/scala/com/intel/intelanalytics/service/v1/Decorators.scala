@@ -22,21 +22,21 @@
 //////////////////////////////////////////////////////////////////////////////
 package com.intel.intelanalytics.service.v1
 
-import com.intel.intelanalytics.domain.{ Command, DataFrame }
 import com.intel.intelanalytics.service.v1.viewmodels._
 import com.intel.intelanalytics.service.v1.viewmodels.DecoratedCommand
 import com.intel.intelanalytics.service.v1.viewmodels.DataFrameHeader
-import com.intel.intelanalytics.domain.DataFrame
 import com.intel.intelanalytics.service.v1.viewmodels.RelLink
-import com.intel.intelanalytics.domain.Command
-import com.intel.intelanalytics.domain.{ Graph, DataFrame }
 import com.intel.intelanalytics.service.v1.viewmodels._
-import com.intel.intelanalytics.domain.Graph
 import com.intel.intelanalytics.service.v1.viewmodels.GraphHeader
 import com.intel.intelanalytics.service.v1.viewmodels.DataFrameHeader
-import com.intel.intelanalytics.domain.DataFrame
 import com.intel.intelanalytics.service.v1.viewmodels.RelLink
 import com.intel.intelanalytics.service.v1.viewmodels.DecoratedDataFrame
+import com.intel.intelanalytics.domain.frame.DataFrame
+import com.intel.intelanalytics.domain.frame.DataFrame
+import com.intel.intelanalytics.domain.graph.Graph
+import com.intel.intelanalytics.domain.graph.Graph
+import com.intel.intelanalytics.domain.command.Command
+import com.intel.intelanalytics.domain.command.Command
 
 trait EntityDecorator[Entity, Index, Decorated] {
   def decorateForIndex(indexUri: String, entities: Seq[Entity]): List[Index]

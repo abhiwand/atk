@@ -30,7 +30,6 @@ import akka.event.Logging
 import spray.json._
 import spray.http.{ HttpHeader, Uri, StatusCodes, MediaTypes }
 import scala.Some
-import com.intel.intelanalytics.domain.DataFrame
 import com.intel.intelanalytics.repository.{ MetaStoreComponent, Repository }
 import com.intel.intelanalytics.service.EventLoggingDirectives
 import com.intel.intelanalytics.service.v1.viewmodels._
@@ -49,18 +48,17 @@ import spray.routing.authentication.BasicAuth
 import shapeless._
 import spray.routing._
 import Directives._
+import com.intel.intelanalytics.domain.frame.{DataFrame, DataFrameTemplate}
 
 //TODO: Is this right execution context for us?
 
 import ExecutionContext.Implicits.global
-import com.intel.intelanalytics.domain.DataFrameTemplate
-import com.intel.intelanalytics.domain.DataFrame
 import com.intel.intelanalytics.service.v1.viewmodels.DecoratedDataFrame
 import scala.util.control.NonFatal
 import scala.util.Failure
-import com.intel.intelanalytics.domain.DataFrameTemplate
+import DataFrameTemplate
 import scala.util.Success
-import com.intel.intelanalytics.domain.DataFrame
+import DataFrame
 import com.intel.intelanalytics.service.v1.viewmodels.JsonTransform
 import com.intel.intelanalytics.service.v1.viewmodels.DecoratedDataFrame
 import scala.concurrent.duration._

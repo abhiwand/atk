@@ -27,18 +27,13 @@ import com.intel.intelanalytics.engine.Rows._
 import org.apache.spark.rdd.RDD
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
-import com.intel.intelanalytics.domain.LoadLines
 import spray.json.JsObject
 import scala.collection.mutable
 import scala.Some
-import com.intel.intelanalytics.engine.spark.RDDJoinParam
-import com.intel.intelanalytics.domain.LoadLines
+import com.intel.intelanalytics.engine.spark.frame.RDDJoinParam
+import com.intel.intelanalytics.domain.frame.LoadLines
+import com.intel.intelanalytics.domain.frame.LoadLines
 
-/**
- * This object exists to avoid having to serialize the entire engine in order to use spark
- */
-
-case class RDDJoinParam(rdd: RDD[(Any, Array[Any])], columnCount: Int)
 
 private[spark] object SparkOps extends Serializable {
 
