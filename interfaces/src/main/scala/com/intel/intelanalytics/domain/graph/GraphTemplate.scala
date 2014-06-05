@@ -27,7 +27,6 @@ package com.intel.intelanalytics.domain.graph
   * Arguments for creating the metadata entry for a graph.
   * @param name The user's name for the graph.
   */
-
 case class GraphTemplate(name: String) {
    require(name != null)
    require(name.trim.length > 0)
