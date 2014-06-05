@@ -21,4 +21,18 @@ class SparkGraphHBaseBackendSpec extends Specification with Mockito {
     }
   }
 
+  "Deleting a table that does exist" should {
+    "cause table to be disabled and deleted" in {
+      val userTableName = "mytable"
+      val internalTableName = "iat_graph_mytable"
+      val mockHBaseAdmin = mock[HBaseAdmin]
+      mockHBaseAdmin.tableExists(internalTableName) returns true
+
+      val sparkGraphHBaseBackend = new SparkGraphHBaseBackend(mockHBaseAdmin)
+      sparkGraphHBaseBackend.deleteUnderlyingTable(userTableName)
+
+      there was one(mockHBaseAdmin).disableTable(internalTableName)
+      there was one(mockHBaseAdmin).deleteTable(internalTableName)
+    }
+  }
 }

@@ -16,7 +16,7 @@ class SparkGraphHBaseBackend(val hbaseAdmin: HBaseAdmin) extends GraphBackendSto
    */
   override def deleteUnderlyingTable(graphName: String): Unit = {
 
-    val tableName: String = ConvertGraphUserNameToBackendName(graphName)
+    val tableName: String = GraphName.convertGraphUserNameToBackendName(graphName)
 
     if (hbaseAdmin.tableExists(tableName)) {
       hbaseAdmin.disableTable(tableName)

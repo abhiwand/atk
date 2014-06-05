@@ -21,47 +21,27 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.graphbuilder.elements
+package com.intel.intelanalytics.engine.spark
 
-import org.specs2.mutable.Specification
+import org.scalatest.{ BeforeAndAfterEach, Matchers, FlatSpec }
+import com.intel.intelanalytics.engine.TestingSparkContext
 
-class VertexSpec extends Specification {
+class FlattenColumnITest extends FlatSpec with Matchers with BeforeAndAfterEach with TestingSparkContext {
+  "flattenRddByColumnIndex" should "create separate rows when flattening entries" in {
+    val carOwnerShips = List(Array[Any]("Bob", "Mustang,Camry"), Array[Any]("Josh", "Neon,CLK"), Array[Any]("Alice", "PT Cruiser,Avalon,F-150"), Array[Any]("Tim", "Beatle"), Array[Any]("Becky", ""))
+    val rdd = sc.parallelize(carOwnerShips)
+    val flattened = SparkOps.flattenRddByColumnIndex(1, ",", rdd)
+    val result = flattened.take(9)
+    result.apply(0) shouldBe Array[Any]("Bob", "Mustang")
+    result.apply(1) shouldBe Array[Any]("Bob", "Camry")
+    result.apply(2) shouldBe Array[Any]("Josh", "Neon")
+    result.apply(3) shouldBe Array[Any]("Josh", "CLK")
+    result.apply(4) shouldBe Array[Any]("Alice", "PT Cruiser")
+    result.apply(5) shouldBe Array[Any]("Alice", "Avalon")
+    result.apply(6) shouldBe Array[Any]("Alice", "F-150")
+    result.apply(7) shouldBe Array[Any]("Tim", "Beatle")
+    result.apply(8) shouldBe Array[Any]("Becky", "")
 
-  val gbId = new Property("gbId", 10001)
-  val vertex = new Vertex(gbId, List(new Property("key", "value")))
-
-  "Vertex" should {
-    "have a unique id that is the gbId" in {
-      vertex.id mustEqual gbId
-    }
-
-    "be mergeable with another vertex" in {
-      val vertex2 = new Vertex(gbId, List(new Property("anotherKey", "anotherValue")))
-
-      // invoke method under test
-      val merged = vertex.merge(vertex2)
-
-      merged.gbId mustEqual gbId
-      merged.properties.size mustEqual 2
-
-      merged.properties(0).key mustEqual "key"
-      merged.properties(0).value mustEqual "value"
-
-      merged.properties(1).key mustEqual "anotherKey"
-      merged.properties(1).value mustEqual "anotherValue"
-    }
-
-    "not allow null gbIds" in {
-      new Vertex(null, Nil) must throwA[IllegalArgumentException]
-    }
-
-    "not allow merging of vertices with different ids" in {
-      val diffId = new Property("gbId", 10002)
-      val vertex2 = new Vertex(diffId, List(new Property("anotherKey", "anotherValue")))
-
-      // invoke method under test
-      vertex.merge(vertex2) must throwA[IllegalArgumentException]
-    }
   }
 
 }
