@@ -14,7 +14,7 @@ case class DataFrameTemplate(name: String, description: Option[String] = None) {
  * @param description description of frame (a good default description might be the name of the input file)
  * @param uri absolute path to the file backing the frame in HDFS
  * @param schema the schema of the frame (defines columns, etc)
- * @param status lifecycle status. For example, INIT (building), ACTIVE, DELETED (undelete possible), DELETE_FINAL (no undelete), INCOMPLETE (failed construction)
+ * @param status lifecycle status. For example, INIT (building), ACTIVE, DELETED (un-delete possible), DELETE_FINAL (no un-delete), INCOMPLETE (failed construction)
  * @param createdOn date/time this record was created
  * @param modifiedOn date/time this record was last modified
  * @param createdBy user who created this row
