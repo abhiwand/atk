@@ -33,6 +33,8 @@ import org.apache.spark.scheduler.SparkListenerStageCompleted
 import scala.Some
 import org.apache.spark.scheduler.SparkListenerJobStart
 import scala.concurrent._
+import org.apache.spark.SparkContext
+import scala.util.{Success, Try}
 
 /**
  * Listens to progress on Spark Jobs.
@@ -47,6 +49,7 @@ class SparkProgressListener extends SparkListener {
   val stageIdToTasksComplete = HashMap[Int, Int]()
   val stageIdToTasksFailed = HashMap[Int, Int]()
   var jobIdPromise: Promise[Int] = null
+  val jobIdToCommandId = HashMap[Int, Int]()
 
   def getJobId(): Future[Int] = {
     val p = promise[Int]
@@ -59,6 +62,15 @@ class SparkProgressListener extends SparkListener {
     val parents = jobStart.job.finalStage.parents
     val parentsIds = parents.map(s => s.id)
     jobIdToStageIds(jobStart.job.jobId) = (parentsIds :+ jobStart.job.finalStage.id).toArray
+
+    val commandIdTry = Try {
+      jobStart.job.properties.getProperty(SparkContext.SPARK_JOB_GROUP_ID).toInt
+    }
+
+    commandIdTry match {
+      case Success(r) => jobIdToCommandId(jobStart.job.jobId) = r
+      case _ => { } // do nothing
+    }
 
     if (jobIdPromise != null) {
       jobIdPromise success jobStart.job.jobId
@@ -132,7 +144,7 @@ class ProgressPrinter(progressListener: SparkProgressListener) extends SparkList
   }
 
   override def onTaskEnd(taskEnd: SparkListenerTaskEnd) {
-    printJobProgress()
+//    printJobProgress()
   }
 
   override def onJobEnd(jobEnd: SparkListenerJobEnd) {
@@ -140,10 +152,10 @@ class ProgressPrinter(progressListener: SparkProgressListener) extends SparkList
   }
 
   def printJobProgress() {
-    val jobIds = progressListener.jobIdToStageIds.keys.toList.sorted
+    val jobIds = progressListener.jobIdToCommandId.keys.toList.sorted
     println("PRINTING PROGRESS........................................................")
     for (id <- jobIds) {
-      println("job: " + id + ", progress: " + progressListener.getProgress(id) + "%")
+      println( "command:" + progressListener.jobIdToCommandId(id) +  ", job: " + id + ", progress: " + progressListener.getProgress(id) + "%")
     }
     println("END.......................................................................")
   }

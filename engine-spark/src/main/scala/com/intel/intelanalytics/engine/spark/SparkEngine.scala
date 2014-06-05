@@ -209,10 +209,14 @@ class SparkComponent extends EngineComponent
       }
     }
 
-    def withCommand[T](command: Command)(block: => JsObject): Unit = {
+    def withCommand[T](command: Command)(block: => JsObject)(implicit user: UserPrincipal): Unit = {
+      val ctx = context(user).sparkContext
+      ctx.setJobGroup(command.id.toString, "")
       commands.complete(command.id, Try {
         block
       })
+
+      ctx.clearJobGroup()
     }
 
     def load(arguments: LoadLines[JsObject, Long])(implicit user: UserPrincipal): (Command, Future[Command]) =
@@ -768,7 +772,7 @@ class SparkComponent extends EngineComponent
 
     //NOTE: we do /not/ expect to have a separate method for every single algorithm, this will move to a plugin
     //system soon
-    def runAls(als: Als[Long]): (Command, Future[Command]) = {
+    def runAls(als: Als[Long])(implicit user: UserPrincipal): (Command, Future[Command]) = {
       import spray.json._
       import DomainJsonProtocol._
       val command = commands.create(CommandTemplate("graph/ml/als", Some(als.toJson.asJsObject)))
