@@ -24,7 +24,15 @@ case class GraphTemplate(name: String) {
  * @param createdByUserId user who created this row
  * @param modifiedByUserId  user who last modified this row
  */
-case class Graph(id: Long, name: String, description: Option[String], storage: String, statusId: Long, createdOn: DateTime, modifiedOn: DateTime, createdByUserId: Option[Long], modifiedByUserId: Option[Long]) extends HasId {
+case class Graph(id: Long,
+                 name: String,
+                 description: Option[String],
+                 storage: String,
+                 statusId: Long,
+                 createdOn: DateTime,
+                 modifiedOn: DateTime,
+                 createdByUserId: Option[Long],
+                 modifiedByUserId: Option[Long]) extends HasId {
   require(id > 0)
   require(name != null)
   require(name.trim.length > 0)
