@@ -23,7 +23,7 @@
 
 package com.intel.intelanalytics.domain
 
-import com.intel.intelanalytics.domain.graphconstruction.{ EdgeRule, VertexRule, OutputConfiguration }
+import com.intel.intelanalytics.domain.graphconstruction.{ FrameRule, EdgeRule, VertexRule }
 
 //TODO: Many of these classes will go away in the future, replaced with something more generic.
 
@@ -59,6 +59,17 @@ case class FrameAddColumn[+Arguments, FrameRef](frame: FrameRef, columnname: Str
   require(expression != null, "expression is required")
 }
 
+/**
+ * frame join command
+ * @param name name of new dataframe to be created, eg: result
+ * @param frames input dataframes for the join operation
+ * @param how methods of join. inner, left or right
+ */
+case class FrameJoin(name: String, frames: List[(Long, String)], how: String) {
+  require(frames != null, "frame is required")
+  require(frames.length == 2, "Two frames are required for the join operation")
+}
+
 case class FrameProject[+Arguments, FrameRef](frame: FrameRef, projected_frame: FrameRef, columns: List[String], new_column_names: List[String]) {
   require(frame != null, "frame is required")
   require(projected_frame != null, "projected frame is required")
@@ -82,26 +93,18 @@ case class SeparatorArgs(separator: Char)
 /**
  * Command for loading  graph data into existing graph in the graph database. Source is tabular data from a dataframe
  * and it is converted into graph data using the graphbuilder3 graph construction rules.
- * @param graphRef Handle to the graph to be written to.
- * @param sourceFrameRef Handle to the dataframe to be used as a data source.
- * @param outputConfig The configuration rules specifying how the graph database will be written to.
- * @param vertexRules Specification of how tabular data will be interpreted as vertices.
- * @param edgeRules Specification of how tabular data will be interpreted as edge.
- * @param retainDanglingEdges
- * @param bidirectional Are edges bidirectional or unidirectional? (equivalently, undirected or directed?)
+ * @param graph Handle to the graph to be written to.
+ * @param frame_rules List of handles to the dataframe to be used as a data source.
+ * @param retain_dangling_edges When true, dangling edges are retained by adding dummy vertices, when false, dangling
+ *                              edges are deleted.
  * @tparam Arguments Type of the command packed provided by the caller.
  * @tparam GraphRef Type of the reference to the graph being written to.
  * @tparam FrameRef Type of the reference to the source frame being read from.
  */
-case class GraphLoad[+Arguments, GraphRef, FrameRef](graphRef: GraphRef,
-                                                     sourceFrameRef: FrameRef,
-                                                     outputConfig: OutputConfiguration,
-                                                     vertexRules: List[VertexRule],
-                                                     edgeRules: List[EdgeRule],
-                                                     retainDanglingEdges: Boolean,
-                                                     bidirectional: Boolean) {
-  require(graphRef != null)
-  require(sourceFrameRef != null)
-  require(outputConfig != null)
+case class GraphLoad[+Arguments, GraphRef, FrameRef](graph: GraphRef,
+                                                     frame_rules: List[FrameRule[FrameRef]],
+                                                     retain_dangling_edges: Boolean) {
+  require(graph != null)
+  require(frame_rules != null)
 }
 

@@ -192,6 +192,7 @@ trait EngineComponent {
     def alter(frame: DataFrame, changes: Seq[Alteration])
 
     def delete(frame: DataFrame): Future[Unit]
+    def join(argument: FrameJoin)(implicit user: UserPrincipal): (Command, Future[Command])
 
     def getFrames(offset: Int, count: Int)(implicit p: UserPrincipal): Future[Seq[DataFrame]]
 
@@ -225,8 +226,7 @@ trait CommandComponent {
     def scan(offset: Int, count: Int): Seq[Command]
 
     def start(id: Long): Unit
-
-    def complete(id: Long, result: Try[Unit]): Unit
+    def complete(id: Long, result: Try[Any]): Unit
   }
 
 }
