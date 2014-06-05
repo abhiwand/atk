@@ -16,6 +16,6 @@ import org.joda.time.DateTime
  * @param createdOn date/time this record was created
  * @param modifiedOn date/time this record was last modified
  */
-case class HookExecution(id: Long, hookId: Long, success: Boolean = false, responseCode: Int = -1, errorBody: String, createdOn: DateTime, modifiedOn: DateTime) extends HasId {
+case class HookExecution(id: Long, hookId: Long, success: Boolean = false, responseCode: Int = -1, errorBody: Option[String] = None, createdOn: DateTime, modifiedOn: DateTime) extends HasId {
 
 }

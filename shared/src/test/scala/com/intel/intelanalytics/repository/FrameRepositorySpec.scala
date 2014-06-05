@@ -14,10 +14,9 @@ class FrameRepositorySpec extends SlickMetaStoreH2Testing with Matchers {
 
         val frameName = "frame-name"
         val frameDescription = "my description"
-        val columnName = "myColumn"
 
         // create a frame
-        val frame = frameRepo.insert(new DataFrameTemplate(frameName, Some(frameDescription), new Schema(List((columnName, DataTypes.float64)))))
+        val frame = frameRepo.insert(new DataFrameTemplate(frameName, Some(frameDescription)))
         frame.get should not be null
 
         // look it up and validate expected values
@@ -26,7 +25,6 @@ class FrameRepositorySpec extends SlickMetaStoreH2Testing with Matchers {
         frame2.get.name shouldBe frameName
         frame2.get.description.get shouldBe frameDescription
         frame2.get.status shouldBe 1
-        frame2.get.schema.columns.head._1 shouldBe columnName
         frame2.get.createdOn should not be null
         frame2.get.modifiedOn should not be null
     }

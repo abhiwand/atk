@@ -1271,7 +1271,7 @@ def calculateScore(list1, list2, biasOn, featureDimension) {
     override def create(frame: DataFrameTemplate): DataFrame = withContext("frame.create") {
       val id = nextFrameId()
       // TODO: wire this up better.  For example, status Id should be looked up, uri needs to be supplied, user supplied, etc.
-      val frame2 = new DataFrame(id = id, name = frame.name, description = frame.description, uri = "TODO", schema = frame.schema, status = 1L, new DateTime(), new DateTime(), None, None)
+      val frame2 = new DataFrame(id = id, name = frame.name, description = frame.description, uri = "TODO", schema = Schema(), status = 1L, new DateTime(), new DateTime(), None, None)
       val meta = File(Paths.get(getFrameMetaDataFile(id)))
       info(s"Saving metadata to $meta")
       val f = files.write(meta)

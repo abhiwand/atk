@@ -41,7 +41,16 @@ import org.joda.time.DateTime
  * @param modifiedOn date/time this record was last modified
  * @param createdById user who created this row
  */
-case class Command(id: Long, name: String, arguments: Option[JsObject], error: Option[Error], complete: Boolean, result: Option[JsObject] = None, createdOn: DateTime, modifiedOn: DateTime, createdById: Option[Long]) extends HasId
+case class Command(id: Long,
+                   name: String,
+                   arguments: Option[JsObject],
+                   error: Option[Error] = None,
+                   complete: Boolean = false,
+                   result: Option[JsObject] = None,
+                   createdOn: DateTime,
+                   modifiedOn: DateTime,
+                   createdById: Option[Long]) extends HasId
+
 case class CommandTemplate(name: String, arguments: Option[JsObject])
 case class Definition(language: String, serialization: String, data: String)
 case class Operation(name: String, definition: Option[Definition])
