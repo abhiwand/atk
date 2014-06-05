@@ -28,10 +28,10 @@ import com.intel.intelanalytics.domain._
 import scala.util.Try
 import spray.json._
 import scala.slick.driver.JdbcProfile
-import com.intel.intelanalytics.domain.CommandTemplate
-import com.intel.intelanalytics.domain.DataFrame
-import com.intel.intelanalytics.domain.Schema
-import com.intel.intelanalytics.domain.Command
+import com.intel.intelanalytics.domain.frame.{DataFrame, DataFrameTemplate}
+import com.intel.intelanalytics.domain.graph.{GraphTemplate, Graph}
+import com.intel.intelanalytics.domain.schema.Schema
+import com.intel.intelanalytics.domain.command.{CommandTemplate, Command}
 
 trait DbProfileComponent {
 

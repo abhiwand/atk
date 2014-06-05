@@ -5,6 +5,4 @@ case class User(id: Long, api_key: String) extends HasId {
   require(api_key != null && !api_key.isEmpty)
 }
 
-case class UserTemplate(api_key: String) {
-  require(api_key != null && !api_key.isEmpty)
-}
+

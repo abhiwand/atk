@@ -1,23 +1,24 @@
 package com.intel.intelanalytics.engine.spark.graph
 
 import com.intel.intelanalytics.domain._
-import com.intel.intelanalytics.domain.graphconstruction._
+import com.intel.intelanalytics.domain.graph.construction._
 import com.intel.graphbuilder.util.SerializableBaseConfiguration
 import com.intel.graphbuilder.parser.rule.{ Value => GBValue, VertexRule => GBVertexRule, EdgeRule => GBEdgeRule, PropertyRule => GBPropertyRule }
 import com.intel.graphbuilder.parser.rule.ConstantValue
 import com.intel.graphbuilder.driver.spark.titan.GraphBuilderConfig
 import com.intel.graphbuilder.parser.rule.ParsedValue
-import com.intel.intelanalytics.domain.graphconstruction.ValueRule
+import com.intel.intelanalytics.domain.graph.construction.ValueRule
 
 import com.intel.graphbuilder.parser.InputSchema
-import com.intel.intelanalytics.domain.Schema
-import com.intel.intelanalytics.domain.graphconstruction.EdgeRule
+import com.intel.intelanalytics.domain.graph.construction.EdgeRule
 import com.intel.graphbuilder.parser.ColumnDef
-import com.intel.intelanalytics.domain.graphconstruction.VertexRule
-import com.intel.intelanalytics.domain.graphconstruction.PropertyRule
+import com.intel.intelanalytics.domain.graph.construction.VertexRule
+import com.intel.intelanalytics.domain.graph.construction.PropertyRule
 import spray.json.JsObject
-import com.intel.intelanalytics.domain.DataTypes.DataType
+import com.intel.intelanalytics.domain.schema.{Schema, DataTypes}
+import DataTypes.DataType
 import com.typesafe.config.{ Config, ConfigFactory }
+import com.intel.intelanalytics.domain.graph.Graph
 
 /**
  * Converter that produces the graphbuilder3 consumable
@@ -57,7 +58,7 @@ class GraphBuilderConfigFactory(val schema: Schema, val graphLoad: GraphLoad[JsO
   }
 
   /**
-   * Converts com.intel.intelanalytics.domain.Schema into com.intel.graphbuilder.parser.InputSchema
+   * Converts com.intel.intelanalytics.domain.schema.Schema into com.intel.graphbuilder.parser.InputSchema
    * @param schema The dataframe schema to be converted.
    * @return Dataframe schema as a com.intel.graphbuilder.parser.InputSchema
    */
