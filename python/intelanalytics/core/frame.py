@@ -597,7 +597,7 @@ class BigFrame(object):
 
     def join(self, right, left_on, right_on=None, how='inner'):
         """
-        Create a new BigFrame from a JOIN operation with another BigFrame
+        Create a new BigFrame from a JOIN operation with another BigFrame.
 
         Parameters
         ----------
