@@ -24,7 +24,7 @@ object TitanReaderTestData extends Suite with BeforeAndAfterAll {
 
   import TitanReaderUtils._
 
-  val gbID = TitanReader.TITAN_READER_GB_ID
+  val gbID = TitanReader.TITAN_READER_DEFAULT_GB_ID
   private var tmpDir: File = createTempDirectory("titan-graph-for-unit-testing-")
 
   var titanConfig = new SerializableBaseConfiguration()

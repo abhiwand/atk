@@ -49,7 +49,7 @@ object TitanReaderExample {
 
     // Create graph connection
     val tableName = "graphofgods"
-    val hBaseZookeeperQuorum = "localhost"
+    val hBaseZookeeperQuorum = "10.10.68.157"
 
     val titanConfig = new SerializableBaseConfiguration()
     titanConfig.setProperty("storage.backend", "hbase")
