@@ -17,7 +17,7 @@ import com.intel.intelanalytics.domain.graphconstruction.VertexRule
 import com.intel.intelanalytics.domain.graphconstruction.PropertyRule
 import spray.json.JsObject
 import com.intel.intelanalytics.domain.DataTypes.DataType
-import com.typesafe.config.{Config, ConfigFactory}
+import com.typesafe.config.{ Config, ConfigFactory }
 
 /**
  * Converter that produces the graphbuilder3 consumable
@@ -81,7 +81,6 @@ class GraphBuilderConfigFactory(val schema: Schema, val graphLoad: GraphLoad[JsO
 
     import scala.collection.JavaConversions._
     val titanConfiguration = new SerializableBaseConfiguration
-
 
     val confFromFile = ConfigFactory.load("engine.conf").getConfig("engine.titan.load")
 
