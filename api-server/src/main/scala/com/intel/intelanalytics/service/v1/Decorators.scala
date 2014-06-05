@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2013 Intel Corporation All Rights Reserved.
+// Copyright 2014 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -64,7 +64,7 @@ object CommandDecorator extends EntityDecorator[Command, CommandHeader, Decorate
                               entity: Command): DecoratedCommand = {
     DecoratedCommand(id = entity.id, name = entity.name,
       arguments = entity.arguments, error = entity.error, complete = entity.complete,
-      links = links.toList)
+      result = entity.result, links = links.toList)
   }
 
   override def decorateForIndex(uri: String, entities: Seq[Command]): List[CommandHeader] = {
