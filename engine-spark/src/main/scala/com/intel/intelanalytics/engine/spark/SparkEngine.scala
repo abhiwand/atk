@@ -108,9 +108,14 @@ import com.intel.intelanalytics.domain.Als
 import com.intel.intelanalytics.engine.spark.graph.{ SparkGraphStorage, SparkGraphHBaseBackend }
 import com.intel.intelanalytics.domain.DataTypes.DataType
 
+import spray.json._
+import com.intel.intelanalytics.domain.DataTypes.DataType
 //TODO documentation
 //TODO progress notification
 //TODO event notification
+//TODO pass current user info
+
+
 
 class SparkComponent extends EngineComponent
     with FrameComponent
@@ -120,6 +125,7 @@ class SparkComponent extends EngineComponent
     with SlickMetaStoreComponent
     with EventLogging {
 
+  import DomainJsonProtocol._
   lazy val configuration: SparkEngineConfiguration = new SparkEngineConfiguration()
 
   val engine = new SparkEngine {}
@@ -185,7 +191,7 @@ class SparkComponent extends EngineComponent
       parser.operation.name match {
         //TODO: look functions up in a table rather than switching on names
         case "builtin/line/separator" => {
-          import DomainJsonProtocol.separatorArgsJsonFormat
+
           val args = parser.arguments match {
             //TODO: genericize this argument conversion
             case a: JsObject => a.convertTo[SeparatorArgs]
@@ -226,7 +232,8 @@ class SparkComponent extends EngineComponent
                 val converter = DataTypes.parseMany(schema.columns.map(_._2).toArray)(_)
                 val ctx = context(user)
                 SparkOps.loadLines(ctx.sparkContext, fsRoot + "/" + arguments.source, location, arguments, parserFunction, converter)
-                frames.updateSchema(realFrame, schema.columns)
+                val frame = frames.updateSchema(realFrame, schema.columns)
+                frame.toJson.asJsObject
               }
               commands.lookup(command.id).get
             }
@@ -434,6 +441,94 @@ class SparkComponent extends EngineComponent
             }
           }
         }
+        (command, result)
+      }
+
+    /**
+     * join two data frames
+     * @param joinCommand parameter contains information for the join operation
+     * @param user current user
+     */
+    override def join(joinCommand: FrameJoin)(implicit user: UserPrincipal): (Command, Future[Command]) =
+      withContext("se.join") {
+
+        def createPairRddForJoin(joinCommand: FrameJoin, ctx: SparkContext): List[RDD[(Any, Array[Any])]] = {
+          val tupleRddColumnIndex: List[(RDD[Rows.Row], Int)] = joinCommand.frames.map {
+            frame =>
+              {
+                val realFrame = frames.lookup(frame._1).getOrElse(
+                  throw new IllegalArgumentException(s"No such data frame"))
+
+                val frameSchema = realFrame.schema
+                val rdd = frames.getFrameRdd(ctx, frame._1)
+                val columnIndex = frameSchema.columns.indexWhere(columnTuple => columnTuple._1 == frame._2)
+                (rdd, columnIndex)
+              }
+          }
+
+          val pairRdds = tupleRddColumnIndex.map {
+            t =>
+              val rdd = t._1
+              val columnIndex = t._2
+              rdd.map(p => SparkOps.create2TupleForJoin(p, columnIndex))
+          }
+
+          pairRdds
+        }
+
+        import DomainJsonProtocol._
+        val command: Command = commands.create(new CommandTemplate("join", Some(joinCommand.toJson.asJsObject)))
+
+        val result: Future[Command] = future {
+          withMyClassLoader {
+            withContext("se.join.future") {
+
+
+
+
+              val originalColumns = joinCommand.frames.map {
+                frame =>
+                  {
+                    val realFrame = frames.lookup(frame._1).getOrElse(
+                      throw new IllegalArgumentException(s"No such data frame"))
+
+                    realFrame.schema.columns
+                  }
+              }
+
+              val leftColumns: List[(String, DataType)] = originalColumns(0)
+              val rightColumns: List[(String, DataType)] = originalColumns(1)
+              val allColumns = SchemaUtil.resolveSchemaNamingConflicts(leftColumns, rightColumns)
+
+              /* create a dataframe should take very little time, much less than 10 minutes */
+              val newJoinFrame = Await.result(create(DataFrameTemplate(joinCommand.name)), 10 minutes)
+
+              withCommand(command) {
+
+                //first validate join columns are valid
+                val leftOn: String = joinCommand.frames(0)._2
+                val rightOn: String = joinCommand.frames(1)._2
+
+                val leftSchema = Schema(leftColumns)
+                val rightSchema = Schema(rightColumns)
+
+                require(leftSchema.columnIndex(leftOn) != -1, s"column $leftOn is invalid")
+                require(rightSchema.columnIndex(rightOn) != -1, s"column $rightOn is invalid")
+
+                val ctx = context(user).sparkContext
+                val pairRdds = createPairRddForJoin(joinCommand, ctx)
+
+                val joinResultRDD = SparkOps.joinRDDs(RDDJoinParam(pairRdds(0), leftColumns.length), RDDJoinParam(pairRdds(1), rightColumns.length), joinCommand.how)
+                joinResultRDD.saveAsObjectFile(fsRoot + frames.getFrameDataFile(newJoinFrame.id))
+                frames.updateSchema(newJoinFrame, allColumns)
+                newJoinFrame.copy(schema = Schema(allColumns)).toJson.asJsObject
+              }
+
+              commands.lookup(command.id).get
+            }
+          }
+        }
+
         (command, result)
       }
 
@@ -1264,7 +1359,7 @@ def calculateScore(list1, list2, biasOn, featureDimension) {
       //TODO: set start date
     }
 
-    override def complete(id: Long, result: Try[Unit]): Unit = {
+    override def complete(id: Long, result: Try[Any]): Unit = {
       require(id > 0, "invalid ID")
       require(result != null)
       metaStore.withSession("se.command.complete") {
@@ -1276,7 +1371,7 @@ def calculateScore(list1, list2, biasOn, featureDimension) {
           //TODO: Update dates
           val changed = result match {
             case Failure(ex) => command.copy(complete = true, error = Some(ex: Error))
-            case Success(_) => command.copy(complete = true)
+            case Success(r) => command.copy(complete = true, result = Some(r.asInstanceOf[JsObject]))
           }
           repo.update(changed)
       }

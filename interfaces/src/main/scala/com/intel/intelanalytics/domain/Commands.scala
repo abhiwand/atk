@@ -59,6 +59,17 @@ case class FrameAddColumn[+Arguments, FrameRef](frame: FrameRef, columnname: Str
   require(expression != null, "expression is required")
 }
 
+/**
+ * frame join command
+ * @param name name of new dataframe to be created, eg: result
+ * @param frames input dataframes for the join operation
+ * @param how methods of join. inner, left or right
+ */
+case class FrameJoin(name: String, frames: List[(Long, String)], how: String) {
+  require(frames != null, "frame is required")
+  require(frames.length == 2, "Two frames are required for the join operation")
+}
+
 case class FrameProject[+Arguments, FrameRef](frame: FrameRef, projected_frame: FrameRef, columns: List[String], new_column_names: List[String]) {
   require(frame != null, "frame is required")
   require(projected_frame != null, "projected frame is required")
