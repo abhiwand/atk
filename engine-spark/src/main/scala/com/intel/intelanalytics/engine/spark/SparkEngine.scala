@@ -686,7 +686,7 @@ class SparkComponent extends EngineComponent
      * Register a graph name with the metadata store.
      * @param graph Metadata for graph creation.
      * @param user IMPLICIT. The user creating the graph.
-     * @return
+     * @return Future of the graph to be created.
      */
     def createGraph(graph: GraphTemplate)(implicit user: UserPrincipal) = {
       future {
@@ -731,7 +731,7 @@ class SparkComponent extends EngineComponent
     /**
      * Obtains a graph's metadata from its identifier.
      * @param id Unique identifier for the graph provided by the metastore.
-     * @return A future of the graph.
+     * @return A future of the graph metadata entry.
      */
     def getGraph(id: SparkComponent.this.Identifier): Future[Graph] = {
       future {
@@ -744,7 +744,7 @@ class SparkComponent extends EngineComponent
      * @param offset First graph to obtain.
      * @param count Number of graphs to obtain.
      * @param user IMPLICIT. User listing the graphs.
-     * @return Future of a sequence of graphs.
+     * @return Future of the sequence of graph metadata entries to be returned.
      */
     def getGraphs(offset: Int, count: Int)(implicit user: UserPrincipal): Future[Seq[Graph]] =
       withContext("se.getGraphs") {
@@ -756,7 +756,7 @@ class SparkComponent extends EngineComponent
     /**
      * Delete a graph from the graph database.
      * @param graph The graph to be deleted.
-     * @return
+     * @return A future of unit.
      */
     def deleteGraph(graph: Graph): Future[Unit] = {
       withContext("se.deletegraph") {
