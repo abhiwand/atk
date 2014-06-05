@@ -83,6 +83,13 @@ class CommandInfo(object):
         except KeyError:
             return False
 
+    @property
+    def result(self):
+        try:
+            return self._payload['result']
+        except KeyError:
+            return False
+
     def update(self, payload):
         if self._payload and self.id_number != payload['id']:
             msg = "Invalid payload, command ID mismatch %d when expecting %d"\

@@ -61,7 +61,7 @@ case class CommandHeader(id: Long, name: String, url: String) {
 }
 
 case class DecoratedCommand(id: Long, name: String, arguments: Option[JsObject], error: Option[Error],
-                            complete: Boolean, links: List[RelLink]) {
+                            complete: Boolean, result: Option[JsObject], links: List[RelLink]) {
   require(id > 0)
   require(name != null)
   require(arguments != null)
@@ -97,7 +97,7 @@ object ViewModelJsonProtocol extends DefaultJsonProtocol with SprayJsonSupport {
   implicit val decoratedDataFrameFormat = jsonFormat4(DecoratedDataFrame)
   implicit val jsonTransformFormat = jsonFormat2(JsonTransform)
   implicit val commandHeaderFormat = jsonFormat3(CommandHeader)
-  implicit val decoratedCommandFormat = jsonFormat6(DecoratedCommand)
+  implicit val decoratedCommandFormat = jsonFormat7(DecoratedCommand)
   implicit val graphHeaderFormat = jsonFormat3(GraphHeader)
   implicit val decoratedGraphHeaderFormat = jsonFormat3(DecoratedGraph)
 }

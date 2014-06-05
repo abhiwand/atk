@@ -24,10 +24,13 @@
 REST backend for frames
 """
 import base64
+import uuid
 import logging
 logger = logging.getLogger(__name__)
 from collections import defaultdict, OrderedDict
+import json
 
+from intelanalytics.core.frame import BigFrame, FrameSchema
 from intelanalytics.core.column import BigColumn
 from intelanalytics.core.files import CsvFile
 from intelanalytics.core.types import *
@@ -79,15 +82,50 @@ class FrameBackendRest(object):
         r = self.rest_http.delete("dataframes/" + str(frame._id))
         return r
 
-    def create(self, frame):
+    def create(self, frame, source, name):
         logger.info("REST Backend: create frame: " + frame.name)
+        if isinstance(source, FrameInfo):
+            self._initialize_frame(frame, source)
+            return  # early exit here
+
+        frame._name = name or self._get_new_frame_name(source)
+        self._create_new_frame(frame)
+
+        # TODO - change project such that server creates the new frame, instead of passing one in
+        if isinstance(source, BigFrame):
+            self.project_columns(source, frame, source.column_names)
+        elif isinstance(source, BigColumn):
+            self.project_columns(source.frame, frame, source.name)
+        elif (isinstance(source, list) and all(isinstance(iter, BigColumn) for iter in source)):
+            self.project_columns(source[0].frame, frame, [s.name for s in source])
+        else:
+            if source:
+                self.append(frame, source)
+
+    def _create_new_frame(self, frame):
         payload = {'name': frame.name }
         r = self.rest_http.post('dataframes', payload)
         logger.info("REST Backend: create frame response: " + r.text)
         payload = r.json()
+        #TODO - call _initialize_frame instead
         frame._id = payload['id']
         frame._uri = self._get_uri(payload)
 
+    def _initialize_frame(self, frame, frame_info):
+        """Initializes a frame according to given frame_info"""
+        frame._id = frame_info.id_number
+        frame._uri = frame_info.uri
+        frame._name = frame_info.name
+        for column in frame_info.columns:
+            self._accept_column(frame, column)
+
+    @staticmethod
+    def _get_new_frame_name(source=None):
+        try:
+            annotation = "_" + source.annotation
+        except:
+            annotation = ''
+        return "frame_" + uuid.uuid4().hex + annotation
 
     @staticmethod
     def _get_uri(payload):
@@ -124,10 +162,11 @@ class FrameBackendRest(object):
         if isinstance(data, CsvFile):
             return {'source': data.file_name,
                     'destination': frame.uri,
-                    'schema': { 'columns': data._schema_to_json() },
+                    'schema': {'columns': data._schema_to_json()},
+                    'skipRows': data.skip_header_lines,
                     'lineParser': {'operation': {'name': 'builtin/line/separator'},
-                                   'arguments': {'separator': data.delimiter,
-                                                 'skipRows': data.skip_header_lines}}}
+                                   'arguments': {'separator': data.delimiter
+                                   }}}
         raise TypeError("Unsupported data source " + type(data).__name__)
 
     @staticmethod
@@ -147,6 +186,14 @@ class FrameBackendRest(object):
         arguments = {'frame': frame.uri, 'predicate': http_ready_predicate}
         command = CommandRequest(name="dataframe/filter", arguments=arguments)
         executor.issue(command)
+
+    def join(self, left, right, left_on, right_on, how):
+        name = self._get_new_frame_name()
+        arguments = {'name': name, "how": how, "frames": [[left._id, left_on], [right._id, right_on]] }
+        command = CommandRequest("dataframe/join", arguments)
+        command_info = executor.issue(command)
+        frame_info = FrameInfo(command_info.result)
+        return BigFrame(frame_info)
 
     def project_columns(self, frame, projected_frame, columns, new_names=None):
         # TODO - fix REST server to accept nulls, for now we'll pass an empty list
@@ -250,3 +297,46 @@ class FrameBackendRest(object):
     def take(self, frame, n, offset):
         r = self.rest_http.get('dataframes/{0}/data?offset={2}&count={1}'.format(frame._id,n, offset))
         return r.json()
+
+
+class FrameInfo(object):
+    """
+    JSON-based Server description of a BigFrame
+    """
+    def __init__(self, frame_json_payload):
+        self._payload = frame_json_payload
+
+    def __repr__(self):
+        return json.dumps(self._payload, indent=2, sort_keys=True)
+
+    def __str__(self):
+        return 'frames/%s "%s"' % (self.id_number, self.name)
+
+    @property
+    def id_number(self):
+        return self._payload['id']
+
+    @property
+    def name(self):
+        return self._payload['name']
+
+    @property
+    def uri(self):
+        try:
+            return self._payload['links'][0]['uri']
+        except KeyError:
+            return ""
+
+    @property
+    def columns(self):
+        return [BigColumn(pair[0], supported_types.get_type_from_string(pair[1]))
+                for pair in self._payload['schema']['columns']]
+
+    def update(self, payload):
+        if self._payload and self.id_number != payload['id']:
+            msg = "Invalid payload, frame ID mismatch %d when expecting %d" \
+                  % (payload['id'], self.id_number)
+            logger.error(msg)
+            raise RuntimeError(msg)
+        self._payload = payload
+
