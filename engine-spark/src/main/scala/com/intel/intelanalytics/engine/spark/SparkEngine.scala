@@ -35,6 +35,7 @@ import com.intel.intelanalytics.engine._
 import com.intel.intelanalytics.domain.User
 import com.intel.intelanalytics.domain.{ GraphTemplate, Graph }
 import scala.concurrent._
+import scala.concurrent.duration._
 import ExecutionContext.Implicits.global
 import java.nio.file.{ Paths, Path, Files }
 import java.io._
@@ -114,8 +115,6 @@ import com.intel.intelanalytics.domain.DataTypes.DataType
 //TODO progress notification
 //TODO event notification
 //TODO pass current user info
-
-
 
 class SparkComponent extends EngineComponent
     with FrameComponent
@@ -483,9 +482,6 @@ class SparkComponent extends EngineComponent
           withMyClassLoader {
             withContext("se.join.future") {
 
-
-
-
               val originalColumns = joinCommand.frames.map {
                 frame =>
                   {
@@ -672,10 +668,12 @@ class SparkComponent extends EngineComponent
                 // validating frames
                 arguments.frame_rules.map(frule => frames.lookup(frule.frame).getOrElse(throw new IllegalArgumentException(s"No such data frame: ${frule.frame}")))
 
-                graphs.loadGraph(arguments)(user)
+                val graph = graphs.loadGraph(arguments)(user)
+                graph.toJson.asJsObject
               }
 
               commands.lookup(command.id).get
+
             }
           }
         }
@@ -1360,6 +1358,9 @@ def calculateScore(list1, list2, biasOn, featureDimension) {
     }
 
     override def complete(id: Long, result: Try[Any]): Unit = {
+
+      import DomainJsonProtocol._
+
       require(id > 0, "invalid ID")
       require(result != null)
       metaStore.withSession("se.command.complete") {
