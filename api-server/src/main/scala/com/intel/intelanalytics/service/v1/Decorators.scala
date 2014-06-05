@@ -64,7 +64,7 @@ object CommandDecorator extends EntityDecorator[Command, CommandHeader, Decorate
                               entity: Command): DecoratedCommand = {
     DecoratedCommand(id = entity.id, name = entity.name,
       arguments = entity.arguments, error = entity.error, complete = entity.complete,
-      links = links.toList)
+      result = entity.result, links = links.toList)
   }
 
   override def decorateForIndex(uri: String, entities: Seq[Command]): List[CommandHeader] = {
