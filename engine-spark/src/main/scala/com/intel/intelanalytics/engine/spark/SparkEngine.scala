@@ -23,7 +23,7 @@
 
 package com.intel.intelanalytics.engine.spark
 
-import org.apache.spark.{ ExceptionFailure, SparkContext }
+import org.apache.spark.SparkContext
 import org.apache.spark.api.python._
 import java.util.{ List => JList, ArrayList => JArrayList, Map => JMap }
 import org.apache.spark.broadcast.Broadcast
@@ -32,9 +32,10 @@ import com.intel.intelanalytics.domain._
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.{ RDD, EmptyRDD }
 import com.intel.intelanalytics.engine._
-import com.intel.intelanalytics.domain.{ User, DataFrameTemplate }
-import com.intel.intelanalytics.domain.{ GraphTemplate, Graph, DataFrame }
+import com.intel.intelanalytics.domain.User
+import com.intel.intelanalytics.domain.{ GraphTemplate, Graph }
 import scala.concurrent._
+import scala.concurrent.duration._
 import ExecutionContext.Implicits.global
 import java.nio.file.{ Paths, Path, Files }
 import java.io._
@@ -44,40 +45,34 @@ import org.apache.hadoop.fs.{ LocalFileSystem, FileSystem }
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.hdfs.DistributedFileSystem
 import java.nio.file.Path
-import spray.json.{ JsObject, JsonParser }
-import scala.io.{ Codec, Source }
-import scala.collection.mutable.ArrayBuffer
+import spray.json.JsObject
+import scala.io.Codec
 import scala.io.{ Codec, Source }
 import org.apache.hadoop.fs.{ Path => HPath }
 import com.intel.intelanalytics.engine.RowParser
 
 import scala.util.matching.Regex
-import com.typesafe.config.{ ConfigResolveOptions, ConfigFactory }
+import com.typesafe.config.ConfigResolveOptions
 import com.intel.event.EventContext
-import scala.concurrent.duration._
 import com.intel.intelanalytics.domain.Partial
 import com.intel.intelanalytics.repository.{ SlickMetaStoreComponent, DbProfileComponent, MetaStoreComponent }
 import scala.slick.driver.H2Driver
-import scala.util.{ Success, Failure, Try }
+import scala.util.{ Success, Try }
 import org.apache.spark.scheduler.SparkListenerStageCompleted
 import scala.Some
-import com.intel.intelanalytics.domain.DataFrame
 import org.apache.spark.scheduler.SparkListenerJobStart
 import org.apache.spark.engine.ProgressPrinter
 import com.typesafe.config.ConfigFactory
 import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.shared.EventLogging
 
-import com.intel.graphbuilder.driver.spark.titan.{ GraphBuilderConfig, GraphBuilder }
+import com.intel.graphbuilder.driver.spark.titan.GraphBuilder
 import com.intel.graphbuilder.driver.spark.titan.examples.ExamplesUtils
 import scala.util.Failure
-import scala.Some
 import scala.collection.JavaConverters._
 import com.intel.intelanalytics.domain.LoadLines
 import com.intel.intelanalytics.domain.Graph
-import com.intel.intelanalytics.domain.FrameRemoveColumn
 import com.intel.intelanalytics.domain.DataFrameTemplate
-import com.intel.intelanalytics.domain.FrameAddColumn
 import scala.util.Success
 import com.intel.intelanalytics.domain.DataFrame
 import com.intel.intelanalytics.domain.Partial
@@ -86,14 +81,11 @@ import com.intel.intelanalytics.domain.CommandTemplate
 import com.intel.intelanalytics.domain.Error
 import com.thinkaurelius.titan.core.{ TitanGraph, TitanFactory }
 import com.tinkerpop.blueprints.{ Direction, Vertex }
-import com.thinkaurelius.titan.graphdb.query.TitanPredicate
 import com.intel.graphbuilder.util.SerializableBaseConfiguration
 
 import org.apache.hadoop.hbase.HBaseConfiguration
 import org.apache.hadoop.hbase.client.HBaseAdmin
 import com.intel.intelanalytics.engine.spark.graph.SparkGraphHBaseBackend
-
-import com.intel.intelanalytics.domain.DataTypes.DataType
 
 import scala.util.Failure
 import scala.Some
@@ -115,12 +107,14 @@ import com.intel.intelanalytics.domain.CommandTemplate
 import com.intel.intelanalytics.domain.Error
 import com.intel.intelanalytics.domain.Als
 import com.intel.intelanalytics.engine.spark.graph.{ SparkGraphStorage, SparkGraphHBaseBackend }
+import com.intel.intelanalytics.domain.DataTypes.DataType
 
-import org.apache.hadoop.mapreduce.Job
-
+import spray.json._
+import com.intel.intelanalytics.domain.DataTypes.DataType
 //TODO documentation
 //TODO progress notification
 //TODO event notification
+//TODO pass current user info
 
 class SparkComponent extends EngineComponent
     with FrameComponent
@@ -130,6 +124,7 @@ class SparkComponent extends EngineComponent
     with SlickMetaStoreComponent
     with EventLogging {
 
+  import DomainJsonProtocol._
   lazy val configuration: SparkEngineConfiguration = new SparkEngineConfiguration()
 
   val engine = new SparkEngine {}
@@ -195,7 +190,7 @@ class SparkComponent extends EngineComponent
       parser.operation.name match {
         //TODO: look functions up in a table rather than switching on names
         case "builtin/line/separator" => {
-          import DomainJsonProtocol.separatorArgsJsonFormat
+
           val args = parser.arguments match {
             //TODO: genericize this argument conversion
             case a: JsObject => a.convertTo[SeparatorArgs]
@@ -236,7 +231,8 @@ class SparkComponent extends EngineComponent
                 val converter = DataTypes.parseMany(schema.columns.map(_._2).toArray)(_)
                 val ctx = context(user)
                 SparkOps.loadLines(ctx.sparkContext, fsRoot + "/" + arguments.source, location, arguments, parserFunction, converter)
-                frames.updateSchema(realFrame, schema.columns)
+                val frame = frames.updateSchema(realFrame, schema.columns)
+                frame.toJson.asJsObject
               }
               commands.lookup(command.id).get
             }
@@ -447,6 +443,91 @@ class SparkComponent extends EngineComponent
         (command, result)
       }
 
+    /**
+     * join two data frames
+     * @param joinCommand parameter contains information for the join operation
+     * @param user current user
+     */
+    override def join(joinCommand: FrameJoin)(implicit user: UserPrincipal): (Command, Future[Command]) =
+      withContext("se.join") {
+
+        def createPairRddForJoin(joinCommand: FrameJoin, ctx: SparkContext): List[RDD[(Any, Array[Any])]] = {
+          val tupleRddColumnIndex: List[(RDD[Rows.Row], Int)] = joinCommand.frames.map {
+            frame =>
+              {
+                val realFrame = frames.lookup(frame._1).getOrElse(
+                  throw new IllegalArgumentException(s"No such data frame"))
+
+                val frameSchema = realFrame.schema
+                val rdd = frames.getFrameRdd(ctx, frame._1)
+                val columnIndex = frameSchema.columns.indexWhere(columnTuple => columnTuple._1 == frame._2)
+                (rdd, columnIndex)
+              }
+          }
+
+          val pairRdds = tupleRddColumnIndex.map {
+            t =>
+              val rdd = t._1
+              val columnIndex = t._2
+              rdd.map(p => SparkOps.create2TupleForJoin(p, columnIndex))
+          }
+
+          pairRdds
+        }
+
+        import DomainJsonProtocol._
+        val command: Command = commands.create(new CommandTemplate("join", Some(joinCommand.toJson.asJsObject)))
+
+        val result: Future[Command] = future {
+          withMyClassLoader {
+            withContext("se.join.future") {
+
+              val originalColumns = joinCommand.frames.map {
+                frame =>
+                  {
+                    val realFrame = frames.lookup(frame._1).getOrElse(
+                      throw new IllegalArgumentException(s"No such data frame"))
+
+                    realFrame.schema.columns
+                  }
+              }
+
+              val leftColumns: List[(String, DataType)] = originalColumns(0)
+              val rightColumns: List[(String, DataType)] = originalColumns(1)
+              val allColumns = SchemaUtil.resolveSchemaNamingConflicts(leftColumns, rightColumns)
+
+              /* create a dataframe should take very little time, much less than 10 minutes */
+              val newJoinFrame = Await.result(create(DataFrameTemplate(joinCommand.name)), 10 minutes)
+
+              withCommand(command) {
+
+                //first validate join columns are valid
+                val leftOn: String = joinCommand.frames(0)._2
+                val rightOn: String = joinCommand.frames(1)._2
+
+                val leftSchema = Schema(leftColumns)
+                val rightSchema = Schema(rightColumns)
+
+                require(leftSchema.columnIndex(leftOn) != -1, s"column $leftOn is invalid")
+                require(rightSchema.columnIndex(rightOn) != -1, s"column $rightOn is invalid")
+
+                val ctx = context(user).sparkContext
+                val pairRdds = createPairRddForJoin(joinCommand, ctx)
+
+                val joinResultRDD = SparkOps.joinRDDs(RDDJoinParam(pairRdds(0), leftColumns.length), RDDJoinParam(pairRdds(1), rightColumns.length), joinCommand.how)
+                joinResultRDD.saveAsObjectFile(fsRoot + frames.getFrameDataFile(newJoinFrame.id))
+                frames.updateSchema(newJoinFrame, allColumns)
+                newJoinFrame.copy(schema = Schema(allColumns)).toJson.asJsObject
+              }
+
+              commands.lookup(command.id).get
+            }
+          }
+        }
+
+        (command, result)
+      }
+
     def removeColumn(arguments: FrameRemoveColumn[JsObject, Long])(implicit user: UserPrincipal): (Command, Future[Command]) =
       withContext("se.removecolumn") {
         require(arguments != null, "arguments are required")
@@ -557,7 +638,7 @@ class SparkComponent extends EngineComponent
      * Register a graph name with the metadata store.
      * @param graph Metadata for graph creation.
      * @param user IMPLICIT. The user creating the graph.
-     * @return
+     * @return Future of the graph to be created.
      */
     def createGraph(graph: GraphTemplate)(implicit user: UserPrincipal) = {
       future {
@@ -571,7 +652,7 @@ class SparkComponent extends EngineComponent
      * Loads graph data into a graph in the database. The source is tabular data interpreted by user-specified  rules.
      * @param arguments Graph construction
      * @param user IMPLICIT. The user loading the graph
-     * @return
+     * @return Command object for this graphload and a future
      */
     def loadGraph(arguments: GraphLoad[JsObject, Long, Long])(implicit user: UserPrincipal): (Command, Future[Command]) =
       withContext("se.load") {
@@ -584,14 +665,15 @@ class SparkComponent extends EngineComponent
             withContext("se.graphLoad.future") {
               withCommand(command) {
 
-                // not sure if we really need this...
-                val realFrame = frames.lookup(arguments.sourceFrameRef).getOrElse(
-                  throw new IllegalArgumentException(s"No such data frame: ${arguments.sourceFrameRef}"))
+                // validating frames
+                arguments.frame_rules.map(frule => frames.lookup(frule.frame).getOrElse(throw new IllegalArgumentException(s"No such data frame: ${frule.frame}")))
 
-                graphs.loadGraph(arguments)(user)
+                val graph = graphs.loadGraph(arguments)(user)
+                graph.toJson.asJsObject
               }
 
               commands.lookup(command.id).get
+
             }
           }
         }
@@ -601,7 +683,7 @@ class SparkComponent extends EngineComponent
     /**
      * Obtains a graph's metadata from its identifier.
      * @param id Unique identifier for the graph provided by the metastore.
-     * @return A future of the graph.
+     * @return A future of the graph metadata entry.
      */
     def getGraph(id: SparkComponent.this.Identifier): Future[Graph] = {
       future {
@@ -614,7 +696,7 @@ class SparkComponent extends EngineComponent
      * @param offset First graph to obtain.
      * @param count Number of graphs to obtain.
      * @param user IMPLICIT. User listing the graphs.
-     * @return Future of a sequence of graphs.
+     * @return Future of the sequence of graph metadata entries to be returned.
      */
     def getGraphs(offset: Int, count: Int)(implicit user: UserPrincipal): Future[Seq[Graph]] =
       withContext("se.getGraphs") {
@@ -626,7 +708,7 @@ class SparkComponent extends EngineComponent
     /**
      * Delete a graph from the graph database.
      * @param graph The graph to be deleted.
-     * @return
+     * @return A future of unit.
      */
     def deleteGraph(graph: Graph): Future[Unit] = {
       withContext("se.deletegraph") {
@@ -1275,7 +1357,10 @@ def calculateScore(list1, list2, biasOn, featureDimension) {
       //TODO: set start date
     }
 
-    override def complete(id: Long, result: Try[Unit]): Unit = {
+    override def complete(id: Long, result: Try[Any]): Unit = {
+
+      import DomainJsonProtocol._
+
       require(id > 0, "invalid ID")
       require(result != null)
       metaStore.withSession("se.command.complete") {
@@ -1287,7 +1372,7 @@ def calculateScore(list1, list2, biasOn, featureDimension) {
           //TODO: Update dates
           val changed = result match {
             case Failure(ex) => command.copy(complete = true, error = Some(ex: Error))
-            case Success(_) => command.copy(complete = true)
+            case Success(r) => command.copy(complete = true, result = Some(r.asInstanceOf[JsObject]))
           }
           repo.update(changed)
       }

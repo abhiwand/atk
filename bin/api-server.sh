@@ -9,7 +9,7 @@ if [ "$DIR/stage" != "" ]; then
 fi
 
 
-CONFDIR=$DIR/../api-server/src/main/resources
+CONFDIR=$DIR/../api-server/src/main/resources:$DIR/../engine/src/main/resources
 
 if [[ -f $DIR/../launcher/target/launcher.jar ]]; then
 	LAUNCHER=$DIR/../launcher/target/launcher.jar
