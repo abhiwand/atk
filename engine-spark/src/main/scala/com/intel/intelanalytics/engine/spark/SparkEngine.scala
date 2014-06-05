@@ -116,6 +116,8 @@ import com.intel.intelanalytics.domain.DataTypes.DataType
 //TODO event notification
 //TODO pass current user info
 
+
+
 class SparkComponent extends EngineComponent
     with FrameComponent
     with CommandComponent
@@ -207,7 +209,7 @@ class SparkComponent extends EngineComponent
       }
     }
 
-    def withCommand[T](command: Command)(block: => T): Unit = {
+    def withCommand[T](command: Command)(block: => JsObject): Unit = {
       commands.complete(command.id, Try {
         block
       })
@@ -280,6 +282,7 @@ class SparkComponent extends EngineComponent
 
                 val newName = arguments.new_name
                 frames.renameFrame(frame, newName)
+                JsNull.asJsObject
               }
               commands.lookup(command.id).get
             }
@@ -311,6 +314,7 @@ class SparkComponent extends EngineComponent
                     s"Lengths of Original and Renamed Columns do not match")
 
                 frames.renameColumn(frame, originalcolumns.zip(renamedcolumns))
+                JsNull.asJsObject
               }
               commands.lookup(command.id).get
             }
@@ -364,6 +368,7 @@ class SparkComponent extends EngineComponent
                   }
                 }
                 frames.updateSchema(projectedFrame, projectedColumns.toList)
+                JsNull.asJsObject
               }
               commands.lookup(command.id).get
             }
@@ -473,6 +478,7 @@ class SparkComponent extends EngineComponent
                 val schema = realFrame.schema
                 val converter = DataTypes.parseMany(schema.columns.map(_._2).toArray)(_)
                 persistPythonRDD(pyRdd, converter, location)
+                JsNull.asJsObject
               }
               commands.lookup(command.id).get
             }
@@ -519,6 +525,9 @@ class SparkComponent extends EngineComponent
         val result: Future[Command] = future {
           withMyClassLoader {
             withContext("se.join.future") {
+
+
+
 
               val originalColumns = joinCommand.frames.map {
                 frame =>
@@ -606,6 +615,7 @@ class SparkComponent extends EngineComponent
                 }
 
                 frames.removeColumn(realFrame, columnIndices)
+                JsNull.asJsObject
               }
               commands.lookup(command.id).get
             }
@@ -648,7 +658,7 @@ class SparkComponent extends EngineComponent
                 val pyRdd = createPythonRDD(frameId, expression)
                 val converter = DataTypes.parseMany(newFrame.schema.columns.map(_._2).toArray)(_)
                 persistPythonRDD(pyRdd, converter, location)
-
+                JsNull.asJsObject
               }
               commands.lookup(command.id).get
             }
@@ -676,7 +686,7 @@ class SparkComponent extends EngineComponent
      * Register a graph name with the metadata store.
      * @param graph Metadata for graph creation.
      * @param user IMPLICIT. The user creating the graph.
-     * @return Future of the graph to be created.
+     * @return
      */
     def createGraph(graph: GraphTemplate)(implicit user: UserPrincipal) = {
       future {
@@ -721,7 +731,7 @@ class SparkComponent extends EngineComponent
     /**
      * Obtains a graph's metadata from its identifier.
      * @param id Unique identifier for the graph provided by the metastore.
-     * @return A future of the graph metadata entry.
+     * @return A future of the graph.
      */
     def getGraph(id: SparkComponent.this.Identifier): Future[Graph] = {
       future {
@@ -734,7 +744,7 @@ class SparkComponent extends EngineComponent
      * @param offset First graph to obtain.
      * @param count Number of graphs to obtain.
      * @param user IMPLICIT. User listing the graphs.
-     * @return Future of the sequence of graph metadata entries to be returned.
+     * @return Future of a sequence of graphs.
      */
     def getGraphs(offset: Int, count: Int)(implicit user: UserPrincipal): Future[Seq[Graph]] =
       withContext("se.getGraphs") {
@@ -746,7 +756,7 @@ class SparkComponent extends EngineComponent
     /**
      * Delete a graph from the graph database.
      * @param graph The graph to be deleted.
-     * @return A future of unit.
+     * @return
      */
     def deleteGraph(graph: Graph): Future[Unit] = {
       withContext("se.deletegraph") {
@@ -839,6 +849,7 @@ class SparkComponent extends EngineComponent
               //"-vof com.intel.giraph.io.titan.TitanVertexOutputFormatPropertyGraph4CF -op hdfs:///user/ec2-user/als -w 1",
               //"-ca als.maxSupersteps=10  -ca als.convergenceThreshold=0  -ca als.lambda=0.065  -ca als.featureDimension=3 -ca als.biasOn=true",
               //)
+              JsNull.asJsObject
             }
             commands.lookup(command.id).get
           }
@@ -1395,10 +1406,7 @@ def calculateScore(list1, list2, biasOn, featureDimension) {
       //TODO: set start date
     }
 
-    override def complete(id: Long, result: Try[Any]): Unit = {
-
-      import DomainJsonProtocol._
-
+    override def complete(id: Long, result: Try[JsObject]): Unit = {
       require(id > 0, "invalid ID")
       require(result != null)
       metaStore.withSession("se.command.complete") {
@@ -1410,7 +1418,7 @@ def calculateScore(list1, list2, biasOn, featureDimension) {
           //TODO: Update dates
           val changed = result match {
             case Failure(ex) => command.copy(complete = true, error = Some(ex: Error))
-            case Success(r) => command.copy(complete = true, result = Some(r.asInstanceOf[JsObject]))
+            case Success(r) => command.copy(complete = true, result = Some(r))
           }
           repo.update(changed)
       }
