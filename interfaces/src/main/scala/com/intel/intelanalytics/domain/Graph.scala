@@ -18,7 +18,7 @@ case class GraphTemplate(name: String) {
  * @param name name assigned by user, auto-assigned by system if user doesn't supply
  * @param description description of the graph (a good default might say what frames it came from)
  * @param storage name used in physical data store, the HBase table name
- * @param statusId lifecycle status. For example, INIT (building), ACTIVE, DELETED (undelete possible), DELETE_FINAL (no undelete), INCOMPLETE (failed construction)
+ * @param statusId lifecycle status. For example, INIT (building), ACTIVE, DELETED (un-delete possible), DELETE_FINAL (no un-delete), INCOMPLETE (failed construction)
  * @param createdOn date/time this record was created
  * @param modifiedOn date/time this record was last modified
  * @param createdByUserId user who created this row
