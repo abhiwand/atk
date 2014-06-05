@@ -11,7 +11,7 @@ import com.thinkaurelius.titan.graphdb.configuration.GraphDatabaseConfiguration
  */
 object TitanReader {
   val TITAN_STORAGE_BACKEND = GraphDatabaseConfiguration.STORAGE_NAMESPACE + "." + GraphDatabaseConfiguration.STORAGE_BACKEND_KEY
-  val TITAN_READER_GB_ID = "titanPhysicalId" //TODO: Replace with a user-defined label
+  val TITAN_READER_DEFAULT_GB_ID = "titanPhysicalId" //TODO: Replace with a user-defined label
 }
 
 /**
@@ -47,6 +47,6 @@ case class TitanReader(sparkContext: SparkContext, titanConnector: TitanGraphCon
       }
     }
 
-    titanReaderRDD.distinct()
+    titanReaderRDD
   }
 }

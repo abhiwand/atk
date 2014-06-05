@@ -41,21 +41,21 @@ object NetflixReaderExample {
       .setAppName(this.getClass.getSimpleName + " " + new Date())
       .setSparkHome(ExamplesUtils.sparkHome)
       .setJars(List(ExamplesUtils.gbJar))
-    conf.set("spark.executor.memory", "6g")
-    conf.set("spark.cores.max", "8")
+    conf.set("spark.executor.memory", "4g")
+    conf.set("spark.cores.max", "6")
     conf.set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
     conf.set("spark.kryo.registrator", "com.intel.graphbuilder.driver.spark.titan.GraphBuilderKryoRegistrator")
 
     val sc = new SparkContext(conf)
 
     // Set HDFS output directory
-    val resultsDir = ExamplesUtils.hdfsMaster + System.getProperty("MOVIE_RESULTS_DIR", "/user/spkavuly/netflix_reader_results")
+    val resultsDir = ExamplesUtils.hdfsMaster + System.getProperty("MOVIE_RESULTS_DIR", "/user/hadoop/netflix_reader_results")
     val vertexResultsDir = resultsDir + "/vertices"
     val edgeResultsDir = resultsDir + "/edges"
 
     // Create graph connection
     val tableName = "netflix"
-    val hBaseZookeeperQuorum = "localhost"
+    val hBaseZookeeperQuorum = ExamplesUtils.storageHostname
 
     val titanConfig = new SerializableBaseConfiguration()
     titanConfig.setProperty("storage.backend", "hbase")

@@ -18,7 +18,7 @@ import scala.collection.mutable.ListBuffer
 class TitanRelationFactory(vertexId: Long) extends com.thinkaurelius.titan.graphdb.database.RelationFactory {
   require(vertexId > 0, "Vertex ID should be greater than zero")
 
-  val gbId = TitanReader.TITAN_READER_GB_ID
+  val gbId = TitanReader.TITAN_READER_DEFAULT_GB_ID
   val edgeList = new ListBuffer[GraphElement]
   val vertexProperties = new ListBuffer[Property]
 

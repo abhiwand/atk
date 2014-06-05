@@ -9,9 +9,10 @@ import com.thinkaurelius.titan.diskstorage.StaticBuffer
 import org.apache.spark.rdd.RDD
 import org.apache.hadoop.hbase.io.ImmutableBytesWritable
 import org.apache.hadoop.hbase.client.Result
-import org.apache.spark.{ TaskContext, Partition }
-import scala.collection.mutable.ListBuffer
+import org.apache.spark.{ InterruptibleIterator, TaskContext, Partition }
 import scala.collection.JavaConversions._
+import com.thinkaurelius.titan.graphdb.database.StandardTitanGraph
+import com.thinkaurelius.titan.graphdb.transaction.StandardTitanTx
 
 /**
  * RDD that loads Titan graph from HBase.
@@ -26,36 +27,75 @@ class TitanHBaseReaderRDD(hBaseRDD: RDD[(ImmutableBytesWritable, Result)],
   override def getPartitions: Array[Partition] = firstParent[(ImmutableBytesWritable, Result)].partitions
 
   /**
-   * Parses HBase input rows to extract vertices and corresponding edges
+   * Parses HBase input rows to extract vertices and corresponding edges.
    *
-   * @return Iterator with GraphBuilder vertices and edges
+   * @return Iterator of GraphBuilder vertices and edges using GraphBuilder's GraphElement trait
    */
   override def compute(split: Partition, context: TaskContext): Iterator[GraphElement] = {
 
-    val titanGraph = titanConnector.connect()
+    val graphElementIterator = new Iterator[GraphElement] {
+      val hBaseIterator = firstParent[(ImmutableBytesWritable, Result)].iterator(split, context)
+      val titanGraph = titanConnector.connect()
+      val titanTransaction = titanGraph.newTransaction(titanGraph.buildTransaction())
+
+      // A single HBase row contains multiple graph elements namely: a single vertex, and adjacent edges
+      var rowElementsIterator = Iterator[GraphElement]()
+
+      override def hasNext: Boolean = {
+        if (!rowElementsIterator.hasNext) {
+          // parsing here instead of instead of in next() method to prevent exceptions
+          // that arise when HBase row contains no graph elements
+          rowElementsIterator = parseHBaseRow(hBaseIterator, titanGraph, titanTransaction)
+        }
+
+        rowElementsIterator.hasNext
+      }
+
+      override def next(): GraphElement = {
+        if (!hasNext) {
+          throw new java.util.NoSuchElementException("No more graph elements available.")
+        }
+        rowElementsIterator.next()
+      }
+
+      context.addOnCompleteCallback(() => {
+        titanTransaction.commit()
+        titanGraph.shutdown()
+      })
+    }
+
+    new InterruptibleIterator(context, graphElementIterator)
+  }
+
+  /**
+   * Parse HBase row to extract a single vertex and its adjacent edges
+   *
+   * This method iterates through HBase rows until it finds a row that contains graph elements.
+   *
+   * @param hBaseIterator HBase row iterator
+   * @param titanGraph Titan graph
+   * @param titanTransaction Titan transaction
+   *
+   * @return Iterator of graph elements for a single row
+   */
+  private def parseHBaseRow(hBaseIterator: Iterator[(ImmutableBytesWritable, Result)],
+                            titanGraph: StandardTitanGraph,
+                            titanTransaction: StandardTitanTx): Iterator[GraphElement] = {
     val titanEdgeSerializer = titanGraph.getEdgeSerializer()
-    val titanTransaction = titanGraph.newTransaction(titanGraph.buildTransaction())
+    var rowGraphElements = Iterator[GraphElement]()
 
-    var graphElements = ListBuffer[GraphElement]()
-
-    firstParent[(ImmutableBytesWritable, Result)].iterator(split, context).foreach(hBaseRow => {
+    // Using while() to skip rows with no graph elements
+    while (hBaseIterator.hasNext && !rowGraphElements.hasNext) {
+      val hBaseRow = hBaseIterator.next()
       val result = hBaseRow._2
       val rowKey = new StaticByteBuffer(result.getRow)
       val titanRow = getSerializedTitanRow(rowKey, result)
 
       val titanRowParser = TitanRowParser(titanRow, titanEdgeSerializer, titanTransaction)
-      val rowGraphElements = titanRowParser.parse()
+      rowGraphElements = titanRowParser.parse().iterator
+    }
 
-      graphElements ++= rowGraphElements
-
-    })
-
-    context.addOnCompleteCallback(() => {
-      titanTransaction.commit()
-      titanGraph.shutdown()
-    })
-
-    graphElements.toList.iterator
+    rowGraphElements
   }
 
   /**
