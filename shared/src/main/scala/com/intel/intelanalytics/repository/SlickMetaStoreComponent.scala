@@ -207,12 +207,12 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
 
     /** execute DDL to create the underlying table */
     def createTable()(implicit session: Session) = {
-
+      users.ddl.create
     }
 
     /** execute DDL to drop the underlying table - for unit testing */
     def dropTable()(implicit session: Session) = {
-
+      users.ddl.drop
     }
 
   }
