@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2013 Intel Corporation All Rights Reserved.
+// Copyright 2014 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -46,23 +46,26 @@ object DomainJsonProtocol extends DefaultJsonProtocol {
   implicit val schemaFormat = jsonFormat1(Schema)
 
   implicit val dataFrameFormat = jsonFormat3(DataFrame)
-  implicit val dataFrameTemplateFormat = jsonFormat2(DataFrameTemplate)
+  implicit val dataFrameTemplateFormat = jsonFormat1(DataFrameTemplate)
   implicit val separatorArgsJsonFormat = jsonFormat1(SeparatorArgs)
   implicit val definitionFormat = jsonFormat3(Definition)
   implicit val operationFormat = jsonFormat2(Operation)
   implicit val partialJsFormat = jsonFormat2(Partial[JsObject])
-  implicit val loadLinesFormat = jsonFormat5(LoadLines[JsObject, String])
-  implicit val loadLinesLongFormat = jsonFormat5(LoadLines[JsObject, Long])
+  implicit val loadLinesFormat = jsonFormat6(LoadLines[JsObject, String])
+  implicit val loadLinesLongFormat = jsonFormat6(LoadLines[JsObject, Long])
   implicit val filterPredicateFormat = jsonFormat2(FilterPredicate[JsObject, String])
   implicit val filterPredicateLongFormat = jsonFormat2(FilterPredicate[JsObject, Long])
   implicit val removeColumnFormat = jsonFormat2(FrameRemoveColumn[JsObject, String])
   implicit val removeColumnLongFormat = jsonFormat2(FrameRemoveColumn[JsObject, Long])
   implicit val addColumnFormat = jsonFormat4(FrameAddColumn[JsObject, String])
   implicit val addColumnLongFormat = jsonFormat4(FrameAddColumn[JsObject, Long])
-  implicit val projectColumnFormat = jsonFormat3(FrameProject[JsObject, String])
-  implicit val projectColumnLongFormat = jsonFormat3(FrameProject[JsObject, Long])
+  implicit val projectColumnFormat = jsonFormat4(FrameProject[JsObject, String])
+  implicit val projectColumnLongFormat = jsonFormat4(FrameProject[JsObject, Long])
+  implicit val renameFrameFormat = jsonFormat2(FrameRenameFrame[JsObject, String])
+  implicit val renameFrameLongFormat = jsonFormat2(FrameRenameFrame[JsObject, Long])
   implicit val renameColumnFormat = jsonFormat3(FrameRenameColumn[JsObject, String])
   implicit val renameColumnLongFormat = jsonFormat3(FrameRenameColumn[JsObject, Long])
+  implicit val joinFrameLongFormat = jsonFormat3(FrameJoin)
 
   implicit val alsFormatString = jsonFormat5(Als[String])
   implicit val alsFormatLong = jsonFormat5(Als[Long])
