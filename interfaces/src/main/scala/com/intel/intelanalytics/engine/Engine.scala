@@ -195,7 +195,6 @@ trait EngineComponent {
     def join(argument: FrameJoin)(implicit user: UserPrincipal): (Command, Future[Command])
     def flattenColumn(argument: FlattenColumn[Long])(implicit user: UserPrincipal): (Command, Future[Command])
 
-
     def getFrames(offset: Int, count: Int)(implicit p: UserPrincipal): Future[Seq[DataFrame]]
 
     def shutdown: Unit

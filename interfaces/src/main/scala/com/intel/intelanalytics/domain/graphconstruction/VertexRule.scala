@@ -5,6 +5,6 @@ package com.intel.intelanalytics.domain.graphconstruction
  * @param id Rule for specifying the ID of the vertex.
  * @param properties List of rules for specifying properties of the vertices.
  */
-case class VertexRule(id: Property, properties: List[Property]) {
+case class VertexRule(id: PropertyRule, properties: List[PropertyRule]) {
   require(id != null)
 }

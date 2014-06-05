@@ -26,10 +26,9 @@ package com.intel.intelanalytics.domain
 import com.intel.intelanalytics.domain.DataTypes.DataType
 import spray.json._
 import com.intel.intelanalytics.domain.graphconstruction._
-import com.intel.intelanalytics.domain.graphconstruction.Value
-import com.intel.intelanalytics.domain.graphconstruction.OutputConfiguration
+import com.intel.intelanalytics.domain.graphconstruction.ValueRule
 import com.intel.intelanalytics.domain.graphconstruction.EdgeRule
-import com.intel.intelanalytics.domain.graphconstruction.Property
+import com.intel.intelanalytics.domain.graphconstruction.PropertyRule
 
 object DomainJsonProtocol extends DefaultJsonProtocol {
 
@@ -80,13 +79,14 @@ object DomainJsonProtocol extends DefaultJsonProtocol {
 
   // graph loading formats for specifying graphbuilder and graphload rules
 
-  implicit val outputConfigurationFormat = jsonFormat2(OutputConfiguration)
-  implicit val valueFormat = jsonFormat2(Value)
-  implicit val propertyFormat = jsonFormat2(Property)
-  implicit val edgeRuleFormat = jsonFormat4(EdgeRule)
+  implicit val valueFormat = jsonFormat2(ValueRule)
+  implicit val propertyFormat = jsonFormat2(PropertyRule)
+  implicit val edgeRuleFormat = jsonFormat5(EdgeRule)
   implicit val vertexRuleFormat = jsonFormat2(VertexRule)
-  implicit val graphLoadLongs = jsonFormat7(GraphLoad[JsObject, Long, Long])
-  implicit val graphLoadStrings = jsonFormat7(GraphLoad[JsObject, String, String])
+  implicit val frameRuleLongs = jsonFormat3(FrameRule[Long])
+  implicit val frameRuleStrings = jsonFormat3(FrameRule[String])
+  implicit val graphLoadLongs = jsonFormat3(GraphLoad[JsObject, Long, Long])
+  implicit val graphLoadStrings = jsonFormat3(GraphLoad[JsObject, String, String])
 
   implicit object DataTypeJsonFormat extends JsonFormat[Any] {
     override def write(obj: Any): JsValue = {
