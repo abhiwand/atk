@@ -110,22 +110,21 @@ export MAVEN_OPTS="-Xms2048m -Xmx4096m -XX:MaxPermSize=4096m -XX:PermSize=2048m"
     </repositories>
 	
     <modules>
-        <!-- commented until we can figure out how to run without invoking sbt on them-->
-
-        <module>ititan</module>
+        <!--<module>ititan</module>
         <module>event</module>
         <module>ispark-deps</module>
-        <module>graphbuilder-3</module><!-- scoverage -->
+        <module>graphbuilder-3</module>&lt;!&ndash; scoverage &ndash;&gt;
         <module>interfaces</module>
-        <module>launcher</module><!-- scoverage -->
-        <module>shared</module><!-- scoverage -->
+        <module>launcher</module>&lt;!&ndash; scoverage &ndash;&gt;
+        <module>shared</module>&lt;!&ndash; scoverage &ndash;&gt;
         <module>api-server</module>
         <module>engine</module>
-        <module>engine-spark</module><!-- scoverage -->
+        <module>engine-spark</module>&lt;!&ndash; scoverage &ndash;&gt;
         <module>imahout</module>
         <module>igiraph</module>
         <module>imllib</module>
-        <module>package</module>
+        <module>graphon</module>
+        <module>package</module>-->
     </modules>
     <prerequisites>
         <maven>3.0</maven>
@@ -157,6 +156,8 @@ export MAVEN_OPTS="-Xms2048m -Xmx4096m -XX:MaxPermSize=4096m -XX:PermSize=2048m"
 
         <dep.hadoop2.version>2.3.0-cdh5.0.0</dep.hadoop2.version>
         <dep.hadoop.core.version>2.3.0-mr1-cdh5.0.0</dep.hadoop.core.version>
+        <dep.hadoop.common.version>2.3.0-cdh5.0.0</dep.hadoop.common.version>
+        <dep.hadoop.client.version>2.3.0-cdh5.0.0</dep.hadoop.client.version>
         <dep.guava.version>12.0</dep.guava.version>
         <dep.hcatalog.version>0.5.0-incubating</dep.hcatalog.version>
         <dep.hive.version>0.11.0</dep.hive.version>
@@ -194,7 +195,60 @@ export MAVEN_OPTS="-Xms2048m -Xmx4096m -XX:MaxPermSize=4096m -XX:PermSize=2048m"
     </properties>
     <profiles>
         <profile>
-            <id>package-jars</id>
+            <id>modules-packaged</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+                <property>
+                    <name>env.build_number</name>
+                </property>
+            </activation>
+            <modules>
+                <!--<module>ititan</module>-->
+                <module>event</module>
+                <module>ispark-deps</module>
+                <module>graphbuilder-3</module><!-- scoverage -->
+                <module>interfaces</module>
+                <module>launcher</module><!-- scoverage -->
+                <module>shared</module><!-- scoverage -->
+                <module>api-server</module>
+                <module>engine</module>
+                <module>engine-spark</module><!-- scoverage -->
+                <!--<module>imahout</module>
+                <module>igiraph</module>
+                <module>imllib</module>
+                <module>graphon</module>-->
+                <module>package</module>
+            </modules>
+        </profile>
+        <profile>
+            <id>modules-all</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+                <property>
+                    <name>env.build_number</name>
+                </property>
+            </activation>
+            <modules>
+                <module>ititan</module>
+                <module>event</module>
+                <module>ispark-deps</module>
+                <module>graphbuilder-3</module><!-- scoverage -->
+                <module>interfaces</module>
+                <module>launcher</module><!-- scoverage -->
+                <module>shared</module><!-- scoverage -->
+                <module>api-server</module>
+                <module>engine</module>
+                <module>engine-spark</module><!-- scoverage -->
+                <module>imahout</module>
+                <module>igiraph</module>
+                <module>imllib</module>
+                <module>graphon</module>
+                <module>package</module>
+            </modules>
+        </profile>
+
+        <profile>
+            <id>compile</id>
             <activation>
 			<activeByDefault>true</activeByDefault>
                 <property>
@@ -253,7 +307,7 @@ export MAVEN_OPTS="-Xms2048m -Xmx4096m -XX:MaxPermSize=4096m -XX:PermSize=2048m"
 			</build>
         </profile>
 		<profile>
-			<id>compile-test</id>
+			<id>test</id>
             <activation>
 			<activeByDefault>true</activeByDefault>
                 <property>
@@ -617,6 +671,7 @@ export MAVEN_OPTS="-Xms2048m -Xmx4096m -XX:MaxPermSize=4096m -XX:PermSize=2048m"
                                     <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
                                         <resource>reference.conf</resource>
                                     </transformer>
+									<transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
                                 </transformers>
                             </configuration>
                         </execution>
