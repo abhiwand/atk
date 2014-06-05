@@ -121,15 +121,19 @@ trait V1DataFrameService extends V1Service {
             }
           } ~
             (path("data") & get) {
-              parameters('offset.as[Int], 'count.as[Int]) { (offset, count) =>
-                onComplete(for { r <- engine.getRows(id, offset, count) } yield r) {
-                  case Success(rows: Iterable[Array[Any]]) => {
-                    import DomainJsonProtocol._
-                    val strings = rows.map(r => r.map(a => a.toJson).toList).toList
-                    complete(strings)
+              parameters('offset.as[Int], 'count.as[Int]) {
+                (offset, count) =>
+                  onComplete(for { r <- engine.getRows(id, offset, count) } yield r) {
+                    case Success(rows: Iterable[Array[Any]]) => {
+                      import DomainJsonProtocol._
+                      val strings = rows.map(r => r.map(a => a match {
+                        case null => JsNull
+                        case _ => a.toJson
+                      }).toList).toList
+                      complete(strings)
+                    }
+                    case Failure(ex) => throw ex
                   }
-                  case Failure(ex) => throw ex
-                }
               }
             }
         }
