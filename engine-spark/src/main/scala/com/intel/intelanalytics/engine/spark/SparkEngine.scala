@@ -129,6 +129,7 @@ class SparkComponent extends EngineComponent
   import DomainJsonProtocol._
   lazy val configuration: SparkEngineConfiguration = new SparkEngineConfiguration()
 
+
   val engine = new SparkEngine {}
 
   //TODO: choose database profile driver class from config
@@ -233,6 +234,8 @@ class SparkComponent extends EngineComponent
                 val converter = DataTypes.parseMany(schema.columns.map(_._2).toArray)(_)
                 val ctx = context(user)
                 SparkOps.loadLines(ctx.sparkContext, fsRoot + "/" + arguments.source, location, arguments, parserFunction, converter)
+                val frame = frames.updateSchema(realFrame, schema.columns)
+                frame.toJson.asJsObject
               }
               commands.lookup(command.id).get
             }
@@ -1090,7 +1093,7 @@ def calculateScore(list1, list2, biasOn, featureDimension) {
 
   trait HdfsFileStorage extends FileStorage with EventLogging {
 
-    val configuration = {
+    val fsConfiguration = {
       val hadoopConfig = new Configuration()
       require(hadoopConfig.getClass().getClassLoader == this.getClass.getClassLoader)
       //http://stackoverflow.com/questions/17265002/hadoop-no-filesystem-for-scheme-file
@@ -1100,14 +1103,14 @@ def calculateScore(list1, list2, biasOn, featureDimension) {
         classOf[LocalFileSystem].getName)
       require(hadoopConfig.getClassByNameOrNull(classOf[LocalFileSystem].getName) != null)
 
-      val root: String = conf.getString("intel.analytics.fs.root")
+      val root: String = configuration.config.getString("intel.analytics.fs.root")
       if (root.startsWith("hdfs"))
         hadoopConfig.set("fs.defaultFS", root)
 
       hadoopConfig
     }
 
-    val fs = FileSystem.get(configuration)
+    val fs = FileSystem.get(fsConfiguration)
 
     override def write(sink: File, append: Boolean): OutputStream = withContext("file.write") {
       val path: HPath = new HPath(fsRoot + sink.path.toString)
