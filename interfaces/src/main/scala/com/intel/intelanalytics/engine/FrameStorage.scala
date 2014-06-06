@@ -21,10 +21,36 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.domain.frame
+package com.intel.intelanalytics.engine
 
-case class DataFrameTemplate(name: String, description: Option[String]) {
-  require(name != null)
-  require(name.trim.length > 0)
-  require(description != null)
+import com.intel.intelanalytics.domain.frame._
+import com.intel.intelanalytics.domain.schema.DataTypes
+import com.intel.intelanalytics.engine.Rows._
+import com.intel.intelanalytics.security.UserPrincipal
+import com.intel.intelanalytics.domain.frame.DataFrame
+import com.intel.intelanalytics.domain.frame.DataFrameTemplate
+import com.intel.intelanalytics.security.UserPrincipal
+
+trait FrameStorage {
+  def lookup(id: Long): Option[DataFrame]
+
+  def create(frame: DataFrameTemplate): DataFrame
+
+  def addColumn[T](frame: DataFrame, column: Column[T], columnType: DataTypes.DataType): DataFrame
+
+  def addColumnWithValue[T](frame: DataFrame, column: Column[T], default: T): Unit
+
+  def removeColumn(frame: DataFrame, columnIndex: Seq[Int]): Unit
+
+  def renameFrame(frame: DataFrame, newName: String): Unit
+
+  def renameColumn(frame: DataFrame, name_pairs: Seq[(String, String)]): Unit
+
+  def removeRows(frame: DataFrame, predicate: Row => Boolean)
+
+  def appendRows(startWith: DataFrame, append: Iterable[Row])
+
+  def getRows(frame: DataFrame, offset: Long, count: Int)(implicit user: UserPrincipal): Iterable[Row]
+
+  def drop(frame: DataFrame)
 }

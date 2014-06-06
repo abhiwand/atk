@@ -23,28 +23,22 @@
 
 package com.intel.intelanalytics.service.v1
 
-import spray.routing._
-import com.intel.intelanalytics._
 import com.intel.intelanalytics.domain._
-import akka.event.Logging
 import spray.json._
-import spray.http.{ Uri, StatusCodes, MediaTypes }
+import spray.http.Uri
 import scala.Some
-import com.intel.intelanalytics.repository.{ MetaStoreComponent, Repository }
-import com.intel.intelanalytics.service.EventLoggingDirectives
+import com.intel.intelanalytics.repository.MetaStoreComponent
 import com.intel.intelanalytics.service.v1.viewmodels._
-import com.intel.intelanalytics.engine.{ EngineComponent }
-import scala.util._
+import com.intel.intelanalytics.engine.EngineComponent
 import scala.concurrent._
-import spray.util.LoggingContext
 import scala.util.Failure
 import scala.util.Success
-import com.intel.intelanalytics.service.v1.viewmodels.JsonTransform
 import com.intel.intelanalytics.service.v1.viewmodels.DecoratedDataFrame
 import com.intel.intelanalytics.shared.EventLogging
 import com.intel.intelanalytics.security.UserPrincipal
-import com.intel.intelanalytics.domain.frame.{DataFrame, DataFrameTemplate}
+import com.intel.intelanalytics.domain.frame.DataFrameTemplate
 import com.intel.intelanalytics.domain.frame.DataFrame
+import com.intel.intelanalytics.domain.DomainJsonProtocol.DataTypeFormat
 
 //TODO: Is this right execution context for us?
 import ExecutionContext.Implicits.global
@@ -53,7 +47,6 @@ trait V1DataFrameService extends V1Service {
   this: V1Service with MetaStoreComponent with EngineComponent with EventLogging =>
 
   def frameRoutes() = {
-    import ViewModelJsonProtocol._
     val prefix = "dataframes"
 
     def decorate(uri: Uri, frame: DataFrame): DecoratedDataFrame = {
@@ -75,6 +68,8 @@ trait V1DataFrameService extends V1Service {
       (path(prefix) & pathEnd) {
         requestUri { uri =>
           get {
+            import spray.json._
+            import ViewModelJsonProtocol._
             //TODO: cursor
             onComplete(engine.getFrames(0, defaultCount)) {
               case Success(frames) => complete(FrameDecorator.decorateForIndex(uri.toString(), frames))
@@ -82,7 +77,9 @@ trait V1DataFrameService extends V1Service {
             }
           } ~
             post {
-              import DomainJsonProtocol._
+              import spray.httpx.SprayJsonSupport._
+              implicit val format = DomainJsonProtocol.dataFrameTemplateFormat
+              implicit val indexFormat = ViewModelJsonProtocol.decoratedDataFrameFormat
               entity(as[DataFrameTemplate]) {
                 frame =>
                   onComplete(engine.create(frame)) {
@@ -101,6 +98,9 @@ trait V1DataFrameService extends V1Service {
                   case Success(Some(frame)) => {
                     val decorated = decorate(uri, frame)
                     complete {
+                      import spray.httpx.SprayJsonSupport._
+                      implicit val format = DomainJsonProtocol.dataFrameTemplateFormat
+                      implicit val indexFormat = ViewModelJsonProtocol.decoratedDataFrameFormat
                       decorated
                     }
                   }
@@ -124,6 +124,8 @@ trait V1DataFrameService extends V1Service {
                 (offset, count) =>
                   onComplete(for { r <- engine.getRows(id, offset, count) } yield r) {
                     case Success(rows: Iterable[Array[Any]]) => {
+                      import spray.httpx.SprayJsonSupport._
+                      import spray.json._
                       import DomainJsonProtocol._
                       val strings = rows.map(r => r.map(a => a match {
                         case null => JsNull

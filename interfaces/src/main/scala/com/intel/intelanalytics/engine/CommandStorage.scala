@@ -23,4 +23,18 @@
 
 package com.intel.intelanalytics.engine
 
-case class RemoveColumn[T](name: String) extends Alteration
+import com.intel.intelanalytics.domain.command.{CommandTemplate, Command}
+import scala.util.Try
+import spray.json.JsObject
+
+trait CommandStorage {
+  def lookup(id: Long): Option[Command]
+
+  def create(frame: CommandTemplate): Command
+
+  def scan(offset: Int, count: Int): Seq[Command]
+
+  def start(id: Long): Unit
+  def complete(id: Long, result: Try[JsObject]): Unit
+}
+

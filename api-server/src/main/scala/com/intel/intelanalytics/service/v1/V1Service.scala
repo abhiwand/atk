@@ -24,31 +24,22 @@
 package com.intel.intelanalytics.service.v1
 
 import spray.routing._
-import com.intel.intelanalytics._
 import com.intel.intelanalytics.domain._
 import akka.event.Logging
 import spray.json._
-import spray.http.{ HttpHeader, Uri, StatusCodes, MediaTypes }
+import spray.http.{ HttpHeader, StatusCodes, MediaTypes }
 import scala.Some
-import com.intel.intelanalytics.repository.{ MetaStoreComponent, Repository }
+import com.intel.intelanalytics.repository.MetaStoreComponent
 import com.intel.intelanalytics.service.EventLoggingDirectives
-import com.intel.intelanalytics.service.v1.viewmodels._
 import com.intel.intelanalytics.engine.{ EngineComponent }
 import scala.util._
 import scala.concurrent._
-import spray.util.LoggingContext
 import com.typesafe.config.ConfigFactory
-import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.domain.User
-import scala.util.Success
 import com.intel.intelanalytics.security.UserPrincipal
-import scala.util.Failure
 import PartialFunction._
-import spray.routing.authentication.BasicAuth
-import shapeless._
 import spray.routing._
-import Directives._
-import com.intel.intelanalytics.domain.frame.{DataFrame, DataFrameTemplate}
+import com.intel.intelanalytics.domain.frame.DataFrameTemplate
 
 //TODO: Is this right execution context for us?
 
@@ -56,11 +47,7 @@ import ExecutionContext.Implicits.global
 import com.intel.intelanalytics.service.v1.viewmodels.DecoratedDataFrame
 import scala.util.control.NonFatal
 import scala.util.Failure
-import DataFrameTemplate
 import scala.util.Success
-import DataFrame
-import com.intel.intelanalytics.service.v1.viewmodels.JsonTransform
-import com.intel.intelanalytics.service.v1.viewmodels.DecoratedDataFrame
 import scala.concurrent.duration._
 
 trait V1Service extends Directives with EventLoggingDirectives {
@@ -108,8 +95,6 @@ trait V1Service extends Directives with EventLoggingDirectives {
       logResponse(eventCtx, Logging.InfoLevel) &
       authenticateKey
   }
-
-  import ViewModelJsonProtocol._
 
   //TODO: needs to be updated for the distinction between Foos and FooTemplates
   //This code is likely to be useful for CRUD operations that need to work with the

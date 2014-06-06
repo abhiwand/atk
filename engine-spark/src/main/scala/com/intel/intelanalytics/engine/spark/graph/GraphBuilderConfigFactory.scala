@@ -1,6 +1,5 @@
 package com.intel.intelanalytics.engine.spark.graph
 
-import com.intel.intelanalytics.domain._
 import com.intel.intelanalytics.domain.graph.construction._
 import com.intel.graphbuilder.util.SerializableBaseConfiguration
 import com.intel.graphbuilder.parser.rule.{ Value => GBValue, VertexRule => GBVertexRule, EdgeRule => GBEdgeRule, PropertyRule => GBPropertyRule }
@@ -17,8 +16,8 @@ import com.intel.intelanalytics.domain.graph.construction.PropertyRule
 import spray.json.JsObject
 import com.intel.intelanalytics.domain.schema.{Schema, DataTypes}
 import DataTypes.DataType
-import com.typesafe.config.{ Config, ConfigFactory }
-import com.intel.intelanalytics.domain.graph.Graph
+import com.typesafe.config.ConfigFactory
+import com.intel.intelanalytics.domain.graph.{GraphLoad, Graph}
 
 /**
  * Converter that produces the graphbuilder3 consumable

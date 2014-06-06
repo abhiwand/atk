@@ -1,5 +1,9 @@
 package com.intel.intelanalytics.engine
 
+import com.intel.intelanalytics.domain.graph.{GraphLoad, GraphTemplate, Graph}
+import com.intel.intelanalytics.security.UserPrincipal
+import spray.json.JsObject
+
 /**
  * Manages multiple graphs in the underlying graph database.
  */

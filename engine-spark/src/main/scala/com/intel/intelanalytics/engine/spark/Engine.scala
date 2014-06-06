@@ -25,28 +25,25 @@ package com.intel.intelanalytics.engine.spark
 
 import com.intel.event.EventContext
 import com.intel.intelanalytics.domain._
-import com.intel.intelanalytics.engine.{Rows, Alteration}
+import com.intel.intelanalytics.engine._
 import scala.concurrent._
 import spray.json.{JsNull, JsObject}
-import com.intel.intelanalytics.engine.spark.frame.RowParser
+import com.intel.intelanalytics.engine.spark.frame.{SparkFrameStorage, RowParser, RDDJoinParam}
 import scala.util.Try
 import org.apache.spark.api.python.{EnginePythonAccumulatorParam, EnginePythonRDD}
 import org.apache.spark.rdd.RDD
-import java.util.List
 import scala.List
 import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.SparkContext
-import com.intel.intelanalytics.domain.schema.{Schema, SchemaUtil, DataTypes}
+import com.intel.intelanalytics.domain.schema.{SchemaUtil, DataTypes}
 import DataTypes.DataType
 import com.intel.intelanalytics.engine.Rows._
-import com.intel.intelanalytics.engine.spark.frame.RDDJoinParam
-import Schema
-import LoadLines
-import Command
-import com.intel.intelanalytics.domain.Partial
-import CommandTemplate
-import com.intel.intelanalytics.domain.graph.Graph
-import com.intel.intelanalytics.domain.frame.FrameRenameColumn
+import com.intel.intelanalytics.engine.spark.context.SparkContextManager
+import com.intel.intelanalytics.shared.EventLogging
+import com.intel.intelanalytics.domain.frame._
+import java.util.{List => JList, ArrayList => JArrayList}
+import spray.json._
+import DomainJsonProtocol._
 import com.intel.intelanalytics.domain.frame.FrameRenameFrame
 import scala.Some
 import com.intel.intelanalytics.domain.frame.DataFrameTemplate
@@ -71,7 +68,17 @@ import com.intel.intelanalytics.domain.frame.FrameJoin
 import com.intel.intelanalytics.engine.spark.frame.RDDJoinParam
 import com.intel.intelanalytics.domain.graph.GraphTemplate
 
-class SparkEngine extends Engine {
+//TODO: Fix execution contexts.
+import ExecutionContext.Implicits.global
+
+
+class SparkEngine(config: SparkEngineConfiguration,
+                  sparkContextManager: SparkContextManager,
+                  commands: CommandStorage,
+                  frames: SparkFrameStorage,
+                  graphs: GraphStorage) extends Engine with EventLogging {
+
+  val fsRoot = config.fsRoot
 
   def context(implicit user: UserPrincipal): Context = {
     sparkContextManager.getContext(user.user.api_key)
@@ -105,13 +112,13 @@ class SparkEngine extends Engine {
 
   override def getCommands(offset: Int, count: Int): Future[Seq[Command]] = withContext("se.getCommands") {
     future {
-      command.scan(offset, count)
+      commands.scan(offset, count)
     }
   }
 
   override def getCommand(id: Identifier): Future[Option[Command]] = withContext("se.getCommand") {
     future {
-      command.lookup(id)
+      commands.lookup(id)
     }
   }
 
@@ -137,7 +144,7 @@ class SparkEngine extends Engine {
   }
 
   def withCommand[T](command: Command)(block: => JsObject): Unit = {
-    command.complete(command.id, Try {
+    commands.complete(command.id, Try {
       block
     })
   }
@@ -146,7 +153,7 @@ class SparkEngine extends Engine {
     withContext("se.load") {
       require(arguments != null, "arguments are required")
       import DomainJsonProtocol._
-      val command: Command = command.create(new CommandTemplate("load", Some(arguments.toJson.asJsObject)))
+      val command: Command = commands.create(new CommandTemplate("load", Some(arguments.toJson.asJsObject)))
       val result: Future[Command] = future {
         withMyClassLoader {
           withContext("se.load.future") {
@@ -163,7 +170,7 @@ class SparkEngine extends Engine {
               val frame = frames.updateSchema(realFrame, schema.columns)
               frame.toJson.asJsObject
             }
-            command.lookup(command.id).get
+            commands.lookup(command.id).get
           }
         }
       }
@@ -196,7 +203,7 @@ class SparkEngine extends Engine {
     withContext("se.rename_frame") {
       require(arguments != null, "arguments are required")
       import DomainJsonProtocol._
-      val command: Command = command.create(new CommandTemplate("rename_frame", Some(arguments.toJson.asJsObject)))
+      val command: Command = commands.create(new CommandTemplate("rename_frame", Some(arguments.toJson.asJsObject)))
       val result: Future[Command] = future {
         withMyClassLoader {
           withContext("se.rename_frame.future") {
@@ -211,7 +218,7 @@ class SparkEngine extends Engine {
               frames.renameFrame(frame, newName)
               JsNull.asJsObject
             }
-            command.lookup(command.id).get
+            commands.lookup(command.id).get
           }
         }
       }
@@ -221,7 +228,7 @@ class SparkEngine extends Engine {
   def renameColumn(arguments: FrameRenameColumn[JsObject, Long])(implicit user: UserPrincipal): (Command, Future[Command]) =
     withContext("se.renamecolumn") {
       require(arguments != null, "arguments are required")
-      val command: Command = command.create(new CommandTemplate("renamecolumn", Some(arguments.toJson.asJsObject)))
+      val command: Command = commands.create(new CommandTemplate("renamecolumn", Some(arguments.toJson.asJsObject)))
       val result: Future[Command] = future {
         withMyClassLoader {
           withContext("se.renamecolumn.future") {
@@ -242,7 +249,7 @@ class SparkEngine extends Engine {
               frames.renameColumn(frame, originalcolumns.zip(renamedcolumns))
               JsNull.asJsObject
             }
-            command.lookup(command.id).get
+            commands.lookup(command.id).get
           }
         }
       }
@@ -252,7 +259,7 @@ class SparkEngine extends Engine {
   def project(arguments: FrameProject[JsObject, Long])(implicit user: UserPrincipal): (Command, Future[Command]) =
     withContext("se.project") {
       require(arguments != null, "arguments are required")
-      val command: Command = command.create(new CommandTemplate("project", Some(arguments.toJson.asJsObject)))
+      val command: Command = commands.create(new CommandTemplate("project", Some(arguments.toJson.asJsObject)))
       val result: Future[Command] = future {
         withMyClassLoader {
           withContext("se.project.future") {
@@ -295,7 +302,7 @@ class SparkEngine extends Engine {
               frames.updateSchema(projectedFrame, projectedColumns.toList)
               JsNull.asJsObject
             }
-            command.lookup(command.id).get
+            commands.lookup(command.id).get
           }
         }
       }
@@ -353,7 +360,7 @@ class SparkEngine extends Engine {
    */
   override def flattenColumn(flattenColumnCommand: FlattenColumn[Long])(implicit user: UserPrincipal): (Command, Future[Command]) =
     withContext("se.flattenColumn") {
-      val command: Command = command.create(new CommandTemplate("flattenColumn", Some(flattenColumnCommand.toJson.asJsObject)))
+      val command: Command = commands.create(new CommandTemplate("flattenColumn", Some(flattenColumnCommand.toJson.asJsObject)))
       val result: Future[Command] = future {
         withMyClassLoader {
           withContext("se.flattenColumn.future") {
@@ -364,8 +371,7 @@ class SparkEngine extends Engine {
             withCommand(command) {
               val ctx = context(user).sparkContext
 
-              /* create a dataframe should take very little time, much less than 10 minutes */
-              val newFrame = Await.result(create(DataFrameTemplate(flattenColumnCommand.name)), 10 minutes)
+              val newFrame = Await.result(create(DataFrameTemplate(flattenColumnCommand.name, None)), config.defaultTimeout)
               val rdd = frames.getFrameRdd(ctx, frameId)
 
               val columnIndex = realFrame.schema.columnIndex(flattenColumnCommand.column)
@@ -377,7 +383,7 @@ class SparkEngine extends Engine {
             }
           }
         }
-        command.lookup(command.id).get
+        commands.lookup(command.id).get
       }
 
       (command, result)
@@ -386,8 +392,7 @@ class SparkEngine extends Engine {
   def filter(arguments: FilterPredicate[JsObject, Long])(implicit user: UserPrincipal): (Command, Future[Command]) =
     withContext("se.filter") {
       require(arguments != null, "arguments are required")
-      import DomainJsonProtocol._
-      val command: Command = command.create(new CommandTemplate("filter", Some(arguments.toJson.asJsObject)))
+      val command: Command = commands.create(new CommandTemplate("filter", Some(arguments.toJson.asJsObject)))
       val result: Future[Command] = future {
         withMyClassLoader {
           withContext("se.filter.future") {
@@ -404,7 +409,7 @@ class SparkEngine extends Engine {
               persistPythonRDD(pyRdd, converter, location)
               JsNull.asJsObject
             }
-            command.lookup(command.id).get
+            commands.lookup(command.id).get
           }
         }
       }
@@ -442,7 +447,7 @@ class SparkEngine extends Engine {
 
         pairRdds
       }
-      val command: Command = command.create(new CommandTemplate("join", Some(joinCommand.toJson.asJsObject)))
+      val command: Command = commands.create(new CommandTemplate("join", Some(joinCommand.toJson.asJsObject)))
 
       val result: Future[Command] = future {
         withMyClassLoader {
@@ -466,7 +471,7 @@ class SparkEngine extends Engine {
             val allColumns = SchemaUtil.resolveSchemaNamingConflicts(leftColumns, rightColumns)
 
             /* create a dataframe should take very little time, much less than 10 minutes */
-            val newJoinFrame = Await.result(create(DataFrameTemplate(joinCommand.name)), 10 minutes)
+            val newJoinFrame = Await.result(create(DataFrameTemplate(joinCommand.name, None)), config.defaultTimeout)
 
             withCommand(command) {
 
@@ -489,7 +494,7 @@ class SparkEngine extends Engine {
               newJoinFrame.copy(schema = Schema(allColumns)).toJson.asJsObject
             }
 
-            command.lookup(command.id).get
+            commands.lookup(command.id).get
           }
         }
       }
@@ -500,8 +505,7 @@ class SparkEngine extends Engine {
   def removeColumn(arguments: FrameRemoveColumn[JsObject, Long])(implicit user: UserPrincipal): (Command, Future[Command]) =
     withContext("se.removecolumn") {
       require(arguments != null, "arguments are required")
-      import DomainJsonProtocol._
-      val command: Command = command.create(new CommandTemplate("removecolumn", Some(arguments.toJson.asJsObject)))
+      val command: Command = commands.create(new CommandTemplate("removecolumn", Some(arguments.toJson.asJsObject)))
       val result: Future[Command] = future {
         withMyClassLoader {
           withContext("se.removecolumn.future") {
@@ -539,7 +543,7 @@ class SparkEngine extends Engine {
               frames.removeColumn(realFrame, columnIndices)
               JsNull.asJsObject
             }
-            command.lookup(command.id).get
+            commands.lookup(command.id).get
           }
         }
       }
@@ -550,7 +554,7 @@ class SparkEngine extends Engine {
     withContext("se.addcolumn") {
       require(arguments != null, "arguments are required")
       import DomainJsonProtocol._
-      val command: Command = command.create(new CommandTemplate("addcolumn", Some(arguments.toJson.asJsObject)))
+      val command: Command = commands.create(new CommandTemplate("addcolumn", Some(arguments.toJson.asJsObject)))
       val result: Future[Command] = future {
         withMyClassLoader {
           withContext("se.addcolumn.future") {
@@ -567,7 +571,6 @@ class SparkEngine extends Engine {
               val schema = realFrame.schema
               val location = fsRoot + frames.getFrameDataFile(frameId)
 
-              case class BigColumn[T](override val name: String) extends Column[T]
               val columnObject = new BigColumn(column_name)
 
               if (schema.columns.indexWhere(columnTuple => columnTuple._1 == column_name) >= 0)
@@ -582,7 +585,7 @@ class SparkEngine extends Engine {
               persistPythonRDD(pyRdd, converter, location)
               JsNull.asJsObject
             }
-            command.lookup(command.id).get
+            commands.lookup(command.id).get
           }
         }
       }
@@ -597,7 +600,7 @@ class SparkEngine extends Engine {
     }
   }
 
-  def getFrame(id: SparkComponent.this.Identifier): Future[Option[DataFrame]] =
+  def getFrame(id: Identifier): Future[Option[DataFrame]] =
     withContext("se.getFrame") {
       future {
         frames.lookup(id)
@@ -628,8 +631,7 @@ class SparkEngine extends Engine {
     withContext("se.load") {
       require(arguments != null, "arguments are required")
       import spray.json._
-      import DomainJsonProtocol._
-      val command: Command = command.create(new CommandTemplate("graphLoad", Some(arguments.toJson.asJsObject)))
+      val command: Command = commands.create(new CommandTemplate("graphLoad", Some(arguments.toJson.asJsObject)))
       val result: Future[Command] = future {
         withMyClassLoader {
           withContext("se.graphLoad.future") {
@@ -642,7 +644,7 @@ class SparkEngine extends Engine {
               graph.toJson.asJsObject
             }
 
-            command.lookup(command.id).get
+            commands.lookup(command.id).get
 
           }
         }
@@ -655,7 +657,7 @@ class SparkEngine extends Engine {
    * @param id Unique identifier for the graph provided by the metastore.
    * @return A future of the graph metadata entry.
    */
-  def getGraph(id: SparkComponent.this.Identifier): Future[Graph] = {
+  def getGraph(id: Identifier): Future[Graph] = {
     future {
       graphs.lookup(id).get
     }
@@ -695,12 +697,6 @@ class SparkEngine extends Engine {
                            count: Int,
                            queryName: String,
                            parameters: Map[String, String]): Future[Iterable[Row]] = {
-    //TODO: these will come from a dynamically configured map rather than a match expression
-    future {
-      queryName match {
-        case "ALSQuery" => alsQuery(graph, offset, count, parameters)
-        case _ => throw new IllegalArgumentException("Unknown query: " + queryName)
-      }
-    }
+   ???
   }
 }

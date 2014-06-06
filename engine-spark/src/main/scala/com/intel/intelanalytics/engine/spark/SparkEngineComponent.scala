@@ -23,61 +23,19 @@
 
 package com.intel.intelanalytics.engine.spark
 
-import org.apache.spark.api.python._
 import java.util.{ List => JList, ArrayList => JArrayList, Map => JMap }
-import org.apache.spark.broadcast.Broadcast
-import com.intel.intelanalytics.domain._
-import org.apache.spark.SparkContext
-import org.apache.spark.rdd.RDD
 import com.intel.intelanalytics.engine._
-import scala.concurrent._
-import scala.concurrent.duration._
-import ExecutionContext.Implicits.global
-import java.nio.file.Paths
-import java.io._
-import com.intel.intelanalytics.engine.Rows._
-import java.util.concurrent.atomic.AtomicLong
-import org.apache.hadoop.fs.{ LocalFileSystem, FileSystem }
-import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.hdfs.DistributedFileSystem
-import java.nio.file.Path
-import scala.io.Codec
-import scala.io.{ Codec, Source }
 import org.apache.hadoop.fs.{ Path => HPath }
-
-import scala.util.matching.Regex
-import com.intel.event.EventContext
 import com.intel.intelanalytics.repository.{ SlickMetaStoreComponent, DbProfileComponent }
 import scala.slick.driver.H2Driver
-import scala.util.Try
-import com.typesafe.config.ConfigFactory
 import com.intel.intelanalytics.shared.EventLogging
-import com.intel.graphbuilder.driver.spark.titan.examples.ExamplesUtils
-import com.thinkaurelius.titan.core.{ TitanGraph, TitanFactory }
-import com.tinkerpop.blueprints.{ Direction, Vertex }
-import com.intel.graphbuilder.util.SerializableBaseConfiguration
 
 import org.apache.hadoop.hbase.HBaseConfiguration
 import org.apache.hadoop.hbase.client.HBaseAdmin
-
-import scala.util.Failure
-import scala.Some
-import scala.collection.JavaConverters._
-import com.intel.intelanalytics.security.UserPrincipal
-import scala.util.Success
-import com.intel.intelanalytics.domain.Partial
-import com.intel.intelanalytics.domain.SeparatorArgs
-import com.intel.intelanalytics.domain.Error
 import com.intel.intelanalytics.engine.spark.graph.{ SparkGraphStorage, SparkGraphHBaseBackend }
-
-import spray.json._
-import com.intel.intelanalytics.domain.schema.DataTypes
-import DataTypes.DataType
-import com.intel.intelanalytics.engine.spark.context.{SparkContextFactory, Context}
-import com.intel.intelanalytics.engine.spark.frame.{RDDJoinParam, RowParser}
-import com.intel.intelanalytics.domain.command._
-import com.intel.intelanalytics.domain.frame.{DataFrame, DataFrameTemplate}
-import com.intel.intelanalytics.domain.graph.{GraphTemplate, Graph}
+import com.intel.intelanalytics.engine.spark.context.{SparkContextManager, SparkContextFactory}
+import com.intel.intelanalytics.engine.spark.frame.SparkFrameStorage
+import com.intel.intelanalytics.engine.spark.command.SparkCommandStorage
 
 //TODO documentation
 //TODO progress notification
@@ -93,11 +51,10 @@ class SparkComponent extends EngineComponent
     with DbProfileComponent
     with SlickMetaStoreComponent
     with EventLogging {
-
-  import DomainJsonProtocol._
   lazy val configuration: SparkEngineConfiguration = new SparkEngineConfiguration()
 
-  val engine = new SparkEngine {}
+  lazy val engine = new SparkEngine(configuration, sparkContextManager,
+                                    commands.asInstanceOf[CommandStorage], frames, graphs) {}
 
   //TODO: choose database profile driver class from config
   override lazy val profile = withContext("engine connecting to metastore") {
@@ -110,22 +67,21 @@ class SparkComponent extends EngineComponent
 
   //TODO: only create if the datatabase doesn't already exist. So far this is in-memory only,
   //but when we want to use postgresql or mysql or something, we won't usually be creating tables here.
-  metaStore.create()
+  metaStore.createAllTables()
 
 
-  val files = new HdfsFileStorage {}
+  val files = new HdfsFileStorage(configuration.fsRoot) {}
 
 
-  val frames = new SparkFrameStorage {}
+  val frames = new SparkFrameStorage(sparkContextManager, configuration.fsRoot, files) {}
 
 
   val graphs: GraphStorage =
     new SparkGraphStorage(engine.context(_),
       metaStore,
-      new SparkGraphHBaseBackend(new HBaseAdmin(HBaseConfiguration.create())),
-      frames)
+      new SparkGraphHBaseBackend(new HBaseAdmin(HBaseConfiguration.create())), frames)
 
-  val commands = new SparkCommandStorage {}
+  val commands = new SparkCommandStorage(metaStore.asInstanceOf[SlickMetaStore]) {}
 
 
 }
