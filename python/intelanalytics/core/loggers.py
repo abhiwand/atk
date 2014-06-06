@@ -96,7 +96,7 @@ class Loggers(object):
                 pass
             self.__dict__[alias + "_set"] = alias_set
 
-    def set(self, level=logging.DEBUG, logger_name='', file_name=None, stderr_flag=False):
+    def set(self, level, logger_name, file_name, stderr_flag):
         """
         Set the level of the logger going to stderr
 
@@ -122,10 +122,9 @@ class Loggers(object):
         #logger_name = logger_name if logger_name != 'root' else ''
         logger = logging.getLogger(logger_name)
 
-
         if level is None or level == '':
         # Disable logging since no level specified
-            logger.level= logging.CRITICAL
+            logger.level= logging.DEBUG
             for h in logger.handlers:
                 if h.name == 'stderr':
                     logger.removeHandler(h)
@@ -139,16 +138,14 @@ class Loggers(object):
                 # Raise an exception since neither stderr nor file logging is enabled
                 raise InputError("Stderr and file logging are disabled!")
 
-            if file_name != '' or file_name != None:
-                # Log to file with specified level
-                logger.setLevel(level)
+            if file_name != '' and file_name != None:
+                # Log to file with specified level.The logger's level is set to DEBUG
+                logger.setLevel(logging.DEBUG)
                 fileHandler = logging.FileHandler(file_name)
                 fileHandler.setLevel(level)
                 formatter=logging.Formatter(self._line_format)
                 fileHandler.setFormatter(formatter)
-                logger.removeHandler(fileHandler)
                 logger.addHandler(fileHandler)
-                logger.removeHandler(fileHandler)
 
             if stderr_flag == True:
                  # Log to stderr with DEBUG level
@@ -161,5 +158,6 @@ class Loggers(object):
 
             if logger_name not in self._user_logger_names + self._aliased_loggers_map.values():
                 self._user_logger_names.append(logger_name)
+        return logger
 
 loggers = Loggers()
