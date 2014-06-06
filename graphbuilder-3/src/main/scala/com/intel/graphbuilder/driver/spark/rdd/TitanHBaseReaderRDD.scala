@@ -32,70 +32,27 @@ class TitanHBaseReaderRDD(hBaseRDD: RDD[(ImmutableBytesWritable, Result)],
    * @return Iterator of GraphBuilder vertices and edges using GraphBuilder's GraphElement trait
    */
   override def compute(split: Partition, context: TaskContext): Iterator[GraphElement] = {
-
-    val graphElementIterator = new Iterator[GraphElement] {
-      val hBaseIterator = firstParent[(ImmutableBytesWritable, Result)].iterator(split, context)
-      val titanGraph = titanConnector.connect()
-      val titanTransaction = titanGraph.newTransaction(titanGraph.buildTransaction())
-
-      // A single HBase row contains multiple graph elements namely: a single vertex, and adjacent edges
-      var rowElementsIterator = Iterator[GraphElement]()
-
-      override def hasNext: Boolean = {
-        if (!rowElementsIterator.hasNext) {
-          // parsing here instead of instead of in next() method to prevent exceptions
-          // that arise when HBase row contains no graph elements
-          rowElementsIterator = parseHBaseRow(hBaseIterator, titanGraph, titanTransaction)
-        }
-
-        rowElementsIterator.hasNext
-      }
-
-      override def next(): GraphElement = {
-        if (!hasNext) {
-          throw new java.util.NoSuchElementException("No more graph elements available.")
-        }
-        rowElementsIterator.next()
-      }
-
-      context.addOnCompleteCallback(() => {
-        titanTransaction.commit()
-        titanGraph.shutdown()
-      })
-    }
-
-    new InterruptibleIterator(context, graphElementIterator)
-  }
-
-  /**
-   * Parse HBase row to extract a single vertex and its adjacent edges
-   *
-   * This method iterates through HBase rows until it finds a row that contains graph elements.
-   *
-   * @param hBaseIterator HBase row iterator
-   * @param titanGraph Titan graph
-   * @param titanTransaction Titan transaction
-   *
-   * @return Iterator of graph elements for a single row
-   */
-  private def parseHBaseRow(hBaseIterator: Iterator[(ImmutableBytesWritable, Result)],
-                            titanGraph: StandardTitanGraph,
-                            titanTransaction: StandardTitanTx): Iterator[GraphElement] = {
+    val titanGraph = titanConnector.connect()
+    val titanTransaction = titanGraph.newTransaction(titanGraph.buildTransaction())
     val titanEdgeSerializer = titanGraph.getEdgeSerializer()
-    var rowGraphElements = Iterator[GraphElement]()
 
-    // Using while() to skip rows with no graph elements
-    while (hBaseIterator.hasNext && !rowGraphElements.hasNext) {
-      val hBaseRow = hBaseIterator.next()
+    val graphElements = firstParent[(ImmutableBytesWritable, Result)].iterator(split, context).flatMap(hBaseRow => {
       val result = hBaseRow._2
       val rowKey = new StaticByteBuffer(result.getRow)
+
       val titanRow = getSerializedTitanRow(rowKey, result)
-
       val titanRowParser = TitanRowParser(titanRow, titanEdgeSerializer, titanTransaction)
-      rowGraphElements = titanRowParser.parse().iterator
-    }
+      val rowGraphElements = titanRowParser.parse()
 
-    rowGraphElements
+      rowGraphElements
+    })
+
+    context.addOnCompleteCallback(() => {
+      titanTransaction.commit()
+      titanGraph.shutdown()
+    })
+
+    new InterruptibleIterator(context, graphElements)
   }
 
   /**
