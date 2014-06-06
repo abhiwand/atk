@@ -69,5 +69,20 @@
             <artifactId>spark-mllib_2.10</artifactId>
             <version>0.9.0-incubating</version>
         </dependency>
+        <dependency>
+            <groupId>com.intel</groupId>
+            <artifactId>graphbuilder-3</artifactId>
+            <version>3</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.jboss.netty</groupId>
+                    <artifactId>netty</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>io.netty</groupId>
+                    <artifactId>netty</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
     </dependencies>
 </project>

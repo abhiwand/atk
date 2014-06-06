@@ -1,4 +1,4 @@
-package com.intel.spark.graphon.ConnectedComponents
+package com.intel.spark.graphon.connectedcomponents
 
 /**
  * The improved connected components algorithm of Rastogi et al:
