@@ -32,8 +32,6 @@ import com.intel.intelanalytics.domain._
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.{ RDD, EmptyRDD }
 import com.intel.intelanalytics.engine._
-import com.intel.intelanalytics.domain.User
-import com.intel.intelanalytics.domain.{ GraphTemplate, Graph }
 import scala.concurrent._
 import scala.concurrent.duration._
 import ExecutionContext.Implicits.global
@@ -54,7 +52,6 @@ import com.intel.intelanalytics.engine.RowParser
 import scala.util.matching.Regex
 import com.typesafe.config.ConfigResolveOptions
 import com.intel.event.EventContext
-import com.intel.intelanalytics.domain.Partial
 import com.intel.intelanalytics.repository.{ SlickMetaStoreComponent, DbProfileComponent, MetaStoreComponent }
 import scala.slick.driver.H2Driver
 import scala.util.{ Success, Try }
@@ -70,15 +67,7 @@ import com.intel.graphbuilder.driver.spark.titan.GraphBuilder
 import com.intel.graphbuilder.driver.spark.titan.examples.ExamplesUtils
 import scala.util.Failure
 import scala.collection.JavaConverters._
-import com.intel.intelanalytics.domain.LoadLines
-import com.intel.intelanalytics.domain.Graph
-import com.intel.intelanalytics.domain.DataFrameTemplate
 import scala.util.Success
-import com.intel.intelanalytics.domain.DataFrame
-import com.intel.intelanalytics.domain.Partial
-import com.intel.intelanalytics.domain.SeparatorArgs
-import com.intel.intelanalytics.domain.CommandTemplate
-import com.intel.intelanalytics.domain.Error
 import com.thinkaurelius.titan.core.{ TitanGraph, TitanFactory }
 import com.tinkerpop.blueprints.{ Direction, Vertex }
 import com.intel.graphbuilder.util.SerializableBaseConfiguration
@@ -90,24 +79,13 @@ import com.intel.intelanalytics.engine.spark.graph.SparkGraphHBaseBackend
 import scala.util.Failure
 import scala.Some
 import scala.collection.JavaConverters._
-import com.intel.intelanalytics.domain.LoadLines
-import com.intel.intelanalytics.domain.Graph
-import com.intel.intelanalytics.domain.FilterPredicate
 import com.intel.intelanalytics.security.UserPrincipal
-import com.intel.intelanalytics.domain.FrameRemoveColumn
-import com.intel.intelanalytics.domain.GraphTemplate
-import com.intel.intelanalytics.domain.DataFrameTemplate
-import com.intel.intelanalytics.domain.FrameAddColumn
 import scala.util.Success
-import com.intel.intelanalytics.domain.DataFrame
-import com.intel.intelanalytics.domain.Command
-import com.intel.intelanalytics.domain.Partial
-import com.intel.intelanalytics.domain.SeparatorArgs
-import com.intel.intelanalytics.domain.CommandTemplate
-import com.intel.intelanalytics.domain.Error
-import com.intel.intelanalytics.domain.Als
 import com.intel.intelanalytics.engine.spark.graph.{ SparkGraphStorage, SparkGraphHBaseBackend }
 import com.intel.intelanalytics.domain.DataTypes.DataType
+
+import org.apache.hadoop.mapreduce.Job
+import org.joda.time.DateTime
 
 import spray.json._
 import com.intel.intelanalytics.domain.DataTypes.DataType
@@ -115,6 +93,8 @@ import com.intel.intelanalytics.domain.DataTypes.DataType
 //TODO progress notification
 //TODO event notification
 //TODO pass current user info
+
+
 
 class SparkComponent extends EngineComponent
     with FrameComponent
@@ -140,7 +120,7 @@ class SparkComponent extends EngineComponent
 
   //TODO: only create if the datatabase doesn't already exist. So far this is in-memory only,
   //but when we want to use postgresql or mysql or something, we won't usually be creating tables here.
-  metaStore.create()
+  metaStore.createAllTables()
 
   class SparkEngine extends Engine {
 
@@ -207,7 +187,7 @@ class SparkComponent extends EngineComponent
       }
     }
 
-    def withCommand[T](command: Command)(block: => T): Unit = {
+    def withCommand[T](command: Command)(block: => JsObject): Unit = {
       commands.complete(command.id, Try {
         block
       })
@@ -280,6 +260,7 @@ class SparkComponent extends EngineComponent
 
                 val newName = arguments.new_name
                 frames.renameFrame(frame, newName)
+                JsNull.asJsObject
               }
               commands.lookup(command.id).get
             }
@@ -311,6 +292,7 @@ class SparkComponent extends EngineComponent
                     s"Lengths of Original and Renamed Columns do not match")
 
                 frames.renameColumn(frame, originalcolumns.zip(renamedcolumns))
+                JsNull.asJsObject
               }
               commands.lookup(command.id).get
             }
@@ -364,6 +346,7 @@ class SparkComponent extends EngineComponent
                   }
                 }
                 frames.updateSchema(projectedFrame, projectedColumns.toList)
+                JsNull.asJsObject
               }
               commands.lookup(command.id).get
             }
@@ -416,6 +399,44 @@ class SparkComponent extends EngineComponent
       }
     }
 
+    /**
+     * flatten rdd by the specified column
+     * @param flattenColumnCommand input specification for column flattening
+     * @param user current user
+     */
+    override def flattenColumn(flattenColumnCommand: FlattenColumn[Long])(implicit user: UserPrincipal): (Command, Future[Command]) =
+      withContext("se.flattenColumn") {
+        import DomainJsonProtocol._
+        val command: Command = commands.create(new CommandTemplate("flattenColumn", Some(flattenColumnCommand.toJson.asJsObject)))
+        val result: Future[Command] = future {
+          withMyClassLoader {
+            withContext("se.flattenColumn.future") {
+              val frameId: Long = flattenColumnCommand.frame
+              val realFrame = frames.lookup(frameId).getOrElse(
+                throw new IllegalArgumentException(s"No such data frame: ${frameId}"))
+
+              withCommand(command) {
+                val ctx = context(user).sparkContext
+
+                /* create a dataframe should take very little time, much less than 10 minutes */
+                val newFrame = Await.result(create(DataFrameTemplate(flattenColumnCommand.name)), 10 minutes)
+                val rdd = frames.getFrameRdd(ctx, frameId)
+
+                val columnIndex = realFrame.schema.columnIndex(flattenColumnCommand.column)
+
+                val flattenedRDD = SparkOps.flattenRddByColumnIndex(columnIndex, flattenColumnCommand.separator, rdd)
+
+                flattenedRDD.saveAsObjectFile(fsRoot + frames.getFrameDataFile(newFrame.id))
+                newFrame.copy(schema = realFrame.schema).toJson.asJsObject
+              }
+            }
+          }
+          commands.lookup(command.id).get
+        }
+
+        (command, result)
+    }
+
     def filter(arguments: FilterPredicate[JsObject, Long])(implicit user: UserPrincipal): (Command, Future[Command]) =
       withContext("se.filter") {
         require(arguments != null, "arguments are required")
@@ -435,6 +456,7 @@ class SparkComponent extends EngineComponent
                 val schema = realFrame.schema
                 val converter = DataTypes.parseMany(schema.columns.map(_._2).toArray)(_)
                 persistPythonRDD(pyRdd, converter, location)
+                JsNull.asJsObject
               }
               commands.lookup(command.id).get
             }
@@ -481,6 +503,9 @@ class SparkComponent extends EngineComponent
         val result: Future[Command] = future {
           withMyClassLoader {
             withContext("se.join.future") {
+
+
+
 
               val originalColumns = joinCommand.frames.map {
                 frame =>
@@ -568,6 +593,7 @@ class SparkComponent extends EngineComponent
                 }
 
                 frames.removeColumn(realFrame, columnIndices)
+                JsNull.asJsObject
               }
               commands.lookup(command.id).get
             }
@@ -610,7 +636,7 @@ class SparkComponent extends EngineComponent
                 val pyRdd = createPythonRDD(frameId, expression)
                 val converter = DataTypes.parseMany(newFrame.schema.columns.map(_._2).toArray)(_)
                 persistPythonRDD(pyRdd, converter, location)
-
+                JsNull.asJsObject
               }
               commands.lookup(command.id).get
             }
@@ -801,6 +827,7 @@ class SparkComponent extends EngineComponent
               //"-vof com.intel.giraph.io.titan.TitanVertexOutputFormatPropertyGraph4CF -op hdfs:///user/ec2-user/als -w 1",
               //"-ca als.maxSupersteps=10  -ca als.convergenceThreshold=0  -ca als.lambda=0.065  -ca als.featureDimension=3 -ca als.biasOn=true",
               //)
+              JsNull.asJsObject
             }
             commands.lookup(command.id).get
           }
@@ -1256,7 +1283,8 @@ def calculateScore(list1, list2, biasOn, featureDimension) {
 
     override def create(frame: DataFrameTemplate): DataFrame = withContext("frame.create") {
       val id = nextFrameId()
-      val frame2 = new DataFrame(id = id, name = frame.name)
+      // TODO: wire this up better.  For example, status Id should be looked up, uri needs to be supplied, user supplied, etc.
+      val frame2 = new DataFrame(id = id, name = frame.name, description = frame.description, uri = "TODO", schema = Schema(), status = 1L, new DateTime(), new DateTime(), None, None)
       val meta = File(Paths.get(getFrameMetaDataFile(id)))
       info(s"Saving metadata to $meta")
       val f = files.write(meta)
@@ -1357,10 +1385,7 @@ def calculateScore(list1, list2, biasOn, featureDimension) {
       //TODO: set start date
     }
 
-    override def complete(id: Long, result: Try[Any]): Unit = {
-
-      import DomainJsonProtocol._
-
+    override def complete(id: Long, result: Try[JsObject]): Unit = {
       require(id > 0, "invalid ID")
       require(result != null)
       metaStore.withSession("se.command.complete") {
@@ -1372,7 +1397,7 @@ def calculateScore(list1, list2, biasOn, featureDimension) {
           //TODO: Update dates
           val changed = result match {
             case Failure(ex) => command.copy(complete = true, error = Some(ex: Error))
-            case Success(r) => command.copy(complete = true, result = Some(r.asInstanceOf[JsObject]))
+            case Success(r) => command.copy(complete = true, result = Some(r))
           }
           repo.update(changed)
       }
