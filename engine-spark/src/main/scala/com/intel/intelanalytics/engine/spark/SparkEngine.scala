@@ -32,8 +32,6 @@ import com.intel.intelanalytics.domain._
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.{ RDD, EmptyRDD }
 import com.intel.intelanalytics.engine._
-import com.intel.intelanalytics.domain.User
-import com.intel.intelanalytics.domain.{ GraphTemplate, Graph }
 import scala.concurrent._
 import scala.concurrent.duration._
 import ExecutionContext.Implicits.global
@@ -54,7 +52,6 @@ import com.intel.intelanalytics.engine.RowParser
 import scala.util.matching.Regex
 import com.typesafe.config.ConfigResolveOptions
 import com.intel.event.EventContext
-import com.intel.intelanalytics.domain.Partial
 import com.intel.intelanalytics.repository.{ SlickMetaStoreComponent, DbProfileComponent, MetaStoreComponent }
 import scala.slick.driver.H2Driver
 import scala.util.{ Success, Try }
@@ -70,15 +67,7 @@ import com.intel.graphbuilder.driver.spark.titan.GraphBuilder
 import com.intel.graphbuilder.driver.spark.titan.examples.ExamplesUtils
 import scala.util.Failure
 import scala.collection.JavaConverters._
-import com.intel.intelanalytics.domain.LoadLines
-import com.intel.intelanalytics.domain.Graph
-import com.intel.intelanalytics.domain.DataFrameTemplate
 import scala.util.Success
-import com.intel.intelanalytics.domain.DataFrame
-import com.intel.intelanalytics.domain.Partial
-import com.intel.intelanalytics.domain.SeparatorArgs
-import com.intel.intelanalytics.domain.CommandTemplate
-import com.intel.intelanalytics.domain.Error
 import com.thinkaurelius.titan.core.{ TitanGraph, TitanFactory }
 import com.tinkerpop.blueprints.{ Direction, Vertex }
 import com.intel.graphbuilder.util.SerializableBaseConfiguration
@@ -90,24 +79,13 @@ import com.intel.intelanalytics.engine.spark.graph.SparkGraphHBaseBackend
 import scala.util.Failure
 import scala.Some
 import scala.collection.JavaConverters._
-import com.intel.intelanalytics.domain.LoadLines
-import com.intel.intelanalytics.domain.Graph
-import com.intel.intelanalytics.domain.FilterPredicate
 import com.intel.intelanalytics.security.UserPrincipal
-import com.intel.intelanalytics.domain.FrameRemoveColumn
-import com.intel.intelanalytics.domain.GraphTemplate
-import com.intel.intelanalytics.domain.DataFrameTemplate
-import com.intel.intelanalytics.domain.FrameAddColumn
 import scala.util.Success
-import com.intel.intelanalytics.domain.DataFrame
-import com.intel.intelanalytics.domain.Command
-import com.intel.intelanalytics.domain.Partial
-import com.intel.intelanalytics.domain.SeparatorArgs
-import com.intel.intelanalytics.domain.CommandTemplate
-import com.intel.intelanalytics.domain.Error
-import com.intel.intelanalytics.domain.Als
 import com.intel.intelanalytics.engine.spark.graph.{ SparkGraphStorage, SparkGraphHBaseBackend }
 import com.intel.intelanalytics.domain.DataTypes.DataType
+
+import org.apache.hadoop.mapreduce.Job
+import org.joda.time.DateTime
 
 import spray.json._
 import com.intel.intelanalytics.domain.DataTypes.DataType
@@ -129,6 +107,7 @@ class SparkComponent extends EngineComponent
   import DomainJsonProtocol._
   lazy val configuration: SparkEngineConfiguration = new SparkEngineConfiguration()
 
+
   val engine = new SparkEngine {}
 
   //TODO: choose database profile driver class from config
@@ -142,7 +121,7 @@ class SparkComponent extends EngineComponent
 
   //TODO: only create if the datatabase doesn't already exist. So far this is in-memory only,
   //but when we want to use postgresql or mysql or something, we won't usually be creating tables here.
-  metaStore.create()
+  metaStore.createAllTables()
 
   class SparkEngine extends Engine {
 
@@ -1096,7 +1075,7 @@ def calculateScore(list1, list2, biasOn, featureDimension) {
 
   trait HdfsFileStorage extends FileStorage with EventLogging {
 
-    val configuration = {
+    val fsConfiguration = {
       val hadoopConfig = new Configuration()
       require(hadoopConfig.getClass().getClassLoader == this.getClass.getClassLoader)
       //http://stackoverflow.com/questions/17265002/hadoop-no-filesystem-for-scheme-file
@@ -1105,10 +1084,15 @@ def calculateScore(list1, list2, biasOn, featureDimension) {
       hadoopConfig.set("fs.file.impl",
         classOf[LocalFileSystem].getName)
       require(hadoopConfig.getClassByNameOrNull(classOf[LocalFileSystem].getName) != null)
+
+      val root: String = configuration.config.getString("intel.analytics.fs.root")
+      if (root.startsWith("hdfs"))
+        hadoopConfig.set("fs.defaultFS", root)
+
       hadoopConfig
     }
 
-    val fs = FileSystem.get(configuration)
+    val fs = FileSystem.get(fsConfiguration)
 
     override def write(sink: File, append: Boolean): OutputStream = withContext("file.write") {
       val path: HPath = new HPath(fsRoot + sink.path.toString)
@@ -1309,7 +1293,8 @@ def calculateScore(list1, list2, biasOn, featureDimension) {
 
     override def create(frame: DataFrameTemplate): DataFrame = withContext("frame.create") {
       val id = nextFrameId()
-      val frame2 = new DataFrame(id = id, name = frame.name)
+      // TODO: wire this up better.  For example, status Id should be looked up, uri needs to be supplied, user supplied, etc.
+      val frame2 = new DataFrame(id = id, name = frame.name, description = frame.description, uri = "TODO", schema = Schema(), status = 1L, new DateTime(), new DateTime(), None, None)
       val meta = File(Paths.get(getFrameMetaDataFile(id)))
       info(s"Saving metadata to $meta")
       val f = files.write(meta)
