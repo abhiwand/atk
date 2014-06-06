@@ -1,6 +1,10 @@
 package com.intel.spark.graphon.connectedcomponents
 
-import org.apache.spark.rdd.RDD
+import org.apache.spark.SparkContext
+import org.apache.spark.SparkContext._
+import org.apache.spark.SparkConf
+
+import org.apache.spark.rdd._
 
 /**
  * Normalizes the vertex-to-connected components mapping so that community IDs come from a range
@@ -14,6 +18,11 @@ object NormalizeConnectedComponents {
    * @return Pair consisting of number of connected components
    */
   def normalize (vertexToCCMap : RDD[(Long, Long)]) : (Long, RDD[(Long, Long)]) = {
-    (0, vertexToCCMap)
+
+    val count = vertexToCCMap.map(x=> x._2).distinct().count()
+
+    vertexToCCMap.sortByKey()
+    vertexToCCMap.map(x=> x._2).distinct()
+    (count, vertexToCCMap)
   }
 }
