@@ -48,18 +48,11 @@
             </plugin>
 
             <plugin>
-                <!--disable specs2 test because the plugin will barf it doesn't have any specs2 test to run-->
-                <groupId>com.mmakowski</groupId>
-                <artifactId>maven-specs2-plugin</artifactId>
-                <configuration>
-                    <skipTests>true</skipTests>
-                </configuration>
-            </plugin>
-            <plugin>
                 <!--add to Create covergage results-->
                 <groupId>org.scoverage</groupId>
                 <artifactId>maven-scoverage-plugin</artifactId>
             </plugin>
+
 
         </plugins>
     </build>
@@ -101,5 +94,6 @@
                 </exclusion>
             </exclusions>
         </dependency>
+
     </dependencies>
 </project>
