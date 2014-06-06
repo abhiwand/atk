@@ -66,9 +66,26 @@
     <dependencies>
         <dependency>
             <groupId>org.apache.spark</groupId>
-            <artifactId>spark-mllib_2.10</artifactId>
-            <version>0.9.0-incubating</version>
+            <artifactId>spark-core_${scala.short.version}</artifactId>
+            <version>0.9.0-cdh5.0.1</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-log4j12</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
+
+        <!-- GRAPHX has only a temporary home here until project structure settles down and we move to full
+        graphX adoption... -->
+
+        <dependency>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-graphx_${scala.short.version}</artifactId>
+            <version>0.9.0-cdh5.0.1</version>
+            <scope>provided</scope>
+        </dependency>
+
         <dependency>
             <groupId>com.intel</groupId>
             <artifactId>graphbuilder-3</artifactId>
