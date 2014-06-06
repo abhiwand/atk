@@ -48,11 +48,6 @@ object NetflixReaderExample {
 
     val sc = new SparkContext(conf)
 
-    // Set HDFS output directory
-    val resultsDir = ExamplesUtils.hdfsMaster + System.getProperty("MOVIE_RESULTS_DIR", "/user/hadoop/netflix_reader_results")
-    val vertexResultsDir = resultsDir + "/vertices"
-    val edgeResultsDir = resultsDir + "/edges"
-
     // Create graph connection
     val tableName = "netflix"
     val hBaseZookeeperQuorum = ExamplesUtils.storageHostname
@@ -67,17 +62,20 @@ object NetflixReaderExample {
     // Read graph
     val titanReader = new TitanReader(sc, titanConnector)
     val titanReaderRDD = titanReader.read()
+    val graphElementCount = titanReaderRDD.count()
+    println("Graph element count:" + graphElementCount)
 
+    // Example of how to filter vertices and edges and save to HDFS
     // Remember to import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRDDImplicits._ to access filter methods
+    /*
+    val resultsDir = ExamplesUtils.hdfsMaster + System.getProperty("MOVIE_RESULTS_DIR", "/user/hadoop/netflix_reader_results")
+    val vertexResultsDir = resultsDir + "/vertices"
+    val edgeResultsDir = resultsDir + "/edges"
     val vertexRDD = titanReaderRDD.filterVertices()
     val edgeRDD = titanReaderRDD.filterEdges()
-
-    // If you encounter the following error, "com.esotericsoftware.kryo.KryoException: Buffer overflow", because
-    // your results are too large, try:
-    // a) Increasing the size of the kryoserializer buffer, e.g., conf.set("spark.kryoserializer.buffer.mb", "32")
-    // b) Saving results to file instead of collect(), e.g.titanReaderRDD.saveToTextFile()
     vertexRDD.saveAsTextFile(vertexResultsDir)
     edgeRDD.saveAsTextFile(edgeResultsDir)
+    */
 
     sc.stop()
   }

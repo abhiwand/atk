@@ -6,13 +6,13 @@ import com.intel.graphbuilder.elements.GraphElement
 import com.thinkaurelius.titan.diskstorage.util.{ StaticArrayBuffer, StaticByteBuffer }
 import com.thinkaurelius.titan.diskstorage.keycolumnvalue.StaticBufferEntry
 import com.thinkaurelius.titan.diskstorage.StaticBuffer
+import com.thinkaurelius.titan.graphdb.database.StandardTitanGraph
+import com.thinkaurelius.titan.graphdb.transaction.StandardTitanTx
 import org.apache.spark.rdd.RDD
 import org.apache.hadoop.hbase.io.ImmutableBytesWritable
 import org.apache.hadoop.hbase.client.Result
 import org.apache.spark.{ InterruptibleIterator, TaskContext, Partition }
 import scala.collection.JavaConversions._
-import com.thinkaurelius.titan.graphdb.database.StandardTitanGraph
-import com.thinkaurelius.titan.graphdb.transaction.StandardTitanTx
 
 /**
  * RDD that loads Titan graph from HBase.
