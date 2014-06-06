@@ -12,21 +12,31 @@ import org.apache.log4j.{Logger, Level}
 class NormalizeConnectedComponentsTest extends FlatSpec with Matchers with TestingSparkContext {
 
 
-  "normalize connected components" should "compile" in {
+
+  "normalize connected components" should "find three components" in {
     val vertexList: List[Long] = List(4, 8, 12, 16, 20, 24, 28, 32)
-
     val components = Set(Set(8, 24, 32), Set(4, 16, 28))
-
     val originalVertexToComponent = List((8, 8), (24, 8), (32, 8), (4, 28), (16, 28), (28, 28), (12, 12))
 
-    val verticesToComponentsRDD = sc.parallelize(originalVertexToComponent)
+    val verticesToComponentsRDD = sc.parallelize(originalVertexToComponent).map(x => (x._1.toLong, x._2.toLong))
+    val normalizeOut = NormalizeConnectedComponents.normalize(verticesToComponentsRDD)
 
-    0 shouldBe 0
-
+    normalizeOut._1 shouldEqual 3
   }
 
+  "normalize connected components" should "have same number of reported components in" in {
+    val vertexList: List[Long] = List(4, 8, 12, 16, 20, 24, 28, 32)
+    val components = Set(Set(8, 24, 32), Set(4, 16, 28))
+    val originalVertexToComponent = List((8, 8), (24, 8), (32, 8), (4, 28), (16, 28), (28, 28), (12, 12))
+
+    val verticesToComponentsRDD = sc.parallelize(originalVertexToComponent).map(x => (x._1.toLong, x._2.toLong))
+    val normalizeOut = NormalizeConnectedComponents.normalize(verticesToComponentsRDD)
+
+    normalizeOut._1 shouldEqual normalizeOut._2.count()
+  }
 }
 
+// TODO: get TestingSparkContext from a shared location
 
 trait TestingSparkContext extends FlatSpec with BeforeAndAfter {
 
