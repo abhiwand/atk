@@ -5,6 +5,7 @@ import scala.collection.mutable
 import com.typesafe.config.{ ConfigFactory, Config }
 import com.intel.intelanalytics.shared.EventLogging
 import org.apache.spark.engine.{ ProgressPrinter, SparkProgressListener }
+import com.intel.intelanalytics.component.Boot
 
 /**
  * Base class for different Spark context management strategies
@@ -38,10 +39,15 @@ class SparkContextFactory {
   def createSparkContext(configuration: Config, appName: String): SparkContext = {
     val sparkHome = configuration.getString("intel.analytics.spark.home")
     val sparkMaster = configuration.getString("intel.analytics.spark.master")
+
+    val jarPath = Boot.getJar("engine-spark")
+
     val sparkConf = new SparkConf()
       .setMaster(sparkMaster)
       .setSparkHome(sparkHome)
       .setAppName(appName)
+      .setJars(Seq(jarPath.getPath))
+
     new SparkContext(sparkConf)
   }
 }
