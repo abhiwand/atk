@@ -29,6 +29,7 @@ import com.intel.intelanalytics.domain.graphconstruction._
 import com.intel.intelanalytics.domain.graphconstruction.ValueRule
 import com.intel.intelanalytics.domain.graphconstruction.EdgeRule
 import com.intel.intelanalytics.domain.graphconstruction.PropertyRule
+import org.joda.time.DateTime
 
 object DomainJsonProtocol extends DefaultJsonProtocol {
 
@@ -42,10 +43,24 @@ object DomainJsonProtocol extends DefaultJsonProtocol {
     override def write(obj: DataType): JsValue = new JsString(obj.toString)
   }
 
+  // TODO: this was added for Joda DateTimes - not sure this is right?
+  trait DateTimeJsonFormat extends JsonFormat[DateTime] {
+    private val dateTimeFmt = org.joda.time.format.ISODateTimeFormat.dateTime
+    def write(x: DateTime) = JsString(dateTimeFmt.print(x))
+    def read(value: JsValue) = value match {
+      case JsString(x) => dateTimeFmt.parseDateTime(x)
+      case x => deserializationError("Expected DateTime as JsString, but got " + x)
+    }
+  }
+
+  implicit val dateTimeFormat = new DateTimeJsonFormat {}
+
   implicit val schemaFormat = jsonFormat1(Schema)
 
-  implicit val dataFrameFormat = jsonFormat3(DataFrame)
-  implicit val dataFrameTemplateFormat = jsonFormat1(DataFrameTemplate)
+  implicit val userFormat = jsonFormat5(User)
+  implicit val statusFormat = jsonFormat5(Status)
+  implicit val dataFrameFormat = jsonFormat10(DataFrame)
+  implicit val dataFrameTemplateFormat = jsonFormat2(DataFrameTemplate)
   implicit val separatorArgsJsonFormat = jsonFormat1(SeparatorArgs)
   implicit val definitionFormat = jsonFormat3(Definition)
   implicit val operationFormat = jsonFormat2(Operation)
@@ -69,13 +84,12 @@ object DomainJsonProtocol extends DefaultJsonProtocol {
   implicit val alsFormatString = jsonFormat5(Als[String])
   implicit val alsFormatLong = jsonFormat5(Als[Long])
   implicit val errorFormat = jsonFormat5(Error)
-  implicit val userFormat = jsonFormat2(User)
   implicit val flattenColumnLongFormat = jsonFormat4(FlattenColumn[Long])
 
   // graph service formats
 
   implicit val graphTemplateFormat = jsonFormat1(GraphTemplate)
-  implicit val graphFormat = jsonFormat2(Graph)
+  implicit val graphFormat = jsonFormat9(Graph)
 
   // graph loading formats for specifying graphbuilder and graphload rules
 
