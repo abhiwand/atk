@@ -23,6 +23,9 @@
 
 package org.apache.spark.api.python
 
+import org.apache.spark.AccumulatorParam
+import java.util.{List => JList, ArrayList => JArrayList}
+
 class EnginePythonAccumulatorParam()
     extends AccumulatorParam[JList[Array[Byte]]] {
   override def zero(value: JList[Array[Byte]]): JList[Array[Byte]] = new JArrayList

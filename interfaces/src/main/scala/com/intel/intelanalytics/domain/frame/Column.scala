@@ -23,8 +23,7 @@
 
 package com.intel.intelanalytics.domain.frame
 
-case class DataFrameTemplate(name: String, description: Option[String]) {
-  require(name != null)
-  require(name.trim.length > 0)
-  require(description != null)
+trait Column[T] {
+  def name: String
 }
+

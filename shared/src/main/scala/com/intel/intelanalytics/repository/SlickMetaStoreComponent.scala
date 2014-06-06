@@ -26,26 +26,16 @@ package com.intel.intelanalytics.repository
 import com.intel.intelanalytics.shared.EventLogging
 import scala.util.Try
 import spray.json._
-import scala.slick.driver.JdbcProfile
 import com.intel.intelanalytics.domain.frame.{DataFrame, DataFrameTemplate}
 import com.intel.intelanalytics.domain.graph.{GraphTemplate, Graph}
 import com.intel.intelanalytics.domain.schema.Schema
 import com.intel.intelanalytics.domain.command.{CommandTemplate, Command}
-import scala.slick.driver.{JdbcDriver, JdbcProfile}
 import org.joda.time.DateTime
 import com.github.tototoshi.slick.GenericJodaSupport
 import com.intel.intelanalytics.domain._
+import scala.slick.driver.{JdbcDriver, JdbcProfile}
 
-trait DbProfileComponent {
 
-  val profile: Profile
-
-  /**
-   * Profiles is how we abstract various back-ends like H2 vs. PostgreSQL
-   */
-  case class Profile(profile: JdbcProfile, connectionString: String, driver: String)
-
-}
 
 trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
   msc: MetaStoreComponent with DbProfileComponent =>
@@ -58,6 +48,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
   // Different versions of implicits are imported here based on the driver
   import genericJodaSupport._
 
+
   // Defining mappings for custom column types
   implicit val schemaColumnType = MappedColumnType.base[Schema, String](
     { schema => schema.toJson.prettyPrint }, // Schema to String
@@ -65,7 +56,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
   )
 
   implicit val jsObjectColumnType = MappedColumnType.base[JsObject, String](
-    { jsObject => jsObject.toString},
+    { jsObject => jsObject.toString()},
     { string => JsonParser(string).convertTo[JsObject] }
   )
 
@@ -420,7 +411,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
       def createdById = column[Option[Long]]("created_by")
 
       /** projection to/from the database */
-      def * = (id, name, arguments, error, complete, result, createdOn, modifiedOn, createdById) <>(Command.tupled, Command.unapply)
+      def * = (id, name, arguments, error, complete, result, createdOn, modifiedOn, createdById) <> (Command.tupled, Command.unapply)
 
       def createdBy = foreignKey("command_created_by", createdById, users)(_.id)
     }

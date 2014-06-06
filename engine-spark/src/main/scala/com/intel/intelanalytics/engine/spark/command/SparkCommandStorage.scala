@@ -23,13 +23,15 @@
 
 package com.intel.intelanalytics.engine.spark.command
 
-import com.intel.intelanalytics.engine.CommandComponent.CommandStorage
 import com.intel.intelanalytics.domain.Error
 import scala.util.{Success, Failure, Try}
 import spray.json.JsObject
 import com.intel.intelanalytics.domain.command.{CommandTemplate, Command}
+import com.intel.intelanalytics.engine.CommandStorage
+import com.intel.intelanalytics.repository.{SlickMetaStoreComponent}
+import com.intel.intelanalytics.shared.EventLogging
 
-trait SparkCommandStorage extends CommandStorage {
+class SparkCommandStorage(val metaStore: SlickMetaStoreComponent#SlickMetaStore) extends CommandStorage with EventLogging {
   val repo = metaStore.commandRepo
 
   override def lookup(id: Long): Option[Command] =
@@ -65,8 +67,9 @@ trait SparkCommandStorage extends CommandStorage {
           warn(s"Ignoring completion attempt for command $id, already completed")
         }
         //TODO: Update dates
+        import com.intel.intelanalytics.domain.throwableToError
         val changed = result match {
-          case Failure(ex) => command.copy(complete = true, error = Some(ex: Error))
+          case Failure(ex) => command.copy(complete = true, error = Some(throwableToError(ex)))
           case Success(r) => command.copy(complete = true, result = Some(r))
         }
         repo.update(changed)

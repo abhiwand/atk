@@ -26,6 +26,7 @@ package com.intel.intelanalytics.domain.command
 import spray.json.JsObject
 import com.intel.intelanalytics.domain.HasId
 import org.joda.time.DateTime
+import com.intel.intelanalytics.domain.Error
 
 /**
  * An invocation of a function defined on the server.

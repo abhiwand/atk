@@ -21,10 +21,27 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.domain.frame
+package com.intel.intelanalytics.engine
 
-case class DataFrameTemplate(name: String, description: Option[String]) {
-  require(name != null)
-  require(name.trim.length > 0)
-  require(description != null)
+import java.nio.file.Path
+import java.io.{OutputStream, InputStream}
+
+trait FileStorage {
+  def createDirectory(name: Path): Directory
+
+  def create(name: Path)
+
+  def delete(path: Path)
+
+  def getMetaData(path: Path): Option[Entry]
+
+  def move(source: Path, destination: Path)
+
+  def copy(source: Path, destination: Path)
+
+  def read(source: File): InputStream
+
+  def list(source: Directory): Seq[Entry]
+
+  def write(sink: File, append: Boolean = false): OutputStream
 }

@@ -23,24 +23,20 @@
 
 package com.intel.intelanalytics.engine.spark
 
-import com.intel.intelanalytics.engine.FileComponent.FileStorage
+import org.apache.hadoop.fs.{Path => HPath, FileSystem, LocalFileSystem}
+import com.intel.intelanalytics.engine.{Directory, File, Entry, FileStorage}
 import com.intel.intelanalytics.shared.EventLogging
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.hdfs.DistributedFileSystem
-import org.apache.hadoop.fs.{Path, FileSystem, LocalFileSystem}
-import com.intel.intelanalytics.engine.FileComponent.File
 import java.io.{IOException, InputStream, OutputStream}
-import com.intel.intelanalytics.engine.Rows.RowSource
-import com.intel.intelanalytics.engine.FileComponent.Directory
-import com.intel.intelanalytics.engine.FileComponent.Entry
 import java.nio.file.{Path, Paths}
-import org.apache.hadoop.fs.Path
 
-trait HdfsFileStorage extends FileStorage with EventLogging {
+case class HdfsStorageConfig(fsRoot: String)
+
+class HdfsFileStorage(fsRoot: String) extends FileStorage with EventLogging {
 
   val configuration = {
     val hadoopConfig = new Configuration()
-    require(hadoopConfig.getClass().getClassLoader == this.getClass.getClassLoader)
     //http://stackoverflow.com/questions/17265002/hadoop-no-filesystem-for-scheme-file
     hadoopConfig.set("fs.hdfs.impl",
       classOf[DistributedFileSystem].getName)
@@ -62,13 +58,9 @@ trait HdfsFileStorage extends FileStorage with EventLogging {
     }
   }
 
-  override def readRows(source: File, rowGenerator: (InputStream) => RowSource,
-                        offsetBytes: Long, readBytes: Long): Unit = withContext("file.readRows") {
-    ???
-  }
 
   override def list(source: Directory): Seq[Entry] = withContext("file.list") {
-    fs.listStatus(new HPath(fsRoot + frames.frameBase))
+    fs.listStatus(new HPath(source.path.toString))
       .map {
       //case s if s.isDirectory => Directory(path = Paths.get(s.getPath.toString))
       case s if s.isDirectory => Directory(path = Paths.get(s.getPath.toString))

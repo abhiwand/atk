@@ -23,29 +23,26 @@
 
 package com.intel.intelanalytics.engine.spark.frame
 
-import com.intel.intelanalytics.engine.FrameComponent.FrameStorage
 import com.intel.intelanalytics.shared.EventLogging
-import com.intel.intelanalytics.engine.Rows
-import com.intel.intelanalytics.domain.schema.DataTypes
+import com.intel.intelanalytics.engine._
+import com.intel.intelanalytics.domain.schema.{Schema, DataTypes}
 import DataTypes.DataType
-import com.intel.intelanalytics.engine.FileComponent.File
 import java.nio.file.Paths
 import scala.io.{Source, Codec}
-import com.intel.intelanalytics.engine.Rows._
-import scala.Some
-import com.intel.intelanalytics.engine.FrameComponent.Column
-import com.intel.intelanalytics.security.UserPrincipal
 import org.apache.spark.rdd.RDD
-import com.intel.intelanalytics.engine.spark.SparkOps
+import com.intel.intelanalytics.engine.spark.{HdfsFileStorage, SparkOps}
 import org.apache.spark.SparkContext
-import com.intel.intelanalytics.engine.FileComponent.Directory
-import spray.json.JsonParser
 import scala.util.matching.Regex
 import java.util.concurrent.atomic.AtomicLong
-import com.intel.intelanalytics.domain.frame.{DataFrame, DataFrameTemplate}
-import com.intel.intelanalytics.domain.schema.DataTypes
+import com.intel.intelanalytics.domain.frame.{Column, DataFrame, DataFrameTemplate}
+import com.intel.intelanalytics.engine.spark.context.{SparkContextManager}
+import scala.Some
+import com.intel.intelanalytics.engine.File
+import com.intel.intelanalytics.security.UserPrincipal
+import org.joda.time.DateTime
 
-trait SparkFrameStorage extends FrameStorage with EventLogging {
+class SparkFrameStorage(contextManager: SparkContextManager, fsRoot: String, files: HdfsFileStorage)
+  extends FrameStorage with EventLogging {
 
   import spray.json._
   import Rows.Row
@@ -144,8 +141,8 @@ trait SparkFrameStorage extends FrameStorage with EventLogging {
       require(frame != null, "frame is required")
       require(offset >= 0, "offset must be zero or greater")
       require(count > 0, "count must be zero or greater")
-      val ctx = engine.context(user)
-      val rdd: RDD[Row] = getFrameRdd(ctx.sparkContext, frame.id)
+      val ctx = contextManager.getContext("intelanalytics:" + user.user.username).sparkContext
+      val rdd: RDD[Row] = getFrameRdd(ctx, frame.id)
       val rows = SparkOps.getRows(rdd, offset, count)
       rows
     }
@@ -171,7 +168,8 @@ trait SparkFrameStorage extends FrameStorage with EventLogging {
 
   override def create(frame: DataFrameTemplate): DataFrame = withContext("frame.create") {
     val id = nextFrameId()
-    val frame2 = new DataFrame(id = id, name = frame.name)
+    // TODO: wire this up better.  For example, status Id should be looked up, uri needs to be supplied, user supplied, etc.
+    val frame2 = new DataFrame(id = id, name = frame.name, description = frame.description, uri = "TODO", schema = Schema(), status = 1L, new DateTime(), new DateTime(), None, None)
     val meta = File(Paths.get(getFrameMetaDataFile(id)))
     info(s"Saving metadata to $meta")
     val f = files.write(meta)
@@ -212,7 +210,7 @@ trait SparkFrameStorage extends FrameStorage with EventLogging {
       case _ => None
     }
       .filter(idRegex.findFirstMatchIn(_).isDefined) //may want to extract a method for this
-      .flatMap(sid => frames.lookup(sid.toLong))
+      .flatMap(sid => lookup(sid.toLong))
   }
 
   val frameBase = "/intelanalytics/dataframes"

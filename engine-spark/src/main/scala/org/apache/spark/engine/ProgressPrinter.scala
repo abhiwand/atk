@@ -23,6 +23,8 @@
 
 package org.apache.spark.engine
 
+import org.apache.spark.scheduler.{SparkListenerJobEnd, SparkListenerTaskEnd, SparkListenerStageCompleted, SparkListener}
+
 /**
  * Create for demo purpose. It is used to get progress from SparkProgressListener and print it out
  * TODO: remove it when progress report is exposed through rest api

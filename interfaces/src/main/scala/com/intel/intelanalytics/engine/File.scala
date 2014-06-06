@@ -21,10 +21,12 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.domain.frame
+package com.intel.intelanalytics.engine
 
-case class DataFrameTemplate(name: String, description: Option[String]) {
-  require(name != null)
-  require(name.trim.length > 0)
-  require(description != null)
-}
+import java.nio.file.Path
+
+sealed abstract class Entry(path: Path) {}
+
+case class File(path: Path, size: Long = 0) extends Entry(path)
+
+case class Directory(path: Path) extends Entry(path)
