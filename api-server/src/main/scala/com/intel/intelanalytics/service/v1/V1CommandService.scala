@@ -133,6 +133,8 @@ trait V1CommandService extends V1Service {
       case ("dataframe/project") => runFrameProject(uri, xform)
       case ("dataframe/renamecolumn") => runFrameRenameColumn(uri, xform)
       case ("dataframe/join") => runJoinFrames(uri, xform)
+      case ("dataframe/join") => runJoinFrames(uri, xform)
+      case ("dataframe/flattenColumn") => runflattenColumn(uri, xform)
       case _ => ???
     }
   }
@@ -361,6 +363,23 @@ trait V1CommandService extends V1Service {
       complete(decorate(uri + "/" + command.id, command))
     }
 
+  }
+
+  /**
+   * Receive column flattening request and executing flatten column command
+   */
+  def runflattenColumn(uri: Uri, xform: JsonTransform)(implicit user: UserPrincipal) = {
+    val test = Try {
+      import DomainJsonProtocol._
+      xform.arguments.get.convertTo[FlattenColumn[Long]]
+    }
+
+    (validate(test.isSuccess, "Failed to parse file load descriptor: " + getErrorMessage(test))) {
+      val args = test.get
+      val result = engine.flattenColumn(args)
+      val command: Command = result._1
+      complete(decorate(uri + "/" + command.id, command))
+    }
   }
 
   def runFrameProject(uri: Uri, xform: JsonTransform)(implicit user: UserPrincipal) = {
