@@ -21,20 +21,27 @@
 # must be express and approved by Intel in writing.
 #############################################################################
 import sys,traceback
-import logging
 
-logger = logging.getLogger(__name__)
+from intelanalytics.core.loggers import *
 
-#Set stack_flag to print the stack trace. If set to false, only the error message is printed.
-stack_flag=False
+# Values to be initialized:
+# Set stack_flag to print the stack trace. If set to false, only the error message is printed.
+# file_name is the name of the logger file. We could pick this up from a config file to ensure we have the same file everywhere
+# std_err flag is to be enabled if we want to log output to the std err console. The logging level here is DEBUG.
 
 def get_stacktrace(exc):
+    stack_flag=True
+    file_name = 'log.out'
+    stderr_flag = False
+
     exc_type,exc_value,exc_traceback = exc
+
+    # Logging the stacktrace at INFO level
+    # Syntax: set(level, logger_name, file_name, stderr_flag)
+    logger = loggers.set('INFO','loggername',file_name,stderr_flag)
     if stack_flag == True:
-        print "Test True"
-        logging.info("\n **** Printing the stack trace: ***")
-        logging.info(traceback.print_exception(exc_type, exc_value, exc_traceback, limit=None, file=sys.stdout))
+        # **** Printing the stack trace: ****
+        logger.info(repr(traceback.extract_tb(exc_traceback)))
     else:
-        print "Test False"
-        logging.info("\n *** The error message is: ***")
-        logging.info(traceback.format_exc(limit=0))
+        # **** Printing the error message is: ****
+        logger.info(traceback.format_exc(limit=0))
