@@ -36,15 +36,16 @@ object Boot extends App {
     final def option[A](a: => A): Option[A] = if (b) Some(a) else None
   }
 
-  val loaders = new mutable.HashMap[String, ClassLoader] with mutable.SynchronizedMap[String, ClassLoader] {}
+  var loaders: Map[String, ClassLoader] = Map.empty
 
-  val archives = new mutable.HashMap[String, Archive] with mutable.SynchronizedMap[String, Archive] {}
+  var archives: Map[String, Archive] = Map.empty
 
   def buildArchive(archive: String, className: String): Archive = {
     val loader = getClassLoader(archive)
     val klass = loader.loadClass(className)
     val thread = Thread.currentThread()
     val prior = thread.getContextClassLoader
+
     try {
       thread.setContextClassLoader(loader)
       val instance = klass.newInstance().asInstanceOf[Archive]
@@ -85,8 +86,10 @@ object Boot extends App {
    * @return Array of URLs to the found class folder and jar files
    */
   def getCodePathUrls(archive: String): Array[URL] = {
-    val classDirectory: Path = Directory.Current.get / archive / "target" / "scala-2.10" / "classes"
-    val developmentJar: Path = Directory.Current.get / archive / "target" / "scala-2.10" / (archive + ".jar")
+    //TODO: Allow directory to be passed in, or otherwise abstracted?
+    //TODO: Make sensitive to actual scala version rather than hard coding.
+    val classDirectory: Path = Directory.Current.get / archive / "target" / "classes"
+    val developmentJar: Path = Directory.Current.get / archive / "target" / (archive + ".jar")
     val deployedJar: Path = Directory.Current.get / "lib" / (archive + ".jar")
     val urls = Array(
       Directory(classDirectory).exists.option {
@@ -109,10 +112,12 @@ object Boot extends App {
     //TODO: Allow directory to be passed in, or otherwise abstracted?
     //TODO: Make sensitive to actual scala version rather than hard coding.
     val urls = getCodePathUrls(archive)
-    urls match {
+    val loader = urls match {
       case u if u.length > 0 => new URLClassLoader(u, parent)
       case _ => throw new Exception(s"Could not locate archive $archive")
     }
+    loaders += (archive -> loader)
+    loader
   }
 
   lazy val interfaces = buildClassLoader("interfaces", getClass.getClassLoader)

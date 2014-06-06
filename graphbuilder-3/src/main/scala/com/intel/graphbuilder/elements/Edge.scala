@@ -38,7 +38,7 @@ import com.intel.graphbuilder.util.StringUtils
  * @param label the Edge label
  * @param properties the list of properties associated with this edge
  */
-case class Edge(var tailPhysicalId: AnyRef, var headPhysicalId: AnyRef, tailVertexGbId: Property, headVertexGbId: Property, label: String, properties: Seq[Property]) extends GraphElement with Mergeable[Edge] {
+case class Edge(var tailPhysicalId: Any, var headPhysicalId: Any, tailVertexGbId: Property, headVertexGbId: Property, label: String, properties: Seq[Property]) extends GraphElement with Mergeable[Edge] {
 
   def this(tailVertexGbId: Property, headVertexGbId: Property, label: String, properties: Seq[Property]) {
     this(null, null, tailVertexGbId, headVertexGbId, label, properties)

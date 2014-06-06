@@ -99,38 +99,35 @@ will merge with those of the new data sources.
 Drop Rows
 ~~~~~~~~~
 
->>> # drop all rows where column 'a' is empty
->>> f.drop(lambda row: row.is_empty('a'))
+>>> # drop all rows where column 'b' contains a negative number
+>>> f.drop(lambda row: row['b'] < 0)
 
-``drop`` takes a predicate function and removes all rows for which the predicate
-evaluates True.  It operates in place, so it is destructive to the frame.  Be
-advised to make a copy of the frame before cleaning.
+>>> # drop all rows where column 'a' is empty
+>>> f.drop(lambda row: row['a'] is None)
 
 >>> # drop all rows where any column is empty
->>> f2 = BigFrame(f)
->>> f2.drop(lambda row: row.is_emptyany))
+>>> f.drop(lambda row: any([cell is None for cell in row]))
 
->>> # Other examples of row.is_empty
->>> f2.drop(lambda row: row.is_empty('a'))              # single column
->>> f2.drop(lambda row: row.is_empty(all))              # multi-column
->>> f2.drop(lambda row: row.is_empty(all, ('a', 'b')))  # multi-column
->>> f2.drop(lambda row: row.is_empty(any, ('a', 'b')))  # multi-column
+``drop`` takes a predicate function and removes all rows for which the predicate
+evaluates True.  It operates in place on the given frame, so it mutates the
+frame's content.
 
-``filter`` is like drop except it removes all the rows for which the predicate
-evaluates False.
+``filter`` is like ``drop`` except it removes all the rows for which the
+predicate evaluates False.
 
->>> # drop all rows where field 'b' is out of range 0 to 10
+>>> # keep only those rows where field 'b' is in the range 0 to 10
 >>> f2.filter(lambda row: 0 >= row['b'] >= 10)
 
 If we want to hang on to the dropped rows, we can pass in a BigFrame to collect
-them.  All of the dropped rows will be appended to that frame.
+them.  All of the dropped rows will be appended to that frame. **Not implemented
+for 0.8**
 
 >>> r = BigFrame()
 >>> f.filter(lambda row: 0 >= row['b'] >= 10, rejected_store=r)
 
 That effectively splits frame ``f`` in two.
 
-See :doc:`rowfunc`
+See :doc:`ds_apir`
 
 ``drop_duplicates`` performs row uniqueness comparisons across the whole table.
 
@@ -257,39 +254,93 @@ There are also a bunch of built-in reducers:  count, sum, avg, stdev, etc.
 Groupby (and Aggregate)
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-***WIP***  current idea:  (follows GraphLab's SFrame)
+(Follows GraphLab's SFrame:
+http://graphlab.com/products/create/docs/graphlab.data_structures.html#module-graphlab.aggregate
+)
 
 Group rows together based on matching column values and then apply aggregation
 functions on each group, producing a new BigFrame object.  Two parameters:
 (1) the column(s) to group on and (2) aggregation function(s)
 
 Aggregation on individual columns:
->>> f.groupby(['a', 'b'], { 'c': [avg, sum, stdev], 'd': [avg, sum]})
+>>> f.groupby(['a', 'b'], { 'c': [agg.avg, agg.sum, agg.stdev], 'd': [agg.avg, agg.sum]})
 
-The name of the new columns are implied.  The previous example would a new
+The name of the new columns are implied.  The previous example would be a new
 BigFrame with 7 columns:
 
-\   ``"a", "b", "c_avg", "c_sum", "c_stdev", "d_avg", "d_sum"``
-
-
-Aggregation based on full row:
->>> f.groupby(['a', 'b'], count)
+Aggregation based on full row:  (*agg.count is the only one supported)
+>>> f.groupby(['a', 'b'], agg.count)
 
 Both by column and row together:
->>> f.groupby(['a', 'b'], count, { 'c': [avg, sum, stdev], 'd': [avg, sum]})
+>>> f.groupby(['a', 'b'], [agg.count, { 'c': [agg.avg, agg.sum, agg.stdev], 'd': [agg.avg, agg.sum]}])
 
 
-Use 'stats' to get all the basic statistical calculations:
+
+def groupby(self, column, aggregation):
+    """
+    Groups rows together based on matching column values and applies aggregation
+    functions on each group, producing a new BigFrame object.
+
+    Parameters
+    ----------
+    column : str, list of string
+        The name(s) of the column(s) to be grouped by
+
+    aggregation : row aggregator, dict of cell aggregators, or list of row aggregator and dict of cell aggregators
+        The aggregation functions (reducers) to apply to each group.  ByRow aggregators
+        use the entire row, reducing all the columns in a group (all columns) to a single value
+        `count` is the only supported ByRow aggregator.
+        ByCell aggregators just use a specific cell, reducing a column in a group to a single value
+
+    Returns
+    -------
+    frame : BigFrame
+        A new BigFrame containing the aggregation results
+
+
+A big question is what aggregators must we support for 0.8?
+
+To match GraphLab's SFrame groupby:
+
+
+avg
+count
+max
+mean
+min
+quantile
+stdev
+sum
+variance
+
+I would add `distinct` to that list for 0.8
+
+
+And then from IAT Product Defn:  (any must-haves for 0.8?)
+
+Mean, Median, Mode, Sum, Geom Mean
+Skewness, Kurtosis, Cumulative Sum, Cumulative Count, Sum, Count
+Minimum, Maximum, Range, Variance, Standard Deviation, Mean Standard Error, Mean Confidence Interval, Outliers
+Count Distinct, Distribution
+Possibly others I missed
+
+
+Stuff to consider for >= 1.0
+
+. Use a 'stats' builtin to get all the basic statistical calculations:
+
 >>> f.groupby(['a', 'b'], { 'c': stats, 'd': stats })
 >>> f.groupby(['a', 'b'], stats)  # on all columns besides the groupby columns
 
-Custom reducers:
+. Use lambdas for custom groupby operations --i.e. first parameter can be a lambda
+
+. Customer reducers:
+
 >>> f.groupby(['a', 'b'], ReducerByRow('my_row_lambda_col', lambda acc, row_upd: acc + row_upd.c - row_upd.d))
 
 Produces a frame with 3 columns: ``"a", "b", "my_row_lambda_col"``
 
-Mixed-combo:   (a little much? this is pretty much exactly what GraphLab is supporting,
-except I'm adding custom reducers)
+. Mixed-combo:
 >>> f.groupby(['a', 'b'],
 >>>           stats,
 >>>           ReducerByRow('my_row_lambda_col', lambda acc, row_upd: acc + row_upd.c - row_upd.d))
@@ -299,24 +350,89 @@ except I'm adding custom reducers)
 Produces a frame with several columns:
 ``"a", "b", "c_avg", "c_stdev", "c_ ..., "d_avg", "d_stdev", "d_ ..., "my_row_lambda_col", "c_fuzz", "d_fuzz"``
 
- 
- 
+
+
+
 Join
 ~~~~
 
-***WIP***
+def join(self, right, left_on, right_on=None, how='left', suffixes=None):
+    """
+    Create a new BigFrame from a JOIN operation with another BigFrame
 
-``join`` produces a new BigFrame
+    Parameters
+    ----------
+    right : BigFrame
+        Another frame to join with
 
-Legacy Tribeca does this:
->> f4 = f1.join([f2, f3], left_on='a', right_on=['a', 'x'], how='left')
+    left_on : str
+        Name of the column for the join for this (left) frame
 
-Pandas does this (only difference is ``on`` vs. ``left_on``, ``right_on``)
->> f5 = f1.join(f2, on='a', how='left')
->> f6 = f1.join(f2, on=['a', 'b'], how='left')
+    right_on : Str, optional
+        Name of the column for the join for the right frame, if not
+        provided, then the value of left_on is used.
 
-Or could try something like this, making the join implicit with the "on" tuples, and adding "select"
->> f7 = f1.join([f2, f3], on=(f1['a'], f2['a'], f3['x']), how='left', select=(f1[['a', 'b', 'c']], f2[['a', 'd'], f3['y']))
->> f8 = join((f1['a'], f2['a'], f3['x']), how='left', select=(f1[['a', 'b', 'c']], f2[['a', 'd'], f3['y']))
+    how : str, optional
+        {'left', 'right', 'outer', 'inner'}
+
+    suffixes : 2-ary tuple of str, optional
+        Suffixes to apply to overlapping column names on the output frame.
+        Default suffixes are ('_L', '_R')
+
+
+    Returns
+    -------
+    frame : BigFrame
+        The new joined frame
+
+    Examples
+    --------
+    >>> joined_frame = frame1.join(frame2, 'a')  # left join on column 'a'
+    >>> joined_frame = frame1.join(frame2, left_on='b', right_on='book', how='outer')
+    """
+
+
+Flatten
+~~~~~~~
+
+``flatten_column`` creates a new BigFrame by copying all the rows of a given
+Frame and flattening a particular cell to produce possibly many new rows.
+
+Example:
+
+>>> frame1.inspect()
+
+a:int32    b:str
+-------   --------
+  1        "solo", "mono", "single"
+  2        "duo", "double"
+
+>>> frame2 = frame1.flatten_column('b')
+>>> frame2.inspect()
+
+ a:int32    b:str
+-------   --------
+  1        "solo"
+  1        "mono"
+  1        "single"
+  2        "duo"
+  2        "double"
+
+
+``flatten_column`` requires a single column name as its first parameter.  There
+is a second optional function parameter which defines how the splitting should
+be done.
+
+>>> frame2 = frame1.flatten('b')  # if column 'a' is natively a list (we don't really support that data type yet)
+
+>>> frame2 = frame1.flatten('b', lambda cell: [item.strip() for item in cell.split(',')])  # could make this the default behavior for string data type
+
+
+Misc Notes
+==========
+
+. uh, this was a thought once --something about not cancelling the job on an
+error, but just marking row/cell as None and reporting
+``raise FillNone("col value out of range")``
 map or whatever will catch this, log it, add to a count in the report, and fill
 the entry with a None
