@@ -23,26 +23,34 @@
 
 package com.intel.intelanalytics.domain
 
+import com.intel.intelanalytics.domain.graphconstruction.{ FrameRule, EdgeRule, VertexRule }
+
 //TODO: Many of these classes will go away in the future, replaced with something more generic.
 
 //TODO: Add more parameters as appropriate
 case class Als[GraphRef](graph: GraphRef, lambda: Double, max_supersteps: Option[Int],
                          converge_threshold: Option[Int], feature_dimension: Option[Int])
 
-case class LoadLines[+Arguments, FrameRef](source: String, destination: FrameRef, skipRows: Option[Int], lineParser: Partial[Arguments]) {
+case class LoadLines[+Arguments, FrameRef](source: String, destination: FrameRef, skipRows: Option[Int], overwrite: Option[Boolean], lineParser: Partial[Arguments], schema: Schema) {
   require(source != null, "source is required")
   require(destination != null, "destination is required")
   require(skipRows.isEmpty || skipRows.get >= 0, "cannot skip negative number of rows")
   require(lineParser != null, "lineParser is required")
+  require(schema != null, "schema is required")
 }
 
 case class FilterPredicate[+Arguments, FrameRef](frame: FrameRef, predicate: String) {
   require(frame != null, "frame is required")
   require(predicate != null, "predicate is required")
 }
+
 case class FrameRemoveColumn[+Arguments, FrameRef](frame: FrameRef, column: String) {
   require(frame != null, "frame is required")
   require(column != null, "column is required")
+}
+case class FrameRenameFrame[+Arguments, FrameRef](frame: FrameRef, new_name: String) {
+  require(frame != null, "frame is required")
+  require(new_name != null && new_name.size > 0, "new_name is required")
 }
 case class FrameAddColumn[+Arguments, FrameRef](frame: FrameRef, columnname: String, columntype: String, expression: String) {
   require(frame != null, "frame is required")
@@ -51,4 +59,55 @@ case class FrameAddColumn[+Arguments, FrameRef](frame: FrameRef, columnname: Str
   require(expression != null, "expression is required")
 }
 
+/**
+ * frame join command
+ * @param name name of new dataframe to be created, eg: result
+ * @param frames input dataframes for the join operation
+ * @param how methods of join. inner, left or right
+ */
+case class FrameJoin(name: String, frames: List[(Long, String)], how: String) {
+  require(frames != null, "frame is required")
+  require(frames.length == 2, "Two frames are required for the join operation")
+}
+
+case class FrameProject[+Arguments, FrameRef](frame: FrameRef, projected_frame: FrameRef, columns: List[String], new_column_names: List[String]) {
+  require(frame != null, "frame is required")
+  require(projected_frame != null, "projected frame is required")
+  require(columns != null && columns.size > 0, "column is required")
+  if (new_column_names != null && new_column_names.size > 0) {
+    // TODO - accept a null Json deserialization... for now Python is passing an empty list rather than null
+    require(columns.size == new_column_names.size, "number of renamed columns must equal number of columns")
+    // TODO - ensure no duplicate names in columns
+    // TODO - ensure no duplicate names in renamed_columns
+  }
+}
+
+case class FrameRenameColumn[+Arguments, FrameRef](frame: FrameRef, originalcolumn: String, renamedcolumn: String) {
+  require(frame != null, "frame is required")
+  require(originalcolumn != null, "original column is required")
+  require(renamedcolumn != null, "renamed column is required")
+}
+
+case class FlattenColumn[FrameRef](name: String, frame: FrameRef, column: String, separator: String)
+
+
 case class SeparatorArgs(separator: Char)
+
+/**
+ * Command for loading  graph data into existing graph in the graph database. Source is tabular data from a dataframe
+ * and it is converted into graph data using the graphbuilder3 graph construction rules.
+ * @param graph Handle to the graph to be written to.
+ * @param frame_rules List of handles to the dataframe to be used as a data source.
+ * @param retain_dangling_edges When true, dangling edges are retained by adding dummy vertices, when false, dangling
+ *                              edges are deleted.
+ * @tparam Arguments Type of the command packed provided by the caller.
+ * @tparam GraphRef Type of the reference to the graph being written to.
+ * @tparam FrameRef Type of the reference to the source frame being read from.
+ */
+case class GraphLoad[+Arguments, GraphRef, FrameRef](graph: GraphRef,
+                                                     frame_rules: List[FrameRule[FrameRef]],
+                                                     retain_dangling_edges: Boolean) {
+  require(graph != null)
+  require(frame_rules != null)
+}
+

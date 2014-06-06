@@ -2,6 +2,21 @@
 # to build in python 2.7 on a RedHat distribution of Linux. RedHat needs
 # version 2.6 to run properly, so we create a virtual environment with
 # python 2.7 in the PYTHONPATH when we create the documents.
+SCRIPT=$(readlink -f "$0")
+SCRIPTPATH=$(dirname "$SCRIPT")
+
+echo $SCRIPT
+
+
+OS=$(cat /etc/*-release | grep ubuntu)
+
+function no_virtpy_exit_os_check()
+{
+	if [ "$OS" == "" ]; then
+		exit 1
+	fi
+	echo "running on ubuntu we don't need virtpy because ubuntu is awesome"
+}
 
 if [[ -f /usr/lib/IntelAnalytics/virtpy/bin/activate ]]; then
     ACTIVATE_FILE=/usr/lib/IntelAnalytics/virtpy/bin/activate
@@ -11,10 +26,14 @@ fi
 
 if [[ ! -f $ACTIVATE_FILE ]]; then
     echo "Virtual Environment is not installed please execute install_pyenv.sh to install."
-    exit 1
+	no_virtpy_exit_os_check
 fi
 
-source $ACTIVATE_FILE
+if [ "$OS" == "" ]; then
+	source $ACTIVATE_FILE
+fi
+
+pushd $SCRIPTPATH
 
 # if the individual running this script is a techwriter and has started the script with 
 # the key word 'packages', check that the packages have been installed.
@@ -44,3 +63,10 @@ fi
 
 # We assume we are running from the doc directory. Ignore all toctree warnings.
 make -B html 2>&1 | grep -v -f toctreeWarnings
+
+# Make a zip file of that which was just built
+if [[ -d build ]]; then
+    zip -rq intel_analytics_docs.zip build
+fi
+
+popd

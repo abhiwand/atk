@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2013 Intel Corporation All Rights Reserved.
+// Copyright 2014 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -37,6 +37,8 @@ object DataTypes {
     type ScalaType
 
     def parse(s: String): Try[ScalaType]
+
+    def scalaType: Class[ScalaType]
   }
 
   /**
@@ -48,6 +50,8 @@ object DataTypes {
     override def parse(s: String) = Try {
       s.toInt
     }
+
+    override def scalaType = classOf[Int]
   }
 
   /**
@@ -59,6 +63,8 @@ object DataTypes {
     override def parse(s: String): Try[int64.ScalaType] = Try {
       s.toLong
     }
+
+    override def scalaType = classOf[Long]
   }
 
   /**
@@ -70,6 +76,8 @@ object DataTypes {
     override def parse(s: String): Try[float32.ScalaType] = Try {
       s.toFloat
     }
+
+    override def scalaType = classOf[Float]
   }
 
   /**
@@ -82,6 +90,8 @@ object DataTypes {
     override def parse(s: String): Try[float64.ScalaType] = Try {
       s.toDouble
     }
+
+    override def scalaType = classOf[Double]
   }
 
   /**
@@ -93,6 +103,8 @@ object DataTypes {
     override def parse(s: String): Try[string.ScalaType] = Try {
       s
     }
+
+    override def scalaType = classOf[String]
   }
 
   /**
@@ -161,6 +173,46 @@ import DataTypes._
  * Schema for a data frame. Contains the columns with names and data types.
  * @param columns the columns in the data frame
  */
-case class Schema(columns: List[(String, DataType)]) {
+case class Schema(columns: List[(String, DataType)] = List[(String, DataType)]()) {
   require(columns != null)
+
+  /**
+   * get column index by column name
+   * @param columnName name of the column to find index
+   */
+  def columnIndex(columnName: String): Int = columns.indexWhere(columnTuple => columnTuple._1 == columnName)
+}
+
+object SchemaUtil {
+  /**
+   * Resolve naming conflicts when both left and right side of join operation have same column names
+   * @param leftColumns columns for the left side of join operation
+   * @param rightColumns columns for the right side of join operation
+   * @return
+   */
+  def resolveSchemaNamingConflicts(leftColumns: List[(String, DataType)], rightColumns: List[(String, DataType)]): List[(String, DataType)] = {
+
+    val funcAppendLetterForConflictingNames = (left: List[(String, DataType)], right: List[(String, DataType)], appendLetter: String) => {
+
+      var leftColumnNames = left.map(r => r._1)
+
+      left.map(r =>
+        if (right.map(i => i._1).contains(r._1)) {
+          var name = r._1 + "_" + appendLetter
+          while (leftColumnNames.contains(name)) {
+            name = name + "_" + appendLetter
+          }
+          leftColumnNames = leftColumnNames ++ List(name)
+          (name, r._2)
+        }
+        else
+          r
+      )
+    }
+
+    val left = funcAppendLetterForConflictingNames(leftColumns, rightColumns, "L")
+    val right = funcAppendLetterForConflictingNames(rightColumns, leftColumns, "R")
+
+    left ++ right
+  }
 }

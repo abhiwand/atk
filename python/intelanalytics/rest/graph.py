@@ -28,7 +28,7 @@ logger = logging.getLogger(__name__)
 
 from intelanalytics.core.graph import VertexRule, EdgeRule
 from intelanalytics.core.column import BigColumn
-from intelanalytics.rest.connection import rest_http
+from intelanalytics.rest.connection import http
 
 
 
@@ -39,7 +39,7 @@ class GraphBackendRest(object):
 
     def get_graph_names(self):
         logger.info("REST Backend: get_graph_names")
-        r = rest_http.get('graphs')
+        r = http.get('graphs')
         payload = r.json()
         return [f['name'] for f in payload]
 
@@ -53,24 +53,90 @@ class GraphBackendRest(object):
 
     def create(self, graph, rules):
         logger.info("REST Backend: create graph: " + graph.name)
-        payload = JsonPayload(graph, rules)
-        r = rest_http.post('graphs', payload)
+
+        r = http.post('graphs', { 'name': graph.name })
+
         logger.info("REST Backend: create response: " + r.text)
         payload = r.json()
         graph._id = payload['id']
+        graph._uri = "%s" % (self._get_uri(payload))
+        payload = JsonPayload(graph, rules)
+
+        if logger.level == logging.DEBUG:
+            import json
+            payload_json =  json.dumps(payload, indent=2, sort_keys=True)
+            logger.debug("REST Backend: create graph payload: " + payload_json)
+
+        r = http.post('commands', {"name": "graph/load", "arguments": payload})
+        logger.info("REST Backend: load response: " + r.text)
 
 
-# JSON Payload objects:
+    def _get_uri(self, payload):
+        links = payload['links']
+        for link in links:
+            if link['rel'] == 'self':
+                return link['uri']
+        return "we don't know"
+        # TODO - bring exception back
+        #raise Exception('Unable to find uri for graph')
+
+    def als(self, graph, *args, **kwargs):
+        logger.info("REST Backend: run als on graph " + graph.name)
+        payload = JsonAlsPayload(graph, *args, **kwargs)
+        if logger.level == logging.DEBUG:
+            import json
+            payload_json =  json.dumps(payload, indent=2, sort_keys=True)
+            logger.debug("REST Backend: run als payload: " + payload_json)
+        r = http.post('commands', payload)
+        logger.debug("REST Backend: run als response: " + r.text)
+
+    def recommend(self, graph, vertex_id):
+        logger.info("REST Backend: als query on graph " + graph.name)
+        cmd_format ='graphs/{0}/vertices?qname=ALSQuery&offset=0&count=10&vertexID={1}'
+        cmd = cmd_format.format(graph._id, vertex_id)
+        logger.debug("REST Backend: als query cmd: " + cmd)
+        r = http.get(cmd)
+        json = r.json()
+        logger.debug("REST Backend: run als response: " + json)
+        return json
+
+
+class JsonAlsPayload(object):
+    def __new__(cls,
+                graph,
+                input_edge_property_list,
+                input_edge_label,
+                output_vertex_property_list,
+                vertex_type,
+                edge_type):
+        return {
+            "name": "graph/ml/als",
+            "arguments" : {
+                "graph": graph.uri,
+                "lambda": 0.1,
+                "max_supersteps": 20,
+                "converge_threshold": 0,
+                "feature_dimension": 1,
+                "input_edge_property_list": input_edge_property_list,
+                "input_edge_label": input_edge_label,
+                "output_vertex_property_list": output_vertex_property_list,
+                "vertex_type": vertex_type,
+                "edge_type": edge_type,
+            }
+        }
+
+
+# GB JSON Payload objects:
 
 class JsonValue(object):
     def __new__(cls, value):
         if isinstance(value, basestring):
-            t, v = "static", value
+            t, v = "CONSTANT", value
         elif isinstance(value, BigColumn):
-            t, v = "column", value.name
+            t, v = "VARYING", value.name
         else:
             raise TypeError("Bad graph element source type")
-        return {"type": t, "value": v}
+        return {"source": t, "value": v}
 
 
 class JsonProperty(object):
@@ -92,20 +158,21 @@ class JsonEdgeRule(object):
                 'head': JsonProperty(JsonValue(rule.head.id_key), JsonValue(rule.head.id_value)),
                 'properties': [JsonProperty(JsonValue(k), JsonValue(v))
                                for k, v in rule.properties.items()],
-                'is_directed': rule.is_directed}
+                'bidirectional': not rule.is_directed}
 
 
 class JsonFrame(object):
     def __new__(cls, frame_uri):
-        return {'frame_uri': frame_uri,
+        return {'frame': frame_uri,
                 'vertex_rules': [],
                 'edge_rules': []}
 
 
 class JsonPayload(object):
     def __new__(cls, graph, rules):
-        return {'name': graph.name,
-                'frames': JsonPayload._get_frames(rules)}
+        return {'graph': graph.uri,
+                'frame_rules': JsonPayload._get_frames(rules),
+                'retain_dangling_edges':False } # TODO
 
     @staticmethod
     def _get_frames(rules):
@@ -130,4 +197,6 @@ class JsonPayload(object):
             frame = JsonFrame(uri)
             frames_dict[uri] = frame
         return frame
+
+
 

@@ -44,9 +44,8 @@ class Loggers(object):
     _line_format = '%(asctime)s|%(name)s|%(levelname)-5s|%(message)s'
 
     # table of aliased loggers for easy reference in REPL
-    _aliased_loggers_map = {
-        'rest_connection': 'intelanalytics.rest.connection',
-        }
+
+    _aliased_loggers_map = {'http': 'intelanalytics.rest.connection',}
 
     # map first character of level to actual level setting, for convenience
     _level_map = {'c': logging.CRITICAL,
@@ -62,35 +61,46 @@ class Loggers(object):
         self._create_alias_set_functions()
 
     def __repr__(self):
-        header = ["{0:<40} {1:<10} {2:<14}".format("Logger", "Level", "# of Handlers"),
-                  "{0:<40} {1:<10} {2:<14}".format("-"*39, "-"*9, "-"*13)]
+        header = ["{0:<8}  {1:<50}  {2:<14}".format("Level", "Logger", "# of Handlers"),
+                  "{0:<8}  {1:<50}  {2:<14}".format("-"*8, "-"*50, "-"*14)]
         entries = []
-        names = self._aliased_loggers_map.values() + self._user_logger_names
-        for name in names:
-            logger = logging.getLogger(name)
-
-            entries.append("{0:<40} {1:<10} {2:7}".
-                           format(logger.name,
-                                  logging.getLevelName(logger.level),
-                                  len(logger.handlers)))
+        for alias, name in self._aliased_loggers_map.items():
+            entries.append(self._get_repr_line(name, alias))
+        for name in self._user_logger_names:
+            entries.append(self._get_repr_line(name, None))
         return "\n".join(header + entries)
+
+
+    @staticmethod
+    def _get_repr_line(name, alias):
+        logger = logging.getLogger(name)
+        if alias:
+            name += " (%s)" % alias
+        return "{0:<8}  {1:<50}  {2:<14}".format(logging.getLevelName(logger.level),
+                                                 name,
+                                                 len(logger.handlers))
+
+    def _create_alias_set_function(self, alias, name):
+        def alias_set(level=logging.DEBUG):
+            self.set(level, name)
+            try:
+                doc = Loggers.set.__doc__
+                alias_set.__doc__ = doc[:doc.index("logger_name")] + """
+        Examples
+        --------
+        >>> loggers.%s('debug')""" % alias
+            except:
+                pass
+        return alias_set
 
     def _create_alias_set_functions(self):
         """
         Creates set methods for aliased loggers and puts them in self.__dict__
         """
         for alias, name in self._aliased_loggers_map.items():
-            def alias_set(level=logging.DEBUG):
-                self.set(level, name)
-            try:
-                doc = Loggers.set.__doc__
-                alias_set.__doc__ = doc[:doc.index("logger_name")] + """
-        Examples
-        --------
-        >>> loggers.%s_set('debug')""" % alias
-            except:
-                pass
-            self.__dict__[alias + "_set"] = alias_set
+
+           self.__dict__["set_" + alias] = self._create_alias_set_function(alias, name)
+
 
     def set(self, level=logging.DEBUG, logger_name=''):
         """
@@ -113,7 +123,7 @@ class Loggers(object):
         """
         logger_name = logger_name if logger_name != 'root' else ''
         logger = logging.getLogger(logger_name)
-        if level is None or level == '':
+        if not level:
             # turn logger OFF
             logger.level = logging.CRITICAL
             for h in logger.handlers:

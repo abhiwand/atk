@@ -3,6 +3,7 @@ dependency-reduced-pom.xml
 /ititan/conf
 /ititan/ext
 /ititan/log
+/ititan/titan-hbase/conf/hbase-site.xml
 *.LOG
 *.build
 repack
@@ -46,13 +47,11 @@ target
 *.tar.gz
 testgraphs
 *.zip
-graphbuilder/graphbuilder.iml
 cscope*
 tags
 *.patch
 *.diff
 patches-*
-*/dependency-reduced-pom.xml
 virtpy
 lib
 *.jar
