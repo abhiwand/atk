@@ -23,7 +23,7 @@
 
 package com.intel.intelanalytics.component
 
-import java.net.URLClassLoader
+import java.net.{ URL, URLClassLoader }
 import scala.reflect.io.{ File, Path, Directory }
 import scala.util.control.NonFatal
 import scala.collection.mutable
@@ -66,7 +66,26 @@ object Boot extends App {
     loaders.getOrElse(archive, buildClassLoader(archive, interfaces))
   }
 
-  def buildClassLoader(archive: String, parent: ClassLoader): ClassLoader = {
+  /**
+   * Return the jar file location for the specified archive
+   * @param archive archive to search
+   * @param f function for searching code paths that contain the archive
+   */
+  def getJar(archive: String, f: String => Array[URL] = getCodePathUrls): URL = {
+    val codePaths = f(archive)
+    val jarPath = codePaths.filter(u => u.getPath.endsWith(".jar")).headOption
+    jarPath match {
+      case None => throw new Exception(s"Could not find jar file for $archive")
+      case _ => jarPath.get
+    }
+  }
+
+  /**
+   * Search the paths to class folder or jar files for the specified archive
+   * @param archive archive to search
+   * @return Array of URLs to the found class folder and jar files
+   */
+  def getCodePathUrls(archive: String): Array[URL] = {
     //TODO: Allow directory to be passed in, or otherwise abstracted?
     //TODO: Make sensitive to actual scala version rather than hard coding.
     val classDirectory: Path = Directory.Current.get / archive / "target" / "classes"
@@ -85,6 +104,14 @@ object Boot extends App {
         println(s"Found jar at $deployedJar")
         deployedJar.toURL
       }).flatten
+
+    urls
+  }
+
+  def buildClassLoader(archive: String, parent: ClassLoader): ClassLoader = {
+    //TODO: Allow directory to be passed in, or otherwise abstracted?
+    //TODO: Make sensitive to actual scala version rather than hard coding.
+    val urls = getCodePathUrls(archive)
     val loader = urls match {
       case u if u.length > 0 => new URLClassLoader(u, parent)
       case _ => throw new Exception(s"Could not locate archive $archive")
