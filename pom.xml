@@ -650,7 +650,7 @@ export MAVEN_OPTS="-Xms2048m -Xmx4096m -XX:MaxPermSize=4096m -XX:PermSize=2048m"
                                 <goal>shade</goal>
                             </goals>
                             <configuration>
-								
+								<shadeTestJar>true</shadeTestJar>
                                 <finalName>${project.artifactId}</finalName>
                                 <shadedArtifactAttached>false</shadedArtifactAttached>
                                 <shadedClassifierName>${project.artifactId}</shadedClassifierName>
