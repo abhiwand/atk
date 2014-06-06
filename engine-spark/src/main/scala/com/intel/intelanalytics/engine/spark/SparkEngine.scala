@@ -107,6 +107,7 @@ class SparkComponent extends EngineComponent
   import DomainJsonProtocol._
   lazy val configuration: SparkEngineConfiguration = new SparkEngineConfiguration()
 
+
   val engine = new SparkEngine {}
 
   //TODO: choose database profile driver class from config
@@ -1070,7 +1071,7 @@ def calculateScore(list1, list2, biasOn, featureDimension) {
 
   trait HdfsFileStorage extends FileStorage with EventLogging {
 
-    val configuration = {
+    val fsConfiguration = {
       val hadoopConfig = new Configuration()
       require(hadoopConfig.getClass().getClassLoader == this.getClass.getClassLoader)
       //http://stackoverflow.com/questions/17265002/hadoop-no-filesystem-for-scheme-file
@@ -1079,10 +1080,15 @@ def calculateScore(list1, list2, biasOn, featureDimension) {
       hadoopConfig.set("fs.file.impl",
         classOf[LocalFileSystem].getName)
       require(hadoopConfig.getClassByNameOrNull(classOf[LocalFileSystem].getName) != null)
+
+      val root: String = configuration.config.getString("intel.analytics.fs.root")
+      if (root.startsWith("hdfs"))
+        hadoopConfig.set("fs.defaultFS", root)
+
       hadoopConfig
     }
 
-    val fs = FileSystem.get(configuration)
+    val fs = FileSystem.get(fsConfiguration)
 
     override def write(sink: File, append: Boolean): OutputStream = withContext("file.write") {
       val path: HPath = new HPath(fsRoot + sink.path.toString)
