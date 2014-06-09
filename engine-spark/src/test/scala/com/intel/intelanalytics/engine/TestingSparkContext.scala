@@ -34,16 +34,13 @@ trait TestingSparkContext extends FlatSpec with BeforeAndAfter {
 
   val useGlobalSparkContext: Boolean = System.getProperty("useGlobalSparkContext", "false").toBoolean
 
-  println("useGlobalSparkContext = " + useGlobalSparkContext)
   var sc: SparkContext = null
 
   before {
     if (useGlobalSparkContext) {
-      println("Using global spark context")
       sc = TestingSparkContext.sc
     }
     else {
-      println("Using local spark context")
       TestingSparkContext.lock.acquire()
       sc = TestingSparkContext.createSparkContext
     }

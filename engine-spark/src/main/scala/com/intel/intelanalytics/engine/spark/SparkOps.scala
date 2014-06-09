@@ -66,11 +66,13 @@ private[spark] object SparkOps extends Serializable {
       val (ct: Int, sum: Int) = sumsAndCounts(i)
       val thisPartStart = sum - ct
       if (sum < offset || thisPartStart >= offset + count) {
+        //println("skipping partition " + i)
         Iterator.empty
       }
       else {
         val start = Math.max(offset - thisPartStart, 0)
-        val numToTake = Math.min((count + offset) - thisPartStart, ct)
+        val numToTake = Math.min((count + offset) - thisPartStart, ct) - start
+        //println(s"partition $i: starting at $start and taking $numToTake")
         rows.drop(start.toInt).take(numToTake.toInt)
       }
     }).collect()

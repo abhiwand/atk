@@ -27,17 +27,33 @@ import org.scalatest.{Suites, Matchers, FlatSpec}
 import com.intel.intelanalytics.engine.TestingSparkContext
 import com.typesafe.config.ConfigFactory
 import org.scalatest.mock.MockitoSugar
+import scala.collection.mutable.ArrayBuffer
 
-class SparkOpsSpec extends Suites(GetRows) with Matchers {
+class SparkOpsTest extends TestingSparkContext with Matchers {
 
   //TODO
 //  val config = ConfigFactory.load("engine.conf")
 //  val max = config.getInt("intel.analytics.engine.max-rows")
   val max = 20
   val array = (1 to max * 2).map(i => Array(i, i.toString, i.toDouble * 0.1))
-  val data = sc.parallelize(array)
+
+  def fetchAllData(): ArrayBuffer[Array[Any]] = {
+    val data = sc.parallelize(array)
+    val results = new ArrayBuffer[Array[Any]]()
+    var offset = 0
+    var loop = true
+    while (loop) {
+      val batch = SparkOps.getRows(data, offset, max)
+      if (batch.length == 0)
+        loop = false
+      offset += max
+      results ++= batch
+    }
+    results
+  }
 
   "getRows" should "return the requested number of rows" in {
+    val data = sc.parallelize(array)
     SparkOps.getRows(data, 0, max).length should equal(max)
   }
 
@@ -47,11 +63,29 @@ class SparkOpsSpec extends Suites(GetRows) with Matchers {
 //  }
 
   it should "return no more rows than are available" in {
-    SparkOps.getRows(data, max * 2 - 5, max) should equal(5)
+    val data = sc.parallelize(array)
+    SparkOps.getRows(data, max * 2 - 5, max).length should equal(5)
   }
 
   it should "start at the requested offset" in {
+    val data = sc.parallelize(array)
     SparkOps.getRows(data, max * 2 - 10, 5).length should equal(5)
   }
 
+  it should "return no rows when a zero count is requested" in {
+    val data = sc.parallelize(array)
+    SparkOps.getRows(data, max * 2 - 10, 0).length should equal(0)
+  }
+
+  it should "return all the data when invoked enough times" in {
+    val results = fetchAllData()
+
+    results.length should equal(array.length)
+  }
+
+  it should "not generate the same row twice" in {
+    val results = fetchAllData()
+
+    results.groupBy { case Array(index, _, _) => index}.count(_._2.length > 1) should equal(0)
+  }
 }
