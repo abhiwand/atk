@@ -26,14 +26,16 @@ log files live in /var/log/intelanalytics/rest-server"
 REQUIRES=" java >= 1.7"
 
 POST="
- echo start intelanalytics-rest-server
+ #echo start intelanalytics-rest-server
 
- service intelanalytics-rest-server restart
+ #service intelanalytics-rest-server start
 "
 
 PREUN="
- echo stopping intelanalytics-rest-server
- service intelanalytics-rest-server stop
+ if  [ \$1 -eq 0 ]; then
+    echo stopping intelanalytics-rest-server
+    service intelanalytics-rest-server stop
+ fi
 "
 
 FILES="
