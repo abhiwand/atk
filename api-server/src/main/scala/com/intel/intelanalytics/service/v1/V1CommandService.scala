@@ -88,12 +88,7 @@ trait V1CommandService extends V1Service {
               uri =>
                 get {
                   onComplete(engine.getCommand(id)) {
-                    case Success(Some(command)) => {
-                      val decorated = decorate(uri, command)
-                      complete {
-                        decorated
-                      }
-                    }
+                    case Success(Some(command)) => complete(decorate(uri, command))
                     case _ => reject()
                   }
                 }
