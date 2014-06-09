@@ -41,14 +41,17 @@ def get_graph_names():
     
     Returns
     -------
+
     list of string
         A list comprised of the graph names
         
     Examples
     --------
-    >>> If we have these BigGraph objects defined: movies, incomes, virus
-    >>> Georgina = get_graph_names()
-    >>> Georgina is now ["incomes", "movies", "virus"]
+
+    >>>
+    If we have these BigGraph objects defined: movies, incomes, virus
+    >>> my_names = get_graph_names()
+    my_names is now ["incomes", "movies", "virus"]
     
     """
     # TODO - Review docstring
@@ -61,18 +64,22 @@ def get_graph(name):
     
     Parameters
     ----------
+
     name : string
         The name of the BigGraph object you are obtaining
         
     Returns
     -------
+
     BigGraph object
     
     Examples
     --------
-    >>> If we have these BigGraph objects defined: movies, incomes, virus
-    >>> Vicki = get_graph("virus")
-    >>> Vicki is now a BigGraph object
+
+    >>>
+    If we have these BigGraph objects defined: movies, incomes, virus
+    >>> my_graph = get_graph("virus")
+    my_graph is now a BigGraph object with the name "virus"
         
     """
     # TODO - Review docstring
@@ -85,19 +92,23 @@ def delete_graph(name):
     
     Parameters
     ----------
+
     name : string
         The name of the BigGraph object you are erasing
         
     Returns
     -------
+
     string
         The name of the BigGraph object you erased
     
     Examples
     --------
-    >>> If we have these BigGraph objects defined: movies, incomes, virus
-    >>> David = delete_graph("incomes")
-    >>> David is now a string with the value "incomes"
+
+    >>>
+    If we have these BigGraph objects defined: movies, incomes, virus
+    >>> my_gone = delete_graph("incomes")
+    my_gone is now a string with the value "incomes"
     
     """
     # TODO - Review docstring
@@ -134,7 +145,8 @@ class Rule(object):
         
         Parameters
         ----------
-        source :
+
+        source
             D
         frame : string
             D
@@ -144,16 +156,19 @@ class Rule(object):
         
         Raises
         ------
+
         RuleWithDifferentFramesError()
         TypeError
         
         Returns
         -------
+
         string
             The name of the frame
             
         Examples
         --------
+
         >>>
         
         """
@@ -203,6 +218,7 @@ class VertexRule(Rule):
 
     Parameters
     ----------
+
     id_key: string
         static string or pulled from BigColumn source; the key for the
         uniquely identifying property for the vertex.
@@ -215,6 +231,7 @@ class VertexRule(Rule):
 
     Examples
     --------
+
     >>> movie_vertex = VertexRule('movie', f['movie'], {'genre': f['genre']})
     >>> user_vertex = VertexRule('user', f['user'], {'age': f['age_1']})
     
@@ -247,6 +264,7 @@ class EdgeRule(Rule):
 
     Parameters
     ----------
+
     label: str or BigColumn source
         edge label, can be constant string or pulled from BigColumn
     tail: VertexRule
@@ -265,6 +283,7 @@ class EdgeRule(Rule):
 
     Examples
     --------
+
     >>> rating_edge = EdgeRule('rating', movie_vertex, user_vertex, {'weight': f['score']})
     
     """
@@ -306,6 +325,7 @@ class BigGraph(object):
 
     Parameters
     ----------
+
     rules : list of Rule, optional
          list of rules which specify how the graph will be created; if empty
          an empty graph will be created
@@ -314,7 +334,9 @@ class BigGraph(object):
 
     Examples
     --------
+
     >>> g = BigGraph([user_vertex, movie_vertex, rating_edge, extra_movie_rule])
+
     """
     def __init__(self, rules=None, name=""):
         if rules and (not isinstance(rules, list) or not all([isinstance(rule, Rule) for rule in rules])):
@@ -334,14 +356,16 @@ class BigGraph(object):
         
         Returns
         -------
+
         string
             The name of the current object.
             
         Examples
         --------
-        >>> Barney = BigGraph( , "Barney")
-        >>> Betty = Barney.name
-        >>> Betty is now a string with the value "Barney"
+        
+        >>> my_graph = BigGraph( , "my_data")
+        >>> my_name = my_graph.name
+        my_name is now a string with the value "my_data"
         
         """
         # TODO - Review Docstring
@@ -354,14 +378,16 @@ class BigGraph(object):
         
         Parameters
         ----------
+
         value : string
             The name for the current object.
             
         Examples
         --------
-        >>> Wilma = BigGraph()
-        >>> Wilma.name("Wilma")
-        >>> Wilma.name() now returns a string with the value "Wilma"
+
+        >>> my_graph = BigGraph()
+        >>> my_graph.name("my_data")
+        my_graph is now a BigGraph object with the name "my_data"
         
         """
         # TODO - Review Docstring
@@ -382,6 +408,7 @@ class BigGraph(object):
 
 
 class GraphMachineLearning(object):
+    # TODO - Docstrings
     def __init__(self, graph):
         self.graph = graph
         if not hasattr(self, '_backend'):
