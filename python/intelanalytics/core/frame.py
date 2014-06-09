@@ -27,6 +27,8 @@ import json
 import logging
 logger = logging.getLogger(__name__)
 
+from intelanalytics.core.types import supported_types
+
 
 def _get_backend():
     from intelanalytics.core.config import get_frame_backend
@@ -169,9 +171,12 @@ class BigFrame(object):
     # We are not defining __delitem__.  Columns must be deleted w/ remove_columns
 
     def __repr__(self):
-        return json.dumps({'_id': str(self._id),
+        return json.dumps({'uri': self.uri,
                            'name': self.name,
-                           'schema': self.schema}, indent=2)
+                           'schema': self._schema_as_json_obj()}, indent=2, separators=(', ', ': '))
+
+    def _schema_as_json_obj(self):
+        return [(col.name, supported_types.get_type_string(col.data_type)) for col in self._columns.values()]
 
     def __len__(self):
         return len(self._columns)
