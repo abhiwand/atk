@@ -83,7 +83,7 @@ trait V1DataFrameService extends V1Service {
               entity(as[DataFrameTemplate]) {
                 frame =>
                   onComplete(engine.create(frame)) {
-                    case Success(frame) => complete(decorate(uri + "/" + frame.id, frame))
+                    case Success(createdFrame) => complete(decorate(uri + "/" + createdFrame.id, createdFrame))
                     case Failure(ex) => throw ex
                   }
               }
