@@ -25,6 +25,23 @@ log files live in /var/log/intelanalytics/rest-server"
 
 REQUIRES=" java >= 1.7"
 
+POST="
+ echo start intelanalytics-rest-server
+
+ service intelanalytics-rest-server restart
+"
+
+PREUN="
+ echo stopping intelanalytics-rest-server
+ service intelanalytics-rest-server stop
+"
+
+FILES="
+    /etc/intelanalytics/rest-server
+    /usr/lib/intelanalytics/rest-server
+"
+
+
 mkdir -p $SCRIPTPATH/rpm/SPECS
 rpmSpec > $SCRIPTPATH/rpm/SPECS/$packageName.spec
 
@@ -40,5 +57,6 @@ rm -rf BUILDROOT/*
 log $BUILD_NUMBER
 rpmbuild --define "_topdir $topDir"  --define "BUILD_NUMBER $BUILD_NUMBER" --define "VERSION $VERSION" -bb SPECS/$packageName.spec
 
+cleanRpm
 popd 
 

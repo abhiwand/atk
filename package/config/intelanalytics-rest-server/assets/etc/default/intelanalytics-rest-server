@@ -1,0 +1,4 @@
+#intelanalytics-rest-server env file
+#Set all your environment variables needed for the rest server here
+
+#export SPARK_HOME="/usr/lib/spark"
