@@ -24,44 +24,13 @@
 package com.intel.intelanalytics.repository
 
 import com.intel.intelanalytics.domain._
-import com.intel.intelanalytics.domain.DataFrame
 import com.intel.intelanalytics.domain.User
-import com.intel.intelanalytics.domain.Command
-import com.intel.intelanalytics.domain.DataFrameTemplate
-import com.intel.intelanalytics.domain.CommandTemplate
 import com.intel.intelanalytics.domain.UserTemplate
+import com.intel.intelanalytics.domain.frame.{DataFrame, DataFrameTemplate}
+import com.intel.intelanalytics.domain.graph.{GraphTemplate, Graph}
+import com.intel.intelanalytics.domain.command.{CommandTemplate, Command}
 
 trait MetaStoreComponent {
   val metaStore: MetaStore
-
-  /**
-   * The MetaStore gives access to Repositories. Repositories are how you
-   * modify and query underlying tables (frames, graphs, users, etc).
-   */
-  trait MetaStore {
-    type Session
-    def withSession[T](name: String)(f: Session => T): T
-
-    /** Repository for CRUD on 'status' table */
-    def statusRepo: Repository[Session, Status, Status]
-
-    /** Repository for CRUD on 'frame' table */
-    def frameRepo: Repository[Session, DataFrameTemplate, DataFrame]
-
-    /** Repository for CRUD on 'command' table */
-
-    def graphRepo: Repository[Session, GraphTemplate, Graph]
-
-    def commandRepo: Repository[Session, CommandTemplate, Command]
-
-    /** Repository for CRUD on 'user' table */
-    def userRepo: Repository[Session, UserTemplate, User] with Queryable[Session, User]
-
-    /** Create the underlying tables */
-    def createAllTables(): Unit
-
-    /** Delete ALL of the underlying tables - useful for unit tests only */
-    private[repository] def dropAllTables(): Unit
-  }
 }
 

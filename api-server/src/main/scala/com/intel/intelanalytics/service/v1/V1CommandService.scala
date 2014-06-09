@@ -23,7 +23,6 @@
 
 package com.intel.intelanalytics.service.v1
 
-import com.intel.intelanalytics.service.v1.viewmodels.Rel
 import scala.util.Try
 import com.intel.intelanalytics.domain._
 import spray.json.JsObject
@@ -33,15 +32,26 @@ import com.intel.intelanalytics.service.v1.viewmodels.ViewModelJsonProtocol._
 import scala.concurrent._
 import spray.http.Uri
 import spray.routing.Route
-import com.intel.intelanalytics.service.v1.viewmodels.DecoratedCommand
+import com.intel.intelanalytics.domain.frame.FrameProject
+import com.intel.intelanalytics.domain.frame.FrameRenameFrame
+import com.intel.intelanalytics.domain.FilterPredicate
+import com.intel.intelanalytics.domain.graph.construction.FrameRule
 import scala.util.Failure
 import scala.Some
+import com.intel.intelanalytics.domain.frame.FrameAddColumn
+import com.intel.intelanalytics.domain.frame.FrameRenameColumn
 import scala.util.Success
+import com.intel.intelanalytics.domain.frame.FlattenColumn
 import com.intel.intelanalytics.security.UserPrincipal
-import com.intel.intelanalytics.service.v1.viewmodels.JsonTransform
-import com.intel.intelanalytics.domain.LoadLines
-import com.intel.intelanalytics.domain.Command
-import com.intel.intelanalytics.domain.graphconstruction.FrameRule
+import com.intel.intelanalytics.domain.frame.FrameRemoveColumn
+import spray.json._
+import com.intel.intelanalytics.domain.DomainJsonProtocol._
+import com.intel.intelanalytics.service.v1.viewmodels._
+import com.intel.intelanalytics.service.v1.viewmodels.ViewModelJsonProtocol._
+import com.intel.intelanalytics.domain.frame.FrameJoin
+import com.intel.intelanalytics.domain.graph.GraphLoad
+import com.intel.intelanalytics.domain.frame.LoadLines
+import com.intel.intelanalytics.domain.command.Command
 
 //TODO: Is this right execution context for us?
 
@@ -97,6 +107,8 @@ trait V1CommandService extends V1Service {
 
               get {
                 //TODO: cursor
+                import spray.json._
+                import ViewModelJsonProtocol._
                 onComplete(engine.getCommands(0, defaultCount)) {
                   case Success(commands) => complete(CommandDecorator.decorateForIndex(uri.toString(), commands))
                   case Failure(ex) => throw ex
@@ -125,14 +137,13 @@ trait V1CommandService extends V1Service {
       //TODO: genericize function resolution and invocation
       case ("dataframe/load") => runFrameLoad(uri, xform)
       case ("graph/load") => runGraphLoad(uri, xform)
-      case ("graph/ml/als") => runAls(uri, xform)
+      //case ("graph/ml/als") => runAls(uri, xform)
       case ("dataframe/filter") => runFilter(uri, xform)
       case ("dataframe/removecolumn") => runFrameRemoveColumn(uri, xform)
       case ("dataframe/rename_frame") => runFrameRenameFrame(uri, xform)
       case ("dataframe/addcolumn") => runFrameAddColumn(uri, xform)
       case ("dataframe/project") => runFrameProject(uri, xform)
       case ("dataframe/renamecolumn") => runFrameRenameColumn(uri, xform)
-      case ("dataframe/join") => runJoinFrames(uri, xform)
       case ("dataframe/join") => runJoinFrames(uri, xform)
       case ("dataframe/flattenColumn") => runflattenColumn(uri, xform)
       case _ => ???
@@ -172,7 +183,6 @@ trait V1CommandService extends V1Service {
    */
   def runGraphLoad(uri: Uri, transform: JsonTransform)(implicit user: UserPrincipal): Route = {
     val test = Try {
-      import DomainJsonProtocol._
       transform.arguments.get.convertTo[GraphLoad[JsObject, String, String]]
     }
 
@@ -209,33 +219,9 @@ trait V1CommandService extends V1Service {
       }
   }
 
-  def runAls(uri: Uri, transform: JsonTransform)(implicit user: UserPrincipal): Route = {
-    val test = Try {
-      import DomainJsonProtocol._
-      transform.arguments.get.convertTo[Als[String]]
-    }
-    val idOpt = test.toOption.flatMap(args => getGraphId(args.graph))
-    (validate(test.isSuccess, "Failed to parse file load descriptor: " + getErrorMessage(test))
-      & validate( /*idOpt.isDefined*/ true, "Destination is not a valid graph URL")) {
-        val args = test.get
-        val id = 1 //idOpt.get
-        val (c, f) = engine.runAls(args.copy[Long](graph = 1))
-        complete(decorate(uri + "/" + c.id, c))
-        //      onComplete(
-        //          for {
-        //            graph <- engine.getGraph(id)
-        //            (c, f) = engine.runAls(args.copy[Long](graph = graph.id))
-        //          } yield c) {
-        //            case Success(c) => complete(decorate(uri + "/" + c.id, c))
-        //            case Failure(ex) => throw ex
-        //          }
-      }
-  }
-
   def runFilter(uri: Uri, xform: JsonTransform)(implicit user: UserPrincipal) = {
     {
       val test = Try {
-        import DomainJsonProtocol._
         xform.arguments.get.convertTo[FilterPredicate[JsObject, String]]
       }
       val idOpt = test.toOption.flatMap(args => getFrameId(args.frame))
@@ -258,7 +244,6 @@ trait V1CommandService extends V1Service {
   def runFrameRenameFrame(uri: Uri, xform: JsonTransform)(implicit user: UserPrincipal) = {
     {
       val test = Try {
-        import DomainJsonProtocol._
         xform.arguments.get.convertTo[FrameRenameFrame[JsObject, String]]
       }
       val idOpt = test.toOption.flatMap(args => getFrameId(args.frame))
@@ -281,7 +266,6 @@ trait V1CommandService extends V1Service {
   def runFrameRenameColumn(uri: Uri, xform: JsonTransform)(implicit user: UserPrincipal) = {
     {
       val test = Try {
-        import DomainJsonProtocol._
         xform.arguments.get.convertTo[FrameRenameColumn[JsObject, String]]
       }
       val idOpt = test.toOption.flatMap(args => getFrameId(args.frame))
@@ -304,7 +288,6 @@ trait V1CommandService extends V1Service {
   def runFrameAddColumn(uri: Uri, xform: JsonTransform)(implicit user: UserPrincipal) = {
     {
       val test = Try {
-        import DomainJsonProtocol._
         xform.arguments.get.convertTo[FrameAddColumn[JsObject, String]]
       }
       val idOpt = test.toOption.flatMap(args => getFrameId(args.frame))
@@ -327,7 +310,6 @@ trait V1CommandService extends V1Service {
   def runFrameRemoveColumn(uri: Uri, xform: JsonTransform)(implicit user: UserPrincipal) = {
     {
       val test = Try {
-        import DomainJsonProtocol._
         xform.arguments.get.convertTo[FrameRemoveColumn[JsObject, String]]
       }
       val idOpt = test.toOption.flatMap(args => getFrameId(args.frame))
@@ -352,7 +334,6 @@ trait V1CommandService extends V1Service {
    */
   def runJoinFrames(uri: Uri, xform: JsonTransform)(implicit user: UserPrincipal): Route = {
     val test = Try {
-      import DomainJsonProtocol._
       xform.arguments.get.convertTo[FrameJoin]
     }
 
@@ -370,7 +351,6 @@ trait V1CommandService extends V1Service {
    */
   def runflattenColumn(uri: Uri, xform: JsonTransform)(implicit user: UserPrincipal) = {
     val test = Try {
-      import DomainJsonProtocol._
       xform.arguments.get.convertTo[FlattenColumn[Long]]
     }
 
@@ -385,7 +365,6 @@ trait V1CommandService extends V1Service {
   def runFrameProject(uri: Uri, xform: JsonTransform)(implicit user: UserPrincipal) = {
     {
       val test = Try {
-        import DomainJsonProtocol._
         xform.arguments.get.convertTo[FrameProject[JsObject, String]]
       }
       val sourceFrameIdOpt = test.toOption.flatMap(args => getFrameId(args.frame))

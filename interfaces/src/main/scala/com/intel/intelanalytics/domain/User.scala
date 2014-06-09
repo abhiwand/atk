@@ -16,6 +16,4 @@ case class User(id: Long, username: Option[String], api_key: String, createdOn: 
   require(api_key != null && !api_key.isEmpty)
 }
 
-case class UserTemplate(api_key: String) {
-  require(api_key != null && !api_key.isEmpty)
-}
+
