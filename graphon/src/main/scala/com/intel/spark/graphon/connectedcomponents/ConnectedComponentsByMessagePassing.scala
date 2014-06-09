@@ -15,9 +15,9 @@ object ConnectedComponentsByMessagePassing {
   def run(vertexList: RDD[Long], edgeList: RDD[(Long, Long)]) = {
 
     val graphXVertices = vertexList.map((vid : Long) => (vid, null))
-    val graphXEdges    = edgeList.map(edge =>   (new GraphXEdge(edge._1, edge._2)))
+    val graphXEdges    = edgeList.map(edge =>   (new GraphXEdge[Null](edge._1, edge._2, null) ))
 
-    val graph = Graph[Null,Nothing](graphXVertices, graphXEdges)
+    val graph = Graph(graphXVertices, graphXEdges)
 
     val out : RDD[(Long, Long)]  = runGraphXCC(graph).vertices
 
