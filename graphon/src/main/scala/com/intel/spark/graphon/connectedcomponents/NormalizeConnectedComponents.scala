@@ -17,12 +17,25 @@ object NormalizeConnectedComponents {
    * @param vertexToCCMap Map of each vertex ID to its component ID.
    * @return Pair consisting of number of connected components
    */
-  def normalize (vertexToCCMap : RDD[(Long, Long)]) : (Long, RDD[(Long, Long)]) = {
+  def normalize (vertexToCCMap : RDD[(Long, Long)], sc: SparkContext) : (Long, RDD[(Long, Long)]) = {
 
-    val count = vertexToCCMap.map(x=> x._2).distinct().count()
+    // TODO implement this procedure properly when the number of connected components is enormous
+    // it certainly makes sense to run this when the number of connected components requires a cluster to be stored
+    // as an RDD of longs,  and the but it may not be a sensible use case for a long time to come...
+    // FOR NOW... articifical restriction that there are at most 10 million connected components
 
-    vertexToCCMap.sortByKey()
-    vertexToCCMap.map(x=> x._2).distinct()
-    (count, vertexToCCMap)
+    val baseComponentRDD = vertexToCCMap.map(x => x._2).distinct()
+    val count = baseComponentRDD.count()
+
+    require(count < 10000000)
+
+    val componentArray = baseComponentRDD.toArray()
+    val range = 1.toLong to count.toLong
+
+    val zipped = componentArray.zip(range)
+    val zippedAsRDD = sc.parallelize(zipped)
+
+    val outRDD = vertexToCCMap.map(x => (x._2, x._1)).join(zippedAsRDD).map(x => x._2)
+    (count, outRDD)
   }
 }

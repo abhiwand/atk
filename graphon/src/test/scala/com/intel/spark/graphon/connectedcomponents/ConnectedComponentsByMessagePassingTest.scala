@@ -1,10 +1,15 @@
 package com.intel.spark.graphon.connectedcomponents
 
-import org.scalatest.FunSuite
+import org.scalatest.{Matchers, WordSpec, FunSuite}
+import org.scalatest.matchers.Matcher
 
-/**
- * Created by nlsegerl on 6/6/14.
- */
-class ConnectedComponentsByMessagePassingTest extends FunSuite {
 
+/*
+class ConnectedComponentsByMessagePassingTest extends WordSpec with Matchers {
+  "connected componentss" should {
+    "compile" in {
+      0 shouldBe 0
+    }
+  }
 }
+*/

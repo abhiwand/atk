@@ -12,7 +12,7 @@ import org.apache.spark.graphx.{Edge => GraphXEdge}
 
 object ConnectedComponentsByMessagePassing {
 
-  def run(vertexList: RDD[Long], edgeList: RDD[(Long, Long)]) = {
+  def run(vertexList: RDD[Long], edgeList: RDD[(Long, Long)]) : RDD[(Long, Long)] = {
 
     val graphXVertices = vertexList.map((vid : Long) => (vid, null))
     val graphXEdges    = edgeList.map(edge =>   (new GraphXEdge[Null](edge._1, edge._2, null) ))
