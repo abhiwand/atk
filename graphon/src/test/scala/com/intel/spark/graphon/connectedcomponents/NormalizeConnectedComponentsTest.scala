@@ -19,22 +19,38 @@ class NormalizeConnectedComponentsTest extends FlatSpec with Matchers with Testi
     val originalVertexToComponent = List((8, 8), (24, 8), (32, 8), (4, 28), (16, 28), (28, 28), (12, 12))
 
     val verticesToComponentsRDD = sc.parallelize(originalVertexToComponent).map(x => (x._1.toLong, x._2.toLong))
-    val normalizeOut = NormalizeConnectedComponents.normalize(verticesToComponentsRDD)
+    val normalizeOut = NormalizeConnectedComponents.normalize(verticesToComponentsRDD, sc)
 
     normalizeOut._1 shouldEqual 3
   }
 
-  "normalize connected components" should "have same number of reported components in" in {
+  "normalize connected components" should "not have any gaps in the range of component IDs returned" in {
     val vertexList: List[Long] = List(4, 8, 12, 16, 20, 24, 28, 32)
     val components = Set(Set(8, 24, 32), Set(4, 16, 28))
     val originalVertexToComponent = List((8, 8), (24, 8), (32, 8), (4, 28), (16, 28), (28, 28), (12, 12))
 
     val verticesToComponentsRDD = sc.parallelize(originalVertexToComponent).map(x => (x._1.toLong, x._2.toLong))
-    val normalizeOut = NormalizeConnectedComponents.normalize(verticesToComponentsRDD)
+    val normalizeOut = NormalizeConnectedComponents.normalize(verticesToComponentsRDD, sc)
+
+    val normalizeOutComponents = normalizeOut._2.map(x => x._2).distinct()
+    println("************************************************8")
+    println(normalizeOutComponents.toString())
+    normalizeOutComponents.map(_.toLong) shouldEqual (1.toLong to (normalizeOutComponents.count().toLong))
+  }
+
+  /*
+  "normalize connected components" should "create correct equivalence classes" in {
+    val vertexList: List[Long] = List(4, 8, 12, 16, 20, 24, 28, 32)
+    val components = Set(Set(8, 24, 32), Set(4, 16, 28))
+    val originalVertexToComponent = List((8, 8), (24, 8), (32, 8), (4, 28), (16, 28), (28, 28), (12, 12))
+
+    val verticesToComponentsRDD = sc.parallelize(originalVertexToComponent).map(x => (x._1.toLong, x._2.toLong))
+    val normalizeOut = NormalizeConnectedComponents.normalize(verticesToComponentsRDD, sc)
 
     normalizeOut._1 shouldEqual normalizeOut._2.count()
   }
-}
+  */
+  }
 
 // TODO: get TestingSparkContext from a shared location
 
