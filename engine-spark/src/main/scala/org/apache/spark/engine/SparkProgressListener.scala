@@ -49,8 +49,8 @@ class SparkProgressListener extends SparkListener {
   val stageIdToTasksComplete = HashMap[Int, Int]()
   val stageIdToTasksFailed = HashMap[Int, Int]()
   var jobIdPromise: Promise[Int] = null
-  //TODO: memory leak.
-  val jobIdToCommandId = HashMap[Int, Int]()
+  val activeJobs = new HashMap[Int, ActiveJob]
+  //  val jobIdToCommandId = HashMap[Int, Int]()
 
   def getJobId(): Future[Int] = {
     val p = promise[Int]
@@ -63,15 +63,17 @@ class SparkProgressListener extends SparkListener {
     val parents = jobStart.job.finalStage.parents
     val parentsIds = parents.map(s => s.id)
     jobIdToStageIds(jobStart.job.jobId) = (parentsIds :+ jobStart.job.finalStage.id).toArray
+    activeJobs(jobStart.job.jobId) = jobStart.job
 
-    val commandIdTry = Try {
-      jobStart.properties.getProperty("command-id")
-    }
 
-    commandIdTry match {
-      case Success(r) => jobIdToCommandId(jobStart.job.jobId) = r.toInt
-      case _ => { } // do nothing
-    }
+    //    val commandIdTry = Try {
+    //      jobStart.job.properties.getProperty(SparkContext.SPARK_JOB_GROUP_ID).toInt
+    //    }
+    //
+    //    commandIdTry match {
+    //      case Success(r) => jobIdToCommandId(jobStart.job.jobId) = r
+    //      case _ => { } // do nothing
+    //    }
 
     if (jobIdPromise != null) {
       jobIdPromise success jobStart.job.jobId
@@ -145,7 +147,7 @@ class ProgressPrinter(progressListener: SparkProgressListener) extends SparkList
   }
 
   override def onTaskEnd(taskEnd: SparkListenerTaskEnd) {
-//    printJobProgress()
+    //    printJobProgress()
   }
 
   override def onJobEnd(jobEnd: SparkListenerJobEnd) {
@@ -153,10 +155,10 @@ class ProgressPrinter(progressListener: SparkProgressListener) extends SparkList
   }
 
   def printJobProgress() {
-    val jobIds = progressListener.jobIdToCommandId.keys.toList.sorted
     println("PRINTING PROGRESS........................................................")
-    for (id <- jobIds) {
-      println( "command:" + progressListener.jobIdToCommandId(id) +  ", job: " + id + ", progress: " + progressListener.getProgress(id) + "%")
+    for(jobId <- progressListener.activeJobs.keys.toList.sorted) {
+      val job = progressListener.activeJobs(jobId)
+      println( "command:" + job.properties.getProperty("command-id") +  ", job: " + job.jobId + ", progress: " + progressListener.getProgress(job.jobId) + "%")
     }
     println("END.......................................................................")
   }

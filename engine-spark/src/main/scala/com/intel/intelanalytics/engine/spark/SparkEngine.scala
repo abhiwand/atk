@@ -86,6 +86,7 @@ import com.intel.intelanalytics.domain.DataTypes.DataType
 
 import org.apache.hadoop.mapreduce.Job
 import org.joda.time.DateTime
+import scala.util.Random
 
 import spray.json._
 import com.intel.intelanalytics.domain.DataTypes.DataType
@@ -106,6 +107,8 @@ class SparkComponent extends EngineComponent
 
   import DomainJsonProtocol._
   lazy val configuration: SparkEngineConfiguration = new SparkEngineConfiguration()
+
+
 
 
   val engine = new SparkEngine {}
@@ -190,12 +193,11 @@ class SparkComponent extends EngineComponent
 
     def withCommand[T](command: Command)(block: => JsObject)(implicit user: UserPrincipal): Unit = {
       val ctx = context(user).sparkContext
-      ctx.setJobGroup(command.id.toString, "")
+      ctx.setLocalProperty("command-id", command.id.toString)
       commands.complete(command.id, Try {
         block
       })
 
-      ctx.clearJobGroup()
     }
 
     def load(arguments: LoadLines[JsObject, Long])(implicit user: UserPrincipal): (Command, Future[Command]) =
