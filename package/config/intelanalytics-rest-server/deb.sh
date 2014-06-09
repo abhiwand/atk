@@ -16,7 +16,7 @@ expandTarDeb
 BUILD_DEPENDS="$BUILD_DEPENS"
 #DEPENDS="\${java:Depends}"
 DEPENDS="openjdk-7-jdk"
-RECOMMENDS="\${java:Recommends}"
+#RECOMMENDS="\${java:Recommends}"
 SOURCE=$packageName
 SUMMARY="zombies "
 DESCRIPTION=$SUMMARY
@@ -65,4 +65,6 @@ debChangeLog
 log "build deb package"
 debuild -us -uc --source-option=--include-binaries --source-option=-isession
 
-popd $SCRIPTPATH/$debDir
+popd
+
+cleanDeb
