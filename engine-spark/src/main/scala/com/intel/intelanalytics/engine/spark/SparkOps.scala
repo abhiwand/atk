@@ -38,30 +38,45 @@ import com.intel.intelanalytics.domain.frame.LoadLines
 private[spark] object SparkOps extends Serializable {
 
   def getRows(rdd: RDD[Row], offset: Long, count: Int): Seq[Row] = {
+
+    //Count the rows in each partition, then order the counts by partition number
     val counts = rdd.mapPartitionsWithIndex(
       (i: Int, rows: Iterator[Row]) => Iterator.single((i, rows.size)))
       .collect()
       .sortBy(_._1)
+
+    //Create cumulative sums of row counts by partition, e.g. 1 -> 200, 2-> 400, 3-> 412
+    //if there were 412 rows divided into two 200 row partitions and one 12 row partition
     val sums = counts.scanLeft((0, 0)) {
       (t1, t2) => (t2._1, t1._2 + t2._2)
     }
-      .drop(1)
+      .drop(1) //first one is (0,0), drop that
       .toMap
+
+    //Put the per-partition counts and cumulative counts together
     val sumsAndCounts = counts.map {
       case (part, count) => (part, (count, sums(part)))
     }.toMap
+
+    //println(sumsAndCounts)
+
+    //Start getting rows. We use the sums and counts to figure out which
+    //partitions we need to read from and which to just ignore
     val rows: Seq[Row] = rdd.mapPartitionsWithIndex((i, rows) => {
       val (ct: Int, sum: Int) = sumsAndCounts(i)
-      if (sum < offset || sum - ct > offset + count) {
+      val thisPartStart = sum - ct
+      if (sum < offset || thisPartStart >= offset + count) {
         Iterator.empty
       }
       else {
-        val start = offset - (sum - ct)
-        rows.drop(start.toInt).take(count)
+        val start = Math.max(offset - thisPartStart, 0)
+        val numToTake = Math.min((count + offset) - thisPartStart, ct)
+        rows.drop(start.toInt).take(numToTake.toInt)
       }
     }).collect()
     rows
   }
+
 
   def loadLines(ctx: SparkContext,
                 fileName: String,
