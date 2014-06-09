@@ -187,7 +187,7 @@ trait V1CommandService extends V1Service {
     }
 
     val frameIDsOpt: Option[List[Option[Long]]] =
-      test.toOption.map(args => (args.frame_rules map (frule => getFrameId(frule.frame))))
+      test.toOption.map(args => args.frame_rules.map(frule => getFrameId(frule.frame)))
 
     val graphIDOpt = test.toOption.flatMap(args => getGraphId(args.graph))
 
