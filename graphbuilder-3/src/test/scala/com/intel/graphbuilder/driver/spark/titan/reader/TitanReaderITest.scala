@@ -1,20 +1,19 @@
 package com.intel.graphbuilder.driver.spark.titan.reader
 
-import com.intel.graphbuilder.testutils.{TestingSparkContext, LogUtils}
+import com.intel.graphbuilder.testutils.{ TestingSparkContext, LogUtils }
 import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRDDImplicits._
 import com.intel.graphbuilder.driver.spark.rdd.TitanHBaseReaderRDD
 import com.intel.graphbuilder.elements.GraphElement
-import org.apache.spark.{SparkContext, SparkConf}
+import org.apache.spark.{ SparkContext, SparkConf }
 import org.apache.hadoop.hbase.client.Result
 import org.apache.hadoop.hbase.io.ImmutableBytesWritable
 import org.apache.hadoop.hbase.CellUtil
-import org.scalatest.{WordSpec,Matchers,BeforeAndAfterAll}
+import org.scalatest.{ WordSpec, Matchers, BeforeAndAfterAll }
 import scala.collection.JavaConversions._
 import java.util.Date
 
 import TitanReaderTestData._
 import TitanReaderUtils.sortGraphElementProperties
-
 
 /**
  * End-to-end integration test for Titan reader

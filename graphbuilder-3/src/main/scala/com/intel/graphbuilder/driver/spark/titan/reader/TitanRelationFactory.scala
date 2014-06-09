@@ -1,6 +1,6 @@
 package com.intel.graphbuilder.driver.spark.titan.reader
 
-import com.intel.graphbuilder.elements.{ Edge, Vertex, Property, GraphElement }
+import com.intel.graphbuilder.elements.{Edge, Vertex, Property, GraphElement}
 import com.tinkerpop.blueprints.Direction
 import com.thinkaurelius.titan.core.TitanType
 import com.thinkaurelius.titan.graphdb.types.system.SystemType
@@ -18,7 +18,7 @@ import scala.collection.mutable.ListBuffer
 class TitanRelationFactory(vertexId: Long) extends com.thinkaurelius.titan.graphdb.database.RelationFactory {
   require(vertexId > 0, "Vertex ID should be greater than zero")
 
-  val gbId = TitanReader.TITAN_READER_GB_ID
+  val gbId = TitanReader.TITAN_READER_DEFAULT_GB_ID
   val edgeList = new ListBuffer[GraphElement]
   val vertexProperties = new ListBuffer[Property]
 
