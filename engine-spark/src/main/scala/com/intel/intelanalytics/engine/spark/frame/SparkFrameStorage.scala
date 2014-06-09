@@ -30,7 +30,7 @@ import DataTypes.DataType
 import java.nio.file.Paths
 import scala.io.{Source, Codec}
 import org.apache.spark.rdd.RDD
-import com.intel.intelanalytics.engine.spark.{HdfsFileStorage, SparkOps}
+import com.intel.intelanalytics.engine.spark.{ClassLoaderAware, HdfsFileStorage, SparkOps}
 import org.apache.spark.SparkContext
 import scala.util.matching.Regex
 import java.util.concurrent.atomic.AtomicLong
@@ -42,7 +42,7 @@ import com.intel.intelanalytics.security.UserPrincipal
 import org.joda.time.DateTime
 
 class SparkFrameStorage(contextManager: SparkContextManager, fsRoot: String, files: HdfsFileStorage)
-  extends FrameStorage with EventLogging {
+  extends FrameStorage with EventLogging with ClassLoaderAware {
 
   import spray.json._
   import Rows.Row
@@ -141,10 +141,12 @@ class SparkFrameStorage(contextManager: SparkContextManager, fsRoot: String, fil
       require(frame != null, "frame is required")
       require(offset >= 0, "offset must be zero or greater")
       require(count > 0, "count must be zero or greater")
-      val ctx = contextManager.getContext("intelanalytics:" + user.user.username).sparkContext
-      val rdd: RDD[Row] = getFrameRdd(ctx, frame.id)
-      val rows = SparkOps.getRows(rdd, offset, count)
-      rows
+      withMyClassLoader {
+        val ctx = contextManager.getContext("intelanalytics:" + user.user.username).sparkContext
+        val rdd: RDD[Row] = getFrameRdd(ctx, frame.id)
+        val rows = SparkOps.getRows(rdd, offset, count)
+        rows
+      }
     }
 
   /**
