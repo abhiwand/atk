@@ -407,7 +407,7 @@ class SparkEngine(config: SparkEngineConfiguration,
               val schema = realFrame.schema
               val converter = DataTypes.parseMany(schema.columns.map(_._2).toArray)(_)
               persistPythonRDD(pyRdd, converter, location)
-              JsNull.asJsObject
+              realFrame.toJson.asJsObject
             }
             commands.lookup(command.id).get
           }
@@ -540,8 +540,7 @@ class SparkEngine(config: SparkEngineConfiguration,
                   .saveAsObjectFile(location)
               }
 
-              frames.removeColumn(realFrame, columnIndices)
-              JsNull.asJsObject
+              frames.removeColumn(realFrame, columnIndices).toJson.asJsObject
             }
             commands.lookup(command.id).get
           }
@@ -583,7 +582,7 @@ class SparkEngine(config: SparkEngineConfiguration,
               val pyRdd = createPythonRDD(frameId, expression)
               val converter = DataTypes.parseMany(newFrame.schema.columns.map(_._2).toArray)(_)
               persistPythonRDD(pyRdd, converter, location)
-              JsNull.asJsObject
+              newFrame.toJson.asJsObject
             }
             commands.lookup(command.id).get
           }

@@ -89,7 +89,7 @@ class SparkFrameStorage(contextManager: SparkContextManager, fsRoot: String, fil
       ???
     }
 
-  override def removeColumn(frame: DataFrame, columnIndex: Seq[Int]): Unit =
+  override def removeColumn(frame: DataFrame, columnIndex: Seq[Int]): DataFrame =
     withContext("frame.removeColumn") {
 
       val remainingColumns = {
