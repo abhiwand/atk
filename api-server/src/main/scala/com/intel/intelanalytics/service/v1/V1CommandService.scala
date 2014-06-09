@@ -23,7 +23,6 @@
 
 package com.intel.intelanalytics.service.v1
 
-import com.intel.intelanalytics.service.v1.viewmodels.Rel
 import scala.util.Try
 import com.intel.intelanalytics.domain._
 import spray.json.JsObject
@@ -33,15 +32,26 @@ import com.intel.intelanalytics.service.v1.viewmodels.ViewModelJsonProtocol._
 import scala.concurrent._
 import spray.http.Uri
 import spray.routing.Route
-import com.intel.intelanalytics.service.v1.viewmodels.DecoratedCommand
+import com.intel.intelanalytics.domain.frame.FrameProject
+import com.intel.intelanalytics.domain.frame.FrameRenameFrame
+import com.intel.intelanalytics.domain.FilterPredicate
+import com.intel.intelanalytics.domain.graph.construction.FrameRule
 import scala.util.Failure
 import scala.Some
+import com.intel.intelanalytics.domain.frame.FrameAddColumn
+import com.intel.intelanalytics.domain.frame.FrameRenameColumn
 import scala.util.Success
+import com.intel.intelanalytics.domain.frame.FlattenColumn
 import com.intel.intelanalytics.security.UserPrincipal
-import com.intel.intelanalytics.service.v1.viewmodels.JsonTransform
-import com.intel.intelanalytics.domain.LoadLines
-import com.intel.intelanalytics.domain.Command
-import com.intel.intelanalytics.domain.graphconstruction.FrameRule
+import com.intel.intelanalytics.domain.frame.FrameRemoveColumn
+import spray.json._
+import com.intel.intelanalytics.domain.DomainJsonProtocol._
+import com.intel.intelanalytics.service.v1.viewmodels._
+import com.intel.intelanalytics.service.v1.viewmodels.ViewModelJsonProtocol._
+import com.intel.intelanalytics.domain.frame.FrameJoin
+import com.intel.intelanalytics.domain.graph.GraphLoad
+import com.intel.intelanalytics.domain.frame.LoadLines
+import com.intel.intelanalytics.domain.command.Command
 
 //TODO: Is this right execution context for us?
 
@@ -50,7 +60,6 @@ import ExecutionContext.Implicits.global
 /**
  * Trait for classes that implement the Intel Analytics V1 REST API Command Service
  */
-
 trait V1CommandService extends V1Service {
   this: V1Service with MetaStoreComponent with EngineComponent =>
 
@@ -79,12 +88,7 @@ trait V1CommandService extends V1Service {
               uri =>
                 get {
                   onComplete(engine.getCommand(id)) {
-                    case Success(Some(command)) => {
-                      val decorated = decorate(uri, command)
-                      complete {
-                        decorated
-                      }
-                    }
+                    case Success(Some(command)) => complete(decorate(uri, command))
                     case _ => reject()
                   }
                 }
@@ -97,6 +101,8 @@ trait V1CommandService extends V1Service {
 
               get {
                 //TODO: cursor
+                import spray.json._
+                import ViewModelJsonProtocol._
                 onComplete(engine.getCommands(0, defaultCount)) {
                   case Success(commands) => complete(CommandDecorator.decorateForIndex(uri.toString(), commands))
                   case Failure(ex) => throw ex
@@ -125,7 +131,7 @@ trait V1CommandService extends V1Service {
       //TODO: genericize function resolution and invocation
       case ("dataframe/load") => runFrameLoad(uri, xform)
       case ("graph/load") => runGraphLoad(uri, xform)
-      case ("graph/ml/als") => runAls(uri, xform)
+      //case ("graph/ml/als") => runAls(uri, xform)
       case ("dataframe/filter") => runFilter(uri, xform)
       case ("dataframe/removecolumn") => runFrameRemoveColumn(uri, xform)
       case ("dataframe/rename_frame") => runFrameRenameFrame(uri, xform)
@@ -133,33 +139,30 @@ trait V1CommandService extends V1Service {
       case ("dataframe/project") => runFrameProject(uri, xform)
       case ("dataframe/renamecolumn") => runFrameRenameColumn(uri, xform)
       case ("dataframe/join") => runJoinFrames(uri, xform)
-      case ("dataframe/join") => runJoinFrames(uri, xform)
       case ("dataframe/flattenColumn") => runflattenColumn(uri, xform)
       case _ => ???
     }
   }
 
   def runFrameLoad(uri: Uri, xform: JsonTransform)(implicit user: UserPrincipal) = {
-    {
-      val test = Try {
-        import DomainJsonProtocol._
-        xform.arguments.get.convertTo[LoadLines[JsObject, String]]
+    val test = Try {
+      import DomainJsonProtocol._
+      xform.arguments.get.convertTo[LoadLines[JsObject, String]]
+    }
+    val idOpt = test.toOption.flatMap(args => getFrameId(args.destination))
+    (validate(test.isSuccess, "Failed to parse file load descriptor: " + getErrorMessage(test))
+      & validate(idOpt.isDefined, "Destination is not a valid data frame URL")) {
+      val args = test.get
+      val id = idOpt.get
+      onComplete(
+        for {
+          frame <- engine.getFrame(id)
+          (c, f) = engine.load(LoadLines[JsObject, Long](args.source, id,
+            skipRows = args.skipRows, overwrite = args.overwrite, lineParser = args.lineParser, schema = args.schema))
+        } yield c) {
+        case Success(c) => complete(decorate(uri + "/" + c.id, c))
+        case Failure(ex) => throw ex
       }
-      val idOpt = test.toOption.flatMap(args => getFrameId(args.destination))
-      (validate(test.isSuccess, "Failed to parse file load descriptor: " + getErrorMessage(test))
-        & validate(idOpt.isDefined, "Destination is not a valid data frame URL")) {
-          val args = test.get
-          val id = idOpt.get
-          onComplete(
-            for {
-              frame <- engine.getFrame(id)
-              (c, f) = engine.load(LoadLines[JsObject, Long](args.source, id,
-                skipRows = args.skipRows, overwrite = args.overwrite, lineParser = args.lineParser, schema = args.schema))
-            } yield c) {
-              case Success(c) => complete(decorate(uri + "/" + c.id, c))
-              case Failure(ex) => throw ex
-            }
-        }
     }
   }
 
@@ -172,178 +175,139 @@ trait V1CommandService extends V1Service {
    */
   def runGraphLoad(uri: Uri, transform: JsonTransform)(implicit user: UserPrincipal): Route = {
     val test = Try {
-      import DomainJsonProtocol._
       transform.arguments.get.convertTo[GraphLoad[JsObject, String, String]]
     }
 
     val frameIDsOpt: Option[List[Option[Long]]] =
-      test.toOption.map(args => (args.frame_rules map (frule => getFrameId(frule.frame))))
+      test.toOption.map(args => args.frame_rules.map(frule => getFrameId(frule.frame)))
 
     val graphIDOpt = test.toOption.flatMap(args => getGraphId(args.graph))
 
     (validate(test.isSuccess, "Failed to parse graph load descriptor: " + getErrorMessage(test))
       & validate(graphIDOpt.isDefined, "Target graph is not a valid graph URL")) {
 
-        (validate(frameIDsOpt.isDefined, "Error parsing per-frame graph construction rules")
-          & validate(frameIDsOpt.get.forall(x => x.isDefined), "Invalid URL provided for source dataframe")) {
-            val args = test.get
-            val sourceFrameIDs = frameIDsOpt.get.map(x => x.get)
-
-            val frameRulesUsingIDs = (sourceFrameIDs, args.frame_rules).zipped.toList.map { case (id: Long, frule: FrameRule[String]) => new FrameRule[Long](id, frule.vertex_rules, frule.edge_rules) }
-
-            val graphID = graphIDOpt.get
-
-            val graphLoad = GraphLoad(graphID,
-              frameRulesUsingIDs,
-              args.retain_dangling_edges)
-
-            onComplete(
-              for {
-                graph <- engine.getGraph(graphID)
-                (c, f) = engine.loadGraph(graphLoad)
-              } yield c) {
-                case Success(c) => complete(decorate(uri + "/" + c.id, c))
-                case Failure(ex) => throw ex
-              }
-          }
-      }
-  }
-
-  def runAls(uri: Uri, transform: JsonTransform)(implicit user: UserPrincipal): Route = {
-    val test = Try {
-      import DomainJsonProtocol._
-      transform.arguments.get.convertTo[Als[String]]
-    }
-    val idOpt = test.toOption.flatMap(args => getGraphId(args.graph))
-    (validate(test.isSuccess, "Failed to parse file load descriptor: " + getErrorMessage(test))
-      & validate( /*idOpt.isDefined*/ true, "Destination is not a valid graph URL")) {
+      (validate(frameIDsOpt.isDefined, "Error parsing per-frame graph construction rules")
+        & validate(frameIDsOpt.get.forall(x => x.isDefined), "Invalid URL provided for source dataframe")) {
         val args = test.get
-        val id = 1 //idOpt.get
-        val (c, f) = engine.runAls(args.copy[Long](graph = 1))
-        complete(decorate(uri + "/" + c.id, c))
-        //      onComplete(
-        //          for {
-        //            graph <- engine.getGraph(id)
-        //            (c, f) = engine.runAls(args.copy[Long](graph = graph.id))
-        //          } yield c) {
-        //            case Success(c) => complete(decorate(uri + "/" + c.id, c))
-        //            case Failure(ex) => throw ex
-        //          }
+        val sourceFrameIDs = frameIDsOpt.get.map(x => x.get)
+
+        val frameRulesUsingIDs = (sourceFrameIDs, args.frame_rules).zipped.toList.map { case (id: Long, frule: FrameRule[String]) => new FrameRule[Long](id, frule.vertex_rules, frule.edge_rules)}
+
+        val graphID = graphIDOpt.get
+
+        val graphLoad = GraphLoad(graphID,
+          frameRulesUsingIDs,
+          args.retain_dangling_edges)
+
+        onComplete(
+          for {
+            graph <- engine.getGraph(graphID)
+            (c, f) = engine.loadGraph(graphLoad)
+          } yield c ) {
+          case Success(c) => complete(decorate(uri + "/" + c.id, c))
+          case Failure(ex) => throw ex
+        }
       }
+    }
   }
 
   def runFilter(uri: Uri, xform: JsonTransform)(implicit user: UserPrincipal) = {
-    {
-      val test = Try {
-        import DomainJsonProtocol._
-        xform.arguments.get.convertTo[FilterPredicate[JsObject, String]]
+    val test = Try {
+      xform.arguments.get.convertTo[FilterPredicate[JsObject, String]]
+    }
+    val idOpt = test.toOption.flatMap(args => getFrameId(args.frame))
+    (validate(test.isSuccess, "Failed to parse file load descriptor: " + getErrorMessage(test))
+      & validate(idOpt.isDefined, "Destination is not a valid data frame URL")) {
+      val args = test.get
+      val id = idOpt.get
+      onComplete(
+        for {
+          frame <- engine.getFrame(id)
+          (c, f) = engine.filter(FilterPredicate[JsObject, Long](id, args.predicate))
+        } yield c) {
+        case Success(c) => complete(decorate(uri + "/" + c.id, c))
+        case Failure(ex) => throw ex
       }
-      val idOpt = test.toOption.flatMap(args => getFrameId(args.frame))
-      (validate(test.isSuccess, "Failed to parse file load descriptor: " + getErrorMessage(test))
-        & validate(idOpt.isDefined, "Destination is not a valid data frame URL")) {
-          val args = test.get
-          val id = idOpt.get
-          onComplete(
-            for {
-              frame <- engine.getFrame(id)
-              (c, f) = engine.filter(FilterPredicate[JsObject, Long](id, args.predicate))
-            } yield c) {
-              case Success(c) => complete(decorate(uri + "/" + c.id, c))
-              case Failure(ex) => throw ex
-            }
-        }
     }
   }
 
   def runFrameRenameFrame(uri: Uri, xform: JsonTransform)(implicit user: UserPrincipal) = {
-    {
-      val test = Try {
-        import DomainJsonProtocol._
-        xform.arguments.get.convertTo[FrameRenameFrame[JsObject, String]]
+    val test = Try {
+      xform.arguments.get.convertTo[FrameRenameFrame[JsObject, String]]
+    }
+    val idOpt = test.toOption.flatMap(args => getFrameId(args.frame))
+    (validate(test.isSuccess, "Failed to understand rename arguments: " + getErrorMessage(test))
+      & validate(idOpt.isDefined, "Frame must be a valid data frame URL")) {
+      val args = test.get
+      val id = idOpt.get
+      onComplete(
+        for {
+          frame <- engine.getFrame(id)
+          (c, f) = engine.renameFrame(FrameRenameFrame[JsObject, Long](id, args.new_name))
+        } yield c) {
+        case Success(c) => complete(decorate(uri + "/" + c.id, c))
+        case Failure(ex) => throw ex
       }
-      val idOpt = test.toOption.flatMap(args => getFrameId(args.frame))
-      (validate(test.isSuccess, "Failed to understand rename arguments: " + getErrorMessage(test))
-        & validate(idOpt.isDefined, "Frame must be a valid data frame URL")) {
-          val args = test.get
-          val id = idOpt.get
-          onComplete(
-            for {
-              frame <- engine.getFrame(id)
-              (c, f) = engine.renameFrame(FrameRenameFrame[JsObject, Long](id, args.new_name))
-            } yield c) {
-              case Success(c) => complete(decorate(uri + "/" + c.id, c))
-              case Failure(ex) => throw ex
-            }
-        }
     }
   }
 
   def runFrameRenameColumn(uri: Uri, xform: JsonTransform)(implicit user: UserPrincipal) = {
-    {
-      val test = Try {
-        import DomainJsonProtocol._
-        xform.arguments.get.convertTo[FrameRenameColumn[JsObject, String]]
+    val test = Try {
+      xform.arguments.get.convertTo[FrameRenameColumn[JsObject, String]]
+    }
+    val idOpt = test.toOption.flatMap(args => getFrameId(args.frame))
+    (validate(test.isSuccess, "Failed to parse file load descriptor: " + getErrorMessage(test))
+      & validate(idOpt.isDefined, "Destination is not a valid data frame URL")) {
+      val args = test.get
+      val id = idOpt.get
+      onComplete(
+        for {
+          frame <- engine.getFrame(id)
+          (c, f) = engine.renameColumn(FrameRenameColumn[JsObject, Long](id, args.originalcolumn, args.renamedcolumn))
+        } yield c) {
+        case Success(c) => complete(decorate(uri + "/" + c.id, c))
+        case Failure(ex) => throw ex
       }
-      val idOpt = test.toOption.flatMap(args => getFrameId(args.frame))
-      (validate(test.isSuccess, "Failed to parse file load descriptor: " + getErrorMessage(test))
-        & validate(idOpt.isDefined, "Destination is not a valid data frame URL")) {
-          val args = test.get
-          val id = idOpt.get
-          onComplete(
-            for {
-              frame <- engine.getFrame(id)
-              (c, f) = engine.renameColumn(FrameRenameColumn[JsObject, Long](id, args.originalcolumn, args.renamedcolumn))
-            } yield c) {
-              case Success(c) => complete(decorate(uri + "/" + c.id, c))
-              case Failure(ex) => throw ex
-            }
-        }
     }
   }
 
   def runFrameAddColumn(uri: Uri, xform: JsonTransform)(implicit user: UserPrincipal) = {
-    {
-      val test = Try {
-        import DomainJsonProtocol._
-        xform.arguments.get.convertTo[FrameAddColumn[JsObject, String]]
+    val test = Try {
+      xform.arguments.get.convertTo[FrameAddColumn[JsObject, String]]
+    }
+    val idOpt = test.toOption.flatMap(args => getFrameId(args.frame))
+    (validate(test.isSuccess, "Failed to parse file load descriptor: " + getErrorMessage(test))
+      & validate(idOpt.isDefined, "Destination is not a valid data frame URL")) {
+      val args = test.get
+      val id = idOpt.get
+      onComplete(
+        for {
+          frame <- engine.getFrame(id)
+          (c, f) = engine.addColumn(FrameAddColumn[JsObject, Long](id, args.columnname, args.columntype, args.expression))
+        } yield c) {
+        case Success(c) => complete(decorate(uri + "/" + c.id, c))
+        case Failure(ex) => throw ex
       }
-      val idOpt = test.toOption.flatMap(args => getFrameId(args.frame))
-      (validate(test.isSuccess, "Failed to parse file load descriptor: " + getErrorMessage(test))
-        & validate(idOpt.isDefined, "Destination is not a valid data frame URL")) {
-          val args = test.get
-          val id = idOpt.get
-          onComplete(
-            for {
-              frame <- engine.getFrame(id)
-              (c, f) = engine.addColumn(FrameAddColumn[JsObject, Long](id, args.columnname, args.columntype, args.expression))
-            } yield c) {
-              case Success(c) => complete(decorate(uri + "/" + c.id, c))
-              case Failure(ex) => throw ex
-            }
-        }
     }
   }
 
   def runFrameRemoveColumn(uri: Uri, xform: JsonTransform)(implicit user: UserPrincipal) = {
-    {
-      val test = Try {
-        import DomainJsonProtocol._
-        xform.arguments.get.convertTo[FrameRemoveColumn[JsObject, String]]
+    val test = Try {
+      xform.arguments.get.convertTo[FrameRemoveColumn[JsObject, String]]
+    }
+    val idOpt = test.toOption.flatMap(args => getFrameId(args.frame))
+    (validate(test.isSuccess, "Failed to parse file load descriptor: " + getErrorMessage(test))
+      & validate(idOpt.isDefined, "Destination is not a valid data frame URL")) {
+      val args = test.get
+      val id = idOpt.get
+      onComplete(
+        for {
+          frame <- engine.getFrame(id)
+          (c, f) = engine.removeColumn(FrameRemoveColumn[JsObject, Long](id, args.column))
+        } yield c) {
+        case Success(c) => complete(decorate(uri + "/" + c.id, c))
+        case Failure(ex) => throw ex
       }
-      val idOpt = test.toOption.flatMap(args => getFrameId(args.frame))
-      (validate(test.isSuccess, "Failed to parse file load descriptor: " + getErrorMessage(test))
-        & validate(idOpt.isDefined, "Destination is not a valid data frame URL")) {
-          val args = test.get
-          val id = idOpt.get
-          onComplete(
-            for {
-              frame <- engine.getFrame(id)
-              (c, f) = engine.removeColumn(FrameRemoveColumn[JsObject, Long](id, args.column))
-            } yield c) {
-              case Success(c) => complete(decorate(uri + "/" + c.id, c))
-              case Failure(ex) => throw ex
-            }
-        }
     }
   }
 
@@ -352,11 +316,10 @@ trait V1CommandService extends V1Service {
    */
   def runJoinFrames(uri: Uri, xform: JsonTransform)(implicit user: UserPrincipal): Route = {
     val test = Try {
-      import DomainJsonProtocol._
       xform.arguments.get.convertTo[FrameJoin]
     }
 
-    (validate(test.isSuccess, "Failed to parse file load descriptor: " + getErrorMessage(test))) {
+    validate(test.isSuccess, "Failed to parse file load descriptor: " + getErrorMessage(test)) {
       val args = test.get
       val result = engine.join(args)
       val command: Command = result._1
@@ -370,11 +333,10 @@ trait V1CommandService extends V1Service {
    */
   def runflattenColumn(uri: Uri, xform: JsonTransform)(implicit user: UserPrincipal) = {
     val test = Try {
-      import DomainJsonProtocol._
       xform.arguments.get.convertTo[FlattenColumn[Long]]
     }
 
-    (validate(test.isSuccess, "Failed to parse file load descriptor: " + getErrorMessage(test))) {
+    validate(test.isSuccess, "Failed to parse file load descriptor: " + getErrorMessage(test)) {
       val args = test.get
       val result = engine.flattenColumn(args)
       val command: Command = result._1
@@ -383,28 +345,25 @@ trait V1CommandService extends V1Service {
   }
 
   def runFrameProject(uri: Uri, xform: JsonTransform)(implicit user: UserPrincipal) = {
-    {
-      val test = Try {
-        import DomainJsonProtocol._
-        xform.arguments.get.convertTo[FrameProject[JsObject, String]]
+    val test = Try {
+      xform.arguments.get.convertTo[FrameProject[JsObject, String]]
+    }
+    val sourceFrameIdOpt = test.toOption.flatMap(args => getFrameId(args.frame))
+    val projectedFrameIdOpt = test.toOption.flatMap(args => getFrameId(args.projected_frame))
+    (validate(test.isSuccess, "Failed to project command descriptor: " + getErrorMessage(test))
+      & validate(projectedFrameIdOpt.isDefined, "Destination is not a valid data frame")) {
+      val args = test.get
+      val sourceFrameId = sourceFrameIdOpt.get
+      val projectedFrameId = projectedFrameIdOpt.get
+      onComplete(
+        for {
+          projectFrame <- engine.getFrame(projectedFrameId)
+          sourceFrame <- engine.getFrame(sourceFrameId)
+          (c, f) = engine.project(FrameProject[JsObject, Long](sourceFrameId, projectedFrameId, args.columns, args.new_column_names))
+        } yield c) {
+        case Success(c) => complete(decorate(uri + "/" + c.id, c))
+        case Failure(ex) => throw ex
       }
-      val sourceFrameIdOpt = test.toOption.flatMap(args => getFrameId(args.frame))
-      val projectedFrameIdOpt = test.toOption.flatMap(args => getFrameId(args.projected_frame))
-      (validate(test.isSuccess, "Failed to project command descriptor: " + getErrorMessage(test))
-        & validate(projectedFrameIdOpt.isDefined, "Destination is not a valid data frame")) {
-          val args = test.get
-          val sourceFrameId = sourceFrameIdOpt.get
-          val projectedFrameId = projectedFrameIdOpt.get
-          onComplete(
-            for {
-              projectFrame <- engine.getFrame(projectedFrameId)
-              sourceFrame <- engine.getFrame(sourceFrameId)
-              (c, f) = engine.project(FrameProject[JsObject, Long](sourceFrameId, projectedFrameId, args.columns, args.new_column_names))
-            } yield c) {
-              case Success(c) => complete(decorate(uri + "/" + c.id, c))
-              case Failure(ex) => throw ex
-            }
-        }
     }
   }
 }
