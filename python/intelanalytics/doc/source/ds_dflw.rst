@@ -157,6 +157,18 @@ Feature Engineering or Data Transformation
 During the "cleaning phase," you will not only want to remove extraneous or erroneous data, you will want to take existing values and transform them into features you can use.
 This is where you manipulate the data, that is, actually crunch the data, using the BigFrame API.
 
+>>> my_frame_proxy.add_columns(w_price+markup, float32, "r_price")
+
+
+
+This is where you manipulate the data, that is, actually crunch the data, using the BigFrame API.
+
+>>> my_frame_proxy.add_columns(w_price+markup, float32, "r_price")
+
+
+
+This is where you manipulate the data, that is, actually crunch the data, using the BigFrame API.
+
 >>> my_frame_proxy.add_column(w_price+markup, float32, "r_price")
 
 

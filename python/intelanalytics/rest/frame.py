@@ -30,7 +30,7 @@ logger = logging.getLogger(__name__)
 from collections import defaultdict, OrderedDict
 import json
 
-from intelanalytics.core.frame import BigFrame, FrameSchema
+from intelanalytics.core.frame import BigFrame
 from intelanalytics.core.column import BigColumn
 from intelanalytics.core.files import CsvFile
 from intelanalytics.core.types import *
@@ -111,13 +111,14 @@ class FrameBackendRest(object):
         frame._id = payload['id']
         frame._uri = self._get_uri(payload)
 
-    def _initialize_frame(self, frame, frame_info):
+    @staticmethod
+    def _initialize_frame(frame, frame_info):
         """Initializes a frame according to given frame_info"""
         frame._id = frame_info.id_number
         frame._uri = frame_info.uri
         frame._name = frame_info.name
         for column in frame_info.columns:
-            self._accept_column(frame, column)
+            FrameBackendRest._accept_column(frame, column)
 
     @staticmethod
     def _get_new_frame_name(source=None):
@@ -226,11 +227,27 @@ class FrameBackendRest(object):
         command = CommandRequest("dataframe/rename_frame", arguments)
         return executor.issue(command)
 
-    def rename_columns(self, frame, name_pairs):
-        originalcolumns, renamedcolumns = ",".join(zip(*name_pairs)[0]), ",".join(zip(*name_pairs)[1])
-        arguments = {'frame': frame.uri, "originalcolumn": originalcolumns, "renamedcolumn": renamedcolumns}
+    def rename_columns(self, frame, column_names, new_names):
+        if isinstance(column_names, basestring) and isinstance(new_names, basestring):
+            column_names = [column_names]
+            new_names = [new_names]
+        if len(column_names) != len(new_names):
+            raise ValueError("rename requires name lists of equal length")
+        current_names = frame._columns.keys()
+        for nn in new_names:
+            if nn in current_names:
+                raise ValueError("Cannot use rename to '{0}' because another column already exists with that name".format(nn))
+        #originalcolumns, renamedcolumns = ",".join(zip(*name_pairs)[0]), ",".join(zip(*name_pairs)[1])
+        arguments = {'frame': frame.uri, "originalcolumn": column_names, "renamedcolumn": new_names}
         command = CommandRequest("dataframe/renamecolumn", arguments)
-        return executor.issue(command)
+        command_info = executor.issue(command)
+        self._initialize_frame(frame, command_info.result)
+
+        # rename on python side, here in the frame's local columns:
+        #values = self._columns.values()  # must preserve order in OrderedDict
+        #for p in name_pairs:
+            #self._columns[p[0]].name = p[1]
+        #self._columns = OrderedDict([(v.name, v) for v in values])
 
     def remove_column(self, frame, name):
         columns = ",".join(name) if isinstance(name, list) else name
@@ -238,12 +255,24 @@ class FrameBackendRest(object):
         command = CommandRequest("dataframe/removecolumn", arguments)
         return executor.issue(command)
 
-    def add_column(self, frame, expression, name, type):
-        frame_uri = "%sdataframes/%d" % (http.base_uri, frame._id)
+    def add_columns(self, frame, expression, names, types):
+        if not names:
+            i = 0
+            while(True):
+                name = "new" + str(i)
+                if name not in frame._columns:
+                    break
+                i += 1
+            names = [name]
+        elif isinstance(names, basestring):
+            names = [names]
 
         def addColumnLambda(row):
             row.data.append(unicode(supported_types.cast(expression(row),type)))
             return ",".join(row.data)
+
+        #def add_columns_func():
+        # TODO - write full add multiple columns
 
         row_ready_predicate = wrap_row_function(frame, addColumnLambda)
         from itertools import imap
@@ -254,7 +283,7 @@ class FrameBackendRest(object):
         http_ready_predicate = encode_bytes_for_http(pickled_predicate)
 
         arguments = {'frame': frame.uri,
-                     'columnname': name,
+                     'columnname': names[0],
                      'columntype': supported_types.get_type_string(type),
                      'expression': http_ready_predicate}
         command = CommandRequest('dataframe/addcolumn', arguments)
