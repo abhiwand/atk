@@ -92,7 +92,7 @@ class GraphBuilder(config: GraphBuilderConfig) extends Serializable {
 
     val mergedVertices = vertices.mergeDuplicates()
     val idMap = mergedVertices.write(titanConnector, config.append)
-    idMap.persist(StorageLevel.MEMORY_AND_DISK)
+    idMap.persist(StorageLevel.MEMORY_AND_DISK_SER)
     println("done parsing and writing, vertices count: " + NumberFormat.getInstance().format(idMap.count()))
 
     if (config.biDirectional) {
@@ -121,6 +121,9 @@ class GraphBuilder(config: GraphBuilderConfig) extends Serializable {
       println("starting write of edges")
       edgesWithPhysicalIds.write(titanConnector, config.append)
     }
+
+    // Manually Unpersist RDDs to help with Memory usage
+    idMap.unpersist();
 
     println("done writing edges")
   }
