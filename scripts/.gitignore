@@ -5,3 +5,5 @@
 **/BUILDROOT/*
 **/BUILD/*
 **/git/*
+#legacy spec files shouldn't be edited anymore
+*.spec
