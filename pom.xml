@@ -25,7 +25,7 @@
 <!--
 if you do a maven build from the parent you will most likely have to increase your memory footprint this has worked for me
 in the past
-export MAVEN_OPTS="-Xms2048m -Xmx4096m -XX:MaxPermSize=4096m -XX:PermSize=2048m"
+export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -38,17 +38,17 @@ export MAVEN_OPTS="-Xms2048m -Xmx4096m -XX:MaxPermSize=4096m -XX:PermSize=2048m"
     <name>IntelAnalytics Parent</name>
     <description>IntelAnalytics : Large Scale Graph Analytics</description>
     <inceptionYear>2013</inceptionYear>
-	
-	    <pluginRepositories>
-        	                <pluginRepository>
-        	                        <id>onejar-maven-plugin.googlecode.com</id>
-        	                        <url>http://onejar-maven-plugin.googlecode.com/svn/mavenrepo-snapshot</url>
-        	                </pluginRepository>
-							<pluginRepository>
-      <id>beardedgeeks-releases</id>
-      <url>http://beardedgeeks.googlecode.com/svn/repository/releases</url>
-    </pluginRepository>	
-               </pluginRepositories>
+
+    <pluginRepositories>
+        <pluginRepository>
+            <id>onejar-maven-plugin.googlecode.com</id>
+            <url>http://onejar-maven-plugin.googlecode.com/svn/mavenrepo-snapshot</url>
+        </pluginRepository>
+        <pluginRepository>
+            <id>beardedgeeks-releases</id>
+            <url>http://beardedgeeks.googlecode.com/svn/repository/releases</url>
+        </pluginRepository>
+    </pluginRepositories>
     <repositories>
         <repository>
             <id>central</id>
@@ -108,7 +108,7 @@ export MAVEN_OPTS="-Xms2048m -Xmx4096m -XX:MaxPermSize=4096m -XX:PermSize=2048m"
             </snapshots>
         </repository>
     </repositories>
-	
+
     <modules>
         <!--<module>ititan</module>
         <module>event</module>
@@ -175,7 +175,7 @@ export MAVEN_OPTS="-Xms2048m -Xmx4096m -XX:MaxPermSize=4096m -XX:PermSize=2048m"
         <dep.zookeeper.version>3.3.3</dep.zookeeper.version>
         <dep.pig.version>0.12.0-cdh5.0.0</dep.pig.version>
         <dep.org.apache.spark>0.9.1</dep.org.apache.spark>
-		<dep.commons.lang>2.6</dep.commons.lang>
+        <dep.commons.lang>2.6</dep.commons.lang>
 
         <!--START GAO MAVEN -->
         <!-- these dependencies are from gaomaven.jf.intel.com -->
@@ -195,6 +195,19 @@ export MAVEN_OPTS="-Xms2048m -Xmx4096m -XX:MaxPermSize=4096m -XX:PermSize=2048m"
     </properties>
     <profiles>
         <profile>
+            <id>ititan</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+                <property>
+                    <!--only needs to be run to add titan jar-->
+                    <name>env.build_number</name>
+                </property>
+            </activation>
+            <modules>
+                <module>ititan</module>
+            </modules>
+        </profile>
+        <profile>
             <id>modules-packaged</id>
             <activation>
                 <activeByDefault>false</activeByDefault>
@@ -203,7 +216,6 @@ export MAVEN_OPTS="-Xms2048m -Xmx4096m -XX:MaxPermSize=4096m -XX:PermSize=2048m"
                 </property>
             </activation>
             <modules>
-                <!--<module>ititan</module>-->
                 <module>event</module>
                 <module>ispark-deps</module>
                 <module>graphbuilder-3</module><!-- scoverage -->
@@ -229,7 +241,7 @@ export MAVEN_OPTS="-Xms2048m -Xmx4096m -XX:MaxPermSize=4096m -XX:PermSize=2048m"
                 </property>
             </activation>
             <modules>
-                <module>ititan</module>
+                <!--<module>ititan</module>-->
                 <module>event</module>
                 <module>ispark-deps</module>
                 <module>graphbuilder-3</module><!-- scoverage -->
@@ -240,6 +252,9 @@ export MAVEN_OPTS="-Xms2048m -Xmx4096m -XX:MaxPermSize=4096m -XX:PermSize=2048m"
                 <module>engine</module>
                 <module>engine-spark</module><!-- scoverage -->
                 <module>imahout</module>
+                <module>igiraph/giraph-core</module>
+                <module>igiraph/giraph-algorithms</module>
+                <module>igiraph/giraph-titan</module>
                 <module>igiraph</module>
                 <module>imllib</module>
                 <module>graphon</module>
@@ -250,294 +265,271 @@ export MAVEN_OPTS="-Xms2048m -Xmx4096m -XX:MaxPermSize=4096m -XX:PermSize=2048m"
         <profile>
             <id>compile</id>
             <activation>
-			<activeByDefault>true</activeByDefault>
+                <activeByDefault>true</activeByDefault>
                 <property>
                     <name>env.BUILD_NUMBER</name>
                 </property>
             </activation>
-			<build>
-			<pluginManagement>
-				<plugins>
-				<!--START DO NOT TOUCH-->
-                <plugin>
-                    <inherited>true</inherited>
-                    <groupId>net.alchim31.maven</groupId>
-                    <artifactId>scala-maven-plugin</artifactId>
-                    <version>3.1.6</version>
-                    <executions>
-                        <execution>
-                            <id>compile</id>
-                            <goals>
-                                <goal>add-source</goal>
-                                <goal>compile</goal>
-                            </goals>
+            <build>
+                <pluginManagement>
+                    <plugins>
+                        <!--START DO NOT TOUCH-->
+                        <plugin>
+                            <inherited>true</inherited>
+                            <groupId>net.alchim31.maven</groupId>
+                            <artifactId>scala-maven-plugin</artifactId>
+                            <version>3.1.6</version>
+                            <executions>
+                                <execution>
+                                    <id>compile</id>
+                                    <goals>
+                                        <goal>add-source</goal>
+                                        <goal>compile</goal>
+                                    </goals>
+                                    <configuration>
+                                        <jvmArgs>
+                                            <jvmArg>-Xms256m</jvmArg>
+                                            <jvmArg>-Xmx512m</jvmArg>
+                                        </jvmArgs>
+                                        <args>
+                                            <arg>-g:vars</arg>
+                                            <arg>-Yrangepos</arg>
+                                        </args>
+                                    </configuration>
+                                </execution>
+                                <execution>
+                                    <id>test</id>
+                                    <goals>
+                                        <goal>add-source</goal>
+                                        <goal>testCompile</goal>
+                                    </goals>
+                                </execution>
+                            </executions>
                             <configuration>
-                                <jvmArgs>
-                                    <jvmArg>-Xms256m</jvmArg>
-                                    <jvmArg>-Xmx512m</jvmArg>
-                                </jvmArgs>
-                                <args>
-                                    <arg>-g:vars</arg>
-                                    <arg>-Yrangepos</arg>
-                                </args>
+                                <scalaVersion>${scala.long.version}</scalaVersion>
+                                <checkMultipleScalaVersions>false</checkMultipleScalaVersions>
                             </configuration>
-                        </execution>
-                        <execution>
-                            <id>test</id>
-                            <goals>
-                                <goal>add-source</goal>
-                                <goal>testCompile</goal>
-                            </goals>
-                        </execution>
-                    </executions>
-                    <configuration>
-                        <scalaVersion>${scala.long.version}</scalaVersion>
-                        <checkMultipleScalaVersions>false</checkMultipleScalaVersions>
-                    </configuration>
-                </plugin>
-                <!--END DO NOT TOUCH-->
-				</plugins>
-				</pluginManagement>
-				<plugins>
-				<plugin>
-                <groupId>net.alchim31.maven</groupId>
-                <artifactId>scala-maven-plugin</artifactId>
-				</plugin>
-			</plugins>
-			</build>
+                        </plugin>
+                        <!--END DO NOT TOUCH-->
+                    </plugins>
+                </pluginManagement>
+                <plugins>
+                    <plugin>
+                        <groupId>net.alchim31.maven</groupId>
+                        <artifactId>scala-maven-plugin</artifactId>
+                    </plugin>
+                </plugins>
+            </build>
         </profile>
-		<profile>
-			<id>test</id>
+        <profile>
+            <id>test</id>
             <activation>
-			<activeByDefault>true</activeByDefault>
+                <activeByDefault>true</activeByDefault>
                 <property>
                     <name>env.BUILD_NUMBER</name>
                 </property>
             </activation>
-			<build>
-			<pluginManagement>
-				<plugins>
-			<!--START DO NOT TOUCH-->
-                <plugin>
-                    <inherited>true</inherited>
-                    <groupId>net.alchim31.maven</groupId>
-                    <artifactId>scala-maven-plugin</artifactId>
-                    <version>3.1.6</version>
-                    <executions>
-                        <execution>
-                            <id>compile</id>
-                            <!--<goals>
-                                <goal>add-source</goal>
-                                <goal>compile</goal>
-                            </goals>-->
+            <build>
+                <pluginManagement>
+                    <plugins>
+                        <!--START DO NOT TOUCH-->
+                        <plugin>
+                            <inherited>true</inherited>
+                            <groupId>net.alchim31.maven</groupId>
+                            <artifactId>scala-maven-plugin</artifactId>
+                            <version>3.1.6</version>
+                            <executions>
+                                <execution>
+                                    <id>compile</id>
+                                    <configuration>
+                                        <compilerPlugins>
+                                            <compilerPlugin>
+                                                <groupId>com.mmakowski</groupId>
+                                                <artifactId>maven-specs2-plugin</artifactId>
+                                                <version>0.4.2</version>
+                                            </compilerPlugin>
+                                        </compilerPlugins>
+                                    </configuration>
+                                </execution>
+                            </executions>
+                        </plugin>
+                        <plugin>
+                            <inherited>true</inherited>
+                            <groupId>org.scalatest</groupId>
+                            <artifactId>scalatest-maven-plugin</artifactId>
+                            <version>1.0-RC2</version>
                             <configuration>
-                                <!--<jvmArgs>
-                                    <jvmArg>-Xms1024m</jvmArg>
-                                    <jvmArg>-Xmx2048m</jvmArg>
-                                </jvmArgs>-->
-                                <compilerPlugins>
-                                    <compilerPlugin>
-                                            <groupId>com.mmakowski</groupId>
-                                            <artifactId>maven-specs2-plugin</artifactId>
-                                            <version>0.4.2</version>
-                                    </compilerPlugin>
-                                </compilerPlugins>
-                                <!--<args>
-                                    <arg>-g:vars</arg>
-                                    <arg>-Yrangepos</arg>
-                                </args>-->
+                                <reportsDirectory>${project.build.directory}/surefire-reports</reportsDirectory>
+                                <junitxml>.</junitxml>
+                                <filereports>WDF TestSuite.txt</filereports>
                             </configuration>
-                        </execution>
-                        <!--<execution>
-                            <id>test</id>
-                            <goals>
-                                <goal>add-source</goal>
-                                <goal>testCompile</goal>
-                            </goals>
-                        </execution>-->
-                    </executions>
-                    <!--<configuration>
-                        <scalaVersion>${scala.long.version}</scalaVersion>
-                        <checkMultipleScalaVersions>false</checkMultipleScalaVersions>
-                    </configuration>-->
-                </plugin>
-                <plugin>
-                    <inherited>true</inherited>
-                    <groupId>org.scalatest</groupId>
-                    <artifactId>scalatest-maven-plugin</artifactId>
-                    <version>1.0-RC2</version>
-                    <configuration>
-                        <reportsDirectory>${project.build.directory}/surefire-reports</reportsDirectory>
-                        <junitxml>.</junitxml>
-                        <filereports>WDF TestSuite.txt</filereports>
-                    </configuration>
-                    <executions>
-                        <execution>
-                            <id>scalaTest</id>
-                            <phase>test</phase>
-                            <goals>
-                                <goal>test</goal>
-                            </goals>
-                        </execution>
-                    </executions>
-                </plugin>
-                <plugin>
-                    <!--run specs test from maven-->
-                    <inherited>true</inherited>
-                    <groupId>com.mmakowski</groupId>
-                    <artifactId>maven-specs2-plugin</artifactId>
-                    <version>0.4.2</version>
-                    <configuration>
+                            <executions>
+                                <execution>
+                                    <id>scalaTest</id>
+                                    <phase>test</phase>
+                                    <goals>
+                                        <goal>test</goal>
+                                    </goals>
+                                </execution>
+                            </executions>
+                        </plugin>
+                        <plugin>
+                            <!--run specs test from maven-->
+                            <inherited>true</inherited>
+                            <groupId>com.mmakowski</groupId>
+                            <artifactId>maven-specs2-plugin</artifactId>
+                            <version>0.4.2</version>
+                            <configuration>
 
-                    </configuration>
-                    <executions>
-                        <execution>
-                            <id>specs2test</id>
-                            <phase>test</phase>
-                            <goals>
-                                <goal>run-specs</goal>
-                            </goals>
-                        </execution>
-                    </executions>
-                </plugin>
-                <!--END DO NOT TOUCH-->
-				</plugins>
-			</pluginManagement>
-			<plugins>
-				<plugin>
-					<groupId>net.alchim31.maven</groupId>
-					<artifactId>scala-maven-plugin</artifactId>
-				</plugin>
-			</plugins>
-			</build>
-			<dependencyManagement>
-				<dependencies>
-					<dependency>
-						<groupId>org.scalatest</groupId>
-						<artifactId>scalatest_${scala.short.version}</artifactId>
-						<version>2.1.6</version>
-						<scope>test</scope>
-					</dependency>
-					<dependency>
-						<groupId>org.specs2</groupId>
-						<artifactId>specs2_${scala.short.version}</artifactId>
-						<version>2.3.10</version>
-						<scope>test</scope>
-					</dependency>
-				</dependencies>
-			</dependencyManagement>
-			<dependencies>
-				<dependency>
-					<groupId>org.scalatest</groupId>
-					<artifactId>scalatest_2.10</artifactId>
-				</dependency>
-				<dependency>
-					<groupId>org.specs2</groupId>
-					<artifactId>specs2_${scala.short.version}</artifactId>
-				</dependency>
-			</dependencies>
-		</profile>
-		<profile>
+                            </configuration>
+                            <executions>
+                                <execution>
+                                    <id>specs2test</id>
+                                    <phase>test</phase>
+                                    <goals>
+                                        <goal>run-specs</goal>
+                                    </goals>
+                                </execution>
+                            </executions>
+                        </plugin>
+                        <!--END DO NOT TOUCH-->
+                    </plugins>
+                </pluginManagement>
+                <plugins>
+                    <plugin>
+                        <groupId>net.alchim31.maven</groupId>
+                        <artifactId>scala-maven-plugin</artifactId>
+                    </plugin>
+                </plugins>
+            </build>
+            <dependencyManagement>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.scalatest</groupId>
+                        <artifactId>scalatest_${scala.short.version}</artifactId>
+                        <version>2.1.6</version>
+                        <scope>test</scope>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.specs2</groupId>
+                        <artifactId>specs2_${scala.short.version}</artifactId>
+                        <version>2.3.10</version>
+                        <scope>test</scope>
+                    </dependency>
+                </dependencies>
+            </dependencyManagement>
+            <dependencies>
+                <dependency>
+                    <groupId>org.scalatest</groupId>
+                    <artifactId>scalatest_2.10</artifactId>
+                </dependency>
+                <dependency>
+                    <groupId>org.specs2</groupId>
+                    <artifactId>specs2_${scala.short.version}</artifactId>
+                </dependency>
+            </dependencies>
+        </profile>
+        <profile>
             <id>scala-coverage</id>
             <activation>
                 <property>
                     <name>env.BUILD_NUMBER</name>
                 </property>
             </activation>
-			<build>
-			<pluginManagement>
-			<plugins>
-			<!--START DO NOT TOUCH-->
-                <plugin>
-                    <inherited>true</inherited>
-                    <groupId>net.alchim31.maven</groupId>
-                    <artifactId>scala-maven-plugin</artifactId>
-                    <version>3.1.6</version>
-                    <executions>
-                        <execution>
-                            <id>compile</id>
-                            <!--<goals>
-                                <goal>add-source</goal>
-                                <goal>compile</goal>
-                            </goals>-->
-                            <configuration>
-                                <!--<jvmArgs>
-                                    <jvmArg>-Xms1024m</jvmArg>
-                                    <jvmArg>-Xmx2048m</jvmArg>
-                                </jvmArgs>-->
-								<dependencies>
-                                    <dependency>
-                                        <groupId>org.scoverage</groupId>
-                                        <artifactId>scalac-scoverage-plugin_${scala.short.version}</artifactId>
-                                        <version>${scoverage-plugin.version}</version>
-                                    </dependency>
-                                </dependencies>
-                                <compilerPlugins>
-                                    <compilerPlugin>
-                                        <groupId>org.scoverage</groupId>
-                                        <artifactId>scalac-scoverage-plugin_${scala.short.version}</artifactId>
-                                        <version>${scoverage-plugin.version}</version>
-                                    </compilerPlugin>
-                                    <compilerPlugin>
-                                            <groupId>com.mmakowski</groupId>
-                                            <artifactId>maven-specs2-plugin</artifactId>
-                                            <version>0.4.2</version>
-                                    </compilerPlugin>
-                                </compilerPlugins>
-                                <args>
-                                    <arg>-g:vars</arg>
-                                    <arg>-Yrangepos</arg>
-                                    <arg>-P:scoverage:dataDir:${project.build.directory}</arg>
-                                </args>
-                            </configuration>
-                        </execution>
-                        <!--<execution>
-                            <id>test</id>
-                            <goals>
-                                <goal>add-source</goal>
-                                <goal>testCompile</goal>
-                            </goals>
-                        </execution>-->
-                    </executions>
-                    <!--<configuration>
-                        <scalaVersion>${scala.long.version}</scalaVersion>
-                        <checkMultipleScalaVersions>false</checkMultipleScalaVersions>
-                    </configuration>-->
-                </plugin>
-                <plugin>
-                    <inherited>true</inherited>
+            <build>
+                <pluginManagement>
+                    <plugins>
+                        <!--START DO NOT TOUCH-->
+                        <plugin>
+                            <inherited>true</inherited>
+                            <groupId>net.alchim31.maven</groupId>
+                            <artifactId>scala-maven-plugin</artifactId>
+                            <version>3.1.6</version>
+                            <executions>
+                                <execution>
+                                    <id>compile</id>
+                                    <!--<goals>
+                                        <goal>add-source</goal>
+                                        <goal>compile</goal>
+                                    </goals>-->
+                                    <configuration>
+                                        <!--<jvmArgs>
+                                            <jvmArg>-Xms1024m</jvmArg>
+                                            <jvmArg>-Xmx2048m</jvmArg>
+                                        </jvmArgs>-->
+                                        <dependencies>
+                                            <dependency>
+                                                <groupId>org.scoverage</groupId>
+                                                <artifactId>scalac-scoverage-plugin_${scala.short.version}</artifactId>
+                                                <version>${scoverage-plugin.version}</version>
+                                            </dependency>
+                                        </dependencies>
+                                        <compilerPlugins>
+                                            <compilerPlugin>
+                                                <groupId>org.scoverage</groupId>
+                                                <artifactId>scalac-scoverage-plugin_${scala.short.version}</artifactId>
+                                                <version>${scoverage-plugin.version}</version>
+                                            </compilerPlugin>
+                                            <compilerPlugin>
+                                                <groupId>com.mmakowski</groupId>
+                                                <artifactId>maven-specs2-plugin</artifactId>
+                                                <version>0.4.2</version>
+                                            </compilerPlugin>
+                                        </compilerPlugins>
+                                        <args>
+                                            <arg>-g:vars</arg>
+                                            <arg>-Yrangepos</arg>
+                                            <arg>-P:scoverage:dataDir:${project.build.directory}</arg>
+                                        </args>
+                                    </configuration>
+                                </execution>
+                                <!--<execution>
+                                    <id>test</id>
+                                    <goals>
+                                        <goal>add-source</goal>
+                                        <goal>testCompile</goal>
+                                    </goals>
+                                </execution>-->
+                            </executions>
+                            <!--<configuration>
+                                <scalaVersion>${scala.long.version}</scalaVersion>
+                                <checkMultipleScalaVersions>false</checkMultipleScalaVersions>
+                            </configuration>-->
+                        </plugin>
+                        <plugin>
+                            <inherited>true</inherited>
+                            <groupId>org.scoverage</groupId>
+                            <artifactId>maven-scoverage-plugin</artifactId>
+                            <version>${scoverage.version}</version>
+                            <executions>
+                                <execution>
+                                    <id>scala-scoverage-report</id>
+                                    <phase>test</phase>
+                                    <goals>
+                                        <goal>report</goal>
+                                    </goals>
+                                </execution>
+                            </executions>
+                        </plugin>
+                        <!--END DO NOT TOUCH-->
+                    </plugins>
+                </pluginManagement>
+            </build>
+            <dependencyManagement>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.scoverage</groupId>
+                        <artifactId>scalac-scoverage-plugin_${scala.short.version}</artifactId>
+                        <version>${scoverage-plugin.version}</version>
+                    </dependency>
+                </dependencies>
+            </dependencyManagement>
+            <dependencies>
+                <dependency>
                     <groupId>org.scoverage</groupId>
-                    <artifactId>maven-scoverage-plugin</artifactId>
-                    <version>${scoverage.version}</version>
-                    <executions>
-                        <execution>
-                            <id>scala-scoverage-report</id>
-                            <phase>test</phase>
-                            <goals>
-                                <goal>report</goal>
-                            </goals>
-                        </execution>
-                    </executions>
-                </plugin>
-                <!--END DO NOT TOUCH-->
-				</plugins>
-				</pluginManagement>
-			</build>
-			<dependencyManagement>
-				<dependencies>
-					<dependency>
-						<groupId>org.scoverage</groupId>
-						<artifactId>scalac-scoverage-plugin_${scala.short.version}</artifactId>
-						<version>${scoverage-plugin.version}</version>
-					</dependency>
-				</dependencies>
-			</dependencyManagement>
-			<dependencies>
-				<dependency>
-					<groupId>org.scoverage</groupId>
-					<artifactId>scalac-scoverage-plugin_${scala.short.version}</artifactId>
-				</dependency>
-		</dependencies>
+                    <artifactId>scalac-scoverage-plugin_${scala.short.version}</artifactId>
+                </dependency>
+            </dependencies>
         </profile>
     </profiles>
     <build>
@@ -613,7 +605,7 @@ export MAVEN_OPTS="-Xms2048m -Xmx4096m -XX:MaxPermSize=4096m -XX:PermSize=2048m"
                         </execution>
                     </executions>
                 </plugin>
-                
+
                 <plugin>
                     <groupId>com.github.koraktor</groupId>
                     <artifactId>mavanagaiata</artifactId>
@@ -633,8 +625,8 @@ export MAVEN_OPTS="-Xms2048m -Xmx4096m -XX:MaxPermSize=4096m -XX:PermSize=2048m"
                         </execution>
                     </executions>
                 </plugin>
-               
-				<!--Create our jars-->
+
+                <!--Create our jars-->
                 <plugin>
                     <inherited>true</inherited>
                     <groupId>org.apache.maven.plugins</groupId>
@@ -647,37 +639,39 @@ export MAVEN_OPTS="-Xms2048m -Xmx4096m -XX:MaxPermSize=4096m -XX:PermSize=2048m"
                                 <goal>shade</goal>
                             </goals>
                             <configuration>
-								
+                                <shadeTestJar>true</shadeTestJar>
                                 <finalName>${project.artifactId}</finalName>
                                 <shadedArtifactAttached>false</shadedArtifactAttached>
                                 <shadedClassifierName>${project.artifactId}</shadedClassifierName>
                                 <artifactSet>
-									<excludes>
-										<exclude>org.apache.maven:*</exclude>
-									</excludes>
-								</artifactSet>
+                                    <excludes>
+                                        <exclude>org.apache.maven:*</exclude>
+                                    </excludes>
+                                </artifactSet>
                                 <filters>
                                     <filter>
                                         <artifact>*:*</artifact>
                                         <excludes>
                                             <exclude>*.html</exclude>
-											 <exclude>META-INF/*.SF</exclude>
+                                            <exclude>META-INF/*.SF</exclude>
                                             <exclude>META-INF/*.DSA</exclude>
                                             <exclude>META-INF/*.RSA</exclude>
                                         </excludes>
                                     </filter>
                                 </filters>
                                 <transformers>
-                                    <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                                    <transformer
+                                            implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
                                         <resource>reference.conf</resource>
                                     </transformer>
-									<transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
+                                    <transformer
+                                            implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
                                 </transformers>
                             </configuration>
                         </execution>
                     </executions>
                 </plugin>
-				
+
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-javadoc-plugin</artifactId>
@@ -843,21 +837,21 @@ export MAVEN_OPTS="-Xms2048m -Xmx4096m -XX:MaxPermSize=4096m -XX:PermSize=2048m"
                 <groupId>com.mmakowski</groupId>
                 <artifactId>maven-specs2-plugin</artifactId>
             </plugin>-->
-<!--
-            <plugin>
-                <groupId>org.scoverage</groupId>
-                <artifactId>maven-scoverage-plugin</artifactId>
-            </plugin>-->
+            <!--
+                        <plugin>
+                            <groupId>org.scoverage</groupId>
+                            <artifactId>maven-scoverage-plugin</artifactId>
+                        </plugin>-->
 
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
             </plugin>
 
-           <!-- <plugin>
-                <groupId>org.apache.rat</groupId>
-                <artifactId>apache-rat-plugin</artifactId>
-            </plugin>-->
+            <!-- <plugin>
+                 <groupId>org.apache.rat</groupId>
+                 <artifactId>apache-rat-plugin</artifactId>
+             </plugin>-->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-checkstyle-plugin</artifactId>
@@ -878,84 +872,84 @@ export MAVEN_OPTS="-Xms2048m -Xmx4096m -XX:MaxPermSize=4096m -XX:PermSize=2048m"
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-checkstyle-plugin</artifactId>
             </plugin>-->
-<!--            <plugin>
-                <artifactId>exec-maven-plugin</artifactId>
-                <groupId>org.codehaus.mojo</groupId>
-                <version>1.2.1</version>
-                <executions>
-                    <execution>
-                        <id>sbt-compile</id>
-                        <phase>compile</phase>
-                        <goals>
-                            <goal>exec</goal>
-                        </goals>
-                        <configuration>
-                            <executable>sbt</executable>
-                            <arguments>
-                                <argument>compile</argument>
-                            </arguments>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>sbt-scalastyle</id>
-                        <phase>test</phase>
-                        <goals>
-                            <goal>exec</goal>
-                        </goals>
-                        <configuration>
-                            <executable>sbt</executable>
-                            <arguments>
-                                <argument>scalastyle</argument>
-                            </arguments>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>sbt-test-w-coverage</id>
-                        <phase>test</phase>
-                        <goals>
-                            <goal>exec</goal>
-                        </goals>
-                        <configuration>
-                            <executable>sbt</executable>
-                            <arguments>
-                                <argument>-Dconfig.resource=dev</argument>
-                                <argument>scoverage:test</argument>
-                            </arguments>
-                        </configuration>
-                    </execution>
-                    <execution>
+            <!--            <plugin>
+                            <artifactId>exec-maven-plugin</artifactId>
+                            <groupId>org.codehaus.mojo</groupId>
+                            <version>1.2.1</version>
+                            <executions>
+                                <execution>
+                                    <id>sbt-compile</id>
+                                    <phase>compile</phase>
+                                    <goals>
+                                        <goal>exec</goal>
+                                    </goals>
+                                    <configuration>
+                                        <executable>sbt</executable>
+                                        <arguments>
+                                            <argument>compile</argument>
+                                        </arguments>
+                                    </configuration>
+                                </execution>
+                                <execution>
+                                    <id>sbt-scalastyle</id>
+                                    <phase>test</phase>
+                                    <goals>
+                                        <goal>exec</goal>
+                                    </goals>
+                                    <configuration>
+                                        <executable>sbt</executable>
+                                        <arguments>
+                                            <argument>scalastyle</argument>
+                                        </arguments>
+                                    </configuration>
+                                </execution>
+                                <execution>
+                                    <id>sbt-test-w-coverage</id>
+                                    <phase>test</phase>
+                                    <goals>
+                                        <goal>exec</goal>
+                                    </goals>
+                                    <configuration>
+                                        <executable>sbt</executable>
+                                        <arguments>
+                                            <argument>-Dconfig.resource=dev</argument>
+                                            <argument>scoverage:test</argument>
+                                        </arguments>
+                                    </configuration>
+                                </execution>
+                                <execution>
 
-                        <id>sbt-test</id>
-                        <phase>test</phase>
-                        <goals>
-                            <goal>exec</goal>
-                        </goals>
-                        <configuration>
-                            <executable>sbt</executable>
-                            <arguments>
-                                <argument>-Dconfig.resource=dev</argument>
-                                <argument>event/test</argument>
-                            </arguments>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>sbt-dist</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>exec</goal>
-                        </goals>
-                        <configuration>
-                            <executable>sbt</executable>
-                            <arguments>
-                                <argument>assembly</argument>
-                            </arguments>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>-->
+                                    <id>sbt-test</id>
+                                    <phase>test</phase>
+                                    <goals>
+                                        <goal>exec</goal>
+                                    </goals>
+                                    <configuration>
+                                        <executable>sbt</executable>
+                                        <arguments>
+                                            <argument>-Dconfig.resource=dev</argument>
+                                            <argument>event/test</argument>
+                                        </arguments>
+                                    </configuration>
+                                </execution>
+                                <execution>
+                                    <id>sbt-dist</id>
+                                    <phase>package</phase>
+                                    <goals>
+                                        <goal>exec</goal>
+                                    </goals>
+                                    <configuration>
+                                        <executable>sbt</executable>
+                                        <arguments>
+                                            <argument>assembly</argument>
+                                        </arguments>
+                                    </configuration>
+                                </execution>
+                            </executions>
+                        </plugin>-->
             <plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-shade-plugin</artifactId>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
             </plugin>
         </plugins>
     </build>
@@ -968,15 +962,14 @@ export MAVEN_OPTS="-Xms2048m -Xmx4096m -XX:MaxPermSize=4096m -XX:PermSize=2048m"
                 <version>${scoverage-plugin.version}</version>
 				<scope>test</scope>
             </dependency>-->
-            
-			
-			
+
+
             <dependency>
                 <groupId>org.scala-lang</groupId>
                 <artifactId>scala-library</artifactId>
                 <version>${scala.long.version}</version>
             </dependency>
-			
+
             <!-- <dependency>
                  <groupId>org.apache.hadoop</groupId>
                  <artifactId>hadoop-common</artifactId>
@@ -1209,14 +1202,13 @@ export MAVEN_OPTS="-Xms2048m -Xmx4096m -XX:MaxPermSize=4096m -XX:PermSize=2048m"
             <artifactId>scalac-scoverage-plugin_${scala.short.version}</artifactId>
 			
         </dependency>-->
-		
-        
-		
+
+
         <dependency>
             <groupId>org.scala-lang</groupId>
             <artifactId>scala-library</artifactId>
         </dependency>
-		
-		
+
+
     </dependencies>
 </project>
