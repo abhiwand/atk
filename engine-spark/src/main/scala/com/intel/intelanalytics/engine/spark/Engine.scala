@@ -76,34 +76,15 @@ class SparkEngine(config: SparkEngineConfiguration,
                   sparkContextManager: SparkContextManager,
                   commands: CommandStorage,
                   frames: SparkFrameStorage,
-                  graphs: GraphStorage) extends Engine with EventLogging {
+                  graphs: GraphStorage) extends Engine
+                                        with EventLogging
+                                        with ClassLoaderAware {
 
   val fsRoot = config.fsRoot
 
-  def context(implicit user: UserPrincipal): Context = {
-    sparkContextManager.getContext(user.user.api_key)
-  }
 
   def shutdown: Unit = {
     sparkContextManager.cleanup()
-  }
-
-  /**
-   * Execute a code block using the ClassLoader of 'this' SparkEngine
-   * rather than the ClassLoader of the currentThread()
-   */
-  def withMyClassLoader[T](f: => T): T = {
-    val prior = Thread.currentThread().getContextClassLoader
-    EventContext.getCurrent.put("priorClassLoader", prior.toString)
-    try {
-      val loader = this.getClass.getClassLoader
-      EventContext.getCurrent.put("newClassLoader", loader.toString)
-      Thread.currentThread setContextClassLoader loader
-      f
-    }
-    finally {
-      Thread.currentThread setContextClassLoader prior
-    }
   }
 
   def alter(frame: DataFrame, changes: Seq[Alteration]): Unit = withContext("se.alter") {
@@ -165,7 +146,7 @@ class SparkEngine(config: SparkEngineConfiguration,
               val location = fsRoot + frames.getFrameDataFile(frameId)
               val schema = arguments.schema
               val converter = DataTypes.parseMany(schema.columns.map(_._2).toArray)(_)
-              val ctx = context(user)
+              val ctx = sparkContextManager.context(user)
               SparkOps.loadLines(ctx.sparkContext, fsRoot + "/" + arguments.source, location, arguments, parserFunction, converter)
               val frame = frames.updateSchema(realFrame, schema.columns)
               frame.toJson.asJsObject
@@ -273,7 +254,7 @@ class SparkEngine(config: SparkEngineConfiguration,
               val projectedFrame = frames.lookup(projectedFrameID).getOrElse(
                 throw new IllegalArgumentException(s"No such data frame: $projectedFrameID"))
 
-              val ctx = context(user).sparkContext
+              val ctx = sparkContextManager.context(user).sparkContext
               val columns = arguments.columns
 
               val schema = sourceFrame.schema
@@ -325,7 +306,7 @@ class SparkEngine(config: SparkEngineConfiguration,
    */
   private def createPythonRDD(frameId: Long, py_expression: String)(implicit user: UserPrincipal): EnginePythonRDD[String] = {
     withMyClassLoader {
-      val ctx = context(user).sparkContext
+      val ctx = sparkContextManager.context(user).sparkContext
       val predicateInBytes = decodePythonBase64EncodedStrToBytes(py_expression)
 
       val baseRdd: RDD[String] = frames.getFrameRdd(ctx, frameId)
@@ -369,7 +350,7 @@ class SparkEngine(config: SparkEngineConfiguration,
               throw new IllegalArgumentException(s"No such data frame: ${frameId}"))
 
             withCommand(command) {
-              val ctx = context(user).sparkContext
+              val ctx = sparkContextManager.context(user).sparkContext
 
               val newFrame = Await.result(create(DataFrameTemplate(flattenColumnCommand.name, None)), config.defaultTimeout)
               val rdd = frames.getFrameRdd(ctx, frameId)
@@ -485,7 +466,7 @@ class SparkEngine(config: SparkEngineConfiguration,
               require(leftSchema.columnIndex(leftOn) != -1, s"column $leftOn is invalid")
               require(rightSchema.columnIndex(rightOn) != -1, s"column $rightOn is invalid")
 
-              val ctx = context(user).sparkContext
+              val ctx = sparkContextManager.context(user).sparkContext
               val pairRdds = createPairRddForJoin(joinCommand, ctx)
 
               val joinResultRDD = SparkOps.joinRDDs(RDDJoinParam(pairRdds(0), leftColumns.length), RDDJoinParam(pairRdds(1), rightColumns.length), joinCommand.how)
@@ -511,7 +492,7 @@ class SparkEngine(config: SparkEngineConfiguration,
           withContext("se.removecolumn.future") {
             withCommand(command) {
 
-              val ctx = context(user).sparkContext
+              val ctx = sparkContextManager.context(user).sparkContext
               val frameId = arguments.frame
               val columns = arguments.column.split(",")
 
@@ -559,7 +540,7 @@ class SparkEngine(config: SparkEngineConfiguration,
           withContext("se.addcolumn.future") {
             withCommand(command) {
 
-              val ctx = context(user).sparkContext
+              val ctx = sparkContextManager.context(user).sparkContext
               val frameId = arguments.frame
               val column_name = arguments.columnname
               val column_type = arguments.columntype

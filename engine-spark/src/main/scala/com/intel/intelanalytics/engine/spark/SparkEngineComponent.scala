@@ -73,13 +73,13 @@ class SparkComponent extends EngineComponent
   val files = new HdfsFileStorage(configuration.fsRoot) {}
 
 
-  val frames = new SparkFrameStorage(sparkContextManager, configuration.fsRoot, files) {}
+  val frames = new SparkFrameStorage(sparkContextManager.context(_), configuration.fsRoot, files) {}
 
 
   private lazy val admin = new HBaseAdmin(HBaseConfiguration.create())
 
   val graphs: GraphStorage =
-    new SparkGraphStorage(engine.context(_),
+    new SparkGraphStorage(sparkContextManager.context(_),
       metaStore,
       new SparkGraphHBaseBackend(admin), frames)
 
