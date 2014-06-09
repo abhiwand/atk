@@ -48,37 +48,14 @@ class SparkProgressListener extends SparkListener {
   val completedStages = ListBuffer[StageInfo]()
   val stageIdToTasksComplete = HashMap[Int, Int]()
   val stageIdToTasksFailed = HashMap[Int, Int]()
-  var jobIdPromise: Promise[Int] = null
-  val activeJobs = new HashMap[Int, ActiveJob]
-  //  val jobIdToCommandId = HashMap[Int, Int]()
-
-  def getJobId(): Future[Int] = {
-    val p = promise[Int]
-    val f = p.future
-    jobIdPromise = p
-    f
-  }
+  val commandIdJobs = new HashMap[String, ActiveJob]
 
   override def onJobStart(jobStart: SparkListenerJobStart) {
     val parents = jobStart.job.finalStage.parents
     val parentsIds = parents.map(s => s.id)
     jobIdToStageIds(jobStart.job.jobId) = (parentsIds :+ jobStart.job.finalStage.id).toArray
-    activeJobs(jobStart.job.jobId) = jobStart.job
-
-
-    //    val commandIdTry = Try {
-    //      jobStart.job.properties.getProperty(SparkContext.SPARK_JOB_GROUP_ID).toInt
-    //    }
-    //
-    //    commandIdTry match {
-    //      case Success(r) => jobIdToCommandId(jobStart.job.jobId) = r
-    //      case _ => { } // do nothing
-    //    }
-
-    if (jobIdPromise != null) {
-      jobIdPromise success jobStart.job.jobId
-      jobIdPromise = null
-    }
+    val job = jobStart.job
+    commandIdJobs(job.properties.getProperty("command-id")) = job
   }
 
   override def onStageSubmitted(stageSubmitted: SparkListenerStageSubmitted) {
@@ -135,31 +112,10 @@ class SparkProgressListener extends SparkListener {
     })
     progress
   }
-}
 
-/**
- * Create for demo purpose. It is used to get progress from SparkProgressListener and print it out
- * TODO: remove it when progress report is exposed through rest api
- */
-class ProgressPrinter(progressListener: SparkProgressListener) extends SparkListener {
-  override def onStageCompleted(stageCompleted: SparkListenerStageCompleted) {
-    printJobProgress()
-  }
-
-  override def onTaskEnd(taskEnd: SparkListenerTaskEnd) {
-    //    printJobProgress()
-  }
-
-  override def onJobEnd(jobEnd: SparkListenerJobEnd) {
-    printJobProgress()
-  }
-
-  def printJobProgress() {
-    println("PRINTING PROGRESS........................................................")
-    for(jobId <- progressListener.activeJobs.keys.toList.sorted) {
-      val job = progressListener.activeJobs(jobId)
-      println( "command:" + job.properties.getProperty("command-id") +  ", job: " + job.jobId + ", progress: " + progressListener.getProgress(job.jobId) + "%")
-    }
-    println("END.......................................................................")
+  def getCommandProgress(commandId: String): Int = {
+    val jobId = commandIdJobs.getOrElse(commandId,  throw new IllegalArgumentException(s"No such command: $commandId")).jobId
+    getProgress(jobId)
   }
 }
+
