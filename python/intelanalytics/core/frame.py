@@ -171,7 +171,7 @@ class BigFrame(object):
     def __repr__(self):
         return json.dumps({'_id': str(self._id),
                            'name': self.name,
-                           'schema': repr(self.schema)}, indent=2)
+                           'schema': self.schema}, indent=2)
 
     def __len__(self):
         return len(self._columns)
@@ -295,8 +295,8 @@ class BigFrame(object):
         --------
         >>> frame.schema
         [("col1", str), ("col1", numpy.int32)]
-        
         """
+        return [(col.name, col.data_type) for col in self._columns.values()]
 
     @property
     def uri(self):
@@ -313,7 +313,6 @@ class BigFrame(object):
     def _as_json_obj(self):
         return self._backend._as_json_obj(self)
         #return ['frame', {"name": self.name}]
-
 
     def add_columns(self, func, types=str, names=""):
         """
@@ -338,12 +337,6 @@ class BigFrame(object):
 
         Examples
         --------
-        >>> frame.add_columns(lambda row: row.a * row.b, float, "a_times_b")
-        # a new column "a_times_b" is created whose cell values are those of
-        # column "a" multiplied by column "b"
-        >>> frame.add_columns(lambda row: (row.a * row.b, row.a + row.b), (float, float), ("a_times_b", "a_plus_b"))
-        # a new column "a_times_b" is created whose cell values are those of
-
         >>> my_frame = BigFrame(data)
         For this example my_frame is a BigFrame object with two int32 columns named "column1" and "column2".
         We want to add a third column named "column3" as an int32 and fill it with the contents of column1 and column2 multiplied together
@@ -353,6 +346,8 @@ class BigFrame(object):
         Now, we want to add another column, we don't care what it is called and it is going to be an empty string (the default).
         >>> my_frame.add_columns(lambda row: '')
         The BigFrame object 'my_frame' now has four columns named "column1", "column2", "column3", and "new0". The first three columns are int32 and the fourth column is string.  Column "new0" has an empty string ('') in every row.
+        >>> frame.add_columns(lambda row: (row.a * row.b, row.a + row.b), (float32, float32), ("a_times_b", "a_plus_b"))
+        # Two new columns are created, "a_times_b" and "a_plus_b"
         """
         self._backend.add_columns(self, func, names, types)
 
@@ -367,10 +362,10 @@ class BigFrame(object):
         Examples
         --------
 
-        >>> my_frame = BigFrame( p_raw_data, my_csv )
-        >>> my_other_frame = BigFrame( p_raw_data, my_other_csv )
-        >>> my_frame.append( &my_other_frame )
-        my_frame now has the data from my_other_frame as well
+        >>> my_frame = BigFrame(my_csv)
+        >>> my_other_frame = BigFrame(my_other_csv)
+        >>> my_frame.append(my_other_frame)
+        # my_frame now has the data from my_other_frame as well
         """
         # TODO - Review examples
         self._backend.append(self, data)
@@ -387,6 +382,27 @@ class BigFrame(object):
         copied_frame = BigFrame()
         self._backend.project_columns(self, copied_frame, self.column_names)
         return copied_frame
+
+    def count(self):
+        """
+        Count the number of rows that exist in this object.
+
+        Returns
+        -------
+
+        int32
+            The number of rows
+
+        Examples
+        --------
+
+        >>>
+        # For this example, my_frame is a BigFrame object with lots of data
+        >>> num_rows = my_frame.count()
+        # num_rows is now the count of rows of data in my_frame
+
+        """
+        return self._backend.count(self)
 
     def filter(self, predicate):
         """
@@ -407,29 +423,6 @@ class BigFrame(object):
         """
         # TODO - Review docstring
         self._backend.filter(self, predicate)
-
-    def count(self):
-        """
-        Count the number of rows that exist in this object.
-        
-        Returns
-        -------
-
-        int32
-            The number of rows
-        
-        Examples
-        --------
-
-        >>>
-        # For this example, my_frame is a BigFrame object with lots of data
-        >>> num_rows = my_frame.count()
-        # num_rows is now the count of rows of data in my_frame
-        
-        """
-        raise NotImplementedError
-        #return self._backend.count(self)
-
 
     def flatten_column(self, column_name):
         """
@@ -468,8 +461,7 @@ class BigFrame(object):
         For this example, my_frame is a BigFrame object with a column called "unimportant" (amongst other)
         >>> my_frame.drop( unimportant == True )
         my_frame's data is now empty of any data with where the column "unimportant" was true.
-        
-        
+
         """
         # TODO - review docstring
         self._backend.drop(self, predicate)
@@ -564,7 +556,7 @@ class BigFrame(object):
         >>> joined_frame = frame1.join(frame2, 'a')
         >>> joined_frame = frame2.join(frame2, left_on='b', right_on='book', how='inner')
         """
-       return self._backend.join(self, right, left_on, right_on, how)
+        return self._backend.join(self, right, left_on, right_on, how)
 
     def project_columns(self, column_names, new_names=None):
         """
