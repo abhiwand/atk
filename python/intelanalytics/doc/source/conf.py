@@ -40,6 +40,7 @@ extensions = [
     'sphinx.ext.autosummary',
     'numpydoc',
     'sphinx.ext.todo',
+    'sphinx.ext.doctest',
 ]
 
 # This is a flag to print out To-Do items
@@ -94,7 +95,7 @@ exclude_patterns = []
 
 # If true, the current module name will be prepended to all description
 # unit titles (such as .. function::).
-#add_module_names = True
+add_module_names = True
 
 # If true, sectionauthor and moduleauthor directives will be shown in the
 # output. They are ignored by default.
@@ -105,7 +106,7 @@ pygments_style = 'sphinx'
 
 # A list of ignored prefixes for module index sorting.
 #modindex_common_prefix = []
-html_use_modindex = False
+html_use_modindex = True
 
 # If true, keep warnings as "system message" paragraphs in the built documents.
 #keep_warnings = False

@@ -4,6 +4,7 @@ import org.specs2.mutable.Specification
 import org.specs2.mock.Mockito
 import org.apache.spark.SparkContext
 import com.typesafe.config.Config
+import com.intel.intelanalytics.engine.spark.context.{SparkContextManager, SparkContextFactory}
 
 class SparkContextManagerSpec extends Specification with Mockito {
 
