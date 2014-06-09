@@ -40,7 +40,7 @@ trait FrameStorage {
 
   def addColumnWithValue[T](frame: DataFrame, column: Column[T], default: T): Unit
 
-  def removeColumn(frame: DataFrame, columnIndex: Seq[Int]): Unit
+  def removeColumn(frame: DataFrame, columnIndex: Seq[Int]): DataFrame
 
   def renameFrame(frame: DataFrame, newName: String): Unit
 
