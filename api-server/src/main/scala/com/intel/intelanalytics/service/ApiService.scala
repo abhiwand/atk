@@ -4,7 +4,6 @@ import akka.actor.Actor
 import spray.routing._
 import spray.http._
 import MediaTypes._
-import com.intel.intelanalytics.domain.Schema
 import akka.event.Logging
 import spray.routing.directives.BasicDirectives
 import com.intel.event.{ Severity, EventContext }
@@ -12,6 +11,7 @@ import com.intel.intelanalytics.shared.EventLogging
 import com.intel.intelanalytics.service.v1.ApiV1Service
 import com.intel.intelanalytics.service.v1.viewmodels.RelLink
 import com.typesafe.config.ConfigFactory
+import com.intel.intelanalytics.domain.schema.Schema
 
 // we don't implement our route structure directly in the service actor because
 // we want to be able to test it independently, without having to spin up an actor

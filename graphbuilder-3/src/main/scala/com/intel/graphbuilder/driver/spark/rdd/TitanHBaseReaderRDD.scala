@@ -1,16 +1,15 @@
 package com.intel.graphbuilder.driver.spark.rdd
 
-import com.intel.graphbuilder.driver.spark.titan.reader.{ TitanRow, TitanRowParser }
+import com.intel.graphbuilder.driver.spark.titan.reader.{TitanRow, TitanRowParser}
 import com.intel.graphbuilder.graph.titan.TitanGraphConnector
 import com.intel.graphbuilder.elements.GraphElement
-import com.thinkaurelius.titan.diskstorage.util.{ StaticArrayBuffer, StaticByteBuffer }
+import com.thinkaurelius.titan.diskstorage.util.{StaticArrayBuffer, StaticByteBuffer}
 import com.thinkaurelius.titan.diskstorage.keycolumnvalue.StaticBufferEntry
 import com.thinkaurelius.titan.diskstorage.StaticBuffer
 import org.apache.spark.rdd.RDD
 import org.apache.hadoop.hbase.io.ImmutableBytesWritable
 import org.apache.hadoop.hbase.client.Result
-import org.apache.spark.{ TaskContext, Partition }
-import scala.collection.mutable.ListBuffer
+import org.apache.spark.{InterruptibleIterator, TaskContext, Partition}
 import scala.collection.JavaConversions._
 
 /**
@@ -26,28 +25,24 @@ class TitanHBaseReaderRDD(hBaseRDD: RDD[(ImmutableBytesWritable, Result)],
   override def getPartitions: Array[Partition] = firstParent[(ImmutableBytesWritable, Result)].partitions
 
   /**
-   * Parses HBase input rows to extract vertices and corresponding edges
+   * Parses HBase input rows to extract vertices and corresponding edges.
    *
-   * @return Iterator with GraphBuilder vertices and edges
+   * @return Iterator of GraphBuilder vertices and edges using GraphBuilder's GraphElement trait
    */
   override def compute(split: Partition, context: TaskContext): Iterator[GraphElement] = {
-
     val titanGraph = titanConnector.connect()
-    val titanEdgeSerializer = titanGraph.getEdgeSerializer()
     val titanTransaction = titanGraph.newTransaction(titanGraph.buildTransaction())
+    val titanEdgeSerializer = titanGraph.getEdgeSerializer()
 
-    var graphElements = ListBuffer[GraphElement]()
-
-    firstParent[(ImmutableBytesWritable, Result)].iterator(split, context).foreach(hBaseRow => {
+    val graphElements = firstParent[(ImmutableBytesWritable, Result)].iterator(split, context).flatMap(hBaseRow => {
       val result = hBaseRow._2
       val rowKey = new StaticByteBuffer(result.getRow)
-      val titanRow = getSerializedTitanRow(rowKey, result)
 
+      val titanRow = getSerializedTitanRow(rowKey, result)
       val titanRowParser = TitanRowParser(titanRow, titanEdgeSerializer, titanTransaction)
       val rowGraphElements = titanRowParser.parse()
 
-      graphElements ++= rowGraphElements
-
+      rowGraphElements
     })
 
     context.addOnCompleteCallback(() => {
@@ -55,7 +50,7 @@ class TitanHBaseReaderRDD(hBaseRDD: RDD[(ImmutableBytesWritable, Result)],
       titanGraph.shutdown()
     })
 
-    graphElements.toList.iterator
+    new InterruptibleIterator(context, graphElements)
   }
 
   /**

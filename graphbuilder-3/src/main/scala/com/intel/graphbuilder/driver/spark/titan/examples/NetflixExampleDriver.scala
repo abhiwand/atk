@@ -82,15 +82,15 @@ object NetflixExampleDriver {
       .setAppName(this.getClass.getSimpleName + " " + new Date())
       .setSparkHome(ExamplesUtils.sparkHome)
       .setJars(List(ExamplesUtils.gbJar))
-    conf.set("spark.executor.memory", "6g")
-    conf.set("spark.cores.max", "8")
+    conf.set("spark.executor.memory", "32g")
+    conf.set("spark.cores.max", "33")
     conf.set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
     conf.set("spark.kryo.registrator", "com.intel.graphbuilder.driver.spark.titan.GraphBuilderKryoRegistrator")
 
     val sc = new SparkContext(conf)
 
     // Setup data in Spark
-    val inputRows = sc.textFile(ExamplesUtils.movieDataset, System.getProperty("PARTITIONS", "120").toInt)
+    val inputRows = sc.textFile(ExamplesUtils.movieDataset, System.getProperty("PARTITIONS", "100").toInt)
     val inputRdd = inputRows.map(row => row.split(","): Seq[_])
 
     // Build the Graph
