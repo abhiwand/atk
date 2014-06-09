@@ -45,14 +45,10 @@ def get_frame_names():
 
     Examples
     --------
-
-    >>> my_names = get_frame_names()
-
-    my_names is now ["my_frame_1", "my_frame_2", "my_frame_3"] where my_frame_1, my_frame_2, and my_frame_3 are BigFrame objects
-    
+    >>> get_frame_names()
+    ["my_frame_1", "my_frame_2", "my_frame_3"] # a list of names of BigFrame objects
     """
     # TODO - Review docstring
-
     return _get_backend().get_frame_names()
 
 
@@ -336,14 +332,9 @@ class BigFrame(object):
 
         names : string  or list/tuple of strings (optional)
             specifies the name(s) of the new column(s).  By default, the new
-            column(s) name will be given a unique name "col#" where # is the
+            column(s) name will be given a unique name "new#" where # is the
             lowest number (starting from 0) such that there is not already a
             column with that name.
-
-        Notes
-        -----
-
-        If the name is left blank, the column name will be given a unique name "res#" where # is the lowest number from 0 through 1000, such that there is not already a column with that name.
 
         Examples
         --------
@@ -356,14 +347,12 @@ class BigFrame(object):
         >>> my_frame = BigFrame(data)
         For this example my_frame is a BigFrame object with two int32 columns named "column1" and "column2".
         We want to add a third column named "column3" as an int32 and fill it with the contents of column1 and column2 multiplied together
-        >>> my_frame.add_column(lambda row: row.column1*row.column2, int32, "column3")
+        >>> my_frame.add_columns(lambda row: row.column1*row.column2, int32, "column3")
         The variable my_frame now has three columns, named "column1", "column2" and "column3". The type of column3 is an int32, and the value is the product of column1 and column2.
         <BLANKLINE>
         Now, we want to add another column, we don't care what it is called and it is going to be an empty string (the default).
-        >>> my_frame.add_column(lambda row: '')
-        The BigFrame object 'my_frame' now has four columns named "column1", "column2", "column3", and "res0000". The first three columns are int32 and the fourth column is string.  Column "res0000" has an empty string ('') in every row.
-        
-
+        >>> my_frame.add_columns(lambda row: '')
+        The BigFrame object 'my_frame' now has four columns named "column1", "column2", "column3", and "new0". The first three columns are int32 and the fourth column is string.  Column "new0" has an empty string ('') in every row.
         """
         self._backend.add_columns(self, func, names, types)
 
@@ -405,19 +394,16 @@ class BigFrame(object):
 
         Parameters
         ----------
-
         predicate: function
-            function definition or lambda which evaluates to a boolean value
+            function definition or lambda which takes a row argument and evaluates to a boolean value
             
         Examples
         --------
-
         >>>
-        For this example, my_frame is a BigFrame object with lots of data and columns for the attributes of animals.
-        We do not want all this data, just the data for lizards and frogs, so ...
-        >>> my_frame.filter( animal_type == "lizard" OR animal_type == "frog" )
-        my_frame now only has data about lizards and frogs
-        
+        # For this example, my_frame is a BigFrame object with lots of data and columns for the attributes of animals.
+        # We do not want all this data, just the data for lizards and frogs, so ...
+        >>> my_frame.filter(animal_type == "lizard" or animal_type == "frog")
+        # my_frame now only has data about lizards and frogs
         """
         # TODO - Review docstring
         self._backend.filter(self, predicate)
@@ -436,45 +422,14 @@ class BigFrame(object):
         --------
 
         >>>
-        For this example, my_frame is a BigFrame object with lots of data
+        # For this example, my_frame is a BigFrame object with lots of data
         >>> num_rows = my_frame.count()
-        num_rows is now the count of rows of data in my_frame
+        # num_rows is now the count of rows of data in my_frame
         
         """
-        return self._backend.count(self)
-        # TODO - Review docstring
-        
-    def remove_column(self, name):
-        """
-        Remove columns from the BigFrame object.
+        raise NotImplementedError
+        #return self._backend.count(self)
 
-        Parameters
-        ----------
-
-        name : str OR list of str
-            column name OR list of column names to be removed from the frame
-
-        Notes
-        -----
-
-        Deleting a non-existant column raises a KeyError.
-        Deleting the last column in a frame leaves the frame empty.
-
-        Examples
-        --------
-
-        >>>
-        For this example, my_frame is a BigFrame object with columns titled "column_a", "column_b", column_c and "column_d".
-        >>> my_frame.remove_column([ column_b, column_d ])
-        Now my_frame only has the columns named "column_a" and "column_c"
-
-        """
-        # TODO - Review examples
-        self._backend.remove_column(self, name)
-        if isinstance(name, basestring):
-            name = [name]
-        for victim in name:
-            del self._columns[victim]
 
     def flatten_column(self, column_name):
         """
@@ -609,10 +564,7 @@ class BigFrame(object):
         >>> joined_frame = frame1.join(frame2, 'a')
         >>> joined_frame = frame2.join(frame2, left_on='b', right_on='book', how='inner')
         """
-        if right_on is None:
-            right_on = left_on
-
-        return self._backend.join(self, right, left_on, right_on, how)
+       return self._backend.join(self, right, left_on, right_on, how)
 
     def project_columns(self, column_names, new_names=None):
         """
@@ -654,27 +606,31 @@ class BigFrame(object):
 
     def remove_columns(self, name):
         """
-        Remove columns
+        Remove columns from the BigFrame object.
 
         Parameters
         ----------
+
         name : str OR list of str
             column name OR list of column names to be removed from the frame
 
         Notes
         -----
-        This function will retain a single column.
+
+        Deleting a non-existant column raises a KeyError.
+        Deleting the last column in a frame leaves the frame empty.
 
         Examples
         --------
+
         >>>
+        # For this example, my_frame is a BigFrame object with columns titled "column_a", "column_b", column_c and "column_d".
+        >>> my_frame.remove_columns([ column_b, column_d ])
+        # Now my_frame only has the columns named "column_a" and "column_c"
+
         """
+        # TODO - Review examples
         self._backend.remove_columns(self, name)
-        # TODO - remove, use result
-        if isinstance(name, basestring):
-            name = [name]
-        for victim in name:
-            del self._columns[victim]
 
     def rename_columns(self, column_names, new_names):
         """
@@ -691,7 +647,6 @@ class BigFrame(object):
         --------
         >>> frame.rename_columns( [ "Wrong", "Wong" ], [ "Right", "Wite" ] )
         # now, what was Wrong is now Right and what was Wong is now Wite
-
         """
         self._backend.rename_columns(self, column_names, new_names)
 
