@@ -87,7 +87,7 @@ class FrameConstruction(unittest.TestCase):
     def test_del_column(self):
         f = get_simple_frame_abcde()
         self.assertEqual(5, len(f))
-        f.remove_column('B')
+        f.remove_columns('B')
         self.assertEqual(4, len(f))
         try:
             b = f['B']
@@ -98,7 +98,7 @@ class FrameConstruction(unittest.TestCase):
     def test_del_column_with_list(self):
         f = get_simple_frame_abcde()
         self.assertEqual(5, len(f))
-        f.remove_column(['C', 'E', 'A'])
+        f.remove_columns(['C', 'E', 'A'])
         self.assertEqual(2, len(f))
         self.assertEqual(2, len(f.column_names))
         self.assertTrue('D' in f.column_names)
@@ -111,11 +111,11 @@ class FrameConstruction(unittest.TestCase):
 
     def test_rename(self):
         f1 = get_simple_frame_abcde()
-        f1.rename_column('A', 'X')
+        f1.rename_columns('A', 'X')
         self.validate_column_names(f1, ['X', 'B', 'C', 'D', 'E'])
-        f1.rename_column('E', 'Y')
+        f1.rename_columns('E', 'Y')
         self.validate_column_names(f1, ['X', 'B', 'C', 'D', 'Y'])
-        f1.rename_column('X', 'Z')
+        f1.rename_columns('X', 'Z')
         self.validate_column_names(f1, ['Z', 'B', 'C', 'D', 'Y'])
 
     def test_iter(self):
