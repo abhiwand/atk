@@ -23,12 +23,10 @@
 
 package com.intel.intelanalytics.service.v1.viewmodels
 
-import com.intel.intelanalytics.domain.Graph
-import spray.json.DefaultJsonProtocol
 import com.intel.intelanalytics.domain._
 import spray.json.{ JsObject, DefaultJsonProtocol }
 import spray.httpx.SprayJsonSupport
-import com.intel.intelanalytics.domain.Schema
+import com.intel.intelanalytics.domain.schema.Schema
 
 case class RelLink(rel: String, uri: String, method: String) {
   require(rel != null)

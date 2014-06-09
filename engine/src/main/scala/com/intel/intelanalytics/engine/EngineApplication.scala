@@ -28,12 +28,12 @@ import java.net.URLClassLoader
 import java.lang.String
 import scala.util.control.NonFatal
 import com.intel.intelanalytics.component.{ Archive }
-import com.intel.intelanalytics.domain.{ DataFrameTemplate, Schema, DataFrame }
 
 import scala.concurrent.{ Await, ExecutionContext }
 import ExecutionContext.Implicits.global
 import scala.concurrent.duration._
 import com.intel.intelanalytics.shared.EventLogging
+import com.intel.intelanalytics.domain.schema.Schema
 
 class EngineApplication extends Archive with EventLogging {
 
