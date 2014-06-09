@@ -34,9 +34,8 @@ import scala.util.Success
 import com.intel.intelanalytics.service.v1.viewmodels.ViewModelJsonProtocol
 import com.intel.intelanalytics.service.v1.viewmodels.Rel
 import com.intel.intelanalytics.domain.DomainJsonProtocol
-import com.intel.intelanalytics.domain.GraphTemplate
-import com.intel.intelanalytics.domain.Graph
 import com.intel.intelanalytics.security.UserPrincipal
+import com.intel.intelanalytics.domain.graph.{GraphTemplate, Graph}
 
 //TODO: Is this right execution context for us?
 
