@@ -1,6 +1,6 @@
 package com.intel.graphbuilder.driver.spark.titan.reader
 
-import com.intel.graphbuilder.elements.{ Edge, Vertex, Property, GraphElement }
+import com.intel.graphbuilder.elements.{Edge, Vertex, Property, GraphElement}
 import com.tinkerpop.blueprints.Direction
 import com.thinkaurelius.titan.core.TitanType
 import com.thinkaurelius.titan.graphdb.types.system.SystemType
