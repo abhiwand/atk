@@ -163,13 +163,40 @@ A list of columns can be specified using a list to index the frame.
 Remove Columns
 ~~~~~~~~~~~~~~
 
->>> f2.remove_column('b')
+>>> f2.remove_columns('b')
+>>> f2.remove_columns(['a', 'c'])
+
+
+
+
+>>> f2.remove_columns(['a', 'c'])
+
+
+>>> f2.remove_columns(['a', 'c'])
+
+
+
+
+>>> f2.remove_columns(['a', 'c'])
+
+
+>>> f2.remove_columns(['a', 'c'])
+
+
+
+
 >>> f2.remove_column(['a', 'c'])
  
 Rename Columns
 ~~~~~~~~~~~~~~
 
->>> f.rename_column(a='id')
+>>> f.rename_columns(a='id')
+>>> f.rename_columns(b='author', c='publisher')
+>>> f.rename_columns({'col-with-dashes': 'no_dashes'})
+
+
+
+
 >>> f.rename_column(b='author', c='publisher')
 >>> f.rename_column({'col-with-dashes': 'no_dashes'})
  
@@ -188,6 +215,144 @@ Add Column
 ~~~~~~~~~~
 
 Map a function to each row in the frame, producing a new column
+
+>>> f.add_column(lambda row: 1, 'all_ones') # add new column of all ones
+>>> f.add_columns(lambda row: row.a + row.b, 'a_plus_b', int32)
+
+
+>>> # Piecewise Linear Transformation
+>>> def transform_a(row):
+...     x = row['a']
+...     if x is None:
+...         return None
+...     if 30 <= x <= 127:
+...         m, c = 0.0046, 0.4168
+...     elif 15 <= x <= 29:
+...         m, c = 0.0071, 0.3429
+...     elif -127 <= x <= 14:
+...         m, c = 0.0032, 0.4025
+...     else:
+...         return None
+...     return m * x + c
+
+>>> f.add_column(transform_a, 'a_lpt')
+
+Create multiple columns at once with
+
+>>> f.add_column(lambda row: 1, 'all_ones') # add new column of all ones
+>>> f.add_columns(lambda row: row.a + row.b, 'a_plus_b', int32)
+
+
+>>> # Piecewise Linear Transformation
+>>> def transform_a(row):
+...     x = row['a']
+...     if x is None:
+...         return None
+...     if 30 <= x <= 127:
+...         m, c = 0.0046, 0.4168
+...     elif 15 <= x <= 29:
+...         m, c = 0.0071, 0.3429
+...     elif -127 <= x <= 14:
+...         m, c = 0.0032, 0.4025
+...     else:
+...         return None
+...     return m * x + c
+
+>>> f.add_column(transform_a, 'a_lpt')
+
+Create multiple columns at once with
+
+>>> f.add_columns(lambda row: 1, 'all_ones') # add new column of all ones
+>>> f.add_columns(lambda row: row.a + row.b, 'a_plus_b', int32)
+
+
+>>> # Piecewise Linear Transformation
+>>> def transform_a(row):
+...     x = row['a']
+...     if x is None:
+...         return None
+...     if 30 <= x <= 127:
+...         m, c = 0.0046, 0.4168
+...     elif 15 <= x <= 29:
+...         m, c = 0.0071, 0.3429
+...     elif -127 <= x <= 14:
+...         m, c = 0.0032, 0.4025
+...     else:
+...         return None
+...     return m * x + c
+
+>>> f.add_column(transform_a, 'a_lpt')
+
+Create multiple columns at once with
+
+>>> f.add_columns(lambda row: 1, 'all_ones') # add new column of all ones
+>>> f.add_columns(lambda row: row.a + row.b, 'a_plus_b', int32)
+
+
+>>> # Piecewise Linear Transformation
+>>> def transform_a(row):
+...     x = row['a']
+...     if x is None:
+...         return None
+...     if 30 <= x <= 127:
+...         m, c = 0.0046, 0.4168
+...     elif 15 <= x <= 29:
+...         m, c = 0.0071, 0.3429
+...     elif -127 <= x <= 14:
+...         m, c = 0.0032, 0.4025
+...     else:
+...         return None
+...     return m * x + c
+
+>>> f.add_column(transform_a, 'a_lpt')
+
+Create multiple columns at once with
+
+>>> f.add_column(lambda row: 1, 'all_ones') # add new column of all ones
+>>> f.add_column(lambda row: row.a + row.b, 'a_plus_b', int32)
+
+
+>>> # Piecewise Linear Transformation
+>>> def transform_a(row):
+...     x = row['a']
+...     if x is None:
+...         return None
+...     if 30 <= x <= 127:
+...         m, c = 0.0046, 0.4168
+...     elif 15 <= x <= 29:
+...         m, c = 0.0071, 0.3429
+...     elif -127 <= x <= 14:
+...         m, c = 0.0032, 0.4025
+...     else:
+...         return None
+...     return m * x + c
+
+>>> f.add_columns(transform_a, 'a_lpt')
+
+Create multiple columns at once with
+
+>>> f.add_column(lambda row: 1, 'all_ones') # add new column of all ones
+>>> f.add_column(lambda row: row.a + row.b, 'a_plus_b', int32)
+
+
+>>> # Piecewise Linear Transformation
+>>> def transform_a(row):
+...     x = row['a']
+...     if x is None:
+...         return None
+...     if 30 <= x <= 127:
+...         m, c = 0.0046, 0.4168
+...     elif 15 <= x <= 29:
+...         m, c = 0.0071, 0.3429
+...     elif -127 <= x <= 14:
+...         m, c = 0.0032, 0.4025
+...     else:
+...         return None
+...     return m * x + c
+
+>>> f.add_columns(transform_a, 'a_lpt')
+
+Create multiple columns at once with
 
 >>> f.add_column(lambda row: 1, 'all_ones') # add new column of all ones
 >>> f.add_column(lambda row: row.a + row.b, 'a_plus_b', int32)

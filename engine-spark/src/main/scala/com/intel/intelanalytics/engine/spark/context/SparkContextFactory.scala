@@ -25,6 +25,7 @@ package com.intel.intelanalytics.engine.spark.context
 
 import com.typesafe.config.Config
 import org.apache.spark.{SparkConf, SparkContext}
+import com.intel.intelanalytics.component.Boot
 
 /**
  * Had to extract SparkContext creation logic from the SparkContextManagementStrategy for better testability
@@ -33,10 +34,14 @@ class SparkContextFactory {
   def createSparkContext(configuration: Config, appName: String): SparkContext = {
     val sparkHome = configuration.getString("intel.analytics.spark.home")
     val sparkMaster = configuration.getString("intel.analytics.spark.master")
+
+    val jarPath = Boot.getJar("engine-spark")
     val sparkConf = new SparkConf()
       .setMaster(sparkMaster)
       .setSparkHome(sparkHome)
       .setAppName(appName)
+      .setJars(Seq(jarPath.getPath))
+
     new SparkContext(sparkConf)
   }
 }
