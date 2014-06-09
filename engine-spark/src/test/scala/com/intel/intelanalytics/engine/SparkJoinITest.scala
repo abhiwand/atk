@@ -27,6 +27,7 @@ import org.scalatest.{ BeforeAndAfterEach, Matchers, FlatSpec }
 import com.intel.intelanalytics.engine.TestingSparkContext
 import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.RDD
+import com.intel.intelanalytics.engine.spark.frame.RDDJoinParam
 
 class SparkJoinITest extends TestingSparkContext with Matchers {
 
