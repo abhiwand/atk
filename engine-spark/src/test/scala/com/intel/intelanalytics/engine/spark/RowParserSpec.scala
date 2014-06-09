@@ -24,7 +24,7 @@ package com.intel.intelanalytics.engine.spark
 //////////////////////////////////////////////////////////////////////////////
 
 import org.specs2.mutable.Specification
-import com.intel.intelanalytics.engine.RowParser
+import com.intel.intelanalytics.engine.spark.frame.RowParser
 
 class RowParserSpec extends Specification {
   val csvRowParser = new RowParser(',')

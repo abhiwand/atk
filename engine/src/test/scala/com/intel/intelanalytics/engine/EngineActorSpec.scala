@@ -2,7 +2,7 @@
 //
 //import org.specs2.mutable.Specification
 //import org.specs2.mock.Mockito
-//import com.intel.intelanalytics.domain.DataFrame
+//import com.intel.intelanalytics.domain.frame.DataFrame
 //import java.util.concurrent.Future
 //
 //class EngineActorSpec extends Specification with Mockito {
