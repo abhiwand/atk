@@ -606,7 +606,7 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                     </executions>
                 </plugin>
 
-                <plugin>
+               <!-- <plugin>
                     <groupId>com.github.koraktor</groupId>
                     <artifactId>mavanagaiata</artifactId>
                     <version>0.5.0</version>
@@ -624,7 +624,7 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                             </goals>
                         </execution>
                     </executions>
-                </plugin>
+                </plugin>-->
 
                 <!--Create our jars-->
                 <plugin>
