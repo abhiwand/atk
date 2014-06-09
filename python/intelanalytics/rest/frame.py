@@ -121,6 +121,23 @@ class FrameBackendRest(object):
             FrameBackendRest._accept_column(frame, column)
 
     @staticmethod
+    def _get_load_arguments(frame, data):
+        if isinstance(data, CsvFile):
+            return {'source': data.file_name,
+                    'destination': frame.uri,
+                    'schema': {'columns': data._schema_to_json()},
+                    'skipRows': data.skip_header_lines,
+                    'lineParser': {'operation': {'name': 'builtin/line/separator'},
+                                   'arguments': {'separator': data.delimiter
+                                   }}}
+        raise TypeError("Unsupported data source " + type(data).__name__)
+
+    @staticmethod
+    def _accept_column(frame, column):
+        frame._columns[column.name] = column
+        column._frame = frame
+
+    @staticmethod
     def _get_new_frame_name(source=None):
         try:
             annotation = "_" + source.annotation
@@ -135,6 +152,51 @@ class FrameBackendRest(object):
             if link['rel'] == 'self':
                return link['uri']
         raise Exception('Unable to find uri for frame')
+
+
+    def add_columns(self, frame, expression, names, types):
+        if not names:
+            i = 0
+            while(True):
+                name = "new" + str(i)
+                if name not in frame._columns:
+                    break
+                i += 1
+            names = [name]
+        elif isinstance(names, basestring):
+            names = [names]
+
+        if not hasattr(types, '__iter__'):
+            types = [types]
+        for t in types:
+            supported_types.validate_is_supported_type(t)
+
+        def addColumnLambda(row):
+            row.data.append(unicode(supported_types.cast(expression(row),types[0])))
+            return ",".join(row.data)
+
+        #def add_columns_func():
+        # TODO - write full add multiple columns
+
+        row_ready_predicate = wrap_row_function(frame, addColumnLambda)
+        from itertools import imap
+        def filter_func(iterator): return imap(row_ready_predicate, iterator)
+        def func(s, iterator): return filter_func(iterator)
+
+        pickled_predicate = pickle_function(func)
+        http_ready_predicate = encode_bytes_for_http(pickled_predicate)
+
+        arguments = {'frame': frame.uri,
+                     'columnname': names[0],
+                     'columntype': supported_types.get_type_string(types[0]),
+                     'expression': http_ready_predicate}
+        command = CommandRequest('dataframe/addcolumn', arguments)
+        command_info = executor.issue(command)
+
+        # todo - this info should come back from the engine
+        self._accept_column(frame, BigColumn(names[0], types[0]))
+
+        return command_info
 
     def append(self, frame, data):
         logger.info("REST Backend: append data to frame {0}: {1}".format(frame.name, repr(data)))
@@ -158,22 +220,9 @@ class FrameBackendRest(object):
             raise TypeError("Unsupported append data type "
                             + data.__class__.__name__)
 
-    @staticmethod
-    def _get_load_arguments(frame, data):
-        if isinstance(data, CsvFile):
-            return {'source': data.file_name,
-                    'destination': frame.uri,
-                    'schema': {'columns': data._schema_to_json()},
-                    'skipRows': data.skip_header_lines,
-                    'lineParser': {'operation': {'name': 'builtin/line/separator'},
-                                   'arguments': {'separator': data.delimiter
-                                   }}}
-        raise TypeError("Unsupported data source " + type(data).__name__)
 
-    @staticmethod
-    def _accept_column(frame, column):
-        frame._columns[column.name] = column
-        column._frame = frame
+    def count(self, frame):
+        raise NotImplementedError  # TODO - impplement count
 
     def filter(self, frame, predicate):
         row_ready_predicate = wrap_row_function(frame, predicate)
@@ -196,6 +245,44 @@ class FrameBackendRest(object):
         frame_info = FrameInfo(command_info.result)
         return BigFrame(frame_info)
 
+    class InspectionTable(object):
+        _align = defaultdict(lambda: 'c')  # 'l', 'c', 'r'
+        _align.update([(bool, 'r'),
+                       (bytearray, 'l'),
+                       (dict, 'l'),
+                       (float32, 'r'),
+                       (float64, 'r'),
+                       (int32, 'r'),
+                       (int64, 'r'),
+                       (list, 'l'),
+                       (string, 'l'),
+                       (str, 'l')])
+
+        def __init__(self, schema, rows):
+            self.schema = schema
+            self.rows = rows
+
+        def __repr__(self):
+            # keep the import localized, as serialization doesn't like prettytable
+            import intelanalytics.rest.prettytable as prettytable
+            table = prettytable.PrettyTable()
+            fields = OrderedDict([("{0}:{1}".format(n, supported_types.get_type_string(t)), self._align[t]) for n, t in self.schema])
+            table.field_names = fields.keys()
+            table.align.update(fields)
+            table.hrules = prettytable.HEADER
+            table.vrules = prettytable.NONE
+            for r in self.rows:
+                table.add_row(r)
+            return table.get_string()
+
+         #def _repr_html_(self): Add this method for ipython notebooks
+
+    def inspect(self, frame, n, offset):
+        # inspect is just a pretty-print of take, we'll do it on the client
+        # side until there's a good reason not to
+        rows = self.take(frame, n, offset)
+        return FrameBackendRest.InspectionTable(frame.schema, rows)
+
     def join(self, left, right, left_on, right_on, how):
         if right_on is None:
             right_on = left_on
@@ -216,17 +303,24 @@ class FrameBackendRest(object):
 
         # TODO - refresh from command_info instead of predicting what happened
         for i, name in enumerate(columns):
-            dtype = frame.schema[name]
+            dtype = frame._columns[name].data_type
             if new_names:
                 name = new_names[i]
             self._accept_column(projected_frame, BigColumn(name, dtype))
 
         return command_info
 
-    def rename_frame(self, frame, name):
-        arguments = {'frame': frame.uri, "new_name": name}
-        command = CommandRequest("dataframe/rename_frame", arguments)
-        return executor.issue(command)
+    def remove_columns(self, frame, name):
+        columns = ",".join(name) if isinstance(name, list) else name
+        arguments = {'frame': frame.uri, 'column': columns}
+        command = CommandRequest("dataframe/removecolumn", arguments)
+        command_info = executor.issue(command)
+        # TODO - slurp command_info, instead of the following:
+        if isinstance(name, basestring):
+            name = [name]
+        for victim in name:
+            del frame._columns[victim]
+        return command_info
 
     def rename_columns(self, frame, column_names, new_names):
         if isinstance(column_names, basestring) and isinstance(new_names, basestring):
@@ -250,94 +344,11 @@ class FrameBackendRest(object):
             #self._columns[p[0]].name = p[1]
         #self._columns = OrderedDict([(v.name, v) for v in values])
 
-    def remove_columns(self, frame, name):
-        columns = ",".join(name) if isinstance(name, list) else name
-        arguments = {'frame': frame.uri, 'column': columns}
-        command = CommandRequest("dataframe/removecolumn", arguments)
-        command_info = executor.issue(command)
-        # TODO - slurp command_info, instead of the following:
-        if isinstance(name, basestring):
-            name = [name]
-        for victim in name:
-            del frame._columns[victim]
-        return command_info
+    def rename_frame(self, frame, name):
+        arguments = {'frame': frame.uri, "new_name": name}
+        command = CommandRequest("dataframe/rename_frame", arguments)
+        return executor.issue(command)
 
-    def add_columns(self, frame, expression, names, types):
-        if not names:
-            i = 0
-            while(True):
-                name = "new" + str(i)
-                if name not in frame._columns:
-                    break
-                i += 1
-            names = [name]
-        elif isinstance(names, basestring):
-            names = [names]
-
-        def addColumnLambda(row):
-            row.data.append(unicode(supported_types.cast(expression(row),type)))
-            return ",".join(row.data)
-
-        #def add_columns_func():
-        # TODO - write full add multiple columns
-
-        row_ready_predicate = wrap_row_function(frame, addColumnLambda)
-        from itertools import imap
-        def filter_func(iterator): return imap(row_ready_predicate, iterator)
-        def func(s, iterator): return filter_func(iterator)
-
-        pickled_predicate = pickle_function(func)
-        http_ready_predicate = encode_bytes_for_http(pickled_predicate)
-
-        arguments = {'frame': frame.uri,
-                     'columnname': names[0],
-                     'columntype': supported_types.get_type_string(type),
-                     'expression': http_ready_predicate}
-        command = CommandRequest('dataframe/addcolumn', arguments)
-        command_info = executor.issue(command)
-
-        # todo - this info should come back from the engine
-        self._accept_column(frame, BigColumn(name, type))
-
-        return command_info
-
-    class InspectionTable(object):
-        _align = defaultdict(lambda: 'c')  # 'l', 'c', 'r'
-        _align.update([(bool, 'r'),
-                       (bytearray, 'l'),
-                       (dict, 'l'),
-                       (float32, 'r'),
-                       (float64, 'r'),
-                       (int32, 'r'),
-                       (int64, 'r'),
-                       (list, 'l'),
-                       (string, 'l'),
-                       (str, 'l')])
-
-        def __init__(self, schema, rows):
-            self.schema = schema
-            self.rows = rows
-
-        def __repr__(self):
-            # keep the import localized, as serialization doesn't like prettytable
-            import intelanalytics.rest.prettytable as prettytable
-            table = prettytable.PrettyTable()
-            fields = OrderedDict([("{0}:{1}".format(n, supported_types.get_type_string(t)), self._align[t]) for n, t in self.schema.items()])
-            table.field_names = fields.keys()
-            table.align.update(fields)
-            table.hrules = prettytable.HEADER
-            table.vrules = prettytable.NONE
-            for r in self.rows:
-                table.add_row(r)
-            return table.get_string()
-
-         #def _repr_html_(self): Add this method for ipython notebooks
-
-    def inspect(self, frame, n, offset):
-        # inspect is just a pretty-print of take, we'll do it on the client
-        # side until there's a good reason not to
-        rows = self.take(frame, n, offset)
-        return FrameBackendRest.InspectionTable(frame.schema, rows)
 
     def take(self, frame, n, offset):
         r = self.rest_http.get('dataframes/{0}/data?offset={2}&count={1}'.format(frame._id,n, offset))
