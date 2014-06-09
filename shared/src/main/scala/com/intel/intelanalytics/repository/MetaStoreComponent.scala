@@ -42,6 +42,9 @@ trait MetaStoreComponent {
     type Session
     def withSession[T](name: String)(f: Session => T): T
 
+    /** Repository for CRUD on 'status' table */
+    def statusRepo: Repository[Session, Status, Status]
+
     /** Repository for CRUD on 'frame' table */
     def frameRepo: Repository[Session, DataFrameTemplate, DataFrame]
 
@@ -55,7 +58,10 @@ trait MetaStoreComponent {
     def userRepo: Repository[Session, UserTemplate, User] with Queryable[Session, User]
 
     /** Create the underlying tables */
-    def create(): Unit
+    def createAllTables(): Unit
+
+    /** Delete ALL of the underlying tables - useful for unit tests only */
+    private[repository] def dropAllTables(): Unit
   }
 }
 

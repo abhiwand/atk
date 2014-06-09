@@ -28,7 +28,7 @@ import org.specs2.mutable.Specification
 class VertexSpec extends Specification {
 
   val gbId = new Property("gbId", 10001)
-  val vertex = Vertex(gbId, List(new Property("key", "value")))
+  val vertex = new Vertex(gbId, List(new Property("key", "value")))
 
   "Vertex" should {
     "have a unique id that is the gbId" in {

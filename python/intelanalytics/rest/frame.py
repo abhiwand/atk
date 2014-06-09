@@ -187,6 +187,15 @@ class FrameBackendRest(object):
         command = CommandRequest(name="dataframe/filter", arguments=arguments)
         executor.issue(command)
 
+    def flatten_column(self, frame, column_name):
+        name = self._get_new_frame_name()
+        arguments = {'name': name, 'frame': frame._id, 'column': column_name, 'separator': ',' }
+        command = CommandRequest("dataframe/flattenColumn", arguments)
+        command_info = executor.issue(command)
+        frame_info = FrameInfo(command_info.result)
+        return BigFrame(frame_info)
+
+
     def join(self, left, right, left_on, right_on, how):
         name = self._get_new_frame_name()
         arguments = {'name': name, "how": how, "frames": [[left._id, left_on], [right._id, right_on]] }

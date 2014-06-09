@@ -90,7 +90,7 @@ trait V1GraphService extends V1Service {
               entity(as[GraphTemplate]) {
                 graph =>
                   onComplete(engine.createGraph(graph)) {
-                    case Success(graph) => complete(decorate(uri, graph))
+                    case Success(graph) => complete(decorate(uri + "/" + graph.id, graph))
                     case Failure(ex) => throw ex
                   }
               }

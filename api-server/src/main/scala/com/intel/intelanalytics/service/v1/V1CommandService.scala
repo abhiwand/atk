@@ -32,7 +32,6 @@ import com.intel.intelanalytics.engine.EngineComponent
 import com.intel.intelanalytics.service.v1.viewmodels.ViewModelJsonProtocol._
 import scala.concurrent._
 import spray.http.Uri
-import com.typesafe.config.Config
 import spray.routing.Route
 import com.intel.intelanalytics.service.v1.viewmodels.DecoratedCommand
 import scala.util.Failure
@@ -42,6 +41,7 @@ import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.service.v1.viewmodels.JsonTransform
 import com.intel.intelanalytics.domain.LoadLines
 import com.intel.intelanalytics.domain.Command
+import com.intel.intelanalytics.domain.graphconstruction.FrameRule
 
 //TODO: Is this right execution context for us?
 
@@ -55,11 +55,11 @@ trait V1CommandService extends V1Service {
   this: V1Service with MetaStoreComponent with EngineComponent =>
 
   /**
-   * Creates "decorated command" for return on HTTP protocol
+   * Creates a view model for return through the HTTP protocol
    *
-   * @param uri
-   * @param command
-   * @return
+   * @param uri The link representing the command.
+   * @param command The command being decorated
+   * @return View model of the command.
    */
   def decorate(uri: Uri, command: Command): DecoratedCommand = {
     //TODO: add other relevant links
@@ -117,7 +117,7 @@ trait V1CommandService extends V1Service {
    * Command dispatcher that translates from HTTP pathname to command invocation
    * @param uri Path of command.
    * @param xform Argument parser.
-   * @param user
+   * @param user IMPLICIT. The user running the command.
    * @return Spray Route for command invocation
    */
   def runCommand(uri: Uri, xform: JsonTransform)(implicit user: UserPrincipal): Route = {
@@ -133,6 +133,8 @@ trait V1CommandService extends V1Service {
       case ("dataframe/project") => runFrameProject(uri, xform)
       case ("dataframe/renamecolumn") => runFrameRenameColumn(uri, xform)
       case ("dataframe/join") => runJoinFrames(uri, xform)
+      case ("dataframe/join") => runJoinFrames(uri, xform)
+      case ("dataframe/flattenColumn") => runflattenColumn(uri, xform)
       case _ => ???
     }
   }
@@ -173,33 +175,36 @@ trait V1CommandService extends V1Service {
       import DomainJsonProtocol._
       transform.arguments.get.convertTo[GraphLoad[JsObject, String, String]]
     }
-    val frameIDOpt = test.toOption.flatMap(args => getFrameId(args.sourceFrameRef))
-    val graphIDOpt = test.toOption.flatMap(args => getGraphId(args.graphRef))
+
+    val frameIDsOpt: Option[List[Option[Long]]] =
+      test.toOption.map(args => (args.frame_rules map (frule => getFrameId(frule.frame))))
+
+    val graphIDOpt = test.toOption.flatMap(args => getGraphId(args.graph))
 
     (validate(test.isSuccess, "Failed to parse graph load descriptor: " + getErrorMessage(test))
-      & validate(frameIDOpt.isDefined, "Source dataframe is not a valid data frame URL")
       & validate(graphIDOpt.isDefined, "Target graph is not a valid graph URL")) {
 
-        val args = test.get
-        val sourceFrameID = frameIDOpt.get
-        val graphID = graphIDOpt.get
+        (validate(frameIDsOpt.isDefined, "Error parsing per-frame graph construction rules")
+          & validate(frameIDsOpt.get.forall(x => x.isDefined), "Invalid URL provided for source dataframe")) {
+            val args = test.get
+            val sourceFrameIDs = frameIDsOpt.get.map(x => x.get)
 
-        val graphLoad = GraphLoad(graphID,
-          sourceFrameID,
-          args.outputConfig,
-          args.vertexRules,
-          args.edgeRules,
-          args.retainDanglingEdges,
-          args.bidirectional)
+            val frameRulesUsingIDs = (sourceFrameIDs, args.frame_rules).zipped.toList.map { case (id: Long, frule: FrameRule[String]) => new FrameRule[Long](id, frule.vertex_rules, frule.edge_rules) }
 
-        onComplete(
-          for {
-            frame <- engine.getFrame(sourceFrameID)
-            graph <- engine.getGraph(graphID)
-            (c, f) = engine.loadGraph(graphLoad)
-          } yield c) {
-            case Success(c) => complete(decorate(uri + "/" + c.id, c))
-            case Failure(ex) => throw ex
+            val graphID = graphIDOpt.get
+
+            val graphLoad = GraphLoad(graphID,
+              frameRulesUsingIDs,
+              args.retain_dangling_edges)
+
+            onComplete(
+              for {
+                graph <- engine.getGraph(graphID)
+                (c, f) = engine.loadGraph(graphLoad)
+              } yield c) {
+                case Success(c) => complete(decorate(uri + "/" + c.id, c))
+                case Failure(ex) => throw ex
+              }
           }
       }
   }
@@ -358,6 +363,23 @@ trait V1CommandService extends V1Service {
       complete(decorate(uri + "/" + command.id, command))
     }
 
+  }
+
+  /**
+   * Receive column flattening request and executing flatten column command
+   */
+  def runflattenColumn(uri: Uri, xform: JsonTransform)(implicit user: UserPrincipal) = {
+    val test = Try {
+      import DomainJsonProtocol._
+      xform.arguments.get.convertTo[FlattenColumn[Long]]
+    }
+
+    (validate(test.isSuccess, "Failed to parse file load descriptor: " + getErrorMessage(test))) {
+      val args = test.get
+      val result = engine.flattenColumn(args)
+      val command: Command = result._1
+      complete(decorate(uri + "/" + command.id, command))
+    }
   }
 
   def runFrameProject(uri: Uri, xform: JsonTransform)(implicit user: UserPrincipal) = {
