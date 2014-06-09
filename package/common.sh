@@ -38,20 +38,23 @@ function deleteOldBuildDirs()
 
 function tarFiles()
 {
-	tar -xvf $1 > TAR.LOG
+	mkdir TESTTAR
+	tar -xvf $1 -C TESTTAR > TAR.LOG
 	rm FILES.LOG
 	for path in `cat TAR.LOG`;
 	do
 		fullPath=$path
+		echo $fullPath
 		fileName=${path##*/}
 		if [ "$fileName" != "" ]; then
 
 			if [[ ! $fullPath == \/* ]]; then
-				fullPath="/$fullPath"
+				fullPath=${fullPath}
 			fi
 			echo $fullPath | sed 's/^.\//\//g' >> FILES.LOG
 		fi
 	done
+	rm -rf TESTTAR
 	export TAR_FILES=FILES.LOG
 }
 
@@ -154,6 +157,21 @@ function debRules()
 	echo -e "\tdh \$@ $RULEOPT"
 }
 
+function cleanDeb()
+{
+    log "clean deb build dirs"
+    rm -rf ${SCRIPTPATH}/${debDir}
+    rm -rf ${SCRIPTPATH}/repack
+}
+
+
+function cleanRpm()
+{
+    log "clean rpm build dirs"
+    rm -rf BUILD/
+    rm -rf BUILDROOT/
+}
+
 function rpmSpec()
 {
 
@@ -196,15 +214,30 @@ echo " rm %{buildroot}/files.tar.gz"
 
 echo "%clean"
 
+echo "%pre"
+if [ ! -z "$PRE" ]; then
+	echo "$PRE"
+fi
+
 echo "%post"
 if [ ! -z "$POST" ]; then
 	echo "$POST"
 fi
+
+echo "%preun"
+if [ ! -z "$PREUN" ]; then
+    echo "$PREUN"
+fi
+
 echo "%postun"
 if [ ! -z "$POSTUN" ]; then
-        echo "$POSTUN"
+    echo "$POSTUN"
 fi
+
 echo "%files"
+if [ ! -z "$FILES" ]; then
+    echo "$FILES"
+fi
 cat $TAR_FILES
 
 
