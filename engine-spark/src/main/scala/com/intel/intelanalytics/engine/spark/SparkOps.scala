@@ -30,6 +30,9 @@ import org.apache.spark.SparkContext._
 import com.intel.intelanalytics.domain.LoadLines
 import spray.json.JsObject
 import scala.collection.mutable
+import scala.Some
+import com.intel.intelanalytics.engine.spark.RDDJoinParam
+import com.intel.intelanalytics.domain.LoadLines
 
 /**
  * This object exists to avoid having to serialize the entire engine in order to use spark
@@ -134,5 +137,33 @@ private[spark] object SparkOps extends Serializable {
     }
 
     result.asInstanceOf[RDD[Array[Any]]]
+  }
+
+  /**
+   * flatten a row by the column with specified column index
+   * Eg. for row (1, "dog,cat"), flatten by second column will yield (1,"dog") and (1,"cat")
+   * @param index column index
+   * @param row row data
+   * @param separator separator for splitting
+   * @return flattened out row/rows
+   */
+  def flattenColumnByIndex(index: Int, row: Array[Any], separator: String): Array[Array[Any]] = {
+    val splitted = row(index).asInstanceOf[String].split(separator)
+    splitted.map(s => {
+      val r = row.clone()
+      r(index) = s
+      r
+    })
+  }
+
+  /**
+   * Flatten RDD by the column with specified column index
+   * @param index column index
+   * @param separator separator for splitting
+   * @param rdd RDD for flattening
+   * @return new RDD with column flattened
+   */
+  def flattenRddByColumnIndex(index: Int, separator: String, rdd: RDD[Row]): RDD[Row] = {
+    rdd.flatMap(row => SparkOps.flattenColumnByIndex(index, row, separator))
   }
 }

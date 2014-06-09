@@ -5,7 +5,7 @@ package com.intel.intelanalytics.domain.graphconstruction
  * @param key The key of the property to be created.
  * @param value The value of the property to be created.
  */
-case class Property(key: Value, value: Value) {
+case class PropertyRule(key: ValueRule, value: ValueRule) {
 
   require(key != null)
   require(value != null)

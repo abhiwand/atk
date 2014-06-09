@@ -14,7 +14,7 @@ case object GBValueSourcing {
  * @param source Is the value constant or varying?
  * @param value If a constant, the value taken. If a varying, the name of the column from which the data is parsed.
  */
-case class Value(source: String, value: String) {
+case class ValueRule(source: String, value: String) {
   require(source.equals(GBValueSourcing.CONSTANT) || source.equals(GBValueSourcing.VARYING))
   require(value != null)
 }

@@ -7,6 +7,8 @@ import com.intel.graphbuilder.graph.GraphConnector
 import com.intel.graphbuilder.graph.titan.TitanGraphConnector
 import com.intel.graphbuilder.parser._
 import com.intel.graphbuilder.parser.rule._
+import org.apache.hadoop.hbase.io.ImmutableBytesWritable
+import org.apache.hadoop.hbase.client.Result
 
 /**
  * Register GraphBuilder classes that are going to be serialized by Kryo.
@@ -59,5 +61,9 @@ class GraphBuilderKryoRegistrator extends KryoRegistrator {
     kryo.register(classOf[InputRow])
     kryo.register(classOf[InputSchema])
     kryo.register(classOf[ColumnDef])
+
+    // reader package
+    kryo.register(classOf[ImmutableBytesWritable])
+    kryo.register(classOf[Result])
   }
 }

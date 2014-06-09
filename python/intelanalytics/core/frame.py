@@ -454,6 +454,7 @@ class BigFrame(object):
         # TODO - Review docstring
         self._backend.filter(self, predicate)
 
+<<<<<<< HEAD
     def count(self):
         """
         Count the number of rows that exist in this object.
@@ -507,6 +508,27 @@ class BigFrame(object):
             name = [name]
         for victim in name:
             del self._columns[victim]
+=======
+    def flatten_column(self, column_name):
+        """
+        Flatten a column
+
+        Parameters
+        ----------
+        column_name : str
+            The column to be flattened
+
+        Returns
+        -------
+        frame : BigFrame
+            The new flattened frame
+
+        Examples
+        --------
+        >>> flattened_frame = frame1.flatten_column('a')
+        """
+        return self._backend.flatten_column(self, column_name)
+>>>>>>> 3beffbfeff6919f4042fcb7d17f998b2e48684d5
 
     def drop(self, predicate):
         """

@@ -42,7 +42,7 @@ object IABuild extends Build {
 
   lazy val spark = Project(id = "engine-spark", base = file("engine-spark"))
     .settings(commonSettings: _*)
-    .dependsOn(interfaces, event, shared, graphbuilder)
+    .dependsOn(interfaces, event, shared, graphbuilder, launcher)
 
   lazy val graphbuilder = Project(id = "graphbuilder-3", base = file("graphbuilder-3"))
     .settings(commonSettings: _*) dependsOn (isparkdeps)

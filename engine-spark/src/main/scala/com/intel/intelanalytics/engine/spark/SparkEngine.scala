@@ -23,7 +23,7 @@
 
 package com.intel.intelanalytics.engine.spark
 
-import org.apache.spark.{ ExceptionFailure, SparkContext }
+import org.apache.spark.SparkContext
 import org.apache.spark.api.python._
 import java.util.{ List => JList, ArrayList => JArrayList, Map => JMap }
 import org.apache.spark.broadcast.Broadcast
@@ -32,9 +32,8 @@ import com.intel.intelanalytics.domain._
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.{ RDD, EmptyRDD }
 import com.intel.intelanalytics.engine._
-import com.intel.intelanalytics.domain.{ User, DataFrameTemplate }
-import com.intel.intelanalytics.domain.{ GraphTemplate, Graph, DataFrame }
 import scala.concurrent._
+import scala.concurrent.duration._
 import ExecutionContext.Implicits.global
 import java.nio.file.{ Paths, Path, Files }
 import java.io._
@@ -44,79 +43,49 @@ import org.apache.hadoop.fs.{ LocalFileSystem, FileSystem }
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.hdfs.DistributedFileSystem
 import java.nio.file.Path
-import spray.json.{ JsObject, JsonParser }
-import scala.io.{ Codec, Source }
-import scala.collection.mutable.ArrayBuffer
+import spray.json.JsObject
+import scala.io.Codec
 import scala.io.{ Codec, Source }
 import org.apache.hadoop.fs.{ Path => HPath }
 import com.intel.intelanalytics.engine.RowParser
 
 import scala.util.matching.Regex
-import com.typesafe.config.{ ConfigResolveOptions, ConfigFactory }
+import com.typesafe.config.ConfigResolveOptions
 import com.intel.event.EventContext
-import scala.concurrent.duration._
-import com.intel.intelanalytics.domain.Partial
 import com.intel.intelanalytics.repository.{ SlickMetaStoreComponent, DbProfileComponent, MetaStoreComponent }
 import scala.slick.driver.H2Driver
-import scala.util.{ Success, Failure, Try }
+import scala.util.{ Success, Try }
 import org.apache.spark.scheduler.SparkListenerStageCompleted
 import scala.Some
-import com.intel.intelanalytics.domain.DataFrame
 import org.apache.spark.scheduler.SparkListenerJobStart
 import org.apache.spark.engine.ProgressPrinter
 import com.typesafe.config.ConfigFactory
 import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.shared.EventLogging
 
-import com.intel.graphbuilder.driver.spark.titan.{ GraphBuilderConfig, GraphBuilder }
+import com.intel.graphbuilder.driver.spark.titan.GraphBuilder
 import com.intel.graphbuilder.driver.spark.titan.examples.ExamplesUtils
 import scala.util.Failure
-import scala.Some
 import scala.collection.JavaConverters._
-import com.intel.intelanalytics.domain.LoadLines
-import com.intel.intelanalytics.domain.Graph
-import com.intel.intelanalytics.domain.FrameRemoveColumn
-import com.intel.intelanalytics.domain.DataFrameTemplate
-import com.intel.intelanalytics.domain.FrameAddColumn
 import scala.util.Success
-import com.intel.intelanalytics.domain.DataFrame
-import com.intel.intelanalytics.domain.Partial
-import com.intel.intelanalytics.domain.SeparatorArgs
-import com.intel.intelanalytics.domain.CommandTemplate
-import com.intel.intelanalytics.domain.Error
 import com.thinkaurelius.titan.core.{ TitanGraph, TitanFactory }
 import com.tinkerpop.blueprints.{ Direction, Vertex }
-import com.thinkaurelius.titan.graphdb.query.TitanPredicate
 import com.intel.graphbuilder.util.SerializableBaseConfiguration
 
 import org.apache.hadoop.hbase.HBaseConfiguration
 import org.apache.hadoop.hbase.client.HBaseAdmin
 import com.intel.intelanalytics.engine.spark.graph.SparkGraphHBaseBackend
 
-import com.intel.intelanalytics.domain.DataTypes.DataType
-
 import scala.util.Failure
 import scala.Some
 import scala.collection.JavaConverters._
-import com.intel.intelanalytics.domain.LoadLines
-import com.intel.intelanalytics.domain.Graph
-import com.intel.intelanalytics.domain.FilterPredicate
 import com.intel.intelanalytics.security.UserPrincipal
-import com.intel.intelanalytics.domain.FrameRemoveColumn
-import com.intel.intelanalytics.domain.GraphTemplate
-import com.intel.intelanalytics.domain.DataFrameTemplate
-import com.intel.intelanalytics.domain.FrameAddColumn
 import scala.util.Success
-import com.intel.intelanalytics.domain.DataFrame
-import com.intel.intelanalytics.domain.Command
-import com.intel.intelanalytics.domain.Partial
-import com.intel.intelanalytics.domain.SeparatorArgs
-import com.intel.intelanalytics.domain.CommandTemplate
-import com.intel.intelanalytics.domain.Error
-import com.intel.intelanalytics.domain.Als
 import com.intel.intelanalytics.engine.spark.graph.{ SparkGraphStorage, SparkGraphHBaseBackend }
+import com.intel.intelanalytics.domain.DataTypes.DataType
 
 import org.apache.hadoop.mapreduce.Job
+import org.joda.time.DateTime
 
 import spray.json._
 import com.intel.intelanalytics.domain.DataTypes.DataType
@@ -138,6 +107,7 @@ class SparkComponent extends EngineComponent
   import DomainJsonProtocol._
   lazy val configuration: SparkEngineConfiguration = new SparkEngineConfiguration()
 
+
   val engine = new SparkEngine {}
 
   //TODO: choose database profile driver class from config
@@ -151,7 +121,7 @@ class SparkComponent extends EngineComponent
 
   //TODO: only create if the datatabase doesn't already exist. So far this is in-memory only,
   //but when we want to use postgresql or mysql or something, we won't usually be creating tables here.
-  metaStore.create()
+  metaStore.createAllTables()
 
   class SparkEngine extends Engine {
 
@@ -218,7 +188,7 @@ class SparkComponent extends EngineComponent
       }
     }
 
-    def withCommand[T](command: Command)(block: => T): Unit = {
+    def withCommand[T](command: Command)(block: => JsObject): Unit = {
       commands.complete(command.id, Try {
         block
       })
@@ -291,6 +261,7 @@ class SparkComponent extends EngineComponent
 
                 val newName = arguments.new_name
                 frames.renameFrame(frame, newName)
+                JsNull.asJsObject
               }
               commands.lookup(command.id).get
             }
@@ -322,6 +293,7 @@ class SparkComponent extends EngineComponent
                     s"Lengths of Original and Renamed Columns do not match")
 
                 frames.renameColumn(frame, originalcolumns.zip(renamedcolumns))
+                JsNull.asJsObject
               }
               commands.lookup(command.id).get
             }
@@ -375,6 +347,7 @@ class SparkComponent extends EngineComponent
                   }
                 }
                 frames.updateSchema(projectedFrame, projectedColumns.toList)
+                JsNull.asJsObject
               }
               commands.lookup(command.id).get
             }
@@ -427,6 +400,44 @@ class SparkComponent extends EngineComponent
       }
     }
 
+    /**
+     * flatten rdd by the specified column
+     * @param flattenColumnCommand input specification for column flattening
+     * @param user current user
+     */
+    override def flattenColumn(flattenColumnCommand: FlattenColumn[Long])(implicit user: UserPrincipal): (Command, Future[Command]) =
+      withContext("se.flattenColumn") {
+        import DomainJsonProtocol._
+        val command: Command = commands.create(new CommandTemplate("flattenColumn", Some(flattenColumnCommand.toJson.asJsObject)))
+        val result: Future[Command] = future {
+          withMyClassLoader {
+            withContext("se.flattenColumn.future") {
+              val frameId: Long = flattenColumnCommand.frame
+              val realFrame = frames.lookup(frameId).getOrElse(
+                throw new IllegalArgumentException(s"No such data frame: ${frameId}"))
+
+              withCommand(command) {
+                val ctx = context(user).sparkContext
+
+                /* create a dataframe should take very little time, much less than 10 minutes */
+                val newFrame = Await.result(create(DataFrameTemplate(flattenColumnCommand.name)), 10 minutes)
+                val rdd = frames.getFrameRdd(ctx, frameId)
+
+                val columnIndex = realFrame.schema.columnIndex(flattenColumnCommand.column)
+
+                val flattenedRDD = SparkOps.flattenRddByColumnIndex(columnIndex, flattenColumnCommand.separator, rdd)
+
+                flattenedRDD.saveAsObjectFile(fsRoot + frames.getFrameDataFile(newFrame.id))
+                newFrame.copy(schema = realFrame.schema).toJson.asJsObject
+              }
+            }
+          }
+          commands.lookup(command.id).get
+        }
+
+        (command, result)
+    }
+
     def filter(arguments: FilterPredicate[JsObject, Long])(implicit user: UserPrincipal): (Command, Future[Command]) =
       withContext("se.filter") {
         require(arguments != null, "arguments are required")
@@ -446,6 +457,7 @@ class SparkComponent extends EngineComponent
                 val schema = realFrame.schema
                 val converter = DataTypes.parseMany(schema.columns.map(_._2).toArray)(_)
                 persistPythonRDD(pyRdd, converter, location)
+                JsNull.asJsObject
               }
               commands.lookup(command.id).get
             }
@@ -582,6 +594,7 @@ class SparkComponent extends EngineComponent
                 }
 
                 frames.removeColumn(realFrame, columnIndices)
+                JsNull.asJsObject
               }
               commands.lookup(command.id).get
             }
@@ -624,7 +637,7 @@ class SparkComponent extends EngineComponent
                 val pyRdd = createPythonRDD(frameId, expression)
                 val converter = DataTypes.parseMany(newFrame.schema.columns.map(_._2).toArray)(_)
                 persistPythonRDD(pyRdd, converter, location)
-
+                JsNull.asJsObject
               }
               commands.lookup(command.id).get
             }
@@ -652,7 +665,7 @@ class SparkComponent extends EngineComponent
      * Register a graph name with the metadata store.
      * @param graph Metadata for graph creation.
      * @param user IMPLICIT. The user creating the graph.
-     * @return
+     * @return Future of the graph to be created.
      */
     def createGraph(graph: GraphTemplate)(implicit user: UserPrincipal) = {
       future {
@@ -666,7 +679,7 @@ class SparkComponent extends EngineComponent
      * Loads graph data into a graph in the database. The source is tabular data interpreted by user-specified  rules.
      * @param arguments Graph construction
      * @param user IMPLICIT. The user loading the graph
-     * @return
+     * @return Command object for this graphload and a future
      */
     def loadGraph(arguments: GraphLoad[JsObject, Long, Long])(implicit user: UserPrincipal): (Command, Future[Command]) =
       withContext("se.load") {
@@ -679,14 +692,15 @@ class SparkComponent extends EngineComponent
             withContext("se.graphLoad.future") {
               withCommand(command) {
 
-                // not sure if we really need this...
-                val realFrame = frames.lookup(arguments.sourceFrameRef).getOrElse(
-                  throw new IllegalArgumentException(s"No such data frame: ${arguments.sourceFrameRef}"))
+                // validating frames
+                arguments.frame_rules.map(frule => frames.lookup(frule.frame).getOrElse(throw new IllegalArgumentException(s"No such data frame: ${frule.frame}")))
 
-                graphs.loadGraph(arguments)(user)
+                val graph = graphs.loadGraph(arguments)(user)
+                graph.toJson.asJsObject
               }
 
               commands.lookup(command.id).get
+
             }
           }
         }
@@ -696,7 +710,7 @@ class SparkComponent extends EngineComponent
     /**
      * Obtains a graph's metadata from its identifier.
      * @param id Unique identifier for the graph provided by the metastore.
-     * @return A future of the graph.
+     * @return A future of the graph metadata entry.
      */
     def getGraph(id: SparkComponent.this.Identifier): Future[Graph] = {
       future {
@@ -709,7 +723,7 @@ class SparkComponent extends EngineComponent
      * @param offset First graph to obtain.
      * @param count Number of graphs to obtain.
      * @param user IMPLICIT. User listing the graphs.
-     * @return Future of a sequence of graphs.
+     * @return Future of the sequence of graph metadata entries to be returned.
      */
     def getGraphs(offset: Int, count: Int)(implicit user: UserPrincipal): Future[Seq[Graph]] =
       withContext("se.getGraphs") {
@@ -721,7 +735,7 @@ class SparkComponent extends EngineComponent
     /**
      * Delete a graph from the graph database.
      * @param graph The graph to be deleted.
-     * @return
+     * @return A future of unit.
      */
     def deleteGraph(graph: Graph): Future[Unit] = {
       withContext("se.deletegraph") {
@@ -814,6 +828,7 @@ class SparkComponent extends EngineComponent
               //"-vof com.intel.giraph.io.titan.TitanVertexOutputFormatPropertyGraph4CF -op hdfs:///user/ec2-user/als -w 1",
               //"-ca als.maxSupersteps=10  -ca als.convergenceThreshold=0  -ca als.lambda=0.065  -ca als.featureDimension=3 -ca als.biasOn=true",
               //)
+              JsNull.asJsObject
             }
             commands.lookup(command.id).get
           }
@@ -1056,7 +1071,7 @@ def calculateScore(list1, list2, biasOn, featureDimension) {
 
   trait HdfsFileStorage extends FileStorage with EventLogging {
 
-    val configuration = {
+    val fsConfiguration = {
       val hadoopConfig = new Configuration()
       require(hadoopConfig.getClass().getClassLoader == this.getClass.getClassLoader)
       //http://stackoverflow.com/questions/17265002/hadoop-no-filesystem-for-scheme-file
@@ -1065,10 +1080,15 @@ def calculateScore(list1, list2, biasOn, featureDimension) {
       hadoopConfig.set("fs.file.impl",
         classOf[LocalFileSystem].getName)
       require(hadoopConfig.getClassByNameOrNull(classOf[LocalFileSystem].getName) != null)
+
+      val root: String = configuration.config.getString("intel.analytics.fs.root")
+      if (root.startsWith("hdfs"))
+        hadoopConfig.set("fs.defaultFS", root)
+
       hadoopConfig
     }
 
-    val fs = FileSystem.get(configuration)
+    val fs = FileSystem.get(fsConfiguration)
 
     override def write(sink: File, append: Boolean): OutputStream = withContext("file.write") {
       val path: HPath = new HPath(fsRoot + sink.path.toString)
@@ -1269,7 +1289,8 @@ def calculateScore(list1, list2, biasOn, featureDimension) {
 
     override def create(frame: DataFrameTemplate): DataFrame = withContext("frame.create") {
       val id = nextFrameId()
-      val frame2 = new DataFrame(id = id, name = frame.name)
+      // TODO: wire this up better.  For example, status Id should be looked up, uri needs to be supplied, user supplied, etc.
+      val frame2 = new DataFrame(id = id, name = frame.name, description = frame.description, uri = "TODO", schema = Schema(), status = 1L, new DateTime(), new DateTime(), None, None)
       val meta = File(Paths.get(getFrameMetaDataFile(id)))
       info(s"Saving metadata to $meta")
       val f = files.write(meta)
@@ -1370,7 +1391,7 @@ def calculateScore(list1, list2, biasOn, featureDimension) {
       //TODO: set start date
     }
 
-    override def complete(id: Long, result: Try[Any]): Unit = {
+    override def complete(id: Long, result: Try[JsObject]): Unit = {
       require(id > 0, "invalid ID")
       require(result != null)
       metaStore.withSession("se.command.complete") {
@@ -1382,7 +1403,7 @@ def calculateScore(list1, list2, biasOn, featureDimension) {
           //TODO: Update dates
           val changed = result match {
             case Failure(ex) => command.copy(complete = true, error = Some(ex: Error))
-            case Success(r) => command.copy(complete = true, result = Some(r.asInstanceOf[JsObject]))
+            case Success(r) => command.copy(complete = true, result = Some(r))
           }
           repo.update(changed)
       }
