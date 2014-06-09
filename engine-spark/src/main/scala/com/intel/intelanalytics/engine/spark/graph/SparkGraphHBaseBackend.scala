@@ -8,7 +8,7 @@ import com.intel.intelanalytics.engine.GraphBackendStorage
 /**
  * Implements graph backend storage in HBase for Spark.
  */
-class SparkGraphHBaseBackend(val hbaseAdmin: HBaseAdmin) extends GraphBackendStorage with EventLogging {
+class SparkGraphHBaseBackend(hbaseAdmin: => HBaseAdmin) extends GraphBackendStorage with EventLogging {
 
   /**
    * Deletes a graph's underlying table from HBase.
@@ -26,7 +26,5 @@ class SparkGraphHBaseBackend(val hbaseAdmin: HBaseAdmin) extends GraphBackendSto
       throw new IllegalArgumentException(
         "SparkGraphHBaseBackend.deleteTable:  HBase table " + tableName + " requested for deletion does not exist.")
     }
-
-    Unit
   }
 }
