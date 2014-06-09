@@ -76,7 +76,9 @@ class SparkEngine(config: SparkEngineConfiguration,
                   sparkContextManager: SparkContextManager,
                   commands: CommandStorage,
                   frames: SparkFrameStorage,
-                  graphs: GraphStorage) extends Engine with EventLogging {
+                  graphs: GraphStorage) extends Engine
+                                        with EventLogging
+                                        with ClassLoaderAware {
 
   val fsRoot = config.fsRoot
 
@@ -86,24 +88,6 @@ class SparkEngine(config: SparkEngineConfiguration,
 
   def shutdown: Unit = {
     sparkContextManager.cleanup()
-  }
-
-  /**
-   * Execute a code block using the ClassLoader of 'this' SparkEngine
-   * rather than the ClassLoader of the currentThread()
-   */
-  def withMyClassLoader[T](f: => T): T = {
-    val prior = Thread.currentThread().getContextClassLoader
-    EventContext.getCurrent.put("priorClassLoader", prior.toString)
-    try {
-      val loader = this.getClass.getClassLoader
-      EventContext.getCurrent.put("newClassLoader", loader.toString)
-      Thread.currentThread setContextClassLoader loader
-      f
-    }
-    finally {
-      Thread.currentThread setContextClassLoader prior
-    }
   }
 
   def alter(frame: DataFrame, changes: Seq[Alteration]): Unit = withContext("se.alter") {
