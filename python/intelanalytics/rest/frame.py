@@ -196,8 +196,9 @@ class FrameBackendRest(object):
         frame_info = FrameInfo(command_info.result)
         return BigFrame(frame_info)
 
-
     def join(self, left, right, left_on, right_on, how):
+        if right_on is None:
+            right_on = left_on
         name = self._get_new_frame_name()
         arguments = {'name': name, "how": how, "frames": [[left._id, left_on], [right._id, right_on]] }
         command = CommandRequest("dataframe/join", arguments)
@@ -249,11 +250,17 @@ class FrameBackendRest(object):
             #self._columns[p[0]].name = p[1]
         #self._columns = OrderedDict([(v.name, v) for v in values])
 
-    def remove_column(self, frame, name):
+    def remove_columns(self, frame, name):
         columns = ",".join(name) if isinstance(name, list) else name
         arguments = {'frame': frame.uri, 'column': columns}
         command = CommandRequest("dataframe/removecolumn", arguments)
-        return executor.issue(command)
+        command_info = executor.issue(command)
+        # TODO - slurp command_info, instead of the following:
+        if isinstance(name, basestring):
+            name = [name]
+        for victim in name:
+            del frame._columns[victim]
+        return command_info
 
     def add_columns(self, frame, expression, names, types):
         if not names:
@@ -348,7 +355,7 @@ class FrameInfo(object):
         return json.dumps(self._payload, indent=2, sort_keys=True)
 
     def __str__(self):
-        return 'frames/%s "%s"' % (self.id_number, self.name)
+        return '%s "%s"' % (self.uri, self.name)
 
     @property
     def id_number(self):

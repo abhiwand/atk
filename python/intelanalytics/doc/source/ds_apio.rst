@@ -169,6 +169,22 @@ Remove Columns
 
 
 
+>>> f2.remove_columns(['a', 'c'])
+
+
+>>> f2.remove_columns(['a', 'c'])
+
+
+
+
+>>> f2.remove_columns(['a', 'c'])
+
+
+>>> f2.remove_columns(['a', 'c'])
+
+
+
+
 >>> f2.remove_column(['a', 'c'])
  
 Rename Columns
