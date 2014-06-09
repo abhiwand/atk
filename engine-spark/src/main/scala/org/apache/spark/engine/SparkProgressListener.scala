@@ -49,6 +49,7 @@ class SparkProgressListener extends SparkListener {
   val stageIdToTasksComplete = HashMap[Int, Int]()
   val stageIdToTasksFailed = HashMap[Int, Int]()
   var jobIdPromise: Promise[Int] = null
+  //TODO: memory leak.
   val jobIdToCommandId = HashMap[Int, Int]()
 
   def getJobId(): Future[Int] = {
@@ -64,11 +65,11 @@ class SparkProgressListener extends SparkListener {
     jobIdToStageIds(jobStart.job.jobId) = (parentsIds :+ jobStart.job.finalStage.id).toArray
 
     val commandIdTry = Try {
-      jobStart.job.properties.getProperty(SparkContext.SPARK_JOB_GROUP_ID).toInt
+      jobStart.properties.getProperty("command-id")
     }
 
     commandIdTry match {
-      case Success(r) => jobIdToCommandId(jobStart.job.jobId) = r
+      case Success(r) => jobIdToCommandId(jobStart.job.jobId) = r.toInt
       case _ => { } // do nothing
     }
 
