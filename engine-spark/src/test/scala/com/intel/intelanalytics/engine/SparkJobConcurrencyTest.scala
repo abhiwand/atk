@@ -30,7 +30,7 @@ class SparkJobConcurrencyTest  extends TestingSparkContext with Matchers {
     sem.acquire(num)
 
 
-    val commandIds = listener.activeJobs.map {
+    val commandIds = listener.commandIdJobs.map {
       t => t._2.properties.getProperty("command-id").toInt
     }
 
