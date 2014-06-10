@@ -120,7 +120,7 @@ class ProgressListenerSpec extends Specification with Mockito {
 
     val submitted = SparkListenerStageSubmitted(stageInfo, null)
     listener.onStageSubmitted(submitted)
-    listener.getCommandProgress("123") shouldEqual 0
+    listener.getCommandProgress(123) shouldEqual 0
   }
 
   "finish first stage" in {
@@ -135,7 +135,7 @@ class ProgressListenerSpec extends Specification with Mockito {
     val completed = SparkListenerStageCompleted(stageInfo)
 
     listener.onStageCompleted(completed)
-    listener.getCommandProgress("123") shouldEqual 33
+    listener.getCommandProgress(123) shouldEqual 33
   }
 
   "finish second stage" in {
@@ -156,7 +156,7 @@ class ProgressListenerSpec extends Specification with Mockito {
     val completed2 = SparkListenerStageCompleted(stageInfo2)
     listener.onStageCompleted(completed2)
 
-    listener.getCommandProgress("123") shouldEqual 66
+    listener.getCommandProgress(123) shouldEqual 66
   }
 
   "finish all stages" in {
@@ -186,7 +186,7 @@ class ProgressListenerSpec extends Specification with Mockito {
     val jobEnd = mock[SparkListenerJobEnd]
     jobEnd.jobResult.returns(JobSucceeded)
     listener.onJobEnd(jobEnd)
-    listener.getCommandProgress("123") shouldEqual 100
+    listener.getCommandProgress(123) shouldEqual 100
   }
 
   "finish first task in first stage" in {
@@ -202,7 +202,7 @@ class ProgressListenerSpec extends Specification with Mockito {
     val task = new FakeTask(1)
     val taskEnd = SparkListenerTaskEnd(task, Success, taskInfo, null)
     listener.onTaskEnd(taskEnd)
-    listener.getCommandProgress("123") shouldEqual 3
+    listener.getCommandProgress(123) shouldEqual 3
   }
 
   "finish second task in second stage" in {
@@ -227,7 +227,7 @@ class ProgressListenerSpec extends Specification with Mockito {
 
     listener.onTaskEnd(taskEnd)
     listener.onTaskEnd(taskEnd)
-    listener.getCommandProgress("123") shouldEqual 39
+    listener.getCommandProgress(123) shouldEqual 39
   }
 
   "finish second task in second stage, secon task in third stage" in {
@@ -265,7 +265,7 @@ class ProgressListenerSpec extends Specification with Mockito {
 
     listener.onTaskEnd(taskEnd3)
     listener.onTaskEnd(taskEnd3)
-    listener.getCommandProgress("123") shouldEqual 45
+    listener.getCommandProgress(123) shouldEqual 45
   }
 
   "finish all tasks in second stage" in {
@@ -292,7 +292,7 @@ class ProgressListenerSpec extends Specification with Mockito {
     listener.onTaskEnd(taskEnd)
     listener.onTaskEnd(taskEnd)
 
-    listener.getCommandProgress("123") shouldEqual 66
+    listener.getCommandProgress(123) shouldEqual 66
   }
 
   "finish all tasks in second stage-2" in {
@@ -319,7 +319,7 @@ class ProgressListenerSpec extends Specification with Mockito {
     listener.getProgress(1) shouldEqual 66
     val completed2 = SparkListenerStageCompleted(stageInfo)
     listener.onStageCompleted(completed2)
-    listener.getCommandProgress("123") shouldEqual 66
+    listener.getCommandProgress(123) shouldEqual 66
   }
 
   "failed at first stage" in {
@@ -338,7 +338,7 @@ class ProgressListenerSpec extends Specification with Mockito {
 
     listener.activeStages.find(s => s.stageId == 1) shouldNotEqual None
     listener.onJobEnd(jobEnd)
-    listener.getCommandProgress("123") shouldEqual 0
+    listener.getCommandProgress(123) shouldEqual 0
     listener.activeStages.find(s => s.stageId == 1) shouldEqual None
   }
 
@@ -391,6 +391,6 @@ class ProgressListenerSpec extends Specification with Mockito {
 
   "query wrong command id should receive exception" in {
     val listener = createListener_two_jobs()
-    listener.getCommandProgress("567") must throwAn[IllegalArgumentException]
+    listener.getCommandProgress(567) must throwAn[IllegalArgumentException]
   }
 }

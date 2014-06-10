@@ -48,14 +48,14 @@ class SparkProgressListener extends SparkListener {
   val completedStages = ListBuffer[StageInfo]()
   val stageIdToTasksComplete = HashMap[Int, Int]()
   val stageIdToTasksFailed = HashMap[Int, Int]()
-  val commandIdJobs = new HashMap[String, ActiveJob]
+  val commandIdJobs = new HashMap[Long, ActiveJob]
 
   override def onJobStart(jobStart: SparkListenerJobStart) {
     val parents = jobStart.job.finalStage.parents
     val parentsIds = parents.map(s => s.id)
     jobIdToStageIds(jobStart.job.jobId) = (parentsIds :+ jobStart.job.finalStage.id).toArray
     val job = jobStart.job
-    commandIdJobs(job.properties.getProperty("command-id")) = job
+    commandIdJobs(job.properties.getProperty("command-id").toLong) = job
   }
 
   override def onStageSubmitted(stageSubmitted: SparkListenerStageSubmitted) {
@@ -113,7 +113,7 @@ class SparkProgressListener extends SparkListener {
     progress
   }
 
-  def getCommandProgress(commandId: String): Int = {
+  def getCommandProgress(commandId: Long): Int = {
     val jobId = commandIdJobs.getOrElse(commandId,  throw new IllegalArgumentException(s"No such command: $commandId")).jobId
     getProgress(jobId)
   }
