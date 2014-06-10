@@ -298,17 +298,11 @@ class FrameBackendRest(object):
     def project_columns(self, frame, projected_frame, columns, new_names=None):
         # TODO - fix REST server to accept nulls, for now we'll pass an empty list
         if new_names is None:
-            new_names = []
+            new_names = list(columns)
         arguments = {'frame': frame.uri, 'projected_frame': projected_frame.uri, 'columns': columns, "new_column_names": new_names}
         command = CommandRequest("dataframe/project", arguments)
         command_info = executor.issue(command)
-
-        # TODO - refresh from command_info instead of predicting what happened
-        for i, name in enumerate(columns):
-            dtype = frame._columns[name].data_type
-            if new_names:
-                name = new_names[i]
-            self._accept_column(projected_frame, BigColumn(name, dtype))
+        self._initialize_frame(projected_frame, FrameInfo(command_info.result))
 
         return command_info
 
