@@ -213,7 +213,7 @@ class FrameBackendRest(object):
         if isinstance(data, CsvFile):
             # update the Python object (set the columns)
             # todo - this info should come back from the engine
-            for name, data_type in data.fields:
+            for name, data_type in data.schema:
                 if data_type is not ignore:
                     self._accept_column(frame, BigColumn(name, data_type))
         else:
