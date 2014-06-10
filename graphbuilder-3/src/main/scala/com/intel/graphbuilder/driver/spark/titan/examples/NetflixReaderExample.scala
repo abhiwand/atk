@@ -49,7 +49,7 @@ object NetflixReaderExample {
     val sc = new SparkContext(conf)
 
     // Set HDFS output directory
-    val resultsDir = ExamplesUtils.hdfsMaster + System.getProperty("MOVIE_RESULTS_DIR", "/user/spkavuly/netflix_reader_results")
+    val resultsDir = ExamplesUtils.hdfsMaster + System.getProperty("MOVIE_RESULTS_DIR", "/user/hadoop/netflix_reader_results")
     val vertexResultsDir = resultsDir + "/vertices"
     val edgeResultsDir = resultsDir + "/edges"
 
