@@ -165,21 +165,21 @@ class TestLittleFrame(unittest.TestCase):
 
     def test_rename_column(self):
         f = LittleFrame(data_source_ab_123)
-        f.rename_column('a', 'a_prime')
+        f.rename_columns('a', 'a_prime')
         self.validate_schema(f, [('a_prime', int32), ('b', str)])
         self.validate_rows(f, [(1, 'one'), (2, 'two'), (3, 'three')])
 
     def test_rename_column_multiple_names(self):
         f = LittleFrame(data_source_nenfr_na)
-        f.rename_column(('en', 'fr'), ('english', 'french'))
+        f.rename_columns(('en', 'fr'), ('english', 'french'))
         self.validate_schema(f, [('n', int32), ('english', str), ('french', str)])
 
     def test_remove_column(self):
         f = LittleFrame(data_source_nenfr_na)
-        f.remove_column('en')
+        f.remove_columns('en')
         self.validate_schema(f, [('n', int32), ('fr', str)])
 
     def test_remove_column_multiple(self):
         f = LittleFrame(data_source_nenfr_na)
-        f.remove_column(['fr', 'en'])
+        f.remove_columns(['fr', 'en'])
         self.validate_schema(f, [('n', int32)])
