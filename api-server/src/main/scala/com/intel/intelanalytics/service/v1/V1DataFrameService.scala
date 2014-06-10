@@ -31,8 +31,7 @@ import com.intel.intelanalytics.repository.MetaStoreComponent
 import com.intel.intelanalytics.service.v1.viewmodels._
 import com.intel.intelanalytics.engine.EngineComponent
 import scala.concurrent._
-import scala.util.Failure
-import scala.util.Success
+import scala.util._
 import com.intel.intelanalytics.service.v1.viewmodels.DecoratedDataFrame
 import com.intel.intelanalytics.shared.EventLogging
 import com.intel.intelanalytics.security.UserPrincipal
@@ -110,8 +109,7 @@ trait V1DataFrameService extends V1Service {
                 delete {
                   onComplete(for {
                     fopt <- engine.getFrame(id)
-                    res <- engine.delete(fopt.get) if fopt.isDefined
-                    res <- future { () } if fopt.isEmpty
+                    res <- fopt.map(f => engine.delete(f)).getOrElse(Future.successful(()))
                   } yield res) {
                     case Success(_) => complete("OK")
                     case Failure(ex) => throw ex
