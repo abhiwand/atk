@@ -40,22 +40,28 @@ function tarFiles()
 {
 	mkdir TESTTAR
 	tar -xvf $1 -C TESTTAR > TAR.LOG
-	rm FILES.LOG
+	rm FILES.LOG CONFIGFILES.LOG
 	for path in `cat TAR.LOG`;
 	do
 		fullPath=$path
-		echo $fullPath
 		fileName=${path##*/}
 		if [ "$fileName" != "" ]; then
 
 			if [[ ! $fullPath == \/* ]]; then
 				fullPath=${fullPath}
 			fi
-			echo $fullPath | sed 's/^.\//\//g' >> FILES.LOG
+
+
+			if [[ $fullPath == */etc/* ]] && [[ $fullPath != */etc/init* ]]; then
+                echo $fullPath | sed 's/^.\//\//g' >> CONFIGFILES.LOG
+                else
+                echo $fullPath | sed 's/^.\//\//g' >> FILES.LOG
+			fi
 		fi
 	done
 	rm -rf TESTTAR
 	export TAR_FILES=FILES.LOG
+	export TAR_FILES_CONFIG=CONFIGFILES.LOG
 }
 
 function expandTarDeb()
@@ -133,7 +139,6 @@ function debInstall()
 {
 	for file in `cat $TAR_FILES`;
 	do
-#		bleh="/usr/lib/intelanalytics/rest-server/api-server.jar"
 		local fileName=${file##*/}
 
 		installDir=$(echo $file | sed "s/$fileName/ /g")
@@ -240,6 +245,14 @@ if [ ! -z "$FILES" ]; then
 fi
 cat $TAR_FILES
 
+if [ ! -z "$CONFIG" ]; then
+  echo "$CONFIG"
+fi
+
+for configFile in `cat ${TAR_FILES_CONFIG}`
+do
+    echo %config $configFile
+done
 
 }
 
