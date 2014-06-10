@@ -12,18 +12,6 @@ import org.apache.log4j.{Logger, Level}
 class NormalizeConnectedComponentsTest extends FlatSpec with Matchers with TestingSparkContext {
 
 
-
-  "normalize connected components" should "find three components" in {
-    val vertexList: List[Long] = List(4, 8, 12, 16, 20, 24, 28, 32)
-    val components = Set(Set(8, 24, 32), Set(4, 16, 28))
-    val originalVertexToComponent = List((8, 8), (24, 8), (32, 8), (4, 28), (16, 28), (28, 28), (12, 12))
-
-    val verticesToComponentsRDD = sc.parallelize(originalVertexToComponent).map(x => (x._1.toLong, x._2.toLong))
-    val normalizeOut = NormalizeConnectedComponents.normalize(verticesToComponentsRDD, sc)
-
-    normalizeOut._1 shouldEqual 3
-  }
-
   "normalize connected components" should "not have any gaps in the range of component IDs returned" in {
     val vertexList: List[Long] = List(4, 8, 12, 16, 20, 24, 28, 32)
     val components = Set(Set(8, 24, 32), Set(4, 16, 28))
@@ -33,23 +21,30 @@ class NormalizeConnectedComponentsTest extends FlatSpec with Matchers with Testi
     val normalizeOut = NormalizeConnectedComponents.normalize(verticesToComponentsRDD, sc)
 
     val normalizeOutComponents = normalizeOut._2.map(x => x._2).distinct()
-    println("************************************************8")
-    println(normalizeOutComponents.toString())
-    normalizeOutComponents.map(_.toLong) shouldEqual (1.toLong to (normalizeOutComponents.count().toLong))
+
+    normalizeOutComponents.map(_.toLong).collect().toSet  shouldEqual (1.toLong to (normalizeOutComponents.count().toLong)).toSet
   }
 
-  /*
+
   "normalize connected components" should "create correct equivalence classes" in {
     val vertexList: List[Long] = List(4, 8, 12, 16, 20, 24, 28, 32)
-    val components = Set(Set(8, 24, 32), Set(4, 16, 28))
+    val originalEquivalenceClasses = Set(Set(8.toLong, 24.toLong, 32.toLong),
+      Set(4.toLong, 16.toLong, 28.toLong), Set(12.toLong))
     val originalVertexToComponent = List((8, 8), (24, 8), (32, 8), (4, 28), (16, 28), (28, 28), (12, 12))
 
     val verticesToComponentsRDD = sc.parallelize(originalVertexToComponent).map(x => (x._1.toLong, x._2.toLong))
     val normalizeOut = NormalizeConnectedComponents.normalize(verticesToComponentsRDD, sc)
 
-    normalizeOut._1 shouldEqual normalizeOut._2.count()
+    val collectedOutput = normalizeOut._2.collect()
+
+    val groupedOutput = collectedOutput.groupBy(x => x._2)
+    val groupedNoKeys = groupedOutput.map(x => x._2)
+    val setsOfPairs  = groupedNoKeys.map(list => list.toSet)
+    val equivalenceclasses = setsOfPairs.map(set => set.map(x => x._1)).toSet
+
+    equivalenceclasses shouldEqual originalEquivalenceClasses
   }
-  */
+
   }
 
 // TODO: get TestingSparkContext from a shared location
