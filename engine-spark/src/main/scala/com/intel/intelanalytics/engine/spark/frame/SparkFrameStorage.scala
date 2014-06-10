@@ -35,13 +35,13 @@ import org.apache.spark.SparkContext
 import scala.util.matching.Regex
 import java.util.concurrent.atomic.AtomicLong
 import com.intel.intelanalytics.domain.frame.{Column, DataFrame, DataFrameTemplate}
-import com.intel.intelanalytics.engine.spark.context.{SparkContextManager}
+import com.intel.intelanalytics.engine.spark.context.{Context, SparkContextManager}
 import scala.Some
 import com.intel.intelanalytics.engine.File
 import com.intel.intelanalytics.security.UserPrincipal
 import org.joda.time.DateTime
 
-class SparkFrameStorage(contextManager: SparkContextManager, fsRoot: String, files: HdfsFileStorage)
+class SparkFrameStorage(context: UserPrincipal => Context, fsRoot: String, files: HdfsFileStorage)
   extends FrameStorage with EventLogging with ClassLoaderAware {
 
   import spray.json._
@@ -113,7 +113,7 @@ class SparkFrameStorage(contextManager: SparkContextManager, fsRoot: String, fil
       updateName(frame, newName)
     }
 
-  override def renameColumn(frame: DataFrame, name_pairs: Seq[(String, String)]): Unit =
+  override def renameColumn(frame: DataFrame, name_pairs: Seq[(String, String)]): DataFrame =
     withContext("frame.renameColumn") {
       val columnsToRename: Seq[String] = name_pairs.map(_._1)
       val newColumnNames: Seq[String] = name_pairs.map(_._2)
@@ -142,7 +142,7 @@ class SparkFrameStorage(contextManager: SparkContextManager, fsRoot: String, fil
       require(offset >= 0, "offset must be zero or greater")
       require(count > 0, "count must be zero or greater")
       withMyClassLoader {
-        val ctx = contextManager.getContext("intelanalytics:" + user.user.username).sparkContext
+        val ctx = context(user).sparkContext
         val rdd: RDD[Row] = getFrameRdd(ctx, frame.id)
         val rows = SparkOps.getRows(rdd, offset, count)
         rows

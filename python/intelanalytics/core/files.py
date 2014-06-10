@@ -44,7 +44,7 @@ class CsvFile(DataFile):
         tuples which describe each field, (field name, field type), where
         the field name is a string, and file is a supported type
         (See supported_types from the types module)
-        The type 'ignore' may also be used if the field should be ignored
+        The type ``ignore`` may also be used if the field should be ignored
         on loads
     delimiter : string (optional)
         string indicator of the delimiter for the fields, the comma character is the default
@@ -69,21 +69,20 @@ class CsvFile(DataFile):
     >>> from intelanalytics import *
     <BLANKLINE>
     At this point create a schema that defines the data
-    >>> csv_schema = []
-    >>> csv_schema.append(("sort_order", string))
-    >>> csv_schema.append(("common_name", string))
-    >>> csv_schema.append(("formal_name", string))
-    >>> csv_schema.append(("type", string))
-    >>> csv_schema.append(("sub_type", string))
-    >>> csv_schema.append(("sovereignty", string))
-    >>> csv_schema.append(("capital", string))
-    >>> csv_schema.append(("iso_4217_currency_code", string))
-    >>> csv_schema.append(("iso_4217_currency_name", string))
-    >>> csv_schema.append(("itu-t_telephone_code", string))
-    >>> csv_schema.append(("iso_3166-1_2_letter_code", string))
-    >>> csv_schema.append(("iso_3166-1_3_letter_code", string))
-    >>> csv_schema.append(("iso_3166-1_number", string))
-    >>> csv_schema.append(("iana_country_code_tld", string))
+    >>> csv_schema = [("sort_order", string),
+    ...               ("common_name", string),
+    ...               ("formal_name", string),
+    ...               ("type", string),
+    ...               ("sub_type", string),
+    ...               ("sovereignty", string),
+    ...               ("capital", string),
+    ...               ("iso_4217_currency_code", string),
+    ...               ("iso_4217_currency_name", string),
+    ...               ("itu-t_telephone_code", string),
+    ...               ("iso_3166-1_2_letter_code", string),
+    ...               ("iso_3166-1_3_letter_code", string),
+    ...               ("iso_3166-1_number", string),
+    ...               ("iana_country_code_tld", string)]
     <BLANKLINE>
     Now build a CsvFile object with this schema
     >>> csv_define = CsvFile("<path to>raw_data.csv", csv_schema)
@@ -139,86 +138,17 @@ class CsvFile(DataFile):
         if not delimiter or not isinstance(delimiter, basestring):
             raise ValueError("delimiter must be a non-empty string")
         self.file_name = file_name
+        self.schema = list(schema)
+        self._validate()
         self.delimiter = delimiter
         self.skip_header_lines = skip_header_lines
-        if isinstance(schema, basestring):
-            self._init_from_string(schema)
-        else:
-            self._init_from_tuples(schema)
-        self._validate()
 
     def __repr__(self):
-        return repr(self.fields)
-
-    def as_json_obj(self):
-        """
-        Breaks up it's information into workable variables.
-
-        This is the function you would use if you wanted to process the csv as a json file.
-
-        Returns
-        -------
-
-        list
-            | string - Type of the file
-            | string - File name
-            | dictionary - JSON schema
-            | string - Delimiter
-            | int32 - Number of header lines to skip
-        
-        Examples
-        --------
-
-        >>> my_csv = CsvFile("my.dat", my_schema, ",", 10)
-        >>> my_json = my_csv.as_json_obj()
-        my_json is now ["csv_file", "raw_data.csv", "my_schema", ",", 10]
-        
-        """
-        # TODO - Review Docstring
- 
-        return ["csv_file", self.file_name, self._schema_to_json(), self.delimiter, self.skip_header_lines]
-
-    @classmethod
-    def from_json_obj(cls, obj):
-        """
-        Converts this object to a CSV file per a JSON schema.
-
-        Parameters
-        ----------
-
-        obj : list
-            This should match the return value from as_json_obj() function
-
-        Returns
-        -------
-
-        A file definition for a csv file.
-
-        Examples
-        --------
-
-        >>> raw data file is raw.data, json_schema file is schema.json
-        >>> my_csv = CsvFile.from_json_obj(["csv_file", raw.data, schema.json])
-        
-        """
-        # TODO - Review docstring
-        assert("csv_file" == obj[0])
-        obj = obj[1:]
-        obj[1] = CsvFile._schema_from_json(obj[1])
-        return CsvFile(*obj)
+        return repr(self.schema)
 
     def _schema_to_json(self):
-        json_schema = []
-        for f in self.fields:
-           json_schema.append((f[0], supported_types.get_type_string(f[1])))
-        return json_schema
-
-    @staticmethod
-    def _schema_from_json(schema_list):
-        schema = []
-        for f in schema_list:
-           schema.append((f[0], supported_types.get_type_from_string(f[1])))
-        return schema
+        return [(field[0], supported_types.get_type_string(field[1]))
+                for field in self.schema]
 
     @property
     def field_names(self):
@@ -234,13 +164,12 @@ class CsvFile(DataFile):
         Examples
         --------
 
-        >>> my_csv = CsvFile.from_json_obj(["csv_file", raw.data, schema.json])
-        >>> my_fields = my_csv.field_names()
-        my_fields now is a list of strings like [ "Column_1", "Column_2", "This_column"]
-        
+        >>> my_csv = CsvFile("my_data.csv", [("col1", int32), ("col2", float32)])
+        >>> my_csv.field_names
+        ["col1", "col2"]
         """
         # TODO - Review docstring
-        return [x[0] for x in self.fields]
+        return [x[0] for x in self.schema]
 
     @property
     def field_types(self):
@@ -256,164 +185,16 @@ class CsvFile(DataFile):
         Examples
         --------
 
-        >>> my_csv = CsvFile.from_json_obj(["csv_file", raw.data, schema.json])
-        >>> my_types = my_csv.field_types()
-        my_types is now a list of data types like [ string, int32, float64 ]
-        
+        >>> my_csv = CsvFile("my_data.csv", [("col1", int32), ("col2", float32)])
+        >>> my_csv.field_types
+        [numpy.int32, numpy.float32]
         """
         # TODO - Review docstring
-        return [x[1] for x in self.fields]
-
-    def to_ordered_dict(self):
-        """
-        Creates an ordered dictionary representing the schema fields and types.
-
-        Returns
-        -------
-
-        Dictionary
-            Ordered pairs of field names and field types
-
-        Raises
-        ------
-
-        ValueError
-
-        Examples
-        --------
-
-        >>>
-        for this example raw_data.csv is a csv file with the fields "col1" and "col2" of types int64 and string respectively
-        >>> my_csv = CsvFile("raw_data.csv", [("col1", int64), ("col2", string)])
-        >>> my_dict = my_csv.to_ordered_dict
-        my_dict is now {("col1" : int64), ("col2" : string)}
-        
-        """
-        # TODO - Review docstring
-        d = OrderedDict()
-        for field in self.fields:
-            d[field[0]] = field[1]
-        return d
-
-    def _init_from_tuples(self, tuples):
-        self.fields = list(tuples)
+        return [x[1] for x in self.schema]
 
     def _validate(self):
-        for t in self.fields:
+        for t in self.schema:
             if not isinstance(t[0], basestring):
                 raise ValueError("First item in CSV schema tuple must be a string")
             if t[1] not in supported_types:
                 raise ValueError("Second item in CSV schema tuple must be a supported type: " + str(supported_types))
-
-    def _init_from_string(self, schema_string):
-        """
-        Parses the given csv schema string of the form:
-           'x:chararray,y:double,z:int,l:long'
-        """
-        self.fields = CsvFile.parse_legacy_schema_string(schema_string)
-
-    @staticmethod
-    def parse_legacy_schema_string(schema_string):
-        """
-        Converts the deprecated schema string format to the new dictionary format.
-
-        Parameters
-        ----------
-
-        schema_string : string
-            Old string format
-
-        Returns
-        -------
-
-        dictionary
-            The new schema format
-
-        Raises
-        -------
-
-        DeprecationWarning
-
-        Examples
-        --------
-        
-        >>>
-        my_old_string is an old format string equal to "dog:string,cat:string,frog:int32"
-        >>> my_new_schema = CsvFiles.parse_legacy_schema_string( my_old_string )
-        my_new_string is now [("dog", string), ("cat", string), ("frog", int32)]
-        
-        """
-        # TODO - Review docstring
-        fields = []
-        pairs = ("".join(schema_string.split())).split(',')
-        for pair in pairs:
-            fields.append(tuple(pair.split(':')))
-        warnings.warn("CSV schema string format 'name:type' is deprecated",
-                      DeprecationWarning)
-        return fields
-
-
-class JsonFile(DataFile):
-    """
-    Creates object which defines a JSON file.
-
-    Parameters
-    ----------
-
-    file_name : string
-        name of file
-
-    Raises
-    ------
-
-    ValueError
-
-    Examples
-    --------
-
-    >>> my_json = JsonFile( data.json )
-    my_json is now a definition object for the json file
-
-    """
-    # TODO - Review docstring
-    annotation = "json_file"
-
-    def __init__(self, file_name):
-        if not file_name or not isinstance(file_name, basestring):
-            raise ValueError("file_name must be a non-empty string")
-        self.file_name = file_name
-
-
-class XmlFile(DataFile):
-    """
-    Creates object which defines a XML file.
-
-    Parameters
-    ----------
-
-    file_name : str
-        name of file
-    tag_name : str, optional
-        The XML tag name
-
-    Raises
-    ------
-
-    ValueError
-
-    Examples
-    --------
-
-    >>> my_xml = XmlFile( data.xml, tags_names.dat )
-    my_xml is now an XmlFile definition object
-
-    """
-    # TODO - Review docstring
-    annotation = "xml_file"
-
-    def __init__(self, file_name, tag_name=None):
-        if not file_name or not isinstance(file_name, basestring):
-            raise ValueError("file_name must be a non-empty string")
-        self.file_name = file_name
-        self.tag_name = tag_name
-
