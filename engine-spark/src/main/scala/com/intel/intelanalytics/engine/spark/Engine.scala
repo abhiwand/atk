@@ -124,7 +124,10 @@ class SparkEngine(config: SparkEngineConfiguration,
     }
   }
 
-  def withCommand[T](command: Command)(block: => JsObject): Unit = {
+  def withCommand[T](command: Command)(block: => JsObject)(implicit user: UserPrincipal): Unit = {
+    val ctx = sparkContextManager.context(user).sparkContext
+    ctx.setLocalProperty("command-id", command.id.toString)
+
     commands.complete(command.id, Try {
       block
     })
