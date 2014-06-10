@@ -115,8 +115,10 @@ class FrameBackendRest(object):
     def _initialize_frame(frame, frame_info):
         """Initializes a frame according to given frame_info"""
         frame._id = frame_info.id_number
-        frame._uri = frame_info.uri
+        # TODO - update uri from result (this is a TODO in the engine)
+        #frame._uri = frame_info.uri
         frame._name = frame_info.name
+        frame._columns.clear()
         for column in frame_info.columns:
             FrameBackendRest._accept_column(frame, column)
 
@@ -333,10 +335,10 @@ class FrameBackendRest(object):
             if nn in current_names:
                 raise ValueError("Cannot use rename to '{0}' because another column already exists with that name".format(nn))
         #originalcolumns, renamedcolumns = ",".join(zip(*name_pairs)[0]), ",".join(zip(*name_pairs)[1])
-        arguments = {'frame': frame.uri, "originalcolumn": column_names, "renamedcolumn": new_names}
-        command = CommandRequest("dataframe/renamecolumn", arguments)
+        arguments = {'frame': frame.uri, "original_names": column_names, "new_names": new_names}
+        command = CommandRequest("dataframe/rename_column", arguments)
         command_info = executor.issue(command)
-        self._initialize_frame(frame, command_info.result)
+        self._initialize_frame(frame, FrameInfo(command_info.result))
 
         # rename on python side, here in the frame's local columns:
         #values = self._columns.values()  # must preserve order in OrderedDict
@@ -378,10 +380,7 @@ class FrameInfo(object):
 
     @property
     def uri(self):
-        try:
-            return self._payload['links'][0]['uri']
-        except KeyError:
-            return ""
+        return self._payload['uri']
 
     @property
     def columns(self):
