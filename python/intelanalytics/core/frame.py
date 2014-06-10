@@ -24,11 +24,10 @@
 from collections import OrderedDict
 import json
 
-from intelanalytics.core.types import supported_types
-from intelanalytics.core.column import BigColumn
-
 import logging
 logger = logging.getLogger(__name__)
+
+from intelanalytics.core.types import supported_types
 
 
 def _get_backend():
@@ -42,17 +41,16 @@ def get_frame_names():
 
     Returns
     -------
+
     list of strings
         Names of the all BigFrame objects
 
     Examples
     --------
-    >>> mac = get_frame_names
-    >>> mac is now ["Moe", "Larry", "Curly"] where Moe, Larry, and Curly are BigFrame objects
-    
+    >>> get_frame_names()
+    ["my_frame_1", "my_frame_2", "my_frame_3"] # a list of names of BigFrame objects
     """
     # TODO - Review docstring
-
     return _get_backend().get_frame_names()
 
 
@@ -62,18 +60,22 @@ def get_frame(name):
     
     Parameters
     ----------
+
     name : string
         String containing the name of the BigFrame object
 
     Returns
     -------
+
     BigFrame
         Named object
 
     Examples
     --------
-    >>> witch = get_frame( g.name )
-    >>> witch is now a copy of the BigFrame object g
+
+    >>> my_frame = get_frame( "my_frame_1" )
+    
+    my_frame is now a proxy of the BigFrame object
 
     """
     # TODO - Review docstring
@@ -86,20 +88,23 @@ def delete_frame(name):
     
     Parameters
     ----------
+
     name : string
         The name of the BigFrame object to delete.
     
     Returns
     -------
+
     string
         The name of the deleted frame
 
     Examples
     --------
-    >>> g = BigFrame(source_data, "Janice")
-    >>> g is now a BigFrame object named Janice
-    >>> who = g.delete_frame( g.name )
-    >>> who is now a string with the value "Janice" and all of the data in g is gone
+
+    >>> my_frame = BigFrame("raw_data.csv", my_csv)
+    >>> deleted_frame = delete_frame( my_frame )
+
+    deleted_frame is now a string with the value of the name of the frame which was deleted
 
     """
     # TODO - Review examples and parameter
@@ -112,18 +117,25 @@ class BigFrame(object):
     
     Parameters
     ----------
-    source : pointer (optional)
-        A source of initial data
+    source : source (optional)
+        A source of initial data, like a CsvFile or another BigFrame
     name : string (optional)
         The name of the newly created BigFrame object
 
+    Notes
+    -----
+
+    If no name is provided for the BigFrame object, it will generate one.
+    If a data source *X* was specified, it will try to generate the frame name as *_X*.
+    If for some reason *_X* would be illegal
     Examples
     --------
-    >>> g = BigFrame(None, "Bob")
-    >>> g.name would be "Bob"
+
+    >>> g = BigFrame(None, "my_data")
+    A BigFrame object has been created and 'g' is its proxy. It has no data, but it has the name "my_data".
+
     """
     # TODO - Review Parameters, Examples
-
 
     def __init__(self, source=None, name=None):
         self._columns = OrderedDict()  # self._columns must be the first attribute to be assigned (see __setattr__)
@@ -156,12 +168,15 @@ class BigFrame(object):
 
     # We are not defining __setitem__.  Columns must be added explicitly
 
-    # We are not defining __delitem__.  Columns must be deleted w/ remove_column
+    # We are not defining __delitem__.  Columns must be deleted w/ remove_columns
 
     def __repr__(self):
-        return json.dumps({'_id': str(self._id),
+        return json.dumps({'uri': self.uri,
                            'name': self.name,
-                           'schema': repr(self.schema)})
+                           'schema': self._schema_as_json_obj()}, indent=2, separators=(', ', ': '))
+
+    def _schema_as_json_obj(self):
+        return [(col.name, supported_types.get_type_string(col.data_type)) for col in self._columns.values()]
 
     def __len__(self):
         return len(self._columns)
@@ -175,25 +190,14 @@ class BigFrame(object):
 
     class _FrameIter(object):
         """
-        Iiterator for BigFrame - frame iteration works on the columns.
-        
-        Notes
-        -----
-        This class is usually not documented in the user help system.
-        
+        (Private)
+        Iterator for BigFrame - frame iteration works on the columns
+        (see BigFrame.__iter__)
+
         Parameters
         ----------
         frame : BigFrame
             A BigFrame object
-            
-        Examples
-        --------
-        >>> bf_sam = BigFrame(data)
-        >>> for this example bf_sam is now a BigFrame object with 300 columns and the columns are named c001, c002, ..., c300
-        >>> while True:
-        >>>     sue = bf_sam._FrameIter.next # This make sue a counter of which column we are working with from 0 to 299
-        >>>     When all of the columns have been gone through and we try to go beyond the number of columns that exist we raise a StopIteration error
-        
         """
 
         def __init__(self, frame):
@@ -228,17 +232,14 @@ class BigFrame(object):
         
         Returns
         -------
+
         list of string
         
         Examples
         --------
-        >>> John = BigFrame(Dan)
-        >>> John is now a BigFrame object with three columns named col01, col02, and col03
-        >>> Mary = John.column_names()
-        >>> Mary is now ["col01", "col02", "col03"] 
-        
+        >>> frame.column_names()
+        ["col1", "col2", "col3"]
         """
-        # TODO - Review Docstring
         return self._columns.keys()
 
     @property
@@ -248,42 +249,35 @@ class BigFrame(object):
         
         Returns
         -------
-        string
+        type : type
             The type of object this is
-            
-        Examples
-        --------
-        >>> Fred = BigFrame()
-        >>> what = Fred.data_type
-        >>> what is "BigFrame"
-        
         """
+        # TODO - what to do about data_type on BigFrame?  is it really necessary?
         # TODO - Review Docstring
         return type(self)
 
     #@property
+    # TODO - should we expose the frame ID publically?
     #def frame_id(self):
     #    return self._id
 
     @property
     def name(self):
         """
-        The name of the current ojbect.
+        The name of the BigFrame
         
         Returns
         -------
-        string
-            The name of the current object.
+        name : str
+            The name of the BigFrame
             
         Examples
         --------
-        >>> leader = BigFrame( , "Mark")
-        >>> leader is now a BigFrame object named Mark
-        >>> follower = Mark.name
-        >>> follower is now a string with the value "Mark"
-        
+        >>> csv = CsvFile("my_data.csv", csv_schema)
+        >>> frame = BigFrame(csv, "my_frame")
+        >>> frame.name
+        "my_frame"
         """
-        # TODO - Review Docstring
         return self._name
 
     @name.setter
@@ -298,18 +292,16 @@ class BigFrame(object):
         
         Returns
         -------
-        FrameSchema
+        schema : list of tuples
+            The schema of the BigFrame, which is a list of tuples which
+            represents and the name and data type of frame's columns
         
         Examples
         --------
-        >>> Sarah = BigFrame()
-        >>> Erica = Sarah.schema
-        >>> Erica is now a FrameSchema matching Sarah's structure
-        
+        >>> frame.schema
+        [("col1", str), ("col1", numpy.int32)]
         """
-        # TODO - Review Docstring
-        return FrameSchema(zip(self._columns.keys(),
-                               map(lambda c: c.data_type, self._columns.values())))
+        return [(col.name, col.data_type) for col in self._columns.values()]
 
     @property
     def uri(self):
@@ -318,61 +310,51 @@ class BigFrame(object):
         
         Returns
         -------
-        uri
+        uri : str
             The value of the uri
-        
-        Examples
-        --------
-        >>> Eric = BigFrame()
-        >>> Clark = Eric.uri
-        >>> Clark is the uniform resource identifier for Eric
-        
         """
-        # TODO - Revise Docstring
         return self._uri
 
     def _as_json_obj(self):
         return self._backend._as_json_obj(self)
         #return ['frame', {"name": self.name}]
 
-
-    def add_column(self, func, type=str, name=""):
+    def add_columns(self, func, types=str, names=""):
         """
-        Adds a new column to the frame by evaluating the given func on each row.
+        Adds one or more new columns to the frame by evaluating the given
+        func on each row.
 
         Parameters
         ----------
+
         func : row function
-            function which takes the values in the row and produces a value for the new cell
+            function which takes the values in the row and produces a value
+            or collection of values for the new cell(s)
 
-        type : data type (optional)
-            specifies the type of the new column
+        types : data type or list/tuple of types (optional)
+            specifies the type(s) of the new column(s)
 
-        name : string (optional)
-            specifies the name of the new column
+        names : string  or list/tuple of strings (optional)
+            specifies the name(s) of the new column(s).  By default, the new
+            column(s) name will be given a unique name "new#" where # is the
+            lowest number (starting from 0) such that there is not already a
+            column with that name.
 
         Examples
         --------
-        >>> Henry = BigFrame(data)
-        >>> for this example Henry is a BigFrame object with two columns named "Tom" and "Dick"
-        >>> Henry.add_column(Tom-Dick, int, "Harry")
-        >>> Henry now has three columns, name "Tom", "Dick" and "Harry" and Harry's value is the value in Tom minus the value in Dick
-        >>>
-        >>> if the name is left blank, the column name will be given a unique name "res#" where # is the lowest number from 0 through 1000 such that there is not already a column with that name.
-
+        >>> my_frame = BigFrame(data)
+        For this example my_frame is a BigFrame object with two int32 columns named "column1" and "column2".
+        We want to add a third column named "column3" as an int32 and fill it with the contents of column1 and column2 multiplied together
+        >>> my_frame.add_columns(lambda row: row.column1*row.column2, int32, "column3")
+        The variable my_frame now has three columns, named "column1", "column2" and "column3". The type of column3 is an int32, and the value is the product of column1 and column2.
+        <BLANKLINE>
+        Now, we want to add another column, we don't care what it is called and it is going to be an empty string (the default).
+        >>> my_frame.add_columns(lambda row: '')
+        The BigFrame object 'my_frame' now has four columns named "column1", "column2", "column3", and "new0". The first three columns are int32 and the fourth column is string.  Column "new0" has an empty string ('') in every row.
+        >>> frame.add_columns(lambda row: (row.a * row.b, row.a + row.b), (float32, float32), ("a_times_b", "a_plus_b"))
+        # Two new columns are created, "a_times_b" and "a_plus_b"
         """
-        # TODO - Review examples
-        # Generate a synthetic name
-        if not name:
-            for i in range(0,1000):
-                if self._columns.get('res%d' % i, None) is None:
-                    name = 'res%d' % i
-                    break
-        self._backend.add_column(self, func, name, type)
-
-    def add_columns(self, func, names=None, ):
-        # Not implemented yet
-        self._backend.add_columns(self, func, names)
+        self._backend.add_columns(self, func, names, types)
 
     def append(self, data):
         """
@@ -380,11 +362,15 @@ class BigFrame(object):
 
         Parameters
         ----------
-        data : data source or list of data source
             The source of the data being added.
 
         Examples
         --------
+
+        >>> my_frame = BigFrame(my_csv)
+        >>> my_other_frame = BigFrame(my_other_csv)
+        >>> my_frame.append(my_other_frame)
+        # my_frame now has the data from my_other_frame as well
         """
         # TODO - Review examples
         self._backend.append(self, data)
@@ -402,6 +388,27 @@ class BigFrame(object):
         self._backend.project_columns(self, copied_frame, self.column_names)
         return copied_frame
 
+    def count(self):
+        """
+        Count the number of rows that exist in this object.
+
+        Returns
+        -------
+
+        int32
+            The number of rows
+
+        Examples
+        --------
+
+        >>>
+        # For this example, my_frame is a BigFrame object with lots of data
+        >>> num_rows = my_frame.count()
+        # num_rows is now the count of rows of data in my_frame
+
+        """
+        return self._backend.count(self)
+
     def filter(self, predicate):
         """
         Select all rows which satisfy a predicate.
@@ -409,15 +416,15 @@ class BigFrame(object):
         Parameters
         ----------
         predicate: function
-            function definition or lambda which evaluates to a boolean value
+            function definition or lambda which takes a row argument and evaluates to a boolean value
             
         Examples
         --------
-        >>> for this example, Steve is a BigFrame object with lots of data and columns for the attributes of animals
-        >>> we do not want all this data, just the data for lizards and frogs, so ...
-        >>> Steve.filter( animal_type == "lizard" OR animal_type == "frog" )
-        >>> Steve now only has data about lizards and frogs
-        
+        >>>
+        # For this example, my_frame is a BigFrame object with lots of data and columns for the attributes of animals.
+        # We do not want all this data, just the data for lizards and frogs, so ...
+        >>> my_frame.filter(animal_type == "lizard" or animal_type == "frog")
+        # my_frame now only has data about lizards and frogs
         """
         # TODO - Review docstring
         self._backend.filter(self, predicate)
@@ -448,15 +455,18 @@ class BigFrame(object):
         
         Parameters
         ----------
+
         predicate : function
             The requirement that the rows must match
             
         Examples
         --------
-        >>> For this example, George is a BigFrame object with a column called "Hair" (amongst other)
-        >>> George.drop( Hair == False )
-        >>> George's data is now empty of any data with no Hair
-        
+
+        >>>
+        For this example, my_frame is a BigFrame object with a column called "unimportant" (amongst other)
+        >>> my_frame.drop( unimportant == True )
+        my_frame's data is now empty of any data with where the column "unimportant" was true.
+
         """
         # TODO - review docstring
         self._backend.drop(self, predicate)
@@ -467,6 +477,7 @@ class BigFrame(object):
 
         Parameters
         ----------
+
         how : any, all, or column name, optional
             any: if any column has an NA value, drop row
             all: if all the columns have an NA value, drop row
@@ -476,16 +487,18 @@ class BigFrame(object):
 
         Examples
         --------
-        >>> For this example, Paul is a BigFrame object with a column called "Guitar" (amongst other)
-        >>> Paul.dropna( "Guitar" ) will eliminate any rows which do not have a value for Guitar
+
         >>>
-        >>> If we used the form
-        >>> Paul.dropna( any, ["Guitar", "Drum"}
-        >>> this erased any line that has no data for Guitar OR Drum
-        >>>
-        >>> If we used the form
-        >>> Paul.dropna( all, ["Guitar", "Drum", "Saxofone"] )
-        >>> this erased any rows that had no data for Guitar, Drum, and Saxofone
+        For this example, my_frame is a BigFrame object with a columns called "column_1", "column_2", and "column_3" (amongst others)
+        >>> my_frame.dropna( "column_1" ) will eliminate any rows which do not have a value for column_1
+        <BLANKLINE>
+        If we used the form
+        >>> my_frame.dropna( any, ["column_2", "column_3"])
+        This erased any line that has no data for column_2 OR column_3
+        <BLANKLINE>
+        If we used the form
+        >>> my_frame.dropna( all, ["column_1", "column_2", "column_3"])
+        This erased any rows that had no data for column_1, column_2 AND column_3.
         
         """
         # TODO - Review examples
@@ -497,6 +510,7 @@ class BigFrame(object):
         
         Parameters
         ----------
+
         n : int
             The number of something
             
@@ -505,15 +519,17 @@ class BigFrame(object):
             
         Returns
         -------
+
         bool
             Whether the data is valid or not.
             
         Examples
         --------
-        >>> Let us say that Craig is a BigFrame object and the row should have types int, str, int, bool
-        >>> and the data for that row is "10", "20", "Bob's your uncle", "0"
-        >>> Randolf = Craig.inspect()
-        >>> Randolf would be false because "Bob's your uncle" is not an int type
+
+        >>>
+        Let us say that my_frame is a BigFrame object and the row should have types int32, str, int64, bool and the data for that row is "10", "20", "Bob's your uncle", "0"
+        >>> my_check = my_frame.inspect()
+        my_check would be false because "Bob's your uncle" is not an int64 type
         
         """
         # TODO - Review docstring
@@ -521,7 +537,7 @@ class BigFrame(object):
 
     def join(self, right, left_on, right_on=None, how='inner'):
         """
-        Create a new BigFrame from a JOIN operation with another BigFrame
+        Create a new BigFrame from a JOIN operation with another BigFrame.
 
         Parameters
         ----------
@@ -545,17 +561,15 @@ class BigFrame(object):
         >>> joined_frame = frame1.join(frame2, 'a')
         >>> joined_frame = frame2.join(frame2, left_on='b', right_on='book', how='inner')
         """
-        if right_on is None:
-            right_on = left_on
-
         return self._backend.join(self, right, left_on, right_on, how)
 
     def project_columns(self, column_names, new_names=None):
         """
-        Copies specified columns into a new BigFrame object, optionally renaming them
+        Copies specified columns into a new BigFrame object, optionally renaming them.
 
         Parameters
         ----------
+
         column_names : str OR list of str
             column name OR list of column names to be removed from the frame
         new_names : str OR list of str
@@ -563,9 +577,18 @@ class BigFrame(object):
 
         Returns
         -------
+
         frame : BigFrame
             A new frame object containing copies of the specified columns
+
+        Examples
+        --------
+
+        >>>
+
         """
+        # TODO - need example in docstring
+
         if isinstance(column_names, basestring):
             column_names = [column_names]
         if new_names is not None:
@@ -578,95 +601,59 @@ class BigFrame(object):
         self._backend.project_columns(self, projected_frame, column_names, new_names)
         return projected_frame
 
-    def remove_column(self, name):
+    def remove_columns(self, name):
         """
-        Remove columns
+        Remove columns from the BigFrame object.
 
         Parameters
         ----------
+
         name : str OR list of str
             column name OR list of column names to be removed from the frame
 
         Notes
         -----
-        This function will retain a single column.
+
+        Deleting a non-existant column raises a KeyError.
+        Deleting the last column in a frame leaves the frame empty.
 
         Examples
         --------
+
         >>>
-        """
-        self._backend.remove_column(self, name)
-        if isinstance(name, basestring):
-            name = [name]
-        for victim in name:
-            del self._columns[victim]
+        # For this example, my_frame is a BigFrame object with columns titled "column_a", "column_b", column_c and "column_d".
+        >>> my_frame.remove_columns([ column_b, column_d ])
+        # Now my_frame only has the columns named "column_a" and "column_c"
 
-    def rename_column(self, column_name, new_name):
         """
-        Rename a column in a frame.
+        # TODO - Review examples
+        self._backend.remove_columns(self, name)
+
+    def rename_columns(self, column_names, new_names):
+        """
+        Renames columns in a frame.
 
         Parameters
         ----------
-        column_name : str
-            The name of the existing column.
-        new_name : str
-            The new name for the column. Must not already exist.
-
-        Raises
-        ------
-        
-        Examples
-        --------
-        >>> Let's say Allen is a BigFrame object with a column named "Wrong" and another named "Wong"
-        >>> Allen.rename_column( [ "Wrong", "Wong" ], [ "Right", "Wite" ] )
-        >>> now, what was Wrong is now Right and what was Wong is now Wite
-
-        """
-        # TODO - Review docstring
-        if isinstance(column_name, basestring) and isinstance(new_name, basestring):
-            column_name = [column_name]
-            new_name = [new_name]
-        if len(column_name) != len(new_name):
-            raise ValueError("rename requires name lists of equal length")
-        current_names = self._columns.keys()
-        for nn in new_name:
-            if nn in current_names:
-                raise ValueError("Cannot use rename to '{0}' because another column already exists with that name".format(nn))
-        name_pairs = zip(column_name, new_name)
-
-        self._backend.rename_columns(self, name_pairs)
-        # rename on python side, here in the frame's local columns:
-        values = self._columns.values()  # must preserve order in OrderedDict
-        for p in name_pairs:
-            self._columns[p[0]].name = p[1]
-        self._columns = OrderedDict([(v.name, v) for v in values])
-
-    def save(self, name=None):
-        """
-        Saves all current data in the frame to disk.
-
-        Parameters
-        ----------
-        name : str (optional)
-            The name of a new file where the frame will be saved
+        column_names : str or list of str
+            The name(s) of the existing column(s).
+        new_names : str
+            The new name(s) for the column(s). Must not already exist.
 
         Examples
         --------
-        >>> Nancy = BigFrame( data_source, "Nancy")
-        >>> Nancy.save
-        >>> The entire object Nancy is saved to disk, even those parts which were in memory waiting to do something
-
+        >>> frame.rename_columns( [ "Wrong", "Wong" ], [ "Right", "Wite" ] )
+        # now, what was Wrong is now Right and what was Wong is now Wite
         """
-        raise NotImplementedError()
-        # TODO - Review docstring
-        #self._backend.save(self, name)
+        self._backend.rename_columns(self, column_names, new_names)
 
     def take(self, n, offset=0):
         """
-        # TODO - Add Docstring
+        .. TODO:: Add Docstring
 
         Parameters
         ----------
+
         n : int
             ?
         offset : int (optional)
@@ -674,193 +661,13 @@ class BigFrame(object):
 
         Examples
         --------
-        >>> Greg = BigFrame( data, "G-Man" )
-        >>> r = Greg.take( 5000 )
+
+        >>> my_frame = BigFrame( p_raw_data, "my_data" )
+        >>> r = my_frame.take( 5000 )
         
         """
         # TODO - Review and complete docstring
         return self._backend.take(self, n, offset)
 
 
-class FrameSchema(OrderedDict):
-    """
-    Ordered key-value pairs of column name -> data type.
-    
-    Parameters
-    ----------
-    source : str or tuple
-        What to use as the pattern for the schema
-        
-    Examples
-    --------
-    >>> Alice( Rabbit )
-    >>> produces a FrameSchema called Alice based on the tuple called Rabbit
-    
-    """
-    # TODO - Review docstring
-    def __init__(self, source=None):
-        super(FrameSchema, self).__init__()
-        if isinstance(source, basestring):
-            self._init_from_string(source)
-        else:
-            self._init_from_tuples(source)
 
-    def __repr__(self,  _repr_running=None):
-        return json.dumps(self._as_json_obj())
-
-    def _as_json_obj(self):
-        return zip(self.get_column_names(), self.get_column_data_type_strings())
-
-    def _init_from_tuples(self, tuples):
-        self.clear()
-        for name, dtype in tuples:
-            if isinstance(dtype, basestring):
-                self[name] = supported_types.get_type_from_string(dtype)
-            elif dtype not in supported_types:
-                raise ValueError("Unsupported data type in schema " + str(dtype))
-            else:
-                self[name] = dtype
-
-    def _init_from_string(self, schema_string):
-        logger.debug("FrameSchema init from string: {0}".format(schema_string))
-        self._init_from_tuples(json.loads(schema_string))
-
-    def get_column_names(self):
-        """
-        Extract the column names from a schema
-        
-        Returns
-        -------
-        list of str
-            A list containing strings with values of the column names
-            
-        Examples
-        --------
-        >>> Cathy = FrameSchema( original )
-        >>> Joe = Cathy.get_column_names()
-        >>> Joe is now ["columnA", "columnB"] (for example)
-
-        """        
-        # TODO - Review docstring
-        return self.keys()
-
-    def get_column_data_types(self):
-        """
-        Extract the column types from a schema
-        
-        Returns
-        -------
-        list of str
-            A list containing strings with values of the column types
-            
-        Examples
-        --------
-        >>> Cathy = FrameSchema( original )
-        >>> Joe = Cathy.get_column_data_types()
-        >>> Joe is now ["str", "int16"] (for example)
-
-        """        
-        # TODO - Review docstring
-        return self.values()
-
-    def get_column_data_type_strings(self):
-        """
-        Extract the column types from a schema
-        
-        Returns
-        -------
-        list of str
-            A list containing strings with values of the column types
-            
-        Examples
-        --------
-        >>> Joan = FrameSchema( original )
-        >>> Kathleen = Joan.get_column_data_type_strings()
-        >>> Kathleen is now "str" (for example)
-
-        """        
-        # TODO - Review docstring
-        return map(lambda v: supported_types.get_type_string(v), self.values())
-
-    def drop(self, victim_column_names):
-        """
-        Remove particular columns.
-
-        Parameters
-        ----------
-        victim_column_names : str OR list of str
-            Name(s) of the columns to drop
-
-        Examples
-        --------
-        >>> Mike = FrameSchema( original )
-        >>> Mike.drop( ["Column_43", "Colon_43" ] )
-        >>> Mike is now a FrameSchema object without information for Column_43 or Colon_43
-
-        """
-        # TODO - Review examples
-        if isinstance(victim_column_names, basestring):
-            victim_column_names = [victim_column_names]
-        for v in victim_column_names:
-            del self[v]
-
-    def append(self, new_columns):
-        """
-        Add new columns.
-
-        Parameters
-        ----------
-        new_columns : tuple (key : value)
-            The column(s) to add
-            key : string    The new column name
-            value : type    The new column data type
-            
-        Raises
-        ------
-        KeyError
-
-        Examples
-        --------
-        >>> Kyle = FrameSchema()
-        >>> Kyle.append( [ "Twelve", string ] )
-        >>> Kyle now contains the schema for an additional column called Twelve
-
-        """
-        # TODO - Review docstring
-        for f in new_columns.keys():
-            if f in self:
-                raise KeyError('Schema already contains column ' + f)
-        for name, dtype in new_columns.items():
-            self[name] = dtype
-
-    def merge(self, schema):
-        """
-        Merge two schemas.
-        
-        This function will merge two schemas. If both schemas have a common column with the same type, it is left as is in the active schems.
-        If the column in the other schema is not in the active schema, it is added to the active one.  If both schemas have the same column
-        but different types for that column, the function raises an error.
-
-        Parameters
-        ----------
-        schema : FrameSchema
-        
-        Raises
-        ------
-        ValueError
-
-        Examples
-        --------
-        >>> Tim = FrameSchema()
-        >>> the_enchanter = FrameSchema( a different schema )
-        >>> Tim.merge( the_enchanter )
-        >>> Tim now contains the original schema, plus the_enchanter's schema
-
-        """
-        # TODO - Review docstring
-        for name, dtype in schema.items():
-            if name not in self:
-                self[name] = dtype
-            elif self[name] != dtype:
-                raise ValueError('Schema merge collision: column being set to '
-                                 'a different type')

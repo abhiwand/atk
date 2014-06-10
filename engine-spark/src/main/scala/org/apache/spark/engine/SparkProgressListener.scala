@@ -122,29 +122,3 @@ class SparkProgressListener extends SparkListener {
   }
 }
 
-/**
- * Create for demo purpose. It is used to get progress from SparkProgressListener and print it out
- * TODO: remove it when progress report is exposed through rest api
- */
-class ProgressPrinter(progressListener: SparkProgressListener) extends SparkListener {
-  override def onStageCompleted(stageCompleted: SparkListenerStageCompleted) {
-    printJobProgress()
-  }
-
-  override def onTaskEnd(taskEnd: SparkListenerTaskEnd) {
-    printJobProgress()
-  }
-
-  override def onJobEnd(jobEnd: SparkListenerJobEnd) {
-    printJobProgress()
-  }
-
-  def printJobProgress() {
-    val jobIds = progressListener.jobIdToStageIds.keys.toList.sorted
-    println("PRINTING PROGRESS........................................................")
-    for (id <- jobIds) {
-      println("job: " + id + ", progress: " + progressListener.getProgress(id) + "%")
-    }
-    println("END.......................................................................")
-  }
-}

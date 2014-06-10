@@ -1,9 +1,7 @@
 package com.intel.intelanalytics.repository
 
 import org.scalatest.Matchers
-import com.intel.intelanalytics.domain.{Schema, DataFrameTemplate}
-import com.intel.intelanalytics.domain.DataTypes
-
+import com.intel.intelanalytics.domain.frame.DataFrameTemplate
 
 class FrameRepositorySpec extends SlickMetaStoreH2Testing with Matchers {
 

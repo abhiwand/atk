@@ -11,6 +11,8 @@ Frame
 .. automodule:: intelanalytics.core.frame
     :members:
 
+.. toctree::
+
 Graph
 -----
 .. automodule:: intelanalytics.core.graph
