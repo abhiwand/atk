@@ -2,7 +2,6 @@ package com.intel.spark.graphon.connectedcomponents
 
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
-import org.apache.spark.SparkConf
 
 import org.apache.spark.rdd._
 
@@ -17,17 +16,22 @@ object NormalizeConnectedComponents {
    * @param vertexToCCMap Map of each vertex ID to its component ID.
    * @return Pair consisting of number of connected components
    */
-  def normalize (vertexToCCMap : RDD[(Long, Long)], sc: SparkContext) : (Long, RDD[(Long, Long)]) = {
+  def normalize(vertexToCCMap: RDD[(Long, Long)], sc: SparkContext): (Long, RDD[(Long, Long)]) = {
 
     // TODO implement this procedure properly when the number of connected components is enormous
     // it certainly makes sense to run this when the number of connected components requires a cluster to be stored
-    // as an RDD of longs,  and the but it may not be a sensible use case for a long time to come...
-    // FOR NOW... articifical restriction that there are at most 10 million connected components
+    // as an RDD of longs (say, if the input was many billions of disconnected nodes...)
+    // BUT that may not be a sensible use case for a long time to come... and the code to handle that is significantly
+    // more complicated.
+    // FOR NOW... we  use the artificial restriction that there are at most 10 million connected components
+    // if start tripping on that, we do this in a distributed fashion...
 
     val baseComponentRDD = vertexToCCMap.map(x => x._2).distinct()
     val count = baseComponentRDD.count()
 
-    require(count < 10000000)
+    require(count < 10000000,
+      "NormalizeConnectedComponents: Failed assumption: The number of connected components exceeds ten million."
+        + "Please consider a fully distributed implementation of ID normalization. Thank you.")
 
     val componentArray = baseComponentRDD.toArray()
     val range = 1.toLong to count.toLong
