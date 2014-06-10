@@ -116,7 +116,7 @@ public class EventMapRedTest {
 
                 try {
                     driv.runTest();
-                } catch (RuntimeException e) {
+                } catch (IOException e) {
                     e.printStackTrace();
                 }
             }
@@ -148,7 +148,7 @@ public class EventMapRedTest {
             public void run() {
                 try {
                     driv.runTest();
-                } catch (RuntimeException e) {
+                } catch (IOException e) {
                     e.printStackTrace();
                 }
             }
