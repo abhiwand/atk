@@ -272,8 +272,7 @@ class SparkEngine(config: SparkEngineConfiguration,
                   yield (arguments.new_column_names(i), schema.columns(columnIndices(i))._2)
                 }
               }
-              frames.updateSchema(projectedFrame, projectedColumns.toList)
-              JsNull.asJsObject
+              frames.updateSchema(projectedFrame, projectedColumns.toList).toJson.asJsObject
             }
             commands.lookup(command.id).get
           }
