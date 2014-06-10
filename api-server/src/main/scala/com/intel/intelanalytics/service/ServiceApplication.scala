@@ -37,7 +37,7 @@ import com.intel.intelanalytics.repository.{ MetaStoreComponent, DbProfileCompon
 import com.intel.intelanalytics.service.v1.{ V1CommandService, V1DataFrameService, ApiV1Service }
 import com.intel.intelanalytics.repository.{ DbProfileComponent, SlickMetaStoreComponent }
 import com.intel.intelanalytics.service.v1.{ V1GraphService, V1DataFrameService, ApiV1Service }
-import com.intel.intelanalytics.engine.EngineComponent
+import com.intel.intelanalytics.engine.{Engine, EngineComponent}
 import com.typesafe.config.{ Config, ConfigFactory }
 import com.intel.intelanalytics.domain.{ UserTemplate, User }
 import com.intel.intelanalytics.shared.EventLogging
