@@ -113,7 +113,7 @@ class SparkFrameStorage(context: UserPrincipal => Context, fsRoot: String, files
       updateName(frame, newName)
     }
 
-  override def renameColumn(frame: DataFrame, name_pairs: Seq[(String, String)]): Unit =
+  override def renameColumn(frame: DataFrame, name_pairs: Seq[(String, String)]): DataFrame =
     withContext("frame.renameColumn") {
       val columnsToRename: Seq[String] = name_pairs.map(_._1)
       val newColumnNames: Seq[String] = name_pairs.map(_._2)
