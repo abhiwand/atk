@@ -48,8 +48,8 @@ case class DataFrame(id: Long,
                      status: Long,
                      createdOn: DateTime,
                      modifiedOn: DateTime,
-                     createdBy: Option[Long],
-                     modifiedBy: Option[Long]) extends HasId {
+                     createdBy: Option[Long] = None,
+                     modifiedBy: Option[Long] = None) extends HasId {
   require(id >= 0)
   require(name != null)
   require(name.trim.length > 0)

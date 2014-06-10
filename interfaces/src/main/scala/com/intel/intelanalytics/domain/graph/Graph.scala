@@ -24,8 +24,8 @@ case class Graph(id: Long,
                  statusId: Long,
                  createdOn: DateTime,
                  modifiedOn: DateTime,
-                 createdByUserId: Option[Long],
-                 modifiedByUserId: Option[Long]) extends HasId {
+                 createdByUserId: Option[Long] = None,
+                 modifiedByUserId: Option[Long] = None) extends HasId {
   require(id > 0)
   require(name != null)
   require(name.trim.length > 0)
