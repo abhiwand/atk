@@ -82,7 +82,7 @@ class GraphBuilderConfigFactory(val schema: Schema, val graphLoad: GraphLoad[JsO
     import scala.collection.JavaConversions._
     val titanConfiguration = new SerializableBaseConfiguration
 
-    val confFromFile = ConfigFactory.load("engine.conf").getConfig("engine.titan.load")
+    val confFromFile = ConfigFactory.load("engine.conf").getConfig("intel.analytics.engine.titan.load")
 
     for (entry <- confFromFile.entrySet()) {
       titanConfiguration.addProperty(entry.getKey(), confFromFile.getString(entry.getKey()))

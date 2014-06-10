@@ -137,7 +137,7 @@ trait V1CommandService extends V1Service {
       case ("dataframe/rename_frame") => runFrameRenameFrame(uri, xform)
       case ("dataframe/addcolumn") => runFrameAddColumn(uri, xform)
       case ("dataframe/project") => runFrameProject(uri, xform)
-      case ("dataframe/renamecolumn") => runFrameRenameColumn(uri, xform)
+      case ("dataframe/rename_column") => runFrameRenameColumn(uri, xform)
       case ("dataframe/join") => runJoinFrames(uri, xform)
       case ("dataframe/flattenColumn") => runflattenColumn(uri, xform)
       case _ => ???
@@ -263,7 +263,7 @@ trait V1CommandService extends V1Service {
       onComplete(
         for {
           frame <- engine.getFrame(id)
-          (c, f) = engine.renameColumn(FrameRenameColumn[JsObject, Long](id, args.originalcolumn, args.renamedcolumn))
+          (c, f) = engine.renameColumn(FrameRenameColumn[JsObject, Long](id, args.original_names, args.new_names))
         } yield c) {
         case Success(c) => complete(decorate(uri + "/" + c.id, c))
         case Failure(ex) => throw ex
