@@ -113,9 +113,10 @@ public class EventMapRedTest {
         Thread thread = new Thread(new Runnable() {
             @Override
             public void run() {
+
                 try {
                     driv.runTest();
-                } catch (IOException e) {
+                } catch (RuntimeException e) {
                     e.printStackTrace();
                 }
             }
@@ -147,7 +148,7 @@ public class EventMapRedTest {
             public void run() {
                 try {
                     driv.runTest();
-                } catch (IOException e) {
+                } catch (RuntimeException e) {
                     e.printStackTrace();
                 }
             }
