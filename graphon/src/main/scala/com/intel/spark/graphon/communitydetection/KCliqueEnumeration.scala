@@ -162,8 +162,6 @@ class KCliqueEnumeration(data: RDD[VertexInAdjacencyFormat], K: Int) {
 
 	/**
 	 * Driver for the k-clique percolation algorithm.
-	 * @param context Spark execution context.
-	 * @param kcliqueInput Algorithm input.
 	 * @return An RDD of extended-by facts.
 	 */
 	def kCliqueExtraction(): RDD[ExtendersFact] = {
