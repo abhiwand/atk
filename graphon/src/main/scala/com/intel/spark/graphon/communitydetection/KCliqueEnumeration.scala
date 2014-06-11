@@ -44,8 +44,6 @@ import com.intel.spark.graphon.communitydetection.KCliquePercolationDataTypes._
 
 class KCliqueEnumeration(data: RDD[VertexInAdjacencyFormat], K: Int) {
 	
-	val sc = data.sparkContext
-
 	/**
 	 * Transform graph from adjacency list representation to edge list representation.
 	 *
@@ -53,29 +51,36 @@ class KCliqueEnumeration(data: RDD[VertexInAdjacencyFormat], K: Int) {
 	 * @return Edge set representation of the graph
 	 */
 
-	def createEdgelistFromParsedAdjList(vertices: RDD[VertexInAdjacencyFormat]): RDD[Edge] = {
-		val edgelistWithDuplicates = vertices.flatMap(vertex => {
+	def createEdgeListFromParsedAdjList(vertices: RDD[VertexInAdjacencyFormat]): RDD[Edge] = {
+		val edgeListWithDuplicates = vertices.flatMap(vertex => {
 			vertex.neighbors.map(nbr => Edge.edgeFactory(vertex.id, nbr))
 		})
 		
-		val distinctEdgeList = edgelistWithDuplicates.distinct()
-		return distinctEdgeList
+		val distinctEdgeList = edgeListWithDuplicates.distinct()
+		distinctEdgeList
 	}
 
 	/**
-	 * Derive the 1 clique-extension facts from the edge list.
+	 * Derive the 1 clique-extension facts from the edge list, which means to gather
+   * the neighbors of the source vertices into an adjacency list (using sets),
+   * which will provide the starting point for later expansion as we add more connected
+   * vertices.
 	 *
 	 * Notice that the invariant holds:
 	 *
 	 * k is odd, and every vertex ID in the VertexSet is less than every vertex ID in the ExtendersSet.
 	 *
-	 * @param edgelist Edge list representation of the graph.
+	 * @param edgeList Edge list representation of the graph.
 	 * @return RDD of extended-by facts.
 	 */
 
-	def initialExtendByMappingFrom(edgelist: RDD[Edge]): RDD[ExtendersFact] = {
-		val initMap = edgelist.groupBy(_.source).mapValues(_.map(_.destination).toSet)
-		initMap.map(vToVlistMap => (Set(vToVlistMap._1), ExtendersSet(vToVlistMap._2)))
+	def initialExtendByMappingFrom(edgeList: RDD[Edge]): RDD[ExtendersFact] = {
+    //A map of source vertices to a set of destination vertices connected from the source
+		val initMap = edgeList.groupBy(_.source).mapValues(_.map(_.destination).toSet)
+
+    //A map of singleton sets (containing source vertices) to the set of neighbors -
+    //essentially an adjacency list
+		initMap.map(vToVListMap => (Set(vToVListMap._1), ExtendersSet(vToVListMap._2)))
 	}
 
 	/**
@@ -168,7 +173,7 @@ class KCliqueEnumeration(data: RDD[VertexInAdjacencyFormat], K: Int) {
 
 		val verticesInAdjListForm: RDD[VertexInAdjacencyFormat] = data
 
-		val edgeList: RDD[Edge] = createEdgelistFromParsedAdjList(verticesInAdjListForm)
+		val edgeList: RDD[Edge] = createEdgeListFromParsedAdjList(verticesInAdjListForm)
 
 			/**
 			 * Derive  k-clique-extension facts from (k-1) clique extension facts.
