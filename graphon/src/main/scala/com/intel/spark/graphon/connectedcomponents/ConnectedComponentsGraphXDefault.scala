@@ -4,13 +4,17 @@ import scala.reflect.ClassTag
 import org.apache.spark.graphx._
 import org.apache.spark.rdd.RDD
 import org.apache.spark.graphx.{Edge => GraphXEdge}
+
+
 /**
- * Implements the standard message-passing based connected components algorithm.
+ * Determine connected components of a graph. The input is a vertex list (an RDD of Longs) and an edge list
+ * (an RDD of pairs of Longs) and the output is a list of (vertexId, componentID) pairs (an RDD of pairs of Longs).
  *
- * Wraps the code straight from graphx/lib/connectedcomponents
+ * This code simply implements the Pegasus (aka Hash-Min) message passing
+ * algorithm in GraphX.
  */
 
-object ConnectedComponentsByMessagePassing {
+object ConnectedComponentsGraphXDefault {
 
   def run(vertexList: RDD[Long], edgeList: RDD[(Long, Long)]) : RDD[(Long, Long)] = {
 
