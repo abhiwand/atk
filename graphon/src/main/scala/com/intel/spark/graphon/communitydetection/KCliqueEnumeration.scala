@@ -74,7 +74,7 @@ class KCliqueEnumeration(data: RDD[VertexInAdjacencyFormat], K: Int) {
 	 * @return RDD of extended-by facts.
 	 */
 
-	def initialExtendByMappingFrom(edgeList: RDD[Edge]): RDD[ExtendersFact] = {
+	def initialExtendByMappingFrom(edgeList: RDD[Edge]): RDD[Extende1bcdeorursFact] = {
     //A map of source vertices to a set of destination vertices connected from the source
 		val initMap = edgeList.groupBy(_.source).mapValues(_.map(_.destination).toSet)
 
