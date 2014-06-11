@@ -21,7 +21,7 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package org.apache.spark.engine
+package org.apache.spark.engine.spark
 
 import org.specs2.mutable.Specification
 
@@ -33,6 +33,10 @@ import org.apache.spark.scheduler.SparkListenerStageCompleted
 import org.apache.spark.scheduler.SparkListenerJobStart
 import org.apache.spark.{ TaskContext, Success }
 import scala.concurrent._
+import com.intel.intelanalytics.engine.spark.CommandProgressUpdater
+import org.apache.spark.engine.SparkProgressListener
+import scala.collection.immutable.HashMap
+import scala.collection.parallel.mutable
 
 class ProgressListenerSpec extends Specification with Mockito {
 
@@ -40,8 +44,21 @@ class ProgressListenerSpec extends Specification with Mockito {
     override def runTask(context: TaskContext): Int = ???
   }
 
+  class TestProgressUpdater extends CommandProgressUpdater {
+
+    val commandProgress = scala.collection.mutable.Map[Long, Int]()
+    override def updateProgress(commandId: Long, progress: Int): Unit = {
+      commandProgress(commandId) = progress
+    }
+  }
+
+
+
   def createListener_one_job(): SparkProgressListener = {
-    val listener = new SparkProgressListener()
+
+
+    val listener = new SparkProgressListener(new TestProgressUpdater())
+
     val stageIds = Array(1, 2, 3)
 
     val job = mock[ActiveJob]
@@ -66,7 +83,8 @@ class ProgressListenerSpec extends Specification with Mockito {
   }
 
   def createListener_two_jobs(): SparkProgressListener = {
-    val listener = new SparkProgressListener()
+
+    val listener = new SparkProgressListener(new TestProgressUpdater())
     val stageIds = Array(1, 2, 3)
 
     val job1 = mock[ActiveJob]
@@ -269,6 +287,12 @@ class ProgressListenerSpec extends Specification with Mockito {
   }
 
   "finish all tasks in second stage" in {
+    val listener: SparkProgressListener = finishAllTasksInSecondStage
+
+    listener.getCommandProgress(123) shouldEqual 66
+  }
+
+  private def finishAllTasksInSecondStage: SparkProgressListener = {
     val listener = createListener_one_job
 
     val stageInfo1 = mock[StageInfo]
@@ -291,8 +315,7 @@ class ProgressListenerSpec extends Specification with Mockito {
     listener.onTaskEnd(taskEnd)
     listener.onTaskEnd(taskEnd)
     listener.onTaskEnd(taskEnd)
-
-    listener.getCommandProgress(123) shouldEqual 66
+    listener
   }
 
   "finish all tasks in second stage-2" in {
@@ -392,5 +415,11 @@ class ProgressListenerSpec extends Specification with Mockito {
   "query wrong command id should receive exception" in {
     val listener = createListener_two_jobs()
     listener.getCommandProgress(567) must throwAn[IllegalArgumentException]
+  }
+
+  "save progress on stage complete" in {
+    val listener: SparkProgressListener = finishAllTasksInSecondStage
+    val updater = listener.progressUpdater.asInstanceOf[TestProgressUpdater]
+    updater.commandProgress(123) shouldEqual 66
   }
 }

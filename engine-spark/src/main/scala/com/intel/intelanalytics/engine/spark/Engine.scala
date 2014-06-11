@@ -67,6 +67,7 @@ import com.intel.intelanalytics.domain.frame.FrameRemoveColumn
 import com.intel.intelanalytics.domain.frame.FrameJoin
 import com.intel.intelanalytics.engine.spark.frame.RDDJoinParam
 import com.intel.intelanalytics.domain.graph.GraphTemplate
+import org.apache.spark.engine.SparkProgressListener
 
 //TODO: Fix execution contexts.
 import ExecutionContext.Implicits.global
@@ -81,6 +82,11 @@ class SparkEngine(config: SparkEngineConfiguration,
                                         with ClassLoaderAware {
 
   val fsRoot = config.fsRoot
+
+  /* This progress listener saves progress update to command table */
+  SparkProgressListener.progressUpdater = new CommandProgressUpdater {
+    override def updateProgress(commandId: Long, progress: Int): Unit = commands.updateProgress(commandId, progress)
+  }
 
 
   def shutdown: Unit = {

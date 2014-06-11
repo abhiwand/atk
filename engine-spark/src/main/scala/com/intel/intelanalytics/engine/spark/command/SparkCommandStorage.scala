@@ -76,4 +76,15 @@ class SparkCommandStorage(val metaStore: SlickMetaStoreComponent#SlickMetaStore)
     }
   }
 
+  /**
+   * update progress information for the command
+   * @param id command id
+   * @param progress progress
+   */
+  override def updateProgress(id: Long, progress: Int): Unit = {
+    metaStore.withSession("se.command.updateProgress") {
+      implicit session =>
+        repo.updateProgress(id, progress)
+    }
+  }
 }

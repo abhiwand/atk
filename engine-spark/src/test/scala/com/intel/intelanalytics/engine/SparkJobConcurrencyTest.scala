@@ -8,7 +8,7 @@ import com.intel.intelanalytics.engine.TestingSparkContext
 
 class SparkJobConcurrencyTest  extends TestingSparkContext with Matchers {
   "Running multiple thread" should "keep isolation between threads when setting properties" in {
-    val listener = new SparkProgressListener()
+    val listener = new SparkProgressListener(null)
     sc.addSparkListener(listener)
     val sem = new Semaphore(0)
     val num = 100
