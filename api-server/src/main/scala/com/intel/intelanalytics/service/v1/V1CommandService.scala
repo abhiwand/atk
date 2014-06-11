@@ -34,7 +34,6 @@ import spray.http.Uri
 import spray.routing.Route
 import com.intel.intelanalytics.domain.frame.FrameProject
 import com.intel.intelanalytics.domain.frame.FrameRenameFrame
-import com.intel.intelanalytics.domain.FilterPredicate
 import com.intel.intelanalytics.domain.graph.construction.FrameRule
 import scala.util.Failure
 import scala.Some
@@ -51,7 +50,24 @@ import com.intel.intelanalytics.service.v1.viewmodels.ViewModelJsonProtocol._
 import com.intel.intelanalytics.domain.frame.FrameJoin
 import com.intel.intelanalytics.domain.graph.GraphLoad
 import com.intel.intelanalytics.domain.frame.LoadLines
-import com.intel.intelanalytics.domain.command.Command
+import com.intel.intelanalytics.domain.command.{CommandTemplate, Command}
+import com.intel.intelanalytics.service.v1.viewmodels.DecoratedCommand
+import com.intel.intelanalytics.domain.frame.FrameProject
+import com.intel.intelanalytics.domain.frame.FrameRenameFrame
+import com.intel.intelanalytics.domain.FilterPredicate
+import com.intel.intelanalytics.domain.graph.construction.FrameRule
+import scala.util.Failure
+import scala.Some
+import com.intel.intelanalytics.domain.frame.FrameAddColumn
+import com.intel.intelanalytics.domain.frame.FrameRenameColumn
+import scala.util.Success
+import com.intel.intelanalytics.domain.frame.FlattenColumn
+import com.intel.intelanalytics.security.UserPrincipal
+import com.intel.intelanalytics.service.v1.viewmodels.JsonTransform
+import com.intel.intelanalytics.domain.frame.FrameRemoveColumn
+import com.intel.intelanalytics.domain.frame.FrameJoin
+import com.intel.intelanalytics.domain.graph.GraphLoad
+import com.intel.intelanalytics.domain.frame.LoadLines
 
 //TODO: Is this right execution context for us?
 
@@ -110,7 +126,27 @@ trait V1CommandService extends V1Service {
               } ~
                 post {
                   entity(as[JsonTransform]) {
-                    xform => runCommand(uri, xform)
+                    xform =>
+                      try {
+                        //TODO: this execution path is going away soon.
+                        runCommand(uri, xform)
+                      }
+                      catch {
+                        case e: IllegalArgumentException => {
+                          //TODO: this will be the only execution path, soon.
+                          //TODO: validate the arguments. To do this requires some kind of sharing
+                          //between the api server and the engine to determine what contracts to use.
+                          //TODO: standardize URI handling such that the API server strips out
+                          //the https://site.com/ part and leaves the engine with only an application-specific,
+                          //non-transport-related URI. This should be automatic and not something that
+                          //every command handler has to call.
+                          onComplete(engine.execute(CommandTemplate(name = xform.name, arguments = xform.arguments))) {
+                            case Success((command, futureResult)) =>
+                              complete(decorate(uri, command))
+                            case Failure(ex) => throw ex
+                          }
+                        }
+                      }
                   }
                 }
           }
@@ -119,6 +155,7 @@ trait V1CommandService extends V1Service {
   }
 
   //TODO: disentangle the command dispatch from the routing
+  //TODO: this method is going away soon.
   /**
    * Command dispatcher that translates from HTTP pathname to command invocation
    * @param uri Path of command.

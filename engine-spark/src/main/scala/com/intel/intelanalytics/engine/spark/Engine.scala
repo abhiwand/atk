@@ -57,8 +57,6 @@ import com.intel.intelanalytics.domain.frame.LoadLines
 import com.intel.intelanalytics.domain.command.Command
 import com.intel.intelanalytics.domain.frame.FrameProject
 import com.intel.intelanalytics.domain.graph.Graph
-import com.intel.intelanalytics.domain.FilterPredicate
-import com.intel.intelanalytics.domain.Partial
 import com.intel.intelanalytics.domain.frame.SeparatorArgs
 import com.intel.intelanalytics.domain.command.CommandTemplate
 import com.intel.intelanalytics.domain.frame.FlattenColumn
@@ -67,6 +65,77 @@ import com.intel.intelanalytics.domain.frame.FrameRemoveColumn
 import com.intel.intelanalytics.domain.frame.FrameJoin
 import com.intel.intelanalytics.engine.spark.frame.RDDJoinParam
 import com.intel.intelanalytics.domain.graph.GraphTemplate
+import com.intel.intelanalytics.domain.frame.FrameRenameFrame
+import scala.Some
+import com.intel.intelanalytics.domain.frame.DataFrameTemplate
+import com.intel.intelanalytics.domain.frame.FrameAddColumn
+import com.intel.intelanalytics.domain.frame.FrameRenameColumn
+import com.intel.intelanalytics.domain.frame.DataFrame
+import com.intel.intelanalytics.domain.graph.GraphLoad
+import com.intel.intelanalytics.domain.schema.Schema
+import com.intel.intelanalytics.domain.frame.LoadLines
+import com.intel.intelanalytics.domain.command.Command
+import com.intel.intelanalytics.domain.frame.FrameProject
+import com.intel.intelanalytics.domain.graph.Graph
+import com.intel.intelanalytics.domain.frame.BigColumn
+import com.intel.intelanalytics.domain.frame.SeparatorArgs
+import com.intel.intelanalytics.domain.command.CommandTemplate
+import com.intel.intelanalytics.domain.frame.FlattenColumn
+import com.intel.intelanalytics.security.UserPrincipal
+import com.intel.intelanalytics.domain.frame.FrameRemoveColumn
+import com.intel.intelanalytics.domain.frame.FrameJoin
+import com.intel.intelanalytics.engine.spark.frame.RDDJoinParam
+import com.intel.intelanalytics.domain.graph.GraphTemplate
+import com.intel.intelanalytics.domain.frame.FrameRenameFrame
+import scala.Some
+import com.intel.intelanalytics.domain.frame.DataFrameTemplate
+import com.intel.intelanalytics.domain.frame.FrameAddColumn
+import com.intel.intelanalytics.domain.frame.FrameRenameColumn
+import com.intel.intelanalytics.domain.frame.DataFrame
+import com.intel.intelanalytics.domain.graph.GraphLoad
+import com.intel.intelanalytics.domain.schema.Schema
+import com.intel.intelanalytics.domain.frame.LoadLines
+import com.intel.intelanalytics.domain.command.Command
+import com.intel.intelanalytics.domain.frame.FrameProject
+import com.intel.intelanalytics.domain.graph.Graph
+import com.intel.intelanalytics.domain.FilterPredicate
+import com.intel.intelanalytics.domain.Partial
+import com.intel.intelanalytics.domain.frame.BigColumn
+import com.intel.intelanalytics.domain.frame.SeparatorArgs
+import com.intel.intelanalytics.domain.command.CommandTemplate
+import com.intel.intelanalytics.domain.frame.FlattenColumn
+import com.intel.intelanalytics.security.UserPrincipal
+import com.intel.intelanalytics.domain.frame.FrameRemoveColumn
+import com.intel.intelanalytics.domain.frame.FrameJoin
+import com.intel.intelanalytics.engine.spark.frame.RDDJoinParam
+import com.intel.intelanalytics.domain.graph.GraphTemplate
+import com.intel.intelanalytics.engine.Execution.CommandExecution
+import com.typesafe.config.ConfigFactory
+import com.intel.intelanalytics.domain.frame.FrameRenameFrame
+import scala.Some
+import com.intel.intelanalytics.domain.frame.DataFrameTemplate
+import com.intel.intelanalytics.domain.frame.FrameAddColumn
+import com.intel.intelanalytics.domain.frame.FrameRenameColumn
+import com.intel.intelanalytics.domain.frame.DataFrame
+import com.intel.intelanalytics.domain.graph.GraphLoad
+import com.intel.intelanalytics.domain.schema.Schema
+import com.intel.intelanalytics.domain.frame.LoadLines
+import com.intel.intelanalytics.domain.command.Command
+import com.intel.intelanalytics.domain.frame.FrameProject
+import com.intel.intelanalytics.domain.graph.Graph
+import com.intel.intelanalytics.domain.FilterPredicate
+import com.intel.intelanalytics.domain.Partial
+import com.intel.intelanalytics.domain.frame.BigColumn
+import com.intel.intelanalytics.domain.frame.SeparatorArgs
+import com.intel.intelanalytics.domain.command.CommandTemplate
+import com.intel.intelanalytics.domain.frame.FlattenColumn
+import com.intel.intelanalytics.security.UserPrincipal
+import com.intel.intelanalytics.domain.frame.FrameRemoveColumn
+import com.intel.intelanalytics.domain.frame.FrameJoin
+import com.intel.intelanalytics.engine.spark.frame.RDDJoinParam
+import com.intel.intelanalytics.domain.graph.GraphTemplate
+import com.intel.intelanalytics.engine.Execution.CommandDefinition
+import com.intel.intelanalytics.engine.spark.algorithm.LoopyBeliefPropagation
 
 //TODO: Fix execution contexts.
 import ExecutionContext.Implicits.global
@@ -669,5 +738,42 @@ class SparkEngine(config: SparkEngineConfiguration,
                            queryName: String,
                            parameters: Map[String, String]): Future[Iterable[Row]] = {
    ???
+  }
+
+
+  private val commandConfig = ConfigFactory.load().getConfig("intel.analytics.engine.command")
+
+
+  //TODO: get the list of available commands by going through a plugin framework
+  //rather than encoding them directly here.
+  def getCommandDefinition(name: String): Option[Execution.CommandDefinition] = {
+    val func : Option[CommandDefinition] = name match {
+      case "graph/ml/loopy_belief_propagation" => Some(LoopyBeliefPropagation)
+      case _ => None
+    }
+    func
+  }
+
+  def execute(command: CommandTemplate)(implicit user: UserPrincipal): Future[(Command, Future[Command])] = {
+    future {
+      val cmd = commands.create(command)
+      withMyClassLoader {
+        withContext("se.execute") {
+          EventContext.getCurrent.put("commandName", command.name)
+          val cmdFuture = future {
+            withCommand(cmd) {
+              val function = getCommandDefinition(command.name)
+                .getOrElse(throw new IllegalArgumentException(s"No such command available: ${command.name}"))
+              val config = commandConfig.getConfig(command.name.replace("/", "."))
+              val funcResult = function(CommandExecution(this, config, cmd.id, cmd.arguments, user,
+                implicitly[ExecutionContext]))
+              funcResult
+            }
+            commands.lookup(cmd.id).get
+          }
+          (cmd, cmdFuture)
+        }
+      }
+    }
   }
 }

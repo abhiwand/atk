@@ -4,8 +4,6 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <artifactId>engine-spark</artifactId>
-    <version>0.8.0-SNAPSHOT</version>
-    <groupId>com.intel</groupId>
     <packaging>jar</packaging>
 
     <parent>
@@ -62,6 +60,14 @@
             <artifactId>shared</artifactId>
             <version>0.8.0-SNAPSHOT</version>
         </dependency>
+        <dependency>
+            <groupId>com.intel</groupId>
+            <artifactId>igiraph-algorithms</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.intel</groupId>
+            <artifactId>igiraph-titan</artifactId>
+        </dependency>
 		<dependency>
             <groupId>com.intel</groupId>
             <artifactId>graphbuilder-3</artifactId>
@@ -82,7 +88,6 @@
         <dependency>
             <groupId>org.apache.spark</groupId>
             <artifactId>spark-core_${scala.short.version}</artifactId>
-            <version>${dep.org.apache.spark}</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.mortbay.jetty</groupId>
@@ -121,9 +126,12 @@
             <version>1.3</version>
         </dependency>
         <dependency>
+            <groupId>org.apache.giraph</groupId>
+            <artifactId>giraph-core</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-common</artifactId>
-            <version>${dep.hadoop2.version}</version>
             <exclusions>
                 <exclusion>
                     <groupId>asm</groupId>
