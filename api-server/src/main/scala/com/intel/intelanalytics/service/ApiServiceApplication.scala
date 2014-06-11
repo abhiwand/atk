@@ -23,25 +23,21 @@
 
 package com.intel.intelanalytics.service
 
-import akka.actor.{ ActorSystem, Props }
+import akka.actor.{ActorSystem, Props}
 import akka.io.IO
 import spray.can.Http
 import akka.pattern.ask
 import akka.util.Timeout
 import scala.concurrent.duration._
-import scala.slick.driver.H2Driver
 import com.intel.event.EventLogger
 import com.intel.event.adapter.SLF4JLogAdapter
-import com.intel.intelanalytics.component.{ Archive }
-import com.intel.intelanalytics.repository.{ MetaStoreComponent, DbProfileComponent, SlickMetaStoreComponent }
-import com.intel.intelanalytics.service.v1
-import com.intel.intelanalytics.repository.{ DbProfileComponent, SlickMetaStoreComponent }
-import com.intel.intelanalytics.engine.{Engine, EngineComponent}
-import com.typesafe.config.{ Config, ConfigFactory }
-import com.intel.intelanalytics.domain.{ UserTemplate, User }
-import com.intel.intelanalytics.shared.EventLogging
-import scala.concurrent.Await
+import com.intel.intelanalytics.component.{Archive}
+import com.intel.intelanalytics.repository.DbProfileComponent
+import com.intel.intelanalytics.repository.DbProfileComponent
+import com.intel.intelanalytics.engine.Engine
+import com.typesafe.config.ConfigFactory
 import com.intel.intelanalytics.domain.UserTemplate
+import scala.concurrent.Await
 
 /**
  * API Service Application - a REST application used by client layer to communicate with the Engine.
