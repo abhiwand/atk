@@ -4,7 +4,7 @@ import org.scalatest.{FlatSpec, Matchers}
 import org.apache.spark.rdd.RDD
 
 
-class ConnectedComponentsByMessagePassingTest extends FlatSpec with Matchers  with TestingSparkContext {
+class ConnectedComponentsGraphXDefaultTest extends FlatSpec with Matchers  with TestingSparkContext {
 
   trait ConnectedComponentsTest {
     val vertexList: List[Long] = List(1, 2, 3, 5, 6, 7)
@@ -21,7 +21,7 @@ class ConnectedComponentsByMessagePassingTest extends FlatSpec with Matchers  wi
     "allocate component IDs according to connectivity equivalence classes" in new ConnectedComponentsTest {
 
       val rddOfComponentLabeledVertices : RDD[(Long,Long)] =
-        ConnectedComponentsByMessagePassing.run(sc.parallelize(vertexList), sc.parallelize(edgeList))
+        ConnectedComponentsGraphXDefault.run(sc.parallelize(vertexList), sc.parallelize(edgeList))
 
       val vertexIdToComponentMap = rddOfComponentLabeledVertices.collect().toMap
 
