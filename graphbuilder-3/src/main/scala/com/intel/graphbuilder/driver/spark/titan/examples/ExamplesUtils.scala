@@ -68,9 +68,14 @@ object ExamplesUtils {
    */
   private def guessGbJar: String = {
     val possiblePaths = List(
+      // SBT build - should be removed after Maven build is working right
       System.getProperty("user.dir") + "/graphbuilder-3/target/scala-2.10/gb.jar",
       System.getProperty("user.dir") + "/target/scala-2.10/gb.jar",
-      System.getProperty("user.dir") + "/gb.jar"
+      System.getProperty("user.dir") + "/gb.jar",
+      // Maven build not working yet
+      System.getProperty("user.dir") + "/graphbuilder-3/target/graphbuilder-3.jar",
+      System.getProperty("user.dir") + "/target/graphbuilder-3.jar",
+      System.getProperty("user.dir") + "/graphbuilder-3.jar"
     )
     possiblePaths.foreach(path => {
       val jar = new File(path)

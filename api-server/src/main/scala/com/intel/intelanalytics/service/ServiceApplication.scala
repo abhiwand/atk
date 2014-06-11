@@ -37,7 +37,7 @@ import com.intel.intelanalytics.repository.{ MetaStoreComponent, DbProfileCompon
 import com.intel.intelanalytics.service.v1.{ V1CommandService, V1DataFrameService, ApiV1Service }
 import com.intel.intelanalytics.repository.{ DbProfileComponent, SlickMetaStoreComponent }
 import com.intel.intelanalytics.service.v1.{ V1GraphService, V1DataFrameService, ApiV1Service }
-import com.intel.intelanalytics.engine.EngineComponent
+import com.intel.intelanalytics.engine.{Engine, EngineComponent}
 import com.typesafe.config.{ Config, ConfigFactory }
 import com.intel.intelanalytics.domain.{ UserTemplate, User }
 import com.intel.intelanalytics.shared.EventLogging
@@ -74,7 +74,7 @@ object ServiceHost {
       with EngineComponent {
 
     ///TODO: choose database profile driver class from config
-    override lazy val profile = {
+    override lazy val profile: Profile = {
       lazy val config = ConfigFactory.load()
 
       val connectionString = config.getString("intel.analytics.metastore.connection.url")
@@ -95,7 +95,7 @@ object ServiceHost {
       Await.ready(engine.getCommands(0, 1), 30 seconds)
 
       //TODO: Remove when connecting to an actual database server
-      metaStore.create()
+      metaStore.createAllTables()
 
       metaStore.withSession("Populating test users") {
         implicit session =>

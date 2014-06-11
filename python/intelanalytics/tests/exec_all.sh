@@ -28,6 +28,8 @@
 
 # '-x' to exclude dirs from coverage, requires nose-exclude to be installed
 
+export IN_UNIT_TESTS='true'
+
 if [[ -f /usr/lib/IntelAnalytics/virtpy/bin/activate ]]; then
     ACTIVATE_FILE=/usr/lib/IntelAnalytics/virtpy/bin/activate
 else
@@ -52,31 +54,21 @@ if [[ -e $(python -c "import coverage") ]]; then
     exit 1
 fi
 
-DIR="$( cd "$( dirname "$BASH_SOURCE[0]}" )" && pwd )"
+TESTS_DIR="$( cd "$( dirname "$BASH_SOURCE[0]}" )" && pwd )"
+INTELANALYTICS_DIR=`dirname $TESTS_DIR`
+PYTHON_DIR=`dirname $INTELANALYTICS_DIR`
 
-PYTHON_HOME=`dirname $DIR`
+echo TESTS_DIR=$TESTS_DIR
+echo INTELANALYTICS_DIR=$INTELANALYTICS_DIR
+echo PYTHON_DIR=$PYTHON_DIR
 
-export INTEL_ANALYTICS_PYTHON=`dirname $PYTHON_HOME`
-export INTEL_ANALYTICS_HOME=$INTEL_ANALYTICS_PYTHON
-export SOURCE_CODE=`dirname $INTEL_ANALYTICS_HOME`
-export IN_UNIT_TESTS='true'
+cd $PYTHON_DIR
+#pushd $INTEL_ANALYTICS_HOME > /dev/null
 
-#echo PYTHON_HOME=$INTEL_ANALYTICS_PYTHON
-#echo INTEL_ANALYTICS_PYTHON=$INTEL_ANALYTICS_PYTHON
-#echo INTEL_ANALYTICS_HOME=$INTEL_ANALYTICS_HOME
-#echo SOURCE_CODE=$SOURCE_CODE
-
-pushd $INTEL_ANALYTICS_HOME > /dev/null
-
-#if [[ ! -f $INTEL_ANALYTICS_HOME/conf/intel_analytics.properties ]]; then
-#    #configuration file does not exist link it to the actual default properties file
-#    ln -s $INTEL_ANALYTICS_HOME/intel_analytics/intel_analytics.properties $INTEL_ANALYTICS_HOME/conf/intel_analytics.properties
-#fi
-
-rm -rf $INTEL_ANALYTICS_HOME/cover
+rm -rf $PYTHON_DIR/cover
 
 if [ "$1" = "-x" ] ; then
-  EXCLUDE_DIRS_FILE=$INTEL_ANALYTICS_HOME/intelanalytics/tests/cov_exclude_dirs.txt
+  EXCLUDE_DIRS_FILE=$TESTS_DIR/cov_exclude_dirs.txt
   if [[ ! -f $EXCLUDE_DIRS_FILE ]]; then
     echo ERROR: -x option: could not find exclusion file $EXCLUDE_DIRS_FILE
     exit 1
@@ -86,26 +78,20 @@ if [ "$1" = "-x" ] ; then
 fi
 
 
-nosetests $PYTHON_HOME --with-coverage --cover-package=intelanalytics --cover-erase --cover-inclusive --cover-html --with-xunit  --xunit-file=$INTEL_ANALYTICS_HOME/nosetests.xml $EXCLUDE_OPTION
+nosetests $TESTS_DIR --with-coverage --cover-package=intelanalytics --cover-erase --cover-inclusive --cover-html --with-xunit  --xunit-file=$PYTHON_DIR/nosetests.xml $EXCLUDE_OPTION
 
 success=$?
 
-COVERAGE_ARCHIVE=$SOURCE_CODE/python-coverage.zip
+COVERAGE_ARCHIVE=$PYTHON_DIR/python-coverage.zip
 
 rm *.log 2> /dev/null
-
-popd > /dev/null
-
 rm -rf $COVERAGE_ARCHIVE 
-
-pushd $INTEL_ANALYTICS_HOME/cover > /dev/null
 zip -rq $COVERAGE_ARCHIVE .
-popd > /dev/null
 
 deactivate
 
-RESULT_FILE=$INTEL_ANALYTICS_HOME/nosetests.xml
-COVERAGE_HTML=$INTEL_ANALYTICS_HOME/cover/index.html
+RESULT_FILE=$PYTHON_DIR/nosetests.xml
+COVERAGE_HTML=$PYTHON_DIR/cover/index.html
 
 echo 
 echo Output File: $RESULT_FILE

@@ -42,7 +42,7 @@ class VertexDAO(graph: Graph) extends Serializable {
    * @param gbId otherwise use this id
    * @return the blueprints Vertex
    */
-  def findById(physicalId: AnyRef, gbId: Property): Option[blueprints.Vertex] = {
+  def findById(physicalId: Any, gbId: Property): Option[blueprints.Vertex] = {
     if (physicalId != null) findByPhysicalId(physicalId)
     else findByGbId(gbId)
   }
@@ -51,7 +51,7 @@ class VertexDAO(graph: Graph) extends Serializable {
    * Find a Vertex by the physicalId of the underlying Graph storage layer
    * @param id the physicalId
    */
-  def findByPhysicalId(id: AnyRef): Option[blueprints.Vertex] = {
+  def findByPhysicalId(id: Any): Option[blueprints.Vertex] = {
     Option(graph.getVertex(id))
   }
 

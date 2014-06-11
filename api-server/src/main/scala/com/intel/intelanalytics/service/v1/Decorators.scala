@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2013 Intel Corporation All Rights Reserved.
+// Copyright 2014 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -22,21 +22,14 @@
 //////////////////////////////////////////////////////////////////////////////
 package com.intel.intelanalytics.service.v1
 
-import com.intel.intelanalytics.domain.{ Command, DataFrame }
 import com.intel.intelanalytics.service.v1.viewmodels._
-import com.intel.intelanalytics.service.v1.viewmodels.DecoratedCommand
-import com.intel.intelanalytics.service.v1.viewmodels.DataFrameHeader
-import com.intel.intelanalytics.domain.DataFrame
-import com.intel.intelanalytics.service.v1.viewmodels.RelLink
-import com.intel.intelanalytics.domain.Command
-import com.intel.intelanalytics.domain.{ Graph, DataFrame }
-import com.intel.intelanalytics.service.v1.viewmodels._
-import com.intel.intelanalytics.domain.Graph
 import com.intel.intelanalytics.service.v1.viewmodels.GraphHeader
 import com.intel.intelanalytics.service.v1.viewmodels.DataFrameHeader
-import com.intel.intelanalytics.domain.DataFrame
 import com.intel.intelanalytics.service.v1.viewmodels.RelLink
 import com.intel.intelanalytics.service.v1.viewmodels.DecoratedDataFrame
+import com.intel.intelanalytics.domain.frame.DataFrame
+import com.intel.intelanalytics.domain.graph.Graph
+import com.intel.intelanalytics.domain.command.Command
 
 trait EntityDecorator[Entity, Index, Decorated] {
   def decorateForIndex(indexUri: String, entities: Seq[Entity]): List[Index]
@@ -64,7 +57,7 @@ object CommandDecorator extends EntityDecorator[Command, CommandHeader, Decorate
                               entity: Command): DecoratedCommand = {
     DecoratedCommand(id = entity.id, name = entity.name,
       arguments = entity.arguments, error = entity.error, complete = entity.complete,
-      links = links.toList)
+      result = entity.result, links = links.toList)
   }
 
   override def decorateForIndex(uri: String, entities: Seq[Command]): List[CommandHeader] = {
@@ -82,6 +75,7 @@ object GraphDecorator extends EntityDecorator[Graph, GraphHeader, DecoratedGraph
   }
 
   override def decorateForIndex(uri: String, entities: Seq[Graph]): List[GraphHeader] = {
+
     entities.map(graph => new GraphHeader(id = graph.id,
       name = graph.name,
       url = uri + "/" + graph.id)).toList

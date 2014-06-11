@@ -30,10 +30,15 @@ package com.intel.graphbuilder.elements
  * identify vertices, but otherwise they are completely normal properties.
  * </p>
  * @constructor create a new Vertex
+ * @param physicalId the unique Physical ID for the Vertex from the underlying Graph storage layer (optional)
  * @param gbId the unique id that will be used by graph builder
  * @param properties the other properties that exist on this vertex
  */
-case class Vertex(gbId: Property, properties: Seq[Property]) extends GraphElement with Mergeable[Vertex] {
+case class Vertex(physicalId: Any, gbId: Property, properties: Seq[Property]) extends GraphElement with Mergeable[Vertex] {
+
+  def this(gbId: Property, properties: Seq[Property]) {
+    this(null, gbId, properties)
+  }
 
   if (gbId == null) {
     throw new IllegalArgumentException("gbId can't be null")

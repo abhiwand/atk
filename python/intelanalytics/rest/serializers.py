@@ -64,39 +64,11 @@ import cPickle
 from itertools import chain, izip, product
 import marshal
 import struct
-from pyspark import cloudpickle
-import string
 import sys
-import json
-
+import cloudpickle
 
 
 __all__ = ["PickleSerializer", "MarshalSerializer"]
-
-def show_hex(byte_array, out=None):
-    """
-    Prints byte array in hex display format, matching that of xxd
-    (try :%!xxd in vi editor)
-    """
-    out = out if out else sys.stdout
-    line = ['.'] * 16
-    i = 0
-    for by in byte_array:
-        if i % 16 == 0:
-            out.write(" %s\n%07x: " % ("".join(line), i))
-        out.write("%02x" % by)
-        c = chr(by)
-        line[i % 16] = c if (c in string.printable and (not c.isspace() or c == ' ')) else '.'
-        if i % 2 == 1:
-            out.write(" ")
-        i += 1
-
-    leftover = i % 16
-    if leftover != 0:
-        out.write(" " * (41 - leftover*2 - (leftover >> 1)))
-    out.write("".join(line[:leftover]))
-    out.write("\n")
-    out.flush()
 
 
 class SpecialLengths(object):
@@ -142,19 +114,14 @@ class FramedSerializer(Serializer):
     where C{length} is a 32-bit integer and data is C{length} bytes.
     """
 
+    def __init__(self):
+        # On Python 2.6, we can't write bytearrays to streams, so we need to convert them
+        # to strings first. Check if the version number is that old.
+        self._only_write_strings = sys.version_info[0:2] <= (2, 6)
+
     def dump_stream(self, iterator, stream):
         for obj in iterator:
             self._write_with_length(obj, stream)
-
-    # def dump_stream_as_json(self, iterator, stream):
-    #     for obj in iterator:
-    #         serialized = json.dumps(obj)
-    #         print "Printing Serialized"
-    #         print serialized
-    #         print "End of Printing Serialized"
-    #         write_int(len(serialized), stream)
-    #         stream.write(serialized)
-
 
     def load_stream(self, stream):
         while True:
@@ -166,15 +133,14 @@ class FramedSerializer(Serializer):
     def _write_with_length(self, obj, stream):
         serialized = self.dumps(obj)
         write_int(len(serialized), stream)
-        stream.write(serialized)
+        if self._only_write_strings:
+            stream.write(str(serialized))
+        else:
+            stream.write(serialized)
 
     def _read_with_length(self, stream):
         length = read_int(stream)
-        print "length in _read_with_length %d" % length
         obj = stream.read(length)
-        print "Displaying obj in _read_with_length"
-        show_hex(bytearray(obj))
-        print "End of Displaying obj in _read_with_length"
         if obj == "":
             raise EOFError
         return self.loads(obj)
@@ -224,14 +190,11 @@ class BatchedSerializer(Serializer):
     def dump_stream(self, iterator, stream):
         self.serializer.dump_stream(self._batched(iterator), stream)
 
-    # def dump_stream_as_json(self, iterator, stream):
-    #     self.serializer.dump_stream_as_json(self._batched(iterator), stream)
-
     def load_stream(self, stream):
         return chain.from_iterable(self._load_stream_without_unbatching(stream))
 
     def _load_stream_without_unbatching(self, stream):
-            return self.serializer.load_stream(stream)
+        return self.serializer.load_stream(stream)
 
     def __eq__(self, other):
         return isinstance(other, BatchedSerializer) and \
@@ -336,16 +299,12 @@ class MarshalSerializer(FramedSerializer):
 
 class UTF8Deserializer(Serializer):
     """
-    Deserializes streams written by getBytes.
+    Deserializes streams written by String.getBytes.
     """
 
     def loads(self, stream):
         length = read_int(stream)
-        print "Length is %d" % length
-        #return stream.read(length).decode('utf8')
-        output = stream.read(length)
-        print "Streaming:***%s***" % output
-        return output.decode('utf8')
+        return stream.read(length).decode('utf8')
 
     def load_stream(self, stream):
         while True:

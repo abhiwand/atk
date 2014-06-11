@@ -38,8 +38,9 @@ function deleteOldBuildDirs()
 
 function tarFiles()
 {
-	tar -xvf $1 > TAR.LOG
-	rm FILES.LOG
+	mkdir TESTTAR
+	tar -xvf $1 -C TESTTAR > TAR.LOG
+	rm FILES.LOG CONFIGFILES.LOG
 	for path in `cat TAR.LOG`;
 	do
 		fullPath=$path
@@ -47,12 +48,20 @@ function tarFiles()
 		if [ "$fileName" != "" ]; then
 
 			if [[ ! $fullPath == \/* ]]; then
-				fullPath="/$fullPath"
+				fullPath=${fullPath}
 			fi
-			echo $fullPath | sed 's/^.\//\//g' >> FILES.LOG
+
+
+			if [[ $fullPath == */etc/* ]] && [[ $fullPath != */etc/init* ]]; then
+                echo $fullPath | sed 's/^.\//\//g' >> CONFIGFILES.LOG
+                else
+                echo $fullPath | sed 's/^.\//\//g' >> FILES.LOG
+			fi
 		fi
 	done
+	rm -rf TESTTAR
 	export TAR_FILES=FILES.LOG
+	export TAR_FILES_CONFIG=CONFIGFILES.LOG
 }
 
 function expandTarDeb()
@@ -94,7 +103,11 @@ function debControl()
 	fi
 	echo "Description: $SUMMARY"
 	echo -e " $DESCRIPTION"
-	echo  $gitLog
+	#IFS="\n"
+	#for $line in $gitLog
+	#do
+ 	#echo  " $line"
+	#done
 }
 
 function debCopyright()
@@ -112,7 +125,7 @@ function debCopyright()
 
 function debChangeLog()
 {
-	dch --create -M -v $version --package $packageName "Initial release. (Closes: #XXXXXX)"
+	dch --create -M -v $version --package $packageName "Initial release. Closes: #XXXXXX"
 }
 
 #not much explanation is given for this file with a magical number for the time being it's  defaulted to 9
@@ -126,7 +139,6 @@ function debInstall()
 {
 	for file in `cat $TAR_FILES`;
 	do
-#		bleh="/usr/lib/intelanalytics/rest-server/api-server.jar"
 		local fileName=${file##*/}
 
 		installDir=$(echo $file | sed "s/$fileName/ /g")
@@ -148,6 +160,21 @@ function debRules()
 	echo "#export DH_VERBOSE=1"
 	echo "%:"
 	echo -e "\tdh \$@ $RULEOPT"
+}
+
+function cleanDeb()
+{
+    log "clean deb build dirs"
+    rm -rf ${SCRIPTPATH}/${debDir}
+    rm -rf ${SCRIPTPATH}/repack
+}
+
+
+function cleanRpm()
+{
+    log "clean rpm build dirs"
+    rm -rf BUILD/
+    rm -rf BUILDROOT/
 }
 
 function rpmSpec()
@@ -192,17 +219,40 @@ echo " rm %{buildroot}/files.tar.gz"
 
 echo "%clean"
 
+echo "%pre"
+if [ ! -z "$PRE" ]; then
+	echo "$PRE"
+fi
+
 echo "%post"
 if [ ! -z "$POST" ]; then
 	echo "$POST"
 fi
+
+echo "%preun"
+if [ ! -z "$PREUN" ]; then
+    echo "$PREUN"
+fi
+
 echo "%postun"
 if [ ! -z "$POSTUN" ]; then
-        echo "$POSTUN"
+    echo "$POSTUN"
 fi
+
 echo "%files"
+if [ ! -z "$FILES" ]; then
+    echo "$FILES"
+fi
 cat $TAR_FILES
 
+if [ ! -z "$CONFIG" ]; then
+  echo "$CONFIG"
+fi
+
+for configFile in `cat ${TAR_FILES_CONFIG}`
+do
+    echo %config $configFile
+done
 
 }
 
