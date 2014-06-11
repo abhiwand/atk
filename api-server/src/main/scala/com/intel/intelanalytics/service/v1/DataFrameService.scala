@@ -29,7 +29,7 @@ import spray.http.Uri
 import scala.Some
 import com.intel.intelanalytics.repository.MetaStoreComponent
 import com.intel.intelanalytics.service.v1.viewmodels._
-import com.intel.intelanalytics.engine.EngineComponent
+import com.intel.intelanalytics.engine.{Engine, EngineComponent}
 import scala.concurrent._
 import scala.util._
 import com.intel.intelanalytics.service.v1.viewmodels.DecoratedDataFrame
@@ -38,12 +38,17 @@ import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.domain.frame.DataFrameTemplate
 import com.intel.intelanalytics.domain.frame.DataFrame
 import com.intel.intelanalytics.domain.DomainJsonProtocol.DataTypeFormat
+import com.typesafe.config.ConfigFactory
+import com.intel.intelanalytics.service.{CommonDirectives, AuthenticationDirective}
+import spray.routing.Directives
 
 //TODO: Is this right execution context for us?
 import ExecutionContext.Implicits.global
 
-trait V1DataFrameService extends V1Service {
-  this: V1Service with MetaStoreComponent with EngineComponent with EventLogging =>
+class DataFrameService(commonDirectives: CommonDirectives, engine: Engine) extends Directives with EventLogging {
+
+  val config = ConfigFactory.load()
+  val defaultCount = config.getInt("intel.analytics.api.defaultCount")
 
   def frameRoutes() = {
     val prefix = "dataframes"
@@ -63,7 +68,7 @@ trait V1DataFrameService extends V1Service {
     //
     // the metastore
     //so they can be queried, and b) support the web hooks.
-    std(prefix) { implicit p: UserPrincipal =>
+    commonDirectives(prefix) { implicit p: UserPrincipal =>
       (path(prefix) & pathEnd) {
         requestUri { uri =>
           get {

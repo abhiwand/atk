@@ -34,96 +34,45 @@ import com.intel.event.EventLogger
 import com.intel.event.adapter.SLF4JLogAdapter
 import com.intel.intelanalytics.component.{ Archive }
 import com.intel.intelanalytics.repository.{ MetaStoreComponent, DbProfileComponent, SlickMetaStoreComponent }
-import com.intel.intelanalytics.service.v1.{ V1CommandService, V1DataFrameService, ApiV1Service }
+import com.intel.intelanalytics.service.v1
 import com.intel.intelanalytics.repository.{ DbProfileComponent, SlickMetaStoreComponent }
-import com.intel.intelanalytics.service.v1.{ V1GraphService, V1DataFrameService, ApiV1Service }
 import com.intel.intelanalytics.engine.{Engine, EngineComponent}
 import com.typesafe.config.{ Config, ConfigFactory }
 import com.intel.intelanalytics.domain.{ UserTemplate, User }
 import com.intel.intelanalytics.shared.EventLogging
 import scala.concurrent.Await
+import com.intel.intelanalytics.domain.UserTemplate
 
-class ServiceApplication extends Archive {
+/**
+ * API Service Application - a REST application used by client layer to communicate with the Engine.
+ * <p>
+ * See the 'api_server.sh' to see how the launcher starts the application.
+ * </p>
+ */
+class ApiServiceApplication extends Archive {
 
+  // TODO: implement or remove get()
   def get[T](descriptor: String): T = {
     throw new IllegalArgumentException("This component provides no services")
   }
 
   def stop() = {}
 
+  // TODO: delete configuration param?
+
+  /**
+   * Main entry point to start the API Service Application
+   */
   def start(configuration: Map[String, String]) = {
+
+    EventLogger.setImplementation(new SLF4JLogAdapter())
+
+    // we need an ActorSystem to host our application in
+    implicit val system = ActorSystem("intelanalytics-api")
+    val service = system.actorOf(Props(initializeDependencies()), "api-service")
+    implicit val timeout = Timeout(5.seconds)
+
     val config = ConfigFactory.load()
-
-    ServiceHost.start(config)
-
-  }
-}
-
-object ServiceHost {
-  EventLogger.setImplementation(new SLF4JLogAdapter())
-
-  // we need an ActorSystem to host our application in
-  implicit val system = ActorSystem("intelanalytics-api")
-
-  trait V1 extends ApiV1Service
-      with SlickMetaStoreComponent
-      with DbProfileComponent
-      with V1DataFrameService
-      with V1CommandService
-      with V1GraphService
-      with EngineComponent {
-
-    ///TODO: choose database profile driver class from config
-    override lazy val profile: Profile = {
-      lazy val config = ConfigFactory.load()
-
-      val connectionString = config.getString("intel.analytics.metastore.connection.url")
-      val driver = config.getString("intel.analytics.metastore.connection.driver")
-      new Profile(H2Driver, connectionString = connectionString, driver = driver)
-    }
-
-    override lazy val engine = com.intel.intelanalytics.component.Boot.getArchive(
-      "engine", "com.intel.intelanalytics.engine.EngineApplication").get[Engine]("engine")
-
-    //populate the database with some test users from the specified file (for testing)
-    val usersFile = config.getString("intel.analytics.test.users.file")
-    //read from the resources folder
-    val source = scala.io.Source.fromURL(getClass.getResource("/" + usersFile))
-    try {
-
-      //make sure engine is initialized
-      Await.ready(engine.getCommands(0, 1), 30 seconds)
-
-      //TODO: Remove when connecting to an actual database server
-      metaStore.createAllTables()
-
-      metaStore.withSession("Populating test users") {
-        implicit session =>
-          for (line <- source.getLines() if !line.startsWith("#")) {
-            val cols: Array[String] = line.split(",")
-            val apiKey = cols(1).trim
-            info(s"Creating test user with api key $apiKey")
-            metaStore.userRepo.insert(new UserTemplate(apiKey)).get
-            assert(metaStore.userRepo.scan().length > 0, "No user was created")
-            assert(metaStore.userRepo.retrieveByColumnValue("api_key", apiKey).length == 1, "User not found by api key")
-          }
-      }
-    }
-    finally {
-      source.close()
-    }
-
-  }
-
-  // create and start our service actor
-  class Service extends ApiServiceActor
-    with ApiService
-    with V1
-
-  val service = system.actorOf(Props[Service], "api-service")
-  implicit val timeout = Timeout(5.seconds)
-
-  def start(config: Config) = {
     val interface = config.getString("intel.analytics.api.host")
     val port = config.getInt("intel.analytics.api.port")
     // start a new HTTP server with our service actor as the handler
@@ -137,4 +86,35 @@ object ServiceHost {
       }
     })
   }
+
+  /**
+   * Initialize API Server dependencies and perform dependency injection as needed.
+   */
+  private def initializeDependencies(): ApiServiceActor = {
+
+    //TODO: later engine will be initialized in a separate JVM
+    lazy val engine = com.intel.intelanalytics.component.Boot.getArchive(
+      "engine", "com.intel.intelanalytics.engine.EngineApplication").get[Engine]("engine")
+
+    //make sure engine is initialized
+    Await.ready(engine.getCommands(0, 1), 30 seconds)
+
+    val metaStore = new MetaStoreConfigured().metaStore
+
+    // setup common directives
+    val serviceAuthentication = new AuthenticationDirective(metaStore)
+    val commonDirectives = new CommonDirectives(serviceAuthentication)
+
+    // setup V1 Services
+    val commandService = new v1.CommandService(commonDirectives, engine)
+    val dataFrameService = new v1.DataFrameService(commonDirectives, engine)
+    val graphService = new v1.GraphService(commonDirectives, engine)
+    val apiV1Service = new v1.ApiV1Service(dataFrameService, commandService, graphService)
+
+    // setup main entry point
+    val apiService = new ApiService(apiV1Service)
+    new ApiServiceActor(apiService)
+  }
 }
+
+
