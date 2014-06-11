@@ -1,6 +1,5 @@
 .ensime*
 TAGS
-/package
 dependency-reduced-pom.xml
 /ititan/bin
 /ititan/conf
