@@ -89,9 +89,15 @@ class TestIAPickle(unittest.TestCase):
         a = np.array([1, 2, 3])
         x = lambda t: t < a.sum()
         y, dependencies = self.pickle_and_unpickle_with_dependencies(x)
-        this = TestIAPickle.__module__.split('.')[0]  # intelanalytics.tests.test_serialize
         self.assertEqual(x(6), y(6))
-        self.assertItemsEqual(['numpy 1.8.0', this, '__builtin__', 'cloud 2.8.5'], dependencies)
+        self.assertTrue('numpy 1.8.0' in dependencies)
+        self.assertTrue('__builtin__' in dependencies)
+        self.assertTrue('intelanalytics' in dependencies)
+        if len(dependencies) == 4:
+            this = TestIAPickle.__module__.split('.')[-1]  # intelanalytics.tests.test_serialize
+            self.assertTrue(this in dependencies)
+        else:
+            self.assertEqual(3, len(dependencies))
 
     def test_complex_lambdas(self):
         import numpy as np

@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2013 Intel Corporation All Rights Reserved.
+// Copyright 2014 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -23,18 +23,14 @@
 
 package com.intel.intelanalytics.repository
 
-import com.intel.intelanalytics.domain.{ DataFrameTemplate, CommandTemplate, Command, DataFrame, User, UserTemplate }
+import com.intel.intelanalytics.domain._
+import com.intel.intelanalytics.domain.User
+import com.intel.intelanalytics.domain.UserTemplate
+import com.intel.intelanalytics.domain.frame.{DataFrame, DataFrameTemplate}
+import com.intel.intelanalytics.domain.graph.{GraphTemplate, Graph}
+import com.intel.intelanalytics.domain.command.{CommandTemplate, Command}
 
 trait MetaStoreComponent {
   val metaStore: MetaStore
-
-  trait MetaStore {
-    type Session
-    def withSession[T](name: String)(f: Session => T): T
-    def frameRepo: Repository[Session, DataFrameTemplate, DataFrame]
-    def commandRepo: Repository[Session, CommandTemplate, Command]
-    def userRepo: Repository[Session, UserTemplate, User] with Queryable[Session, User]
-    def create(): Unit
-  }
 }
 

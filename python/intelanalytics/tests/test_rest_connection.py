@@ -27,8 +27,8 @@ iatest.init()
 import unittest
 from mock import patch, Mock, MagicMock
 import json
-from intelanalytics.rest.connection import Connection
-from intelanalytics.rest.connection import rest_http
+from intelanalytics.rest.connection import Server
+from intelanalytics.rest.connection import http
 
 
 conn1 = {'host': 'good', 'port': '7', 'scheme': 'http', 'version': 'v08'}
@@ -36,11 +36,11 @@ conn2 = {'host': 'solo', 'port': None, 'scheme': 'http', 'version': 'v08'}
 
 
 def create_conn1():
-    return Connection(conn1['host'], conn1['port'], conn1['scheme'], conn1['version'])
+    return Server(conn1['host'], conn1['port'], conn1['scheme'], conn1['version'])
 
 
 def create_conn2():
-    return Connection(**conn2)
+    return Server(**conn2)
 
 
 class TestRestConnection(unittest.TestCase):
@@ -129,25 +129,25 @@ class TestHttpMethods(unittest.TestCase):
         return path, '/'.join([base_uri, version, path])
 
     @patch('intelanalytics.rest.connection.requests', new=MockRequests())
-    @patch('intelanalytics.rest.connection.rest_http.connection')
+    @patch('intelanalytics.rest.connection.http.server')
     def test_get(self, mock_conn):
         path, uri = self.init_mock_conn_and_return_uri(mock_conn)
-        r = rest_http.get(path)
+        r = http.get(path)
         self.assertEquals(uri, r.uri)
 
     @patch('intelanalytics.rest.connection.requests', new=MockRequests())
-    @patch('intelanalytics.rest.connection.rest_http.connection')
+    @patch('intelanalytics.rest.connection.http.server')
     def test_delete(self, mock_conn):
         path, uri = self.init_mock_conn_and_return_uri(mock_conn)
-        r = rest_http.delete(path)
+        r = http.delete(path)
         self.assertEquals(uri, r.uri)
 
     @patch('intelanalytics.rest.connection.requests', new=MockRequests())
-    @patch('intelanalytics.rest.connection.rest_http.connection')
+    @patch('intelanalytics.rest.connection.http.server')
     def test_post(self, mock_conn):
         path, uri = self.init_mock_conn_and_return_uri(mock_conn)
         payload = { 'a': 'aah', 'b': 'boo', 'c': 'caw'}
-        r = rest_http.post(path, payload)
+        r = http.post(path, payload)
         self.assertEquals(uri, r.args[0])
         self.assertEquals(json.dumps(payload), r.kwargs['data'])
         self.assertTrue(r.kwargs['headers'])

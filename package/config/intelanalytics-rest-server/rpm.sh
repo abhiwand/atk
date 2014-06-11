@@ -23,7 +23,28 @@ start the server with 'service intelanalytics-rest-server status'
 config files are in /etc/intelanalytics/rest-server
 log files live in /var/log/intelanalytics/rest-server"
 
-REQUIRES=" java >= 1.7"
+REQUIRES=" java >= 1.7 intelanalytics-python-rest-client >= 0.8.${BUILD_NUMBER}"
+
+POST="
+ if [ \$1 -eq 2 ]; then
+    echo start intelanalytics-rest-server
+    service intelanalytics-rest-server restart
+ fi
+"
+
+PREUN="
+ checkStatus=\$(service intelanalytics-rest-server status | grep start/running)
+ if  [ \$1 -eq 0 ] && [ \"\$checkStatus\" != \"\" ]; then
+    echo stopping intelanalytics-rest-server
+    service intelanalytics-rest-server stop
+ fi
+"
+
+FILES="
+/etc/intelanalytics/rest-server
+/usr/lib/intelanalytics/rest-server
+"
+
 
 mkdir -p $SCRIPTPATH/rpm/SPECS
 rpmSpec > $SCRIPTPATH/rpm/SPECS/$packageName.spec
@@ -39,6 +60,8 @@ rm -rf BUILDROOT/*
 
 log $BUILD_NUMBER
 rpmbuild --define "_topdir $topDir"  --define "BUILD_NUMBER $BUILD_NUMBER" --define "VERSION $VERSION" -bb SPECS/$packageName.spec
+
+cleanRpm
 
 popd 
 

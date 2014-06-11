@@ -16,16 +16,29 @@ cp $tarFile $SCRIPTPATH/rpm/SOURCES/${packageName}-${version}.tar.gz
 LICENSE="Confidential"
 SUMMARY="$packageName-$version Build number: $BUILD_NUMBER. TimeStamp $TIMESTAMP"
 DESCRIPTION=$SUMMARY 
-REQUIRES="python2.7 python2.7-pip"
+REQUIRES="python2.7 python2.7-pip python2.7-pandas"
+
 POST="
  #sim link to python sites packages
+ if [ -d /usr/lib/python2.7/site-packages/intelanalytics ]; then
+   rm /usr/lib/python2.7/site-packages/intelanalytics
+ fi
+
  ln -s /usr/lib/intelanalytics/rest-client/python  /usr/lib/python2.7/site-packages/intelanalytics
+
  #run requirements file
  pip install -r /usr/lib/intelanalytics/rest-client/python/requirements.txt
 "
 
+#delete the sym link only if we are uninstalling not updating
 POSTUN="
- rm /usr/lib/python2.7/site-packages/intelanalytics
+ if  [ \$1 -eq 0 ]; then
+    rm /usr/lib/python2.7/site-packages/intelanalytics
+ fi
+"
+
+FILES="
+/usr/lib/intelanalytics/rest-client
 "
 
 rpmSpec > $SCRIPTPATH/rpm/SPECS/$packageName.spec
@@ -42,5 +55,6 @@ rm -rf BUILDROOT/*
 log $BUILD_NUMBER
 rpmbuild --define "_topdir $topDir"  --define "BUILD_NUMBER $BUILD_NUMBER" --define "VERSION $VERSION" -bb SPECS/$packageName.spec
 
-popd $SCRIPTPATH/rpm 
+cleanRpm
+popd
 

@@ -79,7 +79,7 @@ else:
     PyObject_HEAD = [
         ('ob_refcnt', ctypes.c_size_t),
         ('ob_type', ctypes.c_void_p),
-    ]
+        ]
 
 
 try:
@@ -461,7 +461,7 @@ class CloudPickler(pickle.Pickler):
                 d['__new__'] = obj.__new__
 
             self.save_reduce(type(obj),(obj.__name__,obj.__bases__,
-                                   d),obj=obj)
+                                        d),obj=obj)
             #print 'internal reduce dask %s %s'  % (obj, d)
             return
 
@@ -743,18 +743,18 @@ class CloudPickler(pickle.Pickler):
         if func != ts._tsreconstruct:
             raise pickle.PicklingError('timeseries using unexpected reconstruction function %s' % str(func))
         state = (1,
-                         obj.shape,
-                         obj.dtype,
-                         obj.flags.fnc,
-                         obj._data.tostring(),
-                         ts.getmaskarray(obj).tostring(),
-                         obj._fill_value,
-                         obj._dates.shape,
-                         obj._dates.__array__().tostring(),
-                         obj._dates.dtype, #added -- preserve type
-                         obj.freq,
-                         obj._optinfo,
-                         )
+                 obj.shape,
+                 obj.dtype,
+                 obj.flags.fnc,
+                 obj._data.tostring(),
+                 ts.getmaskarray(obj).tostring(),
+                 obj._fill_value,
+                 obj._dates.shape,
+                 obj._dates.__array__().tostring(),
+                 obj._dates.dtype, #added -- preserve type
+                 obj.freq,
+                 obj._optinfo,
+        )
         return self.save_reduce(_genTimeSeries, (reduce_args, state))
 
     def inject_email(self):
@@ -773,7 +773,7 @@ class CloudPickler(pickle.Pickler):
     """Python Imaging Library"""
     def save_image(self, obj):
         if not obj.im and obj.fp and 'r' in obj.fp.mode and obj.fp.name \
-            and not obj.fp.closed and (not hasattr(obj, 'isatty') or not obj.isatty()):
+                and not obj.fp.closed and (not hasattr(obj, 'isatty') or not obj.isatty()):
             #if image not loaded yet -- lazy load
             self.save_reduce(_lazyloadImage,(obj.fp,), obj=obj)
         else:
@@ -971,4 +971,3 @@ def _genTimeSeries(reduce_args, state):
     # Update the _optinfo dictionary
     time_series._optinfo.update(infodict)
     return time_series
-

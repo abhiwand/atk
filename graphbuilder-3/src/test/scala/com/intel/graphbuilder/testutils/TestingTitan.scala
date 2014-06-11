@@ -28,6 +28,7 @@ import com.intel.graphbuilder.graph.titan.TitanGraphConnector
 import com.intel.graphbuilder.util.SerializableBaseConfiguration
 import com.thinkaurelius.titan.core.TitanGraph
 import java.io.File
+import com.thinkaurelius.titan.graphdb.database.StandardTitanGraph
 
 /**
  * This trait can be mixed into Specifications to get a TitanGraph backed by Berkeley for testing purposes.
@@ -45,7 +46,7 @@ trait TestingTitan extends MultipleAfter {
   titanConfig.setProperty("storage.directory", tmpDir.getAbsolutePath)
 
   var titanConnector = new TitanGraphConnector(titanConfig)
-  var graph: TitanGraph = titanConnector.connect()
+  var graph = titanConnector.connect()
 
   override def after: Unit = {
     cleanupTitan()

@@ -8,7 +8,7 @@ Domain: yhrfhdjdcv.graphtrial.intel.com CNAME yhrfhdjdcv.graphtrial.infra-host.c
 
 Domain: cbjalnicx4.graphtrial.intel.com CNAME cbjalnicx4.graphtrial.infra-host.com  new 'Michael', 'Zions', IntelAnalytics-14-4     i-a7166aae
 
-Domain: 7ae862ce3i.graphtrial.intel.com CNAME 7ae862ce3i.graphtrial.infra-host.com  new 'Grant', 'Babb',  IntelAnalytics-15-4 i-d9106cd0
+Domain: 7ae862ce3i.graphtrial.intel.com CNAME 7ae862ce3i.graphtrial.infra-host.com
 
 Domain: ktrkyaob46.graphtrial.intel.com CNAME ktrkyaob46.graphtrial.infra-host.com
 Domain: qiqwtjizki.graphtrial.intel.com CNAME qiqwtjizki.graphtrial.infra-host.com
