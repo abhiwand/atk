@@ -27,7 +27,7 @@ import spray.json._
 import spray.http.Uri
 import com.intel.intelanalytics.repository.MetaStoreComponent
 import com.intel.intelanalytics.service.v1.viewmodels._
-import com.intel.intelanalytics.engine.EngineComponent
+import com.intel.intelanalytics.engine.{Engine, EngineComponent}
 import scala.concurrent.ExecutionContext
 import scala.util.Failure
 import scala.util.Success
@@ -36,6 +36,9 @@ import com.intel.intelanalytics.service.v1.viewmodels.Rel
 import com.intel.intelanalytics.domain.DomainJsonProtocol
 import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.domain.graph.{GraphTemplate, Graph}
+import com.intel.intelanalytics.shared.EventLogging
+import com.intel.intelanalytics.service.{CommonDirectives, AuthenticationDirective}
+import spray.routing.Directives
 
 //TODO: Is this right execution context for us?
 
@@ -44,9 +47,7 @@ import ExecutionContext.Implicits.global
 /**
  * Trait for classes that implement the Intel Analytics V1 REST API Graph Service
  */
-
-trait V1GraphService extends V1Service {
-  this: V1Service with MetaStoreComponent with EngineComponent =>
+class GraphService(commonDirectives: CommonDirectives, engine: Engine) extends Directives with EventLogging {
 
   /**
    * The spray routes defining the Graph service.
@@ -74,7 +75,7 @@ trait V1GraphService extends V1Service {
     // note: delete is partly asynchronous - it wraps its backend delete in a future but blocks on deleting the graph
     // from the metastore
 
-    std(prefix) { implicit userProfile: UserPrincipal =>
+    commonDirectives(prefix) { implicit userProfile: UserPrincipal =>
       (path(prefix) & pathEnd) {
         requestUri { uri =>
           get {
