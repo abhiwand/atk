@@ -35,8 +35,7 @@ import org.apache.spark.SparkContext
 import scala.util.matching.Regex
 import java.util.concurrent.atomic.AtomicLong
 import com.intel.intelanalytics.domain.frame.{Column, DataFrame, DataFrameTemplate}
-import com.intel.intelanalytics.engine.spark.context.{Context, SparkContextManager}
-import scala.Some
+import com.intel.intelanalytics.engine.spark.context.{Context}
 import com.intel.intelanalytics.engine.File
 import com.intel.intelanalytics.security.UserPrincipal
 import org.joda.time.DateTime
