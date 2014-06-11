@@ -38,7 +38,7 @@ import com.intel.intelanalytics.domain.FilterPredicate
 import com.intel.intelanalytics.domain.graph.construction.FrameRule
 import scala.util.Failure
 import scala.Some
-import com.intel.intelanalytics.domain.frame.FrameAddColumn
+import com.intel.intelanalytics.domain.frame.FrameAddColumns
 import com.intel.intelanalytics.domain.frame.FrameRenameColumn
 import scala.util.Success
 import com.intel.intelanalytics.domain.frame.FlattenColumn
@@ -135,7 +135,7 @@ trait V1CommandService extends V1Service {
       case ("dataframe/filter") => runFilter(uri, xform)
       case ("dataframe/removecolumn") => runFrameRemoveColumn(uri, xform)
       case ("dataframe/rename_frame") => runFrameRenameFrame(uri, xform)
-      case ("dataframe/addcolumn") => runFrameAddColumn(uri, xform)
+      case ("dataframe/add_columns") => runFrameAddColumns(uri, xform)
       case ("dataframe/project") => runFrameProject(uri, xform)
       case ("dataframe/rename_column") => runFrameRenameColumn(uri, xform)
       case ("dataframe/join") => runJoinFrames(uri, xform)
@@ -271,9 +271,9 @@ trait V1CommandService extends V1Service {
     }
   }
 
-  def runFrameAddColumn(uri: Uri, xform: JsonTransform)(implicit user: UserPrincipal) = {
+  def runFrameAddColumns(uri: Uri, xform: JsonTransform)(implicit user: UserPrincipal) = {
     val test = Try {
-      xform.arguments.get.convertTo[FrameAddColumn[JsObject, String]]
+      xform.arguments.get.convertTo[FrameAddColumns[JsObject, String]]
     }
     val idOpt = test.toOption.flatMap(args => getFrameId(args.frame))
     (validate(test.isSuccess, "Failed to parse file load descriptor: " + getErrorMessage(test))
@@ -283,7 +283,7 @@ trait V1CommandService extends V1Service {
       onComplete(
         for {
           frame <- engine.getFrame(id)
-          (c, f) = engine.addColumn(FrameAddColumn[JsObject, Long](id, args.columnname, args.columntype, args.expression))
+          (c, f) = engine.addColumns(FrameAddColumns[JsObject, Long](id, args.column_names, args.column_types, args.expression))
         } yield c) {
         case Success(c) => complete(decorate(uri + "/" + c.id, c))
         case Failure(ex) => throw ex
