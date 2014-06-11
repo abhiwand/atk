@@ -54,15 +54,6 @@ trait V1DataFrameService extends V1Service {
       FrameDecorator.decorateEntity(uri.toString, links, frame)
     }
 
-    //TODO: none of these are yet asynchronous - they communicate with the engine
-    //using futures, but they keep the client on the phone the whole time while they're waiting
-    //for the engine work to complete. Needs to be updated to a) register running jobs in
-    //
-    //
-    //
-    //
-    // the metastore
-    //so they can be queried, and b) support the web hooks.
     std(prefix) { implicit p: UserPrincipal =>
       (path(prefix) & pathEnd) {
         requestUri { uri =>
@@ -121,16 +112,15 @@ trait V1DataFrameService extends V1Service {
               parameters('offset.as[Int], 'count.as[Int]) {
                 (offset, count) =>
                   onComplete(for { r <- engine.getRows(id, offset, count) } yield r) {
-                    case Success(rows: Iterable[Array[Any]]) => {
+                    case Success(rows: Iterable[Array[Any]]) =>
                       import spray.httpx.SprayJsonSupport._
                       import spray.json._
                       import DomainJsonProtocol._
-                      val strings = rows.map(r => r.map(a => a match {
+                      val strings = rows.map(r => r.map {
                         case null => JsNull
-                        case _ => a.toJson
-                      }).toList).toList
+                        case a => a.toJson
+                      }.toList).toList
                       complete(strings)
-                    }
                     case Failure(ex) => throw ex
                   }
               }
