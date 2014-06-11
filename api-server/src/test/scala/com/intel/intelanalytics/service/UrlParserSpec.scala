@@ -18,4 +18,9 @@ class UrlParserSpec extends FlatSpec with Matchers {
     val uri = "http://example.com/v1/invalid/55"
     UrlParser.getFrameId(uri) should be(None)
   }
+
+  it should "NOT parse non-numeric frame ids" in {
+    val uri = "http://example.com/v1/invalid/ABC"
+    UrlParser.getFrameId(uri) should be(None)
+  }
 }
