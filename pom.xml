@@ -174,7 +174,7 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
         <dep.yourkit-api.version>9.5.6</dep.yourkit-api.version>
         <dep.zookeeper.version>3.3.3</dep.zookeeper.version>
         <dep.pig.version>0.12.0-cdh5.0.0</dep.pig.version>
-        <dep.org.apache.spark>0.9.1</dep.org.apache.spark>
+        <dep.spark.version>0.9.1</dep.spark.version>
         <dep.commons.lang>2.6</dep.commons.lang>
 
         <!--START GAO MAVEN -->
@@ -973,12 +973,83 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 <artifactId>scala-library</artifactId>
                 <version>${scala.long.version}</version>
             </dependency>
-
-            <!-- <dependency>
+            <dependency>
+                <groupId>com.intel.intelanalytics</groupId>
+                <artifactId>interfaces</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.intel</groupId>
+                <artifactId>engine</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.intel</groupId>
+                <artifactId>igiraph-algorithms</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.intel</groupId>
+                <artifactId>igiraph-titan</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.intel</groupId>
+                <artifactId>igiraph-core</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.intel</groupId>
+                <artifactId>launcher</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.intel</groupId>
+                <artifactId>shared</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.intel</groupId>
+                <artifactId>event</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
                  <groupId>org.apache.hadoop</groupId>
                  <artifactId>hadoop-common</artifactId>
                  <version>${dep.hadoop2.version}</version>
-             </dependency>-->
+             </dependency>
+
+            <dependency>
+                <groupId>org.apache.spark</groupId>
+                <artifactId>spark-core_${scala.short.version}</artifactId>
+                <version>${dep.spark.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.spark</groupId>
+                <artifactId>spark-mllib_${scala.short.version}</artifactId>
+                <version>${dep.spark.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.thinkaurelius.titan</groupId>
+                <artifactId>titan-core</artifactId>
+                <version>${dep.aurelius.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.apache.avro</groupId>
+                        <artifactId>avro</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>commons-net</groupId>
+                <artifactId>commons-net</artifactId>
+                <version>${dep.commons-net.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.giraph</groupId>
+                <artifactId>giraph-core</artifactId>
+                <version>${dep.giraph-core.version}</version>
+            </dependency>
             <!-- <dependency>
                  <groupId>commons-net</groupId>
                  <artifactId>commons-net</artifactId>
@@ -1116,11 +1187,7 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
              </dependency>-->
 
 
-            <!-- <dependency>
-                 <groupId>org.apache.giraph</groupId>
-                 <artifactId>giraph-core</artifactId>
-                 <version>${dep.giraph-core.version}</version>
-             </dependency>-->
+
             <!--dependency>
                <groupId>org.apache.giraph</groupId>
                <artifactId>giraph-hbase</artifactId>
@@ -1148,11 +1215,7 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                             <artifactId>slf4j-log4j12</artifactId>
                             <version>${dep.slf4j.version}</version>
                         </dependency>
-                        <dependency>
-                            <groupId>com.thinkaurelius.titan</groupId>
-                            <artifactId>titan-core</artifactId>
-                            <version>${dep.aurelius.version}</version>
-                        </dependency>
+
                         <dependency>
                             <groupId>com.thinkaurelius.titan</groupId>
                             <artifactId>titan-hbase</artifactId>

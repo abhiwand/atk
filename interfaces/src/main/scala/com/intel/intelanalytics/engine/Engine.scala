@@ -30,13 +30,13 @@ import spray.json.JsObject
 import com.intel.intelanalytics.domain.frame.FrameRenameColumn
 import com.intel.intelanalytics.domain.frame.FrameProject
 import com.intel.intelanalytics.domain.frame.FrameRenameFrame
-import com.intel.intelanalytics.domain.FilterPredicate
+import com.intel.intelanalytics.domain.{FilterPredicate}
 import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.domain.frame.DataFrame
 import com.intel.intelanalytics.domain.frame.FrameRemoveColumn
 import com.intel.intelanalytics.domain.frame.FrameJoin
 import com.intel.intelanalytics.domain.frame.LoadLines
-import com.intel.intelanalytics.domain.command.Command
+import com.intel.intelanalytics.domain.command.{CommandTemplate, Command}
 import com.intel.intelanalytics.domain.frame.DataFrameTemplate
 import com.intel.intelanalytics.domain.frame.FrameAddColumn
 import com.intel.intelanalytics.domain.graph.{GraphLoad, GraphTemplate, Graph}
@@ -49,6 +49,7 @@ trait Engine {
 
   type Identifier = Long //TODO: make more generic?
 
+  def execute(command: CommandTemplate)(implicit user: UserPrincipal): Future[(Command, Future[Command])]
 
   //TODO: We'll probably return an Iterable[Vertex] instead of rows at some point.
   def getVertices(graph: Identifier, offset: Int, count: Int, queryName: String, parameters: Map[String, String]): Future[Iterable[Row]]
