@@ -216,12 +216,12 @@ class SparkEngine(config: SparkEngineConfiguration,
     }
 
   def renameColumn(arguments: FrameRenameColumn[JsObject, Long])(implicit user: UserPrincipal): (Command, Future[Command]) =
-    withContext("se.renamecolumn") {
+    withContext("se.rename_column") {
       require(arguments != null, "arguments are required")
-      val command: Command = commands.create(new CommandTemplate("renamecolumn", Some(arguments.toJson.asJsObject)))
+      val command: Command = commands.create(new CommandTemplate("rename_column", Some(arguments.toJson.asJsObject)))
       val result: Future[Command] = future {
         withMyClassLoader {
-          withContext("se.renamecolumn.future") {
+          withContext("se.rename_column.future") {
             withCommand(command) {
 
               val frameID = arguments.frame
@@ -229,15 +229,7 @@ class SparkEngine(config: SparkEngineConfiguration,
               val frame = frames.lookup(frameID).getOrElse(
                 throw new IllegalArgumentException(s"No such data frame: $frameID"))
 
-              val originalcolumns = arguments.originalcolumn.split(",")
-              val renamedcolumns = arguments.renamedcolumn.split(",")
-
-              if (originalcolumns.length != renamedcolumns.length)
-                throw new IllegalArgumentException(s"Invalid list of columns: " +
-                  s"Lengths of Original and Renamed Columns do not match")
-
-              frames.renameColumn(frame, originalcolumns.zip(renamedcolumns))
-              JsNull.asJsObject
+              frames.renameColumn(frame, arguments.original_names.zip(arguments.new_names)).toJson.asJsObject
             }
             commands.lookup(command.id).get
           }
@@ -289,8 +281,7 @@ class SparkEngine(config: SparkEngineConfiguration,
                   yield (arguments.new_column_names(i), schema.columns(columnIndices(i))._2)
                 }
               }
-              frames.updateSchema(projectedFrame, projectedColumns.toList)
-              JsNull.asJsObject
+              frames.updateSchema(projectedFrame, projectedColumns.toList).toJson.asJsObject
             }
             commands.lookup(command.id).get
           }
