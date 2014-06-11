@@ -35,13 +35,19 @@ import org.apache.spark.scheduler.SparkListenerJobStart
 import scala.concurrent._
 import org.apache.spark.SparkContext
 import scala.util.{Success, Try}
+import com.intel.intelanalytics.engine.spark.CommandProgressUpdater
+import scala.collection.mutable
 
 /**
  * Listens to progress on Spark Jobs.
  *
  * Requires access to classes private to org.apache.spark.engine
  */
-class SparkProgressListener extends SparkListener {
+object SparkProgressListener {
+  var progressUpdater: CommandProgressUpdater = null
+}
+
+class SparkProgressListener(val progressUpdater: CommandProgressUpdater) extends SparkListener {
 
   val jobIdToStageIds = new HashMap[Int, Array[Int]]
   val activeStages = HashSet[StageInfo]()
@@ -54,8 +60,10 @@ class SparkProgressListener extends SparkListener {
     val parents = jobStart.job.finalStage.parents
     val parentsIds = parents.map(s => s.id)
     jobIdToStageIds(jobStart.job.jobId) = (parentsIds :+ jobStart.job.finalStage.id).toArray
+
     val job = jobStart.job
-    commandIdJobs(job.properties.getProperty("command-id").toLong) = job
+    if(job.properties.containsKey("command-id"))
+      commandIdJobs(job.properties.getProperty("command-id").toLong) = job
   }
 
   override def onStageSubmitted(stageSubmitted: SparkListenerStageSubmitted) {
@@ -68,7 +76,12 @@ class SparkProgressListener extends SparkListener {
     val stage = stageCompleted.stage
     activeStages -= stage
     completedStages += stage
+
+    val stageId = stage.stageId
+    updateProgress(stageId)
   }
+
+
 
   override def onTaskEnd(taskEnd: SparkListenerTaskEnd) {
     val sid = taskEnd.task.stageId
@@ -76,8 +89,9 @@ class SparkProgressListener extends SparkListener {
       case true =>
         stageIdToTasksComplete(sid) = stageIdToTasksComplete.getOrElse(sid, 0) + 1
       case false =>
-
     }
+
+    updateProgress(sid)
   }
 
   override def onJobEnd(jobEnd: SparkListenerJobEnd) {
@@ -98,6 +112,7 @@ class SparkProgressListener extends SparkListener {
     }
   }
 
+  /* calculate progress for the job */
   def getProgress(jobId: Int): Int = {
 
     val stageIds = jobIdToStageIds(jobId)
@@ -113,9 +128,32 @@ class SparkProgressListener extends SparkListener {
     progress
   }
 
+  /**
+   * calculate progress for the command
+   */
   def getCommandProgress(commandId: Long): Int = {
     val jobId = commandIdJobs.getOrElse(commandId,  throw new IllegalArgumentException(s"No such command: $commandId")).jobId
     getProgress(jobId)
+  }
+
+  /**
+   * update the progress information and send it to progress updater
+   */
+  private def updateProgress(stageId: Int) {
+    val jobIdStageIdPairOption = jobIdToStageIds.find(e => e._2.contains(stageId))
+    jobIdStageIdPairOption match {
+      case Some(r) => {
+        val jobId = r._1
+        val commandIdJobOption = commandIdJobs.find(e => e._2.jobId == jobId)
+        commandIdJobOption match {
+          case Some(c) => {
+            val commandId = c._1
+            val progress = getCommandProgress(commandId)
+            progressUpdater.updateProgress(commandId, progress)
+          }
+        }
+      }
+    }
   }
 }
 

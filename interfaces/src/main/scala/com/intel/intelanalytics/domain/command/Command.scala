@@ -48,11 +48,13 @@ case class Command(id: Long,
                    name: String,
                    arguments: Option[JsObject],
                    error: Option[Error] = None,
+                   progress: Long = 0,
                    complete: Boolean = false,
                    result: Option[JsObject] = None,
                    createdOn: DateTime,
                    modifiedOn: DateTime,
-                   createdById: Option[Long]) extends HasId
+                   createdById: Option[Long]
+                   ) extends HasId
 //
 //case class CommandTemplate(name: String, arguments: Option[JsObject])
 //case class Definition(language: String, serialization: String, data: String)

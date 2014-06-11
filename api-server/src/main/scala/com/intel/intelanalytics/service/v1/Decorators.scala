@@ -56,7 +56,7 @@ object CommandDecorator extends EntityDecorator[Command, CommandHeader, Decorate
                               links: Iterable[RelLink],
                               entity: Command): DecoratedCommand = {
     DecoratedCommand(id = entity.id, name = entity.name,
-      arguments = entity.arguments, error = entity.error, complete = entity.complete,
+      arguments = entity.arguments, error = entity.error, progress = entity.progress, complete = entity.complete,
       result = entity.result, links = links.toList)
   }
 

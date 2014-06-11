@@ -90,6 +90,13 @@ class CommandInfo(object):
         except KeyError:
             return False
 
+    @property
+    def progress(self):
+        try:
+            return self._payload['progress']
+        except KeyError:
+            return False
+
     def update(self, payload):
         if self._payload and self.id_number != payload['id']:
             msg = "Invalid payload, command ID mismatch %d when expecting %d"\
@@ -181,6 +188,7 @@ class Executor(object):
         try:
             if not command_info.complete:
                 command_info = Polling.poll(command_info.uri)
+                print command_info.progress
         except KeyboardInterrupt:
             self.cancel(command_info.id_number)
 
