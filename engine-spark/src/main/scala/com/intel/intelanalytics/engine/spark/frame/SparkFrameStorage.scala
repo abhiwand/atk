@@ -108,9 +108,10 @@ class SparkFrameStorage(context: UserPrincipal => Context, fsRoot: String, files
       ???
     }
 
-  override def renameFrame(frame: DataFrame, newName: String): Unit =
+  override def renameFrame(frame: DataFrame, newName: String): DataFrame =
     withContext("frame.rename") {
       updateName(frame, newName)
+      frame
     }
 
   override def renameColumn(frame: DataFrame, name_pairs: Seq[(String, String)]): DataFrame =

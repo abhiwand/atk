@@ -33,7 +33,7 @@ import com.intel.intelanalytics.domain.frame.FrameRenameFrame
 import com.intel.intelanalytics.domain.graph.construction.ValueRule
 import com.intel.intelanalytics.domain.graph.construction.FrameRule
 import com.intel.intelanalytics.domain.frame.DataFrameTemplate
-import com.intel.intelanalytics.domain.frame.FrameAddColumn
+import com.intel.intelanalytics.domain.frame.FrameAddColumns
 import com.intel.intelanalytics.domain.frame.FrameRenameColumn
 import com.intel.intelanalytics.domain.frame.FlattenColumn
 import com.intel.intelanalytics.domain.frame.FrameRemoveColumn
@@ -88,8 +88,8 @@ object DomainJsonProtocol extends DefaultJsonProtocol {
   implicit val filterPredicateLongFormat = jsonFormat2(FilterPredicate[JsObject, Long])
   implicit val removeColumnFormat = jsonFormat2(FrameRemoveColumn[JsObject, String])
   implicit val removeColumnLongFormat = jsonFormat2(FrameRemoveColumn[JsObject, Long])
-  implicit val addColumnFormat = jsonFormat4(FrameAddColumn[JsObject, String])
-  implicit val addColumnLongFormat = jsonFormat4(FrameAddColumn[JsObject, Long])
+  implicit val addColumnFormat = jsonFormat4(FrameAddColumns[JsObject, String])
+  implicit val addColumnLongFormat = jsonFormat4(FrameAddColumns[JsObject, Long])
   implicit val projectColumnFormat = jsonFormat4(FrameProject[JsObject, String])
   implicit val projectColumnLongFormat = jsonFormat4(FrameProject[JsObject, Long])
   implicit val renameFrameFormat = jsonFormat2(FrameRenameFrame[JsObject, String])
