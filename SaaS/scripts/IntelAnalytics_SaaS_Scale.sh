@@ -9,12 +9,12 @@
 # graphtrial.intel.com such as css,js, or scala play changes first deploy the play dist package to s3://gaoprivate/SaaS/
 # then run this script with an approriate launch-config-name ie graphtrial.intel.comvSPRINT and watch the magic happen
 #
-INSTANCE_TYPE="m1.medium"
-IMAGE_ID="ami-b06a0b80"
+INSTANCE_TYPE="m1.small"
+IMAGE_ID="ami-4f780a7f"
 KEY_NAME="IntelAnalytics-SaaS-Admin"
-SCALE_MIN=1
+SCALE_MIN=2
 SCALE_MAX=20
-LOAD_BALANCER="IntelAnalytics-SaaS-pre-prod"
+LOAD_BALANCER="IntelAnalytics-SaaS-Prod"
 ALARM_ARN_NOTIFICATION="arn:aws:sns:us-west-2:953196509655:bdaawssupport"
 
 TEMP=`getopt -o l: --long launch-config-name:,instance-type:,image-id:,key-name:,scale-min:,scale-max:,load-balancer:,alarm-notification: -n 'IntelAnalytics_SaaS_AutoScale.sh' -- "$@"`

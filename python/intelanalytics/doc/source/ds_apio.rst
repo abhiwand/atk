@@ -163,13 +163,40 @@ A list of columns can be specified using a list to index the frame.
 Remove Columns
 ~~~~~~~~~~~~~~
 
->>> f2.remove_column('b')
+>>> f2.remove_columns('b')
+>>> f2.remove_columns(['a', 'c'])
+
+
+
+
+>>> f2.remove_columns(['a', 'c'])
+
+
+>>> f2.remove_columns(['a', 'c'])
+
+
+
+
+>>> f2.remove_columns(['a', 'c'])
+
+
+>>> f2.remove_columns(['a', 'c'])
+
+
+
+
 >>> f2.remove_column(['a', 'c'])
  
 Rename Columns
 ~~~~~~~~~~~~~~
 
->>> f.rename_column(a='id')
+>>> f.rename_columns(a='id')
+>>> f.rename_columns(b='author', c='publisher')
+>>> f.rename_columns({'col-with-dashes': 'no_dashes'})
+
+
+
+
 >>> f.rename_column(b='author', c='publisher')
 >>> f.rename_column({'col-with-dashes': 'no_dashes'})
  
@@ -189,12 +216,11 @@ Add Column
 
 Map a function to each row in the frame, producing a new column
 
->>> f.add_column(lambda row: 1, 'all_ones') # add new column of all ones
->>> f.add_column(lambda row: row.a + row.b, 'a_plus_b', int32)
+>>> f.add_columns(lambda row: 1, int32, 'all_ones') # add new column of all ones
+>>> f.add_columns(lambda row: row.a + row.b, int32, 'a_plus_b')
 
 
->>>
-Piecewise Linear Transformation
+>>> # Piecewise Linear Transformation
 >>> def transform_a(row):
 ...     x = row['a']
 ...     if x is None:
@@ -208,15 +234,18 @@ Piecewise Linear Transformation
 ...     else:
 ...         return None
 ...     return m * x + c
+
+>>> f.add_columns(transform_a, float32, 'a_lpt')
+
 <BLANKLINE>
->>> f.add_column(transform_a, 'a_lpt')
 
-Create multiple columns at once with ``add_columns``, which requires the function to return a tuple of cell values for the new frame columns.
+Create multiple columns at once by making function return a tuple of cell values for the new frame columns, and then providing a tuple of types and a tuple of names.
 
->>> f.add_columns(lambda row: (abs(row.a), abs(row.b)), ('a_abs', 'b_abs'))  # adds 2 columns
+>>> f.add_columns(lambda row: (abs(row.a), abs(row.b)), (int32, int32), ('a_abs', 'b_abs'))  # adds 2 columns
  
-Map
-~~~
+
+Map (WIP)
+~~~~~~~~~
 
 The function ``map()`` produces a new BigFrame by applying a function to each row of a frame or each cell of a column.
 It has the same functionality as ``add_column``, but the results go to a new frame instead of being added to the current frame.
@@ -227,8 +256,8 @@ It has the same functionality as ``add_column``, but the results go to a new fra
 
 .. TODO:: Note: Better name than ``map_many``?
  
-Reduce
-~~~~~~
+Reduce (WIP)
+~~~~~~~~~~~~
 
 Apply a reducer function to each row in a Frame, or each cell in a column.
 The reducer has two parameters, the *accumulator* value and the row or cell *update* value.

@@ -7,12 +7,6 @@ dependency-reduced-pom.xml
 /ititan/ext
 /ititan/log
 /ititan/titan-hbase/conf/hbase-site.xml
-*.LOG
-*.build
-repack
-rpm
-etc
-tarballs
 dev.conf
 application.home_IS_UNDEFINED
 /bin
@@ -41,7 +35,6 @@ make.sh
 pig_*.log
 .project
 *.pyc
-*.rpm
 sdhu.xml
 stats
 *.swo
@@ -59,3 +52,5 @@ virtpy
 lib
 *.jar
 *.orig
+
+atlassian-ide-plugin.xml
