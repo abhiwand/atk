@@ -39,6 +39,7 @@ import com.intel.intelanalytics.domain.graph.{GraphTemplate, Graph}
 import com.intel.intelanalytics.shared.EventLogging
 import com.intel.intelanalytics.service.{CommonDirectives, AuthenticationDirective}
 import spray.routing.Directives
+import com.intel.intelanalytics.service.v1.decorators.GraphDecorator
 
 //TODO: Is this right execution context for us?
 

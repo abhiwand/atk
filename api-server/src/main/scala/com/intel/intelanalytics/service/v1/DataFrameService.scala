@@ -41,6 +41,7 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol.DataTypeFormat
 import com.typesafe.config.ConfigFactory
 import com.intel.intelanalytics.service.{CommonDirectives, AuthenticationDirective}
 import spray.routing.Directives
+import com.intel.intelanalytics.service.v1.decorators.FrameDecorator
 
 //TODO: Is this right execution context for us?
 import ExecutionContext.Implicits.global

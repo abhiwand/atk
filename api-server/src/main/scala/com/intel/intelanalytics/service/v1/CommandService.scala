@@ -55,6 +55,7 @@ import com.intel.intelanalytics.domain.command.Command
 import com.intel.intelanalytics.shared.EventLogging
 import com.typesafe.config.ConfigFactory
 import com.intel.intelanalytics.service.{UrlParser, CommonDirectives, AuthenticationDirective}
+import com.intel.intelanalytics.service.v1.decorators.CommandDecorator
 
 //TODO: Is this right execution context for us?
 
