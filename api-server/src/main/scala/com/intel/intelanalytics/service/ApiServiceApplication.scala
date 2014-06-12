@@ -59,8 +59,8 @@ class ApiServiceApplication extends Archive {
 
     EventLogger.setImplementation(new SLF4JLogAdapter())
 
-    val apiServiceActor = initializeDependencies()
-    createActorSystemAndBindToHttp(apiServiceActor)
+    val apiService = initializeDependencies()
+    createActorSystemAndBindToHttp(apiService)
 
     //cleanup stuff on exit
     Runtime.getRuntime.addShutdownHook(new Thread() {
@@ -75,7 +75,7 @@ class ApiServiceApplication extends Archive {
   /**
    * Initialize API Server dependencies and perform dependency injection as needed.
    */
-  private def initializeDependencies(): ApiServiceActor = {
+  private def initializeDependencies(): ApiService = {
 
     //TODO: later engine will be initialized in a separate JVM
     lazy val engine = com.intel.intelanalytics.component.Boot.getArchive(
@@ -97,19 +97,18 @@ class ApiServiceApplication extends Archive {
     val apiV1Service = new v1.ApiV1Service(dataFrameService, commandService, graphService)
 
     // setup main entry point
-    val apiService = new ApiService(apiV1Service)
-    new ApiServiceActor(apiService)
+    new ApiService(apiV1Service)
   }
 
   /**
    * We need an ActorSystem to host our application in and to bind it to an HTTP port
    */
-  private def createActorSystemAndBindToHttp(apiServiceActor: ApiServiceActor): Unit = {
+  private def createActorSystemAndBindToHttp(apiService: ApiService): Unit = {
     // create the system
     implicit val system = ActorSystem("intelanalytics-api")
     implicit val timeout = Timeout(5.seconds)
 
-    val service = system.actorOf(Props(apiServiceActor), "api-service")
+    val service = system.actorOf(Props(new ApiServiceActor(apiService)), "api-service")
 
     // Bind the Spray Actor to an HTTP Port
     val config = ConfigFactory.load()
