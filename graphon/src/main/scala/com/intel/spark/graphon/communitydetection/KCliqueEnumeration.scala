@@ -24,10 +24,9 @@
 
 package com.intel.spark.graphon.communitydetection
 
-import org.apache.spark.{ SparkConf, SparkContext }
+import com.intel.spark.graphon.communitydetection.KCliquePercolationDataTypes._
 import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.RDD
-import com.intel.spark.graphon.communitydetection.KCliquePercolationDataTypes._
 
 /**
  * K-Clique enumeration
@@ -37,14 +36,9 @@ import com.intel.spark.graphon.communitydetection.KCliquePercolationDataTypes._
  * Varamesh, A.; Akbari, M.K. ; Fereiduni, M. ; Sharifian, S. ; Bagheri, A.
  * The paper is available at
  * http://ieeexplore.ieee.org/xpls/abs_all.jsp?arnumber=6620116
- * 
- * @param data The RDD of vertices in adjacency list format 
- * @param K The clique enumeration number to find K-Cliques
  */
 
-class KCliqueEnumeration(data: RDD[VertexInAdjacencyFormat], K: Int) {
-	
-	val sc = data.sparkContext
+object KCliqueEnumeration extends ((RDD[VertexInAdjacencyFormat], Int) => RDD[ExtendersFact]) {
 
 	/**
 	 * Transform graph from adjacency list representation to edge list representation.
@@ -53,81 +47,107 @@ class KCliqueEnumeration(data: RDD[VertexInAdjacencyFormat], K: Int) {
 	 * @return Edge set representation of the graph
 	 */
 
-	def createEdgelistFromParsedAdjList(vertices: RDD[VertexInAdjacencyFormat]): RDD[Edge] = {
-		val edgelistWithDuplicates = vertices.flatMap(vertex => {
+	def createEdgeListFromParsedAdjList(vertices: RDD[VertexInAdjacencyFormat]): RDD[Edge] = {
+		val edgeListWithDuplicates = vertices.flatMap(vertex => {
 			vertex.neighbors.map(nbr => Edge.edgeFactory(vertex.id, nbr))
 		})
 		
-		val distinctEdgeList = edgelistWithDuplicates.distinct()
-		return distinctEdgeList
+		val distinctEdgeList = edgeListWithDuplicates.distinct()
+		distinctEdgeList
 	}
 
 	/**
-	 * Derive the 1 clique-extension facts from the edge list.
+	 * Derive the 1 clique-extension facts from the edge list, which means to gather
+   * the neighbors of the source vertices into an adjacency list (using sets),
+   * which will provide the starting point for later expansion as we add more connected
+   * vertices.
 	 *
 	 * Notice that the invariant holds:
 	 *
 	 * k is odd, and every vertex ID in the VertexSet is less than every vertex ID in the ExtendersSet.
 	 *
-	 * @param edgelist Edge list representation of the graph.
+	 * @param edgeList Edge list representation of the graph.
 	 * @return RDD of extended-by facts.
 	 */
 
-	def initialExtendByMappingFrom(edgelist: RDD[Edge]): RDD[ExtendersFact] = {
-		val initMap = edgelist.groupBy(_.source).mapValues(_.map(_.destination).toSet)
-		initMap.map(vToVlistMap => (Set(vToVlistMap._1), ExtendersSet(vToVlistMap._2)))
+	def initialExtendByMappingFrom(edgeList: RDD[Edge]): RDD[ExtendersFact] = {
+    //A map of source vertices to a set of destination vertices connected from the source
+		val initMap = edgeList.groupBy(_.source).mapValues(_.map(_.destination).toSet)
+
+    //A map of singleton sets (containing source vertices) to the set of neighbors -
+    //essentially an adjacency list
+		initMap.map(vToVListMap => ExtendersFact(CliqueFact(Set(vToVListMap._1)), vToVListMap._2, neighborsHigh = true))
 	}
 
-	/**
-	 * Derive clique facts from a k-1 extends-by facts.
-	 * @param extensionFacts
-	 * @return
-	 */
-
+  /**
+   * Generate all the k+1-cliques from an RDD of k-cliques and their extensions
+   *
+   * @param extensionFacts the k-cliques and extenders
+   * @return an RDD of k+1 cliques
+   */
 	def deriveKCliquesFromKMinusOneExtensions(extensionFacts: RDD[ExtendersFact]): RDD[CliqueFact] = {
-		extensionFacts.flatMap(
-			{
-				case (keySet: Set[Long], extendersFact: ExtendersSet) => {
-					val extendingVertices = extendersFact.extendingVertices
-					extendingVertices.map(extendByVertex => CliqueFact(keySet + extendByVertex))
-				}
-			})
+		extensionFacts.flatMap(extendClique)
 	}
 
-	/**
-	 * Derive a neighbors-of facts from an extends-by facts.
-	 *
-	 * INVARIANT:
-	 * when k is odd, every vertex ID in the VertexSet is less than the vertex ID in NeighborsOf.v
-	 * when k is even, every vertex ID in the VertexSet is greater than the vertex ID in NeighborsOf.v
-	 *
-	 *
-	 * @param kMinusOneExtensionFacts RDD of ExtendersFact's from round k-1
-	 * @param k Size of the vertex sets being analyzed.
-	 * @return The kth round neighbors-of facts.
-	 */
-	def deriveKNeighborsOfFromKMinusOneExtensions(kMinusOneExtensionFacts: RDD[ExtendersFact], k: Int): RDD[NeighborsOfFact] = {
-		kMinusOneExtensionFacts.flatMap(uToVMap => {
-			val U = uToVMap._1
-			val V = uToVMap._2.extendingVertices
+  /**
+   * Generate all the k+1-cliques from a k-clique and a set of vertices that extend it (are connected to all
+   * vertices in the k-clique)
+   *
+   * @param extendersFact the k-clique and the vertices that are connected to every vertex in the k-clique
+   * @return a k+1 clique
+   */
+  def extendClique(extendersFact: ExtendersFact): Set[CliqueFact] = {
+    case ExtendersFact(clique, extenders) =>
+      extenders.map(extendByVertex => CliqueFact(clique.members + extendByVertex))
+  }
 
-			val vwPairFromV = V.subsets(2)
-
-			// notice that when k-1 is even, v and w are smaller than every vertex of U
-			// and when k-1 is odd, v and w are larger than every vertex of U
-
-			val UMax = U.max
-			val UMin = U.min
-
-			if (k % 2 == 1) {
-				vwPairFromV.map(vwPair => ((vwPair ++ (U - UMin)), NeighborsOf(UMin)))
-			} else {
-				vwPairFromV.map(vwPair => ((vwPair ++ (U - UMax)), NeighborsOf(UMax)))
-			}
-		})
+  /**
+   * Derive neighbors-of facts from an extends-by fact. 
+   *
+   * INVARIANT:
+   * when verticesLessThanNeighbor, every vertex ID in the clique members is less than the vertex ID in the resulting 
+   * NeighborsOfFact. Otherwise, every vertex ID in the clique members is greater than the vertex ID in the resulting 
+   * NeighborsOfFact.
+   *
+   *
+   * @param extensionFacts RDD of ExtendersFacts from round k-1
+   * @return The neighbors-of facts for this extender fact
+   */
+  def deriveNeighborsFromExtensions(extensionFacts: RDD[ExtendersFact],
+                                    verticesLessThanNeighbor: Boolean)
+                                      : RDD[NeighborsOfFact] = {
+		extensionFacts.flatMap(deriveNeighbors)
 	}
 
-	/**
+  /**
+   * Derive neighbors-of facts from an extends-by fact. 
+   *
+   * INVARIANT:
+   * when verticesLessThanNeighbor, every vertex ID in the clique members is less than the vertex ID in the resulting 
+   * NeighborsOfFact. Otherwise, every vertex ID in the clique members is greater than the vertex ID in the resulting 
+   * NeighborsOfFact.
+   *
+   *
+   * @param extenderFact ExtendersFact from round k-1
+   * @return The neighbors-of facts for this extender fact
+   */
+  def deriveNeighbors(extenderFact: ExtendersFact) : Iterator[NeighborsOfFact] = {
+    case ExtendersFact(clique, extenders) =>
+
+      val twoSetsFromExtenders = extenders.subsets(2)
+
+      if (extenderFact.neighborsHigh) {
+        val minimumCliqueMember = clique.members.min
+        twoSetsFromExtenders.map(subset => 
+          NeighborsOfFact(subset ++ (clique.members - minimumCliqueMember), minimumCliqueMember, neighborHigh = false))
+      } else {
+        val maximumCliqueMember = clique.members.max
+        twoSetsFromExtenders.map(subset => 
+          NeighborsOfFact(subset ++ (clique.members - maximumCliqueMember), maximumCliqueMember, neighborHigh = true))
+      }
+  }
+
+  /**
 	 * Combines clique facts and neighborsof facts into extended-by facts.
 	 *
 	 * INVARIANT:
@@ -137,38 +157,55 @@ class KCliqueEnumeration(data: RDD[VertexInAdjacencyFormat], K: Int) {
 	 * This invariant is inherited from the k neighbors-of facts.
 	 *
 	 * @param cliques The set of k-cliques in the graph.
-	 * @param neighbors The set of neighbors-of facts of k-sets in the graph.
+	 * @param neighborFacts The set of neighbors-of facts of k-sets in the graph.
 	 * @return Set of (k+1) clique extension facts.
 	 */
-	def deriveKExtensionFactsFromKCliqueAndKNeighborsFacts(cliques: RDD[(VertexSet, Clique)], neighbors: RDD[(VertexSet, NeighborsOf)]): RDD[ExtendersFact] = {
+	def deriveNextExtensionsFromCliquesAndNeighbors(cliques: RDD[CliqueFact], neighborFacts: RDD[NeighborsOfFact])
+                                                          : RDD[ExtendersFact] = {
 
-		val cliquesAndNeighborsCoGrouped : RDD[(VertexSet, (Seq[Clique], Seq[NeighborsOf]))] =  cliques.cogroup(neighbors)
+    //Map cliques to key-value pairs where the key is the vertex set and the value is a 0. Don't care
+    //about the zero because it's just to get us into a pair so we can call cogroup later.
+    val cliquesAsPairs: RDD[(VertexSet, Int)] = cliques.map({ case CliqueFact(members) => (members, 0)})
 
-		val filteredCoGroups : RDD[(VertexSet, (Seq[Clique], Seq[NeighborsOf]))] = cliquesAndNeighborsCoGrouped.filter(x => (x._2._1.length != 0 && x._2._2.length != 0))
+    //Map neighbors to key-value pairs where the key is the vertex set and the value is a pair
+    //of the neighbor and the "neighborHigh" flag. These flags will be the same for every pair,
+    //so a later optimization might be able to eliminate that part.
+    val neighborsAsPairs = neighborFacts.map({case NeighborsOfFact(members, neighbor, neighborHigh) =>
+                                                    (members, (neighbor, neighborHigh))})
 
-			def helper(neighborfacts: Seq[NeighborsOf]): ExtendersSet = {
-				ExtendersSet(neighborfacts.map(neighborFact => neighborFact.v).toSet)
-			}
-		
-		val filteredUniqueCoGroups : RDD[(VertexSet, Seq[(Seq[Clique], Seq[NeighborsOf])])] = filteredCoGroups.groupBy(_._1).mapValues(_.map(_._2))
-		
-		val vertexsetAndNeighbors : RDD[(VertexSet, Seq[NeighborsOf])] = filteredUniqueCoGroups.mapValues(_.map(_._2)).map{ case (k,Seq(v)) => (k,v) }
-		
-		val cliqueExtendedByMapping : RDD[ExtendersFact] = vertexsetAndNeighbors.mapValues( {case(neighborFacts: Seq[NeighborsOf]) => helper(neighborFacts)} )
-		
-		return cliqueExtendedByMapping
+    //Cogroups (join, then group by) cliques and neighbor sets by identical vertex sets (the keys of the two RDDs
+    //above). The "cliqueTags" are a Seq of zeroes. We care about that for the filter that comes next.
+    val cliquesAndNeighborsCoGrouped = cliquesAsPairs.cogroup(neighborsAsPairs)
+                                            .map({case (members, (cliqueTags,neighbors)) =>
+                                                    (members, cliqueTags, neighbors)})
 
+    //remove vertex sets that don't have cliques or don't have neighbors - these don't make it to the next round.
+		val filteredCoGroups = cliquesAndNeighborsCoGrouped.filter(
+                                                          {case (members, cliqueTags, neighbors) =>
+                                                              cliqueTags.length > 0 && neighbors.length > 0})
+
+    //Repackage these tuples as ExtenderFacts
+    val cliquesAndNeighbors = filteredCoGroups.map({case (members, cliqueTags, neighbors) =>
+                                                      val (neighborVertices, neighborHighs) = neighbors.unzip(identity)
+                                                      ExtendersFact(CliqueFact(members),
+                                                                      neighborVertices.toSet,
+                                                                      neighborHighs.head)})
+
+    cliquesAndNeighbors
 	}
 
 	/**
 	 * Driver for the k-clique percolation algorithm.
+   *
+   * @param data The RDD of vertices in adjacency list format
+   * @param K The clique enumeration number to find K-Cliques
 	 * @return An RDD of extended-by facts.
 	 */
-	def kCliqueExtraction(): RDD[ExtendersFact] = {
+  def apply(data: RDD[VertexInAdjacencyFormat], K: Int) = {
 
 		val verticesInAdjListForm: RDD[VertexInAdjacencyFormat] = data
 
-		val edgeList: RDD[Edge] = createEdgelistFromParsedAdjList(verticesInAdjListForm)
+		val edgeList: RDD[Edge] = createEdgeListFromParsedAdjList(verticesInAdjListForm)
 
 			/**
 			 * Derive  k-clique-extension facts from (k-1) clique extension facts.
@@ -186,9 +223,9 @@ class KCliqueEnumeration(data: RDD[VertexInAdjacencyFormat], K: Int) {
 
 					val kCliques = deriveKCliquesFromKMinusOneExtensions(kMinusOneExtensionFacts)
 
-					val kNeighborsOfFacts = deriveKNeighborsOfFromKMinusOneExtensions(kMinusOneExtensionFacts, k)
+					val kNeighborsOfFacts = deriveNeighborsFromExtensions(kMinusOneExtensionFacts, k % 2 == 1)
 
-					deriveKExtensionFactsFromKCliqueAndKNeighborsFacts(kCliques, kNeighborsOfFacts)
+					deriveNextExtensionsFromCliquesAndNeighbors(kCliques, kNeighborsOfFacts)
 				}
 			}
 

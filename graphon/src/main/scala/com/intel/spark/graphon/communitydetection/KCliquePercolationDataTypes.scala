@@ -69,17 +69,6 @@ object KCliquePercolationDataTypes {
 	 */
 	type VertexSet = Set[Long]
 
-	class Clique() extends Serializable {
-	}
-
-	/**
-	 * All of the vertices in the VertexSet in question are adjacent to Vertex v.
-	 * @param v The vertex to which the others are adjacent.
-	 */
-
-	case class NeighborsOf(v: Long) extends Serializable {
-	}
-
 	/**
 	 * Encodes the fact that all vertices of a given vertex set are neighbors of the vertex specified
 	 * by the NeighborsOf fact.
@@ -92,21 +81,9 @@ object KCliquePercolationDataTypes {
 	 * when k is even, every vertex ID in the VertexSet is greater than the vertex ID in NeighborsOf.v
 	 *
 	 */
-	type NeighborsOfFact = (VertexSet, NeighborsOf)
+	case class NeighborsOfFact(members: VertexSet, neighbor: Long, neighborHigh: Boolean) extends Serializable
 
-	type CliqueFact = (VertexSet, Clique)
-
-	object CliqueFact {
-		def apply(vertexSet: VertexSet) = Pair(vertexSet, new Clique())
-	}
-
-	/**
-	 * Denotes the situation when each vertex in the set can extend some clique.
-	 *
-	 * @param extendingVertices The set of vertices that can extend the clique in question.
-	 */
-	case class ExtendersSet(extendingVertices: Set[Long]) extends Serializable {
-	}
+  case class CliqueFact(members: VertexSet) extends Serializable
 
 	/**
 	 * Encodes the fact that a given VertexSet forms a clique, and that the clique can be extended by adding
@@ -120,6 +97,6 @@ object KCliquePercolationDataTypes {
 	 * when k is even, every vertex ID in the VertexSet is greater than every vertex ID in the ExtenderSet.
 	 *
 	 */
-	type ExtendersFact = (VertexSet, ExtendersSet)
+	case class ExtendersFact(clique: CliqueFact, neighbors: VertexSet, neighborsHigh: Boolean) extends Serializable
 
 }
