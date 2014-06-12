@@ -62,8 +62,15 @@ class SparkProgressListener(val progressUpdater: CommandProgressUpdater) extends
     jobIdToStageIds(jobStart.job.jobId) = (parentsIds :+ jobStart.job.finalStage.id).toArray
 
     val job = jobStart.job
-    if(job.properties.containsKey("command-id"))
-      commandIdJobs(job.properties.getProperty("command-id").toLong) = job
+
+    val commandIdTry = Try {
+      job.properties.getProperty("command-id").toLong
+    }
+
+    commandIdTry match {
+      case Success(id) => commandIdJobs(id) = job
+      case _ =>
+    }
   }
 
   override def onStageSubmitted(stageSubmitted: SparkListenerStageSubmitted) {
