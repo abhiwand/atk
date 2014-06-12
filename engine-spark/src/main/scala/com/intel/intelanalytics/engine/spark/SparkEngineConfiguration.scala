@@ -26,7 +26,8 @@ package com.intel.intelanalytics.engine.spark
 import com.typesafe.config.{ Config, ConfigFactory }
 import scala.concurrent.duration._
 
-class SparkEngineConfiguration(conf: => Config = ConfigFactory.load()) {
+class SparkEngineConfiguration(conf: => Config = ConfigFactory.load().withFallback(
+                                                                        ConfigFactory.load("engine.conf"))) {
   lazy val config = conf
   lazy val sparkHome = conf.getString("intel.analytics.spark.home")
   lazy val sparkMaster = conf.getString("intel.analytics.spark.master")
