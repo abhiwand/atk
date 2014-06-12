@@ -21,10 +21,13 @@ class KCliqueEnumerationTest extends FlatSpec with Matchers with TestingSparkCon
   "creating edge list from adjacency list" should "create correct edge list" in new KCliqueEnumTest {
 
 
+    // amit - you owe the world some unit tests, dude
+    /*
     val kCliqueEnumeration = new KCliqueEnumeration(vertexWithAdjacencyRDD,3)
 
     kCliqueEnumeration.createEdgeListFromParsedAdjList(vertices: RDD[VertexInAdjacencyFormat]): RDD[Edge]
     0 shouldBe 0
+    */
   }
 
 }
