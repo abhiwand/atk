@@ -76,7 +76,7 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
    * @param command The command being decorated
    * @return View model of the command.
    */
-  def decorate(uri: Uri, command: Command): DecoratedCommand = {
+  def decorate(uri: Uri, command: Command): GetCommand = {
     //TODO: add other relevant links
     val links = List(Rel.self(uri.toString()))
     CommandDecorator.decorateEntity(uri.toString(), links, command)

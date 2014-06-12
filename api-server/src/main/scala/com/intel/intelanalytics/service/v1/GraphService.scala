@@ -63,7 +63,7 @@ class GraphService(commonDirectives: CommonDirectives, engine: Engine) extends D
      * @param graph graph metadata
      * @return Decorated graph for HTTP protocol return
      */
-    def decorate(uri: Uri, graph: Graph): DecoratedGraph = {
+    def decorate(uri: Uri, graph: Graph): GetGraph = {
       //TODO: add other relevant links
       val links = List(Rel.self(uri.toString))
       GraphDecorator.decorateEntity(uri.toString, links, graph)

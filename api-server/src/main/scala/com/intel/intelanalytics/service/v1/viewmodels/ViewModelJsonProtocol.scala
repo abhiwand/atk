@@ -32,11 +32,11 @@ object ViewModelJsonProtocol extends DefaultJsonProtocol with SprayJsonSupport {
   import com.intel.intelanalytics.domain.DomainJsonProtocol._
 
   implicit val relLinkFormat = jsonFormat3(RelLink)
-  implicit val dataFrameHeaderFormat = jsonFormat3(DataFrameHeader)
-  implicit val decoratedDataFrameFormat = jsonFormat4(DecoratedDataFrame)
+  implicit val dataFrameHeaderFormat = jsonFormat3(GetDataFrames)
+  implicit val decoratedDataFrameFormat = jsonFormat4(GetDataFrame)
   implicit val jsonTransformFormat = jsonFormat2(JsonTransform)
-  implicit val commandHeaderFormat = jsonFormat3(CommandHeader)
-  implicit val decoratedCommandFormat = jsonFormat7(DecoratedCommand)
-  implicit val graphHeaderFormat = jsonFormat3(GraphHeader)
-  implicit val decoratedGraphHeaderFormat = jsonFormat3(DecoratedGraph)
+  implicit val commandHeaderFormat = jsonFormat3(GetCommands)
+  implicit val decoratedCommandFormat = jsonFormat7(GetCommand)
+  implicit val graphHeaderFormat = jsonFormat3(GetGraphs)
+  implicit val decoratedGraphHeaderFormat = jsonFormat3(GetGraph)
 }

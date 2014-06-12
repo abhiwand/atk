@@ -32,7 +32,7 @@ import com.intel.intelanalytics.service.v1.viewmodels._
 import com.intel.intelanalytics.engine.{Engine, EngineComponent}
 import scala.concurrent._
 import scala.util._
-import com.intel.intelanalytics.service.v1.viewmodels.DecoratedDataFrame
+import com.intel.intelanalytics.service.v1.viewmodels.GetDataFrame
 import com.intel.intelanalytics.shared.EventLogging
 import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.domain.frame.DataFrameTemplate
@@ -57,7 +57,7 @@ class DataFrameService(commonDirectives: CommonDirectives, engine: Engine) exten
   def frameRoutes() = {
     val prefix = "dataframes"
 
-    def decorate(uri: Uri, frame: DataFrame): DecoratedDataFrame = {
+    def decorate(uri: Uri, frame: DataFrame): GetDataFrame = {
       //TODO: add other relevant links
       val links = List(Rel.self(uri.toString))
       FrameDecorator.decorateEntity(uri.toString, links, frame)
