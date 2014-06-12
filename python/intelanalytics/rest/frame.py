@@ -116,7 +116,7 @@ class FrameBackendRest(object):
         """Initializes a frame according to given frame_info"""
         frame._id = frame_info.id_number
         # TODO - update uri from result (this is a TODO in the engine)
-        #frame._uri = frame_info.uri
+        frame._uri = frame_info.uri
         frame._name = frame_info.name
         frame._columns.clear()
         for column in frame_info.columns:

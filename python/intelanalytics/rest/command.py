@@ -27,6 +27,7 @@ Command objects
 import time
 import json
 import logging
+import sys
 logger = logging.getLogger(__name__)
 
 from intelanalytics.rest.connection import http
@@ -109,7 +110,16 @@ class CommandInfo(object):
 class Polling(object):
 
     @staticmethod
-    def poll(uri, predicate=None, interval_secs=0.5, backoff_factor=2, timeout_secs=10):
+    def print_progress(progress):
+        num_star = progress / 2
+        num_dot = 50 - num_star
+        number = str(progress)
+        text = "\r%3s%% [%s%s]" % (number, '=' * num_star, '.' * num_dot)
+        sys.stdout.write(text)
+        sys.stdout.flush()
+
+    @staticmethod
+    def poll(uri, predicate=None, interval_secs=0.5, backoff_factor=2, timeout_secs=500):
         """
         Issues GET methods on the given command uri until the response
         command_info cause the predicate to evalute True.  Exponential retry
@@ -140,6 +150,9 @@ class Polling(object):
             time.sleep(interval_secs)
             wait_time = time.time() - start_time
             command_info = Polling._get_command_info(command_info.uri)
+            progress = command_info.progress
+            Polling.print_progress(progress)
+
             if predicate(command_info):
                 return command_info
             if wait_time > timeout_secs:
@@ -188,7 +201,8 @@ class Executor(object):
         try:
             if not command_info.complete:
                 command_info = Polling.poll(command_info.uri)
-                print command_info.progress
+                Polling.print_progress(command_info.progress)
+
         except KeyboardInterrupt:
             self.cancel(command_info.id_number)
 
