@@ -23,7 +23,7 @@ class KCliqueEnumerationTest extends FlatSpec with Matchers with TestingSparkCon
 
     val kCliqueEnumeration = new KCliqueEnumeration(vertexWithAdjacencyRDD,3)
 
-    kCliqueEnumeration.createEdgelistFromParsedAdjList(vertices: RDD[VertexInAdjacencyFormat]): RDD[Edge]
+    kCliqueEnumeration.createEdgeListFromParsedAdjList(vertices: RDD[VertexInAdjacencyFormat]): RDD[Edge]
     0 shouldBe 0
   }
 
