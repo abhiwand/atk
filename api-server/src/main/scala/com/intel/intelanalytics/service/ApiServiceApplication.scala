@@ -23,7 +23,7 @@
 
 package com.intel.intelanalytics.service
 
-import akka.actor.{ActorSystem, Props}
+import akka.actor.{ActorRef, ActorSystem, Props}
 import akka.io.IO
 import spray.can.Http
 import akka.pattern.ask
@@ -59,16 +59,8 @@ class ApiServiceApplication extends Archive {
 
     EventLogger.setImplementation(new SLF4JLogAdapter())
 
-    // we need an ActorSystem to host our application in
-    implicit val system = ActorSystem("intelanalytics-api")
-    val service = system.actorOf(Props(initializeDependencies()), "api-service")
-    implicit val timeout = Timeout(5.seconds)
-
-    val config = ConfigFactory.load()
-    val interface = config.getString("intel.analytics.api.host")
-    val port = config.getInt("intel.analytics.api.port")
-    // start a new HTTP server with our service actor as the handler
-    IO(Http) ? Http.Bind(service, interface = interface, port = port)
+    val apiServiceActor = initializeDependencies()
+    createActorSystemAndBindToHttp(apiServiceActor)
 
     //cleanup stuff on exit
     Runtime.getRuntime.addShutdownHook(new Thread() {
@@ -78,6 +70,7 @@ class ApiServiceApplication extends Archive {
       }
     })
   }
+
 
   /**
    * Initialize API Server dependencies and perform dependency injection as needed.
@@ -107,6 +100,24 @@ class ApiServiceApplication extends Archive {
     val apiService = new ApiService(apiV1Service)
     new ApiServiceActor(apiService)
   }
+
+  /**
+   * We need an ActorSystem to host our application in and to bind it to an HTTP port
+   */
+  private def createActorSystemAndBindToHttp(apiServiceActor: ApiServiceActor): Unit = {
+    // create the system
+    implicit val system = ActorSystem("intelanalytics-api")
+    implicit val timeout = Timeout(5.seconds)
+
+    val service = system.actorOf(Props(apiServiceActor), "api-service")
+
+    // Bind the Spray Actor to an HTTP Port
+    val config = ConfigFactory.load()
+    val interface = config.getString("intel.analytics.api.host")
+    val port = config.getInt("intel.analytics.api.port")
+
+    // start a new HTTP server with our service actor as the handler
+    IO(Http) ? Http.Bind(service, interface = interface, port = port)
+  }
+
 }
-
-
