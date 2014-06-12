@@ -109,23 +109,6 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
         </repository>
     </repositories>
 
-    <modules>
-        <!--<module>ititan</module>
-        <module>event</module>
-        <module>ispark-deps</module>
-        <module>graphbuilder-3</module>&lt;!&ndash; scoverage &ndash;&gt;
-        <module>interfaces</module>
-        <module>launcher</module>&lt;!&ndash; scoverage &ndash;&gt;
-        <module>shared</module>&lt;!&ndash; scoverage &ndash;&gt;
-        <module>api-server</module>
-        <module>engine</module>
-        <module>engine-spark</module>&lt;!&ndash; scoverage &ndash;&gt;
-        <module>imahout</module>
-        <module>igiraph</module>
-        <module>imllib</module>
-        <module>graphon</module>
-        <module>package</module>-->
-    </modules>
     <prerequisites>
         <maven>3.0</maven>
     </prerequisites>
@@ -193,8 +176,10 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
 
         <scoverage-plugin.version>0.99.2</scoverage-plugin.version>
         <scoverage.version>0.99.2</scoverage.version>
-        <maven.plugin.scoverage.version>0.99.2</maven.plugin.scoverage.version>
     </properties>
+    <modules>
+
+    </modules>
     <profiles>
         <profile>
             <id>ititan</id>
@@ -1072,6 +1057,36 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 <artifactId>slf4j-api</artifactId>
                 <version>${dep.slf4j.version}</version>
             </dependency>
+            <dependency>
+                <groupId>com.thinkaurelius.faunus</groupId>
+                <artifactId>faunus</artifactId>
+                <version>${dep.aurelius.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.mahout</groupId>
+                <artifactId>mahout-core</artifactId>
+                <version>${dep.mahout.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.mahout</groupId>
+                <artifactId>mahout-math</artifactId>
+                <version>${dep.mahout.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.thinkaurelius.titan</groupId>
+                <artifactId>titan-hbase</artifactId>
+                <version>${dep.aurelius.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.hbase</groupId>
+                <artifactId>hbase-common</artifactId>
+                <version>${dep.hbase.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.hbase</groupId>
+                <artifactId>hbase-client</artifactId>
+                <version>${dep.hbase.version}</version>
+            </dependency>
             <!-- <dependency>
                  <groupId>commons-net</groupId>
                  <artifactId>commons-net</artifactId>
@@ -1238,31 +1253,12 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                             <version>${dep.slf4j.version}</version>
                         </dependency>
 
-                        <dependency>
-                            <groupId>com.thinkaurelius.titan</groupId>
-                            <artifactId>titan-hbase</artifactId>
-                            <version>${dep.aurelius.version}</version>
-                        </dependency>
+
                         <dependency>
                             <groupId>org.apache.hbase</groupId>
                             <artifactId>hbase</artifactId>
                             <version>${dep.hbase.version}</version>
                             <classifier>security</classifier>
-                        </dependency>
-                        <dependency>
-                            <groupId>com.thinkaurelius.faunus</groupId>
-                            <artifactId>faunus</artifactId>
-                            <version>${dep.aurelius.version}</version>
-                        </dependency>
-                        <dependency>
-                            <groupId>org.apache.mahout</groupId>
-                            <artifactId>mahout-core</artifactId>
-                            <version>${dep.mahout.version}</version>
-                        </dependency>
-                        <dependency>
-                            <groupId>org.apache.mahout</groupId>
-                            <artifactId>mahout-math</artifactId>
-                            <version>${dep.mahout.version}</version>
                         </dependency>
                         <dependency>
                             <groupId>org.apache.zookeeper</groupId>

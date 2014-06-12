@@ -27,11 +27,11 @@ import scala.util.Try
 import com.intel.intelanalytics.domain._
 import spray.json.JsObject
 import com.intel.intelanalytics.repository.MetaStoreComponent
-import com.intel.intelanalytics.engine.EngineComponent
+import com.intel.intelanalytics.engine.{Engine, EngineComponent}
 import com.intel.intelanalytics.service.v1.viewmodels.ViewModelJsonProtocol._
 import scala.concurrent._
 import spray.http.Uri
-import spray.routing.Route
+import spray.routing.{Directives, Route}
 import com.intel.intelanalytics.domain.frame.FrameProject
 import com.intel.intelanalytics.domain.frame.FrameRenameFrame
 import com.intel.intelanalytics.domain.graph.construction.FrameRule
@@ -51,33 +51,22 @@ import com.intel.intelanalytics.domain.frame.FrameJoin
 import com.intel.intelanalytics.domain.graph.GraphLoad
 import com.intel.intelanalytics.domain.frame.LoadLines
 import com.intel.intelanalytics.domain.command.{CommandTemplate, Command}
-import com.intel.intelanalytics.service.v1.viewmodels.DecoratedCommand
-import com.intel.intelanalytics.domain.frame.FrameProject
-import com.intel.intelanalytics.domain.frame.FrameRenameFrame
-import com.intel.intelanalytics.domain.FilterPredicate
-import com.intel.intelanalytics.domain.graph.construction.FrameRule
-import scala.util.Failure
-import scala.Some
-import com.intel.intelanalytics.domain.frame.FrameAddColumn
-import com.intel.intelanalytics.domain.frame.FrameRenameColumn
-import scala.util.Success
-import com.intel.intelanalytics.domain.frame.FlattenColumn
-import com.intel.intelanalytics.security.UserPrincipal
-import com.intel.intelanalytics.service.v1.viewmodels.JsonTransform
-import com.intel.intelanalytics.domain.frame.FrameRemoveColumn
-import com.intel.intelanalytics.domain.frame.FrameJoin
-import com.intel.intelanalytics.domain.graph.GraphLoad
-import com.intel.intelanalytics.domain.frame.LoadLines
+import com.intel.intelanalytics.shared.EventLogging
+import com.typesafe.config.ConfigFactory
+import com.intel.intelanalytics.service.{UrlParser, CommonDirectives, AuthenticationDirective}
+import com.intel.intelanalytics.service.v1.decorators.CommandDecorator
 
 //TODO: Is this right execution context for us?
 
 import ExecutionContext.Implicits.global
 
 /**
- * Trait for classes that implement the Intel Analytics V1 REST API Command Service
+ * REST API Command Service
  */
-trait V1CommandService extends V1Service {
-  this: V1Service with MetaStoreComponent with EngineComponent =>
+class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends Directives with EventLogging {
+
+  val config = ConfigFactory.load()
+  val defaultCount = config.getInt("intel.analytics.api.defaultCount")
 
   /**
    * Creates a view model for return through the HTTP protocol
@@ -96,7 +85,7 @@ trait V1CommandService extends V1Service {
    * The spray routes defining the command service.
    */
   def commandRoutes() = {
-    std("commands") { implicit principal: UserPrincipal =>
+    commonDirectives("commands") { implicit principal: UserPrincipal =>
       pathPrefix("commands" / LongNumber) {
         id =>
           pathEnd {
@@ -186,7 +175,7 @@ trait V1CommandService extends V1Service {
       import DomainJsonProtocol._
       xform.arguments.get.convertTo[LoadLines[JsObject, String]]
     }
-    val idOpt = test.toOption.flatMap(args => getFrameId(args.destination))
+    val idOpt = test.toOption.flatMap(args => UrlParser.getFrameId(args.destination))
     (validate(test.isSuccess, "Failed to parse file load descriptor: " + getErrorMessage(test))
       & validate(idOpt.isDefined, "Destination is not a valid data frame URL")) {
       val args = test.get
@@ -216,9 +205,9 @@ trait V1CommandService extends V1Service {
     }
 
     val frameIDsOpt: Option[List[Option[Long]]] =
-      test.toOption.map(args => args.frame_rules.map(frule => getFrameId(frule.frame)))
+      test.toOption.map(args => args.frame_rules.map(frule => UrlParser.getFrameId(frule.frame)))
 
-    val graphIDOpt = test.toOption.flatMap(args => getGraphId(args.graph))
+    val graphIDOpt = test.toOption.flatMap(args => UrlParser.getGraphId(args.graph))
 
     (validate(test.isSuccess, "Failed to parse graph load descriptor: " + getErrorMessage(test))
       & validate(graphIDOpt.isDefined, "Target graph is not a valid graph URL")) {
@@ -252,7 +241,7 @@ trait V1CommandService extends V1Service {
     val test = Try {
       xform.arguments.get.convertTo[FilterPredicate[JsObject, String]]
     }
-    val idOpt = test.toOption.flatMap(args => getFrameId(args.frame))
+    val idOpt = test.toOption.flatMap(args => UrlParser.getFrameId(args.frame))
     (validate(test.isSuccess, "Failed to parse file load descriptor: " + getErrorMessage(test))
       & validate(idOpt.isDefined, "Destination is not a valid data frame URL")) {
       val args = test.get
@@ -272,7 +261,7 @@ trait V1CommandService extends V1Service {
     val test = Try {
       xform.arguments.get.convertTo[FrameRenameFrame[JsObject, String]]
     }
-    val idOpt = test.toOption.flatMap(args => getFrameId(args.frame))
+    val idOpt = test.toOption.flatMap(args => UrlParser.getFrameId(args.frame))
     (validate(test.isSuccess, "Failed to understand rename arguments: " + getErrorMessage(test))
       & validate(idOpt.isDefined, "Frame must be a valid data frame URL")) {
       val args = test.get
@@ -292,7 +281,7 @@ trait V1CommandService extends V1Service {
     val test = Try {
       xform.arguments.get.convertTo[FrameRenameColumn[JsObject, String]]
     }
-    val idOpt = test.toOption.flatMap(args => getFrameId(args.frame))
+    val idOpt = test.toOption.flatMap(args => UrlParser.getFrameId(args.frame))
     (validate(test.isSuccess, "Failed to parse file load descriptor: " + getErrorMessage(test))
       & validate(idOpt.isDefined, "Destination is not a valid data frame URL")) {
       val args = test.get
@@ -312,7 +301,7 @@ trait V1CommandService extends V1Service {
     val test = Try {
       xform.arguments.get.convertTo[FrameAddColumn[JsObject, String]]
     }
-    val idOpt = test.toOption.flatMap(args => getFrameId(args.frame))
+    val idOpt = test.toOption.flatMap(args => UrlParser.getFrameId(args.frame))
     (validate(test.isSuccess, "Failed to parse file load descriptor: " + getErrorMessage(test))
       & validate(idOpt.isDefined, "Destination is not a valid data frame URL")) {
       val args = test.get
@@ -332,7 +321,7 @@ trait V1CommandService extends V1Service {
     val test = Try {
       xform.arguments.get.convertTo[FrameRemoveColumn[JsObject, String]]
     }
-    val idOpt = test.toOption.flatMap(args => getFrameId(args.frame))
+    val idOpt = test.toOption.flatMap(args => UrlParser.getFrameId(args.frame))
     (validate(test.isSuccess, "Failed to parse file load descriptor: " + getErrorMessage(test))
       & validate(idOpt.isDefined, "Destination is not a valid data frame URL")) {
       val args = test.get
@@ -385,8 +374,8 @@ trait V1CommandService extends V1Service {
     val test = Try {
       xform.arguments.get.convertTo[FrameProject[JsObject, String]]
     }
-    val sourceFrameIdOpt = test.toOption.flatMap(args => getFrameId(args.frame))
-    val projectedFrameIdOpt = test.toOption.flatMap(args => getFrameId(args.projected_frame))
+    val sourceFrameIdOpt = test.toOption.flatMap(args => UrlParser.getFrameId(args.frame))
+    val projectedFrameIdOpt = test.toOption.flatMap(args => UrlParser.getFrameId(args.projected_frame))
     (validate(test.isSuccess, "Failed to project command descriptor: " + getErrorMessage(test))
       & validate(projectedFrameIdOpt.isDefined, "Destination is not a valid data frame")) {
       val args = test.get
@@ -402,5 +391,11 @@ trait V1CommandService extends V1Service {
         case Failure(ex) => throw ex
       }
     }
+  }
+
+  //TODO: internationalization
+  def getErrorMessage[T](value: Try[T]): String = value match {
+    case Success(x) => ""
+    case Failure(ex) => ex.getMessage
   }
 }

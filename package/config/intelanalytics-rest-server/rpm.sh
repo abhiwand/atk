@@ -23,7 +23,7 @@ start the server with 'service intelanalytics-rest-server status'
 config files are in /etc/intelanalytics/rest-server
 log files live in /var/log/intelanalytics/rest-server"
 
-REQUIRES=" java >= 1.7 intelanalytics-python-rest-client >= 0.8.${BUILD_NUMBER}"
+REQUIRES=" java >= 1.7, intelanalytics-python-rest-client >= 0.8.${BUILD_NUMBER}-${BUILD_NUMBER}"
 
 POST="
  if [ \$1 -eq 2 ]; then
