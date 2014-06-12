@@ -23,27 +23,13 @@
 
 package com.intel.intelanalytics.component
 
-import com.typesafe.config.Config
-
 /**
- * Base interface for a component / plugin.
+ * Components that can be located through a component registry
  */
-trait Component {
-
-
+trait Located {
   /**
-   * Called before processing any requests.
-   *
-   * @param configuration Configuration information, scoped to that required by the
-   *                      plugin based on its installed paths.
+   * The location(s) that this component would prefer to be located in the
+   * component registry. Can be overridden by configuration.
    */
-  def start(configuration: Config)
-
-  /**
-   * Called before the application as a whole shuts down. Not guaranteed to be called,
-   * nor guaranteed that the application will not shut down while this method is running,
-   * though an effort will be made.
-   */
-  def stop()
+  def defaultLocations: Seq[String]
 }
-

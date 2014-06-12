@@ -23,9 +23,9 @@
 
 package com.intel.intelanalytics.engine
 
+import com.intel.intelanalytics.component.ClassLoaderAware
 import com.intel.intelanalytics.security.UserPrincipal
 import scala.concurrent.ExecutionContext
-import com.intel.intelanalytics.engine.spark.ClassLoaderAware
 import com.typesafe.config.Config
 import spray.json.JsObject
 import com.intel.intelanalytics.shared.EventLogging

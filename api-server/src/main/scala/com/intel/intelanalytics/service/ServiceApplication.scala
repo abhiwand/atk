@@ -23,27 +23,25 @@
 
 package com.intel.intelanalytics.service
 
-import akka.actor.{ ActorSystem, Props }
+import akka.actor.{ActorSystem, Props}
 import akka.io.IO
-import spray.can.Http
 import akka.pattern.ask
 import akka.util.Timeout
-import scala.concurrent.duration._
-import scala.slick.driver.H2Driver
 import com.intel.event.EventLogger
 import com.intel.event.adapter.SLF4JLogAdapter
-import com.intel.intelanalytics.component.{ Archive }
-import com.intel.intelanalytics.repository.{ MetaStoreComponent, DbProfileComponent, SlickMetaStoreComponent }
-import com.intel.intelanalytics.service.v1.{ V1CommandService, V1DataFrameService, ApiV1Service }
-import com.intel.intelanalytics.repository.{ DbProfileComponent, SlickMetaStoreComponent }
-import com.intel.intelanalytics.service.v1.{ V1GraphService, V1DataFrameService, ApiV1Service }
+import com.intel.intelanalytics.component.{Locator, Component}
+import com.intel.intelanalytics.domain.UserTemplate
 import com.intel.intelanalytics.engine.{Engine, EngineComponent}
-import com.typesafe.config.{ Config, ConfigFactory }
-import com.intel.intelanalytics.domain.{ UserTemplate, User }
-import com.intel.intelanalytics.shared.EventLogging
-import scala.concurrent.Await
+import com.intel.intelanalytics.repository.{DbProfileComponent, SlickMetaStoreComponent}
+import com.intel.intelanalytics.service.v1.{ApiV1Service, V1CommandService, V1DataFrameService, V1GraphService}
+import com.typesafe.config.{Config, ConfigFactory}
+import spray.can.Http
 
-class ServiceApplication extends Archive {
+import scala.concurrent.Await
+import scala.concurrent.duration._
+import scala.slick.driver.H2Driver
+
+class ServiceApplication extends Component {
 
   def get[T](descriptor: String): T = {
     throw new IllegalArgumentException("This component provides no services")
@@ -51,10 +49,9 @@ class ServiceApplication extends Archive {
 
   def stop() = {}
 
-  def start(configuration: Map[String, String]) = {
-    val config = ConfigFactory.load()
+  def start(configuration: Config) = {
 
-    ServiceHost.start(config)
+    ServiceHost.start(configuration)
 
   }
 }
@@ -83,7 +80,10 @@ object ServiceHost {
     }
 
     override lazy val engine = com.intel.intelanalytics.component.Boot.getArchive(
-      "engine", "com.intel.intelanalytics.engine.EngineApplication").get[Engine]("engine")
+      "engine", "com.intel.intelanalytics.engine.EngineApplication", "")
+      .asInstanceOf[Component with Locator]
+      .get[Engine]("engine")
+      .getOrElse(throw new Exception("Could not obtain Engine instance"))
 
     //populate the database with some test users from the specified file (for testing)
     val usersFile = config.getString("intel.analytics.test.users.file")

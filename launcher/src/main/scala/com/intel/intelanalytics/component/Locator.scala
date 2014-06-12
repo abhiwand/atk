@@ -23,27 +23,14 @@
 
 package com.intel.intelanalytics.component
 
-import com.typesafe.config.Config
-
-/**
- * Base interface for a component / plugin.
- */
-trait Component {
-
-
+trait Locator {
   /**
-   * Called before processing any requests.
+   * Obtain instances of a given class. The keys are established purely
+   * by convention.
    *
-   * @param configuration Configuration information, scoped to that required by the
-   *                      plugin based on its installed paths.
+   * @param descriptor the string key of the desired class instance.
+   * @tparam T the type of the requested instance
+   * @return the requested instance, or None if no such instance could be produced.
    */
-  def start(configuration: Config)
-
-  /**
-   * Called before the application as a whole shuts down. Not guaranteed to be called,
-   * nor guaranteed that the application will not shut down while this method is running,
-   * though an effort will be made.
-   */
-  def stop()
+  def get[T](descriptor: String): Option[T]
 }
-
