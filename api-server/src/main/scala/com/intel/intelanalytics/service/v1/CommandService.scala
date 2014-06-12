@@ -62,7 +62,7 @@ import com.intel.intelanalytics.service.v1.decorators.CommandDecorator
 import ExecutionContext.Implicits.global
 
 /**
- * Trait for classes that implement the Intel Analytics V1 REST API Command Service
+ * REST API Command Service
  */
 class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends Directives with EventLogging {
 

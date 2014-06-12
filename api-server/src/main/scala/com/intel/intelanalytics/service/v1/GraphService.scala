@@ -46,7 +46,7 @@ import com.intel.intelanalytics.service.v1.decorators.GraphDecorator
 import ExecutionContext.Implicits.global
 
 /**
- * Trait for classes that implement the Intel Analytics V1 REST API Graph Service
+ * REST API Graph Service
  */
 class GraphService(commonDirectives: CommonDirectives, engine: Engine) extends Directives with EventLogging {
 
