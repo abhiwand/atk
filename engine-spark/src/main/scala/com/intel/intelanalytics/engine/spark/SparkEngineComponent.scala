@@ -73,7 +73,8 @@ class SparkComponent extends EngineComponent
   val files = new HdfsFileStorage(configuration.fsRoot) {}
 
 
-  val frames = new SparkFrameStorage(sparkContextManager.context(_), configuration.fsRoot, files) {}
+  val frames = new SparkFrameStorage(sparkContextManager.context(_),
+    configuration.fsRoot, files, configuration.config.getInt("intel.analytics.engine.max-rows")) {}
 
 
   private lazy val admin = new HBaseAdmin(HBaseConfiguration.create())
