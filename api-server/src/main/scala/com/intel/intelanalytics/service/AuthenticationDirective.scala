@@ -16,11 +16,12 @@ import spray.json._
 import com.intel.intelanalytics.repository.MetaStore
 import com.typesafe.config.ConfigFactory
 import scala.concurrent.duration._
+import com.intel.intelanalytics.shared.EventLogging
 
 /**
  * Uses authorization HTTP header and metaStore to authenticate a user
  */
-class AuthenticationDirective(val metaStore: MetaStore) extends Directives with EventLoggingDirectives {
+class AuthenticationDirective(val metaStore: MetaStore) extends Directives with EventLogging {
 
   val config = ConfigFactory.load()
   val defaultTimeout: FiniteDuration = config.getInt("intel.analytics.api.defaultTimeout").seconds
