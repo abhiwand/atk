@@ -31,7 +31,7 @@ class SparkJobConcurrencyTest  extends TestingSparkContext with Matchers {
 
 
     val commandIds = listener.commandIdJobs.map {
-      t => t._2.properties.getProperty("command-id").toInt
+      t => t._2(0).properties.getProperty("command-id").toInt
     }
 
     val distinctIds = commandIds.toSet.toList.sorted

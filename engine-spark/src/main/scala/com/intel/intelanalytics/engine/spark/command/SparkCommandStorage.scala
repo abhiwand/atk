@@ -70,7 +70,7 @@ class SparkCommandStorage(val metaStore: SlickMetaStoreComponent#SlickMetaStore)
         import com.intel.intelanalytics.domain.throwableToError
         val changed = result match {
           case Failure(ex) => command.copy(complete = true, error = Some(throwableToError(ex)))
-          case Success(r) => command.copy(complete = true, progress = 100, result = Some(r))
+          case Success(r) => command.copy(complete = true, progress = List(100), result = Some(r))
         }
         repo.update(changed)
     }
@@ -81,7 +81,7 @@ class SparkCommandStorage(val metaStore: SlickMetaStoreComponent#SlickMetaStore)
    * @param id command id
    * @param progress progress
    */
-  override def updateProgress(id: Long, progress: Int): Unit = {
+  override def updateProgress(id: Long, progress: List[Int]): Unit = {
     metaStore.withSession("se.command.updateProgress") {
       implicit session =>
         repo.updateProgress(id, progress)

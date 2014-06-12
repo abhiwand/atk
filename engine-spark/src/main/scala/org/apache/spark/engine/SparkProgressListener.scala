@@ -54,7 +54,7 @@ class SparkProgressListener(val progressUpdater: CommandProgressUpdater) extends
   val completedStages = ListBuffer[StageInfo]()
   val stageIdToTasksComplete = HashMap[Int, Int]()
   val stageIdToTasksFailed = HashMap[Int, Int]()
-  val commandIdJobs = new HashMap[Long, ActiveJob]
+  val commandIdJobs = new HashMap[Long, List[ActiveJob]]
 
   override def onJobStart(jobStart: SparkListenerJobStart) {
     val parents = jobStart.job.finalStage.parents
@@ -68,7 +68,12 @@ class SparkProgressListener(val progressUpdater: CommandProgressUpdater) extends
     }
 
     commandIdTry match {
-      case Success(id) => commandIdJobs(id) = job
+      case Success(id) => {
+        if(!commandIdJobs.contains(id))
+          commandIdJobs(id) = List(job)
+        else
+          commandIdJobs(id) = commandIdJobs(id) ++ List(job)
+      }
       case _ =>
     }
   }
@@ -138,9 +143,9 @@ class SparkProgressListener(val progressUpdater: CommandProgressUpdater) extends
   /**
    * calculate progress for the command
    */
-  def getCommandProgress(commandId: Long): Int = {
-    val jobId = commandIdJobs.getOrElse(commandId,  throw new IllegalArgumentException(s"No such command: $commandId")).jobId
-    getProgress(jobId)
+  def getCommandProgress(commandId: Long): List[Int] = {
+    val jobList = commandIdJobs.getOrElse(commandId,  throw new IllegalArgumentException(s"No such command: $commandId"))
+    jobList.map(job => getProgress(job.jobId))
   }
 
   /**
@@ -151,7 +156,7 @@ class SparkProgressListener(val progressUpdater: CommandProgressUpdater) extends
     jobIdStageIdPairOption match {
       case Some(r) => {
         val jobId = r._1
-        val commandIdJobOption = commandIdJobs.find(e => e._2.jobId == jobId)
+        val commandIdJobOption = commandIdJobs.find(e => e._2.map(job => job.jobId).contains(jobId))
         commandIdJobOption match {
           case Some(c) => {
             val commandId = c._1

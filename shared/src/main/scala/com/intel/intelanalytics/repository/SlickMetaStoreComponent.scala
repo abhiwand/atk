@@ -65,6 +65,11 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
     { string => JsonParser(string).convertTo[Error] }
   )
 
+  implicit val commandProgressType = MappedColumnType.base[List[Int], String](
+  { progress => progress.toJson.prettyPrint },
+  { string => JsonParser(string).convertTo[List[Int]] }
+  )
+
   private[repository] val database = withContext("Connecting to database") {
     Database.forURL(profile.connectionString, driver = profile.driver)
   }
@@ -400,7 +405,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
 
       def error = column[Option[Error]]("error")
 
-      def progress = column[Long]("progress", O.Default(0))
+      def progress = column[List[Int]]("progress")
 
       def complete = column[Boolean]("complete", O.Default(false))
 
@@ -426,7 +431,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
 
     override def insert(command: CommandTemplate)(implicit session: Session): Try[Command] = Try {
       // TODO: add createdBy user id
-      val c = Command(0, command.name, command.arguments, None, 0, false, None, new DateTime(), new DateTime(), None)
+      val c = Command(0, command.name, command.arguments, None, List(), false, None, new DateTime(), new DateTime(), None)
       commandsAutoInc.insert(c)
     }
 
@@ -476,7 +481,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
      * @param progress progress for the command
      * @param session session to db
      */
-    override def updateProgress(id: Long, progress: Int)(implicit session: Session): Try[Unit] = Try {
+    override def updateProgress(id: Long, progress: List[Int])(implicit session: Session): Try[Unit] = Try {
       val q = for{c <- commands if c.id === id} yield c.progress
       q.update(progress)
     }
