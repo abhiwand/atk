@@ -21,15 +21,15 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.service.v1
+package com.intel.intelanalytics.service.v1.viewmodels
 
-import spray.routing._
+import spray.json.JsObject
 
 /**
- * Single entry point for classes that implement the Intel Analytics V1 REST API
+ * Generic JSON message for commands
+ * @param name the name of the operation
+ * @param arguments arguments for the operation
  */
-class ApiV1Service(val dataFrameService: DataFrameService, val commandService: CommandService, val graphService: GraphService) extends Directives {
-  def route: Route = {
-    dataFrameService.frameRoutes() ~ commandService.commandRoutes() ~ graphService.graphRoutes()
-  }
+case class JsonTransform(name: String, arguments: Option[JsObject]) {
+  require(name != null, "Name is required")
 }

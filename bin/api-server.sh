@@ -26,7 +26,7 @@ fi
 pushd $DIR/..
 pwd
 
-echo java $@ -cp "$CONF:$LAUNCHER" com.intel.intelanalytics.component.Boot api-server com.intel.intelanalytics.service.ServiceApplication
-java $@ -cp "$CONF:$LAUNCHER" com.intel.intelanalytics.component.Boot api-server com.intel.intelanalytics.service.ServiceApplication
+echo java $@ -cp "$CONF:$LAUNCHER" com.intel.intelanalytics.component.Boot api-server com.intel.intelanalytics.service.ApiServiceApplication
+java $@ -cp "$CONF:$LAUNCHER" com.intel.intelanalytics.component.Boot api-server com.intel.intelanalytics.service.ApiServiceApplication
 
 popd
