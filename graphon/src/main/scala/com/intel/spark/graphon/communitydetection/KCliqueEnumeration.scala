@@ -97,8 +97,8 @@ object KCliqueEnumeration extends ((RDD[VertexInAdjacencyFormat], Int) => RDD[Ex
    * @return a k+1 clique
    */
   def extendClique(extendersFact: ExtendersFact): Set[CliqueFact] = {
-    case ExtendersFact(clique, extenders) =>
-      extenders.map(extendByVertex => CliqueFact(clique.members + extendByVertex))
+    extendersFact match {case ExtendersFact(clique, extenders, neighborHigh : Boolean) =>
+      extenders.map(extendByVertex => CliqueFact(clique.members + extendByVertex)) }
   }
 
   /**
@@ -132,19 +132,21 @@ object KCliqueEnumeration extends ((RDD[VertexInAdjacencyFormat], Int) => RDD[Ex
    * @return The neighbors-of facts for this extender fact
    */
   def deriveNeighbors(extenderFact: ExtendersFact) : Iterator[NeighborsOfFact] = {
-    case ExtendersFact(clique, extenders) =>
+    extenderFact match {
+      case ExtendersFact(clique, extenders: VertexSet, _) =>
 
-      val twoSetsFromExtenders = extenders.subsets(2)
+        val twoSetsFromExtenders = extenders.subsets(2)
 
-      if (extenderFact.neighborsHigh) {
-        val minimumCliqueMember = clique.members.min
-        twoSetsFromExtenders.map(subset => 
-          NeighborsOfFact(subset ++ (clique.members - minimumCliqueMember), minimumCliqueMember, neighborHigh = false))
-      } else {
-        val maximumCliqueMember = clique.members.max
-        twoSetsFromExtenders.map(subset => 
-          NeighborsOfFact(subset ++ (clique.members - maximumCliqueMember), maximumCliqueMember, neighborHigh = true))
-      }
+        if (extenderFact.neighborsHigh) {
+          val minimumCliqueMember = clique.members.min
+          twoSetsFromExtenders.map(subset =>
+            NeighborsOfFact(subset ++ (clique.members - minimumCliqueMember), minimumCliqueMember, neighborHigh = false))
+        } else {
+          val maximumCliqueMember = clique.members.max
+          twoSetsFromExtenders.map(subset =>
+            NeighborsOfFact(subset ++ (clique.members - maximumCliqueMember), maximumCliqueMember, neighborHigh = true))
+        }
+    }
   }
 
   /**
