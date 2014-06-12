@@ -543,9 +543,10 @@ class SparkEngine(config: SparkEngineConfiguration,
 
               var newFrame = realFrame
               for {
-                column_name <- column_names
-                column_type <- column_types
+                i <- 0 until column_names.size
               } {
+                val column_name = column_names(i)
+                val column_type = column_types(i)
                 val columnObject = new BigColumn(column_name)
 
                 if (schema.columns.indexWhere(columnTuple => columnTuple._1 == column_name) >= 0)
