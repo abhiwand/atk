@@ -81,7 +81,7 @@ object KCliquePercolationDataTypes {
 	 * when k is even, every vertex ID in the VertexSet is greater than the vertex ID in NeighborsOf.v
 	 *
 	 */
-	case class NeighborsOfFact(members: VertexSet, neighbor: Long) extends Serializable
+	case class NeighborsOfFact(members: VertexSet, neighbor: Long, neighborHigh: Boolean) extends Serializable
 
   case class CliqueFact(members: VertexSet) extends Serializable
 
@@ -97,6 +97,6 @@ object KCliquePercolationDataTypes {
 	 * when k is even, every vertex ID in the VertexSet is greater than every vertex ID in the ExtenderSet.
 	 *
 	 */
-	case class ExtendersFact(clique: CliqueFact, neighbors: VertexSet) extends Serializable
+	case class ExtendersFact(clique: CliqueFact, neighbors: VertexSet, neighborsHigh: Boolean) extends Serializable
 
 }
