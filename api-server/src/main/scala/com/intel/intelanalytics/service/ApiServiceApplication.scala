@@ -31,19 +31,15 @@ import akka.util.Timeout
 import scala.concurrent.duration._
 import com.intel.event.EventLogger
 import com.intel.event.adapter.SLF4JLogAdapter
-import com.intel.intelanalytics.component.{Archive}
-import com.intel.intelanalytics.repository.DbProfileComponent
-import com.intel.intelanalytics.repository.DbProfileComponent
+import com.intel.intelanalytics.component.Archive
 import com.intel.intelanalytics.engine.Engine
 import com.typesafe.config.ConfigFactory
-import com.intel.intelanalytics.domain.UserTemplate
 import scala.concurrent.Await
 
 /**
  * API Service Application - a REST application used by client layer to communicate with the Engine.
- * <p>
+ *
  * See the 'api_server.sh' to see how the launcher starts the application.
- * </p>
  */
 class ApiServiceApplication extends Archive {
 
