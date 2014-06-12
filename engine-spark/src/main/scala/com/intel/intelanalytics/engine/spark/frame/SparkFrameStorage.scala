@@ -23,6 +23,7 @@
 
 package com.intel.intelanalytics.engine.spark.frame
 
+import com.intel.intelanalytics.component.ClassLoaderAware
 import com.intel.intelanalytics.shared.EventLogging
 import com.intel.intelanalytics.engine._
 import com.intel.intelanalytics.domain.schema.{Schema, DataTypes}
@@ -30,7 +31,7 @@ import DataTypes.DataType
 import java.nio.file.Paths
 import scala.io.{Source, Codec}
 import org.apache.spark.rdd.RDD
-import com.intel.intelanalytics.engine.spark.{ClassLoaderAware, HdfsFileStorage, SparkOps}
+import com.intel.intelanalytics.engine.spark.{HdfsFileStorage, SparkOps}
 import org.apache.spark.SparkContext
 import scala.util.matching.Regex
 import java.util.concurrent.atomic.AtomicLong

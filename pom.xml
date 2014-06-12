@@ -176,7 +176,9 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
         <dep.pig.version>0.12.0-cdh5.0.0</dep.pig.version>
         <dep.spark.version>0.9.1</dep.spark.version>
         <dep.commons.lang>2.6</dep.commons.lang>
+        <dep.logback.version>1.1.1</dep.logback.version>
 
+        <dep.typesafe-config.version>1.2.1</dep.typesafe-config.version>
         <!--START GAO MAVEN -->
         <!-- these dependencies are from gaomaven.jf.intel.com -->
         <dep.giraph-core.version>1.1.0-SNAPSHOT-20140317</dep.giraph-core.version>
@@ -974,6 +976,11 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 <version>${scala.long.version}</version>
             </dependency>
             <dependency>
+                <groupId>org.scala-lang</groupId>
+                <artifactId>scala-reflect</artifactId>
+                <version>${scala.long.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>com.intel.intelanalytics</groupId>
                 <artifactId>interfaces</artifactId>
                 <version>${project.version}</version>
@@ -1049,6 +1056,21 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 <groupId>org.apache.giraph</groupId>
                 <artifactId>giraph-core</artifactId>
                 <version>${dep.giraph-core.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.typesafe</groupId>
+                <artifactId>config</artifactId>
+                <version>${dep.typesafe-config.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>ch.qos.logback</groupId>
+                <artifactId>logback-classic</artifactId>
+                <version>${dep.logback.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-api</artifactId>
+                <version>${dep.slf4j.version}</version>
             </dependency>
             <!-- <dependency>
                  <groupId>commons-net</groupId>

@@ -21,21 +21,35 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.engine.spark
-
-import com.intel.event.EventContext
+package com.intel.intelanalytics.component
 
 trait ClassLoaderAware {
+
+
   /**
-   * Execute a code block using the ClassLoader of 'this' SparkEngine
+   * Execute a code block using specified class loader
+   * rather than the ClassLoader of the currentThread()
+   */
+  def withLoader[T](loader: ClassLoader)(expr: => T): T = {
+    val prior = Thread.currentThread().getContextClassLoader
+    try {
+      Thread.currentThread().setContextClassLoader(loader)
+      expr
+    }
+    finally {
+      Thread.currentThread().setContextClassLoader(prior)
+    }
+  }
+
+
+  /**
+   * Execute a code block using the ClassLoader of 'this'
    * rather than the ClassLoader of the currentThread()
    */
   def withMyClassLoader[T](f: => T): T = {
     val prior = Thread.currentThread().getContextClassLoader
-    EventContext.getCurrent.put("priorClassLoader", prior.toString)
     try {
       val loader = this.getClass.getClassLoader
-      EventContext.getCurrent.put("newClassLoader", loader.toString)
       Thread.currentThread setContextClassLoader loader
       f
     }

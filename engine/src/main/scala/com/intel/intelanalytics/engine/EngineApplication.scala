@@ -23,19 +23,13 @@
 
 package com.intel.intelanalytics.engine
 
-import scala.reflect.io.Directory
-import java.net.URLClassLoader
-import java.lang.String
-import scala.util.control.NonFatal
-import com.intel.intelanalytics.component.{ Archive }
-
-import scala.concurrent.{ Await, ExecutionContext }
-import ExecutionContext.Implicits.global
-import scala.concurrent.duration._
+import com.intel.intelanalytics.component.{ClassLoaderAware, Component}
 import com.intel.intelanalytics.shared.EventLogging
-import com.intel.intelanalytics.domain.schema.Schema
+import com.typesafe.config.Config
 
-class EngineApplication extends Archive with EventLogging {
+import scala.util.control.NonFatal
+
+class EngineApplication extends Component with EventLogging with ClassLoaderAware {
 
   var engine: EngineComponent with FrameComponent with CommandComponent = null
 
@@ -51,7 +45,7 @@ class EngineApplication extends Archive with EventLogging {
     engine.engine.shutdown
   }
 
-  def start(configuration: Map[String, String]) = {
+  def start(configuration: Config) = {
 
     try {
       //TODO: when Engine moves to its own process, it will need to start its own Akka actor system.
@@ -69,10 +63,9 @@ class EngineApplication extends Archive with EventLogging {
       }
     }
     catch {
-      case NonFatal(e) => {
+      case NonFatal(e) =>
         error("An error occurred while starting the engine.", exception = e)
         throw e
-      }
     }
   }
 }

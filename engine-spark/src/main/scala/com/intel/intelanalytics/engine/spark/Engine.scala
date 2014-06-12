@@ -24,6 +24,7 @@
 package com.intel.intelanalytics.engine.spark
 
 import com.intel.event.EventContext
+import com.intel.intelanalytics.component.ClassLoaderAware
 import com.intel.intelanalytics.domain._
 import com.intel.intelanalytics.engine._
 import scala.concurrent._
