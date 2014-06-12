@@ -25,6 +25,11 @@ package com.intel.intelanalytics.service.v1.viewmodels
 
 import spray.json.JsObject
 
+/**
+ * Generic JSON message for commands
+ * @param name the name of the operation
+ * @param arguments arguments for the operation
+ */
 case class JsonTransform(name: String, arguments: Option[JsObject]) {
   require(name != null, "Name is required")
 }
