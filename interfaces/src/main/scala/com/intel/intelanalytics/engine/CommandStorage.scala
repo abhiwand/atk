@@ -33,6 +33,6 @@ trait CommandStorage {
   def scan(offset: Int, count: Int): Seq[Command]
   def start(id: Long): Unit
   def complete(id: Long, result: Try[JsObject]): Unit
-  def updateProgress(id: Long, progress: Int): Unit
+  def updateProgress(id: Long, progress: List[Int]): Unit
 }
 

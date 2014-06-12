@@ -41,7 +41,7 @@ class CommandRepositorySpec extends SlickMetaStoreH2Testing with Matchers {
         val command = commandRepo.insert(new CommandTemplate(name, None))
         command match {
           case Success(r) => {
-            commandRepo.updateProgress(r.id, 100)
+            commandRepo.updateProgress(r.id, List(100))
             val command2 = commandRepo.lookup(command.get.id)
             command2.get.progress shouldBe 100
           }
