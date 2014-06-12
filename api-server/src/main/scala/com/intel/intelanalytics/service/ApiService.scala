@@ -5,13 +5,8 @@ import spray.routing._
 import spray.http._
 import MediaTypes._
 import akka.event.Logging
-import spray.routing.directives.BasicDirectives
-import com.intel.event.{ Severity, EventContext }
-import com.intel.intelanalytics.shared.EventLogging
 import com.intel.intelanalytics.service.v1.ApiV1Service
-import com.intel.intelanalytics.service.v1.viewmodels.RelLink
 import com.typesafe.config.ConfigFactory
-import com.intel.intelanalytics.domain.schema.Schema
 
 /**
  * We don't implement our route structure directly in the service actor because
@@ -39,7 +34,7 @@ class ApiServiceActor(val apiService: ApiService) extends Actor with HttpService
 /**
  * Defines our service behavior independently from the service actor
  */
-class ApiService(val apiV1Service: ApiV1Service) extends Directives with EventLoggingDirectives {
+class ApiService(val apiV1Service: ApiV1Service) extends Directives {
 
   def homepage = {
     respondWithMediaType(`text/html`) {
