@@ -21,15 +21,13 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.service.v1
-
-import spray.routing._
+package com.intel.intelanalytics.service.v1.viewmodels
 
 /**
- * Single entry point for classes that implement the Intel Analytics V1 REST API
+ * Returned handle for a graph stored in the graph database.
  */
-class ApiV1Service(val dataFrameService: DataFrameService, val commandService: CommandService, val graphService: GraphService) extends Directives {
-  def route: Route = {
-    dataFrameService.frameRoutes() ~ commandService.commandRoutes() ~ graphService.graphRoutes()
-  }
+case class DecoratedGraph(id: Long, name: String, links: List[RelLink]) {
+  require(id > 0)
+  require(name != null)
+  require(links != null)
 }

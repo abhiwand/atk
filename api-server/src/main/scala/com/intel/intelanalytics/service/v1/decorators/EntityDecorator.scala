@@ -20,16 +20,11 @@
 // estoppel or otherwise. Any license under such intellectual property rights
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
+package com.intel.intelanalytics.service.v1.decorators
 
-package com.intel.intelanalytics.service.v1
+import com.intel.intelanalytics.service.v1.viewmodels.RelLink
 
-import spray.routing._
-
-/**
- * Single entry point for classes that implement the Intel Analytics V1 REST API
- */
-class ApiV1Service(val dataFrameService: DataFrameService, val commandService: CommandService, val graphService: GraphService) extends Directives {
-  def route: Route = {
-    dataFrameService.frameRoutes() ~ commandService.commandRoutes() ~ graphService.graphRoutes()
-  }
+trait EntityDecorator[Entity, Index, Decorated] {
+  def decorateForIndex(indexUri: String, entities: Seq[Entity]): List[Index]
+  def decorateEntity(uri: String, links: Iterable[RelLink], entity: Entity): Decorated
 }
