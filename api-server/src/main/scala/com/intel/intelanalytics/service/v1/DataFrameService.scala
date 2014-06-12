@@ -46,6 +46,9 @@ import com.intel.intelanalytics.service.v1.decorators.FrameDecorator
 //TODO: Is this right execution context for us?
 import ExecutionContext.Implicits.global
 
+/**
+ * REST API Data Frame Service
+ */
 class DataFrameService(commonDirectives: CommonDirectives, engine: Engine) extends Directives with EventLogging {
 
   val config = ConfigFactory.load()
