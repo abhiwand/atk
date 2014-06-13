@@ -28,7 +28,7 @@ import com.intel.intelanalytics.domain._
 import spray.json.JsObject
 import com.intel.intelanalytics.repository.MetaStoreComponent
 import com.intel.intelanalytics.engine.{Engine, EngineComponent}
-import com.intel.intelanalytics.service.v1.viewmodels.ViewModelJsonProtocol._
+import com.intel.intelanalytics.service.v1.viewmodels.ViewModelJsonImplicits._
 import scala.concurrent._
 import spray.http.Uri
 import spray.routing.{Directives, Route}
@@ -47,7 +47,7 @@ import com.intel.intelanalytics.domain.frame.FrameRemoveColumn
 import spray.json._
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
 import com.intel.intelanalytics.service.v1.viewmodels._
-import com.intel.intelanalytics.service.v1.viewmodels.ViewModelJsonProtocol._
+import com.intel.intelanalytics.service.v1.viewmodels.ViewModelJsonImplicits._
 import com.intel.intelanalytics.domain.frame.FrameJoin
 import com.intel.intelanalytics.domain.graph.GraphLoad
 import com.intel.intelanalytics.domain.frame.LoadLines
@@ -108,7 +108,7 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
               get {
                 //TODO: cursor
                 import spray.json._
-                import ViewModelJsonProtocol._
+                import ViewModelJsonImplicits._
                 onComplete(engine.getCommands(0, defaultCount)) {
                   case Success(commands) => complete(CommandDecorator.decorateForIndex(uri.toString(), commands))
                   case Failure(ex) => throw ex
