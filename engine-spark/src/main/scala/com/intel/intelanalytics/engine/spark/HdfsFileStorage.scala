@@ -42,6 +42,10 @@ class HdfsFileStorage(fsRoot: String) extends FileStorage with EventLogging {
       classOf[DistributedFileSystem].getName)
     hadoopConfig.set("fs.file.impl",
       classOf[LocalFileSystem].getName)
+
+    if (fsRoot.startsWith("hdfs"))
+      hadoopConfig.set("fs.defaultFS", fsRoot)
+
     require(hadoopConfig.getClassByNameOrNull(classOf[LocalFileSystem].getName) != null)
     hadoopConfig
   }
