@@ -42,5 +42,5 @@ object ViewModelJsonImplicits extends DefaultJsonProtocol with SprayJsonSupport 
   implicit val getGraphsFormat = jsonFormat3(GetGraphs)
   implicit val getGraphFormat = jsonFormat3(GetGraph)
   implicit val jsonTransformFormat = jsonFormat2(JsonTransform)
-  
+
 }

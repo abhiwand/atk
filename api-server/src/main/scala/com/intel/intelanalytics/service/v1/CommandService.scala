@@ -135,9 +135,9 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
   def runCommand(uri: Uri, xform: JsonTransform)(implicit user: UserPrincipal): Route = {
     xform.name match {
       //TODO: genericize function resolution and invocation
-      case ("dataframe/load") => runFrameLoad(uri, xform)
       case ("graph/load") => runGraphLoad(uri, xform)
       //case ("graph/ml/als") => runAls(uri, xform)
+      case ("dataframe/load") => runFrameLoad(uri, xform)
       case ("dataframe/filter") => runFilter(uri, xform)
       case ("dataframe/removecolumn") => runFrameRemoveColumn(uri, xform)
       case ("dataframe/rename_frame") => runFrameRenameFrame(uri, xform)
@@ -146,7 +146,7 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
       case ("dataframe/rename_column") => runFrameRenameColumn(uri, xform)
       case ("dataframe/join") => runJoinFrames(uri, xform)
       case ("dataframe/flattenColumn") => runflattenColumn(uri, xform)
-      case _ => ???
+      case _ => throw new IllegalArgumentException("Command name is not supported: " + _)
     }
   }
 
