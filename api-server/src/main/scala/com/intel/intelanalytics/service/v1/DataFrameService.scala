@@ -134,10 +134,10 @@ class DataFrameService(commonDirectives: CommonDirectives, engine: Engine) exten
                       import spray.httpx.SprayJsonSupport._
                       import spray.json._
                       import DomainJsonProtocol._
-                      val strings = rows.map(r => r.map(a => a match {
+                      val strings = rows.map(r => r.map {
                         case null => JsNull
-                        case _ => a.toJson
-                      }).toList).toList
+                        case a => a.toJson
+                      }.toList).toList
                       complete(strings)
                     }
                     case Failure(ex) => throw ex
