@@ -38,7 +38,7 @@ import org.apache.spark.rdd.RDD
  * http://ieeexplore.ieee.org/xpls/abs_all.jsp?arnumber=6620116
  */
 
-object KCliqueEnumeration extends ((RDD[VertexInAdjacencyFormat], Int) => RDD[ExtendersFact]) {
+object KCliqueEnumeration  {
 
 	/**
 	 * Transform graph from adjacency list representation to edge list representation.
@@ -203,34 +203,38 @@ object KCliqueEnumeration extends ((RDD[VertexInAdjacencyFormat], Int) => RDD[Ex
    * @param K The clique enumeration number to find K-Cliques
 	 * @return An RDD of extended-by facts.
 	 */
-  def apply(data: RDD[VertexInAdjacencyFormat], K: Int) = {
+  def applyToAdjacencyList(data: RDD[VertexInAdjacencyFormat], K: Int) = {
 
 		val verticesInAdjListForm: RDD[VertexInAdjacencyFormat] = data
 
 		val edgeList: RDD[Edge] = createEdgeListFromParsedAdjList(verticesInAdjListForm)
 
-			/**
-			 * Derive  k-clique-extension facts from (k-1) clique extension facts.
-			 * @param k  The sizes of the cliques under consideration, ie. the current iteration of the algorithm.
-			 * @param edgeList The edge list of the underlying graph.
-			 * @return The k clique extension facts.
-			 */
-
-			def cliqueExtension(k: Int, edgeList: RDD[Edge]): RDD[ExtendersFact] = {
-				if (k == 1) {
-					initialExtendByMappingFrom(edgeList)
-				} else {
-
-					val kMinusOneExtensionFacts = cliqueExtension(k - 1, edgeList)
-
-					val kCliques = deriveKCliquesFromKMinusOneExtensions(kMinusOneExtensionFacts)
-
-					val kNeighborsOfFacts = deriveNeighborsFromExtensions(kMinusOneExtensionFacts, k % 2 == 1)
-
-					deriveNextExtensionsFromCliquesAndNeighbors(kCliques, kNeighborsOfFacts)
-				}
-			}
-
-		cliqueExtension(K - 1, edgeList)
+    applyToEdgeList(edgeList, K)
 	}
+
+  def applyToEdgeList(edgeList: RDD[Edge], K: Int): RDD[ExtendersFact] = {
+    /**
+     * Derive  k-clique-extension facts from (k-1) clique extension facts.
+     * @param k  The sizes of the cliques under consideration, ie. the current iteration of the algorithm.
+     * @param edgeList The edge list of the underlying graph.
+     * @return The k clique extension facts.
+     */
+
+    def cliqueExtension(k: Int, edgeList: RDD[Edge]): RDD[ExtendersFact] = {
+      if (k == 1) {
+        initialExtendByMappingFrom(edgeList)
+      } else {
+
+        val kMinusOneExtensionFacts = cliqueExtension(k - 1, edgeList)
+
+        val kCliques = deriveKCliquesFromKMinusOneExtensions(kMinusOneExtensionFacts)
+
+        val kNeighborsOfFacts = deriveNeighborsFromExtensions(kMinusOneExtensionFacts, k % 2 == 1)
+
+        deriveNextExtensionsFromCliquesAndNeighbors(kCliques, kNeighborsOfFacts)
+      }
+    }
+
+    cliqueExtension(K - 1, edgeList)
+  }
 }
