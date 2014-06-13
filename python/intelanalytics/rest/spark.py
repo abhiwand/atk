@@ -42,7 +42,7 @@ from serializers import PickleSerializer, BatchedSerializer, UTF8Deserializer, C
 from intelanalytics.core.row import Row
 from intelanalytics.core.types import supported_types
 
-rdd_delimiter = '`'
+rdd_delimiter = '\0'
 
 
 def get_add_one_column_function(row_function, data_type):
