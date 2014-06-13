@@ -98,12 +98,12 @@ class SparkProgressListener(val progressUpdater: CommandProgressUpdater) extends
   override def onTaskEnd(taskEnd: SparkListenerTaskEnd) {
     val sid = taskEnd.task.stageId
     taskEnd.taskInfo.successful match {
-      case true =>
+      case true => {
         stageIdToTasksComplete(sid) = stageIdToTasksComplete.getOrElse(sid, 0) + 1
+        updateProgress(sid)
+      }
       case false =>
     }
-
-    updateProgress(sid)
   }
 
   override def onJobEnd(jobEnd: SparkListenerJobEnd) {
@@ -165,6 +165,8 @@ class SparkProgressListener(val progressUpdater: CommandProgressUpdater) extends
           }
         }
       }
+
+      case _ => println(s"missing command id for stage $stageId")
     }
   }
 }
