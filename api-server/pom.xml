@@ -72,8 +72,9 @@
                                     <include>org.apache.hadoop:*</include>
                                     <include>com.github.tototoshi:*</include>
                                     <include>org.joda:*</include>
+                                    <include>joda-time:*</include>
+                                    <include>postgresql:*</include>
                                 </includes>
-
                             </artifactSet>
                         </configuration>
                     </execution>
