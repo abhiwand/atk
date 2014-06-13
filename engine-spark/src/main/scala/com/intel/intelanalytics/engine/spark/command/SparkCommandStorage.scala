@@ -70,7 +70,11 @@ class SparkCommandStorage(val metaStore: SlickMetaStoreComponent#SlickMetaStore)
         import com.intel.intelanalytics.domain.throwableToError
         val changed = result match {
           case Failure(ex) => command.copy(complete = true, error = Some(throwableToError(ex)))
-          case Success(r) => command.copy(complete = true, progress = List(100), result = Some(r))
+          case Success(r) => {
+            //update progress to 100 since the command is complete
+            val progress = command.progress.map(i => 100)
+            command.copy(complete = true, progress = progress, result = Some(r))
+          }
         }
         repo.update(changed)
     }
