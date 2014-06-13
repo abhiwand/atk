@@ -992,6 +992,16 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
             </dependency>
             <dependency>
                 <groupId>com.intel</groupId>
+                <artifactId>graphbuilder-3</artifactId>
+                <version>3</version>
+            </dependency>
+            <dependency>
+                <groupId>com.intel</groupId>
+                <artifactId>interfaces</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.intel</groupId>
                 <artifactId>launcher</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -1010,7 +1020,11 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                  <artifactId>hadoop-common</artifactId>
                  <version>${dep.hadoop2.version}</version>
              </dependency>
-
+            <dependency>
+                <groupId>org.apache.hadoop</groupId>
+                <artifactId>hadoop-hdfs</artifactId>
+                <version>${dep.hadoop2.version}</version>
+            </dependency>
             <dependency>
                 <groupId>org.apache.spark</groupId>
                 <artifactId>spark-core_${scala.short.version}</artifactId>
@@ -1086,6 +1100,16 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 <groupId>org.apache.hbase</groupId>
                 <artifactId>hbase-client</artifactId>
                 <version>${dep.hbase.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>joda-time</groupId>
+                <artifactId>joda-time</artifactId>
+                <version>2.3</version>
+            </dependency>
+            <dependency>
+                <groupId>org.joda</groupId>
+                <artifactId>joda-convert</artifactId>
+                <version>1.2</version>
             </dependency>
             <!-- <dependency>
                  <groupId>commons-net</groupId>

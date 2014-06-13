@@ -23,13 +23,14 @@
 
 package com.intel.intelanalytics.engine.spark
 
-import org.apache.hadoop.fs.{Path => HPath, FileSystem, LocalFileSystem}
-import com.intel.intelanalytics.engine.{Directory, File, Entry, FileStorage}
+import java.io.{InputStream, OutputStream}
+import java.nio.file.{Path, Paths}
+
+import com.intel.intelanalytics.engine.{Directory, Entry, File, FileStorage}
 import com.intel.intelanalytics.shared.EventLogging
 import org.apache.hadoop.conf.Configuration
+import org.apache.hadoop.fs.{FileSystem, LocalFileSystem, Path => HPath}
 import org.apache.hadoop.hdfs.DistributedFileSystem
-import java.io.{IOException, InputStream, OutputStream}
-import java.nio.file.{Path, Paths}
 
 case class HdfsStorageConfig(fsRoot: String)
 
@@ -42,7 +43,7 @@ class HdfsFileStorage(fsRoot: String) extends FileStorage with EventLogging {
       classOf[DistributedFileSystem].getName)
     hadoopConfig.set("fs.file.impl",
       classOf[LocalFileSystem].getName)
-    require(hadoopConfig.getClassByNameOrNull(classOf[LocalFileSystem].getName) != null)
+    //require(hadoopConfig.getClassByNameOrNull(classOf[LocalFileSystem].getName) != null)
     hadoopConfig
   }
 
@@ -62,9 +63,8 @@ class HdfsFileStorage(fsRoot: String) extends FileStorage with EventLogging {
   override def list(source: Directory): Seq[Entry] = withContext("file.list") {
     fs.listStatus(new HPath(fsRoot + source.path.toString))
       .map {
-      case s if s.isDirectory => Directory(path = Paths.get(s.getPath.toString))
-      case f if f.isDirectory => File(path = Paths.get(f.getPath.toString), size = f.getLen)
-      case x => throw new IOException("Unknown object type in filesystem at " + x.getPath)
+      case s if s.isDir => Directory(path = Paths.get(s.getPath.toString))
+      case f => File(path = Paths.get(f.getPath.toString), size = f.getLen)
     }
   }
 
@@ -89,12 +89,12 @@ class HdfsFileStorage(fsRoot: String) extends FileStorage with EventLogging {
       None
     }
     else {
-      val status = fs.getStatus(hPath)
-      if (status == null || fs.isDirectory(hPath)) {
+      val status = fs.getFileStatus(hPath)
+      if (status == null || status.isDir) {
         Some(Directory(path))
       }
       else {
-        Some(File(path, status.getUsed))
+        Some(File(path, status.getLen))
       }
     }
   }

@@ -21,40 +21,41 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.component
+package com.intel.intelanalytics.engine.plugin
 
-trait ClassLoaderAware {
+import com.intel.intelanalytics.engine.Engine
+import com.intel.intelanalytics.security.UserPrincipal
+import spray.json.JsObject
 
+import scala.concurrent.ExecutionContext
 
-  /**
-   * Execute a code block using specified class loader
-   * rather than the ClassLoader of the currentThread()
-   */
-  def withLoader[T](loader: ClassLoader)(expr: => T): T = {
-    val prior = Thread.currentThread().getContextClassLoader
-    try {
-      Thread.currentThread().setContextClassLoader(loader)
-      expr
-    }
-    finally {
-      Thread.currentThread().setContextClassLoader(prior)
-    }
-  }
-
+/**
+ * Provides context for an invocation of a command or query.
+ *
+ */
+trait Invocation {
+   /**
+    * An instance of the engine that the plugin can use to execute its work
+    */
+  def engine: Engine
 
   /**
-   * Execute a code block using the ClassLoader of 'this'
-   * rather than the ClassLoader of the currentThread()
+   * The identifier of this execution
    */
-  def withMyClassLoader[T](f: => T): T = {
-    val prior = Thread.currentThread().getContextClassLoader
-    try {
-      val loader = this.getClass.getClassLoader
-      Thread.currentThread setContextClassLoader loader
-      f
-    }
-    finally {
-      Thread.currentThread setContextClassLoader prior
-    }
-  }
+  def commandId: Long
+
+  /**
+   * The original arguments as supplied by the user
+   */
+  def arguments: Option[JsObject]
+
+  /**
+   * The user that invoked the operation
+   */
+  def user: UserPrincipal
+
+  /**
+   * A Scala execution context for use with methods that require one
+   */
+  def executionContext: ExecutionContext
 }

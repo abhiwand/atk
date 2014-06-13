@@ -23,31 +23,31 @@
 
 package com.intel.intelanalytics.engine.spark.frame
 
-import com.intel.intelanalytics.component.ClassLoaderAware
-import com.intel.intelanalytics.shared.EventLogging
-import com.intel.intelanalytics.engine._
-import com.intel.intelanalytics.domain.schema.{Schema, DataTypes}
-import DataTypes.DataType
 import java.nio.file.Paths
-import scala.io.{Source, Codec}
-import org.apache.spark.rdd.RDD
-import com.intel.intelanalytics.engine.spark.{HdfsFileStorage, SparkOps}
-import org.apache.spark.SparkContext
-import scala.util.matching.Regex
 import java.util.concurrent.atomic.AtomicLong
+
+import com.intel.intelanalytics.ClassLoaderAware
 import com.intel.intelanalytics.domain.frame.{Column, DataFrame, DataFrameTemplate}
-import com.intel.intelanalytics.engine.spark.context.{Context}
-import com.intel.intelanalytics.engine.File
+import com.intel.intelanalytics.domain.schema.DataTypes.DataType
+import com.intel.intelanalytics.domain.schema.{DataTypes, Schema}
+import com.intel.intelanalytics.domain.DomainJsonProtocol._
+import com.intel.intelanalytics.engine._
+import com.intel.intelanalytics.engine.spark.context.Context
+import com.intel.intelanalytics.engine.spark.{HdfsFileStorage, SparkOps}
 import com.intel.intelanalytics.security.UserPrincipal
+import com.intel.intelanalytics.shared.EventLogging
+import org.apache.spark.SparkContext
+import org.apache.spark.rdd.RDD
 import org.joda.time.DateTime
+
+import scala.io.{Codec, Source}
+import scala.util.matching.Regex
 
 class SparkFrameStorage(context: UserPrincipal => Context, fsRoot: String, files: HdfsFileStorage, maxRows: Int)
   extends FrameStorage with EventLogging with ClassLoaderAware {
 
+  import com.intel.intelanalytics.engine.Rows.Row
   import spray.json._
-  import Rows.Row
-
-  import com.intel.intelanalytics.domain.DomainJsonProtocol._
 
   def updateName(frame: DataFrame, newName: String): DataFrame = {
     val newFrame = frame.copy(name = newName)
