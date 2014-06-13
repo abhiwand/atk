@@ -48,6 +48,9 @@ import com.intel.intelanalytics.domain.graph.construction.PropertyRule
 import com.intel.intelanalytics.domain.graph.construction.VertexRule
 import org.joda.time.DateTime
 
+/**
+ * Implicit conversions for domain objects to JSON
+ */
 object DomainJsonProtocol extends DefaultJsonProtocol {
 
   implicit object DataTypeFormat extends JsonFormat[DataTypes.DataType] {
