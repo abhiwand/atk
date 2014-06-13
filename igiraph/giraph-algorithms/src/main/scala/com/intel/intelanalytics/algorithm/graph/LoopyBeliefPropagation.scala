@@ -21,23 +21,25 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.engine.spark.algorithm
+package com.intel.intelanalytics.algorithm.graph
 
 import java.util.Date
 
 import com.intel.giraph.algorithms.lbp.LoopyBeliefPropagationComputation
 import com.intel.giraph.io.formats.{JsonPropertyGraph4LBPInputFormat, JsonPropertyGraph4LBPOutputFormat}
 import com.intel.intelanalytics.component.Boot
-import com.intel.intelanalytics.domain.DomainJsonProtocol._
-import com.intel.intelanalytics.engine.hadoop.HadoopSupport
-import com.intel.intelanalytics.engine.plugin.{CommandPlugin, Invocation}
+import com.intel.intelanalytics.engine.plugin.{Invocation, CommandPlugin}
 import com.intel.intelanalytics.security.UserPrincipal
-import com.typesafe.config.Config
+import com.typesafe.config.{ConfigValue, ConfigObject, Config}
 import org.apache.giraph.conf.GiraphConfiguration
 import org.apache.giraph.job.{GiraphConfigurationValidator, GiraphJob}
+import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.mapreduce.Job
+import scala.collection.JavaConverters._
 import spray.json._
+import spray.json.DefaultJsonProtocol._
+
 
 import scala.concurrent._
 import scala.concurrent.duration._
@@ -55,14 +57,61 @@ case class Lbp(graph: String,
 case class LbpResult(runTimeSeconds: Double) //TODO
 
 object LoopyBeliefPropagation
-  extends CommandPlugin[Lbp, LbpResult]
-  with HadoopSupport {
-
+  extends CommandPlugin[Lbp, LbpResult] {
   implicit val lbpFormat = jsonFormat9(Lbp)
   implicit val lbpResultFormat = jsonFormat1(LbpResult)
 
+
+  /**
+   * Set a value in the hadoop configuration, if the argument is not None.
+   * @param hadoopConfiguration the configuration to update
+   * @param hadoopKey the key name to set
+   * @param arg the value to use, if it is defined
+   */
+  def set(hadoopConfiguration: Configuration, hadoopKey: String, arg: Option[Any]) = arg.foreach { value =>
+    hadoopConfiguration.set(hadoopKey, value.toString)
+  }
+
+  /**
+   * Create new Hadoop Configuration object, preloaded with the properties
+   * specified in the given Config object under the provided key.
+   * @param config the Config object from which to copy properties to the Hadoop Configuration
+   * @param key the starting point in the Config object. Defaults to "hadoop".
+   * @return a populated Hadoop Configuration object.
+   */
+  def newHadoopConfigurationFrom(config: Config, key: String = "hadoop") = {
+    require(config != null, "Config cannot be null")
+    require(key != null, "Key cannot be null")
+    val hConf = new Configuration()
+    val properties = flattenConfig(config.getConfig(key))
+    properties.foreach { kv =>
+      println(s"Setting ${kv._1} to ${kv._2}")
+      hConf.set(kv._1, kv._2) }
+    hConf
+  }
+
+  /**
+   * Flatten a nested Config structure down to a simple dictionary that maps complex keys to
+   * a string value, similar to java.util.Properties.
+   *
+   * @param config the config to flatten
+   * @return a map of property names to values
+   */
+  private def flattenConfig(config: Config, prefix: String = "") : Map[String, String] = {
+    val result = config.root.asScala.foldLeft(Map.empty[String,String]) {
+      (map, kv) => kv._2 match {
+        case co: ConfigObject =>
+          val nested = flattenConfig(co.toConfig, prefix = prefix + kv._1 + ".")
+          map ++ nested
+        case value: ConfigValue =>
+          map + (prefix + kv._1 -> value.unwrapped().toString)
+      }
+    }
+    result
+  }
+
   override def execute(invocation: Invocation, arguments: Lbp)
-                      (implicit user: UserPrincipal, executionContext:ExecutionContext): LbpResult = withContext("lbp.apply") {
+                      (implicit user: UserPrincipal, executionContext:ExecutionContext): LbpResult =  {
     val start = System.currentTimeMillis()
     val graphFuture = invocation.engine.getGraph(arguments.graph.toLong)
 
@@ -143,8 +192,8 @@ object LoopyBeliefPropagation
   override def defaultLocations: Seq[String] = List("/graphs/ml/loopy-belief-propagation")
 
   //TODO: Replace with generic code that works on any case class
-  override def parseArguments(arguments: JsObject) = arguments.convertTo[Lbp]
+  def parseArguments(arguments: JsObject) = arguments.convertTo[Lbp]
 
   //TODO: Replace with generic code that works on any case class
-  override def serializeReturn(returnValue: Any): JsObject = returnValue.asInstanceOf[LbpResult].toJson.asJsObject
+  def serializeReturn(returnValue: Any): JsObject = returnValue.asInstanceOf[LbpResult].toJson.asJsObject
 }
