@@ -151,7 +151,8 @@ class Polling(object):
             wait_time = time.time() - start_time
             command_info = Polling._get_command_info(command_info.uri)
             progress = command_info.progress
-            Polling.print_progress(progress)
+            print progress
+            # Polling.print_progress(progress)
 
             if predicate(command_info):
                 return command_info
@@ -201,7 +202,7 @@ class Executor(object):
         try:
             if not command_info.complete:
                 command_info = Polling.poll(command_info.uri)
-                Polling.print_progress(command_info.progress)
+                # Polling.print_progress(command_info.progress)
 
         except KeyboardInterrupt:
             self.cancel(command_info.id_number)

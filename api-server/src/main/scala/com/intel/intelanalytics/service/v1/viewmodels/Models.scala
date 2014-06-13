@@ -58,7 +58,7 @@ case class CommandHeader(id: Long, name: String, url: String) {
   require(url != null)
 }
 
-case class DecoratedCommand(id: Long, name: String, arguments: Option[JsObject], error: Option[Error], progress: Long,
+case class DecoratedCommand(id: Long, name: String, arguments: Option[JsObject], error: Option[Error], progress: List[Int],
                             complete: Boolean, result: Option[JsObject], links: List[RelLink]) {
   require(id > 0)
   require(name != null)
