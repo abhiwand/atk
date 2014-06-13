@@ -72,7 +72,7 @@ import com.intel.intelanalytics.domain.graph.GraphTemplate
 import ExecutionContext.Implicits.global
 
 object SparkEngine {
-  private val pythonRddDelimiter = "`"
+  private val pythonRddDelimiter = "\0"
 }
 
 class SparkEngine(config: SparkEngineConfiguration,
