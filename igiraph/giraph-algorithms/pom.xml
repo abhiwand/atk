@@ -39,6 +39,10 @@
 
     <dependencies>
         <dependency>
+            <groupId>com.intel</groupId>
+            <artifactId>interfaces</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-common</artifactId>
         </dependency>
