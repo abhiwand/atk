@@ -31,7 +31,7 @@ import com.intel.intelanalytics.engine.{Engine, EngineComponent}
 import scala.concurrent.ExecutionContext
 import scala.util.Failure
 import scala.util.Success
-import com.intel.intelanalytics.service.v1.viewmodels.ViewModelJsonProtocol
+import com.intel.intelanalytics.service.v1.viewmodels.ViewModelJsonImplicits
 import com.intel.intelanalytics.service.v1.viewmodels.Rel
 import com.intel.intelanalytics.domain.DomainJsonProtocol
 import com.intel.intelanalytics.security.UserPrincipal
@@ -54,7 +54,7 @@ class GraphService(commonDirectives: CommonDirectives, engine: Engine) extends D
    * The spray routes defining the Graph service.
    */
   def graphRoutes() = {
-    import ViewModelJsonProtocol._
+    import ViewModelJsonImplicits._
     val prefix = "graphs"
 
     /**

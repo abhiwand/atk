@@ -77,7 +77,7 @@ class DataFrameService(commonDirectives: CommonDirectives, engine: Engine) exten
         requestUri { uri =>
           get {
             import spray.json._
-            import ViewModelJsonProtocol._
+            import ViewModelJsonImplicits._
             //TODO: cursor
             onComplete(engine.getFrames(0, defaultCount)) {
               case Success(frames) => complete(FrameDecorator.decorateForIndex(uri.toString(), frames))
@@ -87,7 +87,7 @@ class DataFrameService(commonDirectives: CommonDirectives, engine: Engine) exten
             post {
               import spray.httpx.SprayJsonSupport._
               implicit val format = DomainJsonProtocol.dataFrameTemplateFormat
-              implicit val indexFormat = ViewModelJsonProtocol.decoratedDataFrameFormat
+              implicit val indexFormat = ViewModelJsonImplicits.decoratedDataFrameFormat
               entity(as[DataFrameTemplate]) {
                 frame =>
                   onComplete(engine.create(frame)) {
@@ -108,7 +108,7 @@ class DataFrameService(commonDirectives: CommonDirectives, engine: Engine) exten
                     complete {
                       import spray.httpx.SprayJsonSupport._
                       implicit val format = DomainJsonProtocol.dataFrameTemplateFormat
-                      implicit val indexFormat = ViewModelJsonProtocol.decoratedDataFrameFormat
+                      implicit val indexFormat = ViewModelJsonImplicits.decoratedDataFrameFormat
                       decorated
                     }
                   }
