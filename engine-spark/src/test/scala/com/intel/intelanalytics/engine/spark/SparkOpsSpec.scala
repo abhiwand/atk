@@ -31,9 +31,6 @@ import scala.collection.mutable.ArrayBuffer
 
 class SparkOpsTest extends TestingSparkContext with Matchers {
 
-  //TODO
-//  val config = ConfigFactory.load("engine.conf")
-//  val max = config.getInt("intel.analytics.engine.max-rows")
   val max = 20
   val array = (1 to max * 2).map(i => Array(i, i.toString, i.toDouble * 0.1))
 
@@ -43,7 +40,7 @@ class SparkOpsTest extends TestingSparkContext with Matchers {
     var offset = 0
     var loop = true
     while (loop) {
-      val batch = SparkOps.getRows(data, offset, max)
+      val batch = SparkOps.getRows(data, offset, max, max)
       if (batch.length == 0)
         loop = false
       offset += max
@@ -54,27 +51,27 @@ class SparkOpsTest extends TestingSparkContext with Matchers {
 
   "getRows" should "return the requested number of rows" in {
     val data = sc.parallelize(array)
-    SparkOps.getRows(data, 0, max).length should equal(max)
+    SparkOps.getRows(data, 0, max, max).length should equal(max)
   }
 
-//TODO
-//  it should "limit the returned rows based on configured restrictions" in {
-//    SparkOps.getRows(data, 0, max + 5).length should equal(max)
-//  }
+  it should "limit the returned rows based on configured restrictions" in {
+    val data = sc.parallelize(array)
+    SparkOps.getRows(data, 0, max + 5, max).length should equal(max)
+  }
 
   it should "return no more rows than are available" in {
     val data = sc.parallelize(array)
-    SparkOps.getRows(data, max * 2 - 5, max).length should equal(5)
+    SparkOps.getRows(data, max * 2 - 5, max, max).length should equal(5)
   }
 
   it should "start at the requested offset" in {
     val data = sc.parallelize(array)
-    SparkOps.getRows(data, max * 2 - 10, 5).length should equal(5)
+    SparkOps.getRows(data, max * 2 - 10, 5, max).length should equal(5)
   }
 
   it should "return no rows when a zero count is requested" in {
     val data = sc.parallelize(array)
-    SparkOps.getRows(data, max * 2 - 10, 0).length should equal(0)
+    SparkOps.getRows(data, max * 2 - 10, 0, max).length should equal(0)
   }
 
   it should "return all the data when invoked enough times" in {
