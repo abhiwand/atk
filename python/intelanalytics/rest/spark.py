@@ -40,6 +40,28 @@ if spark_python not in sys.path:
 from serializers import PickleSerializer, BatchedSerializer, UTF8Deserializer, CloudPickleSerializer, write_int
 
 from intelanalytics.core.row import Row
+from intelanalytics.core.types import supported_types
+
+rdd_delimiter = '`'
+
+
+def get_add_one_column_function(row_function, data_type):
+    """Returns a function which adds a column to a row based on given row function"""
+    def add_one_column(row):
+        result = row_function(row)
+        row.data.append(unicode(supported_types.cast(result, data_type)))
+        return rdd_delimiter.join(row.data)
+    return add_one_column
+
+
+def get_add_many_columns_function(row_function, data_types):
+    """Returns a function which adds several columns to a row based on given row function"""
+    def add_many_columns(row):
+        result = row_function(row)
+        for i, data_type in enumerate(data_types):
+            row.data.append(unicode(supported_types.cast(result[i], data_type)))
+        return rdd_delimiter.join(row.data)
+    return add_many_columns
 
 
 class RowWrapper(Row):
@@ -50,7 +72,7 @@ class RowWrapper(Row):
     def load_row(self, s):
         # todo - will probably change frequently
         #  specific to String RDD, takes a comma-sep string right now...
-        self.data = s.split(',')  # data is an array of strings
+        self.data = s.split(rdd_delimiter)  # data is an array of strings
         #print "row_wrapper.data=" + str(self.data)
 
 
