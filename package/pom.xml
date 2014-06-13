@@ -142,6 +142,80 @@
                                     </arguments>
                                 </configuration>
                             </execution>
+
+                            <execution>
+                                <id>zip-ispark-deps</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>exec</goal>
+                                </goals>
+                                <configuration>
+                                    <executable>bash</executable>
+                                    <workingDirectory>${basedir}</workingDirectory>
+                                    <arguments>
+                                        <argument>${basedir}/config/intelanalytics-spark-deps/package.sh</argument>
+                                    </arguments>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>package-spark-deps</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>exec</goal>
+                                </goals>
+                                <configuration>
+                                    <executable>bash</executable>
+                                    <workingDirectory>${basedir}</workingDirectory>
+                                    <arguments>
+                                        <argument>package.sh</argument>
+                                        <argument>-p</argument>
+                                        <argument>intelanalytics-spark-deps</argument>
+                                        <argument>-b</argument>
+                                        <argument>${env.BUILD_NUMBER}</argument>
+                                        <argument>-v</argument>
+                                        <argument>${pkg.version}</argument>
+                                        <argument>--tar</argument>
+                                        <argument>${basedir}/intelanalytics-spark-deps-source.tar.gz</argument>
+                                    </arguments>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>zip-graphbuilder</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>exec</goal>
+                                </goals>
+                                <configuration>
+                                    <executable>bash</executable>
+                                    <workingDirectory>${basedir}</workingDirectory>
+                                    <arguments>
+                                        <argument>${basedir}/config/intelanalytics-graphbuilder/package.sh</argument>
+                                    </arguments>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>package-graphbuilder</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>exec</goal>
+                                </goals>
+                                <configuration>
+                                    <executable>bash</executable>
+                                    <workingDirectory>${basedir}</workingDirectory>
+                                    <arguments>
+                                        <argument>package.sh</argument>
+                                        <argument>-p</argument>
+                                        <argument>intelanalytics-graphbuilder</argument>
+                                        <argument>-b</argument>
+                                        <argument>${env.BUILD_NUMBER}</argument>
+                                        <argument>-v</argument>
+                                        <argument>${pkg.version}</argument>
+                                        <argument>--tar</argument>
+                                        <argument>${basedir}/intelanalytics-graphbuilder-source.tar.gz</argument>
+                                    </arguments>
+                                </configuration>
+                            </execution>
+
                         </executions>
                     </plugin>
                 </plugins>
