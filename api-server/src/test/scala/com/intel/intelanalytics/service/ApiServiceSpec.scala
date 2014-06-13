@@ -1,7 +1,6 @@
 package com.intel.intelanalytics.service
 
 import com.intel.intelanalytics.service.v1.ApiV1Service
-import spray.http.StatusCodes
 
 class ApiServiceSpec extends ServiceSpec {
 
@@ -19,10 +18,10 @@ class ApiServiceSpec extends ServiceSpec {
   it should "provide version info as JSON" in {
     Get("/info") ~> apiService.serviceRoute ~> check {
       assert(responseAs[String] == """{
-          |  "name": "Intel Analytics",
-          |  "identifier": "ia",
-          |  "versions": ["v1"]
-          |}""".stripMargin)
+                                     |  "name": "Intel Analytics",
+                                     |  "identifier": "ia",
+                                     |  "versions": ["v1"]
+                                     |}""".stripMargin)
       assert(status.intValue == 200)
       assert(status.isSuccess)
     }

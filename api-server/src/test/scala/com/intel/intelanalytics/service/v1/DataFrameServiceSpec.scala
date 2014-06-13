@@ -36,10 +36,10 @@ class DataFrameServiceSpec extends ServiceSpec {
 
     Get("/dataframes") ~> dataFrameService.frameRoutes() ~> check {
       assert(responseAs[String] == """[{
-        |  "id": 1,
-        |  "name": "name",
-        |  "url": "http://example.com/dataframes/1"
-        |}]""".stripMargin)
+                                     |  "id": 1,
+                                     |  "name": "name",
+                                     |  "url": "http://example.com/dataframes/1"
+                                     |}]""".stripMargin)
     }
   }
 
