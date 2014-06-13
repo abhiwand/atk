@@ -21,45 +21,19 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.engine
+package com.intel.intelanalytics.engine.spark.plugin
 
-import com.intel.intelanalytics.component.ClassLoaderAware
+import com.intel.intelanalytics.engine.Engine
+import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.security.UserPrincipal
-import scala.concurrent.ExecutionContext
-import com.typesafe.config.Config
+import org.apache.spark.SparkContext
 import spray.json.JsObject
-import com.intel.intelanalytics.shared.EventLogging
 
-object Execution {
+import scala.concurrent.ExecutionContext
 
-  case class CommandExecution(engine: Engine,
-                              config: Config,
-                              commandId: Long,
-                              arguments: Option[JsObject],
-                              user: UserPrincipal,
-                              implicit val executionContext: ExecutionContext)
-
-  /**
-   * Commands are the equivalent of functions - units of computation. They
-   * are invoked by the engine, and additional commands can be added as
-   * plugins.
-   */
-  trait CommandDefinition extends (CommandExecution => JsObject)
-  with EventLogging
-  with ClassLoaderAware {
-
-    protected def execute(execution: CommandExecution) : JsObject
-
-    /**
-     * Overridden to ensure that the execute method is called with the command's
-     * class loader as the context class loader.
-     * @param execution the invocation information
-     * @return the result of the command
-     */
-    final def apply(execution: CommandExecution) = {
-      withMyClassLoader {
-        execute(execution)
-      }
-    }
-  }
-}
+case class SparkInvocation(engine: Engine,
+                           user: UserPrincipal,
+                           commandId: Long,
+                           executionContext: ExecutionContext,
+                           arguments: Option[JsObject],
+                           sparkContextFactory: ()=> SparkContext) extends Invocation

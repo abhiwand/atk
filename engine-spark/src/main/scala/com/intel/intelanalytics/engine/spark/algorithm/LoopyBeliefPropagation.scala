@@ -23,68 +23,66 @@
 
 package com.intel.intelanalytics.engine.spark.algorithm
 
-import com.intel.intelanalytics.domain.DomainJsonProtocol
-import scala.concurrent._
-import scala.Some
-import com.intel.intelanalytics.shared.EventLogging
-import com.intel.intelanalytics.engine.Execution
-import spray.json._
-import DomainJsonProtocol._
-import scala.concurrent.duration._
+import java.util.Date
+
+import com.intel.giraph.algorithms.lbp.LoopyBeliefPropagationComputation
+import com.intel.giraph.io.formats.{JsonPropertyGraph4LBPInputFormat, JsonPropertyGraph4LBPOutputFormat}
+import com.intel.intelanalytics.component.Boot
+import com.intel.intelanalytics.domain.DomainJsonProtocol._
+import com.intel.intelanalytics.engine.hadoop.HadoopSupport
+import com.intel.intelanalytics.engine.plugin.{CommandPlugin, Invocation}
+import com.intel.intelanalytics.security.UserPrincipal
+import com.typesafe.config.Config
 import org.apache.giraph.conf.GiraphConfiguration
 import org.apache.giraph.job.{GiraphConfigurationValidator, GiraphJob}
-import com.intel.giraph.algorithms.lbp.LoopyBeliefPropagationComputation
-import com.intel.giraph.io.formats.{JsonPropertyGraph4LBPOutputFormat, JsonPropertyGraph4LBPInputFormat}
 import org.apache.hadoop.fs.Path
-import com.intel.intelanalytics.engine.hadoop.HadoopSupport
 import org.apache.hadoop.mapreduce.Job
-import org.apache.hadoop.yarn.conf.YarnConfiguration
-import org.apache.giraph.GiraphRunner
-import com.intel.intelanalytics.component.Boot
-import java.util.Date
-import org.apache.hadoop.io.{WritableComparable, Writable}
-import com.intel.intelanalytics.engine.hadoop.HadoopSupport
+import spray.json._
+
+import scala.concurrent._
+import scala.concurrent.duration._
+
+case class Lbp(graph: String,
+               max_supersteps: Option[Int] = None,
+               convergence_threshold: Option[Double] = None,
+               anchor_threshold: Option[Double] = None,
+               smoothing: Option[Double] = None,
+               bidirectional_check: Option[Boolean] = None,
+               ignore_vertex_type: Option[Boolean] = None,
+               max_product: Option[Boolean] = None,
+               power: Option[Double] = None)
+
+case class LbpResult(runTimeSeconds: Double) //TODO
 
 object LoopyBeliefPropagation
-  extends Execution.CommandDefinition
+  extends CommandPlugin[Lbp, LbpResult]
   with HadoopSupport {
 
+  implicit val lbpFormat = jsonFormat9(Lbp)
+  implicit val lbpResultFormat = jsonFormat1(LbpResult)
 
-  case class Lbp[GraphRef](graph: GraphRef,
-                           max_supersteps: Option[Int] = None,
-                           convergence_threshold: Option[Double] = None,
-                           anchor_threshold: Option[Double] = None,
-                           smoothing: Option[Double] = None,
-                           bidirectional_check: Option[Boolean] = None,
-                           ignore_vertex_type: Option[Boolean] = None,
-                           max_product: Option[Boolean] = None,
-                           power: Option[Double] = None)
+  override def execute(invocation: Invocation, arguments: Lbp)
+                      (implicit user: UserPrincipal, executionContext:ExecutionContext): LbpResult = withContext("lbp.apply") {
+    val start = System.currentTimeMillis()
+    val graphFuture = invocation.engine.getGraph(arguments.graph.toLong)
 
-  implicit val lbpFormat = jsonFormat9(Lbp[Long])
+    val config: Config = configuration().get
+    val hConf = newHadoopConfigurationFrom(config, "giraph")
 
-  override def execute(execution: Execution.CommandExecution): JsObject = withContext("lbp.apply") {
-
-    val lbp = execution.arguments.getOrElse(
-      illegalArg("Arguments required for loopy belief propagation"))
-      .convertTo[Lbp[Long]]
-    implicit val execCtx = execution.executionContext
-    val graphFuture = execution.engine.getGraph(lbp.graph)
-
-    val hConf = newHadoopConfigurationFrom(execution.config, "giraph")
 
 
 
     //    These parameters are set from the arguments passed in, or defaulted from
     //    the engine configuration if not passed.
-    set(hConf, "lbp.maxSuperSteps", lbp.max_supersteps)
-    set(hConf, "lbp.convergenceThreshold", lbp.convergence_threshold)
-    set(hConf, "lbp.anchorThreshold", lbp.anchor_threshold)
-    set(hConf, "lbp.bidirectionalCheck", lbp.bidirectional_check)
-    set(hConf, "lbp.power", lbp.power)
-    set(hConf, "lbp.smoothing", lbp.smoothing)
-    set(hConf, "lbp.ignoreVertexType", lbp.ignore_vertex_type)
+    set(hConf, "lbp.maxSuperSteps", arguments.max_supersteps)
+    set(hConf, "lbp.convergenceThreshold", arguments.convergence_threshold)
+    set(hConf, "lbp.anchorThreshold", arguments.anchor_threshold)
+    set(hConf, "lbp.bidirectionalCheck", arguments.bidirectional_check)
+    set(hConf, "lbp.power", arguments.power)
+    set(hConf, "lbp.smoothing", arguments.smoothing)
+    set(hConf, "lbp.ignoreVertexType", arguments.ignore_vertex_type)
 
-    val graph = Await.result(graphFuture, execution.config.getInt("default-timeout") seconds)
+    val graph = Await.result(graphFuture, config.getInt("default-timeout") seconds)
 
     //val yarnConfig: YarnConfiguration = new YarnConfiguration(hConf)
     val giraphConf = new GiraphConfiguration(hConf)
@@ -94,11 +92,11 @@ object LoopyBeliefPropagation
     giraphConf.setMasterComputeClass(classOf[LoopyBeliefPropagationComputation.LoopyBeliefPropagationMasterCompute])
     giraphConf.setComputationClass(classOf[LoopyBeliefPropagationComputation])
     giraphConf.setAggregatorWriterClass(classOf[LoopyBeliefPropagationComputation.LoopyBeliefPropagationAggregatorWriter])
-    val graphId = lbp.graph //graph.getOrElse(illegalArg("Graph does not exist, cannot run LBP")
+    val graphId = arguments.graph //graph.getOrElse(illegalArg("Graph does not exist, cannot run LBP")
     //val job = new org.apache.giraph.yarn.GiraphYarnClient(giraphConf, "iat-giraph-lbp-" + new Date());
     val job = new GiraphJob(giraphConf, "iat-giraph-lbp-" + new Date())
     val internalJob: Job = job.getInternalJob
-    val giraphLoader = Boot.getClassLoader(execution.config.getString("giraph.archive.name"))
+    val giraphLoader = Boot.getClassLoader(config.getString("giraph.archive.name"))
     Thread.currentThread().setContextClassLoader(giraphLoader)
     val coreSiteXml = giraphLoader.getResource("core-site.xml")
     assert(coreSiteXml != null, "core-site.xml not available on class path")
@@ -109,7 +107,7 @@ object LoopyBeliefPropagation
     org.apache.hadoop.mapreduce.lib.input.FileInputFormat.setInputPaths(internalJob,
       new Path("/user/hadoop/lbp/in"))
     org.apache.hadoop.mapreduce.lib.output.FileOutputFormat.setOutputPath(internalJob,
-      new Path("/user/hadoop/lbp/out/" + execution.commandId))
+      new Path("/user/hadoop/lbp/out/" + invocation.commandId))
     @SuppressWarnings(Array("rawtypes")) val gtv: GiraphConfigurationValidator[_, _, _, _, _] =
       new GiraphConfigurationValidator(giraphConf)
 
@@ -134,6 +132,19 @@ object LoopyBeliefPropagation
     //      "-ca", "lbp.ignoreVertexType=true",
     //      "-ca", "lbp.maxProduct=false",
     //      "-ca", "lbp.power=0.5"))
-    JsObject()
+    val time = (System.currentTimeMillis() - start).toDouble / 1000.0
+    LbpResult(time)
   }
+
+  /**
+   * The location(s) that this component would prefer to be located in the
+   * component registry. Can be overridden by configuration.
+   */
+  override def defaultLocations: Seq[String] = List("/graphs/ml/loopy-belief-propagation")
+
+  //TODO: Replace with generic code that works on any case class
+  override def parseArguments(arguments: JsObject) = arguments.convertTo[Lbp]
+
+  //TODO: Replace with generic code that works on any case class
+  override def serializeReturn(returnValue: Any): JsObject = returnValue.asInstanceOf[LbpResult].toJson.asJsObject
 }

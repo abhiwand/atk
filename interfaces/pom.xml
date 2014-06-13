@@ -4,8 +4,6 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <artifactId>interfaces</artifactId>
-    <version>0.8.0-SNAPSHOT</version>
-    <groupId>com.intel.intelanalytics</groupId>
     <packaging>jar</packaging>
 
     <parent>
@@ -24,7 +22,10 @@
         </plugins>
     </build>
     <dependencies>
-
+        <dependency>
+            <groupId>com.intel</groupId>
+            <artifactId>launcher</artifactId>
+        </dependency>
         <dependency>
             <groupId>io.spray</groupId>
             <artifactId>spray-json_${scala.short.version}</artifactId>
@@ -33,14 +34,10 @@
         <dependency>
             <groupId>joda-time</groupId>
             <artifactId>joda-time</artifactId>
-            <version>2.3</version>
         </dependency>
         <dependency>
             <groupId>org.joda</groupId>
             <artifactId>joda-convert</artifactId>
-            <version>1.2</version>
         </dependency>
     </dependencies>
-
-
 </project>

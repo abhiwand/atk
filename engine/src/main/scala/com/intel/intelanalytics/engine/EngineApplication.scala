@@ -23,7 +23,8 @@
 
 package com.intel.intelanalytics.engine
 
-import com.intel.intelanalytics.component.{ClassLoaderAware, Component}
+import com.intel.intelanalytics.ClassLoaderAware
+import com.intel.intelanalytics.component.Component
 import com.intel.intelanalytics.shared.EventLogging
 import com.typesafe.config.Config
 

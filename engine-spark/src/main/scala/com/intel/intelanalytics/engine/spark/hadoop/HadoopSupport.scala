@@ -1,12 +1,13 @@
 package com.intel.intelanalytics.engine.hadoop
 
-import org.apache.hadoop.conf.Configuration
-import com.typesafe.config.{ConfigFactory, ConfigValue, ConfigObject, Config}
-import scala.collection.JavaConverters._
-import org.apache.hadoop.hdfs.DistributedFileSystem
-import org.apache.hadoop.fs.{Path, LocalFileSystem}
-import scala.reflect.io.{Directory, File}
 import com.intel.intelanalytics.shared.EventLogging
+import com.typesafe.config.{Config, ConfigFactory, ConfigObject, ConfigValue}
+import org.apache.hadoop.conf.Configuration
+import org.apache.hadoop.fs.{LocalFileSystem, Path}
+import org.apache.hadoop.hdfs.DistributedFileSystem
+
+import scala.collection.JavaConverters._
+import scala.reflect.io.Directory
 
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
@@ -67,7 +68,7 @@ trait HadoopSupport extends EventLogging {
       classOf[DistributedFileSystem].getName)
     hadoopConfig.setIfUnset("fs.file.impl",
       classOf[LocalFileSystem].getName)
-    require(hadoopConfig.getClassByNameOrNull(classOf[LocalFileSystem].getName) != null)
+    //require(hadoopConfig.getClassByNameOrNull(classOf[LocalFileSystem].getName) != null)
 
     hadoopConfig
   }
