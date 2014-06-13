@@ -71,6 +71,9 @@ import com.intel.intelanalytics.domain.graph.GraphTemplate
 //TODO: Fix execution contexts.
 import ExecutionContext.Implicits.global
 
+object SparkEngine {
+  private val pythonRddDelimiter = "`"
+}
 
 class SparkEngine(config: SparkEngineConfiguration,
                   sparkContextManager: SparkContextManager,
@@ -287,6 +290,7 @@ class SparkEngine(config: SparkEngineConfiguration,
     new sun.misc.BASE64Decoder().decodeBuffer(corrected)
   }
 
+
   /**
    * Create a Python RDD
    * @param frameId source frame for the parent RDD
@@ -300,7 +304,7 @@ class SparkEngine(config: SparkEngineConfiguration,
       val predicateInBytes = decodePythonBase64EncodedStrToBytes(py_expression)
 
       val baseRdd: RDD[String] = frames.getFrameRdd(ctx, frameId)
-        .map(x => x.map(t => t.toString()).mkString(",")) // TODO: we're assuming no commas in the values, isn't this going to cause issues?
+        .map(x => x.map(t => t.toString()).mkString(SparkEngine.pythonRddDelimiter))
 
       val pythonExec = "python2.7" //TODO: take from env var or config
       val environment = new java.util.HashMap[String, String]()
@@ -320,7 +324,7 @@ class SparkEngine(config: SparkEngineConfiguration,
 
   private def persistPythonRDD(pyRdd: EnginePythonRDD[String], converter: Array[String] => Array[Any], location: String): Unit = {
     withMyClassLoader {
-      pyRdd.map(s => new String(s).split(",")).map(converter).saveAsObjectFile(location)
+      pyRdd.map(s => new String(s).split(SparkEngine.pythonRddDelimiter)).map(converter).saveAsObjectFile(location)
     }
   }
 

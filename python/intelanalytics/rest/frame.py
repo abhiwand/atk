@@ -35,7 +35,8 @@ from intelanalytics.core.files import CsvFile
 from intelanalytics.core.types import *
 from intelanalytics.rest.connection import http
 from intelanalytics.rest.command import CommandRequest, executor
-from intelanalytics.rest.spark import prepare_row_function
+from intelanalytics.rest.spark import prepare_row_function, get_add_one_column_function, get_add_many_columns_function
+
 
 
 class FrameBackendRest(object):
@@ -129,23 +130,6 @@ class FrameBackendRest(object):
                 raise ValueError("First value in schema tuple must be a string")
             supported_types.validate_is_supported_type(tup[1])
 
-    @staticmethod
-    def _get_add_one_column_function(expression, data_type):
-        def add_one_column(row):
-            result = expression(row)
-            row.data.append(unicode(supported_types.cast(result, data_type)))
-            return ",".join(row.data)
-        return add_one_column
-
-    @staticmethod
-    def _get_add_many_columns_function(expression, data_types):
-        def add_many_columns(row):
-            result = expression(row)
-            for i, data_type in enumerate(data_types):
-                row.data.append(unicode(supported_types.cast(result[i], data_type)))
-            return ",".join(row.data)
-        return add_many_columns
-
     def add_columns(self, frame, expression, schema):
         if not schema or not hasattr(schema, "__iter__"):
             raise ValueError("add_columns requires a non-empty schema of (name, type)")
@@ -158,8 +142,8 @@ class FrameBackendRest(object):
         self._validate_schema(schema)
         names, data_types = zip(*schema)
 
-        add_columns_function = self._get_add_one_column_function(expression, data_types[0]) if only_one_column \
-            else self._get_add_many_columns_function(expression, data_types)
+        add_columns_function = get_add_one_column_function(expression, data_types[0]) if only_one_column \
+            else get_add_many_columns_function(expression, data_types)
         from itertools import imap
         http_ready_function = prepare_row_function(frame, add_columns_function, imap)
 
@@ -193,7 +177,7 @@ class FrameBackendRest(object):
     def flatten_column(self, frame, column_name):
         name = self._get_new_frame_name()
         arguments = {'name': name, 'frame': frame._id, 'column': column_name, 'separator': ',' }
-        execute_new_frame_command('flattenColumn', arguments)
+        return execute_new_frame_command('flattenColumn', arguments)
 
     class InspectionTable(object):
         """
