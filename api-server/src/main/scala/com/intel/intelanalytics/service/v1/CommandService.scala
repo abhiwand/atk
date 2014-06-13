@@ -146,7 +146,8 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
       case ("dataframe/rename_column") => runFrameRenameColumn(uri, xform)
       case ("dataframe/join") => runJoinFrames(uri, xform)
       case ("dataframe/flattenColumn") => runflattenColumn(uri, xform)
-      case _ => throw new IllegalArgumentException("Command name is not supported: " + _)
+      case s: String => illegalArg("Command name is not supported: " + s)
+      case _ => illegalArg("Command name was NOT a string")
     }
   }
 
