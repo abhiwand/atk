@@ -129,7 +129,7 @@ class DataFrameService(commonDirectives: CommonDirectives, engine: Engine) exten
             (path("data") & get) {
               parameters('offset.as[Int], 'count.as[Int]) {
                 (offset, count) =>
-                  onComplete(for { r <- engine.getRows(id, offset, count) } yield r) {
+                  onComplete(engine.getRows(id, offset, count)) {
                     case Success(rows: Iterable[Array[Any]]) => {
                       import spray.httpx.SprayJsonSupport._
                       import spray.json._
