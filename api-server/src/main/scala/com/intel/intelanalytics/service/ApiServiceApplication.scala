@@ -71,7 +71,6 @@ class ApiServiceApplication extends Component {
     })
   }
 
-
   /**
    * Initialize API Server dependencies and perform dependency injection as needed.
    */
@@ -122,4 +121,13 @@ class ApiServiceApplication extends Component {
     IO(Http) ? Http.Bind(service, interface = interface, port = port)
   }
 
+  /**
+   * The location at which this component should be installed in the component
+   * tree. For example, a graph machine learning algorithm called Loopy Belief
+   * Propagation might wish to be installed at
+   * "commands/graphs/ml/loopy_belief_propagation". However, it might not actually
+   * get installed there if the system has been configured to override that
+   * default placement.
+   */
+  override def defaultLocation: String = "api"
 }

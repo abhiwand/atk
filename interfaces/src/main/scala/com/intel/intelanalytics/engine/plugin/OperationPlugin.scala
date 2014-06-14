@@ -58,6 +58,11 @@ sealed trait OperationPlugin[A <: Product, R <: Product] extends ((Invocation, A
   private var config: Option[Config] = None
 
   /**
+   * The name of the command, e.g. graphs/ml/loopy_belief_propagation
+   */
+  def name: String
+
+  /**
    * Access to configuration provided during startup
    */
   def configuration() : Option[Config] = config
@@ -113,6 +118,9 @@ sealed trait OperationPlugin[A <: Product, R <: Product] extends ((Invocation, A
  * Base trait for command plugins
  */
 trait CommandPlugin[Argument <: Product, Return <: Product] extends OperationPlugin[Argument, Return] {
+
+  //TODO: move this override to an engine-specific class
+  final override def defaultLocation = "engine/commands/" + name
 
   //TODO: Replace with generic code that works on any case class
   def parseArguments(arguments: JsObject) : Argument

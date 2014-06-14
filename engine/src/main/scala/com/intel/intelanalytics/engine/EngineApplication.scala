@@ -24,20 +24,20 @@
 package com.intel.intelanalytics.engine
 
 import com.intel.intelanalytics.ClassLoaderAware
-import com.intel.intelanalytics.component.Component
+import com.intel.intelanalytics.component.{Locator, Component}
 import com.intel.intelanalytics.shared.EventLogging
 import com.typesafe.config.Config
 
 import scala.util.control.NonFatal
 
-class EngineApplication extends Component with EventLogging with ClassLoaderAware {
+class EngineApplication extends Component with EventLogging with ClassLoaderAware with Locator {
 
   var engine: EngineComponent with FrameComponent with CommandComponent = null
 
   def get[T](descriptor: String) = {
     descriptor match {
-      case "engine" => engine.engine.asInstanceOf[T]
-      case _ => throw new IllegalArgumentException(s"No suitable implementation for: '$descriptor'")
+      case "engine" => Some(engine.engine.asInstanceOf[T])
+      case _ => None
     }
   }
 
@@ -69,4 +69,14 @@ class EngineApplication extends Component with EventLogging with ClassLoaderAwar
         throw e
     }
   }
+
+  /**
+   * The location at which this component should be installed in the component
+   * tree. For example, a graph machine learning algorithm called Loopy Belief
+   * Propagation might wish to be installed at
+   * "commands/graphs/ml/loopy_belief_propagation". However, it might not actually
+   * get installed there if the system has been configured to override that
+   * default placement.
+   */
+  override def defaultLocation: String = "engine"
 }
