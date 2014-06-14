@@ -54,14 +54,6 @@
             <groupId>com.intel</groupId>
             <artifactId>shared</artifactId>
         </dependency>
-        <dependency>
-            <groupId>com.intel</groupId>
-            <artifactId>igiraph-algorithms</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.intel</groupId>
-            <artifactId>igiraph-titan</artifactId>
-        </dependency>
 		<dependency>
             <groupId>com.intel</groupId>
             <artifactId>graphbuilder-3</artifactId>
@@ -112,10 +104,6 @@
             <groupId>com.typesafe.slick</groupId>
             <artifactId>slick_${scala.short.version}</artifactId>
             <version>${slick.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.giraph</groupId>
-            <artifactId>giraph-core</artifactId>
         </dependency>
         <dependency>
             <groupId>org.apache.hadoop</groupId>
