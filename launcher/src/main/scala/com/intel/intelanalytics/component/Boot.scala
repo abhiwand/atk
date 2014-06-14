@@ -47,18 +47,31 @@ object Boot extends App {
 
   private var archives: Map[String, Component] = Map.empty
 
-  private [intelanalytics] val config = ConfigFactory.load()
+  private [intelanalytics] val config = ConfigFactory.load().getConfig("intel.analytics")
 
-  private def buildArchive(archive: String, className: String, configPath: String): Component = {
-    val loader = getClassLoader(archive)
-    val klass = loader.loadClass(className)
+  def attempt[T](expr: =>T, failureMessage: =>String) = {
+    try {
+      expr
+    } catch {
+      case NonFatal(e) => throw new Exception(failureMessage, e)
+    }
+  }
+
+  private def buildArchive(archive: String, className: String, configPath: Option[String]): Component = {
     val thread = Thread.currentThread()
     val prior = thread.getContextClassLoader
+    val loader = getClassLoader(archive)
 
     try {
+      val klass = attempt(loader.loadClass(className), s"Could not find class $className in archive $archive")
       thread.setContextClassLoader(loader)
-      val instance = klass.newInstance().asInstanceOf[Component]
-      instance.start(config)
+      val instance = attempt(klass.newInstance().asInstanceOf[Component],
+        s"Found class $className in archive $archive, but it is not a Component")
+      val restrictedConfigPath: String = configPath.getOrElse(instance.defaultLocation).replace("/", ".")
+      val restrictedConfig = attempt(config.getConfig(restrictedConfigPath),
+        s"Could not obtain configuration for class $className in archive $archive with path $restrictedConfigPath")
+      attempt(instance.start(restrictedConfig),
+          s"Could not start component $className in archive $archive with path $restrictedConfigPath")
       archives += ((archive + ":" + className) -> instance)
       instance
     }
@@ -79,7 +92,7 @@ object Boot extends App {
    *                   the plugin tree.
    * @return the requested archive
    */
-  def getArchive(archive: String, className: String, configPath: String = ""): Component = {
+  def getArchive(archive: String, className: String, configPath: Option[String] = None): Component = {
     archives.getOrElse(archive + ":" + className, buildArchive(archive, className, configPath))
   }
 
@@ -113,16 +126,26 @@ object Boot extends App {
     //TODO: Allow directory to be passed in, or otherwise abstracted?
     //TODO: Make sensitive to actual scala version rather than hard coding.
     val classDirectory: Path = Directory.Current.get / archive / "target" / "classes"
+    val giraphClassDirectory: Path = Directory.Current.get / "igiraph" / archive.substring(1) / "target" / "classes"
     val developmentJar: Path = Directory.Current.get / archive / "target" / (archive + ".jar")
+    val giraphJar: Path = Directory.Current.get / "igiraph" / archive.substring(1) / "target" / (archive + ".jar")
     val deployedJar: Path = Directory.Current.get / "lib" / (archive + ".jar")
     val urls = Array(
       Directory(classDirectory).exists.option {
         println(s"Found class directory at $classDirectory")
         classDirectory.toURL
       },
+      Directory(giraphClassDirectory).exists.option {
+        println(s"Found class directory at $giraphClassDirectory")
+        giraphClassDirectory.toURL
+      },
       File(developmentJar).exists.option {
         println(s"Found jar at $developmentJar")
         developmentJar.toURL
+      },
+      File(giraphJar).exists.option {
+        println(s"Found jar at $giraphJar")
+        giraphJar.toURL
       },
       File(deployedJar).exists.option {
         println(s"Found jar at $deployedJar")
@@ -156,7 +179,9 @@ object Boot extends App {
       val instance = getArchive(args(0), args(1))
     }
     catch {
-      case NonFatal(e) => println(e)
+      case NonFatal(e) =>
+        println(e)
+        e.printStackTrace()
     }
   }
 }

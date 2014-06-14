@@ -166,7 +166,7 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
       case ("dataframe/rename_column") => runFrameRenameColumn(uri, xform)
       case ("dataframe/join") => runJoinFrames(uri, xform)
       case ("dataframe/flattenColumn") => runflattenColumn(uri, xform)
-      case _ => ???
+      case _ => throw new IllegalArgumentException()
     }
   }
 

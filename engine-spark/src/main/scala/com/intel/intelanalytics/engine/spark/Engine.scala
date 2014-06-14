@@ -39,7 +39,7 @@ import com.intel.intelanalytics.engine._
 import com.intel.intelanalytics.engine.plugin.CommandPlugin
 import com.intel.intelanalytics.engine.spark.context.SparkContextManager
 import com.intel.intelanalytics.engine.spark.frame.{RDDJoinParam, RowParser, SparkFrameStorage}
-import com.intel.intelanalytics.engine.spark.plugin.{SparkCommandPlugin, SparkInvocation}
+import com.intel.intelanalytics.engine.spark.plugin.SparkInvocation
 import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.shared.EventLogging
 import com.intel.intelanalytics.{ClassLoaderAware, NotFoundException}
@@ -651,15 +651,12 @@ with ClassLoaderAware {
   }
 
 
-  private val commandConfig = ConfigFactory.load().getConfig("intel.analytics.engine.command")
-
-
   //TODO: get the list of available commands by going through a plugin framework
   //rather than encoding them directly here.
   def getCommandDefinition(name: String): Option[CommandPlugin[_,_]] = {
     val func: Option[CommandPlugin[_,_]] = name match {
       case "graphs/ml/loopy_belief_propagation" =>
-        Some(Boot.getArchive("giraph-ititan", "com.intel.intelanalytics.engine.spark.algorithm.LoopyBeliefPropagation")
+        Some(Boot.getArchive("igiraph-titan", "com.intel.intelanalytics.algorithm.graph.LoopyBeliefPropagation", None)
               .asInstanceOf[CommandPlugin[_,_]])
       case _ => None
     }
@@ -675,13 +672,11 @@ with ClassLoaderAware {
           val cmdFuture = future {
             withCommand(cmd) {
               val function = getCommandDefinition(command.name)
-                .getOrElse(throw new NotFoundException(command.name, "command definition"))
-              //TODO: temporary, we're working on generic JSON support
-                .asInstanceOf[SparkCommandPlugin[_,_]]
-              val config = commandConfig.getConfig(command.name.replace("/", "."))
+                .getOrElse(throw new NotFoundException("command definition", command.name))
               val invocation: SparkInvocation = SparkInvocation(this, commandId = cmd.id, arguments = cmd.arguments,
                 user = user, executionContext = implicitly[ExecutionContext],
                 sparkContextFactory = () => sparkContextManager.context(user).sparkContext)
+              //TODO: temporary, we're working on generic JSON support
               val convertedArgs = function.parseArguments(command.arguments.get)
               val funcResult = function(invocation, convertedArgs)
               //TODO: temporary, we're working on generic JSON support

@@ -44,7 +44,7 @@ import spray.json.DefaultJsonProtocol._
 import scala.concurrent._
 import scala.concurrent.duration._
 
-case class Lbp(graph: String,
+case class Lbp(graph: Int,
                max_supersteps: Option[Int] = None,
                convergence_threshold: Option[Double] = None,
                anchor_threshold: Option[Double] = None,
@@ -56,7 +56,7 @@ case class Lbp(graph: String,
 
 case class LbpResult(runTimeSeconds: Double) //TODO
 
-object LoopyBeliefPropagation
+class LoopyBeliefPropagation
   extends CommandPlugin[Lbp, LbpResult] {
   implicit val lbpFormat = jsonFormat9(Lbp)
   implicit val lbpResultFormat = jsonFormat1(LbpResult)
@@ -196,4 +196,9 @@ object LoopyBeliefPropagation
 
   //TODO: Replace with generic code that works on any case class
   def serializeReturn(returnValue: Any): JsObject = returnValue.asInstanceOf[LbpResult].toJson.asJsObject
+
+  /**
+   * The name of the command, e.g. graphs/ml/loopy_belief_propagation
+   */
+  override def name: String = "graphs/ml/loopy_belief_propagation"
 }

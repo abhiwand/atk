@@ -30,7 +30,15 @@ import com.typesafe.config.Config
  */
 trait Component {
 
-
+  /**
+   * The location at which this component should be installed in the component
+   * tree. For example, a graph machine learning algorithm called Loopy Belief
+   * Propagation might wish to be installed at
+   * "commands/graphs/ml/loopy_belief_propagation". However, it might not actually
+   * get installed there if the system has been configured to override that
+   * default placement.
+   */
+  def defaultLocation: String
   /**
    * Called before processing any requests.
    *
