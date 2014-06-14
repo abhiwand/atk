@@ -110,16 +110,25 @@ class CommandInfo(object):
 class Polling(object):
 
     @staticmethod
-    def print_progress(progress):
-        num_star = progress / 2
-        num_dot = 50 - num_star
-        number = str(progress)
-        text = "\r%3s%% [%s%s]" % (number, '=' * num_star, '.' * num_dot)
-        sys.stdout.write(text)
+    def print_progress(progress, make_new_line):
+        if not progress:
+            return
+
+        progress_summary = []
+        for p in progress:
+            num_star = p / 2
+            num_dot = 50 - num_star
+            number = str(p)
+            progress_summary.append("\r%3s%% [%s%s]" % (number, '=' * num_star, '.' * num_dot))
+
+        if make_new_line:
+            print progress_summary[-2]
+
+        sys.stdout.write(progress_summary[-1])
         sys.stdout.flush()
 
     @staticmethod
-    def poll(uri, predicate=None, interval_secs=0.5, backoff_factor=2, timeout_secs=500):
+    def poll(uri, predicate=None, interval_secs=0.5, backoff_factor=1.5, timeout_secs=5000):
         """
         Issues GET methods on the given command uri until the response
         command_info cause the predicate to evalute True.  Exponential retry
@@ -146,13 +155,17 @@ class Polling(object):
         command_info = Polling._get_command_info(uri)
         if predicate(command_info):
             return command_info
+
+        job_count = 1
         while True:
             time.sleep(interval_secs)
             wait_time = time.time() - start_time
             command_info = Polling._get_command_info(command_info.uri)
             progress = command_info.progress
-            print progress
-            # Polling.print_progress(progress)
+
+            Polling.print_progress(progress, job_count < len(progress))
+            if(job_count < len(progress)):
+                job_count = len(progress)
 
             if predicate(command_info):
                 return command_info
@@ -161,7 +174,12 @@ class Polling(object):
                       % (str(command_info), wait_time)
                 logger.error(msg)
                 raise RuntimeError(msg)
+
             interval_secs *= backoff_factor
+            if interval_secs > 30:
+                interval_secs = 30
+
+
 
     @staticmethod
     def _get_command_info(uri):
