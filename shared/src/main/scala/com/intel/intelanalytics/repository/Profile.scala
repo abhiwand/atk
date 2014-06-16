@@ -27,13 +27,14 @@ object Profile {
    */
   def initializeFromConfig(config: SharedConfig): Profile = {
 
-    val connectionString = config.metaStoreConnectionUrl
     val driver = config.metaStoreConnectionDriver
-    val username = config.metaStoreConnectionUsername
-    val password = config.metaStoreConnectionPassword
-    val createTables = config.metaStoreConnectionCreateTables
 
-    new Profile(jdbcProfileForDriver(driver), connectionString, driver, username, password, createTables)
+    new Profile(jdbcProfileForDriver(driver),
+                connectionString = config.metaStoreConnectionUrl,
+                driver,
+                username = config.metaStoreConnectionUsername,
+                password = config.metaStoreConnectionPassword,
+                createTables = config.metaStoreConnectionCreateTables)
   }
 
   /**
