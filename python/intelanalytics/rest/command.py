@@ -32,6 +32,25 @@ logger = logging.getLogger(__name__)
 
 from intelanalytics.rest.connection import http
 
+def print_progress(progress, make_new_line):
+    if not progress:
+        sys.stdout.write("\rinitializing...")
+        sys.stdout.flush()
+        return
+
+    progress_summary = []
+    for p in progress:
+        num_star = p / 2
+        num_dot = 50 - num_star
+        number = str(p)
+        progress_summary.append("\r%3s%% [%s%s]" % (number, '=' * num_star, '.' * num_dot))
+
+    if make_new_line:
+        print progress_summary[-2]
+
+    sys.stdout.write(progress_summary[-1])
+    sys.stdout.flush()
+
 
 class CommandRequest(object):
     def __init__(self, name, arguments):
@@ -110,24 +129,6 @@ class CommandInfo(object):
 class Polling(object):
 
     @staticmethod
-    def print_progress(progress, make_new_line):
-        if not progress:
-            return
-
-        progress_summary = []
-        for p in progress:
-            num_star = p / 2
-            num_dot = 50 - num_star
-            number = str(p)
-            progress_summary.append("\r%3s%% [%s%s]" % (number, '=' * num_star, '.' * num_dot))
-
-        if make_new_line:
-            print progress_summary[-2]
-
-        sys.stdout.write(progress_summary[-1])
-        sys.stdout.flush()
-
-    @staticmethod
     def poll(uri, predicate=None, interval_secs=0.5, backoff_factor=1.5, timeout_secs=5000):
         """
         Issues GET methods on the given command uri until the response
@@ -163,8 +164,9 @@ class Polling(object):
             command_info = Polling._get_command_info(command_info.uri)
             progress = command_info.progress
 
-            Polling.print_progress(progress, job_count < len(progress))
-            if(job_count < len(progress)):
+            new_job_progress_exists = job_count < len(progress)
+            print_progress(progress, new_job_progress_exists)
+            if(new_job_progress_exists):
                 job_count = len(progress)
 
             if predicate(command_info):
