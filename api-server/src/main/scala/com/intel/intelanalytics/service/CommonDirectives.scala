@@ -21,47 +21,31 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.service.v1
+package com.intel.intelanalytics.service
 
-import spray.routing._
-import com.intel.intelanalytics.domain._
 import akka.event.Logging
-import spray.json._
-import spray.http.{ HttpHeader, StatusCodes, MediaTypes }
-import scala.Some
-import com.intel.intelanalytics.repository.MetaStoreComponent
-import com.intel.intelanalytics.service.EventLoggingDirectives
-import com.intel.intelanalytics.engine.{ EngineComponent }
-import scala.util._
-import scala.concurrent._
-import com.typesafe.config.ConfigFactory
-import com.intel.intelanalytics.domain.User
+import spray.http.StatusCodes
 import com.intel.intelanalytics.security.UserPrincipal
-import PartialFunction._
 import spray.routing._
-import com.intel.intelanalytics.domain.frame.DataFrameTemplate
-
-//TODO: Is this right execution context for us?
-
-import ExecutionContext.Implicits.global
-import com.intel.intelanalytics.service.v1.viewmodels.DecoratedDataFrame
 import scala.util.control.NonFatal
-import scala.util.Failure
-import scala.util.Success
-import scala.concurrent.duration._
 
-trait V1Service extends Directives with EventLoggingDirectives {
-  this: V1Service with MetaStoreComponent with EngineComponent =>
+/**
+ * Directives common to all services
+ *
+ * @param authenticationDirective implementation for authentication
+ */
+class CommonDirectives(val authenticationDirective: AuthenticationDirective) extends Directives with EventLoggingDirectives {
 
-  val config = ConfigFactory.load()
-  val defaultCount = config.getInt("intel.analytics.api.defaultCount")
-  val defaultTimeout: FiniteDuration = config.getInt("intel.analytics.api.defaultTimeout") seconds
-
-  //TODO: internationalization
-
-  def getErrorMessage[T](value: Try[T]): String = value match {
-    case Success(x) => ""
-    case Failure(ex) => ex.getMessage
+  /**
+   * Directives common to all services
+   * @param eventCtx name of the current context for logging
+   * @return directives with authenticated user
+   */
+  def apply(eventCtx: String): Directive1[UserPrincipal] = {
+    eventContext(eventCtx) &
+      handleExceptions(errorHandler) &
+      logResponse(eventCtx, Logging.InfoLevel) &
+      authenticationDirective.authenticateKey
   }
 
   def errorHandler = {
@@ -77,24 +61,6 @@ trait V1Service extends Directives with EventLoggingDirectives {
     }
   }
 
-  def getUserPrincipalFromHeader(header: HttpHeader): Option[UserPrincipal] =
-    condOpt(header) {
-      case h if h.is("authorization") => Await.result(getUserPrincipal(h.value), defaultTimeout)
-    }
-
-  def authenticateKey: Directive1[UserPrincipal] =
-    //TODO: proper authorization with spray authenticate directive in a manner similar to S3.
-    optionalHeaderValue(getUserPrincipalFromHeader).flatMap {
-      case Some(p) => provide(p)
-      case None => reject(AuthenticationFailedRejection(AuthenticationFailedRejection.CredentialsMissing, List()))
-    }
-
-  def std(eventCtx: String): Directive1[UserPrincipal] = {
-    eventContext(eventCtx) &
-      handleExceptions(errorHandler) &
-      logResponse(eventCtx, Logging.InfoLevel) &
-      authenticateKey
-  }
 
   //TODO: needs to be updated for the distinction between Foos and FooTemplates
   //This code is likely to be useful for CRUD operations that need to work with the
@@ -145,38 +111,6 @@ trait V1Service extends Directives with EventLoggingDirectives {
   //      }
   //    }
   //  }
-  private val frameIdRegex = "/dataframes/(\\d+)".r
 
-  protected def getFrameId(url: String): Option[Long] = {
-    val id = frameIdRegex.findFirstMatchIn(url).map(m => m.group(1))
-    id.map(s => s.toLong)
-  }
 
-  private val graphIdRegex = "/graphs/(\\d+)".r
-
-  protected def getGraphId(url: String): Option[Long] = {
-    val id = graphIdRegex.findFirstMatchIn(url).map(m => m.group(1))
-    id.map(s => s.toLong)
-  }
-
-  protected def getUserPrincipal(apiKey: String): Future[UserPrincipal] = {
-    future {
-      metaStore.withSession("Getting user principal") { implicit session =>
-        val users: List[User] = metaStore.userRepo.retrieveByColumnValue("api_key", apiKey)
-        users match {
-          case Nil => {
-            import DomainJsonProtocol._
-            metaStore.userRepo.scan().foreach(u => info(u.toJson.prettyPrint))
-            throw new SecurityException("User not found")
-          }
-          case users if users.length > 1 => throw new SecurityException("Problem accessing user credentials")
-          case user => {
-            val userPrincipal: UserPrincipal = new UserPrincipal(users(0), List("user")) //TODO need role definitions
-            info("Authenticated user " + userPrincipal)
-            userPrincipal
-          }
-        }
-      }
-    }
-  }
 }

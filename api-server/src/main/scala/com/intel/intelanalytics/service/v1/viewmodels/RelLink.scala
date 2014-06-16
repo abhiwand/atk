@@ -21,15 +21,15 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.service.v1
+package com.intel.intelanalytics.service.v1.viewmodels
 
-import spray.routing._
+case class RelLink(rel: String, uri: String, method: String) {
+  require(rel != null)
+  require(uri != null)
+  require(method != null)
+  require(List("GET", "PUT", "POST", "HEAD", "DELETE", "OPTIONS").contains(method))
+}
 
-/**
- * Single entry point for classes that implement the Intel Analytics V1 REST API
- */
-class ApiV1Service(val dataFrameService: DataFrameService, val commandService: CommandService, val graphService: GraphService) extends Directives {
-  def route: Route = {
-    dataFrameService.frameRoutes() ~ commandService.commandRoutes() ~ graphService.graphRoutes()
-  }
+object Rel {
+  def self(uri: String) = RelLink(rel = "self", uri = uri, method = "GET")
 }
