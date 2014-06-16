@@ -666,7 +666,7 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                         </execution>
                     </executions>
                 </plugin>
-                <!-- Scalariform is ready but I'm commenting out temporarily until there is less code for people to merge --Todd 6/16/2014 -->
+                <!-- Scalariform is ready but I'm commenting out temporarily until there is less code for people to merge -Todd 6/16/2014 -->
                 <!--plugin>
                     <groupId>org.scalariform</groupId>
                     <artifactId>scalariform-maven-plugin</artifactId>
