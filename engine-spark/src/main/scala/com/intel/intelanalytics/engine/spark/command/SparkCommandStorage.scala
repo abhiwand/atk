@@ -71,7 +71,12 @@ class SparkCommandStorage(val metaStore: SlickMetaStoreComponent#SlickMetaStore)
         val changed = result match {
           case Failure(ex) => command.copy(complete = true, error = Some(throwableToError(ex)))
           case Success(r) => {
-            //update progress to 100 since the command is complete
+            /**
+             * update progress to 100 since the command is complete. This step is necessary
+             * because the actually progress notification events are sent to SparkProgressListener.
+             * The exact timing of the events arrival can not be determined.
+             */
+
             val progress = command.progress.map(i => 100)
             command.copy(complete = true, progress = progress, result = Some(r))
           }
