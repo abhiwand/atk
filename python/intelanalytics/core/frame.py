@@ -404,6 +404,25 @@ class BigFrame(object):
         """
         return self._backend.count(self)
 
+    def drop(self, predicate):
+        """
+        Remove all rows from the frame which satisfy the predicate.
+
+        Parameters
+        ----------
+        predicate : function
+            function or lambda which takes a row argument and evaluates to a boolean value
+
+        Examples
+        --------
+        >>>
+        # For this example, my_frame is a BigFrame object with lots of data and columns for the attributes of animals.
+        # We want to get rid of the lions and tigers
+        >>> my_frame.drop(lambda row: row.animal_type == "lion" or row.animal_type == "tiger")
+        """
+        # TODO - Review docstring
+        self._backend.drop(self, predicate)
+
     def filter(self, predicate):
         """
         Select all rows which satisfy a predicate.
@@ -418,7 +437,7 @@ class BigFrame(object):
         >>>
         # For this example, my_frame is a BigFrame object with lots of data and columns for the attributes of animals.
         # We do not want all this data, just the data for lizards and frogs, so ...
-        >>> my_frame.filter(animal_type == "lizard" or animal_type == "frog")
+        >>> my_frame.filter(lambda row: row.animal_type == "lizard" or row.animal_type == "frog")
         # my_frame now only has data about lizards and frogs
         """
         # TODO - Review docstring
