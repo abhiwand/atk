@@ -43,5 +43,5 @@ def get_stacktrace(exc):
         # **** Printing the stack trace: ****
         logger.info(repr(traceback.extract_tb(exc_traceback)))
     else:
-        # **** Printing the error message is: ****
+        # **** Printing the error message: ****
         logger.info(traceback.format_exc(limit=0))

@@ -35,8 +35,7 @@ import uuid
 import sys
 
 def _handle_stacktrace():
-    exc=sys.exc_info()
-    get_stacktrace(exc)
+    get_stacktrace(sys.exc_info())
 
 def _get_backend():
     from intelanalytics.core.config import get_frame_backend
