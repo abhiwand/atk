@@ -42,6 +42,10 @@ class HdfsFileStorage(fsRoot: String) extends FileStorage with EventLogging {
       classOf[DistributedFileSystem].getName)
     hadoopConfig.set("fs.file.impl",
       classOf[LocalFileSystem].getName)
+
+    if (fsRoot.startsWith("hdfs"))
+      hadoopConfig.set("fs.defaultFS", fsRoot)
+
     require(hadoopConfig.getClassByNameOrNull(classOf[LocalFileSystem].getName) != null)
     hadoopConfig
   }
@@ -60,9 +64,8 @@ class HdfsFileStorage(fsRoot: String) extends FileStorage with EventLogging {
 
 
   override def list(source: Directory): Seq[Entry] = withContext("file.list") {
-    fs.listStatus(new HPath(source.path.toString))
+    fs.listStatus(new HPath(fsRoot + source.path.toString))
       .map {
-      //case s if s.isDirectory => Directory(path = Paths.get(s.getPath.toString))
       case s if s.isDirectory => Directory(path = Paths.get(s.getPath.toString))
       case f if f.isDirectory => File(path = Paths.get(f.getPath.toString), size = f.getLen)
       case x => throw new IOException("Unknown object type in filesystem at " + x.getPath)

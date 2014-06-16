@@ -35,13 +35,12 @@ import org.apache.spark.SparkContext
 import scala.util.matching.Regex
 import java.util.concurrent.atomic.AtomicLong
 import com.intel.intelanalytics.domain.frame.{Column, DataFrame, DataFrameTemplate}
-import com.intel.intelanalytics.engine.spark.context.{Context, SparkContextManager}
-import scala.Some
+import com.intel.intelanalytics.engine.spark.context.{Context}
 import com.intel.intelanalytics.engine.File
 import com.intel.intelanalytics.security.UserPrincipal
 import org.joda.time.DateTime
 
-class SparkFrameStorage(context: UserPrincipal => Context, fsRoot: String, files: HdfsFileStorage)
+class SparkFrameStorage(context: UserPrincipal => Context, fsRoot: String, files: HdfsFileStorage, maxRows: Int)
   extends FrameStorage with EventLogging with ClassLoaderAware {
 
   import spray.json._
@@ -97,7 +96,7 @@ class SparkFrameStorage(context: UserPrincipal => Context, fsRoot: String, files
           case singleColumn if singleColumn.length == 1 =>
             frame.schema.columns.take(singleColumn(0)) ++ frame.schema.columns.drop(singleColumn(0) + 1)
           case _ =>
-            frame.schema.columns.zipWithIndex.filter(elem => columnIndex.contains(elem._2) == false).map(_._1)
+            frame.schema.columns.zipWithIndex.filter(elem => !columnIndex.contains(elem._2)).map(_._1)
         }
       }
       updateSchema(frame, remainingColumns)
@@ -144,7 +143,7 @@ class SparkFrameStorage(context: UserPrincipal => Context, fsRoot: String, files
       withMyClassLoader {
         val ctx = context(user).sparkContext
         val rdd: RDD[Row] = getFrameRdd(ctx, frame.id)
-        val rows = SparkOps.getRows(rdd, offset, count)
+        val rows = SparkOps.getRows(rdd, offset, count, maxRows)
         rows
       }
     }
@@ -156,7 +155,12 @@ class SparkFrameStorage(context: UserPrincipal => Context, fsRoot: String, files
    * @return the newly created RDD
    */
   def getFrameRdd(ctx: SparkContext, frameId: Long): RDD[Row] = {
-    ctx.objectFile[Row](fsRoot + getFrameDataFile(frameId))
+    val path: String = getFrameDataFile(frameId)
+    val absPath = fsRoot + path
+    files.getMetaData(Paths.get(path)) match {
+      case None => ctx.parallelize(Nil)
+      case _ => ctx.objectFile[Row](absPath)
+    }
   }
 
   def getOrCreateDirectory(name: String): Directory = {
