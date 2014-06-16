@@ -20,16 +20,23 @@
 // estoppel or otherwise. Any license under such intellectual property rights
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
+package com.intel.intelanalytics.service.v1.decorators
 
-package com.intel.intelanalytics.service.v1
+import com.intel.intelanalytics.domain.graph.Graph
+import com.intel.intelanalytics.service.v1.viewmodels.{RelLink, DecoratedGraph, GraphHeader}
 
-import spray.routing._
-
-/**
- * Single entry point for classes that implement the Intel Analytics V1 REST API
- */
-class ApiV1Service(val dataFrameService: DataFrameService, val commandService: CommandService, val graphService: GraphService) extends Directives {
-  def route: Route = {
-    dataFrameService.frameRoutes() ~ commandService.commandRoutes() ~ graphService.graphRoutes()
+object GraphDecorator extends EntityDecorator[Graph, GraphHeader, DecoratedGraph] {
+  override def decorateEntity(uri: String,
+                              links: Iterable[RelLink],
+                              entity: Graph): DecoratedGraph = {
+    DecoratedGraph(id = entity.id, name = entity.name, links = links.toList)
   }
+
+  override def decorateForIndex(uri: String, entities: Seq[Graph]): List[GraphHeader] = {
+
+    entities.map(graph => new GraphHeader(id = graph.id,
+      name = graph.name,
+      url = uri + "/" + graph.id)).toList
+  }
+
 }

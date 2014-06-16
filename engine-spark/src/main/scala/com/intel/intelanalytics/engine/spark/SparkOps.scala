@@ -37,7 +37,7 @@ import com.intel.intelanalytics.domain.frame.LoadLines
 
 private[spark] object SparkOps extends Serializable {
 
-  def getRows(rdd: RDD[Row], offset: Long, count: Int): Seq[Row] = {
+  def getRows(rdd: RDD[Row], offset: Long, count: Int, limit: Int): Seq[Row] = {
 
     //Count the rows in each partition, then order the counts by partition number
     val counts = rdd.mapPartitionsWithIndex(
@@ -59,19 +59,20 @@ private[spark] object SparkOps extends Serializable {
     }.toMap
 
     //println(sumsAndCounts)
+    val capped = Math.min(count, limit)
 
     //Start getting rows. We use the sums and counts to figure out which
     //partitions we need to read from and which to just ignore
     val rows: Seq[Row] = rdd.mapPartitionsWithIndex((i, rows) => {
       val (ct: Int, sum: Int) = sumsAndCounts(i)
       val thisPartStart = sum - ct
-      if (sum < offset || thisPartStart >= offset + count) {
+      if (sum < offset || thisPartStart >= offset + capped) {
         //println("skipping partition " + i)
         Iterator.empty
       }
       else {
         val start = Math.max(offset - thisPartStart, 0)
-        val numToTake = Math.min((count + offset) - thisPartStart, ct) - start
+        val numToTake = Math.min((capped + offset) - thisPartStart, ct) - start
         //println(s"partition $i: starting at $start and taking $numToTake")
         rows.drop(start.toInt).take(numToTake.toInt)
       }
