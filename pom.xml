@@ -678,8 +678,8 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                                 <goal>format</goal>
                             </goals>
                             <configuration>
-                                <rewriteArrowSymbols>true</rewriteArrowSymbols>
-
+                                <alignParameters>true</alignParameters>
+                                <compactControlReadability>true</compactControlReadability>
                             </configuration>
                         </execution>
                     </executions>
