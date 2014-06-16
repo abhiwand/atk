@@ -72,15 +72,14 @@ import com.intel.intelanalytics.domain.graph.GraphTemplate
 import ExecutionContext.Implicits.global
 
 
-class SparkEngine(config: SparkEngineConfiguration,
-                  sparkContextManager: SparkContextManager,
+class SparkEngine(sparkContextManager: SparkContextManager,
                   commands: CommandStorage,
                   frames: SparkFrameStorage,
                   graphs: GraphStorage) extends Engine
                                         with EventLogging
                                         with ClassLoaderAware {
 
-  val fsRoot = config.fsRoot
+  val fsRoot = SparkEngineConfig.fsRoot
 
 
   def shutdown: Unit = {
@@ -343,7 +342,7 @@ class SparkEngine(config: SparkEngineConfiguration,
             withCommand(command) {
               val ctx = sparkContextManager.context(user).sparkContext
 
-              val newFrame = Await.result(create(DataFrameTemplate(flattenColumnCommand.name, None)), config.defaultTimeout)
+              val newFrame = Await.result(create(DataFrameTemplate(flattenColumnCommand.name, None)), SparkEngineConfig.defaultTimeout)
               val rdd = frames.getFrameRdd(ctx, frameId)
 
               val columnIndex = realFrame.schema.columnIndex(flattenColumnCommand.column)
@@ -443,7 +442,7 @@ class SparkEngine(config: SparkEngineConfiguration,
             val allColumns = SchemaUtil.resolveSchemaNamingConflicts(leftColumns, rightColumns)
 
             /* create a dataframe should take very little time, much less than 10 minutes */
-            val newJoinFrame = Await.result(create(DataFrameTemplate(joinCommand.name, None)), config.defaultTimeout)
+            val newJoinFrame = Await.result(create(DataFrameTemplate(joinCommand.name, None)), SparkEngineConfig.defaultTimeout)
 
             withCommand(command) {
 

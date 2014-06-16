@@ -53,8 +53,7 @@ import com.intel.intelanalytics.domain.graph.GraphLoad
 import com.intel.intelanalytics.domain.frame.LoadLines
 import com.intel.intelanalytics.domain.command.Command
 import com.intel.intelanalytics.shared.EventLogging
-import com.typesafe.config.ConfigFactory
-import com.intel.intelanalytics.service.{UrlParser, CommonDirectives, AuthenticationDirective}
+import com.intel.intelanalytics.service.{ApiServiceConfig, UrlParser, CommonDirectives, AuthenticationDirective}
 import com.intel.intelanalytics.service.v1.decorators.CommandDecorator
 
 //TODO: Is this right execution context for us?
@@ -65,9 +64,6 @@ import ExecutionContext.Implicits.global
  * REST API Command Service
  */
 class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends Directives with EventLogging {
-
-  val config = ConfigFactory.load()
-  val defaultCount = config.getInt("intel.analytics.api.defaultCount")
 
   /**
    * Creates a view model for return through the HTTP protocol
@@ -109,7 +105,7 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
                 //TODO: cursor
                 import spray.json._
                 import ViewModelJsonImplicits._
-                onComplete(engine.getCommands(0, defaultCount)) {
+                onComplete(engine.getCommands(0, ApiServiceConfig.defaultCount)) {
                   case Success(commands) => complete(CommandDecorator.decorateForIndex(uri.toString(), commands))
                   case Failure(ex) => throw ex
                 }

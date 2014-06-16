@@ -38,8 +38,7 @@ import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.domain.frame.DataFrameTemplate
 import com.intel.intelanalytics.domain.frame.DataFrame
 import com.intel.intelanalytics.domain.DomainJsonProtocol.DataTypeFormat
-import com.typesafe.config.ConfigFactory
-import com.intel.intelanalytics.service.{CommonDirectives, AuthenticationDirective}
+import com.intel.intelanalytics.service.{ApiServiceConfig, CommonDirectives, AuthenticationDirective}
 import spray.routing.Directives
 import com.intel.intelanalytics.service.v1.decorators.FrameDecorator
 
@@ -50,9 +49,6 @@ import ExecutionContext.Implicits.global
  * REST API Data Frame Service
  */
 class DataFrameService(commonDirectives: CommonDirectives, engine: Engine) extends Directives with EventLogging {
-
-  val config = ConfigFactory.load()
-  val defaultCount = config.getInt("intel.analytics.api.defaultCount")
 
   def frameRoutes() = {
     val prefix = "dataframes"
@@ -79,7 +75,7 @@ class DataFrameService(commonDirectives: CommonDirectives, engine: Engine) exten
             import spray.json._
             import ViewModelJsonImplicits._
             //TODO: cursor
-            onComplete(engine.getFrames(0, defaultCount)) {
+            onComplete(engine.getFrames(0, ApiServiceConfig.defaultCount)) {
               case Success(frames) => complete(FrameDecorator.decorateForIndex(uri.toString(), frames))
               case Failure(ex) => throw ex
             }
