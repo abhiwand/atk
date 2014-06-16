@@ -20,36 +20,10 @@
 // estoppel or otherwise. Any license under such intellectual property rights
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
-package com.intel.intelanalytics.service.v1
+package com.intel.intelanalytics.service.v1.decorators
 
-import com.intel.intelanalytics.service.v1.viewmodels._
-import com.intel.intelanalytics.service.v1.viewmodels.GraphHeader
-import com.intel.intelanalytics.service.v1.viewmodels.DataFrameHeader
-import com.intel.intelanalytics.service.v1.viewmodels.RelLink
-import com.intel.intelanalytics.service.v1.viewmodels.DecoratedDataFrame
-import com.intel.intelanalytics.domain.frame.DataFrame
-import com.intel.intelanalytics.domain.graph.Graph
 import com.intel.intelanalytics.domain.command.Command
-
-trait EntityDecorator[Entity, Index, Decorated] {
-  def decorateForIndex(indexUri: String, entities: Seq[Entity]): List[Index]
-  def decorateEntity(uri: String, links: Iterable[RelLink], entity: Entity): Decorated
-}
-
-object FrameDecorator extends EntityDecorator[DataFrame, DataFrameHeader, DecoratedDataFrame] {
-  override def decorateEntity(uri: String,
-                              links: Iterable[RelLink],
-                              entity: DataFrame): DecoratedDataFrame = {
-    DecoratedDataFrame(id = entity.id, name = entity.name,
-      schema = entity.schema, links = links.toList)
-  }
-
-  override def decorateForIndex(uri: String, entities: Seq[DataFrame]): List[DataFrameHeader] = {
-    entities.map(frame => new DataFrameHeader(id = frame.id,
-      name = frame.name,
-      url = uri + "/" + frame.id)).toList
-  }
-}
+import com.intel.intelanalytics.service.v1.viewmodels.{RelLink, DecoratedCommand, CommandHeader}
 
 object CommandDecorator extends EntityDecorator[Command, CommandHeader, DecoratedCommand] {
   override def decorateEntity(uri: String,
@@ -65,20 +39,4 @@ object CommandDecorator extends EntityDecorator[Command, CommandHeader, Decorate
       name = frame.name,
       url = uri + "/" + frame.id)).toList
   }
-}
-
-object GraphDecorator extends EntityDecorator[Graph, GraphHeader, DecoratedGraph] {
-  override def decorateEntity(uri: String,
-                              links: Iterable[RelLink],
-                              entity: Graph): DecoratedGraph = {
-    DecoratedGraph(id = entity.id, name = entity.name, links = links.toList)
-  }
-
-  override def decorateForIndex(uri: String, entities: Seq[Graph]): List[GraphHeader] = {
-
-    entities.map(graph => new GraphHeader(id = graph.id,
-      name = graph.name,
-      url = uri + "/" + graph.id)).toList
-  }
-
 }
