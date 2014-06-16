@@ -26,7 +26,7 @@ package com.intel.intelanalytics.service.v1.viewmodels
 import com.intel.intelanalytics.domain.Error
 import spray.json.JsObject
 
-case class DecoratedCommand(id: Long, name: String, arguments: Option[JsObject], error: Option[Error],
+case class DecoratedCommand(id: Long, name: String, arguments: Option[JsObject], error: Option[Error], progress: List[Int],
                             complete: Boolean, result: Option[JsObject], links: List[RelLink]) {
   require(id > 0)
   require(name != null)

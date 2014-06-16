@@ -36,7 +36,7 @@ object ViewModelJsonProtocol extends DefaultJsonProtocol with SprayJsonSupport {
   implicit val decoratedDataFrameFormat = jsonFormat4(DecoratedDataFrame)
   implicit val jsonTransformFormat = jsonFormat2(JsonTransform)
   implicit val commandHeaderFormat = jsonFormat3(CommandHeader)
-  implicit val decoratedCommandFormat = jsonFormat7(DecoratedCommand)
+  implicit val decoratedCommandFormat = jsonFormat8(DecoratedCommand)
   implicit val graphHeaderFormat = jsonFormat3(GraphHeader)
   implicit val decoratedGraphHeaderFormat = jsonFormat3(DecoratedGraph)
 }
