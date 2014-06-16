@@ -10,7 +10,7 @@ class SparkContextManager(conf: Config, factory: SparkContextFactory) extends Sp
   contextManagementStrategy.sparkContextFactory = factory
 
   def getContext(user: String): Context = contextManagementStrategy.getContext(user)
-  def context(implicit user: UserPrincipal): Context = getContext(user.user.api_key)
+  def context(implicit user: UserPrincipal): Context = getContext(user.user.apiKey.get)
   def cleanup(): Unit = contextManagementStrategy.cleanup()
   def removeContext(user: String): Unit = contextManagementStrategy.removeContext(user)
   def getAllContexts(): List[Context] = contextManagementStrategy.getAllContexts()

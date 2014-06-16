@@ -149,7 +149,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
 
     def username = column[Option[String]]("username")
 
-    def api_key = column[String]("api_key")
+    def api_key = column[Option[String]]("api_key")
 
     def createdOn = column[DateTime]("created_on")
 
