@@ -175,7 +175,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
     }
 
     override def insert(newUser: UserTemplate)(implicit session: Session): Try[User] = Try {
-      usersAutoInc.insert(User(0, None, newUser.api_key, new DateTime(), new DateTime()))(session)
+      usersAutoInc.insert(User(0, None, Some(newUser.api_key), new DateTime(), new DateTime()))(session)
     }
 
     override def lookup(id: Long)(implicit session: Session): Option[User] = {
