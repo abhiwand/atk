@@ -80,7 +80,6 @@ function getDeployConfigRoles(){
         done
         deployRoles=${deployRoles%,}
         deployRoles=${deployRoles}']}'
-        echo $deployRoles
 }
 function deployConfig(){
 	getDeployConfigRoles
@@ -90,7 +89,8 @@ function deployConfig(){
 }
 function setUpdatedClassPath(){
         local existingClassPath=$1
-        echo $existingClassPath
+        existingClassPath=${existingClassPath% }
+		existingClassPath=${existingClassPath# }
         if [ "$existingClassPath" == "" ]; then
                 updatedClassPath="${INTEL_ANALYTICS_SPARK_CLASSPATH}"
         else
@@ -251,15 +251,14 @@ if [ "$sparkService" != "" ]; then
         	                sed -i "s/export SPARK_CLASSPATH=\(\\\\\".*\\\\\"\|[^\\\r\\\n]*\)/export SPARK_CLASSPATH=\\\\\"REPLACEME\\\\\"/g"  /tmp/spark_env.sh.tmp
 
                        		sed -i  "s|REPLACEME|$updatedClassPath\*|Ig"  /tmp/spark_env.sh.tmp
-	                  	cat /tmp/spark_env.sh.tmp
 
                 	        configValue=$(cat /tmp/spark_env.sh.tmp)
 				
 				setConfig $configValue
-				echo "$green SPARK_CLASSPATH updated and deploying"
+				echo "${green} SPARK_CLASSPATH updated and deploying ${normal}"
 				exit 0
 			else
-				echo  "$green Existing intel analytics spark classpath entry no changes needed. Current spark classpath: ${existingClassPath} $normal"
+				echo  "${green} Existing intel analytics spark classpath entry no changes needed. Current spark classpath: ${existingClassPath} ${normal}"
 			fi
 		else
 			echo "Setting SPARK_CLASSPATH none set"
@@ -267,7 +266,7 @@ if [ "$sparkService" != "" ]; then
 			configValue=$configValue'\r\n export SPARK_CLASSPATH=\"'$updatedClassPath\*'\"'
 			
 			setConfig $configValue
-			echo "$green SPARK_CLASSPATH updated and deploying"
+			echo "${green} SPARK_CLASSPATH updated and deploying ${normal}"
 			exit 0
 		fi
 	else
@@ -282,7 +281,7 @@ if [ "$sparkService" != "" ]; then
                 exit 0
 	fi
 else
-	echo "${red}Spark is not runing on the cluster no classpath to set/update, exitting${normal}"
+	echo "${red}Spark is not runing on the cluster no classpath to set/update, exitting ${normal}"
 	exit 1
 fi
 
