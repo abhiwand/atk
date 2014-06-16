@@ -47,7 +47,11 @@ object SparkEngineConfig extends SharedConfig {
 
   val maxRows = config.getInt("intel.analytics.engine.max-rows")
 
-  /** Default settings for Titan Load */
+  /**
+   * Default settings for Titan Load.
+   *
+   * Creates a new configuration bean each time so it can be modified by the caller (like setting the table name).
+   */
   def titanLoadConfiguration = {
     val titanConfiguration = new SerializableBaseConfiguration
     val titanLoadConfig = config.getConfig("intel.analytics.engine.titan.load")
