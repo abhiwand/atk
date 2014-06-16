@@ -23,79 +23,20 @@
 
 package com.intel.intelanalytics.service.v1.viewmodels
 
-import com.intel.intelanalytics.domain._
-import spray.json.{ JsObject, DefaultJsonProtocol }
+import spray.json.DefaultJsonProtocol
 import spray.httpx.SprayJsonSupport
-import com.intel.intelanalytics.domain.schema.Schema
-
-case class RelLink(rel: String, uri: String, method: String) {
-  require(rel != null)
-  require(uri != null)
-  require(method != null)
-  require(List("GET", "PUT", "POST", "HEAD", "DELETE", "OPTIONS").contains(method))
-}
-
-object Rel {
-  def self(uri: String) = RelLink(rel = "self", uri = uri, method = "GET")
-}
-
-case class DecoratedDataFrame(id: Long, name: String, schema: Schema, links: List[RelLink]) {
-  require(id > 0)
-  require(name != null)
-  require(schema != null)
-  require(links != null)
-}
-
-case class DataFrameHeader(id: Long, name: String, url: String) {
-  require(id > 0)
-  require(name != null)
-  require(url != null)
-}
-
-case class CommandHeader(id: Long, name: String, url: String) {
-  require(id > 0)
-  require(name != null)
-  require(url != null)
-}
-
-case class DecoratedCommand(id: Long, name: String, arguments: Option[JsObject], error: Option[Error], progress: List[Int],
-                            complete: Boolean, result: Option[JsObject], links: List[RelLink]) {
-  require(id > 0)
-  require(name != null)
-  require(arguments != null)
-  require(links != null)
-  require(error != null)
-}
-
-case class JsonTransform(name: String, arguments: Option[JsObject]) {
-  require(name != null, "Name is required")
-}
-
-/**
- * Returned handle for a graph stored in the graph database.
- */
-case class DecoratedGraph(id: Long, name: String, links: List[RelLink]) {
-  require(id > 0)
-  require(name != null)
-  require(links != null)
-}
-
-case class GraphHeader(id: Long, name: String, url: String) {
-  require(id > 0)
-  require(name != null)
-  require(url != null)
-}
 
 object ViewModelJsonProtocol extends DefaultJsonProtocol with SprayJsonSupport {
 
-  import com.intel.intelanalytics.domain.DomainJsonProtocol._ //this is needed for implicits
+  //this is needed for implicits
+  import com.intel.intelanalytics.domain.DomainJsonProtocol._
 
   implicit val relLinkFormat = jsonFormat3(RelLink)
   implicit val dataFrameHeaderFormat = jsonFormat3(DataFrameHeader)
   implicit val decoratedDataFrameFormat = jsonFormat4(DecoratedDataFrame)
   implicit val jsonTransformFormat = jsonFormat2(JsonTransform)
   implicit val commandHeaderFormat = jsonFormat3(CommandHeader)
-  implicit val decoratedCommandFormat = jsonFormat8(DecoratedCommand)
+  implicit val decoratedCommandFormat = jsonFormat7(DecoratedCommand)
   implicit val graphHeaderFormat = jsonFormat3(GraphHeader)
   implicit val decoratedGraphHeaderFormat = jsonFormat3(DecoratedGraph)
 }

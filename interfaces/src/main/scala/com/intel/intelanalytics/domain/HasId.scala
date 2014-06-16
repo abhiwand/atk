@@ -23,6 +23,9 @@
 
 package com.intel.intelanalytics.domain
 
+/**
+ * Trait for Entities to say they have a primary key of type Long
+ */
 trait HasId {
   def id: Long
 }
