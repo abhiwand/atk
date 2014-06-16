@@ -168,6 +168,12 @@ class FrameBackendRest(object):
     def count(self, frame):
         raise NotImplementedError  # TODO - impplement count
 
+    def drop(self, frame, predicate):
+        from itertools import ifilterfalse  # use the REST API filter, with a ifilterfalse iterator
+        http_ready_function = prepare_row_function(frame, predicate, ifilterfalse)
+        arguments = {'frame': frame.uri, 'predicate': http_ready_function}
+        return execute_update_frame_command("filter", arguments, frame)
+
     def filter(self, frame, predicate):
         from itertools import ifilter
         http_ready_function = prepare_row_function(frame, predicate, ifilter)
