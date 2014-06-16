@@ -297,7 +297,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
               val ctx = sparkContextManager.context(user).sparkContext
               val schema = originalFrame.schema
 
-              val newFrame = Await.result(create(DataFrameTemplate(arguments.name, None)), config.defaultTimeout)
+              val newFrame = Await.result(create(DataFrameTemplate(arguments.name, None)), SparkEngineConfig.defaultTimeout)
 
               val location = fsRoot + frames.getFrameDataFile(newFrame.id)
 
