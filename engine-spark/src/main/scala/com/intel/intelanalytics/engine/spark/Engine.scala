@@ -281,6 +281,63 @@ class SparkEngine(config: SparkEngineConfiguration,
       (command, result)
     }
 
+  def groupBy(arguments: FrameGroupByColumn[JsObject, Long])(implicit user: UserPrincipal): (Command, Future[Command]) =
+    withContext("se.groupBy") {
+      require(arguments != null, "arguments are required")
+      val command: Command = commands.create(new CommandTemplate("groupBy", Some(arguments.toJson.asJsObject)))
+      val result: Future[Command] = future {
+        withMyClassLoader {
+          withContext("se.groupBy.future") {
+            withCommand(command) {
+
+              val originalFrameID = arguments.frame
+
+              val originalFrame = frames.lookup(originalFrameID).getOrElse(
+                throw new IllegalArgumentException(s"No such data frame: $originalFrameID"))
+
+              val ctx = sparkContextManager.context(user).sparkContext
+              val schema = originalFrame.schema
+
+              val newFrame = Await.result(create(DataFrameTemplate(arguments.name, None)), config.defaultTimeout)
+
+              val location = fsRoot + frames.getFrameDataFile(newFrame.id)
+
+              val aggregation_arguments = arguments.aggregations
+
+              val args_pair = for {
+                (aggregation_function, column_to_apply, new_column_name) <- aggregation_arguments
+              } yield (schema.columns.indexWhere(columnTuple => columnTuple._1 == column_to_apply), aggregation_function)
+
+              val new_data_types = if (arguments.group_by_columns.length > 0) {
+                val groupByColumns = arguments.group_by_columns
+
+                val columnIndices: Seq[(Int, DataType)] = for {
+                  col <- groupByColumns
+                  columnIndex = schema.columns.indexWhere(columnTuple => columnTuple._1 == col)
+                  columnDataType = schema.columns(columnIndex)._2
+                } yield (columnIndex, columnDataType)
+
+                val groupedRDD = frames.getFrameRdd(ctx, originalFrameID).groupBy((data: Rows.Row) => {
+                  for { index <- columnIndices.map(_._1) } yield data(index)
+                }.mkString("\0"))
+                SparkOps.aggregation(groupedRDD, args_pair, originalFrame.schema.columns, columnIndices.map(_._2).toArray, location)
+              }
+              else {
+                val groupedRDD = frames.getFrameRdd(ctx, originalFrameID).groupBy((data: Rows.Row) => "")
+                SparkOps.aggregation(groupedRDD, args_pair, originalFrame.schema.columns, Array[DataType](), location)
+              }
+              val new_column_names = arguments.group_by_columns ++ { for {i <- aggregation_arguments} yield i._3 }
+              val new_schema = new_column_names.zip(new_data_types)
+              frames.updateSchema(newFrame, new_schema)
+              newFrame.copy(schema = Schema(new_schema)).toJson.asJsObject
+            }
+            commands.lookup(command.id).get
+          }
+        }
+      }
+      (command, result)
+    }
+
   def decodePythonBase64EncodedStrToBytes(byteStr: String): Array[Byte] = {
     // Python uses different RFC than Java, must correct a couple characters
     // http://stackoverflow.com/questions/21318601/how-to-decode-a-base64-string-in-scala-or-java00

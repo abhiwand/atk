@@ -32,25 +32,18 @@ import com.intel.intelanalytics.service.v1.viewmodels.ViewModelJsonProtocol._
 import scala.concurrent._
 import spray.http.Uri
 import spray.routing.{Directives, Route}
-import com.intel.intelanalytics.domain.frame.FrameProject
-import com.intel.intelanalytics.domain.frame.FrameRenameFrame
+import com.intel.intelanalytics.domain.frame._
 import com.intel.intelanalytics.domain.FilterPredicate
 import com.intel.intelanalytics.domain.graph.construction.FrameRule
 import scala.util.Failure
 import scala.Some
-import com.intel.intelanalytics.domain.frame.FrameAddColumn
-import com.intel.intelanalytics.domain.frame.FrameRenameColumn
 import scala.util.Success
-import com.intel.intelanalytics.domain.frame.FlattenColumn
 import com.intel.intelanalytics.security.UserPrincipal
-import com.intel.intelanalytics.domain.frame.FrameRemoveColumn
 import spray.json._
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
 import com.intel.intelanalytics.service.v1.viewmodels._
 import com.intel.intelanalytics.service.v1.viewmodels.ViewModelJsonProtocol._
-import com.intel.intelanalytics.domain.frame.FrameJoin
 import com.intel.intelanalytics.domain.graph.GraphLoad
-import com.intel.intelanalytics.domain.frame.LoadLines
 import com.intel.intelanalytics.domain.command.Command
 import com.intel.intelanalytics.shared.EventLogging
 import com.typesafe.config.ConfigFactory
@@ -146,6 +139,7 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
       case ("dataframe/rename_column") => runFrameRenameColumn(uri, xform)
       case ("dataframe/join") => runJoinFrames(uri, xform)
       case ("dataframe/flattenColumn") => runflattenColumn(uri, xform)
+      case ("dataframe/groupby") => runFrameGroupByColumn(uri, xform)
       case _ => ???
     }
   }
@@ -369,6 +363,29 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
         } yield c) {
         case Success(c) => complete(decorate(uri + "/" + c.id, c))
         case Failure(ex) => throw ex
+      }
+    }
+  }
+
+  def runFrameGroupByColumn(uri: Uri, xform: JsonTransform)(implicit user: UserPrincipal) = {
+    {
+      val test = Try {
+        import DomainJsonProtocol._
+        xform.arguments.get.convertTo[FrameGroupByColumn[JsObject, String]]
+      }
+      val idOpt = test.toOption.flatMap(args => UrlParser.getFrameId(args.frame))
+      (validate(test.isSuccess, "Failed to : " + getErrorMessage(test))
+        & validate(idOpt.isDefined, "Destination is not a valid data frame URL")) {
+        val args = test.get
+        val id = idOpt.get
+        onComplete(
+          for {
+            frame <- engine.getFrame(id)
+            (c, f) = engine.groupBy(FrameGroupByColumn[JsObject, Long](id, args.name, args.group_by_columns, args.aggregations))
+          } yield c) {
+          case Success(c) => complete(decorate(uri + "/" + c.id, c))
+          case Failure(ex) => throw ex
+        }
       }
     }
   }
