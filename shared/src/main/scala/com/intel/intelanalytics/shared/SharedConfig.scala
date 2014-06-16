@@ -16,7 +16,7 @@ trait SharedConfig {
   // not lazy because failing early is better
   val metaStoreConnectionUrl: String = nonEmptyString("intel.analytics.metastore.connection.url")
   val metaStoreConnectionDriver: String = nonEmptyString("intel.analytics.metastore.connection.driver")
-  val metaStoreConnectionUsername:String = config.getString("intel.analytics.metastore.connection.username")
+  val metaStoreConnectionUsername: String = config.getString("intel.analytics.metastore.connection.username")
   val metaStoreConnectionPassword: String = config.getString("intel.analytics.metastore.connection.password")
   val metaStoreConnectionCreateTables: Boolean = config.getBoolean("intel.analytics.metastore.connection.createTables")
 

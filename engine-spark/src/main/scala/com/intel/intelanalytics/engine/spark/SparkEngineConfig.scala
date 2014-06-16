@@ -26,7 +26,6 @@ package com.intel.intelanalytics.engine.spark
 import scala.concurrent.duration._
 import com.intel.intelanalytics.shared.SharedConfig
 import com.intel.graphbuilder.util.SerializableBaseConfiguration
-import com.typesafe.config.ConfigFactory
 import scala.collection.JavaConversions._
 
 /**
@@ -36,10 +35,16 @@ import scala.collection.JavaConversions._
  */
 object SparkEngineConfig extends SharedConfig {
 
+  /** Spark home directory, e.g. "/opt/cloudera/parcels/CDH/lib/spark", "/usr/lib/spark", etc. */
   val sparkHome = config.getString("intel.analytics.spark.home")
+
+  /** URL for spark master, e.g. "spark://hostname:7077", "local[4]", etc */
   val sparkMaster = config.getString("intel.analytics.spark.master")
+
   val defaultTimeout = config.getInt("intel.analytics.engine.defaultTimeout").seconds
+
   val fsRoot = config.getString("intel.analytics.fs.root")
+
   val maxRows = config.getInt("intel.analytics.engine.max-rows")
 
   /** Default settings for Titan Load */

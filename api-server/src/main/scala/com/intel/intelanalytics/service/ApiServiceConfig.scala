@@ -1,9 +1,7 @@
 package com.intel.intelanalytics.service
 
 import com.intel.intelanalytics.shared.SharedConfig
-import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.duration._
-import com.typesafe.config.ConfigFactory
 
 /**
  * Configuration settings for ApiServer.
@@ -17,9 +15,16 @@ object ApiServiceConfig extends SharedConfig {
 
   /** Port that ApiService should listen on */
   val port = config.getInt("intel.analytics.api.port")
-  
+
+  /** A String describing the service, e.g. "ia" */
   val identifier = config.getString("intel.analytics.api.identifier")
+
+  /** Default timeout for actors */
   val defaultTimeout: FiniteDuration = config.getInt("intel.analytics.api.defaultTimeout").seconds
+
+  /** Default number of items to return in service index when not specified. E.g. GET /v1/commands */
   val defaultCount = config.getInt("intel.analytics.api.defaultCount")
+
+  /** Input file for creating test users for local development */
   val testUsersFile = config.getString("intel.analytics.test.users.file")
 }
