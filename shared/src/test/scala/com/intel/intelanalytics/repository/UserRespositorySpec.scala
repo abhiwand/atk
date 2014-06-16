@@ -16,7 +16,7 @@ class UserRespositorySpec extends SlickMetaStoreH2Testing with Matchers {
 
         // create a user
         val user = userRepo.insert(new UserTemplate(apiKey))
-        user.get.api_key shouldBe apiKey
+        user.get.apiKey shouldBe apiKey
 
         // look it up and validate expected values
         val user2 = userRepo.lookup(user.get.id)

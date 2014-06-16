@@ -16,6 +16,7 @@ import spray.json._
 import com.intel.intelanalytics.repository.MetaStore
 import scala.concurrent.duration._
 import com.intel.intelanalytics.shared.EventLogging
+import org.apache.commons.lang.StringUtils
 
 /**
  * Uses authorization HTTP header and metaStore to authenticate a user
@@ -44,6 +45,9 @@ class AuthenticationDirective(val metaStore: MetaStore) extends Directives with 
   protected def getUserPrincipal(apiKey: String): Future[UserPrincipal] = {
     future {
       metaStore.withSession("Getting user principal") { implicit session =>
+        if (StringUtils.isBlank(apiKey)) {
+          throw new SecurityException("Api key was not provided")
+        }
         val users: List[User] = metaStore.userRepo.retrieveByColumnValue("api_key", apiKey)
         users match {
           case Nil => {
