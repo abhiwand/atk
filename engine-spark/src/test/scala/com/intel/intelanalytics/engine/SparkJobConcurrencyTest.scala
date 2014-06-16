@@ -19,7 +19,7 @@ class SparkJobConcurrencyTest  extends TestingSparkContext with Matchers {
           val carOwnerShips = List(Array[Any]("Bob", "Mustang,Camry"), Array[Any]("Josh", "Neon,CLK"), Array[Any]("Alice", "PT Cruiser,Avalon,F-150"), Array[Any]("Tim", "Beatle"), Array[Any]("Becky", ""))
           val rdd = sc.parallelize(carOwnerShips)
           val flattened = SparkOps.flattenRddByColumnIndex(1, ",", rdd)
-          flattened.saveAsTextFile("command-" + i.toString)
+          flattened.collect()
           sem.release()
         }
       }
