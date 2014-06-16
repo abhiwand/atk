@@ -156,13 +156,18 @@ class SparkProgressListener(val progressUpdater: CommandProgressUpdater) extends
     jobIdStageIdPairOption match {
       case Some(r) => {
         val jobId = r._1
-        val commandIdJobOption = commandIdJobs.find(e => e._2.map(job => job.jobId).contains(jobId))
+
+        val fnGetListJobId = (jobs: List[ActiveJob]) => jobs.map(job => job.jobId)
+
+        val commandIdJobOption = commandIdJobs.find(e => fnGetListJobId(e._2).contains(jobId))
         commandIdJobOption match {
           case Some(c) => {
             val commandId = c._1
             val progress = getCommandProgress(commandId)
             progressUpdater.updateProgress(commandId, progress)
           }
+
+          case None =>
         }
       }
 
