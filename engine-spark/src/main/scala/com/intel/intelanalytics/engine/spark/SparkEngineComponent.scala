@@ -52,26 +52,23 @@ class SparkComponent extends EngineComponent
     with SlickMetaStoreComponent
     with EventLogging {
 
-  lazy val configuration: SparkEngineConfiguration = new SparkEngineConfiguration()
-
-  lazy val engine = new SparkEngine(configuration, sparkContextManager,
+  lazy val engine = new SparkEngine(sparkContextManager,
                                     commands.asInstanceOf[CommandStorage], frames, graphs) {}
 
   override lazy val profile = withContext("engine connecting to metastore") {
-    Profile.initializeFromConfig()
+    Profile.initializeFromConfig(SparkEngineConfig)
   }
 
   if (profile.createTables) {
     metaStore.createAllTables()
   }
 
-  val sparkContextManager = new SparkContextManager(configuration.config, new SparkContextFactory)
+  val sparkContextManager = new SparkContextManager(SparkEngineConfig.config, new SparkContextFactory)
 
-  lazy val fsRoot = configuration.fsRoot
-  val files = new HdfsFileStorage(configuration.fsRoot) {}
+  val files = new HdfsFileStorage(SparkEngineConfig.fsRoot) {}
 
   val frames = new SparkFrameStorage(sparkContextManager.context(_),
-    configuration.fsRoot, files, configuration.config.getInt("intel.analytics.engine.max-rows")) {}
+    SparkEngineConfig.fsRoot, files, SparkEngineConfig.maxRows) {}
 
 
   private lazy val admin = new HBaseAdmin(HBaseConfiguration.create())

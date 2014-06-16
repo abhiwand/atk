@@ -9,14 +9,12 @@ import com.intel.intelanalytics.domain.UserTemplate
  */
 class MetaStoreConfigured extends SlickMetaStoreComponent with DbProfileComponent {
 
-  override lazy val profile = Profile.initializeFromConfig()
+  override lazy val profile = Profile.initializeFromConfig(ApiServiceConfig)
 
   if (profile.createTables) {
-    val config = ConfigFactory.load()
-    //populate the database with some test users from the specified file (for testing)
-    val usersFile = config.getString("intel.analytics.test.users.file")
-    //read from the resources folder
-    val source = scala.io.Source.fromURL(getClass.getResource("/" + usersFile))
+
+    //populate the database with some test users from the specified file (for testing), read from the resources folder
+    val source = scala.io.Source.fromURL(getClass.getResource("/" + ApiServiceConfig.testUsersFile))
 
     try {
       metaStore.createAllTables()

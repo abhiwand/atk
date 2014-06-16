@@ -25,7 +25,6 @@ package com.intel.intelanalytics.engine.spark
 
 import org.scalatest.{Suites, Matchers, FlatSpec}
 import com.intel.intelanalytics.engine.TestingSparkContext
-import com.typesafe.config.ConfigFactory
 import org.scalatest.mock.MockitoSugar
 import scala.collection.mutable.ArrayBuffer
 

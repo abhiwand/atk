@@ -23,23 +23,34 @@
 
 package com.intel.intelanalytics.engine.spark
 
-import com.typesafe.config.{ Config, ConfigFactory }
 import scala.concurrent.duration._
+import com.intel.intelanalytics.shared.SharedConfig
+import com.intel.graphbuilder.util.SerializableBaseConfiguration
+import com.typesafe.config.ConfigFactory
+import scala.collection.JavaConversions._
 
-class SparkEngineConfiguration(conf: => Config = ConfigFactory.load().withFallback(
-                                                                        ConfigFactory.load("engine.conf"))) {
-  lazy val config = conf
-  lazy val sparkHome = conf.getString("intel.analytics.spark.home")
-  lazy val sparkMaster = conf.getString("intel.analytics.spark.master")
-  lazy val defaultTimeout = conf.getInt("intel.analytics.engine.defaultTimeout").seconds
-  lazy val connectionString = conf.getString("intel.analytics.metastore.connection.url") match {
-    case "" | null => throw new Exception("No metastore connection url specified in configuration")
-    case u => u
-  }
-  lazy val driver = conf.getString("intel.analytics.metastore.connection.driver") match {
-    case "" | null => throw new Exception("No metastore driver specified in configuration")
-    case d => d
+/**
+ * Configuration Settings for the SparkEngine,
+ *
+ * This is our wrapper for Typesafe config.
+ */
+object SparkEngineConfig extends SharedConfig {
+
+  val sparkHome = config.getString("intel.analytics.spark.home")
+  val sparkMaster = config.getString("intel.analytics.spark.master")
+  val defaultTimeout = config.getInt("intel.analytics.engine.defaultTimeout").seconds
+  val fsRoot = config.getString("intel.analytics.fs.root")
+  val maxRows = config.getInt("intel.analytics.engine.max-rows")
+
+  /** Default settings for Titan Load */
+  def titanLoadConfiguration = {
+    val titanConfiguration = new SerializableBaseConfiguration
+    val titanLoadConfig = config.getConfig("intel.analytics.engine.titan.load")
+    for (entry <- titanLoadConfig.entrySet()) {
+      titanConfiguration.addProperty(entry.getKey, titanLoadConfig.getString(entry.getKey))
+    }
+    titanConfiguration
   }
 
-  lazy val fsRoot = conf.getString("intel.analytics.fs.root")
+
 }

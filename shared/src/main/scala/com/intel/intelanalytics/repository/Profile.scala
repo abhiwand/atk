@@ -1,7 +1,7 @@
 package com.intel.intelanalytics.repository
 
 import scala.slick.driver.{PostgresDriver, H2Driver, JdbcProfile}
-import com.typesafe.config.ConfigFactory
+import com.intel.intelanalytics.shared.SharedConfig
 
 /**
  * Profiles are how we abstract various back-ends like H2 vs. PostgreSQL
@@ -25,14 +25,13 @@ object Profile {
   /**
    * Initialize a Profile from settings in the config
    */
-  def initializeFromConfig(): Profile = {
+  def initializeFromConfig(config: SharedConfig): Profile = {
 
-    val config = ConfigFactory.load()
-    val connectionString = config.getString("intel.analytics.metastore.connection.url")
-    val driver = config.getString("intel.analytics.metastore.connection.driver")
-    val username = config.getString("intel.analytics.metastore.connection.username")
-    val password = config.getString("intel.analytics.metastore.connection.password")
-    val createTables = config.getBoolean("intel.analytics.metastore.connection.createTables")
+    val connectionString = config.metaStoreConnectionUrl
+    val driver = config.metaStoreConnectionDriver
+    val username = config.metaStoreConnectionUsername
+    val password = config.metaStoreConnectionPassword
+    val createTables = config.metaStoreConnectionCreateTables
 
     new Profile(jdbcProfileForDriver(driver), connectionString, driver, username, password, createTables)
   }
