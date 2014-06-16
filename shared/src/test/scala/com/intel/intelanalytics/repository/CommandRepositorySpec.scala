@@ -43,7 +43,7 @@ class CommandRepositorySpec extends SlickMetaStoreH2Testing with Matchers {
           case Success(r) => {
             commandRepo.updateProgress(r.id, List(100))
             val command2 = commandRepo.lookup(command.get.id)
-            command2.get.progress shouldBe 100
+            command2.get.progress shouldBe List(100)
           }
         }
 
