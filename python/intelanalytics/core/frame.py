@@ -24,10 +24,12 @@
 from collections import OrderedDict
 import json
 
+
 import logging
 logger = logging.getLogger(__name__)
 
 from intelanalytics.core.types import supported_types
+from intelanalytics.core.aggregation import *
 
 
 def _get_backend():
@@ -600,6 +602,53 @@ class BigFrame(object):
         projected_frame = BigFrame()
         self._backend.project_columns(self, projected_frame, column_names, new_names)
         return projected_frame
+
+    def groupBy(self, group_by_columns, *aggregation_arguments):
+        """
+        Group frame as per the criteria provided and compute aggregation on each group
+
+        Parameters
+        ----------
+        group_by_columns: BigColumn or List of BigColumns or function
+            columns or result of a function will be used to create grouping
+        aggregation_arguments: dict
+            (column,aggregation function) pairs
+
+        Return
+        ------
+        frame: BigFrame
+            new aggregated frame
+
+        Examples
+        --------
+        frame.groupBy(frame.a, count)
+        frame.groupBy([frame.a, frame.b], {f.c: avg})
+        frame.groupBy(frame[['a', 'c']], count, {f.d: [avg, sum, min], f.e: [max]})
+        """
+
+
+        groupByColumns = []
+        if isinstance(group_by_columns, list):
+            groupByColumns = [i.name for i in group_by_columns]
+        elif group_by_columns:
+            groupByColumns = [group_by_columns.name]
+
+        primaryColumn = groupByColumns[0] if groupByColumns else self.column_names[0]
+        aggregation_list = []
+
+        for i in aggregation_arguments:
+            if i == count:
+                aggregation_list.append((count, primaryColumn, "count"))
+            else:
+                for k,v in i.iteritems():
+                    if isinstance(v, list):
+                        for j in v:
+                            aggregation_list.append((j, k.name, "%s_%s" % (k.name, j)))
+                    else:
+                        aggregation_list.append((v, k.name, "%s_%s" % (k.name, v)))
+
+        # Send to backend to compute aggregation
+        return self._backend.groupBy(self, groupByColumns, aggregation_list)
 
     def remove_columns(self, name):
         """
