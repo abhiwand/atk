@@ -129,7 +129,7 @@ class CommandInfo(object):
 class Polling(object):
 
     @staticmethod
-    def poll(uri, predicate=None, interval_secs=0.5, backoff_factor=1.5, timeout_secs=5000):
+    def poll(uri, predicate=None, interval_secs=1, backoff_factor=1.05, timeout_secs=5000):
         """
         Issues GET methods on the given command uri until the response
         command_info cause the predicate to evalute True.  Exponential retry
@@ -158,6 +158,7 @@ class Polling(object):
             return command_info
 
         job_count = 1
+        last_progress = []
         while True:
             time.sleep(interval_secs)
             wait_time = time.time() - start_time
@@ -166,6 +167,7 @@ class Polling(object):
 
             new_job_progress_exists = job_count < len(progress)
             print_progress(progress, new_job_progress_exists)
+
             if(new_job_progress_exists):
                 job_count = len(progress)
 
@@ -177,11 +179,13 @@ class Polling(object):
                 logger.error(msg)
                 raise RuntimeError(msg)
 
-            interval_secs *= backoff_factor
-            if interval_secs > 30:
-                interval_secs = 30
 
+            if last_progress == progress:
+                interval_secs *= backoff_factor
+                if interval_secs > 30:
+                    interval_secs = 30
 
+            last_progress = progress
 
     @staticmethod
     def _get_command_info(uri):
