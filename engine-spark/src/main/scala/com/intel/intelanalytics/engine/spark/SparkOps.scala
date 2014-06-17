@@ -108,8 +108,8 @@ private[spark] object SparkOps extends Serializable {
    * @param data row data
    * @param keyIndex index of the key column
    */
-  def create2TupleForJoin(data: Array[Any], keyIndex: Int): (Any, Array[Any]) = {
-    (data(keyIndex), data)
+  def create2TupleForJoin(data: Array[Any], keyIndex: List[Int]): (Any, Array[Any]) = {
+    (data(keyIndex(0)), data)
   }
 
   /**

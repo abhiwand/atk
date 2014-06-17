@@ -386,7 +386,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
    * @param flattenColumnCommand input specification for column flattening
    * @param user current user
    */
-  override def flattenColumn(flattenColumnCommand: FlattenColumn[Long])(implicit user: UserPrincipal): (Command, Future[Command]) =
+  override def flattenColumn(flattenColumnCommand: FlattenColumn)(implicit user: UserPrincipal): (Command, Future[Command]) =
     withContext("se.flattenColumn") {
       val command: Command = commands.create(new CommandTemplate("flattenColumn", Some(flattenColumnCommand.toJson.asJsObject)))
       val result: Future[Command] = future {
@@ -470,7 +470,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
           t =>
             val rdd = t._1
             val columnIndex = t._2
-            rdd.map(p => SparkOps.create2TupleForJoin(p, columnIndex))
+            rdd.map(p => SparkOps.create2TupleForJoin(p, List(columnIndex)))
         }
 
         pairRdds
@@ -725,5 +725,26 @@ class SparkEngine(sparkContextManager: SparkContextManager,
                            queryName: String,
                            parameters: Map[String, String]): Future[Iterable[Row]] = {
    ???
+  }
+
+  override def dropDuplicates(dropDuplicateCommand: DropDuplicates)(implicit user: UserPrincipal): (Command, Future[Command]) =
+    withContext("se.dropDuplicates") {
+    require(dropDuplicateCommand != null, "arguments are required")
+
+    import spray.json._
+    val command: Command = commands.create(new CommandTemplate("dropDuplicates", Some(dropDuplicateCommand.toJson.asJsObject)))
+    val result: Future[Command] = future {
+      withMyClassLoader {
+        withContext("se.dropDuplicates.future") {
+          withCommand(command) {
+
+
+            JsNull.asJsObject
+          }
+          commands.lookup(command.id).get
+        }
+      }
+    }
+    (command, result)
   }
 }

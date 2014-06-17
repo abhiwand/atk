@@ -23,4 +23,4 @@
 
 package com.intel.intelanalytics.domain.frame
 
-case class FlattenColumn(name: String, frame: Long, column: String, separator: String)
+case class DropDuplicates(keyColumns: List[String])
