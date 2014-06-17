@@ -4,6 +4,8 @@
 -- This file was generated from pg_dump with modifications
 -- See FlywayDB.org documentation to see how these changes are applied
 --
+-- !!! DO NOT MODIFY THIS SCRIPT !!!
+--
 
 SET statement_timeout = 0;
 SET client_encoding = 'UTF8';
@@ -250,13 +252,16 @@ ALTER TABLE ONLY users ALTER COLUMN id SET DEFAULT nextval('users_id_seq'::regcl
 -- Data for Name: status; Type: TABLE DATA; Schema: public; Owner: metastore
 --
 
-COPY status (id, name, description, created_on, modified_on) FROM stdin;
-1	INIT	Initial Status: currently building or initializing	2014-06-13 08:09:02.247	2014-06-13 08:09:02.273
-2	ACTIVE	Active and can be interacted with	2014-06-13 08:09:02.35	2014-06-13 08:09:02.35
-3	INCOMPLETE	Partially created: failure occurred during construction.	2014-06-13 08:09:02.363	2014-06-13 08:09:02.363
-4	DELETED	Deleted but can still be un-deleted, no action has yet been taken on disk	2014-06-13 08:09:02.371	2014-06-13 08:09:02.371
-5	DELETE_FINAL	Underlying storage has been reclaimed, no un-delete is possible	2014-06-13 08:09:02.38	2014-06-13 08:09:02.38
-\.
+INSERT INTO status (id, name, description, created_on, modified_on) VALUES
+  (1, 'INIT', 'Initial Status: currently building or initializing', now(), now());
+INSERT INTO status (id, name, description, created_on, modified_on) VALUES
+  (2, 'ACTIVE',	'Active and can be interacted with', now(), now());
+INSERT INTO status (id, name, description, created_on, modified_on) VALUES
+  (3,	'INCOMPLETE',	'Partially created: failure occurred during construction.', now(), now());
+INSERT INTO status (id, name, description, created_on, modified_on) VALUES
+  (4,	'DELETED',	'Deleted but can still be un-deleted, no action has yet been taken on disk', now(), now());
+INSERT INTO status (id, name, description, created_on, modified_on) VALUES
+  (5, 'DELETE_FINAL',	'Underlying storage has been reclaimed, no un-delete is possible', now(), now());
 
 
 --

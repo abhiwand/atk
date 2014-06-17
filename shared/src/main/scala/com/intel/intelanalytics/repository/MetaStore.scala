@@ -52,7 +52,7 @@ trait MetaStore {
   def userRepo: Repository[Session, UserTemplate, User] with Queryable[Session, User]
 
   /** Create the underlying tables */
-  def createAllTables(): Unit
+  def initializeSchema(): Unit
 
   /** Delete ALL of the underlying tables - useful for unit tests only */
   private[repository] def dropAllTables(): Unit

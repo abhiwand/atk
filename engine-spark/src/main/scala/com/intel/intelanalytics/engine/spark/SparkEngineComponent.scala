@@ -59,9 +59,7 @@ class SparkComponent extends EngineComponent
     Profile.initializeFromConfig(SparkEngineConfig)
   }
 
-  if (profile.createTables) {
-    metaStore.createAllTables()
-  }
+  metaStore.initializeSchema()
 
   val sparkContextManager = new SparkContextManager(SparkEngineConfig.config, new SparkContextFactory)
 
