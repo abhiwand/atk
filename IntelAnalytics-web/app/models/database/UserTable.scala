@@ -35,31 +35,29 @@ import play.api.db.slick.Config.driver.simple._
  * @param clusterId
  */
 case class UserRow(uid: Option[Long], givenName: String, familyName: String, email: String, registered: Boolean,
-                ipythonUrl: Option[String], clusterId: Option[String], secret: Option[String])
+                   ipythonUrl: Option[String], clusterId: Option[String], secret: Option[String])
 
 /**
  * Table mapping for user_info table.
  */
 object UserTable extends Table[UserRow]("user_info") {
 
-    def uid = column[Long]("uid", O.PrimaryKey, O.AutoInc)
+  def uid = column[Long]("uid", O.PrimaryKey, O.AutoInc)
 
-    def givenName = column[String]("given_name")
+  def givenName = column[String]("given_name")
 
-    def familyName = column[String]("family_name")
+  def familyName = column[String]("family_name")
 
-    def email = column[String]("email", O.NotNull)
+  def email = column[String]("email", O.NotNull)
 
-    def registered = column[Boolean]("registered")
+  def registered = column[Boolean]("registered")
 
-    def ipythonUrl = column[String]("ipythonUrl")
+  def ipythonUrl = column[String]("ipythonUrl")
 
-    def clusterId = column[String]("cluster_id", O.Nullable)
+  def clusterId = column[String]("cluster_id", O.Nullable)
 
-    def secret = column[String]("secret", O.Nullable)
+  def secret = column[String]("secret", O.Nullable)
 
-    def * = uid.? ~ givenName ~ familyName ~ email ~ registered ~ ipythonUrl.? ~ clusterId.? ~ secret.? <>(UserRow, UserRow.unapply _)
+  def * = uid.? ~ givenName ~ familyName ~ email ~ registered ~ ipythonUrl.? ~ clusterId.? ~ secret.? <> (UserRow, UserRow.unapply _)
 }
-
-
 

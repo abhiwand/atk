@@ -21,22 +21,11 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.service.v1.viewmodels
+package com.intel.intelanalytics.domain.frame
 
-import spray.json.DefaultJsonProtocol
-import spray.httpx.SprayJsonSupport
-
-object ViewModelJsonProtocol extends DefaultJsonProtocol with SprayJsonSupport {
-
-  //this is needed for implicits
-  import com.intel.intelanalytics.domain.DomainJsonProtocol._
-
-  implicit val relLinkFormat = jsonFormat3(RelLink)
-  implicit val dataFrameHeaderFormat = jsonFormat3(DataFrameHeader)
-  implicit val decoratedDataFrameFormat = jsonFormat4(DecoratedDataFrame)
-  implicit val jsonTransformFormat = jsonFormat2(JsonTransform)
-  implicit val commandHeaderFormat = jsonFormat3(CommandHeader)
-  implicit val decoratedCommandFormat = jsonFormat7(DecoratedCommand)
-  implicit val graphHeaderFormat = jsonFormat3(GraphHeader)
-  implicit val decoratedGraphHeaderFormat = jsonFormat3(DecoratedGraph)
+case class FrameGroupByColumn[+Arguments, FrameRef](frame: FrameRef, name: String, group_by_columns: List[String], aggregations: List[(String,String, String)]) {
+  require(name != null, "frame name is required for the new frame")
+  require(frame != null, "frame is required")
+  require(group_by_columns != null, "groupbycol is required")
+  require(aggregations != null, "aggregation list is required")
 }

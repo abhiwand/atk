@@ -249,6 +249,19 @@ class FrameBackendRest(object):
         arguments = {'frame': frame.uri, 'projected_frame': projected_frame.uri, 'columns': columns, "new_column_names": new_names}
         return execute_update_frame_command('project', arguments, projected_frame)
 
+    def groupBy(self, frame, group_by_columns, aggregation_list):
+        name = self._get_new_frame_name()
+        arguments = {'frame': frame.uri,
+                    'name': name,
+                    'group_by_columns' : group_by_columns,
+                    'aggregations': aggregation_list}
+
+        command = CommandRequest("dataframe/groupby", arguments)
+        command_info = executor.issue(command)
+        frame_info = FrameInfo(command_info.result)
+
+        return BigFrame(frame_info)
+
     def remove_columns(self, frame, name):
         columns = ",".join(name) if isinstance(name, list) else name
         arguments = {'frame': frame.uri, 'column': columns}

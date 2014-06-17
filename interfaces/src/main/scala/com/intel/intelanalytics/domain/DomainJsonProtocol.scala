@@ -48,6 +48,9 @@ import com.intel.intelanalytics.domain.graph.construction.PropertyRule
 import com.intel.intelanalytics.domain.graph.construction.VertexRule
 import org.joda.time.DateTime
 
+/**
+ * Implicit conversions for domain objects to JSON
+ */
 object DomainJsonProtocol extends DefaultJsonProtocol {
 
   implicit object DataTypeFormat extends JsonFormat[DataTypes.DataType] {
@@ -97,6 +100,8 @@ object DomainJsonProtocol extends DefaultJsonProtocol {
   implicit val renameColumnFormat = jsonFormat3(FrameRenameColumn[JsObject, String])
   implicit val renameColumnLongFormat = jsonFormat3(FrameRenameColumn[JsObject, Long])
   implicit val joinFrameLongFormat = jsonFormat3(FrameJoin)
+  implicit val groupByColumnFormat = jsonFormat4(FrameGroupByColumn[JsObject, String])
+  implicit val groupByColumnLongFormat = jsonFormat4(FrameGroupByColumn[JsObject, Long])
 
   implicit val alsFormatString = jsonFormat5(Als[String])
   implicit val alsFormatLong = jsonFormat5(Als[Long])

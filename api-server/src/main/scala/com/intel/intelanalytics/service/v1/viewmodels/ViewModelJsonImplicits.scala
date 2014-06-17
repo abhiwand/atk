@@ -23,8 +23,24 @@
 
 package com.intel.intelanalytics.service.v1.viewmodels
 
-case class GraphHeader(id: Long, name: String, url: String) {
-  require(id > 0)
-  require(name != null)
-  require(url != null)
+import spray.json.DefaultJsonProtocol
+import spray.httpx.SprayJsonSupport
+
+/**
+ * Implicit Conversions for View/Models to JSON
+ */
+object ViewModelJsonImplicits extends DefaultJsonProtocol with SprayJsonSupport {
+
+  //this is needed for implicits
+  import com.intel.intelanalytics.domain.DomainJsonProtocol._
+
+  implicit val relLinkFormat = jsonFormat3(RelLink)
+  implicit val getCommandsFormat = jsonFormat3(GetCommands)
+  implicit val getCommandFormat = jsonFormat7(GetCommand)
+  implicit val getDataFramesFormat = jsonFormat3(GetDataFrames)
+  implicit val getDataFrameFormat = jsonFormat4(GetDataFrame)
+  implicit val getGraphsFormat = jsonFormat3(GetGraphs)
+  implicit val getGraphFormat = jsonFormat3(GetGraph)
+  implicit val jsonTransformFormat = jsonFormat2(JsonTransform)
+
 }

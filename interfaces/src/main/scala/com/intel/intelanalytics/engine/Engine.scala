@@ -39,7 +39,7 @@ import com.intel.intelanalytics.domain.frame.LoadLines
 import com.intel.intelanalytics.domain.command.Command
 import com.intel.intelanalytics.domain.frame.DataFrameTemplate
 import com.intel.intelanalytics.domain.frame.FrameAddColumns
-import com.intel.intelanalytics.domain.graph.{GraphLoad, GraphTemplate, Graph}
+import com.intel.intelanalytics.domain.graph.{ GraphLoad, GraphTemplate, Graph }
 
 //TODO: make these all use Try instead?
 //TODO: make as many of these as possible use id instead of dataframe as the first argument?
@@ -48,7 +48,6 @@ import com.intel.intelanalytics.domain.graph.{GraphLoad, GraphTemplate, Graph}
 trait Engine {
 
   type Identifier = Long //TODO: make more generic?
-
 
   //TODO: We'll probably return an Iterable[Vertex] instead of rows at some point.
   def getVertices(graph: Identifier, offset: Int, count: Int, queryName: String, parameters: Map[String, String]): Future[Iterable[Row]]
@@ -75,7 +74,6 @@ trait Engine {
 
   def renameColumn(arguments: FrameRenameColumn[JsObject, Long])(implicit user: UserPrincipal): (Command, Future[Command])
 
-  //  Should predicate be Partial[Any]  def filter(frame: DataFrame, predicate: Partial[Any])(implicit user: UserPrincipal): Future[DataFrame]
   def removeColumn(arguments: FrameRemoveColumn[JsObject, Long])(implicit user: UserPrincipal): (Command, Future[Command])
 
   def addColumns(arguments: FrameAddColumns[JsObject, Long])(implicit user: UserPrincipal): (Command, Future[Command])
@@ -85,6 +83,8 @@ trait Engine {
   def delete(frame: DataFrame): Future[Unit]
   def join(argument: FrameJoin)(implicit user: UserPrincipal): (Command, Future[Command])
   def flattenColumn(argument: FlattenColumn[Long])(implicit user: UserPrincipal): (Command, Future[Command])
+
+  def groupBy(arguments: FrameGroupByColumn[JsObject, Long])(implicit user: UserPrincipal): (Command, Future[Command])
 
   def getFrames(offset: Int, count: Int)(implicit p: UserPrincipal): Future[Seq[DataFrame]]
 
