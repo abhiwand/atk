@@ -224,7 +224,7 @@ class FrameBackendRest(object):
 
 
     def count(self, frame):
-        raise NotImplementedError  # TODO - impplement count
+        raise NotImplementedError  # TODO - implement count
 
     def filter(self, frame, predicate):
         row_ready_predicate = wrap_row_function(frame, predicate)

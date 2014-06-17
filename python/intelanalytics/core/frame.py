@@ -43,7 +43,6 @@ def get_frame_names():
 
     Returns
     -------
-
     list of strings
         Names of the all BigFrame objects
 
@@ -62,21 +61,17 @@ def get_frame(name):
     
     Parameters
     ----------
-
     name : string
         String containing the name of the BigFrame object
 
     Returns
     -------
-
     BigFrame
         Named object
 
     Examples
     --------
-
     >>> my_frame = get_frame( "my_frame_1" )
-    
     my_frame is now a proxy of the BigFrame object
 
     """
@@ -90,22 +85,18 @@ def delete_frame(name):
     
     Parameters
     ----------
-
     name : string
         The name of the BigFrame object to delete.
     
     Returns
     -------
-
     string
         The name of the deleted frame
 
     Examples
     --------
-
     >>> my_frame = BigFrame("raw_data.csv", my_csv)
     >>> deleted_frame = delete_frame( my_frame )
-
     deleted_frame is now a string with the value of the name of the frame which was deleted
 
     """
@@ -126,13 +117,12 @@ class BigFrame(object):
 
     Notes
     -----
-
     If no name is provided for the BigFrame object, it will generate one.
     If a data source *X* was specified, it will try to generate the frame name as *_X*.
     If for some reason *_X* would be illegal
+
     Examples
     --------
-
     >>> g = BigFrame(None, "my_data")
     A BigFrame object has been created and 'g' is its proxy. It has no data, but it has the name "my_data".
 
@@ -234,20 +224,20 @@ class BigFrame(object):
         
         Returns
         -------
-
         list of string
         
         Examples
         --------
         >>> frame.column_names()
         ["col1", "col2", "col3"]
+
         """
         return self._columns.keys()
 
     @property
     def data_type(self):
         """
-        The type of object this is
+        The type of object this is.
         
         Returns
         -------
@@ -266,7 +256,7 @@ class BigFrame(object):
     @property
     def name(self):
         """
-        The name of the BigFrame
+        The name of the BigFrame.
         
         Returns
         -------
@@ -323,12 +313,13 @@ class BigFrame(object):
 
     def add_columns(self, func, types=str, names=""):
         """
+        Add column(s).
+        
         Adds one or more new columns to the frame by evaluating the given
         func on each row.
 
         Parameters
         ----------
-
         func : row function
             function which takes the values in the row and produces a value
             or collection of values for the new cell(s)
@@ -364,11 +355,10 @@ class BigFrame(object):
 
         Parameters
         ----------
-            The source of the data being added.
+            data : a schema describing the data being added
 
         Examples
         --------
-
         >>> my_frame = BigFrame(my_csv)
         >>> my_other_frame = BigFrame(my_other_csv)
         >>> my_frame.append(my_other_frame)
@@ -379,12 +369,12 @@ class BigFrame(object):
 
     def copy(self):
         """
-        Creates a full copy of the current frame
+        Creates a full copy of the current frame.
 
         Returns
         -------
         frame : BigFrame
-            A new frame object which is a copy of this frame
+            A new frame object which is a copy of the currently active BigFrame
         """
         copied_frame = BigFrame()
         self._backend.project_columns(self, copied_frame, self.column_names)
@@ -396,13 +386,11 @@ class BigFrame(object):
 
         Returns
         -------
-
         int32
-            The number of rows
+            The number of rows in the currently active BigFrame
 
         Examples
         --------
-
         >>>
         # For this example, my_frame is a BigFrame object with lots of data
         >>> num_rows = my_frame.count()
@@ -433,7 +421,11 @@ class BigFrame(object):
 
     def flatten_column(self, column_name):
         """
-        Flatten a column
+        Flatten a column.
+
+        Search through the currently active BigFrame for multiple items in a single specified column.
+        When it finds multiple values in the column, it replicates the row and separates the multiple items across the existing and new rows.
+        Multiple items is defined in this case as being things separated by commas.
 
         Parameters
         ----------
@@ -447,8 +439,21 @@ class BigFrame(object):
 
         Examples
         --------
+        >>>
+        For this example, we have a BigFrame called 'frame1' with a column called 'a' and a column called 'b'.
+        Row 1, column 'a' is "me", column 'b' is "x"
+        Row 2, column 'a' is "oh, oh, you", column 'b' is "y"
+        Row 3, column 'a' is "my", column 'b' is "z, e, r, o"
+        <BLANKLINE>
         >>> flattened_frame = frame1.flatten_column('a')
+        <BLANKLINE>
+        Row 1, column 'a' is "me", column 'b' is "x"
+        Row 2, column 'a' is "oh", column 'b' is "y"
+        Row 3, column 'a' is "my", column 'b' is "z, e, r, o"
+        Row 4, column 'a' is "oh", column 'b' is "y"
+        Row 5, column 'a' is "you", column 'b' is "y"
         """
+        # TODO - Review docstring
         return self._backend.flatten_column(self, column_name)
 
     def drop(self, predicate):
@@ -457,15 +462,13 @@ class BigFrame(object):
         
         Parameters
         ----------
-
         predicate : function
             The requirement that the rows must match
             
         Examples
         --------
-
         >>>
-        For this example, my_frame is a BigFrame object with a column called "unimportant" (amongst other)
+        For this example, my_frame is a BigFrame object with a boolean column called "unimportant".
         >>> my_frame.drop( unimportant == True )
         my_frame's data is now empty of any data with where the column "unimportant" was true.
 
@@ -479,7 +482,6 @@ class BigFrame(object):
 
         Parameters
         ----------
-
         how : any, all, or column name, optional
             any: if any column has an NA value, drop row
             all: if all the columns have an NA value, drop row
@@ -489,10 +491,10 @@ class BigFrame(object):
 
         Examples
         --------
-
         >>>
         For this example, my_frame is a BigFrame object with a columns called "column_1", "column_2", and "column_3" (amongst others)
-        >>> my_frame.dropna( "column_1" ) will eliminate any rows which do not have a value for column_1
+        >>> my_frame.dropna( "column_1" )
+        will eliminate any rows which do not have a value for column_1
         <BLANKLINE>
         If we used the form
         >>> my_frame.dropna( any, ["column_2", "column_3"])
@@ -512,24 +514,20 @@ class BigFrame(object):
         
         Parameters
         ----------
-
         n : int
-            The number of something
-            
+            The number of rows to check
         offset : int
-            The number of something else
+            The first row to check
             
         Returns
         -------
-
         bool
             Whether the data is valid or not.
             
         Examples
         --------
-
         >>>
-        Let us say that my_frame is a BigFrame object and the row should have types int32, str, int64, bool and the data for that row is "10", "20", "Bob's your uncle", "0"
+        For this example, my_frame is a BigFrame object and the row should have types int32, str, int64, bool and the data for that row is "10", "20", "o", "0"
         >>> my_check = my_frame.inspect()
         my_check would be false because "Bob's your uncle" is not an int64 type
         
@@ -539,17 +537,28 @@ class BigFrame(object):
 
     def join(self, right, left_on, right_on=None, how='inner'):
         """
-        Create a new BigFrame from a JOIN operation with another BigFrame.
+        Build a new BigFrame from two others.
+
+        Create a new BigFrame from a SQL JOIN operation with another BigFrame.
+        The BigFrame on the 'left' is the currently active frame.
+        The BigFrame on the 'right' is another frame.
+        This function takes a column in the left frame and matches it's values with a column in the right frame.
+        Using the default 'how' option ['inner'] will only allow data in the resultant frame if both the left and right
+        frames have the same value in the matching column.
+        Using the 'left' 'how' option will allow any data in the resultant frame if it exists in the left frame, but
+        will allow any data from the right frame if it has a value in it's column which matches the value in the left frame column.
+        Using the 'right' option works similarly, except it keeps all the data from the right frame and only the
+        data from the left frame when it matches.
 
         Parameters
         ----------
         right : BigFrame
             Another frame to join with
         left_on : str
-            Name of the column for the join in this (left) frame
+            Name of the column in the left frame used to match up the two frames.
         right_on : str, optional
-            Name of the column for the join in the right frame.  If not
-            provided, then the value of left_on is used.
+            Name of the column in the right frame used to match up the two frames.
+            If not provided, then the column name used must be the same in both frames.
         how : str, optional
             {'left', 'right', 'inner'}
 
@@ -560,8 +569,17 @@ class BigFrame(object):
 
         Examples
         --------
-        >>> joined_frame = frame1.join(frame2, 'a')
+        >>>
+        For this example, we will used a frame called 'frame1' with columns 'a', 'b', 'c', and a frame called 'frame2' with columns 'a', 'd', 'e'.
+        >>> frame1 = BigFrame(schema1)
+        ... frame2 = BigFrame(schema2)
+        ... joined_frame = frame1.join(frame2, 'a')
+        Now, joined_frame is a BigFrame with the columns 'a', 'b', 'c', 'd', 'e'. The data in the new frame will be from the rows where column 'a' was the same in both 'frame1' and 'frame2'.
+        <BLANKLINE>
+        Now, using a single BigFrame called 'frame2' with the columns 'b' and 'book':
         >>> joined_frame = frame2.join(frame2, left_on='b', right_on='book', how='inner')
+        We end up with a new BigFrame with the columns 'b' and 'book', but only those rows where the data in the original frame in column 'b' matched the data in column 'book'.  Note that there are still the original number of columns, with the original column names, but any rows of data where 'b' and 'book' did not match are now gone.
+
         """
         return self._backend.join(self, right, left_on, right_on, how)
 
@@ -573,20 +591,35 @@ class BigFrame(object):
         ----------
 
         column_names : str OR list of str
-            column name OR list of column names to be removed from the frame
-        new_names : str OR list of str
+            column name OR list of column names to be copied from the currently active frame
+        new_names : str OR list of str, optional
             The new name(s) for the column(s)
+
+        Notes
+        -----
+        If new column names are specified, the quantity of column names must match the quantity of new names,
+        though if you are only using a single column, it does not matter whether that column is declared in string
+        fashion, or as a single string in a list.
+
+        Raises
+        ------
+        ValueError
+            number of columns specified in column_names does not match the number of columns specified in new_names
 
         Returns
         -------
-
         frame : BigFrame
             A new frame object containing copies of the specified columns
 
         Examples
         --------
-
         >>>
+        For this example, our original BigFrame called 'frame1' has columns named 'a', 'b', 'c', 'd'.
+        >>> new_frame = frame1.project_columns( ['a', 'b', 'c'], ['apple', 'boat', 'frog'])
+        And the result is a new BigFrame named 'new_name' with columns 'apple', 'boat', 'frog', and the data from 'frame1', column 'a' is now copied in column 'apple', the data from column 'b' is now copied in column 'boat' and the data from column 'c' is now copied in column 'frog'.
+        Continuing:
+        >>> frog_frame = new_frame.project_columns('frog')
+        And the new BigFrame called 'frog_frame' has a single column called 'frog' with a copy of all the data from the original column 'c' in 'frame1'.
 
         """
         # TODO - need example in docstring
@@ -605,7 +638,9 @@ class BigFrame(object):
 
     def groupBy(self, group_by_columns, *aggregation_arguments):
         """
-        Group frame as per the criteria provided and compute aggregation on each group
+        Create a new BigFrame using an existing frame, compressed by groups.
+        
+        Group frame as per the criteria provided and compute aggregation on each group.
 
         Parameters
         ----------
