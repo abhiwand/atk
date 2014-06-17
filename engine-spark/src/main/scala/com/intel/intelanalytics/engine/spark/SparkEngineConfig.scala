@@ -61,5 +61,4 @@ object SparkEngineConfig extends SharedConfig {
     titanConfiguration
   }
 
-
 }

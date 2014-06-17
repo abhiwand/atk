@@ -14,9 +14,9 @@ import com.intel.graphbuilder.parser.ColumnDef
 import com.intel.intelanalytics.domain.graph.construction.VertexRule
 import com.intel.intelanalytics.domain.graph.construction.PropertyRule
 import spray.json.JsObject
-import com.intel.intelanalytics.domain.schema.{Schema, DataTypes}
+import com.intel.intelanalytics.domain.schema.{ Schema, DataTypes }
 import DataTypes.DataType
-import com.intel.intelanalytics.domain.graph.{GraphLoad, Graph}
+import com.intel.intelanalytics.domain.graph.{ GraphLoad, Graph }
 import com.intel.intelanalytics.engine.spark.SparkEngineConfig
 
 /**
