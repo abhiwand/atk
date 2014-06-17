@@ -137,6 +137,7 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
       case ("dataframe/join") => runJoinFrames(uri, xform)
       case ("dataframe/flattenColumn") => runflattenColumn(uri, xform)
       case ("dataframe/groupby") => runFrameGroupByColumn(uri, xform)
+      case ("dataframe/dropDuplicates") => rundropDuplicates(uri, xform)
       case s: String => illegalArg("Command name is not supported: " + s)
       case _ => illegalArg("Command name was NOT a string")
     }
@@ -331,7 +332,7 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
    */
   def runflattenColumn(uri: Uri, xform: JsonTransform)(implicit user: UserPrincipal) = {
     val test = Try {
-      xform.arguments.get.convertTo[FlattenColumn[Long]]
+      xform.arguments.get.convertTo[FlattenColumn]
     }
 
     validate(test.isSuccess, "Failed to parse file load descriptor: " + getErrorMessage(test)) {
@@ -341,6 +342,23 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
       complete(decorate(uri + "/" + command.id, command))
     }
   }
+
+  /**
+   * Receive drop duplicates request and executing drop duplicates
+   */
+  def rundropDuplicates(uri: Uri, xform: JsonTransform)(implicit user: UserPrincipal) = {
+    val test = Try {
+      xform.arguments.get.convertTo[DropDuplicates]
+    }
+
+    validate(test.isSuccess, "Failed to parse file load descriptor: " + getErrorMessage(test)) {
+      val args = test.get
+      val result = engine.dropDuplicates(args)
+      val command: Command = result._1
+      complete(decorate(uri + "/" + command.id, command))
+    }
+  }
+
 
   def runFrameProject(uri: Uri, xform: JsonTransform)(implicit user: UserPrincipal) = {
     val test = Try {

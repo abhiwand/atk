@@ -82,7 +82,8 @@ trait Engine {
 
   def delete(frame: DataFrame): Future[Unit]
   def join(argument: FrameJoin)(implicit user: UserPrincipal): (Command, Future[Command])
-  def flattenColumn(argument: FlattenColumn[Long])(implicit user: UserPrincipal): (Command, Future[Command])
+  def flattenColumn(argument: FlattenColumn)(implicit user: UserPrincipal): (Command, Future[Command])
+  def dropDuplicates(dropDuplicateCommand: DropDuplicates)(implicit user: UserPrincipal): (Command, Future[Command])
 
   def groupBy(arguments: FrameGroupByColumn[JsObject, Long])(implicit user: UserPrincipal): (Command, Future[Command])
 
