@@ -34,6 +34,7 @@ import org.joda.time.DateTime
 import com.github.tototoshi.slick.GenericJodaSupport
 import com.intel.intelanalytics.domain._
 import scala.slick.driver.{JdbcDriver, JdbcProfile}
+import org.flywaydb.core.Flyway
 
 
 trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
@@ -83,23 +84,30 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
     type Session = msc.Session
 
     /**
-     * Create the underlying tables
+     * Create the underlying tables, sequences, etc.
      */
-    override def createAllTables(): Unit = {
-
-      /** Repository for CRUD on 'frame' table */
+    override def initializeSchema(): Unit = {
 
       withSession("Creating tables") {
         implicit session =>
-          info("creating")
-          // Tables that are dependencies for other tables need to go first
-          statusRepo.asInstanceOf[SlickStatusRepository].createTable
-          statusRepo.asInstanceOf[SlickStatusRepository].initializeValues
-          userRepo.asInstanceOf[SlickUserRepository].createTable
-          frameRepo.asInstanceOf[SlickFrameRepository].createTable // depends on user, status
-          commandRepo.asInstanceOf[SlickCommandRepository].createTable // depends on user
-          graphRepo.asInstanceOf[SlickGraphRepository].createTable // depends on user, status
-          info("tables created")
+          if (profile.isH2) {
+            info("Creating schema using Slick")
+            // Tables that are dependencies for other tables need to go first
+            statusRepo.asInstanceOf[SlickStatusRepository].createTable
+            statusRepo.asInstanceOf[SlickStatusRepository].initializeValues
+            userRepo.asInstanceOf[SlickUserRepository].createTable
+            frameRepo.asInstanceOf[SlickFrameRepository].createTable // depends on user, status
+            commandRepo.asInstanceOf[SlickCommandRepository].createTable // depends on user
+            graphRepo.asInstanceOf[SlickGraphRepository].createTable // depends on user, status
+            info("Schema creation completed")
+          }
+          else {
+            info("Running migrations to create/update schema as needed, jdbcUrl: " + profile.connectionString + ", user: " + profile.username)
+            val flyway = new Flyway()
+            flyway.setDataSource(profile.connectionString, profile.username, profile.password)
+            flyway.migrate()
+            info("Migration completed")
+          }
       }
     }
 
@@ -108,14 +116,19 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
 
       withSession("Dropping all tables") {
         implicit session =>
-          info("dropping")
-          // Tables that are dependencies for other tables need to go last
-          frameRepo.asInstanceOf[SlickFrameRepository].dropTable
-          commandRepo.asInstanceOf[SlickCommandRepository].dropTable
-          graphRepo.asInstanceOf[SlickGraphRepository].dropTable
-          userRepo.asInstanceOf[SlickUserRepository].dropTable
-          statusRepo.asInstanceOf[SlickStatusRepository].dropTable
-          info("tables dropped")
+          if (profile.isH2) {
+            info("dropping")
+            // Tables that are dependencies for other tables need to go last
+            frameRepo.asInstanceOf[SlickFrameRepository].dropTable
+            commandRepo.asInstanceOf[SlickCommandRepository].dropTable
+            graphRepo.asInstanceOf[SlickGraphRepository].dropTable
+            userRepo.asInstanceOf[SlickUserRepository].dropTable
+            statusRepo.asInstanceOf[SlickStatusRepository].dropTable
+            info("tables dropped")
+          }
+          else {
+            throw new RuntimeException("Dropping tables is only supported for H2")
+          }
       }
     }
 
@@ -137,7 +150,6 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
       }
     }
   }
-
 
   /**
    * A slick implementation of the 'User' table that defines
@@ -197,7 +209,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
     }
 
     override def retrieveByColumnValue(colName: String, value: String)(implicit session: Session): List[User] = {
-      users.filter(_.column[String](colName) === value).list
+      users.filter(_.column[Option[String]](colName) === value).list
     }
 
     /** execute DDL to create the underlying table */

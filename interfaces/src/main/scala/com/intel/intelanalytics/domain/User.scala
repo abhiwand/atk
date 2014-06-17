@@ -2,6 +2,7 @@ package com.intel.intelanalytics.domain
 
 import org.joda.time.DateTime
 
+
 /**
  * Users of the system.
  *
@@ -11,11 +12,11 @@ import org.joda.time.DateTime
  * @param createdOn date/time this record was created
  * @param modifiedOn date/time this record was last modified
  */
-<<<<<<< HEAD
-case class User(id: Long, username: Option[String], apiKey: Option[String], createdOn: DateTime, modifiedOn: DateTime ) extends HasId {
-=======
-case class User(id: Long, username: Option[String], api_key: String, createdOn: DateTime, modifiedOn: DateTime) extends HasId {
->>>>>>> remotes/origin/sprint_14
+case class User(id: Long,
+                username: Option[String],
+                apiKey: Option[String],
+                createdOn: DateTime,
+                modifiedOn: DateTime ) extends HasId {
   require(id >= 0)
   require(apiKey != null && !apiKey.isEmpty)
 }

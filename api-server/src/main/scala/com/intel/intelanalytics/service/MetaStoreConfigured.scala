@@ -11,13 +11,13 @@ class MetaStoreConfigured extends SlickMetaStoreComponent with DbProfileComponen
 
   override lazy val profile = Profile.initializeFromConfig(ApiServiceConfig)
 
-  if (profile.createTables) {
+  if (profile.isH2) {
 
     //populate the database with some test users from the specified file (for testing), read from the resources folder
     val source = scala.io.Source.fromURL(getClass.getResource("/" + ApiServiceConfig.testUsersFile))
 
     try {
-      metaStore.createAllTables()
+      metaStore.initializeSchema()
 
       metaStore.withSession("Populating test users") {
         implicit session =>
