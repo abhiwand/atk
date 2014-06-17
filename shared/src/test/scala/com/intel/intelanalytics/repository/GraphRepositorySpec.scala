@@ -1,7 +1,7 @@
 package com.intel.intelanalytics.repository
 
 import org.scalatest.Matchers
-import com.intel.intelanalytics.domain.{GraphTemplate, Schema}
+import com.intel.intelanalytics.domain.graph.GraphTemplate
 
 
 class GraphRepositorySpec extends SlickMetaStoreH2Testing with Matchers {

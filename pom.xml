@@ -109,23 +109,6 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
         </repository>
     </repositories>
 
-    <modules>
-        <!--<module>ititan</module>
-        <module>event</module>
-        <module>ispark-deps</module>
-        <module>graphbuilder-3</module>&lt;!&ndash; scoverage &ndash;&gt;
-        <module>interfaces</module>
-        <module>launcher</module>&lt;!&ndash; scoverage &ndash;&gt;
-        <module>shared</module>&lt;!&ndash; scoverage &ndash;&gt;
-        <module>api-server</module>
-        <module>engine</module>
-        <module>engine-spark</module>&lt;!&ndash; scoverage &ndash;&gt;
-        <module>imahout</module>
-        <module>igiraph</module>
-        <module>imllib</module>
-        <module>graphon</module>
-        <module>package</module>-->
-    </modules>
     <prerequisites>
         <maven>3.0</maven>
     </prerequisites>
@@ -191,8 +174,10 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
 
         <scoverage-plugin.version>0.99.2</scoverage-plugin.version>
         <scoverage.version>0.99.2</scoverage.version>
-        <maven.plugin.scoverage.version>0.99.2</maven.plugin.scoverage.version>
     </properties>
+    <modules>
+
+    </modules>
     <profiles>
         <profile>
             <id>ititan</id>
@@ -225,10 +210,6 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 <module>api-server</module>
                 <module>engine</module>
                 <module>engine-spark</module><!-- scoverage -->
-                <!--<module>imahout</module>
-                <module>igiraph</module>
-                <module>imllib</module>
-                <module>graphon</module>-->
                 <module>package</module>
             </modules>
         </profile>
@@ -293,7 +274,11 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                                         </jvmArgs>
                                         <args>
                                             <arg>-g:vars</arg>
-                                            <arg>-Yrangepos</arg>
+                                            <!--
+                                                The -Yrangepos flag was causing issues with a ScalaTest in imllib.
+                                                It is needed for scoverage but hopefully not needed here.
+                                             -->
+                                            <!--arg>-Yrangepos</arg-->
                                         </args>
                                     </configuration>
                                 </execution>
@@ -483,18 +468,7 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                                         </args>
                                     </configuration>
                                 </execution>
-                                <!--<execution>
-                                    <id>test</id>
-                                    <goals>
-                                        <goal>add-source</goal>
-                                        <goal>testCompile</goal>
-                                    </goals>
-                                </execution>-->
                             </executions>
-                            <!--<configuration>
-                                <scalaVersion>${scala.long.version}</scalaVersion>
-                                <checkMultipleScalaVersions>false</checkMultipleScalaVersions>
-                            </configuration>-->
                         </plugin>
                         <plugin>
                             <inherited>true</inherited>
@@ -606,26 +580,6 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                     </executions>
                 </plugin>
 
-                <plugin>
-                    <groupId>com.github.koraktor</groupId>
-                    <artifactId>mavanagaiata</artifactId>
-                    <version>0.5.0</version>
-                    <configuration>
-                        <gitDir>.git</gitDir>
-                        <skipNoGit>true</skipNoGit>
-                    </configuration>
-                    <executions>
-                        <execution>
-                            <id>git-commit</id>
-                            <phase>validate</phase>
-                            <goals>
-                                <goal>branch</goal>
-                                <goal>commit</goal>
-                            </goals>
-                        </execution>
-                    </executions>
-                </plugin>
-
                 <!--Create our jars-->
                 <plugin>
                     <inherited>true</inherited>
@@ -712,6 +666,26 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                         </execution>
                     </executions>
                 </plugin>
+                <!-- Scalariform is ready but I'm commenting out temporarily until there is less code for people to merge -Todd 6/16/2014 -->
+                <!--plugin>
+                    <groupId>org.scalariform</groupId>
+                    <artifactId>scalariform-maven-plugin</artifactId>
+                    <version>0.1.2</version>
+
+                    <executions>
+                        <execution>
+                            <phase>process-sources</phase>
+                            <goals>
+                                <goal>format</goal>
+                            </goals>
+                            <configuration>
+                                <alignParameters>true</alignParameters>
+                                <compactControlReadability>true</compactControlReadability>
+                                <preserveDanglingCloseParenthesis>true</preserveDanglingCloseParenthesis>
+                            </configuration>
+                        </execution>
+                    </executions>
+                </plugin-->
                 <!--<plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-site-plugin</artifactId>
@@ -820,58 +794,29 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
 
 
         <plugins>
-            <!--<plugin>
-                <groupId>net.alchim31.maven</groupId>
-                <artifactId>scala-maven-plugin</artifactId>
-            </plugin>-->
-            <!--<plugin>
-                <artifactId>maven-assembly-plugin</artifactId>
-            </plugin>-->
-            <!--
-            <plugin>
-                <groupId>org.scalatest</groupId>
-                <artifactId>scalatest-maven-plugin</artifactId>
-            </plugin>
-            <plugin>
-                &lt;!&ndash;run specs test from maven&ndash;&gt;
-                <groupId>com.mmakowski</groupId>
-                <artifactId>maven-specs2-plugin</artifactId>
-            </plugin>-->
-            <!--
-                        <plugin>
-                            <groupId>org.scoverage</groupId>
-                            <artifactId>maven-scoverage-plugin</artifactId>
-                        </plugin>-->
+
 
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
             </plugin>
 
-            <!-- <plugin>
-                 <groupId>org.apache.rat</groupId>
-                 <artifactId>apache-rat-plugin</artifactId>
-             </plugin>-->
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-checkstyle-plugin</artifactId>
             </plugin>
-            <!--<plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-enforcer-plugin</artifactId>
-            </plugin>-->
-            <!--<plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
-            </plugin>-->
+
             <plugin>
                 <groupId>com.github.koraktor</groupId>
                 <artifactId>mavanagaiata</artifactId>
             </plugin>
-            <!--<plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-checkstyle-plugin</artifactId>
-            </plugin>-->
+
+            <plugin>
+                <groupId>org.scalariform</groupId>
+                <artifactId>scalariform-maven-plugin</artifactId>
+            </plugin>
+
             <!--            <plugin>
                             <artifactId>exec-maven-plugin</artifactId>
                             <groupId>org.codehaus.mojo</groupId>
@@ -969,6 +914,7 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 <artifactId>scala-library</artifactId>
                 <version>${scala.long.version}</version>
             </dependency>
+
 
             <!-- <dependency>
                  <groupId>org.apache.hadoop</groupId>

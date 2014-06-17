@@ -1,3 +1,4 @@
+from collections import OrderedDict
 from intelanalytics.core.types import supported_types
 
 
@@ -5,13 +6,13 @@ class Row(object):
 
     def __init__(self, schema, data=None):
         """
-        Expects schema to be a OrderedDict
+        Expects schema to as list of tuples
         """
-        self.schema = schema
+        self.schema_dict = OrderedDict(schema)
         self.data = [] if data is None else data  # data is an array of strings right now
 
     def __getattr__(self, name):
-        if name != "_schema" and name in self.schema.keys():
+        if name != "_schema" and name in self.schema_dict.keys():
             return self[name]
         return super(Row, self).__getattribute__(name)
 
@@ -62,14 +63,14 @@ class Row(object):
         if isinstance(choice, basestring):
             return self._is_cell_empty(choice)
         elif choice is any or choice is all:
-            subset = self.schema.keys() if subset is None else subset
+            subset = self.schema_dict.keys() if subset is None else subset
             return choice(map(self._is_cell_empty, subset))
         else:
             raise ValueError("Bad choice; must be any, all, or a column name")
 
     def _get_cell_value(self, key):
         # converts the string into the proper data type
-        index = self.schema.keys().index(key)  # could improve speed here...
-        dtype = self.schema[key]
+        index = self.schema_dict.keys().index(key)  # could improve speed here...
+        dtype = self.schema_dict[key]
         return supported_types.cast(self.data[index], dtype)
 

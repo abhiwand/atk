@@ -58,4 +58,6 @@ mkdir debian/source ; echo '3.0 (quilt)' > debian/source/format ; dch 'Switch to
 log "build deb package"
 debuild -us -uc --source-option=--include-binaries --source-option=-isession
 
-popd $SCRIPTPATH/$debDir
+popd
+
+cleanDeb
