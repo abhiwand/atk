@@ -105,9 +105,9 @@ case class InputSchema(columns: Seq[ColumnDef]) extends Serializable {
   /**
    * Convert dataTypes of Class[primitive] to their Object equivalents
    *
-   * e.g. scala.Int to java.lang.Integer
-   *      scala.Long to java.lang.Long
-   *      scala.Char to java.lang.Char
+   * e.g. classOf[scala.Int] to classOf[java.lang.Integer]
+   *      classOf[scala.Long] to classOf[java.lang.Long]
+   *      classOf[scala.Char] to classOf[java.lang.Char]
    *      etc.
    *
    * Titan doesn't support primitive properties so we convert them to their Object equivalents.
