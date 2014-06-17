@@ -23,14 +23,34 @@
 
 package com.intel.intelanalytics.domain
 
-import com.intel.intelanalytics.domain.DataTypes.DataType
+import com.intel.intelanalytics.domain.schema.{Schema, DataTypes}
+import DataTypes.DataType
 import spray.json._
-import com.intel.intelanalytics.domain.graphconstruction._
-import com.intel.intelanalytics.domain.graphconstruction.ValueRule
-import com.intel.intelanalytics.domain.graphconstruction.EdgeRule
-import com.intel.intelanalytics.domain.graphconstruction.PropertyRule
+import com.intel.intelanalytics.domain.frame._
+import com.intel.intelanalytics.domain.frame.FrameProject
+import com.intel.intelanalytics.domain.graph.Graph
+import com.intel.intelanalytics.domain.frame.FrameRenameFrame
+import com.intel.intelanalytics.domain.graph.construction.ValueRule
+import com.intel.intelanalytics.domain.graph.construction.FrameRule
+import com.intel.intelanalytics.domain.frame.DataFrameTemplate
+import com.intel.intelanalytics.domain.frame.FrameAddColumn
+import com.intel.intelanalytics.domain.frame.FrameRenameColumn
+import com.intel.intelanalytics.domain.frame.FlattenColumn
+import com.intel.intelanalytics.domain.frame.FrameRemoveColumn
+import com.intel.intelanalytics.domain.frame.DataFrame
+import com.intel.intelanalytics.domain.frame.FrameJoin
+import com.intel.intelanalytics.domain.graph.GraphLoad
+import com.intel.intelanalytics.domain.graph.GraphTemplate
+import com.intel.intelanalytics.domain.frame.LoadLines
+import com.intel.intelanalytics.domain.command.Als
+import com.intel.intelanalytics.domain.graph.construction.EdgeRule
+import com.intel.intelanalytics.domain.graph.construction.PropertyRule
+import com.intel.intelanalytics.domain.graph.construction.VertexRule
 import org.joda.time.DateTime
 
+/**
+ * Implicit conversions for domain objects to JSON
+ */
 object DomainJsonProtocol extends DefaultJsonProtocol {
 
   implicit object DataTypeFormat extends JsonFormat[DataTypes.DataType] {
@@ -80,6 +100,8 @@ object DomainJsonProtocol extends DefaultJsonProtocol {
   implicit val renameColumnFormat = jsonFormat3(FrameRenameColumn[JsObject, String])
   implicit val renameColumnLongFormat = jsonFormat3(FrameRenameColumn[JsObject, Long])
   implicit val joinFrameLongFormat = jsonFormat3(FrameJoin)
+  implicit val groupByColumnFormat = jsonFormat4(FrameGroupByColumn[JsObject, String])
+  implicit val groupByColumnLongFormat = jsonFormat4(FrameGroupByColumn[JsObject, Long])
 
   implicit val alsFormatString = jsonFormat5(Als[String])
   implicit val alsFormatLong = jsonFormat5(Als[Long])

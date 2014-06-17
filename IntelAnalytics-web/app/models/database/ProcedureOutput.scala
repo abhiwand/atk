@@ -27,6 +27,6 @@ package models.database
  * Define basic outputs from calling stored procedure.
  */
 trait ProcedureOutput {
-    val errorCode : Int
-    val errorMessage : String
+  val errorCode: Int
+  val errorMessage: String
 }

@@ -30,9 +30,9 @@ package models.database
  * @param loginAfterRegistration indicate whether to log in user directly after registration.
  * @param userId current user's id in the system.
  */
-class RegistrationOutput(code : Int, message : String, loginAfterRegistration : Int, userId : Long) extends ProcedureOutput {
-    val uid = userId
-    val login = loginAfterRegistration
-    val errorCode = code
-    val errorMessage = message
+class RegistrationOutput(code: Int, message: String, loginAfterRegistration: Int, userId: Long) extends ProcedureOutput {
+  val uid = userId
+  val login = loginAfterRegistration
+  val errorCode = code
+  val errorMessage = message
 }
