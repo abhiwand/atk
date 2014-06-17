@@ -74,7 +74,7 @@ class SparkJoinITest extends TestingSparkContext with Matchers {
     val countryNames = sc.parallelize(id_country_names).map(t => SparkOps.create2TupleForJoin(t, List(0)))
 
     val result = SparkOps.joinRDDs(RDDJoinParam(countryCode, 2), RDDJoinParam(countryNames, 2), "right")
-    val sortable = result.map(t => SparkOps.create2TupleForJoin(t, List(0))).asInstanceOf[RDD[(Int, Array[Any])]]
+    val sortable = result.map(t => SparkOps.create2TupleForJoin(t, List(2))).asInstanceOf[RDD[(Int, Array[Any])]]
     val sorted = sortable.sortByKey(true)
 
     val data = sorted.take(4)
