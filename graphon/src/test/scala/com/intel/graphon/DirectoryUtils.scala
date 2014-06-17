@@ -43,9 +43,8 @@ object DirectoryUtils {
   def createTempDirectory(prefix: String): File = {
     try {
       convertFileToDirectory(File.createTempFile(prefix, "-tmp"))
-    }
-    catch {
-      case e: Exception =>
+    } catch {
+      case e: Exception ⇒
         throw new RuntimeException("Could NOT initialize temp directory, prefix: " + prefix, e)
     }
   }

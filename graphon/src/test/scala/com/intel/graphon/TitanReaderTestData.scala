@@ -147,8 +147,7 @@ object TitanReaderTestData extends Suite with BeforeAndAfterAll {
         transaction.commit()
         graph.shutdown()
       }
-    }
-    finally {
+    } finally {
       deleteTempDirectory(tmpDir)
     }
 
