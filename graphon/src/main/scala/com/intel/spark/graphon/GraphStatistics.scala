@@ -26,7 +26,7 @@ package com.intel.spark.graphon
 import com.intel.graphbuilder.elements.Edge
 import org.apache.spark.rdd.RDD
 
-object Statistics {
+object GraphStatistics {
 
   /**
    * A parallel method to calculate the out degree
@@ -40,8 +40,8 @@ object Statistics {
    */
   def outDegrees(edgeRDD: RDD[Edge]): RDD[(Any, Long)] = {
 
-    val groupedByEdges = edgeRDD.groupBy(edge => edge.tailPhysicalId)
-    groupedByEdges.map(e => (e._1, e._2.size))
+    val groupedByEdges = edgeRDD.groupBy(edge ⇒ edge.tailPhysicalId)
+    groupedByEdges.map(e ⇒ (e._1, e._2.size))
   }
 
   /**
@@ -55,9 +55,9 @@ object Statistics {
    */
   def outDegreesByEdgeType(edgeRDD: RDD[Edge], edgeLabel: String): RDD[(Any, Long)] = {
 
-    val filteredEdges = edgeRDD.filter(edge => edge.label == edgeLabel)
-    val groupedByEdges = filteredEdges.groupBy(edge => edge.tailPhysicalId)
-    groupedByEdges.map(e => (e._1, e._2.size))
+    val filteredEdges = edgeRDD.filter(edge ⇒ edge.label == edgeLabel)
+    val groupedByEdges = filteredEdges.groupBy(edge ⇒ edge.tailPhysicalId)
+    groupedByEdges.map(e ⇒ (e._1, e._2.size))
   }
 
   /**
@@ -72,9 +72,8 @@ object Statistics {
    */
   def inDegrees(edgeRDD: RDD[Edge]): RDD[(Any, Long)] = {
 
-    edgeRDD.foreach(println)
-    val groupedByEdges = edgeRDD.groupBy(edge => edge.headPhysicalId)
-    groupedByEdges.map(e => (e._1, e._2.size))
+    val groupedByEdges = edgeRDD.groupBy(edge ⇒ edge.headPhysicalId)
+    groupedByEdges.map(e ⇒ (e._1, e._2.size))
   }
 
   /**
@@ -88,8 +87,8 @@ object Statistics {
    */
   def inDegreesByEdgeType(edgeRDD: RDD[Edge], edgeLabel: String): RDD[(Any, Long)] = {
 
-    val filteredEdges = edgeRDD.filter(edge => edge.label == edgeLabel)
-    val groupedByEdges = filteredEdges.groupBy(edge => edge.headPhysicalId)
-    groupedByEdges.map(e => (e._1, e._2.size))
+    val filteredEdges = edgeRDD.filter(edge ⇒ edge.label == edgeLabel)
+    val groupedByEdges = filteredEdges.groupBy(edge ⇒ edge.headPhysicalId)
+    groupedByEdges.map(e ⇒ (e._1, e._2.size))
   }
 }

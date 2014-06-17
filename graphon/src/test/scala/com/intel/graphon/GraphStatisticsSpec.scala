@@ -28,13 +28,13 @@ import java.util.Date
 import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRDDImplicits._
 import com.intel.graphbuilder.driver.spark.rdd.TitanHBaseReaderRDD
 import com.intel.graphon.TitanReaderTestData._
-import com.intel.spark.graphon.Statistics
+import com.intel.spark.graphon.GraphStatistics
 import org.apache.spark.{SparkConf, SparkContext}
 import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpec}
 
 import scala.concurrent.Lock
 
-class StatisticsSpec extends WordSpec with Matchers with TitanSparkContext {
+class GraphStatisticsSpec extends WordSpec with Matchers with TitanSparkContext {
 
   "Out degrees of vertices in test graph" in {
     val hBaseRDD = sparkContext.parallelize(hBaseRowMap.toSeq)
@@ -42,7 +42,7 @@ class StatisticsSpec extends WordSpec with Matchers with TitanSparkContext {
     val titanReaderRDD = new TitanHBaseReaderRDD(hBaseRDD, titanConnector).distinct()
     val vertexRDD = titanReaderRDD.filterVertices()
     val edgeRDD = titanReaderRDD.filterEdges()
-    Statistics.outDegrees(edgeRDD).collect().length shouldBe 1
+    GraphStatistics.outDegrees(edgeRDD).collect().length shouldBe 1
   }
 
   "In degrees of vertices in test graph" in {
@@ -51,7 +51,7 @@ class StatisticsSpec extends WordSpec with Matchers with TitanSparkContext {
     val titanReaderRDD = new TitanHBaseReaderRDD(hBaseRDD, titanConnector).distinct()
     val vertexRDD = titanReaderRDD.filterVertices()
     val edgeRDD = titanReaderRDD.filterEdges()
-    Statistics.inDegrees(edgeRDD).collect().length shouldBe 2
+    GraphStatistics.inDegrees(edgeRDD).collect().length shouldBe 2
   }
 
   "Out degrees of vertices with \"LIKES\" edge-type in test graph" in {
@@ -60,7 +60,7 @@ class StatisticsSpec extends WordSpec with Matchers with TitanSparkContext {
     val titanReaderRDD = new TitanHBaseReaderRDD(hBaseRDD, titanConnector).distinct()
     val vertexRDD = titanReaderRDD.filterVertices()
     val edgeRDD = titanReaderRDD.filterEdges()
-    Statistics.outDegreesByEdgeType(edgeRDD, "LIKES").collect().length shouldBe 0
+    GraphStatistics.outDegreesByEdgeType(edgeRDD, "LIKES").collect().length shouldBe 0
   }
 
   "In degrees of vertices with \"LIKES\" edge-type in test graph" in {
@@ -69,7 +69,7 @@ class StatisticsSpec extends WordSpec with Matchers with TitanSparkContext {
     val titanReaderRDD = new TitanHBaseReaderRDD(hBaseRDD, titanConnector).distinct()
     val vertexRDD = titanReaderRDD.filterVertices()
     val edgeRDD = titanReaderRDD.filterEdges()
-    Statistics.inDegreesByEdgeType(edgeRDD, "LIKES").collect().length shouldBe 0
+    GraphStatistics.inDegreesByEdgeType(edgeRDD, "LIKES").collect().length shouldBe 0
   }
 
   "Out degrees of vertices with \"lives\" edge-type in test graph" in {
@@ -78,7 +78,7 @@ class StatisticsSpec extends WordSpec with Matchers with TitanSparkContext {
     val titanReaderRDD = new TitanHBaseReaderRDD(hBaseRDD, titanConnector).distinct()
     val vertexRDD = titanReaderRDD.filterVertices()
     val edgeRDD = titanReaderRDD.filterEdges()
-    Statistics.outDegreesByEdgeType(edgeRDD, "lives").collect().length shouldBe 1
+    GraphStatistics.outDegreesByEdgeType(edgeRDD, "lives").collect().length shouldBe 1
   }
 
   "In degrees of vertices with \"lives\" edge-type in test graph" in {
@@ -87,10 +87,9 @@ class StatisticsSpec extends WordSpec with Matchers with TitanSparkContext {
     val titanReaderRDD = new TitanHBaseReaderRDD(hBaseRDD, titanConnector).distinct()
     val vertexRDD = titanReaderRDD.filterVertices()
     val edgeRDD = titanReaderRDD.filterEdges()
-    Statistics.inDegreesByEdgeType(edgeRDD, "lives").collect().length shouldBe 1
+    GraphStatistics.inDegreesByEdgeType(edgeRDD, "lives").collect().length shouldBe 1
   }
 }
-
 
 trait TitanSparkContext extends WordSpec with BeforeAndAfterAll {
   GraphonLogUtils.silenceSpark()
@@ -124,8 +123,7 @@ trait TitanSparkContext extends WordSpec with BeforeAndAfterAll {
       if (sparkContext != null) {
         sparkContext.stop()
       }
-    }
-    finally {
+    } finally {
       // To avoid Akka rebinding to the same port, since it doesn't unbind immediately on shutdown
       System.clearProperty("spark.driver.port")
       TestingSparkContext.lock.release()
