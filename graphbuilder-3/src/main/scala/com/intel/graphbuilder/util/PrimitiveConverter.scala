@@ -1,12 +1,16 @@
 package com.intel.graphbuilder.util
 
 /**
- * Titan doesn't support primitive properties so we convert them to their Object equivalents
+ * Convert Primitives to their Object equivalents
  *
- * e.g. scala.Int to java.lang.Integer
- *      scala.Long to java.lang.Long
- *      scala.Char to java.lang.Char
+ * e.g. classOf[scala.Int] to classOf[java.lang.Integer]
+ *      classOf[scala.Long] to classOf[java.lang.Long]
+ *      classOf[scala.Char] to classOf[java.lang.Char]
  *      etc.
+ *
+ * Titan doesn't support primitive properties so we convert them to their Object equivalents.
+ *
+ * Spark also has trouble de-serializing classOf[Int] because of the underlying Java classes it uses.
  */
 object PrimitiveConverter {
 
@@ -22,10 +26,18 @@ object PrimitiveConverter {
   private val char = classOf[Char]
 
   /**
-   * Titan doesn't support primitive properties so we convert them to their Object equivalents
-   * e.g. Int to java.lang.Integer.
+   * Convert Primitives to their Object equivalents
    *
-   * @param dataType convert primitives to Objects, e.g. Int to java.lang.Integer.
+   * e.g. classOf[scala.Int] to classOf[java.lang.Integer]
+   *      classOf[scala.Long] to classOf[java.lang.Long]
+   *      classOf[scala.Char] to classOf[java.lang.Char]
+   *      etc.
+   *
+   * Titan doesn't support primitive properties so we convert them to their Object equivalents.
+   *
+   * Spark also has trouble de-serializing classOf[Int] because of the underlying Java classes it uses.
+   *
+   * @param dataType convert primitives to Objects, e.g. classOf[Int] to classOf[java.lang.Integer].
    * @return the dataType unchanged, unless it was a primitive
    */
   def primitivesToObjects(dataType: Class[_]): Class[_] = dataType match {
