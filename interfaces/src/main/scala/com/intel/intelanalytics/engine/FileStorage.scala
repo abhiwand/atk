@@ -24,7 +24,7 @@
 package com.intel.intelanalytics.engine
 
 import java.nio.file.Path
-import java.io.{OutputStream, InputStream}
+import java.io.{ OutputStream, InputStream }
 
 trait FileStorage {
   def createDirectory(name: Path): Directory

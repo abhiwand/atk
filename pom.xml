@@ -681,6 +681,7 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                             <configuration>
                                 <alignParameters>true</alignParameters>
                                 <compactControlReadability>true</compactControlReadability>
+                                <preserveDanglingCloseParenthesis>true</preserveDanglingCloseParenthesis>
                             </configuration>
                         </execution>
                     </executions>

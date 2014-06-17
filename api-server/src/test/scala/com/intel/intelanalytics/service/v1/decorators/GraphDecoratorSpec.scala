@@ -1,6 +1,6 @@
 package com.intel.intelanalytics.service.v1.decorators
 
-import org.scalatest.{Matchers, FlatSpec}
+import org.scalatest.{ Matchers, FlatSpec }
 import com.intel.intelanalytics.service.v1.viewmodels.RelLink
 import com.intel.intelanalytics.domain.graph.Graph
 import org.joda.time.DateTime
