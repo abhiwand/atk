@@ -2,7 +2,7 @@ package com.intel.intelanalytics.service.v1
 
 import org.mockito.Mockito._
 import com.intel.intelanalytics.security.UserPrincipal
-import com.intel.intelanalytics.service.{ServiceSpec, CommonDirectives}
+import com.intel.intelanalytics.service.{ ServiceSpec, CommonDirectives }
 import com.intel.intelanalytics.engine.Engine
 import scala.concurrent.Future
 

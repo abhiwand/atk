@@ -24,38 +24,36 @@
 package models
 
 import scala.Some
-import models.database.{GetWhiteListEntryCommand, WhiteListRow}
+import models.database.{ GetWhiteListEntryCommand, WhiteListRow }
 
 /**
  * Singleton object to provide white list services
  */
 object Whitelists {
 
-    def anonymousWhitelist(): WhiteListRow = {
-        WhiteListRow(Some(0), Some(""))
-    }
+  def anonymousWhitelist(): WhiteListRow = {
+    WhiteListRow(Some(0), Some(""))
+  }
 
-    /**
-     * check whether the user with the specific email exists in the white list.
-     * @param email
-     * @return
-     */
-    def exists(email: String, getWhiteListEntryCommand: GetWhiteListEntryCommand): Boolean = {
-        val whiteListResult = read(email, getWhiteListEntryCommand)
-        if (whiteListResult != None && whiteListResult.get.uid.get > 0)
-            true
-        else
-            false
-    }
+  /**
+   * check whether the user with the specific email exists in the white list.
+   * @param email
+   * @return
+   */
+  def exists(email: String, getWhiteListEntryCommand: GetWhiteListEntryCommand): Boolean = {
+    val whiteListResult = read(email, getWhiteListEntryCommand)
+    if (whiteListResult != None && whiteListResult.get.uid.get > 0)
+      true
+    else
+      false
+  }
 
-
-
-    /**
-     * get white list row by email.
-     * @param email
-     * @return
-     */
-    def read(email: String, getWhiteListEntryCommand: GetWhiteListEntryCommand): Option[WhiteListRow] = {
-        getWhiteListEntryCommand.execute(email)
-    }
+  /**
+   * get white list row by email.
+   * @param email
+   * @return
+   */
+  def read(email: String, getWhiteListEntryCommand: GetWhiteListEntryCommand): Option[WhiteListRow] = {
+    getWhiteListEntryCommand.execute(email)
+  }
 }

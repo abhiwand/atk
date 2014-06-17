@@ -52,8 +52,6 @@ class EnginePythonRDD[T: ClassTag](
 
 }
 
-
-
 /**
  * Internal class that acts as an `AccumulatorParam` for Python accumulators. Inside, it
  * collects a list of pickled strings that we pass to Python through a socket.
