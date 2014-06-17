@@ -5,11 +5,11 @@ import com.intel.intelanalytics.engine.{ Rows, GraphBackendStorage, GraphStorage
 import com.intel.graphbuilder.driver.spark.titan.GraphBuilder
 import org.apache.spark.rdd.RDD
 import com.intel.intelanalytics.engine.spark.{ SparkComponent }
-import com.intel.intelanalytics.repository.{MetaStore, MetaStoreComponent}
+import com.intel.intelanalytics.repository.{ MetaStore, MetaStoreComponent }
 import com.intel.intelanalytics.shared.EventLogging
 import scala.concurrent._
 import ExecutionContext.Implicits.global
-import com.intel.intelanalytics.domain.graph.{GraphLoad, GraphTemplate, Graph}
+import com.intel.intelanalytics.domain.graph.{ GraphLoad, GraphTemplate, Graph }
 import com.intel.intelanalytics.engine.spark.context.Context
 import com.intel.intelanalytics.engine.spark.frame.SparkFrameStorage
 

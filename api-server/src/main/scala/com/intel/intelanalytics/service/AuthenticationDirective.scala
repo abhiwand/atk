@@ -11,10 +11,9 @@ import scala.concurrent._
 import com.intel.intelanalytics.security.UserPrincipal
 import scala.Some
 import spray.routing._
-import com.intel.intelanalytics.domain.{DomainJsonProtocol, User}
+import com.intel.intelanalytics.domain.{ DomainJsonProtocol, User }
 import spray.json._
 import com.intel.intelanalytics.repository.MetaStore
-import com.typesafe.config.ConfigFactory
 import scala.concurrent.duration._
 import com.intel.intelanalytics.shared.EventLogging
 
@@ -23,15 +22,12 @@ import com.intel.intelanalytics.shared.EventLogging
  */
 class AuthenticationDirective(val metaStore: MetaStore) extends Directives with EventLogging {
 
-  val config = ConfigFactory.load()
-  val defaultTimeout: FiniteDuration = config.getInt("intel.analytics.api.defaultTimeout").seconds
-
   /**
    * Gets authorization header and authenticates a user
    * @return the authenticated user
    */
   def authenticateKey: Directive1[UserPrincipal] =
-  //TODO: proper authorization with spray authenticate directive in a manner similar to S3.
+    //TODO: proper authorization with spray authenticate directive in a manner similar to S3.
     optionalHeaderValue(getUserPrincipalFromHeader).flatMap {
       case Some(p) => provide(p)
       case None => reject(AuthenticationFailedRejection(AuthenticationFailedRejection.CredentialsMissing, List()))
@@ -39,7 +35,7 @@ class AuthenticationDirective(val metaStore: MetaStore) extends Directives with 
 
   protected def getUserPrincipalFromHeader(header: HttpHeader): Option[UserPrincipal] =
     condOpt(header) {
-      case h if h.is("authorization") => Await.result(getUserPrincipal(h.value), defaultTimeout)
+      case h if h.is("authorization") => Await.result(getUserPrincipal(h.value), ApiServiceConfig.defaultTimeout)
     }
 
   protected def getUserPrincipal(apiKey: String): Future[UserPrincipal] = {

@@ -19,7 +19,7 @@ normal=$(tput sgr0)
 
 
 CM_HOST=$(cat /etc/cloudera-scm-agent/config.ini | grep server_host | awk -F"=" '{print $2}')
-echo "What is the cloudera manager's host address [${CM_HOST}]"
+echo "What is the cloudera manager's host address [${CM_HOST}]:"
 read CM_HOST
 if [ "$CM_HOST" == "" ]; then
 	CM_HOST=$(cat /etc/cloudera-scm-agent/config.ini | grep server_host | awk -F"=" '{print $2}')
@@ -80,17 +80,88 @@ function getDeployConfigRoles(){
         done
         deployRoles=${deployRoles%,}
         deployRoles=${deployRoles}']}'
-        echo $deployRoles
 }
 function deployConfig(){
 	getDeployConfigRoles
 	createUrl clusters/${clusterNameEncoded}/services/${sparkService}/commands/deployClientConfig
-	doCurl POST ${deployRoles} 1
-#	curl -s -H "Content-Type: application/json" -X POST -d ${deployRoles} ${curlLoginOpt} ${url}
+	#doCurl POST ${deployRoles} 1
+    response=$(curl -s -H "Content-Type: application/json" -X POST -d${deployRoles}  ${curlLoginOpt} ${url} | jq -c -r '{id,active}')
+    deployConfigCommandId=$(echo $response| jq '.id' )
+    activeStatus=$(echo $response| jq '.active' )
+
+    if [ "$deployConfigCommandId" == "" ] && [ "$activeStatus" != "true" ]; then
+        echo "${red}couldn't deploy configuration${normal}"
+        exit 1
+    else
+        echo -n "${yellow}Deploying Config${normal}"
+    fi
+
+    createUrl clusters/${clusterNameEncoded}/services/${sparkService}/commands
+    count=1
+    while [ $count -ne 0 ]
+    do
+        count=0
+        for commandId in `curl -s -H "Content-Type: application/json" -X GET  ${curlLoginOpt} ${url} | jq -c -r '.items[].id' `
+        do
+            if [ "$commandId" == "$deployConfigCommandId" ]; then
+                count=$(($count +1))
+                echo -n "."
+	        	sleep 3
+		break
+            fi
+        done
+    done
+    if [ $count -eq 0 ];then
+        echo "${green}config deployed to spark master and workers${normal}"
+        restartSpark
+    fi
+
 }
+
+function restartSpark(){
+    echo "The spark service must be restarted for the changes to take affect."
+    read -p "If you want to restart spark service type 'yes': " restart
+
+    if [ "$restart" == "yes" ]; then
+
+        createUrl clusters/${clusterNameEncoded}/services/${sparkService}/commands/restart
+        response=$(curl -s -H "Content-Type: application/json" -X POST  ${curlLoginOpt} ${url} | jq -c -r '{id,active}')
+	    restartCommandId=$(echo $response | jq -c -r '.id')
+	    activeStatus=$(echo $response| jq '.active' )
+
+	    if [ "$restartCommandId" == "" ] && [ "$activeStatus" != "true" ]; then
+            echo "${red}couldn't restart spark service${normal}"
+            exit 1
+        else
+            echo -n "${yellow}restarting spark${normal}"
+        fi
+
+        createUrl clusters/${clusterNameEncoded}/services/${sparkService}/commands
+        count=1
+        while [ $count -ne 0 ]
+        do
+            count=0
+            for commandId in `curl -s -H "Content-Type: application/json" -X GET  ${curlLoginOpt} ${url} | jq -c -r '.items[].id' `
+            do
+                if [ "$commandId" == "$restartCommandId" ]; then
+                    count=$((count +1))
+                    echo -n "."
+		            sleep 3
+                    break
+                fi
+            done
+        done
+        if [ $count -eq 0 ];then
+            echo "${green}Spark restarted${normal}"
+        fi
+    fi
+    return 0
+}
+
 function setUpdatedClassPath(){
         local existingClassPath=$1
-        echo $existingClassPath
+        existingClassPath=${existingClassPath% }
+		existingClassPath=${existingClassPath# }
         if [ "$existingClassPath" == "" ]; then
                 updatedClassPath="${INTEL_ANALYTICS_SPARK_CLASSPATH}"
         else
@@ -106,7 +177,7 @@ function doCurl(){
 	if [ $debug -eq 1 ]; then
 		debug="#"
 	fi
-	echo $json
+
 	http_code=$(curl -s -o /dev/null -w "%{http_code}" -H "Content-Type: application/json" -X$verb -d$json  ${curlLoginOpt} ${url}) #--trace-ascii /dev/stdout)
 
 	
@@ -120,7 +191,7 @@ function setConfig(){
 	local json=$1
 	createUrl clusters/${clusterNameEncoded}/services/spark/roleConfigGroups/spark-GATEWAY-BASE/config
 	doCurl PUT  '{"items":[{"name":"spark-conf/spark-env.sh_client_config_safety_valve","value":"'$json'"}]}' 1
-        deployConfig
+    deployConfig
 }
 
 IFS=$'\n'
@@ -210,10 +281,8 @@ if [ "$sparkService" != "" ]; then
 	echo "Setting/updating the SPARK_CLASSPATH for cluster: $clusterName"
 	createUrl clusters/${clusterNameEncoded}/services/${sparkService}/roleConfigGroups/${SPARK_CLOUDERA_CONFIG_GROUP}/config
 	configSet=0
-	echo $config
 	for configItem in `curl -s ${curlLoginOpt} ${url} | jq -c -r '.items[] | {name,value}'`
 	do
-		echo $configItem
 		configName=$(echo  $configItem | jq -c -r '.name')
 		configValue=$(echo $configItem | jq -c '.value')
 		#i have to not due raw input for value or i loose my carrige returns
@@ -221,7 +290,6 @@ if [ "$sparkService" != "" ]; then
 		configValue=${configValue%\"}
 		configValue=${configValue#\"}
 		if [ "$configName" == "$SPARK_ENV_CONFIG_NAME" ]; then
-			echo -E " $configName $configValue"
 			configSet=1	
 			break
 		fi
@@ -229,17 +297,17 @@ if [ "$sparkService" != "" ]; then
 
 	if [ $configSet -eq 1 ]; then
 		echo Updating cloudera spark env
-		echo $configValue
+
 		existingClassPathExport=$(echo  $configValue | grep "SPARK_CLASSPATH=")
 		exitingClassPath=""
-		echo $existingClassPathExport
+
 		if [ "$existingClassPathExport" != "" ]; then
 			#They have a classpath that i need to modify
 
 			#read the config and only keep the spark classpath i don't care about anything else			
 			echo -E $configValue > /tmp/spark_env.sh.tmp				
 			existingClassPath=$(sed "s/.*\(SPARK_CLASSPATH=\(\\\\\".*\\\\\"\|[^\\\r\\\n]*\)\).*/\1/" /tmp/spark_env.sh.tmp | awk -F"=" '{print $2}')
-			echo -E $existingClassPath			
+
 			#remove quotes
 			existingClassPath=${existingClassPath%\\\"}
 			existingClassPath=${existingClassPath#\\\"}
@@ -251,29 +319,25 @@ if [ "$sparkService" != "" ]; then
 				setUpdatedClassPath $existingClassPath
 				
 				echo -E $configValue > /tmp/spark_env.sh.tmp
-                	        #"s/export SPARK_CLASSPATH=\(\\\\\".*\\\\\"\|\S*\)/export SPARK_CLASSPATH=\\\\\"REPLACEME\\\\\"/Ig"
         	                sed -i "s/export SPARK_CLASSPATH=\(\\\\\".*\\\\\"\|[^\\\r\\\n]*\)/export SPARK_CLASSPATH=\\\\\"REPLACEME\\\\\"/g"  /tmp/spark_env.sh.tmp
 
                        		sed -i  "s|REPLACEME|$updatedClassPath\*|Ig"  /tmp/spark_env.sh.tmp
-	                  	cat /tmp/spark_env.sh.tmp
 
                 	        configValue=$(cat /tmp/spark_env.sh.tmp)
-        	                #echo "save cat"
-	                        #echo -E $configValue
 				
 				setConfig $configValue
+				echo "${green}SPARK_CLASSPATH updated and deployed ${normal}"
 				exit 0
 			else
-				echo  "Existing intel analytics spark classpath entry no changes needed. Current spark classpath: ${existingClassPath}"
+				echo  "${green}Existing intel analytics spark classpath entry no changes needed. Current spark classpath: ${existingClassPath} ${normal}"
 			fi
 		else
 			echo "Setting SPARK_CLASSPATH none set"
-			echo "$configValue"
 			setUpdatedClassPath ""
-			echo $updatedClassPath	
 			configValue=$configValue'\r\n export SPARK_CLASSPATH=\"'$updatedClassPath\*'\"'
 			
 			setConfig $configValue
+			echo "${green}SPARK_CLASSPATH updated and deployed ${normal}"
 			exit 0
 		fi
 	else
@@ -284,10 +348,11 @@ if [ "$sparkService" != "" ]; then
                 configValue='export SPARK_CLASSPATH=\"'$updatedClassPath\*'\"'
 
                 setConfig $configValue
+                echo "${green}SPARK_CLASSPATH updated and deployed ${normal}"
                 exit 0
 	fi
 else
-	echo "${red}Spark is not runing on the cluster no classpath to set/update, exitting${normal}"
+	echo "${red}Spark is not runing on the cluster no classpath to set/update, exitting ${normal}"
 	exit 1
 fi
 

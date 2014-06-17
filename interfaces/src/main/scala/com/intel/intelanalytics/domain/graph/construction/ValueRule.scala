@@ -1,7 +1,5 @@
 package com.intel.intelanalytics.domain.graph.construction
 
-
-
 /**
  * IntelAnalytics V1 API Graph Loader rule for creating property graph values from tabular data.
  * @param source Is the value constant or varying?

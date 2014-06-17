@@ -1,6 +1,6 @@
 package com.intel.intelanalytics.service
 
-import org.scalatest.{Matchers, FlatSpec}
+import org.scalatest.{ Matchers, FlatSpec }
 import org.scalatest.mock.MockitoSugar
 import spray.testkit.ScalatestRouteTest
 import spray.routing.HttpService

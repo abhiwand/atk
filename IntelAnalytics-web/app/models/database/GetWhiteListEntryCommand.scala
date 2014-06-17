@@ -23,15 +23,14 @@
 
 package models.database
 
-
 /**
  * command to find white list entry
  */
 trait GetWhiteListEntryCommand {
-    /**
-     * find white list entry by email
-     * @param email
-     * @return white list entry
-     */
-    def execute(email: String): Option[WhiteListRow]
+  /**
+   * find white list entry by email
+   * @param email
+   * @return white list entry
+   */
+  def execute(email: String): Option[WhiteListRow]
 }
