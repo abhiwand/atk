@@ -36,5 +36,16 @@ case class Schema(columns: List[(String, DataType)] = List[(String, DataType)]()
    * get column index by column name
    * @param columnName name of the column to find index
    */
-  def columnIndex(columnName: String): Int = columns.indexWhere(columnTuple => columnTuple._1 == columnName)
+  def columnIndex(columnName: String): Int = columnIndex(Seq(columnName))(0)
+
+  /**
+   * Retrieve list of column index based on column names
+   * @param columnNames input column names
+   */
+  def columnIndex(columnNames: Seq[String]): Seq[Int] = {
+    if(columnNames.isEmpty)
+      (0 to (columns.length - 1)).toList
+    else
+      columnNames.map(col => columns.indexWhere(columnTuple => columnTuple._1 == col))
+  }
 }
