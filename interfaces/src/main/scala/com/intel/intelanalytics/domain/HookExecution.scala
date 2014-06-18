@@ -2,6 +2,8 @@ package com.intel.intelanalytics.domain
 
 import org.joda.time.DateTime
 
+// TODO: this class is not yet used but there will be a table for storing Hooks like this in the DB
+
 /**
  * An instance of a Hook execution.
  *
