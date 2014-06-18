@@ -461,7 +461,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
 
             val frameSchema = realFrame.schema
             val rdd = frames.getFrameRdd(ctx, frame._1)
-            val columnIndex = frameSchema.columns.indexWhere(columnTuple => columnTuple._1 == frame._2)
+            val columnIndex = frameSchema.columnIndex(frame._2)
             (rdd, columnIndex)
           }
         }
@@ -728,13 +728,6 @@ class SparkEngine(sparkContextManager: SparkContextManager,
    ???
   }
 
-  def getColumnIndexByColumnNames(keyColumns: List[String], columns: List[(String, DataType)]): List[Int] = {
-    if(keyColumns.isEmpty)
-      (0 to (columns.length - 1)).toList
-    else
-      keyColumns.map(col => columns.indexWhere(columnTuple => columnTuple._1 == col))
-  }
-
   override def dropDuplicates(dropDuplicateCommand: DropDuplicates)(implicit user: UserPrincipal): (Command, Future[Command]) =
     withContext("se.dropDuplicates") {
       require(dropDuplicateCommand != null, "arguments are required")
@@ -756,13 +749,13 @@ class SparkEngine(sparkContextManager: SparkContextManager,
               val frameSchema = realFrame.schema
               val rdd = frames.getFrameRdd(ctx, frameId)
 
-              val columnIndices = getColumnIndexByColumnNames(dropDuplicateCommand.keyColumns, frameSchema.columns)
+              val columnIndices = frameSchema.columnIndex(dropDuplicateCommand.keyColumns)
               val pairRdd = rdd.map(row => SparkOps.createKeyValuePairFromRow(row, columnIndices))
 
               val duplicatesRemoved: RDD[Array[Any]] = SparkOps.removeDuplicatesByKey(pairRdd)
 
               duplicatesRemoved.saveAsObjectFile(fsRoot + frames.getFrameDataFile(frameId))
-              JsNull.asJsObject
+              JsObject(List())
             }
             commands.lookup(command.id).get
           }
