@@ -52,7 +52,7 @@ class ParserRDDFunctions(self: RDD[Seq[_]]) {
    * @param edgeParser the parser to use
    */
   def parseEdges(edgeParser: Parser[Edge]): RDD[Edge] = {
-    self.flatMap(row => edgeParser.parse(row))
+    self.flatMap(row ⇒ edgeParser.parse(row))
   }
 
   /**
@@ -64,7 +64,7 @@ class ParserRDDFunctions(self: RDD[Seq[_]]) {
    * @param parser the parser to use
    */
   def parse(parser: Parser[GraphElement]): RDD[GraphElement] = {
-    self.flatMap(row => parser.parse(row))
+    self.flatMap(row ⇒ parser.parse(row))
   }
 
 }

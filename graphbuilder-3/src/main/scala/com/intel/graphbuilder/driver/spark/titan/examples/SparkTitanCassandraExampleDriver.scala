@@ -23,17 +23,16 @@
 
 package com.intel.graphbuilder.driver.spark.titan.examples
 
-import com.intel.graphbuilder.driver.spark.titan.{ GraphBuilderConfig, GraphBuilder }
+import java.util.Date
+
+import com.intel.graphbuilder.driver.spark.titan.{GraphBuilder, GraphBuilderConfig}
 import com.intel.graphbuilder.graph.titan.TitanGraphConnector
-import com.intel.graphbuilder.parser.ColumnDef
-import com.intel.graphbuilder.parser.InputSchema
+import com.intel.graphbuilder.parser.{ColumnDef, InputSchema}
 import com.intel.graphbuilder.parser.rule.RuleParserDSL._
 import com.intel.graphbuilder.parser.rule._
 import com.intel.graphbuilder.util.SerializableBaseConfiguration
-import java.util.{ Calendar, Date }
 import org.apache.spark.rdd.RDD
-import org.apache.spark.{ SparkConf, SparkContext }
-import java.util
+import org.apache.spark.{SparkConf, SparkContext}
 
 /**
  * This is an example of building a graph on Titan with a Cassandra backend using Spark.
@@ -54,8 +53,7 @@ object SparkTitanCassandraExampleDriver {
     List("2", "{(1)}", "10", "Y", "2", "Y"),
     List("3", "{(1)}", "11", "Y", "3", "Y"),
     List("4", "{(1),(2)}", "100", "N", "4", "Y"),
-    List("5", "{(1)}", "101", "Y", "5", "Y")
-  )
+    List("5", "{(1)}", "101", "Y", "5", "Y"))
 
   // Input Schema
   val inputSchema = new InputSchema(List(
@@ -64,8 +62,7 @@ object SparkTitanCassandraExampleDriver {
     new ColumnDef("binary", classOf[String]),
     new ColumnDef("isPrime", classOf[String]),
     new ColumnDef("reverse", classOf[String]),
-    new ColumnDef("isPalindrome", classOf[String])
-  ))
+    new ColumnDef("isPalindrome", classOf[String])))
 
   // Parser Configuration
   val vertexRules = List(VertexRule(gbId("cf:number"), List(property("isPrime"))),
@@ -100,8 +97,7 @@ object SparkTitanCassandraExampleDriver {
     val graph = titanConnector.connect()
     try {
       println(ExamplesUtils.dumpGraph(graph))
-    }
-    finally {
+    } finally {
       graph.shutdown()
     }
 

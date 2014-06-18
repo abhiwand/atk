@@ -63,13 +63,13 @@ case class InputSchema(columns: Seq[ColumnDef]) extends Serializable {
    * @param columnType the dataType shared by all columns (needed to infer the schema from the parsing rules)
    */
   def this(columnNames: Seq[String], columnType: Class[_]) {
-    this(columnNames.map(columnName => new ColumnDef(columnName, columnType)))
+    this(columnNames.map(columnName ⇒ new ColumnDef(columnName, columnType)))
   }
 
   private lazy val schema = {
     var schema = Map[String, ColumnDef]()
     var columnIndex = 0
-    for (column <- columns) {
+    for (column ← columns) {
       schema = schema + (column.columnName -> {
         if (column.columnIndex == null) column.copy(columnIndex = columnIndex)
         else column
