@@ -278,6 +278,10 @@ private[spark] object SparkOps extends Serializable {
     groupedColumnSchema ++ aggregated_column_schema
   }
 
+  /**
+   * Remove duplicate rows identified by the key
+   * @param pairRdd rdd which has (key, value) structure in each row
+   */
   def removeDuplicatesByKey(pairRdd: RDD[(Seq[Any], Array[Any])]): RDD[Array[Any]] = {
     import org.apache.spark.SparkContext._
     val grouped = pairRdd.groupByKey()
