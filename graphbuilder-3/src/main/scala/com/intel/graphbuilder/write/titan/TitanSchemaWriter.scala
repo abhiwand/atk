@@ -27,6 +27,7 @@ import com.intel.graphbuilder.schema.{ EdgeLabelDef, PropertyDef, PropertyType, 
 import com.intel.graphbuilder.write.SchemaWriter
 import com.thinkaurelius.titan.core.TitanGraph
 import com.tinkerpop.blueprints._
+import com.intel.graphbuilder.util.PrimitiveConverter
 
 /**
  * Titan specific implementation of SchemaWriter.
@@ -67,7 +68,7 @@ class TitanSchemaWriter(graph: TitanGraph) extends SchemaWriter {
    */
   private def writePropertyDef(propertyDef: PropertyDef): Unit = {
     if (graph.getType(propertyDef.name) == null) {
-      val property = graph.makeKey(propertyDef.name).dataType(propertyDef.dataType)
+      val property = graph.makeKey(propertyDef.name).dataType(PrimitiveConverter.primitivesToObjects(propertyDef.dataType))
       if (propertyDef.indexed) {
         // TODO: future: should we implement INDEX_NAME?
         property.indexed(indexType(propertyDef.propertyType))
@@ -78,6 +79,7 @@ class TitanSchemaWriter(graph: TitanGraph) extends SchemaWriter {
       property.make()
     }
   }
+
 
   /**
    * Determine the index type from the supplied PropertyType

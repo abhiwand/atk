@@ -11,9 +11,8 @@ import org.joda.time.DateTime
  * @param createdOn date/time this record was created
  * @param modifiedOn date/time this record was last modified
  */
-case class User(id: Long, username: Option[String], api_key: String, createdOn: DateTime, modifiedOn: DateTime ) extends HasId {
+case class User(id: Long, username: Option[String], api_key: String, createdOn: DateTime, modifiedOn: DateTime) extends HasId {
   require(id >= 0)
   require(api_key != null && !api_key.isEmpty)
 }
-
 

@@ -23,18 +23,35 @@
 package com.intel.intelanalytics.service.v1.decorators
 
 import com.intel.intelanalytics.domain.graph.Graph
-import com.intel.intelanalytics.service.v1.viewmodels.{RelLink, DecoratedGraph, GraphHeader}
+import com.intel.intelanalytics.service.v1.viewmodels.{ RelLink, GetGraph, GetGraphs }
 
-object GraphDecorator extends EntityDecorator[Graph, GraphHeader, DecoratedGraph] {
-  override def decorateEntity(uri: String,
-                              links: Iterable[RelLink],
-                              entity: Graph): DecoratedGraph = {
-    DecoratedGraph(id = entity.id, name = entity.name, links = links.toList)
+/**
+ * A decorator that takes an entity from the database and converts it to a View/Model
+ * for delivering via REST services
+ */
+object GraphDecorator extends EntityDecorator[Graph, GetGraphs, GetGraph] {
+
+  /**
+   * Decorate a single entity (like you would want in "GET /entities/id")
+   *
+   * @param uri UNUSED? DELETE?
+   * @param links related links
+   * @param entity the entity to decorate
+   * @return the View/Model
+   */
+  override def decorateEntity(uri: String, links: Iterable[RelLink], entity: Graph): GetGraph = {
+    GetGraph(id = entity.id, name = entity.name, links = links.toList)
   }
 
-  override def decorateForIndex(uri: String, entities: Seq[Graph]): List[GraphHeader] = {
-
-    entities.map(graph => new GraphHeader(id = graph.id,
+  /**
+   * Decorate a list of entities (like you would want in "GET /entities")
+   *
+   * @param uri the base URI, for this type of entity "../entities"
+   * @param entities the list of entities to decorate
+   * @return the View/Model
+   */
+  override def decorateForIndex(uri: String, entities: Seq[Graph]): List[GetGraphs] = {
+    entities.map(graph => new GetGraphs(id = graph.id,
       name = graph.name,
       url = uri + "/" + graph.id)).toList
   }

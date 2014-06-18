@@ -44,20 +44,20 @@ class GraphBuilderITest extends Specification {
 
       // Input Data
       val inputRows = List(
-        List("1", "{(1)}", "1", "Y", "1", "Y"),
-        List("2", "{(1)}", "10", "Y", "2", "Y"),
-        List("3", "{(1)}", "11", "Y", "3", "Y"),
-        List("4", "{(1),(2)}", "100", "N", "4", "Y"),
-        List("5", "{(1)}", "101", "Y", "5", "Y")
+        List(1, "{(1)}", "1", "Y", 1, "Y"),
+        List(2, "{(1)}", "10", "Y", 2, "Y"),
+        List(3, "{(1)}", "11", "Y", 3, "Y"),
+        List(4, "{(1),(2)}", "100", "N", 4, "Y"),
+        List(5, "{(1)}", "101", "Y", 5, "Y")
       )
 
       // Input Schema
       val inputSchema = new InputSchema(List(
-        new ColumnDef("cf:number", classOf[String]),
+        new ColumnDef("cf:number", classOf[Int]),
         new ColumnDef("cf:factor", classOf[String]),
         new ColumnDef("binary", classOf[String]),
         new ColumnDef("isPrime", classOf[String]),
-        new ColumnDef("reverse", classOf[String]),
+        new ColumnDef("reverse", classOf[Int]),
         new ColumnDef("isPalindrome", classOf[String])
       ))
 
@@ -84,9 +84,9 @@ class GraphBuilderITest extends Specification {
 
       // define more input
       val additionalInputRows = List(
-        List("5", "{(1)}", "101", "Y", "5", "Y"), // this row overlaps with above
-        List("6", "{(1),(2),(3)}", "110", "N", "6", "Y"),
-        List("7", "{(1)}", "111", "Y", "7", "Y")
+        List(5, "{(1)}", "101", "Y", 5, "Y"), // this row overlaps with above
+        List(6, "{(1),(2),(3)}", "110", "N", 6, "Y"),
+        List(7, "{(1)}", "111", "Y", 7, "Y")
       )
 
       val inputRdd2 = sc.parallelize(additionalInputRows.asInstanceOf[Seq[_]]).asInstanceOf[RDD[Seq[_]]]
