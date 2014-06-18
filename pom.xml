@@ -40,14 +40,7 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
     <inceptionYear>2013</inceptionYear>
 
     <pluginRepositories>
-        <pluginRepository>
-            <id>onejar-maven-plugin.googlecode.com</id>
-            <url>http://onejar-maven-plugin.googlecode.com/svn/mavenrepo-snapshot</url>
-        </pluginRepository>
-        <pluginRepository>
-            <id>beardedgeeks-releases</id>
-            <url>http://beardedgeeks.googlecode.com/svn/repository/releases</url>
-        </pluginRepository>
+
     </pluginRepositories>
     <repositories>
         <repository>
@@ -418,7 +411,7 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
             <id>scala-coverage</id>
             <activation>
                 <property>
-                    <name>env.BUILD_NUMBER</name>
+                    <name>env.BUILD_NUMBER1</name>
                 </property>
             </activation>
             <build>
