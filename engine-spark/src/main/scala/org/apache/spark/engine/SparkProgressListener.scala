@@ -63,18 +63,8 @@ class SparkProgressListener(val progressUpdater: CommandProgressUpdater) extends
 
     val job = jobStart.job
 
-    val commandIdTry = Try {
-      job.properties.getProperty("command-id").toLong
-    }
-
-    commandIdTry match {
-      case Success(id) => {
-        if(!commandIdJobs.contains(id))
-          commandIdJobs(id) = List(job)
-        else
-          commandIdJobs(id) = commandIdJobs(id) ++ List(job)
-      }
-      case _ =>
+    if (hasCommandId(job)) {
+      addToCommandIdJobs(job)
     }
   }
 
@@ -173,6 +163,24 @@ class SparkProgressListener(val progressUpdater: CommandProgressUpdater) extends
 
       case _ => println(s"missing command id for stage $stageId")
     }
+  }
+
+  /**
+   * Some jobs don't have command id, explain
+   */
+  def hasCommandId(job: ActiveJob): Boolean = {
+    job.properties.contains("command-id")
+  }
+
+  /**
+   * Keep track of id's to jobs in a Map
+   */
+  def addToCommandIdJobs(job: ActiveJob) {
+    val id = job.properties.getProperty("command-id").toLong
+    if(!commandIdJobs.contains(id))
+      commandIdJobs(id) = List(job)
+    else
+      commandIdJobs(id) = commandIdJobs(id) ++ List(job)
   }
 }
 

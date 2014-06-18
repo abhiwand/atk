@@ -26,6 +26,17 @@ package com.intel.intelanalytics.service.v1.viewmodels
 import com.intel.intelanalytics.domain.Error
 import spray.json.JsObject
 
+/**
+ * Decorated command object
+ * @param id command id
+ * @param name The name of the command
+ * @param arguments The arguments to the function.
+ * @param error StackTrace and/or other error text if it exists
+ * @param progress List of progress for all jobs initiated by this command
+ * @param complete True if this command is completed
+ * @param result result data for executing the command
+ * @param links The link representing the command
+ */
 case class DecoratedCommand(id: Long, name: String, arguments: Option[JsObject], error: Option[Error], progress: List[Int],
                             complete: Boolean, result: Option[JsObject], links: List[RelLink]) {
   require(id > 0)
