@@ -32,12 +32,12 @@ import play.api.db.slick.Config.driver.simple._
  * @param data
  * @param timestamp
  */
-case class SessionRow(Id:String, uid:Long, data:String, var timestamp:Long)
+case class SessionRow(Id: String, uid: Long, data: String, var timestamp: Long)
 
 /**
  * Table mapping for Sessions table.
  */
-object SessionTable extends Table[SessionRow]("Sessions"){
+object SessionTable extends Table[SessionRow]("Sessions") {
   def Id = column[String]("Id", O.PrimaryKey)
   def uid = column[Long]("uid", O.NotNull)
   def data = column[String]("data")

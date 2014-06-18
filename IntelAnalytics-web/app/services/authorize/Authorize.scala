@@ -24,89 +24,89 @@
 package services.authorize
 
 import play.api.libs.json.JsValue
-import services.authorize.providers.google.{GoogleTokenResponse, GooglePlus}
+import services.authorize.providers.google.{ GoogleTokenResponse, GooglePlus }
 import services.authorize.Providers.Providers
 
 class Authorize(var authData: JsValue, var provider: Providers.Providers) {
 
-    var Provider = provider
-    var jsonData = authData
-    var responseData: Option[TokenResponse] = None
-    var userInfo: Option[UserInfo] = None;
+  var Provider = provider
+  var jsonData = authData
+  var responseData: Option[TokenResponse] = None
+  var userInfo: Option[UserInfo] = None;
 
-    /**
-     *
-     * @return a flag indicate whether the token response is valid
-     */
-    def validateTokenResponseData(): Boolean = {
-        Provider match {
-            case Providers.GooglePlus =>
-                responseData = GooglePlus.validateTokenResponseData(jsonData)
-                return if (responseData != None) true else false
-            case Providers.None =>
-                return false;
-
-        }
-    }
-
-    /**
-     * Verify the token data is valid.
-     * @return userInfo
-     */
-    def validateToken(): Option[UserInfo] = {
-        Provider match {
-            case Providers.GooglePlus =>
-                userInfo = GooglePlus.validateToken(jsonData)
-                if (userInfo != None && userInfo.get.email != null) userInfo else None
-            case Providers.None =>
-                None
-        }
-    }
-
-    /**
-     * Verify the user info is valid.
-     * @return
-     */
-    def validateUserInfo(): Option[UserInfo] = {
-        Provider match {
-            case Providers.GooglePlus =>
-                userInfo = GooglePlus.validateUserInfo(authData)
-                userInfo
-            case _ =>
-                None
-        }
+  /**
+   *
+   * @return a flag indicate whether the token response is valid
+   */
+  def validateTokenResponseData(): Boolean = {
+    Provider match {
+      case Providers.GooglePlus =>
+        responseData = GooglePlus.validateTokenResponseData(jsonData)
+        return if (responseData != None) true else false
+      case Providers.None =>
+        return false;
 
     }
+  }
 
-    /**
-     * Get user info from access token.
-     * @return
-     */
-    def getUserInfo(): Option[UserInfo] = {
-        Provider match {
-            case Providers.GooglePlus =>
-                if(responseData == None)
-                    None
+  /**
+   * Verify the token data is valid.
+   * @return userInfo
+   */
+  def validateToken(): Option[UserInfo] = {
+    Provider match {
+      case Providers.GooglePlus =>
+        userInfo = GooglePlus.validateToken(jsonData)
+        if (userInfo != None && userInfo.get.email != null) userInfo else None
+      case Providers.None =>
+        None
+    }
+  }
 
-                userInfo = GooglePlus.getUserInfo(responseData.get.access_token)
-                userInfo
-            case _ =>
-                None
-        }
+  /**
+   * Verify the user info is valid.
+   * @return
+   */
+  def validateUserInfo(): Option[UserInfo] = {
+    Provider match {
+      case Providers.GooglePlus =>
+        userInfo = GooglePlus.validateUserInfo(authData)
+        userInfo
+      case _ =>
+        None
     }
 
-    /**
-     * Check whether the auth response data is valid.
-     * @return
-     */
-    def isAuthResponseDataValid(): Boolean = {
-        (validateTokenResponseData() && validateToken() != None && getUserInfo() != None)
-    }
+  }
 
-    def getJavascriptOauthParams( provider: Providers ): String = {
-      provider match{
-        case Providers.GooglePlus =>
-          GooglePlus.getJavascriptOauthParams()
-      }
+  /**
+   * Get user info from access token.
+   * @return
+   */
+  def getUserInfo(): Option[UserInfo] = {
+    Provider match {
+      case Providers.GooglePlus =>
+        if (responseData == None)
+          None
+
+        userInfo = GooglePlus.getUserInfo(responseData.get.access_token)
+        userInfo
+      case _ =>
+        None
     }
+  }
+
+  /**
+   * Check whether the auth response data is valid.
+   * @return
+   */
+  def isAuthResponseDataValid(): Boolean = {
+    (validateTokenResponseData() && validateToken() != None && getUserInfo() != None)
+  }
+
+  def getJavascriptOauthParams(provider: Providers): String = {
+    provider match {
+      case Providers.GooglePlus =>
+        GooglePlus.getJavascriptOauthParams()
+    }
+  }
 }

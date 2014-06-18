@@ -25,10 +25,11 @@ package com.intel.intelanalytics.engine
 
 import com.intel.intelanalytics.ClassLoaderAware
 import com.intel.intelanalytics.component.{Locator, Component}
-import com.intel.intelanalytics.shared.EventLogging
 import com.typesafe.config.Config
-
+import java.lang.String
 import scala.util.control.NonFatal
+//import com.intel.intelanalytics.component.Archive
+import com.intel.intelanalytics.shared.EventLogging
 
 class EngineApplication extends Component with EventLogging with ClassLoaderAware with Locator {
 

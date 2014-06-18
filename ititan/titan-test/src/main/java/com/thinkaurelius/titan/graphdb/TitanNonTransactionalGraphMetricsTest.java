@@ -9,8 +9,8 @@ import com.thinkaurelius.titan.diskstorage.keycolumnvalue.CachedKeyColumnValueSt
 import com.thinkaurelius.titan.diskstorage.keycolumnvalue.StoreFeatures;
 import com.thinkaurelius.titan.diskstorage.util.MetricInstrumentedStore;
 import static com.thinkaurelius.titan.diskstorage.util.MetricInstrumentedStore.*;
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertNotNull;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 import com.thinkaurelius.titan.graphdb.configuration.GraphDatabaseConfiguration;
 import com.thinkaurelius.titan.graphdb.database.StandardTitanGraph;

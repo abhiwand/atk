@@ -14,10 +14,10 @@ import com.intel.graphbuilder.parser.ColumnDef
 import com.intel.intelanalytics.domain.graph.construction.VertexRule
 import com.intel.intelanalytics.domain.graph.construction.PropertyRule
 import spray.json.JsObject
-import com.intel.intelanalytics.domain.schema.{Schema, DataTypes}
+import com.intel.intelanalytics.domain.schema.{ Schema, DataTypes }
 import DataTypes.DataType
-import com.typesafe.config.ConfigFactory
-import com.intel.intelanalytics.domain.graph.{GraphLoad, Graph}
+import com.intel.intelanalytics.domain.graph.{ GraphLoad, Graph }
+import com.intel.intelanalytics.engine.spark.SparkEngineConfig
 
 /**
  * Converter that produces the graphbuilder3 consumable
@@ -79,17 +79,8 @@ class GraphBuilderConfigFactory(val schema: Schema, val graphLoad: GraphLoad[JsO
     // load settings from titan.conf file...
     // ... the configurations are Java objects and the conversion requires jumping through some hoops...
 
-    import scala.collection.JavaConversions._
-    val titanConfiguration = new SerializableBaseConfiguration
-
-    val confFromFile = ConfigFactory.load().getConfig("intel.analytics.engine.titan.load")
-
-    for (entry <- confFromFile.entrySet()) {
-      titanConfiguration.addProperty(entry.getKey(), confFromFile.getString(entry.getKey()))
-    }
-
+    val titanConfiguration = SparkEngineConfig.titanLoadConfiguration
     titanConfiguration.setProperty("storage.tablename", GraphName.convertGraphUserNameToBackendName(graphName))
-
     titanConfiguration
   }
 
