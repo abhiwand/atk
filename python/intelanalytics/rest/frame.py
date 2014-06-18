@@ -26,6 +26,7 @@ REST backend for frames
 import base64
 import uuid
 import logging
+
 logger = logging.getLogger(__name__)
 from collections import defaultdict, OrderedDict
 import json
@@ -125,13 +126,26 @@ class FrameBackendRest(object):
     @staticmethod
     def _get_load_arguments(frame, data):
         if isinstance(data, CsvFile):
-            return {'source': data.file_name,
-                    'destination': frame.uri,
-                    'schema': {'columns': data._schema_to_json()},
-                    'skipRows': data.skip_header_lines,
-                    'lineParser': {'operation': {'name': 'builtin/line/separator'},
-                                   'arguments': {'separator': data.delimiter
-                                   }}}
+            return {'destination': frame.uri,
+                    'source': {
+                        "source_type": "file",
+                        "uri": data.file_name,
+                        "parser":{
+                            "name": "builtin/line/separator",
+                            "arguments": {
+                                "separator": data.delimiter,
+                                "skip_rows": data.skip_header_lines,
+                                "schema":{
+                                    "columns": data._schema_to_json()
+                                }
+                            }
+                        }
+                    }
+            }
+        if isinstance(data, BigFrame):
+            return {'source': { 'source_type': 'dataframe',
+                                'uri': data.uri},
+                    'destination': frame.uri}
         raise TypeError("Unsupported data source " + type(data).__name__)
 
     @staticmethod
@@ -212,10 +226,11 @@ class FrameBackendRest(object):
         command = CommandRequest(name="dataframe/load", arguments=arguments)
         command_info = executor.issue(command)
 
-        if isinstance(data, CsvFile):
+        if isinstance(data, (CsvFile, BigFrame)):
             # update the Python object (set the columns)
-            # todo - this info should come back from the engine
-            for name, data_type in data.schema:
+            for column in command_info.result['schema']['columns']:
+            # for name, data_type in data.schema:
+                name, data_type =  column[0], supported_types.try_get_type_from_string(column[1])
                 if data_type is not ignore:
                     self._accept_column(frame, BigColumn(name, data_type))
         else:

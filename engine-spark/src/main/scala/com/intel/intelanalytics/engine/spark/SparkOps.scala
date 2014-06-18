@@ -23,6 +23,7 @@
 
 package com.intel.intelanalytics.engine.spark
 
+import com.intel.intelanalytics.domain.frame.load.Load
 import com.intel.intelanalytics.engine.Rows._
 import org.apache.spark.rdd.RDD
 import org.apache.spark.SparkContext
@@ -83,15 +84,14 @@ private[spark] object SparkOps extends Serializable {
 
   def loadLines(ctx: SparkContext,
                 fileName: String,
-                location: String,
-                arguments: LoadLines[JsObject, Long],
+                skipRows:Option[Int],
                 parserFunction: String => Array[String],
-                converter: Array[String] => Array[Any]) = {
+                converter: Array[String] => Array[Any]): RDD[Row]= {
     ctx.textFile(fileName)
       .mapPartitionsWithIndex {
         case (partition, lines) => {
           if (partition == 0) {
-            lines.drop(arguments.skipRows.getOrElse(0)).map(parserFunction)
+            lines.drop(skipRows.getOrElse(0)).map(parserFunction)
           }
           else {
             lines.map(parserFunction)
@@ -99,8 +99,30 @@ private[spark] object SparkOps extends Serializable {
         }
       }
       .map(converter)
-      .saveAsObjectFile(location)
   }
+
+
+
+//  def loadLines(ctx: SparkContext,
+//                fileName: String,
+//                location: String,
+//                arguments: LoadLines[JsObject, Long],
+//                parserFunction: String => Array[String],
+//                converter: Array[String] => Array[Any]) = {
+//    ctx.textFile(fileName)
+//      .mapPartitionsWithIndex {
+//      case (partition, lines) => {
+//        if (partition == 0) {
+//          lines.drop(arguments.skipRows.getOrElse(0)).map(parserFunction)
+//        }
+//        else {
+//          lines.map(parserFunction)
+//        }
+//      }
+//    }
+//      .map(converter)
+//      .saveAsObjectFile(location)
+//  }
 
   /**
    * generate 2 tuple instance in order to invoke pairRDD functions

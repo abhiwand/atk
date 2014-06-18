@@ -23,6 +23,8 @@
 
 package com.intel.intelanalytics.service.v1
 
+import com.intel.intelanalytics.domain.frame.load.{LoadSource, Load}
+
 import scala.util.Try
 import com.intel.intelanalytics.domain._
 import spray.json.JsObject
@@ -51,7 +53,7 @@ import com.intel.intelanalytics.service.v1.viewmodels.ViewModelJsonProtocol._
 import com.intel.intelanalytics.domain.frame.FrameJoin
 import com.intel.intelanalytics.domain.graph.GraphLoad
 import com.intel.intelanalytics.domain.frame.LoadLines
-import com.intel.intelanalytics.domain.command.Command
+import com.intel.intelanalytics.domain.command.{CommandTemplate, Command}
 import com.intel.intelanalytics.shared.EventLogging
 import com.typesafe.config.ConfigFactory
 import com.intel.intelanalytics.service.{UrlParser, CommonDirectives, AuthenticationDirective}
@@ -153,7 +155,7 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
   def runFrameLoad(uri: Uri, xform: JsonTransform)(implicit user: UserPrincipal) = {
     val test = Try {
       import DomainJsonProtocol._
-      xform.arguments.get.convertTo[LoadLines[JsObject, String]]
+      xform.arguments.get.convertTo[Load[String]]
     }
     val idOpt = test.toOption.flatMap(args => UrlParser.getFrameId(args.destination))
     (validate(test.isSuccess, "Failed to parse file load descriptor: " + getErrorMessage(test))
@@ -163,8 +165,17 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
       onComplete(
         for {
           frame <- engine.getFrame(id)
-          (c, f) = engine.load(LoadLines[JsObject, Long](args.source, id,
-            skipRows = args.skipRows, overwrite = args.overwrite, lineParser = args.lineParser, schema = args.schema))
+          /* if the source is a dataframe we only care about the id. Get the ID here so that we
+            can utilize UrlParser without creating a circular dependency between api-server and engine
+           */
+          (c, f) = engine.load(Load[Long](id,args.source.source_type match {
+            case "dataframe" => {
+              val dataID = UrlParser.getFrameId(args.source.uri)
+              validate(dataID.isDefined, "Source is not a valid data frame URL")
+              LoadSource(args.source.source_type, dataID.get.toString, args.source.parser)
+            }
+            case _ => args.source
+          }))
         } yield c) {
         case Success(c) => complete(decorate(uri + "/" + c.id, c))
         case Failure(ex) => throw ex
