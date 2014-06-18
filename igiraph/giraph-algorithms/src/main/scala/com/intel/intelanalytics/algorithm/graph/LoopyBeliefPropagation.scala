@@ -32,6 +32,7 @@ import com.intel.intelanalytics.engine.plugin.{Invocation, CommandPlugin}
 import com.intel.intelanalytics.security.UserPrincipal
 import com.typesafe.config.{ConfigValue, ConfigObject, Config}
 import org.apache.giraph.conf.GiraphConfiguration
+import org.apache.giraph.io.formats.{GiraphTextOutputFormat, GiraphFileInputFormat}
 import org.apache.giraph.job.{GiraphConfigurationValidator, GiraphJob}
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
@@ -113,7 +114,7 @@ class LoopyBeliefPropagation
   override def execute(invocation: Invocation, arguments: Lbp)
                       (implicit user: UserPrincipal, executionContext:ExecutionContext): LbpResult =  {
     val start = System.currentTimeMillis()
-    val graphFuture = invocation.engine.getGraph(arguments.graph.toLong)
+//    val graphFuture = invocation.engine.getGraph(arguments.graph.toLong)
 
     val config: Config = configuration().get
     val hConf = newHadoopConfigurationFrom(config, "giraph")
@@ -131,7 +132,7 @@ class LoopyBeliefPropagation
     set(hConf, "lbp.smoothing", arguments.smoothing)
     set(hConf, "lbp.ignoreVertexType", arguments.ignore_vertex_type)
 
-    val graph = Await.result(graphFuture, config.getInt("default-timeout") seconds)
+//    val graph = Await.result(graphFuture, config.getInt("default-timeout") seconds)
 
     //val yarnConfig: YarnConfiguration = new YarnConfiguration(hConf)
     val giraphConf = new GiraphConfiguration(hConf)
@@ -141,6 +142,10 @@ class LoopyBeliefPropagation
     giraphConf.setMasterComputeClass(classOf[LoopyBeliefPropagationComputation.LoopyBeliefPropagationMasterCompute])
     giraphConf.setComputationClass(classOf[LoopyBeliefPropagationComputation])
     giraphConf.setAggregatorWriterClass(classOf[LoopyBeliefPropagationComputation.LoopyBeliefPropagationAggregatorWriter])
+
+    GiraphFileInputFormat.addVertexInputPath(giraphConf, new Path("/user/hadoop/lbp/in"))
+
+
     val graphId = arguments.graph //graph.getOrElse(illegalArg("Graph does not exist, cannot run LBP")
     //val job = new org.apache.giraph.yarn.GiraphYarnClient(giraphConf, "iat-giraph-lbp-" + new Date());
     val job = new GiraphJob(giraphConf, "iat-giraph-lbp-" + new Date())
@@ -153,15 +158,17 @@ class LoopyBeliefPropagation
     val algorithm = giraphLoader.loadClass(classOf[LoopyBeliefPropagationComputation].getCanonicalName)
     internalJob.setJarByClass(algorithm)
     //internalJob.setJar(execution.config.getString("giraph-jar"))
-    org.apache.hadoop.mapreduce.lib.input.FileInputFormat.setInputPaths(internalJob,
+
+    org.apache.hadoop.mapreduce.lib.input.FileInputFormat.addInputPath(internalJob,
       new Path("/user/hadoop/lbp/in"))
     org.apache.hadoop.mapreduce.lib.output.FileOutputFormat.setOutputPath(internalJob,
       new Path("/user/hadoop/lbp/out/" + invocation.commandId))
-    @SuppressWarnings(Array("rawtypes")) val gtv: GiraphConfigurationValidator[_, _, _, _, _] =
-      new GiraphConfigurationValidator(giraphConf)
-
-
-    gtv.validateConfiguration()
+ 
+//   @SuppressWarnings(Array("rawtypes")) val gtv: GiraphConfigurationValidator[_, _, _, _, _] =
+//      new GiraphConfigurationValidator(giraphConf)
+//
+//
+//    gtv.validateConfiguration()
     job.run(true)
     //    val runner = giraphLoader.loadClass(classOf[GiraphRunner].getCanonicalName)
     //    val method = runner.getMethod("main", classOf[Array[String]])
