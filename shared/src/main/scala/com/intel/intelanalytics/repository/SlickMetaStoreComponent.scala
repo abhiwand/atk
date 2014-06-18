@@ -198,10 +198,11 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
       users.where(_.id === id).mutate(c => c.delete())
     }
 
-    override def update(c: User)(implicit session: Session): Try[User] = Try {
+    override def update(user: User)(implicit session: Session): Try[User] = Try {
       // TODO: updated modifiedOn timestamp on all tables
-      users.where(_.id === c.id).update(c)
-      c
+      val updatedUser = user.copy(modifiedOn = new DateTime)
+      users.where(_.id === user.id).update(updatedUser)
+      updatedUser
     }
 
     override def scan(offset: Int = 0, count: Int = defaultScanCount)(implicit session: Session): Seq[User] = {
@@ -258,8 +259,9 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
     }
 
     override def update(status: Status)(implicit session: Session): Try[Status] = Try {
-      statuses.where(_.id === status.id).update(status)
-      status
+      val updatedStatus = status.copy(modifiedOn = new DateTime)
+      statuses.where(_.id === status.id).update(updatedStatus)
+      updatedStatus
     }
 
     override def scan(offset: Int = 0, count: Int = defaultScanCount)(implicit session: Session): Seq[Status] = {
@@ -361,8 +363,9 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
     }
 
     override def update(frame: DataFrame)(implicit session: Session): Try[DataFrame] = Try {
-      frames.where(_.id === frame.id).update(frame)
-      frame
+      val updatedFrame = frame.copy(modifiedOn = new DateTime)
+      frames.where(_.id === frame.id).update(updatedFrame)
+      updatedFrame
     }
 
     override def insert(frame: DataFrameTemplate)(implicit session: Session): Try[DataFrame] = Try {
@@ -444,8 +447,9 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
     }
 
     override def update(command: Command)(implicit session: Session): Try[Command] = Try {
-      val updated = commands.where(_.id === command.id).update(command)
-      command
+      val updatedCommand = command.copy(modifiedOn = new DateTime())
+      val updated = commands.where(_.id === command.id).update(updatedCommand)
+      updatedCommand
     }
 
     override def scan(offset: Int = 0, count: Int = defaultScanCount)(implicit session: Session): Seq[Command] = {
@@ -528,8 +532,9 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
     }
 
     override def update(graph: Graph)(implicit session: Session): Try[Graph] = Try {
-      graphs.where(_.id === graph.id).update(graph)
-      graph
+      val updatedGraph = graph.copy(modifiedOn = new DateTime)
+      graphs.where(_.id === graph.id).update(updatedGraph)
+      updatedGraph
     }
 
     override def scan(offset: Int = 0, count: Int = defaultScanCount)(implicit session: Session): Seq[Graph] = {
