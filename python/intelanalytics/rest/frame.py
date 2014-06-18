@@ -23,7 +23,6 @@
 """
 REST backend for frames
 """
-import base64
 import uuid
 import logging
 logger = logging.getLogger(__name__)
@@ -36,27 +35,8 @@ from intelanalytics.core.files import CsvFile
 from intelanalytics.core.types import *
 from intelanalytics.rest.connection import http
 from intelanalytics.rest.command import CommandRequest, executor
-from intelanalytics.rest.spark import RowWrapper, pickle_function
+from intelanalytics.rest.spark import prepare_row_function, get_add_one_column_function, get_add_many_columns_function
 
-
-def encode_bytes_for_http(b):
-    """
-    Encodes bytes using base64, so they can travel as a string
-    """
-    return base64.urlsafe_b64encode(b)
-
-
-def wrap_row_function(frame, row_function):
-    """
-    Wraps a python row function, like one used for a filter predicate, such
-    that it will be evaluated with using the expected 'row' object rather than
-    whatever raw form the engine is using.  Ideally, this belong in the engine
-    """
-    def row_func(row):
-        row_wrapper = RowWrapper(frame.schema)
-        row_wrapper.load_row(row)
-        return row_function(row_wrapper)
-    return row_func
 
 
 class FrameBackendRest(object):
@@ -85,7 +65,7 @@ class FrameBackendRest(object):
     def create(self, frame, source, name):
         logger.info("REST Backend: create frame: " + frame.name)
         if isinstance(source, FrameInfo):
-            self._initialize_frame(frame, source)
+            initialize_frame(frame, source)
             return  # early exit here
 
         frame._name = name or self._get_new_frame_name(source)
@@ -107,20 +87,8 @@ class FrameBackendRest(object):
         r = self.rest_http.post('dataframes', payload)
         logger.info("REST Backend: create frame response: " + r.text)
         payload = r.json()
-        #TODO - call _initialize_frame instead
         frame._id = payload['id']
         frame._uri = self._get_uri(payload)
-
-    @staticmethod
-    def _initialize_frame(frame, frame_info):
-        """Initializes a frame according to given frame_info"""
-        frame._id = frame_info.id_number
-        # TODO - update uri from result (this is a TODO in the engine)
-        #frame._uri = frame_info.uri
-        frame._name = frame_info.name
-        frame._columns.clear()
-        for column in frame_info.columns:
-            FrameBackendRest._accept_column(frame, column)
 
     @staticmethod
     def _get_load_arguments(frame, data):
@@ -155,50 +123,36 @@ class FrameBackendRest(object):
                return link['uri']
         raise Exception('Unable to find uri for frame')
 
+    @staticmethod
+    def _validate_schema(schema):
+        for tup in schema:
+            if not isinstance(tup[0], basestring):
+                raise ValueError("First value in schema tuple must be a string")
+            supported_types.validate_is_supported_type(tup[1])
 
-    def add_columns(self, frame, expression, names, types):
-        if not names:
-            i = 0
-            while(True):
-                name = "new" + str(i)
-                if name not in frame._columns:
-                    break
-                i += 1
-            names = [name]
-        elif isinstance(names, basestring):
-            names = [names]
+    def add_columns(self, frame, expression, schema):
+        if not schema or not hasattr(schema, "__iter__"):
+            raise ValueError("add_columns requires a non-empty schema of (name, type)")
 
-        if not hasattr(types, '__iter__'):
-            types = [types]
-        for t in types:
-            supported_types.validate_is_supported_type(t)
+        only_one_column = False
+        if isinstance(schema[0], basestring):
+            only_one_column = True
+            schema = [schema]
 
-        def addColumnLambda(row):
-            row.data.append(unicode(supported_types.cast(expression(row),types[0])))
-            return ",".join(row.data)
+        self._validate_schema(schema)
+        names, data_types = zip(*schema)
 
-        #def add_columns_func():
-        # TODO - write full add multiple columns
-
-        row_ready_predicate = wrap_row_function(frame, addColumnLambda)
+        add_columns_function = get_add_one_column_function(expression, data_types[0]) if only_one_column \
+            else get_add_many_columns_function(expression, data_types)
         from itertools import imap
-        def filter_func(iterator): return imap(row_ready_predicate, iterator)
-        def func(s, iterator): return filter_func(iterator)
-
-        pickled_predicate = pickle_function(func)
-        http_ready_predicate = encode_bytes_for_http(pickled_predicate)
+        http_ready_function = prepare_row_function(frame, add_columns_function, imap)
 
         arguments = {'frame': frame.uri,
-                     'columnname': names[0],
-                     'columntype': supported_types.get_type_string(types[0]),
-                     'expression': http_ready_predicate}
-        command = CommandRequest('dataframe/addcolumn', arguments)
-        command_info = executor.issue(command)
+                     'column_names': names,
+                     'column_types': [supported_types.get_type_string(t) for t in data_types],
+                     'expression': http_ready_function}
 
-        # todo - this info should come back from the engine
-        self._accept_column(frame, BigColumn(names[0], types[0]))
-
-        return command_info
+        return execute_update_frame_command('add_columns', arguments, frame)
 
     def append(self, frame, data):
         logger.info("REST Backend: append data to frame {0}: {1}".format(frame.name, repr(data)))
@@ -209,45 +163,32 @@ class FrameBackendRest(object):
             return
 
         arguments = self._get_load_arguments(frame, data)
-        command = CommandRequest(name="dataframe/load", arguments=arguments)
-        command_info = executor.issue(command)
-
-        if isinstance(data, CsvFile):
-            # update the Python object (set the columns)
-            # todo - this info should come back from the engine
-            for name, data_type in data.schema:
-                if data_type is not ignore:
-                    self._accept_column(frame, BigColumn(name, data_type))
-        else:
-            raise TypeError("Unsupported append data type "
-                            + data.__class__.__name__)
-
+        return execute_update_frame_command("load", arguments, frame)
 
     def count(self, frame):
         raise NotImplementedError  # TODO - impplement count
 
+    def drop(self, frame, predicate):
+        from itertools import ifilterfalse  # use the REST API filter, with a ifilterfalse iterator
+        http_ready_function = prepare_row_function(frame, predicate, ifilterfalse)
+        arguments = {'frame': frame.uri, 'predicate': http_ready_function}
+        return execute_update_frame_command("filter", arguments, frame)
+
     def filter(self, frame, predicate):
-        row_ready_predicate = wrap_row_function(frame, predicate)
         from itertools import ifilter
-        def filter_func(iterator): return ifilter(row_ready_predicate, iterator)
-        def func(s, iterator): return filter_func(iterator)
-
-        pickled_predicate = pickle_function(func)
-        http_ready_predicate = encode_bytes_for_http(pickled_predicate)
-
-        arguments = {'frame': frame.uri, 'predicate': http_ready_predicate}
-        command = CommandRequest(name="dataframe/filter", arguments=arguments)
-        executor.issue(command)
+        http_ready_function = prepare_row_function(frame, predicate, ifilter)
+        arguments = {'frame': frame.uri, 'predicate': http_ready_function}
+        return execute_update_frame_command("filter", arguments, frame)
 
     def flatten_column(self, frame, column_name):
         name = self._get_new_frame_name()
         arguments = {'name': name, 'frame': frame._id, 'column': column_name, 'separator': ',' }
-        command = CommandRequest("dataframe/flattenColumn", arguments)
-        command_info = executor.issue(command)
-        frame_info = FrameInfo(command_info.result)
-        return BigFrame(frame_info)
+        return execute_new_frame_command('flattenColumn', arguments)
 
     class InspectionTable(object):
+        """
+        Inline class used specifically for inspect, where the __repr__ is king
+        """
         _align = defaultdict(lambda: 'c')  # 'l', 'c', 'r'
         _align.update([(bool, 'r'),
                        (bytearray, 'l'),
@@ -277,7 +218,7 @@ class FrameBackendRest(object):
                 table.add_row(r)
             return table.get_string()
 
-         #def _repr_html_(self): Add this method for ipython notebooks
+         #def _repr_html_(self): TODO - Add this method for ipython notebooks
 
     def inspect(self, frame, n, offset):
         # inspect is just a pretty-print of take, we'll do it on the client
@@ -290,21 +231,23 @@ class FrameBackendRest(object):
             right_on = left_on
         name = self._get_new_frame_name()
         arguments = {'name': name, "how": how, "frames": [[left._id, left_on], [right._id, right_on]] }
-        command = CommandRequest("dataframe/join", arguments)
-        command_info = executor.issue(command)
-        frame_info = FrameInfo(command_info.result)
-        return BigFrame(frame_info)
+        return execute_new_frame_command('join', arguments)
 
     def project_columns(self, frame, projected_frame, columns, new_names=None):
+        # TODO - change project_columns so the server creates the new frame, like join
+        if isinstance(columns, basestring):
+            columns = [columns]
+        if new_names is not None:
+            if isinstance(new_names, basestring):
+                new_names = [new_names]
+            if len(columns) != len(new_names):
+                raise ValueError("new_names list argument must be the same length as the column_names")
+        # TODO - create a general method to validate lists of column names, such that they exist, are all from the same frame, and not duplicated
         # TODO - fix REST server to accept nulls, for now we'll pass an empty list
-        if new_names is None:
+        else:
             new_names = list(columns)
         arguments = {'frame': frame.uri, 'projected_frame': projected_frame.uri, 'columns': columns, "new_column_names": new_names}
-        command = CommandRequest("dataframe/project", arguments)
-        command_info = executor.issue(command)
-        self._initialize_frame(projected_frame, FrameInfo(command_info.result))
-
-        return command_info
+        return execute_update_frame_command('project', arguments, projected_frame)
 
     def groupBy(self, frame, group_by_columns, aggregation_list):
         name = self._get_new_frame_name()
@@ -322,14 +265,7 @@ class FrameBackendRest(object):
     def remove_columns(self, frame, name):
         columns = ",".join(name) if isinstance(name, list) else name
         arguments = {'frame': frame.uri, 'column': columns}
-        command = CommandRequest("dataframe/removecolumn", arguments)
-        command_info = executor.issue(command)
-        # TODO - slurp command_info, instead of the following:
-        if isinstance(name, basestring):
-            name = [name]
-        for victim in name:
-            del frame._columns[victim]
-        return command_info
+        return execute_update_frame_command('removecolumn', arguments, frame)
 
     def rename_columns(self, frame, column_names, new_names):
         if isinstance(column_names, basestring) and isinstance(new_names, basestring):
@@ -341,23 +277,12 @@ class FrameBackendRest(object):
         for nn in new_names:
             if nn in current_names:
                 raise ValueError("Cannot use rename to '{0}' because another column already exists with that name".format(nn))
-        #originalcolumns, renamedcolumns = ",".join(zip(*name_pairs)[0]), ",".join(zip(*name_pairs)[1])
         arguments = {'frame': frame.uri, "original_names": column_names, "new_names": new_names}
-        command = CommandRequest("dataframe/rename_column", arguments)
-        command_info = executor.issue(command)
-        self._initialize_frame(frame, FrameInfo(command_info.result))
-
-        # rename on python side, here in the frame's local columns:
-        #values = self._columns.values()  # must preserve order in OrderedDict
-        #for p in name_pairs:
-            #self._columns[p[0]].name = p[1]
-        #self._columns = OrderedDict([(v.name, v) for v in values])
+        return execute_update_frame_command('rename_column', arguments, frame)
 
     def rename_frame(self, frame, name):
         arguments = {'frame': frame.uri, "new_name": name}
-        command = CommandRequest("dataframe/rename_frame", arguments)
-        return executor.issue(command)
-
+        return execute_update_frame_command('rename_frame', arguments, frame)
 
     def take(self, frame, n, offset):
         r = self.rest_http.get('dataframes/{0}/data?offset={2}&count={1}'.format(frame._id,n, offset))
@@ -402,3 +327,29 @@ class FrameInfo(object):
             raise RuntimeError(msg)
         self._payload = payload
 
+
+def initialize_frame(frame, frame_info):
+    """Initializes a frame according to given frame_info"""
+    frame._id = frame_info.id_number
+    # TODO - update uri from result (this is a TODO in the engine)
+    #frame._uri = frame_info.uri
+    frame._name = frame_info.name
+    frame._columns.clear()
+    for column in frame_info.columns:
+        FrameBackendRest._accept_column(frame, column)
+
+
+def execute_update_frame_command(command_name, arguments, frame):
+    """Executes command and updates frame with server response"""
+    command_request = CommandRequest('dataframe/' + command_name, arguments)
+    command_info = executor.issue(command_request)
+    initialize_frame(frame, FrameInfo(command_info.result))
+    return command_info
+
+
+def execute_new_frame_command(command_name, arguments):
+    """Executes command and creates a new BigFrame object from server response"""
+    command_request = CommandRequest('dataframe/' + command_name, arguments)
+    command_info = executor.issue(command_request)
+    frame_info = FrameInfo(command_info.result)
+    return BigFrame(frame_info)
