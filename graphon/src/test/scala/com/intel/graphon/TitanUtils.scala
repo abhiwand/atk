@@ -40,12 +40,15 @@ import scala.collection.immutable.HashMap
 import scala.collection.mutable.ListBuffer
 
 /**
+ * This class definition is duplicated from
+ * [[com.intel.graphbuilder.driver.spark.titan.reader.TitanReaderUtils]]
+ *
  * Utility methods for creating test data for reading Titan graphs.
  *
  * These utilities serialize Titan graph elements into the format that Titan uses for its key-value stores.
  * The utilities also create GraphBuilder elements from Titan elements.
  */
-object TitanReaderUtils {
+object TitanUtils {
 
   /**
    * Create GraphBuilder properties from a list of Titan properties.
@@ -97,9 +100,8 @@ object TitanReaderUtils {
    * @param titanElement Titan vertex property or edge
    * @return
    */
-  def serializeGraphElement(titanEdgeSerializer: EdgeSerializer,
-    titanVertex: TitanVertex,
-    titanElement: TitanElement): Seq[Entry] = {
+  def serializeGraphElement(titanEdgeSerializer: EdgeSerializer, titanVertex: TitanVertex, titanElement: TitanElement): Seq[Entry] = {
+
     val relation = titanElement.asInstanceOf[InternalRelation]
 
     val entryList = ListBuffer[Entry]()
@@ -130,8 +132,10 @@ object TitanReaderUtils {
       val dummyType = 0.toByte
 
       val hBaseCells = entries.map(entry ⇒ {
-        CellUtil.createCell(rowKey, titanColumnFamilyName, entry.getArrayColumn(),
-          dummyTimestamp, dummyType, entry.getArrayValue)
+        CellUtil.createCell(rowKey, titanColumnFamilyName,
+          entry.getArrayColumn(),
+          dummyTimestamp, dummyType,
+          entry.getArrayValue)
       })
 
       (new ImmutableBytesWritable(rowKey), Result.create(hBaseCells))

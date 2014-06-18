@@ -29,6 +29,7 @@ import com.intel.graphbuilder.driver.spark.titan.reader.TitanReader
 import com.intel.graphbuilder.elements.{Edge, Property, Vertex}
 import com.intel.graphbuilder.graph.titan.TitanGraphConnector
 import com.intel.graphbuilder.util.SerializableBaseConfiguration
+import com.intel.testutils.DirectoryUtils
 import org.scalatest.{BeforeAndAfterAll, Suite}
 
 import scala.collection.JavaConversions._
@@ -46,11 +47,10 @@ import scala.collection.JavaConversions._
  */
 object TitanReaderTestData extends Suite with BeforeAndAfterAll {
 
-  import com.intel.graphon.DirectoryUtils._
   import com.intel.graphon.TitanReaderUtils._
 
   val gbID = TitanReader.TITAN_READER_DEFAULT_GB_ID
-  private var tmpDir: File = createTempDirectory("titan-graph-for-unit-testing-")
+  private var tmpDir: File = DirectoryUtils.createTempDirectory("titan-graph-for-unit-testing-")
 
   var titanConfig = new SerializableBaseConfiguration()
   titanConfig.setProperty("storage.directory", tmpDir.getAbsolutePath)
@@ -121,11 +121,13 @@ object TitanReaderTestData extends Suite with BeforeAndAfterAll {
 
   val seaGbEdge = {
     val gbSeaEdgeProperties = List(Property("reason", "loves waves"))
-    new Edge(neptuneTitanVertex.getID, seaTitanVertex.getID, Property(gbID, neptuneTitanVertex.getID()), Property(gbID, seaTitanVertex.getID()), seaTitanEdge.getLabel(), gbSeaEdgeProperties)
+    new Edge(neptuneTitanVertex.getID, seaTitanVertex.getID, Property(gbID, neptuneTitanVertex.getID()),
+      Property(gbID, seaTitanVertex.getID()), seaTitanEdge.getLabel(), gbSeaEdgeProperties)
   }
 
   val plutoGbEdge = {
-    new Edge(neptuneTitanVertex.getID, plutoTitanVertex.getID, Property(gbID, neptuneTitanVertex.getID()), Property(gbID, plutoTitanVertex.getID()), plutoTitanEdge.getLabel(), List[Property]())
+    new Edge(neptuneTitanVertex.getID, plutoTitanVertex.getID, Property(gbID, neptuneTitanVertex.getID()),
+      Property(gbID, plutoTitanVertex.getID()), plutoTitanEdge.getLabel(), List[Property]())
   }
 
   // Serialized Titan rows created using the Titan graph elements defined above.
@@ -148,7 +150,7 @@ object TitanReaderTestData extends Suite with BeforeAndAfterAll {
         graph.shutdown()
       }
     } finally {
-      deleteTempDirectory(tmpDir)
+      DirectoryUtils.deleteTempDirectory(tmpDir)
     }
 
     // make sure this class is unusable when we're done

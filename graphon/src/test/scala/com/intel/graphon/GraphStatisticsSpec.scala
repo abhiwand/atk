@@ -23,16 +23,11 @@
 
 package com.intel.graphon
 
-import java.util.Date
-
 import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRDDImplicits._
 import com.intel.graphbuilder.driver.spark.rdd.TitanHBaseReaderRDD
 import com.intel.graphon.TitanReaderTestData._
 import com.intel.spark.graphon.GraphStatistics
-import org.apache.spark.{SparkConf, SparkContext}
-import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpec}
-
-import scala.concurrent.Lock
+import org.scalatest.{Matchers, WordSpec}
 
 class GraphStatisticsSpec extends WordSpec with Matchers with TitanSparkContext {
 
@@ -89,48 +84,4 @@ class GraphStatisticsSpec extends WordSpec with Matchers with TitanSparkContext 
     val edgeRDD = titanReaderRDD.filterEdges()
     GraphStatistics.inDegreesByEdgeType(edgeRDD, "lives").collect().length shouldBe 1
   }
-}
-
-trait TitanSparkContext extends WordSpec with BeforeAndAfterAll {
-  GraphonLogUtils.silenceSpark()
-
-  val conf = new SparkConf()
-    .setMaster("local")
-    .setAppName(this.getClass.getSimpleName + " " + new Date())
-  conf.set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
-  conf.set("spark.kryo.registrator", "com.intel.graphbuilder.driver.spark.titan.GraphBuilderKryoRegistrator")
-
-  var sparkContext: SparkContext = null
-
-  override def beforeAll = {
-    // Ensure only one Spark local context is running at a time
-    TestingSparkContext.lock.acquire()
-    sparkContext = new SparkContext(conf)
-  }
-
-  /**
-   * Clean up after the test is done
-   */
-  override def afterAll = {
-    cleanupSpark()
-  }
-
-  /**
-   * Shutdown spark and release the lock
-   */
-  def cleanupSpark(): Unit = {
-    try {
-      if (sparkContext != null) {
-        sparkContext.stop()
-      }
-    } finally {
-      // To avoid Akka rebinding to the same port, since it doesn't unbind immediately on shutdown
-      System.clearProperty("spark.driver.port")
-      TestingSparkContext.lock.release()
-    }
-  }
-}
-
-object TestingSparkContext {
-  val lock = new Lock()
 }

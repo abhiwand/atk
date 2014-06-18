@@ -1,6 +1,7 @@
 package com.intel.graphbuilder.driver.spark.titan.examples
 
 import java.util.Date
+
 import org.apache.spark.SparkContext
 
 /**
@@ -19,7 +20,7 @@ object SparkReadFileTest {
     println("Trying to read file: " + ExamplesUtils.movieDataset)
 
     val inputRows = sc.textFile(ExamplesUtils.movieDataset, System.getProperty("PARTITIONS", "120").toInt)
-    val inputRdd = inputRows.map(row => row.split(","): Seq[_])
+    val inputRdd = inputRows.map(row ⇒ row.split(","): Seq[_])
 
     println("Spark Read Input Rows: " + inputRdd.count())
   }

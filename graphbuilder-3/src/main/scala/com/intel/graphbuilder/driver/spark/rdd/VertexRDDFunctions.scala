@@ -23,7 +23,7 @@
 
 package com.intel.graphbuilder.driver.spark.rdd
 
-import com.intel.graphbuilder.elements.{ GbIdToPhysicalId, Vertex }
+import com.intel.graphbuilder.elements.{GbIdToPhysicalId, Vertex}
 import com.intel.graphbuilder.graph.titan.TitanGraphConnector
 import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.RDD
@@ -43,7 +43,7 @@ class VertexRDDFunctions(self: RDD[Vertex]) {
    * @return an RDD without duplicates
    */
   def mergeDuplicates(): RDD[Vertex] = {
-    self.groupBy(m => m.id).mapValues(dups => dups.reduce((m1, m2) => m1.merge(m2))).values
+    self.groupBy(m ⇒ m.id).mapValues(dups ⇒ dups.reduce((m1, m2) ⇒ m1.merge(m2))).values
   }
 
   /**

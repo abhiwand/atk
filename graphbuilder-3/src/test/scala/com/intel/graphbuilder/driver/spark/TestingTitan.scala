@@ -21,51 +21,54 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.graphbuilder.testutils
+package com.intel.graphbuilder.driver.spark
 
 import java.io.File
-import org.apache.commons.io.FileUtils
-import org.apache.log4j.Logger
+
+import com.intel.graphbuilder.graph.titan.TitanGraphConnector
+import com.intel.graphbuilder.util.SerializableBaseConfiguration
+import com.intel.testutils.{DirectoryUtils, LogUtils, MultipleAfter}
 
 /**
- * Utility methods for working with directories.
+ * This trait can be mixed into Specifications to get a TitanGraph backed by Berkeley for testing purposes.
+ *
+ * IMPORTANT! only one thread can use the graph below at a time. This isn't normally an issue because
+ * each test usually gets its own copy.
  */
-object DirectoryUtils {
+trait TestingTitan extends MultipleAfter {
 
-  private val log: Logger = Logger.getLogger(DirectoryUtils.getClass)
+  LogUtils.silenceTitan()
+
+  private var tmpDir: File = DirectoryUtils.createTempDirectory("titan-graph-for-unit-testing-")
+
+  var titanConfig = new SerializableBaseConfiguration()
+  titanConfig.setProperty("storage.directory", tmpDir.getAbsolutePath)
+
+  var titanConnector = new TitanGraphConnector(titanConfig)
+  var graph = titanConnector.connect()
+
+  override def after: Unit = {
+    cleanupTitan()
+    super.after
+  }
 
   /**
-   * Create a Temporary directory
-   * @param prefix the prefix for the directory name, this is used to make the Temp directory more identifiable.
-   * @return the temporary directory
+   * IMPORTANT! removes temporary files
    */
-  def createTempDirectory(prefix: String): File = {
+  def cleanupTitan(): Unit = {
     try {
-      convertFileToDirectory(File.createTempFile(prefix, "-tmp"))
+      if (graph != null) {
+        graph.shutdown()
+      }
+    } finally {
+      DirectoryUtils.deleteTempDirectory(tmpDir)
     }
-    catch {
-      case e: Exception =>
-        throw new RuntimeException("Could NOT initialize temp directory, prefix: " + prefix, e)
-    }
+
+    // make sure this class is unusable when we're done
+    titanConfig = null
+    titanConnector = null
+    graph = null
+    tmpDir = null
   }
 
-  /**
-   * Convert a file into a directory
-   * @param file a file that isn't a directory
-   * @return directory with same name as File
-   */
-  private def convertFileToDirectory(file: File): File = {
-    file.delete()
-    if (!file.mkdirs()) {
-      throw new RuntimeException("Failed to create tmpDir: " + file.getAbsolutePath)
-    }
-    file
-  }
-
-  def deleteTempDirectory(tmpDir: File) {
-    FileUtils.deleteQuietly(tmpDir)
-    if (tmpDir != null && tmpDir.exists) {
-      log.error("Failed to delete tmpDir: " + tmpDir.getAbsolutePath)
-    }
-  }
 }
