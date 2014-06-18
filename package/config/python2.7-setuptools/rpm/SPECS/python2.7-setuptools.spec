@@ -5,8 +5,8 @@ Summary: setuptools %{?setuptoolsVersion} rpm built against python %{?pythonVers
 License: https://pypi.python.org/pypi/setuptools
 Release: 1
 Version: %{?setuptoolsVersion}
-BuildRequires: gcc make expat-devel db4-devel gdbm-devel sqlite-devel readline-devel zlib-devel bzip2-devel openssl-devel python2.7
-Requires: python2.7, gcc, gcc-c++
+BuildRequires: gcc >= 4.4.7 make, expat-devel, db4-devel, gdbm-devel, sqlite-devel, readline-devel, zlib-devel, bzip2-devel, openssl-devel, python2.7
+Requires: python2.7, gcc >= 4.4.7, gcc-c++ >= 4.4.7
 AutoReq: no
 Source: setuptools-3.6.tar.gz
 Prefix: /usr

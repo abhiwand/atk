@@ -37,7 +37,7 @@ object DBRegisterCommand extends RegisterCommand {
    * see RegisterCommand
    */
   def execute(user: UserRow, registrationForm: RegistrationFormMapping, statementGenerator: StatementGenerator): RegistrationOutput = DB.withSession {
-    implicit session: scala.slick.session.Session ⇒
+    implicit session: scala.slick.session.Session =>
 
       val callString = "{call sp_register(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)}";
       val cStmt = statementGenerator.getCallStatement(session, callString)

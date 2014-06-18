@@ -66,7 +66,7 @@ object S3 {
     val corsConfigs = Play.application.configuration.getObjectList("aws.S3.cors").get.toList map (new CR(_))
 
     var corsRules: List[CORSRule] = List[CORSRule]()
-    for (corsConfig ← corsConfigs) {
+    for (corsConfig <- corsConfigs) {
       val rule = new CORSRule()
       rule.setAllowedOrigins(corsConfig.origin)
       rule.setAllowedHeaders(corsConfig.allowedHeaders)
@@ -81,7 +81,7 @@ object S3 {
   def getPermissions(): List[String] = {
     val permissions = Play.application.configuration.getStringList("aws.S3.permissions").get.toList
     var S3Permissions: List[String] = List[String]()
-    for (permission ← permissions) {
+    for (permission <- permissions) {
       S3Permissions ::= "S3:" + permission
     }
     S3Permissions
@@ -108,8 +108,9 @@ object S3 {
     var bucket: Bucket = new Bucket()
     try {
       bucket = s3Client.createBucket(getBucketName, Region.US_West_2)
-    } catch {
-      case e: AmazonS3Exception ⇒
+    }
+    catch {
+      case e: AmazonS3Exception =>
         if (!e.getErrorCode.equals("BucketAlreadyOwnedByYou")) {
           throw e
         }
@@ -131,7 +132,8 @@ object S3 {
   def getObjectList(userIdentifier: String): List[S3ObjectSummary] = {
     if (userIdentifier.isEmpty) {
       List()
-    } else {
+    }
+    else {
       val objectList = s3Client.listObjects(getBucketName, PREFIX + userIdentifier + "/")
       //scala.collection.JavaConversions.asScalaBuffer[S3ObjectSummary](objectList.getObjectSummaries)
       objectList.getObjectSummaries.toList

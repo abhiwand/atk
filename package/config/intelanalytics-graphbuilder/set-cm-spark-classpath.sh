@@ -84,9 +84,80 @@ function getDeployConfigRoles(){
 function deployConfig(){
 	getDeployConfigRoles
 	createUrl clusters/${clusterNameEncoded}/services/${sparkService}/commands/deployClientConfig
-	doCurl POST ${deployRoles} 1
-    echo "Deploy config"
+	#doCurl POST ${deployRoles} 1
+    response=$(curl -s -H "Content-Type: application/json" -X POST -d${deployRoles}  ${curlLoginOpt} ${url} | jq -c -r '{id,active}')
+    deployConfigCommandId=$(echo $response| jq '.id' )
+    activeStatus=$(echo $response| jq '.active' )
+
+    if [ "$deployConfigCommandId" == "" ] && [ "$activeStatus" != "true" ]; then
+        echo "${red}couldn't deploy configuration${normal}"
+        exit 1
+    else
+        echo -n "${yellow}Deploying Config${normal}"
+    fi
+
+    createUrl clusters/${clusterNameEncoded}/services/${sparkService}/commands
+    count=1
+    while [ $count -ne 0 ]
+    do
+        count=0
+        for commandId in `curl -s -H "Content-Type: application/json" -X GET  ${curlLoginOpt} ${url} | jq -c -r '.items[].id' `
+        do
+            if [ "$commandId" == "$deployConfigCommandId" ]; then
+                count=$(($count +1))
+                echo -n "."
+	        	sleep 3
+		break
+            fi
+        done
+    done
+    if [ $count -eq 0 ];then
+        echo "${green}config deployed to spark master and workers${normal}"
+        restartSpark
+    fi
+
 }
+
+function restartSpark(){
+    echo "The spark service must be restarted for the changes to take affect."
+    read -p "If you want to restart spark service type 'yes': " restart
+
+    if [ "$restart" == "yes" ]; then
+
+        createUrl clusters/${clusterNameEncoded}/services/${sparkService}/commands/restart
+        response=$(curl -s -H "Content-Type: application/json" -X POST  ${curlLoginOpt} ${url} | jq -c -r '{id,active}')
+	    restartCommandId=$(echo $response | jq -c -r '.id')
+	    activeStatus=$(echo $response| jq '.active' )
+
+	    if [ "$restartCommandId" == "" ] && [ "$activeStatus" != "true" ]; then
+            echo "${red}couldn't restart spark service${normal}"
+            exit 1
+        else
+            echo -n "${yellow}restarting spark${normal}"
+        fi
+
+        createUrl clusters/${clusterNameEncoded}/services/${sparkService}/commands
+        count=1
+        while [ $count -ne 0 ]
+        do
+            count=0
+            for commandId in `curl -s -H "Content-Type: application/json" -X GET  ${curlLoginOpt} ${url} | jq -c -r '.items[].id' `
+            do
+                if [ "$commandId" == "$restartCommandId" ]; then
+                    count=$((count +1))
+                    echo -n "."
+		            sleep 3
+                    break
+                fi
+            done
+        done
+        if [ $count -eq 0 ];then
+            echo "${green}Spark restarted${normal}"
+        fi
+    fi
+    return 0
+}
+
 function setUpdatedClassPath(){
         local existingClassPath=$1
         existingClassPath=${existingClassPath% }
@@ -255,10 +326,10 @@ if [ "$sparkService" != "" ]; then
                 	        configValue=$(cat /tmp/spark_env.sh.tmp)
 				
 				setConfig $configValue
-				echo "${green} SPARK_CLASSPATH updated and deploying ${normal}"
+				echo "${green}SPARK_CLASSPATH updated and deployed ${normal}"
 				exit 0
 			else
-				echo  "${green} Existing intel analytics spark classpath entry no changes needed. Current spark classpath: ${existingClassPath} ${normal}"
+				echo  "${green}Existing intel analytics spark classpath entry no changes needed. Current spark classpath: ${existingClassPath} ${normal}"
 			fi
 		else
 			echo "Setting SPARK_CLASSPATH none set"
@@ -266,7 +337,7 @@ if [ "$sparkService" != "" ]; then
 			configValue=$configValue'\r\n export SPARK_CLASSPATH=\"'$updatedClassPath\*'\"'
 			
 			setConfig $configValue
-			echo "${green} SPARK_CLASSPATH updated and deploying ${normal}"
+			echo "${green}SPARK_CLASSPATH updated and deployed ${normal}"
 			exit 0
 		fi
 	else
@@ -277,7 +348,7 @@ if [ "$sparkService" != "" ]; then
                 configValue='export SPARK_CLASSPATH=\"'$updatedClassPath\*'\"'
 
                 setConfig $configValue
-                echo "$green SPARK_CLASSPATH updated and deploying"
+                echo "${green}SPARK_CLASSPATH updated and deployed ${normal}"
                 exit 0
 	fi
 else

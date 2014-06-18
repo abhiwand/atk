@@ -19,8 +19,9 @@ class CookieSpec extends Specification with Mockito {
       var isSuccess: Boolean = true
       try {
         cookieGen.create_signed_value(null, "username-10.10.68.142-8888", "localUser")
-      } catch {
-        case ex: IllegalArgumentException ⇒ {
+      }
+      catch {
+        case ex: IllegalArgumentException => {
           isSuccess = false
         }
       }
@@ -33,8 +34,9 @@ class CookieSpec extends Specification with Mockito {
       var isSuccess: Boolean = true
       try {
         cookieGen.create_signed_value("", "username-10.10.68.142-8888", "localUser")
-      } catch {
-        case ex: IllegalArgumentException ⇒ {
+      }
+      catch {
+        case ex: IllegalArgumentException => {
           isSuccess = false
         }
       }

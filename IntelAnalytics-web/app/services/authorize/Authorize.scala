@@ -40,10 +40,10 @@ class Authorize(var authData: JsValue, var provider: Providers.Providers) {
    */
   def validateTokenResponseData(): Boolean = {
     Provider match {
-      case Providers.GooglePlus ⇒
+      case Providers.GooglePlus =>
         responseData = GooglePlus.validateTokenResponseData(jsonData)
         return if (responseData != None) true else false
-      case Providers.None ⇒
+      case Providers.None =>
         return false;
 
     }
@@ -55,10 +55,10 @@ class Authorize(var authData: JsValue, var provider: Providers.Providers) {
    */
   def validateToken(): Option[UserInfo] = {
     Provider match {
-      case Providers.GooglePlus ⇒
+      case Providers.GooglePlus =>
         userInfo = GooglePlus.validateToken(jsonData)
         if (userInfo != None && userInfo.get.email != null) userInfo else None
-      case Providers.None ⇒
+      case Providers.None =>
         None
     }
   }
@@ -69,10 +69,10 @@ class Authorize(var authData: JsValue, var provider: Providers.Providers) {
    */
   def validateUserInfo(): Option[UserInfo] = {
     Provider match {
-      case Providers.GooglePlus ⇒
+      case Providers.GooglePlus =>
         userInfo = GooglePlus.validateUserInfo(authData)
         userInfo
-      case _ ⇒
+      case _ =>
         None
     }
 
@@ -84,13 +84,13 @@ class Authorize(var authData: JsValue, var provider: Providers.Providers) {
    */
   def getUserInfo(): Option[UserInfo] = {
     Provider match {
-      case Providers.GooglePlus ⇒
+      case Providers.GooglePlus =>
         if (responseData == None)
           None
 
         userInfo = GooglePlus.getUserInfo(responseData.get.access_token)
         userInfo
-      case _ ⇒
+      case _ =>
         None
     }
   }
@@ -105,7 +105,7 @@ class Authorize(var authData: JsValue, var provider: Providers.Providers) {
 
   def getJavascriptOauthParams(provider: Providers): String = {
     provider match {
-      case Providers.GooglePlus ⇒
+      case Providers.GooglePlus =>
         GooglePlus.getJavascriptOauthParams()
     }
   }

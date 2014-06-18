@@ -33,7 +33,7 @@ object DBLoginCommand extends LoginCommand {
    * see LoginCommand
    */
   def execute(email: String, statementGenerator: StatementGenerator): LoginOutput = DB.withSession {
-    implicit session: scala.slick.session.Session ⇒
+    implicit session: scala.slick.session.Session =>
 
       val callString = "{call sp_login(?, ?, ?, ?)}";
       val cStmt = statementGenerator.getCallStatement(session, callString)

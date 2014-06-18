@@ -23,18 +23,35 @@
 package com.intel.intelanalytics.service.v1.decorators
 
 import com.intel.intelanalytics.domain.frame.DataFrame
-import com.intel.intelanalytics.service.v1.viewmodels.{ RelLink, DecoratedDataFrame, DataFrameHeader }
+import com.intel.intelanalytics.service.v1.viewmodels.{ RelLink, GetDataFrame, GetDataFrames }
 
-object FrameDecorator extends EntityDecorator[DataFrame, DataFrameHeader, DecoratedDataFrame] {
-  override def decorateEntity(uri: String,
-    links: Iterable[RelLink],
-    entity: DataFrame): DecoratedDataFrame = {
-    DecoratedDataFrame(id = entity.id, name = entity.name,
-      schema = entity.schema, links = links.toList)
+/**
+ * A decorator that takes an entity from the database and converts it to a View/Model
+ * for delivering via REST services
+ */
+object FrameDecorator extends EntityDecorator[DataFrame, GetDataFrames, GetDataFrame] {
+
+  /**
+   * Decorate a single entity (like you would want in "GET /entities/id")
+   *
+   * @param uri UNUSED? DELETE?
+   * @param links related links
+   * @param entity the entity to decorate
+   * @return the View/Model
+   */
+  override def decorateEntity(uri: String, links: Iterable[RelLink], entity: DataFrame): GetDataFrame = {
+    GetDataFrame(id = entity.id, name = entity.name, schema = entity.schema, links = links.toList)
   }
 
-  override def decorateForIndex(uri: String, entities: Seq[DataFrame]): List[DataFrameHeader] = {
-    entities.map(frame ⇒ new DataFrameHeader(id = frame.id,
+  /**
+   * Decorate a list of entities (like you would want in "GET /entities")
+   *
+   * @param uri the base URI, for this type of entity "../entities"
+   * @param entities the list of entities to decorate
+   * @return the View/Model
+   */
+  override def decorateForIndex(uri: String, entities: Seq[DataFrame]): List[GetDataFrames] = {
+    entities.map(frame => new GetDataFrames(id = frame.id,
       name = frame.name,
       url = uri + "/" + frame.id)).toList
   }
