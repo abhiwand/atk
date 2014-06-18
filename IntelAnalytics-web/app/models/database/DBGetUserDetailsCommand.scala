@@ -30,51 +30,52 @@ import play.api.db.slick.Config.driver.simple._
 
 import play.api.db.slick.DB
 
-
 object DBGetUserDetailsCommand extends GetUserDetailsCommand {
-    /**
-     * see GetUserDetailsCommand
-     */
-    def executeById(uid: Long): Option[UserDetails] = DB.withSession {
-        implicit session: scala.slick.session.Session =>
-            val users = getByUid(uid).list
-            if (users.length > 0) {
-                Some(UserDetails(users.last._1, users.last._2))
-            } else {
-                None
-            }
-    }
+  /**
+   * see GetUserDetailsCommand
+   */
+  def executeById(uid: Long): Option[UserDetails] = DB.withSession {
+    implicit session: scala.slick.session.Session =>
+      val users = getByUid(uid).list
+      if (users.length > 0) {
+        Some(UserDetails(users.last._1, users.last._2))
+      }
+      else {
+        None
+      }
+  }
 
-    /**
-     * see executeById
-     */
-    def executeByEmail(email: String): Option[UserRow] = DB.withSession {
-        implicit session: scala.slick.session.Session =>
-            val getResult = getByEmail(email).list
-            if (getResult.length > 0) {
-                Some(getResult.last)
-            } else {
-                None
-            }
-    }
+  /**
+   * see executeById
+   */
+  def executeByEmail(email: String): Option[UserRow] = DB.withSession {
+    implicit session: scala.slick.session.Session =>
+      val getResult = getByEmail(email).list
+      if (getResult.length > 0) {
+        Some(getResult.last)
+      }
+      else {
+        None
+      }
+  }
 
-    /**
-     * find user info by querying table with id
-     * @param uid
-     * @return
-     */
-    private def getByUid(uid: Long): Query[(database.UserTable.type, database.WhiteListTable.type), (UserRow, WhiteListRow)] = DB.withSession {
-        implicit session: scala.slick.session.Session =>
-            return for {(u, w) <- database.UserTable leftJoin database.WhiteListTable on (_.uid === _.uid) if u.uid === uid} yield (u, w)
-    }
+  /**
+   * find user info by querying table with id
+   * @param uid
+   * @return
+   */
+  private def getByUid(uid: Long): Query[(database.UserTable.type, database.WhiteListTable.type), (UserRow, WhiteListRow)] = DB.withSession {
+    implicit session: scala.slick.session.Session =>
+      return for { (u, w) <- database.UserTable leftJoin database.WhiteListTable on (_.uid === _.uid) if u.uid === uid } yield (u, w)
+  }
 
-    /**
-     * find user info by querying table with email
-     * @param email
-     * @return
-     */
-    private def getByEmail(email: String): Query[database.UserTable.type, database.UserRow] = DB.withSession {
-        implicit session: scala.slick.session.Session =>
-            for {u <- database.UserTable if u.email === email} yield u
-    }
+  /**
+   * find user info by querying table with email
+   * @param email
+   * @return
+   */
+  private def getByEmail(email: String): Query[database.UserTable.type, database.UserRow] = DB.withSession {
+    implicit session: scala.slick.session.Session =>
+      for { u <- database.UserTable if u.email === email } yield u
+  }
 }

@@ -31,17 +31,17 @@ case class UserDetails(userInfo: UserRow, whitelistEntry: WhiteListRow)
  * Command to find user by id
  */
 trait GetUserDetailsCommand {
-    /**
-     * get user details by id
-     * @param uid
-     * @return tuple of (userRow, whitelListRow)
-     */
-    def executeById(uid: Long): Option[UserDetails]
+  /**
+   * get user details by id
+   * @param uid
+   * @return tuple of (userRow, whitelListRow)
+   */
+  def executeById(uid: Long): Option[UserDetails]
 
-    /**
-     * get user details by email
-     * @param email
-     * @return userRow
-     */
-    def executeByEmail(email: String): Option[database.UserRow]
+  /**
+   * get user details by email
+   * @param email
+   * @return userRow
+   */
+  def executeByEmail(email: String): Option[database.UserRow]
 }
