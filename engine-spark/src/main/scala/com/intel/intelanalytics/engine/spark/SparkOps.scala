@@ -108,8 +108,13 @@ private[spark] object SparkOps extends Serializable {
    * @param data row data
    * @param keyIndex index of the key column
    */
-  def create2TupleForJoin(data: Array[Any], keyIndex: List[Int]): (Any, Array[Any]) = {
-    (data(keyIndex(0)), data)
+  def createKeyValuePairFromRow(data: Array[Any], keyIndex: Seq[Int]): (Seq[Any], Array[Any]) = {
+
+    var key: Seq[Any] = Seq()
+    for(i <- keyIndex)
+      key = key :+ data(i)
+
+    (key, data)
   }
 
   /**
@@ -271,6 +276,16 @@ private[spark] object SparkOps extends Serializable {
       }
     }
     groupedColumnSchema ++ aggregated_column_schema
+  }
+
+  def removeDuplicatesByKey(pairRdd: RDD[(Seq[Any], Array[Any])]): RDD[Array[Any]] = {
+    import org.apache.spark.SparkContext._
+    val grouped = pairRdd.groupByKey()
+    val duplicatesRemoved = grouped.map(bag => {
+      val firstEntry = bag._2(0)
+      firstEntry
+    })
+    duplicatesRemoved
   }
 
 }

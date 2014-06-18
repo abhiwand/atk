@@ -470,11 +470,12 @@ class SparkEngine(sparkContextManager: SparkContextManager,
           t =>
             val rdd = t._1
             val columnIndex = t._2
-            rdd.map(p => SparkOps.create2TupleForJoin(p, List(columnIndex)))
+            rdd.map(p => SparkOps.createKeyValuePairFromRow(p, Seq(columnIndex))).map(t => (t._1(0), t._2))
         }
 
         pairRdds
       }
+
       val command: Command = commands.create(new CommandTemplate("join", Some(joinCommand.toJson.asJsObject)))
 
       val result: Future[Command] = future {
@@ -729,22 +730,37 @@ class SparkEngine(sparkContextManager: SparkContextManager,
 
   override def dropDuplicates(dropDuplicateCommand: DropDuplicates)(implicit user: UserPrincipal): (Command, Future[Command]) =
     withContext("se.dropDuplicates") {
-    require(dropDuplicateCommand != null, "arguments are required")
+      require(dropDuplicateCommand != null, "arguments are required")
 
-    import spray.json._
-    val command: Command = commands.create(new CommandTemplate("dropDuplicates", Some(dropDuplicateCommand.toJson.asJsObject)))
-    val result: Future[Command] = future {
-      withMyClassLoader {
-        withContext("se.dropDuplicates.future") {
-          withCommand(command) {
+      import spray.json._
+      val command: Command = commands.create(new CommandTemplate("dropDuplicates", Some(dropDuplicateCommand.toJson.asJsObject)))
 
+      val result: Future[Command] = future {
+        withMyClassLoader {
+          withContext("se.dropDuplicates.future") {
+            withCommand(command) {
 
-            JsNull.asJsObject
+              val frameId: Long = dropDuplicateCommand.frame
+              val realFrame = frames.lookup(frameId).getOrElse(
+                throw new IllegalArgumentException(s"No such data frame"))
+
+              val ctx = sparkContextManager.context(user).sparkContext
+
+              val frameSchema = realFrame.schema
+              val rdd = frames.getFrameRdd(ctx, frameId)
+
+              val columnIndices = dropDuplicateCommand.keyColumns.map(col => frameSchema.columns.indexWhere(columnTuple => columnTuple._1 == col))
+              val pairRdd = rdd.map(row => SparkOps.createKeyValuePairFromRow(row, columnIndices))
+
+              val duplicatesRemoved: RDD[Array[Any]] = SparkOps.removeDuplicatesByKey(pairRdd)
+
+              duplicatesRemoved.saveAsObjectFile(fsRoot + frames.getFrameDataFile(frameId))
+              JsNull.asJsObject
+            }
+            commands.lookup(command.id).get
           }
-          commands.lookup(command.id).get
         }
       }
+      (command, result)
     }
-    (command, result)
-  }
 }
