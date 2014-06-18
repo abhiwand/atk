@@ -34,13 +34,13 @@ import play.api.Play.current
  */
 object Python extends Controller {
 
-    /**
-     * direct to ipython page.
-     */
-    def ipython = Authenticated {
-        request =>
-            Ok(views.html.ipython("Ipython", request.user.userInfo))
-              .withCookies(new CookieGenerator createCookie(request.user.userInfo.secret.getOrElse(" "), request.user.userInfo.ipythonUrl.getOrElse(" ")))
-    }
+  /**
+   * direct to ipython page.
+   */
+  def ipython = Authenticated {
+    request =>
+      Ok(views.html.ipython("Ipython", request.user.userInfo))
+        .withCookies(new CookieGenerator createCookie (request.user.userInfo.secret.getOrElse(" "), request.user.userInfo.ipythonUrl.getOrElse(" ")))
+  }
 
 }

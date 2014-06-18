@@ -24,6 +24,7 @@
 package com.intel.intelanalytics.engine.spark
 
 import com.intel.intelanalytics.domain.frame.load.Load
+import com.intel.intelanalytics.domain.schema.DataTypes
 import com.intel.intelanalytics.engine.Rows._
 import org.apache.spark.rdd.RDD
 import org.apache.spark.SparkContext
@@ -100,29 +101,6 @@ private[spark] object SparkOps extends Serializable {
       }
       .map(converter)
   }
-
-
-
-//  def loadLines(ctx: SparkContext,
-//                fileName: String,
-//                location: String,
-//                arguments: LoadLines[JsObject, Long],
-//                parserFunction: String => Array[String],
-//                converter: Array[String] => Array[Any]) = {
-//    ctx.textFile(fileName)
-//      .mapPartitionsWithIndex {
-//      case (partition, lines) => {
-//        if (partition == 0) {
-//          lines.drop(arguments.skipRows.getOrElse(0)).map(parserFunction)
-//        }
-//        else {
-//          lines.map(parserFunction)
-//        }
-//      }
-//    }
-//      .map(converter)
-//      .saveAsObjectFile(location)
-//  }
 
   /**
    * generate 2 tuple instance in order to invoke pairRDD functions
@@ -201,4 +179,97 @@ private[spark] object SparkOps extends Serializable {
   def flattenRddByColumnIndex(index: Int, separator: String, rdd: RDD[Row]): RDD[Row] = {
     rdd.flatMap(row => SparkOps.flattenColumnByIndex(index, row, separator))
   }
+
+  def aggregation_functions(elem: Seq[Array[Any]],
+                            args_pair: Seq[(Int, String)],
+                            schema: List[(String, DataTypes.DataType)]): Seq[Any] = {
+    for {
+      i <- args_pair
+    } yield (i, schema(i._1)._2) match {
+      case ((j: Int, "SUM"), DataTypes.int32) => elem.map(e => e(j).asInstanceOf[Int]).sum
+      case ((j: Int, "SUM"), DataTypes.int64) => elem.map(e => e(j).asInstanceOf[Long]).sum
+      case ((j: Int, "SUM"), DataTypes.float32) => elem.map(e => e(j).asInstanceOf[Float]).sum
+      case ((j: Int, "SUM"), DataTypes.float64) => elem.map(e => e(j).asInstanceOf[Double]).sum
+      case ((j: Int, "MAX"), DataTypes.int32) => elem.map(e => e(j).asInstanceOf[Int]).max
+      case ((j: Int, "MAX"), DataTypes.int64) => elem.map(e => e(j).asInstanceOf[Long]).max
+      case ((j: Int, "MAX"), DataTypes.float32) => elem.map(e => e(j).asInstanceOf[Float]).max
+      case ((j: Int, "MAX"), DataTypes.float64) => elem.map(e => e(j).asInstanceOf[Double]).max
+      case ((j: Int, "MIN"), DataTypes.int32) => elem.map(e => e(j).asInstanceOf[Int]).min
+      case ((j: Int, "MIN"), DataTypes.int64) => elem.map(e => e(j).asInstanceOf[Long]).min
+      case ((j: Int, "MIN"), DataTypes.float32) => elem.map(e => e(j).asInstanceOf[Float]).min
+      case ((j: Int, "MIN"), DataTypes.float64) => elem.map(e => e(j).asInstanceOf[Double]).min
+      case ((j: Int, "AVG"), DataTypes.int32) => elem.map(e => e(j).asInstanceOf[Int]).sum * 1.0 / elem.length
+      case ((j: Int, "AVG"), DataTypes.int64) => elem.map(e => e(j).asInstanceOf[Long]).sum * 1.0 / elem.length
+      case ((j: Int, "AVG"), DataTypes.float32) => elem.map(e => e(j).asInstanceOf[Float]).sum / elem.length
+      case ((j: Int, "AVG"), DataTypes.float64) => elem.map(e => e(j).asInstanceOf[Double]).sum / elem.length
+
+      case ((j: Int, "COUNT"), _) => elem.length
+      case ((j: Int, "COUNT_DISTINCT"), _) => elem.map(e => e(j)).distinct.length
+
+      case ((j: Int, "VAR"), DataTypes.int32) =>
+        val elements: Seq[Int] = elem.map(e => e(j).asInstanceOf[Int])
+        val mean = elements.sum / elements.length
+        elements.foldLeft(0.0)((r, c) => r + Math.pow(c - mean, 2)) / elements.length
+      case ((j: Int, "VAR"), DataTypes.int64) =>
+        val elements: Seq[Long] = elem.map(e => e(j).asInstanceOf[Long])
+        val mean = elements.sum / elements.length
+        elements.foldLeft(0.0)((r, c) => r + Math.pow(c - mean, 2)) / elements.length
+      case ((j: Int, "VAR"), DataTypes.float32) =>
+        val elements: Seq[Float] = elem.map(e => e(j).asInstanceOf[Float])
+        val mean = elements.sum / elements.length
+        elements.foldLeft(0.0)((r, c) => r + Math.pow(c - mean, 2)) / elements.length
+      case ((j: Int, "VAR"), DataTypes.float64) =>
+        val elements: Seq[Double] = elem.map(e => e(j).asInstanceOf[Double])
+        val mean = elements.sum / elements.length
+        elements.foldLeft(0.0)((r, c) => r + Math.pow(c - mean, 2)) / elements.length
+
+      case ((j: Int, "STDEV"), DataTypes.int32) =>
+        val elements: Seq[Int] = elem.map(e => e(j).asInstanceOf[Int])
+        val mean = elements.sum / elements.length
+        Math.sqrt(elements.foldLeft(0.0)((r, c) => r + Math.pow(c - mean, 2)) / elements.length)
+      case ((j: Int, "STDEV"), DataTypes.int64) =>
+        val elements: Seq[Long] = elem.map(e => e(j).asInstanceOf[Long])
+        val mean = elements.sum / elements.length
+        Math.sqrt(elements.foldLeft(0.0)((r, c) => r + Math.pow(c - mean, 2)) / elements.length)
+      case ((j: Int, "STDEV"), DataTypes.float32) =>
+        val elements: Seq[Float] = elem.map(e => e(j).asInstanceOf[Float])
+        val mean = elements.sum / elements.length
+        Math.sqrt(elements.foldLeft(0.0)((r, c) => r + Math.pow(c - mean, 2)) / elements.length)
+      case ((j: Int, "STDEV"), DataTypes.float64) =>
+        val elements: Seq[Double] = elem.map(e => e(j).asInstanceOf[Double])
+        val mean = elements.sum / elements.length
+        Math.sqrt(elements.foldLeft(0.0)((r, c) => r + Math.pow(c - mean, 2)) / elements.length)
+
+      case _ => throw new IllegalArgumentException(s"Invalid aggregation function $i._2")
+    }
+  }
+
+  def convertGroupBasedOnSchema(groupedColumnSchema: Array[DataTypes.DataType], data: String): Array[Any] =
+    if (data != null && data != "")
+      DataTypes.parseMany(groupedColumnSchema)(data.split("\0"))
+    else
+      Array[Any]()
+
+  def aggregation(rdd: RDD[(String, Seq[Array[Any]])],
+                  args_pair: Seq[(Int, String)],
+                  schema: List[(String, DataTypes.DataType)],
+                  groupedColumnSchema: Array[DataTypes.DataType],
+                  location: String) : Seq[DataTypes.DataType] = {
+
+    rdd.map(elem =>
+      convertGroupBasedOnSchema(groupedColumnSchema, elem._1) ++ aggregation_functions(elem._2, args_pair, schema))
+      .saveAsObjectFile(location)
+
+    val aggregated_column_schema = for {
+      i <- args_pair
+    } yield {
+      i._2 match {
+        case "COUNT" | "COUNT_DISTINCT"  => DataTypes.int64
+        case "SUM" | "MIN" | "MAX" => schema(i._1)._2
+        case _ => DataTypes.float64
+      }
+    }
+    groupedColumnSchema ++ aggregated_column_schema
+  }
+
 }

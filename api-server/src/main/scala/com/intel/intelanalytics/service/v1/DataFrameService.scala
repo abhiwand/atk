@@ -29,17 +29,16 @@ import spray.http.Uri
 import scala.Some
 import com.intel.intelanalytics.repository.MetaStoreComponent
 import com.intel.intelanalytics.service.v1.viewmodels._
-import com.intel.intelanalytics.engine.{Engine, EngineComponent}
+import com.intel.intelanalytics.engine.{ Engine, EngineComponent }
 import scala.concurrent._
 import scala.util._
-import com.intel.intelanalytics.service.v1.viewmodels.DecoratedDataFrame
+import com.intel.intelanalytics.service.v1.viewmodels.GetDataFrame
 import com.intel.intelanalytics.shared.EventLogging
 import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.domain.frame.DataFrameTemplate
 import com.intel.intelanalytics.domain.frame.DataFrame
 import com.intel.intelanalytics.domain.DomainJsonProtocol.DataTypeFormat
-import com.typesafe.config.ConfigFactory
-import com.intel.intelanalytics.service.{CommonDirectives, AuthenticationDirective}
+import com.intel.intelanalytics.service.{ ApiServiceConfig, CommonDirectives, AuthenticationDirective }
 import spray.routing.Directives
 import com.intel.intelanalytics.service.v1.decorators.FrameDecorator
 
@@ -51,13 +50,10 @@ import ExecutionContext.Implicits.global
  */
 class DataFrameService(commonDirectives: CommonDirectives, engine: Engine) extends Directives with EventLogging {
 
-  val config = ConfigFactory.load()
-  val defaultCount = config.getInt("intel.analytics.api.defaultCount")
-
   def frameRoutes() = {
     val prefix = "dataframes"
 
-    def decorate(uri: Uri, frame: DataFrame): DecoratedDataFrame = {
+    def decorate(uri: Uri, frame: DataFrame): GetDataFrame = {
       //TODO: add other relevant links
       val links = List(Rel.self(uri.toString))
       FrameDecorator.decorateEntity(uri.toString, links, frame)
@@ -77,9 +73,9 @@ class DataFrameService(commonDirectives: CommonDirectives, engine: Engine) exten
         requestUri { uri =>
           get {
             import spray.json._
-            import ViewModelJsonProtocol._
+            import ViewModelJsonImplicits._
             //TODO: cursor
-            onComplete(engine.getFrames(0, defaultCount)) {
+            onComplete(engine.getFrames(0, ApiServiceConfig.defaultCount)) {
               case Success(frames) => complete(FrameDecorator.decorateForIndex(uri.toString(), frames))
               case Failure(ex) => throw ex
             }
@@ -87,7 +83,7 @@ class DataFrameService(commonDirectives: CommonDirectives, engine: Engine) exten
             post {
               import spray.httpx.SprayJsonSupport._
               implicit val format = DomainJsonProtocol.dataFrameTemplateFormat
-              implicit val indexFormat = ViewModelJsonProtocol.decoratedDataFrameFormat
+              implicit val indexFormat = ViewModelJsonImplicits.getDataFrameFormat
               entity(as[DataFrameTemplate]) {
                 frame =>
                   onComplete(engine.create(frame)) {
@@ -108,7 +104,7 @@ class DataFrameService(commonDirectives: CommonDirectives, engine: Engine) exten
                     complete {
                       import spray.httpx.SprayJsonSupport._
                       implicit val format = DomainJsonProtocol.dataFrameTemplateFormat
-                      implicit val indexFormat = ViewModelJsonProtocol.decoratedDataFrameFormat
+                      implicit val indexFormat = ViewModelJsonImplicits.getDataFrameFormat
                       decorated
                     }
                   }
@@ -129,15 +125,15 @@ class DataFrameService(commonDirectives: CommonDirectives, engine: Engine) exten
             (path("data") & get) {
               parameters('offset.as[Int], 'count.as[Int]) {
                 (offset, count) =>
-                  onComplete(for { r <- engine.getRows(id, offset, count) } yield r) {
+                  onComplete(engine.getRows(id, offset, count)) {
                     case Success(rows: Iterable[Array[Any]]) => {
                       import spray.httpx.SprayJsonSupport._
                       import spray.json._
                       import DomainJsonProtocol._
-                      val strings = rows.map(r => r.map(a => a match {
+                      val strings = rows.map(r => r.map {
                         case null => JsNull
-                        case _ => a.toJson
-                      }).toList).toList
+                        case a => a.toJson
+                      }.toList).toList
                       complete(strings)
                     }
                     case Failure(ex) => throw ex

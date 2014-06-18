@@ -30,33 +30,30 @@ import com.intel.intelanalytics.domain._
 import spray.json.JsObject
 import com.intel.intelanalytics.repository.MetaStoreComponent
 import com.intel.intelanalytics.engine.{Engine, EngineComponent}
-import com.intel.intelanalytics.service.v1.viewmodels.ViewModelJsonProtocol._
+import com.intel.intelanalytics.service.v1.viewmodels.ViewModelJsonImplicits._
 import scala.concurrent._
 import spray.http.Uri
 import spray.routing.{Directives, Route}
-import com.intel.intelanalytics.domain.frame.FrameProject
-import com.intel.intelanalytics.domain.frame.FrameRenameFrame
+import com.intel.intelanalytics.domain.frame._
 import com.intel.intelanalytics.domain.FilterPredicate
 import com.intel.intelanalytics.domain.graph.construction.FrameRule
 import scala.util.Failure
 import scala.Some
-import com.intel.intelanalytics.domain.frame.FrameAddColumn
+import com.intel.intelanalytics.domain.frame.FrameAddColumns
 import com.intel.intelanalytics.domain.frame.FrameRenameColumn
 import scala.util.Success
-import com.intel.intelanalytics.domain.frame.FlattenColumn
 import com.intel.intelanalytics.security.UserPrincipal
-import com.intel.intelanalytics.domain.frame.FrameRemoveColumn
 import spray.json._
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
 import com.intel.intelanalytics.service.v1.viewmodels._
-import com.intel.intelanalytics.service.v1.viewmodels.ViewModelJsonProtocol._
+import com.intel.intelanalytics.service.v1.viewmodels.ViewModelJsonImplicits._
 import com.intel.intelanalytics.domain.frame.FrameJoin
 import com.intel.intelanalytics.domain.graph.GraphLoad
+import com.intel.intelanalytics.domain.command.Command
 import com.intel.intelanalytics.domain.frame.LoadLines
 import com.intel.intelanalytics.domain.command.{CommandTemplate, Command}
 import com.intel.intelanalytics.shared.EventLogging
-import com.typesafe.config.ConfigFactory
-import com.intel.intelanalytics.service.{UrlParser, CommonDirectives, AuthenticationDirective}
+import com.intel.intelanalytics.service.{ApiServiceConfig, UrlParser, CommonDirectives, AuthenticationDirective}
 import com.intel.intelanalytics.service.v1.decorators.CommandDecorator
 
 //TODO: Is this right execution context for us?
@@ -68,9 +65,6 @@ import ExecutionContext.Implicits.global
  */
 class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends Directives with EventLogging {
 
-  val config = ConfigFactory.load()
-  val defaultCount = config.getInt("intel.analytics.api.defaultCount")
-
   /**
    * Creates a view model for return through the HTTP protocol
    *
@@ -78,7 +72,7 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
    * @param command The command being decorated
    * @return View model of the command.
    */
-  def decorate(uri: Uri, command: Command): DecoratedCommand = {
+  def decorate(uri: Uri, command: Command): GetCommand = {
     //TODO: add other relevant links
     val links = List(Rel.self(uri.toString()))
     CommandDecorator.decorateEntity(uri.toString(), links, command)
@@ -110,8 +104,8 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
               get {
                 //TODO: cursor
                 import spray.json._
-                import ViewModelJsonProtocol._
-                onComplete(engine.getCommands(0, defaultCount)) {
+                import ViewModelJsonImplicits._
+                onComplete(engine.getCommands(0, ApiServiceConfig.defaultCount)) {
                   case Success(commands) => complete(CommandDecorator.decorateForIndex(uri.toString(), commands))
                   case Failure(ex) => throw ex
                 }
@@ -137,18 +131,20 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
   def runCommand(uri: Uri, xform: JsonTransform)(implicit user: UserPrincipal): Route = {
     xform.name match {
       //TODO: genericize function resolution and invocation
-      case ("dataframe/load") => runFrameLoad(uri, xform)
       case ("graph/load") => runGraphLoad(uri, xform)
       //case ("graph/ml/als") => runAls(uri, xform)
+      case ("dataframe/load") => runFrameLoad(uri, xform)
       case ("dataframe/filter") => runFilter(uri, xform)
       case ("dataframe/removecolumn") => runFrameRemoveColumn(uri, xform)
       case ("dataframe/rename_frame") => runFrameRenameFrame(uri, xform)
-      case ("dataframe/addcolumn") => runFrameAddColumn(uri, xform)
+      case ("dataframe/add_columns") => runFrameAddColumns(uri, xform)
       case ("dataframe/project") => runFrameProject(uri, xform)
       case ("dataframe/rename_column") => runFrameRenameColumn(uri, xform)
       case ("dataframe/join") => runJoinFrames(uri, xform)
       case ("dataframe/flattenColumn") => runflattenColumn(uri, xform)
-      case _ => ???
+      case ("dataframe/groupby") => runFrameGroupByColumn(uri, xform)
+      case s: String => illegalArg("Command name is not supported: " + s)
+      case _ => illegalArg("Command name was NOT a string")
     }
   }
 
@@ -288,9 +284,9 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
     }
   }
 
-  def runFrameAddColumn(uri: Uri, xform: JsonTransform)(implicit user: UserPrincipal) = {
+  def runFrameAddColumns(uri: Uri, xform: JsonTransform)(implicit user: UserPrincipal) = {
     val test = Try {
-      xform.arguments.get.convertTo[FrameAddColumn[JsObject, String]]
+      xform.arguments.get.convertTo[FrameAddColumns[JsObject, String]]
     }
     val idOpt = test.toOption.flatMap(args => UrlParser.getFrameId(args.frame))
     (validate(test.isSuccess, "Failed to parse file load descriptor: " + getErrorMessage(test))
@@ -300,7 +296,7 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
       onComplete(
         for {
           frame <- engine.getFrame(id)
-          (c, f) = engine.addColumn(FrameAddColumn[JsObject, Long](id, args.columnname, args.columntype, args.expression))
+          (c, f) = engine.addColumns(FrameAddColumns[JsObject, Long](id, args.column_names, args.column_types, args.expression))
         } yield c) {
         case Success(c) => complete(decorate(uri + "/" + c.id, c))
         case Failure(ex) => throw ex
@@ -380,6 +376,29 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
         } yield c) {
         case Success(c) => complete(decorate(uri + "/" + c.id, c))
         case Failure(ex) => throw ex
+      }
+    }
+  }
+
+  def runFrameGroupByColumn(uri: Uri, xform: JsonTransform)(implicit user: UserPrincipal) = {
+    {
+      val test = Try {
+        import DomainJsonProtocol._
+        xform.arguments.get.convertTo[FrameGroupByColumn[JsObject, String]]
+      }
+      val idOpt = test.toOption.flatMap(args => UrlParser.getFrameId(args.frame))
+      (validate(test.isSuccess, "Failed to : " + getErrorMessage(test))
+        & validate(idOpt.isDefined, "Destination is not a valid data frame URL")) {
+        val args = test.get
+        val id = idOpt.get
+        onComplete(
+          for {
+            frame <- engine.getFrame(id)
+            (c, f) = engine.groupBy(FrameGroupByColumn[JsObject, Long](id, args.name, args.group_by_columns, args.aggregations))
+          } yield c) {
+          case Success(c) => complete(decorate(uri + "/" + c.id, c))
+          case Failure(ex) => throw ex
+        }
       }
     }
   }

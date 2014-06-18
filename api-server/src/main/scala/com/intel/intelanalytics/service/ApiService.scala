@@ -6,7 +6,6 @@ import spray.http._
 import MediaTypes._
 import akka.event.Logging
 import com.intel.intelanalytics.service.v1.ApiV1Service
-import com.typesafe.config.ConfigFactory
 
 /**
  * We don't implement our route structure directly in the service actor because
@@ -48,11 +47,9 @@ class ApiService(val apiV1Service: ApiV1Service) extends Directives {
     }
   }
 
-  private val config = ConfigFactory.load()
-
   lazy val description = {
     new ServiceDescription(name = "Intel Analytics",
-      identifier = config.getString("intel.analytics.api.identifier"),
+      identifier = ApiServiceConfig.identifier,
       versions = List("v1"))
   }
 

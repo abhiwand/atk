@@ -30,9 +30,9 @@ package models.database
  * @param loginSuccessful indicate whether log in is successful.
  * @param userId current user's id in the system.
  */
-class LoginOutput(code : Int, message : String, loginSuccessful : Int, userId : Long) extends ProcedureOutput{
-    val uid = userId
-    val success = loginSuccessful
-    val errorCode = code
-    val errorMessage = message
+class LoginOutput(code: Int, message: String, loginSuccessful: Int, userId: Long) extends ProcedureOutput {
+  val uid = userId
+  val success = loginSuccessful
+  val errorCode = code
+  val errorMessage = message
 }
