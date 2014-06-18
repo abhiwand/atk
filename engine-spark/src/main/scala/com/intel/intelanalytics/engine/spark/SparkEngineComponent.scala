@@ -23,9 +23,9 @@
 
 package com.intel.intelanalytics.engine.spark
 
-import java.util.{ List => JList, ArrayList => JArrayList, Map => JMap }
+import java.util.{ List ⇒ JList, ArrayList ⇒ JArrayList, Map ⇒ JMap }
 import com.intel.intelanalytics.engine._
-import org.apache.hadoop.fs.{ Path => HPath }
+import org.apache.hadoop.fs.{ Path ⇒ HPath }
 import com.intel.intelanalytics.repository.{ SlickMetaStoreComponent, DbProfileComponent }
 import scala.slick.driver.H2Driver
 import com.intel.intelanalytics.shared.EventLogging
@@ -33,7 +33,7 @@ import com.intel.intelanalytics.shared.EventLogging
 import org.apache.hadoop.hbase.HBaseConfiguration
 import org.apache.hadoop.hbase.client.HBaseAdmin
 import com.intel.intelanalytics.engine.spark.graph.{ SparkGraphStorage, SparkGraphHBaseBackend }
-import com.intel.intelanalytics.engine.spark.context.{SparkContextManager, SparkContextFactory}
+import com.intel.intelanalytics.engine.spark.context.{ SparkContextManager, SparkContextFactory }
 import com.intel.intelanalytics.engine.spark.frame.SparkFrameStorage
 import com.intel.intelanalytics.engine.spark.command.SparkCommandStorage
 
@@ -41,8 +41,6 @@ import com.intel.intelanalytics.engine.spark.command.SparkCommandStorage
 //TODO progress notification
 //TODO event notification
 //TODO pass current user info
-
-
 
 class SparkComponent extends EngineComponent
     with FrameComponent
@@ -54,7 +52,7 @@ class SparkComponent extends EngineComponent
   lazy val configuration: SparkEngineConfiguration = new SparkEngineConfiguration()
 
   lazy val engine = new SparkEngine(configuration, sparkContextManager,
-                                    commands.asInstanceOf[CommandStorage], frames, graphs) {}
+    commands.asInstanceOf[CommandStorage], frames, graphs) {}
 
   //TODO: choose database profile driver class from config
   override lazy val profile = withContext("engine connecting to metastore") {
@@ -69,13 +67,10 @@ class SparkComponent extends EngineComponent
   //but when we want to use postgresql or mysql or something, we won't usually be creating tables here.
   metaStore.createAllTables()
 
-
   val files = new HdfsFileStorage(configuration.fsRoot) {}
-
 
   val frames = new SparkFrameStorage(sparkContextManager.context(_),
     configuration.fsRoot, files, configuration.config.getInt("intel.analytics.engine.max-rows")) {}
-
 
   private lazy val admin = new HBaseAdmin(HBaseConfiguration.create())
 
@@ -85,7 +80,6 @@ class SparkComponent extends EngineComponent
       new SparkGraphHBaseBackend(admin), frames)
 
   val commands = new SparkCommandStorage(metaStore.asInstanceOf[SlickMetaStore]) {}
-
 
 }
 

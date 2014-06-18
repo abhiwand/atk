@@ -27,7 +27,7 @@ import spray.json._
 import spray.http.Uri
 import com.intel.intelanalytics.repository.MetaStoreComponent
 import com.intel.intelanalytics.service.v1.viewmodels._
-import com.intel.intelanalytics.engine.{Engine, EngineComponent}
+import com.intel.intelanalytics.engine.{ Engine, EngineComponent }
 import scala.concurrent.ExecutionContext
 import scala.util.Failure
 import scala.util.Success
@@ -35,9 +35,9 @@ import com.intel.intelanalytics.service.v1.viewmodels.ViewModelJsonProtocol
 import com.intel.intelanalytics.service.v1.viewmodels.Rel
 import com.intel.intelanalytics.domain.DomainJsonProtocol
 import com.intel.intelanalytics.security.UserPrincipal
-import com.intel.intelanalytics.domain.graph.{GraphTemplate, Graph}
+import com.intel.intelanalytics.domain.graph.{ GraphTemplate, Graph }
 import com.intel.intelanalytics.shared.EventLogging
-import com.intel.intelanalytics.service.{CommonDirectives, AuthenticationDirective}
+import com.intel.intelanalytics.service.{ CommonDirectives, AuthenticationDirective }
 import spray.routing.Directives
 import com.intel.intelanalytics.service.v1.decorators.GraphDecorator
 
@@ -76,61 +76,61 @@ class GraphService(commonDirectives: CommonDirectives, engine: Engine) extends D
     // note: delete is partly asynchronous - it wraps its backend delete in a future but blocks on deleting the graph
     // from the metastore
 
-    commonDirectives(prefix) { implicit userProfile: UserPrincipal =>
+    commonDirectives(prefix) { implicit userProfile: UserPrincipal ⇒
       (path(prefix) & pathEnd) {
-        requestUri { uri =>
+        requestUri { uri ⇒
           get {
             //TODO: cursor
             onComplete(engine.getGraphs(0, 20)) {
-              case Success(graphs) => complete(GraphDecorator.decorateForIndex(uri.toString(), graphs))
-              case Failure(ex) => throw ex
+              case Success(graphs) ⇒ complete(GraphDecorator.decorateForIndex(uri.toString(), graphs))
+              case Failure(ex) ⇒ throw ex
             }
           } ~
             post {
               import DomainJsonProtocol._
               entity(as[GraphTemplate]) {
-                graph =>
+                graph ⇒
                   onComplete(engine.createGraph(graph)) {
-                    case Success(graph) => complete(decorate(uri + "/" + graph.id, graph))
-                    case Failure(ex) => throw ex
+                    case Success(graph) ⇒ complete(decorate(uri + "/" + graph.id, graph))
+                    case Failure(ex) ⇒ throw ex
                   }
               }
             }
         }
       } ~
-        pathPrefix(prefix / LongNumber) { id =>
+        pathPrefix(prefix / LongNumber) { id ⇒
           pathEnd {
-            requestUri { uri =>
+            requestUri { uri ⇒
               get {
                 onComplete(engine.getGraph(id)) {
-                  case Success(graph) => {
+                  case Success(graph) ⇒ {
                     val decorated = decorate(uri, graph)
                     complete {
                       decorated
                     }
                   }
-                  case _ => reject()
+                  case _ ⇒ reject()
                 }
               } ~
                 delete {
                   onComplete(for {
-                    graph <- engine.getGraph(id)
-                    res <- engine.deleteGraph(graph)
+                    graph ← engine.getGraph(id)
+                    res ← engine.deleteGraph(graph)
                   } yield res) {
-                    case Success(frames) => complete("OK")
-                    case Failure(ex) => throw ex
+                    case Success(frames) ⇒ complete("OK")
+                    case Failure(ex) ⇒ throw ex
                   }
                 } ~
                 (path("vertices") & get) {
-                  parameters('qname.as[String], 'offset.as[Int], 'count.as[Int]) { (queryName, offset, count) =>
-                    parameterMap { params =>
-                      onComplete(for { r <- engine.getVertices(id, offset, count, queryName, params) } yield r) {
-                        case Success(rows: Iterable[Array[Any]]) => {
+                  parameters('qname.as[String], 'offset.as[Int], 'count.as[Int]) { (queryName, offset, count) ⇒
+                    parameterMap { params ⇒
+                      onComplete(for { r ← engine.getVertices(id, offset, count, queryName, params) } yield r) {
+                        case Success(rows: Iterable[Array[Any]]) ⇒ {
                           import DomainJsonProtocol._
-                          val strings = rows.map(r => r.map(a => a.toJson).toList).toList
+                          val strings = rows.map(r ⇒ r.map(a ⇒ a.toJson).toList).toList
                           complete(strings)
                         }
-                        case Failure(ex) => throw ex
+                        case Failure(ex) ⇒ throw ex
                       }
                     }
                   }

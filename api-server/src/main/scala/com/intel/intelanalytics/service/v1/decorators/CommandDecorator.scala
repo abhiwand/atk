@@ -23,19 +23,19 @@
 package com.intel.intelanalytics.service.v1.decorators
 
 import com.intel.intelanalytics.domain.command.Command
-import com.intel.intelanalytics.service.v1.viewmodels.{RelLink, DecoratedCommand, CommandHeader}
+import com.intel.intelanalytics.service.v1.viewmodels.{ RelLink, DecoratedCommand, CommandHeader }
 
 object CommandDecorator extends EntityDecorator[Command, CommandHeader, DecoratedCommand] {
   override def decorateEntity(uri: String,
-                              links: Iterable[RelLink],
-                              entity: Command): DecoratedCommand = {
+    links: Iterable[RelLink],
+    entity: Command): DecoratedCommand = {
     DecoratedCommand(id = entity.id, name = entity.name,
       arguments = entity.arguments, error = entity.error, complete = entity.complete,
       result = entity.result, links = links.toList)
   }
 
   override def decorateForIndex(uri: String, entities: Seq[Command]): List[CommandHeader] = {
-    entities.map(frame => new CommandHeader(id = frame.id,
+    entities.map(frame ⇒ new CommandHeader(id = frame.id,
       name = frame.name,
       url = uri + "/" + frame.id)).toList
   }

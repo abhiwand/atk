@@ -203,6 +203,7 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
             <modules>
                 <module>event</module>
                 <module>ispark-deps</module>
+                <module>testutils</module>
                 <module>graphbuilder-3</module><!-- scoverage -->
                 <module>graphon</module><!-- scoverage -->
                 <module>interfaces</module>
@@ -226,6 +227,7 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 <!--<module>ititan</module>-->
                 <module>event</module>
                 <module>ispark-deps</module>
+                <module>testutils</module><!-- scoverage -->
                 <module>graphbuilder-3</module><!-- scoverage -->
                 <module>interfaces</module>
                 <module>launcher</module><!-- scoverage -->

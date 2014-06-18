@@ -24,8 +24,8 @@
 package controllers
 
 import play.api.mvc._
-import services.authorize.{Providers, Authorize}
-import models.database.{DBLoginCommand, StatementGenerator, MySQLStatementGenerator}
+import services.authorize.{ Providers, Authorize }
+import models.database.{ DBLoginCommand, StatementGenerator, MySQLStatementGenerator }
 import models._
 import controllers.Session._
 import models.StatusCodes
@@ -36,65 +36,63 @@ import play.api.mvc.SimpleResult
  */
 object Login extends Controller {
 
-    abstract class LoginActionResponse
-    case class SuccessfullyLoginResponse(sessionId: String) extends LoginActionResponse
-    case class FailToValidateResponse() extends LoginActionResponse
-    case class GeneralErrorResponse(errorCode: Int) extends LoginActionResponse
+  abstract class LoginActionResponse
+  case class SuccessfullyLoginResponse(sessionId: String) extends LoginActionResponse
+  case class FailToValidateResponse() extends LoginActionResponse
+  case class GeneralErrorResponse(errorCode: Int) extends LoginActionResponse
 
-    var simpleResult: SimpleResult = Ok
+  var simpleResult: SimpleResult = Ok
 
-    /**
-     * get login result and return to user
-     */
-    def login = Action(parse.json) {
-        request => {
-            val auth = new Authorize(request.body, Providers.GooglePlus)
-            getResult(auth, Sessions, MySQLStatementGenerator)
-        }
+  /**
+   * get login result and return to user
+   */
+  def login = Action(parse.json) {
+    request ⇒
+      {
+        val auth = new Authorize(request.body, Providers.GooglePlus)
+        getResult(auth, Sessions, MySQLStatementGenerator)
+      }
+  }
+
+  /**
+   * get login result from database.
+   * @param auth
+   * @param sessionGen
+   * @param statementGenerator
+   * @return
+   */
+  def getResult(auth: Authorize, sessionGen: SessionGenerator, statementGenerator: StatementGenerator): SimpleResult = {
+
+    var response = getResponse(auth, sessionGen, statementGenerator)
+
+    response match {
+      case successfulResponse: SuccessfullyLoginResponse ⇒ Ok(StatusCodes.getJsonStatusCode(StatusCodes.LOGIN)).withNewSession.withSession(SessionValName -> successfulResponse.sessionId).withCookies(Register.getRegisteredCookie)
+      case failedResponse: FailToValidateResponse ⇒ Ok(StatusCodes.getJsonStatusCode(StatusCodes.FAIL_TO_VALIDATE_AUTH_DATA))
+      case generalErrorResponse: GeneralErrorResponse ⇒ Ok(StatusCodes.getJsonStatusCode(generalErrorResponse.errorCode))
+      case _: FailToValidateResponse ⇒ Ok(StatusCodes.getJsonStatusCode(StatusCodes.FAIL_TO_VALIDATE_AUTH_DATA))
     }
+  }
 
-    /**
-     * get login result from database.
-     * @param auth
-     * @param sessionGen
-     * @param statementGenerator
-     * @return
-     */
-    def getResult(auth: Authorize, sessionGen: SessionGenerator, statementGenerator: StatementGenerator): SimpleResult = {
+  /**
+   *
+   * @param Authorization info
+   * @return LoginActionResponse
+   */
+  def getResponse(auth: Authorize, sessionGen: SessionGenerator, statementGenerator: StatementGenerator): LoginActionResponse = {
+    if (auth.validateToken() == None || auth.validateUserInfo() == None)
+      return FailToValidateResponse()
 
-        var response = getResponse(auth, sessionGen, statementGenerator)
+    val result = Users.login(auth.userInfo.get.email, statementGenerator, DBLoginCommand)
 
-        response match {
-            case successfulResponse: SuccessfullyLoginResponse => Ok(StatusCodes.getJsonStatusCode(StatusCodes.LOGIN)).withNewSession.withSession(SessionValName -> successfulResponse.sessionId).withCookies(Register.getRegisteredCookie)
-            case failedResponse: FailToValidateResponse => Ok(StatusCodes.getJsonStatusCode(StatusCodes.FAIL_TO_VALIDATE_AUTH_DATA))
-            case generalErrorResponse: GeneralErrorResponse => Ok(StatusCodes.getJsonStatusCode(generalErrorResponse.errorCode))
-            case _: FailToValidateResponse => Ok(StatusCodes.getJsonStatusCode(StatusCodes.FAIL_TO_VALIDATE_AUTH_DATA))
-        }
-    }
+    if (result.success == 1) {
 
-
-    /**
-     *
-     * @param Authorization info
-     * @return LoginActionResponse
-     */
-    def getResponse(auth: Authorize, sessionGen: SessionGenerator, statementGenerator: StatementGenerator): LoginActionResponse = {
-        if (auth.validateToken() == None || auth.validateUserInfo() == None)
-            return FailToValidateResponse()
-
-        val result = Users.login(auth.userInfo.get.email, statementGenerator, DBLoginCommand)
-
-        if (result.success == 1) {
-
-            val sessionId = sessionGen.create(result.uid)
-            if (sessionId == None)
-                FailToValidateResponse()
-            else
-                SuccessfullyLoginResponse(sessionId.get)
-        }
-        else
-            GeneralErrorResponse(result.errorCode)
-    }
+      val sessionId = sessionGen.create(result.uid)
+      if (sessionId == None)
+        FailToValidateResponse()
+      else
+        SuccessfullyLoginResponse(sessionId.get)
+    } else
+      GeneralErrorResponse(result.errorCode)
+  }
 }
-
 

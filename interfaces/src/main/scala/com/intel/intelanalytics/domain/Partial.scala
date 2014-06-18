@@ -24,13 +24,7 @@ package com.intel.intelanalytics.domain
 
 import spray.json.JsObject
 
-
-
-
-
 case class Partial[+Arguments](operation: Operation, arguments: Arguments)
-
-
 
 //case class View(id: Long, basedOn: Long,
 //                name: String, schema: Schema, transform: Transform) extends HasId {

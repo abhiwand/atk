@@ -23,18 +23,18 @@
 package com.intel.intelanalytics.service.v1.decorators
 
 import com.intel.intelanalytics.domain.graph.Graph
-import com.intel.intelanalytics.service.v1.viewmodels.{RelLink, DecoratedGraph, GraphHeader}
+import com.intel.intelanalytics.service.v1.viewmodels.{ RelLink, DecoratedGraph, GraphHeader }
 
 object GraphDecorator extends EntityDecorator[Graph, GraphHeader, DecoratedGraph] {
   override def decorateEntity(uri: String,
-                              links: Iterable[RelLink],
-                              entity: Graph): DecoratedGraph = {
+    links: Iterable[RelLink],
+    entity: Graph): DecoratedGraph = {
     DecoratedGraph(id = entity.id, name = entity.name, links = links.toList)
   }
 
   override def decorateForIndex(uri: String, entities: Seq[Graph]): List[GraphHeader] = {
 
-    entities.map(graph => new GraphHeader(id = graph.id,
+    entities.map(graph ⇒ new GraphHeader(id = graph.id,
       name = graph.name,
       url = uri + "/" + graph.id)).toList
   }

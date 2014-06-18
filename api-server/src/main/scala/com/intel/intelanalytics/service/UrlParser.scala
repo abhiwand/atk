@@ -12,8 +12,8 @@ object UrlParser {
    * @return unique id
    */
   def getFrameId(url: String): Option[Long] = {
-    val id = frameIdRegex.findFirstMatchIn(url).map(m => m.group(1))
-    id.map(s => s.toLong)
+    val id = frameIdRegex.findFirstMatchIn(url).map(m ⇒ m.group(1))
+    id.map(s ⇒ s.toLong)
   }
 
   private val graphIdRegex = "/graphs/(\\d+)".r
@@ -23,8 +23,8 @@ object UrlParser {
    * @return unique id
    */
   def getGraphId(url: String): Option[Long] = {
-    val id = graphIdRegex.findFirstMatchIn(url).map(m => m.group(1))
-    id.map(s => s.toLong)
+    val id = graphIdRegex.findFirstMatchIn(url).map(m ⇒ m.group(1))
+    id.map(s ⇒ s.toLong)
   }
 
 }

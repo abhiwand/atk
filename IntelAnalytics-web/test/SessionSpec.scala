@@ -1,5 +1,5 @@
-import models.database.{SessionRow, SessionTable}
-import models.{database, Sessions}
+import models.database.{ SessionRow, SessionTable }
+import models.{ database, Sessions }
 import org.junit.runner.RunWith
 import org.specs2.mock.Mockito
 import org.specs2.mutable.Specification
@@ -22,75 +22,74 @@ import scala.collection.immutable.HashSet
 @RunWith(classOf[JUnitRunner])
 class SessionSpec extends Specification with Mockito {
 
+  "Search session by id" should {
 
-    "Search session by id" should {
+    "create" in {
 
-        "create" in {
+      running(FakeApplication()) {
+        DB.withConnection {
+          implicit c ⇒
 
-            running(FakeApplication()) {
-                DB.withConnection {
-                    implicit c =>
+            val num = Sessions.create(123)
 
-                        val num = Sessions.create(123)
-
-                        //create a session row
-                        val sessionObj = Sessions.read(num.get)
-                        (sessionObj != None) must beEqualTo(true)
-                        sessionObj.get.uid must beEqualTo(123)
-                }
-            }
+            //create a session row
+            val sessionObj = Sessions.read(num.get)
+            (sessionObj != None) must beEqualTo(true)
+            sessionObj.get.uid must beEqualTo(123)
         }
-
-        "delete" in {
-
-            running(FakeApplication()) {
-                DB.withConnection {
-                    implicit c =>
-
-                        val num = Sessions.create(123)
-                        Sessions.delete(num.get)
-                        val deleted = Sessions.read(num.get)
-                        (deleted == None) must beEqualTo(true)
-                }
-            }
-        }
-
-        "update" in {
-
-            running(FakeApplication()) {
-                DB.withConnection {
-                    implicit c =>
-
-                        val num = Sessions.create(123)
-                        val sessionRow = SessionRow(num.get, 123, "test content", 11111111)
-                        Sessions.update(sessionRow)
-                        val sessionObj = Sessions.read(num.get)
-                        (sessionObj != None) must beEqualTo(true)
-                        sessionObj.get.uid must beEqualTo(123)
-                        sessionObj.get.Id must beEqualTo(num.get)
-                        sessionObj.get.data must beEqualTo("test content")
-                }
-            }
-        }
-
-        "create random session id" in {
-            running(FakeApplication()) {
-                val valuesSet = new HashSet[String]
-                var foundDuplicate: Boolean = false
-
-                for(a <- 1 to 100000) {
-                    val id = Sessions.createSessionId()
-                    if(valuesSet.contains(id)) {
-                        foundDuplicate = true
-                        //todo: find a way to break the loop
-                    }
-
-                    valuesSet + (id)
-                }
-
-                foundDuplicate must beFalse
-            }
-        }
+      }
     }
+
+    "delete" in {
+
+      running(FakeApplication()) {
+        DB.withConnection {
+          implicit c ⇒
+
+            val num = Sessions.create(123)
+            Sessions.delete(num.get)
+            val deleted = Sessions.read(num.get)
+            (deleted == None) must beEqualTo(true)
+        }
+      }
+    }
+
+    "update" in {
+
+      running(FakeApplication()) {
+        DB.withConnection {
+          implicit c ⇒
+
+            val num = Sessions.create(123)
+            val sessionRow = SessionRow(num.get, 123, "test content", 11111111)
+            Sessions.update(sessionRow)
+            val sessionObj = Sessions.read(num.get)
+            (sessionObj != None) must beEqualTo(true)
+            sessionObj.get.uid must beEqualTo(123)
+            sessionObj.get.Id must beEqualTo(num.get)
+            sessionObj.get.data must beEqualTo("test content")
+        }
+      }
+    }
+
+    "create random session id" in {
+      running(FakeApplication()) {
+        val valuesSet = new HashSet[String]
+        var foundDuplicate: Boolean = false
+
+        for (a ← 1 to 100000) {
+          val id = Sessions.createSessionId()
+          if (valuesSet.contains(id)) {
+            foundDuplicate = true
+            //todo: find a way to break the loop
+          }
+
+          valuesSet + (id)
+        }
+
+        foundDuplicate must beFalse
+      }
+    }
+  }
 }
 

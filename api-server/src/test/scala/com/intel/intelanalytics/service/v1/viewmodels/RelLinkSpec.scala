@@ -1,6 +1,6 @@
 package com.intel.intelanalytics.service.v1.viewmodels
 
-import org.scalatest.{Matchers, FlatSpec}
+import org.scalatest.{ Matchers, FlatSpec }
 
 class RelLinkSpec extends FlatSpec with Matchers {
 

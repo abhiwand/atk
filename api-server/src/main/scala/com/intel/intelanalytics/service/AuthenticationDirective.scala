@@ -11,7 +11,7 @@ import scala.concurrent._
 import com.intel.intelanalytics.security.UserPrincipal
 import scala.Some
 import spray.routing._
-import com.intel.intelanalytics.domain.{DomainJsonProtocol, User}
+import com.intel.intelanalytics.domain.{ DomainJsonProtocol, User }
 import spray.json._
 import com.intel.intelanalytics.repository.MetaStore
 import com.typesafe.config.ConfigFactory
@@ -31,29 +31,29 @@ class AuthenticationDirective(val metaStore: MetaStore) extends Directives with 
    * @return the authenticated user
    */
   def authenticateKey: Directive1[UserPrincipal] =
-  //TODO: proper authorization with spray authenticate directive in a manner similar to S3.
+    //TODO: proper authorization with spray authenticate directive in a manner similar to S3.
     optionalHeaderValue(getUserPrincipalFromHeader).flatMap {
-      case Some(p) => provide(p)
-      case None => reject(AuthenticationFailedRejection(AuthenticationFailedRejection.CredentialsMissing, List()))
+      case Some(p) ⇒ provide(p)
+      case None ⇒ reject(AuthenticationFailedRejection(AuthenticationFailedRejection.CredentialsMissing, List()))
     }
 
   protected def getUserPrincipalFromHeader(header: HttpHeader): Option[UserPrincipal] =
     condOpt(header) {
-      case h if h.is("authorization") => Await.result(getUserPrincipal(h.value), defaultTimeout)
+      case h if h.is("authorization") ⇒ Await.result(getUserPrincipal(h.value), defaultTimeout)
     }
 
   protected def getUserPrincipal(apiKey: String): Future[UserPrincipal] = {
     future {
-      metaStore.withSession("Getting user principal") { implicit session =>
+      metaStore.withSession("Getting user principal") { implicit session ⇒
         val users: List[User] = metaStore.userRepo.retrieveByColumnValue("api_key", apiKey)
         users match {
-          case Nil => {
+          case Nil ⇒ {
             import DomainJsonProtocol._
-            metaStore.userRepo.scan().foreach(u => info(u.toJson.prettyPrint))
+            metaStore.userRepo.scan().foreach(u ⇒ info(u.toJson.prettyPrint))
             throw new SecurityException("User not found")
           }
-          case users if users.length > 1 => throw new SecurityException("Problem accessing user credentials")
-          case user => {
+          case users if users.length > 1 ⇒ throw new SecurityException("Problem accessing user credentials")
+          case user ⇒ {
             val userPrincipal: UserPrincipal = new UserPrincipal(users(0), List("user")) //TODO need role definitions
             info("Authenticated user " + userPrincipal)
             userPrincipal

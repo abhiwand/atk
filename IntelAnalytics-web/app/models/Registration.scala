@@ -29,12 +29,11 @@ import play.api.Play.current
 import play.api.db.slick.Config.driver.simple._
 import play.api.db.slick.DB
 
+case class RegistrationFormMapping(name: String, organization_name: String, organization_email: String, organization_phone: String,
+  experience: Int, role: String, whyParticipate: String,
+  whatTools: String, terms: String, authResult: String)
 
-case class RegistrationFormMapping(name:String,organization_name: String, organization_email: String, organization_phone: String,
-                        experience:Int, role:String, whyParticipate:String,
-                        whatTools:String, terms: String, authResult: String)
-
-object Registrations{
+object Registrations {
   val RegistrationFormValidation = Form(
     mapping(
       "name" -> nonEmptyText,
@@ -42,16 +41,14 @@ object Registrations{
       "organization_email" -> email,
       "organization_phone" -> nonEmptyText,
       "experience" -> number,
-      "role" ->nonEmptyText,
+      "role" -> nonEmptyText,
       "whyParticipate" -> nonEmptyText,
       "whatTools" -> nonEmptyText,
       "terms" -> nonEmptyText,
-      "authResult" -> nonEmptyText
-    )(RegistrationFormMapping.apply)(RegistrationFormMapping.unapply)
-  )
+      "authResult" -> nonEmptyText)(RegistrationFormMapping.apply)(RegistrationFormMapping.unapply))
 
   //crud
-  def createRegistration(registration:database.Registration): Long = DB.withSession{implicit session: scala.slick.session.Session =>
+  def createRegistration(registration: database.Registration): Long = DB.withSession { implicit session: scala.slick.session.Session ⇒
     database.Registrations.insert(registration)
   }
 }

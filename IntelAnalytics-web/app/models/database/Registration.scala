@@ -37,14 +37,14 @@ import play.api.db.slick.Config.driver.simple._
  * @param whyParticipate
  * @param whatTools
  */
-case class Registration(uid:Long,myName:String,
-                        organization_name: String,  organization_phone: String,organization_email: String,
-                        experience:Int, role:String, whyParticipate:String, whatTools:String )
+case class Registration(uid: Long, myName: String,
+  organization_name: String, organization_phone: String, organization_email: String,
+  experience: Int, role: String, whyParticipate: String, whatTools: String)
 
 /**
  * Table mapping for user_registration table.
  */
-object Registrations extends Table[Registration]("user_registration"){
+object Registrations extends Table[Registration]("user_registration") {
   def uid = column[Long]("uid", O.PrimaryKey)
   def myName = column[String]("myName")
   def organization_name = column[String]("organization_name")

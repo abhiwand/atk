@@ -23,6 +23,6 @@
 
 package services.authorize.providers.google
 
-case class GoogleUserInfo(id:String, email:String,name:String, given_name:String,
-                          family_name:String)
+case class GoogleUserInfo(id: String, email: String, name: String, given_name: String,
+  family_name: String)
 

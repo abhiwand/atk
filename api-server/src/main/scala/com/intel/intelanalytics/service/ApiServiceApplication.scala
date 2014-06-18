@@ -23,7 +23,7 @@
 
 package com.intel.intelanalytics.service
 
-import akka.actor.{ActorRef, ActorSystem, Props}
+import akka.actor.{ ActorRef, ActorSystem, Props }
 import akka.io.IO
 import spray.can.Http
 import akka.pattern.ask
@@ -70,7 +70,6 @@ class ApiServiceApplication extends Archive {
       }
     })
   }
-
 
   /**
    * Initialize API Server dependencies and perform dependency injection as needed.
