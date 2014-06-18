@@ -157,7 +157,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
    */
   class UserTable(tag: Tag) extends Table[User](tag, "users") {
 
-    def id = column[Long]("id", O.PrimaryKey, O.AutoInc)
+    def id = column[Long]("user_id", O.PrimaryKey, O.AutoInc)
 
     def username = column[Option[String]]("username")
 
@@ -225,7 +225,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
   }
 
   class StatusTable(tag: Tag) extends Table[Status](tag, "status") {
-    def id = column[Long]("id", O.PrimaryKey)
+    def id = column[Long]("status_id", O.PrimaryKey)
 
     def name = column[String]("name")
 
@@ -479,7 +479,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
     this: Repository[Session, GraphTemplate, Graph] =>
 
     class GraphTable(tag: Tag) extends Table[Graph](tag, "graph") {
-      def id = column[Long]("id", O.PrimaryKey, O.AutoInc)
+      def id = column[Long]("graph_id", O.PrimaryKey, O.AutoInc)
 
       def name = column[String]("name")
 

@@ -25,7 +25,7 @@ SET default_with_oids = false;
 --
 
 CREATE TABLE command (
-    command_id integer NOT NULL,
+    command_id bigint PRIMARY KEY,
     name character varying(254) NOT NULL,
     arguments text,
     error text,
@@ -72,7 +72,7 @@ SELECT pg_catalog.setval('command_command_id_seq', 1, false);
 --
 
 CREATE TABLE frame (
-    frame_id integer NOT NULL,
+    frame_id bigint PRIMARY KEY,
     name character varying(128) NOT NULL,
     description text,
     uri text NOT NULL,
@@ -120,7 +120,7 @@ SELECT pg_catalog.setval('frame_frame_id_seq', 1, false);
 --
 
 CREATE TABLE graph (
-    id integer NOT NULL,
+    graph_id bigint PRIMARY KEY,
     name character varying(128) NOT NULL,
     description text,
     storage character varying(254) NOT NULL,
@@ -135,10 +135,10 @@ CREATE TABLE graph (
 ALTER TABLE public.graph OWNER TO metastore;
 
 --
--- Name: graph_id_seq; Type: SEQUENCE; Schema: public; Owner: metastore
+-- Name: graph_graph_id_seq; Type: SEQUENCE; Schema: public; Owner: metastore
 --
 
-CREATE SEQUENCE graph_id_seq
+CREATE SEQUENCE graph_graph_id_seq
     START WITH 1
     INCREMENT BY 1
     NO MAXVALUE
@@ -146,20 +146,20 @@ CREATE SEQUENCE graph_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.graph_id_seq OWNER TO metastore;
+ALTER TABLE public.graph_graph_id_seq OWNER TO metastore;
 
 --
--- Name: graph_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: metastore
+-- Name: graph_graph_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: metastore
 --
 
-ALTER SEQUENCE graph_id_seq OWNED BY graph.id;
+ALTER SEQUENCE graph_graph_id_seq OWNED BY graph.graph_id;
 
 
 --
--- Name: graph_id_seq; Type: SEQUENCE SET; Schema: public; Owner: metastore
+-- Name: graph_graph_id_seq; Type: SEQUENCE SET; Schema: public; Owner: metastore
 --
 
-SELECT pg_catalog.setval('graph_id_seq', 1, false);
+SELECT pg_catalog.setval('graph_graph_id_seq', 1, false);
 
 
 --
@@ -167,7 +167,7 @@ SELECT pg_catalog.setval('graph_id_seq', 1, false);
 --
 
 CREATE TABLE status (
-    id bigint NOT NULL,
+    status_id bigint PRIMARY KEY,
     name character varying(128) NOT NULL,
     description text NOT NULL,
     created_on timestamp without time zone NOT NULL,
@@ -182,7 +182,7 @@ ALTER TABLE public.status OWNER TO metastore;
 --
 
 CREATE TABLE users (
-    id integer NOT NULL,
+    user_id bigint PRIMARY KEY,
     username character varying(254),
     api_key character varying(512),
     created_on timestamp without time zone NOT NULL,
@@ -193,10 +193,10 @@ CREATE TABLE users (
 ALTER TABLE public.users OWNER TO metastore;
 
 --
--- Name: users_id_seq; Type: SEQUENCE; Schema: public; Owner: metastore
+-- Name: users_user_id_seq; Type: SEQUENCE; Schema: public; Owner: metastore
 --
 
-CREATE SEQUENCE users_id_seq
+CREATE SEQUENCE users_user_id_seq
     START WITH 1
     INCREMENT BY 1
     NO MAXVALUE
@@ -204,20 +204,20 @@ CREATE SEQUENCE users_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.users_id_seq OWNER TO metastore;
+ALTER TABLE public.users_user_id_seq OWNER TO metastore;
 
 --
--- Name: users_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: metastore
+-- Name: users_user_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: metastore
 --
 
-ALTER SEQUENCE users_id_seq OWNED BY users.id;
+ALTER SEQUENCE users_user_id_seq OWNED BY users.user_id;
 
 
 --
--- Name: users_id_seq; Type: SEQUENCE SET; Schema: public; Owner: metastore
+-- Name: users_user_id_seq; Type: SEQUENCE SET; Schema: public; Owner: metastore
 --
 
-SELECT pg_catalog.setval('users_id_seq', 1, false);
+SELECT pg_catalog.setval('users_user_id_seq', 1, false);
 
 
 --
@@ -238,70 +238,30 @@ ALTER TABLE ONLY frame ALTER COLUMN frame_id SET DEFAULT nextval('frame_frame_id
 -- Name: id; Type: DEFAULT; Schema: public; Owner: metastore
 --
 
-ALTER TABLE ONLY graph ALTER COLUMN id SET DEFAULT nextval('graph_id_seq'::regclass);
+ALTER TABLE ONLY graph ALTER COLUMN graph_id SET DEFAULT nextval('graph_graph_id_seq'::regclass);
 
 
 --
 -- Name: id; Type: DEFAULT; Schema: public; Owner: metastore
 --
 
-ALTER TABLE ONLY users ALTER COLUMN id SET DEFAULT nextval('users_id_seq'::regclass);
+ALTER TABLE ONLY users ALTER COLUMN user_id SET DEFAULT nextval('users_user_id_seq'::regclass);
 
 
 --
 -- Data for Name: status; Type: TABLE DATA; Schema: public; Owner: metastore
 --
 
-INSERT INTO status (id, name, description, created_on, modified_on) VALUES
+INSERT INTO status (status_id, name, description, created_on, modified_on) VALUES
   (1, 'INIT', 'Initial Status: currently building or initializing', now(), now());
-INSERT INTO status (id, name, description, created_on, modified_on) VALUES
+INSERT INTO status (status_id, name, description, created_on, modified_on) VALUES
   (2, 'ACTIVE',	'Active and can be interacted with', now(), now());
-INSERT INTO status (id, name, description, created_on, modified_on) VALUES
+INSERT INTO status (status_id, name, description, created_on, modified_on) VALUES
   (3,	'INCOMPLETE',	'Partially created: failure occurred during construction.', now(), now());
-INSERT INTO status (id, name, description, created_on, modified_on) VALUES
+INSERT INTO status (status_id, name, description, created_on, modified_on) VALUES
   (4,	'DELETED',	'Deleted but can still be un-deleted, no action has yet been taken on disk', now(), now());
-INSERT INTO status (id, name, description, created_on, modified_on) VALUES
+INSERT INTO status (status_id, name, description, created_on, modified_on) VALUES
   (5, 'DELETE_FINAL',	'Underlying storage has been reclaimed, no un-delete is possible', now(), now());
-
-
---
--- Name: command_pkey; Type: CONSTRAINT; Schema: public; Owner: metastore; Tablespace:
---
-
-ALTER TABLE ONLY command
-    ADD CONSTRAINT command_pkey PRIMARY KEY (command_id);
-
-
---
--- Name: frame_pkey; Type: CONSTRAINT; Schema: public; Owner: metastore; Tablespace:
---
-
-ALTER TABLE ONLY frame
-    ADD CONSTRAINT frame_pkey PRIMARY KEY (frame_id);
-
-
---
--- Name: graph_pkey; Type: CONSTRAINT; Schema: public; Owner: metastore; Tablespace:
---
-
-ALTER TABLE ONLY graph
-    ADD CONSTRAINT graph_pkey PRIMARY KEY (id);
-
-
---
--- Name: status_pkey; Type: CONSTRAINT; Schema: public; Owner: metastore; Tablespace:
---
-
-ALTER TABLE ONLY status
-    ADD CONSTRAINT status_pkey PRIMARY KEY (id);
-
-
---
--- Name: users_pkey; Type: CONSTRAINT; Schema: public; Owner: metastore; Tablespace:
---
-
-ALTER TABLE ONLY users
-    ADD CONSTRAINT users_pkey PRIMARY KEY (id);
 
 
 --
@@ -309,7 +269,7 @@ ALTER TABLE ONLY users
 --
 
 ALTER TABLE ONLY command
-    ADD CONSTRAINT command_created_by FOREIGN KEY (created_by) REFERENCES users(id);
+    ADD CONSTRAINT command_created_by FOREIGN KEY (created_by) REFERENCES users(user_id);
 
 
 --
@@ -317,7 +277,7 @@ ALTER TABLE ONLY command
 --
 
 ALTER TABLE ONLY frame
-    ADD CONSTRAINT frame_created_by FOREIGN KEY (created_by) REFERENCES users(id);
+    ADD CONSTRAINT frame_created_by FOREIGN KEY (created_by) REFERENCES users(user_id);
 
 
 --
@@ -325,7 +285,7 @@ ALTER TABLE ONLY frame
 --
 
 ALTER TABLE ONLY frame
-    ADD CONSTRAINT frame_modified_by FOREIGN KEY (modified_by) REFERENCES users(id);
+    ADD CONSTRAINT frame_modified_by FOREIGN KEY (modified_by) REFERENCES users(user_id);
 
 
 --
@@ -333,7 +293,7 @@ ALTER TABLE ONLY frame
 --
 
 ALTER TABLE ONLY frame
-    ADD CONSTRAINT frame_status_id FOREIGN KEY (status_id) REFERENCES status(id);
+    ADD CONSTRAINT frame_status_id FOREIGN KEY (status_id) REFERENCES status(status_id);
 
 
 --
@@ -341,7 +301,7 @@ ALTER TABLE ONLY frame
 --
 
 ALTER TABLE ONLY graph
-    ADD CONSTRAINT graph_created_by FOREIGN KEY (created_by) REFERENCES users(id);
+    ADD CONSTRAINT graph_created_by FOREIGN KEY (created_by) REFERENCES users(user_id);
 
 
 --
@@ -349,7 +309,7 @@ ALTER TABLE ONLY graph
 --
 
 ALTER TABLE ONLY graph
-    ADD CONSTRAINT graph_modified_by FOREIGN KEY (modified_by) REFERENCES users(id);
+    ADD CONSTRAINT graph_modified_by FOREIGN KEY (modified_by) REFERENCES users(user_id);
 
 
 --
@@ -357,7 +317,7 @@ ALTER TABLE ONLY graph
 --
 
 ALTER TABLE ONLY graph
-    ADD CONSTRAINT graph_status_id FOREIGN KEY (status_id) REFERENCES status(id);
+    ADD CONSTRAINT graph_status_id FOREIGN KEY (status_id) REFERENCES status(status_id);
 
 
 --
