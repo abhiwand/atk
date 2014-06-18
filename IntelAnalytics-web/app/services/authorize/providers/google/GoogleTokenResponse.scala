@@ -23,10 +23,10 @@
 
 package services.authorize.providers.google
 
-import services.authorize.{TokenResponse}
+import services.authorize.{ TokenResponse }
 
-class GoogleTokenResponse(access_token: String, client_id: String, email:String)
-  extends TokenResponse(access_token, client_id, email){
+class GoogleTokenResponse(access_token: String, client_id: String, email: String)
+    extends TokenResponse(access_token, client_id, email) {
 
 }
 

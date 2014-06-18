@@ -47,7 +47,7 @@ import DomainJsonProtocol._
 import com.intel.intelanalytics.domain.frame.FrameRenameFrame
 import scala.Some
 import com.intel.intelanalytics.domain.frame.DataFrameTemplate
-import com.intel.intelanalytics.domain.frame.FrameAddColumn
+import com.intel.intelanalytics.domain.frame.FrameAddColumns
 import com.intel.intelanalytics.domain.frame.FrameRenameColumn
 import com.intel.intelanalytics.domain.frame.DataFrame
 import com.intel.intelanalytics.engine.spark.context.Context
@@ -71,6 +71,9 @@ import com.intel.intelanalytics.domain.graph.GraphTemplate
 //TODO: Fix execution contexts.
 import ExecutionContext.Implicits.global
 
+object SparkEngine {
+  private val pythonRddDelimiter = "\0"
+}
 
 class SparkEngine(sparkContextManager: SparkContextManager,
                   commands: CommandStorage,
@@ -195,8 +198,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
                 throw new IllegalArgumentException(s"No such data frame: $frameID"))
 
               val newName = arguments.new_name
-              frames.renameFrame(frame, newName)
-              JsNull.asJsObject
+              frames.renameFrame(frame, newName).toJson.asJsObject
             }
             commands.lookup(command.id).get
           }
@@ -344,6 +346,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     new sun.misc.BASE64Decoder().decodeBuffer(corrected)
   }
 
+
   /**
    * Create a Python RDD
    * @param frameId source frame for the parent RDD
@@ -357,7 +360,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
       val predicateInBytes = decodePythonBase64EncodedStrToBytes(py_expression)
 
       val baseRdd: RDD[String] = frames.getFrameRdd(ctx, frameId)
-        .map(x => x.map(t => t.toString()).mkString(",")) // TODO: we're assuming no commas in the values, isn't this going to cause issues?
+        .map(x => x.map(t => t.toString()).mkString(SparkEngine.pythonRddDelimiter))
 
       val pythonExec = "python2.7" //TODO: take from env var or config
       val environment = new java.util.HashMap[String, String]()
@@ -377,7 +380,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
 
   private def persistPythonRDD(pyRdd: EnginePythonRDD[String], converter: Array[String] => Array[Any], location: String): Unit = {
     withMyClassLoader {
-      pyRdd.map(s => new String(s).split(",")).map(converter).saveAsObjectFile(location)
+      pyRdd.map(s => new String(s).split(SparkEngine.pythonRddDelimiter)).map(converter).saveAsObjectFile(location)
     }
   }
 
@@ -577,20 +580,20 @@ class SparkEngine(sparkContextManager: SparkContextManager,
       (command, result)
     }
 
-  def addColumn(arguments: FrameAddColumn[JsObject, Long])(implicit user: UserPrincipal): (Command, Future[Command]) =
-    withContext("se.addcolumn") {
+  def addColumns(arguments: FrameAddColumns[JsObject, Long])(implicit user: UserPrincipal): (Command, Future[Command]) =
+    withContext("se.add_columns") {
       require(arguments != null, "arguments are required")
       import DomainJsonProtocol._
-      val command: Command = commands.create(new CommandTemplate("addcolumn", Some(arguments.toJson.asJsObject)))
+      val command: Command = commands.create(new CommandTemplate("add_columns", Some(arguments.toJson.asJsObject)))
       val result: Future[Command] = future {
         withMyClassLoader {
-          withContext("se.addcolumn.future") {
+          withContext("se.add_columns.future") {
             withCommand(command) {
 
               val ctx = sparkContextManager.context(user).sparkContext
               val frameId = arguments.frame
-              val column_name = arguments.columnname
-              val column_type = arguments.columntype
+              val column_names = arguments.column_names
+              val column_types = arguments.column_types
               val expression = arguments.expression // Python Wrapper containing lambda expression
 
               val realFrame = frames.lookup(arguments.frame).getOrElse(
@@ -598,13 +601,20 @@ class SparkEngine(sparkContextManager: SparkContextManager,
               val schema = realFrame.schema
               val location = fsRoot + frames.getFrameDataFile(frameId)
 
-              val columnObject = new BigColumn(column_name)
+              var newFrame = realFrame
+              for {
+                i <- 0 until column_names.size
+              } {
+                val column_name = column_names(i)
+                val column_type = column_types(i)
+                val columnObject = new BigColumn(column_name)
 
-              if (schema.columns.indexWhere(columnTuple => columnTuple._1 == column_name) >= 0)
-                throw new IllegalArgumentException(s"Duplicate column name: $column_name")
+                if (schema.columns.indexWhere(columnTuple => columnTuple._1 == column_name) >= 0)
+                  throw new IllegalArgumentException(s"Duplicate column name: $column_name")
 
-              // Update the schema
-              val newFrame = frames.addColumn(realFrame, columnObject, DataTypes.toDataType(column_type))
+                // Update the schema
+                newFrame = frames.addColumn(newFrame, columnObject, DataTypes.toDataType(column_type))
+              }
 
               // Update the data
               val pyRdd = createPythonRDD(frameId, expression)

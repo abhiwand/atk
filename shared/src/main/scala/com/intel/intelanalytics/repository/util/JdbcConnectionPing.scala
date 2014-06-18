@@ -28,7 +28,7 @@ object JdbcConnectionPing {
 
     val connection = DriverManager.getConnection(url, user, password)
     val resultSet = connection.createStatement().executeQuery("SELECT now()")
-    while(resultSet.next()) {
+    while (resultSet.next()) {
       println("SELECT now() = " + resultSet.getString(1))
       println("Test was SUCCESSFUL")
     }

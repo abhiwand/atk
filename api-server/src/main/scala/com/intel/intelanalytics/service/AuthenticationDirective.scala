@@ -11,7 +11,7 @@ import scala.concurrent._
 import com.intel.intelanalytics.security.UserPrincipal
 import scala.Some
 import spray.routing._
-import com.intel.intelanalytics.domain.{DomainJsonProtocol, User}
+import com.intel.intelanalytics.domain.{ DomainJsonProtocol, User }
 import spray.json._
 import com.intel.intelanalytics.repository.MetaStore
 import scala.concurrent.duration._
@@ -22,15 +22,12 @@ import com.intel.intelanalytics.shared.EventLogging
  */
 class AuthenticationDirective(val metaStore: MetaStore) extends Directives with EventLogging {
 
-
-
-
   /**
    * Gets authorization header and authenticates a user
    * @return the authenticated user
    */
   def authenticateKey: Directive1[UserPrincipal] =
-  //TODO: proper authorization with spray authenticate directive in a manner similar to S3.
+    //TODO: proper authorization with spray authenticate directive in a manner similar to S3.
     optionalHeaderValue(getUserPrincipalFromHeader).flatMap {
       case Some(p) => provide(p)
       case None => reject(AuthenticationFailedRejection(AuthenticationFailedRejection.CredentialsMissing, List()))

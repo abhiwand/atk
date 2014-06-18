@@ -13,5 +13,4 @@ class SlickMetaStoreComponentSpec extends SlickMetaStoreH2Testing with Matchers 
     count shouldEqual 5 // expected number of tables in the meta store
   }
 
-
 }
