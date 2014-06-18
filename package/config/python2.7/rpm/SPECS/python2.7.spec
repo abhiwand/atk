@@ -4,15 +4,15 @@ Provides: python(abi) = %{libvers}
 Summary: compiled python %{pythonVersion}
 License: PSF
 Version: %{pythonVersion}
-BuildRequires: gcc make expat-devel db4-devel gdbm-devel sqlite-devel readline-devel zlib-devel bzip2-devel openssl-devel
-Requires: openssl, glibc, gcc, gcc-c++
+BuildRequires: gcc >= 4.4.7,  make, expat-devel, db4-devel, gdbm-devel, sqlite-devel, readline-devel, zlib-devel, bzip2-devel, openssl-devel
+Requires: openssl, glibc, gcc >= 4.4.7, gcc-c++ >= 4.4.7
 Release: 1
 AutoReq: no
 Source: Python-%{pythonVersion}.%{tarSuffix}
 Prefix: /usr
 URL: https://www.python.org/download/releases/%{pythonVersion}
 %description
-compiled python %{pythonVersion}
+python %{pythonVersion}
 
 %define libVersion 2.7
 %define pythonVersion 2.7.5

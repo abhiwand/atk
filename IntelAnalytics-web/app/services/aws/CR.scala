@@ -12,7 +12,7 @@ class CR(config: ConfigObject) {
 
   def setMethods(methods: List[String]): List[CORSRule.AllowedMethods] = {
     var allowedMethods: List[CORSRule.AllowedMethods] = List[CORSRule.AllowedMethods]()
-    for (method ← methods) {
+    for (method <- methods) {
       allowedMethods ::= CORSRule.AllowedMethods.fromValue(method)
     }
     allowedMethods

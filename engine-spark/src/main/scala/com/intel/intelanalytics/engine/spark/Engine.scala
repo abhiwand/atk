@@ -47,7 +47,7 @@ import DomainJsonProtocol._
 import com.intel.intelanalytics.domain.frame.FrameRenameFrame
 import scala.Some
 import com.intel.intelanalytics.domain.frame.DataFrameTemplate
-import com.intel.intelanalytics.domain.frame.FrameAddColumn
+import com.intel.intelanalytics.domain.frame.FrameAddColumns
 import com.intel.intelanalytics.domain.frame.FrameRenameColumn
 import com.intel.intelanalytics.domain.frame.DataFrame
 import com.intel.intelanalytics.engine.spark.context.Context
@@ -71,16 +71,18 @@ import com.intel.intelanalytics.domain.graph.GraphTemplate
 //TODO: Fix execution contexts.
 import ExecutionContext.Implicits.global
 
+object SparkEngine {
+  private val pythonRddDelimiter = "\0"
+}
 
-class SparkEngine(config: SparkEngineConfiguration,
-                  sparkContextManager: SparkContextManager,
+class SparkEngine(sparkContextManager: SparkContextManager,
                   commands: CommandStorage,
                   frames: SparkFrameStorage,
                   graphs: GraphStorage) extends Engine
                                         with EventLogging
                                         with ClassLoaderAware {
 
-  val fsRoot = config.fsRoot
+  val fsRoot = SparkEngineConfig.fsRoot
 
 
   def shutdown: Unit = {
@@ -196,8 +198,7 @@ class SparkEngine(config: SparkEngineConfiguration,
                 throw new IllegalArgumentException(s"No such data frame: $frameID"))
 
               val newName = arguments.new_name
-              frames.renameFrame(frame, newName)
-              JsNull.asJsObject
+              frames.renameFrame(frame, newName).toJson.asJsObject
             }
             commands.lookup(command.id).get
           }
@@ -281,12 +282,70 @@ class SparkEngine(config: SparkEngineConfiguration,
       (command, result)
     }
 
+  def groupBy(arguments: FrameGroupByColumn[JsObject, Long])(implicit user: UserPrincipal): (Command, Future[Command]) =
+    withContext("se.groupBy") {
+      require(arguments != null, "arguments are required")
+      val command: Command = commands.create(new CommandTemplate("groupBy", Some(arguments.toJson.asJsObject)))
+      val result: Future[Command] = future {
+        withMyClassLoader {
+          withContext("se.groupBy.future") {
+            withCommand(command) {
+
+              val originalFrameID = arguments.frame
+
+              val originalFrame = frames.lookup(originalFrameID).getOrElse(
+                throw new IllegalArgumentException(s"No such data frame: $originalFrameID"))
+
+              val ctx = sparkContextManager.context(user).sparkContext
+              val schema = originalFrame.schema
+
+              val newFrame = Await.result(create(DataFrameTemplate(arguments.name, None)), SparkEngineConfig.defaultTimeout)
+
+              val location = fsRoot + frames.getFrameDataFile(newFrame.id)
+
+              val aggregation_arguments = arguments.aggregations
+
+              val args_pair = for {
+                (aggregation_function, column_to_apply, new_column_name) <- aggregation_arguments
+              } yield (schema.columns.indexWhere(columnTuple => columnTuple._1 == column_to_apply), aggregation_function)
+
+              val new_data_types = if (arguments.group_by_columns.length > 0) {
+                val groupByColumns = arguments.group_by_columns
+
+                val columnIndices: Seq[(Int, DataType)] = for {
+                  col <- groupByColumns
+                  columnIndex = schema.columns.indexWhere(columnTuple => columnTuple._1 == col)
+                  columnDataType = schema.columns(columnIndex)._2
+                } yield (columnIndex, columnDataType)
+
+                val groupedRDD = frames.getFrameRdd(ctx, originalFrameID).groupBy((data: Rows.Row) => {
+                  for { index <- columnIndices.map(_._1) } yield data(index)
+                }.mkString("\0"))
+                SparkOps.aggregation(groupedRDD, args_pair, originalFrame.schema.columns, columnIndices.map(_._2).toArray, location)
+              }
+              else {
+                val groupedRDD = frames.getFrameRdd(ctx, originalFrameID).groupBy((data: Rows.Row) => "")
+                SparkOps.aggregation(groupedRDD, args_pair, originalFrame.schema.columns, Array[DataType](), location)
+              }
+              val new_column_names = arguments.group_by_columns ++ { for {i <- aggregation_arguments} yield i._3 }
+              val new_schema = new_column_names.zip(new_data_types)
+              frames.updateSchema(newFrame, new_schema)
+              newFrame.copy(schema = Schema(new_schema)).toJson.asJsObject
+            }
+            commands.lookup(command.id).get
+          }
+        }
+      }
+      (command, result)
+    }
+
   def decodePythonBase64EncodedStrToBytes(byteStr: String): Array[Byte] = {
     // Python uses different RFC than Java, must correct a couple characters
     // http://stackoverflow.com/questions/21318601/how-to-decode-a-base64-string-in-scala-or-java00
     val corrected = byteStr.map { case '-' => '+'; case '_' => '/'; case c => c }
     new sun.misc.BASE64Decoder().decodeBuffer(corrected)
   }
+
 
   /**
    * Create a Python RDD
@@ -301,7 +360,7 @@ class SparkEngine(config: SparkEngineConfiguration,
       val predicateInBytes = decodePythonBase64EncodedStrToBytes(py_expression)
 
       val baseRdd: RDD[String] = frames.getFrameRdd(ctx, frameId)
-        .map(x => x.map(t => t.toString()).mkString(",")) // TODO: we're assuming no commas in the values, isn't this going to cause issues?
+        .map(x => x.map(t => t.toString()).mkString(SparkEngine.pythonRddDelimiter))
 
       val pythonExec = "python2.7" //TODO: take from env var or config
       val environment = new java.util.HashMap[String, String]()
@@ -321,7 +380,7 @@ class SparkEngine(config: SparkEngineConfiguration,
 
   private def persistPythonRDD(pyRdd: EnginePythonRDD[String], converter: Array[String] => Array[Any], location: String): Unit = {
     withMyClassLoader {
-      pyRdd.map(s => new String(s).split(",")).map(converter).saveAsObjectFile(location)
+      pyRdd.map(s => new String(s).split(SparkEngine.pythonRddDelimiter)).map(converter).saveAsObjectFile(location)
     }
   }
 
@@ -343,7 +402,7 @@ class SparkEngine(config: SparkEngineConfiguration,
             withCommand(command) {
               val ctx = sparkContextManager.context(user).sparkContext
 
-              val newFrame = Await.result(create(DataFrameTemplate(flattenColumnCommand.name, None)), config.defaultTimeout)
+              val newFrame = Await.result(create(DataFrameTemplate(flattenColumnCommand.name, None)), SparkEngineConfig.defaultTimeout)
               val rdd = frames.getFrameRdd(ctx, frameId)
 
               val columnIndex = realFrame.schema.columnIndex(flattenColumnCommand.column)
@@ -443,7 +502,7 @@ class SparkEngine(config: SparkEngineConfiguration,
             val allColumns = SchemaUtil.resolveSchemaNamingConflicts(leftColumns, rightColumns)
 
             /* create a dataframe should take very little time, much less than 10 minutes */
-            val newJoinFrame = Await.result(create(DataFrameTemplate(joinCommand.name, None)), config.defaultTimeout)
+            val newJoinFrame = Await.result(create(DataFrameTemplate(joinCommand.name, None)), SparkEngineConfig.defaultTimeout)
 
             withCommand(command) {
 
@@ -521,20 +580,20 @@ class SparkEngine(config: SparkEngineConfiguration,
       (command, result)
     }
 
-  def addColumn(arguments: FrameAddColumn[JsObject, Long])(implicit user: UserPrincipal): (Command, Future[Command]) =
-    withContext("se.addcolumn") {
+  def addColumns(arguments: FrameAddColumns[JsObject, Long])(implicit user: UserPrincipal): (Command, Future[Command]) =
+    withContext("se.add_columns") {
       require(arguments != null, "arguments are required")
       import DomainJsonProtocol._
-      val command: Command = commands.create(new CommandTemplate("addcolumn", Some(arguments.toJson.asJsObject)))
+      val command: Command = commands.create(new CommandTemplate("add_columns", Some(arguments.toJson.asJsObject)))
       val result: Future[Command] = future {
         withMyClassLoader {
-          withContext("se.addcolumn.future") {
+          withContext("se.add_columns.future") {
             withCommand(command) {
 
               val ctx = sparkContextManager.context(user).sparkContext
               val frameId = arguments.frame
-              val column_name = arguments.columnname
-              val column_type = arguments.columntype
+              val column_names = arguments.column_names
+              val column_types = arguments.column_types
               val expression = arguments.expression // Python Wrapper containing lambda expression
 
               val realFrame = frames.lookup(arguments.frame).getOrElse(
@@ -542,13 +601,20 @@ class SparkEngine(config: SparkEngineConfiguration,
               val schema = realFrame.schema
               val location = fsRoot + frames.getFrameDataFile(frameId)
 
-              val columnObject = new BigColumn(column_name)
+              var newFrame = realFrame
+              for {
+                i <- 0 until column_names.size
+              } {
+                val column_name = column_names(i)
+                val column_type = column_types(i)
+                val columnObject = new BigColumn(column_name)
 
-              if (schema.columns.indexWhere(columnTuple => columnTuple._1 == column_name) >= 0)
-                throw new IllegalArgumentException(s"Duplicate column name: $column_name")
+                if (schema.columns.indexWhere(columnTuple => columnTuple._1 == column_name) >= 0)
+                  throw new IllegalArgumentException(s"Duplicate column name: $column_name")
 
-              // Update the schema
-              val newFrame = frames.addColumn(realFrame, columnObject, DataTypes.toDataType(column_type))
+                // Update the schema
+                newFrame = frames.addColumn(newFrame, columnObject, DataTypes.toDataType(column_type))
+              }
 
               // Update the data
               val pyRdd = createPythonRDD(frameId, expression)

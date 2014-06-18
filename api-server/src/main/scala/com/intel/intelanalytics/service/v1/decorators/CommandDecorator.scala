@@ -23,19 +23,37 @@
 package com.intel.intelanalytics.service.v1.decorators
 
 import com.intel.intelanalytics.domain.command.Command
-import com.intel.intelanalytics.service.v1.viewmodels.{ RelLink, DecoratedCommand, CommandHeader }
+import com.intel.intelanalytics.service.v1.viewmodels.{ RelLink, GetCommand, GetCommands }
 
-object CommandDecorator extends EntityDecorator[Command, CommandHeader, DecoratedCommand] {
-  override def decorateEntity(uri: String,
-    links: Iterable[RelLink],
-    entity: Command): DecoratedCommand = {
-    DecoratedCommand(id = entity.id, name = entity.name,
+/**
+ * A decorator that takes an entity from the database and converts it to a View/Model
+ * for delivering via REST services
+ */
+object CommandDecorator extends EntityDecorator[Command, GetCommands, GetCommand] {
+
+  /**
+   * Decorate a single entity (like you would want in "GET /entities/id")
+   *
+   * @param uri UNUSED? DELETE?
+   * @param links related links
+   * @param entity the entity to decorate
+   * @return the View/Model
+   */
+  override def decorateEntity(uri: String, links: Iterable[RelLink], entity: Command): GetCommand = {
+    GetCommand(id = entity.id, name = entity.name,
       arguments = entity.arguments, error = entity.error, complete = entity.complete,
       result = entity.result, links = links.toList)
   }
 
-  override def decorateForIndex(uri: String, entities: Seq[Command]): List[CommandHeader] = {
-    entities.map(frame ⇒ new CommandHeader(id = frame.id,
+  /**
+   * Decorate a list of entities (like you would want in "GET /entities")
+   *
+   * @param uri the base URI, for this type of entity "../entities"
+   * @param entities the list of entities to decorate
+   * @return the View/Model
+   */
+  override def decorateForIndex(uri: String, entities: Seq[Command]): List[GetCommands] = {
+    entities.map(frame => new GetCommands(id = frame.id,
       name = frame.name,
       url = uri + "/" + frame.id)).toList
   }

@@ -38,15 +38,15 @@ object Sessions extends SessionGenerator {
    * see SessionGenerator.
    */
   def getById(sessionId: String): Query[database.SessionTable.type, database.SessionRow] = DB.withSession {
-    implicit session: scala.slick.session.Session ⇒
-      return for { se ← table if se.Id === sessionId } yield se
+    implicit session: scala.slick.session.Session =>
+      return for { se <- table if se.Id === sessionId } yield se
   }
 
   /**
    * see SessionGenerator.
    */
   def create(uid: Long): Option[String] = DB.withSession {
-    implicit session: scala.slick.session.Session ⇒
+    implicit session: scala.slick.session.Session =>
       val sessionId = createSessionId
       val successful = table.insert(SessionRow(sessionId, uid, "", System.currentTimeMillis / 1000))
       if (successful == 1)
@@ -59,7 +59,7 @@ object Sessions extends SessionGenerator {
    * see SessionGenerator.
    */
   def read(sessionId: String): Option[database.SessionRow] = DB.withSession {
-    implicit session: scala.slick.session.Session ⇒
+    implicit session: scala.slick.session.Session =>
       val userSessions = getById(sessionId).list
 
       if (userSessions.length > 0)
@@ -72,7 +72,7 @@ object Sessions extends SessionGenerator {
    * see SessionGenerator.
    */
   def update(userSession: models.database.SessionRow) = DB.withSession {
-    implicit session: scala.slick.session.Session ⇒
+    implicit session: scala.slick.session.Session =>
       val userSes = getById(userSession.Id)
       userSes.update(userSession)
   }
@@ -81,7 +81,7 @@ object Sessions extends SessionGenerator {
    * see SessionGenerator.
    */
   def delete(sessionId: String) = DB.withSession {
-    implicit session: scala.slick.session.Session ⇒
+    implicit session: scala.slick.session.Session =>
       val userSes = getById(sessionId)
       userSes.delete
   }

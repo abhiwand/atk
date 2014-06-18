@@ -28,7 +28,7 @@ class SessionSpec extends Specification with Mockito {
 
       running(FakeApplication()) {
         DB.withConnection {
-          implicit c ⇒
+          implicit c =>
 
             val num = Sessions.create(123)
 
@@ -44,7 +44,7 @@ class SessionSpec extends Specification with Mockito {
 
       running(FakeApplication()) {
         DB.withConnection {
-          implicit c ⇒
+          implicit c =>
 
             val num = Sessions.create(123)
             Sessions.delete(num.get)
@@ -58,7 +58,7 @@ class SessionSpec extends Specification with Mockito {
 
       running(FakeApplication()) {
         DB.withConnection {
-          implicit c ⇒
+          implicit c =>
 
             val num = Sessions.create(123)
             val sessionRow = SessionRow(num.get, 123, "test content", 11111111)
@@ -77,7 +77,7 @@ class SessionSpec extends Specification with Mockito {
         val valuesSet = new HashSet[String]
         var foundDuplicate: Boolean = false
 
-        for (a ← 1 to 100000) {
+        for (a <- 1 to 100000) {
           val id = Sessions.createSessionId()
           if (valuesSet.contains(id)) {
             foundDuplicate = true

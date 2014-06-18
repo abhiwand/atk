@@ -90,7 +90,7 @@ class CookieGenerator {
       val mac: Mac = Mac.getInstance(HMAC_SHA1_ALGORITHM)
       val signingKey = new SecretKeySpec(secret, HMAC_SHA1_ALGORITHM)
       mac.init(signingKey)
-      for (bytes ← parts) {
+      for (bytes <- parts) {
         mac.update(bytes)
       }
       mac.doFinal()

@@ -47,7 +47,7 @@ object Login extends Controller {
    * get login result and return to user
    */
   def login = Action(parse.json) {
-    request ⇒
+    request =>
       {
         val auth = new Authorize(request.body, Providers.GooglePlus)
         getResult(auth, Sessions, MySQLStatementGenerator)
@@ -66,10 +66,10 @@ object Login extends Controller {
     var response = getResponse(auth, sessionGen, statementGenerator)
 
     response match {
-      case successfulResponse: SuccessfullyLoginResponse ⇒ Ok(StatusCodes.getJsonStatusCode(StatusCodes.LOGIN)).withNewSession.withSession(SessionValName -> successfulResponse.sessionId).withCookies(Register.getRegisteredCookie)
-      case failedResponse: FailToValidateResponse ⇒ Ok(StatusCodes.getJsonStatusCode(StatusCodes.FAIL_TO_VALIDATE_AUTH_DATA))
-      case generalErrorResponse: GeneralErrorResponse ⇒ Ok(StatusCodes.getJsonStatusCode(generalErrorResponse.errorCode))
-      case _: FailToValidateResponse ⇒ Ok(StatusCodes.getJsonStatusCode(StatusCodes.FAIL_TO_VALIDATE_AUTH_DATA))
+      case successfulResponse: SuccessfullyLoginResponse => Ok(StatusCodes.getJsonStatusCode(StatusCodes.LOGIN)).withNewSession.withSession(SessionValName -> successfulResponse.sessionId).withCookies(Register.getRegisteredCookie)
+      case failedResponse: FailToValidateResponse => Ok(StatusCodes.getJsonStatusCode(StatusCodes.FAIL_TO_VALIDATE_AUTH_DATA))
+      case generalErrorResponse: GeneralErrorResponse => Ok(StatusCodes.getJsonStatusCode(generalErrorResponse.errorCode))
+      case _: FailToValidateResponse => Ok(StatusCodes.getJsonStatusCode(StatusCodes.FAIL_TO_VALIDATE_AUTH_DATA))
     }
   }
 
@@ -91,7 +91,8 @@ object Login extends Controller {
         FailToValidateResponse()
       else
         SuccessfullyLoginResponse(sessionId.get)
-    } else
+    }
+    else
       GeneralErrorResponse(result.errorCode)
   }
 }

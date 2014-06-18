@@ -52,29 +52,30 @@ object Register extends Controller {
    * register user to the system.
    */
   def register = Action {
-    request ⇒
+    request =>
       {
         Registrations.RegistrationFormValidation.bindFromRequest()(request).fold(
-          formWithErrors ⇒ {
+          formWithErrors => {
             Redirect("/").withCookies(Cookie("authenticationFailed", "true", Some(3600), "/", None, true, false))
           },
-          registrationForm ⇒ {
+          registrationForm => {
             //make sure the terms are set to on since we couldnt' validate with a boolean
             if (registrationForm.terms.trim.toLowerCase == "i agree" && registrationForm.experience >= 1 && registrationForm.experience <= 4) {
               json = Json.parse(registrationForm.authResult)
               auth = new Authorize(json, Providers.GooglePlus)
               response = getResponse(registrationForm, auth, Sessions, MySQLStatementGenerator)
-            } else {
+            }
+            else {
               Redirect("/").withCookies(Cookie("authenticationFailed", "true", Some(3600), "/", None, true, false))
             }
           })
         response match {
-          case successfulResponse: SuccessfullyRegisterResponse ⇒ Redirect("/ipython").withNewSession.withSession(SessionValName -> successfulResponse.sessionId).withCookies(getRegisteredCookie)
-          case failedResponse: FailToValidateResponse ⇒ Redirect("/").withCookies(Cookie("authenticationFailed", "true", Some(3600),
+          case successfulResponse: SuccessfullyRegisterResponse => Redirect("/ipython").withNewSession.withSession(SessionValName -> successfulResponse.sessionId).withCookies(getRegisteredCookie)
+          case failedResponse: FailToValidateResponse => Redirect("/").withCookies(Cookie("authenticationFailed", "true", Some(3600),
             "/", None, true, false))
-          case generalErrorResponse: GeneralErrorResponse ⇒ Redirect("/").withCookies(Cookie("approvalPending", "true", Some(3600),
+          case generalErrorResponse: GeneralErrorResponse => Redirect("/").withCookies(Cookie("approvalPending", "true", Some(3600),
             "/", None, true, false)).withCookies(getRegisteredCookie)
-          case _: FailToValidateResponse ⇒ Redirect("/").withCookies(Cookie("authenticationFailed", "true", Some(3600),
+          case _: FailToValidateResponse => Redirect("/").withCookies(Cookie("authenticationFailed", "true", Some(3600),
             "/", None, true, false))
         }
       }
@@ -98,7 +99,8 @@ object Register extends Controller {
         FailToValidateResponse()
       else
         SuccessfullyRegisterResponse(sessionId.get)
-    } else
+    }
+    else
       GeneralErrorResponse()
   }
 

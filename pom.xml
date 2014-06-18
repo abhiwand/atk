@@ -40,14 +40,7 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
     <inceptionYear>2013</inceptionYear>
 
     <pluginRepositories>
-        <pluginRepository>
-            <id>onejar-maven-plugin.googlecode.com</id>
-            <url>http://onejar-maven-plugin.googlecode.com/svn/mavenrepo-snapshot</url>
-        </pluginRepository>
-        <pluginRepository>
-            <id>beardedgeeks-releases</id>
-            <url>http://beardedgeeks.googlecode.com/svn/repository/releases</url>
-        </pluginRepository>
+
     </pluginRepositories>
     <repositories>
         <repository>
@@ -669,7 +662,8 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                         </execution>
                     </executions>
                 </plugin>
-                <plugin>
+                <!-- Scalariform is ready but I'm commenting out temporarily until there is less code for people to merge -Todd 6/16/2014 -->
+                <!--plugin>
                     <groupId>org.scalariform</groupId>
                     <artifactId>scalariform-maven-plugin</artifactId>
                     <version>0.1.2</version>
@@ -681,12 +675,13 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                                 <goal>format</goal>
                             </goals>
                             <configuration>
-                                <rewriteArrowSymbols>true</rewriteArrowSymbols>
-
+                                <alignParameters>true</alignParameters>
+                                <compactControlReadability>true</compactControlReadability>
+                                <preserveDanglingCloseParenthesis>true</preserveDanglingCloseParenthesis>
                             </configuration>
                         </execution>
                     </executions>
-                </plugin>
+                </plugin-->
                 <!--<plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-site-plugin</artifactId>

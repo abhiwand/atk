@@ -63,7 +63,8 @@ object GooglePlus {
   def validateClientId(idToValidate: String): Boolean = {
     if (idToValidate == clientId) {
       true
-    } else {
+    }
+    else {
       false
     }
   }
@@ -75,7 +76,7 @@ object GooglePlus {
    */
   def validateTokenResponseData(authData: JsValue): Option[TokenResponse] = {
     authData.validate[ValidateTokenResponseData](validateTokenResponseData).map {
-      case (validResponse) ⇒
+      case (validResponse) =>
         if (validateClientId(validResponse.client_id)) {
           return Some(new GoogleTokenResponse(validResponse.access_token, validResponse.client_id, validResponse.email))
         }
@@ -97,16 +98,16 @@ object GooglePlus {
 
     val responseFuture = WS.url(tokenVerifyUrl).withQueryString("access_token" -> validate.get.access_token).get()
     val resultFuture = responseFuture map {
-      response ⇒
+      response =>
         response.status match {
-          case 200 ⇒
+          case 200 =>
             Json.parse(response.body).validate[ValidateTokenJson](validateTokenJson).map {
-              case (validateTokenJson) ⇒
+              case (validateTokenJson) =>
                 if (validateClientId(validateTokenJson.audience) && validateTokenJson.email.equals(validate.get.email)) {
                   validateTokenJson
                 }
             }
-          case _ ⇒
+          case _ =>
             ValidateTokenJson("", "", "", "", 0, "", false, "")
         }
     }
@@ -117,7 +118,8 @@ object GooglePlus {
     if (result.isInstanceOf[play.api.libs.json.JsSuccess[ValidateTokenJson]]) {
       val jsSuccess = result.asInstanceOf[play.api.libs.json.JsSuccess[ValidateTokenJson]]
       Some(UserInfo("", jsSuccess.get.email, "", ""))
-    } else {
+    }
+    else {
       None
     }
   }
@@ -130,7 +132,7 @@ object GooglePlus {
   def validateUserInfo(body: JsValue): Option[UserInfo] = {
 
     body.validate[GoogleUserInfo](validateUserInfo).map {
-      case (validUser) ⇒
+      case (validUser) =>
         return Some(UserInfo(validUser.id, validUser.email, validUser.given_name, validUser.family_name))
     }
     None
@@ -144,12 +146,12 @@ object GooglePlus {
   def getUserInfo(token: String): Option[UserInfo] = {
     val responseFuture = WS.url(userInfoUrl).withQueryString("access_token" -> token).get()
     val resultFuture = responseFuture map {
-      response ⇒
+      response =>
         response.status match {
-          case 200 ⇒ {
+          case 200 => {
             validateUserInfo(Json.parse(response.body))
           }
-          case _ ⇒
+          case _ =>
             None
         }
     }

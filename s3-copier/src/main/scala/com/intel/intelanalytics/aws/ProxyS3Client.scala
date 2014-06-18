@@ -29,7 +29,7 @@ import com.amazonaws.services.s3.AmazonS3Client
 import com.amazonaws.ClientConfiguration
 
 class ProxyS3Client(credentials: Credentials = Credentials.defaultEnv,
-  configuration: ClientConfiguration)
+                    configuration: ClientConfiguration)
     extends AmazonS3Client(credentials, configuration)
     with S3 {
 

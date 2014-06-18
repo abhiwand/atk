@@ -44,8 +44,8 @@ class GraphBuilder(config: GraphBuilderConfig) extends Serializable {
 
   val titanConnector = new TitanGraphConnector(config.titanConfig)
   val titanSchemaManager = new InferSchemaManager(config)
-  val vertexParser = new VertexRuleParser(config.inputSchema, config.vertexRules)
-  val edgeParser = new EdgeRuleParser(config.inputSchema, config.edgeRules)
+  val vertexParser = new VertexRuleParser(config.inputSchema.serializableCopy, config.vertexRules)
+  val edgeParser = new EdgeRuleParser(config.inputSchema.serializableCopy, config.edgeRules)
 
   /**
    * Build the Graph, both Edges and Vertices from one source.

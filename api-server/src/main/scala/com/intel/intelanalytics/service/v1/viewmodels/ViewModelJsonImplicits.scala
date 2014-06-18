@@ -23,14 +23,24 @@
 
 package com.intel.intelanalytics.service.v1.viewmodels
 
-import com.intel.intelanalytics.domain.Error
-import spray.json.JsObject
+import spray.json.DefaultJsonProtocol
+import spray.httpx.SprayJsonSupport
 
-case class DecoratedCommand(id: Long, name: String, arguments: Option[JsObject], error: Option[Error],
-    complete: Boolean, result: Option[JsObject], links: List[RelLink]) {
-  require(id > 0)
-  require(name != null)
-  require(arguments != null)
-  require(links != null)
-  require(error != null)
+/**
+ * Implicit Conversions for View/Models to JSON
+ */
+object ViewModelJsonImplicits extends DefaultJsonProtocol with SprayJsonSupport {
+
+  //this is needed for implicits
+  import com.intel.intelanalytics.domain.DomainJsonProtocol._
+
+  implicit val relLinkFormat = jsonFormat3(RelLink)
+  implicit val getCommandsFormat = jsonFormat3(GetCommands)
+  implicit val getCommandFormat = jsonFormat7(GetCommand)
+  implicit val getDataFramesFormat = jsonFormat3(GetDataFrames)
+  implicit val getDataFrameFormat = jsonFormat4(GetDataFrame)
+  implicit val getGraphsFormat = jsonFormat3(GetGraphs)
+  implicit val getGraphFormat = jsonFormat3(GetGraph)
+  implicit val jsonTransformFormat = jsonFormat2(JsonTransform)
+
 }

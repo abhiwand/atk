@@ -35,7 +35,7 @@ import play.api.db.slick.Config.driver.simple._
  * @param clusterId
  */
 case class UserRow(uid: Option[Long], givenName: String, familyName: String, email: String, registered: Boolean,
-  ipythonUrl: Option[String], clusterId: Option[String], secret: Option[String])
+                   ipythonUrl: Option[String], clusterId: Option[String], secret: Option[String])
 
 /**
  * Table mapping for user_info table.

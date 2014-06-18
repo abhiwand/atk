@@ -83,7 +83,7 @@ object Users {
    * @return
    */
   def create(user: database.UserRow): Long = DB.withSession {
-    implicit session: scala.slick.session.Session ⇒
+    implicit session: scala.slick.session.Session =>
       database.UserTable.insert(user)
   }
 

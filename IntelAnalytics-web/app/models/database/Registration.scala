@@ -38,8 +38,8 @@ import play.api.db.slick.Config.driver.simple._
  * @param whatTools
  */
 case class Registration(uid: Long, myName: String,
-  organization_name: String, organization_phone: String, organization_email: String,
-  experience: Int, role: String, whyParticipate: String, whatTools: String)
+                        organization_name: String, organization_phone: String, organization_email: String,
+                        experience: Int, role: String, whyParticipate: String, whatTools: String)
 
 /**
  * Table mapping for user_registration table.

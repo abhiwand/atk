@@ -61,7 +61,8 @@ object Session extends Controller {
 
     if (System.currentTimeMillis / millisecondsPerSecond - userSession.get.timestamp > SessionTimeout) {
       None
-    } else {
+    }
+    else {
       userSession.get.timestamp = System.currentTimeMillis / 1000
       //update the session timeout
       models.Sessions.update(userSession.get)
@@ -74,9 +75,9 @@ object Session extends Controller {
   class ActionWithSession[A](val user: UserDetails, request: Request[A]) extends WrappedRequest[A](request)
 
   object ActionWithSession extends ActionBuilder[ActionWithSession] {
-    def invokeBlock[A](request: Request[A], block: (ActionWithSession[A]) ⇒ Future[SimpleResult]) = {
+    def invokeBlock[A](request: Request[A], block: (ActionWithSession[A]) => Future[SimpleResult]) = {
       request.session.get(SessionValName).map {
-        sessionId ⇒
+        sessionId =>
           //validate session id
           val validatedSession = validateSessionId(sessionId)
           if (validatedSession != None) {
@@ -87,7 +88,8 @@ object Session extends Controller {
             else
               //continue with the request
               block(new ActionWithSession(u.get, request))
-          } else {
+          }
+          else {
             block(new ActionWithSession(UserDetails(Users.anonymousUser(), Whitelists.anonymousWhitelist()), request))
           }
       } getOrElse {
@@ -97,9 +99,9 @@ object Session extends Controller {
   }
 
   object Authenticated extends ActionBuilder[AuthenticatedRequest] {
-    def invokeBlock[A](request: Request[A], block: (AuthenticatedRequest[A]) ⇒ Future[SimpleResult]) = {
+    def invokeBlock[A](request: Request[A], block: (AuthenticatedRequest[A]) => Future[SimpleResult]) = {
       request.session.get(SessionValName).map {
-        sessionId ⇒
+        sessionId =>
           //validate session id
           val validatedSession = validateSessionId(sessionId)
           if (validatedSession != None) {
@@ -108,10 +110,12 @@ object Session extends Controller {
             //continue with the request
             if (u == None || u.get.whitelistEntry.email.isEmpty || u.get.whitelistEntry.uid.get == 0) {
               Future.successful(Redirect("/"))
-            } else {
+            }
+            else {
               block(new AuthenticatedRequest(u.get, request))
             }
-          } else {
+          }
+          else {
             Future.successful(Redirect("/"))
           }
       } getOrElse {
@@ -121,9 +125,9 @@ object Session extends Controller {
   }
 
   def onlyHttps[A](action: Action[A]) = Action.async(action.parser) {
-    request ⇒
+    request =>
       request.headers.get("X-Forwarded-Proto").collect {
-        case "https" ⇒ action(request)
+        case "https" => action(request)
       } getOrElse {
         Future.successful(Forbidden("Only HTTPS requests allowed"))
       }
