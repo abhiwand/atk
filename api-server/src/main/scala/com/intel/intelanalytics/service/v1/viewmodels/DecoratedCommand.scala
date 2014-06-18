@@ -27,7 +27,7 @@ import com.intel.intelanalytics.domain.Error
 import spray.json.JsObject
 
 case class DecoratedCommand(id: Long, name: String, arguments: Option[JsObject], error: Option[Error],
-                            complete: Boolean, result: Option[JsObject], links: List[RelLink]) {
+    complete: Boolean, result: Option[JsObject], links: List[RelLink]) {
   require(id > 0)
   require(name != null)
   require(arguments != null)

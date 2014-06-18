@@ -8,7 +8,7 @@ class FrameRepositorySpec extends SlickMetaStoreH2Testing with Matchers {
   "FrameRepository" should "be able to create frames" in {
     val frameRepo = slickMetaStoreComponent.metaStore.frameRepo
     slickMetaStoreComponent.metaStore.withSession("frame-test") {
-      implicit session =>
+      implicit session ⇒
 
         val frameName = "frame-name"
         val frameDescription = "my description"

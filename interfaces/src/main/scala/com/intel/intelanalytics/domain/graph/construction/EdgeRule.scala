@@ -9,10 +9,10 @@ package com.intel.intelanalytics.domain.graph.construction
  * @param bidirectional True if the edge is a bidirectional edge, false if it is a directed edge.
  */
 case class EdgeRule(head: PropertyRule,
-                    tail: PropertyRule,
-                    label: ValueRule,
-                    properties: List[PropertyRule],
-                    bidirectional: Boolean) {
+    tail: PropertyRule,
+    label: ValueRule,
+    properties: List[PropertyRule],
+    bidirectional: Boolean) {
   require(head != null)
   require(tail != null)
   require(label != null)

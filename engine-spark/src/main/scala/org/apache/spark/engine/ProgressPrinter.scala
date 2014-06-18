@@ -23,7 +23,7 @@
 
 package org.apache.spark.engine
 
-import org.apache.spark.scheduler.{SparkListenerJobEnd, SparkListenerTaskEnd, SparkListenerStageCompleted, SparkListener}
+import org.apache.spark.scheduler.{ SparkListenerJobEnd, SparkListenerTaskEnd, SparkListenerStageCompleted, SparkListener }
 
 /**
  * Create for demo purpose. It is used to get progress from SparkProgressListener and print it out
@@ -45,7 +45,7 @@ class ProgressPrinter(progressListener: SparkProgressListener) extends SparkList
   def printJobProgress() {
     val jobIds = progressListener.jobIdToStageIds.keys.toList.sorted
     println("PRINTING PROGRESS........................................................")
-    for (id <- jobIds) {
+    for (id ← jobIds) {
       println("job: " + id + ", progress: " + progressListener.getProgress(id) + "%")
     }
     println("END.......................................................................")

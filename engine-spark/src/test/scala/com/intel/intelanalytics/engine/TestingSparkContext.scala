@@ -39,8 +39,7 @@ trait TestingSparkContext extends FlatSpec with BeforeAndAfter {
   before {
     if (useGlobalSparkContext) {
       sc = TestingSparkContext.sc
-    }
-    else {
+    } else {
       TestingSparkContext.lock.acquire()
       sc = TestingSparkContext.createSparkContext
     }
@@ -61,8 +60,7 @@ trait TestingSparkContext extends FlatSpec with BeforeAndAfter {
       if (sc != null) {
         sc.stop()
       }
-    }
-    finally {
+    } finally {
       // To avoid Akka rebinding to the same port, since it doesn't unbind immediately on shutdown
       System.clearProperty("spark.driver.port")
 
@@ -81,6 +79,6 @@ object TestingSparkContext {
   }
 
   private def setLogLevels(level: org.apache.log4j.Level, loggers: TraversableOnce[String]): Unit = {
-    loggers.foreach(loggerName => Logger.getLogger(loggerName).setLevel(level))
+    loggers.foreach(loggerName ⇒ Logger.getLogger(loggerName).setLevel(level))
   }
 }

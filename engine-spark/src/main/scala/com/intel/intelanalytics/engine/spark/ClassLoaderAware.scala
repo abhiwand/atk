@@ -30,7 +30,7 @@ trait ClassLoaderAware {
    * Execute a code block using the ClassLoader of 'this' SparkEngine
    * rather than the ClassLoader of the currentThread()
    */
-  def withMyClassLoader[T](f: => T): T = {
+  def withMyClassLoader[T](f: ⇒ T): T = {
     val prior = Thread.currentThread().getContextClassLoader
     EventContext.getCurrent.put("priorClassLoader", prior.toString)
     try {
@@ -38,8 +38,7 @@ trait ClassLoaderAware {
       EventContext.getCurrent.put("newClassLoader", loader.toString)
       Thread.currentThread setContextClassLoader loader
       f
-    }
-    finally {
+    } finally {
       Thread.currentThread setContextClassLoader prior
     }
   }

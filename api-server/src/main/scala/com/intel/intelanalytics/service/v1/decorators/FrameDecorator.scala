@@ -23,18 +23,18 @@
 package com.intel.intelanalytics.service.v1.decorators
 
 import com.intel.intelanalytics.domain.frame.DataFrame
-import com.intel.intelanalytics.service.v1.viewmodels.{RelLink, DecoratedDataFrame, DataFrameHeader}
+import com.intel.intelanalytics.service.v1.viewmodels.{ RelLink, DecoratedDataFrame, DataFrameHeader }
 
 object FrameDecorator extends EntityDecorator[DataFrame, DataFrameHeader, DecoratedDataFrame] {
   override def decorateEntity(uri: String,
-                              links: Iterable[RelLink],
-                              entity: DataFrame): DecoratedDataFrame = {
+    links: Iterable[RelLink],
+    entity: DataFrame): DecoratedDataFrame = {
     DecoratedDataFrame(id = entity.id, name = entity.name,
       schema = entity.schema, links = links.toList)
   }
 
   override def decorateForIndex(uri: String, entities: Seq[DataFrame]): List[DataFrameHeader] = {
-    entities.map(frame => new DataFrameHeader(id = frame.id,
+    entities.map(frame ⇒ new DataFrameHeader(id = frame.id,
       name = frame.name,
       url = uri + "/" + frame.id)).toList
   }

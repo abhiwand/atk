@@ -29,7 +29,7 @@ import spray.http.Uri
 import scala.Some
 import com.intel.intelanalytics.repository.MetaStoreComponent
 import com.intel.intelanalytics.service.v1.viewmodels._
-import com.intel.intelanalytics.engine.{Engine, EngineComponent}
+import com.intel.intelanalytics.engine.{ Engine, EngineComponent }
 import scala.concurrent._
 import scala.util._
 import com.intel.intelanalytics.service.v1.viewmodels.DecoratedDataFrame
@@ -39,7 +39,7 @@ import com.intel.intelanalytics.domain.frame.DataFrameTemplate
 import com.intel.intelanalytics.domain.frame.DataFrame
 import com.intel.intelanalytics.domain.DomainJsonProtocol.DataTypeFormat
 import com.typesafe.config.ConfigFactory
-import com.intel.intelanalytics.service.{CommonDirectives, AuthenticationDirective}
+import com.intel.intelanalytics.service.{ CommonDirectives, AuthenticationDirective }
 import spray.routing.Directives
 import com.intel.intelanalytics.service.v1.decorators.FrameDecorator
 
@@ -72,16 +72,16 @@ class DataFrameService(commonDirectives: CommonDirectives, engine: Engine) exten
     //
     // the metastore
     //so they can be queried, and b) support the web hooks.
-    commonDirectives(prefix) { implicit p: UserPrincipal =>
+    commonDirectives(prefix) { implicit p: UserPrincipal ⇒
       (path(prefix) & pathEnd) {
-        requestUri { uri =>
+        requestUri { uri ⇒
           get {
             import spray.json._
             import ViewModelJsonProtocol._
             //TODO: cursor
             onComplete(engine.getFrames(0, defaultCount)) {
-              case Success(frames) => complete(FrameDecorator.decorateForIndex(uri.toString(), frames))
-              case Failure(ex) => throw ex
+              case Success(frames) ⇒ complete(FrameDecorator.decorateForIndex(uri.toString(), frames))
+              case Failure(ex) ⇒ throw ex
             }
           } ~
             post {
@@ -89,21 +89,21 @@ class DataFrameService(commonDirectives: CommonDirectives, engine: Engine) exten
               implicit val format = DomainJsonProtocol.dataFrameTemplateFormat
               implicit val indexFormat = ViewModelJsonProtocol.decoratedDataFrameFormat
               entity(as[DataFrameTemplate]) {
-                frame =>
+                frame ⇒
                   onComplete(engine.create(frame)) {
-                    case Success(createdFrame) => complete(decorate(uri + "/" + createdFrame.id, createdFrame))
-                    case Failure(ex) => throw ex
+                    case Success(createdFrame) ⇒ complete(decorate(uri + "/" + createdFrame.id, createdFrame))
+                    case Failure(ex) ⇒ throw ex
                   }
               }
             }
         }
       } ~
-        pathPrefix(prefix / LongNumber) { id =>
+        pathPrefix(prefix / LongNumber) { id ⇒
           pathEnd {
-            requestUri { uri =>
+            requestUri { uri ⇒
               get {
                 onComplete(engine.getFrame(id)) {
-                  case Success(Some(frame)) => {
+                  case Success(Some(frame)) ⇒ {
                     val decorated = decorate(uri, frame)
                     complete {
                       import spray.httpx.SprayJsonSupport._
@@ -112,35 +112,35 @@ class DataFrameService(commonDirectives: CommonDirectives, engine: Engine) exten
                       decorated
                     }
                   }
-                  case _ => reject()
+                  case _ ⇒ reject()
                 }
               } ~
                 delete {
                   onComplete(for {
-                    fopt <- engine.getFrame(id)
-                    res <- fopt.map(f => engine.delete(f)).getOrElse(Future.successful(()))
+                    fopt ← engine.getFrame(id)
+                    res ← fopt.map(f ⇒ engine.delete(f)).getOrElse(Future.successful(()))
                   } yield res) {
-                    case Success(_) => complete("OK")
-                    case Failure(ex) => throw ex
+                    case Success(_) ⇒ complete("OK")
+                    case Failure(ex) ⇒ throw ex
                   }
                 }
             }
           } ~
             (path("data") & get) {
               parameters('offset.as[Int], 'count.as[Int]) {
-                (offset, count) =>
-                  onComplete(for { r <- engine.getRows(id, offset, count) } yield r) {
-                    case Success(rows: Iterable[Array[Any]]) => {
+                (offset, count) ⇒
+                  onComplete(for { r ← engine.getRows(id, offset, count) } yield r) {
+                    case Success(rows: Iterable[Array[Any]]) ⇒ {
                       import spray.httpx.SprayJsonSupport._
                       import spray.json._
                       import DomainJsonProtocol._
-                      val strings = rows.map(r => r.map(a => a match {
-                        case null => JsNull
-                        case _ => a.toJson
+                      val strings = rows.map(r ⇒ r.map(a ⇒ a match {
+                        case null ⇒ JsNull
+                        case _ ⇒ a.toJson
                       }).toList).toList
                       complete(strings)
                     }
-                    case Failure(ex) => throw ex
+                    case Failure(ex) ⇒ throw ex
                   }
               }
             }

@@ -37,8 +37,8 @@ import com.intel.intelanalytics.domain.graph.construction.FrameRule
  * @tparam FrameRef Type of the reference to the source frame being read from.
  */
 case class GraphLoad[+Arguments, GraphRef, FrameRef](graph: GraphRef,
-                                                     frame_rules: List[FrameRule[FrameRef]],
-                                                     retain_dangling_edges: Boolean) {
+    frame_rules: List[FrameRule[FrameRef]],
+    retain_dangling_edges: Boolean) {
   require(graph != null)
   require(frame_rules != null)
 }

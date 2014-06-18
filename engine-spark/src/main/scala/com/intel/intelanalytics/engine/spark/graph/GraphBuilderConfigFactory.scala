@@ -2,7 +2,7 @@ package com.intel.intelanalytics.engine.spark.graph
 
 import com.intel.intelanalytics.domain.graph.construction._
 import com.intel.graphbuilder.util.SerializableBaseConfiguration
-import com.intel.graphbuilder.parser.rule.{ Value => GBValue, VertexRule => GBVertexRule, EdgeRule => GBEdgeRule, PropertyRule => GBPropertyRule }
+import com.intel.graphbuilder.parser.rule.{ Value ⇒ GBValue, VertexRule ⇒ GBVertexRule, EdgeRule ⇒ GBEdgeRule, PropertyRule ⇒ GBPropertyRule }
 import com.intel.graphbuilder.parser.rule.ConstantValue
 import com.intel.graphbuilder.driver.spark.titan.GraphBuilderConfig
 import com.intel.graphbuilder.parser.rule.ParsedValue
@@ -14,10 +14,10 @@ import com.intel.graphbuilder.parser.ColumnDef
 import com.intel.intelanalytics.domain.graph.construction.VertexRule
 import com.intel.intelanalytics.domain.graph.construction.PropertyRule
 import spray.json.JsObject
-import com.intel.intelanalytics.domain.schema.{Schema, DataTypes}
+import com.intel.intelanalytics.domain.schema.{ Schema, DataTypes }
 import DataTypes.DataType
 import com.typesafe.config.ConfigFactory
-import com.intel.intelanalytics.domain.graph.{GraphLoad, Graph}
+import com.intel.intelanalytics.domain.graph.{ GraphLoad, Graph }
 
 /**
  * Converter that produces the graphbuilder3 consumable
@@ -36,13 +36,12 @@ class GraphBuilderConfigFactory(val schema: Schema, val graphLoad: GraphLoad[JsO
   val theOnlyFrameRule = graphLoad.frame_rules.head
 
   // TODO graphbuilder does not yet support per-edge bidirectionality
-  require((theOnlyFrameRule.edge_rules.forall(erule => (erule.bidirectional == true))) ||
-    (theOnlyFrameRule.edge_rules.forall(erule => (erule.bidirectional == false))))
+  require((theOnlyFrameRule.edge_rules.forall(erule ⇒ (erule.bidirectional == true))) ||
+    (theOnlyFrameRule.edge_rules.forall(erule ⇒ (erule.bidirectional == false))))
 
   val theOnlyBidirctionalityBit = if (theOnlyFrameRule.edge_rules.size == 0) {
     true
-  }
-  else { theOnlyFrameRule.edge_rules.head.bidirectional }
+  } else { theOnlyFrameRule.edge_rules.head.bidirectional }
 
   val graphConfig: GraphBuilderConfig = {
     new GraphBuilderConfig(getInputSchema(schema),
@@ -63,7 +62,7 @@ class GraphBuilderConfigFactory(val schema: Schema, val graphLoad: GraphLoad[JsO
    */
   private def getInputSchema(schema: Schema): InputSchema = {
 
-    val columns: List[ColumnDef] = schema.columns map { case (name: String, dataType: DataType) => new ColumnDef(name, dataType.scalaType) }
+    val columns: List[ColumnDef] = schema.columns map { case (name: String, dataType: DataType) ⇒ new ColumnDef(name, dataType.scalaType) }
 
     new InputSchema(columns)
   }
@@ -84,7 +83,7 @@ class GraphBuilderConfigFactory(val schema: Schema, val graphLoad: GraphLoad[JsO
 
     val confFromFile = ConfigFactory.load("engine.conf").getConfig("intel.analytics.engine.titan.load")
 
-    for (entry <- confFromFile.entrySet()) {
+    for (entry ← confFromFile.entrySet()) {
       titanConfiguration.addProperty(entry.getKey(), confFromFile.getString(entry.getKey()))
     }
 
@@ -103,8 +102,7 @@ class GraphBuilderConfigFactory(val schema: Schema, val graphLoad: GraphLoad[JsO
   private def getGBValue(value: ValueRule): GBValue = {
     if (value.source == GBValueSourcing.CONSTANT) {
       new ConstantValue(value.value)
-    }
-    else {
+    } else {
       new ParsedValue(value.value)
     }
   }

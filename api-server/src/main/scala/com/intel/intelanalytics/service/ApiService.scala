@@ -81,4 +81,3 @@ class ApiService(val apiV1Service: ApiV1Service) extends Directives {
 
 case class ServiceDescription(name: String, identifier: String, versions: List[String])
 
-

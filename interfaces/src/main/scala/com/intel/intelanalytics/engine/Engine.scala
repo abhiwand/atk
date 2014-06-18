@@ -39,7 +39,7 @@ import com.intel.intelanalytics.domain.frame.LoadLines
 import com.intel.intelanalytics.domain.command.Command
 import com.intel.intelanalytics.domain.frame.DataFrameTemplate
 import com.intel.intelanalytics.domain.frame.FrameAddColumn
-import com.intel.intelanalytics.domain.graph.{GraphLoad, GraphTemplate, Graph}
+import com.intel.intelanalytics.domain.graph.{ GraphLoad, GraphTemplate, Graph }
 
 //TODO: make these all use Try instead?
 //TODO: make as many of these as possible use id instead of dataframe as the first argument?
@@ -48,7 +48,6 @@ import com.intel.intelanalytics.domain.graph.{GraphLoad, GraphTemplate, Graph}
 trait Engine {
 
   type Identifier = Long //TODO: make more generic?
-
 
   //TODO: We'll probably return an Iterable[Vertex] instead of rows at some point.
   def getVertices(graph: Identifier, offset: Int, count: Int, queryName: String, parameters: Map[String, String]): Future[Iterable[Row]]
