@@ -31,6 +31,7 @@ float64 = np.float64
 int32 = np.int32
 int64 = np.int64
 string = unicode
+str = string
 
 
 class _Ignore(object):

@@ -23,6 +23,8 @@
 
 package com.intel.intelanalytics.engine
 
+import com.intel.intelanalytics.domain.frame.load.Load
+
 import scala.concurrent.Future
 import com.intel.intelanalytics.engine.Rows._
 import com.intel.intelanalytics.domain.frame._
@@ -35,7 +37,6 @@ import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.domain.frame.DataFrame
 import com.intel.intelanalytics.domain.frame.FrameRemoveColumn
 import com.intel.intelanalytics.domain.frame.FrameJoin
-import com.intel.intelanalytics.domain.frame.LoadLines
 import com.intel.intelanalytics.domain.command.Command
 import com.intel.intelanalytics.domain.frame.DataFrameTemplate
 import com.intel.intelanalytics.domain.frame.FrameAddColumn
@@ -65,7 +66,7 @@ trait Engine {
 
   def clear(frame: DataFrame): Future[DataFrame]
 
-  def load(arguments: LoadLines[JsObject, Long])(implicit user: UserPrincipal): (Command, Future[Command])
+  def load(arguments: Load[Long])(implicit user: UserPrincipal): (Command, Future[Command])
 
   def filter(arguments: FilterPredicate[JsObject, Long])(implicit user: UserPrincipal): (Command, Future[Command])
 

@@ -25,6 +25,7 @@ package com.intel.intelanalytics.engine.spark
 
 import com.intel.event.EventContext
 import com.intel.intelanalytics.domain._
+import com.intel.intelanalytics.domain.frame.load.{LoadSource, LineParserArguments, LineParser, Load}
 import com.intel.intelanalytics.engine._
 import scala.concurrent._
 import spray.json.{JsNull, JsObject}
@@ -103,15 +104,13 @@ class SparkEngine(config: SparkEngineConfiguration,
     }
   }
 
-  def getLineParser(parser: Partial[Any]): String => Array[String] = {
-    parser.operation.name match {
+  def getLineParser(parser: LineParser): String => Array[String] = {
+    parser.name match {
       //TODO: look functions up in a table rather than switching on names
       case "builtin/line/separator" => {
-
         val args = parser.arguments match {
           //TODO: genericize this argument conversion
-          case a: JsObject => a.convertTo[SeparatorArgs]
-          case a: SeparatorArgs => a
+          case a: LineParserArguments => a
           case x => throw new IllegalArgumentException(
             "Could not convert instance of " + x.getClass.getName + " to  arguments for builtin/line/separator")
         }
@@ -130,25 +129,72 @@ class SparkEngine(config: SparkEngineConfiguration,
     })
   }
 
-  def load(arguments: LoadLines[JsObject, Long])(implicit user: UserPrincipal): (Command, Future[Command]) =
+
+  def getData(ctx: Context, source: LoadSource ): (Schema, RDD[Row]) = {
+    source.source_type match {
+      case "dataframe" => {
+         val frame =  frames.lookup(source.uri.toInt).getOrElse(
+             throw new IllegalArgumentException(s"No such data frame: ${source.uri}"))
+        (frame.schema, frames.getFrameRdd(ctx.sparkContext, source.uri.toInt))
+      }
+      case "file" => {
+        val parser = source.parser.get
+        val parserFunction = getLineParser(parser)
+        val schema = parser.arguments.schema
+        val converter = DataTypes.parseMany(schema.columns.map(_._2).toArray)(_)
+
+        (schema, SparkOps.loadLines(ctx.sparkContext, fsRoot + "/" + source.uri,
+          parser.arguments.skip_rows, parserFunction, converter))
+      }
+      case _ => ???
+    }
+  }
+
+  def load(arguments: Load[Long])(implicit user: UserPrincipal): (Command, Future[Command]) =
     withContext("se.load") {
       require(arguments != null, "arguments are required")
+      require(arguments.source.source_type != "file" || arguments.source.parser != None, "We need a parser to load files")
       import DomainJsonProtocol._
       val command: Command = commands.create(new CommandTemplate("load", Some(arguments.toJson.asJsObject)))
       val result: Future[Command] = future {
         withMyClassLoader {
           withContext("se.load.future") {
             withCommand(command) {
+              //get destination
               val realFrame = frames.lookup(arguments.destination).getOrElse(
                 throw new IllegalArgumentException(s"No such data frame: ${arguments.destination}"))
-              val frameId = arguments.destination
-              val parserFunction = getLineParser(arguments.lineParser)
-              val location = fsRoot + frames.getFrameDataFile(frameId)
-              val schema = arguments.schema
-              val converter = DataTypes.parseMany(schema.columns.map(_._2).toArray)(_)
+              val frameId = realFrame.id
+
+              //get Spark Context
               val ctx = sparkContextManager.context(user)
-              SparkOps.loadLines(ctx.sparkContext, fsRoot + "/" + arguments.source, location, arguments, parserFunction, converter)
-              val frame = frames.updateSchema(realFrame, schema.columns)
+              val (schema, newData) = getData(ctx, arguments.source)
+
+              val rdd = frames.getFrameRdd(ctx.sparkContext, realFrame.id)
+
+              //get new schema
+                //List.groupBy is changing the ordering of the columns. I need to group on my own to keep the ordering given by consecutive load calls
+              val (newColumns, updatedRdd) = if(realFrame.schema == schema) {
+                (realFrame.schema.columns.toArray, rdd.union(newData))
+              } else {
+                val nc = (realFrame.schema.columns ++ schema.columns)
+                val columnOrdering: List[String] = nc.map(_._1).distinct
+                val groupedColumns = nc.groupBy(_._1)
+
+                val newColumns: Array[(String, DataType)] = columnOrdering.map(key => {
+                  (key, DataTypes.mergeTypes(groupedColumns(key).map(_._2)))
+                }).toArray
+
+                ( newColumns,
+                  rdd.map(DataTypes.convertSchema(realFrame.schema.columns.toArray, newColumns)(_))
+                    .union(newData.map(DataTypes.convertSchema(schema.columns.toArray, newColumns)(_)))
+                  )
+              }
+
+
+              //save data
+              val location = fsRoot + frames.getFrameDataFile(frameId)
+              updatedRdd.saveAsObjectFile(location)
+              val frame = frames.updateSchema(realFrame, newColumns.toList)
               frame.toJson.asJsObject
             }
             commands.lookup(command.id).get
@@ -157,6 +203,7 @@ class SparkEngine(config: SparkEngineConfiguration,
       }
       (command, result)
     }
+
 
   def clear(frame: DataFrame): Future[DataFrame] = withContext("se.clear") {
     ???
