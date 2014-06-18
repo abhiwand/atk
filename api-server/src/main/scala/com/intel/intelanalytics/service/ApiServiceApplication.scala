@@ -23,7 +23,7 @@
 
 package com.intel.intelanalytics.service
 
-import akka.actor.{ActorSystem, Props}
+import akka.actor.{ ActorRef, ActorSystem, Props }
 import akka.io.IO
 import spray.can.Http
 import akka.pattern.ask
@@ -113,12 +113,8 @@ class ApiServiceApplication extends Component {
     val service = system.actorOf(Props(new ApiServiceActor(apiService)), "api-service")
 
     // Bind the Spray Actor to an HTTP Port
-    val config = ConfigFactory.load()
-    val interface = config.getString("intel.analytics.api.host")
-    val port = config.getInt("intel.analytics.api.port")
-
     // start a new HTTP server with our service actor as the handler
-    IO(Http) ? Http.Bind(service, interface = interface, port = port)
+    IO(Http) ? Http.Bind(service, interface = ApiServiceConfig.host, port = ApiServiceConfig.port)
   }
 
   /**

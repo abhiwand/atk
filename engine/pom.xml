@@ -32,10 +32,10 @@
             <groupId>com.intel</groupId>
             <artifactId>launcher</artifactId>
         </dependency>
-        <dependency>
+        <!--dependency>
             <groupId>com.intel</groupId>
             <artifactId>interfaces</artifactId>
-        </dependency>
+        </dependency-->
         <!--END BDA dependencies to our modules-->
 
         <dependency>

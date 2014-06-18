@@ -38,8 +38,8 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.*;
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * This class is for testing TitanHBaseVertexInputFormatPropertyGraph4LDA

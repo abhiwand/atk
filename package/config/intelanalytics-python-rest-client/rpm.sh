@@ -27,7 +27,7 @@ POST="
  ln -s /usr/lib/intelanalytics/rest-client/python  /usr/lib/python2.7/site-packages/intelanalytics
 
  #run requirements file
- pip install -r /usr/lib/intelanalytics/rest-client/python/requirements.txt
+ pip2.7 install -r /usr/lib/intelanalytics/rest-client/python/requirements.txt
 "
 
 #delete the sym link only if we are uninstalling not updating
