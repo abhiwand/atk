@@ -45,7 +45,7 @@ class EngineApplication extends Archive with EventLogging {
   }
 
   def start(configuration: Map[String, String]) = {
-
+    info("Starting engine")
     try {
       //TODO: when Engine moves to its own process, it will need to start its own Akka actor system.
 
