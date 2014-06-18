@@ -185,6 +185,7 @@ echo "Provides: $PROVIDES"
 echo "Summary: $SUMMARY"
 echo "License: $LICENSE"
 echo "Version: $VERSION"
+#echo "Serial: $RELEASE"
 echo "Group: $GROUP"
 if [ ! -z "$REQUIRES" ];then
 	echo "Requires: $REQUIRES"
