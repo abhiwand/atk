@@ -21,6 +21,15 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.domain.frame
+package com.intel.intelanalytics.engine.spark
 
-case class DropDuplicates(frame: Long, keyColumns: List[String])
+import org.scalatest.{Matchers, FlatSpec}
+
+class DropDuplicatesTest extends FlatSpec with Matchers {
+  "createKeyValuePairFromRow" should "include specified 2 key columns as key" in {
+
+    val t = SparkOps.createKeyValuePairFromRow(Array[Any]("John", 1, "Titanic"), Seq(0, 1))
+    t._1 shouldBe Seq("John", 1)
+    t._2 shouldBe Array[Any]("John", 1, "Titanic")
+  }
+}
