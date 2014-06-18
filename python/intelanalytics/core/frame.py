@@ -473,6 +473,35 @@ class BigFrame(object):
         # TODO - review docstring
         self._backend.drop(self, predicate)
 
+    def drop_duplicates(self, columns=[]):
+        """
+        Remove duplicate rows and keep the first row. Duplicates are determined by the specified columns.
+
+        Parameters
+        ----------
+
+        columns : str OR list of str
+            column name(s) to identify duplicates. If empty, will remove duplicates that have whole row data identical.
+
+        Examples
+        --------
+
+        >>>
+        Remove duplicate rows that have same data on column b.
+        >>> my_frame.drop_duplicates("b")
+        <BLANKLINE>
+        Remove duplicate rows that have same data on column a and b
+        >>> my_frame.drop_duplicates(["a", "b"])
+        Remove duplicates that have whole row data identical
+        <BLANKLINE
+        >>> my_frame.drop_duplicates()
+        """
+
+        if isinstance(columns, basestring):
+            columns = [columns]
+
+        self._backend.drop_duplicates(self, columns)
+
     def dropna(self, how=any, column_subset=None):
         """
         Drops all rows which have NA values.
