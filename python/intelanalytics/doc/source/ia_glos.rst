@@ -1,6 +1,21 @@
 Glossary
 ========
 
+Aggregation Functions
+---------------------
+
+Aggregation functions are mathematical functions which are computed over a single column within a specified set of rows.
+Aggregation functions supported are:
+
+* avg : The average or mean across the rows
+* count : The count of the rows
+* count_distinct : The count of unique rows
+* max : The largest value within the rows
+* min : The smallest or most negative value within the applicable rows
+* stdev : The standard deviation of the applicable rows, see http://en.wikipedia.org/wiki/Standard_deviation
+* sum : The result of adding all the values together
+* var : The variance of the rows, see https://en.wikipedia.org/wiki/Variance
+
 Alternating Least Squares
 -------------------------
 

@@ -110,9 +110,9 @@ class BigFrame(object):
     
     Parameters
     ----------
-    source : source (optional)
+    source : source
         A source of initial data, like a CsvFile or another BigFrame
-    name : string (optional)
+    name : string
         The name of the newly created BigFrame object
 
     Notes
@@ -324,10 +324,10 @@ class BigFrame(object):
             function which takes the values in the row and produces a value
             or collection of values for the new cell(s)
 
-        types : data type or list/tuple of types (optional)
+        types : data type or list/tuple of types
             specifies the type(s) of the new column(s)
 
-        names : string  or list/tuple of strings (optional)
+        names : string  or list/tuple of strings
             specifies the name(s) of the new column(s).  By default, the new
             column(s) name will be given a unique name "new#" where # is the
             lowest number (starting from 0) such that there is not already a
@@ -411,10 +411,10 @@ class BigFrame(object):
         Examples
         --------
         >>>
-        # For this example, my_frame is a BigFrame object with lots of data and columns for the attributes of animals.
-        # We do not want all this data, just the data for lizards and frogs, so ...
+        For this example, my_frame is a BigFrame object with lots of data and columns for the attributes of animals.
+        We do not want all this data, just the data for lizards and frogs, so ...
         >>> my_frame.filter(animal_type == "lizard" or animal_type == "frog")
-        # my_frame now only has data about lizards and frogs
+        BigFrame 'my_frame' now only has data about lizards and frogs
         """
         # TODO - Review docstring
         self._backend.filter(self, predicate)
@@ -482,11 +482,13 @@ class BigFrame(object):
 
         Parameters
         ----------
-        how : any, all, or column name, optional
+        how : any, all, or column name
             any: if any column has an NA value, drop row
             all: if all the columns have an NA value, drop row
             column name: if named column has an NA value, drop row
-        column_subset : str OR list of str (optional)
+
+
+        column_subset : str OR list of str
             if not "None", only the given columns are considered
 
         Examples
@@ -510,26 +512,32 @@ class BigFrame(object):
 
     def inspect(self, n=10, offset=0):
         """
-        Check the data for validity.
+        Print the data in readable format.
         
         Parameters
         ----------
         n : int
-            The number of rows to check
+            The number of rows to print
         offset : int
-            The first row to check
+            The number of rows to skip before printing
             
         Returns
         -------
-        bool
-            Whether the data is valid or not.
+        data
+            Formatted for ease of human inspection
             
         Examples
         --------
         >>>
-        For this example, my_frame is a BigFrame object and the row should have types int32, str, int64, bool and the data for that row is "10", "20", "o", "0"
-        >>> my_check = my_frame.inspect()
-        my_check would be false because "Bob's your uncle" is not an int64 type
+        For this example, my_frame is a BigFrame object with two columns 'a' and 'b'.
+        Column 'a' is float32 and 'b' is int64.
+        >>> print my_frame.inspect()
+        Output would be something like:
+        <BLANKLINE>
+        a float32       b int64
+        -----------------------------
+           12.3000              500
+          195.1230           183954
         
         """
         # TODO - Review docstring
@@ -556,10 +564,10 @@ class BigFrame(object):
             Another frame to join with
         left_on : str
             Name of the column in the left frame used to match up the two frames.
-        right_on : str, optional
+        right_on : str
             Name of the column in the right frame used to match up the two frames.
             If not provided, then the column name used must be the same in both frames.
-        how : str, optional
+        how : str
             {'left', 'right', 'inner'}
 
         Returns
@@ -592,7 +600,7 @@ class BigFrame(object):
 
         column_names : str OR list of str
             column name OR list of column names to be copied from the currently active frame
-        new_names : str OR list of str, optional
+        new_names : str OR list of str
             The new name(s) for the column(s)
 
         Notes
@@ -640,37 +648,78 @@ class BigFrame(object):
         """
         Create a new BigFrame using an existing frame, compressed by groups.
         
-        Group frame as per the criteria provided and compute aggregation on each group.
+        Creates a new BigFrame.
+        Takes a column or group of columns, finds the unique combination of values, and creates unique rows with these column values.
+        The other columns are combined according to the aggregation argument(s).
 
         Parameters
         ----------
         group_by_columns: BigColumn or List of BigColumns or function
-            columns or result of a function will be used to create grouping
-        aggregation_arguments: dict
-            (column,aggregation function) pairs
+            columns, or virtual columns created by a function, will be used to create grouping
+        aggregation_arguments: column and (count or dict)
+            (column, aggregation function(s)) pairs
 
         Return
         ------
         frame: BigFrame
             new aggregated frame
 
+        Notes
+        -----
+        * The column names created by aggregation functions in the returned frame are the original column name appended with the '_' character and the aggregation function. For example, if the original field is 'a' and the function is 'avg', the resultant column is named 'a_avg'.
+        * An aggregation argument of 'count' results in a column named 'count'
+
         Examples
         --------
-        frame.groupBy(frame.a, count)
-        frame.groupBy([frame.a, frame.b], {f.c: avg})
-        frame.groupBy(frame[['a', 'c']], count, {f.d: [avg, sum, min], f.e: [max]})
+        >>>
+        For this example, we will use a BigFrame called 'my_frame', with a column called 'a'.
+        Column 'a' has the values 'cat', 'apple', 'bat', 'cat', 'bat', 'cat'.
+        >>> new_frame = my_frame.groupBy(my_frame.a, count)
+        The new BigFrame 'new_frame' has two columns named 'a' and 'count'.
+        In a row of 'new_frame', column 'a' is 'apple' and column 'count' is 1.
+        In another row of 'new_frame', column 'a' is 'bat' and column 'count' is 2.
+        In another row of 'new_frame', column 'a' is 'cat' and column 'count' is 3.
+        <BLANKLINE>
+        In this example, 'my_frame' has three columns, named 'a', 'b', and 'c'. The data in these columns is:
+        'a' is 1, 'b' is 'alpha', 'c' is 3.0
+        'a' is 1, 'b' is 'bravo', 'c' is 5.0
+        'a' is 1, 'b' is 'alpha', 'c' is 5.0
+        'a' is 2, 'b' is 'bravo', 'c' is 8.0
+        'a' is 2, 'b' is 'bravo', 'c' is 12.0
+        >>> new_frame = my_frame.groupBy([my_frame.a, my_frame.b], {my_frame.c: avg})
+        The new BigFrame 'new_frame' has three columns named 'a', 'b', and 'c_avg'. The data is:
+        'a' is 1, 'b' is 'alpha', 'c_avg' is 4.0
+        'a' is 1, 'b' is 'bravo', 'c_avg' is 5.0
+        'a' is 2, 'b' is 'bravo', 'c_avg' is 10.0
+        <BLANKLINE>
+        For this example, we use 'my_frame' with columns 'a', 'c', 'd', and 'e'. Column types will be str, int, float, int. The data is:
+        'a' is 'ape', 'c' is 1, 'd' is 4.0, 'e' is 9
+        'a' is 'ape', 'c' is 1, 'd' is 8.0, 'e' is 8
+        'a' is 'big', 'c' is 1, 'd' is 5.0, 'e' is 7
+        'a' is 'big', 'c' is 1, 'd' is 6.0, 'e' is 6
+        'a' is 'big', 'c' is 1, 'd' is 8.0, 'e' is 5
+        >>> new_frame = my_frame.groupBy(my_frame[['a', 'c']], count, {my_frame.d: [avg, sum, min], my_frame.e: [max]})
+        The new BigFrame 'new_frame' has columns 'a', 'c', 'count', 'd_avg', 'd_sum', 'd_min', 'e_max'.
+        The column types are (respectively): str, int, int, float, float, float, int.
+        The data is:
+        'a' is 'ape', 'c' is 1, 'count' is 2, 'd_avg' is 6.0, 'd_sum' is 12.0, 'd_min' is 4.0, 'e_max' is 9
+        'a' is 'big', 'c' is 1, 'count' is 3, 'd_avg' is 6.333333, 'd_sum' is 19.0, 'd_min' is 5.0, 'e_max' is 7
+
         """
 
-
+        # This section creates a list comprised only of the names of the columns used to group the data.
         groupByColumns = []
         if isinstance(group_by_columns, list):
             groupByColumns = [i.name for i in group_by_columns]
         elif group_by_columns:
             groupByColumns = [group_by_columns.name]
 
+        # The primary column name will be the first column name passed on the command line if it exists,
+        # otherwise it will be the first column name of the currently active BigFrame
         primaryColumn = groupByColumns[0] if groupByColumns else self.column_names[0]
         aggregation_list = []
 
+        # Go through each of the aggregation arguments individually
         for i in aggregation_arguments:
             if i == count:
                 aggregation_list.append((count, primaryColumn, "count"))
@@ -691,19 +740,16 @@ class BigFrame(object):
 
         Parameters
         ----------
-
         name : str OR list of str
             column name OR list of column names to be removed from the frame
 
         Notes
         -----
-
-        Deleting a non-existant column raises a KeyError.
-        Deleting the last column in a frame leaves the frame empty.
+        * Deleting a non-existant column raises a KeyError.
+        * Deleting the last column in a frame leaves the frame empty.
 
         Examples
         --------
-
         >>>
         # For this example, my_frame is a BigFrame object with columns titled "column_a", "column_b", column_c and "column_d".
         >>> my_frame.remove_columns([ column_b, column_d ])
@@ -726,6 +772,7 @@ class BigFrame(object):
 
         Examples
         --------
+        If we start with a BigFrame with columns named "Wrong" and "Wong"
         >>> frame.rename_columns( [ "Wrong", "Wong" ], [ "Right", "Wite" ] )
         # now, what was Wrong is now Right and what was Wong is now Wite
         """
@@ -733,21 +780,29 @@ class BigFrame(object):
 
     def take(self, n, offset=0):
         """
-        .. TODO:: Add Docstring
+        Take a subset of the currently active BigFrame.
 
         Parameters
         ----------
-
         n : int
-            ?
-        offset : int (optional)
-            ?
+            The number of rows to copy from the currently active BigFrame
+        offset : int
+            The number of rows to skip before copying
+
+        Notes
+        -----
+        The data is considered 'unstructured', therefore taking a certain number of rows, the rows obtained 
 
         Examples
         --------
-
-        >>> my_frame = BigFrame( p_raw_data, "my_data" )
+        >>>
+        Let's say we have a frame called 'my_frame' with millions of rows of data
         >>> r = my_frame.take( 5000 )
+        We now have a separate BigFrame called 'r' with a copy of the first 5000 rows of 'my_frame'
+        <BLANKLINE>
+        If we use the function like:
+        >>> r = my_frame.take( 5000, 1000 )
+        We end up with the BigFrame called 'r' again, but this time it has a copy of rows 1001 to 5000 of 'my_frame'
         
         """
         # TODO - Review and complete docstring

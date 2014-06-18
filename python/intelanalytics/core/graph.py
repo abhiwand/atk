@@ -41,13 +41,11 @@ def get_graph_names():
     
     Returns
     -------
-
     list of string
         A list comprised of the graph names
         
     Examples
     --------
-
     >>>
     If we have these BigGraph objects defined: movies, incomes, virus
     >>> my_names = get_graph_names()
@@ -64,18 +62,16 @@ def get_graph(name):
     
     Parameters
     ----------
-
     name : string
         The name of the BigGraph object you are obtaining
         
     Returns
     -------
-
-    BigGraph object
+    graph
+        A BigGraph object
     
     Examples
     --------
-
     >>>
     If we have these BigGraph objects defined: movies, incomes, virus
     >>> my_graph = get_graph("virus")
@@ -92,19 +88,16 @@ def delete_graph(name):
     
     Parameters
     ----------
-
     name : string
         The name of the BigGraph object you are erasing
         
     Returns
     -------
-
     string
         The name of the BigGraph object you erased
     
     Examples
     --------
-
     >>>
     If we have these BigGraph objects defined: movies, incomes, virus
     >>> my_gone = delete_graph("incomes")
@@ -145,30 +138,23 @@ class Rule(object):
         
         Parameters
         ----------
-
         source
             D
         frame : string
             D
-        
-        Returns
-        -------
-        
+
         Raises
         ------
-
         RuleWithDifferentFramesError()
         TypeError
         
         Returns
         -------
-
         string
             The name of the frame
             
         Examples
         --------
-
         >>>
         
         """
@@ -218,20 +204,18 @@ class VertexRule(Rule):
 
     Parameters
     ----------
-
     id_key: string
         static string or pulled from BigColumn source; the key for the
         uniquely identifying property for the vertex.
     id_value: BigColumn source
         vertex value; the unique value to identify this vertex
-    properties: dictionary, optional
+    properties: dictionary
         vertex properties of the form property_name:property_value
         property_name is a string, and property_value is a literal value
         or a BigColumn source, which must be from same BigFrame as value arg
 
     Examples
     --------
-
     >>> movie_vertex = VertexRule('movie', f['movie'], {'genre': f['genre']})
     >>> user_vertex = VertexRule('user', f['user'], {'age': f['age_1']})
     
@@ -252,6 +236,18 @@ class VertexRule(Rule):
         return to_json(self)
 
     def validate(self):
+        """
+        Checks that the rule has what it needs
+
+        Returns
+        -------
+
+        Examples
+        --------
+        >>>
+
+        """
+
         # TODO - Add docstring
         id_frame = self.validate_property(self.id_key, self.id_value, None)
         properties_frame = self.validate_properties(self.properties)
@@ -264,7 +260,6 @@ class EdgeRule(Rule):
 
     Parameters
     ----------
-
     label: str or BigColumn source
         edge label, can be constant string or pulled from BigColumn
     tail: VertexRule
@@ -273,17 +268,16 @@ class EdgeRule(Rule):
     head: VertexRule
         head vertex ('to' vertex); must be from same BigFrame as tail,
         label and any properties
-    properties: dict, optional
+    properties: dict
         edge properties of the form property_name:property_value
         property_name is a string, and property_value is a literal value
         or a BigColumn source, which must be from same BigFrame as head,
         tail and label
-    is_directed : bool, optional
+    is_directed : bool
         indicates the edge is directed
 
     Examples
     --------
-
     >>> rating_edge = EdgeRule('rating', movie_vertex, user_vertex, {'weight': f['score']})
     
     """
@@ -307,6 +301,22 @@ class EdgeRule(Rule):
         return to_json(self)
 
     def validate(self):
+        """
+        Checks that the rule has what it needs
+
+        Raises
+        ------
+        TypeError
+            "Label argument must be a column or non-empty string"
+
+        Returns
+        -------
+
+        Examples
+        --------
+        >>>
+
+        """
         # TODO - Add docstring
         label_frame = None
         if isinstance(self.label, BigColumn):
@@ -325,16 +335,14 @@ class BigGraph(object):
 
     Parameters
     ----------
-
-    rules : list of Rule, optional
+    rules : list of Rule
          list of rules which specify how the graph will be created; if empty
          an empty graph will be created
-    name : str, optional
+    name : str
          name for the new graph; if not provided a default name is generated
 
     Examples
     --------
-
     >>> g = BigGraph([user_vertex, movie_vertex, rating_edge, extra_movie_rule])
 
     """
@@ -356,13 +364,11 @@ class BigGraph(object):
         
         Returns
         -------
-
         string
             The name of the current object.
             
         Examples
         --------
-        
         >>> my_graph = BigGraph( , "my_data")
         >>> my_name = my_graph.name
         my_name is now a string with the value "my_data"
@@ -378,13 +384,11 @@ class BigGraph(object):
         
         Parameters
         ----------
-
         value : string
             The name for the current object.
             
         Examples
         --------
-
         >>> my_graph = BigGraph()
         >>> my_graph.name("my_data")
         my_graph is now a BigGraph object with the name "my_data"
@@ -395,6 +399,14 @@ class BigGraph(object):
 
     @property
     def uri(self):
+        """
+        Provides the URI of the BigGraph
+
+        Returns
+        -------
+        URI
+            See http://en.wikipedia.org/wiki/Uniform_Resource_Identifier
+        """
         return self._uri
 
     def _get_new_graph_name(self):
