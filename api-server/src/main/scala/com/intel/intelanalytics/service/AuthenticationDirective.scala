@@ -50,7 +50,7 @@ class AuthenticationDirective(val metaStore: MetaStore) extends Directives with 
           case Nil => {
             import DomainJsonProtocol._
             metaStore.userRepo.scan().foreach(u => info(u.toJson.prettyPrint))
-            throw new SecurityException("User not found")
+            throw new SecurityException("User not found with apiKey:" + apiKey)
           }
           case users if users.length > 1 => throw new SecurityException("Problem accessing user credentials")
           case user => {
