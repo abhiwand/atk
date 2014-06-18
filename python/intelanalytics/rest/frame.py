@@ -229,8 +229,7 @@ class FrameBackendRest(object):
     def drop_duplicates(self, frame, columns):
         arguments = {'frame': frame._id, "keyColumns": columns}
         command = CommandRequest("dataframe/drop_duplicates", arguments)
-        command_info = executor.issue(command)
-        frame_info = FrameInfo(command_info.result)
+        executor.issue(command)
 
     def filter(self, frame, predicate):
         row_ready_predicate = wrap_row_function(frame, predicate)
