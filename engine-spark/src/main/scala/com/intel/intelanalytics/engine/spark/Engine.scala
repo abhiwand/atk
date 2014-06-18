@@ -728,6 +728,13 @@ class SparkEngine(sparkContextManager: SparkContextManager,
    ???
   }
 
+  def getColumnIndexByColumnNames(keyColumns: List[String], columns: List[(String, DataType)]): List[Int] = {
+    if(keyColumns.isEmpty)
+      (0 to (columns.length - 1)).toList
+    else
+      keyColumns.map(col => columns.indexWhere(columnTuple => columnTuple._1 == col))
+  }
+
   override def dropDuplicates(dropDuplicateCommand: DropDuplicates)(implicit user: UserPrincipal): (Command, Future[Command]) =
     withContext("se.dropDuplicates") {
       require(dropDuplicateCommand != null, "arguments are required")
@@ -749,7 +756,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
               val frameSchema = realFrame.schema
               val rdd = frames.getFrameRdd(ctx, frameId)
 
-              val columnIndices = dropDuplicateCommand.keyColumns.map(col => frameSchema.columns.indexWhere(columnTuple => columnTuple._1 == col))
+              val columnIndices = getColumnIndexByColumnNames(dropDuplicateCommand.keyColumns, frameSchema.columns)
               val pairRdd = rdd.map(row => SparkOps.createKeyValuePairFromRow(row, columnIndices))
 
               val duplicatesRemoved: RDD[Array[Any]] = SparkOps.removeDuplicatesByKey(pairRdd)
