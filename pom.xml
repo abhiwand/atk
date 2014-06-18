@@ -411,7 +411,7 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
             <id>scala-coverage</id>
             <activation>
                 <property>
-                    <name>env.BUILD_NUMBER1</name>
+                    <name>env.BUILD_NUMBER</name>
                 </property>
             </activation>
             <build>
