@@ -5,8 +5,8 @@ Summary: pandas %{?VERSION} rpm built against python %{?pythonVersion}
 License: http://pandas.pydata.org/getpandas.html
 Release: 1
 Version: %{?VERSION}
-BuildRequires: gcc make expat-devel db4-devel gdbm-devel sqlite-devel readline-devel zlib-devel bzip2-devel openssl-devel python2.7
-Requires: python2.7, gcc, gcc-c++
+BuildRequires: gcc >= 4.4.7, make, expat-devel, db4-devel, gdbm-devel, sqlite-devel, readline-devel, zlib-devel, bzip2-devel, openssl-devel, python2.7
+Requires: python2.7, gcc >= 4.4.7, gcc-c++ >= 4.4.7
 AutoReq: no
 Source: pandas-%{?VERSION}.tar.gz
 Prefix: /usr
