@@ -8,7 +8,7 @@ import scala.util.Try
  */
 trait CommandRepository[Session] extends Repository[Session, CommandTemplate, Command] {
   def updateComplete(id: Long, complete: Boolean)(implicit session: Session): Try[Unit]
-  def updateProgress(id: Long, progress: List[Int])(implicit session: Session): Try[Unit]
+  def updateProgress(id: Long, progress: List[Float])(implicit session: Session): Try[Unit]
 }
 
 

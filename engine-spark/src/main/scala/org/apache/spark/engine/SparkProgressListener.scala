@@ -115,25 +115,26 @@ class SparkProgressListener(val progressUpdater: CommandProgressUpdater) extends
   }
 
   /* calculate progress for the job */
-  def getProgress(jobId: Int): Int = {
+  def getProgress(jobId: Int): Float = {
 
     val stageIds = jobIdToStageIds(jobId)
     val finishedStages = stageIds.count(i => completedStages.filter(s => s.stageId == i).length > 0)
     val currentActiveStages = activeStages.filter(s => stageIds.contains(s.stageId))
-    var progress = (100 * finishedStages) / stageIds.length
+    var progress: Float = (100 * finishedStages.toFloat) / stageIds.length.toFloat
 
     currentActiveStages.foreach(currentActiveStage => {
       val totalTaskForStage = currentActiveStage.numTasks
       val successCount = stageIdToTasksComplete.getOrElse(currentActiveStage.stageId, 0)
-      progress += (100 * successCount / (totalTaskForStage * stageIds.length))
+      progress += (100 * successCount.toFloat / (totalTaskForStage * stageIds.length).toFloat)
     })
-    progress
+
+    BigDecimal(progress).setScale(2, BigDecimal.RoundingMode.DOWN).toFloat
   }
 
   /**
    * calculate progress for the command
    */
-  def getCommandProgress(commandId: Long): List[Int] = {
+  def getCommandProgress(commandId: Long): List[Float] = {
     val jobList = commandIdJobs.getOrElse(commandId,  throw new IllegalArgumentException(s"No such command: $commandId"))
     jobList.map(job => getProgress(job.jobId))
   }
@@ -169,7 +170,7 @@ class SparkProgressListener(val progressUpdater: CommandProgressUpdater) extends
    * Some jobs don't have command id, explain
    */
   def hasCommandId(job: ActiveJob): Boolean = {
-    job.properties.contains("command-id")
+    job.properties.containsKey("command-id")
   }
 
   /**

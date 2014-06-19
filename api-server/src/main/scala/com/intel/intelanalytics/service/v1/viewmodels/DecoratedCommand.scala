@@ -37,7 +37,7 @@ import spray.json.JsObject
  * @param result result data for executing the command
  * @param links The link representing the command
  */
-case class DecoratedCommand(id: Long, name: String, arguments: Option[JsObject], error: Option[Error], progress: List[Int],
+case class DecoratedCommand(id: Long, name: String, arguments: Option[JsObject], error: Option[Error], progress: List[Float],
                             complete: Boolean, result: Option[JsObject], links: List[RelLink]) {
   require(id > 0)
   require(name != null)
