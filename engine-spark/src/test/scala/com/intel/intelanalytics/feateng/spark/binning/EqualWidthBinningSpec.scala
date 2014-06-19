@@ -24,7 +24,7 @@
 package com.intel.intelanalytics.feateng.spark.binning
 
 import org.specs2.mutable.Specification
-import com.intel.intelanalytics.sparkalgos.testutils.TestingSparkContext
+import com.intel.intelanalytics.feateng.spark.testutils.TestingSparkContext
 
 class EqualWidthBinningSpec extends Specification {
 

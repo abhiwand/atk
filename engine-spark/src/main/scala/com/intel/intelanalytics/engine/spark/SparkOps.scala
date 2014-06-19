@@ -216,10 +216,10 @@ private[spark] object SparkOps extends Serializable {
           }
         }
       } while (working)
-      (element, binIndex)
+      (element.asInstanceOf[Any], binIndex.asInstanceOf[Any])
     }
     // join the bin mappings back to the frame
-    rdd.map(row => (row(index), row)).join(binnedColumnRdd).map(pairs => pairs._2._1 ++ pairs._2._2)
+    rdd.map(row => (row(index), row)).join(binnedColumnRdd).map(pairs => pairs._2._1 :+ pairs._2._2)
   }
 
   /**

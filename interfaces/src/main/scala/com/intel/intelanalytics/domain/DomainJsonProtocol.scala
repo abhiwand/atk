@@ -36,6 +36,7 @@ import com.intel.intelanalytics.domain.frame.DataFrameTemplate
 import com.intel.intelanalytics.domain.frame.FrameAddColumns
 import com.intel.intelanalytics.domain.frame.FrameRenameColumn
 import com.intel.intelanalytics.domain.frame.FlattenColumn
+import com.intel.intelanalytics.domain.frame.BinColumn
 import com.intel.intelanalytics.domain.frame.FrameRemoveColumn
 import com.intel.intelanalytics.domain.frame.DataFrame
 import com.intel.intelanalytics.domain.frame.FrameJoin
@@ -107,6 +108,7 @@ object DomainJsonProtocol extends DefaultJsonProtocol {
   implicit val alsFormatLong = jsonFormat5(Als[Long])
   implicit val errorFormat = jsonFormat5(Error)
   implicit val flattenColumnLongFormat = jsonFormat4(FlattenColumn[Long])
+  implicit val binColumnLongFormat = jsonFormat6(BinColumn[Long])
 
   // graph service formats
 

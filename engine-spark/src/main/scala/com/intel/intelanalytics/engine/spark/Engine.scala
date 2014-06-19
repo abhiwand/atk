@@ -68,6 +68,7 @@ import com.intel.intelanalytics.domain.Partial
 import com.intel.intelanalytics.domain.frame.SeparatorArgs
 import com.intel.intelanalytics.domain.command.CommandTemplate
 import com.intel.intelanalytics.domain.frame.FlattenColumn
+import com.intel.intelanalytics.domain.frame.BinColumn
 import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.domain.frame.FrameRemoveColumn
 import com.intel.intelanalytics.domain.frame.FrameJoin
