@@ -23,4 +23,4 @@
 
 package com.intel.intelanalytics.domain.frame
 
-case class BinColumn[FrameRef](name: String, frame: FrameRef, column: String, separator: String)
+case class BinColumn[FrameRef](name: String, frame: FrameRef, columnName: String, numBins: Int, binType: String, binColumnName: String)
