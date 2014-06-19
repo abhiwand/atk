@@ -487,7 +487,7 @@ class BigFrame(object):
 
         Examples
         --------
-        >>> binned_frame = frame1.bin_column('a', 5, 'equalwidth', 'aBinned')
+        >>> binnedFrame = frame.bin_column('a', 5, 'equalwidth', 'aBinned')
         """
         return self._backend.bin_column(self, column_name, num_bins, bin_type, bin_column_name)
 
