@@ -38,7 +38,7 @@ import com.intel.intelanalytics.engine.Rows._
 import com.intel.intelanalytics.engine._
 import com.intel.intelanalytics.engine.plugin.CommandPlugin
 import com.intel.intelanalytics.engine.spark.context.SparkContextManager
-import com.intel.intelanalytics.engine.spark.frame.{RDDJoinParam, RowParser, SparkFrameStorage}
+import com.intel.intelanalytics.engine.spark.frame._
 import com.intel.intelanalytics.engine.spark.plugin.SparkInvocation
 import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.shared.EventLogging
@@ -71,7 +71,6 @@ import com.intel.intelanalytics.domain.frame.FlattenColumn
 import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.domain.frame.FrameRemoveColumn
 import com.intel.intelanalytics.domain.frame.FrameJoin
-import com.intel.intelanalytics.engine.spark.frame.RDDJoinParam
 import com.intel.intelanalytics.domain.graph.GraphTemplate
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -170,11 +169,12 @@ with ClassLoaderAware {
     ???
   }
 
-  def create(frame: DataFrameTemplate): Future[DataFrame] = withContext("se.create") {
-    future {
-      frames.create(frame)
-    }
-  }
+  def create(frame: DataFrameTemplate)(implicit user: UserPrincipal): Future[DataFrame] =
+    for {
+      (start, complete) <- execute(new CommandTemplate(name = "dataframes/create",
+                                                        arguments = Some(frame.toJson.asJsObject)))
+      result <- complete
+    } yield result.result.get.convertTo[DataFrame]
 
   def delete(frame: DataFrame): Future[Unit] = withContext("se.delete") {
     future {
@@ -741,16 +741,15 @@ with ClassLoaderAware {
   }
 
 
+  val commandPlugins: Map[String,CommandPlugin[_,_]] = SparkEngineConfig.commands.flatMap { case (archive, classes) =>
+    val plugins = classes.map(c => Boot.getArchive(archive, c).asInstanceOf[CommandPlugin[_ <: Product,_ <: Product]])
+    plugins
+  }.map((p:CommandPlugin[_ <: Product, _ <: Product]) => (p.name, p)).toMap
+
   //TODO: get the list of available commands by going through a plugin framework
   //rather than encoding them directly here.
   def getCommandDefinition(name: String): Option[CommandPlugin[_,_]] = {
-    val func: Option[CommandPlugin[_,_]] = name match {
-      case "graphs/ml/loopy_belief_propagation" =>
-        Some(Boot.getArchive("igiraph-titan", "com.intel.intelanalytics.algorithm.graph.LoopyBeliefPropagation", None)
-              .asInstanceOf[CommandPlugin[_,_]])
-      case _ => None
-    }
-    func
+    commandPlugins.get(name)
   }
 
   def execute(command: CommandTemplate)(implicit user: UserPrincipal): Future[(Command, Future[Command])] = {
@@ -765,7 +764,7 @@ with ClassLoaderAware {
                 .getOrElse(throw new NotFoundException("command definition", command.name))
               val invocation: SparkInvocation = SparkInvocation(this, commandId = cmd.id, arguments = cmd.arguments,
                 user = user, executionContext = implicitly[ExecutionContext],
-                sparkContextFactory = () => sparkContextManager.context(user).sparkContext)
+                sparkContextFactory = () => sparkContextManager.context(user).sparkContext, frames = frames)
               //TODO: temporary, we're working on generic JSON support
               val convertedArgs = function.parseArguments(command.arguments.get)
               val funcResult = function(invocation, convertedArgs)
