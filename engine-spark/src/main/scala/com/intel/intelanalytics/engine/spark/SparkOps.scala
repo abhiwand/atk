@@ -82,7 +82,15 @@ private[spark] object SparkOps extends Serializable {
     rows
   }
 
-
+  /**
+   * Load each line from CSV file into an RDD of Row objects.
+   * @param ctx SparkContext used for textFile reading
+   * @param fileName name of file to parse
+   * @param skipRows number of rows to skip before beginning parsing
+   * @param parserFunction function used for parsing lines into Row objects
+   * @param converter function used for converting parsed strings into DataTypes
+   * @return  RDD of Row objects
+   */
   def loadLines(ctx: SparkContext,
                 fileName: String,
                 skipRows:Option[Int],

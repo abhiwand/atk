@@ -181,7 +181,6 @@ class FrameBackendRest(object):
         if isinstance(data, (CsvFile, BigFrame)):
             # update the Python object (set the columns)
             for column in command_info.result['schema']['columns']:
-            # for name, data_type in data.schema:
                 name, data_type =  column[0], supported_types.try_get_type_from_string(column[1])
                 if data_type is not ignore:
                     self._accept_column(frame, BigColumn(name, data_type))

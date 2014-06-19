@@ -148,6 +148,14 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
     }
   }
 
+  /**
+   * Load a dataset and append it to an existing dataframe.
+   *
+   * @param uri Command path
+   * @param xform Json Object used for parsing the command sent from the client.
+   * @param user current user
+   * @return
+   */
   def runFrameLoad(uri: Uri, xform: JsonTransform)(implicit user: UserPrincipal) = {
     val test = Try {
       import DomainJsonProtocol._

@@ -1,45 +1,40 @@
+//////////////////////////////////////////////////////////////////////////////
+// INTEL CONFIDENTIAL
+//
+// Copyright 2014 Intel Corporation All Rights Reserved.
+//
+// The source code contained or described herein and all documents related to
+// the source code (Material) are owned by Intel Corporation or its suppliers
+// or licensors. Title to the Material remains with Intel Corporation or its
+// suppliers and licensors. The Material may contain trade secrets and
+// proprietary and confidential information of Intel Corporation and its
+// suppliers and licensors, and is protected by worldwide copyright and trade
+// secret laws and treaty provisions. No part of the Material may be used,
+// copied, reproduced, modified, published, uploaded, posted, transmitted,
+// distributed, or disclosed in any way without Intel's prior express written
+// permission.
+//
+// No license under any patent, copyright, trade secret or other intellectual
+// property right is granted to or conferred upon you by disclosure or
+// delivery of the Materials, either expressly, by implication, inducement,
+// estoppel or otherwise. Any license under such intellectual property rights
+// must be express and approved by Intel in writing.
+//////////////////////////////////////////////////////////////////////////////
+
+
 package com.intel.intelanalytics.domain
 
 import com.intel.intelanalytics.domain.frame.LoadLines
 import com.intel.intelanalytics.domain.frame.load.{Load, LineParserArguments, LineParser, LoadSource}
+import com.intel.intelanalytics.domain.schema.{DataTypes, Schema}
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers
 import spray.json._
 import DomainJsonProtocol._
 
-/**
- * Created by rhicke on 6/12/14.
- */
+
 class LoadLinesTest extends FlatSpec with Matchers{
-
-
-  it should "be parsable from a JSON object" in {
-       val string =
-         """
-           |{
-           |    "source": "temp/simple.csv",
-           |    "destination": "http://localhost:9099/v1/dataframes/5",
-           |    "skipRows": 0,
-           |    "lineParser": {
-           |      "operation": {
-           |        "name": "builtin/line/separator"
-           |      },
-           |      "arguments": {
-           |        "separator": ","
-           |      }
-           |    },
-           |    "schema": {
-           |      "columns": [["a", "int32"], ["b", "int32"]]
-           |    }
-           |  }
-         """.stripMargin
-      val myJson = JsonParser(string).asJsObject
-      val myLoadLines = myJson.convertTo[LoadLines[JsObject, String]]
-      myLoadLines.source should be("temp/simple.csv")
-      println(myLoadLines.lineParser)
-  }
-
-  "Load" should "parse a Load object with a LinesSource" in {
+  "Load" should "parse a Load object with for a file source" in {
     val string =
       """
         |{
@@ -63,12 +58,36 @@ class LoadLinesTest extends FlatSpec with Matchers{
         |}
         |
       """.stripMargin
-//    println(string)
     val myJson = JsonParser(string).asJsObject
-//    println(myJson)
     val myLoadLines = myJson.convertTo[Load[String]]
-    println(myLoadLines)
+
     myLoadLines.source.uri should be("m1demo/domains.json")
+    myLoadLines.source.source_type should be("file")
+    myLoadLines.source.parser should not be(None)
+    val parser = myLoadLines.source.parser.get
+
+    parser.name should be ("builtin/line/separator")
+    parser.arguments should be( LineParserArguments('`',Schema(List(("json",DataTypes.string))), Some(0)) )
+  }
+
+  "Load" should "parse a Load object with for a dataframe source" in {
+    val string =
+      """
+        |{
+        |    "destination": "http://localhost:9099/v1/dataframes/5",
+        |    "source": {
+        |      "source_type": "dataframe",
+        |      "uri": "http://localhost:9099/v1/dataframes/5"
+        |    }
+        |}
+        |
+      """.stripMargin
+    val myJson = JsonParser(string).asJsObject
+    val myLoadLines = myJson.convertTo[Load[String]]
+
+    myLoadLines.source.uri should be("http://localhost:9099/v1/dataframes/5")
+    myLoadLines.source.source_type should be("dataframe")
+    myLoadLines.source.parser should be(None)
   }
 
   "LoadSource" should "be parsed from a JSON that does include a parser" in{
@@ -95,68 +114,8 @@ class LoadLinesTest extends FlatSpec with Matchers{
     val mySource = myJson.convertTo[LoadSource]
     mySource.source_type should be("file")
     mySource.uri  should be("m1demo/domains.json")
-    println(mySource)
+
     mySource.parser should not be(None)
   }
-
-  "LoadSource" should "be parsed from a JSON that does not include a parser" in{
-    val json =
-      """
-        |{
-        |  "source_type": "dataframe",
-        |  "uri": "temp/simple.csv"
-        |}
-      """.stripMargin
-    val myJson = JsonParser(json).asJsObject
-    val mySource = myJson.convertTo[LoadSource]
-    mySource.source_type should be("dataframe")
-    mySource.uri  should be("temp/simple.csv")
-    println(mySource)
-    mySource.parser should be(None)
-  }
-
-
-  "Parser" should "be parsed from a JSON" in{
-    val json =
-      """{
-        |        "name": "builtin/line/separator",
-        |        "arguments": {
-        |            "separator": "`",
-        |            "skip_rows": 0,
-        |            "schema": {
-        |                "columns": [
-        |                    ["json","str"]
-        |                ]
-        |            }
-        |        }
-        |    }
-      """.stripMargin
-    val myJson = JsonParser(json).asJsObject
-    val mySource = myJson.convertTo[LineParser]
-//    mySource.sourceType should be("dataframe")
-//    mySource.uri  should be("temp/simple.csv")
-    println(mySource)
-  }
-
-  "ParserArguments" should "be parsed from a JSON" in{
-    val json =
-      """{
-        |            "separator": "`",
-        |            "skip_rows": 0,
-        |            "schema": {
-        |                "columns": [
-        |                    ["json","str"]
-        |                ]
-        |            }
-        |        }
-      """.stripMargin
-    val myJson = JsonParser(json).asJsObject
-    val mySource = myJson.convertTo[LineParserArguments]
-    //    mySource.sourceType should be("dataframe")
-    //    mySource.uri  should be("temp/simple.csv")
-    println(mySource)
-  }
-
-
 
 }

@@ -131,8 +131,13 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     })
   }
 
-
-  def getData(ctx: Context, source: LoadSource ): (Schema, RDD[Row]) = {
+  /**
+   * Load data from a resource described by a LoadSource object.
+   * @param ctx Context object that should be used for accessing data from spark
+   * @param source LoadSource object with information on what data to load
+   * @return A tuple containing a schema object describing the RDD loaded as well as the RDD itself.
+   */
+  def getLoadData(ctx: Context, source: LoadSource ): (Schema, RDD[Row]) = {
     source.source_type match {
       case "dataframe" => {
          val frame =  frames.lookup(source.uri.toInt).getOrElse(
@@ -145,13 +150,20 @@ class SparkEngine(sparkContextManager: SparkContextManager,
         val schema = parser.arguments.schema
         val converter = DataTypes.parseMany(schema.columns.map(_._2).toArray)(_)
 
-        (schema, SparkOps.loadLines(ctx.sparkContext, fsRoot + "/" + source.uri,
-          parser.arguments.skip_rows, parserFunction, converter))
+        ( schema,
+          SparkOps.loadLines(ctx.sparkContext, fsRoot + "/" + source.uri,
+            parser.arguments.skip_rows, parserFunction, converter) )
       }
       case _ => ???
     }
   }
 
+
+  /**
+   * Load data from a LoadSource object to an existing destination described in the Load object
+   * @param arguments Load command object
+   * @param user current user
+   */
   def load(arguments: Load[Long])(implicit user: UserPrincipal): (Command, Future[Command]) =
     withContext("se.load") {
       require(arguments != null, "arguments are required")
@@ -165,38 +177,27 @@ class SparkEngine(sparkContextManager: SparkContextManager,
               //get destination
               val realFrame = frames.lookup(arguments.destination).getOrElse(
                 throw new IllegalArgumentException(s"No such data frame: ${arguments.destination}"))
-              val frameId = realFrame.id
 
               //get Spark Context
               val ctx = sparkContextManager.context(user)
-              val (schema, newData) = getData(ctx, arguments.source)
-
+              //get Data
+              val (schema, newData) = getLoadData(ctx, arguments.source)
               val rdd = frames.getFrameRdd(ctx.sparkContext, realFrame.id)
 
-              //get new schema
-                //List.groupBy is changing the ordering of the columns. I need to group on my own to keep the ordering given by consecutive load calls
-              val (newColumns, updatedRdd) = if(realFrame.schema == schema) {
-                (realFrame.schema.columns.toArray, rdd.union(newData))
-              } else {
-                val nc = (realFrame.schema.columns ++ schema.columns)
-                val columnOrdering: List[String] = nc.map(_._1).distinct
-                val groupedColumns = nc.groupBy(_._1)
+              val (mergedSchema, updatedRdd) = if(realFrame.schema == schema)
+                (realFrame.schema, rdd ++ newData)
+              else{
+                val mergedSchema = SchemaUtil.mergeSchema(realFrame.schema, schema)
+                val leftData = rdd.map(SchemaUtil.convertSchema(realFrame.schema, mergedSchema,_))
+                val rightData = newData.map(SchemaUtil.convertSchema(schema, mergedSchema,_))
 
-                val newColumns: Array[(String, DataType)] = columnOrdering.map(key => {
-                  (key, DataTypes.mergeTypes(groupedColumns(key).map(_._2)))
-                }).toArray
-
-                ( newColumns,
-                  rdd.map(DataTypes.convertSchema(realFrame.schema.columns.toArray, newColumns)(_))
-                    .union(newData.map(DataTypes.convertSchema(schema.columns.toArray, newColumns)(_)))
-                  )
+                val updatedRdd = leftData ++ rightData
+                (mergedSchema,updatedRdd)
               }
-
-
               //save data
-              val location = fsRoot + frames.getFrameDataFile(frameId)
+              val location = fsRoot + frames.getFrameDataFile(realFrame.id)
               updatedRdd.saveAsObjectFile(location)
-              val frame = frames.updateSchema(realFrame, newColumns.toList)
+              val frame = frames.updateSchema(realFrame, mergedSchema.columns)
               frame.toJson.asJsObject
             }
             commands.lookup(command.id).get
