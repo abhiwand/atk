@@ -465,6 +465,32 @@ class BigFrame(object):
         """
         return self._backend.flatten_column(self, column_name)
 
+    def bin_column(self, column_name, num_bins, bin_type='equalwidth', bin_column_name='binned'):
+        """
+        Bin a column
+
+        Parameters
+        ----------
+        column_name : str
+            The column whose values are to be binned
+        num_bins : int
+            The requested number of bins
+        bin_type : str
+            The binning algorithm to use.  Currently, this is one of: 'equalwidth', 'equaldepth'
+        bin_column_name : str
+            The name for the new binned column
+
+        Returns
+        -------
+        frame : BigFrame
+            The new frame with binned column appended
+
+        Examples
+        --------
+        >>> binned_frame = frame1.bin_column('a', 5, 'equalwidth', 'aBinned')
+        """
+        return self._backend.bin_column(self, column_name, num_bins, bin_type, bin_column_name)
+
     def drop(self, predicate):
         """
         Drop rows that match a requirement.

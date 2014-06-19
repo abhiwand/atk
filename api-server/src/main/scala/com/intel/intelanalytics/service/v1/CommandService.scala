@@ -157,6 +157,7 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
       case ("dataframe/join") => runJoinFrames(uri, xform)
       case ("dataframe/flattenColumn") => runflattenColumn(uri, xform)
       case ("dataframe/groupby") => runFrameGroupByColumn(uri, xform)
+      case ("dataframe/binColumn") => runBinColumn(uri, xform)
       case s: String => illegalArg("Command name is not supported: " + s)
       case _ => illegalArg("Command name was NOT a string")
     }
@@ -357,6 +358,19 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
     validate(test.isSuccess, "Failed to parse file load descriptor: " + getErrorMessage(test)) {
       val args = test.get
       val result = engine.flattenColumn(args)
+      val command: Command = result._1
+      complete(decorate(uri + "/" + command.id, command))
+    }
+  }
+
+  def runBinColumn(uri: Uri, xform: JsonTransform)(implicit user: UserPrincipal) = {
+    val test = Try {
+      xform.arguments.get.convertTo[BinColumn[Long]]
+    }
+
+    validate(test.isSuccess, "Failed to parse file load descriptor: " + getErrorMessage(test)) {
+      val args = test.get
+      val result = engine.binColumn(args)
       val command: Command = result._1
       complete(decorate(uri + "/" + command.id, command))
     }

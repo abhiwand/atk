@@ -427,6 +427,51 @@ with ClassLoaderAware {
       (command, result)
     }
 
+  /**
+   * Bin the specified column in RDD
+   * @param arguments input specification for column binning
+   * @param user current user
+   */
+  override def binColumn(arguments: BinColumn[Long])(implicit user: UserPrincipal): (Command, Future[Command]) =
+    withContext("se.binColumn") {
+      val command: Command = commands.create(new CommandTemplate("binColumn", Some(arguments.toJson.asJsObject)))
+      val result: Future[Command] = future {
+        withMyClassLoader {
+          withContext("se.binColumn.future") {
+            val frameId: Long = arguments.frame
+            val realFrame = frames.lookup(frameId).getOrElse(
+              throw new IllegalArgumentException(s"No such data frame: ${frameId}"))
+
+            withCommand(command) {
+              val ctx = sparkContextManager.context(user).sparkContext
+
+              val newFrame = Await.result(create(DataFrameTemplate(arguments.name, None)), SparkEngineConfig.defaultTimeout)
+              val rdd = frames.getFrameRdd(ctx, frameId)
+
+              val columnIndex = realFrame.schema.columnIndex(arguments.columnName)
+
+              arguments.binType match {
+                case "equalwidth" => {
+                  val binnedRDD = SparkOps.binEqualWidth(columnIndex, arguments.numBins, rdd)
+                  binnedRDD.saveAsObjectFile(fsRoot + frames.getFrameDataFile(newFrame.id))
+                }
+                case "equaldepth" => {
+                  val binnedRDD = SparkOps.binEqualDepth(columnIndex, arguments.numBins, rdd)
+                  binnedRDD.saveAsObjectFile(fsRoot + frames.getFrameDataFile(newFrame.id))
+                }
+                case _ => throw new IllegalArgumentException(s"Invalid binning type: ${arguments.binType.toString()}")
+              }
+
+              newFrame.copy(schema = realFrame.schema).toJson.asJsObject
+            }
+          }
+        }
+        commands.lookup(command.id).get
+      }
+
+      (command, result)
+    }
+
   def filter(arguments: FilterPredicate[JsObject, Long])(implicit user: UserPrincipal): (Command, Future[Command]) =
     withContext("se.filter") {
       require(arguments != null, "arguments are required")

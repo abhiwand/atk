@@ -185,6 +185,11 @@ class FrameBackendRest(object):
         arguments = {'name': name, 'frame': frame._id, 'column': column_name, 'separator': ',' }
         return execute_new_frame_command('flattenColumn', arguments)
 
+    def bin_column(self, frame, column_name, num_bins, bin_type='equalwidth', bin_column_name='binned'):
+        name = self._get_new_frame_name()
+        arguments = {'name': name, 'frame': frame._id, 'columnName': column_name, 'numBins': num_bins, 'binType': bin_type, 'binColumnName': bin_column_name}
+        return execute_new_frame_command('binColumn', arguments)
+
     class InspectionTable(object):
         """
         Inline class used specifically for inspect, where the __repr__ is king
