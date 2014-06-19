@@ -25,8 +25,8 @@ mkdir -p  tarballs/$package/etc/intelanalytics/rest-server
 
 mkdir -p  tarballs/$package/usr/lib/intelanalytics/rest-server/lib
 
-cp -Rv config/intelanalytics-rest-server/assets/* tarballs/$package/
 cp -Rv ../api-server/src/main/resources/* tarballs/$package/etc/intelanalytics/rest-server
+cp -Rv config/intelanalytics-rest-server/assets/* tarballs/$package/
 cp -v ../engine/src/main/resources/engine.conf tarballs/$package/etc/intelanalytics/rest-server
 
 jars="engine-spark.jar api-server.jar engine.jar interfaces.jar "

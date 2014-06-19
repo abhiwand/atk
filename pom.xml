@@ -107,7 +107,7 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
     </prerequisites>
     <properties>
         <project.version>0.8.0-SNAPSHOT</project.version>
-        <pkg.version>0.8</pkg.version>
+        <pkg.version>0.8.0</pkg.version>
         <top.dir>${project.basedir}</top.dir>
         <buildtype>test</buildtype>
 
