@@ -100,4 +100,5 @@ trait Engine {
 
   def deleteGraph(graph: Graph): Future[Unit]
 
+  def lookupByName(name: String)(implicit user:UserPrincipal): Future[Graph]
 }
