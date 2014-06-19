@@ -27,11 +27,11 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <artifactId>graphon</artifactId>
-    <packaging>pom</packaging>
+    <packaging>jar</packaging>
     <url>http://maven.apache.org</url>
     <name>IntelAnalytics graph algorithms</name>
     <parent>
-        <groupId>com.intel</groupId>
+        <groupId>com.intel.ia</groupId>
         <artifactId>IntelAnalytics</artifactId>
         <relativePath>../pom.xml</relativePath>
         <version>0.8.0-SNAPSHOT</version>
@@ -66,8 +66,8 @@
     <dependencies>
         <dependency>
             <groupId>org.apache.spark</groupId>
-            <artifactId>spark-mllib_2.10</artifactId>
-            <version>0.9.0-incubating</version>
+            <artifactId>spark-mllib_${scala.short.version}</artifactId>
+            <!--not sure if this is going to work for graphon but the parent version is 0.9.1 and this was 0.9-incubating-->
         </dependency>
     </dependencies>
 </project>
