@@ -750,6 +750,12 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 <groupId>com.thinkaurelius.titan</groupId>
                 <artifactId>titan-cassandra</artifactId>
                 <version>${dep.aurelius.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.apache.cassandra.deps</groupId>
+                        <artifactId>avro</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <!--ENDititan-->
 
