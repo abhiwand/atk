@@ -196,14 +196,15 @@ private[spark] object SparkOps extends Serializable {
     // Need consider how cutoffs/binSizes are going to be returned (if at all)
 
     // try the following and throw exception if can not cast to Double
-    val columnRdd = rdd.map(row => row(index).asInstanceOf[Double])
+    val columnRdd = rdd.map(row => java.lang.Double.parseDouble(row(index).toString))
 
     val (cutoffs: Array[Double], binSizes: Array[Long]) = columnRdd.histogram(numBins)
 
     // map each data element to its bin id, using cutoffs index as bin id
-    val binnedColumnRdd = columnRdd.map { element ⇒
+    val binnedColumnRdd = rdd.map { row ⇒
       var binIndex = 0
       var working = true
+      val element = java.lang.Double.parseDouble(row(index).toString)
       do {
         for (i ← 0 to cutoffs.length - 2) {
           // inclusive upper-bound on last cutoff range
@@ -216,10 +217,12 @@ private[spark] object SparkOps extends Serializable {
           }
         }
       } while (working)
-      (element.asInstanceOf[Any], binIndex.asInstanceOf[Any])
+      //(element.asInstanceOf[Any], binIndex.asInstanceOf[Any])
+      row :+ binIndex.asInstanceOf[Any]
     }
+    binnedColumnRdd
     // join the bin mappings back to the frame
-    rdd.map(row => (row(index), row)).join(binnedColumnRdd).map(pairs => pairs._2._1 :+ pairs._2._2)
+    //rdd.map(row => (row(index), row)).join(binnedColumnRdd).map(pairs => pairs._2._1 :+ pairs._2._2)
   }
 
   /**

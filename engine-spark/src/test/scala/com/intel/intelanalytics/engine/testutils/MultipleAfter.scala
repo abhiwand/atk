@@ -21,7 +21,7 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.feateng.spark.testutils
+package com.intel.intelanalytics.engine.testutils
 
 import org.specs2.mutable.After
 

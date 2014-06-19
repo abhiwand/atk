@@ -21,40 +21,57 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.feateng.spark.binning
+package com.intel.intelanalytics.engine.testutils
 
-import org.apache.spark.rdd.RDD
-import org.apache.spark.SparkContext._
+import java.util.Date
+import org.apache.spark.SparkContext
+import scala.concurrent.Lock
 
-object EqualWidthBinning extends Binning[Double] {
+/**
+ * This trait case be mixed into Specifications to create a SparkContext for testing.
+ * <p>
+ * IMPORTANT! This adds a couple seconds to your unit test!
+ * </p>
+ * <p>
+ * Lock is used because you can only have one local SparkContext running at a time.
+ * Other option is to use "parallelExecution in Test := false" but locking seems to be faster.
+ * </p>
+ */
+trait TestingSparkContext extends MultipleAfter {
 
-  override def bin(inputRdd: RDD[Double], numBins: Int): Array[(Double, Int)] = {
-    require(numBins >= 1, "Invalid number of bins: " + numBins)
-    // TODO: save cutoffs and binSizes somewhere
-    val (cutoffs: Array[Double], binSizes: Array[Long]) = inputRdd.histogram(numBins)
+  // locking in the constructor is slightly odd but it seems to work well
+  TestingSparkContext.lock.acquire()
 
-    cutoffs.foreach(println(_))
-    binSizes.foreach(println(_))
+  LogUtils.silenceSpark()
 
-    // map each data element to its bin id, using cutoffs index as bin id
-    val binnedRdd = inputRdd.map { element ⇒
-      var index = 0
-      var working = true
-      do {
-        for (i ← 0 to cutoffs.length - 2) {
-          // inclusive upper-bound on last cutoff range
-          if ((i == cutoffs.length - 2) && (element - cutoffs(i) >= 0.0) && (element - cutoffs(i + 1) <= 0.0)) {
-            index = i
-            working = false
-          } else if ((element - cutoffs(i) >= 0.0) && (element - cutoffs(i + 1) < 0.0)) {
-            index = i
-            working = false
-          }
-        }
-      } while (working)
-      (element, index)
-    }
-    binnedRdd.toArray()
+  lazy val sc = new SparkContext("local", "test " + new Date())
+
+  /**
+   * Clean up after the test is done
+   */
+  override def after: Any = {
+    cleanupSpark()
+    super.after
   }
 
+  /**
+   * Shutdown spark and release the lock
+   */
+  def cleanupSpark(): Unit = {
+    try {
+      if (sc != null) {
+        sc.stop()
+      }
+    }
+    finally {
+      // To avoid Akka rebinding to the same port, since it doesn't unbind immediately on shutdown
+      System.clearProperty("spark.driver.port")
+
+      TestingSparkContext.lock.release()
+    }
+  }
+}
+
+object TestingSparkContext {
+  val lock = new Lock()
 }

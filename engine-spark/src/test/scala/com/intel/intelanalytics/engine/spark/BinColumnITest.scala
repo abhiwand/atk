@@ -21,45 +21,26 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.feateng.spark.testutils
+package com.intel.intelanalytics.engine.spark
 
-import org.scalatest.{ BeforeAndAfterAll, Suite }
-import scala.concurrent.Lock
-import org.apache.spark.{ SparkContext, SparkConf }
-import java.util.Date
+import com.intel.intelanalytics.engine.testutils.TestingSparkContext
+import org.specs2.mutable.Specification
 
-object ScalaTestSparkContext extends Suite with BeforeAndAfterAll {
-  LogUtils.silenceSpark()
-  val lock = new Lock()
-  lock.acquire()
+class BinColumnITest extends Specification {
 
-  val conf = new SparkConf()
-    .setMaster("local")
-    .setAppName(this.getClass.getSimpleName + " " + new Date())
-  conf.set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
-  conf.set("spark.kryo.registrator", "com.intel.graphbuilder.driver.spark.titan.GraphBuilderKryoRegistrator")
-  val sc = new SparkContext(conf)
+  "binEqualWidth" should {
 
-  /**
-   * Clean up after the test is done
-   */
-  override def afterAll = {
-    cleanupSpark()
-  }
-
-  /**
-   * Shutdown spark and release the lock
-   */
-  def cleanupSpark(): Unit = {
-    try {
-      if (sc != null) {
-        sc.stop()
-      }
-    } finally {
-      // To avoid Akka rebinding to the same port, since it doesn't unbind immediately on shutdown
-      System.clearProperty("spark.driver.port")
-
-      lock.release()
+    "create append new column" in new TestingSparkContext {
+      val inputList = List(Array[Any]("A", 1), Array[Any]("B", 2), Array[Any]("C", 3), Array[Any]("D", 4), Array[Any]("E", 5))
+      val rdd = sc.parallelize(inputList)
+      val binnedRdd = SparkOps.binEqualWidth(1, 2, rdd)
+      val result = binnedRdd.take(5)
+      result.apply(0) mustEqual Array[Any]("A", 1, 0)
+      result.apply(1) mustEqual Array[Any]("B", 2, 0)
+      result.apply(2) mustEqual Array[Any]("C", 3, 1)
+      result.apply(3) mustEqual Array[Any]("D", 4, 1)
+      result.apply(4) mustEqual Array[Any]("E", 5, 1)
     }
   }
+
 }

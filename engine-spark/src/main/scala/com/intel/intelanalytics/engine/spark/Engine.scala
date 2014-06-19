@@ -446,24 +446,40 @@ with ClassLoaderAware {
             withCommand(command) {
               val ctx = sparkContextManager.context(user).sparkContext
 
-              val newFrame = Await.result(create(DataFrameTemplate(arguments.name, None)), SparkEngineConfig.defaultTimeout)
+              //val newFrame = Await.result(create(DataFrameTemplate(arguments.name, None)), SparkEngineConfig.defaultTimeout)
               val rdd = frames.getFrameRdd(ctx, frameId)
 
               val columnIndex = realFrame.schema.columnIndex(arguments.columnName)
 
+
+              val columnObject = new BigColumn(arguments.binColumnName)
+
+              if (realFrame.schema.columns.indexWhere(columnTuple => columnTuple._1 == arguments.binColumnName) >= 0)
+                throw new IllegalArgumentException(s"Duplicate column name: ${arguments.binColumnName}")
+
+              // Update the schema
+              var newFrame = realFrame
+              newFrame = frames.addColumn(newFrame, columnObject, DataTypes.toDataType(DataTypes.int32))
+
+
               arguments.binType match {
                 case "equalwidth" => {
-                  val binnedRDD = SparkOps.binEqualWidth(columnIndex, arguments.numBins, rdd)
-                  binnedRDD.saveAsObjectFile(fsRoot + frames.getFrameDataFile(newFrame.id))
+                  println("Running equal width")
+                  val binnedRdd = SparkOps.binEqualWidth(columnIndex, arguments.numBins, rdd)
+                  binnedRdd.take(5)
+                  binnedRdd.saveAsObjectFile(fsRoot + frames.getFrameDataFile(newFrame.id))
                 }
                 case "equaldepth" => {
-                  val binnedRDD = SparkOps.binEqualDepth(columnIndex, arguments.numBins, rdd)
-                  binnedRDD.saveAsObjectFile(fsRoot + frames.getFrameDataFile(newFrame.id))
+                  val binnedRdd = SparkOps.binEqualDepth(columnIndex, arguments.numBins, rdd)
+                  binnedRdd.saveAsObjectFile(fsRoot + frames.getFrameDataFile(newFrame.id))
                 }
                 case _ => throw new IllegalArgumentException(s"Invalid binning type: ${arguments.binType.toString()}")
               }
 
-              newFrame.copy(schema = realFrame.schema).toJson.asJsObject
+              //val newSchema = new Schema(realFrame.schema.columns :+ (arguments.binColumnName, DataTypes.string))
+              //println("SCHEMA = " + realFrame.schema.toString)
+              println("NEW SCHEMA = " + newFrame.schema.toString)
+              newFrame.copy(schema = newFrame.schema).toJson.asJsObject
             }
           }
         }
