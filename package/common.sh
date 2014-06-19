@@ -181,7 +181,7 @@ function rpmSpec()
 {
 
 echo "Name: $PACKAGE_NAME"
-echo "Provides: $PROVIDES"
+#echo "Provides: $PROVIDES"
 echo "Summary: $SUMMARY"
 echo "License: $LICENSE"
 echo "Version: $VERSION"
