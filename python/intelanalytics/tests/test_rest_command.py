@@ -33,7 +33,7 @@ class TestRestCommand(unittest.TestCase):
 
         self.assertEqual(len(write_queue), 2)
         self.assertEqual(write_queue[0], "\rinitializing...")
-        self.assertEqual(write_queue[1], "\r 30% [===============...................................]")
+        self.assertEqual(write_queue[1], "\r 30.00% [===============...................................]")
 
 
 if __name__ == '__main__':
