@@ -1,20 +1,5 @@
 package controllers
 
-import play.api.mvc._
-import controllers.Session._
-import play.api.Play
-import play.api.Play.current
-import play.api.libs.iteratee._
-import scala.concurrent.{ ExecutionContext, Future }
-
-//{Enumerator, Input, Iteratee}
-import ExecutionContext.Implicits.global
-import play.api.libs.ws.WS
-import play.api.libs.concurrent.Promise
-//import play.api.libs.iteratee.Step.Done
-import scala.concurrent.Future
-import scala.util.{ Failure, Success }
-
 object Documentation extends Controller {
   /**
    * main documentation page shows a links to all the other pages

@@ -23,12 +23,12 @@
 
 package com.intel.intelanalytics.service
 
-import org.scalatest.{ Matchers, FlatSpec }
-import org.scalatest.mock.MockitoSugar
-import spray.testkit.ScalatestRouteTest
-import spray.routing.HttpService
 import com.intel.event.EventLogger
 import com.intel.event.adapter.SLF4JLogAdapter
+import org.scalatest.mock.MockitoSugar
+import org.scalatest.{FlatSpec, Matchers}
+import spray.routing.HttpService
+import spray.testkit.ScalatestRouteTest
 
 /**
  * Parent class for ServiceSpecs

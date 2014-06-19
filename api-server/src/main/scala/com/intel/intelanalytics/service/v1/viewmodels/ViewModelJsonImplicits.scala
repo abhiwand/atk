@@ -23,8 +23,8 @@
 
 package com.intel.intelanalytics.service.v1.viewmodels
 
-import spray.json.DefaultJsonProtocol
 import spray.httpx.SprayJsonSupport
+import spray.json.DefaultJsonProtocol
 
 /**
  * Implicit Conversions for View/Models to JSON

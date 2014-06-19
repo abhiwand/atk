@@ -23,8 +23,8 @@
 
 package com.intel.intelanalytics.repository
 
-import org.scalatest.Matchers
 import com.intel.intelanalytics.domain.frame.DataFrameTemplate
+import org.scalatest.Matchers
 
 class FrameRepositorySpec extends SlickMetaStoreH2Testing with Matchers {
 

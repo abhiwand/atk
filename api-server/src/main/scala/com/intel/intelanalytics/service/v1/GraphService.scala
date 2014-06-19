@@ -23,27 +23,21 @@
 
 package com.intel.intelanalytics.service.v1
 
-import spray.json._
-import spray.http.Uri
-import com.intel.intelanalytics.repository.MetaStoreComponent
-import com.intel.intelanalytics.service.v1.viewmodels._
-import com.intel.intelanalytics.engine.{ Engine, EngineComponent }
-import scala.concurrent.ExecutionContext
-import scala.util.Failure
-import scala.util.Success
-import com.intel.intelanalytics.service.v1.viewmodels.ViewModelJsonImplicits
-import com.intel.intelanalytics.service.v1.viewmodels.Rel
 import com.intel.intelanalytics.domain.DomainJsonProtocol
+import com.intel.intelanalytics.domain.graph.{Graph, GraphTemplate}
+import com.intel.intelanalytics.engine.Engine
 import com.intel.intelanalytics.security.UserPrincipal
-import com.intel.intelanalytics.domain.graph.{ GraphTemplate, Graph }
-import com.intel.intelanalytics.shared.EventLogging
-import com.intel.intelanalytics.service.{ CommonDirectives, AuthenticationDirective }
-import spray.routing.Directives
+import com.intel.intelanalytics.service.CommonDirectives
 import com.intel.intelanalytics.service.v1.decorators.GraphDecorator
+import com.intel.intelanalytics.service.v1.viewmodels.{Rel, ViewModelJsonImplicits, _}
+import com.intel.intelanalytics.shared.EventLogging
+import spray.http.Uri
+import spray.json._
+import spray.routing.Directives
 
-//TODO: Is this right execution context for us?
-
-import ExecutionContext.Implicits.global
+import scala.concurrent.ExecutionContext
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.util.{Failure, Success}
 
 /**
  * REST API Graph Service
@@ -54,7 +48,7 @@ class GraphService(commonDirectives: CommonDirectives, engine: Engine) extends D
    * The spray routes defining the Graph service.
    */
   def graphRoutes() = {
-    import ViewModelJsonImplicits._
+    import com.intel.intelanalytics.service.v1.viewmodels.ViewModelJsonImplicits._
     val prefix = "graphs"
 
     /**
@@ -87,7 +81,7 @@ class GraphService(commonDirectives: CommonDirectives, engine: Engine) extends D
             }
           } ~
             post {
-              import DomainJsonProtocol._
+              import com.intel.intelanalytics.domain.DomainJsonProtocol._
               entity(as[GraphTemplate]) {
                 graph ⇒
                   onComplete(engine.createGraph(graph)) {
@@ -126,7 +120,7 @@ class GraphService(commonDirectives: CommonDirectives, engine: Engine) extends D
                     parameterMap { params ⇒
                       onComplete(for { r ← engine.getVertices(id, offset, count, queryName, params) } yield r) {
                         case Success(rows: Iterable[Array[Any]]) ⇒ {
-                          import DomainJsonProtocol._
+                          import com.intel.intelanalytics.domain.DomainJsonProtocol._
                           val strings = rows.map(r ⇒ r.map(a ⇒ a.toJson).toList).toList
                           complete(strings)
                         }

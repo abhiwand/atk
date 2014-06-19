@@ -23,14 +23,8 @@
 
 package services.authorize.providers.google
 
-import play.api.libs.json._
-import play.api.Play.current
-import scala.concurrent.duration._
-import play.api.libs.ws.WS
 import scala.concurrent.Await
-import play.api.libs.concurrent.Execution.Implicits._
-import services.authorize.{ UserInfo, TokenResponse }
-import play.api.Play
+import scala.concurrent.duration._
 
 /**
  * Singleton object to provide google oauth services.

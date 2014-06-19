@@ -23,9 +23,9 @@
 
 package com.intel.intelanalytics.engine.spark
 
-import org.scalatest.{ Suites, Matchers, FlatSpec }
 import com.intel.intelanalytics.engine.TestingSparkContext
-import org.scalatest.mock.MockitoSugar
+import org.scalatest.Matchers
+
 import scala.collection.mutable.ArrayBuffer
 
 class SparkOpsTest extends TestingSparkContext with Matchers {

@@ -24,26 +24,19 @@
 package com.intel.intelanalytics.service.v1
 
 import com.intel.intelanalytics.domain._
-import spray.json._
+import com.intel.intelanalytics.domain.frame.{DataFrame, DataFrameTemplate}
+import com.intel.intelanalytics.engine.Engine
+import com.intel.intelanalytics.security.UserPrincipal
+import com.intel.intelanalytics.service.v1.decorators.FrameDecorator
+import com.intel.intelanalytics.service.v1.viewmodels.{GetDataFrame, _}
+import com.intel.intelanalytics.service.{ApiServiceConfig, CommonDirectives}
+import com.intel.intelanalytics.shared.EventLogging
 import spray.http.Uri
-import scala.Some
-import com.intel.intelanalytics.repository.MetaStoreComponent
-import com.intel.intelanalytics.service.v1.viewmodels._
-import com.intel.intelanalytics.engine.{ Engine, EngineComponent }
+import spray.routing.Directives
+
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent._
 import scala.util._
-import com.intel.intelanalytics.service.v1.viewmodels.GetDataFrame
-import com.intel.intelanalytics.shared.EventLogging
-import com.intel.intelanalytics.security.UserPrincipal
-import com.intel.intelanalytics.domain.frame.DataFrameTemplate
-import com.intel.intelanalytics.domain.frame.DataFrame
-import com.intel.intelanalytics.domain.DomainJsonProtocol.DataTypeFormat
-import com.intel.intelanalytics.service.{ ApiServiceConfig, CommonDirectives, AuthenticationDirective }
-import spray.routing.Directives
-import com.intel.intelanalytics.service.v1.decorators.FrameDecorator
-
-//TODO: Is this right execution context for us?
-import ExecutionContext.Implicits.global
 
 /**
  * REST API Data Frame Service
@@ -72,8 +65,6 @@ class DataFrameService(commonDirectives: CommonDirectives, engine: Engine) exten
       (path(prefix) & pathEnd) {
         requestUri { uri =>
           get {
-            import spray.json._
-            import ViewModelJsonImplicits._
             //TODO: cursor
             onComplete(engine.getFrames(0, ApiServiceConfig.defaultCount)) {
               case Success(frames) => complete(FrameDecorator.decorateForIndex(uri.toString(), frames))
@@ -102,7 +93,6 @@ class DataFrameService(commonDirectives: CommonDirectives, engine: Engine) exten
                   case Success(Some(frame)) => {
                     val decorated = decorate(uri, frame)
                     complete {
-                      import spray.httpx.SprayJsonSupport._
                       implicit val format = DomainJsonProtocol.dataFrameTemplateFormat
                       implicit val indexFormat = ViewModelJsonImplicits.getDataFrameFormat
                       decorated
@@ -127,9 +117,8 @@ class DataFrameService(commonDirectives: CommonDirectives, engine: Engine) exten
                 (offset, count) =>
                   onComplete(engine.getRows(id, offset, count)) {
                     case Success(rows: Iterable[Array[Any]]) => {
-                      import spray.httpx.SprayJsonSupport._
+                      import com.intel.intelanalytics.domain.DomainJsonProtocol._
                       import spray.json._
-                      import DomainJsonProtocol._
                       val strings = rows.map(r => r.map {
                         case null => JsNull
                         case a => a.toJson

@@ -23,8 +23,9 @@
 
 package com.intel.intelanalytics.repository
 
-import scala.util.Try
 import com.intel.intelanalytics.domain.HasId
+
+import scala.util.Try
 
 /**
  * Repository interface for read/write operations (CRUD) for a single table.

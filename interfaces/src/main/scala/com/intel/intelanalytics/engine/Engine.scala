@@ -23,23 +23,15 @@
 
 package com.intel.intelanalytics.engine
 
-import scala.concurrent.Future
-import com.intel.intelanalytics.engine.Rows._
-import com.intel.intelanalytics.domain.frame._
-import spray.json.JsObject
-import com.intel.intelanalytics.domain.frame.FrameRenameColumn
-import com.intel.intelanalytics.domain.frame.FrameProject
-import com.intel.intelanalytics.domain.frame.FrameRenameFrame
 import com.intel.intelanalytics.domain.FilterPredicate
-import com.intel.intelanalytics.security.UserPrincipal
-import com.intel.intelanalytics.domain.frame.DataFrame
-import com.intel.intelanalytics.domain.frame.FrameRemoveColumn
-import com.intel.intelanalytics.domain.frame.FrameJoin
-import com.intel.intelanalytics.domain.frame.LoadLines
 import com.intel.intelanalytics.domain.command.Command
-import com.intel.intelanalytics.domain.frame.DataFrameTemplate
-import com.intel.intelanalytics.domain.frame.FrameAddColumns
-import com.intel.intelanalytics.domain.graph.{ GraphLoad, GraphTemplate, Graph }
+import com.intel.intelanalytics.domain.frame.{DataFrame, DataFrameTemplate, FrameAddColumns, FrameJoin, FrameProject, FrameRemoveColumn, FrameRenameColumn, FrameRenameFrame, LoadLines, _}
+import com.intel.intelanalytics.domain.graph.{Graph, GraphLoad, GraphTemplate}
+import com.intel.intelanalytics.engine.Rows._
+import com.intel.intelanalytics.security.UserPrincipal
+import spray.json.JsObject
+
+import scala.concurrent.Future
 
 //TODO: make these all use Try instead?
 //TODO: make as many of these as possible use id instead of dataframe as the first argument?

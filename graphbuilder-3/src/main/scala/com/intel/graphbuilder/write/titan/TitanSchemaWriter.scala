@@ -24,10 +24,10 @@
 package com.intel.graphbuilder.write.titan
 
 import com.intel.graphbuilder.schema.{EdgeLabelDef, GraphSchema, PropertyDef, PropertyType}
+import com.intel.graphbuilder.util.PrimitiveConverter
 import com.intel.graphbuilder.write.SchemaWriter
 import com.thinkaurelius.titan.core.TitanGraph
 import com.tinkerpop.blueprints._
-import com.intel.graphbuilder.util.PrimitiveConverter
 
 /**
  * Titan specific implementation of SchemaWriter.
