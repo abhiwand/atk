@@ -181,6 +181,58 @@ private[spark] object SparkOps extends Serializable {
     rdd.flatMap(row => SparkOps.flattenColumnByIndex(index, row, separator))
   }
 
+  /**
+   * Bin column at index using equal width binning
+   *
+   * @param index column index
+   * @param rdd RDD for binning
+   * @return new RDD with binned column appended
+   */
+  def binEqualWidth(index: Int, numBins: Int, rdd: RDD[Row]): RDD[Row] = {
+    // TODO: save cutoffs and binSizes somewhere
+    // TODO: histogram assumes an RDD[Double], so this needs to be verified
+    // Basically, I need to extract the column RDD, check that the types are numeric (and cast to Double),
+    // run the histogram algo on RDD[Double] for column, then append column back to dataframe
+    // Need consider how cutoffs/binSizes are going to be returned (if at all)
+
+    // try the following and throw exception if can not cast to Double
+    val columnRdd = rdd.map(row => row(index).asInstanceOf[Double])
+
+    val (cutoffs: Array[Double], binSizes: Array[Long]) = columnRdd.histogram(numBins)
+
+    // map each data element to its bin id, using cutoffs index as bin id
+    val binnedColumnRdd = columnRdd.map { element ⇒
+      var binIndex = 0
+      var working = true
+      do {
+        for (i ← 0 to cutoffs.length - 2) {
+          // inclusive upper-bound on last cutoff range
+          if ((i == cutoffs.length - 2) && (element - cutoffs(i) >= 0.0) && (element - cutoffs(i + 1) <= 0.0)) {
+            binIndex = i
+            working = false
+          } else if ((element - cutoffs(i) >= 0.0) && (element - cutoffs(i + 1) < 0.0)) {
+            binIndex = i
+            working = false
+          }
+        }
+      } while (working)
+      (element, binIndex)
+    }
+    // join the bin mappings back to the frame
+    rdd.map(row => (row(index), row)).join(binnedColumnRdd).map(pairs => pairs._2._1 ++ pairs._2._2)
+  }
+
+  /**
+   * Bin column at index using equal depth binning
+   *
+   * @param index column index
+   * @param rdd RDD for binning
+   * @return new RDD with binned column appended
+   */
+  def binEqualDepth(index: Int, numBins: Int, rdd: RDD[Row]): RDD[Row] = {
+    ???
+  }
+
   def aggregation_functions(elem: Seq[Array[Any]],
                             args_pair: Seq[(Int, String)],
                             schema: List[(String, DataTypes.DataType)]): Seq[Any] = {
