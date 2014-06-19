@@ -62,7 +62,7 @@ trait Engine {
 
   def getRows(id: Identifier, offset: Long, count: Int)(implicit user: UserPrincipal): Future[Iterable[Row]]
 
-  def create(frame: DataFrameTemplate): Future[DataFrame]
+  def create(frame: DataFrameTemplate)(implicit user: UserPrincipal): Future[DataFrame]
 
   def clear(frame: DataFrame): Future[DataFrame]
 

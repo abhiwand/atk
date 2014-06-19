@@ -24,7 +24,7 @@
 package com.intel.intelanalytics.engine.plugin
 
 import com.intel.intelanalytics.ClassLoaderAware
-import com.intel.intelanalytics.component.{Component, Located}
+import com.intel.intelanalytics.component.Component
 import com.intel.intelanalytics.security.UserPrincipal
 import com.typesafe.config.Config
 import spray.json.JsObject
@@ -42,7 +42,6 @@ import scala.concurrent.ExecutionContext
  */
 sealed trait OperationPlugin[A <: Product, R <: Product] extends ((Invocation, Any) => R)
                                                                           with Component
-                                                                          with Located
                                                                           with ClassLoaderAware {
 
   /**

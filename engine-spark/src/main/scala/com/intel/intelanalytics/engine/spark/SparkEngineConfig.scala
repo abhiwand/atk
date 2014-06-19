@@ -26,7 +26,7 @@ package com.intel.intelanalytics.engine.spark
 import scala.concurrent.duration._
 import com.intel.intelanalytics.shared.SharedConfig
 import com.intel.graphbuilder.util.SerializableBaseConfiguration
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 
 /**
  * Configuration Settings for the SparkEngine,
@@ -47,6 +47,13 @@ object SparkEngineConfig extends SharedConfig {
 
   val maxRows: Int = config.getInt("intel.analytics.engine.max-rows")
 
+  val commands: List[(String,List[String])] = {
+    val cfg = config.getConfig("intel.analytics.engine.commands.available")
+    cfg.entrySet().asScala
+        .map(e => (e.getKey, cfg.getStringList(e.getKey).asScala.toList))
+        .toList
+  }
+
   /**
    * Default settings for Titan Load.
    *
@@ -55,7 +62,7 @@ object SparkEngineConfig extends SharedConfig {
   def titanLoadConfiguration: SerializableBaseConfiguration = {
     val titanConfiguration = new SerializableBaseConfiguration
     val titanLoadConfig = config.getConfig("intel.analytics.engine.titan.load")
-    for (entry <- titanLoadConfig.entrySet()) {
+    for (entry <- titanLoadConfig.entrySet().asScala) {
       titanConfiguration.addProperty(entry.getKey, titanLoadConfig.getString(entry.getKey))
     }
     titanConfiguration
