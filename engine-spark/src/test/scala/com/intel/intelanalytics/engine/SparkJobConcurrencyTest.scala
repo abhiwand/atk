@@ -13,12 +13,17 @@ class SparkJobConcurrencyTest  extends TestingSparkContext with Matchers {
     val listener = new SparkProgressListener(null)
     sc.addSparkListener(listener)
 
-    val file = File.createTempFile("test", "-tmp")
-    val path = file.getAbsolutePath
-    file.delete()
-    if (!file.mkdirs()) {
-      throw new RuntimeException("Failed to create tmpDir: " + path)
+    def createTempDir: File = {
+      val file = File.createTempFile("test", "-tmp")
+      val path = file.getAbsolutePath
+      file.delete()
+      if (!file.mkdirs()) {
+        throw new RuntimeException("Failed to create tmpDir: " + path)
+      }
+      file
     }
+    val file = createTempDir
+    val path = file.getAbsolutePath
 
     val sem = new Semaphore(0)
     val num = 100

@@ -40,10 +40,10 @@ def print_progress(progress, make_new_line):
 
     progress_summary = []
     for p in progress:
-        num_star = p / 2
+        num_star = int(p / 2)
         num_dot = 50 - num_star
-        number = str(p)
-        progress_summary.append("\r%3s%% [%s%s]" % (number, '=' * num_star, '.' * num_dot))
+        number = "%3.2f" % p
+        progress_summary.append("\r%6s%% [%s%s]" % (number, '=' * num_star, '.' * num_dot))
 
     if make_new_line:
         print progress_summary[-2]
