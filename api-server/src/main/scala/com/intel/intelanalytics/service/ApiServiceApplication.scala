@@ -23,18 +23,18 @@
 
 package com.intel.intelanalytics.service
 
-import akka.actor.{ ActorRef, ActorSystem, Props }
+import akka.actor.{ActorSystem, Props}
 import akka.io.IO
-import spray.can.Http
 import akka.pattern.ask
 import akka.util.Timeout
-import scala.concurrent.duration._
 import com.intel.event.EventLogger
 import com.intel.event.adapter.SLF4JLogAdapter
 import com.intel.intelanalytics.component.Archive
 import com.intel.intelanalytics.engine.Engine
-import com.typesafe.config.ConfigFactory
+import spray.can.Http
+
 import scala.concurrent.Await
+import scala.concurrent.duration._
 
 /**
  * API Service Application - a REST application used by client layer to communicate with the Engine.

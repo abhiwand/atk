@@ -23,13 +23,14 @@
 
 package com.intel.intelanalytics.engine.spark
 
-import org.apache.hadoop.fs.{ Path ⇒ HPath, FileSystem, LocalFileSystem }
-import com.intel.intelanalytics.engine.{ Directory, File, Entry, FileStorage }
+import java.io.{IOException, InputStream, OutputStream}
+import java.nio.file.{Path, Paths}
+
+import com.intel.intelanalytics.engine.{Directory, Entry, File, FileStorage}
 import com.intel.intelanalytics.shared.EventLogging
 import org.apache.hadoop.conf.Configuration
+import org.apache.hadoop.fs.{FileSystem, LocalFileSystem, Path => HPath}
 import org.apache.hadoop.hdfs.DistributedFileSystem
-import java.io.{ IOException, InputStream, OutputStream }
-import java.nio.file.{ Path, Paths }
 
 case class HdfsStorageConfig(fsRoot: String)
 

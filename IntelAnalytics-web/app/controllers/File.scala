@@ -1,11 +1,6 @@
 package controllers
 
-import controllers.Session._
-import services.aws.{ S3, SQS }
-import play.api.libs.json.Json
 import scala.util.control.Breaks._
-import scalax.io.Resource
-import play.api.mvc.SimpleResult
 
 object File {
   case class FileUpload(name: String, size: Long)

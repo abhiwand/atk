@@ -23,24 +23,25 @@
 
 package com.intel.intelanalytics.repository
 
-import com.intel.intelanalytics.shared.EventLogging
-import scala.util.Try
-import spray.json._
-import com.intel.intelanalytics.domain.frame.{DataFrame, DataFrameTemplate}
-import com.intel.intelanalytics.domain.graph.{GraphTemplate, Graph}
-import com.intel.intelanalytics.domain.schema.Schema
-import com.intel.intelanalytics.domain.command.{CommandTemplate, Command}
-import org.joda.time.DateTime
 import com.github.tototoshi.slick.GenericJodaSupport
 import com.intel.intelanalytics.domain._
-import scala.slick.driver.{JdbcDriver, JdbcProfile}
+import com.intel.intelanalytics.domain.command.{Command, CommandTemplate}
+import com.intel.intelanalytics.domain.frame.{DataFrame, DataFrameTemplate}
+import com.intel.intelanalytics.domain.graph.{Graph, GraphTemplate}
+import com.intel.intelanalytics.domain.schema.Schema
+import com.intel.intelanalytics.shared.EventLogging
+import org.joda.time.DateTime
+import spray.json._
+
+import scala.slick.driver.JdbcDriver
+import scala.util.Try
 
 
 trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
   msc: MetaStoreComponent with DbProfileComponent =>
 
-  import profile.profile.simple._
   import com.intel.intelanalytics.domain.DomainJsonProtocol._
+  import profile.profile.simple._
 
   // Joda Support depends on the driver being used.
   val genericJodaSupport = new GenericJodaSupport(profile.profile.asInstanceOf[JdbcDriver])

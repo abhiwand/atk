@@ -25,20 +25,17 @@ package com.intel.intelanalytics.service
 
 //TODO: Is this right execution context for us?
 
-import scala.concurrent._
-import ExecutionContext.Implicits.global
-
-import spray.http.HttpHeader
-import scala.PartialFunction._
-import scala.concurrent._
-import com.intel.intelanalytics.security.UserPrincipal
-import scala.Some
-import spray.routing._
-import com.intel.intelanalytics.domain.{ DomainJsonProtocol, User }
-import spray.json._
+import com.intel.intelanalytics.domain.{DomainJsonProtocol, User}
 import com.intel.intelanalytics.repository.MetaStore
-import scala.concurrent.duration._
+import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.shared.EventLogging
+import spray.http.HttpHeader
+import spray.json._
+import spray.routing._
+
+import scala.PartialFunction._
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent._
 
 /**
  * Uses authorization HTTP header and metaStore to authenticate a user
@@ -67,7 +64,7 @@ class AuthenticationDirective(val metaStore: MetaStore) extends Directives with 
         val users: List[User] = metaStore.userRepo.retrieveByColumnValue("api_key", apiKey)
         users match {
           case Nil => {
-            import DomainJsonProtocol._
+            import com.intel.intelanalytics.domain.DomainJsonProtocol._
             metaStore.userRepo.scan().foreach(u => info(u.toJson.prettyPrint))
             throw new SecurityException("User not found")
           }

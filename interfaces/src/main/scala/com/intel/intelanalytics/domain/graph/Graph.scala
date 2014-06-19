@@ -24,7 +24,6 @@
 package com.intel.intelanalytics.domain.graph
 
 import com.intel.intelanalytics.domain.HasId
-
 import org.joda.time.DateTime
 
 /**

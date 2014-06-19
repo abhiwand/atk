@@ -23,13 +23,7 @@
 
 package controllers
 
-import play.api.mvc._
 import scala.concurrent.Future
-import models.database.{ UserDetails, DBGetUserDetailsCommand, WhiteListRow, UserRow }
-import models.Users
-import models.Whitelists
-import play.api.Play
-import play.api.Play.current
 
 /**
  * Singleton object to provide session related services.

@@ -23,7 +23,8 @@
 
 package com.intel.intelanalytics.shared
 
-import com.intel.event.{ EventLogger, Severity, EventContext }
+import com.intel.event.{EventContext, EventLogger, Severity}
+
 import scala.util.control.NonFatal
 
 /**

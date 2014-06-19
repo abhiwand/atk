@@ -23,8 +23,8 @@
 
 package com.intel.graphbuilder.parser
 
-import org.apache.commons.lang3.StringUtils
 import com.intel.graphbuilder.util.PrimitiveConverter
+import org.apache.commons.lang3.StringUtils
 
 /**
  * Column Definition including the Index of the Column
