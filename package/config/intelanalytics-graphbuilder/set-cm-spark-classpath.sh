@@ -1,8 +1,7 @@
 #!/bin/bash
 #Will update the spark_env config value in cloudera manager for the cluster this host is running in
 #The host must be a valid cloudera cluster and it needs to run spark.
-#All request are throught the cloudera managers rest api version 6
-
+#All request are through the cloudera managers rest api version 6
 
 API_VERSION="v6"
 API_PREFIX="api"
@@ -19,29 +18,42 @@ normal=$(tput sgr0)
 
 
 CM_HOST=$(cat /etc/cloudera-scm-agent/config.ini | grep server_host | awk -F"=" '{print $2}')
-echo "What is the cloudera manager's host address [${CM_HOST}]:"
+echo "What is the cloudera manager's host address? will default to ${CM_HOST}:"
 read CM_HOST
 if [ "$CM_HOST" == "" ]; then
 	CM_HOST=$(cat /etc/cloudera-scm-agent/config.ini | grep server_host | awk -F"=" '{print $2}')
 fi
 
-echo "What is the cloudera manager port [7180]:"
+if [ ! -d /etc/cloudera-scm-agent/config.ini ] && [ "$CM_HOST" == "" ]; then
+    echo "${red}No cloudera manager host given or found${normal}"
+    exit 1
+fi
+
+echo "What is the cloudera manager port? will default to 7180:"
 read CM_PORT
 if [ "$CM_PORT" == "" ]; then
 	CM_PORT=7180
 fi
 
-echo "What is the cloudera manager user [admin]:"
+echo "What is the cloudera manager user? will default to admin:"
 read USERNAME
 if [ "$USERNAME" == "" ]; then
 	USERNAME="admin"
 fi
 
-echo "What is the cloudera manager password [admin]:"
+echo "What is the cloudera manager password? will default to admin:"
 read -s PASSWORD
 if [ "$PASSWORD" == "" ]; then
         PASSWORD="admin"
 fi
+
+HOST=$(cat /etc/cloudera-scm-agent/config.ini | grep server_host | awk -F"=" '{print $2}')
+CLUSTERNAME=""
+if [ "$HOST" == "" ]; then
+    echo "This script is not running on a cloudera cluster please specify the cluster's name as it appears in the cloudera manager?"
+    read CLUSTERNAME
+fi
+
 
 echo "connecting to ${USERNAME}:${PASSWORD} ${CM_HOST}:${CM_PORT}"
 CM_URL="${CM_HOST}:7180"
@@ -56,17 +68,6 @@ function createUrl(){
 }
 function setUrl(){
 	url=$1
-}
-
-function getHostId(){
-	#see if we are on aws instance
-	httpCode=$(curl -s -o /dev/null -w "%{http_code}" http://169.254.169.254/latest/meta-data/instance-id)
-	if [ "$httpCode" == "200" ]; then
-		#get the aws instanceId
-		instanceId=$(curl -s http://169.254.169.254/latest/meta-data/instance-id)
-	else
-		instanceId="hostname"
-	fi
 }
 
 deployRoles=""
@@ -170,18 +171,13 @@ function setUpdatedClassPath(){
 }
 
 function doCurl(){
-#	httpCode=$(curl -s -o /dev/null -w "%{http_code}" http://169.254.169.254/latest/meta-data/instance-id)
 	local verb=$1
 	local json=$2
 	local debug=$3
-	if [ $debug -eq 1 ]; then
-		debug="#"
-	fi
 
 	http_code=$(curl -s -o /dev/null -w "%{http_code}" -H "Content-Type: application/json" -X$verb -d$json  ${curlLoginOpt} ${url}) #--trace-ascii /dev/stdout)
 
-	
-	if [ "$httpCode" != "200" ]; then
+	if [ "$http_code" != "200" ]; then
 		echo "$red failed to set rest call $normal"
 		exit 1
 	fi
@@ -196,59 +192,43 @@ function setConfig(){
 
 IFS=$'\n'
 
-#get the host id
-getHostId
 #store the url encoded cluster name
 clusterNameEncoded=""
 #human readable clustername
 clusterName=""
 
-createUrl "hosts?view=full"
-for host in `curl -s ${curlLoginOpt} ${url} | jq -c -r '.items[] | {hostId,ipAddress,hostname,roleRefs}' `
-do
-	hostName=$(echo -E $host | jq -c -r '.hostname')
-	myHostName=$(hostname -f)
-	if [ "$hostName" == "$myHostName" ]; then
-		echo "${green}found host${normal}"
-		for roleRef in `echo -E $host | jq -c -r '.roleRefs[]'`
-		do
-			serviceName=$(echo -E $roleRef | jq -c -r '.serviceName')
-			clusterName=$(echo -E $roleRef | jq -c -r '.clusterName')
-		
-			if [ "$serviceName" == "spark" ]; then
-				echo "${green}Found cluster owner${normal}"
-				clusterNameEncoded=$(perl -MURI::Escape -e 'print uri_escape($ARGV[0]);' "${clusterName}")
-				break
-			fi
-		done
-	fi
-	if [ "$clusterNameEncoded" != "" ]; then
-		break;
-	fi
-done
+if [ "$CLUSTERNAME" == "" ]; then
+    createUrl "hosts?view=full"
+    for host in `curl -s ${curlLoginOpt} ${url} | jq -c -r '.items[] | {hostId,ipAddress,hostname,roleRefs}' `
+    do
+        hostName=$(echo -E $host | jq -c -r '.hostname')
+        myHostName=$(hostname -f)
+        if [ "$hostName" == "$myHostName" ]; then
+            echo "${green}found host${normal}"
+            for roleRef in `echo -E $host | jq -c -r '.roleRefs[]'`
+            do
+                serviceName=$(echo -E $roleRef | jq -c -r '.serviceName')
+                clusterName=$(echo -E $roleRef | jq -c -r '.clusterName')
 
-#createUrl clusters
-#query cloudera manager for cluster details
-#for cluster in `curl -s ${curlLoginOpt} ${url} | jq -c -r '.items[] | {displayName, version, fullVersion}' `
-#do 
-#	#url encdoe the cluster name
-#	clusterNameEncoded=$(perl -MURI::Escape -e 'print uri_escape($ARGV[0]);' "$(echo $cluster | jq -c -r '.displayName')")
-#	createUrl clusters/${clusterNameEncoded}/hosts
-#	#query for hosts allocated to the cluster
-#	for host in `curl -s ${curlLoginOpt} ${url} | jq -c -r '.items[].hostId'`
-#	do
-#		#match this host to a cluster
-#		if [ "$host" == $instanceId ]; then
-#			echo "host id match"
-#			clusterName=$(echo $cluster | jq -c -r '.displayName')
-#			break		
-#		fi
-#	done
-#	#continue break if we found a host id match
-#	if [ "$clusterName" != "" ]; then
-#		break
- ##       fi
-#done
+                if [ "$serviceName" == "spark" ]; then
+                    echo "${green}Found cluster owner${normal}"
+                    clusterNameEncoded=$(perl -MURI::Escape -e 'print uri_escape($ARGV[0]);' "${clusterName}")
+                    break
+                fi
+            done
+        fi
+        if [ "$clusterNameEncoded" != "" ]; then
+            break;
+        fi
+    done
+    if [ "$clusterNameEncoded" == "" ]; then
+        echo "${red}Couldn't find this host's cluster${normal}"
+        exit 1
+    fi
+else
+    clusterNameEncoded=$(perl -MURI::Escape -e 'print uri_escape($ARGV[0]);' "${CLUSTERNAME}")
+    clustername=$clusterNameEncoded
+fi
 
 #we technically did do a service check before when were were trying to match the host id to a cluster but 
 #i would rather query the services directly to find out if it's running rather than indirectly through the hosts url
@@ -271,10 +251,9 @@ do
 done
 
 if [ "$sparkService" == "" ]; then
-	echo "$red Cluster '${$clusterName}' is not running spark$normal"
+	echo "${red} Cluster \'${$clusterName}\' is not running spark${normal}"
 	exit 1
 fi
-
 
 #make sure the service is installed an running on the cluster
 if [ "$sparkService" != "" ]; then
