@@ -24,7 +24,7 @@
 package com.intel.intelanalytics.domain.frame
 
 /**
- * Command for dropping duplicates rows identified by the key columns
+ * Command for dropping duplicates rows per uniqueness criteria match
  * @param frameId id of the data frame
  * @param unique_columns the key columns for identifying duplicates
  */

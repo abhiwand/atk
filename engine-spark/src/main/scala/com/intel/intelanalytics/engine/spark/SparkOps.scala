@@ -33,6 +33,7 @@ import scala.collection.mutable
 import scala.Some
 import com.intel.intelanalytics.engine.spark.frame.RDDJoinParam
 import com.intel.intelanalytics.domain.frame.LoadLines
+
 //implicit conversion for PairRDD
 import org.apache.spark.SparkContext._
 
