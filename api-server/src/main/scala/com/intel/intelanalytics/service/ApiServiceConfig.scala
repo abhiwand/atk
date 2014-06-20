@@ -1,7 +1,6 @@
 package com.intel.intelanalytics.service
 
 import com.intel.intelanalytics.shared.SharedConfig
-
 import scala.concurrent.duration._
 
 /**

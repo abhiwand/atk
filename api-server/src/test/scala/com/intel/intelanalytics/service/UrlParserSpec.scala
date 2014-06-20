@@ -23,7 +23,7 @@
 
 package com.intel.intelanalytics.service
 
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.{ Matchers, FlatSpec }
 
 class UrlParserSpec extends FlatSpec with Matchers {
 

@@ -50,16 +50,17 @@ class CommonDirectives(val authenticationDirective: AuthenticationDirective) ext
 
   def errorHandler = {
     ExceptionHandler {
-      case e: IllegalArgumentException ⇒ {
+      case e: IllegalArgumentException => {
         error("An error occurred during request processing.", exception = e)
         complete(StatusCodes.BadRequest, "Bad request: " + e.getMessage)
       }
-      case NonFatal(e) ⇒ {
+      case NonFatal(e) => {
         error("An error occurred during request processing.", exception = e)
         complete(StatusCodes.InternalServerError, "An internal server error occurred")
       }
     }
   }
+
 
   //TODO: needs to be updated for the distinction between Foos and FooTemplates
   //This code is likely to be useful for CRUD operations that need to work with the
@@ -110,5 +111,6 @@ class CommonDirectives(val authenticationDirective: AuthenticationDirective) ext
   //      }
   //    }
   //  }
+
 
 }

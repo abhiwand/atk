@@ -23,10 +23,10 @@
 
 package com.intel.intelanalytics.service.v1.decorators
 
-import com.intel.intelanalytics.domain.command.Command
+import org.scalatest.{ Matchers, FlatSpec }
 import com.intel.intelanalytics.service.v1.viewmodels.RelLink
 import org.joda.time.DateTime
-import org.scalatest.{FlatSpec, Matchers}
+import com.intel.intelanalytics.domain.command.Command
 
 class CommandDecoratorSpec extends FlatSpec with Matchers {
 

@@ -23,10 +23,10 @@
 
 package com.intel.intelanalytics.service.v1.decorators
 
-import com.intel.intelanalytics.domain.graph.Graph
+import org.scalatest.{ Matchers, FlatSpec }
 import com.intel.intelanalytics.service.v1.viewmodels.RelLink
+import com.intel.intelanalytics.domain.graph.Graph
 import org.joda.time.DateTime
-import org.scalatest.{FlatSpec, Matchers}
 
 class GraphDecoratorSpec extends FlatSpec with Matchers {
 

@@ -23,26 +23,38 @@
 
 package com.intel.intelanalytics.service.v1
 
-import com.intel.intelanalytics.domain.DomainJsonProtocol._
-import com.intel.intelanalytics.domain.{FilterPredicate, _}
-import com.intel.intelanalytics.domain.command.Command
-import com.intel.intelanalytics.domain.frame.{FrameAddColumns, FrameJoin, FrameRenameColumn, _}
-import com.intel.intelanalytics.domain.graph.GraphLoad
-import com.intel.intelanalytics.domain.graph.construction.FrameRule
-import com.intel.intelanalytics.engine.Engine
-import com.intel.intelanalytics.security.UserPrincipal
-import com.intel.intelanalytics.service.v1.decorators.CommandDecorator
+import scala.util.Try
+import com.intel.intelanalytics.domain._
+import spray.json.JsObject
+import com.intel.intelanalytics.repository.MetaStoreComponent
+import com.intel.intelanalytics.engine.{Engine, EngineComponent}
 import com.intel.intelanalytics.service.v1.viewmodels.ViewModelJsonImplicits._
-import com.intel.intelanalytics.service.v1.viewmodels._
-import com.intel.intelanalytics.service.{ApiServiceConfig, CommonDirectives, UrlParser}
-import com.intel.intelanalytics.shared.EventLogging
-import spray.http.Uri
-import spray.json._
-import spray.routing.{Directives, Route}
-
-import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent._
-import scala.util.{Failure, Success, Try}
+import spray.http.Uri
+import spray.routing.{Directives, Route}
+import com.intel.intelanalytics.domain.frame._
+import com.intel.intelanalytics.domain.FilterPredicate
+import com.intel.intelanalytics.domain.graph.construction.FrameRule
+import scala.util.Failure
+import scala.Some
+import com.intel.intelanalytics.domain.frame.FrameAddColumns
+import com.intel.intelanalytics.domain.frame.FrameRenameColumn
+import scala.util.Success
+import com.intel.intelanalytics.security.UserPrincipal
+import spray.json._
+import com.intel.intelanalytics.domain.DomainJsonProtocol._
+import com.intel.intelanalytics.service.v1.viewmodels._
+import com.intel.intelanalytics.service.v1.viewmodels.ViewModelJsonImplicits._
+import com.intel.intelanalytics.domain.frame.FrameJoin
+import com.intel.intelanalytics.domain.graph.GraphLoad
+import com.intel.intelanalytics.domain.command.Command
+import com.intel.intelanalytics.shared.EventLogging
+import com.intel.intelanalytics.service.{ApiServiceConfig, UrlParser, CommonDirectives, AuthenticationDirective}
+import com.intel.intelanalytics.service.v1.decorators.CommandDecorator
+
+//TODO: Is this right execution context for us?
+
+import ExecutionContext.Implicits.global
 
 /**
  * REST API Command Service
@@ -87,6 +99,8 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
 
               get {
                 //TODO: cursor
+                import spray.json._
+                import ViewModelJsonImplicits._
                 onComplete(engine.getCommands(0, ApiServiceConfig.defaultCount)) {
                   case Success(commands) => complete(CommandDecorator.decorateForIndex(uri.toString(), commands))
                   case Failure(ex) => throw ex
@@ -132,7 +146,7 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
 
   def runFrameLoad(uri: Uri, xform: JsonTransform)(implicit user: UserPrincipal) = {
     val test = Try {
-      import com.intel.intelanalytics.domain.DomainJsonProtocol._
+      import DomainJsonProtocol._
       xform.arguments.get.convertTo[LoadLines[JsObject, String]]
     }
     val idOpt = test.toOption.flatMap(args => UrlParser.getFrameId(args.destination))
@@ -356,7 +370,7 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
   def runFrameGroupByColumn(uri: Uri, xform: JsonTransform)(implicit user: UserPrincipal) = {
     {
       val test = Try {
-        import com.intel.intelanalytics.domain.DomainJsonProtocol._
+        import DomainJsonProtocol._
         xform.arguments.get.convertTo[FrameGroupByColumn[JsObject, String]]
       }
       val idOpt = test.toOption.flatMap(args => UrlParser.getFrameId(args.frame))
