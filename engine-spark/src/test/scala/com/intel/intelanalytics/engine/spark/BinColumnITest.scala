@@ -30,7 +30,7 @@ class BinColumnITest extends Specification {
 
   "binEqualWidth" should {
 
-    "create append new column" in new TestingSparkContext {
+    "append new column" in new TestingSparkContext {
       val inputList = List(Array[Any]("A", 1), Array[Any]("B", 2), Array[Any]("C", 3), Array[Any]("D", 4), Array[Any]("E", 5))
       val rdd = sc.parallelize(inputList)
       val binnedRdd = SparkOps.binEqualWidth(1, 2, rdd)
@@ -40,6 +40,42 @@ class BinColumnITest extends Specification {
       result.apply(2) mustEqual Array[Any]("C", 3, 1)
       result.apply(3) mustEqual Array[Any]("D", 4, 1)
       result.apply(4) mustEqual Array[Any]("E", 5, 1)
+    }
+
+    "create the correct number of bins" in new TestingSparkContext {
+      // Input data
+      val inputList = List(Array[Any]("A", 1), Array[Any]("B", 2), Array[Any]("C", 3), Array[Any]("D", 4), Array[Any]("E", 5))
+      val rdd = sc.parallelize(inputList)
+      val binnedRdd = SparkOps.binEqualWidth(1, 2, rdd)
+
+      // Validate
+      binnedRdd.map(row => row(2)).distinct.count() mustEqual 2
+    }
+
+  }
+
+  "binEqualDepth" should {
+
+    "append new column" in new TestingSparkContext {
+      val inputList = List(Array[Any]("A", 1), Array[Any]("B", 2), Array[Any]("C", 3), Array[Any]("D", 4), Array[Any]("E", 5))
+      val rdd = sc.parallelize(inputList)
+      val binnedRdd = SparkOps.binEqualDepth(1, 2, rdd)
+      val result = binnedRdd.take(5)
+      result.apply(0) mustEqual Array[Any]("A", 1, 0)
+      result.apply(1) mustEqual Array[Any]("B", 2, 0)
+      result.apply(2) mustEqual Array[Any]("C", 3, 1)
+      result.apply(3) mustEqual Array[Any]("D", 4, 1)
+      result.apply(4) mustEqual Array[Any]("E", 5, 1)
+    }
+
+    "create the correct number of bins" in new TestingSparkContext {
+      // Input data
+      val inputList = List(Array[Any]("A", 1), Array[Any]("B", 2), Array[Any]("C", 3), Array[Any]("D", 4), Array[Any]("E", 5))
+      val rdd = sc.parallelize(inputList)
+      val binnedRdd = SparkOps.binEqualDepth(1, 2, rdd)
+
+      // Validate
+      binnedRdd.map(row => row(2)).distinct.count() mustEqual 2
     }
   }
 

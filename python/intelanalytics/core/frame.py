@@ -467,7 +467,12 @@ class BigFrame(object):
 
     def bin_column(self, column_name, num_bins, bin_type='equalwidth', bin_column_name='binned'):
         """
-        Bin a column
+        Bin data into equal width or equal depth bins.
+
+        The numBins parameter is an upper-bound on the number of bins since the data
+        may justify fewer bins.  With equal depth binning, for example, if the inputRdd has 10 elements with only 2
+        distinct values and numBins > 2, then the number of actual bins will only be 2.  This is due to a restriction
+        that elements with the same value must belong to the same bin.
 
         Parameters
         ----------

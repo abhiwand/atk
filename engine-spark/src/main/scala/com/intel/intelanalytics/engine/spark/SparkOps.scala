@@ -185,15 +185,13 @@ private[spark] object SparkOps extends Serializable {
    * Bin column at index using equal width binning
    *
    * @param index column index
+   * @param numBins requested number of bins
    * @param rdd RDD for binning
    * @return new RDD with binned column appended
    */
   def binEqualWidth(index: Int, numBins: Int, rdd: RDD[Row]): RDD[Row] = {
-    // TODO: save cutoffs and binSizes somewhere
     // TODO: histogram assumes an RDD[Double], so this needs to be verified
-    // Basically, I need to extract the column RDD, check that the types are numeric (and cast to Double),
-    // run the histogram algo on RDD[Double] for column, then append column back to dataframe
-    // Need consider how cutoffs/binSizes are going to be returned (if at all)
+    // TODO: Need consider how cutoffs/binSizes are going to be returned (if at all)
 
     // try the following and throw exception if can not cast to Double
     val columnRdd = rdd.map(row => java.lang.Double.parseDouble(row(index).toString))
@@ -229,11 +227,45 @@ private[spark] object SparkOps extends Serializable {
    * Bin column at index using equal depth binning
    *
    * @param index column index
+   * @param numBins requested number of bins
    * @param rdd RDD for binning
    * @return new RDD with binned column appended
    */
   def binEqualDepth(index: Int, numBins: Int, rdd: RDD[Row]): RDD[Row] = {
-    ???
+    import scala.math.ceil
+
+    val columnRdd = rdd.map(row => java.lang.Double.parseDouble(row(index).toString))
+    val numElements = columnRdd.count()
+
+    // assign a rank to each distinct element
+    val pairedRdd = columnRdd.groupBy(element => element).sortByKey()
+    var rank = 1
+    val rankedRdd = pairedRdd.map { value =>
+      val valueRank = (rank to (rank + (value._2.size - 1))).sum / value._2.size.asInstanceOf[Double]
+      val valuePairs = value._2.map(v => (v, valueRank))
+      rank += value._2.size
+      (value._1, valuePairs)
+    }.flatMap(mapping => mapping._2)
+
+    // compute the bin number
+    val binnedRdd = rankedRdd.map { ranking =>
+      // not sure why scala.math.ceil returns Double instead of Int or Long
+      val bin = ceil((numBins * ranking._2) / numElements).asInstanceOf[Int]
+      (ranking._1, bin)
+    }
+
+    // shift the bin numbers so that they are zero-based contiguous values
+    val sortedBinnedRdd = binnedRdd.groupBy(_._2).sortByKey()
+    rank = 1
+    val shiftedRdd = sortedBinnedRdd.map { value =>
+      val valuePairs = value._2.map(v => (v._1, rank))
+      rank += 1
+      (value._1, valuePairs)
+    }.flatMap(mapping => mapping._2)
+
+    val binMappings = shiftedRdd.toArray.toMap
+    // zero-rooted bin numbers, so subtract 1
+    rdd.map(row => row :+ (binMappings.get(java.lang.Double.parseDouble(row(index).toString)).get - 1).asInstanceOf[Any])
   }
 
   def aggregation_functions(elem: Seq[Array[Any]],
