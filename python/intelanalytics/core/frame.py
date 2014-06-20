@@ -614,7 +614,7 @@ class BigFrame(object):
 
         Parameters
         ----------
-        group_by_columns: BigColumn or List of BigColumns or function
+        group_by_columns: BigColumn or List of BigColumns
             columns or result of a function will be used to create grouping
         aggregation_arguments: dict
             (column,aggregation function) pairs
@@ -627,8 +627,9 @@ class BigFrame(object):
         Examples
         --------
         frame.groupBy(frame.a, count)
-        frame.groupBy([frame.a, frame.b], {f.c: avg})
-        frame.groupBy(frame[['a', 'c']], count, {f.d: [avg, sum, min], f.e: [max]})
+        frame.groupBy([frame.a, frame.b], {frame.c: avg})
+        frame.groupBy(frame[['a', 'c']], count, {frame.d: [avg, sum, min], frame.e: count_distinct})
+        frame.groupBy(None, {frame.a : sum, frame.b: [avg, var, stdev]})
         """
 
 

@@ -38,13 +38,12 @@ class HdfsFileStorage(fsRoot: String) extends FileStorage with EventLogging {
   val configuration = {
     val hadoopConfig = new Configuration()
     //http://stackoverflow.com/questions/17265002/hadoop-no-filesystem-for-scheme-file
-    hadoopConfig.set("fs.hdfs.impl",
-      classOf[DistributedFileSystem].getName)
-    hadoopConfig.set("fs.file.impl",
-      classOf[LocalFileSystem].getName)
+    hadoopConfig.set("fs.hdfs.impl", classOf[DistributedFileSystem].getName)
+    hadoopConfig.set("fs.file.impl", classOf[LocalFileSystem].getName)
 
-    if (fsRoot.startsWith("hdfs"))
+    if (fsRoot.startsWith("hdfs")) {
       hadoopConfig.set("fs.defaultFS", fsRoot)
+    }
 
     require(hadoopConfig.getClassByNameOrNull(classOf[LocalFileSystem].getName) != null)
     hadoopConfig
