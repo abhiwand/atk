@@ -41,7 +41,7 @@ object PropertyType extends Enumeration {
  * @param unique True if this property is unique
  * @param indexed True if this property should be indexed
  */
-case class PropertyDef(propertyType: PropertyType.Value, name: String, dataType: Class[_], unique: Boolean, indexed: Boolean) {
+case class PropertyDef(propertyType: PropertyType.Value, name: String, dataType: Class[_], unique: Boolean = false, indexed: Boolean = false) {
 
   if (StringUtils.isEmpty(name)) {
     throw new IllegalArgumentException("property name can't be empty")

@@ -42,7 +42,7 @@ trait FrameStorage {
 
   def removeColumn(frame: DataFrame, columnIndex: Seq[Int]): DataFrame
 
-  def renameFrame(frame: DataFrame, newName: String): Unit
+  def renameFrame(frame: DataFrame, newName: String): DataFrame
 
   def renameColumn(frame: DataFrame, name_pairs: Seq[(String, String)]): DataFrame
 

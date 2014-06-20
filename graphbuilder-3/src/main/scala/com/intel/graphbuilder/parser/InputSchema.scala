@@ -24,6 +24,7 @@
 package com.intel.graphbuilder.parser
 
 import org.apache.commons.lang3.StringUtils
+import com.intel.graphbuilder.util.PrimitiveConverter
 
 /**
  * Column Definition including the Index of the Column
@@ -66,6 +67,7 @@ case class InputSchema(columns: Seq[ColumnDef]) extends Serializable {
     this(columnNames.map(columnName => new ColumnDef(columnName, columnType)))
   }
 
+  @transient
   private lazy val schema = {
     var schema = Map[String, ColumnDef]()
     var columnIndex = 0
@@ -98,5 +100,23 @@ case class InputSchema(columns: Seq[ColumnDef]) extends Serializable {
    */
   def size: Int = {
     schema.size
+  }
+
+  /**
+   * Convert dataTypes of Class[primitive] to their Object equivalents
+   *
+   * e.g. classOf[scala.Int] to classOf[java.lang.Integer]
+   *      classOf[scala.Long] to classOf[java.lang.Long]
+   *      classOf[scala.Char] to classOf[java.lang.Char]
+   *      etc.
+   *
+   * Titan doesn't support primitive properties so we convert them to their Object equivalents.
+   *
+   * Spark also has trouble de-serializing classOf[Int] because of the underlying Java classes it uses.
+   */
+  def serializableCopy: InputSchema = {
+    this.copy(columns = columns.map(columnDef => 
+      columnDef.copy(dataType = PrimitiveConverter.primitivesToObjects(columnDef.dataType))
+    ))
   }
 }

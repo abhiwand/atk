@@ -24,7 +24,33 @@ package com.intel.intelanalytics.service.v1.decorators
 
 import com.intel.intelanalytics.service.v1.viewmodels.RelLink
 
-trait EntityDecorator[Entity, Index, Decorated] {
-  def decorateForIndex(indexUri: String, entities: Seq[Entity]): List[Index]
-  def decorateEntity(uri: String, links: Iterable[RelLink], entity: Entity): Decorated
+/**
+ * A decorate takes an entity from the database and converts it to a View/Model
+ * for delivering via REST services
+ *
+ * @tparam Entity the entity from the database
+ * @tparam GetEntities the View/Model for a list of entities
+ * @tparam GetEntity the View/Model for a single entity
+ */
+trait EntityDecorator[Entity, GetEntities, GetEntity] {
+
+  /**
+   * Decorate a single entity (like you would want in "GET /entities/id")
+   *
+   * @param uri UNUSED? DELETE?
+   * @param links related links
+   * @param entity the entity to decorate
+   * @return the View/Model
+   */
+  def decorateEntity(uri: String, links: Iterable[RelLink], entity: Entity): GetEntity
+
+  /**
+   * Decorate a list of entities (like you would want in "GET /entities")
+   *
+   * @param indexUri the base URI, for this type of entity "../entities"
+   * @param entities the list of entities to decorate
+   * @return the View/Model
+   */
+  def decorateForIndex(indexUri: String, entities: Seq[Entity]): List[GetEntities]
+
 }

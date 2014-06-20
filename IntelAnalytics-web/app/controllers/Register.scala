@@ -25,7 +25,7 @@ package controllers
 
 import play.api.mvc._
 import play.api.libs.json._
-import services.authorize.{Providers, Authorize}
+import services.authorize.{ Providers, Authorize }
 import models._
 import models.database._
 import controllers.Session._
@@ -40,76 +40,76 @@ import models.database.UserRow
  */
 object Register extends Controller {
 
-    abstract class RegisterActionResponse
-    case class SuccessfullyRegisterResponse(sessionId: String) extends RegisterActionResponse
-    case class FailToValidateResponse() extends RegisterActionResponse
-    case class GeneralErrorResponse() extends RegisterActionResponse
+  abstract class RegisterActionResponse
+  case class SuccessfullyRegisterResponse(sessionId: String) extends RegisterActionResponse
+  case class FailToValidateResponse() extends RegisterActionResponse
+  case class GeneralErrorResponse() extends RegisterActionResponse
 
-    var json: JsValue = _
-    var auth: Authorize = _
-    var response: RegisterActionResponse = _
-    /**
-     * register user to the system.
-     */
-    def register = Action {
-        request => {
-            Registrations.RegistrationFormValidation.bindFromRequest()(request).fold(
-                formWithErrors => {
-                    Redirect("/").withCookies(Cookie("authenticationFailed", "true", Some(3600), "/", None, true, false))
-                },
-                registrationForm => {
-                    //make sure the terms are set to on since we couldnt' validate with a boolean
-                    if (registrationForm.terms.trim.toLowerCase == "i agree" && registrationForm.experience >= 1 && registrationForm.experience <= 4) {
-                        json = Json.parse(registrationForm.authResult)
-                        auth = new Authorize(json, Providers.GooglePlus)
-                        response = getResponse(registrationForm, auth, Sessions, MySQLStatementGenerator)
-                    }else{
-                      Redirect("/").withCookies(Cookie("authenticationFailed", "true", Some(3600), "/", None, true, false))
-                    }
-                }
-            )
-            response match {
-                case successfulResponse: SuccessfullyRegisterResponse => Redirect("/ipython").withNewSession.withSession(SessionValName -> successfulResponse.sessionId).withCookies(getRegisteredCookie)
-                case failedResponse: FailToValidateResponse => Redirect("/").withCookies(Cookie("authenticationFailed", "true", Some(3600),
-                    "/", None, true, false))
-                case generalErrorResponse: GeneralErrorResponse => Redirect("/").withCookies(Cookie("approvalPending", "true", Some(3600),
-                    "/", None, true, false)).withCookies(getRegisteredCookie)
-                case _: FailToValidateResponse => Redirect("/").withCookies(Cookie("authenticationFailed", "true", Some(3600),
-                  "/", None, true, false))
+  var json: JsValue = _
+  var auth: Authorize = _
+  var response: RegisterActionResponse = _
+  /**
+   * register user to the system.
+   */
+  def register = Action {
+    request =>
+      {
+        Registrations.RegistrationFormValidation.bindFromRequest()(request).fold(
+          formWithErrors => {
+            Redirect("/").withCookies(Cookie("authenticationFailed", "true", Some(3600), "/", None, true, false))
+          },
+          registrationForm => {
+            //make sure the terms are set to on since we couldnt' validate with a boolean
+            if (registrationForm.terms.trim.toLowerCase == "i agree" && registrationForm.experience >= 1 && registrationForm.experience <= 4) {
+              json = Json.parse(registrationForm.authResult)
+              auth = new Authorize(json, Providers.GooglePlus)
+              response = getResponse(registrationForm, auth, Sessions, MySQLStatementGenerator)
             }
+            else {
+              Redirect("/").withCookies(Cookie("authenticationFailed", "true", Some(3600), "/", None, true, false))
+            }
+          })
+        response match {
+          case successfulResponse: SuccessfullyRegisterResponse => Redirect("/ipython").withNewSession.withSession(SessionValName -> successfulResponse.sessionId).withCookies(getRegisteredCookie)
+          case failedResponse: FailToValidateResponse => Redirect("/").withCookies(Cookie("authenticationFailed", "true", Some(3600),
+            "/", None, true, false))
+          case generalErrorResponse: GeneralErrorResponse => Redirect("/").withCookies(Cookie("approvalPending", "true", Some(3600),
+            "/", None, true, false)).withCookies(getRegisteredCookie)
+          case _: FailToValidateResponse => Redirect("/").withCookies(Cookie("authenticationFailed", "true", Some(3600),
+            "/", None, true, false))
         }
+      }
+  }
+
+  /**
+   * Get registration response.
+   * @param Authorization info
+   * @return RegisterActionResponse
+   */
+  def getResponse(registrationForm: RegistrationFormMapping, auth: Authorize, sessionGen: SessionGenerator, statementGenerator: StatementGenerator): RegisterActionResponse = {
+    if (auth.validateToken() == None || auth.validateUserInfo() == None)
+      return FailToValidateResponse()
+
+    val u = UserRow(None, auth.userInfo.get.givenName, auth.userInfo.get.familyName, auth.userInfo.get.email, true, None, None, None)
+    val result = Users.register(u, registrationForm, statementGenerator, DBRegisterCommand)
+
+    if (result.login == 1) {
+      val sessionId = sessionGen.create(result.uid)
+      if (sessionId == None)
+        FailToValidateResponse()
+      else
+        SuccessfullyRegisterResponse(sessionId.get)
     }
+    else
+      GeneralErrorResponse()
+  }
 
-    /**
-     * Get registration response.
-     * @param Authorization info
-     * @return RegisterActionResponse
-     */
-    def getResponse(registrationForm: RegistrationFormMapping, auth: Authorize, sessionGen: SessionGenerator, statementGenerator: StatementGenerator): RegisterActionResponse = {
-        if (auth.validateToken() == None || auth.validateUserInfo() == None)
-            return FailToValidateResponse()
-
-
-        val u = UserRow(None, auth.userInfo.get.givenName, auth.userInfo.get.familyName, auth.userInfo.get.email, true, None, None, None)
-        val result = Users.register(u, registrationForm, statementGenerator, DBRegisterCommand)
-
-        if (result.login == 1) {
-            val sessionId = sessionGen.create(result.uid)
-            if (sessionId == None)
-                FailToValidateResponse()
-            else
-                SuccessfullyRegisterResponse(sessionId.get)
-        }
-        else
-            GeneralErrorResponse()
-    }
-
-    /**
-     * get cookie to indicate that the user has registered.
-     * @return cookie
-     */
-  def getRegisteredCookie:Cookie = {
-    Cookie("registered", "true", Some(3600),"/", None, true, false)
+  /**
+   * get cookie to indicate that the user has registered.
+   * @return cookie
+   */
+  def getRegisteredCookie: Cookie = {
+    Cookie("registered", "true", Some(3600), "/", None, true, false)
   }
 
 }
