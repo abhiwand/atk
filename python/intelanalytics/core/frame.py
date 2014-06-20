@@ -475,8 +475,7 @@ class BigFrame(object):
 
     def drop_duplicates(self, columns=[]):
         """
-        Remove duplicate rows, keeping only the first row in a set of duplicates. Duplicates are determined
-        by matching values in one or more given columns.
+        Remove duplicate rows, keeping only one row per uniqueness criteria match
 
         Parameters
         ----------

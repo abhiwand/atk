@@ -741,8 +741,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
             withCommand(command) {
 
               val frameId: Long = dropDuplicateCommand.frameId
-              val realFrame = frames.lookup(frameId).getOrElse(
-                throw new IllegalArgumentException(s"No such data frame"))
+              val realFrame: DataFrame = getDataFrameById(frameId)
 
               val ctx = sparkContextManager.context(user).sparkContext
 
@@ -763,4 +762,15 @@ class SparkEngine(sparkContextManager: SparkContextManager,
       }
       (command, result)
     }
+
+
+  /**
+   * Retrieve DataFrame object by frame id
+   * @param frameId id of the dataframe
+   */
+  def getDataFrameById(frameId: Long): DataFrame = {
+    val realFrame = frames.lookup(frameId).getOrElse(
+      throw new IllegalArgumentException(s"No such data frame $frameId"))
+    realFrame
+  }
 }
