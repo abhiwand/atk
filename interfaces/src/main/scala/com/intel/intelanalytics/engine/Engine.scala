@@ -36,7 +36,7 @@ import com.intel.intelanalytics.domain.frame.DataFrame
 import com.intel.intelanalytics.domain.frame.FrameRemoveColumn
 import com.intel.intelanalytics.domain.frame.FrameJoin
 import com.intel.intelanalytics.domain.frame.LoadLines
-import com.intel.intelanalytics.domain.command.{CommandTemplate, Command}
+import com.intel.intelanalytics.domain.command.{Execution, CommandTemplate, Command}
 import com.intel.intelanalytics.domain.frame.DataFrameTemplate
 import com.intel.intelanalytics.domain.frame.FrameAddColumns
 import com.intel.intelanalytics.domain.graph.{ GraphLoad, GraphTemplate, Graph }
@@ -49,7 +49,16 @@ trait Engine {
 
   type Identifier = Long //TODO: make more generic?
 
-  def execute(command: CommandTemplate)(implicit user: UserPrincipal): Future[(Command, Future[Command])]
+  /**
+   * Executes the given command template, managing all necessary auditing, contexts, class loaders, etc.
+   *
+   * Stores the results of the command execution back in the persistent command object.
+   *
+   * @param command the command to run, including name and arguments
+   * @param user the user running the command
+   * @return a future that includes
+   */
+  def execute(command: CommandTemplate)(implicit user: UserPrincipal): Future[Execution]
 
   //TODO: We'll probably return an Iterable[Vertex] instead of rows at some point.
   def getVertices(graph: Identifier, offset: Int, count: Int, queryName: String, parameters: Map[String, String]): Future[Iterable[Row]]

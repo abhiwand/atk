@@ -25,12 +25,11 @@ package com.intel.intelanalytics.engine.spark
 
 import java.util.{ArrayList => JArrayList, List => JList}
 
-import com.intel.event.EventContext
-import com.intel.intelanalytics.component.Boot
+import com.intel.intelanalytics.component.{ArchiveName, Boot}
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
 import com.intel.intelanalytics.domain._
-import com.intel.intelanalytics.domain.command.{Command, CommandTemplate}
-import com.intel.intelanalytics.domain.frame.BigColumn
+import com.intel.intelanalytics.domain.command.{Execution, Command, CommandTemplate}
+import com.intel.intelanalytics.domain.frame._
 import com.intel.intelanalytics.domain.graph.{Graph, GraphLoad, GraphTemplate}
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 import com.intel.intelanalytics.domain.schema.{DataTypes, Schema, SchemaUtil}
@@ -43,35 +42,11 @@ import com.intel.intelanalytics.engine.spark.plugin.SparkInvocation
 import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.shared.EventLogging
 import com.intel.intelanalytics.{ClassLoaderAware, NotFoundException}
-import com.typesafe.config.ConfigFactory
 import org.apache.spark.SparkContext
 import org.apache.spark.api.python.{EnginePythonAccumulatorParam, EnginePythonRDD}
 import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.rdd.RDD
 import spray.json._
-import DomainJsonProtocol._
-import com.intel.intelanalytics.domain.frame._
-import scala.Some
-import com.intel.intelanalytics.domain.frame.DataFrameTemplate
-import com.intel.intelanalytics.domain.frame.FrameAddColumns
-import com.intel.intelanalytics.domain.frame.FrameRenameColumn
-import com.intel.intelanalytics.domain.frame.DataFrame
-import com.intel.intelanalytics.engine.spark.context.Context
-import com.intel.intelanalytics.domain.graph.GraphLoad
-import com.intel.intelanalytics.domain.schema.Schema
-import com.intel.intelanalytics.domain.frame.LoadLines
-import com.intel.intelanalytics.domain.command.Command
-import com.intel.intelanalytics.domain.frame.FrameProject
-import com.intel.intelanalytics.domain.graph.Graph
-import com.intel.intelanalytics.domain.FilterPredicate
-import com.intel.intelanalytics.domain.Partial
-import com.intel.intelanalytics.domain.frame.SeparatorArgs
-import com.intel.intelanalytics.domain.command.CommandTemplate
-import com.intel.intelanalytics.domain.frame.FlattenColumn
-import com.intel.intelanalytics.security.UserPrincipal
-import com.intel.intelanalytics.domain.frame.FrameRemoveColumn
-import com.intel.intelanalytics.domain.frame.FrameJoin
-import com.intel.intelanalytics.domain.graph.GraphTemplate
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent._
@@ -171,8 +146,8 @@ with ClassLoaderAware {
 
   def create(frame: DataFrameTemplate)(implicit user: UserPrincipal): Future[DataFrame] =
     for {
-      (start, complete) <- execute(new CommandTemplate(name = "dataframes/create",
-                                                        arguments = Some(frame.toJson.asJsObject)))
+      Execution(start, complete) <- execute(new CommandTemplate(name = "dataframes/create",
+        arguments = Some(frame.toJson.asJsObject)))
       result <- complete
     } yield result.result.get.convertTo[DataFrame]
 
@@ -275,10 +250,9 @@ with ClassLoaderAware {
 
               val projectedColumns = arguments.new_column_names match {
                 case empty if empty.size == 0 => for {i <- columnIndices} yield schema.columns(i)
-                case _ => {
+                case _ =>
                   for {i <- 0 until columnIndices.size}
                   yield (arguments.new_column_names(i), schema.columns(columnIndices(i))._2)
-                }
               }
               frames.updateSchema(projectedFrame, projectedColumns.toList).toJson.asJsObject
             }
@@ -326,7 +300,7 @@ with ClassLoaderAware {
                 } yield (columnIndex, columnDataType)
 
                 val groupedRDD = frames.getFrameRdd(ctx, originalFrameID).groupBy((data: Rows.Row) => {
-                  for { index <- columnIndices.map(_._1) } yield data(index)
+                  for {index <- columnIndices.map(_._1)} yield data(index)
                 }.mkString("\0"))
                 SparkOps.aggregation(groupedRDD, args_pair, originalFrame.schema.columns, columnIndices.map(_._2).toArray, location)
               }
@@ -334,7 +308,9 @@ with ClassLoaderAware {
                 val groupedRDD = frames.getFrameRdd(ctx, originalFrameID).groupBy((data: Rows.Row) => "")
                 SparkOps.aggregation(groupedRDD, args_pair, originalFrame.schema.columns, Array[DataType](), location)
               }
-              val new_column_names = arguments.group_by_columns ++ { for {i <- aggregation_arguments} yield i._3 }
+              val new_column_names = arguments.group_by_columns ++ {
+                for {i <- aggregation_arguments} yield i._3
+              }
               val new_schema = new_column_names.zip(new_data_types)
               frames.updateSchema(newFrame, new_schema)
               newFrame.copy(schema = Schema(new_schema)).toJson.asJsObject
@@ -586,7 +562,7 @@ with ClassLoaderAware {
   def addColumns(arguments: FrameAddColumns[JsObject, Long])(implicit user: UserPrincipal): (Command, Future[Command]) =
     withContext("se.add_columns") {
       require(arguments != null, "arguments are required")
-      import DomainJsonProtocol._
+      import com.intel.intelanalytics.domain.DomainJsonProtocol._
       val command: Command = commands.create(new CommandTemplate("add_columns", Some(arguments.toJson.asJsObject)))
       val result: Future[Command] = future {
         withMyClassLoader {
@@ -741,23 +717,30 @@ with ClassLoaderAware {
   }
 
 
-  val commandPlugins: Map[String,CommandPlugin[_,_]] = SparkEngineConfig.commands.flatMap { case (archive, classes) =>
-    val plugins = classes.map(c => Boot.getArchive(archive, c).asInstanceOf[CommandPlugin[_ <: Product,_ <: Product]])
-    plugins
-  }.map((p:CommandPlugin[_ <: Product, _ <: Product]) => (p.name, p)).toMap
+  private val commandPlugins: Map[String, CommandPlugin[_, _]] = SparkEngineConfig.archives.flatMap {
+    case (archive, className) => Boot.getArchive(ArchiveName(archive, className))
+                                      .getAll[CommandPlugin[_,_]]("CommandPlugin")
+                                      .map(p => (p.name, p))
+  }.toMap
 
-  //TODO: get the list of available commands by going through a plugin framework
-  //rather than encoding them directly here.
-  def getCommandDefinition(name: String): Option[CommandPlugin[_,_]] = {
+  private def getCommandDefinition(name: String): Option[CommandPlugin[_, _]] = {
     commandPlugins.get(name)
   }
 
-  def execute(command: CommandTemplate)(implicit user: UserPrincipal): Future[(Command, Future[Command])] = {
-    future {
-      val cmd = commands.create(command)
-      withMyClassLoader {
-        withContext("se.execute") {
-          EventContext.getCurrent.put("commandName", command.name)
+  /**
+   * Executes the given command template, managing all necessary auditing, contexts, class loaders, etc.
+   *
+   * Stores the results of the command execution back in the persistent command object.
+   *
+   * @param command the command to run, including name and arguments
+   * @param user the user running the command
+   * @return a future that includes
+   */
+  def execute(command: CommandTemplate)(implicit user: UserPrincipal): Future[Execution] = future {
+    val cmd = commands.create(command)
+    withMyClassLoader {
+      withContext("se.execute") {
+        withContext(command.name) {
           val cmdFuture = future {
             withCommand(cmd) {
               val function = getCommandDefinition(command.name)
@@ -773,7 +756,7 @@ with ClassLoaderAware {
             }
             commands.lookup(cmd.id).get
           }
-          (cmd, cmdFuture)
+          Execution(cmd, cmdFuture)
         }
       }
     }

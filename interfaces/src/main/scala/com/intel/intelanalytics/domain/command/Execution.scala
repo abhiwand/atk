@@ -21,19 +21,12 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.component
+package com.intel.intelanalytics.domain.command
 
-import scala.reflect.ClassTag
+import scala.concurrent.Future
 
-trait Locator {
-
-  /**
-   * Obtain instances of a given class. The keys are established purely
-   * by convention.
-   *
-   * @param descriptor the string key of the desired class instance.
-   * @tparam T the type of the requested instances
-   * @return the requested instances, or the empty sequence if no such instances could be produced.
-   */
-  def getAll[T : ClassTag](descriptor: String): Seq[T]
-}
+/**
+ * Encapsulates a Command in two states - one snapshot that is taken just before running the command,
+ * and a future that will contain the eventual finished state of the command.
+ */
+case class Execution(start: Command, end: Future[Command])

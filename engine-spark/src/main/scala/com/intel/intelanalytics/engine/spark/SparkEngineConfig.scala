@@ -47,10 +47,10 @@ object SparkEngineConfig extends SharedConfig {
 
   val maxRows: Int = config.getInt("intel.analytics.engine.max-rows")
 
-  val commands: List[(String,List[String])] = {
-    val cfg = config.getConfig("intel.analytics.engine.commands.available")
+  val archives: List[(String, String)] = {
+    val cfg = config.getConfig("intel.analytics.engine.archives")
     cfg.entrySet().asScala
-        .map(e => (e.getKey, cfg.getStringList(e.getKey).asScala.toList))
+        .map(e => (e.getKey, e.getValue.unwrapped().asInstanceOf[String]))
         .toList
   }
 
