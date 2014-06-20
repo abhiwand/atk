@@ -29,7 +29,7 @@ import com.intel.testutils._
 import org.apache.spark.{SparkConf, SparkContext}
 import org.scalatest.{BeforeAndAfterAll, WordSpec}
 
-trait TitanSparkContext extends WordSpec with BeforeAndAfterAll {
+trait GraphonSparkContext extends WordSpec with BeforeAndAfterAll {
   LogUtils.silenceSpark()
 
   val conf = new SparkConf()

@@ -23,65 +23,65 @@
 
 package com.intel.graphon
 
-import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRDDImplicits._
-import com.intel.graphbuilder.driver.spark.rdd.TitanHBaseReaderRDD
-import com.intel.graphon.TitanReaderTestData._
+import com.intel.graphbuilder.elements.{Property, Edge, Vertex}
 import com.intel.spark.graphon.GraphStatistics
 import org.scalatest.{Matchers, WordSpec}
 
-class GraphStatisticsSpec extends WordSpec with Matchers with TitanSparkContext {
+class GraphStatisticsSpec extends WordSpec with Matchers with GraphonSparkContext {
 
-  "Out degrees of vertices in test graph" in {
-    val hBaseRDD = sparkContext.parallelize(hBaseRowMap.toSeq)
+  private val validEdgeLabel = "worksWith"
+  private val invalidEdgeLabel = "LIKES"
 
-    val titanReaderRDD = new TitanHBaseReaderRDD(hBaseRDD, titanConnector).distinct()
-    val vertexRDD = titanReaderRDD.filterVertices()
-    val edgeRDD = titanReaderRDD.filterEdges()
+  "Out degrees of vertices in test graph with one edge" in {
+    val (vertexSeq, edgeSeq) = createVertexWithOneEdge
+    val vertexRDD = sparkContext.parallelize(vertexSeq.toSeq)
+    val edgeRDD = sparkContext.parallelize(edgeSeq.toSeq)
     GraphStatistics.outDegrees(edgeRDD).collect().length shouldBe 1
   }
 
   "In degrees of vertices in test graph" in {
-    val hBaseRDD = sparkContext.parallelize(hBaseRowMap.toSeq)
-
-    val titanReaderRDD = new TitanHBaseReaderRDD(hBaseRDD, titanConnector).distinct()
-    val vertexRDD = titanReaderRDD.filterVertices()
-    val edgeRDD = titanReaderRDD.filterEdges()
-    GraphStatistics.inDegrees(edgeRDD).collect().length shouldBe 2
+    val (vertexSeq, edgeSeq) = createVertexWithOneEdge
+    val vertexRDD = sparkContext.parallelize(vertexSeq.toSeq)
+    val edgeRDD = sparkContext.parallelize(edgeSeq.toSeq)
+    GraphStatistics.inDegrees(edgeRDD).collect().length shouldBe 1
   }
 
   "Out degrees of vertices with \"LIKES\" edge-type in test graph" in {
-    val hBaseRDD = sparkContext.parallelize(hBaseRowMap.toSeq)
-
-    val titanReaderRDD = new TitanHBaseReaderRDD(hBaseRDD, titanConnector).distinct()
-    val vertexRDD = titanReaderRDD.filterVertices()
-    val edgeRDD = titanReaderRDD.filterEdges()
-    GraphStatistics.outDegreesByEdgeType(edgeRDD, "LIKES").collect().length shouldBe 0
+    val (vertexSeq, edgeSeq) = createVertexWithOneEdge
+    val vertexRDD = sparkContext.parallelize(vertexSeq.toSeq)
+    val edgeRDD = sparkContext.parallelize(edgeSeq.toSeq)
+    GraphStatistics.outDegreesByEdgeType(edgeRDD, invalidEdgeLabel).collect().length shouldBe 0
   }
 
   "In degrees of vertices with \"LIKES\" edge-type in test graph" in {
-    val hBaseRDD = sparkContext.parallelize(hBaseRowMap.toSeq)
-
-    val titanReaderRDD = new TitanHBaseReaderRDD(hBaseRDD, titanConnector).distinct()
-    val vertexRDD = titanReaderRDD.filterVertices()
-    val edgeRDD = titanReaderRDD.filterEdges()
-    GraphStatistics.inDegreesByEdgeType(edgeRDD, "LIKES").collect().length shouldBe 0
+    val (vertexSeq, edgeSeq) = createVertexWithOneEdge
+    val vertexRDD = sparkContext.parallelize(vertexSeq.toSeq)
+    val edgeRDD = sparkContext.parallelize(edgeSeq.toSeq)
+    GraphStatistics.inDegreesByEdgeType(edgeRDD, invalidEdgeLabel).collect().length shouldBe 0
   }
 
   "Out degrees of vertices with \"lives\" edge-type in test graph" in {
-    val hBaseRDD = sparkContext.parallelize(hBaseRowMap.toSeq)
-
-    val titanReaderRDD = new TitanHBaseReaderRDD(hBaseRDD, titanConnector).distinct()
-    val vertexRDD = titanReaderRDD.filterVertices()
-    val edgeRDD = titanReaderRDD.filterEdges()
-    GraphStatistics.outDegreesByEdgeType(edgeRDD, "lives").collect().length shouldBe 1
+    val (vertexSeq, edgeSeq) = createVertexWithOneEdge
+    val vertexRDD = sparkContext.parallelize(vertexSeq.toSeq)
+    val edgeRDD = sparkContext.parallelize(edgeSeq.toSeq)
+    GraphStatistics.outDegreesByEdgeType(edgeRDD, validEdgeLabel).collect().length shouldBe 1
   }
 
   "In degrees of vertices with \"lives\" edge-type in test graph" in {
-    val hBaseRDD = sparkContext.parallelize(hBaseRowMap.toSeq)
+    val (vertexSeq, edgeSeq) = createVertexWithOneEdge
+    val vertexRDD = sparkContext.parallelize(vertexSeq.toSeq)
+    val edgeRDD = sparkContext.parallelize(edgeSeq.toSeq)
+    GraphStatistics.inDegreesByEdgeType(edgeRDD, validEdgeLabel).collect().length shouldBe 1
+  }
 
-    val titanReaderRDD = new TitanHBaseReaderRDD(hBaseRDD, titanConnector).distinct()
-    val vertexRDD = titanReaderRDD.filterVertices()
-    val edgeRDD = titanReaderRDD.filterEdges()
-    GraphStatistics.inDegreesByEdgeType(edgeRDD, "lives").collect().length shouldBe 1
+  private def createVertexWithOneEdge: (Seq[Vertex], Seq[Edge]) = {
+    val alice_gbId = new Property("gbId", 10001)
+    val alice = new Vertex(alice_gbId, List(new Property("Name", "Alice")))
+
+    val bob_gbId = new Property("gbId", 10002)
+    val bob = new Vertex(bob_gbId, List(new Property("Name", "Bob")))
+
+    val edge1 = new Edge (alice_gbId, bob_gbId, validEdgeLabel, List(new Property("time", 20)))
+    (Seq(alice, bob), Seq(edge1))
   }
 }

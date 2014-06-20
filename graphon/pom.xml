@@ -75,13 +75,5 @@
             <artifactId>testutils</artifactId>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>com.tinkerpop.blueprints</groupId>
-            <artifactId>blueprints-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.intel.ia</groupId>
-            <artifactId>ititan-core</artifactId>
-        </dependency>
     </dependencies>
 </project>
