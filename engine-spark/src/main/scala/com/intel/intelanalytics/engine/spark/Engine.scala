@@ -392,7 +392,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
       val result: Future[Command] = future {
         withMyClassLoader {
           withContext("se.flattenColumn.future") {
-            val frameId: Long = flattenColumnCommand.frame
+            val frameId: Long = flattenColumnCommand.frameId
             val realFrame = frames.lookup(frameId).getOrElse(
               throw new IllegalArgumentException(s"No such data frame: ${frameId}"))
 
@@ -470,7 +470,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
           t =>
             val rdd = t._1
             val columnIndex = t._2
-            rdd.map(p => SparkOps.createKeyValuePairFromRow(p, Seq(columnIndex))).map(t => (t._1(0), t._2))
+            rdd.map(p => SparkOps.createKeyValuePairFromRow(p, Seq(columnIndex))).map {case (keyColumns, data) => (keyColumns(0), data)}
         }
 
         pairRdds
@@ -740,7 +740,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
           withContext("se.dropDuplicates.future") {
             withCommand(command) {
 
-              val frameId: Long = dropDuplicateCommand.frame
+              val frameId: Long = dropDuplicateCommand.frameId
               val realFrame = frames.lookup(frameId).getOrElse(
                 throw new IllegalArgumentException(s"No such data frame"))
 
@@ -749,7 +749,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
               val frameSchema = realFrame.schema
               val rdd = frames.getFrameRdd(ctx, frameId)
 
-              val columnIndices = frameSchema.columnIndex(dropDuplicateCommand.keyColumns)
+              val columnIndices = frameSchema.columnIndex(dropDuplicateCommand.unique_columns)
               val pairRdd = rdd.map(row => SparkOps.createKeyValuePairFromRow(row, columnIndices))
 
               val duplicatesRemoved: RDD[Array[Any]] = SparkOps.removeDuplicatesByKey(pairRdd)
