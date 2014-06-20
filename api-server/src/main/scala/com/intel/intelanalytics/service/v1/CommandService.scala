@@ -25,9 +25,7 @@ package com.intel.intelanalytics.service.v1
 
 import scala.util.Try
 import com.intel.intelanalytics.domain._
-import spray.json.JsObject
-import com.intel.intelanalytics.repository.MetaStoreComponent
-import com.intel.intelanalytics.engine.{Engine, EngineComponent}
+import com.intel.intelanalytics.engine.Engine
 import com.intel.intelanalytics.service.v1.viewmodels.ViewModelJsonImplicits._
 import scala.concurrent._
 import spray.http.Uri
@@ -36,7 +34,6 @@ import com.intel.intelanalytics.domain.frame._
 import com.intel.intelanalytics.domain.FilterPredicate
 import com.intel.intelanalytics.domain.graph.construction.FrameRule
 import scala.util.Failure
-import scala.Some
 import scala.util.Success
 import com.intel.intelanalytics.security.UserPrincipal
 import spray.json._
@@ -44,7 +41,7 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol._
 import com.intel.intelanalytics.service.v1.viewmodels._
 import com.intel.intelanalytics.service.v1.viewmodels.ViewModelJsonImplicits._
 import com.intel.intelanalytics.domain.graph.GraphLoad
-import com.intel.intelanalytics.domain.command.{CommandTemplate, Command}
+import com.intel.intelanalytics.domain.command.{Execution, CommandTemplate, Command}
 import com.intel.intelanalytics.shared.EventLogging
 import com.intel.intelanalytics.service.{ApiServiceConfig, UrlParser, CommonDirectives, AuthenticationDirective}
 import com.intel.intelanalytics.service.v1.decorators.CommandDecorator
@@ -120,7 +117,7 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
                           //non-transport-related URI. This should be automatic and not something that
                           //every command handler has to call.
                           onComplete(engine.execute(CommandTemplate(name = xform.name, arguments = xform.arguments))) {
-                            case Success((command, futureResult)) =>
+                            case Success(Execution(command, futureResult)) =>
                               complete(decorate(uri, command))
                             case Failure(ex) => throw ex
                           }

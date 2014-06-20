@@ -1,3 +1,5 @@
+package com.intel.intelanalytics.component
+
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
@@ -21,19 +23,29 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.component
+trait Archive extends Component with Locator {
 
-import scala.reflect.ClassTag
-
-trait Locator {
+  private var loader : Option[String => Any] = None
 
   /**
-   * Obtain instances of a given class. The keys are established purely
-   * by convention.
-   *
-   * @param descriptor the string key of the desired class instance.
-   * @tparam T the type of the requested instances
-   * @return the requested instances, or the empty sequence if no such instances could be produced.
+   * Called by the component framework to provide a method for loading new classes from the same
+   * archive, with the correct startup support. Archives should store this function for later use
    */
-  def getAll[T : ClassTag](descriptor: String): Seq[T]
+  def setLoader(function: String => Any) : Unit = loader match {
+    case None => loader = Some(function)
+    case _ => throw new Exception("Loader function already set for this archive")
+  }
+
+  /**
+   * Called by archives in order to load new instances from the archive. Does not provide
+   * any caching of instances.
+   *
+   * @param name the class name to instantiate and configure
+   * @return the new instance
+   */
+  protected def load(name: String) : Any = {
+    loader.getOrElse(throw new Exception("Loader not installed for this archive"))(name)
+  }
+
+
 }

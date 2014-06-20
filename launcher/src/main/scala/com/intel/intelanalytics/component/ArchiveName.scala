@@ -21,8 +21,9 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.domain.command
+package com.intel.intelanalytics.component
 
-//TODO: Add more parameters as appropriate
-case class Als[GraphRef](graph: GraphRef, lambda: Double, max_supersteps: Option[Int],
-                         converge_threshold: Option[Int], feature_dimension: Option[Int])
+/**
+ * Encapsulates all data needed to load an archive
+ */
+case class ArchiveName(archive: String, archiveClass: String)

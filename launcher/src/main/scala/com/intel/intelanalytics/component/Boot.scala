@@ -45,11 +45,11 @@ object Boot extends App {
 
   private var loaders: Map[String, ClassLoader] = Map.empty
 
-  private var archives: Map[String, Component] = Map.empty
+  private var archives: Map[ArchiveName, Archive] = Map.empty
 
-  private [intelanalytics] val config = ConfigFactory.load().getConfig("intel.analytics")
+  private[intelanalytics] val config = ConfigFactory.load().getConfig("intel.analytics")
 
-  def attempt[T](expr: =>T, failureMessage: =>String) = {
+  def attempt[T](expr: => T, failureMessage: => String) = {
     try {
       expr
     } catch {
@@ -57,34 +57,64 @@ object Boot extends App {
     }
   }
 
-  private def buildArchive(archive: String, className: String, configPath: Option[String]): Component = {
-    val thread = Thread.currentThread()
-    val prior = thread.getContextClassLoader
-    val loader = getClassLoader(archive)
+  private def startComponent(componentInstance: Component, archive: String, configPath: Option[String]) : Unit = {
+    val restrictedConfigPath: String = configPath.getOrElse(componentInstance.defaultLocation).replace("/", ".")
+    val restrictedConfig = attempt(config.getConfig(restrictedConfigPath),
+      s"Could not obtain configuration for class ${componentInstance.getClass.getName} " +
+        s"in archive $archive with path $restrictedConfigPath")
+    componentInstance.start(restrictedConfig)
+  }
 
-    try {
-      val klass = attempt(loader.loadClass(className), s"Could not find class $className in archive $archive")
-      thread.setContextClassLoader(loader)
-      val instance = attempt(klass.newInstance().asInstanceOf[Component],
-        s"Found class $className in archive $archive, but it is not a Component")
-      val restrictedConfigPath: String = configPath.getOrElse(instance.defaultLocation).replace("/", ".")
-      val restrictedConfig = attempt(config.getConfig(restrictedConfigPath),
-        s"Could not obtain configuration for class $className in archive $archive with path $restrictedConfigPath")
-      attempt(instance.start(restrictedConfig),
-          s"Could not start component $className in archive $archive with path $restrictedConfigPath")
-      archives += ((archive + ":" + className) -> instance)
-      instance
+  private def defaultInit(instance: Any, archive: String, configPath: Option[String]) {
+    instance match {
+      case componentInstance: Component => startComponent(componentInstance, archive, configPath)
+      case _ =>
     }
-    finally {
-      thread.setContextClassLoader(prior)
+  }
+
+  private def buildArchive(archiveName: ArchiveName, configPath: Option[String]): Archive = {
+    val loader = getClassLoader(archiveName.archive)
+
+    //this is the function that will become the basis of the loader function for the archive.
+    //the init param is used because we will want to initialize the archive slightly differently
+    //than other components, so we need to control the initialization process here.
+    def load(name: String, init: Any => Unit) = {
+      val thread = Thread.currentThread()
+      val prior = thread.getContextClassLoader
+      try {
+        val klass = attempt(loader.loadClass(name),
+          s"Could not find class $name in archive ${archiveName.archive}")
+        thread.setContextClassLoader(loader)
+        val instance = attempt(klass.newInstance(), s"Could not instantiate class $name")
+        init(instance)
+        instance
+      }
+      finally {
+        thread.setContextClassLoader(prior)
+      }
     }
+
+    val instance = load(archiveName.archiveClass, inst => {
+      val archiveInstance = attempt(inst.asInstanceOf[Archive],
+        s"Loaded class ${archiveName.archiveClass} in archive ${archiveName.archive}, but it is not an Archive")
+      archiveInstance.setLoader(name =>load(name, inst => defaultInit(inst, archiveName.archive, configPath)))
+      defaultInit(archiveInstance, archiveName.archive, configPath)
+      //cleanup stuff on exit
+      Runtime.getRuntime.addShutdownHook(new Thread() {
+        override def run(): Unit = {
+          archiveInstance.stop()
+        }
+      })
+    })
+
+    val archiveInstance = instance.asInstanceOf[Archive]
+    archives += (archiveName -> archiveInstance)
+    archiveInstance
   }
 
   /**
    * Returns the requested archive, loading it if needed.
-   * @param archive the name of the archive
-   * @param className the class to instantiate for communication with the archive. This
-   *                  class should implement Component with Locator.
+   * @param name the name of the archive
    * @param configPath the subset of the application configuration that should be available
    *                   to this archive. Only relevant if this call causes the archive to be
    *                   built. Empty string means given the component access to whatever
@@ -92,8 +122,8 @@ object Boot extends App {
    *                   the plugin tree.
    * @return the requested archive
    */
-  def getArchive(archive: String, className: String, configPath: Option[String] = None): Component = {
-    archives.getOrElse(archive + ":" + className, buildArchive(archive, className, configPath))
+  def getArchive(name: ArchiveName, configPath: Option[String] = None): Archive = {
+    archives.getOrElse(name, buildArchive(name, configPath))
   }
 
   /**
@@ -176,7 +206,7 @@ object Boot extends App {
   }
   else {
     try {
-      val instance = getArchive(args(0), args(1))
+      val instance = getArchive(ArchiveName(args(0), args(1)))
     }
     catch {
       case NonFatal(e) =>
