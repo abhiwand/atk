@@ -24,10 +24,11 @@
 package com.intel.intelanalytics.service
 
 import akka.actor.Actor
+import spray.routing._
+import spray.http._
+import MediaTypes._
 import akka.event.Logging
 import com.intel.intelanalytics.service.v1.ApiV1Service
-import spray.http.MediaTypes._
-import spray.routing._
 
 /**
  * We don't implement our route structure directly in the service actor because
@@ -75,7 +76,9 @@ class ApiService(val apiV1Service: ApiV1Service) extends Directives {
       versions = List("v1"))
   }
 
-  import spray.json.DefaultJsonProtocol._
+  import spray.json._
+  import spray.httpx.SprayJsonSupport._
+  import DefaultJsonProtocol._
   implicit val descFormat = jsonFormat3(ServiceDescription)
 
   /**

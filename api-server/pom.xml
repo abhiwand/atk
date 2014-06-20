@@ -82,7 +82,7 @@
     </build>
 
     <dependencies>
-        <!--START BDA dependencies to our modules-->
+		<!--START BDA dependencies to our modules-->
         <dependency>
             <groupId>com.intel.ia</groupId>
             <artifactId>event</artifactId>
@@ -100,7 +100,7 @@
             <artifactId>shared</artifactId>
         </dependency>
         <!--END BDA dependencies to our modules-->
-
+		
         <dependency>
             <groupId>org.scala-lang</groupId>
             <artifactId>scala-reflect</artifactId>
