@@ -137,7 +137,7 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
       case ("dataframe/join") => runJoinFrames(uri, xform)
       case ("dataframe/flattenColumn") => runflattenColumn(uri, xform)
       case ("dataframe/groupby") => runFrameGroupByColumn(uri, xform)
-      case ("dataframe/drop_duplicates") => rundropDuplicates(uri, xform)
+      case ("dataframe/drop_duplicates") => runDropDuplicates(uri, xform)
       case s: String => illegalArg("Command name is not supported: " + s)
       case _ => illegalArg("Command name was NOT a string")
     }
@@ -346,7 +346,7 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
   /**
    * Receive drop duplicates request and executing drop duplicates
    */
-  def rundropDuplicates(uri: Uri, xform: JsonTransform)(implicit user: UserPrincipal) = {
+  def runDropDuplicates(uri: Uri, xform: JsonTransform)(implicit user: UserPrincipal) = {
     val test = Try {
       xform.arguments.get.convertTo[DropDuplicates]
     }

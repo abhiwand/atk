@@ -33,7 +33,8 @@ import scala.collection.mutable
 import scala.Some
 import com.intel.intelanalytics.engine.spark.frame.RDDJoinParam
 import com.intel.intelanalytics.domain.frame.LoadLines
-import com.intel.intelanalytics.domain.frame.LoadLines
+//implicit conversion for PairRDD
+import org.apache.spark.SparkContext._
 
 
 private[spark] object SparkOps extends Serializable {
@@ -283,7 +284,6 @@ private[spark] object SparkOps extends Serializable {
    * @param pairRdd rdd which has (key, value) structure in each row
    */
   def removeDuplicatesByKey(pairRdd: RDD[(Seq[Any], Array[Any])]): RDD[Array[Any]] = {
-    import org.apache.spark.SparkContext._
     val grouped = pairRdd.groupByKey()
     val duplicatesRemoved = grouped.map(bag => {
       val firstEntry = bag._2(0)
