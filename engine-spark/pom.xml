@@ -4,12 +4,10 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <artifactId>engine-spark</artifactId>
-    <version>0.8.0-SNAPSHOT</version>
-    <groupId>com.intel</groupId>
     <packaging>jar</packaging>
 
     <parent>
-        <groupId>com.intel</groupId>
+        <groupId>com.intel.ia</groupId>
         <artifactId>IntelAnalytics</artifactId>
         <relativePath>../pom.xml</relativePath>
         <version>0.8.0-SNAPSHOT</version>
@@ -41,23 +39,23 @@
 
         <!--START BDA dependencies to our modules-->
         <dependency>
-            <groupId>com.intel</groupId>
+            <groupId>com.intel.ia</groupId>
             <artifactId>event</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.intel</groupId>
+            <groupId>com.intel.ia</groupId>
             <artifactId>interfaces</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.intel</groupId>
+            <groupId>com.intel.ia</groupId>
             <artifactId>launcher</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.intel</groupId>
+            <groupId>com.intel.ia</groupId>
             <artifactId>shared</artifactId>
         </dependency>
 		<dependency>
-            <groupId>com.intel</groupId>
+            <groupId>com.intel.ia</groupId>
             <artifactId>graphbuilder-3</artifactId>
             <exclusions>
                 <exclusion>
@@ -105,12 +103,10 @@
         <dependency>
             <groupId>com.typesafe.slick</groupId>
             <artifactId>slick_${scala.short.version}</artifactId>
-            <version>${slick.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-common</artifactId>
-            <version>${dep.hadoop2.version}</version>
             <exclusions>
                 <exclusion>
                     <groupId>asm</groupId>
@@ -125,12 +121,10 @@
         <dependency>
             <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-core</artifactId>
-            <version>${dep.hadoop.core.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-hdfs</artifactId>
-            <version>${dep.hadoop2.version}</version>
             <exclusions>
                 <exclusion>
                     <groupId>asm</groupId>
