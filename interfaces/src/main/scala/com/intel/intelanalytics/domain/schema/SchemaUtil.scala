@@ -69,13 +69,11 @@ object SchemaUtil {
    * @return an array of values matching the new schema
    */
   def convertSchema(oldSchema: Schema, newSchema: Schema, row: Array[_ <: Any]): Array[Any] = {
-    require(oldSchema.columns.length == row.length, "The row provided should match the original schema")
 
     val oldNames = oldSchema.columns.map(_._1).toArray
     newSchema.columns.toArray.map {
       case ((name, columnType)) => {
         val index = oldNames.indexOf(name)
-//        val index = oldSchema.columnIndex(name)
         if (index != -1) {
           val value = row(index)
           if (value != null)
@@ -98,12 +96,12 @@ object SchemaUtil {
     if (originalSchema == appendedSchema)
       originalSchema
     else {
-      val nc = (originalSchema.columns ++ appendedSchema.columns)
-      val columnOrdering: List[String] = nc.map(_._1).distinct
-      val groupedColumns = nc.groupBy(_._1)
+      val appendedColumns = originalSchema.columns ++ appendedSchema.columns
+      val columnOrdering: List[String] = appendedColumns.map{ case (name, dataTypes) => name }.distinct
+      val groupedColumns = appendedColumns.groupBy{ case (name, dataTypes) => name }
 
       val newColumns = columnOrdering.map(key => {
-        (key, DataTypes.mergeTypes(groupedColumns(key).map(_._2)))
+        (key, DataTypes.mergeTypes(groupedColumns(key).map{ case (name, dataTypes) => dataTypes }))
       })
 
       Schema(newColumns)

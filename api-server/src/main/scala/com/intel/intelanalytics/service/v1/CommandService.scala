@@ -169,9 +169,8 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
       onComplete(
         for {
           frame <- engine.getFrame(id)
-          /* if the source is a dataframe we only care about the id. Get the ID here so that we
-            can utilize UrlParser without creating a circular dependency between api-server and engine
-           */
+           //if the source is a dataframe we only care about the id. Get the ID here so that we
+           //can utilize UrlParser without creating a circular dependency between api-server and engine
           (c, f) = engine.load(Load[Long](id,args.source.source_type match {
             case "dataframe" => {
               val dataID = UrlParser.getFrameId(args.source.uri)
