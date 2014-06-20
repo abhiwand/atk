@@ -461,12 +461,9 @@ with ClassLoaderAware {
               var newFrame = realFrame
               newFrame = frames.addColumn(newFrame, columnObject, DataTypes.toDataType(DataTypes.int32))
 
-
               arguments.binType match {
                 case "equalwidth" => {
-                  println("Running equal width")
                   val binnedRdd = SparkOps.binEqualWidth(columnIndex, arguments.numBins, rdd)
-                  binnedRdd.take(5)
                   binnedRdd.saveAsObjectFile(fsRoot + frames.getFrameDataFile(newFrame.id))
                 }
                 case "equaldepth" => {
@@ -476,9 +473,6 @@ with ClassLoaderAware {
                 case _ => throw new IllegalArgumentException(s"Invalid binning type: ${arguments.binType.toString()}")
               }
 
-              //val newSchema = new Schema(realFrame.schema.columns :+ (arguments.binColumnName, DataTypes.string))
-              //println("SCHEMA = " + realFrame.schema.toString)
-              println("NEW SCHEMA = " + newFrame.schema.toString)
               newFrame.copy(schema = newFrame.schema).toJson.asJsObject
             }
           }

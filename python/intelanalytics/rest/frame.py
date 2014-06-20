@@ -186,9 +186,13 @@ class FrameBackendRest(object):
         return execute_new_frame_command('flattenColumn', arguments)
 
     def bin_column(self, frame, column_name, num_bins, bin_type='equalwidth', bin_column_name='binned'):
+        if num_bins < 1:
+            raise ValueError("num_bins must be at least 1")
+        if not bin_type in ['equalwidth', 'equaldepth']:
+            raise ValueError("bin_type must be one of: equalwidth, equaldepth")
         name = self._get_new_frame_name()
         arguments = {'name': name, 'frame': frame._id, 'columnName': column_name, 'numBins': num_bins, 'binType': bin_type, 'binColumnName': bin_column_name}
-        return execute_new_frame_command('binColumn', arguments)
+        return execute_update_frame_command('binColumn', arguments, frame)
 
     class InspectionTable(object):
         """

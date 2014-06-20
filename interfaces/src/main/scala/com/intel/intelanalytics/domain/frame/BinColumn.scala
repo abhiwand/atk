@@ -23,4 +23,9 @@
 
 package com.intel.intelanalytics.domain.frame
 
-case class BinColumn[FrameRef](name: String, frame: FrameRef, columnName: String, numBins: Int, binType: String, binColumnName: String)
+case class BinColumn[FrameRef](name: String, frame: FrameRef, columnName: String, numBins: Int, binType: String, binColumnName: String) {
+  require(frame != null, "frame is required")
+  require(columnName != null, "column name is required")
+  require(numBins >= 1, "at least one bin is required")
+  require(binColumnName != null, "bin column name is required")
+}
