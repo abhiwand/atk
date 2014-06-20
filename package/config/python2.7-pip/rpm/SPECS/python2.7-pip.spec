@@ -5,8 +5,8 @@ Summary: pip %{?pipVersion} rpm built against python %{?pythonVersion}
 License: https://github.com/pypa/pip/blob/develop/LICENSE.txt
 Release: 1
 Version: %{?pipVersion}
-BuildRequires: gcc make expat-devel db4-devel gdbm-devel sqlite-devel readline-devel zlib-devel bzip2-devel openssl-devel
-Requires: python2.7, gcc, gcc-c++
+BuildRequires: gcc >= 4.4.7, make, expat-devel, db4-devel, gdbm-devel, sqlite-devel, readline-devel, zlib-devel, bzip2-devel, openssl-devel
+Requires: python2.7, python2.7-setuptools, gcc >= 4.4.7, gcc-c++
 AutoReq: no
 Source: pip-1.5.5.tar.gz
 Prefix: /usr
@@ -25,8 +25,8 @@ pip %{pipVersion} rpm built against python %{pythonVersion}
 
 %build
 
- python2.7 setup.py build
-
+ python2.7 setup.py build 
+ 
 %install
 
  rm -rf %{buildroot}
@@ -38,6 +38,12 @@ pip %{pipVersion} rpm built against python %{pythonVersion}
  mkdir -p %{buildroot}%{prefix}/lib/python2.7/site-packages
 
  python2.7 setup.py install  --prefix %{buildroot}%{prefix}
+ 
+ rm %{buildroot}%{prefix}/bin/pip
+ rm %{buildroot}%{prefix}/bin/pip2 
+ rm %{buildroot}%{prefix}/lib/python2.7/site-packages/site.py
+ rm %{buildroot}%{prefix}/lib/python2.7/site-packages/site.pyc
+ rm %{buildroot}%{prefix}/lib/python2.7/site-packages/easy-install.pth
 
 %clean
 %post
