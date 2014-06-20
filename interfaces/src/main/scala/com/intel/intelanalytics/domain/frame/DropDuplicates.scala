@@ -23,4 +23,9 @@
 
 package com.intel.intelanalytics.domain.frame
 
-case class DropDuplicates(frame: Long, keyColumns: List[String])
+/**
+ * Command for dropping duplicates rows identified by the key columns
+ * @param frameId id of the data frame
+ * @param unique_columns the key columns for identifying duplicates
+ */
+case class DropDuplicates(frameId: Long, unique_columns: List[String])

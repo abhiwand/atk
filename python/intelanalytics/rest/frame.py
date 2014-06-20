@@ -227,7 +227,7 @@ class FrameBackendRest(object):
         raise NotImplementedError  # TODO - impplement count
 
     def drop_duplicates(self, frame, columns):
-        arguments = {'frame': frame._id, "keyColumns": columns}
+        arguments = {'frameId': frame._id, "unique_columns": columns}
         command = CommandRequest("dataframe/drop_duplicates", arguments)
         executor.issue(command)
 
@@ -246,7 +246,7 @@ class FrameBackendRest(object):
 
     def flatten_column(self, frame, column_name):
         name = self._get_new_frame_name()
-        arguments = {'name': name, 'frame': frame._id, 'column': column_name, 'separator': ',' }
+        arguments = {'name': name, 'frameId': frame._id, 'column': column_name, 'separator': ',' }
         command = CommandRequest("dataframe/flattenColumn", arguments)
         command_info = executor.issue(command)
         frame_info = FrameInfo(command_info.result)

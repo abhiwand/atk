@@ -351,7 +351,7 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
       xform.arguments.get.convertTo[DropDuplicates]
     }
 
-    validate(test.isSuccess, "Failed to parse file load descriptor: " + getErrorMessage(test)) {
+    validate(test.isSuccess, "Failed to parse drop duplicates descriptor: " + getErrorMessage(test)) {
       val args = test.get
       val result = engine.dropDuplicates(args)
       val command: Command = result._1
