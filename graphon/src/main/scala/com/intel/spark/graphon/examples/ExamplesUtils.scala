@@ -26,10 +26,6 @@ package com.intel.spark.graphon.examples
 import java.io.File
 import java.net.InetAddress
 
-import com.tinkerpop.blueprints.Graph
-
-import scala.collection.JavaConversions._
-
 /**
  * Single location for settings used in examples to make them easier to run on different machines.
  */
@@ -137,37 +133,4 @@ object ExamplesUtils {
 
   /** Hostname for current system */
   private def hostname: String = InetAddress.getLocalHost.getHostName
-
-  /**
-   * Path to the movie data set.
-   */
-  def movieDataset: String = {
-    val moviePath = System.getProperty("MOVIE_DATA", "/user/hadoop/netflix.csv")
-    println("Movie Data Set in HDFS: " + moviePath)
-    hdfsMaster + moviePath
-  }
-
-  /**
-   * Dump the entire graph into a String (not scalable obviously but nice for quick testing)
-   */
-  def dumpGraph(graph: Graph): String = {
-    var vertexCount = 0
-    var edgeCount = 0
-
-    val output = new StringBuilder("---- Graph Dump ----\n")
-
-    graph.getVertices.toList.foreach(v ⇒ {
-      output.append(v).append("\n")
-      vertexCount += 1
-    })
-
-    graph.getEdges.toList.foreach(e ⇒ {
-      output.append(e).append("\n")
-      edgeCount += 1
-    })
-
-    output.append(vertexCount + " Vertices, " + edgeCount + " Edges")
-
-    output.toString()
-  }
 }
