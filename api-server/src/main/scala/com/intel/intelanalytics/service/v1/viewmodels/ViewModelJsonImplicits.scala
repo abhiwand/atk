@@ -23,25 +23,24 @@
 
 package com.intel.intelanalytics.service.v1.viewmodels
 
-import com.intel.intelanalytics.domain.Error
-import spray.json.JsObject
+import spray.json.DefaultJsonProtocol
+import spray.httpx.SprayJsonSupport
 
 /**
- * Decorated command object
- * @param id command id
- * @param name The name of the command
- * @param arguments The arguments to the function.
- * @param error StackTrace and/or other error text if it exists
- * @param progress List of progress for all jobs initiated by this command
- * @param complete True if this command is completed
- * @param result result data for executing the command
- * @param links The link representing the command
+ * Implicit Conversions for View/Models to JSON
  */
-case class DecoratedCommand(id: Long, name: String, arguments: Option[JsObject], error: Option[Error], progress: List[Float],
-                            complete: Boolean, result: Option[JsObject], links: List[RelLink]) {
-  require(id > 0)
-  require(name != null)
-  require(arguments != null)
-  require(links != null)
-  require(error != null)
+object ViewModelJsonImplicits extends DefaultJsonProtocol with SprayJsonSupport {
+
+  //this is needed for implicits
+  import com.intel.intelanalytics.domain.DomainJsonProtocol._
+
+  implicit val relLinkFormat = jsonFormat3(RelLink)
+  implicit val getCommandsFormat = jsonFormat3(GetCommands)
+  implicit val getCommandFormat = jsonFormat7(GetCommand)
+  implicit val getDataFramesFormat = jsonFormat3(GetDataFrames)
+  implicit val getDataFrameFormat = jsonFormat4(GetDataFrame)
+  implicit val getGraphsFormat = jsonFormat3(GetGraphs)
+  implicit val getGraphFormat = jsonFormat3(GetGraph)
+  implicit val jsonTransformFormat = jsonFormat2(JsonTransform)
+
 }

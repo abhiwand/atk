@@ -36,7 +36,6 @@ import com.intel.intelanalytics.domain._
 import scala.slick.driver.{JdbcDriver, JdbcProfile}
 
 
-
 trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
   msc: MetaStoreComponent with DbProfileComponent =>
 
@@ -71,7 +70,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
   )
 
   private[repository] val database = withContext("Connecting to database") {
-    Database.forURL(profile.connectionString, driver = profile.driver)
+    Database.forURL(profile.connectionString, driver = profile.driver, user = profile.username, password = profile.password)
   }
 
   type Session = profile.profile.simple.Session

@@ -24,10 +24,12 @@
 from collections import OrderedDict
 import json
 
+
 import logging
 logger = logging.getLogger(__name__)
 
 from intelanalytics.core.types import supported_types
+from intelanalytics.core.aggregation import *
 
 
 def _get_backend():
@@ -317,9 +319,8 @@ class BigFrame(object):
 
     def _as_json_obj(self):
         return self._backend._as_json_obj(self)
-        #return ['frame', {"name": self.name}]
 
-    def add_columns(self, func, types=str, names=""):
+    def add_columns(self, func, schema):
         """
         Adds one or more new columns to the frame by evaluating the given
         func on each row.
@@ -331,30 +332,26 @@ class BigFrame(object):
             function which takes the values in the row and produces a value
             or collection of values for the new cell(s)
 
-        types : data type or list/tuple of types (optional)
-            specifies the type(s) of the new column(s)
+        schema : tuple or list of tuples
+            the schema for the results of the functions, indicating the new
+            column(s) to add.  Each tuple provides the column name and data
+            type and is of the form (str, type).
 
-        names : string  or list/tuple of strings (optional)
-            specifies the name(s) of the new column(s).  By default, the new
-            column(s) name will be given a unique name "new#" where # is the
-            lowest number (starting from 0) such that there is not already a
-            column with that name.
-
-        Examples
+       Examples
         --------
         >>> my_frame = BigFrame(data)
         For this example my_frame is a BigFrame object with two int32 columns named "column1" and "column2".
         We want to add a third column named "column3" as an int32 and fill it with the contents of column1 and column2 multiplied together
-        >>> my_frame.add_columns(lambda row: row.column1*row.column2, int32, "column3")
+        >>> my_frame.add_columns(lambda row: row.column1*row.column2, ('column3', int32))
         The variable my_frame now has three columns, named "column1", "column2" and "column3". The type of column3 is an int32, and the value is the product of column1 and column2.
         <BLANKLINE>
-        Now, we want to add another column, we don't care what it is called and it is going to be an empty string (the default).
-        >>> my_frame.add_columns(lambda row: '')
+        Now, we want to add another column that is empty
+        >>> my_frame.add_columns(lambda row: '', ('empty', str))
         The BigFrame object 'my_frame' now has four columns named "column1", "column2", "column3", and "new0". The first three columns are int32 and the fourth column is string.  Column "new0" has an empty string ('') in every row.
-        >>> frame.add_columns(lambda row: (row.a * row.b, row.a + row.b), (float32, float32), ("a_times_b", "a_plus_b"))
+        >>> my_frame.add_columns(lambda row: (row.a * row.b, row.a + row.b), [("a_times_b", float32), ("a_plus_b", float32))
         # Two new columns are created, "a_times_b" and "a_plus_b"
         """
-        self._backend.add_columns(self, func, names, types)
+        self._backend.add_columns(self, func, schema)
 
     def append(self, data):
         """
@@ -409,6 +406,25 @@ class BigFrame(object):
         """
         return self._backend.count(self)
 
+    def drop(self, predicate):
+        """
+        Remove all rows from the frame which satisfy the predicate.
+
+        Parameters
+        ----------
+        predicate : function
+            function or lambda which takes a row argument and evaluates to a boolean value
+
+        Examples
+        --------
+        >>>
+        # For this example, my_frame is a BigFrame object with lots of data and columns for the attributes of animals.
+        # We want to get rid of the lions and tigers
+        >>> my_frame.drop(lambda row: row.animal_type == "lion" or row.animal_type == "tiger")
+        """
+        # TODO - Review docstring
+        self._backend.drop(self, predicate)
+
     def filter(self, predicate):
         """
         Select all rows which satisfy a predicate.
@@ -423,7 +439,7 @@ class BigFrame(object):
         >>>
         # For this example, my_frame is a BigFrame object with lots of data and columns for the attributes of animals.
         # We do not want all this data, just the data for lizards and frogs, so ...
-        >>> my_frame.filter(animal_type == "lizard" or animal_type == "frog")
+        >>> my_frame.filter(lambda row: row.animal_type == "lizard" or row.animal_type == "frog")
         # my_frame now only has data about lizards and frogs
         """
         # TODO - Review docstring
@@ -588,18 +604,57 @@ class BigFrame(object):
 
         """
         # TODO - need example in docstring
-
-        if isinstance(column_names, basestring):
-            column_names = [column_names]
-        if new_names is not None:
-            if isinstance(new_names, basestring):
-                new_names = [new_names]
-            if len(column_names) != len(new_names):
-                raise ValueError("new_names list argument must be the same length as the column_names")
-        # TODO - create a general method to validate lists of column names, such that they exist, are all from the same frame, and not duplicated
         projected_frame = BigFrame()
         self._backend.project_columns(self, projected_frame, column_names, new_names)
         return projected_frame
+
+    def groupBy(self, group_by_columns, *aggregation_arguments):
+        """
+        Group frame as per the criteria provided and compute aggregation on each group
+
+        Parameters
+        ----------
+        group_by_columns: BigColumn or List of BigColumns
+            columns or result of a function will be used to create grouping
+        aggregation_arguments: dict
+            (column,aggregation function) pairs
+
+        Return
+        ------
+        frame: BigFrame
+            new aggregated frame
+
+        Examples
+        --------
+        frame.groupBy(frame.a, count)
+        frame.groupBy([frame.a, frame.b], {frame.c: avg})
+        frame.groupBy(frame[['a', 'c']], count, {frame.d: [avg, sum, min], frame.e: count_distinct})
+        frame.groupBy(None, {frame.a : sum, frame.b: [avg, var, stdev]})
+        """
+
+
+        groupByColumns = []
+        if isinstance(group_by_columns, list):
+            groupByColumns = [i.name for i in group_by_columns]
+        elif group_by_columns:
+            groupByColumns = [group_by_columns.name]
+
+        primaryColumn = groupByColumns[0] if groupByColumns else self.column_names[0]
+        aggregation_list = []
+
+        for i in aggregation_arguments:
+            if i == count:
+                aggregation_list.append((count, primaryColumn, "count"))
+            else:
+                for k,v in i.iteritems():
+                    if isinstance(v, list):
+                        for j in v:
+                            aggregation_list.append((j, k.name, "%s_%s" % (k.name, j)))
+                    else:
+                        aggregation_list.append((v, k.name, "%s_%s" % (k.name, v)))
+
+        # Send to backend to compute aggregation
+        return self._backend.groupBy(self, groupByColumns, aggregation_list)
 
     def remove_columns(self, name):
         """

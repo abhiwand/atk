@@ -24,7 +24,7 @@
 package com.intel.intelanalytics.engine.spark.context
 
 import com.typesafe.config.Config
-import org.apache.spark.{SparkConf, SparkContext}
+import org.apache.spark.{ SparkConf, SparkContext }
 import com.intel.intelanalytics.component.Boot
 
 /**

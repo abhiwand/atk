@@ -21,10 +21,11 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.service.v1.viewmodels
+package com.intel.intelanalytics.domain.frame
 
-case class GraphHeader(id: Long, name: String, url: String) {
-  require(id > 0)
-  require(name != null)
-  require(url != null)
+case class FrameGroupByColumn[+Arguments, FrameRef](frame: FrameRef, name: String, group_by_columns: List[String], aggregations: List[(String,String, String)]) {
+  require(name != null, "frame name is required for the new frame")
+  require(frame != null, "frame is required")
+  require(group_by_columns != null, "groupbycol is required")
+  require(aggregations != null, "aggregation list is required")
 }
