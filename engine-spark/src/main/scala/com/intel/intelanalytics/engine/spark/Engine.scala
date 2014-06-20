@@ -144,12 +144,15 @@ with ClassLoaderAware {
     ???
   }
 
-  def create(frame: DataFrameTemplate)(implicit user: UserPrincipal): Future[DataFrame] =
+  private def getResult[A: JsonFormat, R: JsonFormat](name: String, arguments: A): Future[R] = {
     for {
-      Execution(start, complete) <- execute(new CommandTemplate(name = "dataframes/create",
-        arguments = Some(frame.toJson.asJsObject)))
+      Execution(start, complete) <- execute(new CommandTemplate(name, Some(arguments.toJson.asJsObject)))
       result <- complete
-    } yield result.result.get.convertTo[DataFrame]
+    } yield result.result.get.convertTo[R]
+  }
+
+  def create(frame: DataFrameTemplate)(implicit user: UserPrincipal): Future[DataFrame] =
+    getResult("dataframes/create", frame)
 
   def delete(frame: DataFrame): Future[Unit] = withContext("se.delete") {
     future {
@@ -719,8 +722,8 @@ with ClassLoaderAware {
 
   private val commandPlugins: Map[String, CommandPlugin[_, _]] = SparkEngineConfig.archives.flatMap {
     case (archive, className) => Boot.getArchive(ArchiveName(archive, className))
-                                      .getAll[CommandPlugin[_,_]]("CommandPlugin")
-                                      .map(p => (p.name, p))
+      .getAll[CommandPlugin[_, _]]("CommandPlugin")
+      .map(p => (p.name, p))
   }.toMap
 
   private def getCommandDefinition(name: String): Option[CommandPlugin[_, _]] = {
