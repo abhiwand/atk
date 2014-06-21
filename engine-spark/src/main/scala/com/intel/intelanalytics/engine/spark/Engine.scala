@@ -446,20 +446,14 @@ with ClassLoaderAware {
             withCommand(command) {
               val ctx = sparkContextManager.context(user).sparkContext
 
-              //val newFrame = Await.result(create(DataFrameTemplate(arguments.name, None)), SparkEngineConfig.defaultTimeout)
               val rdd = frames.getFrameRdd(ctx, frameId)
 
               val columnIndex = realFrame.schema.columnIndex(arguments.columnName)
 
-
-              val columnObject = new BigColumn(arguments.binColumnName)
-
               if (realFrame.schema.columns.indexWhere(columnTuple => columnTuple._1 == arguments.binColumnName) >= 0)
                 throw new IllegalArgumentException(s"Duplicate column name: ${arguments.binColumnName}")
 
-              // Update the schema
-              var newFrame = realFrame
-              newFrame = frames.addColumn(newFrame, columnObject, DataTypes.toDataType(DataTypes.int32))
+              val newFrame = Await.result(create(DataFrameTemplate(arguments.name, None)), SparkEngineConfig.defaultTimeout)
 
               arguments.binType match {
                 case "equalwidth" => {
@@ -473,7 +467,9 @@ with ClassLoaderAware {
                 case _ => throw new IllegalArgumentException(s"Invalid binning type: ${arguments.binType.toString()}")
               }
 
-              newFrame.copy(schema = newFrame.schema).toJson.asJsObject
+              val allColumns = realFrame.schema.columns :+ (arguments.binColumnName, DataTypes.int32)
+              frames.updateSchema(newFrame, allColumns)
+              newFrame.copy(schema = Schema(allColumns)).toJson.asJsObject
             }
           }
         }
