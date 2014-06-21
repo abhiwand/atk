@@ -186,13 +186,17 @@ class FrameBackendRest(object):
         return execute_new_frame_command('flattenColumn', arguments)
 
     def bin_column(self, frame, column_name, num_bins, bin_type='equalwidth', bin_column_name='binned'):
+        import numpy as np
         if num_bins < 1:
             raise ValueError("num_bins must be at least 1")
         if not bin_type in ['equalwidth', 'equaldepth']:
             raise ValueError("bin_type must be one of: equalwidth, equaldepth")
+        colTypes = dict(frame.schema)
+        if not colTypes[column_name] in [np.float32, np.float64, np.int32, np.int64]:
+            raise ValueError("unable to bin non-numeric values")
         name = self._get_new_frame_name()
         arguments = {'name': name, 'frame': frame._id, 'columnName': column_name, 'numBins': num_bins, 'binType': bin_type, 'binColumnName': bin_column_name}
-        return execute_update_frame_command('binColumn', arguments, frame)
+        return execute_new_frame_command('binColumn', arguments)
 
     class InspectionTable(object):
         """
