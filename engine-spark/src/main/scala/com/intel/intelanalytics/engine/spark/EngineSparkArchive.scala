@@ -25,14 +25,13 @@ package com.intel.intelanalytics.engine.spark
 
 import com.intel.intelanalytics.NotFoundException
 import com.intel.intelanalytics.component.Archive
-import com.intel.intelanalytics.engine.spark.frame.CreateFrame
 import com.typesafe.config.Config
 
 import scala.reflect.ClassTag
 
 class EngineSparkArchive extends Archive {
 
-  val commands = Seq(classOf[CreateFrame])
+  val commands: Seq[Class[_]] = Seq()
   /**
    * Obtain instances of a given class. The keys are established purely
    * by convention.

@@ -26,7 +26,7 @@ package com.intel.intelanalytics.engine.spark
 import java.util.{ArrayList => JArrayList, List => JList, Map => JMap}
 
 import com.intel.intelanalytics.engine._
-import com.intel.intelanalytics.engine.spark.command.SparkCommandStorage
+import com.intel.intelanalytics.engine.spark.command.{CommandExecutor, SparkCommandStorage}
 import com.intel.intelanalytics.engine.spark.context.{SparkContextFactory, SparkContextManager}
 import com.intel.intelanalytics.engine.spark.frame.SparkFrameStorage
 import com.intel.intelanalytics.engine.spark.graph.{SparkGraphHBaseBackend, SparkGraphStorage}
@@ -52,7 +52,7 @@ class SparkComponent extends EngineComponent
     with EventLogging {
 
   lazy val engine = new SparkEngine(sparkContextManager,
-                                    commands.asInstanceOf[CommandStorage], frames, graphs) {}
+                                    commands.asInstanceOf[CommandExecutor], frames, graphs) {}
 
   override lazy val profile = withContext("engine connecting to metastore") {
     Profile.initializeFromConfig(SparkEngineConfig)

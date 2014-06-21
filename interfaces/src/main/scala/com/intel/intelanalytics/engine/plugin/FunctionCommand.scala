@@ -21,31 +21,29 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.engine.spark.plugin
+package com.intel.intelanalytics.engine.plugin
 
-import com.intel.intelanalytics.engine.Engine
-import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.security.UserPrincipal
-import org.apache.spark.SparkContext
-import spray.json.JsObject
+import spray.json._
 
 import scala.concurrent.ExecutionContext
 
-/**
- * Captures details of a particular invocation of a command. This instance is passed to the
- * command's execute method along with the (converted) arguments supplied by the caller.
- *
- * @param engine an instance of the Engine for use by the command
- * @param user the calling user
- * @param commandId the ID assigned to this command execution
- * @param executionContext the Scala execution context in use
- * @param arguments the original JSON arguments, unconverted
- * @param sparkContextFactory a method that can be called to get direct access to a SparkContext
- */
-case class SparkInvocation(engine: Engine,
-                           user: UserPrincipal,
-                           commandId: Long,
-                           executionContext: ExecutionContext,
-                           arguments: Option[JsObject],
-                           sparkContextFactory: ()=> SparkContext
-                           ) extends Invocation
+case class FunctionCommand[Arguments <: Product : JsonFormat, Return <: Product : JsonFormat]
+    (name: String, function: (Arguments, UserPrincipal) => Return) extends CommandPlugin[Arguments, Return] {
+
+  override def parseArguments(arguments: JsObject) = arguments.convertTo[Arguments]
+
+  override def serializeReturn(returnValue: Any): JsObject = returnValue.asInstanceOf[Return].toJson.asJsObject
+
+  /**
+   * Operation plugins must implement this method to do the work requested by the user.
+   * @param invocation information about the user and the circumstances at the time of the call
+   * @param arguments the arguments supplied by the caller
+   * @return a value of type declared as the Return type.
+   */
+  override def execute(invocation: Invocation, arguments: Arguments)
+                      (implicit user: UserPrincipal, executionContext: ExecutionContext)
+                      : Return = {
+    function(arguments, user)
+  }
+}
