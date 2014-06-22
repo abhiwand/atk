@@ -91,12 +91,12 @@ class CommandExecutor(engine: SparkEngine, commands: SparkCommandStorage, contex
    * @param user the user running the command
    * @return a future that includes
    */
-  def execute[A <: Product : JsonFormat, R <: Product : JsonFormat](command: CommandPlugin[A,R],
+  def execute[A, R](command: CommandPlugin[A,R],
                                           arguments: A,
                                           user: UserPrincipal,
                                           executionContext: ExecutionContext): Execution = {
     implicit val ec = executionContext
-    val cmd = commands.create(CommandTemplate(command.name, Some(arguments.toJson.asJsObject())))
+    val cmd = commands.create(CommandTemplate(command.name, Some(command.serializeArguments(arguments))))
     withMyClassLoader {
       withContext("ce.execute") {
         withContext(command.name) {
@@ -117,7 +117,7 @@ class CommandExecutor(engine: SparkEngine, commands: SparkCommandStorage, contex
     }
   }
 
-  def execute[A <: Product : JsonFormat, R <: Product : JsonFormat](name: String,
+  def execute[A, R](name: String,
                                           arguments: A,
                                           user: UserPrincipal,
                                           executionContext: ExecutionContext) : Execution= {
@@ -127,7 +127,7 @@ class CommandExecutor(engine: SparkEngine, commands: SparkCommandStorage, contex
     execute(function, arguments, user, executionContext)
   }
 
-  def execute[A <: Product : JsonFormat, R <: Product : JsonFormat](command: CommandTemplate,
+  def execute[A, R](command: CommandTemplate,
                     user: UserPrincipal,
                     executionContext: ExecutionContext) : Execution = {
     val function = getCommandDefinition(command.name)
