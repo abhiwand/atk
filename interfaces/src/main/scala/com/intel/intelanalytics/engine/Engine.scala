@@ -56,7 +56,7 @@ trait Engine {
    *
    * @param command the command to run, including name and arguments
    * @param user the user running the command
-   * @return a future that includes
+   * @return an Execution that can be used to track the completion of the command
    */
   def execute(command: CommandTemplate)(implicit user: UserPrincipal): Execution
 

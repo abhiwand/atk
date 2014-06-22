@@ -194,7 +194,7 @@ class LoopyBeliefPropagation
   def parseArguments(arguments: JsObject) = arguments.convertTo[Lbp]
 
   //TODO: Replace with generic code that works on any case class
-  def serializeReturn(returnValue: Any): JsObject = returnValue.asInstanceOf[LbpResult].toJson.asJsObject
+  def serializeReturn(returnValue: LbpResult): JsObject = returnValue.toJson.asJsObject
 
   /**
    * The name of the command, e.g. graphs/ml/loopy_belief_propagation

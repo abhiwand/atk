@@ -52,7 +52,7 @@ class SparkComponent extends EngineComponent
     with EventLogging {
 
   lazy val engine = new SparkEngine(sparkContextManager,
-                                    commandExecutor, frames, graphs) {}
+                                    commandExecutor, commands, frames, graphs) {}
 
   override lazy val profile = withContext("engine connecting to metastore") {
     Profile.initializeFromConfig(SparkEngineConfig)

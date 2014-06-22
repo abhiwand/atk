@@ -28,12 +28,20 @@ import spray.json._
 
 import scala.concurrent.ExecutionContext
 
-case class FunctionCommand[Arguments <: Product : JsonFormat, Return <: Product : JsonFormat]
+/**
+ * Encapsulates a normal Scala function as a CommandPlugin.
+ *
+ * @param name the name to assign to the command
+ * @param function the function to call when the command executes
+ * @tparam Arguments the argument type of the command
+ * @tparam Return the return type of the command
+ */
+case class FunctionCommand[Arguments : JsonFormat, Return : JsonFormat]
     (name: String, function: (Arguments, UserPrincipal) => Return) extends CommandPlugin[Arguments, Return] {
 
   override def parseArguments(arguments: JsObject) = arguments.convertTo[Arguments]
 
-  override def serializeReturn(returnValue: Any): JsObject = returnValue.asInstanceOf[Return].toJson.asJsObject
+  override def serializeReturn(returnValue: Return): JsObject = returnValue.toJson.asJsObject
 
   override def serializeArguments(arguments: Arguments): JsObject = arguments.toJson.asJsObject()
 
@@ -46,9 +54,10 @@ case class FunctionCommand[Arguments <: Product : JsonFormat, Return <: Product 
   override def execute(invocation: Invocation, arguments: Arguments)
                       (implicit user: UserPrincipal, executionContext: ExecutionContext)
                       : Return = {
+    //Since the function may come from any class loader, we use the function's
+    //class loader, not our own
     withLoader(function.getClass.getClassLoader) {
       function(arguments, user)
     }
   }
-
 }

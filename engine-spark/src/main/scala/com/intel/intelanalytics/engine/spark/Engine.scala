@@ -44,7 +44,9 @@ import org.apache.spark.api.python.{EnginePythonAccumulatorParam, EnginePythonRD
 import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.rdd.RDD
 import spray.json._
+
 import DomainJsonProtocol._
+
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent._
 
@@ -54,6 +56,7 @@ object SparkEngine {
 
 class SparkEngine(sparkContextManager: SparkContextManager,
                   commands: CommandExecutor,
+                  commandStorage: CommandStorage,
                   frames: SparkFrameStorage,
                   graphs: GraphStorage) extends Engine
                                             with EventLogging
@@ -65,9 +68,17 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     sparkContextManager.cleanup()
   }
 
-  override def getCommands(offset: Int, count: Int): Future[Seq[Command]] = commands.getCommands(offset, count)
+  override def getCommands(offset: Int, count: Int): Future[Seq[Command]] = withContext("se.getCommands") {
+    future {
+      commandStorage.scan(offset, count)
+    }
+  }
 
-  override def getCommand(id: Identifier): Future[Option[Command]] = commands.getCommand(id)
+  override def getCommand(id: Long): Future[Option[Command]] = withContext("se.getCommand") {
+    future {
+      commandStorage.lookup(id)
+    }
+  }
 
 
   /**
@@ -77,7 +88,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
    *
    * @param command the command to run, including name and arguments
    * @param user the user running the command
-   * @return a future that includes
+   * @return an Execution that can be used to track the completion of the command
    */
   def execute(command: CommandTemplate)(implicit user: UserPrincipal): Execution =
     commands.execute(command, user, implicitly[ExecutionContext])

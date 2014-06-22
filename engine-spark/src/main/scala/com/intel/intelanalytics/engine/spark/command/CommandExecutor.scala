@@ -37,21 +37,31 @@ import spray.json._
 import scala.concurrent._
 import scala.util.Try
 
+/**
+ * CommandExecutor manages a registry of CommandPlugins and executes them on request.
+ *
+ * The plugin registry is based on configuration - all Archives listed in the configuration
+ * file under intel.analytics.engine.archives will be queried for the "CommandPlugin" key, and
+ * any plugins they provide will be added to the plugin registry.
+ *
+ * Plugins can also be added programmatically using the registerCommand method.
+ *
+ * Plugins can be executed in three ways:
+ *
+ * 1. A CommandPlugin can be passed directly to the execute method. The command need not be in
+ *    the registry
+ * 2. A command can be called by name. This requires that the command be in the registry.
+ * 3. A command can be called with a CommandTemplate. This requires that the command named by
+ *    the command template be in the registry, and that the arguments provided in the CommandTemplate
+ *    can be parsed by the command.
+ *
+ * @param engine an Engine instance that will be passed to command plugins during execution
+ * @param commands a command storage that the executor can use for audit logging command execution
+ * @param contextManager a SparkContext factory that can be passed to SparkCommandPlugins during execution
+ */
 class CommandExecutor(engine: => SparkEngine, commands: SparkCommandStorage, contextManager: SparkContextManager)
       extends EventLogging
         with ClassLoaderAware {
-
-  def getCommands(offset: Int, count: Int)(implicit ec: ExecutionContext): Future[Seq[Command]] = withContext("se.getCommands") {
-    future {
-      commands.scan(offset, count)
-    }
-  }
-
-  def getCommand(id: Long)(implicit ec:ExecutionContext): Future[Option[Command]] = withContext("se.getCommand") {
-    future {
-      commands.lookup(id)
-    }
-  }
 
   private var commandPlugins: Map[String, CommandPlugin[_, _]] = SparkEngineConfig.archives.flatMap {
     case (archive, className) => Boot.getArchive(ArchiveName(archive, className))
@@ -59,6 +69,13 @@ class CommandExecutor(engine: => SparkEngine, commands: SparkCommandStorage, con
       .map(p => (p.name, p))
   }.toMap
 
+  /**
+   * Adds the given command to the registry.
+   * @param command the command to add
+   * @tparam A the argument type for the command
+   * @tparam R the return type for the command
+   * @return the same command that was passed, for convenience
+   */
   def registerCommand[A,R](command: CommandPlugin[A,R]): CommandPlugin[A,R] = {
     synchronized {
       commandPlugins += (command.name -> command)
@@ -66,20 +83,23 @@ class CommandExecutor(engine: => SparkEngine, commands: SparkCommandStorage, con
     command
   }
 
-  def registerCommand[A <: Product : JsonFormat, R <: Product : JsonFormat](name: String,
-                                                  function: (A, UserPrincipal) => R) : CommandPlugin[A, R] =
+  /**
+   * Registers a function as a command using FunctionCommand. This is a convenience method,
+   * it is also possible to construct a FunctionCommand explicitly and pass it to the
+   * registerCommand method that takes a CommandPlugin.
+   *
+   * @param name the name of the command
+   * @param function the function to be called when running the command
+   * @tparam A the argument type of the command
+   * @tparam R the return type of the command
+   * @return the CommandPlugin instance created during the registration process.
+   */
+  def registerCommand[A : JsonFormat, R : JsonFormat](name: String,
+                                                      function: (A, UserPrincipal) => R) : CommandPlugin[A, R] =
     registerCommand(FunctionCommand(name, function))
 
   private def getCommandDefinition(name: String): Option[CommandPlugin[_, _]] = {
     commandPlugins.get(name)
-  }
-
-  private def getResult[R: JsonFormat](execution: Future[Execution], ec:ExecutionContext): Future[R] = {
-    implicit val e = ec
-    for {
-      Execution(start, complete) <- execution
-      result <- complete
-    } yield result.result.get.convertTo[R]
   }
 
   /**
@@ -89,7 +109,7 @@ class CommandExecutor(engine: => SparkEngine, commands: SparkCommandStorage, con
    *
    * @param command the command to run, including name and arguments
    * @param user the user running the command
-   * @return a future that includes
+   * @return an Execution object that can be used to track the command's execution
    */
   def execute[A, R](command: CommandPlugin[A,R],
                                           arguments: A,
@@ -117,6 +137,18 @@ class CommandExecutor(engine: => SparkEngine, commands: SparkCommandStorage, con
     }
   }
 
+  /**
+   * Executes the given command template, managing all necessary auditing, contexts, class loaders, etc.
+   *
+   * Stores the results of the command execution back in the persistent command object.
+   *
+   * This overload requires that the command already is registered in the plugin registry using registerCommand.
+   *
+   * @param name the name of the command to run
+   * @param arguments the arguments to pass to the command
+   * @param user the user running the command
+   * @return an Execution object that can be used to track the command's execution
+   */
   def execute[A, R](name: String,
                                           arguments: A,
                                           user: UserPrincipal,
@@ -127,6 +159,17 @@ class CommandExecutor(engine: => SparkEngine, commands: SparkCommandStorage, con
     execute(function, arguments, user, executionContext)
   }
 
+  /**
+   * Executes the given command template, managing all necessary auditing, contexts, class loaders, etc.
+   *
+   * Stores the results of the command execution back in the persistent command object.
+   *
+   * This overload requires that the command already is registered in the plugin registry using registerCommand.
+   *
+   * @param command the CommandTemplate from which to extract the command name and the arguments
+   * @param user the user running the command
+   * @return an Execution object that can be used to track the command's execution
+   */
   def execute[A, R](command: CommandTemplate,
                     user: UserPrincipal,
                     executionContext: ExecutionContext) : Execution = {
@@ -137,7 +180,7 @@ class CommandExecutor(engine: => SparkEngine, commands: SparkCommandStorage, con
     execute(function, convertedArgs, user, executionContext)
   }
 
-  def withCommand[T](command: Command)(block: => JsObject): Unit = {
+  private def withCommand[T](command: Command)(block: => JsObject): Unit = {
     commands.complete(command.id, Try {
       block
     })
