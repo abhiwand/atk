@@ -46,7 +46,9 @@ case class FunctionCommand[Arguments <: Product : JsonFormat, Return <: Product 
   override def execute(invocation: Invocation, arguments: Arguments)
                       (implicit user: UserPrincipal, executionContext: ExecutionContext)
                       : Return = {
-    function(arguments, user)
+    withLoader(function.getClass.getClassLoader) {
+      function(arguments, user)
+    }
   }
 
 }
