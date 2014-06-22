@@ -40,7 +40,7 @@ import scala.concurrent.ExecutionContext
  *           the user
  * @tparam Return the type of the data that this plugin will return when invoked.
  */
-sealed trait OperationPlugin[Argument <: Product, Return <: Product] extends ((Invocation, Any) => Return)
+sealed trait OperationPlugin[Argument, Return] extends ((Invocation, Any) => Return)
                                                                           with Component
                                                                           with ClassLoaderAware {
 
@@ -107,7 +107,7 @@ sealed trait OperationPlugin[Argument <: Product, Return <: Product] extends ((I
 /**
  * Base trait for command plugins
  */
-trait CommandPlugin[Argument <: Product, Return <: Product] extends OperationPlugin[Argument, Return] {
+trait CommandPlugin[Argument, Return] extends OperationPlugin[Argument, Return] {
 
   //TODO: move this override to an engine-specific class
   final override def defaultLocation = "engine/commands/" + name
@@ -116,12 +116,15 @@ trait CommandPlugin[Argument <: Product, Return <: Product] extends OperationPlu
   def parseArguments(arguments: JsObject) : Argument
 
   //TODO: Replace with generic code that works on any case class
+  def serializeArguments(arguments: Argument) : JsObject
+
+  //TODO: Replace with generic code that works on any case class
   def serializeReturn(returnValue: Any) : JsObject
 }
 
 /**
  * Base trait for query plugins
  */
-trait QueryPlugin[Argument <: Product, Return <: Product] extends OperationPlugin[Argument, Return] {
+trait QueryPlugin[Argument, Return] extends OperationPlugin[Argument, Return] {
 
 }

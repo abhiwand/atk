@@ -200,4 +200,7 @@ class LoopyBeliefPropagation
    * The name of the command, e.g. graphs/ml/loopy_belief_propagation
    */
   override def name: String = "graphs/ml/loopy_belief_propagation"
+
+  //TODO: Replace with generic code that works on any case class
+  override def serializeArguments(arguments: Lbp): JsObject = arguments.toJson.asJsObject()
 }

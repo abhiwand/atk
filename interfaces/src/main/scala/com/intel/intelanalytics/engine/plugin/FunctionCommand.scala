@@ -35,6 +35,8 @@ case class FunctionCommand[Arguments <: Product : JsonFormat, Return <: Product 
 
   override def serializeReturn(returnValue: Any): JsObject = returnValue.asInstanceOf[Return].toJson.asJsObject
 
+  override def serializeArguments(arguments: Arguments): JsObject = arguments.toJson.asJsObject()
+
   /**
    * Operation plugins must implement this method to do the work requested by the user.
    * @param invocation information about the user and the circumstances at the time of the call
@@ -46,4 +48,5 @@ case class FunctionCommand[Arguments <: Product : JsonFormat, Return <: Product 
                       : Return = {
     function(arguments, user)
   }
+
 }

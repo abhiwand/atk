@@ -23,13 +23,12 @@
 
 package com.intel.intelanalytics.engine.spark.plugin
 
-import com.intel.intelanalytics.engine.plugin.{Invocation, CommandPlugin}
+import com.intel.intelanalytics.engine.plugin.{CommandPlugin, Invocation}
 import com.intel.intelanalytics.security.UserPrincipal
-import spray.json.JsObject
 
 import scala.concurrent.ExecutionContext
 
-trait SparkCommandPlugin[A <: Product, R <: Product] extends CommandPlugin[A,R] {
+trait SparkCommandPlugin[Argument, Return] extends CommandPlugin[Argument, Return] {
 
   /**
    * Operation plugins must implement this method to do the work requested by the user.
