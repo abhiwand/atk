@@ -37,7 +37,7 @@ import spray.json._
 import scala.concurrent._
 import scala.util.Try
 
-class CommandExecutor(engine: SparkEngine, commands: SparkCommandStorage, contextManager: SparkContextManager)
+class CommandExecutor(engine: => SparkEngine, commands: SparkCommandStorage, contextManager: SparkContextManager)
       extends EventLogging
         with ClassLoaderAware {
 
