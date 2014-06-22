@@ -47,6 +47,9 @@ object SparkEngineConfig extends SharedConfig {
 
   val maxRows: Int = config.getInt("intel.analytics.engine.max-rows")
 
+  /**
+   * A list of archives that will be searched for command plugins
+   */
   val archives: List[(String, String)] = {
     val cfg = config.getConfig("intel.analytics.engine.archives")
     cfg.entrySet().asScala

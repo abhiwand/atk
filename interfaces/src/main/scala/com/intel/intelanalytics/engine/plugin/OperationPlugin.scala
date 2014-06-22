@@ -112,14 +112,20 @@ trait CommandPlugin[Argument, Return] extends OperationPlugin[Argument, Return] 
   //TODO: move this override to an engine-specific class
   final override def defaultLocation = "engine/commands/" + name
 
-  //TODO: Replace with generic code that works on any case class
+  /**
+   * Convert the given JsObject to an instance of the Argument type
+   */
   def parseArguments(arguments: JsObject) : Argument
 
-  //TODO: Replace with generic code that works on any case class
+  /**
+   * Convert the given argument to a JsObject
+   */
   def serializeArguments(arguments: Argument) : JsObject
 
-  //TODO: Replace with generic code that works on any case class
-  def serializeReturn(returnValue: Any) : JsObject
+  /**
+   * Convert the given object to a JsObject
+   */
+  def serializeReturn(returnValue: Return) : JsObject
 }
 
 /**
