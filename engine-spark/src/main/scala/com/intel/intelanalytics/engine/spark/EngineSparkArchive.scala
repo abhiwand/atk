@@ -21,54 +21,41 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.engine
+package com.intel.intelanalytics.engine.spark
 
-import com.intel.intelanalytics.ClassLoaderAware
+import com.intel.intelanalytics.NotFoundException
 import com.intel.intelanalytics.component.Archive
-import com.intel.intelanalytics.shared.EventLogging
 import com.typesafe.config.Config
 
 import scala.reflect.ClassTag
-import scala.util.control.NonFatal
 
-class EngineApplication extends Archive with EventLogging with ClassLoaderAware {
+class EngineSparkArchive extends Archive {
 
-  var engine: EngineComponent with FrameComponent with CommandComponent = null
-
-  override def getAll[T : ClassTag](descriptor: String) = {
-    descriptor match {
-      case "engine" => Seq(engine.engine.asInstanceOf[T])
-      case _ => Seq()
-    }
+  val commands: Seq[Class[_]] = Seq()
+  /**
+   * Obtain instances of a given class. The keys are established purely
+   * by convention.
+   *
+   * @param descriptor the string key of the desired class instance.
+   * @tparam T the type of the requested instances
+   * @return the requested instances, or the empty sequence if no such instances could be produced.
+   */
+  override def getAll[T : ClassTag](descriptor: String): Seq[T] = descriptor match {
+    //TODO: move the plumbing parts to the Archive trait and make this just a simple PartialFunction
+    case "CommandPlugin" =>   commands
+                              .map(c => load(c.getName))
+                              .filter(i => i.isInstanceOf[T])
+                              .map(i => i.asInstanceOf[T])
+    case _ => throw new NotFoundException("instances", descriptor)
   }
 
-  def stop() = {
-    info("Shutting down engine")
-    engine.engine.shutdown
-  }
+  /**
+   * Called before the application as a whole shuts down. Not guaranteed to be called,
+   * nor guaranteed that the application will not shut down while this method is running,
+   * though an effort will be made.
+   */
+  override def stop(): Unit = {
 
-  def start(configuration: Config) = {
-
-    try {
-      //TODO: when Engine moves to its own process, it will need to start its own Akka actor system.
-
-      val sparkLoader = {
-        com.intel.intelanalytics.component.Boot.getClassLoader("engine-spark")
-      }
-
-      engine = {
-        withLoader(sparkLoader) {
-          val class_ = sparkLoader.loadClass("com.intel.intelanalytics.engine.spark.SparkComponent")
-          val instance = class_.newInstance()
-          instance.asInstanceOf[EngineComponent with FrameComponent with CommandComponent]
-        }
-      }
-    }
-    catch {
-      case NonFatal(e) =>
-        error("An error occurred while starting the engine.", exception = e)
-        throw e
-    }
   }
 
   /**
@@ -80,4 +67,14 @@ class EngineApplication extends Archive with EventLogging with ClassLoaderAware 
    * default placement.
    */
   override def defaultLocation: String = "engine"
+
+  /**
+   * Called before processing any requests.
+   *
+   * @param configuration Configuration information, scoped to that required by the
+   *                      plugin based on its installed paths.
+   */
+  override def start(configuration: Config): Unit = {
+
+  }
 }
