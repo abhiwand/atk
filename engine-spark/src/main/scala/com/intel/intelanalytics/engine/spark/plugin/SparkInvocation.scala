@@ -40,12 +40,12 @@ import scala.concurrent.ExecutionContext
  * @param commandId the ID assigned to this command execution
  * @param executionContext the Scala execution context in use
  * @param arguments the original JSON arguments, unconverted
- * @param sparkContextFactory a method that can be called to get direct access to a SparkContext
+ * @param sparkContext a method that can be called to get direct access to a SparkContext
  */
 case class SparkInvocation(engine: Engine,
                            user: UserPrincipal,
                            commandId: Long,
                            executionContext: ExecutionContext,
                            arguments: Option[JsObject],
-                           sparkContextFactory: ()=> SparkContext
+                           sparkContext: SparkContext
                            ) extends Invocation
