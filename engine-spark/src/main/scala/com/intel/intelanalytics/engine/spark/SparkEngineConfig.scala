@@ -24,15 +24,9 @@
 package com.intel.intelanalytics.engine.spark
 
 import com.intel.graphbuilder.util.SerializableBaseConfiguration
-<<<<<<< HEAD
-import scala.collection.JavaConversions._
-import com.typesafe.config.ConfigValue
-=======
 import scala.collection.JavaConverters._
 import com.intel.intelanalytics.shared.SharedConfig
-
 import scala.concurrent.duration._
->>>>>>> remotes/origin/sprint_14
 
 /**
  * Configuration Settings for the SparkEngine,
