@@ -34,6 +34,8 @@ import com.intel.intelanalytics.security.UserPrincipal
 trait FrameStorage {
   def lookup(id: Long): Option[DataFrame]
 
+  def lookupFrameByName(name: String): Option[DataFrame]
+
   def create(frame: DataFrameTemplate): DataFrame
 
   def addColumn[T](frame: DataFrame, column: Column[T], columnType: DataTypes.DataType): DataFrame
