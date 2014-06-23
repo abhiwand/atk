@@ -38,6 +38,7 @@ import com.intel.intelanalytics.domain.Error
  *                  arguments that configure the parser before any input arrives. In other cases, such as training an
  *                  ML algorithm, the parameters are used to execute the function directly.
  * @param error StackTrace and/or other error text if it exists
+ * @param progress List of progress for the jobs initiated by this command
  * @param complete True if this command is completed
  * @param result result data for executing the command
  * @param createdOn date/time this record was created
