@@ -23,12 +23,19 @@
 
 package com.intel.intelanalytics.component
 
-import java.net.{ URL, URLClassLoader }
-import scala.reflect.io.{ File, Path, Directory }
-import scala.util.control.NonFatal
-import scala.collection.mutable
-import PartialFunction._
+import java.net.{URL, URLClassLoader}
 
+import com.typesafe.config.ConfigFactory
+
+import scala.reflect.io.{Directory, File, Path}
+import scala.util.control.NonFatal
+
+/**
+ * Entry point for all Intel Analytics Toolkit applications.
+ *
+ * Manages a registry of plugins.
+ *
+ */
 object Boot extends App {
 
   //Scalaz also provides this, but we don't want a scalaz dependency in the launcher
@@ -36,32 +43,92 @@ object Boot extends App {
     final def option[A](a: => A): Option[A] = if (b) Some(a) else None
   }
 
-  var loaders: Map[String, ClassLoader] = Map.empty
+  private var loaders: Map[String, ClassLoader] = Map.empty
 
-  var archives: Map[String, Archive] = Map.empty
+  private var archives: Map[ArchiveName, Archive] = Map.empty
 
-  def buildArchive(archive: String, className: String): Archive = {
-    val loader = getClassLoader(archive)
-    val klass = loader.loadClass(className)
-    val thread = Thread.currentThread()
-    val prior = thread.getContextClassLoader
+  private[intelanalytics] val config = ConfigFactory.load().getConfig("intel.analytics")
 
+  def attempt[T](expr: => T, failureMessage: => String) = {
     try {
-      thread.setContextClassLoader(loader)
-      val instance = klass.newInstance().asInstanceOf[Archive]
-      instance.start(Map.empty)
-      archives += ((archive + ":" + className) -> instance)
-      instance
-    }
-    finally {
-      thread.setContextClassLoader(prior)
+      expr
+    } catch {
+      case NonFatal(e) => throw new Exception(failureMessage, e)
     }
   }
 
-  def getArchive(archive: String, className: String): Archive = {
-    archives.getOrElse(archive + ":" + className, buildArchive(archive, className))
+  private def startComponent(componentInstance: Component, archive: String, configPath: Option[String]) : Unit = {
+    val restrictedConfigPath: String = configPath.getOrElse(componentInstance.defaultLocation).replace("/", ".")
+    val restrictedConfig = attempt(config.getConfig(restrictedConfigPath),
+      s"Could not obtain configuration for class ${componentInstance.getClass.getName} " +
+        s"in archive $archive with path $restrictedConfigPath")
+    componentInstance.start(restrictedConfig)
   }
 
+  private def defaultInit(instance: Any, archive: String, configPath: Option[String]) {
+    instance match {
+      case componentInstance: Component => startComponent(componentInstance, archive, configPath)
+      case _ =>
+    }
+  }
+
+  private def buildArchive(archiveName: ArchiveName, configPath: Option[String]): Archive = {
+    val loader = getClassLoader(archiveName.archive)
+
+    //this is the function that will become the basis of the loader function for the archive.
+    //the init param is used because we will want to initialize the archive slightly differently
+    //than other components, so we need to control the initialization process here.
+    def load(name: String, init: Any => Unit) = {
+      val thread = Thread.currentThread()
+      val prior = thread.getContextClassLoader
+      try {
+        val klass = attempt(loader.loadClass(name),
+          s"Could not find class $name in archive ${archiveName.archive}")
+        thread.setContextClassLoader(loader)
+        val instance = attempt(klass.newInstance(), s"Could not instantiate class $name")
+        init(instance)
+        instance
+      }
+      finally {
+        thread.setContextClassLoader(prior)
+      }
+    }
+
+    val instance = load(archiveName.archiveClass, inst => {
+      val archiveInstance = attempt(inst.asInstanceOf[Archive],
+        s"Loaded class ${archiveName.archiveClass} in archive ${archiveName.archive}, but it is not an Archive")
+      archiveInstance.setLoader(name =>load(name, inst => defaultInit(inst, archiveName.archive, configPath)))
+      defaultInit(archiveInstance, archiveName.archive, configPath)
+      //cleanup stuff on exit
+      Runtime.getRuntime.addShutdownHook(new Thread() {
+        override def run(): Unit = {
+          archiveInstance.stop()
+        }
+      })
+    })
+
+    val archiveInstance = instance.asInstanceOf[Archive]
+    archives += (archiveName -> archiveInstance)
+    archiveInstance
+  }
+
+  /**
+   * Returns the requested archive, loading it if needed.
+   * @param name the name of the archive
+   * @param configPath the subset of the application configuration that should be available
+   *                   to this archive. Only relevant if this call causes the archive to be
+   *                   built. Empty string means given the component access to whatever
+   *                   portion of the config it requests based on its desired position in
+   *                   the plugin tree.
+   * @return the requested archive
+   */
+  def getArchive(name: ArchiveName, configPath: Option[String] = None): Archive = {
+    archives.getOrElse(name, buildArchive(name, configPath))
+  }
+
+  /**
+   * Returns the class loader for the given archive
+   */
   def getClassLoader(archive: String): ClassLoader = {
     loaders.getOrElse(archive, buildClassLoader(archive, interfaces))
   }
@@ -73,7 +140,7 @@ object Boot extends App {
    */
   def getJar(archive: String, f: String => Array[URL] = getCodePathUrls): URL = {
     val codePaths = f(archive)
-    val jarPath = codePaths.filter(u => u.getPath.endsWith(".jar")).headOption
+    val jarPath = codePaths.find(u => u.getPath.endsWith(".jar"))
     jarPath match {
       case None => throw new Exception(s"Could not find jar file for $archive")
       case _ => jarPath.get
@@ -89,16 +156,26 @@ object Boot extends App {
     //TODO: Allow directory to be passed in, or otherwise abstracted?
     //TODO: Make sensitive to actual scala version rather than hard coding.
     val classDirectory: Path = Directory.Current.get / archive / "target" / "classes"
+    val giraphClassDirectory: Path = Directory.Current.get / "igiraph" / archive.substring(1) / "target" / "classes"
     val developmentJar: Path = Directory.Current.get / archive / "target" / (archive + ".jar")
+    val giraphJar: Path = Directory.Current.get / "igiraph" / archive.substring(1) / "target" / (archive + ".jar")
     val deployedJar: Path = Directory.Current.get / "lib" / (archive + ".jar")
     val urls = Array(
       Directory(classDirectory).exists.option {
         println(s"Found class directory at $classDirectory")
         classDirectory.toURL
       },
+      Directory(giraphClassDirectory).exists.option {
+        println(s"Found class directory at $giraphClassDirectory")
+        giraphClassDirectory.toURL
+      },
       File(developmentJar).exists.option {
         println(s"Found jar at $developmentJar")
         developmentJar.toURL
+      },
+      File(giraphJar).exists.option {
+        println(s"Found jar at $giraphJar")
+        giraphJar.toURL
       },
       File(deployedJar).exists.option {
         println(s"Found jar at $deployedJar")
@@ -108,7 +185,7 @@ object Boot extends App {
     urls
   }
 
-  def buildClassLoader(archive: String, parent: ClassLoader): ClassLoader = {
+  private def buildClassLoader(archive: String, parent: ClassLoader): ClassLoader = {
     //TODO: Allow directory to be passed in, or otherwise abstracted?
     //TODO: Make sensitive to actual scala version rather than hard coding.
     val urls = getCodePathUrls(archive)
@@ -120,7 +197,7 @@ object Boot extends App {
     loader
   }
 
-  lazy val interfaces = buildClassLoader("interfaces", getClass.getClassLoader)
+  private lazy val interfaces = buildClassLoader("interfaces", getClass.getClassLoader)
 
   def usage() = println("Usage: java -jar launcher.jar <archive> <application>")
 
@@ -129,10 +206,12 @@ object Boot extends App {
   }
   else {
     try {
-      val instance = getArchive(args(0), args(1))
+      val instance = getArchive(ArchiveName(args(0), args(1)))
     }
     catch {
-      case NonFatal(e) => println(e)
+      case NonFatal(e) =>
+        println(e)
+        e.printStackTrace()
     }
   }
 }

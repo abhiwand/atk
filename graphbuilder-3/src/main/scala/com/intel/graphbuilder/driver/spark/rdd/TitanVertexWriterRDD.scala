@@ -23,13 +23,13 @@
 
 package com.intel.graphbuilder.driver.spark.rdd
 
-import com.intel.graphbuilder.elements.{ GbIdToPhysicalId, Vertex }
+import com.intel.graphbuilder.elements.{GbIdToPhysicalId, Vertex}
 import com.intel.graphbuilder.graph.titan.TitanGraphConnector
 import com.intel.graphbuilder.write.VertexWriter
 import com.intel.graphbuilder.write.dao.VertexDAO
 import com.intel.graphbuilder.write.titan.TitanVertexWriter
 import org.apache.spark.rdd.RDD
-import org.apache.spark.{ TaskContext, Partition }
+import org.apache.spark.{Partition, TaskContext}
 
 /**
  * RDD that writes to Titan and produces output mapping GbId's to Physical Id's
@@ -44,9 +44,9 @@ import org.apache.spark.{ TaskContext, Partition }
  *                              10k seems to be a pretty we established number to use for Vertices.
  */
 class TitanVertexWriterRDD(prev: RDD[Vertex],
-                           titanConnector: TitanGraphConnector,
-                           val append: Boolean = false,
-                           val maxVerticesPerCommit: Long = 10000L) extends RDD[GbIdToPhysicalId](prev) {
+    titanConnector: TitanGraphConnector,
+    val append: Boolean = false,
+    val maxVerticesPerCommit: Long = 10000L) extends RDD[GbIdToPhysicalId](prev) {
 
   override def getPartitions: Array[Partition] = firstParent[Vertex].partitions
 
@@ -59,7 +59,7 @@ class TitanVertexWriterRDD(prev: RDD[Vertex],
     val writer = new TitanVertexWriter(new VertexWriter(new VertexDAO(graph), append))
 
     var count = 0L
-    val gbIdsToPhyiscalIds = firstParent[Vertex].iterator(split, context).map(v => {
+    val gbIdsToPhyiscalIds = firstParent[Vertex].iterator(split, context).map(v ⇒ {
       val id = writer.write(v)
       count += 1
       if (count % maxVerticesPerCommit == 0) {
@@ -70,7 +70,7 @@ class TitanVertexWriterRDD(prev: RDD[Vertex],
 
     graph.commit()
 
-    context.addOnCompleteCallback(() => {
+    context.addOnCompleteCallback(() ⇒ {
       println("vertices written: " + count + " for split: " + split.index)
       graph.shutdown()
     })

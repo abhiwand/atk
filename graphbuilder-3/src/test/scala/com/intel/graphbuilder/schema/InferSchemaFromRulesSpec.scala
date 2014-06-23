@@ -25,7 +25,7 @@ package com.intel.graphbuilder.schema
 
 import com.intel.graphbuilder.parser._
 import com.intel.graphbuilder.parser.rule.RuleParserDSL._
-import com.intel.graphbuilder.parser.rule.{ ParsedValue, DataTypeResolver, EdgeRule, VertexRule }
+import com.intel.graphbuilder.parser.rule.{DataTypeResolver, EdgeRule, ParsedValue, VertexRule}
 import org.specs2.mutable.Specification
 
 class InferSchemaFromRulesSpec extends Specification {
@@ -41,14 +41,12 @@ class InferSchemaFromRulesSpec extends Specification {
       new ColumnDef("rating", classOf[Int]),
       new ColumnDef("date", classOf[String]),
       new ColumnDef("emptyColumn", classOf[String]),
-      new ColumnDef("noneColumn", null)
-    )
+      new ColumnDef("noneColumn", null))
     val inputSchema = new InputSchema(columnDefs)
     val dataTypeParser = new DataTypeResolver(inputSchema)
     val vertexRules = List(
       VertexRule(property("userId"), List(constant("name") -> column("userName"))),
-      VertexRule(property("movieId"), List(constant("title") -> column("movieTitle")))
-    )
+      VertexRule(property("movieId"), List(constant("title") -> column("movieTitle"))))
     val edgeRules = List(new EdgeRule(property("userId"), property("movieId"), constant("watched"), property("date")))
 
     val inferSchemaFromRules = new InferSchemaFromRules(dataTypeParser, vertexRules, edgeRules)
@@ -119,13 +117,11 @@ class InferSchemaFromRulesSpec extends Specification {
       new ColumnDef("dynamicPropertyName", classOf[String]), // can't be inferred
       new ColumnDef("dynamicPropertyValue", classOf[Int]),
       new ColumnDef("dynamicLabel", classOf[String]), // can't be inferred
-      new ColumnDef("date", classOf[java.util.Date])
-    )
+      new ColumnDef("date", classOf[java.util.Date]))
     val inputSchema = new InputSchema(columnDefs)
     val dataTypeParser = new DataTypeResolver(inputSchema)
     val vertexRules = List(
-      VertexRule(property("id"), List(column("dynamicPropertyName") -> column("dynamicPropertyValue")))
-    )
+      VertexRule(property("id"), List(column("dynamicPropertyName") -> column("dynamicPropertyValue"))))
     val edgeRules = List(new EdgeRule(property("id"), property("id"), column("dynamicLabel"), property("date")))
     val inferSchemaFromRules = new InferSchemaFromRules(dataTypeParser, vertexRules, edgeRules)
     val graphSchema = inferSchemaFromRules.inferGraphSchema()
@@ -158,8 +154,7 @@ class InferSchemaFromRulesSpec extends Specification {
       new ColumnDef("dynamicPropertyName", classOf[String]), // can't be inferred
       new ColumnDef("dynamicPropertyValue", classOf[Int]),
       new ColumnDef("dynamicLabel", classOf[String]), // can't be inferred
-      new ColumnDef("date", classOf[java.util.Date])
-    )
+      new ColumnDef("date", classOf[java.util.Date]))
     val inputSchema = new InputSchema(columnDefs)
     val dataTypeParser = new DataTypeResolver(inputSchema)
     val vertexRules = List(VertexRule(property("id"), Nil))

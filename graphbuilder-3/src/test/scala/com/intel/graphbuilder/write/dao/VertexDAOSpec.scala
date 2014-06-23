@@ -23,9 +23,9 @@
 
 package com.intel.graphbuilder.write.dao
 
-import com.intel.graphbuilder.write.titan.TitanIdUtils
+import com.intel.graphbuilder.driver.spark.TestingTitan
 import com.intel.graphbuilder.elements._
-import com.intel.graphbuilder.testutils.TestingTitan
+import com.intel.graphbuilder.write.titan.TitanIdUtils
 import org.specs2.mutable.Specification
 
 class VertexDAOSpec extends Specification {
