@@ -21,16 +21,8 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.graphbuilder.testutils
+package com.intel.intelanalytics.engine.spark.plugin
 
-import org.specs2.mutable.After
+class SparkQueryPlugin {
 
-/**
- * Extends After adding a concrete after() method.
- *
- * This allows subclasses to call super so you can mix in multiple After traits.
- */
-trait MultipleAfter extends After {
-
-  override def after: Any = {}
 }

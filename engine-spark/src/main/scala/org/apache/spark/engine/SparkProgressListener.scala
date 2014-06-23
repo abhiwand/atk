@@ -57,7 +57,7 @@ class SparkProgressListener extends SparkListener {
 
   override def onJobStart(jobStart: SparkListenerJobStart) {
     val parents = jobStart.job.finalStage.parents
-    val parentsIds = parents.map(s => s.id)
+    val parentsIds = parents.map(s ⇒ s.id)
     jobIdToStageIds(jobStart.job.jobId) = (parentsIds :+ jobStart.job.finalStage.id).toArray
 
     if (jobIdPromise != null) {
@@ -81,9 +81,9 @@ class SparkProgressListener extends SparkListener {
   override def onTaskEnd(taskEnd: SparkListenerTaskEnd) {
     val sid = taskEnd.task.stageId
     taskEnd.taskInfo.successful match {
-      case true =>
+      case true ⇒
         stageIdToTasksComplete(sid) = stageIdToTasksComplete.getOrElse(sid, 0) + 1
-      case false =>
+      case false ⇒
 
     }
   }
@@ -91,29 +91,29 @@ class SparkProgressListener extends SparkListener {
   override def onJobEnd(jobEnd: SparkListenerJobEnd) {
 
     jobEnd match {
-      case end: SparkListenerJobEnd =>
+      case end: SparkListenerJobEnd ⇒
         end.jobResult match {
-          case JobFailed(ex, Some(stage)) =>
+          case JobFailed(ex, Some(stage)) ⇒
             /* If two jobs share a stage we could get this failure message twice. So we first
             *  check whether we've already retired this stage. */
-            val stageInfo = activeStages.filter(s => s.stageId == stage.id).headOption
-            stageInfo.foreach { s =>
+            val stageInfo = activeStages.filter(s ⇒ s.stageId == stage.id).headOption
+            stageInfo.foreach { s ⇒
               activeStages -= s
             }
-          case _ =>
+          case _ ⇒
         }
-      case _ =>
+      case _ ⇒
     }
   }
 
   def getProgress(jobId: Int): Int = {
 
     val stageIds = jobIdToStageIds(jobId)
-    val finishedStages = stageIds.count(i => completedStages.filter(s => s.stageId == i).length > 0)
-    val currentActiveStages = activeStages.filter(s => stageIds.contains(s.stageId))
+    val finishedStages = stageIds.count(i ⇒ completedStages.filter(s ⇒ s.stageId == i).length > 0)
+    val currentActiveStages = activeStages.filter(s ⇒ stageIds.contains(s.stageId))
     var progress = (100 * finishedStages) / stageIds.length
 
-    currentActiveStages.foreach(currentActiveStage => {
+    currentActiveStages.foreach(currentActiveStage ⇒ {
       val totalTaskForStage = currentActiveStage.numTasks
       val successCount = stageIdToTasksComplete.getOrElse(currentActiveStage.stageId, 0)
       progress += (100 * successCount / (totalTaskForStage * stageIds.length))

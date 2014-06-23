@@ -45,8 +45,8 @@ class RowParser(separator: Char) extends RegexParsers with Serializable {
    * @param line to be parsed
    */
   def apply(line: String): Array[String] = parseAll(record, line) match {
-    case Success(result, _) => result.toArray
-    case failure: NoSuccess => { throw new Exception("Parse Failed") }
+    case Success(result, _) ⇒ result.toArray
+    case failure: NoSuccess ⇒ { throw new Exception("Parse Failed") }
   }
 
   def record = repsep(mainToken, separator.toString)

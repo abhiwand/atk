@@ -115,8 +115,10 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
         <dep.hadoop2.version>2.3.0-cdh5.0.0</dep.hadoop2.version>
 
         <dep.mahout.version>0.9</dep.mahout.version>
+
         <dep.spark.version>0.9.1</dep.spark.version>
 
+        <dep.typesafe-config.version>1.2.1</dep.typesafe-config.version>
         <!--START GAO MAVEN -->
         <!-- these dependencies are from gaomaven.jf.intel.com -->
         <dep.giraph-core.version>1.1.0-SNAPSHOT-20140317</dep.giraph-core.version>
@@ -158,7 +160,9 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
             <modules>
                 <module>event</module>
                 <module>ispark-deps</module>
+                <module>testutils</module>
                 <module>graphbuilder-3</module><!-- scoverage -->
+                <module>graphon</module>
                 <module>interfaces</module>
                 <module>launcher</module><!-- scoverage -->
                 <module>shared</module><!-- scoverage -->
@@ -180,6 +184,7 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 <!--<module>ititan</module>-->
                 <module>event</module>
                 <module>ispark-deps</module>
+                <module>testutils</module>
                 <module>graphbuilder-3</module><!-- scoverage -->
                 <module>interfaces</module>
                 <module>launcher</module><!-- scoverage -->
@@ -640,7 +645,17 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
             </dependency>
             <dependency>
                 <groupId>com.intel.ia</groupId>
+                <artifactId>testutils</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.intel.ia</groupId>
                 <artifactId>graphbuilder-3</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.intel.ia</groupId>
+                <artifactId>graphon</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

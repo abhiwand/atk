@@ -32,6 +32,7 @@ import org.apache.giraph.aggregators.AggregatorWriter;
 import org.apache.giraph.aggregators.DoubleSumAggregator;
 import org.apache.giraph.aggregators.LongSumAggregator;
 import org.apache.giraph.conf.DefaultImmutableClassesGiraphConfigurable;
+import org.apache.giraph.conf.ImmutableClassesGiraphConfiguration;
 import org.apache.giraph.counters.GiraphStats;
 import org.apache.giraph.edge.Edge;
 import org.apache.giraph.graph.BasicComputation;
@@ -404,8 +405,21 @@ public class LoopyBeliefPropagationComputation extends BasicComputation<LongWrit
      * This is an aggregator writer for lbp, which after each super step will persist the
      * aggregator values to disk, by use of the Writable interface.
      */
-    public static class LoopyBeliefPropagationAggregatorWriter extends DefaultImmutableClassesGiraphConfigurable
+    public static class LoopyBeliefPropagationAggregatorWriter
         implements AggregatorWriter {
+
+        /** Configuration */
+        private ImmutableClassesGiraphConfiguration conf;
+
+        @Override
+        public void setConf(ImmutableClassesGiraphConfiguration conf) {
+            this.conf = conf;
+        }
+
+        @Override
+        public ImmutableClassesGiraphConfiguration getConf() {
+            return conf;
+        }
         /** Name of the file we wrote to */
         private static String FILENAME;
         /** Saved output stream to write to */

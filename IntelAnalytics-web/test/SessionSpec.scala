@@ -1,15 +1,3 @@
-import models.database.{ SessionRow, SessionTable }
-import models.{ database, Sessions }
-import org.junit.runner.RunWith
-import org.specs2.mock.Mockito
-import org.specs2.mutable.Specification
-import org.specs2.runner.JUnitRunner
-import play.api.db.DB
-import play.api.test.FakeApplication
-import play.api.test.FakeApplication
-import play.api.test.Helpers._
-import play.api.Play.current
-import play.api.db.slick.Config.driver.simple._
 import scala.collection.immutable.HashSet
 
 /**

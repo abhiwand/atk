@@ -21,26 +21,51 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.engine.spark
+package com.intel.testutils
 
-import com.intel.event.EventContext
+import java.io.File
 
-trait ClassLoaderAware {
+import org.apache.commons.io.FileUtils
+import org.apache.log4j.Logger
+
+/**
+ * Utility methods for working with directories.
+ */
+object DirectoryUtils {
+
+  private val log: Logger = Logger.getLogger(DirectoryUtils.getClass)
+
   /**
-   * Execute a code block using the ClassLoader of 'this' SparkEngine
-   * rather than the ClassLoader of the currentThread()
+   * Create a Temporary directory
+   * @param prefix the prefix for the directory name, this is used to make the Temp directory more identifiable.
+   * @return the temporary directory
    */
-  def withMyClassLoader[T](f: => T): T = {
-    val prior = Thread.currentThread().getContextClassLoader
-    EventContext.getCurrent.put("priorClassLoader", prior.toString)
+  def createTempDirectory(prefix: String): File = {
     try {
-      val loader = this.getClass.getClassLoader
-      EventContext.getCurrent.put("newClassLoader", loader.toString)
-      Thread.currentThread setContextClassLoader loader
-      f
+      convertFileToDirectory(File.createTempFile(prefix, "-tmp"))
+    } catch {
+      case e: Exception ⇒
+        throw new RuntimeException("Could NOT initialize temp directory, prefix: " + prefix, e)
     }
-    finally {
-      Thread.currentThread setContextClassLoader prior
+  }
+
+  /**
+   * Convert a file into a directory
+   * @param file a file that isn't a directory
+   * @return directory with same name as File
+   */
+  private def convertFileToDirectory(file: File): File = {
+    file.delete()
+    if (!file.mkdirs()) {
+      throw new RuntimeException("Failed to create tmpDir: " + file.getAbsolutePath)
+    }
+    file
+  }
+
+  def deleteTempDirectory(tmpDir: File) {
+    FileUtils.deleteQuietly(tmpDir)
+    if (tmpDir != null && tmpDir.exists) {
+      log.error("Failed to delete tmpDir: " + tmpDir.getAbsolutePath)
     }
   }
 }
