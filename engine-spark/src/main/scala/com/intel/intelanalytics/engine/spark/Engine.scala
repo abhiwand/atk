@@ -47,6 +47,7 @@ import spray.json._
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent._
 import scala.util.Try
+import org.apache.spark.engine.SparkProgressListener
 
 object SparkEngine {
   private val pythonRddDelimiter = "\0"
