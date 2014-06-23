@@ -4,7 +4,7 @@ Intel® Big Data Platform: Analytics Toolkit
 Contents:
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
 
    ia_intr
    ad_over
@@ -16,6 +16,7 @@ References
    :maxdepth: 1
 
 * :doc:`ia_glos`
+* :doc:`ia_legal`
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
