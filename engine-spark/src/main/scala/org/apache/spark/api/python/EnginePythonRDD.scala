@@ -24,7 +24,7 @@
 package org.apache.spark.api.python
 
 import org.apache.spark.rdd.RDD
-import java.util.{ List => JList, ArrayList => JArrayList, Map => JMap }
+import java.util.{ List ⇒ JList, ArrayList ⇒ JArrayList, Map ⇒ JMap }
 
 import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.Accumulator
@@ -51,8 +51,6 @@ class EnginePythonRDD[T: ClassTag](
       preservePartitioning, pythonExec, broadcastVars, accumulator) {
 
 }
-
-
 
 /**
  * Internal class that acts as an `AccumulatorParam` for Python accumulators. Inside, it

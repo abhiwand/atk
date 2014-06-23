@@ -23,73 +23,68 @@
 
 package models
 
-import play.api.Play.current
-import play.api.db.slick.Config.driver.simple._
-import play.api.db.slick.DB
-import models.database.SessionRow
-
 /**
  * Singleton object to provide session services.
  */
 object Sessions extends SessionGenerator {
-    var table = database.SessionTable
+  var table = database.SessionTable
 
-    /**
-     * see SessionGenerator.
-     */
-    def getById(sessionId: String): Query[database.SessionTable.type, database.SessionRow] = DB.withSession {
-        implicit session: scala.slick.session.Session =>
-            return for {se <- table if se.Id === sessionId} yield se
-    }
+  /**
+   * see SessionGenerator.
+   */
+  def getById(sessionId: String): Query[database.SessionTable.type, database.SessionRow] = DB.withSession {
+    implicit session: scala.slick.session.Session =>
+      return for { se <- table if se.Id === sessionId } yield se
+  }
 
-    /**
-     * see SessionGenerator.
-     */
-    def create(uid: Long): Option[String] = DB.withSession {
-        implicit session: scala.slick.session.Session =>
-            val sessionId = createSessionId
-            val successful = table.insert(SessionRow(sessionId, uid, "", System.currentTimeMillis / 1000))
-            if (successful == 1)
-                Some(sessionId)
-            else
-                None
-    }
+  /**
+   * see SessionGenerator.
+   */
+  def create(uid: Long): Option[String] = DB.withSession {
+    implicit session: scala.slick.session.Session =>
+      val sessionId = createSessionId
+      val successful = table.insert(SessionRow(sessionId, uid, "", System.currentTimeMillis / 1000))
+      if (successful == 1)
+        Some(sessionId)
+      else
+        None
+  }
 
-    /**
-     * see SessionGenerator.
-     */
-    def read(sessionId: String): Option[database.SessionRow] = DB.withSession {
-        implicit session: scala.slick.session.Session =>
-            val userSessions = getById(sessionId).list
+  /**
+   * see SessionGenerator.
+   */
+  def read(sessionId: String): Option[database.SessionRow] = DB.withSession {
+    implicit session: scala.slick.session.Session =>
+      val userSessions = getById(sessionId).list
 
-            if (userSessions.length > 0)
-                Some(userSessions.last)
-            else
-                None
-    }
+      if (userSessions.length > 0)
+        Some(userSessions.last)
+      else
+        None
+  }
 
-    /**
-     * see SessionGenerator.
-     */
-    def update(userSession: models.database.SessionRow) = DB.withSession {
-        implicit session: scala.slick.session.Session =>
-            val userSes = getById(userSession.Id)
-            userSes.update(userSession)
-    }
+  /**
+   * see SessionGenerator.
+   */
+  def update(userSession: models.database.SessionRow) = DB.withSession {
+    implicit session: scala.slick.session.Session =>
+      val userSes = getById(userSession.Id)
+      userSes.update(userSession)
+  }
 
-    /**
-     * see SessionGenerator.
-     */
-    def delete(sessionId: String) = DB.withSession {
-        implicit session: scala.slick.session.Session =>
-            val userSes = getById(sessionId)
-            userSes.delete
-    }
+  /**
+   * see SessionGenerator.
+   */
+  def delete(sessionId: String) = DB.withSession {
+    implicit session: scala.slick.session.Session =>
+      val userSes = getById(sessionId)
+      userSes.delete
+  }
 
-    /**
-     * get random session id.
-     */
-    def createSessionId(): String = {
-        java.util.UUID.randomUUID().toString()
-    }
+  /**
+   * get random session id.
+   */
+  def createSessionId(): String = {
+    java.util.UUID.randomUUID().toString()
+  }
 }

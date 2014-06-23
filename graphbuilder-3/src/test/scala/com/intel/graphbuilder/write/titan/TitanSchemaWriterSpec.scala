@@ -23,12 +23,12 @@
 
 package com.intel.graphbuilder.write.titan
 
-import org.specs2.mutable.Specification
-import com.intel.graphbuilder.schema.{ PropertyType, PropertyDef, EdgeLabelDef, GraphSchema }
-import com.tinkerpop.blueprints.{ Vertex, Direction, Edge }
-import org.specs2.mock.Mockito
+import com.intel.graphbuilder.driver.spark.TestingTitan
+import com.intel.graphbuilder.schema.{EdgeLabelDef, GraphSchema, PropertyDef, PropertyType}
 import com.thinkaurelius.titan.core.TitanGraph
-import com.intel.graphbuilder.testutils.TestingTitan
+import com.tinkerpop.blueprints.{Direction, Edge, Vertex}
+import org.specs2.mock.Mockito
+import org.specs2.mutable.Specification
 
 class TitanSchemaWriterSpec extends Specification with Mockito {
 

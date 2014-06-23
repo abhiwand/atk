@@ -23,12 +23,11 @@
 
 package com.intel.graphbuilder.write.dao
 
-import org.specs2.mutable.Specification
-import com.intel.graphbuilder.elements.{ Edge, Property }
-import com.tinkerpop.blueprints.Direction
-import com.intel.graphbuilder.elements.Vertex
+import com.intel.graphbuilder.driver.spark.TestingTitan
+import com.intel.graphbuilder.elements.{Edge, Property, Vertex}
 import com.intel.graphbuilder.write.titan.TitanIdUtils.titanId
-import com.intel.graphbuilder.testutils.TestingTitan
+import com.tinkerpop.blueprints.Direction
+import org.specs2.mutable.Specification
 
 class EdgeDAOSpec extends Specification {
 

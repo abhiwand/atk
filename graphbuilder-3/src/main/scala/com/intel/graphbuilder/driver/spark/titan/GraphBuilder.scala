@@ -23,10 +23,11 @@
 
 package com.intel.graphbuilder.driver.spark.titan
 
+import java.text.NumberFormat
+
 import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRDDImplicits._
 import com.intel.graphbuilder.graph.titan.TitanGraphConnector
 import com.intel.graphbuilder.parser.rule._
-import java.text.NumberFormat
 import org.apache.spark.rdd.RDD
 import org.apache.spark.storage.StorageLevel
 
@@ -43,8 +44,8 @@ class GraphBuilder(config: GraphBuilderConfig) extends Serializable {
 
   val titanConnector = new TitanGraphConnector(config.titanConfig)
   val titanSchemaManager = new InferSchemaManager(config)
-  val vertexParser = new VertexRuleParser(config.inputSchema, config.vertexRules)
-  val edgeParser = new EdgeRuleParser(config.inputSchema, config.edgeRules)
+  val vertexParser = new VertexRuleParser(config.inputSchema.serializableCopy, config.vertexRules)
+  val edgeParser = new EdgeRuleParser(config.inputSchema.serializableCopy, config.edgeRules)
 
   /**
    * Build the Graph, both Edges and Vertices from one source.
@@ -105,7 +106,7 @@ class GraphBuilder(config: GraphBuilderConfig) extends Serializable {
 
       val ids = idMap.collect()
       println("vertex ids size: " + ids.length)
-      val vertexMap = ids.map(gbIdToPhysicalId => gbIdToPhysicalId.toTuple).toMap
+      val vertexMap = ids.map(gbIdToPhysicalId ⇒ gbIdToPhysicalId.toTuple).toMap
 
       println("broadcasting vertex ids")
       val gbIdToPhysicalIdMap = vertexInputRdd.sparkContext.broadcast(vertexMap)
@@ -113,8 +114,7 @@ class GraphBuilder(config: GraphBuilderConfig) extends Serializable {
       println("starting write of edges")
       mergedEdges.write(titanConnector, gbIdToPhysicalIdMap, config.append)
 
-    }
-    else {
+    } else {
       println("join edges with physical ids")
       val edgesWithPhysicalIds = mergedEdges.joinWithPhysicalIds(idMap)
 

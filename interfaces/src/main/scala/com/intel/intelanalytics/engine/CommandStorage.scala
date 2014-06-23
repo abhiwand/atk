@@ -23,7 +23,7 @@
 
 package com.intel.intelanalytics.engine
 
-import com.intel.intelanalytics.domain.command.{CommandTemplate, Command}
+import com.intel.intelanalytics.domain.command.{ CommandTemplate, Command }
 import scala.util.Try
 import spray.json.JsObject
 

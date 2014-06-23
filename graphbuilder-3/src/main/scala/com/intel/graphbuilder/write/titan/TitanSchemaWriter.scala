@@ -23,7 +23,8 @@
 
 package com.intel.graphbuilder.write.titan
 
-import com.intel.graphbuilder.schema.{ EdgeLabelDef, PropertyDef, PropertyType, GraphSchema }
+import com.intel.graphbuilder.schema.{EdgeLabelDef, GraphSchema, PropertyDef, PropertyType}
+import com.intel.graphbuilder.util.PrimitiveConverter
 import com.intel.graphbuilder.write.SchemaWriter
 import com.thinkaurelius.titan.core.TitanGraph
 import com.tinkerpop.blueprints._
@@ -56,7 +57,7 @@ class TitanSchemaWriter(graph: TitanGraph) extends SchemaWriter {
    * @param propertyDefs the definition of a Property
    */
   private def writePropertyDefs(propertyDefs: List[PropertyDef]): Unit = {
-    for (propertyDef <- propertyDefs) {
+    for (propertyDef ← propertyDefs) {
       writePropertyDef(propertyDef)
     }
   }
@@ -67,7 +68,7 @@ class TitanSchemaWriter(graph: TitanGraph) extends SchemaWriter {
    */
   private def writePropertyDef(propertyDef: PropertyDef): Unit = {
     if (graph.getType(propertyDef.name) == null) {
-      val property = graph.makeKey(propertyDef.name).dataType(propertyDef.dataType)
+      val property = graph.makeKey(propertyDef.name).dataType(PrimitiveConverter.primitivesToObjects(propertyDef.dataType))
       if (propertyDef.indexed) {
         // TODO: future: should we implement INDEX_NAME?
         property.indexed(indexType(propertyDef.propertyType))
@@ -79,6 +80,7 @@ class TitanSchemaWriter(graph: TitanGraph) extends SchemaWriter {
     }
   }
 
+
   /**
    * Determine the index type from the supplied PropertyType
    * @param propertyType enumeration to specify Vertex or Edge
@@ -86,11 +88,9 @@ class TitanSchemaWriter(graph: TitanGraph) extends SchemaWriter {
   private[titan] def indexType(propertyType: PropertyType.Value): Class[_ <: Element] = {
     if (propertyType == PropertyType.Vertex) {
       classOf[Vertex] // TODO: this should probably be an Index Type property?
-    }
-    else if (propertyType == PropertyType.Edge) {
+    } else if (propertyType == PropertyType.Edge) {
       classOf[Edge] // TODO: this should probably be an Index Type property?
-    }
-    else {
+    } else {
       throw new RuntimeException("Unknown PropertyType is not yet implemented: " + propertyType)
     }
   }
@@ -108,10 +108,9 @@ class TitanSchemaWriter(graph: TitanGraph) extends SchemaWriter {
     //  ArrayList<TitanKey> titanKeys = new ArrayList<TitanKey>();
     //  signature()
 
-    edgeLabelDefs.foreach(labelSchema =>
+    edgeLabelDefs.foreach(labelSchema ⇒
       if (graph.getType(labelSchema.label) == null) {
         graph.makeLabel(labelSchema.label).make()
-      }
-    )
+      })
   }
 }
