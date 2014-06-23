@@ -23,7 +23,7 @@
 
 package com.intel.intelanalytics.service
 
-import akka.actor.{ActorRef, ActorSystem, Props}
+import akka.actor.{ ActorRef, ActorSystem, Props }
 import akka.io.IO
 import spray.can.Http
 import akka.pattern.ask
@@ -31,10 +31,11 @@ import akka.util.Timeout
 import scala.concurrent.duration._
 import com.intel.event.EventLogger
 import com.intel.event.adapter.SLF4JLogAdapter
-import com.intel.intelanalytics.component.Archive
+import com.intel.intelanalytics.component.{Archive, ArchiveName}
 import com.intel.intelanalytics.engine.Engine
-import com.typesafe.config.ConfigFactory
+import com.typesafe.config.{Config, ConfigFactory}
 import scala.concurrent.Await
+import scala.reflect.ClassTag
 
 /**
  * API Service Application - a REST application used by client layer to communicate with the Engine.
@@ -55,22 +56,13 @@ class ApiServiceApplication extends Archive {
   /**
    * Main entry point to start the API Service Application
    */
-  def start(configuration: Map[String, String]) = {
+  def start(configuration: Config) = {
 
     EventLogger.setImplementation(new SLF4JLogAdapter())
 
     val apiService = initializeDependencies()
     createActorSystemAndBindToHttp(apiService)
-
-    //cleanup stuff on exit
-    Runtime.getRuntime.addShutdownHook(new Thread() {
-      override def run(): Unit = {
-        com.intel.intelanalytics.component.Boot.getArchive(
-          "engine", "com.intel.intelanalytics.engine.EngineApplication").stop()
-      }
-    })
   }
-
 
   /**
    * Initialize API Server dependencies and perform dependency injection as needed.
@@ -79,7 +71,8 @@ class ApiServiceApplication extends Archive {
 
     //TODO: later engine will be initialized in a separate JVM
     lazy val engine = com.intel.intelanalytics.component.Boot.getArchive(
-      "engine", "com.intel.intelanalytics.engine.EngineApplication").get[Engine]("engine")
+                              ArchiveName("engine", "com.intel.intelanalytics.engine.EngineApplication"))
+                        .get[Engine]("engine")
 
     //make sure engine is initialized
     Await.ready(engine.getCommands(0, 1), 30 seconds)
@@ -111,12 +104,29 @@ class ApiServiceApplication extends Archive {
     val service = system.actorOf(Props(new ApiServiceActor(apiService)), "api-service")
 
     // Bind the Spray Actor to an HTTP Port
-    val config = ConfigFactory.load()
-    val interface = config.getString("intel.analytics.api.host")
-    val port = config.getInt("intel.analytics.api.port")
-
     // start a new HTTP server with our service actor as the handler
-    IO(Http) ? Http.Bind(service, interface = interface, port = port)
+    IO(Http) ? Http.Bind(service, interface = ApiServiceConfig.host, port = ApiServiceConfig.port)
   }
 
+  /**
+   * The location at which this component should be installed in the component
+   * tree. For example, a graph machine learning algorithm called Loopy Belief
+   * Propagation might wish to be installed at
+   * "commands/graphs/ml/loopy_belief_propagation". However, it might not actually
+   * get installed there if the system has been configured to override that
+   * default placement.
+   */
+  override def defaultLocation: String = "api"
+
+  /**
+   * Obtain instances of a given class. The keys are established purely
+   * by convention.
+   *
+   * @param descriptor the string key of the desired class instance.
+   * @tparam T the type of the requested instances
+   * @return the requested instances, or the empty sequence if no such instances could be produced.
+   */
+  override def getAll[T: ClassTag](descriptor: String): Seq[T] = {
+    throw new Exception("API server provides no components at this time")
+  }
 }

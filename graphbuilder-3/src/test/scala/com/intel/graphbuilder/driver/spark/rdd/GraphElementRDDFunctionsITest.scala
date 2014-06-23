@@ -23,12 +23,10 @@
 
 package com.intel.graphbuilder.driver.spark.rdd
 
+import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRDDImplicits._
+import com.intel.graphbuilder.elements.{Edge, Vertex, _}
+import com.intel.testutils.TestingSparkContext
 import org.specs2.mutable.Specification
-import com.intel.graphbuilder.testutils.TestingSparkContext
-import com.intel.graphbuilder.elements._
-import GraphBuilderRDDImplicits._
-import com.intel.graphbuilder.elements.Vertex
-import com.intel.graphbuilder.elements.Edge
 
 class GraphElementRDDFunctionsITest extends Specification {
 

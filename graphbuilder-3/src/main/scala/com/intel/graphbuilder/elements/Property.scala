@@ -50,7 +50,7 @@ object Property {
    */
   def merge(listA: Seq[Property], listB: Seq[Property]): Seq[Property] = {
     val listWithDuplicates = listA ++ listB
-    val mapWithoutDuplicates = listWithDuplicates.map(p => (p.key, p)).toMap
+    val mapWithoutDuplicates = listWithDuplicates.map(p ⇒ (p.key, p)).toMap
     mapWithoutDuplicates.valuesIterator.toList
   }
 

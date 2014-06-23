@@ -23,14 +23,14 @@
 
 package com.intel.graphbuilder.driver.spark.titan.examples
 
-import com.intel.graphbuilder.driver.spark.titan.{ GraphBuilder, GraphBuilderConfig }
-import com.intel.graphbuilder.parser.ColumnDef
-import com.intel.graphbuilder.parser.InputSchema
-import com.intel.graphbuilder.parser.rule.RuleParserDSL._
-import com.intel.graphbuilder.parser.rule.{ EdgeRule, VertexRule }
-import com.intel.graphbuilder.util.SerializableBaseConfiguration
 import java.util.Date
-import org.apache.spark.{ SparkContext, SparkConf }
+
+import com.intel.graphbuilder.driver.spark.titan.{GraphBuilder, GraphBuilderConfig}
+import com.intel.graphbuilder.parser.{ColumnDef, InputSchema}
+import com.intel.graphbuilder.parser.rule.RuleParserDSL._
+import com.intel.graphbuilder.parser.rule.{EdgeRule, VertexRule}
+import com.intel.graphbuilder.util.SerializableBaseConfiguration
+import org.apache.spark.{SparkConf, SparkContext}
 
 /**
  * Example of building a Graph using a Netflix file as input.
@@ -62,8 +62,7 @@ object NetflixExampleDriver {
     new ColumnDef("vertexType", classOf[String]),
     new ColumnDef("movieId", classOf[String]),
     new ColumnDef("rating", classOf[String]),
-    new ColumnDef("splits", classOf[String])
-  ))
+    new ColumnDef("splits", classOf[String])))
 
   // Parser Configuration
   val vertexRules = List(VertexRule(property("userId"), List(property("vertexType"))), VertexRule(property("movieId")))
@@ -92,7 +91,7 @@ object NetflixExampleDriver {
 
     // Setup data in Spark
     val inputRows = sc.textFile(ExamplesUtils.movieDataset, System.getProperty("PARTITIONS", "100").toInt)
-    val inputRdd = inputRows.map(row => row.split(","): Seq[_])
+    val inputRdd = inputRows.map(row ⇒ row.split(","): Seq[_])
 
     // Build the Graph
     val config = new GraphBuilderConfig(inputSchema, vertexRules, edgeRules, titanConfig, biDirectional = false, append = false, broadcastVertexIds = false)

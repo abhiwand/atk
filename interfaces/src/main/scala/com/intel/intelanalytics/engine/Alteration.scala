@@ -29,4 +29,4 @@ sealed abstract class Alteration {}
 
 case class RemoveColumn[T](name: String) extends Alteration
 
-case class AddColumn[T](name: String, value: Option[T], generator: Row => T) extends Alteration
+case class AddColumn[T](name: String, value: Option[T], generator: Row ⇒ T) extends Alteration

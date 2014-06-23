@@ -23,13 +23,14 @@
 
 package com.intel.spark.mllib.util
 
-import org.apache.spark.rdd.RDD
-import scala.reflect.ClassTag
 import java.util.Random
+
+import org.apache.spark.rdd.RDD
 import org.apache.spark.{Partition, TaskContext}
 
-private[spark]
-class AuxiliaryRDDPartition(val prev: Partition, val seed: Int) extends Partition with Serializable {
+import scala.reflect.ClassTag
+
+private[spark] class AuxiliaryRDDPartition(val prev: Partition, val seed: Int) extends Partition with Serializable {
   override val index: Int = prev.index
 }
 
@@ -37,19 +38,19 @@ class AuxiliaryRDDPartition(val prev: Partition, val seed: Int) extends Partitio
  * Class to generate auxiliary RDD from an input RDD. The generated RDD has the same
  * number of partitions as the input RDD, and each partition has the same number of entries
  * as the corresponding partition of input RDD. The entry values in auxilary RDD are random
- * samples from a uniform distribution on [0, 1]. 
+ * samples from a uniform distribution on [0, 1].
  *
  * @param prev: An input RDD as a blueprint.
  * @param seed: Random seed for random number generator.
  */
 class AuxiliaryRDD[T: ClassTag](
-    prev: RDD[T],
-    seed: Int)
-  extends RDD[Double](prev) {
+  prev: RDD[T],
+  seed: Int)
+    extends RDD[Double](prev) {
 
   override def getPartitions: Array[Partition] = {
     val rg = new Random(seed)
-    firstParent[T].partitions.map(x => new AuxiliaryRDDPartition(x, rg.nextInt))
+    firstParent[T].partitions.map(x ⇒ new AuxiliaryRDDPartition(x, rg.nextInt))
   }
 
   override def getPreferredLocations(split: Partition): Seq[String] =
@@ -58,6 +59,6 @@ class AuxiliaryRDD[T: ClassTag](
   override def compute(splitIn: Partition, context: TaskContext): Iterator[Double] = {
     val split = splitIn.asInstanceOf[AuxiliaryRDDPartition]
     val rand = new Random(split.seed)
-    firstParent[T].iterator(split.prev, context).map(x => rand.nextDouble)
+    firstParent[T].iterator(split.prev, context).map(x ⇒ rand.nextDouble)
   }
 }

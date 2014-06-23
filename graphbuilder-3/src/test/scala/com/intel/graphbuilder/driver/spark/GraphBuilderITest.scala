@@ -23,15 +23,16 @@
 
 package com.intel.graphbuilder.driver.spark
 
-import com.intel.graphbuilder.testutils.{ TestingSparkContext, TestingTitan }
-import com.intel.graphbuilder.parser.{ ColumnDef, InputSchema }
-import com.intel.graphbuilder.parser.rule.{ EdgeRule, VertexRule }
-import org.specs2.mutable.Specification
+import com.intel.graphbuilder.driver.spark.titan.{GraphBuilder, GraphBuilderConfig}
 import com.intel.graphbuilder.parser.rule.RuleParserDSL._
-import org.apache.spark.rdd.RDD
-import scala.collection.JavaConversions._
-import com.intel.graphbuilder.driver.spark.titan.{ GraphBuilder, GraphBuilderConfig }
+import com.intel.graphbuilder.parser.rule.{EdgeRule, VertexRule}
+import com.intel.graphbuilder.parser.{ColumnDef, InputSchema}
+import com.intel.testutils.TestingSparkContext
 import com.tinkerpop.blueprints.Direction
+import org.apache.spark.rdd.RDD
+import org.specs2.mutable.Specification
+
+import scala.collection.JavaConversions._
 
 /**
  * End-to-end Integration Test
@@ -48,8 +49,7 @@ class GraphBuilderITest extends Specification {
         List("2", "{(1)}", "10", "Y", "2", "Y"),
         List("3", "{(1)}", "11", "Y", "3", "Y"),
         List("4", "{(1),(2)}", "100", "N", "4", "Y"),
-        List("5", "{(1)}", "101", "Y", "5", "Y")
-      )
+        List("5", "{(1)}", "101", "Y", "5", "Y"))
 
       // Input Schema
       val inputSchema = new InputSchema(List(
@@ -58,8 +58,7 @@ class GraphBuilderITest extends Specification {
         new ColumnDef("binary", classOf[String]),
         new ColumnDef("isPrime", classOf[String]),
         new ColumnDef("reverse", classOf[String]),
-        new ColumnDef("isPalindrome", classOf[String])
-      ))
+        new ColumnDef("isPalindrome", classOf[String])))
 
       // Parser Configuration
       val vertexRules = List(VertexRule(gbId("cf:number"), List(property("isPrime"))), VertexRule(gbId("reverse")))
@@ -86,8 +85,7 @@ class GraphBuilderITest extends Specification {
       val additionalInputRows = List(
         List("5", "{(1)}", "101", "Y", "5", "Y"), // this row overlaps with above
         List("6", "{(1),(2),(3)}", "110", "N", "6", "Y"),
-        List("7", "{(1)}", "111", "Y", "7", "Y")
-      )
+        List("7", "{(1)}", "111", "Y", "7", "Y"))
 
       val inputRdd2 = sc.parallelize(additionalInputRows.asInstanceOf[Seq[_]]).asInstanceOf[RDD[Seq[_]]]
 
@@ -117,7 +115,7 @@ class GraphBuilderITest extends Specification {
         List("", "", "", 1004L, "hated", 1002L), // edge that means "Lincoln hated Frozen"
         List("", "", "", 1001L, "hated", 1003L), // edge that means "Obama hated The Hobbit"
         List("", "", "", 1001L, "hated", 1007L) // edge that means "Obama hated a movie that is a dangling edge"
-      )
+        )
 
       // Input Schema
       val inputSchema = new InputSchema(List(
@@ -126,16 +124,14 @@ class GraphBuilderITest extends Specification {
         new ColumnDef("name", classOf[String]), // movie title or user name
         new ColumnDef("userIdOfRating", classOf[String]),
         new ColumnDef("liking", classOf[String]),
-        new ColumnDef("movieIdOfRating", classOf[String])
-      ))
+        new ColumnDef("movieIdOfRating", classOf[String])))
 
       // Parser Configuration
       val vertexRules = List(VertexRule(column("idType") -> column("id"), List(property("name"))))
 
       val edgeRules = List(
         EdgeRule(constant("userId") -> column("userIdOfRating"), constant("movieId") -> column("movieIdOfRating"), column("liking"), Nil),
-        EdgeRule(constant("movieId") -> column("movieIdOfRating"), constant("userId") -> column("userIdOfRating"), "was-watched-by", Nil)
-      )
+        EdgeRule(constant("movieId") -> column("movieIdOfRating"), constant("userId") -> column("userIdOfRating"), "was-watched-by", Nil))
 
       // Setup data in Spark
       val inputRdd = sc.parallelize(inputRows.asInstanceOf[Seq[_]]).asInstanceOf[RDD[Seq[_]]]

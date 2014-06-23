@@ -23,16 +23,15 @@
 
 package com.intel.intelanalytics.engine.spark
 
-import org.scalatest.{Suites, Matchers, FlatSpec}
 import com.intel.intelanalytics.engine.TestingSparkContext
-import com.typesafe.config.ConfigFactory
-import org.scalatest.mock.MockitoSugar
+import org.scalatest.Matchers
+
 import scala.collection.mutable.ArrayBuffer
 
 class SparkOpsTest extends TestingSparkContext with Matchers {
 
   val max = 20
-  val array = (1 to max * 2).map(i => Array(i, i.toString, i.toDouble * 0.1))
+  val array = (1 to max * 2).map(i ⇒ Array(i, i.toString, i.toDouble * 0.1))
 
   def fetchAllData(): ArrayBuffer[Array[Any]] = {
     val data = sc.parallelize(array)
@@ -83,6 +82,6 @@ class SparkOpsTest extends TestingSparkContext with Matchers {
   it should "not generate the same row twice" in {
     val results = fetchAllData()
 
-    results.groupBy { case Array(index, _, _) => index}.count(_._2.length > 1) should equal(0)
+    results.groupBy { case Array(index, _, _) ⇒ index }.count(_._2.length > 1) should equal(0)
   }
 }

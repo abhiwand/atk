@@ -8,15 +8,14 @@ import scalariform.formatter.preferences._
 object IABuild extends Build {
 
   val commonSettings =
-      net.virtualvoid.sbt.graph.Plugin.graphSettings ++
+    net.virtualvoid.sbt.graph.Plugin.graphSettings ++
       org.scalastyle.sbt.ScalastylePlugin.Settings ++
       scalariformSettings ++
       //oneLogSettings
       List(
         ScalariformKeys.preferences := ScalariformKeys.preferences.value
           .setPreference(AlignParameters, true)
-          .setPreference(CompactControlReadability, true)
-      )
+          .setPreference(CompactControlReadability, true))
 
   lazy val root = Project(id = "root", base = file("."))
     .settings(commonSettings: _*)

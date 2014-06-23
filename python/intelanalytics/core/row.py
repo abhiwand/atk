@@ -1,4 +1,5 @@
 from collections import OrderedDict
+
 from intelanalytics.core.types import supported_types
 
 
@@ -22,6 +23,8 @@ class Row(object):
                 raise TypeError("Index slicing a row is not supported")
             if isinstance(key, list):
                 return [self._get_cell_value(k) for k in key]
+            if isinstance(key, int):
+                return self._get_cell_value_by_index(key)
             return self._get_cell_value(key)
         except KeyError:
             raise KeyError("Column name " + str(key) + " not present.")
@@ -71,6 +74,9 @@ class Row(object):
     def _get_cell_value(self, key):
         # converts the string into the proper data type
         index = self.schema_dict.keys().index(key)  # could improve speed here...
-        dtype = self.schema_dict[key]
-        return supported_types.cast(self.data[index], dtype)
+        return self._get_cell_value_by_index(index)
 
+    def _get_cell_value_by_index(self, index):
+        # converts the string into the proper data type
+        dtype = self.schema_dict.values()[index]
+        return supported_types.cast(self.data[index], dtype)

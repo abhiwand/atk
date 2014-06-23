@@ -23,10 +23,9 @@
 
 package com.intel.graphbuilder.write.dao
 
-import com.intel.graphbuilder.elements.Edge
-import com.intel.graphbuilder.elements.Property
+import com.intel.graphbuilder.elements.{Edge, Property}
 import com.tinkerpop.blueprints
-import com.tinkerpop.blueprints.{ Direction, Graph }
+import com.tinkerpop.blueprints.{Direction, Graph}
 
 /**
  * Data access for Edges using Blueprints API
@@ -62,8 +61,7 @@ class EdgeDAO(graph: Graph, vertexDAO: VertexDAO) extends Serializable {
 
     if (tailVertex.isEmpty || headVertex.isEmpty) {
       None
-    }
-    else {
+    } else {
       find(tailVertex.get, headVertex.get, label)
     }
   }
@@ -109,7 +107,7 @@ class EdgeDAO(graph: Graph, vertexDAO: VertexDAO) extends Serializable {
    * @return the blueprints.Edge
    */
   def update(edge: Edge, blueprintsEdge: blueprints.Edge): blueprints.Edge = {
-    edge.properties.map(property => blueprintsEdge.setProperty(property.key, property.value))
+    edge.properties.map(property ⇒ blueprintsEdge.setProperty(property.key, property.value))
     blueprintsEdge
   }
 
@@ -122,8 +120,7 @@ class EdgeDAO(graph: Graph, vertexDAO: VertexDAO) extends Serializable {
     val blueprintsEdge = find(edge)
     if (blueprintsEdge.isEmpty) {
       create(edge)
-    }
-    else {
+    } else {
       update(edge, blueprintsEdge.get)
     }
   }

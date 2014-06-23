@@ -23,24 +23,18 @@
 
 package controllers
 
-import play.api.mvc._
-import controllers.Session._
-import services.authorize.CookieGenerator
-import play.api.Play
-import play.api.Play.current
-
 /**
  * Ipython page controller
  */
 object Python extends Controller {
 
-    /**
-     * direct to ipython page.
-     */
-    def ipython = Authenticated {
-        request =>
-            Ok(views.html.ipython("Ipython", request.user.userInfo))
-              .withCookies(new CookieGenerator createCookie(request.user.userInfo.secret.getOrElse(" "), request.user.userInfo.ipythonUrl.getOrElse(" ")))
-    }
+  /**
+   * direct to ipython page.
+   */
+  def ipython = Authenticated {
+    request =>
+      Ok(views.html.ipython("Ipython", request.user.userInfo))
+        .withCookies(new CookieGenerator createCookie (request.user.userInfo.secret.getOrElse(" "), request.user.userInfo.ipythonUrl.getOrElse(" ")))
+  }
 
 }

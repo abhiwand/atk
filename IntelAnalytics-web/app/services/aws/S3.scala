@@ -22,26 +22,16 @@
 //////////////////////////////////////////////////////////////////////////////
 package services.aws
 
-import javax.crypto.Mac;
-import javax.crypto.spec.SecretKeySpec;
-
-
-import play.api.libs.json.Json
-import java.util.{TimeZone, Date}
 import java.text.SimpleDateFormat
-import com.amazonaws.auth.BasicAWSCredentials
-import com.amazonaws.services.s3.model._
-import com.amazonaws.services.s3.AmazonS3Client
-import java.lang.Math
-import scala.collection.mutable
+import java.util.{Date, TimeZone}
+import javax.crypto.Mac
+import javax.crypto.spec.SecretKeySpec
+
 import sun.misc.BASE64Encoder
-import play.api.Play
-import play.api.Play.current
-import scala.collection.JavaConversions._
 
 object S3 {
   //one week
-  val POLICY_EXPIRATION =  Play.application.configuration.getLong("aws.S3.bucket_expiration_policy").get
+  val POLICY_EXPIRATION = Play.application.configuration.getLong("aws.S3.bucket_expiration_policy").get
   val BUCKET = Play.application.configuration.getString("aws.S3.bucket").get
   val BUCKET_PREFIX = Play.application.configuration.getString("aws.S3.bucketPrefix").get
   val MAX_SIZE = Play.application.configuration.getLong("aws.S3.bucket_max_file_size").get
@@ -55,19 +45,19 @@ object S3 {
   }
 
   def getBucketName: String = {
-    val bucketNameParts = List[String](BUCKET_PREFIX, Play.application.mode.toString.toLowerCase,"public")
+    val bucketNameParts = List[String](BUCKET_PREFIX, Play.application.mode.toString.toLowerCase, "public")
     bucketNameParts.mkString("-")
   }
 
-  def getBucketResource:String ={
+  def getBucketResource: String = {
     "arn:aws:s3:::" + getBucketName
   }
 
-  def getCORSConfig():BucketCrossOriginConfiguration ={
-    val corsConfigs = Play.application.configuration.getObjectList("aws.S3.cors").get.toList map(new CR(_))
+  def getCORSConfig(): BucketCrossOriginConfiguration = {
+    val corsConfigs = Play.application.configuration.getObjectList("aws.S3.cors").get.toList map (new CR(_))
 
-    var corsRules:List[CORSRule] = List[CORSRule]()
-    for(corsConfig <- corsConfigs){
+    var corsRules: List[CORSRule] = List[CORSRule]()
+    for (corsConfig <- corsConfigs) {
       val rule = new CORSRule()
       rule.setAllowedOrigins(corsConfig.origin)
       rule.setAllowedHeaders(corsConfig.allowedHeaders)
@@ -81,8 +71,8 @@ object S3 {
 
   def getPermissions(): List[String] = {
     val permissions = Play.application.configuration.getStringList("aws.S3.permissions").get.toList
-    var S3Permissions:List[String] = List[String]()
-    for(permission <- permissions){
+    var S3Permissions: List[String] = List[String]()
+    for (permission <- permissions) {
       S3Permissions ::= "S3:" + permission
     }
     S3Permissions
@@ -96,26 +86,24 @@ object S3 {
       Json.obj(
         "Sid" -> ("Sid-" + getBucketName),
         "Effect" -> "Allow",
-        "Principal" -> Json.obj("AWS" -> principalIds.toList ),
+        "Principal" -> Json.obj("AWS" -> principalIds.toList),
         "Action" -> permissions.toList,
-        "Resource" -> getBucketResource
-      )
-    )
+        "Resource" -> getBucketResource))
     val policy = Json.obj("Version" -> Play.application.configuration.getString("aws.S3.policyVersion").get,
       "Id" -> (getBucketName + "-DefaultPolicy"),
-      "Statement" -> Statement
-    )
+      "Statement" -> Statement)
     Json.stringify(policy)
   }
 
   def createBucket() {
-    var bucket:Bucket = new Bucket()
-    try{
+    var bucket: Bucket = new Bucket()
+    try {
       bucket = s3Client.createBucket(getBucketName, Region.US_West_2)
-    } catch {
+    }
+    catch {
       case e: AmazonS3Exception =>
-        if(!e.getErrorCode.equals("BucketAlreadyOwnedByYou")){
-            throw e
+        if (!e.getErrorCode.equals("BucketAlreadyOwnedByYou")) {
+          throw e
         }
     }
     s3Client.setBucketCrossOriginConfiguration(getBucketName, getCORSConfig)
@@ -123,7 +111,7 @@ object S3 {
     val bucketAcl = s3Client.getBucketAcl(getBucketName)
     val grantee = new CanonicalGrantee("arn:aws:iam::953196509655:user/IntelAnalytics_Web")
     bucketAcl.grantPermission(grantee, Permission.FullControl)
-    s3Client.setBucketPolicy(getBucketName, getBucketPolicy )
+    s3Client.setBucketPolicy(getBucketName, getBucketPolicy)
   }
   def formatSize(size: Long): String = {
     val sizes = Array("Bytes", "KB", "MB", "GB", "TB")
@@ -133,16 +121,17 @@ object S3 {
   }
 
   def getObjectList(userIdentifier: String): List[S3ObjectSummary] = {
-    if(userIdentifier.isEmpty){
+    if (userIdentifier.isEmpty) {
       List()
-    }else{
+    }
+    else {
       val objectList = s3Client.listObjects(getBucketName, PREFIX + userIdentifier + "/")
       //scala.collection.JavaConversions.asScalaBuffer[S3ObjectSummary](objectList.getObjectSummaries)
       objectList.getObjectSummaries.toList
     }
   }
 
-  def uploadDirectory(userIdentifier:String): String = {
+  def uploadDirectory(userIdentifier: String): String = {
     PREFIX + userIdentifier + "/"
   }
   def createPolicy(userIdentifier: String): String = {
@@ -157,8 +146,7 @@ object S3 {
         //Json.arr("starts-with", "$name", ""),
         //Json.obj("success_action_redirect" -> "https://localhost/"),
         //Json.arr("starts-with", "$Content-Type", ""),
-        Json.arr("content-length-range", 0, MAX_SIZE))
-    )
+        Json.arr("content-length-range", 0, MAX_SIZE)))
     Json.stringify(policyJson)
   }
 
@@ -181,7 +169,7 @@ object S3 {
     new BASE64Encoder().encode(hmac.doFinal(policy.getBytes("UTF-8"))).replaceAll("\n", "");
   }
 
-  def deleteObject(key: String){
+  def deleteObject(key: String) {
     s3Client.deleteObject(getBucketName, key)
   }
 }
