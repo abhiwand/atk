@@ -41,8 +41,7 @@ class VertexWriter(vertexDAO: VertexDAO, append: Boolean) extends Serializable {
   def write(vertex: Vertex): blueprints.Vertex = {
     if (append) {
       vertexDAO.updateOrCreate(vertex)
-    }
-    else {
+    } else {
       vertexDAO.create(vertex)
     }
   }

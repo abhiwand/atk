@@ -23,19 +23,18 @@
 
 package com.intel.intelanalytics.engine.spark
 
-import java.util.{ List => JList, ArrayList => JArrayList, Map => JMap }
-import com.intel.intelanalytics.engine._
-import org.apache.hadoop.fs.{ Path => HPath }
-import com.intel.intelanalytics.repository.{Profile, SlickMetaStoreComponent, DbProfileComponent}
-import scala.slick.driver.H2Driver
-import com.intel.intelanalytics.shared.EventLogging
+import java.util.{ArrayList => JArrayList, List => JList, Map => JMap}
 
+import com.intel.intelanalytics.engine._
+import com.intel.intelanalytics.engine.spark.command.SparkCommandStorage
+import com.intel.intelanalytics.engine.spark.context.{SparkContextFactory, SparkContextManager}
+import com.intel.intelanalytics.engine.spark.frame.SparkFrameStorage
+import com.intel.intelanalytics.engine.spark.graph.{SparkGraphHBaseBackend, SparkGraphStorage}
+import com.intel.intelanalytics.repository.{DbProfileComponent, Profile, SlickMetaStoreComponent}
+import com.intel.intelanalytics.shared.EventLogging
+import org.apache.hadoop.fs.{Path => HPath}
 import org.apache.hadoop.hbase.HBaseConfiguration
 import org.apache.hadoop.hbase.client.HBaseAdmin
-import com.intel.intelanalytics.engine.spark.graph.{ SparkGraphStorage, SparkGraphHBaseBackend }
-import com.intel.intelanalytics.engine.spark.context.{SparkContextManager, SparkContextFactory}
-import com.intel.intelanalytics.engine.spark.frame.SparkFrameStorage
-import com.intel.intelanalytics.engine.spark.command.SparkCommandStorage
 
 //TODO documentation
 //TODO progress notification

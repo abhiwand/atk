@@ -15,8 +15,7 @@ object IABuild extends Build {
       List(
         ScalariformKeys.preferences := ScalariformKeys.preferences.value
           .setPreference(AlignParameters, true)
-          .setPreference(CompactControlReadability, true)
-      )
+          .setPreference(CompactControlReadability, true))
 
   lazy val root = Project(id = "root", base = file("."))
     .settings(commonSettings: _*)

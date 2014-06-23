@@ -1,7 +1,7 @@
 package com.intel.graphbuilder.util
 
-import org.scalatest.FlatSpec
 import com.intel.graphbuilder.elements.Vertex
+import org.scalatest.FlatSpec
 
 class PrimitiveConverterTest extends FlatSpec {
 

@@ -158,7 +158,9 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
             <modules>
                 <module>event</module>
                 <module>ispark-deps</module>
+                <module>testutils</module>
                 <module>graphbuilder-3</module><!-- scoverage -->
+                <module>graphon</module>
                 <module>interfaces</module>
                 <module>launcher</module><!-- scoverage -->
                 <module>shared</module><!-- scoverage -->
@@ -180,6 +182,7 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 <!--<module>ititan</module>-->
                 <module>event</module>
                 <module>ispark-deps</module>
+                <module>testutils</module>
                 <module>graphbuilder-3</module><!-- scoverage -->
                 <module>interfaces</module>
                 <module>launcher</module><!-- scoverage -->
@@ -640,7 +643,17 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
             </dependency>
             <dependency>
                 <groupId>com.intel.ia</groupId>
+                <artifactId>testutils</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.intel.ia</groupId>
                 <artifactId>graphbuilder-3</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.intel.ia</groupId>
+                <artifactId>graphon</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

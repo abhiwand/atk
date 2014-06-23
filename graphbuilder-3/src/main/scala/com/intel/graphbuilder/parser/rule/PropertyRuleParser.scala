@@ -32,14 +32,14 @@ import com.intel.graphbuilder.parser._
 case class PropertyRuleParser(propertyRules: Seq[PropertyRule]) extends Serializable {
 
   // create a parser for each rule
-  val propertyParsers = propertyRules.map(rule => rule -> new SinglePropertyRuleParser(rule)).toMap
+  val propertyParsers = propertyRules.map(rule ⇒ rule -> new SinglePropertyRuleParser(rule)).toMap
 
   /**
    * Parser zero or more properties from the supplied input using the configured rules.
    */
   def parse(row: InputRow): Seq[Property] = {
     for {
-      rule <- propertyRules
+      rule ← propertyRules
       if rule appliesTo row
     } yield propertyParsers(rule).parse(row)
   }

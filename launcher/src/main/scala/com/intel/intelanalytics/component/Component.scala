@@ -24,13 +24,12 @@
 package com.intel.intelanalytics.component
 
 trait Archive {
-  def withLoader[T](loader: ClassLoader)(expr: => T): T = {
+  def withLoader[T](loader: ClassLoader)(expr: ⇒ T): T = {
     val prior = Thread.currentThread().getContextClassLoader
     try {
       Thread.currentThread().setContextClassLoader(loader)
       expr
-    }
-    finally {
+    } finally {
       Thread.currentThread().setContextClassLoader(prior)
     }
   }

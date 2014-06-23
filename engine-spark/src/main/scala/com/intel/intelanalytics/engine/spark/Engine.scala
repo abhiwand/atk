@@ -23,54 +23,30 @@
 
 package com.intel.intelanalytics.engine.spark
 
-import com.intel.event.EventContext
-import com.intel.intelanalytics.domain._
-import com.intel.intelanalytics.engine._
-import scala.concurrent._
-import spray.json.{JsNull, JsObject}
-import com.intel.intelanalytics.engine.spark.frame.{SparkFrameStorage, RowParser, RDDJoinParam}
-import scala.util.Try
-import org.apache.spark.api.python.{EnginePythonAccumulatorParam, EnginePythonRDD}
-import org.apache.spark.rdd.RDD
-import scala.List
-import org.apache.spark.broadcast.Broadcast
-import org.apache.spark.SparkContext
-import com.intel.intelanalytics.domain.schema.{SchemaUtil, DataTypes}
-import DataTypes.DataType
-import com.intel.intelanalytics.engine.Rows._
-import com.intel.intelanalytics.engine.spark.context.SparkContextManager
-import com.intel.intelanalytics.shared.EventLogging
-import com.intel.intelanalytics.domain.frame._
-import java.util.{List => JList, ArrayList => JArrayList}
-import spray.json._
-import DomainJsonProtocol._
-import com.intel.intelanalytics.domain.frame.FrameRenameFrame
-import scala.Some
-import com.intel.intelanalytics.domain.frame.DataFrameTemplate
-import com.intel.intelanalytics.domain.frame.FrameAddColumns
-import com.intel.intelanalytics.domain.frame.FrameRenameColumn
-import com.intel.intelanalytics.domain.frame.DataFrame
-import com.intel.intelanalytics.engine.spark.context.Context
-import com.intel.intelanalytics.domain.graph.GraphLoad
-import com.intel.intelanalytics.domain.schema.Schema
-import com.intel.intelanalytics.domain.frame.LoadLines
-import com.intel.intelanalytics.domain.command.Command
-import com.intel.intelanalytics.domain.frame.FrameProject
-import com.intel.intelanalytics.domain.graph.Graph
-import com.intel.intelanalytics.domain.FilterPredicate
-import com.intel.intelanalytics.domain.Partial
-import com.intel.intelanalytics.domain.frame.SeparatorArgs
-import com.intel.intelanalytics.domain.command.CommandTemplate
-import com.intel.intelanalytics.domain.frame.FlattenColumn
-import com.intel.intelanalytics.security.UserPrincipal
-import com.intel.intelanalytics.domain.frame.FrameRemoveColumn
-import com.intel.intelanalytics.domain.frame.FrameJoin
-import com.intel.intelanalytics.engine.spark.frame.RDDJoinParam
-import com.intel.intelanalytics.domain.graph.GraphTemplate
-import org.apache.spark.engine.SparkProgressListener
+import java.util.{ArrayList => JArrayList, List => JList}
 
-//TODO: Fix execution contexts.
-import ExecutionContext.Implicits.global
+import com.intel.intelanalytics.domain.DomainJsonProtocol._
+import com.intel.intelanalytics.domain.{FilterPredicate, Partial, _}
+import com.intel.intelanalytics.domain.command.{Command, CommandTemplate}
+import com.intel.intelanalytics.domain.frame.{DataFrame, DataFrameTemplate, FlattenColumn, FrameAddColumns, FrameJoin, FrameProject, FrameRemoveColumn, FrameRenameColumn, FrameRenameFrame, LoadLines, SeparatorArgs, _}
+import com.intel.intelanalytics.domain.graph.{Graph, GraphLoad, GraphTemplate}
+import com.intel.intelanalytics.domain.schema.DataTypes.DataType
+import com.intel.intelanalytics.domain.schema.{DataTypes, Schema, SchemaUtil}
+import com.intel.intelanalytics.engine.Rows._
+import com.intel.intelanalytics.engine._
+import com.intel.intelanalytics.engine.spark.context.SparkContextManager
+import com.intel.intelanalytics.engine.spark.frame.{RDDJoinParam, RowParser, SparkFrameStorage}
+import com.intel.intelanalytics.security.UserPrincipal
+import com.intel.intelanalytics.shared.EventLogging
+import org.apache.spark.SparkContext
+import org.apache.spark.api.python.{EnginePythonAccumulatorParam, EnginePythonRDD}
+import org.apache.spark.broadcast.Broadcast
+import org.apache.spark.rdd.RDD
+import spray.json._
+
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent._
+import scala.util.Try
 
 object SparkEngine {
   private val pythonRddDelimiter = "\0"
@@ -144,7 +120,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
   def load(arguments: LoadLines[JsObject, Long])(implicit user: UserPrincipal): (Command, Future[Command]) =
     withContext("se.load") {
       require(arguments != null, "arguments are required")
-      import DomainJsonProtocol._
+      import com.intel.intelanalytics.domain.DomainJsonProtocol._
       val command: Command = commands.create(new CommandTemplate("load", Some(arguments.toJson.asJsObject)))
       val result: Future[Command] = future {
         withMyClassLoader {
@@ -194,7 +170,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
   def renameFrame(arguments: FrameRenameFrame[JsObject, Long])(implicit user: UserPrincipal): (Command, Future[Command]) =
     withContext("se.rename_frame") {
       require(arguments != null, "arguments are required")
-      import DomainJsonProtocol._
+      import com.intel.intelanalytics.domain.DomainJsonProtocol._
       val command: Command = commands.create(new CommandTemplate("rename_frame", Some(arguments.toJson.asJsObject)))
       val result: Future[Command] = future {
         withMyClassLoader {
@@ -592,7 +568,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
   def addColumns(arguments: FrameAddColumns[JsObject, Long])(implicit user: UserPrincipal): (Command, Future[Command]) =
     withContext("se.add_columns") {
       require(arguments != null, "arguments are required")
-      import DomainJsonProtocol._
+      import com.intel.intelanalytics.domain.DomainJsonProtocol._
       val command: Command = commands.create(new CommandTemplate("add_columns", Some(arguments.toJson.asJsObject)))
       val result: Future[Command] = future {
         withMyClassLoader {

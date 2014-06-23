@@ -10,7 +10,7 @@ class UserRespositorySpec extends SlickMetaStoreH2Testing with Matchers {
     val userRepo = slickMetaStoreComponent.metaStore.userRepo
 
     slickMetaStoreComponent.metaStore.withSession("user-test") {
-      implicit session =>
+      implicit session ⇒
 
         val apiKey = "my-api-key-" + System.currentTimeMillis()
 

@@ -24,7 +24,7 @@
 package com.intel.graphbuilder.parser.rule
 
 import com.intel.graphbuilder.elements.Vertex
-import com.intel.graphbuilder.parser.{ InputSchema, Parser, InputRow }
+import com.intel.graphbuilder.parser.{InputRow, InputSchema, Parser}
 
 /**
  * Parse an InputRow into Vertices using VertexRules
@@ -32,14 +32,14 @@ import com.intel.graphbuilder.parser.{ InputSchema, Parser, InputRow }
 case class VertexRuleParser(inputSchema: InputSchema, vertexRules: List[VertexRule]) extends Parser[Vertex](inputSchema) with Serializable {
 
   // each rule gets its own parser
-  private val vertexParsers = vertexRules.map(rule => rule -> new SingleVertexRuleParser(rule)).toMap
+  private val vertexParsers = vertexRules.map(rule ⇒ rule -> new SingleVertexRuleParser(rule)).toMap
 
   /**
    * Parse the supplied InputRow into zero or more Vertices using all applicable rules
    */
   def parse(row: InputRow): Seq[Vertex] = {
     for {
-      rule <- vertexRules
+      rule ← vertexRules
       if rule appliesTo row
     } yield vertexParsers(rule).parse(row)
   }

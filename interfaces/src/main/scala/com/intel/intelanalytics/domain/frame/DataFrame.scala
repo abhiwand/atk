@@ -41,15 +41,15 @@ import org.joda.time.DateTime
  * @param modifiedBy user who last modified this row
  */
 case class DataFrame(id: Long,
-                     name: String,
-                     description: Option[String] = None,
-                     uri: String,
-                     schema: Schema = Schema(),
-                     status: Long,
-                     createdOn: DateTime,
-                     modifiedOn: DateTime,
-                     createdBy: Option[Long] = None,
-                     modifiedBy: Option[Long] = None) extends HasId {
+    name: String,
+    description: Option[String] = None,
+    uri: String,
+    schema: Schema = Schema(),
+    status: Long,
+    createdOn: DateTime,
+    modifiedOn: DateTime,
+    createdBy: Option[Long] = None,
+    modifiedBy: Option[Long] = None) extends HasId {
   require(id >= 0)
   require(name != null)
   require(name.trim.length > 0)
