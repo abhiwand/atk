@@ -124,7 +124,7 @@ class CommandExecutor(engine: => SparkEngine, commands: SparkCommandStorage, con
             withCommand(cmd) {
               val invocation: SparkInvocation = SparkInvocation(engine, commandId = cmd.id, arguments = cmd.arguments,
                 user = user, executionContext = implicitly[ExecutionContext],
-                sparkContextFactory = () => contextManager.context(user).sparkContext)
+                sparkContext = contextManager.context(user).sparkContext)
 
               val funcResult = command(invocation, arguments)
               command.serializeReturn(funcResult)

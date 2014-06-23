@@ -28,6 +28,12 @@ import com.intel.intelanalytics.security.UserPrincipal
 
 import scala.concurrent.ExecutionContext
 
+/**
+ * Base trait for command plugins that need direct access to a SparkContext
+ *
+ * @tparam Argument the argument type for the command
+ * @tparam Return the return type for the command
+ */
 trait SparkCommandPlugin[Argument, Return] extends CommandPlugin[Argument, Return] {
 
   /**
