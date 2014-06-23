@@ -333,6 +333,11 @@ class BigFrame(object):
             lowest number (starting from 0) such that there is not already a
             column with that name.
 
+        Notes
+        -----
+        The row function ('func') must return a value in the same format as specified by the data type ('types').
+        See examples below and glossary.
+        
         Examples
         --------
         >>> my_frame = BigFrame(data)
@@ -346,6 +351,25 @@ class BigFrame(object):
         The BigFrame object 'my_frame' now has four columns named "column1", "column2", "column3", and "new0". The first three columns are int32 and the fourth column is string.  Column "new0" has an empty string ('') in every row.
         >>> frame.add_columns(lambda row: (row.a * row.b, row.a + row.b), (float32, float32), ("a_times_b", "a_plus_b"))
         # Two new columns are created, "a_times_b" and "a_plus_b"
+        <BLANKLINE>
+        Now, let us start with a BigFrame with some existing rows of data.
+        >>> my_frame.add_columns( function_a, ("calculated_a", int))
+        It is our responsibility to insure that function_a returns an int value.
+        >>> my_columns = [("calculated_b", float), ("calculated_c", str)]
+        >>> my_frame.add_columns(function_b, my_columns)
+        In this case function_b would have to return an array of two elements so the program can figure out which result goes into which column.
+        It is not obvious though that if you have an array with a single tuple describing the column, your function must provide the result as an array with a single value matching the column type.
+        This would cause an error:
+        >>> def function_c: return 12
+        >>> my_frame.add_columns(function_c, [('column_C', int)])
+        However, this would work fine:
+        >>> def function_c: return [12]
+        >>> my_frame.add_columns(function_c, [('column_C', int)])
+        And these would work fine:
+        >>> def function_c: return 12
+        >>> my_frame.add_columns(function_c, ('column_C, int))
+        >>> my_frame.add_columns(function_c, int, 'column_C')
+
         """
         self._backend.add_columns(self, func, names, types)
 
@@ -674,7 +698,8 @@ class BigFrame(object):
         >>>
         For this example, we will use a BigFrame called 'my_frame', with a column called 'a'.
         Column 'a' has the values 'cat', 'apple', 'bat', 'cat', 'bat', 'cat'.
-        >>> new_frame = my_frame.groupBy(my_frame.a, count)
+        >>> column_a = my_frame.a
+        >>> new_frame = my_frame.groupBy(column_a, count)
         The new BigFrame 'new_frame' has two columns named 'a' and 'count'.
         In a row of 'new_frame', column 'a' is 'apple' and column 'count' is 1.
         In another row of 'new_frame', column 'a' is 'bat' and column 'count' is 2.
@@ -686,7 +711,10 @@ class BigFrame(object):
         'a' is 1, 'b' is 'alpha', 'c' is 5.0
         'a' is 2, 'b' is 'bravo', 'c' is 8.0
         'a' is 2, 'b' is 'bravo', 'c' is 12.0
-        >>> new_frame = my_frame.groupBy([my_frame.a, my_frame.b], {my_frame.c: avg})
+        >>> column_a = my_frame.a
+        >>> column_b = my_frame.b
+        >>> column_c = my_frame.c
+        >>> new_frame = my_frame.groupBy([column_a, column_b], {column_c: avg})
         The new BigFrame 'new_frame' has three columns named 'a', 'b', and 'c_avg'. The data is:
         'a' is 1, 'b' is 'alpha', 'c_avg' is 4.0
         'a' is 1, 'b' is 'bravo', 'c_avg' is 5.0
@@ -698,7 +726,9 @@ class BigFrame(object):
         'a' is 'big', 'c' is 1, 'd' is 5.0, 'e' is 7
         'a' is 'big', 'c' is 1, 'd' is 6.0, 'e' is 6
         'a' is 'big', 'c' is 1, 'd' is 8.0, 'e' is 5
-        >>> new_frame = my_frame.groupBy(my_frame[['a', 'c']], count, {my_frame.d: [avg, sum, min], my_frame.e: [max]})
+        >>> column_d = my_frame.d
+        >>> column_e = my_frame.e
+        >>> new_frame = my_frame.groupBy(my_frame[['a', 'c']], count, {column_d: [avg, sum, min], column_e: [max]})
         The new BigFrame 'new_frame' has columns 'a', 'c', 'count', 'd_avg', 'd_sum', 'd_min', 'e_max'.
         The column types are (respectively): str, int, int, float, float, float, int.
         The data is:
