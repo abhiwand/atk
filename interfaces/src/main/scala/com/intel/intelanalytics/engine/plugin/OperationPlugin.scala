@@ -24,7 +24,7 @@
 package com.intel.intelanalytics.engine.plugin
 
 import com.intel.intelanalytics.ClassLoaderAware
-import com.intel.intelanalytics.component.Component
+import com.intel.intelanalytics.component.{Plugin, Component}
 import com.intel.intelanalytics.security.UserPrincipal
 import com.typesafe.config.Config
 import spray.json.JsObject
@@ -41,7 +41,7 @@ import scala.concurrent.ExecutionContext
  * @tparam Return the type of the data that this plugin will return when invoked.
  */
 sealed trait OperationPlugin[Argument, Return] extends ((Invocation, Any) => Return)
-                                                                          with Component
+                                                                          with Plugin
                                                                           with ClassLoaderAware {
 
 
