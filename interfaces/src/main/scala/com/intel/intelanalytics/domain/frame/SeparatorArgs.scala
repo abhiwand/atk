@@ -25,24 +25,5 @@ package com.intel.intelanalytics.domain.frame
 
 //TODO: Many of these classes will go away in the future, replaced with something more generic.
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 case class SeparatorArgs(separator: Char)
 

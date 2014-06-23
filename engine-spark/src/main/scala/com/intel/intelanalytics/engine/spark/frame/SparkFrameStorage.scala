@@ -27,10 +27,10 @@ import java.nio.file.Paths
 import java.util.concurrent.atomic.AtomicLong
 
 import com.intel.intelanalytics.ClassLoaderAware
+import com.intel.intelanalytics.engine._
 import com.intel.intelanalytics.domain.frame.{Column, DataFrame, DataFrameTemplate}
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 import com.intel.intelanalytics.domain.schema.{DataTypes, Schema}
-import com.intel.intelanalytics.engine._
 import com.intel.intelanalytics.engine.spark.context.Context
 import com.intel.intelanalytics.engine.spark.{HdfsFileStorage, SparkOps}
 import com.intel.intelanalytics.security.UserPrincipal
@@ -38,13 +38,13 @@ import com.intel.intelanalytics.shared.EventLogging
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import org.joda.time.DateTime
-
-import com.intel.intelanalytics.domain.DomainJsonProtocol._
 import scala.io.{Codec, Source}
 import scala.util.matching.Regex
+import com.intel.intelanalytics.domain.DomainJsonProtocol._
 
 class SparkFrameStorage(context: UserPrincipal => Context, fsRoot: String, files: HdfsFileStorage, maxRows: Int)
   extends FrameStorage with EventLogging with ClassLoaderAware {
+
 
   import com.intel.intelanalytics.engine.Rows.Row
   import spray.json._

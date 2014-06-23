@@ -21,57 +21,51 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.graphbuilder.testutils
+package com.intel.testutils
 
-import java.util.Date
-import org.apache.spark.SparkContext
-import scala.concurrent.Lock
+import java.io.File
+
+import org.apache.commons.io.FileUtils
+import org.apache.log4j.Logger
 
 /**
- * This trait case be mixed into Specifications to create a SparkContext for testing.
- * <p>
- * IMPORTANT! This adds a couple seconds to your unit test!
- * </p>
- * <p>
- * Lock is used because you can only have one local SparkContext running at a time.
- * Other option is to use "parallelExecution in Test := false" but locking seems to be faster.
- * </p>
+ * Utility methods for working with directories.
  */
-trait TestingSparkContext extends MultipleAfter {
+object DirectoryUtils {
 
-  // locking in the constructor is slightly odd but it seems to work well
-  TestingSparkContext.lock.acquire()
-
-  LogUtils.silenceSpark()
-
-  lazy val sc = new SparkContext("local", "test " + new Date())
+  private val log: Logger = Logger.getLogger(DirectoryUtils.getClass)
 
   /**
-   * Clean up after the test is done
+   * Create a Temporary directory
+   * @param prefix the prefix for the directory name, this is used to make the Temp directory more identifiable.
+   * @return the temporary directory
    */
-  override def after: Any = {
-    cleanupSpark()
-    super.after
-  }
-
-  /**
-   * Shutdown spark and release the lock
-   */
-  def cleanupSpark(): Unit = {
+  def createTempDirectory(prefix: String): File = {
     try {
-      if (sc != null) {
-        sc.stop()
-      }
-    }
-    finally {
-      // To avoid Akka rebinding to the same port, since it doesn't unbind immediately on shutdown
-      System.clearProperty("spark.driver.port")
-
-      TestingSparkContext.lock.release()
+      convertFileToDirectory(File.createTempFile(prefix, "-tmp"))
+    } catch {
+      case e: Exception ⇒
+        throw new RuntimeException("Could NOT initialize temp directory, prefix: " + prefix, e)
     }
   }
-}
 
-object TestingSparkContext {
-  val lock = new Lock()
+  /**
+   * Convert a file into a directory
+   * @param file a file that isn't a directory
+   * @return directory with same name as File
+   */
+  private def convertFileToDirectory(file: File): File = {
+    file.delete()
+    if (!file.mkdirs()) {
+      throw new RuntimeException("Failed to create tmpDir: " + file.getAbsolutePath)
+    }
+    file
+  }
+
+  def deleteTempDirectory(tmpDir: File) {
+    FileUtils.deleteQuietly(tmpDir)
+    if (tmpDir != null && tmpDir.exists) {
+      log.error("Failed to delete tmpDir: " + tmpDir.getAbsolutePath)
+    }
+  }
 }

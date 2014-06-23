@@ -23,10 +23,9 @@
 
 package com.intel.intelanalytics.repository
 
-import scala.util.Try
 import com.intel.intelanalytics.domain.HasId
 
-
+import scala.util.Try
 
 /**
  * Repository interface for read/write operations (CRUD) for a single table.
@@ -54,6 +53,4 @@ trait Repository[Session, CreateEntity, Entity <: HasId] extends ReadRepository[
    */
   def delete(id: Long)(implicit session: Session): Try[Unit]
 }
-
-
 
