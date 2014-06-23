@@ -26,5 +26,5 @@ depth_frame3 = frame.bin_column('colA', 2, bin_type='equaldepth', bin_column_nam
 print(depth_frame3.inspect())
 
 # should fail in bin_column: unable to bin non-numeric values
-bad_frame = frame.bin_column('colC', 2, bin_type='equalwidth', bin_column_name='EWBinned')
-print(bad_frame.inspect())
+#bad_frame = frame.bin_column('colC', 2, bin_type='equalwidth', bin_column_name='EWBinned')
+#print(bad_frame.inspect())
