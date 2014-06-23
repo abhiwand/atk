@@ -25,7 +25,6 @@ package com.intel.intelanalytics.engine
 
 import com.intel.intelanalytics.domain.schema.Schema
 
-
 object Rows {
   type Row = Array[Any]
 
@@ -45,22 +44,5 @@ object Rows {
 //  case class DropRows(id: Long, filter: RowFunction[Boolean])
 //}
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 // TODO: Move classes from cake to dependency injection.
-
-
-
 

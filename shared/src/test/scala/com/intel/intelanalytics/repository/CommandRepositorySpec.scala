@@ -23,9 +23,8 @@
 
 package com.intel.intelanalytics.repository
 
-import org.scalatest.Matchers
 import com.intel.intelanalytics.domain.command.CommandTemplate
-import scala.util.Success
+import org.scalatest.Matchers
 
 class CommandRepositorySpec extends SlickMetaStoreH2Testing with Matchers {
 
@@ -34,7 +33,7 @@ class CommandRepositorySpec extends SlickMetaStoreH2Testing with Matchers {
     val commandRepo = slickMetaStoreComponent.metaStore.commandRepo
 
     slickMetaStoreComponent.metaStore.withSession("command-test") {
-      implicit session =>
+      implicit session ⇒
 
         val name = "my-name"
 
@@ -48,7 +47,6 @@ class CommandRepositorySpec extends SlickMetaStoreH2Testing with Matchers {
         command2.get.name shouldBe name
         command2.get.createdOn should not be null
         command2.get.modifiedOn should not be null
-
     }
   }
 

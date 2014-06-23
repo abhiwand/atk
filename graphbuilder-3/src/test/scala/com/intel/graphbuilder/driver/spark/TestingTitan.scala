@@ -21,14 +21,13 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.graphbuilder.testutils
+package com.intel.graphbuilder.driver.spark
 
-import DirectoryUtils._
+import java.io.File
+
 import com.intel.graphbuilder.graph.titan.TitanGraphConnector
 import com.intel.graphbuilder.util.SerializableBaseConfiguration
-import com.thinkaurelius.titan.core.TitanGraph
-import java.io.File
-import com.thinkaurelius.titan.graphdb.database.StandardTitanGraph
+import com.intel.testutils.{DirectoryUtils, LogUtils, MultipleAfter}
 
 /**
  * This trait can be mixed into Specifications to get a TitanGraph backed by Berkeley for testing purposes.
@@ -40,7 +39,7 @@ trait TestingTitan extends MultipleAfter {
 
   LogUtils.silenceTitan()
 
-  private var tmpDir: File = createTempDirectory("titan-graph-for-unit-testing-")
+  private var tmpDir: File = DirectoryUtils.createTempDirectory("titan-graph-for-unit-testing-")
 
   var titanConfig = new SerializableBaseConfiguration()
   titanConfig.setProperty("storage.directory", tmpDir.getAbsolutePath)
@@ -61,9 +60,8 @@ trait TestingTitan extends MultipleAfter {
       if (graph != null) {
         graph.shutdown()
       }
-    }
-    finally {
-      deleteTempDirectory(tmpDir)
+    } finally {
+      DirectoryUtils.deleteTempDirectory(tmpDir)
     }
 
     // make sure this class is unusable when we're done

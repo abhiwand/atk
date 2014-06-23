@@ -23,10 +23,10 @@
 
 package com.intel.intelanalytics.engine
 
-import java.lang.String
-import scala.util.control.NonFatal
 import com.intel.intelanalytics.component.Archive
 import com.intel.intelanalytics.shared.EventLogging
+
+import scala.util.control.NonFatal
 
 class EngineApplication extends Archive with EventLogging {
 

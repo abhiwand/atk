@@ -1,13 +1,14 @@
 package com.intel.graphbuilder.driver.spark.titan.reader
 
-import com.intel.graphbuilder.graph.titan.TitanGraphConnector
-import com.intel.graphbuilder.elements.{ Vertex, Edge }
-import com.intel.graphbuilder.testutils.DirectoryUtils._
-import com.intel.graphbuilder.util.SerializableBaseConfiguration
-import com.intel.graphbuilder.elements.Property
-import scala.collection.JavaConversions._
-import org.scalatest.{ Suite, BeforeAndAfterAll }
 import java.io.File
+
+import com.intel.graphbuilder.elements.{Edge, Property, Vertex}
+import com.intel.graphbuilder.graph.titan.TitanGraphConnector
+import com.intel.graphbuilder.util.SerializableBaseConfiguration
+import com.intel.testutils.DirectoryUtils
+import org.scalatest.{BeforeAndAfterAll, Suite}
+
+import scala.collection.JavaConversions._
 
 /**
  * A collection of data used to test reading from a Titan graph.
@@ -22,10 +23,10 @@ import java.io.File
  */
 object TitanReaderTestData extends Suite with BeforeAndAfterAll {
 
-  import TitanReaderUtils._
+  import com.intel.graphbuilder.driver.spark.titan.reader.TitanReaderUtils._
 
   val gbID = TitanReader.TITAN_READER_DEFAULT_GB_ID
-  private var tmpDir: File = createTempDirectory("titan-graph-for-unit-testing-")
+  private var tmpDir: File = DirectoryUtils.createTempDirectory("titan-graph-for-unit-testing-")
 
   var titanConfig = new SerializableBaseConfiguration()
   titanConfig.setProperty("storage.directory", tmpDir.getAbsolutePath)
@@ -122,9 +123,8 @@ object TitanReaderTestData extends Suite with BeforeAndAfterAll {
         transaction.commit()
         graph.shutdown()
       }
-    }
-    finally {
-      deleteTempDirectory(tmpDir)
+    } finally {
+      DirectoryUtils.deleteTempDirectory(tmpDir)
     }
 
     // make sure this class is unusable when we're done

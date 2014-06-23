@@ -23,10 +23,11 @@
 
 package com.intel.intelanalytics.engine.spark
 
-import scala.concurrent.duration._
-import com.intel.intelanalytics.shared.SharedConfig
 import com.intel.graphbuilder.util.SerializableBaseConfiguration
+import com.intel.intelanalytics.shared.SharedConfig
+
 import scala.collection.JavaConversions._
+import scala.concurrent.duration._
 
 /**
  * Configuration Settings for the SparkEngine,

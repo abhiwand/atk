@@ -22,7 +22,6 @@
 //////////////////////////////////////////////////////////////////////////////
 
 package models.database
-import play.api.db.slick.Config.driver.simple._
 
 /**
  * User entry.

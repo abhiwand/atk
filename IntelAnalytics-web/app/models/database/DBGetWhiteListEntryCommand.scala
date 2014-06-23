@@ -24,9 +24,6 @@
 package models.database
 
 import models.database
-import play.api.Play.current
-import play.api.db.slick.Config.driver.simple._
-import play.api.db.slick.DB
 
 /**
  * Command to find white list entry
