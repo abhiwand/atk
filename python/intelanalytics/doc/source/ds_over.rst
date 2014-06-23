@@ -1,5 +1,5 @@
-Data Scientist
-==============
+User Manual
+===========
 
 Contents:
 

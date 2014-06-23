@@ -238,6 +238,17 @@ As the magnitude of the fitting parameter increases, there will be an increasing
 This penalty is dependent on the squares of the parameters as well as the magnitude of lambda.
 Adapted from: http://openclassroom.stanford.edu/MainFolder/DocumentPage.php?course=MachineLearning&doc=exercises/ex5/ex5.html.
 
+.. _glossary_lambda_functions:
+
+Lambda Functions
+----------------
+
+These are referred to in the API documentation.
+These are functions passed to other functions.
+An example of this would be adding a column to a BigFrame and telling the function responsible for the column addition what it should put into the new column based on data in other columns.
+A function must return the same type of data that the column definition supplies.
+For example, if a column is defined as a float within an array, the function must return the data as a float in an array.
+
 Latent Dirichlet Allocation
 ---------------------------
 
