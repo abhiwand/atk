@@ -23,12 +23,6 @@
 
 package models
 
-import play.api.data._
-import play.api.data.Forms._
-import play.api.Play.current
-import play.api.db.slick.Config.driver.simple._
-import play.api.db.slick.DB
-
 case class RegistrationFormMapping(name: String, organization_name: String, organization_email: String, organization_phone: String,
                                    experience: Int, role: String, whyParticipate: String,
                                    whatTools: String, terms: String, authResult: String)

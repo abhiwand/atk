@@ -21,57 +21,36 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.graphbuilder.testutils
+package com.intel.testutils
 
-import java.util.Date
-import org.apache.spark.SparkContext
-import scala.concurrent.Lock
+import org.apache.log4j.{ Level, Logger }
 
 /**
- * This trait case be mixed into Specifications to create a SparkContext for testing.
+ * Utility methods related to logging in Unit testing.
  * <p>
- * IMPORTANT! This adds a couple seconds to your unit test!
- * </p>
- * <p>
- * Lock is used because you can only have one local SparkContext running at a time.
- * Other option is to use "parallelExecution in Test := false" but locking seems to be faster.
+ * Logging of underlying libraries can get annoying in unit
+ * tests so it is nice to be able to change easily.
  * </p>
  */
-trait TestingSparkContext extends MultipleAfter {
-
-  // locking in the constructor is slightly odd but it seems to work well
-  TestingSparkContext.lock.acquire()
-
-  LogUtils.silenceSpark()
-
-  lazy val sc = new SparkContext("local", "test " + new Date())
+object LogUtils {
 
   /**
-   * Clean up after the test is done
+   * Turn down logging since Spark gives so much output otherwise.
    */
-  override def after: Any = {
-    cleanupSpark()
-    super.after
+  def silenceSpark() {
+    setLogLevels(Level.WARN, Seq("spark", "org.eclipse.jetty", "akka"))
   }
 
   /**
-   * Shutdown spark and release the lock
+   * Turn down logging for Titan
    */
-  def cleanupSpark(): Unit = {
-    try {
-      if (sc != null) {
-        sc.stop()
-      }
-    }
-    finally {
-      // To avoid Akka rebinding to the same port, since it doesn't unbind immediately on shutdown
-      System.clearProperty("spark.driver.port")
-
-      TestingSparkContext.lock.release()
-    }
+  def silenceTitan() {
+    setLogLevels(Level.WARN, Seq("com.thinkaurelius"))
+    setLogLevels(Level.ERROR, Seq("com.thinkaurelius.titan.graphdb.transaction.StandardTitanTx"))
   }
-}
 
-object TestingSparkContext {
-  val lock = new Lock()
+  private def setLogLevels(level: org.apache.log4j.Level, loggers: TraversableOnce[String]): Unit = {
+    loggers.foreach(loggerName ⇒ Logger.getLogger(loggerName).setLevel(level))
+  }
+
 }

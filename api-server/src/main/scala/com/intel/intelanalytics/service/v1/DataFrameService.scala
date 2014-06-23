@@ -59,15 +59,6 @@ class DataFrameService(commonDirectives: CommonDirectives, engine: Engine) exten
       FrameDecorator.decorateEntity(uri.toString, links, frame)
     }
 
-    //TODO: none of these are yet asynchronous - they communicate with the engine
-    //using futures, but they keep the client on the phone the whole time while they're waiting
-    //for the engine work to complete. Needs to be updated to a) register running jobs in
-    //
-    //
-    //
-    //
-    // the metastore
-    //so they can be queried, and b) support the web hooks.
     commonDirectives(prefix) { implicit p: UserPrincipal =>
       (path(prefix) & pathEnd) {
         requestUri { uri =>

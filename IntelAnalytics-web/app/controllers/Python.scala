@@ -23,12 +23,6 @@
 
 package controllers
 
-import play.api.mvc._
-import controllers.Session._
-import services.authorize.CookieGenerator
-import play.api.Play
-import play.api.Play.current
-
 /**
  * Ipython page controller
  */

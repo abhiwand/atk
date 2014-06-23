@@ -16,15 +16,26 @@ cp $tarFile $SCRIPTPATH/rpm/SOURCES/${packageName}-${version}.tar.gz
 LICENSE="Confidential"
 SUMMARY="$packageName-$version Build number: $BUILD_NUMBER. TimeStamp $TIMESTAMP"
 DESCRIPTION=$SUMMARY 
-REQUIRES="java >= 1.7, intelanalytics-spark-deps >= 0.8.${BUILD_NUMBER}-${BUILD_NUMBER}"
+REQUIRES="java >= 1.7, intelanalytics-spark-deps >= 0.8-${BUILD_NUMBER}, jq"
 
 POST="
+ #sim link to python sites packages
+ if [ -f /usr/lib/intelanalytics/graphbuilder/ext/graphbuilder-3.jar ]; then
+   rm /usr/lib/intelanalytics/graphbuilder/ext/graphbuilder-3.jar
+ fi
 
+ ln -s /usr/lib/intelanalytics/graphbuilder/graphbuilder-3.jar  /usr/lib/intelanalytics/graphbuilder/ext/graphbuilder-3.jar
 "
 
 #delete the sym link only if we are uninstalling not updating
 POSTUN="
 
+"
+
+FILES="
+/usr/lib/intelanalytics/graphbuilder/bin
+/usr/lib/intelanalytics/graphbuilder/conf
+/usr/lib/intelanalytics/graphbuilder/ext
 "
 
 rpmSpec > $SCRIPTPATH/rpm/SPECS/$packageName.spec

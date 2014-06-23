@@ -23,8 +23,8 @@
 
 package com.intel.intelanalytics.engine.spark.context
 
-import com.typesafe.config.Config
 import com.intel.intelanalytics.security.UserPrincipal
+import com.typesafe.config.Config
 
 class SparkContextManager(conf: Config, factory: SparkContextFactory) extends SparkContextManagementStrategy {
   //TODO read the strategy from the config file

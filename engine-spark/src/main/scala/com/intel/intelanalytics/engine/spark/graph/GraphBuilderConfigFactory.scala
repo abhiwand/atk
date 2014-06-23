@@ -1,23 +1,15 @@
 package com.intel.intelanalytics.engine.spark.graph
 
-import com.intel.intelanalytics.domain.graph.construction._
-import com.intel.graphbuilder.util.SerializableBaseConfiguration
-import com.intel.graphbuilder.parser.rule.{ Value => GBValue, VertexRule => GBVertexRule, EdgeRule => GBEdgeRule, PropertyRule => GBPropertyRule }
-import com.intel.graphbuilder.parser.rule.ConstantValue
 import com.intel.graphbuilder.driver.spark.titan.GraphBuilderConfig
-import com.intel.graphbuilder.parser.rule.ParsedValue
-import com.intel.intelanalytics.domain.graph.construction.ValueRule
-
-import com.intel.graphbuilder.parser.InputSchema
-import com.intel.intelanalytics.domain.graph.construction.EdgeRule
-import com.intel.graphbuilder.parser.ColumnDef
-import com.intel.intelanalytics.domain.graph.construction.VertexRule
-import com.intel.intelanalytics.domain.graph.construction.PropertyRule
-import spray.json.JsObject
-import com.intel.intelanalytics.domain.schema.{ Schema, DataTypes }
-import DataTypes.DataType
-import com.intel.intelanalytics.domain.graph.{ GraphLoad, Graph }
+import com.intel.graphbuilder.parser.{ColumnDef, InputSchema}
+import com.intel.graphbuilder.parser.rule.{ConstantValue, ParsedValue, EdgeRule => GBEdgeRule, PropertyRule => GBPropertyRule, Value => GBValue, VertexRule => GBVertexRule}
+import com.intel.graphbuilder.util.SerializableBaseConfiguration
+import com.intel.intelanalytics.domain.graph.construction.{EdgeRule, PropertyRule, ValueRule, VertexRule, _}
+import com.intel.intelanalytics.domain.graph.{Graph, GraphLoad}
+import com.intel.intelanalytics.domain.schema.DataTypes.DataType
+import com.intel.intelanalytics.domain.schema.{DataTypes, Schema}
 import com.intel.intelanalytics.engine.spark.SparkEngineConfig
+import spray.json.JsObject
 
 /**
  * Converter that produces the graphbuilder3 consumable

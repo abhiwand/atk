@@ -23,25 +23,26 @@
 
 package com.intel.intelanalytics.repository
 
-import com.intel.intelanalytics.shared.EventLogging
-import scala.util.Try
-import spray.json._
-import com.intel.intelanalytics.domain.frame.{DataFrame, DataFrameTemplate}
-import com.intel.intelanalytics.domain.graph.{GraphTemplate, Graph}
-import com.intel.intelanalytics.domain.schema.Schema
-import com.intel.intelanalytics.domain.command.{CommandTemplate, Command}
-import org.joda.time.DateTime
 import com.github.tototoshi.slick.GenericJodaSupport
 import com.intel.intelanalytics.domain._
+import com.intel.intelanalytics.domain.command.{Command, CommandTemplate}
+import com.intel.intelanalytics.domain.frame.{DataFrame, DataFrameTemplate}
+import com.intel.intelanalytics.domain.graph.{Graph, GraphTemplate}
+import com.intel.intelanalytics.domain.schema.Schema
+import com.intel.intelanalytics.shared.EventLogging
+import org.joda.time.DateTime
 import scala.slick.driver.{JdbcDriver, JdbcProfile}
 import org.flywaydb.core.Flyway
+import spray.json._
+
+import scala.util.Try
 
 
 trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
   msc: MetaStoreComponent with DbProfileComponent =>
 
-  import profile.profile.simple._
   import com.intel.intelanalytics.domain.DomainJsonProtocol._
+  import profile.profile.simple._
 
   // Joda Support depends on the driver being used.
   val genericJodaSupport = new GenericJodaSupport(profile.profile.asInstanceOf[JdbcDriver])
@@ -150,6 +151,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
       }
     }
   }
+
 
   /**
    * A slick implementation of the 'User' table that defines
@@ -320,8 +322,6 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
 
       def description = column[Option[String]]("description")
 
-      def uri = column[String]("uri")
-
       def schema = column[Schema]("schema")
 
       def statusId = column[Long]("status_id", O.Default(1))
@@ -335,7 +335,8 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
       def modifiedById = column[Option[Long]]("modified_by")
 
       /** projection to/from the database */
-      override def * = (id, name, description, uri, schema, statusId, createdOn, modifiedOn, createdById, modifiedById) <>(DataFrame.tupled, DataFrame.unapply)
+      override def * = (id, name, description, schema, statusId, createdOn, modifiedOn, createdById, modifiedById) <>
+                        (DataFrame.tupled, DataFrame.unapply)
 
       // foreign key relationships
 
@@ -354,7 +355,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
     }
 
     def _insertFrame(frame: DataFrameTemplate)(implicit session: Session) = {
-      val f = DataFrame(0, frame.name, frame.description, "TODO: supply uri", Schema(), 1L, new DateTime(), new DateTime(), None, None)
+      val f = DataFrame(0, frame.name, frame.description, Schema(), 1L, new DateTime(), new DateTime(), None, None)
       framesAutoInc.insert(f)
     }
 

@@ -23,7 +23,8 @@
 
 package com.intel.graphbuilder.schema
 
-import com.intel.graphbuilder.elements.{ Property, Vertex, Edge }
+import com.intel.graphbuilder.elements.{Edge, Property, Vertex}
+
 import scala.collection.mutable.Map
 
 /**
@@ -73,7 +74,7 @@ class InferSchemaFromData extends Serializable {
    * Add a list of properties, if they aren't already present.
    */
   private def addProperties(propertyType: PropertyType.Value, properties: Seq[Property]): Unit = {
-    properties.foreach(prop => addProperty(propertyType, prop, isGbId = false))
+    properties.foreach(prop ⇒ addProperty(propertyType, prop, isGbId = false))
 
   }
 
