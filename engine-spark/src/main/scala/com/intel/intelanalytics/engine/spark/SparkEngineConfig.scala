@@ -66,7 +66,7 @@ object SparkEngineConfig extends SharedConfig {
   /**
    * Configuration properties that will be supplied to SparkConf()
    */
-  def sparkConfProperties: Map[String,String] = {
+  val sparkConfProperties: Map[String,String] = {
     var sparkConfProperties = Map[String,String]()
     val properties = config.getConfig("intel.analytics.engine.spark.conf.properties")
     for (entry <- properties.entrySet()) {
