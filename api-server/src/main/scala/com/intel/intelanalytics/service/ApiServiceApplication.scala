@@ -72,9 +72,7 @@ class ApiServiceApplication extends Archive {
     //TODO: later engine will be initialized in a separate JVM
     lazy val engine = com.intel.intelanalytics.component.Boot.getArchive(
                               ArchiveName("engine", "com.intel.intelanalytics.engine.EngineApplication"))
-                        .getAll[Engine]("engine")
-                        .headOption
-                        .getOrElse(throw new Exception("Could not locate engine"))
+                        .get[Engine]("engine")
 
     //make sure engine is initialized
     Await.ready(engine.getCommands(0, 1), 30 seconds)

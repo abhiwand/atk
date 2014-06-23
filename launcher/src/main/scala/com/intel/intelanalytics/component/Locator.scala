@@ -36,4 +36,15 @@ trait Locator {
    * @return the requested instances, or the empty sequence if no such instances could be produced.
    */
   def getAll[T : ClassTag](descriptor: String): Seq[T]
+
+  /**
+   * Obtain a single instance of a given class. The keys are established purely
+   * by convention.
+   *
+   * @param descriptor the string key of the desired class instance.
+   * @tparam T the type of the requested instances
+   * @return the requested instance, or the first such instance if the locator provides more than one
+   * @throws NoSuchElementException if no instances were found
+   */
+  def get[T : ClassTag](descriptor: String): T = getAll(descriptor).head
 }
