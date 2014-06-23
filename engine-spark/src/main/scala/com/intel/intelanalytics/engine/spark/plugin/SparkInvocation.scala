@@ -40,7 +40,7 @@ import scala.concurrent.ExecutionContext
  * @param commandId the ID assigned to this command execution
  * @param executionContext the Scala execution context in use
  * @param arguments the original JSON arguments, unconverted
- * @param sparkContext a method that can be called to get direct access to a SparkContext
+ * @param sparkContext a SparkContext that can be used to implement the plugin's functionality
  */
 case class SparkInvocation(engine: Engine,
                            user: UserPrincipal,
