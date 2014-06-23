@@ -25,11 +25,15 @@ package com.intel.intelanalytics.service
 
 //TODO: Is this right execution context for us?
 
-import scala.concurrent._
-import ExecutionContext.Implicits.global
-
+import com.intel.intelanalytics.domain.User
+import com.intel.intelanalytics.repository.MetaStore
+import com.intel.intelanalytics.security.UserPrincipal
+import com.intel.intelanalytics.shared.EventLogging
 import spray.http.HttpHeader
+import spray.routing._
+
 import scala.PartialFunction._
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent._
 import com.intel.intelanalytics.security.UserPrincipal
 import scala.Some
@@ -70,12 +74,8 @@ class AuthenticationDirective(val metaStore: MetaStore) extends Directives with 
         }
         val users: List[User] = metaStore.userRepo.retrieveByColumnValue("api_key", apiKey)
         users match {
-          case Nil => {
-            import DomainJsonProtocol._
-            metaStore.userRepo.scan().foreach(u => info(u.toJson.prettyPrint))
-            throw new SecurityException("User not found with apiKey:" + apiKey)
-          }
-          case users if users.length > 1 => throw new SecurityException("Problem accessing user credentials")
+          case Nil => throw new SecurityException("User not found with apiKey:" + apiKey)
+          case us if us.length > 1 => throw new SecurityException("Problem accessing user credentials")
           case user => {
             val userPrincipal: UserPrincipal = new UserPrincipal(users(0), List("user")) //TODO need role definitions
             info("Authenticated user " + userPrincipal)

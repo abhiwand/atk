@@ -25,10 +25,6 @@ package services.authorize
 
 import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec
-import org.apache.commons.codec.binary.Hex
-import play.api.mvc.Cookie
-import play.api.Play
-import play.api.Play.current
 
 /**
  * Generate cookie with the secret and name value

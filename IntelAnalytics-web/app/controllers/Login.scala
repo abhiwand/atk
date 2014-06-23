@@ -23,13 +23,7 @@
 
 package controllers
 
-import play.api.mvc._
-import services.authorize.{ Providers, Authorize }
-import models.database.{ DBLoginCommand, StatementGenerator, MySQLStatementGenerator }
-import models._
-import controllers.Session._
 import models.StatusCodes
-import play.api.mvc.SimpleResult
 
 /**
  * Singleton object to handle log in request and generate response accordingly.

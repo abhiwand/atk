@@ -24,7 +24,7 @@
 package org.apache.spark.api.python
 
 import org.apache.spark.rdd.RDD
-import java.util.{ List => JList, ArrayList => JArrayList, Map => JMap }
+import java.util.{ List ⇒ JList, ArrayList ⇒ JArrayList, Map ⇒ JMap }
 
 import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.Accumulator

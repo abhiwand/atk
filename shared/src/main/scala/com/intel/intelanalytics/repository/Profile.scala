@@ -23,8 +23,9 @@
 
 package com.intel.intelanalytics.repository
 
-import scala.slick.driver.{PostgresDriver, H2Driver, JdbcProfile}
 import com.intel.intelanalytics.shared.SharedConfig
+
+import scala.slick.driver.{H2Driver, JdbcProfile, PostgresDriver}
 
 /**
  * Profiles are how we abstract various back-ends like H2 vs. PostgreSQL

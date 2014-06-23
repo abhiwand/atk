@@ -21,56 +21,39 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.graphbuilder.testutils
+package com.intel.intelanalytics
 
-import DirectoryUtils._
-import com.intel.graphbuilder.graph.titan.TitanGraphConnector
-import com.intel.graphbuilder.util.SerializableBaseConfiguration
-import com.thinkaurelius.titan.core.TitanGraph
-import java.io.File
-import com.thinkaurelius.titan.graphdb.database.StandardTitanGraph
+trait ClassLoaderAware {
 
-/**
- * This trait can be mixed into Specifications to get a TitanGraph backed by Berkeley for testing purposes.
- *
- * IMPORTANT! only one thread can use the graph below at a time. This isn't normally an issue because
- * each test usually gets its own copy.
- */
-trait TestingTitan extends MultipleAfter {
-
-  LogUtils.silenceTitan()
-
-  private var tmpDir: File = createTempDirectory("titan-graph-for-unit-testing-")
-
-  var titanConfig = new SerializableBaseConfiguration()
-  titanConfig.setProperty("storage.directory", tmpDir.getAbsolutePath)
-
-  var titanConnector = new TitanGraphConnector(titanConfig)
-  var graph = titanConnector.connect()
-
-  override def after: Unit = {
-    cleanupTitan()
-    super.after
-  }
 
   /**
-   * IMPORTANT! removes temporary files
+   * Execute a code block using specified class loader
+   * rather than the ClassLoader of the currentThread()
    */
-  def cleanupTitan(): Unit = {
+  def withLoader[T](loader: ClassLoader)(expr: => T): T = {
+    val prior = Thread.currentThread().getContextClassLoader
     try {
-      if (graph != null) {
-        graph.shutdown()
-      }
+      Thread.currentThread().setContextClassLoader(loader)
+      expr
     }
     finally {
-      deleteTempDirectory(tmpDir)
+      Thread.currentThread().setContextClassLoader(prior)
     }
-
-    // make sure this class is unusable when we're done
-    titanConfig = null
-    titanConnector = null
-    graph = null
-    tmpDir = null
   }
 
+
+  /**
+   * Execute a code block using the ClassLoader of 'this'
+   * rather than the ClassLoader of the currentThread()
+   */
+  def withMyClassLoader[T](f: ⇒ T): T = {
+    val prior = Thread.currentThread().getContextClassLoader
+    try {
+      val loader = this.getClass.getClassLoader
+      Thread.currentThread setContextClassLoader loader
+      f
+    } finally {
+      Thread.currentThread setContextClassLoader prior
+    }
+  }
 }
