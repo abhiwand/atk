@@ -21,51 +21,36 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.graphbuilder.testutils
+package com.intel.testutils
 
-import java.io.File
-import org.apache.commons.io.FileUtils
-import org.apache.log4j.Logger
+import org.apache.log4j.{ Level, Logger }
 
 /**
- * Utility methods for working with directories.
+ * Utility methods related to logging in Unit testing.
+ * <p>
+ * Logging of underlying libraries can get annoying in unit
+ * tests so it is nice to be able to change easily.
+ * </p>
  */
-object DirectoryUtils {
-
-  private val log: Logger = Logger.getLogger(DirectoryUtils.getClass)
+object LogUtils {
 
   /**
-   * Create a Temporary directory
-   * @param prefix the prefix for the directory name, this is used to make the Temp directory more identifiable.
-   * @return the temporary directory
+   * Turn down logging since Spark gives so much output otherwise.
    */
-  def createTempDirectory(prefix: String): File = {
-    try {
-      convertFileToDirectory(File.createTempFile(prefix, "-tmp"))
-    }
-    catch {
-      case e: Exception =>
-        throw new RuntimeException("Could NOT initialize temp directory, prefix: " + prefix, e)
-    }
+  def silenceSpark() {
+    setLogLevels(Level.WARN, Seq("spark", "org.eclipse.jetty", "akka"))
   }
 
   /**
-   * Convert a file into a directory
-   * @param file a file that isn't a directory
-   * @return directory with same name as File
+   * Turn down logging for Titan
    */
-  private def convertFileToDirectory(file: File): File = {
-    file.delete()
-    if (!file.mkdirs()) {
-      throw new RuntimeException("Failed to create tmpDir: " + file.getAbsolutePath)
-    }
-    file
+  def silenceTitan() {
+    setLogLevels(Level.WARN, Seq("com.thinkaurelius"))
+    setLogLevels(Level.ERROR, Seq("com.thinkaurelius.titan.graphdb.transaction.StandardTitanTx"))
   }
 
-  def deleteTempDirectory(tmpDir: File) {
-    FileUtils.deleteQuietly(tmpDir)
-    if (tmpDir != null && tmpDir.exists) {
-      log.error("Failed to delete tmpDir: " + tmpDir.getAbsolutePath)
-    }
+  private def setLogLevels(level: org.apache.log4j.Level, loggers: TraversableOnce[String]): Unit = {
+    loggers.foreach(loggerName ⇒ Logger.getLogger(loggerName).setLevel(level))
   }
+
 }

@@ -23,18 +23,16 @@
 
 package com.intel.intelanalytics.engine.spark
 
+import com.intel.intelanalytics.domain.frame.LoadLines
 import com.intel.intelanalytics.domain.schema.DataTypes
 import com.intel.intelanalytics.engine.Rows._
-import org.apache.spark.rdd.RDD
+import com.intel.intelanalytics.engine.spark.frame.RDDJoinParam
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
+import org.apache.spark.rdd.RDD
 import spray.json.JsObject
-import scala.collection.mutable
-import scala.Some
-import com.intel.intelanalytics.engine.spark.frame.RDDJoinParam
-import com.intel.intelanalytics.domain.frame.LoadLines
-import com.intel.intelanalytics.domain.frame.LoadLines
 
+import scala.collection.mutable
 
 private[spark] object SparkOps extends Serializable {
 
@@ -42,21 +40,21 @@ private[spark] object SparkOps extends Serializable {
 
     //Count the rows in each partition, then order the counts by partition number
     val counts = rdd.mapPartitionsWithIndex(
-      (i: Int, rows: Iterator[Row]) => Iterator.single((i, rows.size)))
+      (i: Int, rows: Iterator[Row]) ⇒ Iterator.single((i, rows.size)))
       .collect()
       .sortBy(_._1)
 
     //Create cumulative sums of row counts by partition, e.g. 1 -> 200, 2-> 400, 3-> 412
     //if there were 412 rows divided into two 200 row partitions and one 12 row partition
     val sums = counts.scanLeft((0, 0)) {
-      (t1, t2) => (t2._1, t1._2 + t2._2)
+      (t1, t2) ⇒ (t2._1, t1._2 + t2._2)
     }
       .drop(1) //first one is (0,0), drop that
       .toMap
 
     //Put the per-partition counts and cumulative counts together
     val sumsAndCounts = counts.map {
-      case (part, count) => (part, (count, sums(part)))
+      case (part, count) ⇒ (part, (count, sums(part)))
     }.toMap
 
     //println(sumsAndCounts)
@@ -64,14 +62,13 @@ private[spark] object SparkOps extends Serializable {
 
     //Start getting rows. We use the sums and counts to figure out which
     //partitions we need to read from and which to just ignore
-    val rows: Seq[Row] = rdd.mapPartitionsWithIndex((i, rows) => {
+    val rows: Seq[Row] = rdd.mapPartitionsWithIndex((i, rows) ⇒ {
       val (ct: Int, sum: Int) = sumsAndCounts(i)
       val thisPartStart = sum - ct
       if (sum < offset || thisPartStart >= offset + capped) {
         //println("skipping partition " + i)
         Iterator.empty
-      }
-      else {
+      } else {
         val start = Math.max(offset - thisPartStart, 0)
         val numToTake = Math.min((capped + offset) - thisPartStart, ct) - start
         //println(s"partition $i: starting at $start and taking $numToTake")
@@ -81,20 +78,18 @@ private[spark] object SparkOps extends Serializable {
     rows
   }
 
-
   def loadLines(ctx: SparkContext,
-                fileName: String,
-                location: String,
-                arguments: LoadLines[JsObject, Long],
-                parserFunction: String => Array[String],
-                converter: Array[String] => Array[Any]) = {
+    fileName: String,
+    location: String,
+    arguments: LoadLines[JsObject, Long],
+    parserFunction: String ⇒ Array[String],
+    converter: Array[String] ⇒ Array[Any]) = {
     ctx.textFile(fileName)
       .mapPartitionsWithIndex {
-        case (partition, lines) => {
+        case (partition, lines) ⇒ {
           if (partition == 0) {
             lines.drop(arguments.skipRows.getOrElse(0)).map(parserFunction)
-          }
-          else {
+          } else {
             lines.map(parserFunction)
           }
         }
@@ -121,29 +116,29 @@ private[spark] object SparkOps extends Serializable {
   def joinRDDs(left: RDDJoinParam, right: RDDJoinParam, how: String): RDD[Array[Any]] = {
 
     val result = how match {
-      case "left" => left.rdd.leftOuterJoin(right.rdd).map(t => {
+      case "left" ⇒ left.rdd.leftOuterJoin(right.rdd).map(t ⇒ {
         val rightValues: Option[Array[Any]] = t._2._2
         val leftValues: Array[Any] = t._2._1
         rightValues match {
-          case s: Some[Array[Any]] => leftValues ++ s.get
-          case None => leftValues ++ (1 to right.columnCount).map(i => null)
+          case s: Some[Array[Any]] ⇒ leftValues ++ s.get
+          case None ⇒ leftValues ++ (1 to right.columnCount).map(i ⇒ null)
         }
       })
 
-      case "right" => left.rdd.rightOuterJoin(right.rdd).map(t => {
+      case "right" ⇒ left.rdd.rightOuterJoin(right.rdd).map(t ⇒ {
         val leftValues: Option[Array[Any]] = t._2._1
         val rightValues: Array[Any] = t._2._2
         leftValues match {
-          case s: Some[Array[Any]] => s.get ++ rightValues
-          case None => {
+          case s: Some[Array[Any]] ⇒ s.get ++ rightValues
+          case None ⇒ {
             var array: Array[Any] = rightValues
-            (1 to left.columnCount).foreach(i => array = null +: array)
+            (1 to left.columnCount).foreach(i ⇒ array = null +: array)
             array
           }
         }
       })
 
-      case _ => left.rdd.join(right.rdd).map(t => {
+      case _ ⇒ left.rdd.join(right.rdd).map(t ⇒ {
         val leftValues: Array[Any] = t._2._1
         val rightValues: mutable.ArrayOps[Any] = t._2._2
         leftValues ++ rightValues
@@ -163,7 +158,7 @@ private[spark] object SparkOps extends Serializable {
    */
   def flattenColumnByIndex(index: Int, row: Array[Any], separator: String): Array[Array[Any]] = {
     val splitted = row(index).asInstanceOf[String].split(separator)
-    splitted.map(s => {
+    splitted.map(s ⇒ {
       val r = row.clone()
       r(index) = s
       r
@@ -178,7 +173,7 @@ private[spark] object SparkOps extends Serializable {
    * @return new RDD with column flattened
    */
   def flattenRddByColumnIndex(index: Int, separator: String, rdd: RDD[Row]): RDD[Row] = {
-    rdd.flatMap(row => SparkOps.flattenColumnByIndex(index, row, separator))
+    rdd.flatMap(row ⇒ SparkOps.flattenColumnByIndex(index, row, separator))
   }
 
   def aggregation_functions(elem: Seq[Array[Any]],

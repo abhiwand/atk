@@ -21,7 +21,7 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.graphbuilder.testutils
+package com.intel.testutils
 
 import org.specs2.mutable.After
 
@@ -31,6 +31,5 @@ import org.specs2.mutable.After
  * This allows subclasses to call super so you can mix in multiple After traits.
  */
 trait MultipleAfter extends After {
-
   override def after: Any = {}
 }

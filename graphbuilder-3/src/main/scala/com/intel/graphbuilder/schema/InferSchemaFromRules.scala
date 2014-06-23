@@ -52,11 +52,10 @@ class InferSchemaFromRules(dataTypeParser: DataTypeResolver, vertexRules: List[V
    * False if any Edge labels are to be dynamically parsed from the input
    */
   def canInferEdgeLabels: Boolean = {
-    edgeRules.foreach(edgeRule =>
+    edgeRules.foreach(edgeRule ⇒
       if (edgeRule.label.isParsed) {
         return false
-      }
-    )
+      })
     true
   }
 
@@ -67,18 +66,16 @@ class InferSchemaFromRules(dataTypeParser: DataTypeResolver, vertexRules: List[V
   def canInferAllPropertyKeyNames: Boolean = {
 
     // see if every property key name for Vertices is non-parsed
-    vertexRules.foreach(_.fullPropertyRules.foreach(propertyRule =>
+    vertexRules.foreach(_.fullPropertyRules.foreach(propertyRule ⇒
       if (propertyRule.key.isParsed) {
         return false
-      }
-    ))
+      }))
 
     // see if every property key name for Edges is non-parsed
-    edgeRules.foreach(_.propertyRules.foreach(propertyRule =>
+    edgeRules.foreach(_.propertyRules.foreach(propertyRule ⇒
       if (propertyRule.key.isParsed) {
         return false
-      }
-    ))
+      }))
 
     true
   }
@@ -97,7 +94,7 @@ class InferSchemaFromRules(dataTypeParser: DataTypeResolver, vertexRules: List[V
    */
   private def inferEdgeLabelDefs(): List[EdgeLabelDef] = {
     for {
-      edgeRule <- edgeRules
+      edgeRule ← edgeRules
       if edgeRule.label.isNotParsed
     } yield new EdgeLabelDef(edgeRule.label.value)
   }
@@ -106,7 +103,7 @@ class InferSchemaFromRules(dataTypeParser: DataTypeResolver, vertexRules: List[V
    * Distinct list of PropertyDefs by name
    */
   private def distinctPropertyDefs(list: List[PropertyDef]): List[PropertyDef] = {
-    list.map(propertyDef => (propertyDef.name, propertyDef)).toMap.valuesIterator.toList
+    list.map(propertyDef ⇒ (propertyDef.name, propertyDef)).toMap.valuesIterator.toList
   }
 
   /**
@@ -115,19 +112,19 @@ class InferSchemaFromRules(dataTypeParser: DataTypeResolver, vertexRules: List[V
   private def inferPropertyDefs(): List[PropertyDef] = {
 
     val vertexGbIdPropertyDefs = for {
-      vertexRule <- vertexRules
+      vertexRule ← vertexRules
       if vertexRule.gbId.key.isNotParsed
     } yield PropertyDef(PropertyType.Vertex, safeValue(vertexRule.gbId.key), dataTypeParser.get(vertexRule.gbId.value), unique = true, indexed = true)
 
     val vertexPropertyDefs = for {
-      vertexRule <- vertexRules
-      propertyRule <- vertexRule.propertyRules
+      vertexRule ← vertexRules
+      propertyRule ← vertexRule.propertyRules
       if propertyRule.key.isNotParsed
     } yield PropertyDef(PropertyType.Vertex, safeValue(propertyRule.key), dataTypeParser.get(propertyRule.value), unique = false, indexed = false)
 
     val edgePropertyDefs = for {
-      edgeRule <- edgeRules
-      propertyRule <- edgeRule.propertyRules
+      edgeRule ← edgeRules
+      propertyRule ← edgeRule.propertyRules
       if propertyRule.key.isNotParsed
     } yield PropertyDef(PropertyType.Edge, safeValue(propertyRule.key), dataTypeParser.get(propertyRule.value), unique = false, indexed = false)
 
@@ -140,8 +137,7 @@ class InferSchemaFromRules(dataTypeParser: DataTypeResolver, vertexRules: List[V
   private[schema] def safeValue(key: Value): String = {
     if (key.isNotParsed) {
       StringUtils.nullSafeToString(key.value)
-    }
-    else {
+    } else {
       throw new RuntimeException("Unexpected: this method should not be called with parsed values: " + key)
     }
   }

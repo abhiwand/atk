@@ -34,11 +34,11 @@ import com.intel.intelanalytics.domain.schema.{DataTypes, Schema, SchemaUtil}
 import com.intel.intelanalytics.engine.Rows._
 import com.intel.intelanalytics.engine._
 import com.intel.intelanalytics.engine.spark.command.CommandExecutor
+import com.intel.intelanalytics.{ClassLoaderAware, NotFoundException}
 import com.intel.intelanalytics.engine.spark.context.SparkContextManager
-import com.intel.intelanalytics.engine.spark.frame._
+import com.intel.intelanalytics.engine.spark.frame.{RDDJoinParam, RowParser, SparkFrameStorage}
 import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.shared.EventLogging
-import com.intel.intelanalytics.{ClassLoaderAware, NotFoundException}
 import org.apache.spark.SparkContext
 import org.apache.spark.api.python.{EnginePythonAccumulatorParam, EnginePythonRDD}
 import org.apache.spark.broadcast.Broadcast
@@ -113,7 +113,6 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     }
   }
 
-
   def load(arguments: LoadLines[JsObject, Long])(implicit user: UserPrincipal): Execution =
     commands.execute(loadCommand, arguments, user, implicitly[ExecutionContext])
 
@@ -151,7 +150,6 @@ class SparkEngine(sparkContextManager: SparkContextManager,
   def expectFrame(frameId: Long) = {
     frames.lookup(frameId).getOrElse(throw new NotFoundException("dataframe", frameId.toString))
   }
-
 
   def renameFrame(arguments: FrameRenameFrame[JsObject, Long])(implicit user: UserPrincipal): Execution =
     commands.execute(renameFrameCommand, arguments, user, implicitly[ExecutionContext])

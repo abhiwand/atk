@@ -24,7 +24,6 @@
 package com.intel.intelanalytics.domain.graph
 
 import com.intel.intelanalytics.domain.HasId
-
 import org.joda.time.DateTime
 
 /**
@@ -40,14 +39,14 @@ import org.joda.time.DateTime
  * @param modifiedByUserId  user who last modified this row
  */
 case class Graph(id: Long,
-                 name: String,
-                 description: Option[String],
-                 storage: String,
-                 statusId: Long,
-                 createdOn: DateTime,
-                 modifiedOn: DateTime,
-                 createdByUserId: Option[Long] = None,
-                 modifiedByUserId: Option[Long] = None) extends HasId {
+    name: String,
+    description: Option[String],
+    storage: String,
+    statusId: Long,
+    createdOn: DateTime,
+    modifiedOn: DateTime,
+    createdByUserId: Option[Long] = None,
+    modifiedByUserId: Option[Long] = None) extends HasId {
   require(id > 0)
   require(name != null)
   require(name.trim.length > 0)

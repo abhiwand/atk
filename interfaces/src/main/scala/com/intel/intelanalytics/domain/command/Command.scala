@@ -45,14 +45,14 @@ import com.intel.intelanalytics.domain.Error
  * @param createdById user who created this row
  */
 case class Command(id: Long,
-                   name: String,
-                   arguments: Option[JsObject],
-                   error: Option[Error] = None,
-                   complete: Boolean = false,
-                   result: Option[JsObject] = None,
-                   createdOn: DateTime,
-                   modifiedOn: DateTime,
-                   createdById: Option[Long] = None) extends HasId
+  name: String,
+  arguments: Option[JsObject],
+  error: Option[Error] = None,
+  complete: Boolean = false,
+  result: Option[JsObject] = None,
+  createdOn: DateTime,
+  modifiedOn: DateTime,
+  createdById: Option[Long] = None) extends HasId
 //
 //case class CommandTemplate(name: String, arguments: Option[JsObject])
 //case class Definition(language: String, serialization: String, data: String)

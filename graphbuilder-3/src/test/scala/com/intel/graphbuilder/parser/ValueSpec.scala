@@ -23,11 +23,11 @@
 
 package com.intel.graphbuilder.parser
 
-import com.intel.graphbuilder.parser.rule.{ CompoundValue, ParsedValue, ConstantValue, Value }
+import com.intel.graphbuilder.parser.rule.{CompoundValue, ConstantValue, ParsedValue, Value}
 import org.apache.commons.lang3.StringUtils
 import org.specs2.ScalaCheck
-import org.specs2.mutable.Specification
 import org.specs2.mock.Mockito
+import org.specs2.mutable.Specification
 
 class ValueSpec extends Specification with ScalaCheck with Mockito {
 
@@ -46,7 +46,7 @@ class ValueSpec extends Specification with ScalaCheck with Mockito {
     }
 
     "never be considerd parsed for any value" ! check {
-      (a: String) =>
+      (a: String) ⇒
         StringUtils.isNotEmpty(a) ==>
           !new ConstantValue(a).isParsed
     }
@@ -70,7 +70,7 @@ class ValueSpec extends Specification with ScalaCheck with Mockito {
     }
 
     "always be considered parsed for any value" ! check {
-      (a: String) =>
+      (a: String) ⇒
         StringUtils.isNotEmpty(a) ==>
           new ParsedValue(a).isParsed
     }
@@ -94,7 +94,7 @@ class ValueSpec extends Specification with ScalaCheck with Mockito {
     }
 
     "never be considered parsed when fully composed of constant values" ! check {
-      (a: String, b: String) =>
+      (a: String, b: String) ⇒
         (StringUtils.isNotEmpty(a) && StringUtils.isNotEmpty(b)) ==>
           !new CompoundValue(new ConstantValue(a), new ConstantValue(b)).isParsed
     }

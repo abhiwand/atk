@@ -23,10 +23,6 @@
 
 package controllers
 
-import play.api.mvc._
-import controllers.Session._
-import play.api.mvc.SimpleResult
-
 object Application extends Controller {
 
   def index = ActionWithSession { request =>

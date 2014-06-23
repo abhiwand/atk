@@ -21,36 +21,50 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.graphbuilder.testutils
+package com.intel.graphon
 
-import org.apache.log4j.{ Logger, Level }
+import java.util.Date
 
-/**
- * Utility methods related to logging in Unit testing.
- * <p>
- * Logging of underlying libraries can get annoying in unit
- * tests so it is nice to be able to change easily.
- * </p>
- */
-object LogUtils {
+import com.intel.testutils._
+import org.apache.spark.{SparkConf, SparkContext}
+import org.scalatest.{BeforeAndAfterAll, WordSpec}
 
-  /**
-   * Turn down logging since Spark gives so much output otherwise.
-   */
-  def silenceSpark() {
-    setLogLevels(Level.WARN, Seq("spark", "org.eclipse.jetty", "akka"))
+trait GraphonSparkContext extends WordSpec with BeforeAndAfterAll {
+  LogUtils.silenceSpark()
+
+  val conf = new SparkConf()
+    .setMaster("local")
+    .setAppName(this.getClass.getSimpleName + " " + new Date())
+  conf.set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
+  conf.set("spark.kryo.registrator", "com.intel.graphbuilder.driver.spark.titan.GraphBuilderKryoRegistrator")
+
+  var sparkContext: SparkContext = null
+
+  override def beforeAll = {
+    // Ensure only one Spark local context is running at a time
+    TestingSparkContext.lock.acquire()
+    sparkContext = new SparkContext(conf)
   }
 
   /**
-   * Turn down logging for Titan
+   * Clean up after the test is done
    */
-  def silenceTitan() {
-    setLogLevels(Level.WARN, Seq("com.thinkaurelius"))
-    setLogLevels(Level.ERROR, Seq("com.thinkaurelius.titan.graphdb.transaction.StandardTitanTx"))
+  override def afterAll = {
+    cleanupSpark()
   }
 
-  private def setLogLevels(level: org.apache.log4j.Level, loggers: TraversableOnce[String]): Unit = {
-    loggers.foreach(loggerName => Logger.getLogger(loggerName).setLevel(level))
+  /**
+   * Shutdown spark and release the lock
+   */
+  def cleanupSpark(): Unit = {
+    try {
+      if (sparkContext != null) {
+        sparkContext.stop()
+      }
+    } finally {
+      // To avoid Akka rebinding to the same port, since it doesn't unbind immediately on shutdown
+      System.clearProperty("spark.driver.port")
+      TestingSparkContext.lock.release()
+    }
   }
-
 }

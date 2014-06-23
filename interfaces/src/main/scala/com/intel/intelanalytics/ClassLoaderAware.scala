@@ -46,14 +46,13 @@ trait ClassLoaderAware {
    * Execute a code block using the ClassLoader of 'this'
    * rather than the ClassLoader of the currentThread()
    */
-  def withMyClassLoader[T](f: => T): T = {
+  def withMyClassLoader[T](f: ⇒ T): T = {
     val prior = Thread.currentThread().getContextClassLoader
     try {
       val loader = this.getClass.getClassLoader
       Thread.currentThread setContextClassLoader loader
       f
-    }
-    finally {
+    } finally {
       Thread.currentThread setContextClassLoader prior
     }
   }

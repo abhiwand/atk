@@ -23,10 +23,11 @@
 
 package com.intel.graphbuilder.driver.spark.rdd
 
-import org.apache.spark.rdd.RDD
-import com.intel.graphbuilder.elements.{ Property, Vertex }
-import org.apache.spark.{ TaskContext, Partition }
+import com.intel.graphbuilder.elements.{Property, Vertex}
 import com.intel.graphbuilder.parser.Parser
+import org.apache.spark.rdd.RDD
+import org.apache.spark.{Partition, TaskContext}
+
 import scala.collection.mutable.Map
 
 /**
@@ -52,13 +53,12 @@ class VertexParserRDD(prev: RDD[Seq[_]], vertexParser: Parser[Vertex]) extends R
     // shuffle later.  For input without duplicates, this shouldn't add much overhead.
     val vertexMap = Map[Property, Vertex]()
 
-    firstParent[Seq[_]].iterator(split, context).foreach(row => {
-      vertexParser.parse(row).foreach(v => {
+    firstParent[Seq[_]].iterator(split, context).foreach(row ⇒ {
+      vertexParser.parse(row).foreach(v ⇒ {
         val opt = vertexMap.get(v.gbId)
         if (opt.isDefined) {
           vertexMap.put(v.gbId, v.merge(opt.get))
-        }
-        else {
+        } else {
           vertexMap.put(v.gbId, v)
         }
       })
