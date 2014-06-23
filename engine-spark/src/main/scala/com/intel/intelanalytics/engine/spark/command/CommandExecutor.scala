@@ -32,6 +32,7 @@ import com.intel.intelanalytics.engine.spark.{SparkEngine, SparkEngineConfig}
 import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.shared.EventLogging
 import com.intel.intelanalytics.{ClassLoaderAware, NotFoundException}
+import org.apache.spark.SparkContext
 import spray.json._
 
 import scala.concurrent._
@@ -120,11 +121,12 @@ class CommandExecutor(engine: => SparkEngine, commands: SparkCommandStorage, con
     withMyClassLoader {
       withContext("ce.execute") {
         withContext(command.name) {
+          val context: SparkContext = contextManager.context(user).sparkContext
           val cmdFuture = future {
             withCommand(cmd) {
               val invocation: SparkInvocation = SparkInvocation(engine, commandId = cmd.id, arguments = cmd.arguments,
                 user = user, executionContext = implicitly[ExecutionContext],
-                sparkContext = contextManager.context(user).sparkContext)
+                sparkContext = context)
 
               val funcResult = command(invocation, arguments)
               command.serializeReturn(funcResult)
