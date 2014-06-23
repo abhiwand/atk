@@ -170,7 +170,7 @@ class SparkProgressListener(val progressUpdater: CommandProgressUpdater) extends
    * Some jobs don't have command id, explain
    */
   def hasCommandId(job: ActiveJob): Boolean = {
-    job.properties.containsKey("command-id")
+    job.properties != null && job.properties.containsKey("command-id")
   }
 
   /**
