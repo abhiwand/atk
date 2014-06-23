@@ -23,35 +23,28 @@
 
 package com.intel.intelanalytics.component
 
-import com.typesafe.config.Config
+import scala.reflect.ClassTag
 
-/**
- * Base interface for a component / plugin.
- */
-trait Component {
+trait Locator {
 
   /**
-   * The location at which this component should be installed in the component
-   * tree. For example, a graph machine learning algorithm called Loopy Belief
-   * Propagation might wish to be installed at
-   * "commands/graphs/ml/loopy_belief_propagation". However, it might not actually
-   * get installed there if the system has been configured to override that
-   * default placement.
-   */
-  def defaultLocation: String
-  /**
-   * Called before processing any requests.
+   * Obtain instances of a given class. The keys are established purely
+   * by convention.
    *
-   * @param configuration Configuration information, scoped to that required by the
-   *                      plugin based on its installed paths.
+   * @param descriptor the string key of the desired class instance.
+   * @tparam T the type of the requested instances
+   * @return the requested instances, or the empty sequence if no such instances could be produced.
    */
-  def start(configuration: Config)
+  def getAll[T : ClassTag](descriptor: String): Seq[T]
 
   /**
-   * Called before the application as a whole shuts down. Not guaranteed to be called,
-   * nor guaranteed that the application will not shut down while this method is running,
-   * though an effort will be made.
+   * Obtain a single instance of a given class. The keys are established purely
+   * by convention.
+   *
+   * @param descriptor the string key of the desired class instance.
+   * @tparam T the type of the requested instances
+   * @return the requested instance, or the first such instance if the locator provides more than one
+   * @throws NoSuchElementException if no instances were found
    */
-  def stop()
+  def get[T : ClassTag](descriptor: String): T = getAll(descriptor).head
 }
-

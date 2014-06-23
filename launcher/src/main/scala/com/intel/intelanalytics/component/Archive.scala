@@ -1,3 +1,5 @@
+package com.intel.intelanalytics.component
+
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
@@ -21,37 +23,29 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.component
+trait Archive extends Component with Locator {
 
-import com.typesafe.config.Config
-
-/**
- * Base interface for a component / plugin.
- */
-trait Component {
+  private var loader : Option[String => Any] = None
 
   /**
-   * The location at which this component should be installed in the component
-   * tree. For example, a graph machine learning algorithm called Loopy Belief
-   * Propagation might wish to be installed at
-   * "commands/graphs/ml/loopy_belief_propagation". However, it might not actually
-   * get installed there if the system has been configured to override that
-   * default placement.
+   * Called by the component framework to provide a method for loading new classes from the same
+   * archive, with the correct startup support. Archives should store this function for later use
    */
-  def defaultLocation: String
+  def setLoader(function: String => Any) : Unit = loader match {
+    case None => loader = Some(function)
+    case _ => throw new Exception("Loader function already set for this archive")
+  }
+
   /**
-   * Called before processing any requests.
+   * Called by archives in order to load new instances from the archive. Does not provide
+   * any caching of instances.
    *
-   * @param configuration Configuration information, scoped to that required by the
-   *                      plugin based on its installed paths.
+   * @param name the class name to instantiate and configure
+   * @return the new instance
    */
-  def start(configuration: Config)
+  protected def load(name: String) : Any = {
+    loader.getOrElse(throw new Exception("Loader not installed for this archive"))(name)
+  }
 
-  /**
-   * Called before the application as a whole shuts down. Not guaranteed to be called,
-   * nor guaranteed that the application will not shut down while this method is running,
-   * though an effort will be made.
-   */
-  def stop()
+
 }
-

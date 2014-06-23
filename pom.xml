@@ -115,8 +115,10 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
         <dep.hadoop2.version>2.3.0-cdh5.0.0</dep.hadoop2.version>
 
         <dep.mahout.version>0.9</dep.mahout.version>
+
         <dep.spark.version>0.9.1</dep.spark.version>
 
+        <dep.typesafe-config.version>1.2.1</dep.typesafe-config.version>
         <!--START GAO MAVEN -->
         <!-- these dependencies are from gaomaven.jf.intel.com -->
         <dep.giraph-core.version>1.1.0-SNAPSHOT-20140317</dep.giraph-core.version>

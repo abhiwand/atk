@@ -21,37 +21,12 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.component
+package com.intel.intelanalytics.domain.command
 
-import com.typesafe.config.Config
+import scala.concurrent.Future
 
 /**
- * Base interface for a component / plugin.
+ * Encapsulates a Command in two states - one snapshot that is taken just before running the command,
+ * and a future that will contain the eventual finished state of the command.
  */
-trait Component {
-
-  /**
-   * The location at which this component should be installed in the component
-   * tree. For example, a graph machine learning algorithm called Loopy Belief
-   * Propagation might wish to be installed at
-   * "commands/graphs/ml/loopy_belief_propagation". However, it might not actually
-   * get installed there if the system has been configured to override that
-   * default placement.
-   */
-  def defaultLocation: String
-  /**
-   * Called before processing any requests.
-   *
-   * @param configuration Configuration information, scoped to that required by the
-   *                      plugin based on its installed paths.
-   */
-  def start(configuration: Config)
-
-  /**
-   * Called before the application as a whole shuts down. Not guaranteed to be called,
-   * nor guaranteed that the application will not shut down while this method is running,
-   * though an effort will be made.
-   */
-  def stop()
-}
-
+case class Execution(start: Command, end: Future[Command])

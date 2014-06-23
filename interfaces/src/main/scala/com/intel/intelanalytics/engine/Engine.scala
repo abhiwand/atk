@@ -23,9 +23,10 @@
 
 package com.intel.intelanalytics.engine
 
+import com.intel.intelanalytics.domain.command.{Execution, CommandTemplate}
 import com.intel.intelanalytics.domain.FilterPredicate
 import com.intel.intelanalytics.domain.command.Command
-import com.intel.intelanalytics.domain.frame.{DataFrame, DataFrameTemplate, FrameAddColumns, FrameJoin, FrameProject, FrameRemoveColumn, FrameRenameColumn, FrameRenameFrame, LoadLines, _}
+import com.intel.intelanalytics.domain.frame._
 import com.intel.intelanalytics.domain.graph.{Graph, GraphLoad, GraphTemplate}
 import com.intel.intelanalytics.engine.Rows._
 import com.intel.intelanalytics.security.UserPrincipal
@@ -41,6 +42,17 @@ trait Engine {
 
   type Identifier = Long //TODO: make more generic?
 
+  /**
+   * Executes the given command template, managing all necessary auditing, contexts, class loaders, etc.
+   *
+   * Stores the results of the command execution back in the persistent command object.
+   *
+   * @param command the command to run, including name and arguments
+   * @param user the user running the command
+   * @return an Execution that can be used to track the completion of the command
+   */
+  def execute(command: CommandTemplate)(implicit user: UserPrincipal): Execution
+
   //TODO: We'll probably return an Iterable[Vertex] instead of rows at some point.
   def getVertices(graph: Identifier, offset: Int, count: Int, queryName: String, parameters: Map[String, String]): Future[Iterable[Row]]
 
@@ -52,35 +64,31 @@ trait Engine {
 
   def getRows(id: Identifier, offset: Long, count: Int)(implicit user: UserPrincipal): Future[Iterable[Row]]
 
-  def create(frame: DataFrameTemplate): Future[DataFrame]
+  def create(frame: DataFrameTemplate)(implicit user: UserPrincipal): Future[DataFrame]
 
-  def clear(frame: DataFrame): Future[DataFrame]
+  def load(arguments: LoadLines[JsObject, Long])(implicit user: UserPrincipal): Execution
 
-  def load(arguments: LoadLines[JsObject, Long])(implicit user: UserPrincipal): (Command, Future[Command])
+  def filter(arguments: FilterPredicate[JsObject, Long])(implicit user: UserPrincipal): Execution
 
-  def filter(arguments: FilterPredicate[JsObject, Long])(implicit user: UserPrincipal): (Command, Future[Command])
+  def project(arguments: FrameProject[JsObject, Long])(implicit user: UserPrincipal): Execution
 
-  def project(arguments: FrameProject[JsObject, Long])(implicit user: UserPrincipal): (Command, Future[Command])
+  def renameFrame(arguments: FrameRenameFrame[JsObject, Long])(implicit user: UserPrincipal): Execution
 
-  def renameFrame(arguments: FrameRenameFrame[JsObject, Long])(implicit user: UserPrincipal): (Command, Future[Command])
+  def renameColumn(arguments: FrameRenameColumn[JsObject, Long])(implicit user: UserPrincipal): Execution
 
-  def renameColumn(arguments: FrameRenameColumn[JsObject, Long])(implicit user: UserPrincipal): (Command, Future[Command])
+  def removeColumn(arguments: FrameRemoveColumn[JsObject, Long])(implicit user: UserPrincipal): Execution
 
-  def removeColumn(arguments: FrameRemoveColumn[JsObject, Long])(implicit user: UserPrincipal): (Command, Future[Command])
-
-  def addColumns(arguments: FrameAddColumns[JsObject, Long])(implicit user: UserPrincipal): (Command, Future[Command])
-
-  def alter(frame: DataFrame, changes: Seq[Alteration])
+  def addColumns(arguments: FrameAddColumns[JsObject, Long])(implicit user: UserPrincipal): Execution
 
   def delete(frame: DataFrame): Future[Unit]
-  def join(argument: FrameJoin)(implicit user: UserPrincipal): (Command, Future[Command])
-  def flattenColumn(argument: FlattenColumn[Long])(implicit user: UserPrincipal): (Command, Future[Command])
+  def join(argument: FrameJoin)(implicit user: UserPrincipal): Execution
+  def flattenColumn(argument: FlattenColumn[Long])(implicit user: UserPrincipal): Execution
 
-  def groupBy(arguments: FrameGroupByColumn[JsObject, Long])(implicit user: UserPrincipal): (Command, Future[Command])
+  def groupBy(arguments: FrameGroupByColumn[JsObject, Long])(implicit user: UserPrincipal): Execution
 
   def getFrames(offset: Int, count: Int)(implicit p: UserPrincipal): Future[Seq[DataFrame]]
 
-  def shutdown: Unit
+  def shutdown(): Unit
 
   def getGraph(id: Identifier): Future[Graph]
 
@@ -88,7 +96,7 @@ trait Engine {
 
   def createGraph(graph: GraphTemplate)(implicit user: UserPrincipal): Future[Graph]
 
-  def loadGraph(graph: GraphLoad[JsObject, Long, Long])(implicit user: UserPrincipal): (Command, Future[Command])
+  def loadGraph(graph: GraphLoad[JsObject, Long, Long])(implicit user: UserPrincipal): Execution
 
   def deleteGraph(graph: Graph): Future[Unit]
 

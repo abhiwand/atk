@@ -21,37 +21,39 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.component
+package com.intel.intelanalytics
 
-import com.typesafe.config.Config
+trait ClassLoaderAware {
 
-/**
- * Base interface for a component / plugin.
- */
-trait Component {
 
   /**
-   * The location at which this component should be installed in the component
-   * tree. For example, a graph machine learning algorithm called Loopy Belief
-   * Propagation might wish to be installed at
-   * "commands/graphs/ml/loopy_belief_propagation". However, it might not actually
-   * get installed there if the system has been configured to override that
-   * default placement.
+   * Execute a code block using specified class loader
+   * rather than the ClassLoader of the currentThread()
    */
-  def defaultLocation: String
-  /**
-   * Called before processing any requests.
-   *
-   * @param configuration Configuration information, scoped to that required by the
-   *                      plugin based on its installed paths.
-   */
-  def start(configuration: Config)
+  def withLoader[T](loader: ClassLoader)(expr: => T): T = {
+    val prior = Thread.currentThread().getContextClassLoader
+    try {
+      Thread.currentThread().setContextClassLoader(loader)
+      expr
+    }
+    finally {
+      Thread.currentThread().setContextClassLoader(prior)
+    }
+  }
+
 
   /**
-   * Called before the application as a whole shuts down. Not guaranteed to be called,
-   * nor guaranteed that the application will not shut down while this method is running,
-   * though an effort will be made.
+   * Execute a code block using the ClassLoader of 'this'
+   * rather than the ClassLoader of the currentThread()
    */
-  def stop()
+  def withMyClassLoader[T](f: ⇒ T): T = {
+    val prior = Thread.currentThread().getContextClassLoader
+    try {
+      val loader = this.getClass.getClassLoader
+      Thread.currentThread setContextClassLoader loader
+      f
+    } finally {
+      Thread.currentThread setContextClassLoader prior
+    }
+  }
 }
-
