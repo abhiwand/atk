@@ -36,6 +36,8 @@ import scala.concurrent.duration._
  */
 object SparkEngineConfig extends SharedConfig {
 
+  // val's are not lazy because failing early is better
+
   /** Spark home directory, e.g. "/opt/cloudera/parcels/CDH/lib/spark", "/usr/lib/spark", etc. */
   val sparkHome: String = config.getString("intel.analytics.spark.home")
 
