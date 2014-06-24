@@ -33,10 +33,10 @@ import spray.routing._
 trait EventLoggingDirectives extends EventLogging {
   import BasicDirectives._
   def eventContext(context: String): Directive0 =
-    mapRequestContext { ctx ⇒
+    mapRequestContext { ctx =>
       withContext(context) {
         ctx.withRouteResponseMapped {
-          response ⇒ response
+          response => response
         }
       }
     }

@@ -35,7 +35,7 @@ class GraphSchema(val edgeLabelDefs: List[EdgeLabelDef], val propertyDefs: List[
    * Get a list of zero or more properties with the supplied name
    */
   def propertiesWithName(propertyName: String): List[PropertyDef] = {
-    propertyDefs.filter(propertyDef ⇒ propertyDef.name == propertyName)
+    propertyDefs.filter(propertyDef => propertyDef.name == propertyName)
   }
 
 }

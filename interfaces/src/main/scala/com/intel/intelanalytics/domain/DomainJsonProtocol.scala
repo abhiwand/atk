@@ -55,8 +55,8 @@ object DomainJsonProtocol extends DefaultJsonProtocol {
     private val dateTimeFmt = org.joda.time.format.ISODateTimeFormat.dateTime
     def write(x: DateTime) = JsString(dateTimeFmt.print(x))
     def read(value: JsValue) = value match {
-      case JsString(x) ⇒ dateTimeFmt.parseDateTime(x)
-      case x ⇒ deserializationError("Expected DateTime as JsString, but got " + x)
+      case JsString(x) => dateTimeFmt.parseDateTime(x)
+      case x => deserializationError("Expected DateTime as JsString, but got " + x)
     }
   }
 
@@ -117,23 +117,23 @@ object DomainJsonProtocol extends DefaultJsonProtocol {
   implicit object DataTypeJsonFormat extends JsonFormat[Any] {
     override def write(obj: Any): JsValue = {
       obj match {
-        case n: Int ⇒ new JsNumber(n)
-        case n: Long ⇒ new JsNumber(n)
-        case n: Float ⇒ new JsNumber(n)
-        case n: Double ⇒ new JsNumber(n)
-        case s: String ⇒ new JsString(s)
-        case unk ⇒ serializationError("Cannot serialize " + unk.getClass.getName)
+        case n: Int => new JsNumber(n)
+        case n: Long => new JsNumber(n)
+        case n: Float => new JsNumber(n)
+        case n: Double => new JsNumber(n)
+        case s: String => new JsString(s)
+        case unk => serializationError("Cannot serialize " + unk.getClass.getName)
       }
     }
 
     override def read(json: JsValue): Any = {
       json match {
-        case JsNumber(n) if n.isValidInt ⇒ n.intValue()
-        case JsNumber(n) if n.isValidLong ⇒ n.longValue()
-        case JsNumber(n) if n.isValidFloat ⇒ n.floatValue()
-        case JsNumber(n) ⇒ n.doubleValue()
-        case JsString(s) ⇒ s
-        case unk ⇒ serializationError("Cannot deserialize " + unk.getClass.getName)
+        case JsNumber(n) if n.isValidInt => n.intValue()
+        case JsNumber(n) if n.isValidLong => n.longValue()
+        case JsNumber(n) if n.isValidFloat => n.floatValue()
+        case JsNumber(n) => n.doubleValue()
+        case JsString(s) => s
+        case unk => serializationError("Cannot deserialize " + unk.getClass.getName)
       }
     }
   }

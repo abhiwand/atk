@@ -53,8 +53,8 @@ class VertexParserRDD(prev: RDD[Seq[_]], vertexParser: Parser[Vertex]) extends R
     // shuffle later.  For input without duplicates, this shouldn't add much overhead.
     val vertexMap = Map[Property, Vertex]()
 
-    firstParent[Seq[_]].iterator(split, context).foreach(row ⇒ {
-      vertexParser.parse(row).foreach(v ⇒ {
+    firstParent[Seq[_]].iterator(split, context).foreach(row => {
+      vertexParser.parse(row).foreach(v => {
         val opt = vertexMap.get(v.gbId)
         if (opt.isDefined) {
           vertexMap.put(v.gbId, v.merge(opt.get))
