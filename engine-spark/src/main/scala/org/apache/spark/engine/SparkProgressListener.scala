@@ -65,6 +65,9 @@ class SparkProgressListener(val progressUpdater: CommandProgressUpdater) extends
 
     if (hasCommandId(job)) {
       addToCommandIdJobs(job)
+
+      //update initial progress to 0
+      progressUpdater.updateProgress(job.properties.getProperty("command-id").toLong, List(0.00f))
     }
   }
 
