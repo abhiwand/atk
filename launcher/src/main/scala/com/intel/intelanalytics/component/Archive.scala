@@ -1,3 +1,5 @@
+package com.intel.intelanalytics.component
+
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
@@ -21,16 +23,29 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.graphbuilder.testutils
+trait Archive extends Component with Locator {
 
-import org.specs2.mutable.After
+  private var loader : Option[String => Any] = None
 
-/**
- * Extends After adding a concrete after() method.
- *
- * This allows subclasses to call super so you can mix in multiple After traits.
- */
-trait MultipleAfter extends After {
+  /**
+   * Called by the component framework to provide a method for loading new classes from the same
+   * archive, with the correct startup support. Archives should store this function for later use
+   */
+  def setLoader(function: String => Any) : Unit = loader match {
+    case None => loader = Some(function)
+    case _ => throw new Exception("Loader function already set for this archive")
+  }
 
-  override def after: Any = {}
+  /**
+   * Called by archives in order to load new instances from the archive. Does not provide
+   * any caching of instances.
+   *
+   * @param name the class name to instantiate and configure
+   * @return the new instance
+   */
+  protected def load(name: String) : Any = {
+    loader.getOrElse(throw new Exception("Loader not installed for this archive"))(name)
+  }
+
+
 }

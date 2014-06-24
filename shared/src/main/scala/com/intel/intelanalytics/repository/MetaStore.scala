@@ -23,10 +23,10 @@
 
 package com.intel.intelanalytics.repository
 
-import com.intel.intelanalytics.domain.{User, UserTemplate, Status}
-import com.intel.intelanalytics.domain.frame.{DataFrame, DataFrameTemplate}
-import com.intel.intelanalytics.domain.graph.{Graph, GraphTemplate}
-import com.intel.intelanalytics.domain.command.{Command, CommandTemplate}
+import com.intel.intelanalytics.domain.{ User, UserTemplate, Status }
+import com.intel.intelanalytics.domain.frame.{ DataFrame, DataFrameTemplate }
+import com.intel.intelanalytics.domain.graph.{ Graph, GraphTemplate }
+import com.intel.intelanalytics.domain.command.{ Command, CommandTemplate }
 
 /**
  * The MetaStore gives access to Repositories. Repositories are how you

@@ -28,22 +28,20 @@ import java.util.Date
 import com.intel.giraph.algorithms.lbp.LoopyBeliefPropagationComputation
 import com.intel.giraph.io.formats.{JsonPropertyGraph4LBPInputFormat, JsonPropertyGraph4LBPOutputFormat}
 import com.intel.intelanalytics.component.Boot
-import com.intel.intelanalytics.engine.plugin.{Invocation, CommandPlugin}
+import com.intel.intelanalytics.engine.plugin.{CommandPlugin, Invocation}
 import com.intel.intelanalytics.security.UserPrincipal
-import com.typesafe.config.{ConfigValue, ConfigObject, Config}
+import com.typesafe.config.{Config, ConfigObject, ConfigValue}
 import org.apache.giraph.conf.GiraphConfiguration
-import org.apache.giraph.io.formats.{GiraphTextOutputFormat, GiraphFileInputFormat}
-import org.apache.giraph.job.{GiraphConfigurationValidator, GiraphJob}
+import org.apache.giraph.io.formats.GiraphFileInputFormat
+import org.apache.giraph.job.GiraphJob
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.mapreduce.Job
-import scala.collection.JavaConverters._
-import spray.json._
 import spray.json.DefaultJsonProtocol._
+import spray.json._
 
-
+import scala.collection.JavaConverters._
 import scala.concurrent._
-import scala.concurrent.duration._
 
 case class Lbp(graph: Int,
                max_supersteps: Option[Int] = None,
@@ -192,20 +190,17 @@ class LoopyBeliefPropagation
     LbpResult(time)
   }
 
-  /**
-   * The location(s) that this component would prefer to be located in the
-   * component registry. Can be overridden by configuration.
-   */
-  override def defaultLocations: Seq[String] = List("/graphs/ml/loopy-belief-propagation")
-
   //TODO: Replace with generic code that works on any case class
   def parseArguments(arguments: JsObject) = arguments.convertTo[Lbp]
 
   //TODO: Replace with generic code that works on any case class
-  def serializeReturn(returnValue: Any): JsObject = returnValue.asInstanceOf[LbpResult].toJson.asJsObject
+  def serializeReturn(returnValue: LbpResult): JsObject = returnValue.toJson.asJsObject
 
   /**
    * The name of the command, e.g. graphs/ml/loopy_belief_propagation
    */
   override def name: String = "graphs/ml/loopy_belief_propagation"
+
+  //TODO: Replace with generic code that works on any case class
+  override def serializeArguments(arguments: Lbp): JsObject = arguments.toJson.asJsObject()
 }

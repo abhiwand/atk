@@ -23,14 +23,28 @@
 
 package com.intel.intelanalytics.component
 
+import scala.reflect.ClassTag
+
 trait Locator {
+
   /**
    * Obtain instances of a given class. The keys are established purely
    * by convention.
    *
    * @param descriptor the string key of the desired class instance.
-   * @tparam T the type of the requested instance
-   * @return the requested instance, or None if no such instance could be produced.
+   * @tparam T the type of the requested instances
+   * @return the requested instances, or the empty sequence if no such instances could be produced.
    */
-  def get[T](descriptor: String): Option[T]
+  def getAll[T : ClassTag](descriptor: String): Seq[T]
+
+  /**
+   * Obtain a single instance of a given class. The keys are established purely
+   * by convention.
+   *
+   * @param descriptor the string key of the desired class instance.
+   * @tparam T the type of the requested instances
+   * @return the requested instance, or the first such instance if the locator provides more than one
+   * @throws NoSuchElementException if no instances were found
+   */
+  def get[T : ClassTag](descriptor: String): T = getAll(descriptor).head
 }

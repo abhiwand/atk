@@ -1,18 +1,19 @@
 package com.intel.graphbuilder.driver.spark.titan.reader
 
-import com.thinkaurelius.titan.graphdb.database.{ StandardTitanGraph, EdgeSerializer }
-import com.thinkaurelius.titan.core.{ TitanProperty, TitanElement, TitanVertex }
-import com.thinkaurelius.titan.diskstorage.keycolumnvalue.Entry
-import com.thinkaurelius.titan.graphdb.internal.InternalRelation
-import com.thinkaurelius.titan.graphdb.database.idhandling.IDHandler
-import com.intel.graphbuilder.elements.{ Edge, GraphElement, Vertex, Property }
+import com.intel.graphbuilder.elements.{Edge, GraphElement, Property, Vertex}
+import com.thinkaurelius.titan.core.{TitanElement, TitanProperty, TitanVertex}
 import com.thinkaurelius.titan.diskstorage.StaticBuffer
+import com.thinkaurelius.titan.diskstorage.keycolumnvalue.Entry
+import com.thinkaurelius.titan.graphdb.database.idhandling.IDHandler
+import com.thinkaurelius.titan.graphdb.database.{EdgeSerializer, StandardTitanGraph}
+import com.thinkaurelius.titan.graphdb.internal.InternalRelation
 import org.apache.hadoop.hbase.CellUtil
-import org.apache.hadoop.hbase.io.ImmutableBytesWritable
 import org.apache.hadoop.hbase.client.Result
-import scala.collection.mutable.ListBuffer
-import scala.collection.immutable.HashMap
+import org.apache.hadoop.hbase.io.ImmutableBytesWritable
+
 import scala.collection.JavaConversions._
+import scala.collection.immutable.HashMap
+import scala.collection.mutable.ListBuffer
 
 /**
  * Utility methods for creating test data for reading Titan graphs.
@@ -77,7 +78,7 @@ object TitanReaderUtils {
 
     val entryList = ListBuffer[Entry]()
 
-    for (pos <- 0 until relation.getLen()) {
+    for (pos ← 0 until relation.getLen()) {
       if (relation.getVertex(pos) == titanVertex) {
         // Ensure that we are serializing properties for the right vertex
         entryList += titanEdgeSerializer.writeRelation(relation, pos, relation.tx())

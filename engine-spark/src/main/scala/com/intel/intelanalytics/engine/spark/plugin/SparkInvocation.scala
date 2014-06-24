@@ -31,9 +31,21 @@ import spray.json.JsObject
 
 import scala.concurrent.ExecutionContext
 
+/**
+ * Captures details of a particular invocation of a command. This instance is passed to the
+ * command's execute method along with the (converted) arguments supplied by the caller.
+ *
+ * @param engine an instance of the Engine for use by the command
+ * @param user the calling user
+ * @param commandId the ID assigned to this command execution
+ * @param executionContext the Scala execution context in use
+ * @param arguments the original JSON arguments, unconverted
+ * @param sparkContext a SparkContext that can be used to implement the plugin's functionality
+ */
 case class SparkInvocation(engine: Engine,
                            user: UserPrincipal,
                            commandId: Long,
                            executionContext: ExecutionContext,
                            arguments: Option[JsObject],
-                           sparkContextFactory: ()=> SparkContext) extends Invocation
+                           sparkContext: SparkContext
+                           ) extends Invocation

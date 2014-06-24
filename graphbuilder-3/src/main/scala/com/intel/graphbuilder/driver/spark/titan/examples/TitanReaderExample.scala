@@ -23,12 +23,13 @@
 
 package com.intel.graphbuilder.driver.spark.titan.examples
 
-import com.intel.graphbuilder.util.SerializableBaseConfiguration
+import java.util.Date
+
+import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRDDImplicits._
 import com.intel.graphbuilder.driver.spark.titan.reader.TitanReader
 import com.intel.graphbuilder.graph.titan.TitanGraphConnector
-import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRDDImplicits._
-import org.apache.spark.{ SparkConf, SparkContext }
-import java.util.Date
+import com.intel.graphbuilder.util.SerializableBaseConfiguration
+import org.apache.spark.{SparkConf, SparkContext}
 
 /**
  * Example of reading Titan graph in Spark.
@@ -48,8 +49,8 @@ object TitanReaderExample {
     val sc = new SparkContext(conf)
 
     // Create graph connection
-    val tableName = "graphofgods"
-    val hBaseZookeeperQuorum = "localhost"
+    val tableName = "g2"
+    val hBaseZookeeperQuorum = "gao-ws5"
 
     val titanConfig = new SerializableBaseConfiguration()
     titanConfig.setProperty("storage.backend", "hbase")

@@ -23,8 +23,9 @@
 
 package org.apache.spark.api.python
 
+import java.util.{ArrayList => JArrayList, List => JList}
+
 import org.apache.spark.AccumulatorParam
-import java.util.{ List => JList, ArrayList => JArrayList }
 
 class EnginePythonAccumulatorParam()
     extends AccumulatorParam[JList[Array[Byte]]] {

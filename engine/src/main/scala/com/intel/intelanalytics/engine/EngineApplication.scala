@@ -24,21 +24,21 @@
 package com.intel.intelanalytics.engine
 
 import com.intel.intelanalytics.ClassLoaderAware
-import com.intel.intelanalytics.component.{Locator, Component}
-import com.typesafe.config.Config
-import java.lang.String
-import scala.util.control.NonFatal
-//import com.intel.intelanalytics.component.Archive
+import com.intel.intelanalytics.component.Archive
 import com.intel.intelanalytics.shared.EventLogging
+import com.typesafe.config.Config
 
-class EngineApplication extends Component with EventLogging with ClassLoaderAware with Locator {
+import scala.reflect.ClassTag
+import scala.util.control.NonFatal
+
+class EngineApplication extends Archive with EventLogging with ClassLoaderAware {
 
   var engine: EngineComponent with FrameComponent with CommandComponent = null
 
-  def get[T](descriptor: String) = {
+  override def getAll[T : ClassTag](descriptor: String) = {
     descriptor match {
-      case "engine" => Some(engine.engine.asInstanceOf[T])
-      case _ => None
+      case "engine" => Seq(engine.engine.asInstanceOf[T])
+      case _ => Seq()
     }
   }
 

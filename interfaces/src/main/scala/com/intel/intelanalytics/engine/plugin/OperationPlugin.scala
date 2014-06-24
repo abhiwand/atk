@@ -24,7 +24,7 @@
 package com.intel.intelanalytics.engine.plugin
 
 import com.intel.intelanalytics.ClassLoaderAware
-import com.intel.intelanalytics.component.{Component, Located}
+import com.intel.intelanalytics.component.{Plugin, Component}
 import com.intel.intelanalytics.security.UserPrincipal
 import com.typesafe.config.Config
 import spray.json.JsObject
@@ -36,24 +36,14 @@ import scala.concurrent.ExecutionContext
  *
  * Plugin authors should implement the execute() method
  *
- * @tparam A the type of the arguments that the plugin expects to receive from
+ * @tparam Argument the type of the arguments that the plugin expects to receive from
  *           the user
- * @tparam R the type of the data that this plugin will return when invoked.
+ * @tparam Return the type of the data that this plugin will return when invoked.
  */
-sealed trait OperationPlugin[A <: Product, R <: Product] extends ((Invocation, Any) => R)
-                                                                          with Component
-                                                                          with Located
+sealed trait OperationPlugin[Argument, Return] extends ((Invocation, Any) => Return)
+                                                                          with Plugin
                                                                           with ClassLoaderAware {
 
-  /**
-   * The type of the arguments this plugin can process
-   */
-  type Argument = A
-
-  /**
-   * The type of the return data this plugin provides
-   */
-  type Return = R
 
   private var config: Option[Config] = None
 
@@ -106,7 +96,7 @@ sealed trait OperationPlugin[A <: Product, R <: Product] extends ((Invocation, A
     //apply so that if we ever need to put additional actions before or
     //after the plugin code, we can.
     withMyClassLoader {
-      val result = execute(invocation, arguments.asInstanceOf[A])(invocation.user, invocation.executionContext)
+      val result = execute(invocation, arguments.asInstanceOf[Argument])(invocation.user, invocation.executionContext)
       if (result == null) { throw new Exception(s"Plugin ${this.getClass.getName} returned null") }
       result
     }
@@ -117,21 +107,30 @@ sealed trait OperationPlugin[A <: Product, R <: Product] extends ((Invocation, A
 /**
  * Base trait for command plugins
  */
-trait CommandPlugin[Argument <: Product, Return <: Product] extends OperationPlugin[Argument, Return] {
+trait CommandPlugin[Argument, Return] extends OperationPlugin[Argument, Return] {
 
   //TODO: move this override to an engine-specific class
   final override def defaultLocation = "engine/commands/" + name
 
-  //TODO: Replace with generic code that works on any case class
+  /**
+   * Convert the given JsObject to an instance of the Argument type
+   */
   def parseArguments(arguments: JsObject) : Argument
 
-  //TODO: Replace with generic code that works on any case class
-  def serializeReturn(returnValue: Any) : JsObject
+  /**
+   * Convert the given argument to a JsObject
+   */
+  def serializeArguments(arguments: Argument) : JsObject
+
+  /**
+   * Convert the given object to a JsObject
+   */
+  def serializeReturn(returnValue: Return) : JsObject
 }
 
 /**
  * Base trait for query plugins
  */
-trait QueryPlugin[Argument <: Product, Return <: Product] extends OperationPlugin[Argument, Return] {
+trait QueryPlugin[Argument, Return] extends OperationPlugin[Argument, Return] {
 
 }

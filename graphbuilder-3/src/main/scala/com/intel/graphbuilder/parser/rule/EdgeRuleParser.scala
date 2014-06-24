@@ -39,7 +39,7 @@ case class EdgeRuleParser(inputSchema: InputSchema, edgeRules: List[EdgeRule]) e
    */
   def parse(row: InputRow): Seq[Edge] = {
     for {
-      rule <- edgeRules
+      rule ← edgeRules
       if rule appliesTo row
     } yield edgeParsers(rule).parse(row)
   }

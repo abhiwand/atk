@@ -39,7 +39,7 @@ case class PropertyRuleParser(propertyRules: Seq[PropertyRule]) extends Serializ
    */
   def parse(row: InputRow): Seq[Property] = {
     for {
-      rule <- propertyRules
+      rule ← propertyRules
       if rule appliesTo row
     } yield propertyParsers(rule).parse(row)
   }

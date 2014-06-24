@@ -55,7 +55,11 @@ class FrameBackendRest(object):
 
     def get_frame(self, name):
         """Retrieves the named BigFrame object"""
-        raise NotImplemented  # TODO - implement get_frame
+        logger.info("REST Backend: get_frame:",name)
+        r=self.rest_http.get(name)
+
+
+        #raise NotImplemented  # TODO - implement get_frame
 
     def delete_frame(self, frame):
         logger.info("REST Backend: Delete frame {0}".format(repr(frame)))
