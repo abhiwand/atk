@@ -324,7 +324,7 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
     validate(test.isSuccess, "Failed to parse bin column descriptor: " + getErrorMessage(test)) {
       val args = test.get
       val result = engine.binColumn(args)
-      val command: Command = result._1
+      val command: Command = result.start
       complete(decorate(uri + "/" + command.id, command))
     }
   }
