@@ -33,9 +33,7 @@ import scala.util.control.NonFatal
 trait EventLogging {
   val setEventLog: EventLog = {
     if (EventLogger.getImplementation == null) {
-      println("START shared EventLogging set slf4j")
       EventLogger.setImplementation(new SLF4JLogAdapter())
-      println("END shared EventLogging set slf4j")
     }
     EventLogger.getImplementation
   }
