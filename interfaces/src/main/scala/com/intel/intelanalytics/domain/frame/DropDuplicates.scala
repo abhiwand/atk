@@ -21,26 +21,11 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.service.v1.viewmodels
-
-import spray.json.DefaultJsonProtocol
-import spray.httpx.SprayJsonSupport
+package com.intel.intelanalytics.domain.frame
 
 /**
- * Implicit Conversions for View/Models to JSON
+ * Command for dropping duplicates rows per uniqueness criteria match
+ * @param frameId id of the data frame
+ * @param unique_columns the key columns for identifying duplicates
  */
-object ViewModelJsonImplicits extends DefaultJsonProtocol with SprayJsonSupport {
-
-  //this is needed for implicits
-  import com.intel.intelanalytics.domain.DomainJsonProtocol._
-
-  implicit val relLinkFormat = jsonFormat3(RelLink)
-  implicit val getCommandsFormat = jsonFormat3(GetCommands)
-  implicit val getCommandFormat = jsonFormat8(GetCommand)
-  implicit val getDataFramesFormat = jsonFormat3(GetDataFrames)
-  implicit val getDataFrameFormat = jsonFormat4(GetDataFrame)
-  implicit val getGraphsFormat = jsonFormat3(GetGraphs)
-  implicit val getGraphFormat = jsonFormat3(GetGraph)
-  implicit val jsonTransformFormat = jsonFormat2(JsonTransform)
-
-}
+case class DropDuplicates(frameId: Long, unique_columns: List[String])
