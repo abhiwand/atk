@@ -24,8 +24,9 @@
 package com.intel.intelanalytics.engine.spark.context
 
 import com.intel.intelanalytics.shared.EventLogging
+import org.apache.spark.engine.{ProgressPrinter, SparkProgressListener}
+
 import scala.collection.mutable
-import org.apache.spark.engine.{ ProgressPrinter, SparkProgressListener }
 
 /**
  * This context management strategy creates a context per user if it doesn't exist, else returns the existing context

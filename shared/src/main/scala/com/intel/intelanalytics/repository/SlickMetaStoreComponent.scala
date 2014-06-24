@@ -23,24 +23,25 @@
 
 package com.intel.intelanalytics.repository
 
-import com.intel.intelanalytics.shared.EventLogging
-import scala.util.Try
-import spray.json._
-import com.intel.intelanalytics.domain.frame.{DataFrame, DataFrameTemplate}
-import com.intel.intelanalytics.domain.graph.{GraphTemplate, Graph}
-import com.intel.intelanalytics.domain.schema.Schema
-import com.intel.intelanalytics.domain.command.{CommandTemplate, Command}
-import org.joda.time.DateTime
 import com.github.tototoshi.slick.GenericJodaSupport
 import com.intel.intelanalytics.domain._
-import scala.slick.driver.{JdbcDriver, JdbcProfile}
+import com.intel.intelanalytics.domain.command.{Command, CommandTemplate}
+import com.intel.intelanalytics.domain.frame.{DataFrame, DataFrameTemplate}
+import com.intel.intelanalytics.domain.graph.{Graph, GraphTemplate}
+import com.intel.intelanalytics.domain.schema.Schema
+import com.intel.intelanalytics.shared.EventLogging
+import org.joda.time.DateTime
+import spray.json._
+
+import scala.slick.driver.JdbcDriver
+import scala.util.Try
 
 
 trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
   msc: MetaStoreComponent with DbProfileComponent =>
 
-  import profile.profile.simple._
   import com.intel.intelanalytics.domain.DomainJsonProtocol._
+  import profile.profile.simple._
 
   // Joda Support depends on the driver being used.
   val genericJodaSupport = new GenericJodaSupport(profile.profile.asInstanceOf[JdbcDriver])
@@ -182,6 +183,10 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
       users.where(_.id === id).firstOption
     }
 
+    override def lookupByName(name: String)(implicit session: Session): Option[User] ={
+      users.where(_.username === name).firstOption
+    }
+
     override def delete(id: Long)(implicit session: Session): Try[Unit] = Try {
       users.where(_.id === id).mutate(c => c.delete())
     }
@@ -258,6 +263,10 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
       statuses.where(_.id === id).firstOption
     }
 
+    override def lookupByName(name: String)(implicit session: Session): Option[Status] ={
+      statuses.where(_.name === name).firstOption
+    }
+
     def lookupInit()(implicit session: Session): Status = {
       lookup(1).get
     }
@@ -306,8 +315,6 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
 
       def description = column[Option[String]]("description")
 
-      def uri = column[String]("uri")
-
       def schema = column[Schema]("schema")
 
       def statusId = column[Long]("status_id", O.Default(1))
@@ -321,7 +328,8 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
       def modifiedById = column[Option[Long]]("modified_by")
 
       /** projection to/from the database */
-      override def * = (id, name, description, uri, schema, statusId, createdOn, modifiedOn, createdById, modifiedById) <>(DataFrame.tupled, DataFrame.unapply)
+      override def * = (id, name, description, schema, statusId, createdOn, modifiedOn, createdById, modifiedById) <>
+                        (DataFrame.tupled, DataFrame.unapply)
 
       // foreign key relationships
 
@@ -340,7 +348,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
     }
 
     def _insertFrame(frame: DataFrameTemplate)(implicit session: Session) = {
-      val f = DataFrame(0, frame.name, frame.description, "TODO: supply uri", Schema(), 1L, new DateTime(), new DateTime(), None, None)
+      val f = DataFrame(0, frame.name, frame.description, Schema(), 1L, new DateTime(), new DateTime(), None, None)
       framesAutoInc.insert(f)
     }
 
@@ -363,6 +371,9 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
 
     override def lookup(id: Long)(implicit session: Session): Option[DataFrame] = {
       frames.where(_.id === id).firstOption
+    }
+    override def lookupByName(name: String)(implicit session: Session): Option[DataFrame] ={
+      frames.where(_.name === name).firstOption
     }
 
     /** execute DDL to create the underlying table */
@@ -442,6 +453,10 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
 
     override def lookup(id: Long)(implicit session: Session): Option[Command] = {
       commands.where(_.id === id).firstOption
+    }
+
+    override def lookupByName(name: String)(implicit session: Session): Option[Command] ={
+      commands.where(_.name === name).firstOption
     }
 
     /** execute DDL to create the underlying table */
@@ -528,6 +543,9 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
       graphs.where(_.id === id).firstOption
     }
 
+    override def lookupByName(name:String)(implicit session:Session): Option[Graph] = {
+      graphs.where(_.name === name).firstOption
+    }
     /** execute DDL to create the underlying table */
     def createTable(implicit session: Session) = {
       graphs.ddl.create

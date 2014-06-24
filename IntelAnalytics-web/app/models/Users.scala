@@ -23,12 +23,6 @@
 
 package models
 
-import models.database._
-import play.api.Play.current
-import play.api.db.slick.Config.driver.simple._
-
-import play.api.db.slick.DB
-
 /**
  * Singleton object to provide user related services.
  */

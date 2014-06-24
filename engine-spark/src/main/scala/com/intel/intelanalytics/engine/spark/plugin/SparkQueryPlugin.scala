@@ -21,8 +21,8 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.domain.command
+package com.intel.intelanalytics.engine.spark.plugin
 
-//TODO: Add more parameters as appropriate
-case class Als[GraphRef](graph: GraphRef, lambda: Double, max_supersteps: Option[Int],
-                         converge_threshold: Option[Int], feature_dimension: Option[Int])
+class SparkQueryPlugin {
+
+}

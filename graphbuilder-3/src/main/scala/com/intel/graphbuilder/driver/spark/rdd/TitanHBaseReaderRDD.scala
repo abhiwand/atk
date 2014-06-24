@@ -1,15 +1,16 @@
 package com.intel.graphbuilder.driver.spark.rdd
 
 import com.intel.graphbuilder.driver.spark.titan.reader.{TitanRow, TitanRowParser}
-import com.intel.graphbuilder.graph.titan.TitanGraphConnector
 import com.intel.graphbuilder.elements.GraphElement
-import com.thinkaurelius.titan.diskstorage.util.{StaticArrayBuffer, StaticByteBuffer}
-import com.thinkaurelius.titan.diskstorage.keycolumnvalue.StaticBufferEntry
+import com.intel.graphbuilder.graph.titan.TitanGraphConnector
 import com.thinkaurelius.titan.diskstorage.StaticBuffer
-import org.apache.spark.rdd.RDD
-import org.apache.hadoop.hbase.io.ImmutableBytesWritable
+import com.thinkaurelius.titan.diskstorage.keycolumnvalue.StaticBufferEntry
+import com.thinkaurelius.titan.diskstorage.util.{StaticArrayBuffer, StaticByteBuffer}
 import org.apache.hadoop.hbase.client.Result
-import org.apache.spark.{InterruptibleIterator, TaskContext, Partition}
+import org.apache.hadoop.hbase.io.ImmutableBytesWritable
+import org.apache.spark.rdd.RDD
+import org.apache.spark.{InterruptibleIterator, Partition, TaskContext}
+
 import scala.collection.JavaConversions._
 
 /**
@@ -20,7 +21,7 @@ import scala.collection.JavaConversions._
  */
 
 class TitanHBaseReaderRDD(hBaseRDD: RDD[(ImmutableBytesWritable, Result)],
-                          titanConnector: TitanGraphConnector) extends RDD[GraphElement](hBaseRDD) {
+    titanConnector: TitanGraphConnector) extends RDD[GraphElement](hBaseRDD) {
 
   override def getPartitions: Array[Partition] = firstParent[(ImmutableBytesWritable, Result)].partitions
 
@@ -61,8 +62,7 @@ class TitanHBaseReaderRDD(hBaseRDD: RDD[(ImmutableBytesWritable, Result)],
     val titanColumnFamilyMap = result.getFamilyMap(titanColumnFamilyName);
 
     val serializedEntries = titanColumnFamilyMap.entrySet().map(entry =>
-      StaticBufferEntry.of(new StaticArrayBuffer(entry.getKey), new StaticArrayBuffer(entry.getValue))
-    ).toSeq
+      StaticBufferEntry.of(new StaticArrayBuffer(entry.getKey), new StaticArrayBuffer(entry.getValue))).toSeq
 
     new TitanRow(rowKey, serializedEntries)
   }

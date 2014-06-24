@@ -21,57 +21,39 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.graphbuilder.testutils
+package com.intel.intelanalytics
 
-import java.util.Date
-import org.apache.spark.SparkContext
-import scala.concurrent.Lock
+trait ClassLoaderAware {
 
-/**
- * This trait case be mixed into Specifications to create a SparkContext for testing.
- * <p>
- * IMPORTANT! This adds a couple seconds to your unit test!
- * </p>
- * <p>
- * Lock is used because you can only have one local SparkContext running at a time.
- * Other option is to use "parallelExecution in Test := false" but locking seems to be faster.
- * </p>
- */
-trait TestingSparkContext extends MultipleAfter {
-
-  // locking in the constructor is slightly odd but it seems to work well
-  TestingSparkContext.lock.acquire()
-
-  LogUtils.silenceSpark()
-
-  lazy val sc = new SparkContext("local", "test " + new Date())
 
   /**
-   * Clean up after the test is done
+   * Execute a code block using specified class loader
+   * rather than the ClassLoader of the currentThread()
    */
-  override def after: Any = {
-    cleanupSpark()
-    super.after
-  }
-
-  /**
-   * Shutdown spark and release the lock
-   */
-  def cleanupSpark(): Unit = {
+  def withLoader[T](loader: ClassLoader)(expr: => T): T = {
+    val prior = Thread.currentThread().getContextClassLoader
     try {
-      if (sc != null) {
-        sc.stop()
-      }
+      Thread.currentThread().setContextClassLoader(loader)
+      expr
     }
     finally {
-      // To avoid Akka rebinding to the same port, since it doesn't unbind immediately on shutdown
-      System.clearProperty("spark.driver.port")
-
-      TestingSparkContext.lock.release()
+      Thread.currentThread().setContextClassLoader(prior)
     }
   }
-}
 
-object TestingSparkContext {
-  val lock = new Lock()
+
+  /**
+   * Execute a code block using the ClassLoader of 'this'
+   * rather than the ClassLoader of the currentThread()
+   */
+  def withMyClassLoader[T](f: => T): T = {
+    val prior = Thread.currentThread().getContextClassLoader
+    try {
+      val loader = this.getClass.getClassLoader
+      Thread.currentThread setContextClassLoader loader
+      f
+    } finally {
+      Thread.currentThread setContextClassLoader prior
+    }
+  }
 }

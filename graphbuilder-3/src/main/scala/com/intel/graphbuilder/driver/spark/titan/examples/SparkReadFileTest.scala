@@ -1,6 +1,7 @@
 package com.intel.graphbuilder.driver.spark.titan.examples
 
 import java.util.Date
+
 import org.apache.spark.SparkContext
 
 /**

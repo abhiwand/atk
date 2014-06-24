@@ -23,10 +23,12 @@
 
 package com.intel.graphbuilder.driver.spark.titan.examples
 
-import com.tinkerpop.blueprints.Graph
-import scala.collection.JavaConversions._
 import java.io.File
 import java.net.InetAddress
+
+import com.tinkerpop.blueprints.Graph
+
+import scala.collection.JavaConversions._
 
 /**
  * Single location for settings used in examples to make them easier to run on different machines.
@@ -75,8 +77,7 @@ object ExamplesUtils {
       // Maven build not working yet
       System.getProperty("user.dir") + "/graphbuilder-3/target/graphbuilder-3.jar",
       System.getProperty("user.dir") + "/target/graphbuilder-3.jar",
-      System.getProperty("user.dir") + "/graphbuilder-3.jar"
-    )
+      System.getProperty("user.dir") + "/graphbuilder-3.jar")
     possiblePaths.foreach(path => {
       val jar = new File(path)
       if (jar.exists()) {
@@ -100,7 +101,7 @@ object ExamplesUtils {
    * Check for SPARK_HOME in the expected locations
    */
   private def guessSparkHome: String = {
-    val possibleSparkHomes = List("/opt/cloudera/parcels/CDH/lib/spark/", "/usr/lib/spark")
+    val possibleSparkHomes = List("/opt/cloudera/parcels/CDH/lib/spark/", "/usr/lib/spark", "/home/kdatta1/spark-0.9.1-bin-hadoop2")
     possibleSparkHomes.foreach(dir => {
       val path = new File(dir)
       if (path.exists()) {

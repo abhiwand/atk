@@ -23,12 +23,9 @@
 
 package com.intel.intelanalytics.engine
 
-import com.intel.intelanalytics.domain.frame._
+import com.intel.intelanalytics.domain.frame.{DataFrame, DataFrameTemplate, _}
 import com.intel.intelanalytics.domain.schema.DataTypes
 import com.intel.intelanalytics.engine.Rows._
-import com.intel.intelanalytics.security.UserPrincipal
-import com.intel.intelanalytics.domain.frame.DataFrame
-import com.intel.intelanalytics.domain.frame.DataFrameTemplate
 import com.intel.intelanalytics.security.UserPrincipal
 
 trait FrameStorage {
