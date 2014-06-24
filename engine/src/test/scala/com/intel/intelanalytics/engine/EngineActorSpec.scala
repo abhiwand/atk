@@ -7,25 +7,18 @@
 //
 //class EngineActorSpec extends Specification with Mockito {
 //  "EngineActor" should {
-//    val engine = new EngineComponent {
+//    val engine = new EngineComponent
+//    {
 //      override def engine: Engine = mock[Engine]
 //
-//      val id: Identifier = mock[Identifier]
-//      val frame = engine.getFrame(id)
-//      "get a frame" in {
-//        val frame = engine.getFrame(id)
+//      val name: String = mock[String]
+//      val frame = engine.getFrameByName(name)
+//      "get frame by name" in{
+//        val frame = engine.getFrameByName(name)
 //        frame mustNotEqual null
 //      }
-//      "return a data frame" in {
-//        val file: String = mock[String]
-//        def parser: Functional = mock[Functional]
-//        def frame = mock[DataFrame]
-//        val appendedFile = engine.appendFile(frame, file, parser)
-//        appendedFile mustNotEqual null
-//      }
-//      "warn about unknown message" in {
-//        engine.appendFile(mock[DataFrame], mock[String], mock[Functional]) equals null
-//      }
+//
 //    }
+//
 //  }
 //}
