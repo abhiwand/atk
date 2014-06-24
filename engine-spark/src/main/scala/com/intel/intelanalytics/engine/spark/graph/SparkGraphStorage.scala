@@ -21,9 +21,9 @@ import com.intel.intelanalytics.engine.spark.frame.SparkFrameStorage
  * @param frameStorage Provides dataframe services.
  */
 class SparkGraphStorage(context: (UserPrincipal) => Context,
-                        metaStore: MetaStore,
-                        backendStorage: GraphBackendStorage,
-                        frameStorage: SparkFrameStorage)
+  metaStore: MetaStore,
+  backendStorage: GraphBackendStorage,
+  frameStorage: SparkFrameStorage)
     extends GraphStorage with EventLogging {
 
   import spray.json._
@@ -133,4 +133,5 @@ class SparkGraphStorage(context: (UserPrincipal) => Context,
         }
     }
   }
+
 }

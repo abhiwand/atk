@@ -45,6 +45,11 @@
         <!--START BDA dependencies to our modules-->
         <dependency>
             <groupId>com.intel.ia</groupId>
+            <artifactId>testutils</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.intel.ia</groupId>
             <artifactId>ititan-core</artifactId>
         </dependency>
         <dependency>

@@ -23,13 +23,11 @@
 
 package com.intel.spark.mllib.util
 
-import org.apache.spark.SparkConf
-import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
+import org.apache.spark.{SparkConf, SparkContext, SparkException}
 import org.apache.spark.rdd._
+
 import scala.reflect.ClassTag
-import org.apache.spark.SparkException
-import scala.util.Random
 
 /**
  * Class that represents the entry content and label of a data point.
@@ -40,14 +38,14 @@ import scala.util.Random
 case class LabeledLine[T: ClassTag](label: Int, entry: T)
 
 /**
- * Data Splitter for ML algorithms. It randomly labels an input RDD with user 
+ * Data Splitter for ML algorithms. It randomly labels an input RDD with user
  * specified percentage for each category.
  *
  * @param percentages A double array stores percentages.
  * @param seed Random seed for random number generator.
  */
 class MLDataSplitter(percentages: Array[Double], seed: Int) extends Serializable {
-  
+
   // verify percentages
   if (!percentages.forall(p => p > 0)) {
     throw new SparkException("Some percentage numbers are negative or zero.")
@@ -70,9 +68,9 @@ class MLDataSplitter(percentages: Array[Double], seed: Int) extends Serializable
     // generate auxiliary (sample) RDD
     val auxiliaryRDD = new AuxiliaryRDD(inputRDD, seed)
     val labeledRDD = inputRDD.zip(auxiliaryRDD).map { p =>
-          val (line, sampleValue) = p
-          val label = cdf.indexWhere(_ >= sampleValue)
-          LabeledLine(label, line)
+      val (line, sampleValue) = p
+      val label = cdf.indexWhere(_ >= sampleValue)
+      LabeledLine(label, line)
     }
     labeledRDD
   }
@@ -105,17 +103,17 @@ object MLDataSplitter {
 
     // set up spark context
     val conf = new SparkConf()
-                    .setMaster(master)
-                    .setAppName("MLDataSplitter")
-                    .set("spark.executor.memory", memorySize)
-                    .setJars(jarOfClass(this.getClass))
+      .setMaster(master)
+      .setAppName("MLDataSplitter")
+      .set("spark.executor.memory", memorySize)
+      .setJars(jarOfClass(this.getClass))
     val sc = new SparkContext(conf)
 
     // load data for sampling/splitting
-    val inputRDD  = sc.textFile(input)
+    val inputRDD = sc.textFile(input)
     val totalSize = inputRDD.count
     println("Number of lines in input files: %d".format(totalSize))
-    
+
     // split RDD randomly
     val labeledRDD = splitter.randomlyLabelRDD(inputRDD)
 
@@ -125,7 +123,7 @@ object MLDataSplitter {
       val partitionSize = partitionRDD.count
       partitionRDD.saveAsTextFile(output + "/" + partitionName)
       println("Number of lines in partition %s: %d (%.2f%%)".format(partitionName, partitionSize,
-              partitionSize * 100.0 / totalSize))
+        partitionSize * 100.0 / totalSize))
     }
 
     sc.stop()

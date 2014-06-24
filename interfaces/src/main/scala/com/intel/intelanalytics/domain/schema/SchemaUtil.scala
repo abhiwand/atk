@@ -46,10 +46,8 @@ object SchemaUtil {
           }
           leftColumnNames = leftColumnNames ++ List(name)
           (name, r._2)
-        }
-        else
-          r
-      )
+        } else
+          r)
     }
 
     val left = funcAppendLetterForConflictingNames(leftColumns, rightColumns, "L")

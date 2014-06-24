@@ -67,7 +67,7 @@ class EventLoggingSpec extends FlatSpec with Matchers with MockitoSugar {
     val mocked = new EventLogging {
 
       override def error(message: String, messageCode: Int, markers: Seq[String],
-                         substitutions: Seq[String], exception: Throwable) {
+        substitutions: Seq[String], exception: Throwable) {
         message should be("Yikes!")
         messageCode should be(0)
         markers should be(Nil)
@@ -90,7 +90,7 @@ class EventLoggingSpec extends FlatSpec with Matchers with MockitoSugar {
     val mocked = new EventLogging {
 
       override def error(message: String, messageCode: Int, markers: Seq[String],
-                         substitutions: Seq[String], exception: Throwable) {
+        substitutions: Seq[String], exception: Throwable) {
         called = true
       }
 
@@ -108,7 +108,7 @@ class EventLoggingSpec extends FlatSpec with Matchers with MockitoSugar {
     val mocked = new EventLogging {
 
       override def error(message: String, messageCode: Int, markers: Seq[String],
-                         substitutions: Seq[String], exception: Throwable) {
+        substitutions: Seq[String], exception: Throwable) {
         message should be("Yikes!")
         messageCode should be(0)
         markers should be(Nil)
@@ -131,7 +131,7 @@ class EventLoggingSpec extends FlatSpec with Matchers with MockitoSugar {
     val mocked = new EventLogging {
 
       override def error(message: String, messageCode: Int, markers: Seq[String],
-                         substitutions: Seq[String], exception: Throwable) {
+        substitutions: Seq[String], exception: Throwable) {
         message should be(exception.getClass.getName + " (null error message)")
         messageCode should be(0)
         markers should be(Nil)
@@ -154,7 +154,7 @@ class EventLoggingSpec extends FlatSpec with Matchers with MockitoSugar {
     val mocked = new EventLogging {
 
       override def error(message: String, messageCode: Int, markers: Seq[String],
-                         substitutions: Seq[String], exception: Throwable) {
+        substitutions: Seq[String], exception: Throwable) {
         message should be(exception.getClass.getName + " (empty error message)")
         messageCode should be(0)
         markers should be(Nil)
@@ -227,8 +227,7 @@ class EventLoggingSpec extends FlatSpec with Matchers with MockitoSugar {
     val ctx = rawLogger.enter("hello")
     try {
       ctx.getName should be("hello")
-    }
-    finally {
+    } finally {
       ctx.close()
     }
 
@@ -242,7 +241,6 @@ class EventLoggingSpec extends FlatSpec with Matchers with MockitoSugar {
           val event = argument.asInstanceOf[Event]
           f(event)
         }
-      }
-    )
+      })
   }
 }

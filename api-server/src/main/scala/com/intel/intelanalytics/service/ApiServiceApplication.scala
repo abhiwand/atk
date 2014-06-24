@@ -31,17 +31,18 @@ import akka.util.Timeout
 import scala.concurrent.duration._
 import com.intel.event.EventLogger
 import com.intel.event.adapter.SLF4JLogAdapter
-import com.intel.intelanalytics.component.{Locator, Component}
+import com.intel.intelanalytics.component.{Archive, ArchiveName}
 import com.intel.intelanalytics.engine.Engine
 import com.typesafe.config.{Config, ConfigFactory}
 import scala.concurrent.Await
+import scala.reflect.ClassTag
 
 /**
  * API Service Application - a REST application used by client layer to communicate with the Engine.
  *
  * See the 'api_server.sh' to see how the launcher starts the application.
  */
-class ApiServiceApplication extends Component {
+class ApiServiceApplication extends Archive {
 
   // TODO: implement or remove get()
   def get[T](descriptor: String): T = {
@@ -61,14 +62,6 @@ class ApiServiceApplication extends Component {
 
     val apiService = initializeDependencies()
     createActorSystemAndBindToHttp(apiService)
-
-    //cleanup stuff on exit
-    Runtime.getRuntime.addShutdownHook(new Thread() {
-      override def run(): Unit = {
-        com.intel.intelanalytics.component.Boot.getArchive(
-          "engine", "com.intel.intelanalytics.engine.EngineApplication").stop()
-      }
-    })
   }
 
   /**
@@ -78,10 +71,8 @@ class ApiServiceApplication extends Component {
 
     //TODO: later engine will be initialized in a separate JVM
     lazy val engine = com.intel.intelanalytics.component.Boot.getArchive(
-                              "engine", "com.intel.intelanalytics.engine.EngineApplication")
-                        .asInstanceOf[Component with Locator]
+                              ArchiveName("engine", "com.intel.intelanalytics.engine.EngineApplication"))
                         .get[Engine]("engine")
-                        .getOrElse(throw new Exception("Could not locate engine"))
 
     //make sure engine is initialized
     Await.ready(engine.getCommands(0, 1), 30 seconds)
@@ -126,4 +117,16 @@ class ApiServiceApplication extends Component {
    * default placement.
    */
   override def defaultLocation: String = "api"
+
+  /**
+   * Obtain instances of a given class. The keys are established purely
+   * by convention.
+   *
+   * @param descriptor the string key of the desired class instance.
+   * @tparam T the type of the requested instances
+   * @return the requested instances, or the empty sequence if no such instances could be produced.
+   */
+  override def getAll[T: ClassTag](descriptor: String): Seq[T] = {
+    throw new Exception("API server provides no components at this time")
+  }
 }

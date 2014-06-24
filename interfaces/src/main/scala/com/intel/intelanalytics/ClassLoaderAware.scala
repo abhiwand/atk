@@ -52,8 +52,7 @@ trait ClassLoaderAware {
       val loader = this.getClass.getClassLoader
       Thread.currentThread setContextClassLoader loader
       f
-    }
-    finally {
+    } finally {
       Thread.currentThread setContextClassLoader prior
     }
   }

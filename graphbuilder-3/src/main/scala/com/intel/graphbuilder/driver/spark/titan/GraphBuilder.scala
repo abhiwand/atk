@@ -23,10 +23,11 @@
 
 package com.intel.graphbuilder.driver.spark.titan
 
+import java.text.NumberFormat
+
 import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRDDImplicits._
 import com.intel.graphbuilder.graph.titan.TitanGraphConnector
 import com.intel.graphbuilder.parser.rule._
-import java.text.NumberFormat
 import org.apache.spark.rdd.RDD
 import org.apache.spark.storage.StorageLevel
 
@@ -113,8 +114,7 @@ class GraphBuilder(config: GraphBuilderConfig) extends Serializable {
       println("starting write of edges")
       mergedEdges.write(titanConnector, gbIdToPhysicalIdMap, config.append)
 
-    }
-    else {
+    } else {
       println("join edges with physical ids")
       val edgesWithPhysicalIds = mergedEdges.joinWithPhysicalIds(idMap)
 

@@ -24,7 +24,7 @@
 package com.intel.graphbuilder.driver.spark.titan
 
 import com.intel.graphbuilder.parser.InputSchema
-import com.intel.graphbuilder.parser.rule.{ EdgeRule, VertexRule }
+import com.intel.graphbuilder.parser.rule.{EdgeRule, VertexRule}
 import com.intel.graphbuilder.util.SerializableBaseConfiguration
 
 /**
@@ -46,13 +46,13 @@ import com.intel.graphbuilder.util.SerializableBaseConfiguration
  *                           bottleneck while writing edges). 23GB Netflix data produced about 180MB of Vertex Ids.
  */
 case class GraphBuilderConfig(inputSchema: InputSchema,
-                              vertexRules: List[VertexRule],
-                              edgeRules: List[EdgeRule],
-                              titanConfig: SerializableBaseConfiguration,
-                              biDirectional: Boolean = false,
-                              append: Boolean = false,
-                              retainDanglingEdges: Boolean = false,
-                              inferSchema: Boolean = true,
-                              broadcastVertexIds: Boolean = false) extends Serializable {
+    vertexRules: List[VertexRule],
+    edgeRules: List[EdgeRule],
+    titanConfig: SerializableBaseConfiguration,
+    biDirectional: Boolean = false,
+    append: Boolean = false,
+    retainDanglingEdges: Boolean = false,
+    inferSchema: Boolean = true,
+    broadcastVertexIds: Boolean = false) extends Serializable {
 
 }

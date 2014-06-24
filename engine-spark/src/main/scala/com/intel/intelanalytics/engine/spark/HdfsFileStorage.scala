@@ -23,7 +23,7 @@
 
 package com.intel.intelanalytics.engine.spark
 
-import java.io.{InputStream, OutputStream}
+import java.io.{IOException, InputStream, OutputStream}
 import java.nio.file.{Path, Paths}
 
 import com.intel.intelanalytics.engine.{Directory, Entry, File, FileStorage}
@@ -56,19 +56,18 @@ class HdfsFileStorage(fsRoot: String) extends FileStorage with EventLogging {
     val path: HPath = new HPath(fsRoot + sink.path.toString)
     if (append) {
       fs.append(path)
-    }
-    else {
+    } else {
       fs.create(path, true)
     }
   }
 
-
   override def list(source: Directory): Seq[Entry] = withContext("file.list") {
     fs.listStatus(new HPath(fsRoot + source.path.toString))
       .map {
-      case s if s.isDir => Directory(path = Paths.get(s.getPath.toString))
-      case f => File(path = Paths.get(f.getPath.toString), size = f.getLen)
-    }
+        case s if s.isDirectory => Directory(path = Paths.get(s.getPath.toString))
+        case f if f.isDirectory => File(path = Paths.get(f.getPath.toString), size = f.getLen)
+        case x => throw new IOException("Unknown object type in filesystem at " + x.getPath)
+      }
   }
 
   override def read(source: File): InputStream = withContext("file.read") {
@@ -90,14 +89,12 @@ class HdfsFileStorage(fsRoot: String) extends FileStorage with EventLogging {
     val exists = fs.exists(hPath)
     if (!exists) {
       None
-    }
-    else {
-      val status = fs.getFileStatus(hPath)
-      if (status == null || status.isDir) {
+    } else {
+      val status = fs.getStatus(hPath)
+      if (status == null || fs.isDirectory(hPath)) {
         Some(Directory(path))
-      }
-      else {
-        Some(File(path, status.getLen))
+      } else {
+        Some(File(path, status.getUsed))
       }
     }
   }
