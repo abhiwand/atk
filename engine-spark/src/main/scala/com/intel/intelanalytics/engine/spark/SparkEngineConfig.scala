@@ -42,6 +42,9 @@ object SparkEngineConfig extends SharedConfig {
   /** URL for spark master, e.g. "spark://hostname:7077", "local[4]", etc */
   val sparkMaster: String = config.getString("intel.analytics.spark.master")
 
+  /** Default number for partitioning data */
+  val sparkDefaultPartitions: Int = config.getInt("intel.analytics.spark.defaultPartitions")
+
   val defaultTimeout: FiniteDuration = config.getInt("intel.analytics.engine.defaultTimeout").seconds
 
   val fsRoot: String = config.getString("intel.analytics.fs.root")

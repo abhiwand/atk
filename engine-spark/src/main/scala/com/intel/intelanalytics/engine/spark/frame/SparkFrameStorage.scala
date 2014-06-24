@@ -32,7 +32,7 @@ import com.intel.intelanalytics.domain.frame.{Column, DataFrame, DataFrameTempla
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 import com.intel.intelanalytics.domain.schema.{DataTypes, Schema}
 import com.intel.intelanalytics.engine.spark.context.Context
-import com.intel.intelanalytics.engine.spark.{HdfsFileStorage, SparkOps}
+import com.intel.intelanalytics.engine.spark.{SparkEngineConfig, HdfsFileStorage, SparkOps}
 import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.shared.EventLogging
 import org.apache.spark.SparkContext
@@ -161,7 +161,7 @@ class SparkFrameStorage(context: UserPrincipal => Context, fsRoot: String, files
     val absPath = fsRoot + path
     files.getMetaData(Paths.get(path)) match {
       case None => ctx.parallelize(Nil)
-      case _ => ctx.objectFile[Row](absPath)
+      case _ => ctx.objectFile[Row](absPath, SparkEngineConfig.sparkDefaultPartitions)
     }
   }
 

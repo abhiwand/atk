@@ -84,7 +84,7 @@ private[spark] object SparkOps extends Serializable {
     arguments: LoadLines[JsObject, Long],
     parserFunction: String => Array[String],
     converter: Array[String] => Array[Any]) = {
-    ctx.textFile(fileName)
+    ctx.textFile(fileName, SparkEngineConfig.sparkDefaultPartitions)
       .mapPartitionsWithIndex {
         case (partition, lines) => {
           if (partition == 0) {
