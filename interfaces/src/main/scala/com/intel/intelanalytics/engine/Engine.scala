@@ -84,7 +84,7 @@ trait Engine {
   def join(argument: FrameJoin)(implicit user: UserPrincipal): Execution
   def flattenColumn(argument: FlattenColumn[Long])(implicit user: UserPrincipal): Execution
 
-  def binColumn(arguments: BinColumn[Long])(implicit user: UserPrincipal): (Command, Future[Command])
+  def binColumn(arguments: BinColumn[Long])(implicit user: UserPrincipal): Execution
 
   def groupBy(arguments: FrameGroupByColumn[JsObject, Long])(implicit user: UserPrincipal): Execution
 

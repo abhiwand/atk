@@ -343,52 +343,41 @@ class SparkEngine(sparkContextManager: SparkContextManager,
    * @param arguments input specification for column binning
    * @param user current user
    */
-  override def binColumn(arguments: BinColumn[Long])(implicit user: UserPrincipal): (Command, Future[Command]) =
-    withContext("se.binColumn") {
-      val command: Command = commands.create(new CommandTemplate("binColumn", Some(arguments.toJson.asJsObject)))
-      val result: Future[Command] = future {
-        withMyClassLoader {
-          withContext("se.binColumn.future") {
-            val frameId: Long = arguments.frame
-            val realFrame = frames.lookup(frameId).getOrElse(
-              throw new IllegalArgumentException(s"No such data frame: ${frameId}"))
+  override def binColumn(arguments: BinColumn[Long])(implicit user: UserPrincipal): Execution =
+    commands.execute(binColumnCommand, arguments, user, implicitly[ExecutionContext])
 
-            withCommand(command) {
-              val ctx = sparkContextManager.context(user).sparkContext
+  val binColumnCommand = commands.registerCommand("dataframe/binColumn", binColumnSimple)
+  def binColumnSimple(arguments: BinColumn[Long], user: UserPrincipal) = {
+    implicit val u = user
+    val frameId: Long = arguments.frame
+    val realFrame = expectFrame(frameId)
 
-              val rdd = frames.getFrameRdd(ctx, frameId)
+    val ctx = sparkContextManager.context(user).sparkContext
 
-              val columnIndex = realFrame.schema.columnIndex(arguments.columnName)
+    val rdd = frames.getFrameRdd(ctx, frameId)
 
-              if (realFrame.schema.columns.indexWhere(columnTuple => columnTuple._1 == arguments.binColumnName) >= 0)
-                throw new IllegalArgumentException(s"Duplicate column name: ${arguments.binColumnName}")
+    val columnIndex = realFrame.schema.columnIndex(arguments.columnName)
 
-              val newFrame = Await.result(create(DataFrameTemplate(arguments.name, None)), SparkEngineConfig.defaultTimeout)
+    if (realFrame.schema.columns.indexWhere(columnTuple => columnTuple._1 == arguments.binColumnName) >= 0)
+      throw new IllegalArgumentException(s"Duplicate column name: ${arguments.binColumnName}")
 
-              arguments.binType match {
-                case "equalwidth" => {
-                  val binnedRdd = SparkOps.binEqualWidth(columnIndex, arguments.numBins, rdd)
-                  binnedRdd.saveAsObjectFile(fsRoot + frames.getFrameDataFile(newFrame.id))
-                }
-                case "equaldepth" => {
-                  val binnedRdd = SparkOps.binEqualDepth(columnIndex, arguments.numBins, rdd)
-                  binnedRdd.saveAsObjectFile(fsRoot + frames.getFrameDataFile(newFrame.id))
-                }
-                case _ => throw new IllegalArgumentException(s"Invalid binning type: ${arguments.binType.toString()}")
-              }
+    val newFrame = Await.result(create(DataFrameTemplate(arguments.name, None)), SparkEngineConfig.defaultTimeout)
 
-              val allColumns = realFrame.schema.columns :+ (arguments.binColumnName, DataTypes.int32)
-              frames.updateSchema(newFrame, allColumns)
-              newFrame.copy(schema = Schema(allColumns)).toJson.asJsObject
-            }
-          }
-        }
-        commands.lookup(command.id).get
+    arguments.binType match {
+      case "equalwidth" => {
+        val binnedRdd = SparkOps.binEqualWidth(columnIndex, arguments.numBins, rdd)
+        binnedRdd.saveAsObjectFile(fsRoot + frames.getFrameDataFile(newFrame.id))
       }
+      case "equaldepth" => {
+        val binnedRdd = SparkOps.binEqualDepth(columnIndex, arguments.numBins, rdd)
+        binnedRdd.saveAsObjectFile(fsRoot + frames.getFrameDataFile(newFrame.id))
+      }
+      case _ => throw new IllegalArgumentException(s"Invalid binning type: ${arguments.binType.toString()}")
+    }
 
-    flattenedRDD.saveAsObjectFile(fsRoot + frames.getFrameDataFile(newFrame.id))
-    newFrame.copy(schema = realFrame.schema)
-
+    val allColumns = realFrame.schema.columns :+ (arguments.binColumnName, DataTypes.int32)
+    frames.updateSchema(newFrame, allColumns)
+    newFrame.copy(schema = Schema(allColumns))
   }
 
 
