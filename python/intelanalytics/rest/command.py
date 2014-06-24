@@ -27,9 +27,29 @@ Command objects
 import time
 import json
 import logging
+import sys
 logger = logging.getLogger(__name__)
 
 from intelanalytics.rest.connection import http
+
+def print_progress(progress, make_new_line):
+    if not progress:
+        sys.stdout.write("\rinitializing...")
+        sys.stdout.flush()
+        return
+
+    progress_summary = []
+    for p in progress:
+        num_star = int(p / 2)
+        num_dot = 50 - num_star
+        number = "%3.2f" % p
+        progress_summary.append("\r%6s%% [%s%s]" % (number, '=' * num_star, '.' * num_dot))
+
+    if make_new_line:
+        print progress_summary[-2]
+
+    sys.stdout.write(progress_summary[-1])
+    sys.stdout.flush()
 
 
 class CommandRequest(object):
@@ -90,6 +110,13 @@ class CommandInfo(object):
         except KeyError:
             return False
 
+    @property
+    def progress(self):
+        try:
+            return self._payload['progress']
+        except KeyError:
+            return False
+
     def update(self, payload):
         if self._payload and self.id_number != payload['id']:
             msg = "Invalid payload, command ID mismatch %d when expecting %d"\
@@ -102,7 +129,7 @@ class CommandInfo(object):
 class Polling(object):
 
     @staticmethod
-    def poll(uri, predicate=None, interval_secs=0.5, backoff_factor=2, timeout_secs=10):
+    def poll(uri, predicate=None, interval_secs=1, backoff_factor=1.05, timeout_secs=5000):
         """
         Issues GET methods on the given command uri until the response
         command_info cause the predicate to evalute True.  Exponential retry
@@ -129,10 +156,21 @@ class Polling(object):
         command_info = Polling._get_command_info(uri)
         if predicate(command_info):
             return command_info
+
+        job_count = 1
+        last_progress = []
         while True:
             time.sleep(interval_secs)
             wait_time = time.time() - start_time
             command_info = Polling._get_command_info(command_info.uri)
+            progress = command_info.progress
+
+            new_job_progress_exists = job_count < len(progress)
+            print_progress(progress, new_job_progress_exists)
+
+            if(new_job_progress_exists):
+                job_count = len(progress)
+
             if predicate(command_info):
                 return command_info
             if wait_time > timeout_secs:
@@ -140,7 +178,14 @@ class Polling(object):
                       % (str(command_info), wait_time)
                 logger.error(msg)
                 raise RuntimeError(msg)
-            interval_secs *= backoff_factor
+
+
+            if last_progress == progress:
+                interval_secs *= backoff_factor
+                if interval_secs > 30:
+                    interval_secs = 30
+
+            last_progress = progress
 
     @staticmethod
     def _get_command_info(uri):
@@ -181,6 +226,8 @@ class Executor(object):
         try:
             if not command_info.complete:
                 command_info = Polling.poll(command_info.uri)
+                # Polling.print_progress(command_info.progress)
+
         except KeyboardInterrupt:
             self.cancel(command_info.id_number)
 

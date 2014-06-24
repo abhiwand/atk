@@ -26,6 +26,7 @@ package com.intel.intelanalytics.engine.spark
 import com.intel.graphbuilder.util.SerializableBaseConfiguration
 import scala.collection.JavaConverters._
 import com.intel.intelanalytics.shared.SharedConfig
+
 import scala.concurrent.duration._
 
 /**
@@ -34,6 +35,17 @@ import scala.concurrent.duration._
  * This is our wrapper for Typesafe config.
  */
 object SparkEngineConfig extends SharedConfig {
+
+  // val's are not lazy because failing early is better
+
+  /** Spark home directory, e.g. "/opt/cloudera/parcels/CDH/lib/spark", "/usr/lib/spark", etc. */
+  val sparkHome: String = config.getString("intel.analytics.spark.home")
+
+  /** URL for spark master, e.g. "spark://hostname:7077", "local[4]", etc */
+  val sparkMaster: String = config.getString("intel.analytics.spark.master")
+
+  /** Default number for partitioning data */
+  val sparkDefaultPartitions: Int = config.getInt("intel.analytics.engine.spark.defaultPartitions")
 
   val defaultTimeout: FiniteDuration = config.getInt("intel.analytics.engine.defaultTimeout").seconds
 
@@ -64,13 +76,6 @@ object SparkEngineConfig extends SharedConfig {
     }
     titanConfiguration
   }
-
-  // TODO: these settings should move under sparkConfProperties below
-  /** Spark home directory, e.g. "/opt/cloudera/parcels/CDH/lib/spark", "/usr/lib/spark", etc. */
-  val sparkHome: String = config.getString("intel.analytics.spark.home")
-
-  /** URL for spark master, e.g. "spark://hostname:7077", "local[4]", etc */
-  val sparkMaster: String = config.getString("intel.analytics.spark.master")
 
   /**
    * Configuration properties that will be supplied to SparkConf()

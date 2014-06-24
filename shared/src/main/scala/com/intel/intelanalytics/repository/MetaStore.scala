@@ -42,17 +42,18 @@ trait MetaStore {
   /** Repository for CRUD on 'frame' table */
   def frameRepo: Repository[Session, DataFrameTemplate, DataFrame]
 
-  /** Repository for CRUD on 'command' table */
 
+  /** Repository for CRUD on 'graph' table */
   def graphRepo: Repository[Session, GraphTemplate, Graph]
 
-  def commandRepo: Repository[Session, CommandTemplate, Command]
+  /** Repository for CRUD on 'command' table */
+  def commandRepo: CommandRepository[Session]
 
   /** Repository for CRUD on 'user' table */
   def userRepo: Repository[Session, UserTemplate, User] with Queryable[Session, User]
 
   /** Create the underlying tables */
-  def createAllTables(): Unit
+  def initializeSchema(): Unit
 
   /** Delete ALL of the underlying tables - useful for unit tests only */
   private[repository] def dropAllTables(): Unit

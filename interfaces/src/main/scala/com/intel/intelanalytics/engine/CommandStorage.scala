@@ -29,12 +29,16 @@ import spray.json.JsObject
 
 trait CommandStorage {
   def lookup(id: Long): Option[Command]
-
   def create(frame: CommandTemplate): Command
-
   def scan(offset: Int, count: Int): Seq[Command]
-
   def start(id: Long): Unit
   def complete(id: Long, result: Try[JsObject]): Unit
+
+  /**
+   * update command info regarding progress of jobs initiated by this command
+   * @param id command id
+   * @param progress progress of jobs initiated by this command
+   */
+  def updateProgress(id: Long, progress: List[Float]): Unit
 }
 

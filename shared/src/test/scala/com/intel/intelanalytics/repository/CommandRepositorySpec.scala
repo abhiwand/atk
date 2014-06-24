@@ -49,4 +49,21 @@ class CommandRepositorySpec extends SlickMetaStoreH2Testing with Matchers {
         command2.get.modifiedOn should not be null
     }
   }
+
+  "CommandRepository" should "update single column for single row" in {
+    val commandRepo = slickMetaStoreComponent.metaStore.commandRepo
+
+    slickMetaStoreComponent.metaStore.withSession("command-test") {
+      implicit session =>
+
+        val name = "my-name"
+
+        // create a command
+        val command = commandRepo.insert(new CommandTemplate(name, None))
+        commandRepo.updateProgress(command.get.id, List(100))
+        val command2 = commandRepo.lookup(command.get.id)
+        command2.get.progress shouldBe List(100)
+    }
+  }
+
 }
