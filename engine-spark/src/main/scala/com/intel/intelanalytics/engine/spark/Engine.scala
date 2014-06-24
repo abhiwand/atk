@@ -624,6 +624,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     val duplicatesRemoved: RDD[Array[Any]] = SparkOps.removeDuplicatesByKey(pairRdd)
 
     duplicatesRemoved.saveAsObjectFile(fsRoot + frames.getFrameDataFile(frameId))
+    realFrame
   }
 
   /**
