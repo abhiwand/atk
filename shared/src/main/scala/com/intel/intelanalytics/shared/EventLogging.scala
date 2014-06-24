@@ -23,14 +23,22 @@
 
 package com.intel.intelanalytics.shared
 
-import com.intel.event.{ EventLogger, Severity, EventContext }
+import com.intel.event.adapter.SLF4JLogAdapter
+import com.intel.event.{EventLog, EventLogger, Severity, EventContext}
 import scala.util.control.NonFatal
 
 /**
  * Mixin for logging with the Event library.
  */
 trait EventLogging {
-
+  val setEventLog: EventLog = {
+    if (EventLogger.getImplementation() == null) {
+      println("START shared EventLogging set slf4j")
+      EventLogger.setImplementation(new SLF4JLogAdapter())
+      println("END shared EventLogging set slf4j")
+    }
+    EventLogger.getImplementation
+  }
   /**
    * Starts a new event context. Usually this method is not the one you want,
    * more likely you're looking for [[withContext(String)]], which will manage
