@@ -34,7 +34,7 @@ import com.typesafe.config.ConfigFactory
  */
 trait SharedConfig {
 
-  val config = ConfigFactory.load().withFallback(ConfigFactory.load("engine.conf"))
+  val config = ConfigFactory.load()
 
   // not lazy because failing early is better
   val metaStoreConnectionUrl: String = nonEmptyString("intel.analytics.metastore.connection.url")
