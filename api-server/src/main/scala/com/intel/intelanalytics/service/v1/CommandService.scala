@@ -368,7 +368,7 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
       xform.arguments.get.convertTo[BinColumn[Long]]
     }
 
-    validate(test.isSuccess, "Failed to parse file load descriptor: " + getErrorMessage(test)) {
+    validate(test.isSuccess, "Failed to parse bin column descriptor: " + getErrorMessage(test)) {
       val args = test.get
       val result = engine.binColumn(args)
       val command: Command = result._1
