@@ -180,27 +180,15 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
       & validate(idOpt.isDefined, "Destination is not a valid data frame URL")) {
       val args = test.get
       val id = idOpt.get
-      val exec = engine.load(LoadLines[JsObject, Long](args.source, id,
-        skipRows = args.skipRows, overwrite = args.overwrite, lineParser = args.lineParser, schema = args.schema))
+      val exec = engine.load(Load[Long](id, args.source.source_type match {
+        case "dataframe" => {
+          val dataID = UrlParser.getFrameId(args.source.uri)
+          validate(dataID.isDefined, "Source is not a valid data frame URL")
+          LoadSource(args.source.source_type, dataID.get.toString, args.source.parser)
+        }
+        case _ => args.source
+      }))
       complete(decorate(uri + "/" + exec.start.id, exec.start))
-      //below is my data
-      onComplete(
-        for {
-          frame <- engine.getFrame(id)
-           //if the source is a dataframe we only care about the id. Get the ID here so that we
-           //can utilize UrlParser without creating a circular dependency between api-server and engine
-          (c, f) = engine.load(Load[Long](id,args.source.source_type match {
-            case "dataframe" => {
-              val dataID = UrlParser.getFrameId(args.source.uri)
-              validate(dataID.isDefined, "Source is not a valid data frame URL")
-              LoadSource(args.source.source_type, dataID.get.toString, args.source.parser)
-            }
-            case _ => args.source
-          }))
-        } yield c) {
-        case Success(c) => complete(decorate(uri + "/" + c.id, c))
-        case Failure(ex) => throw ex
-      }
     }
   }
 
