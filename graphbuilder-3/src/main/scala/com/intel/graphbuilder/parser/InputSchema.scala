@@ -64,7 +64,7 @@ case class InputSchema(columns: Seq[ColumnDef]) extends Serializable {
    * @param columnType the dataType shared by all columns (needed to infer the schema from the parsing rules)
    */
   def this(columnNames: Seq[String], columnType: Class[_]) {
-    this(columnNames.map(columnName ⇒ new ColumnDef(columnName, columnType)))
+    this(columnNames.map(columnName => new ColumnDef(columnName, columnType)))
   }
 
   @transient

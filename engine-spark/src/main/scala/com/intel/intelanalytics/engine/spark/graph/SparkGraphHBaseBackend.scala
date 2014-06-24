@@ -8,7 +8,7 @@ import com.intel.intelanalytics.engine.GraphBackendStorage
 /**
  * Implements graph backend storage in HBase for Spark.
  */
-class SparkGraphHBaseBackend(hbaseAdmin: ⇒ HBaseAdmin) extends GraphBackendStorage with EventLogging {
+class SparkGraphHBaseBackend(hbaseAdmin: => HBaseAdmin) extends GraphBackendStorage with EventLogging {
 
   /**
    * Deletes a graph's underlying table from HBase.

@@ -225,12 +225,12 @@ class BigFrame(object):
             raise StopIteration
 
     def __iter__(self):
-        return BigFrame._FrameIter(self)
+            return BigFrame._FrameIter(self)
 
     def __eq__(self, other):
-        if not isinstance(other, BigFrame):
-            return False
-        return self._id == other._id
+            if not isinstance(other, BigFrame):
+                return False
+            return self._id == other._id
 
     def __hash__(self):
         return hash(self._id)
@@ -429,7 +429,7 @@ class BigFrame(object):
         Parameters
         ----------
         predicate : function
-            function or lambda which takes a row argument and evaluates to a boolean value
+        function or lambda which takes a row argument and evaluates to a boolean value
 
         Examples
         --------

@@ -38,11 +38,11 @@ case class TitanReader(sparkContext: SparkContext, titanConnector: TitanGraphCon
     val storageBackend = titanConfig.getString(TITAN_STORAGE_BACKEND)
 
     val titanReaderRDD = storageBackend match {
-      case "hbase" ⇒ {
+      case "hbase" => {
         val titanHBaseReader = new TitanHBaseReader(sparkContext, titanConnector)
         titanHBaseReader.read()
       }
-      case _ ⇒ throw new RuntimeException {
+      case _ => throw new RuntimeException {
         "Unsupported storage backend for Titan reader: " + storageBackend
       }
     }

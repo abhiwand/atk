@@ -44,7 +44,7 @@ object DirectoryUtils {
     try {
       convertFileToDirectory(File.createTempFile(prefix, "-tmp"))
     } catch {
-      case e: Exception ⇒
+      case e: Exception =>
         throw new RuntimeException("Could NOT initialize temp directory, prefix: " + prefix, e)
     }
   }
