@@ -132,7 +132,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
     override lazy val frameRepo: Repository[Session, DataFrameTemplate, DataFrame] = new SlickFrameRepository
 
     /** Repository for CRUD on 'command' table */
-    override lazy val commandRepo: Repository[Session, CommandTemplate, Command] = new SlickCommandRepository
+    override lazy val commandRepo: CommandRepository[Session] = new SlickCommandRepository
 
     /** Repository for CRUD on 'user' table */
     override lazy val userRepo: Repository[Session, UserTemplate, User] with Queryable[Session, User] = new SlickUserRepository
@@ -186,6 +186,10 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
 
     override def lookup(id: Long)(implicit session: Session): Option[User] = {
       users.where(_.id === id).firstOption
+    }
+
+    override def lookupByName(name: String)(implicit session: Session): Option[User] ={
+      users.where(_.username === name).firstOption
     }
 
     override def delete(id: Long)(implicit session: Session): Try[Unit] = Try {
@@ -264,6 +268,10 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
       statuses.where(_.id === id).firstOption
     }
 
+    override def lookupByName(name: String)(implicit session: Session): Option[Status] ={
+      statuses.where(_.name === name).firstOption
+    }
+
     def lookupInit()(implicit session: Session): Status = {
       lookup(1).get
     }
@@ -312,8 +320,6 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
 
       def description = column[Option[String]]("description")
 
-      def uri = column[String]("uri")
-
       def schema = column[Schema]("schema")
 
       def statusId = column[Long]("status_id", O.Default(1))
@@ -327,7 +333,8 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
       def modifiedById = column[Option[Long]]("modified_by")
 
       /** projection to/from the database */
-      override def * = (id, name, description, uri, schema, statusId, createdOn, modifiedOn, createdById, modifiedById) <>(DataFrame.tupled, DataFrame.unapply)
+      override def * = (id, name, description, schema, statusId, createdOn, modifiedOn, createdById, modifiedById) <>
+                        (DataFrame.tupled, DataFrame.unapply)
 
       // foreign key relationships
 
@@ -346,7 +353,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
     }
 
     def _insertFrame(frame: DataFrameTemplate)(implicit session: Session) = {
-      val f = DataFrame(0, frame.name, frame.description, "TODO: supply uri", Schema(), 1L, new DateTime(), new DateTime(), None, None)
+      val f = DataFrame(0, frame.name, frame.description, Schema(), 1L, new DateTime(), new DateTime(), None, None)
       framesAutoInc.insert(f)
     }
 
@@ -370,6 +377,9 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
     override def lookup(id: Long)(implicit session: Session): Option[DataFrame] = {
       frames.where(_.id === id).firstOption
     }
+    override def lookupByName(name: String)(implicit session: Session): Option[DataFrame] ={
+      frames.where(_.name === name).firstOption
+    }
 
     /** execute DDL to create the underlying table */
     def createTable(implicit session: Session) = {
@@ -388,7 +398,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
    *
    * Provides methods for modifying and querying the command table.
    */
-  class SlickCommandRepository extends Repository[Session, CommandTemplate, Command]
+  class SlickCommandRepository extends CommandRepository[Session]
   with EventLogging {
     this: Repository[Session, CommandTemplate, Command] =>
 
