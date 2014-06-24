@@ -113,11 +113,16 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     }
   }
 
-  //Merge Changes
   def load(arguments: Load[Long])(implicit user: UserPrincipal): Execution =
     commands.execute(loadCommand, arguments, user, implicitly[ExecutionContext])
 
   val loadCommand = commands.registerCommand(name = "dataframe/load", loadSimple)
+
+  /**
+   * Load data from a LoadSource object to an existing destination described in the Load object
+   * @param arguments Load command object
+   * @param user current user
+   */
   def loadSimple(arguments: Load[Long], user: UserPrincipal) = {
     val frameId = arguments.destination
     val realFrame = expectFrame(frameId)
@@ -168,55 +173,6 @@ class SparkEngine(sparkContextManager: SparkContextManager,
       case _ => ???
     }
   }
-
-//
-//  /**
-//   * Load data from a LoadSource object to an existing destination described in the Load object
-//   * @param arguments Load command object
-//   * @param user current user
-//   */
-//  def load(arguments: Load[Long])(implicit user: UserPrincipal): (Command, Future[Command]) =
-//    withContext("se.load") {
-//      require(arguments != null, "arguments are required")
-//      require(arguments.source.source_type != "file" || arguments.source.parser != None, "We need a parser to load files")
-//      import DomainJsonProtocol._
-//      val command: Command = commands.create(new CommandTemplate("load", Some(arguments.toJson.asJsObject)))
-//      val result: Future[Command] = future {
-//        withMyClassLoader {
-//          withContext("se.load.future") {
-//            withCommand(command) {
-//              //get destination
-//              val realFrame = frames.lookup(arguments.destination).getOrElse(
-//                throw new IllegalArgumentException(s"No such data frame: ${arguments.destination}"))
-//
-//              //get Spark Context
-//              val ctx = sparkContextManager.context(user)
-//              //get Data
-//              val (schema, newData) = getLoadData(ctx.sparkContext, arguments.source)
-//              val rdd = frames.getFrameRdd(ctx.sparkContext, realFrame.id)
-//
-//              val (mergedSchema, updatedRdd) = if(realFrame.schema == schema)
-//                (realFrame.schema, rdd ++ newData)
-//              else{
-//                val mergedSchema = SchemaUtil.mergeSchema(realFrame.schema, schema)
-//                val leftData = rdd.map(SchemaUtil.convertSchema(realFrame.schema, mergedSchema,_))
-//                val rightData = newData.map(SchemaUtil.convertSchema(schema, mergedSchema,_))
-//
-//                val updatedRdd = leftData ++ rightData
-//                (mergedSchema,updatedRdd)
-//              }
-//              //save data
-//              val location = fsRoot + frames.getFrameDataFile(realFrame.id)
-//              updatedRdd.saveAsObjectFile(location)
-//              val frame = frames.updateSchema(realFrame, mergedSchema.columns)
-//              frame.toJson.asJsObject
-//            }
-//            commands.lookup(command.id).get
-//          }
-//        }
-//      }
-//      (command, result)
-//    }
 
 
   def create(frame: DataFrameTemplate)(implicit user: UserPrincipal): Future[DataFrame] =
