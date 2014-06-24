@@ -23,18 +23,6 @@
 
 package controllers
 
-import play.api.mvc._
-import play.api.libs.json._
-import services.authorize.{ Providers, Authorize }
-import models._
-import models.database._
-import controllers.Session._
-import models.Registrations
-import models.RegistrationFormMapping
-import play.api.mvc.Cookie
-import scala.Some
-import models.database.UserRow
-
 /**
  * Singleton object to handle register request and generate response accordingly.
  */

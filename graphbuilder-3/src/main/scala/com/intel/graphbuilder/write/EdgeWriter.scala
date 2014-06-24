@@ -38,8 +38,7 @@ class EdgeWriter(edgeDAO: EdgeDAO, append: Boolean) extends Serializable {
   def write(edge: Edge): blueprints.Edge = {
     if (append) {
       edgeDAO.updateOrCreate(edge)
-    }
-    else {
+    } else {
       edgeDAO.create(edge)
     }
   }

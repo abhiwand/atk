@@ -41,8 +41,8 @@ class GraphElementRDDFunctions(self: RDD[GraphElement]) {
    */
   def filterEdges(): RDD[Edge] = {
     self.flatMap {
-      case e: Edge => Some(e)
-      case _ => None
+      case e: Edge ⇒ Some(e)
+      case _ ⇒ None
     }
   }
 
@@ -51,8 +51,8 @@ class GraphElementRDDFunctions(self: RDD[GraphElement]) {
    */
   def filterVertices(): RDD[Vertex] = {
     self.flatMap {
-      case v: Vertex => Some(v)
-      case _ => None
+      case v: Vertex ⇒ Some(v)
+      case _ ⇒ None
     }
   }
 }

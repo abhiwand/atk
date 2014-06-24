@@ -23,9 +23,7 @@
 
 package models.database
 
-import play.api.db.slick._
-import java.sql.{ ResultSet, Types }
-import play.api.Play.current
+import java.sql.{ResultSet, Types}
 
 object DBLoginCommand extends LoginCommand {
 

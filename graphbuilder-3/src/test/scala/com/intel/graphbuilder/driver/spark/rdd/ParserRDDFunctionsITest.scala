@@ -23,14 +23,14 @@
 
 package com.intel.graphbuilder.driver.spark.rdd
 
-import com.intel.graphbuilder.testutils.TestingSparkContext
-import com.intel.graphbuilder.parser.{ CombinedParser, InputSchema, ColumnDef }
-import com.intel.graphbuilder.parser.rule.{ EdgeRuleParser, VertexRuleParser, EdgeRule, VertexRule }
+import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRDDImplicits._
 import com.intel.graphbuilder.parser.rule.RuleParserDSL._
+import com.intel.graphbuilder.parser.rule.{EdgeRule, EdgeRuleParser, VertexRule, VertexRuleParser}
+import com.intel.graphbuilder.parser.{ColumnDef, CombinedParser, InputSchema}
+import com.intel.testutils.TestingSparkContext
 import org.apache.spark.rdd.RDD
-import org.specs2.mutable.Specification
-import GraphBuilderRDDImplicits._
 import org.specs2.mock.Mockito
+import org.specs2.mutable.Specification
 
 class ParserRDDFunctionsITest extends Specification with Mockito {
 
@@ -44,8 +44,7 @@ class ParserRDDFunctionsITest extends Specification with Mockito {
         List("2", "{(1)}", "10", "Y", "2", "Y"),
         List("3", "{(1)}", "11", "Y", "3", "Y"),
         List("4", "{(1),(2)}", "100", "N", "4", "Y"),
-        List("5", "{(1)}", "101", "Y", "5", "Y")
-      )
+        List("5", "{(1)}", "101", "Y", "5", "Y"))
 
       // Input Schema
       val inputSchema = new InputSchema(List(
@@ -54,8 +53,7 @@ class ParserRDDFunctionsITest extends Specification with Mockito {
         new ColumnDef("binary", classOf[String]),
         new ColumnDef("isPrime", classOf[String]),
         new ColumnDef("reverse", classOf[String]),
-        new ColumnDef("isPalindrome", classOf[String])
-      ))
+        new ColumnDef("isPalindrome", classOf[String])))
 
       // Parser Configuration
       val vertexRules = List(VertexRule(gbId("cf:number"), List(property("isPrime"))), VertexRule(gbId("reverse")))

@@ -28,26 +28,12 @@ import com.intel.intelanalytics.domain.schema.{Schema, DataTypes}
 import DataTypes.DataType
 import spray.json._
 import com.intel.intelanalytics.domain.frame._
-import com.intel.intelanalytics.domain.frame.FrameProject
-import com.intel.intelanalytics.domain.graph.Graph
-import com.intel.intelanalytics.domain.frame.FrameRenameFrame
-import com.intel.intelanalytics.domain.graph.construction.ValueRule
-import com.intel.intelanalytics.domain.graph.construction.FrameRule
-import com.intel.intelanalytics.domain.frame.DataFrameTemplate
-import com.intel.intelanalytics.domain.frame.FrameAddColumns
-import com.intel.intelanalytics.domain.frame.FrameRenameColumn
-import com.intel.intelanalytics.domain.frame.FlattenColumn
-import com.intel.intelanalytics.domain.frame.FrameRemoveColumn
-import com.intel.intelanalytics.domain.frame.DataFrame
-import com.intel.intelanalytics.domain.frame.FrameJoin
-import com.intel.intelanalytics.domain.graph.GraphLoad
-import com.intel.intelanalytics.domain.graph.GraphTemplate
-import com.intel.intelanalytics.domain.frame.LoadLines
-import com.intel.intelanalytics.domain.command.Als
-import com.intel.intelanalytics.domain.graph.construction.EdgeRule
-import com.intel.intelanalytics.domain.graph.construction.PropertyRule
-import com.intel.intelanalytics.domain.graph.construction.VertexRule
+import com.intel.intelanalytics.domain.graph.{Graph, GraphLoad, GraphTemplate}
+import com.intel.intelanalytics.domain.graph.construction.{EdgeRule, FrameRule, PropertyRule, ValueRule, VertexRule}
+import com.intel.intelanalytics.domain.schema.DataTypes.DataType
+import com.intel.intelanalytics.domain.schema.{DataTypes, Schema}
 import org.joda.time.DateTime
+import spray.json._
 
 /**
  * Implicit conversions for domain objects to JSON
@@ -69,8 +55,8 @@ object DomainJsonProtocol extends DefaultJsonProtocol {
     private val dateTimeFmt = org.joda.time.format.ISODateTimeFormat.dateTime
     def write(x: DateTime) = JsString(dateTimeFmt.print(x))
     def read(value: JsValue) = value match {
-      case JsString(x) => dateTimeFmt.parseDateTime(x)
-      case x => deserializationError("Expected DateTime as JsString, but got " + x)
+      case JsString(x) ⇒ dateTimeFmt.parseDateTime(x)
+      case x ⇒ deserializationError("Expected DateTime as JsString, but got " + x)
     }
   }
 
@@ -80,7 +66,7 @@ object DomainJsonProtocol extends DefaultJsonProtocol {
 
   implicit val userFormat = jsonFormat5(User)
   implicit val statusFormat = jsonFormat5(Status)
-  implicit val dataFrameFormat = jsonFormat10(DataFrame)
+  implicit val dataFrameFormat = jsonFormat9(DataFrame)
   implicit val dataFrameTemplateFormat = jsonFormat2(DataFrameTemplate)
   implicit val separatorArgsJsonFormat = jsonFormat1(SeparatorArgs)
   implicit val definitionFormat = jsonFormat3(Definition)
@@ -109,8 +95,6 @@ object DomainJsonProtocol extends DefaultJsonProtocol {
   implicit val groupByColumnFormat = jsonFormat4(FrameGroupByColumn[JsObject, String])
   implicit val groupByColumnLongFormat = jsonFormat4(FrameGroupByColumn[JsObject, Long])
 
-  implicit val alsFormatString = jsonFormat5(Als[String])
-  implicit val alsFormatLong = jsonFormat5(Als[Long])
   implicit val errorFormat = jsonFormat5(Error)
   implicit val flattenColumnLongFormat = jsonFormat4(FlattenColumn[Long])
 
@@ -133,23 +117,23 @@ object DomainJsonProtocol extends DefaultJsonProtocol {
   implicit object DataTypeJsonFormat extends JsonFormat[Any] {
     override def write(obj: Any): JsValue = {
       obj match {
-        case n: Int => new JsNumber(n)
-        case n: Long => new JsNumber(n)
-        case n: Float => new JsNumber(n)
-        case n: Double => new JsNumber(n)
-        case s: String => new JsString(s)
-        case unk => serializationError("Cannot serialize " + unk.getClass.getName)
+        case n: Int ⇒ new JsNumber(n)
+        case n: Long ⇒ new JsNumber(n)
+        case n: Float ⇒ new JsNumber(n)
+        case n: Double ⇒ new JsNumber(n)
+        case s: String ⇒ new JsString(s)
+        case unk ⇒ serializationError("Cannot serialize " + unk.getClass.getName)
       }
     }
 
     override def read(json: JsValue): Any = {
       json match {
-        case JsNumber(n) if n.isValidInt => n.intValue()
-        case JsNumber(n) if n.isValidLong => n.longValue()
-        case JsNumber(n) if n.isValidFloat => n.floatValue()
-        case JsNumber(n) => n.doubleValue()
-        case JsString(s) => s
-        case unk => serializationError("Cannot deserialize " + unk.getClass.getName)
+        case JsNumber(n) if n.isValidInt ⇒ n.intValue()
+        case JsNumber(n) if n.isValidLong ⇒ n.longValue()
+        case JsNumber(n) if n.isValidFloat ⇒ n.floatValue()
+        case JsNumber(n) ⇒ n.doubleValue()
+        case JsString(s) ⇒ s
+        case unk ⇒ serializationError("Cannot deserialize " + unk.getClass.getName)
       }
     }
   }

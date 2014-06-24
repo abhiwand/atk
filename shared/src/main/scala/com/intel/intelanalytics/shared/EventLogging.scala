@@ -1,6 +1,30 @@
+//////////////////////////////////////////////////////////////////////////////
+// INTEL CONFIDENTIAL
+//
+// Copyright 2014 Intel Corporation All Rights Reserved.
+//
+// The source code contained or described herein and all documents related to
+// the source code (Material) are owned by Intel Corporation or its suppliers
+// or licensors. Title to the Material remains with Intel Corporation or its
+// suppliers and licensors. The Material may contain trade secrets and
+// proprietary and confidential information of Intel Corporation and its
+// suppliers and licensors, and is protected by worldwide copyright and trade
+// secret laws and treaty provisions. No part of the Material may be used,
+// copied, reproduced, modified, published, uploaded, posted, transmitted,
+// distributed, or disclosed in any way without Intel's prior express written
+// permission.
+//
+// No license under any patent, copyright, trade secret or other intellectual
+// property right is granted to or conferred upon you by disclosure or
+// delivery of the Materials, either expressly, by implication, inducement,
+// estoppel or otherwise. Any license under such intellectual property rights
+// must be express and approved by Intel in writing.
+//////////////////////////////////////////////////////////////////////////////
+
 package com.intel.intelanalytics.shared
 
-import com.intel.event.{ EventLogger, Severity, EventContext }
+import com.intel.event.{EventContext, EventLogger, Severity}
+
 import scala.util.control.NonFatal
 
 /**
@@ -28,32 +52,30 @@ trait EventLogging {
    * @tparam T result type of the block
    * @return the return value of the block
    */
-  def withContext[T](context: String, logErrors: Boolean = true)(block: => T): T = {
+  def withContext[T](context: String, logErrors: Boolean = true)(block: ⇒ T): T = {
     require(context != null, "event context name cannot be null")
     require(context.trim() != "", "event context name must have non-whitespace characters")
     val ctx = EventContext.enter(context.trim())
     try {
       block
-    }
-    catch {
-      case NonFatal(e) => {
+    } catch {
+      case NonFatal(e) ⇒ {
         if (logErrors) {
           val message = safeMessage(e)
           error(message, exception = e)
         }
         throw e
       }
-    }
-    finally {
+    } finally {
       ctx.close()
     }
   }
 
   private def safeMessage[T](e: Throwable): String = {
     e.getMessage match {
-      case null => e.getClass.getName + " (null error message)"
-      case "" => e.getClass.getName + " (empty error message)"
-      case m => m
+      case null ⇒ e.getClass.getName + " (null error message)"
+      case "" ⇒ e.getClass.getName + " (empty error message)"
+      case m ⇒ m
     }
   }
 
@@ -64,12 +86,11 @@ trait EventLogging {
    * @tparam T return type of the block
    * @return the return value of the block
    */
-  def logErrors[T](block: => T): T = {
+  def logErrors[T](block: ⇒ T): T = {
     try {
       block
-    }
-    catch {
-      case NonFatal(e) => {
+    } catch {
+      case NonFatal(e) ⇒ {
         error(safeMessage(e), exception = e)
         throw e
       }
@@ -97,16 +118,16 @@ trait EventLogging {
    * @param exception the [[Throwable]] associated with this event, if any
    */
   def event(message: String,
-            messageCode: Int = 0,
-            markers: Seq[String] = Nil,
-            severity: Severity = Severity.DEBUG,
-            substitutions: Seq[String] = Nil,
-            exception: Throwable = null) = {
+    messageCode: Int = 0,
+    markers: Seq[String] = Nil,
+    severity: Severity = Severity.DEBUG,
+    substitutions: Seq[String] = Nil,
+    exception: Throwable = null) = {
     var builder = EventContext.event(severity, messageCode, message, substitutions.toArray: _*)
     if (exception != null) {
       builder = builder.addException(exception)
     }
-    for (m <- markers) {
+    for (m ← markers) {
       builder = builder.addMarker(m)
     }
     EventLogger.log(builder.build())
@@ -123,10 +144,10 @@ trait EventLogging {
    *
    */
   def debug(message: String,
-            messageCode: Int = 0,
-            markers: Seq[String] = Nil,
-            substitutions: Seq[String] = Nil,
-            exception: Throwable = null) = event(message, messageCode, markers, Severity.DEBUG, substitutions, exception)
+    messageCode: Int = 0,
+    markers: Seq[String] = Nil,
+    substitutions: Seq[String] = Nil,
+    exception: Throwable = null) = event(message, messageCode, markers, Severity.DEBUG, substitutions, exception)
 
   /**
    * Constructs an INFO level event using the provided arguments.
@@ -139,10 +160,10 @@ trait EventLogging {
    *
    */
   def info(message: String,
-           messageCode: Int = 0,
-           markers: Seq[String] = Nil,
-           substitutions: Seq[String] = Nil,
-           exception: Throwable = null) = event(message, messageCode, markers, Severity.INFO, substitutions, exception)
+    messageCode: Int = 0,
+    markers: Seq[String] = Nil,
+    substitutions: Seq[String] = Nil,
+    exception: Throwable = null) = event(message, messageCode, markers, Severity.INFO, substitutions, exception)
 
   /**
    * Constructs a WARN level event using the provided arguments.
@@ -155,10 +176,10 @@ trait EventLogging {
    *
    */
   def warn(message: String,
-           messageCode: Int = 0,
-           markers: Seq[String] = Nil,
-           substitutions: Seq[String] = Nil,
-           exception: Throwable = null) = event(message, messageCode, markers, Severity.WARN, substitutions, exception)
+    messageCode: Int = 0,
+    markers: Seq[String] = Nil,
+    substitutions: Seq[String] = Nil,
+    exception: Throwable = null) = event(message, messageCode, markers, Severity.WARN, substitutions, exception)
 
   /**
    * Constructs an ERROR level event using the provided arguments.
@@ -171,9 +192,9 @@ trait EventLogging {
    *
    */
   def error(message: String,
-            messageCode: Int = 0,
-            markers: Seq[String] = Nil,
-            substitutions: Seq[String] = Nil,
-            exception: Throwable = null) = event(message, messageCode, markers, Severity.ERROR, substitutions, exception)
+    messageCode: Int = 0,
+    markers: Seq[String] = Nil,
+    substitutions: Seq[String] = Nil,
+    exception: Throwable = null) = event(message, messageCode, markers, Severity.ERROR, substitutions, exception)
 }
 

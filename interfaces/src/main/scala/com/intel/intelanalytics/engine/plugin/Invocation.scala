@@ -21,36 +21,41 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.graphbuilder.testutils
+package com.intel.intelanalytics.engine.plugin
 
-import org.apache.log4j.{ Logger, Level }
+import com.intel.intelanalytics.engine.Engine
+import com.intel.intelanalytics.security.UserPrincipal
+import spray.json.JsObject
+
+import scala.concurrent.ExecutionContext
 
 /**
- * Utility methods related to logging in Unit testing.
- * <p>
- * Logging of underlying libraries can get annoying in unit
- * tests so it is nice to be able to change easily.
- * </p>
+ * Provides context for an invocation of a command or query.
+ *
  */
-object LogUtils {
+trait Invocation {
+   /**
+    * An instance of the engine that the plugin can use to execute its work
+    */
+  def engine: Engine
 
   /**
-   * Turn down logging since Spark gives so much output otherwise.
+   * The identifier of this execution
    */
-  def silenceSpark() {
-    setLogLevels(Level.WARN, Seq("spark", "org.eclipse.jetty", "akka"))
-  }
+  def commandId: Long
 
   /**
-   * Turn down logging for Titan
+   * The original arguments as supplied by the user
    */
-  def silenceTitan() {
-    setLogLevels(Level.WARN, Seq("com.thinkaurelius"))
-    setLogLevels(Level.ERROR, Seq("com.thinkaurelius.titan.graphdb.transaction.StandardTitanTx"))
-  }
+  def arguments: Option[JsObject]
 
-  private def setLogLevels(level: org.apache.log4j.Level, loggers: TraversableOnce[String]): Unit = {
-    loggers.foreach(loggerName => Logger.getLogger(loggerName).setLevel(level))
-  }
+  /**
+   * The user that invoked the operation
+   */
+  def user: UserPrincipal
 
+  /**
+   * A Scala execution context for use with methods that require one
+   */
+  def executionContext: ExecutionContext
 }

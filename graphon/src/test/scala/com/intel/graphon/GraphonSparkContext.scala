@@ -21,51 +21,50 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.graphbuilder.testutils
+package com.intel.graphon
 
-import java.io.File
-import org.apache.commons.io.FileUtils
-import org.apache.log4j.Logger
+import java.util.Date
 
-/**
- * Utility methods for working with directories.
- */
-object DirectoryUtils {
+import com.intel.testutils._
+import org.apache.spark.{SparkConf, SparkContext}
+import org.scalatest.{BeforeAndAfterAll, WordSpec}
 
-  private val log: Logger = Logger.getLogger(DirectoryUtils.getClass)
+trait GraphonSparkContext extends WordSpec with BeforeAndAfterAll {
+  LogUtils.silenceSpark()
+
+  val conf = new SparkConf()
+    .setMaster("local")
+    .setAppName(this.getClass.getSimpleName + " " + new Date())
+  conf.set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
+  conf.set("spark.kryo.registrator", "com.intel.graphbuilder.driver.spark.titan.GraphBuilderKryoRegistrator")
+
+  var sparkContext: SparkContext = null
+
+  override def beforeAll = {
+    // Ensure only one Spark local context is running at a time
+    TestingSparkContext.lock.acquire()
+    sparkContext = new SparkContext(conf)
+  }
 
   /**
-   * Create a Temporary directory
-   * @param prefix the prefix for the directory name, this is used to make the Temp directory more identifiable.
-   * @return the temporary directory
+   * Clean up after the test is done
    */
-  def createTempDirectory(prefix: String): File = {
+  override def afterAll = {
+    cleanupSpark()
+  }
+
+  /**
+   * Shutdown spark and release the lock
+   */
+  def cleanupSpark(): Unit = {
     try {
-      convertFileToDirectory(File.createTempFile(prefix, "-tmp"))
-    }
-    catch {
-      case e: Exception =>
-        throw new RuntimeException("Could NOT initialize temp directory, prefix: " + prefix, e)
-    }
-  }
-
-  /**
-   * Convert a file into a directory
-   * @param file a file that isn't a directory
-   * @return directory with same name as File
-   */
-  private def convertFileToDirectory(file: File): File = {
-    file.delete()
-    if (!file.mkdirs()) {
-      throw new RuntimeException("Failed to create tmpDir: " + file.getAbsolutePath)
-    }
-    file
-  }
-
-  def deleteTempDirectory(tmpDir: File) {
-    FileUtils.deleteQuietly(tmpDir)
-    if (tmpDir != null && tmpDir.exists) {
-      log.error("Failed to delete tmpDir: " + tmpDir.getAbsolutePath)
+      if (sparkContext != null) {
+        sparkContext.stop()
+      }
+    } finally {
+      // To avoid Akka rebinding to the same port, since it doesn't unbind immediately on shutdown
+      System.clearProperty("spark.driver.port")
+      TestingSparkContext.lock.release()
     }
   }
 }

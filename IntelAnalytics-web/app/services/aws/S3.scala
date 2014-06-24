@@ -22,21 +22,12 @@
 //////////////////////////////////////////////////////////////////////////////
 package services.aws
 
-import javax.crypto.Mac;
-import javax.crypto.spec.SecretKeySpec;
-
-import play.api.libs.json.Json
-import java.util.{ TimeZone, Date }
 import java.text.SimpleDateFormat
-import com.amazonaws.auth.BasicAWSCredentials
-import com.amazonaws.services.s3.model._
-import com.amazonaws.services.s3.AmazonS3Client
-import java.lang.Math
-import scala.collection.mutable
+import java.util.{Date, TimeZone}
+import javax.crypto.Mac
+import javax.crypto.spec.SecretKeySpec
+
 import sun.misc.BASE64Encoder
-import play.api.Play
-import play.api.Play.current
-import scala.collection.JavaConversions._
 
 object S3 {
   //one week
