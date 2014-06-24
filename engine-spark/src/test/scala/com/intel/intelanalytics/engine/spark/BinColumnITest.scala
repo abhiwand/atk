@@ -79,7 +79,7 @@ class BinColumnITest extends Specification {
         Array[Any]("D", 3),
         Array[Any]("E", 4),
         Array[Any]("F", 4.5))
-      val rdd = sc.parallelize(inputList)
+      val rdd = sc.parallelize(inputList, 2)
 
       // Get binned results
       val binnedRdd = SparkOps.binEqualWidth(1, 4, rdd)
@@ -137,7 +137,7 @@ class BinColumnITest extends Specification {
         Array[Any]("H", 8),
         Array[Any]("I", 9),
         Array[Any]("J", 10))
-      val rdd = sc.parallelize(inputList)
+      val rdd = sc.parallelize(inputList, 2)
 
       // Get binned results
       val binnedRdd = SparkOps.binEqualWidth(1, 20, rdd)  // note this creates bins of width 0.55 for this dataset
