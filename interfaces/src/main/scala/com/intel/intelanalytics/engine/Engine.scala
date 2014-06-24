@@ -58,8 +58,6 @@ trait Engine {
 
   def getFrame(id: Identifier): Future[Option[DataFrame]]
 
-  //def getFrameByName(name: String)(implicit p: UserPrincipal): Future[Option[DataFrame]]
-  def getFrameByName(name: String): Future[Option[DataFrame]]
   def getRows(id: Identifier, offset: Long, count: Int)(implicit user: UserPrincipal): Future[Iterable[Row]]
 
   def create(frame: DataFrameTemplate): Future[DataFrame]

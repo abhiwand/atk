@@ -24,12 +24,6 @@ class GraphRepositorySpec extends SlickMetaStoreH2Testing with Matchers {
          graph2.get.createdOn should not be null
          graph2.get.modifiedOn should not be null
 
-          //lookup graph with name and validate expected values
-          val graph3 = graphRepo.lookupByName(graph.get.name)
-          graph3.get should not be null
-          graph3.get.name shouldBe name
-          graph3.get.createdOn should not be null
-          graph3.get.modifiedOn should not be null
      }
    }
 

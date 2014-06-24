@@ -72,42 +72,12 @@ class DataFrameService(commonDirectives: CommonDirectives, engine: Engine) exten
       (path(prefix) & pathEnd) {
         requestUri { uri =>
           get {
-            parameters('name.?) {
-              //parameters('name.as[Option[String]]) {
-              import spray.httpx.SprayJsonSupport._
-              implicit val format = DomainJsonProtocol.dataFrameTemplateFormat
-              implicit val indexFormat = ViewModelJsonImplicits.getDataFrameFormat
-              (name) => name match {
-                //            import
-                //            spray.json._
-                //            import ViewModelJsonImplicits._ { {
-                case Some(name) => {
-                  onComplete(engine.getFrameByName(name)) {
-                    case Success(Some(frame)) => {
-                     val links = List(Rel.self(uri.toString))
-
-                     complete(FrameDecorator.decorateEntity(uri.toString(), links, frame))
-//                      val decorated = decorate(uri, frame)
-//                      complete {
-//                        decorated
-//                      }
-                    }
-                    case _ => reject()
-                  }
-                }
-
-                case _ =>
-                  //TODO: cursor { { {
-                  onComplete(engine.getFrames(0, ApiServiceConfig.defaultCount)) {
-                    case Success(frames) =>
-                      import DefaultJsonProtocol._
-                      implicit val indexFormat = ViewModelJsonImplicits.getDataFramesFormat
-                      complete(FrameDecorator.decorateForIndex(uri.toString(), frames))
+                import spray.json._
+                import ViewModelJsonImplicits._
+                onComplete(engine.getFrames(0, ApiServiceConfig.defaultCount)) {
+                    case Success(frames) => complete(FrameDecorator.decorateForIndex(uri.toString(), frames))
                     case Failure(ex) => throw ex
                   }
-
-              }
-
             } ~
               post {
                 import spray.httpx.SprayJsonSupport._
@@ -121,7 +91,7 @@ class DataFrameService(commonDirectives: CommonDirectives, engine: Engine) exten
                     }
                 }
               }
-          }
+
         }
       } ~
         pathPrefix(prefix / LongNumber) { id =>
