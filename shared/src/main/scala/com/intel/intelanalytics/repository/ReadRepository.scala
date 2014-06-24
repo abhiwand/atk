@@ -16,6 +16,7 @@ trait ReadRepository[Session, Entity <: HasId] {
    */
   def lookup(id: Long)(implicit session: Session): Option[Entity]
 
+  def lookupByName (name:String)(implicit session:Session): Option[Entity]
   /**
    * Get a 'page' of rows
    *

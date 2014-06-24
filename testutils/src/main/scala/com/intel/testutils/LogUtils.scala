@@ -50,7 +50,7 @@ object LogUtils {
   }
 
   private def setLogLevels(level: org.apache.log4j.Level, loggers: TraversableOnce[String]): Unit = {
-    loggers.foreach(loggerName ⇒ Logger.getLogger(loggerName).setLevel(level))
+    loggers.foreach(loggerName => Logger.getLogger(loggerName).setLevel(level))
   }
 
 }

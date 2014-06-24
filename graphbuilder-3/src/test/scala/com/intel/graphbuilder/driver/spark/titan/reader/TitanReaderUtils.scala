@@ -30,7 +30,7 @@ object TitanReaderUtils {
    * @return Iterable of GraphBuilder properties
    */
   def createGbProperties(properties: Iterable[TitanProperty]): Seq[Property] = {
-    properties.map(p ⇒ Property(p.getPropertyKey().getName(), p.getValue())).toList
+    properties.map(p => Property(p.getPropertyKey().getName(), p.getValue())).toList
   }
 
   /**
@@ -46,14 +46,14 @@ object TitanReaderUtils {
     val edgeSerializer = graph.getEdgeSerializer()
     var entryMap = HashMap[String, TitanRow]()
 
-    graph.getVertices().foreach(vertex ⇒ {
+    graph.getVertices().foreach(vertex => {
       val titanVertex = vertex.asInstanceOf[TitanVertex]
 
-      val propertyList = titanVertex.getProperties().flatMap(property ⇒ {
+      val propertyList = titanVertex.getProperties().flatMap(property => {
         serializeGraphElement(edgeSerializer, titanVertex, property.asInstanceOf[TitanElement])
       }).toList
 
-      val edgeList = titanVertex.getEdges().flatMap(edge ⇒ {
+      val edgeList = titanVertex.getEdges().flatMap(edge => {
         serializeGraphElement(edgeSerializer, titanVertex, edge.asInstanceOf[TitanElement])
       }).toList
 
@@ -95,7 +95,7 @@ object TitanReaderUtils {
    */
   def createTestHBaseRows(titanRowMap: Map[String, TitanRow]): Map[org.apache.hadoop.hbase.io.ImmutableBytesWritable, org.apache.hadoop.hbase.client.Result] = {
 
-    titanRowMap.map(row ⇒ {
+    titanRowMap.map(row => {
       val titanRow: TitanRow = row._2
       val rowKey = titanRow.rowKey.as[Array[Byte]](StaticBuffer.ARRAY_FACTORY)
       val entries = titanRow.serializedEntries
@@ -103,7 +103,7 @@ object TitanReaderUtils {
       val dummyTimestamp = 1
       val dummyType = 0.toByte
 
-      val hBaseCells = entries.map(entry ⇒ {
+      val hBaseCells = entries.map(entry => {
         CellUtil.createCell(rowKey, titanColumnFamilyName, entry.getArrayColumn(), dummyTimestamp, dummyType, entry.getArrayValue)
       })
 
@@ -122,13 +122,13 @@ object TitanReaderUtils {
    * @return  Array of GraphBuilder elements with sorted property lists
    */
   def sortGraphElementProperties(graphElements: Array[GraphElement]) = {
-    graphElements.map(element ⇒ {
+    graphElements.map(element => {
       element match {
-        case v: Vertex ⇒ {
-          new Vertex(v.physicalId, v.gbId, v.properties.sortBy(p ⇒ p.key)).asInstanceOf[GraphElement]
+        case v: Vertex => {
+          new Vertex(v.physicalId, v.gbId, v.properties.sortBy(p => p.key)).asInstanceOf[GraphElement]
         }
-        case e: Edge ⇒ {
-          new Edge(e.tailPhysicalId, e.headPhysicalId, e.tailVertexGbId, e.headVertexGbId, e.label, e.properties.sortBy(p ⇒ p.key)).asInstanceOf[GraphElement]
+        case e: Edge => {
+          new Edge(e.tailPhysicalId, e.headPhysicalId, e.tailVertexGbId, e.headVertexGbId, e.label, e.properties.sortBy(p => p.key)).asInstanceOf[GraphElement]
         }
       }
     })

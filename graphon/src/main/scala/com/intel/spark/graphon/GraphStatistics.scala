@@ -40,8 +40,8 @@ object GraphStatistics {
    */
   def outDegrees(edgeRDD: RDD[Edge]): RDD[(Any, Long)] = {
 
-    val groupedByEdges = edgeRDD.groupBy(edge ⇒ edge.tailPhysicalId)
-    groupedByEdges.map(e ⇒ (e._1, e._2.size))
+    val groupedByEdges = edgeRDD.groupBy(edge => edge.tailPhysicalId)
+    groupedByEdges.map(e => (e._1, e._2.size))
   }
 
   /**
@@ -55,9 +55,9 @@ object GraphStatistics {
    */
   def outDegreesByEdgeType(edgeRDD: RDD[Edge], edgeLabel: String): RDD[(Any, Long)] = {
 
-    val filteredEdges = edgeRDD.filter(edge ⇒ edge.label == edgeLabel)
-    val groupedByEdges = filteredEdges.groupBy(edge ⇒ edge.tailPhysicalId)
-    groupedByEdges.map(e ⇒ (e._1, e._2.size))
+    val filteredEdges = edgeRDD.filter(edge => edge.label == edgeLabel)
+    val groupedByEdges = filteredEdges.groupBy(edge => edge.tailPhysicalId)
+    groupedByEdges.map(e => (e._1, e._2.size))
   }
 
   /**
@@ -72,8 +72,8 @@ object GraphStatistics {
    */
   def inDegrees(edgeRDD: RDD[Edge]): RDD[(Any, Long)] = {
 
-    val groupedByEdges = edgeRDD.groupBy(edge ⇒ edge.headPhysicalId)
-    groupedByEdges.map(e ⇒ (e._1, e._2.size))
+    val groupedByEdges = edgeRDD.groupBy(edge => edge.headPhysicalId)
+    groupedByEdges.map(e => (e._1, e._2.size))
   }
 
   /**
@@ -87,8 +87,8 @@ object GraphStatistics {
    */
   def inDegreesByEdgeType(edgeRDD: RDD[Edge], edgeLabel: String): RDD[(Any, Long)] = {
 
-    val filteredEdges = edgeRDD.filter(edge ⇒ edge.label == edgeLabel)
-    val groupedByEdges = filteredEdges.groupBy(edge ⇒ edge.headPhysicalId)
-    groupedByEdges.map(e ⇒ (e._1, e._2.size))
+    val filteredEdges = edgeRDD.filter(edge => edge.label == edgeLabel)
+    val groupedByEdges = filteredEdges.groupBy(edge => edge.headPhysicalId)
+    groupedByEdges.map(e => (e._1, e._2.size))
   }
 }

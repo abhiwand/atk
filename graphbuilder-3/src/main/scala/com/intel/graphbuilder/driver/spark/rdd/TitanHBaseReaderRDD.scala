@@ -35,7 +35,7 @@ class TitanHBaseReaderRDD(hBaseRDD: RDD[(ImmutableBytesWritable, Result)],
     val titanTransaction = titanGraph.newTransaction(titanGraph.buildTransaction())
     val titanEdgeSerializer = titanGraph.getEdgeSerializer()
 
-    val graphElements = firstParent[(ImmutableBytesWritable, Result)].iterator(split, context).flatMap(hBaseRow ⇒ {
+    val graphElements = firstParent[(ImmutableBytesWritable, Result)].iterator(split, context).flatMap(hBaseRow => {
       val result = hBaseRow._2
       val rowKey = new StaticByteBuffer(result.getRow)
 
@@ -46,7 +46,7 @@ class TitanHBaseReaderRDD(hBaseRDD: RDD[(ImmutableBytesWritable, Result)],
       rowGraphElements
     })
 
-    context.addOnCompleteCallback(() ⇒ {
+    context.addOnCompleteCallback(() => {
       titanTransaction.commit()
       titanGraph.shutdown()
     })
@@ -61,7 +61,7 @@ class TitanHBaseReaderRDD(hBaseRDD: RDD[(ImmutableBytesWritable, Result)],
     val titanColumnFamilyName = com.thinkaurelius.titan.diskstorage.Backend.EDGESTORE_NAME.getBytes();
     val titanColumnFamilyMap = result.getFamilyMap(titanColumnFamilyName);
 
-    val serializedEntries = titanColumnFamilyMap.entrySet().map(entry ⇒
+    val serializedEntries = titanColumnFamilyMap.entrySet().map(entry =>
       StaticBufferEntry.of(new StaticArrayBuffer(entry.getKey), new StaticArrayBuffer(entry.getValue))).toSeq
 
     new TitanRow(rowKey, serializedEntries)

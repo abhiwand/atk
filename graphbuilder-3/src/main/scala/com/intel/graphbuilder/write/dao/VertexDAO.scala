@@ -89,7 +89,7 @@ class VertexDAO(graph: Graph) extends Serializable {
    * @return the blueprints.Vertex
    */
   def update(vertex: Vertex, blueprintsVertex: blueprints.Vertex): blueprints.Vertex = {
-    vertex.fullProperties.map(property ⇒ blueprintsVertex.setProperty(property.key, property.value))
+    vertex.fullProperties.map(property => blueprintsVertex.setProperty(property.key, property.value))
     blueprintsVertex
   }
 

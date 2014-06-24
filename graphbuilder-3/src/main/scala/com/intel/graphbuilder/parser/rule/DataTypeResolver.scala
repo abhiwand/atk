@@ -35,16 +35,16 @@ class DataTypeResolver(inputSchema: InputSchema) extends Serializable {
    */
   def get(value: Value): Class[_] = {
     value match {
-      case constant: ConstantValue ⇒ constant.value.getClass
-      case parsed: ParsedValue ⇒
+      case constant: ConstantValue => constant.value.getClass
+      case parsed: ParsedValue =>
         val dataType = inputSchema.columnType(parsed.columnName)
         if (dataType == null) {
           throw new RuntimeException("InputSchema did NOT define a dataType for column: " + parsed.columnName
             + ". Please supply the type or don't infer the schema from the rules.")
         }
         dataType
-      case compound: CompoundValue ⇒ classOf[String]
-      case _ ⇒ throw new RuntimeException("Unexpected type of value is not yet implemented: " + value)
+      case compound: CompoundValue => classOf[String]
+      case _ => throw new RuntimeException("Unexpected type of value is not yet implemented: " + value)
     }
   }
 }
