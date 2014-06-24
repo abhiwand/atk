@@ -181,28 +181,28 @@ class EventLoggingSpec extends FlatSpec with Matchers with MockitoSugar {
     val mockLog = mock[EventLog]
     EventLogger.setImplementation(mockLog)
     rawLogger.warn("Hey!")
-    verify(mockLog).log(eventWith(e ⇒ e.getSeverity == Severity.WARN))
+    verify(mockLog).log(eventWith(e => e.getSeverity == Severity.WARN))
   }
 
   "Calling error" should "generate an ERROR event" in {
     val mockLog = mock[EventLog]
     EventLogger.setImplementation(mockLog)
     rawLogger.error("Hey!")
-    verify(mockLog).log(eventWith(e ⇒ e.getSeverity == Severity.ERROR))
+    verify(mockLog).log(eventWith(e => e.getSeverity == Severity.ERROR))
   }
 
   "Calling info" should "generate an INFO event" in {
     val mockLog = mock[EventLog]
     EventLogger.setImplementation(mockLog)
     rawLogger.info("Hey!")
-    verify(mockLog).log(eventWith(e ⇒ e.getSeverity == Severity.INFO))
+    verify(mockLog).log(eventWith(e => e.getSeverity == Severity.INFO))
   }
 
   "Calling debug" should "generate a DEBUG event" in {
     val mockLog = mock[EventLog]
     EventLogger.setImplementation(mockLog)
     rawLogger.debug("Hey!")
-    verify(mockLog).log(eventWith(e ⇒ e.getSeverity == Severity.DEBUG))
+    verify(mockLog).log(eventWith(e => e.getSeverity == Severity.DEBUG))
   }
 
   "Calling event" should "include exceptions if passed" in {
@@ -210,7 +210,7 @@ class EventLoggingSpec extends FlatSpec with Matchers with MockitoSugar {
     EventLogger.setImplementation(mockLog)
     val ex = new IllegalArgumentException()
     rawLogger.event("Hey!", exception = ex)
-    verify(mockLog).log(eventWith(e ⇒ e.getSeverity == Severity.DEBUG && e.getErrors.contains(ex)))
+    verify(mockLog).log(eventWith(e => e.getSeverity == Severity.DEBUG && e.getErrors.contains(ex)))
   }
 
   it should "include markers if passed" in {
@@ -218,7 +218,7 @@ class EventLoggingSpec extends FlatSpec with Matchers with MockitoSugar {
     EventLogger.setImplementation(mockLog)
     val ex = new IllegalArgumentException()
     rawLogger.event("Hey!", markers = List("a", "b"))
-    verify(mockLog).log(eventWith(e ⇒ e.getSeverity == Severity.DEBUG
+    verify(mockLog).log(eventWith(e => e.getSeverity == Severity.DEBUG
       && e.getMarkers.contains("a")
       && e.getMarkers.contains("b")))
   }
@@ -233,7 +233,7 @@ class EventLoggingSpec extends FlatSpec with Matchers with MockitoSugar {
 
   }
 
-  def eventWith(f: Event ⇒ Boolean) = {
+  def eventWith(f: Event => Boolean) = {
 
     org.mockito.Matchers.argThat(
       new ArgumentMatcher[Event] {

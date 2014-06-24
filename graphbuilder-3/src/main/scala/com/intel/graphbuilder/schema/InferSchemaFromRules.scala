@@ -52,7 +52,7 @@ class InferSchemaFromRules(dataTypeParser: DataTypeResolver, vertexRules: List[V
    * False if any Edge labels are to be dynamically parsed from the input
    */
   def canInferEdgeLabels: Boolean = {
-    edgeRules.foreach(edgeRule ⇒
+    edgeRules.foreach(edgeRule =>
       if (edgeRule.label.isParsed) {
         return false
       })
@@ -66,13 +66,13 @@ class InferSchemaFromRules(dataTypeParser: DataTypeResolver, vertexRules: List[V
   def canInferAllPropertyKeyNames: Boolean = {
 
     // see if every property key name for Vertices is non-parsed
-    vertexRules.foreach(_.fullPropertyRules.foreach(propertyRule ⇒
+    vertexRules.foreach(_.fullPropertyRules.foreach(propertyRule =>
       if (propertyRule.key.isParsed) {
         return false
       }))
 
     // see if every property key name for Edges is non-parsed
-    edgeRules.foreach(_.propertyRules.foreach(propertyRule ⇒
+    edgeRules.foreach(_.propertyRules.foreach(propertyRule =>
       if (propertyRule.key.isParsed) {
         return false
       }))
@@ -103,7 +103,7 @@ class InferSchemaFromRules(dataTypeParser: DataTypeResolver, vertexRules: List[V
    * Distinct list of PropertyDefs by name
    */
   private def distinctPropertyDefs(list: List[PropertyDef]): List[PropertyDef] = {
-    list.map(propertyDef ⇒ (propertyDef.name, propertyDef)).toMap.valuesIterator.toList
+    list.map(propertyDef => (propertyDef.name, propertyDef)).toMap.valuesIterator.toList
   }
 
   /**
