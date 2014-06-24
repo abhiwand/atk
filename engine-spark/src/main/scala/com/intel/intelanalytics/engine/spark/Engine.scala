@@ -376,12 +376,13 @@ class SparkEngine(sparkContextManager: SparkContextManager,
             throw new IllegalArgumentException(s"No such data frame"))
 
 
-            val frameSchema = realFrame.schema
-            val rdd = frames.getFrameRdd(ctx, frame._1)
-            val columnIndex = frameSchema.columnIndex(frame._2)
-            (rdd, columnIndex)
-          }
+          val frameSchema = realFrame.schema
+          val rdd = frames.getFrameRdd(ctx, frame._1)
+          val columnIndex = frameSchema.columnIndex(frame._2)
+          (rdd, columnIndex)
         }
+      }
+
       
 
         val pairRdds = tupleRddColumnIndex.map {
@@ -393,9 +394,6 @@ class SparkEngine(sparkContextManager: SparkContextManager,
 
         pairRdds
       }
-
-      pairRdds
-    }
 
     val originalColumns = arguments.frames.map {
       frame => {
@@ -606,41 +604,27 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     ???
   }
 
-  override def dropDuplicates(dropDuplicateCommand: DropDuplicates)(implicit user: UserPrincipal): (Command, Future[Command]) =
-    withContext("se.dropDuplicates") {
-      require(dropDuplicateCommand != null, "arguments are required")
+  override def dropDuplicates(arguments: DropDuplicates)(implicit user: UserPrincipal): Execution =
+    commands.execute(dropDuplicateCommand, arguments, user, implicitly[ExecutionContext])
 
-      import spray.json._
-      val command: Command = commands.create(new CommandTemplate("dropDuplicates", Some(dropDuplicateCommand.toJson.asJsObject)))
+  val dropDuplicateCommand = commands.registerCommand("dataframe/drop_duplicates", dropDuplicateSimple)
 
-      val result: Future[Command] = future {
-        withMyClassLoader {
-          withContext("se.dropDuplicates.future") {
-            withCommand(command) {
+  def dropDuplicateSimple(dropDuplicateCommand: DropDuplicates, user: UserPrincipal) = {
+    val frameId: Long = dropDuplicateCommand.frameId
+    val realFrame: DataFrame = getDataFrameById(frameId)
 
-              val frameId: Long = dropDuplicateCommand.frameId
-              val realFrame: DataFrame = getDataFrameById(frameId)
+    val ctx = sparkContextManager.context(user).sparkContext
 
-              val ctx = sparkContextManager.context(user).sparkContext
+    val frameSchema = realFrame.schema
+    val rdd = frames.getFrameRdd(ctx, frameId)
 
-              val frameSchema = realFrame.schema
-              val rdd = frames.getFrameRdd(ctx, frameId)
+    val columnIndices = frameSchema.columnIndex(dropDuplicateCommand.unique_columns)
+    val pairRdd = rdd.map(row => SparkOps.createKeyValuePairFromRow(row, columnIndices))
 
-              val columnIndices = frameSchema.columnIndex(dropDuplicateCommand.unique_columns)
-              val pairRdd = rdd.map(row => SparkOps.createKeyValuePairFromRow(row, columnIndices))
+    val duplicatesRemoved: RDD[Array[Any]] = SparkOps.removeDuplicatesByKey(pairRdd)
 
-              val duplicatesRemoved: RDD[Array[Any]] = SparkOps.removeDuplicatesByKey(pairRdd)
-
-              duplicatesRemoved.saveAsObjectFile(fsRoot + frames.getFrameDataFile(frameId))
-              JsObject(List())
-            }
-            commands.lookup(command.id).get
-          }
-        }
-      }
-      (command, result)
-    }
-
+    duplicatesRemoved.saveAsObjectFile(fsRoot + frames.getFrameDataFile(frameId))
+  }
 
   /**
    * Retrieve DataFrame object by frame id

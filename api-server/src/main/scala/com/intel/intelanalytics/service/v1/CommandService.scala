@@ -327,7 +327,7 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
     validate(test.isSuccess, "Failed to parse drop duplicates descriptor: " + getErrorMessage(test)) {
       val args = test.get
       val result = engine.dropDuplicates(args)
-      val command: Command = result._1
+      val command: Command = result.start
       complete(decorate(uri + "/" + command.id, command))
     }
   }
