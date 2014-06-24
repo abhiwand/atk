@@ -28,6 +28,7 @@ import java.util.{ArrayList => JArrayList, List => JList}
 import com.intel.intelanalytics.domain._
 import com.intel.intelanalytics.domain.command.{Command, CommandTemplate, Execution}
 import com.intel.intelanalytics.domain.frame._
+import com.intel.intelanalytics.domain.frame.load.{LineParserArguments, LineParser, LoadSource, Load}
 import com.intel.intelanalytics.domain.graph.{Graph, GraphLoad, GraphTemplate}
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 import com.intel.intelanalytics.domain.schema.{DataTypes, Schema, SchemaUtil}
@@ -113,33 +114,46 @@ class SparkEngine(sparkContextManager: SparkContextManager,
   }
 
   //Merge Changes
-  def load(arguments: LoadLines[JsObject, Long])(implicit user: UserPrincipal): Execution =
+  def load(arguments: Load[Long])(implicit user: UserPrincipal): Execution =
     commands.execute(loadCommand, arguments, user, implicitly[ExecutionContext])
 
   val loadCommand = commands.registerCommand(name = "dataframe/load", loadSimple)
-  def loadSimple(arguments: LoadLines[JsObject, Long], user: UserPrincipal) = {
+  def loadSimple(arguments: Load[Long], user: UserPrincipal) = {
     val frameId = arguments.destination
     val realFrame = expectFrame(frameId)
-    val parserFunction = getLineParser(arguments.lineParser)
-    val location = fsRoot + frames.getFrameDataFile(frameId)
-    val schema = arguments.schema
-    val converter = DataTypes.parseMany(schema.columns.map(_._2).toArray)(_)
     val ctx = sparkContextManager.context(user)
-    SparkOps.loadLines(ctx.sparkContext, fsRoot + "/" + arguments.source, location, arguments, parserFunction, converter)
-    val frame = frames.updateSchema(realFrame, schema.columns)
+
+    //get Data
+    val (schema, newData) = getLoadData(ctx.sparkContext, arguments.source)
+    val rdd = frames.getFrameRdd(ctx.sparkContext, realFrame.id)
+
+    val (mergedSchema: Schema, updatedRdd: RDD[Row]) = if(realFrame.schema == schema)
+      (realFrame.schema, rdd ++ newData)
+    else{
+      val mergedSchema: Schema = SchemaUtil.mergeSchema(realFrame.schema, schema)
+      val leftData = rdd.map(SchemaUtil.convertSchema(realFrame.schema, mergedSchema,_))
+      val rightData = newData.map(SchemaUtil.convertSchema(schema, mergedSchema,_))
+
+      val updatedRdd = leftData ++ rightData
+      (mergedSchema,updatedRdd)
+    }
+    val location = fsRoot + frames.getFrameDataFile(frameId)
+    updatedRdd.saveAsObjectFile(location)
+    val frame = frames.updateSchema(realFrame, mergedSchema.columns)
     frame
+  }
   /**
    * Load data from a resource described by a LoadSource object.
    * @param ctx Context object that should be used for accessing data from spark
    * @param source LoadSource object with information on what data to load
    * @return A tuple containing a schema object describing the RDD loaded as well as the RDD itself.
    */
-  def getLoadData(ctx: Context, source: LoadSource ): (Schema, RDD[Row]) = {
+  def getLoadData(ctx: SparkContext, source: LoadSource ): (Schema, RDD[Row]) = {
     source.source_type match {
       case "dataframe" => {
          val frame =  frames.lookup(source.uri.toInt).getOrElse(
              throw new IllegalArgumentException(s"No such data frame: ${source.uri}"))
-        (frame.schema, frames.getFrameRdd(ctx.sparkContext, source.uri.toInt))
+        (frame.schema, frames.getFrameRdd(ctx, source.uri.toInt))
       }
       case "file" => {
         val parser = source.parser.get
@@ -148,66 +162,62 @@ class SparkEngine(sparkContextManager: SparkContextManager,
         val converter = DataTypes.parseMany(schema.columns.map(_._2).toArray)(_)
 
         ( schema,
-          SparkOps.loadLines(ctx.sparkContext, fsRoot + "/" + source.uri,
+          SparkOps.loadLines(ctx, fsRoot + "/" + source.uri,
             parser.arguments.skip_rows, parserFunction, converter) )
       }
       case _ => ???
     }
   }
 
+//
+//  /**
+//   * Load data from a LoadSource object to an existing destination described in the Load object
+//   * @param arguments Load command object
+//   * @param user current user
+//   */
+//  def load(arguments: Load[Long])(implicit user: UserPrincipal): (Command, Future[Command]) =
+//    withContext("se.load") {
+//      require(arguments != null, "arguments are required")
+//      require(arguments.source.source_type != "file" || arguments.source.parser != None, "We need a parser to load files")
+//      import DomainJsonProtocol._
+//      val command: Command = commands.create(new CommandTemplate("load", Some(arguments.toJson.asJsObject)))
+//      val result: Future[Command] = future {
+//        withMyClassLoader {
+//          withContext("se.load.future") {
+//            withCommand(command) {
+//              //get destination
+//              val realFrame = frames.lookup(arguments.destination).getOrElse(
+//                throw new IllegalArgumentException(s"No such data frame: ${arguments.destination}"))
+//
+//              //get Spark Context
+//              val ctx = sparkContextManager.context(user)
+//              //get Data
+//              val (schema, newData) = getLoadData(ctx.sparkContext, arguments.source)
+//              val rdd = frames.getFrameRdd(ctx.sparkContext, realFrame.id)
+//
+//              val (mergedSchema, updatedRdd) = if(realFrame.schema == schema)
+//                (realFrame.schema, rdd ++ newData)
+//              else{
+//                val mergedSchema = SchemaUtil.mergeSchema(realFrame.schema, schema)
+//                val leftData = rdd.map(SchemaUtil.convertSchema(realFrame.schema, mergedSchema,_))
+//                val rightData = newData.map(SchemaUtil.convertSchema(schema, mergedSchema,_))
+//
+//                val updatedRdd = leftData ++ rightData
+//                (mergedSchema,updatedRdd)
+//              }
+//              //save data
+//              val location = fsRoot + frames.getFrameDataFile(realFrame.id)
+//              updatedRdd.saveAsObjectFile(location)
+//              val frame = frames.updateSchema(realFrame, mergedSchema.columns)
+//              frame.toJson.asJsObject
+//            }
+//            commands.lookup(command.id).get
+//          }
+//        }
+//      }
+//      (command, result)
+//    }
 
-  /**
-   * Load data from a LoadSource object to an existing destination described in the Load object
-   * @param arguments Load command object
-   * @param user current user
-   */
-  def load(arguments: Load[Long])(implicit user: UserPrincipal): (Command, Future[Command]) =
-    withContext("se.load") {
-      require(arguments != null, "arguments are required")
-      require(arguments.source.source_type != "file" || arguments.source.parser != None, "We need a parser to load files")
-      import DomainJsonProtocol._
-      val command: Command = commands.create(new CommandTemplate("load", Some(arguments.toJson.asJsObject)))
-      val result: Future[Command] = future {
-        withMyClassLoader {
-          withContext("se.load.future") {
-            withCommand(command) {
-              //get destination
-              val realFrame = frames.lookup(arguments.destination).getOrElse(
-                throw new IllegalArgumentException(s"No such data frame: ${arguments.destination}"))
-
-              //get Spark Context
-              val ctx = sparkContextManager.context(user)
-              //get Data
-              val (schema, newData) = getLoadData(ctx, arguments.source)
-              val rdd = frames.getFrameRdd(ctx.sparkContext, realFrame.id)
-
-              val (mergedSchema, updatedRdd) = if(realFrame.schema == schema)
-                (realFrame.schema, rdd ++ newData)
-              else{
-                val mergedSchema = SchemaUtil.mergeSchema(realFrame.schema, schema)
-                val leftData = rdd.map(SchemaUtil.convertSchema(realFrame.schema, mergedSchema,_))
-                val rightData = newData.map(SchemaUtil.convertSchema(schema, mergedSchema,_))
-
-                val updatedRdd = leftData ++ rightData
-                (mergedSchema,updatedRdd)
-              }
-              //save data
-              val location = fsRoot + frames.getFrameDataFile(realFrame.id)
-              updatedRdd.saveAsObjectFile(location)
-              val frame = frames.updateSchema(realFrame, mergedSchema.columns)
-              frame.toJson.asJsObject
-            }
-            commands.lookup(command.id).get
-          }
-        }
-      }
-      (command, result)
-    }
-
-
-  def clear(frame: DataFrame): Future[DataFrame] = withContext("se.clear") {
-    ???
-  }
 
   def create(frame: DataFrameTemplate)(implicit user: UserPrincipal): Future[DataFrame] =
     future {

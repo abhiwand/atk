@@ -27,6 +27,7 @@ import com.intel.intelanalytics.domain.command.{Execution, CommandTemplate}
 import com.intel.intelanalytics.domain.FilterPredicate
 import com.intel.intelanalytics.domain.command.Command
 import com.intel.intelanalytics.domain.frame._
+import com.intel.intelanalytics.domain.frame.load.Load
 import com.intel.intelanalytics.domain.graph.{Graph, GraphLoad, GraphTemplate}
 import com.intel.intelanalytics.engine.Rows._
 import com.intel.intelanalytics.security.UserPrincipal
@@ -66,9 +67,8 @@ trait Engine {
 
   def create(frame: DataFrameTemplate)(implicit user: UserPrincipal): Future[DataFrame]
 
-  def load(arguments: LoadLines[JsObject, Long])(implicit user: UserPrincipal): Execution
+  def load(arguments: Load[Long])(implicit user: UserPrincipal): Execution
 
-  def load(arguments: Load[Long])(implicit user: UserPrincipal): (Command, Future[Command])
   def filter(arguments: FilterPredicate[JsObject, Long])(implicit user: UserPrincipal): Execution
 
   def project(arguments: FrameProject[JsObject, Long])(implicit user: UserPrincipal): Execution
