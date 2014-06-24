@@ -43,7 +43,7 @@ trait FrameStorage {
 
   def renameColumn(frame: DataFrame, name_pairs: Seq[(String, String)]): DataFrame
 
-  def removeRows(frame: DataFrame, predicate: Row ⇒ Boolean)
+  def removeRows(frame: DataFrame, predicate: Row => Boolean)
 
   def appendRows(startWith: DataFrame, append: Iterable[Row])
 

@@ -563,6 +563,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     }
   }
 
+
   /**
    * Get the metadata for a range of graph identifiers.
    * @param offset First graph to obtain.

@@ -47,7 +47,7 @@ case class LabeledLine[T: ClassTag](label: Int, entry: T)
 class MLDataSplitter(percentages: Array[Double], seed: Int) extends Serializable {
 
   // verify percentages
-  if (!percentages.forall(p ⇒ p > 0)) {
+  if (!percentages.forall(p => p > 0)) {
     throw new SparkException("Some percentage numbers are negative or zero.")
   }
 
@@ -67,7 +67,7 @@ class MLDataSplitter(percentages: Array[Double], seed: Int) extends Serializable
   def randomlyLabelRDD[T: ClassTag](inputRDD: RDD[T]): RDD[LabeledLine[T]] = {
     // generate auxiliary (sample) RDD
     val auxiliaryRDD = new AuxiliaryRDD(inputRDD, seed)
-    val labeledRDD = inputRDD.zip(auxiliaryRDD).map { p ⇒
+    val labeledRDD = inputRDD.zip(auxiliaryRDD).map { p =>
       val (line, sampleValue) = p
       val label = cdf.indexWhere(_ >= sampleValue)
       LabeledLine(label, line)
@@ -117,9 +117,9 @@ object MLDataSplitter {
     // split RDD randomly
     val labeledRDD = splitter.randomlyLabelRDD(inputRDD)
 
-    (0 until percentages.size).foreach { i ⇒
+    (0 until percentages.size).foreach { i =>
       val partitionName = partitionNames(i)
-      val partitionRDD = labeledRDD.filter(p ⇒ p.label == i).map(_.entry)
+      val partitionRDD = labeledRDD.filter(p => p.label == i).map(_.entry)
       val partitionSize = partitionRDD.count
       partitionRDD.saveAsTextFile(output + "/" + partitionName)
       println("Number of lines in partition %s: %d (%.2f%%)".format(partitionName, partitionSize,

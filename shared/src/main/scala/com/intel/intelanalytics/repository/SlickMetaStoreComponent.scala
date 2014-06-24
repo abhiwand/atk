@@ -183,6 +183,10 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
       users.where(_.id === id).firstOption
     }
 
+    override def lookupByName(name: String)(implicit session: Session): Option[User] ={
+      users.where(_.username === name).firstOption
+    }
+
     override def delete(id: Long)(implicit session: Session): Try[Unit] = Try {
       users.where(_.id === id).mutate(c => c.delete())
     }
@@ -257,6 +261,10 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
 
     override def lookup(id: Long)(implicit session: Session): Option[Status] = {
       statuses.where(_.id === id).firstOption
+    }
+
+    override def lookupByName(name: String)(implicit session: Session): Option[Status] ={
+      statuses.where(_.name === name).firstOption
     }
 
     def lookupInit()(implicit session: Session): Status = {
@@ -364,6 +372,9 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
     override def lookup(id: Long)(implicit session: Session): Option[DataFrame] = {
       frames.where(_.id === id).firstOption
     }
+    override def lookupByName(name: String)(implicit session: Session): Option[DataFrame] ={
+      frames.where(_.name === name).firstOption
+    }
 
     /** execute DDL to create the underlying table */
     def createTable(implicit session: Session) = {
@@ -442,6 +453,10 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
 
     override def lookup(id: Long)(implicit session: Session): Option[Command] = {
       commands.where(_.id === id).firstOption
+    }
+
+    override def lookupByName(name: String)(implicit session: Session): Option[Command] ={
+      commands.where(_.name === name).firstOption
     }
 
     /** execute DDL to create the underlying table */
@@ -528,6 +543,9 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
       graphs.where(_.id === id).firstOption
     }
 
+    override def lookupByName(name:String)(implicit session:Session): Option[Graph] = {
+      graphs.where(_.name === name).firstOption
+    }
     /** execute DDL to create the underlying table */
     def createTable(implicit session: Session) = {
       graphs.ddl.create

@@ -62,8 +62,8 @@ class MLDataSplitterSuite extends FunSuite with BeforeAndAfterAll with ShouldMat
 
     // collect the size of each partition
     val partitionSizes = new Array[Long](percentages.size)
-    (0 until percentages.size).foreach { i ⇒
-      val partitionRDD = labeledRDD.filter(p ⇒ p.label == i).map(_.entry)
+    (0 until percentages.size).foreach { i =>
+      val partitionRDD = labeledRDD.filter(p => p.label == i).map(_.entry)
       partitionSizes(i) = partitionRDD.count
     }
 
@@ -72,7 +72,7 @@ class MLDataSplitterSuite extends FunSuite with BeforeAndAfterAll with ShouldMat
     assert(nTotalSamples == nPoints, "# data points sampled isn't equal to specified.")
 
     // check if partition percentages are expected 
-    (0 until percentages.size).foreach { i ⇒
+    (0 until percentages.size).foreach { i =>
       val realPercentage = partitionSizes(i).toDouble / nTotalSamples
       assert(Math.abs(realPercentage - percentages(i)) < 0.05,
         "partition percentage isn't in [%f, %f].".format(percentages(i) - 0.05, percentages(i) + 0.05))
