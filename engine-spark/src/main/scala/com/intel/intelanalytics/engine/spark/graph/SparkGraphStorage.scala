@@ -20,7 +20,7 @@ import com.intel.intelanalytics.engine.spark.frame.SparkFrameStorage
  * @param backendStorage Backend store the graph database.
  * @param frameStorage Provides dataframe services.
  */
-class SparkGraphStorage(context: (UserPrincipal) ⇒ Context,
+class SparkGraphStorage(context: (UserPrincipal) => Context,
   metaStore: MetaStore,
   backendStorage: GraphBackendStorage,
   frameStorage: SparkFrameStorage)
@@ -35,7 +35,7 @@ class SparkGraphStorage(context: (UserPrincipal) ⇒ Context,
    */
   override def drop(graph: Graph): Unit = {
     metaStore.withSession("spark.graphstorage.drop") {
-      implicit session ⇒
+      implicit session =>
         {
           future {
             backendStorage.deleteUnderlyingTable(graph.name)
@@ -56,7 +56,7 @@ class SparkGraphStorage(context: (UserPrincipal) ⇒ Context,
    */
   override def createGraph(graph: GraphTemplate)(implicit user: UserPrincipal): Graph = {
     metaStore.withSession("spark.graphstorage.drop") {
-      implicit session ⇒
+      implicit session =>
         {
           metaStore.graphRepo.insert(graph).get
         }
@@ -73,7 +73,7 @@ class SparkGraphStorage(context: (UserPrincipal) ⇒ Context,
   override def loadGraph(graphLoad: GraphLoad[JsObject, Long, Long])(implicit user: UserPrincipal): Graph = {
     withContext("se.loadgraph") {
       metaStore.withSession("spark.graphstorage.createGraph") {
-        implicit session ⇒
+        implicit session =>
           {
             val sparkContext = context(user).sparkContext
 
@@ -94,7 +94,7 @@ class SparkGraphStorage(context: (UserPrincipal) ⇒ Context,
             // Setup data in Spark
             val inputRowsRdd: RDD[Rows.Row] = frameStorage.getFrameRdd(sparkContext, theOnlySourceFrameID)
 
-            val inputRdd: RDD[Seq[_]] = inputRowsRdd.map(x ⇒ x.toSeq)
+            val inputRdd: RDD[Seq[_]] = inputRowsRdd.map(x => x.toSeq)
 
             graphBuilder.build(inputRdd)
 
@@ -113,7 +113,7 @@ class SparkGraphStorage(context: (UserPrincipal) ⇒ Context,
    */
   override def getGraphs(offset: Int, count: Int)(implicit user: UserPrincipal): Seq[Graph] = {
     metaStore.withSession("spark.graphstorage.getGraphs") {
-      implicit session ⇒
+      implicit session =>
         {
           metaStore.graphRepo.scan(offset, count)
         }
@@ -127,10 +127,11 @@ class SparkGraphStorage(context: (UserPrincipal) ⇒ Context,
    */
   override def lookup(id: Long): Option[Graph] = {
     metaStore.withSession("spark.graphstorage.lookup") {
-      implicit session ⇒
+      implicit session =>
         {
           metaStore.graphRepo.lookup(id)
         }
     }
   }
+
 }

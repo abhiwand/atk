@@ -52,7 +52,7 @@ class EdgeRDDFunctions(self: RDD[Edge], val maxEdgesPerCommit: Long = 50000L) ex
    * @return an RDD without duplicates
    */
   def mergeDuplicates(): RDD[Edge] = {
-    self.groupBy(m ⇒ m.id).mapValues(dups ⇒ dups.reduce((m1, m2) ⇒ m1.merge(m2))).values
+    self.groupBy(m => m.id).mapValues(dups => dups.reduce((m1, m2) => m1.merge(m2))).values
   }
 
   /**
@@ -64,7 +64,7 @@ class EdgeRDDFunctions(self: RDD[Edge], val maxEdgesPerCommit: Long = 50000L) ex
    * </p>
    */
   def biDirectional(): RDD[Edge] = {
-    self.flatMap(edge ⇒ List(edge, edge.reverse()))
+    self.flatMap(edge => List(edge, edge.reverse()))
   }
 
   /**
@@ -75,7 +75,7 @@ class EdgeRDDFunctions(self: RDD[Edge], val maxEdgesPerCommit: Long = 50000L) ex
    * </p>
    */
   def verticesFromEdges(): RDD[Vertex] = {
-    self.flatMap(edge ⇒ List(new Vertex(edge.tailVertexGbId, Nil), new Vertex(edge.headVertexGbId, Nil)))
+    self.flatMap(edge => List(new Vertex(edge.tailVertexGbId, Nil), new Vertex(edge.headVertexGbId, Nil)))
   }
 
   /**
@@ -85,24 +85,24 @@ class EdgeRDDFunctions(self: RDD[Edge], val maxEdgesPerCommit: Long = 50000L) ex
    */
   def joinWithPhysicalIds(ids: RDD[GbIdToPhysicalId]): RDD[Edge] = {
 
-    val idsByGbId = ids.groupBy(idMap ⇒ idMap.gbId)
+    val idsByGbId = ids.groupBy(idMap => idMap.gbId)
 
     // set physical ids for tail vertices
-    val edgesByTail = self.groupBy(edge ⇒ edge.tailVertexGbId)
-    val edgesWithTail = idsByGbId.join(edgesByTail).flatMapValues(value ⇒ {
+    val edgesByTail = self.groupBy(edge => edge.tailVertexGbId)
+    val edgesWithTail = idsByGbId.join(edgesByTail).flatMapValues(value => {
       val gbIdToPhysicalIds = value._1
       val physicalId = gbIdToPhysicalIds(0).physicalId
       val edges = value._2
-      edges.map(e ⇒ e.copy(tailPhysicalId = physicalId))
+      edges.map(e => e.copy(tailPhysicalId = physicalId))
     }).values
 
     // set physical ids for head vertices
-    val edgesByHead = edgesWithTail.groupBy(e ⇒ e.headVertexGbId)
-    val edgesWithPhysicalIds = idsByGbId.join(edgesByHead).flatMapValues(value ⇒ {
+    val edgesByHead = edgesWithTail.groupBy(e => e.headVertexGbId)
+    val edgesWithPhysicalIds = idsByGbId.join(edgesByHead).flatMapValues(value => {
       val gbIdToPhysicalIds = value._1
       val physicalId = gbIdToPhysicalIds(0).physicalId
       val edges = value._2
-      edges.map(e ⇒ e.copy(headPhysicalId = physicalId))
+      edges.map(e => e.copy(headPhysicalId = physicalId))
     }).values
 
     edgesWithPhysicalIds
@@ -112,7 +112,7 @@ class EdgeRDDFunctions(self: RDD[Edge], val maxEdgesPerCommit: Long = 50000L) ex
    * Filter Edges that do NOT have physical ids
    */
   def filterEdgesWithoutPhysicalIds(): RDD[Edge] = {
-    self.filter(edge ⇒ {
+    self.filter(edge => {
       if (edge.tailPhysicalId == null || edge.headPhysicalId == null) false
       else true
     })
@@ -124,7 +124,7 @@ class EdgeRDDFunctions(self: RDD[Edge], val maxEdgesPerCommit: Long = 50000L) ex
    */
   def write(titanConnector: TitanGraphConnector, append: Boolean): Unit = {
 
-    self.context.runJob(self, (context: TaskContext, iterator: Iterator[Edge]) ⇒ {
+    self.context.runJob(self, (context: TaskContext, iterator: Iterator[Edge]) => {
       val graph = titanConnector.connect()
       val edgeDAO = new EdgeDAO(graph, new VertexDAO(graph))
       val writer = new EdgeWriter(edgeDAO, append)
@@ -155,7 +155,7 @@ class EdgeRDDFunctions(self: RDD[Edge], val maxEdgesPerCommit: Long = 50000L) ex
    */
   def write(titanConnector: TitanGraphConnector, gbIdToPhysicalIdMap: Broadcast[Map[Property, AnyRef]], append: Boolean): Unit = {
 
-    self.context.runJob(self, (context: TaskContext, iterator: Iterator[Edge]) ⇒ {
+    self.context.runJob(self, (context: TaskContext, iterator: Iterator[Edge]) => {
       val graph = titanConnector.connect()
       val edgeDAO = new EdgeDAO(graph, new VertexDAO(graph))
       val writer = new EdgeWriter(edgeDAO, append)
