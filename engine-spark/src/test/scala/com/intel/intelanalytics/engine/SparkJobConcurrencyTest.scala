@@ -3,14 +3,22 @@ package com.intel.intelanalytics.engine.spark
 import org.scalatest.Matchers
 import org.apache.spark.engine.{ProgressPrinter, SparkProgressListener}
 import java.util.concurrent.Semaphore
-import com.intel.intelanalytics.engine.spark.SparkOps
+import com.intel.intelanalytics.engine.spark.{CommandProgressUpdater, SparkOps}
 import com.intel.intelanalytics.engine.TestingSparkContext
 import java.io.File
 import org.apache.commons.io.FileUtils
 
 class SparkJobConcurrencyTest  extends TestingSparkContext with Matchers {
   "Running multiple thread" should "keep isolation between threads when setting properties" in {
-    val listener = new SparkProgressListener(null)
+
+    val updater = new CommandProgressUpdater {
+      override def updateProgress(commandId: Long, progress: List[Float]): Unit = {
+        //do nothing
+      }
+    }
+
+
+    val listener = new SparkProgressListener(updater)
     sc.addSparkListener(listener)
 
     def createTempDir: File = {
