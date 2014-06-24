@@ -43,7 +43,7 @@ object SparkEngineConfig extends SharedConfig {
   val sparkMaster: String = config.getString("intel.analytics.spark.master")
 
   /** Default number for partitioning data */
-  val sparkDefaultPartitions: Int = config.getInt("intel.analytics.spark.defaultPartitions")
+  val sparkDefaultPartitions: Int = config.getInt("intel.analytics.engine.spark.defaultPartitions")
 
   val defaultTimeout: FiniteDuration = config.getInt("intel.analytics.engine.defaultTimeout").seconds
 
