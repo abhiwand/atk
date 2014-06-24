@@ -78,7 +78,7 @@ object ExamplesUtils {
       System.getProperty("user.dir") + "/graphbuilder-3/target/graphbuilder-3.jar",
       System.getProperty("user.dir") + "/target/graphbuilder-3.jar",
       System.getProperty("user.dir") + "/graphbuilder-3.jar")
-    possiblePaths.foreach(path ⇒ {
+    possiblePaths.foreach(path => {
       val jar = new File(path)
       if (jar.exists()) {
         return jar.getAbsolutePath
@@ -102,7 +102,7 @@ object ExamplesUtils {
    */
   private def guessSparkHome: String = {
     val possibleSparkHomes = List("/opt/cloudera/parcels/CDH/lib/spark/", "/usr/lib/spark", "/home/kdatta1/spark-0.9.1-bin-hadoop2")
-    possibleSparkHomes.foreach(dir ⇒ {
+    possibleSparkHomes.foreach(dir => {
       val path = new File(dir)
       if (path.exists()) {
         return path.getAbsolutePath
@@ -132,12 +132,12 @@ object ExamplesUtils {
 
     val output = new StringBuilder("---- Graph Dump ----\n")
 
-    graph.getVertices.toList.foreach(v ⇒ {
+    graph.getVertices.toList.foreach(v => {
       output.append(v).append("\n")
       vertexCount += 1
     })
 
-    graph.getEdges.toList.foreach(e ⇒ {
+    graph.getEdges.toList.foreach(e => {
       output.append(e).append("\n")
       edgeCount += 1
     })

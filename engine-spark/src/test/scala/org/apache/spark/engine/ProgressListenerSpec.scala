@@ -325,10 +325,10 @@ class ProgressListenerSpec extends Specification with Mockito {
     stage.id.returns(1)
     jobEnd.jobResult.returns(JobFailed(null, Some(stage)))
 
-    listener.activeStages.find(s ⇒ s.stageId == 1) shouldNotEqual None
+    listener.activeStages.find(s => s.stageId == 1) shouldNotEqual None
     listener.onJobEnd(jobEnd)
     listener.getProgress(1) shouldEqual 0
-    listener.activeStages.find(s ⇒ s.stageId == 1) shouldEqual None
+    listener.activeStages.find(s => s.stageId == 1) shouldEqual None
   }
 
   "job1: finish second task in second stage, job2: finish first task in first stage" in {
