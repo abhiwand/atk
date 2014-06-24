@@ -182,12 +182,6 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     }
   }
 
-  def getFrameByName(name: String): Future[Option[DataFrame]] = withContext("se.getFrameByName"){
-    future{
-      frames.lookupFrameByName(name)
-    }
-  }
-
   def renameFrame(arguments: FrameRenameFrame[JsObject, Long])(implicit user: UserPrincipal): (Command, Future[Command]) =
     withContext("se.rename_frame") {
       require(arguments != null, "arguments are required")
