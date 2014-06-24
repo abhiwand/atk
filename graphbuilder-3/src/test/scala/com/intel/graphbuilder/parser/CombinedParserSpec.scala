@@ -38,8 +38,7 @@ class CombinedParserSpec extends Specification {
         List("2", "{(1)}", "10", "Y", "2", "Y"),
         List("3", "{(1)}", "11", "Y", "3", "Y"),
         List("4", "{(1),(2)}", "100", "N", "4", "Y"),
-        List("5", "{(1)}", "101", "Y", "5", "Y")
-      )
+        List("5", "{(1)}", "101", "Y", "5", "Y"))
 
       val parser = {
         val inputSchema = new InputSchema(List("cf:number", "cf:factor", "binary", "isPrime", "reverse", "isPalindrome"), null)
@@ -48,7 +47,7 @@ class CombinedParserSpec extends Specification {
         new CombinedParser(inputSchema, new VertexRuleParser(inputSchema, vertexRules), new EdgeRuleParser(inputSchema, edgeRules))
       }
 
-      inputRows.flatMap(row => parser.parse(row)).size mustEqual 15
+      inputRows.flatMap(row ⇒ parser.parse(row)).size mustEqual 15
     }
 
   }

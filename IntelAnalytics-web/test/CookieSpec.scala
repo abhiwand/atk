@@ -1,8 +1,4 @@
-import org.junit.runner.RunWith
-import org.specs2.mock.Mockito
-import org.specs2.mutable.Specification
-import org.specs2.runner.JUnitRunner
-import services.authorize.CookieGenerator
+
 
 @RunWith(classOf[JUnitRunner])
 class CookieSpec extends Specification with Mockito {

@@ -31,7 +31,7 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>com.intel</groupId>
+    <groupId>com.intel.ia</groupId>
     <artifactId>IntelAnalytics</artifactId>
     <packaging>pom</packaging>
     <version>0.8.0-SNAPSHOT</version>
@@ -39,9 +39,6 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
     <description>IntelAnalytics : Large Scale Graph Analytics</description>
     <inceptionYear>2013</inceptionYear>
 
-    <pluginRepositories>
-
-    </pluginRepositories>
     <repositories>
         <repository>
             <id>central</id>
@@ -107,52 +104,21 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
     </prerequisites>
     <properties>
         <project.version>0.8.0-SNAPSHOT</project.version>
-        <pkg.version>0.8.${env.BUILD_NUMBER}</pkg.version>
         <top.dir>${project.basedir}</top.dir>
         <buildtype>test</buildtype>
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-        <dep.accumulo.version>1.4.0</dep.accumulo.version>
-        <dep.airline.version>0.5</dep.airline.version>
         <dep.aurelius.version>0.4.5-SNAPSHOT</dep.aurelius.version>
-        <dep.base64.version>2.3.8</dep.base64.version>
-        <dep.cli-parser.version>1.1</dep.cli-parser.version>
-        <dep.codehaus-jackson.version>1.8.0</dep.codehaus-jackson.version>
-        <dep.commons-cli.version>1.2</dep.commons-cli.version>
-        <dep.commons-collections.version>3.2.1</dep.commons-collections.version>
-        <dep.commons-configuration.version>1.6</dep.commons-configuration.version>
-        <dep.commons-httpclient.version>3.0.1</dep.commons-httpclient.version>
-        <dep.commons-io.version>2.1</dep.commons-io.version>
-        <dep.commons-logging.version>1.0.4</dep.commons-logging.version>
-        <dep.commons-net.version>3.1</dep.commons-net.version>
-        <dep.fasterxml-jackson.version>2.1.0</dep.fasterxml-jackson.version>
-        <dep.fastutil.version>6.5.3</dep.fastutil.version>
+
         <dep.hbase.version>0.96.1.1-cdh5.0.0</dep.hbase.version>
-
         <dep.hadoop2.version>2.3.0-cdh5.0.0</dep.hadoop2.version>
-        <dep.hadoop.core.version>2.3.0-mr1-cdh5.0.0</dep.hadoop.core.version>
-        <dep.hadoop.common.version>2.3.0-cdh5.0.0</dep.hadoop.common.version>
-        <dep.hadoop.client.version>2.3.0-cdh5.0.0</dep.hadoop.client.version>
-        <dep.guava.version>12.0</dep.guava.version>
-        <dep.hcatalog.version>0.5.0-incubating</dep.hcatalog.version>
-        <dep.hive.version>0.11.0</dep.hive.version>
-        <dep.hiveio.version>0.17</dep.hiveio.version>
-        <dep.json.version>20090211</dep.json.version>
-        <dep.junit.version>4.8</dep.junit.version>
-        <dep.jython.version>2.5.3</dep.jython.version>
-        <dep.mahout.version>0.9</dep.mahout.version>
-        <dep.mockito-all.version>1.8.5</dep.mockito-all.version>
-        <dep.netty.version>3.5.3.Final</dep.netty.version>
-        <dep.slf4j.version>1.7.5</dep.slf4j.version>
-        <dep.typetools.version>0.2.1</dep.typetools.version>
-        <dep.yammer-metrics.version>2.2.0</dep.yammer-metrics.version>
-        <dep.yourkit-api.version>9.5.6</dep.yourkit-api.version>
-        <dep.zookeeper.version>3.3.3</dep.zookeeper.version>
-        <dep.pig.version>0.12.0-cdh5.0.0</dep.pig.version>
-        <dep.org.apache.spark>0.9.1</dep.org.apache.spark>
-        <dep.commons.lang>2.6</dep.commons.lang>
 
+        <dep.mahout.version>0.9</dep.mahout.version>
+
+        <dep.spark.version>0.9.1</dep.spark.version>
+
+        <dep.typesafe-config.version>1.2.1</dep.typesafe-config.version>
         <!--START GAO MAVEN -->
         <!-- these dependencies are from gaomaven.jf.intel.com -->
         <dep.giraph-core.version>1.1.0-SNAPSHOT-20140317</dep.giraph-core.version>
@@ -161,12 +127,10 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
 
         <scala.long.version>2.10.3</scala.long.version>
         <scala.short.version>2.10</scala.short.version>
+
         <akka.version>2.3.2</akka.version>
-        <spray-json.version>1.2.5</spray-json.version>
-        <slick.version>2.0.1</slick.version>
 
         <scoverage-plugin.version>0.99.2</scoverage-plugin.version>
-        <scoverage.version>0.99.2</scoverage.version>
     </properties>
     <modules>
 
@@ -196,7 +160,9 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
             <modules>
                 <module>event</module>
                 <module>ispark-deps</module>
+                <module>testutils</module>
                 <module>graphbuilder-3</module><!-- scoverage -->
+                <module>graphon</module>
                 <module>interfaces</module>
                 <module>launcher</module><!-- scoverage -->
                 <module>shared</module><!-- scoverage -->
@@ -222,6 +188,7 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 <!--<module>ititan</module>-->
                 <module>event</module>
                 <module>ispark-deps</module>
+                <module>testutils</module>
                 <module>graphbuilder-3</module><!-- scoverage -->
                 <module>interfaces</module>
                 <module>launcher</module><!-- scoverage -->
@@ -430,15 +397,7 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                             <executions>
                                 <execution>
                                     <id>compile</id>
-                                    <!--<goals>
-                                        <goal>add-source</goal>
-                                        <goal>compile</goal>
-                                    </goals>-->
                                     <configuration>
-                                        <!--<jvmArgs>
-                                            <jvmArg>-Xms1024m</jvmArg>
-                                            <jvmArg>-Xmx2048m</jvmArg>
-                                        </jvmArgs>-->
                                         <dependencies>
                                             <dependency>
                                                 <groupId>org.scoverage</groupId>
@@ -471,7 +430,7 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                             <inherited>true</inherited>
                             <groupId>org.scoverage</groupId>
                             <artifactId>maven-scoverage-plugin</artifactId>
-                            <version>${scoverage.version}</version>
+                            <version>${scoverage-plugin.version}</version>
                             <executions>
                                 <execution>
                                     <id>scala-scoverage-report</id>
@@ -520,41 +479,6 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                         <target>1.7</target>
                     </configuration>
                 </plugin>
-
-                <!--<plugin>
-                    <groupId>org.apache.rat</groupId>
-                    <artifactId>apache-rat-plugin</artifactId>
-                    <version>0.8</version>
-                    <executions>
-                        <execution>
-                            <phase>verify</phase>
-                            <goals>
-                                <goal>check</goal>
-                            </goals>
-                        </execution>
-                    </executions>
-                    <configuration>
-                        <excludeSubProjects>false</excludeSubProjects>
-                        <numUnapprovedLicenses>0</numUnapprovedLicenses>
-                        <excludes>
-                            <exclude>CODE_CONVENTIONS</exclude>
-                            &lt;!&ndash; generated content&ndash;&gt;
-                            <exclude>**/target/**</exclude>
-                            <exclude>/_bsp/**</exclude>
-                            <exclude>.checkstyle</exclude>
-                            &lt;!&ndash;source control and IDEs &ndash;&gt;&ndash;&gt;
-                            <exclude>.reviewboardrc</exclude>
-                            <exclude>.git/**</exclude>
-                            <exclude>.gitignore</exclude>
-                            <exclude>*.patch</exclude>
-                            <exclude>.idea/**</exclude>
-                            <exclude>**/*.iml</exclude>
-                            <exclude>**/*.ipr</exclude>
-                            &lt;!&ndash; test resources (for Giraph on YARN profile)&ndash;&gt;
-                            <exclude>**/test/resources/**</exclude>
-                        </excludes>
-                    </configuration>
-                </plugin>-->
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-checkstyle-plugin</artifactId>
@@ -683,212 +607,26 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                         </execution>
                     </executions>
                 </plugin-->
-                <!--<plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-site-plugin</artifactId>
-                    <version>3.3</version>
-                    <configuration>
-                        <reportPlugins>
-                            <plugin>
-                                <groupId>org.apache.maven.plugins</groupId>
-                                <artifactId>maven-project-info-reports-plugin</artifactId>
-                                <version>2.7</version>
-                                <reports>
-                                    <report>index</report>
-                                    <report>project-team</report>
-                                    <report>license</report>
-                                    <report>mailing-list</report>
-                                    <report>dependencies</report>
-                                    <report>dependency-convergence</report>
-                                    <report>plugin-management</report>
-                                    <report>cim</report>
-                                    <report>issue-tracking</report>
-                                    <report>scm</report>
-                                    <report>summary</report>
-                                </reports>
-                            </plugin>
-                            <plugin>
-                                <groupId>org.apache.maven.plugins</groupId>
-                                <artifactId>maven-surefire-report-plugin</artifactId>
-                                <version>2.6</version>
-                            </plugin>
-                            <plugin>
-                                <groupId>org.apache.maven.plugins</groupId>
-                                <artifactId>maven-javadoc-plugin</artifactId>
-                                <version>2.9</version>
-                            </plugin>
-                            <plugin>
-                                <groupId>org.apache.maven.plugins</groupId>
-                                <artifactId>maven-checkstyle-plugin</artifactId>
-                                <version>2.9</version>
-                            </plugin>
-                            <plugin>
-                                <groupId>org.codehaus.mojo</groupId>
-                                <artifactId>jdepend-maven-plugin</artifactId>
-                                <version>2.0-beta-2</version>
-                            </plugin>
-                            <plugin>
-                                <groupId>org.codehaus.mojo</groupId>
-                                <artifactId>cobertura-maven-plugin</artifactId>
-                                <version>2.4</version>
-                            </plugin>
-                            <plugin>
-                                <groupId>org.codehaus.mojo</groupId>
-                                <artifactId>taglist-maven-plugin</artifactId>
-                                <version>2.4</version>
-                            </plugin>
-                            <plugin>
-                                <groupId>org.apache.maven.plugins</groupId>
-                                <artifactId>maven-jxr-plugin</artifactId>
-                                <version>2.1</version>
-                            </plugin>
-                            <plugin>
-                                <groupId>org.codehaus.mojo</groupId>
-                                <artifactId>findbugs-maven-plugin</artifactId>
-                                <version>2.5.1</version>
-                            </plugin>
-                        </reportPlugins>
-                    </configuration>
-                </plugin>-->
-
-                <!--<plugin>
-                    <groupId>org.codehaus.mojo</groupId>
-                    <artifactId>findbugs-maven-plugin</artifactId>
-                    <version>2.5.2</version>
-                    <configuration>
-                        <xmlOutput>true</xmlOutput>
-                        <findbugsXmlOutput>false</findbugsXmlOutput>
-                        <excludeFilterFile>${top.dir}/findbugs-exclude.xml</excludeFilterFile>
-                    </configuration>
-                    <executions>
-                        <execution>
-                            <phase>verify</phase>
-                            <goals>
-                                <goal>check</goal>
-                            </goals>
-                        </execution>
-                    </executions>
-                </plugin>-->
-                <!--<plugin>
-                    <groupId>org.sonatype.plugins</groupId>
-                    <artifactId>munge-maven-plugin</artifactId>
-                    <version>1.0</version>
-                    <executions>
-                        <execution>
-                            <id>munge</id>
-                            <phase>generate-sources</phase>
-                            <goals>
-                                <goal>munge</goal>
-                            </goals>
-                            <configuration>
-                                <symbols>${munge.symbols}</symbols>
-                            </configuration>
-                        </execution>
-                    </executions>
-                </plugin>-->
             </plugins>
         </pluginManagement>
 
 
         <plugins>
-
-
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
             </plugin>
-
 
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-checkstyle-plugin</artifactId>
             </plugin>
 
-            <plugin>
-                <groupId>com.github.koraktor</groupId>
-                <artifactId>mavanagaiata</artifactId>
-            </plugin>
-
-            <plugin>
+            <!--<plugin>
                 <groupId>org.scalariform</groupId>
                 <artifactId>scalariform-maven-plugin</artifactId>
-            </plugin>
+            </plugin>-->
 
-            <!--            <plugin>
-                            <artifactId>exec-maven-plugin</artifactId>
-                            <groupId>org.codehaus.mojo</groupId>
-                            <version>1.2.1</version>
-                            <executions>
-                                <execution>
-                                    <id>sbt-compile</id>
-                                    <phase>compile</phase>
-                                    <goals>
-                                        <goal>exec</goal>
-                                    </goals>
-                                    <configuration>
-                                        <executable>sbt</executable>
-                                        <arguments>
-                                            <argument>compile</argument>
-                                        </arguments>
-                                    </configuration>
-                                </execution>
-                                <execution>
-                                    <id>sbt-scalastyle</id>
-                                    <phase>test</phase>
-                                    <goals>
-                                        <goal>exec</goal>
-                                    </goals>
-                                    <configuration>
-                                        <executable>sbt</executable>
-                                        <arguments>
-                                            <argument>scalastyle</argument>
-                                        </arguments>
-                                    </configuration>
-                                </execution>
-                                <execution>
-                                    <id>sbt-test-w-coverage</id>
-                                    <phase>test</phase>
-                                    <goals>
-                                        <goal>exec</goal>
-                                    </goals>
-                                    <configuration>
-                                        <executable>sbt</executable>
-                                        <arguments>
-                                            <argument>-Dconfig.resource=dev</argument>
-                                            <argument>scoverage:test</argument>
-                                        </arguments>
-                                    </configuration>
-                                </execution>
-                                <execution>
-
-                                    <id>sbt-test</id>
-                                    <phase>test</phase>
-                                    <goals>
-                                        <goal>exec</goal>
-                                    </goals>
-                                    <configuration>
-                                        <executable>sbt</executable>
-                                        <arguments>
-                                            <argument>-Dconfig.resource=dev</argument>
-                                            <argument>event/test</argument>
-                                        </arguments>
-                                    </configuration>
-                                </execution>
-                                <execution>
-                                    <id>sbt-dist</id>
-                                    <phase>package</phase>
-                                    <goals>
-                                        <goal>exec</goal>
-                                    </goals>
-                                    <configuration>
-                                        <executable>sbt</executable>
-                                        <arguments>
-                                            <argument>assembly</argument>
-                                        </arguments>
-                                    </configuration>
-                                </execution>
-                            </executions>
-                        </plugin>-->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
@@ -898,87 +636,221 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
 
     <dependencyManagement>
         <dependencies>
-            <!--<dependency>
-                <groupId>org.scoverage</groupId>
-                <artifactId>scalac-scoverage-plugin_${scala.short.version}</artifactId>
-                <version>${scoverage-plugin.version}</version>
-				<scope>test</scope>
-            </dependency>-->
+            <!--START bda dependencies-->
+            <dependency>
+                <groupId>com.intel.ia</groupId>
+                <artifactId>event</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.intel.ia</groupId>
+                <artifactId>ispark-deps</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.intel.ia</groupId>
+                <artifactId>testutils</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.intel.ia</groupId>
+                <artifactId>graphbuilder-3</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.intel.ia</groupId>
+                <artifactId>graphon</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.intel.ia</groupId>
+                <artifactId>interfaces</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.intel.ia</groupId>
+                <artifactId>launcher</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.intel.ia</groupId>
+                <artifactId>shared</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.intel.ia</groupId>
+                <artifactId>api-server</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.intel.ia</groupId>
+                <artifactId>engine</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.intel.ia</groupId>
+                <artifactId>engine-spark</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.intel.ia</groupId>
+                <artifactId>imahout</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.intel.ia</groupId>
+                <artifactId>igiraph-algorithms</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.intel.ia</groupId>
+                <artifactId>igiraph-titan</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.intel.ia</groupId>
+                <artifactId>igiraph-core</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.intel.ia</groupId>
+                <artifactId>igiraph</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.intel.ia</groupId>
+                <artifactId>imlib</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.intel.ia</groupId>
+                <artifactId>graphon</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <!--END bda dependencies-->
+            <!--STARTititan-->
+            <dependency>
+                <groupId>com.intel.ia</groupId>
+                <artifactId>ititan-core</artifactId>
+                <version>${dep.aurelius.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.thinkaurelius.titan</groupId>
+                <artifactId>titan-core</artifactId>
+                <version>${dep.aurelius.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.thinkaurelius.titan</groupId>
+                <artifactId>ititan-core</artifactId>
+                <version>${dep.aurelius.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.apache.avro</groupId>
+                        <artifactId>avro</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>com.thinkaurelius.faunus</groupId>
+                <artifactId>faunus</artifactId>
+                <version>${dep.aurelius.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.thinkaurelius.titan</groupId>
+                <artifactId>titan-hbase</artifactId>
+                <version>${dep.aurelius.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.thinkaurelius.titan</groupId>
+                <artifactId>titan-berkeleyje</artifactId>
+                <version>${dep.aurelius.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.thinkaurelius.titan</groupId>
+                <artifactId>titan-cassandra</artifactId>
+                <version>${dep.aurelius.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.apache.cassandra.deps</groupId>
+                        <artifactId>avro</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <!--ENDititan-->
 
-
+            <!--org.scala-->
             <dependency>
                 <groupId>org.scala-lang</groupId>
                 <artifactId>scala-library</artifactId>
-                <version>${scala.long.version}</version>
+                <version>2.10.3</version>
+            </dependency>
+            <dependency>
+                <groupId>org.scala-lang</groupId>
+                <artifactId>scala-reflect</artifactId>
+                <version>2.10.3</version>
             </dependency>
 
-
-            <!-- <dependency>
-                 <groupId>org.apache.hadoop</groupId>
-                 <artifactId>hadoop-common</artifactId>
-                 <version>${dep.hadoop2.version}</version>
-             </dependency>-->
-            <!-- <dependency>
-                 <groupId>commons-net</groupId>
-                 <artifactId>commons-net</artifactId>
-                 <version>${dep.commons-net.version}</version>
-             </dependency>
-             <dependency>
-                 <groupId>org.apache.hadoop</groupId>
-                 <artifactId>hadoop-mapreduce-client-shuffle</artifactId>
-                 <version>${dep.hadoop2.version}</version>
-             </dependency>
-             <dependency>
-                 <groupId>org.apache.hadoop</groupId>
-                 <artifactId>hadoop-mapreduce-client-jobclient</artifactId>
-                 <version>${dep.hadoop2.version}</version>
-             </dependency>
-             <dependency>
-                 <groupId>org.apache.hadoop</groupId>
-                 <artifactId>hadoop-mapreduce-client-hs</artifactId>
-                 <version>${dep.hadoop2.version}</version>
-             </dependency>
-             <dependency>
-                 <groupId>org.apache.hadoop</groupId>
-                 <artifactId>hadoop-mapreduce-client-core</artifactId>
-                 <version>${dep.hadoop2.version}</version>
-             </dependency>
-             <dependency>
-                 <groupId>org.apache.hadoop</groupId>
-                 <artifactId>hadoop-mapreduce-client-common</artifactId>
-                 <version>${dep.hadoop2.version}</version>
-             </dependency>
-             <dependency>
-                 <groupId>org.apache.hadoop</groupId>
-                 <artifactId>hadoop-auth</artifactId>
-                 <version>${dep.hadoop2.version}</version>
-             </dependency>
-             <dependency>
-                 <groupId>org.apache.hadoop</groupId>
-                 <artifactId>hadoop-client</artifactId>
-                 <version>${dep.hadoop2.version}</version>
-             </dependency>
-             <dependency>
-                 <groupId>org.apache.hadoop</groupId>
-                 <artifactId>hadoop-minicluster</artifactId>
-                 <version>${dep.hadoop2.version}</version>
-                 <scope>test</scope>
-             </dependency>-->
-            <!-- <dependency>
-                 <groupId>joda-time</groupId>
-                 <artifactId>joda-time</artifactId>
-                 <version>2.3</version>
-                 &lt;!&ndash;scope>test</scope&ndash;&gt;
-             </dependency>-->
-            <!--dependency>
-                <groupId>log4j</groupId>
-                <artifactId>log4j</artifactId>
-                <version>1.2.17</version>
-            </dependency-->
-            <!--<dependency>
-                <groupId>commons-lang</groupId>
-                <artifactId>commons-lang</artifactId>
-                <version>2.6</version>
+            <!--org.apache.zookeeper-->
+            <dependency>
+                <groupId>org.apache.zookeeper</groupId>
+                <artifactId>zookeeper</artifactId>
+                <version>3.3.3</version>
+            </dependency>
+            <!--org.apache.hadoop-->
+            <dependency>
+                <groupId>org.apache.hadoop</groupId>
+                <artifactId>hadoop-common</artifactId>
+                <version>${dep.hadoop2.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.hadoop</groupId>
+                <artifactId>hadoop-hdfs</artifactId>
+                <version>${dep.hadoop2.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.hadoop</groupId>
+                <artifactId>hadoop-mapreduce-client-app</artifactId>
+                <version>${dep.hadoop2.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.hadoop</groupId>
+                <artifactId>hadoop-core</artifactId>
+                <version>2.3.0-mr1-cdh5.0.0</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.hadoop</groupId>
+                <artifactId>hadoop-mapreduce-client-hs</artifactId>
+                <version>${dep.hadoop2.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.hadoop</groupId>
+                <artifactId>hadoop-mapreduce-client-shuffle</artifactId>
+                <version>${dep.hadoop2.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.hadoop</groupId>
+                <artifactId>hadoop-mapreduce-client-jobclient</artifactId>
+                <version>${dep.hadoop2.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.hadoop</groupId>
+                <artifactId>hadoop-mapreduce-client-core</artifactId>
+                <version>${dep.hadoop2.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.hadoop</groupId>
+                <artifactId>hadoop-mapreduce-client-common</artifactId>
+                <version>${dep.hadoop2.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.hadoop</groupId>
+                <artifactId>hadoop-auth</artifactId>
+                <version>${dep.hadoop2.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.hadoop</groupId>
+                <artifactId>hadoop-client</artifactId>
+                <version>${dep.hadoop2.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.hadoop</groupId>
@@ -989,169 +861,343 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 <groupId>org.apache.hadoop</groupId>
                 <artifactId>hadoop-yarn-api</artifactId>
                 <version>${dep.hadoop2.version}</version>
-            </dependency>-->
-            <!-- <dependency>
-                 <groupId>org.apache.hadoop</groupId>
-                 <artifactId>hadoop-common</artifactId>
-                 <version>${dep.hadoop2.version}</version>
-                 <exclusions>
-                     <exclusion>
-                         <groupId>net.sf.kosmosfs</groupId>
-                         <artifactId>kfs</artifactId>
-                     </exclusion>
-                     <exclusion>
-                         <groupId>org.mortbay.jetty</groupId>
-                         <artifactId>jetty</artifactId>
-                     </exclusion>
-                     <exclusion>
-                         <groupId>org.mortbay.jetty</groupId>
-                         <artifactId>jetty-util</artifactId>
-                     </exclusion>
-                     <exclusion>
-                         <groupId>hsqldb</groupId>
-                         <artifactId>hsqldb</artifactId>
-                     </exclusion>
-                     <exclusion>
-                         <groupId>junit</groupId>
-                         <artifactId>junit</artifactId>
-                     </exclusion>
-                     <exclusion>
-                         <groupId>oro</groupId>
-                         <artifactId>oro</artifactId>
-                     </exclusion>
-                     <exclusion>
-                         <groupId>org.mortbay.jetty</groupId>
-                         <artifactId>jsp-2.1</artifactId>
-                     </exclusion>
-                     <exclusion>
-                         <groupId>org.mortbay.jetty</groupId>
-                         <artifactId>jsp-api-2.1</artifactId>
-                     </exclusion>
-                     <exclusion>
-                         <groupId>org.mortbay.jetty</groupId>
-                         <artifactId>servlet-api-2.5</artifactId>
-                     </exclusion>
-                     <exclusion>
-                         <groupId>tomcat</groupId>
-                         <artifactId>jasper-runtime</artifactId>
-                     </exclusion>
-                     <exclusion>
-                         <groupId>tomcat</groupId>
-                         <artifactId>jasper-compiler</artifactId>
-                     </exclusion>
-                     <exclusion>
-                         <groupId>xmlenc</groupId>
-                         <artifactId>xmlenc</artifactId>
-                     </exclusion>
-                     <exclusion>
-                         <groupId>net.java.dev.jets3t</groupId>
-                         <artifactId>jets3t</artifactId>
-                     </exclusion>
-                     <exclusion>
-                         <groupId>org.eclipse.jdt</groupId>
-                         <artifactId>core</artifactId>
-                     </exclusion>
-                 </exclusions>
-             </dependency>-->
+            </dependency>
+            <dependency>
+                <groupId>org.apache.hadoop</groupId>
+                <artifactId>hadoop-minicluster</artifactId>
+                <version>${dep.hadoop2.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <!--org.apache.spark-->
+            <dependency>
+                <groupId>org.apache.spark</groupId>
+                <artifactId>spark-core_${scala.short.version}</artifactId>
+                <version>${dep.spark.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.spark</groupId>
+                <artifactId>spark-mllib_${scala.short.version}</artifactId>
+                <version>${dep.spark.version}</version>
+            </dependency>
+            <!--org.apache.mahout-->
+            <dependency>
+                <groupId>org.apache.mahout</groupId>
+                <artifactId>mahout-core</artifactId>
+                <version>${dep.mahout.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.mahout</groupId>
+                <artifactId>mahout-math</artifactId>
+                <version>${dep.mahout.version}</version>
+            </dependency>
+            <!--org.apache.giraph-->
+            <dependency>
+                <groupId>org.apache.giraph</groupId>
+                <artifactId>giraph-core</artifactId>
+                <version>${dep.giraph-core.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.giraph</groupId>
+                <artifactId>giraph-core</artifactId>
+                <version>${dep.giraph-core.version}</version>
+                <type>test-jar</type>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.giraph</groupId>
+                <artifactId>giraph-hbase</artifactId>
+                <version>${dep.giraph-hbase.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.giraph</groupId>
+                <artifactId>giraph-hbase</artifactId>
+                <version>${dep.giraph-hbase.version}</version>
+                <type>test-jar</type>
+            </dependency>
+            <!--org.apache.hbase-->
+            <dependency>
+                <groupId>org.apache.hbase</groupId>
+                <artifactId>hbase-protocol</artifactId>
+                <version>${dep.hbase.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.hbase</groupId>
+                <artifactId>hbase-common</artifactId>
+                <version>${dep.hbase.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.hbase</groupId>
+                <artifactId>hbase-server</artifactId>
+                <version>${dep.hbase.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.hbase</groupId>
+                <artifactId>hbase-client</artifactId>
+                <version>${dep.hbase.version}</version>
+            </dependency>
 
-
-            <!-- <dependency>
-                 <groupId>org.apache.giraph</groupId>
-                 <artifactId>giraph-core</artifactId>
-                 <version>${dep.giraph-core.version}</version>
-             </dependency>-->
-            <!--dependency>
-               <groupId>org.apache.giraph</groupId>
-               <artifactId>giraph-hbase</artifactId>
-               <version>${dep.giraph-hbase.version}</version>
-            </dependency-->
-            <!--<dependency>
+            <!--commons-->
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-lang3</artifactId>
+                <version>3.3.1</version>
+            </dependency>
+            <dependency>
+                <groupId>commons-lang</groupId>
+                <artifactId>commons-lang</artifactId>
+                <version>2.6</version>
+            </dependency>
+            <dependency>
+                <groupId>commons-httpclient</groupId>
+                <artifactId>commons-httpclient</artifactId>
+                <version>3.1</version>
+            </dependency>
+            <dependency>
+                <groupId>commons-collections</groupId>
+                <artifactId>commons-collections</artifactId>
+                <version>3.2.1</version>
+            </dependency>
+            <dependency>
                 <groupId>commons-configuration</groupId>
                 <artifactId>commons-configuration</artifactId>
-                <version>${dep.commons-configuration.version}</version>
-                <scope>compile</scope>
-            </dependency>-->
-            <!--
-                        <dependency>
-                            <groupId>org.json</groupId>
-                            <artifactId>json</artifactId>
-                            <version>${dep.json.version}</version>
-                        </dependency>
-                        <dependency>
-                            <groupId>org.slf4j</groupId>
-                            <artifactId>slf4j-api</artifactId>
-                            <version>${dep.slf4j.version}</version>
-                        </dependency>
-                        <dependency>
-                            <groupId>org.slf4j</groupId>
-                            <artifactId>slf4j-log4j12</artifactId>
-                            <version>${dep.slf4j.version}</version>
-                        </dependency>
-                        <dependency>
-                            <groupId>com.thinkaurelius.titan</groupId>
-                            <artifactId>titan-core</artifactId>
-                            <version>${dep.aurelius.version}</version>
-                        </dependency>
-                        <dependency>
-                            <groupId>com.thinkaurelius.titan</groupId>
-                            <artifactId>titan-hbase</artifactId>
-                            <version>${dep.aurelius.version}</version>
-                        </dependency>
-                        <dependency>
-                            <groupId>org.apache.hbase</groupId>
-                            <artifactId>hbase</artifactId>
-                            <version>${dep.hbase.version}</version>
-                            <classifier>security</classifier>
-                        </dependency>
-                        <dependency>
-                            <groupId>com.thinkaurelius.faunus</groupId>
-                            <artifactId>faunus</artifactId>
-                            <version>${dep.aurelius.version}</version>
-                        </dependency>
-                        <dependency>
-                            <groupId>org.apache.mahout</groupId>
-                            <artifactId>mahout-core</artifactId>
-                            <version>${dep.mahout.version}</version>
-                        </dependency>
-                        <dependency>
-                            <groupId>org.apache.mahout</groupId>
-                            <artifactId>mahout-math</artifactId>
-                            <version>${dep.mahout.version}</version>
-                        </dependency>
-                        <dependency>
-                            <groupId>org.apache.zookeeper</groupId>
-                            <artifactId>zookeeper</artifactId>
-                            <version>${dep.zookeeper.version}</version>
-                        </dependency>
-                        &lt;!&ndash; test dependencies. sorted lexicographically. &ndash;&gt;
-                        <dependency>
-                            <groupId>junit</groupId>
-                            <artifactId>junit</artifactId>
-                            <version>${dep.junit.version}</version>
-                            <scope>test</scope>
-                        </dependency>
-                        <dependency>
-                            <groupId>org.mockito</groupId>
-                            <artifactId>mockito-all</artifactId>
-                            <version>${dep.mockito-all.version}</version>
-                            <scope>test</scope>
-                        </dependency>-->
+                <version>1.6</version>
+            </dependency>
+            <dependency>
+                <groupId>commons-io</groupId>
+                <artifactId>commons-io</artifactId>
+                <version>2.1</version>
+            </dependency>
+            <dependency>
+                <groupId>commons-codec</groupId>
+                <artifactId>commons-codec</artifactId>
+                <version>1.7</version>
+            </dependency>
+            <dependency>
+                <groupId>commons-net</groupId>
+                <artifactId>commons-net</artifactId>
+                <version>3.1</version>
+            </dependency>
+
+            <!--log4j-->
+            <dependency>
+                <groupId>log4j</groupId>
+                <artifactId>log4j</artifactId>
+                <version>1.2.17</version>
+            </dependency>
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-api</artifactId>
+                <version>1.7.5</version>
+            </dependency>
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-log4j12</artifactId>
+                <version>1.7.5</version>
+            </dependency>
+
+            <!--io.spray-->
+            <dependency>
+                <groupId>io.spray</groupId>
+                <artifactId>spray-json_${scala.short.version}</artifactId>
+                <version>1.2.5</version>
+            </dependency>
+            <dependency>
+                <groupId>io.spray</groupId>
+                <artifactId>spray-can</artifactId>
+                <version>1.3.1</version>
+            </dependency>
+            <dependency>
+                <groupId>io.spray</groupId>
+                <artifactId>spray-routing</artifactId>
+                <version>1.3.1</version>
+            </dependency>
+            <dependency>
+                <groupId>io.spray</groupId>
+                <artifactId>spray-testkit</artifactId>
+                <version>1.3.1</version>
+                <scope>test</scope>
+            </dependency>
+
+            <!--com.typesafe-->
+            <dependency>
+                <groupId>com.typesafe</groupId>
+                <artifactId>config</artifactId>
+                <version>1.2.1</version>
+            </dependency>
+            <dependency>
+                <groupId>com.typesafe.slick</groupId>
+                <artifactId>slick_${scala.short.version}</artifactId>
+                <version>2.0.1</version>
+            </dependency>
+            <dependency>
+                <groupId>com.typesafe.akka</groupId>
+                <artifactId>akka-actor_${scala.short.version}</artifactId>
+                <version>${akka.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.typesafe.akka</groupId>
+                <artifactId>akka-slf4j_${scala.short.version}</artifactId>
+                <version>${akka.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.typesafe.akka</groupId>
+                <artifactId>akka-testkit_${scala.short.version}</artifactId>
+                <version>${akka.version}</version>
+                <scope>test</scope>
+            </dependency>
+
+
+            <dependency>
+                <groupId>ch.qos.logback</groupId>
+                <artifactId>logback-classic</artifactId>
+                <version>1.1.1</version>
+            </dependency>
+
+            <dependency>
+                <groupId>joda-time</groupId>
+                <artifactId>joda-time</artifactId>
+                <version>2.3</version>
+            </dependency>
+            <dependency>
+                <groupId>org.joda</groupId>
+                <artifactId>joda-convert</artifactId>
+                <version>1.2</version>
+            </dependency>
+            <dependency>
+                <groupId>org.codehaus.jackson</groupId>
+                <artifactId>jackson-core-asl</artifactId>
+                <version>1.9.13</version>
+            </dependency>
+            <dependency>
+                <groupId>com.tinkerpop.blueprints</groupId>
+                <artifactId>blueprints-core</artifactId>
+                <version>2.4.0</version>
+            </dependency>
+            <dependency>
+                <groupId>com.tinkerpop</groupId>
+                <artifactId>frames</artifactId>
+                <version>2.4.0</version>
+            </dependency>
+            <dependency>
+                <groupId>com.codahale.metrics</groupId>
+                <artifactId>metrics-core</artifactId>
+                <version>3.0.1</version>
+            </dependency>
+            <dependency>
+                <groupId>com.codahale.metrics</groupId>
+                <artifactId>metrics-ganglia</artifactId>
+                <version>3.0.1</version>
+            </dependency>
+            <dependency>
+                <groupId>com.codahale.metrics</groupId>
+                <artifactId>metrics-graphite</artifactId>
+                <version>3.0.1</version>
+            </dependency>
+            <dependency>
+                <groupId>com.spatial4j</groupId>
+                <artifactId>spatial4j</artifactId>
+                <version>0.3</version>
+            </dependency>
+            <dependency>
+                <groupId>com.google.guava</groupId>
+                <artifactId>guava</artifactId>
+                <version>14.0.1</version>
+            </dependency>
+            <dependency>
+                <groupId>com.google.code.findbugs</groupId>
+                <artifactId>jsr305</artifactId>
+                <version>1.3.9</version>
+            </dependency>
+            <dependency>
+                <groupId>com.carrotsearch</groupId>
+                <artifactId>hppc</artifactId>
+                <version>0.4.2</version>
+            </dependency>
+            <dependency>
+                <groupId>com.github.stephenc.high-scale-lib</groupId>
+                <artifactId>high-scale-lib</artifactId>
+                <version>1.1.4</version>
+            </dependency>
+            <dependency>
+                <groupId>com.googlecode.json-simple</groupId>
+                <artifactId>json-simple</artifactId>
+                <version>1.1.1</version>
+            </dependency>
+            <dependency>
+                <groupId>com.h2database</groupId>
+                <artifactId>h2</artifactId>
+                <version>1.3.175</version>
+            </dependency>
+            <dependency>
+                <groupId>postgresql</groupId>
+                <artifactId>postgresql</artifactId>
+                <version>8.4-702.jdbc4</version>
+            </dependency>
+            <dependency>
+                <groupId>com.github.tototoshi</groupId>
+                <artifactId>slick-joda-mapper_2.10</artifactId>
+                <version>1.1.0</version>
+            </dependency>
+            <dependency>
+                <groupId>com.jsuereth</groupId>
+                <artifactId>scala-arm_${scala.short.version}</artifactId>
+                <version>1.3</version>
+            </dependency>
+            <dependency>
+                <groupId>org.json</groupId>
+                <artifactId>json</artifactId>
+                <version>20090211</version>
+            </dependency>
+
+            <!--test scope-->
+            <dependency>
+                <groupId>org.mockito</groupId>
+                <artifactId>mockito-all</artifactId>
+                <version>1.8.5</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.powermock</groupId>
+                <artifactId>powermock-module-junit4</artifactId>
+                <version>1.5.1</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>junit</groupId>
+                <artifactId>junit</artifactId>
+                <version>4.8.1</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.powermock</groupId>
+                <artifactId>powermock-api-mockito</artifactId>
+                <version>1.5.1</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.mrunit</groupId>
+                <artifactId>mrunit</artifactId>
+                <version>1.0.0</version>
+                <classifier>hadoop1</classifier>
+            </dependency>
+            <dependency>
+                <groupId>org.hamcrest</groupId>
+                <artifactId>hamcrest-library</artifactId>
+                <version>1.3</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>com.novocode</groupId>
+                <artifactId>junit-interface</artifactId>
+                <version>0.9</version>
+                <scope>test</scope>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
     <dependencies>
-        <!--<dependency>
-            <groupId>org.scoverage</groupId>
-            <artifactId>scalac-scoverage-plugin_${scala.short.version}</artifactId>
-			
-        </dependency>-->
-
-
         <dependency>
             <groupId>org.scala-lang</groupId>
             <artifactId>scala-library</artifactId>
         </dependency>
-
-
     </dependencies>
 </project>
