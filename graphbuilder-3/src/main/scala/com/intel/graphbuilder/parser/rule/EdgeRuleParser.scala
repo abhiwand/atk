@@ -32,7 +32,7 @@ import com.intel.graphbuilder.parser._
 case class EdgeRuleParser(inputSchema: InputSchema, edgeRules: List[EdgeRule]) extends Parser[Edge](inputSchema) with Serializable {
 
   // each rule gets its own parser
-  private val edgeParsers = edgeRules.map(rule ⇒ rule -> new SingleEdgeRuleParser(rule)).toMap
+  private val edgeParsers = edgeRules.map(rule => rule -> new SingleEdgeRuleParser(rule)).toMap
 
   /**
    * Parse the supplied InputRow into zero or more Edges using all applicable rules

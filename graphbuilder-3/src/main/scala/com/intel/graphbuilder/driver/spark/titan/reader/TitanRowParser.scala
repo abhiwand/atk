@@ -30,7 +30,7 @@ case class TitanRowParser(titanRow: TitanRow, titanEdgeSerializer: EdgeSerialize
     try {
       titanRelationFactory.createGraphElements(titanRow, titanEdgeSerializer, titanTransaction)
     } catch {
-      case e: Exception ⇒ {
+      case e: Exception => {
         throw new RuntimeException("Unable to parse Titan row:" + titanRow, e)
       }
     }
@@ -43,7 +43,7 @@ case class TitanRowParser(titanRow: TitanRow, titanEdgeSerializer: EdgeSerialize
     try {
       IDHandler.getKeyID(titanRow.rowKey)
     } catch {
-      case e: Exception ⇒ {
+      case e: Exception => {
         throw new RuntimeException("Unable to extract Titan row key:" + rowKey, e)
       }
     }

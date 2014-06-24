@@ -50,7 +50,7 @@ class AuxiliaryRDD[T: ClassTag](
 
   override def getPartitions: Array[Partition] = {
     val rg = new Random(seed)
-    firstParent[T].partitions.map(x ⇒ new AuxiliaryRDDPartition(x, rg.nextInt))
+    firstParent[T].partitions.map(x => new AuxiliaryRDDPartition(x, rg.nextInt))
   }
 
   override def getPreferredLocations(split: Partition): Seq[String] =
@@ -59,6 +59,6 @@ class AuxiliaryRDD[T: ClassTag](
   override def compute(splitIn: Partition, context: TaskContext): Iterator[Double] = {
     val split = splitIn.asInstanceOf[AuxiliaryRDDPartition]
     val rand = new Random(split.seed)
-    firstParent[T].iterator(split.prev, context).map(x ⇒ rand.nextDouble)
+    firstParent[T].iterator(split.prev, context).map(x => rand.nextDouble)
   }
 }

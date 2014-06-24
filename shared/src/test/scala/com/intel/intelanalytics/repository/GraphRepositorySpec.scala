@@ -8,7 +8,7 @@ class GraphRepositorySpec extends SlickMetaStoreH2Testing with Matchers {
   "GraphRepository" should "be able to create graphs" in {
     val graphRepo = slickMetaStoreComponent.metaStore.graphRepo
     slickMetaStoreComponent.metaStore.withSession("graph-test") {
-      implicit session ⇒
+      implicit session =>
 
         val name = "my-name"
 
