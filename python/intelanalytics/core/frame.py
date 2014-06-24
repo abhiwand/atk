@@ -403,8 +403,8 @@ class BigFrame(object):
         """
         Count the number of rows that exist in this object.
 
-    Returns
-    -------
+        Returns
+        -------
 
         int32
             The number of rows
@@ -417,14 +417,14 @@ class BigFrame(object):
         >>> num_rows = my_frame.count()
         # num_rows is now the count of rows of data in my_frame
 
-    """
-    try:
-        return self._backend.count(self)
-    except:
-        _handle_stacktrace()
-def drop(self, predicate):
-    """
-    Remove all rows from the frame which satisfy the predicate.
+        """
+        try:
+            return self._backend.count(self)
+        except:
+            _handle_stacktrace()
+    def drop(self, predicate):
+        """
+        Remove all rows from the frame which satisfy the predicate.
 
         Parameters
         ----------
