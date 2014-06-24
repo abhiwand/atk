@@ -72,8 +72,6 @@ trait Engine {
 
   def renameFrame(arguments: FrameRenameFrame[JsObject, Long])(implicit user: UserPrincipal): (Command, Future[Command])
 
-
-
   def renameColumn(arguments: FrameRenameColumn[JsObject, Long])(implicit user: UserPrincipal): (Command, Future[Command])
 
   def removeColumn(arguments: FrameRemoveColumn[JsObject, Long])(implicit user: UserPrincipal): (Command, Future[Command])
@@ -102,5 +100,4 @@ trait Engine {
 
   def deleteGraph(graph: Graph): Future[Unit]
 
-  def lookupByName(name: String)(implicit user:UserPrincipal): Future[Graph]
 }

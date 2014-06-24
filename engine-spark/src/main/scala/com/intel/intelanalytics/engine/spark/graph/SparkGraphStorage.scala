@@ -134,19 +134,4 @@ class SparkGraphStorage(context: (UserPrincipal) => Context,
     }
   }
 
-
-
-  /**
-   * Get the metadata for a graph from its name
-   * @param name name being looked up.
-   * @return Future of Graph metadata.
-   */
-  override def lookupByName(name: String)(implicit  user:UserPrincipal): Option[Graph] ={
-    metaStore.withSession("spark.graphstorage.lookupByName"){
-      implicit session =>
-      {
-        metaStore.graphRepo.lookupByName(name)
-      }
-    }
-  }
 }

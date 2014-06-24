@@ -42,5 +42,4 @@ trait GraphStorage {
 
   def getGraphs(offset: Int, count: Int)(implicit user: UserPrincipal): Seq[Graph]
 
-  def lookupByName(name: String)(implicit user: UserPrincipal) : Option[Graph]
 }
