@@ -558,7 +558,7 @@ class BigFrame(object):
         >>> print my_frame.inspect()
         Output would be something like:
         <BLANKLINE>
-        a float32       b int64
+         a float32          b int64
         -----------------------------
            12.3000              500
           195.1230           183954
