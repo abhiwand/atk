@@ -34,12 +34,12 @@ object SchemaUtil {
    */
   def resolveSchemaNamingConflicts(leftColumns: List[(String, DataType)], rightColumns: List[(String, DataType)]): List[(String, DataType)] = {
 
-    val funcAppendLetterForConflictingNames = (left: List[(String, DataType)], right: List[(String, DataType)], appendLetter: String) ⇒ {
+    val funcAppendLetterForConflictingNames = (left: List[(String, DataType)], right: List[(String, DataType)], appendLetter: String) => {
 
-      var leftColumnNames = left.map(r ⇒ r._1)
+      var leftColumnNames = left.map(r => r._1)
 
-      left.map(r ⇒
-        if (right.map(i ⇒ i._1).contains(r._1)) {
+      left.map(r =>
+        if (right.map(i => i._1).contains(r._1)) {
           var name = r._1 + "_" + appendLetter
           while (leftColumnNames.contains(name)) {
             name = name + "_" + appendLetter

@@ -92,7 +92,7 @@ class TitanHBaseReader(sparkContext: SparkContext, titanConnector: TitanGraphCon
       converter.setAccessible(true)
       hBaseConfig.set(TableInputFormat.SCAN, converter.invoke(null, scanner).asInstanceOf[String])
     } catch {
-      case e: Exception ⇒ {
+      case e: Exception => {
         throw new RuntimeException("Unable to create HBase filter for Titan's edge column family", e)
       }
     }

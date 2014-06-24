@@ -52,14 +52,14 @@ trait EventLogging {
    * @tparam T result type of the block
    * @return the return value of the block
    */
-  def withContext[T](context: String, logErrors: Boolean = true)(block: ⇒ T): T = {
+  def withContext[T](context: String, logErrors: Boolean = true)(block: => T): T = {
     require(context != null, "event context name cannot be null")
     require(context.trim() != "", "event context name must have non-whitespace characters")
     val ctx = EventContext.enter(context.trim())
     try {
       block
     } catch {
-      case NonFatal(e) ⇒ {
+      case NonFatal(e) => {
         if (logErrors) {
           val message = safeMessage(e)
           error(message, exception = e)
@@ -73,9 +73,9 @@ trait EventLogging {
 
   private def safeMessage[T](e: Throwable): String = {
     e.getMessage match {
-      case null ⇒ e.getClass.getName + " (null error message)"
-      case "" ⇒ e.getClass.getName + " (empty error message)"
-      case m ⇒ m
+      case null => e.getClass.getName + " (null error message)"
+      case "" => e.getClass.getName + " (empty error message)"
+      case m => m
     }
   }
 
@@ -86,11 +86,11 @@ trait EventLogging {
    * @tparam T return type of the block
    * @return the return value of the block
    */
-  def logErrors[T](block: ⇒ T): T = {
+  def logErrors[T](block: => T): T = {
     try {
       block
     } catch {
-      case NonFatal(e) ⇒ {
+      case NonFatal(e) => {
         error(safeMessage(e), exception = e)
         throw e
       }

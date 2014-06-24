@@ -34,7 +34,7 @@ import com.intel.intelanalytics.domain.command.{ Command, CommandTemplate }
  */
 trait MetaStore {
   type Session
-  def withSession[T](name: String)(f: Session ⇒ T): T
+  def withSession[T](name: String)(f: Session => T): T
 
   /** Repository for CRUD on 'status' table */
   def statusRepo: Repository[Session, Status, Status]

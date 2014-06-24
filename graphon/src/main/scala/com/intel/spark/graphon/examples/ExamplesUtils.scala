@@ -79,7 +79,7 @@ object ExamplesUtils {
       System.getProperty("user.dir") + "/graphon/target/graphon.jar",
       System.getProperty("user.dir") + "/target/graphon.jar",
       System.getProperty("user.dir") + "/graphon.jar")
-    possiblePaths.foreach(path ⇒ {
+    possiblePaths.foreach(path => {
       val jar = new File(path)
       if (jar.exists()) {
         return jar.getAbsolutePath
@@ -96,7 +96,7 @@ object ExamplesUtils {
       System.getProperty("user.dir") + "/graphbuilder-3/target/scala-2.10/graphbuilder-3.jar",
       System.getProperty("user.dir") + "/target/scala-2.10/graphbuilder-3.jar",
       System.getProperty("user.dir") + "/graphbuilder-3.jar")
-    possiblePaths.foreach(path ⇒ {
+    possiblePaths.foreach(path => {
       val jar = new File(path)
       if (jar.exists()) {
         return jar.getAbsolutePath
@@ -122,7 +122,7 @@ object ExamplesUtils {
     val possibleSparkHomes = List("/opt/cloudera/parcels/CDH/lib/spark/",
       "/usr/lib/spark",
       "/home/kdatta1/spark-0.9.1-bin-hadoop2")
-    possibleSparkHomes.foreach(dir ⇒ {
+    possibleSparkHomes.foreach(dir => {
       val path = new File(dir)
       if (path.exists()) {
         return path.getAbsolutePath

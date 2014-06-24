@@ -58,8 +58,8 @@ class InferSchemaManager(config: GraphBuilderConfig) extends Serializable {
    * Infer the schema by passing over each edge and vertex.
    */
   def writeSchemaFromData(edges: RDD[Edge], vertices: RDD[Vertex]) = {
-    edges.foreach(edge ⇒ inferSchemaFromData.add(edge))
-    vertices.foreach(vertex ⇒ inferSchemaFromData.add(vertex))
+    edges.foreach(edge => inferSchemaFromData.add(edge))
+    vertices.foreach(vertex => inferSchemaFromData.add(vertex))
     writeSchema(inferSchemaFromData.graphSchema)
   }
 
