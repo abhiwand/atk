@@ -136,9 +136,13 @@
                 </exclusion>
             </exclusions>
         </dependency>
-		<dependency>
+		<!--<dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
+        </dependency>-->
+		<dependency>
+            <groupId>commons-lang</groupId>
+            <artifactId>commons-lang</artifactId>
         </dependency>
     </dependencies>
 </project>
