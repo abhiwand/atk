@@ -31,6 +31,10 @@ import scala.util.control.NonFatal
  * Mixin for logging with the Event library.
  */
 trait EventLogging {
+
+  /**
+   * Sets the event logging to SLF4J otherwise we will default to STDOUT logger
+   */
   val setEventLog: EventLog = {
     if (EventLogger.getImplementation == null) {
       EventLogger.setImplementation(new SLF4JLogAdapter())
