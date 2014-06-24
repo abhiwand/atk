@@ -108,7 +108,7 @@ class TitanSchemaWriter(graph: TitanGraph) extends SchemaWriter {
     //  ArrayList<TitanKey> titanKeys = new ArrayList<TitanKey>();
     //  signature()
 
-    edgeLabelDefs.foreach(labelSchema ⇒
+    edgeLabelDefs.foreach(labelSchema =>
       if (graph.getType(labelSchema.label) == null) {
         graph.makeLabel(labelSchema.label).make()
       })

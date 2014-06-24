@@ -59,7 +59,7 @@ class TitanVertexWriterRDD(prev: RDD[Vertex],
     val writer = new TitanVertexWriter(new VertexWriter(new VertexDAO(graph), append))
 
     var count = 0L
-    val gbIdsToPhyiscalIds = firstParent[Vertex].iterator(split, context).map(v ⇒ {
+    val gbIdsToPhyiscalIds = firstParent[Vertex].iterator(split, context).map(v => {
       val id = writer.write(v)
       count += 1
       if (count % maxVerticesPerCommit == 0) {
@@ -70,7 +70,7 @@ class TitanVertexWriterRDD(prev: RDD[Vertex],
 
     graph.commit()
 
-    context.addOnCompleteCallback(() ⇒ {
+    context.addOnCompleteCallback(() => {
       println("vertices written: " + count + " for split: " + split.index)
       graph.shutdown()
     })

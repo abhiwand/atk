@@ -27,8 +27,8 @@ package object domain {
 
   implicit def throwableToError(t: Throwable): Error = {
     val message = t.getMessage match {
-      case null | "" ⇒ t.getClass.getName
-      case s ⇒ s
+      case null | "" => t.getClass.getName
+      case s => s
     }
     Error(message, code = None, details = None, additional = None, stackTrace = Some(t.getStackTraceString))
   }

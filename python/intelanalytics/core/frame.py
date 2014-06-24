@@ -24,13 +24,17 @@
 from collections import OrderedDict
 import json
 
-
 import logging
+
+import uuid, sys
 logger = logging.getLogger(__name__)
 
 from intelanalytics.core.types import supported_types
 from intelanalytics.core.aggregation import *
+from intelanalytics.core.errorhandle import get_stacktrace
 
+def _handle_stacktrace():
+    get_stacktrace(sys.exc_info())
 
 def _get_backend():
     from intelanalytics.core.config import get_frame_backend
@@ -53,13 +57,15 @@ def get_frame_names():
     ["my_frame_1", "my_frame_2", "my_frame_3"] # a list of names of BigFrame objects
     """
     # TODO - Review docstring
-    return _get_backend().get_frame_names()
-
+    try:
+        return _get_backend().get_frame_names()
+    except:
+        _handle_stacktrace()
 
 def get_frame(name):
     """
     Retrieves the named BigFrame object.
-    
+
     Parameters
     ----------
 
@@ -76,24 +82,26 @@ def get_frame(name):
     --------
 
     >>> my_frame = get_frame( "my_frame_1" )
-    
+
     my_frame is now a proxy of the BigFrame object
 
     """
     # TODO - Review docstring
-    return _get_backend().get_frame(name)
-
+    try:
+        return _get_backend().get_frame(name)
+    except:
+        _handle_stacktrace()
 
 def delete_frame(name):
     """
     Deletes the frame from backing store.
-    
+
     Parameters
     ----------
 
     name : string
         The name of the BigFrame object to delete.
-    
+
     Returns
     -------
 
@@ -102,7 +110,6 @@ def delete_frame(name):
 
     Examples
     --------
-
     >>> my_frame = BigFrame("raw_data.csv", my_csv)
     >>> deleted_frame = delete_frame( my_frame )
 
@@ -110,13 +117,15 @@ def delete_frame(name):
 
     """
     # TODO - Review examples and parameter
-    return _get_backend().delete_frame(name)
-
+    try:
+        return _get_backend().delete_frame(name)
+    except:
+        _handle_stacktrace()
 
 class BigFrame(object):
     """
     Proxy for a large 2D container to work with table data at scale.
-    
+
     Parameters
     ----------
     source : source (optional)
@@ -132,7 +141,6 @@ class BigFrame(object):
     If for some reason *_X* would be illegal
     Examples
     --------
-
     >>> g = BigFrame(None, "my_data")
     A BigFrame object has been created and 'g' is its proxy. It has no data, but it has the name "my_data".
 
@@ -217,12 +225,12 @@ class BigFrame(object):
             raise StopIteration
 
     def __iter__(self):
-        return BigFrame._FrameIter(self)
+            return BigFrame._FrameIter(self)
 
     def __eq__(self, other):
-        if not isinstance(other, BigFrame):
-            return False
-        return self._id == other._id
+            if not isinstance(other, BigFrame):
+                return False
+            return self._id == other._id
 
     def __hash__(self):
         return hash(self._id)
@@ -231,12 +239,12 @@ class BigFrame(object):
     def column_names(self):
         """
         The names of all the columns in the current BigFrame object.
-        
+
         Returns
         -------
 
         list of string
-        
+
         Examples
         --------
         >>> frame.column_names()
@@ -248,7 +256,7 @@ class BigFrame(object):
     def data_type(self):
         """
         The type of object this is
-        
+
         Returns
         -------
         type : type
@@ -267,12 +275,12 @@ class BigFrame(object):
     def name(self):
         """
         The name of the BigFrame
-        
+
         Returns
         -------
         name : str
             The name of the BigFrame
-            
+
         Examples
         --------
         >>> csv = CsvFile("my_data.csv", csv_schema)
@@ -291,13 +299,13 @@ class BigFrame(object):
     def schema(self):
         """
         The schema of the current object.
-        
+
         Returns
         -------
         schema : list of tuples
             The schema of the BigFrame, which is a list of tuples which
             represents and the name and data type of frame's columns
-        
+
         Examples
         --------
         >>> frame.schema
@@ -309,7 +317,7 @@ class BigFrame(object):
     def uri(self):
         """
         The uniform resource identifier of the current object.
-        
+
         Returns
         -------
         uri : str
@@ -351,8 +359,10 @@ class BigFrame(object):
         >>> my_frame.add_columns(lambda row: (row.a * row.b, row.a + row.b), [("a_times_b", float32), ("a_plus_b", float32))
         # Two new columns are created, "a_times_b" and "a_plus_b"
         """
-        self._backend.add_columns(self, func, schema)
-
+        try:
+            self._backend.add_columns(self, func, schema)
+        except:
+            _handle_stacktrace()
     def append(self, data):
         """
         Adds more data to the BigFrame object.
@@ -370,8 +380,10 @@ class BigFrame(object):
         # my_frame now has the data from my_other_frame as well
         """
         # TODO - Review examples
-        self._backend.append(self, data)
-
+        try:
+            self._backend.append(self, data)
+        except:
+            _handle_stacktrace()
     def copy(self):
         """
         Creates a full copy of the current frame
@@ -381,10 +393,12 @@ class BigFrame(object):
         frame : BigFrame
             A new frame object which is a copy of this frame
         """
-        copied_frame = BigFrame()
-        self._backend.project_columns(self, copied_frame, self.column_names)
-        return copied_frame
-
+        try:
+            copied_frame = BigFrame()
+            self._backend.project_columns(self, copied_frame, self.column_names)
+            return copied_frame
+        except:
+            _handle_stacktrace()
     def count(self):
         """
         Count the number of rows that exist in this object.
@@ -404,8 +418,10 @@ class BigFrame(object):
         # num_rows is now the count of rows of data in my_frame
 
         """
-        return self._backend.count(self)
-
+        try:
+            return self._backend.count(self)
+        except:
+            _handle_stacktrace()
     def drop(self, predicate):
         """
         Remove all rows from the frame which satisfy the predicate.
@@ -413,7 +429,7 @@ class BigFrame(object):
         Parameters
         ----------
         predicate : function
-            function or lambda which takes a row argument and evaluates to a boolean value
+        function or lambda which takes a row argument and evaluates to a boolean value
 
         Examples
         --------
@@ -423,7 +439,10 @@ class BigFrame(object):
         >>> my_frame.drop(lambda row: row.animal_type == "lion" or row.animal_type == "tiger")
         """
         # TODO - Review docstring
-        self._backend.drop(self, predicate)
+        try:
+            self._backend.drop(self, predicate)
+        except:
+            _handle_stacktrace()
 
     def filter(self, predicate):
         """
@@ -433,7 +452,7 @@ class BigFrame(object):
         ----------
         predicate: function
             function definition or lambda which takes a row argument and evaluates to a boolean value
-            
+
         Examples
         --------
         >>>
@@ -443,8 +462,10 @@ class BigFrame(object):
         # my_frame now only has data about lizards and frogs
         """
         # TODO - Review docstring
-        self._backend.filter(self, predicate)
-
+        try:
+            self._backend.filter(self, predicate)
+        except:
+            _handle_stacktrace()
     def flatten_column(self, column_name):
         """
         Flatten a column
@@ -463,18 +484,20 @@ class BigFrame(object):
         --------
         >>> flattened_frame = frame1.flatten_column('a')
         """
-        return self._backend.flatten_column(self, column_name)
-
+        try:
+            return self._backend.flatten_column(self, column_name)
+        except:
+            _handle_stacktrace()
     def drop(self, predicate):
         """
         Drop rows that match a requirement.
-        
+
         Parameters
         ----------
 
         predicate : function
             The requirement that the rows must match
-            
+
         Examples
         --------
 
@@ -485,8 +508,10 @@ class BigFrame(object):
 
         """
         # TODO - review docstring
-        self._backend.drop(self, predicate)
-
+        try:
+            self._backend.drop(self, predicate)
+        except:
+            _handle_stacktrace()
     def dropna(self, how=any, column_subset=None):
         """
         Drops all rows which have NA values.
@@ -515,30 +540,32 @@ class BigFrame(object):
         If we used the form
         >>> my_frame.dropna( all, ["column_1", "column_2", "column_3"])
         This erased any rows that had no data for column_1, column_2 AND column_3.
-        
+
         """
         # TODO - Review examples
-        self._backend.dropna(self, how, column_subset)
-
+        try:
+            self._backend.dropna(self, how, column_subset)
+        except:
+            _handle_stacktrace()
     def inspect(self, n=10, offset=0):
         """
         Check the data for validity.
-        
+
         Parameters
         ----------
 
         n : int
             The number of something
-            
+
         offset : int
             The number of something else
-            
+
         Returns
         -------
 
         bool
             Whether the data is valid or not.
-            
+
         Examples
         --------
 
@@ -546,11 +573,13 @@ class BigFrame(object):
         Let us say that my_frame is a BigFrame object and the row should have types int32, str, int64, bool and the data for that row is "10", "20", "Bob's your uncle", "0"
         >>> my_check = my_frame.inspect()
         my_check would be false because "Bob's your uncle" is not an int64 type
-        
+
         """
         # TODO - Review docstring
-        return self._backend.inspect(self, n, offset)
-
+        try:
+            return self._backend.inspect(self, n, offset)
+        except:
+            _handle_stacktrace()
     def join(self, right, left_on, right_on=None, how='inner'):
         """
         Create a new BigFrame from a JOIN operation with another BigFrame.
@@ -577,8 +606,10 @@ class BigFrame(object):
         >>> joined_frame = frame1.join(frame2, 'a')
         >>> joined_frame = frame2.join(frame2, left_on='b', right_on='book', how='inner')
         """
-        return self._backend.join(self, right, left_on, right_on, how)
-
+        try:
+            return self._backend.join(self, right, left_on, right_on, how)
+        except:
+            _handle_stacktrace()
     def project_columns(self, column_names, new_names=None):
         """
         Copies specified columns into a new BigFrame object, optionally renaming them.
@@ -604,17 +635,19 @@ class BigFrame(object):
 
         """
         # TODO - need example in docstring
-        projected_frame = BigFrame()
-        self._backend.project_columns(self, projected_frame, column_names, new_names)
-        return projected_frame
-
+        try:
+            projected_frame = BigFrame()
+            self._backend.project_columns(self, projected_frame, column_names, new_names)
+            return projected_frame
+        except:
+            _handle_stacktrace()
     def groupBy(self, group_by_columns, *aggregation_arguments):
         """
         Group frame as per the criteria provided and compute aggregation on each group
 
         Parameters
         ----------
-        group_by_columns: BigColumn or List of BigColumns
+        group_by_columns: BigColumn or List of BigColumns or function
             columns or result of a function will be used to create grouping
         aggregation_arguments: dict
             (column,aggregation function) pairs
@@ -627,35 +660,35 @@ class BigFrame(object):
         Examples
         --------
         frame.groupBy(frame.a, count)
-        frame.groupBy([frame.a, frame.b], {frame.c: avg})
-        frame.groupBy(frame[['a', 'c']], count, {frame.d: [avg, sum, min], frame.e: count_distinct})
-        frame.groupBy(None, {frame.a : sum, frame.b: [avg, var, stdev]})
+        frame.groupBy([frame.a, frame.b], {f.c: avg})
+        frame.groupBy(frame[['a', 'c']], count, {f.d: [avg, sum, min], f.e: [max]})
         """
 
+        try:
+            groupByColumns = []
+            if isinstance(group_by_columns, list):
+                groupByColumns = [i.name for i in group_by_columns]
+            elif group_by_columns:
+                groupByColumns = [group_by_columns.name]
 
-        groupByColumns = []
-        if isinstance(group_by_columns, list):
-            groupByColumns = [i.name for i in group_by_columns]
-        elif group_by_columns:
-            groupByColumns = [group_by_columns.name]
+            primaryColumn = groupByColumns[0] if groupByColumns else self.column_names[0]
+            aggregation_list = []
 
-        primaryColumn = groupByColumns[0] if groupByColumns else self.column_names[0]
-        aggregation_list = []
+            for i in aggregation_arguments:
+                if i == count:
+                    aggregation_list.append((count, primaryColumn, "count"))
+                else:
+                    for k,v in i.iteritems():
+                        if isinstance(v, list):
+                            for j in v:
+                                aggregation_list.append((j, k.name, "%s_%s" % (k.name, j)))
+                        else:
+                            aggregation_list.append((v, k.name, "%s_%s" % (k.name, v)))
 
-        for i in aggregation_arguments:
-            if i == count:
-                aggregation_list.append((count, primaryColumn, "count"))
-            else:
-                for k,v in i.iteritems():
-                    if isinstance(v, list):
-                        for j in v:
-                            aggregation_list.append((j, k.name, "%s_%s" % (k.name, j)))
-                    else:
-                        aggregation_list.append((v, k.name, "%s_%s" % (k.name, v)))
-
-        # Send to backend to compute aggregation
-        return self._backend.groupBy(self, groupByColumns, aggregation_list)
-
+            # Send to backend to compute aggregation
+            return self._backend.groupBy(self, groupByColumns, aggregation_list)
+        except:
+            _handle_stacktrace()
     def remove_columns(self, name):
         """
         Remove columns from the BigFrame object.
@@ -682,8 +715,10 @@ class BigFrame(object):
 
         """
         # TODO - Review examples
-        self._backend.remove_columns(self, name)
-
+        try:
+            self._backend.remove_columns(self, name)
+        except:
+            _handle_stacktrace()
     def rename_columns(self, column_names, new_names):
         """
         Renames columns in a frame.
@@ -700,8 +735,10 @@ class BigFrame(object):
         >>> frame.rename_columns( [ "Wrong", "Wong" ], [ "Right", "Wite" ] )
         # now, what was Wrong is now Right and what was Wong is now Wite
         """
-        self._backend.rename_columns(self, column_names, new_names)
-
+        try:
+            self._backend.rename_columns(self, column_names, new_names)
+        except:
+            _handle_stacktrace()
     def take(self, n, offset=0):
         """
         .. TODO:: Add Docstring
@@ -719,10 +756,10 @@ class BigFrame(object):
 
         >>> my_frame = BigFrame( p_raw_data, "my_data" )
         >>> r = my_frame.take( 5000 )
-        
+
         """
         # TODO - Review and complete docstring
-        return self._backend.take(self, n, offset)
-
-
-
+        try:
+            return self._backend.take(self, n, offset)
+        except:
+            _handle_stacktrace()

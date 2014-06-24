@@ -243,6 +243,11 @@ class SparkFrameStorage(context: UserPrincipal => Context, fsRoot: String, files
     path.toString
   }
 
+  def getFrameDirectoryByName(name: String): String = {
+    val path = Paths.get(s"$frameBase/$name")
+    path.toString
+  }
+
   def getFrameDataFile(id: Long): String = {
     getFrameDirectory(id) + "/data"
   }
