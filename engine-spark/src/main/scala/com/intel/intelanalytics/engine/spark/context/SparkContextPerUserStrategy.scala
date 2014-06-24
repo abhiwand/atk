@@ -45,8 +45,8 @@ object SparkContextPerUserStrategy extends SparkContextManagementStrategy with E
 
   override def getContext(user: String): Context = {
     contextMap.get(user) match {
-      case Some(ctx) ⇒ ctx
-      case None ⇒ {
+      case Some(ctx) => ctx
+      case None => {
         //we need to clean/update some properties to get rid of Spark's port binding problems
         //when creating multiple SparkContexts within the same JVM
         System.clearProperty("spark.driver.port") //need to clear this to get rid of port bind problems
@@ -68,7 +68,7 @@ object SparkContextPerUserStrategy extends SparkContextManagementStrategy with E
    * stop all managed SparkContexts
    */
   override def cleanup(): Unit = {
-    contextMap.keys.foreach { key ⇒
+    contextMap.keys.foreach { key =>
       contextMap(key).sparkContext.stop()
     }
   }

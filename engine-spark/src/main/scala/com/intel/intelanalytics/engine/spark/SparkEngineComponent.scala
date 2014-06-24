@@ -26,7 +26,7 @@ package com.intel.intelanalytics.engine.spark
 import java.util.{ArrayList => JArrayList, List => JList, Map => JMap}
 
 import com.intel.intelanalytics.engine._
-import com.intel.intelanalytics.engine.spark.command.SparkCommandStorage
+import com.intel.intelanalytics.engine.spark.command.{CommandExecutor, SparkCommandStorage}
 import com.intel.intelanalytics.engine.spark.context.{SparkContextFactory, SparkContextManager}
 import com.intel.intelanalytics.engine.spark.frame.SparkFrameStorage
 import com.intel.intelanalytics.engine.spark.graph.{SparkGraphHBaseBackend, SparkGraphStorage}
@@ -52,7 +52,7 @@ class SparkComponent extends EngineComponent
     with EventLogging {
 
   lazy val engine = new SparkEngine(sparkContextManager,
-                                    commands.asInstanceOf[CommandStorage], frames, graphs) {}
+                                    commandExecutor, commands, frames, graphs) {}
 
   override lazy val profile = withContext("engine connecting to metastore") {
     Profile.initializeFromConfig(SparkEngineConfig)
@@ -64,10 +64,10 @@ class SparkComponent extends EngineComponent
 
   val sparkContextManager = new SparkContextManager(SparkEngineConfig.config, new SparkContextFactory)
 
-  val files = new HdfsFileStorage(SparkEngineConfig.fsRoot) {}
+  val files = new HdfsFileStorage(SparkEngineConfig.fsRoot)
 
   val frames = new SparkFrameStorage(sparkContextManager.context(_),
-    SparkEngineConfig.fsRoot, files, SparkEngineConfig.maxRows) {}
+    SparkEngineConfig.fsRoot, files, SparkEngineConfig.maxRows)
 
 
   private lazy val admin = new HBaseAdmin(HBaseConfiguration.create())
@@ -77,8 +77,9 @@ class SparkComponent extends EngineComponent
       metaStore,
       new SparkGraphHBaseBackend(admin), frames)
 
-  val commands = new SparkCommandStorage(metaStore.asInstanceOf[SlickMetaStore]) {}
+  val commands = new SparkCommandStorage(metaStore.asInstanceOf[SlickMetaStore])
 
+  lazy val commandExecutor : CommandExecutor = new CommandExecutor(engine, commands, sparkContextManager)
 
 }
 

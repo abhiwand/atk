@@ -98,14 +98,14 @@ class TitanRelationFactory(vertexId: Long) extends com.thinkaurelius.titan.graph
    */
   def createGraphElements(titanRow: TitanRow, titanEdgeSerializer: EdgeSerializer, titanTransaction: StandardTitanTx): Seq[GraphElement] = {
 
-    titanRow.serializedEntries.map(entry ⇒ {
+    titanRow.serializedEntries.map(entry => {
       titanEdgeSerializer.readRelation(this, entry, titanTransaction);
       build()
     })
 
     createVertex() match {
-      case Some(v) ⇒ edgeList :+ v
-      case _ ⇒ edgeList
+      case Some(v) => edgeList :+ v
+      case _ => edgeList
     }
   }
 
@@ -157,13 +157,13 @@ class TitanRelationFactory(vertexId: Long) extends com.thinkaurelius.titan.graph
   private def createEdge(vertexId: Long, otherVertexID: Long, direction: Direction, edgeLabel: String, properties: Map[String, Any]): Option[Edge] = {
 
     direction match {
-      case Direction.OUT ⇒
+      case Direction.OUT =>
         val srcVertexId = vertexId
         val destVertexId = otherVertexID
-        val edgeProperties = properties.map(entry ⇒ Property(entry._1, entry._2)).toSeq
+        val edgeProperties = properties.map(entry => Property(entry._1, entry._2)).toSeq
 
         Option(new Edge(srcVertexId, destVertexId, Property(gbId, srcVertexId), Property(gbId, destVertexId), edgeLabel, edgeProperties))
-      case _ ⇒ None
+      case _ => None
     }
   }
 

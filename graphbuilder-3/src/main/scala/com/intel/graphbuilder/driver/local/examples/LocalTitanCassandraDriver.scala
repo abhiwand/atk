@@ -81,14 +81,14 @@ object LocalTitanCassandraDriver {
 
     val parser = new CombinedParser(inputSchema, new VertexRuleParser(inputSchema, vertexRules), new EdgeRuleParser(inputSchema, edgeRules))
 
-    val elements = inputRows.flatMap(row ⇒ parser.parse(row))
+    val elements = inputRows.flatMap(row => parser.parse(row))
 
     // Separate Vertices and Edges
     val vertices = elements.collect {
-      case v: Vertex ⇒ v
+      case v: Vertex => v
     }
     val edges = elements.collect {
-      case e: Edge ⇒ e
+      case e: Edge => e
     }
 
     // Print out the parsed Info
@@ -96,11 +96,11 @@ object LocalTitanCassandraDriver {
     println("elements size: " + elements.size)
     println("vertices size: " + vertices.size)
     println("edges size: " + edges.size)
-    elements.foreach(element ⇒ println(element))
+    elements.foreach(element => println(element))
 
     // Merge Duplicates (non-Spark)
-    val mergedVertices = vertices.groupBy(v ⇒ v.id).mapValues(dups ⇒ dups.reduce((v1, v2) ⇒ v1.merge(v2))).values.toList
-    val mergedEdges = edges.groupBy(e ⇒ e.id).mapValues(dups ⇒ dups.reduce((e1, e2) ⇒ e1.merge(e2))).values.toList
+    val mergedVertices = vertices.groupBy(v => v.id).mapValues(dups => dups.reduce((v1, v2) => v1.merge(v2))).values.toList
+    val mergedEdges = edges.groupBy(e => e.id).mapValues(dups => dups.reduce((e1, e2) => e1.merge(e2))).values.toList
 
     println("\n--- Merge Duplicates ---")
     println("mergedVertices size: " + mergedVertices.size)
@@ -126,11 +126,11 @@ object LocalTitanCassandraDriver {
       val edgeWriter = new EdgeWriter(new EdgeDAO(graph, vertexDAO), append = false)
 
       // write Graph
-      mergedVertices.foreach(v ⇒ {
+      mergedVertices.foreach(v => {
         val bp = vertexWriter.write(v)
         println("ID => " + bp.getId + " --- " + bp + " --- " + v)
       })
-      mergedEdges.foreach(e ⇒ {
+      mergedEdges.foreach(e => {
         val bp = edgeWriter.write(e)
         println("Edge Id => " + bp.getId + " --- " + bp + " ---- " + e)
       })

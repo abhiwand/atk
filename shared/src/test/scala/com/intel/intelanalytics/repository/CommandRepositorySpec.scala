@@ -33,7 +33,7 @@ class CommandRepositorySpec extends SlickMetaStoreH2Testing with Matchers {
     val commandRepo = slickMetaStoreComponent.metaStore.commandRepo
 
     slickMetaStoreComponent.metaStore.withSession("command-test") {
-      implicit session ⇒
+      implicit session =>
 
         val name = "my-name"
 
