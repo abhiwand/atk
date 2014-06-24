@@ -23,19 +23,20 @@
 
 package com.intel.graphbuilder.driver.local.examples
 
-import com.intel.graphbuilder.elements.Edge
-import com.intel.graphbuilder.elements.Vertex
+import java.util.Date
+
+import com.intel.graphbuilder.elements.{Edge, Vertex}
 import com.intel.graphbuilder.graph.titan.TitanGraphConnector
 import com.intel.graphbuilder.parser._
 import com.intel.graphbuilder.parser.rule.RuleParserDSL._
 import com.intel.graphbuilder.parser.rule._
 import com.intel.graphbuilder.schema.InferSchemaFromRules
-import com.intel.graphbuilder.write.dao.{ EdgeDAO, VertexDAO }
+import com.intel.graphbuilder.write.dao.{EdgeDAO, VertexDAO}
 import com.intel.graphbuilder.write.titan.TitanSchemaWriter
-import com.intel.graphbuilder.write.{ EdgeWriter, VertexWriter }
+import com.intel.graphbuilder.write.{EdgeWriter, VertexWriter}
 import com.thinkaurelius.titan.core.TitanGraph
-import java.util.Date
 import org.apache.commons.configuration.BaseConfiguration
+
 import scala.collection.JavaConversions._
 
 // TODO: this class should either be deleted or cleaned up
@@ -52,8 +53,7 @@ object LocalTitanCassandraDriver {
       List("2", "{(1)}", "10", "Y", "2", "Y"),
       List("3", "{(1)}", "11", "Y", "3", "Y"),
       List("4", "{(1),(2)}", "100", "N", "4", "Y"),
-      List("5", "{(1)}", "101", "Y", "5", "Y")
-    )
+      List("5", "{(1)}", "101", "Y", "5", "Y"))
 
     val inputSchema = new InputSchema(List(
       new ColumnDef("cf:number", classOf[String]),
@@ -61,8 +61,7 @@ object LocalTitanCassandraDriver {
       new ColumnDef("binary", classOf[String]),
       new ColumnDef("isPrime", classOf[String]),
       new ColumnDef("reverse", classOf[String]),
-      new ColumnDef("isPalindrome", classOf[String])
-    ))
+      new ColumnDef("isPalindrome", classOf[String])))
 
     val vertexRules = List(VertexRule(gbId("cf:number"), List(property("isPrime"))), VertexRule(gbId("reverse")))
     val edgeRules = List(EdgeRule(gbId("cf:number"), gbId("reverse"), constant("reverseOf")))
@@ -140,8 +139,7 @@ object LocalTitanCassandraDriver {
       println(graph.getEdges.iterator().toList.size)
       println(graph.getVertices.iterator().toList.size)
 
-    }
-    finally {
+    } finally {
       graph.shutdown()
     }
 

@@ -23,10 +23,7 @@
 
 package models.database
 
-import play.api.db.slick._
-import models.RegistrationFormMapping
-import java.sql.{ ResultSet, Types }
-import play.api.Play.current
+import java.sql.{ResultSet, Types}
 
 /**
  * Implementation of registration logic

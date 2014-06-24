@@ -23,7 +23,7 @@
 
 package com.intel.graphbuilder.write.dao
 
-import com.intel.graphbuilder.elements.{ Property, Vertex }
+import com.intel.graphbuilder.elements.{Property, Vertex}
 import com.tinkerpop.blueprints
 import com.tinkerpop.blueprints.Graph
 
@@ -61,14 +61,12 @@ class VertexDAO(graph: Graph) extends Serializable {
   def findByGbId(gbId: Property): Option[blueprints.Vertex] = {
     if (gbId == null) {
       None
-    }
-    else {
+    } else {
       val vertices = graph.getVertices(gbId.key, gbId.value)
       val i = vertices.iterator()
       if (i.hasNext) {
         Some(i.next())
-      }
-      else {
+      } else {
         None
       }
     }
@@ -104,8 +102,7 @@ class VertexDAO(graph: Graph) extends Serializable {
     val blueprintsVertex = findByGbId(vertex.gbId)
     if (blueprintsVertex.isEmpty) {
       create(vertex)
-    }
-    else {
+    } else {
       update(vertex, blueprintsVertex.get)
     }
   }

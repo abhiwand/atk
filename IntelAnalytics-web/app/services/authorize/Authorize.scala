@@ -23,10 +23,6 @@
 
 package services.authorize
 
-import play.api.libs.json.JsValue
-import services.authorize.providers.google.{ GoogleTokenResponse, GooglePlus }
-import services.authorize.Providers.Providers
-
 class Authorize(var authData: JsValue, var provider: Providers.Providers) {
 
   var Provider = provider

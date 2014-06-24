@@ -23,12 +23,15 @@
 
 package com.intel.intelanalytics.engine.spark
 
+import com.intel.intelanalytics.domain.frame.LoadLines
 import com.intel.intelanalytics.domain.schema.DataTypes
 import com.intel.intelanalytics.engine.Rows._
-import org.apache.spark.rdd.RDD
+import com.intel.intelanalytics.engine.spark.frame.RDDJoinParam
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
+import org.apache.spark.rdd.RDD
 import spray.json.JsObject
+
 import scala.collection.mutable
 import scala.Some
 import com.intel.intelanalytics.engine.spark.frame.RDDJoinParam
@@ -72,8 +75,7 @@ private[spark] object SparkOps extends Serializable {
       if (sum < offset || thisPartStart >= offset + capped) {
         //println("skipping partition " + i)
         Iterator.empty
-      }
-      else {
+      } else {
         val start = Math.max(offset - thisPartStart, 0)
         val numToTake = Math.min((capped + offset) - thisPartStart, ct) - start
         //println(s"partition $i: starting at $start and taking $numToTake")
@@ -83,20 +85,18 @@ private[spark] object SparkOps extends Serializable {
     rows
   }
 
-
   def loadLines(ctx: SparkContext,
-                fileName: String,
-                location: String,
-                arguments: LoadLines[JsObject, Long],
-                parserFunction: String => Array[String],
-                converter: Array[String] => Array[Any]) = {
+    fileName: String,
+    location: String,
+    arguments: LoadLines[JsObject, Long],
+    parserFunction: String => Array[String],
+    converter: Array[String] => Array[Any]) = {
     ctx.textFile(fileName)
       .mapPartitionsWithIndex {
         case (partition, lines) => {
           if (partition == 0) {
             lines.drop(arguments.skipRows.getOrElse(0)).map(parserFunction)
-          }
-          else {
+          } else {
             lines.map(parserFunction)
           }
         }

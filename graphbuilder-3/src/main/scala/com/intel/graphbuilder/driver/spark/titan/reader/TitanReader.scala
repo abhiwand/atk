@@ -1,10 +1,10 @@
 package com.intel.graphbuilder.driver.spark.titan.reader
 
-import org.apache.spark.rdd.RDD
 import com.intel.graphbuilder.elements.GraphElement
 import com.intel.graphbuilder.graph.titan.TitanGraphConnector
-import org.apache.spark.SparkContext
 import com.thinkaurelius.titan.graphdb.configuration.GraphDatabaseConfiguration
+import org.apache.spark.SparkContext
+import org.apache.spark.rdd.RDD
 
 /**
  * TitanReader constants.
@@ -22,7 +22,7 @@ object TitanReader {
  */
 case class TitanReader(sparkContext: SparkContext, titanConnector: TitanGraphConnector) extends Serializable {
 
-  import TitanReader._
+  import com.intel.graphbuilder.driver.spark.titan.reader.TitanReader._
 
   val titanConfig = titanConnector.config
 

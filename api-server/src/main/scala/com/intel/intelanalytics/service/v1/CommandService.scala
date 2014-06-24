@@ -25,9 +25,7 @@ package com.intel.intelanalytics.service.v1
 
 import scala.util.Try
 import com.intel.intelanalytics.domain._
-import spray.json.JsObject
-import com.intel.intelanalytics.repository.MetaStoreComponent
-import com.intel.intelanalytics.engine.{Engine, EngineComponent}
+import com.intel.intelanalytics.engine.Engine
 import com.intel.intelanalytics.service.v1.viewmodels.ViewModelJsonImplicits._
 import scala.concurrent._
 import spray.http.Uri
@@ -36,18 +34,14 @@ import com.intel.intelanalytics.domain.frame._
 import com.intel.intelanalytics.domain.FilterPredicate
 import com.intel.intelanalytics.domain.graph.construction.FrameRule
 import scala.util.Failure
-import scala.Some
-import com.intel.intelanalytics.domain.frame.FrameAddColumns
-import com.intel.intelanalytics.domain.frame.FrameRenameColumn
 import scala.util.Success
 import com.intel.intelanalytics.security.UserPrincipal
 import spray.json._
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
 import com.intel.intelanalytics.service.v1.viewmodels._
 import com.intel.intelanalytics.service.v1.viewmodels.ViewModelJsonImplicits._
-import com.intel.intelanalytics.domain.frame.FrameJoin
 import com.intel.intelanalytics.domain.graph.GraphLoad
-import com.intel.intelanalytics.domain.command.Command
+import com.intel.intelanalytics.domain.command.{Execution, CommandTemplate, Command}
 import com.intel.intelanalytics.shared.EventLogging
 import com.intel.intelanalytics.service.{ApiServiceConfig, UrlParser, CommonDirectives, AuthenticationDirective}
 import com.intel.intelanalytics.service.v1.decorators.CommandDecorator
@@ -108,7 +102,26 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
               } ~
                 post {
                   entity(as[JsonTransform]) {
-                    xform => runCommand(uri, xform)
+                    xform =>
+                      try {
+                        //TODO: this execution path is going away soon.
+                        runCommand(uri, xform)
+                      }
+                      catch {
+                        case e: IllegalArgumentException => {
+                          //TODO: this will be the only execution path, soon.
+                          //TODO: validate the arguments. To do this requires some kind of sharing
+                          //between the api server and the engine to determine what contracts to use.
+                          //TODO: standardize URI handling such that the API server strips out
+                          //the https://site.com/ part and leaves the engine with only an application-specific,
+                          //non-transport-related URI. This should be automatic and not something that
+                          //every command handler has to call.
+                          engine.execute(CommandTemplate(name = xform.name, arguments = xform.arguments)) match {
+                            case Execution(command, futureResult) =>
+                              complete(decorate(uri, command))
+                          }
+                        }
+                      }
                   }
                 }
           }
@@ -117,6 +130,7 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
   }
 
   //TODO: disentangle the command dispatch from the routing
+  //TODO: this method is going away soon.
   /**
    * Command dispatcher that translates from HTTP pathname to command invocation
    * @param uri Path of command.
@@ -155,15 +169,9 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
       & validate(idOpt.isDefined, "Destination is not a valid data frame URL")) {
       val args = test.get
       val id = idOpt.get
-      onComplete(
-        for {
-          frame <- engine.getFrame(id)
-          (c, f) = engine.load(LoadLines[JsObject, Long](args.source, id,
-            skipRows = args.skipRows, overwrite = args.overwrite, lineParser = args.lineParser, schema = args.schema))
-        } yield c) {
-        case Success(c) => complete(decorate(uri + "/" + c.id, c))
-        case Failure(ex) => throw ex
-      }
+      val exec = engine.load(LoadLines[JsObject, Long](args.source, id,
+        skipRows = args.skipRows, overwrite = args.overwrite, lineParser = args.lineParser, schema = args.schema))
+      complete(decorate(uri + "/" + exec.start.id, exec.start))
     }
   }
 
@@ -199,15 +207,8 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
         val graphLoad = GraphLoad(graphID,
           frameRulesUsingIDs,
           args.retain_dangling_edges)
-
-        onComplete(
-          for {
-            graph <- engine.getGraph(graphID)
-            (c, f) = engine.loadGraph(graphLoad)
-          } yield c ) {
-          case Success(c) => complete(decorate(uri + "/" + c.id, c))
-          case Failure(ex) => throw ex
-        }
+        val exec = engine.loadGraph(graphLoad)
+        complete(decorate(uri + "/" + exec.start.id, exec.start))
       }
     }
   }
@@ -221,14 +222,8 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
       & validate(idOpt.isDefined, "Destination is not a valid data frame URL")) {
       val args = test.get
       val id = idOpt.get
-      onComplete(
-        for {
-          frame <- engine.getFrame(id)
-          (c, f) = engine.filter(FilterPredicate[JsObject, Long](id, args.predicate))
-        } yield c) {
-        case Success(c) => complete(decorate(uri + "/" + c.id, c))
-        case Failure(ex) => throw ex
-      }
+      val exec = engine.filter(FilterPredicate[JsObject, Long](id, args.predicate))
+      complete(decorate(uri + "/" + exec.start.id, exec.start))
     }
   }
 
@@ -241,14 +236,8 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
       & validate(idOpt.isDefined, "Frame must be a valid data frame URL")) {
       val args = test.get
       val id = idOpt.get
-      onComplete(
-        for {
-          frame <- engine.getFrame(id)
-          (c, f) = engine.renameFrame(FrameRenameFrame[JsObject, Long](id, args.new_name))
-        } yield c) {
-        case Success(c) => complete(decorate(uri + "/" + c.id, c))
-        case Failure(ex) => throw ex
-      }
+      val exec = engine.renameFrame(FrameRenameFrame[JsObject, Long](id, args.new_name))
+      complete(decorate(uri + "/" + exec.start.id, exec.start))
     }
   }
 
@@ -261,14 +250,8 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
       & validate(idOpt.isDefined, "Destination is not a valid data frame URL")) {
       val args = test.get
       val id = idOpt.get
-      onComplete(
-        for {
-          frame <- engine.getFrame(id)
-          (c, f) = engine.renameColumn(FrameRenameColumn[JsObject, Long](id, args.original_names, args.new_names))
-        } yield c) {
-        case Success(c) => complete(decorate(uri + "/" + c.id, c))
-        case Failure(ex) => throw ex
-      }
+      val exec = engine.renameColumn(FrameRenameColumn[JsObject, Long](id, args.original_names, args.new_names))
+      complete(decorate(uri + "/" + exec.start.id, exec.start))
     }
   }
 
@@ -281,14 +264,8 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
       & validate(idOpt.isDefined, "Destination is not a valid data frame URL")) {
       val args = test.get
       val id = idOpt.get
-      onComplete(
-        for {
-          frame <- engine.getFrame(id)
-          (c, f) = engine.addColumns(FrameAddColumns[JsObject, Long](id, args.column_names, args.column_types, args.expression))
-        } yield c) {
-        case Success(c) => complete(decorate(uri + "/" + c.id, c))
-        case Failure(ex) => throw ex
-      }
+      val exec = engine.addColumns(FrameAddColumns[JsObject, Long](id, args.column_names, args.column_types, args.expression))
+      complete(decorate(uri + "/" + exec.start.id, exec.start))
     }
   }
 
@@ -301,14 +278,8 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
       & validate(idOpt.isDefined, "Destination is not a valid data frame URL")) {
       val args = test.get
       val id = idOpt.get
-      onComplete(
-        for {
-          frame <- engine.getFrame(id)
-          (c, f) = engine.removeColumn(FrameRemoveColumn[JsObject, Long](id, args.column))
-        } yield c) {
-        case Success(c) => complete(decorate(uri + "/" + c.id, c))
-        case Failure(ex) => throw ex
-      }
+      val exec = engine.removeColumn(FrameRemoveColumn[JsObject, Long](id, args.column))
+      complete(decorate(uri + "/" + exec.start.id, exec.start))
     }
   }
 
@@ -323,7 +294,7 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
     validate(test.isSuccess, "Failed to parse file load descriptor: " + getErrorMessage(test)) {
       val args = test.get
       val result = engine.join(args)
-      val command: Command = result._1
+      val command: Command = result.start
       complete(decorate(uri + "/" + command.id, command))
     }
 
@@ -340,7 +311,7 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
     validate(test.isSuccess, "Failed to parse file load descriptor: " + getErrorMessage(test)) {
       val args = test.get
       val result = engine.flattenColumn(args)
-      val command: Command = result._1
+      val command: Command = result.start
       complete(decorate(uri + "/" + command.id, command))
     }
   }
@@ -373,15 +344,8 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
       val args = test.get
       val sourceFrameId = sourceFrameIdOpt.get
       val projectedFrameId = projectedFrameIdOpt.get
-      onComplete(
-        for {
-          projectFrame <- engine.getFrame(projectedFrameId)
-          sourceFrame <- engine.getFrame(sourceFrameId)
-          (c, f) = engine.project(FrameProject[JsObject, Long](sourceFrameId, projectedFrameId, args.columns, args.new_column_names))
-        } yield c) {
-        case Success(c) => complete(decorate(uri + "/" + c.id, c))
-        case Failure(ex) => throw ex
-      }
+      val exec = engine.project(FrameProject[JsObject, Long](sourceFrameId, projectedFrameId, args.columns, args.new_column_names))
+      complete(decorate(uri + "/" + exec.start.id, exec.start))
     }
   }
 
@@ -396,14 +360,8 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
         & validate(idOpt.isDefined, "Destination is not a valid data frame URL")) {
         val args = test.get
         val id = idOpt.get
-        onComplete(
-          for {
-            frame <- engine.getFrame(id)
-            (c, f) = engine.groupBy(FrameGroupByColumn[JsObject, Long](id, args.name, args.group_by_columns, args.aggregations))
-          } yield c) {
-          case Success(c) => complete(decorate(uri + "/" + c.id, c))
-          case Failure(ex) => throw ex
-        }
+        val exec = engine.groupBy(FrameGroupByColumn[JsObject, Long](id, args.name, args.group_by_columns, args.aggregations))
+        complete(decorate(uri + "/" + exec.start.id, exec.start))
       }
     }
   }

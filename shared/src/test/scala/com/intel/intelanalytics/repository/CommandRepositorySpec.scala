@@ -23,8 +23,8 @@
 
 package com.intel.intelanalytics.repository
 
-import org.scalatest.Matchers
 import com.intel.intelanalytics.domain.command.CommandTemplate
+import org.scalatest.Matchers
 
 class CommandRepositorySpec extends SlickMetaStoreH2Testing with Matchers {
 

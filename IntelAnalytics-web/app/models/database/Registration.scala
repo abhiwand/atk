@@ -23,8 +23,6 @@
 
 package models.database
 
-import play.api.db.slick.Config.driver.simple._
-
 /**
  * Mapping to data submitted from registration form.
  * @param uid

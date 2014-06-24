@@ -23,19 +23,22 @@
 
 package com.intel.intelanalytics.engine
 
-import java.lang.String
-import scala.util.control.NonFatal
+import com.intel.intelanalytics.ClassLoaderAware
 import com.intel.intelanalytics.component.Archive
 import com.intel.intelanalytics.shared.EventLogging
+import com.typesafe.config.Config
 
-class EngineApplication extends Archive with EventLogging {
+import scala.reflect.ClassTag
+import scala.util.control.NonFatal
+
+class EngineApplication extends Archive with EventLogging with ClassLoaderAware {
 
   var engine: EngineComponent with FrameComponent with CommandComponent = null
 
-  def get[T](descriptor: String) = {
+  override def getAll[T : ClassTag](descriptor: String) = {
     descriptor match {
-      case "engine" => engine.engine.asInstanceOf[T]
-      case _ => throw new IllegalArgumentException(s"No suitable implementation for: '$descriptor'")
+      case "engine" => Seq(engine.engine.asInstanceOf[T])
+      case _ => Seq()
     }
   }
 
@@ -44,7 +47,7 @@ class EngineApplication extends Archive with EventLogging {
     engine.engine.shutdown
   }
 
-  def start(configuration: Map[String, String]) = {
+  def start(configuration: Config) = {
 
     try {
       //TODO: when Engine moves to its own process, it will need to start its own Akka actor system.
@@ -62,10 +65,19 @@ class EngineApplication extends Archive with EventLogging {
       }
     }
     catch {
-      case NonFatal(e) => {
+      case NonFatal(e) =>
         error("An error occurred while starting the engine.", exception = e)
         throw e
-      }
     }
   }
+
+  /**
+   * The location at which this component should be installed in the component
+   * tree. For example, a graph machine learning algorithm called Loopy Belief
+   * Propagation might wish to be installed at
+   * "commands/graphs/ml/loopy_belief_propagation". However, it might not actually
+   * get installed there if the system has been configured to override that
+   * default placement.
+   */
+  override def defaultLocation: String = "engine"
 }

@@ -23,9 +23,9 @@
 
 package com.intel.intelanalytics.engine.spark
 
-import org.scalatest.{Suites, Matchers, FlatSpec}
 import com.intel.intelanalytics.engine.TestingSparkContext
-import org.scalatest.mock.MockitoSugar
+import org.scalatest.Matchers
+
 import scala.collection.mutable.ArrayBuffer
 
 class SparkOpsTest extends TestingSparkContext with Matchers {
@@ -82,6 +82,6 @@ class SparkOpsTest extends TestingSparkContext with Matchers {
   it should "not generate the same row twice" in {
     val results = fetchAllData()
 
-    results.groupBy { case Array(index, _, _) => index}.count(_._2.length > 1) should equal(0)
+    results.groupBy { case Array(index, _, _) => index }.count(_._2.length > 1) should equal(0)
   }
 }

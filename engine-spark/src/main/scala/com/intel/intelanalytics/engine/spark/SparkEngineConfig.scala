@@ -23,10 +23,11 @@
 
 package com.intel.intelanalytics.engine.spark
 
-import scala.concurrent.duration._
-import com.intel.intelanalytics.shared.SharedConfig
 import com.intel.graphbuilder.util.SerializableBaseConfiguration
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
+import com.intel.intelanalytics.shared.SharedConfig
+
+import scala.concurrent.duration._
 
 /**
  * Configuration Settings for the SparkEngine,
@@ -48,6 +49,16 @@ object SparkEngineConfig extends SharedConfig {
   val maxRows: Int = config.getInt("intel.analytics.engine.max-rows")
 
   /**
+   * A list of archives that will be searched for command plugins
+   */
+  val archives: List[(String, String)] = {
+    val cfg = config.getConfig("intel.analytics.engine.archives")
+    cfg.entrySet().asScala
+        .map(e => (e.getKey, e.getValue.unwrapped().asInstanceOf[String]))
+        .toList
+  }
+
+  /**
    * Default settings for Titan Load.
    *
    * Creates a new configuration bean each time so it can be modified by the caller (like setting the table name).
@@ -55,7 +66,7 @@ object SparkEngineConfig extends SharedConfig {
   def titanLoadConfiguration: SerializableBaseConfiguration = {
     val titanConfiguration = new SerializableBaseConfiguration
     val titanLoadConfig = config.getConfig("intel.analytics.engine.titan.load")
-    for (entry <- titanLoadConfig.entrySet()) {
+    for (entry <- titanLoadConfig.entrySet().asScala) {
       titanConfiguration.addProperty(entry.getKey, titanLoadConfig.getString(entry.getKey))
     }
     titanConfiguration
