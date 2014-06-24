@@ -74,7 +74,7 @@ class InferSchemaFromData extends Serializable {
    * Add a list of properties, if they aren't already present.
    */
   private def addProperties(propertyType: PropertyType.Value, properties: Seq[Property]): Unit = {
-    properties.foreach(prop ⇒ addProperty(propertyType, prop, isGbId = false))
+    properties.foreach(prop => addProperty(propertyType, prop, isGbId = false))
 
   }
 

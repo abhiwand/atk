@@ -132,7 +132,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
     override lazy val frameRepo: Repository[Session, DataFrameTemplate, DataFrame] = new SlickFrameRepository
 
     /** Repository for CRUD on 'command' table */
-    override lazy val commandRepo: CommandRepository[Session] = new SlickCommandRepository
+    override lazy val commandRepo: Repository[Session, CommandTemplate, Command] = new SlickCommandRepository
 
     /** Repository for CRUD on 'user' table */
     override lazy val userRepo: Repository[Session, UserTemplate, User] with Queryable[Session, User] = new SlickUserRepository
@@ -388,7 +388,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
    *
    * Provides methods for modifying and querying the command table.
    */
-  class SlickCommandRepository extends CommandRepository[Session]
+  class SlickCommandRepository extends Repository[Session, CommandTemplate, Command]
   with EventLogging {
     this: Repository[Session, CommandTemplate, Command] =>
 
@@ -450,6 +450,10 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
 
     override def lookup(id: Long)(implicit session: Session): Option[Command] = {
       commands.where(_.id === id).firstOption
+    }
+
+    override def lookupByName(name: String)(implicit session: Session): Option[Command] ={
+      commands.where(_.name === name).firstOption
     }
 
     /**
@@ -560,6 +564,9 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
       graphs.where(_.id === id).firstOption
     }
 
+    override def lookupByName(name:String)(implicit session:Session): Option[Graph] = {
+      graphs.where(_.name === name).firstOption
+    }
     /** execute DDL to create the underlying table */
     def createTable(implicit session: Session) = {
       graphs.ddl.create

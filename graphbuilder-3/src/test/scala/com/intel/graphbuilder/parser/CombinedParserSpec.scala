@@ -47,7 +47,7 @@ class CombinedParserSpec extends Specification {
         new CombinedParser(inputSchema, new VertexRuleParser(inputSchema, vertexRules), new EdgeRuleParser(inputSchema, edgeRules))
       }
 
-      inputRows.flatMap(row ⇒ parser.parse(row)).size mustEqual 15
+      inputRows.flatMap(row => parser.parse(row)).size mustEqual 15
     }
 
   }
