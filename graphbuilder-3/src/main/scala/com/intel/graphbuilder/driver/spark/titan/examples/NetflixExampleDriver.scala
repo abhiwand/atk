@@ -91,7 +91,7 @@ object NetflixExampleDriver {
 
     // Setup data in Spark
     val inputRows = sc.textFile(ExamplesUtils.movieDataset, System.getProperty("PARTITIONS", "100").toInt)
-    val inputRdd = inputRows.map(row ⇒ row.split(","): Seq[_])
+    val inputRdd = inputRows.map(row => row.split(","): Seq[_])
 
     // Build the Graph
     val config = new GraphBuilderConfig(inputSchema, vertexRules, edgeRules, titanConfig, biDirectional = false, append = false, broadcastVertexIds = false)

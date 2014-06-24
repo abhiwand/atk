@@ -50,11 +50,11 @@ class InputRow(inputSchema: InputSchema, row: Seq[Any]) {
   def columnIsNotEmpty(columnName: String): Boolean = {
     val any = row(inputSchema.columnIndex(columnName))
     any match {
-      case null ⇒ false
-      case None ⇒ false
-      case Nil ⇒ false
-      case s: String ⇒ StringUtils.isNotEmpty(s)
-      case _ ⇒ true
+      case null => false
+      case None => false
+      case Nil => false
+      case s: String => StringUtils.isNotEmpty(s)
+      case _ => true
     }
   }
 
