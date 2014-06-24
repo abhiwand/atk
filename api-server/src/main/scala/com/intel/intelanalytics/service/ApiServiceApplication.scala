@@ -58,8 +58,6 @@ class ApiServiceApplication extends Archive {
    */
   def start(configuration: Config) = {
 
-    EventLogger.setImplementation(new SLF4JLogAdapter())
-
     val apiService = initializeDependencies()
     createActorSystemAndBindToHttp(apiService)
   }
