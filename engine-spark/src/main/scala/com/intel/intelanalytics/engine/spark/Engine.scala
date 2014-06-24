@@ -702,16 +702,6 @@ class SparkEngine(sparkContextManager: SparkContextManager,
 
 
   /**
-   * Obtains a graph's metadata from its identifier.
-   * @param name Name of the graph in metastore
-   * @return A future of the graph metadata entry.
-   */
-  def lookupByName(name: String)(implicit user: UserPrincipal): Future[Graph] = {
-    future{
-      graphs.lookupByName(name).get
-    }
-  }
-  /**
    * Get the metadata for a range of graph identifiers.
    * @param offset First graph to obtain.
    * @param count Number of graphs to obtain.

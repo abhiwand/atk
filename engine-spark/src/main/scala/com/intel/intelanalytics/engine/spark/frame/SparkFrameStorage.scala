@@ -208,23 +208,6 @@ class SparkFrameStorage(context: UserPrincipal => Context, fsRoot: String, files
     }
   }
 
-  override def lookupFrameByName(name: String): Option[DataFrame] = withContext("frame.lookupFrameByName"){
-    val path = getFrameDirectoryByName(name)
-    val meta = File(Paths.get(path, "meta"))
-    if(files.getMetaData(meta.path).isEmpty){
-      return None
-    }
-    val f = files.read(meta)
-    try{
-      val src = Source.fromInputStream(f)(Codec.UTF8).getLines().mkString("")
-      val json = JsonParser(src)
-      return Some(json.convertTo[DataFrame])
-    }
-    finally{
-      f.close()
-    }
-  }
-
   val idRegex: Regex = "^\\d+$".r
 
   def getFrames(offset: Int, count: Int): Seq[DataFrame] = withContext("frame.getFrames") {
