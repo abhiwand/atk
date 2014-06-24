@@ -68,7 +68,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
 
   /* This progress listener saves progress update to command table */
   SparkProgressListener.progressUpdater = new CommandProgressUpdater {
-    override def updateProgress(commandId: Long, progress: List[Float]): Unit = commands.updateProgress(commandId, progress)
+    override def updateProgress(commandId: Long, progress: List[Float]): Unit = commandStorage.updateProgress(commandId, progress)
   }
 
 
@@ -121,14 +121,6 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     }
   }
 
-  def withCommand[T](command: Command)(block: => JsObject)(implicit user: UserPrincipal): Unit = {
-    val ctx = sparkContextManager.context(user).sparkContext
-    ctx.setLocalProperty("command-id", command.id.toString)
-
-    commands.complete(command.id, Try {
-      block
-    })
-  }
   def load(arguments: LoadLines[JsObject, Long])(implicit user: UserPrincipal): Execution =
     commands.execute(loadCommand, arguments, user, implicitly[ExecutionContext])
 
