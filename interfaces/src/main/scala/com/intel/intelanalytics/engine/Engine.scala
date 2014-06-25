@@ -81,8 +81,16 @@ trait Engine {
   def addColumns(arguments: FrameAddColumns[JsObject, Long])(implicit user: UserPrincipal): Execution
 
   def delete(frame: DataFrame): Future[Unit]
+
+  /**
+   * Remove duplicates rows, keeping only one row per uniqueness criteria match
+   * @param dropDuplicateCommand command for dropping duplicates
+   * @param user current user
+   */
+  def dropDuplicates(dropDuplicateCommand: DropDuplicates)(implicit user: UserPrincipal): Execution
+
   def join(argument: FrameJoin)(implicit user: UserPrincipal): Execution
-  def flattenColumn(argument: FlattenColumn[Long])(implicit user: UserPrincipal): Execution
+  def flattenColumn(argument: FlattenColumn)(implicit user: UserPrincipal): Execution
 
   def groupBy(arguments: FrameGroupByColumn[JsObject, Long])(implicit user: UserPrincipal): Execution
 

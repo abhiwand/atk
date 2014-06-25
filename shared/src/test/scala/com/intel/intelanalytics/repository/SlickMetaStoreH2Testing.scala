@@ -41,7 +41,7 @@ trait SlickMetaStoreH2Testing extends FlatSpec with BeforeAndAfter {
 
   before {
     // initialize tables
-    slickMetaStoreComponent.metaStore.createAllTables()
+    slickMetaStoreComponent.metaStore.initializeSchema()
   }
 
   after {
