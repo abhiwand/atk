@@ -33,7 +33,7 @@ from intelanalytics.core.frame import BigFrame
 from intelanalytics.core.column import BigColumn
 from intelanalytics.core.files import CsvFile
 from intelanalytics.core.types import *
-from intelanalytics.core.aggregation import AggregationFunctions as agg
+from intelanalytics.core.aggregation import agg
 from intelanalytics.rest.connection import http
 from intelanalytics.rest.command import CommandRequest, executor
 from intelanalytics.rest.spark import prepare_row_function, get_add_one_column_function, get_add_many_columns_function
@@ -262,16 +262,16 @@ class FrameBackendRest(object):
         arguments = {'frame': frame.uri, 'projected_frame': projected_frame.uri, 'columns': columns, "new_column_names": new_names}
         return execute_update_frame_command('project', arguments, projected_frame)
 
-    def groupby(self, frame, groupby_columns, *aggregation):
-
-        if isinstance(groupby_columns, basestring):
+    def groupby(self, frame, groupby_columns, aggregation):
+        if groupby_columns is None:
+            groupby_columns = []
+        elif isinstance(groupby_columns, basestring):
             groupby_columns = [groupby_columns]
 
         aggregation_list = []
-
         for arg in aggregation:
             if arg == agg.count:
-                aggregation_list.append((agg.count, groupby_columns[0], "count"))
+                aggregation_list.append((agg.count, frame.column_names[0], "count"))
             elif isinstance(arg, dict):
                 for k,v in arg.iteritems():
                     if k not in frame._columns:
@@ -280,17 +280,17 @@ class FrameBackendRest(object):
                         for j in v:
                             if j not in agg:
                                 raise ValueError("%s is not a valid aggregation function, like agg.max.  Supported agg methods: %s" % (j, agg))
-                            aggregation_list.append((j, k.name, "%s_%s" % (k.name, j)))
+                            aggregation_list.append((j, k, "%s_%s" % (k, j)))
                     else:
-                        aggregation_list.append((v, k.name, "%s_%s" % (k.name, v)))
+                        aggregation_list.append((v, k, "%s_%s" % (k, v)))
             else:
                 raise TypeError("Bad type %s provided in aggregation arguments; expecting an aggregation function or a dictionary of column_name:[func]" % type(arg))
 
         name = self._get_new_frame_name()
         arguments = {'frame': frame.uri,
-                    'name': name,
-                    'group_by_columns' : groupby_columns,
-                    'aggregations': aggregation_list}
+                     'name': name,
+                     'group_by_columns': groupby_columns,
+                     'aggregations': aggregation_list}
 
         return execute_new_frame_command("groupby", arguments)
 
