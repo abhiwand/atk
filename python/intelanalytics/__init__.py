@@ -31,4 +31,3 @@ from intelanalytics.core.frame import BigFrame, get_frame, get_frame_names, dele
 from intelanalytics.core.graph import BigGraph, get_graph, get_graph_names, delete_graph, VertexRule, EdgeRule
 from intelanalytics.core.loggers import loggers
 from intelanalytics.rest.connection import server
-from intelanalytics.rest.spark import CellNone  # TODO - tmp

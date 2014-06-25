@@ -165,7 +165,12 @@ public class EventLogger {
      *
      * @param eventLog the logging implementation to use
      */
-    public static void setImplementation(EventLog eventLog) {
-        EventLogger.EVENT_LOG = eventLog;
-    }
+    public static void setImplementation(EventLog eventLog) {   EventLogger.EVENT_LOG = eventLog; }
+
+    /**
+     * Check if we have a logging implementation. If you desire not to keep setting it after it's been set once.
+     *
+     * @return the current event logger null if none is set
+     */
+    public static EventLog getImplementation() { return EventLogger.EVENT_LOG; }
 }
