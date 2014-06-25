@@ -292,7 +292,10 @@ class SparkEngine(sparkContextManager: SparkContextManager,
       val predicateInBytes = decodePythonBase64EncodedStrToBytes(py_expression)
 
       val baseRdd: RDD[String] = frames.getFrameRdd(ctx, frameId)
-        .map(x => x.map(t => t.toString).mkString(SparkEngine.pythonRddDelimiter))
+        .map(x => x.map(t => t match {
+                                 case null => DataTypes.pythonRddNullString
+                                 case _ => t.toString
+                               }).mkString(SparkEngine.pythonRddDelimiter))
 
       val pythonExec = "python2.7" //TODO: take from env var or config
       val environment = new java.util.HashMap[String, String]()
@@ -342,6 +345,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     val flattenedRDD = SparkOps.flattenRddByColumnIndex(columnIndex, arguments.separator, rdd)
 
     flattenedRDD.saveAsObjectFile(fsRoot + frames.getFrameDataFile(newFrame.id))
+    frames.updateSchema(newFrame, realFrame.schema.columns)
     newFrame.copy(schema = realFrame.schema)
 
   }

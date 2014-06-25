@@ -24,11 +24,14 @@
 package com.intel.intelanalytics.service
 
 import com.intel.intelanalytics.service.v1.ApiV1Service
+import com.intel.intelanalytics.service.{AuthenticationDirective, CommonDirectives}
 
 class ApiServiceSpec extends ServiceSpec {
 
   val apiV1Service = mock[ApiV1Service]
-  val apiService = new ApiService(apiV1Service)
+  val authenticationDirective = mock[AuthenticationDirective]
+  val commonDirectives = new CommonDirectives(authenticationDirective)
+  val apiService = new ApiService(commonDirectives, apiV1Service)
 
   "ApiService" should "return a greeting for GET requests to the root path" in {
     Get() ~> apiService.serviceRoute ~> check {

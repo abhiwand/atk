@@ -21,14 +21,24 @@
 # must be express and approved by Intel in writing.
 ##############################################################################
 """
-iapy package init, public API
+config file for rest client
 """
-from intelanalytics.core.types import *
-from intelanalytics.core.aggregation import agg
-from intelanalytics.core.errorhandle import ErrorHandling as error_handling
-from intelanalytics.core.files import CsvFile
-from intelanalytics.core.frame import BigFrame, get_frame, get_frame_names, delete_frame
-from intelanalytics.core.graph import BigGraph, get_graph, get_graph_names, delete_graph, VertexRule, EdgeRule
-from intelanalytics.core.loggers import loggers
-from intelanalytics.rest.connection import server
-from intelanalytics.rest.spark import CellNone  # TODO - tmp
+
+# default connection config
+class server:
+    host = "localhost"
+    port = 9099
+    scheme = "http"
+    version = "v1"
+    headers = {'Content-type': 'application/json',
+               'Accept': 'application/json,text/plain',
+               'Authorization': "test_api_key_1"}
+
+
+class polling:
+    start_interval_secs = 1
+    max_interval_secs = 20
+    backoff_factor = 1.02
+
+
+build_id = None
