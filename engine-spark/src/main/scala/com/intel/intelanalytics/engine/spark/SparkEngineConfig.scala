@@ -44,6 +44,9 @@ object SparkEngineConfig extends SharedConfig {
   /** URL for spark master, e.g. "spark://hostname:7077", "local[4]", etc */
   val sparkMaster: String = config.getString("intel.analytics.spark.master")
 
+  /** Default number for partitioning data */
+  val sparkDefaultPartitions: Int = config.getInt("intel.analytics.engine.spark.defaultPartitions")
+
   val defaultTimeout: FiniteDuration = config.getInt("intel.analytics.engine.defaultTimeout").seconds
 
   val fsRoot: String = config.getString("intel.analytics.fs.root")
@@ -72,6 +75,18 @@ object SparkEngineConfig extends SharedConfig {
       titanConfiguration.addProperty(entry.getKey, titanLoadConfig.getString(entry.getKey))
     }
     titanConfiguration
+  }
+
+  /**
+   * Configuration properties that will be supplied to SparkConf()
+   */
+  val sparkConfProperties: Map[String,String] = {
+    var sparkConfProperties = Map[String,String]()
+    val properties = config.getConfig("intel.analytics.engine.spark.conf.properties")
+    for (entry <- properties.entrySet().asScala) {
+      sparkConfProperties += entry.getKey -> properties.getString(entry.getKey)
+    }
+    sparkConfProperties
   }
 
 }

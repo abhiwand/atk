@@ -31,6 +31,9 @@ import scala.util.Try
  */
 object DataTypes {
 
+
+  val pythonRddNullString = "YoMeNull"  // TODO - identify correct null indicator, and locate this appropriately
+
   /**
    * The datatype trait
    */
@@ -114,6 +117,11 @@ object DataTypes {
   val str = string
 
   /**
+   * An alias for string
+   */
+  val unicode = string
+
+  /**
    * An alias for int32
    */
   val int = int32
@@ -127,6 +135,7 @@ object DataTypes {
       .map(t => t.toString -> t)
       .toMap ++
       Map("str" -> string,
+        "unicode" -> string,
         "int" -> int32)
 
   /**
@@ -175,11 +184,15 @@ object DataTypes {
     val lifted = columnTypes.lift
     strings.zipWithIndex.map {
       case (s, i) => {
-        val colType = lifted(i).getOrElse(throw new IllegalArgumentException(
-          "Data extend beyond number" +
-            " of columns defined in data frame"))
-        val value = colType.parse(s)
-        value.get
+        s match {
+          case nullString if nullString == pythonRddNullString => null  // TODO - remove, handle differently
+          case _ =>
+            val colType = lifted (i).getOrElse (throw new IllegalArgumentException (
+            "Data extend beyond number" +
+            " of columns defined in data frame") )
+            val value = colType.parse (s)
+            value.get
+        }
       }
     }
   }

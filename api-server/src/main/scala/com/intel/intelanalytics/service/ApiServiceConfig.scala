@@ -29,4 +29,6 @@ object ApiServiceConfig extends SharedConfig {
 
   /** Input file for creating test users for local development */
   val testUsersFile: String = config.getString("intel.analytics.test.users.file")
+
+  val buildId = config.getString("intel.analytics.api.buildId")
 }

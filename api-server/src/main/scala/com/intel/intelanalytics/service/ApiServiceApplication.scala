@@ -90,7 +90,7 @@ class ApiServiceApplication extends Archive {
     val apiV1Service = new v1.ApiV1Service(dataFrameService, commandService, graphService)
 
     // setup main entry point
-    new ApiService(apiV1Service)
+    new ApiService(commonDirectives, apiV1Service)
   }
 
   /**
