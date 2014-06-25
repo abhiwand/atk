@@ -38,6 +38,7 @@ FILES="
 /usr/lib/intelanalytics/graphbuilder/ext
 "
 
+mkdir -p $SCRIPTPATH/rpm/SPECS
 rpmSpec > $SCRIPTPATH/rpm/SPECS/$packageName.spec
 
 topDir="$SCRIPTPATH/rpm"
