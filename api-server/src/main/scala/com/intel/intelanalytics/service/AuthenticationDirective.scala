@@ -35,6 +35,15 @@ import spray.routing._
 import scala.PartialFunction._
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent._
+import com.intel.intelanalytics.security.UserPrincipal
+import scala.Some
+import spray.routing._
+import com.intel.intelanalytics.domain.{ DomainJsonProtocol, User }
+import spray.json._
+import com.intel.intelanalytics.repository.MetaStore
+import scala.concurrent.duration._
+import com.intel.intelanalytics.shared.EventLogging
+import org.apache.commons.lang.StringUtils
 
 /**
  * Uses authorization HTTP header and metaStore to authenticate a user
@@ -60,9 +69,12 @@ class AuthenticationDirective(val metaStore: MetaStore) extends Directives with 
   protected def getUserPrincipal(apiKey: String): Future[UserPrincipal] = {
     future {
       metaStore.withSession("Getting user principal") { implicit session =>
+        if (StringUtils.isBlank(apiKey)) {
+          throw new SecurityException("Api key was not provided")
+        }
         val users: List[User] = metaStore.userRepo.retrieveByColumnValue("api_key", apiKey)
         users match {
-          case Nil => throw new SecurityException("User not found")
+          case Nil => throw new SecurityException("User not found with apiKey:" + apiKey)
           case us if us.length > 1 => throw new SecurityException("Problem accessing user credentials")
           case user => {
             val userPrincipal: UserPrincipal = new UserPrincipal(users(0), List("user")) //TODO need role definitions

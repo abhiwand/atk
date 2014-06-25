@@ -530,6 +530,34 @@ class BigFrame(object):
         except:
             raise IaError(logger)
 
+    def drop_duplicates(self, columns=[]):
+        """
+        Remove duplicate rows, keeping only one row per uniqueness criteria match
+    
+        Parameters
+        ----------
+    
+        columns : str OR list of str
+            column name(s) to identify duplicates. If empty, will remove duplicates that have whole row data identical.
+    
+        Examples
+        --------
+    
+        >>>
+        Remove duplicate rows that have same data on column b.
+        >>> my_frame.drop_duplicates("b")
+        <BLANKLINE>
+        Remove duplicate rows that have same data on column a and b
+        >>> my_frame.drop_duplicates(["a", "b"])
+        Remove duplicates that have whole row data identical
+        <BLANKLINE
+        >>> my_frame.drop_duplicates()
+        """
+        try:
+            self._backend.drop_duplicates(self, columns)
+        except:
+            raise IaError(logger)
+
     def dropna(self, how=any, column_subset=None):
         """
         Drops all rows which have NA values.
