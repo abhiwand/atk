@@ -103,4 +103,3 @@ class ApiService(val commonDirectives: CommonDirectives, val apiV1Service: ApiV1
 
 case class ServiceDescription(name: String, identifier: String, versions: List[String])
 
-

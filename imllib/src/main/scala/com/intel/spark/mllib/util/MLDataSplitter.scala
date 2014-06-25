@@ -24,7 +24,7 @@
 package com.intel.spark.mllib.util
 
 import org.apache.spark.SparkContext._
-import org.apache.spark.{SparkConf, SparkContext, SparkException}
+import org.apache.spark.{ SparkConf, SparkContext, SparkException }
 import org.apache.spark.rdd._
 
 import scala.reflect.ClassTag

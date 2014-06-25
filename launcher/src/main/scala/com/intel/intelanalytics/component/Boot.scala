@@ -23,11 +23,11 @@
 
 package com.intel.intelanalytics.component
 
-import java.net.{URL, URLClassLoader}
+import java.net.{ URL, URLClassLoader }
 
 import com.typesafe.config.ConfigFactory
 
-import scala.reflect.io.{Directory, File, Path}
+import scala.reflect.io.{ Directory, File, Path }
 import scala.util.control.NonFatal
 
 /**
@@ -52,12 +52,13 @@ object Boot extends App {
   def attempt[T](expr: => T, failureMessage: => String) = {
     try {
       expr
-    } catch {
+    }
+    catch {
       case NonFatal(e) => throw new Exception(failureMessage, e)
     }
   }
 
-  private def startComponent(componentInstance: Component, archive: String, configPath: Option[String]) : Unit = {
+  private def startComponent(componentInstance: Component, archive: String, configPath: Option[String]): Unit = {
     val restrictedConfigPath: String = configPath.getOrElse(componentInstance.defaultLocation).replace("/", ".")
     val restrictedConfig = attempt(config.getConfig(restrictedConfigPath),
       s"Could not obtain configuration for class ${componentInstance.getClass.getName} " +
@@ -97,7 +98,7 @@ object Boot extends App {
     val instance = load(archiveName.archiveClass, inst => {
       val archiveInstance = attempt(inst.asInstanceOf[Archive],
         s"Loaded class ${archiveName.archiveClass} in archive ${archiveName.archive}, but it is not an Archive")
-      archiveInstance.setLoader(name =>load(name, inst => defaultInit(inst, archiveName.archive, configPath)))
+      archiveInstance.setLoader(name => load(name, inst => defaultInit(inst, archiveName.archive, configPath)))
       defaultInit(archiveInstance, archiveName.archive, configPath)
       //cleanup stuff on exit
       Runtime.getRuntime.addShutdownHook(new Thread() {

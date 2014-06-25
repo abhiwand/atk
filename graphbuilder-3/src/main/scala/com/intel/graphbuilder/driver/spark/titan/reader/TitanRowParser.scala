@@ -29,7 +29,8 @@ case class TitanRowParser(titanRow: TitanRow, titanEdgeSerializer: EdgeSerialize
 
     try {
       titanRelationFactory.createGraphElements(titanRow, titanEdgeSerializer, titanTransaction)
-    } catch {
+    }
+    catch {
       case e: Exception => {
         throw new RuntimeException("Unable to parse Titan row:" + titanRow, e)
       }
@@ -42,7 +43,8 @@ case class TitanRowParser(titanRow: TitanRow, titanEdgeSerializer: EdgeSerialize
   private def getTitanVertexID(rowKey: StaticBuffer) = {
     try {
       IDHandler.getKeyID(titanRow.rowKey)
-    } catch {
+    }
+    catch {
       case e: Exception => {
         throw new RuntimeException("Unable to extract Titan row key:" + rowKey, e)
       }

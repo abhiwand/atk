@@ -24,7 +24,7 @@
 package com.intel.graphbuilder.write.dao
 
 import com.intel.graphbuilder.driver.spark.TestingTitan
-import com.intel.graphbuilder.elements.{Edge, Property, Vertex}
+import com.intel.graphbuilder.elements.{ Edge, Property, Vertex }
 import com.intel.graphbuilder.write.titan.TitanIdUtils.titanId
 import com.tinkerpop.blueprints.Direction
 import org.specs2.mutable.Specification

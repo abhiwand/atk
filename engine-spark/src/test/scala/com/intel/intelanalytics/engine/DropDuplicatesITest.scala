@@ -1,6 +1,6 @@
 package com.intel.intelanalytics.engine.spark
 
-import org.scalatest.{BeforeAndAfterEach, Matchers, FlatSpec}
+import org.scalatest.{ BeforeAndAfterEach, Matchers, FlatSpec }
 import com.intel.intelanalytics.engine.TestingSparkContext
 import org.apache.spark.rdd.RDD
 import org.apache.spark.SparkContext._
@@ -22,7 +22,7 @@ class DropDuplicatesITest extends FlatSpec with Matchers with BeforeAndAfterEach
     duplicatesRemoved.count() shouldBe 3 // original data contain 5 rows, now drop to 3
 
     //transform output to a sortable format
-    val sortable = duplicatesRemoved.map(t => SparkOps.createKeyValuePairFromRow(t, Seq(1))).map{case (keyColumns, data) => (keyColumns(0), data)}.asInstanceOf[RDD[(Int, Array[Any])]]
+    val sortable = duplicatesRemoved.map(t => SparkOps.createKeyValuePairFromRow(t, Seq(1))).map { case (keyColumns, data) => (keyColumns(0), data) }.asInstanceOf[RDD[(Int, Array[Any])]]
 
     //sort output to validate result
     val sorted = sortable.sortByKey(true)

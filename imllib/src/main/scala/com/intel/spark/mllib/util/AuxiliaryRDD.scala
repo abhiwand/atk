@@ -26,7 +26,7 @@ package com.intel.spark.mllib.util
 import java.util.Random
 
 import org.apache.spark.rdd.RDD
-import org.apache.spark.{Partition, TaskContext}
+import org.apache.spark.{ Partition, TaskContext }
 
 import scala.reflect.ClassTag
 

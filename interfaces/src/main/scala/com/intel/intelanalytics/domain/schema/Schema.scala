@@ -43,7 +43,7 @@ case class Schema(columns: List[(String, DataType)] = List[(String, DataType)]()
    * @param columnNames input column names
    */
   def columnIndex(columnNames: Seq[String]): Seq[Int] = {
-    if(columnNames.isEmpty)
+    if (columnNames.isEmpty)
       (0 to (columns.length - 1)).toList
     else
       columnNames.map(col => columns.indexWhere(columnTuple => columnTuple._1 == col))

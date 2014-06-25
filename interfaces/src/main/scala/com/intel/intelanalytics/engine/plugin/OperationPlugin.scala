@@ -24,7 +24,7 @@
 package com.intel.intelanalytics.engine.plugin
 
 import com.intel.intelanalytics.ClassLoaderAware
-import com.intel.intelanalytics.component.{Plugin, Component}
+import com.intel.intelanalytics.component.{ Plugin, Component }
 import com.intel.intelanalytics.security.UserPrincipal
 import com.typesafe.config.Config
 import spray.json.JsObject
@@ -41,9 +41,8 @@ import scala.concurrent.ExecutionContext
  * @tparam Return the type of the data that this plugin will return when invoked.
  */
 sealed trait OperationPlugin[Argument, Return] extends ((Invocation, Any) => Return)
-                                                                          with Plugin
-                                                                          with ClassLoaderAware {
-
+    with Plugin
+    with ClassLoaderAware {
 
   private var config: Option[Config] = None
 
@@ -55,7 +54,7 @@ sealed trait OperationPlugin[Argument, Return] extends ((Invocation, Any) => Ret
   /**
    * Access to configuration provided during startup
    */
-  def configuration() : Option[Config] = config
+  def configuration(): Option[Config] = config
 
   /**
    * Called before processing any requests.
@@ -73,7 +72,7 @@ sealed trait OperationPlugin[Argument, Return] extends ((Invocation, Any) => Ret
    * nor guaranteed that the application will not shut down while this method is running,
    * though an effort will be made.
    */
-  override def stop(): Unit = { }
+  override def stop(): Unit = {}
 
   /**
    * Operation plugins must implement this method to do the work requested by the user.
@@ -81,8 +80,7 @@ sealed trait OperationPlugin[Argument, Return] extends ((Invocation, Any) => Ret
    * @param arguments the arguments supplied by the caller
    * @return a value of type declared as the Return type.
    */
-  def execute(invocation: Invocation, arguments: Argument)
-             (implicit user: UserPrincipal, executionContext: ExecutionContext): Return
+  def execute(invocation: Invocation, arguments: Argument)(implicit user: UserPrincipal, executionContext: ExecutionContext): Return
 
   /**
    * Invokes the operation, which calls the execute method that each plugin implements.
@@ -103,7 +101,6 @@ sealed trait OperationPlugin[Argument, Return] extends ((Invocation, Any) => Ret
   }
 }
 
-
 /**
  * Base trait for command plugins
  */
@@ -115,17 +112,17 @@ trait CommandPlugin[Argument, Return] extends OperationPlugin[Argument, Return] 
   /**
    * Convert the given JsObject to an instance of the Argument type
    */
-  def parseArguments(arguments: JsObject) : Argument
+  def parseArguments(arguments: JsObject): Argument
 
   /**
    * Convert the given argument to a JsObject
    */
-  def serializeArguments(arguments: Argument) : JsObject
+  def serializeArguments(arguments: Argument): JsObject
 
   /**
    * Convert the given object to a JsObject
    */
-  def serializeReturn(returnValue: Return) : JsObject
+  def serializeReturn(returnValue: Return): JsObject
 }
 
 /**

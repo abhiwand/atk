@@ -5,7 +5,7 @@ import play.api.mvc._
 import play.api.mvc.Results._
 import java.io.File
 import scala.collection.JavaConversions._
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{ ExecutionContext, Future }
 import scala.Some
 import play.api.Play.current
 import play.api.Logger
@@ -13,23 +13,22 @@ import services.aws.S3
 import play.api.http.HeaderNames._
 import ExecutionContext.Implicits.global
 
-
-object Global extends GlobalSettings{
+object Global extends GlobalSettings {
 
   override def onLoadConfig(config: Configuration, path: File, classloader: ClassLoader, mode: Mode.Mode): Configuration = {
     //if we get a play mode environment variable use that instead of the default one from play
-    val playMode = if(System.getProperty("play.config") == null) mode.toString.toLowerCase else System.getProperty("play.config").toLowerCase
+    val playMode = if (System.getProperty("play.config") == null) mode.toString.toLowerCase else System.getProperty("play.config").toLowerCase
     val customConfigFileName = s"application.${playMode}.conf";
     //load our config
     val loadConfig = ConfigFactory.load(customConfigFileName)
 
     val customConfigs = loadConfig.withOnlyPath(playMode.toLowerCase).entrySet map (_.getKey)
-    for(customConfig <- customConfigs){
+    for (customConfig <- customConfigs) {
       System.setProperty(customConfig.replace(playMode + ".", ""), loadConfig.getString(customConfig))
     }
 
     val modeSpecificConfig = config ++ Configuration(loadConfig)
-    if(!playMode.eq(Mode.Prod.toString.toLowerCase)){
+    if (!playMode.eq(Mode.Prod.toString.toLowerCase)) {
       System.out.println("loaded config file: " + customConfigFileName)
     }
 
@@ -37,9 +36,9 @@ object Global extends GlobalSettings{
     super.onLoadConfig(modeSpecificConfig, path, classloader, mode)
   }
 
-  override def onStart(app : play.api.Application){
+  override def onStart(app: play.api.Application) {
     //don't create the s3 bucket in test mode
-    if(!Play.isTest){
+    if (!Play.isTest) {
       //create s3 bucket to hold user files
       S3.createBucket()
     }
@@ -56,24 +55,25 @@ object Global extends GlobalSettings{
     val elbHealthChecker = request.headers.get(USER_AGENT).getOrElse("").contains("ELB-HealthChecker")
 
     //only force https on prod mode when User-Agent header is anything but aws health check
-    if (Play.isProd &&  !elbHealthChecker && !request.headers.get(X_FORWARDED_PROTO).getOrElse("").contains("https")) {
+    if (Play.isProd && !elbHealthChecker && !request.headers.get(X_FORWARDED_PROTO).getOrElse("").contains("https")) {
       Some(controllers.Application.redirect)
-    } else {
+    }
+    else {
       super.onRouteRequest(request)
     }
   }
 
   override def onError(request: RequestHeader, throwable: Throwable) = {
-      if (Play.isProd){
-        Logger.error(request.toString)
-        Logger.error(throwable.toString)
-        Future.successful(Redirect(routes.Application.error500))
-      }
-      else super.onError(request, throwable);
+    if (Play.isProd) {
+      Logger.error(request.toString)
+      Logger.error(throwable.toString)
+      Future.successful(Redirect(routes.Application.error500))
+    }
+    else super.onError(request, throwable);
   }
 
   override def onBadRequest(request: RequestHeader, error: String): Future[SimpleResult] = {
-    if(Play.isProd){
+    if (Play.isProd) {
       Logger.error(request.toString)
       Logger.error(error)
       Future.successful(Redirect(routes.Application.error400))
@@ -82,7 +82,7 @@ object Global extends GlobalSettings{
   }
 
   override def onHandlerNotFound(request: RequestHeader): Future[SimpleResult] = {
-    if(Play.isProd){
+    if (Play.isProd) {
       Logger.error(request.toString)
       Future.successful(Redirect(routes.Application.error404))
     }

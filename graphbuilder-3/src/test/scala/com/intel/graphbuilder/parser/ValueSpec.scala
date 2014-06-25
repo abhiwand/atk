@@ -23,7 +23,7 @@
 
 package com.intel.graphbuilder.parser
 
-import com.intel.graphbuilder.parser.rule.{CompoundValue, ConstantValue, ParsedValue, Value}
+import com.intel.graphbuilder.parser.rule.{ CompoundValue, ConstantValue, ParsedValue, Value }
 import org.apache.commons.lang3.StringUtils
 import org.specs2.ScalaCheck
 import org.specs2.mock.Mockito

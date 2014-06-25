@@ -23,7 +23,7 @@
 
 package com.intel.intelanalytics.engine
 
-import com.intel.intelanalytics.domain.graph.{Graph, GraphLoad, GraphTemplate}
+import com.intel.intelanalytics.domain.graph.{ Graph, GraphLoad, GraphTemplate }
 import com.intel.intelanalytics.security.UserPrincipal
 import spray.json.JsObject
 
