@@ -95,20 +95,11 @@ private[spark] object SparkOps extends Serializable {
    * @return  RDD of Row objects
    */
   def loadLines(ctx: SparkContext,
-<<<<<<< HEAD
                 fileName: String,
                 skipRows:Option[Int],
                 parserFunction: String => Array[String],
                 converter: Array[String] => Array[Any]): RDD[Row]= {
     ctx.textFile(fileName)
-=======
-    fileName: String,
-    location: String,
-    arguments: LoadLines[JsObject, Long],
-    parserFunction: String => Array[String],
-    converter: Array[String] => Array[Any]) = {
-    ctx.textFile(fileName, SparkEngineConfig.sparkDefaultPartitions)
->>>>>>> sprint_14
       .mapPartitionsWithIndex {
         case (partition, lines) => {
           if (partition == 0) {
