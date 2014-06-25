@@ -20,30 +20,72 @@
 # estoppel or otherwise. Any license under such intellectual property rights
 # must be express and approved by Intel in writing.
 #############################################################################
-import sys,traceback
+import sys
+import traceback
+import warnings
 
-from intelanalytics.core.loggers import *
 
-# Values to be initialized:
-# Set stack_flag to print the stack trace. If set to false, only the error message is printed.
-# file_name is the name of the logger file. We could pick this up from a config file to ensure we have the same file everywhere
-# std_err flag is to be enabled if we want to log output to the std err console. The logging level here is DEBUG.
+class ErrorHandling(object):
+    """
+    Settings and methods for Python API layer error handling
+    """
+    show_details = False
+    """Boolean which determines if the full exception traceback is included in the exception handling"""
 
-def get_stacktrace(exc):
-    stack_flag= True
-    file_name = 'log.out'
-    stderr_flag = True
+    _last_exc_info = None
+    """the last captured API layer exception"""
 
-    exc_type,exc_value,exc_traceback = exc
+    help_msg = """(For full stack trace of this error, type: error_handling.print_last()
+ To always show full details, set error_handling.show_details = True)
+"""
 
-    # Logging the stacktrace at INFO level
-    # Syntax: set(level, logger_name, file_name, stderr_flag)
-    logger = loggers.set('INFO','loggername',file_name,stderr_flag)
-    if stack_flag == True:
-        # **** Printing the stack trace: ****
-        logger.info(repr(traceback.format_exc(limit=None)))
+    @staticmethod
+    def get_last():
+        """Returns list of formatted strings of the details (traceback) of the last captured exception"""
+        if ErrorHandling._last_exc_info:
+            (exc_type, exc_value, exc_tb) = ErrorHandling._last_exc_info
+            return traceback.format_exception(exc_type, exc_value, exc_tb)
+        else:
+            return None
 
-    else:
-        # **** Printing the error message: ****
-        formatted_lines= traceback.format_exc().splitlines()
-        logger.info(formatted_lines[-1])
+    @staticmethod
+    def print_last():
+        """Prints the details (traceback) of the last captured exception"""
+        print "".join(ErrorHandling.get_last())
+
+
+class IaError(Exception):
+    """
+    Internal Error Factory for the API layer to report or remove error stack trace.
+
+    Use with raise
+
+    Examples
+    --------
+    >>> try:
+    ...    x = 4 / 0  # some work...
+    ... except:
+    ...    raise IaError()
+    """
+    def __new__(cls, logger=None):
+        exc_info = sys.exc_info()
+        ErrorHandling._last_exc_info = exc_info
+        try:
+            cls.log_error(logger)
+        except:
+            warnings.warn("Unable to log exc_info", RuntimeWarning)
+
+        if ErrorHandling.show_details:
+            # to show the stack, we just re-raise the last exception as is
+            raise
+        else:
+            # to hide the stack, we return the exception info w/o trace
+            sys.stderr.write(ErrorHandling.help_msg)
+            sys.stderr.flush()
+            return exc_info[1], None, None
+
+    @classmethod
+    def log_error(cls, logger=None):
+        if logger:
+            message = traceback.format_exc(limit=None)
+            logger.error(message)
