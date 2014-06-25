@@ -2,11 +2,11 @@ package com.intel.graphbuilder.driver.spark.titan.reader
 
 import java.io.File
 
-import com.intel.graphbuilder.elements.{Edge, Property, Vertex}
+import com.intel.graphbuilder.elements.{ Edge, Property, Vertex }
 import com.intel.graphbuilder.graph.titan.TitanGraphConnector
 import com.intel.graphbuilder.util.SerializableBaseConfiguration
 import com.intel.testutils.DirectoryUtils
-import org.scalatest.{BeforeAndAfterAll, Suite}
+import org.scalatest.{ BeforeAndAfterAll, Suite }
 
 import scala.collection.JavaConversions._
 
@@ -123,7 +123,8 @@ object TitanReaderTestData extends Suite with BeforeAndAfterAll {
         transaction.commit()
         graph.shutdown()
       }
-    } finally {
+    }
+    finally {
       DirectoryUtils.deleteTempDirectory(tmpDir)
     }
 

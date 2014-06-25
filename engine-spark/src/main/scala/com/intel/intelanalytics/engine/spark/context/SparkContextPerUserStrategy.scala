@@ -24,7 +24,7 @@
 package com.intel.intelanalytics.engine.spark.context
 
 import com.intel.intelanalytics.shared.EventLogging
-import org.apache.spark.engine.{ProgressPrinter, SparkProgressListener}
+import org.apache.spark.engine.{ ProgressPrinter, SparkProgressListener }
 
 import scala.collection.mutable
 
@@ -52,7 +52,7 @@ object SparkContextPerUserStrategy extends SparkContextManagementStrategy with E
         System.clearProperty("spark.driver.port") //need to clear this to get rid of port bind problems
         System.setProperty("spark.ui.port", String.valueOf(4041 + contextMap.size)) //need to uniquely set this to get rid of bind problems
         val context = sparkContextFactory.createSparkContext(configuration, "intel-analytics:" + user)
-        val listener = new SparkProgressListener()
+        val listener = new SparkProgressListener(SparkProgressListener.progressUpdater)
         val progressPrinter = new ProgressPrinter(listener)
         context.addSparkListener(listener)
         context.addSparkListener(progressPrinter)

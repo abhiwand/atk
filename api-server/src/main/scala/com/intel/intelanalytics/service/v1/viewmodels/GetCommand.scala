@@ -40,8 +40,8 @@ import spray.json.JsObject
  * @param result result data for executing the command
  * @param links
  */
-case class GetCommand(id: Long, name: String, arguments: Option[JsObject], error: Option[Error],
-                            complete: Boolean, result: Option[JsObject], links: List[RelLink]) {
+case class GetCommand(id: Long, name: String, arguments: Option[JsObject], error: Option[Error], progress: List[Float],
+                      complete: Boolean, result: Option[JsObject], links: List[RelLink]) {
   require(id > 0)
   require(name != null)
   require(arguments != null)

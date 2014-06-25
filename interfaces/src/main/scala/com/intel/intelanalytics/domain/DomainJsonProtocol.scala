@@ -24,10 +24,10 @@
 package com.intel.intelanalytics.domain
 
 import com.intel.intelanalytics.domain.frame._
-import com.intel.intelanalytics.domain.graph.{Graph, GraphLoad, GraphTemplate}
-import com.intel.intelanalytics.domain.graph.construction.{EdgeRule, FrameRule, PropertyRule, ValueRule, VertexRule}
+import com.intel.intelanalytics.domain.graph.{ Graph, GraphLoad, GraphTemplate }
+import com.intel.intelanalytics.domain.graph.construction.{ EdgeRule, FrameRule, PropertyRule, ValueRule, VertexRule }
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
-import com.intel.intelanalytics.domain.schema.{DataTypes, Schema}
+import com.intel.intelanalytics.domain.schema.{ DataTypes, Schema }
 import org.joda.time.DateTime
 import spray.json._
 
@@ -87,7 +87,8 @@ object DomainJsonProtocol extends DefaultJsonProtocol {
   implicit val groupByColumnLongFormat = jsonFormat4(FrameGroupByColumn[JsObject, Long])
 
   implicit val errorFormat = jsonFormat5(Error)
-  implicit val flattenColumnLongFormat = jsonFormat4(FlattenColumn[Long])
+  implicit val flattenColumnLongFormat = jsonFormat4(FlattenColumn)
+  implicit val dropDuplicatesFormat = jsonFormat2(DropDuplicates)
   implicit val binColumnLongFormat = jsonFormat6(BinColumn[Long])
 
   // graph service formats

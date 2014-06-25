@@ -29,13 +29,17 @@ import org.apache.spark.scheduler.{ SparkListenerJobEnd, SparkListenerTaskEnd, S
  * Create for demo purpose. It is used to get progress from SparkProgressListener and print it out
  * TODO: remove it when progress report is exposed through rest api
  */
+/**
+ * Create for demo purpose. It is used to get progress from SparkProgressListener and print it out
+ * TODO: remove it when progress report is exposed through rest api
+ */
 class ProgressPrinter(progressListener: SparkProgressListener) extends SparkListener {
   override def onStageCompleted(stageCompleted: SparkListenerStageCompleted) {
     printJobProgress()
   }
 
   override def onTaskEnd(taskEnd: SparkListenerTaskEnd) {
-    printJobProgress()
+    //    printJobProgress()
   }
 
   override def onJobEnd(jobEnd: SparkListenerJobEnd) {
@@ -43,10 +47,11 @@ class ProgressPrinter(progressListener: SparkProgressListener) extends SparkList
   }
 
   def printJobProgress() {
-    val jobIds = progressListener.jobIdToStageIds.keys.toList.sorted
     println("PRINTING PROGRESS........................................................")
-    for (id ← jobIds) {
-      println("job: " + id + ", progress: " + progressListener.getProgress(id) + "%")
+    for (commandId <- progressListener.commandIdJobs.keys.toList.sorted) {
+      for (job <- progressListener.commandIdJobs(commandId)) {
+        println("command:" + commandId + ", job: " + job.jobId + ", progress: " + progressListener.getProgress(job.jobId) + "%")
+      }
     }
     println("END.......................................................................")
   }

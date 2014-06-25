@@ -23,7 +23,7 @@
 
 package com.intel.intelanalytics.engine.spark.plugin
 
-import com.intel.intelanalytics.engine.plugin.{CommandPlugin, Invocation}
+import com.intel.intelanalytics.engine.plugin.{ CommandPlugin, Invocation }
 import com.intel.intelanalytics.security.UserPrincipal
 
 import scala.concurrent.ExecutionContext
@@ -42,8 +42,7 @@ trait SparkCommandPlugin[Argument, Return] extends CommandPlugin[Argument, Retur
    * @param arguments the arguments supplied by the caller
    * @return a value of type declared as the Return type.
    */
-  override def execute(invocation: Invocation, arguments: Argument)
-                      (implicit user: UserPrincipal, executionContext: ExecutionContext): Return = {
+  override def execute(invocation: Invocation, arguments: Argument)(implicit user: UserPrincipal, executionContext: ExecutionContext): Return = {
     execute(invocation.asInstanceOf[SparkInvocation], arguments)(user, executionContext)
   }
 
@@ -55,6 +54,5 @@ trait SparkCommandPlugin[Argument, Return] extends CommandPlugin[Argument, Retur
    * @param arguments the arguments supplied by the caller
    * @return a value of type declared as the Return type.
    */
-  def execute(invocation: SparkInvocation, arguments: Argument)
-             (implicit user: UserPrincipal, executionContext: ExecutionContext): Return
+  def execute(invocation: SparkInvocation, arguments: Argument)(implicit user: UserPrincipal, executionContext: ExecutionContext): Return
 }

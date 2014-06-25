@@ -25,14 +25,14 @@ package com.intel.graphbuilder.driver.spark.titan.examples
 
 import java.util.Date
 
-import com.intel.graphbuilder.driver.spark.titan.{GraphBuilder, GraphBuilderConfig}
+import com.intel.graphbuilder.driver.spark.titan.{ GraphBuilder, GraphBuilderConfig }
 import com.intel.graphbuilder.graph.titan.TitanGraphConnector
-import com.intel.graphbuilder.parser.{ColumnDef, InputSchema}
+import com.intel.graphbuilder.parser.{ ColumnDef, InputSchema }
 import com.intel.graphbuilder.parser.rule.RuleParserDSL._
 import com.intel.graphbuilder.parser.rule._
 import com.intel.graphbuilder.util.SerializableBaseConfiguration
 import org.apache.spark.rdd.RDD
-import org.apache.spark.{SparkConf, SparkContext}
+import org.apache.spark.{ SparkConf, SparkContext }
 
 /**
  * This is an example of building a graph on Titan with a Cassandra backend using Spark.
@@ -97,7 +97,8 @@ object SparkTitanCassandraExampleDriver {
     val graph = titanConnector.connect()
     try {
       println(ExamplesUtils.dumpGraph(graph))
-    } finally {
+    }
+    finally {
       graph.shutdown()
     }
 

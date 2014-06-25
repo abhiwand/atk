@@ -41,6 +41,7 @@ FILES="
 /usr/lib/intelanalytics/rest-client
 "
 
+mkdir -p $SCRIPTPATH/rpm/SPECS
 rpmSpec > $SCRIPTPATH/rpm/SPECS/$packageName.spec
 
 topDir="$SCRIPTPATH/rpm"

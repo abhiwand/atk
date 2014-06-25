@@ -35,7 +35,7 @@ class EngineApplication extends Archive with EventLogging with ClassLoaderAware 
 
   var engine: EngineComponent with FrameComponent with CommandComponent = null
 
-  override def getAll[T : ClassTag](descriptor: String) = {
+  override def getAll[T: ClassTag](descriptor: String) = {
     descriptor match {
       case "engine" => Seq(engine.engine.asInstanceOf[T])
       case _ => Seq()

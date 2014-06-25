@@ -29,7 +29,7 @@ import com.intel.intelanalytics.engine.Engine
 import com.intel.intelanalytics.service.v1.viewmodels.ViewModelJsonImplicits._
 import scala.concurrent._
 import spray.http.Uri
-import spray.routing.{Directives, Route}
+import spray.routing.{ Directives, Route }
 import com.intel.intelanalytics.domain.frame._
 import com.intel.intelanalytics.domain.FilterPredicate
 import com.intel.intelanalytics.domain.graph.construction.FrameRule
@@ -41,9 +41,9 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol._
 import com.intel.intelanalytics.service.v1.viewmodels._
 import com.intel.intelanalytics.service.v1.viewmodels.ViewModelJsonImplicits._
 import com.intel.intelanalytics.domain.graph.GraphLoad
-import com.intel.intelanalytics.domain.command.{Execution, CommandTemplate, Command}
+import com.intel.intelanalytics.domain.command.{ Execution, CommandTemplate, Command }
 import com.intel.intelanalytics.shared.EventLogging
-import com.intel.intelanalytics.service.{ApiServiceConfig, UrlParser, CommonDirectives, AuthenticationDirective}
+import com.intel.intelanalytics.service.{ ApiServiceConfig, UrlParser, CommonDirectives, AuthenticationDirective }
 import com.intel.intelanalytics.service.v1.decorators.CommandDecorator
 
 //TODO: Is this right execution context for us?
@@ -153,6 +153,7 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
       case ("dataframe/join") => runJoinFrames(uri, xform)
       case ("dataframe/flattenColumn") => runflattenColumn(uri, xform)
       case ("dataframe/groupby") => runFrameGroupByColumn(uri, xform)
+      case ("dataframe/drop_duplicates") => runDropDuplicates(uri, xform)
       case ("dataframe/binColumn") => runBinColumn(uri, xform)
       case s: String => illegalArg("Command name is not supported: " + s)
       case _ => illegalArg("Command name was NOT a string")
@@ -167,12 +168,12 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
     val idOpt = test.toOption.flatMap(args => UrlParser.getFrameId(args.destination))
     (validate(test.isSuccess, "Failed to parse file load descriptor: " + getErrorMessage(test))
       & validate(idOpt.isDefined, "Destination is not a valid data frame URL")) {
-      val args = test.get
-      val id = idOpt.get
-      val exec = engine.load(LoadLines[JsObject, Long](args.source, id,
-        skipRows = args.skipRows, overwrite = args.overwrite, lineParser = args.lineParser, schema = args.schema))
-      complete(decorate(uri + "/" + exec.start.id, exec.start))
-    }
+        val args = test.get
+        val id = idOpt.get
+        val exec = engine.load(LoadLines[JsObject, Long](args.source, id,
+          skipRows = args.skipRows, overwrite = args.overwrite, lineParser = args.lineParser, schema = args.schema))
+        complete(decorate(uri + "/" + exec.start.id, exec.start))
+      }
   }
 
   /**
@@ -195,22 +196,22 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
     (validate(test.isSuccess, "Failed to parse graph load descriptor: " + getErrorMessage(test))
       & validate(graphIDOpt.isDefined, "Target graph is not a valid graph URL")) {
 
-      (validate(frameIDsOpt.isDefined, "Error parsing per-frame graph construction rules")
-        & validate(frameIDsOpt.get.forall(x => x.isDefined), "Invalid URL provided for source dataframe")) {
-        val args = test.get
-        val sourceFrameIDs = frameIDsOpt.get.map(x => x.get)
+        (validate(frameIDsOpt.isDefined, "Error parsing per-frame graph construction rules")
+          & validate(frameIDsOpt.get.forall(x => x.isDefined), "Invalid URL provided for source dataframe")) {
+            val args = test.get
+            val sourceFrameIDs = frameIDsOpt.get.map(x => x.get)
 
-        val frameRulesUsingIDs = (sourceFrameIDs, args.frame_rules).zipped.toList.map { case (id: Long, frule: FrameRule[String]) => new FrameRule[Long](id, frule.vertex_rules, frule.edge_rules)}
+            val frameRulesUsingIDs = (sourceFrameIDs, args.frame_rules).zipped.toList.map { case (id: Long, frule: FrameRule[String]) => new FrameRule[Long](id, frule.vertex_rules, frule.edge_rules) }
 
-        val graphID = graphIDOpt.get
+            val graphID = graphIDOpt.get
 
-        val graphLoad = GraphLoad(graphID,
-          frameRulesUsingIDs,
-          args.retain_dangling_edges)
-        val exec = engine.loadGraph(graphLoad)
-        complete(decorate(uri + "/" + exec.start.id, exec.start))
+            val graphLoad = GraphLoad(graphID,
+              frameRulesUsingIDs,
+              args.retain_dangling_edges)
+            val exec = engine.loadGraph(graphLoad)
+            complete(decorate(uri + "/" + exec.start.id, exec.start))
+          }
       }
-    }
   }
 
   def runFilter(uri: Uri, xform: JsonTransform)(implicit user: UserPrincipal) = {
@@ -220,11 +221,11 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
     val idOpt = test.toOption.flatMap(args => UrlParser.getFrameId(args.frame))
     (validate(test.isSuccess, "Failed to parse file load descriptor: " + getErrorMessage(test))
       & validate(idOpt.isDefined, "Destination is not a valid data frame URL")) {
-      val args = test.get
-      val id = idOpt.get
-      val exec = engine.filter(FilterPredicate[JsObject, Long](id, args.predicate))
-      complete(decorate(uri + "/" + exec.start.id, exec.start))
-    }
+        val args = test.get
+        val id = idOpt.get
+        val exec = engine.filter(FilterPredicate[JsObject, Long](id, args.predicate))
+        complete(decorate(uri + "/" + exec.start.id, exec.start))
+      }
   }
 
   def runFrameRenameFrame(uri: Uri, xform: JsonTransform)(implicit user: UserPrincipal) = {
@@ -234,11 +235,11 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
     val idOpt = test.toOption.flatMap(args => UrlParser.getFrameId(args.frame))
     (validate(test.isSuccess, "Failed to understand rename arguments: " + getErrorMessage(test))
       & validate(idOpt.isDefined, "Frame must be a valid data frame URL")) {
-      val args = test.get
-      val id = idOpt.get
-      val exec = engine.renameFrame(FrameRenameFrame[JsObject, Long](id, args.new_name))
-      complete(decorate(uri + "/" + exec.start.id, exec.start))
-    }
+        val args = test.get
+        val id = idOpt.get
+        val exec = engine.renameFrame(FrameRenameFrame[JsObject, Long](id, args.new_name))
+        complete(decorate(uri + "/" + exec.start.id, exec.start))
+      }
   }
 
   def runFrameRenameColumn(uri: Uri, xform: JsonTransform)(implicit user: UserPrincipal) = {
@@ -248,11 +249,11 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
     val idOpt = test.toOption.flatMap(args => UrlParser.getFrameId(args.frame))
     (validate(test.isSuccess, "Failed to parse file load descriptor: " + getErrorMessage(test))
       & validate(idOpt.isDefined, "Destination is not a valid data frame URL")) {
-      val args = test.get
-      val id = idOpt.get
-      val exec = engine.renameColumn(FrameRenameColumn[JsObject, Long](id, args.original_names, args.new_names))
-      complete(decorate(uri + "/" + exec.start.id, exec.start))
-    }
+        val args = test.get
+        val id = idOpt.get
+        val exec = engine.renameColumn(FrameRenameColumn[JsObject, Long](id, args.original_names, args.new_names))
+        complete(decorate(uri + "/" + exec.start.id, exec.start))
+      }
   }
 
   def runFrameAddColumns(uri: Uri, xform: JsonTransform)(implicit user: UserPrincipal) = {
@@ -262,11 +263,11 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
     val idOpt = test.toOption.flatMap(args => UrlParser.getFrameId(args.frame))
     (validate(test.isSuccess, "Failed to parse file load descriptor: " + getErrorMessage(test))
       & validate(idOpt.isDefined, "Destination is not a valid data frame URL")) {
-      val args = test.get
-      val id = idOpt.get
-      val exec = engine.addColumns(FrameAddColumns[JsObject, Long](id, args.column_names, args.column_types, args.expression))
-      complete(decorate(uri + "/" + exec.start.id, exec.start))
-    }
+        val args = test.get
+        val id = idOpt.get
+        val exec = engine.addColumns(FrameAddColumns[JsObject, Long](id, args.column_names, args.column_types, args.expression))
+        complete(decorate(uri + "/" + exec.start.id, exec.start))
+      }
   }
 
   def runFrameRemoveColumn(uri: Uri, xform: JsonTransform)(implicit user: UserPrincipal) = {
@@ -276,11 +277,11 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
     val idOpt = test.toOption.flatMap(args => UrlParser.getFrameId(args.frame))
     (validate(test.isSuccess, "Failed to parse file load descriptor: " + getErrorMessage(test))
       & validate(idOpt.isDefined, "Destination is not a valid data frame URL")) {
-      val args = test.get
-      val id = idOpt.get
-      val exec = engine.removeColumn(FrameRemoveColumn[JsObject, Long](id, args.column))
-      complete(decorate(uri + "/" + exec.start.id, exec.start))
-    }
+        val args = test.get
+        val id = idOpt.get
+        val exec = engine.removeColumn(FrameRemoveColumn[JsObject, Long](id, args.column))
+        complete(decorate(uri + "/" + exec.start.id, exec.start))
+      }
   }
 
   /**
@@ -305,7 +306,7 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
    */
   def runflattenColumn(uri: Uri, xform: JsonTransform)(implicit user: UserPrincipal) = {
     val test = Try {
-      xform.arguments.get.convertTo[FlattenColumn[Long]]
+      xform.arguments.get.convertTo[FlattenColumn]
     }
 
     validate(test.isSuccess, "Failed to parse file load descriptor: " + getErrorMessage(test)) {
@@ -329,6 +330,22 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
     }
   }
 
+  /**
+   * Receive drop duplicates request and executing drop duplicates
+   */
+  def runDropDuplicates(uri: Uri, xform: JsonTransform)(implicit user: UserPrincipal) = {
+    val test = Try {
+      xform.arguments.get.convertTo[DropDuplicates]
+    }
+
+    validate(test.isSuccess, "Failed to parse drop duplicates descriptor: " + getErrorMessage(test)) {
+      val args = test.get
+      val result = engine.dropDuplicates(args)
+      val command: Command = result.start
+      complete(decorate(uri + "/" + command.id, command))
+    }
+  }
+
   def runFrameProject(uri: Uri, xform: JsonTransform)(implicit user: UserPrincipal) = {
     val test = Try {
       xform.arguments.get.convertTo[FrameProject[JsObject, String]]
@@ -337,12 +354,12 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
     val projectedFrameIdOpt = test.toOption.flatMap(args => UrlParser.getFrameId(args.projected_frame))
     (validate(test.isSuccess, "Failed to project command descriptor: " + getErrorMessage(test))
       & validate(projectedFrameIdOpt.isDefined, "Destination is not a valid data frame")) {
-      val args = test.get
-      val sourceFrameId = sourceFrameIdOpt.get
-      val projectedFrameId = projectedFrameIdOpt.get
-      val exec = engine.project(FrameProject[JsObject, Long](sourceFrameId, projectedFrameId, args.columns, args.new_column_names))
-      complete(decorate(uri + "/" + exec.start.id, exec.start))
-    }
+        val args = test.get
+        val sourceFrameId = sourceFrameIdOpt.get
+        val projectedFrameId = projectedFrameIdOpt.get
+        val exec = engine.project(FrameProject[JsObject, Long](sourceFrameId, projectedFrameId, args.columns, args.new_column_names))
+        complete(decorate(uri + "/" + exec.start.id, exec.start))
+      }
   }
 
   def runFrameGroupByColumn(uri: Uri, xform: JsonTransform)(implicit user: UserPrincipal) = {
@@ -354,11 +371,11 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
       val idOpt = test.toOption.flatMap(args => UrlParser.getFrameId(args.frame))
       (validate(test.isSuccess, "Failed to : " + getErrorMessage(test))
         & validate(idOpt.isDefined, "Destination is not a valid data frame URL")) {
-        val args = test.get
-        val id = idOpt.get
-        val exec = engine.groupBy(FrameGroupByColumn[JsObject, Long](id, args.name, args.group_by_columns, args.aggregations))
-        complete(decorate(uri + "/" + exec.start.id, exec.start))
-      }
+          val args = test.get
+          val id = idOpt.get
+          val exec = engine.groupBy(FrameGroupByColumn[JsObject, Long](id, args.name, args.group_by_columns, args.aggregations))
+          complete(decorate(uri + "/" + exec.start.id, exec.start))
+        }
     }
   }
 

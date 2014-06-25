@@ -23,9 +23,9 @@
 
 package com.intel.intelanalytics.repository
 
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.{ FlatSpec, Matchers }
 
-import scala.slick.driver.{H2Driver, PostgresDriver}
+import scala.slick.driver.{ H2Driver, PostgresDriver }
 
 class ProfileSpec extends FlatSpec with Matchers {
 

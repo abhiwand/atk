@@ -32,7 +32,7 @@ class CommandDecoratorSpec extends FlatSpec with Matchers {
 
   val uri = "http://www.example.com/commands"
   val relLinks = Seq(RelLink("foo", uri, "GET"))
-  val command = new Command(1, "name", None, None, false, None, new DateTime, new DateTime)
+  val command = new Command(1, "name", None, None, List(20.00f), false, None, new DateTime, new DateTime)
 
   "CommandDecorator" should "be able to decorate a command" in {
     val decoratedCommand = CommandDecorator.decorateEntity(null, relLinks, command)

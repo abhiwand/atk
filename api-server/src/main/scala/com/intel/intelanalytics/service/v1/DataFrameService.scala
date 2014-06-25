@@ -63,25 +63,25 @@ class DataFrameService(commonDirectives: CommonDirectives, engine: Engine) exten
       (path(prefix) & pathEnd) {
         requestUri { uri =>
           get {
-                import spray.json._
-                import ViewModelJsonImplicits._
-                onComplete(engine.getFrames(0, ApiServiceConfig.defaultCount)) {
-                    case Success(frames) => complete(FrameDecorator.decorateForIndex(uri.toString(), frames))
+            import spray.json._
+            import ViewModelJsonImplicits._
+            onComplete(engine.getFrames(0, ApiServiceConfig.defaultCount)) {
+              case Success(frames) => complete(FrameDecorator.decorateForIndex(uri.toString(), frames))
+              case Failure(ex) => throw ex
+            }
+          } ~
+            post {
+              import spray.httpx.SprayJsonSupport._
+              implicit val format = DomainJsonProtocol.dataFrameTemplateFormat
+              implicit val indexFormat = ViewModelJsonImplicits.getDataFrameFormat
+              entity(as[DataFrameTemplate]) {
+                frame =>
+                  onComplete(engine.create(frame)) {
+                    case Success(createdFrame) => complete(decorate(uri + "/" + createdFrame.id, createdFrame))
                     case Failure(ex) => throw ex
                   }
-            } ~
-              post {
-                import spray.httpx.SprayJsonSupport._
-                implicit val format = DomainJsonProtocol.dataFrameTemplateFormat
-                implicit val indexFormat = ViewModelJsonImplicits.getDataFrameFormat
-                entity(as[DataFrameTemplate]) {
-                  frame =>
-                    onComplete(engine.create(frame)) {
-                      case Success(createdFrame) => complete(decorate(uri + "/" + createdFrame.id, createdFrame))
-                      case Failure(ex) => throw ex
-                    }
-                }
               }
+            }
 
         }
       } ~

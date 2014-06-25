@@ -34,14 +34,13 @@ import com.typesafe.config.ConfigFactory
  */
 trait SharedConfig {
 
-  val config = ConfigFactory.load().withFallback(ConfigFactory.load("engine.conf"))
+  val config = ConfigFactory.load()
 
-  // not lazy because failing early is better
+  // val's are not lazy because failing early is better
   val metaStoreConnectionUrl: String = nonEmptyString("intel.analytics.metastore.connection.url")
   val metaStoreConnectionDriver: String = nonEmptyString("intel.analytics.metastore.connection.driver")
   val metaStoreConnectionUsername: String = config.getString("intel.analytics.metastore.connection.username")
   val metaStoreConnectionPassword: String = config.getString("intel.analytics.metastore.connection.password")
-  val metaStoreConnectionCreateTables: Boolean = config.getBoolean("intel.analytics.metastore.connection.createTables")
 
   /**
    * Get a String but throw Exception if it is empty
