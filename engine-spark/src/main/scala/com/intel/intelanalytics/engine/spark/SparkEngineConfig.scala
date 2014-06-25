@@ -77,4 +77,16 @@ object SparkEngineConfig extends SharedConfig {
     titanConfiguration
   }
 
+  /**
+   * Configuration properties that will be supplied to SparkConf()
+   */
+  val sparkConfProperties: Map[String,String] = {
+    var sparkConfProperties = Map[String,String]()
+    val properties = config.getConfig("intel.analytics.engine.spark.conf.properties")
+    for (entry <- properties.entrySet().asScala) {
+      sparkConfProperties += entry.getKey -> properties.getString(entry.getKey)
+    }
+    sparkConfProperties
+  }
+
 }

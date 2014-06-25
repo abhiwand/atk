@@ -26,12 +26,15 @@ package com.intel.intelanalytics.engine.spark.context
 import com.typesafe.config.Config
 import org.apache.spark.{ SparkConf, SparkContext }
 import com.intel.intelanalytics.component.Boot
+import com.intel.intelanalytics.shared.EventLogging
+import com.intel.intelanalytics.engine.spark.SparkEngineConfig
 
 /**
  * Had to extract SparkContext creation logic from the SparkContextManagementStrategy for better testability
  */
-class SparkContextFactory {
-  def createSparkContext(configuration: Config, appName: String): SparkContext = {
+class SparkContextFactory extends EventLogging {
+
+  def createSparkContext(configuration: Config, appName: String): SparkContext = withContext("engine.sparkContextFactory") {
     val sparkHome = configuration.getString("intel.analytics.spark.home")
     val sparkMaster = configuration.getString("intel.analytics.spark.master")
 
@@ -41,6 +44,10 @@ class SparkContextFactory {
       .setSparkHome(sparkHome)
       .setAppName(appName)
       .setJars(Seq(jarPath.getPath))
+
+    sparkConf.setAll(SparkEngineConfig.sparkConfProperties)
+
+    info("SparkConf settings: " + sparkConf.toDebugString)
 
     new SparkContext(sparkConf)
   }
