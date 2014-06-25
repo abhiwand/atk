@@ -34,9 +34,9 @@ import scala.concurrent.ExecutionContext
  *
  */
 trait Invocation {
-   /**
-    * An instance of the engine that the plugin can use to execute its work
-    */
+  /**
+   * An instance of the engine that the plugin can use to execute its work
+   */
   def engine: Engine
 
   /**

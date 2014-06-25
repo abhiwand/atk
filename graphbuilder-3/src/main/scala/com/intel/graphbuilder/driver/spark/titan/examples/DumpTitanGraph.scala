@@ -46,7 +46,8 @@ object DumpTitanGraph {
     val graph = titanConnector.connect()
     try {
       println(ExamplesUtils.dumpGraph(graph))
-    } finally {
+    }
+    finally {
       graph.shutdown()
     }
 

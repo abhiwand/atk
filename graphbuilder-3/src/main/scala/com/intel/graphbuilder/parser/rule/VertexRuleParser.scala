@@ -24,7 +24,7 @@
 package com.intel.graphbuilder.parser.rule
 
 import com.intel.graphbuilder.elements.Vertex
-import com.intel.graphbuilder.parser.{InputRow, InputSchema, Parser}
+import com.intel.graphbuilder.parser.{ InputRow, InputSchema, Parser }
 
 /**
  * Parse an InputRow into Vertices using VertexRules

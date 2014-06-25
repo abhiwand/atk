@@ -23,7 +23,7 @@
 
 package com.intel.intelanalytics.repository
 
-import org.scalatest.{BeforeAndAfter, FlatSpec}
+import org.scalatest.{ BeforeAndAfter, FlatSpec }
 
 import scala.slick.driver.H2Driver
 import scala.util.Random
@@ -41,7 +41,7 @@ trait SlickMetaStoreH2Testing extends FlatSpec with BeforeAndAfter {
 
   before {
     // initialize tables
-    slickMetaStoreComponent.metaStore.createAllTables()
+    slickMetaStoreComponent.metaStore.initializeSchema()
   }
 
   after {

@@ -39,7 +39,8 @@ trait TestingSparkContext extends FlatSpec with BeforeAndAfter {
   before {
     if (useGlobalSparkContext) {
       sc = TestingSparkContext.sc
-    } else {
+    }
+    else {
       TestingSparkContext.lock.acquire()
       sc = TestingSparkContext.createSparkContext
     }
@@ -60,7 +61,8 @@ trait TestingSparkContext extends FlatSpec with BeforeAndAfter {
       if (sc != null) {
         sc.stop()
       }
-    } finally {
+    }
+    finally {
       // To avoid Akka rebinding to the same port, since it doesn't unbind immediately on shutdown
       System.clearProperty("spark.driver.port")
 

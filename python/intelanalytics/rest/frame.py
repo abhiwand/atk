@@ -33,9 +33,11 @@ from intelanalytics.core.frame import BigFrame
 from intelanalytics.core.column import BigColumn
 from intelanalytics.core.files import CsvFile
 from intelanalytics.core.types import *
+from intelanalytics.core.aggregation import agg
 from intelanalytics.rest.connection import http
 from intelanalytics.rest.command import CommandRequest, executor
 from intelanalytics.rest.spark import prepare_row_function, get_add_one_column_function, get_add_many_columns_function
+
 
 
 
@@ -178,6 +180,13 @@ class FrameBackendRest(object):
         arguments = {'frame': frame.uri, 'predicate': http_ready_function}
         return execute_update_frame_command("filter", arguments, frame)
 
+    def drop_duplicates(self, frame, columns):
+        if isinstance(columns, basestring):
+            columns = [columns]
+        arguments = {'frameId': frame._id, "unique_columns": columns}
+        command = CommandRequest("dataframe/drop_duplicates", arguments)
+        executor.issue(command)
+
     def filter(self, frame, predicate):
         from itertools import ifilter
         http_ready_function = prepare_row_function(frame, predicate, ifilter)
@@ -186,7 +195,7 @@ class FrameBackendRest(object):
 
     def flatten_column(self, frame, column_name):
         name = self._get_new_frame_name()
-        arguments = {'name': name, 'frame': frame._id, 'column': column_name, 'separator': ',' }
+        arguments = {'name': name, 'frameId': frame._id, 'column': column_name, 'separator': ',' }
         return execute_new_frame_command('flattenColumn', arguments)
 
     def bin_column(self, frame, column_name, num_bins, bin_type='equalwidth', bin_column_name='binned'):
@@ -215,7 +224,7 @@ class FrameBackendRest(object):
                        (int32, 'r'),
                        (int64, 'r'),
                        (list, 'l'),
-                       (string, 'l'),
+                       (unicode, 'l'),
                        (str, 'l')])
 
         def __init__(self, schema, rows):
@@ -266,18 +275,37 @@ class FrameBackendRest(object):
         arguments = {'frame': frame.uri, 'projected_frame': projected_frame.uri, 'columns': columns, "new_column_names": new_names}
         return execute_update_frame_command('project', arguments, projected_frame)
 
-    def groupBy(self, frame, group_by_columns, aggregation_list):
+    def groupby(self, frame, groupby_columns, aggregation):
+        if groupby_columns is None:
+            groupby_columns = []
+        elif isinstance(groupby_columns, basestring):
+            groupby_columns = [groupby_columns]
+
+        aggregation_list = []
+        for arg in aggregation:
+            if arg == agg.count:
+                aggregation_list.append((agg.count, frame.column_names[0], "count"))
+            elif isinstance(arg, dict):
+                for k,v in arg.iteritems():
+                    if k not in frame._columns:
+                        raise ValueError("%s is not a valid column name for this frame" % k)
+                    if isinstance(v, list) or isinstance(v, tuple):
+                        for j in v:
+                            if j not in agg:
+                                raise ValueError("%s is not a valid aggregation function, like agg.max.  Supported agg methods: %s" % (j, agg))
+                            aggregation_list.append((j, k, "%s_%s" % (k, j)))
+                    else:
+                        aggregation_list.append((v, k, "%s_%s" % (k, v)))
+            else:
+                raise TypeError("Bad type %s provided in aggregation arguments; expecting an aggregation function or a dictionary of column_name:[func]" % type(arg))
+
         name = self._get_new_frame_name()
         arguments = {'frame': frame.uri,
-                    'name': name,
-                    'group_by_columns' : group_by_columns,
-                    'aggregations': aggregation_list}
+                     'name': name,
+                     'group_by_columns': groupby_columns,
+                     'aggregations': aggregation_list}
 
-        command = CommandRequest("dataframe/groupby", arguments)
-        command_info = executor.issue(command)
-        frame_info = FrameInfo(command_info.result)
-
-        return BigFrame(frame_info)
+        return execute_new_frame_command("groupby", arguments)
 
     def remove_columns(self, frame, name):
         columns = ",".join(name) if isinstance(name, list) else name
@@ -317,7 +345,7 @@ class FrameInfo(object):
         return json.dumps(self._payload, indent=2, sort_keys=True)
 
     def __str__(self):
-        return '%s "%s"' % (self.uri, self.name)
+        return '%s "%s"' % (self.id_number, self.name)
 
     @property
     def id_number(self):
@@ -326,10 +354,6 @@ class FrameInfo(object):
     @property
     def name(self):
         return self._payload['name']
-
-    @property
-    def uri(self):
-        return self._payload['uri']
 
     @property
     def columns(self):
@@ -349,7 +373,7 @@ def initialize_frame(frame, frame_info):
     """Initializes a frame according to given frame_info"""
     frame._id = frame_info.id_number
     # TODO - update uri from result (this is a TODO in the engine)
-    #frame._uri = frame_info.uri
+    frame._uri = http._get_uri("dataframes/" + str(frame._id))
     frame._name = frame_info.name
     frame._columns.clear()
     for column in frame_info.columns:

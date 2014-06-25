@@ -25,7 +25,7 @@ package com.intel.intelanalytics.repository
 
 import com.intel.intelanalytics.shared.SharedConfig
 
-import scala.slick.driver.{H2Driver, JdbcProfile, PostgresDriver}
+import scala.slick.driver.{ H2Driver, JdbcProfile, PostgresDriver }
 
 /**
  * Profiles are how we abstract various back-ends like H2 vs. PostgreSQL
@@ -33,16 +33,25 @@ import scala.slick.driver.{H2Driver, JdbcProfile, PostgresDriver}
  * @param profile Slick profile
  * @param connectionString JDBC connection string
  * @param driver JDBC driver to use
- * @param username database user (not needed for H2)
- * @param password database password (not needed for H2)
- * @param createTables true to create the underlying DDL needed
+ * @param username database user (should be empty string for H2)
+ * @param password database password (should be empty string for H2)
  */
 case class Profile(profile: JdbcProfile,
                    connectionString: String,
                    driver: String,
-                   username: String = null,
-                   password: String = null,
-                   createTables: Boolean = false)
+                   username: String = "",
+                   password: String = "") {
+
+  /**
+   * True if database is H2, False otherwise.
+   *
+   * With H2 it makes sense to initialize the schema differently.
+   */
+  val isH2: Boolean = profile match {
+    case H2Driver => true
+    case _ => false
+  }
+}
 
 object Profile {
 
@@ -54,11 +63,10 @@ object Profile {
     val driver = config.metaStoreConnectionDriver
 
     new Profile(jdbcProfileForDriver(driver),
-                connectionString = config.metaStoreConnectionUrl,
-                driver,
-                username = config.metaStoreConnectionUsername,
-                password = config.metaStoreConnectionPassword,
-                createTables = config.metaStoreConnectionCreateTables)
+      connectionString = config.metaStoreConnectionUrl,
+      driver,
+      username = config.metaStoreConnectionUsername,
+      password = config.metaStoreConnectionPassword)
   }
 
   /**

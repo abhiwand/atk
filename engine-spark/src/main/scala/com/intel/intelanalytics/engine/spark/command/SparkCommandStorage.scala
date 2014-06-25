@@ -24,11 +24,11 @@
 package com.intel.intelanalytics.engine.spark.command
 
 import com.intel.intelanalytics.domain.Error
-import scala.util.{Success, Failure, Try}
+import scala.util.{ Success, Failure, Try }
 import spray.json.JsObject
-import com.intel.intelanalytics.domain.command.{CommandTemplate, Command}
+import com.intel.intelanalytics.domain.command.{ CommandTemplate, Command }
 import com.intel.intelanalytics.engine.CommandStorage
-import com.intel.intelanalytics.repository.{SlickMetaStoreComponent}
+import com.intel.intelanalytics.repository.{ SlickMetaStoreComponent }
 import com.intel.intelanalytics.shared.EventLogging
 
 class SparkCommandStorage(val metaStore: SlickMetaStoreComponent#SlickMetaStore) extends CommandStorage with EventLogging {
@@ -70,10 +70,30 @@ class SparkCommandStorage(val metaStore: SlickMetaStoreComponent#SlickMetaStore)
         import com.intel.intelanalytics.domain.throwableToError
         val changed = result match {
           case Failure(ex) => command.copy(complete = true, error = Some(throwableToError(ex)))
-          case Success(r) => command.copy(complete = true, result = Some(r))
+          case Success(r) => {
+            /**
+             * update progress to 100 since the command is complete. This step is necessary
+             * because the actually progress notification events are sent to SparkProgressListener.
+             * The exact timing of the events arrival can not be determined.
+             */
+
+            val progress = command.progress.map(i => 100f)
+            command.copy(complete = true, progress = progress, result = Some(r))
+          }
         }
         repo.update(changed)
     }
   }
 
+  /**
+   * update progress information for the command
+   * @param id command id
+   * @param progress progress
+   */
+  override def updateProgress(id: Long, progress: List[Float]): Unit = {
+    metaStore.withSession("se.command.updateProgress") {
+      implicit session =>
+        repo.updateProgress(id, progress)
+    }
+  }
 }

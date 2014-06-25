@@ -1,11 +1,11 @@
 package com.intel.graphbuilder.driver.spark.titan.reader
 
-import com.intel.graphbuilder.elements.{Edge, GraphElement, Property, Vertex}
-import com.thinkaurelius.titan.core.{TitanElement, TitanProperty, TitanVertex}
+import com.intel.graphbuilder.elements.{ Edge, GraphElement, Property, Vertex }
+import com.thinkaurelius.titan.core.{ TitanElement, TitanProperty, TitanVertex }
 import com.thinkaurelius.titan.diskstorage.StaticBuffer
 import com.thinkaurelius.titan.diskstorage.keycolumnvalue.Entry
 import com.thinkaurelius.titan.graphdb.database.idhandling.IDHandler
-import com.thinkaurelius.titan.graphdb.database.{EdgeSerializer, StandardTitanGraph}
+import com.thinkaurelius.titan.graphdb.database.{ EdgeSerializer, StandardTitanGraph }
 import com.thinkaurelius.titan.graphdb.internal.InternalRelation
 import org.apache.hadoop.hbase.CellUtil
 import org.apache.hadoop.hbase.client.Result
