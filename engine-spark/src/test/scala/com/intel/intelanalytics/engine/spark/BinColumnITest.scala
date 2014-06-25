@@ -168,7 +168,7 @@ class BinColumnITest extends Specification {
         Array[Any]("C", 3),
         Array[Any]("D", 4),
         Array[Any]("E", 5))
-      val rdd = sc.parallelize(inputList)
+      val rdd = sc.parallelize(inputList, 2)
 
       // Get binned results
       val binnedRdd = SparkOps.binEqualDepth(1, 2, rdd)
@@ -190,7 +190,7 @@ class BinColumnITest extends Specification {
         Array[Any]("C", 3),
         Array[Any]("D", 4),
         Array[Any]("E", 5))
-      val rdd = sc.parallelize(inputList)
+      val rdd = sc.parallelize(inputList, 2)
 
       // Get binned results
       val binnedRdd = SparkOps.binEqualDepth(1, 2, rdd)
@@ -207,7 +207,7 @@ class BinColumnITest extends Specification {
         Array[Any]("C", 1),
         Array[Any]("D", 1),
         Array[Any]("E", 5))
-      val rdd = sc.parallelize(inputList)
+      val rdd = sc.parallelize(inputList, 2)
 
       // Get binned results
       val binnedRdd = SparkOps.binEqualDepth(1, 3, rdd)
@@ -230,7 +230,7 @@ class BinColumnITest extends Specification {
         Array[Any]("D", 1.6),
         Array[Any]("E", 3),
         Array[Any]("F", 6))
-      val rdd = sc.parallelize(inputList)
+      val rdd = sc.parallelize(inputList, 2)
 
       // Get binned results
       val binnedRdd = SparkOps.binEqualDepth(1, 3, rdd)
@@ -258,7 +258,7 @@ class BinColumnITest extends Specification {
         Array[Any]("H", 8),
         Array[Any]("I", 9),
         Array[Any]("J", 10))
-      val rdd = sc.parallelize(inputList)
+      val rdd = sc.parallelize(inputList, 2)
 
       // Get binned results
       val binnedRdd = SparkOps.binEqualDepth(1, 2, rdd)
@@ -290,7 +290,7 @@ class BinColumnITest extends Specification {
         Array[Any]("H", 8),
         Array[Any]("I", 9),
         Array[Any]("J", 10))
-      val rdd = sc.parallelize(inputList)
+      val rdd = sc.parallelize(inputList, 2)
 
       // Get binned results
       val binnedRdd = SparkOps.binEqualDepth(1, 20, rdd)
