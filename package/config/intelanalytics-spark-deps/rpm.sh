@@ -31,6 +31,7 @@ FILES="
 /usr/lib/intelanalytics/graphbuilder/lib
 "
 
+mkdir -p $SCRIPTPATH/rpm/SPECS
 rpmSpec > $SCRIPTPATH/rpm/SPECS/$packageName.spec
 
 topDir="$SCRIPTPATH/rpm"
