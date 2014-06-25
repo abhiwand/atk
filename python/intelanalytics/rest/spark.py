@@ -43,21 +43,7 @@ from intelanalytics.core.row import Row
 from intelanalytics.core.types import supported_types
 
 rdd_delimiter = '\0'
-
-
-class _CellNone(object):
-    """
-    Class which represents the null-value representation of a cell
-
-    Examples
-    --------
-    >>> frame.drop(lambda row: row.colA == CellNone)  # must use '==' operator (do not use 'is' operator)
-    """
-    # it is just a comparator for the string encoding in our spark PythonRDD serialization
-    # TODO - improve this strategy
-    def __eq__(self, other):
-        return isinstance(other, basestring) and other == "YoMeNull"
-CellNone = _CellNone()
+rdd_null_indicator = 'YoMeNull'
 
 
 def get_add_one_column_function(row_function, data_type):
@@ -87,7 +73,8 @@ class RowWrapper(Row):
     def load_row(self, s):
         # todo - will probably change frequently
         #  specific to String RDD, takes a comma-sep string right now...
-        self.data = s.split(rdd_delimiter)  # data is an array of strings
+        self.data = [field if field != rdd_null_indicator else None
+                     for field in s.split(rdd_delimiter)]
         #print "row_wrapper.data=" + str(self.data)
 
 
