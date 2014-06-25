@@ -31,29 +31,12 @@ logger = logging.getLogger(__name__)
 
 __all__ = ['Server', 'HttpMethods']
 
-# default connection config
-_host = "localhost"
-_port = 9099
-_scheme = "http"
-_version = "v1"
-_headers = {'Content-type': 'application/json', 'Accept': 'application/json'}
+import intelanalytics.rest.config as config
 
 _default = object()
 
 
 class Server(object):
-
-    def __init__(self, host=None, port=_default, scheme=None, version=None):
-        self.host = host or _host
-        self.port = port if port is not _default else _port
-        self.scheme = scheme or _scheme
-        self.version = version or _version
-        self.headers = _headers
-
-        # Currently credentials only contain the api key, and that will be
-        # passed in the Authorization header of every request sent to the backend
-        # TODO: switch to real credentials
-        self.headers['Authorization'] = "test_api_key_1"
 
     def __repr__(self):
         return '{"host": "%s", "port": "%s", "scheme": "%s", "version": "%s"}' \
@@ -71,6 +54,27 @@ version: %s""" % (self.host, self.port, self.scheme, self.version)
             uri += ":%s" % self.port
         return uri
 
+    @property
+    def host(self):
+        return config.server.host
+
+    @property
+    def port(self):
+        return config.server.port
+
+    @property
+    def scheme(self):
+        return config.server.scheme
+
+    @property
+    def version(self):
+        return config.server.version
+
+    @property
+    def headers(self):
+        return config.server.headers
+
+
     def get_base_uri(self):
         return "%s/%s/" % (self._get_scheme_and_authority(), self.version)
 
@@ -83,8 +87,8 @@ version: %s""" % (self.host, self.port, self.scheme, self.version)
             uri = self._get_scheme_and_authority() + "/info"
             logger.info("[HTTP Get] %s", uri)
             r = requests.get(uri)
-            logger.debug("[HTTP Get Response] %s", r.text)
-            r.raise_for_status()
+            logger.debug("[HTTP Get Response] %s\n%s", r.text, r.headers)
+            HttpMethods._check_response(r)
             if "Intel Analytics" != r.json()['name']:
                 raise Exception("Invalid response payload: " + r.text)
             print "Successful ping to Intel Analytics at " + uri
@@ -107,6 +111,7 @@ class HttpMethods(object):
 
     @staticmethod
     def _check_response(response, ignore=None):
+        HttpMethods._check_response_for_build_id(response)
         if not ignore or response.status_code not in ignore:
             response.raise_for_status()
         else:
@@ -118,6 +123,20 @@ class HttpMethods(object):
                 logger.warn(m)
                 sys.stderr.write(m)
                 sys.stderr.flush()
+
+    @staticmethod
+    def _check_response_for_build_id(response):
+        # verify server and client are from the same build
+        if hasattr(config, "build_id") and config.build_id:
+            try:
+                build_id = response.headers['build_id']
+            except KeyError:
+                raise RuntimeError("Server response did not provide a build ID.  " + build_id_help_msg)
+            else:
+                if config.build_id != build_id:
+                    raise RuntimeError("Client build ID '%s' does not match server build ID '%s'.  "
+                                       % (config.build_id, build_id) + build_id_help_msg)
+
 
     @property
     def base_uri(self):
@@ -134,7 +153,7 @@ class HttpMethods(object):
             logger.info("[HTTP Get] %s", uri)
         r = requests.get(uri, headers=self.server.headers)
         if logger.level <= logging.DEBUG:
-            logger.debug("[HTTP Get Response] %s", r.text)
+            logger.debug("[HTTP Get Response] %s\n%s", r.text, r.headers)
         self._check_response(r)
         return r
 
@@ -165,6 +184,15 @@ class HttpMethods(object):
         self._check_response(r, {406: 'long initialization time'})
         return r
 
+build_id_help_msg = """
+Double check your client and server installation versions.
+
+To turn this client/server build check OFF, change the value of 'build_id' to
+be None in the intelanalytics/rest/config.py file --OR-- run this code:
+
+import intelanalytics.rest.config
+intelanalytics.rest.config.build_id = None
+"""
 
 server = Server()
 http = HttpMethods(server)

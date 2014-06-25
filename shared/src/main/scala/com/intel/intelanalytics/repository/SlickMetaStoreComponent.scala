@@ -66,6 +66,11 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
     { string => JsonParser(string).convertTo[Error] }
   )
 
+  implicit val commandProgressType = MappedColumnType.base[List[Float], String](
+  { progress => progress.toJson.prettyPrint },
+  { string => JsonParser(string).convertTo[List[Float]] }
+  )
+
   private[repository] val database = withContext("Connecting to database") {
     Database.forURL(profile.connectionString, driver = profile.driver, user = profile.username, password = profile.password)
   }
@@ -140,7 +145,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
     override lazy val frameRepo: Repository[Session, DataFrameTemplate, DataFrame] = new SlickFrameRepository
 
     /** Repository for CRUD on 'command' table */
-    override lazy val commandRepo: Repository[Session, CommandTemplate, Command] = new SlickCommandRepository
+    override lazy val commandRepo: CommandRepository[Session] = new SlickCommandRepository
 
     /** Repository for CRUD on 'user' table */
     override lazy val userRepo: Repository[Session, UserTemplate, User] with Queryable[Session, User] = new SlickUserRepository
@@ -409,7 +414,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
    *
    * Provides methods for modifying and querying the command table.
    */
-  class SlickCommandRepository extends Repository[Session, CommandTemplate, Command]
+  class SlickCommandRepository extends CommandRepository[Session]
   with EventLogging {
     this: Repository[Session, CommandTemplate, Command] =>
 
@@ -426,6 +431,8 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
 
       def error = column[Option[Error]]("error")
 
+      def progress = column[List[Float]]("progress")
+
       def complete = column[Boolean]("complete", O.Default(false))
 
       def result = column[Option[JsObject]]("result")
@@ -437,7 +444,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
       def createdById = column[Option[Long]]("created_by")
 
       /** projection to/from the database */
-      def * = (id, name, arguments, error, complete, result, createdOn, modifiedOn, createdById) <> (Command.tupled, Command.unapply)
+      def * = (id, name, arguments, error, progress, complete, result, createdOn, modifiedOn, createdById) <> (Command.tupled, Command.unapply)
 
       def createdBy = foreignKey("command_created_by", createdById, users)(_.id)
     }
@@ -450,7 +457,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
 
     override def insert(command: CommandTemplate)(implicit session: Session): Try[Command] = Try {
       // TODO: add createdBy user id
-      val c = Command(0, command.name, command.arguments, None, false, None, new DateTime(), new DateTime(), None)
+      val c = Command(0, command.name, command.arguments, None, List(), false, None, new DateTime(), new DateTime(), None)
       commandsAutoInc.insert(c)
     }
 
@@ -476,6 +483,19 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
       commands.where(_.name === name).firstOption
     }
 
+    /**
+     * update the command to complete
+     * @param id command id
+     * @param complete the complete flag
+     * @param session session to db
+     */
+    override def updateComplete(id: Long, complete: Boolean)(implicit session: Session): Try[Unit] = Try {
+      val completeCol = for(c <- commands if c.id === id) yield c.complete
+      completeCol.update(complete)
+    }
+
+
+
     /** execute DDL to create the underlying table */
     def createTable(implicit session: Session) = {
       commands.ddl.create
@@ -484,6 +504,17 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
     /** execute DDL to drop the underlying table - for unit testing */
     def dropTable()(implicit session: Session) = {
       commands.ddl.drop
+    }
+
+    /**
+     * update the progress for the command
+     * @param id command id
+     * @param progress progress for the command
+     * @param session session to db
+     */
+    override def updateProgress(id: Long, progress: List[Float])(implicit session: Session): Try[Unit] = Try {
+      val q = for{c <- commands if c.id === id} yield c.progress
+      q.update(progress)
     }
   }
 

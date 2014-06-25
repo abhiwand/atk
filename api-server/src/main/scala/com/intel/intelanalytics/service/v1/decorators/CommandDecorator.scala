@@ -41,7 +41,7 @@ object CommandDecorator extends EntityDecorator[Command, GetCommands, GetCommand
    */
   override def decorateEntity(uri: String, links: Iterable[RelLink], entity: Command): GetCommand = {
     GetCommand(id = entity.id, name = entity.name,
-      arguments = entity.arguments, error = entity.error, complete = entity.complete,
+      arguments = entity.arguments, error = entity.error, progress = entity.progress, complete = entity.complete,
       result = entity.result, links = links.toList)
   }
 

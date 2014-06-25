@@ -33,6 +33,13 @@ import org.apache.spark.rdd.RDD
 import spray.json.JsObject
 
 import scala.collection.mutable
+import scala.Some
+import com.intel.intelanalytics.engine.spark.frame.RDDJoinParam
+import com.intel.intelanalytics.domain.frame.LoadLines
+
+//implicit conversion for PairRDD
+import org.apache.spark.SparkContext._
+
 
 private[spark] object SparkOps extends Serializable {
 
@@ -88,11 +95,20 @@ private[spark] object SparkOps extends Serializable {
    * @return  RDD of Row objects
    */
   def loadLines(ctx: SparkContext,
+<<<<<<< HEAD
                 fileName: String,
                 skipRows:Option[Int],
                 parserFunction: String => Array[String],
                 converter: Array[String] => Array[Any]): RDD[Row]= {
     ctx.textFile(fileName)
+=======
+    fileName: String,
+    location: String,
+    arguments: LoadLines[JsObject, Long],
+    parserFunction: String => Array[String],
+    converter: Array[String] => Array[Any]) = {
+    ctx.textFile(fileName, SparkEngineConfig.sparkDefaultPartitions)
+>>>>>>> sprint_14
       .mapPartitionsWithIndex {
         case (partition, lines) => {
           if (partition == 0) {
@@ -111,8 +127,13 @@ private[spark] object SparkOps extends Serializable {
    * @param data row data
    * @param keyIndex index of the key column
    */
-  def create2TupleForJoin(data: Array[Any], keyIndex: Int): (Any, Array[Any]) = {
-    (data(keyIndex), data)
+  def createKeyValuePairFromRow(data: Array[Any], keyIndex: Seq[Int]): (Seq[Any], Array[Any]) = {
+
+    var key: Seq[Any] = Seq()
+    for(i <- keyIndex)
+      key = key :+ data(i)
+
+    (key, data)
   }
 
   /**
@@ -274,6 +295,19 @@ private[spark] object SparkOps extends Serializable {
       }
     }
     groupedColumnSchema ++ aggregated_column_schema
+  }
+
+  /**
+   * Remove duplicate rows identified by the key
+   * @param pairRdd rdd which has (key, value) structure in each row
+   */
+  def removeDuplicatesByKey(pairRdd: RDD[(Seq[Any], Array[Any])]): RDD[Array[Any]] = {
+    val grouped = pairRdd.groupByKey()
+    val duplicatesRemoved = grouped.map(bag => {
+      val firstEntry = bag._2(0)
+      firstEntry
+    })
+    duplicatesRemoved
   }
 
 }

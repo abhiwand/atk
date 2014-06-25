@@ -21,13 +21,28 @@
 # must be express and approved by Intel in writing.
 ##############################################################################
 """
-intel_analytics definitions for aggregations
+intelanalytics frame aggregation functions
 """
-avg = 'AVG'
-max = 'MAX'
-min = 'MIN'
-sum = 'SUM'
-count = 'COUNT'
-count_distinct = 'COUNT_DISTINCT'
-var = 'VAR'
-stdev = 'STDEV'
+
+
+class AggregationFunctions(object):
+    """
+    Defines supported aggregation functions, maps them to keyword strings
+    """
+    avg = 'avg'
+    count = 'count'
+    count_distinct = 'count_distinct'
+    max = 'max'
+    min = 'min'
+    sum = 'sum'
+    var = 'var'
+    stdev = 'stdev'
+
+    def __repr__(self):
+        return ", ".join([k for k in AggregationFunctions.__dict__.keys()
+                          if isinstance(k, basestring) and not k.startswith("__")])
+
+    def __contains__(self, item):
+        return item in AggregationFunctions.__dict__.values()
+
+agg = AggregationFunctions()
