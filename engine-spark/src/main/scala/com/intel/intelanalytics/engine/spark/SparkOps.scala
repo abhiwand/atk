@@ -198,6 +198,7 @@ private[spark] object SparkOps extends Serializable {
       case cce: NumberFormatException => throw new NumberFormatException("Column values cannot be binned: " + cce.toString)
     }
 
+    // TODO: Extract only the functionality for creating cutoffs array, no need for computing binSizes
     val (cutoffs: Array[Double], binSizes: Array[Long]) = columnRdd.histogram(numBins)
 
     // map each data element to its bin id, using cutoffs index as bin id
@@ -248,14 +249,14 @@ private[spark] object SparkOps extends Serializable {
     val numElements = columnRdd.count()
 
     // assign a rank to each distinct element
-    val pairedRdd = columnRdd.groupBy(element => element)
+    val pairedRdd = columnRdd.groupBy(element => element).sortByKey()
 
     // Need to go through values sequentially, but this creates an issue with Spark and multiple partitions
     // Option 1: use outside var counter...but each partition gets a fresh copy (no good)
     // Option 2: use Spark accumulator...but nondeterministic order of access among partitions (no good)
     // Option 3: convert RDD to Array for these sequential operations and back to RDD otherwise (works fine)
     // TODO: Option 4: ??? (find better way that avoids iterating over potentially long Arrays)
-    val pairedArray = pairedRdd.collect().sortBy(_._1)
+    val pairedArray = pairedRdd.collect()
 
     var rank = 1
     val rankedArray = pairedArray.map { value =>
@@ -274,9 +275,9 @@ private[spark] object SparkOps extends Serializable {
     }
 
     // shift the bin numbers so that they are contiguous values
-    val sortedBinnedRdd = binnedRdd.groupBy(_._2)
+    val sortedBinnedRdd = binnedRdd.groupBy(_._2).sortByKey()
 
-    val sortedBinnedArray = sortedBinnedRdd.collect().sortBy(_._1)
+    val sortedBinnedArray = sortedBinnedRdd.collect()
 
     rank = 1
     val shiftedArray = sortedBinnedArray.map { value =>
