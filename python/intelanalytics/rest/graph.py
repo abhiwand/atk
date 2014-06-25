@@ -29,6 +29,7 @@ logger = logging.getLogger(__name__)
 from intelanalytics.core.graph import VertexRule, EdgeRule
 from intelanalytics.core.column import BigColumn
 from intelanalytics.rest.connection import http
+from intelanalytics.rest.command import CommandRequest, executor
 
 
 
@@ -67,8 +68,9 @@ class GraphBackendRest(object):
             payload_json =  json.dumps(payload, indent=2, sort_keys=True)
             logger.debug("REST Backend: create graph payload: " + payload_json)
 
-        r = http.post('commands', {"name": "graph/load", "arguments": payload})
-        logger.info("REST Backend: load response: " + r.text)
+        command = CommandRequest(name="graph/load", arguments=payload)
+        command_info = executor.issue(command)
+
 
 
     def _get_uri(self, payload):
