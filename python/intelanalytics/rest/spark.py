@@ -45,6 +45,21 @@ from intelanalytics.core.types import supported_types
 rdd_delimiter = '\0'
 
 
+class _CellNone(object):
+    """
+    Class which represents the null-value representation of a cell
+
+    Examples
+    --------
+    >>> frame.drop(lambda row: row.colA == CellNone)  # must use '==' operator (do not use 'is' operator)
+    """
+    # it is just a comparator for the string encoding in our spark PythonRDD serialization
+    # TODO - improve this strategy
+    def __eq__(self, other):
+        return isinstance(other, basestring) and other == "YoMeNull"
+CellNone = _CellNone()
+
+
 def get_add_one_column_function(row_function, data_type):
     """Returns a function which adds a column to a row based on given row function"""
     def add_one_column(row):
@@ -136,5 +151,9 @@ class IaBatchedSerializer(BatchedSerializer):
     def dump_stream_as_json(self, iterator, stream):
         for obj in iterator:
             serialized = ",".join(obj)
-            write_int(len(serialized), stream)
-            stream.write(serialized)
+            try:
+                s = str(serialized)
+            except UnicodeEncodeError:
+                s = unicode(serialized).encode('unicode_escape')
+            write_int(len(s), stream)
+            stream.write(s)

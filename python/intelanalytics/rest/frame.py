@@ -211,7 +211,7 @@ class FrameBackendRest(object):
                        (int32, 'r'),
                        (int64, 'r'),
                        (list, 'l'),
-                       (string, 'l'),
+                       (unicode, 'l'),
                        (str, 'l')])
 
         def __init__(self, schema, rows):
@@ -332,7 +332,7 @@ class FrameInfo(object):
         return json.dumps(self._payload, indent=2, sort_keys=True)
 
     def __str__(self):
-        return '%s "%s"' % (self.uri, self.name)
+        return '%s "%s"' % (self.id_number, self.name)
 
     @property
     def id_number(self):
@@ -341,10 +341,6 @@ class FrameInfo(object):
     @property
     def name(self):
         return self._payload['name']
-
-    @property
-    def uri(self):
-        return self._payload['uri']
 
     @property
     def columns(self):
@@ -364,7 +360,7 @@ def initialize_frame(frame, frame_info):
     """Initializes a frame according to given frame_info"""
     frame._id = frame_info.id_number
     # TODO - update uri from result (this is a TODO in the engine)
-    #frame._uri = frame_info.uri
+    frame._uri = http._get_uri("dataframes/" + str(frame._id))
     frame._name = frame_info.name
     frame._columns.clear()
     for column in frame_info.columns:

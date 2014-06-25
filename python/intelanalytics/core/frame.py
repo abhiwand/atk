@@ -558,42 +558,6 @@ class BigFrame(object):
         except:
             raise IaError(logger)
 
-    def dropna(self, how=any, column_subset=None):
-        """
-        Drops all rows which have NA values.
-
-        Parameters
-        ----------
-
-        how : any, all, or column name, optional
-            any: if any column has an NA value, drop row
-            all: if all the columns have an NA value, drop row
-            column name: if named column has an NA value, drop row
-        column_subset : str OR list of str (optional)
-            if not "None", only the given columns are considered
-
-        Examples
-        --------
-
-        >>>
-        For this example, my_frame is a BigFrame object with a columns called "column_1", "column_2", and "column_3" (amongst others)
-        >>> my_frame.dropna( "column_1" ) will eliminate any rows which do not have a value for column_1
-        <BLANKLINE>
-        If we used the form
-        >>> my_frame.dropna( any, ["column_2", "column_3"])
-        This erased any line that has no data for column_2 OR column_3
-        <BLANKLINE>
-        If we used the form
-        >>> my_frame.dropna( all, ["column_1", "column_2", "column_3"])
-        This erased any rows that had no data for column_1, column_2 AND column_3.
-
-        """
-        # TODO - Review examples
-        try:
-            self._backend.dropna(self, how, column_subset)
-        except:
-            raise IaError(logger)
-
     def inspect(self, n=10, offset=0):
         """
         Check the data for validity.
