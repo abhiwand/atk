@@ -30,11 +30,6 @@ float32 = np.float32
 float64 = np.float64
 int32 = np.int32
 int64 = np.int64
-<<<<<<< HEAD
-string = unicode
-str = string
-=======
->>>>>>> sprint_14
 
 
 class _Ignore(object):
