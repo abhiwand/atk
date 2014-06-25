@@ -61,7 +61,7 @@ master_doc = 'index'
 # General information about the project.
 project = u'IntelAnalytics'
 #project = 'Welcome to the Intel Big Data Platform: Analytics Toolkit'
-copyright = u'2014, Intel'
+copyright = u'2014, Intel - INTEL CONFIDENTIAL'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -130,7 +130,7 @@ internal_docs = False
 #html_theme = 'default'
 #html_theme = 'nature'
 #html_theme = 'agogo'
-html_theme = 'scipy'
+#html_theme = 'scipy'
 #html_theme = 'basic'
 #html_theme = 'epub'
 #html_theme = 'haiku'
@@ -138,7 +138,7 @@ html_theme = 'scipy'
 #html_theme = 'scrolls'
 #html_theme = 'sphinxdoc'
 #html_theme = 'traditional'
-#html_theme = 'aldrich'
+html_theme = 'aldrich'
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the

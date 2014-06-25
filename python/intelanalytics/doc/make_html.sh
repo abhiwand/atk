@@ -57,18 +57,26 @@ if
     weird=$( echo $1 | grep -ic "doctest" )
 then
     make -B doctest 2>&1 | grep -v -f toctreeWarnings
-else
-    # Delete previously automatically built files
-    if [[ -d build ]]; then
-        rm -R build
-    fi
+    popd
+    exit
+fi
+if
+    weird=$( echo $1 | grep -ic "latexpdf" )
+then
+    make -B $1 2>&1 | grep -v -f toctreeWarnings
+    popd
+    exit
+fi
+# Delete previously automatically built files
+if [[ -d build ]]; then
+    rm -R build
+fi
 
-    # We assume we are running from the doc directory. Ignore all toctree warnings.
-    make -B html 2>&1 | grep -v -f toctreeWarnings
+# We assume we are running from the doc directory. Ignore all toctree warnings.
+make -B html 2>&1 | grep -v -f toctreeWarnings
 
-    # Make a zip file of that which was just built
-    if [[ -d build ]]; then
-        zip -rq intel_analytics_docs.zip build
-    fi
+# Make a zip file of that which was just built
+if [[ -d build ]]; then
+    zip -rq intel_analytics_docs.zip build
 fi
 popd
