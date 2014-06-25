@@ -24,7 +24,7 @@
 package com.intel.intelanalytics.shared
 
 import com.intel.event.adapter.SLF4JLogAdapter
-import com.intel.event.{EventLog, EventLogger, Severity, EventContext}
+import com.intel.event.{ EventLog, EventLogger, Severity, EventContext }
 import scala.util.control.NonFatal
 
 /**
@@ -67,7 +67,8 @@ trait EventLogging {
     val ctx = EventContext.enter(context.trim())
     try {
       block
-    } catch {
+    }
+    catch {
       case NonFatal(e) => {
         if (logErrors) {
           val message = safeMessage(e)
@@ -75,7 +76,8 @@ trait EventLogging {
         }
         throw e
       }
-    } finally {
+    }
+    finally {
       ctx.close()
     }
   }
@@ -98,7 +100,8 @@ trait EventLogging {
   def logErrors[T](block: => T): T = {
     try {
       block
-    } catch {
+    }
+    catch {
       case NonFatal(e) => {
         error(safeMessage(e), exception = e)
         throw e
@@ -127,11 +130,11 @@ trait EventLogging {
    * @param exception the [[Throwable]] associated with this event, if any
    */
   def event(message: String,
-    messageCode: Int = 0,
-    markers: Seq[String] = Nil,
-    severity: Severity = Severity.DEBUG,
-    substitutions: Seq[String] = Nil,
-    exception: Throwable = null) = {
+            messageCode: Int = 0,
+            markers: Seq[String] = Nil,
+            severity: Severity = Severity.DEBUG,
+            substitutions: Seq[String] = Nil,
+            exception: Throwable = null) = {
     var builder = EventContext.event(severity, messageCode, message, substitutions.toArray: _*)
     if (exception != null) {
       builder = builder.addException(exception)
@@ -153,10 +156,10 @@ trait EventLogging {
    *
    */
   def debug(message: String,
-    messageCode: Int = 0,
-    markers: Seq[String] = Nil,
-    substitutions: Seq[String] = Nil,
-    exception: Throwable = null) = event(message, messageCode, markers, Severity.DEBUG, substitutions, exception)
+            messageCode: Int = 0,
+            markers: Seq[String] = Nil,
+            substitutions: Seq[String] = Nil,
+            exception: Throwable = null) = event(message, messageCode, markers, Severity.DEBUG, substitutions, exception)
 
   /**
    * Constructs an INFO level event using the provided arguments.
@@ -169,10 +172,10 @@ trait EventLogging {
    *
    */
   def info(message: String,
-    messageCode: Int = 0,
-    markers: Seq[String] = Nil,
-    substitutions: Seq[String] = Nil,
-    exception: Throwable = null) = event(message, messageCode, markers, Severity.INFO, substitutions, exception)
+           messageCode: Int = 0,
+           markers: Seq[String] = Nil,
+           substitutions: Seq[String] = Nil,
+           exception: Throwable = null) = event(message, messageCode, markers, Severity.INFO, substitutions, exception)
 
   /**
    * Constructs a WARN level event using the provided arguments.
@@ -185,10 +188,10 @@ trait EventLogging {
    *
    */
   def warn(message: String,
-    messageCode: Int = 0,
-    markers: Seq[String] = Nil,
-    substitutions: Seq[String] = Nil,
-    exception: Throwable = null) = event(message, messageCode, markers, Severity.WARN, substitutions, exception)
+           messageCode: Int = 0,
+           markers: Seq[String] = Nil,
+           substitutions: Seq[String] = Nil,
+           exception: Throwable = null) = event(message, messageCode, markers, Severity.WARN, substitutions, exception)
 
   /**
    * Constructs an ERROR level event using the provided arguments.
@@ -201,9 +204,9 @@ trait EventLogging {
    *
    */
   def error(message: String,
-    messageCode: Int = 0,
-    markers: Seq[String] = Nil,
-    substitutions: Seq[String] = Nil,
-    exception: Throwable = null) = event(message, messageCode, markers, Severity.ERROR, substitutions, exception)
+            messageCode: Int = 0,
+            markers: Seq[String] = Nil,
+            substitutions: Seq[String] = Nil,
+            exception: Throwable = null) = event(message, messageCode, markers, Severity.ERROR, substitutions, exception)
 }
 

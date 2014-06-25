@@ -1,9 +1,9 @@
 package com.intel.intelanalytics.engine.hadoop
 
 import com.intel.intelanalytics.shared.EventLogging
-import com.typesafe.config.{Config, ConfigFactory, ConfigObject, ConfigValue}
+import com.typesafe.config.{ Config, ConfigFactory, ConfigObject, ConfigValue }
 import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.{LocalFileSystem, Path}
+import org.apache.hadoop.fs.{ LocalFileSystem, Path }
 import org.apache.hadoop.hdfs.DistributedFileSystem
 
 import scala.collection.JavaConverters._
@@ -41,7 +41,7 @@ trait HadoopSupport extends EventLogging {
    * Create a new Hadoop Configuration object
    * @return a Hadoop Configuration
    */
-  def newHadoopConfiguration() : Configuration = {
+  def newHadoopConfiguration(): Configuration = {
     val hadoopConfig = new Configuration()
 
     //TODO: refactor so we don't need root config here.
@@ -87,7 +87,8 @@ trait HadoopSupport extends EventLogging {
     val properties = flattenConfig(config.getConfig(key))
     properties.foreach { kv =>
       println(s"Setting ${kv._1} to ${kv._2}")
-      hConf.set(kv._1, kv._2) }
+      hConf.set(kv._1, kv._2)
+    }
     hConf
   }
 
@@ -98,15 +99,16 @@ trait HadoopSupport extends EventLogging {
    * @param config the config to flatten
    * @return a map of property names to values
    */
-  private def flattenConfig(config: Config, prefix: String = "") : Map[String, String] = {
-    val result = config.root.asScala.foldLeft(Map.empty[String,String]) {
-      (map, kv) => kv._2 match {
-        case co: ConfigObject =>
-          val nested = flattenConfig(co.toConfig, prefix = prefix + kv._1 + ".")
-          map ++ nested
-        case value: ConfigValue =>
-          map + (prefix + kv._1 -> value.unwrapped().toString)
-      }
+  private def flattenConfig(config: Config, prefix: String = ""): Map[String, String] = {
+    val result = config.root.asScala.foldLeft(Map.empty[String, String]) {
+      (map, kv) =>
+        kv._2 match {
+          case co: ConfigObject =>
+            val nested = flattenConfig(co.toConfig, prefix = prefix + kv._1 + ".")
+            map ++ nested
+          case value: ConfigValue =>
+            map + (prefix + kv._1 -> value.unwrapped().toString)
+        }
     }
     result
   }

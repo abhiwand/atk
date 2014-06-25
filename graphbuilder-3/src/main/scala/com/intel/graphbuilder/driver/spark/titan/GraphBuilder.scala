@@ -114,7 +114,8 @@ class GraphBuilder(config: GraphBuilderConfig) extends Serializable {
       println("starting write of edges")
       mergedEdges.write(titanConnector, gbIdToPhysicalIdMap, config.append)
 
-    } else {
+    }
+    else {
       println("join edges with physical ids")
       val edgesWithPhysicalIds = mergedEdges.joinWithPhysicalIds(idMap)
 

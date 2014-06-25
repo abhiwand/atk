@@ -50,8 +50,6 @@ class ProgressListenerSpec extends Specification with Mockito {
     }
   }
 
-
-
   def createListener_one_job(commandId: String): SparkProgressListener = {
     val listener = new SparkProgressListener(new TestProgressUpdater())
 
@@ -83,7 +81,6 @@ class ProgressListenerSpec extends Specification with Mockito {
 
     createListener_two_jobs(firstCommandId, secondCommandId)
   }
-
 
   def createListener_two_jobs(firstCommandId: String, secondCommandId: String): SparkProgressListener = {
     val listener = new SparkProgressListener(new TestProgressUpdater())

@@ -2,7 +2,6 @@ package com.intel.intelanalytics.domain
 
 import org.joda.time.DateTime
 
-
 /**
  * Users of the system.
  *
@@ -16,12 +15,12 @@ case class User(id: Long,
                 username: Option[String],
                 apiKey: Option[String],
                 createdOn: DateTime,
-                modifiedOn: DateTime ) extends HasId {
+                modifiedOn: DateTime) extends HasId {
   require(id >= 0)
   require(username != null)
   require(apiKey != null)
 
-  if(apiKey.isDefined) {
+  if (apiKey.isDefined) {
     require(!apiKey.get.isEmpty)
   }
 }

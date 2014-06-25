@@ -23,7 +23,7 @@
 
 package org.apache.spark.api.python
 
-import java.util.{ArrayList => JArrayList, List => JList}
+import java.util.{ ArrayList => JArrayList, List => JList }
 
 import org.apache.spark.AccumulatorParam
 

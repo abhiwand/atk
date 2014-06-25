@@ -72,7 +72,7 @@ class CommonDirectives(val authenticationDirective: AuthenticationDirective) ext
       route => respondWithBuildId { route }
     }
 
-  def respondWithBuildId =  respondWithHeader(RawHeader("build_id", ApiServiceConfig.buildId))
+  def respondWithBuildId = respondWithHeader(RawHeader("build_id", ApiServiceConfig.buildId))
 
   //TODO: needs to be updated for the distinction between Foos and FooTemplates
   //This code is likely to be useful for CRUD operations that need to work with the
@@ -123,6 +123,5 @@ class CommonDirectives(val authenticationDirective: AuthenticationDirective) ext
   //      }
   //    }
   //  }
-
 
 }

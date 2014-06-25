@@ -23,7 +23,7 @@
 
 package models.database
 
-import java.sql.{ResultSet, Types}
+import java.sql.{ ResultSet, Types }
 
 /**
  * Implementation of registration logic

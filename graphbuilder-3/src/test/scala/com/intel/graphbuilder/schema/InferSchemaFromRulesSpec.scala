@@ -25,7 +25,7 @@ package com.intel.graphbuilder.schema
 
 import com.intel.graphbuilder.parser._
 import com.intel.graphbuilder.parser.rule.RuleParserDSL._
-import com.intel.graphbuilder.parser.rule.{DataTypeResolver, EdgeRule, ParsedValue, VertexRule}
+import com.intel.graphbuilder.parser.rule.{ DataTypeResolver, EdgeRule, ParsedValue, VertexRule }
 import org.specs2.mutable.Specification
 
 class InferSchemaFromRulesSpec extends Specification {

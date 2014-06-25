@@ -584,11 +584,10 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                     </executions>
                 </plugin>
                 <!-- Scalariform is ready but I'm commenting out temporarily until there is less code for people to merge -Todd 6/16/2014 -->
-                <!--plugin>
+                <plugin>
                     <groupId>org.scalariform</groupId>
                     <artifactId>scalariform-maven-plugin</artifactId>
-                    <version>0.1.2</version>
-
+                    <version>0.1.4</version>
                     <executions>
                         <execution>
                             <phase>process-sources</phase>
@@ -596,13 +595,14 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                                 <goal>format</goal>
                             </goals>
                             <configuration>
+
                                 <alignParameters>true</alignParameters>
                                 <compactControlReadability>true</compactControlReadability>
                                 <preserveDanglingCloseParenthesis>true</preserveDanglingCloseParenthesis>
                             </configuration>
                         </execution>
                     </executions>
-                </plugin-->
+                </plugin>
             </plugins>
         </pluginManagement>
 
@@ -618,10 +618,10 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 <artifactId>maven-checkstyle-plugin</artifactId>
             </plugin>
 
-            <!--<plugin>
+            <plugin>
                 <groupId>org.scalariform</groupId>
                 <artifactId>scalariform-maven-plugin</artifactId>
-            </plugin>-->
+            </plugin>
 
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

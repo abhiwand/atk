@@ -23,7 +23,7 @@
 
 package com.intel.intelanalytics.engine.spark
 
-import org.scalatest.{Matchers, FlatSpec}
+import org.scalatest.{ Matchers, FlatSpec }
 
 class DropDuplicatesTest extends FlatSpec with Matchers {
   "createKeyValuePairFromRow" should "include specified 2 key columns as key" in {

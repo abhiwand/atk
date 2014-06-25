@@ -21,7 +21,8 @@ class SparkGraphHBaseBackend(hbaseAdmin: => HBaseAdmin) extends GraphBackendStor
     if (hbaseAdmin.tableExists(tableName)) {
       hbaseAdmin.disableTable(tableName)
       hbaseAdmin.deleteTable(tableName)
-    } else {
+    }
+    else {
       throw new IllegalArgumentException(
         "SparkGraphHBaseBackend.deleteTable:  HBase table " + tableName + " requested for deletion does not exist.")
     }

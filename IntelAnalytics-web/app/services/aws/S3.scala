@@ -23,7 +23,7 @@
 package services.aws
 
 import java.text.SimpleDateFormat
-import java.util.{Date, TimeZone}
+import java.util.{ Date, TimeZone }
 import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec
 
