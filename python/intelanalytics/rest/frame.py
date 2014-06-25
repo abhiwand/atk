@@ -178,6 +178,11 @@ class FrameBackendRest(object):
         arguments = {'frame': frame.uri, 'predicate': http_ready_function}
         return execute_update_frame_command("filter", arguments, frame)
 
+    def drop_duplicates(self, frame, columns):
+        arguments = {'frameId': frame._id, "unique_columns": columns}
+        command = CommandRequest("dataframe/drop_duplicates", arguments)
+        executor.issue(command)
+
     def filter(self, frame, predicate):
         from itertools import ifilter
         http_ready_function = prepare_row_function(frame, predicate, ifilter)
@@ -186,7 +191,7 @@ class FrameBackendRest(object):
 
     def flatten_column(self, frame, column_name):
         name = self._get_new_frame_name()
-        arguments = {'name': name, 'frame': frame._id, 'column': column_name, 'separator': ',' }
+        arguments = {'name': name, 'frameId': frame._id, 'column': column_name, 'separator': ',' }
         return execute_new_frame_command('flattenColumn', arguments)
 
     class InspectionTable(object):

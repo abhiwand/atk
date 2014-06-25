@@ -323,13 +323,13 @@ class SparkEngine(sparkContextManager: SparkContextManager,
    * @param arguments input specification for column flattening
    * @param user current user
    */
-  override def flattenColumn(arguments: FlattenColumn[Long])(implicit user: UserPrincipal): Execution =
+  override def flattenColumn(arguments: FlattenColumn)(implicit user: UserPrincipal): Execution =
     commands.execute(flattenColumnCommand, arguments, user, implicitly[ExecutionContext])
 
   val flattenColumnCommand = commands.registerCommand("dataframe/flattenColumn", flattenColumnSimple)
-  def flattenColumnSimple(arguments: FlattenColumn[Long], user: UserPrincipal) = {
+  def flattenColumnSimple(arguments: FlattenColumn, user: UserPrincipal) = {
     implicit val u = user
-    val frameId: Long = arguments.frame
+    val frameId: Long = arguments.frameId
     val realFrame = expectFrame(frameId)
 
     val ctx = sparkContextManager.context(user).sparkContext
@@ -383,22 +383,25 @@ class SparkEngine(sparkContextManager: SparkContextManager,
           val realFrame = frames.lookup(frame._1).getOrElse(
             throw new IllegalArgumentException(s"No such data frame"))
 
+
           val frameSchema = realFrame.schema
           val rdd = frames.getFrameRdd(ctx, frame._1)
-          val columnIndex = frameSchema.columns.indexWhere(columnTuple => columnTuple._1 == frame._2)
+          val columnIndex = frameSchema.columnIndex(frame._2)
           (rdd, columnIndex)
         }
       }
 
-      val pairRdds = tupleRddColumnIndex.map {
-        t =>
-          val rdd = t._1
-          val columnIndex = t._2
-          rdd.map(p => SparkOps.create2TupleForJoin(p, columnIndex))
-      }
+      
 
-      pairRdds
-    }
+        val pairRdds = tupleRddColumnIndex.map {
+          t =>
+            val rdd = t._1
+            val columnIndex = t._2
+            rdd.map(p => SparkOps.createKeyValuePairFromRow(p, Seq(columnIndex))).map {case (keyColumns, data) => (keyColumns(0), data)}
+        }
+
+        pairRdds
+      }
 
     val originalColumns = arguments.frames.map {
       frame => {
@@ -607,6 +610,39 @@ class SparkEngine(sparkContextManager: SparkContextManager,
                            queryName: String,
                            parameters: Map[String, String]): Future[Iterable[Row]] = {
     ???
+  }
+
+  override def dropDuplicates(arguments: DropDuplicates)(implicit user: UserPrincipal): Execution =
+    commands.execute(dropDuplicateCommand, arguments, user, implicitly[ExecutionContext])
+
+  val dropDuplicateCommand = commands.registerCommand("dataframe/drop_duplicates", dropDuplicateSimple)
+
+  def dropDuplicateSimple(dropDuplicateCommand: DropDuplicates, user: UserPrincipal) = {
+    val frameId: Long = dropDuplicateCommand.frameId
+    val realFrame: DataFrame = getDataFrameById(frameId)
+
+    val ctx = sparkContextManager.context(user).sparkContext
+
+    val frameSchema = realFrame.schema
+    val rdd = frames.getFrameRdd(ctx, frameId)
+
+    val columnIndices = frameSchema.columnIndex(dropDuplicateCommand.unique_columns)
+    val pairRdd = rdd.map(row => SparkOps.createKeyValuePairFromRow(row, columnIndices))
+
+    val duplicatesRemoved: RDD[Array[Any]] = SparkOps.removeDuplicatesByKey(pairRdd)
+
+    duplicatesRemoved.saveAsObjectFile(fsRoot + frames.getFrameDataFile(frameId))
+    realFrame
+  }
+
+  /**
+   * Retrieve DataFrame object by frame id
+   * @param frameId id of the dataframe
+   */
+  def getDataFrameById(frameId: Long): DataFrame = {
+    val realFrame = frames.lookup(frameId).getOrElse(
+      throw new IllegalArgumentException(s"No such data frame $frameId"))
+    realFrame
   }
 
 

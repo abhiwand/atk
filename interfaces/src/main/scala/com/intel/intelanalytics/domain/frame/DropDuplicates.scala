@@ -24,11 +24,8 @@
 package com.intel.intelanalytics.domain.frame
 
 /**
- * Command for flatten the specified column of the data frame and store the result to a
- * new data frame.
- * @param name name of the new data frame to be created
- * @param frameId id of the data frame to perform column flattening
- * @param column name of the target column to be flattened
- * @param separator separator for the data in the target column
+ * Command for dropping duplicates rows per uniqueness criteria match
+ * @param frameId id of the data frame
+ * @param unique_columns the key columns for identifying duplicates
  */
-case class FlattenColumn(name: String, frameId: Long, column: String, separator: String)
+case class DropDuplicates(frameId: Long, unique_columns: List[String])
