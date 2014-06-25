@@ -102,7 +102,7 @@ class CommandInfo(object):
 class Polling(object):
 
     @staticmethod
-    def poll(uri, predicate=None, interval_secs=0.5, backoff_factor=2, timeout_secs=10):
+    def poll(uri, predicate=None, interval_secs=0.5, backoff_factor=2, timeout_secs=120):
         """
         Issues GET methods on the given command uri until the response
         command_info cause the predicate to evalute True.  Exponential retry
