@@ -248,14 +248,14 @@ private[spark] object SparkOps extends Serializable {
     val numElements = columnRdd.count()
 
     // assign a rank to each distinct element
-    val pairedRdd = columnRdd.groupBy(element => element).sortByKey()
+    val pairedRdd = columnRdd.groupBy(element => element)
 
     // Need to go through values sequentially, but this creates an issue with Spark and multiple partitions
     // Option 1: use outside var counter...but each partition gets a fresh copy (no good)
     // Option 2: use Spark accumulator...but nondeterministic order of access among partitions (no good)
     // Option 3: convert RDD to Array for these sequential operations and back to RDD otherwise (works fine)
     // TODO: Option 4: ??? (find better way that avoids iterating over potentially long Arrays)
-    val pairedArray = pairedRdd.collect()
+    val pairedArray = pairedRdd.collect().sortBy(_._1)
 
     var rank = 1
     val rankedArray = pairedArray.map { value =>
@@ -274,9 +274,9 @@ private[spark] object SparkOps extends Serializable {
     }
 
     // shift the bin numbers so that they are contiguous values
-    val sortedBinnedRdd = binnedRdd.groupBy(_._2).sortByKey()
+    val sortedBinnedRdd = binnedRdd.groupBy(_._2)
 
-    val sortedBinnedArray = sortedBinnedRdd.collect()
+    val sortedBinnedArray = sortedBinnedRdd.collect().sortBy(_._1)
 
     rank = 1
     val shiftedArray = sortedBinnedArray.map { value =>
