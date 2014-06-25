@@ -56,7 +56,7 @@ class ApiServiceActor(val apiService: ApiService) extends Actor with HttpService
 /**
  * Defines our service behavior independently from the service actor
  */
-class ApiService(val apiV1Service: ApiV1Service) extends Directives {
+class ApiService(val commonDirectives: CommonDirectives, val apiV1Service: ApiV1Service) extends Directives {
 
   def homepage = {
     respondWithMediaType(`text/html`) {
@@ -93,7 +93,9 @@ class ApiService(val apiV1Service: ApiV1Service) extends Directives {
       } ~
       path("info") {
         respondWithMediaType(`application/json`) {
-          complete(description)
+          commonDirectives.respondWithBuildId {
+            complete(description)
+          }
         }
       }
   }

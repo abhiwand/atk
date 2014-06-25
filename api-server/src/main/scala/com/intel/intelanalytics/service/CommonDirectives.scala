@@ -28,6 +28,7 @@ import spray.http.StatusCodes
 import com.intel.intelanalytics.security.UserPrincipal
 import spray.routing._
 import scala.util.control.NonFatal
+import spray.http.HttpHeaders.RawHeader
 
 /**
  * Directives common to all services
@@ -43,6 +44,7 @@ class CommonDirectives(val authenticationDirective: AuthenticationDirective) ext
    */
   def apply(eventCtx: String): Directive1[UserPrincipal] = {
     eventContext(eventCtx) &
+      addCommonResponseHeaders &
       handleExceptions(errorHandler) &
       logResponse(eventCtx, Logging.InfoLevel) &
       authenticationDirective.authenticateKey
@@ -61,6 +63,16 @@ class CommonDirectives(val authenticationDirective: AuthenticationDirective) ext
     }
   }
 
+  /**
+   * Adds header fields common to all responses
+   * @return directive to wrap route with headers
+   */
+  def addCommonResponseHeaders: Directive0 =
+    mapInnerRoute {
+      route => respondWithBuildId { route }
+    }
+
+  def respondWithBuildId =  respondWithHeader(RawHeader("build_id", ApiServiceConfig.buildId))
 
   //TODO: needs to be updated for the distinction between Foos and FooTemplates
   //This code is likely to be useful for CRUD operations that need to work with the

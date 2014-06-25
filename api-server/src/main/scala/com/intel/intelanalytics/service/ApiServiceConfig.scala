@@ -10,6 +10,8 @@ import scala.concurrent.duration._
  */
 object ApiServiceConfig extends SharedConfig {
 
+  // val's are not lazy because failing early is better
+
   /** Host or interface that ApiService should listen on */
   val host: String = config.getString("intel.analytics.api.host")
 
@@ -27,4 +29,6 @@ object ApiServiceConfig extends SharedConfig {
 
   /** Input file for creating test users for local development */
   val testUsersFile: String = config.getString("intel.analytics.test.users.file")
+
+  val buildId = config.getString("intel.analytics.api.buildId")
 }

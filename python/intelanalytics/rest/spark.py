@@ -43,6 +43,7 @@ from intelanalytics.core.row import Row
 from intelanalytics.core.types import supported_types
 
 rdd_delimiter = '\0'
+rdd_null_indicator = 'YoMeNull'
 
 
 def get_add_one_column_function(row_function, data_type):
@@ -72,7 +73,8 @@ class RowWrapper(Row):
     def load_row(self, s):
         # todo - will probably change frequently
         #  specific to String RDD, takes a comma-sep string right now...
-        self.data = s.split(rdd_delimiter)  # data is an array of strings
+        self.data = [field if field != rdd_null_indicator else None
+                     for field in s.split(rdd_delimiter)]
         #print "row_wrapper.data=" + str(self.data)
 
 
@@ -136,5 +138,9 @@ class IaBatchedSerializer(BatchedSerializer):
     def dump_stream_as_json(self, iterator, stream):
         for obj in iterator:
             serialized = ",".join(obj)
-            write_int(len(serialized), stream)
-            stream.write(serialized)
+            try:
+                s = str(serialized)
+            except UnicodeEncodeError:
+                s = unicode(serialized).encode('unicode_escape')
+            write_int(len(s), stream)
+            stream.write(s)

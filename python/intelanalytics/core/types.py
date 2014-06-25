@@ -30,7 +30,6 @@ float32 = np.float32
 float64 = np.float64
 int32 = np.int32
 int64 = np.int64
-string = unicode
 
 
 class _Ignore(object):
@@ -58,7 +57,8 @@ class _Types(frozenset):
                  "int64": int64,
                  "list": list,
                  "str": str,
-                 "string": string}
+                 "string": unicode,
+                 "unicode": unicode}
 
     _python_to_ia = {int: int64,
                      long: int64,
@@ -75,7 +75,7 @@ class _Types(frozenset):
                      int64: int,
                      list: list,
                      str: str,
-                     string: string}
+                     unicode: unicode}
 
     def validate_is_supported_type(self, data_type):
         self.get_type_string(data_type)

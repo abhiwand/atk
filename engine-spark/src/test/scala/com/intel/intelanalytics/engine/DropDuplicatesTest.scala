@@ -21,34 +21,15 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.engine.spark.context
+package com.intel.intelanalytics.engine.spark
 
-import com.typesafe.config.Config
-import org.apache.spark.{ SparkConf, SparkContext }
-import com.intel.intelanalytics.component.Boot
-import com.intel.intelanalytics.shared.EventLogging
-import com.intel.intelanalytics.engine.spark.SparkEngineConfig
+import org.scalatest.{Matchers, FlatSpec}
 
-/**
- * Had to extract SparkContext creation logic from the SparkContextManagementStrategy for better testability
- */
-class SparkContextFactory extends EventLogging {
+class DropDuplicatesTest extends FlatSpec with Matchers {
+  "createKeyValuePairFromRow" should "include specified 2 key columns as key" in {
 
-  def createSparkContext(configuration: Config, appName: String): SparkContext = withContext("engine.sparkContextFactory") {
-    val sparkHome = configuration.getString("intel.analytics.spark.home")
-    val sparkMaster = configuration.getString("intel.analytics.spark.master")
-
-    val jarPath = Boot.getJar("engine-spark")
-    val sparkConf = new SparkConf()
-      .setMaster(sparkMaster)
-      .setSparkHome(sparkHome)
-      .setAppName(appName)
-      .setJars(Seq(jarPath.getPath))
-
-    sparkConf.setAll(SparkEngineConfig.sparkConfProperties)
-
-    info("SparkConf settings: " + sparkConf.toDebugString)
-
-    new SparkContext(sparkConf)
+    val t = SparkOps.createKeyValuePairFromRow(Array[Any]("John", 1, "Titanic"), Seq(0, 1))
+    t._1 shouldBe Seq("John", 1)
+    t._2 shouldBe Array[Any]("John", 1, "Titanic")
   }
 }
