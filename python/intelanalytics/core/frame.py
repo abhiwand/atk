@@ -31,10 +31,7 @@ logger = logging.getLogger(__name__)
 
 from intelanalytics.core.types import supported_types
 from intelanalytics.core.aggregation import *
-from intelanalytics.core.errorhandle import get_stacktrace
-
-def _handle_stacktrace():
-    get_stacktrace(sys.exc_info())
+from intelanalytics.core.errorhandle import IaError
 
 def _get_backend():
     from intelanalytics.core.config import get_frame_backend
@@ -60,7 +57,7 @@ def get_frame_names():
     try:
         return _get_backend().get_frame_names()
     except:
-        _handle_stacktrace()
+        raise IaError(logger)
 
 def get_frame(name):
     """
@@ -90,7 +87,7 @@ def get_frame(name):
     try:
         return _get_backend().get_frame(name)
     except:
-        _handle_stacktrace()
+        raise IaError(logger)
 
 def delete_frame(name):
     """
@@ -120,7 +117,7 @@ def delete_frame(name):
     try:
         return _get_backend().delete_frame(name)
     except:
-        _handle_stacktrace()
+        raise IaError(logger)
 
 class BigFrame(object):
     """
@@ -148,21 +145,29 @@ class BigFrame(object):
     # TODO - Review Parameters, Examples
 
     def __init__(self, source=None, name=None):
-        self._columns = OrderedDict()  # self._columns must be the first attribute to be assigned (see __setattr__)
-        self._id = 0
-        self._uri = ""
-        self._name = ""
-        if not hasattr(self, '_backend'):  # if a subclass has not already set the _backend
-            self._backend = _get_backend()
-        self._backend.create(self, source, name)
-        logger.info('Created new frame "%s"', self._name)
+        try:
+            self._columns = OrderedDict()  # self._columns must be the first attribute to be assigned (see __setattr__)
+            self._id = 0
+            self._uri = ""
+            self._name = ""
+            if not hasattr(self, '_backend'):  # if a subclass has not already set the _backend
+                self._backend = _get_backend()
+            self._backend.create(self, source, name)
+            logger.info('Created new frame "%s"', self._name)
+        except:
+            raise IaError(logger)
+
 
     def __getattr__(self, name):
         """After regular attribute access, try looking up the name of a column.
         This allows simpler access to columns for interactive use."""
-        if name != "_columns" and name in self._columns:
-            return self[name]
-        return super(BigFrame, self).__getattribute__(name)
+        try:
+            if name != "_columns" and name in self._columns:
+                return self[name]
+            return super(BigFrame, self).__getattribute__(name)
+        except:
+            raise IaError(logger)
+
 
     # We are not defining __setattr__.  Columns must be added explicitly
 
@@ -181,9 +186,12 @@ class BigFrame(object):
     # We are not defining __delitem__.  Columns must be deleted w/ remove_columns
 
     def __repr__(self):
-        return json.dumps({'uri': self.uri,
-                           'name': self.name,
-                           'schema': self._schema_as_json_obj()}, indent=2, separators=(', ', ': '))
+        try:
+            return json.dumps({'uri': self.uri,
+                               'name': self.name,
+                               'schema': self._schema_as_json_obj()}, indent=2, separators=(', ', ': '))
+        except:
+            raise IaError(logger)
 
     def _schema_as_json_obj(self):
         return [(col.name, supported_types.get_type_string(col.data_type)) for col in self._columns.values()]
@@ -292,8 +300,11 @@ class BigFrame(object):
 
     @name.setter
     def name(self, value):
-        self._backend.rename_frame(self, value)
-        self._name = value  # TODO - update from backend
+        try:
+            self._backend.rename_frame(self, value)
+            self._name = value  # TODO - update from backend
+        except:
+            raise IaError(logger)
 
     @property
     def schema(self):
@@ -362,7 +373,8 @@ class BigFrame(object):
         try:
             self._backend.add_columns(self, func, schema)
         except:
-            _handle_stacktrace()
+            raise IaError(logger)
+
     def append(self, data):
         """
         Adds more data to the BigFrame object.
@@ -383,7 +395,8 @@ class BigFrame(object):
         try:
             self._backend.append(self, data)
         except:
-            _handle_stacktrace()
+            raise IaError(logger)
+
     def copy(self):
         """
         Creates a full copy of the current frame
@@ -398,7 +411,8 @@ class BigFrame(object):
             self._backend.project_columns(self, copied_frame, self.column_names)
             return copied_frame
         except:
-            _handle_stacktrace()
+            raise IaError(logger)
+
     def count(self):
         """
         Count the number of rows that exist in this object.
@@ -421,7 +435,8 @@ class BigFrame(object):
         try:
             return self._backend.count(self)
         except:
-            _handle_stacktrace()
+            raise IaError(logger)
+
     def drop(self, predicate):
         """
         Remove all rows from the frame which satisfy the predicate.
@@ -442,7 +457,7 @@ class BigFrame(object):
         try:
             self._backend.drop(self, predicate)
         except:
-            _handle_stacktrace()
+            raise IaError(logger)
 
     def filter(self, predicate):
         """
@@ -465,7 +480,8 @@ class BigFrame(object):
         try:
             self._backend.filter(self, predicate)
         except:
-            _handle_stacktrace()
+            raise IaError(logger)
+
     def flatten_column(self, column_name):
         """
         Flatten a column
@@ -487,7 +503,8 @@ class BigFrame(object):
         try:
             return self._backend.flatten_column(self, column_name)
         except:
-            _handle_stacktrace()
+            raise IaError(logger)
+
     def drop(self, predicate):
         """
         Drop rows that match a requirement.
@@ -511,7 +528,8 @@ class BigFrame(object):
         try:
             self._backend.drop(self, predicate)
         except:
-            _handle_stacktrace()
+            raise IaError(logger)
+
     def dropna(self, how=any, column_subset=None):
         """
         Drops all rows which have NA values.
@@ -546,7 +564,8 @@ class BigFrame(object):
         try:
             self._backend.dropna(self, how, column_subset)
         except:
-            _handle_stacktrace()
+            raise IaError(logger)
+
     def inspect(self, n=10, offset=0):
         """
         Check the data for validity.
@@ -579,7 +598,8 @@ class BigFrame(object):
         try:
             return self._backend.inspect(self, n, offset)
         except:
-            _handle_stacktrace()
+            raise IaError(logger)
+
     def join(self, right, left_on, right_on=None, how='inner'):
         """
         Create a new BigFrame from a JOIN operation with another BigFrame.
@@ -609,7 +629,8 @@ class BigFrame(object):
         try:
             return self._backend.join(self, right, left_on, right_on, how)
         except:
-            _handle_stacktrace()
+            raise IaError(logger)
+
     def project_columns(self, column_names, new_names=None):
         """
         Copies specified columns into a new BigFrame object, optionally renaming them.
@@ -640,16 +661,17 @@ class BigFrame(object):
             self._backend.project_columns(self, projected_frame, column_names, new_names)
             return projected_frame
         except:
-            _handle_stacktrace()
-    def groupBy(self, group_by_columns, *aggregation_arguments):
+            raise IaError(logger)
+
+    def groupby(self, groupby_columns, *aggregation_arguments):
         """
         Group frame as per the criteria provided and compute aggregation on each group
 
         Parameters
         ----------
-        group_by_columns: BigColumn or List of BigColumns or function
+        groupby_columns: column name or list of column names (or function TODO)
             columns or result of a function will be used to create grouping
-        aggregation_arguments: dict
+        aggregation: one or more aggregation functions or dictionaries of
             (column,aggregation function) pairs
 
         Return
@@ -659,36 +681,16 @@ class BigFrame(object):
 
         Examples
         --------
-        frame.groupBy(frame.a, count)
-        frame.groupBy([frame.a, frame.b], {f.c: avg})
-        frame.groupBy(frame[['a', 'c']], count, {f.d: [avg, sum, min], f.e: [max]})
+        frame.groupby(frame.a, count)
+        frame.groupby([frame.a, frame.b], {f.c: avg})
+        frame.groupby(frame[['a', 'c']], count, {f.d: [avg, sum, min], f.e: [max]})
         """
 
         try:
-            groupByColumns = []
-            if isinstance(group_by_columns, list):
-                groupByColumns = [i.name for i in group_by_columns]
-            elif group_by_columns:
-                groupByColumns = [group_by_columns.name]
-
-            primaryColumn = groupByColumns[0] if groupByColumns else self.column_names[0]
-            aggregation_list = []
-
-            for i in aggregation_arguments:
-                if i == count:
-                    aggregation_list.append((count, primaryColumn, "count"))
-                else:
-                    for k,v in i.iteritems():
-                        if isinstance(v, list):
-                            for j in v:
-                                aggregation_list.append((j, k.name, "%s_%s" % (k.name, j)))
-                        else:
-                            aggregation_list.append((v, k.name, "%s_%s" % (k.name, v)))
-
-            # Send to backend to compute aggregation
-            return self._backend.groupBy(self, groupByColumns, aggregation_list)
+            return self._backend.groupby(self, groupby_columns, aggregation_arguments)
         except:
-            _handle_stacktrace()
+            raise IaError(logger)
+
     def remove_columns(self, name):
         """
         Remove columns from the BigFrame object.
@@ -718,7 +720,8 @@ class BigFrame(object):
         try:
             self._backend.remove_columns(self, name)
         except:
-            _handle_stacktrace()
+            raise IaError(logger)
+
     def rename_columns(self, column_names, new_names):
         """
         Renames columns in a frame.
@@ -738,7 +741,8 @@ class BigFrame(object):
         try:
             self._backend.rename_columns(self, column_names, new_names)
         except:
-            _handle_stacktrace()
+            raise IaError(logger)
+
     def take(self, n, offset=0):
         """
         .. TODO:: Add Docstring
@@ -762,4 +766,4 @@ class BigFrame(object):
         try:
             return self._backend.take(self, n, offset)
         except:
-            _handle_stacktrace()
+            raise IaError(logger)
