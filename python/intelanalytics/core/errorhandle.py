@@ -80,8 +80,8 @@ class IaError(Exception):
             raise
         else:
             # to hide the stack, we return the exception info w/o trace
-            sys.stderr.write(ErrorHandling.help_msg)
-            sys.stderr.flush()
+            #sys.stderr.write(ErrorHandling.help_msg)
+            #sys.stderr.flush()
             return exc_info[1], None, None
 
     @classmethod
