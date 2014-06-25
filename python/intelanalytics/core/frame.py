@@ -504,9 +504,9 @@ class BigFrame(object):
             The column whose values are to be binned
         num_bins : int
             The requested number of bins
-        bin_type : str
-            The binning algorithm to use: 'equalwidth' or 'equaldepth'
-        bin_column_name : str
+        bin_type : 'equalwidth' or 'equaldepth', (default 'equalwidth')
+            The binning algorithm to use
+        bin_column_name : str, (default 'binned')
             The name for the new binned column
 
         Returns
