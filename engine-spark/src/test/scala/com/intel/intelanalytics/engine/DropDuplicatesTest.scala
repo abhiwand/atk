@@ -21,14 +21,15 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.domain.frame
+package com.intel.intelanalytics.engine.spark
 
-/**
- * Command for flatten the specified column of the data frame and store the result to a
- * new data frame.
- * @param name name of the new data frame to be created
- * @param frameId id of the data frame to perform column flattening
- * @param column name of the target column to be flattened
- * @param separator separator for the data in the target column
- */
-case class FlattenColumn(name: String, frameId: Long, column: String, separator: String)
+import org.scalatest.{Matchers, FlatSpec}
+
+class DropDuplicatesTest extends FlatSpec with Matchers {
+  "createKeyValuePairFromRow" should "include specified 2 key columns as key" in {
+
+    val t = SparkOps.createKeyValuePairFromRow(Array[Any]("John", 1, "Titanic"), Seq(0, 1))
+    t._1 shouldBe Seq("John", 1)
+    t._2 shouldBe Array[Any]("John", 1, "Titanic")
+  }
+}
