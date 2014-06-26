@@ -245,6 +245,8 @@ class Executor(object):
     Executes commands
     """
 
+    __commands = []
+
     def issue(self, command_request):
         """
         Issues the command_request to the server
@@ -271,6 +273,26 @@ class Executor(object):
         """
         logger.info("Executor cancelling command " + str(command_id))
         # TODO - implement command cancellation (like a DELETE to commands/id?)
+
+    def fetch(self):
+        """
+        Obtains a list of all the available commands from the server
+        :return: the commands available
+        """
+        logger.info("Requesting available commands")
+        response = http.get("commands/definitions")
+        commands = response.json()
+        return commands
+
+    @property
+    def commands(self):
+        """
+        The available commands
+        """
+        if not self.__commands:
+            self.__commands = self.fetch()
+        return self.__commands
+
 
 
 executor = Executor()

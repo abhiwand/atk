@@ -24,7 +24,7 @@
 package com.intel.intelanalytics.engine.spark.command
 
 import com.intel.intelanalytics.component.{ ArchiveName, Boot }
-import com.intel.intelanalytics.domain.command.{ Command, CommandTemplate, Execution }
+import com.intel.intelanalytics.domain.command.{ CommandDefinition, Command, CommandTemplate, Execution }
 import com.intel.intelanalytics.engine.plugin.{ FunctionCommand, CommandPlugin }
 import com.intel.intelanalytics.engine.spark.context.SparkContextManager
 import com.intel.intelanalytics.engine.spark.plugin.SparkInvocation
@@ -63,6 +63,11 @@ import scala.util.Try
 class CommandExecutor(engine: => SparkEngine, commands: SparkCommandStorage, contextManager: SparkContextManager)
     extends EventLogging
     with ClassLoaderAware {
+
+  /**
+   * Returns all the command definitions registered with this command executor.
+   */
+  def getCommandDefinitions(): Iterable[CommandDefinition] = commandPlugins.values.map(p => CommandDefinition(p.name))
 
   private var commandPlugins: Map[String, CommandPlugin[_, _]] = SparkEngineConfig.archives.flatMap {
     case (archive, className) => Boot.getArchive(ArchiveName(archive, className))
