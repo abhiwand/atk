@@ -201,7 +201,6 @@ private[spark] object SparkOps extends Serializable {
    * @return new RDD with binned column appended
    */
   def binEqualWidth(index: Int, numBins: Int, rdd: RDD[Row]): RDD[Row] = {
-    // TODO: histogram assumes an RDD[Double], so this needs to be verified
     // TODO: Need consider how cutoffs/binSizes are going to be returned (if at all)
 
     // try creating RDD[Double] from column (as required by histogram)
@@ -212,8 +211,21 @@ private[spark] object SparkOps extends Serializable {
       case cce: NumberFormatException => throw new NumberFormatException("Column values cannot be binned: " + cce.toString)
     }
 
-    // TODO: Extract only the functionality for creating cutoffs array, no need for computing binSizes
-    val (cutoffs: Array[Double], binSizes: Array[Long]) = columnRdd.histogram(numBins)
+    // find the minimum and maximum values in the column RDD
+    val pairedRdd = columnRdd.map(value => (value, value)).distinct()
+
+    val min: Double = pairedRdd.sortByKey().first()._1
+    val max: Double = pairedRdd.sortByKey(false).first()._1
+
+    // determine bin width and cutoffs
+    val binWidth = (max - min) / numBins.toDouble
+
+    val cutoffs: Array[Double] = if (binWidth != 0) {
+      Range.Double.inclusive(min, max, binWidth).toArray
+    }
+    else {
+      List(min, min).toArray
+    }
 
     // map each data element to its bin id, using cutoffs index as bin id
     val binnedColumnRdd = rdd.map { row =>
