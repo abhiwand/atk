@@ -1,7 +1,7 @@
 package com.intel.spark.graphon.communitydetection
 
 import com.intel.spark.graphon.titanreader.TitanReader
-import com.intel.graphbuilder.elements.{GraphElement, Edge => GBEdge}
+import com.intel.graphbuilder.elements.{ GraphElement, Edge => GBEdge }
 import org.apache.spark.rdd.RDD
 import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRDDImplicits._
 import com.intel.graphbuilder.driver.spark.rdd.GraphElementRDDFunctions
@@ -24,22 +24,18 @@ class KCliqueCommunities {
   val titanStorageName = "localhost"
   val sparkMasterName = "localhost"
 
-  def runKCliqueCommunityAnalysis(input : KCliqueInput) {
+  def runKCliqueCommunityAnalysis(input: KCliqueInput) {
 
     val titanReader = new TitanReader()
-    val graphElements : RDD[GraphElement] =  titanReader.loadGraph(graphName, titanStorageName, sparkMasterName)
+    val graphElements: RDD[GraphElement] = titanReader.loadGraph(graphName, titanStorageName, sparkMasterName)
 
-    val gbEdgeList : RDD[GBEdge] = graphElements.filterEdges()
-
+    val gbEdgeList: RDD[GBEdge] = graphElements.filterEdges()
 
     // GB allows these to be pairs of anys, but Titan actually gives us longs.
     // it would be a total soup if we let the vertices have type "any" so convert to longs
 
-    val edgeList  = gbEdgeList.map(e => Pair(e.headPhysicalId, e.tailPhysicalId))
-      .filter( _.isInstanceOf[(Long, Long)]).asInstanceOf[(Long, Long)]
-
-
-
+    val edgeList = gbEdgeList.map(e => Pair(e.headPhysicalId, e.tailPhysicalId))
+      .filter(_.isInstanceOf[(Long, Long)]).asInstanceOf[(Long, Long)]
 
   }
 

@@ -34,7 +34,7 @@ object CreateGraphFromEnumeratedKCliques {
   /**
    * @param cliqueAndExtenders
    */
-  def applyToExtendersFact(cliqueAndExtenders: RDD[ExtendersFact]) : RDD[Set[CliqueFact]] = {
+  def applyToExtendersFact(cliqueAndExtenders: RDD[ExtendersFact]): RDD[Set[CliqueFact]] = {
 
     /**
      * Derive the key value pairs of k-1 cliques in the graph and k cliques that extend them

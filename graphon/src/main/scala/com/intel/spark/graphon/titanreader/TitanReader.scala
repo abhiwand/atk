@@ -24,13 +24,13 @@
 package com.intel.spark.graphon.titanreader
 
 import com.intel.graphbuilder.util.SerializableBaseConfiguration
-import com.intel.graphbuilder.driver.spark.titan.reader.{TitanReader => GBTitanReader}
+import com.intel.graphbuilder.driver.spark.titan.reader.{ TitanReader => GBTitanReader }
 import com.intel.graphbuilder.graph.titan.TitanGraphConnector
 import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRDDImplicits._
 import org.apache.spark.{ SparkConf, SparkContext }
 import java.util.Date
 import org.apache.spark.rdd.RDD
-import com.intel.graphbuilder.elements.{GraphElement, Edge, Vertex}
+import com.intel.graphbuilder.elements.{ GraphElement, Edge, Vertex }
 import java.io.File
 import com.intel.graphbuilder.driver.spark.titan.examples.ExamplesUtils
 
@@ -39,22 +39,19 @@ import com.intel.graphbuilder.driver.spark.titan.examples.ExamplesUtils
  */
 class TitanReader {
 
-
   /**
    *
    * @param graphTableName
    * @param titanStorageHostName
    * @return
    */
-  def loadGraph(graphTableName: String, titanStorageHostName: String, sparkMaster: String) : RDD[GraphElement] = {
-
+  def loadGraph(graphTableName: String, titanStorageHostName: String, sparkMaster: String): RDD[GraphElement] = {
 
     val conf = new SparkConf()
       .setMaster(sparkMaster)
       .setAppName(this.getClass.getSimpleName + " " + new Date())
       .setSparkHome(ExamplesUtils.sparkHome)
       .setJars(List(ExamplesUtils.gbJar))
-
 
     conf.set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
     conf.set("spark.kryo.registrator", "com.intel.graphbuilder.driver.spark.titan.GraphBuilderKryoRegistrator")
@@ -65,7 +62,7 @@ class TitanReader {
     // Create graph connection
 
     val titanConfig = new SerializableBaseConfiguration()
-    titanConfig.setProperty("storage.backend", "hbase")  // TODO : we should probably have this come from... somewhere
+    titanConfig.setProperty("storage.backend", "hbase") // TODO : we should probably have this come from... somewhere
     titanConfig.setProperty("storage.hostname", titanStorageHostName)
     titanConfig.setProperty("storage.tablename", graphTableName)
 
@@ -83,7 +80,6 @@ class TitanReader {
     // your results are too large, try:
     // a) Increasing the size of the kryoserializer buffer, e.g., conf.set("spark.kryoserializer.buffer.mb", "32")
     // b) Saving results to file instead of collect(), e.g.titanReaderRDD.saveToTextFile()
-
 
     sc.stop()
 

@@ -2,11 +2,9 @@ package com.intel.spark.graphon.communitydetection
 
 import com.intel.spark.graphon.titanreader.TitanReader
 import org.apache.spark.rdd.RDD
-import com.intel.graphbuilder.elements.{Edge => GBEdge, GraphElement}
+import com.intel.graphbuilder.elements.{ Edge => GBEdge, GraphElement }
 import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRDDImplicits._
 import com.intel.spark.graphon.communitydetection.KCliquePercolationDataTypes._
-
-
 
 object KCliquePercolationDriver {
 

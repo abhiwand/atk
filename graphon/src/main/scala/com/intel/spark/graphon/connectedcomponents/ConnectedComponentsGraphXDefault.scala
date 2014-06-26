@@ -3,8 +3,7 @@ package com.intel.spark.graphon.connectedcomponents
 import scala.reflect.ClassTag
 import org.apache.spark.graphx._
 import org.apache.spark.rdd.RDD
-import org.apache.spark.graphx.{Edge => GraphXEdge}
-
+import org.apache.spark.graphx.{ Edge => GraphXEdge }
 
 /**
  * Determine connected components of a graph. The input is a vertex list (an RDD of Longs) and an edge list
@@ -16,17 +15,17 @@ import org.apache.spark.graphx.{Edge => GraphXEdge}
 
 object ConnectedComponentsGraphXDefault {
 
-  def run(vertexList: RDD[Long], edgeList: RDD[(Long, Long)]) : RDD[(Long, Long)] = {
+  def run(vertexList: RDD[Long], edgeList: RDD[(Long, Long)]): RDD[(Long, Long)] = {
 
-    val graphXVertices = vertexList.map((vid : Long) => (vid, null))
-    val graphXEdges    = edgeList.map(edge =>   (new GraphXEdge[Null](edge._1, edge._2, null) ))
+    val graphXVertices = vertexList.map((vid: Long) => (vid, null))
+    val graphXEdges = edgeList.map(edge => (new GraphXEdge[Null](edge._1, edge._2, null)))
 
     val graph = Graph(graphXVertices, graphXEdges)
 
-    val out : RDD[(Long, Long)]  = runGraphXCC(graph).vertices
+    val out: RDD[(Long, Long)] = runGraphXCC(graph).vertices
 
     out
-}
+  }
 
   /**
    * Compute the connected component membership of each vertex and return a graph with the vertex
@@ -45,9 +44,11 @@ object ConnectedComponentsGraphXDefault {
     def sendMessage(edge: EdgeTriplet[VertexId, ED]) = {
       if (edge.srcAttr < edge.dstAttr) {
         Iterator((edge.dstId, edge.srcAttr))
-      } else if (edge.srcAttr > edge.dstAttr) {
+      }
+      else if (edge.srcAttr > edge.dstAttr) {
         Iterator((edge.srcId, edge.dstAttr))
-      } else {
+      }
+      else {
         Iterator.empty
       }
     }
