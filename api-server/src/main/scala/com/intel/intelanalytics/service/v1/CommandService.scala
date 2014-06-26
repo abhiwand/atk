@@ -107,27 +107,29 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
                     }
                   } ~
                     post {
+                      implicit val frameReferenceFormat = new FrameReferenceFormat(
+                        uri.toString().dropRight("/commands".length))
                       entity(as[JsonTransform]) {
                         xform =>
-                          try {
-                            //TODO: this execution path is going away soon.
-                            runCommand(uri, xform)
+                          //                          try {
+                          //                            //TODO: this execution path is going away soon.
+                          //                            runCommand(uri, xform)
+                          //                          }
+                          //                          catch {
+                          //                            case e: IllegalArgumentException => {
+                          //                              //TODO: this will be the only execution path, soon.
+                          //                              //TODO: validate the arguments. To do this requires some kind of sharing
+                          //                              //between the api server and the engine to determine what contracts to use.
+                          //                              //TODO: standardize URI handling such that the API server strips out
+                          //                              //the https://site.com/ part and leaves the engine with only an application-specific,
+                          //                              //non-transport-related URI. This should be automatic and not something that
+                          //                              //every command handler has to call.
+                          engine.execute(CommandTemplate(name = xform.name, arguments = xform.arguments)) match {
+                            case Execution(command, futureResult) =>
+                              complete(decorate(uri, command))
                           }
-                          catch {
-                            case e: IllegalArgumentException => {
-                              //TODO: this will be the only execution path, soon.
-                              //TODO: validate the arguments. To do this requires some kind of sharing
-                              //between the api server and the engine to determine what contracts to use.
-                              //TODO: standardize URI handling such that the API server strips out
-                              //the https://site.com/ part and leaves the engine with only an application-specific,
-                              //non-transport-related URI. This should be automatic and not something that
-                              //every command handler has to call.
-                              engine.execute(CommandTemplate(name = xform.name, arguments = xform.arguments)) match {
-                                case Execution(command, futureResult) =>
-                                  complete(decorate(uri, command))
-                              }
-                            }
-                          }
+                        //}
+                        //}
                       }
                     }
                 }
@@ -151,7 +153,7 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
       //TODO: genericize function resolution and invocation
       case ("graph/load") => runGraphLoad(uri, xform)
       //case ("graph/ml/als") => runAls(uri, xform)
-      case ("dataframe/load") => runFrameLoad(uri, xform)
+      //case ("dataframe/load") => runFrameLoad(uri, xform)
       case ("dataframe/filter") => runFilter(uri, xform)
       case ("dataframe/removecolumn") => runFrameRemoveColumn(uri, xform)
       case ("dataframe/rename_frame") => runFrameRenameFrame(uri, xform)
@@ -167,21 +169,21 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
     }
   }
 
-  def runFrameLoad(uri: Uri, xform: JsonTransform)(implicit user: UserPrincipal) = {
-    val test = Try {
-      import DomainJsonProtocol._
-      xform.arguments.get.convertTo[LoadLines[JsObject, String]]
-    }
-    val idOpt = test.toOption.flatMap(args => UrlParser.getFrameId(args.destination))
-    (validate(test.isSuccess, "Failed to parse file load descriptor: " + getErrorMessage(test))
-      & validate(idOpt.isDefined, "Destination is not a valid data frame URL")) {
-        val args = test.get
-        val id = idOpt.get
-        val exec = engine.load(LoadLines[JsObject, Long](args.source, id,
-          skipRows = args.skipRows, overwrite = args.overwrite, lineParser = args.lineParser, schema = args.schema))
-        complete(decorate(uri + "/" + exec.start.id, exec.start))
-      }
-  }
+  //  def runFrameLoad(uri: Uri, xform: JsonTransform)(implicit user: UserPrincipal) = {
+  //    val test = Try {
+  //      import DomainJsonProtocol._
+  //      xform.arguments.get.convertTo[LoadLines[JsObject]]
+  //    }
+  //    val idOpt = test.toOption.flatMap(args => UrlParser.getFrameId(args.destination))
+  //    (validate(test.isSuccess, "Failed to parse file load descriptor: " + getErrorMessage(test))
+  //      & validate(idOpt.isDefined, "Destination is not a valid data frame URL")) {
+  //        val args = test.get
+  //        val id = idOpt.get
+  //        val exec = engine.load(LoadLines[JsObject](args.source, id,
+  //          skipRows = args.skipRows, overwrite = args.overwrite, lineParser = args.lineParser, schema = args.schema))
+  //        complete(decorate(uri + "/" + exec.start.id, exec.start))
+  //      }
+  //  }
 
   /**
    * Translates tabular data into graph form and load it into a graph database.

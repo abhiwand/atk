@@ -21,20 +21,23 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.domain.frame
+package com.intel.intelanalytics.service.v1.viewmodels
 
-import com.intel.intelanalytics.domain.Partial
-import com.intel.intelanalytics.domain.schema.Schema
+import com.intel.intelanalytics.domain.frame.FrameReference
+import org.scalatest.{ Matchers, FlatSpec }
+import spray.json._
+import ViewModelJsonImplicits._
 
-case class LoadLines[+Arguments](source: FileName,
-                                 destination: FrameReference,
-                                 skipRows: Option[Int],
-                                 overwrite: Option[Boolean],
-                                 lineParser: Partial[Arguments],
-                                 schema: Schema) {
-  require(source != null, "source is required")
-  require(destination != null, "destination is required")
-  require(skipRows.isEmpty || skipRows.get >= 0, "cannot skip negative number of rows")
-  require(lineParser != null, "lineParser is required")
-  require(schema != null, "schema is required")
+class FrameReferenceFormatSpec extends FlatSpec with Matchers {
+
+  implicit val format = new ViewModelJsonImplicits.FrameReferenceFormat("https://site.com/v1")
+
+  "Frame reference (domain)" should "convert https://site.com/v1/dataframes/3 to a frame reference for id 3" in {
+    JsString("https://site.com/v1/dataframes/3").convertTo[FrameReference] should equal(FrameReference(3))
+  }
+
+  it should "convert a frame reference for frame 3 to https://site.com/v1/dataframes/3" in {
+    FrameReference(3).toJson should equal(JsString("https://site.com/v1/dataframes/3"))
+  }
+
 }
