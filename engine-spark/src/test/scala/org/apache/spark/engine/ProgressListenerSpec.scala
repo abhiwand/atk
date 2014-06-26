@@ -45,9 +45,8 @@ class ProgressListenerSpec extends Specification with Mockito {
   class TestProgressUpdater extends CommandProgressUpdater {
 
     val commandProgress = scala.collection.mutable.Map[Long, List[Float]]()
-    override def updateProgress(commandId: Long, progress: List[Float]): Unit = {
-      commandProgress(commandId) = progress
-    }
+
+    override def updateProgress(commandId: Long, progress: List[Float], progressMessage: String): Unit = { commandProgress(commandId) = progress }
   }
 
   def createListener_one_job(commandId: String): SparkProgressListener = {
@@ -294,6 +293,7 @@ class ProgressListenerSpec extends Specification with Mockito {
     listener.onTaskEnd(taskEnd3)
     listener.onTaskEnd(taskEnd3)
     listener.getCommandProgress(1) shouldEqual List(46.66f)
+    listener.getCommandProgressMessage(1) shouldEqual "step 2/3 task 2/10, step 3/3 task 2/10"
   }
 
   "finish all tasks in second stage" in {

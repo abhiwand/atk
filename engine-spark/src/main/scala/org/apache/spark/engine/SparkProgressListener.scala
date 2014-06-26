@@ -24,7 +24,7 @@
 package org.apache.spark.engine
 
 import org.apache.spark.scheduler._
-import scala.collection.mutable.{ ListBuffer, HashSet, HashMap }
+import scala.collection.mutable.{ ListBuffer, LinkedHashSet, HashMap }
 import org.apache.spark.scheduler.SparkListenerTaskEnd
 import org.apache.spark.scheduler.SparkListenerJobEnd
 import org.apache.spark.scheduler.SparkListenerStageSubmitted
@@ -50,7 +50,7 @@ object SparkProgressListener {
 class SparkProgressListener(val progressUpdater: CommandProgressUpdater) extends SparkListener {
 
   val jobIdToStageIds = new HashMap[Int, Array[Int]]
-  val activeStages = HashSet[StageInfo]()
+  val activeStages = LinkedHashSet[StageInfo]()
   val completedStages = ListBuffer[StageInfo]()
   val stageIdToTasksComplete = HashMap[Int, Int]()
   val stageIdToTasksFailed = HashMap[Int, Int]()
@@ -67,7 +67,7 @@ class SparkProgressListener(val progressUpdater: CommandProgressUpdater) extends
       addToCommandIdJobs(job)
 
       //update initial progress to 0
-      progressUpdater.updateProgress(job.properties.getProperty("command-id").toLong, List(0.00f))
+      progressUpdater.updateProgress(job.properties.getProperty("command-id").toLong, List(0.00f), "")
     }
   }
 
@@ -131,21 +131,23 @@ class SparkProgressListener(val progressUpdater: CommandProgressUpdater) extends
     BigDecimal(progress).setScale(2, BigDecimal.RoundingMode.DOWN).toFloat
   }
 
-
   /**
    * return a message about current job progress.
    * eg. step 2/5 tasks 500/1000
    */
   private def getProgressMessage(jobId: Int): String = {
     val stageIds = jobIdToStageIds(jobId)
-    val currentStep = stageIds.count(i => completedStages.filter(s => s.stageId == i).length > 0) + 1
-    val currentActiveStage = activeStages.filter(s => stageIds.contains(s.stageId)).last
+    val currentActiveStages = activeStages.filter(s => stageIds.contains(s.stageId))
+    val message: mutable.ListBuffer[String] = mutable.ListBuffer()
 
-    val totalTaskForStage = currentActiveStage.numTasks
-    val successCount = stageIdToTasksComplete.getOrElse(currentActiveStage.stageId, 0)
-
-    val totalStages = stageIds.length
-    s"step $currentStep/$totalStages task $successCount/$totalTaskForStage"
+    for (activeStage <- currentActiveStages) {
+      val currentStep = stageIds.indexOf(activeStage.stageId) + 1
+      val totalStages = stageIds.length
+      val totalTaskForStage = activeStage.numTasks
+      val successCount = stageIdToTasksComplete.getOrElse(activeStage.stageId, 0)
+      message += s"step $currentStep/$totalStages task $successCount/$totalTaskForStage"
+    }
+    message.mkString(", ")
   }
 
   /**
@@ -164,8 +166,6 @@ class SparkProgressListener(val progressUpdater: CommandProgressUpdater) extends
     getProgressMessage(jobList.last.jobId)
   }
 
-
-
   /**
    * update the progress information and send it to progress updater
    */
@@ -182,7 +182,8 @@ class SparkProgressListener(val progressUpdater: CommandProgressUpdater) extends
           case Some(c) => {
             val commandId = c._1
             val progress = getCommandProgress(commandId)
-            progressUpdater.updateProgress(commandId, progress)
+            val progressMessage = getCommandProgressMessage(commandId)
+            progressUpdater.updateProgress(commandId, progress, progressMessage)
           }
 
           case None =>

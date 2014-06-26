@@ -430,6 +430,8 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
 
       def progress = column[List[Float]]("progress")
 
+      def progressMessage = column[String]("progressMessage")
+
       def complete = column[Boolean]("complete", O.Default(false))
 
       def result = column[Option[JsObject]]("result")
@@ -441,7 +443,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
       def createdById = column[Option[Long]]("created_by")
 
       /** projection to/from the database */
-      def * = (id, name, arguments, error, progress, complete, result, createdOn, modifiedOn, createdById) <> (Command.tupled, Command.unapply)
+      def * = (id, name, arguments, error, progress, progressMessage, complete, result, createdOn, modifiedOn, createdById) <> (Command.tupled, Command.unapply)
 
       def createdBy = foreignKey("command_created_by", createdById, users)(_.id)
     }
@@ -454,7 +456,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
 
     override def insert(command: CommandTemplate)(implicit session: Session): Try[Command] = Try {
       // TODO: add createdBy user id
-      val c = Command(0, command.name, command.arguments, None, List(), false, None, new DateTime(), new DateTime(), None)
+      val c = Command(0, command.name, command.arguments, None, List(), "", false, None, new DateTime(), new DateTime(), None)
       commandsAutoInc.insert(c)
     }
 
@@ -507,9 +509,9 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
      * @param progress progress for the command
      * @param session session to db
      */
-    override def updateProgress(id: Long, progress: List[Float])(implicit session: Session): Try[Unit] = Try {
-      val q = for { c <- commands if c.id === id } yield c.progress
-      q.update(progress)
+    override def updateProgress(id: Long, progress: List[Float], progressMessage: String)(implicit session: Session): Try[Unit] = Try {
+      val q = for { c <- commands if c.id === id } yield (c.progress, c.progressMessage)
+      q.update(progress, progressMessage)
     }
   }
 
