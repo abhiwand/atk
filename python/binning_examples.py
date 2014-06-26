@@ -14,7 +14,7 @@ csv_file = CsvFile(input_file, [('src', int64),
 frame = BigFrame(csv_file)
 print(frame.inspect())
 
-width_frame = frame.bin_column('weight', 3, bin_type='equalwidth', bin_column_name='EWBinned')
+width_frame = frame.bin_column('weight', 9, bin_type='equalwidth', bin_column_name='EWBinned')
 print(width_frame.inspect())
 
 width_frame2 = frame.bin_column('weight', 5, bin_type='equalwidth', bin_column_name='EWBinned')
