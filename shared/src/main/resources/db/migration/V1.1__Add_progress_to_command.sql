@@ -12,4 +12,4 @@
  * This is used to track the amount of progress that a command will report to the user.
  */
 
-ALTER TABLE command ADD COLUMN progress varchar(1024);
+ALTER TABLE command ADD COLUMN progress text;
