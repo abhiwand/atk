@@ -678,14 +678,14 @@ class BigFrame(object):
 
         Parameters
         ----------
-        group_by_columns: BigColumn or List of BigColumns or function
+        group_by_columns : BigColumn or List of BigColumns or function
             columns, or virtual columns created by a function, will be used to create grouping
-        aggregation_arguments: column and (count or dict)
+        aggregation_arguments : column and (count or dict)
             (column, aggregation function(s)) pairs
 
-        Return
-        ------
-        frame: BigFrame
+        Returns
+        -------
+        frame
             new aggregated frame
 
         Notes
