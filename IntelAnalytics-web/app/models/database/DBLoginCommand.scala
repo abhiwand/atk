@@ -23,7 +23,7 @@
 
 package models.database
 
-import java.sql.{ResultSet, Types}
+import java.sql.{ ResultSet, Types }
 
 object DBLoginCommand extends LoginCommand {
 

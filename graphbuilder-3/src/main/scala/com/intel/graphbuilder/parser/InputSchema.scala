@@ -115,7 +115,7 @@ case class InputSchema(columns: Seq[ColumnDef]) extends Serializable {
    * Spark also has trouble de-serializing classOf[Int] because of the underlying Java classes it uses.
    */
   def serializableCopy: InputSchema = {
-    this.copy(columns = columns.map(columnDef => 
+    this.copy(columns = columns.map(columnDef =>
       columnDef.copy(dataType = PrimitiveConverter.primitivesToObjects(columnDef.dataType))
     ))
   }

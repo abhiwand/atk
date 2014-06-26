@@ -23,10 +23,10 @@
 
 package com.intel.graphbuilder.driver.spark.rdd
 
-import com.intel.graphbuilder.elements.{Property, Vertex}
+import com.intel.graphbuilder.elements.{ Property, Vertex }
 import com.intel.graphbuilder.parser.Parser
 import org.apache.spark.rdd.RDD
-import org.apache.spark.{Partition, TaskContext}
+import org.apache.spark.{ Partition, TaskContext }
 
 import scala.collection.mutable.Map
 
@@ -58,7 +58,8 @@ class VertexParserRDD(prev: RDD[Seq[_]], vertexParser: Parser[Vertex]) extends R
         val opt = vertexMap.get(v.gbId)
         if (opt.isDefined) {
           vertexMap.put(v.gbId, v.merge(opt.get))
-        } else {
+        }
+        else {
           vertexMap.put(v.gbId, v)
         }
       })

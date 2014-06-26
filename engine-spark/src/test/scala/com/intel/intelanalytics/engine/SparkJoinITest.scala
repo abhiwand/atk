@@ -35,11 +35,11 @@ class SparkJoinITest extends TestingSparkContext with Matchers {
     val id_country_codes = List(Array[Any](1, 354), Array[Any](2, 91), Array[Any](3, 47), Array[Any](4, 968))
     val id_country_names = List(Array[Any](1, "Iceland"), Array[Any](2, "India"), Array[Any](3, "Norway"), Array[Any](4, "Oman"))
 
-    val countryCode = sc.parallelize(id_country_codes).map(t => SparkOps.createKeyValuePairFromRow(t, List(0))).map{case (keyColumns, data) => (keyColumns(0), data)}
-    val countryNames = sc.parallelize(id_country_names).map(t => SparkOps.createKeyValuePairFromRow(t, List(0))).map{case (keyColumns, data) => (keyColumns(0), data)}
+    val countryCode = sc.parallelize(id_country_codes).map(t => SparkOps.createKeyValuePairFromRow(t, List(0))).map { case (keyColumns, data) => (keyColumns(0), data) }
+    val countryNames = sc.parallelize(id_country_names).map(t => SparkOps.createKeyValuePairFromRow(t, List(0))).map { case (keyColumns, data) => (keyColumns(0), data) }
 
     val result = SparkOps.joinRDDs(RDDJoinParam(countryCode, 2), RDDJoinParam(countryNames, 2), "inner")
-    val sortable = result.map(t => SparkOps.createKeyValuePairFromRow(t, List(0))).map {case (keyColumns, data) => (keyColumns(0), data)}.asInstanceOf[RDD[(Int, Array[Any])]]
+    val sortable = result.map(t => SparkOps.createKeyValuePairFromRow(t, List(0))).map { case (keyColumns, data) => (keyColumns(0), data) }.asInstanceOf[RDD[(Int, Array[Any])]]
     val sorted = sortable.sortByKey(true)
 
     val data = sorted.take(4)
@@ -53,10 +53,10 @@ class SparkJoinITest extends TestingSparkContext with Matchers {
     val id_country_codes = List(Array[Any](1, 354), Array[Any](2, 91), Array[Any](3, 47), Array[Any](4, 968))
     val id_country_names = List(Array[Any](1, "Iceland"), Array[Any](2, "India"), Array[Any](3, "Norway"))
     val countryCodeRDD: RDD[Array[Any]] = sc.parallelize(id_country_codes)
-    val countryCode = countryCodeRDD.map(t => SparkOps.createKeyValuePairFromRow(t, List(0))).map{case (keyColumns, data) => (keyColumns(0), data)}
-    val countryNames = sc.parallelize(id_country_names).map(t => SparkOps.createKeyValuePairFromRow(t, List(0))).map{case (keyColumns, data) => (keyColumns(0), data)}
+    val countryCode = countryCodeRDD.map(t => SparkOps.createKeyValuePairFromRow(t, List(0))).map { case (keyColumns, data) => (keyColumns(0), data) }
+    val countryNames = sc.parallelize(id_country_names).map(t => SparkOps.createKeyValuePairFromRow(t, List(0))).map { case (keyColumns, data) => (keyColumns(0), data) }
     val result = SparkOps.joinRDDs(RDDJoinParam(countryCode, 2), RDDJoinParam(countryNames, 2), "left")
-    val sortable = result.map(t => SparkOps.createKeyValuePairFromRow(t, List(0))).map{case (keyColumns, data) => (keyColumns(0), data)}.asInstanceOf[RDD[(Int, Array[Any])]]
+    val sortable = result.map(t => SparkOps.createKeyValuePairFromRow(t, List(0))).map { case (keyColumns, data) => (keyColumns(0), data) }.asInstanceOf[RDD[(Int, Array[Any])]]
     val sorted = sortable.sortByKey(true)
 
     val data = sorted.take(4)
@@ -70,11 +70,11 @@ class SparkJoinITest extends TestingSparkContext with Matchers {
     val id_country_codes = List(Array[Any](1, 354), Array[Any](2, 91), Array[Any](3, 47))
     val id_country_names = List(Array[Any](1, "Iceland"), Array[Any](2, "India"), Array[Any](3, "Norway"), Array[Any](4, "Oman"))
 
-    val countryCode = sc.parallelize(id_country_codes).map(t => SparkOps.createKeyValuePairFromRow(t, List(0))).map{case (keyColumns, data) => (keyColumns(0), data)}
-    val countryNames = sc.parallelize(id_country_names).map(t => SparkOps.createKeyValuePairFromRow(t, List(0))).map{case (keyColumns, data) => (keyColumns(0), data)}
+    val countryCode = sc.parallelize(id_country_codes).map(t => SparkOps.createKeyValuePairFromRow(t, List(0))).map { case (keyColumns, data) => (keyColumns(0), data) }
+    val countryNames = sc.parallelize(id_country_names).map(t => SparkOps.createKeyValuePairFromRow(t, List(0))).map { case (keyColumns, data) => (keyColumns(0), data) }
 
     val result = SparkOps.joinRDDs(RDDJoinParam(countryCode, 2), RDDJoinParam(countryNames, 2), "right")
-    val sortable = result.map(t => SparkOps.createKeyValuePairFromRow(t, List(2))).map{case (keyColumns, data) => (keyColumns(0), data)}.asInstanceOf[RDD[(Int, Array[Any])]]
+    val sortable = result.map(t => SparkOps.createKeyValuePairFromRow(t, List(2))).map { case (keyColumns, data) => (keyColumns(0), data) }.asInstanceOf[RDD[(Int, Array[Any])]]
     val sorted = sortable.sortByKey(true)
 
     val data = sorted.take(4)
