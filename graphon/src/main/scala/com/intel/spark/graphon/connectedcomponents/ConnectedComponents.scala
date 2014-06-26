@@ -9,7 +9,6 @@ import org.apache.spark.graphx._
  * will go here.
  */
 
-
 class ConnectedComponents {
 
   def runConnnectedComponents = {}

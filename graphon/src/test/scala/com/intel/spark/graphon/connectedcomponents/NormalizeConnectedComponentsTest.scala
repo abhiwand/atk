@@ -5,11 +5,10 @@ import org.scalatest.Matchers
 import java.util.Date
 import org.apache.spark.SparkContext
 import scala.concurrent.Lock
-import org.scalatest.{FlatSpec, BeforeAndAfter}
-import org.apache.log4j.{Logger, Level}
+import org.scalatest.{ FlatSpec, BeforeAndAfter }
+import org.apache.log4j.{ Logger, Level }
 
 class NormalizeConnectedComponentsTest extends FlatSpec with Matchers with TestingSparkContext {
-
 
   trait ConnectedComponentsTest {
     val vertexList: List[Long] = List(4, 8, 12, 16, 20, 24, 28, 32)
@@ -21,7 +20,6 @@ class NormalizeConnectedComponentsTest extends FlatSpec with Matchers with Testi
 
   "normalize connected components" should "not have any gaps in the range of component IDs returned" in new ConnectedComponentsTest {
 
-
     val verticesToComponentsRDD = sc.parallelize(originalVertexToComponent).map(x => (x._1.toLong, x._2.toLong))
     val normalizeOut = NormalizeConnectedComponents.normalize(verticesToComponentsRDD, sc)
 
@@ -30,9 +28,7 @@ class NormalizeConnectedComponentsTest extends FlatSpec with Matchers with Testi
     normalizeOutComponents.map(_.toLong).collect().toSet shouldEqual (1.toLong to (normalizeOutComponents.count().toLong)).toSet
   }
 
-
   "normalize connected components" should "create correct equivalence classes" in new ConnectedComponentsTest {
-
 
     val verticesToComponentsRDD = sc.parallelize(originalVertexToComponent).map(x => (x._1.toLong, x._2.toLong))
     val normalizedCCROutput = NormalizeConnectedComponents.normalize(verticesToComponentsRDD, sc)
