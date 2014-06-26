@@ -46,12 +46,21 @@ rdd_delimiter = '\0'
 rdd_null_indicator = 'YoMeNull'
 
 
+def make_row(row_data):
+    return [unicode(field) if field is not None else unicode(rdd_null_indicator)
+            for field in row_data]
+
+
 def get_add_one_column_function(row_function, data_type):
     """Returns a function which adds a column to a row based on given row function"""
     def add_one_column(row):
         result = row_function(row)
-        row.data.append(unicode(supported_types.cast(result, data_type)))
-        return rdd_delimiter.join(row.data)
+        cast_value = supported_types.cast(result, data_type)
+        if cast_value is None:
+            cast_value = rdd_null_indicator
+        row.data.append(cast_value)
+        row_data = make_row(row.data)
+        return rdd_delimiter.join(row_data)
     return add_one_column
 
 
@@ -60,8 +69,12 @@ def get_add_many_columns_function(row_function, data_types):
     def add_many_columns(row):
         result = row_function(row)
         for i, data_type in enumerate(data_types):
-            row.data.append(unicode(supported_types.cast(result[i], data_type)))
-        return rdd_delimiter.join(row.data)
+            cast_value = supported_types.cast(result[i], data_type)
+            if cast_value is None:
+                cast_value = rdd_null_indicator
+            row.data.append(cast_value)
+        row_data = make_row(row.data)
+        return rdd_delimiter.join(row_data)
     return add_many_columns
 
 

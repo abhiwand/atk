@@ -27,7 +27,7 @@ import spray.json._
 import spray.http.Uri
 import com.intel.intelanalytics.repository.MetaStoreComponent
 import com.intel.intelanalytics.service.v1.viewmodels._
-import com.intel.intelanalytics.engine.{Engine, EngineComponent}
+import com.intel.intelanalytics.engine.{ Engine, EngineComponent }
 import scala.concurrent.ExecutionContext
 import scala.util.Failure
 import scala.util.Success
@@ -35,9 +35,9 @@ import com.intel.intelanalytics.service.v1.viewmodels.ViewModelJsonImplicits
 import com.intel.intelanalytics.service.v1.viewmodels.Rel
 import com.intel.intelanalytics.domain.DomainJsonProtocol
 import com.intel.intelanalytics.security.UserPrincipal
-import com.intel.intelanalytics.domain.graph.{GraphTemplate, Graph}
+import com.intel.intelanalytics.domain.graph.{ GraphTemplate, Graph }
 import com.intel.intelanalytics.shared.EventLogging
-import com.intel.intelanalytics.service.{CommonDirectives, AuthenticationDirective}
+import com.intel.intelanalytics.service.{ CommonDirectives, AuthenticationDirective }
 import spray.routing.Directives
 import com.intel.intelanalytics.service.v1.decorators.GraphDecorator
 

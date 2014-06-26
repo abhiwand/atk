@@ -23,11 +23,11 @@
 
 package com.intel.intelanalytics.engine
 
-import com.intel.intelanalytics.domain.command.{Execution, CommandTemplate}
+import com.intel.intelanalytics.domain.command.{ Execution, CommandTemplate }
 import com.intel.intelanalytics.domain.FilterPredicate
 import com.intel.intelanalytics.domain.command.Command
 import com.intel.intelanalytics.domain.frame._
-import com.intel.intelanalytics.domain.graph.{Graph, GraphLoad, GraphTemplate}
+import com.intel.intelanalytics.domain.graph.{ Graph, GraphLoad, GraphTemplate }
 import com.intel.intelanalytics.engine.Rows._
 import com.intel.intelanalytics.security.UserPrincipal
 import spray.json.JsObject

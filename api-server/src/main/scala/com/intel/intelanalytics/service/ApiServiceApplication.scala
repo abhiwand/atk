@@ -31,9 +31,9 @@ import akka.util.Timeout
 import scala.concurrent.duration._
 import com.intel.event.EventLogger
 import com.intel.event.adapter.SLF4JLogAdapter
-import com.intel.intelanalytics.component.{Archive, ArchiveName}
+import com.intel.intelanalytics.component.{ Archive, ArchiveName }
 import com.intel.intelanalytics.engine.Engine
-import com.typesafe.config.{Config, ConfigFactory}
+import com.typesafe.config.{ Config, ConfigFactory }
 import scala.concurrent.Await
 import scala.reflect.ClassTag
 
@@ -58,8 +58,6 @@ class ApiServiceApplication extends Archive {
    */
   def start(configuration: Config) = {
 
-    EventLogger.setImplementation(new SLF4JLogAdapter())
-
     val apiService = initializeDependencies()
     createActorSystemAndBindToHttp(apiService)
   }
@@ -71,8 +69,8 @@ class ApiServiceApplication extends Archive {
 
     //TODO: later engine will be initialized in a separate JVM
     lazy val engine = com.intel.intelanalytics.component.Boot.getArchive(
-                              ArchiveName("engine", "com.intel.intelanalytics.engine.EngineApplication"))
-                        .get[Engine]("engine")
+      ArchiveName("engine", "com.intel.intelanalytics.engine.EngineApplication"))
+      .get[Engine]("engine")
 
     //make sure engine is initialized
     Await.ready(engine.getCommands(0, 1), 30 seconds)

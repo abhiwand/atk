@@ -24,11 +24,11 @@
 package com.intel.intelanalytics.engine.spark.command
 
 import com.intel.intelanalytics.domain.Error
-import scala.util.{Success, Failure, Try}
+import scala.util.{ Success, Failure, Try }
 import spray.json.JsObject
-import com.intel.intelanalytics.domain.command.{CommandTemplate, Command}
+import com.intel.intelanalytics.domain.command.{ CommandTemplate, Command }
 import com.intel.intelanalytics.engine.CommandStorage
-import com.intel.intelanalytics.repository.{SlickMetaStoreComponent}
+import com.intel.intelanalytics.repository.{ SlickMetaStoreComponent }
 import com.intel.intelanalytics.shared.EventLogging
 
 class SparkCommandStorage(val metaStore: SlickMetaStoreComponent#SlickMetaStore) extends CommandStorage with EventLogging {

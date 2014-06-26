@@ -47,5 +47,4 @@ case class SparkInvocation(engine: Engine,
                            commandId: Long,
                            executionContext: ExecutionContext,
                            arguments: Option[JsObject],
-                           sparkContext: SparkContext
-                           ) extends Invocation
+                           sparkContext: SparkContext) extends Invocation

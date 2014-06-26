@@ -42,7 +42,6 @@ trait MetaStore {
   /** Repository for CRUD on 'frame' table */
   def frameRepo: Repository[Session, DataFrameTemplate, DataFrame]
 
-
   /** Repository for CRUD on 'graph' table */
   def graphRepo: Repository[Session, GraphTemplate, Graph]
 

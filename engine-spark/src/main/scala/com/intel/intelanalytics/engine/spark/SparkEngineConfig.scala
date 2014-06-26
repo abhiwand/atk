@@ -59,8 +59,8 @@ object SparkEngineConfig extends SharedConfig {
   val archives: List[(String, String)] = {
     val cfg = config.getConfig("intel.analytics.engine.archives")
     cfg.entrySet().asScala
-        .map(e => (e.getKey, e.getValue.unwrapped().asInstanceOf[String]))
-        .toList
+      .map(e => (e.getKey, e.getValue.unwrapped().asInstanceOf[String]))
+      .toList
   }
 
   /**
@@ -80,8 +80,8 @@ object SparkEngineConfig extends SharedConfig {
   /**
    * Configuration properties that will be supplied to SparkConf()
    */
-  val sparkConfProperties: Map[String,String] = {
-    var sparkConfProperties = Map[String,String]()
+  val sparkConfProperties: Map[String, String] = {
+    var sparkConfProperties = Map[String, String]()
     val properties = config.getConfig("intel.analytics.engine.spark.conf.properties")
     for (entry <- properties.entrySet().asScala) {
       sparkConfProperties += entry.getKey -> properties.getString(entry.getKey)

@@ -46,7 +46,8 @@ object SchemaUtil {
           }
           leftColumnNames = leftColumnNames ++ List(name)
           (name, r._2)
-        } else
+        }
+        else
           r)
     }
 

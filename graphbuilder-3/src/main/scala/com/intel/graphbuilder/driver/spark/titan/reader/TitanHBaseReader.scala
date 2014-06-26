@@ -7,9 +7,9 @@ import com.intel.graphbuilder.elements.GraphElement
 import com.intel.graphbuilder.graph.titan.TitanGraphConnector
 import com.thinkaurelius.titan.diskstorage.hbase.HBaseStoreManager
 import com.thinkaurelius.titan.graphdb.configuration.GraphDatabaseConfiguration
-import org.apache.hadoop.hbase.client.{HBaseAdmin, Scan}
-import org.apache.hadoop.hbase.mapreduce.{TableInputFormat, TableMapReduceUtil}
-import org.apache.hadoop.hbase.{HBaseConfiguration, HConstants}
+import org.apache.hadoop.hbase.client.{ HBaseAdmin, Scan }
+import org.apache.hadoop.hbase.mapreduce.{ TableInputFormat, TableMapReduceUtil }
+import org.apache.hadoop.hbase.{ HBaseConfiguration, HConstants }
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 
@@ -91,7 +91,8 @@ class TitanHBaseReader(sparkContext: SparkContext, titanConnector: TitanGraphCon
       converter = classOf[TableMapReduceUtil].getDeclaredMethod("convertScanToString", classOf[Scan])
       converter.setAccessible(true)
       hBaseConfig.set(TableInputFormat.SCAN, converter.invoke(null, scanner).asInstanceOf[String])
-    } catch {
+    }
+    catch {
       case e: Exception => {
         throw new RuntimeException("Unable to create HBase filter for Titan's edge column family", e)
       }

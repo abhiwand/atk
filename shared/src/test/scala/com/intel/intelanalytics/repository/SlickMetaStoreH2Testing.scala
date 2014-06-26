@@ -23,7 +23,7 @@
 
 package com.intel.intelanalytics.repository
 
-import org.scalatest.{BeforeAndAfter, FlatSpec}
+import org.scalatest.{ BeforeAndAfter, FlatSpec }
 
 import scala.slick.driver.H2Driver
 import scala.util.Random

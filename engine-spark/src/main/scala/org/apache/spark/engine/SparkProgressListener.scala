@@ -34,7 +34,7 @@ import scala.Some
 import org.apache.spark.scheduler.SparkListenerJobStart
 import scala.concurrent._
 import org.apache.spark.SparkContext
-import scala.util.{Success, Try}
+import scala.util.{ Success, Try }
 import com.intel.intelanalytics.engine.spark.CommandProgressUpdater
 import scala.collection.mutable
 
@@ -86,8 +86,6 @@ class SparkProgressListener(val progressUpdater: CommandProgressUpdater) extends
     updateProgress(stageId)
   }
 
-
-
   override def onTaskEnd(taskEnd: SparkListenerTaskEnd) {
     val sid = taskEnd.task.stageId
     taskEnd.taskInfo.successful match {
@@ -138,7 +136,7 @@ class SparkProgressListener(val progressUpdater: CommandProgressUpdater) extends
    * calculate progress for the command
    */
   def getCommandProgress(commandId: Long): List[Float] = {
-    val jobList = commandIdJobs.getOrElse(commandId,  throw new IllegalArgumentException(s"No such command: $commandId"))
+    val jobList = commandIdJobs.getOrElse(commandId, throw new IllegalArgumentException(s"No such command: $commandId"))
     jobList.map(job => getProgress(job.jobId))
   }
 
@@ -181,7 +179,7 @@ class SparkProgressListener(val progressUpdater: CommandProgressUpdater) extends
    */
   def addToCommandIdJobs(job: ActiveJob) {
     val id = job.properties.getProperty("command-id").toLong
-    if(!commandIdJobs.contains(id))
+    if (!commandIdJobs.contains(id))
       commandIdJobs(id) = List(job)
     else
       commandIdJobs(id) = commandIdJobs(id) ++ List(job)

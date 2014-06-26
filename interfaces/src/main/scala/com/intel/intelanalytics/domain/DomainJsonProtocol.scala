@@ -24,10 +24,10 @@
 package com.intel.intelanalytics.domain
 
 import com.intel.intelanalytics.domain.frame._
-import com.intel.intelanalytics.domain.graph.{Graph, GraphLoad, GraphTemplate}
-import com.intel.intelanalytics.domain.graph.construction.{EdgeRule, FrameRule, PropertyRule, ValueRule, VertexRule}
+import com.intel.intelanalytics.domain.graph.{ Graph, GraphLoad, GraphTemplate }
+import com.intel.intelanalytics.domain.graph.construction.{ EdgeRule, FrameRule, PropertyRule, ValueRule, VertexRule }
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
-import com.intel.intelanalytics.domain.schema.{DataTypes, Schema}
+import com.intel.intelanalytics.domain.schema.{ DataTypes, Schema }
 import org.joda.time.DateTime
 import spray.json._
 
