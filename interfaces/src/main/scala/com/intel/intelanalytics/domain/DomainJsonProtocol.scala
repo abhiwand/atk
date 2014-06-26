@@ -60,6 +60,31 @@ object DomainJsonProtocol extends DefaultJsonProtocol {
 
   implicit val schemaFormat = jsonFormat1(Schema)
 
+  implicit object FileNameFormat extends JsonFormat[FileName] {
+    override def write(obj: FileName): JsValue = JsString(obj.name)
+
+    override def read(json: JsValue): FileName = json match {
+      case JsString(name) => FileName(name)
+      case x => deserializationError("Expected file name, but got " + x)
+    }
+  }
+
+  implicit object FrameReferenceFormat extends JsonFormat[FrameReference] {
+
+    val urlPattern = """ia://dataframes/(\d+)""".r
+
+    override def write(obj: FrameReference): JsValue = JsString("ia://dataframes/" + obj.id)
+
+    override def read(json: JsValue): FrameReference = json match {
+      case JsString(name) =>
+        urlPattern.findFirstMatchIn(json.asInstanceOf[JsString].value) match {
+          case Some(mat) => FrameReference(mat.group(1).toLong)
+          case None => deserializationError("Couldn't find dataframe ID in " + name)
+        }
+      case _ => deserializationError("Expected data frame URL, but received " + json)
+    }
+  }
+
   implicit val userFormat = jsonFormat5(User)
   implicit val statusFormat = jsonFormat5(Status)
   implicit val dataFrameFormat = jsonFormat9(DataFrame)
@@ -68,8 +93,7 @@ object DomainJsonProtocol extends DefaultJsonProtocol {
   implicit val definitionFormat = jsonFormat3(Definition)
   implicit val operationFormat = jsonFormat2(Operation)
   implicit val partialJsFormat = jsonFormat2(Partial[JsObject])
-  implicit val loadLinesFormat = jsonFormat6(LoadLines[JsObject, String])
-  implicit val loadLinesLongFormat = jsonFormat6(LoadLines[JsObject, Long])
+  implicit val loadLinesFormat = jsonFormat6(LoadLines[JsObject])
   implicit val filterPredicateFormat = jsonFormat2(FilterPredicate[JsObject, String])
   implicit val filterPredicateLongFormat = jsonFormat2(FilterPredicate[JsObject, Long])
   implicit val removeColumnFormat = jsonFormat2(FrameRemoveColumn[JsObject, String])

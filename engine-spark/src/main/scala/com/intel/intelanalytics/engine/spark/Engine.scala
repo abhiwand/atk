@@ -25,8 +25,9 @@ package com.intel.intelanalytics.engine.spark
 
 import java.util.{ ArrayList => JArrayList, List => JList }
 
+import com.intel.intelanalytics.domain.DomainJsonProtocol._
 import com.intel.intelanalytics.domain._
-import com.intel.intelanalytics.domain.command.{ CommandDefinition, Command, CommandTemplate, Execution }
+import com.intel.intelanalytics.domain.command.{ Command, CommandDefinition, CommandTemplate, Execution }
 import com.intel.intelanalytics.domain.frame._
 import com.intel.intelanalytics.domain.graph.{ Graph, GraphLoad, GraphTemplate }
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
@@ -34,23 +35,20 @@ import com.intel.intelanalytics.domain.schema.{ DataTypes, Schema, SchemaUtil }
 import com.intel.intelanalytics.engine.Rows._
 import com.intel.intelanalytics.engine._
 import com.intel.intelanalytics.engine.spark.command.CommandExecutor
-import com.intel.intelanalytics.{ ClassLoaderAware, NotFoundException }
 import com.intel.intelanalytics.engine.spark.context.SparkContextManager
 import com.intel.intelanalytics.engine.spark.frame.{ RDDJoinParam, RowParser, SparkFrameStorage }
 import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.shared.EventLogging
+import com.intel.intelanalytics.{ ClassLoaderAware, NotFoundException }
 import org.apache.spark.SparkContext
 import org.apache.spark.api.python.{ EnginePythonAccumulatorParam, EnginePythonRDD }
 import org.apache.spark.broadcast.Broadcast
+import org.apache.spark.engine.SparkProgressListener
 import org.apache.spark.rdd.RDD
 import spray.json._
 
-import DomainJsonProtocol._
-
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent._
-import scala.util.Try
-import org.apache.spark.engine.SparkProgressListener
 
 object SparkEngine {
   private val pythonRddDelimiter = "\0"
@@ -126,15 +124,14 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     }
   }
 
-  def load(arguments: LoadLines[JsObject, Long])(implicit user: UserPrincipal): Execution =
+  def load(arguments: LoadLines[JsObject])(implicit user: UserPrincipal): Execution =
     commands.execute(loadCommand, arguments, user, implicitly[ExecutionContext])
 
   val loadCommand = commands.registerCommand(name = "dataframe/load", loadSimple)
-  def loadSimple(arguments: LoadLines[JsObject, Long], user: UserPrincipal) = {
-    val frameId = arguments.destination
-    val realFrame = expectFrame(frameId)
+  def loadSimple(arguments: LoadLines[JsObject], user: UserPrincipal) = {
+    val realFrame = expectFrame(arguments.destination)
     val parserFunction = getLineParser(arguments.lineParser)
-    val location = fsRoot + frames.getFrameDataFile(frameId)
+    val location = fsRoot + frames.getFrameDataFile(arguments.destination.id)
     val schema = arguments.schema
     val converter = DataTypes.parseMany(schema.columns.map(_._2).toArray)(_)
     val ctx = sparkContextManager.context(user)
@@ -160,9 +157,11 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     }
   }
 
-  def expectFrame(frameId: Long) = {
+  def expectFrame(frameId: Long): DataFrame = {
     frames.lookup(frameId).getOrElse(throw new NotFoundException("dataframe", frameId.toString))
   }
+
+  def expectFrame(frameRef: FrameReference): DataFrame = expectFrame(frameRef.id)
 
   def renameFrame(arguments: FrameRenameFrame[JsObject, Long])(implicit user: UserPrincipal): Execution =
     commands.execute(renameFrameCommand, arguments, user, implicitly[ExecutionContext])

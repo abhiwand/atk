@@ -70,7 +70,7 @@ trait Engine {
 
   def create(frame: DataFrameTemplate)(implicit user: UserPrincipal): Future[DataFrame]
 
-  def load(arguments: LoadLines[JsObject, Long])(implicit user: UserPrincipal): Execution
+  def load(arguments: LoadLines[JsObject])(implicit user: UserPrincipal): Execution
 
   def filter(arguments: FilterPredicate[JsObject, Long])(implicit user: UserPrincipal): Execution
 

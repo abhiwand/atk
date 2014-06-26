@@ -24,8 +24,9 @@
 package com.intel.intelanalytics.service.v1.viewmodels
 
 import com.intel.intelanalytics.domain.command.CommandDefinition
-import spray.json.DefaultJsonProtocol
+import com.intel.intelanalytics.domain.frame.FrameReference
 import spray.httpx.SprayJsonSupport
+import spray.json._
 
 /**
  * Implicit Conversions for View/Models to JSON
@@ -44,5 +45,21 @@ object ViewModelJsonImplicits extends DefaultJsonProtocol with SprayJsonSupport 
   implicit val getGraphFormat = jsonFormat3(GetGraph)
   implicit val jsonTransformFormat = jsonFormat2(JsonTransform)
   implicit val commandDefinitionFormat = jsonFormat1(CommandDefinition)
+
+  class FrameReferenceFormat(baseUrl: String) extends JsonFormat[FrameReference] {
+
+    val urlPattern = (baseUrl + """/dataframes/(\d+)""").r
+
+    override def write(obj: FrameReference): JsValue = JsString(baseUrl + "/dataframes/" + obj.id)
+
+    override def read(json: JsValue): FrameReference = json match {
+      case JsString(name) =>
+        urlPattern.findFirstMatchIn(name) match {
+          case Some(m) => FrameReference(m.group(1).toLong)
+          case None => deserializationError("Couldn't find dataframe ID in " + name)
+        }
+      case _ => deserializationError("Expected data frame URL, but received " + json)
+    }
+  }
 
 }

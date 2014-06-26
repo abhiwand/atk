@@ -44,10 +44,22 @@ from intelanalytics.rest.spark import prepare_row_function, get_add_one_column_f
 class FrameBackendRest(object):
     """REST plumbing for BigFrame"""
 
+    __commands_loaded = {}
+
     def __init__(self, http_methods=None):
         self.rest_http = http_methods or http
         # use global connection, auth, etc.  This client does not support
         # multiple connection contexts
+        if not self.__class__.__commands_loaded:
+            for cmd in executor.commands:
+                parts = cmd['name'].split('/')
+                if len(parts) == 2 \
+                        and parts[0] in ('dataframe', 'dataframes') \
+                        and not hasattr(self, parts[1]):
+                    def invoke(s, **kwargs):
+                        execute_update_frame_command(parts[1], kwargs, s)
+                    setattr(FrameBackendRest, parts[1], invoke)
+                    self.__class__.__commands_loaded[parts[1]] = invoke
 
     def get_frame_names(self):
         logger.info("REST Backend: get_frame_names")
@@ -82,11 +94,17 @@ class FrameBackendRest(object):
             self.project_columns(source, frame, source.column_names)
         elif isinstance(source, BigColumn):
             self.project_columns(source.frame, frame, source.name)
-        elif (isinstance(source, list) and all(isinstance(iter, BigColumn) for iter in source)):
+        elif isinstance(source, list) and all(isinstance(iter, BigColumn) for iter in source):
             self.project_columns(source[0].frame, frame, [s.name for s in source])
         else:
             if source:
                 self.append(frame, source)
+
+        for (k, v) in self.__commands_loaded.items():
+            if not hasattr(frame, k):
+                setattr(frame.__class__, k, v)
+
+
 
     def _create_new_frame(self, frame):
         payload = {'name': frame.name }
@@ -312,9 +330,9 @@ class FrameBackendRest(object):
         arguments = {'frame': frame.uri, "original_names": column_names, "new_names": new_names}
         return execute_update_frame_command('rename_column', arguments, frame)
 
-    def rename_frame(self, frame, name):
-        arguments = {'frame': frame.uri, "new_name": name}
-        return execute_update_frame_command('rename_frame', arguments, frame)
+    # def rename_frame(self, frame, name):
+    #     arguments = {'frame': frame.uri, "new_name": name}
+    #     return execute_update_frame_command('rename_frame', arguments, frame)
 
     def take(self, frame, n, offset):
         r = self.rest_http.get('dataframes/{0}/data?offset={2}&count={1}'.format(frame._id,n, offset))
