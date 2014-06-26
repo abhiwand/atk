@@ -23,10 +23,10 @@
 
 package com.intel.graphbuilder.driver.spark
 
-import com.intel.graphbuilder.driver.spark.titan.{GraphBuilder, GraphBuilderConfig}
+import com.intel.graphbuilder.driver.spark.titan.{ GraphBuilder, GraphBuilderConfig }
 import com.intel.graphbuilder.parser.rule.RuleParserDSL._
-import com.intel.graphbuilder.parser.rule.{EdgeRule, VertexRule}
-import com.intel.graphbuilder.parser.{ColumnDef, InputSchema}
+import com.intel.graphbuilder.parser.rule.{ EdgeRule, VertexRule }
+import com.intel.graphbuilder.parser.{ ColumnDef, InputSchema }
 import com.intel.testutils.TestingSparkContext
 import com.tinkerpop.blueprints.Direction
 import org.apache.spark.rdd.RDD
@@ -115,7 +115,7 @@ class GraphBuilderITest extends Specification {
         List("", "", "", 1004L, "hated", 1002L), // edge that means "Lincoln hated Frozen"
         List("", "", "", 1001L, "hated", 1003L), // edge that means "Obama hated The Hobbit"
         List("", "", "", 1001L, "hated", 1007L) // edge that means "Obama hated a movie that is a dangling edge"
-        )
+      )
 
       // Input Schema
       val inputSchema = new InputSchema(List(

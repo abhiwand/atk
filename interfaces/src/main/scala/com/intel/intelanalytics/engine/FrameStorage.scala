@@ -23,7 +23,7 @@
 
 package com.intel.intelanalytics.engine
 
-import com.intel.intelanalytics.domain.frame.{DataFrame, DataFrameTemplate, _}
+import com.intel.intelanalytics.domain.frame.{ DataFrame, DataFrameTemplate, _ }
 import com.intel.intelanalytics.domain.schema.DataTypes
 import com.intel.intelanalytics.engine.Rows._
 import com.intel.intelanalytics.security.UserPrincipal

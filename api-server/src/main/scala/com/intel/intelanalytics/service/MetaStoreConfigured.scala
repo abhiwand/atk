@@ -23,7 +23,7 @@
 
 package com.intel.intelanalytics.service
 
-import com.intel.intelanalytics.repository.{Profile, DbProfileComponent, SlickMetaStoreComponent}
+import com.intel.intelanalytics.repository.{ Profile, DbProfileComponent, SlickMetaStoreComponent }
 import com.typesafe.config.ConfigFactory
 import com.intel.intelanalytics.domain.UserTemplate
 

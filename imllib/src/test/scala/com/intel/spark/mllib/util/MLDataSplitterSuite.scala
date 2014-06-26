@@ -24,7 +24,7 @@
 package com.intel.spark.mllib.util
 
 import org.apache.spark.SparkContext
-import org.scalatest.{BeforeAndAfterAll, FunSuite}
+import org.scalatest.{ BeforeAndAfterAll, FunSuite }
 import org.scalatest.matchers.ShouldMatchers
 
 import scala.util.Random

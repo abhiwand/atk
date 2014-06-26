@@ -24,9 +24,9 @@
 package com.intel.graphbuilder.write.titan
 
 import com.intel.graphbuilder.driver.spark.TestingTitan
-import com.intel.graphbuilder.schema.{EdgeLabelDef, GraphSchema, PropertyDef, PropertyType}
+import com.intel.graphbuilder.schema.{ EdgeLabelDef, GraphSchema, PropertyDef, PropertyType }
 import com.thinkaurelius.titan.core.TitanGraph
-import com.tinkerpop.blueprints.{Direction, Edge, Vertex}
+import com.tinkerpop.blueprints.{ Direction, Edge, Vertex }
 import org.specs2.mock.Mockito
 import org.specs2.mutable.Specification
 

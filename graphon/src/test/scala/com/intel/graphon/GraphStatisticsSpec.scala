@@ -23,9 +23,9 @@
 
 package com.intel.graphon
 
-import com.intel.graphbuilder.elements.{Property, Edge, Vertex}
+import com.intel.graphbuilder.elements.{ Property, Edge, Vertex }
 import com.intel.spark.graphon.GraphStatistics
-import org.scalatest.{Matchers, WordSpec}
+import org.scalatest.{ Matchers, WordSpec }
 
 class GraphStatisticsSpec extends WordSpec with Matchers with GraphonSparkContext {
 
@@ -81,7 +81,7 @@ class GraphStatisticsSpec extends WordSpec with Matchers with GraphonSparkContex
     val bob_gbId = new Property("gbId", 10002)
     val bob = new Vertex(bob_gbId, List(new Property("Name", "Bob")))
 
-    val edge1 = new Edge (alice_gbId, bob_gbId, validEdgeLabel, List(new Property("time", 20)))
+    val edge1 = new Edge(alice_gbId, bob_gbId, validEdgeLabel, List(new Property("time", 20)))
     (Seq(alice, bob), Seq(edge1))
   }
 }

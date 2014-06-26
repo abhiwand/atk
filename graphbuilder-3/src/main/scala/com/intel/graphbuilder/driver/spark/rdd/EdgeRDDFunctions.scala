@@ -26,7 +26,7 @@ package com.intel.graphbuilder.driver.spark.rdd
 import com.intel.graphbuilder.elements._
 import com.intel.graphbuilder.graph.titan.TitanGraphConnector
 import com.intel.graphbuilder.write.EdgeWriter
-import com.intel.graphbuilder.write.dao.{EdgeDAO, VertexDAO}
+import com.intel.graphbuilder.write.dao.{ EdgeDAO, VertexDAO }
 import org.apache.spark.SparkContext._
 import org.apache.spark.TaskContext
 import org.apache.spark.broadcast.Broadcast
@@ -142,7 +142,8 @@ class EdgeRDDFunctions(self: RDD[Edge], val maxEdgesPerCommit: Long = 50000L) ex
         println("wrote edges: " + count + " for split: " + context.partitionId)
 
         graph.commit()
-      } finally {
+      }
+      finally {
         graph.shutdown()
       }
     })
@@ -176,7 +177,8 @@ class EdgeRDDFunctions(self: RDD[Edge], val maxEdgesPerCommit: Long = 50000L) ex
         println("wrote edges: " + count + " for split: " + context.partitionId)
 
         graph.commit()
-      } finally {
+      }
+      finally {
         graph.shutdown()
       }
     })

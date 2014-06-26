@@ -23,7 +23,7 @@
 
 package com.intel.graphbuilder.driver.spark.rdd
 
-import com.intel.graphbuilder.elements.{GbIdToPhysicalId, Vertex}
+import com.intel.graphbuilder.elements.{ GbIdToPhysicalId, Vertex }
 import com.intel.graphbuilder.graph.titan.TitanGraphConnector
 import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.RDD

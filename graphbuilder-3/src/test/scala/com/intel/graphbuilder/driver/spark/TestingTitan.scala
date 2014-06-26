@@ -27,7 +27,7 @@ import java.io.File
 
 import com.intel.graphbuilder.graph.titan.TitanGraphConnector
 import com.intel.graphbuilder.util.SerializableBaseConfiguration
-import com.intel.testutils.{DirectoryUtils, LogUtils, MultipleAfter}
+import com.intel.testutils.{ DirectoryUtils, LogUtils, MultipleAfter }
 
 /**
  * This trait can be mixed into Specifications to get a TitanGraph backed by Berkeley for testing purposes.
@@ -60,7 +60,8 @@ trait TestingTitan extends MultipleAfter {
       if (graph != null) {
         graph.shutdown()
       }
-    } finally {
+    }
+    finally {
       DirectoryUtils.deleteTempDirectory(tmpDir)
     }
 

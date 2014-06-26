@@ -7,12 +7,12 @@ import com.intel.graphbuilder.driver.spark.rdd.TitanHBaseReaderRDD
 import com.intel.graphbuilder.driver.spark.titan.reader.TitanReaderTestData._
 import com.intel.graphbuilder.driver.spark.titan.reader.TitanReaderUtils.sortGraphElementProperties
 import com.intel.graphbuilder.elements.GraphElement
-import com.intel.testutils.{LogUtils, TestingSparkContext}
+import com.intel.testutils.{ LogUtils, TestingSparkContext }
 import org.apache.hadoop.hbase.CellUtil
 import org.apache.hadoop.hbase.client.Result
 import org.apache.hadoop.hbase.io.ImmutableBytesWritable
-import org.apache.spark.{SparkConf, SparkContext}
-import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpec}
+import org.apache.spark.{ SparkConf, SparkContext }
+import org.scalatest.{ BeforeAndAfterAll, Matchers, WordSpec }
 
 import scala.collection.JavaConversions._
 
@@ -107,7 +107,8 @@ trait TitanReaderSparkContext extends WordSpec with BeforeAndAfterAll {
       if (sparkContext != null) {
         sparkContext.stop()
       }
-    } finally {
+    }
+    finally {
       // To avoid Akka rebinding to the same port, since it doesn't unbind immediately on shutdown
       System.clearProperty("spark.driver.port")
       TestingSparkContext.lock.release()

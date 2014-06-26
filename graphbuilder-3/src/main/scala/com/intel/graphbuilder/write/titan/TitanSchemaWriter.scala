@@ -23,7 +23,7 @@
 
 package com.intel.graphbuilder.write.titan
 
-import com.intel.graphbuilder.schema.{EdgeLabelDef, GraphSchema, PropertyDef, PropertyType}
+import com.intel.graphbuilder.schema.{ EdgeLabelDef, GraphSchema, PropertyDef, PropertyType }
 import com.intel.graphbuilder.util.PrimitiveConverter
 import com.intel.graphbuilder.write.SchemaWriter
 import com.thinkaurelius.titan.core.TitanGraph
@@ -80,7 +80,6 @@ class TitanSchemaWriter(graph: TitanGraph) extends SchemaWriter {
     }
   }
 
-
   /**
    * Determine the index type from the supplied PropertyType
    * @param propertyType enumeration to specify Vertex or Edge
@@ -88,9 +87,11 @@ class TitanSchemaWriter(graph: TitanGraph) extends SchemaWriter {
   private[titan] def indexType(propertyType: PropertyType.Value): Class[_ <: Element] = {
     if (propertyType == PropertyType.Vertex) {
       classOf[Vertex] // TODO: this should probably be an Index Type property?
-    } else if (propertyType == PropertyType.Edge) {
+    }
+    else if (propertyType == PropertyType.Edge) {
       classOf[Edge] // TODO: this should probably be an Index Type property?
-    } else {
+    }
+    else {
       throw new RuntimeException("Unknown PropertyType is not yet implemented: " + propertyType)
     }
   }

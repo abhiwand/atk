@@ -25,7 +25,6 @@ package com.intel.intelanalytics
 
 trait ClassLoaderAware {
 
-
   /**
    * Execute a code block using specified class loader
    * rather than the ClassLoader of the currentThread()
@@ -41,7 +40,6 @@ trait ClassLoaderAware {
     }
   }
 
-
   /**
    * Execute a code block using the ClassLoader of 'this'
    * rather than the ClassLoader of the currentThread()
@@ -52,7 +50,8 @@ trait ClassLoaderAware {
       val loader = this.getClass.getClassLoader
       Thread.currentThread setContextClassLoader loader
       f
-    } finally {
+    }
+    finally {
       Thread.currentThread setContextClassLoader prior
     }
   }
