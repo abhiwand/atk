@@ -185,6 +185,7 @@ class SparkFrameStorage(context: UserPrincipal => Context, fsRoot: String, files
       modifiedOn = new DateTime(),
       createdBy = None,
       modifiedBy = None)
+    drop(frame2) //remove any existing artifacts to prevent collisions when a database is reinitialized.
     val meta = File(Paths.get(getFrameMetaDataFile(id)))
     info(s"Saving metadata to $meta")
     val f = files.write(meta)

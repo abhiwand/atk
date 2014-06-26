@@ -142,16 +142,16 @@ object DataTypes {
    * @param dataTypes DataTypes to merge
    * @return  Merged DataType
    */
-  def mergeTypes(dataTypes : List[ DataType]): DataType = {
-      dataTypes.toSet match {
-        case x if x.size == 1 => x.head
-        case x if Set[DataType](string).subsetOf(x) => string
-        case x if Set[DataType](float64).subsetOf(x) => float64
-        case x if Set[DataType](int64, float32).subsetOf(x) => float64
-        case x if Set[DataType](int32, float32).subsetOf(x) => float32
-        case x if Set[DataType](int32, int64).subsetOf(x) => int64
-        case _ => string
-      }
+  def mergeTypes(dataTypes: List[DataType]): DataType = {
+    dataTypes.toSet match {
+      case x if x.size == 1 => x.head
+      case x if Set[DataType](string).subsetOf(x) => string
+      case x if Set[DataType](float64).subsetOf(x) => float64
+      case x if Set[DataType](int64, float32).subsetOf(x) => float64
+      case x if Set[DataType](int32, float32).subsetOf(x) => float32
+      case x if Set[DataType](int32, int64).subsetOf(x) => int64
+      case _ => string
+    }
   }
 
   /**
@@ -195,7 +195,5 @@ object DataTypes {
       }
     }
   }
-
-
 
 }

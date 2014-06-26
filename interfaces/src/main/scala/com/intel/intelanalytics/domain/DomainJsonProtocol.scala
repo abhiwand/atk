@@ -23,8 +23,8 @@
 
 package com.intel.intelanalytics.domain
 
-import com.intel.intelanalytics.domain.frame.load.{Load, LineParser, LoadSource, LineParserArguments}
-import com.intel.intelanalytics.domain.schema.{Schema, DataTypes}
+import com.intel.intelanalytics.domain.frame.load.{ Load, LineParser, LoadSource, LineParserArguments }
+import com.intel.intelanalytics.domain.schema.{ Schema, DataTypes }
 import DataTypes.DataType
 import spray.json._
 import com.intel.intelanalytics.domain.frame._

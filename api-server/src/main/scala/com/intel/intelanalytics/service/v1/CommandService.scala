@@ -23,7 +23,7 @@
 
 package com.intel.intelanalytics.service.v1
 
-import com.intel.intelanalytics.domain.frame.load.{LoadSource, Load}
+import com.intel.intelanalytics.domain.frame.load.{ LoadSource, Load }
 
 import scala.util.Try
 import com.intel.intelanalytics.domain._
@@ -43,7 +43,7 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol._
 import com.intel.intelanalytics.service.v1.viewmodels._
 import com.intel.intelanalytics.service.v1.viewmodels.ViewModelJsonImplicits._
 import com.intel.intelanalytics.domain.graph.GraphLoad
-import com.intel.intelanalytics.domain.command.{Execution, CommandTemplate, Command}
+import com.intel.intelanalytics.domain.command.{ Execution, CommandTemplate, Command }
 import com.intel.intelanalytics.shared.EventLogging
 import com.intel.intelanalytics.service.{ ApiServiceConfig, UrlParser, CommonDirectives, AuthenticationDirective }
 import com.intel.intelanalytics.service.v1.decorators.CommandDecorator
@@ -177,18 +177,18 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
     val idOpt = test.toOption.flatMap(args => UrlParser.getFrameId(args.destination))
     (validate(test.isSuccess, "Failed to parse file load descriptor: " + getErrorMessage(test))
       & validate(idOpt.isDefined, "Destination is not a valid data frame URL")) {
-      val args = test.get
-      val id = idOpt.get
-      val exec = engine.load(Load[Long](id, args.source.source_type match {
-        case "dataframe" => {
-          val dataID = UrlParser.getFrameId(args.source.uri)
-          validate(dataID.isDefined, "Source is not a valid data frame URL")
-          LoadSource(args.source.source_type, dataID.get.toString, args.source.parser)
-        }
-        case _ => args.source
-      }))
-      complete(decorate(uri + "/" + exec.start.id, exec.start))
-    }
+        val args = test.get
+        val id = idOpt.get
+        val exec = engine.load(Load[Long](id, args.source.source_type match {
+          case "dataframe" => {
+            val dataID = UrlParser.getFrameId(args.source.uri)
+            validate(dataID.isDefined, "Source is not a valid data frame URL")
+            LoadSource(args.source.source_type, dataID.get.toString, args.source.parser)
+          }
+          case _ => args.source
+        }))
+        complete(decorate(uri + "/" + exec.start.id, exec.start))
+      }
   }
 
   /**
