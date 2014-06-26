@@ -40,7 +40,6 @@ import com.intel.intelanalytics.domain.frame.LoadLines
 //implicit conversion for PairRDD
 import org.apache.spark.SparkContext._
 
-
 private[spark] object SparkOps extends Serializable {
 
   def getRows(rdd: RDD[Row], offset: Long, count: Int, limit: Int): Seq[Row] = {
@@ -75,7 +74,8 @@ private[spark] object SparkOps extends Serializable {
       if (sum < offset || thisPartStart >= offset + capped) {
         //println("skipping partition " + i)
         Iterator.empty
-      } else {
+      }
+      else {
         val start = Math.max(offset - thisPartStart, 0)
         val numToTake = Math.min((capped + offset) - thisPartStart, ct) - start
         //println(s"partition $i: starting at $start and taking $numToTake")
@@ -86,17 +86,18 @@ private[spark] object SparkOps extends Serializable {
   }
 
   def loadLines(ctx: SparkContext,
-    fileName: String,
-    location: String,
-    arguments: LoadLines[JsObject, Long],
-    parserFunction: String => Array[String],
-    converter: Array[String] => Array[Any]) = {
+                fileName: String,
+                location: String,
+                arguments: LoadLines[JsObject, Long],
+                parserFunction: String => Array[String],
+                converter: Array[String] => Array[Any]) = {
     ctx.textFile(fileName, SparkEngineConfig.sparkDefaultPartitions)
       .mapPartitionsWithIndex {
         case (partition, lines) => {
           if (partition == 0) {
             lines.drop(arguments.skipRows.getOrElse(0)).map(parserFunction)
-          } else {
+          }
+          else {
             lines.map(parserFunction)
           }
         }
@@ -113,7 +114,7 @@ private[spark] object SparkOps extends Serializable {
   def createKeyValuePairFromRow(data: Array[Any], keyIndex: Seq[Int]): (Seq[Any], Array[Any]) = {
 
     var key: Seq[Any] = Seq()
-    for(i <- keyIndex)
+    for (i <- keyIndex)
       key = key :+ data(i)
 
     (key, data)
@@ -262,7 +263,7 @@ private[spark] object SparkOps extends Serializable {
                   args_pair: Seq[(Int, String)],
                   schema: List[(String, DataTypes.DataType)],
                   groupedColumnSchema: Array[DataTypes.DataType],
-                  location: String) : Seq[DataTypes.DataType] = {
+                  location: String): Seq[DataTypes.DataType] = {
 
     rdd.map(elem =>
       convertGroupBasedOnSchema(groupedColumnSchema, elem._1) ++ aggregation_functions(elem._2, args_pair, schema))
@@ -272,7 +273,7 @@ private[spark] object SparkOps extends Serializable {
       i <- args_pair
     } yield {
       i._2 match {
-        case "COUNT" | "COUNT_DISTINCT"  => DataTypes.int64
+        case "COUNT" | "COUNT_DISTINCT" => DataTypes.int64
         case "SUM" | "MIN" | "MAX" => schema(i._1)._2
         case _ => DataTypes.float64
       }

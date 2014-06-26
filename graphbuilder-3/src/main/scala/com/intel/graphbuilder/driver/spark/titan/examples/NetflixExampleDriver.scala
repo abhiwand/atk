@@ -25,12 +25,12 @@ package com.intel.graphbuilder.driver.spark.titan.examples
 
 import java.util.Date
 
-import com.intel.graphbuilder.driver.spark.titan.{GraphBuilder, GraphBuilderConfig}
-import com.intel.graphbuilder.parser.{ColumnDef, InputSchema}
+import com.intel.graphbuilder.driver.spark.titan.{ GraphBuilder, GraphBuilderConfig }
+import com.intel.graphbuilder.parser.{ ColumnDef, InputSchema }
 import com.intel.graphbuilder.parser.rule.RuleParserDSL._
-import com.intel.graphbuilder.parser.rule.{EdgeRule, VertexRule}
+import com.intel.graphbuilder.parser.rule.{ EdgeRule, VertexRule }
 import com.intel.graphbuilder.util.SerializableBaseConfiguration
-import org.apache.spark.{SparkConf, SparkContext}
+import org.apache.spark.{ SparkConf, SparkContext }
 
 /**
  * Example of building a Graph using a Netflix file as input.

@@ -25,18 +25,17 @@ package com.intel.intelanalytics.repository
 
 import com.github.tototoshi.slick.GenericJodaSupport
 import com.intel.intelanalytics.domain._
-import com.intel.intelanalytics.domain.command.{Command, CommandTemplate}
-import com.intel.intelanalytics.domain.frame.{DataFrame, DataFrameTemplate}
-import com.intel.intelanalytics.domain.graph.{Graph, GraphTemplate}
+import com.intel.intelanalytics.domain.command.{ Command, CommandTemplate }
+import com.intel.intelanalytics.domain.frame.{ DataFrame, DataFrameTemplate }
+import com.intel.intelanalytics.domain.graph.{ Graph, GraphTemplate }
 import com.intel.intelanalytics.domain.schema.Schema
 import com.intel.intelanalytics.shared.EventLogging
 import org.joda.time.DateTime
-import scala.slick.driver.{JdbcDriver, JdbcProfile}
+import scala.slick.driver.{ JdbcDriver, JdbcProfile }
 import org.flywaydb.core.Flyway
 import spray.json._
 
 import scala.util.Try
-
 
 trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
   msc: MetaStoreComponent with DbProfileComponent =>
@@ -49,7 +48,6 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
   // Different versions of implicits are imported here based on the driver
   import genericJodaSupport._
 
-
   // Defining mappings for custom column types
   implicit val schemaColumnType = MappedColumnType.base[Schema, String](
     { schema => schema.toJson.prettyPrint }, // Schema to String
@@ -57,7 +55,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
   )
 
   implicit val jsObjectColumnType = MappedColumnType.base[JsObject, String](
-    { jsObject => jsObject.toString()},
+    { jsObject => jsObject.toString() },
     { string => JsonParser(string).convertTo[JsObject] }
   )
 
@@ -67,8 +65,8 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
   )
 
   implicit val commandProgressType = MappedColumnType.base[List[Float], String](
-  { progress => progress.toJson.prettyPrint },
-  { string => JsonParser(string).convertTo[List[Float]] }
+    { progress => progress.toJson.prettyPrint },
+    { string => JsonParser(string).convertTo[List[Float]] }
   )
 
   private[repository] val database = withContext("Connecting to database") {
@@ -157,7 +155,6 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
     }
   }
 
-
   /**
    * A slick implementation of the 'User' table that defines
    * the columns and conversion to/from Scala beans.
@@ -174,7 +171,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
 
     def modifiedOn = column[DateTime]("modified_on")
 
-    def * = (id, username, api_key, createdOn, modifiedOn) <>(User.tupled, User.unapply)
+    def * = (id, username, api_key, createdOn, modifiedOn) <> (User.tupled, User.unapply)
   }
 
   val users = TableQuery[UserTable]
@@ -185,8 +182,8 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
    * Provides methods for modifying and querying the user table.
    */
   class SlickUserRepository extends Repository[Session, UserTemplate, User]
-  with Queryable[Session, User]
-  with EventLogging {
+      with Queryable[Session, User]
+      with EventLogging {
     this: Repository[Session, UserTemplate, User] with Queryable[Session, User] =>
 
     protected val usersAutoInc = users returning users.map(_.id) into {
@@ -201,7 +198,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
       users.where(_.id === id).firstOption
     }
 
-    override def lookupByName(name: String)(implicit session: Session): Option[User] ={
+    override def lookupByName(name: String)(implicit session: Session): Option[User] = {
       users.where(_.username === name).firstOption
     }
 
@@ -248,7 +245,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
     def modifiedOn = column[DateTime]("modified_on")
 
     /** projection to/from the database */
-    def * = (id, name, description, createdOn, modifiedOn) <>(Status.tupled, Status.unapply)
+    def * = (id, name, description, createdOn, modifiedOn) <> (Status.tupled, Status.unapply)
   }
 
   val statuses = TableQuery[StatusTable]
@@ -257,7 +254,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
    * A slick implementation of the graph repository. It stores metadata for statuses.
    */
   class SlickStatusRepository extends Repository[Session, Status, Status]
-  with EventLogging {
+      with EventLogging {
     this: Repository[Session, Status, Status] =>
 
     override def insert(status: Status)(implicit session: Session): Try[Status] = {
@@ -283,7 +280,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
       statuses.where(_.id === id).firstOption
     }
 
-    override def lookupByName(name: String)(implicit session: Session): Option[Status] ={
+    override def lookupByName(name: String)(implicit session: Session): Option[Status] = {
       statuses.where(_.name === name).firstOption
     }
 
@@ -321,7 +318,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
    * Provides methods for modifying and querying the frame table.
    */
   class SlickFrameRepository extends Repository[Session, DataFrameTemplate, DataFrame]
-  with EventLogging {
+      with EventLogging {
     this: Repository[Session, DataFrameTemplate, DataFrame] =>
 
     /**
@@ -349,7 +346,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
 
       /** projection to/from the database */
       override def * = (id, name, description, schema, statusId, createdOn, modifiedOn, createdById, modifiedById) <>
-                        (DataFrame.tupled, DataFrame.unapply)
+        (DataFrame.tupled, DataFrame.unapply)
 
       // foreign key relationships
 
@@ -393,7 +390,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
     override def lookup(id: Long)(implicit session: Session): Option[DataFrame] = {
       frames.where(_.id === id).firstOption
     }
-    override def lookupByName(name: String)(implicit session: Session): Option[DataFrame] ={
+    override def lookupByName(name: String)(implicit session: Session): Option[DataFrame] = {
       frames.where(_.name === name).firstOption
     }
 
@@ -415,7 +412,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
    * Provides methods for modifying and querying the command table.
    */
   class SlickCommandRepository extends CommandRepository[Session]
-  with EventLogging {
+      with EventLogging {
     this: Repository[Session, CommandTemplate, Command] =>
 
     /**
@@ -479,7 +476,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
       commands.where(_.id === id).firstOption
     }
 
-    override def lookupByName(name: String)(implicit session: Session): Option[Command] ={
+    override def lookupByName(name: String)(implicit session: Session): Option[Command] = {
       commands.where(_.name === name).firstOption
     }
 
@@ -490,11 +487,9 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
      * @param session session to db
      */
     override def updateComplete(id: Long, complete: Boolean)(implicit session: Session): Try[Unit] = Try {
-      val completeCol = for(c <- commands if c.id === id) yield c.complete
+      val completeCol = for (c <- commands if c.id === id) yield c.complete
       completeCol.update(complete)
     }
-
-
 
     /** execute DDL to create the underlying table */
     def createTable(implicit session: Session) = {
@@ -513,7 +508,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
      * @param session session to db
      */
     override def updateProgress(id: Long, progress: List[Float])(implicit session: Session): Try[Unit] = Try {
-      val q = for{c <- commands if c.id === id} yield c.progress
+      val q = for { c <- commands if c.id === id } yield c.progress
       q.update(progress)
     }
   }
@@ -526,7 +521,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
    * will require tracking.
    */
   class SlickGraphRepository extends Repository[Session, GraphTemplate, Graph]
-  with EventLogging {
+      with EventLogging {
     this: Repository[Session, GraphTemplate, Graph] =>
 
     class GraphTable(tag: Tag) extends Table[Graph](tag, "graph") {
@@ -550,7 +545,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
       def modifiedByUserId = column[Option[Long]]("modified_by")
 
       /** projection to/from the database */
-      override def * = (id, name, description, storage, statusId, createdOn, modifiedOn, createdByUserId, modifiedByUserId) <>(Graph.tupled, Graph.unapply)
+      override def * = (id, name, description, storage, statusId, createdOn, modifiedOn, createdByUserId, modifiedByUserId) <> (Graph.tupled, Graph.unapply)
 
       // foreign key relationships
 
@@ -592,7 +587,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
       graphs.where(_.id === id).firstOption
     }
 
-    override def lookupByName(name:String)(implicit session:Session): Option[Graph] = {
+    override def lookupByName(name: String)(implicit session: Session): Option[Graph] = {
       graphs.where(_.name === name).firstOption
     }
     /** execute DDL to create the underlying table */

@@ -29,14 +29,14 @@ class AggregationFunctions(object):
     """
     Defines supported aggregation functions, maps them to keyword strings
     """
-    avg = 'avg'
-    count = 'count'
-    count_distinct = 'count_distinct'
-    max = 'max'
-    min = 'min'
-    sum = 'sum'
-    var = 'var'
-    stdev = 'stdev'
+    avg = 'AVG'
+    count = 'COUNT'
+    count_distinct = 'COUNT_DISTINCT'
+    max = 'MAX'
+    min = 'MIN'
+    sum = 'SUM'
+    var = 'VAR'
+    stdev = 'STDEV'
 
     def __repr__(self):
         return ", ".join([k for k in AggregationFunctions.__dict__.keys()

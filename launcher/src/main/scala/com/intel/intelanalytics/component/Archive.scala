@@ -25,13 +25,13 @@ package com.intel.intelanalytics.component
 
 trait Archive extends Component with Locator {
 
-  private var loader : Option[String => Any] = None
+  private var loader: Option[String => Any] = None
 
   /**
    * Called by the component framework to provide a method for loading new classes from the same
    * archive, with the correct startup support. Archives should store this function for later use
    */
-  def setLoader(function: String => Any) : Unit = loader match {
+  def setLoader(function: String => Any): Unit = loader match {
     case None => loader = Some(function)
     case _ => throw new Exception("Loader function already set for this archive")
   }
@@ -43,9 +43,8 @@ trait Archive extends Component with Locator {
    * @param name the class name to instantiate and configure
    * @return the new instance
    */
-  protected def load(name: String) : Any = {
+  protected def load(name: String): Any = {
     loader.getOrElse(throw new Exception("Loader not installed for this archive"))(name)
   }
-
 
 }

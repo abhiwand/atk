@@ -28,23 +28,22 @@ import java.util.concurrent.atomic.AtomicLong
 
 import com.intel.intelanalytics.ClassLoaderAware
 import com.intel.intelanalytics.engine._
-import com.intel.intelanalytics.domain.frame.{Column, DataFrame, DataFrameTemplate}
+import com.intel.intelanalytics.domain.frame.{ Column, DataFrame, DataFrameTemplate }
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
-import com.intel.intelanalytics.domain.schema.{DataTypes, Schema}
+import com.intel.intelanalytics.domain.schema.{ DataTypes, Schema }
 import com.intel.intelanalytics.engine.spark.context.Context
-import com.intel.intelanalytics.engine.spark.{SparkEngineConfig, HdfsFileStorage, SparkOps}
+import com.intel.intelanalytics.engine.spark.{ SparkEngineConfig, HdfsFileStorage, SparkOps }
 import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.shared.EventLogging
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import org.joda.time.DateTime
-import scala.io.{Codec, Source}
+import scala.io.{ Codec, Source }
 import scala.util.matching.Regex
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
 
 class SparkFrameStorage(context: UserPrincipal => Context, fsRoot: String, files: HdfsFileStorage, maxRows: Int)
-  extends FrameStorage with EventLogging with ClassLoaderAware {
-
+    extends FrameStorage with EventLogging with ClassLoaderAware {
 
   import com.intel.intelanalytics.engine.Rows.Row
   import spray.json._
@@ -178,14 +177,14 @@ class SparkFrameStorage(context: UserPrincipal => Context, fsRoot: String, files
     val id = nextFrameId()
     // TODO: wire this up better.  For example, status Id should be looked up, user supplied, etc.
     val frame2 = new DataFrame(id = id,
-                                name = frame.name,
-                                description = frame.description,
-                                schema = Schema(),
-                                status = 1L,
-                                createdOn = new DateTime(),
-                                modifiedOn = new DateTime(),
-                                createdBy = None,
-                                modifiedBy = None)
+      name = frame.name,
+      description = frame.description,
+      schema = Schema(),
+      status = 1L,
+      createdOn = new DateTime(),
+      modifiedOn = new DateTime(),
+      createdBy = None,
+      modifiedBy = None)
     val meta = File(Paths.get(getFrameMetaDataFile(id)))
     info(s"Saving metadata to $meta")
     val f = files.write(meta)
@@ -222,9 +221,9 @@ class SparkFrameStorage(context: UserPrincipal => Context, fsRoot: String, files
   def getFrames(offset: Int, count: Int): Seq[DataFrame] = withContext("frame.getFrames") {
     files.list(getOrCreateDirectory(frameBase))
       .flatMap {
-      case Directory(p) => Some(p.getName(p.getNameCount - 1).toString)
-      case _ => None
-    }
+        case Directory(p) => Some(p.getName(p.getNameCount - 1).toString)
+        case _ => None
+      }
       .filter(idRegex.findFirstMatchIn(_).isDefined) //may want to extract a method for this
       .flatMap(sid => lookup(sid.toLong))
   }

@@ -23,13 +23,13 @@
 
 package com.intel.intelanalytics.engine.spark
 
-import java.io.{IOException, InputStream, OutputStream}
-import java.nio.file.{Path, Paths}
+import java.io.{ IOException, InputStream, OutputStream }
+import java.nio.file.{ Path, Paths }
 
-import com.intel.intelanalytics.engine.{Directory, Entry, File, FileStorage}
+import com.intel.intelanalytics.engine.{ Directory, Entry, File, FileStorage }
 import com.intel.intelanalytics.shared.EventLogging
 import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.{FileSystem, LocalFileSystem, Path => HPath}
+import org.apache.hadoop.fs.{ FileSystem, LocalFileSystem, Path => HPath }
 import org.apache.hadoop.hdfs.DistributedFileSystem
 
 case class HdfsStorageConfig(fsRoot: String)
@@ -56,7 +56,8 @@ class HdfsFileStorage(fsRoot: String) extends FileStorage with EventLogging {
     val path: HPath = new HPath(fsRoot + sink.path.toString)
     if (append) {
       fs.append(path)
-    } else {
+    }
+    else {
       fs.create(path, true)
     }
   }
@@ -89,11 +90,13 @@ class HdfsFileStorage(fsRoot: String) extends FileStorage with EventLogging {
     val exists = fs.exists(hPath)
     if (!exists) {
       None
-    } else {
+    }
+    else {
       val status = fs.getStatus(hPath)
       if (status == null || fs.isDirectory(hPath)) {
         Some(Directory(path))
-      } else {
+      }
+      else {
         Some(File(path, status.getUsed))
       }
     }

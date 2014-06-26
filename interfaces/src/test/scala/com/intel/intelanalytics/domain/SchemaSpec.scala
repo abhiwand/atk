@@ -1,6 +1,6 @@
 package com.intel.intelanalytics.domain
-import org.scalatest.{Matchers, FlatSpec}
-import com.intel.intelanalytics.domain.schema.DataTypes.{float32, int64, DataType, string}
+import org.scalatest.{ Matchers, FlatSpec }
+import com.intel.intelanalytics.domain.schema.DataTypes.{ float32, int64, DataType, string }
 import com.intel.intelanalytics.domain.schema.Schema
 
 class SchemaSpec extends FlatSpec with Matchers {
@@ -24,6 +24,5 @@ class SchemaSpec extends FlatSpec with Matchers {
     val schema = Schema(columns)
     schema.columnIndex(Seq()) shouldBe List(0, 1, 2)
   }
-
 
 }

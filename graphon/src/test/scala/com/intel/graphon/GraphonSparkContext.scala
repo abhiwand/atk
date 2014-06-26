@@ -26,8 +26,8 @@ package com.intel.graphon
 import java.util.Date
 
 import com.intel.testutils._
-import org.apache.spark.{SparkConf, SparkContext}
-import org.scalatest.{BeforeAndAfterAll, WordSpec}
+import org.apache.spark.{ SparkConf, SparkContext }
+import org.scalatest.{ BeforeAndAfterAll, WordSpec }
 
 trait GraphonSparkContext extends WordSpec with BeforeAndAfterAll {
   LogUtils.silenceSpark()
@@ -61,7 +61,8 @@ trait GraphonSparkContext extends WordSpec with BeforeAndAfterAll {
       if (sparkContext != null) {
         sparkContext.stop()
       }
-    } finally {
+    }
+    finally {
       // To avoid Akka rebinding to the same port, since it doesn't unbind immediately on shutdown
       System.clearProperty("spark.driver.port")
       TestingSparkContext.lock.release()

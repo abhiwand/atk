@@ -24,7 +24,7 @@
 package com.intel.intelanalytics.engine.spark.context
 
 import com.intel.intelanalytics.shared.EventLogging
-import org.apache.spark.engine.{ProgressPrinter, SparkProgressListener}
+import org.apache.spark.engine.{ ProgressPrinter, SparkProgressListener }
 
 import scala.collection.mutable
 

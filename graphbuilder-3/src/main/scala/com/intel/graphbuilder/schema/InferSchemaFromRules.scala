@@ -137,7 +137,8 @@ class InferSchemaFromRules(dataTypeParser: DataTypeResolver, vertexRules: List[V
   private[schema] def safeValue(key: Value): String = {
     if (key.isNotParsed) {
       StringUtils.nullSafeToString(key.value)
-    } else {
+    }
+    else {
       throw new RuntimeException("Unexpected: this method should not be called with parsed values: " + key)
     }
   }

@@ -40,12 +40,12 @@ class EngineSparkArchive extends Archive {
    * @tparam T the type of the requested instances
    * @return the requested instances, or the empty sequence if no such instances could be produced.
    */
-  override def getAll[T : ClassTag](descriptor: String): Seq[T] = descriptor match {
+  override def getAll[T: ClassTag](descriptor: String): Seq[T] = descriptor match {
     //TODO: move the plumbing parts to the Archive trait and make this just a simple PartialFunction
-    case "CommandPlugin" =>   commands
-                              .map(c => load(c.getName))
-                              .filter(i => i.isInstanceOf[T])
-                              .map(i => i.asInstanceOf[T])
+    case "CommandPlugin" => commands
+      .map(c => load(c.getName))
+      .filter(i => i.isInstanceOf[T])
+      .map(i => i.asInstanceOf[T])
     case _ => throw new NotFoundException("instances", descriptor)
   }
 
