@@ -41,7 +41,7 @@ object KCliquePercolationDriver {
     /**
      * Construct the clique graph that will be input for connected components
      */
-    val kcliqueGraphForComponentAnalysis = CreateGraphFromEnumeratedKCliques.applyToExtendersFact(enumeratedKCliques)
+    val kcliqueGraphForComponentAnalysis = CreateGraphFromEnumeratedKCliques.run(enumeratedKCliques)
 
     /**
      * TODO: Call connected component analysis to get the communities
