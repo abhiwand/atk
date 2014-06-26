@@ -93,7 +93,7 @@ class SparkProgressListener(val progressUpdater: CommandProgressUpdater) extends
         stageIdToTasksComplete(sid) = stageIdToTasksComplete.getOrElse(sid, 0) + 1
         updateProgress(sid)
       }
-      case false =>
+      case false => stageIdToTasksFailed(sid) = stageIdToTasksFailed.getOrElse(sid, 0) + 1
     }
   }
 
@@ -116,8 +116,7 @@ class SparkProgressListener(val progressUpdater: CommandProgressUpdater) extends
   }
 
   /* calculate progress for the job */
-  def getProgress(jobId: Int): Float = {
-
+  private def getProgress(jobId: Int): Float = {
     val stageIds = jobIdToStageIds(jobId)
     val finishedStages = stageIds.count(i => completedStages.filter(s => s.stageId == i).length > 0)
     val currentActiveStages = activeStages.filter(s => stageIds.contains(s.stageId))
@@ -132,6 +131,23 @@ class SparkProgressListener(val progressUpdater: CommandProgressUpdater) extends
     BigDecimal(progress).setScale(2, BigDecimal.RoundingMode.DOWN).toFloat
   }
 
+
+  /**
+   * return a message about current job progress.
+   * eg. step 2/5 tasks 500/1000
+   */
+  private def getProgressMessage(jobId: Int): String = {
+    val stageIds = jobIdToStageIds(jobId)
+    val currentStep = stageIds.count(i => completedStages.filter(s => s.stageId == i).length > 0) + 1
+    val currentActiveStage = activeStages.filter(s => stageIds.contains(s.stageId)).last
+
+    val totalTaskForStage = currentActiveStage.numTasks
+    val successCount = stageIdToTasksComplete.getOrElse(currentActiveStage.stageId, 0)
+
+    val totalStages = stageIds.length
+    s"step $currentStep/$totalStages task $successCount/$totalTaskForStage"
+  }
+
   /**
    * calculate progress for the command
    */
@@ -139,6 +155,16 @@ class SparkProgressListener(val progressUpdater: CommandProgressUpdater) extends
     val jobList = commandIdJobs.getOrElse(commandId, throw new IllegalArgumentException(s"No such command: $commandId"))
     jobList.map(job => getProgress(job.jobId))
   }
+
+  /**
+   * return message about the command's progress
+   */
+  def getCommandProgressMessage(commandId: Long): String = {
+    val jobList = commandIdJobs.getOrElse(commandId, throw new IllegalArgumentException(s"No such command: $commandId"))
+    getProgressMessage(jobList.last.jobId)
+  }
+
+
 
   /**
    * update the progress information and send it to progress updater

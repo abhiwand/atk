@@ -50,7 +50,7 @@ class ProgressPrinter(progressListener: SparkProgressListener) extends SparkList
     println("PRINTING PROGRESS........................................................")
     for (commandId <- progressListener.commandIdJobs.keys.toList.sorted) {
       for (job <- progressListener.commandIdJobs(commandId)) {
-        println("command:" + commandId + ", job: " + job.jobId + ", progress: " + progressListener.getProgress(job.jobId) + "%")
+        println("command:" + commandId + ", job: " + job.jobId + ", progress: " + progressListener.getCommandProgress(commandId) + "%")
       }
     }
     println("END.......................................................................")
