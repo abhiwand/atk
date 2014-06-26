@@ -26,7 +26,7 @@ package com.intel.intelanalytics.engine.spark
 import java.util.{ ArrayList => JArrayList, List => JList }
 
 import com.intel.intelanalytics.domain._
-import com.intel.intelanalytics.domain.command.{ Command, CommandTemplate, Execution }
+import com.intel.intelanalytics.domain.command.{ CommandDefinition, Command, CommandTemplate, Execution }
 import com.intel.intelanalytics.domain.frame._
 import com.intel.intelanalytics.domain.graph.{ Graph, GraphLoad, GraphTemplate }
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
@@ -98,6 +98,13 @@ class SparkEngine(sparkContextManager: SparkContextManager,
    */
   def execute(command: CommandTemplate)(implicit user: UserPrincipal): Execution =
     commands.execute(command, user, implicitly[ExecutionContext])
+
+  /**
+   * All the command definitions available
+   */
+  override def getCommandDefinitions()(implicit user: UserPrincipal): Iterable[CommandDefinition] = {
+    commands.getCommandDefinitions()
+  }
 
   def getLineParser(parser: Partial[Any]): String => Array[String] = {
     parser.operation.name match {

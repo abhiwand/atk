@@ -87,43 +87,51 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
             }
           }
       } ~
-        (path("commands") & pathEnd) {
+        pathPrefix("commands") {
           requestUri {
             uri =>
-
-              get {
-                //TODO: cursor
-                import spray.json._
-                import ViewModelJsonImplicits._
-                onComplete(engine.getCommands(0, ApiServiceConfig.defaultCount)) {
-                  case Success(commands) => complete(CommandDecorator.decorateForIndex(uri.toString(), commands))
-                  case Failure(ex) => throw ex
+              path("definitions") {
+                get {
+                  import ViewModelJsonImplicits._
+                  complete(engine.getCommandDefinitions().toList)
                 }
               } ~
-                post {
-                  entity(as[JsonTransform]) {
-                    xform =>
-                      try {
-                        //TODO: this execution path is going away soon.
-                        runCommand(uri, xform)
-                      }
-                      catch {
-                        case e: IllegalArgumentException => {
-                          //TODO: this will be the only execution path, soon.
-                          //TODO: validate the arguments. To do this requires some kind of sharing
-                          //between the api server and the engine to determine what contracts to use.
-                          //TODO: standardize URI handling such that the API server strips out
-                          //the https://site.com/ part and leaves the engine with only an application-specific,
-                          //non-transport-related URI. This should be automatic and not something that
-                          //every command handler has to call.
-                          engine.execute(CommandTemplate(name = xform.name, arguments = xform.arguments)) match {
-                            case Execution(command, futureResult) =>
-                              complete(decorate(uri, command))
+                pathEnd {
+                  get {
+                    //TODO: cursor
+                    import spray.json._
+                    import ViewModelJsonImplicits._
+                    onComplete(engine.getCommands(0, ApiServiceConfig.defaultCount)) {
+                      case Success(commands) => complete(CommandDecorator.decorateForIndex(uri.toString(), commands))
+                      case Failure(ex) => throw ex
+                    }
+                  } ~
+                    post {
+                      entity(as[JsonTransform]) {
+                        xform =>
+                          try {
+                            //TODO: this execution path is going away soon.
+                            runCommand(uri, xform)
                           }
-                        }
+                          catch {
+                            case e: IllegalArgumentException => {
+                              //TODO: this will be the only execution path, soon.
+                              //TODO: validate the arguments. To do this requires some kind of sharing
+                              //between the api server and the engine to determine what contracts to use.
+                              //TODO: standardize URI handling such that the API server strips out
+                              //the https://site.com/ part and leaves the engine with only an application-specific,
+                              //non-transport-related URI. This should be automatic and not something that
+                              //every command handler has to call.
+                              engine.execute(CommandTemplate(name = xform.name, arguments = xform.arguments)) match {
+                                case Execution(command, futureResult) =>
+                                  complete(decorate(uri, command))
+                              }
+                            }
+                          }
                       }
-                  }
+                    }
                 }
+
           }
         }
     }

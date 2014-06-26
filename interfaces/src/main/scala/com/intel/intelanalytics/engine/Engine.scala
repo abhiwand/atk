@@ -23,9 +23,8 @@
 
 package com.intel.intelanalytics.engine
 
-import com.intel.intelanalytics.domain.command.{ Execution, CommandTemplate }
+import com.intel.intelanalytics.domain.command.{ CommandDefinition, Execution, CommandTemplate, Command }
 import com.intel.intelanalytics.domain.FilterPredicate
-import com.intel.intelanalytics.domain.command.Command
 import com.intel.intelanalytics.domain.frame._
 import com.intel.intelanalytics.domain.graph.{ Graph, GraphLoad, GraphTemplate }
 import com.intel.intelanalytics.engine.Rows._
@@ -52,6 +51,11 @@ trait Engine {
    * @return an Execution that can be used to track the completion of the command
    */
   def execute(command: CommandTemplate)(implicit user: UserPrincipal): Execution
+
+  /**
+   * All the command definitions available
+   */
+  def getCommandDefinitions()(implicit user: UserPrincipal): Iterable[CommandDefinition]
 
   //TODO: We'll probably return an Iterable[Vertex] instead of rows at some point.
   def getVertices(graph: Identifier, offset: Int, count: Int, queryName: String, parameters: Map[String, String]): Future[Iterable[Row]]
