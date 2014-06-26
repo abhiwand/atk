@@ -59,7 +59,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'IntelAnalytics'
+project = u'Intel Analytics'
 #project = 'Welcome to the Intel Big Data Platform: Analytics Toolkit'
 copyright = u'2014, Intel - INTEL CONFIDENTIAL'
 
@@ -68,7 +68,7 @@ copyright = u'2014, Intel - INTEL CONFIDENTIAL'
 # built documents.
 #
 # The short X.Y version.
-version = '0.8.0'
+version = '0.8'
 # The full version, including alpha/beta/rc tags.
 release = '0.8.0'
 
@@ -91,7 +91,7 @@ exclude_patterns = []
 #default_role = None
 
 # If true, '()' will be appended to :func: etc. cross-reference text.
-#add_function_parentheses = True
+add_function_parentheses = True
 
 # If true, the current module name will be prepended to all description
 # unit titles (such as .. function::).
@@ -138,7 +138,7 @@ internal_docs = False
 #html_theme = 'scrolls'
 #html_theme = 'sphinxdoc'
 #html_theme = 'traditional'
-html_theme = 'aldrich'
+html_theme = 'IA'
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
@@ -153,7 +153,7 @@ html_theme_path = ['_theme']
 #html_title = None
 
 # A shorter title for the navigation bar.  Default is the same as html_title.
-#html_short_title = None
+html_short_title = "Intel Analytics"
 
 # The name of an image file (relative to this directory) to place at the top
 # of the sidebar.
@@ -178,7 +178,7 @@ html_static_path = ['_static']
 
 # If not '', a 'Last updated on:' timestamp is inserted at every page bottom,
 # using the given strftime format.
-#html_last_updated_fmt = '%b %d, %Y'
+html_last_updated_fmt = '%b %d, %Y'
 
 # If true, SmartyPants will be used to convert quotes and dashes to
 # typographically correct entities.
@@ -192,7 +192,7 @@ html_sidebars = {'**': ['searchbox.html', 'globaltoc.html']}
 #html_additional_pages = {}
 
 # If false, no module index is generated.
-html_domain_indices = True
+html_domain_indices = False
 
 # If false, no index is generated.
 html_use_index = True
@@ -201,13 +201,13 @@ html_use_index = True
 #html_split_index = False
 
 # If true, links to the reST sources are added to the pages.
-html_show_sourcelink = False
+html_show_sourcelink = True
 
 # If true, "Created using Sphinx" is shown in the HTML footer. Default is True.
-#html_show_sphinx = True
+html_show_sphinx = False
 
 # If true, "(C) Copyright ..." is shown in the HTML footer. Default is True.
-#html_show_copyright = True
+html_show_copyright = True
 
 # If true, an OpenSearch description file will be output, and all pages will
 # contain a <link> tag referring to it.  The value of this option must be the
@@ -218,7 +218,7 @@ html_show_sourcelink = False
 #html_file_suffix = None
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'IntelAnalyticsdoc'
+htmlhelp_basename = 'IntelAnalyticsDoc'
 
 
 # -- Options for LaTeX output ---------------------------------------------

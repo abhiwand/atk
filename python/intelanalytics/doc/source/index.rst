@@ -18,5 +18,4 @@ References
 * :doc:`ia_glos`
 * :doc:`ia_legal`
 * :ref:`genindex`
-* :ref:`modindex`
 * :ref:`search`

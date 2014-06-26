@@ -53,15 +53,8 @@ then
 fi
 
 # Check for weird stuff first
-if 
-    weird=$( echo $1 | grep -ic "doctest" )
-then
-    make -B doctest 2>&1 | grep -v -f toctreeWarnings
-    popd
-    exit
-fi
 if
-    weird=$( echo $1 | grep -ic "latexpdf" )
+    weird=$( echo $1 | grep -ic -e "text" -e "doctest" -e "latexpdf" )
 then
     make -B $1 2>&1 | grep -v -f toctreeWarnings
     popd
