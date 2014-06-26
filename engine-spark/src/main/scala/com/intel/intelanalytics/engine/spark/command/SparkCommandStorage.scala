@@ -78,7 +78,7 @@ class SparkCommandStorage(val metaStore: SlickMetaStoreComponent#SlickMetaStore)
              */
 
             val progress = command.progress.map(i => 100f)
-            command.copy(complete = true, progress = progress, progressMessage = "complete", result = Some(r))
+            command.copy(complete = true, progress = progress, progressMessage = "Done", result = Some(r))
           }
         }
         repo.update(changed)
