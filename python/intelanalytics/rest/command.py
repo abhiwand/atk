@@ -34,7 +34,7 @@ import intelanalytics.rest.config as config
 from intelanalytics.rest.connection import http
 
 
-def print_progress(progress, make_new_line):
+def print_progress(progress, progressMessage, make_new_line):
     if not progress:
         sys.stdout.write("\rinitializing...")
         sys.stdout.flush()
@@ -45,11 +45,12 @@ def print_progress(progress, make_new_line):
         num_star = int(p / 2)
         num_dot = 50 - num_star
         number = "%3.2f" % p
-        progress_summary.append("\r%6s%% [%s%s]" % (number, '=' * num_star, '.' * num_dot))
+        progress_summary.append("\r%6s%% [%s%s] %s" % (number, '=' * num_star, '.' * num_dot, progressMessage))
 
     if make_new_line:
         print progress_summary[-2]
 
+    sys.stdout.write("\r")
     sys.stdout.write(progress_summary[-1])
     sys.stdout.flush()
 
@@ -119,6 +120,13 @@ class CommandInfo(object):
         except KeyError:
             return False
 
+    @property
+    def progressMessage(self):
+        try:
+            return self._payload['progressMessage']
+        except KeyError:
+            return False
+
     def update(self, payload):
         if self._payload and self.id_number != payload['id']:
             msg = "Invalid payload, command ID mismatch %d when expecting %d"\
@@ -171,7 +179,7 @@ class Polling(object):
 
                 progress = command_info.progress
                 new_job_progress_exists = job_count < len(progress)
-                print_progress(progress, new_job_progress_exists)
+                print_progress(progress, command_info.progressMessage, new_job_progress_exists)
                 if new_job_progress_exists:
                     job_count = len(progress)
 

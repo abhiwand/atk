@@ -78,7 +78,7 @@ class SparkCommandStorage(val metaStore: SlickMetaStoreComponent#SlickMetaStore)
              */
 
             val progress = command.progress.map(i => 100f)
-            command.copy(complete = true, progress = progress, result = Some(r))
+            command.copy(complete = true, progress = progress, progressMessage = "complete", result = Some(r))
           }
         }
         repo.update(changed)
@@ -90,10 +90,10 @@ class SparkCommandStorage(val metaStore: SlickMetaStoreComponent#SlickMetaStore)
    * @param id command id
    * @param progress progress
    */
-  override def updateProgress(id: Long, progress: List[Float]): Unit = {
+  override def updateProgress(id: Long, progress: List[Float], progressMessage: String): Unit = {
     metaStore.withSession("se.command.updateProgress") {
       implicit session =>
-        repo.updateProgress(id, progress)
+        repo.updateProgress(id, progress, progressMessage)
     }
   }
 }

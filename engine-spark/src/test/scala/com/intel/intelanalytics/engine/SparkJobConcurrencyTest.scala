@@ -12,7 +12,7 @@ class SparkJobConcurrencyTest extends TestingSparkContext with Matchers {
   "Running multiple thread" should "keep isolation between threads when setting properties" in {
 
     val updater = new CommandProgressUpdater {
-      override def updateProgress(commandId: Long, progress: List[Float]): Unit = {
+      override def updateProgress(commandId: Long, progress: List[Float], progressMessage: String): Unit = {
         //do nothing
       }
     }

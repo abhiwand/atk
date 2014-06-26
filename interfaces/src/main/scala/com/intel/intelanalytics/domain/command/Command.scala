@@ -39,6 +39,7 @@ import com.intel.intelanalytics.domain.Error
  *                  ML algorithm, the parameters are used to execute the function directly.
  * @param error StackTrace and/or other error text if it exists
  * @param progress List of progress for the jobs initiated by this command
+ * @param progressMessage message describing the current progress
  * @param complete True if this command is completed
  * @param result result data for executing the command
  * @param createdOn date/time this record was created
@@ -50,6 +51,7 @@ case class Command(id: Long,
                    arguments: Option[JsObject],
                    error: Option[Error] = None,
                    progress: List[Float],
+                   progressMessage: String,
                    complete: Boolean = false,
                    result: Option[JsObject] = None,
                    createdOn: DateTime,
