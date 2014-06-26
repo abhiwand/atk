@@ -34,7 +34,7 @@ object CreateGraphFromEnumeratedKCliques {
   /**
    * @param cliqueAndExtenders
    */
-  def applyToExtendersFact(cliqueAndExtenders: RDD[ExtendersFact]): RDD[Set[CliqueFact]] = {
+  def createCliqueAndExtendedCliqueSet(cliqueAndExtenders: RDD[ExtendersFact]): RDD[(CliqueFact, Set[CliqueFact])] = {
 
     /**
      * Derive the key value pairs of k-1 cliques in the graph and k cliques that extend them
@@ -45,9 +45,16 @@ object CreateGraphFromEnumeratedKCliques {
 
     /**
      * Group those pairs by their keys (the k-1) sets, so in each group we get something like
-     * (U, Seq(V_1, …. V_m)), where the U is a k-1 clique and each V_i is a k-clique extending it
+     * (U, Seq(V_1, . V_m)), where the U is a k-1 clique and each V_i is a k-clique extending it
      */
     val cliqueAndExtendedCliqueSet: RDD[(CliqueFact, Set[CliqueFact])] = cliqueAndExtendedClique.groupBy(_._1).mapValues(_.map(_._2).toSet)
+
+    cliqueAndExtendedCliqueSet
+  }
+
+  def run(cliqueAndExtenders: RDD[ExtendersFact]): RDD[Set[CliqueFact]] = {
+
+    val cliqueAndExtendedCliqueSet = createCliqueAndExtendedCliqueSet(cliqueAndExtenders)
 
     /**
      * Each V_i becomes s vertex of the clique graph. Create edge list as ( V_i, V_j )
@@ -55,6 +62,6 @@ object CreateGraphFromEnumeratedKCliques {
     val cliqueEdgeList: RDD[Set[CliqueFact]] = cliqueAndExtendedCliqueSet.flatMap({ case (clique, setOfCliques) => setOfCliques.subsets(2) })
 
     cliqueEdgeList
-  }
 
+  }
 }

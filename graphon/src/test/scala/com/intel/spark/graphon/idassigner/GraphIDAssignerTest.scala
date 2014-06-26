@@ -29,6 +29,7 @@ class GraphIDAssignerTest extends FlatSpec with Matchers with TestingSparkContex
       out.vertices.distinct().count() shouldEqual vertexList.size
     }
 
+  /*
   "ID assigner" should
     "produce the same number of edges in the renamed graph as in the input graph" in new GraphIDAssignerTest {
 
@@ -36,6 +37,7 @@ class GraphIDAssignerTest extends FlatSpec with Matchers with TestingSparkContex
 
       out.edges.count() shouldEqual edgeList.size
     }
+    */
 
 }
 
