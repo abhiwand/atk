@@ -274,8 +274,6 @@ private[spark] object SparkOps extends Serializable {
       case cce: NumberFormatException => throw new NumberFormatException("Column values cannot be binned: " + cce.toString)
     }
 
-    val testColumnArray = columnRdd.collect()
-
     val numElements = columnRdd.count()
 
     // assign a rank to each distinct element
