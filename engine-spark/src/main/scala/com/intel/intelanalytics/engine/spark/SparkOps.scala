@@ -220,8 +220,8 @@ private[spark] object SparkOps extends Serializable {
     // determine bin width and cutoffs
     val binWidth = (max - min) / numBins.toDouble
 
-    val cutoffs: Array[Double] = if (binWidth != 0) {
-      Range.Double.inclusive(min, max, binWidth).toArray
+    val cutoffs = if (binWidth != 0) {
+      (min to max by binWidth).toArray
     }
     else {
       List(min, min).toArray
@@ -235,7 +235,7 @@ private[spark] object SparkOps extends Serializable {
       do {
         for (i <- 0 to cutoffs.length - 2) {
           // inclusive upper-bound on last cutoff range
-          if ((i == cutoffs.length - 2) && (element - cutoffs(i) >= 0) && (element - cutoffs(i + 1) <= 0)) {
+          if ((i == cutoffs.length - 2) && (element - cutoffs(i) >= 0)) { // && (element - cutoffs(i + 1) <= 0)) {
             binIndex = i
             working = false
           }
