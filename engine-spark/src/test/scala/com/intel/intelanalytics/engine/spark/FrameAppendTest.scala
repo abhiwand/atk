@@ -24,7 +24,7 @@
 package com.intel.intelanalytics.engine.spark
 
 import com.intel.intelanalytics.domain.schema.DataTypes
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.{ FlatSpec, Matchers }
 
 class FrameAppendTest extends FlatSpec with Matchers {
   "List[DataTypes]" should "determine which type they will combine into" in {

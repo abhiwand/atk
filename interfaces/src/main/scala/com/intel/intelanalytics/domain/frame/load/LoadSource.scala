@@ -13,7 +13,7 @@ import com.intel.intelanalytics.domain.schema.Schema
  * @param source Object describing the data to load into the destination. Includes the Where and How of loading.
  * @tparam frameRef If DataFrame is a uri this should be a String if it is an id it should be a Long
  */
-case class Load[frameRef](destination:frameRef, source:LoadSource)
+case class Load[frameRef](destination: frameRef, source: LoadSource)
 
 //source_type instead of sourceType so that the parser can properly parse the REST Apis naming convention
 /**
@@ -23,7 +23,7 @@ case class Load[frameRef](destination:frameRef, source:LoadSource)
  * @param uri Location of data to load. Should be appropriate for the source_type.
  * @param parser Object describing how to parse the resource. If data already an RDD can be set to None
  */
-case class LoadSource(source_type: String, uri: String, parser:Option[LineParser])
+case class LoadSource(source_type: String, uri: String, parser: Option[LineParser])
 
 /**
  *  Describes a Parser
@@ -31,7 +31,7 @@ case class LoadSource(source_type: String, uri: String, parser:Option[LineParser
  * @param name Parser name such as  builtin/line/separator
  * @param arguments values necessary for initializing the Parser
  */
-case class LineParser(name: String, arguments:LineParserArguments)
+case class LineParser(name: String, arguments: LineParserArguments)
 
 //skip_rows instead of skipRows so that the parser can properly parse the REST Apis naming convention
 /**
@@ -41,4 +41,4 @@ case class LineParser(name: String, arguments:LineParserArguments)
  * @param schema Schema of Row created in file
  * @param skip_rows number of lines to skip in the file
  */
-case class LineParserArguments(separator:Char, schema: Schema, skip_rows:Option[Int])
+case class LineParserArguments(separator: Char, schema: Schema, skip_rows: Option[Int])

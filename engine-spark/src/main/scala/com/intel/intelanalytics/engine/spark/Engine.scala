@@ -28,7 +28,7 @@ import java.util.{ ArrayList => JArrayList, List => JList }
 import com.intel.intelanalytics.domain._
 import com.intel.intelanalytics.domain.command.{ Command, CommandTemplate, Execution }
 import com.intel.intelanalytics.domain.frame._
-import com.intel.intelanalytics.domain.frame.load.{LineParserArguments, LineParser, LoadSource, Load}
+import com.intel.intelanalytics.domain.frame.load.{ LineParserArguments, LineParser, LoadSource, Load }
 
 import com.intel.intelanalytics.domain.graph.{ Graph, GraphLoad, GraphTemplate }
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
@@ -139,15 +139,15 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     val (schema, newData) = getLoadData(ctx.sparkContext, arguments.source)
     val rdd = frames.getFrameRdd(ctx.sparkContext, realFrame.id)
 
-    val (mergedSchema: Schema, updatedRdd: RDD[Row]) = if(realFrame.schema == schema)
+    val (mergedSchema: Schema, updatedRdd: RDD[Row]) = if (realFrame.schema == schema)
       (realFrame.schema, rdd ++ newData)
-    else{
+    else {
       val mergedSchema: Schema = SchemaUtil.mergeSchema(realFrame.schema, schema)
-      val leftData = rdd.map(SchemaUtil.convertSchema(realFrame.schema, mergedSchema,_))
-      val rightData = newData.map(SchemaUtil.convertSchema(schema, mergedSchema,_))
+      val leftData = rdd.map(SchemaUtil.convertSchema(realFrame.schema, mergedSchema, _))
+      val rightData = newData.map(SchemaUtil.convertSchema(schema, mergedSchema, _))
 
       val updatedRdd = leftData ++ rightData
-      (mergedSchema,updatedRdd)
+      (mergedSchema, updatedRdd)
     }
     val location = fsRoot + frames.getFrameDataFile(frameId)
     updatedRdd.saveAsObjectFile(location)
@@ -160,11 +160,11 @@ class SparkEngine(sparkContextManager: SparkContextManager,
    * @param source LoadSource object with information on what data to load
    * @return A tuple containing a schema object describing the RDD loaded as well as the RDD itself.
    */
-  def getLoadData(ctx: SparkContext, source: LoadSource ): (Schema, RDD[Row]) = {
+  def getLoadData(ctx: SparkContext, source: LoadSource): (Schema, RDD[Row]) = {
     source.source_type match {
       case "dataframe" => {
-         val frame =  frames.lookup(source.uri.toInt).getOrElse(
-             throw new IllegalArgumentException(s"No such data frame: ${source.uri}"))
+        val frame = frames.lookup(source.uri.toInt).getOrElse(
+          throw new IllegalArgumentException(s"No such data frame: ${source.uri}"))
         (frame.schema, frames.getFrameRdd(ctx, source.uri.toInt))
       }
       case "file" => {
@@ -173,14 +173,13 @@ class SparkEngine(sparkContextManager: SparkContextManager,
         val schema = parser.arguments.schema
         val converter = DataTypes.parseMany(schema.columns.map(_._2).toArray)(_)
 
-        ( schema,
+        (schema,
           SparkOps.loadLines(ctx, fsRoot + "/" + source.uri,
-            parser.arguments.skip_rows, parserFunction, converter) )
+            parser.arguments.skip_rows, parserFunction, converter))
       }
       case _ => ???
     }
   }
-
 
   def create(frame: DataFrameTemplate)(implicit user: UserPrincipal): Future[DataFrame] =
     future {

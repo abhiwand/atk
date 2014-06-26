@@ -21,19 +21,17 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-
 package com.intel.intelanalytics.domain
 
 import com.intel.intelanalytics.domain.frame.LoadLines
-import com.intel.intelanalytics.domain.frame.load.{Load, LineParserArguments, LineParser, LoadSource}
-import com.intel.intelanalytics.domain.schema.{DataTypes, Schema}
+import com.intel.intelanalytics.domain.frame.load.{ Load, LineParserArguments, LineParser, LoadSource }
+import com.intel.intelanalytics.domain.schema.{ DataTypes, Schema }
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers
 import spray.json._
 import DomainJsonProtocol._
 
-
-class LoadLinesTest extends FlatSpec with Matchers{
+class LoadLinesTest extends FlatSpec with Matchers {
   "Load" should "parse a Load object with for a file source" in {
     val string =
       """
@@ -63,11 +61,11 @@ class LoadLinesTest extends FlatSpec with Matchers{
 
     myLoadLines.source.uri should be("m1demo/domains.json")
     myLoadLines.source.source_type should be("file")
-    myLoadLines.source.parser should not be(None)
+    myLoadLines.source.parser should not be (None)
     val parser = myLoadLines.source.parser.get
 
-    parser.name should be ("builtin/line/separator")
-    parser.arguments should be( LineParserArguments('`',Schema(List(("json",DataTypes.string))), Some(0)) )
+    parser.name should be("builtin/line/separator")
+    parser.arguments should be(LineParserArguments('`', Schema(List(("json", DataTypes.string))), Some(0)))
   }
 
   "Load" should "parse a Load object with for a dataframe source" in {
@@ -90,7 +88,7 @@ class LoadLinesTest extends FlatSpec with Matchers{
     myLoadLines.source.parser should be(None)
   }
 
-  "LoadSource" should "be parsed from a JSON that does include a parser" in{
+  "LoadSource" should "be parsed from a JSON that does include a parser" in {
     val json =
       """
         |{
@@ -113,9 +111,9 @@ class LoadLinesTest extends FlatSpec with Matchers{
     val myJson = JsonParser(json).asJsObject
     val mySource = myJson.convertTo[LoadSource]
     mySource.source_type should be("file")
-    mySource.uri  should be("m1demo/domains.json")
+    mySource.uri should be("m1demo/domains.json")
 
-    mySource.parser should not be(None)
+    mySource.parser should not be (None)
   }
 
 }

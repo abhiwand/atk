@@ -95,11 +95,11 @@ object SchemaUtil {
       originalSchema
     else {
       val appendedColumns = originalSchema.columns ++ appendedSchema.columns
-      val columnOrdering: List[String] = appendedColumns.map{ case (name, dataTypes) => name }.distinct
-      val groupedColumns = appendedColumns.groupBy{ case (name, dataTypes) => name }
+      val columnOrdering: List[String] = appendedColumns.map { case (name, dataTypes) => name }.distinct
+      val groupedColumns = appendedColumns.groupBy { case (name, dataTypes) => name }
 
       val newColumns = columnOrdering.map(key => {
-        (key, DataTypes.mergeTypes(groupedColumns(key).map{ case (name, dataTypes) => dataTypes }))
+        (key, DataTypes.mergeTypes(groupedColumns(key).map { case (name, dataTypes) => dataTypes }))
       })
 
       Schema(newColumns)

@@ -96,9 +96,9 @@ private[spark] object SparkOps extends Serializable {
    */
   def loadLines(ctx: SparkContext,
                 fileName: String,
-                skipRows:Option[Int],
+                skipRows: Option[Int],
                 parserFunction: String => Array[String],
-                converter: Array[String] => Array[Any]): RDD[Row]= {
+                converter: Array[String] => Array[Any]): RDD[Row] = {
     ctx.textFile(fileName)
       .mapPartitionsWithIndex {
         case (partition, lines) => {
