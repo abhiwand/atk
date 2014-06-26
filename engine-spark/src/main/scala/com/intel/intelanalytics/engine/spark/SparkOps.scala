@@ -235,11 +235,11 @@ private[spark] object SparkOps extends Serializable {
       do {
         for (i <- 0 to cutoffs.length - 2) {
           // inclusive upper-bound on last cutoff range
-          if ((i == cutoffs.length - 2) && (element - cutoffs(i) >= 0.0) && (element - cutoffs(i + 1) <= 0.0)) {
+          if ((i == cutoffs.length - 2) && (element - cutoffs(i) >= 0) && (element - cutoffs(i + 1) <= 0)) {
             binIndex = i
             working = false
           }
-          else if ((element - cutoffs(i) >= 0.0) && (element - cutoffs(i + 1) < 0.0)) {
+          else if ((element - cutoffs(i) >= 0) && (element - cutoffs(i + 1) < 0)) {
             binIndex = i
             working = false
           }
