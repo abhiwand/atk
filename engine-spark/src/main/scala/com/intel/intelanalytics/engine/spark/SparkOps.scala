@@ -262,6 +262,8 @@ private[spark] object SparkOps extends Serializable {
       case cce: NumberFormatException => throw new NumberFormatException("Column values cannot be binned: " + cce.toString)
     }
 
+    val testColumnArray = columnRdd.collect()
+
     val numElements = columnRdd.count()
 
     // assign a rank to each distinct element
@@ -278,7 +280,7 @@ private[spark] object SparkOps extends Serializable {
     var rank = 1
     val rankedArray = try {
       pairedArray.map { value =>
-        val avgRank = BigDecimal(BigInt(rank).until(BigInt(rank + (value._2 - 1))).foldLeft(BigInt("0"))(_ + _)) / BigDecimal(value._2)
+        val avgRank = BigDecimal((BigInt(rank) to BigInt(rank + (value._2 - 1))).foldLeft(BigInt("0"))(_ + _)) / BigDecimal(value._2)
         rank += value._2
         (value._1, avgRank.toDouble)
       }
@@ -300,7 +302,7 @@ private[spark] object SparkOps extends Serializable {
 
     val sortedBinnedArray = sortedBinnedRdd.collect()
 
-    rank = 0
+    rank = 1
     val shiftedArray = sortedBinnedArray.flatMap { binMappings =>
       val valuePairs = binMappings._2.map(valueBin => (valueBin._1, rank))
       rank += 1
@@ -308,7 +310,7 @@ private[spark] object SparkOps extends Serializable {
     }
 
     val binMap = shiftedArray.toMap
-    rdd.map(row => row :+ binMap.get(java.lang.Double.parseDouble(row(index).toString)).get.asInstanceOf[Any])
+    rdd.map(row => row :+ (binMap.get(java.lang.Double.parseDouble(row(index).toString)).get - 1).asInstanceOf[Any])
   }
 
   def aggregation_functions(elem: Seq[Array[Any]],
