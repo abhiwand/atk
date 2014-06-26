@@ -81,9 +81,6 @@ class SparkProgressListener(val progressUpdater: CommandProgressUpdater) extends
     val stage = stageCompleted.stage
     activeStages -= stage
     completedStages += stage
-
-    val stageId = stage.stageId
-    updateProgress(stageId)
   }
 
   override def onTaskEnd(taskEnd: SparkListenerTaskEnd) {

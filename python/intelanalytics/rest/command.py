@@ -34,11 +34,12 @@ import intelanalytics.rest.config as config
 from intelanalytics.rest.connection import http
 
 
-def print_progress(progress, progressMessage, make_new_line):
+def print_progress(progress, progressMessage, characters_to_clear_in_line, make_new_line):
     if not progress:
-        sys.stdout.write("\rinitializing...")
+        initializing_text = "\rinitializing..."
+        sys.stdout.write(initializing_text)
         sys.stdout.flush()
-        return
+        return len(initializing_text)
 
     progress_summary = []
     for p in progress:
@@ -50,9 +51,10 @@ def print_progress(progress, progressMessage, make_new_line):
     if make_new_line:
         print progress_summary[-2]
 
-    sys.stdout.write("\r")
+    sys.stdout.write("\r" + " " * (characters_to_clear_in_line))
     sys.stdout.write(progress_summary[-1])
     sys.stdout.flush()
+    return len(progress_summary[-1])
 
 
 class CommandRequest(object):
@@ -173,13 +175,14 @@ class Polling(object):
         if not predicate(command_info):
             job_count = 1
             last_progress = []
+            printed_characters = 0
             while True:
                 time.sleep(interval_secs)
                 command_info = Polling._get_command_info(command_info.uri)
 
                 progress = command_info.progress
                 new_job_progress_exists = job_count < len(progress)
-                print_progress(progress, command_info.progressMessage, new_job_progress_exists)
+                printed_characters = print_progress(progress, command_info.progressMessage, printed_characters, new_job_progress_exists)
                 if new_job_progress_exists:
                     job_count = len(progress)
 
