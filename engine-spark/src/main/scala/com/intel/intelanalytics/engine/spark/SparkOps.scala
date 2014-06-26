@@ -207,7 +207,8 @@ private[spark] object SparkOps extends Serializable {
     // try creating RDD[Double] from column (as required by histogram)
     val columnRdd = try {
       rdd.map(row => java.lang.Double.parseDouble(row(index).toString))
-    } catch {
+    }
+    catch {
       case cce: NumberFormatException => throw new NumberFormatException("Column values cannot be binned: " + cce.toString)
     }
 
@@ -225,7 +226,8 @@ private[spark] object SparkOps extends Serializable {
           if ((i == cutoffs.length - 2) && (element - cutoffs(i) >= 0.0) && (element - cutoffs(i + 1) <= 0.0)) {
             binIndex = i
             working = false
-          } else if ((element - cutoffs(i) >= 0.0) && (element - cutoffs(i + 1) < 0.0)) {
+          }
+          else if ((element - cutoffs(i) >= 0.0) && (element - cutoffs(i + 1) < 0.0)) {
             binIndex = i
             working = false
           }
@@ -255,53 +257,58 @@ private[spark] object SparkOps extends Serializable {
     // try creating RDD[Double] from column
     val columnRdd = try {
       rdd.map(row => java.lang.Double.parseDouble(row(index).toString))
-    } catch {
+    }
+    catch {
       case cce: NumberFormatException => throw new NumberFormatException("Column values cannot be binned: " + cce.toString)
     }
 
     val numElements = columnRdd.count()
 
     // assign a rank to each distinct element
-    val pairedRdd = columnRdd.groupBy(element => element).sortByKey()
+    val pairedRdd = columnRdd.groupBy(element => element).map(pairs => (pairs._1, pairs._2.size)).sortByKey()
 
     // Need to go through values sequentially, but this creates an issue with Spark and multiple partitions
     // Option 1: use outside var counter...but each partition gets a fresh copy (no good)
     // Option 2: use Spark accumulator...but nondeterministic order of access among partitions (no good)
-    // Option 3: convert RDD to Array for these sequential operations and back to RDD otherwise (works fine)
+    // Option 3: convert RDD to Array for sequential operations and back to RDD otherwise (works fine but inefficient)
     // TODO: Option 4: ??? (find better way that avoids iterating over potentially long Arrays)
     val pairedArray = pairedRdd.collect()
 
+    // the following will fail for columns that contain more than Int.MaxValue of a specific value
     var rank = 1
-    val rankedArray = pairedArray.map { value =>
-      val valueRank = (rank to (rank + (value._2.size - 1))).sum / value._2.size.asInstanceOf[Double]
-      val valuePairs = value._2.map(v => (v, valueRank))
-      rank += value._2.size
-      (value._1, valuePairs)
-    }.flatMap(mapping => mapping._2)
+    val rankedArray = try {
+      pairedArray.map { value =>
+        val avgRank = BigDecimal(BigInt(rank).until(BigInt(rank + (value._2 - 1))).foldLeft(BigInt("0"))(_ + _)) / BigDecimal(value._2)
+        rank += value._2
+        (value._1, avgRank.toDouble)
+      }
+    }
+    catch {
+      case iae: IllegalArgumentException => throw new IllegalArgumentException("More than Int.MaxValue of specific column value" + iae.toString)
+    }
 
     val rankedRdd = rdd.sparkContext.parallelize(rankedArray)
 
     // compute the bin number
-    val binnedRdd = rankedRdd.map { ranking =>
-      val bin = ceil((numBins * ranking._2) / numElements).asInstanceOf[Int]
-      (ranking._1, bin)
+    val binnedRdd = rankedRdd.map { valueRank =>
+      val bin = ceil((numBins * valueRank._2) / numElements.asInstanceOf[Double]).asInstanceOf[Long]
+      (valueRank._1, bin)
     }
 
     // shift the bin numbers so that they are contiguous values
-    val sortedBinnedRdd = binnedRdd.groupBy(_._2).sortByKey()
+    val sortedBinnedRdd = binnedRdd.groupBy(valueBin => valueBin._2).sortByKey()
 
     val sortedBinnedArray = sortedBinnedRdd.collect()
 
-    rank = 1
-    val shiftedArray = sortedBinnedArray.map { value =>
-      val valuePairs = value._2.map(v => (v._1, rank))
+    rank = 0
+    val shiftedArray = sortedBinnedArray.flatMap { binMappings =>
+      val valuePairs = binMappings._2.map(valueBin => (valueBin._1, rank))
       rank += 1
-      (value._1, valuePairs)
-    }.flatMap(mapping => mapping._2)
+      valuePairs
+    }
 
-    val binMap = shiftedArray.distinct.toMap
-    // subtract 1 from bin number so they are zero-based
-    rdd.map(row => row :+ (binMap.get(java.lang.Double.parseDouble(row(index).toString)).get - 1).asInstanceOf[Any])
+    val binMap = shiftedArray.toMap
+    rdd.map(row => row :+ binMap.get(java.lang.Double.parseDouble(row(index).toString)).get.asInstanceOf[Any])
   }
 
   def aggregation_functions(elem: Seq[Array[Any]],

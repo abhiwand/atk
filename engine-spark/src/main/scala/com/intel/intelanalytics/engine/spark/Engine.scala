@@ -339,7 +339,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     flattenedRDD.saveAsObjectFile(fsRoot + frames.getFrameDataFile(newFrame.id))
     frames.updateSchema(newFrame, realFrame.schema.columns)
     newFrame.copy(schema = realFrame.schema)
-    
+
   }
 
   /**
