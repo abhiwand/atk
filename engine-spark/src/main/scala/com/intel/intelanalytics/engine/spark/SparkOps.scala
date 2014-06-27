@@ -23,7 +23,7 @@
 
 package com.intel.intelanalytics.engine.spark
 
-import com.intel.intelanalytics.domain.frame.LoadLines
+import com.intel.intelanalytics.domain.frame.load.Load
 import com.intel.intelanalytics.domain.schema.DataTypes
 import com.intel.intelanalytics.engine.Rows._
 import com.intel.intelanalytics.engine.spark.frame.RDDJoinParam
@@ -79,17 +79,25 @@ private[spark] object SparkOps extends Serializable {
     rows
   }
 
+  /**
+   * Load each line from CSV file into an RDD of Row objects.
+   * @param ctx SparkContext used for textFile reading
+   * @param fileName name of file to parse
+   * @param skipRows number of rows to skip before beginning parsing
+   * @param parserFunction function used for parsing lines into Row objects
+   * @param converter function used for converting parsed strings into DataTypes
+   * @return  RDD of Row objects
+   */
   def loadLines(ctx: SparkContext,
                 fileName: String,
-                location: String,
-                arguments: LoadLines[JsObject],
+                skipRows: Option[Int],
                 parserFunction: String => Array[String],
-                converter: Array[String] => Array[Any]) = {
-    ctx.textFile(fileName, SparkEngineConfig.sparkDefaultPartitions)
+                converter: Array[String] => Array[Any]): RDD[Row] = {
+    ctx.textFile(fileName)
       .mapPartitionsWithIndex {
         case (partition, lines) => {
           if (partition == 0) {
-            lines.drop(arguments.skipRows.getOrElse(0)).map(parserFunction)
+            lines.drop(skipRows.getOrElse(0)).map(parserFunction)
           }
           else {
             lines.map(parserFunction)
@@ -97,7 +105,6 @@ private[spark] object SparkOps extends Serializable {
         }
       }
       .map(converter)
-      .saveAsObjectFile(location)
   }
 
   /**
