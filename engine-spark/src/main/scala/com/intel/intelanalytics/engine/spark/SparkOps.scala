@@ -203,17 +203,18 @@ private[spark] object SparkOps extends Serializable {
   def binEqualWidth(index: Int, numBins: Int, rdd: RDD[Row]): RDD[Row] = {
     // TODO: Need consider how cutoffs/binSizes are going to be returned (if at all)
 
-    // try creating RDD[Double] from column (as required by histogram)
-    val columnRdd = try {
-      rdd.map(row => java.lang.Double.parseDouble(row(index).toString))
+    // try parsing column as pairs of doubles
+    val pairedRdd = try {
+      rdd.map { row =>
+        val value = java.lang.Double.parseDouble(row(index).toString)
+        (value, value)
+      }.distinct()
     }
     catch {
       case cce: NumberFormatException => throw new NumberFormatException("Column values cannot be binned: " + cce.toString)
     }
 
     // find the minimum and maximum values in the column RDD
-    val pairedRdd = columnRdd.map(value => (value, value)).distinct()
-
     val min: Double = pairedRdd.sortByKey().first()._1
     val max: Double = pairedRdd.sortByKey(false).first()._1
 
