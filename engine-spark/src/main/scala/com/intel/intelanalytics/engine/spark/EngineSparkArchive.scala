@@ -75,6 +75,6 @@ class EngineSparkArchive extends Archive {
    *                      plugin based on its installed paths.
    */
   override def start(configuration: Config): Unit = {
-
+    SparkEngineConfig.logSettings()
   }
 }
