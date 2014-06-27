@@ -36,7 +36,7 @@ import com.intel.intelanalytics.engine._
 import com.intel.intelanalytics.engine.spark.command.CommandExecutor
 import com.intel.intelanalytics.{ ClassLoaderAware, NotFoundException }
 import com.intel.intelanalytics.engine.spark.context.SparkContextManager
-import com.intel.intelanalytics.engine.spark.frame.{ RDDJoinParam, RowParser, SparkFrameStorage }
+import com.intel.intelanalytics.engine.spark.frame.{ RowParseResult, RDDJoinParam, RowParser, SparkFrameStorage }
 import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.shared.EventLogging
 import org.apache.spark.SparkContext
@@ -99,7 +99,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
   def execute(command: CommandTemplate)(implicit user: UserPrincipal): Execution =
     commands.execute(command, user, implicitly[ExecutionContext])
 
-  def getLineParser(parser: Partial[Any]): String => Array[String] = {
+  def getLineParser(parser: Partial[Any], columnTypes: Array[DataTypes.DataType]): String => RowParseResult = {
     parser.operation.name match {
       //TODO: look functions up in a table rather than switching on names
       case "builtin/line/separator" => {
@@ -111,7 +111,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
             "Could not convert instance of " + x.getClass.getName + " to  arguments for builtin/line/separator")
         }
 
-        val rowParser = new RowParser(args.separator)
+        val rowParser = new RowParser(args.separator, columnTypes)
         s => rowParser(s)
 
       }
@@ -126,12 +126,11 @@ class SparkEngine(sparkContextManager: SparkContextManager,
   def loadSimple(arguments: LoadLines[JsObject, Long], user: UserPrincipal) = {
     val frameId = arguments.destination
     val realFrame = expectFrame(frameId)
-    val parserFunction = getLineParser(arguments.lineParser)
-    val location = fsRoot + frames.getFrameDataFile(frameId)
     val schema = arguments.schema
-    val converter = DataTypes.parseMany(schema.columns.map(_._2).toArray)(_)
+    val parserFunction = getLineParser(arguments.lineParser, schema.columns.map(_._2).toArray)
+    val location = fsRoot + frames.getFrameDataFile(frameId)
     val ctx = sparkContextManager.context(user)
-    SparkOps.loadLines(ctx.sparkContext, fsRoot + "/" + arguments.source, location, arguments, parserFunction, converter)
+    SparkOps.loadLines(ctx.sparkContext, fsRoot + "/" + arguments.source, location, arguments, parserFunction)
     val frame = frames.updateSchema(realFrame, schema.columns)
     frame
   }

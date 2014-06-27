@@ -26,7 +26,7 @@ package com.intel.intelanalytics.engine.spark
 import com.intel.intelanalytics.domain.frame.LoadLines
 import com.intel.intelanalytics.domain.schema.DataTypes
 import com.intel.intelanalytics.engine.Rows._
-import com.intel.intelanalytics.engine.spark.frame.RDDJoinParam
+import com.intel.intelanalytics.engine.spark.frame.{ RowParseResult, RDDJoinParam }
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.RDD
@@ -34,10 +34,10 @@ import spray.json.JsObject
 
 import scala.collection.mutable
 import scala.Some
-import com.intel.intelanalytics.engine.spark.frame.RDDJoinParam
 import com.intel.intelanalytics.domain.frame.LoadLines
 
 //implicit conversion for PairRDD
+
 import org.apache.spark.SparkContext._
 
 private[spark] object SparkOps extends Serializable {
@@ -89,9 +89,8 @@ private[spark] object SparkOps extends Serializable {
                 fileName: String,
                 location: String,
                 arguments: LoadLines[JsObject, Long],
-                parserFunction: String => Array[String],
-                converter: Array[String] => Array[Any]) = {
-    ctx.textFile(fileName, SparkEngineConfig.sparkDefaultPartitions)
+                parserFunction: String => RowParseResult) = {
+    val parseResultRdd = ctx.textFile(fileName, SparkEngineConfig.sparkDefaultPartitions)
       .mapPartitionsWithIndex {
         case (partition, lines) => {
           if (partition == 0) {
@@ -102,8 +101,20 @@ private[spark] object SparkOps extends Serializable {
           }
         }
       }
-      .map(converter)
-      .saveAsObjectFile(location)
+
+    try {
+      parseResultRdd.cache()
+      val successesRdd = parseResultRdd.filter(rowParseResult => rowParseResult.parseSuccess)
+        .map(rowParseResult => rowParseResult.row)
+      val failuresRdd = parseResultRdd.filter(rowParseResult => !rowParseResult.parseSuccess)
+        .map(rowParseResult => rowParseResult.row)
+
+      successesRdd.saveAsObjectFile(location)
+      failuresRdd.saveAsObjectFile(location + "-errors") // TODO: fix me
+    }
+    finally {
+      parseResultRdd.unpersist(blocking = false)
+    }
   }
 
   /**
