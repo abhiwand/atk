@@ -166,9 +166,13 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 <module>interfaces</module>
                 <module>launcher</module><!-- scoverage -->
                 <module>shared</module><!-- scoverage -->
-                <module>api-server</module>
                 <module>engine</module>
                 <module>engine-spark</module><!-- scoverage -->
+                <module>api-server</module>
+                <!--<module>imahout</module>
+                <module>igiraph</module>
+                <module>imllib</module>
+                <module>graphon</module>-->
                 <module>package</module>
             </modules>
         </profile>
@@ -189,9 +193,9 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 <module>interfaces</module>
                 <module>launcher</module><!-- scoverage -->
                 <module>shared</module><!-- scoverage -->
-                <module>api-server</module>
                 <module>engine</module>
                 <module>engine-spark</module><!-- scoverage -->
+                <module>api-server</module>
                 <module>imahout</module>
                 <module>igiraph/giraph-core</module>
                 <module>igiraph/giraph-algorithms</module>
@@ -583,7 +587,6 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                         </execution>
                     </executions>
                 </plugin>
-                <!-- Scalariform is ready but I'm commenting out temporarily until there is less code for people to merge -Todd 6/16/2014 -->
                 <plugin>
                     <groupId>org.scalariform</groupId>
                     <artifactId>scalariform-maven-plugin</artifactId>
@@ -595,7 +598,6 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                                 <goal>format</goal>
                             </goals>
                             <configuration>
-
                                 <alignParameters>true</alignParameters>
                                 <compactControlReadability>true</compactControlReadability>
                                 <preserveDanglingCloseParenthesis>true</preserveDanglingCloseParenthesis>
