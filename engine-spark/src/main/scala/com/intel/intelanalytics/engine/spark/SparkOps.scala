@@ -90,6 +90,9 @@ private[spark] object SparkOps extends Serializable {
                 location: String,
                 arguments: LoadLines[JsObject, Long],
                 parserFunction: String => RowParseResult) = {
+
+
+
     val parseResultRdd = ctx.textFile(fileName, SparkEngineConfig.sparkDefaultPartitions)
       .mapPartitionsWithIndex {
         case (partition, lines) => {
@@ -110,7 +113,7 @@ private[spark] object SparkOps extends Serializable {
         .map(rowParseResult => rowParseResult.row)
 
       successesRdd.saveAsObjectFile(location)
-      failuresRdd.saveAsObjectFile(location + "-errors") // TODO: fix me
+      //failuresRdd.saveAsObjectFile(location + "-errors") // TODO: fix me
     }
     finally {
       parseResultRdd.unpersist(blocking = false)
