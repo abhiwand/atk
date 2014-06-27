@@ -159,7 +159,7 @@ object DataTypes {
    * @param columnTypes the types of the columns. The values in the strings array are assumed to be in
    *                    the same order as the values in the columnTypes array.
    * @param strings the strings to be converted
-   * @return the convereted values. Any values that cannot be parsed will result in an illegal argument exception.
+   * @return the converted values. Any values that cannot be parsed will result in an illegal argument exception.
    */
   def parseMany(columnTypes: Array[DataType])(strings: Array[String]): Array[Any] = {
     val lifted = columnTypes.lift
