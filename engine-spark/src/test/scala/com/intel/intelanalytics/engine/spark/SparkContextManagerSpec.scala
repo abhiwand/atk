@@ -17,8 +17,8 @@ class SparkContextManagerSpec extends Specification with Mockito {
     val mockSparkContext_2 = mock[SparkContext]
     val mockSparkContext_3 = mock[SparkContext]
 
-    mockConfig.getString("intel.analytics.spark.home") returns ""
-    mockConfig.getString("intel.analytics.spark.master") returns ""
+    mockConfig.getString("intel.analytics.engine.spark.home") returns ""
+    mockConfig.getString("intel.analytics.engine.spark.master") returns ""
     mockSparkContextFactory.createSparkContext(mockConfig, "intel-analytics:user_1") returns mockSparkContext_1
     mockSparkContextFactory.createSparkContext(mockConfig, "intel-analytics:user_2") returns mockSparkContext_2
     mockSparkContextFactory.createSparkContext(mockConfig, "intel-analytics:user_3") returns mockSparkContext_3

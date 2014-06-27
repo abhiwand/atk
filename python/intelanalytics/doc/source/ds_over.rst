@@ -1,12 +1,12 @@
-Data Scientist
-==============
+User Manual
+===========
 
 Contents:
 
 ..  toctree::
     :maxdepth: 2
 
-    ia_legl
+    ds_legl
     ds_strt
     ds_db
     ds_dflw
