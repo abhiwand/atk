@@ -197,7 +197,7 @@ class FrameBackendRest(object):
 
 
     def count(self, frame):
-        raise NotImplementedError  # TODO - impplement count
+        raise NotImplementedError  # TODO - implement count
 
     def drop(self, frame, predicate):
         from itertools import ifilterfalse  # use the REST API filter, with a ifilterfalse iterator

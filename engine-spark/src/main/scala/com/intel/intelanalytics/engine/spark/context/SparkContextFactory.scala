@@ -35,13 +35,11 @@ import com.intel.intelanalytics.engine.spark.SparkEngineConfig
 class SparkContextFactory extends EventLogging {
 
   def createSparkContext(configuration: Config, appName: String): SparkContext = withContext("engine.sparkContextFactory") {
-    val sparkHome = configuration.getString("intel.analytics.spark.home")
-    val sparkMaster = configuration.getString("intel.analytics.spark.master")
 
     val jarPath = Boot.getJar("engine-spark")
     val sparkConf = new SparkConf()
-      .setMaster(sparkMaster)
-      .setSparkHome(sparkHome)
+      .setMaster(SparkEngineConfig.sparkMaster)
+      .setSparkHome(SparkEngineConfig.sparkHome)
       .setAppName(appName)
       .setJars(Seq(jarPath.getPath))
 
