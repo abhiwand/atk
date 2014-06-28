@@ -171,8 +171,7 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 <module>api-server</module>
                 <!--<module>imahout</module>
                 <module>igiraph</module>
-                <module>imllib</module>
-                <module>graphon</module>-->
+                <module>imllib</module>-->
                 <module>package</module>
             </modules>
         </profile>
@@ -190,6 +189,7 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 <module>ispark-deps</module>
                 <module>testutils</module>
                 <module>graphbuilder-3</module><!-- scoverage -->
+                <module>graphon</module>
                 <module>interfaces</module>
                 <module>launcher</module><!-- scoverage -->
                 <module>shared</module><!-- scoverage -->
@@ -202,7 +202,6 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 <module>igiraph/giraph-titan</module>
                 <module>igiraph</module>
                 <module>imllib</module>
-                <module>graphon</module>
                 <module>package</module>
             </modules>
         </profile>
@@ -718,11 +717,6 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
             <dependency>
                 <groupId>com.intel.ia</groupId>
                 <artifactId>imlib</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.intel.ia</groupId>
-                <artifactId>graphon</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <!--END bda dependencies-->

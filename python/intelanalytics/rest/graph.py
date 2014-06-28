@@ -102,6 +102,10 @@ class GraphBackendRest(object):
         logger.debug("REST Backend: run als response: " + json)
         return json
 
+    def vertex_sample(self, graph, size, sample_type, seed):
+        graph.name  # pass graph name
+        pass
+
 
 class JsonAlsPayload(object):
     def __new__(cls,
