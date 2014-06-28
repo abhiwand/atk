@@ -23,6 +23,7 @@
 """
 Command objects
 """
+import datetime
 
 import time
 import json
@@ -34,7 +35,7 @@ import intelanalytics.rest.config as config
 from intelanalytics.rest.connection import http
 
 
-def print_progress(progress, progressMessage, characters_to_clear_in_line, make_new_line):
+def print_progress(progress, progressMessage, characters_to_clear_in_line, make_new_line, elapsed_time_in_seconds):
     if not progress:
         initializing_text = "\rinitializing..."
         sys.stdout.write(initializing_text)
@@ -42,11 +43,16 @@ def print_progress(progress, progressMessage, characters_to_clear_in_line, make_
         return len(initializing_text)
 
     progress_summary = []
-    for p in progress:
+
+    for index in range(0, len(progress)):
+        p = progress[index]
+        message = progressMessage[index] if(index < len(progressMessage)) else ''
+
         num_star = int(p / 2)
         num_dot = 50 - num_star
         number = "%3.2f" % p
-        progress_summary.append("\r%6s%% [%s%s] %s" % (number, '=' * num_star, '.' * num_dot, progressMessage))
+        time_string = datetime.timedelta(seconds = int(elapsed_time_in_seconds))
+        progress_summary.append("\r%6s%% [%s%s] %s [Elapsed Time %s]" % (number, '=' * num_star, '.' * num_dot, message, time_string))
 
     if make_new_line:
         print progress_summary[-2]
@@ -55,7 +61,6 @@ def print_progress(progress, progressMessage, characters_to_clear_in_line, make_
     sys.stdout.write(progress_summary[-1])
     sys.stdout.flush()
     return len(progress_summary[-1])
-
 
 class CommandRequest(object):
     def __init__(self, name, arguments):
@@ -176,13 +181,20 @@ class Polling(object):
             job_count = 1
             last_progress = []
             printed_characters = 0
+
+            next_poll_time = time.time()
+
             while True:
-                time.sleep(interval_secs)
+                if time.time() < next_poll_time:
+                    time.sleep(start_interval_secs)
+                    continue
+
                 command_info = Polling._get_command_info(command_info.uri)
 
+                next_poll_time = time.time() + interval_secs
                 progress = command_info.progress
                 new_job_progress_exists = job_count < len(progress)
-                printed_characters = print_progress(progress, command_info.progressMessage, printed_characters, new_job_progress_exists)
+                printed_characters = print_progress(progress, command_info.progressMessage, printed_characters, new_job_progress_exists, time.time() - start_time)
                 if new_job_progress_exists:
                     job_count = len(progress)
 

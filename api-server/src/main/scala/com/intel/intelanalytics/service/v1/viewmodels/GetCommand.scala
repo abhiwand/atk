@@ -25,6 +25,7 @@ package com.intel.intelanalytics.service.v1.viewmodels
 
 import com.intel.intelanalytics.domain.Error
 import spray.json.JsObject
+import com.intel.intelanalytics.engine.StageProgressInfo
 
 /**
  * The REST service response for single command in "GET ../commands/id"
@@ -41,7 +42,7 @@ import spray.json.JsObject
  * @param links
  */
 case class GetCommand(id: Long, name: String, arguments: Option[JsObject], error: Option[Error], progress: List[Float],
-                      progressMessage: String, complete: Boolean, result: Option[JsObject], links: List[RelLink]) {
+                      progressMessage: List[String], complete: Boolean, result: Option[JsObject], links: List[RelLink]) {
   require(id > 0)
   require(name != null)
   require(arguments != null)

@@ -1,12 +1,13 @@
 package com.intel.intelanalytics.repository
 import com.intel.intelanalytics.domain.command.{ Command, CommandTemplate }
 import scala.util.Try
+import com.intel.intelanalytics.engine.StageProgressInfo
 
 /**
  * Repository for command records
  */
 trait CommandRepository[Session] extends Repository[Session, CommandTemplate, Command] {
   def updateComplete(id: Long, complete: Boolean)(implicit session: Session): Try[Unit]
-  def updateProgress(id: Long, progress: List[Float], progressMessage: String)(implicit session: Session): Try[Unit]
+  def updateProgress(id: Long, progress: List[Float], detailedProgress: List[StageProgressInfo])(implicit session: Session): Try[Unit]
 }
 
