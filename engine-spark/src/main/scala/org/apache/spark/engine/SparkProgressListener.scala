@@ -32,11 +32,10 @@ import org.apache.spark.scheduler.JobFailed
 import org.apache.spark.scheduler.SparkListenerStageCompleted
 import scala.Some
 import org.apache.spark.scheduler.SparkListenerJobStart
-import scala.concurrent._
-import org.apache.spark.SparkContext
-import scala.util.{ Success, Try }
+import scala.util.Success
 import com.intel.intelanalytics.engine.spark.CommandProgressUpdater
 import scala.collection.mutable
+import com.intel.intelanalytics.engine.StageProgressInfo
 
 /**
  * Listens to progress on Spark Jobs.
@@ -55,11 +54,28 @@ class SparkProgressListener(val progressUpdater: CommandProgressUpdater) extends
   val stageIdToTasksComplete = HashMap[Int, Int]()
   val stageIdToTasksFailed = HashMap[Int, Int]()
   val commandIdJobs = new HashMap[Long, List[ActiveJob]]
+  val jobIdDetailedProgressInfo = new HashMap[Int, List[StageProgressInfo]]()
+
+  private def addStageIdToCollection(stageIdList: ListBuffer[Stage], stage: Stage): Unit = {
+    if (stage.parents != null) {
+
+      stage.parents.foreach(s => {
+        addStageIdToCollection(stageIdList, s)
+      })
+    }
+
+    if (!stageIdList.contains(stage))
+      stageIdList += stage
+  }
 
   override def onJobStart(jobStart: SparkListenerJobStart) {
-    val parents = jobStart.job.finalStage.parents
+    val parents: ListBuffer[Stage] = ListBuffer()
+
+    addStageIdToCollection(parents, jobStart.job.finalStage)
+
     val parentsIds = parents.map(s => s.id)
-    jobIdToStageIds(jobStart.job.jobId) = (parentsIds :+ jobStart.job.finalStage.id).toArray
+    println("PROGRESS### job id:" + jobStart.job.jobId + ", stage ids:" + parentsIds.toArray.mkString(","))
+    jobIdToStageIds(jobStart.job.jobId) = parentsIds.toArray
 
     val job = jobStart.job
 
@@ -67,12 +83,13 @@ class SparkProgressListener(val progressUpdater: CommandProgressUpdater) extends
       addToCommandIdJobs(job)
 
       //update initial progress to 0
-      progressUpdater.updateProgress(job.properties.getProperty("command-id").toLong, List(0.00f), "")
+      progressUpdater.updateProgress(job.properties.getProperty("command-id").toLong, List(0.00f), List())
     }
   }
 
   override def onStageSubmitted(stageSubmitted: SparkListenerStageSubmitted) {
     val stage = stageSubmitted.stage
+
     activeStages += stage
   }
 
@@ -129,22 +146,24 @@ class SparkProgressListener(val progressUpdater: CommandProgressUpdater) extends
   }
 
   /**
-   * return a message about current job progress.
-   * eg. step 2/5 tasks 500/1000
+   * return a detailed progress info about current job.
    */
-  private def getProgressMessage(jobId: Int): String = {
+  private def getDetailedProgress(jobId: Int): List[StageProgressInfo] = {
+    println("PROGRESS### job id:" + jobId)
     val stageIds = jobIdToStageIds(jobId)
     val currentActiveStages = activeStages.filter(s => stageIds.contains(s.stageId))
-    val message: mutable.ListBuffer[String] = mutable.ListBuffer()
+    val stageProgressList: mutable.ListBuffer[StageProgressInfo] = mutable.ListBuffer()
 
     for (activeStage <- currentActiveStages) {
+      println("PROGRESS### Active stage:" + activeStage.stageId)
       val currentStep = stageIds.indexOf(activeStage.stageId) + 1
       val totalStages = stageIds.length
       val totalTaskForStage = activeStage.numTasks
       val successCount = stageIdToTasksComplete.getOrElse(activeStage.stageId, 0)
-      message += s"step $currentStep/$totalStages task $successCount/$totalTaskForStage"
+      stageProgressList += StageProgressInfo(currentStep, totalStages, successCount, totalTaskForStage)
     }
-    message.mkString(", ")
+    println("PROGRESS###" + stageProgressList.toList)
+    stageProgressList.toList
   }
 
   /**
@@ -156,11 +175,21 @@ class SparkProgressListener(val progressUpdater: CommandProgressUpdater) extends
   }
 
   /**
-   * return message about the command's progress
+   * return detailed info about the command's progress
    */
-  def getCommandProgressMessage(commandId: Long): String = {
+  def getDetailedCommandProgress(commandId: Long): List[StageProgressInfo] = {
+    val jobList = commandIdJobs.getOrElse(commandId, throw new IllegalArgumentException(s"No such command: $commandId")).filter(job => jobIdDetailedProgressInfo.contains(job.jobId))
+    jobList.flatMap(job => jobIdDetailedProgressInfo(job.jobId))
+  }
+
+  def updateDetailedProgress(commandId: Long) = {
     val jobList = commandIdJobs.getOrElse(commandId, throw new IllegalArgumentException(s"No such command: $commandId"))
-    getProgressMessage(jobList.last.jobId)
+    jobList.foreach(job => {
+
+      val detailedProgress: List[StageProgressInfo] = getDetailedProgress(job.jobId)
+      if (!detailedProgress.isEmpty)
+        jobIdDetailedProgressInfo(job.jobId) = detailedProgress
+    })
   }
 
   /**
@@ -179,8 +208,12 @@ class SparkProgressListener(val progressUpdater: CommandProgressUpdater) extends
           case Some(c) => {
             val commandId = c._1
             val progress = getCommandProgress(commandId)
-            val progressMessage = getCommandProgressMessage(commandId)
-            progressUpdater.updateProgress(commandId, progress, progressMessage)
+            updateDetailedProgress(commandId)
+            val detailedProgress = getDetailedCommandProgress(commandId)
+
+            //            println("##################### PRINT DETAILED PROGRESS #######################")
+            //            println(detailedProgress)
+            progressUpdater.updateProgress(commandId, progress, detailedProgress)
           }
 
           case None =>
