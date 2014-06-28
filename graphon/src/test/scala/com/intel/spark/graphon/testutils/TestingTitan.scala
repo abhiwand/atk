@@ -21,51 +21,55 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.graphon
+package com.intel.spark.graphon.testutils
 
-import java.util.Date
+import com.intel.testutils.DirectoryUtils._
+import com.intel.testutils.{ MultipleAfter, LogUtils }
+import com.intel.graphbuilder.graph.titan.TitanGraphConnector
+import com.intel.graphbuilder.util.SerializableBaseConfiguration
+import java.io.File
 
-import com.intel.testutils._
-import org.apache.spark.{ SparkConf, SparkContext }
-import org.scalatest.{ BeforeAndAfterAll, WordSpec }
+/**
+ * This trait can be mixed into Specifications to get a TitanGraph backed by Berkeley for testing purposes.
+ *
+ * IMPORTANT! only one thread can use the graph below at a time. This isn't normally an issue because
+ * each test usually gets its own copy.
+ */
+trait TestingTitan extends MultipleAfter {
 
-trait GraphonSparkContext extends WordSpec with BeforeAndAfterAll {
-  LogUtils.silenceSpark()
+  LogUtils.silenceTitan()
 
-  val conf = new SparkConf()
-    .setMaster("local")
-    .setAppName(this.getClass.getSimpleName + " " + new Date())
-  conf.set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
-  conf.set("spark.kryo.registrator", "com.intel.graphbuilder.driver.spark.titan.GraphBuilderKryoRegistrator")
+  private var tmpDir: File = createTempDirectory("titan-graph-for-unit-testing-")
 
-  var sparkContext: SparkContext = null
+  var titanConfig = new SerializableBaseConfiguration()
+  titanConfig.setProperty("storage.directory", tmpDir.getAbsolutePath)
 
-  override def beforeAll = {
-    // Ensure only one Spark local context is running at a time
-    TestingSparkContext.lock.acquire()
-    sparkContext = new SparkContext(conf)
+  var titanConnector = new TitanGraphConnector(titanConfig)
+  var graph = titanConnector.connect()
+
+  override def after: Unit = {
+    cleanupTitan()
+    super.after
   }
 
   /**
-   * Clean up after the test is done
+   * IMPORTANT! removes temporary files
    */
-  override def afterAll = {
-    cleanupSpark()
-  }
-
-  /**
-   * Shutdown spark and release the lock
-   */
-  def cleanupSpark(): Unit = {
+  def cleanupTitan(): Unit = {
     try {
-      if (sparkContext != null) {
-        sparkContext.stop()
+      if (graph != null) {
+        graph.shutdown()
       }
     }
     finally {
-      // To avoid Akka rebinding to the same port, since it doesn't unbind immediately on shutdown
-      System.clearProperty("spark.driver.port")
-      TestingSparkContext.lock.release()
+      deleteTempDirectory(tmpDir)
     }
+
+    // make sure this class is unusable when we're done
+    titanConfig = null
+    titanConnector = null
+    graph = null
+    tmpDir = null
   }
+
 }

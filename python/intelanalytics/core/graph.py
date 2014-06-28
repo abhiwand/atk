@@ -355,6 +355,7 @@ class BigGraph(object):
         self._uri = ""
         self._backend.create(self, rules)
         self.ml = GraphMachineLearning(self)
+        self.vertex_sample = GraphSample(self).vertex_sample
         logger.info('Created new graph "%s"', self._name)
 
     @property
@@ -441,3 +442,46 @@ class GraphMachineLearning(object):
 
     def recommend(self, vertex_id):
         return self._backend.recommend(self.graph, vertex_id)
+
+class GraphSample(object):
+
+    def __init__(self, graph):
+        self.graph = graph
+        self.subgraph_name = graph._get_new_graph_name()
+        if not hasattr(self, '_backend'):
+            self._backend = _get_backend()
+
+    def vertex_sample(self, size=1, sample_type='uniform', seed=1):
+        """
+        Sample vertices of graph and generate a new graph that represents the vertex induced subgraph.
+
+        There are three types of vertex sampling implemented.  A 'uniform' vertex sample selects the specified
+        number of vertices uniformly at random from the set of all graph vertices.  A 'degree'-weighted vertex sample
+        selects vertices based on a random weighted draw, where the weight is given by the degree of the vertex.  Note
+        that this will bias toward high-degree vertices.  A 'degreedist'-weighted vertex sample selects vertices based
+        on a random weighted draw, where the weight is given by the total number of vertices in the graph that have
+        the same vertex degree.
+
+        Parameters
+        ----------
+
+        size : int
+            The number of vertices to sample
+        sample_type : string
+            The type of vertex sample: 'uniform', 'degree', 'degreedist'
+        seed : int
+            Random seed value
+
+        Returns
+        -------
+
+        BigGraph
+            A BigGraph object for the vertex-induced subgraph
+
+        Examples
+        --------
+        >>> graph = BigGraph([vertex_rule, edge_rule])
+        >>> subgraph = graph.vertex_sample(100, 'degreedist')
+
+        """
+        self._backend.vertex_sample(self.graph, size, sample_type, seed)
