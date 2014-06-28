@@ -38,20 +38,18 @@ sealed trait Primitive extends Schema {
 }
 
 case class ObjectSchema(
-                   id: Option[URI] = None,
-                   title: Option[String] = None,
-                   $schema: String = "http://json-schema.org/draft-04/schema#",
-                   description: Option[String] = None,
-                   fields: Map[String,Schema]
-                   ) extends Schema
+  id: Option[URI] = None,
+  title: Option[String] = None,
+  $schema: String = "http://json-schema.org/draft-04/schema#",
+  description: Option[String] = None,
+  fields: Map[String, Schema]) extends Schema
 
 case class StringSchema(
-            title: Option[String],
-            description: Option[String],
-            maxLength: Option[Int] = None,
-            minLength: Option[Int] = None,
-            pattern: Option[String]
-                         ) extends Primitive {
+    title: Option[String],
+    description: Option[String],
+    maxLength: Option[Int] = None,
+    minLength: Option[Int] = None,
+    pattern: Option[String]) extends Primitive {
   def `type` = "string"
   require(maxLength.isEmpty || maxLength > 0, "maxLength must be greater than zero")
   require(minLength.isEmpty || maxLength >= 0, "minLength must be greater than or equal to zero")
@@ -60,8 +58,8 @@ case class StringSchema(
 
 case class ArraySchema(title: Option[String],
                        description: Option[String],
-                       additionalItems: Option[Either[Boolean,ObjectSchema]],
-                       items: Option[Either[ObjectSchema,Array[ObjectSchema]]]) extends Primitive {
+                       additionalItems: Option[Either[Boolean, ObjectSchema]],
+                       items: Option[Either[ObjectSchema, Array[ObjectSchema]]]) extends Primitive {
 
 }
 
