@@ -25,7 +25,7 @@ package com.intel.intelanalytics.service.v1.viewmodels
 
 import com.intel.intelanalytics.domain.Error
 import spray.json.JsObject
-import com.intel.intelanalytics.engine.StageProgressInfo
+import com.intel.intelanalytics.engine.ProgressInfo
 
 /**
  * The REST service response for single command in "GET ../commands/id"

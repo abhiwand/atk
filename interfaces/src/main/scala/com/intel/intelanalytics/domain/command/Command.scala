@@ -27,7 +27,7 @@ import spray.json.JsObject
 import com.intel.intelanalytics.domain.HasId
 import org.joda.time.DateTime
 import com.intel.intelanalytics.domain.Error
-import com.intel.intelanalytics.engine.StageProgressInfo
+import com.intel.intelanalytics.engine.ProgressInfo
 
 /**
  * An invocation of a function defined on the server.
@@ -52,7 +52,7 @@ case class Command(id: Long,
                    arguments: Option[JsObject],
                    error: Option[Error] = None,
                    progress: List[Float],
-                   detailedProgress: List[StageProgressInfo],
+                   detailedProgress: List[ProgressInfo],
                    complete: Boolean = false,
                    result: Option[JsObject] = None,
                    createdOn: DateTime,

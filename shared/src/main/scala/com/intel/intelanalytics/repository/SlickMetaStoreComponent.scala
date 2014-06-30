@@ -36,8 +36,8 @@ import org.flywaydb.core.Flyway
 import spray.json._
 
 import scala.util.Try
-import com.intel.intelanalytics.engine.StageProgressInfo
-import com.intel.intelanalytics.engine.StageProgressInfo
+import com.intel.intelanalytics.engine.ProgressInfo
+import com.intel.intelanalytics.engine.ProgressInfo
 import scala.Some
 import com.intel.intelanalytics.domain.frame.DataFrameTemplate
 import com.intel.intelanalytics.domain.User
@@ -83,9 +83,9 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
     { string => JsonParser(string).convertTo[List[Float]] }
   )
 
-  implicit val detailedProgressType = MappedColumnType.base[List[StageProgressInfo], String](
+  implicit val detailedProgressType = MappedColumnType.base[List[ProgressInfo], String](
     { detailedProgress => detailedProgress.toJson.prettyPrint },
-    { string => JsonParser(string).convertTo[List[StageProgressInfo]] }
+    { string => JsonParser(string).convertTo[List[ProgressInfo]] }
   )
 
   private[repository] val database = withContext("Connecting to database") {
@@ -449,7 +449,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
 
       def progress = column[List[Float]]("progress")
 
-      def detailedProgress = column[List[StageProgressInfo]]("detailedProgress")
+      def detailedProgress = column[List[ProgressInfo]]("detailedProgress")
 
       def complete = column[Boolean]("complete", O.Default(false))
 
@@ -528,7 +528,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
      * @param progress progress for the command
      * @param session session to db
      */
-    override def updateProgress(id: Long, progress: List[Float], detailedProgress: List[StageProgressInfo])(implicit session: Session): Try[Unit] = Try {
+    override def updateProgress(id: Long, progress: List[Float], detailedProgress: List[ProgressInfo])(implicit session: Session): Try[Unit] = Try {
       val q = for { c <- commands if c.id === id } yield (c.progress, c.detailedProgress)
       q.update(progress, detailedProgress)
     }
