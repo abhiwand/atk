@@ -23,9 +23,13 @@
 
 package com.intel.intelanalytics.domain
 
+import java.net.URI
+
+import com.intel.intelanalytics.domain.command.CommandDefinition
 import com.intel.intelanalytics.domain.frame.load.{ Load, LineParser, LoadSource, LineParserArguments }
 import com.intel.intelanalytics.domain.schema.{ Schema, DataTypes }
 import DataTypes.DataType
+import com.intel.intelanalytics.schema._
 import spray.json._
 import com.intel.intelanalytics.domain.frame._
 import com.intel.intelanalytics.domain.graph.{ Graph, GraphLoad, GraphTemplate }
@@ -159,9 +163,43 @@ object DomainJsonProtocol extends DefaultJsonProtocol {
         case JsNumber(n) if n.isValidFloat => n.floatValue()
         case JsNumber(n) => n.doubleValue()
         case JsString(s) => s
-        case unk => serializationError("Cannot deserialize " + unk.getClass.getName)
+        case unk => deserializationError("Cannot deserialize " + unk.getClass.getName)
       }
+    }
+
+  }
+  implicit object UriFormat extends JsonFormat[URI] {
+    override def read(json: JsValue): URI = json match {
+      case JsString(value) => new URI(value)
+      case x => deserializationError(s"Expected string, received $x")
+    }
+
+    override def write(obj: URI): JsValue = JsString(obj.toString)
+  }
+
+  implicit object JsonSchemaFormat extends JsonFormat[JsonSchema] {
+    override def read(json: JsValue): JsonSchema = json match {
+      case JsObject(o) =>
+        o.getOrElse("type", JsString("object")) match {
+          case JsString("string") => stringSchemaFormat.read(json)
+          case JsString("array") => arraySchemaFormat.read(json)
+          case JsString("number") => numberSchemaFormat.read(json)
+          case _ => objectSchemaFormat.read(json)
+        }
+      case x => deserializationError(s"Expected a Json schema object, but got $x")
+    }
+
+    override def write(obj: JsonSchema): JsValue = obj match {
+      case o: ObjectSchema => objectSchemaFormat.write(o)
+      case s: StringSchema => stringSchemaFormat.write(s)
+      case a: ArraySchema => arraySchemaFormat.write(a)
+      case n: NumberSchema => numberSchemaFormat.write(n)
     }
   }
 
+  implicit val numberSchemaFormat = jsonFormat8(NumberSchema)
+  implicit val stringSchemaFormat = jsonFormat8(StringSchema)
+  implicit val objectSchemaFormat = jsonFormat11(ObjectSchema)
+  implicit val arraySchemaFormat = jsonFormat8(ArraySchema)
+  implicit val commandDefinitionFormat = jsonFormat3(CommandDefinition)
 }

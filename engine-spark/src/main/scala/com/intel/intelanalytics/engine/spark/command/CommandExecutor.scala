@@ -30,7 +30,7 @@ import com.intel.intelanalytics.engine.spark.context.SparkContextManager
 import com.intel.intelanalytics.engine.spark.plugin.SparkInvocation
 import com.intel.intelanalytics.engine.spark.{ SparkEngine, SparkEngineConfig }
 import com.intel.intelanalytics.security.UserPrincipal
-import com.intel.intelanalytics.shared.EventLogging
+import com.intel.intelanalytics.shared.{ JsonSchemaExtractor, EventLogging }
 import com.intel.intelanalytics.{ ClassLoaderAware, NotFoundException }
 import org.apache.spark.SparkContext
 import spray.json._
@@ -67,7 +67,17 @@ class CommandExecutor(engine: => SparkEngine, commands: SparkCommandStorage, con
   /**
    * Returns all the command definitions registered with this command executor.
    */
-  def getCommandDefinitions(): Iterable[CommandDefinition] = commandPlugins.values.map(p => CommandDefinition(p.name))
+  def getCommandDefinitions(): Iterable[CommandDefinition] =
+    commandPlugins.values.map(p => {
+      val (argSchema, resSchema) = getArgumentAndResultSchemas(p)
+      CommandDefinition(p.name, argSchema, resSchema)
+    })
+
+  private def getArgumentAndResultSchemas(plugin: CommandPlugin[_, _]) = {
+    val arg = plugin.argumentManifest
+    val ret = plugin.returnManifest
+    (JsonSchemaExtractor.getProductSchema(arg), JsonSchemaExtractor.getProductSchema(ret))
+  }
 
   private var commandPlugins: Map[String, CommandPlugin[_, _]] = SparkEngineConfig.archives.flatMap {
     case (archive, className) => Boot.getArchive(ArchiveName(archive, className))
@@ -82,7 +92,7 @@ class CommandExecutor(engine: => SparkEngine, commands: SparkCommandStorage, con
    * @tparam R the return type for the command
    * @return the same command that was passed, for convenience
    */
-  def registerCommand[A, R](command: CommandPlugin[A, R]): CommandPlugin[A, R] = {
+  def registerCommand[A <: Product, R <: Product](command: CommandPlugin[A, R]): CommandPlugin[A, R] = {
     synchronized {
       commandPlugins += (command.name -> command)
     }
@@ -100,8 +110,8 @@ class CommandExecutor(engine: => SparkEngine, commands: SparkCommandStorage, con
    * @tparam R the return type of the command
    * @return the CommandPlugin instance created during the registration process.
    */
-  def registerCommand[A: JsonFormat, R: JsonFormat](name: String,
-                                                    function: (A, UserPrincipal) => R): CommandPlugin[A, R] =
+  def registerCommand[A <: Product: JsonFormat: ClassManifest, R <: Product: JsonFormat: ClassManifest](name: String,
+                                                                                                        function: (A, UserPrincipal) => R): CommandPlugin[A, R] =
     registerCommand(FunctionCommand(name, function))
 
   private def getCommandDefinition(name: String): Option[CommandPlugin[_, _]] = {
@@ -117,10 +127,10 @@ class CommandExecutor(engine: => SparkEngine, commands: SparkCommandStorage, con
    * @param user the user running the command
    * @return an Execution object that can be used to track the command's execution
    */
-  def execute[A, R](command: CommandPlugin[A, R],
-                    arguments: A,
-                    user: UserPrincipal,
-                    executionContext: ExecutionContext): Execution = {
+  def execute[A <: Product, R <: Product](command: CommandPlugin[A, R],
+                                          arguments: A,
+                                          user: UserPrincipal,
+                                          executionContext: ExecutionContext): Execution = {
     implicit val ec = executionContext
     val cmd = commands.create(CommandTemplate(command.name, Some(command.serializeArguments(arguments))))
     withMyClassLoader {
@@ -158,10 +168,10 @@ class CommandExecutor(engine: => SparkEngine, commands: SparkCommandStorage, con
    * @param user the user running the command
    * @return an Execution object that can be used to track the command's execution
    */
-  def execute[A, R](name: String,
-                    arguments: A,
-                    user: UserPrincipal,
-                    executionContext: ExecutionContext): Execution = {
+  def execute[A <: Product, R <: Product](name: String,
+                                          arguments: A,
+                                          user: UserPrincipal,
+                                          executionContext: ExecutionContext): Execution = {
     val function = getCommandDefinition(name)
       .getOrElse(throw new NotFoundException("command definition", name))
       .asInstanceOf[CommandPlugin[A, R]]
@@ -179,9 +189,9 @@ class CommandExecutor(engine: => SparkEngine, commands: SparkCommandStorage, con
    * @param user the user running the command
    * @return an Execution object that can be used to track the command's execution
    */
-  def execute[A, R](command: CommandTemplate,
-                    user: UserPrincipal,
-                    executionContext: ExecutionContext): Execution = {
+  def execute[A <: Product, R <: Product](command: CommandTemplate,
+                                          user: UserPrincipal,
+                                          executionContext: ExecutionContext): Execution = {
     val function = getCommandDefinition(command.name)
       .getOrElse(throw new NotFoundException("command definition", command.name))
       .asInstanceOf[CommandPlugin[A, R]]

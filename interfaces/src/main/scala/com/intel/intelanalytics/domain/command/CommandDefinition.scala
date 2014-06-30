@@ -23,9 +23,11 @@
 
 package com.intel.intelanalytics.domain.command
 
-import spray.json.JsObject
+import com.intel.intelanalytics.schema.ObjectSchema
 
 /**
  * A description of a command in the system, including sample arguments and results
  */
-case class CommandDefinition(name: String, argumentSchema: JsObject, returnSchema: JsObject)
+case class CommandDefinition(name: String,
+                             argumentSchema: ObjectSchema,
+                             returnSchema: ObjectSchema)
