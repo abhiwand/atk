@@ -21,40 +21,21 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.repository.util
+package com.intel.intelanalytics.engine.spark
 
-import java.sql.DriverManager
+import com.intel.intelanalytics.domain.schema.DataTypes
+import org.scalatest.{ FlatSpec, Matchers }
 
-/**
- * Developer utility for testing JDBC Connectivity
- */
-object JdbcConnectionPing {
-
-  // URL Format: "jdbc:postgresql://host:port/database"
-  var url = "jdbc:postgresql://localhost:5432/metastore"
-  var user = "metastore"
-  var password = "Tribeca123"
-
-  /**
-   * Establish JDBC Connection, read now() from database
-   * @param args url, user, password
-   */
-  def main(args: Array[String]) {
-
-    if (args.length == 3) {
-      url = args(1)
-      user = args(2)
-      password = args(3)
-    }
-
-    println("Trying to Connect (url: " + url + ", user: " + user + ", password: " + password.replaceAll(".", "*") + ")")
-
-    val connection = DriverManager.getConnection(url, user, password)
-    val resultSet = connection.createStatement().executeQuery("SELECT now()")
-    while (resultSet.next()) {
-      println("SELECT now() = " + resultSet.getString(1))
-      println("Test was SUCCESSFUL")
-    }
-
+class FrameAppendTest extends FlatSpec with Matchers {
+  "List[DataTypes]" should "determine which type they will combine into" in {
+    DataTypes.mergeTypes(DataTypes.string :: DataTypes.int32 :: DataTypes.float64 :: Nil) should be(DataTypes.string)
+    DataTypes.mergeTypes(DataTypes.string :: DataTypes.float64 :: Nil) should be(DataTypes.string)
+    DataTypes.mergeTypes(DataTypes.string :: DataTypes.int64 :: DataTypes.float64 :: Nil) should be(DataTypes.string)
+    DataTypes.mergeTypes(DataTypes.int32 :: DataTypes.float64 :: Nil) should be(DataTypes.float64)
+    DataTypes.mergeTypes(DataTypes.int64 :: DataTypes.float32 :: Nil) should be(DataTypes.float64)
+    DataTypes.mergeTypes(DataTypes.int32 :: DataTypes.int64 :: Nil) should be(DataTypes.int64)
+    DataTypes.mergeTypes(DataTypes.int32 :: DataTypes.float32 :: Nil) should be(DataTypes.float32)
+    DataTypes.mergeTypes(DataTypes.int32 :: DataTypes.int32 :: Nil) should be(DataTypes.int32)
   }
+
 }

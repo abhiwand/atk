@@ -99,13 +99,26 @@ class FrameBackendRest(object):
     @staticmethod
     def _get_load_arguments(frame, data):
         if isinstance(data, CsvFile):
-            return {'source': data.file_name,
-                    'destination': frame.uri,
-                    'schema': {'columns': data._schema_to_json()},
-                    'skipRows': data.skip_header_lines,
-                    'lineParser': {'operation': {'name': 'builtin/line/separator'},
-                                   'arguments': {'separator': data.delimiter
-                                   }}}
+            return {'destination': frame.uri,
+                    'source': {
+                        "source_type": "file",
+                        "uri": data.file_name,
+                        "parser":{
+                            "name": "builtin/line/separator",
+                            "arguments": {
+                                "separator": data.delimiter,
+                                "skip_rows": data.skip_header_lines,
+                                "schema":{
+                                    "columns": data._schema_to_json()
+                                }
+                            }
+                        }
+                    }
+            }
+        if isinstance(data, BigFrame):
+            return {'source': { 'source_type': 'dataframe',
+                                'uri': data.uri},
+                    'destination': frame.uri}
         raise TypeError("Unsupported data source " + type(data).__name__)
 
     @staticmethod
@@ -169,7 +182,19 @@ class FrameBackendRest(object):
             return
 
         arguments = self._get_load_arguments(frame, data)
-        return execute_update_frame_command("load", arguments, frame)
+        command_info = execute_update_frame_command("load", arguments, frame)
+
+        if isinstance(data, (CsvFile, BigFrame)):
+            # update the Python object (set the columns)
+            for column in command_info.result['schema']['columns']:
+                name, data_type =  column[0], supported_types.try_get_type_from_string(column[1])
+                if data_type is not ignore:
+                    self._accept_column(frame, BigColumn(name, data_type))
+        else:
+            raise TypeError("Unsupported append data type "
+                            + data.__class__.__name__)
+        return command_info
+
 
     def count(self, frame):
         raise NotImplementedError  # TODO - implement count

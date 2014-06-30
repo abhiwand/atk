@@ -23,6 +23,7 @@
 
 package com.intel.intelanalytics.domain.schema
 
+import scala.collection.immutable.Set
 import scala.util.Try
 
 /**
@@ -137,6 +138,23 @@ object DataTypes {
         "int" -> int32)
 
   /**
+   * Determine root DataType that all DataTypes in list can be converted into.
+   * @param dataTypes DataTypes to merge
+   * @return  Merged DataType
+   */
+  def mergeTypes(dataTypes: List[DataType]): DataType = {
+    dataTypes.toSet match {
+      case x if x.size == 1 => x.head
+      case x if Set[DataType](string).subsetOf(x) => string
+      case x if Set[DataType](float64).subsetOf(x) => float64
+      case x if Set[DataType](int64, float32).subsetOf(x) => float64
+      case x if Set[DataType](int32, float32).subsetOf(x) => float32
+      case x if Set[DataType](int32, int64).subsetOf(x) => int64
+      case _ => string
+    }
+  }
+
+  /**
    * Converts a string such as "int32" to a datatype if possible.
    * @param s a string that matches the name of a data type
    * @return the data type object corresponding to the name
@@ -177,4 +195,5 @@ object DataTypes {
       }
     }
   }
+
 }
