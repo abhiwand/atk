@@ -25,7 +25,7 @@ package com.intel.intelanalytics.repository
 
 import com.intel.intelanalytics.domain.command.CommandTemplate
 import org.scalatest.Matchers
-import com.intel.intelanalytics.engine.StageProgressInfo
+import com.intel.intelanalytics.engine.ProgressInfo
 
 class CommandRepositorySpec extends SlickMetaStoreH2Testing with Matchers {
 
@@ -61,10 +61,10 @@ class CommandRepositorySpec extends SlickMetaStoreH2Testing with Matchers {
 
         // create a command
         val command = commandRepo.insert(new CommandTemplate(name, None))
-        commandRepo.updateProgress(command.get.id, List(100), List(StageProgressInfo(5, 5, 10, 10))) //"step 5/5 task 10/10")
+        commandRepo.updateProgress(command.get.id, List(100), List(ProgressInfo(100, 5)))
         val command2 = commandRepo.lookup(command.get.id)
         command2.get.progress shouldBe List(100)
-        command2.get.detailedProgress shouldBe List(StageProgressInfo(5, 5, 10, 10)) //"step 5/5 task 10/10"
+        command2.get.detailedProgress shouldBe List(ProgressInfo(100, 5))
     }
   }
 

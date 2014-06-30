@@ -68,7 +68,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
 
   /* This progress listener saves progress update to command table */
   SparkProgressListener.progressUpdater = new CommandProgressUpdater {
-    override def updateProgress(commandId: Long, progress: List[Float], detailedProgress: List[StageProgressInfo]): Unit = commandStorage.updateProgress(commandId, progress, detailedProgress)
+    override def updateProgress(commandId: Long, progress: List[Float], detailedProgress: List[ProgressInfo]): Unit = commandStorage.updateProgress(commandId, progress, detailedProgress)
   }
 
   def shutdown: Unit = {

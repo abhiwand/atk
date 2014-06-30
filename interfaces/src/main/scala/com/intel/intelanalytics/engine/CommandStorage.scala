@@ -39,6 +39,6 @@ trait CommandStorage {
    * @param id command id
    * @param progress progress of jobs initiated by this command
    */
-  def updateProgress(id: Long, progress: List[Float], detailedProgress: List[StageProgressInfo]): Unit
+  def updateProgress(id: Long, progress: List[Float], detailedProgress: List[ProgressInfo]): Unit
 }
 
