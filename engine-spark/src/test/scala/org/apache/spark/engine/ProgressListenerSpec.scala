@@ -63,6 +63,8 @@ class ProgressListenerSpec extends Specification with Mockito {
     parent1.id.returns(1)
     val parent2 = mock[Stage]
     parent2.id.returns(2)
+    parent2.parents.returns(List(parent1))
+
     finalStage1.parents.returns(List(parent1, parent2))
     val properties = mock[java.util.Properties]
     properties.getProperty("command-id").returns(commandId)
@@ -162,7 +164,7 @@ class ProgressListenerSpec extends Specification with Mockito {
     val jobStart = SparkListenerJobStart(job, Array())
     listener onJobStart jobStart
 
-    listener.jobIdToStageIds(1) shouldEqual Array(4, 5, 1, 2, 3)
+    listener.jobIdToStagesIds(1) shouldEqual Array(4, 5, 1, 2, 3)
   }
 
   "initialize stages count" in {
@@ -541,7 +543,18 @@ class ProgressListenerSpec extends Specification with Mockito {
     listener.onStageCompleted(completed1_3)
 
     listener.getDetailedCommandProgress(1) shouldEqual List(StageProgressInfo(3, 3, 10, 10), StageProgressInfo(1, 4, 1, 10))
+  }
 
+  "mark parent stage to complete when child stage is starting" in {
+    val listener = createListener_one_job("1")
+    val stageInfo = mock[StageInfo]
+    stageInfo.numTasks.returns(10)
+    stageInfo.stageId.returns(2)
+
+    val completed = SparkListenerStageCompleted(stageInfo)
+    listener.onStageCompleted(completed)
+    listener.getCommandProgress(1) shouldEqual List(66.66f)
+//    listener.getDetailedCommandProgress(1) shouldEqual List(StageProgressInfo(2, 3, 0, 10))
   }
 
 }
