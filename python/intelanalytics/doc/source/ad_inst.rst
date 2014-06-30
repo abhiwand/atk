@@ -4,47 +4,12 @@ Installation
 Pre-Installation
 ----------------
 
-Set Up A Cluster Server
-~~~~~~~~~~~~~~~~~~~~~~~
+..  toctree::
+    :maxdepth: 1
 
-Server Workstation
-``````````````````
-
-A user needs to be set up on the workstation with superuser rights without a password, for example ``hadoop``.
-    $ sudo visudo
-Add the following line to the end of file
-    hadoop ALL=(ALL)      NOPASSWD: ALL
-Use a fully qualified hostname wherever it can be used, for example ``host.computercenter.com``.
-To assign a hostname to the workstation in Ubuntu it is necessary to edit the file /etc/hostname; in RedHat/CentOS it is /etc/sysconfig/network.
-    Add or change the hostname to ``host.computercenter.com``
-    Save the change
-    Run the command $ sudo hostname ``host.computercenter.com``
-The next step is to set up the hosts file.
-    Edit the file /etc/hosts
-    Add the actual ip address and then the hostname, for example: ``127.0.0.1`` ``host.computercenter.com``
-    The actual hostname should be just after the ip address in a single line.
-Now, turn off iptables and selinux.
-In Ubuntu, the steps to turn off the iptables are:
-    sudo service ufw stop
-    sudo ufw disable
-While in RedHat/CentOS, the steps are:
-    sudo service iptables stop
-    sudo chkconfig iptables off
-To turn off selinux, edit the file /etc/sysconfig/selinux and change the SELINUX line to:
-    SELINUX=disabled
-Keep RedHat from defragmenting the hard drive.
-    Edit /etc/rc.local
-    At the bottom of the file enter: echo never > /sys/kernel/mm/redhat_transparent_hugepage/defrag
-
-A cluster server is usually a dedicated group of computers, but for testing and trial uses, it could be the same computer as the client.
-Install the Cloudera Manager. See `Cloudera Manager`_ and `Cloudera Documentation`_.
-This sets up a data server.
-
-PostgreSQL
-~~~~~~~~~~
-
-Under normal circumstances, when you installed the Cloudera Manager, it will have also installed PostgreSQL.
-This program is used for managing the metadata (the user login and the command record)
+    ad_inse
+    ad_inwk
+    ad_psql
 
 Installation
 ------------
@@ -64,10 +29,7 @@ In addition, the rest-server package also installs 'java' version 1.7 or newer
 Platform Specific Installation
 ------------------------------
 
-.. toctree::
-   :maxdepth: 1
-
-   ad_yum
+RedHat/Centos or other system using ``yum``: :doc:ad_yum
 
 .. ad_apt (future)
 
