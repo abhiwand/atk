@@ -256,14 +256,14 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
 
   def runFrameRenameFrame(uri: Uri, xform: JsonTransform)(implicit user: UserPrincipal) = {
     val test = Try {
-      xform.arguments.get.convertTo[FrameRenameFrame[JsObject, String]]
+      xform.arguments.get.convertTo[FrameRenameFrame]
     }
-    val idOpt = test.toOption.flatMap(args => UrlParser.getFrameId(args.frame))
+    val idOpt = test.toOption.map(args => args.frame.id)
     (validate(test.isSuccess, "Failed to understand rename arguments: " + getErrorMessage(test))
       & validate(idOpt.isDefined, "Frame must be a valid data frame URL")) {
         val args = test.get
         val id = idOpt.get
-        val exec = engine.renameFrame(FrameRenameFrame[JsObject, Long](id, args.new_name))
+        val exec = engine.renameFrame(args)
         complete(decorate(uri + "/" + exec.start.id, exec.start))
       }
   }

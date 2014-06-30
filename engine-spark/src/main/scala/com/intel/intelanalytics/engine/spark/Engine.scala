@@ -209,11 +209,11 @@ class SparkEngine(sparkContextManager: SparkContextManager,
 
   def expectFrame(frameRef: FrameReference): DataFrame = expectFrame(frameRef.id)
 
-  def renameFrame(arguments: FrameRenameFrame[JsObject, Long])(implicit user: UserPrincipal): Execution =
+  def renameFrame(arguments: FrameRenameFrame)(implicit user: UserPrincipal): Execution =
     commands.execute(renameFrameCommand, arguments, user, implicitly[ExecutionContext])
 
   val renameFrameCommand = commands.registerCommand("dataframe/rename_frame", renameFrameSimple)
-  private def renameFrameSimple(arguments: FrameRenameFrame[JsObject, Long], user: UserPrincipal) = {
+  private def renameFrameSimple(arguments: FrameRenameFrame, user: UserPrincipal) = {
     val frame = expectFrame(arguments.frame)
     val newName = arguments.new_name
     frames.renameFrame(frame, newName)
