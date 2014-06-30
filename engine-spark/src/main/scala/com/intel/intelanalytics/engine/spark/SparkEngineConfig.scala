@@ -25,31 +25,63 @@ package com.intel.intelanalytics.engine.spark
 
 import com.intel.graphbuilder.util.SerializableBaseConfiguration
 import scala.collection.JavaConverters._
-import com.intel.intelanalytics.shared.SharedConfig
+import com.intel.intelanalytics.shared.{ EventLogging, SharedConfig }
 
 import scala.concurrent.duration._
+import java.net.InetAddress
+import java.io.File
 
 /**
  * Configuration Settings for the SparkEngine,
  *
  * This is our wrapper for Typesafe config.
  */
-object SparkEngineConfig extends SharedConfig {
+object SparkEngineConfig extends SharedConfig with EventLogging {
 
   // val's are not lazy because failing early is better
 
   /** Spark home directory, e.g. "/opt/cloudera/parcels/CDH/lib/spark", "/usr/lib/spark", etc. */
-  val sparkHome: String = config.getString("intel.analytics.spark.home")
+  val sparkHome: String = {
+    val sparkHome = config.getString("intel.analytics.engine.spark.home")
+    if (sparkHome == "") {
+      guessSparkHome
+    }
+    else {
+      sparkHome
+    }
+  }
+
+  /**
+   * Check for sparkHome in the expected locations
+   */
+  private def guessSparkHome: String = {
+    val possibleSparkHomes = List("/usr/lib/spark", "/opt/cloudera/parcels/CDH/lib/spark/")
+    possibleSparkHomes.foreach(dir => {
+      val path = new File(dir)
+      if (path.exists()) {
+        return path.getAbsolutePath
+      }
+    })
+    throw new RuntimeException("sparkHome wasn't found at any of the expected locations, please set sparkHome in the config")
+  }
 
   /** URL for spark master, e.g. "spark://hostname:7077", "local[4]", etc */
-  val sparkMaster: String = config.getString("intel.analytics.spark.master")
+  val sparkMaster: String = {
+    val sparkMaster = config.getString("intel.analytics.engine.spark.master")
+    if (sparkMaster == "") {
+      "spark://" + hostname + ":7077"
+    }
+    else {
+      sparkMaster
+    }
+  }
 
   /** Default number for partitioning data */
   val sparkDefaultPartitions: Int = config.getInt("intel.analytics.engine.spark.defaultPartitions")
 
   val defaultTimeout: FiniteDuration = config.getInt("intel.analytics.engine.defaultTimeout").seconds
 
-  val fsRoot: String = config.getString("intel.analytics.fs.root")
+  val fsRoot: String = config.getString("intel.analytics.engine.fs.root")
 
   val maxRows: Int = config.getInt("intel.analytics.engine.max-rows")
 
@@ -87,6 +119,19 @@ object SparkEngineConfig extends SharedConfig {
       sparkConfProperties += entry.getKey -> properties.getString(entry.getKey)
     }
     sparkConfProperties
+  }
+
+  /** Hostname for current system */
+  private def hostname: String = InetAddress.getLocalHost.getHostName
+
+  // log important settings
+  def logSettings(): Unit = withContext("SparkEngineConfig") {
+    info("fsRoot: " + fsRoot)
+    info("sparkHome: " + sparkHome)
+    info("sparkMaster: " + sparkMaster)
+    for ((key: String, value: String) <- sparkConfProperties) {
+      info(s"sparkConfProperties: $key = $value")
+    }
   }
 
 }
