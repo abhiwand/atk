@@ -669,6 +669,26 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     realFrame
   }
 
+  val modelAccuracyCommand = commands.registerCommand("dataframe/model_accuracy", modelAccuracySimple)
+
+  override def modelAccuracy(arguments: ModelAccuracy)(implicit user: UserPrincipal): Execution =
+    commands.execute(modelAccuracyCommand, arguments, user, implicitly[ExecutionContext])
+
+  def modelAccuracySimple(arguments: ModelAccuracy, user: UserPrincipal) = {
+    val frameId: Long = arguments.frameId
+    val realFrame: DataFrame = getDataFrameById(frameId)
+
+    val ctx = sparkContextManager.context(user).sparkContext
+
+    val frameSchema = realFrame.schema
+    val frameRdd = frames.getFrameRdd(ctx, frameId)
+
+    val labelColumnIndex = frameSchema.columnIndex(arguments.labelColumn)
+    val predColumnIndex = frameSchema.columnIndex(arguments.predColumn)
+
+    val accuracy = SparkOps.modelAccuracy(frameRdd, labelColumnIndex, predColumnIndex)
+  }
+
   /**
    * Retrieve DataFrame object by frame id
    * @param frameId id of the dataframe
