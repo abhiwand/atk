@@ -56,4 +56,53 @@ object SchemaUtil {
 
     left ++ right
   }
+
+  /**
+   * Convert a row of values from one schema to another while maintaining the order specified in newColumns.
+   * if a row does not exist in the old schema set the value to null
+   *
+   * @param oldSchema The columns found in the original schema
+   * @param newSchema The columns found in the new schema
+   * @param row an array of values matching the original schema
+   * @return an array of values matching the new schema
+   */
+  def convertSchema(oldSchema: Schema, newSchema: Schema, row: Array[_ <: Any]): Array[Any] = {
+
+    val oldNames = oldSchema.columns.map(_._1).toArray
+    newSchema.columns.toArray.map {
+      case ((name, columnType)) => {
+        val index = oldNames.indexOf(name)
+        if (index != -1) {
+          val value = row(index)
+          if (value != null)
+            columnType.parse(value.toString).get
+          else
+            null
+        }
+        else
+          null
+      }
+    }
+  }
+
+  /**
+   * Merge schema for the purpose of appending two datasets.
+   * @param originalSchema Schema of the original DataFrame
+   * @return a single Schema with columns from both using the ordering of the originalSchema
+   */
+  def mergeSchema(originalSchema: Schema, appendedSchema: Schema): Schema = {
+    if (originalSchema == appendedSchema)
+      originalSchema
+    else {
+      val appendedColumns = originalSchema.columns ++ appendedSchema.columns
+      val columnOrdering: List[String] = appendedColumns.map { case (name, dataTypes) => name }.distinct
+      val groupedColumns = appendedColumns.groupBy { case (name, dataTypes) => name }
+
+      val newColumns = columnOrdering.map(key => {
+        (key, DataTypes.mergeTypes(groupedColumns(key).map { case (name, dataTypes) => dataTypes }))
+      })
+
+      Schema(newColumns)
+    }
+  }
 }
