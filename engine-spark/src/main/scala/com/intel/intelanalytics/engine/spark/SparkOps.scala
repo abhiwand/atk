@@ -196,6 +196,26 @@ private[spark] object SparkOps extends Serializable {
     rdd.flatMap(row => SparkOps.flattenColumnByIndex(index, row, separator))
   }
 
+  /**
+   * Compute accuracy for model performance
+   *
+   * @param frameRdd the dataframe RDD containing the labeled and predicted columns
+   * @param labelColumnIndex column index for the correctly labeled data
+   * @param predColumnIndex column index for the model prediction
+   * @return a Double of the model accuracy measure
+   */
+  def modelAccuracy(frameRdd: RDD[Row], labelColumnIndex: Int, predColumnIndex: Int): Double = {
+    val k = frameRdd.count()
+    val t = frameRdd.sparkContext.accumulator[Long](0)
+
+    frameRdd.foreach{ row =>
+      row(labelColumnIndex) == row(predColumnIndex) match {
+        case true => tp.add(1)
+      }
+    }
+    t / k.toDouble
+  }
+
   def aggregation_functions(elem: Seq[Array[Any]],
                             args_pair: Seq[(Int, String)],
                             schema: List[(String, DataTypes.DataType)]): Seq[Any] = {

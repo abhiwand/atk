@@ -109,4 +109,8 @@ trait Engine {
 
   def deleteGraph(graph: Graph): Future[Unit]
 
+  // Model performance measures
+
+  def modelAccuracy(arguments: ModelAccuracy)(implicit user: UserPrincipal): Execution
+
 }
