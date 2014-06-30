@@ -23,8 +23,9 @@
 
 package com.intel.intelanalytics.domain.frame
 
-case class ModelAccuracy[+Arguments, FrameRef](frameId: FrameRef, labelColumn: String, predColumn: String) {
+case class ClassificationMetric[+Arguments, FrameRef](frameId: FrameRef, metricType: String, labelColumn: String, predColumn: String) {
   require(frame != null, "frame is required")
-  require(labelColumn != null, "label column is required")
-  require(predColumn != null, "predict column is required")
+  require(metricType.equals("accuracy"), "valid metric type is required")  // TODO: add all valid classification metrics here
+  require(labelColumn != null && !labelColumn.equals(""), "label column is required")
+  require(predColumn != null && !predColumn.equals(""), "predict column is required")
 }

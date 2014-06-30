@@ -669,12 +669,12 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     realFrame
   }
 
-  val modelAccuracyCommand = commands.registerCommand("dataframe/model_accuracy", modelAccuracySimple)
+  val classificationMetricCommand = commands.registerCommand("dataframe/classification_metric", classificationMetricSimple)
 
-  override def modelAccuracy(arguments: ModelAccuracy)(implicit user: UserPrincipal): Execution =
-    commands.execute(modelAccuracyCommand, arguments, user, implicitly[ExecutionContext])
+  override def classificationMetric(arguments: ClassificationMetric)(implicit user: UserPrincipal): Execution =
+    commands.execute(classificationMetricCommand, arguments, user, implicitly[ExecutionContext])
 
-  def modelAccuracySimple(arguments: ModelAccuracy, user: UserPrincipal) = {
+  def classificationMetricSimple(arguments: ClassificationMetric, user: UserPrincipal) = {
     val frameId: Long = arguments.frameId
     val realFrame: DataFrame = getDataFrameById(frameId)
 
@@ -686,7 +686,13 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     val labelColumnIndex = frameSchema.columnIndex(arguments.labelColumn)
     val predColumnIndex = frameSchema.columnIndex(arguments.predColumn)
 
-    val accuracy = SparkOps.modelAccuracy(frameRdd, labelColumnIndex, predColumnIndex)
+    val metric_value = arguments.metricType match {
+      case "accuracy" => SparkOps.modelAccuracy(frameRdd, labelColumnIndex, predColumnIndex)
+      case _ => throw new IllegalArgumentException()  // TODO: this exception needs to be handled differently
+    }
+
+    // TODO: return the accuracy measure itself
+
   }
 
   /**
