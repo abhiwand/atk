@@ -111,6 +111,6 @@ trait Engine {
 
   // Model performance measures
 
-  def modelAccuracy(arguments: ModelAccuracy)(implicit user: UserPrincipal): Execution
+  def classificationMetric(arguments: ClassificationMetric)(implicit user: UserPrincipal): Execution
 
 }

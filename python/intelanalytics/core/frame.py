@@ -875,3 +875,36 @@ class BigFrame(object):
             return self._backend.take(self, n, offset)
         except:
             raise IaError(logger)
+
+    def accuracy(self, label_column, pred_column, pos_label = 0):
+        """
+        Computes the accuracy measure for a classification model
+
+        A column containing the correct labels for each instance and a column containing the predictions made by the
+        model are specified.  The accuracy of a model is the proportion of predictions that are correct.  If we let
+        TP denote the number of true positives, TN denote the number of true negatives, and K denote the total number
+        of classified instances, then the model accuracy is given by: (TP + TN) / K.
+
+        Parameters
+        ----------
+        label_column : str
+            the name of the column containing the correct label for each instance
+        pred_column : str
+            the name of the column containing the predicted label for each instance
+        pos_label : int32 (optional, default = 1)
+            the label for a positive instance
+
+        Returns
+        ----------
+        accuracy : float64
+            the accuracy measure for the model whose output is contained in the input data
+
+        Examples
+        ----------
+        >>> acc = frame.accuracy('labels', 'predictions')
+
+        """
+        try:
+            return self._backend.classification_metric(self, 'accuracy', label_column, pred_column, pos_label)
+        except:
+            raise IaError(logger)

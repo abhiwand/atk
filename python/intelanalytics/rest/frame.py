@@ -345,6 +345,18 @@ class FrameBackendRest(object):
         r = self.rest_http.get('dataframes/{0}/data?offset={2}&count={1}'.format(frame._id,n, offset))
         return r.json()
 
+    def classification_metric(self, frame, metric_type, label_column, pred_column, pos_label):
+        if metric_type not in ['accuracy']:
+            raise ValueError("metric_type must be one of: 'accuracy'")
+        if label_column.strip() == "":
+            raise ValueError("label_column can not be empty string")
+        if pred_column.strip() == "":
+            raise ValueError("pred_column can not be empty string")
+        if pos_label.strip() == "":
+            raise ValueError("invalid pos_label")
+        arguments = {'frame': frame._id, 'metricType': metric_type, 'labelColumn': label_column, 'predColumn': pred_column}
+        return get_command_output_value('classification_metric', arguments)
+
 
 class FrameInfo(object):
     """
@@ -406,3 +418,9 @@ def execute_new_frame_command(command_name, arguments):
     command_info = executor.issue(command_request)
     frame_info = FrameInfo(command_info.result)
     return BigFrame(frame_info)
+
+def get_command_output_value(command_name, arguments):
+    """Executes command and returns the computed value"""
+    command_request = CommandRequest('dataframe/' + command_name, arguments)
+    command_info = executor.issue(command_request)
+    return command_info.result

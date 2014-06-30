@@ -197,7 +197,7 @@ private[spark] object SparkOps extends Serializable {
   }
 
   /**
-   * Compute accuracy for model performance
+   * Compute accuracy of a classification model
    *
    * @param frameRdd the dataframe RDD containing the labeled and predicted columns
    * @param labelColumnIndex column index for the correctly labeled data
@@ -205,15 +205,69 @@ private[spark] object SparkOps extends Serializable {
    * @return a Double of the model accuracy measure
    */
   def modelAccuracy(frameRdd: RDD[Row], labelColumnIndex: Int, predColumnIndex: Int): Double = {
+    // TODO: Are these checks necessary at this point?
+    require(labelColumnIndex >= 0)
+    require(predColumnIndex >= 0)
+
     val k = frameRdd.count()
     val t = frameRdd.sparkContext.accumulator[Long](0)
 
     frameRdd.foreach{ row =>
       row(labelColumnIndex) == row(predColumnIndex) match {
-        case true => tp.add(1)
+        case true => t.add(1)
       }
     }
     t / k.toDouble
+  }
+
+  /**
+   * Compute precision of a classification model
+   *
+   * @param frameRdd the dataframe RDD containing the labeled and predicted columns
+   * @param labelColumnIndex column index for the correctly labeled data
+   * @param predColumnIndex column index for the model prediction
+   * @return a Double of the model precision measure
+   */
+  def modelPrecision(frameRdd: RDD[Row], labelColumnIndex: Int, predColumnIndex: Int): Double = {
+    // TODO: Are these checks necessary at this point?
+    require(labelColumnIndex >= 0)
+    require(predColumnIndex >= 0)
+
+    val tp = frameRdd.sparkContext.accumulator[Long](0)
+    val fp = frameRdd.sparkContext.accumulator[Long](0)
+
+    frameRdd.foreach{ row =>
+      row(labelColumnIndex) == row(predColumnIndex) match {
+        case true => tp.add(1)
+        case false => fp.add(1)
+      }
+    }
+    tp / (tp + fp).toDouble
+  }
+
+  /**
+   * Compute recall of a classification model
+   *
+   * @param frameRdd the dataframe RDD containing the labeled and predicted columns
+   * @param labelColumnIndex column index for the correctly labeled data
+   * @param predColumnIndex column index for the model prediction
+   * @return a Double of the model recall measure
+   */
+  def modelRecall(frameRdd: RDD[Row], labelColumnIndex: Int, predColumnIndex: Int): Double = {
+    // TODO: Are these checks necessary at this point?
+    require(labelColumnIndex >= 0)
+    require(predColumnIndex >= 0)
+
+    val tp = frameRdd.sparkContext.accumulator[Long](0)
+    val fn = frameRdd.sparkContext.accumulator[Long](0)
+
+    frameRdd.foreach{ row =>
+      row(labelColumnIndex) == row(predColumnIndex) match {
+        case true => tp.add(1)
+        case false => fp.add(1)
+      }
+    }
+    tp / (tp + fn).toDouble
   }
 
   def aggregation_functions(elem: Seq[Array[Any]],
