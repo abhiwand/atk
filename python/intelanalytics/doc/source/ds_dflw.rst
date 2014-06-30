@@ -15,13 +15,10 @@ CSV File
 
 Example:
 
-This is an example of a CSV file being used for importing data.
-
->>> "Sort Order","Common Name","Formal Name","Type","Sub Type","Sovereignty","Capital","ISO 4217 Currency Code","ISO 4217 Currency Name","ITU-T Telephone Code","ISO 3166-1 2 Letter Code","ISO 3166-1 3 Letter Code","ISO 3166-1 Number","IANA Country Code TLD"
-    "1","Afghanistan","Islamic State of Afghanistan","Independent State",,,"Kabul","AFN","Afghani","+93","AF","AFG","004",".af"
-    "2","Albania","Republic of Albania","Independent State",,,"Tirana","ALL","Lek","+355","AL","ALB","008",".al"
-    "3","Algeria","People's Democratic Republic of Algeria","Independent State",,,"Algiers","DZD","Dinar","+213","DZ","DZA","012",".dz"
-    "4","Andorra","Principality of Andorra","Independent State",,,"Andorra la Vella","EUR","Euro","+376","AD","AND","020",".ad"
+>>>
+For this example, we are going to use the random data generator 'datagen.py'
+>>> python datagen.py -f data -r 100 -t "string string int"
+This will generate 3 files named data, a column names file (data.nam), a column types file (data.typ), and the csv data file (data.csv).
 
 To import CSV data you need a schema, in other words, a way for the program to know what the format of the data is supposed to be.
 The first steps are to create a FrameSchema object and then add column descriptions to it.
@@ -29,11 +26,11 @@ The order of the columns must match the order of the data.
 
 >>> from intelanalytics import *
     my_schema = FrameSchema()
-    my_schema.append(( 'Sort Order', int32 ))
-    my_schema.append(( "Common Name", string ))
-    ...
+    my_schema.append(( 'First Name', string ))
+    my_schema.append(( 'Last Name', string ))
+    my_schema.append(( 'Age', int))
 
-This will create the schema called ``my_schema``, with two columns identified, ``Sort Order`` as an int32 and ``Common Name`` as a string.
+This will create the schema called ``my_schema``, with three columns identified, ``First Name`` as a string, ``Last Name`` as a string, and ``age`` as an integer.
 Naturally you would add to the code as much as you needed to to import the proper fields of data.
 Valid types can be found by polling the types file.
 
@@ -45,80 +42,82 @@ Now we create an object used to define the data layout.
 >>> from intelanalytics import *
     my_csv = CsvFile(raw_data.csv, my_schema, ,1)
 
-JSON File
-~~~~~~~~~
+.. TODO:: Other import data formats
 
-Example:
+    JSON File
+    =~~~~~~~~~
 
->>> {
-       "firstName": "John",
-       "lastName": "Smith",
-       "age": 25,
-       "address": {
-           "streetAddress": "21 2nd Street",
-           "city": "New York",
-           "state": "NY",
-           "postalCode": "10021"
-       },
-       "phoneNumber": [
-           {
-               "type": "home",
-               "number": "212 555-1239"
+    Example:
+
+    >>> {
+           "firstName": "John",
+           "lastName": "Smith",
+           "age": 25,
+           "address": {
+               "streetAddress": "21 2nd Street",
+               "city": "New York",
+               "state": "NY",
+               "postalCode": "10021"
            },
-           {
-               "type": "fax",
-               "number": "646 555-4567"
+           "phoneNumber": [
+               {
+                   "type": "home",
+                   "number": "212 555-1239"
+               },
+               {
+                   "type": "fax",
+                   "number": "646 555-4567"
+               }
+           ],
+           "gender":{
+                "type":"male"
            }
-       ],
-       "gender":{
-            "type":"male"
-       }
-    }
+        }
 
-Since the raw data has the data descriptors built in, the only things we have to do is define an object to hold the data.
+    Since the raw data has the data descriptors built in, the only things we have to do is define an object to hold the data.
 
->>> from intelanalytics.core.files import JsonFile
-    my_json = JsonFile(my_data_file.json)
+    >>> from intelanalytics.core.files import JsonFile
+        my_json = JsonFile(my_data_file.json)
 
-XML File
-~~~~~~~~
+    XML File
+    =~~~~~~~~
 
-Example:
+    Example:
 
->>> <person>
-      <firstName>John</firstName>
-      <lastName>Smith</lastName>
-      <age>25</age>
-      <address>
-        <streetAddress>21 2nd Street</streetAddress>
-        <city>New York</city>
-        <state>NY</state>
-        <postalCode>10021</postalCode>
-      </address>
-      <phoneNumbers>
-        <phoneNumber type="home">212 555-1234</phoneNumber>
-        <phoneNumber type="fax">646 555-4567</phoneNumber>
-      </phoneNumbers>
-      <gender>
-        <type>male</type>
-      </gender>
-    </person>
+    >>> <person>
+          <firstName>John</firstName>
+          <lastName>Smith</lastName>
+          <age>25</age>
+          <address>
+            <streetAddress>21 2nd Street</streetAddress>
+            <city>New York</city>
+            <state>NY</state>
+            <postalCode>10021</postalCode>
+          </address>
+          <phoneNumbers>
+            <phoneNumber type="home">212 555-1234</phoneNumber>
+            <phoneNumber type="fax">646 555-4567</phoneNumber>
+          </phoneNumbers>
+          <gender>
+            <type>male</type>
+          </gender>
+        </person>
 
-The primitive values can also get encoded using attributes instead of tags:
+    The primitive values can also get encoded using attributes instead of tags:
 
->>> <person firstName="John" lastName="Smith" age="25">
-      <address streetAddress="21 2nd Street" city="New York" state="NY" postalCode="10021" />
-      <phoneNumbers>
-         <phoneNumber type="home" number="212 555-1234"/>
-         <phoneNumber type="fax"  number="646 555-4567"/>
-      </phoneNumbers>
-      <gender type="male"/>
-    </person>
+    >>> <person firstName="John" lastName="Smith" age="25">
+          <address streetAddress="21 2nd Street" city="New York" state="NY" postalCode="10021" />
+          <phoneNumbers>
+             <phoneNumber type="home" number="212 555-1234"/>
+             <phoneNumber type="fax"  number="646 555-4567"/>
+          </phoneNumbers>
+          <gender type="male"/>
+        </person>
 
-Since the raw data has the data descriptors built in, the only things we have to do is define an object to hold the data.
+    Since the raw data has the data descriptors built in, the only things we have to do is define an object to hold the data.
 
->>> from intelanalytics.core.files import XmlFile
-    my_xml = XmlFile(my_data_file.xml)
+    >>> from intelanalytics.core.files import XmlFile
+        my_xml = XmlFile(my_data_file.xml)
 
 Data Import or BigFrame Construction
 ------------------------------------
@@ -126,7 +125,7 @@ Data Import or BigFrame Construction
 Now we have some idea of the data file, we will use that to import the data.
 
 >>> from intelanalytics import *
-    my_frame_proxy = BigFrame(my_csv, "Country Data")
+    my_frame_proxy = BigFrame(my_csv, "Personal Data")
 
 This could take a while depending upon the amount of raw data.
 The raw data file has now been copied into a BigFrame object and is ready to be cleaned and transformed using the advanced functionality of the BigFrame.
