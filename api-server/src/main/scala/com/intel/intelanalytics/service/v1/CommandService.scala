@@ -94,7 +94,8 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
             uri =>
               path("definitions") {
                 get {
-                  import ViewModelJsonImplicits._
+                  import DefaultJsonProtocol.listFormat
+                  import DomainJsonProtocol.commandDefinitionFormat
                   complete(engine.getCommandDefinitions().toList)
                 }
               } ~
