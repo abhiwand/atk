@@ -52,7 +52,14 @@ object JsonSchemaExtractor {
 
   def getFieldSchema(manifest: ClassManifest[_])(propertyName: String): JsonSchema = {
     val theClass = manifest.erasure
-    val field = theClass.getField(propertyName)
+    val field = try {
+      theClass.getDeclaredField(propertyName)
+    }
+    catch {
+      case e: NoSuchFieldException =>
+        throw new NoSuchFieldException(s"Class ${manifest.erasure} has no field $propertyName")
+    }
+
     assert(field != null, s"Field $propertyName not found on ${theClass.getName}")
     val schema = field.getType match {
       case t if t == classOf[URI] => StringSchema(format = Some("uri"))

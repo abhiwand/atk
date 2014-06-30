@@ -56,7 +56,11 @@ class FrameBackendRest(object):
                 if len(parts) == 2 \
                         and parts[0] in ('dataframe', 'dataframes') \
                         and not hasattr(self, parts[1]):
+                    args = cmd['argumentSchema']
+                    self_name = ([k for k, v in args if v.has_key('self')] or [None])[0]
                     def invoke(s, **kwargs):
+                        if self_name:
+                            kwargs[self_name] = s.id
                         execute_update_frame_command(parts[1], kwargs, s)
                     setattr(FrameBackendRest, parts[1], invoke)
                     self.__class__.__commands_loaded[parts[1]] = invoke
@@ -117,7 +121,7 @@ class FrameBackendRest(object):
     @staticmethod
     def _get_load_arguments(frame, data):
         if isinstance(data, CsvFile):
-            return {'destination': frame.uri,
+            return {'destination': frame.id,
                     'source': {
                         "source_type": "file",
                         "uri": data.file_name,

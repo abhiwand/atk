@@ -77,7 +77,7 @@ trait Engine {
 
   def project(arguments: FrameProject[JsObject, Long])(implicit user: UserPrincipal): Execution
 
-  def renameFrame(arguments: FrameRenameFrame[JsObject, Long])(implicit user: UserPrincipal): Execution
+  def renameFrame(arguments: FrameRenameFrame)(implicit user: UserPrincipal): Execution
 
   def renameColumn(arguments: FrameRenameColumn[JsObject, Long])(implicit user: UserPrincipal): Execution
 

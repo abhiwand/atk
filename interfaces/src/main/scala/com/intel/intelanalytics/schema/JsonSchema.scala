@@ -61,8 +61,8 @@ case class ObjectSchema(
     additionalProperties: Option[Boolean] = None,
     properties: Option[Map[String, JsonSchema]] = None,
     patternProperties: Option[Map[String, JsonSchema]] = None,
-    definitions: Option[Map[String, JsonSchema]] = None) extends JsonSchema {
-  def `type`: Option[String] = Some("object")
+    definitions: Option[Map[String, JsonSchema]] = None,
+    `type`: Option[String] = Some("object")) extends JsonSchema {
 }
 
 case class StringSchema(
@@ -73,8 +73,8 @@ case class StringSchema(
     minLength: Option[Int] = None,
     pattern: Option[String] = None,
     format: Option[String] = None,
-    self: Option[Boolean] = None) extends Primitive {
-  def `type` = Some("string")
+    self: Option[Boolean] = None,
+    `type`: Option[String] = Some("string")) extends Primitive {
   require(maxLength.isEmpty || maxLength.get > 0, "maxLength must be greater than zero")
   require(minLength.isEmpty || maxLength.get >= 0, "minLength must be greater than or equal to zero")
   require(minLength.getOrElse(0) <= maxLength.getOrElse(Int.MaxValue), "maximum must be at least equal to minimum")
@@ -87,10 +87,10 @@ case class ArraySchema(id: Option[URI] = None,
                        items: Option[Either[ObjectSchema, Array[ObjectSchema]]] = None,
                        maxItems: Option[Int] = None,
                        minItems: Option[Int] = None,
-                       uniqueItems: Option[Boolean] = None) extends Primitive {
+                       uniqueItems: Option[Boolean] = None,
+                       `type`: Option[String] = Some("array")) extends Primitive {
   require(maxItems.isEmpty || maxItems.get >= 0, "maxItems may not be less than zero")
   require(minItems.isEmpty || minItems.get >= 0, "minItems may not be less than zero")
-  def `type` = Some("array")
 }
 
 case class NumberSchema(id: Option[URI] = None,
@@ -100,7 +100,7 @@ case class NumberSchema(id: Option[URI] = None,
                         exclusiveMinimum: Option[Double] = None,
                         maximum: Option[Double] = None,
                         exclusiveMaximum: Option[Double] = None,
-                        multipleOf: Option[Double] = None) extends Primitive {
-  def `type` = Some("number")
+                        multipleOf: Option[Double] = None,
+                        `type`: Option[String] = Some("number")) extends Primitive {
 }
 

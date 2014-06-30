@@ -116,8 +116,7 @@ object DomainJsonProtocol extends DefaultJsonProtocol {
   implicit val addColumnLongFormat = jsonFormat4(FrameAddColumns[JsObject, Long])
   implicit val projectColumnFormat = jsonFormat4(FrameProject[JsObject, String])
   implicit val projectColumnLongFormat = jsonFormat4(FrameProject[JsObject, Long])
-  implicit val renameFrameFormat = jsonFormat2(FrameRenameFrame[JsObject, String])
-  implicit val renameFrameLongFormat = jsonFormat2(FrameRenameFrame[JsObject, Long])
+  implicit val renameFrameFormat = jsonFormat2(FrameRenameFrame)
   implicit val renameColumnFormat = jsonFormat3(FrameRenameColumn[JsObject, String])
   implicit val renameColumnLongFormat = jsonFormat3(FrameRenameColumn[JsObject, Long])
   implicit val joinFrameLongFormat = jsonFormat3(FrameJoin)
@@ -197,9 +196,9 @@ object DomainJsonProtocol extends DefaultJsonProtocol {
     }
   }
 
-  implicit val numberSchemaFormat = jsonFormat8(NumberSchema)
-  implicit val stringSchemaFormat = jsonFormat8(StringSchema)
-  implicit val objectSchemaFormat = jsonFormat11(ObjectSchema)
-  implicit val arraySchemaFormat = jsonFormat8(ArraySchema)
-  implicit val commandDefinitionFormat = jsonFormat3(CommandDefinition)
+  lazy implicit val numberSchemaFormat = jsonFormat9(NumberSchema)
+  lazy implicit val stringSchemaFormat = jsonFormat9(StringSchema)
+  lazy implicit val objectSchemaFormat = jsonFormat12(ObjectSchema)
+  lazy implicit val arraySchemaFormat = jsonFormat9(ArraySchema)
+  lazy implicit val commandDefinitionFormat = jsonFormat3(CommandDefinition)
 }
