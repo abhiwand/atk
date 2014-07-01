@@ -99,4 +99,10 @@ object KCliquePercolationDataTypes {
    */
   case class ExtendersFact(clique: CliqueFact, neighbors: VertexSet, neighborsHigh: Boolean) extends Serializable
 
+  /**
+   * Represents a mapping between vertex ID and community ID
+   * @param vertex
+   * @param communityID
+   */
+  case class VertexCommunity(vertex: Long, communityID: Long) extends Serializable
 }
