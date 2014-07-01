@@ -321,6 +321,57 @@ class Executor(object):
             self.__commands = self.fetch()
         return self.__commands
 
+    def get_command_functions(self, prefixes, update_function, new_function):
+        functions = dict()
+        for cmd in executor.commands:
+            parts = cmd['name'].split('/')
+            if len(parts) != 2 or parts[0] not in prefixes:
+                continue
+            args = cmd['argument_schema']
+            command_name = parts[1][:]
+            parameters = args.setdefault('properties', {})
+            print "ARG schema:", args
+            self_name = ([k for k, v in parameters.items() if isinstance(v, dict) and v.has_key('self')] or [None])[0]
+            print "self arg: ", self_name
+
+            retProps = cmd['return_schema'].setdefault('properties', {})
+            return_self = ([k for k, v in retProps.items() if isinstance(v, dict) and v.has_key('self')] or [None])[0]
+            possible_args = list(parameters.keys())
+            if self_name:
+                possible_args.remove(self_name)
+
+            #Create a new function scope to bind variables properly
+            # (see, e.g. http://eev.ee/blog/2011/04/24/gotcha-python-scoping-closures )
+            #Need make and not just invoke so that invoke won't have
+            #kwargs that include command_name et. al.
+            def make(command_name = command_name, cmd = cmd,
+                     self_name = self_name, return_self = return_self,
+                     possible_args = possible_args,
+                     parameters = parameters):
+
+                def invoke(s, *args, **kwargs):
+                    if self_name:
+                        print "Setting", self_name, "to", s._id
+                        kwargs[self_name] = s._id
+                    for (k,v) in zip(possible_args, args):
+                        if k in kwargs:
+                            raise ValueError("Argument " + k +
+                                             " supplied as a positional argument and as a keyword argument")
+                        print "Assigning", k, "to", v
+                        kwargs[k] = v
+                        validated = CommandRequest.validate_arguments(parameters, kwargs)
+                    if return_self:
+                        return new_function(command_name, validated, s)
+                    else:
+                        update_function(command_name, validated, s)
+                invoke.command = cmd
+                invoke.parameters = parameters
+                invoke.func_name = str(command_name)
+                return invoke
+            f = make()
+            functions[command_name] = f
+        return functions
+
 
 
 executor = Executor()

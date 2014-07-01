@@ -51,55 +51,15 @@ class FrameBackendRest(object):
         # use global connection, auth, etc.  This client does not support
         # multiple connection contexts
         if not self.__class__.commands_loaded:
-            for cmd in executor.commands:
-                parts = cmd['name'].split('/')
-                if len(parts) == 2 \
-                        and parts[0] in ('dataframe', 'dataframes') \
-                        and not hasattr(self, parts[1]):
-                    args = cmd['argument_schema']
-                    command_name = parts[1][:]
-                    parameters = args.setdefault('properties', {})
-                    print "ARG schema:", args
-                    self_name = ([k for k, v in parameters.items() if isinstance(v, dict) and v.has_key('self')] or [None])[0]
-                    print "self arg: ", self_name
+            self.__class__.commands_loaded.update(executor.get_command_functions(('dataframe', 'dataframes'),
+                                                                        execute_update_frame_command,
+                                                                        execute_new_frame_command))
+            for (k, v) in FrameBackendRest.commands_loaded.items():
+                print k
+                if not hasattr(FrameBackendRest, k):
+                    print k, "installed"
+                    setattr(FrameBackendRest, k, staticmethod(v))
 
-                    retProps = cmd['return_schema'].setdefault('properties', {})
-                    return_self = ([k for k, v in retProps.items() if isinstance(v, dict) and v.has_key('self')] or [None])[0]
-                    possible_args = list(parameters.keys())
-                    if self_name:
-                        possible_args.remove(self_name)
-
-                    #Create a new function scope to bind variables properly
-                    # (see, e.g. http://eev.ee/blog/2011/04/24/gotcha-python-scoping-closures )
-                    #Need make and not just invoke so that invoke won't have
-                    #kwargs that include command_name et. al.
-                    def make(command_name = command_name, cmd = cmd,
-                             self_name = self_name, return_self = return_self,
-                             possible_args = possible_args,
-                             parameters = parameters):
-
-                        def invoke(s, *args, **kwargs):
-                            if self_name:
-                                print "Setting", self_name, "to", s._id
-                                kwargs[self_name] = s._id
-                            for (k,v) in zip(possible_args, args):
-                                if k in kwargs:
-                                    raise ValueError("Argument " + k +
-                                                     " supplied as a positional argument and as a keyword argument")
-                                print "Assigning", k, "to", v
-                                kwargs[k] = v
-                                validated = CommandRequest.validate_arguments(parameters, kwargs)
-                            if return_self:
-                                return execute_new_frame_command(command_name, validated, s)
-                            else:
-                                execute_update_frame_command(command_name, validated, s)
-                        invoke.command = cmd
-                        invoke.parameters = parameters
-                        invoke.func_name = str(command_name)
-                        return invoke
-                    f = make()
-                    setattr(FrameBackendRest, parts[1], f)
-                    self.__class__.commands_loaded[parts[1]] = f
 
     def get_frame_names(self):
         logger.info("REST Backend: get_frame_names")
