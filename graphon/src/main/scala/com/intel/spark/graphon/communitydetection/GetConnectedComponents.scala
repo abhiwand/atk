@@ -38,7 +38,8 @@ object GetConnectedComponents {
 
   /**
    * Run the connected components and get the community IDs along with mapping between new Long IDs and original k-cliques
-   * @param kcliqueGraphForComponentAnalysis KCliqueGraphOutput having set of k-cliques and pair of kcliques having (k-1) vertices common
+   * @param kcliqueGraphForComponentAnalysis KCliqueGraphOutput with set of k-cliques as vertices of new graph and
+   *                                         pair of k-cliques having (k-1) vertices common as edges of new graph
    * @return connectedComponentsOutput
    */
   def run(kcliqueGraphForComponentAnalysis: KCliqueGraphOutput) = {
@@ -55,6 +56,11 @@ object GetConnectedComponents {
 
   }
 
+  /**
+   * Return value of connected components including the community IDs
+   * @param connectedComponents pair of new vertex ID and community ID
+   * @param cliqueGraphNewIDsToVerticesList mapping between new vertex ID and original k-cliques
+   */
   case class connectedComponentsOutput(val connectedComponents: RDD[(Long, Long)], val cliqueGraphNewIDsToVerticesList: RDD[(Long, VertexSet)])
 
 }
