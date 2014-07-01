@@ -31,7 +31,7 @@ import com.intel.intelanalytics.engine.Engine
 import com.intel.intelanalytics.service.v1.viewmodels.ViewModelJsonImplicits._
 import scala.concurrent._
 import spray.http.Uri
-import spray.routing.{ Directives, Route }
+import spray.routing.{ ValidationRejection, Directives, Route }
 import com.intel.intelanalytics.domain.frame._
 import com.intel.intelanalytics.domain.FilterPredicate
 import com.intel.intelanalytics.domain.graph.construction.FrameRule
@@ -90,16 +90,16 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
           }
       } ~
         pathPrefix("commands") {
-          requestUri {
-            uri =>
-              path("definitions") {
-                get {
-                  import DefaultJsonProtocol.listFormat
-                  import DomainJsonProtocol.commandDefinitionFormat
-                  complete(engine.getCommandDefinitions().toList)
-                }
-              } ~
-                pathEnd {
+          path("definitions") {
+            get {
+              import DefaultJsonProtocol.listFormat
+              import DomainJsonProtocol.commandDefinitionFormat
+              complete(engine.getCommandDefinitions().toList)
+            }
+          } ~
+            pathEnd {
+              requestUri {
+                uri =>
                   get {
                     //TODO: cursor
                     import spray.json._
@@ -127,17 +127,27 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
                           //                              //the https://site.com/ part and leaves the engine with only an application-specific,
                           //                              //non-transport-related URI. This should be automatic and not something that
                           //                              //every command handler has to call.
-                          engine.execute(CommandTemplate(name = xform.name, arguments = xform.arguments)) match {
-                            case Execution(command, futureResult) =>
-                              complete(decorate(uri, command))
+                          val template = CommandTemplate(name = xform.name, arguments = xform.arguments)
+                          info(s"Received command template for execution: $template")
+                          try {
+                            engine.execute(template) match {
+                              case Execution(command, futureResult) =>
+                                complete(decorate(uri + "/" + command.id, command))
+                            }
+                          }
+                          catch {
+                            case e: DeserializationException =>
+                              reject(ValidationRejection(
+                                s"Incorrectly formatted JSON found while parsing command '${xform.name}':" +
+                                  s" ${e.getMessage}", Some(e)))
                           }
                         //}
                         //}
                       }
                     }
-                }
+              }
 
-          }
+            }
         }
     }
   }

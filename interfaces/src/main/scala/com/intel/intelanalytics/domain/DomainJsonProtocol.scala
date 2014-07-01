@@ -89,6 +89,7 @@ object DomainJsonProtocol extends DefaultJsonProtocol {
           case Some(mat) => FrameReference(mat.group(1).toLong)
           case None => deserializationError("Couldn't find dataframe ID in " + name)
         }
+      case JsNumber(n) => FrameReference(n.toLong)
       case _ => deserializationError("Expected data frame URL, but received " + json)
     }
   }
