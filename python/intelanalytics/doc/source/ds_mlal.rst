@@ -1,3 +1,4 @@
+===========================
 Machine Learning Algorithms
 ===========================
 
@@ -26,6 +27,7 @@ From a functionality point of view, they fall into these categories: *Collaborat
 
 .. _Collaborative_Filtering:
 
+-----------------------
 Collaborative Filtering
 -----------------------
 
@@ -37,7 +39,7 @@ We support two methods in this category, :ref:`ALS` and :ref:`CGD`
 .. _ALS:
 
 Alternating Least Squares (ALS)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+===============================
 
 We use the Alternating Least Squares with Bias for collaborative filtering algorithms.
 http://columbiadatascience.com/2012/10/18/week-7-hunch-com-recommendation-engines-svd-alternating-least-squares-convexity-filter-bubbles/
@@ -53,7 +55,7 @@ Within collaborative filtering approaches, ALS falls in the category of the matr
 
 
 The ALS Model
-~~~~~~~~~~~~~
+=============
 
 A typical representation of the preference matrix P in Giraph is a bipartite graph, where nodes at the left side represent a list of users and nodes at the right side represent a set of items (such as, movies), and edges encode the rating a user provided to an item.
 To support training, validation, and test, a common practice in machine learning, each edge is also annotated by "TR", "VA" or "TE".
@@ -75,10 +77,10 @@ Here the first term strives to find (f_* ) ?'s and b_*'s that fit the given rati
 After the parameters (f_* ) ? and b_* are determined, given an item mj the rating from user ui can be predicted by a simple linear model:
 
 ALS Example Usage
-~~~~~~~~~~~~~~~~~
+=================
 
 Input Data Format
-~~~~~~~~~~~~~~~~~
+=================
 
 The ALS algorithm takes an input data represented in CSV, JSON or XML format.
 We use aCSV file as an example.
@@ -92,7 +94,7 @@ The splits column specifies this row of data is for train, validation, or test.
 We used TR, VA, TE for these three types of splits, respectively.
 
 Data Import
-~~~~~~~~~~~
+===========
 
 To import the ALS input data, use the following ipython calls we provided.
 
@@ -114,7 +116,7 @@ You need to name each column, and specify the data type of each column in your i
 The fourth argument is whether to overwrite the frame if you have imported data to the AlsFrame before.
 
 Graph Construction
-~~~~~~~~~~~~~~~~~~
+==================
 
 After you import the raw data, you register which fields to use for source vertex, which fields to use for target vertex, and then construct a graph from your input data.
 
@@ -128,7 +130,7 @@ Finally, line 6 builds a graph named AlsGraph based on the input data and graph 
 The overwrite option overwrites a pre-existing graph with the same name.
 
 Run ALS Algorithm
-~~~~~~~~~~~~~~~~~
+=================
 
 After graph construction, run the ALS algorithm as follows:
 
@@ -225,7 +227,7 @@ Returns
 >>> After execution, the algorithm's results are stored in the database.
     The convergence curve is accessible through the report object.
 
-For a more complete definition of the Lambda parameter, see the :ref:`glossary<glossary_lambda>`.
+For a more complete definition of the Lambda parameter, see :term:`Lambda`.
 
 Example
 ~~~~~~~
@@ -252,7 +254,7 @@ Example
 .. _CGD:
 
 Conjugate Gradient Descent (CGD)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+================================
 
 See: http://en.wikipedia.org/wiki/Conjugate_gradient_method.
 
@@ -268,7 +270,7 @@ The records are usually organized as a preference matrix P, which is a sparse ma
 Similar to ALS, CGD falls in the category of matrix factorization/latent factor model that infers user profiles and item profiles in low-dimension space, such that the original matrix P can be approximated by a linear model.
 
 Comparison between CGD and ALS
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+==============================
 
 The CGD model is the same as that of ALS except that CGD employs the conjugate gradient descent instead of least squares in optimization.
 Refer to the ALS discussion above for more details on the model.
@@ -285,12 +287,11 @@ CGD converges slower than ALS but requires less memory.
 
 Whenever feasible, ALS is a preferred solver over CGD, while CGD is recommended only when the application requires so much memory that it might be beyond the capacity of the system.
 
-
 CGD Example Usage
-~~~~~~~~~~~~~~~~~
+=================
 
 Input data format
-~~~~~~~~~~~~~~~~~
+=================
 
 The CGD algorithm takes input data represented in CSV, JSON or XML format.
 In this example, we use a CSV file.
@@ -303,7 +304,7 @@ The splits column specifies if this row of data is for training, validation, or 
 We used TR, VA, TE for these three types of splits, respectively.
 
 Data import
-~~~~~~~~~~~
+===========
 
 To import the CGD data, use the following ipython calls that we provide, as shown below.
 
@@ -326,7 +327,7 @@ The fourth argument is whether to overwrite the frame if you have imported data 
 
 
 Graph Construction
-~~~~~~~~~~~~~~~~~~
+==================
 
 After you import the raw data, you register which fields to use for the source vertex, which fields to use for the target vertex, and then construct a graph from your input data.
 
@@ -342,7 +343,7 @@ The overwrite=True in this line means that if you have previously built a graph 
 
 
 Run CGD algorithm
-~~~~~~~~~~~~~~~~~
+=================
 
 After graph construction, run the CGD algorithm, as shown in the example below.
 
@@ -459,6 +460,7 @@ The bias result will be stored in cgd_bias.
 
 .. _Graph_Analytics:
 
+---------------
 Graph Analytics
 ---------------
 
@@ -467,7 +469,7 @@ We support three algorithms in this category, :ref:`APL`, :ref:`CC`, and :ref:`P
 .. _APL:
 
 Average Path Length (APL)
-~~~~~~~~~~~~~~~~~~~~~~~~~
+=========================
 
 The average path length algorithm calculates the average path length from a vertex to any other vertices.
 
@@ -493,7 +495,7 @@ The average path length algorithm calculates the average path length from a vert
         The default value is 15.
 
 Returns
-~~~~~~~
+=======
 
 Output : AlgorithmReport
 
@@ -501,7 +503,7 @@ Output : AlgorithmReport
         The progress curve is accessible through the report object.
 
 Example
-~~~~~~~
+=======
 
 >>> graph.ml.avg_path_len(
                 input_edge_label="edge",
@@ -514,7 +516,7 @@ Example
 .. _CC:
 
 Connected Components (CC)
-~~~~~~~~~~~~~~~~~~~~~~~~~
+=========================
 
 The connected components algorithm finds all connected components in graph.
 The implementation is inspired by PEGASUS paper.
@@ -541,14 +543,14 @@ The implementation is inspired by PEGASUS paper.
         The default value is 15.
 
 Returns
-~~~~~~~
+=======
 
 >>>output : AlgorithmReport
     The algorithm's results in the database.
     The progress curve is accessible through the report object.
 
 Example
-~~~~~~~
+=======
 
 >>> graph.ml.connected_components(
                 input_edge_label="connects",
@@ -561,7 +563,7 @@ Example
 .. _PR:
 
 Page Rank (PR)
-~~~~~~~~~~~~~~
+==============
 
 This is the algorithm used by web search engines to rank the relevance of the pages returned by a query.
 See: http://en.wikipedia.org/wiki/PageRank.
@@ -596,13 +598,13 @@ See: http://en.wikipedia.org/wiki/PageRank.
         The default value is 1, which means output every super step.
 
 Returns
-~~~~~~~
+=======
 >>> output : AlgorithmReport
         The algorithm's results in database.
         The progress curve is accessible through the report object.
 
 Example
-~~~~~~~
+=======
 
 >>> graph.ml.page_rank(self,
                       input_edge_label="edges",
@@ -617,6 +619,7 @@ Example
 
 .. _Graphical_Models:
 
+----------------
 Graphical Models
 ----------------
 
@@ -626,7 +629,7 @@ We currently support :ref:`LP` and :ref:`LBP`
 .. _LP:
 
 Label Propagation (LP)
-~~~~~~~~~~~~~~~~~~~~~~
+======================
 
 Originally proposed as a semi-supervised learning algorithm, label propagation propagates labels from labeled data to unlabeled data along a graph encoding similarity relationships among all data points.
 It has been used in many classification problems where a similarity measure between instances is available and can be exploited for inference.
@@ -639,7 +642,7 @@ X. Zhu and Z. Ghahramani. Learning from labeled and unlabeled data with label pr
 See: http://www.cs.cmu.edu/~zhuxj/pub/CMU-CALD-02-107.pdf
 
 The Label Propagation Model
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
+===========================
 
 A typical representation of the Label Propagation (LP) model is a general graph (see the figure below), where nodes are a set of labeled examples (blue) or unlabeled examples (red) and the edges encode the similarity among examples, such that more similar examples are connected by edges with higher weights.
 For a labeled example, the label probability Pi is attached to the node.
@@ -648,10 +651,10 @@ The underlying assumption is that similar nodes should have similar labels.
 The solution can be found with simple matrix operations that iteratively conduct matrix multiplication until convergence.
 
 LP Example Usage
-~~~~~~~~~~~~~~~~
+================
 
 Input data format
-~~~~~~~~~~~~~~~~~
+=================
 
 The Label Propagation (LP) algorithm takes as input data represented in CSV, JSON, or XML format.
 In this example, we use a CSV file.
@@ -664,7 +667,7 @@ The target column is a list of target IDs.
 The weight column is the weight on the edge from the source to the target.
 
 Data import
-~~~~~~~~~~~
+===========
 
 To import the LP input data, use the following ipython calls we provide.
 
@@ -685,7 +688,7 @@ You need to name each column, and specify the data type of each column in your i
 The fourth argument is whether to overwrite the frame if you have imported data to the LpFrame frame before.
 
 Graph Construction
-~~~~~~~~~~~~~~~~~~
+==================
 
 After you import the raw data, you register which fields to use for the source vertex, which fields to use for the target vertex, and then construct a graph from your input data.
 
@@ -700,7 +703,7 @@ Line six builds a graph based on your input data and graph registration, with th
 The overwrite=True in this line means that if you have previously built a graph with the same name, you want to overwrite the old graph.
 
 Run LP algorithm
-~~~~~~~~~~~~~~~~
+================
 
 After graph construction, you are able to run the LP algorithm.
 Here is an example of it.
@@ -763,12 +766,12 @@ Because the input prior value for each vertex is a vector with two elements, we 
         The default value is 1.
 
 Returns
-~~~~~~~
+=======
 >>> output : AlgorithmReport
         The algorithm's results in the database.
 
 Example
-~~~~~~~
+=======
 
 >>> graph.ml.label_prop(
                 input_vertex_property_list="value",
@@ -787,7 +790,7 @@ Example
 .. _LBP:
 
 Loopy Belief Propagation (LBP)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+==============================
 
 See: http://en.wikipedia.org/wiki/Belief_propagation.
 
@@ -800,7 +803,7 @@ The algorithm is described in "K. Murphy, Y. Weiss, and M. Jordan, Loopy-belief 
 We also extended it to support training, validation and test, a common practice in machine learning.
 
 The Loopy Belief Propagation Model
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+==================================
 
 The algorithm performs approximate inference on an undirected graph of hidden variables, where each variable is represented as a node, and edges encode the similarity of it to its neighbors.
 Initially a prior noisy prediction Pri is attached to each node, then the algorithm infers the posterior distribution Poi of each node by propagating and collecting messages to and from its neighbors and updating the beliefs.
@@ -859,12 +862,12 @@ In Giraph, we run the algorithm in iterations until it converges.
         The default value is 1.
 
 Returns
-~~~~~~~
+=======
 output : AlgorithmReport
     The algorithm's results in the database.
 
 Example
-~~~~~~~
+=======
 
 >>> graph.ml.belief_prop(
                         input_vertex_property_list="values",
@@ -879,11 +882,12 @@ Example
                         anchor_threshold="1"
     )
 
-For a more complete definition of the Ising Smoothing parameter, see the :ref:`glossary<glossary_Ising_Smoothing_Parameter>`.
+For a more complete definition of the Ising Smoothing parameter, see :term:`Ising Smoothing Parameter`.
 
 
 .. _Topic_Modeling:
 
+--------------
 Topic Modeling
 --------------
 
@@ -892,7 +896,7 @@ For Topic Modeling, see: http://en.wikipedia.org/wiki/Topic_model
 .. _LDA:
 
 Latent Dirichlet Allocation (LDA)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+=================================
 
 We currently support Latent Dirichlet Allocation (LDA) for our topic modeling.
 
@@ -908,7 +912,7 @@ Our implementation is based on the CVB0 LDA algorithm, one of the state of the a
 http://www.gatsby.ucl.ac.uk/~ywteh/research/inference/nips2006.pdf
 
 The LDA Model
-~~~~~~~~~~~~~
+=============
 
 A typical representation of LDA is a bipartite graph, where nodes on the left side represent a collection of documents and nodes on the right side represents a set of words (for example., vocabulary), and edges encode number of occurrences of a word in a corresponding document (see the example below).
 
@@ -925,10 +929,10 @@ At a high-level, LDA extracts semantically similar words into a topic, such as "
 The underlying assumptions are intuitive: (1) words in the same documents are topically related; (2) documents that share common words are likely about similar topics.
 
 LDA Example Usage
-~~~~~~~~~~~~~~~~~
+=================
 
 Input data format
-~~~~~~~~~~~~~~~~~
+=================
 
 The LDA algorithm takes an input text corpus represented in CSV, JSON or XML format.
 We use a CSV file in this example.
@@ -939,7 +943,7 @@ The "count" column records how many times a word appears in a given document.
 The "vertex_type" labels the type of the source vertex in each row.
 
 Data import
-~~~~~~~~~~~
+===========
 
 To import the LDA input data, you can use the following iPython calls:
 
@@ -961,7 +965,7 @@ You need to name each column, and specify the data type of each column in your i
 The fourth argument is whether to overwrite the frame; true overwrites the frame, if you have imported data to the lda frame before.
 
 Graph Construction
-~~~~~~~~~~~~~~~~~~
+==================
 
 After you import the raw data, you register which fields to use for the source vertex, which fields to use for the target vertex, and then construct a graph from your input data.
 
@@ -974,7 +978,7 @@ Finally, line 6 builds a graph named ldagraph based on the input data and graph 
 The overwrite option specifies that an existing graph with this name will be overwritten.
 
 Run LDA algorithm
-~~~~~~~~~~~~~~~~~
+=================
 
 After graph construction, we run the LDA algorithm as shown:
 
@@ -1049,13 +1053,13 @@ The eighth line is the same as the seventh line in previous example.
         The default value is 10.
 
 Returns
-~~~~~~~
+=======
 >>> output : AlgorithmReport
         The algorithm's results in the database.
         The convergence curve is accessible through the report object.
 
 Example
-~~~~~~~
+=======
 
 >>> graph.ml.lda(
                 input_edge_property_list="frequency",
@@ -1075,7 +1079,7 @@ Example
     )
 
 Perform Analytics on the Graph
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+==============================
 
 When you have all your data in the Titan graph database, you are now able to perform additional analytics to view and explore your data.
 This is where you look at what was once raw data and now has some form and much more information.
