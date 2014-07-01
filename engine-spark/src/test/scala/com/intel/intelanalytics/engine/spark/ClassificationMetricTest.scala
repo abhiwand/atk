@@ -39,6 +39,22 @@ class ClassificationMetricTest extends TestingSparkContext with Matchers {
     Array[Any](0, 0),
     Array[Any](1, 0))
 
+  val inputListBinary2 = List(
+    Array[Any](0, 0),
+    Array[Any](1, 1),
+    Array[Any](0, 1),
+    Array[Any](1, 1),
+    Array[Any](0, 0),
+    Array[Any](0, 1),
+    Array[Any](0, 0),
+    Array[Any](1, 1),
+    Array[Any](1, 1),
+    Array[Any](0, 0),
+    Array[Any](1, 0),
+    Array[Any](0, 1),
+    Array[Any](1, 1),
+    Array[Any](0, 1))
+
   // tp + tn = 2
   val inputListMulti = List(
     Array[Any](0, 0),
@@ -55,12 +71,20 @@ class ClassificationMetricTest extends TestingSparkContext with Matchers {
     metricValue shouldEqual 0.75
   }
 
+  "accuracy measure" should "compute correct value for binary classifier 2" in {
+    val rdd = sc.parallelize(inputListBinary2)
+
+    val metricValue = SparkOps.modelAccuracy(rdd, 0, 1)
+    val diff = (metricValue - 0.6428571).abs
+    diff should be <= 0.0000001
+  }
+
   "accuracy measure" should "compute correct value for multi-class classifier" in {
     val rdd = sc.parallelize(inputListMulti)
 
     val metricValue = SparkOps.modelAccuracy(rdd, 0, 1)
-    val diff = (metricValue - 0.33).abs
-    diff should be <= 0.01
+    val diff = (metricValue - 0.3333333).abs
+    diff should be <= 0.0000001
   }
 
   "precision measure" should "compute correct value for binary classifier" in {
@@ -70,11 +94,20 @@ class ClassificationMetricTest extends TestingSparkContext with Matchers {
     metricValue shouldEqual 1.0
   }
 
+  "precision measure" should "compute correct value for binary classifier 2" in {
+    val rdd = sc.parallelize(inputListBinary2)
+
+    val metricValue = SparkOps.modelPrecision(rdd, 0, 1, "1")
+    val diff = (metricValue - 0.5555555).abs
+    diff should be <= 0.0000001
+  }
+
   "precision measure" should "compute correct value for multi-class classifier" in {
     val rdd = sc.parallelize(inputListMulti)
 
     val metricValue = SparkOps.modelPrecision(rdd, 0, 1, "1")
-    metricValue shouldEqual 0.6
+    val diff = (metricValue - 0.2222222).abs
+    diff should be <= 0.0000001
   }
 
   "recall measure" should "compute correct value for binary classifier" in {
@@ -84,43 +117,92 @@ class ClassificationMetricTest extends TestingSparkContext with Matchers {
     metricValue shouldEqual 0.5
   }
 
+  "recall measure" should "compute correct value for binary classifier 2" in {
+    val rdd = sc.parallelize(inputListBinary2)
+
+    val metricValue = SparkOps.modelRecall(rdd, 0, 1, "1")
+    val diff = (metricValue - 0.8333333).abs
+    diff should be <= 0.0000001
+  }
+
   "recall measure" should "compute correct value for multi-class classifier" in {
     val rdd = sc.parallelize(inputListMulti)
 
     val metricValue = SparkOps.modelRecall(rdd, 0, 1, "1")
-    metricValue shouldEqual 0.6
+    val diff = (metricValue - 0.3333333).abs
+    diff should be <= 0.0000001
   }
 
   "f measure" should "compute correct value for binary classifier for beta = 0.5" in {
     val rdd = sc.parallelize(inputListBinary)
 
     val metricValue = SparkOps.modelFMeasure(rdd, 0, 1, "1", 0.5)
-    val diff = (metricValue - 0.83).abs
-    diff should be <= 0.01
+    val diff = (metricValue - 0.8333333).abs
+    diff should be <= 0.0000001
+  }
+
+  "f measure" should "compute correct value for binary classifier 2 for beta = 0.5" in {
+    val rdd = sc.parallelize(inputListBinary2)
+
+    val metricValue = SparkOps.modelFMeasure(rdd, 0, 1, "1", 0.5)
+    val diff = (metricValue - 0.5952380).abs
+    diff should be <= 0.0000001
   }
 
   "f measure" should "compute correct value for binary classifier for beta = 1" in {
     val rdd = sc.parallelize(inputListBinary)
 
     val metricValue = SparkOps.modelFMeasure(rdd, 0, 1, "1", 1)
-    val diff = (metricValue - 0.66).abs
-    diff should be <= 0.01
+    val diff = (metricValue - 0.6666666).abs
+    diff should be <= 0.0000001
+  }
+
+  "f measure" should "compute correct value for binary classifier 2 for beta = 1" in {
+    val rdd = sc.parallelize(inputListBinary2)
+
+    val metricValue = SparkOps.modelFMeasure(rdd, 0, 1, "1", 1)
+    val diff = (metricValue - 0.6666666).abs
+    diff should be <= 0.0000001
   }
 
   "f measure" should "compute correct value for binary classifier for beta = 2" in {
     val rdd = sc.parallelize(inputListBinary)
 
     val metricValue = SparkOps.modelFMeasure(rdd, 0, 1, "1", 2)
-    val diff = (metricValue - 0.55).abs
-    diff should be <= 0.01
+    val diff = (metricValue - 0.5555555).abs
+    diff should be <= 0.0000001
   }
 
-  "f measure" should "compute correct value for multi-class classifier" in {
+  "f measure" should "compute correct value for binary classifier 2 for beta = 2" in {
+    val rdd = sc.parallelize(inputListBinary2)
+
+    val metricValue = SparkOps.modelFMeasure(rdd, 0, 1, "1", 2)
+    val diff = (metricValue - 0.7575757).abs
+    diff should be <= 0.0000001
+  }
+
+  "f measure" should "compute correct value for multi-class classifier for beta = 0.5" in {
+    val rdd = sc.parallelize(inputListMulti)
+
+    val metricValue = SparkOps.modelFMeasure(rdd, 0, 1, "1", 0.5)
+    val diff = (metricValue - 0.2380952).abs
+    diff should be <= 0.0000001
+  }
+
+  "f measure" should "compute correct value for multi-class classifier for beta = 1" in {
     val rdd = sc.parallelize(inputListMulti)
 
     val metricValue = SparkOps.modelFMeasure(rdd, 0, 1, "1", 1)
-    val diff = (metricValue - 0.26).abs
-    diff should be <= 0.01
+    val diff = (metricValue - 0.2666666).abs
+    diff should be <= 0.0000001
+  }
+
+  "f measure" should "compute correct value for multi-class classifier for beta = 2" in {
+    val rdd = sc.parallelize(inputListMulti)
+
+    val metricValue = SparkOps.modelFMeasure(rdd, 0, 1, "1", 2)
+    val diff = (metricValue - 0.3030303).abs
+    diff should be <= 0.0000001
   }
 
 }

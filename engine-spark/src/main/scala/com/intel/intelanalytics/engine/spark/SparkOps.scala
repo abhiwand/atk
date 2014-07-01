@@ -257,32 +257,46 @@ private[spark] object SparkOps extends Serializable {
      * compute precision for multi-class classifier using weighted averaging
      */
     def multiclassPrecision = {
-      val groupedRdd = frameRdd.map(row => (row(labelColumnIndex), row(predColumnIndex))).groupBy(pair => pair._1)
+      val labeledRdd = frameRdd.map(row => (row(labelColumnIndex).toString, row(predColumnIndex).toString)).groupBy(pair => pair._1)
 
-      val totalCount = groupedRdd.count()
+      val totalCount = labeledRdd.count()
 
-      val weightedPrecisionsRdd: RDD[Double] = groupedRdd.map { label =>
+      val correctRdd: RDD[Double] = labeledRdd.map { label =>
         val labelCount = label._2.size
         // get number of instance we correctly predicted as this label
         // get total number that we predicted as this label
         // divide these two, then multiply by weight
-        val correctPredict = frameRdd.sparkContext.accumulator[Long](0)
-        val totalPredict = frameRdd.sparkContext.accumulator[Long](0)
+        var correctPredict: Long = 0
         label._2.map { predictions =>
-          if (predictions._1.toString.equals(predictions._2.toString)) {
-            correctPredict.add(1)
+          if (predictions._1.equals(predictions._2)) {
+            correctPredict += 1
           }
-          if (predictions._2.toString.equals(label._1.toString)) {
-            totalPredict.add(1)
+      }
+      weightedPrecisionsRdd.sum() / totalCount.toDouble
+
+
+/*      val weightedPrecisionsRdd: RDD[Double] = groupedRdd.map { label =>
+        val labelCount = label._2.size
+        // get number of instance we correctly predicted as this label
+        // get total number that we predicted as this label
+        // divide these two, then multiply by weight
+        var correctPredict: Long = 0
+        var totalPredict: Long = 0
+        label._2.map { predictions =>
+          if (predictions._1.equals(predictions._2)) {
+            correctPredict += 1
+          }
+          if (predictions._2.equals(label._1)) {
+            totalPredict += 1
           }
         }
 
-        totalPredict.value match {
+        totalPredict match {
           case 0 => 0
-          case _ => labelCount * (correctPredict.value / totalPredict.value.toDouble)
+          case _ => labelCount * (correctPredict / totalPredict.toDouble)
         }
       }
-      weightedPrecisionsRdd.sum() / totalCount.toDouble
+      weightedPrecisionsRdd.sum() / totalCount.toDouble*/
     }
 
     // determine if this is binary or multi-class classifier
