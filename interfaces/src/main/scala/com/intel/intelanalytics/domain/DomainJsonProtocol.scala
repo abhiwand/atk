@@ -98,6 +98,7 @@ object DomainJsonProtocol extends DefaultJsonProtocol {
   implicit val errorFormat = jsonFormat5(Error)
   implicit val flattenColumnLongFormat = jsonFormat4(FlattenColumn)
   implicit val dropDuplicatesFormat = jsonFormat2(DropDuplicates)
+  implicit val binColumnLongFormat = jsonFormat6(BinColumn[Long])
 
   // model performance formats
 
