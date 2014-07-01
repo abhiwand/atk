@@ -345,16 +345,26 @@ class FrameBackendRest(object):
         r = self.rest_http.get('dataframes/{0}/data?offset={2}&count={1}'.format(frame._id,n, offset))
         return r.json()
 
-    def classification_metric(self, frame, metric_type, label_column, pred_column, pos_label):
-        if metric_type not in ['accuracy']:
+    def classification_metric(self, frame, metric_type, label_column, pred_column, pos_label, beta):
+        if metric_type not in ['accuracy', 'precision', 'recall', 'fmeasure']:
             raise ValueError("metric_type must be one of: 'accuracy'")
         if label_column.strip() == "":
             raise ValueError("label_column can not be empty string")
         if pred_column.strip() == "":
             raise ValueError("pred_column can not be empty string")
-        if pos_label.strip() == "":
+        if str(pos_label).strip() == "":
             raise ValueError("invalid pos_label")
-        arguments = {'frame': frame._id, 'metricType': metric_type, 'labelColumn': label_column, 'predColumn': pred_column}
+        if not label_column in frame.column_names:
+            raise ValueError("label_column does not exist in frame")
+        if not pred_column in frame.column_names:
+            raise ValueError("pred_column does not exist in frame")
+        if dict(frame.schema).get(label_column) in ['float32', 'float64']:
+            raise ValueError("invalid label_column types")
+        if dict(frame.schema).get(pred_column) in ['float32', 'float64']:
+            raise ValueError("invalid pred_column types")
+        if not beta > 0:
+            raise ValueError("invalid beta value for f measure")
+        arguments = {'frame': frame._id, 'metricType': metric_type, 'labelColumn': label_column, 'predColumn': pred_column, 'posLabel': pos_label, 'beta': beta}
         return get_command_output_value('classification_metric', arguments)
 
 

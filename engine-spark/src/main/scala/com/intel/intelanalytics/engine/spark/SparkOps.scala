@@ -36,6 +36,7 @@ import scala.collection.mutable
 import scala.Some
 import com.intel.intelanalytics.engine.spark.frame.RDDJoinParam
 import com.intel.intelanalytics.domain.frame.LoadLines
+import scala.math.pow
 
 //implicit conversion for PairRDD
 import org.apache.spark.SparkContext._
@@ -212,12 +213,13 @@ private[spark] object SparkOps extends Serializable {
     val k = frameRdd.count()
     val t = frameRdd.sparkContext.accumulator[Long](0)
 
-    frameRdd.foreach{ row =>
-      row(labelColumnIndex) == row(predColumnIndex) match {
-        case true => t.add(1)
+    frameRdd.foreach(row => {
+      row match {
+        case x if row(labelColumnIndex).toString.equals(row(predColumnIndex).toString) => t.add(1) // TODO: maybe check types instead of casting to string
+        case _ => false
       }
-    }
-    t / k.toDouble
+    })
+    t.value / k.toDouble
   }
 
   /**
@@ -226,23 +228,69 @@ private[spark] object SparkOps extends Serializable {
    * @param frameRdd the dataframe RDD containing the labeled and predicted columns
    * @param labelColumnIndex column index for the correctly labeled data
    * @param predColumnIndex column index for the model prediction
+   * @param posLabel the label for a positive instance
    * @return a Double of the model precision measure
    */
-  def modelPrecision(frameRdd: RDD[Row], labelColumnIndex: Int, predColumnIndex: Int): Double = {
+  def modelPrecision(frameRdd: RDD[Row], labelColumnIndex: Int, predColumnIndex: Int, posLabel: String): Double = {
     // TODO: Are these checks necessary at this point?
     require(labelColumnIndex >= 0)
     require(predColumnIndex >= 0)
 
-    val tp = frameRdd.sparkContext.accumulator[Long](0)
-    val fp = frameRdd.sparkContext.accumulator[Long](0)
+    /**
+     * compute precision for binary classifier: TP / (TP + FP)
+     */
+    def binaryPrecision = {
+      val tp = frameRdd.sparkContext.accumulator[Long](0)
+      val fp = frameRdd.sparkContext.accumulator[Long](0)
 
-    frameRdd.foreach{ row =>
-      row(labelColumnIndex) == row(predColumnIndex) match {
-        case true => tp.add(1)
-        case false => fp.add(1)
+      frameRdd.foreach { row =>
+        row match {
+          case x if row(labelColumnIndex).toString.equals(posLabel) && row(predColumnIndex).toString.equals(posLabel) => tp.add(1)
+          case y if !row(labelColumnIndex).toString.equals(posLabel) && row(predColumnIndex).toString.equals(posLabel) => fp.add(1)
+          case _ => false
+        }
       }
+      tp.value / (tp.value + fp.value).toDouble
     }
-    tp / (tp + fp).toDouble
+
+    /**
+     * compute precision for multi-class classifier using weighted averaging
+     */
+    def multiclassPrecision = {
+      val groupedRdd = frameRdd.map(row => (row(labelColumnIndex), row(predColumnIndex))).groupBy(pair => pair._1)
+
+      val totalCount = groupedRdd.count()
+
+      val weightedPrecisionsRdd: RDD[Double] = groupedRdd.map { label =>
+        val labelCount = label._2.size
+        // get number of instance we correctly predicted as this label
+        // get total number that we predicted as this label
+        // divide these two, then multiply by weight
+        val correctPredict = frameRdd.sparkContext.accumulator[Long](0)
+        val totalPredict = frameRdd.sparkContext.accumulator[Long](0)
+        label._2.map { predictions =>
+          if (predictions._1.toString.equals(predictions._2.toString)) {
+            correctPredict.add(1)
+          }
+          if (predictions._2.toString.equals(label._1.toString)) {
+            totalPredict.add(1)
+          }
+        }
+
+        totalPredict.value match {
+          case 0 => 0
+          case _ => labelCount * (correctPredict.value / totalPredict.value.toDouble)
+        }
+      }
+      weightedPrecisionsRdd.sum() / totalCount.toDouble
+    }
+
+    // determine if this is binary or multi-class classifier
+    frameRdd.map(row => row(labelColumnIndex)).distinct().count() match {
+      case x if x == 1 || x == 2 => binaryPrecision
+      case y if y > 2 => multiclassPrecision
+      case _ => throw new IllegalArgumentException()
+    }
   }
 
   /**
@@ -251,23 +299,143 @@ private[spark] object SparkOps extends Serializable {
    * @param frameRdd the dataframe RDD containing the labeled and predicted columns
    * @param labelColumnIndex column index for the correctly labeled data
    * @param predColumnIndex column index for the model prediction
+   * @param posLabel the label for a positive instance
    * @return a Double of the model recall measure
    */
-  def modelRecall(frameRdd: RDD[Row], labelColumnIndex: Int, predColumnIndex: Int): Double = {
+  def modelRecall(frameRdd: RDD[Row], labelColumnIndex: Int, predColumnIndex: Int, posLabel: String): Double = {
     // TODO: Are these checks necessary at this point?
     require(labelColumnIndex >= 0)
     require(predColumnIndex >= 0)
 
-    val tp = frameRdd.sparkContext.accumulator[Long](0)
-    val fn = frameRdd.sparkContext.accumulator[Long](0)
+    /**
+     * compute recall for binary classifier: TP / (TP + FN)
+     */
+    def binaryRecall = {
+      val tp = frameRdd.sparkContext.accumulator[Long](0)
+      val fn = frameRdd.sparkContext.accumulator[Long](0)
 
-    frameRdd.foreach{ row =>
-      row(labelColumnIndex) == row(predColumnIndex) match {
-        case true => tp.add(1)
-        case false => fp.add(1)
+      frameRdd.foreach { row =>
+        row match {
+          case x if row(labelColumnIndex).toString.equals(posLabel) && row(predColumnIndex).toString.equals(posLabel) => tp.add(1)
+          case y if row(labelColumnIndex).toString.equals(posLabel) && !row(predColumnIndex).toString.equals(posLabel) => fn.add(1)
+          case _ => false
+        }
       }
+      tp.value / (tp.value + fn.value).toDouble
     }
-    tp / (tp + fn).toDouble
+
+    /**
+     * compute recall for multi-class classifier using weighted averaging
+     */
+    def multiclassRecall = {
+      val groupedRdd = frameRdd.map(row => (row(labelColumnIndex), row(predColumnIndex))).groupBy(pair => pair._1)
+
+      val totalCount = groupedRdd.count()
+
+      val weightedRecallsRdd: RDD[Double] = groupedRdd.map { label =>
+        val labelCount = label._2.size
+        val correctPredict = frameRdd.sparkContext.accumulator[Long](0)
+        label._2.map { predictions =>
+          if (predictions._1.toString.equals(predictions._2.toString)) {
+            correctPredict.add(1)
+          }
+        }
+
+        labelCount match {
+          case 0 => 0
+          case _ => labelCount * (correctPredict.value / labelCount.toDouble) // TODO: this simply equals correctPredict.value
+        }
+      }
+      weightedRecallsRdd.sum() / totalCount.toDouble
+    }
+
+    // determine if this is binary or multi-class classifier
+    frameRdd.map(row => row(labelColumnIndex)).distinct().count() match {
+      case x if x == 1 || x == 2 => binaryRecall
+      case y if y > 2 => multiclassRecall
+      case _ => throw new IllegalArgumentException()
+    }
+  }
+
+  /**
+   * Compute f measure of a classification model
+   *
+   * @param frameRdd the dataframe RDD containing the labeled and predicted columns
+   * @param labelColumnIndex column index for the correctly labeled data
+   * @param predColumnIndex column index for the model prediction
+   * @param posLabel the label for a positive instance
+   * @param beta the beta value to use to compute the f measure
+   * @return a Double of the model f measure
+   */
+  def modelFMeasure(frameRdd: RDD[Row], labelColumnIndex: Int, predColumnIndex: Int, posLabel: String, beta: Double): Double = {
+    // TODO: Are these checks necessary at this point?
+    require(labelColumnIndex >= 0)
+    require(predColumnIndex >= 0)
+
+    /**
+     * compute recall for binary classifier
+     */
+    def binaryFMeasure = {
+      val tp = frameRdd.sparkContext.accumulator[Long](0)
+      val fp = frameRdd.sparkContext.accumulator[Long](0)
+      val fn = frameRdd.sparkContext.accumulator[Long](0)
+
+      frameRdd.foreach { row =>
+        row match {
+          case x if row(labelColumnIndex).toString.equals(posLabel) && row(predColumnIndex).toString.equals(posLabel) => tp.add(1)
+          case y if !row(labelColumnIndex).toString.equals(posLabel) && row(predColumnIndex).toString.equals(posLabel) => fp.add(1)
+          case z if row(labelColumnIndex).toString.equals(posLabel) && !row(predColumnIndex).toString.equals(posLabel) => fn.add(1)
+          case _ => false
+        }
+      }
+      val precision = tp.value / (tp.value + fp.value).toDouble
+      val recall = tp.value / (tp.value + fn.value).toDouble
+      (1 + pow(beta, 2)) * ((precision * recall) / ((pow(beta, 2) * precision) + recall))
+    }
+
+    /**
+     * compute f measure for multi-class classifier using weighted averaging
+     */
+    def multiclassFMeasure = {
+      val groupedRdd = frameRdd.map(row => (row(labelColumnIndex), row(predColumnIndex))).groupBy(pair => pair._1)
+
+      val totalCount = groupedRdd.count()
+
+      val weightedFMeasuresRdd: RDD[Double] = groupedRdd.map { label =>
+        val labelCount = label._2.size
+
+        val correctPredict = frameRdd.sparkContext.accumulator[Long](0)
+        val totalPredict = frameRdd.sparkContext.accumulator[Long](0)
+
+        label._2.map { predictions =>
+          if (predictions._1.toString.equals(predictions._2.toString)) {
+            correctPredict.add(1)
+          }
+          if (predictions._2.toString.equals(label._1.toString)) {
+            totalPredict.add(1)
+          }
+        }
+
+        val precision = totalPredict.value match {
+          case 0 => 0
+          case _ => labelCount * (correctPredict.value / totalPredict.value.toDouble)
+        }
+
+        val recall = labelCount match {
+          case 0 => 0
+          case _ => labelCount * (correctPredict.value / labelCount.toDouble) // TODO: this simply equals correctPredict.value
+        }
+        (1 + pow(beta, 2)) * ((precision * recall) / ((pow(beta, 2) * precision) + recall))
+      }
+      weightedFMeasuresRdd.sum() / totalCount.toDouble
+    }
+
+    // determine if this is binary or multi-class classifier
+    frameRdd.map(row => row(labelColumnIndex)).distinct().count() match {
+      case x if x == 1 || x == 2 => binaryFMeasure
+      case y if y > 2 => multiclassFMeasure
+      case _ => throw new IllegalArgumentException()
+    }
   }
 
   def aggregation_functions(elem: Seq[Array[Any]],

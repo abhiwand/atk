@@ -23,9 +23,13 @@
 
 package com.intel.intelanalytics.domain.frame
 
-case class ClassificationMetric[+Arguments, FrameRef](frameId: FrameRef, metricType: String, labelColumn: String, predColumn: String) {
-  require(frame != null, "frame is required")
-  require(metricType.equals("accuracy"), "valid metric type is required")  // TODO: add all valid classification metrics here
+case class ClassificationMetric(frameId: Long, metricType: String, labelColumn: String, predColumn: String, posLabel: String, beta: Double) {
+  require(metricType.equals("accuracy") ||
+    metricType.equals("precision") ||
+    metricType.equals("recall") ||
+    metricType.equals("fmeasure"), "valid metric type is required")
   require(labelColumn != null && !labelColumn.equals(""), "label column is required")
   require(predColumn != null && !predColumn.equals(""), "predict column is required")
+  require(posLabel != null && !posLabel.equals(""), "invalid positive label")
+  require(beta > 0, "invalid beta value for f measure")
 }
