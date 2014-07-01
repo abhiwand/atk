@@ -372,5 +372,4 @@ class ProgressListenerSpec extends Specification with Mockito {
     listener.getCommandProgress(1) shouldEqual List(66.66f)
     listener.getDetailedCommandProgress(1) shouldEqual List(ProgressInfo(10, 3))
   }
-
 }

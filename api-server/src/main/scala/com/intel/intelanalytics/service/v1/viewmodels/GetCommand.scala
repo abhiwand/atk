@@ -37,6 +37,8 @@ import com.intel.intelanalytics.engine.ProgressInfo
  *                  arguments that configure the parser before any input arrives. In other cases, such as training an
  *                  ML algorithm, the parameters are used to execute the function directly.
  * @param error StackTrace and/or other error text if it exists
+ * @param progress List of progress for each job initiated by the command
+ * @param progressMessage List of detailed progress message for each job initiated by the command
  * @param complete True if this command is completed
  * @param result result data for executing the command
  * @param links
