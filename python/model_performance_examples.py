@@ -18,4 +18,4 @@ binary_acc = binary_frame.accuracy('labeled', 'predicted')
 print('binary accuracy = {0}'.format(binary_acc))
 
 multiclass_acc = multiclass_frame.accuracy('labeled', 'predicted')
-print('binary accuracy = {0}'.format(multiclass_acc))
+print('multiclass accuracy = {0}'.format(multiclass_acc))
