@@ -55,22 +55,25 @@ class SparkProgressListener(val progressUpdater: CommandProgressUpdater) extends
   val commandIdJobs = new HashMap[Long, List[ActiveJob]]
   val jobIdDetailedProgressInfo = new HashMap[Int, ProgressInfo]()
 
-  private def addStageAndAncestorStagesToCollection(stageList: ListBuffer[Stage], stage: Stage): Unit = {
+  def addStageAndAncestorStagesToCollection(stage: Stage): Seq[Stage] = {
+    val stageList: ListBuffer[Stage] = new ListBuffer[Stage]
+
     if (stage.parents != null) {
 
+      /* multiple stages may have common parents. Do not add the same parent twice */
       stage.parents.foreach(s => {
-        addStageAndAncestorStagesToCollection(stageList, s)
+        stageList ++= addStageAndAncestorStagesToCollection(s).filter(s => !stageList.contains(s))
       })
     }
 
     if (!stageList.contains(stage))
       stageList += stage
+
+    stageList.toSeq
   }
 
   override def onJobStart(jobStart: SparkListenerJobStart) {
-    val stages: ListBuffer[Stage] = ListBuffer()
-
-    addStageAndAncestorStagesToCollection(stages, jobStart.job.finalStage)
+    val stages = addStageAndAncestorStagesToCollection(jobStart.job.finalStage)
 
     val stageIds = stages.map(s => s.id)
     jobIdToStagesIds(jobStart.job.jobId) = stageIds.toArray
@@ -101,8 +104,7 @@ class SparkProgressListener(val progressUpdater: CommandProgressUpdater) extends
 
     //make sure all the parent stages are marked to complete
     val stage = stageIdStageMapping(stageInfo.stageId)
-    val markToCompleteStages: ListBuffer[Stage] = ListBuffer()
-    addStageAndAncestorStagesToCollection(markToCompleteStages, stage)
+    val markToCompleteStages = addStageAndAncestorStagesToCollection(stage)
     for (stage <- markToCompleteStages) {
       if (!completedStages.contains(stage.id))
         completedStages += stage.id
