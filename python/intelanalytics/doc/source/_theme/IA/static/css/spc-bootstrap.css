@@ -5166,13 +5166,13 @@ input[type="submit"].btn.btn-mini {
   text-decoration: none;
   background-color: #f5f5f5;
 }
-.pager .next > a,
-.pager .next > span {
-  float: right;
-}
 .pager .previous > a,
 .pager .previous > span {
   float: left;
+}
+.pager .next > a,
+.pager .next > span {
+  float: right;
 }
 .pager .disabled > a,
 .pager .disabled > a:hover,
