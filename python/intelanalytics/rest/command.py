@@ -29,6 +29,7 @@ import json
 import logging
 import sys
 import re
+import collections
 
 logger = logging.getLogger(__name__)
 
@@ -57,6 +58,19 @@ def print_progress(progress, make_new_line):
 
 
 class CommandRequest(object):
+    @staticmethod
+    def validate_arguments(parameterTypes, arguments):
+        validated = {}
+        for (k, v) in arguments.items():
+            if k not in parameterTypes:
+                raise ValueError("No parameter named '%s'" % k)
+            validated[k] = v
+            schema = parameterTypes[k]
+            if schema.get('type') == 'array':
+                if isinstance(v, str) or not isinstance(v, collections.Iterable):
+                    validated[k] = [v]
+        return validated
+
     def __init__(self, name, arguments):
         self.name = name
         self.arguments = arguments

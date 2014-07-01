@@ -168,8 +168,8 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
       //case ("graph/ml/als") => runAls(uri, xform)
       //case ("dataframe/load") => runFrameLoad(uri, xform)
       case ("dataframe/filter") => runFilter(uri, xform)
-      case ("dataframe/removecolumn") => runFrameRemoveColumn(uri, xform)
-      case ("dataframe/rename_frame") => runFrameRenameFrame(uri, xform)
+      //ncase ("dataframe/removecolumn") => runFrameRemoveColumn(uri, xform)
+      //case ("dataframe/rename_frame") => runFrameRenameFrame(uri, xform)
       case ("dataframe/add_columns") => runFrameAddColumns(uri, xform)
       case ("dataframe/project") => runFrameProject(uri, xform)
       case ("dataframe/rename_column") => runFrameRenameColumn(uri, xform)
@@ -306,19 +306,19 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
       }
   }
 
-  def runFrameRemoveColumn(uri: Uri, xform: JsonTransform)(implicit user: UserPrincipal) = {
-    val test = Try {
-      xform.arguments.get.convertTo[FrameRemoveColumn[JsObject, String]]
-    }
-    val idOpt = test.toOption.flatMap(args => UrlParser.getFrameId(args.frame))
-    (validate(test.isSuccess, "Failed to parse file load descriptor: " + getErrorMessage(test))
-      & validate(idOpt.isDefined, "Destination is not a valid data frame URL")) {
-        val args = test.get
-        val id = idOpt.get
-        val exec = engine.removeColumn(FrameRemoveColumn[JsObject, Long](id, args.column))
-        complete(decorate(uri + "/" + exec.start.id, exec.start))
-      }
-  }
+  //  def runFrameRemoveColumn(uri: Uri, xform: JsonTransform)(implicit user: UserPrincipal) = {
+  //    val test = Try {
+  //      xform.arguments.get.convertTo[FrameRemoveColumn[JsObject, String]]
+  //    }
+  //    val idOpt = test.toOption.flatMap(args => UrlParser.getFrameId(args.frame))
+  //    (validate(test.isSuccess, "Failed to parse file load descriptor: " + getErrorMessage(test))
+  //      & validate(idOpt.isDefined, "Destination is not a valid data frame URL")) {
+  //        val args = test.get
+  //        val id = idOpt.get
+  //        val exec = engine.removeColumn(FrameRemoveColumn[JsObject, Long](id, args.column))
+  //        complete(decorate(uri + "/" + exec.start.id, exec.start))
+  //      }
+  //  }
 
   /**
    * Perform the join operation and return the submitted command to the client

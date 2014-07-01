@@ -58,14 +58,14 @@ class FrameBackendRest(object):
                         and not hasattr(self, parts[1]):
                     args = cmd['argument_schema']
                     command_name = parts[1][:]
-                    properties = args.setdefault('properties', {})
+                    parameters = args.setdefault('properties', {})
                     print "ARG schema:", args
-                    self_name = ([k for k, v in properties.items() if isinstance(v, dict) and v.has_key('self')] or [None])[0]
+                    self_name = ([k for k, v in parameters.items() if isinstance(v, dict) and v.has_key('self')] or [None])[0]
                     print "self arg: ", self_name
 
                     retProps = cmd['return_schema'].setdefault('properties', {})
                     return_self = ([k for k, v in retProps.items() if isinstance(v, dict) and v.has_key('self')] or [None])[0]
-                    possible_args = list(properties.keys())
+                    possible_args = list(parameters.keys())
                     if self_name:
                         possible_args.remove(self_name)
 
@@ -75,7 +75,8 @@ class FrameBackendRest(object):
                     #kwargs that include command_name et. al.
                     def make(command_name = command_name, cmd = cmd,
                              self_name = self_name, return_self = return_self,
-                             possible_args = possible_args):
+                             possible_args = possible_args,
+                             parameters = parameters):
 
                         def invoke(s, *args, **kwargs):
                             if self_name:
@@ -87,12 +88,14 @@ class FrameBackendRest(object):
                                                      " supplied as a positional argument and as a keyword argument")
                                 print "Assigning", k, "to", v
                                 kwargs[k] = v
+                                validated = CommandRequest.validate_arguments(parameters, kwargs)
                             if return_self:
-                                return execute_new_frame_command(command_name, kwargs, s)
+                                return execute_new_frame_command(command_name, validated, s)
                             else:
-                                execute_update_frame_command(command_name, kwargs, s)
-                        invoke.command_name = command_name
+                                execute_update_frame_command(command_name, validated, s)
                         invoke.command = cmd
+                        invoke.parameters = parameters
+                        invoke.func_name = str(command_name)
                         return invoke
                     f = make()
                     setattr(FrameBackendRest, parts[1], f)
@@ -139,7 +142,18 @@ class FrameBackendRest(object):
 
         for (k, v) in self.commands_loaded.items():
             if not hasattr(frame, k):
+                print "Installing", k
                 setattr(frame.__class__, k, v)
+            else:
+                f = getattr(frame, k)
+                if hasattr(f, "docstub"):
+                    v.__doc__ = f.__doc__
+                    delattr(frame.__class__, k)
+                    setattr(frame.__class__, k, v)
+                    print "Installing (with documentation copied from stub):", k
+                else:
+                    print "Skipping installation of", k, "method already exists and is not a stub"
+
 
 
 
@@ -374,10 +388,10 @@ class FrameBackendRest(object):
 
         return execute_new_frame_command("groupby", arguments)
 
-    def remove_columns(self, frame, name):
-        columns = ",".join(name) if isinstance(name, list) else name
-        arguments = {'frame': frame.uri, 'column': columns}
-        return execute_update_frame_command('removecolumn', arguments, frame)
+    # def remove_columns(self, frame, name):
+    #     columns = ",".join(name) if isinstance(name, list) else name
+    #     arguments = {'frame': frame.uri, 'column': columns}
+    #     return execute_update_frame_command('removecolumn', arguments, frame)
 
     def rename_columns(self, frame, column_names, new_names):
         if isinstance(column_names, basestring) and isinstance(new_names, basestring):

@@ -26,7 +26,7 @@ package com.intel.intelanalytics.shared
 import java.net.URI
 
 import com.intel.intelanalytics.domain.frame.FrameReference
-import com.intel.intelanalytics.schema.{ JsonSchema, NumberSchema, StringSchema, ObjectSchema }
+import com.intel.intelanalytics.schema._
 import org.joda.time.DateTime
 import spray.json.{ AdditionalFormats, StandardFormats, ProductFormats }
 
@@ -74,6 +74,11 @@ object JsonSchemaExtractor {
           s.copy(self = Some(true))
         }
         else s
+      case t if classOf[Map[_, _]].isAssignableFrom(t) => ObjectSchema()
+      case t if classOf[Seq[_]].isAssignableFrom(t) => ArraySchema()
+      case t if classOf[Iterable[_]].isAssignableFrom(t) => ArraySchema()
+      case t if classOf[List[_]].isAssignableFrom(t) => ArraySchema()
+      case t if classOf[Array[_]].isAssignableFrom(t) => ArraySchema()
       case t => JsonSchema.empty
     }
     schema
