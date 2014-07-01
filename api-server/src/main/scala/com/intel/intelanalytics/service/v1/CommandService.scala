@@ -264,20 +264,6 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
       }
   }
 
-  def runFrameRenameFrame(uri: Uri, xform: JsonTransform)(implicit user: UserPrincipal) = {
-    val test = Try {
-      xform.arguments.get.convertTo[FrameRenameFrame]
-    }
-    val idOpt = test.toOption.map(args => args.frame.id)
-    (validate(test.isSuccess, "Failed to understand rename arguments: " + getErrorMessage(test))
-      & validate(idOpt.isDefined, "Frame must be a valid data frame URL")) {
-        val args = test.get
-        val id = idOpt.get
-        val exec = engine.renameFrame(args)
-        complete(decorate(uri + "/" + exec.start.id, exec.start))
-      }
-  }
-
   def runFrameRenameColumn(uri: Uri, xform: JsonTransform)(implicit user: UserPrincipal) = {
     val test = Try {
       xform.arguments.get.convertTo[FrameRenameColumn[JsObject, String]]
@@ -306,19 +292,6 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
       }
   }
 
-  //  def runFrameRemoveColumn(uri: Uri, xform: JsonTransform)(implicit user: UserPrincipal) = {
-  //    val test = Try {
-  //      xform.arguments.get.convertTo[FrameRemoveColumn[JsObject, String]]
-  //    }
-  //    val idOpt = test.toOption.flatMap(args => UrlParser.getFrameId(args.frame))
-  //    (validate(test.isSuccess, "Failed to parse file load descriptor: " + getErrorMessage(test))
-  //      & validate(idOpt.isDefined, "Destination is not a valid data frame URL")) {
-  //        val args = test.get
-  //        val id = idOpt.get
-  //        val exec = engine.removeColumn(FrameRemoveColumn[JsObject, Long](id, args.column))
-  //        complete(decorate(uri + "/" + exec.start.id, exec.start))
-  //      }
-  //  }
 
   /**
    * Perform the join operation and return the submitted command to the client
