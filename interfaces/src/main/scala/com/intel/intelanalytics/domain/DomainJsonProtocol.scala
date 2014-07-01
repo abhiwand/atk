@@ -102,6 +102,7 @@ object DomainJsonProtocol extends DefaultJsonProtocol {
   // model performance formats
 
   implicit val classificationMetricLongFormat = jsonFormat6(ClassificationMetric)
+  implicit val classificationMetricValueLongFormat = jsonFormat1(ClassificationMetricValue)
 
   // graph service formats
 

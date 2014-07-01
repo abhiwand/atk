@@ -33,3 +33,5 @@ case class ClassificationMetric(frameId: Long, metricType: String, labelColumn: 
   require(posLabel != null && !posLabel.equals(""), "invalid positive label")
   require(beta > 0, "invalid beta value for f measure")
 }
+
+case class ClassificationMetricValue(metricValue: Double)
