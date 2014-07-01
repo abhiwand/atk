@@ -29,5 +29,5 @@ import com.intel.intelanalytics.schema.ObjectSchema
  * A description of a command in the system, including sample arguments and results
  */
 case class CommandDefinition(name: String,
-                             argumentSchema: ObjectSchema,
-                             returnSchema: ObjectSchema)
+                             argument_schema: ObjectSchema,
+                             return_schema: ObjectSchema)

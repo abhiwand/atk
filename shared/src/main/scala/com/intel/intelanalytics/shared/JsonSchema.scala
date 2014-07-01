@@ -39,8 +39,6 @@ private[intelanalytics] class ProductFormatsAccessor extends ProductFormats
 
 object JsonSchemaExtractor {
 
-  val schemaRoot = new ObjectSchema().$schema
-
   val fieldHelper = new ProductFormatsAccessor()
 
   def getProductSchema[T](manifest: ClassManifest[T]): ObjectSchema = {
