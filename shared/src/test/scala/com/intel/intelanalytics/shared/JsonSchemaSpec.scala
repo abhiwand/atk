@@ -23,7 +23,7 @@
 
 package com.intel.intelanalytics.shared
 
-import org.scalatest.{Matchers, FlatSpec}
+import org.scalatest.{ Matchers, FlatSpec }
 
 case class SchemaSample(int: Int, long: Long, string: String, array: Array[String], nested: Option[SchemaSample])
 class JsonSchemaSpec extends FlatSpec with Matchers {

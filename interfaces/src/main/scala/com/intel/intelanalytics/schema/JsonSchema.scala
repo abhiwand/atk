@@ -31,7 +31,7 @@ import spray.json.{ JsValue, JsonFormat }
 trait JsonSchema {
   def id: Option[URI]
   def title: Option[String]
-  def $schema: Option[String]
+  //def $schema: Option[String]
   def description: Option[String]
   def `type`: Option[String]
 }
@@ -40,7 +40,7 @@ object JsonSchema {
   val empty: JsonSchema = new JsonSchema {
     def id = None
     def title = None
-    def $schema = None
+    //def $schema = None
     def description = None
     def `type` = None
   }
@@ -53,7 +53,7 @@ sealed trait Primitive extends JsonSchema {
 case class ObjectSchema(
     id: Option[URI] = None,
     title: Option[String] = None,
-    $schema: Option[String] = Some("http://intel.com/iat/schema/json-schema-04"),
+    //$schema: Option[String] = Some("http://intel.com/iat/schema/json-schema-04"),
     description: Option[String] = None,
     maxProperties: Option[Int] = None,
     minProperties: Option[Int] = None,

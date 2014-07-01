@@ -193,12 +193,14 @@ object DomainJsonProtocol extends DefaultJsonProtocol {
       case s: StringSchema => stringSchemaFormat.write(s)
       case a: ArraySchema => arraySchemaFormat.write(a)
       case n: NumberSchema => numberSchemaFormat.write(n)
+      case JsonSchema.empty => JsObject().toJson
+      case x => serializationError(s"Expected a valid json schema object, but received: $x")
     }
   }
 
   lazy implicit val numberSchemaFormat = jsonFormat9(NumberSchema)
   lazy implicit val stringSchemaFormat = jsonFormat9(StringSchema)
-  lazy implicit val objectSchemaFormat = jsonFormat12(ObjectSchema)
+  lazy implicit val objectSchemaFormat = jsonFormat11(ObjectSchema)
   lazy implicit val arraySchemaFormat = jsonFormat9(ArraySchema)
   lazy implicit val commandDefinitionFormat = jsonFormat3(CommandDefinition)
 }
