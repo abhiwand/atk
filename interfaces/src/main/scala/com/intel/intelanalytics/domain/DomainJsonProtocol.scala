@@ -99,6 +99,7 @@ object DomainJsonProtocol extends DefaultJsonProtocol {
   implicit val flattenColumnLongFormat = jsonFormat4(FlattenColumn)
   implicit val dropDuplicatesFormat = jsonFormat2(DropDuplicates)
   implicit val binColumnLongFormat = jsonFormat6(BinColumn[Long])
+  implicit val meanColumnLongFormat = jsonFormat2(MeanColumn[Long])
 
   // graph service formats
 
