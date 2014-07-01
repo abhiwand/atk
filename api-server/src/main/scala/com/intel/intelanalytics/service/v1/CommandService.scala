@@ -384,16 +384,14 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
   def runClassificationMetric(uri: Uri, xform: JsonTransform)(implicit user: UserPrincipal) = {
     {
       val test = Try {
-        import DomainJsonProtocol._
-        xform.arguments.get.convertTo[ClassificationMetric[JsObject, String]]
+        xform.arguments.get.convertTo[ClassificationMetric]
       }
-      val idOpt = test.toOption.flatMap(args => UrlParser.getFrameId(args.frameId))
-      (validate(test.isSuccess, "Failed to : " + getErrorMessage(test))
-        & validate(idOpt.isDefined, "Destination is not a valid data frame URL")) {
+
+      validate(test.isSuccess, "Failed to parse file load descriptor: " + getErrorMessage(test)) {
         val args = test.get
-        val frameId = idOpt.get
-        val exec = engine.classificationMetric(ClassificationMetric[JsObject, Long](frameId, args.metricType, args.labelColumn, args.predColumn))
-        complete(decorate(uri + "/" + exec.start.id, exec.start))
+        val result = engine.classificationMetric(args)
+        val command: Command = result.start
+        complete(decorate(uri + "/" + command.id, command))
       }
     }
   }

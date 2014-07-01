@@ -688,11 +688,12 @@ class SparkEngine(sparkContextManager: SparkContextManager,
 
     val metric_value = arguments.metricType match {
       case "accuracy" => SparkOps.modelAccuracy(frameRdd, labelColumnIndex, predColumnIndex)
-      case _ => throw new IllegalArgumentException()  // TODO: this exception needs to be handled differently
+      case "precision" => SparkOps.modelPrecision(frameRdd, labelColumnIndex, predColumnIndex, arguments.posLabel)
+      case "recall" => SparkOps.modelRecall(frameRdd, labelColumnIndex, predColumnIndex, arguments.posLabel)
+      case "fmeasure" => SparkOps.modelFMeasure(frameRdd, labelColumnIndex, predColumnIndex, arguments.posLabel, arguments.beta)
+      case _ => throw new IllegalArgumentException() // TODO: this exception needs to be handled differently
     }
-
-    // TODO: return the accuracy measure itself
-
+    metric_value
   }
 
   /**
