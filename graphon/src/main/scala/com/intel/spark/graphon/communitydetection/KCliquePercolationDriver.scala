@@ -68,7 +68,8 @@ object KCliquePercolationDriver {
     /**
      * Associate each vertex with a list of the communities to which it belongs
      */
-    val vertexAndCommunityList: RDD[(Long, Set[Long])] = AssignCommunitiesToVertex.run(cliquesAndConnectedComponent)
+    val vertexAndCommunityList: RDD[(Long, Set[Long])] =
+      AssignCommunitiesToVertex.run(cliquesAndConnectedComponent.connectedComponents, cliquesAndConnectedComponent.cliqueGraphNewIDsToVerticesList)
 
     /**
      * TODO: Update the properties for each vertex by adding community property to it
