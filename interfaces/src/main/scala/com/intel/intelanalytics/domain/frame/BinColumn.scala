@@ -39,4 +39,5 @@ case class BinColumn[FrameRef](name: String, frame: FrameRef, columnName: String
   require(columnName != null, "column name is required")
   require(numBins >= 1, "at least one bin is required")
   require(binColumnName != null, "bin column name is required")
+  require(!binColumnName.equals(""), "bin column name is required")
 }
