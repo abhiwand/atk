@@ -257,25 +257,11 @@ private[spark] object SparkOps extends Serializable {
      * compute precision for multi-class classifier using weighted averaging
      */
     def multiclassPrecision = {
-      val labeledRdd = frameRdd.map(row => (row(labelColumnIndex).toString, row(predColumnIndex).toString)).groupBy(pair => pair._1)
+      val groupedRdd = frameRdd.map(row => (row(labelColumnIndex).toString, row(predColumnIndex).toString)).groupBy(pair => pair._1)
 
-      val totalCount = labeledRdd.count()
+      val totalCount = groupedRdd.count()
 
-      val correctRdd: RDD[Double] = labeledRdd.map { label =>
-        val labelCount = label._2.size
-        // get number of instance we correctly predicted as this label
-        // get total number that we predicted as this label
-        // divide these two, then multiply by weight
-        var correctPredict: Long = 0
-        label._2.map { predictions =>
-          if (predictions._1.equals(predictions._2)) {
-            correctPredict += 1
-          }
-      }
-      weightedPrecisionsRdd.sum() / totalCount.toDouble
-
-
-/*      val weightedPrecisionsRdd: RDD[Double] = groupedRdd.map { label =>
+      val weightedPrecisionsRdd: RDD[Double] = groupedRdd.map { label =>
         val labelCount = label._2.size
         // get number of instance we correctly predicted as this label
         // get total number that we predicted as this label
@@ -296,7 +282,7 @@ private[spark] object SparkOps extends Serializable {
           case _ => labelCount * (correctPredict / totalPredict.toDouble)
         }
       }
-      weightedPrecisionsRdd.sum() / totalCount.toDouble*/
+      weightedPrecisionsRdd.sum() / totalCount.toDouble
     }
 
     // determine if this is binary or multi-class classifier

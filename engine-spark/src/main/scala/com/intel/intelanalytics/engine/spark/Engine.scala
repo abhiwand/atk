@@ -35,6 +35,7 @@ import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 import com.intel.intelanalytics.domain.schema.{ DataTypes, Schema, SchemaUtil }
 import com.intel.intelanalytics.engine.Rows._
 import com.intel.intelanalytics.engine._
+import com.intel.intelanalytics.engine.plugin.CommandPlugin
 import com.intel.intelanalytics.engine.spark.command.CommandExecutor
 import com.intel.intelanalytics.{ ClassLoaderAware, NotFoundException }
 import com.intel.intelanalytics.engine.spark.context.SparkContextManager
@@ -669,7 +670,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     realFrame
   }
 
-  val classificationMetricCommand = commands.registerCommand("dataframe/classification_metric", classificationMetricSimple)
+  val classificationMetricCommand: CommandPlugin[ClassificationMetric, ClassificationMetricValue] = commands.registerCommand("dataframe/classification_metric", classificationMetricSimple)
 
   override def classificationMetric(arguments: ClassificationMetric)(implicit user: UserPrincipal): Execution =
     commands.execute(classificationMetricCommand, arguments, user, implicitly[ExecutionContext])
@@ -693,7 +694,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
       case "fmeasure" => SparkOps.modelFMeasure(frameRdd, labelColumnIndex, predColumnIndex, arguments.posLabel, arguments.beta)
       case _ => throw new IllegalArgumentException() // TODO: this exception needs to be handled differently
     }
-    metric_value
+    ClassificationMetricValue(metric_value)
   }
 
   /**
