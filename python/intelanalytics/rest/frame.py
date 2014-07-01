@@ -236,6 +236,15 @@ class FrameBackendRest(object):
         arguments = {'name': name, 'frame': frame._id, 'columnName': column_name, 'numBins': num_bins, 'binType': bin_type, 'binColumnName': bin_column_name}
         return execute_new_frame_command('binColumn', arguments)
 
+
+    def mean_column(self, frame, column_name):
+        import numpy as np
+        colTypes = dict(frame.schema)
+        if not colTypes[column_name] in [np.float32, np.float64, np.int32, np.int64]:
+            raise ValueError("unable to take mean of non-numeric values")
+        arguments = {'frame': frame._id, 'columnName': column_name}
+        return execute_new_frame_command('meanColumn', arguments)
+
     class InspectionTable(object):
         """
         Inline class used specifically for inspect, where the __repr__ is king

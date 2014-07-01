@@ -53,6 +53,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent._
 import scala.util.Try
 import org.apache.spark.engine.SparkProgressListener
+import com.intel.intelanalytics.engine.plugin.CommandPlugin
 
 object SparkEngine {
   private val pythonRddDelimiter = "\0"
@@ -395,7 +396,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
   override def binColumn(arguments: BinColumn[Long])(implicit user: UserPrincipal): Execution =
     commands.execute(binColumnCommand, arguments, user, implicitly[ExecutionContext])
 
-  val binColumnCommand = commands.registerCommand("dataframe/binColumn", binColumnSimple)
+  val binColumnCommand: CommandPlugin[BinColumn[Long], DataFrame] = commands.registerCommand("dataframe/binColumn", binColumnSimple)
   def binColumnSimple(arguments: BinColumn[Long], user: UserPrincipal) = {
     implicit val u = user
     val frameId: Long = arguments.frame
@@ -427,6 +428,31 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     val allColumns = realFrame.schema.columns :+ (arguments.binColumnName, DataTypes.int32)
     frames.updateSchema(newFrame, allColumns)
     newFrame.copy(schema = Schema(allColumns))
+  }
+
+  /**
+   * Calculate the mean of the specified column.
+   * @param arguments input specification for column mean
+   * @param user current user
+   */
+  override def meanColumn(arguments: MeanColumn[Long])(implicit user: UserPrincipal): Execution =
+    commands.execute(meanColumnCommand, arguments, user, implicitly[ExecutionContext])
+
+  val meanColumnCommand: CommandPlugin[MeanColumn[Long], Double] = commands.registerCommand("dataframe/meanColumn", meanColumnSimple)
+  def meanColumnSimple(arguments: MeanColumn[Long], user: UserPrincipal): Double = {
+    implicit val u = user
+    val frameId: Long = arguments.frame
+    val realFrame = expectFrame(frameId)
+
+    val ctx = sparkContextManager.context(user).sparkContext
+
+    val rdd = frames.getFrameRdd(ctx, frameId)
+
+    val columnIndex = realFrame.schema.columnIndex(arguments.columnName)
+
+    val mean = SparkOps.meanColumn(columnIndex, rdd)
+
+    mean
   }
 
   def filter(arguments: FilterPredicate[JsObject, Long])(implicit user: UserPrincipal): Execution =

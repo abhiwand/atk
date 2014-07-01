@@ -331,6 +331,28 @@ private[spark] object SparkOps extends Serializable {
     rdd.map(row => row :+ (binMap.get(java.lang.Double.parseDouble(row(index).toString)).get - 1).asInstanceOf[Any])
   }
 
+  /**
+   * Calculate mean of column at index..
+   *
+   * @param index column index
+   * @param rdd RDD of input rows
+   * @return the mean value of the column
+   */
+  def meanColumn(index: Int, rdd: RDD[Row]): Double = {
+    import scala.math.ceil
+
+    // try creating RDD[Double] from column
+    val columnRdd = try {
+      rdd.map(row => java.lang.Double.parseDouble(row(index).toString))
+    }
+    catch {
+      case cce: NumberFormatException =>
+        throw new NumberFormatException("Mean cannot be calculated for column values: " + cce.toString)
+    }
+
+    columnRdd.mean()
+  }
+
   def aggregation_functions(elem: Seq[Array[Any]],
                             args_pair: Seq[(Int, String)],
                             schema: List[(String, DataTypes.DataType)]): Seq[Any] = {

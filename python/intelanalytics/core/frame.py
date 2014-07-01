@@ -567,6 +567,26 @@ class BigFrame(object):
         """
         return self._backend.bin_column(self, column_name, num_bins, bin_type, bin_column_name)
 
+    def mean_column(self, column_name):
+        """
+        Calculate the mean value of a column.
+
+        Parameters
+        ----------
+        column_name : str
+            The column whose values are to be binned
+
+        Returns
+        -------
+        mean : Double
+            The mean of the values in the column
+
+        Examples
+        --------
+        >>> mean = frame.mean_column('interesting column')
+        """
+        return self._backend.mean_column(self, column_name)
+
     def drop(self, predicate):
         """
         Drop rows that match a requirement.
