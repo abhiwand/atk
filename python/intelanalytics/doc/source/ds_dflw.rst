@@ -1,8 +1,11 @@
+=========
 Data Flow
 =========
 
-When using the Intel® Data Platform: Analytics Toolkit, you will import your data, clean the data, combine or filter the data, and finally, make a graph of the data.
+When using the Intel® Data Platform: Analytics Toolkit, you will import your data, clean the data, combine or filter the data,
+and finally, make a graph of the data.
 
+-------------------
 Data Identification
 -------------------
 
@@ -11,7 +14,7 @@ Supported raw data formats are CSV, JSON, and XML.
 At this stage we are just developing the information we will later need to import the data.
 
 CSV File
-~~~~~~~~
+========
 
 Example:
 
@@ -119,6 +122,7 @@ Now we create an object used to define the data layout.
     >>> from intelanalytics.core.files import XmlFile
         my_xml = XmlFile(my_data_file.xml)
 
+------------------------------------
 Data Import or BigFrame Construction
 ------------------------------------
 
@@ -130,6 +134,7 @@ Now we have some idea of the data file, we will use that to import the data.
 This could take a while depending upon the amount of raw data.
 The raw data file has now been copied into a BigFrame object and is ready to be cleaned and transformed using the advanced functionality of the BigFrame.
 
+-------------------
 Feature Engineering
 -------------------
 
@@ -137,11 +142,12 @@ Feature Engineering is an iterative process in which you select data, clean it, 
 Then, you'll look at what you have and iterate again, looking for more data, or removing some data from the set until you have the desired result.
 You'll probably clean the data in a number of different ways, and then run your transforms again.
 We provide several methods in the Analytics Toolkit, but you can use features from other Python libraries as well to manipulate your data.
-The Intel® Data Platform: Analytics Toolkit Python libraries have been specifically designed to handle very large data sets, so when using standard Python libraries, be aware that some of them are not designed to handle these very large data sets.
+The Intel® Data Platform: Analytics Toolkit Python libraries have been specifically designed to handle very large data sets,
+so when using standard Python libraries, be aware that some of them are not designed to handle these very large data sets.
 
 
 Data Cleaning
-~~~~~~~~~~~~~
+=============
 
 First, to clean your data, you will want to remove incomplete, incorrect, inaccurate, or corrupted data from your data set.
 You will use the BigFrame API to perform the data cleaning.
@@ -151,9 +157,10 @@ Here's an example of cleaning data. In this case, we are going to drop (erase/de
 >>> my_frame_proxy.dropna(all)
 
 Feature Engineering or Data Transformation
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+==========================================
 
-During the "cleaning phase," you will not only want to remove extraneous or erroneous data, you will want to take existing values and transform them into features you can use.
+During the "cleaning phase," you will not only want to remove extraneous or erroneous data,
+you will want to take existing values and transform them into features you can use.
 This is where you manipulate the data, that is, actually crunch the data, using the BigFrame API.
 
 >>> my_frame_proxy.add_columns(w_price+markup, float32, "r_price")
@@ -171,6 +178,7 @@ This is where you manipulate the data, that is, actually crunch the data, using 
 >>> my_frame_proxy.add_column(w_price+markup, float32, "r_price")
 
 
+------------------
 Graph Construction
 ------------------
 
@@ -182,7 +190,7 @@ First, you will build a set of rules to describe the transformation from table t
 
 
 Building Rules
-~~~~~~~~~~~~~~
+==============
 
 First make rule objects.
 These are the criteria for transforming the table data to graph data.
@@ -204,7 +212,7 @@ This creates an edge labeled as what is in the column named transaction, going f
 
 
 Build Your Graph
-~~~~~~~~~~~~~~~~
+================
 
 Now that you have built some rules, let us put them to use and create a BigGraph object.
 
