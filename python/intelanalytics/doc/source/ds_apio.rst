@@ -267,6 +267,7 @@ The reducer has two parameters, the *accumulator* value and the row or cell *upd
 
 There are also a bunch of built-in reducers:  count, sum, avg, stdev, etc.
  
+
 .. TODO:: Where is the Groupby function? 
     Groupby (and Aggregate)
 
