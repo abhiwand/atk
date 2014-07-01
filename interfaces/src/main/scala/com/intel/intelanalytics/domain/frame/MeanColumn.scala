@@ -33,3 +33,9 @@ case class MeanColumn[FrameRef](frame: FrameRef, columnName: String) {
   require(frame != null, "frame is required")
   require(columnName != null, "column name is required")
 }
+
+/**
+ * Represents a MeanColumn return object
+ */
+case class MeanColumnReturn(mean: Double) {
+}

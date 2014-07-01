@@ -245,7 +245,7 @@ class FrameBackendRest(object):
         if not colTypes[column_name] in [np.float32, np.float64, np.int32, np.int64]:
             raise ValueError("unable to take mean of non-numeric values")
         arguments = {'frame': frame._id, 'columnName': column_name}
-        return execute_new_frame_command('meanColumn', arguments)
+        return execute_new_object_command('meanColumn', arguments).get('mean')
 
     class InspectionTable(object):
         """
@@ -430,3 +430,10 @@ def execute_new_frame_command(command_name, arguments):
     command_info = executor.issue(command_request)
     frame_info = FrameInfo(command_info.result)
     return BigFrame(frame_info)
+
+
+def execute_new_object_command(command_name, arguments):
+    """Executes command and creates a new BigFrame object from server response"""
+    command_request = CommandRequest('dataframe/' + command_name, arguments)
+    command_info = executor.issue(command_request)
+    return command_info.result

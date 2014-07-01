@@ -438,8 +438,8 @@ class SparkEngine(sparkContextManager: SparkContextManager,
   override def meanColumn(arguments: MeanColumn[Long])(implicit user: UserPrincipal): Execution =
     commands.execute(meanColumnCommand, arguments, user, implicitly[ExecutionContext])
 
-  val meanColumnCommand: CommandPlugin[MeanColumn[Long], Double] = commands.registerCommand("dataframe/meanColumn", meanColumnSimple)
-  def meanColumnSimple(arguments: MeanColumn[Long], user: UserPrincipal): Double = {
+  val meanColumnCommand: CommandPlugin[MeanColumn[Long], MeanColumnReturn] = commands.registerCommand("dataframe/meanColumn", meanColumnSimple)
+  def meanColumnSimple(arguments: MeanColumn[Long], user: UserPrincipal): MeanColumnReturn = {
     implicit val u = user
     val frameId: Long = arguments.frame
     val realFrame = expectFrame(frameId)
@@ -452,7 +452,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
 
     val mean = SparkOps.meanColumn(columnIndex, rdd)
 
-    mean
+    MeanColumnReturn(mean)
   }
 
   def filter(arguments: FilterPredicate[JsObject, Long])(implicit user: UserPrincipal): Execution =

@@ -352,7 +352,7 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
       xform.arguments.get.convertTo[MeanColumn[Long]]
     }
 
-    validate(test.isSuccess, "Failed to parse bin column descriptor: " + getErrorMessage(test)) {
+    validate(test.isSuccess, "Failed to parse mean column descriptor: " + getErrorMessage(test)) {
       val args = test.get
       val result = engine.meanColumn(args)
       val command: Command = result.start
