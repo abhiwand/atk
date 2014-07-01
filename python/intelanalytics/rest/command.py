@@ -35,7 +35,7 @@ import intelanalytics.rest.config as config
 from intelanalytics.rest.connection import http
 
 
-def print_progress(progress, progressMessage, characters_to_clear_in_line, make_new_line, elapsed_time_in_seconds):
+def print_progress(progress, progressMessage, make_new_line, start_times):
     if not progress:
         initializing_text = "\rinitializing..."
         sys.stdout.write(initializing_text)
@@ -51,13 +51,13 @@ def print_progress(progress, progressMessage, characters_to_clear_in_line, make_
         num_star = int(p / 2)
         num_dot = 50 - num_star
         number = "%3.2f" % p
-        time_string = datetime.timedelta(seconds = int(elapsed_time_in_seconds))
+
+        time_string = datetime.timedelta(seconds = int(time.time() - start_times[index]))
         progress_summary.append("\r%6s%% [%s%s] %s [Elapsed Time %s]" % (number, '=' * num_star, '.' * num_dot, message, time_string))
 
     if make_new_line:
         print progress_summary[-2]
 
-    sys.stdout.write("\r" + " " * (characters_to_clear_in_line))
     sys.stdout.write(progress_summary[-1])
     sys.stdout.flush()
     return len(progress_summary[-1])
@@ -173,17 +173,17 @@ class Polling(object):
         if backoff_factor is None:
             backoff_factor = config.polling.backoff_factor
         interval_secs = start_interval_secs
-        start_time = time.time()
 
         command_info = Polling._get_command_info(uri)
 
         if not predicate(command_info):
-            job_count = 1
+            job_count = 0
             last_progress = []
-            printed_characters = 0
 
             next_poll_time = time.time()
 
+            start_time = time.time()
+            job_start_times = []
             while True:
                 if time.time() < next_poll_time:
                     time.sleep(start_interval_secs)
@@ -193,13 +193,18 @@ class Polling(object):
 
                 next_poll_time = time.time() + interval_secs
                 progress = command_info.progress
-                new_job_progress_exists = job_count < len(progress)
-                printed_characters = print_progress(progress, command_info.progressMessage, printed_characters, new_job_progress_exists, time.time() - start_time)
-                if new_job_progress_exists:
+                print_new_line = len(progress) > 1 and job_count < len(progress)
+
+                if job_count < len(progress):
+                    job_start_times.append(time.time())
                     job_count = len(progress)
+
+                print_progress(progress, command_info.progressMessage, print_new_line, job_start_times)
+
 
                 if predicate(command_info):
                     break
+
                 if last_progress == progress and interval_secs < max_interval_secs:
                     interval_secs = min(max_interval_secs, interval_secs * backoff_factor)
                 last_progress = progress
@@ -214,14 +219,14 @@ class Polling(object):
         # last_progress = []
         # while True:
         #     time.sleep(interval_secs)
-        #     wait_time = time.time() - start_time
+        #     wait_time = time.time() - job_start_times
         #     command_info = Polling._get_command_info(command_info.uri)
         #     progress = command_info.progress
         #
-        #     new_job_progress_exists = job_count < len(progress)
-        #     print_progress(progress, new_job_progress_exists)
+        #     print_new_line = job_count < len(progress)
+        #     print_progress(progress, print_new_line)
         #
-        #     if(new_job_progress_exists):
+        #     if(print_new_line):
         #         job_count = len(progress)
         #
         #     if predicate(command_info):
