@@ -28,6 +28,8 @@ import time
 import json
 import logging
 import sys
+import re
+
 logger = logging.getLogger(__name__)
 
 import intelanalytics.rest.config as config
@@ -67,8 +69,16 @@ class CommandRequest(object):
 
 
 class CommandInfo(object):
+    __commands_regex = re.compile("""^http.+/commands/\d+""")
+
+    @staticmethod
+    def is_valid_command_uri(uri):
+        return CommandInfo.__commands_regex.match(uri) is not None
+
     def __init__(self, response_payload):
         self._payload = response_payload
+        if not self.is_valid_command_uri(self.uri):
+            raise ValueError("Invalid command URI: " + self.uri)
 
     def __repr__(self):
         return json.dumps(self._payload, indent=2, sort_keys=True)
@@ -130,6 +140,8 @@ class CommandInfo(object):
 
 class Polling(object):
 
+
+
     @staticmethod
     def poll(uri, predicate=None, start_interval_secs=None, max_interval_secs=None, backoff_factor=None):
         """
@@ -157,6 +169,8 @@ class Polling(object):
             start_interval_secs = config.polling.start_interval_secs
         if backoff_factor is None:
             backoff_factor = config.polling.backoff_factor
+        if not CommandInfo.is_valid_command_uri(uri):
+            raise ValueError('Cannot poll ' + uri + ' - a /commands/{number} uri is required')
         interval_secs = start_interval_secs
         start_time = time.time()
 

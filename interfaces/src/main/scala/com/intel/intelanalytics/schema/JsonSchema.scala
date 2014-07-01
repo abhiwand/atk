@@ -47,7 +47,7 @@ object JsonSchema {
 }
 
 sealed trait Primitive extends JsonSchema {
-  def $schema = None
+  //def $schema = None
 }
 
 case class ObjectSchema(
