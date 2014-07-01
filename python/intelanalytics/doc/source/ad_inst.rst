@@ -1,6 +1,19 @@
 Installation
 ============
 
+Pre-Installation
+----------------
+
+..  toctree::
+    :maxdepth: 1
+
+    ad_inse
+    ad_inwk
+    ad_psql
+
+Installation
+------------
+
 | The installation of the Intel® Analytics package relys upon other programs to function properly. During installation these other packages are checked for and installed if absent:
 |     python2.7
 |     python2.7-pip
@@ -16,12 +29,17 @@ In addition, the rest-server package also installs 'java' version 1.7 or newer
 Platform Specific Installation
 ------------------------------
 
-.. toctree::
-   :maxdepth: 1
-
-   ad_yum
+RedHat/Centos or other system using ``yum``: :doc:ad_yum
 
 .. ad_apt (future)
+
+sudo visudo
+Defaults:rmaldrix !requiretty
+rmaldrix        ALL=(ALL)       NOPASSWD: ALL
+127.0.0.1 because 10.10.68.36 did not work (personal problem)
+
+
+
 
 Effects
 -------
@@ -89,3 +107,5 @@ Effects
 |     /usr/lib/intelanalytics/rest-client/python/tests/test_webhook.py
 |     symbolic link from /usr/lib/intelanalytics/rest-client/python  to /usr/lib/python2.7/site-packages/intelanalytics
 
+.. _Cloudera Manager: http://www.cloudera.com/content/support/en/downloads/cloudera_manager/cm-5-0-2.html
+.. _Cloudera Documentation: http://www.cloudera.com/content/support/en/documentation/cdh5-documentation/cdh5-documentation-v5-latest.html
