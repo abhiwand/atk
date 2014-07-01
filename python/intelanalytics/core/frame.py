@@ -37,6 +37,18 @@ def _get_backend():
     from intelanalytics.core.config import get_frame_backend
     return get_frame_backend()
 
+def docstub(f):
+    """
+    Marks the function as a documentation stub that exists only to facilitate
+    generation of status Python html docs. The implementation, if any, is replaced
+    at runtime by the standard command dispatch logic.
+    :param f: the function
+    :return: the function, annotated so that the command dispatch logic knows it is
+                safe to replace it.
+    """
+    f.docstub = True
+    return f
+
 
 def get_frame_names():
     """
@@ -793,6 +805,7 @@ class BigFrame(object):
         except:
             raise IaError(logger)
 
+    @docstub
     def remove_columns(self, name):
         """
         Remove columns from the BigFrame object.
@@ -815,11 +828,12 @@ class BigFrame(object):
         # Now my_frame only has the columns named "column_a" and "column_c"
 
         """
+        pass
         # TODO - Review examples
-        try:
-            self._backend.remove_columns(self, name)
-        except:
-            raise IaError(logger)
+        #try:
+        #    self._backend.remove_columns(self, name)
+        #except:
+        #    raise IaError(logger)
 
     def rename_columns(self, column_names, new_names):
         """

@@ -484,15 +484,15 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     newJoinFrame.copy(schema = Schema(allColumns))
   }
 
-  def removeColumn(arguments: FrameRemoveColumn[JsObject, Long])(implicit user: UserPrincipal): Execution =
+  def removeColumn(arguments: FrameRemoveColumn)(implicit user: UserPrincipal): Execution =
     commands.execute(removeColumnCommand, arguments, user, implicitly[ExecutionContext])
 
-  val removeColumnCommand = commands.registerCommand("dataframe/removecolumn", removeColumnSimple)
-  def removeColumnSimple(arguments: FrameRemoveColumn[JsObject, Long], user: UserPrincipal) = {
+  val removeColumnCommand = commands.registerCommand("dataframe/remove_columns", removeColumnSimple)
+  def removeColumnSimple(arguments: FrameRemoveColumn, user: UserPrincipal) = {
 
     val ctx = sparkContextManager.context(user).sparkContext
-    val frameId = arguments.frame
-    val columns = arguments.column.split(",")
+    val frameId = arguments.frame.id
+    val columns = arguments.columns
 
     val realFrame = expectFrame(arguments.frame)
     val schema = realFrame.schema
@@ -507,7 +507,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
 
     columnIndices match {
       case invalidColumns if invalidColumns.contains(-1) =>
-        throw new IllegalArgumentException(s"Invalid list of columns: ${arguments.column}")
+        throw new IllegalArgumentException(s"Invalid list of columns: [${arguments.columns.mkString(", ")}]")
       case allColumns if allColumns.length == schema.columns.length =>
         frames.getFrameRdd(ctx, frameId).filter(_ => false).saveAsObjectFile(location)
       case singleColumn if singleColumn.length == 1 => frames.getFrameRdd(ctx, frameId)
