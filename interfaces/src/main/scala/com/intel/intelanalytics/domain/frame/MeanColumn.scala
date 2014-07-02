@@ -29,7 +29,7 @@ package com.intel.intelanalytics.domain.frame
  * @param columnName name of the column to bin
  * @tparam FrameRef
  */
-case class MeanColumn[FrameRef](frame: FrameRef, columnName: String) {
+case class MeanColumn[FrameRef](frame: FrameRef, columnName: String, multiplierColumnName: Option[String]) {
   require(frame != null, "frame is required")
   require(columnName != null, "column name is required")
 }

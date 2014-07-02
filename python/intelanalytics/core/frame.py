@@ -567,7 +567,7 @@ class BigFrame(object):
         """
         return self._backend.bin_column(self, column_name, num_bins, bin_type, bin_column_name)
 
-    def mean_column(self, column_name):
+    def mean_column(self, column_name, multiplier_column_name = None):
         """
         Calculate the mean value of a column.
 
@@ -585,7 +585,7 @@ class BigFrame(object):
         --------
         >>> mean = frame.mean_column('interesting column')
         """
-        return self._backend.mean_column(self, column_name)
+        return self._backend.mean_column(self, column_name, multiplier_column_name)
 
     def drop(self, predicate):
         """
