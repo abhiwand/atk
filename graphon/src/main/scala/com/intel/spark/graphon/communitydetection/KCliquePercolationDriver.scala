@@ -1,3 +1,27 @@
+
+//////////////////////////////////////////////////////////////////////////////
+// INTEL CONFIDENTIAL
+//
+// Copyright 2014 Intel Corporation All Rights Reserved.
+//
+// The source code contained or described herein and all documents related to
+// the source code (Material) are owned by Intel Corporation or its suppliers
+// or licensors. Title to the Material remains with Intel Corporation or its
+// suppliers and licensors. The Material may contain trade secrets and
+// proprietary and confidential information of Intel Corporation and its
+// suppliers and licensors, and is protected by worldwide copyright and trade
+// secret laws and treaty provisions. No part of the Material may be used,
+// copied, reproduced, modified, published, uploaded, posted, transmitted,
+// distributed, or disclosed in any way without Intel's prior express written
+// permission.
+//
+// No license under any patent, copyright, trade secret or other intellectual
+// property right is granted to or conferred upon you by disclosure or
+// delivery of the Materials, either expressly, by implication, inducement,
+// estoppel or otherwise. Any license under such intellectual property rights
+// must be express and approved by Intel in writing.
+//////////////////////////////////////////////////////////////////////////////
+
 package com.intel.spark.graphon.communitydetection
 
 import com.intel.spark.graphon.titanreader.TitanReader
@@ -5,16 +29,33 @@ import org.apache.spark.rdd.RDD
 import com.intel.graphbuilder.elements.{ Edge => GBEdge, GraphElement }
 import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRDDImplicits._
 import com.intel.spark.graphon.communitydetection.KCliquePercolationDataTypes._
+import com.intel.spark.graphon.communitydetection.CreateGraphFromEnumeratedKCliques.KCliqueGraphOutput
 
+/**
+ * The driver for running the k-clique percolation algorithm
+ */
 object KCliquePercolationDriver {
 
+  /**
+   * Convert Graph Builder edge to the undirected edge as pair of vertex identifiers
+   * @param gbEdgeList Graph Builder edge list
+   * @return an RDD of Edge set
+   */
   def edgeListFromGBEdgeList(gbEdgeList: RDD[GBEdge]): RDD[Edge] = {
 
     gbEdgeList.filter(e => (e.tailPhysicalId.asInstanceOf[Long] < e.headPhysicalId.asInstanceOf[Long])).
-      map(e => (KCliquePercolationDataTypes.Edge(e.tailPhysicalId.asInstanceOf[Long], e.headPhysicalId.asInstanceOf[Long])))
+      map(e => KCliquePercolationDataTypes.Edge(e.tailPhysicalId.asInstanceOf[Long], e.headPhysicalId.asInstanceOf[Long]))
 
   }
 
+  /**
+   * The main driver to execute k-clique percolation algorithm
+   * @param graphTableName This should be reference to the graph from which we are pulling data
+   * @param titanStorageHostName
+   * @param sparkMaster
+   * @param k Parameter determining clique-size used to determine communities. Must be at least 1. Large values of k
+   *          result in fewer, smaller communities that are more connected
+   */
   def run(graphTableName: String, titanStorageHostName: String, sparkMaster: String, k: Int) = {
 
     /**
@@ -29,7 +70,7 @@ object KCliquePercolationDriver {
     val gbEdgeList = graphElements.filterEdges()
 
     /**
-     * Convert the graph builder edge list to the edge list that can will used in KClique Percolation
+     * Convert the graph builder edge list to the edge list that can be used in KClique Percolation
      */
     val edgeList: RDD[Edge] = edgeListFromGBEdgeList(gbEdgeList)
 
@@ -41,17 +82,18 @@ object KCliquePercolationDriver {
     /**
      * Construct the clique graph that will be input for connected components
      */
-    val kcliqueGraphForComponentAnalysis = CreateGraphFromEnumeratedKCliques.run(enumeratedKCliques)
+    val kcliqueGraphForComponentAnalysis: KCliqueGraphOutput = CreateGraphFromEnumeratedKCliques.run(enumeratedKCliques)
 
     /**
-     * TODO: Call connected component analysis to get the communities
+     *  Run connected component analysis to get the communities
      */
-    //val cliquesAndConnectedComponent = GetConnectedComponentsFrom(kcliqueGraphForComponentAnalysis)
+    val cliquesAndConnectedComponent = GetConnectedComponents.run(kcliqueGraphForComponentAnalysis)
 
     /**
-     * TODO: Associate each vertex with a list of the communities to which it belongs
+     * Associate each vertex with a list of the communities to which it belongs
      */
-    //val vertexAndCommunities = AssignCommunitiesToVertexUsing(cliquesAndConnectedComponent)
+    val vertexAndCommunityList: RDD[(Long, Set[Long])] =
+      AssignCommunitiesToVertex.run(cliquesAndConnectedComponent.connectedComponents, cliquesAndConnectedComponent.cliqueGraphNewIDsToVerticesList)
 
     /**
      * TODO: Update the properties for each vertex by adding community property to it
