@@ -114,35 +114,35 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
                         uri.toString().dropRight("/commands".length))
                       entity(as[JsonTransform]) {
                         xform =>
-                          //                          try {
-                          //                            //TODO: this execution path is going away soon.
-                          //                            runCommand(uri, xform)
-                          //                          }
-                          //                          catch {
-                          //                            case e: IllegalArgumentException => {
-                          //                              //TODO: this will be the only execution path, soon.
-                          //                              //TODO: validate the arguments. To do this requires some kind of sharing
-                          //                              //between the api server and the engine to determine what contracts to use.
-                          //                              //TODO: standardize URI handling such that the API server strips out
-                          //                              //the https://site.com/ part and leaves the engine with only an application-specific,
-                          //                              //non-transport-related URI. This should be automatic and not something that
-                          //                              //every command handler has to call.
-                          val template = CommandTemplate(name = xform.name, arguments = xform.arguments)
-                          info(s"Received command template for execution: $template")
                           try {
-                            engine.execute(template) match {
-                              case Execution(command, futureResult) =>
-                                complete(decorate(uri + "/" + command.id, command))
-                            }
+                            //TODO: this execution path is going away soon.
+                            runCommand(uri, xform)
                           }
                           catch {
-                            case e: DeserializationException =>
-                              reject(ValidationRejection(
-                                s"Incorrectly formatted JSON found while parsing command '${xform.name}':" +
-                                  s" ${e.getMessage}", Some(e)))
+                            case e: IllegalArgumentException => {
+                              //TODO: this will be the only execution path, soon.
+                              //TODO: validate the arguments. To do this requires some kind of sharing
+                              //between the api server and the engine to determine what contracts to use.
+                              //TODO: standardize URI handling such that the API server strips out
+                              //the https://site.com/ part and leaves the engine with only an application-specific,
+                              //non-transport-related URI. This should be automatic and not something that
+                              //every command handler has to call.
+                              val template = CommandTemplate(name = xform.name, arguments = xform.arguments)
+                              info(s"Received command template for execution: $template")
+                              try {
+                                engine.execute(template) match {
+                                  case Execution(command, futureResult) =>
+                                    complete(decorate(uri + "/" + command.id, command))
+                                }
+                              }
+                              catch {
+                                case e: DeserializationException =>
+                                  reject(ValidationRejection(
+                                    s"Incorrectly formatted JSON found while parsing command '${xform.name}':" +
+                                      s" ${e.getMessage}", Some(e)))
+                              }
+                            }
                           }
-                        //}
-                        //}
                       }
                     }
               }
