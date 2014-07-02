@@ -35,6 +35,7 @@ import spray.json.JsObject
 import scala.collection.mutable
 import scala.Some
 import com.intel.intelanalytics.domain.frame.LoadLines
+import scala.reflect.ClassTag
 
 //implicit conversion for PairRDD
 
@@ -42,11 +43,11 @@ import org.apache.spark.SparkContext._
 
 private[spark] object SparkOps extends Serializable {
 
-  def getRows(rdd: RDD[Row], offset: Long, count: Int, limit: Int): Seq[Row] = {
+  def getRows[T: ClassTag](rdd: RDD[T], offset: Long, count: Int, limit: Int): Seq[T] = {
 
     //Count the rows in each partition, then order the counts by partition number
     val counts = rdd.mapPartitionsWithIndex(
-      (i: Int, rows: Iterator[Row]) => Iterator.single((i, rows.size)))
+      (i: Int, rows: Iterator[T]) => Iterator.single((i, rows.size)))
       .collect()
       .sortBy(_._1)
 
@@ -68,7 +69,7 @@ private[spark] object SparkOps extends Serializable {
 
     //Start getting rows. We use the sums and counts to figure out which
     //partitions we need to read from and which to just ignore
-    val rows: Seq[Row] = rdd.mapPartitionsWithIndex((i, rows) => {
+    val rows: Seq[T] = rdd.mapPartitionsWithIndex((i, rows) => {
       val (ct: Int, sum: Int) = sumsAndCounts(i)
       val thisPartStart = sum - ct
       if (sum < offset || thisPartStart >= offset + capped) {
@@ -91,7 +92,17 @@ private[spark] object SparkOps extends Serializable {
                 arguments: LoadLines[JsObject, Long],
                 parserFunction: String => RowParseResult) = {
 
+    val fileContentRdd: RDD[String] = ctx.textFile(fileName, SparkEngineConfig.sparkDefaultPartitions)
 
+    /**
+     * parse the first 100 lines and make sure the file is acceptable
+     */
+    val top100Rows: Seq[String] = getRows(fileContentRdd, 0, 100, 100)
+    val preEvaluateResults = ctx.parallelize(top100Rows).map(parserFunction)
+    val failedCount = preEvaluateResults.filter(r => r.parseSuccess == false).count()
+
+    if (failedCount > 0)
+      throw new Exception("The data does not match the specified schema")
 
     val parseResultRdd = ctx.textFile(fileName, SparkEngineConfig.sparkDefaultPartitions)
       .mapPartitionsWithIndex {
