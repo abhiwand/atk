@@ -113,6 +113,6 @@ trait Engine {
 
   // Model performance measures
 
-  def classificationMetric(arguments: ClassificationMetric)(implicit user: UserPrincipal): Execution
+  def classificationMetric(arguments: ClassificationMetric[Long])(implicit user: UserPrincipal): Execution
 
 }

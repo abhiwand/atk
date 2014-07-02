@@ -934,10 +934,7 @@ class BigFrame(object):
         >>> acc = frame.accuracy('labels', 'predictions')
 
         """
-        try:
-            return self._backend.classification_metric(self, 'accuracy', label_column, pred_column, 1, 1)
-        except:
-            raise IaError(logger)
+        return self._backend.classification_metric(self, 'accuracy', label_column, pred_column, '1', 1)
 
     def precision(self, label_column, pred_column, pos_label = 1):
         """
@@ -971,10 +968,7 @@ class BigFrame(object):
         >>> acc = frame.precision('labels', 'predictions')
 
         """
-        try:
-            return self._backend.classification_metric(self, 'precision', label_column, pred_column, pos_label, 1)
-        except:
-            raise IaError(logger)
+        return self._backend.classification_metric(self, 'precision', label_column, pred_column, pos_label, 1)
 
     def recall(self, label_column, pred_column, pos_label = 1):
         """
@@ -1009,10 +1003,7 @@ class BigFrame(object):
         >>> acc = frame.recall('labels', 'predictions')
 
         """
-        try:
-            return self._backend.classification_metric(self, 'recall', label_column, pred_column, pos_label, 1)
-        except:
-            raise IaError(logger)
+        return self._backend.classification_metric(self, 'recall', label_column, pred_column, pos_label, 1)
 
     def fmeasure(self, label_column, pred_column, pos_label = 1, beta = 1):
         """
@@ -1048,7 +1039,4 @@ class BigFrame(object):
         >>> acc = frame.fmeasure('labels', 'predictions')
 
         """
-        try:
-            return self._backend.classification_metric(self, 'fmeasure', label_column, pred_column, pos_label, beta)
-        except:
-            raise IaError(logger)
+        return self._backend.classification_metric(self, 'fmeasure', label_column, pred_column, pos_label, beta)

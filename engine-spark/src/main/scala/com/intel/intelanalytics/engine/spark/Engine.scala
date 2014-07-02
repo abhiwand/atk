@@ -712,12 +712,13 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     realFrame
   }
 
-  val classificationMetricCommand: CommandPlugin[ClassificationMetric, ClassificationMetricValue] = commands.registerCommand("dataframe/classification_metric", classificationMetricSimple)
-
-  override def classificationMetric(arguments: ClassificationMetric)(implicit user: UserPrincipal): Execution =
+  override def classificationMetric(arguments: ClassificationMetric[Long])(implicit user: UserPrincipal): Execution =
     commands.execute(classificationMetricCommand, arguments, user, implicitly[ExecutionContext])
 
-  def classificationMetricSimple(arguments: ClassificationMetric, user: UserPrincipal) = {
+  val classificationMetricCommand: CommandPlugin[ClassificationMetric[Long], ClassificationMetricValue] = commands.registerCommand("dataframe/classification_metric", classificationMetricSimple)
+
+  def classificationMetricSimple(arguments: ClassificationMetric[Long], user: UserPrincipal): ClassificationMetricValue = {
+    implicit val u = user
     val frameId: Long = arguments.frameId
     val realFrame: DataFrame = getDataFrameById(frameId)
 
