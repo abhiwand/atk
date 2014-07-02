@@ -321,9 +321,9 @@ Glossary
 
         For more information see: :term:`Supervised Learning`, and :term:`Unsupervised Learning`.
 
-    Simple Random Sampling (SRS)
+    Simple Random Sampling
 
-        In statistics, a simple random sample is a subset of individuals (a sample) chosen from a larger set (a population).
+        In statistics, a simple random sample (SRS) is a subset of individuals (a sample) chosen from a larger set (a population).
         Each individual is chosen randomly and entirely by chance, such that each individual has the same probability of being
         chosen at any stage during the sampling process, and each subset of *k* individuals has the same probability of being
         chosen for the sample as any other subset of *k* individuals. [#f1]_

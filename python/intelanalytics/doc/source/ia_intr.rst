@@ -3,7 +3,7 @@ Introduction
 ============
 
 The Intel Data Platform: Analytics Toolkit provides a unified environment for analyzing "Big Data."
-It brings together the powerful new capabilities of graph analytics with classic machine learning.
+It brings together the powerful new capabilities of :term:`graph analytics` with classic :term:`machine learning`.
 This new toolkit enables data scientists and developers to more easily create new analytic capabilities in a platform
 that is more cost effective and easier to manage than disparate, non-integrated tools.
 Users can leverage the full spectrum of powerful analytic capabilities without constraining their sophistication and creativity.
@@ -20,14 +20,17 @@ We use:
 Support Programs
 ----------------
 
-    Apache® Hadoop® and the Hadoop Distributed File System (HDFS)
-
-    Apache Giraph® scalable iterative graph processing system
-
-    A Python-based API, using iPython
-
-    Cloudera Graph Database
-
-    TinkerPop® Gremlin® Graph Query language
+    | `Apache™ Hadoop®`_ and the Hadoop Distributed File System (HDFS)
+    | `Apache Giraph©`_ scalable iterative graph processing system
+    | A Python-based API, using iPython_
+    | `Cloudera Graph Database`_
+    | `TinkerPop™ Gremlin®`_ Graph Query language
 
 These tools work well together, and with many other open source tools.
+
+
+.. _iPython: http://ipython.org/
+.. _Apache™ Hadoop®: http://hadoop.apache.org/docs/current/index.html 
+.. _Apache Giraph©: http://giraph.apache.org/ 
+.. _Cloudera Graph Database: http://www.cloudera.com/
+.. _TinkerPop™ Gremlin®: https://github.com/tinkerpop/gremlin/wiki

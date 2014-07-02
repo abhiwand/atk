@@ -2,7 +2,7 @@
 Machine Learning Algorithms
 ===========================
 
-In this release of the Intel® Data Platform: Analytics Toolkit, we support eight graphical algorithms in iGiraph.
+In this release of the Analytics Toolkit, we support eight graphical algorithms in iGiraph.
 From a functionality point of view, they fall into these categories: *Collaborative Filtering*, *Graph Analytics*, *Graphical Models*, and *Topic Modeling*.
 
 * :ref:`Collaborative_Filtering`
@@ -32,38 +32,45 @@ Collaborative Filtering
 -----------------------
 
 Collaborative Filtering is widely used in recommender systems.
-See: http://en.wikipedia.org/wiki/Collaborative_filtering
+For more information see: `Wikipedia\: Collaborative Filtering`_.
 
 We support two methods in this category, :ref:`ALS` and :ref:`CGD`
 
 .. _ALS:
 
-Alternating Least Squares (ALS)
-===============================
+:term:`Alternating Least Squares` (ALS)
+=======================================
 
-We use the Alternating Least Squares with Bias for collaborative filtering algorithms.
-http://columbiadatascience.com/2012/10/18/week-7-hunch-com-recommendation-engines-svd-alternating-least-squares-convexity-filter-bubbles/
-Our implementation is based on the following papers.
+We use the :term:`Alternating Least Squares` with Bias for collaborative filtering algorithms.
+For more information see: `Columbia Data Science\: Blog Week-7`_.
 
-| Y. Zhou, D. Wilkinson, R. Schreiber and R. Pan. Large-Scale Parallel Collaborative Filtering for the Netflix Prize. 2008.
-| Y. Koren. Factorization Meets the Neighborhood: a Multifaceted Collaborative Filtering Model. In ACM KDD 2008. (Equation 5)
-| See: http://public.research.att.com/~volinsky/netflix/kdd08koren.pdf
+Our implementation is based on the following papers:
+    Y. Zhou, D. Wilkinson, R. Schreiber and R. Pan. `Large-Scale Parallel Collaborative Filtering for the Netflix Prize`_. 2008.
+    Y. Koren. `Factorization Meets the Neighborhood\: a Multifaceted Collaborative Filtering Model`_. In ACM KDD 2008. (Equation 5)
 
-This algorithm for collaborative filtering is widely used in recommendation systems to suggest items (products, movies, articles, and so on) to potential users based on historical records of items that all users have purchased, rated, or viewed.
-The records are usually organized as a preference matrix P, which is a sparse matrix holding the preferences (such as, ratings) given by users to items.
-Within collaborative filtering approaches, ALS falls in the category of the matrix factorization/latent factor model that infers user profiles and item profiles in low-dimension space, such that the original matrix P can be approximated by a linear model.
+This algorithm for collaborative filtering is widely used in recommendation systems to suggest items
+(products, movies, articles, and so on) to potential users based on historical records of items that
+all users have purchased, rated, or viewed.
+The records are usually organized as a preference matrix P, which is a sparse matrix holding the preferences
+(such as, ratings) given by users to items.
+Within collaborative filtering approaches, ALS falls in the category of the matrix factorization/latent
+factor model that infers user profiles and item profiles in low-dimension space, such that the original
+matrix P can be approximated by a linear model.
 
 
 The ALS Model
 =============
 
-A typical representation of the preference matrix P in Giraph is a bipartite graph, where nodes at the left side represent a list of users and nodes at the right side represent a set of items (such as, movies), and edges encode the rating a user provided to an item.
+A typical representation of the preference matrix P in Giraph is a bipartite graph, where nodes at the
+left side represent a list of users and nodes at the right side represent a set of items (such as, movies),
+and edges encode the rating a user provided to an item.
 To support training, validation, and test, a common practice in machine learning, each edge is also annotated by "TR", "VA" or "TE".
 
 ..  image::
     ds_mlal_als_1.png
 
-After executing ALS on the input bipartite graph, each node in the graph will be associated with a vector (f_* ) ? of length k, where k is the feature dimension is specified by the user, and a bias term b_*.
+After executing ALS on the input bipartite graph, each node in the graph will be associated with a
+vector (f_* ) ? of length k, where k is the feature dimension is specified by the user, and a bias term b_*.
 ALS optimizes (f_* ) ?  and b_* alternatively between user profiles and item profiles such that the following l2 regularized cost function is minimized:
 
 ..  image::
@@ -80,45 +87,60 @@ ALS Example Usage
 =================
 
 Input Data Format
-=================
+-----------------
 
 The ALS algorithm takes an input data represented in CSV, JSON or XML format.
-We use aCSV file as an example.
+We use a CSV file as an example.
 Each CSV file consists of at least five columns as shown in the example below.
 The user column is a list of user IDs.
 The movie column is a list of movie IDs.
 The rating column records how the user rates the movie in each row.
-The vertex_type labels the type of the source vertex in each row.
+The vertex_type labels the type of the source :term:`vertex` in each row.
 It labels which nodes will be on the "left-side" and which nodes will be on the "right-side" in the bi-partite graph we are building.
 The splits column specifies this row of data is for train, validation, or test.
 We used TR, VA, TE for these three types of splits, respectively.
 
 Data Import
-===========
+-----------
 
-To import the ALS input data, use the following ipython calls we provided.
+To import the ALS input data, use the following iPython calls:
+
+>>> from intelanalytics.table.bigdataframe import get_frame_builder
+>>> fb = get_frame_builder()
+>>> csvfile = '/user/hadoop/recommendation_raw_input.csv'
+>>> frame = fb.build_from_csv('AlsFrame',
+...                           csvfile,
+...                           schema='/user:long,vertex_type:chararray,movie:long,rating:logn.splits:chararray',
+...                           overwrite=True)
 
 The example above loads the ALS input data from a CSV file.
 The first line imports the needed python modules.
 The second line gets the frame builder into the fb object.
 The third line specifies the path to the input file.
 The rest of the lines import the input data.
-Here is a detailed description of the build_from_csv method.
+Here is a detailed description of the "build_from_csv" method.
 
 The first argument is the name you want to give to the frame.
-We used AlsFrame in this example.
+We used "AlsFrame" in this example.
 
 The second argument specifies that this is a csv file.
 
 The third argument is the schema of the input data.
 You need to name each column, and specify the data type of each column in your input CSV input data.
 
-The fourth argument is whether to overwrite the frame if you have imported data to the AlsFrame before.
+The fourth argument is whether to overwrite the frame if you have imported data to the "AlsFrame" before.
 
 Graph Construction
-==================
+------------------
 
 After you import the raw data, you register which fields to use for source vertex, which fields to use for target vertex, and then construct a graph from your input data.
+
+>>> from intelanalytics.graph.giggraph import get_graph_builder, GraphTypes
+>>> gb = get_graph_builder(GraphTypes.Property, frame)
+>>> gb.register_vertex('user', ['vertex_type'])
+>>> gb.register_vertex('movie')
+>>> gb.register_edge(('user', 'movie', 'rates'), ['splits', 'rating'])
+>>> graph = gb.build("AlsGraph", overwrite=True)
 
 In the example above, the first two lines import python modules related to graph construction, and get the graph builder object into gb.
 The third to fifth lines register the graph.
@@ -130,9 +152,12 @@ Finally, line 6 builds a graph named AlsGraph based on the input data and graph 
 The overwrite option overwrites a pre-existing graph with the same name.
 
 Run ALS Algorithm
-=================
+-----------------
 
 After graph construction, run the ALS algorithm as follows:
+
+>>> report1 = graph.ml.als(
+...             input_edge_property_list="rating",
 
 In the example above, the first line calls to the algorithm.
 The second line specifies which edge property you want to use for the ALS algorithm.
@@ -221,7 +246,7 @@ The code looks like this:
         True means turn bias calculation on, and False means turn bias calculation off.
         The default value is false.
 Returns
-~~~~~~~
+=======
 >>> output : AlgorithmReport
 
 >>> After execution, the algorithm's results are stored in the database.
@@ -230,7 +255,7 @@ Returns
 For a more complete definition of the Lambda parameter, see :term:`Lambda`.
 
 Example
-~~~~~~~
+=======
 
 >>> Graph.ml.als(
                 input_edge_property_list="source",
@@ -1146,3 +1171,9 @@ Finally, we deliberately entered an unknown value to the recommendation as an ex
 
 
 Figure 7, Trained Learning and Error Message
+
+.. _Wikipedia\: Collaborative Filtering: http://en.wikipedia.org/wiki/Collaborative_filtering
+.. _Columbia Data Science\: Blog Week-7: http://columbiadatascience.com/2012/10/18/week-7-hunch-com-recommendation-engines-svd-alternating-least-squares-convexity-filter-bubbles/
+.. _Factorization Meets the Neighborhood\: a Multifaceted Collaborative Filtering Model: http://public.research.att.com/~volinsky/netflix/kdd08koren.pdf
+.. _Large-Scale Parallel Collaborative Filtering for the Netflix Prize: http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.173.2797
+
