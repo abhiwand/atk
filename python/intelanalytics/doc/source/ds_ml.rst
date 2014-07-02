@@ -2,14 +2,15 @@
 Machine Learning
 ================
 
-Machine learning is a branch of artificial intelligence.
+:term:`Machine learning` is a branch of artificial intelligence.
 It is about constructing and studying software that can "learn" from data.
 
 When you enter a search phrase or question in an internet search tool, you get a list of websites ranked in order of relevance.
 The search engine bases its list on the content of the site, the links in each sites' webpages, how often users visit these sites,
 "how often users follow the suggested links in a query, and examples of queries and manually ranked webpages."
-More and more, machine learning is being used to automate search engines.
-(See http://alex.smola.org/drafts/thebook.pdf.)
+More and more, :term:`machine learning` is being used to automate search engines.
+(See `Introduction to Machine Learning`_ [#f1]_ )
+
 
 Internet bookstores or video rental sites use collaborative filtering to encourage users to buy more books, or rent more movies.
 The website needs to produce a list of suggestions, without having access to a specific query.
@@ -18,7 +19,7 @@ Additionally, the site might use the behavior of similar users to predict what t
 The business goal here is to automate this logic, so that the application behind the website can make these predictions without
 involving an analyst or other website personnel.
 
-There are many other problems that are amenable to machine learning solutions.
+There are many other problems that are amenable to :term:`machine learning` solutions.
 Translation of text for example is a difficult issue.
 It is possible to use examples of pre-translated to text to enable an algorithm to "learn" how to translate text from one language to another.
 This requires many good examples of translations, but ultimately, the software learns how to translate, at least for specific languages.
@@ -29,37 +30,37 @@ That way, when we encounter new problems, we can look at the type of data and pr
 Even when we have similar problems, the data may use different measures, feet, inches, meters, pounds, kilograms, Euros, yen, dollars, or pesos.
 To automate these problems and the solutions, we need to normalize the data.
 
--------------------------------------------------
-Machine Learning as the Analytics Toolkit Uses It
--------------------------------------------------
+---------------
+Other Resources
+---------------
 
-There is plenty of literature on machine learning for those who want to gain a more thorough understanding of it.
-We recommend: http://alex.smola.org/drafts/thebook.pdf and http://en.wikipedia.org/wiki/Machine_learning.
-You might find this link helpful as well:
-http://blog.bigml.com/2013/02/21/everything-you-wanted-to-know-about-machine-learning-but-were-too-afraid-to-ask-part-two/.
+There is plenty of literature on :term:`machine learning` for those who want to gain a more thorough understanding of it.
+We recommend: `Introduction to Machine Learning`_ [#f1]_ and `Wikipedia\: Machine Learning`_.
+You might find this link helpful as well: `Everything You Wanted to Know About
+Machine Learning, But Were Too Afraid To Ask (Part Two)`_.
 
 ---------------
 Algorithm Types
 ---------------
 
-The algorithms that we use in the Analytics Toolkit are Unsupervised Learning or Supervised Learning algorithms,
+The algorithms that we use in the Analytics Toolkit are :term:`Unsupervised Learning` or :term:`Supervised Learning` algorithms,
 where you either have definitive results (supervised) or where the results are determined by an estimation on the relationship
 of the data to be examined and not a specific known result (unsupervised).
 
-For more information http://en.wikipedia.org/wiki/Machine_learning#Algorithm_types has a longer discussion of algorithm types.
+For more information `Wikipedia\: Machine Learning / Algorithm Types`_ has a longer discussion of algorithm types.
 
-**Supervised Learning** - These algorithms are designed to teach the software to generalize from specific data.
+:term:`Supervised Learning` - These algorithms are designed to teach the software to generalize from specific data.
 Then the generalized learning is applied to new problems.
 
-**Unsupervised Learning** - Here the algorithm learns from data where the outcome is unknown.
+:term:`Unsupervised Learning` - Here the algorithm learns from data where the outcome is unknown.
 The idea here is to find new structure in the data.
 
-**Semi-Supervised Learning** - In this case, some of the data given to the algorithm are known, as in supervised learning,
+:term:`Semi-Supervised Learning` - In this case, some of the data given to the algorithm are known, as in supervised learning,
 and some are unknown, as in unsupervised learning.
 The idea here is that the software learns faster.
 
-.. todo:: Methods to implement machine learning
-    We implement machine learning in several classes and several methods.
+.. todo:: Methods to implement :term:`machine learning`
+    We implement :term:`machine learning` in several classes and several methods.
     The following methods implement various algorithms for manipulating your data.
 
     The ``recommend()`` method is for making recommendations, such as movies, books, or guitars the user might find interesting.
@@ -100,3 +101,13 @@ The idea here is that the software learns faster.
 
     Different models need different evaluation methods.
     What will be added in the first step will be prior and posterior histogram, RoC/AUC curves, and lift curves.
+
+
+.. _Introduction to Machine Learning: http://alex.smola.org/drafts/thebook.pdf
+.. _Wikipedia\: Machine Learning: http://en.wikipedia.org/wiki/Machine_learning
+.. _Everything You Wanted to Know About Machine Learning, But Were Too Afraid To Ask (Part Two): http://blog.bigml.com/2013/02/21/everything-you-wanted-to-know-about-machine-learning-but-were-too-afraid-to-ask-part-two/
+.. _Wikipedia\: Machine Learning / Algorithm Types: http://en.wikipedia.org/wiki/Machine_learning#Algorithm_types
+
+.. rubric:: Footnotes
+
+.. [#f1] Alex Smola and S.V.N. Vishwanathan (2008). thebook.pdf, Cambridge University Press, ISBN 0-521-82583-0.

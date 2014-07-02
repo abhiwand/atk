@@ -4,7 +4,7 @@ When exact strings are to be entered into the command line, they are surrounded 
 
 When a value is expected to be entered by user, a short description is used inside the <> characters such as <this>.
 
-Single word strings, which are not file names, are surrounded by double quotes.
+When emphasizing word strings, which are not file names, they are surrounded by double quotes.
 
 Code
 ====

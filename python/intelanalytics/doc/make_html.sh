@@ -55,7 +55,7 @@ fi
 # We assume we are running from the doc directory. Ignore all toctree warnings.
 # Check for weird stuff first
 if
-    weird=$( echo $1 | grep -ic -e "text" -e "doctest" -e "latexpdf" )
+    weird=$( echo $1 | grep -ic -e "text" -e "doctest" -e "latexpdf" -e "latex")
 then
     make -B $1 2>&1 | grep -v -f toctreeWarnings
 else

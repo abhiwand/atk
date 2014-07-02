@@ -5,7 +5,7 @@ Getting Started
 The Intel® Data Platform: Analytics Toolkit is a scalable database and analytics tool for examining and analyzing "Big Data."
 The Analytics Toolkit gives data scientists the tools to take raw data, clean it appropriately, build graphs,
 examine the relationships between data, and view the data in different ways.
-The Intel Data Platform: Analytics Toolkit includes powerful algorithms for transforming your data and a built-in
+The Analytics Toolkit includes powerful algorithms for transforming your data and a built-in
 graph database allows you to examine your data and run analytic tools on it.
 The interface to the data is through a Python programmatic interface where data scientists will be able to iteratively
 manage data, features, graphs,  models, results and visualizations.
@@ -15,21 +15,19 @@ manage data, features, graphs,  models, results and visualizations.
 Features
 --------
 
-* You can import data from several different formats.
-* The Analytics Toolkit provides data cleaning tools to prepare your data by removing erroneous values, transforming value
-    to a normalized state and constructing new features through manipulating existing values.
-* We provide powerful algorithms for gaining deeper insight into your data.
+Import data from several different formats
+
+Data cleaning tools to prepare your data by removing erroneous values, transforming value to a normalized state and constructing new features through manipulating existing values
+
+Powerful algorithms for gaining deeper insight into your data.
 
 
 ------------------
 Built-in Databases
 ------------------
 
-The Intel Data Platform: Analytics Toolkit holds data as either traditional table-based format in HBase or can store that data
-in a graph database.
-The Intel® Data Platform: Analytics Toolkit provides the functionality that allows data scientists to easily manipulate data in
-either of these data formats.
-
+The Analytics Toolkit holds data as either traditional table-based format in HBase or can store that data in a graph database.
+It provides the functionality that allows data scientists to easily manipulate data in either of these data formats.
 
 ----------------
 Before You Start
