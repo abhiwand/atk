@@ -360,6 +360,9 @@ class FrameBackendRest(object):
         r = self.rest_http.get('dataframes/{0}/data?offset={2}&count={1}'.format(frame._id,n, offset))
         return r.json()
 
+    def ks2_test(self, frame, sample_one_col, sample_two_col):
+        arguments = {'frameId': frame._id, 'sampleOneCol': sample_one_col, 'sampleTwoCol': sample_two_col}
+        return execute_command_output('ks2_test', arguments)
 
 class FrameInfo(object):
     """
@@ -421,3 +424,9 @@ def execute_new_frame_command(command_name, arguments):
     command_info = executor.issue(command_request)
     frame_info = FrameInfo(command_info.result)
     return BigFrame(frame_info)
+
+def execute_command_output(command_name, arguments):
+    """Executes command and get output"""
+    command_request = CommandRequest('dataframe/' + command_name, arguments)
+    command_info = executor.issue(command_request)
+    return command_info.result
