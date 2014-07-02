@@ -85,6 +85,10 @@ object SparkEngineConfig extends SharedConfig with EventLogging {
 
   val maxRows: Int = config.getInt("intel.analytics.engine.max-rows")
 
+  val frameLoadTestSampleSize: Int = config.getInt("intel.analytics.engine.frameLoadTestSampleSize")
+
+  val frameLoadTestFailThresholdPercentage: Int = config.getInt("intel.analytics.engine.frameLoadTestFailThresholdPercentage")
+
   /**
    * A list of archives that will be searched for command plugins
    */
