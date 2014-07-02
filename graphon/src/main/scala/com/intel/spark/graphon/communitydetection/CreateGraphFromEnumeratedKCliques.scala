@@ -26,15 +26,10 @@ package com.intel.spark.graphon.communitydetection
 import com.intel.spark.graphon.communitydetection.KCliquePercolationDataTypes._
 import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.RDD
-import com.intel.spark.graphon.communitydetection.KCliquePercolationDataTypes.ExtendersFact
-import com.intel.spark.graphon.communitydetection.KCliquePercolationDataTypes.CliqueFact
 
 object CreateGraphFromEnumeratedKCliques {
 
-  /**
-   * @param cliqueAndExtenders
-   */
-  def createCliqueAndExtendedCliqueSet(cliqueAndExtenders: RDD[ExtendersFact]): RDD[(CliqueFact, Set[CliqueFact])] = {
+  def run(cliqueAndExtenders: RDD[ExtendersFact]) = {
 
     /**
      * Derive the key value pairs of k-1 cliques in the graph and k cliques that extend them
@@ -44,24 +39,30 @@ object CreateGraphFromEnumeratedKCliques {
       cliqueAndExtenders.flatMap({ case ExtendersFact(clique, extenders, neighborHigh) => extenders.map(extendedBy => (CliqueFact(clique.members), CliqueFact(clique.members + extendedBy))) })
 
     /**
+     * Get the distinct CliqueFact set as the new vertex list of k-clique graph
+     */
+    val cliqueFactVertexList: RDD[CliqueFact] = cliqueAndExtenders.flatMap({ case ExtendersFact(clique, extenders, neighborHigh) => extenders.map(extendedBy => CliqueFact(clique.members + extendedBy)) }).distinct()
+
+    /**
      * Group those pairs by their keys (the k-1) sets, so in each group we get something like
      * (U, Seq(V_1, . V_m)), where the U is a k-1 clique and each V_i is a k-clique extending it
      */
     val cliqueAndExtendedCliqueSet: RDD[(CliqueFact, Set[CliqueFact])] = cliqueAndExtendedClique.groupBy(_._1).mapValues(_.map(_._2).toSet)
 
-    cliqueAndExtendedCliqueSet
-  }
-
-  def run(cliqueAndExtenders: RDD[ExtendersFact]): RDD[Set[CliqueFact]] = {
-
-    val cliqueAndExtendedCliqueSet = createCliqueAndExtendedCliqueSet(cliqueAndExtenders)
-
     /**
      * Each V_i becomes s vertex of the clique graph. Create edge list as ( V_i, V_j )
      */
-    val cliqueEdgeList: RDD[Set[CliqueFact]] = cliqueAndExtendedCliqueSet.flatMap({ case (clique, setOfCliques) => setOfCliques.subsets(2) })
+    val twoSetsOfCliqueFacts = cliqueAndExtendedCliqueSet.flatMap({ case (clique, setOfCliques) => setOfCliques.subsets(2) })
+    val cliqueFactEdgeList = twoSetsOfCliqueFacts.map(subset => (subset.head, subset.last))
 
-    cliqueEdgeList
+    new KCliqueGraphOutput(cliqueFactVertexList, cliqueFactEdgeList)
 
   }
+
+  /**
+   * Return value of KClique Graph generator
+   * @param cliqueFactVertexList List of vertices of new graph where vertices are k-cliques
+   * @param cliqueFactEdgeList List of edges between the vertices of new graph of k-cliques
+   */
+  case class KCliqueGraphOutput(val cliqueFactVertexList: RDD[CliqueFact], val cliqueFactEdgeList: RDD[(CliqueFact, CliqueFact)])
 }
