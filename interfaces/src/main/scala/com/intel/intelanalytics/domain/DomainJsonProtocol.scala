@@ -32,12 +32,14 @@ import DataTypes.DataType
 import com.intel.intelanalytics.schema._
 import spray.json._
 import com.intel.intelanalytics.domain.frame._
-import com.intel.intelanalytics.domain.graph.{ Graph, GraphLoad, GraphTemplate }
+import com.intel.intelanalytics.domain.graph.{ GraphReference, Graph, GraphLoad, GraphTemplate }
 import com.intel.intelanalytics.domain.graph.construction.{ EdgeRule, FrameRule, PropertyRule, ValueRule, VertexRule }
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 import com.intel.intelanalytics.domain.schema.{ DataTypes, Schema }
 import org.joda.time.DateTime
 import spray.json._
+
+import scala.util.matching.Regex
 
 /**
  * Implicit conversions for domain objects to JSON
@@ -77,22 +79,29 @@ object DomainJsonProtocol extends DefaultJsonProtocol {
     }
   }
 
-  implicit object FrameReferenceFormat extends JsonFormat[FrameReference] {
+  class ReferenceFormat[T <: HasId](urlPattern: Regex, collection: String, name: String, factory: Long => T)
+      extends JsonFormat[T] {
 
-    val urlPattern = """ia://dataframes/(\d+)""".r
+    override def write(obj: T): JsValue = JsString(s"ia://$collection/${obj.id}")
 
-    override def write(obj: FrameReference): JsValue = JsString("ia://dataframes/" + obj.id)
-
-    override def read(json: JsValue): FrameReference = json match {
+    override def read(json: JsValue): T = json match {
       case JsString(name) =>
         urlPattern.findFirstMatchIn(json.asInstanceOf[JsString].value) match {
-          case Some(mat) => FrameReference(mat.group(1).toLong)
-          case None => deserializationError("Couldn't find dataframe ID in " + name)
+          case Some(mat) => factory(mat.group(1).toLong)
+          case None => deserializationError(s"Couldn't find $collection ID in " + name)
         }
-      case JsNumber(n) => FrameReference(n.toLong)
-      case _ => deserializationError("Expected data frame URL, but received " + json)
+      case JsNumber(n) => factory(n.toLong)
+      case _ => deserializationError(s"Expected $name URL, but received " + json)
     }
   }
+
+  implicit val frameReferenceFormat = new ReferenceFormat[FrameReference]("""ia://dataframes/(\d+)""".r,
+    "dataframes", "data frame",
+    n => FrameReference(n))
+
+  implicit val graphReferenceFormat = new ReferenceFormat[GraphReference]("""ia://graphs/(\d+)""".r,
+    "graphs", "graph",
+    n => GraphReference(n))
 
   implicit val userFormat = jsonFormat5(User)
   implicit val statusFormat = jsonFormat5(Status)
@@ -138,10 +147,8 @@ object DomainJsonProtocol extends DefaultJsonProtocol {
   implicit val propertyFormat = jsonFormat2(PropertyRule)
   implicit val edgeRuleFormat = jsonFormat5(EdgeRule)
   implicit val vertexRuleFormat = jsonFormat2(VertexRule)
-  implicit val frameRuleLongs = jsonFormat3(FrameRule[Long])
-  implicit val frameRuleStrings = jsonFormat3(FrameRule[String])
-  implicit val graphLoadLongs = jsonFormat3(GraphLoad[JsObject, Long, Long])
-  implicit val graphLoadStrings = jsonFormat3(GraphLoad[JsObject, String, String])
+  implicit val frameRuleFormat = jsonFormat3(FrameRule)
+  implicit val graphLoadFormat = jsonFormat3(GraphLoad)
 
   implicit object DataTypeJsonFormat extends JsonFormat[Any] {
     override def write(obj: Any): JsValue = {

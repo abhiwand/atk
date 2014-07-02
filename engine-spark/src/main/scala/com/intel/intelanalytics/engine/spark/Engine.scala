@@ -594,11 +594,11 @@ class SparkEngine(sparkContextManager: SparkContextManager,
    * @param user IMPLICIT. The user loading the graph
    * @return Command object for this graphload and a future
    */
-  def loadGraph(arguments: GraphLoad[JsObject, Long, Long])(implicit user: UserPrincipal): Execution =
+  def loadGraph(arguments: GraphLoad)(implicit user: UserPrincipal): Execution =
     commands.execute(loadGraphCommand, arguments, user, implicitly[ExecutionContext])
 
   val loadGraphCommand = commands.registerCommand("graph/load", loadGraphSimple)
-  def loadGraphSimple(arguments: GraphLoad[JsObject, Long, Long], user: UserPrincipal) = {
+  def loadGraphSimple(arguments: GraphLoad, user: UserPrincipal) = {
     // validating frames
     arguments.frame_rules.foreach(frule => expectFrame(frule.frame))
 

@@ -321,6 +321,28 @@ class Executor(object):
             self.__commands = self.fetch()
         return self.__commands
 
+    def install_static_methods(self, clazz, functions):
+        for (k, v) in functions.items():
+            print k
+            if not hasattr(clazz, k):
+                print k, "installed"
+                setattr(clazz, k, staticmethod(v))
+
+    def install_instance_methods(self, clazz, functions):
+        for (k, v) in functions.items():
+            if not hasattr(clazz, k):
+                print "Installing", k
+                setattr(clazz, k, v)
+            else:
+                f = getattr(clazz, k)
+                if hasattr(f, "docstub"):
+                    v.__doc__ = f.__doc__
+                    delattr(clazz, k)
+                    setattr(clazz, k, v)
+                    print "Installing (with documentation copied from stub):", k
+                else:
+                    print "Skipping installation of", k, "method already exists and is not a stub"
+
     def get_command_functions(self, prefixes, update_function, new_function):
         functions = dict()
         for cmd in executor.commands:
