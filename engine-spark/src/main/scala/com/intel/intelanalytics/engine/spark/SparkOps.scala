@@ -338,12 +338,18 @@ private[spark] object SparkOps extends Serializable {
    * @param rdd RDD of input rows
    * @return the mean value of the column
    */
-  def meanColumn(index: Int, rdd: RDD[Row]): Double = {
+  def meanColumn(index: Int, multiplierIndexOption: Option[Int], rdd: RDD[Row]): Double = {
     import scala.math.ceil
 
     // try creating RDD[Double] from column
     val columnRdd = try {
-      rdd.map(row => java.lang.Double.parseDouble(row(index).toString))
+      if (multiplierIndexOption.isEmpty) {
+        rdd.map(row => java.lang.Double.parseDouble(row(index).toString))
+      }
+      else {
+        rdd.map(row => (java.lang.Double.parseDouble(row(index).toString)
+          * (java.lang.Double.parseDouble(row(multiplierIndexOption.get).toString))))
+      }
     }
     catch {
       case cce: NumberFormatException =>

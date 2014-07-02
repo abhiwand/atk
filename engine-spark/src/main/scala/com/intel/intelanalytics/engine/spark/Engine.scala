@@ -450,7 +450,14 @@ class SparkEngine(sparkContextManager: SparkContextManager,
 
     val columnIndex = realFrame.schema.columnIndex(arguments.columnName)
 
-    val mean = SparkOps.meanColumn(columnIndex, rdd)
+    val multiplierColumnIndexOption = if (arguments.multiplierColumnName.isEmpty) {
+      None
+    }
+    else {
+      Some(realFrame.schema.columnIndex(arguments.multiplierColumnName.get))
+    }
+
+    val mean = SparkOps.meanColumn(columnIndex, multiplierColumnIndexOption, rdd)
 
     MeanColumnReturn(mean)
   }
