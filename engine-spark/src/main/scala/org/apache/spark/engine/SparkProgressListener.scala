@@ -55,31 +55,13 @@ class SparkProgressListener(val progressUpdater: CommandProgressUpdater) extends
   val commandIdJobs = new HashMap[Long, List[ActiveJob]]
   val jobIdDetailedProgressInfo = new HashMap[Int, ProgressInfo]()
 
-  def addStageAndAncestorStagesToCollection(stage: Stage): Seq[Stage] = {
-    val stageList: ListBuffer[Stage] = new ListBuffer[Stage]
-
-    if (stage.parents != null) {
-
-      /* multiple stages may have common parents. Do not add the same parent twice */
-      stage.parents.foreach(s => {
-        stageList ++= addStageAndAncestorStagesToCollection(s).filter(s => !stageList.contains(s))
-      })
-    }
-
-    if (!stageList.contains(stage))
-      stageList += stage
-
-    stageList.toSeq
-  }
 
   override def onJobStart(jobStart: SparkListenerJobStart) {
     val stages = addStageAndAncestorStagesToCollection(jobStart.job.finalStage)
 
     val stageIds = stages.map(s => s.id)
     jobIdToStagesIds(jobStart.job.jobId) = stageIds.toArray
-
-    for (stage <- stages)
-      stageIdStageMapping(stage.id) = stage
+    stageIdStageMapping ++= stages.map(stage => (stage.id, stage))
 
     val job = jobStart.job
 
@@ -90,6 +72,24 @@ class SparkProgressListener(val progressUpdater: CommandProgressUpdater) extends
       progressUpdater.updateProgress(job.properties.getProperty("command-id").toLong, List(0.00f), List())
     }
   }
+
+  /**
+   * return all the ancestors stages and the stage itself
+   * @param stage the stage to find all the ancestors
+   */
+  def addStageAndAncestorStagesToCollection(stage: Stage): Seq[Stage] = {
+    val stageList = new HashSet[Stage]
+
+    if (stage.parents != null) {
+      stage.parents.foreach(s => {
+        stageList ++= addStageAndAncestorStagesToCollection(s)
+      })
+    }
+
+    stageList += stage
+    stageList.toSeq
+  }
+
 
   override def onStageSubmitted(stageSubmitted: SparkListenerStageSubmitted) {
     val stage = stageSubmitted.stage

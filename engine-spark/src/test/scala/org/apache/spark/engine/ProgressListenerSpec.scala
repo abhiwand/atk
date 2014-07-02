@@ -191,7 +191,7 @@ class ProgressListenerSpec extends Specification with Mockito {
     val jobStart = SparkListenerJobStart(job, Array())
     listener onJobStart jobStart
 
-    listener.jobIdToStagesIds(1) shouldEqual Array(4, 5, 1, 2, 3)
+    listener.jobIdToStagesIds(1).toList.sorted shouldEqual List(1, 2, 3, 4, 5)
   }
 
   "initialize stages count" in {
