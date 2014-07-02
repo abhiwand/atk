@@ -23,7 +23,7 @@
 
 package com.intel.intelanalytics.engine.spark
 
-import com.intel.intelanalytics.domain.frame.{ SampleTestCriteria, LoadLines }
+import com.intel.intelanalytics.domain.frame.LoadLines
 import com.intel.intelanalytics.domain.schema.DataTypes
 import com.intel.intelanalytics.engine.Rows._
 import com.intel.intelanalytics.engine.spark.frame.{ RowParseResult, RDDJoinParam }
@@ -89,19 +89,22 @@ private[spark] object SparkOps extends Serializable {
                 fileName: String,
                 location: String,
                 arguments: LoadLines[JsObject, Long],
-                parserFunction: String => RowParseResult, sampleTestCriteria: SampleTestCriteria) = {
+                parserFunction: String => RowParseResult) = {
 
     val fileContentRdd: RDD[String] = ctx.textFile(fileName, SparkEngineConfig.sparkDefaultPartitions)
 
     /**
      * parse the first number of lines specified as sample size and make sure the file is acceptable
      */
-    val sampleRows: Seq[String] = getRows(fileContentRdd, arguments.skipRows.getOrElse(0).toInt, sampleTestCriteria.sampleSize, sampleTestCriteria.sampleSize)
+    val sampleSize = SparkEngineConfig.frameLoadTestSampleSize
+    val threshold = SparkEngineConfig.frameLoadTestFailThresholdPercentage
+
+    val sampleRows: Seq[String] = getRows(fileContentRdd, arguments.skipRows.getOrElse(0).toInt, sampleSize, sampleSize)
     val preEvaluateResults = ctx.parallelize(sampleRows).map(parserFunction)
     val failedCount = preEvaluateResults.filter(r => r.parseSuccess == false).count()
     val failedRatio = 100 * failedCount / sampleRows.length
 
-    if (failedRatio >= sampleTestCriteria.failThresholdPercentage)
+    if (failedRatio >= threshold)
       throw new Exception("The data does not match the specified schema")
 
     val parseResultRdd = ctx.textFile(fileName, SparkEngineConfig.sparkDefaultPartitions)
