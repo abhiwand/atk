@@ -130,7 +130,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     val parserFunction = getLineParser(arguments.lineParser, schema.columns.map(_._2).toArray)
     val location = fsRoot + frames.getFrameDataFile(frameId)
     val ctx = sparkContextManager.context(user)
-    SparkOps.loadLines(ctx.sparkContext, fsRoot + "/" + arguments.source, location, arguments, parserFunction, SampleTestCriteria(SparkEngineConfig.frameLoadTestSampleSize, SparkEngineConfig.frameLoadTestFailThresholdPercentage))
+    SparkOps.loadLines(ctx.sparkContext, fsRoot + "/" + arguments.source, location, arguments, parserFunction)
     val frame = frames.updateSchema(realFrame, schema.columns)
     frame
   }
