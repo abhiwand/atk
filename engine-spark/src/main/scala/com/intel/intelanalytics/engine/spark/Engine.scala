@@ -606,6 +606,35 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     graph
   }
 
+  //TODO: remove
+
+  case class GA(hello: Int)
+
+  case class GR(world: Int)
+
+  case class FA(hello: Int)
+
+  case class FR(world: Int)
+
+  implicit val gaf = jsonFormat1(GA)
+  implicit val grf = jsonFormat1(GR)
+  implicit val faf = jsonFormat1(FA)
+  implicit val frf = jsonFormat1(FR)
+  commands.registerCommand("graph/ml/algo", graphml)
+
+  commands.registerCommand("dataframe/ml/algo2", frameml)
+
+  def graphml(arguments: GA, user: UserPrincipal): GR = {
+    println(s"Received: $arguments")
+    GR(5)
+  }
+
+  def frameml(arguments: FA, user: UserPrincipal): FR = {
+    println(s"Received: $arguments")
+    FR(6)
+  }
+  //end remove
+
   /**
    * Obtains a graph's metadata from its identifier.
    * @param id Unique identifier for the graph provided by the metastore.

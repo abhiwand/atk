@@ -32,8 +32,11 @@ from intelanalytics.rest.connection import http
 from intelanalytics.rest.command import CommandRequest, executor
 
 
-def execute_update_graph_command(name, arguments, graph):
-    command = CommandRequest(name="graph/" + name, arguments=arguments)
+def execute_update_graph_command(command_name, arguments, graph):
+    #support for non-plugin methods that may not supply the full name
+    if not command_name.startswith('graph'):
+        command_name = 'graph/' + command_name
+    command = CommandRequest(command_name, arguments=arguments)
     command_info = executor.issue(command)
 
 execute_new_graph_command = execute_update_graph_command

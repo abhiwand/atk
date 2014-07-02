@@ -24,6 +24,7 @@
 Command objects
 """
 
+from types import MethodType
 
 def docstub(f):
     """
@@ -37,32 +38,38 @@ def docstub(f):
     f.docstub = True
     return f
 
+class Holder(object):
+    pass
+
 class CommandSupport(object):
 
     def __init__(self):
         functions = getattr(self.__class__, "_commands", dict())
+        print "****Installing instance commands"
         for ((intermediates, name), function) in functions.items():
-            current = self.__class__
+            print (((intermediates), name), function)
+            current = self
             for inter in intermediates:
                 if not hasattr(current, inter):
-                    def make(current = current, inter = inter):
-                        class Holder:
-                            pass
-                        return Holder
-                    holder = make()
-                    setattr(current, inter, holder)
-                else:
-                    holder = getattr(current, inter)
+                    print "creating", inter
+                    setattr(current, inter, Holder())
+                holder = getattr(current, inter)
                 current = holder
-            if not hasattr(current, name):
-                print "Installing", name
-                setattr(current, name, function)
-            else:
-                f = getattr(current, name)
-                if hasattr(f, "docstub"):
-                    function.__doc__ = f.__doc__
-                    delattr(current, name)
-                    setattr(current, name, function)
-                    print "Installing (with documentation copied from stub):", name
+            if current == self:
+                if not hasattr(self.__class__, name):
+                    print "Installing", name
+                    setattr(self.__class__, name, function)
                 else:
-                    print "Skipping installation of", name, "method already exists and is not a stub"
+                    f = getattr(self.__class__, name)
+                    if hasattr(f, "docstub"):
+                        function.__doc__ = f.__doc__
+                        delattr(self.__class__, name)
+                        setattr(self.__class__, name, function)
+                        print "Installing (with documentation copied from stub):", name
+                    else:
+                        print "Skipping installation of", name, "method already exists and is not a stub"
+            else:
+                print "Installing", name, "on helper", current, "at", intermediates
+                method = MethodType(function, self, self.__class__)
+                current.__dict__[name] = method
+        print "****Finished installing instance commands"

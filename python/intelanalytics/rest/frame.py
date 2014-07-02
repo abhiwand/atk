@@ -32,7 +32,7 @@ import json
 from intelanalytics.core.frame import BigFrame
 from intelanalytics.core.column import BigColumn
 from intelanalytics.core.files import CsvFile
-from intelanalytics.core.types import *
+from intelanalytics.core.iatypes import *
 from intelanalytics.core.aggregation import agg
 from intelanalytics.rest.connection import http
 from intelanalytics.rest.command import CommandRequest, executor
@@ -191,19 +191,7 @@ class FrameBackendRest(object):
             return
 
         arguments = self._get_load_arguments(frame, data)
-        command_info = execute_update_frame_command("load", arguments, frame)
-
-        if isinstance(data, (CsvFile, BigFrame)):
-            # update the Python object (set the columns)
-            for column in command_info.result['schema']['columns']:
-                name, data_type =  column[0], supported_types.try_get_type_from_string(column[1])
-                if data_type is not ignore:
-                    self._accept_column(frame, BigColumn(name, data_type))
-        else:
-            raise TypeError("Unsupported append data type "
-                            + data.__class__.__name__)
-        return command_info
-
+        execute_update_frame_command("load", arguments, frame)
 
     def count(self, frame):
         raise NotImplementedError  # TODO - implement count
@@ -403,15 +391,23 @@ def initialize_frame(frame, frame_info):
 
 def execute_update_frame_command(command_name, arguments, frame):
     """Executes command and updates frame with server response"""
-    command_request = CommandRequest('dataframe/' + command_name, arguments)
+    #support for non-plugin methods that may not supply the full name
+    if not command_name.startswith('dataframe'):
+        command_name = 'dataframe/' + command_name
+    command_request = CommandRequest(command_name, arguments)
     command_info = executor.issue(command_request)
-    initialize_frame(frame, FrameInfo(command_info.result))
-    return command_info
+    if command_info.result.has_key('name') and command_info.result.has_key('schema'):
+        initialize_frame(frame, FrameInfo(command_info.result))
+        return None
+    return command_info.result
 
 
 def execute_new_frame_command(command_name, arguments):
     """Executes command and creates a new BigFrame object from server response"""
-    command_request = CommandRequest('dataframe/' + command_name, arguments)
+    #support for non-plugin methods that may not supply the full name
+    if not command_name.startswith('dataframe'):
+        command_name = 'dataframe/' + command_name
+    command_request = CommandRequest(command_name, arguments)
     command_info = executor.issue(command_request)
     frame_info = FrameInfo(command_info.result)
     return BigFrame(frame_info)
