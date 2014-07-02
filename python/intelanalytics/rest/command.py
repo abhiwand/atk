@@ -333,13 +333,14 @@ class Executor(object):
                     setattr(current, inter, holder)
                     current = holder
             if not hasattr(current, name):
-                print name, "installed"
+                print name, "installed statically on ", clazz
                 setattr(clazz, name, staticmethod(v))
 
     def get_command_functions(self, prefixes, update_function, new_function):
         functions = dict()
         for cmd in executor.commands:
-            parts = cmd['name'].split('/')
+            full_name = cmd['name']
+            parts = full_name.split('/')
             if parts[0] not in prefixes:
                 continue
             args = cmd['argument_schema']
@@ -360,7 +361,8 @@ class Executor(object):
             # (see, e.g. http://eev.ee/blog/2011/04/24/gotcha-python-scoping-closures )
             #Need make and not just invoke so that invoke won't have
             #kwargs that include command_name et. al.
-            def make(command_name = command_name, cmd = cmd,
+            def make(full_name = full_name,
+                     command_name = command_name, cmd = cmd,
                      self_name = self_name, return_self = return_self,
                      possible_args = possible_args,
                      parameters = parameters):
@@ -377,9 +379,9 @@ class Executor(object):
                         kwargs[k] = v
                         validated = CommandRequest.validate_arguments(parameters, kwargs)
                     if return_self:
-                        return new_function(command_name, validated, s)
+                        return new_function(full_name, validated, s)
                     else:
-                        update_function(command_name, validated, s)
+                        return update_function(full_name, validated, s)
                 invoke.command = cmd
                 invoke.parameters = parameters
                 invoke.func_name = str(command_name)

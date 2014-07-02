@@ -22,7 +22,7 @@
 ##############################################################################
 import warnings
 from collections import OrderedDict
-from types import supported_types
+from iatypes import supported_types
 
 
 class DataFile(object):

@@ -29,7 +29,7 @@ import logging
 import uuid, sys
 logger = logging.getLogger(__name__)
 
-from intelanalytics.core.types import supported_types
+from intelanalytics.core.iatypes import supported_types
 from intelanalytics.core.aggregation import *
 from intelanalytics.core.errorhandle import IaError
 from intelanalytics.core.command import CommandSupport, docstub
@@ -140,7 +140,6 @@ class BigFrame(CommandSupport):
 
     def __init__(self, source=None, name=None):
         try:
-            CommandSupport.__init__(self)
             self._columns = OrderedDict()  # self._columns must be the first attribute to be assigned (see __setattr__)
             self._id = 0
             self._uri = ""
@@ -148,6 +147,7 @@ class BigFrame(CommandSupport):
             if not hasattr(self, '_backend'):  # if a subclass has not already set the _backend
                 self._backend = _get_backend()
             self._backend.create(self, source, name)
+            CommandSupport.__init__(self)
             logger.info('Created new frame "%s"', self._name)
         except:
             raise IaError(logger)
