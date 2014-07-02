@@ -42,8 +42,7 @@ import org.apache.spark.SparkContext._
 
 private[spark] object SparkOps extends Serializable {
 
-  def getRows[T: ClassTag](rdd: RDD[T], offset: Long, count: Int, limit: Int): Seq[T] = {
-
+  def getPagedRdd[T: ClassTag](rdd: RDD[T], offset: Long, count: Int, limit: Int): RDD[T] = {
     //Count the rows in each partition, then order the counts by partition number
     val counts = rdd.mapPartitionsWithIndex(
       (i: Int, rows: Iterator[T]) => Iterator.single((i, rows.size)))
@@ -68,7 +67,7 @@ private[spark] object SparkOps extends Serializable {
 
     //Start getting rows. We use the sums and counts to figure out which
     //partitions we need to read from and which to just ignore
-    val rows: Seq[T] = rdd.mapPartitionsWithIndex((i, rows) => {
+    val pagedRdd: RDD[T] = rdd.mapPartitionsWithIndex((i, rows) => {
       val (ct: Int, sum: Int) = sumsAndCounts(i)
       val thisPartStart = sum - ct
       if (sum < offset || thisPartStart >= offset + capped) {
@@ -81,7 +80,14 @@ private[spark] object SparkOps extends Serializable {
         //println(s"partition $i: starting at $start and taking $numToTake")
         rows.drop(start.toInt).take(numToTake.toInt)
       }
-    }).collect()
+    })
+
+    pagedRdd
+  }
+
+  def getRows[T: ClassTag](rdd: RDD[T], offset: Long, count: Int, limit: Int): Seq[T] = {
+    val pagedRdd = getPagedRdd(rdd, offset, count, limit)
+    val rows: Seq[T] = pagedRdd.collect()
     rows
   }
 
@@ -99,10 +105,10 @@ private[spark] object SparkOps extends Serializable {
     val sampleSize = SparkEngineConfig.frameLoadTestSampleSize
     val threshold = SparkEngineConfig.frameLoadTestFailThresholdPercentage
 
-    val sampleRows: Seq[String] = getRows(fileContentRdd, arguments.skipRows.getOrElse(0).toInt, sampleSize, sampleSize)
-    val preEvaluateResults = ctx.parallelize(sampleRows).map(parserFunction)
+    val sampleRdd = getPagedRdd(fileContentRdd, arguments.skipRows.getOrElse(0).toInt, sampleSize, sampleSize)
+    val preEvaluateResults = sampleRdd.map(parserFunction)
     val failedCount = preEvaluateResults.filter(r => r.parseSuccess == false).count()
-    val failedRatio = 100 * failedCount / sampleRows.length
+    val failedRatio = 100 * failedCount / sampleRdd.count()
 
     if (failedRatio >= threshold)
       throw new Exception("The data does not match the specified schema")
