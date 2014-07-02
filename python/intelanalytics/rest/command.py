@@ -152,6 +152,9 @@ class CommandInfo(object):
         self._payload = payload
 
 
+
+
+
 class Polling(object):
 
 
@@ -322,35 +325,26 @@ class Executor(object):
         return self.__commands
 
     def install_static_methods(self, clazz, functions):
-        for (k, v) in functions.items():
-            print k
-            if not hasattr(clazz, k):
-                print k, "installed"
-                setattr(clazz, k, staticmethod(v))
-
-    def install_instance_methods(self, clazz, functions):
-        for (k, v) in functions.items():
-            if not hasattr(clazz, k):
-                print "Installing", k
-                setattr(clazz, k, v)
-            else:
-                f = getattr(clazz, k)
-                if hasattr(f, "docstub"):
-                    v.__doc__ = f.__doc__
-                    delattr(clazz, k)
-                    setattr(clazz, k, v)
-                    print "Installing (with documentation copied from stub):", k
-                else:
-                    print "Skipping installation of", k, "method already exists and is not a stub"
+        for ((intermediates, name), v) in functions.items():
+            current = clazz
+            for inter in intermediates:
+                if not hasattr(current, inter):
+                    holder = object()
+                    setattr(current, inter, holder)
+                    current = holder
+            if not hasattr(current, name):
+                print name, "installed"
+                setattr(clazz, name, staticmethod(v))
 
     def get_command_functions(self, prefixes, update_function, new_function):
         functions = dict()
         for cmd in executor.commands:
             parts = cmd['name'].split('/')
-            if len(parts) != 2 or parts[0] not in prefixes:
+            if parts[0] not in prefixes:
                 continue
             args = cmd['argument_schema']
-            command_name = parts[1][:]
+            intermediates = parts[1:-1]
+            command_name = parts[-1]
             parameters = args.setdefault('properties', {})
             print "ARG schema:", args
             self_name = ([k for k, v in parameters.items() if isinstance(v, dict) and v.has_key('self')] or [None])[0]
@@ -391,7 +385,7 @@ class Executor(object):
                 invoke.func_name = str(command_name)
                 return invoke
             f = make()
-            functions[command_name] = f
+            functions[(tuple(intermediates), command_name)] = f
         return functions
 
 
