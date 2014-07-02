@@ -23,7 +23,7 @@
 
 package com.intel.intelanalytics.domain.frame
 
-case class ClassificationMetric(frameId: Long, metricType: String, labelColumn: String, predColumn: String, posLabel: String, beta: Double) {
+case class ClassificationMetric[FrameRef](frameId: FrameRef, metricType: String, labelColumn: String, predColumn: String, posLabel: String, beta: Double) {
   require(metricType.equals("accuracy") ||
     metricType.equals("precision") ||
     metricType.equals("recall") ||
