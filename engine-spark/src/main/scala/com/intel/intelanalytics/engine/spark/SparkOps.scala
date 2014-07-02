@@ -206,20 +206,22 @@ private[spark] object SparkOps extends Serializable {
    * @return a Double of the model accuracy measure
    */
   def modelAccuracy(frameRdd: RDD[Row], labelColumnIndex: Int, predColumnIndex: Int): Double = {
-    // TODO: Are these checks necessary at this point?
     require(labelColumnIndex >= 0)
     require(predColumnIndex >= 0)
 
     val k = frameRdd.count()
     val t = frameRdd.sparkContext.accumulator[Long](0)
 
-    frameRdd.foreach(row => {
-      row match {
-        case x if row(labelColumnIndex).toString.equals(row(predColumnIndex).toString) => t.add(1) // TODO: maybe check types instead of casting to string
-        case _ => false
+    frameRdd.foreach(row =>
+      if (row(labelColumnIndex).toString.equals(row(predColumnIndex).toString)) {
+        t.add(1)
       }
-    })
-    t.value / k.toDouble
+    )
+
+    k match {
+      case 0 => 0
+      case _ => t.value / k.toDouble
+    }
   }
 
   /**
@@ -232,7 +234,6 @@ private[spark] object SparkOps extends Serializable {
    * @return a Double of the model precision measure
    */
   def modelPrecision(frameRdd: RDD[Row], labelColumnIndex: Int, predColumnIndex: Int, posLabel: String): Double = {
-    // TODO: Are these checks necessary at this point?
     require(labelColumnIndex >= 0)
     require(predColumnIndex >= 0)
 
@@ -244,13 +245,18 @@ private[spark] object SparkOps extends Serializable {
       val fp = frameRdd.sparkContext.accumulator[Long](0)
 
       frameRdd.foreach { row =>
-        row match {
-          case x if row(labelColumnIndex).toString.equals(posLabel) && row(predColumnIndex).toString.equals(posLabel) => tp.add(1)
-          case y if !row(labelColumnIndex).toString.equals(posLabel) && row(predColumnIndex).toString.equals(posLabel) => fp.add(1)
-          case _ => false
+        if (row(labelColumnIndex).toString.equals(posLabel) && row(predColumnIndex).toString.equals(posLabel)) {
+          tp.add(1)
+        }
+        else if (!row(labelColumnIndex).toString.equals(posLabel) && row(predColumnIndex).toString.equals(posLabel)) {
+          fp.add(1)
         }
       }
-      tp.value / (tp.value + fp.value).toDouble
+      // if, for example, user specifies pos_label that does not exist, then return 0 for precision
+      (tp.value + fp.value) match {
+        case 0 => 0
+        case _ => tp.value / (tp.value + fp.value).toDouble
+      }
     }
 
     /**
@@ -258,6 +264,7 @@ private[spark] object SparkOps extends Serializable {
      */
     def multiclassPrecision = {
       val pairedRdd = frameRdd.map(row => (row(labelColumnIndex).toString, row(predColumnIndex).toString)).cache()
+
       val labelGroupedRdd = pairedRdd.groupBy(pair => pair._1)
       val predictGroupedRdd = pairedRdd.groupBy(pair => pair._2)
 
@@ -300,7 +307,6 @@ private[spark] object SparkOps extends Serializable {
    * @return a Double of the model recall measure
    */
   def modelRecall(frameRdd: RDD[Row], labelColumnIndex: Int, predColumnIndex: Int, posLabel: String): Double = {
-    // TODO: Are these checks necessary at this point?
     require(labelColumnIndex >= 0)
     require(predColumnIndex >= 0)
 
@@ -312,13 +318,18 @@ private[spark] object SparkOps extends Serializable {
       val fn = frameRdd.sparkContext.accumulator[Long](0)
 
       frameRdd.foreach { row =>
-        row match {
-          case x if row(labelColumnIndex).toString.equals(posLabel) && row(predColumnIndex).toString.equals(posLabel) => tp.add(1)
-          case y if row(labelColumnIndex).toString.equals(posLabel) && !row(predColumnIndex).toString.equals(posLabel) => fn.add(1)
-          case _ => false
+        if (row(labelColumnIndex).toString.equals(posLabel) && row(predColumnIndex).toString.equals(posLabel)) {
+          tp.add(1)
+        }
+        else if (row(labelColumnIndex).toString.equals(posLabel) && !row(predColumnIndex).toString.equals(posLabel)) {
+          fn.add(1)
         }
       }
-      tp.value / (tp.value + fn.value).toDouble
+
+      (tp.value + fn.value) match {
+        case 0 => 0
+        case _ => tp.value / (tp.value + fn.value).toDouble
+      }
     }
 
     /**
@@ -326,6 +337,7 @@ private[spark] object SparkOps extends Serializable {
      */
     def multiclassRecall = {
       val pairedRdd = frameRdd.map(row => (row(labelColumnIndex).toString, row(predColumnIndex).toString)).cache()
+
       val labelGroupedRdd = pairedRdd.groupBy(pair => pair._1)
 
       val weightedRecallRdd: RDD[Double] = labelGroupedRdd.map { label =>
@@ -361,7 +373,6 @@ private[spark] object SparkOps extends Serializable {
    * @return a Double of the model f measure
    */
   def modelFMeasure(frameRdd: RDD[Row], labelColumnIndex: Int, predColumnIndex: Int, posLabel: String, beta: Double): Double = {
-    // TODO: Are these checks necessary at this point?
     require(labelColumnIndex >= 0)
     require(predColumnIndex >= 0)
 
@@ -374,16 +385,31 @@ private[spark] object SparkOps extends Serializable {
       val fn = frameRdd.sparkContext.accumulator[Long](0)
 
       frameRdd.foreach { row =>
-        row match {
-          case x if row(labelColumnIndex).toString.equals(posLabel) && row(predColumnIndex).toString.equals(posLabel) => tp.add(1)
-          case y if !row(labelColumnIndex).toString.equals(posLabel) && row(predColumnIndex).toString.equals(posLabel) => fp.add(1)
-          case z if row(labelColumnIndex).toString.equals(posLabel) && !row(predColumnIndex).toString.equals(posLabel) => fn.add(1)
-          case _ => false
+        if (row(labelColumnIndex).toString.equals(posLabel) && row(predColumnIndex).toString.equals(posLabel)) {
+          tp.add(1)
+        }
+        else if (!row(labelColumnIndex).toString.equals(posLabel) && row(predColumnIndex).toString.equals(posLabel)) {
+          fp.add(1)
+        }
+        else if (row(labelColumnIndex).toString.equals(posLabel) && !row(predColumnIndex).toString.equals(posLabel)) {
+          fn.add(1)
         }
       }
-      val precision = tp.value / (tp.value + fp.value).toDouble
-      val recall = tp.value / (tp.value + fn.value).toDouble
-      (1 + pow(beta, 2)) * ((precision * recall) / ((pow(beta, 2) * precision) + recall))
+
+      val precision = (tp.value + fp.value) match {
+        case 0 => 0
+        case _ => tp.value / (tp.value + fp.value).toDouble
+      }
+
+      val recall = (tp.value + fn.value) match {
+        case 0 => 0
+        case _ => tp.value / (tp.value + fn.value).toDouble
+      }
+
+      ((pow(beta, 2) * precision + recall)) match {
+        case 0 => 0
+        case _ => (1 + pow(beta, 2)) * ((precision * recall) / ((pow(beta, 2) * precision) + recall))
+      }
     }
 
     /**
@@ -391,6 +417,7 @@ private[spark] object SparkOps extends Serializable {
      */
     def multiclassFMeasure = {
       val pairedRdd = frameRdd.map(row => (row(labelColumnIndex).toString, row(predColumnIndex).toString)).cache()
+
       val labelGroupedRdd = pairedRdd.groupBy(pair => pair._1)
       val predictGroupedRdd = pairedRdd.groupBy(pair => pair._2)
 
