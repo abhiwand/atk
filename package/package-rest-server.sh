@@ -29,7 +29,10 @@ cp -Rv ../api-server/src/main/resources/* tarballs/$package/etc/intelanalytics/r
 cp -Rv ../engine/src/main/resources/* tarballs/$package/etc/intelanalytics/rest-server
 cp -Rv config/intelanalytics-rest-server/assets/* tarballs/$package/
 
-jars="engine-spark.jar api-server.jar engine.jar interfaces.jar "
+log "add build number to application conf"
+sed -i "s/^intel.analytics.api.buildId.*/intel.analytics.api.buildId = \"$BUILD_NUMBER\"/g" tarballs/$package/etc/intelanalytics/rest-server/application.conf
+
+jars="engine-spark.jar api-server.jar engine.jar interfaces.jar igiraph-titan.jar"
 
 popd
 
