@@ -94,7 +94,7 @@ private[spark] object SparkOps extends Serializable {
     val fileContentRdd: RDD[String] = ctx.textFile(fileName, SparkEngineConfig.sparkDefaultPartitions)
 
     /**
-     * parse the first 100 lines and make sure the file is acceptable
+     * parse the first number of lines specified as sample size and make sure the file is acceptable
      */
     val sampleRows: Seq[String] = getRows(fileContentRdd, arguments.skipRows.getOrElse(0).toInt, sampleTestCriteria.sampleSize, sampleTestCriteria.sampleSize)
     val preEvaluateResults = ctx.parallelize(sampleRows).map(parserFunction)
