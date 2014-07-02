@@ -23,6 +23,8 @@
 
 package com.intel.intelanalytics.service.v1
 
+import com.intel.intelanalytics.domain.frame.load.{ LoadSource, Load }
+
 import scala.util.Try
 import com.intel.intelanalytics.domain._
 import com.intel.intelanalytics.engine.Engine
@@ -154,23 +156,38 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
       case ("dataframe/flattenColumn") => runflattenColumn(uri, xform)
       case ("dataframe/groupby") => runFrameGroupByColumn(uri, xform)
       case ("dataframe/drop_duplicates") => runDropDuplicates(uri, xform)
+      case ("dataframe/binColumn") => runBinColumn(uri, xform)
       case s: String => illegalArg("Command name is not supported: " + s)
       case _ => illegalArg("Command name was NOT a string")
     }
   }
 
+  /**
+   * Load a dataset and append it to an existing dataframe.
+   *
+   * @param uri Command path
+   * @param xform Json Object used for parsing the command sent from the client.
+   * @param user current user
+   * @return
+   */
   def runFrameLoad(uri: Uri, xform: JsonTransform)(implicit user: UserPrincipal) = {
     val test = Try {
       import DomainJsonProtocol._
-      xform.arguments.get.convertTo[LoadLines[JsObject, String]]
+      xform.arguments.get.convertTo[Load[String]]
     }
     val idOpt = test.toOption.flatMap(args => UrlParser.getFrameId(args.destination))
     (validate(test.isSuccess, "Failed to parse file load descriptor: " + getErrorMessage(test))
       & validate(idOpt.isDefined, "Destination is not a valid data frame URL")) {
         val args = test.get
         val id = idOpt.get
-        val exec = engine.load(LoadLines[JsObject, Long](args.source, id,
-          skipRows = args.skipRows, overwrite = args.overwrite, lineParser = args.lineParser, schema = args.schema))
+        val exec = engine.load(Load[Long](id, args.source.source_type match {
+          case "dataframe" => {
+            val dataID = UrlParser.getFrameId(args.source.uri)
+            validate(dataID.isDefined, "Source is not a valid data frame URL")
+            LoadSource(args.source.source_type, dataID.get.toString, args.source.parser)
+          }
+          case _ => args.source
+        }))
         complete(decorate(uri + "/" + exec.start.id, exec.start))
       }
   }
@@ -311,6 +328,19 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
     validate(test.isSuccess, "Failed to parse file load descriptor: " + getErrorMessage(test)) {
       val args = test.get
       val result = engine.flattenColumn(args)
+      val command: Command = result.start
+      complete(decorate(uri + "/" + command.id, command))
+    }
+  }
+
+  def runBinColumn(uri: Uri, xform: JsonTransform)(implicit user: UserPrincipal) = {
+    val test = Try {
+      xform.arguments.get.convertTo[BinColumn[Long]]
+    }
+
+    validate(test.isSuccess, "Failed to parse bin column descriptor: " + getErrorMessage(test)) {
+      val args = test.get
+      val result = engine.binColumn(args)
       val command: Command = result.start
       complete(decorate(uri + "/" + command.id, command))
     }
