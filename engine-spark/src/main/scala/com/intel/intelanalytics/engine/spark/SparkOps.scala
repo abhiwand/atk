@@ -23,7 +23,7 @@
 
 package com.intel.intelanalytics.engine.spark
 
-import com.intel.intelanalytics.domain.frame.LoadLines
+import com.intel.intelanalytics.domain.frame.{ SampleTestCriteria, LoadLines }
 import com.intel.intelanalytics.domain.schema.DataTypes
 import com.intel.intelanalytics.engine.Rows._
 import com.intel.intelanalytics.engine.spark.frame.{ RowParseResult, RDDJoinParam }
@@ -34,7 +34,6 @@ import spray.json.JsObject
 
 import scala.collection.mutable
 import scala.Some
-import com.intel.intelanalytics.domain.frame.LoadLines
 import scala.reflect.ClassTag
 
 //implicit conversion for PairRDD
@@ -90,18 +89,19 @@ private[spark] object SparkOps extends Serializable {
                 fileName: String,
                 location: String,
                 arguments: LoadLines[JsObject, Long],
-                parserFunction: String => RowParseResult) = {
+                parserFunction: String => RowParseResult, sampleTestCriteria: SampleTestCriteria) = {
 
     val fileContentRdd: RDD[String] = ctx.textFile(fileName, SparkEngineConfig.sparkDefaultPartitions)
 
     /**
      * parse the first 100 lines and make sure the file is acceptable
      */
-    val top100Rows: Seq[String] = getRows(fileContentRdd, 0, 100, 100)
-    val preEvaluateResults = ctx.parallelize(top100Rows).map(parserFunction)
+    val sampleRows: Seq[String] = getRows(fileContentRdd, arguments.skipRows.getOrElse(0).toInt, sampleTestCriteria.sampleSize, sampleTestCriteria.sampleSize)
+    val preEvaluateResults = ctx.parallelize(sampleRows).map(parserFunction)
     val failedCount = preEvaluateResults.filter(r => r.parseSuccess == false).count()
+    val failedRatio = 100 * failedCount / sampleRows.length
 
-    if (failedCount > 0)
+    if (failedRatio >= sampleTestCriteria.failThresholdPercentage)
       throw new Exception("The data does not match the specified schema")
 
     val parseResultRdd = ctx.textFile(fileName, SparkEngineConfig.sparkDefaultPartitions)
