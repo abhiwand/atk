@@ -21,29 +21,8 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.service.v1.viewmodels
+package com.intel.intelanalytics.domain.query
 
-import spray.json.DefaultJsonProtocol
-import spray.httpx.SprayJsonSupport
+import spray.json.JsObject
 
-/**
- * Implicit Conversions for View/Models to JSON
- */
-object ViewModelJsonImplicits extends DefaultJsonProtocol with SprayJsonSupport {
-
-  //this is needed for implicits
-  import com.intel.intelanalytics.domain.DomainJsonProtocol._
-
-  implicit val relLinkFormat = jsonFormat3(RelLink)
-  implicit val getCommandsFormat = jsonFormat3(GetCommands)
-  implicit val getCommandFormat = jsonFormat8(GetCommand)
-  implicit val getDataFramesFormat = jsonFormat3(GetDataFrames)
-  implicit val getDataFrameFormat = jsonFormat4(GetDataFrame)
-  implicit val getGraphsFormat = jsonFormat3(GetGraphs)
-  implicit val getGraphFormat = jsonFormat3(GetGraph)
-  implicit val getQueriesFormat = jsonFormat3(GetQueries)
-  implicit val getQueryFormat = jsonFormat8(GetQuery)
-  implicit val jsonTransformFormat = jsonFormat2(JsonTransform)
-
-
-}
+case class QueryTemplate(name: String, arguments: Option[JsObject])

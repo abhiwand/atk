@@ -28,6 +28,7 @@ import com.intel.intelanalytics.domain._
 import com.intel.intelanalytics.domain.command.{ Command, CommandTemplate }
 import com.intel.intelanalytics.domain.frame.{ DataFrame, DataFrameTemplate }
 import com.intel.intelanalytics.domain.graph.{ Graph, GraphTemplate }
+import com.intel.intelanalytics.domain.query.{QueryTemplate, Query => gaoQuery}
 import com.intel.intelanalytics.domain.schema.Schema
 import com.intel.intelanalytics.shared.EventLogging
 import org.joda.time.DateTime
@@ -101,7 +102,8 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
             statusRepo.asInstanceOf[SlickStatusRepository].initializeValues
             userRepo.asInstanceOf[SlickUserRepository].createTable
             frameRepo.asInstanceOf[SlickFrameRepository].createTable // depends on user, status
-            commandRepo.asInstanceOf[SlickCommandRepository].createTable // depends on user
+            commandRepo.asInstanceOf[SlickQueryRepository].createTable // depends on user
+            queryRepo.asInstanceOf[SlickQueryRepository].createTable // depends on user
             graphRepo.asInstanceOf[SlickGraphRepository].createTable // depends on user, status
             info("Schema creation completed")
           }
@@ -125,6 +127,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
             // Tables that are dependencies for other tables need to go last
             frameRepo.asInstanceOf[SlickFrameRepository].dropTable
             commandRepo.asInstanceOf[SlickCommandRepository].dropTable
+            queryRepo.asInstanceOf[SlickQueryRepository].dropTable
             graphRepo.asInstanceOf[SlickGraphRepository].dropTable
             userRepo.asInstanceOf[SlickUserRepository].dropTable
             statusRepo.asInstanceOf[SlickStatusRepository].dropTable
@@ -144,6 +147,9 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
 
     /** Repository for CRUD on 'command' table */
     override lazy val commandRepo: CommandRepository[Session] = new SlickCommandRepository
+
+    /** Repository for CRUD on 'command' table */
+    override lazy val queryRepo: QueryRepository[Session] = new SlickQueryRepository
 
     /** Repository for CRUD on 'user' table */
     override lazy val userRepo: Repository[Session, UserTemplate, User] with Queryable[Session, User] = new SlickUserRepository
@@ -512,6 +518,114 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
       q.update(progress)
     }
   }
+
+  /**
+   * A slick implementation of a Query Repository.
+   *
+   * Provides methods for modifying and querying the query table.
+   */
+  class SlickQueryRepository extends QueryRepository[Session]
+  with EventLogging {
+    this: Repository[Session, QueryTemplate, gaoQuery] =>
+
+    /**
+     * A slick implementation of the 'Query' table that defines
+     * the columns and conversion to/from Scala beans.
+     */
+    class QueryTable(tag: Tag) extends Table[gaoQuery](tag, "command") {
+      def id = column[Long]("query_id", O.PrimaryKey, O.AutoInc)
+
+      def name = column[String]("name")
+
+      def arguments = column[Option[JsObject]]("arguments")
+
+      def error = column[Option[Error]]("error")
+
+      def progress = column[List[Float]]("progress")
+
+      def complete = column[Boolean]("complete", O.Default(false))
+
+      def result = column[Option[JsObject]]("result")
+
+      def createdOn = column[DateTime]("created_on")
+
+      def modifiedOn = column[DateTime]("modified_on")
+
+      def createdById = column[Option[Long]]("created_by")
+
+      /** projection to/from the database */
+      def * = (id, name, arguments, error, progress, complete, result, createdOn, modifiedOn, createdById) <> (gaoQuery.tupled, gaoQuery.unapply)
+
+      def createdBy = foreignKey("query_created_by", createdById, users)(_.id)
+    }
+
+    val queries = TableQuery[QueryTable]
+
+    protected val queriesAutoInc = queries returning queries.map(_.id) into {
+      case (f, id) => f.copy(id = id)
+    }
+
+    override def insert(query: QueryTemplate)(implicit session: Session): Try[gaoQuery] = Try {
+      // TODO: add createdBy user id
+      val c = gaoQuery(0, query.name, query.arguments, None, List(), false, None, new DateTime(), new DateTime(), None)
+      queriesAutoInc.insert(c)
+    }
+
+    override def delete(id: Long)(implicit session: Session): Try[Unit] = Try {
+      queries.where(_.id === id).mutate(f => f.delete())
+    }
+
+    override def update(query: gaoQuery)(implicit session: Session): Try[gaoQuery] = Try {
+      val updatedQuery = query.copy(modifiedOn = new DateTime())
+      val updated = queries.where(_.id === query.id).update(updatedQuery)
+      updatedQuery
+    }
+
+    override def scan(offset: Int = 0, count: Int = defaultScanCount)(implicit session: Session): Seq[gaoQuery] = {
+      queries.drop(offset).take(count).list
+    }
+
+    override def lookup(id: Long)(implicit session: Session): Option[gaoQuery] = {
+      queries.where(_.id === id).firstOption
+    }
+
+    override def lookupByName(name: String)(implicit session: Session): Option[gaoQuery] = {
+      queries.where(_.name === name).firstOption
+    }
+
+    /**
+     * update the query to complete
+     * @param id query id
+     * @param complete the complete flag
+     * @param session session to db
+     */
+    override def updateComplete(id: Long, complete: Boolean)(implicit session: Session): Try[Unit] = Try {
+      val completeCol = for (c <- queries if c.id === id) yield c.complete
+      completeCol.update(complete)
+    }
+
+    /** execute DDL to create the underlying table */
+    def createTable(implicit session: Session) = {
+      queries.ddl.create
+    }
+
+    /** execute DDL to drop the underlying table - for unit testing */
+    def dropTable()(implicit session: Session) = {
+      queries.ddl.drop
+    }
+
+    /**
+     * update the progress for the command
+     * @param id command id
+     * @param progress progress for the command
+     * @param session session to db
+     */
+    override def updateProgress(id: Long, progress: List[Float])(implicit session: Session): Try[Unit] = Try {
+      val q = for { c <- queries if c.id === id } yield c.progress
+      q.update(progress)
+    }
+  }
+
 
   /**
    * A slick implementation of the graph repository. It stores metadata for graphs.

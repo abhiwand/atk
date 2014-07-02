@@ -21,29 +21,24 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.service.v1.viewmodels
+package com.intel.intelanalytics.engine
 
-import spray.json.DefaultJsonProtocol
-import spray.httpx.SprayJsonSupport
+import com.intel.intelanalytics.domain.query.{ QueryTemplate, Query }
+import scala.util.Try
+import spray.json.JsObject
 
-/**
- * Implicit Conversions for View/Models to JSON
- */
-object ViewModelJsonImplicits extends DefaultJsonProtocol with SprayJsonSupport {
+trait QueryStorage {
+  def lookup(id: Long): Option[Query]
+  def create(frame: QueryTemplate): Query
+  def scan(offset: Int, count: Int): Seq[Query]
+  def start(id: Long): Unit
+  def complete(id: Long, result: Try[JsObject]): Unit
 
-  //this is needed for implicits
-  import com.intel.intelanalytics.domain.DomainJsonProtocol._
-
-  implicit val relLinkFormat = jsonFormat3(RelLink)
-  implicit val getCommandsFormat = jsonFormat3(GetCommands)
-  implicit val getCommandFormat = jsonFormat8(GetCommand)
-  implicit val getDataFramesFormat = jsonFormat3(GetDataFrames)
-  implicit val getDataFrameFormat = jsonFormat4(GetDataFrame)
-  implicit val getGraphsFormat = jsonFormat3(GetGraphs)
-  implicit val getGraphFormat = jsonFormat3(GetGraph)
-  implicit val getQueriesFormat = jsonFormat3(GetQueries)
-  implicit val getQueryFormat = jsonFormat8(GetQuery)
-  implicit val jsonTransformFormat = jsonFormat2(JsonTransform)
-
-
+  /**
+   * update command info regarding progress of jobs initiated by this command
+   * @param id command id
+   * @param progress progress of jobs initiated by this command
+   */
+  def updateProgress(id: Long, progress: List[Float]): Unit
 }
+

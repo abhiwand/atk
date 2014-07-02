@@ -31,6 +31,7 @@ import com.intel.intelanalytics.domain.frame._
 import com.intel.intelanalytics.domain.frame.load.{ LineParserArguments, LineParser, LoadSource, Load }
 
 import com.intel.intelanalytics.domain.graph.{ Graph, GraphLoad, GraphTemplate }
+import com.intel.intelanalytics.domain.query.Query
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 import com.intel.intelanalytics.domain.schema.{ DataTypes, Schema, SchemaUtil }
 import com.intel.intelanalytics.engine.Rows._
@@ -62,7 +63,8 @@ class SparkEngine(sparkContextManager: SparkContextManager,
                   commands: CommandExecutor,
                   commandStorage: CommandStorage,
                   frames: SparkFrameStorage,
-                  graphs: GraphStorage) extends Engine
+                  graphs: GraphStorage,
+                  queryStorage: QueryStorage) extends Engine
     with EventLogging
     with ClassLoaderAware {
 
@@ -86,6 +88,18 @@ class SparkEngine(sparkContextManager: SparkContextManager,
   override def getCommand(id: Long): Future[Option[Command]] = withContext("se.getCommand") {
     future {
       commandStorage.lookup(id)
+    }
+  }
+
+  override def getQueries(offset: Int, count: Int): Future[Seq[Query]] = withContext("se.getCommands") {
+    future {
+      queryStorage.scan(offset, count)
+    }
+  }
+
+  override def getQuery(id: Long): Future[Option[Query]] = withContext("se.getCommand") {
+    future {
+      queryStorage.lookup(id)
     }
   }
 
