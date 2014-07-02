@@ -64,7 +64,7 @@ class ClassificationMetricTest extends TestingSparkContext with Matchers {
     Array[Any](1, 0),
     Array[Any](2, 1))
 
-  /*  "accuracy measure" should "compute correct value for binary classifier" in {
+  "accuracy measure" should "compute correct value for binary classifier" in {
     val rdd = sc.parallelize(inputListBinary)
 
     val metricValue = SparkOps.modelAccuracy(rdd, 0, 1)
@@ -179,7 +179,7 @@ class ClassificationMetricTest extends TestingSparkContext with Matchers {
     val metricValue = SparkOps.modelFMeasure(rdd, 0, 1, "1", 2)
     val diff = (metricValue - 0.7575757).abs
     diff should be <= 0.0000001
-  }*/
+  }
 
   "f measure" should "compute correct value for multi-class classifier for beta = 0.5" in {
     val rdd = sc.parallelize(inputListMulti)
