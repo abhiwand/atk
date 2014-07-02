@@ -42,7 +42,7 @@ import spray.json._
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
 import com.intel.intelanalytics.service.v1.viewmodels._
 import com.intel.intelanalytics.service.v1.viewmodels.ViewModelJsonImplicits._
-import com.intel.intelanalytics.domain.graph.GraphLoad
+import com.intel.intelanalytics.domain.graph.{ GraphReference, GraphLoad }
 import com.intel.intelanalytics.domain.command.{ Execution, CommandTemplate, Command }
 import com.intel.intelanalytics.shared.EventLogging
 import com.intel.intelanalytics.service.{ ApiServiceConfig, UrlParser, CommonDirectives, AuthenticationDirective }
@@ -164,11 +164,11 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
   def runCommand(uri: Uri, xform: JsonTransform)(implicit user: UserPrincipal): Route = {
     xform.name match {
       //TODO: genericize function resolution and invocation
-      case ("graph/load") => runGraphLoad(uri, xform)
+      //case ("graph/load") => runGraphLoad(uri, xform)
       //case ("graph/ml/als") => runAls(uri, xform)
       //case ("dataframe/load") => runFrameLoad(uri, xform)
       case ("dataframe/filter") => runFilter(uri, xform)
-      //ncase ("dataframe/removecolumn") => runFrameRemoveColumn(uri, xform)
+      //case ("dataframe/removecolumn") => runFrameRemoveColumn(uri, xform)
       //case ("dataframe/rename_frame") => runFrameRenameFrame(uri, xform)
       case ("dataframe/add_columns") => runFrameAddColumns(uri, xform)
       case ("dataframe/project") => runFrameProject(uri, xform)
@@ -221,32 +221,28 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
    */
   def runGraphLoad(uri: Uri, transform: JsonTransform)(implicit user: UserPrincipal): Route = {
     val test = Try {
-      transform.arguments.get.convertTo[GraphLoad[JsObject, String, String]]
+      transform.arguments.get.convertTo[GraphLoad]
     }
 
-    val frameIDsOpt: Option[List[Option[Long]]] =
-      test.toOption.map(args => args.frame_rules.map(frule => UrlParser.getFrameId(frule.frame)))
+    val frameIDsOpt: Option[List[Long]] =
+      test.toOption.map(args => args.frame_rules.map(frule => frule.frame.id))
 
-    val graphIDOpt = test.toOption.flatMap(args => UrlParser.getGraphId(args.graph))
+    val graphIDOpt = test.toOption.map(args => args.graph.id)
 
     (validate(test.isSuccess, "Failed to parse graph load descriptor: " + getErrorMessage(test))
       & validate(graphIDOpt.isDefined, "Target graph is not a valid graph URL")) {
 
-        (validate(frameIDsOpt.isDefined, "Error parsing per-frame graph construction rules")
-          & validate(frameIDsOpt.get.forall(x => x.isDefined), "Invalid URL provided for source dataframe")) {
-            val args = test.get
-            val sourceFrameIDs = frameIDsOpt.get.map(x => x.get)
+        validate(frameIDsOpt.isDefined, "Error parsing per-frame graph construction rules") {
+          val args = test.get
 
-            val frameRulesUsingIDs = (sourceFrameIDs, args.frame_rules).zipped.toList.map { case (id: Long, frule: FrameRule[String]) => new FrameRule[Long](id, frule.vertex_rules, frule.edge_rules) }
+          val graphID = graphIDOpt.get
 
-            val graphID = graphIDOpt.get
-
-            val graphLoad = GraphLoad(graphID,
-              frameRulesUsingIDs,
-              args.retain_dangling_edges)
-            val exec = engine.loadGraph(graphLoad)
-            complete(decorate(uri + "/" + exec.start.id, exec.start))
-          }
+          val graphLoad = GraphLoad(GraphReference(graphID),
+            args.frame_rules,
+            args.retain_dangling_edges)
+          val exec = engine.loadGraph(graphLoad)
+          complete(decorate(uri + "/" + exec.start.id, exec.start))
+        }
       }
   }
 
@@ -291,7 +287,6 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
         complete(decorate(uri + "/" + exec.start.id, exec.start))
       }
   }
-
 
   /**
    * Perform the join operation and return the submitted command to the client

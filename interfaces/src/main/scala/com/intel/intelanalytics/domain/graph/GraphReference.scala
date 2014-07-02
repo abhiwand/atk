@@ -21,8 +21,8 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.domain.frame
+package com.intel.intelanalytics.domain.graph
 
 import com.intel.intelanalytics.domain.HasId
 
-case class FrameReference(id: Long) extends HasId
+case class GraphReference(id: Long) extends HasId

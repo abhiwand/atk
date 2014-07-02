@@ -54,12 +54,8 @@ class FrameBackendRest(object):
             self.__class__.commands_loaded.update(executor.get_command_functions(('dataframe', 'dataframes'),
                                                                         execute_update_frame_command,
                                                                         execute_new_frame_command))
-            for (k, v) in FrameBackendRest.commands_loaded.items():
-                print k
-                if not hasattr(FrameBackendRest, k):
-                    print k, "installed"
-                    setattr(FrameBackendRest, k, staticmethod(v))
-
+            executor.install_static_methods(self.__class__, self.__class__.commands_loaded)
+            executor.install_instance_methods(BigFrame, self.__class__.commands_loaded)
 
     def get_frame_names(self):
         logger.info("REST Backend: get_frame_names")
@@ -99,22 +95,6 @@ class FrameBackendRest(object):
         else:
             if source:
                 self.append(frame, source)
-
-        for (k, v) in self.commands_loaded.items():
-            if not hasattr(frame, k):
-                print "Installing", k
-                setattr(frame.__class__, k, v)
-            else:
-                f = getattr(frame, k)
-                if hasattr(f, "docstub"):
-                    v.__doc__ = f.__doc__
-                    delattr(frame.__class__, k)
-                    setattr(frame.__class__, k, v)
-                    print "Installing (with documentation copied from stub):", k
-                else:
-                    print "Skipping installation of", k, "method already exists and is not a stub"
-
-
 
 
     def _create_new_frame(self, frame):

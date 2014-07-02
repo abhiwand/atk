@@ -26,17 +26,29 @@ REST backend for graphs
 import logging
 logger = logging.getLogger(__name__)
 
-from intelanalytics.core.graph import VertexRule, EdgeRule
+from intelanalytics.core.graph import VertexRule, EdgeRule, BigGraph
 from intelanalytics.core.column import BigColumn
 from intelanalytics.rest.connection import http
 from intelanalytics.rest.command import CommandRequest, executor
 
 
+def execute_update_graph_command(name, arguments, graph):
+    command = CommandRequest(name="graph/" + name, arguments=arguments)
+    command_info = executor.issue(command)
+
+execute_new_graph_command = execute_update_graph_command
 
 class GraphBackendRest(object):
 
-    #def __init__(self):
-    #    pass
+    commands_loaded = {}
+
+    def __init__(self):
+        if not self.__class__.commands_loaded:
+            self.__class__.commands_loaded.update(executor.get_command_functions(('graph', 'graphs'),
+                                                                                 execute_update_graph_command,
+                                                                                 execute_new_graph_command))
+            executor.install_static_methods(self.__class__, self.__class__.commands_loaded)
+            executor.install_instance_methods(BigGraph, self.__class__.commands_loaded)
 
     def get_graph_names(self):
         logger.info("REST Backend: get_graph_names")
@@ -65,12 +77,10 @@ class GraphBackendRest(object):
 
         if logger.level == logging.DEBUG:
             import json
-            payload_json =  json.dumps(payload, indent=2, sort_keys=True)
+            payload_json = json.dumps(payload, indent=2, sort_keys=True)
             logger.debug("REST Backend: create graph payload: " + payload_json)
-
-        command = CommandRequest(name="graph/load", arguments=payload)
-        command_info = executor.issue(command)
-
+        self.load(graph, payload['frame_rules'], False)
+        #execute_update_graph_command(graph, name = "graph/load", arguments=payload)
 
 
     def _get_uri(self, payload):
@@ -172,7 +182,7 @@ class JsonFrame(object):
 
 class JsonPayload(object):
     def __new__(cls, graph, rules):
-        return {'graph': graph.uri,
+        return {'graph': graph._id,
                 'frame_rules': JsonPayload._get_frames(rules),
                 'retain_dangling_edges':False } # TODO
 
@@ -192,7 +202,7 @@ class JsonPayload(object):
 
     @staticmethod
     def _get_frame(rule, frames_dict):
-        uri = rule.source_frame.uri
+        uri = rule.source_frame._id
         try:
             frame = frames_dict[uri]
         except KeyError:

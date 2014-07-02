@@ -109,7 +109,7 @@ trait Engine {
 
   def createGraph(graph: GraphTemplate)(implicit user: UserPrincipal): Future[Graph]
 
-  def loadGraph(graph: GraphLoad[JsObject, Long, Long])(implicit user: UserPrincipal): Execution
+  def loadGraph(graph: GraphLoad)(implicit user: UserPrincipal): Execution
 
   def deleteGraph(graph: Graph): Future[Unit]
 

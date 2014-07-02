@@ -26,6 +26,7 @@ package com.intel.intelanalytics.shared
 import java.net.URI
 
 import com.intel.intelanalytics.domain.frame.FrameReference
+import com.intel.intelanalytics.domain.graph.GraphReference
 import com.intel.intelanalytics.schema._
 import org.joda.time.DateTime
 import spray.json.{ AdditionalFormats, StandardFormats, ProductFormats }
@@ -71,6 +72,12 @@ object JsonSchemaExtractor {
         val s = StringSchema(format = Some("uri/iat-frame"))
         if (propertyName.toLowerCase == "frame"
           || propertyName.toLowerCase == "dataframe") {
+          s.copy(self = Some(true))
+        }
+        else s
+      case t if t == classOf[GraphReference] =>
+        val s = StringSchema(format = Some("uri/iat-graph"))
+        if (propertyName.toLowerCase == "graph") {
           s.copy(self = Some(true))
         }
         else s
