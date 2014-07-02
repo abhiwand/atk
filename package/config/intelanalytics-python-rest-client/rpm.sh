@@ -36,6 +36,7 @@ POSTUN="
 
 FILES="
 /usr/lib/intelanalytics/rest-client
+%config(noreplace) /usr/lib/intelanalytics/rest-client/python/rest/config.py
 "
 
 mkdir -p $SCRIPTPATH/rpm/SPECS
