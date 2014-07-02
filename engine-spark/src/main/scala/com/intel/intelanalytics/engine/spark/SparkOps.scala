@@ -108,10 +108,11 @@ private[spark] object SparkOps extends Serializable {
     val sampleRdd = getPagedRdd(fileContentRdd, arguments.skipRows.getOrElse(0).toInt, sampleSize, sampleSize)
     val preEvaluateResults = sampleRdd.map(parserFunction)
     val failedCount = preEvaluateResults.filter(r => r.parseSuccess == false).count()
-    val failedRatio = 100 * failedCount / sampleRdd.count()
+    val sampleRowsCount: Long = sampleRdd.count()
+    val failedRatio = 100 * failedCount / sampleRowsCount
 
     if (failedRatio >= threshold)
-      throw new Exception("The data does not match the specified schema")
+      throw new Exception(s"Parse failed on $failedCount rows out of the first $sampleRowsCount")
 
     val parseResultRdd = ctx.textFile(fileName, SparkEngineConfig.sparkDefaultPartitions)
       .mapPartitionsWithIndex {
