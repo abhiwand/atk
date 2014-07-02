@@ -102,6 +102,16 @@ class GraphBackendRest(object):
         logger.debug("REST Backend: run als response: " + json)
         return json
 
+    def histogram_roc(self, graph, *args, **kwargs):
+        logger.info("REST Backend: histogram_roc query on graph " + graph.name)
+        payload = JsonHistogramRocPayload(graph, *args, **kwargs)
+        if logger.level == logging.DEBUG:
+            import json
+            payload_json =  json.dumps(payload, indent=2, sort_keys=True)
+            logger.debug("REST Backend: histogram_roc payload: " + payload_json)
+        r = http.post('commands', payload)
+        logger.debug("REST Backend: histogram_roc response: " + r.text)
+
 
 class JsonAlsPayload(object):
     def __new__(cls,
@@ -124,6 +134,28 @@ class JsonAlsPayload(object):
                 "output_vertex_property_list": output_vertex_property_list,
                 "vertex_type": vertex_type,
                 "edge_type": edge_type,
+            }
+        }
+
+class JsonHistogramRocPayload(object):
+    def __new__(cls,
+                graph,
+                prior_property_name,
+                posterior_property_name,
+                enable_roc,
+                property_type):
+        return {
+            "name": "graphs/query/histogram_roc",
+            "arguments" : {
+                "graph": graph._id,
+                "priorPropertyName": prior_property_name,
+                "posteriorPropertyName": posterior_property_name,
+                "enableRoc": enable_roc,
+                "propertyType": property_type,
+                "rocThreshold": [0, 0.05, 1],
+                "vertexTypeKey": "vertex_type",
+                "splitTypes": ["TR", "VA", "TE"],
+                "binNum":  30
             }
         }
 
