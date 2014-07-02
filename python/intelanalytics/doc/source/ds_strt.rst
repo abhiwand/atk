@@ -17,7 +17,7 @@ Features
 
 * You can import data from several different formats.
 * The Analytics Toolkit provides data cleaning tools to prepare your data by removing erroneous values, transforming value
-to a normalized state and constructing new features through manipulating existing values.
+    to a normalized state and constructing new features through manipulating existing values.
 * We provide powerful algorithms for gaining deeper insight into your data.
 
 
