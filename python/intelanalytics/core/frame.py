@@ -535,6 +535,38 @@ class BigFrame(object):
         except:
             raise IaError(logger)
 
+    def bin_column(self, column_name, num_bins, bin_type='equalwidth', bin_column_name='binned'):
+        """
+        Bin column values into equal width or equal depth bins.
+
+        The numBins parameter is an upper-bound on the number of bins since the data
+        may justify fewer bins.  With equal depth binning, for example, if the column to be binned has 10 elements with
+        only 2 distinct values and numBins > 2, then the number of actual bins will only be 2.  This is due to a
+        restriction that elements with an identical value must belong to the same bin.
+
+        Parameters
+        ----------
+        column_name : str
+            The column whose values are to be binned
+        num_bins : int
+            The requested number of bins
+        bin_type : 'equalwidth' or 'equaldepth', (optional, default 'equalwidth')
+            The binning algorithm to use
+        bin_column_name : str, (optional, default 'binned')
+            The name for the new binned column
+
+        Returns
+        -------
+        frame : BigFrame
+            A new frame with binned column appended to original frame
+
+        Examples
+        --------
+        >>> binnedEW = frame.bin_column('a', 5, 'equalwidth', 'aEWBinned')
+        >>> binnedED = frame.bin_column('a', 5, 'equaldepth', 'aEDBinned')
+        """
+        return self._backend.bin_column(self, column_name, num_bins, bin_type, bin_column_name)
+
     def drop(self, predicate):
         """
         Drop rows that match a requirement.
