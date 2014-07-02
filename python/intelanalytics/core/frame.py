@@ -907,3 +907,6 @@ class BigFrame(object):
             return self._backend.take(self, n, offset)
         except:
             raise IaError(logger)
+
+    def ks2_test(self, sample_one_col, sample_two_col):
+        return self._backend.ks2_test(self, sample_one_col, sample_two_col)
