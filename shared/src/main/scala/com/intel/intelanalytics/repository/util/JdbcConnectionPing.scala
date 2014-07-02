@@ -33,7 +33,7 @@ object JdbcConnectionPing {
   // URL Format: "jdbc:postgresql://host:port/database"
   var url = "jdbc:postgresql://localhost:5432/metastore"
   var user = "metastore"
-  var password = "Intel123"
+  var password = "Tribeca123"
 
   /**
    * Establish JDBC Connection, read now() from database

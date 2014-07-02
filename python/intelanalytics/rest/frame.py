@@ -99,13 +99,26 @@ class FrameBackendRest(object):
     @staticmethod
     def _get_load_arguments(frame, data):
         if isinstance(data, CsvFile):
-            return {'source': data.file_name,
-                    'destination': frame.uri,
-                    'schema': {'columns': data._schema_to_json()},
-                    'skipRows': data.skip_header_lines,
-                    'lineParser': {'operation': {'name': 'builtin/line/separator'},
-                                   'arguments': {'separator': data.delimiter
-                                   }}}
+            return {'destination': frame.uri,
+                    'source': {
+                        "source_type": "file",
+                        "uri": data.file_name,
+                        "parser":{
+                            "name": "builtin/line/separator",
+                            "arguments": {
+                                "separator": data.delimiter,
+                                "skip_rows": data.skip_header_lines,
+                                "schema":{
+                                    "columns": data._schema_to_json()
+                                }
+                            }
+                        }
+                    }
+            }
+        if isinstance(data, BigFrame):
+            return {'source': { 'source_type': 'dataframe',
+                                'uri': data.uri},
+                    'destination': frame.uri}
         raise TypeError("Unsupported data source " + type(data).__name__)
 
     @staticmethod
@@ -169,10 +182,22 @@ class FrameBackendRest(object):
             return
 
         arguments = self._get_load_arguments(frame, data)
-        return execute_update_frame_command("load", arguments, frame)
+        command_info = execute_update_frame_command("load", arguments, frame)
+
+        if isinstance(data, (CsvFile, BigFrame)):
+            # update the Python object (set the columns)
+            for column in command_info.result['schema']['columns']:
+                name, data_type =  column[0], supported_types.try_get_type_from_string(column[1])
+                if data_type is not ignore:
+                    self._accept_column(frame, BigColumn(name, data_type))
+        else:
+            raise TypeError("Unsupported append data type "
+                            + data.__class__.__name__)
+        return command_info
+
 
     def count(self, frame):
-        raise NotImplementedError  # TODO - impplement count
+        raise NotImplementedError  # TODO - implement count
 
     def drop(self, frame, predicate):
         from itertools import ifilterfalse  # use the REST API filter, with a ifilterfalse iterator
@@ -197,6 +222,21 @@ class FrameBackendRest(object):
         name = self._get_new_frame_name()
         arguments = {'name': name, 'frameId': frame._id, 'column': column_name, 'separator': ',' }
         return execute_new_frame_command('flattenColumn', arguments)
+
+    def bin_column(self, frame, column_name, num_bins, bin_type='equalwidth', bin_column_name='binned'):
+        import numpy as np
+        if num_bins < 1:
+            raise ValueError("num_bins must be at least 1")
+        if not bin_type in ['equalwidth', 'equaldepth']:
+            raise ValueError("bin_type must be one of: equalwidth, equaldepth")
+        if bin_column_name.strip() == "":
+            raise ValueError("bin_column_name can not be empty string")
+        colTypes = dict(frame.schema)
+        if not colTypes[column_name] in [np.float32, np.float64, np.int32, np.int64]:
+            raise ValueError("unable to bin non-numeric values")
+        name = self._get_new_frame_name()
+        arguments = {'name': name, 'frame': frame._id, 'columnName': column_name, 'numBins': num_bins, 'binType': bin_type, 'binColumnName': bin_column_name}
+        return execute_new_frame_command('binColumn', arguments)
 
     class InspectionTable(object):
         """

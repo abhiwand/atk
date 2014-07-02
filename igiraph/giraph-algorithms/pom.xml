@@ -2,7 +2,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2013 Intel Corporation All Rights Reserved.
+// Copyright 2014 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -83,47 +83,6 @@
             <artifactId>hadoop-minicluster</artifactId>
             <scope>test</scope>
         </dependency>
-        <!--<dependency>-->
-            <!--<groupId>org.apache.hadoop</groupId>-->
-            <!--<artifactId>hadoop-mapreduce-client-shuffle</artifactId>-->
-            <!--<version>${dep.hadoop2.version}</version>-->
-        <!--</dependency>-->
-        <!--<dependency>-->
-            <!--<groupId>org.apache.hadoop</groupId>-->
-            <!--<artifactId>hadoop-mapreduce-client-jobclient</artifactId>-->
-            <!--<version>${dep.hadoop2.version}</version>-->
-        <!--</dependency>-->
-        <!--<dependency>-->
-            <!--<groupId>org.apache.hadoop</groupId>-->
-            <!--<artifactId>hadoop-mapreduce-client-hs</artifactId>-->
-            <!--<version>${dep.hadoop2.version}</version>-->
-        <!--</dependency>-->
-        <!--<dependency>-->
-            <!--<groupId>org.apache.hadoop</groupId>-->
-            <!--<artifactId>hadoop-mapreduce-client-core</artifactId>-->
-            <!--<version>${dep.hadoop2.version}</version>-->
-        <!--</dependency>-->
-        <!--<dependency>-->
-            <!--<groupId>org.apache.hadoop</groupId>-->
-            <!--<artifactId>hadoop-mapreduce-client-common</artifactId>-->
-            <!--<version>${dep.hadoop2.version}</version>-->
-        <!--</dependency>-->
-        <!--<dependency>-->
-            <!--<groupId>org.apache.hadoop</groupId>-->
-            <!--<artifactId>hadoop-auth</artifactId>-->
-            <!--<version>${dep.hadoop2.version}</version>-->
-        <!--</dependency>-->
-        <!--<dependency>-->
-            <!--<groupId>org.apache.hadoop</groupId>-->
-            <!--<artifactId>hadoop-client</artifactId>-->
-            <!--<version>${dep.hadoop2.version}</version>-->
-        <!--</dependency>-->
-        <!--<dependency>-->
-            <!--<groupId>org.apache.hadoop</groupId>-->
-            <!--<artifactId>hadoop-minicluster</artifactId>-->
-            <!--<version>${dep.hadoop2.version}</version>-->
-            <!--<scope>test</scope>-->
-        <!--</dependency>-->
 
 
         <dependency>
