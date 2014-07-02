@@ -29,6 +29,7 @@ import com.intel.intelanalytics.domain.command.Command
 import com.intel.intelanalytics.domain.frame._
 import com.intel.intelanalytics.domain.frame.load.Load
 import com.intel.intelanalytics.domain.graph.{ Graph, GraphLoad, GraphTemplate }
+import com.intel.intelanalytics.domain.query.Query
 import com.intel.intelanalytics.engine.Rows._
 import com.intel.intelanalytics.security.UserPrincipal
 import spray.json.JsObject
@@ -60,6 +61,10 @@ trait Engine {
   def getCommands(offset: Int, count: Int): Future[Seq[Command]]
 
   def getCommand(id: Identifier): Future[Option[Command]]
+
+  def getQueries(offset: Int, count: Int): Future[Seq[Query]]
+
+  def getQuery(id: Identifier): Future[Option[Query]]
 
   def getFrame(id: Identifier): Future[Option[DataFrame]]
 

@@ -30,6 +30,7 @@ import com.intel.intelanalytics.engine.spark.command.{ CommandExecutor, SparkCom
 import com.intel.intelanalytics.engine.spark.context.{ SparkContextFactory, SparkContextManager }
 import com.intel.intelanalytics.engine.spark.frame.SparkFrameStorage
 import com.intel.intelanalytics.engine.spark.graph.{ SparkGraphHBaseBackend, SparkGraphStorage }
+import com.intel.intelanalytics.engine.spark.queries.SparkQueryStorage
 import com.intel.intelanalytics.repository.{ DbProfileComponent, Profile, SlickMetaStoreComponent }
 import com.intel.intelanalytics.shared.EventLogging
 import org.apache.hadoop.fs.{ Path => HPath }
@@ -50,7 +51,7 @@ class SparkComponent extends EngineComponent
     with EventLogging {
 
   lazy val engine = new SparkEngine(sparkContextManager,
-    commandExecutor, commands, frames, graphs) {}
+    commandExecutor, commands, frames, graphs, queries) {}
 
   override lazy val profile = withContext("engine connecting to metastore") {
     Profile.initializeFromConfig(SparkEngineConfig)
@@ -75,6 +76,8 @@ class SparkComponent extends EngineComponent
   val commands = new SparkCommandStorage(metaStore.asInstanceOf[SlickMetaStore])
 
   lazy val commandExecutor: CommandExecutor = new CommandExecutor(engine, commands, sparkContextManager)
+
+  val queries = new SparkQueryStorage(metaStore.asInstanceOf[SlickMetaStore])
 
 }
 
