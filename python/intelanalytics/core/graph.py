@@ -1,4 +1,4 @@
-##############################################################################
+# #############################################################################
 # INTEL CONFIDENTIAL
 #
 # Copyright 2014 Intel Corporation All Rights Reserved.
@@ -23,6 +23,7 @@
 f, f2 = {}, {}
 
 import logging
+
 logger = logging.getLogger(__name__)
 import uuid
 
@@ -32,6 +33,7 @@ from intelanalytics.core.column import BigColumn
 
 def _get_backend():
     from intelanalytics.core.config import get_graph_backend
+
     return get_graph_backend()
 
 
@@ -179,7 +181,7 @@ class Rule(object):
             elif frame != source.frame:
                 raise RuleWithDifferentFramesError()
         elif not isinstance(source, basestring):
-                raise TypeError("Rule contains invalid source type" + type(source).__name__)
+            raise TypeError("Rule contains invalid source type" + type(source).__name__)
         return frame
 
     @staticmethod
@@ -236,6 +238,7 @@ class VertexRule(Rule):
     >>> user_vertex = VertexRule('user', f['user'], {'age': f['age_1']})
     
     """
+
     def __init__(self, id_key, id_value, properties=None):
         self.id_key = id_key
         self.id_value = id_value
@@ -287,6 +290,7 @@ class EdgeRule(Rule):
     >>> rating_edge = EdgeRule('rating', movie_vertex, user_vertex, {'weight': f['score']})
     
     """
+
     def __init__(self, label, tail, head, properties=None, is_directed=False):
         self.label = label
         self.tail = tail
@@ -338,6 +342,7 @@ class BigGraph(object):
     >>> g = BigGraph([user_vertex, movie_vertex, rating_edge, extra_movie_rule])
 
     """
+
     def __init__(self, rules=None, name=""):
         if rules and (not isinstance(rules, list) or not all([isinstance(rule, Rule) for rule in rules])):
             raise TypeError("rules must be a list of Rule objects")
@@ -400,11 +405,24 @@ class BigGraph(object):
     def _get_new_graph_name(self):
         return "graph_" + uuid.uuid4().hex
 
-    # TODO - consider:
-    #def add(self, rules)
-    #def remove(self, rules)
-    #def add_props(self, rules)
-    #def remove_props(self, rules)
+    def histogram_roc(self,
+                      prior_property_name,
+                      posterior_property_name,
+                      enable_roc,
+                      property_type):
+
+        return self._backend.histogram_roc(self,
+                                           prior_property_name,
+                                           posterior_property_name,
+                                           enable_roc,
+                                           property_type)
+        logger.info('Returned ROC query"%s"', self._name)
+
+        # TODO - consider:
+        #def add(self, rules)
+        #def remove(self, rules)
+        #def add_props(self, rules)
+        #def remove_props(self, rules)
 
 
 class GraphMachineLearning(object):
