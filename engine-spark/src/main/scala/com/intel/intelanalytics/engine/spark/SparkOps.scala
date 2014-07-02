@@ -257,32 +257,29 @@ private[spark] object SparkOps extends Serializable {
      * compute precision for multi-class classifier using weighted averaging
      */
     def multiclassPrecision = {
-      val groupedRdd = frameRdd.map(row => (row(labelColumnIndex).toString, row(predColumnIndex).toString)).groupBy(pair => pair._1)
+      val pairedRdd = frameRdd.map(row => (row(labelColumnIndex).toString, row(predColumnIndex).toString)).cache()
+      val labelGroupedRdd = pairedRdd.groupBy(pair => pair._1)
+      val predictGroupedRdd = pairedRdd.groupBy(pair => pair._2)
 
-      val totalCount = groupedRdd.count()
+      val joinedRdd = labelGroupedRdd.join(predictGroupedRdd)
 
-      val weightedPrecisionsRdd: RDD[Double] = groupedRdd.map { label =>
-        val labelCount = label._2.size
-        // get number of instance we correctly predicted as this label
-        // get total number that we predicted as this label
-        // divide these two, then multiply by weight
+      val weightedPrecisionRdd: RDD[Double] = joinedRdd.map { label =>
+        // label is tuple of (labelValue, (SeqOfInstancesWithThisActualLabel, SeqOfInstancesWithThisPredictedLabel))
+        val labelCount = label._2._1.size // get the number of instances with this label as the actual label
         var correctPredict: Long = 0
-        var totalPredict: Long = 0
-        label._2.map { predictions =>
-          if (predictions._1.equals(predictions._2)) {
+        val totalPredict = label._2._2.size
+
+        label._2._1.map { prediction =>
+          if (prediction._1.equals(prediction._2)) {
             correctPredict += 1
           }
-          if (predictions._2.equals(label._1)) {
-            totalPredict += 1
-          }
         }
-
         totalPredict match {
           case 0 => 0
           case _ => labelCount * (correctPredict / totalPredict.toDouble)
         }
       }
-      weightedPrecisionsRdd.sum() / totalCount.toDouble
+      weightedPrecisionRdd.sum() / pairedRdd.count().toDouble
     }
 
     // determine if this is binary or multi-class classifier
@@ -328,25 +325,21 @@ private[spark] object SparkOps extends Serializable {
      * compute recall for multi-class classifier using weighted averaging
      */
     def multiclassRecall = {
-      val groupedRdd = frameRdd.map(row => (row(labelColumnIndex), row(predColumnIndex))).groupBy(pair => pair._1)
+      val pairedRdd = frameRdd.map(row => (row(labelColumnIndex).toString, row(predColumnIndex).toString)).cache()
+      val labelGroupedRdd = pairedRdd.groupBy(pair => pair._1)
 
-      val totalCount = groupedRdd.count()
+      val weightedRecallRdd: RDD[Double] = labelGroupedRdd.map { label =>
+        // label is tuple of (labelValue, SeqOfInstancesWithThisActualLabel)
+        var correctPredict: Long = 0
 
-      val weightedRecallsRdd: RDD[Double] = groupedRdd.map { label =>
-        val labelCount = label._2.size
-        val correctPredict = frameRdd.sparkContext.accumulator[Long](0)
-        label._2.map { predictions =>
-          if (predictions._1.toString.equals(predictions._2.toString)) {
-            correctPredict.add(1)
+        label._2.map { prediction =>
+          if (prediction._1.equals(prediction._2)) {
+            correctPredict += 1
           }
         }
-
-        labelCount match {
-          case 0 => 0
-          case _ => labelCount * (correctPredict.value / labelCount.toDouble) // TODO: this simply equals correctPredict.value
-        }
+        correctPredict
       }
-      weightedRecallsRdd.sum() / totalCount.toDouble
+      weightedRecallRdd.sum() / pairedRdd.count().toDouble
     }
 
     // determine if this is binary or multi-class classifier
@@ -397,37 +390,40 @@ private[spark] object SparkOps extends Serializable {
      * compute f measure for multi-class classifier using weighted averaging
      */
     def multiclassFMeasure = {
-      val groupedRdd = frameRdd.map(row => (row(labelColumnIndex), row(predColumnIndex))).groupBy(pair => pair._1)
+      val pairedRdd = frameRdd.map(row => (row(labelColumnIndex).toString, row(predColumnIndex).toString)).cache()
+      val labelGroupedRdd = pairedRdd.groupBy(pair => pair._1)
+      val predictGroupedRdd = pairedRdd.groupBy(pair => pair._2)
 
-      val totalCount = groupedRdd.count()
+      val joinedRdd = labelGroupedRdd.join(predictGroupedRdd)
 
-      val weightedFMeasuresRdd: RDD[Double] = groupedRdd.map { label =>
-        val labelCount = label._2.size
+      val weightedFMeasureRdd: RDD[Double] = joinedRdd.map { label =>
+        // label is tuple of (labelValue, (SeqOfInstancesWithThisActualLabel, SeqOfInstancesWithThisPredictedLabel))
+        val labelCount = label._2._1.size // get the number of instances with this label as the actual label
+        var correctPredict: Long = 0
+        val totalPredict = label._2._2.size
 
-        val correctPredict = frameRdd.sparkContext.accumulator[Long](0)
-        val totalPredict = frameRdd.sparkContext.accumulator[Long](0)
-
-        label._2.map { predictions =>
-          if (predictions._1.toString.equals(predictions._2.toString)) {
-            correctPredict.add(1)
-          }
-          if (predictions._2.toString.equals(label._1.toString)) {
-            totalPredict.add(1)
+        label._2._1.map { prediction =>
+          if (prediction._1.equals(prediction._2)) {
+            correctPredict += 1
           }
         }
 
-        val precision = totalPredict.value match {
+        val precision = totalPredict match {
           case 0 => 0
-          case _ => labelCount * (correctPredict.value / totalPredict.value.toDouble)
+          case _ => labelCount * (correctPredict / totalPredict.toDouble)
         }
 
         val recall = labelCount match {
           case 0 => 0
-          case _ => labelCount * (correctPredict.value / labelCount.toDouble) // TODO: this simply equals correctPredict.value
+          case _ => labelCount * (correctPredict / labelCount.toDouble)
         }
-        (1 + pow(beta, 2)) * ((precision * recall) / ((pow(beta, 2) * precision) + recall))
+
+        ((pow(beta, 2) * precision) + recall) match {
+          case 0 => 0
+          case _ => (1 + pow(beta, 2)) * ((precision * recall) / ((pow(beta, 2) * precision) + recall))
+        }
       }
-      weightedFMeasuresRdd.sum() / totalCount.toDouble
+      weightedFMeasureRdd.sum() / pairedRdd.count().toDouble
     }
 
     // determine if this is binary or multi-class classifier
@@ -485,7 +481,7 @@ private[spark] object SparkOps extends Serializable {
       do {
         for (i <- 0 to cutoffs.length - 2) {
           // inclusive upper-bound on last cutoff range
-          if ((i == cutoffs.length - 2) && (element - cutoffs(i) >= 0)) { // && (element - cutoffs(i + 1) <= 0)) {
+          if ((i == cutoffs.length - 2) && (element - cutoffs(i) >= 0)) {
             binIndex = i
             working = false
           }
