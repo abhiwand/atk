@@ -32,22 +32,12 @@ logger = logging.getLogger(__name__)
 from intelanalytics.core.types import supported_types
 from intelanalytics.core.aggregation import *
 from intelanalytics.core.errorhandle import IaError
+from intelanalytics.core.command import CommandSupport, docstub
 
 def _get_backend():
     from intelanalytics.core.config import get_frame_backend
     return get_frame_backend()
 
-def docstub(f):
-    """
-    Marks the function as a documentation stub that exists only to facilitate
-    generation of status Python html docs. The implementation, if any, is replaced
-    at runtime by the standard command dispatch logic.
-    :param f: the function
-    :return: the function, annotated so that the command dispatch logic knows it is
-                safe to replace it.
-    """
-    f.docstub = True
-    return f
 
 
 def get_frame_names():
@@ -123,7 +113,7 @@ def delete_frame(name):
     except:
         raise IaError(logger)
 
-class BigFrame(object):
+class BigFrame(CommandSupport):
     """
     Proxy for a large 2D container to work with table data at scale.
 
@@ -150,6 +140,7 @@ class BigFrame(object):
 
     def __init__(self, source=None, name=None):
         try:
+            CommandSupport.__init__(self)
             self._columns = OrderedDict()  # self._columns must be the first attribute to be assigned (see __setattr__)
             self._id = 0
             self._uri = ""

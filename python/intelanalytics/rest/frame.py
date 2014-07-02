@@ -55,7 +55,7 @@ class FrameBackendRest(object):
                                                                         execute_update_frame_command,
                                                                         execute_new_frame_command))
             executor.install_static_methods(self.__class__, self.__class__.commands_loaded)
-            executor.install_instance_methods(BigFrame, self.__class__.commands_loaded)
+            BigFrame._commands = self.__class__.commands_loaded
 
     def get_frame_names(self):
         logger.info("REST Backend: get_frame_names")

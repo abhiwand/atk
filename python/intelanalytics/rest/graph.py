@@ -48,7 +48,7 @@ class GraphBackendRest(object):
                                                                                  execute_update_graph_command,
                                                                                  execute_new_graph_command))
             executor.install_static_methods(self.__class__, self.__class__.commands_loaded)
-            executor.install_instance_methods(BigGraph, self.__class__.commands_loaded)
+            BigGraph._commands = self.__class__.commands_loaded
 
     def get_graph_names(self):
         logger.info("REST Backend: get_graph_names")
