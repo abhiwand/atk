@@ -380,6 +380,8 @@ class FrameBackendRest(object):
         arguments = {'frameId': frame._id, 'labelColumn': label_column, 'predColumn': pred_column, 'posLabel': str(pos_label)}
         # valueList = (tp, tn, fp, fn)
         valueList = get_command_output('confusion_matrix', arguments).get('valueList')
+
+        # the following output formatting code is ugly, but it works for now...
         maxLength = len(max((str(x) for x in valueList), key=len))
         topRowLen = max([maxLength*2 - 7, 1])
         formattedMatrix = "\n         " + " " * len(str(pos_label)) + "   " + " Predicted" + " " * topRowLen + "  \n"
