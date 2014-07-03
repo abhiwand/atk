@@ -121,7 +121,7 @@ class LoopyBeliefPropagation
 
     System.out.println("*********In Execute method of LBP********")
 
-    val graphFuture = invocation.engine.getGraph(arguments.graph.toLong)
+    //    val graphFuture = invocation.engine.getGraph(arguments.graph.toLong)
 
     val config = configuration().get
     val hConf = newHadoopConfigurationFrom(config, "giraph")
@@ -165,10 +165,11 @@ class LoopyBeliefPropagation
     giraphConf.setComputationClass(classOf[LoopyBeliefPropagationComputation])
     giraphConf.setAggregatorWriterClass(classOf[LoopyBeliefPropagationComputation.LoopyBeliefPropagationAggregatorWriter])
 
-    val job = new GiraphJob(giraphConf, "iat-giraph-lbp-" + new Date())
-    val internalJob: Job = job.getInternalJob
     val giraphLoader = Boot.getClassLoader(config.getString("giraph.archive.name"))
     Thread.currentThread().setContextClassLoader(giraphLoader)
+
+    val job = new GiraphJob(giraphConf, "iat-giraph-lbp")
+    val internalJob: Job = job.getInternalJob
     //    val coreSiteXml = giraphLoader.getResource("core-site.xml")
     //    assert(coreSiteXml != null, "core-site.xml not available on class path")
     //    println("Found: " + coreSiteXml.getFile)
