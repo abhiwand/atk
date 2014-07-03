@@ -337,7 +337,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
           case _ => t.toString
         }).mkString(SparkEngine.pythonRddDelimiter))
 
-      val pythonExec = "python2.7" //TODO: take from env var or config
+      val pythonExec = "python" //TODO: take from env var or config
       val environment = new java.util.HashMap[String, String]()
 
       val accumulator = ctx.accumulator[JList[Array[Byte]]](new JArrayList[Array[Byte]]())(new EnginePythonAccumulatorParam())
