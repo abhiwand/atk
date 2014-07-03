@@ -26,7 +26,8 @@ REST backend for frames
 import uuid
 import logging
 logger = logging.getLogger(__name__)
-from collections import defaultdict, OrderedDict
+from ordereddict import OrderedDict
+from collections import defaultdict
 import json
 
 from intelanalytics.core.frame import BigFrame
@@ -222,6 +223,21 @@ class FrameBackendRest(object):
         name = self._get_new_frame_name()
         arguments = {'name': name, 'frameId': frame._id, 'column': column_name, 'separator': ',' }
         return execute_new_frame_command('flattenColumn', arguments)
+
+    def bin_column(self, frame, column_name, num_bins, bin_type='equalwidth', bin_column_name='binned'):
+        import numpy as np
+        if num_bins < 1:
+            raise ValueError("num_bins must be at least 1")
+        if not bin_type in ['equalwidth', 'equaldepth']:
+            raise ValueError("bin_type must be one of: equalwidth, equaldepth")
+        if bin_column_name.strip() == "":
+            raise ValueError("bin_column_name can not be empty string")
+        colTypes = dict(frame.schema)
+        if not colTypes[column_name] in [np.float32, np.float64, np.int32, np.int64]:
+            raise ValueError("unable to bin non-numeric values")
+        name = self._get_new_frame_name()
+        arguments = {'name': name, 'frame': frame._id, 'columnName': column_name, 'numBins': num_bins, 'binType': bin_type, 'binColumnName': bin_column_name}
+        return execute_new_frame_command('binColumn', arguments)
 
     class InspectionTable(object):
         """

@@ -342,7 +342,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
           case _ => t.toString
         }).mkString(SparkEngine.pythonRddDelimiter))
 
-      val pythonExec = "python2.7" //TODO: take from env var or config
+      val pythonExec = "python" //TODO: take from env var or config
       val environment = new java.util.HashMap[String, String]()
 
       val accumulator = ctx.accumulator[JList[Array[Byte]]](new JArrayList[Array[Byte]]())(new EnginePythonAccumulatorParam())
@@ -391,6 +391,48 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     frames.updateSchema(newFrame, realFrame.schema.columns)
     newFrame.copy(schema = realFrame.schema)
 
+  }
+
+  /**
+   * Bin the specified column in RDD
+   * @param arguments input specification for column binning
+   * @param user current user
+   */
+  override def binColumn(arguments: BinColumn[Long])(implicit user: UserPrincipal): Execution =
+    commands.execute(binColumnCommand, arguments, user, implicitly[ExecutionContext])
+
+  val binColumnCommand = commands.registerCommand("dataframe/binColumn", binColumnSimple)
+  def binColumnSimple(arguments: BinColumn[Long], user: UserPrincipal) = {
+    implicit val u = user
+    val frameId: Long = arguments.frame
+    val realFrame = expectFrame(frameId)
+
+    val ctx = sparkContextManager.context(user).sparkContext
+
+    val rdd = frames.getFrameRdd(ctx, frameId)
+
+    val columnIndex = realFrame.schema.columnIndex(arguments.columnName)
+
+    if (realFrame.schema.columns.indexWhere(columnTuple => columnTuple._1 == arguments.binColumnName) >= 0)
+      throw new IllegalArgumentException(s"Duplicate column name: ${arguments.binColumnName}")
+
+    val newFrame = Await.result(create(DataFrameTemplate(arguments.name, None)), SparkEngineConfig.defaultTimeout)
+
+    arguments.binType match {
+      case "equalwidth" => {
+        val binnedRdd = SparkOps.binEqualWidth(columnIndex, arguments.numBins, rdd)
+        binnedRdd.saveAsObjectFile(fsRoot + frames.getFrameDataFile(newFrame.id))
+      }
+      case "equaldepth" => {
+        val binnedRdd = SparkOps.binEqualDepth(columnIndex, arguments.numBins, rdd)
+        binnedRdd.saveAsObjectFile(fsRoot + frames.getFrameDataFile(newFrame.id))
+      }
+      case _ => throw new IllegalArgumentException(s"Invalid binning type: ${arguments.binType.toString()}")
+    }
+
+    val allColumns = realFrame.schema.columns :+ (arguments.binColumnName, DataTypes.int32)
+    frames.updateSchema(newFrame, allColumns)
+    newFrame.copy(schema = Schema(allColumns))
   }
 
   def filter(arguments: FilterPredicate[JsObject, Long])(implicit user: UserPrincipal): Execution =
