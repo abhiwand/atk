@@ -33,6 +33,8 @@ import org.apache.spark.rdd.RDD
  */
 object KCliquePercolationDataTypes {
 
+  val COMMUNITY_PROPERTY_DEFAULT_LABEL = "communities" //TODO: Replace with a user-defined label
+
   /**
    * Represents a vertex in adjacency list form
    *
@@ -105,4 +107,6 @@ object KCliquePercolationDataTypes {
    * @param communityID
    */
   case class VertexCommunity(vertex: Long, communityID: Long) extends Serializable
+
+  case class CommunityList(communityList: Set[Long]) extends Serializable
 }

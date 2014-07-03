@@ -102,9 +102,9 @@ object KCliquePercolationDriver {
     // end nls test
 
     /**
-     * TODO: Update the properties for each vertex by adding community property to it
+     * Write back to each vertex in Titan graph the set of communities to which it belongs in the property with name "communities"
      */
-    //WriteBackToTitan(vertexAndCommunities)
+    WriteBackToTitan.run(vertexAndCommunityList, graphTableName, titanStorageHostName)
 
   }
 
