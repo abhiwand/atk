@@ -27,7 +27,7 @@ import com.intel.intelanalytics.component.{ ArchiveName, Boot }
 import com.intel.intelanalytics.domain.command.{ Command, CommandTemplate, Execution }
 import com.intel.intelanalytics.engine.plugin.{ FunctionCommand, CommandPlugin }
 import com.intel.intelanalytics.engine.spark.context.SparkContextManager
-import com.intel.intelanalytics.engine.spark.plugin.SparkInvocation
+import com.intel.intelanalytics.engine.spark.plugin.{ SimpleInvocation, SparkInvocation }
 import com.intel.intelanalytics.engine.spark.{ SparkEngine, SparkEngineConfig }
 import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.shared.EventLogging
@@ -121,14 +121,17 @@ class CommandExecutor(engine: => SparkEngine, commands: SparkCommandStorage, con
     withMyClassLoader {
       withContext("ce.execute") {
         withContext(command.name) {
-          val context: SparkContext = contextManager.context(user).sparkContext
+          //          val context: SparkContext = contextManager.context(user).sparkContext
           val cmdFuture = future {
             withCommand(cmd) {
-              val invocation: SparkInvocation = SparkInvocation(engine, commandId = cmd.id, arguments = cmd.arguments,
-                user = user, executionContext = implicitly[ExecutionContext],
-                sparkContext = context)
+              //              val invocation: SparkInvocation = SparkInvocation(engine, commandId = cmd.id, arguments = cmd.arguments,
+              //                user = user, executionContext = implicitly[ExecutionContext],
+              //                sparkContext = context)
 
-              context.setLocalProperty("command-id", cmd.id.toString)
+              val invocation: SimpleInvocation = SimpleInvocation(engine, commandId = cmd.id, arguments = cmd.arguments,
+                user = user, executionContext = implicitly[ExecutionContext])
+
+              //              context.setLocalProperty("command-id", cmd.id.toString)
 
               val funcResult = command(invocation, arguments)
               command.serializeReturn(funcResult)
