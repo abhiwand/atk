@@ -17,7 +17,7 @@
 
 
     <build>
-        <testSourceDirectory>src/test/scala</testSourceDirectory>
+        <!--<testSourceDirectory>src/test/scala</testSourceDirectory>-->
         <plugins>
             <plugin>
                 <groupId>org.scalatest</groupId>
