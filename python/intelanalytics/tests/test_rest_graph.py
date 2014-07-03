@@ -26,7 +26,7 @@ iatest.init()
 
 import unittest
 from mock import patch, Mock
-from collections import OrderedDict
+from ordereddict import OrderedDict
 import json
 
 from intelanalytics.core.graph import BigGraph, VertexRule, EdgeRule
