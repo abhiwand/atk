@@ -335,63 +335,139 @@ private[spark] object SparkOps extends Serializable {
    * Calculate scalar statistic of column at index.
    *
    * @param index column index
-   * @param rdd RDD of input rows
+   * @param rowRDD RDD of input rows
    * @param operation The operation to be performed
    * @return the  value of the column
    */
-  def columnStatistic(index: Int, multiplierIndexOption: Option[Int], rdd: RDD[Row], operation: String): Double = {
-    import scala.math.ceil
+  def columnStatistic(index: Int, multiplierIndexOption: Option[Int], rowRDD: RDD[Row], operation: String): Double = {
 
-    // try creating RDD[Double] from column
-    val columnRdd = try {
-      if (multiplierIndexOption.isEmpty) {
-        rdd.map(row => java.lang.Double.parseDouble(row(index).toString))
-      }
-      else {
-        rdd.map(row => (java.lang.Double.parseDouble(row(index).toString)
-          * (java.lang.Double.parseDouble(row(multiplierIndexOption.get).toString))))
-      }
+    val dataRDD = try {
+      rowRDD.map(row => java.lang.Double.parseDouble(row(index).toString))
     }
     catch {
-      case cce: NumberFormatException =>
-        throw new NumberFormatException("Mean cannot be calculated for column values: " + cce.toString)
+      case cce: NumberFormatException => throw new NumberFormatException("Column values cannot be analyzed using "
+        + operation + ":" + cce.toString)
+    }
+
+    val weighted = multiplierIndexOption.isEmpty
+
+    val weightsRDD = if (weighted) {
+      try {
+        rowRDD.map(row => java.lang.Double.parseDouble(row(index).toString))
+      }
+      catch {
+        case cce: NumberFormatException => throw new NumberFormatException("Column values cannot be used as weights for "
+          + operation + ":" + cce.toString)
+      }
+    }
+    else {
+      null
     }
 
     if (operation equals "MEAN") {
-      columnRdd.mean()
+      if (weighted) {
+        dataRDD.zip(weightsRDD).map({ case (d, w) => d * w }).sum() / (weightsRDD.sum)
+      }
+      else {
+        dataRDD.mean()
+      }
     }
     else if (operation equals "MIN") {
-      columnRdd.reduce(Math.min)
+      if (weighted) {
+        dataRDD.zip(weightsRDD).map({ case (d, w) => d * w }).reduce(Math.min)
+      }
+      else {
+        dataRDD.reduce(Math.min)
+      }
     }
     else if (operation equals "MAX") {
-      columnRdd.reduce(Math.max)
+      if (weighted) {
+        dataRDD.zip(weightsRDD).map({ case (d, w) => d * w }).reduce(Math.min)
+      }
+      else {
+        dataRDD.reduce(Math.max)
+      }
     }
     else if (operation equals "STDEV") {
-      columnRdd.stats().stdev
+      val d = dataRDD.count() - 1
+
+      require(d > 0, "You can't calculate the standard deviation of a column with no elements.")
+
+      val mean = if (weighted) {
+        dataRDD.zip(weightsRDD).map({ case (d, w) => d * w }).sum() / (weightsRDD.sum)
+      }
+      else {
+        dataRDD.mean()
+      }
+
+      val squaredDistancesFromMean = dataRDD.map(x => (x - mean) * (x - mean))
+
+      val weightedSquaredDistancesFromMean = if (weighted) {
+        squaredDistancesFromMean.zip(weightsRDD).map({ case (x, w) => x * w })
+      }
+      else {
+        squaredDistancesFromMean
+      }
+
+      Math.sqrt(weightedSquaredDistancesFromMean.sum() / d)
     }
     else if (operation equals "VARIANCE") {
-      columnRdd.stats().variance
+      val d = dataRDD.count() - 1
+
+      require(d > 0, "You can't calculate the standard deviation of a column with no elements.")
+
+      val mean = if (weighted) {
+        dataRDD.zip(weightsRDD).map({ case (d, w) => d * w }).sum() / (weightsRDD.sum)
+      }
+      else {
+        dataRDD.mean()
+      }
+
+      val squaredDistancesFromMean = dataRDD.map(x => (x - mean) * (x - mean))
+
+      val weightedSquaredDistancesFromMean = if (weighted) {
+        squaredDistancesFromMean.zip(weightsRDD).map({ case (x, w) => x * w })
+      }
+      else {
+        squaredDistancesFromMean
+      }
+
+      (weightedSquaredDistancesFromMean.sum()) / d
     }
     else if (operation equals "GEOMEAN") {
-      val count: Double = columnRdd.stats().count
-      columnRdd.map(x => math.pow(x, (1 / count))).reduce(_ * _)
+      // TODO: handle weights
+      val count: Double = dataRDD.stats().count
+      dataRDD.map(x => math.pow(x, (1 / count))).reduce(_ * _)
     }
     else if (operation equals "MODE") {
 
+      val workingRDD = if (weighted) {
+        dataRDD.zip(weightsRDD).map({ case (d, w) => d * w })
+      }
+      else {
+        dataRDD
+      }
       // the countByValue operation creates (value, count) pairs out the RDD
       // hence the mode is the first component of the component with maximum second component
 
       def takeValueWithMinimumCount(p1: (Double, Long), p2: (Double, Long)): (Double, Long) = {
         if (p1._2 > p2._2) p1 else p2
       }
-      columnRdd.countByValue().reduce(takeValueWithMinimumCount)._1
+      workingRDD.countByValue().reduce(takeValueWithMinimumCount)._1
     }
 
     else if (operation equals "MEDIAN") {
-      val count: Long = columnRdd.stats().count
+      val count: Long = dataRDD.stats().count
       val medianIndex: Long = count / 2
 
-      val sortedRdd = columnRdd.map(x => (x, x)).sortByKey(ascending = true)
+      val workingRDD = if (weighted) {
+        dataRDD.zip(weightsRDD).map({ case (d, w) => d * w })
+      }
+      else {
+        dataRDD
+      }
+
+      val sortedRdd = workingRDD.map(x => (x, x)).sortByKey(ascending = true)
 
       val partitionCounts: Array[Int] = sortedRdd.glom().map(a => a.length).collect()
 
@@ -417,7 +493,13 @@ private[spark] object SparkOps extends Serializable {
     }
     else {
       require(operation equals "SUM", "illegal column statistic operation specified")
-      columnRdd.sum()
+      val workingRDD = if (weighted) {
+        dataRDD.zip(weightsRDD).map({ case (d, w) => d * w })
+      }
+      else {
+        dataRDD
+      }
+      workingRDD.sum()
     }
   }
 
