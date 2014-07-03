@@ -239,13 +239,14 @@ class FrameBackendRest(object):
         return execute_new_frame_command('binColumn', arguments)
 
 
-    def mean_column(self, frame, column_name, multiplier_column_name):
+    def column_statistic(self, frame, column_name, multiplier_column_name, operation):
         import numpy as np
         colTypes = dict(frame.schema)
         if not colTypes[column_name] in [np.float32, np.float64, np.int32, np.int64]:
-            raise ValueError("unable to take mean of non-numeric values")
-        arguments = {'frame': frame._id, 'columnName': column_name, 'multiplierColumnName' : multiplier_column_name}
-        return execute_new_object_command('meanColumn', arguments).get('mean')
+            raise ValueError("unable to take statistics of non-numeric values")
+        arguments = {'frame': frame._id, 'columnName': column_name, 'multiplierColumnName' : multiplier_column_name,
+                     'operation' : operation}
+        return execute_new_object_command('columnStatistic', arguments).get('value')
 
     class InspectionTable(object):
         """
