@@ -75,6 +75,7 @@ case class Vertex(physicalId: Any, gbId: Property, properties: Seq[Property]) ex
 
   /**
    * Find a property in the property list by key
+   *
    * @param key Property key
    * @return Matching property
    */
