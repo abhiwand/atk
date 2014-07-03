@@ -252,7 +252,7 @@ fi
 
 for configFile in `cat ${TAR_FILES_CONFIG}`
 do
-    echo %config $configFile
+    echo "%config ${configFile}"
 done
 
 }
