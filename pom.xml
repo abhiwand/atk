@@ -166,9 +166,13 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 <module>interfaces</module>
                 <module>launcher</module><!-- scoverage -->
                 <module>shared</module><!-- scoverage -->
-                <module>api-server</module>
                 <module>engine</module>
                 <module>engine-spark</module><!-- scoverage -->
+                <module>api-server</module>
+                <!--<module>imahout</module>
+                <module>igiraph</module>
+                <module>imllib</module>
+                <module>graphon</module>-->
                 <module>package</module>
             </modules>
         </profile>
@@ -189,9 +193,9 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 <module>interfaces</module>
                 <module>launcher</module><!-- scoverage -->
                 <module>shared</module><!-- scoverage -->
-                <module>api-server</module>
                 <module>engine</module>
                 <module>engine-spark</module><!-- scoverage -->
+                <module>api-server</module>
                 <module>imahout</module>
                 <module>igiraph/giraph-core</module>
                 <module>igiraph/giraph-algorithms</module>
