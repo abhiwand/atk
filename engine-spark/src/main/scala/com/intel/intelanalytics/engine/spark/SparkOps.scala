@@ -332,13 +332,14 @@ private[spark] object SparkOps extends Serializable {
   }
 
   /**
-   * Calculate mean of column at index..
+   * Calculate scalar statistic of column at index.
    *
    * @param index column index
    * @param rdd RDD of input rows
-   * @return the mean value of the column
+   * @param operation The operation to be performed
+   * @return the  value of the column
    */
-  def meanColumn(index: Int, multiplierIndexOption: Option[Int], rdd: RDD[Row]): Double = {
+  def columnStatistic(index: Int, multiplierIndexOption: Option[Int], rdd: RDD[Row], operation: String): Double = {
     import scala.math.ceil
 
     // try creating RDD[Double] from column
@@ -356,7 +357,68 @@ private[spark] object SparkOps extends Serializable {
         throw new NumberFormatException("Mean cannot be calculated for column values: " + cce.toString)
     }
 
-    columnRdd.mean()
+    if (operation equals "MEAN") {
+      columnRdd.mean()
+    }
+    else if (operation equals "MIN") {
+      columnRdd.reduce(Math.min)
+    }
+    else if (operation equals "MAX") {
+      columnRdd.reduce(Math.max)
+    }
+    else if (operation equals "STDEV") {
+      columnRdd.stats().stdev
+    }
+    else if (operation equals "VARIANCE") {
+      columnRdd.stats().variance
+    }
+    else if (operation equals "GEOMEAN") {
+      val count: Double = columnRdd.stats().count
+      columnRdd.map(x => math.pow(x, (1 / count))).reduce(_ * _)
+    }
+    else if (operation equals "MODE") {
+
+      // the countByValue operation creates (value, count) pairs out the RDD
+      // hence the mode is the first component of the component with maximum second component
+
+      def takeValueWithMinimumCount(p1: (Double, Long), p2: (Double, Long)): (Double, Long) = {
+        if (p1._2 > p2._2) p1 else p2
+      }
+      columnRdd.countByValue().reduce(takeValueWithMinimumCount)._1
+    }
+
+    else if (operation equals "MEDIAN") {
+      val count: Long = columnRdd.stats().count
+      val medianIndex: Long = count / 2
+
+      val sortedRdd = columnRdd.map(x => (x, x)).sortByKey(ascending = true)
+
+      val partitionCounts: Array[Int] = sortedRdd.glom().map(a => a.length).collect()
+
+      var partitionIndex = 0
+      var totalCountSeenPrevious = 0
+
+      while (medianIndex >= totalCountSeenPrevious + partitionCounts.apply(partitionIndex)) {
+        partitionIndex += 1
+        totalCountSeenPrevious += partitionCounts.apply(partitionIndex)
+      }
+
+      val indexOfMedianInsidePartition = (medianIndex - totalCountSeenPrevious).toInt
+
+      def partitionSelector(index: Int, partitionIterator: Iterator[(Double, Double)]) = {
+        if (index == partitionIndex) partitionIterator else Iterator[(Double, Double)]()
+      }
+
+      val partRdd = sortedRdd.mapPartitionsWithIndex(partitionSelector, true)
+
+      val segmentContainingMedian = partRdd.collect
+
+      segmentContainingMedian.apply(indexOfMedianInsidePartition)._1
+    }
+    else {
+      require(operation equals "SUM", "illegal column statistic operation specified")
+      columnRdd.sum()
+    }
   }
 
   def aggregation_functions(elem: Seq[Array[Any]],

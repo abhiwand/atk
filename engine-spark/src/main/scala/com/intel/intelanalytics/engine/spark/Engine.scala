@@ -435,13 +435,16 @@ class SparkEngine(sparkContextManager: SparkContextManager,
    * @param arguments input specification for column mean
    * @param user current user
    */
-  override def meanColumn(arguments: MeanColumn[Long])(implicit user: UserPrincipal): Execution =
-    commands.execute(meanColumnCommand, arguments, user, implicitly[ExecutionContext])
+  override def columnStatistic(arguments: ColumnStatistic[Long])(implicit user: UserPrincipal): Execution =
+    commands.execute(columnStatisticCommand, arguments, user, implicitly[ExecutionContext])
 
-  val meanColumnCommand: CommandPlugin[MeanColumn[Long], MeanColumnReturn] = commands.registerCommand("dataframe/meanColumn", meanColumnSimple)
-  def meanColumnSimple(arguments: MeanColumn[Long], user: UserPrincipal): MeanColumnReturn = {
+  val columnStatisticCommand: CommandPlugin[ColumnStatistic[Long], ColumnStatisticReturn] = commands.registerCommand("dataframe/columnStatistics", columnStatisticSimple)
+  def columnStatisticSimple(arguments: ColumnStatistic[Long], user: UserPrincipal): ColumnStatisticReturn = {
+
     implicit val u = user
+
     val frameId: Long = arguments.frame
+
     val realFrame = expectFrame(frameId)
 
     val ctx = sparkContextManager.context(user).sparkContext
@@ -457,9 +460,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
       Some(realFrame.schema.columnIndex(arguments.multiplierColumnName.get))
     }
 
-    val mean = SparkOps.meanColumn(columnIndex, multiplierColumnIndexOption, rdd)
-
-    MeanColumnReturn(mean)
+    ColumnStatisticReturn(SparkOps.columnStatistic(columnIndex, multiplierColumnIndexOption, rdd, arguments.operation))
   }
 
   def filter(arguments: FilterPredicate[JsObject, Long])(implicit user: UserPrincipal): Execution =

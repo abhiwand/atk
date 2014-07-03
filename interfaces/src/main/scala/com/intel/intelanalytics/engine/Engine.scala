@@ -95,7 +95,7 @@ trait Engine {
 
   def binColumn(arguments: BinColumn[Long])(implicit user: UserPrincipal): Execution
 
-  def meanColumn(arguments: MeanColumn[Long])(implicit user: UserPrincipal): Execution
+  def columnStatistic(arguments: ColumnStatistic[Long])(implicit user: UserPrincipal): Execution
 
   def groupBy(arguments: FrameGroupByColumn[JsObject, Long])(implicit user: UserPrincipal): Execution
 

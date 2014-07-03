@@ -574,7 +574,7 @@ class BigFrame(object):
         Parameters
         ----------
         column_name : str
-            The column whose values are to be binned
+            The column whose mean value is to be calculated
 
         Returns
         -------
@@ -585,7 +585,167 @@ class BigFrame(object):
         --------
         >>> mean = frame.mean_column('interesting column')
         """
-        return self._backend.mean_column(self, column_name, multiplier_column_name)
+        return self._backend.column_statistic(self, column_name, multiplier_column_name, 'MEAN')
+
+    def mode_column(self, column_name, multiplier_column_name = None):
+        """
+        Calculate the mode of a column.
+
+        Parameters
+        ----------
+        column_name : str
+            The column whose mode is to be calculated
+
+        Returns
+        -------
+        mode : Double
+            The mode of the values in the column
+
+        Examples
+        --------
+        >>> mode = frame.mode_column('interesting column')
+        """
+        return self._backend.column_statistic(self, column_name, multiplier_column_name, 'MODE')
+
+    def median_column(self, column_name, multiplier_column_name = None):
+        """
+        Calculate the median of a column.
+
+        Parameters
+        ----------
+        column_name : str
+            The column whose median is to be calculated
+
+        Returns
+        -------
+        median : Double
+            The median of the values in the column
+
+        Examples
+        --------
+        >>> median = frame.median_column('interesting column')
+        """
+        return self._backend.column_statistic(self, column_name, multiplier_column_name, 'MEDIAN')
+
+    def sum_column(self, column_name, multiplier_column_name = None):
+            """
+            Calculate the sum of a column.
+
+            Parameters
+            ----------
+            column_name : str
+                The column whose values are to be summed
+
+            Returns
+            -------
+            mean : Double
+                The sum of the values in the column
+
+            Examples
+            --------
+            >>> sum = frame.sum_column('interesting column')
+            """
+            return self._backend.column_statistic(self, column_name, multiplier_column_name, 'SUM')
+
+    def max_column(self, column_name, multiplier_column_name = None):
+        """
+        Calculate the maximum value of a column.
+
+        Parameters
+        ----------
+        column_name : str
+            The column whose maximum is to be found
+
+        Returns
+        -------
+        max : Double
+            The maximum value of the column
+
+        Examples
+        --------
+        >>> max = frame.max_column('interesting column')
+        """
+        return self._backend.column_statistic(self, column_name, multiplier_column_name, 'MAX')
+
+    def min_column(self, column_name, multiplier_column_name = None):
+        """
+        Calculate the minimum value of a column.
+
+        Parameters
+        ----------
+        column_name : str
+            The column whose minimum is to be found
+
+        Returns
+        -------
+        min : Double
+            The minimum value of the column
+
+        Examples
+        --------
+        >>> min = frame.min_column('interesting column')
+        """
+        return self._backend.column_statistic(self, column_name, multiplier_column_name, 'MIN')
+
+    def variance_column(self, column_name, multiplier_column_name = None):
+        """
+        Calculate the variance of a column.
+
+        Parameters
+        ----------
+        column_name : str
+            The column whose variance is to be calculated
+
+        Returns
+        -------
+        variance : Double
+            The variance of the values in the column
+
+        Examples
+        --------
+        >>> variance = frame.variance_column('interesting column')
+        """
+        return self._backend.column_statistic(self, column_name, multiplier_column_name, 'VARIANCE')
+
+    def stdev_column(self, column_name, multiplier_column_name = None):
+        """
+        Calculate the standard deviation of a column.
+
+        Parameters
+        ----------
+        column_name : str
+            The column whose standard deviation is to be calculated
+
+        Returns
+        -------
+        stdev : Double
+            The standard deviation of the values in the column
+
+        Examples
+        --------
+        >>> stdev = frame.stdev_column('interesting column')
+        """
+        return self._backend.column_statistic(self, column_name, multiplier_column_name, 'STDEV')
+
+    def geomean_column(self, column_name, multiplier_column_name = None):
+        """
+        Calculate the geometric mean of a column.
+
+        Parameters
+        ----------
+        column_name : str
+            The column whose geometric mean is to be calculated
+
+        Returns
+        -------
+        geomean : Double
+            The geometric mean of the values in the column
+
+        Examples
+        --------
+        >>> geomean = frame.geomean_column('interesting column')
+        """
+        return self._backend.column_statistic(self, column_name, multiplier_column_name, 'GEOMEAN')
 
     def drop(self, predicate):
         """

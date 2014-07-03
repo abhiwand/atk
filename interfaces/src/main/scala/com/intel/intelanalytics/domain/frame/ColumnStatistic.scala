@@ -29,13 +29,24 @@ package com.intel.intelanalytics.domain.frame
  * @param columnName name of the column to bin
  * @tparam FrameRef
  */
-case class MeanColumn[FrameRef](frame: FrameRef, columnName: String, multiplierColumnName: Option[String]) {
+case class ColumnStatistic[FrameRef](frame: FrameRef, operation: String, columnName: String, multiplierColumnName: Option[String]) {
+
   require(frame != null, "frame is required")
   require(columnName != null, "column name is required")
+  require(operation != null, "operation is required")
+  require(ColumnStatisticConstants.legalColumnStatistics.contains(operation), "illegal operation specified")
+
 }
 
 /**
  * Represents a MeanColumn return object
  */
-case class MeanColumnReturn(mean: Double) {
+case class ColumnStatisticReturn(value: Double) {
+}
+
+/**
+ * Holds constants related to calculation of per-column statistics.
+ */
+object ColumnStatisticConstants {
+  val legalColumnStatistics = Set("MEAN", "SUM", "MIN", "MAX", "STDEV", "VARIANCE", "GEOMEAN", "MEDIAN", "MODE")
 }

@@ -157,7 +157,7 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
       case ("dataframe/groupby") => runFrameGroupByColumn(uri, xform)
       case ("dataframe/drop_duplicates") => runDropDuplicates(uri, xform)
       case ("dataframe/binColumn") => runBinColumn(uri, xform)
-      case ("dataframe/meanColumn") => runMeanColumn(uri, xform)
+      case ("dataframe/columnStatistic") => runColumnStatistic(uri, xform)
       case s: String => illegalArg("Command name is not supported: " + s)
       case _ => illegalArg("Command name was NOT a string")
     }
@@ -347,14 +347,14 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
     }
   }
 
-  def runMeanColumn(uri: Uri, xform: JsonTransform)(implicit user: UserPrincipal) = {
+  def runColumnStatistic(uri: Uri, xform: JsonTransform)(implicit user: UserPrincipal) = {
     val test = Try {
-      xform.arguments.get.convertTo[MeanColumn[Long]]
+      xform.arguments.get.convertTo[ColumnStatistic[Long]]
     }
 
     validate(test.isSuccess, "Failed to parse mean column descriptor: " + getErrorMessage(test)) {
       val args = test.get
-      val result = engine.meanColumn(args)
+      val result = engine.columnStatistic(args)
       val command: Command = result.start
       complete(decorate(uri + "/" + command.id, command))
     }
