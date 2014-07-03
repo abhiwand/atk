@@ -42,6 +42,13 @@ import org.apache.spark.SparkContext._
 
 private[spark] object SparkOps extends Serializable {
 
+  /**
+   * take an input RDD and return another RDD which contains the subset of the original contents
+   * @param rdd input RDD
+   * @param offset rows to be skipped before including rows in the new RDD
+   * @param count total rows to be included in the new RDD
+   * @param limit limit on number of rows to be included in the new RDD
+   */
   def getPagedRdd[T: ClassTag](rdd: RDD[T], offset: Long, count: Int, limit: Int): RDD[T] = {
     //Count the rows in each partition, then order the counts by partition number
     val counts = rdd.mapPartitionsWithIndex(
@@ -85,6 +92,13 @@ private[spark] object SparkOps extends Serializable {
     pagedRdd
   }
 
+  /**
+   * take input RDD and return the subset of the original content
+   * @param rdd input RDD
+   * @param offset  rows to be skipped before including rows in the result
+   * @param count total rows to be included in the result
+   * @param limit limit on number of rows to be included in the result
+   */
   def getRows[T: ClassTag](rdd: RDD[T], offset: Long, count: Int, limit: Int): Seq[T] = {
     val pagedRdd = getPagedRdd(rdd, offset, count, limit)
     val rows: Seq[T] = pagedRdd.collect()
@@ -99,17 +113,22 @@ private[spark] object SparkOps extends Serializable {
 
     val fileContentRdd: RDD[String] = ctx.textFile(fileName, SparkEngineConfig.sparkDefaultPartitions)
 
-    /**
-     * parse the first number of lines specified as sample size and make sure the file is acceptable
-     */
+    //parse the first number of lines specified as sample size and make sure the file is acceptable
     val sampleSize = SparkEngineConfig.frameLoadTestSampleSize
     val threshold = SparkEngineConfig.frameLoadTestFailThresholdPercentage
 
     val sampleRdd = getPagedRdd(fileContentRdd, arguments.skipRows.getOrElse(0).toInt, sampleSize, sampleSize)
+
+    //cache the RDD since it will be used multiple times
+    sampleRdd.cache()
+
     val preEvaluateResults = sampleRdd.map(parserFunction)
     val failedCount = preEvaluateResults.filter(r => r.parseSuccess == false).count()
     val sampleRowsCount: Long = sampleRdd.count()
     val failedRatio = 100 * failedCount / sampleRowsCount
+
+    //don't need it anymore
+    sampleRdd.unpersist()
 
     if (failedRatio >= threshold)
       throw new Exception(s"Parse failed on $failedCount rows out of the first $sampleRowsCount")
