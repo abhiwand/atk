@@ -170,14 +170,11 @@ class LoopyBeliefPropagation
 
     val job = new GiraphJob(giraphConf, "iat-giraph-lbp")
     val internalJob: Job = job.getInternalJob
-    //    val coreSiteXml = giraphLoader.getResource("core-site.xml")
-    //    assert(coreSiteXml != null, "core-site.xml not available on class path")
-    //    println("Found: " + coreSiteXml.getFile)
     val algorithm = giraphLoader.loadClass(classOf[LoopyBeliefPropagationComputation].getCanonicalName)
     internalJob.setJarByClass(algorithm)
 
     org.apache.hadoop.mapreduce.lib.output.FileOutputFormat.setOutputPath(internalJob,
-      new Path("/user/yarn/" + invocation.commandId))
+      new Path("/user/hadoop/lbp/out/" + invocation.commandId))
 
     job.run(true)
 
