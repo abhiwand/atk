@@ -30,7 +30,8 @@ import com.intel.graphbuilder.elements.{ Edge => GBEdge, GraphElement }
 import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRDDImplicits._
 import com.intel.spark.graphon.communitydetection.KCliquePercolationDataTypes._
 import com.intel.spark.graphon.communitydetection.CreateGraphFromEnumeratedKCliques.KCliqueGraphOutput
-
+import spray.json._
+import DefaultJsonProtocol._
 /**
  * The driver for running the k-clique percolation algorithm
  */
@@ -94,6 +95,11 @@ object KCliquePercolationDriver {
      */
     val vertexAndCommunityList: RDD[(Long, Set[Long])] =
       AssignCommunitiesToVertex.run(cliquesAndConnectedComponent.connectedComponents, cliquesAndConnectedComponent.cliqueGraphNewIDsToVerticesList)
+
+    // nls test - this is just an example to demonstrate that the json converter can be used
+    val testSet = Set(1.toLong,2.toLong,3.toLong,4.toLong,5.toLong)
+    val testSetJson = testSet.toJson
+    // end nls test
 
     /**
      * TODO: Update the properties for each vertex by adding community property to it
