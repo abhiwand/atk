@@ -362,7 +362,7 @@ class FrameBackendRest(object):
 
     def ks2_test(self, frame, sample_one_col, sample_two_col):
         arguments = {'frameId': frame._id, 'sampleOneCol': sample_one_col, 'sampleTwoCol': sample_two_col}
-        return execute_command_output('ks2_test', arguments)
+        return execute_command_output('ks2Test', arguments).get('testResult')
 
 class FrameInfo(object):
     """

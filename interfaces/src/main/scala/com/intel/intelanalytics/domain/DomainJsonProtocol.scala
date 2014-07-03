@@ -100,6 +100,11 @@ object DomainJsonProtocol extends DefaultJsonProtocol {
   implicit val dropDuplicatesFormat = jsonFormat2(DropDuplicates)
   implicit val binColumnLongFormat = jsonFormat6(BinColumn[Long])
 
+  // model performance formats
+
+  implicit val ks2TestLongFormat = jsonFormat3(KS2Test[Long])
+  implicit val ks2TestResultFormat = jsonFormat1(KS2TestResult)
+
   // graph service formats
 
   implicit val graphTemplateFormat = jsonFormat1(GraphTemplate)
