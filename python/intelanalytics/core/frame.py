@@ -909,4 +909,28 @@ class BigFrame(object):
             raise IaError(logger)
 
     def ks2_test(self, sample_one_col, sample_two_col):
+        """
+        Computes a two-sample KS test.
+
+        Notes
+        -----
+        The distribution from which the samples are drawn is assumed to be continuous.
+
+        Parameters
+        ----------
+        sample_one_col : str
+            the name of the column containing sample one
+        sample_two_col : str
+            the name of the column containing sample two
+
+        Returns
+        --------
+        float64
+            test result of the KS two-sample test
+
+        Examples
+        --------
+        >>> frame.ks2_test('sample_one', 'sample_two')
+
+        """
         return self._backend.ks2_test(self, sample_one_col, sample_two_col)

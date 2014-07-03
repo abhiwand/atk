@@ -111,4 +111,6 @@ trait Engine {
 
   def deleteGraph(graph: Graph): Future[Unit]
 
+  def ks2Test(arguments: KS2Test[Long])(implicit user: UserPrincipal): Execution
+
 }

@@ -331,6 +331,10 @@ private[spark] object SparkOps extends Serializable {
     rdd.map(row => row :+ (binMap.get(java.lang.Double.parseDouble(row(index).toString)).get - 1).asInstanceOf[Any])
   }
 
+  def ks2Test(frameRdd: RDD[Row], sampleOneIndex: Int, sampleTwoIndex: Int): Double = {
+    1.0
+  }
+
   def aggregation_functions(elem: Seq[Array[Any]],
                             args_pair: Seq[(Int, String)],
                             schema: List[(String, DataTypes.DataType)]): Seq[Any] = {

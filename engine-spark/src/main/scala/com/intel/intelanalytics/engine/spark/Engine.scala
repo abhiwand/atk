@@ -35,6 +35,7 @@ import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 import com.intel.intelanalytics.domain.schema.{ DataTypes, Schema, SchemaUtil }
 import com.intel.intelanalytics.engine.Rows._
 import com.intel.intelanalytics.engine._
+import com.intel.intelanalytics.engine.plugin.CommandPlugin
 import com.intel.intelanalytics.engine.spark.command.CommandExecutor
 import com.intel.intelanalytics.{ ClassLoaderAware, NotFoundException }
 import com.intel.intelanalytics.engine.spark.context.SparkContextManager
@@ -709,6 +710,29 @@ class SparkEngine(sparkContextManager: SparkContextManager,
 
     duplicatesRemoved.saveAsObjectFile(fsRoot + frames.getFrameDataFile(frameId))
     realFrame
+  }
+
+  override def ks2Test(arguments: KS2Test[Long])(implicit user: UserPrincipal): Execution =
+    commands.execute(ks2TestCommand, arguments, user, implicitly[ExecutionContext])
+
+  val ks2TestCommand: CommandPlugin[KS2Test[Long], KS2TestResult] = commands.registerCommand("dataframe/ks2Test", ks2TestSimple)
+
+  def ks2TestSimple(arguments: KS2Test[Long], user: UserPrincipal): KS2TestResult = {
+    implicit val u = user
+    val frameId: Long = arguments.frameId
+    val realFrame: DataFrame = getDataFrameById(frameId)
+
+    val ctx = sparkContextManager.context(user).sparkContext
+
+    val frameSchema = realFrame.schema
+    val frameRdd = frames.getFrameRdd(ctx, frameId)
+
+    val sampleOneIndex = frameSchema.columnIndex(arguments.sampleOneCol)
+    val sampleTwoIndex = frameSchema.columnIndex(arguments.sampleTwoCol)
+
+    val testResult = SparkOps.ks2Test(frameRdd, sampleOneIndex, sampleTwoIndex)
+
+    KS2TestValue(testResult)
   }
 
   /**

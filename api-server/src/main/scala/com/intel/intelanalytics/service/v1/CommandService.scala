@@ -157,6 +157,7 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
       case ("dataframe/groupby") => runFrameGroupByColumn(uri, xform)
       case ("dataframe/drop_duplicates") => runDropDuplicates(uri, xform)
       case ("dataframe/binColumn") => runBinColumn(uri, xform)
+      case ("dataframe/ks2Test") => runKS2Test(uri, xform)
       case s: String => illegalArg("Command name is not supported: " + s)
       case _ => illegalArg("Command name was NOT a string")
     }
@@ -392,6 +393,19 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
           val exec = engine.groupBy(FrameGroupByColumn[JsObject, Long](id, args.name, args.group_by_columns, args.aggregations))
           complete(decorate(uri + "/" + exec.start.id, exec.start))
         }
+    }
+  }
+
+  def runKS2Test(uri: Uri, xform: JsonTransform)(implicit user: UserPrincipal) = {
+    val test = Try {
+      xform.arguments.get.convertTo[KS2Test[Long]]
+    }
+
+    validate(test.isSuccess, "Failed to parse frame descriptor: " + getErrorMessage(test)) {
+      val args = test.get
+      val result = engine.ks2Test(args)
+      val command: Command = result.start
+      complete(decorate(uri + "/" + command.id, command))
     }
   }
 
