@@ -332,7 +332,15 @@ private[spark] object SparkOps extends Serializable {
   }
 
   def ks2Test(frameRdd: RDD[Row], sampleOneIndex: Int, sampleTwoIndex: Int): Double = {
-    1.0
+    // group identical values together
+    val groupedOneRdd = frameRdd.map(row => (row(sampleOneIndex), row(sampleOneIndex))).groupByKey()
+    val groupedTwoRdd = frameRdd.map(row => (row(sampleTwoIndex), row(sampleTwoIndex))).groupByKey()
+
+    // count number of each distinct value and sort by distinct value
+    val sortedOneRdd = groupedOneRdd.map(pair => (pair._1, pair._2.size)).sortByKey()
+    val sortedTwoRdd = groupedTwoRdd.map(pair => (pair._1, pair._2.size)).sortByKey()
+
+
   }
 
   def aggregation_functions(elem: Seq[Array[Any]],
