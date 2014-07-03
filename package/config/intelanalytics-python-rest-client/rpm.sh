@@ -16,29 +16,27 @@ cp $tarFile $SCRIPTPATH/rpm/SOURCES/${packageName}-${version}.tar.gz
 LICENSE="Confidential"
 SUMMARY="$packageName-$version Build number: $BUILD_NUMBER. TimeStamp $TIMESTAMP"
 DESCRIPTION=$SUMMARY 
-REQUIRES="python2.7 python2.7-pip python2.7-pandas"
+REQUIRES="python, python-ordereddict, python-pip, numpy >= 1.8.1, python-pandas >= 0.13.1, python-bottle >= 0.12, python-requests >= 2.2.1"
 
 POST="
  #sim link to python sites packages
- if [ -d /usr/lib/python2.7/site-packages/intelanalytics ]; then
-   rm /usr/lib/python2.7/site-packages/intelanalytics
+ if [ -d /usr/lib/python2.6/site-packages/intelanalytics ]; then
+   rm /usr/lib/python2.6/site-packages/intelanalytics
  fi
 
- ln -s /usr/lib/intelanalytics/rest-client/python  /usr/lib/python2.7/site-packages/intelanalytics
-
- #run requirements file
- pip2.7 install -r /usr/lib/intelanalytics/rest-client/python/requirements.txt
+ ln -s /usr/lib/intelanalytics/rest-client/python  /usr/lib/python2.6/site-packages/intelanalytics
 "
 
 #delete the sym link only if we are uninstalling not updating
 POSTUN="
  if  [ \$1 -eq 0 ]; then
-    rm /usr/lib/python2.7/site-packages/intelanalytics
+    rm /usr/lib/python2.6/site-packages/intelanalytics
  fi
 "
 
 FILES="
 /usr/lib/intelanalytics/rest-client
+%config(noreplace) /usr/lib/intelanalytics/rest-client/python/rest/config.py
 "
 
 mkdir -p $SCRIPTPATH/rpm/SPECS
