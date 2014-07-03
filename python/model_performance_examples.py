@@ -28,7 +28,7 @@ binary_rec = binary_frame.recall('labeled', 'predicted')
 binary_f = binary_frame.fmeasure('labeled', 'predicted')
 print('binary: {0}, {1}, {2}, {3}'.format(binary_acc, binary_prec, binary_rec, binary_f))
 
-binary_char_acc = binary_char_frame.accuracy('labeled', 'predicted', 'yes')
+binary_char_acc = binary_char_frame.accuracy('labeled', 'predicted')
 binary_char_prec = binary_char_frame.precision('labeled', 'predicted', 'yes')
 binary_char_rec = binary_char_frame.recall('labeled', 'predicted', 'yes')
 binary_char_f = binary_char_frame.fmeasure('labeled', 'predicted', 'yes')
