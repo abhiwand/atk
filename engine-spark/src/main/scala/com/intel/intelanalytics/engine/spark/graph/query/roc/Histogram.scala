@@ -42,7 +42,7 @@ object Histogram {
     val (max: Double, min: Double) = rdd.mapPartitions { items =>
       Iterator(items.foldRight(Double.NegativeInfinity,
         Double.PositiveInfinity)((e: Double, x: Pair[Double, Double]) =>
-        (x._1.max(e), x._2.min(e))))
+          (x._1.max(e), x._2.min(e))))
     }.reduce { (maxmin1, maxmin2) =>
       (maxmin1._1.max(maxmin2._1), maxmin1._2.min(maxmin2._2))
     }
