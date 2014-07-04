@@ -20,3 +20,24 @@
 // estoppel or otherwise. Any license under such intellectual property rights
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
+
+package com.intel.intelanalytics.domain.frame
+
+/**
+ * Represents a BinColumn object
+ *
+ * @param name name for the new dataframe with binned column appended
+ * @param frame identifier for the input dataframe
+ * @param columnName name of the column to bin
+ * @param numBins number of bins requested
+ * @param binType the type of binning algorithm to use: "equalwidth", "equaldepth"
+ * @param binColumnName name for the created binned column
+ * @tparam FrameRef
+ */
+case class BinColumn[FrameRef](name: String, frame: FrameRef, columnName: String, numBins: Int, binType: String, binColumnName: String) {
+  require(frame != null, "frame is required")
+  require(columnName != null, "column name is required")
+  require(numBins >= 1, "at least one bin is required")
+  require(binColumnName != null, "bin column name is required")
+  require(!binColumnName.equals(""), "bin column name is required")
+}
