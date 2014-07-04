@@ -340,6 +340,28 @@ private[spark] object SparkOps extends Serializable {
     val sortedOneRdd = groupedOneRdd.map(pair => (pair._1, pair._2.size)).sortByKey()
     val sortedTwoRdd = groupedTwoRdd.map(pair => (pair._1, pair._2.size)).sortByKey()
 
+    // compute the cumulative sums
+    val sumsOne = 0 +: sortedOneRdd.mapPartitionsWithIndex{
+      case(index, partition) => Iterator(partition.map(pair => pair._1).sum)
+    }.collect()
+
+    val sumsTwo = 0 +: sortedTwoRdd.mapPartitionsWithIndex{
+      case(index, partition) => Iterator(partition.map(pair => pair._1).sum)
+    }.collect()
+
+    val cumSumOne = sortedOneRdd.mapPartitionsWithIndex{
+      case(index, partition) =>
+        val startValue = sumsOne(index)
+        partition.scanLeft(startValue)(_+_).drop(1)
+    }.collect()
+
+    val cumSumTwo = sortedTwoRdd.mapPartitionsWithIndex{
+      case(index, partition) =>
+        val startValue = sumsTwo(index)
+        partition.scanLeft(startValue)(_+_).drop(1)
+    }.collect()
+
+    // TODO: finish implementing ecdf
 
   }
 
