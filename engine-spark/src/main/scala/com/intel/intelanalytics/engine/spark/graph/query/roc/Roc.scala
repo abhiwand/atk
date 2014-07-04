@@ -13,7 +13,7 @@ object RocCounts {
    * @param rocParams ROC parameters
    * @return Counts of true positives, false positives, positives, and negatives for each threshold
    */
-  def updateRocCounts(prior: Double, posterior : Double, rocParams : RocParams): RocCounts = {
+  def updateRocCounts(prior: Double, posterior: Double, rocParams: RocParams): RocCounts = {
 
     val rocCounts = new RocCounts(rocParams.size)
     var k = 0
@@ -48,10 +48,10 @@ object RocCounts {
     for (k <- 0 until rocParams.size) {
       val fpr = if (rocCounts.numNegatives(k) > 0) rocCounts.numFalsePositives(k) / rocCounts.numNegatives(k).toFloat else 0d
       val tpr = if (rocCounts.numPositives(k) > 0) rocCounts.numTruePositives(k) / rocCounts.numPositives(k).toFloat else 0d
-      rocList +=  Roc(rocParams.thresholds(k), fpr, tpr)
+      rocList += Roc(rocParams.thresholds(k), fpr, tpr)
     }
-    rocList +=  Roc(0, 0, 0)
-    rocList +=  Roc(1, 1, 1)
+    rocList += Roc(0, 0, 0)
+    rocList += Roc(1, 1, 1)
     rocList.sortBy(_.fpr).toList
   }
 }
@@ -68,7 +68,7 @@ case class RocParams(args: List[Double]) {
   val step = args(1)
   val max = args(2)
   val size = ((max - min) / step).toInt
-  
+
   val thresholds = (0 until size).map(i => BigDecimal(min + step * i).setScale(3, BigDecimal.RoundingMode.HALF_UP).toDouble)
 }
 
@@ -82,8 +82,8 @@ case class RocParams(args: List[Double]) {
 case class Roc(threshold: Double, fpr: Double, tpr: Double)
 
 /**
- * Tracks the number of true positives, false positives, positives, and negatives for each ROC threshold. 
- * 
+ * Tracks the number of true positives, false positives, positives, and negatives for each ROC threshold.
+ *
  * @param numTruePositives Count of true positives for each ROC threshold
  * @param numFalsePositives Count of false positives for each ROC threshold
  * @param numPositives Count of positives for each ROC threshold
@@ -92,7 +92,7 @@ case class Roc(threshold: Double, fpr: Double, tpr: Double)
 case class RocCounts(numTruePositives: Array[Long],
                      numFalsePositives: Array[Long],
                      numPositives: Array[Long],
-                     numNegatives: Array[Long])  {
+                     numNegatives: Array[Long]) {
 
   def this(sizeThresholds: Int) = {
     this(new Array[Long](sizeThresholds),
@@ -103,7 +103,7 @@ case class RocCounts(numTruePositives: Array[Long],
 
   /**
    * Returns sum of ROC counts.
-   * 
+   *
    * @param rocCountsToAdd ROC counts to add
    * @return Sum of ROC counts
    */
@@ -118,12 +118,12 @@ case class RocCounts(numTruePositives: Array[Long],
 
   /**
    * Add two arrays.
-   * 
+   *
    * @param arr1 First array
    * @param arr2 Second array
    * @return Sum of first and second array
    */
-  def add (arr1: Array[Long], arr2 : Array[Long]) : Array[Long] = {
+  def add(arr1: Array[Long], arr2: Array[Long]): Array[Long] = {
     arr1.zip(arr2).map { case (a, b) => a + b }
   }
 

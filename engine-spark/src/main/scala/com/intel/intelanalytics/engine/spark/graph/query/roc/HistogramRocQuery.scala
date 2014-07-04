@@ -3,15 +3,16 @@ package com.intel.intelanalytics.engine.spark.graph.query.roc
 import com.intel.graphbuilder.util.SerializableBaseConfiguration
 import com.intel.graphbuilder.driver.spark.titan.reader.TitanReader
 import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRDDImplicits._
-import scala.Some
-import com.intel.graphbuilder.graph.titan.TitanGraphConnector
-import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
-import spray.json.DefaultJsonProtocol._
-import org.apache.spark.SparkContext._
-import org.apache.spark.{SparkConf, SparkContext}
 import com.intel.graphbuilder.driver.spark.titan.examples.ExamplesUtils
-import java.util.Date
+import com.intel.graphbuilder.graph.titan.TitanGraphConnector
+import com.intel.intelanalytics.engine.spark.plugin.{ SparkInvocation, SparkCommandPlugin }
+import com.intel.intelanalytics.security.UserPrincipal
+import org.apache.spark.{ SparkConf, SparkContext }
 import org.apache.spark.storage.StorageLevel
+import scala.concurrent.ExecutionContext
+import java.util.Date
+import spray.json._
+import spray.json.DefaultJsonProtocol._
 
 /**
  * Get histogram and optionally ROC curve on property values
@@ -50,7 +51,7 @@ case class HistogramRocParams(graph: Int,
                               rocThreshold: Option[List[Double]] = Some(List(0, 0.05, 1)),
                               propertyType: Option[String] = Some("VERTEX_PROPERTY"),
                               vertexTypeKey: Option[String] = Some("vertex_type"),
-                              splitTypes: Option[List[String]] = Some(List("TR", "VA", "TE")),
+                              splitTypes: Option[List[String]] = Some(List("[TR]", "[VA]", "[TE]")),
                               numBuckets: Option[Int] = Some(30)) {
   require(rocThreshold.get.size == 3)
 }
@@ -64,29 +65,30 @@ case class HistogramRocParams(graph: Int,
  */
 case class HistogramRocResult(priorHistograms: List[Histogram],
                               posteriorHistograms: Option[List[Histogram]],
-                              rocCurves: Option[List[List[(Option[String], List[Roc])]]])
+                              rocCurves: Option[List[List[(String, List[Roc])]]])
 
-
-/*class HistogramRocQuery extends SparkCommandPlugin[HistogramRocParams, HistogramRocResult] {
+class HistogramRocQuery extends SparkCommandPlugin[HistogramRocParams, HistogramRocResult] {
   implicit val histogramRocParamsFormat = jsonFormat9(HistogramRocParams)
   implicit val rocFormat = jsonFormat3(Roc)
-  implicit val rocResultFormat = jsonFormat(RocResult, "featureId", "splitType", "rocList")
-  implicit val histogramRocResultFormat = jsonFormat(HistogramRocResult, "roc")
+  implicit val histogramFormat = jsonFormat2(Histogram.apply)
+  implicit val histogramRocResultFormat = jsonFormat3(HistogramRocResult)
 
   override def execute(invocation: SparkInvocation, arguments: HistogramRocParams)(implicit user: UserPrincipal, executionContext: ExecutionContext): HistogramRocResult = {
     //val graphFuture = invocation.engine.getGraph(arguments.graph.toLong) */
-object HistogramRocQuery {
-  def main(args: Array[String]) {
-    // Properties
+    //object HistogramRocQuery {
+    //def main(args: Array[String]) {
+
     val queryArgs = HistogramRocParams(1, "lbp_prior", Some("lbp_posterior"), enableRoc = Some(true))
-    val priorPropertyName =  queryArgs.priorPropertyName
+    val priorPropertyName = queryArgs.priorPropertyName
     val posteriorPropertyName = queryArgs.posteriorPropertyName
-    val enableRoc : Boolean = queryArgs.enableRoc.get
-    val rocParams  = RocParams(queryArgs.rocThreshold.get)
-    val propertyType : Option[String] = queryArgs.propertyType
-    val vertexTypeKey : Option[String] = queryArgs.vertexTypeKey
-    val splitTypes : List[String] = queryArgs.splitTypes.get
-    val numBuckets : Int = queryArgs.numBuckets.get
+    val rocParams = RocParams(queryArgs.rocThreshold.getOrElse(List(0, 0.05, 1)))
+
+    // Specifying variable type due to Scala bug
+    val enableRoc: Boolean = queryArgs.enableRoc.getOrElse(false)
+    val propertyType: Option[String] = queryArgs.propertyType
+    val vertexTypeKey: Option[String] = queryArgs.vertexTypeKey
+    val splitTypes: Option[List[String]] = queryArgs.splitTypes
+    val numBuckets: Int = queryArgs.numBuckets.getOrElse(30)
 
     // Create graph connection
     val tableName = "lbp_test"
@@ -100,7 +102,7 @@ object HistogramRocQuery {
     val titanConnector = new TitanGraphConnector(titanConfig)
 
     // Read graph
-    val conf = new SparkConf()
+    /*val conf = new SparkConf()
       //.setMaster("spark://gao-ws9.hf.intel.com:7077")
       .setMaster("local")
       .setAppName(this.getClass.getSimpleName + " " + new Date())
@@ -114,13 +116,12 @@ object HistogramRocQuery {
     conf.set("spark.cores.max", "10")
 
     val sc = new SparkContext(conf)
-
-    //val sc = invocation.sparkContext
-    //sc.addJar("/home/spkavuly/git/source_code/engine-spark/target/engine-spark.jar")
+      */
+    val sc = invocation.sparkContext
     val titanReader = new TitanReader(sc, titanConnector)
     val titanReaderRDD = titanReader.read()
 
-    val graphElementRDD = queryArgs.propertyType match {
+    val graphElementRDD = propertyType match {
       case Some("VERTEX_PROPERTY") => titanReaderRDD.filterVertices()
       case Some("EDGE_PROPERTY") => titanReaderRDD.filterEdges()
       case _ => throw new IllegalArgumentException("Input Property Type is not supported!")
@@ -130,38 +131,44 @@ object HistogramRocQuery {
     val featureVectorRDD = graphElementRDD.flatMap(element => {
       FeatureVector.parseGraphElement(element, priorPropertyName, posteriorPropertyName, vertexTypeKey)
     })
-    featureVectorRDD.persist(StorageLevel.MEMORY_AND_DISK)
+
+    // Filter by split type
+    val filteredFeatureRDD = if (splitTypes != None) {
+      featureVectorRDD.filter(f => splitTypes.get.contains(f.splitType))
+    }
+    else featureVectorRDD
+    filteredFeatureRDD.persist(StorageLevel.MEMORY_AND_DISK)
 
     // Compute histograms
-    val priorHistograms = FeatureVector.getHistograms(featureVectorRDD, false, numBuckets)
+    val priorHistograms = FeatureVector.getHistograms(filteredFeatureRDD, false, numBuckets)
 
     val posteriorHistograms = if (posteriorPropertyName != None) {
-      Some(FeatureVector.getHistograms(featureVectorRDD, true, numBuckets))
+      Some(FeatureVector.getHistograms(filteredFeatureRDD, true, numBuckets))
     }
     else None
 
     // Compute ROC curves for each feature and split type
     val rocCurves = if (enableRoc) {
-      Some(FeatureVector.getRocCurves(featureVectorRDD, rocParams))
+      Some(FeatureVector.getRocCurves(filteredFeatureRDD, rocParams))
     }
     else None
 
-    featureVectorRDD.unpersist()
+    filteredFeatureRDD.unpersist()
 
     HistogramRocResult(priorHistograms, posteriorHistograms, rocCurves)
 
   }
 
   //TODO: Replace with generic code that works on any case class
-  //def parseArguments(arguments: JsObject) = arguments.convertTo[HistogramRocParams]
+  def parseArguments(arguments: JsObject) = arguments.convertTo[HistogramRocParams]
 
   //TODO: Replace with generic code that works on any case class
-  //def serializeReturn(returnValue: HistogramRocResult): JsObject = returnValue.toJson.asJsObject
+  def serializeReturn(returnValue: HistogramRocResult): JsObject = returnValue.toJson.asJsObject
 
-  //def serializeArguments(arguments: HistogramRocParams): JsObject = arguments.toJson.asJsObject()
+  def serializeArguments(arguments: HistogramRocParams): JsObject = arguments.toJson.asJsObject
 
   /**
    * The name of the command, e.g. graphs/ml/loopy_belief_propagation
    */
-  //override def name: String = "graphs/query/histogram_roc"
+  override def name: String = "graphs/query/histogram_roc"
 }

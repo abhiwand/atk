@@ -5,7 +5,6 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.SparkContext._
 import scala.collection.mutable.ArrayBuffer
 
-
 object FeatureVector {
 
   /**
@@ -26,21 +25,18 @@ object FeatureVector {
     val splitType = parseSplitType(graphElement, splitPropertyName)
 
     val posteriorArray = if (posteriorPropertyName != None) {
-      Some(parseArray(graphElement, posteriorPropertyName.get))
+      parseArray(graphElement, posteriorPropertyName.get)
     }
-    else {
-      None
-    }
+    else Array.empty[Double]
 
     // Prior and posterior vector should be the same size
-    if (posteriorArray == None || posteriorArray.get.size == priorArray.size) {
+    if (posteriorArray.isEmpty || posteriorArray.size == priorArray.size) {
       Some(FeatureVector(priorArray, posteriorArray, splitType))
     }
     else {
       None //TODO: Warn or throw exception?
     }
   }
-
 
   /**
    * Get split type from graph element. The split type may be train (TR), validation (VA), and test (TE).
@@ -49,14 +45,12 @@ object FeatureVector {
    * @param splitPropertyName Property name for split type
    * @return An optional split type which can be train (TR), validation (VA), and test (TE).
    */
-  def parseSplitType(graphElement: GraphElement, splitPropertyName: Option[String]): Option[String] = {
+  def parseSplitType(graphElement: GraphElement, splitPropertyName: Option[String]): String = {
     if (splitPropertyName != None) {
       val splitProperty = graphElement.getProperty(splitPropertyName.get)
-      if (splitProperty != None) Some(splitProperty.get.value.toString.toUpperCase) else None
+      if (splitProperty != None) splitProperty.get.value.toString.toUpperCase else ""
     }
-    else {
-      None
-    }
+    else ""
   }
 
   /**
@@ -104,7 +98,7 @@ object FeatureVector {
     var i = 0
     for (i <- 0 until featureSize) {
       val valueRDD = featureVectorRDD.map(f => {
-        if (usePosterior) f.posteriorArray.get(i) else f.priorArray(i)
+        if (usePosterior) f.posteriorArray(i) else f.priorArray(i)
       })
       val histogram = Histogram.getHistogram(valueRDD, numBuckets)
       histograms += histogram
@@ -121,14 +115,14 @@ object FeatureVector {
    *
    * @return List of ROC curves for each feature and split type
    */
-  def getRocCurves(featureVectorRDD: RDD[FeatureVector], rocParams: RocParams): List[List[(Option[String], List[Roc])]] = {
-    val rocCurves = ArrayBuffer[List[(Option[String], List[Roc])]]()
+  def getRocCurves(featureVectorRDD: RDD[FeatureVector], rocParams: RocParams): List[List[(String, List[Roc])]] = {
+    val rocCurves = ArrayBuffer[List[(String, List[Roc])]]()
     val featureSize = featureVectorRDD.first().priorArray.size
 
     var i = 0
     for (i <- 0 until featureSize) {
       val rocCountsRDD = featureVectorRDD.map(f =>
-        (f.splitType, RocCounts.updateRocCounts(f.priorArray(i), f.posteriorArray.get(i), rocParams))
+        (f.splitType, RocCounts.updateRocCounts(f.priorArray(i), f.posteriorArray(i), rocParams))
       ).reduceByKey((a1, a2) => a1.merge(a2))
 
       val rocRdd = rocCountsRDD.map(rocCounts => (rocCounts._1, RocCounts.calcRoc(rocCounts._2, rocParams)))
@@ -143,6 +137,6 @@ object FeatureVector {
  *
  * @param priorArray Prior probabilities (one for each feature)
  * @param posteriorArray  Posterior probabilities (one for each feature)
- * @param splitType An optional split type which can be train (TR), validation (VA), and test (TE)
+ * @param splitType An split type which can be train (TR), validation (VA), and test (TE)
  */
-case class FeatureVector(priorArray: Array[Double], posteriorArray: Option[Array[Double]], splitType: Option[String])
+case class FeatureVector(priorArray: Array[Double], posteriorArray: Array[Double], splitType: String)

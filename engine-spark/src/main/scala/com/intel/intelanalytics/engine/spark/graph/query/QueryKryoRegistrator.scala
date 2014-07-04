@@ -31,8 +31,8 @@ class QueryKryoRegistrator extends GraphBuilderKryoRegistrator {
   override def registerClasses(kryo: Kryo) {
 
     super.registerClasses(kryo)
-    kryo.register(classOf[FeatureProbability])
-    kryo.register(classOf[HistogramRocQuery])
+    //kryo.register(classOf[FeatureProbability])
+    //kryo.register(classOf[HistogramRocQuery])
 
   }
 }
