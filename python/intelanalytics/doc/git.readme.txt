@@ -33,3 +33,19 @@ https://jira01.devtools.intel.com; <Username> is your Intel login identification
 	Select the menu option labeled "Create review", then "Browse Changesets"
 	Change Repository to "TRIB-source_code" and check the box next to the changes you made and click the button labeled "Edit Details"
 	Select the appropriate reviewers, explain your objectives, then click the button labeled "Start Review"
+
+    Normal work process:
+git fetch origin
+git checkout sprint_15
+git branch doc_15
+git checkout doc_15
+git merge sprint_15
+    Fix any merges, do your changes.
+git add (as necessary)
+git commit -m "" (as necessary)
+git pull origin sprint_15
+git merge sprint_15
+git checkout sprint_15
+git merge doc_15
+git push origin sprint_15
+git checkout doc_15 (before you forget and work in the wrong branch)
