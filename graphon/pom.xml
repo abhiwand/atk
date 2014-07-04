@@ -44,6 +44,10 @@
         </dependency>
         <dependency>
             <groupId>com.intel.ia</groupId>
+            <artifactId>interfaces</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.intel.ia</groupId>
             <artifactId>engine-spark</artifactId>
         </dependency>
         <dependency>
