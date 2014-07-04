@@ -23,3 +23,8 @@ print(multiclass_frame.inspect())
 print(multiclass_char_frame.inspect())
 
 print(binary_frame.confusion_matrix('labeled', 'predicted'))
+print(binary_char_frame.confusion_matrix('labeled', 'predicted', 'yes'))
+
+# these should fail
+print(multiclass_frame.confusion_matrix('labeled', 'predicted'))
+print(multiclass_char_frame.confusion_matrix('labeled', 'predicted'))
