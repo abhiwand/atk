@@ -41,12 +41,12 @@ object AssignCommunitiesToVertex {
    * Group by vertex IDs so that each vertex ID gets a list (possibly empty) of the community IDs to which it belongs
    *
    * @param connectedComponents pair of new Long IDs (corresponding to each k-cliques) and community ID
-   * @param cliqueGraphNewIDsToVerticesList pair of new Long IDs and corresponding k-cliques
+   * @param newVertexIdToOldVertexIdOfCliqueGraph pair of new Long IDs and corresponding k-cliques
    * @return an RDD of pair of original vertex ID and list of community IDs to which it belongs
    */
-  def run(connectedComponents: RDD[(Long, Long)], cliqueGraphNewIDsToVerticesList: RDD[(Long, VertexSet)]): RDD[(Long, Set[Long])] = {
+  def run(connectedComponents: RDD[(Long, Long)], newVertexIdToOldVertexIdOfCliqueGraph: RDD[(Long, VertexSet)]): RDD[(Long, Set[Long])] = {
 
-    val communityCoGroupedWithVerticesList: RDD[(Seq[Long], Seq[Set[Long]])] = connectedComponents.cogroup(cliqueGraphNewIDsToVerticesList).map(_._2)
+    val communityCoGroupedWithVerticesList: RDD[(Seq[Long], Seq[Set[Long]])] = connectedComponents.cogroup(newVertexIdToOldVertexIdOfCliqueGraph).map(_._2)
     val communityVerticesList: RDD[(Long, Set[Long])] = communityCoGroupedWithVerticesList.flatMap({ case (communityIdList, verticesList) => communityIdList.flatMap(communityID => verticesList.map(vertices => (communityID, vertices))) })
     val communityVertex: RDD[VertexCommunity] = communityVerticesList.flatMap(communityVertices => communityVertices._2.map(vertex => VertexCommunity(vertex, communityVertices._1)))
 

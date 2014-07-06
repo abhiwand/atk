@@ -26,47 +26,45 @@ package com.intel.spark.graphon.communitydetection
 
 import com.intel.graphbuilder.elements._
 import org.apache.spark.rdd.RDD
-import com.intel.graphbuilder.elements.{ Edge => GBEdge }
-import com.intel.spark.graphon.communitydetection.KCliquePercolationDataTypes._
 import com.intel.graphbuilder.driver.spark.titan.reader.TitanReader
-import com.intel.graphbuilder.driver.spark.rdd.VertexRDDFunctions
-import com.intel.graphbuilder.util.SerializableBaseConfiguration
+import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRDDImplicits._
 import com.intel.graphbuilder.graph.titan.TitanGraphConnector
+import collection.JavaConverters._
 
 /**
  * Write back to each vertex in Titan graph the set of communities to which it
  * belongs in some property specified by the user
  */
+class WriteBackToTitan {
 
-object WriteBackToTitan {
+  /**
+   *
+   * @param vertexAndCommunityList an RDD of pair of vertex Id and list of communities it belongs to.
+   *                               Vertex Id is of type Long and the list of communities is Set[Long]
+   * @param communityPropertyDefaultLabel name of the community property of vertex that will be updated/created in the input graph
+   * @param titanConnector The titan graph connector
+   */
+  def run(vertexAndCommunityList: RDD[(Long, Set[Long])], communityPropertyDefaultLabel: String, titanConnector: TitanGraphConnector) {
+    //  To create a GB Vertex from the (Long, Set[Long]) pair in vertexAndCommunityList.
+    //  The ID (the long) is both the physical ID and the GB ID. Since we need a GB ID to
+    //  create the vertex, we need to create some default property (TitanReader.TITAN_READER_DEFAULT_GB_ID)
+    //  and stick the physical ID in there as well (so the property list will have two entries:
+    //  the GB ID and the community list)
+    //  The label of the cmmunityList property is defined as COMMUNITY_PROPERTY_DEFAULT_LABEL
 
-  def run(vertexAndCommunityList: RDD[(Long, Set[Long])], graphTableName: String, titanStorageHostName: String) = {
+    //  Converted communityList from scala Set to Java.util.Set using .asJava decorator method of JavaConverters, as
+    //  we need to use Java objects while actually storing to Titan using GraphBuilder.
 
-    /**
-     * Convert the pairs of vertex and community list into GB vertex objects
-     */
     val newGBVertex: RDD[Vertex] = vertexAndCommunityList
       .map({
-        case (vertex, communityList) => Vertex(vertex,
-          Property(TitanReader.TITAN_READER_DEFAULT_GB_ID, vertex),
-          Seq(Property(COMMUNITY_PROPERTY_DEFAULT_LABEL, communityList)))
+        case (vertexId, communityList) => Vertex(vertexId,
+          Property(TitanReader.TITAN_READER_DEFAULT_GB_ID, vertexId),
+          Seq(Property(communityPropertyDefaultLabel, communityList.asJava)))
       })
 
-    /**
-     * Create graph connection
-     */
-    val titanConfig = new SerializableBaseConfiguration()
-    titanConfig.setProperty("storage.backend", "hbase") // TODO : we should probably have this come from... somewhere
-    titanConfig.setProperty("storage.hostname", titanStorageHostName)
-    titanConfig.setProperty("storage.tablename", graphTableName)
-
-    val titanConnector = new TitanGraphConnector(titanConfig)
-
-    /**
-     * Write back vertices to Titan and append in existing graph
-     */
-    val vertexRDDFunctions = new VertexRDDFunctions(newGBVertex)
-    vertexRDDFunctions.write(titanConnector, true)
+    //  Write back vertices to Titan and append in existing graph
+    val vertexRDDFunctions = vertexRDDToVertexRDDFunctions(newGBVertex)
+    vertexRDDFunctions.write(titanConnector, append = true)
   }
 
 }

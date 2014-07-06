@@ -49,10 +49,10 @@ class CreateGraphFromEnumeratedKCliquesTest extends FlatSpec with Matchers with 
     "have each k-cliques as the vertex of the new graph " in new KCliqueGraphTest {
 
       val rddOfFourCliques = sc.parallelize(fourCliques).map({ case (x, y) => ExtendersFact(CliqueFact(x), y, true) })
-      val rddOfVertexListOfFourCliqueGraph = sc.parallelize(vertexListOfFourCliqueGraph).map(vertexSet => CliqueFact(vertexSet))
+      val rddOfVertexListOfFourCliqueGraph = sc.parallelize(vertexListOfFourCliqueGraph)
 
       val fourCliqueGraphFromCreateGraphOutput = CreateGraphFromEnumeratedKCliques.run(rddOfFourCliques)
-      val vertexListFromCreateGraphOutput = fourCliqueGraphFromCreateGraphOutput.cliqueFactVertexList
+      val vertexListFromCreateGraphOutput = fourCliqueGraphFromCreateGraphOutput.cliqueGraphVertices
 
       vertexListFromCreateGraphOutput.collect().toSet shouldEqual rddOfVertexListOfFourCliqueGraph.collect().toSet
     }
@@ -61,10 +61,10 @@ class CreateGraphFromEnumeratedKCliquesTest extends FlatSpec with Matchers with 
     "produce correct edge list where edges between two k-cliques (which is the vertices of new graph) exists if they share (k-1) elements" in new KCliqueGraphTest {
 
       val rddOfFourCliques = sc.parallelize(fourCliques).map({ case (x, y) => ExtendersFact(CliqueFact(x), y, true) })
-      val rddOfEdgeListOfFourCliqueGraph = sc.parallelize(edgeListOfFourCliqueGraph).map(subset => (CliqueFact(subset.head), CliqueFact(subset.last)))
+      val rddOfEdgeListOfFourCliqueGraph = sc.parallelize(edgeListOfFourCliqueGraph).map(subset => (subset.head, subset.last))
 
       val fourCliqueGraphFromCreateGraphOutput = CreateGraphFromEnumeratedKCliques.run(rddOfFourCliques)
-      val edgeListFromCreateGraphOutput = fourCliqueGraphFromCreateGraphOutput.cliqueFactEdgeList
+      val edgeListFromCreateGraphOutput = fourCliqueGraphFromCreateGraphOutput.cliqueGraphEdges
 
       edgeListFromCreateGraphOutput.collect().toSet shouldEqual rddOfEdgeListOfFourCliqueGraph.collect().toSet
     }
