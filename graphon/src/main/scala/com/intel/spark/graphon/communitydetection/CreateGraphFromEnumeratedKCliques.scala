@@ -55,14 +55,22 @@ object CreateGraphFromEnumeratedKCliques {
     val twoSetsOfCliqueFacts = cliqueAndExtendedCliqueSet.flatMap({ case (clique, setOfCliques) => setOfCliques.subsets(2) })
     val cliqueFactEdgeList = twoSetsOfCliqueFacts.map(subset => (subset.head, subset.last))
 
-    new KCliqueGraphOutput(cliqueFactVertexList, cliqueFactEdgeList)
+    val cliqueGraphVertices = cliqueFactVertexList.map({
+      case (CliqueFact(cliqueVertex)) => cliqueVertex
+    })
+
+    val cliqueGraphEdges: RDD[(VertexSet, VertexSet)] = cliqueFactEdgeList.map({
+      case (CliqueFact(idCliqueVertex), CliqueFact(nbrCliqueVertex)) => (idCliqueVertex, nbrCliqueVertex)
+    })
+
+    new KCliqueGraphOutput(cliqueGraphVertices, cliqueGraphEdges)
 
   }
 
   /**
    * Return value of KClique Graph generator
-   * @param cliqueFactVertexList List of vertices of new graph where vertices are k-cliques
-   * @param cliqueFactEdgeList List of edges between the vertices of new graph of k-cliques
+   * @param cliqueGraphVertices List of vertices of new graph where vertices are k-cliques
+   * @param cliqueGraphEdges List of edges between the vertices of new graph of k-cliques
    */
-  case class KCliqueGraphOutput(val cliqueFactVertexList: RDD[CliqueFact], val cliqueFactEdgeList: RDD[(CliqueFact, CliqueFact)])
+  case class KCliqueGraphOutput(val cliqueGraphVertices: RDD[VertexSet], val cliqueGraphEdges: RDD[(VertexSet, VertexSet)])
 }

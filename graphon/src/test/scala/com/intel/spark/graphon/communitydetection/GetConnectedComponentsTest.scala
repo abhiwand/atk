@@ -44,7 +44,7 @@ class GetConnectedComponentsTest extends FlatSpec with Matchers with TestingSpar
       val rddOfFourCliques = sc.parallelize(fourCliques).map({ case (x, y) => ExtendersFact(CliqueFact(x), y, true) })
 
       val fourCliqueGraphFromCreateGraphOutput = CreateGraphFromEnumeratedKCliques.run(rddOfFourCliques)
-      val fourCliqueGraphCCOutput = GetConnectedComponents.run(fourCliqueGraphFromCreateGraphOutput)
+      val fourCliqueGraphCCOutput = GetConnectedComponents.run(fourCliqueGraphFromCreateGraphOutput, sc)
       val fourCliqueGraphCC = fourCliqueGraphCCOutput.connectedComponents
 
       fourCliqueGraphCC.count() shouldEqual vertexListOfFourCliqueGraph.size
