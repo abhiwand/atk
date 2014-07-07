@@ -36,7 +36,7 @@ object ViewModelJsonImplicits extends DefaultJsonProtocol with SprayJsonSupport 
 
   implicit val relLinkFormat = jsonFormat3(RelLink)
   implicit val getCommandsFormat = jsonFormat3(GetCommands)
-  implicit val getCommandFormat = jsonFormat8(GetCommand)
+  implicit val getCommandFormat = jsonFormat9(GetCommand)
   implicit val getDataFramesFormat = jsonFormat3(GetDataFrames)
   implicit val getDataFrameFormat = jsonFormat4(GetDataFrame)
   implicit val getGraphsFormat = jsonFormat3(GetGraphs)

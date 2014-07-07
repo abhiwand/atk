@@ -38,6 +38,7 @@ extensions = [
     'sphinx.ext.intersphinx',
     'sphinx.ext.ifconfig',
     'sphinx.ext.autosummary',
+    'sphinx.ext.pngmath',
     'numpydoc',
     'sphinx.ext.todo',
     'sphinx.ext.doctest',
@@ -125,6 +126,8 @@ internal_docs = False
 
 # -- Options for HTML output ----------------------------------------------
 
+# html_style = 'strike.css'
+
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #html_theme = 'default'
@@ -168,8 +171,6 @@ html_logo = "_static/intel-logo.jpg"
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
-
-# html_style = 'strike.css'
 
 # Add any extra paths that contain custom files (such as robots.txt or
 # .htaccess) here, relative to this directory. These files are copied
@@ -232,6 +233,11 @@ latex_elements = {
 
 # Additional stuff for the LaTeX preamble.
 #'preamble': '',
+'preamble': '\setcounter{tocdepth}{2}',
+
+'classoptions': ',openany,oneside',
+'babel' : '\\usepackage[english]{babel}',
+'footer' : '2014, Intel - INTEL CONFIDENTIAL'
 }
 
 # Grouping the document tree into LaTeX files. List of tuples
@@ -245,6 +251,7 @@ latex_documents = [
 # The name of an image file (relative to this directory) to place at the top of
 # the title page.
 #latex_logo = None
+latex_logo = "_static/intel-logo.jpg"
 
 # For "manual" documents, if this is true, then toplevel headings are parts,
 # not chapters.
@@ -255,13 +262,18 @@ latex_documents = [
 
 # If true, show URL addresses after external links.
 #latex_show_urls = False
+latex_show_urls = True
 
 # Documents to append as an appendix to all manuals.
 #latex_appendices = []
+latex_appendices = ['glossary']
 
 # If false, no module index is generated.
 #latex_domain_indices = True
+latex_domain_indices = False
 
+# If false, upper division is 'chapters'
+latex_show_parts = True
 
 # -- Options for manual page output ---------------------------------------
 
