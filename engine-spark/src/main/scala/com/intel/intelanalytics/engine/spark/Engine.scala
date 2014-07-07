@@ -23,20 +23,22 @@
 
 package com.intel.intelanalytics.engine.spark
 
+import java.util
 import java.util.{ ArrayList => JArrayList, List => JList }
 
 import com.intel.intelanalytics.domain._
 import com.intel.intelanalytics.domain.command.{ Command, CommandTemplate, Execution }
+import com.intel.intelanalytics.domain.query.{ Execution => QueryExecution, QueryResult, TableQuery, Query, QueryTemplate }
 import com.intel.intelanalytics.domain.frame._
 import com.intel.intelanalytics.domain.frame.load.{ LineParserArguments, LineParser, LoadSource, Load }
 
 import com.intel.intelanalytics.domain.graph.{ Graph, GraphLoad, GraphTemplate }
-import com.intel.intelanalytics.domain.query.Query
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 import com.intel.intelanalytics.domain.schema.{ DataTypes, Schema, SchemaUtil }
 import com.intel.intelanalytics.engine.Rows._
 import com.intel.intelanalytics.engine._
 import com.intel.intelanalytics.engine.spark.command.CommandExecutor
+import com.intel.intelanalytics.engine.spark.queries.QueryExecutor
 import com.intel.intelanalytics.{ ClassLoaderAware, NotFoundException }
 import com.intel.intelanalytics.engine.spark.context.SparkContextManager
 import com.intel.intelanalytics.engine.spark.frame.{ RDDJoinParam, RowParser, SparkFrameStorage }
@@ -64,7 +66,8 @@ class SparkEngine(sparkContextManager: SparkContextManager,
                   commandStorage: CommandStorage,
                   frames: SparkFrameStorage,
                   graphs: GraphStorage,
-                  queryStorage: QueryStorage) extends Engine
+                  queryStorage: QueryStorage,
+                  queries: QueryExecutor) extends Engine
     with EventLogging
     with ClassLoaderAware {
 
@@ -608,12 +611,21 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     newFrame
   }
 
-  def getRows(id: Identifier, offset: Long, count: Int)(implicit user: UserPrincipal) = withContext("se.getRows") {
-    future {
-      val frame = frames.lookup(id).getOrElse(throw new IllegalArgumentException("Requested frame does not exist"))
-      val rows = frames.getRows(frame, offset, count)
-      rows
-    }
+  def getRows(arguments: TableQuery[Identifier])(implicit user: UserPrincipal): QueryExecution = {
+    queries.execute(getRowsQuery, arguments, user, implicitly[ExecutionContext])
+  }
+  val getRowsQuery = queries.registerQuery("dataframes/data", getRowsSimple)
+
+  def getRowsSimple(arguments: TableQuery[Identifier], user: UserPrincipal) = {
+    implicit val impUser: UserPrincipal = user
+    val frame = frames.lookup(arguments.id).getOrElse(throw new IllegalArgumentException("Requested frame does not exist"))
+    val rows = frames.getRows(frame, arguments.offset, arguments.count)
+    rows
+//    QueryResult.buildFromRows(rows)
+    //    QueryResult(rows)
+    //    QueryResult(rows.map(r => r.map {
+    //      case a => a.toString
+    //    }.toList).toList)
   }
 
   def getFrame(id: Identifier): Future[Option[DataFrame]] =

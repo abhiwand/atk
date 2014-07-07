@@ -130,4 +130,22 @@ trait CommandPlugin[Argument, Return] extends OperationPlugin[Argument, Return] 
  */
 trait QueryPlugin[Argument, Return] extends OperationPlugin[Argument, Return] {
 
+  //TODO: move this override to an engine-specific class
+  final override def defaultLocation = "engine/queries/" + name
+
+  /**
+   * Convert the given JsObject to an instance of the Argument type
+   */
+  def parseArguments(arguments: JsObject): Argument
+
+  /**
+   * Convert the given argument to a JsObject
+   */
+  def serializeArguments(arguments: Argument): JsObject
+
+  /**
+   * Convert the given object to a JsObject
+   */
+  def serializeReturn(returnValue: Return): JsObject
+
 }

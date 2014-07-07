@@ -23,7 +23,7 @@
 package com.intel.intelanalytics.service.v1.decorators
 
 import com.intel.intelanalytics.domain.query.Query
-import com.intel.intelanalytics.service.v1.viewmodels.{GetQueries, GetQuery, RelLink}
+import com.intel.intelanalytics.service.v1.viewmodels.{ GetQueries, GetQuery, RelLink }
 
 /**
  * A decorator that takes an entity from the database and converts it to a View/Model
