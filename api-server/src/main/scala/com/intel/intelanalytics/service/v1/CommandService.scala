@@ -110,8 +110,6 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
                     }
                   } ~
                     post {
-                      implicit val frameReferenceFormat = new FrameReferenceFormat(
-                        uri.toString().dropRight("/commands".length))
                       entity(as[JsonTransform]) {
                         xform =>
                           try {
@@ -121,12 +119,6 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
                           catch {
                             case e: IllegalArgumentException => {
                               //TODO: this will be the only execution path, soon.
-                              //TODO: validate the arguments. To do this requires some kind of sharing
-                              //between the api server and the engine to determine what contracts to use.
-                              //TODO: standardize URI handling such that the API server strips out
-                              //the https://site.com/ part and leaves the engine with only an application-specific,
-                              //non-transport-related URI. This should be automatic and not something that
-                              //every command handler has to call.
                               val template = CommandTemplate(name = xform.name, arguments = xform.arguments)
                               info(s"Received command template for execution: $template")
                               try {
@@ -194,14 +186,14 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
   def runFrameLoad(uri: Uri, xform: JsonTransform)(implicit user: UserPrincipal) = {
     val test = Try {
       import DomainJsonProtocol._
-      xform.arguments.get.convertTo[Load[String]]
+      xform.arguments.get.convertTo[Load]
     }
-    val idOpt = test.toOption.flatMap(args => UrlParser.getFrameId(args.destination))
+    val idOpt = test.toOption.map(args => args.destination.id)
     (validate(test.isSuccess, "Failed to parse file load descriptor: " + getErrorMessage(test))
       & validate(idOpt.isDefined, "Destination is not a valid data frame URL")) {
         val args = test.get
         val id = idOpt.get
-        val exec = engine.load(Load[Long](id, args.source.source_type match {
+        val exec = engine.load(Load(FrameReference(id), args.source.source_type match {
           case "dataframe" => {
             val dataID = UrlParser.getFrameId(args.source.uri)
             validate(dataID.isDefined, "Source is not a valid data frame URL")

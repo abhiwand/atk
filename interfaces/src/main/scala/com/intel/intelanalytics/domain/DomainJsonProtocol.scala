@@ -79,27 +79,45 @@ object DomainJsonProtocol extends DefaultJsonProtocol {
     }
   }
 
-  class ReferenceFormat[T <: HasId](urlPattern: Regex, collection: String, name: String, factory: Long => T)
+  /**
+   * Holds a regular expression, plus the group number we care about in case
+   * the pattern is a match
+   */
+  case class PatternIndex(pattern: Regex, groupNumber: Int) {
+    def findMatch(text: String): Option[String] = {
+      val result = pattern.findFirstMatchIn(text)
+        .map(m => m.group(groupNumber))
+        .flatMap(s => if (s == null) None else Some(s))
+      result
+    }
+  }
+
+  class ReferenceFormat[T <: HasId](patterns: Seq[PatternIndex], collection: String, name: String, factory: Long => T)
       extends JsonFormat[T] {
 
     override def write(obj: T): JsValue = JsString(s"ia://$collection/${obj.id}")
 
     override def read(json: JsValue): T = json match {
       case JsString(name) =>
-        urlPattern.findFirstMatchIn(json.asInstanceOf[JsString].value) match {
-          case Some(mat) => factory(mat.group(1).toLong)
-          case None => deserializationError(s"Couldn't find $collection ID in " + name)
-        }
+        val id = patterns.flatMap(p => p.findMatch(name))
+          .headOption
+          .map(s => s.toLong)
+          .getOrElse(deserializationError(s"Couldn't find $collection ID in " + name))
+        factory(id)
       case JsNumber(n) => factory(n.toLong)
       case _ => deserializationError(s"Expected $name URL, but received " + json)
     }
   }
 
-  implicit val frameReferenceFormat = new ReferenceFormat[FrameReference]("""ia://dataframes/(\d+)""".r,
+  implicit val frameReferenceFormat = new ReferenceFormat[FrameReference](
+    List(PatternIndex("""ia://dataframes/(\d+)""".r, 1),
+      PatternIndex("""https?://.+/dataframes/(\d+)""".r, 1)),
     "dataframes", "data frame",
     n => FrameReference(n))
 
-  implicit val graphReferenceFormat = new ReferenceFormat[GraphReference]("""ia://graphs/(\d+)""".r,
+  implicit val graphReferenceFormat = new ReferenceFormat[GraphReference](
+    List(PatternIndex("""ia://graphs/(\d+)""".r, 1),
+      PatternIndex("""https?://.+/graphs/(\d+)""".r, 1)),
     "graphs", "graph",
     n => GraphReference(n))
 
@@ -116,8 +134,7 @@ object DomainJsonProtocol extends DefaultJsonProtocol {
   implicit val loadSourceParserArgumentsFormat = jsonFormat3(LineParserArguments)
   implicit val loadSourceParserFormat = jsonFormat2(LineParser)
   implicit val loadSourceFormat = jsonFormat3(LoadSource)
-  implicit val loadFormat = jsonFormat2(Load[String])
-  implicit val loadLongFormat = jsonFormat2(Load[Long])
+  implicit val loadFormat = jsonFormat2(Load)
   implicit val filterPredicateFormat = jsonFormat2(FilterPredicate[JsObject, String])
   implicit val filterPredicateLongFormat = jsonFormat2(FilterPredicate[JsObject, Long])
   implicit val removeColumnFormat = jsonFormat2(FrameRemoveColumn)
