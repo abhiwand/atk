@@ -358,8 +358,10 @@ class FrameBackendRest(object):
         return execute_update_frame_command('rename_frame', arguments, frame)
 
     def take(self, frame, n, offset):
-        r = self.rest_http.get('dataframes/{0}/data?offset={2}&count={1}'.format(frame._id,n, offset))
-        return r.json()
+        url = 'dataframes/{0}/data?offset={2}&count={1}'.format(frame._id,n, offset)
+        print(url)
+        return executor.query(url).result['data']
+
 
 
 class FrameInfo(object):
