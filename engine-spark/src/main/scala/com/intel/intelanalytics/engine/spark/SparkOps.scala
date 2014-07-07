@@ -36,6 +36,7 @@ import scala.collection.mutable
 import scala.Some
 import com.intel.intelanalytics.engine.spark.frame.RDDJoinParam
 import com.intel.intelanalytics.domain.frame.LoadLines
+import com.intel.intelanalytics.algorithm.PercentileElement
 
 //implicit conversion for PairRDD
 import org.apache.spark.SparkContext._
@@ -434,6 +435,33 @@ private[spark] object SparkOps extends Serializable {
       firstEntry
     })
     duplicatesRemoved
+  }
+
+  /**
+   * calculate and return elements for calculating percentile
+   * For examle, 25th percentile out of 10 rows(x1, x2, x3, ... x10) will be
+   * 0.5 * x2 + 0.5 * x3. The method will return x2 and x3 with weight as 0.5
+   * @param totalRows
+   * @param percentile
+   */
+  def getPercentileComposingElements(totalRows: Long, percentile: Int): Seq[PercentileElement] = {
+    val position = percentile.toDouble * totalRows.toDouble / 100
+    var integer = position.toInt
+    val decimal = BigDecimal(position - integer).setScale(2, BigDecimal.RoundingMode.DOWN).toFloat
+
+    val result = mutable.ListBuffer[PercentileElement]()
+
+    //element starts from 1. therefore x0 equals x1
+    if(integer == 0)
+      integer = 1
+
+    if((1 - decimal) > 0)
+      result += PercentileElement(integer, 1 - decimal)
+
+    if(decimal > 0)
+      result += PercentileElement(integer + 1, decimal)
+
+    result.toSeq
   }
 
 }
