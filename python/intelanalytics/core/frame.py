@@ -908,29 +908,23 @@ class BigFrame(object):
         except:
             raise IaError(logger)
 
-    def ks2_test(self, sample_one_col, sample_two_col):
+    def ecdf(self, sample_col):
         """
-        Computes a two-sample KS test.
-
-        Notes
-        -----
-        The distribution from which the samples are drawn is assumed to be continuous.
+        Generates the empirical cumulative distribution for the input column
 
         Parameters
         ----------
-        sample_one_col : str
-            the name of the column containing sample one
-        sample_two_col : str
-            the name of the column containing sample two
+        sample_col : str
+            the name of the column containing sample
 
         Returns
         --------
-        float64
-            test result of the KS two-sample test
+        list
+            list of tuples containing each distinct value in the sample and its corresponding ecdf value
 
         Examples
         --------
-        >>> frame.ks2_test('sample_one', 'sample_two')
+        >>> ecdf_frame = frame.ecdf('sample')
 
         """
-        return self._backend.ks2_test(self, sample_one_col, sample_two_col)
+        return self._backend.ecdf(self, sample_col)

@@ -331,38 +331,44 @@ private[spark] object SparkOps extends Serializable {
     rdd.map(row => row :+ (binMap.get(java.lang.Double.parseDouble(row(index).toString)).get - 1).asInstanceOf[Any])
   }
 
-  def ks2Test(frameRdd: RDD[Row], sampleOneIndex: Int, sampleTwoIndex: Int): Double = {
+  /**
+   * Generate the empirical cumulative distribution for an input dataframe column
+   *
+   * @param frameRdd rdd for a BigFrame
+   * @param sampleIndex index of the column containing the sample data
+   * @return a new RDD of tuples containing each distinct sample value and its ecdf value
+   */
+  def ecdf(frameRdd: RDD[Row], sampleIndex: Int): RDD[Row] = {
+    // parse values
+    val pairedRdd = try {
+      frameRdd.map(row => (java.lang.Double.parseDouble(row(sampleIndex).toString), java.lang.Double.parseDouble(row(sampleIndex).toString)))
+    }
+    catch {
+      case cce: NumberFormatException => throw new NumberFormatException("Non-numeric column: " + cce.toString)
+    }
+
+    // get sample size
+    val n = pairedRdd.count()
+
     // group identical values together
-    val groupedOneRdd = frameRdd.map(row => (row(sampleOneIndex), row(sampleOneIndex))).groupByKey()
-    val groupedTwoRdd = frameRdd.map(row => (row(sampleTwoIndex), row(sampleTwoIndex))).groupByKey()
+    val groupedRdd = pairedRdd.groupByKey()
 
     // count number of each distinct value and sort by distinct value
-    val sortedOneRdd = groupedOneRdd.map(pair => (pair._1, pair._2.size)).sortByKey()
-    val sortedTwoRdd = groupedTwoRdd.map(pair => (pair._1, pair._2.size)).sortByKey()
+    val sortedRdd = groupedRdd.map(pair => (pair._1, pair._2.size)).sortByKey()
 
-    // compute the cumulative sums
-    val sumsOne = 0 +: sortedOneRdd.mapPartitionsWithIndex{
-      case(index, partition) => Iterator(partition.map(pair => pair._1).sum)
+    // compute the partition sums
+    val partSums = 0 +: sortedRdd.mapPartitionsWithIndex {
+      case (index, partition) => Iterator(partition.map(pair => pair._2).sum)
     }.collect()
 
-    val sumsTwo = 0 +: sortedTwoRdd.mapPartitionsWithIndex{
-      case(index, partition) => Iterator(partition.map(pair => pair._1).sum)
-    }.collect()
-
-    val cumSumOne = sortedOneRdd.mapPartitionsWithIndex{
-      case(index, partition) =>
-        val startValue = sumsOne(index)
-        partition.scanLeft(startValue)(_+_).drop(1)
-    }.collect()
-
-    val cumSumTwo = sortedTwoRdd.mapPartitionsWithIndex{
-      case(index, partition) =>
-        val startValue = sumsTwo(index)
-        partition.scanLeft(startValue)(_+_).drop(1)
-    }.collect()
-
-    // TODO: finish implementing ecdf
-
+    // compute empirical cumulative distribution
+    sortedRdd.mapPartitionsWithIndex {
+      case (index, partition) => {
+        var startValue = 0
+        for { i <- 0 to index } startValue += partSums(i)
+        partition.scanLeft((0.0, startValue))((prev, curr) => (curr._1, prev._2 + curr._2)).drop(1)
+      }
+    }.map(x => Array(x._1.asInstanceOf[Any], (x._2 / n.toDouble).asInstanceOf[Any]))
   }
 
   def aggregation_functions(elem: Seq[Array[Any]],

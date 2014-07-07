@@ -102,8 +102,7 @@ object DomainJsonProtocol extends DefaultJsonProtocol {
 
   // model performance formats
 
-  implicit val ks2TestLongFormat = jsonFormat3(KS2Test[Long])
-  implicit val ks2TestResultFormat = jsonFormat1(KS2TestResult)
+  implicit val ecdfLongFormat = jsonFormat3(ECDF[Long])
 
   // graph service formats
 
