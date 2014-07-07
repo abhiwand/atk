@@ -305,7 +305,7 @@ There are also a bunch of built-in reducers:  count, sum, avg, stdev, etc.
        column : str, list of string
            The name(s) of the column(s) to be grouped by
        aggregation : row aggregator, dict of cell aggregators, or list of row aggregator and dict of cell aggregators
-           The aggregation functions (reducers) to apply to each group.  ByRow aggregators
+           The :term:`aggregation functions` (reducers) to apply to each group.  ByRow aggregators
            use the entire row, reducing all the columns in a group (all columns) to a single value
            `count` is the only supported ByRow aggregator.
            ByCell aggregators just use a specific cell, reducing a column in a group to a single value
