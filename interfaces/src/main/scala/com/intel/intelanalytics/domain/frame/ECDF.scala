@@ -23,10 +23,8 @@
 
 package com.intel.intelanalytics.domain.frame
 
-case class KS2Test[FrameRef](frameId: FrameRef, sampleOneCol: String, sampleTwoCol: String) {
-  require(frame != null, "frame is required")
-  require(sampleOneCol != null, "column name for sample one is required")
-  require(sampleTwoCol != null, "column name for sample two is required")
+case class ECDF[FrameRef](name: String, frameId: FrameRef, sampleCol: String) {
+  require(name != null, "new frame name is required")
+  require(frameId != null, "frame is required")
+  require(sampleCol != null, "column name for sample is required")
 }
-
-case class KS2TestResult(testResult: Double)

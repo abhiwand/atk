@@ -712,27 +712,30 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     realFrame
   }
 
-  override def ks2Test(arguments: KS2Test[Long])(implicit user: UserPrincipal): Execution =
-    commands.execute(ks2TestCommand, arguments, user, implicitly[ExecutionContext])
+  override def ecdf(arguments: ECDF[Long])(implicit user: UserPrincipal): Execution =
+    commands.execute(ecdfCommand, arguments, user, implicitly[ExecutionContext])
 
-  val ks2TestCommand: CommandPlugin[KS2Test[Long], KS2TestResult] = commands.registerCommand("dataframe/ks2Test", ks2TestSimple)
+  val ecdfCommand = commands.registerCommand("dataframe/ecdf", ecdfSimple)
 
-  def ks2TestSimple(arguments: KS2Test[Long], user: UserPrincipal): KS2TestResult = {
+  def ecdfSimple(arguments: ECDF[Long], user: UserPrincipal) = {
     implicit val u = user
     val frameId: Long = arguments.frameId
-    val realFrame: DataFrame = getDataFrameById(frameId)
+    val realFrame = expectFrame(frameId)
 
     val ctx = sparkContextManager.context(user).sparkContext
 
-    val frameSchema = realFrame.schema
-    val frameRdd = frames.getFrameRdd(ctx, frameId)
+    val rdd = frames.getFrameRdd(ctx, frameId)
 
-    val sampleOneIndex = frameSchema.columnIndex(arguments.sampleOneCol)
-    val sampleTwoIndex = frameSchema.columnIndex(arguments.sampleTwoCol)
+    val sampleIndex = realFrame.schema.columnIndex(arguments.sampleCol)
 
-    val testResult = SparkOps.ks2Test(frameRdd, sampleOneIndex, sampleTwoIndex)
+    val newFrame = Await.result(create(DataFrameTemplate(arguments.name, None)), SparkEngineConfig.defaultTimeout)
 
-    KS2TestValue(testResult)
+    val ecdfRdd = SparkOps.ecdf(rdd, sampleIndex)
+    ecdfRdd.saveAsObjectFile(fsRoot + frames.getFrameDataFile(newFrame.id))
+
+    val allColumns = List((arguments.sampleCol, DataTypes.float64), (arguments.sampleCol + "ECDF", DataTypes.float64))
+    frames.updateSchema(newFrame, allColumns)
+    newFrame.copy(schema = Schema(allColumns))
   }
 
   /**
