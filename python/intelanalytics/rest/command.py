@@ -207,6 +207,7 @@ class Polling(object):
 
                 if last_progress == progress and interval_secs < max_interval_secs:
                     interval_secs = min(max_interval_secs, interval_secs * backoff_factor)
+
                 last_progress = progress
         end_time = time.time()
         logger.info("polling %s completed after %0.2f seconds" % (uri, end_time - start_time))
@@ -283,7 +284,7 @@ class Executor(object):
         # For now, we just poll until the command completes
         try:
             if not command_info.complete:
-                command_info = Polling.poll(command_info.uri)
+                command_info = Polling.poll(command_info.uri, max_interval_secs=30, backoff_factor=1.1)
                 # Polling.print_progress(command_info.progress)
 
         except KeyboardInterrupt:
