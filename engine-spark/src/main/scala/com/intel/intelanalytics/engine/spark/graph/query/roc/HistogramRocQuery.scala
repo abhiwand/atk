@@ -1,18 +1,17 @@
 package com.intel.intelanalytics.engine.spark.graph.query.roc
 
-import com.intel.graphbuilder.util.SerializableBaseConfiguration
-import com.intel.graphbuilder.driver.spark.titan.reader.TitanReader
 import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRDDImplicits._
-import com.intel.graphbuilder.driver.spark.titan.examples.ExamplesUtils
+import com.intel.graphbuilder.driver.spark.titan.reader.TitanReader
 import com.intel.graphbuilder.graph.titan.TitanGraphConnector
-import com.intel.intelanalytics.engine.spark.plugin.{ SparkInvocation, SparkCommandPlugin }
+import com.intel.graphbuilder.util.SerializableBaseConfiguration
+import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
 import com.intel.intelanalytics.security.UserPrincipal
-import org.apache.spark.{ SparkConf, SparkContext }
+import com.typesafe.config.Config
 import org.apache.spark.storage.StorageLevel
-import scala.concurrent.ExecutionContext
-import java.util.Date
-import spray.json._
 import spray.json.DefaultJsonProtocol._
+import spray.json._
+import scala.collection.JavaConverters._
+import scala.concurrent._
 
 /**
  * Get histogram and optionally ROC curve on property values
@@ -51,7 +50,7 @@ case class HistogramRocParams(graph: Int,
                               rocThreshold: Option[List[Double]] = Some(List(0, 0.05, 1)),
                               propertyType: Option[String] = Some("VERTEX_PROPERTY"),
                               vertexTypeKey: Option[String] = Some("vertex_type"),
-                              splitTypes: Option[List[String]] = Some(List("[TR]", "[VA]", "[TE]")),
+                              splitTypes: Option[List[String]] = Some(List("TR", "VA", "TE")),
                               numBuckets: Option[Int] = Some(30)) {
   require(rocThreshold.get.size == 3)
 }
@@ -74,49 +73,29 @@ class HistogramRocQuery extends SparkCommandPlugin[HistogramRocParams, Histogram
   implicit val histogramRocResultFormat = jsonFormat3(HistogramRocResult)
 
   override def execute(invocation: SparkInvocation, arguments: HistogramRocParams)(implicit user: UserPrincipal, executionContext: ExecutionContext): HistogramRocResult = {
-    //val graphFuture = invocation.engine.getGraph(arguments.graph.toLong) */
-    //object HistogramRocQuery {
-    //def main(args: Array[String]) {
-
-    val queryArgs = HistogramRocParams(1, "lbp_prior", Some("lbp_posterior"), enableRoc = Some(true))
-    val priorPropertyName = queryArgs.priorPropertyName
-    val posteriorPropertyName = queryArgs.posteriorPropertyName
-    val rocParams = RocParams(queryArgs.rocThreshold.getOrElse(List(0, 0.05, 1)))
+    // TODO: Integrate with Joyesh
+    //val graphFuture = invocation.engine.getGraph(arguments.graph.toLong)
+    //val graph = Await.result(graphFuture, config.getInt("default-timeout") seconds)
+    val config: Config = configuration().get
+    val priorPropertyName = arguments.priorPropertyName
+    val posteriorPropertyName = arguments.posteriorPropertyName
+    val rocParams = RocParams(arguments.rocThreshold.getOrElse(List(0, 0.05, 1)))
 
     // Specifying variable type due to Scala bug
-    val enableRoc: Boolean = queryArgs.enableRoc.getOrElse(false)
-    val propertyType: Option[String] = queryArgs.propertyType
-    val vertexTypeKey: Option[String] = queryArgs.vertexTypeKey
-    val splitTypes: Option[List[String]] = queryArgs.splitTypes
-    val numBuckets: Int = queryArgs.numBuckets.getOrElse(30)
+    val enableRoc: Boolean = arguments.enableRoc.getOrElse(false)
+    val propertyType: Option[String] = arguments.propertyType
+    val vertexTypeKey: Option[String] = arguments.vertexTypeKey
+    val splitTypes: Option[List[String]] = arguments.splitTypes
+    val numBuckets: Int = arguments.numBuckets.getOrElse(30)
 
     // Create graph connection
-    val tableName = "lbp_test"
-    val hBaseZookeeperQuorum = "10.10.68.157"
+    val titanConfiguration = new SerializableBaseConfiguration()
+    val titanLoadConfig = config.getConfig("intel.analytics.engine.graphs.query.histogram_roc")
+    for (entry <- titanLoadConfig.entrySet().asScala) {
+      titanConfiguration.addProperty(entry.getKey, titanLoadConfig.getString(entry.getKey))
+    }
 
-    val titanConfig = new SerializableBaseConfiguration()
-    titanConfig.setProperty("storage.backend", "hbase")
-    titanConfig.setProperty("storage.hostname", hBaseZookeeperQuorum)
-    titanConfig.setProperty("storage.tablename", tableName)
-
-    val titanConnector = new TitanGraphConnector(titanConfig)
-
-    // Read graph
-    /*val conf = new SparkConf()
-      //.setMaster("spark://gao-ws9.hf.intel.com:7077")
-      .setMaster("local")
-      .setAppName(this.getClass.getSimpleName + " " + new Date())
-      .setSparkHome(ExamplesUtils.sparkHome)
-      .setJars(List(ExamplesUtils.gbJar))
-
-    conf.set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
-    conf.set("spark.kryo.registrator", "com.intel.graphbuilder.driver.spark.titan.GraphBuilderKryoRegistrator")
-    conf.set("spark.kryoserializer.buffer.mb", "32")
-    conf.set("spark.executor.memory", "4g")
-    conf.set("spark.cores.max", "10")
-
-    val sc = new SparkContext(conf)
-      */
+    val titanConnector = new TitanGraphConnector(titanConfiguration)
     val sc = invocation.sparkContext
     val titanReader = new TitanReader(sc, titanConnector)
     val titanReaderRDD = titanReader.read()
@@ -141,7 +120,6 @@ class HistogramRocQuery extends SparkCommandPlugin[HistogramRocParams, Histogram
 
     // Compute histograms
     val priorHistograms = FeatureVector.getHistograms(filteredFeatureRDD, false, numBuckets)
-
     val posteriorHistograms = if (posteriorPropertyName != None) {
       Some(FeatureVector.getHistograms(filteredFeatureRDD, true, numBuckets))
     }
