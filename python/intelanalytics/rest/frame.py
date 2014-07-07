@@ -56,10 +56,10 @@ class FrameBackendRest(object):
         return [f['name'] for f in payload]
 
     def get_frame(self, name):
-        """Retrieves the named BigFrame object"""
-        logger.info("REST Backend: get_frame:",name)
-        r=self.rest_http.get(name)
-
+        logger.info("REST Backend: get_frame")
+        r = self.rest_http.get('dataframes?name='+name)
+        payload = r.json()
+        return json.dumps(payload, indent=2)
 
         #raise NotImplemented  # TODO - implement get_frame
 
@@ -338,8 +338,16 @@ class FrameBackendRest(object):
         return execute_update_frame_command('rename_column', arguments, frame)
 
     def rename_frame(self, frame, name):
-        arguments = {'frame': frame.uri, "new_name": name}
-        return execute_update_frame_command('rename_frame', arguments, frame)
+        r= self.rest_http.get('dataframes')
+        payload = r.json()
+        frame_names = [f['name'] for f in payload]
+        for i in frame_names:
+            if name==i:
+                raise ValueError("A frame with this name already exists. Rename failed")
+
+            else:
+                arguments = {'frame': frame.uri, "new_name": name}
+                return execute_update_frame_command('rename_frame', arguments, frame)
 
     def take(self, frame, n, offset):
         r = self.rest_http.get('dataframes/{0}/data?offset={2}&count={1}'.format(frame._id,n, offset))

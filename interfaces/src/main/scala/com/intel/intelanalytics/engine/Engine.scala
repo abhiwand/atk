@@ -61,7 +61,7 @@ trait Engine {
 
   def getCommand(id: Identifier): Future[Option[Command]]
 
-  def getFrame(id: Identifier): Future[Option[DataFrame]]
+  def getFrame(id: Identifier)(implicit user: UserPrincipal): Future[Option[DataFrame]]
 
   def getRows(id: Identifier, offset: Long, count: Int)(implicit user: UserPrincipal): Future[Iterable[Row]]
 
@@ -96,6 +96,8 @@ trait Engine {
   def groupBy(arguments: FrameGroupByColumn[JsObject, Long])(implicit user: UserPrincipal): Execution
 
   def getFrames(offset: Int, count: Int)(implicit p: UserPrincipal): Future[Seq[DataFrame]]
+
+  def getFrameByName(name: String)(implicit p: UserPrincipal): Future[Option[DataFrame]]
 
   def shutdown(): Unit
 
