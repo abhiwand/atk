@@ -36,7 +36,8 @@ import scala.collection.mutable
 import scala.Some
 import com.intel.intelanalytics.engine.spark.frame.RDDJoinParam
 import com.intel.intelanalytics.domain.frame.LoadLines
-import com.intel.intelanalytics.algorithm.PercentileElement
+import com.intel.intelanalytics.algorithm.{PercentileTarget, PercentileElement}
+import scala.collection.mutable.ListBuffer
 
 //implicit conversion for PairRDD
 import org.apache.spark.SparkContext._
@@ -462,6 +463,30 @@ private[spark] object SparkOps extends Serializable {
       result += PercentileElement(integer + 1, decimal)
 
     result.toSeq
+  }
+
+
+  /**
+   * Calculate mapping between an element's position and Seq of percentile that the element can contribute to
+   * @param totalRows total number of rows in the data
+   * @param percentiles Sequence of percentiles to search
+   */
+  def getPercentileTargetMapping(totalRows: Long, percentiles: Seq[Int]): Map[Long, Seq[PercentileTarget]] = {
+
+    val mapping = percentiles.flatMap(percentile => getPercentileComposingElements(totalRows, percentile).map(element => {
+      val elementIndex: Int = element.index
+      (elementIndex, PercentileTarget(percentile, element.weight))
+    })).
+    foldLeft(mutable.Map[Long, ListBuffer[PercentileTarget]]())((mapping, element) => {
+      val elementPosition: Long = element._1
+      if(!mapping.contains(elementPosition))
+        mapping(elementPosition) = ListBuffer[PercentileTarget]()
+
+      mapping(elementPosition) += element._2
+      mapping
+    })
+
+    mapping.map(i => (i._1, i._2.toSeq)).toMap
   }
 
 }
