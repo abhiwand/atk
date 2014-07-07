@@ -24,7 +24,11 @@
 package com.intel.intelanalytics.domain
 
 import com.intel.intelanalytics.domain.frame.load.{ Load, LineParser, LoadSource, LineParserArguments }
+<<<<<<< HEAD
 import com.intel.intelanalytics.domain.query.{ QueryResult, TableQuery }
+=======
+import com.intel.intelanalytics.domain.query.{ RowQuery, RowQueryResult }
+>>>>>>> TRIB-2992
 import com.intel.intelanalytics.domain.schema.{ Schema, DataTypes }
 import DataTypes.DataType
 import spray.json._
@@ -105,6 +109,9 @@ object DomainJsonProtocol extends DefaultJsonProtocol {
   implicit val dropDuplicatesFormat = jsonFormat2(DropDuplicates)
   implicit val progressInfoFormat = jsonFormat2(ProgressInfo)
   implicit val binColumnLongFormat = jsonFormat6(BinColumn[Long])
+
+  implicit val rowQueryFormat = jsonFormat3(RowQuery[Long])
+  implicit val rowQueryResultFormat = jsonFormat1(RowQueryResult)
 
   // graph service formats
 
