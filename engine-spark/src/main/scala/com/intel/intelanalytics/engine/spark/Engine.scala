@@ -262,6 +262,58 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     frames.updateSchema(projectedFrame, projectedColumns.toList)
   }
 
+  def splitData(arguments: SplitData[JsObject, Long])(implicit user: UserPrincipal): Execution =
+    commands.execute(splitDataCommand, arguments, user, implicitly[ExecutionContext])
+
+  val splitDataCommand = commands.registerCommand("dataframe/splitData", splitDataSimple)
+  def splitDataSimple(arguments: SplitData[JsObject, Long], user: UserPrincipal) = {
+
+    val ctx = sparkContextManager.context(user).sparkContext
+
+    val sourceFrameID = arguments.source_frame
+    val sourceFrame = expectFrame(sourceFrameID)
+
+    val trainingFrameID = arguments.training_frame
+    val trainingFrame = expectFrame(trainingFrameID)
+
+    val testFrameID = arguments.test_frame
+    val testFrame = expectFrame(testFrameID)
+
+    val validationFrameID = arguments.validation_frame
+    val validationFrame = expectFrame(validationFrameID)
+
+    // nls TODO
+    // replace with an actual call to the data splitter
+
+    /*
+    val schema = sourceFrame.schema
+    val location = fsRoot + frames.getFrameDataFile(projectedFrameID)
+
+    val columnIndices = for {
+      col <- columns
+      columnIndex = schema.columns.indexWhere(columnTuple => columnTuple._1 == col)
+    } yield columnIndex
+
+    if (columnIndices.contains(-1)) {
+      throw new IllegalArgumentException(s"Invalid list of columns: ${arguments.columns.toString()}")
+    }
+
+    frames.getFrameRdd(ctx, sourceFrameID)
+      .map(row => {
+        for { i <- columnIndices } yield row(i)
+      }.toArray)
+      .saveAsObjectFile(location)
+
+    val projectedColumns = arguments.new_column_names match {
+      case empty if empty.size == 0 => for { i <- columnIndices } yield schema.columns(i)
+      case _ =>
+        for { i <- 0 until columnIndices.size }
+          yield (arguments.new_column_names(i), schema.columns(columnIndices(i))._2)
+    }
+    frames.updateSchema(projectedFrame, projectedColumns.toList)
+    */
+  }
+
   def groupBy(arguments: FrameGroupByColumn[JsObject, Long])(implicit user: UserPrincipal): Execution =
     commands.execute(groupByCommand, arguments, user, implicitly[ExecutionContext])
 
