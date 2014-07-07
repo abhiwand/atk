@@ -30,6 +30,11 @@ import com.intel.intelanalytics.domain.graph.GraphReference
 import com.intel.intelanalytics.schema._
 import org.joda.time.DateTime
 import spray.json.{ AdditionalFormats, StandardFormats, ProductFormats }
+import scala.reflect.api.JavaUniverse
+import scala.reflect.runtime.{ universe => ru }
+import ru.typeTag
+
+import scala.reflect.ClassTag
 
 private[intelanalytics] class ProductFormatsAccessor extends ProductFormats
     with StandardFormats
@@ -42,50 +47,47 @@ object JsonSchemaExtractor {
 
   val fieldHelper = new ProductFormatsAccessor()
 
-  def getProductSchema[T](manifest: ClassManifest[T]): ObjectSchema = {
+  def getProductSchema[T](tag: ClassTag[T]): ObjectSchema = {
+    val manifest: ClassManifest[T] = tag
     val names = fieldHelper.extractFieldNames(manifest)
-    val get = getFieldSchema(manifest)(_)
-    val properties = names.map(n => n -> get(n)).toMap
+    val mirror = ru.runtimeMirror(tag.runtimeClass.getClassLoader)
+    val typ: ru.Type = mirror.classSymbol(tag.runtimeClass).toType
+    val members = typ.members.filter(m => !m.isMethod)
+    val func = getFieldSchema(typ)(_)
+    val properties = members.map(n => n.name.decoded -> func(n)).toMap
     ObjectSchema(properties = Some(properties))
   }
 
-  def getFieldSchema(manifest: ClassManifest[_])(propertyName: String): JsonSchema = {
-    val theClass = manifest.erasure
-    val field = try {
-      theClass.getDeclaredField(propertyName)
-    }
-    catch {
-      case e: NoSuchFieldException =>
-        throw new NoSuchFieldException(s"Class ${manifest.erasure} has no field $propertyName")
-    }
-
-    assert(field != null, s"Field $propertyName not found on ${theClass.getName}")
-    val schema = field.getType match {
-      case t if t == classOf[URI] => StringSchema(format = Some("uri"))
-      case t if t == classOf[String] => StringSchema()
-      case t if t == classOf[Int] => NumberSchema(maximum = Some(Int.MaxValue),
+  def getFieldSchema(clazz: ru.Type)(symbol: ru.Symbol): JsonSchema = {
+    val typeSignature: ru.Type = symbol.typeSignatureIn(clazz)
+    val schema = typeSignature match {
+      case t if t =:= typeTag[URI].tpe => StringSchema(format = Some("uri"))
+      case t if t =:= typeTag[String].tpe => StringSchema()
+      case t if t =:= typeTag[Int].tpe => NumberSchema(maximum = Some(Int.MaxValue),
         minimum = Some(Int.MinValue))
-      case t if t == classOf[Long] => NumberSchema(maximum = Some(Long.MaxValue),
+      case t if t =:= typeTag[Long].tpe => NumberSchema(maximum = Some(Long.MaxValue),
         minimum = Some(Long.MinValue))
-      case t if t == classOf[DateTime] => StringSchema(format = Some("date-time"))
-      case t if t == classOf[FrameReference] =>
+      case t if t =:= typeTag[DateTime].tpe => StringSchema(format = Some("date-time"))
+      case t if t =:= typeTag[FrameReference].tpe =>
         val s = StringSchema(format = Some("uri/iat-frame"))
-        if (propertyName.toLowerCase == "frame"
-          || propertyName.toLowerCase == "dataframe") {
+        val name = symbol.name.decoded.toLowerCase
+        if (name == "frame" || name.toLowerCase == "dataframe") {
           s.copy(self = Some(true))
         }
         else s
-      case t if t == classOf[GraphReference] =>
+      case t if t =:= typeTag[GraphReference].tpe =>
         val s = StringSchema(format = Some("uri/iat-graph"))
-        if (propertyName.toLowerCase == "graph") {
+        val name = symbol.name.decoded.toLowerCase
+        if (name == "graph") {
           s.copy(self = Some(true))
         }
         else s
-      case t if classOf[Map[_, _]].isAssignableFrom(t) => ObjectSchema()
-      case t if classOf[Seq[_]].isAssignableFrom(t) => ArraySchema()
-      case t if classOf[Iterable[_]].isAssignableFrom(t) => ArraySchema()
-      case t if classOf[List[_]].isAssignableFrom(t) => ArraySchema()
-      case t if classOf[Array[_]].isAssignableFrom(t) => ArraySchema()
+      case t if t.erasure =:= typeTag[Option[Any]].tpe => JsonSchema.empty
+      case t if t.erasure =:= typeTag[Map[Any, Any]].tpe => ObjectSchema()
+      case t if t.erasure =:= typeTag[Seq[Any]].tpe => ArraySchema()
+      case t if t.erasure =:= typeTag[Iterable[Any]].tpe => ArraySchema()
+      case t if t.erasure =:= typeTag[List[Any]].tpe => ArraySchema()
+      case t if t.erasure =:= typeTag[Array[Any]].tpe => ArraySchema()
       case t => JsonSchema.empty
     }
     schema
