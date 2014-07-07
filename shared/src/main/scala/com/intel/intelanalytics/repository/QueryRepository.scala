@@ -1,6 +1,6 @@
 package com.intel.intelanalytics.repository
 
-import com.intel.intelanalytics.domain.query.{QueryTemplate, Query}
+import com.intel.intelanalytics.domain.query.{ QueryTemplate, Query }
 import scala.util.Try
 
 /**

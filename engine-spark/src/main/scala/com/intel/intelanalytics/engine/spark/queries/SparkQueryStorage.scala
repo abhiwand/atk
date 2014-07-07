@@ -23,13 +23,13 @@
 
 package com.intel.intelanalytics.engine.spark.queries
 
-import com.intel.intelanalytics.domain.query.{Query, QueryTemplate}
-import com.intel.intelanalytics.engine.{QueryStorage}
+import com.intel.intelanalytics.domain.query.{ Query, QueryTemplate }
+import com.intel.intelanalytics.engine.{ QueryStorage }
 import com.intel.intelanalytics.repository.SlickMetaStoreComponent
 import com.intel.intelanalytics.shared.EventLogging
 import spray.json.JsObject
 
-import scala.util.{Failure, Success, Try}
+import scala.util.{ Failure, Success, Try }
 
 class SparkQueryStorage(val metaStore: SlickMetaStoreComponent#SlickMetaStore) extends QueryStorage with EventLogging {
   val repo = metaStore.queryRepo

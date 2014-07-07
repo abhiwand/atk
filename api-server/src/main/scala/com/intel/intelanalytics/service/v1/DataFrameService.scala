@@ -24,6 +24,7 @@
 package com.intel.intelanalytics.service.v1
 
 import com.intel.intelanalytics.domain._
+import com.intel.intelanalytics.domain.query.TableQuery
 import spray.json._
 import spray.http.Uri
 import scala.Some
@@ -35,12 +36,11 @@ import scala.util._
 import com.intel.intelanalytics.service.v1.viewmodels.GetDataFrame
 import com.intel.intelanalytics.shared.EventLogging
 import com.intel.intelanalytics.security.UserPrincipal
-import com.intel.intelanalytics.domain.frame.DataFrameTemplate
-import com.intel.intelanalytics.domain.frame.DataFrame
+import com.intel.intelanalytics.domain.frame.{ DataFrameTemplate, DataFrame }
 import com.intel.intelanalytics.domain.DomainJsonProtocol.DataTypeFormat
 import com.intel.intelanalytics.service.{ ApiServiceConfig, CommonDirectives, AuthenticationDirective }
 import spray.routing.Directives
-import com.intel.intelanalytics.service.v1.decorators.FrameDecorator
+import com.intel.intelanalytics.service.v1.decorators.{ QueryDecorator, FrameDecorator }
 
 //TODO: Is this right execution context for us?
 import ExecutionContext.Implicits.global
@@ -116,18 +116,10 @@ class DataFrameService(commonDirectives: CommonDirectives, engine: Engine) exten
             (path("data") & get) {
               parameters('offset.as[Int], 'count.as[Int]) {
                 (offset, count) =>
-                  onComplete(engine.getRows(id, offset, count)) {
-                    case Success(rows: Iterable[Array[Any]]) => {
-                      import spray.httpx.SprayJsonSupport._
-                      import spray.json._
-                      import DomainJsonProtocol._
-                      val strings = rows.map(r => r.map {
-                        case null => JsNull
-                        case a => a.toJson
-                      }.toList).toList
-                      complete(strings)
-                    }
-                    case Failure(ex) => throw ex
+                  {
+                    import ViewModelJsonImplicits._
+                    val exec = engine.getRows(TableQuery[Long](id, offset, count))
+                    complete(QueryDecorator.decorateEntity(exec.start.id.toString, List(Rel.self(exec.start.id.toString)), exec.start))
                   }
               }
             }

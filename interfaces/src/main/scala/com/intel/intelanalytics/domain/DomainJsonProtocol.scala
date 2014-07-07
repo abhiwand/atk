@@ -24,6 +24,7 @@
 package com.intel.intelanalytics.domain
 
 import com.intel.intelanalytics.domain.frame.load.{ Load, LineParser, LoadSource, LineParserArguments }
+import com.intel.intelanalytics.domain.query.{ QueryResult, TableQuery }
 import com.intel.intelanalytics.domain.schema.{ Schema, DataTypes }
 import DataTypes.DataType
 import spray.json._
@@ -94,6 +95,9 @@ object DomainJsonProtocol extends DefaultJsonProtocol {
   implicit val joinFrameLongFormat = jsonFormat3(FrameJoin)
   implicit val groupByColumnFormat = jsonFormat4(FrameGroupByColumn[JsObject, String])
   implicit val groupByColumnLongFormat = jsonFormat4(FrameGroupByColumn[JsObject, Long])
+
+  implicit val tableQueryFormat = jsonFormat3(TableQuery[Long])
+  implicit val queryResultFormat = jsonFormat1(QueryResult)
 
   implicit val errorFormat = jsonFormat5(Error)
   implicit val flattenColumnLongFormat = jsonFormat4(FlattenColumn)

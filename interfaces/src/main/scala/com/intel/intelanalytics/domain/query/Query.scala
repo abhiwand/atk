@@ -23,7 +23,7 @@
 
 package com.intel.intelanalytics.domain.query
 
-import com.intel.intelanalytics.domain.{Error, HasId}
+import com.intel.intelanalytics.domain.{ Error, HasId }
 import org.joda.time.DateTime
 import spray.json.JsObject
 
@@ -45,13 +45,13 @@ import spray.json.JsObject
  * @param createdById user who created this row
  */
 case class Query(id: Long,
-                   name: String,
-                   arguments: Option[JsObject],
-                   error: Option[Error] = None,
-                   progress: List[Float],
-                   complete: Boolean = false,
-                   result: Option[JsObject] = None,
-                   createdOn: DateTime,
-                   modifiedOn: DateTime,
-                   createdById: Option[Long] = None) extends HasId
+                 name: String,
+                 arguments: Option[JsObject],
+                 error: Option[Error] = None,
+                 progress: List[Float],
+                 complete: Boolean = false,
+                 result: Option[JsObject] = None,
+                 createdOn: DateTime,
+                 modifiedOn: DateTime,
+                 createdById: Option[Long] = None) extends HasId
 

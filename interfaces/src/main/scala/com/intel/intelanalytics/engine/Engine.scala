@@ -29,7 +29,7 @@ import com.intel.intelanalytics.domain.command.Command
 import com.intel.intelanalytics.domain.frame._
 import com.intel.intelanalytics.domain.frame.load.Load
 import com.intel.intelanalytics.domain.graph.{ Graph, GraphLoad, GraphTemplate }
-import com.intel.intelanalytics.domain.query.Query
+import com.intel.intelanalytics.domain.query.{ Execution => QueryExecution, TableQuery, Query }
 import com.intel.intelanalytics.engine.Rows._
 import com.intel.intelanalytics.security.UserPrincipal
 import spray.json.JsObject
@@ -68,7 +68,7 @@ trait Engine {
 
   def getFrame(id: Identifier): Future[Option[DataFrame]]
 
-  def getRows(id: Identifier, offset: Long, count: Int)(implicit user: UserPrincipal): Future[Iterable[Row]]
+  def getRows(arguments: TableQuery[Identifier])(implicit user: UserPrincipal): QueryExecution
 
   def create(frame: DataFrameTemplate)(implicit user: UserPrincipal): Future[DataFrame]
 

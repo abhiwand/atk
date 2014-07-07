@@ -26,7 +26,7 @@ package com.intel.intelanalytics.domain.query
 import scala.concurrent.Future
 
 /**
- * Encapsulates a Qiery in two states - one snapshot that is taken just before running the command,
+ * Encapsulates a Query in two states - one snapshot that is taken just before running the command,
  * and a future that will contain the eventual finished state of the query.
  */
 case class Execution(start: Query, end: Future[Query])

@@ -32,6 +32,7 @@ import scala.reflect.ClassTag
 class EngineSparkArchive extends Archive {
 
   val commands: Seq[Class[_]] = Seq()
+  val queries: Seq[Class[_]] = Seq()
   /**
    * Obtain instances of a given class. The keys are established purely
    * by convention.
@@ -44,6 +45,10 @@ class EngineSparkArchive extends Archive {
     //TODO: move the plumbing parts to the Archive trait and make this just a simple PartialFunction
     case "CommandPlugin" => commands
       .map(c => load(c.getName))
+      .filter(i => i.isInstanceOf[T])
+      .map(i => i.asInstanceOf[T])
+    case "QueryPlugin" => queries
+      .map(q => load(q.getName))
       .filter(i => i.isInstanceOf[T])
       .map(i => i.asInstanceOf[T])
     case _ => throw new NotFoundException("instances", descriptor)

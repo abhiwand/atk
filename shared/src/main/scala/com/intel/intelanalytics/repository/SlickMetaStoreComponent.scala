@@ -28,7 +28,7 @@ import com.intel.intelanalytics.domain._
 import com.intel.intelanalytics.domain.command.{ Command, CommandTemplate }
 import com.intel.intelanalytics.domain.frame.{ DataFrame, DataFrameTemplate }
 import com.intel.intelanalytics.domain.graph.{ Graph, GraphTemplate }
-import com.intel.intelanalytics.domain.query.{QueryTemplate, Query => gaoQuery}
+import com.intel.intelanalytics.domain.query.{ QueryTemplate, Query => gaoQuery }
 import com.intel.intelanalytics.domain.schema.Schema
 import com.intel.intelanalytics.shared.EventLogging
 import org.joda.time.DateTime
@@ -102,7 +102,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
             statusRepo.asInstanceOf[SlickStatusRepository].initializeValues
             userRepo.asInstanceOf[SlickUserRepository].createTable
             frameRepo.asInstanceOf[SlickFrameRepository].createTable // depends on user, status
-            commandRepo.asInstanceOf[SlickQueryRepository].createTable // depends on user
+            commandRepo.asInstanceOf[SlickCommandRepository].createTable // depends on user
             queryRepo.asInstanceOf[SlickQueryRepository].createTable // depends on user
             graphRepo.asInstanceOf[SlickGraphRepository].createTable // depends on user, status
             info("Schema creation completed")
@@ -525,14 +525,14 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
    * Provides methods for modifying and querying the query table.
    */
   class SlickQueryRepository extends QueryRepository[Session]
-  with EventLogging {
+      with EventLogging {
     this: Repository[Session, QueryTemplate, gaoQuery] =>
 
     /**
      * A slick implementation of the 'Query' table that defines
      * the columns and conversion to/from Scala beans.
      */
-    class QueryTable(tag: Tag) extends Table[gaoQuery](tag, "command") {
+    class QueryTable(tag: Tag) extends Table[gaoQuery](tag, "query") {
       def id = column[Long]("query_id", O.PrimaryKey, O.AutoInc)
 
       def name = column[String]("name")
@@ -625,7 +625,6 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
       q.update(progress)
     }
   }
-
 
   /**
    * A slick implementation of the graph repository. It stores metadata for graphs.

@@ -45,5 +45,4 @@ object ViewModelJsonImplicits extends DefaultJsonProtocol with SprayJsonSupport 
   implicit val getQueryFormat = jsonFormat8(GetQuery)
   implicit val jsonTransformFormat = jsonFormat2(JsonTransform)
 
-
 }
