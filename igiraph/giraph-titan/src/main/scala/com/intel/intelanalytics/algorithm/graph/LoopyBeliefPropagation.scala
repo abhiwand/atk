@@ -43,7 +43,7 @@ import spray.json._
 import scala.concurrent._
 import scala.collection.JavaConverters._
 
-case class Lbp(graph: Int,
+case class Lbp(graph: Option[String],
                vertex_value_property_list: Option[String],
                edge_value_property_list: Option[String],
                input_edge_label_list: Option[String],
@@ -121,10 +121,9 @@ class LoopyBeliefPropagation
 
     System.out.println("*********In Execute method of LBP********")
 
-    //    val graphFuture = invocation.engine.getGraph(arguments.graph.toLong)
-
     val config = configuration().get
     val hConf = newHadoopConfigurationFrom(config, "giraph")
+    val titanConf = flattenConfig(config.getConfig("titan"), "titan.")
 
     //    These parameters are set from the arguments passed in, or defaulted from
     //    the engine configuration if not passed.
@@ -136,27 +135,19 @@ class LoopyBeliefPropagation
     set(hConf, "lbp.smoothing", arguments.smoothing)
     set(hConf, "lbp.ignoreVertexType", arguments.ignore_vertex_type)
 
-    set(hConf, "giraph.titan.input.storage.backend", Option[Any]("hbase"))
-    set(hConf, "giraph.titan.input.storage.hostname", Option[Any]("master"))
-    set(hConf, "giraph.titan.input.storage.tablename", Option[Any]("iat_graph_graph_fe0ab8cf6f904f8e9e7f5229f00a80c8"))
-    set(hConf, "giraph.titan.input.storage.port", Option[Any]("2181"))
+    set(hConf, "giraph.titan.input.storage.backend", titanConf.get("titan.load.storage.backend"))
+    set(hConf, "giraph.titan.input.storage.hostname", titanConf.get("titan.load.storage.hostname"))
+    set(hConf, "giraph.titan.input.storage.tablename", arguments.graph)
+    set(hConf, "giraph.titan.input.storage.port", titanConf.get("titan.load.storage.port"))
 
-    set(hConf, "input.vertex.value.property.key.list", Option[Any]("value"))
-    set(hConf, "input.edge.value.property.key.list", Option[Any]("weight"))
-    set(hConf, "input.edge.label.list", Option[Any]("edge"))
-    set(hConf, "output.vertex.property.key.list", Option[Any]("lbp_posterior"))
-    set(hConf, "vertex.type.property.key", Option[Any]("vertex_type"))
-    set(hConf, "vector.value", Option[Any]("true"))
+    set(hConf, "input.vertex.value.property.key.list", arguments.vertex_value_property_list)
+    set(hConf, "input.edge.value.property.key.list", arguments.edge_value_property_list)
+    set(hConf, "input.edge.label.list", arguments.input_edge_label_list)
+    set(hConf, "output.vertex.property.key.list", arguments.output_vertex_property_list)
+    set(hConf, "vertex.type.property.key", arguments.vertex_type_property_key)
+    set(hConf, "vector.value", arguments.vector_value)
 
-    //    set(hConf, "input.vertex.value.property.key.list", arguments.vertex_value_property_list)
-    //    set(hConf, "input.edge.value.property.key.list", arguments.edge_value_property_list)
-    //    set(hConf, "input.edge.label.list", arguments.input_edge_label_list)
-    //    set(hConf, "output.vertex.property.key.list", arguments.output_vertex_property_list)
-    //    set(hConf, "vertex.type.property.key", arguments.vertex_type_property_key)
-    //    set(hConf, "vector.value", arguments.vector_value)
-
-    //    val graph = Await.result(graphFuture, config.getInt("default-timeout") seconds)
-
+    val giraphLoader = Boot.getClassLoader(config.getString("giraph.archive.name"))
     val giraphConf = new GiraphConfiguration(hConf)
 
     giraphConf.setVertexInputFormatClass(classOf[TitanHBaseVertexInputFormatPropertyGraph4LBP])
@@ -165,7 +156,6 @@ class LoopyBeliefPropagation
     giraphConf.setComputationClass(classOf[LoopyBeliefPropagationComputation])
     giraphConf.setAggregatorWriterClass(classOf[LoopyBeliefPropagationComputation.LoopyBeliefPropagationAggregatorWriter])
 
-    val giraphLoader = Boot.getClassLoader(config.getString("giraph.archive.name"))
     Thread.currentThread().setContextClassLoader(giraphLoader)
 
     val job = new GiraphJob(giraphConf, "iat-giraph-lbp")
