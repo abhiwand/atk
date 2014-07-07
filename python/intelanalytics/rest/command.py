@@ -35,7 +35,7 @@ import intelanalytics.rest.config as config
 from intelanalytics.rest.connection import http
 
 
-def print_progress(progress, progressMessage, make_new_line, start_times):
+def print_progress(progress, progressMessage, make_new_line, start_times, finished):
     if not progress:
         initializing_text = "\rinitializing..."
         sys.stdout.write(initializing_text)
@@ -56,11 +56,17 @@ def print_progress(progress, progressMessage, make_new_line, start_times):
         progress_summary.append("\r%6s%% [%s%s] %s [Elapsed Time %s]" % (number, '=' * num_star, '.' * num_dot, message, time_string))
 
     if make_new_line:
-        print progress_summary[-2]
+        previous_step_progress = progress_summary[-2]
+        previous_step_progress = previous_step_progress + "\n"
+        sys.stdout.write(previous_step_progress)
 
-    sys.stdout.write(progress_summary[-1])
+    current_step_progress = progress_summary[-1]
+
+    if finished:
+        current_step_progress = current_step_progress + "\n"
+
+    sys.stdout.write(current_step_progress)
     sys.stdout.flush()
-    return len(progress_summary[-1])
 
 class CommandRequest(object):
     def __init__(self, name, arguments):
@@ -190,6 +196,7 @@ class Polling(object):
                     continue
 
                 command_info = Polling._get_command_info(command_info.uri)
+                finish = predicate(command_info)
 
                 next_poll_time = time.time() + interval_secs
                 progress = command_info.progress
@@ -199,10 +206,9 @@ class Polling(object):
                     job_start_times.append(time.time())
                     job_count = len(progress)
 
-                print_progress(progress, command_info.progressMessage, print_new_line, job_start_times)
+                print_progress(progress, command_info.progressMessage, print_new_line, job_start_times, finish)
 
-
-                if predicate(command_info):
+                if finish:
                     break
 
                 if last_progress == progress and interval_secs < max_interval_secs:
