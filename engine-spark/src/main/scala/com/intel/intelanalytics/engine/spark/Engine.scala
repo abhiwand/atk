@@ -31,6 +31,7 @@ import com.intel.intelanalytics.domain.frame._
 import com.intel.intelanalytics.domain.frame.load.{ LineParserArguments, LineParser, LoadSource, Load }
 
 import com.intel.intelanalytics.domain.graph.{ Graph, GraphLoad, GraphTemplate }
+import com.intel.intelanalytics.domain.query.{ RowQueryResult, RowQuery }
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 import com.intel.intelanalytics.domain.schema.{ DataTypes, Schema, SchemaUtil }
 import com.intel.intelanalytics.engine.Rows._
@@ -594,12 +595,27 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     newFrame
   }
 
-  def getRows(id: Identifier, offset: Long, count: Int)(implicit user: UserPrincipal) = withContext("se.getRows") {
-    future {
-      val frame = frames.lookup(id).getOrElse(throw new IllegalArgumentException("Requested frame does not exist"))
-      val rows = frames.getRows(frame, offset, count)
-      rows
-    }
+  /**
+   * Return a number of rows from a specific dataframe starting at an offset
+   * It is done
+   * @param arguments  RowQuery object describing the id, offset, and count of query
+   * @param user IMPLICIT current user
+   * @return RowQueryResult containing result of query
+   */
+  def getRows(arguments: RowQuery[Identifier])(implicit user: UserPrincipal): Execution = {
+    commands.execute(getRowsCommand, arguments, user, implicitly[ExecutionContext])
+  }
+
+  val getRowsCommand = commands.registerCommand("dataframes/data", getRowsSimple)
+
+  def getRowsSimple(arguments: RowQuery[Identifier], user: UserPrincipal) = {
+    implicit val impUser: UserPrincipal = user
+    val frame = frames.lookup(arguments.id).getOrElse(throw new IllegalArgumentException("Requested frame does not exist"))
+    val rows = frames.getRows(frame, arguments.offset, arguments.count)
+    RowQueryResult(rows.map(row => row.map {
+      case null => JsNull
+      case a => a.toJson
+    }.toJson).toList)
   }
 
   def getFrame(id: Identifier): Future[Option[DataFrame]] =

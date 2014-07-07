@@ -64,7 +64,7 @@ private[spark] object SparkOps extends Serializable {
     }.toMap
 
     //println(sumsAndCounts)
-    val capped = Math.min(count, limit)
+    val capped = count
 
     //Start getting rows. We use the sums and counts to figure out which
     //partitions we need to read from and which to just ignore

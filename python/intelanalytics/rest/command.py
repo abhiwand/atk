@@ -251,6 +251,14 @@ class Executor(object):
         """
         logger.info("Issuing command " + command_request.name)
         response = http.post("commands", command_request.to_json_obj())
+        return self.poll_command_info(response)
+
+    def poll_command_info(self, response):
+        """
+        poll command_info until the command is completed and return results
+        :param response: response from original command
+        :return: :raise CommandServerError:
+        """
         command_info = CommandInfo(response.json())
         # For now, we just poll until the command completes
         try:
@@ -264,6 +272,18 @@ class Executor(object):
         if command_info.error:
             raise CommandServerError(command_info)
         return command_info
+
+    def query(self, query_url):
+        """
+        Issues the query_request to the server
+
+        todo: queries still need to handle pagination and transient storage of query results rather than
+        execute as a command
+        """
+        logger.info("Issuing query " + query_url)
+        response = http.get(query_url)
+        return self.poll_command_info(response)
+
 
     def cancel(self, command_id):
         """
