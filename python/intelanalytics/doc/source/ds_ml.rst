@@ -84,7 +84,7 @@ The idea here is that the software learns faster.
     The lda() method performs latent Dirichlet allocation.
     For more information, see http://en.wikipedia.org/wiki/Latent_Dirichlet_allocation.
 
-    The als() method performs the Alternating Least Squares with Bias for collaborative filtering algorithms.
+    The als() method performs the :term:`Alternating Least Squares` with Bias for collaborative filtering algorithms.
     Use this for recommendation calculations.
     For more details,
     see: http://www.hpl.hp.com/personal/Robert_Schreiber/papers/2008%20AAIM%20Netflix/netflix_aaim08(submitted).pdf
