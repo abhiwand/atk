@@ -1,16 +1,15 @@
 index
     intro: Introduction
     ad_over: Overview
-        intel_legal: Legal
         ad_reqs: Requirements
         ad_inst: Installation
             ad_yum: Procedures for systems using yum
             ad_apt: Procedures for systems using apt-get (future)
-        ad_conf: Configuration
-        ad_mntc: Maintenance
-        ad_trbl: Troubleshooting
+        ad_plug: Plug-ins
+        ad_conf: Configuration (future)
+        ad_mntc: Maintenance (future)
+        ad_trbl: Troubleshooting (future)
     ds_over: Overview
-        intel_legal: Legal
         ds_strt: Getting Started
         ds_db: Databases
         ds_dflw: Data Flow
@@ -26,6 +25,7 @@ index
         ds_supp: Supplemental (future)
         ds_bkm: Best Known Methods (future)
         ds_resc: Resources (future)
+    intel_legal: Legal
     glossary: Glossary
     genindex
     modindex
