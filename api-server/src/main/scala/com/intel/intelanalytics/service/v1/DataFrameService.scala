@@ -86,8 +86,8 @@ class DataFrameService(commonDirectives: CommonDirectives, engine: Engine) exten
         }
       } ~
         pathPrefix(prefix / LongNumber) { id =>
-          pathEnd {
-            requestUri { uri =>
+          requestUri { uri =>
+            pathEnd {
               get {
                 onComplete(engine.getFrame(id)) {
                   case Success(Some(frame)) => {
@@ -112,17 +112,16 @@ class DataFrameService(commonDirectives: CommonDirectives, engine: Engine) exten
                   }
                 }
             }
-          } ~
-            (path("data") & get) {
+            ~(path("data") & get) {
               parameters('offset.as[Int], 'count.as[Int]) {
-                (offset, count) =>
-                  {
-                    import ViewModelJsonImplicits._
-                    val exec = engine.getRows(TableQuery[Long](id, offset, count))
-                    complete(QueryDecorator.decorateEntity(exec.start.id.toString, List(Rel.self(exec.start.id.toString)), exec.start))
-                  }
+                (offset, count) => {
+                  import ViewModelJsonImplicits._
+                  val exec = engine.getRows(TableQuery[Long](id, offset, count))
+                  complete(QueryDecorator.decorateEntity(exec.start.id.toString, List(Rel.self(exec.start.id.toString)), exec.start))
+                }
               }
             }
+          }
         }
     }
   }

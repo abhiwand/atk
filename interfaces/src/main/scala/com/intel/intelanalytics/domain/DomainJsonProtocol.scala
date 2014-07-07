@@ -24,11 +24,8 @@
 package com.intel.intelanalytics.domain
 
 import com.intel.intelanalytics.domain.frame.load.{ Load, LineParser, LoadSource, LineParserArguments }
-<<<<<<< HEAD
 import com.intel.intelanalytics.domain.query.{ QueryResult, TableQuery }
-=======
 import com.intel.intelanalytics.domain.query.{ RowQuery, RowQueryResult }
->>>>>>> TRIB-2992
 import com.intel.intelanalytics.domain.schema.{ Schema, DataTypes }
 import DataTypes.DataType
 import spray.json._
