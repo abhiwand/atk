@@ -125,7 +125,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     }
   }
 
-  def load(arguments: Load[Long])(implicit user: UserPrincipal): Execution =
+  def load(arguments: Load)(implicit user: UserPrincipal): Execution =
     commands.execute(loadCommand, arguments, user, implicitly[ExecutionContext])
 
   val loadCommand = commands.registerCommand(name = "dataframe/load", loadSimple)
@@ -135,8 +135,8 @@ class SparkEngine(sparkContextManager: SparkContextManager,
    * @param arguments Load command object
    * @param user current user
    */
-  def loadSimple(arguments: Load[Long], user: UserPrincipal) = {
-    val frameId = arguments.destination
+  def loadSimple(arguments: Load, user: UserPrincipal) = {
+    val frameId = arguments.destination.id
     val realFrame = expectFrame(frameId)
     val ctx = sparkContextManager.context(user)
 
