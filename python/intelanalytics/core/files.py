@@ -21,7 +21,8 @@
 # must be express and approved by Intel in writing.
 ##############################################################################
 import warnings
-from collections import OrderedDict
+from ordereddict import OrderedDict
+from collections import defaultdict
 from types import supported_types
 
 
