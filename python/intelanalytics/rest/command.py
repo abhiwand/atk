@@ -23,6 +23,7 @@
 """
 Command objects
 """
+import datetime
 
 import time
 import json
@@ -34,25 +35,38 @@ import intelanalytics.rest.config as config
 from intelanalytics.rest.connection import http
 
 
-def print_progress(progress, make_new_line):
+def print_progress(progress, progressMessage, make_new_line, start_times, finished):
     if not progress:
-        sys.stdout.write("\rinitializing...")
+        initializing_text = "\rinitializing..."
+        sys.stdout.write(initializing_text)
         sys.stdout.flush()
-        return
+        return len(initializing_text)
 
     progress_summary = []
-    for p in progress:
+
+    for index in range(0, len(progress)):
+        p = progress[index]
+        message = progressMessage[index] if(index < len(progressMessage)) else ''
+
         num_star = int(p / 2)
         num_dot = 50 - num_star
         number = "%3.2f" % p
-        progress_summary.append("\r%6s%% [%s%s]" % (number, '=' * num_star, '.' * num_dot))
+
+        time_string = datetime.timedelta(seconds = int(time.time() - start_times[index]))
+        progress_summary.append("\r%6s%% [%s%s] %s [Elapsed Time %s]" % (number, '=' * num_star, '.' * num_dot, message, time_string))
 
     if make_new_line:
-        print progress_summary[-2]
+        previous_step_progress = progress_summary[-2]
+        previous_step_progress = previous_step_progress + "\n"
+        sys.stdout.write(previous_step_progress)
 
-    sys.stdout.write(progress_summary[-1])
+    current_step_progress = progress_summary[-1]
+
+    if finished:
+        current_step_progress = current_step_progress + "\n"
+
+    sys.stdout.write(current_step_progress)
     sys.stdout.flush()
-
 
 class CommandRequest(object):
     def __init__(self, name, arguments):
@@ -119,6 +133,13 @@ class CommandInfo(object):
         except KeyError:
             return False
 
+    @property
+    def progressMessage(self):
+        try:
+            return self._payload['progressMessage']
+        except KeyError:
+            return False
+
     def update(self, payload):
         if self._payload and self.id_number != payload['id']:
             msg = "Invalid payload, command ID mismatch %d when expecting %d"\
@@ -158,27 +179,41 @@ class Polling(object):
         if backoff_factor is None:
             backoff_factor = config.polling.backoff_factor
         interval_secs = start_interval_secs
-        start_time = time.time()
 
         command_info = Polling._get_command_info(uri)
 
         if not predicate(command_info):
-            job_count = 1
+            job_count = 0
             last_progress = []
-            while True:
-                time.sleep(interval_secs)
-                command_info = Polling._get_command_info(command_info.uri)
 
+            next_poll_time = time.time()
+
+            start_time = time.time()
+            job_start_times = []
+            while True:
+                if time.time() < next_poll_time:
+                    time.sleep(start_interval_secs)
+                    continue
+
+                command_info = Polling._get_command_info(command_info.uri)
+                finish = predicate(command_info)
+
+                next_poll_time = time.time() + interval_secs
                 progress = command_info.progress
-                new_job_progress_exists = job_count < len(progress)
-                print_progress(progress, new_job_progress_exists)
-                if new_job_progress_exists:
+                print_new_line = len(progress) > 1 and job_count < len(progress)
+
+                if job_count < len(progress):
+                    job_start_times.append(time.time())
                     job_count = len(progress)
 
-                if predicate(command_info):
+                print_progress(progress, command_info.progressMessage, print_new_line, job_start_times, finish)
+
+                if finish:
                     break
+
                 if last_progress == progress and interval_secs < max_interval_secs:
                     interval_secs = min(max_interval_secs, interval_secs * backoff_factor)
+
                 last_progress = progress
         end_time = time.time()
         logger.info("polling %s completed after %0.2f seconds" % (uri, end_time - start_time))
@@ -191,14 +226,14 @@ class Polling(object):
         # last_progress = []
         # while True:
         #     time.sleep(interval_secs)
-        #     wait_time = time.time() - start_time
+        #     wait_time = time.time() - job_start_times
         #     command_info = Polling._get_command_info(command_info.uri)
         #     progress = command_info.progress
         #
-        #     new_job_progress_exists = job_count < len(progress)
-        #     print_progress(progress, new_job_progress_exists)
+        #     print_new_line = job_count < len(progress)
+        #     print_progress(progress, print_new_line)
         #
-        #     if(new_job_progress_exists):
+        #     if(print_new_line):
         #         job_count = len(progress)
         #
         #     if predicate(command_info):
@@ -255,7 +290,7 @@ class Executor(object):
         # For now, we just poll until the command completes
         try:
             if not command_info.complete:
-                command_info = Polling.poll(command_info.uri)
+                command_info = Polling.poll(command_info.uri, max_interval_secs=30, backoff_factor=1.1)
                 # Polling.print_progress(command_info.progress)
 
         except KeyboardInterrupt:
