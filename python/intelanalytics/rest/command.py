@@ -59,15 +59,15 @@ def print_progress(progress, make_new_line):
 
 class CommandRequest(object):
     @staticmethod
-    def validate_arguments(parameterTypes, arguments):
+    def validate_arguments(parameter_types, arguments):
         validated = {}
         for (k, v) in arguments.items():
-            if k not in parameterTypes:
+            if k not in parameter_types:
                 raise ValueError("No parameter named '%s'" % k)
             validated[k] = v
-            schema = parameterTypes[k]
+            schema = parameter_types[k]
             if schema.get('type') == 'array':
-                if isinstance(v, str) or not isinstance(v, collections.Iterable):
+                if isinstance(v, basestring) or not hasattr(v, '__iter__'):
                     validated[k] = [v]
         return validated
 
@@ -348,22 +348,24 @@ class Executor(object):
             command_name = parts[-1]
             parameters = args.setdefault('properties', {})
             print "ARG schema:", args
-            self_name = ([k for k, v in parameters.items() if isinstance(v, dict) and v.has_key('self')] or [None])[0]
-            print "self arg: ", self_name
+            self_parameter_name = ([k for k, v in parameters.items() if isinstance(v, dict) and v.has_key('self')] or [None])[0]
+            print "self arg: ", self_parameter_name
 
-            retProps = cmd['return_schema'].setdefault('properties', {})
-            return_self = ([k for k, v in retProps.items() if isinstance(v, dict) and v.has_key('self')] or [None])[0]
+            return_props = cmd['return_schema'].setdefault('properties', {})
+            return_self_parameter = ([k for k, v in return_props.items() if isinstance(v, dict) and v.has_key('self')] or [None])[0]
             possible_args = list(parameters.keys())
-            if self_name:
-                possible_args.remove(self_name)
+            if self_parameter_name:
+                possible_args.remove(self_parameter_name)
 
             #Create a new function scope to bind variables properly
             # (see, e.g. http://eev.ee/blog/2011/04/24/gotcha-python-scoping-closures )
             #Need make and not just invoke so that invoke won't have
             #kwargs that include command_name et. al.
             def make(full_name = full_name,
-                     command_name = command_name, cmd = cmd,
-                     self_name = self_name, return_self = return_self,
+                     command_name = command_name,
+                     cmd = cmd,
+                     self_name = self_parameter_name,
+                     return_self = return_self_parameter,
                      possible_args = possible_args,
                      parameters = parameters):
 
@@ -377,7 +379,7 @@ class Executor(object):
                                              " supplied as a positional argument and as a keyword argument")
                         print "Assigning", k, "to", v
                         kwargs[k] = v
-                        validated = CommandRequest.validate_arguments(parameters, kwargs)
+                    validated = CommandRequest.validate_arguments(parameters, kwargs)
                     if return_self:
                         return new_function(full_name, validated, s)
                     else:
