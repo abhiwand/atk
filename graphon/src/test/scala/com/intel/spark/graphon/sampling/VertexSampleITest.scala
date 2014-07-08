@@ -201,7 +201,7 @@ class VertexSampleITest extends Specification {
       graph.getVertices.size mustEqual 8
     }
 
-    /*    "correctly read the input graph from Titan into Vertex and Edge RDDs" in new TestingSparkContext with TestingTitan {
+    "correctly read the input graph from Titan into Vertex and Edge RDDs" in new TestingSparkContext with TestingTitan {
       // TODO: tablename not recognized...
       val vertexRdd = sc.parallelize(inputVertexList.toSeq, 2)
       val edgeRdd = sc.parallelize(inputEdgeList.toSeq, 2)
@@ -215,7 +215,7 @@ class VertexSampleITest extends Specification {
 
       readEdgeRdd.count() mustEqual 20
       readVertexRdd.count() mustEqual 8
-    }*/
+    }
   }
 
 }

@@ -25,14 +25,13 @@ package com.intel.spark.graphon
 
 import com.intel.intelanalytics.NotFoundException
 import com.intel.intelanalytics.component.Archive
-import com.intel.intelanalytics.engine.spark.SparkEngineConfig
 import com.typesafe.config.Config
 
 import scala.reflect.ClassTag
 
-class EngineSparkArchive extends Archive {
+class GraphonSparkArchive extends Archive {
 
-  val commands: Seq[Class[_]] = Seq(VertexSample)
+  val commands: Seq[Class[_]] = Seq(classOf[com.intel.spark.graphon.sampling.VertexSample])
   /**
    * Obtain instances of a given class. The keys are established purely
    * by convention.
@@ -67,7 +66,7 @@ class EngineSparkArchive extends Archive {
    * get installed there if the system has been configured to override that
    * default placement.
    */
-  override def defaultLocation: String = "commands/graphs/ml"
+  override def defaultLocation: String = "commands/graph/sampling"
 
   /**
    * Called before processing any requests.
@@ -76,6 +75,6 @@ class EngineSparkArchive extends Archive {
    *                      plugin based on its installed paths.
    */
   override def start(configuration: Config): Unit = {
-    SparkEngineConfig.logSettings()
+
   }
 }

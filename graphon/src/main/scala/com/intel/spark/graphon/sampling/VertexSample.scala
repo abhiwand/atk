@@ -30,6 +30,8 @@ import com.intel.graphbuilder.parser.InputSchema
 import com.intel.graphbuilder.util.SerializableBaseConfiguration
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkInvocation, SparkCommandPlugin }
 import com.intel.intelanalytics.security.UserPrincipal
+import com.intel.intelanalytics.domain.DomainJsonProtocol
+import com.intel.intelanalytics.domain.graph.GraphReference
 import com.typesafe.config.ConfigFactory
 import org.apache.spark.SparkContext
 import spray.json.DefaultJsonProtocol._
@@ -41,26 +43,30 @@ import com.intel.graphbuilder.elements.{ Edge, Vertex }
 import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRDDImplicits._
 import com.intel.spark.graphon.GraphStatistics
 import scala.util.Random
+import scala.concurrent._
+import scala.collection.JavaConverters._
 
 /**
- * @param graphName storage table name for the graph
+ * @param graph reference to the graph to be sampled
  * @param size the requested sample size
  * @param sampleType type of vertex sampling to use
  * @param seed random seed value
  * @param subgraphName storage table name for the new subgraph
  */
-case class VS(graphName: String, size: Int, sampleType: String, seed: Int = 1, subgraphName: String)
+case class VS(graph: GraphReference, size: Int, sampleType: String, seed: Int = 1, subgraphName: String)
 
-case class VSResult(subgraphName: String)
+case class VSResult(subgraph: GraphReference)
 
 class VertexSample extends SparkCommandPlugin[VS, VSResult] {
+
+  import DomainJsonProtocol._
 
   implicit val vsFormat = jsonFormat5(VS)
   implicit val vsResultFormat = jsonFormat1(VSResult)
 
   // Titan Settings
   private val config = ConfigFactory.load("titanConfig")
-  // TODO: titanConfig properties should be accessed in project-wide resource file, not module-specific as done here
+
   var titanConfig = new SerializableBaseConfiguration()
   titanConfig.setProperty("storage.backend", config.getString("storage.backend"))
   titanConfig.setProperty("storage.hostname", config.getString("storage.hostname"))
@@ -76,30 +82,31 @@ class VertexSample extends SparkCommandPlugin[VS, VSResult] {
   titanConfig.setProperty("ids.block-size", config.getString("ids.block-size"))
   titanConfig.setProperty("ids.renew-timeout", config.getString("ids.renew-timeout"))
 
-  /**
-   * The name of the command
-   */
-  override def name: String = "graph/sampling/vertex_sample"
-
   override def execute(invocation: SparkInvocation, arguments: VS)
                       (implicit user: UserPrincipal, executionContext: ExecutionContext): VSResult = {
-    val sc = invocation.sparkContext
 
-    val graph = getGraph(arguments.graphName, sc)
+    val graphFuture = invocation.engine.getGraph(arguments.graph.id)
+    // Change this to read from default-timeout
+    import scala.concurrent.duration._
+    val graph = Await.result(graphFuture, config.getInt("default-timeout") seconds)
+
+    val sc = invocation.sparkContext
+    val (vertexRDD, edgeRDD) = getGraph(graph.name, sc)
 
     val vertexSample = arguments.sampleType match {
-      case "uniform" => sampleVerticesUniform(graph._1, arguments.size, arguments.seed)
-      case "degree" => sampleVerticesDegree(graph._1, graph._2, arguments.size, arguments.seed)
-      case "degreedist" => sampleVerticesDegreeDist(graph._1, graph._2, arguments.size, arguments.seed)
+      case "uniform" => sampleVerticesUniform(vertexRDD, arguments.size, arguments.seed)
+      case "degree" => sampleVerticesDegree(vertexRDD, edgeRDD, arguments.size, arguments.seed)
+      case "degreedist" => sampleVerticesDegreeDist(vertexRDD, edgeRDD, arguments.size, arguments.seed)
       case _ => throw new IllegalArgumentException("Invalid sample type")
     }
 
-    val edgeSample = sampleEdges(vertexSample, graph._2)
+    val edgeSample = sampleEdges(vertexSample, edgeRDD)
 
     titanConfig.setProperty("storage.tablename", arguments.subgraphName)
     writeToTitan(vertexSample, edgeSample)
 
-    VSResult(arguments.subgraphName) // nothing new is really returned here
+    // TODO: get the Titan graph ID and return as GraphReference
+    VSResult(0)
   }
 
   /**
@@ -246,6 +253,8 @@ class VertexSample extends SparkCommandPlugin[VS, VSResult] {
   def sampleEdges(vertices: RDD[Vertex], edges: RDD[Edge]): RDD[Edge] = {
     val vertexArray = vertices.map(v => v.gbId.value).collect() // get vertexGbIds
     edges.filter(e => vertexArray.contains(e.headVertexGbId.value) && vertexArray.contains(e.tailVertexGbId.value))
+    Double
+    Long
   }
 
   /**
@@ -259,6 +268,11 @@ class VertexSample extends SparkCommandPlugin[VS, VSResult] {
     val gb = new GraphBuilder(new GraphBuilderConfig(new InputSchema(Seq.empty), List.empty, List.empty, titanConfig))
     gb.buildGraphWithSpark(vertices, edges)
   }
+
+  /**
+   * The name of the command
+   */
+  override def name: String = "graph/sampling/vertex_sample"
 
   //TODO: Replace with generic code that works on any case class
   def parseArguments(arguments: JsObject) = arguments.convertTo[VS]
