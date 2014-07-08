@@ -26,7 +26,7 @@ iatest.init()
 import unittest
 from intelanalytics.core.serialize import to_json
 from intelanalytics.core.files import *
-from intelanalytics.core.types import *
+from intelanalytics.core.iatypes import *
 
 
 class TestCsvFile(unittest.TestCase):

@@ -31,7 +31,7 @@ import com.intel.intelanalytics.engine.Engine
 import com.intel.intelanalytics.service.v1.viewmodels.ViewModelJsonImplicits._
 import scala.concurrent._
 import spray.http.Uri
-import spray.routing.{ Directives, Route }
+import spray.routing.{ ValidationRejection, Directives, Route }
 import com.intel.intelanalytics.domain.frame._
 import com.intel.intelanalytics.domain.FilterPredicate
 import com.intel.intelanalytics.domain.graph.construction.FrameRule
@@ -42,7 +42,7 @@ import spray.json._
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
 import com.intel.intelanalytics.service.v1.viewmodels._
 import com.intel.intelanalytics.service.v1.viewmodels.ViewModelJsonImplicits._
-import com.intel.intelanalytics.domain.graph.GraphLoad
+import com.intel.intelanalytics.domain.graph.{ GraphReference, GraphLoad }
 import com.intel.intelanalytics.domain.command.{ Execution, CommandTemplate, Command }
 import com.intel.intelanalytics.shared.EventLogging
 import com.intel.intelanalytics.service.{ ApiServiceConfig, UrlParser, CommonDirectives, AuthenticationDirective }
@@ -89,44 +89,57 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
             }
           }
       } ~
-        (path("commands") & pathEnd) {
-          requestUri {
-            uri =>
-
-              get {
-                //TODO: cursor
-                import spray.json._
-                import ViewModelJsonImplicits._
-                onComplete(engine.getCommands(0, ApiServiceConfig.defaultCount)) {
-                  case Success(commands) => complete(CommandDecorator.decorateForIndex(uri.toString(), commands))
-                  case Failure(ex) => throw ex
-                }
-              } ~
-                post {
-                  entity(as[JsonTransform]) {
-                    xform =>
-                      try {
-                        //TODO: this execution path is going away soon.
-                        runCommand(uri, xform)
-                      }
-                      catch {
-                        case e: IllegalArgumentException => {
-                          //TODO: this will be the only execution path, soon.
-                          //TODO: validate the arguments. To do this requires some kind of sharing
-                          //between the api server and the engine to determine what contracts to use.
-                          //TODO: standardize URI handling such that the API server strips out
-                          //the https://site.com/ part and leaves the engine with only an application-specific,
-                          //non-transport-related URI. This should be automatic and not something that
-                          //every command handler has to call.
-                          engine.execute(CommandTemplate(name = xform.name, arguments = xform.arguments)) match {
-                            case Execution(command, futureResult) =>
-                              complete(decorate(uri, command))
+        pathPrefix("commands") {
+          path("definitions") {
+            get {
+              import DefaultJsonProtocol.listFormat
+              import DomainJsonProtocol.commandDefinitionFormat
+              complete(engine.getCommandDefinitions().toList)
+            }
+          } ~
+            pathEnd {
+              requestUri {
+                uri =>
+                  get {
+                    //TODO: cursor
+                    import spray.json._
+                    import ViewModelJsonImplicits._
+                    onComplete(engine.getCommands(0, ApiServiceConfig.defaultCount)) {
+                      case Success(commands) => complete(CommandDecorator.decorateForIndex(uri.toString(), commands))
+                      case Failure(ex) => throw ex
+                    }
+                  } ~
+                    post {
+                      entity(as[JsonTransform]) {
+                        xform =>
+                          try {
+                            //TODO: this execution path is going away soon.
+                            runCommand(uri, xform)
                           }
-                        }
+                          catch {
+                            case e: IllegalArgumentException => {
+                              //TODO: this will be the only execution path, soon.
+                              val template = CommandTemplate(name = xform.name, arguments = xform.arguments)
+                              info(s"Received command template for execution: $template")
+                              try {
+                                engine.execute(template) match {
+                                  case Execution(command, futureResult) =>
+                                    complete(decorate(uri + "/" + command.id, command))
+                                }
+                              }
+                              catch {
+                                case e: DeserializationException =>
+                                  reject(ValidationRejection(
+                                    s"Incorrectly formatted JSON found while parsing command '${xform.name}':" +
+                                      s" ${e.getMessage}", Some(e)))
+                              }
+                            }
+                          }
                       }
-                  }
-                }
-          }
+                    }
+              }
+
+            }
         }
     }
   }
@@ -143,12 +156,12 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
   def runCommand(uri: Uri, xform: JsonTransform)(implicit user: UserPrincipal): Route = {
     xform.name match {
       //TODO: genericize function resolution and invocation
-      case ("graph/load") => runGraphLoad(uri, xform)
+      //case ("graph/load") => runGraphLoad(uri, xform)
       //case ("graph/ml/als") => runAls(uri, xform)
-      case ("dataframe/load") => runFrameLoad(uri, xform)
+      //case ("dataframe/load") => runFrameLoad(uri, xform)
       case ("dataframe/filter") => runFilter(uri, xform)
-      case ("dataframe/removecolumn") => runFrameRemoveColumn(uri, xform)
-      case ("dataframe/rename_frame") => runFrameRenameFrame(uri, xform)
+      //case ("dataframe/removecolumn") => runFrameRemoveColumn(uri, xform)
+      //case ("dataframe/rename_frame") => runFrameRenameFrame(uri, xform)
       case ("dataframe/add_columns") => runFrameAddColumns(uri, xform)
       case ("dataframe/project") => runFrameProject(uri, xform)
       case ("dataframe/rename_column") => runFrameRenameColumn(uri, xform)
@@ -173,14 +186,14 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
   def runFrameLoad(uri: Uri, xform: JsonTransform)(implicit user: UserPrincipal) = {
     val test = Try {
       import DomainJsonProtocol._
-      xform.arguments.get.convertTo[Load[String]]
+      xform.arguments.get.convertTo[Load]
     }
-    val idOpt = test.toOption.flatMap(args => UrlParser.getFrameId(args.destination))
+    val idOpt = test.toOption.map(args => args.destination.id)
     (validate(test.isSuccess, "Failed to parse file load descriptor: " + getErrorMessage(test))
       & validate(idOpt.isDefined, "Destination is not a valid data frame URL")) {
         val args = test.get
         val id = idOpt.get
-        val exec = engine.load(Load[Long](id, args.source.source_type match {
+        val exec = engine.load(Load(FrameReference(id), args.source.source_type match {
           case "dataframe" => {
             val dataID = UrlParser.getFrameId(args.source.uri)
             validate(dataID.isDefined, "Source is not a valid data frame URL")
@@ -201,32 +214,28 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
    */
   def runGraphLoad(uri: Uri, transform: JsonTransform)(implicit user: UserPrincipal): Route = {
     val test = Try {
-      transform.arguments.get.convertTo[GraphLoad[JsObject, String, String]]
+      transform.arguments.get.convertTo[GraphLoad]
     }
 
-    val frameIDsOpt: Option[List[Option[Long]]] =
-      test.toOption.map(args => args.frame_rules.map(frule => UrlParser.getFrameId(frule.frame)))
+    val frameIDsOpt: Option[List[Long]] =
+      test.toOption.map(args => args.frame_rules.map(frule => frule.frame.id))
 
-    val graphIDOpt = test.toOption.flatMap(args => UrlParser.getGraphId(args.graph))
+    val graphIDOpt = test.toOption.map(args => args.graph.id)
 
     (validate(test.isSuccess, "Failed to parse graph load descriptor: " + getErrorMessage(test))
       & validate(graphIDOpt.isDefined, "Target graph is not a valid graph URL")) {
 
-        (validate(frameIDsOpt.isDefined, "Error parsing per-frame graph construction rules")
-          & validate(frameIDsOpt.get.forall(x => x.isDefined), "Invalid URL provided for source dataframe")) {
-            val args = test.get
-            val sourceFrameIDs = frameIDsOpt.get.map(x => x.get)
+        validate(frameIDsOpt.isDefined, "Error parsing per-frame graph construction rules") {
+          val args = test.get
 
-            val frameRulesUsingIDs = (sourceFrameIDs, args.frame_rules).zipped.toList.map { case (id: Long, frule: FrameRule[String]) => new FrameRule[Long](id, frule.vertex_rules, frule.edge_rules) }
+          val graphID = graphIDOpt.get
 
-            val graphID = graphIDOpt.get
-
-            val graphLoad = GraphLoad(graphID,
-              frameRulesUsingIDs,
-              args.retain_dangling_edges)
-            val exec = engine.loadGraph(graphLoad)
-            complete(decorate(uri + "/" + exec.start.id, exec.start))
-          }
+          val graphLoad = GraphLoad(GraphReference(graphID),
+            args.frame_rules,
+            args.retain_dangling_edges)
+          val exec = engine.loadGraph(graphLoad)
+          complete(decorate(uri + "/" + exec.start.id, exec.start))
+        }
       }
   }
 
@@ -240,20 +249,6 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
         val args = test.get
         val id = idOpt.get
         val exec = engine.filter(FilterPredicate[JsObject, Long](id, args.predicate))
-        complete(decorate(uri + "/" + exec.start.id, exec.start))
-      }
-  }
-
-  def runFrameRenameFrame(uri: Uri, xform: JsonTransform)(implicit user: UserPrincipal) = {
-    val test = Try {
-      xform.arguments.get.convertTo[FrameRenameFrame[JsObject, String]]
-    }
-    val idOpt = test.toOption.flatMap(args => UrlParser.getFrameId(args.frame))
-    (validate(test.isSuccess, "Failed to understand rename arguments: " + getErrorMessage(test))
-      & validate(idOpt.isDefined, "Frame must be a valid data frame URL")) {
-        val args = test.get
-        val id = idOpt.get
-        val exec = engine.renameFrame(FrameRenameFrame[JsObject, Long](id, args.new_name))
         complete(decorate(uri + "/" + exec.start.id, exec.start))
       }
   }
@@ -282,20 +277,6 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
         val args = test.get
         val id = idOpt.get
         val exec = engine.addColumns(FrameAddColumns[JsObject, Long](id, args.column_names, args.column_types, args.expression))
-        complete(decorate(uri + "/" + exec.start.id, exec.start))
-      }
-  }
-
-  def runFrameRemoveColumn(uri: Uri, xform: JsonTransform)(implicit user: UserPrincipal) = {
-    val test = Try {
-      xform.arguments.get.convertTo[FrameRemoveColumn[JsObject, String]]
-    }
-    val idOpt = test.toOption.flatMap(args => UrlParser.getFrameId(args.frame))
-    (validate(test.isSuccess, "Failed to parse file load descriptor: " + getErrorMessage(test))
-      & validate(idOpt.isDefined, "Destination is not a valid data frame URL")) {
-        val args = test.get
-        val id = idOpt.get
-        val exec = engine.removeColumn(FrameRemoveColumn[JsObject, Long](id, args.column))
         complete(decorate(uri + "/" + exec.start.id, exec.start))
       }
   }
