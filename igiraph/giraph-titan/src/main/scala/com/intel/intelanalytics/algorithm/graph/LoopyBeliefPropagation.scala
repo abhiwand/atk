@@ -29,6 +29,8 @@ import com.intel.giraph.algorithms.lbp.LoopyBeliefPropagationComputation
 import com.intel.giraph.io.titan.TitanVertexOutputFormatPropertyGraph4LBP
 import com.intel.giraph.io.titan.hbase.TitanHBaseVertexInputFormatPropertyGraph4LBP
 import com.intel.intelanalytics.component.Boot
+import com.intel.intelanalytics.domain.DomainJsonProtocol
+import com.intel.intelanalytics.domain.graph.GraphReference
 import com.intel.intelanalytics.engine.plugin.{ CommandPlugin, Invocation }
 import com.intel.intelanalytics.security.UserPrincipal
 import com.typesafe.config.{ Config, ConfigObject, ConfigValue }
@@ -43,7 +45,7 @@ import spray.json._
 import scala.concurrent._
 import scala.collection.JavaConverters._
 
-case class Lbp(graph: Option[String],
+case class Lbp(graph: GraphReference,
                vertex_value_property_list: Option[String],
                edge_value_property_list: Option[String],
                input_edge_label_list: Option[String],
@@ -63,6 +65,7 @@ case class LbpResult(runTimeSeconds: Double) //TODO
 
 class LoopyBeliefPropagation
     extends CommandPlugin[Lbp, LbpResult] {
+  import DomainJsonProtocol._
   implicit val lbpFormat = jsonFormat15(Lbp)
   implicit val lbpResultFormat = jsonFormat1(LbpResult)
 
@@ -125,6 +128,11 @@ class LoopyBeliefPropagation
     val hConf = newHadoopConfigurationFrom(config, "giraph")
     val titanConf = flattenConfig(config.getConfig("titan"), "titan.")
 
+    val graphFuture = invocation.engine.getGraph(arguments.graph.id)
+    // Change this to read from default-timeout
+    import scala.concurrent.duration._
+    val graph = Await.result(graphFuture, config.getInt("default-timeout") seconds)
+
     //    These parameters are set from the arguments passed in, or defaulted from
     //    the engine configuration if not passed.
     set(hConf, "lbp.maxSuperSteps", arguments.max_supersteps)
@@ -137,7 +145,8 @@ class LoopyBeliefPropagation
 
     set(hConf, "giraph.titan.input.storage.backend", titanConf.get("titan.load.storage.backend"))
     set(hConf, "giraph.titan.input.storage.hostname", titanConf.get("titan.load.storage.hostname"))
-    set(hConf, "giraph.titan.input.storage.tablename", arguments.graph)
+    // TODO - graph should provide backend to retrieve the stored table name in hbase
+    set(hConf, "giraph.titan.input.storage.tablename", Option[Any]("iat_graph_" + graph.name))
     set(hConf, "giraph.titan.input.storage.port", titanConf.get("titan.load.storage.port"))
 
     set(hConf, "input.vertex.value.property.key.list", arguments.vertex_value_property_list)

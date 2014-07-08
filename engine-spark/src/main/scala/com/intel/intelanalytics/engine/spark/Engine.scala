@@ -25,8 +25,9 @@ package com.intel.intelanalytics.engine.spark
 
 import java.util.{ ArrayList => JArrayList, List => JList }
 
+import com.intel.intelanalytics.domain.DomainJsonProtocol._
 import com.intel.intelanalytics.domain._
-import com.intel.intelanalytics.domain.command.{ Command, CommandTemplate, Execution }
+import com.intel.intelanalytics.domain.command.{ Command, CommandDefinition, CommandTemplate, Execution }
 import com.intel.intelanalytics.domain.frame._
 import com.intel.intelanalytics.domain.frame.load.{ LineParserArguments, LineParser, LoadSource, Load }
 
@@ -36,23 +37,20 @@ import com.intel.intelanalytics.domain.schema.{ DataTypes, Schema, SchemaUtil }
 import com.intel.intelanalytics.engine.Rows._
 import com.intel.intelanalytics.engine._
 import com.intel.intelanalytics.engine.spark.command.CommandExecutor
-import com.intel.intelanalytics.{ ClassLoaderAware, NotFoundException }
 import com.intel.intelanalytics.engine.spark.context.SparkContextManager
 import com.intel.intelanalytics.engine.spark.frame.{ RDDJoinParam, RowParser, SparkFrameStorage }
 import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.shared.EventLogging
+import com.intel.intelanalytics.{ ClassLoaderAware, NotFoundException }
 import org.apache.spark.SparkContext
 import org.apache.spark.api.python.{ EnginePythonAccumulatorParam, EnginePythonRDD }
 import org.apache.spark.broadcast.Broadcast
+import org.apache.spark.engine.SparkProgressListener
 import org.apache.spark.rdd.RDD
 import spray.json._
 
-import DomainJsonProtocol._
-
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent._
-import scala.util.Try
-import org.apache.spark.engine.SparkProgressListener
 
 object SparkEngine {
   private val pythonRddDelimiter = "\0"
@@ -101,6 +99,13 @@ class SparkEngine(sparkContextManager: SparkContextManager,
   def execute(command: CommandTemplate)(implicit user: UserPrincipal): Execution =
     commands.execute(command, user, implicitly[ExecutionContext])
 
+  /**
+   * All the command definitions available
+   */
+  override def getCommandDefinitions()(implicit user: UserPrincipal): Iterable[CommandDefinition] = {
+    commands.getCommandDefinitions()
+  }
+
   def getLineParser(parser: LineParser): String => Array[String] = {
     parser.name match {
       //TODO: look functions up in a table rather than switching on names
@@ -120,7 +125,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     }
   }
 
-  def load(arguments: Load[Long])(implicit user: UserPrincipal): Execution =
+  def load(arguments: Load)(implicit user: UserPrincipal): Execution =
     commands.execute(loadCommand, arguments, user, implicitly[ExecutionContext])
 
   val loadCommand = commands.registerCommand(name = "dataframe/load", loadSimple)
@@ -130,8 +135,8 @@ class SparkEngine(sparkContextManager: SparkContextManager,
    * @param arguments Load command object
    * @param user current user
    */
-  def loadSimple(arguments: Load[Long], user: UserPrincipal) = {
-    val frameId = arguments.destination
+  def loadSimple(arguments: Load, user: UserPrincipal) = {
+    val frameId = arguments.destination.id
     val realFrame = expectFrame(frameId)
     val ctx = sparkContextManager.context(user)
 
@@ -198,15 +203,17 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     }
   }
 
-  def expectFrame(frameId: Long) = {
+  def expectFrame(frameId: Long): DataFrame = {
     frames.lookup(frameId).getOrElse(throw new NotFoundException("dataframe", frameId.toString))
   }
 
-  def renameFrame(arguments: FrameRenameFrame[JsObject, Long])(implicit user: UserPrincipal): Execution =
+  def expectFrame(frameRef: FrameReference): DataFrame = expectFrame(frameRef.id)
+
+  def renameFrame(arguments: FrameRenameFrame)(implicit user: UserPrincipal): Execution =
     commands.execute(renameFrameCommand, arguments, user, implicitly[ExecutionContext])
 
   val renameFrameCommand = commands.registerCommand("dataframe/rename_frame", renameFrameSimple)
-  private def renameFrameSimple(arguments: FrameRenameFrame[JsObject, Long], user: UserPrincipal) = {
+  private def renameFrameSimple(arguments: FrameRenameFrame, user: UserPrincipal) = {
     val frame = expectFrame(arguments.frame)
     val newName = arguments.new_name
     frames.renameFrame(frame, newName)
@@ -519,15 +526,15 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     newJoinFrame.copy(schema = Schema(allColumns))
   }
 
-  def removeColumn(arguments: FrameRemoveColumn[JsObject, Long])(implicit user: UserPrincipal): Execution =
+  def removeColumn(arguments: FrameRemoveColumn)(implicit user: UserPrincipal): Execution =
     commands.execute(removeColumnCommand, arguments, user, implicitly[ExecutionContext])
 
-  val removeColumnCommand = commands.registerCommand("dataframe/removecolumn", removeColumnSimple)
-  def removeColumnSimple(arguments: FrameRemoveColumn[JsObject, Long], user: UserPrincipal) = {
+  val removeColumnCommand = commands.registerCommand("dataframe/remove_columns", removeColumnSimple)
+  def removeColumnSimple(arguments: FrameRemoveColumn, user: UserPrincipal) = {
 
     val ctx = sparkContextManager.context(user).sparkContext
-    val frameId = arguments.frame
-    val columns = arguments.column.split(",")
+    val frameId = arguments.frame.id
+    val columns = arguments.columns
 
     val realFrame = expectFrame(arguments.frame)
     val schema = realFrame.schema
@@ -542,7 +549,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
 
     columnIndices match {
       case invalidColumns if invalidColumns.contains(-1) =>
-        throw new IllegalArgumentException(s"Invalid list of columns: ${arguments.column}")
+        throw new IllegalArgumentException(s"Invalid list of columns: [${arguments.columns.mkString(", ")}]")
       case allColumns if allColumns.length == schema.columns.length =>
         frames.getFrameRdd(ctx, frameId).filter(_ => false).saveAsObjectFile(location)
       case singleColumn if singleColumn.length == 1 => frames.getFrameRdd(ctx, frameId)
@@ -629,11 +636,11 @@ class SparkEngine(sparkContextManager: SparkContextManager,
    * @param user IMPLICIT. The user loading the graph
    * @return Command object for this graphload and a future
    */
-  def loadGraph(arguments: GraphLoad[JsObject, Long, Long])(implicit user: UserPrincipal): Execution =
+  def loadGraph(arguments: GraphLoad)(implicit user: UserPrincipal): Execution =
     commands.execute(loadGraphCommand, arguments, user, implicitly[ExecutionContext])
 
   val loadGraphCommand = commands.registerCommand("graph/load", loadGraphSimple)
-  def loadGraphSimple(arguments: GraphLoad[JsObject, Long, Long], user: UserPrincipal) = {
+  def loadGraphSimple(arguments: GraphLoad, user: UserPrincipal) = {
     // validating frames
     arguments.frame_rules.foreach(frule => expectFrame(frule.frame))
 
