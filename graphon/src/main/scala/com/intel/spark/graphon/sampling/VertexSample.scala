@@ -81,18 +81,24 @@ class VertexSample extends SparkCommandPlugin[VS, VSResult] {
    */
   override def name: String = "graph/sampling/vertex_sample"
 
-  override def execute(invocation: SparkInvocation, arguments: VS)(implicit user: UserPrincipal, executionContext: ExecutionContext): VSResult = {
+  override def execute(invocation: SparkInvocation, arguments: VS)
+                      (implicit user: UserPrincipal, executionContext: ExecutionContext): VSResult = {
     val sc = invocation.sparkContext
+
     val graph = getGraph(arguments.graphName, sc)
-    titanConfig.setProperty("storage.tablename", arguments.subgraphName)
+
     val vertexSample = arguments.sampleType match {
       case "uniform" => sampleVerticesUniform(graph._1, arguments.size, arguments.seed)
       case "degree" => sampleVerticesDegree(graph._1, graph._2, arguments.size, arguments.seed)
       case "degreedist" => sampleVerticesDegreeDist(graph._1, graph._2, arguments.size, arguments.seed)
       case _ => throw new IllegalArgumentException("Invalid sample type")
     }
+
     val edgeSample = sampleEdges(vertexSample, graph._2)
+
+    titanConfig.setProperty("storage.tablename", arguments.subgraphName)
     writeToTitan(vertexSample, edgeSample)
+
     VSResult(arguments.subgraphName) // nothing new is really returned here
   }
 
@@ -115,6 +121,9 @@ class VertexSample extends SparkCommandPlugin[VS, VSResult] {
 
     val vertexRDD = titanReaderRDD.filterVertices()
     val edgeRDD = titanReaderRDD.filterEdges()
+
+    titanConfig.clearProperty("storage.tablename")
+
     (vertexRDD, edgeRDD)
   }
 
