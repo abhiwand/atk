@@ -15,12 +15,13 @@ if [[ -f $DIR/../launcher/target/launcher.jar ]]; then
 	LAUNCHER=$DIR/../launcher/target/launcher.jar
 fi
 
+HBASE_CLASSPATH=`hbase classpath`
 
 if [[ -n "$EXTRA_CONF" ]]
  then
-    CONF="$EXTRA_CONF:$CONFDIR"
+    CONF="$EXTRA_CONF:$CONFDIR:$HBASE_CLASSPATH"
 else
-    CONF="$CONFDIR"
+    CONF="$CONFDIR:$HBASE_CLASSPATH"
 fi
 
 pushd $DIR/..

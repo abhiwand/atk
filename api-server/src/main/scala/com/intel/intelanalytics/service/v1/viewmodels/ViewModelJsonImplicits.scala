@@ -23,8 +23,10 @@
 
 package com.intel.intelanalytics.service.v1.viewmodels
 
-import spray.json.DefaultJsonProtocol
+import com.intel.intelanalytics.domain.command.CommandDefinition
+import com.intel.intelanalytics.domain.frame.FrameReference
 import spray.httpx.SprayJsonSupport
+import spray.json._
 
 /**
  * Implicit Conversions for View/Models to JSON
@@ -42,5 +44,4 @@ object ViewModelJsonImplicits extends DefaultJsonProtocol with SprayJsonSupport 
   implicit val getGraphsFormat = jsonFormat3(GetGraphs)
   implicit val getGraphFormat = jsonFormat3(GetGraph)
   implicit val jsonTransformFormat = jsonFormat2(JsonTransform)
-
 }

@@ -7,7 +7,7 @@ from intelanalytics.core.backend import FrameBackendSimplePrint
 from intelanalytics.core.frame import BigFrame
 from intelanalytics.core.column import BigColumn
 from intelanalytics.core.files import CsvFile
-from intelanalytics.core.types import *
+from intelanalytics.core.iatypes import *
 
 def get_simple_frame_abcde():
     return BigFrame(CsvFile("dummy.csv", [('A', str),
