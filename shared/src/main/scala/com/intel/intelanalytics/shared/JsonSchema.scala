@@ -32,7 +32,7 @@ import org.joda.time.DateTime
 import spray.json.{ AdditionalFormats, StandardFormats, ProductFormats }
 import scala.reflect.api.JavaUniverse
 import scala.reflect.runtime.{ universe => ru }
-import ru.typeTag
+import ru._
 
 import scala.reflect.ClassTag
 
@@ -54,12 +54,20 @@ object JsonSchemaExtractor {
     val typ: ru.Type = mirror.classSymbol(tag.runtimeClass).toType
     val members = typ.members.filter(m => !m.isMethod)
     val func = getFieldSchema(typ)(_)
-    val properties = members.map(n => n.name.decoded -> func(n)).toMap
-    ObjectSchema(properties = Some(properties))
+    val propertyInfo = members.map(n => n.name.decoded -> func(n))
+    val required = propertyInfo.filter { case (name, (_, optional)) => !optional }.map { case (n, _) => n }.toArray
+    val properties = propertyInfo.map { case (name, (schema, _)) => name -> schema }.toMap
+    ObjectSchema(properties = Some(properties), required = Some(required))
   }
 
-  def getFieldSchema(clazz: ru.Type)(symbol: ru.Symbol): JsonSchema = {
+  def getFieldSchema(clazz: ru.Type)(symbol: ru.Symbol): (JsonSchema, Boolean) = {
     val typeSignature: ru.Type = symbol.typeSignatureIn(clazz)
+    val name = symbol.name.decoded.toLowerCase
+    val schema = getSchemaForType(name, typeSignature)
+    schema
+  }
+
+  def getSchemaForType(name: String, typeSignature: ru.Type): (JsonSchema, Boolean) = {
     val schema = typeSignature match {
       case t if t =:= typeTag[URI].tpe => StringSchema(format = Some("uri"))
       case t if t =:= typeTag[String].tpe => StringSchema()
@@ -69,20 +77,20 @@ object JsonSchemaExtractor {
         minimum = Some(Long.MinValue))
       case t if t =:= typeTag[DateTime].tpe => StringSchema(format = Some("date-time"))
       case t if t =:= typeTag[FrameReference].tpe =>
-        val s = StringSchema(format = Some("uri/iat-frame"))
-        val name = symbol.name.decoded.toLowerCase
+        val s = StringSchema(format = Some("uri/ia-frame"))
         if (name == "frame" || name.toLowerCase == "dataframe") {
           s.copy(self = Some(true))
         }
         else s
       case t if t =:= typeTag[GraphReference].tpe =>
-        val s = StringSchema(format = Some("uri/iat-graph"))
-        val name = symbol.name.decoded.toLowerCase
+        val s = StringSchema(format = Some("uri/ia-graph"))
         if (name == "graph") {
           s.copy(self = Some(true))
         }
         else s
-      case t if t.erasure =:= typeTag[Option[Any]].tpe => JsonSchema.empty
+      case t if t.erasure =:= typeTag[Option[Any]].tpe =>
+        val (subSchema, _) = getSchemaForType(name, t.asInstanceOf[TypeRefApi].args.head)
+        subSchema
       case t if t.erasure =:= typeTag[Map[Any, Any]].tpe => ObjectSchema()
       case t if t.erasure =:= typeTag[Seq[Any]].tpe => ArraySchema()
       case t if t.erasure =:= typeTag[Iterable[Any]].tpe => ArraySchema()
@@ -90,6 +98,6 @@ object JsonSchemaExtractor {
       case t if t.erasure =:= typeTag[Array[Any]].tpe => ArraySchema()
       case t => JsonSchema.empty
     }
-    schema
+    (schema, typeSignature.erasure =:= typeTag[Option[Any]].tpe)
   }
 }
