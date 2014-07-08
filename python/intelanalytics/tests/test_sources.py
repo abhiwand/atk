@@ -26,7 +26,7 @@ iatest.init()
 import unittest
 
 from intelanalytics.tests.sources import SimpleDataSource
-from intelanalytics.core.types import *
+from intelanalytics.core.iatypes import *
 
 expected_repr_123 = """   a      b
 0  1    one
