@@ -116,7 +116,7 @@ private[spark] object SparkOps extends Serializable {
   def loadLines(ctx: SparkContext,
                 fileName: String,
                 skipRows: Option[Int],
-                parserFunction: String => Array[String],
+                parserFunction: String => RowParseResult,
                 converter: Array[String] => Array[Any]): RDD[Row] = {
 
     val fileContentRdd: RDD[String] = ctx.textFile(fileName, SparkEngineConfig.sparkDefaultPartitions)
@@ -143,16 +143,16 @@ private[spark] object SparkOps extends Serializable {
 
     val parseResultRdd = ctx.textFile(fileName, SparkEngineConfig.sparkDefaultPartitions)
       .mapPartitionsWithIndex {
-        case (partition, lines) => {
-          if (partition == 0) {
-            lines.drop(skipRows.getOrElse(0)).map(parserFunction)
-          }
-          else {
-            lines.map(parserFunction)
-          }
+      case (partition, lines) => {
+        if (partition == 0) {
+          lines.drop(skipRows.getOrElse(0)).map(parserFunction)
+        }
+        else {
+          lines.map(parserFunction)
         }
       }
-      
+    }
+
 
     try {
       parseResultRdd.cache()
@@ -161,12 +161,13 @@ private[spark] object SparkOps extends Serializable {
       val failuresRdd = parseResultRdd.filter(rowParseResult => !rowParseResult.parseSuccess)
         .map(rowParseResult => rowParseResult.row)
 
-      successesRdd.map(converter)
+      successesRdd
       //failuresRdd.saveAsObjectFile(location + "-errors") // TODO: fix me
     }
     finally {
       parseResultRdd.unpersist(blocking = false)
     }
+    .map(converter)
   }
 
   /**
