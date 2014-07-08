@@ -29,6 +29,9 @@ import time
 import json
 import logging
 import sys
+import re
+import collections
+
 logger = logging.getLogger(__name__)
 
 import intelanalytics.rest.config as config
@@ -69,6 +72,19 @@ def print_progress(progress, progressMessage, make_new_line, start_times, finish
     sys.stdout.flush()
 
 class CommandRequest(object):
+    @staticmethod
+    def validate_arguments(parameterTypes, arguments):
+        validated = {}
+        for (k, v) in arguments.items():
+            if k not in parameterTypes:
+                raise ValueError("No parameter named '%s'" % k)
+            validated[k] = v
+            schema = parameterTypes[k]
+            if schema.get('type') == 'array':
+                if isinstance(v, str) or not isinstance(v, collections.Iterable):
+                    validated[k] = [v]
+        return validated
+
     def __init__(self, name, arguments):
         self.name = name
         self.arguments = arguments
@@ -81,8 +97,16 @@ class CommandRequest(object):
 
 
 class CommandInfo(object):
+    __commands_regex = re.compile("""^http.+/commands/\d+""")
+
+    @staticmethod
+    def is_valid_command_uri(uri):
+        return CommandInfo.__commands_regex.match(uri) is not None
+
     def __init__(self, response_payload):
         self._payload = response_payload
+        if not self.is_valid_command_uri(self.uri):
+            raise ValueError("Invalid command URI: " + self.uri)
 
     def __repr__(self):
         return json.dumps(self._payload, indent=2, sort_keys=True)
@@ -149,7 +173,12 @@ class CommandInfo(object):
         self._payload = payload
 
 
+
+
+
 class Polling(object):
+
+
 
     @staticmethod
     def poll(uri, predicate=None, start_interval_secs=None, max_interval_secs=None, backoff_factor=None):
@@ -178,6 +207,8 @@ class Polling(object):
             start_interval_secs = config.polling.start_interval_secs
         if backoff_factor is None:
             backoff_factor = config.polling.backoff_factor
+        if not CommandInfo.is_valid_command_uri(uri):
+            raise ValueError('Cannot poll ' + uri + ' - a /commands/{number} uri is required')
         interval_secs = start_interval_secs
 
         command_info = Polling._get_command_info(uri)
@@ -280,6 +311,8 @@ class Executor(object):
     Executes commands
     """
 
+    __commands = []
+
     def issue(self, command_request):
         """
         Issues the command_request to the server
@@ -306,6 +339,92 @@ class Executor(object):
         """
         logger.info("Executor cancelling command " + str(command_id))
         # TODO - implement command cancellation (like a DELETE to commands/id?)
+
+    def fetch(self):
+        """
+        Obtains a list of all the available commands from the server
+        :return: the commands available
+        """
+        logger.info("Requesting available commands")
+        response = http.get("commands/definitions")
+        commands = response.json()
+        return commands
+
+    @property
+    def commands(self):
+        """
+        The available commands
+        """
+        if not self.__commands:
+            self.__commands = self.fetch()
+        return self.__commands
+
+    def install_static_methods(self, clazz, functions):
+        for ((intermediates, name), v) in functions.items():
+            current = clazz
+            for inter in intermediates:
+                if not hasattr(current, inter):
+                    holder = object()
+                    setattr(current, inter, holder)
+                    current = holder
+            if not hasattr(current, name):
+                print name, "installed statically on ", clazz
+                setattr(clazz, name, staticmethod(v))
+
+    def get_command_functions(self, prefixes, update_function, new_function):
+        functions = dict()
+        for cmd in executor.commands:
+            full_name = cmd['name']
+            parts = full_name.split('/')
+            if parts[0] not in prefixes:
+                continue
+            args = cmd['argument_schema']
+            intermediates = parts[1:-1]
+            command_name = parts[-1]
+            parameters = args.setdefault('properties', {})
+            print "ARG schema:", args
+            self_name = ([k for k, v in parameters.items() if isinstance(v, dict) and v.has_key('self')] or [None])[0]
+            print "self arg: ", self_name
+
+            retProps = cmd['return_schema'].setdefault('properties', {})
+            return_self = ([k for k, v in retProps.items() if isinstance(v, dict) and v.has_key('self')] or [None])[0]
+            possible_args = list(parameters.keys())
+            if self_name:
+                possible_args.remove(self_name)
+
+            #Create a new function scope to bind variables properly
+            # (see, e.g. http://eev.ee/blog/2011/04/24/gotcha-python-scoping-closures )
+            #Need make and not just invoke so that invoke won't have
+            #kwargs that include command_name et. al.
+            def make(full_name = full_name,
+                     command_name = command_name, cmd = cmd,
+                     self_name = self_name, return_self = return_self,
+                     possible_args = possible_args,
+                     parameters = parameters):
+
+                def invoke(s, *args, **kwargs):
+                    if self_name:
+                        print "Setting", self_name, "to", s._id
+                        kwargs[self_name] = s._id
+                    for (k,v) in zip(possible_args, args):
+                        if k in kwargs:
+                            raise ValueError("Argument " + k +
+                                             " supplied as a positional argument and as a keyword argument")
+                        print "Assigning", k, "to", v
+                        kwargs[k] = v
+                    validated = CommandRequest.validate_arguments(parameters, kwargs)
+                    if return_self:
+                        return new_function(full_name, validated, s)
+                    else:
+                        return update_function(full_name, validated, s)
+                invoke.command = cmd
+                invoke.parameters = parameters
+                invoke.func_name = str(command_name)
+                return invoke
+            f = make()
+            functions[(tuple(intermediates), command_name)] = f
+        return functions
+
 
 
 executor = Executor()
