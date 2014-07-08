@@ -1,12 +1,12 @@
-Data Scientist
-==============
+===========
+User Manual
+===========
 
 Contents:
 
 ..  toctree::
     :maxdepth: 2
 
-    ia_legl
     ds_strt
     ds_db
     ds_dflw
@@ -16,6 +16,7 @@ Contents:
     ds_apim
     ds_misc
 
-..   ds_supp # Supplemental
-     ds_bkm # BKM
-     ds_resr # Resources
+.. TODO::
+    ds_supp # Supplemental
+    ds_bkm # BKM
+    ds_resr # Resources

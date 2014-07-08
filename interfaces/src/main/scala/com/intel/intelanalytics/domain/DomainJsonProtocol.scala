@@ -23,6 +23,10 @@
 
 package com.intel.intelanalytics.domain
 
+import com.intel.intelanalytics.domain.frame.load.{ Load, LineParser, LoadSource, LineParserArguments }
+import com.intel.intelanalytics.domain.schema.{ Schema, DataTypes }
+import DataTypes.DataType
+import spray.json._
 import com.intel.intelanalytics.domain.frame._
 import com.intel.intelanalytics.domain.graph.{ Graph, GraphLoad, GraphTemplate }
 import com.intel.intelanalytics.domain.graph.construction.{ EdgeRule, FrameRule, PropertyRule, ValueRule, VertexRule }
@@ -30,6 +34,7 @@ import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 import com.intel.intelanalytics.domain.schema.{ DataTypes, Schema }
 import org.joda.time.DateTime
 import spray.json._
+import com.intel.intelanalytics.engine.ProgressInfo
 
 /**
  * Implicit conversions for domain objects to JSON
@@ -70,6 +75,11 @@ object DomainJsonProtocol extends DefaultJsonProtocol {
   implicit val partialJsFormat = jsonFormat2(Partial[JsObject])
   implicit val loadLinesFormat = jsonFormat6(LoadLines[JsObject, String])
   implicit val loadLinesLongFormat = jsonFormat6(LoadLines[JsObject, Long])
+  implicit val loadSourceParserArgumentsFormat = jsonFormat3(LineParserArguments)
+  implicit val loadSourceParserFormat = jsonFormat2(LineParser)
+  implicit val loadSourceFormat = jsonFormat3(LoadSource)
+  implicit val loadFormat = jsonFormat2(Load[String])
+  implicit val loadLongFormat = jsonFormat2(Load[Long])
   implicit val filterPredicateFormat = jsonFormat2(FilterPredicate[JsObject, String])
   implicit val filterPredicateLongFormat = jsonFormat2(FilterPredicate[JsObject, Long])
   implicit val removeColumnFormat = jsonFormat2(FrameRemoveColumn[JsObject, String])
@@ -89,6 +99,8 @@ object DomainJsonProtocol extends DefaultJsonProtocol {
   implicit val errorFormat = jsonFormat5(Error)
   implicit val flattenColumnLongFormat = jsonFormat4(FlattenColumn)
   implicit val dropDuplicatesFormat = jsonFormat2(DropDuplicates)
+  implicit val progressInfoFormat = jsonFormat2(ProgressInfo)
+  implicit val binColumnLongFormat = jsonFormat6(BinColumn[Long])
 
   // graph service formats
 

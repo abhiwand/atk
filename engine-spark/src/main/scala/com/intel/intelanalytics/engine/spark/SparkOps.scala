@@ -23,7 +23,7 @@
 
 package com.intel.intelanalytics.engine.spark
 
-import com.intel.intelanalytics.domain.frame.LoadLines
+import com.intel.intelanalytics.domain.frame.load.Load
 import com.intel.intelanalytics.domain.schema.DataTypes
 import com.intel.intelanalytics.engine.Rows._
 import com.intel.intelanalytics.engine.spark.frame.{ RowParseResult, RDDJoinParam }
@@ -37,7 +37,6 @@ import scala.Some
 import scala.reflect.ClassTag
 
 //implicit conversion for PairRDD
-
 import org.apache.spark.SparkContext._
 
 private[spark] object SparkOps extends Serializable {
@@ -105,11 +104,20 @@ private[spark] object SparkOps extends Serializable {
     rows
   }
 
+  /**
+   * Load each line from CSV file into an RDD of Row objects.
+   * @param ctx SparkContext used for textFile reading
+   * @param fileName name of file to parse
+   * @param skipRows number of rows to skip before beginning parsing
+   * @param parserFunction function used for parsing lines into Row objects
+   * @param converter function used for converting parsed strings into DataTypes
+   * @return  RDD of Row objects
+   */
   def loadLines(ctx: SparkContext,
                 fileName: String,
-                location: String,
-                arguments: LoadLines[JsObject, Long],
-                parserFunction: String => RowParseResult) = {
+                skipRows: Option[Int],
+                parserFunction: String => Array[String],
+                converter: Array[String] => Array[Any]): RDD[Row] = {
 
     val fileContentRdd: RDD[String] = ctx.textFile(fileName, SparkEngineConfig.sparkDefaultPartitions)
 
@@ -117,7 +125,7 @@ private[spark] object SparkOps extends Serializable {
     val sampleSize = SparkEngineConfig.frameLoadTestSampleSize
     val threshold = SparkEngineConfig.frameLoadTestFailThresholdPercentage
 
-    val sampleRdd = getPagedRdd(fileContentRdd, arguments.skipRows.getOrElse(0).toInt, sampleSize, sampleSize)
+    val sampleRdd = getPagedRdd(fileContentRdd, skipRows.getOrElse(0).toInt, sampleSize, sampleSize)
 
     //cache the RDD since it will be used multiple times
     sampleRdd.cache()
@@ -137,13 +145,14 @@ private[spark] object SparkOps extends Serializable {
       .mapPartitionsWithIndex {
         case (partition, lines) => {
           if (partition == 0) {
-            lines.drop(arguments.skipRows.getOrElse(0)).map(parserFunction)
+            lines.drop(skipRows.getOrElse(0)).map(parserFunction)
           }
           else {
             lines.map(parserFunction)
           }
         }
       }
+      
 
     try {
       parseResultRdd.cache()
@@ -152,7 +161,7 @@ private[spark] object SparkOps extends Serializable {
       val failuresRdd = parseResultRdd.filter(rowParseResult => !rowParseResult.parseSuccess)
         .map(rowParseResult => rowParseResult.row)
 
-      successesRdd.saveAsObjectFile(location)
+      successesRdd.map(converter)
       //failuresRdd.saveAsObjectFile(location + "-errors") // TODO: fix me
     }
     finally {
@@ -241,6 +250,141 @@ private[spark] object SparkOps extends Serializable {
    */
   def flattenRddByColumnIndex(index: Int, separator: String, rdd: RDD[Row]): RDD[Row] = {
     rdd.flatMap(row => SparkOps.flattenColumnByIndex(index, row, separator))
+  }
+
+  /**
+   * Bin column at index using equal width binning.
+   *
+   * This uses the Spark histogram function to get the cutoffs, then map each input rdd column value to a bin number
+   * based on the cutoff ranges.
+   *
+   * @param index column index
+   * @param numBins requested number of bins
+   * @param rdd RDD that contains the column for binning
+   * @return new RDD with binned column appended
+   */
+  def binEqualWidth(index: Int, numBins: Int, rdd: RDD[Row]): RDD[Row] = {
+    // TODO: Need consider how cutoffs/binSizes are going to be returned (if at all)
+
+    // try parsing column as pairs of doubles
+    val pairedRdd = try {
+      rdd.map { row =>
+        val value = java.lang.Double.parseDouble(row(index).toString)
+        (value, value)
+      }.distinct()
+    }
+    catch {
+      case cce: NumberFormatException => throw new NumberFormatException("Column values cannot be binned: " + cce.toString)
+    }
+
+    // find the minimum and maximum values in the column RDD
+    val min: Double = pairedRdd.sortByKey().first()._1
+    val max: Double = pairedRdd.sortByKey(false).first()._1
+
+    // determine bin width and cutoffs
+    val binWidth = (max - min) / numBins.toDouble
+
+    val cutoffs = if (binWidth != 0) {
+      (min to max by binWidth).toArray
+    }
+    else {
+      List(min, min).toArray
+    }
+
+    // map each data element to its bin id, using cutoffs index as bin id
+    val binnedColumnRdd = rdd.map { row =>
+      var binIndex = 0
+      var working = true
+      val element = java.lang.Double.parseDouble(row(index).toString)
+      do {
+        for (i <- 0 to cutoffs.length - 2) {
+          // inclusive upper-bound on last cutoff range
+          if ((i == cutoffs.length - 2) && (element - cutoffs(i) >= 0)) { // && (element - cutoffs(i + 1) <= 0)) {
+            binIndex = i
+            working = false
+          }
+          else if ((element - cutoffs(i) >= 0) && (element - cutoffs(i + 1) < 0)) {
+            binIndex = i
+            working = false
+          }
+        }
+      } while (working)
+      row :+ binIndex.asInstanceOf[Any]
+    }
+    binnedColumnRdd
+  }
+
+  /**
+   * Bin column at index using equal depth binning.
+   *
+   * For n bins of a column C of length m, the bin number is determined by:
+   * ceiling(n * f(C) / m)
+   * where f is a tie-adjusted ranking function over values of C.  If there are multiple of the same value in C, then
+   * their tie-adjusted rank is the average of their ordered rank values.
+   *
+   * @param index column index
+   * @param numBins requested number of bins
+   * @param rdd RDD for binning
+   * @return new RDD with binned column appended
+   */
+  def binEqualDepth(index: Int, numBins: Int, rdd: RDD[Row]): RDD[Row] = {
+    import scala.math.ceil
+
+    // try creating RDD[Double] from column
+    val columnRdd = try {
+      rdd.map(row => java.lang.Double.parseDouble(row(index).toString))
+    }
+    catch {
+      case cce: NumberFormatException => throw new NumberFormatException("Column values cannot be binned: " + cce.toString)
+    }
+
+    val numElements = columnRdd.count()
+
+    // assign a rank to each distinct element
+    val pairedRdd = columnRdd.groupBy(element => element).map(pairs => (pairs._1, pairs._2.size)).sortByKey()
+
+    // Need to go through values sequentially, but this creates an issue with Spark and multiple partitions
+    // Option 1: use outside var counter...but each partition gets a fresh copy (no good)
+    // Option 2: use Spark accumulator...but nondeterministic order of access among partitions (no good)
+    // Option 3: convert RDD to Array for sequential operations and back to RDD otherwise (works fine but inefficient)
+    // TODO: Option 4: ??? (find better way that avoids iterating over potentially long Arrays)
+    val pairedArray = pairedRdd.collect()
+
+    // the following will fail for columns that contain more than Int.MaxValue of a specific value
+    var rank = 1
+    val rankedArray = try {
+      pairedArray.map { value =>
+        val avgRank = BigDecimal((BigInt(rank) to BigInt(rank + (value._2 - 1))).foldLeft(BigInt("0"))(_ + _)) / BigDecimal(value._2)
+        rank += value._2
+        (value._1, avgRank.toDouble)
+      }
+    }
+    catch {
+      case iae: IllegalArgumentException => throw new IllegalArgumentException("More than Int.MaxValue of specific column value" + iae.toString)
+    }
+
+    val rankedRdd = rdd.sparkContext.parallelize(rankedArray)
+
+    // compute the bin number
+    val binnedRdd = rankedRdd.map { valueRank =>
+      val bin = ceil((numBins * valueRank._2) / numElements.asInstanceOf[Double]).asInstanceOf[Long]
+      (valueRank._1, bin)
+    }
+
+    // shift the bin numbers so that they are contiguous values
+    val sortedBinnedRdd = binnedRdd.groupBy(valueBin => valueBin._2).sortByKey()
+
+    val sortedBinnedArray = sortedBinnedRdd.collect()
+
+    rank = 1
+    val shiftedArray = sortedBinnedArray.flatMap { binMappings =>
+      val valuePairs = binMappings._2.map(valueBin => (valueBin._1, rank))
+      rank += 1
+      valuePairs
+    }
+
+    val binMap = shiftedArray.toMap
+    rdd.map(row => row :+ (binMap.get(java.lang.Double.parseDouble(row(index).toString)).get - 1).asInstanceOf[Any])
   }
 
   def aggregation_functions(elem: Seq[Array[Any]],
