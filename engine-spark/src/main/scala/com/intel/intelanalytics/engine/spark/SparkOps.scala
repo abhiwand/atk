@@ -23,21 +23,16 @@
 
 package com.intel.intelanalytics.engine.spark
 
-import com.intel.intelanalytics.domain.frame.load.Load
 import com.intel.intelanalytics.domain.schema.DataTypes
 import com.intel.intelanalytics.engine.Rows._
-import com.intel.intelanalytics.engine.spark.frame.RDDJoinParam
 import org.apache.spark.SparkContext
-import org.apache.spark.SparkContext._
-import org.apache.spark.rdd.RDD
-import spray.json.JsObject
 
 import scala.collection.mutable
 import scala.Some
 import com.intel.intelanalytics.engine.spark.frame.RDDJoinParam
-import com.intel.intelanalytics.domain.frame.LoadLines
 import com.intel.intelanalytics.algorithm.{PercentileTarget, PercentileElement}
 import scala.collection.mutable.ListBuffer
+import org.apache.spark.rdd.RDD
 
 //implicit conversion for PairRDD
 import org.apache.spark.SparkContext._
@@ -487,6 +482,51 @@ private[spark] object SparkOps extends Serializable {
     })
 
     mapping.map(i => (i._1, i._2.toSeq)).toMap
+  }
+
+  def calculatePercentiles(rdd: RDD[Row], percentiles: Seq[Int], columnIndex: Int): Seq[Any] = {
+    val totalRows = rdd.count()
+    val pairRdd = rdd.map(row => SparkOps.createKeyValuePairFromRow(row, List(columnIndex))).map { case (keyColumns, data) => (keyColumns(0), data) }
+    val sorted = pairRdd.sortByKey(true)
+
+    val mapping = getPercentileTargetMapping(totalRows, percentiles)
+    //Count the rows in each partition, then order the counts by partition number
+
+    val counts = sorted.mapPartitionsWithIndex(
+      (i: Int, rows: Iterator[(Any, Row)]) => Iterator.single((i, rows.size)))
+      .collect()
+      .sortBy(_._1)
+
+    //Create cumulative sums of row counts by partition, e.g. 1 -> 200, 2-> 400, 3-> 412
+    //if there were 412 rows divided into two 200 row partitions and one 12 row partition
+    val sums = counts.scanLeft((0, 0)) {
+      (t1, t2) => (t2._1, t1._2 + t2._2)
+    }
+      .drop(1) //first one is (0,0), drop that
+      .toMap
+
+    //Put the per-partition counts and cumulative counts together
+    val sumsAndCounts = counts.map {
+      case (part, count) => (part, (count, sums(part)))
+    }.toMap
+
+    val temp = sorted.mapPartitionsWithIndex((i, rows) => {
+      var index =  (if(i == 1) 0 else sums(i - 1)) + 1
+
+      val result = ListBuffer[(Int, BigDecimal)]()
+
+      for(row <- rows) {
+        val target: Seq[PercentileTarget] = mapping(index)
+        index = index + 1
+        for(percentile <- target)
+          result += Tuple2(percentile.percentile, percentile.weight * BigDecimal(row._1))
+      }
+
+
+      result.iterator
+    }).asInstanceOf[RDD[(Int, Int)]]
+
+    temp.reduceByKey((i, j)=> i+ j).collect().toSeq
   }
 
 }
