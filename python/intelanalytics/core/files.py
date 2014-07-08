@@ -21,8 +21,9 @@
 # must be express and approved by Intel in writing.
 ##############################################################################
 import warnings
-from collections import OrderedDict
 from iatypes import supported_types
+from ordereddict import OrderedDict
+from collections import defaultdict
 
 
 class DataFile(object):
