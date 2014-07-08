@@ -21,7 +21,7 @@
 # must be express and approved by Intel in writing.
 ##############################################################################
 
-from intelanalytics.core.types import unknown, supported_types
+from intelanalytics.core.iatypes import unknown, supported_types
 
 
 class BigColumn(object):

@@ -21,38 +21,18 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics
+package com.intel.intelanalytics.shared
 
-trait ClassLoaderAware {
+import org.scalatest._
 
-  /**
-   * Execute a code block using specified class loader
-   * rather than the ClassLoader of the currentThread()
-   */
-  def withLoader[T](loader: ClassLoader)(expr: => T): T = {
-    val prior = Thread.currentThread().getContextClassLoader
-    try {
-      Thread.currentThread().setContextClassLoader(loader)
-      expr
-    }
-    finally {
-      Thread.currentThread().setContextClassLoader(prior)
-    }
+case class SchemaSample(int: Int, long: Long, string: String, array: Array[String], nested: Option[SchemaSample])
+
+@Ignore
+class JsonSchemaSpec extends FlatSpec with Matchers {
+
+  "Case classes" should "generate schemas" in {
+    val schema = JsonSchemaExtractor.getProductSchema(manifest[SchemaSample])
+    schema should equal()
   }
 
-  /**
-   * Execute a code block using the ClassLoader of 'this'
-   * rather than the ClassLoader of the currentThread()
-   */
-  def withMyClassLoader[T](expression: => T): T = {
-    val prior = Thread.currentThread().getContextClassLoader
-    try {
-      val loader = this.getClass.getClassLoader
-      Thread.currentThread setContextClassLoader loader
-      expression
-    }
-    finally {
-      Thread.currentThread setContextClassLoader prior
-    }
-  }
 }
