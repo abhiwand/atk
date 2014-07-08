@@ -21,11 +21,12 @@ object FeatureVector {
                         posteriorPropertyName: Option[String],
                         splitPropertyName: Option[String]): Option[FeatureVector] = {
 
-    val priorArray = parseArray(graphElement, priorPropertyName)
+    val priorArray = parseArray(graphElement, priorPropertyName, " ")
+
     val splitType = parseSplitType(graphElement, splitPropertyName)
 
     val posteriorArray = if (posteriorPropertyName != None) {
-      parseArray(graphElement, posteriorPropertyName.get)
+      parseArray(graphElement, posteriorPropertyName.get, ",")
     }
     else Array.empty[Double]
 
@@ -46,11 +47,11 @@ object FeatureVector {
    * @return An optional split type which can be train (TR), validation (VA), and test (TE).
    */
   def parseSplitType(graphElement: GraphElement, splitPropertyName: Option[String]): String = {
-    if (splitPropertyName != None) {
-      val splitProperty = graphElement.getProperty(splitPropertyName.get)
-      if (splitProperty != None) splitProperty.get.value.toString.toUpperCase else ""
-    }
-    else ""
+    val result = for {
+      name <- splitPropertyName
+      property <- graphElement.getProperty(name)
+    } yield property.value.toString.toUpperCase
+    result.getOrElse("")
   }
 
   /**
@@ -61,7 +62,7 @@ object FeatureVector {
    * @param sep Delimiter (defaults to comma)
    * @return Array of feature probabilities
    */
-  def parseArray(graphElement: GraphElement, propertyName: String, sep: String = ","): Array[Double] = {
+  def parseArray(graphElement: GraphElement, propertyName: String, sep: String = " "): Array[Double] = {
     val property = graphElement.getProperty(propertyName)
     if (property != None) {
       property.get.value.toString.split(sep).map(parseDouble(_).getOrElse(0d))

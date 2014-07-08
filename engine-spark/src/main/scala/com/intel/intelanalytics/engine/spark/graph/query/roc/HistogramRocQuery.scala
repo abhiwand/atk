@@ -4,6 +4,8 @@ import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRDDImplicits._
 import com.intel.graphbuilder.driver.spark.titan.reader.TitanReader
 import com.intel.graphbuilder.graph.titan.TitanGraphConnector
 import com.intel.graphbuilder.util.SerializableBaseConfiguration
+import com.intel.intelanalytics.domain.DomainJsonProtocol
+import com.intel.intelanalytics.domain.graph.GraphReference
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
 import com.intel.intelanalytics.security.UserPrincipal
 import com.typesafe.config.Config
@@ -16,7 +18,7 @@ import scala.concurrent._
 /**
  * Get histogram and optionally ROC curve on property values
  *
- * @param graph The graph ID
+ * @param graph The graph reference
  * @param priorPropertyName The property name on which users want to get histogram.
  *                          When used without second_property_name, this property name can from either prior
  *                          or posterior properties. When used together with second_property_name, expect the
@@ -43,7 +45,7 @@ import scala.concurrent._
  *
  * @param numBuckets The number of buckets to plot histogram. The default value is 30.
  */
-case class HistogramRocParams(graph: Int,
+case class HistogramRocParams(graph: GraphReference,
                               priorPropertyName: String,
                               posteriorPropertyName: Option[String] = Some(""),
                               enableRoc: Option[Boolean] = Some(false),
@@ -67,6 +69,7 @@ case class HistogramRocResult(priorHistograms: List[Histogram],
                               rocCurves: Option[List[List[(String, List[Roc])]]])
 
 class HistogramRocQuery extends SparkCommandPlugin[HistogramRocParams, HistogramRocResult] {
+  import DomainJsonProtocol._
   implicit val histogramRocParamsFormat = jsonFormat9(HistogramRocParams)
   implicit val rocFormat = jsonFormat3(Roc)
   implicit val histogramFormat = jsonFormat2(Histogram.apply)
@@ -74,9 +77,15 @@ class HistogramRocQuery extends SparkCommandPlugin[HistogramRocParams, Histogram
 
   override def execute(invocation: SparkInvocation, arguments: HistogramRocParams)(implicit user: UserPrincipal, executionContext: ExecutionContext): HistogramRocResult = {
     // TODO: Integrate with Joyesh
-    //val graphFuture = invocation.engine.getGraph(arguments.graph.toLong)
+    System.out.println("*********In Execute method of LBP********")
+
+    val config = configuration().get
+    //val graphFuture = invocation.engine.getGraph(arguments.graph.id)
+
+    // Change this to read from default-timeout
+    import scala.concurrent.duration._
     //val graph = Await.result(graphFuture, config.getInt("default-timeout") seconds)
-    val config: Config = configuration().get
+
     val priorPropertyName = arguments.priorPropertyName
     val posteriorPropertyName = arguments.posteriorPropertyName
     val rocParams = RocParams(arguments.rocThreshold.getOrElse(List(0, 0.05, 1)))
@@ -90,10 +99,11 @@ class HistogramRocQuery extends SparkCommandPlugin[HistogramRocParams, Histogram
 
     // Create graph connection
     val titanConfiguration = new SerializableBaseConfiguration()
-    val titanLoadConfig = config.getConfig("intel.analytics.engine.graphs.query.histogram_roc")
+    val titanLoadConfig = config.getConfig("titan.load")
     for (entry <- titanLoadConfig.entrySet().asScala) {
       titanConfiguration.addProperty(entry.getKey, titanLoadConfig.getString(entry.getKey))
     }
+    titanConfiguration.setProperty("storage.tablename", "iat_graph_mygraph") // + graph.name)
 
     val titanConnector = new TitanGraphConnector(titanConfiguration)
     val sc = invocation.sparkContext
