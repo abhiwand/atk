@@ -33,6 +33,7 @@ import com.intel.intelanalytics.engine.spark.frame.RDDJoinParam
 import com.intel.intelanalytics.algorithm.{PercentileTarget, PercentileElement}
 import scala.collection.mutable.ListBuffer
 import org.apache.spark.rdd.RDD
+import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 
 //implicit conversion for PairRDD
 import org.apache.spark.SparkContext._
@@ -41,24 +42,7 @@ private[spark] object SparkOps extends Serializable {
 
   def getRows(rdd: RDD[Row], offset: Long, count: Int, limit: Int): Seq[Row] = {
 
-    //Count the rows in each partition, then order the counts by partition number
-    val counts = rdd.mapPartitionsWithIndex(
-      (i: Int, rows: Iterator[Row]) => Iterator.single((i, rows.size)))
-      .collect()
-      .sortBy(_._1)
-
-    //Create cumulative sums of row counts by partition, e.g. 1 -> 200, 2-> 400, 3-> 412
-    //if there were 412 rows divided into two 200 row partitions and one 12 row partition
-    val sums = counts.scanLeft((0, 0)) {
-      (t1, t2) => (t2._1, t1._2 + t2._2)
-    }
-      .drop(1) //first one is (0,0), drop that
-      .toMap
-
-    //Put the per-partition counts and cumulative counts together
-    val sumsAndCounts = counts.map {
-      case (part, count) => (part, (count, sums(part)))
-    }.toMap
+    val sumsAndCounts: Map[Int, (Int, Int)] = getPerPartitionCountAndAccumulatedSum(rdd)
 
     //println(sumsAndCounts)
     val capped = Math.min(count, limit)
@@ -80,6 +64,28 @@ private[spark] object SparkOps extends Serializable {
       }
     }).collect()
     rows
+  }
+
+  def getPerPartitionCountAndAccumulatedSum[T](rdd: RDD[T]): Map[Int, (Int, Int)] = {
+    //Count the rows in each partition, then order the counts by partition number
+    val counts = rdd.mapPartitionsWithIndex(
+      (i: Int, rows: Iterator[T]) => Iterator.single((i, rows.size)))
+      .collect()
+      .sortBy(_._1)
+
+    //Create cumulative sums of row counts by partition, e.g. 1 -> 200, 2-> 400, 3-> 412
+    //if there were 412 rows divided into two 200 row partitions and one 12 row partition
+    val sums = counts.scanLeft((0, 0)) {
+      (t1, t2) => (t2._1, t1._2 + t2._2)
+    }
+      .drop(1) //first one is (0,0), drop that
+      .toMap
+
+    //Put the per-partition counts and cumulative counts together
+    val sumsAndCounts = counts.map {
+      case (part, count) => (part, (count, sums(part)))
+    }.toMap
+    sumsAndCounts
   }
 
   /**
@@ -484,49 +490,44 @@ private[spark] object SparkOps extends Serializable {
     mapping.map(i => (i._1, i._2.toSeq)).toMap
   }
 
-  def calculatePercentiles(rdd: RDD[Row], percentiles: Seq[Int], columnIndex: Int): Seq[Any] = {
+  def calculatePercentiles(rdd: RDD[Row], percentiles: Seq[Int], columnIndex: Int, dataType: DataType): Seq[Any] = {
     val totalRows = rdd.count()
     val pairRdd = rdd.map(row => SparkOps.createKeyValuePairFromRow(row, List(columnIndex))).map { case (keyColumns, data) => (keyColumns(0), data) }
-    val sorted = pairRdd.sortByKey(true)
+    val sorted = pairRdd.asInstanceOf[RDD[(Int, Row)]].sortByKey(true)
 
-    val mapping = getPercentileTargetMapping(totalRows, percentiles)
-    //Count the rows in each partition, then order the counts by partition number
+    val percentileTargetMapping = getPercentileTargetMapping(totalRows, percentiles)
+    val sumsAndCounts: Map[Int, (Int, Int)] = getPerPartitionCountAndAccumulatedSum(sorted)
 
-    val counts = sorted.mapPartitionsWithIndex(
-      (i: Int, rows: Iterator[(Any, Row)]) => Iterator.single((i, rows.size)))
-      .collect()
-      .sortBy(_._1)
-
-    //Create cumulative sums of row counts by partition, e.g. 1 -> 200, 2-> 400, 3-> 412
-    //if there were 412 rows divided into two 200 row partitions and one 12 row partition
-    val sums = counts.scanLeft((0, 0)) {
-      (t1, t2) => (t2._1, t1._2 + t2._2)
-    }
-      .drop(1) //first one is (0,0), drop that
-      .toMap
-
-    //Put the per-partition counts and cumulative counts together
-    val sumsAndCounts = counts.map {
-      case (part, count) => (part, (count, sums(part)))
-    }.toMap
-
-    val temp = sorted.mapPartitionsWithIndex((i, rows) => {
-      var index =  (if(i == 1) 0 else sums(i - 1)) + 1
-
+    val temp = sorted.mapPartitionsWithIndex((partitionIndex, rows) => {
+      var rowIndex =  (if(partitionIndex == 0) 0 else sumsAndCounts(partitionIndex - 1)._2) + 1
       val result = ListBuffer[(Int, BigDecimal)]()
 
       for(row <- rows) {
-        val target: Seq[PercentileTarget] = mapping(index)
-        index = index + 1
-        for(percentile <- target)
-          result += Tuple2(percentile.percentile, percentile.weight * BigDecimal(row._1))
+        if(percentileTargetMapping.contains(rowIndex)) {
+          val target: Seq[PercentileTarget] = percentileTargetMapping(rowIndex)
+
+          for(percentile <- target) {
+            val value = row._1
+
+            val numericVal = dataType match {
+              case DataTypes.int32 => BigDecimal(value.asInstanceOf[DataTypes.int32.ScalaType])
+              case DataTypes.int64 => BigDecimal(value.asInstanceOf[DataTypes.int64.ScalaType])
+              case DataTypes.float32 => BigDecimal(value.asInstanceOf[DataTypes.float32.ScalaType])
+              case DataTypes.float64 => BigDecimal(value.asInstanceOf[DataTypes.float64.ScalaType])
+            }
+
+            result += Tuple2(percentile.percentile, numericVal * percentile.weight)
+          }
+        }
+
+        rowIndex = rowIndex + 1
       }
 
 
       result.iterator
-    }).asInstanceOf[RDD[(Int, Int)]]
+    })
 
-    temp.reduceByKey((i, j)=> i+ j).collect().toSeq
+    temp.reduceByKey((i, j)=> i+ j).sortByKey(true).collect()
   }
 
 }
