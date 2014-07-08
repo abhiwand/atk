@@ -6,9 +6,11 @@ Administration includes:
 ..  toctree::
     :maxdepth: 1
 
-    ia_legl
     ad_reqs
     ad_inst
+    ad_plug
+
+.. TODO:: Future sections
     ad_conf
     ad_mntc
     ad_trbl
