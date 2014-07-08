@@ -110,14 +110,12 @@ private[spark] object SparkOps extends Serializable {
    * @param fileName name of file to parse
    * @param skipRows number of rows to skip before beginning parsing
    * @param parserFunction function used for parsing lines into Row objects
-   * @param converter function used for converting parsed strings into DataTypes
    * @return  RDD of Row objects
    */
   def loadLines(ctx: SparkContext,
                 fileName: String,
                 skipRows: Option[Int],
-                parserFunction: String => RowParseResult,
-                converter: Array[String] => Array[Any]): RDD[Row] = {
+                parserFunction: String => RowParseResult): RDD[Row] = {
 
     val fileContentRdd: RDD[String] = ctx.textFile(fileName, SparkEngineConfig.sparkDefaultPartitions)
 
@@ -143,16 +141,15 @@ private[spark] object SparkOps extends Serializable {
 
     val parseResultRdd = ctx.textFile(fileName, SparkEngineConfig.sparkDefaultPartitions)
       .mapPartitionsWithIndex {
-      case (partition, lines) => {
-        if (partition == 0) {
-          lines.drop(skipRows.getOrElse(0)).map(parserFunction)
-        }
-        else {
-          lines.map(parserFunction)
+        case (partition, lines) => {
+          if (partition == 0) {
+            lines.drop(skipRows.getOrElse(0)).map(parserFunction)
+          }
+          else {
+            lines.map(parserFunction)
+          }
         }
       }
-    }
-
 
     try {
       parseResultRdd.cache()
@@ -167,7 +164,6 @@ private[spark] object SparkOps extends Serializable {
     finally {
       parseResultRdd.unpersist(blocking = false)
     }
-    .map(converter)
   }
 
   /**
