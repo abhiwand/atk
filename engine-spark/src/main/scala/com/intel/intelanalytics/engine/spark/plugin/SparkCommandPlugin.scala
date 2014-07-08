@@ -34,7 +34,8 @@ import scala.concurrent.ExecutionContext
  * @tparam Argument the argument type for the command
  * @tparam Return the return type for the command
  */
-trait SparkCommandPlugin[Argument, Return] extends CommandPlugin[Argument, Return] {
+trait SparkCommandPlugin[Argument <: Product, Return <: Product]
+    extends CommandPlugin[Argument, Return] {
 
   /**
    * Operation plugins must implement this method to do the work requested by the user.

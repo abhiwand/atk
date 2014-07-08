@@ -31,7 +31,7 @@ from ordereddict import OrderedDict
 from intelanalytics.core.frame import BigFrame
 from intelanalytics.core.column import BigColumn
 from intelanalytics.core.sources import SimpleDataSource
-from intelanalytics.core.types import *
+from intelanalytics.core.iatypes import *
 
 _little_frame_backend = None
 
