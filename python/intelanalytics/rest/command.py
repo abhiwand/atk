@@ -334,7 +334,6 @@ class Executor(object):
                     setattr(current, inter, holder)
                     current = holder
             if not hasattr(current, name):
-                print name, "installed statically on ", clazz
                 setattr(clazz, name, staticmethod(v))
 
     def get_command_functions(self, prefixes, update_function, new_function):
@@ -348,10 +347,8 @@ class Executor(object):
             intermediates = parts[1:-1]
             command_name = parts[-1]
             parameters = args.get('properties', {})
-            print "ARG schema:", args
             self_parameter_name = ([k for k, v in parameters.items()
                                     if isinstance(v, dict) and v.has_key('self')] or [None])[0]
-            print "self arg: ", self_parameter_name
 
             return_props = cmd['return_schema'].setdefault('properties', {})
             return_self_parameter = ([k for k, v in return_props.items()
@@ -375,13 +372,11 @@ class Executor(object):
                 def invoke(s, *args, **kwargs):
                     try:
                         if self_name:
-                            print "Setting", self_name, "to", s._id
                             kwargs[self_name] = s._id
                         for (k,v) in zip(possible_args, args):
                             if k in kwargs:
                                 raise ValueError("Argument " + k +
                                                  " supplied as a positional argument and as a keyword argument")
-                            print "Assigning", k, "to", v
                             kwargs[k] = v
                         validated = CommandRequest.validate_arguments(parameters, kwargs)
                         if return_self:
