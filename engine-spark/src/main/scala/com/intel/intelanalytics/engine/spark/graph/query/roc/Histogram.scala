@@ -18,8 +18,12 @@ object Histogram {
    * @return Histogram buckets
    */
   def makeBuckets(numBuckets: Int, min: Double, max: Double): Array[Double] = {
-    val bucketWidth = (max - min) / numBuckets + epsilon
-    (1 to numBuckets).map(x => min + bucketWidth * x).toArray
+    require(numBuckets > 0, "Number of buckets for histogram should be greater than zero.")
+    require(max > min, "Maximum value should exceed minimum value for histogram buckets.")
+    require(!min.isNaN && !max.isNaN && !min.isInfinite && !max.isInfinite, "Values should not contain +/-infinity or NaN")
+
+    val bucketWidth = (max - min) / numBuckets
+    (0 to numBuckets).map(x => min + bucketWidth * x).toArray
   }
 
   /**
@@ -46,7 +50,12 @@ object Histogram {
     }.reduce { (maxmin1, maxmin2) =>
       (maxmin1._1.max(maxmin2._1), maxmin1._2.min(maxmin2._2))
     }
-    (min, max)
+    if (max == Double.NegativeInfinity && min == Double.PositiveInfinity) { //Empty RDD
+      (Double.NegativeInfinity, Double.PositiveInfinity)
+    }
+    else {
+      (min, max)
+    }
   }
 }
 
