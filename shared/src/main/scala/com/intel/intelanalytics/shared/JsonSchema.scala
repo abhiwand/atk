@@ -30,6 +30,11 @@ import com.intel.intelanalytics.domain.graph.GraphReference
 import com.intel.intelanalytics.schema._
 import org.joda.time.DateTime
 import spray.json.{ AdditionalFormats, StandardFormats, ProductFormats }
+import scala.reflect.api.JavaUniverse
+import scala.reflect.runtime.{ universe => ru }
+import ru._
+
+import scala.reflect.ClassTag
 
 private[intelanalytics] class ProductFormatsAccessor extends ProductFormats
     with StandardFormats
@@ -42,53 +47,58 @@ object JsonSchemaExtractor {
 
   val fieldHelper = new ProductFormatsAccessor()
 
-  def getProductSchema[T](manifest: ClassManifest[T]): ObjectSchema = {
+  def getProductSchema[T](tag: ClassTag[T]): ObjectSchema = {
+    val manifest: ClassManifest[T] = tag
     val names = fieldHelper.extractFieldNames(manifest)
-    val get = getFieldSchema(manifest)(_)
-    val properties = names.map(n => n -> get(n)).toMap
-    ObjectSchema(properties = Some(properties))
+    val mirror = ru.runtimeMirror(tag.runtimeClass.getClassLoader)
+    val typ: ru.Type = mirror.classSymbol(tag.runtimeClass).toType
+    val members = typ.members.filter(m => !m.isMethod)
+    val func = getFieldSchema(typ)(_)
+    val propertyInfo = members.map(n => n.name.decoded.trim -> func(n))
+    val required = propertyInfo.filter { case (name, (_, optional)) => !optional }.map { case (n, _) => n }.toArray
+    val properties = propertyInfo.map { case (name, (schema, _)) => name -> schema }.toMap
+    ObjectSchema(properties = Some(properties), required = Some(required))
   }
 
-  def getFieldSchema(manifest: ClassManifest[_])(propertyName: String): JsonSchema = {
-    val theClass = manifest.erasure
-    val field = try {
-      theClass.getDeclaredField(propertyName)
-    }
-    catch {
-      case e: NoSuchFieldException =>
-        throw new NoSuchFieldException(s"Class ${manifest.erasure} has no field $propertyName")
-    }
+  def getFieldSchema(clazz: ru.Type)(symbol: ru.Symbol): (JsonSchema, Boolean) = {
+    val typeSignature: ru.Type = symbol.typeSignatureIn(clazz)
+    val name = symbol.name.decoded.toLowerCase.trim
+    val schema = getSchemaForType(name, typeSignature)
+    schema
+  }
 
-    assert(field != null, s"Field $propertyName not found on ${theClass.getName}")
-    val schema = field.getType match {
-      case t if t == classOf[URI] => StringSchema(format = Some("uri"))
-      case t if t == classOf[String] => StringSchema()
-      case t if t == classOf[Int] => NumberSchema(maximum = Some(Int.MaxValue),
-        minimum = Some(Int.MinValue))
-      case t if t == classOf[Long] => NumberSchema(maximum = Some(Long.MaxValue),
-        minimum = Some(Long.MinValue))
-      case t if t == classOf[DateTime] => StringSchema(format = Some("date-time"))
-      case t if t == classOf[FrameReference] =>
-        val s = StringSchema(format = Some("uri/iat-frame"))
-        if (propertyName.toLowerCase == "frame"
-          || propertyName.toLowerCase == "dataframe") {
+  def getSchemaForType(name: String, typeSignature: ru.Type): (JsonSchema, Boolean) = {
+    val schema = typeSignature match {
+      case t if t =:= typeTag[URI].tpe => StringSchema(format = Some("uri"))
+      case t if t =:= typeTag[String].tpe => StringSchema()
+      case t if t =:= typeTag[Int].tpe => JsonSchema.int
+      case t if t =:= typeTag[Long].tpe => JsonSchema.long
+      case t if t =:= typeTag[DateTime].tpe => JsonSchema.dateTime
+      case t if t =:= typeTag[FrameReference].tpe =>
+        println(s"NAME IS '$name'")
+        val s = JsonSchema.frame
+        if (name == "frame" || name == "dataframe") {
           s.copy(self = Some(true))
         }
         else s
-      case t if t == classOf[GraphReference] =>
-        val s = StringSchema(format = Some("uri/iat-graph"))
-        if (propertyName.toLowerCase == "graph") {
+      case t if t =:= typeTag[GraphReference].tpe =>
+        val s = JsonSchema.graph
+        if (name == "graph") {
           s.copy(self = Some(true))
         }
         else s
-      case t if t == classOf[Option[_]] => JsonSchema.empty
-      case t if classOf[Map[_, _]].isAssignableFrom(t) => ObjectSchema()
-      case t if classOf[Seq[_]].isAssignableFrom(t) => ArraySchema()
-      case t if classOf[Iterable[_]].isAssignableFrom(t) => ArraySchema()
-      case t if classOf[List[_]].isAssignableFrom(t) => ArraySchema()
-      case t if classOf[Array[_]].isAssignableFrom(t) => ArraySchema()
+      case t if t.erasure =:= typeTag[Option[Any]].tpe =>
+        val (subSchema, _) = getSchemaForType(name, t.asInstanceOf[TypeRefApi].args.head)
+        subSchema
+        //parameterized types need special handling
+      case t if t.erasure =:= typeTag[Map[Any, Any]].tpe => ObjectSchema()
+      case t if t.erasure =:= typeTag[Seq[Any]].tpe => ArraySchema()
+      case t if t.erasure =:= typeTag[Iterable[Any]].tpe => ArraySchema()
+      case t if t.erasure =:= typeTag[List[Any]].tpe => ArraySchema()
+        //array type system works a little differently
+      case t if t.typeConstructor =:= typeTag[Array[Any]].tpe.typeConstructor => ArraySchema()
       case t => JsonSchema.empty
     }
-    schema
+    (schema, typeSignature.erasure =:= typeTag[Option[Any]].tpe)
   }
 }
