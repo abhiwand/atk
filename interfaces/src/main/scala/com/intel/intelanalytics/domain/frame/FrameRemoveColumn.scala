@@ -25,5 +25,5 @@ package com.intel.intelanalytics.domain.frame
 
 case class FrameRemoveColumn(frame: FrameReference, columns: Array[String]) {
   require(frame != null, "frame is required")
-  require(columns != null, "column is required")
+  require(columns != null, "columns are required")
 }

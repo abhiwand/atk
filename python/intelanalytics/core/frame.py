@@ -511,7 +511,7 @@ class BigFrame(CommandSupport):
         ----------
         column_name : str
             The column to be flattened
-
+                                                  n
         Returns
         -------
         frame : BigFrame
