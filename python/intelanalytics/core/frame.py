@@ -565,7 +565,10 @@ class BigFrame(object):
         >>> binnedEW = frame.bin_column('a', 5, 'equalwidth', 'aEWBinned')
         >>> binnedED = frame.bin_column('a', 5, 'equaldepth', 'aEDBinned')
         """
-        return self._backend.bin_column(self, column_name, num_bins, bin_type, bin_column_name)
+        try:
+            return self._backend.bin_column(self, column_name, num_bins, bin_type, bin_column_name)
+        except:
+            raise IaError(logger)
 
     def drop(self, predicate):
         """
@@ -927,4 +930,7 @@ class BigFrame(object):
         >>> ecdf_frame = frame.ecdf('sample')
 
         """
-        return self._backend.ecdf(self, sample_col)
+        try:
+            return self._backend.ecdf(self, sample_col)
+        except:
+            raise IaError(logger)
