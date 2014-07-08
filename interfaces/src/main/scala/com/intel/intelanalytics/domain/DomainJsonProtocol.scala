@@ -34,6 +34,7 @@ import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 import com.intel.intelanalytics.domain.schema.{ DataTypes, Schema }
 import org.joda.time.DateTime
 import spray.json._
+import com.intel.intelanalytics.engine.ProgressInfo
 
 /**
  * Implicit conversions for domain objects to JSON
@@ -98,6 +99,7 @@ object DomainJsonProtocol extends DefaultJsonProtocol {
   implicit val errorFormat = jsonFormat5(Error)
   implicit val flattenColumnLongFormat = jsonFormat4(FlattenColumn)
   implicit val dropDuplicatesFormat = jsonFormat2(DropDuplicates)
+  implicit val progressInfoFormat = jsonFormat2(ProgressInfo)
   implicit val binColumnLongFormat = jsonFormat6(BinColumn[Long])
 
   // graph service formats
