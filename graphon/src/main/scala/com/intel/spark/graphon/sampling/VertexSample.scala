@@ -133,7 +133,7 @@ class VertexSample extends SparkCommandPlugin[VS, VSResult] {
       vertices
     }
     else {
-      // without replacement should be fine
+      // currently without replacement
       val vertexSample = vertices.takeSample(false, size, seed)
       vertices.sparkContext.parallelize(vertexSample)
     }
