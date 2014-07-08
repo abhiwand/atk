@@ -82,8 +82,7 @@ class VertexSample extends SparkCommandPlugin[VS, VSResult] {
   titanConfig.setProperty("ids.block-size", config.getString("ids.block-size"))
   titanConfig.setProperty("ids.renew-timeout", config.getString("ids.renew-timeout"))
 
-  override def execute(invocation: SparkInvocation, arguments: VS)
-                      (implicit user: UserPrincipal, executionContext: ExecutionContext): VSResult = {
+  override def execute(invocation: SparkInvocation, arguments: VS)(implicit user: UserPrincipal, executionContext: ExecutionContext): VSResult = {
 
     val graphFuture = invocation.engine.getGraph(arguments.graph.id)
     // Change this to read from default-timeout
@@ -105,8 +104,10 @@ class VertexSample extends SparkCommandPlugin[VS, VSResult] {
     titanConfig.setProperty("storage.tablename", arguments.subgraphName)
     writeToTitan(vertexSample, edgeSample)
 
+    val titanConnector = new TitanGraphConnector(titanConfig)
+    titanConnector.connect()
     // TODO: get the Titan graph ID and return as GraphReference
-    VSResult(0)
+    VSResult(new GraphReference(0))
   }
 
   /**
@@ -253,8 +254,6 @@ class VertexSample extends SparkCommandPlugin[VS, VSResult] {
   def sampleEdges(vertices: RDD[Vertex], edges: RDD[Edge]): RDD[Edge] = {
     val vertexArray = vertices.map(v => v.gbId.value).collect() // get vertexGbIds
     edges.filter(e => vertexArray.contains(e.headVertexGbId.value) && vertexArray.contains(e.tailVertexGbId.value))
-    Double
-    Long
   }
 
   /**
