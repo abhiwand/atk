@@ -23,10 +23,12 @@
 
 package com.intel.intelanalytics.shared
 
-import com.intel.intelanalytics.schema.{JsonSchema, ArraySchema, StringSchema, NumberSchema, ObjectSchema}
-import org.scalatest.{Matchers, FlatSpec}
+import com.intel.intelanalytics.domain.frame.FrameReference
+import com.intel.intelanalytics.schema.{ JsonSchema, ArraySchema, StringSchema, NumberSchema, ObjectSchema }
+import org.scalatest.{ Matchers, FlatSpec }
 
-case class SchemaSample(int: Int, long: Long, string: String, array: Array[String], option: Option[Int])
+case class SchemaSample(int: Int, long: Long, string: String, array: Array[String], option: Option[Int],
+                        frame: FrameReference, other_frame: FrameReference)
 
 class JsonSchemaSpec extends FlatSpec with Matchers {
   val schema = JsonSchemaExtractor.getProductSchema(manifest[SchemaSample])
@@ -34,8 +36,11 @@ class JsonSchemaSpec extends FlatSpec with Matchers {
     "long" -> JsonSchema.long,
     "string" -> new StringSchema(),
     "array" -> ArraySchema(),
-    "option" -> JsonSchema.int)),
-    required = Some(Array("int", "long", "string", "array")))
+    "option" -> JsonSchema.int,
+    "frame" -> StringSchema(format = Some("ia/dataframe"), self = Some(true)),
+    "other_frame" -> StringSchema(format = Some("ia/graph"))
+  )),
+    required = Some(Array("int", "long", "string", "array", "frame", "other_frame")))
 
   "JsonSchemaExtractor" should "find all the case class vals" in {
     schema.properties.get.keys should equal(reference.properties.get.keys)
@@ -49,10 +54,18 @@ class JsonSchemaSpec extends FlatSpec with Matchers {
   }
   it should "make Options not required" in {
     schema.properties.get("option") should equal(reference.properties.get("option"))
-    schema.required.get should not contain("option")
+    schema.required.get should not contain ("option")
   }
   it should "make non-Option types required" in {
     schema.properties.get("string") should equal(reference.properties.get("string"))
     schema.required.get should contain("string")
+  }
+
+  it should "detect frames named frame as self members" in {
+    schema.properties.get.get("frame").get.asInstanceOf[StringSchema].self should equal(Some(true))
+  }
+
+  it should "treat frames not named frame as non-self members" in {
+    schema.properties.get.get("other_frame").get.asInstanceOf[StringSchema].self should equal(None)
   }
 }

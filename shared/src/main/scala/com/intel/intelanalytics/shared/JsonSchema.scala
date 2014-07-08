@@ -62,7 +62,7 @@ object JsonSchemaExtractor {
 
   def getFieldSchema(clazz: ru.Type)(symbol: ru.Symbol): (JsonSchema, Boolean) = {
     val typeSignature: ru.Type = symbol.typeSignatureIn(clazz)
-    val name = symbol.name.decoded.toLowerCase
+    val name = symbol.name.decoded.toLowerCase.trim
     val schema = getSchemaForType(name, typeSignature)
     schema
   }
@@ -75,8 +75,9 @@ object JsonSchemaExtractor {
       case t if t =:= typeTag[Long].tpe => JsonSchema.long
       case t if t =:= typeTag[DateTime].tpe => JsonSchema.dateTime
       case t if t =:= typeTag[FrameReference].tpe =>
+        println(s"NAME IS '$name'")
         val s = JsonSchema.frame
-        if (name == "frame" || name.toLowerCase == "dataframe") {
+        if (name == "frame" || name == "dataframe") {
           s.copy(self = Some(true))
         }
         else s
@@ -89,11 +90,13 @@ object JsonSchemaExtractor {
       case t if t.erasure =:= typeTag[Option[Any]].tpe =>
         val (subSchema, _) = getSchemaForType(name, t.asInstanceOf[TypeRefApi].args.head)
         subSchema
+        //parameterized types need special handling
       case t if t.erasure =:= typeTag[Map[Any, Any]].tpe => ObjectSchema()
       case t if t.erasure =:= typeTag[Seq[Any]].tpe => ArraySchema()
       case t if t.erasure =:= typeTag[Iterable[Any]].tpe => ArraySchema()
       case t if t.erasure =:= typeTag[List[Any]].tpe => ArraySchema()
-      case t if t.erasure =:= typeTag[Array[Any]].tpe => ArraySchema()
+        //array type system works a little differently
+      case t if t.typeConstructor =:= typeTag[Array[Any]].tpe.typeConstructor => ArraySchema()
       case t => JsonSchema.empty
     }
     (schema, typeSignature.erasure =:= typeTag[Option[Any]].tpe)
