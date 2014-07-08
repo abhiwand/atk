@@ -23,21 +23,18 @@
 
 package com.intel.intelanalytics.domain.frame
 
-case class SplitData[+Arguments, FrameRef](source_frame: FrameRef,
-                                           training_frame: FrameRef,
-                                           test_frame: FrameRef,
-                                           validation_frame: FrameRef,
-                                           training_percentage: Double,
-                                           test_percentage: Double,
-                                           validation_percentage: Double,
-                                           random_seed: Int) {
-  require(source_frame != null)
-  require(training_frame != null)
-  require(validation_frame != null)
+case class SplitData[FrameRef](frame: FrameRef,
+                               split_percent: List[Double],
+                               output_column: String,
+                               random_seed: Int) {
+  require(frame != null)
 
-  require(0 <= training_percentage)
-  require(0 <= test_percentage)
-  require(0 <= validation_percentage)
+  require(split_percent != null)
 
-  require(training_percentage + test_percentage + validation_percentage <= 1)
+  require(split_percent.forall(x => (x >= 0)))
+  require(split_percent.reduce(_ + _) <= 1)
+
+  require(output_column != null)
+
+  require(random_seed != null)
 }

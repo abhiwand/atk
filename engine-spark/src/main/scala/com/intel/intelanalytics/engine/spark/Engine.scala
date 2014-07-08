@@ -47,12 +47,15 @@ import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.rdd.RDD
 import spray.json._
 
+import com.intel.intelanalytics.domain.frame.LoadLines
+
 import DomainJsonProtocol._
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent._
 import scala.util.Try
 import org.apache.spark.engine.SparkProgressListener
+import com.intel.spark.mllib.util.{ LabeledLine, MLDataSplitter }
 
 object SparkEngine {
   private val pythonRddDelimiter = "\0"
@@ -268,56 +271,33 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     frames.updateSchema(projectedFrame, projectedColumns.toList)
   }
 
-  def splitData(arguments: SplitData[JsObject, Long])(implicit user: UserPrincipal): Execution =
+  def splitData(arguments: SplitData[Long])(implicit user: UserPrincipal): Execution =
     commands.execute(splitDataCommand, arguments, user, implicitly[ExecutionContext])
 
   val splitDataCommand = commands.registerCommand("dataframe/splitData", splitDataSimple)
-  def splitDataSimple(arguments: SplitData[JsObject, Long], user: UserPrincipal) = {
+  def splitDataSimple(arguments: SplitData[Long], user: UserPrincipal) = {
 
     val ctx = sparkContextManager.context(user).sparkContext
 
-    val sourceFrameID = arguments.source_frame
-    val sourceFrame = expectFrame(sourceFrameID)
+    val frameID = arguments.frame
+    val frame = expectFrame(frameID)
 
-    val trainingFrameID = arguments.training_frame
-    val trainingFrame = expectFrame(trainingFrameID)
+    val splitter = new MLDataSplitter(arguments.split_percent.toArray, arguments.random_seed)
 
-    val testFrameID = arguments.test_frame
-    val testFrame = expectFrame(testFrameID)
+    val ttvLabeledRDD = splitter.randomlyLabelRDD(frames.getFrameRdd(ctx, frameID))
 
-    val validationFrameID = arguments.validation_frame
-    val validationFrame = expectFrame(validationFrameID)
+    val splitRDD = ttvLabeledRDD.map((labeledRow: LabeledLine[Row]) =>
+      {
+        val row: Row = labeledRow.entry
+        val label: Any = labeledRow.label.asInstanceOf[Any]
+        row :+ label
+      })
 
-    // nls TODO
-    // replace with an actual call to the data splitter
+    splitRDD.saveAsObjectFile(fsRoot + frames.getFrameDataFile(frame.id))
 
-    /*
-    val schema = sourceFrame.schema
-    val location = fsRoot + frames.getFrameDataFile(projectedFrameID)
-
-    val columnIndices = for {
-      col <- columns
-      columnIndex = schema.columns.indexWhere(columnTuple => columnTuple._1 == col)
-    } yield columnIndex
-
-    if (columnIndices.contains(-1)) {
-      throw new IllegalArgumentException(s"Invalid list of columns: ${arguments.columns.toString()}")
-    }
-
-    frames.getFrameRdd(ctx, sourceFrameID)
-      .map(row => {
-        for { i <- columnIndices } yield row(i)
-      }.toArray)
-      .saveAsObjectFile(location)
-
-    val projectedColumns = arguments.new_column_names match {
-      case empty if empty.size == 0 => for { i <- columnIndices } yield schema.columns(i)
-      case _ =>
-        for { i <- 0 until columnIndices.size }
-          yield (arguments.new_column_names(i), schema.columns(columnIndices(i))._2)
-    }
-    frames.updateSchema(projectedFrame, projectedColumns.toList)
-    */
+    val allColumns = frame.schema.columns :+ (arguments.output_column, DataTypes.int32)
+    frames.updateSchema(frame, allColumns)
+    frame.copy(schema = Schema(allColumns))
   }
 
   def groupBy(arguments: FrameGroupByColumn[JsObject, Long])(implicit user: UserPrincipal): Execution =

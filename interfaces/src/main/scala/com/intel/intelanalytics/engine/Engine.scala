@@ -73,7 +73,7 @@ trait Engine {
 
   def project(arguments: FrameProject[JsObject, Long])(implicit user: UserPrincipal): Execution
 
-  def splitData(arguments: SplitData[JsObject, Long])(implicit user: UserPrincipal): Execution
+  def splitData(arguments: SplitData[Long])(implicit user: UserPrincipal): Execution
 
   def renameFrame(arguments: FrameRenameFrame[JsObject, Long])(implicit user: UserPrincipal): Execution
 
