@@ -27,14 +27,14 @@ case class SplitData[FrameRef](frame: FrameRef,
                                split_percentages: List[Double],
                                output_column: String,
                                random_seed: Int) {
-  require(frame != null)
+  require(frame != null, "SplitData requires a non-null dataframe.")
 
-  require(split_percentages != null)
+  require(split_percentages != null, "SplitData requires that the percentages vector be non-null.")
 
-  require(split_percentages.forall(x => (x >= 0)))
-  require(split_percentages.reduce(_ + _) <= 1)
+  require(split_percentages.forall(x => (x >= 0)), "SplitData requires that all percentages be non-negative")
+  require(split_percentages.reduce(_ + _) <= 1, "SplitData requires that percentages sum to no more than 1")
 
-  require(output_column != null)
+  require(output_column != null, "SplitData requires a non-null output_column")
 
-  require(random_seed != null)
+  require(random_seed != null, "SplitData requires a non-null random seed")
 }
