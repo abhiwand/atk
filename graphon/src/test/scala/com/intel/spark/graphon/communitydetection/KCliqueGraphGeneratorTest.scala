@@ -28,25 +28,44 @@ import org.scalatest.{ Matchers, FlatSpec, FunSuite }
 import com.intel.spark.graphon.connectedcomponents.TestingSparkContext
 import com.intel.spark.graphon.communitydetection.KCliquePercolationDataTypes._
 
-class GetConnectedComponentsTest extends FlatSpec with Matchers with TestingSparkContext {
+class KCliqueGraphGeneratorTest extends FlatSpec with Matchers with TestingSparkContext {
 
-  trait getConnectedComponentsTest {
+  trait KCliqueGraphGenTest {
     val fourCliques = List((Array(2, 3, 4), Array(5, 7, 8)), (Array(3, 5, 6), Array(7, 8)))
       .map({ case (cliques, extenders) => (cliques.map(_.toLong).toSet, extenders.map(_.toLong).toSet) })
 
     val vertexListOfFourCliqueGraph = List(Array(2, 3, 4, 5), Array(2, 3, 4, 7), Array(2, 3, 4, 8), Array(3, 5, 6, 7), Array(3, 5, 6, 8))
       .map(clique => clique.map(_.toLong).toSet)
+
+    val edgeListOfFourCliqueGraph = List(
+      Array(Array(2, 3, 4, 5), Array(2, 3, 4, 7)),
+      Array(Array(2, 3, 4, 5), Array(2, 3, 4, 8)),
+      Array(Array(2, 3, 4, 7), Array(2, 3, 4, 8)),
+      Array(Array(3, 5, 6, 7), Array(3, 5, 6, 8))
+    ).map(_.map(_.map(_.toLong).toSet).toSet)
   }
 
-  "K-Clique Connected Components" should
-    "produce the same number of pairs of vertices and component ID as the number of vertices in the input graph" in new getConnectedComponentsTest {
+  "K-Clique graph" should
+    "have each k-cliques as the vertex of the new graph " in new KCliqueGraphGenTest {
 
       val rddOfFourCliques = sc.parallelize(fourCliques).map({ case (x, y) => ExtendersFact(CliqueFact(x), y, true) })
+      val rddOfVertexListOfFourCliqueGraph = sc.parallelize(vertexListOfFourCliqueGraph)
 
       val fourCliqueGraphFromCreateGraphOutput = KCliqueGraphGenerator.run(rddOfFourCliques)
-      val fourCliqueGraphCCOutput = GetConnectedComponents.run(fourCliqueGraphFromCreateGraphOutput, sc)
-      val fourCliqueGraphCC = fourCliqueGraphCCOutput.connectedComponents
+      val vertexListFromCreateGraphOutput = fourCliqueGraphFromCreateGraphOutput.cliqueGraphVertices
 
-      fourCliqueGraphCC.count() shouldEqual vertexListOfFourCliqueGraph.size
+      vertexListFromCreateGraphOutput.collect().toSet shouldEqual rddOfVertexListOfFourCliqueGraph.collect().toSet
+    }
+
+  "K-Clique graph" should
+    "produce correct edge list where edges between two k-cliques (which is the vertices of new graph) exists if they share (k-1) elements" in new KCliqueGraphGenTest {
+
+      val rddOfFourCliques = sc.parallelize(fourCliques).map({ case (x, y) => ExtendersFact(CliqueFact(x), y, true) })
+      val rddOfEdgeListOfFourCliqueGraph = sc.parallelize(edgeListOfFourCliqueGraph).map(subset => (subset.head, subset.last))
+
+      val fourCliqueGraphFromCreateGraphOutput = KCliqueGraphGenerator.run(rddOfFourCliques)
+      val edgeListFromCreateGraphOutput = fourCliqueGraphFromCreateGraphOutput.cliqueGraphEdges
+
+      edgeListFromCreateGraphOutput.collect().toSet shouldEqual rddOfEdgeListOfFourCliqueGraph.collect().toSet
     }
 }

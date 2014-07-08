@@ -50,7 +50,7 @@ object AssignCommunitiesToVertex {
     val communityVerticesList: RDD[(Long, Set[Long])] = communityCoGroupedWithVerticesList.flatMap({ case (communityIdList, verticesList) => communityIdList.flatMap(communityID => verticesList.map(vertices => (communityID, vertices))) })
     val communityVertex: RDD[VertexCommunity] = communityVerticesList.flatMap(communityVertices => communityVertices._2.map(vertex => VertexCommunity(vertex, communityVertices._1)))
 
-    val vertexCommunityList: RDD[(Long, Set[Long])] = communityVertex.groupBy(_.vertex).mapValues(_.map(_.communityID).toSet)
+    val vertexCommunityList: RDD[(Long, Set[Long])] = communityVertex.groupBy(_.vertexID).mapValues(_.map(_.communityID).toSet)
     vertexCommunityList
   }
 
