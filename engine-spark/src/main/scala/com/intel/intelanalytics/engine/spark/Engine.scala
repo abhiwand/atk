@@ -118,7 +118,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
             "Could not convert instance of " + x.getClass.getName + " to  arguments for builtin/line/separator")
         }
 
-        val rowParser = new RowParser(args.separator)
+        val rowParser = new RowParser(args.separator, columnTypes)
         s => rowParser(s)
 
       }
@@ -175,8 +175,8 @@ class SparkEngine(sparkContextManager: SparkContextManager,
       }
       case "file" => {
         val parser = source.parser.get
-        val parserFunction = getLineParser(parser)
         val schema = parser.arguments.schema
+        val parserFunction = getLineParser(parser, schema.columns.map(_._2).toArray)
         val converter = DataTypes.parseMany(schema.columns.map(_._2).toArray)(_)
 
         (schema,
