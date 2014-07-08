@@ -35,31 +35,32 @@ import collection.JavaConverters._
  * Write back to each vertex in Titan graph the set of communities to which it
  * belongs in some property specified by the user
  */
-class WriteBackToTitan {
+
+class KCliqueCommunityWriterInTitan {
 
   /**
    *
-   * @param vertexAndCommunityList an RDD of pair of vertex Id and list of communities it belongs to.
+   * @param vertexAndCommunitySet an RDD of pair of vertex Id and list of communities it belongs to.
    *                               Vertex Id is of type Long and the list of communities is Set[Long]
    * @param communityPropertyDefaultLabel name of the community property of vertex that will be updated/created in the input graph
    * @param titanConnector The titan graph connector
    */
-  def run(vertexAndCommunityList: RDD[(Long, Set[Long])], communityPropertyDefaultLabel: String, titanConnector: TitanGraphConnector) {
-    //  To create a GB Vertex from the (Long, Set[Long]) pair in vertexAndCommunityList.
+  def run(vertexAndCommunitySet: RDD[(Long, Set[Long])], communityPropertyDefaultLabel: String, titanConnector: TitanGraphConnector) {
+    //  To create a GB Vertex from the (Long, Set[Long]) pair in vertexAndCommunitySet.
     //  The ID (the long) is both the physical ID and the GB ID. Since we need a GB ID to
     //  create the vertex, we need to create some default property (TitanReader.TITAN_READER_DEFAULT_GB_ID)
     //  and stick the physical ID in there as well (so the property list will have two entries:
     //  the GB ID and the community list)
-    //  The label of the cmmunityList property is defined as COMMUNITY_PROPERTY_DEFAULT_LABEL
+    //  The label of the communitySet property is defined as communityPropertyDefaultLabel
 
-    //  Converted communityList from scala Set to Java.util.Set using .asJava decorator method of JavaConverters, as
-    //  we need to use Java objects while actually storing to Titan using GraphBuilder.
+    //  Converted communitySet from scala Set to Java.util.Set using .asJava decorator method of JavaConverters.
+    //  We need to use Java objects while actually storing to Titan using GraphBuilder.
 
-    val newGBVertex: RDD[Vertex] = vertexAndCommunityList
+    val newGBVertex: RDD[Vertex] = vertexAndCommunitySet
       .map({
-        case (vertexId, communityList) => Vertex(vertexId,
+        case (vertexId, communitySet) => Vertex(vertexId,
           Property(TitanReader.TITAN_READER_DEFAULT_GB_ID, vertexId),
-          Seq(Property(communityPropertyDefaultLabel, communityList.asJava)))
+          Seq(Property(communityPropertyDefaultLabel, communitySet.asJava)))
       })
 
     //  Write back vertices to Titan and append in existing graph

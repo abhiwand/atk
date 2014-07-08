@@ -2,10 +2,10 @@ package com.intel.spark.graphon.communitydetection
 
 import com.intel.spark.graphon.communitydetection.KCliquePercolationDataTypes._
 import org.apache.spark.rdd.RDD
-import com.intel.spark.graphon.communitydetection.CreateGraphFromEnumeratedKCliques._
 import com.intel.spark.graphon.idassigner._
 import com.intel.spark.graphon.connectedcomponents.ConnectedComponentsGraphXDefault
 import org.apache.spark.SparkContext
+import com.intel.spark.graphon.communitydetection.KCliqueGraphGenerator._
 
 /**
  * Assign new Long IDs for each K-cliques of the k-clique graphs. Create a new graph using these Long IDs as
@@ -16,20 +16,20 @@ object GetConnectedComponents {
 
   /**
    * Run the connected components and get the community IDs along with mapping between new Long IDs and original k-cliques
-   * @param kCliqueGraphOutput KCliqueGraphOutput with set of k-cliques as vertices of new graph and
+   * @param kCliqueGraphGeneratorOutput KCliqueGraphOutput with set of k-cliques as vertices of new graph and
    *                           pair of k-cliques having (k-1) vertices common as edges of new graph
-   * @param sparkContext SparkContext
+   * @param sc SparkContext
    * @return connectedComponentsOutput
    */
-  def run(kCliqueGraphOutput: KCliqueGraphOutput, sparkContext: SparkContext) = {
+  def run(kCliqueGraphGeneratorOutput: KCliqueGraphGeneratorOutput, sc: SparkContext) = {
 
-    val cliqueGraphVertices = kCliqueGraphOutput.cliqueGraphVertices
-    val cliqueGraphEdges = kCliqueGraphOutput.cliqueGraphEdges
+    val cliqueGraphVertices = kCliqueGraphGeneratorOutput.cliqueGraphVertices
+    val cliqueGraphEdges = kCliqueGraphGeneratorOutput.cliqueGraphEdges
 
     //    Generate new Long IDs for each K-Clique in k-clique graph. These long IDs will be the vertices
     //    of a new graph. In this new graph, the edge between two vertices will exists if the two original
     //    k-cliques corresponding to the two vertices have exactly (k-1) number of elements in common
-    val graphIDAssigner = new GraphIDAssigner[VertexSet](sparkContext)
+    val graphIDAssigner = new GraphIDAssigner[VertexSet](sc)
     val graphIDAssignerOutput = graphIDAssigner.run(cliqueGraphVertices, cliqueGraphEdges)
 
     val newVerticesOfCliqueGraph = graphIDAssignerOutput.vertices
