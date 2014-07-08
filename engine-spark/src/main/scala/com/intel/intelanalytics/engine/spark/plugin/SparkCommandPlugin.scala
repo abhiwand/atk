@@ -43,7 +43,7 @@ trait SparkCommandPlugin[Argument <: Product, Return <: Product]
    * @param arguments the arguments supplied by the caller
    * @return a value of type declared as the Return type.
    */
-  override def execute(invocation: Invocation, arguments: Argument)(implicit user: UserPrincipal, executionContext: ExecutionContext): Return = {
+  final override def execute(invocation: Invocation, arguments: Argument)(implicit user: UserPrincipal, executionContext: ExecutionContext): Return = {
     execute(invocation.asInstanceOf[SparkInvocation], arguments)(user, executionContext)
   }
 

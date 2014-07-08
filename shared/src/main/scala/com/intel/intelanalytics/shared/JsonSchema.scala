@@ -54,7 +54,7 @@ object JsonSchemaExtractor {
     val typ: ru.Type = mirror.classSymbol(tag.runtimeClass).toType
     val members = typ.members.filter(m => !m.isMethod)
     val func = getFieldSchema(typ)(_)
-    val propertyInfo = members.map(n => n.name.decoded -> func(n))
+    val propertyInfo = members.map(n => n.name.decoded.trim -> func(n))
     val required = propertyInfo.filter { case (name, (_, optional)) => !optional }.map { case (n, _) => n }.toArray
     val properties = propertyInfo.map { case (name, (schema, _)) => name -> schema }.toMap
     ObjectSchema(properties = Some(properties), required = Some(required))
@@ -71,19 +71,17 @@ object JsonSchemaExtractor {
     val schema = typeSignature match {
       case t if t =:= typeTag[URI].tpe => StringSchema(format = Some("uri"))
       case t if t =:= typeTag[String].tpe => StringSchema()
-      case t if t =:= typeTag[Int].tpe => NumberSchema(maximum = Some(Int.MaxValue),
-        minimum = Some(Int.MinValue))
-      case t if t =:= typeTag[Long].tpe => NumberSchema(maximum = Some(Long.MaxValue),
-        minimum = Some(Long.MinValue))
-      case t if t =:= typeTag[DateTime].tpe => StringSchema(format = Some("date-time"))
+      case t if t =:= typeTag[Int].tpe => JsonSchema.int
+      case t if t =:= typeTag[Long].tpe => JsonSchema.long
+      case t if t =:= typeTag[DateTime].tpe => JsonSchema.dateTime
       case t if t =:= typeTag[FrameReference].tpe =>
-        val s = StringSchema(format = Some("uri/ia-frame"))
+        val s = JsonSchema.frame
         if (name == "frame" || name.toLowerCase == "dataframe") {
           s.copy(self = Some(true))
         }
         else s
       case t if t =:= typeTag[GraphReference].tpe =>
-        val s = StringSchema(format = Some("uri/ia-graph"))
+        val s = JsonSchema.graph
         if (name == "graph") {
           s.copy(self = Some(true))
         }
