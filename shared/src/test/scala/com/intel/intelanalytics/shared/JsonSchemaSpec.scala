@@ -29,7 +29,7 @@ case class SchemaSample(int: Int, long: Long, string: String, array: Array[Strin
 class JsonSchemaSpec extends FlatSpec with Matchers {
   "Case classes" should "generate schemas" in {
     val schema = JsonSchemaExtractor.getProductSchema(manifest[SchemaSample])
-    schema should equal()
+    schema should not be null
   }
 
 }
