@@ -24,15 +24,15 @@
 package com.intel.intelanalytics.domain.frame
 
 case class SplitData[FrameRef](frame: FrameRef,
-                               split_percent: List[Double],
+                               split_percentages: List[Double],
                                output_column: String,
                                random_seed: Int) {
   require(frame != null)
 
-  require(split_percent != null)
+  require(split_percentages != null)
 
-  require(split_percent.forall(x => (x >= 0)))
-  require(split_percent.reduce(_ + _) <= 1)
+  require(split_percentages.forall(x => (x >= 0)))
+  require(split_percentages.reduce(_ + _) <= 1)
 
   require(output_column != null)
 
