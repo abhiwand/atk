@@ -420,19 +420,6 @@ class BigGraph(CommandSupport):
     def _get_new_graph_name(self):
         return "graph_" + uuid.uuid4().hex
 
-    def histogram_roc(self,
-                      prior_property_name,
-                      posterior_property_name,
-                      enable_roc,
-                      property_type):
-
-        return self._backend.histogram_roc(self,
-                                           prior_property_name,
-                                           posterior_property_name,
-                                           enable_roc,
-                                           property_type)
-        logger.info('Returned ROC query"%s"', self._name)
-
         # TODO - consider:
         #def add(self, rules)
         #def remove(self, rules)

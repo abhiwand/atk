@@ -1,7 +1,7 @@
 package com.intel.intelanalytics.engine.spark.graph.query.roc
 
 import com.intel.graphbuilder.elements.{ Property, Vertex }
-import org.scalatest.matchers.{MatchResult, Matcher}
+import org.scalatest.matchers.{ MatchResult, Matcher }
 import org.scalatest.{ FlatSpec, Matchers }
 import com.intel.testutils.MatcherUtils._
 
@@ -16,9 +16,9 @@ class FeatureVectorTest extends FlatSpec with Matchers {
       Seq(Property("prior", "0.1,0.2"), Property("posterior", "0.4,0.6"), Property("split", "TR")))
     val featureVector = FeatureVector.parseGraphElement(vertex, "prior", Some("posterior"), Some("split")).get
 
-    featureVector.priorArray should equalWithTolerance (Array(0.1, 0.2), tolerance)
-    featureVector.posteriorArray should equalWithTolerance (Array(0.4, 0.6), tolerance)
-    featureVector.splitType shouldEqual("TR")
+    featureVector.priorArray should equalWithTolerance(Array(0.1, 0.2), tolerance)
+    featureVector.posteriorArray should equalWithTolerance(Array(0.4, 0.6), tolerance)
+    featureVector.splitType shouldEqual ("TR")
 
   }
   it should "parse doubles" in {
