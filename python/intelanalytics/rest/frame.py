@@ -26,8 +26,7 @@ REST backend for frames
 import uuid
 import logging
 logger = logging.getLogger(__name__)
-from ordereddict import OrderedDict
-from collections import defaultdict
+from collections import defaultdict, OrderedDict
 import json
 
 from intelanalytics.core.frame import BigFrame

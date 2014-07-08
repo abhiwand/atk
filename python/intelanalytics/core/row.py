@@ -1,4 +1,4 @@
-from ordereddict import OrderedDict
+from collections import OrderedDict
 
 from intelanalytics.core.iatypes import supported_types
 

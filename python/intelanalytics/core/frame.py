@@ -21,7 +21,7 @@
 # must be express and approved by Intel in writing.
 ##############################################################################
 
-from ordereddict import OrderedDict
+from collections import OrderedDict
 import json
 
 import logging

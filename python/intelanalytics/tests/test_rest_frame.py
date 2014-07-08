@@ -27,7 +27,7 @@ iatest.init()
 import unittest
 from intelanalytics.core.iatypes import *
 from ordereddict import OrderedDict
-from intelanalytics.rest.frame import FrameBackendRest
+mmafrom intelanalytics.rest.frame import FrameBackendRest
 
 
 class TestInspectionTable(unittest.TestCase):
