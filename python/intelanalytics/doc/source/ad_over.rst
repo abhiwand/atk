@@ -1,7 +1,7 @@
 Administration
 ==============
 
-Administration includes:
+Contents:
 
 ..  toctree::
     :maxdepth: 1

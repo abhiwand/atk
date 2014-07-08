@@ -6,6 +6,14 @@ Glossary
 ..  glossary::
     :sorted:
 
+    Adjacency List
+
+        From `Wikipedia\: Adjacency List`_:
+
+        In graph theory and computer science, an adjacency list representation of a graph is a collection of unordered lists,
+        one for each vertex in the graph.
+        Each list describes the set of neighbors of its vertex.
+
     Aggregation Functions
 
         Aggregation functions are mathematical functions which are computed over a single column within a specified set of rows.
@@ -87,6 +95,47 @@ Glossary
 
         A table database object with function to manipulate the data.
 
+    Classification
+
+        From `Wikipedia\: Statistical Classification`_:
+
+        In machine learning and statistics, classification is the problem of identifying to which of a set of categories (sub-populations) a new
+        observation belongs, on the basis of a training set of data containing observations (or instances) whose category membership is known.
+
+    Clustering
+
+        From `Wikipedia\: Cluster Analysis`_:
+
+        Cluster analysis or clustering is the task of grouping a set of objects in such a way that objects in the same group (called a cluster)
+        are more similar (in some sense or another) to each other than to those in other groups (clusters).
+        It is a main task of exploratory data mining, and a common technique for statistical data analysis, used in many fields, including
+        machine learning, pattern recognition, image analysis, information retrieval, and bioinformatics.
+
+    Collaborative Filtering
+
+        From `Wikipedia\: Collaborative Filtering`_:
+
+        In general, collaborative filtering is the process of filtering for information or patterns using techniques
+        involving collaboration among multiple agents, viewpoints, data sources, etc. [#f5]_
+
+    Community Structure Detection
+
+        From `Wikipedia\: Community Structure`_:
+
+        In the study of complex networks, a network is said to have community structure if the nodes of the network can be easily grouped
+        into (potentially overlapping) sets of nodes such that each set of nodes is densely connected internally.
+
+    Confusion Matrix
+    Confusion Matrices
+
+        From `Wikipedia\: Confusion Matrix`_:
+
+        In the field of machine learning, a confusion matrix, also known as a contingency table or an error matrix [#f6]_ ,
+        is a specific table layout that allows visualization of the performance of an algorithm, typically a supervised learning
+        one (in unsupervised learning it is usually called a matching matrix).
+        Each column of the matrix represents the instances in a predicted class, while each row represents the instances in an actual class.
+        The name stems from the fact that it makes it easy to see if the system is confusing two classes (i.e. commonly mislabeling one as another).
+
     Congugate Gradient Descent
 
         The "Congugate Gradient Descent with Bias for Collaborative Filtering algorithm is an algorithm used by the Intel Data Platform:
@@ -140,6 +189,14 @@ Glossary
             The disparate systems containing the original data are frequently managed and operated by different employees.
             For example a cost accounting system may combine data from payroll, sales and purchasing.
 
+
+    F1 Score
+    F-Measure
+    F-Score
+        
+        From `Wikipedia\: F1 score`_:
+
+        In statistical analysis of binary classification, the F1 score (also F-score or F-measure) is a measure of a test's accuracy.
 
     Gaussian Random Fields
 
@@ -217,6 +274,21 @@ Glossary
         You can use any positive float number.
         So 3, 2.5, 1, or 0.7 are all valid values.
         A larger smoothing value implies stronger relationships between adjacent random variables in the graph.
+
+    Kolmogorov–Smirnov Test
+    K-S Tests
+
+        From `Wikipedia\: Kolmogorov–Smirnov Test`_:
+
+        In statistics, the Kolmogorov–Smirnov test (K–S test) is a nonparametric test of the equality of continuous, one-dimensional
+        probability distributions that can be used to compare a sample with a reference probability distribution (one-sample K–S test),
+        or to compare two samples (two-sample K–S test).
+        The Kolmogorov–Smirnov statistic quantifies a distance between the empirical distribution function of the sample and the
+        cumulative distribution function of the reference distribution, or between the empirical distribution functions of two samples.
+
+    Label Propagation
+
+        TODO: LP
 
     Labeled Data vs Unlabeled Data
 
@@ -298,12 +370,28 @@ Glossary
 
         For more information see: `Wikipedia\: PageRank`_.
 
+    Precision/Recall
+
+        From `Wikipedia\: Precision and Recall`_:
+
+        In pattern recognition and information retrieval with binary classification, precision (also called positive predictive value) is the
+        fraction of retrieved instances that are relevant, while recall (also known as sensitivity) is the fraction of relevant instances that
+        are retrieved.
+        Both precision and recall are therefore based on an understanding and measure of relevance.
+        
     Property Map
 
         A property map is a key-value map.
         Both edges and vertices have property maps.
 
         For more information see: `Tinkerpop\: Property Graph Model`_.
+
+    Recommendation Systems
+
+        From `Wikipedia\: Recommender System`_:
+
+        Recommender systems or recommendation systems (sometimes replacing "system" with a synonym such as platform or engine) are a subclass
+        of information filtering system that seek to predict the 'rating' or 'preference' that user would give to an item [#f3]_ [#f4]_ .
 
     RDF
     
@@ -364,6 +452,22 @@ Glossary
 
         For more information see: :term:`Unsupervised Learning`, and :term:`Semi-Supervised Learning`.
 
+    Topic Modeling
+
+        From `Wikipedia\: Topic Modeling`_:
+
+        In machine learning and natural language processing, a topic model is a type of statistical model for discovering the abstract "topics"
+        that occur in a collection of documents.
+
+    Transaction Processing
+    Transactional Functionality
+
+        From `Wikipedia\: Transaction Processing`_:
+
+        In computer science, transaction processing is information processing that is divided into individual, indivisible operations,
+        called transactions.
+        Each transaction must succeed or fail as a complete unit; it cannot be only partially complete.
+
     Undirected Graph
 
         An undirected graph is one in which the edges have no orientation (direction).
@@ -421,8 +525,25 @@ Glossary
 .. _Wikipedia\: Relaxation (iterative method): http://en.wikipedia.org/wiki/Relaxation_(iterative_method 
 .. _Wikipedia\: Stratified Sampling: https://en.wikipedia.org/wiki/Stratified_sampling
 .. _Wikipedia\: Undirected Graph: http://en.wikipedia.org/wiki/Undirected_graph#Undirected_graph
+.. _Wikipedia\: Cluster Analysis: http://en.wikipedia.org/wiki/Cluster_analysis
+.. _Wikipedia\: Statistical Classification: http://en.wikipedia.org/wiki/Statistical_classification
+.. _Wikipedia\: Recommender System: http://en.wikipedia.org/wiki/Recommendation_system
+.. _How Computers Know What We Want — Before We Do: http://content.time.com/time/magazine/article/0,9171,1992403,00.html
+.. _Wikipedia\: Topic Modeling: http://en.wikipedia.org/wiki/Topic_modeling
+.. _Wikipedia\: Community Structure: http://en.wikipedia.org/wiki/Community_structure
+.. _Wikipedia\: Transaction Processing: http://en.wikipedia.org/wiki/Transaction_processing
+.. _Wikipedia\: Adjacency List: http://en.wikipedia.org/wiki/Edge_list
+.. _Wikipedia\: Collaborative Filtering: http://en.wikipedia.org/wiki/Collaborative_filtering
+.. _Wikipedia\: Confusion Matrix: http://en.wikipedia.org/wiki/Confusion_matrix
+.. _Wikipedia\: Kolmogorov–Smirnov Test: http://en.wikipedia.org/wiki/K-S_Test
+.. _Wikipedia\: Precision and Recall: http://en.wikipedia.org/wiki/Precision_and_recall
+.. _Wikipedia\: F1 score: http://en.wikipedia.org/wiki/F-measure
 
 .. rubric:: Footnotes
 
 .. [#f1] Yates, Daniel S.; David S. Moore, Daren S. Starnes (2008). The Practice of Statistics, 3rd Ed. Freeman. ISBN 978-0-7167-7309-2.
 .. [#f2] S. Geman, E. Bienenstock, and R. Doursat (1992). Neural networks and the bias/variance dilemma. Neural Computation 4, 1–58.
+.. [#f3] Francesco Ricci and Lior Rokach and Bracha Shapira (2011). Recommender Systems Handbook, pp. 1-35. Springer.
+.. [#f4] Lev Grossman (2010). `How Computers Know What We Want — Before We Do`_. Time.
+.. [#f5] Terveen, Loren; Hill, Will (2001). Beyond Recommender Systems: Helping People Help Each Other pp. 6. Addison-Wesley.
+.. [#f6] Stehman, Stephen V. (1997). Selecting and interpreting measures of thematic classification accuracy. Remote Sensing of Environment 62 (1): 77–89. doi:10.1016/S0034-4257(97)00083-7.

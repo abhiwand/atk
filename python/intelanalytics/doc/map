@@ -1,5 +1,7 @@
 index
-    intro: Introduction
+    ia_intro_0: Introduction
+        ia_intro_1
+        ia_intro_2
     ad_over: Overview
         ad_reqs: Requirements
         ad_inst: Installation
