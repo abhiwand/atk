@@ -177,11 +177,10 @@ class SparkEngine(sparkContextManager: SparkContextManager,
         val parser = source.parser.get
         val schema = parser.arguments.schema
         val parserFunction = getLineParser(parser, schema.columns.map(_._2).toArray)
-        val converter = DataTypes.parseMany(schema.columns.map(_._2).toArray)(_)
 
         (schema,
           SparkOps.loadLines(ctx, fsRoot + "/" + source.uri,
-            parser.arguments.skip_rows, parserFunction, converter))
+            parser.arguments.skip_rows, parserFunction))
       }
       case _ => ???
     }
