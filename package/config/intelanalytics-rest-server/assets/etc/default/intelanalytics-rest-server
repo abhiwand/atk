@@ -2,3 +2,4 @@
 #Set all your environment variables needed for the rest server here
 
 #export SPARK_HOME="/usr/lib/spark"
+export EXTRA_CONF=`hbase classpath`
