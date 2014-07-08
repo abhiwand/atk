@@ -50,7 +50,7 @@ private[intelanalytics] class ProductFormatsAccessor extends ProductFormats
 /**
  * Generates `JsonSchema` objects to represent case classes
  */
-private [intelanalytics] object JsonSchemaExtractor {
+private[intelanalytics] object JsonSchemaExtractor {
 
   val fieldHelper = new ProductFormatsAccessor()
 
@@ -67,12 +67,12 @@ private [intelanalytics] object JsonSchemaExtractor {
     val members: Array[ru.Symbol] = typ.members.filter(m => !m.isMethod).toArray.reverse
     val func = getFieldSchema(typ)(_, _)
     val ordered = Array.tabulate(members.length) { i => (members(i), i) }
-    val propertyInfo = ordered.map({ case (sym, i) => sym.name.decoded.trim -> func(sym, i)})
+    val propertyInfo = ordered.map({ case (sym, i) => sym.name.decoded.trim -> func(sym, i) })
     val required = propertyInfo.filter { case (name, (_, optional)) => !optional }.map { case (n, _) => n }.toArray
     val properties = propertyInfo.map { case (name, (schema, _)) => name -> schema }.toMap
     ObjectSchema(properties = Some(properties),
-                  required = Some(required),
-                  order = Some(members.map(sym => sym.name.decoded.trim).toArray))
+      required = Some(required),
+      order = Some(members.map(sym => sym.name.decoded.trim).toArray))
   }
 
   /**
@@ -123,12 +123,12 @@ private [intelanalytics] object JsonSchemaExtractor {
       case t if t.erasure =:= typeTag[Option[Any]].tpe =>
         val (subSchema, _) = getSchemaForType(name, t.asInstanceOf[TypeRefApi].args.head, order)
         subSchema
-        //parameterized types need special handling
+      //parameterized types need special handling
       case t if t.erasure =:= typeTag[Map[Any, Any]].tpe => ObjectSchema()
       case t if t.erasure =:= typeTag[Seq[Any]].tpe => ArraySchema()
       case t if t.erasure =:= typeTag[Iterable[Any]].tpe => ArraySchema()
       case t if t.erasure =:= typeTag[List[Any]].tpe => ArraySchema()
-        //array type system works a little differently
+      //array type system works a little differently
       case t if t.typeConstructor =:= typeTag[Array[Any]].tpe.typeConstructor => ArraySchema()
       case t => JsonSchema.empty
     }
