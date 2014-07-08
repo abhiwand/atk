@@ -128,4 +128,3 @@ case class NumberSchema(id: Option[URI] = None,
                         `type`: Option[String] = Some("number")) extends Primitive {
 }
 
-
