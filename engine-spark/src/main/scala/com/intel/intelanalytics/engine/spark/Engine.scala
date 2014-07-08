@@ -282,7 +282,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     val frameID = arguments.frame
     val frame = expectFrame(frameID)
 
-    val splitter = new MLDataSplitter(arguments.split_percent.toArray, arguments.random_seed)
+    val splitter = new MLDataSplitter(arguments.split_percentages.toArray, arguments.random_seed)
 
     val ttvLabeledRDD = splitter.randomlyLabelRDD(frames.getFrameRdd(ctx, frameID))
 
