@@ -106,7 +106,7 @@ Glossary
         and how well-used a road is within an urban network.
         There are four main measures of centrality: degree, betweenness, closeness, and eigenvector.
         Centrality concepts were first developed in social network analysis, and many of the terms used to measure centrality reflect their
-        sociological origin. [#10]_
+        sociological origin. [#f10]_
 
     Classification
 
@@ -175,7 +175,7 @@ Glossary
 
             In mathematics and computer science, a directed acyclic graph (DAG), is a directed graph with no directed cycles.
             That is, it is formed by a collection of vertices and directed edges, each edge connecting one vertex to another,
-            such that there is no way to start at some vertex v and follow a sequence of edges that eventually loops back to v again.
+            such that there is no way to start at some vertex :math:`v` and follow a sequence of edges that eventually loops back to :math:`v` again.
 
         Contrast with :term:`Undirected Graph`.
 
@@ -319,7 +319,20 @@ Glossary
 
     Label Propagation
 
-        TODO: LP
+        Label propagation is a way of labeling things so that similar things get the same label.
+
+        You start out with a few things that are labeled (with a "kind" or "class" marker).
+        And a whole bunch of things that are unlabeled.
+        The goal is compute labels for the unlabeled things so that things that are similar get the same label.
+
+        Mathematically, similarity means that when you model these things as points in space, they are close.
+        So, if you want to be all pretty and geometric about it, it's a way of taking a bunch of points, some of which are colored,
+        and then coloring the uncolored ones, so that at the end the points that are close share the same color.
+
+        Applications of this could include classifying customer profiles (or really any profile, of course), identifying communities of
+        interacting agents, etc.
+
+        A not brief reference: `Learning from Labeled and Unlabeled Data with Label Propagation`_.
 
     Labeled Data vs Unlabeled Data
 
@@ -534,7 +547,7 @@ Glossary
         In graph theory, the degree (or valency) of a vertex of a graph is the number of edges incident to the vertex, with loops counted
         twice. [#f7]_
         The degree of a vertex :math:`v` is denoted :math:`\deg(v)`.
-        The maximum degree of a graph :math:'G`, denoted by :math:`Δ(G)`, and the minimum degree of a graph, denoted by :math:`δ(G)`,
+        The maximum degree of a graph :math:'G`, denoted by :math:`\Delta(G)`, and the minimum degree of a graph, denoted by :math:`\delta(G)`,
         are the maximum and minimum degree of its vertices.
 
     Vertex Degree Distribution
@@ -593,6 +606,7 @@ Glossary
 .. _Wikipedia\: Katz Centrality: http://en.wikipedia.org/wiki/Katz_centrality
 .. _Introduction to Social Network Methods: http://faculty.ucr.edu/~hanneman/nettext/
 .. _Wikipedia\: Centrality: http://en.wikipedia.org/wiki/Centrality
+.. _Learning from Labeled and Unlabeled Data with Label Propagation: http://lvk.cs.msu.su/~bruzz/articles/classification/zhu02learning.pdf
 
 .. rubric:: Footnotes
 

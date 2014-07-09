@@ -3,7 +3,7 @@ Python API
 ==========
 
 ..  toctree::
-    :maxdepth: 2
+    :maxdepth: 3
 
     ds_apio
     ds_apic

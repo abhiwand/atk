@@ -1,205 +1,178 @@
-..  role:: strikeraw
-    
-..  role:: strike
-        
-===================
-Python API Overview
-===================
+=====================
+Process Flow Examples
+=====================
 
->>> from intelanalytics import *
+To load the toolkit::
+
+    from intelanalytics import *
 
 .. _ds_apio_data_types:
 
+----------
 Data Types
-==========
+----------
 
 The following data types are supported:
 
->>> supported_types
-    bool, bytearray, dict, float32, float64, int32, int64, list, str, string
+    bool, bytearray, dict, float32, float64, int32, int64, list, str, string, unicode
 
-where ``str`` is ASCII per Python, ``string`` is UTF-8
+where "str" is ASCII per Python, "string" is UTF-8
  
+------------
 Data Sources
-============
+------------
 
 1. CSV Files - Comma separated values
--------------------------------------
+=====================================
 
-Describe a CSV file with its name and schema at minimum:
+Describe a CSV file with its name and schema at minimum::
 
->>> schema_ab = [('a', int32), ('b', string)]
->>> csv1 = CsvFile("data.txt", schema_ab)
->>> csv2 = CsvFile("more_data.txt", schema_ab)
->>> csv3 = CsvFile("different_data.txt", [('x', float32), ('', ignore), ('y', int64)])
+    schema_ab = [('a', int32), ('b', string)]
+    csv1 = CsvFile("data.txt", schema_ab)
+    csv2 = CsvFile("more_data.txt", schema_ab)
+    csv3 = CsvFile("different_data.txt", [('x', float32), ('', ignore), ('y', int64)])
 
-The *schema* is a computer definition of the data in the CSV file.
-It is built from tuples, each representing a field -- its name and type
-(See :ref:`supported data types<ds_apio_data_types>`.)
+    raw_csv_data_file = "my_data.csv"
+    column_schema_list = [("x", float32), ("y", float32), ("z", bool)]
+    csv4 = CsvFile(raw_csv_data_file,
+                   column_schema_list,
+                   delimiter='|',
+                   skip_header_lines=2)
 
+A "schema" is a computer definition of the data in the CSV file.
+It is built from tuples, each representing a field -- its name and type (See :ref:`ds_apio_data_types`.)
 The schema is used to tell the BigFrame parser what the structure of the data file should be.
-When defining schemas, if the parser should ignore the field, the type can be assigned ``ignore`` and the name can be assigned an empty string ``''``.
+When defining schemas, if the parser should ignore the field, the type can be assigned "ignore" and the name can be assigned an empty string ''.
 
-Optionally, the delimiter could be declared.
-This would be a benfit if the delimiter is something other than ','.
-Another option is to skip the first n lines of the file, to ignore lines like headers.
+Optionally, the delimiter could be declared using the key word ``delimiter``.
+This would be a benefit if the delimiter is something other than a comma.
 
->>> csv4 = CsvFile("bar_data.txt",
-...                [('m', int32), ('n', int32), ('o', string)],
-...                delimiter='|',
-...                skip_header_lines==2)
+Another option is to use the key word ``skip_header_lines`` and skip the first *n* lines of the file, so it will ignore lines like headers.
 
 .. TODO::
 
     2. JSON Files
-    - -----------
+    =  ==========
 
     >>> json1 = JsonFile("json_records.json") # schema TBD
 
     3. XML Files
-    - ----------
+    =  =========
 
     >>> xml1 - XmlFile("xml_records.xml") # schema TBD
- 
+
+--------
 BigFrame
-========
-
-A BigFrame is a table structure of rows and columns, capable of holding many, many, ..., many rows.
- 
-1. Create
----------
-
->>> f = BigFrame()            # empty frame
->>> g = BigFrame(csv1, csv2)  # initialize from a couple CSV File data sources
->>> h = BigFrame(json1)       # initialize from a JSON File data source
->>> f2 = BigFrame(f)          # copy another frame
-
-The ``append`` function will add more rows of data to a frame, typically from a different data source.
-The BigFrame schema will merge together the schemas of the different data sources.
-
->>>
-In this example, the BigFrame f will get more data which could have it's own schema:
->>> f.append(CsvFile("bonus_ab_data.txt", schema_ab))
-<BLANKLINE>
-In this example, BigFrame f will get more rows of data and a new column 'c':
->>> f.append(CsvFile("bonus_abc_data.txt", [('a', int32), ('b', string), ('c', string)]))
-
- 
- 
-2. Inspect
-----------
-
->>> f.count()               # row count
->>> len(f)                  # column count
->>> f.inspect(5)            # pretty-print first 5 rows
->>> f.take(10, offset=200)  # retrieve a list of 10 rows, starting at row 200
-
- 
- 
-3. Clean
 --------
 
-See :doc:`ds_apir`
+A BigFrame is a table structure of rows and columns, capable of holding "big data".
+ 
+1. Create
+=========
+A new frame is created as empty, defined by CSV schema (possibly multiple schemas), or copying (all or a part of) another frame.
+A list of columns can be specified using a list::
+
+           f = BigFrame()               # create an empty frame
+    my_frame = BigFrame(csv1, csv2)     # create a frame from multiple CSV files
+          f2 = BigFrame(my_frame)       # create a new frame, identical to the original
+          f3 = BigFrame(f2[['a', 'c']]) # create a new frame with only columns *a* and *c* from the original
+
+What gets returned is not all the data, but a proxy (descriptive pointer) for the data.
+Commands such as ``f4 = my_frame`` will only give you a copy of the proxy, pointing to the same frame.
+
+The "append" function can add more rows of data to a frame, typically from a different data source.
+If columns are the same in both name and data type, the appended data will go into the existing column.
+If the column of data in the new source is not in the original structure, it will be added to the structure and all existing rows will have ``None``
+assigned to the new column and the new data will be added to the bottom with ``None`` in all of the previously existing, non-identical columns.
+::
+
+    my_frame.append(CsvFile("bonus_ab_data.txt", schema_ab))
+
+2. Inspect
+==========
+::
+
+    my_frame.count()               # row count
+    len(my_frame)                  # column count
+    my_frame.inspect(5)            # pretty-print first 5 rows
+    my_frame.take(10, offset=200)  # retrieve a list of 10 rows, starting at row 200
+ 
+3. Clean
+========
+
+| See :doc:`ds_apir`
+| See :doc:`ds_lambda`
+
+.. warning::
+
+    Unless stated otherwise, all of the following functions use the proxy to operate on the data in the given frame,
+    so it changes the frame's content rather than return a new frame with the changed data.
 
 Drop Rows
-~~~~~~~~~
+---------
+    The function ``drop`` takes a predicate function and removes all rows for which the predicate evaluates to ``True``.
 
-``drop`` takes a predicate function and removes all rows for which the predicate evaluates True.
-It operates in place on the given frame, so it mutates the frame's content.
+        Drop all rows where column *b* contains a negative number::
 
->>>
-Drop all rows where column 'b' contains a negative number
->>> f.drop(lambda row: row['b'] < 0)
-<BLANKLINE>
-Drop all rows where column 'a' is empty
->>> f.drop(lambda row: row['a'] is None)
-<BLANKLINE>
-Drop all rows where any column is empty
->>> f.drop(lambda row: any([cell is None for cell in row]))
+            my_frame.drop(lambda row: row['b'] < 0)
 
-``filter`` is like ``drop`` except it removes all the rows for which the predicate evaluates False.
+        Drop all rows where column *a* is empty::
 
->>>
-Keep only those rows where field 'b' is in the range 0 to 10
->>> f2.filter(lambda row: 0 >= row['b'] >= 10)
+            my_frame.drop(lambda row: row['a'] is None)
 
-.. TODO:: Catch the rows that dropped
+        Drop all rows where any column is empty::
 
-    If we want to hang on to the dropped rows, we can pass in a BigFrame to collect them.
-    All of the dropped rows will be appended to that frame. **Not implemented for 0.8**
+            my_frame.drop(lambda row: any([cell is None for cell in row]))
 
-    >>> r = BigFrame()
-    >>> f.filter(lambda row: 0 >= row['b'] >= 10, rejected_store=r)
+    The functon ``filter`` is like ``drop`` except it removes all the rows for which the predicate evaluates False.
 
-    That effectively splits frame ``f`` in two.
+        Keep only those rows where field *b* is in the range 0 to 10::
 
-The function ``drop_duplicates`` performs row uniqueness comparisons across the whole table.
+            my_frame.filter(lambda row: 0 >= row['b'] >= 10)
 
->>> f.drop_duplicates(['a', 'b'])  # only columns 'a' and 'b' considered for uniqueness
->>> f.drop_duplicates()            # all columns considered for uniqueness
- 
-Fill Cells
-~~~~~~~~~~
+    The function ``drop_duplicates`` performs row uniqueness comparisons across the whole table.
 
->>> f['a'].fillna(800001)
->>> f['a'].fill(lambda cell: 800001 if cell is None else 800002 if cell < 0 else cell)
->>> def filler(cell):
-...     if cell is None:
-...         return 800001
-...     if cell < 0:
-...         return 800002
-...     if cell > 255:
-...         return 800003
-...     return cell
->>> f['a'].fill(filler)
+        Drop any rows where the data in column *a* and column *b* are duplicates of some previously evaluated row::
 
-Copy Columns
-~~~~~~~~~~~~
+            my_frame.drop_duplicates(['a', 'b'])
 
-A list of columns can be specified using a list to index the frame.
+        Drop any rows where the data matches some previously evaluated row in all columns::
 
->>> f2 = BigFrame(f[['a', 'c']])  # projects columns 'a' and 'c' to new frame f2
- 
+            my_frame.drop_duplicates()
+     
+.. TODO:: There is no way to fill in the data
+    Fill Cells
+    - --------
+
+    >>> f['a'].fill(lambda cell: 800001 if cell is None else 800002 if cell < 0 else cell)
+    >>> def filler(cell):
+    ...     if cell is None:
+    ...         return 800001
+    ...     if cell < 0:
+    ...         return 800002
+    ...     if cell > 255:
+    ...         return 800003
+    ...     return cell
+    >>> f['a'].fill(filler)
+    
 Remove Columns
-~~~~~~~~~~~~~~
+--------------
 
->>> f2.remove_columns('b')
->>> f2.remove_columns(['a', 'c'])
+    Columns can be removed either with a string matching the column name or a list of strings::
 
+        my_frame.remove_columns('b')
+        my_frame.remove_columns(['a', 'c'])
 
-
-
->>> f2.remove_columns(['a', 'c'])
-
-
->>> f2.remove_columns(['a', 'c'])
-
-
-
-
->>> f2.remove_columns(['a', 'c'])
-
-
->>> f2.remove_columns(['a', 'c'])
-
-
-
-
->>> f2.remove_column(['a', 'c'])
- 
 Rename Columns
-~~~~~~~~~~~~~~
+--------------
 
->>> f.rename_columns(a='id')
->>> f.rename_columns(b='author', c='publisher')
->>> f.rename_columns({'col-with-dashes': 'no_dashes'})
+    Columns can be renamed by giving the column name and setting it equal to the new name, or by specifying a dictionary entry with the key
+    being the existing column name and the value being the new column name::
 
+        my_frame.rename_columns(a='id')
+        my_frame.rename_columns(b='author', c='publisher')
+        my_frame.rename_columns({'col-with-dashes': 'no_dashes'})
 
-
-
->>> f.rename_column(b='author', c='publisher')
->>> f.rename_column({'col-with-dashes': 'no_dashes'})
- 
 .. TODO:: Cast columns
     Cast Columns
     ~~~~~~~~~~~~
@@ -208,133 +181,167 @@ Rename Columns
 
     >>> f['a'].cast(int32)
 
-4. Engineer
+4. Transform
+============
+
+Add Columns
 -----------
 
-Add Column
-~~~~~~~~~~
+    Columns can be added to the frame using values (usually manipulated) from other columns as their value.
 
-Map a function to each row in the frame, producing a new column
+    Add a column *column3* as an int32 and fill it with the contents of *column1* and *column2* multiplied together::
 
->>> f.add_columns(lambda row: 1, int32, 'all_ones') # add new column of all ones
->>> f.add_columns(lambda row: row.a + row.b, int32, 'a_plus_b')
+        my_frame.add_columns(lambda row: row.column1*row.column2, ('column3', int32))
 
+    Add a new column *all_ones* and fill the entire column with the value 1::
 
->>> # Piecewise Linear Transformation
->>> def transform_a(row):
-...     x = row['a']
-...     if x is None:
-...         return None
-...     if 30 <= x <= 127:
-...         m, c = 0.0046, 0.4168
-...     elif 15 <= x <= 29:
-...         m, c = 0.0071, 0.3429
-...     elif -127 <= x <= 14:
-...         m, c = 0.0032, 0.4025
-...     else:
-...         return None
-...     return m * x + c
+        my_frame.add_columns(lambda row: 1, ('all_ones', int32))
 
->>> f.add_columns(transform_a, float32, 'a_lpt')
+    Add a new column *a_plus_b* and fill the entire column with the value of column *a* plus column *b*::
 
-<BLANKLINE>
+        my_frame.add_columns(lambda row: row.a + row.b, ('a_plus_b', int32))
 
-Create multiple columns at once by making function return a tuple of cell values for the new frame columns, and then providing a tuple of types and a tuple of names.
+    Add a new column *a_lpt* and fill the value according to this table:
 
->>> f.add_columns(lambda row: (abs(row.a), abs(row.b)), (int32, int32), ('a_abs', 'b_abs'))  # adds 2 columns
- 
+    +-------------------------------------------+-------------------------------------------+
+    | value in column *a*                       | value for column *a_lpt*                  |
+    +===========================================+===========================================+
+    | None                                      | None                                      |
+    +-------------------------------------------+-------------------------------------------+
+    | Between 30 and 127 (inclusive)            | column *a* times 0.0046 plus 0.4168       |
+    +-------------------------------------------+-------------------------------------------+
+    | Between 15 and 29 (inclusive)             | column *a* times 0.0071 plus 0.3429       |
+    +-------------------------------------------+-------------------------------------------+
+    | Between -127 and 14 (inclusive)           | column *a* times 0.0032 plus 0.4025       |
+    +-------------------------------------------+-------------------------------------------+
+    | None of the above                         | None                                      |
+    +-------------------------------------------+-------------------------------------------+
 
-Map (WIP)
-~~~~~~~~~
+    An example of a Piecewise Linear Transformation::
 
-The function ``map()`` produces a new BigFrame by applying a function to each row of a frame or each cell of a column.
-It has the same functionality as ``add_column``, but the results go to a new frame instead of being added to the current frame.
+        def transform_a(row):
+            x = row['a']
+            if x is None:
+                return None
+            if 30 <= x <= 127:
+                m, c = 0.0046, 0.4168
+            elif 15 <= x <= 29:
+                m, c = 0.0071, 0.3429
+            elif -127 <= x <= 14:
+                m, c = 0.0032, 0.4025
+            else:
+                return None
+            return m * x + c
 
->>> f2 = f1['a'].map(lambda cell: abs(cell))
->>> f3 = f1.map_many(lambda row: (abs(row.a), abs(row.b)), ('a_abs', 'b_abs'))
->>> f4 = f1.map_many(lambda row: (abs(row.a), abs(row.b)), (('a_abs', float32), ('b_abs', float32)))
+        my_frame.add_columns(transform_a, float32, 'a_lpt')
+
+    Create multiple columns at once by making a function return a tuple of cell values for the new frame columns, and then providing a tuple of
+    types and a tuple of names::
+
+        my_frame.add_columns(lambda row: (abs(row.a), abs(row.b)), (int32, int32), ('a_abs', 'b_abs'))
+
+.. TODO:: There is no map command
+
+    Map (WIP)
+
+    The function ``map()`` produces a new BigFrame by applying a function to each row of a frame or each cell of a column.
+    It has the same functionality as ``add_column``, but the results go to a new frame instead of being added to the current frame.
+
+    >>> f2 = f1['a'].map(lambda cell: abs(cell))
+    >>> f3 = f1.map_many(lambda row: (abs(row.a), abs(row.b)), ('a_abs', 'b_abs'))
+    >>> f4 = f1.map_many(lambda row: (abs(row.a), abs(row.b)), (('a_abs', float32), ('b_abs', float32)))
 
 .. TODO:: Note: Better name than ``map_many``?
  
-Reduce (WIP)
-~~~~~~~~~~~~
+.. TODO:: There is no reduce command
 
-Apply a reducer function to each row in a Frame, or each cell in a column.
-The reducer has two parameters, the *accumulator* value and the row or cell *update* value.
+    Reduce (WIP)
 
->>> f.reduce(lambda acc, row_upd: acc + row_upd['a'] - row_upd['b'])
->>> f['a'].reduce(lambda acc, cell_upd: acc + cell_upd)
+    Apply a reducer function to each row in a Frame, or each cell in a column.
+    The reducer has two parameters, the *accumulator* value and the row or cell *update* value.
 
-There are also a bunch of built-in reducers:  count, sum, avg, stdev, etc.
- 
+    >>> f.reduce(lambda acc, row_upd: acc + row_upd['a'] - row_upd['b'])
+    >>> f['a'].reduce(lambda acc, cell_upd: acc + cell_upd)
 
-.. TODO:: Where is the Groupby function? 
-    Groupby (and Aggregate)
+    There are also a bunch of built-in reducers:  count, sum, avg, stdev, etc.
+     
 
+Groupby (and Aggregate)
+-----------------------
+
+    Group rows together based on matching column values and then apply aggregation
+    functions on each group, producing a **new** BigFrame object.
+    Two parameters:
+
+        (1) the column(s) to group on
+        (2) aggregation function(s)
+
+    Aggregation based on columns:
+
+        | Given a frame with columns *a*, *b*, *c*, and *d*, minimum:
+        | Group by unique values in columns *a* and *b*;
+        | Average the grouped values in column *c* and save it in a new column *c_avg*;
+        | Add up the grouped values in column *c* and save it in a new column *c_sum*;
+        | Get the standard deviation of the grouped values in column *c* and save it in a new column *c_stdev*;
+        | Average the grouped values in column *d* and save it in a new column *d_avg*;
+        | Add up the grouped values in column *d* and save it in a new column *d_sum*::
+
+            my_frame.groupby(['a', 'b'], { 'c': [agg.avg, agg.sum, agg.stdev], 'd': [agg.avg, agg.sum]})
+
+        Note:
+            The only columns in the new frame will be the grouping columns and the generated columns. In this case, regardless of the original frame size,
+            you will get seven columns::
+
+                *a*
+                *b*
+                *c_avg*
+                *c_sum*
+                *c_stdev*
+                *d_avg*
+                *d_sum*
+
+    Aggregation based on full row:
+
+        | Given a frame with columns *a*, and *b*, minimum:
+        | Group by unique values in columns *a* and *b*;
+        | Count the number of rows in each group and put that value in column *count*::
+
+            my_frame.groupby(['a', 'b'], agg.count)
+
+        Note:
+            agg.count is the only one supported at this time
+
+    Aggregation based on both column and row together:
+
+        | Given a frame with columns *a*, *b*, *c*, and *d*, minimum:
+        | Group by unique values in columns *a* and *b*;
+        | Count the number of rows in each group and put that value in column *count*:
+        | Average the grouped values in column *c* and save it in a new column *c_avg*;
+        | Add up the grouped values in column *c* and save it in a new column *c_sum*;
+        | Get the standard deviation of the grouped values in column *c* and save it in a new column *c_stdev*;
+        | Average the grouped values in column *d* and save it in a new column *d_avg*;
+        | Add up the grouped values in column *d* and save it in a new column *d_sum*::
+
+            my_frame.groupby(['a', 'b'], [agg.count, { 'c': [agg.avg, agg.sum, agg.stdev], 'd': [agg.avg, agg.sum]}])
+
+        Supported aggregation functions:
+
+            avg
+            count
+            max
+            mean
+            min
+            quantile
+            stdev
+            sum
+            variance
+            distinct
+
+
+.. ifconfig:: internal_docs
 
     (Follows GraphLab's SFrame:
     http://graphlab.com/products/create/docs/graphlab.data_structures.html#module-graphlab.aggregate)
-
-    Group rows together based on matching column values and then apply aggregation
-    functions on each group, producing a new BigFrame object.  Two parameters:
-    (1) the column(s) to group on and (2) aggregation function(s)
-
-    Aggregation on individual columns:
-    >>> f.groupby(['a', 'b'], { 'c': [agg.avg, agg.sum, agg.stdev], 'd': [agg.avg, agg.sum]})
-
-    The name of the new columns are implied.  The previous example would be a new
-    BigFrame with 7 columns:
-
-    Aggregation based on full row:  (\*agg.count is the only one supported)
-    >>> f.groupby(['a', 'b'], agg.count)
-
-    Both by column and row together:
-    >>> f.groupby(['a', 'b'], [agg.count, { 'c': [agg.avg, agg.sum, agg.stdev], 'd': [agg.avg, agg.sum]}])
-
-
-.. TODO:: Functions do not work well except in .py files
-
-   def groupby(self, column, aggregation):
-       """
-       Groups rows together based on matching column values and applies aggregation
-       functions on each group, producing a new BigFrame object.
-
-       Parameters
-
-
-       column : str, list of string
-           The name(s) of the column(s) to be grouped by
-       aggregation : row aggregator, dict of cell aggregators, or list of row aggregator and dict of cell aggregators
-           The :term:`aggregation functions` (reducers) to apply to each group.  ByRow aggregators
-           use the entire row, reducing all the columns in a group (all columns) to a single value
-           `count` is the only supported ByRow aggregator.
-           ByCell aggregators just use a specific cell, reducing a column in a group to a single value
-
-       Returns
-
-
-       frame : BigFrame
-           A new BigFrame containing the aggregation results
-
-
-       A big question is what aggregators must we support for 0.8?
-
-.. TODO:: Again, where is groupby?
-    To match GraphLab's SFrame groupby:
-
-
-    avg
-    count
-    max
-    mean
-    min
-    quantile
-    stdev
-    sum
-    variance
-
-    I would add `distinct` to that list for 0.8
-
 
     And then from IAT Product Defn:  (any must-haves for 0.8?)
 
@@ -373,73 +380,72 @@ There are also a bunch of built-in reducers:  count, sum, avg, stdev, etc.
 
 .. TODO:: Functions do not work well except in .py files
 
-   Join
+Join
+----
 
+    Create a **new** BigFrame from a JOIN operation with another BigFrame
 
-   def join(self, right, left_on, right_on=None, how='left', suffixes=None):
-       """
-       Create a new BigFrame from a JOIN operation with another BigFrame
+    Given two frames *my_frame* (columns *a*, *b*, *c*) and *your_frame* (columns *b*, *c*, *d*);
+    Column *b* in both frames is a unique identifier used to tie the two frame together;
+    Join the *your_frame* to *my_frame*;
+    Include all data from *my_frame* and only that data in *your_frame* which has a value in *b* that matches a value in *my_frame* *b*::
 
-       Parameters
+        our_frame = my_frame.join(your_frame, 'b', how='left')
 
-       right : BigFrame
-           Another frame to join with
+    Result is *our_frame* with columns *a*, *b*, *c_L*, *c_R*, and *d*.
+ 
+    Include only data from *my_frame* and *your_frame* which have matching values in *b*::
 
-       left_on : str
-           Name of the column for the join for this (left) frame
+        our_frame = my_frame.join(your_frame, 'b')
 
-       right_on : Str, optional
-           Name of the column for the join for the right frame, if not
-           provided, then the value of left_on is used.
+    Result is *our_frame* with columns *a*, *b*, *c_L*, *c_R*, and *d*.
 
-       how : str, optional
-           {'left', 'right', 'outer', 'inner'}
+    Include any data from *my_frame* and *your_frame* which do not have matching values in *b*::
 
-       suffixes : 2-ary tuple of str, optional
-           Suffixes to apply to overlapping column names on the output frame.
-           Default suffixes are ('_L', '_R')
+        our_frame = my_frame.join(your_frame, 'b', how='outer')
 
+    Result is *our_frame* with columns *a*, *b*, *c_L*, *c_R*, and *d*.
 
-       Returns
+    Given that column *b* in *my_frame* and column *c* in *your_frame* are the tie:
+    Include all data from *your_frame* and only that data in *my_frame* which has a value in *b* that matches a value in *your_frame* *c*::
 
-       frame : BigFrame
-           The new joined frame
+        our_frame = my_frame.join(your_frame, left_on='b', right_on='c', how='right')
 
-       Examples
-
-       >>> joined_frame = frame1.join(frame2, 'a')  # left join on column 'a'
-       >>> joined_frame = frame1.join(frame2, left_on='b', right_on='book', how='outer')
-       """
-
+    Result is *our_frame* with columns *a*, *b_L*, *b_R*, *c_L*, *c_R*, and *d*.
 
 Flatten
-~~~~~~~
+-------
 
-The function ``flatten_column`` creates a new BigFrame by copying all the rows of a given Frame and flattening a particular cell to produce possibly many new rows.
+    The function ``flatten_column`` creates a **new** BigFrame by copying all the rows of a given frame and splitting a particular cell to produce
+    possibly many new rows.
 
-Example:
+    Example::
 
->>> frame1.inspect()
-    a:int32   b:str
-    -------   ------------------------
-      1       "solo", "mono", "single"
-      2       "duo", "double"
-<BLANKLINE>
->>> frame2 = frame1.flatten_column('b')
->>> frame2.inspect()
-    a:int32   b:str
-    -------   --------
-      1       "solo"
-      1       "mono"
-      1       "single"
-      2       "duo"
-      2       "double"
+        my_frame.inspect()
 
-``flatten_column`` requires a single column name as its first parameter.
-There is a second optional function parameter which defines how the splitting should be done.
+        a:int32   b:str
+        -------   ------------------------
+          1       "solo", "mono", "single"
+          2       "duo", "double"
 
->>> frame2 = frame1.flatten('b')  # if column 'a' is natively a list (we don't really support that data type yet)
->>> frame2 = frame1.flatten('b', lambda cell: [item.strip() for item in cell.split(',')])  # could make this the default behavior for string data type
+        your_frame = my_frame.flatten_column('b')
+        your_frame.inspect()
+
+        a:int32   b:str
+        -------   --------
+          1       "solo"
+          1       "mono"
+          1       "single"
+          2       "duo"
+          2       "double"
+
+
+.. TODO:: future flatter?
+
+    The ``flatten_column`` function requires a single column name as its first parameter.
+    There is a second optional function parameter which defines how the splitting should be done::
+
+        frame2 = frame1.flatten('b', lambda cell: [item.strip() for item in cell.split(',')])  # could make this the default behavior for string data type
 
 .. TODO:: Miscellaneous Notes
     Misc Notes

@@ -33,7 +33,7 @@ class DataFile(object):
 
 class CsvFile(DataFile):
     """
-    Creates object which defines a CSV file.
+    Define a CSV file.
 
     Parameters
     ----------
