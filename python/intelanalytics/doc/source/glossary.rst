@@ -95,6 +95,19 @@ Glossary
 
         A table database object with function to manipulate the data.
 
+    Centrality
+    Centrality (PageRank)
+    PageRank Centrality
+
+        From `Wikipedia\: Centrality`_:
+
+        In graph theory and network analysis, centrality of a vertex measures its relative importance within a graph.
+        Applications include how influential a person is within a social network, how important a room is within a building (space syntax),
+        and how well-used a road is within an urban network.
+        There are four main measures of centrality: degree, betweenness, closeness, and eigenvector.
+        Centrality concepts were first developed in social network analysis, and many of the terms used to measure centrality reflect their
+        sociological origin. [#10]_
+
     Classification
 
         From `Wikipedia\: Statistical Classification`_:
@@ -125,6 +138,13 @@ Glossary
         In the study of complex networks, a network is said to have community structure if the nodes of the network can be easily grouped
         into (potentially overlapping) sets of nodes such that each set of nodes is densely connected internally.
 
+    Connected Component
+
+        From `Wikipedia\: Connected Component (Graph Theory)`_:
+
+        In graph theory, a connected component (or just component) of an undirected graph is a subgraph in which any two vertices are connected
+        to each other by paths, and which is connected to no additional vertices in the supergraph.
+
     Confusion Matrix
     Confusion Matrices
 
@@ -136,7 +156,7 @@ Glossary
         Each column of the matrix represents the instances in a predicted class, while each row represents the instances in an actual class.
         The name stems from the fact that it makes it easy to see if the system is confusing two classes (i.e. commonly mislabeling one as another).
 
-    Congugate Gradient Descent
+    Conjugate Gradient Descent
 
         The "Congugate Gradient Descent with Bias for Collaborative Filtering algorithm is an algorithm used by the Intel Data Platform:
         Analytics Toolkit.
@@ -274,6 +294,17 @@ Glossary
         You can use any positive float number.
         So 3, 2.5, 1, or 0.7 are all valid values.
         A larger smoothing value implies stronger relationships between adjacent random variables in the graph.
+
+    Katz Centrality
+    Centrality (Katz)
+
+        From `Wikipedia\: Katz Centrality`_:
+
+        In Social Network Analysis (SNA) there are various measures of :term:`centrality` which determine the relative importance of an actor (or node)
+        within the network.
+        Katz centrality was introduced by Leo Katz in 1953 and is used to measure the degree of influence of an actor in a social network. [#f8]_
+        Unlike typical centrality measures which consider only the shortest path (the geodesic) between a pair of actors, Katz centrality
+        measures influence by taking into account the total number of walks between a pair of actors. [#f9]_
 
     Kolmogorov–Smirnov Test
     K-S Tests
@@ -486,14 +517,32 @@ Glossary
         For more information see: :term:`Supervised Learning`, and :term:`Semi-Supervised Learning`.
 
     Vertex
+    Vertices
 
-        A vertex (plural: vertices) is a data point in a graph database.
+        A vertex is a data point in a graph database.
         Each vertex has an ID and a property map.
         In Giraph, a long integer is used as ID for each vertex.
         The property map may contain 0 or more properties.
         Each vertex is connected to others by edges.
 
         For more information see: :term:`Edge`, and `Tinkerpop\: Property Graph Model`_.
+
+    Vertex Degree
+
+        From `Wikipedia\: Vertex Degree`_:
+
+        In graph theory, the degree (or valency) of a vertex of a graph is the number of edges incident to the vertex, with loops counted
+        twice. [#f7]_
+        The degree of a vertex :math:`v` is denoted :math:`\deg(v)`.
+        The maximum degree of a graph :math:'G`, denoted by :math:`Δ(G)`, and the minimum degree of a graph, denoted by :math:`δ(G)`,
+        are the maximum and minimum degree of its vertices.
+
+    Vertex Degree Distribution
+
+        From `Wikipedia\: Degree Distribution`_:
+
+        In the study of graphs and networks, the degree of a node in a network is the number of connections it has to other nodes and
+        the degree distribution is the probability distribution of these degrees over the whole network.
 
 .. _Wikipedia\: Standard Deviation: http://en.wikipedia.org/wiki/Standard_deviation
 .. _Wikipedia\: Variance: https://en.wikipedia.org/wiki/Variance
@@ -538,6 +587,12 @@ Glossary
 .. _Wikipedia\: Kolmogorov–Smirnov Test: http://en.wikipedia.org/wiki/K-S_Test
 .. _Wikipedia\: Precision and Recall: http://en.wikipedia.org/wiki/Precision_and_recall
 .. _Wikipedia\: F1 score: http://en.wikipedia.org/wiki/F-measure
+.. _Wikipedia\: Connected Component (Graph Theory): http://en.wikipedia.org/wiki/Connected_component_%28graph_theory%29
+.. _Wikipedia\: Vertex Degree: http://en.wikipedia.org/wiki/Vertex_degree
+.. _Wikipedia\: Degree Distribution: http://en.wikipedia.org/wiki/Degree_distribution
+.. _Wikipedia\: Katz Centrality: http://en.wikipedia.org/wiki/Katz_centrality
+.. _Introduction to Social Network Methods: http://faculty.ucr.edu/~hanneman/nettext/
+.. _Wikipedia\: Centrality: http://en.wikipedia.org/wiki/Centrality
 
 .. rubric:: Footnotes
 
@@ -547,3 +602,7 @@ Glossary
 .. [#f4] Lev Grossman (2010). `How Computers Know What We Want — Before We Do`_. Time.
 .. [#f5] Terveen, Loren; Hill, Will (2001). Beyond Recommender Systems: Helping People Help Each Other pp. 6. Addison-Wesley.
 .. [#f6] Stehman, Stephen V. (1997). Selecting and interpreting measures of thematic classification accuracy. Remote Sensing of Environment 62 (1): 77–89. doi:10.1016/S0034-4257(97)00083-7.
+.. [#f7] Diestel, Reinhard (2005). Graph Theory (3rd ed.). Berlin, New York: Springer-Verlag. ISBN 978-3-540-26183-4.
+.. [#f8] Katz, L. (1953). A New Status Index Derived from Sociometric Index. Psychometrika, 39-43.
+.. [#f9] Hanneman, R. A., & Riddle, M. (2005). `Introduction to Social Network Methods`_.
+.. [#f10] Newman, M.E.J. 2010. Networks: An Introduction. Oxford, UK: Oxford University Press.
