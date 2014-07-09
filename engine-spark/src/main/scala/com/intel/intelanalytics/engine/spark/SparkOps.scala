@@ -30,7 +30,7 @@ import org.apache.spark.SparkContext
 import scala.collection.mutable
 import scala.Some
 import com.intel.intelanalytics.engine.spark.frame.RDDJoinParam
-import com.intel.intelanalytics.algorithm.{PercentileTarget, PercentileElement}
+import com.intel.intelanalytics.algorithm.{ PercentileTarget, PercentileElement }
 import scala.collection.mutable.ListBuffer
 import org.apache.spark.rdd.RDD
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
@@ -454,18 +454,17 @@ private[spark] object SparkOps extends Serializable {
     val result = mutable.ListBuffer[PercentileElement]()
 
     //element starts from 1. therefore x0 equals x1
-    if(integer == 0)
+    if (integer == 0)
       integer = 1
 
-    if((1 - decimal) > 0)
+    if ((1 - decimal) > 0)
       result += PercentileElement(integer, 1 - decimal)
 
-    if(decimal > 0)
+    if (decimal > 0)
       result += PercentileElement(integer + 1, decimal)
 
     result.toSeq
   }
-
 
   /**
    * Calculate mapping between an element's position and Seq of percentile that the element can contribute to
@@ -478,14 +477,14 @@ private[spark] object SparkOps extends Serializable {
       val elementIndex: Int = element.index
       (elementIndex, PercentileTarget(percentile, element.weight))
     })).
-    foldLeft(mutable.Map[Long, ListBuffer[PercentileTarget]]())((mapping, element) => {
-      val elementPosition: Long = element._1
-      if(!mapping.contains(elementPosition))
-        mapping(elementPosition) = ListBuffer[PercentileTarget]()
+      foldLeft(mutable.Map[Long, ListBuffer[PercentileTarget]]())((mapping, element) => {
+        val elementPosition: Long = element._1
+        if (!mapping.contains(elementPosition))
+          mapping(elementPosition) = ListBuffer[PercentileTarget]()
 
-      mapping(elementPosition) += element._2
-      mapping
-    })
+        mapping(elementPosition) += element._2
+        mapping
+      })
 
     mapping.map(i => (i._1, i._2.toSeq)).toMap
   }
@@ -498,52 +497,30 @@ private[spark] object SparkOps extends Serializable {
     val percentileTargetMapping = getPercentileTargetMapping(totalRows, percentiles)
     val sumsAndCounts: Map[Int, (Int, Int)] = getPerPartitionCountAndAccumulatedSum(sorted)
 
-    val temp = sorted.mapPartitionsWithIndex((partitionIndex, rows) => {
-      var startIndex =  (if(partitionIndex == 0) 0 else sumsAndCounts(partitionIndex - 1)._2) + 1
+    //this is the first stage of calculating percentile
+    //generate data that has keys as percentiles and values as column data times weight
+    val percentilesComponentsRDD = sorted.mapPartitionsWithIndex((partitionIndex, rows) => {
+      var rowIndex: Long = (if (partitionIndex == 0) 0 else sumsAndCounts(partitionIndex - 1)._2) + 1
       val result = ListBuffer[(Int, BigDecimal)]()
 
-//      val result = for {
-//        rowAndIndexPair <- rows.zipWithIndex
-//        rowIndex = startIndex + rowAndIndexPair._2
-//        percentile <- percentileTargetMapping(rowIndex) if percentileTargetMapping.contains(rowIndex)
-//        keyValueRow: (Int, Array[Any]) = rowAndIndexPair._1
-//        key = keyValueRow._1
-//        numericVal = dataType match {
-//          case DataTypes.int32 => BigDecimal(key.asInstanceOf[DataTypes.int32.ScalaType])
-//          case DataTypes.int64 => BigDecimal(key.asInstanceOf[DataTypes.int64.ScalaType])
-//          case DataTypes.float32 => BigDecimal(key.asInstanceOf[DataTypes.float32.ScalaType])
-//          case DataTypes.float64 => BigDecimal(key.asInstanceOf[DataTypes.float64.ScalaType])
-//        }
-//      } yield Tuple2(percentile.percentile, numericVal * percentile.weight)
-
-
-
-      for(rowAndIndexPair <- rows.zipWithIndex) {
-        val rowIndex = startIndex + rowAndIndexPair._2
-        if(percentileTargetMapping.contains(rowIndex)) {
+      for (row <- rows) {
+        if (percentileTargetMapping.contains(rowIndex)) {
           val target: Seq[PercentileTarget] = percentileTargetMapping(rowIndex)
 
-          for(percentile <- target) {
-            val keyValueRow: (Int, Array[Any]) = rowAndIndexPair._1
-            val key = keyValueRow._1
-
-            val numericVal = dataType match {
-              case DataTypes.int32 => BigDecimal(key.asInstanceOf[DataTypes.int32.ScalaType])
-              case DataTypes.int64 => BigDecimal(key.asInstanceOf[DataTypes.int64.ScalaType])
-              case DataTypes.float32 => BigDecimal(key.asInstanceOf[DataTypes.float32.ScalaType])
-              case DataTypes.float64 => BigDecimal(key.asInstanceOf[DataTypes.float64.ScalaType])
-            }
-
+          for (percentile <- target) {
+            val value = row._1
+            val numericVal = DataTypes.toBigDecimal(value)
             result += Tuple2(percentile.percentile, numericVal * percentile.weight)
           }
         }
-      }
 
+        rowIndex = rowIndex + 1
+      }
 
       result.toIterator
     })
 
-    temp.reduceByKey((i, j)=> i+ j).sortByKey(true).collect()
+    percentilesComponentsRDD.reduceByKey(_ + _).sortByKey(true).collect()
   }
 
 }
