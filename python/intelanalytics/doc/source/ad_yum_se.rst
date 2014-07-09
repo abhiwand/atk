@@ -73,6 +73,7 @@ Installing the Intel® Analytics Package
 
 Do a search for "intelanalytics"::
 
+    sudo yum distro-sync
     sudo yum search intelanalytics
 
 This should return with two new packages "intelanalytics-python-rest-client" and "intelanalytics-rest-server"
