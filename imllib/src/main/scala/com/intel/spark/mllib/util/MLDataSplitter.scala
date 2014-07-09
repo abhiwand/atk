@@ -79,6 +79,8 @@ class MLDataSplitter(percentages: Array[Double], seed: Int) extends Serializable
 
 /**
  * Top-level methods for calling MLDataSplitter.
+ *  NLS TODO:  I intend to deprecate this code... it is not relevant now that we are calling the splitter from the
+ *  engine.  Speak now or forever hold your peace...
  */
 object MLDataSplitter {
 
