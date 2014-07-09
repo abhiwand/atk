@@ -52,22 +52,25 @@ object JsonSchemaExtractor {
     val names = fieldHelper.extractFieldNames(manifest)
     val mirror = ru.runtimeMirror(tag.runtimeClass.getClassLoader)
     val typ: ru.Type = mirror.classSymbol(tag.runtimeClass).toType
-    val members = typ.members.filter(m => !m.isMethod)
-    val func = getFieldSchema(typ)(_)
-    val propertyInfo = members.map(n => n.name.decoded.trim -> func(n))
+    val members: Array[ru.Symbol] = typ.members.filter(m => !m.isMethod).toArray.reverse
+    val func = getFieldSchema(typ)(_, _)
+    val ordered = Array.tabulate(members.length) { i => (members(i), i) }
+    val propertyInfo = ordered.map({ case (sym, i) => sym.name.decoded.trim -> func(sym, i) })
     val required = propertyInfo.filter { case (name, (_, optional)) => !optional }.map { case (n, _) => n }.toArray
     val properties = propertyInfo.map { case (name, (schema, _)) => name -> schema }.toMap
-    ObjectSchema(properties = Some(properties), required = Some(required))
+    ObjectSchema(properties = Some(properties),
+      required = Some(required),
+      order = Some(members.map(sym => sym.name.decoded.trim).toArray))
   }
 
-  def getFieldSchema(clazz: ru.Type)(symbol: ru.Symbol): (JsonSchema, Boolean) = {
+  def getFieldSchema(clazz: ru.Type)(symbol: ru.Symbol, order: Int): (JsonSchema, Boolean) = {
     val typeSignature: ru.Type = symbol.typeSignatureIn(clazz)
     val name = symbol.name.decoded.toLowerCase.trim
-    val schema = getSchemaForType(name, typeSignature)
+    val schema = getSchemaForType(name, typeSignature, order)
     schema
   }
 
-  def getSchemaForType(name: String, typeSignature: ru.Type): (JsonSchema, Boolean) = {
+  def getSchemaForType(name: String, typeSignature: ru.Type, order: Int): (JsonSchema, Boolean) = {
     val schema = typeSignature match {
       case t if t =:= typeTag[URI].tpe => StringSchema(format = Some("uri"))
       case t if t =:= typeTag[String].tpe => StringSchema()
@@ -75,20 +78,19 @@ object JsonSchemaExtractor {
       case t if t =:= typeTag[Long].tpe => JsonSchema.long
       case t if t =:= typeTag[DateTime].tpe => JsonSchema.dateTime
       case t if t =:= typeTag[FrameReference].tpe =>
-        println(s"NAME IS '$name'")
         val s = JsonSchema.frame
-        if (name == "frame" || name == "dataframe") {
+        if (order == 0) {
           s.copy(self = Some(true))
         }
         else s
       case t if t =:= typeTag[GraphReference].tpe =>
         val s = JsonSchema.graph
-        if (name == "graph") {
+        if (order == 0) {
           s.copy(self = Some(true))
         }
         else s
       case t if t.erasure =:= typeTag[Option[Any]].tpe =>
-        val (subSchema, _) = getSchemaForType(name, t.asInstanceOf[TypeRefApi].args.head)
+        val (subSchema, _) = getSchemaForType(name, t.asInstanceOf[TypeRefApi].args.head, order)
         subSchema
       //parameterized types need special handling
       case t if t.erasure =:= typeTag[Map[Any, Any]].tpe => ObjectSchema()

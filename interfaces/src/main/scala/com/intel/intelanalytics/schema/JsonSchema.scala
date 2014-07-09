@@ -86,6 +86,7 @@ case class ObjectSchema(
     properties: Option[Map[String, JsonSchema]] = None,
     patternProperties: Option[Map[String, JsonSchema]] = None,
     definitions: Option[Map[String, JsonSchema]] = None,
+    order: Option[Array[String]] = None,
     `type`: Option[String] = Some("object")) extends JsonSchema {
 }
 

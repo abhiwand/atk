@@ -27,8 +27,8 @@ import com.intel.intelanalytics.domain.frame.FrameReference
 import com.intel.intelanalytics.schema.{ JsonSchema, ArraySchema, StringSchema, NumberSchema, ObjectSchema }
 import org.scalatest.{ Matchers, FlatSpec }
 
-case class SchemaSample(int: Int, long: Long, string: String, array: Array[String], option: Option[Int],
-                        frame: FrameReference, other_frame: FrameReference)
+case class SchemaSample(other_frame: FrameReference, int: Int, long: Long,
+                        string: String, frame: FrameReference, array: Array[String], option: Option[Int])
 
 class JsonSchemaSpec extends FlatSpec with Matchers {
   val schema = JsonSchemaExtractor.getProductSchema(manifest[SchemaSample])
@@ -62,11 +62,16 @@ class JsonSchemaSpec extends FlatSpec with Matchers {
 
   }
 
-  it should "detect frames named frame as self members" in {
-    schema.properties.get.get("frame").get.asInstanceOf[StringSchema].self should equal(Some(true))
+  it should "detect frames in first position as self members" in {
+    schema.properties.get.get("other_frame").get.asInstanceOf[StringSchema].self should equal(Some(true))
   }
 
-  it should "treat frames not named frame as non-self members" in {
-    schema.properties.get.get("other_frame").get.asInstanceOf[StringSchema].self should equal(None)
+  it should "treat frames in positions other than first as non-self members" in {
+    schema.properties.get.get("frame").get.asInstanceOf[StringSchema].self should equal(None)
+  }
+
+  it should "capture the order of the fields" in {
+    schema.order.get should equal(Array("other_frame", "int", "long",
+      "string", "frame", "array", "option"))
   }
 }
