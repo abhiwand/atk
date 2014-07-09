@@ -12,18 +12,18 @@ object Histogram {
    *
    * Spark's histogram(Int) method is throwing ArrayOutOfBounds exceptions so this is a work-around.
    *
-   * @param numBuckets Number
+   * @param bucketCount Number
    * @param min Minimum value for histogram
    * @param max Maximum value for histogram
    * @return Histogram buckets
    */
-  def makeBuckets(numBuckets: Int, min: Double, max: Double): Array[Double] = {
-    require(numBuckets > 0, "Number of buckets for histogram should be greater than zero.")
+  def makeBuckets(bucketCount: Int, min: Double, max: Double): Array[Double] = {
+    require(bucketCount > 0, "Number of buckets for histogram should be greater than zero.")
     require(max > min, "Maximum value should exceed minimum value for histogram buckets.")
     require(!min.isNaN && !max.isNaN && !min.isInfinite && !max.isInfinite, "Values should not contain +/-infinity or NaN")
 
-    val bucketWidth = (max - min) / numBuckets
-    (0 to numBuckets).map(x => min + bucketWidth * x).toArray
+    val bucketWidth = (max - min) / bucketCount
+    (0 to bucketCount).map(x => min + bucketWidth * x).toArray
   }
 
   /**

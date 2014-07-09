@@ -42,7 +42,7 @@ object RocCounts {
    * @param rocParams  ROC parameters
    * @return True positive and false positive rates for each threshold
    */
-  def calcRoc(rocCounts: RocCounts, rocParams: RocParams): List[Roc] = {
+  def calcRoc(rocCounts: RocCounts, rocParams: RocParams): Seq[Roc] = {
     val rocList = ArrayBuffer[Roc]()
     var k = 0
     for (k <- 0 until rocParams.size) {
@@ -52,7 +52,7 @@ object RocCounts {
     }
     rocList += Roc(0, 0, 0)
     rocList += Roc(1, 1, 1)
-    rocList.sortBy(_.fpr).toList
+    rocList.sortBy(_.falsePositiveRate).toSeq
   }
 }
 
@@ -76,10 +76,19 @@ case class RocParams(args: List[Double]) {
  * True positive rate, and false positive rate for ROC threshold.
  *
  * @param threshold ROC threshold
- * @param fpr False positive rate
- * @param tpr True positive rate
+ * @param falsePositiveRate False positive rate
+ * @param truePositiveRate True positive rate
  */
-case class Roc(threshold: Double, fpr: Double, tpr: Double)
+case class Roc(threshold: Double, falsePositiveRate: Double, truePositiveRate: Double)
+
+
+/**
+ * ROC curve.
+ *
+ * @param splitType  Split type
+ * @param rocCurve  Sorted ROC values for a range of thresholds
+ */
+case class RocCurve(splitType : String, rocCurve: Seq[Roc])
 
 /**
  * Tracks the number of true positives, false positives, positives, and negatives for each ROC threshold.

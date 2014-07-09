@@ -19,39 +19,40 @@ object FeatureVector {
   def parseGraphElement(graphElement: GraphElement,
                         priorPropertyName: String,
                         posteriorPropertyName: Option[String],
-                        splitPropertyName: Option[String]): Option[FeatureVector] = {
+                        splitPropertyName: Option[String]): FeatureVector = {
 
-    val priorArray = parseArray(graphElement, priorPropertyName, " ")
-
+    val priorArray = parseDoubleArray(graphElement, priorPropertyName, " ")
     val splitType = parseSplitType(graphElement, splitPropertyName)
 
     val posteriorArray = if (posteriorPropertyName != None) {
-      parseArray(graphElement, posteriorPropertyName.get, ",")
+      parseDoubleArray(graphElement, posteriorPropertyName.get, ",")
     }
     else Array.empty[Double]
 
     // Prior and posterior vector should be the same size
     if (posteriorArray.isEmpty || posteriorArray.size == priorArray.size) {
-      Some(FeatureVector(priorArray, posteriorArray, splitType))
+      FeatureVector(priorArray, posteriorArray, splitType)
     }
     else {
-      None //TODO: Warn or throw exception?
+      throw new RuntimeException("Prior vector and posterior vector do not have the same length in graph element")
     }
   }
 
   /**
-   * Get split type from graph element. The split type may be train (TR), validation (VA), and test (TE).
+   * Get split type from graph element.
+   *
+   * The split type can be any user-defined value, e.g., train (TR), validation (VA), and test (TE).
    *
    * @param graphElement Graph element which can be a vertex or an edge
    * @param splitPropertyName Property name for split type
-   * @return An optional split type which can be train (TR), validation (VA), and test (TE).
+   * @return An optional split type
    */
   def parseSplitType(graphElement: GraphElement, splitPropertyName: Option[String]): String = {
-    val result = for {
+    val splitType = for {
       name <- splitPropertyName
       property <- graphElement.getProperty(name)
     } yield property.value.toString.toUpperCase
-    result.getOrElse("")
+    splitType.getOrElse("")
   }
 
   /**
@@ -62,24 +63,16 @@ object FeatureVector {
    * @param sep Delimiter (defaults to comma)
    * @return Array of feature probabilities
    */
-  def parseArray(graphElement: GraphElement, propertyName: String, sep: String = " "): Array[Double] = {
+  def parseDoubleArray(graphElement: GraphElement, propertyName: String, sep: String = " "): Array[Double] = {
     val property = graphElement.getProperty(propertyName)
     if (property != None) {
-      property.get.value.toString.split(sep).map(parseDouble(_).getOrElse(0d))
+      property.get.value.toString.split(sep).map( p => {
+        try { p.toDouble} catch {case _ => 0d}
+      })
     }
     else {
       Array.empty[Double]
     }
-  }
-
-  /**
-   * Parse double from string
-   */
-  def parseDouble(str: String): Option[Double] = try {
-    Some(str.toDouble)
-  }
-  catch {
-    case e: Exception => None //TODO: Warn?
   }
 
   /**
@@ -116,8 +109,8 @@ object FeatureVector {
    *
    * @return List of ROC curves for each feature and split type
    */
-  def getRocCurves(featureVectorRDD: RDD[FeatureVector], rocParams: RocParams): List[List[(String, List[Roc])]] = {
-    val rocCurves = ArrayBuffer[List[(String, List[Roc])]]()
+  def getRocCurves(featureVectorRDD: RDD[FeatureVector], rocParams: RocParams): List[List[RocCurve]] = {
+    val rocCurves = ArrayBuffer[List[RocCurve]]()
     val featureSize = featureVectorRDD.first().priorArray.size
 
     var i = 0
@@ -126,7 +119,7 @@ object FeatureVector {
         (f.splitType, RocCounts.updateRocCounts(f.priorArray(i), f.posteriorArray(i), rocParams))
       ).reduceByKey((a1, a2) => a1.merge(a2))
 
-      val rocRdd = rocCountsRDD.map(rocCounts => (rocCounts._1, RocCounts.calcRoc(rocCounts._2, rocParams)))
+      val rocRdd = rocCountsRDD.map(r => (RocCurve(r._1, RocCounts.calcRoc(r._2, rocParams))))
       rocCurves += rocRdd.collect().toList
     }
     rocCurves.toList
