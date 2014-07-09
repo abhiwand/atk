@@ -32,6 +32,7 @@ import scala.reflect.ClassTag
 class GraphonSparkArchive extends Archive {
 
   val commands: Seq[Class[_]] = Seq(classOf[com.intel.spark.graphon.sampling.VertexSample])
+
   /**
    * Obtain instances of a given class. The keys are established purely
    * by convention.
