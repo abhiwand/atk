@@ -41,6 +41,7 @@ class ProgressPrinter(object):
         self.job_count = 0
         self.last_progress = []
         self.job_start_times = []
+        self.initializing = True
 
     def print_progress(self, progress, progressMessage, finished):
         """
@@ -56,14 +57,20 @@ class ProgressPrinter(object):
             Indicate whether the command is finished
         """
 
-        number_of_new_lines = (len(progress) - self.job_count) if len(progress) > 1 and self.job_count < len(progress) else 0
+        total_job_count = len(progress)
+        new_added_job_count = total_job_count - self.job_count
 
-        for i in range(0, len(progress) - self.job_count):
+        # if it was printing initializing, overwrite initializing in the same line
+        # therefore it requires 1 less new line
+        number_of_new_lines = new_added_job_count if not self.initializing else new_added_job_count - 1
+
+        if total_job_count > 0:
+            self.initializing = False
+
+        for i in range(0, new_added_job_count):
             self.job_start_times.append(time.time())
 
-        if self.job_count < len(progress):
-            self.job_count = len(progress)
-
+        self.job_count = total_job_count
         self.print_progress_as_text(progress, progressMessage, number_of_new_lines, self.job_start_times, finished)
 
     def print_progress_as_text(self, progress, progressMessage, number_of_new_lines, start_times, finished):
@@ -103,7 +110,10 @@ class ProgressPrinter(object):
             progress_summary.append("\r%6s%% [%s%s] %s [Elapsed Time %s]" % (number, '=' * num_star, '.' * num_dot, message, time_string))
 
         for i in range(0, number_of_new_lines):
-            index = -2 - (number_of_new_lines - 1 - i)
+            # calculate the index for fetch from the list from the end
+            # if number_of_new_lines is 3, will need to take progress_summary[-4], progress_summary[-3], progress_summary[-2]
+            # index will be calculated as -4, -3 and -2 respectively
+            index = -1 - number_of_new_lines + i
             previous_step_progress = progress_summary[index]
             previous_step_progress = previous_step_progress + "\n"
             sys.stdout.write(previous_step_progress)
