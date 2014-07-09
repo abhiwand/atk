@@ -21,38 +21,8 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics
+package com.intel.intelanalytics.domain.graph
 
-trait ClassLoaderAware {
+import com.intel.intelanalytics.domain.HasId
 
-  /**
-   * Execute a code block using specified class loader
-   * rather than the ClassLoader of the currentThread()
-   */
-  def withLoader[T](loader: ClassLoader)(expr: => T): T = {
-    val prior = Thread.currentThread().getContextClassLoader
-    try {
-      Thread.currentThread().setContextClassLoader(loader)
-      expr
-    }
-    finally {
-      Thread.currentThread().setContextClassLoader(prior)
-    }
-  }
-
-  /**
-   * Execute a code block using the ClassLoader of 'this'
-   * rather than the ClassLoader of the currentThread()
-   */
-  def withMyClassLoader[T](expression: => T): T = {
-    val prior = Thread.currentThread().getContextClassLoader
-    try {
-      val loader = this.getClass.getClassLoader
-      Thread.currentThread setContextClassLoader loader
-      expression
-    }
-    finally {
-      Thread.currentThread setContextClassLoader prior
-    }
-  }
-}
+case class GraphReference(id: Long) extends HasId

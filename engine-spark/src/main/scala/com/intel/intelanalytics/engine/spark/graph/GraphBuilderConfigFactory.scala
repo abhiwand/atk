@@ -20,7 +20,7 @@ import spray.json.JsObject
  * @param graphLoad The graph loading command.
  * @param graph Metadata for the graph being written to.
  */
-class GraphBuilderConfigFactory(val schema: Schema, val graphLoad: GraphLoad[JsObject, Long, Long], graph: Graph) {
+class GraphBuilderConfigFactory(val schema: Schema, val graphLoad: GraphLoad, graph: Graph) {
 
   // TODO graphbuilder does not yet support taking multiple frames as input
   require(graphLoad.frame_rules.size == 1)

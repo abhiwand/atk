@@ -26,7 +26,12 @@ package com.intel.intelanalytics.domain.frame
 import com.intel.intelanalytics.domain.Partial
 import com.intel.intelanalytics.domain.schema.Schema
 
-case class LoadLines[+Arguments, FrameRef](source: String, destination: FrameRef, skipRows: Option[Int], overwrite: Option[Boolean], lineParser: Partial[Arguments], schema: Schema) {
+case class LoadLines[+Arguments](source: FileName,
+                                 destination: FrameReference,
+                                 skipRows: Option[Int],
+                                 overwrite: Option[Boolean],
+                                 lineParser: Partial[Arguments],
+                                 schema: Schema) {
   require(source != null, "source is required")
   require(destination != null, "destination is required")
   require(skipRows.isEmpty || skipRows.get >= 0, "cannot skip negative number of rows")

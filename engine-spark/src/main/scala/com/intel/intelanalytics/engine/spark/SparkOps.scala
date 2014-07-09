@@ -33,12 +33,6 @@ import org.apache.spark.rdd.RDD
 import spray.json.JsObject
 
 import scala.collection.mutable
-import scala.Some
-import com.intel.intelanalytics.engine.spark.frame.RDDJoinParam
-import com.intel.intelanalytics.domain.frame.LoadLines
-
-//implicit conversion for PairRDD
-import org.apache.spark.SparkContext._
 
 private[spark] object SparkOps extends Serializable {
 

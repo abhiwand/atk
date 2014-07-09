@@ -29,13 +29,15 @@ import logging
 import uuid, sys
 logger = logging.getLogger(__name__)
 
-from intelanalytics.core.types import supported_types
+from intelanalytics.core.iatypes import supported_types
 from intelanalytics.core.aggregation import *
 from intelanalytics.core.errorhandle import IaError
+from intelanalytics.core.command import CommandSupport, docstub
 
 def _get_backend():
     from intelanalytics.core.config import get_frame_backend
     return get_frame_backend()
+
 
 
 def get_frame_names():
@@ -111,7 +113,7 @@ def delete_frame(name):
     except:
         raise IaError(logger)
 
-class BigFrame(object):
+class BigFrame(CommandSupport):
     """
     Proxy for a large 2D container to work with table data at scale.
 
@@ -145,6 +147,7 @@ class BigFrame(object):
             if not hasattr(self, '_backend'):  # if a subclass has not already set the _backend
                 self._backend = _get_backend()
             self._backend.create(self, source, name)
+            CommandSupport.__init__(self)
             logger.info('Created new frame "%s"', self._name)
         except:
             raise IaError(logger)
@@ -508,7 +511,7 @@ class BigFrame(object):
         ----------
         column_name : str
             The column to be flattened
-
+                                                  n
         Returns
         -------
         frame : BigFrame
@@ -1005,6 +1008,7 @@ class BigFrame(object):
         except:
             raise IaError(logger)
 
+    @docstub
     def remove_columns(self, name):
         """
         Remove columns from the BigFrame object.
@@ -1027,11 +1031,12 @@ class BigFrame(object):
         # Now my_frame only has the columns named "column_a" and "column_c"
 
         """
+        pass
         # TODO - Review examples
-        try:
-            self._backend.remove_columns(self, name)
-        except:
-            raise IaError(logger)
+        #try:
+        #    self._backend.remove_columns(self, name)
+        #except:
+        #    raise IaError(logger)
 
     def rename_columns(self, column_names, new_names):
         """

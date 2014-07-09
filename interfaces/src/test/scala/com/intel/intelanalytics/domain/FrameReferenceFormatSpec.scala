@@ -21,38 +21,22 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics
+package com.intel.intelanalytics.domain
 
-trait ClassLoaderAware {
+import com.intel.intelanalytics.domain.frame.FrameReference
+import org.scalatest.{ Matchers, FlatSpec }
 
-  /**
-   * Execute a code block using specified class loader
-   * rather than the ClassLoader of the currentThread()
-   */
-  def withLoader[T](loader: ClassLoader)(expr: => T): T = {
-    val prior = Thread.currentThread().getContextClassLoader
-    try {
-      Thread.currentThread().setContextClassLoader(loader)
-      expr
-    }
-    finally {
-      Thread.currentThread().setContextClassLoader(prior)
-    }
+import DomainJsonProtocol._
+import spray.json._
+
+class FrameReferenceFormatSpec extends FlatSpec with Matchers {
+
+  "Frame reference (domain)" should "convert ia://dataframes/3 to a frame reference for id 3" in {
+    JsString("ia://dataframes/3").convertTo[FrameReference] should equal(FrameReference(3))
   }
 
-  /**
-   * Execute a code block using the ClassLoader of 'this'
-   * rather than the ClassLoader of the currentThread()
-   */
-  def withMyClassLoader[T](expression: => T): T = {
-    val prior = Thread.currentThread().getContextClassLoader
-    try {
-      val loader = this.getClass.getClassLoader
-      Thread.currentThread setContextClassLoader loader
-      expression
-    }
-    finally {
-      Thread.currentThread setContextClassLoader prior
-    }
+  it should "convert a frame reference for frame 3 to ia://dataframes/3" in {
+    FrameReference(3).toJson should equal(JsString("ia://dataframes/3"))
   }
+
 }
