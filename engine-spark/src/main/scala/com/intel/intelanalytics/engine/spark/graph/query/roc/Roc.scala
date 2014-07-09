@@ -81,14 +81,13 @@ case class RocParams(args: List[Double]) {
  */
 case class Roc(threshold: Double, falsePositiveRate: Double, truePositiveRate: Double)
 
-
 /**
  * ROC curve.
  *
  * @param splitType  Split type
  * @param rocCurve  Sorted ROC values for a range of thresholds
  */
-case class RocCurve(splitType : String, rocCurve: Seq[Roc])
+case class RocCurve(splitType: String, rocCurve: Seq[Roc])
 
 /**
  * Tracks the number of true positives, false positives, positives, and negatives for each ROC threshold.

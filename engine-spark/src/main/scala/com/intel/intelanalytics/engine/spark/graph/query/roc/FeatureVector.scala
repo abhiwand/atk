@@ -66,8 +66,8 @@ object FeatureVector {
   def parseDoubleArray(graphElement: GraphElement, propertyName: String, sep: String = " "): Array[Double] = {
     val property = graphElement.getProperty(propertyName)
     if (property != None) {
-      property.get.value.toString.split(sep).map( p => {
-        try { p.toDouble} catch {case _ => 0d}
+      property.get.value.toString.split(sep).map(p => {
+        try { p.toDouble } catch { case _ => 0d }
       })
     }
     else {

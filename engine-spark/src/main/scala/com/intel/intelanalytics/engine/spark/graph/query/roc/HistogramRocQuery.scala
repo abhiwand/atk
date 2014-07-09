@@ -16,7 +16,6 @@ import spray.json._
 import scala.collection.JavaConverters._
 import scala.concurrent._
 
-
 /**
  * Get histogram and optionally ROC curve on property values
  *
@@ -83,11 +82,11 @@ class HistogramRocQuery extends SparkCommandPlugin[HistogramRocParams, Histogram
     System.out.println("*********In Execute method of LBP********")
 
     val config = configuration().get
-    //val graphFuture = invocation.engine.getGraph(arguments.graph.id)
+    val graphFuture = invocation.engine.getGraph(arguments.graph.id)
 
     // Change this to read from default-timeout
     import scala.concurrent.duration._
-    //val graph = Await.result(graphFuture, config.getInt("default-timeout") seconds)
+    val graph = Await.result(graphFuture, config.getInt("default-timeout") seconds)
 
     val priorPropertyName = arguments.priorPropertyName
     val posteriorPropertyName = arguments.posteriorPropertyName
@@ -106,7 +105,8 @@ class HistogramRocQuery extends SparkCommandPlugin[HistogramRocParams, Histogram
     for (entry <- titanLoadConfig.entrySet().asScala) {
       titanConfiguration.addProperty(entry.getKey, titanLoadConfig.getString(entry.getKey))
     }
-    titanConfiguration.setProperty("storage.tablename", "iat_graph_mygraph") // + graph.name)
+
+    titanConfiguration.setProperty("storage.tablename", "iat_graph_" + graph.name) // "iat_graph_mygraph") graph.name)
 
     val titanConnector = new TitanGraphConnector(titanConfiguration)
     val sc = invocation.sparkContext
