@@ -35,7 +35,7 @@ import scala.reflect.ClassTag
  * @param label for this data point.
  * @param entry content for this data point.
  */
-case class LabeledLine[T: ClassTag](label: Int, entry: T)
+case class LabeledLine[L: ClassTag, T: ClassTag](label: L, entry: T)
 
 /**
  * Data Splitter for ML algorithms. It randomly labels an input RDD with user
@@ -44,7 +44,7 @@ case class LabeledLine[T: ClassTag](label: Int, entry: T)
  * @param percentages A double array stores percentages.
  * @param seed Random seed for random number generator.
  */
-class MLDataSplitter(percentages: Array[Double], seed: Int) extends Serializable {
+class MLDataSplitter(percentages: Array[Double], labels: Array[String], seed: Int) extends Serializable {
 
   // verify percentages
   if (!percentages.forall(p => p > 0)) {
@@ -53,6 +53,10 @@ class MLDataSplitter(percentages: Array[Double], seed: Int) extends Serializable
 
   if (Math.abs(percentages.sum - 1) > 0.001) {
     throw new SparkException("Summation of percentages isn't equal to 1.")
+  }
+
+  if (labels.length != percentages.length) {
+    throw new SparkException("Number of class labels differs from number of percentages given.")
   }
 
   var cdf = percentages.scanLeft(0D)(_ + _)
@@ -64,12 +68,12 @@ class MLDataSplitter(percentages: Array[Double], seed: Int) extends Serializable
    *
    * @param inputRDD RDD of type T.
    */
-  def randomlyLabelRDD[T: ClassTag](inputRDD: RDD[T]): RDD[LabeledLine[T]] = {
+  def randomlyLabelRDD[T: ClassTag](inputRDD: RDD[T]): RDD[LabeledLine[String, T]] = {
     // generate auxiliary (sample) RDD
     val auxiliaryRDD = new AuxiliaryRDD(inputRDD, seed)
     val labeledRDD = inputRDD.zip(auxiliaryRDD).map { p =>
       val (line, sampleValue) = p
-      val label = cdf.indexWhere(_ >= sampleValue)
+      val label = labels.apply(cdf.indexWhere(_ >= sampleValue))
       LabeledLine(label, line)
     }
     labeledRDD
@@ -81,53 +85,54 @@ class MLDataSplitter(percentages: Array[Double], seed: Int) extends Serializable
  * Top-level methods for calling MLDataSplitter.
  *  NLS TODO:  I intend to deprecate this code... it is not relevant now that we are calling the splitter from the
  *  engine.  Speak now or forever hold your peace...
+ *
+ * object MLDataSplitter {
+ *
+ * def main(args: Array[String]) {
+ * if (args.length != 6) {
+ * println("Usage: MLDataSplitter <master> <input_dir> <output_dir> <percentages> <random_seed> <memory_size>")
+ * System.exit(1)
+ * }
+ * val master = args(0)
+ * val input = args(1)
+ * val output = args(2)
+ * val percentages = args(3).split(',').map(_.split(':'))
+ * val seed = args(4).toInt
+ * val memorySize = args(5)
+ *
+ * // extract partition names and percentages
+ * val partitionNames = percentages.map(_(0))
+ * val partitionPercentages = percentages.map(_(1).toDouble)
+ *
+ * // create data splitter
+ * val splitter = new MLDataSplitter(partitionPercentages, seed)
+ *
+ * // set up spark context
+ * val conf = new SparkConf()
+ * .setMaster(master)
+ * .setAppName("MLDataSplitter")
+ * .set("spark.executor.memory", memorySize)
+ * .setJars(jarOfClass(this.getClass))
+ * val sc = new SparkContext(conf)
+ *
+ * // load data for sampling/splitting
+ * val inputRDD = sc.textFile(input)
+ * val totalSize = inputRDD.count
+ * println("Number of lines in input files: %d".format(totalSize))
+ *
+ * // split RDD randomly
+ * val labeledRDD = splitter.randomlyLabelRDD(inputRDD)
+ *
+ * (0 until percentages.size).foreach { i =>
+ * val partitionName = partitionNames(i)
+ * val partitionRDD = labeledRDD.filter(p => p.label == i).map(_.entry)
+ * val partitionSize = partitionRDD.count
+ * partitionRDD.saveAsTextFile(output + "/" + partitionName)
+ * println("Number of lines in partition %s: %d (%.2f%%)".format(partitionName, partitionSize,
+ * partitionSize * 100.0 / totalSize))
+ * }
+ *
+ * sc.stop()
+ * }
+ * }
  */
-object MLDataSplitter {
-
-  def main(args: Array[String]) {
-    if (args.length != 6) {
-      println("Usage: MLDataSplitter <master> <input_dir> <output_dir> <percentages> <random_seed> <memory_size>")
-      System.exit(1)
-    }
-    val master = args(0)
-    val input = args(1)
-    val output = args(2)
-    val percentages = args(3).split(',').map(_.split(':'))
-    val seed = args(4).toInt
-    val memorySize = args(5)
-
-    // extract partition names and percentages
-    val partitionNames = percentages.map(_(0))
-    val partitionPercentages = percentages.map(_(1).toDouble)
-
-    // create data splitter
-    val splitter = new MLDataSplitter(partitionPercentages, seed)
-
-    // set up spark context
-    val conf = new SparkConf()
-      .setMaster(master)
-      .setAppName("MLDataSplitter")
-      .set("spark.executor.memory", memorySize)
-      .setJars(jarOfClass(this.getClass))
-    val sc = new SparkContext(conf)
-
-    // load data for sampling/splitting
-    val inputRDD = sc.textFile(input)
-    val totalSize = inputRDD.count
-    println("Number of lines in input files: %d".format(totalSize))
-
-    // split RDD randomly
-    val labeledRDD = splitter.randomlyLabelRDD(inputRDD)
-
-    (0 until percentages.size).foreach { i =>
-      val partitionName = partitionNames(i)
-      val partitionRDD = labeledRDD.filter(p => p.label == i).map(_.entry)
-      val partitionSize = partitionRDD.count
-      partitionRDD.saveAsTextFile(output + "/" + partitionName)
-      println("Number of lines in partition %s: %d (%.2f%%)".format(partitionName, partitionSize,
-        partitionSize * 100.0 / totalSize))
-    }
-
-    sc.stop()
-  }
-}
