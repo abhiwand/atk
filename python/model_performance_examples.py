@@ -2,6 +2,21 @@ from intelanalytics import *
 
 #loggers.set('DEBUG', 'intelanalytics.rest.connection','/home/hadoop/logOutput','True')
 
+netflix_input = "datasets/model_33_50.csv"
+netflix_file = CsvFile(netflix_input, [('src', int64),
+                                ('vertex_type', str),
+                                ('dest', int64),
+                                ('labeled', int32),
+                                ('edge_type', str),
+                                ('predicted', int32)])
+netflix_frame = BigFrame(netflix_file)
+print(netflix_frame.inspect())
+netflix_acc = netflix_frame.accuracy('labeled', 'predicted')
+netflix_prec = netflix_frame.precision('labeled', 'predicted')
+netflix_rec = netflix_frame.recall('labeled', 'predicted')
+netflix_f = netflix_frame.fmeasure('labeled', 'predicted')
+print('binary: {0}, {1}, {2}, {3}'.format(netflix_acc, netflix_prec, netflix_rec, netflix_f))
+
 binary_input = "datasets/binarymodel.csv"
 binary_char_input = "datasets/binarymodelchar.csv"
 multiclass_input = "datasets/multimodel.csv"
