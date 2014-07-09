@@ -28,7 +28,7 @@ import uuid
 
 from intelanalytics.core.serialize import to_json
 from intelanalytics.core.column import BigColumn
-from intelanalytics.core.command import CommandSupport, docstub
+from intelanalytics.core.command import CommandSupport, doc_stub
 
 def _get_backend():
     from intelanalytics.core.config import get_graph_backend

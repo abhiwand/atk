@@ -57,18 +57,10 @@ fi
 if
     weird=$( echo $1 | grep -ic -e "text" -e "doctest" -e "latexpdf" -e "latex")
 then
-    # Delete previously automatically built files
-    built_dir="build/"$1
-    if [[ -d $built_dir ]]; then
-        echo Deleting previous build.
-        rm -R $built_dir
-    fi
-
     make -B $1 2>&1 | grep -v -f toctreeWarnings
 else
     # Delete previously automatically built files
     if [[ -d build/html ]]; then
-        echo Deleting previous build.
         rm -R build/html
     fi
 
