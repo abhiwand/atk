@@ -28,10 +28,13 @@ import com.intel.graphbuilder.driver.spark.titan.reader.TitanReader
 import com.intel.graphbuilder.graph.titan.TitanGraphConnector
 import com.intel.graphbuilder.parser.InputSchema
 import com.intel.graphbuilder.util.SerializableBaseConfiguration
+import com.intel.intelanalytics.engine.Rows
+import com.intel.intelanalytics.engine.spark.SparkEngineConfig
+import com.intel.intelanalytics.engine.spark.graph.GraphBuilderConfigFactory
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkInvocation, SparkCommandPlugin }
 import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.domain.DomainJsonProtocol
-import com.intel.intelanalytics.domain.graph.GraphReference
+import com.intel.intelanalytics.domain.graph.{ GraphTemplate, GraphReference }
 import com.typesafe.config.ConfigFactory
 import org.apache.spark.SparkContext
 import spray.json.DefaultJsonProtocol._
@@ -45,15 +48,16 @@ import com.intel.spark.graphon.GraphStatistics
 import scala.util.Random
 import scala.concurrent._
 import scala.collection.JavaConverters._
+import com.intel.intelanalytics.engine.spark.graph.SparkGraphStorage
+import java.util.UUID
 
 /**
  * @param graph reference to the graph to be sampled
  * @param size the requested sample size
  * @param sampleType type of vertex sampling to use
  * @param seed random seed value
- * @param subgraphName storage table name for the new subgraph
  */
-case class VS(graph: GraphReference, size: Int, sampleType: String, seed: Int = 1, subgraphName: String)
+case class VS(graph: GraphReference, size: Int, sampleType: String, seed: Int = 1)
 
 case class VSResult(subgraph: GraphReference)
 
@@ -61,7 +65,7 @@ class VertexSample extends SparkCommandPlugin[VS, VSResult] {
 
   import DomainJsonProtocol._
 
-  implicit val vsFormat = jsonFormat5(VS)
+  implicit val vsFormat = jsonFormat4(VS)
   implicit val vsResultFormat = jsonFormat1(VSResult)
 
   // Titan Settings
@@ -84,10 +88,7 @@ class VertexSample extends SparkCommandPlugin[VS, VSResult] {
 
   override def execute(invocation: SparkInvocation, arguments: VS)(implicit user: UserPrincipal, executionContext: ExecutionContext): VSResult = {
 
-    val graphFuture = invocation.engine.getGraph(arguments.graph.id)
-    // Change this to read from default-timeout
-    import scala.concurrent.duration._
-    val graph = Await.result(graphFuture, config.getInt("default-timeout") seconds)
+    val graph = Await.result(invocation.engine.getGraph(arguments.graph.id), SparkEngineConfig.defaultTimeout)
 
     val sc = invocation.sparkContext
     val (vertexRDD, edgeRDD) = getGraph(graph.name, sc)
@@ -101,13 +102,15 @@ class VertexSample extends SparkCommandPlugin[VS, VSResult] {
 
     val edgeSample = sampleEdges(vertexSample, edgeRDD)
 
-    titanConfig.setProperty("storage.tablename", arguments.subgraphName)
+    val subgraphName = "graph_" + UUID.randomUUID.toString
+
+    titanConfig.setProperty("storage.tablename", subgraphName)
+
+    val subgraph = Await.result(invocation.engine.createGraph(GraphTemplate(subgraphName)), SparkEngineConfig.defaultTimeout)
+
     writeToTitan(vertexSample, edgeSample)
 
-    val titanConnector = new TitanGraphConnector(titanConfig)
-    titanConnector.connect()
-    // TODO: get the Titan graph ID and return as GraphReference
-    VSResult(new GraphReference(0))
+    VSResult(new GraphReference(subgraph.id))
   }
 
   /**
@@ -261,9 +264,8 @@ class VertexSample extends SparkCommandPlugin[VS, VSResult] {
    *
    * @param vertices the vertices to write to Titan
    * @param edges the edges to write to Titan
-   * @return the storage table name for the graph written to Titan
    */
-  def writeToTitan(vertices: RDD[Vertex], edges: RDD[Edge]) {
+  def writeToTitan(vertices: RDD[Vertex], edges: RDD[Edge]) = {
     val gb = new GraphBuilder(new GraphBuilderConfig(new InputSchema(Seq.empty), List.empty, List.empty, titanConfig))
     gb.buildGraphWithSpark(vertices, edges)
   }
