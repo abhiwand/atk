@@ -44,7 +44,7 @@ import scala.concurrent._
  *                   A semi-colon separated string with train (TR), validation (VA), and test (TE) splits.
  *                   The default value is "TR;VA;TE"
  *
- * @param numBuckets The number of buckets to plot histogram. The default value is 30.
+ * @param bucketCount The number of buckets to plot histogram. The default value is 30.
  */
 case class HistogramRocParams(graph: GraphReference,
                               priorPropertyName: String,
@@ -54,7 +54,7 @@ case class HistogramRocParams(graph: GraphReference,
                               propertyType: Option[String] = Some("VERTEX_PROPERTY"),
                               vertexTypeKey: Option[String] = Some("vertex_type"),
                               splitTypes: Option[List[String]] = Some(List("TR", "VA", "TE")),
-                              numBuckets: Option[Int] = Some(30)) {
+                              bucketCount: Option[Int] = Some(30)) {
   require(rocThreshold.get.size == 3)
 }
 
@@ -79,7 +79,7 @@ class HistogramRocQuery extends SparkCommandPlugin[HistogramRocParams, Histogram
 
   override def execute(invocation: SparkInvocation, arguments: HistogramRocParams)(implicit user: UserPrincipal, executionContext: ExecutionContext): HistogramRocResult = {
     // TODO: Integrate with Joyesh
-    System.out.println("*********In Execute method of LBP********")
+    System.out.println("*********In Execute method of Histogram ROC query********")
 
     val config = configuration().get
     val graphFuture = invocation.engine.getGraph(arguments.graph.id)
@@ -97,7 +97,7 @@ class HistogramRocQuery extends SparkCommandPlugin[HistogramRocParams, Histogram
     val propertyType: Option[String] = arguments.propertyType
     val vertexTypeKey: Option[String] = arguments.vertexTypeKey
     val splitTypes: Option[List[String]] = arguments.splitTypes
-    val numBuckets: Int = arguments.numBuckets.getOrElse(30)
+    val numBuckets: Int = arguments.bucketCount.getOrElse(30)
 
     // Create graph connection
     val titanConfiguration = new SerializableBaseConfiguration()
