@@ -201,15 +201,17 @@ class VertexSampleITest extends Specification {
       graph.getVertices.size mustEqual 8
     }
 
-    "correctly read the input graph from Titan into Vertex and Edge RDDs" in new TestingSparkContext with TestingTitan {
-      // TODO: tablename not recognized...
+    "correctly read the input graph from Titan into Vertex and Edge RDDs" in new TestingSparkContext {
       val vertexRdd = sc.parallelize(inputVertexList.toSeq, 2)
       val edgeRdd = sc.parallelize(inputEdgeList.toSeq, 2)
 
       val vs = new VertexSample
-      vs.titanConfig = titanConfig
-      titanConfig.setProperty("storage.tablename", "titanTestGraph")
+
+      // TODO: delete preexisting graph or it will simply append and cause test to fail
+      vs.titanConfig.setProperty("storage.tablename", "titanTestGraph")
       vs.writeToTitan(vertexRdd, edgeRdd)
+
+      vs.titanConfig.clearProperty("storage.tablename")
 
       val (readVertexRdd: RDD[Vertex], readEdgeRdd: RDD[Edge]) = vs.getGraph("titanTestGraph", sc)
 

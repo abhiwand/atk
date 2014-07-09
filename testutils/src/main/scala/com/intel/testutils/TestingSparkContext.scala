@@ -24,7 +24,7 @@
 package com.intel.testutils
 
 import java.util.Date
-import org.apache.spark.SparkContext
+import org.apache.spark.{ SparkConf, SparkContext }
 import scala.concurrent.Lock
 
 /**
@@ -44,7 +44,13 @@ trait TestingSparkContext extends MultipleAfter {
 
   LogUtils.silenceSpark()
 
-  lazy val sc = new SparkContext("local", "test " + new Date())
+  val conf = new SparkConf()
+    .setMaster("local")
+    .setAppName(this.getClass.getSimpleName + " " + new Date())
+  conf.set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
+  conf.set("spark.kryo.registrator", "com.intel.graphbuilder.driver.spark.titan.GraphBuilderKryoRegistrator")
+
+  lazy val sc = new SparkContext(conf)
 
   /**
    * Clean up after the test is done

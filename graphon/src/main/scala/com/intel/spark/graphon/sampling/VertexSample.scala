@@ -74,6 +74,7 @@ class VertexSample extends SparkCommandPlugin[VS, VSResult] {
   var titanConfig = new SerializableBaseConfiguration()
   titanConfig.setProperty("storage.backend", config.getString("storage.backend"))
   titanConfig.setProperty("storage.hostname", config.getString("storage.hostname"))
+  titanConfig.setProperty("storage.port", config.getString("storage.port"))
   titanConfig.setProperty("storage.batch-loading", config.getString("storage.batch-loading"))
   titanConfig.setProperty("autotype", config.getString("autotype"))
   titanConfig.setProperty("storage.buffer-size", config.getString("storage.buffer-size"))
@@ -111,31 +112,6 @@ class VertexSample extends SparkCommandPlugin[VS, VSResult] {
     writeToTitan(vertexSample, edgeSample)
 
     VSResult(new GraphReference(subgraph.id))
-  }
-
-  /**
-   * Read in the graph vertices and edges for the specified graphId
-   *
-   * @param graphName storage table name for the graph
-   * @param sc access to SparkContext
-   * @return tuple containing RDDs of vertices and edges
-   */
-  def getGraph(graphName: String, sc: SparkContext): (RDD[Vertex], RDD[Edge]) = {
-    // TODO: these properties need to be read from project-wide location
-    titanConfig.setProperty("storage.tablename", graphName)
-
-    val titanConnector = new TitanGraphConnector(titanConfig)
-
-    // Read graph
-    val titanReader = new TitanReader(sc, titanConnector)
-    val titanReaderRDD = titanReader.read()
-
-    val vertexRDD = titanReaderRDD.filterVertices()
-    val edgeRDD = titanReaderRDD.filterEdges()
-
-    titanConfig.clearProperty("storage.tablename")
-
-    (vertexRDD, edgeRDD)
   }
 
   /**
@@ -257,6 +233,28 @@ class VertexSample extends SparkCommandPlugin[VS, VSResult] {
   def sampleEdges(vertices: RDD[Vertex], edges: RDD[Edge]): RDD[Edge] = {
     val vertexArray = vertices.map(v => v.gbId.value).collect() // get vertexGbIds
     edges.filter(e => vertexArray.contains(e.headVertexGbId.value) && vertexArray.contains(e.tailVertexGbId.value))
+  }
+
+  /**
+   * Read in the graph vertices and edges for the specified graphId
+   *
+   * @param graphName storage table name for the graph
+   * @param sc access to SparkContext
+   * @return tuple containing RDDs of vertices and edges
+   */
+  def getGraph(graphName: String, sc: SparkContext): (RDD[Vertex], RDD[Edge]) = {
+    titanConfig.setProperty("storage.tablename", graphName)
+
+    val titanConnector = new TitanGraphConnector(titanConfig)
+
+    // Read graph
+    val titanReader = new TitanReader(sc, titanConnector)
+    val titanReaderRDD = titanReader.read()
+
+    val vertexRDD = titanReaderRDD.filterVertices()
+    val edgeRDD = titanReaderRDD.filterEdges()
+
+    (vertexRDD, edgeRDD)
   }
 
   /**
