@@ -499,32 +499,48 @@ private[spark] object SparkOps extends Serializable {
     val sumsAndCounts: Map[Int, (Int, Int)] = getPerPartitionCountAndAccumulatedSum(sorted)
 
     val temp = sorted.mapPartitionsWithIndex((partitionIndex, rows) => {
-      var rowIndex =  (if(partitionIndex == 0) 0 else sumsAndCounts(partitionIndex - 1)._2) + 1
+      var startIndex =  (if(partitionIndex == 0) 0 else sumsAndCounts(partitionIndex - 1)._2) + 1
       val result = ListBuffer[(Int, BigDecimal)]()
 
-      for(row <- rows) {
+//      val result = for {
+//        rowAndIndexPair <- rows.zipWithIndex
+//        rowIndex = startIndex + rowAndIndexPair._2
+//        percentile <- percentileTargetMapping(rowIndex) if percentileTargetMapping.contains(rowIndex)
+//        keyValueRow: (Int, Array[Any]) = rowAndIndexPair._1
+//        key = keyValueRow._1
+//        numericVal = dataType match {
+//          case DataTypes.int32 => BigDecimal(key.asInstanceOf[DataTypes.int32.ScalaType])
+//          case DataTypes.int64 => BigDecimal(key.asInstanceOf[DataTypes.int64.ScalaType])
+//          case DataTypes.float32 => BigDecimal(key.asInstanceOf[DataTypes.float32.ScalaType])
+//          case DataTypes.float64 => BigDecimal(key.asInstanceOf[DataTypes.float64.ScalaType])
+//        }
+//      } yield Tuple2(percentile.percentile, numericVal * percentile.weight)
+
+
+
+      for(rowAndIndexPair <- rows.zipWithIndex) {
+        val rowIndex = startIndex + rowAndIndexPair._2
         if(percentileTargetMapping.contains(rowIndex)) {
           val target: Seq[PercentileTarget] = percentileTargetMapping(rowIndex)
 
           for(percentile <- target) {
-            val value = row._1
+            val keyValueRow: (Int, Array[Any]) = rowAndIndexPair._1
+            val key = keyValueRow._1
 
             val numericVal = dataType match {
-              case DataTypes.int32 => BigDecimal(value.asInstanceOf[DataTypes.int32.ScalaType])
-              case DataTypes.int64 => BigDecimal(value.asInstanceOf[DataTypes.int64.ScalaType])
-              case DataTypes.float32 => BigDecimal(value.asInstanceOf[DataTypes.float32.ScalaType])
-              case DataTypes.float64 => BigDecimal(value.asInstanceOf[DataTypes.float64.ScalaType])
+              case DataTypes.int32 => BigDecimal(key.asInstanceOf[DataTypes.int32.ScalaType])
+              case DataTypes.int64 => BigDecimal(key.asInstanceOf[DataTypes.int64.ScalaType])
+              case DataTypes.float32 => BigDecimal(key.asInstanceOf[DataTypes.float32.ScalaType])
+              case DataTypes.float64 => BigDecimal(key.asInstanceOf[DataTypes.float64.ScalaType])
             }
 
             result += Tuple2(percentile.percentile, numericVal * percentile.weight)
           }
         }
-
-        rowIndex = rowIndex + 1
       }
 
 
-      result.iterator
+      result.toIterator
     })
 
     temp.reduceByKey((i, j)=> i+ j).sortByKey(true).collect()
