@@ -34,7 +34,8 @@ import scala.concurrent.ExecutionContext
  * @tparam Argument the argument type for the command
  * @tparam Return the return type for the command
  */
-trait SparkCommandPlugin[Argument, Return] extends CommandPlugin[Argument, Return] {
+trait SparkCommandPlugin[Argument <: Product, Return <: Product]
+    extends CommandPlugin[Argument, Return] {
 
   /**
    * Operation plugins must implement this method to do the work requested by the user.
@@ -42,7 +43,7 @@ trait SparkCommandPlugin[Argument, Return] extends CommandPlugin[Argument, Retur
    * @param arguments the arguments supplied by the caller
    * @return a value of type declared as the Return type.
    */
-  override def execute(invocation: Invocation, arguments: Argument)(implicit user: UserPrincipal, executionContext: ExecutionContext): Return = {
+  final override def execute(invocation: Invocation, arguments: Argument)(implicit user: UserPrincipal, executionContext: ExecutionContext): Return = {
     execute(invocation.asInstanceOf[SparkInvocation], arguments)(user, executionContext)
   }
 

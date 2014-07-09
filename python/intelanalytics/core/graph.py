@@ -28,7 +28,7 @@ import uuid
 
 from intelanalytics.core.serialize import to_json
 from intelanalytics.core.column import BigColumn
-
+from intelanalytics.core.command import CommandSupport, docstub
 
 def _get_backend():
     from intelanalytics.core.config import get_graph_backend
@@ -329,7 +329,7 @@ class EdgeRule(Rule):
         return self.validate_same_frame(label_frame, tail_frame, head_frame, properties_frame)
 
 
-class BigGraph(object):
+class BigGraph(CommandSupport):
     """
     Creates a big graph
 
@@ -347,6 +347,7 @@ class BigGraph(object):
 
     """
     def __init__(self, rules=None, name=""):
+
         if rules and (not isinstance(rules, list) or not all([isinstance(rule, Rule) for rule in rules])):
             raise TypeError("rules must be a list of Rule objects")
         if not hasattr(self, '_backend'):
@@ -354,7 +355,9 @@ class BigGraph(object):
         self._name = name or self._get_new_graph_name()
         self._uri = ""
         self._backend.create(self, rules)
-        self.ml = GraphMachineLearning(self)
+
+        CommandSupport.__init__(self)
+        #self.ml = GraphMachineLearning(self)
         logger.info('Created new graph "%s"', self._name)
 
     @property
@@ -380,7 +383,7 @@ class BigGraph(object):
     @name.setter
     def name(self, value):
         """
-        Set the name of the current ojbect.
+        Set the name of the current object.
         
         Parameters
         ----------

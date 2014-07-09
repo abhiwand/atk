@@ -23,18 +23,24 @@
 
 package com.intel.intelanalytics.domain
 
+import java.net.URI
+
+import com.intel.intelanalytics.domain.command.CommandDefinition
 import com.intel.intelanalytics.domain.frame.load.{ Load, LineParser, LoadSource, LineParserArguments }
 import com.intel.intelanalytics.domain.schema.{ Schema, DataTypes }
 import DataTypes.DataType
+import com.intel.intelanalytics.schema._
 import spray.json._
 import com.intel.intelanalytics.domain.frame._
-import com.intel.intelanalytics.domain.graph.{ Graph, GraphLoad, GraphTemplate }
+import com.intel.intelanalytics.domain.graph.{ GraphReference, Graph, GraphLoad, GraphTemplate }
 import com.intel.intelanalytics.domain.graph.construction.{ EdgeRule, FrameRule, PropertyRule, ValueRule, VertexRule }
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 import com.intel.intelanalytics.domain.schema.{ DataTypes, Schema }
 import org.joda.time.DateTime
 import spray.json._
 import com.intel.intelanalytics.engine.ProgressInfo
+
+import scala.util.matching.Regex
 
 /**
  * Implicit conversions for domain objects to JSON
@@ -65,6 +71,57 @@ object DomainJsonProtocol extends DefaultJsonProtocol {
 
   implicit val schemaFormat = jsonFormat1(Schema)
 
+  implicit object FileNameFormat extends JsonFormat[FileName] {
+    override def write(obj: FileName): JsValue = JsString(obj.name)
+
+    override def read(json: JsValue): FileName = json match {
+      case JsString(name) => FileName(name)
+      case x => deserializationError("Expected file name, but got " + x)
+    }
+  }
+
+  /**
+   * Holds a regular expression, plus the group number we care about in case
+   * the pattern is a match
+   */
+  case class PatternIndex(pattern: Regex, groupNumber: Int) {
+    def findMatch(text: String): Option[String] = {
+      val result = pattern.findFirstMatchIn(text)
+        .map(m => m.group(groupNumber))
+        .flatMap(s => if (s == null) None else Some(s))
+      result
+    }
+  }
+
+  class ReferenceFormat[T <: HasId](patterns: Seq[PatternIndex], collection: String, name: String, factory: Long => T)
+      extends JsonFormat[T] {
+
+    override def write(obj: T): JsValue = JsString(s"ia://$collection/${obj.id}")
+
+    override def read(json: JsValue): T = json match {
+      case JsString(name) =>
+        val id = patterns.flatMap(p => p.findMatch(name))
+          .headOption
+          .map(s => s.toLong)
+          .getOrElse(deserializationError(s"Couldn't find $collection ID in " + name))
+        factory(id)
+      case JsNumber(n) => factory(n.toLong)
+      case _ => deserializationError(s"Expected $name URL, but received " + json)
+    }
+  }
+
+  implicit val frameReferenceFormat = new ReferenceFormat[FrameReference](
+    List(PatternIndex("""ia://dataframes/(\d+)""".r, 1),
+      PatternIndex("""https?://.+/dataframes/(\d+)""".r, 1)),
+    "dataframes", "data frame",
+    n => FrameReference(n))
+
+  implicit val graphReferenceFormat = new ReferenceFormat[GraphReference](
+    List(PatternIndex("""ia://graphs/(\d+)""".r, 1),
+      PatternIndex("""https?://.+/graphs/(\d+)""".r, 1)),
+    "graphs", "graph",
+    n => GraphReference(n))
+
   implicit val userFormat = jsonFormat5(User)
   implicit val statusFormat = jsonFormat5(Status)
   implicit val dataFrameFormat = jsonFormat9(DataFrame)
@@ -73,23 +130,20 @@ object DomainJsonProtocol extends DefaultJsonProtocol {
   implicit val definitionFormat = jsonFormat3(Definition)
   implicit val operationFormat = jsonFormat2(Operation)
   implicit val partialJsFormat = jsonFormat2(Partial[JsObject])
-  implicit val loadLinesFormat = jsonFormat6(LoadLines[JsObject, String])
-  implicit val loadLinesLongFormat = jsonFormat6(LoadLines[JsObject, Long])
+  implicit val loadLinesFormat = jsonFormat6(LoadLines[JsObject])
+  implicit val loadLinesLongFormat = jsonFormat6(LoadLines[JsObject])
   implicit val loadSourceParserArgumentsFormat = jsonFormat3(LineParserArguments)
   implicit val loadSourceParserFormat = jsonFormat2(LineParser)
   implicit val loadSourceFormat = jsonFormat3(LoadSource)
-  implicit val loadFormat = jsonFormat2(Load[String])
-  implicit val loadLongFormat = jsonFormat2(Load[Long])
+  implicit val loadFormat = jsonFormat2(Load)
   implicit val filterPredicateFormat = jsonFormat2(FilterPredicate[JsObject, String])
   implicit val filterPredicateLongFormat = jsonFormat2(FilterPredicate[JsObject, Long])
-  implicit val removeColumnFormat = jsonFormat2(FrameRemoveColumn[JsObject, String])
-  implicit val removeColumnLongFormat = jsonFormat2(FrameRemoveColumn[JsObject, Long])
+  implicit val removeColumnFormat = jsonFormat2(FrameRemoveColumn)
   implicit val addColumnFormat = jsonFormat4(FrameAddColumns[JsObject, String])
   implicit val addColumnLongFormat = jsonFormat4(FrameAddColumns[JsObject, Long])
   implicit val projectColumnFormat = jsonFormat4(FrameProject[JsObject, String])
   implicit val projectColumnLongFormat = jsonFormat4(FrameProject[JsObject, Long])
-  implicit val renameFrameFormat = jsonFormat2(FrameRenameFrame[JsObject, String])
-  implicit val renameFrameLongFormat = jsonFormat2(FrameRenameFrame[JsObject, Long])
+  implicit val renameFrameFormat = jsonFormat2(FrameRenameFrame)
   implicit val renameColumnFormat = jsonFormat3(FrameRenameColumn[JsObject, String])
   implicit val renameColumnLongFormat = jsonFormat3(FrameRenameColumn[JsObject, Long])
   implicit val joinFrameLongFormat = jsonFormat3(FrameJoin)
@@ -115,10 +169,8 @@ object DomainJsonProtocol extends DefaultJsonProtocol {
   implicit val propertyFormat = jsonFormat2(PropertyRule)
   implicit val edgeRuleFormat = jsonFormat5(EdgeRule)
   implicit val vertexRuleFormat = jsonFormat2(VertexRule)
-  implicit val frameRuleLongs = jsonFormat3(FrameRule[Long])
-  implicit val frameRuleStrings = jsonFormat3(FrameRule[String])
-  implicit val graphLoadLongs = jsonFormat3(GraphLoad[JsObject, Long, Long])
-  implicit val graphLoadStrings = jsonFormat3(GraphLoad[JsObject, String, String])
+  implicit val frameRuleFormat = jsonFormat3(FrameRule)
+  implicit val graphLoadFormat = jsonFormat3(GraphLoad)
 
   implicit object DataTypeJsonFormat extends JsonFormat[Any] {
     override def write(obj: Any): JsValue = {
@@ -139,9 +191,45 @@ object DomainJsonProtocol extends DefaultJsonProtocol {
         case JsNumber(n) if n.isValidFloat => n.floatValue()
         case JsNumber(n) => n.doubleValue()
         case JsString(s) => s
-        case unk => serializationError("Cannot deserialize " + unk.getClass.getName)
+        case unk => deserializationError("Cannot deserialize " + unk.getClass.getName)
       }
+    }
+
+  }
+  implicit object UriFormat extends JsonFormat[URI] {
+    override def read(json: JsValue): URI = json match {
+      case JsString(value) => new URI(value)
+      case x => deserializationError(s"Expected string, received $x")
+    }
+
+    override def write(obj: URI): JsValue = JsString(obj.toString)
+  }
+
+  implicit object JsonSchemaFormat extends JsonFormat[JsonSchema] {
+    override def read(json: JsValue): JsonSchema = json match {
+      case JsObject(o) =>
+        o.getOrElse("type", JsString("object")) match {
+          case JsString("string") => stringSchemaFormat.read(json)
+          case JsString("array") => arraySchemaFormat.read(json)
+          case JsString("number") => numberSchemaFormat.read(json)
+          case _ => objectSchemaFormat.read(json)
+        }
+      case x => deserializationError(s"Expected a Json schema object, but got $x")
+    }
+
+    override def write(obj: JsonSchema): JsValue = obj match {
+      case o: ObjectSchema => objectSchemaFormat.write(o)
+      case s: StringSchema => stringSchemaFormat.write(s)
+      case a: ArraySchema => arraySchemaFormat.write(a)
+      case n: NumberSchema => numberSchemaFormat.write(n)
+      case JsonSchema.empty => JsObject().toJson
+      case x => serializationError(s"Expected a valid json schema object, but received: $x")
     }
   }
 
+  lazy implicit val numberSchemaFormat = jsonFormat9(NumberSchema)
+  lazy implicit val stringSchemaFormat = jsonFormat9(StringSchema)
+  lazy implicit val objectSchemaFormat = jsonFormat12(ObjectSchema)
+  lazy implicit val arraySchemaFormat = jsonFormat9(ArraySchema)
+  lazy implicit val commandDefinitionFormat = jsonFormat3(CommandDefinition)
 }
