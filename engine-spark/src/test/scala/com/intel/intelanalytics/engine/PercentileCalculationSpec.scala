@@ -1,7 +1,7 @@
 package com.intel.intelanalytics.engine.spark
 
-import org.scalatest.{Matchers, FlatSpec}
-import com.intel.intelanalytics.algorithm.{PercentileTarget, PercentileElement}
+import org.scalatest.{ Matchers, FlatSpec }
+import com.intel.intelanalytics.algorithm.{ PercentileTarget, PercentileElement }
 
 class PercentileCalculationSpec extends FlatSpec with Matchers {
   "25th percentile" should "be 0.5 * x2 + 0.5 * x3 from 10 elements" in {
@@ -28,11 +28,9 @@ class PercentileCalculationSpec extends FlatSpec with Matchers {
     val mapping = SparkOps.getPercentileTargetMapping(5260980, Seq(0, 95, 99))
 
     mapping(1) shouldBe Seq(PercentileTarget(0, 1))
-    mapping(4997931) shouldBe  Seq(PercentileTarget(95, 1))
+    mapping(4997931) shouldBe Seq(PercentileTarget(95, 1))
     mapping(5208370) shouldBe Seq(PercentileTarget(99, 0.8f))
     mapping(5208371) shouldBe Seq(PercentileTarget(99, 0.2f))
   }
-
-
 
 }
