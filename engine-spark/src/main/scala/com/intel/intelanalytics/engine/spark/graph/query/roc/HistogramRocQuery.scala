@@ -2,6 +2,7 @@ package com.intel.intelanalytics.engine.spark.graph.query.roc
 
 import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRDDImplicits._
 import com.intel.graphbuilder.driver.spark.titan.reader.TitanReader
+import com.intel.graphbuilder.elements.GraphElement
 import com.intel.graphbuilder.graph.titan.TitanGraphConnector
 import com.intel.graphbuilder.util.SerializableBaseConfiguration
 import com.intel.intelanalytics.domain.DomainJsonProtocol
@@ -14,6 +15,7 @@ import spray.json.DefaultJsonProtocol._
 import spray.json._
 import scala.collection.JavaConverters._
 import scala.concurrent._
+
 
 /**
  * Get histogram and optionally ROC curve on property values
@@ -66,12 +68,13 @@ case class HistogramRocParams(graph: GraphReference,
  */
 case class HistogramRocResult(priorHistograms: List[Histogram],
                               posteriorHistograms: Option[List[Histogram]],
-                              rocCurves: Option[List[List[(String, List[Roc])]]])
+                              rocCurves: Option[List[List[RocCurve]]])
 
 class HistogramRocQuery extends SparkCommandPlugin[HistogramRocParams, HistogramRocResult] {
   import DomainJsonProtocol._
   implicit val histogramRocParamsFormat = jsonFormat9(HistogramRocParams)
   implicit val rocFormat = jsonFormat3(Roc)
+  implicit val rocCurveFormat = jsonFormat2(RocCurve)
   implicit val histogramFormat = jsonFormat2(Histogram.apply)
   implicit val histogramRocResultFormat = jsonFormat3(HistogramRocResult)
 
@@ -117,7 +120,7 @@ class HistogramRocQuery extends SparkCommandPlugin[HistogramRocParams, Histogram
     }
 
     // Parse features
-    val featureVectorRDD = graphElementRDD.flatMap(element => {
+    val featureVectorRDD = graphElementRDD.map(element => {
       FeatureVector.parseGraphElement(element, priorPropertyName, posteriorPropertyName, vertexTypeKey)
     })
 

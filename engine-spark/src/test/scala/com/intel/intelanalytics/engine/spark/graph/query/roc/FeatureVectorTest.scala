@@ -21,10 +21,6 @@ class FeatureVectorTest extends FlatSpec with Matchers {
     featureVector.splitType shouldEqual ("TR")
 
   }
-  it should "parse doubles" in {
-    FeatureVector.parseDouble("0.1").get should be(0.1 +- tolerance)
-    FeatureVector.parseDouble(" 12.2 ").get should be(12.2 +- tolerance) //Checks double with spaces
-    FeatureVector.parseDouble("-100.55").get should be(-100.55 +- tolerance)
-  }
+
 
 }
