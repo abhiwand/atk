@@ -229,7 +229,7 @@ object DomainJsonProtocol extends DefaultJsonProtocol {
 
   lazy implicit val numberSchemaFormat = jsonFormat9(NumberSchema)
   lazy implicit val stringSchemaFormat = jsonFormat9(StringSchema)
-  lazy implicit val objectSchemaFormat = jsonFormat11(ObjectSchema)
+  lazy implicit val objectSchemaFormat = jsonFormat12(ObjectSchema)
   lazy implicit val arraySchemaFormat = jsonFormat9(ArraySchema)
   lazy implicit val commandDefinitionFormat = jsonFormat3(CommandDefinition)
 }
