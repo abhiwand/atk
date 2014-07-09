@@ -305,6 +305,8 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     val frameID = arguments.frame.id
     val frame = expectFrame(frameID)
 
+    val splitPercentages = arguments.split_percentages.toArray
+
     val outputColumn = arguments.output_column.getOrElse("sample bin")
 
     if (frame.schema.columns.indexWhere(columnTuple => columnTuple._1 == outputColumn) >= 0)
@@ -312,12 +314,23 @@ class SparkEngine(sparkContextManager: SparkContextManager,
 
     val seed = arguments.random_seed.getOrElse(0)
 
-    val splitter = new MLDataSplitter(arguments.split_percentages.toArray, seed)
+    val splitLabels: Array[String] = if (arguments.split_labels.isEmpty) {
+      if (splitPercentages.length == 3) {
+        Array("TR", "TE", "VA")
+      }
+      else {
+        (0 to splitPercentages.length - 1).map(i => "Sample Bin #" + i).toArray
+      }
+    }
+    else {
+      arguments.split_labels.get.toArray
+    }
+
+    val splitter = new MLDataSplitter(splitPercentages, splitLabels, seed)
 
     val labeledRDD = splitter.randomlyLabelRDD(frames.getFrameRdd(ctx, frameID))
 
-    val splitRDD = labeledRDD.map((labeledRow: LabeledLine[Row]) =>
-      labeledRow.entry :+ labeledRow.label.asInstanceOf[Any])
+    val splitRDD = labeledRDD.map(labeledRow => labeledRow.entry :+ labeledRow.label.asInstanceOf[Any])
 
     splitRDD.saveAsObjectFile(fsRoot + frames.getFrameDataFile(frame.id))
 

@@ -25,6 +25,7 @@ package com.intel.intelanalytics.domain.frame
 
 case class SplitData(frame: FrameReference,
                      split_percentages: List[Double],
+                     split_labels: Option[List[String]],
                      output_column: Option[String],
                      random_seed: Option[Int]) {
   require(frame != null, "SplitData requires a non-null dataframe.")

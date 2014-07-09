@@ -156,7 +156,7 @@ object DomainJsonProtocol extends DefaultJsonProtocol {
   implicit val progressInfoFormat = jsonFormat2(ProgressInfo)
   implicit val binColumnLongFormat = jsonFormat6(BinColumn[Long])
 
-  implicit val splitDataLongFormat = jsonFormat4(SplitData)
+  implicit val splitDataFormat = jsonFormat5(SplitData)
 
   // graph service formats
 
