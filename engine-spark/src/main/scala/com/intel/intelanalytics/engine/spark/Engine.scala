@@ -285,31 +285,43 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     frames.updateSchema(projectedFrame, projectedColumns.toList)
   }
 
-  def splitData(arguments: SplitData[Long])(implicit user: UserPrincipal): Execution =
+  /**
+   * Randomly splits data into classes given a vector of percentages. Modifies the current table by adding a
+   * column (called "sample bin" by default).
+   *
+   * @param arguments SplitData command payload
+   * @param user the current user
+   * @return
+   */
+  def splitData(arguments: SplitData)(implicit user: UserPrincipal): Execution =
     commands.execute(splitDataCommand, arguments, user, implicitly[ExecutionContext])
 
-  val splitDataCommand = commands.registerCommand("dataframe/splitData", splitDataSimple)
-  def splitDataSimple(arguments: SplitData[Long], user: UserPrincipal) = {
+  val splitDataCommand = commands.registerCommand("dataframe/split_data", splitDataSimple)
+
+  def splitDataSimple(arguments: SplitData, user: UserPrincipal) = {
 
     val ctx = sparkContextManager.context(user).sparkContext
 
-    val frameID = arguments.frame
+    val frameID = arguments.frame.id
     val frame = expectFrame(frameID)
 
-    val splitter = new MLDataSplitter(arguments.split_percentages.toArray, arguments.random_seed)
+    val outputColumn = arguments.output_column.getOrElse("sample bin")
 
-    val ttvLabeledRDD = splitter.randomlyLabelRDD(frames.getFrameRdd(ctx, frameID))
+    if (frame.schema.columns.indexWhere(columnTuple => columnTuple._1 == outputColumn) >= 0)
+      throw new IllegalArgumentException(s"Duplicate column name: ${outputColumn}")
 
-    val splitRDD = ttvLabeledRDD.map((labeledRow: LabeledLine[Row]) =>
-      {
-        val row: Row = labeledRow.entry
-        val label: Any = labeledRow.label.asInstanceOf[Any]
-        row :+ label
-      })
+    val seed = arguments.random_seed.getOrElse(0)
+
+    val splitter = new MLDataSplitter(arguments.split_percentages.toArray, seed)
+
+    val labeledRDD = splitter.randomlyLabelRDD(frames.getFrameRdd(ctx, frameID))
+
+    val splitRDD = labeledRDD.map((labeledRow: LabeledLine[Row]) =>
+      labeledRow.entry :+ labeledRow.label.asInstanceOf[Any])
 
     splitRDD.saveAsObjectFile(fsRoot + frames.getFrameDataFile(frame.id))
 
-    val allColumns = frame.schema.columns :+ (arguments.output_column, DataTypes.int32)
+    val allColumns = frame.schema.columns :+ (outputColumn, DataTypes.int32)
     frames.updateSchema(frame, allColumns)
     frame.copy(schema = Schema(allColumns))
   }

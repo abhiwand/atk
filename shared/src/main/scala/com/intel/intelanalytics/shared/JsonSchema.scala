@@ -90,12 +90,12 @@ object JsonSchemaExtractor {
       case t if t.erasure =:= typeTag[Option[Any]].tpe =>
         val (subSchema, _) = getSchemaForType(name, t.asInstanceOf[TypeRefApi].args.head)
         subSchema
-        //parameterized types need special handling
+      //parameterized types need special handling
       case t if t.erasure =:= typeTag[Map[Any, Any]].tpe => ObjectSchema()
       case t if t.erasure =:= typeTag[Seq[Any]].tpe => ArraySchema()
       case t if t.erasure =:= typeTag[Iterable[Any]].tpe => ArraySchema()
       case t if t.erasure =:= typeTag[List[Any]].tpe => ArraySchema()
-        //array type system works a little differently
+      //array type system works a little differently
       case t if t.typeConstructor =:= typeTag[Array[Any]].tpe.typeConstructor => ArraySchema()
       case t => JsonSchema.empty
     }
