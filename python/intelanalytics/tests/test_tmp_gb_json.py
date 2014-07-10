@@ -7,7 +7,7 @@ iatest.init()
 
 import unittest
 from mock import patch, Mock
-from ordereddict import OrderedDict
+from collections import OrderedDict
 import json
 
 from intelanalytics.core.graph import VertexRule, EdgeRule
