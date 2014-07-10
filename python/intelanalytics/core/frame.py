@@ -1036,7 +1036,7 @@ class BigFrame(CommandSupport):
         pos_label : int or str, (optional, default=1)
             the value to be interpreted as a positive instance (only for binary, ignored for multi-class)
         beta : float, (optional, default=1)
-            beta value to use for f-beta measure (default f1 measure is computed)
+            beta value to use for f-beta measure (default f1 measure is computed); must be greater than 0
 
         Returns
         ----------
