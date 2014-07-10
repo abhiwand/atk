@@ -113,7 +113,7 @@ For graph statistics, algorithms provided include:
 * :term:`Vertex degree distribution`
 * Shortest path from a vertex to all other vertices
 * :term:`Centrality (Katz)`
-* :term:`Centrality (Page rank)`
+* :term:`Centrality (PageRank)`
 
 The graph engine utilized for this release of the toolkit is Apache Giraph, and it is integrated into the complete graph processing pipeline to
 provide usability and utility substantially enhanced over the naked open source libraries.
@@ -133,10 +133,9 @@ Toolkit Deployment
 
 The Intel Analytics Toolkit 0.8 beta has dependencies on the Cloudera cluster, particularly for managing version dependencies in Spark, HBase, and
 additional platform components.
-The toolkit itself does not need to be installed on the Cloudera cluster itself.
-That is, it can be installed on edge nodes to the cluster if preferred.
-Currently, Cloudera version 5.0.2-patch 13 (CDH 5.0.3-1.cdh5.0.2.p0.13, run the required minimum versions of the platform components.
-The toolkit installer checks for the right dependencies existing in the Hadoop platform, and any other installation dependencies for the toolkit itself.
+Currently, Cloudera version 5.0.2-patch 13 (CDH 5.0.3-1.cdh5.0.2.p0.13, runs the required minimum versions of the platform components.
+The toolkit installer checks for the proper dependencies existing in the Hadoop platform, and any other installation dependencies for the toolkit itself.
 
 .. rubric:: Footnotes
+
 .. [#f1] Aurelius (thinkaurelius.com) is the creator of the Titan open source graph database

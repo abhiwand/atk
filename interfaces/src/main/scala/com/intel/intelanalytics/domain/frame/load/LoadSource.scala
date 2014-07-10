@@ -1,5 +1,6 @@
 package com.intel.intelanalytics.domain.frame.load
 
+import com.intel.intelanalytics.domain.frame.FrameReference
 import com.intel.intelanalytics.domain.schema.Schema
 
 /**
@@ -11,9 +12,8 @@ import com.intel.intelanalytics.domain.schema.Schema
  *
  * @param destination DataFrame to load data into. Should be either a uri or id
  * @param source Object describing the data to load into the destination. Includes the Where and How of loading.
- * @tparam frameRef If DataFrame is a uri this should be a String if it is an id it should be a Long
  */
-case class Load[frameRef](destination: frameRef, source: LoadSource)
+case class Load(destination: FrameReference, source: LoadSource)
 
 //source_type instead of sourceType so that the parser can properly parse the REST Apis naming convention
 /**
