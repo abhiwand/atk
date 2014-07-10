@@ -307,7 +307,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
 
     val splitPercentages = arguments.split_percentages.toArray
 
-    val outputColumn = arguments.output_column.getOrElse("sample bin")
+    val outputColumn = arguments.output_column.getOrElse("split_class")
 
     if (frame.schema.columns.indexWhere(columnTuple => columnTuple._1 == outputColumn) >= 0)
       throw new IllegalArgumentException(s"Duplicate column name: ${outputColumn}")
@@ -319,7 +319,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
         Array("TR", "TE", "VA")
       }
       else {
-        (0 to splitPercentages.length - 1).map(i => "Sample Bin #" + i).toArray
+        (0 to splitPercentages.length - 1).map(i => "Split#" + i).toArray
       }
     }
     else {
@@ -334,7 +334,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
 
     splitRDD.saveAsObjectFile(fsRoot + frames.getFrameDataFile(frame.id))
 
-    val allColumns = frame.schema.columns :+ (outputColumn, DataTypes.int32)
+    val allColumns = frame.schema.columns :+ (outputColumn, DataTypes.string)
     frames.updateSchema(frame, allColumns)
     frame.copy(schema = Schema(allColumns))
   }
