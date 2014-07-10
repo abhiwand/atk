@@ -3,7 +3,7 @@ package com.intel.intelanalytics.engine.spark
 import org.scalatest.{ Matchers, FlatSpec }
 import com.intel.intelanalytics.algorithm.{ PercentileTarget, PercentileElement }
 
-class PercentileCalculationSpec extends FlatSpec with Matchers {
+class PercentileCalculationTest extends FlatSpec with Matchers {
   "25th percentile" should "be 0.5 * x2 + 0.5 * x3 from 10 elements" in {
     Seq(PercentileElement(2, 0.5f), PercentileElement(3, 0.5f)) shouldBe SparkOps.getPercentileComposingElements(10, 25)
   }

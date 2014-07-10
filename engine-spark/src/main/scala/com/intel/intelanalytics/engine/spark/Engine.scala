@@ -37,7 +37,6 @@ import com.intel.intelanalytics.domain.schema.{ DataTypes, Schema, SchemaUtil }
 import com.intel.intelanalytics.engine.Rows._
 import com.intel.intelanalytics.engine._
 import com.intel.intelanalytics.engine.spark.command.CommandExecutor
-import com.intel.intelanalytics.engine.spark.context.SparkContextManager
 import com.intel.intelanalytics.engine.spark.frame.{ RDDJoinParam, RowParser, SparkFrameStorage }
 import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.shared.EventLogging
@@ -51,6 +50,7 @@ import spray.json._
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent._
+import com.intel.intelanalytics.engine.spark.context.SparkContextManager
 
 object SparkEngine {
   private val pythonRddDelimiter = "\0"
@@ -728,8 +728,17 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     commands.execute(calculatePercentileCommand, percentiles, user, implicitly[ExecutionContext])
 
   val calculatePercentileCommand = commands.registerCommand("dataframe/calculate_percentiles", calculatePercentilesSimple)
+
   def calculatePercentilesSimple(percentiles: CalculatePercentiles, user: UserPrincipal) = {
-    println("############ CALCULATING PERCENTILES ############")
+    val frameId: Long = percentiles.frameId
+    val realFrame: DataFrame = getDataFrameById(frameId)
+    val ctx = sparkContextManager.context(user).sparkContext
+    val rdd = frames.getFrameRdd(ctx, frameId)
+    val frameSchema = realFrame.schema
+    val columnIndex = frameSchema.columnIndex(percentiles.columnName)
+    val columnDataType = frameSchema.columnDataType(percentiles.columnName)
+
+    SparkOps.calculatePercentiles(rdd, percentiles.percentiles, columnIndex, columnDataType)
   }
 
   /**
