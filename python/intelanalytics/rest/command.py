@@ -266,6 +266,8 @@ class Polling(object):
             start_interval_secs = config.polling.start_interval_secs
         if backoff_factor is None:
             backoff_factor = config.polling.backoff_factor
+        if max_interval_secs is None:
+            max_interval_secs = config.polling.max_interval_secs
         if not CommandInfo.is_valid_command_uri(uri):
             raise ValueError('Cannot poll ' + uri + ' - a /commands/{number} uri is required')
         interval_secs = start_interval_secs
@@ -297,8 +299,8 @@ class Polling(object):
                     interval_secs = min(max_interval_secs, interval_secs * backoff_factor)
 
                 last_progress = progress
-        end_time = time.time()
-        logger.info("polling %s completed after %0.2f seconds" % (uri, end_time - start_time))
+            end_time = time.time()
+            logger.info("polling %s completed after %0.2f seconds" % (uri, end_time - start_time))
         return command_info
 
     @staticmethod
@@ -341,7 +343,7 @@ class Executor(object):
         # For now, we just poll until the command completes
         try:
             if not command_info.complete:
-                command_info = Polling.poll(command_info.uri, max_interval_secs=30, backoff_factor=1.1)
+                command_info = Polling.poll(command_info.uri)
                 # Polling.print_progress(command_info.progress)
 
         except KeyboardInterrupt:
