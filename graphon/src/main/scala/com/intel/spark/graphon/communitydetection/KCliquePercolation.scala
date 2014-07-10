@@ -92,7 +92,7 @@ class KCliquePercolation extends SparkCommandPlugin[KClique, KCliqueResult] {
     val sparkContext = sparkInvocation.sparkContext
 
     val config = configuration().get
-    val titanConf = flattenConfig(config.getConfig("titan"), "titan.")
+    val titanConf = config.getConfig("titan")
 
     val graphFuture = sparkInvocation.engine.getGraph(arguments.graph.id)
 
@@ -102,10 +102,12 @@ class KCliquePercolation extends SparkCommandPlugin[KClique, KCliqueResult] {
 
     // Create graph connection
     val titanConfig = new SerializableBaseConfiguration()
-    titanConfig.setProperty("storage.backend", titanConf.get("titan.load.storage.backend"))
-    titanConfig.setProperty("storage.hostname", titanConf.get("titan.load.storage.hostname"))
-    titanConfig.setProperty("storage.tablename", Option[Any]("iat_graph_" + graph.name))
+    titanConfig.setProperty("storage.backend", titanConf.getString("storage.backend"))
+    titanConfig.setProperty("storage.hostname", titanConf.getString("storage.hostname"))
+    titanConfig.setProperty("storage.port", titanConf.getString("storage.port"))
+    titanConfig.setProperty("storage.tablename", graph.name)
     val titanConnector = new TitanGraphConnector(titanConfig)
+
 
     KCliquePercolationDriver.run(titanConnector, sparkContext, arguments.cliqueSize, arguments.communityPropertyDefaultLabel)
 
