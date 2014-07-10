@@ -437,15 +437,10 @@ private[spark] object SparkOps extends Serializable {
       segmentContainingMedian.apply(indexOfMedianInsidePartition)._1
     }
     else if (operation == "SKEWNESS") {
-      val count: Long = dataRDD.stats().count
-      val medianIndex: Long = count / 2
-
-      val workingRDD = if (weighted) {
-        dataRDD.zip(weightsRDD).map({ case (d, w) => d * w })
-      }
-      else {
-        dataRDD
-      }
+      statisticsEngine.getWeightedSkewness
+    }
+    else if (operation == "KURTOSIS") {
+      statisticsEngine.getWeightedKurtosis
     }
     else {
       require(operation equals "SUM", "illegal column statistic operation specified")
