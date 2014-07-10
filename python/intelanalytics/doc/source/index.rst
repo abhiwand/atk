@@ -9,6 +9,8 @@ Contents:
    ia_intro
    ad_over
    ds_over
+   glossary
+   ia_legal
 
 References
 ----------
