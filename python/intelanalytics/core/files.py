@@ -21,9 +21,9 @@
 # must be express and approved by Intel in writing.
 ##############################################################################
 import warnings
+from iatypes import supported_types
 from ordereddict import OrderedDict
 from collections import defaultdict
-from types import supported_types
 
 
 class DataFile(object):
@@ -33,7 +33,7 @@ class DataFile(object):
 
 class CsvFile(DataFile):
     """
-    Creates object which defines a CSV file.
+    Define a CSV file.
 
     Parameters
     ----------

@@ -25,9 +25,9 @@ iatest.init()
 #iatest.set_logging("intelanalytics.rest.connection", 20)
 
 import unittest
+from intelanalytics.core.iatypes import *
 from ordereddict import OrderedDict
-from intelanalytics.core.types import *
-from intelanalytics.rest.frame import FrameBackendRest
+mmafrom intelanalytics.rest.frame import FrameBackendRest
 
 
 class TestInspectionTable(unittest.TestCase):
