@@ -157,6 +157,7 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
       case ("dataframe/groupby") => runFrameGroupByColumn(uri, xform)
       case ("dataframe/drop_duplicates") => runDropDuplicates(uri, xform)
       case ("dataframe/binColumn") => runBinColumn(uri, xform)
+      case ("dataframe/calculate_percentiles") => runCalculatePercentiles(uri, xform)
       case s: String => illegalArg("Command name is not supported: " + s)
       case _ => illegalArg("Command name was NOT a string")
     }
@@ -394,6 +395,26 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
         }
     }
   }
+
+  def runCalculatePercentiles(uri: Uri, xform: JsonTransform)(implicit user: UserPrincipal) = {
+    {
+      val test = Try {
+        import DomainJsonProtocol._
+        xform.arguments.get.convertTo[FrameGroupByColumn[JsObject, String]]
+      }
+      val idOpt = test.toOption.flatMap(args => UrlParser.getFrameId(args.frame))
+      (validate(test.isSuccess, "Failed to : " + getErrorMessage(test))
+        & validate(idOpt.isDefined, "Destination is not a valid data frame URL")) {
+        val args = test.get
+        val id = idOpt.get
+        val exec = engine.groupBy(FrameGroupByColumn[JsObject, Long](id, args.name, args.group_by_columns, args.aggregations))
+        complete(decorate(uri + "/" + exec.start.id, exec.start))
+      }
+    }
+  }
+
+
+
 
   //TODO: internationalization
   def getErrorMessage[T](value: Try[T]): String = value match {
