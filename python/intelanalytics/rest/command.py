@@ -36,6 +36,7 @@ logger = logging.getLogger(__name__)
 
 import intelanalytics.rest.config as config
 from intelanalytics.rest.connection import http
+from intelanalytics.core.errorhandle import IaError
 
 
 def print_progress(progress, progressMessage, make_new_line, start_times, finished):
@@ -368,7 +369,6 @@ class Executor(object):
                     setattr(current, inter, holder)
                     current = holder
             if not hasattr(current, name):
-                print name, "installed statically on ", clazz
                 setattr(clazz, name, staticmethod(v))
 
     def get_command_functions(self, prefixes, update_function, new_function):
@@ -381,14 +381,14 @@ class Executor(object):
             args = cmd['argument_schema']
             intermediates = parts[1:-1]
             command_name = parts[-1]
-            parameters = args.setdefault('properties', {})
-            print "ARG schema:", args
-            self_parameter_name = ([k for k, v in parameters.items() if isinstance(v, dict) and v.has_key('self')] or [None])[0]
-            print "self arg: ", self_parameter_name
+            parameters = args.get('properties', {})
+            self_parameter_name = ([k for k, v in parameters.items()
+                                    if isinstance(v, dict) and v.has_key('self')] or [None])[0]
 
             return_props = cmd['return_schema'].setdefault('properties', {})
-            return_self_parameter = ([k for k, v in return_props.items() if isinstance(v, dict) and v.has_key('self')] or [None])[0]
-            possible_args = list(parameters.keys())
+            return_self_parameter = ([k for k, v in return_props.items()
+                                      if isinstance(v, dict) and v.has_key('self')] or [None])[0]
+            possible_args = args.get('order', [])[:]
             if self_parameter_name:
                 possible_args.remove(self_parameter_name)
 
@@ -405,20 +405,21 @@ class Executor(object):
                      parameters = parameters):
 
                 def invoke(s, *args, **kwargs):
-                    if self_name:
-                        print "Setting", self_name, "to", s._id
-                        kwargs[self_name] = s._id
-                    for (k,v) in zip(possible_args, args):
-                        if k in kwargs:
-                            raise ValueError("Argument " + k +
-                                             " supplied as a positional argument and as a keyword argument")
-                        print "Assigning", k, "to", v
-                        kwargs[k] = v
-                    validated = CommandRequest.validate_arguments(parameters, kwargs)
-                    if return_self:
-                        return new_function(full_name, validated, s)
-                    else:
-                        return update_function(full_name, validated, s)
+                    try:
+                        if self_name:
+                            kwargs[self_name] = s._id
+                        for (k,v) in zip(possible_args, args):
+                            if k in kwargs:
+                                raise ValueError("Argument " + k +
+                                                 " supplied as a positional argument and as a keyword argument")
+                            kwargs[k] = v
+                        validated = CommandRequest.validate_arguments(parameters, kwargs)
+                        if return_self:
+                            return new_function(full_name, validated, s)
+                        else:
+                            return update_function(full_name, validated, s)
+                    except:
+                        raise IaError(logger)
                 invoke.command = cmd
                 invoke.parameters = parameters
                 invoke.func_name = str(command_name)
