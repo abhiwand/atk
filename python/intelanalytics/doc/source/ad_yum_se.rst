@@ -11,14 +11,14 @@ First add the epel RHEL/Centos::
     wget http://download.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
     sudo rpm -ivh epel-release-6-8.noarch.rpm
 
-Now build a yum repo file '/etc/yum.repos.d/bda-internal-yum-deps.repo' with the following contents:
+Now build a yum repo file '/etc/yum.repos.d/bda-internal-yum-deps.repo' with the following contents::
 
->>> [bda-internal-yum-deps]
-... name=bda-internal-yum-deps
-... baseurl=https://bda-public-repo.s3-us-west-2.amazonaws.com/yum
-... gpgcheck=0
-... priority=1
-... enabled=1
+    [bda-internal-yum-deps]
+    name=bda-internal-yum-deps
+    baseurl=https://bda-public-repo.s3-us-west-2.amazonaws.com/yum
+    gpgcheck=0
+    priority=1
+    enabled=1
 
 .. ifconfig:: internal_docs
 
@@ -32,12 +32,12 @@ Now build a yum repo file '/etc/yum.repos.d/bda-internal-yum-deps.repo' with the
 
     Create a yum repo file '/etc/yum.repos.d/bda-internal-yum.repo' with the following contents:
 
-    >>> [bda-internal-yum]
-    ... name=bda-internal-yum
-    ... baseurl=https://bda-internal-yum.s3-us-west-2.amazonaws.com/My-Branch
-    ... gpgcheck=0
-    ... priority=1
-    ... enabled=1
+        [bda-internal-yum]
+        name=bda-internal-yum
+        baseurl=https://bda-internal-yum.s3-us-west-2.amazonaws.com/My-Branch
+        gpgcheck=0
+        priority=1
+        enabled=1
 
     Note:
         Change "My-Branch" to the name of the real branch!
@@ -52,15 +52,15 @@ Install the yum-s3 plugin::
 
 Create a yum repo file '/etc/yum.repos.d/bda-internal-yum.repo' with the following contents:
 
->>> [bda-internal-yum]
-... name=bda internal yum
-... baseurl=https://bda-internal-yum.s3-us-west-2.amazonaws.com/TRIBECA_PRODUCTION_SOURCE
-... gpgcheck=0
-... priority=1
-... s3_enabled=1
-... #yum-get iam only has get
-... key_id=AKIAJRVHQZHGTIVGBGJA
-... secret_key=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
+    [bda-internal-yum]
+    name=bda internal yum
+    baseurl=https://bda-internal-yum.s3-us-west-2.amazonaws.com/TRIBECA_PRODUCTION_SOURCE
+    gpgcheck=0
+    priority=1
+    s3_enabled=1
+    #yum-get iam only has get
+    key_id=AKIAJRVHQZHGTIVGBGJA
+    secret_key=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
 
 Note:
     The normal yum security plugin conflicts with the yum-s3 plugin so, for now, disable it.
