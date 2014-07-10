@@ -13,7 +13,7 @@ class FeatureVectorTest extends FlatSpec with Matchers {
 
   "FeatureVector" should "parse graph elements" in {
     val vertex = Vertex(1, Property("gbID", 1),
-      Seq(Property("prior", "0.1,0.2"), Property("posterior", "0.4,0.6"), Property("split", "TR")))
+      Seq(Property("prior", "0.1 0.2"), Property("posterior", "0.4,0.6"), Property("split", "TR")))
     val featureVector = FeatureVector.parseGraphElement(vertex, "prior", Some("posterior"), Some("split"))
 
     featureVector.priorArray should equalWithTolerance(Array(0.1, 0.2), tolerance)
