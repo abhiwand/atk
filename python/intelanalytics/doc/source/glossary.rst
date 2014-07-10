@@ -547,7 +547,7 @@ Glossary
         In graph theory, the degree (or valency) of a vertex of a graph is the number of edges incident to the vertex, with loops counted
         twice. [#f7]_
         The degree of a vertex :math:`v` is denoted :math:`\deg(v)`.
-        The maximum degree of a graph :math:'G`, denoted by :math:`\Delta(G)`, and the minimum degree of a graph, denoted by :math:`\delta(G)`,
+        The maximum degree of a graph :math:`G`, denoted by :math:`\Delta(G)`, and the minimum degree of a graph, denoted by :math:`\delta(G)`,
         are the maximum and minimum degree of its vertices.
 
     Vertex Degree Distribution
