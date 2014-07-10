@@ -334,7 +334,6 @@ private[spark] object SparkOps extends Serializable {
    * @return the  value of the column
    */
   def columnStatistic(index: Int, multiplierIndexOption: Option[Int], rowRDD: RDD[Row], operation: String): Double = {
-
     val dataRDD = try {
       rowRDD.map(row => java.lang.Double.parseDouble(row(index).toString))
     }
@@ -358,80 +357,32 @@ private[spark] object SparkOps extends Serializable {
       null
     }
 
+    val dataWeightPairs = if (weighted) {
+      dataRDD.zip(weightsRDD)
+    }
+    else {
+      dataRDD.map(x => (x, 1.toDouble))
+    }
+
+    val statisticsEngine = new NumericalStatistics(dataWeightPairs)
+
     if (operation equals "MEAN") {
-      if (weighted) {
-        dataRDD.zip(weightsRDD).map({ case (d, w) => d * w }).sum() / (weightsRDD.sum)
-      }
-      else {
-        dataRDD.mean()
-      }
+      statisticsEngine.getWeightedMean
     }
     else if (operation equals "MIN") {
-      if (weighted) {
-        dataRDD.zip(weightsRDD).map({ case (d, w) => d * w }).reduce(Math.min)
-      }
-      else {
-        dataRDD.reduce(Math.min)
-      }
+      statisticsEngine.getWeightedMin
     }
     else if (operation equals "MAX") {
-      if (weighted) {
-        dataRDD.zip(weightsRDD).map({ case (d, w) => d * w }).reduce(Math.min)
-      }
-      else {
-        dataRDD.reduce(Math.max)
-      }
+      statisticsEngine.getWeightedMax
     }
     else if (operation equals "STDEV") {
-      val d = dataRDD.count() - 1
-
-      require(d > 0, "You can't calculate the standard deviation of a column with no elements.")
-
-      val mean = if (weighted) {
-        dataRDD.zip(weightsRDD).map({ case (d, w) => d * w }).sum() / (weightsRDD.sum)
-      }
-      else {
-        dataRDD.mean()
-      }
-
-      val squaredDistancesFromMean = dataRDD.map(x => (x - mean) * (x - mean))
-
-      val weightedSquaredDistancesFromMean = if (weighted) {
-        squaredDistancesFromMean.zip(weightsRDD).map({ case (x, w) => x * w })
-      }
-      else {
-        squaredDistancesFromMean
-      }
-
-      Math.sqrt(weightedSquaredDistancesFromMean.sum() / d)
+      statisticsEngine.getWeightedStandardDeviation
     }
     else if (operation equals "VARIANCE") {
-      val d = dataRDD.count() - 1
-
-      require(d > 0, "You can't calculate the standard deviation of a column with no elements.")
-
-      val mean = if (weighted) {
-        dataRDD.zip(weightsRDD).map({ case (d, w) => d * w }).sum() / (weightsRDD.sum)
-      }
-      else {
-        dataRDD.mean()
-      }
-
-      val squaredDistancesFromMean = dataRDD.map(x => (x - mean) * (x - mean))
-
-      val weightedSquaredDistancesFromMean = if (weighted) {
-        squaredDistancesFromMean.zip(weightsRDD).map({ case (x, w) => x * w })
-      }
-      else {
-        squaredDistancesFromMean
-      }
-
-      (weightedSquaredDistancesFromMean.sum()) / d
+      statisticsEngine.getWeightedVariance
     }
     else if (operation equals "GEOMEAN") {
-      // TODO: handle weights
-      val count: Double = dataRDD.stats().count
-      dataRDD.map(x => math.pow(x, (1 / count))).reduce(_ * _)
+      statisticsEngine.getWeightedGeometricMean
     }
     else if (operation equals "MODE") {
 
@@ -484,6 +435,17 @@ private[spark] object SparkOps extends Serializable {
       val segmentContainingMedian = partRdd.collect
 
       segmentContainingMedian.apply(indexOfMedianInsidePartition)._1
+    }
+    else if (operation == "SKEWNESS") {
+      val count: Long = dataRDD.stats().count
+      val medianIndex: Long = count / 2
+
+      val workingRDD = if (weighted) {
+        dataRDD.zip(weightsRDD).map({ case (d, w) => d * w })
+      }
+      else {
+        dataRDD
+      }
     }
     else {
       require(operation equals "SUM", "illegal column statistic operation specified")
