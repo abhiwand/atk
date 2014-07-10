@@ -28,18 +28,13 @@ import com.intel.graphbuilder.driver.spark.titan.reader.TitanReader
 import com.intel.graphbuilder.graph.titan.TitanGraphConnector
 import com.intel.graphbuilder.parser.InputSchema
 import com.intel.graphbuilder.util.SerializableBaseConfiguration
-import com.intel.intelanalytics.engine.Rows
 import com.intel.intelanalytics.engine.spark.SparkEngineConfig
-import com.intel.intelanalytics.engine.spark.graph.GraphBuilderConfigFactory
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkInvocation, SparkCommandPlugin }
 import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.domain.DomainJsonProtocol
 import com.intel.intelanalytics.domain.graph.{ GraphTemplate, GraphReference }
-import com.typesafe.config.ConfigFactory
 import org.apache.spark.SparkContext
-import spray.json.DefaultJsonProtocol._
 import spray.json._
-import scala.concurrent.ExecutionContext
 import org.apache.spark.rdd.RDD
 import org.apache.spark.SparkContext._
 import com.intel.graphbuilder.elements.{ Edge, Vertex }
@@ -47,9 +42,10 @@ import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRDDImplicits._
 import com.intel.spark.graphon.GraphStatistics
 import scala.util.Random
 import scala.concurrent._
-import scala.collection.JavaConverters._
-import com.intel.intelanalytics.engine.spark.graph.SparkGraphStorage
 import java.util.UUID
+
+import spray.json.DefaultJsonProtocol._
+import scala.collection.JavaConverters._
 
 /**
  * @param graph reference to the graph to be sampled
@@ -68,31 +64,22 @@ class VertexSample extends SparkCommandPlugin[VS, VSResult] {
   implicit val vsFormat = jsonFormat4(VS)
   implicit val vsResultFormat = jsonFormat1(VSResult)
 
-  // Titan Settings
-  private val config = ConfigFactory.load("titanConfig")
-
-  var titanConfig = new SerializableBaseConfiguration()
-  titanConfig.setProperty("storage.backend", config.getString("storage.backend"))
-  titanConfig.setProperty("storage.hostname", config.getString("storage.hostname"))
-  titanConfig.setProperty("storage.port", config.getString("storage.port"))
-  titanConfig.setProperty("storage.batch-loading", config.getString("storage.batch-loading"))
-  titanConfig.setProperty("autotype", config.getString("autotype"))
-  titanConfig.setProperty("storage.buffer-size", config.getString("storage.buffer-size"))
-  titanConfig.setProperty("storage.attempt-wait", config.getString("storage.attempt-wait"))
-  titanConfig.setProperty("storage.lock-wait-time", config.getString("storage.lock-wait-time"))
-  titanConfig.setProperty("storage.lock-retries", config.getString("storage.lock-retries"))
-  titanConfig.setProperty("storage.idauthority-retries", config.getString("storage.idauthority-retries"))
-  titanConfig.setProperty("storage.write-attempts", config.getString("storage.write-attempts"))
-  titanConfig.setProperty("storage.read-attempts", config.getString("storage.read-attempts"))
-  titanConfig.setProperty("ids.block-size", config.getString("ids.block-size"))
-  titanConfig.setProperty("ids.renew-timeout", config.getString("ids.renew-timeout"))
-
   override def execute(invocation: SparkInvocation, arguments: VS)(implicit user: UserPrincipal, executionContext: ExecutionContext): VSResult = {
 
-    val graph = Await.result(invocation.engine.getGraph(arguments.graph.id), SparkEngineConfig.defaultTimeout)
+    // Titan Settings
+    val config = configuration().get
+    val titanConfigInput = config.getConfig("titan")
+
+    val titanConfig = new SerializableBaseConfiguration()
+    titanConfig.setProperty("storage.backend", titanConfigInput.getString("storage.backend"))
+    titanConfig.setProperty("storage.hostname", titanConfigInput.getString("storage.hostname"))
+    titanConfig.setProperty("storage.port", titanConfigInput.getString("storage.port"))
+
+    import scala.concurrent.duration._
+    val graph = Await.result(invocation.engine.getGraph(arguments.graph.id), config.getInt("default-timeout") seconds)
 
     val sc = invocation.sparkContext
-    val (vertexRDD, edgeRDD) = getGraph(graph.name, sc)
+    val (vertexRDD, edgeRDD) = getGraph(graph.name, sc, titanConfig)
 
     val vertexSample = arguments.sampleType match {
       case "uniform" => sampleVerticesUniform(vertexRDD, arguments.size, arguments.seed)
@@ -107,9 +94,9 @@ class VertexSample extends SparkCommandPlugin[VS, VSResult] {
 
     titanConfig.setProperty("storage.tablename", subgraphName)
 
-    val subgraph = Await.result(invocation.engine.createGraph(GraphTemplate(subgraphName)), SparkEngineConfig.defaultTimeout)
+    val subgraph = Await.result(invocation.engine.createGraph(GraphTemplate(subgraphName)), config.getInt("default-timeout") seconds)
 
-    writeToTitan(vertexSample, edgeSample)
+    writeToTitan(vertexSample, edgeSample, titanConfig)
 
     VSResult(new GraphReference(subgraph.id))
   }
@@ -242,7 +229,7 @@ class VertexSample extends SparkCommandPlugin[VS, VSResult] {
    * @param sc access to SparkContext
    * @return tuple containing RDDs of vertices and edges
    */
-  def getGraph(graphName: String, sc: SparkContext): (RDD[Vertex], RDD[Edge]) = {
+  def getGraph(graphName: String, sc: SparkContext, titanConfig: SerializableBaseConfiguration): (RDD[Vertex], RDD[Edge]) = {
     titanConfig.setProperty("storage.tablename", graphName)
 
     val titanConnector = new TitanGraphConnector(titanConfig)
@@ -263,7 +250,7 @@ class VertexSample extends SparkCommandPlugin[VS, VSResult] {
    * @param vertices the vertices to write to Titan
    * @param edges the edges to write to Titan
    */
-  def writeToTitan(vertices: RDD[Vertex], edges: RDD[Edge]) = {
+  def writeToTitan(vertices: RDD[Vertex], edges: RDD[Edge], titanConfig: SerializableBaseConfiguration) = {
     val gb = new GraphBuilder(new GraphBuilderConfig(new InputSchema(Seq.empty), List.empty, List.empty, titanConfig))
     gb.buildGraphWithSpark(vertices, edges)
   }
@@ -271,7 +258,7 @@ class VertexSample extends SparkCommandPlugin[VS, VSResult] {
   /**
    * The name of the command
    */
-  override def name: String = "graph/sampling/vertex_sample"
+  override def name: String = "graphs/sampling/vertex_sample"
 
   //TODO: Replace with generic code that works on any case class
   def parseArguments(arguments: JsObject) = arguments.convertTo[VS]
