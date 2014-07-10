@@ -2,4 +2,5 @@
 #Set all your environment variables needed for the rest server here
 
 #export SPARK_HOME="/usr/lib/spark"
+export IA_JVM_OPT="-XX:MaxPermSize=256m"
 export EXTRA_CONF=`hbase classpath`
