@@ -36,7 +36,9 @@ import scala.concurrent.ExecutionContext
  * @tparam Arguments the argument type of the command
  * @tparam Return the return type of the command
  */
-case class FunctionCommand[Arguments: JsonFormat, Return: JsonFormat](name: String, function: (Arguments, UserPrincipal) => Return) extends CommandPlugin[Arguments, Return] {
+case class FunctionCommand[Arguments <: Product: JsonFormat: ClassManifest, Return <: Product: JsonFormat: ClassManifest](name: String,
+                                                                                                                          function: (Arguments, UserPrincipal) => Return)
+    extends CommandPlugin[Arguments, Return] {
 
   override def parseArguments(arguments: JsObject) = arguments.convertTo[Arguments]
 
