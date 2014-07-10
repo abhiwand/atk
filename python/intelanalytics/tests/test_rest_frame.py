@@ -26,10 +26,12 @@ iatest.init()
 
 import unittest
 
-from collections import OrderedDict
-from intelanalytics.core.iatypes import *
 
+
+from intelanalytics.core.iatypes import *
+from ordereddict import OrderedDict
 from intelanalytics.rest.frame import FrameBackendRest
+
 
 
 class TestInspectionTable(unittest.TestCase):
