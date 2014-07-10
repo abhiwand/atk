@@ -22,10 +22,9 @@
 ##############################################################################
 import warnings
 
+
 from collections import OrderedDict
 from iatypes import supported_types
-
-
 
 class DataFile(object):
     annotation = "data_file"
@@ -34,7 +33,7 @@ class DataFile(object):
 
 class CsvFile(DataFile):
     """
-    Creates object which defines a CSV file.
+    Define a CSV file.
 
     Parameters
     ----------
