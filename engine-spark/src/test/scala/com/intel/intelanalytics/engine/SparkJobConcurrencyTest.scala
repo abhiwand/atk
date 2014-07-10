@@ -4,7 +4,7 @@ import org.scalatest.Matchers
 import org.apache.spark.engine.{ ProgressPrinter, SparkProgressListener }
 import java.util.concurrent.Semaphore
 import com.intel.intelanalytics.engine.spark.{ CommandProgressUpdater, SparkOps }
-import com.intel.intelanalytics.engine.TestingSparkContext
+import com.intel.intelanalytics.engine.{ ProgressInfo, TestingSparkContext }
 import java.io.File
 import org.apache.commons.io.FileUtils
 
@@ -12,7 +12,7 @@ class SparkJobConcurrencyTest extends TestingSparkContext with Matchers {
   "Running multiple thread" should "keep isolation between threads when setting properties" in {
 
     val updater = new CommandProgressUpdater {
-      override def updateProgress(commandId: Long, progress: List[Float]): Unit = {
+      override def updateProgress(commandId: Long, progress: List[Float], detailedProgress: List[ProgressInfo]): Unit = {
         //do nothing
       }
     }

@@ -27,7 +27,7 @@ import com.intel.intelanalytics.domain.Error
 import scala.util.{ Success, Failure, Try }
 import spray.json.JsObject
 import com.intel.intelanalytics.domain.command.{ CommandTemplate, Command }
-import com.intel.intelanalytics.engine.CommandStorage
+import com.intel.intelanalytics.engine.{ ProgressInfo, CommandStorage }
 import com.intel.intelanalytics.repository.{ SlickMetaStoreComponent }
 import com.intel.intelanalytics.shared.EventLogging
 
@@ -89,11 +89,12 @@ class SparkCommandStorage(val metaStore: SlickMetaStoreComponent#SlickMetaStore)
    * update progress information for the command
    * @param id command id
    * @param progress progress
+   * @param detailedProgress extra progress information
    */
-  override def updateProgress(id: Long, progress: List[Float]): Unit = {
+  override def updateProgress(id: Long, progress: List[Float], detailedProgress: List[ProgressInfo]): Unit = {
     metaStore.withSession("se.command.updateProgress") {
       implicit session =>
-        repo.updateProgress(id, progress)
+        repo.updateProgress(id, progress, detailedProgress)
     }
   }
 }

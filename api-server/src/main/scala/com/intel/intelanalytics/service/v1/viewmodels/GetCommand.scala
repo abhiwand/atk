@@ -25,6 +25,7 @@ package com.intel.intelanalytics.service.v1.viewmodels
 
 import com.intel.intelanalytics.domain.Error
 import spray.json.JsObject
+import com.intel.intelanalytics.engine.ProgressInfo
 
 /**
  * The REST service response for single command in "GET ../commands/id"
@@ -36,12 +37,14 @@ import spray.json.JsObject
  *                  arguments that configure the parser before any input arrives. In other cases, such as training an
  *                  ML algorithm, the parameters are used to execute the function directly.
  * @param error StackTrace and/or other error text if it exists
+ * @param progress List of progress for each job initiated by the command
+ * @param progressMessage List of detailed progress message for each job initiated by the command
  * @param complete True if this command is completed
  * @param result result data for executing the command
  * @param links
  */
 case class GetCommand(id: Long, name: String, arguments: Option[JsObject], error: Option[Error], progress: List[Float],
-                      complete: Boolean, result: Option[JsObject], links: List[RelLink]) {
+                      progressMessage: List[String], complete: Boolean, result: Option[JsObject], links: List[RelLink]) {
   require(id > 0)
   require(name != null)
   require(arguments != null)
