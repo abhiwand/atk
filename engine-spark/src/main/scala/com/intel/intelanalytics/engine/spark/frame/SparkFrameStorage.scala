@@ -49,25 +49,11 @@ class SparkFrameStorage(context: UserPrincipal => Context, fsRoot: String, files
   import spray.json._
   import Rows.Row
 
-  //val repo = metaStore.frameRepo
-  //  override def updateName(frame: DataFrame, newName: String)(implicit user: UserPrincipal): DataFrame = {
-  //    metaStore.withSession("spark.frame.") {
-  //      implicit session => {
-  //        val newFrame = frame.copy(name = newName)
-  //        metaStore.frameRepo.update(newFrame)
-  //        frame
-  //      }
-  //    }
-  //  }
-
   def updateSchema(frame: DataFrame, columns: List[(String, DataType)]): Unit = {
     metaStore.withSession("frame.updateSchema") {
       implicit session =>
         {
           metaStore.frameRepo.updateSchema(frame, columns)
-          //    val newSchema = frame.schema.copy(columns = columns)
-          //    val newFrame = frame.copy(schema = newSchema)
-          //    metaStore.frameRepo.update(newFrame)
           Unit
         }
     }
@@ -97,17 +83,21 @@ class SparkFrameStorage(context: UserPrincipal => Context, fsRoot: String, files
   }
 
   override def removeColumn(frame: DataFrame, columnIndex: Seq[Int])(implicit user: UserPrincipal): DataFrame =
-    withContext("frame.removeColumn") {
-
-      val remainingColumns = {
-        columnIndex match {
-          case singleColumn if singleColumn.length == 1 =>
-            frame.schema.columns.take(singleColumn(0)) ++ frame.schema.columns.drop(singleColumn(0) + 1)
-          case _ =>
-            frame.schema.columns.zipWithIndex.filter(elem => !columnIndex.contains(elem._2)).map(_._1)
+    //withContext("frame.removeColumn") {
+    metaStore.withSession("frame.removeColumn") {
+      implicit session =>
+        {
+          val remainingColumns = {
+            columnIndex match {
+              case singleColumn if singleColumn.length == 1 =>
+                frame.schema.columns.take(singleColumn(0)) ++ frame.schema.columns.drop(singleColumn(0) + 1)
+              case _ =>
+                frame.schema.columns.zipWithIndex.filter(elem => !columnIndex.contains(elem._2)).map(_._1)
+            }
+          }
+          //metaStore.frameRepo.updateSchema(frame, remainingColumns)(user)
+          frame
         }
-      }
-      metaStore.frameRepo.updateSchema(frame, remainingColumns)(user)
     }
 
   override def addColumnWithValue[T](frame: DataFrame, column: Column[T], default: T): Unit =
@@ -126,28 +116,37 @@ class SparkFrameStorage(context: UserPrincipal => Context, fsRoot: String, files
     }
   }
   override def renameColumn(frame: DataFrame, name_pairs: Seq[(String, String)]): DataFrame =
-    withContext("frame.renameColumn") {
-      val columnsToRename: Seq[String] = name_pairs.map(_._1)
-      val newColumnNames: Seq[String] = name_pairs.map(_._2)
+    //withContext("frame.renameColumn") {
+    metaStore.withSession("frame.renameColumn") {
+      implicit session =>
+        {
+          val columnsToRename: Seq[String] = name_pairs.map(_._1)
+          val newColumnNames: Seq[String] = name_pairs.map(_._2)
 
-      def generateNewColumnTuple(oldColumn: String, columnsToRename: Seq[String], newColumnNames: Seq[String]): String = {
-        val result = columnsToRename.indexOf(oldColumn) match {
-          case notFound if notFound < 0 => oldColumn
-          case found => newColumnNames(found)
+          def generateNewColumnTuple(oldColumn: String, columnsToRename: Seq[String], newColumnNames: Seq[String]): String = {
+            val result = columnsToRename.indexOf(oldColumn) match {
+              case notFound if notFound < 0 => oldColumn
+              case found => newColumnNames(found)
+            }
+            result
+          }
+
+          val newColumns = frame.schema.columns.map(col => (generateNewColumnTuple(col._1, columnsToRename, newColumnNames), col._2))
+          metaStore.frameRepo.updateSchema(frame, newColumns)
+          frame
         }
-        result
-      }
-
-      val newColumns = frame.schema.columns.map(col => (generateNewColumnTuple(col._1, columnsToRename, newColumnNames), col._2))
-      metaStore.frameRepo.updateSchema(frame, newColumns)
     }
 
   override def addColumn[T](frame: DataFrame, column: Column[T], columnType: DataTypes.DataType): DataFrame =
-    withContext("frame.addColumn") {
-      val newColumns = frame.schema.columns :+ (column.name, columnType)
-      metaStore.frameRepo.updateSchema(frame, newColumns)
+    //withContext("frame.addColumn") {
+    metaStore.withSession("frame.addColumn") {
+      implicit session =>
+        {
+          val newColumns = frame.schema.columns :+ (column.name, columnType)
+          metaStore.frameRepo.updateSchema(frame, newColumns)
+          frame
+        }
     }
-
   override def getRows(frame: DataFrame, offset: Long, count: Int)(implicit user: UserPrincipal): Iterable[Row] =
     withContext("frame.getRows") {
       require(frame != null, "frame is required")

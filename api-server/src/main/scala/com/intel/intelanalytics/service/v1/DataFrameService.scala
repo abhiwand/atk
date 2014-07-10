@@ -68,7 +68,6 @@ class DataFrameService(commonDirectives: CommonDirectives, engine: Engine) exten
               implicit val indexFormat = ViewModelJsonImplicits.getDataFrameFormat
               (name) => name match {
                 case Some(name) => {
-                  println("\n In first case")
                   onComplete(engine.getFrameByName(name)) {
                     case Success(Some(frame)) => {
 

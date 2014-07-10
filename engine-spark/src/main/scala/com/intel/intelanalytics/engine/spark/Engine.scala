@@ -152,7 +152,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     }
     val location = fsRoot + frames.getFrameDataFile(frameId)
     updatedRdd.saveAsObjectFile(location)
-    val frame = frames.updateSchema(realFrame, mergedSchema.columns)(user)
+    val frame = frames.updateSchema(realFrame, mergedSchema.columns)
     frame
   }
   /**
@@ -197,14 +197,12 @@ class SparkEngine(sparkContextManager: SparkContextManager,
   def getFrames(offset: Int, count: Int)(implicit p: UserPrincipal): Future[Seq[DataFrame]] = withContext("se.getFrames") {
     future {
       frames.getFrames(offset, count)
-      //println("\n frames.getFrames(offset,count)"+frames.getFrames(offset,count))
     }
   }
 
   def getFrameByName(name: String)(implicit p: UserPrincipal): Future[Option[DataFrame]] = withContext("se.getFrameByName") {
     future {
-      println("\n in Engine.scala--getFrameByName")
-      frames.getFrameByName(name)(p)
+      frames.lookupByName(name)
     }
   }
   def expectFrame(frameId: Long)(implicit user: UserPrincipal) = {
@@ -633,6 +631,13 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     withContext("se.getGraphs") {
       future {
         graphs.getGraphs(offset, count)
+      }
+    }
+
+  def getGraphByName(name: String)(implicit user: UserPrincipal): Future[Option[Graph]] =
+    withContext("se.getGraphByName") {
+      future {
+        graphs.getGraphByName(name)
       }
     }
 
