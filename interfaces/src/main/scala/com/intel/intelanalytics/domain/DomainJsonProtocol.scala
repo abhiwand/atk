@@ -170,6 +170,7 @@ object DomainJsonProtocol extends DefaultJsonProtocol {
   implicit val vertexRuleFormat = jsonFormat2(VertexRule)
   implicit val frameRuleFormat = jsonFormat3(FrameRule)
   implicit val graphLoadFormat = jsonFormat3(GraphLoad)
+  implicit val PercentileCalculationResultFormat = jsonFormat1(PercentileValues)
 
   implicit object DataTypeJsonFormat extends JsonFormat[Any] {
     override def write(obj: Any): JsValue = {

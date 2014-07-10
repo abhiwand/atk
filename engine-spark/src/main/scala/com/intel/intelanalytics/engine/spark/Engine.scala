@@ -731,14 +731,16 @@ class SparkEngine(sparkContextManager: SparkContextManager,
 
   def calculatePercentilesSimple(percentiles: CalculatePercentiles, user: UserPrincipal) = {
     val frameId: Long = percentiles.frameId
-    val realFrame: DataFrame = getDataFrameById(frameId)
     val ctx = sparkContextManager.context(user).sparkContext
-    val rdd = frames.getFrameRdd(ctx, frameId)
+
+    val realFrame: DataFrame = getDataFrameById(frameId)
     val frameSchema = realFrame.schema
     val columnIndex = frameSchema.columnIndex(percentiles.columnName)
     val columnDataType = frameSchema.columnDataType(percentiles.columnName)
 
-    SparkOps.calculatePercentiles(rdd, percentiles.percentiles, columnIndex, columnDataType)
+    val rdd = frames.getFrameRdd(ctx, frameId)
+    val percentileValues = SparkOps.calculatePercentiles(rdd, percentiles.percentiles, columnIndex, columnDataType).toList
+    PercentileValues(percentileValues)
   }
 
   /**

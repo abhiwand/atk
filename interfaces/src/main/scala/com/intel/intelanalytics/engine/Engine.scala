@@ -115,6 +115,11 @@ trait Engine {
 
   def deleteGraph(graph: Graph): Future[Unit]
 
+  /**
+   * calculate percentiles values
+   * @param percentiles command for calculating percentiles
+   * @param user current user
+   */
   def calculatePercentiles(percentiles: CalculatePercentiles)(implicit user: UserPrincipal): Execution
 
 }
