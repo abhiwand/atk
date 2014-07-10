@@ -158,6 +158,11 @@ object DomainJsonProtocol extends DefaultJsonProtocol {
 
   implicit val splitDataFormat = jsonFormat5(SplitData)
 
+  // model performance formats
+
+  implicit val classificationMetricLongFormat = jsonFormat6(ClassificationMetric[Long])
+  implicit val classificationMetricValueLongFormat = jsonFormat1(ClassificationMetricValue)
+
   // graph service formats
 
   implicit val graphTemplateFormat = jsonFormat1(GraphTemplate)
