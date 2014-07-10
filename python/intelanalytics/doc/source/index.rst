@@ -6,7 +6,7 @@ Contents:
 .. toctree::
    :maxdepth: 2
 
-   ia_intr
+   ia_intro
    ad_over
    ds_over
 
