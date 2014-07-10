@@ -45,7 +45,6 @@ class ConfusionMatrixTest extends TestingSparkContext with Matchers {
     Array[Any]("no", "no"),
     Array[Any]("yes", "no"))
 
-
   val inputListMulti = List(
     Array[Any](0, 0),
     Array[Any](1, 2),
@@ -53,7 +52,6 @@ class ConfusionMatrixTest extends TestingSparkContext with Matchers {
     Array[Any](0, 0),
     Array[Any](1, 0),
     Array[Any](2, 1))
-
 
   "confusion matrix" should "compute correct TP, TN, FP, FN values" in {
     val rdd = sc.parallelize(inputListBinary)
