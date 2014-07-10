@@ -32,7 +32,7 @@ logger = logging.getLogger(__name__)
 from intelanalytics.core.iatypes import supported_types
 from intelanalytics.core.aggregation import *
 from intelanalytics.core.errorhandle import IaError
-from intelanalytics.core.command import CommandSupport, docstub
+from intelanalytics.core.command import CommandSupport, doc_stub
 
 def _get_backend():
     from intelanalytics.core.config import get_frame_backend
@@ -860,7 +860,7 @@ class BigFrame(CommandSupport):
         except:
             raise IaError(logger)
 
-    @docstub
+    @doc_stub
     def remove_columns(self, name):
         """
         Remove columns from the BigFrame object.

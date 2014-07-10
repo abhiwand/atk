@@ -27,7 +27,7 @@ LittleFrame object (BigFrame without Big backend, i.e. all Python memory space)
 """
 
 from pandas import Series
-from ordereddict import OrderedDict
+from collections import OrderedDict
 from intelanalytics.core.frame import BigFrame
 from intelanalytics.core.column import BigColumn
 from intelanalytics.core.sources import SimpleDataSource

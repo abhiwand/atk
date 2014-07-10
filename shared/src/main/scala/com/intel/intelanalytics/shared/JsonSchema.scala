@@ -36,6 +36,10 @@ import ru._
 
 import scala.reflect.ClassTag
 
+/**
+ * Helper to allow access to spray-json utility so that we can ensure we're
+ * accessing case class vals in exactly the same way that it will
+ */
 private[intelanalytics] class ProductFormatsAccessor extends ProductFormats
     with StandardFormats
     with AdditionalFormats {
@@ -43,10 +47,18 @@ private[intelanalytics] class ProductFormatsAccessor extends ProductFormats
     super.extractFieldNames(classManifest)
 }
 
-object JsonSchemaExtractor {
+/**
+ * Generates `JsonSchema` objects to represent case classes
+ */
+private[intelanalytics] object JsonSchemaExtractor {
 
   val fieldHelper = new ProductFormatsAccessor()
 
+  /**
+   * Entry point for generating schema information for a case class
+   * @param tag extended type information for the given type
+   * @tparam T the type for which to generate a JSON schema
+   */
   def getProductSchema[T](tag: ClassTag[T]): ObjectSchema = {
     val manifest: ClassManifest[T] = tag
     val names = fieldHelper.extractFieldNames(manifest)
@@ -63,13 +75,32 @@ object JsonSchemaExtractor {
       order = Some(members.map(sym => sym.name.decoded.trim).toArray))
   }
 
-  def getFieldSchema(clazz: ru.Type)(symbol: ru.Symbol, order: Int): (JsonSchema, Boolean) = {
+  /**
+   * Get the schema for one particular field
+   *
+   * @param clazz the parent class
+   * @param symbol the field
+   * @param order the numeric (0 based) order of this field in the class
+   * @return a pair containing the schema, plus a flag indicating if the field is optional or not
+   */
+  private def getFieldSchema(clazz: ru.Type)(symbol: ru.Symbol, order: Int): (JsonSchema, Boolean) = {
     val typeSignature: ru.Type = symbol.typeSignatureIn(clazz)
     val name = symbol.name.decoded.toLowerCase.trim
     val schema = getSchemaForType(name, typeSignature, order)
     schema
   }
 
+  /**
+   * Returns the schema for a particular type.
+   *
+   * FrameReference and GraphReference types that appear at position zero are marked
+   * as "self" arguments.
+   *
+   * @param name the field name
+   * @param typeSignature the type
+   * @param order the numeric order of the field within its containing class
+   * @return
+   */
   def getSchemaForType(name: String, typeSignature: ru.Type, order: Int): (JsonSchema, Boolean) = {
     val schema = typeSignature match {
       case t if t =:= typeTag[URI].tpe => StringSchema(format = Some("uri"))
