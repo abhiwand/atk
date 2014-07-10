@@ -1,5 +1,5 @@
-Python API in Detail
-====================
+Python API
+==========
 
 Files
 -----

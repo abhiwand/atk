@@ -6,6 +6,8 @@ When a value is expected to be entered by user, a short description is used insi
 
 When emphasizing word strings, which are not file names, they are surrounded by double quotes.
 
+When refering to something by name such as a column name or frame name, use *name*.
+
 Code
 ====
 Each function is entered beginning with >>>.
