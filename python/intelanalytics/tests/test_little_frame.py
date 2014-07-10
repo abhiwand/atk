@@ -26,7 +26,7 @@ iatest.init()
 import unittest
 
 from intelanalytics.little.frame import LittleFrame
-from intelanalytics.core.types import *
+from intelanalytics.core.iatypes import *
 from intelanalytics.core.sources import SimpleDataSource
 
 
