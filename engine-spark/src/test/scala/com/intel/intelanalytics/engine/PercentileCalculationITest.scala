@@ -22,19 +22,19 @@ class PercentileCalculationITest extends TestingSparkContext with Matchers {
     result(1) shouldBe (40, 10)
   }
 
-  "Calculation percentile in large data set" should "return the correct values" in {
-
-    val numbers = ListBuffer[Array[Any]]()
-    numbers
-    for (i <- 1 to 1000000) {
-      numbers += Array[Any](i, "")
-    }
-
-    val rdd = sc.parallelize(numbers, 90)
-    val result = SparkOps.calculatePercentiles(rdd, Seq(5, 40), 0, DataTypes.int32)
-    result.length shouldBe 2
-    result(0) shouldBe (5, 50000)
-    result(1) shouldBe (40, 400000)
-  }
+  //  "Calculation percentile in large data set" should "return the correct values" in {
+  //
+  //    val numbers = ListBuffer[Array[Any]]()
+  //    numbers
+  //    for (i <- 1 to 1000000) {
+  //      numbers += Array[Any](i, "")
+  //    }
+  //
+  //    val rdd = sc.parallelize(numbers, 90)
+  //    val result = SparkOps.calculatePercentiles(rdd, Seq(5, 40), 0, DataTypes.int32)
+  //    result.length shouldBe 2
+  //    result(0) shouldBe (5, 50000)
+  //    result(1) shouldBe (40, 400000)
+  //  }
 
 }
