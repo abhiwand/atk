@@ -570,7 +570,7 @@ class BigFrame(CommandSupport):
         """
         return self._backend.bin_column(self, column_name, num_bins, bin_type, bin_column_name)
 
-    @docstub
+    @doc_stub
     def split_data(self, name):
         """
         Randomly split data into classes given a vector of percentages:
