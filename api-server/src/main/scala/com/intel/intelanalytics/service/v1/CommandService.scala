@@ -400,21 +400,16 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
     {
       val test = Try {
         import DomainJsonProtocol._
-        xform.arguments.get.convertTo[FrameGroupByColumn[JsObject, String]]
+        xform.arguments.get.convertTo[CalculatePercentiles]
       }
-      val idOpt = test.toOption.flatMap(args => UrlParser.getFrameId(args.frame))
-      (validate(test.isSuccess, "Failed to : " + getErrorMessage(test))
-        & validate(idOpt.isDefined, "Destination is not a valid data frame URL")) {
+      validate(test.isSuccess, "Failed to parse calculate percentiles descriptor: " + getErrorMessage(test)) {
         val args = test.get
-        val id = idOpt.get
-        val exec = engine.groupBy(FrameGroupByColumn[JsObject, Long](id, args.name, args.group_by_columns, args.aggregations))
-        complete(decorate(uri + "/" + exec.start.id, exec.start))
+        val result = engine.calculatePercentiles(args)
+        val command: Command = result.start
+        complete(decorate(uri + "/" + command.id, command))
       }
     }
   }
-
-
-
 
   //TODO: internationalization
   def getErrorMessage[T](value: Try[T]): String = value match {

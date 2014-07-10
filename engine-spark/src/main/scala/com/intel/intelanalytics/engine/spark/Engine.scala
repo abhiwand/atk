@@ -717,6 +717,14 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     realFrame
   }
 
+  override def calculatePercentiles(percentiles: CalculatePercentiles)(implicit user: UserPrincipal): Execution =
+    commands.execute(calculatePercentileCommand, percentiles, user, implicitly[ExecutionContext])
+
+  val calculatePercentileCommand = commands.registerCommand("dataframe/calculate_percentiles", calculatePercentilesSimple)
+  def calculatePercentilesSimple(percentiles: CalculatePercentiles, user: UserPrincipal) = {
+    println("############ CALCULATING PERCENTILES ############")
+  }
+
   /**
    * Retrieve DataFrame object by frame id
    * @param frameId id of the dataframe
