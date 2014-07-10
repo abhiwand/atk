@@ -55,7 +55,6 @@ class SparkProgressListener(val progressUpdater: CommandProgressUpdater) extends
   val commandIdJobs = new HashMap[Long, List[ActiveJob]]
   val jobIdDetailedProgressInfo = new HashMap[Int, ProgressInfo]()
 
-
   override def onJobStart(jobStart: SparkListenerJobStart) {
     val stages = addStageAndAncestorStagesToCollection(jobStart.job.finalStage)
 
@@ -89,7 +88,6 @@ class SparkProgressListener(val progressUpdater: CommandProgressUpdater) extends
     stageList += stage
     stageList.toSeq
   }
-
 
   override def onStageSubmitted(stageSubmitted: SparkListenerStageSubmitted) {
     val stage = stageSubmitted.stage

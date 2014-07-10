@@ -40,7 +40,7 @@ if spark_python not in sys.path:
 from serializers import PickleSerializer, BatchedSerializer, UTF8Deserializer, CloudPickleSerializer, write_int
 
 from intelanalytics.core.row import Row
-from intelanalytics.core.types import supported_types
+from intelanalytics.core.iatypes import supported_types
 
 rdd_delimiter = '\0'
 rdd_null_indicator = 'YoMeNull'

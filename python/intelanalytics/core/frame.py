@@ -29,13 +29,15 @@ import logging
 import uuid, sys
 logger = logging.getLogger(__name__)
 
-from intelanalytics.core.types import supported_types
+from intelanalytics.core.iatypes import supported_types
 from intelanalytics.core.aggregation import *
 from intelanalytics.core.errorhandle import IaError
+from intelanalytics.core.command import CommandSupport, doc_stub
 
 def _get_backend():
     from intelanalytics.core.config import get_frame_backend
     return get_frame_backend()
+
 
 
 def get_frame_names():
@@ -111,7 +113,7 @@ def delete_frame(name):
     except:
         raise IaError(logger)
 
-class BigFrame(object):
+class BigFrame(CommandSupport):
     """
     Proxy for a large 2D container to work with table data at scale.
 
@@ -145,6 +147,7 @@ class BigFrame(object):
             if not hasattr(self, '_backend'):  # if a subclass has not already set the _backend
                 self._backend = _get_backend()
             self._backend.create(self, source, name)
+            CommandSupport.__init__(self)
             logger.info('Created new frame "%s"', self._name)
         except:
             raise IaError(logger)
@@ -508,7 +511,7 @@ class BigFrame(object):
         ----------
         column_name : str
             The column to be flattened
-
+                                                  n
         Returns
         -------
         frame : BigFrame
@@ -825,6 +828,7 @@ class BigFrame(object):
         except:
             raise IaError(logger)
 
+    @doc_stub
     def remove_columns(self, name):
         """
         Remove columns from the BigFrame object.
@@ -847,11 +851,12 @@ class BigFrame(object):
         # Now my_frame only has the columns named "column_a" and "column_c"
 
         """
+        pass
         # TODO - Review examples
-        try:
-            self._backend.remove_columns(self, name)
-        except:
-            raise IaError(logger)
+        #try:
+        #    self._backend.remove_columns(self, name)
+        #except:
+        #    raise IaError(logger)
 
     def rename_columns(self, column_names, new_names):
         """
@@ -907,3 +912,142 @@ class BigFrame(object):
             return self._backend.take(self, n, offset)
         except:
             raise IaError(logger)
+
+    def accuracy(self, label_column, pred_column):
+        """
+        Computes the accuracy measure for a classification model
+
+        A column containing the correct labels for each instance and a column containing the predictions made by the
+        classifier are specified.  The accuracy of a classification model is the proportion of predictions that are
+        correct.  If we let TP denote the number of true positives, TN denote the number of true negatives, and K
+        denote the total number of classified instances, then the model accuracy is given by: (TP + TN) / K.
+
+        This measure applies to binary and multi-class classifiers.
+
+        Parameters
+        ----------
+        label_column : str
+            the name of the column containing the correct label for each instance
+        pred_column : str
+            the name of the column containing the predicted label for each instance
+
+        Returns
+        ----------
+        float64
+            the accuracy measure for the classifier
+
+        Examples
+        ----------
+        >>> acc = frame.accuracy('labels', 'predictions')
+
+        """
+        return self._backend.classification_metric(self, 'accuracy', label_column, pred_column, '1', 1)
+
+    def precision(self, label_column, pred_column, pos_label=1):
+        """
+        Computes the precision measure for a classification model
+
+        A column containing the correct labels for each instance and a column containing the predictions made by the
+        model are specified.  The precision of a binary classification model is the proportion of predicted positive
+        instances that are correct.  If we let TP denote the number of true positives and FP denote the number of false
+        positives, then the model precision is given by: TP / (TP + FP).
+
+        For multi-class classification, the precision measure is computed as the weighted average of the precision
+        for each label, where the weight is the number of instances with each label in the labeled column.  The
+        determination of binary vs. multi-class is automatically inferred from the data.
+
+        Parameters
+        ----------
+        label_column : str
+            the name of the column containing the correct label for each instance
+        pred_column : str
+            the name of the column containing the predicted label for each instance
+        pos_label : int or str, (optional, default=1)
+            the value to be interpreted as a positive instance (only for binary, ignored for multi-class)
+
+        Returns
+        ----------
+        float64
+            the precision measure for the classifier
+
+        Examples
+        ----------
+        >>> prec = frame.precision('labels', 'predictions')
+        >>> prec2 = frame.precision('labels', 'predictions', 'yes')
+
+        """
+        return self._backend.classification_metric(self, 'precision', label_column, pred_column, pos_label, 1)
+
+    def recall(self, label_column, pred_column, pos_label=1):
+        """
+        Computes the recall measure for a classification model
+
+        A column containing the correct labels for each instance and a column containing the predictions made by the
+        model are specified.  The recall of a binary classification model is the proportion of positive instances that
+        are correctly identified.  If we let TP denote the number of true positives and FN denote the number of false
+        negatives, then the model recall is given by: TP / (TP + FN).
+
+        For multi-class classification, the recall measure is computed as the weighted average of the recall
+        for each label, where the weight is the number of instance with each label in the labeled column.  The
+        determination of binary vs. multi-class is automatically inferred from the data.
+
+        Parameters
+        ----------
+        label_column : str
+            the name of the column containing the correct label for each instance
+        pred_column : str
+            the name of the column containing the predicted label for each instance
+        pos_label : int or str, (optional, default=1)
+            the value to be interpreted as a positive instance (only for binary, ignored for multi-class)
+
+        Returns
+        ----------
+        float64
+            the recall measure for the classifier
+
+        Examples
+        ----------
+        >>> rec = frame.recall('labels', 'predictions')
+        >>> rec2 = frame.recall('labels', 'predictions', 'pos')
+
+        """
+        return self._backend.classification_metric(self, 'recall', label_column, pred_column, pos_label, 1)
+
+    def fmeasure(self, label_column, pred_column, pos_label=1, beta=1):
+        """
+        Computes the f-beta measure for a classification model
+
+        A column containing the correct labels for each instance and a column containing the predictions made by the
+        model are specified.  The f-beta measure of a binary classification model is the harmonic mean of precision and
+        recall. If we let TP denote the number of true positives, FP denote the number of false positives, and FN
+        denote the number of false negatives, then the model f-beta measure is given by:
+        (1 + beta^2) * (((TP / (TP + FP)) * (TP / (TP + FN))) / (beta^2 * ((TP / (TP + FP)) + (TP / (TP + FN))))).
+
+        For multi-class classification, the f-beta measure is computed as the weighted average of the f-beta measure
+        for each label, where the weight is the number of instance with each label in the labeled column.  The
+        determination of binary vs. multi-class is automatically inferred from the data.
+
+        Parameters
+        ----------
+        label_column : str
+            the name of the column containing the correct label for each instance
+        pred_column : str
+            the name of the column containing the predicted label for each instance
+        pos_label : int or str, (optional, default=1)
+            the value to be interpreted as a positive instance (only for binary, ignored for multi-class)
+        beta : float, (optional, default=1)
+            beta value to use for f-beta measure (default f1 measure is computed); must be greater than 0
+
+        Returns
+        ----------
+        float64
+            the f-beta measure for the classifier
+
+        Examples
+        ----------
+        >>> f1 = frame.fmeasure('labels', 'predictions')
+        >>> f2 = frame.fmeasure('labels', 'predictions', beta=2)
+        >>> f1_binary = frame.fmeasure('labels', 'predictions', pos_label='good')
+
+        """
+        return self._backend.classification_metric(self, 'fmeasure', label_column, pred_column, pos_label, beta)
