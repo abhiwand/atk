@@ -6,9 +6,9 @@ Contents:
 ..  toctree::
     :maxdepth: 2
 
+    ad_legl
     ad_reqs
     ad_inst
-    ad_plug
 
 .. TODO:: Future sections
     ad_conf

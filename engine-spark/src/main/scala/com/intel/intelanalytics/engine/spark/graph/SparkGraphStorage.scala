@@ -70,7 +70,7 @@ class SparkGraphStorage(context: (UserPrincipal) => Context,
    * @param user The user loading the graph.
    * @return
    */
-  override def loadGraph(graphLoad: GraphLoad[JsObject, Long, Long])(implicit user: UserPrincipal): Graph = {
+  override def loadGraph(graphLoad: GraphLoad)(implicit user: UserPrincipal): Graph = {
     withContext("se.loadgraph") {
       metaStore.withSession("spark.graphstorage.createGraph") {
         implicit session =>
@@ -81,11 +81,11 @@ class SparkGraphStorage(context: (UserPrincipal) => Context,
 
             // TODO graphbuilder only supports one input frame at present
             require(frameRules.size == 1)
-            val theOnlySourceFrameID = frameRules.head.frame
+            val theOnlySourceFrameID = frameRules.head.frame.id
 
             val dataFrame = frameStorage.lookup(theOnlySourceFrameID)
 
-            val graph = lookup(graphLoad.graph).get
+            val graph = lookup(graphLoad.graph.id).get
 
             val gbConfigFactory = new GraphBuilderConfigFactory(dataFrame.get.schema, graphLoad, graph)
 
