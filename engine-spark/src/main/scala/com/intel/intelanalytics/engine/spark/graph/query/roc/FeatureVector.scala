@@ -71,7 +71,8 @@ object FeatureVector {
       })
     }
     else {
-      Array.empty[Double]
+      throw new RuntimeException("Property does not exist in the graph element: propertyName=" +
+        propertyName + ", graph element=" + graphElement  )
     }
   }
 
