@@ -2,17 +2,16 @@ package com.intel.intelanalytics.engine.spark.graph.query.roc
 
 import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRDDImplicits._
 import com.intel.graphbuilder.driver.spark.titan.reader.TitanReader
-import com.intel.graphbuilder.elements.{ Vertex, GraphElement, Edge }
+import com.intel.graphbuilder.elements.{Edge, Vertex}
 import com.intel.graphbuilder.graph.titan.TitanGraphConnector
 import com.intel.graphbuilder.util.SerializableBaseConfiguration
 import com.intel.intelanalytics.domain.DomainJsonProtocol
 import com.intel.intelanalytics.domain.graph.GraphReference
-import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
+import com.intel.intelanalytics.engine.spark.plugin.{SparkCommandPlugin, SparkInvocation}
 import com.intel.intelanalytics.security.UserPrincipal
-import com.typesafe.config.Config
 import org.apache.spark.storage.StorageLevel
-import spray.json.DefaultJsonProtocol._
 import spray.json._
+
 import scala.collection.JavaConverters._
 import scala.concurrent._
 
@@ -21,28 +20,28 @@ import scala.concurrent._
  *
  * @param graph The graph reference
  * @param prior_property_list The property name on which users want to get histogram.
- *                          When used without second_property_name, this property name can from either prior
- *                          or posterior properties. When used together with second_property_name, expect the
- *                          first_property_name is from prior properties, and the second_property_name is from
- *                          posterior properties.
+ *                            When used without second_property_name, this property name can from either prior
+ *                            or posterior properties. When used together with second_property_name, expect the
+ *                            first_property_name is from prior properties, and the second_property_name is from
+ *                            posterior properties.
  *
  * @param posterior_property_list The property name on which users want to get histogram.
- *                              The default value is empty string.
+ *                                The default value is empty string.
  * @param enable_roc True means to plot ROC curve on the validation (VA) and test(TE) splits of
- *                  the prior and posterior values, as well as calculate the AUC value on each
- *                  feature dimension of the prior and posterior values.
- *                  False means not to plot ROC curve.
- *                  The default value is False.
+ *                   the prior and posterior values, as well as calculate the AUC value on each
+ *                   feature dimension of the prior and posterior values.
+ *                   False means not to plot ROC curve.
+ *                   The default value is False.
  * @param roc_threshold The ROC threshold parameters in "min:step:max" format.
- *                     The default value is "0:0.05:1"
+ *                      The default value is "0:0.05:1"
  * @param property_type  The type of the first and second property.
- *                      Valid values are either VERTEX_PROPERTY or EDGE_PROPERTY.
- *                      The default value is VERTEX_PROPERTY
+ *                       Valid values are either VERTEX_PROPERTY or EDGE_PROPERTY.
+ *                       The default value is VERTEX_PROPERTY
  * @param vertex_type_property_key The property name for vertex type. The default value "vertex_type".
- *                      We need this name to know data is in train, validation or test splits
+ *                                 We need this name to know data is in train, validation or test splits
  * @param split_types The list of split types to include in the report.
- *                   A semi-colon separated string with train (TR), validation (VA), and test (TE) splits.
- *                   The default value is "TR;VA;TE"
+ *                    A semi-colon separated string with train (TR), validation (VA), and test (TE) splits.
+ *                    The default value is "TR;VA;TE"
  *
  * @param histogram_buckets The number of buckets to plot histogram. The default value is 30.
  */
@@ -71,7 +70,9 @@ case class HistogramRocResult(prior_histograms: List[Histogram],
                               roc_curves: Option[List[List[RocCurve]]])
 
 class HistogramRocQuery extends SparkCommandPlugin[HistogramRocParams, HistogramRocResult] {
-  import DomainJsonProtocol._
+
+  import com.intel.intelanalytics.domain.DomainJsonProtocol._
+
   implicit val histogramRocParamsFormat = jsonFormat9(HistogramRocParams)
   implicit val rocFormat = jsonFormat3(Roc)
   implicit val rocCurveFormat = jsonFormat2(RocCurve)
