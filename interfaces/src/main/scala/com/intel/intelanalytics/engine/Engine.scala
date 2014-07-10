@@ -105,6 +105,8 @@ trait Engine {
 
   def getGraphs(offset: Int, count: Int)(implicit user: UserPrincipal): Future[Seq[Graph]]
 
+  def getGraphByName(name: String)(implicit user: UserPrincipal): Future[Option[Graph]]
+
   def createGraph(graph: GraphTemplate)(implicit user: UserPrincipal): Future[Graph]
 
   def loadGraph(graph: GraphLoad[JsObject, Long, Long])(implicit user: UserPrincipal): Execution

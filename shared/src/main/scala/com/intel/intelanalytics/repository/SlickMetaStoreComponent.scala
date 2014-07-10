@@ -322,6 +322,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
   class SlickFrameRepository extends FrameRepository[Session]
       with EventLogging {
     this: Repository[Session, DataFrameTemplate, DataFrame] =>
+    type Session = msc.Session
 
     /**
      * A slick implementation of the 'Frame' table that defines
@@ -383,10 +384,9 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
 
     override def updateSchema(frame: DataFrame, columns: List[(String, DataType)])(implicit session: Session): Unit = {
       val newSchema = frame.schema.copy(columns = columns)
-      val newFrame = frame.copy(schema = newSchema)
-      //frames.where(_.id == frame.id).update(newFrame)
-      metaStore.frameRepo.update(newFrame)
-
+      val updatedFrame = frame.copy(schema = newSchema, modifiedOn = new DateTime)
+      frames.where(_.id === frame.id).update(updatedFrame)
+      updatedFrame
     }
 
     override def insert(frame: DataFrameTemplate)(implicit session: Session): Try[DataFrame] = Try {
@@ -413,7 +413,6 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
     def dropTable()(implicit session: Session) = {
       frames.ddl.drop
     }
-
   }
 
   /**
