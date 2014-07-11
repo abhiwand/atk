@@ -1,5 +1,3 @@
-package com.intel.intelanalytics.component
-
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
@@ -23,31 +21,17 @@ package com.intel.intelanalytics.component
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-trait Archive extends Component with Locator {
+package com.intel.intelanalytics.domain.frame
 
-  override def locatorName: String = this.componentName
-
-  private var loader: Option[(String, String) => Any] = None
-
-  /**
-   * Called by the component framework to provide a method for loading new classes from the same
-   * archive, with the correct startup support. Archives should store this function for later use
-   */
-  def setLoader(function: (String, String) => Any): Unit = loader match {
-    case None => loader = Some(function)
-    case _ => throw new Exception("Loader function already set for this archive")
-  }
-
-  /**
-   * Called by archives in order to load new instances from the archive. Does not provide
-   * any caching of instances.
-   *
-   * @param className the class name to instantiate and configure
-   * @return the new instance
-   */
-  protected def load(componentName: String, className: String): Any = {
-    println("Loading " + className)
-    loader.getOrElse(throw new Exception("Loader not installed for this archive"))(componentName, className)
-  }
-
+case class ClassificationMetric[FrameRef](frameId: FrameRef, metricType: String, labelColumn: String, predColumn: String, posLabel: String, beta: Double) {
+  require(metricType.equals("accuracy") ||
+    metricType.equals("precision") ||
+    metricType.equals("recall") ||
+    metricType.equals("fmeasure"), "valid metric type is required")
+  require(labelColumn != null && !labelColumn.equals(""), "label column is required")
+  require(predColumn != null && !predColumn.equals(""), "predict column is required")
+  require(posLabel != null && !posLabel.equals(""), "invalid positive label")
+  require(beta > 0, "invalid beta value for f measure")
 }
+
+case class ClassificationMetricValue(metricValue: Double)

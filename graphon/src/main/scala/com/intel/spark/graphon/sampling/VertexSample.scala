@@ -67,7 +67,7 @@ class VertexSample extends SparkCommandPlugin[VS, VSResult] {
   override def execute(invocation: SparkInvocation, arguments: VS)(implicit user: UserPrincipal, executionContext: ExecutionContext): VSResult = {
 
     // Titan Settings
-    val config = configuration().get
+    val config = configuration
     val titanConfigInput = config.getConfig("titan")
 
     val titanConfig = new SerializableBaseConfiguration()

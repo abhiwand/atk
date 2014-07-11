@@ -43,19 +43,10 @@ class IGiraphArchive extends Archive {
   override def getAll[T: ClassTag](descriptor: String): Seq[T] = descriptor match {
     //TODO: move the plumbing parts to the Archive trait and make this just a simple PartialFunction
     case "CommandPlugin" => commands
-      .map(c => load(c.getName))
+      .map(c => load("CommandPlugin", c.getName))
       .filter(i => i.isInstanceOf[T])
       .map(i => i.asInstanceOf[T])
     case _ => throw new NotFoundException("instances", descriptor)
-  }
-
-  /**
-   * Called before the application as a whole shuts down. Not guaranteed to be called,
-   * nor guaranteed that the application will not shut down while this method is running,
-   * though an effort will be made.
-   */
-  override def stop(): Unit = {
-
   }
 
   /**
@@ -68,13 +59,4 @@ class IGiraphArchive extends Archive {
    */
   override def defaultLocation: String = "engine"
 
-  /**
-   * Called before processing any requests.
-   *
-   * @param configuration Configuration information, scoped to that required by the
-   *                      plugin based on its installed paths.
-   */
-  override def start(configuration: Config): Unit = {
-
-  }
 }

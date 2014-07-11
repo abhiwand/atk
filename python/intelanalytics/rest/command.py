@@ -39,38 +39,96 @@ from intelanalytics.rest.connection import http
 from intelanalytics.core.errorhandle import IaError
 
 
-def print_progress(progress, progressMessage, make_new_line, start_times, finished):
-    if not progress:
-        initializing_text = "\rinitializing..."
-        sys.stdout.write(initializing_text)
+class ProgressPrinter(object):
+
+    def __init__(self):
+        self.job_count = 0
+        self.last_progress = []
+        self.job_start_times = []
+        self.initializing = True
+
+    def print_progress(self, progress, progressMessage, finished):
+        """
+        Print progress information on progress bar
+
+        Parameters
+        ----------
+        progress : List of float
+            The progresses of the jobs initiated by the command
+        progressMessage : List of str
+            Detailed progress information for the jobs initiated by the command
+        finished : boolean
+            Indicate whether the command is finished
+        """
+
+        total_job_count = len(progress)
+        new_added_job_count = total_job_count - self.job_count
+
+        # if it was printing initializing, overwrite initializing in the same line
+        # therefore it requires 1 less new line
+        number_of_new_lines = new_added_job_count if not self.initializing else new_added_job_count - 1
+
+        if total_job_count > 0:
+            self.initializing = False
+
+        for i in range(0, new_added_job_count):
+            self.job_start_times.append(time.time())
+
+        self.job_count = total_job_count
+        self.print_progress_as_text(progress, progressMessage, number_of_new_lines, self.job_start_times, finished)
+
+    def print_progress_as_text(self, progress, progressMessage, number_of_new_lines, start_times, finished):
+        """
+        Print progress information on command line progress bar
+
+        Parameters
+        ----------
+        progress : List of float
+            The progresses of the jobs initiated by the command
+        progressMessage : List of str
+            Detailed progress information for the jobs initiated by the command
+        number_of_new_lines: int
+            number of new lines to print in the command line
+        start_times: List of time
+            list of observed starting time for the jobs initiated by the command
+        finished : boolean
+            Indicate whether the command is finished
+        """
+        if not progress:
+            initializing_text = "\rinitializing..."
+            sys.stdout.write(initializing_text)
+            sys.stdout.flush()
+            return len(initializing_text)
+
+        progress_summary = []
+
+        for index in range(0, len(progress)):
+            p = progress[index]
+            message = progressMessage[index] if(index < len(progressMessage)) else ''
+
+            num_star = int(p / 2)
+            num_dot = 50 - num_star
+            number = "%3.2f" % p
+
+            time_string = datetime.timedelta(seconds = int(time.time() - start_times[index]))
+            progress_summary.append("\r%6s%% [%s%s] %s [Elapsed Time %s]" % (number, '=' * num_star, '.' * num_dot, message, time_string))
+
+        for i in range(0, number_of_new_lines):
+            # calculate the index for fetch from the list from the end
+            # if number_of_new_lines is 3, will need to take progress_summary[-4], progress_summary[-3], progress_summary[-2]
+            # index will be calculated as -4, -3 and -2 respectively
+            index = -1 - number_of_new_lines + i
+            previous_step_progress = progress_summary[index]
+            previous_step_progress = previous_step_progress + "\n"
+            sys.stdout.write(previous_step_progress)
+
+        current_step_progress = progress_summary[-1]
+
+        if finished:
+            current_step_progress = current_step_progress + "\n"
+
+        sys.stdout.write(current_step_progress)
         sys.stdout.flush()
-        return len(initializing_text)
-
-    progress_summary = []
-
-    for index in range(0, len(progress)):
-        p = progress[index]
-        message = progressMessage[index] if(index < len(progressMessage)) else ''
-
-        num_star = int(p / 2)
-        num_dot = 50 - num_star
-        number = "%3.2f" % p
-
-        time_string = datetime.timedelta(seconds = int(time.time() - start_times[index]))
-        progress_summary.append("\r%6s%% [%s%s] %s [Elapsed Time %s]" % (number, '=' * num_star, '.' * num_dot, message, time_string))
-
-    if make_new_line:
-        previous_step_progress = progress_summary[-2]
-        previous_step_progress = previous_step_progress + "\n"
-        sys.stdout.write(previous_step_progress)
-
-    current_step_progress = progress_summary[-1]
-
-    if finished:
-        current_step_progress = current_step_progress + "\n"
-
-    sys.stdout.write(current_step_progress)
-    sys.stdout.flush()
 
 class CommandRequest(object):
     @staticmethod
@@ -208,20 +266,20 @@ class Polling(object):
             start_interval_secs = config.polling.start_interval_secs
         if backoff_factor is None:
             backoff_factor = config.polling.backoff_factor
+        if max_interval_secs is None:
+            max_interval_secs = config.polling.max_interval_secs
         if not CommandInfo.is_valid_command_uri(uri):
             raise ValueError('Cannot poll ' + uri + ' - a /commands/{number} uri is required')
         interval_secs = start_interval_secs
 
         command_info = Polling._get_command_info(uri)
 
+        printer = ProgressPrinter()
         if not predicate(command_info):
-            job_count = 0
             last_progress = []
 
             next_poll_time = time.time()
-
             start_time = time.time()
-            job_start_times = []
             while True:
                 if time.time() < next_poll_time:
                     time.sleep(start_interval_secs)
@@ -232,13 +290,7 @@ class Polling(object):
 
                 next_poll_time = time.time() + interval_secs
                 progress = command_info.progress
-                print_new_line = len(progress) > 1 and job_count < len(progress)
-
-                if job_count < len(progress):
-                    job_start_times.append(time.time())
-                    job_count = len(progress)
-
-                print_progress(progress, command_info.progressMessage, print_new_line, job_start_times, finish)
+                printer.print_progress(progress, command_info.progressMessage, finish)
 
                 if finish:
                     break
@@ -250,39 +302,6 @@ class Polling(object):
             end_time = time.time()
             logger.info("polling %s completed after %0.2f seconds" % (uri, end_time - start_time))
         return command_info
-
-        # if predicate(command_info):
-        #     return command_info
-        #
-        # job_count = 1
-        # last_progress = []
-        # while True:
-        #     time.sleep(interval_secs)
-        #     wait_time = time.time() - job_start_times
-        #     command_info = Polling._get_command_info(command_info.uri)
-        #     progress = command_info.progress
-        #
-        #     print_new_line = job_count < len(progress)
-        #     print_progress(progress, print_new_line)
-        #
-        #     if(print_new_line):
-        #         job_count = len(progress)
-        #
-        #     if predicate(command_info):
-        #         return command_info
-        #     if wait_time > timeout_secs:
-        #         msg = "Polling timeout for %s after ~%d seconds" \
-        #               % (str(command_info), wait_time)
-        #         logger.error(msg)
-        #         raise RuntimeError(msg)
-        #
-        #
-        #     if last_progress == progress:
-        #         interval_secs *= backoff_factor
-        #         if interval_secs > 30:
-        #             interval_secs = 30
-        #
-        #     last_progress = progress
 
     @staticmethod
     def _get_command_info(uri):
@@ -324,7 +343,7 @@ class Executor(object):
         # For now, we just poll until the command completes
         try:
             if not command_info.complete:
-                command_info = Polling.poll(command_info.uri, max_interval_secs=30, backoff_factor=1.1)
+                command_info = Polling.poll(command_info.uri)
                 # Polling.print_progress(command_info.progress)
 
         except KeyboardInterrupt:
