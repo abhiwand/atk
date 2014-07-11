@@ -164,6 +164,28 @@ class SparkFrameStorage(context: UserPrincipal => Context, fsRoot: String, files
     }
   }
 
+  /**
+   * Create an FrameRDD from a frame data file
+   * @param ctx spark context
+   * @param frame the model for the frame
+   * @return the newly created FrameRDD
+   */
+  def getFrameRdd(ctx: SparkContext, frame: DataFrame): FrameRDD = {
+    new FrameRDD(frame.schema, getFrameRdd(ctx, frame.id))
+  }
+
+  /**
+   * Get the pair of FrameRDD's that were the result of a parse
+   * @param ctx spark context
+   * @param frame the model of the frame that was the successfully parsed lines
+   * @param errorFrame the model for the frame that was the parse errors
+   */
+  def getParseResult(ctx: SparkContext, frame: DataFrame, errorFrame: DataFrame): ParseResultRddWrapper = {
+    val frameRdd = getFrameRdd(ctx, frame)
+    val errorFrameRdd = getFrameRdd(ctx, errorFrame)
+    new ParseResultRddWrapper(frameRdd, errorFrameRdd)
+  }
+
   def getOrCreateDirectory(name: String): Directory = {
     val path = Paths.get(name)
     val meta = files.getMetaData(path).getOrElse(files.createDirectory(path))
