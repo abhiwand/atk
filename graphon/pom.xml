@@ -49,6 +49,7 @@
         <dependency>
             <groupId>com.intel.ia</groupId>
             <artifactId>engine-spark</artifactId>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>com.intel.ia</groupId>
