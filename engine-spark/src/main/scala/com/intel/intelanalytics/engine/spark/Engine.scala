@@ -729,7 +729,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
 
   val calculatePercentileCommand = commands.registerCommand("dataframe/calculate_percentiles", calculatePercentilesSimple)
 
-  def calculatePercentilesSimple(percentiles: CalculatePercentiles, user: UserPrincipal) = {
+  def calculatePercentilesSimple(percentiles: CalculatePercentiles, user: UserPrincipal): PercentileValues = {
     val frameId: Long = percentiles.frameId
     val ctx = sparkContextManager.context(user).sparkContext
 
