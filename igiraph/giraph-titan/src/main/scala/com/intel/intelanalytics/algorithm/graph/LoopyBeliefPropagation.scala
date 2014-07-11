@@ -64,7 +64,7 @@ case class Lbp(graph: GraphReference,
                max_product: Option[Boolean] = None,
                power: Option[Double] = None)
 
-case class LbpResult(runTimeSeconds: Double) //TODO
+case class LbpResult(value: String) //TODO
 
 class LoopyBeliefPropagation
     extends CommandPlugin[Lbp, LbpResult] {
@@ -123,9 +123,6 @@ class LoopyBeliefPropagation
   }
 
   override def execute(invocation: Invocation, arguments: Lbp)(implicit user: UserPrincipal, executionContext: ExecutionContext): LbpResult = {
-    val start = System.currentTimeMillis()
-
-    System.out.println("*********In Execute method of LBP********")
 
     val config = configuration().get
     val hConf = newHadoopConfigurationFrom(config, "giraph")
@@ -173,7 +170,8 @@ class LoopyBeliefPropagation
     val algorithm = giraphLoader.loadClass(classOf[LoopyBeliefPropagationComputation].getCanonicalName)
     internalJob.setJarByClass(algorithm)
 
-    val output_dir = new URI(config.getString("fs.root") + "/" + config.getString("output.dir") + "/" + invocation.commandId)
+    val output_dir_path = config.getString("fs.root") + "/" + config.getString("output.dir") + "/" + invocation.commandId
+    val output_dir = new URI(output_dir_path)
     if (config.getBoolean("output.overwrite")) {
       val fs = FileSystem.get(new Configuration())
       fs.delete(new Path(output_dir), true)
@@ -182,12 +180,15 @@ class LoopyBeliefPropagation
     org.apache.hadoop.mapreduce.lib.output.FileOutputFormat.setOutputPath(internalJob,
       new Path(output_dir))
 
-    job.run(true)
-
-    //TODO Pack results from output_dir
-
-    val time = (System.currentTimeMillis() - start).toDouble / 1000.0
-    LbpResult(time)
+    if (job.run(true)) {
+      val fs = FileSystem.get(new Configuration())
+      val stream = fs.open(new Path(output_dir_path + "/" + "lbp-learning-report_0"))
+      def readLines = Stream.cons(stream.readLine, Stream.continually(stream.readLine))
+      val result = readLines.takeWhile(_ != null).toList.mkString("\n")
+      fs.close()
+      LbpResult(result)
+    }
+    else LbpResult("Error: No Learning Report found!!")
   }
 
   //TODO: Replace with generic code that works on any case class
