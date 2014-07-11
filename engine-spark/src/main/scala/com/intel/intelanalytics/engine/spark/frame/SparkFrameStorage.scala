@@ -49,12 +49,11 @@ class SparkFrameStorage(context: UserPrincipal => Context, fsRoot: String, files
   import spray.json._
   import Rows.Row
 
-  def updateSchema(frame: DataFrame, columns: List[(String, DataType)]): Unit = {
+  def updateSchema(frame: DataFrame, columns: List[(String, DataType)]): DataFrame = {
     metaStore.withSession("frame.updateSchema") {
       implicit session =>
         {
           metaStore.frameRepo.updateSchema(frame, columns)
-          Unit
         }
     }
   }
@@ -95,8 +94,7 @@ class SparkFrameStorage(context: UserPrincipal => Context, fsRoot: String, files
                 frame.schema.columns.zipWithIndex.filter(elem => !columnIndex.contains(elem._2)).map(_._1)
             }
           }
-          //metaStore.frameRepo.updateSchema(frame, remainingColumns)(user)
-          frame
+          metaStore.frameRepo.updateSchema(frame, remainingColumns)
         }
     }
 
@@ -184,7 +182,7 @@ class SparkFrameStorage(context: UserPrincipal => Context, fsRoot: String, files
     }
   }
 
-  override def lookup(id: Long)(implicit user: UserPrincipal): Option[DataFrame] = {
+  override def lookup(id: Long): Option[DataFrame] = {
     metaStore.withSession("frame.lookup") {
       implicit session =>
         {

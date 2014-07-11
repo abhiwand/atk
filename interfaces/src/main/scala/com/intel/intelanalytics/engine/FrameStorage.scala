@@ -30,7 +30,7 @@ import com.intel.intelanalytics.engine.Rows._
 import com.intel.intelanalytics.security.UserPrincipal
 
 trait FrameStorage {
-  def lookup(id: Long)(implicit user: UserPrincipal): Option[DataFrame]
+  def lookup(id: Long): Option[DataFrame]
   def lookupByName(name: String)(implicit user: UserPrincipal): Option[DataFrame]
   def getFrames(offset: Int, count: Int)(implicit user: UserPrincipal): Seq[DataFrame]
   def create(frame: DataFrameTemplate)(implicit user: UserPrincipal): DataFrame
@@ -44,5 +44,5 @@ trait FrameStorage {
   def getRows(frame: DataFrame, offset: Long, count: Int)(implicit user: UserPrincipal): Iterable[Row]
   def drop(frame: DataFrame)
   //def updateName(frame: DataFrame, newName: String)(implicit user: UserPrincipal): DataFrame
-  def updateSchema(frame: DataFrame, columns: List[(String, DataType)]): Unit
+  def updateSchema(frame: DataFrame, columns: List[(String, DataType)]): DataFrame
 }

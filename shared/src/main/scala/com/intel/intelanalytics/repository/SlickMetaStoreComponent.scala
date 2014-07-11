@@ -34,12 +34,9 @@ import org.joda.time.DateTime
 import scala.slick.driver.{ JdbcDriver, JdbcProfile }
 import org.flywaydb.core.Flyway
 import spray.json._
-
 import scala.util.Try
-<<<<<<< HEAD
 import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
-=======
 import com.intel.intelanalytics.engine.ProgressInfo
 import com.intel.intelanalytics.engine.ProgressInfo
 import scala.Some
@@ -54,7 +51,6 @@ import com.intel.intelanalytics.domain.command.CommandTemplate
 import com.intel.intelanalytics.domain.Error
 import com.intel.intelanalytics.domain.graph.GraphTemplate
 import com.intel.intelanalytics.domain.UserTemplate
->>>>>>> remotes/origin/sprint_16
 
 trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
   msc: MetaStoreComponent with DbProfileComponent =>
@@ -404,7 +400,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
       updatedFrame
     }
 
-    override def updateSchema(frame: DataFrame, columns: List[(String, DataType)])(implicit session: Session): Unit = {
+    override def updateSchema(frame: DataFrame, columns: List[(String, DataType)])(implicit session: Session): DataFrame = {
       val newSchema = frame.schema.copy(columns = columns)
       val updatedFrame = frame.copy(schema = newSchema, modifiedOn = new DateTime)
       frames.where(_.id === frame.id).update(updatedFrame)
