@@ -170,6 +170,7 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
       case ("dataframe/groupby") => runFrameGroupByColumn(uri, xform)
       case ("dataframe/drop_duplicates") => runDropDuplicates(uri, xform)
       case ("dataframe/binColumn") => runBinColumn(uri, xform)
+      case ("dataframe/classification_metric") => runClassificationMetric(uri, xform)
       case ("dataframe/ecdf") => runECDF(uri, xform)
       case s: String => illegalArg("Command name is not supported: " + s)
       case _ => illegalArg("Command name was NOT a string")
@@ -374,6 +375,21 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
           val exec = engine.groupBy(FrameGroupByColumn[JsObject, Long](id, args.name, args.group_by_columns, args.aggregations))
           complete(decorate(uri + "/" + exec.start.id, exec.start))
         }
+    }
+  }
+
+  def runClassificationMetric(uri: Uri, xform: JsonTransform)(implicit user: UserPrincipal) = {
+    {
+      val test = Try {
+        xform.arguments.get.convertTo[ClassificationMetric[Long]]
+      }
+
+      validate(test.isSuccess, "Failed to parse file load descriptor: " + getErrorMessage(test)) {
+        val args = test.get
+        val result = engine.classificationMetric(args)
+        val command: Command = result.start
+        complete(decorate(uri + "/" + command.id, command))
+      }
     }
   }
 
