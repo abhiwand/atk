@@ -1,5 +1,11 @@
 #!/bin/bash
 
+#
+#intelanalytics-rest-server init script
+#
+#chkconfig: 2345 99 25
+#description: intel analytics rest server for doing graph creation
+#
 
 # Source function library.
 . /etc/init.d/functions

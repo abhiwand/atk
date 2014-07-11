@@ -32,7 +32,7 @@ from mock import patch
 from intelanalytics.core.frame import BigFrame
 from intelanalytics.core.column import BigColumn
 from intelanalytics.core.files import CsvFile
-from intelanalytics.core.types import *
+from intelanalytics.core.iatypes import *
 from intelanalytics.core.backend import FrameBackendSimplePrint
 
 

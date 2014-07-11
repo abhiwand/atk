@@ -33,7 +33,7 @@ import json
 from intelanalytics.core.frame import BigFrame
 from intelanalytics.core.column import BigColumn
 from intelanalytics.core.files import CsvFile
-from intelanalytics.core.types import *
+from intelanalytics.core.iatypes import *
 from intelanalytics.core.aggregation import agg
 from intelanalytics.rest.connection import http
 from intelanalytics.rest.command import CommandRequest, executor
@@ -45,10 +45,18 @@ from intelanalytics.rest.spark import prepare_row_function, get_add_one_column_f
 class FrameBackendRest(object):
     """REST plumbing for BigFrame"""
 
+    commands_loaded = {}
+
     def __init__(self, http_methods=None):
         self.rest_http = http_methods or http
         # use global connection, auth, etc.  This client does not support
         # multiple connection contexts
+        if not self.__class__.commands_loaded:
+            self.__class__.commands_loaded.update(executor.get_command_functions(('dataframe', 'dataframes'),
+                                                                        execute_update_frame_command,
+                                                                        execute_new_frame_command))
+            executor.install_static_methods(self.__class__, self.__class__.commands_loaded)
+            BigFrame._commands = self.__class__.commands_loaded
 
     def get_frame_names(self):
         logger.info("REST Backend: get_frame_names")
@@ -83,11 +91,12 @@ class FrameBackendRest(object):
             self.project_columns(source, frame, source.column_names)
         elif isinstance(source, BigColumn):
             self.project_columns(source.frame, frame, source.name)
-        elif (isinstance(source, list) and all(isinstance(iter, BigColumn) for iter in source)):
+        elif isinstance(source, list) and all(isinstance(iter, BigColumn) for iter in source):
             self.project_columns(source[0].frame, frame, [s.name for s in source])
         else:
             if source:
                 self.append(frame, source)
+
 
     def _create_new_frame(self, frame):
         payload = {'name': frame.name }
@@ -100,7 +109,7 @@ class FrameBackendRest(object):
     @staticmethod
     def _get_load_arguments(frame, data):
         if isinstance(data, CsvFile):
-            return {'destination': frame.uri,
+            return {'destination': frame._id,
                     'source': {
                         "source_type": "file",
                         "uri": data.file_name,
@@ -183,19 +192,7 @@ class FrameBackendRest(object):
             return
 
         arguments = self._get_load_arguments(frame, data)
-        command_info = execute_update_frame_command("load", arguments, frame)
-
-        if isinstance(data, (CsvFile, BigFrame)):
-            # update the Python object (set the columns)
-            for column in command_info.result['schema']['columns']:
-                name, data_type =  column[0], supported_types.try_get_type_from_string(column[1])
-                if data_type is not ignore:
-                    self._accept_column(frame, BigColumn(name, data_type))
-        else:
-            raise TypeError("Unsupported append data type "
-                            + data.__class__.__name__)
-        return command_info
-
+        execute_update_frame_command("load", arguments, frame)
 
     def count(self, frame):
         raise NotImplementedError  # TODO - implement count
@@ -335,10 +332,10 @@ class FrameBackendRest(object):
 
         return execute_new_frame_command("groupby", arguments)
 
-    def remove_columns(self, frame, name):
-        columns = ",".join(name) if isinstance(name, list) else name
-        arguments = {'frame': frame.uri, 'column': columns}
-        return execute_update_frame_command('removecolumn', arguments, frame)
+    # def remove_columns(self, frame, name):
+    #     columns = ",".join(name) if isinstance(name, list) else name
+    #     arguments = {'frame': frame.uri, 'column': columns}
+    #     return execute_update_frame_command('removecolumn', arguments, frame)
 
     def rename_columns(self, frame, column_names, new_names):
         if isinstance(column_names, basestring) and isinstance(new_names, basestring):
@@ -353,13 +350,36 @@ class FrameBackendRest(object):
         arguments = {'frame': frame.uri, "original_names": column_names, "new_names": new_names}
         return execute_update_frame_command('rename_column', arguments, frame)
 
-    def rename_frame(self, frame, name):
-        arguments = {'frame': frame.uri, "new_name": name}
-        return execute_update_frame_command('rename_frame', arguments, frame)
+    # def rename_frame(self, frame, name):
+    #     arguments = {'frame': frame.uri, "new_name": name}
+    #     return execute_update_frame_command('rename_frame', arguments, frame)
 
     def take(self, frame, n, offset):
         r = self.rest_http.get('dataframes/{0}/data?offset={2}&count={1}'.format(frame._id,n, offset))
         return r.json()
+
+    def classification_metric(self, frame, metric_type, label_column, pred_column, pos_label, beta):
+        if metric_type not in ['accuracy', 'precision', 'recall', 'fmeasure']:
+            raise ValueError("metric_type must be one of: 'accuracy'")
+        if label_column.strip() == "":
+            raise ValueError("label_column can not be empty string")
+        if pred_column.strip() == "":
+            raise ValueError("pred_column can not be empty string")
+        if str(pos_label).strip() == "":
+            raise ValueError("invalid pos_label")
+        if not label_column in frame.column_names:
+            raise ValueError("label_column does not exist in frame")
+        if not pred_column in frame.column_names:
+            raise ValueError("pred_column does not exist in frame")
+        if dict(frame.schema).get(label_column) in ['float32', 'float64']:
+            raise ValueError("invalid label_column types")
+        if dict(frame.schema).get(pred_column) in ['float32', 'float64']:
+            raise ValueError("invalid pred_column types")
+        if not beta > 0:
+            raise ValueError("invalid beta value for f measure")
+
+        arguments = {'frameId': frame._id, 'metricType': metric_type, 'labelColumn': label_column, 'predColumn': pred_column, 'posLabel': str(pos_label), 'beta': beta}
+        return get_command_output_value('classification_metric', arguments).get('metricValue')
 
 
 class FrameInfo(object):
@@ -410,15 +430,29 @@ def initialize_frame(frame, frame_info):
 
 def execute_update_frame_command(command_name, arguments, frame):
     """Executes command and updates frame with server response"""
-    command_request = CommandRequest('dataframe/' + command_name, arguments)
+    #support for non-plugin methods that may not supply the full name
+    if not command_name.startswith('dataframe'):
+        command_name = 'dataframe/' + command_name
+    command_request = CommandRequest(command_name, arguments)
     command_info = executor.issue(command_request)
-    initialize_frame(frame, FrameInfo(command_info.result))
-    return command_info
+    if command_info.result.has_key('name') and command_info.result.has_key('schema'):
+        initialize_frame(frame, FrameInfo(command_info.result))
+        return None
+    return command_info.result
 
 
 def execute_new_frame_command(command_name, arguments):
     """Executes command and creates a new BigFrame object from server response"""
-    command_request = CommandRequest('dataframe/' + command_name, arguments)
+    #support for non-plugin methods that may not supply the full name
+    if not command_name.startswith('dataframe'):
+        command_name = 'dataframe/' + command_name
+    command_request = CommandRequest(command_name, arguments)
     command_info = executor.issue(command_request)
     frame_info = FrameInfo(command_info.result)
     return BigFrame(frame_info)
+
+def get_command_output_value(command_name, arguments):
+    """Executes command and returns the computed value"""
+    command_request = CommandRequest('dataframe/' + command_name, arguments)
+    command_info = executor.issue(command_request)
+    return command_info.result
