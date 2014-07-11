@@ -23,38 +23,127 @@
 """
 Command objects
 """
+import datetime
 
 import time
 import json
 import logging
 import sys
+import re
+import collections
+
 logger = logging.getLogger(__name__)
 
 import intelanalytics.rest.config as config
 from intelanalytics.rest.connection import http
+from intelanalytics.core.errorhandle import IaError
 
 
-def print_progress(progress, make_new_line):
-    if not progress:
-        sys.stdout.write("\rinitializing...")
+class ProgressPrinter(object):
+
+    def __init__(self):
+        self.job_count = 0
+        self.last_progress = []
+        self.job_start_times = []
+        self.initializing = True
+
+    def print_progress(self, progress, progressMessage, finished):
+        """
+        Print progress information on progress bar
+
+        Parameters
+        ----------
+        progress : List of float
+            The progresses of the jobs initiated by the command
+        progressMessage : List of str
+            Detailed progress information for the jobs initiated by the command
+        finished : boolean
+            Indicate whether the command is finished
+        """
+
+        total_job_count = len(progress)
+        new_added_job_count = total_job_count - self.job_count
+
+        # if it was printing initializing, overwrite initializing in the same line
+        # therefore it requires 1 less new line
+        number_of_new_lines = new_added_job_count if not self.initializing else new_added_job_count - 1
+
+        if total_job_count > 0:
+            self.initializing = False
+
+        for i in range(0, new_added_job_count):
+            self.job_start_times.append(time.time())
+
+        self.job_count = total_job_count
+        self.print_progress_as_text(progress, progressMessage, number_of_new_lines, self.job_start_times, finished)
+
+    def print_progress_as_text(self, progress, progressMessage, number_of_new_lines, start_times, finished):
+        """
+        Print progress information on command line progress bar
+
+        Parameters
+        ----------
+        progress : List of float
+            The progresses of the jobs initiated by the command
+        progressMessage : List of str
+            Detailed progress information for the jobs initiated by the command
+        number_of_new_lines: int
+            number of new lines to print in the command line
+        start_times: List of time
+            list of observed starting time for the jobs initiated by the command
+        finished : boolean
+            Indicate whether the command is finished
+        """
+        if not progress:
+            initializing_text = "\rinitializing..."
+            sys.stdout.write(initializing_text)
+            sys.stdout.flush()
+            return len(initializing_text)
+
+        progress_summary = []
+
+        for index in range(0, len(progress)):
+            p = progress[index]
+            message = progressMessage[index] if(index < len(progressMessage)) else ''
+
+            num_star = int(p / 2)
+            num_dot = 50 - num_star
+            number = "%3.2f" % p
+
+            time_string = datetime.timedelta(seconds = int(time.time() - start_times[index]))
+            progress_summary.append("\r%6s%% [%s%s] %s [Elapsed Time %s]" % (number, '=' * num_star, '.' * num_dot, message, time_string))
+
+        for i in range(0, number_of_new_lines):
+            # calculate the index for fetch from the list from the end
+            # if number_of_new_lines is 3, will need to take progress_summary[-4], progress_summary[-3], progress_summary[-2]
+            # index will be calculated as -4, -3 and -2 respectively
+            index = -1 - number_of_new_lines + i
+            previous_step_progress = progress_summary[index]
+            previous_step_progress = previous_step_progress + "\n"
+            sys.stdout.write(previous_step_progress)
+
+        current_step_progress = progress_summary[-1]
+
+        if finished:
+            current_step_progress = current_step_progress + "\n"
+
+        sys.stdout.write(current_step_progress)
         sys.stdout.flush()
-        return
-
-    progress_summary = []
-    for p in progress:
-        num_star = int(p / 2)
-        num_dot = 50 - num_star
-        number = "%3.2f" % p
-        progress_summary.append("\r%6s%% [%s%s]" % (number, '=' * num_star, '.' * num_dot))
-
-    if make_new_line:
-        print progress_summary[-2]
-
-    sys.stdout.write(progress_summary[-1])
-    sys.stdout.flush()
-
 
 class CommandRequest(object):
+    @staticmethod
+    def validate_arguments(parameter_types, arguments):
+        validated = {}
+        for (k, v) in arguments.items():
+            if k not in parameter_types:
+                raise ValueError("No parameter named '%s'" % k)
+            validated[k] = v
+            schema = parameter_types[k]
+            if schema.get('type') == 'array':
+                if isinstance(v, basestring) or not hasattr(v, '__iter__'):
+                    validated[k] = [v]
+        return validated
+
     def __init__(self, name, arguments):
         self.name = name
         self.arguments = arguments
@@ -67,8 +156,16 @@ class CommandRequest(object):
 
 
 class CommandInfo(object):
+    __commands_regex = re.compile("""^http.+/commands/\d+""")
+
+    @staticmethod
+    def is_valid_command_uri(uri):
+        return CommandInfo.__commands_regex.match(uri) is not None
+
     def __init__(self, response_payload):
         self._payload = response_payload
+        if not self.is_valid_command_uri(self.uri):
+            raise ValueError("Invalid command URI: " + self.uri)
 
     def __repr__(self):
         return json.dumps(self._payload, indent=2, sort_keys=True)
@@ -119,6 +216,13 @@ class CommandInfo(object):
         except KeyError:
             return False
 
+    @property
+    def progressMessage(self):
+        try:
+            return self._payload['progressMessage']
+        except KeyError:
+            return False
+
     def update(self, payload):
         if self._payload and self.id_number != payload['id']:
             msg = "Invalid payload, command ID mismatch %d when expecting %d"\
@@ -128,7 +232,12 @@ class CommandInfo(object):
         self._payload = payload
 
 
+
+
+
 class Polling(object):
+
+
 
     @staticmethod
     def poll(uri, predicate=None, start_interval_secs=None, max_interval_secs=None, backoff_factor=None):
@@ -157,65 +266,42 @@ class Polling(object):
             start_interval_secs = config.polling.start_interval_secs
         if backoff_factor is None:
             backoff_factor = config.polling.backoff_factor
+        if max_interval_secs is None:
+            max_interval_secs = config.polling.max_interval_secs
+        if not CommandInfo.is_valid_command_uri(uri):
+            raise ValueError('Cannot poll ' + uri + ' - a /commands/{number} uri is required')
         interval_secs = start_interval_secs
-        start_time = time.time()
 
         command_info = Polling._get_command_info(uri)
 
+        printer = ProgressPrinter()
         if not predicate(command_info):
-            job_count = 1
             last_progress = []
+
+            next_poll_time = time.time()
+            start_time = time.time()
             while True:
-                time.sleep(interval_secs)
+                if time.time() < next_poll_time:
+                    time.sleep(start_interval_secs)
+                    continue
+
                 command_info = Polling._get_command_info(command_info.uri)
+                finish = predicate(command_info)
 
+                next_poll_time = time.time() + interval_secs
                 progress = command_info.progress
-                new_job_progress_exists = job_count < len(progress)
-                print_progress(progress, new_job_progress_exists)
-                if new_job_progress_exists:
-                    job_count = len(progress)
+                printer.print_progress(progress, command_info.progressMessage, finish)
 
-                if predicate(command_info):
+                if finish:
                     break
+
                 if last_progress == progress and interval_secs < max_interval_secs:
                     interval_secs = min(max_interval_secs, interval_secs * backoff_factor)
-                last_progress = progress
-        end_time = time.time()
-        logger.info("polling %s completed after %0.2f seconds" % (uri, end_time - start_time))
-        return command_info
 
-        # if predicate(command_info):
-        #     return command_info
-        #
-        # job_count = 1
-        # last_progress = []
-        # while True:
-        #     time.sleep(interval_secs)
-        #     wait_time = time.time() - start_time
-        #     command_info = Polling._get_command_info(command_info.uri)
-        #     progress = command_info.progress
-        #
-        #     new_job_progress_exists = job_count < len(progress)
-        #     print_progress(progress, new_job_progress_exists)
-        #
-        #     if(new_job_progress_exists):
-        #         job_count = len(progress)
-        #
-        #     if predicate(command_info):
-        #         return command_info
-        #     if wait_time > timeout_secs:
-        #         msg = "Polling timeout for %s after ~%d seconds" \
-        #               % (str(command_info), wait_time)
-        #         logger.error(msg)
-        #         raise RuntimeError(msg)
-        #
-        #
-        #     if last_progress == progress:
-        #         interval_secs *= backoff_factor
-        #         if interval_secs > 30:
-        #             interval_secs = 30
-        #
-        #     last_progress = progress
+                last_progress = progress
+            end_time = time.time()
+            logger.info("polling %s completed after %0.2f seconds" % (uri, end_time - start_time))
+        return command_info
 
     @staticmethod
     def _get_command_info(uri):
@@ -245,6 +331,8 @@ class Executor(object):
     Executes commands
     """
 
+    __commands = []
+
     def issue(self, command_request):
         """
         Issues the command_request to the server
@@ -271,6 +359,94 @@ class Executor(object):
         """
         logger.info("Executor cancelling command " + str(command_id))
         # TODO - implement command cancellation (like a DELETE to commands/id?)
+
+    def fetch(self):
+        """
+        Obtains a list of all the available commands from the server
+        :return: the commands available
+        """
+        logger.info("Requesting available commands")
+        response = http.get("commands/definitions")
+        commands = response.json()
+        return commands
+
+    @property
+    def commands(self):
+        """
+        The available commands
+        """
+        if not self.__commands:
+            self.__commands = self.fetch()
+        return self.__commands
+
+    def install_static_methods(self, clazz, functions):
+        for ((intermediates, name), v) in functions.items():
+            current = clazz
+            for inter in intermediates:
+                if not hasattr(current, inter):
+                    holder = object()
+                    setattr(current, inter, holder)
+                    current = holder
+            if not hasattr(current, name):
+                setattr(clazz, name, staticmethod(v))
+
+    def get_command_functions(self, prefixes, update_function, new_function):
+        functions = dict()
+        for cmd in executor.commands:
+            full_name = cmd['name']
+            parts = full_name.split('/')
+            if parts[0] not in prefixes:
+                continue
+            args = cmd['argument_schema']
+            intermediates = parts[1:-1]
+            command_name = parts[-1]
+            parameters = args.get('properties', {})
+            self_parameter_name = ([k for k, v in parameters.items()
+                                    if isinstance(v, dict) and v.has_key('self')] or [None])[0]
+
+            return_props = cmd['return_schema'].setdefault('properties', {})
+            return_self_parameter = ([k for k, v in return_props.items()
+                                      if isinstance(v, dict) and v.has_key('self')] or [None])[0]
+            possible_args = args.get('order', [])[:]
+            if self_parameter_name:
+                possible_args.remove(self_parameter_name)
+
+            #Create a new function scope to bind variables properly
+            # (see, e.g. http://eev.ee/blog/2011/04/24/gotcha-python-scoping-closures )
+            #Need make and not just invoke so that invoke won't have
+            #kwargs that include command_name et. al.
+            def make(full_name = full_name,
+                     command_name = command_name,
+                     cmd = cmd,
+                     self_name = self_parameter_name,
+                     return_self = return_self_parameter,
+                     possible_args = possible_args,
+                     parameters = parameters):
+
+                def invoke(s, *args, **kwargs):
+                    try:
+                        if self_name:
+                            kwargs[self_name] = s._id
+                        for (k,v) in zip(possible_args, args):
+                            if k in kwargs:
+                                raise ValueError("Argument " + k +
+                                                 " supplied as a positional argument and as a keyword argument")
+                            kwargs[k] = v
+                        validated = CommandRequest.validate_arguments(parameters, kwargs)
+                        if return_self:
+                            return new_function(full_name, validated, s)
+                        else:
+                            return update_function(full_name, validated, s)
+                    except:
+                        raise IaError(logger)
+                invoke.command = cmd
+                invoke.parameters = parameters
+                invoke.func_name = str(command_name)
+                return invoke
+            f = make()
+            functions[(tuple(intermediates), command_name)] = f
+        return functions
+
 
 
 executor = Executor()

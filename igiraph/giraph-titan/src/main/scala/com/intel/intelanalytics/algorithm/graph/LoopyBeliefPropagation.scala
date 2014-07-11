@@ -26,24 +26,35 @@ package com.intel.intelanalytics.algorithm.graph
 import java.util.Date
 
 import com.intel.giraph.algorithms.lbp.LoopyBeliefPropagationComputation
-import com.intel.giraph.io.formats.{ JsonPropertyGraph4LBPInputFormat, JsonPropertyGraph4LBPOutputFormat }
+import com.intel.giraph.io.titan.TitanVertexOutputFormatPropertyGraph4LBP
+import com.intel.giraph.io.titan.hbase.TitanHBaseVertexInputFormatPropertyGraph4LBP
 import com.intel.intelanalytics.component.Boot
+import com.intel.intelanalytics.domain.DomainJsonProtocol
+import com.intel.intelanalytics.domain.graph.GraphReference
 import com.intel.intelanalytics.engine.plugin.{ CommandPlugin, Invocation }
 import com.intel.intelanalytics.security.UserPrincipal
 import com.typesafe.config.{ Config, ConfigObject, ConfigValue }
 import org.apache.giraph.conf.GiraphConfiguration
-import org.apache.giraph.io.formats.GiraphFileInputFormat
 import org.apache.giraph.job.GiraphJob
 import org.apache.hadoop.conf.Configuration
+import org.apache.hadoop.fs.FileSystem
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.mapreduce.Job
 import spray.json.DefaultJsonProtocol._
 import spray.json._
+import scala.concurrent.duration._
+import java.net.URI
 
-import scala.collection.JavaConverters._
 import scala.concurrent._
+import scala.collection.JavaConverters._
 
-case class Lbp(graph: Int,
+case class Lbp(graph: GraphReference,
+               vertex_value_property_list: Option[String],
+               edge_value_property_list: Option[String],
+               input_edge_label_list: Option[String],
+               output_vertex_property_list: Option[String],
+               vertex_type_property_key: Option[String],
+               vector_value: Option[String],
                max_supersteps: Option[Int] = None,
                convergence_threshold: Option[Double] = None,
                anchor_threshold: Option[Double] = None,
@@ -57,7 +68,8 @@ case class LbpResult(runTimeSeconds: Double) //TODO
 
 class LoopyBeliefPropagation
     extends CommandPlugin[Lbp, LbpResult] {
-  implicit val lbpFormat = jsonFormat9(Lbp)
+  import DomainJsonProtocol._
+  implicit val lbpFormat = jsonFormat15(Lbp)
   implicit val lbpResultFormat = jsonFormat1(LbpResult)
 
   /**
@@ -112,10 +124,15 @@ class LoopyBeliefPropagation
 
   override def execute(invocation: Invocation, arguments: Lbp)(implicit user: UserPrincipal, executionContext: ExecutionContext): LbpResult = {
     val start = System.currentTimeMillis()
-    //    val graphFuture = invocation.engine.getGraph(arguments.graph.toLong)
 
-    val config: Config = configuration().get
+    System.out.println("*********In Execute method of LBP********")
+
+    val config = configuration().get
     val hConf = newHadoopConfigurationFrom(config, "giraph")
+    val titanConf = flattenConfig(config.getConfig("titan"), "titan.")
+
+    val graphFuture = invocation.engine.getGraph(arguments.graph.id)
+    val graph = Await.result(graphFuture, config.getInt("default-timeout") seconds)
 
     //    These parameters are set from the arguments passed in, or defaulted from
     //    the engine configuration if not passed.
@@ -127,61 +144,48 @@ class LoopyBeliefPropagation
     set(hConf, "lbp.smoothing", arguments.smoothing)
     set(hConf, "lbp.ignoreVertexType", arguments.ignore_vertex_type)
 
-    //    val graph = Await.result(graphFuture, config.getInt("default-timeout") seconds)
+    set(hConf, "giraph.titan.input.storage.backend", titanConf.get("titan.load.storage.backend"))
+    set(hConf, "giraph.titan.input.storage.hostname", titanConf.get("titan.load.storage.hostname"))
+    // TODO - graph should provide backend to retrieve the stored table name in hbase
+    set(hConf, "giraph.titan.input.storage.tablename", Option[Any]("iat_graph_" + graph.name))
+    set(hConf, "giraph.titan.input.storage.port", titanConf.get("titan.load.storage.port"))
 
-    //val yarnConfig: YarnConfiguration = new YarnConfiguration(hConf)
+    set(hConf, "input.vertex.value.property.key.list", arguments.vertex_value_property_list)
+    set(hConf, "input.edge.value.property.key.list", arguments.edge_value_property_list)
+    set(hConf, "input.edge.label.list", arguments.input_edge_label_list)
+    set(hConf, "output.vertex.property.key.list", arguments.output_vertex_property_list)
+    set(hConf, "vertex.type.property.key", arguments.vertex_type_property_key)
+    set(hConf, "vector.value", arguments.vector_value)
+
+    val giraphLoader = Boot.getClassLoader(config.getString("giraph.archive.name"))
     val giraphConf = new GiraphConfiguration(hConf)
-    //TODO: replace these with titan formats when we have titan working.
-    giraphConf.setVertexInputFormatClass(classOf[JsonPropertyGraph4LBPInputFormat])
-    giraphConf.setVertexOutputFormatClass(classOf[JsonPropertyGraph4LBPOutputFormat])
+
+    giraphConf.setVertexInputFormatClass(classOf[TitanHBaseVertexInputFormatPropertyGraph4LBP])
+    giraphConf.setVertexOutputFormatClass(classOf[TitanVertexOutputFormatPropertyGraph4LBP[_ <: org.apache.hadoop.io.WritableComparable[_], _ <: org.apache.hadoop.io.Writable, _ <: org.apache.hadoop.io.Writable]])
     giraphConf.setMasterComputeClass(classOf[LoopyBeliefPropagationComputation.LoopyBeliefPropagationMasterCompute])
     giraphConf.setComputationClass(classOf[LoopyBeliefPropagationComputation])
     giraphConf.setAggregatorWriterClass(classOf[LoopyBeliefPropagationComputation.LoopyBeliefPropagationAggregatorWriter])
 
-    GiraphFileInputFormat.addVertexInputPath(giraphConf, new Path("/user/hadoop/lbp/in"))
-
-    val graphId = arguments.graph //graph.getOrElse(illegalArg("Graph does not exist, cannot run LBP")
-    //val job = new org.apache.giraph.yarn.GiraphYarnClient(giraphConf, "iat-giraph-lbp-" + new Date());
-    val job = new GiraphJob(giraphConf, "iat-giraph-lbp-" + new Date())
-    val internalJob: Job = job.getInternalJob
-    val giraphLoader = Boot.getClassLoader(config.getString("giraph.archive.name"))
     Thread.currentThread().setContextClassLoader(giraphLoader)
-    val coreSiteXml = giraphLoader.getResource("core-site.xml")
-    assert(coreSiteXml != null, "core-site.xml not available on class path")
-    println("Found: " + coreSiteXml.getFile)
+
+    val job = new GiraphJob(giraphConf, "iat-giraph-lbp")
+    val internalJob: Job = job.getInternalJob
     val algorithm = giraphLoader.loadClass(classOf[LoopyBeliefPropagationComputation].getCanonicalName)
     internalJob.setJarByClass(algorithm)
-    //internalJob.setJar(execution.config.getString("giraph-jar"))
 
-    org.apache.hadoop.mapreduce.lib.input.FileInputFormat.addInputPath(internalJob,
-      new Path("/user/hadoop/lbp/in"))
+    val output_dir = new URI(config.getString("fs.root") + "/" + config.getString("output.dir") + "/" + invocation.commandId)
+    if (config.getBoolean("output.overwrite")) {
+      val fs = FileSystem.get(new Configuration())
+      fs.delete(new Path(output_dir), true)
+    }
+
     org.apache.hadoop.mapreduce.lib.output.FileOutputFormat.setOutputPath(internalJob,
-      new Path("/user/hadoop/lbp/out/" + invocation.commandId))
+      new Path(output_dir))
 
-    //   @SuppressWarnings(Array("rawtypes")) val gtv: GiraphConfigurationValidator[_, _, _, _, _] =
-    //      new GiraphConfigurationValidator(giraphConf)
-    //
-    //
-    //    gtv.validateConfiguration()
     job.run(true)
-    //    val runner = giraphLoader.loadClass(classOf[GiraphRunner].getCanonicalName)
-    //    val method = runner.getMethod("main", classOf[Array[String]])
-    //    method.invoke(null, Array("com.intel.giraph.algorithms.lbp.LoopyBeliefPropagationComputation",
-    //      "-vif", "com.intel.giraph.io.formats.JsonPropertyGraph4LBPInputFormat",
-    //      "-vip", "input/synth.pg.json_training",
-    //      "-vof", " com.intel.giraph.io.formats.JsonPropertyGraph4LBPOutputFormat",
-    //      "-op", "output/lbp_test",
-    //      "-mc", "com.intel.giraph.algorithms.lbp.LoopyBeliefPropagationComputation$LoopyBeliefPropagationMasterCompute",
-    //      "-aw", "com.intel.giraph.algorithms.lbp.LoopyBeliefPropagationComputation$LoopyBeliefPropagationAggregatorWriter",
-    //      "-w", "1",
-    //      "-ca", "giraph.SplitMasterWorker=true",
-    //      "-ca", "lbp.maxSupersteps=10",
-    //      "-ca", "lbp.smoothing=2",
-    //      "-ca", "lbp.convergenceThreshold=0",
-    //      "-ca", "lbp.anchorThreshold=0.9",
-    //      "-ca", "lbp.ignoreVertexType=true",
-    //      "-ca", "lbp.maxProduct=false",
-    //      "-ca", "lbp.power=0.5"))
+
+    //TODO Pack results from output_dir
+
     val time = (System.currentTimeMillis() - start).toDouble / 1000.0
     LbpResult(time)
   }

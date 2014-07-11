@@ -25,8 +25,9 @@ package com.intel.intelanalytics.engine.spark
 
 import java.util.{ ArrayList => JArrayList, List => JList }
 
+import com.intel.intelanalytics.domain.DomainJsonProtocol._
 import com.intel.intelanalytics.domain._
-import com.intel.intelanalytics.domain.command.{ Command, CommandTemplate, Execution }
+import com.intel.intelanalytics.domain.command.{ Command, CommandDefinition, CommandTemplate, Execution }
 import com.intel.intelanalytics.domain.frame._
 import com.intel.intelanalytics.domain.frame.load.{ LineParserArguments, LineParser, LoadSource, Load }
 
@@ -35,24 +36,22 @@ import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 import com.intel.intelanalytics.domain.schema.{ DataTypes, Schema, SchemaUtil }
 import com.intel.intelanalytics.engine.Rows._
 import com.intel.intelanalytics.engine._
+import com.intel.intelanalytics.engine.plugin.CommandPlugin
 import com.intel.intelanalytics.engine.spark.command.CommandExecutor
-import com.intel.intelanalytics.{ ClassLoaderAware, NotFoundException }
 import com.intel.intelanalytics.engine.spark.context.SparkContextManager
 import com.intel.intelanalytics.engine.spark.frame.{ RDDJoinParam, RowParser, SparkFrameStorage }
 import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.shared.EventLogging
+import com.intel.intelanalytics.{ ClassLoaderAware, NotFoundException }
 import org.apache.spark.SparkContext
 import org.apache.spark.api.python.{ EnginePythonAccumulatorParam, EnginePythonRDD }
 import org.apache.spark.broadcast.Broadcast
+import org.apache.spark.engine.SparkProgressListener
 import org.apache.spark.rdd.RDD
 import spray.json._
 
-import DomainJsonProtocol._
-
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent._
-import scala.util.Try
-import org.apache.spark.engine.SparkProgressListener
 
 object SparkEngine {
   private val pythonRddDelimiter = "\0"
@@ -70,7 +69,13 @@ class SparkEngine(sparkContextManager: SparkContextManager,
 
   /* This progress listener saves progress update to command table */
   SparkProgressListener.progressUpdater = new CommandProgressUpdater {
-    override def updateProgress(commandId: Long, progress: List[Float]): Unit = commandStorage.updateProgress(commandId, progress)
+    /**
+     * save the progress update
+     * @param commandId id of the command
+     * @param progress list of progress for jobs initiated by the command
+     * @param detailedProgress list of extra progress info for jobs initiated by the command
+     */
+    override def updateProgress(commandId: Long, progress: List[Float], detailedProgress: List[ProgressInfo]): Unit = commandStorage.updateProgress(commandId, progress, detailedProgress)
   }
 
   def shutdown: Unit = {
@@ -101,6 +106,13 @@ class SparkEngine(sparkContextManager: SparkContextManager,
   def execute(command: CommandTemplate)(implicit user: UserPrincipal): Execution =
     commands.execute(command, user, implicitly[ExecutionContext])
 
+  /**
+   * All the command definitions available
+   */
+  override def getCommandDefinitions()(implicit user: UserPrincipal): Iterable[CommandDefinition] = {
+    commands.getCommandDefinitions()
+  }
+
   def getLineParser(parser: LineParser): String => Array[String] = {
     parser.name match {
       //TODO: look functions up in a table rather than switching on names
@@ -120,7 +132,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     }
   }
 
-  def load(arguments: Load[Long])(implicit user: UserPrincipal): Execution =
+  def load(arguments: Load)(implicit user: UserPrincipal): Execution =
     commands.execute(loadCommand, arguments, user, implicitly[ExecutionContext])
 
   val loadCommand = commands.registerCommand(name = "dataframe/load", loadSimple)
@@ -130,9 +142,15 @@ class SparkEngine(sparkContextManager: SparkContextManager,
    * @param arguments Load command object
    * @param user current user
    */
+<<<<<<< HEAD
   def loadSimple(arguments: Load[Long], user: UserPrincipal) = {
     val frameId = arguments.destination
     val realFrame = expectFrame(frameId)(user)
+=======
+  def loadSimple(arguments: Load, user: UserPrincipal) = {
+    val frameId = arguments.destination.id
+    val realFrame = expectFrame(frameId)
+>>>>>>> remotes/origin/sprint_16
     val ctx = sparkContextManager.context(user)
 
     implicit val u = user
@@ -200,6 +218,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     }
   }
 
+<<<<<<< HEAD
   def getFrameByName(name: String)(implicit p: UserPrincipal): Future[Option[DataFrame]] = withContext("se.getFrameByName") {
     future {
       frames.lookupByName(name)
@@ -207,14 +226,25 @@ class SparkEngine(sparkContextManager: SparkContextManager,
   }
   def expectFrame(frameId: Long)(implicit user: UserPrincipal) = {
     frames.lookup(frameId)(user).getOrElse(throw new NotFoundException("dataframe", frameId.toString))
+=======
+  def expectFrame(frameId: Long): DataFrame = {
+    frames.lookup(frameId).getOrElse(throw new NotFoundException("dataframe", frameId.toString))
+>>>>>>> remotes/origin/sprint_16
   }
 
-  def renameFrame(arguments: FrameRenameFrame[JsObject, Long])(implicit user: UserPrincipal): Execution =
+  def expectFrame(frameRef: FrameReference): DataFrame = expectFrame(frameRef.id)
+
+  def renameFrame(arguments: FrameRenameFrame)(implicit user: UserPrincipal): Execution =
     commands.execute(renameFrameCommand, arguments, user, implicitly[ExecutionContext])
 
   val renameFrameCommand = commands.registerCommand("dataframe/rename_frame", renameFrameSimple)
+<<<<<<< HEAD
   private def renameFrameSimple(arguments: FrameRenameFrame[JsObject, Long], user: UserPrincipal) = {
     val frame = expectFrame(arguments.frame)(user)
+=======
+  private def renameFrameSimple(arguments: FrameRenameFrame, user: UserPrincipal) = {
+    val frame = expectFrame(arguments.frame)
+>>>>>>> remotes/origin/sprint_16
     val newName = arguments.new_name
     frames.renameFrame(frame, newName)
   }
@@ -345,7 +375,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
           case _ => t.toString
         }).mkString(SparkEngine.pythonRddDelimiter))
 
-      val pythonExec = "python2.7" //TODO: take from env var or config
+      val pythonExec = "python" //TODO: take from env var or config
       val environment = new java.util.HashMap[String, String]()
 
       val accumulator = ctx.accumulator[JList[Array[Byte]]](new JArrayList[Array[Byte]]())(new EnginePythonAccumulatorParam())
@@ -394,6 +424,48 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     frames.updateSchema(newFrame, realFrame.schema.columns)
     newFrame.copy(schema = realFrame.schema)
 
+  }
+
+  /**
+   * Bin the specified column in RDD
+   * @param arguments input specification for column binning
+   * @param user current user
+   */
+  override def binColumn(arguments: BinColumn[Long])(implicit user: UserPrincipal): Execution =
+    commands.execute(binColumnCommand, arguments, user, implicitly[ExecutionContext])
+
+  val binColumnCommand = commands.registerCommand("dataframe/binColumn", binColumnSimple)
+  def binColumnSimple(arguments: BinColumn[Long], user: UserPrincipal) = {
+    implicit val u = user
+    val frameId: Long = arguments.frame
+    val realFrame = expectFrame(frameId)
+
+    val ctx = sparkContextManager.context(user).sparkContext
+
+    val rdd = frames.getFrameRdd(ctx, frameId)
+
+    val columnIndex = realFrame.schema.columnIndex(arguments.columnName)
+
+    if (realFrame.schema.columns.indexWhere(columnTuple => columnTuple._1 == arguments.binColumnName) >= 0)
+      throw new IllegalArgumentException(s"Duplicate column name: ${arguments.binColumnName}")
+
+    val newFrame = Await.result(create(DataFrameTemplate(arguments.name, None)), SparkEngineConfig.defaultTimeout)
+
+    arguments.binType match {
+      case "equalwidth" => {
+        val binnedRdd = SparkOps.binEqualWidth(columnIndex, arguments.numBins, rdd)
+        binnedRdd.saveAsObjectFile(fsRoot + frames.getFrameDataFile(newFrame.id))
+      }
+      case "equaldepth" => {
+        val binnedRdd = SparkOps.binEqualDepth(columnIndex, arguments.numBins, rdd)
+        binnedRdd.saveAsObjectFile(fsRoot + frames.getFrameDataFile(newFrame.id))
+      }
+      case _ => throw new IllegalArgumentException(s"Invalid binning type: ${arguments.binType.toString()}")
+    }
+
+    val allColumns = realFrame.schema.columns :+ (arguments.binColumnName, DataTypes.int32)
+    frames.updateSchema(newFrame, allColumns)
+    newFrame.copy(schema = Schema(allColumns))
   }
 
   def filter(arguments: FilterPredicate[JsObject, Long])(implicit user: UserPrincipal): Execution =
@@ -486,16 +558,16 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     newJoinFrame.copy(schema = Schema(allColumns))
   }
 
-  def removeColumn(arguments: FrameRemoveColumn[JsObject, Long])(implicit user: UserPrincipal): Execution =
+  def removeColumn(arguments: FrameRemoveColumn)(implicit user: UserPrincipal): Execution =
     commands.execute(removeColumnCommand, arguments, user, implicitly[ExecutionContext])
 
-  val removeColumnCommand = commands.registerCommand("dataframe/removecolumn", removeColumnSimple)
-  def removeColumnSimple(arguments: FrameRemoveColumn[JsObject, Long], user: UserPrincipal) = {
+  val removeColumnCommand = commands.registerCommand("dataframe/remove_columns", removeColumnSimple)
+  def removeColumnSimple(arguments: FrameRemoveColumn, user: UserPrincipal) = {
 
     implicit val u = user
     val ctx = sparkContextManager.context(user).sparkContext
-    val frameId = arguments.frame
-    val columns = arguments.column.split(",")
+    val frameId = arguments.frame.id
+    val columns = arguments.columns
 
     val realFrame = expectFrame(arguments.frame)(user)
     val schema = realFrame.schema
@@ -510,7 +582,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
 
     columnIndices match {
       case invalidColumns if invalidColumns.contains(-1) =>
-        throw new IllegalArgumentException(s"Invalid list of columns: ${arguments.column}")
+        throw new IllegalArgumentException(s"Invalid list of columns: [${arguments.columns.mkString(", ")}]")
       case allColumns if allColumns.length == schema.columns.length =>
         frames.getFrameRdd(ctx, frameId).filter(_ => false).saveAsObjectFile(location)
       case singleColumn if singleColumn.length == 1 => frames.getFrameRdd(ctx, frameId)
@@ -597,11 +669,11 @@ class SparkEngine(sparkContextManager: SparkContextManager,
    * @param user IMPLICIT. The user loading the graph
    * @return Command object for this graphload and a future
    */
-  def loadGraph(arguments: GraphLoad[JsObject, Long, Long])(implicit user: UserPrincipal): Execution =
+  def loadGraph(arguments: GraphLoad)(implicit user: UserPrincipal): Execution =
     commands.execute(loadGraphCommand, arguments, user, implicitly[ExecutionContext])
 
   val loadGraphCommand = commands.registerCommand("graph/load", loadGraphSimple)
-  def loadGraphSimple(arguments: GraphLoad[JsObject, Long, Long], user: UserPrincipal) = {
+  def loadGraphSimple(arguments: GraphLoad, user: UserPrincipal) = {
     // validating frames
     arguments.frame_rules.foreach(frule => expectFrame(frule.frame)(user))
 
@@ -686,6 +758,34 @@ class SparkEngine(sparkContextManager: SparkContextManager,
 
     duplicatesRemoved.saveAsObjectFile(fsRoot + frames.getFrameDataFile(frameId))
     realFrame
+  }
+
+  override def classificationMetric(arguments: ClassificationMetric[Long])(implicit user: UserPrincipal): Execution =
+    commands.execute(classificationMetricCommand, arguments, user, implicitly[ExecutionContext])
+
+  val classificationMetricCommand: CommandPlugin[ClassificationMetric[Long], ClassificationMetricValue] = commands.registerCommand("dataframe/classification_metric", classificationMetricSimple)
+
+  def classificationMetricSimple(arguments: ClassificationMetric[Long], user: UserPrincipal): ClassificationMetricValue = {
+    implicit val u = user
+    val frameId: Long = arguments.frameId
+    val realFrame: DataFrame = getDataFrameById(frameId)
+
+    val ctx = sparkContextManager.context(user).sparkContext
+
+    val frameSchema = realFrame.schema
+    val frameRdd = frames.getFrameRdd(ctx, frameId)
+
+    val labelColumnIndex = frameSchema.columnIndex(arguments.labelColumn)
+    val predColumnIndex = frameSchema.columnIndex(arguments.predColumn)
+
+    val metric_value = arguments.metricType match {
+      case "accuracy" => SparkOps.modelAccuracy(frameRdd, labelColumnIndex, predColumnIndex)
+      case "precision" => SparkOps.modelPrecision(frameRdd, labelColumnIndex, predColumnIndex, arguments.posLabel)
+      case "recall" => SparkOps.modelRecall(frameRdd, labelColumnIndex, predColumnIndex, arguments.posLabel)
+      case "fmeasure" => SparkOps.modelFMeasure(frameRdd, labelColumnIndex, predColumnIndex, arguments.posLabel, arguments.beta)
+      case _ => throw new IllegalArgumentException() // TODO: this exception needs to be handled differently
+    }
+    ClassificationMetricValue(metric_value)
   }
 
   /**

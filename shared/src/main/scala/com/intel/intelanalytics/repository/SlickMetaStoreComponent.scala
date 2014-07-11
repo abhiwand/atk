@@ -36,8 +36,25 @@ import org.flywaydb.core.Flyway
 import spray.json._
 
 import scala.util.Try
+<<<<<<< HEAD
 import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
+=======
+import com.intel.intelanalytics.engine.ProgressInfo
+import com.intel.intelanalytics.engine.ProgressInfo
+import scala.Some
+import com.intel.intelanalytics.domain.frame.DataFrameTemplate
+import com.intel.intelanalytics.domain.User
+import com.intel.intelanalytics.domain.frame.DataFrame
+import com.intel.intelanalytics.domain.schema.Schema
+import com.intel.intelanalytics.domain.Status
+import com.intel.intelanalytics.domain.command.Command
+import com.intel.intelanalytics.domain.graph.Graph
+import com.intel.intelanalytics.domain.command.CommandTemplate
+import com.intel.intelanalytics.domain.Error
+import com.intel.intelanalytics.domain.graph.GraphTemplate
+import com.intel.intelanalytics.domain.UserTemplate
+>>>>>>> remotes/origin/sprint_16
 
 trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
   msc: MetaStoreComponent with DbProfileComponent =>
@@ -69,6 +86,11 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
   implicit val commandProgressType = MappedColumnType.base[List[Float], String](
     { progress => progress.toJson.prettyPrint },
     { string => JsonParser(string).convertTo[List[Float]] }
+  )
+
+  implicit val detailedProgressType = MappedColumnType.base[List[ProgressInfo], String](
+    { detailedProgress => detailedProgress.toJson.prettyPrint },
+    { string => JsonParser(string).convertTo[List[ProgressInfo]] }
   )
 
   private[repository] val database = withContext("Connecting to database") {
@@ -439,6 +461,8 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
 
       def progress = column[List[Float]]("progress")
 
+      def detailedProgress = column[List[ProgressInfo]]("detailedProgress")
+
       def complete = column[Boolean]("complete", O.Default(false))
 
       def result = column[Option[JsObject]]("result")
@@ -450,7 +474,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
       def createdById = column[Option[Long]]("created_by")
 
       /** projection to/from the database */
-      def * = (id, name, arguments, error, progress, complete, result, createdOn, modifiedOn, createdById) <> (Command.tupled, Command.unapply)
+      def * = (id, name, arguments, error, progress, detailedProgress, complete, result, createdOn, modifiedOn, createdById) <> (Command.tupled, Command.unapply)
 
       def createdBy = foreignKey("command_created_by", createdById, users)(_.id)
     }
@@ -463,7 +487,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
 
     override def insert(command: CommandTemplate)(implicit session: Session): Try[Command] = Try {
       // TODO: add createdBy user id
-      val c = Command(0, command.name, command.arguments, None, List(), false, None, new DateTime(), new DateTime(), None)
+      val c = Command(0, command.name, command.arguments, None, List(), List(), false, None, new DateTime(), new DateTime(), None)
       commandsAutoInc.insert(c)
     }
 
@@ -516,9 +540,9 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
      * @param progress progress for the command
      * @param session session to db
      */
-    override def updateProgress(id: Long, progress: List[Float])(implicit session: Session): Try[Unit] = Try {
-      val q = for { c <- commands if c.id === id } yield c.progress
-      q.update(progress)
+    override def updateProgress(id: Long, progress: List[Float], detailedProgress: List[ProgressInfo])(implicit session: Session): Try[Unit] = Try {
+      val q = for { c <- commands if c.id === id } yield (c.progress, c.detailedProgress)
+      q.update(progress, detailedProgress)
     }
   }
 
