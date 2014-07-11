@@ -117,4 +117,8 @@ trait Engine {
 
   def deleteGraph(graph: Graph): Future[Unit]
 
+  // Model performance measures
+
+  def classificationMetric(arguments: ClassificationMetric[Long])(implicit user: UserPrincipal): Execution
+
 }
