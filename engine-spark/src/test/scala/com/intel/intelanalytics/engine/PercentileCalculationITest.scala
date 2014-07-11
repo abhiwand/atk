@@ -2,9 +2,9 @@ package com.intel.intelanalytics.engine.spark
 
 import org.scalatest.Matchers
 import com.intel.intelanalytics.engine.TestingSparkContext
-import org.apache.spark.rdd.RDD
 import com.intel.intelanalytics.domain.schema.DataTypes
 import scala.collection.mutable.ListBuffer
+
 
 class PercentileCalculationITest extends TestingSparkContext with Matchers {
   "Calculation percentile in small data set" should "return the correct values" in {
@@ -18,23 +18,26 @@ class PercentileCalculationITest extends TestingSparkContext with Matchers {
     val rdd = sc.parallelize(numbers, 3)
     val result = SparkOps.calculatePercentiles(rdd, Seq(5, 40), 0, DataTypes.int32)
     result.length shouldBe 2
-    result(0) shouldBe (5, 1.25)
-    result(1) shouldBe (40, 10)
+    result(0) shouldBe(5, 1.25)
+    result(1) shouldBe(40, 10)
   }
 
-  //  "Calculation percentile in large data set" should "return the correct values" in {
-  //
-  //    val numbers = ListBuffer[Array[Any]]()
-  //    numbers
-  //    for (i <- 1 to 1000000) {
-  //      numbers += Array[Any](i, "")
-  //    }
-  //
-  //    val rdd = sc.parallelize(numbers, 90)
-  //    val result = SparkOps.calculatePercentiles(rdd, Seq(5, 40), 0, DataTypes.int32)
-  //    result.length shouldBe 2
-  //    result(0) shouldBe (5, 50000)
-  //    result(1) shouldBe (40, 400000)
-  //  }
-
+  //   Large scale test takes longer time. uncomment it when needed.
+//  "Calculation percentile in large data set" should "return the correct values" in {
+//
+//    import scala.util.Random
+//    val numbers = ListBuffer[Array[Any]]()
+//    numbers
+//    for (i <- 1 to 1000000) {
+//      numbers += Array[Any](i, "")
+//    }
+//
+//    val randomPositionedNumbers = Random.shuffle(numbers)
+//
+//    val rdd = sc.parallelize(randomPositionedNumbers, 90)
+//    val result = SparkOps.calculatePercentiles(rdd, Seq(5, 40), 0, DataTypes.int32)
+//    result.length shouldBe 2
+//    result(0) shouldBe(5, 50000)
+//    result(1) shouldBe(40, 400000)
+//  }
 }
