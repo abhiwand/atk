@@ -350,23 +350,17 @@ class FrameBackendRest(object):
         arguments = {'frame': frame.uri, "original_names": column_names, "new_names": new_names}
         return execute_update_frame_command('rename_column', arguments, frame)
 
-<<<<<<< HEAD
-    def rename_frame(self, frame, name):
-        r= self.rest_http.get('dataframes')
-        payload = r.json()
-        frame_names = [f['name'] for f in payload]
-        for i in frame_names:
-            if name==i:
-                raise ValueError("A frame with this name already exists. Rename failed")
-
-            else:
-                arguments = {'frame': frame.uri, "new_name": name}
-                return execute_update_frame_command('rename_frame', arguments, frame)
-=======
     # def rename_frame(self, frame, name):
-    #     arguments = {'frame': frame.uri, "new_name": name}
-    #     return execute_update_frame_command('rename_frame', arguments, frame)
->>>>>>> remotes/origin/sprint_16
+    #     r= self.rest_http.get('dataframes')
+    #     payload = r.json()
+    #     frame_names = [f['name'] for f in payload]
+    #     for i in frame_names:
+    #         if name==i:
+    #             raise ValueError("A frame with this name already exists. Rename failed")
+    #
+    #         else:
+    #             arguments = {'frame': frame.uri, "new_name": name}
+    #             return execute_update_frame_command('rename_frame', arguments, frame)
 
     def take(self, frame, n, offset):
         r = self.rest_http.get('dataframes/{0}/data?offset={2}&count={1}'.format(frame._id,n, offset))

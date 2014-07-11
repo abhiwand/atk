@@ -142,15 +142,9 @@ class SparkEngine(sparkContextManager: SparkContextManager,
    * @param arguments Load command object
    * @param user current user
    */
-<<<<<<< HEAD
-  def loadSimple(arguments: Load[Long], user: UserPrincipal) = {
-    val frameId = arguments.destination
-    val realFrame = expectFrame(frameId)(user)
-=======
-  def loadSimple(arguments: Load, user: UserPrincipal) = {
+  def loadSimple(arguments: Load, user: UserPrincipal): DataFrame = {
     val frameId = arguments.destination.id
     val realFrame = expectFrame(frameId)
->>>>>>> remotes/origin/sprint_16
     val ctx = sparkContextManager.context(user)
 
     implicit val u = user
@@ -218,18 +212,14 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     }
   }
 
-<<<<<<< HEAD
   def getFrameByName(name: String)(implicit p: UserPrincipal): Future[Option[DataFrame]] = withContext("se.getFrameByName") {
     future {
       frames.lookupByName(name)
     }
   }
-  def expectFrame(frameId: Long)(implicit user: UserPrincipal) = {
-    frames.lookup(frameId)(user).getOrElse(throw new NotFoundException("dataframe", frameId.toString))
-=======
+
   def expectFrame(frameId: Long): DataFrame = {
     frames.lookup(frameId).getOrElse(throw new NotFoundException("dataframe", frameId.toString))
->>>>>>> remotes/origin/sprint_16
   }
 
   def expectFrame(frameRef: FrameReference): DataFrame = expectFrame(frameRef.id)
@@ -238,13 +228,9 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     commands.execute(renameFrameCommand, arguments, user, implicitly[ExecutionContext])
 
   val renameFrameCommand = commands.registerCommand("dataframe/rename_frame", renameFrameSimple)
-<<<<<<< HEAD
-  private def renameFrameSimple(arguments: FrameRenameFrame[JsObject, Long], user: UserPrincipal) = {
-    val frame = expectFrame(arguments.frame)(user)
-=======
+
   private def renameFrameSimple(arguments: FrameRenameFrame, user: UserPrincipal) = {
     val frame = expectFrame(arguments.frame)
->>>>>>> remotes/origin/sprint_16
     val newName = arguments.new_name
     frames.renameFrame(frame, newName)
   }
@@ -255,7 +241,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
   val renameColumnCommand = commands.registerCommand("dataframe/rename_column", renameColumnSimple)
   def renameColumnSimple(arguments: FrameRenameColumn[JsObject, Long], user: UserPrincipal) = {
     val frameID = arguments.frame
-    val frame = expectFrame(frameID)(user)
+    val frame = expectFrame(frameID)
     frames.renameColumn(frame, arguments.original_names.zip(arguments.new_names))
   }
 
@@ -263,14 +249,14 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     commands.execute(projectCommand, arguments, user, implicitly[ExecutionContext])
 
   val projectCommand = commands.registerCommand("dataframe/project", projectSimple)
-  def projectSimple(arguments: FrameProject[JsObject, Long], user: UserPrincipal) = {
+  def projectSimple(arguments: FrameProject[JsObject, Long], user: UserPrincipal): DataFrame = {
 
     implicit val u = user
 
     val sourceFrameID = arguments.frame
-    val sourceFrame = expectFrame(sourceFrameID)(user)
+    val sourceFrame = expectFrame(sourceFrameID)
     val projectedFrameID = arguments.projected_frame
-    val projectedFrame = expectFrame(projectedFrameID)(user)
+    val projectedFrame = expectFrame(projectedFrameID)
     val ctx = sparkContextManager.context(user).sparkContext
     val columns = arguments.columns
 
@@ -409,7 +395,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
   def flattenColumnSimple(arguments: FlattenColumn, user: UserPrincipal) = {
     implicit val u = user
     val frameId: Long = arguments.frameId
-    val realFrame = expectFrame(frameId)(user)
+    val realFrame = expectFrame(frameId)
 
     val ctx = sparkContextManager.context(user).sparkContext
 
@@ -524,7 +510,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     val originalColumns = arguments.frames.map {
       frame =>
         {
-          val realFrame = expectFrame(frame._1)(user)
+          val realFrame = expectFrame(frame._1)
 
           realFrame.schema.columns
         }
@@ -569,7 +555,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     val frameId = arguments.frame.id
     val columns = arguments.columns
 
-    val realFrame = expectFrame(arguments.frame)(user)
+    val realFrame = expectFrame(arguments.frame)
     val schema = realFrame.schema
     val location = fsRoot + frames.getFrameDataFile(frameId)
 
@@ -608,7 +594,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     val column_types = arguments.column_types
     val expression = arguments.expression // Python Wrapper containing lambda expression
 
-    val realFrame = expectFrame(arguments.frame)(user)
+    val realFrame = expectFrame(arguments.frame)
     val schema = realFrame.schema
     val location = fsRoot + frames.getFrameDataFile(frameId)
 
@@ -645,7 +631,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
   def getFrame(id: Identifier)(implicit user: UserPrincipal): Future[Option[DataFrame]] =
     withContext("se.getFrame") {
       future {
-        frames.lookup(id)(user)
+        frames.lookup(id)
       }
     }
 
@@ -675,7 +661,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
   val loadGraphCommand = commands.registerCommand("graph/load", loadGraphSimple)
   def loadGraphSimple(arguments: GraphLoad, user: UserPrincipal) = {
     // validating frames
-    arguments.frame_rules.foreach(frule => expectFrame(frule.frame)(user))
+    arguments.frame_rules.foreach(frule => expectFrame(frule.frame))
 
     val graph = graphs.loadGraph(arguments)(user)
     graph
