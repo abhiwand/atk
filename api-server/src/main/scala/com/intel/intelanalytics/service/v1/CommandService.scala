@@ -399,7 +399,7 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
         xform.arguments.get.convertTo[ConfusionMatrix[Long]]
       }
 
-      validate(test.isSuccess, "Failed to parse file load descriptor: " + getErrorMessage(test)) {
+      validate(test.isSuccess, "Failed to parse confusion matrix descriptor: " + getErrorMessage(test)) {
         val args = test.get
         val result = engine.confusionMatrix(args)
         val command: Command = result.start
