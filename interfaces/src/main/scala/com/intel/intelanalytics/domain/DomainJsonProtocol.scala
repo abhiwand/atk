@@ -27,7 +27,7 @@ import java.net.URI
 
 import com.intel.intelanalytics.domain.command.CommandDefinition
 import com.intel.intelanalytics.domain.frame.load.{ Load, LineParser, LoadSource, LineParserArguments }
-import com.intel.intelanalytics.domain.schema.{ Schema, DataTypes }
+import com.intel.intelanalytics.domain.schema.DataTypes
 import DataTypes.DataType
 import com.intel.intelanalytics.schema._
 import spray.json._
@@ -41,6 +41,7 @@ import spray.json._
 import com.intel.intelanalytics.engine.ProgressInfo
 
 import scala.util.matching.Regex
+import com.intel.intelanalytics.algorithm.Percentile
 
 /**
  * Implicit conversions for domain objects to JSON
@@ -170,6 +171,7 @@ object DomainJsonProtocol extends DefaultJsonProtocol {
   implicit val vertexRuleFormat = jsonFormat2(VertexRule)
   implicit val frameRuleFormat = jsonFormat3(FrameRule)
   implicit val graphLoadFormat = jsonFormat3(GraphLoad)
+  implicit val percentileFormat = jsonFormat2(Percentile)
   implicit val PercentileCalculationResultFormat = jsonFormat1(PercentileValues)
 
   implicit object DataTypeJsonFormat extends JsonFormat[Any] {
