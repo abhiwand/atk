@@ -69,6 +69,7 @@ Platform Specific Installation
 
 If your server is on a different machine than your Client, you can do port forwarding for communication between client and server. In order to do so run the following command from your shell: nohup ssh -NL <Server-Port>:localhost:<Client-Port> <Server Name or IP> &
 I usually choose 9099 for both Server and Client ports.
+
 .. _Cloudera Manager: http://www.cloudera.com/content/support/en/downloads/cloudera_manager/cm-5-0-2.html
 .. _Cloudera Documentation: http://www.cloudera.com/content/support/en/documentation/cdh5-documentation/cdh5-documentation-v5-latest.html
 

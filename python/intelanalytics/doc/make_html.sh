@@ -62,6 +62,7 @@ else
     # Delete previously automatically built files
     if [[ -d build/html ]]; then
         rm -R build/html
+        rm -R ../core/*.pyc
     fi
 
     make -B html 2>&1 | grep -v -f toctreeWarnings
