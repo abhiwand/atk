@@ -143,25 +143,6 @@ class SparkEngine(sparkContextManager: SparkContextManager,
   override def getCommandDefinitions()(implicit user: UserPrincipal): Iterable[CommandDefinition] = {
     commands.getCommandDefinitions()
   }
-  
-  def getLineParser(parser: LineParser, columnTypes: Array[DataTypes.DataType]): String => RowParseResult = {
-    parser.name match {
-      //TODO: look functions up in a table rather than switching on names
-      case "builtin/line/separator" => {
-        val args = parser.arguments match {
-          //TODO: genericize this argument conversion
-          case a: LineParserArguments => a
-          case x => throw new IllegalArgumentException(
-            "Could not convert instance of " + x.getClass.getName + " to  arguments for builtin/line/separator")
-        }
-
-        val rowParser = new RowParser(args.separator, columnTypes)
-        s => rowParser(s)
-
-      }
-      case x => throw new Exception("Unsupported parser: " + x)
-    }
-  }
 
   def load(arguments: Load)(implicit user: UserPrincipal): Execution =
     commands.execute(loadCommand, arguments, user, implicitly[ExecutionContext])

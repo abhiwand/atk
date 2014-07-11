@@ -137,7 +137,7 @@ private[spark] object SparkOps extends Serializable {
    *
    * @param ctx SparkContext used for textFile reading
    * @param fileName name of file to parse
-   * @param parser
+   * @param parser the parser to use
    */
   private[spark] def parseSampleOfFile(ctx: SparkContext,
                                        fileName: String,
