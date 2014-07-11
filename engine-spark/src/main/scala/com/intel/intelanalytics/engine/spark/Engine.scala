@@ -38,7 +38,7 @@ import com.intel.intelanalytics.engine._
 import com.intel.intelanalytics.engine.spark.command.CommandExecutor
 import com.intel.intelanalytics.{ ClassLoaderAware, NotFoundException }
 import com.intel.intelanalytics.engine.spark.context.SparkContextManager
-import com.intel.intelanalytics.engine.spark.frame.{ RowParseResult, RDDJoinParam, RowParser, SparkFrameStorage }
+import com.intel.intelanalytics.engine.spark.frame._
 import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.shared.EventLogging
 import org.apache.spark.SparkContext
@@ -53,6 +53,35 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent._
 import scala.util.Try
 import org.apache.spark.engine.SparkProgressListener
+import com.intel.intelanalytics.domain.frame.FrameAddColumns
+import com.intel.intelanalytics.domain.frame.FrameRenameFrame
+import com.intel.intelanalytics.domain.frame.load.LineParserArguments
+import com.intel.intelanalytics.domain.graph.GraphLoad
+import com.intel.intelanalytics.domain.schema.Schema
+import com.intel.intelanalytics.domain.frame.DropDuplicates
+import com.intel.intelanalytics.engine.spark.frame.RowParseResult
+import com.intel.intelanalytics.domain.frame.FrameProject
+import com.intel.intelanalytics.domain.graph.Graph
+import com.intel.intelanalytics.domain.FilterPredicate
+import com.intel.intelanalytics.domain.frame.load.Load
+import com.intel.intelanalytics.domain.frame.load.LineParser
+import com.intel.intelanalytics.domain.frame.BigColumn
+import com.intel.intelanalytics.domain.frame.FrameGroupByColumn
+import com.intel.intelanalytics.security.UserPrincipal
+import com.intel.intelanalytics.domain.frame.FrameRemoveColumn
+import com.intel.intelanalytics.engine.spark.frame.RDDJoinParam
+import com.intel.intelanalytics.domain.graph.GraphTemplate
+import com.intel.intelanalytics.domain.frame.load.LoadSource
+import com.intel.intelanalytics.domain.frame.DataFrameTemplate
+import com.intel.intelanalytics.engine.ProgressInfo
+import com.intel.intelanalytics.domain.frame.FrameRenameColumn
+import com.intel.intelanalytics.domain.frame.BinColumn
+import com.intel.intelanalytics.domain.frame.DataFrame
+import com.intel.intelanalytics.domain.command.Execution
+import com.intel.intelanalytics.domain.command.Command
+import com.intel.intelanalytics.domain.command.CommandTemplate
+import com.intel.intelanalytics.domain.frame.FlattenColumn
+import com.intel.intelanalytics.domain.frame.FrameJoin
 
 object SparkEngine {
   private val pythonRddDelimiter = "\0"
@@ -107,25 +136,6 @@ class SparkEngine(sparkContextManager: SparkContextManager,
   def execute(command: CommandTemplate)(implicit user: UserPrincipal): Execution =
     commands.execute(command, user, implicitly[ExecutionContext])
 
-  def getLineParser(parser: LineParser, columnTypes: Array[DataTypes.DataType]): String => RowParseResult = {
-    parser.name match {
-      //TODO: look functions up in a table rather than switching on names
-      case "builtin/line/separator" => {
-        val args = parser.arguments match {
-          //TODO: genericize this argument conversion
-          case a: LineParserArguments => a
-          case x => throw new IllegalArgumentException(
-            "Could not convert instance of " + x.getClass.getName + " to  arguments for builtin/line/separator")
-        }
-
-        val rowParser = new RowParser(args.separator, columnTypes)
-        s => rowParser(s)
-
-      }
-      case x => throw new Exception("Unsupported parser: " + x)
-    }
-  }
-
   def load(arguments: Load[Long])(implicit user: UserPrincipal): Execution =
     commands.execute(loadCommand, arguments, user, implicitly[ExecutionContext])
 
@@ -141,23 +151,13 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     val realFrame = expectFrame(frameId)
     val ctx = sparkContextManager.context(user)
 
-    //get Data
-    val (schema, newData) = getLoadData(ctx.sparkContext, arguments.source)
-    val rdd = frames.getFrameRdd(ctx.sparkContext, realFrame.id)
+    val newRdd = getLoadData(ctx.sparkContext, arguments.source)
+    val existingRdd = frames.getFrameRdd(ctx.sparkContext, realFrame)
+    val unionedRdd = newRdd.union(existingRdd)
 
-    val (mergedSchema: Schema, updatedRdd: RDD[Row]) = if (realFrame.schema == schema)
-      (realFrame.schema, rdd ++ newData)
-    else {
-      val mergedSchema: Schema = SchemaUtil.mergeSchema(realFrame.schema, schema)
-      val leftData = rdd.map(SchemaUtil.convertSchema(realFrame.schema, mergedSchema, _))
-      val rightData = newData.map(SchemaUtil.convertSchema(schema, mergedSchema, _))
-
-      val updatedRdd = leftData ++ rightData
-      (mergedSchema, updatedRdd)
-    }
     val location = fsRoot + frames.getFrameDataFile(frameId)
-    updatedRdd.saveAsObjectFile(location)
-    val frame = frames.updateSchema(realFrame, mergedSchema.columns)
+    unionedRdd.saveAsObjectFile(location)
+    val frame = frames.updateSchema(realFrame, unionedRdd.schema.columns)
     frame
   }
   /**
@@ -166,22 +166,16 @@ class SparkEngine(sparkContextManager: SparkContextManager,
    * @param source LoadSource object with information on what data to load
    * @return A tuple containing a schema object describing the RDD loaded as well as the RDD itself.
    */
-  def getLoadData(ctx: SparkContext, source: LoadSource): (Schema, RDD[Row]) = {
+  def getLoadData(ctx: SparkContext, source: LoadSource): FrameRDD = {
     source.source_type match {
-      case "dataframe" => {
+      case "dataframe" =>
         val frame = frames.lookup(source.uri.toInt).getOrElse(
           throw new IllegalArgumentException(s"No such data frame: ${source.uri}"))
-        (frame.schema, frames.getFrameRdd(ctx, source.uri.toInt))
-      }
-      case "file" => {
+        new FrameRDD(frame.schema, frames.getFrameRdd(ctx, source.uri.toInt))
+      case "file" =>
         val parser = source.parser.get
-        val schema = parser.arguments.schema
-        val parserFunction = getLineParser(parser, schema.columns.map(_._2).toArray)
-
-        (schema,
-          SparkOps.loadLines(ctx, fsRoot + "/" + source.uri,
-            parser.arguments.skip_rows, parserFunction))
-      }
+        val parseResult = SparkOps.loadAndParseLines(ctx, fsRoot + "/" + source.uri, parser)
+        parseResult.parsedLines
       case _ => ???
     }
   }

@@ -26,6 +26,14 @@ package com.intel.intelanalytics.domain.schema
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 
 object SchemaUtil {
+
+  // TODO: remove hard coded strings
+
+  /**
+   * Schema for Error Frames
+   */
+  val ErrorFrameSchema = new Schema(List(("Original Row", DataTypes.str), ("Error", DataTypes.str)))
+
   /**
    * Resolve naming conflicts when both left and right side of join operation have same column names
    * @param leftColumns columns for the left side of join operation
