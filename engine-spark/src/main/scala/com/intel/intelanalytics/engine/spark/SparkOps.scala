@@ -30,7 +30,7 @@ import org.apache.spark.SparkContext
 import scala.collection.mutable
 import scala.Some
 import com.intel.intelanalytics.engine.spark.frame.RDDJoinParam
-import com.intel.intelanalytics.algorithm.{ PercentileTarget, PercentileComposingElement }
+import com.intel.intelanalytics.algorithm.{ Percentile, PercentileTarget, PercentileComposingElement }
 import scala.collection.mutable.ListBuffer
 import org.apache.spark.rdd.RDD
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
@@ -440,65 +440,6 @@ private[spark] object SparkOps extends Serializable {
   }
 
   /**
-   * calculate and return elements for calculating percentile
-   * For example, 25th percentile out of 10 rows(X1, X2, X3, ... X10) will be
-   * 0.5 * x2 + 0.5 * x3. The method will return x2 and x3 with weight as 0.5
-   *
-   * For whole percentile calculation process, please refer to doc of method calculatePercentiles
-   * @param totalRows
-   * @param percentile
-   */
-  def getPercentileComposingElements(totalRows: Long, percentile: Int): Seq[PercentileComposingElement] = {
-    val position = percentile.toDouble * totalRows.toDouble / 100
-    var integer = position.toInt
-    val fraction = BigDecimal(position - integer).setScale(2, BigDecimal.RoundingMode.DOWN).toFloat
-
-    val result = mutable.ListBuffer[PercentileComposingElement]()
-
-    //element starts from 1. therefore X0 equals X1
-    if (integer == 0)
-      integer = 1
-
-    val addPercentileComposingElement = (position: Int, weight: Float) => {
-      if (weight > 0)
-        result += PercentileComposingElement(position, weight)
-    }
-
-    addPercentileComposingElement(integer, 1 - fraction)
-    addPercentileComposingElement(integer + 1, fraction)
-    result.toSeq
-  }
-
-  /**
-   * Calculate mapping between an element's position and Seq of percentiles that the element can contribute to
-   * @param totalRows total number of rows in the data
-   * @param percentiles Sequence of percentiles to search
-   *
-   * For whole percentile calculation process, please refer to doc of method calculatePercentiles
-   */
-  def getPercentileTargetMapping(totalRows: Long, percentiles: Seq[Int]): Map[Long, Seq[PercentileTarget]] = {
-
-    val composingElements: Seq[(Int, PercentileTarget)] = percentiles.flatMap(percentile => getPercentileComposingElements(totalRows, percentile).map(element => {
-      (element.index, PercentileTarget(percentile, element.weight))
-    }))
-
-    val mapping = composingElements.
-      foldLeft(mutable.Map[Long, ListBuffer[PercentileTarget]]()) {
-        case (mapping, (elementPosition, percentileTarget)) => {
-          if (!mapping.contains(elementPosition))
-            mapping(elementPosition) = ListBuffer[PercentileTarget]()
-
-          mapping(elementPosition) += percentileTarget
-          mapping
-        }
-      }
-
-    //for each element's percentile targets, convert from ListBuffer to Seq
-    //convert the map to immutable map
-    mapping.map { case (elementIndex, targets) => (elementIndex, targets.toSeq) }.toMap
-  }
-
-  /**
    * Calculate percentile values
    * @param rdd input rdd
    * @param percentiles seq of percentiles to find value for
@@ -519,7 +460,7 @@ private[spark] object SparkOps extends Serializable {
    * the mapping created earlier. emit (T, i * (1 - j))
    * 4. reduce by key, which is percentile. Sum all partial results to get the final percentile values.
    */
-  def calculatePercentiles(rdd: RDD[Row], percentiles: Seq[Int], columnIndex: Int, dataType: DataType): Seq[(Int, BigDecimal)] = {
+  def calculatePercentiles(rdd: RDD[Row], percentiles: Seq[Int], columnIndex: Int, dataType: DataType): Seq[Percentile] = {
     val totalRows = rdd.count()
     val pairRdd = rdd.map(row => SparkOps.createKeyValuePairFromRow(row, List(columnIndex))).map { case (keyColumns, data) => (keyColumns(0), data) }
     val sorted = pairRdd.asInstanceOf[RDD[(Int, Row)]].sortByKey(true)
@@ -540,7 +481,7 @@ private[spark] object SparkOps extends Serializable {
           for (percentileTarget <- targets) {
             val value = row._1
             val numericVal = DataTypes.toBigDecimal(value)
-            perPartitionResult += Tuple2(percentileTarget.percentile, numericVal * percentileTarget.weight)
+            perPartitionResult += ((percentileTarget.percentile, numericVal * percentileTarget.weight))
           }
         }
 
@@ -550,7 +491,62 @@ private[spark] object SparkOps extends Serializable {
       perPartitionResult.toIterator
     })
 
-    percentilesComponentsRDD.reduceByKey(_ + _).sortByKey(true).collect()
+    percentilesComponentsRDD.reduceByKey(_ + _).sortByKey(true).collect().map { case (percentile, value) => Percentile(percentile, value) }
   }
 
+  /**
+   * calculate and return elements for calculating percentile
+   * For example, 25th percentile out of 10 rows(X1, X2, X3, ... X10) will be
+   * 0.5 * x2 + 0.5 * x3. The method will return x2 and x3 with weight as 0.5
+   *
+   * For whole percentile calculation process, please refer to doc of method calculatePercentiles
+   * @param totalRows
+   * @param percentile
+   */
+  def getPercentileComposingElements(totalRows: Long, percentile: Int): Seq[PercentileComposingElement] = {
+    val position = percentile.toDouble * totalRows.toDouble / 100
+    var integerPosition = position.toLong
+    val fractionPosition = BigDecimal(position - integerPosition).setScale(2, BigDecimal.RoundingMode.DOWN).toFloat
+
+    val result = mutable.ListBuffer[PercentileComposingElement]()
+
+    //element starts from 1. therefore X0 equals X1
+    if (integerPosition == 0)
+      integerPosition = 1
+
+    val addPercentileComposingElement = (position: Long, percentile: Int, weight: Float) => {
+      if (weight > 0)
+        result += PercentileComposingElement(position, PercentileTarget(percentile, weight))
+    }
+
+    addPercentileComposingElement(integerPosition, percentile, 1 - fractionPosition)
+    addPercentileComposingElement(integerPosition + 1, percentile, fractionPosition)
+    result.toSeq
+  }
+
+  /**
+   * Calculate mapping between an element's position and Seq of percentiles that the element can contribute to
+   * @param totalRows total number of rows in the data
+   * @param percentiles Sequence of percentiles to search
+   *
+   * For whole percentile calculation process, please refer to doc of method calculatePercentiles
+   */
+  def getPercentileTargetMapping(totalRows: Long, percentiles: Seq[Int]): Map[Long, Seq[PercentileTarget]] = {
+
+    val composingElements: Seq[PercentileComposingElement] = percentiles.flatMap(percentile => getPercentileComposingElements(totalRows, percentile))
+
+    val mapping = mutable.Map[Long, ListBuffer[PercentileTarget]]()
+    for (element <- composingElements) {
+      val elementIndex: Long = element.index
+
+      if (!mapping.contains(elementIndex))
+        mapping(elementIndex) = ListBuffer[PercentileTarget]()
+
+      mapping(elementIndex) += element.percentileTarget
+    }
+
+    //for each element's percentile targets, convert from ListBuffer to Seq
+    //convert the map to immutable map
+    mapping.map { case (elementIndex, targets) => (elementIndex, targets.toSeq) }.toMap
+  }
 }
