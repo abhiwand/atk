@@ -18,7 +18,7 @@ rm $package-source.tar.gz
 
 mkdir -p  tarballs/$package/usr/lib/intelanalytics/graphbuilder/lib
 
-jars="ispark-deps.jar igiraph-titan.jar"
+jars="ispark-deps.jar interfaces.jar"
 for jar in $jars
 do
 	jarPath=$(find ..  -path ./package -prune -o -name $jar -print)

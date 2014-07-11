@@ -21,7 +21,7 @@
 # must be express and approved by Intel in writing.
 ##############################################################################
 
-from collections import OrderedDict
+from ordereddict import OrderedDict
 import json
 
 import logging
@@ -29,18 +29,30 @@ import logging
 import uuid, sys
 logger = logging.getLogger(__name__)
 
-from intelanalytics.core.types import supported_types
+from intelanalytics.core.iatypes import supported_types
 from intelanalytics.core.aggregation import *
 from intelanalytics.core.errorhandle import IaError
+from intelanalytics.core.command import CommandSupport, doc_stub
 
 def _get_backend():
     from intelanalytics.core.config import get_frame_backend
     return get_frame_backend()
 
 
+
 def get_frame_names():
     """
-    Gets the names of BigFrame objects available for retrieval.
+    Summary
+    -------
+    BigFrame names
+
+    Extended Summary
+    ----------------
+    Gets the names of BigFrame objects available for retrieval
+
+    Raises
+    ------
+    IaError
 
     Returns
     -------
@@ -49,8 +61,16 @@ def get_frame_names():
 
     Examples
     --------
-    >>> get_frame_names()
-    ["my_frame_1", "my_frame_2", "my_frame_3"] # a list of names of BigFrame objects
+    ::
+
+        frame1 = BigFrame(csv_schema_1, "BigFrame1")
+        frame2 = BigFrame(csv_schema_2, "BigFrame2")
+        frame_names = get_frame_names()
+        print frame_names
+
+    Result would be::
+
+        ["BigFrame1", "BigFrame2"]
     """
     # TODO - Review docstring
     try:
@@ -60,22 +80,39 @@ def get_frame_names():
 
 def get_frame(name):
     """
-    Retrieves the named BigFrame object.
+    Summary
+    -------
+    Get BigFrame
+
+    Extended Summary
+    ----------------
+    Retrieves a BigFrame class object to allow you to address the data
 
     Parameters
     ----------
     name : string
         String containing the name of the BigFrame object
 
+    Raises
+    ------
+    IaError
+
     Returns
     -------
-    BigFrame
-        Named object
+    class
+        BigFrame class object
 
     Examples
     --------
-    >>> my_frame = get_frame( "my_frame_1" )
-    my_frame is now a proxy of the BigFrame object
+    ::
+
+        BigFrame1a = BigFrame(my_csv, "BF1")
+        BigFrame1b = get_frame("BF1")
+        print BigFrame1a == BigFrame1b
+
+    Result would be::
+
+        True
 
     """
     # TODO - Review docstring
@@ -86,12 +123,22 @@ def get_frame(name):
 
 def delete_frame(name):
     """
-    Deletes the frame from backing store.
+    Summary
+    -------
+    Erases data
+
+    Extended Summary
+    ----------------
+    Deletes the frame from backing store
 
     Parameters
     ----------
     name : string
         The name of the BigFrame object to delete.
+
+    Raises
+    ------
+    IaError
 
     Returns
     -------
@@ -100,10 +147,15 @@ def delete_frame(name):
 
     Examples
     --------
-    >>> my_frame = BigFrame("raw_data.csv", my_csv)
-    >>> deleted_frame = delete_frame( my_frame )
-    deleted_frame is now a string with the value of the name of the frame which was deleted
+    ::
 
+        my_frame = BigFrame(my_csv, 'BF1')
+        deleted_frame = delete_frame('BF1')
+        print deleted_frame
+
+    The result would be::
+
+        BF1
     """
     # TODO - Review examples and parameter
     try:
@@ -111,9 +163,16 @@ def delete_frame(name):
     except:
         raise IaError(logger)
 
-class BigFrame(object):
+class BigFrame(CommandSupport):
     """
-    Proxy for a large 2D container to work with table data at scale.
+    Summary
+    -------
+    Data handle
+
+    Extended Summary
+    ----------------
+    Class with information about a large 2D table of data.
+    Has information needed to modify data and table structure.
 
     Parameters
     ----------
@@ -125,8 +184,8 @@ class BigFrame(object):
     Notes
     -----
     If no name is provided for the BigFrame object, it will generate one.
-    If a data source *X* was specified, it will try to generate the frame name as *_X*.
-    If for some reason *_X* would be illegal
+    A automatically generated name will be the word "frame_" followed by the uuid.uuid4().hex and
+    if allowed, an "_" character then the name of the data source.
 
     Examples
     --------
@@ -145,6 +204,7 @@ class BigFrame(object):
             if not hasattr(self, '_backend'):  # if a subclass has not already set the _backend
                 self._backend = _get_backend()
             self._backend.create(self, source, name)
+            CommandSupport.__init__(self)
             logger.info('Created new frame "%s"', self._name)
         except:
             raise IaError(logger)
@@ -508,7 +568,7 @@ class BigFrame(object):
         ----------
         column_name : str
             The column to be flattened
-
+                                                  n
         Returns
         -------
         frame : BigFrame
@@ -534,6 +594,38 @@ class BigFrame(object):
             return self._backend.flatten_column(self, column_name)
         except:
             raise IaError(logger)
+
+    def bin_column(self, column_name, num_bins, bin_type='equalwidth', bin_column_name='binned'):
+        """
+        Bin column values into equal width or equal depth bins.
+
+        The numBins parameter is an upper-bound on the number of bins since the data
+        may justify fewer bins.  With equal depth binning, for example, if the column to be binned has 10 elements with
+        only 2 distinct values and numBins > 2, then the number of actual bins will only be 2.  This is due to a
+        restriction that elements with an identical value must belong to the same bin.
+
+        Parameters
+        ----------
+        column_name : str
+            The column whose values are to be binned
+        num_bins : int
+            The requested number of bins
+        bin_type : 'equalwidth' or 'equaldepth', (optional, default 'equalwidth')
+            The binning algorithm to use
+        bin_column_name : str, (optional, default 'binned')
+            The name for the new binned column
+
+        Returns
+        -------
+        frame : BigFrame
+            A new frame with binned column appended to original frame
+
+        Examples
+        --------
+        >>> binnedEW = frame.bin_column('a', 5, 'equalwidth', 'aEWBinned')
+        >>> binnedED = frame.bin_column('a', 5, 'equaldepth', 'aEDBinned')
+        """
+        return self._backend.bin_column(self, column_name, num_bins, bin_type, bin_column_name)
 
     def drop(self, predicate):
         """
@@ -793,6 +885,7 @@ class BigFrame(object):
         except:
             raise IaError(logger)
 
+    @doc_stub
     def remove_columns(self, name):
         """
         Remove columns from the BigFrame object.
@@ -815,11 +908,12 @@ class BigFrame(object):
         # Now my_frame only has the columns named "column_a" and "column_c"
 
         """
+        pass
         # TODO - Review examples
-        try:
-            self._backend.remove_columns(self, name)
-        except:
-            raise IaError(logger)
+        #try:
+        #    self._backend.remove_columns(self, name)
+        #except:
+        #    raise IaError(logger)
 
     def rename_columns(self, column_names, new_names):
         """
@@ -875,3 +969,142 @@ class BigFrame(object):
             return self._backend.take(self, n, offset)
         except:
             raise IaError(logger)
+
+    def accuracy(self, label_column, pred_column):
+        """
+        Computes the accuracy measure for a classification model
+
+        A column containing the correct labels for each instance and a column containing the predictions made by the
+        classifier are specified.  The accuracy of a classification model is the proportion of predictions that are
+        correct.  If we let TP denote the number of true positives, TN denote the number of true negatives, and K
+        denote the total number of classified instances, then the model accuracy is given by: (TP + TN) / K.
+
+        This measure applies to binary and multi-class classifiers.
+
+        Parameters
+        ----------
+        label_column : str
+            the name of the column containing the correct label for each instance
+        pred_column : str
+            the name of the column containing the predicted label for each instance
+
+        Returns
+        ----------
+        float64
+            the accuracy measure for the classifier
+
+        Examples
+        ----------
+        >>> acc = frame.accuracy('labels', 'predictions')
+
+        """
+        return self._backend.classification_metric(self, 'accuracy', label_column, pred_column, '1', 1)
+
+    def precision(self, label_column, pred_column, pos_label=1):
+        """
+        Computes the precision measure for a classification model
+
+        A column containing the correct labels for each instance and a column containing the predictions made by the
+        model are specified.  The precision of a binary classification model is the proportion of predicted positive
+        instances that are correct.  If we let TP denote the number of true positives and FP denote the number of false
+        positives, then the model precision is given by: TP / (TP + FP).
+
+        For multi-class classification, the precision measure is computed as the weighted average of the precision
+        for each label, where the weight is the number of instances with each label in the labeled column.  The
+        determination of binary vs. multi-class is automatically inferred from the data.
+
+        Parameters
+        ----------
+        label_column : str
+            the name of the column containing the correct label for each instance
+        pred_column : str
+            the name of the column containing the predicted label for each instance
+        pos_label : int or str, (optional, default=1)
+            the value to be interpreted as a positive instance (only for binary, ignored for multi-class)
+
+        Returns
+        ----------
+        float64
+            the precision measure for the classifier
+
+        Examples
+        ----------
+        >>> prec = frame.precision('labels', 'predictions')
+        >>> prec2 = frame.precision('labels', 'predictions', 'yes')
+
+        """
+        return self._backend.classification_metric(self, 'precision', label_column, pred_column, pos_label, 1)
+
+    def recall(self, label_column, pred_column, pos_label=1):
+        """
+        Computes the recall measure for a classification model
+
+        A column containing the correct labels for each instance and a column containing the predictions made by the
+        model are specified.  The recall of a binary classification model is the proportion of positive instances that
+        are correctly identified.  If we let TP denote the number of true positives and FN denote the number of false
+        negatives, then the model recall is given by: TP / (TP + FN).
+
+        For multi-class classification, the recall measure is computed as the weighted average of the recall
+        for each label, where the weight is the number of instance with each label in the labeled column.  The
+        determination of binary vs. multi-class is automatically inferred from the data.
+
+        Parameters
+        ----------
+        label_column : str
+            the name of the column containing the correct label for each instance
+        pred_column : str
+            the name of the column containing the predicted label for each instance
+        pos_label : int or str, (optional, default=1)
+            the value to be interpreted as a positive instance (only for binary, ignored for multi-class)
+
+        Returns
+        ----------
+        float64
+            the recall measure for the classifier
+
+        Examples
+        ----------
+        >>> rec = frame.recall('labels', 'predictions')
+        >>> rec2 = frame.recall('labels', 'predictions', 'pos')
+
+        """
+        return self._backend.classification_metric(self, 'recall', label_column, pred_column, pos_label, 1)
+
+    def fmeasure(self, label_column, pred_column, pos_label=1, beta=1):
+        """
+        Computes the f-beta measure for a classification model
+
+        A column containing the correct labels for each instance and a column containing the predictions made by the
+        model are specified.  The f-beta measure of a binary classification model is the harmonic mean of precision and
+        recall. If we let TP denote the number of true positives, FP denote the number of false positives, and FN
+        denote the number of false negatives, then the model f-beta measure is given by:
+        (1 + beta^2) * (((TP / (TP + FP)) * (TP / (TP + FN))) / (beta^2 * ((TP / (TP + FP)) + (TP / (TP + FN))))).
+
+        For multi-class classification, the f-beta measure is computed as the weighted average of the f-beta measure
+        for each label, where the weight is the number of instance with each label in the labeled column.  The
+        determination of binary vs. multi-class is automatically inferred from the data.
+
+        Parameters
+        ----------
+        label_column : str
+            the name of the column containing the correct label for each instance
+        pred_column : str
+            the name of the column containing the predicted label for each instance
+        pos_label : int or str, (optional, default=1)
+            the value to be interpreted as a positive instance (only for binary, ignored for multi-class)
+        beta : float, (optional, default=1)
+            beta value to use for f-beta measure (default f1 measure is computed); must be greater than 0
+
+        Returns
+        ----------
+        float64
+            the f-beta measure for the classifier
+
+        Examples
+        ----------
+        >>> f1 = frame.fmeasure('labels', 'predictions')
+        >>> f2 = frame.fmeasure('labels', 'predictions', beta=2)
+        >>> f1_binary = frame.fmeasure('labels', 'predictions', pos_label='good')
+
+        """
+        return self._backend.classification_metric(self, 'fmeasure', label_column, pred_column, pos_label, beta)

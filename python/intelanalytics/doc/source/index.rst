@@ -6,16 +6,18 @@ Contents:
 .. toctree::
    :maxdepth: 2
 
-   ia_intr
+   ia_intro
    ad_over
    ds_over
+   glossary
+   ia_legal
 
 References
 ----------
 .. toctree::
    :maxdepth: 1
 
-* :doc:`ia_glos`
+* :doc:`glossary`
 * :doc:`ia_legal`
 * :ref:`genindex`
 * :ref:`search`

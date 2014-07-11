@@ -36,7 +36,7 @@ trait GraphStorage {
 
   def createGraph(graph: GraphTemplate)(implicit user: UserPrincipal): Graph
 
-  def loadGraph(graph: GraphLoad[JsObject, Long, Long])(implicit user: UserPrincipal): Graph
+  def loadGraph(graph: GraphLoad)(implicit user: UserPrincipal): Graph
 
   def drop(graph: Graph)
 

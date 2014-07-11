@@ -1,6 +1,6 @@
-from collections import OrderedDict
+from ordereddict import OrderedDict
 
-from intelanalytics.core.types import supported_types
+from intelanalytics.core.iatypes import supported_types
 
 
 class Row(object):
