@@ -79,4 +79,13 @@ case class Edge(var tailPhysicalId: Any, var headPhysicalId: Any, tailVertexGbId
     new Edge(headVertexGbId, tailVertexGbId, label, properties)
   }
 
+  /**
+   * Find a property in the property list by key
+   * @param key Property key
+   * @return Matching property
+   */
+  override def getProperty(key: String): Option[Property] = {
+    properties.find(p => p.key == key)
+  }
+
 }
