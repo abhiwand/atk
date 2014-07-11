@@ -24,7 +24,7 @@ import iatest
 iatest.init()
 
 import unittest
-from intelanalytics.core.types import *
+from intelanalytics.core.iatypes import *
 
 
 class SupportedTypes(unittest.TestCase):

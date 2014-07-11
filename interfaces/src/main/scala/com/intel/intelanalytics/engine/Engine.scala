@@ -23,9 +23,8 @@
 
 package com.intel.intelanalytics.engine
 
-import com.intel.intelanalytics.domain.command.{ Execution, CommandTemplate }
+import com.intel.intelanalytics.domain.command.{ CommandDefinition, Execution, CommandTemplate, Command }
 import com.intel.intelanalytics.domain.FilterPredicate
-import com.intel.intelanalytics.domain.command.Command
 import com.intel.intelanalytics.domain.frame._
 import com.intel.intelanalytics.domain.frame.load.Load
 import com.intel.intelanalytics.domain.graph.{ Graph, GraphLoad, GraphTemplate }
@@ -54,6 +53,11 @@ trait Engine {
    */
   def execute(command: CommandTemplate)(implicit user: UserPrincipal): Execution
 
+  /**
+   * All the command definitions available
+   */
+  def getCommandDefinitions()(implicit user: UserPrincipal): Iterable[CommandDefinition]
+
   //TODO: We'll probably return an Iterable[Vertex] instead of rows at some point.
   def getVertices(graph: Identifier, offset: Int, count: Int, queryName: String, parameters: Map[String, String]): Future[Iterable[Row]]
 
@@ -67,17 +71,17 @@ trait Engine {
 
   def create(frame: DataFrameTemplate)(implicit user: UserPrincipal): Future[DataFrame]
 
-  def load(arguments: Load[Long])(implicit user: UserPrincipal): Execution
+  def load(arguments: Load)(implicit user: UserPrincipal): Execution
 
   def filter(arguments: FilterPredicate[JsObject, Long])(implicit user: UserPrincipal): Execution
 
   def project(arguments: FrameProject[JsObject, Long])(implicit user: UserPrincipal): Execution
 
-  def renameFrame(arguments: FrameRenameFrame[JsObject, Long])(implicit user: UserPrincipal): Execution
+  def renameFrame(arguments: FrameRenameFrame)(implicit user: UserPrincipal): Execution
 
   def renameColumn(arguments: FrameRenameColumn[JsObject, Long])(implicit user: UserPrincipal): Execution
 
-  def removeColumn(arguments: FrameRemoveColumn[JsObject, Long])(implicit user: UserPrincipal): Execution
+  def removeColumn(arguments: FrameRemoveColumn)(implicit user: UserPrincipal): Execution
 
   def addColumns(arguments: FrameAddColumns[JsObject, Long])(implicit user: UserPrincipal): Execution
 
@@ -107,8 +111,12 @@ trait Engine {
 
   def createGraph(graph: GraphTemplate)(implicit user: UserPrincipal): Future[Graph]
 
-  def loadGraph(graph: GraphLoad[JsObject, Long, Long])(implicit user: UserPrincipal): Execution
+  def loadGraph(graph: GraphLoad)(implicit user: UserPrincipal): Execution
 
   def deleteGraph(graph: Graph): Future[Unit]
+
+  // Model performance measures
+
+  def classificationMetric(arguments: ClassificationMetric[Long])(implicit user: UserPrincipal): Execution
 
 }
