@@ -124,7 +124,7 @@ class LoopyBeliefPropagation
 
     System.out.println("*********In Execute method of LBP********")
 
-    val config = configuration().get
+    val config = configuration
     val hConf = newHadoopConfigurationFrom(config, "giraph")
     val titanConf = flattenConfig(config.getConfig("titan"), "titan.")
 

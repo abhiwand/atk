@@ -44,35 +44,10 @@ sealed abstract class OperationPlugin[Argument <: Product: ClassManifest, Return
     with Plugin
     with ClassLoaderAware {
 
-  private var config: Option[Config] = None
-
   /**
    * The name of the command, e.g. graphs/ml/loopy_belief_propagation
    */
   def name: String
-
-  /**
-   * Access to configuration provided during startup
-   */
-  def configuration(): Option[Config] = config
-
-  /**
-   * Called before processing any requests.
-   *
-   * @param configuration Configuration information, scoped to that required by the
-   *                      plugin based on its installed paths.
-   */
-  override def start(configuration: Config): Unit = {
-    require(configuration != null, "Configuration cannot be null")
-    config = Some(configuration)
-  }
-
-  /**
-   * Called before the application as a whole shuts down. Not guaranteed to be called,
-   * nor guaranteed that the application will not shut down while this method is running,
-   * though an effort will be made.
-   */
-  override def stop(): Unit = {}
 
   /**
    * Operation plugins must implement this method to do the work requested by the user.
