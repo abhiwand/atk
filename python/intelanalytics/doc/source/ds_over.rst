@@ -13,7 +13,7 @@ Contents:
     ds_samp
     ds_ml
     ds_mlal
-    ds_apim
+    ds_apic
     ds_misc
 
 .. TODO::

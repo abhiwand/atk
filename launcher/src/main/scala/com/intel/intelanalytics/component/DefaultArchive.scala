@@ -21,17 +21,17 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.engine.spark
+package com.intel.intelanalytics.component
 
-import com.intel.intelanalytics.NotFoundException
-import com.intel.intelanalytics.component.Archive
 import com.typesafe.config.Config
 
 import scala.reflect.ClassTag
 
-class EngineSparkArchive extends Archive {
+import scala.collection.JavaConverters._
+import scala.util.{ Failure, Success, Try }
 
-  val commands: Seq[Class[_]] = Seq()
+class DefaultArchive extends Archive {
+
   /**
    * Obtain instances of a given class. The keys are established purely
    * by convention.
@@ -40,22 +40,12 @@ class EngineSparkArchive extends Archive {
    * @tparam T the type of the requested instances
    * @return the requested instances, or the empty sequence if no such instances could be produced.
    */
-  override def getAll[T: ClassTag](descriptor: String): Seq[T] = descriptor match {
-    //TODO: move the plumbing parts to the Archive trait and make this just a simple PartialFunction
-    case "CommandPlugin" => commands
-      .map(c => load("CommandPlugin", c.getName))
-      .filter(i => i.isInstanceOf[T])
-      .map(i => i.asInstanceOf[T])
-    case _ => throw new NotFoundException("instances", descriptor)
-  }
-
-  /**
-   * Called before the application as a whole shuts down. Not guaranteed to be called,
-   * nor guaranteed that the application will not shut down while this method is running,
-   * though an effort will be made.
-   */
-  override def stop(): Unit = {
-
+  override def getAll[T: ClassTag](descriptor: String): Seq[T] = {
+    val array = Try {
+      val list = configuration.getStringList(descriptor)
+      list.asScala.toArray.map(className => this.load(descriptor, className).asInstanceOf[T])
+    }.getOrElse(Array[T]())
+    array
   }
 
   /**
@@ -66,9 +56,5 @@ class EngineSparkArchive extends Archive {
    * get installed there if the system has been configured to override that
    * default placement.
    */
-  override def defaultLocation: String = "engine"
-
-  override def start(): Unit = {
-    SparkEngineConfig.logSettings()
-  }
+  override def defaultLocation: String = ""
 }

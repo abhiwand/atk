@@ -45,7 +45,7 @@ class GraphonSparkArchive extends Archive {
   override def getAll[T: ClassTag](descriptor: String): Seq[T] = descriptor match {
     //TODO: move the plumbing parts to the Archive trait and make this just a simple PartialFunction
     case "CommandPlugin" => commands
-      .map(c => load(c.getName))
+      .map(c => load(descriptor, c.getName))
       .filter(i => i.isInstanceOf[T])
       .map(i => i.asInstanceOf[T])
     case _ => throw new NotFoundException("instances", descriptor)
@@ -68,15 +68,13 @@ class GraphonSparkArchive extends Archive {
    * get installed there if the system has been configured to override that
    * default placement.
    */
-  override def defaultLocation: String = "engine"
+  override def defaultLocation: String = "graphon"
 
   /**
    * Called before processing any requests.
    *
-   * @param configuration Configuration information, scoped to that required by the
-   *                      plugin based on its installed paths.
    */
-  override def start(configuration: Config): Unit = {
+  override def start(): Unit = {
     SparkEngineConfig.logSettings()
   }
 }
