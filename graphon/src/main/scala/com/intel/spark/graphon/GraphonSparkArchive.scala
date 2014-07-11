@@ -30,7 +30,7 @@ import com.typesafe.config.Config
 
 import scala.reflect.ClassTag
 
-class ISparkArchive extends Archive {
+class GraphonSparkArchive extends Archive {
 
   val commands: Seq[Class[_]] = Seq(classOf[com.intel.spark.graphon.communitydetection.KCliquePercolation])
   /**
@@ -79,3 +79,4 @@ class ISparkArchive extends Archive {
 
   }
 }
+
