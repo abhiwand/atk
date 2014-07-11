@@ -49,15 +49,10 @@ class ApiServiceApplication extends Archive {
     throw new IllegalArgumentException("This component provides no services")
   }
 
-  def stop() = {}
-
-  // TODO: delete configuration param?
-
   /**
    * Main entry point to start the API Service Application
    */
-  def start(configuration: Config) = {
-
+  override def start() = {
     val apiService = initializeDependencies()
     createActorSystemAndBindToHttp(apiService)
   }
@@ -68,8 +63,7 @@ class ApiServiceApplication extends Archive {
   private def initializeDependencies(): ApiService = {
 
     //TODO: later engine will be initialized in a separate JVM
-    lazy val engine = com.intel.intelanalytics.component.Boot.getArchive(
-      ArchiveName("engine", "com.intel.intelanalytics.engine.EngineApplication"))
+    lazy val engine = com.intel.intelanalytics.component.Boot.getArchive("engine")
       .get[Engine]("engine")
 
     //make sure engine is initialized

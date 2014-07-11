@@ -28,6 +28,11 @@ import scala.reflect.ClassTag
 trait Locator {
 
   /**
+   * The name of this locator, for use in error messages
+   */
+  def locatorName: String
+
+  /**
    * Obtain instances of a given class. The keys are established purely
    * by convention.
    *
@@ -46,5 +51,7 @@ trait Locator {
    * @return the requested instance, or the first such instance if the locator provides more than one
    * @throws NoSuchElementException if no instances were found
    */
-  def get[T: ClassTag](descriptor: String): T = getAll(descriptor).head
+  def get[T: ClassTag](descriptor: String): T = getAll(descriptor).headOption
+    .getOrElse(throw new NoSuchElementException(
+      s"No class matching descriptor $descriptor was found in location '$locatorName'"))
 }

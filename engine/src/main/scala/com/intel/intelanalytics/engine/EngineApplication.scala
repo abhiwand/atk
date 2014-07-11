@@ -24,7 +24,7 @@
 package com.intel.intelanalytics.engine
 
 import com.intel.intelanalytics.ClassLoaderAware
-import com.intel.intelanalytics.component.Archive
+import com.intel.intelanalytics.component.{ ArchiveName, Archive }
 import com.intel.intelanalytics.shared.EventLogging
 import com.typesafe.config.Config
 
@@ -42,18 +42,18 @@ class EngineApplication extends Archive with EventLogging with ClassLoaderAware 
     }
   }
 
-  def stop() = {
+  override def stop() = {
     info("Shutting down engine")
     engine.engine.shutdown
   }
 
-  def start(configuration: Config) = {
+  override def start() = {
 
     try {
       //TODO: when Engine moves to its own process, it will need to start its own Akka actor system.
 
       val sparkLoader = {
-        com.intel.intelanalytics.component.Boot.getClassLoader("engine-spark")
+        com.intel.intelanalytics.component.Boot.getArchive("engine-spark").getClass.getClassLoader
       }
 
       engine = {

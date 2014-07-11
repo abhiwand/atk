@@ -80,8 +80,8 @@ class CommandExecutor(engine: => SparkEngine, commands: SparkCommandStorage, con
   }
 
   private var commandPlugins: Map[String, CommandPlugin[_, _]] = SparkEngineConfig.archives.flatMap {
-    case (archive, className) => Boot.getArchive(ArchiveName(archive, className))
-      .getAll[CommandPlugin[_, _]]("CommandPlugin")
+    archive => Boot.getArchive(archive)
+      .getAll[CommandPlugin[_ <: Product, _ <: Product]]("CommandPlugin")
       .map(p => (p.name, p))
   }.toMap
 
