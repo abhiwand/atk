@@ -591,6 +591,51 @@ private[spark] object SparkOps extends Serializable {
   }
 
   /**
+   * Calculate (weighed) mode of column at index.
+   *
+   * @param index column index
+   * @param rowRDD RDD of input rows
+   * @return the  mode of the column (as a string)
+   */
+  def columnMode(index: Int, multiplierIndexOption: Option[Int], rowRDD: RDD[Row]): (String, Double) = {
+
+    val dataRDD: RDD[String] =
+      try {
+        rowRDD.map(row => row(index).toString)
+      }
+      catch {
+        case cce: NumberFormatException => throw new NumberFormatException("Column values  from cannot be parsed :"
+          + cce.toString)
+      }
+
+    val weighted = multiplierIndexOption.isEmpty
+
+    val weightsRDD = if (weighted) {
+      try {
+        rowRDD.map(row => java.lang.Double.parseDouble(row(index).toString))
+      }
+      catch {
+        case cce: NumberFormatException => throw new NumberFormatException("Column values cannot be used as weights for "
+          + "mode calculation:" + cce.toString)
+      }
+    }
+    else {
+      null
+    }
+
+    val dataWeightPairs = if (weighted) {
+      dataRDD.zip(weightsRDD)
+    }
+    else {
+      dataRDD.map((x: String) => (x, 1.toDouble))
+    }
+
+    val frequencyStatistics = new FrequencyStatistics(dataWeightPairs, "no items found")
+    println(" the weights of the mode is " + frequencyStatistics.modeAndNetWeight._2)
+    frequencyStatistics.modeAndNetWeight
+  }
+
+  /**
    * Calculate scalar statistic of column at index.
    *
    * @param index column index
@@ -629,44 +674,7 @@ private[spark] object SparkOps extends Serializable {
       dataRDD.map(x => (x, 1.toDouble))
     }
 
-    val statisticsEngine = new NumericalStatistics(dataWeightPairs)
-
-    if (operation equals "MEAN") {
-      statisticsEngine.getWeightedMean
-    }
-    else if (operation equals "MIN") {
-      statisticsEngine.getWeightedMin
-    }
-    else if (operation equals "MAX") {
-      statisticsEngine.getWeightedMax
-    }
-    else if (operation equals "STDEV") {
-      statisticsEngine.getWeightedStandardDeviation
-    }
-    else if (operation equals "VARIANCE") {
-      statisticsEngine.getWeightedVariance
-    }
-    else if (operation equals "GEOMEAN") {
-      statisticsEngine.getWeightedGeometricMean
-    }
-    else if (operation equals "MODE") {
-
-      val workingRDD = if (weighted) {
-        dataRDD.zip(weightsRDD).map({ case (d, w) => d * w })
-      }
-      else {
-        dataRDD
-      }
-      // the countByValue operation creates (value, count) pairs out the RDD
-      // hence the mode is the first component of the component with maximum second component
-
-      def takeValueWithMinimumCount(p1: (Double, Long), p2: (Double, Long)): (Double, Long) = {
-        if (p1._2 > p2._2) p1 else p2
-      }
-      workingRDD.countByValue().reduce(takeValueWithMinimumCount)._1
-    }
-
-    else if (operation equals "MEDIAN") {
+    if (operation equals "MEDIAN") {
       val count: Long = dataRDD.stats().count
       val medianIndex: Long = count / 2
 
@@ -701,21 +709,38 @@ private[spark] object SparkOps extends Serializable {
 
       segmentContainingMedian.apply(indexOfMedianInsidePartition)._1
     }
-    else if (operation == "SKEWNESS") {
-      statisticsEngine.getWeightedSkewness
-    }
-    else if (operation == "KURTOSIS") {
-      statisticsEngine.getWeightedKurtosis
-    }
     else {
-      require(operation equals "SUM", "illegal column statistic operation specified")
-      val workingRDD = if (weighted) {
-        dataRDD.zip(weightsRDD).map({ case (d, w) => d * w })
+
+      val statisticsEngine = new NumericalStatistics(dataWeightPairs)
+
+      if (operation equals "MEAN") {
+        statisticsEngine.weightedMean
+      }
+      else if (operation equals "MIN") {
+        statisticsEngine.weightedMin
+      }
+      else if (operation equals "MAX") {
+        statisticsEngine.weightedMax
+      }
+      else if (operation equals "STDEV") {
+        statisticsEngine.weightedStandardDeviation
+      }
+      else if (operation equals "VARIANCE") {
+        statisticsEngine.weightedVariance
+      }
+      else if (operation equals "GEOMEAN") {
+        statisticsEngine.weightedGeometricMean
+      }
+      else if (operation == "SKEWNESS") {
+        statisticsEngine.weightedSkewness
+      }
+      else if (operation == "KURTOSIS") {
+        statisticsEngine.weightedKurtosis
       }
       else {
-        dataRDD
+        require(operation equals "SUM", "illegal column statistic operation specified")
+        statisticsEngine.weightedSum
       }
-      workingRDD.sum()
     }
   }
 

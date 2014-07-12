@@ -101,6 +101,8 @@ trait Engine {
 
   def columnStatistic(arguments: ColumnStatistic[Long])(implicit user: UserPrincipal): Execution
 
+  def columnMode(arguments: ColumnMode)(implicit user: UserPrincipal): Execution
+
   def groupBy(arguments: FrameGroupByColumn[JsObject, Long])(implicit user: UserPrincipal): Execution
 
   def getFrames(offset: Int, count: Int)(implicit p: UserPrincipal): Future[Seq[DataFrame]]

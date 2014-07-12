@@ -9,39 +9,25 @@ case class SimpleStatistics(weightedSum: Double, weightedProduct: Double, weight
 
 class NumericalStatistics(dataWeightPairs: RDD[(Double, Double)]) {
 
-  private lazy val simpleStatistics: SimpleStatistics = generateFirstOrderStats(dataWeightPairs)
+  lazy val simpleStatistics: SimpleStatistics = generateFirstOrderStats(dataWeightPairs)
 
-  private lazy val weightedMean: Double = simpleStatistics.weightedSum / simpleStatistics.totalWeight
+  lazy val weightedSum: Double = simpleStatistics.weightedSum
 
-  private lazy val weightedMin: Double = simpleStatistics.weightedMin
+  lazy val weightedMean: Double = simpleStatistics.weightedSum / simpleStatistics.totalWeight
 
-  private lazy val weightedMax: Double = simpleStatistics.weightedMax
+  lazy val weightedMin: Double = simpleStatistics.weightedMin
 
-  private lazy val weightedGeometricMean: Double = Math.pow(simpleStatistics.weightedProduct, 1 / simpleStatistics.totalWeight)
+  lazy val weightedMax: Double = simpleStatistics.weightedMax
 
-  private lazy val weightedVariance: Double = generateVariance()
+  lazy val weightedGeometricMean: Double = Math.pow(simpleStatistics.weightedProduct, 1 / simpleStatistics.totalWeight)
 
-  private lazy val weightedStandardDeviation: Double = Math.sqrt(weightedVariance)
+  lazy val weightedVariance: Double = generateVariance()
 
-  private lazy val weightedSkewness: Double = generateSkewness()
+  lazy val weightedStandardDeviation: Double = Math.sqrt(weightedVariance)
 
-  private lazy val weightedKurtosis: Double = generateKurtosis()
+  lazy val weightedSkewness: Double = generateSkewness()
 
-  def getWeightedMean: Double = weightedMean
-
-  def getWeightedMin: Double = weightedMin
-
-  def getWeightedMax: Double = weightedMax
-
-  def getWeightedGeometricMean: Double = weightedGeometricMean
-
-  def getWeightedVariance: Double = weightedVariance
-
-  def getWeightedStandardDeviation: Double = weightedStandardDeviation
-
-  def getWeightedSkewness: Double = weightedSkewness
-
-  def getWeightedKurtosis: Double = weightedKurtosis
+  lazy val weightedKurtosis: Double = generateKurtosis()
 
   private def convertWeightedPairToStats(p: (Double, Double)): SimpleStatistics = {
     val data = p._1
@@ -74,7 +60,7 @@ class NumericalStatistics(dataWeightPairs: RDD[(Double, Double)]) {
     val n = simpleStatistics.count
     val xw = weightedMean
 
-    (1.toDouble / (n - 1).toDouble) * dataWeightPairs.map({ case (x, _) => (x - xw) * (x - xw) }).reduce(_ + _)
+    (1.toDouble / (n - 1).toDouble) * dataWeightPairs.map({ case (x, w) => w * (x - xw) * (x - xw) }).reduce(_ + _)
   }
 
   private def generateSkewness(): Double = {
@@ -92,7 +78,7 @@ class NumericalStatistics(dataWeightPairs: RDD[(Double, Double)]) {
       }).reduce(_ + _)
   }
 
-  def generateKurtosis(): Double = {
+  private def generateKurtosis(): Double = {
     val n = simpleStatistics.count
     require(n > 3, "Cannot calculate kurtosis of fewer than 4 samples")
 

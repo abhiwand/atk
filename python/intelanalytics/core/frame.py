@@ -570,7 +570,8 @@ class BigFrame(CommandSupport):
         """
         return self._backend.bin_column(self, column_name, num_bins, bin_type, bin_column_name)
 
-    @docstub
+
+
     def mean_column(self, column_name, multiplier_column_name = None):
         """
         Calculate the mean value of a column.
@@ -589,9 +590,10 @@ class BigFrame(CommandSupport):
         --------
         >>> mean = frame.mean_column('interesting column')
         """
-        pass
+        return self._backend.column_statistic(self, column_name, multiplier_column_name, 'MEAN')
 
-    def mode_column(self, column_name, multiplier_column_name = None):
+    @doc_stub
+    def column_mode (self, column_name, multiplier_column_name = None):
         """
         Calculate the mode of a column.
 
@@ -607,9 +609,9 @@ class BigFrame(CommandSupport):
 
         Examples
         --------
-        >>> mode = frame.mode_column('interesting column')
+        >>> mode = frame.column_mode('interesting column')
         """
-        return self._backend.column_statistic(self, column_name, multiplier_column_name, 'MODE')
+        pass
 
     def median_column(self, column_name, multiplier_column_name = None):
         """
