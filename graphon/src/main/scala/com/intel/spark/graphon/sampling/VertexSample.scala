@@ -29,6 +29,7 @@ import com.intel.graphbuilder.graph.titan.TitanGraphConnector
 import com.intel.graphbuilder.parser.InputSchema
 import com.intel.graphbuilder.util.SerializableBaseConfiguration
 import com.intel.intelanalytics.engine.spark.SparkEngineConfig
+import com.intel.intelanalytics.engine.spark.graph.GraphName
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkInvocation, SparkCommandPlugin }
 import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.domain.DomainJsonProtocol
@@ -68,7 +69,7 @@ class VertexSample extends SparkCommandPlugin[VS, VSResult] {
 
     // Titan Settings
     val config = configuration
-    val titanConfigInput = config.getConfig("titan")
+    val titanConfigInput = config.getConfig("titan.load")
 
     val titanConfig = new SerializableBaseConfiguration()
     titanConfig.setProperty("storage.backend", titanConfigInput.getString("storage.backend"))
@@ -79,7 +80,9 @@ class VertexSample extends SparkCommandPlugin[VS, VSResult] {
     val graph = Await.result(invocation.engine.getGraph(arguments.graph.id), config.getInt("default-timeout") seconds)
 
     val sc = invocation.sparkContext
-    val (vertexRDD, edgeRDD) = getGraph(graph.name, sc, titanConfig)
+
+    val iatGraphName = GraphName.convertGraphUserNameToBackendName(graph.name)
+    val (vertexRDD, edgeRDD) = getGraph(iatGraphName, sc, titanConfig)
 
     val vertexSample = arguments.sampleType match {
       case "uniform" => sampleVerticesUniform(vertexRDD, arguments.size, arguments.seed)
@@ -90,11 +93,10 @@ class VertexSample extends SparkCommandPlugin[VS, VSResult] {
 
     val edgeSample = sampleEdges(vertexSample, edgeRDD)
 
-    val subgraphName = "graph_" + UUID.randomUUID.toString
+    val iatSubgraphName = GraphName.convertGraphUserNameToBackendName("graph_" + UUID.randomUUID.toString)
+    titanConfig.setProperty("storage.tablename", iatSubgraphName)
 
-    titanConfig.setProperty("storage.tablename", subgraphName)
-
-    val subgraph = Await.result(invocation.engine.createGraph(GraphTemplate(subgraphName)), config.getInt("default-timeout") seconds)
+    val subgraph = Await.result(invocation.engine.createGraph(GraphTemplate(iatSubgraphName)), config.getInt("default-timeout") seconds)
 
     writeToTitan(vertexSample, edgeSample, titanConfig)
 
@@ -218,7 +220,8 @@ class VertexSample extends SparkCommandPlugin[VS, VSResult] {
    * @return the edge set RDD for the vertex induced subgraph
    */
   def sampleEdges(vertices: RDD[Vertex], edges: RDD[Edge]): RDD[Edge] = {
-    val vertexArray = vertices.map(v => v.gbId.value).collect() // get vertexGbIds
+    // TODO: graphX is welcome here...it has a subgraph function...and the current approach is inefficient
+    val vertexArray = vertices.map(v => v.gbId.value).collect()
     edges.filter(e => vertexArray.contains(e.headVertexGbId.value) && vertexArray.contains(e.tailVertexGbId.value))
   }
 
