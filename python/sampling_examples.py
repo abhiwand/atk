@@ -36,7 +36,7 @@ print(frame.inspect())
 user_vertex_rule = VertexRule('userId', frame['vertexType'])
 movie_vertex_rule = VertexRule('movieId', frame['movieId'])
 
-edge_rule = EdgeRule('rates', user_vertex_rule, movie_vertex_rule)
+edge_rule = EdgeRule('rating', user_vertex_rule, movie_vertex_rule)
 
 graph = BigGraph([user_vertex_rule, movie_vertex_rule, edge_rule])
 
