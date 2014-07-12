@@ -242,9 +242,9 @@ class FrameBackendRest(object):
         colTypes = dict(frame.schema)
         if not colTypes[column_name] in [np.float32, np.float64, np.int32, np.int64]:
             raise ValueError("unable to take statistics of non-numeric values")
-        arguments = {'frame': frame._id, 'columnName': column_name, 'multiplierColumnName' : multiplier_column_name,
+        arguments = {'columnName': column_name, 'multiplierColumnName' : multiplier_column_name,
                      'operation' : operation}
-        return get_command_output_value('columnStatistic', arguments).get('value')
+        return execute_update_frame_command('columnStatistic', arguments, frame)
 
     class InspectionTable(object):
         """
@@ -448,6 +448,8 @@ def execute_update_frame_command(command_name, arguments, frame):
     if command_info.result.has_key('name') and command_info.result.has_key('schema'):
         initialize_frame(frame, FrameInfo(command_info.result))
         return None
+    if (command_info.result.has_key('value') and len(command_info.result) == 1):
+        return command_info.result.get('value')
     return command_info.result
 
 

@@ -24,30 +24,17 @@
 package com.intel.intelanalytics.domain.frame
 
 /**
- * Represents a MeanColumn object
+ * Represents a ModeColumn command
  * @param frame identifier for the input dataframe
- * @param columnName name of the column to bin
- * @tparam FrameRef
  */
-case class ColumnStatistic[FrameRef](frame: FrameRef, operation: String, columnName: String, multiplierColumnName: Option[String]) {
+case class ColumnMode(frame: FrameReference, column: String, weights_column: Option[String]) {
 
   require(frame != null, "frame is required")
-  require(columnName != null, "column name is required")
-  require(operation != null, "operation is required")
-  require(ColumnStatisticConstants.legalColumnStatistics.contains(operation), "illegal operation specified")
-
+  require(column != null, "column is required")
 }
 
 /**
- * Represents a MeanColumn return object
+ * Represents a ColumnMode return object... it returns the mode of the column
  */
-case class ColumnStatisticReturn(value: Double) {
-}
-
-/**
- * Holds constants related to calculation of per-column statistics.
- */
-object ColumnStatisticConstants {
-  val legalColumnStatistics = Set("MEAN", "SUM", "MIN", "MAX", "STDEV", "VARIANCE",
-    "GEOMEAN", "MEDIAN", "MODE", "SKEWNESS", "KURTOSIS")
+case class ColumnModeReturn(mode: String, net_weight: Double) {
 }

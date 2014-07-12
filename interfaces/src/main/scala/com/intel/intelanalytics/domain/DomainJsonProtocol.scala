@@ -157,6 +157,8 @@ object DomainJsonProtocol extends DefaultJsonProtocol {
   implicit val binColumnLongFormat = jsonFormat6(BinColumn[Long])
   implicit val columnStatisticLongFormat = jsonFormat4(ColumnStatistic[Long])
   implicit val columnStatisticReturnFormat = jsonFormat1(ColumnStatisticReturn)
+  implicit val columnModeFormat = jsonFormat3(ColumnMode)
+  implicit val columnModeReturnFormat = jsonFormat2(ColumnModeReturn)
 
   // model performance formats
 

@@ -449,6 +449,40 @@ class SparkEngine(sparkContextManager: SparkContextManager,
    * @param arguments input specification for column mean
    * @param user current user
    */
+  override def columnMode(arguments: ColumnMode)(implicit user: UserPrincipal): Execution =
+    commands.execute(columnModeCommand, arguments, user, implicitly[ExecutionContext])
+
+  val columnModeCommand: CommandPlugin[ColumnMode, ColumnModeReturn] = commands.registerCommand("dataframe/column_mode", columnModeSimple)
+  def columnModeSimple(arguments: ColumnMode, user: UserPrincipal): ColumnModeReturn = {
+
+    implicit val u = user
+
+    val frameId = arguments.frame
+
+    val realFrame = expectFrame(frameId)
+
+    val ctx = sparkContextManager.context(user).sparkContext
+
+    val rdd = frames.getFrameRdd(ctx, frameId.id)
+
+    val columnIndex = realFrame.schema.columnIndex(arguments.column)
+
+    val weightsColumnIndexOption = if (arguments.weights_column.isEmpty) {
+      None
+    }
+    else {
+      Some(realFrame.schema.columnIndex(arguments.weights_column.get))
+    }
+
+    val x = SparkOps.columnMode(columnIndex, weightsColumnIndexOption, rdd)
+    ColumnModeReturn(x._1, x._2)
+  }
+
+  /**
+   * Calculate the mean of the specified column.
+   * @param arguments input specification for column mean
+   * @param user current user
+   */
   override def columnStatistic(arguments: ColumnStatistic[Long])(implicit user: UserPrincipal): Execution =
     commands.execute(columnStatisticCommand, arguments, user, implicitly[ExecutionContext])
 
