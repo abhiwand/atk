@@ -17,7 +17,7 @@ class PercentileCalculationTest extends FlatSpec with Matchers {
   }
 
   "99st percentile" should "be 1 * x4997931 + 0 * x4997932 from 5260980 elements" in {
-    Seq(PercentileComposingElement(5208370, PercentileTarget(99, 0.8f)), PercentileComposingElement(5208371, PercentileTarget(99, 0.2f))) shouldBe SparkOps.getPercentileComposingElements(5260980, 99)
+    Seq(PercentileComposingElement(5208370, PercentileTarget(99, BigDecimal(0.8))), PercentileComposingElement(5208371, PercentileTarget(99, BigDecimal(0.2)))) shouldBe SparkOps.getPercentileComposingElements(5260980, 99)
   }
 
   "100th percentile" should "be 1 * x1 + 0 * x2 from 5260980 elements" in {
@@ -29,8 +29,8 @@ class PercentileCalculationTest extends FlatSpec with Matchers {
 
     mapping(1) shouldBe Seq(PercentileTarget(0, 1))
     mapping(4997931) shouldBe Seq(PercentileTarget(95, 1))
-    mapping(5208370) shouldBe Seq(PercentileTarget(99, 0.8f))
-    mapping(5208371) shouldBe Seq(PercentileTarget(99, 0.2f))
+    mapping(5208370) shouldBe Seq(PercentileTarget(99, 0.8))
+    mapping(5208371) shouldBe Seq(PercentileTarget(99, 0.2))
   }
 
 }

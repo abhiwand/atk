@@ -769,9 +769,9 @@ private[spark] object SparkOps extends Serializable {
    * @param percentile
    */
   def getPercentileComposingElements(totalRows: Long, percentile: Int): Seq[PercentileComposingElement] = {
-    val position = percentile.toDouble * totalRows.toDouble / 100
+    val position = (BigDecimal(percentile) * totalRows) / 100
     var integerPosition = position.toLong
-    val fractionPosition = BigDecimal(position - integerPosition)
+    val fractionPosition = position - integerPosition
 
     val result = mutable.ListBuffer[PercentileComposingElement]()
 
