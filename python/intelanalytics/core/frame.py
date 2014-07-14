@@ -42,7 +42,17 @@ def _get_backend():
 
 def get_frame_names():
     """
-    Gets the names of BigFrame objects available for retrieval.
+    Summary
+    -------
+    BigFrame names
+
+    Extended Summary
+    ----------------
+    Gets the names of BigFrame objects available for retrieval
+
+    Raises
+    ------
+    IaError
 
     Returns
     -------
@@ -51,8 +61,16 @@ def get_frame_names():
 
     Examples
     --------
-    >>> get_frame_names()
-    ["my_frame_1", "my_frame_2", "my_frame_3"] # a list of names of BigFrame objects
+    ::
+
+        frame1 = BigFrame(csv_schema_1, "BigFrame1")
+        frame2 = BigFrame(csv_schema_2, "BigFrame2")
+        frame_names = get_frame_names()
+        print frame_names
+
+    Result would be::
+
+        ["BigFrame1", "BigFrame2"]
     """
     # TODO - Review docstring
     try:
@@ -63,22 +81,39 @@ def get_frame_names():
 
 def get_frame(name):
     """
-    Retrieves the named BigFrame object.
+    Summary
+    -------
+    Get BigFrame
+
+    Extended Summary
+    ----------------
+    Retrieves a BigFrame class object to allow you to address the data
 
     Parameters
     ----------
     name : string
         String containing the name of the BigFrame object
 
+    Raises
+    ------
+    IaError
+
     Returns
     -------
-    BigFrame
-        Named object
+    class
+        BigFrame class object
 
     Examples
     --------
-    >>> my_frame = get_frame( "my_frame_1" )
-    my_frame is now a proxy of the BigFrame object
+    ::
+
+        BigFrame1a = BigFrame(my_csv, "BF1")
+        BigFrame1b = get_frame("BF1")
+        print BigFrame1a == BigFrame1b
+
+    Result would be::
+
+        True
 
     """
     # TODO - Review docstring
@@ -90,12 +125,22 @@ def get_frame(name):
 
 def delete_frame(name):
     """
-    Deletes the frame from backing store.
+    Summary
+    -------
+    Erases data
+
+    Extended Summary
+    ----------------
+    Deletes the frame from backing store
 
     Parameters
     ----------
     name : string
         The name of the BigFrame object to delete.
+
+    Raises
+    ------
+    IaError
 
     Returns
     -------
@@ -104,10 +149,15 @@ def delete_frame(name):
 
     Examples
     --------
-    >>> my_frame = BigFrame("raw_data.csv", my_csv)
-    >>> deleted_frame = delete_frame( my_frame )
-    deleted_frame is now a string with the value of the name of the frame which was deleted
+    ::
 
+        my_frame = BigFrame(my_csv, 'BF1')
+        deleted_frame = delete_frame('BF1')
+        print deleted_frame
+
+    The result would be::
+
+        BF1
     """
     # TODO - Review examples and parameter
     try:
@@ -118,7 +168,14 @@ def delete_frame(name):
 
 class BigFrame(CommandSupport):
     """
-    Proxy for a large 2D container to work with table data at scale.
+    Summary
+    -------
+    Data handle
+
+    Extended Summary
+    ----------------
+    Class with information about a large 2D table of data.
+    Has information needed to modify data and table structure.
 
     Parameters
     ----------
@@ -130,8 +187,8 @@ class BigFrame(CommandSupport):
     Notes
     -----
     If no name is provided for the BigFrame object, it will generate one.
-    If a data source *X* was specified, it will try to generate the frame name as *_X*.
-    If for some reason *_X* would be illegal
+    A automatically generated name will be the word "frame_" followed by the uuid.uuid4().hex and
+    if allowed, an "_" character then the name of the data source.
 
     Examples
     --------

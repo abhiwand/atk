@@ -30,7 +30,9 @@ class DataFile(object):
 
 class CsvFile(DataFile):
     """
-    Define a CSV file.
+    Summary
+    -------
+    Define a CSV file
 
     Parameters
     ----------
@@ -59,27 +61,39 @@ class CsvFile(DataFile):
 
     Examples
     --------
-    >>>
-    For this example, we are going to use a raw data file named "raw_data.csv". The data is described in the first tow rows. The first row is the column names: 'a', 'b', 'c', and the second row has the column types: <type 'int32'>, <type 'int32'>, <type 'str'>.
-    <BLANKLINE>
-    First bring in the stuff.
-    >>> from intelanalytics import *
-    <BLANKLINE>
-    At this point create a schema that defines the data
-    >>> csv_schema = [("a", int32),
-    ...               ("b", int32),
-    ...               ("c", string)]
-    <BLANKLINE>
-    Now build a CsvFile object with this schema
-    >>> csv_define = CsvFile("raw_data.csv", csv_schema)
-    <BLANKLINE>
-    The standard delimiter in a csv file is the comma. If the columns of data were separated by a character other than comma, we need to add the appropriate delimiter. For example if the data columns were separated by the colon character, the instruction would be:
-    >>> csv_data = CsvFile("raw_data.csv", csv_schema, ':') # or CsvFile("raw_data.csv", csv_schema, delimiter = ':')
-    <BLANKLINE>
-    Our example data file had two lines at the top which were not data.
-    Therefore, we should have skipped these lines.
-    >>> csv_data = CsvFile("<path to>raw_data.csv", csv_schema, skip_header_lines=2)
 
+    For this example, we are going to use a raw data file named "raw_data.csv".
+    The data is described in the first two rows.
+    The first row is the column names: "a", "b", "c", and the second row has the column types: "int32", "int32", "str".
+
+    First bring in the stuff::
+
+        from intelanalytics import *
+
+    At this point create a schema that defines the data::
+
+        csv_schema = [("a", int32),
+                      ("b", int32),
+                      ("c", string)]
+
+    Now build a CsvFile object with this schema::
+
+        csv_define = CsvFile("raw_data.csv", csv_schema)
+
+    The standard delimiter in a csv file is the comma.
+    If the columns of data were separated by a character other than comma, we need to add the appropriate delimiter.
+    For example if the data columns were separated by the colon character, the instruction would be::
+
+        csv_data = CsvFile("raw_data.csv", csv_schema, ':')
+            or
+        CsvFile("raw_data.csv", csv_schema, delimiter = ':')
+
+    Our example data file had two lines at the top which were not data.
+    Therefore, we should have skipped these lines::
+
+        csv_data = CsvFile("<path to>raw_data.csv", csv_schema, skip_header_lines=2)
+
+    For other examples see :ref:`example_files.csvfile`.
     """
 
     # TODO - Review docstring
@@ -108,7 +122,13 @@ class CsvFile(DataFile):
     @property
     def field_names(self):
         """
-        List of field names from the schema stored in the CsvFile object.
+        Summary
+        -------
+        Schema field names
+
+        Extended Summary
+        ----------------
+        List of field names from the schema stored in the CsvFile object
 
         Returns
         -------
@@ -117,12 +137,16 @@ class CsvFile(DataFile):
         
         Examples
         --------
-        >>>
-        For this example, we are going to use a raw data file called 'my_data.csv'. It will have two columns named 'col1' and 'col2' with types of int32 and float32 respectively.
-        >>> my_csv = CsvFile("my_data.csv", [("col1", int32), ("col2", float32)])
-        >>> print(my_csv.field_names)
-        The output would be:
-        ["col1", "col2"]
+        For this example, we are going to use a raw data file called 'my_data.csv'.
+        It will have two columns named 'col1' and 'col2' with types of int32 and float32 respectively::
+
+            my_csv = CsvFile("my_data.csv", [("col1", int32), ("col2", float32)])
+            print(my_csv.field_names)
+
+        The output would be::
+
+            ["col1", "col2"]
+
         """
         # TODO - Review docstring
         return [x[0] for x in self.schema]
@@ -130,6 +154,12 @@ class CsvFile(DataFile):
     @property
     def field_types(self):
         """
+        Summary
+        -------
+        Schema field types
+
+        Extended Summary
+        ----------------
         List of field types from the schema stored in the CsvFile object.
         
         Returns
@@ -139,12 +169,15 @@ class CsvFile(DataFile):
         
         Examples
         --------
-        >>>
-        For this example, we are going to use a raw data file called 'my_data.csv'. It will have two columns named 'col1' and 'col2' with types of int32 and float32 respectively.
-        >>> my_csv = CsvFile("my_data.csv", [("col1", int32), ("col2", float32)])
-        >>> print(my_csv.field_types)
-        The output would be:
-        [numpy.int32, numpy.float32]
+        For this example, we are going to use a raw data file called 'my_data.csv'.
+        It will have two columns named 'col1' and 'col2' with types of int32 and float32 respectively::
+
+            my_csv = CsvFile("my_data.csv", [("col1", int32), ("col2", float32)])
+            print(my_csv.field_types)
+
+        The output would be::
+
+            [numpy.int32, numpy.float32]
         """
         # TODO - Review docstring
         return [x[1] for x in self.schema]
