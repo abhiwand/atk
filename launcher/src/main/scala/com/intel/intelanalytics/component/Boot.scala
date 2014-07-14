@@ -59,23 +59,56 @@ object Boot extends App {
     }
   }
 
-  private def startComponent(componentInstance: Component, archive: String, component: String, config: Config): Unit = {
-    val restrictedConfigPath: String = componentInstance.defaultLocation.replace("/", ".")
-    val restrictedConfig = restrictedConfigPath match {
-      case null | "" => config
-      case p => attempt(config.getConfig(p),
-        s"Could not obtain configuration for class ${componentInstance.getClass.getName} " +
-          s"in archive $archive with path $restrictedConfigPath")
-    }
-    componentInstance.init(component, restrictedConfig)
-    componentInstance.start()
+  case class ArchiveDefinition(name: String, parent: String, className: String, configPath: String)
+
+  private def readArchiveDefinition(archiveName: String, config: Config) = {
+    val configKey = "intel.analytics.component.archives." + archiveName
+    val restricted = Try { config.getConfig(configKey) }.getOrElse(ConfigFactory.empty())
+    val parent = Try {
+      restricted.getString("parent")
+    }.getOrElse("interfaces")
+    val className = Try {
+      restricted.getString("class")
+    }.getOrElse("com.intel.intelanalytics.component.DefaultArchive")
+
+    val configPath = Try { restricted.getString("config-path") }.getOrElse(configKey)
+    ArchiveDefinition(archiveName, parent, className, configPath)
   }
 
-  private def defaultInit(instance: Any, archive: String, component: String, config: Config) {
-    instance match {
-      case componentInstance: Component => startComponent(componentInstance, archive, component, config)
-      case _ =>
+  /**
+   * Load a class and create a new instance.
+   * @param loader the class loader to use
+   * @param name the name of the class to load
+   * @return the created object
+   */
+  private def load(archiveName: String, loader: ClassLoader)(name: String) = {
+    val thread = Thread.currentThread()
+    val prior = thread.getContextClassLoader
+    try {
+      val klass = attempt(loader.loadClass(name),
+        s"Could not find class $name in archive $archiveName")
+      thread.setContextClassLoader(loader)
+      val instance = attempt(klass.newInstance(), s"Could not instantiate class $name")
+      instance
     }
+    finally {
+      thread.setContextClassLoader(prior)
+    }
+  }
+
+  private def initializeArchive(definition: ArchiveDefinition, loader: ClassLoader, augmentedConfig: Config)(instance: Archive) = {
+    val boundLoad = load(definition.name, loader)(_)
+
+    instance.init(definition.name, augmentedConfig)
+
+    instance.initializeArchive(definition, boundLoad)
+
+    //cleanup stuff on exit
+    Runtime.getRuntime.addShutdownHook(new Thread() {
+      override def run(): Unit = {
+        instance.stop()
+      }
+    })
   }
 
   private def buildArchive(archiveName: String): Archive = {
@@ -85,59 +118,27 @@ object Boot extends App {
     val probe = buildClassLoader(archiveName, interfaces)
     val additionalConfig = ConfigFactory.load(probe)
     val augmented = additionalConfig.withFallback(config)
-    val configKey = "intel.analytics.component.archives." + archiveName
-    val (parentName, className) = Try {
-      val restricted = Try { augmented.getConfig(configKey) }
-      val parent = Try {
-        restricted.get.getString("parent")
-      }.orElse(Try { "interfaces" })
-      val className = Try {
-        restricted.get.getString("class")
-      }.orElse(Try { "com.intel.intelanalytics.component.DefaultArchive" })
-      (parent.get, className.get)
-    }.getOrElse(("interfaces", "com.intel.intelanalytics.component.DefaultArchive"))
+    val definition = readArchiveDefinition(archiveName,
+      config.getConfig("intel.analytics.component.archives." + archiveName))
 
     //Now that we know the parent, we build the real classloader we're going to use for this archive.
-    val parentLoader = loaders.getOrElse(parentName, throw new IllegalArgumentException(
-      s"Archive $parentName not found when searching for parent archive for ${archiveName}"))
+    val parentLoader = loaders.getOrElse(definition.parent, throw new IllegalArgumentException(
+      s"Archive ${definition.parent} not found when searching for parent archive for $archiveName"))
 
     val loader = buildClassLoader(archiveName, parentLoader)
 
     //this is the function that will become the basis of the loader function for the archive.
     //the init param is used because we will want to initialize the archive slightly differently
     //than other components, so we need to control the initialization process here.
-    def load(name: String, init: Any => Unit) = {
-      val thread = Thread.currentThread()
-      val prior = thread.getContextClassLoader
-      try {
-        val klass = attempt(loader.loadClass(name),
-          s"Could not find class $name in archive ${archiveName}")
-        thread.setContextClassLoader(loader)
-        val instance = attempt(klass.newInstance(), s"Could not instantiate class $name")
-        init(instance)
-        instance
-      }
-      finally {
-        thread.setContextClassLoader(prior)
-      }
-    }
+    val boundLoad = load(archiveName, loader)(_)
 
-    val instance = load(className, inst => {
-      val archiveInstance = attempt(inst.asInstanceOf[Archive],
-        s"Loaded class ${className} in archive ${archiveName}, but it is not an Archive")
-      archiveInstance.setLoader((component, name) => load(name, inst => defaultInit(inst, archiveName, component, augmented)))
-      defaultInit(archiveInstance, archiveName, archiveName, augmented)
-      //cleanup stuff on exit
-      Runtime.getRuntime.addShutdownHook(new Thread() {
-        override def run(): Unit = {
-          archiveInstance.stop()
-        }
-      })
-    })
+    val instance = boundLoad(definition.className)
 
-    val archiveInstance = instance.asInstanceOf[Archive]
+    val archiveInstance = attempt(instance.asInstanceOf[Archive],
+      s"Loaded class ${instance.getClass.getName} in archive ${definition.name}, but it is not an Archive")
+
     archives += (archiveName -> archiveInstance)
-    println(s"Registered archive $archiveName with parent $parentName")
+    println(s"Registered archive $archiveName with parent ${definition.parent}")
     archiveInstance
   }
 

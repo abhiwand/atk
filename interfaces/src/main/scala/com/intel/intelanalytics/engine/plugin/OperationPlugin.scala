@@ -85,9 +85,6 @@ abstract class CommandPlugin[Argument <: Product: ClassManifest, Return <: Produ
   val argumentManifest = implicitly[ClassManifest[Argument]]
   val returnManifest = implicitly[ClassManifest[Return]]
 
-  //TODO: move this override to an engine-specific class
-  final override def defaultLocation = "engine/commands/" + name
-
   /**
    * Convert the given JsObject to an instance of the Argument type
    */
