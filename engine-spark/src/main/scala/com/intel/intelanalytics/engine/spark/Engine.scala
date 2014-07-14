@@ -160,7 +160,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     val ctx = sparkContextManager.context(user)
 
     val newRdd = getLoadData(ctx.sparkContext, arguments.source)
-    val existingRdd = frames.getFrameRdd(ctx.sparkContext, realFrame.id)
+    val existingRdd = frames.getFrameRdd(ctx.sparkContext, realFrame)
     val unionedRdd = newRdd.union(existingRdd)
 
     val location = fsRoot + frames.getFrameDataFile(frameId)
