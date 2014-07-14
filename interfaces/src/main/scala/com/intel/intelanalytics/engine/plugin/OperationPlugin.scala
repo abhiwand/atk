@@ -23,8 +23,7 @@
 
 package com.intel.intelanalytics.engine.plugin
 
-import com.intel.intelanalytics.ClassLoaderAware
-import com.intel.intelanalytics.component.{ Plugin, Component }
+import com.intel.intelanalytics.component.{ ClassLoaderAware, Plugin, Component }
 import com.intel.intelanalytics.security.UserPrincipal
 import com.typesafe.config.Config
 import spray.json.JsObject
@@ -84,9 +83,6 @@ abstract class CommandPlugin[Argument <: Product: ClassManifest, Return <: Produ
 
   val argumentManifest = implicitly[ClassManifest[Argument]]
   val returnManifest = implicitly[ClassManifest[Return]]
-
-  //TODO: move this override to an engine-specific class
-  final override def defaultLocation = "engine/commands/" + name
 
   /**
    * Convert the given JsObject to an instance of the Argument type

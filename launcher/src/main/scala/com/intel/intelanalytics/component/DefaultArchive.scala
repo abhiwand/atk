@@ -28,6 +28,7 @@ import com.typesafe.config.Config
 import scala.reflect.ClassTag
 
 import scala.collection.JavaConverters._
+import scala.util.control.NonFatal
 import scala.util.{ Failure, Success, Try }
 
 class DefaultArchive extends Archive {
@@ -41,20 +42,20 @@ class DefaultArchive extends Archive {
    * @return the requested instances, or the empty sequence if no such instances could be produced.
    */
   override def getAll[T: ClassTag](descriptor: String): Seq[T] = {
-    val array = Try {
-      val list = configuration.getStringList(descriptor)
-      list.asScala.toArray.map(className => this.load(descriptor, className).asInstanceOf[T])
-    }.getOrElse(Array[T]())
+    val array = try {
+      Archive.logger(s"Archive ${definition.name} getting all '$descriptor'")
+      val stringList = configuration.getStringList(descriptor + ".available").asScala
+      Archive.logger(s"Found: $stringList")
+      val components = stringList.map(componentName => loadComponent(descriptor + "." + componentName))
+      components.map(_.asInstanceOf[T]).toArray
+    }
+    catch {
+      case NonFatal(e) =>
+        Archive.logger(e.toString)
+        Archive.logger(configuration.root().render())
+        Array[T]()
+    }
     array
   }
 
-  /**
-   * The location at which this component should be installed in the component
-   * tree. For example, a graph machine learning algorithm called Loopy Belief
-   * Propagation might wish to be installed at
-   * "commands/graphs/ml/loopy_belief_propagation". However, it might not actually
-   * get installed there if the system has been configured to override that
-   * default placement.
-   */
-  override def defaultLocation: String = ""
 }
