@@ -156,6 +156,11 @@ object DomainJsonProtocol extends DefaultJsonProtocol {
   implicit val progressInfoFormat = jsonFormat2(ProgressInfo)
   implicit val binColumnLongFormat = jsonFormat6(BinColumn[Long])
 
+  // model performance formats
+
+  implicit val classificationMetricLongFormat = jsonFormat6(ClassificationMetric[Long])
+  implicit val classificationMetricValueLongFormat = jsonFormat1(ClassificationMetricValue)
+
   // graph service formats
 
   implicit val graphTemplateFormat = jsonFormat1(GraphTemplate)
@@ -227,7 +232,7 @@ object DomainJsonProtocol extends DefaultJsonProtocol {
 
   lazy implicit val numberSchemaFormat = jsonFormat9(NumberSchema)
   lazy implicit val stringSchemaFormat = jsonFormat9(StringSchema)
-  lazy implicit val objectSchemaFormat = jsonFormat11(ObjectSchema)
+  lazy implicit val objectSchemaFormat = jsonFormat12(ObjectSchema)
   lazy implicit val arraySchemaFormat = jsonFormat9(ArraySchema)
   lazy implicit val commandDefinitionFormat = jsonFormat3(CommandDefinition)
 }

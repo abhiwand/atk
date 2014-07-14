@@ -171,8 +171,7 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 <module>api-server</module>
                 <module>igiraph/giraph-titan</module>
                 <!--<module>imahout</module>
-                <module>imllib</module>
-                <module>graphon</module>-->
+                <module>imllib</module>-->
                 <module>package</module>
             </modules>
         </profile>
@@ -190,6 +189,7 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 <module>ispark-deps</module>
                 <module>testutils</module>
                 <module>graphbuilder-3</module><!-- scoverage -->
+                <module>graphon</module>
                 <module>interfaces</module>
                 <module>launcher</module><!-- scoverage -->
                 <module>shared</module><!-- scoverage -->
@@ -202,7 +202,6 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 <module>igiraph/giraph-titan</module>
                 <module>igiraph</module>
                 <module>imllib</module>
-                <module>graphon</module>
                 <module>package</module>
             </modules>
         </profile>
@@ -629,6 +628,30 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
             </plugin>
+
+            <plugin>
+                <artifactId>maven-clean-plugin</artifactId>
+                <version>2.5</version>
+                <configuration>
+                    <filesets>
+                        <fileset>
+                            <directory>api-server/application.home_IS_UNDEFINED</directory>
+                            <followSymlinks>false</followSymlinks>
+                        </fileset>
+                        <fileset>
+                            <directory>application.home_IS_UNDEFINED</directory>
+                            <followSymlinks>false</followSymlinks>
+                        </fileset>
+                        <fileset>
+                            <directory>.</directory>
+                            <includes>
+                                <include>**/*.pyc</include>
+                            </includes>
+                            <followSymlinks>false</followSymlinks>
+                        </fileset>
+                    </filesets>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 
@@ -664,11 +687,13 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 <groupId>com.intel.ia</groupId>
                 <artifactId>interfaces</artifactId>
                 <version>${project.version}</version>
+                <scope>provided</scope>
             </dependency>
             <dependency>
                 <groupId>com.intel.ia</groupId>
                 <artifactId>launcher</artifactId>
                 <version>${project.version}</version>
+                <scope>provided</scope>
             </dependency>
             <dependency>
                 <groupId>com.intel.ia</groupId>
@@ -684,11 +709,13 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 <groupId>com.intel.ia</groupId>
                 <artifactId>engine</artifactId>
                 <version>${project.version}</version>
+                <scope>provided</scope>
             </dependency>
             <dependency>
                 <groupId>com.intel.ia</groupId>
                 <artifactId>engine-spark</artifactId>
                 <version>${project.version}</version>
+                <scope>provided</scope>
             </dependency>
             <dependency>
                 <groupId>com.intel.ia</groupId>
@@ -718,11 +745,6 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
             <dependency>
                 <groupId>com.intel.ia</groupId>
                 <artifactId>imlib</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.intel.ia</groupId>
-                <artifactId>graphon</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <!--END bda dependencies-->

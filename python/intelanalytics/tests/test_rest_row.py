@@ -25,8 +25,13 @@ iatest.init()
 #iatest.set_logging("intelanalytics.rest.connection", 20)
 
 import unittest
+<<<<<<< HEAD
+from intelanalytics.core.iatypes import *
+from ordereddict import OrderedDict
+=======
 from collections import OrderedDict
 from intelanalytics.core.iatypes import *
+>>>>>>> origin/trib_jmishra
 from intelanalytics.rest.frame import RowWrapper
 
 
