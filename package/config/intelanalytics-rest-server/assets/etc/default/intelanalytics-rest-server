@@ -4,3 +4,4 @@
 #export SPARK_HOME="/usr/lib/spark"
 export IA_JVM_OPT="-XX:MaxPermSize=256m"
 export EXTRA_CONF=`hbase classpath`
+export IAUSER="iauser"
