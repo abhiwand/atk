@@ -59,7 +59,7 @@ case class Lp(graph: GraphReference,
               bidirectional_check: Option[Boolean] = None)
 case class LpResult(runTimeSeconds: Double) //TODO
 
-class LabalPropagation
+class LabelPropagation
     extends CommandPlugin[Lp, LpResult] {
   import DomainJsonProtocol._
   implicit val lbpFormat = jsonFormat11(Lp)

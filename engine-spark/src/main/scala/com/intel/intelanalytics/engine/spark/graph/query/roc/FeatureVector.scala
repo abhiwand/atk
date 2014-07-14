@@ -72,7 +72,7 @@ object FeatureVector {
     }
     else {
       throw new RuntimeException("Property does not exist in the graph element: propertyName=" +
-        propertyName + ", graph element=" + graphElement  )
+        propertyName + ", graph element=" + graphElement)
     }
   }
 
