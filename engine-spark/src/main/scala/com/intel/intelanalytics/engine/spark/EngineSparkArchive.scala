@@ -32,6 +32,7 @@ import scala.reflect.ClassTag
 class EngineSparkArchive extends Archive {
 
   val commands: Seq[Class[_]] = Seq(classOf[com.intel.intelanalytics.engine.spark.graph.query.roc.HistogramRocQuery])
+  val queries: Seq[Class[_]] = Seq()
 
   /**
    * Obtain instances of a given class. The keys are established purely
@@ -43,7 +44,12 @@ class EngineSparkArchive extends Archive {
    */
   override def getAll[T: ClassTag](descriptor: String): Seq[T] = descriptor match {
     //TODO: move the plumbing parts to the Archive trait and make this just a simple PartialFunction
+
     case "CommandPlugin" => commands
+      .map(c => load(c.getName))
+      .filter(i => i.isInstanceOf[T])
+      .map(i => i.asInstanceOf[T])
+    case "QueryPlugin" => queries
       .map(c => load(c.getName))
       .filter(i => i.isInstanceOf[T])
       .map(i => i.asInstanceOf[T])

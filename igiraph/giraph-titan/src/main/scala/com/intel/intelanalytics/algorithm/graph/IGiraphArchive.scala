@@ -32,6 +32,8 @@ import scala.reflect.ClassTag
 class IGiraphArchive extends Archive {
 
   val commands: Seq[Class[_]] = Seq(classOf[com.intel.intelanalytics.algorithm.graph.LoopyBeliefPropagation])
+  val queries: Seq[Class[_]] = Seq()
+
   /**
    * Obtain instances of a given class. The keys are established purely
    * by convention.
@@ -46,6 +48,12 @@ class IGiraphArchive extends Archive {
       .map(c => load(c.getName))
       .filter(i => i.isInstanceOf[T])
       .map(i => i.asInstanceOf[T])
+
+    case "QueryPlugin" => queries
+      .map(c => load(c.getName))
+      .filter(i => i.isInstanceOf[T])
+      .map(i => i.asInstanceOf[T])
+
     case _ => throw new NotFoundException("instances", descriptor)
   }
 

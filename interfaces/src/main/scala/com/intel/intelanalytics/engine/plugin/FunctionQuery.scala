@@ -35,7 +35,7 @@ import scala.concurrent.ExecutionContext
  * @param function the function to call when the query executes
  * @tparam Arguments the argument type of the query
  */
-case class FunctionQuery[Arguments: JsonFormat](name: String, function: (Arguments, UserPrincipal) => Any) extends QueryPlugin[Arguments] {
+case class FunctionQuery[Arguments <: Product: JsonFormat: ClassManifest](name: String, function: (Arguments, UserPrincipal) => Any) extends QueryPlugin[Arguments] {
 
   override def parseArguments(arguments: JsObject) = arguments.convertTo[Arguments]
 
