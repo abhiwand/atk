@@ -23,7 +23,9 @@
 package com.intel.intelanalytics.service.v1.decorators
 
 import com.intel.intelanalytics.domain.frame.DataFrame
-import com.intel.intelanalytics.service.v1.viewmodels.{ RelLink, GetDataFrame, GetDataFrames }
+import com.intel.intelanalytics.service.v1.viewmodels.{ Rel, RelLink, GetDataFrame, GetDataFrames }
+import spray.http.Uri
+import org.apache.commons.lang.StringUtils
 
 /**
  * A decorator that takes an entity from the database and converts it to a View/Model
@@ -34,13 +36,23 @@ object FrameDecorator extends EntityDecorator[DataFrame, GetDataFrames, GetDataF
   /**
    * Decorate a single entity (like you would want in "GET /entities/id")
    *
-   * @param uri UNUSED? DELETE?
-   * @param links related links
+   * Self-link and errorFrame links are auto-created from supplied uri.
+   *
+   * @param uri the uri to the current entity
+   * @param additionalLinks related links
    * @param entity the entity to decorate
    * @return the View/Model
    */
-  override def decorateEntity(uri: String, links: Iterable[RelLink], entity: DataFrame): GetDataFrame = {
-    GetDataFrame(id = entity.id, name = entity.name, schema = entity.schema, links = links.toList)
+  override def decorateEntity(uri: String, additionalLinks: Iterable[RelLink] = Nil, entity: DataFrame): GetDataFrame = {
+
+    var links = List(Rel.self(uri.toString)) ++ additionalLinks
+
+    if (entity.errorFrameId.isDefined) {
+      val baseUri = StringUtils.substringBeforeLast(uri, "/")
+      links = RelLink("errorFrame", baseUri + "/" + entity.errorFrameId.get, "GET") :: links
+    }
+
+    GetDataFrame(id = entity.id, name = entity.name, schema = entity.schema, links)
   }
 
   /**
