@@ -73,4 +73,14 @@ case class Vertex(physicalId: Any, gbId: Property, properties: Seq[Property]) ex
     gbId :: properties.toList
   }
 
+  /**
+   * Find a property in the property list by key
+   *
+   * @param key Property key
+   * @return Matching property
+   */
+  override def getProperty(key: String): Option[Property] = {
+    properties.find(p => p.key == key)
+  }
+
 }
