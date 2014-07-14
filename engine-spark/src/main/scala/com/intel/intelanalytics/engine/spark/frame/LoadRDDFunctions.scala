@@ -2,7 +2,7 @@ package com.intel.intelanalytics.engine.spark.frame
 
 import org.apache.spark.SparkContext
 import com.intel.intelanalytics.domain.frame.load.{LineParserArguments, LineParser}
-import com.intel.intelanalytics.engine.spark.SparkEngineConfig
+import com.intel.intelanalytics.engine.spark.{SparkOps, SparkEngineConfig}
 import org.apache.spark.rdd.RDD
 import com.intel.intelanalytics.domain.schema.{DataTypes, SchemaUtil}
 
@@ -48,7 +48,7 @@ object LoadRDDFunctions extends Serializable {
     val threshold = SparkEngineConfig.frameLoadTestFailThresholdPercentage
 
     val fileContentRdd: RDD[String] = ctx.textFile(fileName, SparkEngineConfig.sparkDefaultPartitions)
-    val sampleRdd = getPagedRdd(fileContentRdd, 0, sampleSize, sampleSize)
+    val sampleRdd = SparkOps.getPagedRdd(fileContentRdd, 0, sampleSize, sampleSize)
 
     //cache the RDD since it will be used multiple times
     sampleRdd.cache()
