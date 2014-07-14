@@ -635,6 +635,10 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 <configuration>
                     <filesets>
                         <fileset>
+                            <directory>api-server/application.home_IS_UNDEFINED</directory>
+                            <followSymlinks>false</followSymlinks>
+                        </fileset>
+                        <fileset>
                             <directory>application.home_IS_UNDEFINED</directory>
                             <followSymlinks>false</followSymlinks>
                         </fileset>
