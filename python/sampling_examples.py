@@ -42,3 +42,9 @@ graph = BigGraph([user_vertex_rule, movie_vertex_rule, edge_rule])
 
 subgraph = graph.sampling.vertex_sample(50, 'uniform', 1)
 print(subgraph.name)
+
+subgraph = graph.sampling.vertex_sample(50, 'degree', 1)
+print(subgraph.name)
+
+subgraph = graph.sampling.vertex_sample(50, 'degreedist', 1)
+print(subgraph.name)
