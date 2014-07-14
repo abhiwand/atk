@@ -38,9 +38,10 @@ extensions = [
     'sphinx.ext.intersphinx',
     'sphinx.ext.ifconfig',
     'sphinx.ext.autosummary',
-    'numpydoc',
     'sphinx.ext.todo',
     'sphinx.ext.doctest',
+    'sphinx.ext.pngmath',
+    'numpydoc',
 ]
 
 # This is a flag to print out To-Do items

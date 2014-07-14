@@ -2,56 +2,123 @@
 Process Flow Examples
 =====================
 
-When using the Analytics Toolkit, you will import your data, perform cleaning operations on it, possibly combine it with other data sets,
+Now, we will cover the path a typical user might follow with the Analytics Toolkit.
+
+When using the toolkit, you will import your data, perform cleaning operations on it, possibly combine it with other data sets,
 and finally, analyze it.
 
-To load the toolkit::
+The first thing to do is to load the toolkit.
+This is stored in the intelanalytics folder and it's sub-folders.
+It is recommended that you add the intelanalytics folder to the PYTHONPATH environmental variable prior to starting Python.
+This can be done from a shell script, similar to::
+
+    PYTHONPATH=/usr/lib/
+    export PYTHONPATH
+    python
+
+This way, from inside Python, it is easy to load the toolkit::
 
     from intelanalytics import *
 
---------
-Raw Data
---------
+Note:
+    Using the form ``import intelanalytics`` will not function properly.
+    It may not object initially, but there are some things which will not work.
+    To test whether you have imported the toolkit properly type::
 
-Data Types
-==========
+        print supported_types
 
-The following data types are supported:
+    You should see something like this::
 
-    bool, bytearray, dict, float32, float64, int32, int64, list, str, string, unicode
+        bool, bytearray, dict, float32, float64, int32, int64, list, str, string, unicode
 
-where "str" is ASCII per Python, "string" is UTF-8
- 
-.. _example_csvfile:
+.. _valid_data_types:
 
-Data Sources
-============
+------------------------------
+Bringing Data Into The Toolkit
+------------------------------
 
-The first stage is specifying the information necessary to import the data.
+Your data is composed of different data types.
+It could be composed of strings, integers, logic(True or False), floating point numbers, and other types.
+Each row of data is probably a combination of these.
+To maintain a database structure, each column of data can only hold one type of data.
 
-The currently supported raw data format is CSV.
+The following data types are supported by the Analytics Toolkit:
+
+.. hlist::
+    :columns: 6
+
+    * :term:`bool`
+    * :term:`bytearray`
+    * :term:`dict`
+    * :term:`float32`
+    * :term:`float64`
+    * :term:`int32`
+    * :term:`int64`
+    * :term:`list`
+    * :term:`str`
+    * :term:`string`
+    * :term:`unicode`
+
+Types Of Raw Data
+=================
+
+The only currently supported raw data format is comma-separated variables (CSV).
 Planned for future release are JSON and XML formats.
 
-To import CSV data you need a schema defining the format and data types in your data.
-The order of the columns name must match the order of the data::
+.. _example_files.csvfile:
+
+Importing a CSV File
+--------------------
+
+A CSV file looks similar to this::
+
+    "string",123,True,"again",25.125
+    "next",,,"or not",1.0
+    ,1,False,"again?",
+
+Lines of data, with individual pieces of data separated by a delimiter, in this case the comma character.
+
+You need to bring your data into the database file in a way that the toolkit can understand and access it.
+The first thing to do is to tell the toolkit how your data is formatted.
+
+A database file can be viewed as a table with rows and columns.
+Each column has a unique name, each row holds data, and the data in each column & row intersection relates to other data in the row.
+The data in each column must be the same data type.
+
+To import CSV data you need a :term:`schema` defining the structure of your data.
+The schema is constructed as a list of tuples, each defining a column in the database.
+Each tuple is composed of a string and a data type.
+The string is the name of the column.
+See :ref:`valid_data_types`.
+The order of the columns defined in the schema must match the order of the data.
+
+Let's start with some data *Data.csv* that looks like this::
+
+    1,"Easy on My Mind"
+    2,"No Rest For The Wicked"
+    ,"Does Your Chewing Gum"
+    4,
+    5,""
+
+Create the schema *schema_ab* with two columns identified: *a* as an int32, and *b* as a string::
 
     schema_ab = [('a', int32), ('b', string)]
 
-This will create the schema *schema_ab* with two columns identified: *a* as an int32, and *b* as a string.
+When defining schemas, if the parser should ignore the field, the type is assigned *ignore* and the name assigned an empty string ''::
 
-When defining schemas, if the parser should ignore the field, the type can be assigned "ignore" and the name can be assigned an empty string ''.
+    schema_2 = [('column_a', str), ('', ignore), ('more_data', str)]
 
 Optionally, the delimiter could be declared using the key word ``delimiter``.
 This would be a benefit if the delimiter is something other than a comma.
 
-Another option is to use the key word ``skip_header_lines`` and skip the first *n* lines of the file, so it will ignore lines like headers.
+Another option is to use the key word ``skip_header_lines`` and skip the first *n* lines of the file, so it will ignore a header.
 
 Now we create a "CsvFile" object used to define the data layout::
 
     my_csv = CsvFile('Data.csv', schema_ab)
     csv1 = CsvFile("data.txt", schema_ab)
-    csv2 = CsvFile("more_data.txt", schema_ab)
-    csv3 = CsvFile("different_data.txt", [('x', float32), ('', ignore), ('y', int64)])
+    csv2 = CsvFile(file_name="more_data.txt", schema=schema_ab)
+    csv3 = CsvFile("different_data.txt", schema=[('x', float32), ('', ignore), ('y', int64)])
 
     raw_csv_data_file = "my_data.csv"
     column_schema_list = [("x", float32), ("y", float32), ("z", bool)]
@@ -137,38 +204,48 @@ Now we create a "CsvFile" object used to define the data layout::
     >>> from intelanalytics.core.files import XmlFile
         my_xml = XmlFile(my_data_file.xml)
 
-.. _example_bigframe:
+.. _example_frame.bigframe:
 
 --------
 BigFrame
 --------
 
-A BigFrame is a table structure of rows and columns, capable of holding "big data".
- 
-1. Create
-=========
+A BigFrame is a class of objects capable of accessing and controlling "big data".
+The data is visualized as a table structure of rows and columns.
+It can handle huge amounts of data because it is designed to handle data spread over multiple clusters.
+
+Create A BigFrame
+=================
+
 A new frame is created: 1. as empty, 2. as defined by a CSV schema, or 3. by copying (all or a part of) another frame::
 
            f = BigFrame()               # create an empty frame
     my_frame = BigFrame(my_csv, 'bf')   # create a frame a CSV file and name it *bf*
-          f2 = BigFrame(my_frame)       # create a new frame, identical to the original
+          f2 = BigFrame(my_frame)       # create a new frame, identical to the original, except for the name
           f3 = BigFrame(f2[['a', 'c']]) # create a new frame with only columns *a* and *c* from the original
 
-What gets returned is not the :term:`BigFrame` with all the data, but a proxy (descriptive pointer) for the data.
-Commands such as ``f4 = my_frame`` will only give you a copy of the proxy, pointing to the same data.
+The BigFrame returned is not the data, but a proxy (descriptive pointer) for the data.
+Commands such as ``f4 = my_frame`` will only give you a copy of the BigFrame proxy, pointing to the same data.
+
+.. _example_frame.append:
 
 Append
 ------
-The "append" function can add more rows of data to a frame, typically from a different data source.
+The "append" function adds more rows, and columns, of data to a frame, typically from a different data source.
 If columns are the same in both name and data type, the appended data will go into the existing column.
-If the column of data in the new source is not in the original structure, it will be added to the structure and all existing rows will have ``None``
-assigned to the new column and the new data will be added to the bottom with ``None`` in all of the previously existing, non-identical columns.
+If the column of data in the new source is not in the original structure, it will be added to the structure and all existing rows will have *None*
+assigned to the new column and the new data will be added to the bottom with *None* in all of the previously existing, non-identical columns.
 ::
 
-    my_frame.append(CsvFile("bonus_ab_data.txt", schema_ab))
+    my_frame.append(CsvFile("bonus_ab_data.csv", schema_ab))
 
-2. Inspect
-==========
+.. _example_frame.inspect:
+
+Inspect The Data
+================
+
+You next look over the data to fix any problems it has.
+It could be missing values in some fields; bad values; other nasties that will not help the analysis later.
 ::
 
     my_frame.count()               # row count
@@ -176,27 +253,26 @@ assigned to the new column and the new data will be added to the bottom with ``N
     my_frame.inspect(5)            # pretty-print first 5 rows
     my_frame.take(10, offset=200)  # retrieve a list of 10 rows, starting at row 200
  
-3. Clean
-========
+Clean The Data
+==============
 
 To clean data, it is important to remove incomplete, incorrect, inaccurate, or corrupted data from the data set.
 The BigFrame API should be used for this.
 While these Python libraries do not support all Python functionality, they have been specifically designed to handle very large data sets,
 so when using standard Python libraries, be aware that some of them are not designed to handle these very large data sets.
 
-| See :doc:`ds_apir`
-| See :doc:`ds_lambda`
+For details about row selection based upon its data see :doc:`ds_apir`
 
 .. warning::
 
-    Unless stated otherwise, cleaning functions use the proxy to operate on the data in the given frame,
-    so it changes the frame's content rather than return a new frame with the changed data.
+    Unless stated otherwise, cleaning functions use the BigFrame proxy to operate directly on the data,
+    so it changes the data in the database, rather than return a new database with the changed data.
 
 .. _example_frame.drop:
 
 Drop Rows
 ---------
-    The function ``drop`` takes a predicate function and removes all rows for which the predicate evaluates to ``True``.
+    The ``drop`` function takes a predicate function and removes all rows for which the predicate evaluates to ``True``.
 
         Drop all rows where column *b* contains a negative number::
 
@@ -210,13 +286,13 @@ Drop Rows
 
             my_frame.drop(lambda row: any([cell is None for cell in row]))
 
-    The functon ``filter`` is like ``drop`` except it removes all the rows for which the predicate evaluates False.
+    The ``filter`` function is like ``drop``, except it removes all rows for which the predicate evaluates False.
 
         Keep only those rows where field *b* is in the range 0 to 10::
 
             my_frame.filter(lambda row: 0 >= row['b'] >= 10)
 
-    The function ``drop_duplicates`` performs row uniqueness comparisons across the whole table.
+    The ``drop_duplicates`` function performs a row uniqueness comparison across the whole table.
 
         Drop any rows where the data in column *a* and column *b* are duplicates of some previously evaluated row::
 
@@ -228,7 +304,6 @@ Drop Rows
      
 .. TODO:: There is no way to fill in the data
     Fill Cells
-    - --------
 
     >>> f['a'].fill(lambda cell: 800001 if cell is None else 800002 if cell < 0 else cell)
     >>> def filler(cell):
@@ -256,12 +331,16 @@ Remove Columns
 Rename Columns
 --------------
 
-    Columns can be renamed by giving the column name and setting it equal to the new name, or by specifying a dictionary entry with the key
-    being the existing column name and the value being the new column name::
+    Columns can be renamed by giving the existing column name and the new name,
+    or by giving a list of columns and a list of new names.
 
-        my_frame.rename_columns(a='id')
-        my_frame.rename_columns(b='author', c='publisher')
-        my_frame.rename_columns({'col-with-dashes': 'no_dashes'})
+    Rename column *a* to *id*::
+
+        my_frame.rename_columns('a', 'id')
+
+    Rename column *b* to *author* and *c* to *publisher*::
+
+        my_frame.rename_columns(['b', 'c'], ['author', 'publisher'])
 
 .. TODO:: Cast columns
 
@@ -271,8 +350,13 @@ Rename Columns
 
     >>> f['a'].cast(int32)
 
-4. Transform
-============
+Transform The Data
+==================
+
+Often, you will need to create new data based upon the existing data.
+For example, you need the first name combined with the last name, or
+you need the number times john spent more than five dollars, or
+you need the average age of teenagers who attend college.
 
 .. _example_frame.add_columns:
 
@@ -283,7 +367,7 @@ Add Columns
 
     Add a column *column3* as an int32 and fill it with the contents of *column1* and *column2* multiplied together::
 
-        my_frame.add_columns(lambda row: row.column1*row.column2, ('column3', int32))
+        my_frame.add_columns(lambda row: row.column1 * row.column2, ('column3', int32))
 
     Add a new column *all_ones* and fill the entire column with the value 1::
 
@@ -309,7 +393,7 @@ Add Columns
     | None of the above                         | None                                      |
     +-------------------------------------------+-------------------------------------------+
 
-    An example of a Piecewise Linear Transformation::
+    An example of Piecewise Linear Transformation::
 
         def transform_a(row):
             x = row['a']
@@ -364,11 +448,12 @@ Groupby (and Aggregate)
 -----------------------
 
     Group rows together based on matching column values and then apply aggregation
-    functions on each group, producing a **new** BigFrame object.
-    Two parameters:
+    functions on each group, producing a **new** frame.
+
+    This needs two parameters:
 
         (1) the column(s) to group on
-        (2) aggregation function(s)
+        (2) the aggregation function(s)
 
     Aggregation based on columns:
 
@@ -517,10 +602,13 @@ Join
 Flatten
 -------
 
-    The function ``flatten_column`` creates a **new** BigFrame by copying all the rows of a given frame and splitting a particular cell to produce
-    possibly many new rows.
+    The function ``flatten_column`` creates a **new** frame by splitting a particular column.
+    The column is searched for rows where there is more than one value, for example, a string column and the row has multiple strings in
+    it separated by commas.
+    The row is duplicated and that column is spread across the existing and new rows.
 
-    Example::
+    Given that I now have a BigFrame called my_frame and the frame has two columns *a* and *b*.
+    I look at it and see::
 
         my_frame.inspect()
 
@@ -529,7 +617,12 @@ Flatten
           1       "solo", "mono", "single"
           2       "duo", "double"
 
+    Now, I want to spread out those sub-strings in column *b*::
+
         your_frame = my_frame.flatten_column('b')
+
+    Now I check again and my result is::
+
         your_frame.inspect()
 
         a:int32   b:str
@@ -561,7 +654,7 @@ Flatten
 BigGraph
 --------
 
-You have imported your data, cleaned it, massaged the data,
+You have imported your data into a frame, cleaned it, corrected the data as necessary,
 and now you are at the point where you can make a :term:`graph`.
 
 There are two main steps to :term:`graph` construction.
@@ -574,7 +667,7 @@ Building Rules
 First make rule objects.
 These are the criteria for transforming the table data to :term:`graph` data.
 
-.. _example_vertexrule:
+.. _example_graph.vertexrule:
 
 Vertex Rules
 ------------
@@ -592,7 +685,7 @@ give the :term:`vertex` a property *y*, with a value from column *d*::
 
      my_vertex_rule_2 = VertexRule( 'yid', my_frame['c'], ('y', my_frame('d')))
 
-.. _example_edgerule:
+.. _example_graph.edgerule:
 
 Edge Rules
 ----------
@@ -607,7 +700,7 @@ and tell it that it is a directed edge::
 
     my_edge_rule = EdgeRule( my_frame['a'] + my_frame['c'], my_vertex_rule_1, my_vertex_rule_2, {'z' : my_frame['e'], True)
 
-.. _example_biggraph:
+.. _example_graph.biggraph:
 
 Building A Graph
 ================

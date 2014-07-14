@@ -25,9 +25,9 @@ package com.intel.intelanalytics.algorithm.graph
 
 import java.util.Date
 
-import com.intel.giraph.algorithms.lbp.LoopyBeliefPropagationComputation
-import com.intel.giraph.io.titan.TitanVertexOutputFormatPropertyGraph4LBP
-import com.intel.giraph.io.titan.hbase.TitanHBaseVertexInputFormatPropertyGraph4LBP
+import com.intel.giraph.algorithms.lp.LabelPropagationComputation
+import com.intel.giraph.io.titan.TitanVertexOutputFormatPropertyGraph4LP
+import com.intel.giraph.io.titan.hbase.TitanHBaseVertexInputFormatPropertyGraph4LP
 import com.intel.intelanalytics.component.Boot
 import com.intel.intelanalytics.domain.DomainJsonProtocol
 import com.intel.intelanalytics.domain.graph.GraphReference
@@ -37,40 +37,33 @@ import com.typesafe.config.{ Config, ConfigObject, ConfigValue }
 import org.apache.giraph.conf.GiraphConfiguration
 import org.apache.giraph.job.GiraphJob
 import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.FileSystem
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.mapreduce.Job
 import spray.json.DefaultJsonProtocol._
 import spray.json._
 import scala.concurrent.duration._
-import java.net.URI
 
 import scala.concurrent._
 import scala.collection.JavaConverters._
 
-case class Lbp(graph: GraphReference,
-               vertex_value_property_list: Option[String],
-               edge_value_property_list: Option[String],
-               input_edge_label_list: Option[String],
-               output_vertex_property_list: Option[String],
-               vertex_type_property_key: Option[String],
-               vector_value: Option[String],
-               max_supersteps: Option[Int] = None,
-               convergence_threshold: Option[Double] = None,
-               anchor_threshold: Option[Double] = None,
-               smoothing: Option[Double] = None,
-               bidirectional_check: Option[Boolean] = None,
-               ignore_vertex_type: Option[Boolean] = None,
-               max_product: Option[Boolean] = None,
-               power: Option[Double] = None)
+case class Lp(graph: GraphReference,
+              vertex_value_property_list: Option[String],
+              edge_value_property_list: Option[String],
+              input_edge_label_list: Option[String],
+              output_vertex_property_list: Option[String],
+              vector_value: Option[String],
+              max_supersteps: Option[Int] = None,
+              convergence_threshold: Option[Double] = None,
+              anchor_threshold: Option[Double] = None,
+              lp_lambda: Option[Double] = None,
+              bidirectional_check: Option[Boolean] = None)
+case class LpResult(runTimeSeconds: Double) //TODO
 
-case class LbpResult(value: String) //TODO
-
-class LoopyBeliefPropagation
-    extends CommandPlugin[Lbp, LbpResult] {
+class LabalPropagation
+    extends CommandPlugin[Lp, LpResult] {
   import DomainJsonProtocol._
-  implicit val lbpFormat = jsonFormat15(Lbp)
-  implicit val lbpResultFormat = jsonFormat1(LbpResult)
+  implicit val lbpFormat = jsonFormat11(Lp)
+  implicit val lbpResultFormat = jsonFormat1(LpResult)
 
   /**
    * Set a value in the hadoop configuration, if the argument is not None.
@@ -122,7 +115,10 @@ class LoopyBeliefPropagation
     result
   }
 
-  override def execute(invocation: Invocation, arguments: Lbp)(implicit user: UserPrincipal, executionContext: ExecutionContext): LbpResult = {
+  override def execute(invocation: Invocation, arguments: Lp)(implicit user: UserPrincipal, executionContext: ExecutionContext): LpResult = {
+    val start = System.currentTimeMillis()
+
+    System.out.println("Starting LabelPropagation execution")
 
     val config = configuration().get
     val hConf = newHadoopConfigurationFrom(config, "giraph")
@@ -133,13 +129,10 @@ class LoopyBeliefPropagation
 
     //    These parameters are set from the arguments passed in, or defaulted from
     //    the engine configuration if not passed.
-    set(hConf, "lbp.maxSuperSteps", arguments.max_supersteps)
-    set(hConf, "lbp.convergenceThreshold", arguments.convergence_threshold)
-    set(hConf, "lbp.anchorThreshold", arguments.anchor_threshold)
-    set(hConf, "lbp.bidirectionalCheck", arguments.bidirectional_check)
-    set(hConf, "lbp.power", arguments.power)
-    set(hConf, "lbp.smoothing", arguments.smoothing)
-    set(hConf, "lbp.ignoreVertexType", arguments.ignore_vertex_type)
+    set(hConf, "lp.maxSuperSteps", arguments.max_supersteps)
+    set(hConf, "lp.convergenceThreshold", arguments.convergence_threshold)
+    set(hConf, "lp.anchorThreshold", arguments.anchor_threshold)
+    set(hConf, "lp.bidirectionalCheck", arguments.bidirectional_check)
 
     set(hConf, "giraph.titan.input.storage.backend", titanConf.get("titan.load.storage.backend"))
     set(hConf, "giraph.titan.input.storage.hostname", titanConf.get("titan.load.storage.hostname"))
@@ -151,57 +144,44 @@ class LoopyBeliefPropagation
     set(hConf, "input.edge.value.property.key.list", arguments.edge_value_property_list)
     set(hConf, "input.edge.label.list", arguments.input_edge_label_list)
     set(hConf, "output.vertex.property.key.list", arguments.output_vertex_property_list)
-    set(hConf, "vertex.type.property.key", arguments.vertex_type_property_key)
     set(hConf, "vector.value", arguments.vector_value)
 
     val giraphLoader = Boot.getClassLoader(config.getString("giraph.archive.name"))
     val giraphConf = new GiraphConfiguration(hConf)
 
-    giraphConf.setVertexInputFormatClass(classOf[TitanHBaseVertexInputFormatPropertyGraph4LBP])
-    giraphConf.setVertexOutputFormatClass(classOf[TitanVertexOutputFormatPropertyGraph4LBP[_ <: org.apache.hadoop.io.WritableComparable[_], _ <: org.apache.hadoop.io.Writable, _ <: org.apache.hadoop.io.Writable]])
-    giraphConf.setMasterComputeClass(classOf[LoopyBeliefPropagationComputation.LoopyBeliefPropagationMasterCompute])
-    giraphConf.setComputationClass(classOf[LoopyBeliefPropagationComputation])
-    giraphConf.setAggregatorWriterClass(classOf[LoopyBeliefPropagationComputation.LoopyBeliefPropagationAggregatorWriter])
+    giraphConf.setVertexInputFormatClass(classOf[TitanHBaseVertexInputFormatPropertyGraph4LP])
+    giraphConf.setVertexOutputFormatClass(classOf[TitanVertexOutputFormatPropertyGraph4LP[_ <: org.apache.hadoop.io.LongWritable, _ <: com.intel.giraph.io.VertexData4LPWritable, _ <: org.apache.hadoop.io.Writable]])
+    giraphConf.setMasterComputeClass(classOf[LabelPropagationComputation.LabelPropagationMasterCompute])
+    giraphConf.setComputationClass(classOf[LabelPropagationComputation])
+    giraphConf.setAggregatorWriterClass(classOf[LabelPropagationComputation.LabelPropagationAggregatorWriter])
 
     Thread.currentThread().setContextClassLoader(giraphLoader)
 
-    val job = new GiraphJob(giraphConf, "iat-giraph-lbp")
+    val job = new GiraphJob(giraphConf, "iat-giraph-lp")
     val internalJob: Job = job.getInternalJob
-    val algorithm = giraphLoader.loadClass(classOf[LoopyBeliefPropagationComputation].getCanonicalName)
+    val algorithm = giraphLoader.loadClass(classOf[LabelPropagationComputation].getCanonicalName)
     internalJob.setJarByClass(algorithm)
 
-    val output_dir_path = config.getString("fs.root") + "/" + config.getString("output.dir") + "/" + invocation.commandId
-    val output_dir = new URI(output_dir_path)
-    if (config.getBoolean("output.overwrite")) {
-      val fs = FileSystem.get(new Configuration())
-      fs.delete(new Path(output_dir), true)
-    }
-
     org.apache.hadoop.mapreduce.lib.output.FileOutputFormat.setOutputPath(internalJob,
-      new Path(output_dir))
+      new Path("/user/hadoop/lp/out/" + invocation.commandId))
 
-    if (job.run(true)) {
-      val fs = FileSystem.get(new Configuration())
-      val stream = fs.open(new Path(output_dir_path + "/" + "lbp-learning-report_0"))
-      def readLines = Stream.cons(stream.readLine, Stream.continually(stream.readLine))
-      val result = readLines.takeWhile(_ != null).toList.mkString("\n")
-      fs.close()
-      LbpResult(result)
-    }
-    else LbpResult("Error: No Learning Report found!!")
+    job.run(true)
+
+    val time = (System.currentTimeMillis() - start).toDouble / 1000.0
+    LpResult(time)
   }
 
   //TODO: Replace with generic code that works on any case class
-  def parseArguments(arguments: JsObject) = arguments.convertTo[Lbp]
+  def parseArguments(arguments: JsObject) = arguments.convertTo[Lp]
 
   //TODO: Replace with generic code that works on any case class
-  def serializeReturn(returnValue: LbpResult): JsObject = returnValue.toJson.asJsObject
+  def serializeReturn(returnValue: LpResult): JsObject = returnValue.toJson.asJsObject
 
   /**
    * The name of the command, e.g. graphs/ml/loopy_belief_propagation
    */
-  override def name: String = "graphs/ml/loopy_belief_propagation"
+  override def name: String = "graphs/ml/label_propagation"
 
   //TODO: Replace with generic code that works on any case class
-  override def serializeArguments(arguments: Lbp): JsObject = arguments.toJson.asJsObject()
+  override def serializeArguments(arguments: Lp): JsObject = arguments.toJson.asJsObject()
 }
