@@ -194,7 +194,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     val existingRdd = frames.getFrameRdd(sparkContext, existingFrame)
     val unionedRdd = existingRdd.union(additionalData)
     val location = fsRoot + frames.getFrameDataFile(existingFrame.id)
-    unionedRdd.saveAsObjectFile(location)
+    unionedRdd.rows.saveAsObjectFile(location)
     frames.updateSchema(existingFrame, unionedRdd.schema.columns)
   }
 
