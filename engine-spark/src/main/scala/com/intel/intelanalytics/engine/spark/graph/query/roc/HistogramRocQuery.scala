@@ -2,12 +2,12 @@ package com.intel.intelanalytics.engine.spark.graph.query.roc
 
 import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRDDImplicits._
 import com.intel.graphbuilder.driver.spark.titan.reader.TitanReader
-import com.intel.graphbuilder.elements.{Edge, Vertex}
+import com.intel.graphbuilder.elements.{ Edge, Vertex }
 import com.intel.graphbuilder.graph.titan.TitanGraphConnector
 import com.intel.graphbuilder.util.SerializableBaseConfiguration
 import com.intel.intelanalytics.domain.DomainJsonProtocol
 import com.intel.intelanalytics.domain.graph.GraphReference
-import com.intel.intelanalytics.engine.spark.plugin.{SparkCommandPlugin, SparkInvocation}
+import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
 import com.intel.intelanalytics.security.UserPrincipal
 import org.apache.spark.storage.StorageLevel
 import spray.json._
