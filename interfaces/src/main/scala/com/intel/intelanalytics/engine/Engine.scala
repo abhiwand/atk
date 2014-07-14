@@ -65,7 +65,7 @@ trait Engine {
 
   def getCommand(id: Identifier): Future[Option[Command]]
 
-  def getFrame(id: Identifier): Future[Option[DataFrame]]
+  def getFrame(id: Identifier)(implicit user: UserPrincipal): Future[Option[DataFrame]]
 
   def getRows(id: Identifier, offset: Long, count: Int)(implicit user: UserPrincipal): Future[Iterable[Row]]
 
@@ -103,11 +103,15 @@ trait Engine {
 
   def getFrames(offset: Int, count: Int)(implicit p: UserPrincipal): Future[Seq[DataFrame]]
 
+  def getFrameByName(name: String)(implicit p: UserPrincipal): Future[Option[DataFrame]]
+
   def shutdown(): Unit
 
   def getGraph(id: Identifier): Future[Graph]
 
   def getGraphs(offset: Int, count: Int)(implicit user: UserPrincipal): Future[Seq[Graph]]
+
+  def getGraphByName(name: String)(implicit user: UserPrincipal): Future[Option[Graph]]
 
   def createGraph(graph: GraphTemplate)(implicit user: UserPrincipal): Future[Graph]
 

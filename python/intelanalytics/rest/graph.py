@@ -23,6 +23,7 @@
 """
 REST backend for graphs
 """
+import json
 import logging
 logger = logging.getLogger(__name__)
 
@@ -38,6 +39,7 @@ def execute_update_graph_command(command_name, arguments, graph):
         command_name = 'graph/' + command_name
     command = CommandRequest(command_name, arguments=arguments)
     command_info = executor.issue(command)
+    return command_info.result
 
 execute_new_graph_command = execute_update_graph_command
 
@@ -59,7 +61,12 @@ class GraphBackendRest(object):
         payload = r.json()
         return [f['name'] for f in payload]
 
-    # def get_graph(name):
+    def get_graph(self,name):
+        logger.info("REST Backend: get_graph")
+        r = self.rest_http.get('graphs?name='+name)
+        payload = r.json()
+        return json.dumps(payload, indent=2)
+
     #     """Retrieves the named BigGraph object"""
     #     raise NotImplemented
     #

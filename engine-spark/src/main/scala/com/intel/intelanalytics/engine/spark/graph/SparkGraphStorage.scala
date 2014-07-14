@@ -120,6 +120,14 @@ class SparkGraphStorage(context: (UserPrincipal) => Context,
     }
   }
 
+  override def getGraphByName(name: String)(implicit user: UserPrincipal): Option[Graph] = {
+    metaStore.withSession("spark.graphstorage.getGraphByName") {
+      implicit session =>
+        {
+          metaStore.graphRepo.lookupByName(name)
+        }
+    }
+  }
   /**
    * Get the metadata for a graph from its unique ID.
    * @param id ID being looked up.
