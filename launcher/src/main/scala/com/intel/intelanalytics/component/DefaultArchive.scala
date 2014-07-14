@@ -42,19 +42,11 @@ class DefaultArchive extends Archive {
    */
   override def getAll[T: ClassTag](descriptor: String): Seq[T] = {
     val array = Try {
-      val list = configuration.getStringList(descriptor)
-      list.asScala.toArray.map(className => this.load(descriptor, className).asInstanceOf[T])
+      val stringList = Try { configuration.getStringList(descriptor).asScala }.getOrElse(List())
+      val components = stringList.map(componentName => loadComponent(descriptor + "." + componentName))
+      components.map(_.asInstanceOf[T]).toArray
     }.getOrElse(Array[T]())
     array
   }
 
-  /**
-   * The location at which this component should be installed in the component
-   * tree. For example, a graph machine learning algorithm called Loopy Belief
-   * Propagation might wish to be installed at
-   * "commands/graphs/ml/loopy_belief_propagation". However, it might not actually
-   * get installed there if the system has been configured to override that
-   * default placement.
-   */
-  override def defaultLocation: String = ""
 }

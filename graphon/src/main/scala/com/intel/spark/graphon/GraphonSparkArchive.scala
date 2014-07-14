@@ -45,7 +45,7 @@ class GraphonSparkArchive extends Archive {
   override def getAll[T: ClassTag](descriptor: String): Seq[T] = descriptor match {
     //TODO: move the plumbing parts to the Archive trait and make this just a simple PartialFunction
     case "CommandPlugin" => commands
-      .map(c => load(descriptor, c.getName))
+      .map(c => load(c.getName))
       .filter(i => i.isInstanceOf[T])
       .map(i => i.asInstanceOf[T])
     case _ => throw new NotFoundException("instances", descriptor)
@@ -59,16 +59,6 @@ class GraphonSparkArchive extends Archive {
   override def stop(): Unit = {
 
   }
-
-  /**
-   * The location at which this component should be installed in the component
-   * tree. For example, a graph machine learning algorithm called Loopy Belief
-   * Propagation might wish to be installed at
-   * "commands/graphs/ml/loopy_belief_propagation". However, it might not actually
-   * get installed there if the system has been configured to override that
-   * default placement.
-   */
-  override def defaultLocation: String = "graphon"
 
   /**
    * Called before processing any requests.
