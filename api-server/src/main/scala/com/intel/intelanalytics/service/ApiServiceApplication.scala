@@ -25,6 +25,7 @@ package com.intel.intelanalytics.service
 
 import akka.actor.{ ActorRef, ActorSystem, Props }
 import akka.io.IO
+import com.intel.intelanalytics.shared.EventLogging
 import spray.can.Http
 import akka.pattern.ask
 import akka.util.Timeout
@@ -42,7 +43,7 @@ import scala.reflect.ClassTag
  *
  * See the 'api_server.sh' to see how the launcher starts the application.
  */
-class ApiServiceApplication extends Archive {
+class ApiServiceApplication extends Archive with EventLogging {
 
   // TODO: implement or remove get()
   def get[T](descriptor: String): T = {
@@ -53,6 +54,7 @@ class ApiServiceApplication extends Archive {
    * Main entry point to start the API Service Application
    */
   override def start() = {
+    Archive.logger = (s: String) => debug(s)
     val apiService = initializeDependencies()
     createActorSystemAndBindToHttp(apiService)
   }

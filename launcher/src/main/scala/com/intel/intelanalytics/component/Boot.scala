@@ -124,11 +124,11 @@ object Boot extends App with ClassLoaderAware {
     //interfaces class loader)
     val probe = buildClassLoader(archiveName, getClass.getClassLoader)
     val additionalConfig = ConfigFactory.defaultReference(probe)
-    println("==============Base config===========")
-    println(config.root().render())
+    //println("==============Base config===========")
+    //println(config.root().render())
     val augmented = config.withFallback(additionalConfig)
-    println("==============Augmented config===========")
-    println(augmented.root().render())
+    //println("==============Augmented config===========")
+    //println(augmented.root().render())
     val definition = readArchiveDefinition(archiveName, augmented)
 
     //Now that we know the parent, we build the real classloader we're going to use for this archive.
@@ -145,7 +145,7 @@ object Boot extends App with ClassLoaderAware {
       s"Loaded class ${instance.getClass.getName} in archive ${definition.name}, but it is not an Archive")
 
     withLoader(loader) {
-      initializeArchive(definition, archiveLoader, augmented, archiveInstance)
+      initializeArchive(definition, archiveLoader, augmented.getConfig(definition.configPath), archiveInstance)
       archives += (archiveName -> archiveInstance)
       println(s"Registered archive $archiveName with parent ${definition.parent}")
       archiveInstance.start()

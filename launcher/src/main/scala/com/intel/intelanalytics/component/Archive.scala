@@ -46,6 +46,7 @@ trait Archive extends Component {
   }
 
   protected def loadComponent(path: String): Component = {
+    Archive.logger(s"Loading component $path")
     val className = configuration.getString(path.replace("/", ".") + ".class")
     val component = load(className).asInstanceOf[Component]
     val restricted = configuration.getConfig(path + ".config")
@@ -62,7 +63,7 @@ trait Archive extends Component {
    * @return the new instance
    */
   protected def load(className: String): Any = {
-    println("Loading " + className)
+    Archive.logger(s"Loading class $className")
     loader(className)
   }
 
@@ -88,5 +89,22 @@ trait Archive extends Component {
   def get[T: ClassTag](descriptor: String): T = getAll(descriptor).headOption
     .getOrElse(throw new NoSuchElementException(
       s"No class matching descriptor $descriptor was found in location '${definition.name}'"))
+
+}
+
+object Archive {
+  private var _logger: Option[String => Unit] = Some(println)
+
+  /**
+   * A function that the archive can use to log debug information.
+   */
+  def logger_=(function: String => Unit): Unit = {
+    _logger = Some(function)
+  }
+
+  /**
+   * A function that the archive can use to log debug information.
+   */
+  def logger = _logger.getOrElse(throw new Exception("Archive logger not initialized"))
 
 }

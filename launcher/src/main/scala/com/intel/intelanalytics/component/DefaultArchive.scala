@@ -28,6 +28,7 @@ import com.typesafe.config.Config
 import scala.reflect.ClassTag
 
 import scala.collection.JavaConverters._
+import scala.util.control.NonFatal
 import scala.util.{ Failure, Success, Try }
 
 class DefaultArchive extends Archive {
@@ -41,11 +42,19 @@ class DefaultArchive extends Archive {
    * @return the requested instances, or the empty sequence if no such instances could be produced.
    */
   override def getAll[T: ClassTag](descriptor: String): Seq[T] = {
-    val array = Try {
-      val stringList = Try { configuration.getStringList(descriptor).asScala }.getOrElse(List())
+    val array = try {
+      Archive.logger(s"Archive ${definition.name} getting all '$descriptor'")
+      val stringList = configuration.getStringList(descriptor + ".available").asScala
+      Archive.logger(s"Found: $stringList")
       val components = stringList.map(componentName => loadComponent(descriptor + "." + componentName))
       components.map(_.asInstanceOf[T]).toArray
-    }.getOrElse(Array[T]())
+    }
+    catch {
+      case NonFatal(e) =>
+        Archive.logger(e.toString)
+        Archive.logger(configuration.root().render())
+        Array[T]()
+    }
     array
   }
 
