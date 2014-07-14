@@ -405,16 +405,17 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
     }
 
     override def updateSchema(frame: DataFrame, columns: List[(String, DataType)])(implicit session: Session): DataFrame = {
-      val newSchema = frame.schema.copy(columns = columns)
-      val updatedFrame = frame.copy(schema = newSchema, modifiedOn = new DateTime)
-      frames.where(_.id === frame.id).update(updatedFrame)
-      updatedFrame
+      // this looks crazy but it is how you update only one column
+      val schemaColumn = for (f <- frames if f.id === frame.id) yield f.schema
+      schemaColumn.update(frame.schema.copy(columns = columns))
+      frames.where(_.id === frame.id).firstOption.get
     }
 
     /** Update the errorFrameId column */
     override def updateErrorFrameId(frame: DataFrame, errorFrameId: Option[Long])(implicit session: Session): DataFrame = {
-      val errroFrameIdColumn = for (f <- frames if f.id === frame.id) yield f.errorFrameId
-      errroFrameIdColumn.update(errorFrameId)
+      // this looks crazy but it is how you update only one column
+      val errorFrameIdColumn = for (f <- frames if f.id === frame.id) yield f.errorFrameId
+      errorFrameIdColumn.update(errorFrameId)
       frames.where(_.id === frame.id).firstOption.get
     }
 
