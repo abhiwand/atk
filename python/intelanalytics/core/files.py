@@ -20,10 +20,7 @@
 # estoppel or otherwise. Any license under such intellectual property rights
 # must be express and approved by Intel in writing.
 ##############################################################################
-import warnings
-from iatypes import supported_types
-from ordereddict import OrderedDict
-from collections import defaultdict
+from intelanalytics.core.iatypes import supported_types
 
 
 class DataFile(object):
