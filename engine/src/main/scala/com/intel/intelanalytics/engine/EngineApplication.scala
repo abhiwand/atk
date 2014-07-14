@@ -23,9 +23,8 @@
 
 package com.intel.intelanalytics.engine
 
-import com.intel.intelanalytics.component.{ ClassLoaderAware, ArchiveName, Archive }
+import com.intel.intelanalytics.component.{ ClassLoaderAware, Archive }
 import com.intel.intelanalytics.shared.EventLogging
-import com.typesafe.config.Config
 
 import scala.reflect.ClassTag
 import scala.util.control.NonFatal

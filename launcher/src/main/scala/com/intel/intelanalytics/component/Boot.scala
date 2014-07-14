@@ -59,8 +59,6 @@ object Boot extends App with ClassLoaderAware {
     }
   }
 
-  case class ArchiveDefinition(name: String, parent: String, className: String, configPath: String)
-
   private def readArchiveDefinition(archiveName: String, config: Config) = {
     val configKey = "intel.analytics.component.archives." + archiveName
     val restricted = Try {
@@ -90,6 +88,10 @@ object Boot extends App with ClassLoaderAware {
     ArchiveDefinition(archiveName, parent, className, configPath)
   }
 
+  /**
+   * Packages a class loader with some additional error handling / logging information
+   * that's useful for Archives.
+   */
   case class ArchiveClassLoader(archiveName: String, loader: ClassLoader) extends (String => Any) {
     override def apply(className: String): Any = {
       val klass = attempt(loader.loadClass(className),
@@ -101,6 +103,14 @@ object Boot extends App with ClassLoaderAware {
     }
   }
 
+  /**
+   * Initializes an archive instance
+   *
+   * @param definition the definition (name, etc.)
+   * @param boundLoad  a class loading / instantiating function
+   * @param augmentedConfig config that is specific to this archive
+   * @param instance the (un-initialized) archive instance
+   */
   private def initializeArchive(definition: ArchiveDefinition,
                                 boundLoad: String => Any,
                                 augmentedConfig: Config,
@@ -118,6 +128,12 @@ object Boot extends App with ClassLoaderAware {
     })
   }
 
+  /**
+   * Main entry point for archive creation
+   *
+   * @param archiveName the archive to create
+   * @return the created, running, `Archive`
+   */
   private def buildArchive(archiveName: String): Archive = {
     //We first create a standard plugin classloader, which we will use to query the config
     //to see if this archive needs special treatment (i.e. a parent class loader other than the
@@ -223,6 +239,15 @@ object Boot extends App with ClassLoaderAware {
     urls
   }
 
+  /**
+   * Create a class loader for the given archive, with the given parent.
+   *
+   * As a side effect, updates the loaders map.
+   *
+   * @param archive the archive whose class loader we're constructing
+   * @param parent the parent for the new class loader
+   * @return a class loader
+   */
   private def buildClassLoader(archive: String, parent: ClassLoader): ClassLoader = {
     //TODO: Allow directory to be passed in, or otherwise abstracted?
     //TODO: Make sensitive to actual scala version rather than hard coding.
@@ -231,10 +256,15 @@ object Boot extends App with ClassLoaderAware {
       case u if u.length > 0 => new URLClassLoader(u, parent)
       case _ => throw new Exception(s"Could not locate archive $archive")
     }
-    loaders += (archive -> loader)
+    synchronized {
+      loaders += (archive -> loader)
+    }
     loader
   }
 
+  /**
+   * This one is crucial to build first
+   */
   private val interfaces = buildClassLoader("interfaces", getClass.getClassLoader)
 
   def usage() = println("Usage: java -jar launcher.jar <archive> <application>")
@@ -245,12 +275,13 @@ object Boot extends App with ClassLoaderAware {
   else {
     try {
       val name: String = args(0)
-      println(s"Starting $name")
+      Archive.logger(s"Starting $name")
       val instance = getArchive(name)
-      println(s"Started $name with ${instance.definition}")
+      Archive.logger(s"Started $name with ${instance.definition}")
     }
     catch {
       case NonFatal(e) =>
+        Archive.logger(e.toString)
         println(e)
         e.printStackTrace()
     }

@@ -23,7 +23,6 @@
 
 package com.intel.intelanalytics.component
 
-import com.intel.intelanalytics.component.Boot.ArchiveDefinition
 import com.typesafe.config.Config
 
 /**

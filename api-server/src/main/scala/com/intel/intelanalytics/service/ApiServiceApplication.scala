@@ -32,7 +32,7 @@ import akka.util.Timeout
 import scala.concurrent.duration._
 import com.intel.event.EventLogger
 import com.intel.event.adapter.SLF4JLogAdapter
-import com.intel.intelanalytics.component.{ Archive, ArchiveName }
+import com.intel.intelanalytics.component.{ Archive }
 import com.intel.intelanalytics.engine.Engine
 import com.typesafe.config.{ Config, ConfigFactory }
 import scala.concurrent.Await

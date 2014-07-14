@@ -23,7 +23,7 @@
 
 package com.intel.intelanalytics.engine.spark.command
 
-import com.intel.intelanalytics.component.{ ClassLoaderAware, ArchiveName, Boot }
+import com.intel.intelanalytics.component.{ ClassLoaderAware, Boot }
 import com.intel.intelanalytics.domain.command.{ CommandDefinition, Command, CommandTemplate, Execution }
 import com.intel.intelanalytics.engine.plugin.{ FunctionCommand, CommandPlugin }
 import com.intel.intelanalytics.engine.spark.context.SparkContextManager

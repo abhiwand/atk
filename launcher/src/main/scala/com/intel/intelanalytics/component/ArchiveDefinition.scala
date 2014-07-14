@@ -24,6 +24,13 @@
 package com.intel.intelanalytics.component
 
 /**
- * Encapsulates all data needed to load an archive
+ * Encapsulates registration data for `Archive` instances.
+ *
+ * @param name the name of the Archive (e.g. the name of the jar, without the extension)
+ * @param parent the name of the Archive whose class loader should be the parent for this
+ *               archive's class loader
+ * @param className the name of the class that will manage the archive
+ * @param configPath the location of configuration information (in the config tree)
+ *                   that applies to the archive
  */
-case class ArchiveName(archive: String, archiveClass: String)
+case class ArchiveDefinition(name: String, parent: String, className: String, configPath: String)
