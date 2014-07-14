@@ -365,8 +365,10 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
 
       def modifiedById = column[Option[Long]]("modified_by")
 
+      def errorFrameId = column[Option[Long]]("error_frame_id")
+
       /** projection to/from the database */
-      override def * = (id, name, description, schema, statusId, createdOn, modifiedOn, createdById, modifiedById) <>
+      override def * = (id, name, description, schema, statusId, createdOn, modifiedOn, createdById, modifiedById, errorFrameId) <>
         (DataFrame.tupled, DataFrame.unapply)
 
       // foreign key relationships
@@ -376,6 +378,8 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
       def createdBy = foreignKey("frame_created_by", createdById, users)(_.id)
 
       def modifiedBy = foreignKey("frame_modified_by", modifiedById, users)(_.id)
+
+      def errorFrame = foreignKey("frame_error_frame_id", errorFrameId, frames)(_.id)
 
     }
 
@@ -405,6 +409,13 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
       val updatedFrame = frame.copy(schema = newSchema, modifiedOn = new DateTime)
       frames.where(_.id === frame.id).update(updatedFrame)
       updatedFrame
+    }
+
+    /** Update the errorFrameId column */
+    override def updateErrorFrameId(frame: DataFrame, errorFrameId: Option[Long])(implicit session: Session): DataFrame = {
+      val errroFrameIdColumn = for (f <- frames if f.id === frame.id) yield f.errorFrameId
+      errroFrameIdColumn.update(errorFrameId)
+      frames.where(_.id === frame.id).firstOption.get
     }
 
     override def insert(frame: DataFrameTemplate)(implicit session: Session): Try[DataFrame] = Try {
