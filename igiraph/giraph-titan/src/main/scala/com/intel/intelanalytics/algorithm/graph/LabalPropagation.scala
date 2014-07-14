@@ -120,7 +120,7 @@ class LabalPropagation
 
     System.out.println("Starting LabelPropagation execution")
 
-    val config = configuration().get
+    val config = configuration
     val hConf = newHadoopConfigurationFrom(config, "giraph")
     val titanConf = flattenConfig(config.getConfig("titan"), "titan.")
 
