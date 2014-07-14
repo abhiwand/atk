@@ -14,9 +14,9 @@ Contents:
     ds_ml
     ds_mlal
     ds_apic
-    ds_misc
 
 .. TODO::
+    ds_misc # Miscellaneous
     ds_supp # Supplemental
     ds_bkm # BKM
     ds_resr # Resources
