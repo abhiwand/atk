@@ -23,7 +23,7 @@
 
 package com.intel.intelanalytics.engine.spark.command
 
-import com.intel.intelanalytics.component.{ ArchiveName, Boot }
+import com.intel.intelanalytics.component.{ClassLoaderAware, ArchiveName, Boot}
 import com.intel.intelanalytics.domain.command.{ CommandDefinition, Command, CommandTemplate, Execution }
 import com.intel.intelanalytics.engine.plugin.{ FunctionCommand, CommandPlugin }
 import com.intel.intelanalytics.engine.spark.context.SparkContextManager
@@ -31,7 +31,7 @@ import com.intel.intelanalytics.engine.spark.plugin.SparkInvocation
 import com.intel.intelanalytics.engine.spark.{ SparkEngine, SparkEngineConfig }
 import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.shared.{ JsonSchemaExtractor, EventLogging }
-import com.intel.intelanalytics.{ ClassLoaderAware, NotFoundException }
+import com.intel.intelanalytics.NotFoundException
 import org.apache.spark.SparkContext
 import spray.json._
 
