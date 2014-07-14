@@ -32,13 +32,10 @@ import com.intel.intelanalytics.domain.graph.construction.FrameRule
  * @param frame_rules List of handles to the dataframe to be used as a data source.
  * @param retain_dangling_edges When true, dangling edges are retained by adding dummy vertices, when false, dangling
  *                              edges are deleted.
- * @tparam Arguments Type of the command packed provided by the caller.
- * @tparam GraphRef Type of the reference to the graph being written to.
- * @tparam FrameRef Type of the reference to the source frame being read from.
  */
-case class GraphLoad[+Arguments, GraphRef, FrameRef](graph: GraphRef,
-                                                     frame_rules: List[FrameRule[FrameRef]],
-                                                     retain_dangling_edges: Boolean) {
+case class GraphLoad(graph: GraphReference,
+                     frame_rules: List[FrameRule],
+                     retain_dangling_edges: Boolean) {
   require(graph != null)
   require(frame_rules != null)
 }
