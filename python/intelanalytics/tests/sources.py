@@ -1,4 +1,4 @@
-from collections import OrderedDict
+from intelanalytics.core.orddict import OrderedDict
 
 class SimpleDataSource(object):
 

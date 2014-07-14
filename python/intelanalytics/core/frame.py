@@ -21,7 +21,7 @@
 # must be express and approved by Intel in writing.
 ##############################################################################
 
-from ordereddict import OrderedDict
+from intelanalytics.core.orddict import OrderedDict
 import json
 
 import logging
@@ -34,10 +34,10 @@ from intelanalytics.core.aggregation import *
 from intelanalytics.core.errorhandle import IaError
 from intelanalytics.core.command import CommandSupport, doc_stub
 
+
 def _get_backend():
     from intelanalytics.core.config import get_frame_backend
     return get_frame_backend()
-
 
 
 def get_frame_names():
@@ -59,6 +59,7 @@ def get_frame_names():
         return _get_backend().get_frame_names()
     except:
         raise IaError(logger)
+
 
 def get_frame(name):
     """
@@ -86,6 +87,7 @@ def get_frame(name):
     except:
         raise IaError(logger)
 
+
 def delete_frame(name):
     """
     Deletes the frame from backing store.
@@ -112,6 +114,7 @@ def delete_frame(name):
         return _get_backend().delete_frame(name)
     except:
         raise IaError(logger)
+
 
 class BigFrame(CommandSupport):
     """
@@ -255,24 +258,6 @@ class BigFrame(CommandSupport):
         """
         return self._columns.keys()
 
-    @property
-    def data_type(self):
-        """
-        The type of object this is.
-        
-        Returns
-        -------
-        type : type
-            The type of object this is
-        """
-        # TODO - what to do about data_type on BigFrame?  is it really necessary?
-        # TODO - Review Docstring
-        return type(self)
-
-    #@property
-    # TODO - should we expose the frame ID publically?
-    #def frame_id(self):
-    #    return self._id
 
     @property
     def name(self):
@@ -367,7 +352,7 @@ class BigFrame(CommandSupport):
         Now, we want to add another column that is empty
         >>> my_frame.add_columns(lambda row: '', ('empty', str))
         The BigFrame object 'my_frame' now has four columns named "column1", "column2", "column3", and "new0". The first three columns are int32 and the fourth column is string.  Column "new0" has an empty string ('') in every row.
-        >>> my_frame.add_columns(lambda row: (row.a * row.b, row.a + row.b), [("a_times_b", float32), ("a_plus_b", float32))
+        >>> my_frame.add_columns(lambda row: (row.a * row.b, row.a + row.b), [("a_times_b", float32), ("a_plus_b", float32)])
         # Two new columns are created, "a_times_b" and "a_plus_b"
         <BLANKLINE>
         Now, let us start with a BigFrame with some existing rows of data.
@@ -385,7 +370,7 @@ class BigFrame(CommandSupport):
         >>> my_frame.add_columns(function_c, [('column_C', int)])
         And these would work fine:
         >>> def function_c: return 12
-        >>> my_frame.add_columns(function_c, ('column_C, int))
+        >>> my_frame.add_columns(function_c, ('column_C', int))
         >>> my_frame.add_columns(function_c, int, 'column_C')
 
         """
