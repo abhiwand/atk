@@ -159,6 +159,11 @@ object DomainJsonProtocol extends DefaultJsonProtocol {
 
   implicit val rowQueryFormat = jsonFormat3(RowQuery[Long])
 
+  // model performance formats
+
+  implicit val classificationMetricLongFormat = jsonFormat6(ClassificationMetric[Long])
+  implicit val classificationMetricValueLongFormat = jsonFormat1(ClassificationMetricValue)
+
   // graph service formats
 
   implicit val graphTemplateFormat = jsonFormat1(GraphTemplate)

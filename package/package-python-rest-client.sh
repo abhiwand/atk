@@ -23,8 +23,10 @@ rm $package-source.tar.gz
 mkdir -p  tarballs/$package/usr/lib/intelanalytics/rest-client/python/
 
 cp -v config/intelanalytics-python-rest-client/requirements.txt tarballs/$package/usr/lib/intelanalytics/rest-client/python/
-
+		  
 cp -Rv  ../python/intelanalytics/* tarballs/$package/usr/lib/intelanalytics/rest-client/python/
+
+find ../python/intelanalytics/ -type f -name "*.pyc" -exec rm -f {} \;
 
 popd
 
