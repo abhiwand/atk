@@ -21,7 +21,7 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.algorithm.graph
+package com.intel.intelanalytics.algorithm
 
 import com.intel.intelanalytics.NotFoundException
 import com.intel.intelanalytics.component.Archive
@@ -31,7 +31,8 @@ import scala.reflect.ClassTag
 
 class IGiraphArchive extends Archive {
 
-  val commands: Seq[Class[_]] = Seq(classOf[com.intel.intelanalytics.algorithm.graph.LoopyBeliefPropagation])
+  val commands: Seq[Class[_]] = Seq(classOf[com.intel.intelanalytics.algorithm.graph.LoopyBeliefPropagation],
+    classOf[com.intel.intelanalytics.algorithm.graph.LabelPropagation])
   /**
    * Obtain instances of a given class. The keys are established purely
    * by convention.
