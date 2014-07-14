@@ -148,4 +148,4 @@ trait QueryPlugin[Argument] extends OperationPlugin[Argument, Any] {
    */
   def serializeArguments(arguments: Argument): JsObject
 
-//}
+}
