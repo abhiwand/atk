@@ -44,6 +44,30 @@ object JsonSchema {
     def description = None
     def `type` = None
   }
+  val int = NumberSchema(id = Some(new URI("ia:int")),
+    minimum = Some(Int.MinValue),
+    maximum = Some(Int.MaxValue),
+    multipleOf = Some(1.0))
+
+  val long = NumberSchema(id = Some(new URI("ia:long")),
+    minimum = Some(Long.MinValue),
+    maximum = Some(Long.MaxValue),
+    multipleOf = Some(1.0))
+
+  val float = NumberSchema(id = Some(new URI("ia:float")),
+    minimum = Some(Float.MinValue),
+    maximum = Some(Float.MaxValue))
+
+  val double = NumberSchema(id = Some(new URI("ia:double")),
+    minimum = Some(Double.MinValue),
+    maximum = Some(Double.MaxValue))
+
+  val dateTime = StringSchema(format = Some("date-time"))
+
+  val frame = StringSchema(format = Some("uri/ia-frame"))
+
+  val graph = StringSchema(format = Some("uri/ia-graph"))
+
 }
 
 sealed trait Primitive extends JsonSchema {
@@ -62,6 +86,7 @@ case class ObjectSchema(
     properties: Option[Map[String, JsonSchema]] = None,
     patternProperties: Option[Map[String, JsonSchema]] = None,
     definitions: Option[Map[String, JsonSchema]] = None,
+    order: Option[Array[String]] = None,
     `type`: Option[String] = Some("object")) extends JsonSchema {
 }
 

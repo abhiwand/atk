@@ -23,6 +23,7 @@
 
 package com.intel.intelanalytics.component
 
+import com.intel.intelanalytics.component.Boot.ArchiveDefinition
 import com.typesafe.config.Config
 
 /**
@@ -30,28 +31,45 @@ import com.typesafe.config.Config
  */
 trait Component {
 
+  private var configuredName: Option[String] = None
+
+  private var config: Option[Config] = None
+
   /**
-   * The location at which this component should be installed in the component
-   * tree. For example, a graph machine learning algorithm called Loopy Belief
-   * Propagation might wish to be installed at
-   * "commands/graphs/ml/loopy_belief_propagation". However, it might not actually
-   * get installed there if the system has been configured to override that
-   * default placement.
+   * A component's name, useful for error messages
    */
-  def defaultLocation: String
+  final def componentName: String = {
+    configuredName.getOrElse(throw new Exception("This component has not been initialized, so it does not have a name"))
+  }
+
+  final def configuration: Config = {
+    config.getOrElse(throw new Exception("This component has not been initialized, so it does not have a name"))
+  }
+
   /**
    * Called before processing any requests.
    *
+   * @param name          the name that was used to locate this component
    * @param configuration Configuration information, scoped to that required by the
    *                      plugin based on its installed paths.
    */
-  def start(configuration: Config)
+  final def init(name: String, configuration: Config) = {
+    configuredName = Some(name)
+    config = Some(configuration)
+  }
+
+  /**
+   * Called before processing any requests.
+   *
+   */
+  def start() = {
+  }
 
   /**
    * Called before the application as a whole shuts down. Not guaranteed to be called,
    * nor guaranteed that the application will not shut down while this method is running,
    * though an effort will be made.
    */
-  def stop()
+  def stop() = {}
 }
 

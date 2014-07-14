@@ -21,30 +21,17 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.component
+package com.intel.intelanalytics.domain.frame
 
-import scala.reflect.ClassTag
-
-trait Locator {
-
-  /**
-   * Obtain instances of a given class. The keys are established purely
-   * by convention.
-   *
-   * @param descriptor the string key of the desired class instance.
-   * @tparam T the type of the requested instances
-   * @return the requested instances, or the empty sequence if no such instances could be produced.
-   */
-  def getAll[T: ClassTag](descriptor: String): Seq[T]
-
-  /**
-   * Obtain a single instance of a given class. The keys are established purely
-   * by convention.
-   *
-   * @param descriptor the string key of the desired class instance.
-   * @tparam T the type of the requested instances
-   * @return the requested instance, or the first such instance if the locator provides more than one
-   * @throws NoSuchElementException if no instances were found
-   */
-  def get[T: ClassTag](descriptor: String): T = getAll(descriptor).head
+case class ClassificationMetric[FrameRef](frameId: FrameRef, metricType: String, labelColumn: String, predColumn: String, posLabel: String, beta: Double) {
+  require(metricType.equals("accuracy") ||
+    metricType.equals("precision") ||
+    metricType.equals("recall") ||
+    metricType.equals("fmeasure"), "valid metric type is required")
+  require(labelColumn != null && !labelColumn.equals(""), "label column is required")
+  require(predColumn != null && !predColumn.equals(""), "predict column is required")
+  require(posLabel != null && !posLabel.equals(""), "invalid positive label")
+  require(beta > 0, "invalid beta value for f measure")
 }
+
+case class ClassificationMetricValue(metricValue: Double)

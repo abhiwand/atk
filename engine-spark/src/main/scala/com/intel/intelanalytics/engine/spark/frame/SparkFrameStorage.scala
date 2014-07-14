@@ -25,8 +25,7 @@ package com.intel.intelanalytics.engine.spark.frame
 
 import java.nio.file.Paths
 import java.util.concurrent.atomic.AtomicLong
-
-import com.intel.intelanalytics.ClassLoaderAware
+import com.intel.intelanalytics.component.ClassLoaderAware
 import com.intel.intelanalytics.engine._
 import com.intel.intelanalytics.domain.frame.{ Column, DataFrame, DataFrameTemplate }
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType

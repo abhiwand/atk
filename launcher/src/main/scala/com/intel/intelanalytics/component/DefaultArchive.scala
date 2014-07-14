@@ -21,51 +21,41 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.graphon
+package com.intel.intelanalytics.component
 
-import java.util.Date
+import com.typesafe.config.Config
 
-import com.intel.testutils._
-import org.apache.spark.{ SparkConf, SparkContext }
-import org.scalatest.{ BeforeAndAfterAll, WordSpec }
+import scala.reflect.ClassTag
 
-trait GraphonSparkContext extends WordSpec with BeforeAndAfterAll {
-  LogUtils.silenceSpark()
+import scala.collection.JavaConverters._
+import scala.util.control.NonFatal
+import scala.util.{ Failure, Success, Try }
 
-  val conf = new SparkConf()
-    .setMaster("local")
-    .setAppName(this.getClass.getSimpleName + " " + new Date())
-  conf.set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
-  conf.set("spark.kryo.registrator", "com.intel.graphbuilder.driver.spark.titan.GraphBuilderKryoRegistrator")
-
-  var sparkContext: SparkContext = null
-
-  override def beforeAll = {
-    // Ensure only one Spark local context is running at a time
-    TestingSparkContext.lock.acquire()
-    sparkContext = new SparkContext(conf)
-  }
+class DefaultArchive extends Archive {
 
   /**
-   * Clean up after the test is done
+   * Obtain instances of a given class. The keys are established purely
+   * by convention.
+   *
+   * @param descriptor the string key of the desired class instance.
+   * @tparam T the type of the requested instances
+   * @return the requested instances, or the empty sequence if no such instances could be produced.
    */
-  override def afterAll = {
-    cleanupSpark()
+  override def getAll[T: ClassTag](descriptor: String): Seq[T] = {
+    val array = try {
+      Archive.logger(s"Archive ${definition.name} getting all '$descriptor'")
+      val stringList = configuration.getStringList(descriptor + ".available").asScala
+      Archive.logger(s"Found: $stringList")
+      val components = stringList.map(componentName => loadComponent(descriptor + "." + componentName))
+      components.map(_.asInstanceOf[T]).toArray
+    }
+    catch {
+      case NonFatal(e) =>
+        Archive.logger(e.toString)
+        Archive.logger(configuration.root().render())
+        Array[T]()
+    }
+    array
   }
 
-  /**
-   * Shutdown spark and release the lock
-   */
-  def cleanupSpark(): Unit = {
-    try {
-      if (sparkContext != null) {
-        sparkContext.stop()
-      }
-    }
-    finally {
-      // To avoid Akka rebinding to the same port, since it doesn't unbind immediately on shutdown
-      System.clearProperty("spark.driver.port")
-      TestingSparkContext.lock.release()
-    }
-  }
 }
