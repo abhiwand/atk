@@ -157,7 +157,7 @@ class SparkFrameStorage(context: UserPrincipal => Context, fsRoot: String, files
       withMyClassLoader {
         val ctx = context(user).sparkContext
         val rdd: RDD[Row] = getFrameRdd(ctx, frame.id)
-        val rows = SparkOps.getRowsRdd(rdd, offset, count)
+        val rows = SparkOps.getElementsRdd[Row](rdd, offset, count)
         rows
       }
     }

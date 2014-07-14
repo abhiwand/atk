@@ -40,7 +40,7 @@ import scala.concurrent.ExecutionContext
  *           the user
  * @tparam Return the type of the data that this plugin will return when invoked.
  */
-sealed abstract class OperationPlugin[Argument <: Product: ClassManifest, Return <: Product: ClassManifest] extends ((Invocation, Any) => Return)
+sealed abstract class OperationPlugin[Argument <: Product: ClassManifest, Return] extends ((Invocation, Any) => Return)
     with Plugin
     with ClassLoaderAware {
 
@@ -132,8 +132,7 @@ abstract class CommandPlugin[Argument <: Product: ClassManifest, Return <: Produ
 /**
  * Base trait for query plugins
  */
-//trait QueryPlugin[Argument, Return] extends OperationPlugin[Argument, Return] {
-trait QueryPlugin[Argument] extends OperationPlugin[Argument, Any] {
+abstract class QueryPlugin[Argument <: Product: ClassManifest] extends OperationPlugin[Argument, Any] {
 
   //TODO: move this override to an engine-specific class
   final override def defaultLocation = "engine/queries/" + name

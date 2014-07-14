@@ -31,6 +31,7 @@ import logging
 import sys
 import re
 import collections
+from requests import HTTPError
 
 logger = logging.getLogger(__name__)
 
@@ -156,11 +157,12 @@ class CommandRequest(object):
 
 
 class CommandInfo(object):
-    __commands_regex = re.compile("""^http.+/commands/\d+""")
+    __commands_regex = re.compile("""^http.+/[queries|commands]/\d+""")
 
     @staticmethod
     def is_valid_command_uri(uri):
-        return CommandInfo.__commands_regex.match(uri) is not None
+        return True
+        # return CommandInfo.__commands_regex.match(uri) is not None
 
     def __init__(self, response_payload):
         self._payload = response_payload
@@ -290,14 +292,8 @@ class Polling(object):
 
                 next_poll_time = time.time() + interval_secs
                 progress = command_info.progress
+
                 printer.print_progress(progress, command_info.progressMessage, finish)
-
-                if job_count < len(progress):
-                    job_start_times.append(time.time())
-                    job_count = len(progress)
-
-                if not "queries" in command_info.uri:
-                    print_progress(progress, command_info.progressMessage, print_new_line, job_start_times, finish)
 
                 if finish:
                     break
@@ -377,8 +373,7 @@ class Executor(object):
         command = self.poll_command_info(response)
         data = []
 
-        total_partitions = command.result["totalPartitions"] + 1
-        start_time = [time.time()]
+        total_pages = command.result["totalPartitions"] + 1
 
         def get_query_response(id, partition):
             """
@@ -391,19 +386,20 @@ class Executor(object):
                 try:
                     info =  CommandInfo(http.get("queries/%s/data/%s" % (id, partition)).json())
                     return info
-                except Exception as e:
+                except HTTPError as e:
+                    time.sleep(i)
                     if i == max_retries - 1:
                         raise e
 
         #retreive the data
-        for i in range(1, total_partitions):
+        printer = ProgressPrinter()
+        for i in range(1, total_pages):
             next_partition = get_query_response(command.id_number, i)
             data.extend(next_partition.result["data"])
 
-            #if the total parttions is greater than 10 display a progress bar
-            if total_partitions > 10:
-                print_progress([(float(i)/(total_partitions - 1)) * 100], "", False, start_time, i == total_partitions -1)
-
+            #if the total pages is greater than 10 display a progress bar
+            if total_pages > 10:
+                printer.print_progress([(float(i)/(total_pages - 1)) * 100], ["Pages Retrieved: %s of %s" % (i+1, total_pages)], i == total_pages -1)
         return data
 
 

@@ -34,20 +34,34 @@ import spray.json.JsObject
 
 import scala.collection.mutable
 import scala.math.pow
+import scala.reflect.ClassTag
 
 private[spark] object SparkOps extends Serializable {
 
   /**
-   *
+   * Take a specified number of Rows starting from a specified offset.
    * @param rdd rdd to pull from
    * @param offset offset to start pulling from
    * @param count number of objects to include in result
    * @param limit maximum allowed size of local object
-   * @return Sequence of Row objectes
+   * @return Sequence of Row objects
    */
   def getRows(rdd: RDD[Row], offset: Long, count: Int, limit: Int): Seq[Row] = {
-    val rowsRDD = getRowsRdd(rdd, offset, count)
-    val rows: Seq[Row] = if (rowsRDD.count() > limit) {
+    getElements[Row](rdd, offset, count, limit)
+  }
+
+  /**
+   * Take a specified number of Elements starting from a specified offset
+   * @param rdd rdd to pull from
+   * @param offset offset to start pulling from
+   * @param count number of objects to include in result
+   * @param limit maximum allowed size of local object
+   * @tparam T
+   * @return Sequence of T objects
+   */
+  def getElements[T: ClassTag](rdd: RDD[T], offset: Long, count: Int, limit: Int): Seq[T] = {
+    val rowsRDD = getElementsRdd[T](rdd, offset, count)
+    val rows: Seq[T] = if (rowsRDD.count() > limit) {
       rowsRDD.take(limit)
     }
     else {
@@ -57,17 +71,17 @@ private[spark] object SparkOps extends Serializable {
   }
 
   /**
-   * return an RDD containing the specified rows
+   * return an RDD containing the specified Elements
    *
    * @param rdd rdd to pull from
    * @param offset offset to start pulling from
    * @param count number of objects to include in result
-   * @return RDD of Row objects
+   * @return RDD of T objects
    */
-  def getRowsRdd(rdd: RDD[Row], offset: Long, count: Int): RDD[Row] = {
+  def getElementsRdd[T: ClassTag](rdd: RDD[T], offset: Long, count: Int): RDD[T] = {
     //Count the rows in each partition, then order the counts by partition number
     val counts = rdd.mapPartitionsWithIndex(
-      (i: Int, rows: Iterator[Row]) => Iterator.single((i, rows.size)))
+      (i: Int, rows: Iterator[T]) => Iterator.single((i, rows.size)))
       .collect()
       .sortBy(_._1)
 
@@ -86,7 +100,7 @@ private[spark] object SparkOps extends Serializable {
 
     //Start getting rows. We use the sums and counts to figure out which
     //partitions we need to read from and which to just ignore
-    rdd.mapPartitionsWithIndex((i, rows) => {
+    val newRDD: RDD[T] = rdd.mapPartitionsWithIndex[T]((i, rows) => {
       val (ct: Int, sum: Int) = sumsAndCounts(i)
       val thisPartStart = sum - ct
       if (sum < offset || thisPartStart >= offset + count) {
@@ -100,6 +114,8 @@ private[spark] object SparkOps extends Serializable {
         rows.drop(start.toInt).take(numToTake.toInt)
       }
     })
+
+    newRDD
   }
 
   /**
