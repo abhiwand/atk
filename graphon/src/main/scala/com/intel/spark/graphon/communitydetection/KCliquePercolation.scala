@@ -39,6 +39,7 @@ import spray.json.DefaultJsonProtocol._
 import spray.json._
 import scala.concurrent._
 import scala.collection.JavaConverters._
+import com.intel.intelanalytics.engine.spark.graph.GraphName
 
 case class KClique(graph: GraphReference,
                    cliqueSize: Int,
@@ -52,64 +53,32 @@ class KCliquePercolation extends SparkCommandPlugin[KClique, KCliqueResult] {
   implicit val kcliqueFormat = jsonFormat3(KClique)
   implicit val kcliqueResultFormat = jsonFormat1(KCliqueResult)
 
-  /**
-   * Set a value in the hadoop configuration, if the argument is not None.
-   * @param hadoopConfiguration the configuration to update
-   * @param hadoopKey the key name to set
-   * @param arg the value to use, if it is defined
-   */
-  def set(hadoopConfiguration: Configuration, hadoopKey: String, arg: Option[Any]) = arg.foreach { value =>
-    hadoopConfiguration.set(hadoopKey, value.toString)
-  }
-
-  /**
-   * Flatten a nested Config structure down to a simple dictionary that maps complex keys to
-   * a string value, similar to java.util.Properties.
-   *
-   * @param config the config to flatten
-   * @return a map of property names to values
-   */
-  private def flattenConfig(config: Config, prefix: String = ""): Map[String, String] = {
-    val result = config.root.asScala.foldLeft(Map.empty[String, String]) {
-      (map, kv) =>
-        kv._2 match {
-          case co: ConfigObject =>
-            val nested = flattenConfig(co.toConfig, prefix = prefix + kv._1 + ".")
-            map ++ nested
-          case value: ConfigValue =>
-            map + (prefix + kv._1 -> value.unwrapped().toString)
-        }
-    }
-    result
-  }
-
   override def execute(sparkInvocation: SparkInvocation, arguments: KClique)(implicit user: UserPrincipal, executionContext: ExecutionContext): KCliqueResult = {
 
     val start = System.currentTimeMillis()
     System.out.println("*********In Execute method of KCliquePercolation********")
 
     // Get the SparkContext as one the input parameters for KCliquePercolationDriver
-    val sparkContext = sparkInvocation.sparkContext
+    val sc = sparkInvocation.sparkContext
 
-    val config = configuration().get
-    val titanConf = config.getConfig("titan")
+    // Titan Settings
+    val config = configuration
+    val titanConfigInput = config.getConfig("titan.load")
 
-    val graphFuture = sparkInvocation.engine.getGraph(arguments.graph.id)
-
-    // Change this to read from default-timeout
-    import scala.concurrent.duration._
-    val graph = Await.result(graphFuture, config.getInt("default-timeout") seconds)
-
-    // Create graph connection
     val titanConfig = new SerializableBaseConfiguration()
-    titanConfig.setProperty("storage.backend", titanConf.getString("storage.backend"))
-    titanConfig.setProperty("storage.hostname", titanConf.getString("storage.hostname"))
-    titanConfig.setProperty("storage.port", titanConf.getString("storage.port"))
-    titanConfig.setProperty("storage.tablename", graph.name)
+    titanConfig.setProperty("storage.backend", titanConfigInput.getString("storage.backend"))
+    titanConfig.setProperty("storage.hostname", titanConfigInput.getString("storage.hostname"))
+    titanConfig.setProperty("storage.port", titanConfigInput.getString("storage.port"))
+
+    import scala.concurrent.duration._
+    val graph = Await.result(invocation.engine.getGraph(arguments.graph.id), config.getInt("default-timeout") seconds)
+
+    val iatGraphName = GraphName.convertGraphUserNameToBackendName(graph.name)
+    titanConfig.setProperty("storage.tablename", iatGraphName)
+
     val titanConnector = new TitanGraphConnector(titanConfig)
 
-
-    KCliquePercolationDriver.run(titanConnector, sparkContext, arguments.cliqueSize, arguments.communityPropertyDefaultLabel)
+    KCliquePercolationDriver.run(titanConnector, sc, arguments.cliqueSize, arguments.communityPropertyDefaultLabel)
 
     val time = (System.currentTimeMillis() - start).toDouble / 1000.0
     KCliqueResult(time)
