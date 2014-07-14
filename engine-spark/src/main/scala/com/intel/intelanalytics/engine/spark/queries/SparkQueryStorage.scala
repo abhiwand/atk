@@ -23,29 +23,65 @@
 
 package com.intel.intelanalytics.engine.spark.queries
 
+import java.nio.file.Paths
+
 import com.intel.intelanalytics.domain.query.{ Query, QueryTemplate }
-import com.intel.intelanalytics.engine.{ QueryStorage }
+import com.intel.intelanalytics.engine.Rows._
+import com.intel.intelanalytics.engine.spark.{ SparkOps, HdfsFileStorage, SparkEngineConfig }
+import com.intel.intelanalytics.engine.{ ProgressInfo, QueryStorage }
 import com.intel.intelanalytics.repository.SlickMetaStoreComponent
 import com.intel.intelanalytics.shared.EventLogging
+import org.apache.spark.SparkContext
+import org.apache.spark.rdd.RDD
 import spray.json.JsObject
 
 import scala.util.{ Failure, Success, Try }
 
-class SparkQueryStorage(val metaStore: SlickMetaStoreComponent#SlickMetaStore) extends QueryStorage with EventLogging {
+class SparkQueryStorage(val metaStore: SlickMetaStoreComponent#SlickMetaStore, files: HdfsFileStorage) extends QueryStorage with EventLogging {
   val repo = metaStore.queryRepo
+
+  /**
+   * Create an RDD from a frame data file.
+   * @param ctx spark context
+   * @param queryId primary key of the query record
+   * @return the newly created RDD
+   */
+  def getQueryRdd(ctx: SparkContext, queryId: Long): RDD[Row] = {
+    ctx.objectFile(getAbsoluteFrameDirectory(queryId))
+  }
+
+  /**
+   * Returns the data found in a single partition
+   * @param ctx spark context
+   * @param queryId primary key of the query record
+   * @param partitionId partition number to return
+   * @return data from partition as a local object
+   */
+  def getQueryPartition(ctx: SparkContext, queryId: Long, partitionId: Long): Iterable[Any] = {
+    val rdd = getQueryRdd(ctx, queryId)
+    //    rdd.mapPartitionsWithIndex((i, rows) => {
+    //      if (i == partitionId) rows
+    //      else Iterator.empty
+    //    }).collect()
+    val maxRows = SparkEngineConfig.maxRows
+    SparkOps.getRows(rdd, partitionId * maxRows, maxRows, maxRows)
+  }
 
   override def lookup(id: Long): Option[Query] =
     metaStore.withSession("se.query.lookup") {
       implicit session =>
+        {}
         repo.lookup(id)
     }
 
-  override def create(createReq: QueryTemplate): Query =
+  override def create(createQuery: QueryTemplate): Query =
     metaStore.withSession("se.query.create") {
       implicit session =>
 
-        val created = repo.insert(createReq)
-        repo.lookup(created.get.id).getOrElse(throw new Exception("Query not found immediately after creation"))
+        val created = repo.insert(createQuery)
+        val query = repo.lookup(created.get.id).getOrElse(throw new Exception("Query not found immediately after creation"))
+        drop(query.id)
+        query
     }
 
   override def scan(offset: Int, count: Int): Seq[Query] = metaStore.withSession("se.query.getQuerys") {
@@ -57,9 +93,9 @@ class SparkQueryStorage(val metaStore: SlickMetaStoreComponent#SlickMetaStore) e
     //TODO: set start date
   }
 
-  override def complete(id: Long, result: Try[JsObject]): Unit = {
+  override def complete(id: Long, totalPartitions: Try[Long]): Unit = {
     require(id > 0, "invalid ID")
-    require(result != null)
+    require(totalPartitions != null)
     metaStore.withSession("se.query.complete") {
       implicit session =>
         val query = repo.lookup(id).getOrElse(throw new IllegalArgumentException(s"Query $id not found"))
@@ -68,7 +104,7 @@ class SparkQueryStorage(val metaStore: SlickMetaStoreComponent#SlickMetaStore) e
         }
         //TODO: Update dates
         import com.intel.intelanalytics.domain.throwableToError
-        val changed = result match {
+        val changed = totalPartitions match {
           case Failure(ex) => query.copy(complete = true, error = Some(throwableToError(ex)))
           case Success(r) => {
             /**
@@ -78,7 +114,7 @@ class SparkQueryStorage(val metaStore: SlickMetaStoreComponent#SlickMetaStore) e
              */
 
             val progress = query.progress.map(i => 100f)
-            query.copy(complete = true, progress = progress, result = Some(r))
+            query.copy(complete = true, progress = progress, totalPartitions = Some(r))
           }
         }
         repo.update(changed)
@@ -90,10 +126,26 @@ class SparkQueryStorage(val metaStore: SlickMetaStoreComponent#SlickMetaStore) e
    * @param id query id
    * @param progress progress
    */
-  override def updateProgress(id: Long, progress: List[Float]): Unit = {
+  override def updateProgress(id: Long, progress: List[Float], detailedProgress: List[ProgressInfo]): Unit = {
     metaStore.withSession("se.query.updateProgress") {
       implicit session =>
-        repo.updateProgress(id, progress)
+        repo.updateProgress(id, progress, detailedProgress)
     }
   }
+
+  val queryResultBase = "/intelanalytics/queryresults"
+
+  def getFrameDirectory(id: Long): String = {
+    val path = Paths.get(s"$queryResultBase/$id")
+    path.toString
+  }
+
+  def getAbsoluteFrameDirectory(id: Long): String = {
+    SparkEngineConfig.fsRoot + "/" + getFrameDirectory(id)
+  }
+
+  def drop(queryId: Long): Unit = withContext("frame.drop") {
+    files.delete(Paths.get(getFrameDirectory(queryId)))
+  }
+
 }

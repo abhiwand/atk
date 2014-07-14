@@ -77,7 +77,7 @@ class SparkComponent extends EngineComponent
 
   lazy val commandExecutor: CommandExecutor = new CommandExecutor(engine, commands, sparkContextManager)
 
-  val queries = new SparkQueryStorage(metaStore.asInstanceOf[SlickMetaStore])
+  val queries = new SparkQueryStorage(metaStore.asInstanceOf[SlickMetaStore], files)
 
   lazy val queryExecutor: QueryExecutor = new QueryExecutor(engine, queries, sparkContextManager)
 

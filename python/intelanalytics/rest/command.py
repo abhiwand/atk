@@ -206,7 +206,8 @@ class Polling(object):
                     job_start_times.append(time.time())
                     job_count = len(progress)
 
-                print_progress(progress, command_info.progressMessage, print_new_line, job_start_times, finish)
+                if not "queries" in command_info.uri:
+                    print_progress(progress, command_info.progressMessage, print_new_line, job_start_times, finish)
 
                 if finish:
                     break
@@ -311,13 +312,41 @@ class Executor(object):
     def query(self, query_url):
         """
         Issues the query_request to the server
-
-        todo: queries still need to handle pagination and transient storage of query results rather than
-        execute as a command
         """
         logger.info("Issuing query " + query_url)
         response = http.get(query_url)
-        return self.poll_command_info(response)
+        command = self.poll_command_info(response)
+        data = []
+
+        total_partitions = command.result["totalPartitions"] + 1
+        start_time = [time.time()]
+
+        def get_query_response(id, partition):
+            """
+            Attempt to get the next partition of data as a CommandInfo Object. Allow for several retries
+            :param id: Query ID
+            :param partition: Partition number to pull
+            """
+            max_retries = 10
+            for i in range(0, max_retries):
+                try:
+                    info =  CommandInfo(http.get("queries/%s/data/%s" % (id, partition)).json())
+                    return info
+                except Exception as e:
+                    if i == max_retries - 1:
+                        raise e
+
+        #retreive the data
+        for i in range(1, total_partitions):
+            next_partition = get_query_response(command.id_number, i)
+            data.extend(next_partition.result["data"])
+
+            #if the total parttions is greater than 10 display a progress bar
+            if total_partitions > 10:
+                print_progress([(float(i)/(total_partitions - 1)) * 100], "", False, start_time, i == total_partitions -1)
+
+        return data
+
 
 
     def cancel(self, command_id):

@@ -24,6 +24,7 @@
 package com.intel.intelanalytics.domain.query
 
 import com.intel.intelanalytics.domain.{ Error, HasId }
+import com.intel.intelanalytics.engine.ProgressInfo
 import org.joda.time.DateTime
 import spray.json.JsObject
 
@@ -39,7 +40,7 @@ import spray.json.JsObject
  * @param error StackTrace and/or other error text if it exists
  * @param progress List of progress for the jobs initiated by this command
  * @param complete True if this command is completed
- * @param result result data for executing the command
+ * @param totalPartitions total Partitions of the result object.
  * @param createdOn date/time this record was created
  * @param modifiedOn date/time this record was last modified
  * @param createdById user who created this row
@@ -49,8 +50,9 @@ case class Query(id: Long,
                  arguments: Option[JsObject],
                  error: Option[Error] = None,
                  progress: List[Float],
+                 detailedProgress: List[ProgressInfo] = List(),
                  complete: Boolean = false,
-                 result: Option[JsObject] = None,
+                 totalPartitions: Option[Long] = None,
                  createdOn: DateTime,
                  modifiedOn: DateTime,
                  createdById: Option[Long] = None) extends HasId

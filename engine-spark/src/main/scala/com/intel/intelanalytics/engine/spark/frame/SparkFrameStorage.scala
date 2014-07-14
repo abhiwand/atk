@@ -149,6 +149,19 @@ class SparkFrameStorage(context: UserPrincipal => Context, fsRoot: String, files
       }
     }
 
+  def getRowsRDD(frame: DataFrame, offset: Long, count: Int)(implicit user: UserPrincipal): RDD[Row] =
+    withContext("frame.getRows") {
+      require(frame != null, "frame is required")
+      require(offset >= 0, "offset must be zero or greater")
+      require(count > 0, "count must be zero or greater")
+      withMyClassLoader {
+        val ctx = context(user).sparkContext
+        val rdd: RDD[Row] = getFrameRdd(ctx, frame.id)
+        val rows = SparkOps.getRowsRdd(rdd, offset, count)
+        rows
+      }
+    }
+
   /**
    * Create an RDD from a frame data file.
    * @param ctx spark context

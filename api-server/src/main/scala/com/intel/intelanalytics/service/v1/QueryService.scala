@@ -58,51 +58,108 @@ class QueryService(commonDirectives: CommonDirectives, engine: Engine) extends D
    * @param query The query being decorated
    * @return View model of the command.
    */
-  def decorate(uri: Uri, query: Query): GetQuery = {
+  def decorate(uri: Uri, query: Query, partition: Option[Long])(implicit user: UserPrincipal): GetQuery = {
     //TODO: add other relevant links
     val links = List(Rel.self(uri.toString()))
     QueryDecorator.decorateEntity(uri.toString(), links, query)
   }
 
+  /**
+   * Convert an Iterable of Any to a List of JsValue. Required due to how spray-json handles AnyVals
+   * @param data iterable to return in response
+   * @return JSON friendly version of data
+   */
+  def updateData(data: Iterable[Any]): List[JsValue] = {
+    import com.intel.intelanalytics.domain.DomainJsonProtocol._
+    data match {
+      case x: Iterable[Array[Any]] => {
+        x.map(row => row.map {
+          case null => JsNull
+          case a => a.toJson
+        }.toJson).toList
+      }
+      case x: Iterable[Any] => {
+        data.map {
+          case null => JsNull
+          case a => a.toJson
+        }.toList
+      }
+    }
+  }
+
   val prefix = QueryService.prefix
 
   /**
-   * The spray routes defining the command service.
+   * The spray routes defining the query service.
    */
   def queryRoutes() = {
     commonDirectives(prefix) { implicit principal: UserPrincipal =>
       pathPrefix(prefix / LongNumber) {
         id =>
-          pathEnd {
+          {
             requestUri {
               uri =>
-                get {
-                  onComplete(engine.getQuery(id)) {
-                    case Success(Some(query)) => complete(decorate(uri, query))
-                    case _ => reject()
+                pathEnd {
+                  get {
+                    onComplete(engine.getQuery(id)) {
+                      case Success(Some(query)) => complete(decorate(uri, query, None))
+                      case _ => reject()
+                    }
                   }
-                }
+                } ~
+                  pathPrefix("data") {
+                    pathEnd {
+                      get {
+                        import ViewModelJsonImplicits._
+                        onComplete(engine.getQuery(id)) {
+                          case Success(Some(query)) => complete(QueryDecorator.decoratePartitions(uri.toString, query))
+                          case _ => reject()
+                        }
+                      }
+                    }
+                  } ~ pathPrefix("data" / IntNumber) {
+                    partition =>
+                      {
+                        get {
+
+                          val links = List(Rel.self(uri.toString()))
+                          onComplete(engine.getQuery(id)) {
+                            case Success(Some(query)) => complete(if (query.complete) {
+
+                              val rdd = engine.getQueryPartition(query.id, partition - 1)
+                              QueryDecorator.decoratePartition(uri.toString, links, query, partition, updateData(rdd))
+                            }
+                            else {
+                              QueryDecorator.decorateEntity(uri.toString(), links, query)
+                            })
+                            case _ => reject()
+                          }
+                        }
+                      }
+                  }
             }
           }
       } ~
-        (path(prefix) & pathEnd) {
+        (path(prefix)) {
           requestUri {
             uri =>
-              get {
-                import spray.json._
-                import ViewModelJsonImplicits._
-                //TODO: cursor
-                onComplete(engine.getQueries(0, ApiServiceConfig.defaultCount)) {
-                  case Success(queries) => complete(QueryDecorator.decorateForIndex(uri.toString(), queries))
-                  case Failure(ex) => throw ex
+              pathEnd {
+                get {
+                  import spray.json._
+                  import ViewModelJsonImplicits._
+                  //TODO: cursor
+                  onComplete(engine.getQueries(0, ApiServiceConfig.defaultCount)) {
+                    case Success(queries) => complete(QueryDecorator.decorateForIndex(uri.toString(), queries))
+                    case Failure(ex) => throw ex
+                  }
                 }
               }
           }
         }
     }
   }
-
 }
+
 object QueryService {
   val prefix = "queries"
 }

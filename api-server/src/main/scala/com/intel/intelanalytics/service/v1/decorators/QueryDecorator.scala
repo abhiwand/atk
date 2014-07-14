@@ -23,7 +23,10 @@
 package com.intel.intelanalytics.service.v1.decorators
 
 import com.intel.intelanalytics.domain.query.Query
-import com.intel.intelanalytics.service.v1.viewmodels.{ GetQueries, GetQuery, RelLink }
+import com.intel.intelanalytics.service.v1.viewmodels._
+import spray.json.JsValue
+
+import scala.collection.mutable.ListBuffer
 
 /**
  * A decorator that takes an entity from the database and converts it to a View/Model
@@ -40,9 +43,16 @@ object QueryDecorator extends EntityDecorator[Query, GetQueries, GetQuery] {
    * @return the View/Model
    */
   override def decorateEntity(uri: String, links: Iterable[RelLink], entity: Query): GetQuery = {
+    val detailedProgressMessage = entity.detailedProgress.map(progress => progress.toString)
+
     GetQuery(id = entity.id, name = entity.name,
-      arguments = entity.arguments, error = entity.error, progress = entity.progress, complete = entity.complete,
-      result = entity.result, links = links.toList)
+      arguments = entity.arguments, error = entity.error, progress = entity.progress, progressMessage = detailedProgressMessage, complete = entity.complete,
+      result = if (entity.complete) {
+        Some(GetQueryPartition(None, None, entity.totalPartitions))
+      }
+      else {
+        None
+      }, links = links.toList)
   }
 
   /**
@@ -56,5 +66,40 @@ object QueryDecorator extends EntityDecorator[Query, GetQueries, GetQuery] {
     entities.map(query => new GetQueries(id = query.id,
       name = query.name,
       url = uri + "/" + query.id)).toList
+  }
+
+  /**
+   * Decorate a list of data partitions There will be one record per partition of the query RDD
+   *
+   * @param uri the base URI, for this type query ie ../queries/id
+   * @param entity query to display partitions
+   * @return the View/Model
+   */
+  def decoratePartitions(uri: String, entity: Query): List[GetQueryPartitions] = {
+    require(entity.complete)
+    val partitions = new ListBuffer[GetQueryPartitions]();
+    for (i <- 1 to entity.totalPartitions.get.toInt) {
+      partitions += new GetQueryPartitions(id = i, url = uri + "/" + i)
+    }
+    partitions.toList
+  }
+
+  /**
+   * Decorate a retrieved data partition
+   *
+   * @param uri uri of the query
+   * @param links related links
+   * @param entity query retrieved
+   * @param partition partition requested
+   * @param data data found in the partitiion as a List of JsValues
+   * @return the View/Model
+   */
+  def decoratePartition(uri: String, links: Iterable[RelLink], entity: Query, partition: Long, data: List[JsValue]): GetQuery = {
+    require(entity.complete)
+    val detailedProgressMessage = entity.detailedProgress.map(progress => progress.toString)
+
+    GetQuery(id = entity.id, name = entity.name,
+      arguments = entity.arguments, error = entity.error, progress = entity.progress, progressMessage = detailedProgressMessage, complete = entity.complete,
+      result = Some(new GetQueryPartition(Some(data), Some(partition), entity.totalPartitions)), links = links.toList)
   }
 }

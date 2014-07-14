@@ -24,7 +24,7 @@
 package com.intel.intelanalytics.engine.spark.queries
 
 import com.intel.intelanalytics.component.{ ArchiveName, Boot }
-import com.intel.intelanalytics.domain.query.{ QueryResult, Query, QueryTemplate, Execution }
+import com.intel.intelanalytics.domain.query.{ Query, QueryTemplate, Execution }
 import com.intel.intelanalytics.engine.plugin.{ FunctionQuery, QueryPlugin }
 import com.intel.intelanalytics.engine.spark.context.SparkContextManager
 import com.intel.intelanalytics.engine.spark.plugin.SparkInvocation
@@ -65,9 +65,9 @@ class QueryExecutor(engine: => SparkEngine, queries: SparkQueryStorage, contextM
     extends EventLogging
     with ClassLoaderAware {
 
-  private var queryPlugins: Map[String, QueryPlugin[_, _]] = SparkEngineConfig.archives.flatMap {
+  private var queryPlugins: Map[String, QueryPlugin[_]] = SparkEngineConfig.archives.flatMap {
     case (archive, className) => Boot.getArchive(ArchiveName(archive, className))
-      .getAll[QueryPlugin[_, _]]("QueryPlugin")
+      .getAll[QueryPlugin[_]]("QueryPlugin")
       .map(p => (p.name, p))
   }.toMap
 
@@ -79,28 +79,26 @@ class QueryExecutor(engine: => SparkEngine, queries: SparkQueryStorage, contextM
    * @param name the name of the command
    * @param function the function to be called when running the command
    * @tparam A the argument type of the command
-   * @tparam R the return type of the command
    * @return the CommandPlugin instance created during the registration process.
    */
-  def registerQuery[A: JsonFormat, R: JsonFormat](name: String,
-                                                  function: (A, UserPrincipal) => R): QueryPlugin[A, R] =
+  def registerQuery[A: JsonFormat](name: String,
+                                   function: (A, UserPrincipal) => Any): QueryPlugin[A] =
     registerQuery(FunctionQuery(name, function))
 
   /**
    * Adds the given query to the registry.
    * @param query the query to add
    * @tparam A the argument type for the query
-   * @tparam R the return type for the query
    * @return the same query that was passed, for convenience
    */
-  def registerQuery[A, R](query: QueryPlugin[A, R]): QueryPlugin[A, R] = {
+  def registerQuery[A](query: QueryPlugin[A]): QueryPlugin[A] = {
     synchronized {
       queryPlugins += (query.name -> query)
     }
     query
   }
 
-  private def getQueryDefinition(name: String): Option[QueryPlugin[_, _]] = {
+  private def getQueryDefinition(name: String): Option[QueryPlugin[_]] = {
     queryPlugins.get(name)
   }
 
@@ -113,10 +111,10 @@ class QueryExecutor(engine: => SparkEngine, queries: SparkQueryStorage, contextM
    * @param user the user running the query
    * @return an Execution object that can be used to track the query's execution
    */
-  def execute[A, R](query: QueryPlugin[A, R],
-                    arguments: A,
-                    user: UserPrincipal,
-                    executionContext: ExecutionContext): Execution = {
+  def execute[A](query: QueryPlugin[A],
+                 arguments: A,
+                 user: UserPrincipal,
+                 executionContext: ExecutionContext): Execution = {
     implicit val ec = executionContext
     val q = queries.create(QueryTemplate(query.name, Some(query.serializeArguments(arguments))))
     withMyClassLoader {
@@ -132,7 +130,24 @@ class QueryExecutor(engine: => SparkEngine, queries: SparkQueryStorage, contextM
               context.setLocalProperty("query-id", q.id.toString)
 
               val funcResult = query(invocation, arguments)
-              query.serializeReturn(funcResult)
+
+              if (funcResult.isInstanceOf[RDD[Any]]) {
+                val rdd = funcResult.asInstanceOf[RDD[Any]]
+                val location = queries.getAbsoluteFrameDirectory(q.id)
+
+                //                val count = rdd.count()
+                //                //                val numberDesiredPartitions = math.max(math.ceil(count.toDouble / SparkEngineConfig.maxRows).toInt, rdd.partitions.size)
+                //                val numberDesiredPartitions = math.ceil(count.toDouble / SparkEngineConfig.maxRows).toInt
+                //
+                //                val coalescedRdd = rdd.coalesce(numberDesiredPartitions, true)
+                //
+                //                coalescedRdd.saveAsObjectFile(location)
+                //
+                //                coalescedRdd.partitions.size
+                rdd.saveAsObjectFile(location)
+                math.ceil(rdd.count().toDouble / SparkEngineConfig.maxRows).toInt
+              }
+              else ???
             }
             queries.lookup(q.id).get
           }
@@ -141,24 +156,6 @@ class QueryExecutor(engine: => SparkEngine, queries: SparkQueryStorage, contextM
       }
     }
   }
-//
-//  def updateData(data: Iterable[Any]): List[JsValue] = {
-//    import com.intel.intelanalytics.domain.DomainJsonProtocol._
-//    data match {
-//      case x: Iterable[Array[Any]] => {
-//        x.map(row => row.map {
-//          case null => JsNull
-//          case a => a.toJson
-//        }.toJson).toList
-//      }
-//      case x: Iterable[Any] => {
-//        data.map {
-//          case null => JsNull
-//          case a => a.toJson
-//        }.toList
-//      }
-//    }
-//  }
 
   /**
    * Executes the given query template, managing all necessary auditing, contexts, class loaders, etc.
@@ -172,13 +169,13 @@ class QueryExecutor(engine: => SparkEngine, queries: SparkQueryStorage, contextM
    * @param user the user running the query
    * @return an Execution object that can be used to track the query's execution
    */
-  def execute[A, R](name: String,
-                    arguments: A,
-                    user: UserPrincipal,
-                    executionContext: ExecutionContext): Execution = {
+  def execute[A](name: String,
+                 arguments: A,
+                 user: UserPrincipal,
+                 executionContext: ExecutionContext): Execution = {
     val function = getQueryDefinition(name)
       .getOrElse(throw new NotFoundException("query definition", name))
-      .asInstanceOf[QueryPlugin[A, R]]
+      .asInstanceOf[QueryPlugin[A]]
     execute(function, arguments, user, executionContext)
   }
 
@@ -193,17 +190,17 @@ class QueryExecutor(engine: => SparkEngine, queries: SparkQueryStorage, contextM
    * @param user the user running the query
    * @return an Execution object that can be used to track the query's execution
    */
-  def execute[A, R](query: QueryTemplate,
-                    user: UserPrincipal,
-                    executionContext: ExecutionContext): Execution = {
+  def execute[A](query: QueryTemplate,
+                 user: UserPrincipal,
+                 executionContext: ExecutionContext): Execution = {
     val function = getQueryDefinition(query.name)
       .getOrElse(throw new NotFoundException("query definition", query.name))
-      .asInstanceOf[QueryPlugin[A, R]]
+      .asInstanceOf[QueryPlugin[A]]
     val convertedArgs = function.parseArguments(query.arguments.get)
     execute(function, convertedArgs, user, executionContext)
   }
 
-  private def withQuery[T](query: Query)(block: => JsObject): Unit = {
+  private def withQuery[T](query: Query)(block: => Long): Unit = {
     queries.complete(query.id, Try {
       block
     })

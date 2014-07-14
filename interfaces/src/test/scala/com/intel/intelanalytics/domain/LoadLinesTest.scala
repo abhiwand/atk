@@ -25,7 +25,6 @@ package com.intel.intelanalytics.domain
 
 import com.intel.intelanalytics.domain.frame.LoadLines
 import com.intel.intelanalytics.domain.frame.load.{ Load, LineParserArguments, LineParser, LoadSource }
-import com.intel.intelanalytics.domain.query.{ QueryResultFactory, QueryResult }
 import com.intel.intelanalytics.domain.schema.{ DataTypes, Schema }
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers
@@ -115,20 +114,6 @@ class LoadLinesTest extends FlatSpec with Matchers {
     mySource.uri should be("m1demo/domains.json")
 
     mySource.parser should not be (None)
-  }
-
-  "QueryResult" should "become a JsObject" in {
-    val l: Iterable[Array[Any]] = Iterable(Array(null, 50, "hello"), Array(5.0), Array(1), Array(2), Array(3))
-
-    val q = QueryResult(l.map(row => row.map {
-      case null => JsNull
-      case a => a.toJson
-    }.toJson).toList)
-    println(q)
-    println(q.toJson)
-    println(q.toJson.asJsObject())
-    val q2 = QueryResultFactory.buildFromRows(l)
-    println(q2.toJson)
   }
 
 }
