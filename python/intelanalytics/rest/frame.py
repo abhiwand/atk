@@ -359,6 +359,29 @@ class FrameBackendRest(object):
         return executor.query(url)
 
 
+    def classification_metric(self, frame, metric_type, label_column, pred_column, pos_label, beta):
+        if metric_type not in ['accuracy', 'precision', 'recall', 'fmeasure']:
+            raise ValueError("metric_type must be one of: 'accuracy'")
+        if label_column.strip() == "":
+            raise ValueError("label_column can not be empty string")
+        if pred_column.strip() == "":
+            raise ValueError("pred_column can not be empty string")
+        if str(pos_label).strip() == "":
+            raise ValueError("invalid pos_label")
+        if not label_column in frame.column_names:
+            raise ValueError("label_column does not exist in frame")
+        if not pred_column in frame.column_names:
+            raise ValueError("pred_column does not exist in frame")
+        if dict(frame.schema).get(label_column) in ['float32', 'float64']:
+            raise ValueError("invalid label_column types")
+        if dict(frame.schema).get(pred_column) in ['float32', 'float64']:
+            raise ValueError("invalid pred_column types")
+        if not beta > 0:
+            raise ValueError("invalid beta value for f measure")
+
+        arguments = {'frameId': frame._id, 'metricType': metric_type, 'labelColumn': label_column, 'predColumn': pred_column, 'posLabel': str(pos_label), 'beta': beta}
+        return get_command_output_value('classification_metric', arguments).get('metricValue')
+
 
 class FrameInfo(object):
     """
@@ -428,3 +451,9 @@ def execute_new_frame_command(command_name, arguments):
     command_info = executor.issue(command_request)
     frame_info = FrameInfo(command_info.result)
     return BigFrame(frame_info)
+
+def get_command_output_value(command_name, arguments):
+    """Executes command and returns the computed value"""
+    command_request = CommandRequest('dataframe/' + command_name, arguments)
+    command_info = executor.issue(command_request)
+    return command_info.result
