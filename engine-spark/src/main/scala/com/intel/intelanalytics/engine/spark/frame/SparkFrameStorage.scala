@@ -173,15 +173,6 @@ class SparkFrameStorage(context: UserPrincipal => Context, fsRoot: String, files
     }
   }
 
-  override def lookupByName(name: String)(implicit user: UserPrincipal): Option[DataFrame] = {
-    metaStore.withSession("frame.lookupByName") {
-      implicit session =>
-        {
-          metaStore.frameRepo.lookupByName(name)
-        }
-    }
-  }
-
   /**
    * Create an FrameRDD from a frame data file
    * @param ctx spark context
@@ -190,6 +181,15 @@ class SparkFrameStorage(context: UserPrincipal => Context, fsRoot: String, files
    */
   def getFrameRdd(ctx: SparkContext, frame: DataFrame): FrameRDD = {
     new FrameRDD(frame.schema, getFrameRdd(ctx, frame.id))
+  }
+
+  override def lookupByName(name: String)(implicit user: UserPrincipal): Option[DataFrame] = {
+    metaStore.withSession("frame.lookupByName") {
+      implicit session =>
+        {
+          metaStore.frameRepo.lookupByName(name)
+        }
+    }
   }
 
   /**
