@@ -140,4 +140,6 @@ object SparkEngineConfig extends SharedConfig with EventLogging {
     }
   }
 
+  // Python execution command for workers
+  val pythonWorkerExec : String = config.getString("intel.analytics.engine.spark.pythonWorkerExec")
 }
