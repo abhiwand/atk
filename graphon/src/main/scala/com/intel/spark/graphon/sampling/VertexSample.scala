@@ -221,8 +221,8 @@ class VertexSample extends SparkCommandPlugin[VS, VSResult] {
    */
   def sampleEdges(vertices: RDD[Vertex], edges: RDD[Edge]): RDD[Edge] = {
     // TODO: graphX is welcome here...it has a subgraph function...and the current approach is inefficient
-    val vertexArray = vertices.map(v => v.gbId.value).collect()
-    edges.filter(e => vertexArray.contains(e.headVertexGbId.value) && vertexArray.contains(e.tailVertexGbId.value))
+    val vertexArray = vertices.map(v => v.physicalId).collect()
+    edges.filter(e => vertexArray.contains(e.headPhysicalId) && vertexArray.contains(e.tailPhysicalId))
   }
 
   /**
