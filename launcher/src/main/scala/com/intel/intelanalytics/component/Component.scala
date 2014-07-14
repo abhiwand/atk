@@ -23,6 +23,7 @@
 
 package com.intel.intelanalytics.component
 
+import com.intel.intelanalytics.component.Boot.ArchiveDefinition
 import com.typesafe.config.Config
 
 /**
@@ -45,15 +46,6 @@ trait Component {
     config.getOrElse(throw new Exception("This component has not been initialized, so it does not have a name"))
   }
 
-  /**
-   * The location at which this component should be installed in the component
-   * tree. For example, a graph machine learning algorithm called Loopy Belief
-   * Propagation might wish to be installed at
-   * "commands/graphs/ml/loopy_belief_propagation". However, it might not actually
-   * get installed there if the system has been configured to override that
-   * default placement.
-   */
-  def defaultLocation: String
   /**
    * Called before processing any requests.
    *

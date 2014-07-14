@@ -30,10 +30,10 @@
             <groupId>com.intel.ia</groupId>
             <artifactId>launcher</artifactId>
         </dependency>
-        <!--dependency>
-            <groupId>com.intel</groupId>
+        <dependency>
+            <groupId>com.intel.ia</groupId>
             <artifactId>interfaces</artifactId>
-        </dependency-->
+        </dependency>
         <!--END BDA dependencies to our modules-->
 
         <dependency>

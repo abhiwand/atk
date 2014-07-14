@@ -1,5 +1,9 @@
 package com.intel.intelanalytics.component
 
+import com.intel.intelanalytics.component.Boot.ArchiveDefinition
+
+import scala.reflect.ClassTag
+
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
@@ -23,19 +27,32 @@ package com.intel.intelanalytics.component
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-trait Archive extends Component with Locator {
+trait Archive extends Component {
 
-  override def locatorName: String = this.componentName
+  private var _loader: Option[String => Any] = None
+  private var _definition: Option[ArchiveDefinition] = None
 
-  private var loader: Option[(String, String) => Any] = None
+  def definition: ArchiveDefinition = _definition.getOrElse(
+    throw new Exception("Archive has not been initialized"))
 
-  /**
-   * Called by the component framework to provide a method for loading new classes from the same
-   * archive, with the correct startup support. Archives should store this function for later use
-   */
-  def setLoader(function: (String, String) => Any): Unit = loader match {
-    case None => loader = Some(function)
-    case _ => throw new Exception("Loader function already set for this archive")
+  private def loader: String => Any = _loader.getOrElse(
+    throw new Exception("Archive has not been initialized")
+  )
+
+  private[intelanalytics] def initializeArchive(definition: ArchiveDefinition,
+                                                loader: String => Any) = {
+    this._loader = Some(loader)
+    this._definition = Some(definition)
+  }
+
+  protected def loadComponent(path: String): Component = {
+    Archive.logger(s"Loading component $path")
+    val className = configuration.getString(path.replace("/", ".") + ".class")
+    val component = load(className).asInstanceOf[Component]
+    val restricted = configuration.getConfig(path + ".config")
+    component.init(path, restricted)
+    component.start()
+    component
   }
 
   /**
@@ -45,9 +62,49 @@ trait Archive extends Component with Locator {
    * @param className the class name to instantiate and configure
    * @return the new instance
    */
-  protected def load(componentName: String, className: String): Any = {
-    println("Loading " + className)
-    loader.getOrElse(throw new Exception("Loader not installed for this archive"))(componentName, className)
+  protected def load(className: String): Any = {
+    Archive.logger(s"Loading class $className")
+    loader(className)
   }
+
+  /**
+   * Obtain instances of a given class. The keys are established purely
+   * by convention.
+   *
+   * @param descriptor the string key of the desired class instance.
+   * @tparam T the type of the requested instances
+   * @return the requested instances, or the empty sequence if no such instances could be produced.
+   */
+  def getAll[T: ClassTag](descriptor: String): Seq[T]
+
+  /**
+   * Obtain a single instance of a given class. The keys are established purely
+   * by convention.
+   *
+   * @param descriptor the string key of the desired class instance.
+   * @tparam T the type of the requested instances
+   * @return the requested instance, or the first such instance if the locator provides more than one
+   * @throws NoSuchElementException if no instances were found
+   */
+  def get[T: ClassTag](descriptor: String): T = getAll(descriptor).headOption
+    .getOrElse(throw new NoSuchElementException(
+      s"No class matching descriptor $descriptor was found in location '${definition.name}'"))
+
+}
+
+object Archive {
+  private var _logger: Option[String => Unit] = Some(println)
+
+  /**
+   * A function that the archive can use to log debug information.
+   */
+  def logger_=(function: String => Unit): Unit = {
+    _logger = Some(function)
+  }
+
+  /**
+   * A function that the archive can use to log debug information.
+   */
+  def logger = _logger.getOrElse(throw new Exception("Archive logger not initialized"))
 
 }

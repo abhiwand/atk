@@ -21,7 +21,7 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics
+package com.intel.intelanalytics.component
 
 trait ClassLoaderAware {
 
