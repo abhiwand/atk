@@ -5,4 +5,4 @@ package com.intel.intelanalytics.algorithm
  * @param percentile percentile. For eg, 40 means 40th percentile
  * @param weight weight that will be applied to the element
  */
-case class PercentileTarget(percentile: Int, weight: Float)
+case class PercentileTarget(percentile: Int, weight: BigDecimal)
