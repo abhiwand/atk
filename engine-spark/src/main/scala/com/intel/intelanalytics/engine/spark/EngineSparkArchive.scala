@@ -42,7 +42,7 @@ class EngineSparkArchive extends Archive {
    */
   override def getAll[T: ClassTag](descriptor: String): Seq[T] = descriptor match {
     //TODO: move the plumbing parts to the Archive trait and make this just a simple PartialFunction
-    case "CommandPlugin" => commands
+    case "command" => commands
       .map(c => load(c.getName))
       .filter(i => i.isInstanceOf[T])
       .map(i => i.asInstanceOf[T])

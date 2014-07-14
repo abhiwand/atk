@@ -42,7 +42,7 @@ import scala.util.Try
  * CommandExecutor manages a registry of CommandPlugins and executes them on request.
  *
  * The plugin registry is based on configuration - all Archives listed in the configuration
- * file under intel.analytics.engine.archives will be queried for the "CommandPlugin" key, and
+ * file under intel.analytics.engine.archives will be queried for the "command" key, and
  * any plugins they provide will be added to the plugin registry.
  *
  * Plugins can also be added programmatically using the registerCommand method.
@@ -82,7 +82,7 @@ class CommandExecutor(engine: => SparkEngine, commands: SparkCommandStorage, con
   private var commandPlugins: Map[String, CommandPlugin[_, _]] = SparkEngineConfig.archives.flatMap {
     archive =>
       Boot.getArchive(archive)
-        .getAll[CommandPlugin[_ <: Product, _ <: Product]]("CommandPlugin")
+        .getAll[CommandPlugin[_ <: Product, _ <: Product]]("command")
         .map(p => (p.name, p))
   }.toMap
 
