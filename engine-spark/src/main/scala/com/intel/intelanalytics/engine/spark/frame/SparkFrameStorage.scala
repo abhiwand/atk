@@ -152,25 +152,22 @@ class SparkFrameStorage(context: UserPrincipal => Context, fsRoot: String, files
       require(count > 0, "count must be zero or greater")
       withMyClassLoader {
         val ctx = context(user).sparkContext
-        val rdd: RDD[Row] = getFrameRdd(ctx, frame.id)
+        val rdd: RDD[Row] = getFrameRowRdd(ctx, frame.id)
         val rows = SparkOps.getRows(rdd, offset, count, maxRows)
         rows
       }
     }
 
   /**
-   * Create an RDD from a frame data file.
+   * Create a FrameRDD or throw an exception if bad frameId is given
    * @param ctx spark context
    * @param frameId primary key of the frame record
    * @return the newly created RDD
    */
-  def getFrameRdd(ctx: SparkContext, frameId: Long): RDD[Row] = {
-    val path: String = getFrameDataFile(frameId)
-    val absPath = fsRoot + path
-    files.getMetaData(Paths.get(path)) match {
-      case None => ctx.parallelize(Nil)
-      case _ => ctx.objectFile[Row](absPath, SparkEngineConfig.sparkDefaultPartitions)
-    }
+  def getFrameRdd(ctx: SparkContext, frameId: Long): FrameRDD = {
+    val frame = lookup(frameId).getOrElse(
+      throw new IllegalArgumentException(s"No such data frame: ${frameId}"))
+    getFrameRdd(ctx, frame)
   }
 
   /**
@@ -180,7 +177,22 @@ class SparkFrameStorage(context: UserPrincipal => Context, fsRoot: String, files
    * @return the newly created FrameRDD
    */
   def getFrameRdd(ctx: SparkContext, frame: DataFrame): FrameRDD = {
-    new FrameRDD(frame.schema, getFrameRdd(ctx, frame.id))
+    new FrameRDD(frame.schema, getFrameRowRdd(ctx, frame.id))
+  }
+
+  /**
+   * Create an RDD from a frame data file.
+   * @param ctx spark context
+   * @param frameId primary key of the frame record
+   * @return the newly created RDD
+   */
+  def getFrameRowRdd(ctx: SparkContext, frameId: Long): RDD[Row] = {
+    val path: String = getFrameDataFile(frameId)
+    val absPath = fsRoot + path
+    files.getMetaData(Paths.get(path)) match {
+      case None => ctx.parallelize(Nil)
+      case _ => ctx.objectFile[Row](absPath, SparkEngineConfig.sparkDefaultPartitions)
+    }
   }
 
   override def lookupByName(name: String)(implicit user: UserPrincipal): Option[DataFrame] = {
@@ -240,6 +252,49 @@ class SparkFrameStorage(context: UserPrincipal => Context, fsRoot: String, files
     }
   }
 
+  /**
+   * Get the error frame of the supplied frame or create one if it doesn't exist
+   * @param frame the 'good' frame
+   * @return the parse errors for the 'good' frame
+   */
+  override def lookupOrCreateErrorFrame(frame: DataFrame): DataFrame = {
+    val errorFrame = lookupErrorFrame(frame)
+    if (!errorFrame.isDefined) {
+      metaStore.withSession("frame.lookupOrCreateErrorFrame") {
+        implicit session =>
+          {
+            // TODO: remove hard-coded strings
+            val errorTemplate = new DataFrameTemplate(frame.name + "-parse-errors", Some("This frame was automatically created to capture parse errors for " + frame.name))
+            val newlyCreateErrorFrame = metaStore.frameRepo.insert(errorTemplate).get
+            metaStore.frameRepo.updateErrorFrameId(frame, Some(newlyCreateErrorFrame.id))
+            newlyCreateErrorFrame
+          }
+      }
+    }
+    else {
+      errorFrame.get
+    }
+  }
+
+  /**
+   * Get the error frame of the supplied frame
+   * @param frame the 'good' frame
+   * @return the parse errors for the 'good' frame
+   */
+  override def lookupErrorFrame(frame: DataFrame): Option[DataFrame] = {
+    if (frame.errorFrameId.isDefined) {
+      val errorFrame = lookup(frame.errorFrameId.get)
+      if (!errorFrame.isDefined) {
+        error("Frame referenced an error frame that does NOT exist: " + frame.errorFrameId.get)
+      }
+      errorFrame
+    }
+    else {
+      None
+    }
+
+  }
+
   val idRegex: Regex = "^\\d+$".r
 
   val frameBase = "/intelanalytics/dataframes"
@@ -262,6 +317,7 @@ class SparkFrameStorage(context: UserPrincipal => Context, fsRoot: String, files
   //    path.toString
   //  }
   //
+
   def getFrameDataFile(id: Long): String = {
     getFrameDirectory(id) + "/data"
   }

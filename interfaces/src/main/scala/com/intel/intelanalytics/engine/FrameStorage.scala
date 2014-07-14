@@ -45,4 +45,18 @@ trait FrameStorage {
   def drop(frame: DataFrame)
   //def updateName(frame: DataFrame, newName: String)(implicit user: UserPrincipal): DataFrame
   def updateSchema(frame: DataFrame, columns: List[(String, DataType)]): DataFrame
+
+  /**
+   * Get the error frame of the supplied frame or create one if it doesn't exist
+   * @param frame the 'good' frame
+   * @return the parse errors for the 'good' frame
+   */
+  def lookupOrCreateErrorFrame(frame: DataFrame): DataFrame
+
+  /**
+   * Get the error frame of the supplied frame
+   * @param frame the 'good' frame
+   * @return the parse errors for the 'good' frame
+   */
+  def lookupErrorFrame(frame: DataFrame): Option[DataFrame]
 }

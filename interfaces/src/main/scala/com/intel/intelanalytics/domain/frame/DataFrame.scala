@@ -39,6 +39,7 @@ import org.joda.time.DateTime
  * @param modifiedOn date/time this record was last modified
  * @param createdBy user who created this row
  * @param modifiedBy user who last modified this row
+ * @param errorFrameId foreign key for the error data frame associated with this frame (parse errors go into this frame)
  */
 case class DataFrame(id: Long,
                      name: String,
@@ -48,7 +49,8 @@ case class DataFrame(id: Long,
                      createdOn: DateTime,
                      modifiedOn: DateTime,
                      createdBy: Option[Long] = None,
-                     modifiedBy: Option[Long] = None) extends HasId {
+                     modifiedBy: Option[Long] = None,
+                     errorFrameId: Option[Long] = None) extends HasId {
   require(id >= 0)
   require(name != null)
   require(name.trim.length > 0)

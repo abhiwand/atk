@@ -1,10 +1,10 @@
 package com.intel.intelanalytics.engine.spark.frame
 
 import org.apache.spark.SparkContext
-import com.intel.intelanalytics.domain.frame.load.{LineParserArguments, LineParser}
-import com.intel.intelanalytics.engine.spark.{SparkOps, SparkEngineConfig}
+import com.intel.intelanalytics.domain.frame.load.{ LineParserArguments, LineParser }
+import com.intel.intelanalytics.engine.spark.{ SparkOps, SparkEngineConfig }
 import org.apache.spark.rdd.RDD
-import com.intel.intelanalytics.domain.schema.{DataTypes, SchemaUtil}
+import com.intel.intelanalytics.domain.schema.{ DataTypes, SchemaUtil }
 
 /**
  * Helper functions for loading an RDD
@@ -13,20 +13,20 @@ object LoadRDDFunctions extends Serializable {
 
   /**
    * Load each line from CSV file into an RDD of Row objects.
-   * @param ctx SparkContext used for textFile reading
+   * @param sc SparkContext used for textFile reading
    * @param fileName name of file to parse
    * @param parser
    * @return  RDD of Row objects
    */
-  def loadAndParseLines(ctx: SparkContext,
+  def loadAndParseLines(sc: SparkContext,
                         fileName: String,
                         parser: LineParser): ParseResultRddWrapper = {
 
     // parse a sample so we can bail early if needed
-    parseSampleOfFile(ctx, fileName, parser)
+    parseSampleOfFile(sc, fileName, parser)
 
     // re-parse the entire file
-    parse(ctx.textFile(fileName, SparkEngineConfig.sparkDefaultPartitions), parser)
+    parse(sc.textFile(fileName, SparkEngineConfig.sparkDefaultPartitions), parser)
 
   }
 
@@ -54,7 +54,7 @@ object LoadRDDFunctions extends Serializable {
     sampleRdd.cache()
 
     val preEvaluateResults = parse(sampleRdd, parser)
-    val failedCount = preEvaluateResults.failedLines.count()
+    val failedCount = preEvaluateResults.errorLines.count()
     val sampleRowsCount: Long = sampleRdd.count()
     val failedRatio = 100 * failedCount / sampleRowsCount
 

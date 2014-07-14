@@ -151,41 +151,51 @@ class SparkEngine(sparkContextManager: SparkContextManager,
 
   /**
    * Load data from a LoadSource object to an existing destination described in the Load object
-   * @param arguments Load command object
+   * @param load Load command object
    * @param user current user
    */
-  def loadSimple(arguments: Load, user: UserPrincipal): DataFrame = {
-    val frameId = arguments.destination.id
-    val realFrame = expectFrame(frameId)
+  def loadSimple(load: Load, user: UserPrincipal): DataFrame = {
+    val frameId = load.destination.id
+    val destinationFrame = expectFrame(frameId)
     val ctx = sparkContextManager.context(user)
 
-    val newRdd = getLoadData(ctx.sparkContext, arguments.source)
-    val existingRdd = frames.getFrameRdd(ctx.sparkContext, realFrame)
-    val unionedRdd = newRdd.union(existingRdd)
-
-    val location = fsRoot + frames.getFrameDataFile(frameId)
-    unionedRdd.saveAsObjectFile(location)
-    val frame = frames.updateSchema(realFrame, unionedRdd.schema.columns)
-    frame
-  }
-  /**
-   * Load data from a resource described by a LoadSource object.
-   * @param ctx Context object that should be used for accessing data from spark
-   * @param source LoadSource object with information on what data to load
-   * @return A tuple containing a schema object describing the RDD loaded as well as the RDD itself.
-   */
-  def getLoadData(ctx: SparkContext, source: LoadSource): FrameRDD = {
-    source.source_type match {
-      case "dataframe" =>
-        val frame = frames.lookup(source.uri.toInt).getOrElse(
-          throw new IllegalArgumentException(s"No such data frame: ${source.uri}"))
-        new FrameRDD(frame.schema, frames.getFrameRdd(ctx, source.uri.toInt))
-      case "file" =>
-        val parser = source.parser.get
-        val parseResult = LoadRDDFunctions.loadAndParseLines(ctx, fsRoot + "/" + source.uri, parser)
-        parseResult.parsedLines
-      case _ => ???
+    if (load.source.isFrame) {
+      // load data from an existing frame and add its data onto the target frame
+      val additionalData = frames.getFrameRdd(ctx.sparkContext, expectFrame(load.source.uri.toInt))
+      unionAndSave(ctx.sparkContext, destinationFrame, additionalData)
     }
+    else if (load.source.isFile) {
+      val parser = load.source.parser.get
+      val parseResult = LoadRDDFunctions.loadAndParseLines(ctx.sparkContext, fsRoot + "/" + load.source.uri, parser)
+
+      // parse failures go to their own data frame
+      if (parseResult.errorLines.count() > 0) {
+        val errorFrame = frames.lookupOrCreateErrorFrame(destinationFrame)
+        unionAndSave(ctx.sparkContext, errorFrame, parseResult.errorLines)
+      }
+
+      // successfully parsed lines get added to the destination frame
+      unionAndSave(ctx.sparkContext, destinationFrame, parseResult.parsedLines)
+    }
+    else {
+      throw new IllegalArgumentException("Unsupported load source: " + load.source.source_type)
+    }
+
+  }
+
+  /**
+   * Union the additionalData onto the end of the existingFrame
+   * @param sparkContext Spark Context
+   * @param existingFrame the target DataFrame that may or may not already have data
+   * @param additionalData the data to add to the existingFrame
+   * @return the frame with updated schema
+   */
+  private def unionAndSave(sparkContext: SparkContext, existingFrame: DataFrame, additionalData: FrameRDD): DataFrame = {
+    val existingRdd = frames.getFrameRdd(sparkContext, existingFrame)
+    val unionedRdd = existingRdd.union(additionalData)
+    val location = fsRoot + frames.getFrameDataFile(existingFrame.id)
+    unionedRdd.saveAsObjectFile(location)
+    frames.updateSchema(existingFrame, unionedRdd.schema.columns)
   }
 
   def create(frame: DataFrameTemplate)(implicit user: UserPrincipal): Future[DataFrame] =
@@ -265,7 +275,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
       throw new IllegalArgumentException(s"Invalid list of columns: ${arguments.columns.toString()}")
     }
 
-    frames.getFrameRdd(ctx, sourceFrameID)
+    frames.getFrameRowRdd(ctx, sourceFrameID)
       .map(row => {
         for { i <- columnIndices } yield row(i)
       }.toArray)
@@ -312,13 +322,13 @@ class SparkEngine(sparkContextManager: SparkContextManager,
         columnDataType = schema.columns(columnIndex)._2
       } yield (columnIndex, columnDataType)
 
-      val groupedRDD = frames.getFrameRdd(ctx, originalFrameID).groupBy((data: Rows.Row) => {
+      val groupedRDD = frames.getFrameRowRdd(ctx, originalFrameID).groupBy((data: Rows.Row) => {
         for { index <- columnIndices.map(_._1) } yield data(index)
       }.mkString("\0"))
       SparkOps.aggregation(groupedRDD, args_pair, originalFrame.schema.columns, columnIndices.map(_._2).toArray, location)
     }
     else {
-      val groupedRDD = frames.getFrameRdd(ctx, originalFrameID).groupBy((data: Rows.Row) => "")
+      val groupedRDD = frames.getFrameRowRdd(ctx, originalFrameID).groupBy((data: Rows.Row) => "")
       SparkOps.aggregation(groupedRDD, args_pair, originalFrame.schema.columns, Array[DataType](), location)
     }
     val new_column_names = arguments.group_by_columns ++ {
@@ -348,7 +358,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
       val ctx = sparkContextManager.context(user).sparkContext
       val predicateInBytes = decodePythonBase64EncodedStrToBytes(py_expression)
 
-      val baseRdd: RDD[String] = frames.getFrameRdd(ctx, frameId)
+      val baseRdd: RDD[String] = frames.getFrameRowRdd(ctx, frameId)
         .map(x => x.map(t => t match {
           case null => DataTypes.pythonRddNullString
           case _ => t.toString
@@ -393,7 +403,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     val ctx = sparkContextManager.context(user).sparkContext
 
     val newFrame = Await.result(create(DataFrameTemplate(arguments.name, None)), SparkEngineConfig.defaultTimeout)
-    val rdd = frames.getFrameRdd(ctx, frameId)
+    val rdd = frames.getFrameRowRdd(ctx, frameId)
 
     val columnIndex = realFrame.schema.columnIndex(arguments.column)
 
@@ -421,7 +431,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
 
     val ctx = sparkContextManager.context(user).sparkContext
 
-    val rdd = frames.getFrameRdd(ctx, frameId)
+    val rdd = frames.getFrameRowRdd(ctx, frameId)
 
     val columnIndex = realFrame.schema.columnIndex(arguments.columnName)
 
@@ -484,7 +494,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
               throw new IllegalArgumentException(s"No such data frame"))
 
             val frameSchema = realFrame.schema
-            val rdd = frames.getFrameRdd(ctx, frame._1)
+            val rdd = frames.getFrameRowRdd(ctx, frame._1)
             val columnIndex = frameSchema.columnIndex(frame._2)
             (rdd, columnIndex)
           }
@@ -563,11 +573,11 @@ class SparkEngine(sparkContextManager: SparkContextManager,
       case invalidColumns if invalidColumns.contains(-1) =>
         throw new IllegalArgumentException(s"Invalid list of columns: [${arguments.columns.mkString(", ")}]")
       case allColumns if allColumns.length == schema.columns.length =>
-        frames.getFrameRdd(ctx, frameId).filter(_ => false).saveAsObjectFile(location)
-      case singleColumn if singleColumn.length == 1 => frames.getFrameRdd(ctx, frameId)
+        frames.getFrameRowRdd(ctx, frameId).filter(_ => false).saveAsObjectFile(location)
+      case singleColumn if singleColumn.length == 1 => frames.getFrameRowRdd(ctx, frameId)
         .map(row => row.take(singleColumn(0)) ++ row.drop(singleColumn(0) + 1))
         .saveAsObjectFile(location)
-      case multiColumn => frames.getFrameRdd(ctx, frameId)
+      case multiColumn => frames.getFrameRowRdd(ctx, frameId)
         .map(row => row.zipWithIndex.filter(elem => multiColumn.contains(elem._2) == false).map(_._1))
         .saveAsObjectFile(location)
     }
@@ -728,7 +738,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     val ctx = sparkContextManager.context(user).sparkContext
 
     val frameSchema = realFrame.schema
-    val rdd = frames.getFrameRdd(ctx, frameId)
+    val rdd = frames.getFrameRowRdd(ctx, frameId)
 
     val columnIndices = frameSchema.columnIndex(dropDuplicateCommand.unique_columns)
     val pairRdd = rdd.map(row => SparkOps.createKeyValuePairFromRow(row, columnIndices))
@@ -752,7 +762,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     val ctx = sparkContextManager.context(user).sparkContext
 
     val frameSchema = realFrame.schema
-    val frameRdd = frames.getFrameRdd(ctx, frameId)
+    val frameRdd = frames.getFrameRowRdd(ctx, frameId)
 
     val labelColumnIndex = frameSchema.columnIndex(arguments.labelColumn)
     val predColumnIndex = frameSchema.columnIndex(arguments.predColumn)
