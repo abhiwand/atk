@@ -6,6 +6,10 @@ Glossary
 ..  glossary::
     :sorted:
 
+    ASCII
+
+        A data type consisting of a character which be represented in the computer within 7 bits.
+
     Adjacency List
 
         From `Wikipedia\: Adjacency List`_:
@@ -89,11 +93,21 @@ Glossary
 
     BigGraph
 
-        A graph database object with functions to manipulate the data.
+        A class object with the functionality to manipulate the data in a :term:`graph`.
 
     BigFrame
 
-        A table database object with function to manipulate the data.
+        A class object with the functionality to manipulate the data in a :term:`frame`.
+
+    bool
+    Boolean
+    Booleans
+
+        A variable that can hold a single "True" or "False" value. In Python, it can also be "None" meaning that it is not defined.
+
+    bytearray
+
+        A sequence of integers in the range 0 <= x < 256.
 
     Centrality
     Centrality (PageRank)
@@ -169,6 +183,11 @@ Glossary
 
         For more information see: `Wikipedia\: Convergence (mathematics)`_.
 
+    dict
+    Dictionary
+
+        A class of data composed of key/value pairs.
+
     Directed Acyclic Graph (DAG)
 
         From `Wikipedia\: Directed Acyclic Graph`_:
@@ -180,6 +199,7 @@ Glossary
         Contrast with :term:`Undirected Graph`.
 
     Edge
+    Edges
 
         An edge is the link between two vertices in a graph database.
         Edges can have direction, or be undirected.
@@ -217,6 +237,15 @@ Glossary
         From `Wikipedia\: F1 score`_:
 
         In statistical analysis of binary classification, the F1 score (also F-score or F-measure) is a measure of a test's accuracy.
+
+    float32
+    float64
+
+        A real non-integer number with 32 or 64 bits of precision as appropriate.
+
+    Frame
+
+        A table database with rows and columns containing data.
 
     Gaussian Random Fields
 
@@ -285,6 +314,12 @@ Glossary
         Gremlin is a graph query language, akin to SQL, that enables users to manipulate and query a graph.
         Gremlin works with the Titan Graph Database, though it is made by a different company.
         For more information see: `Gremlin Wiki`_.
+
+    int32
+    int64
+
+        An integer is a member of the set of positive whole numbers {1, 2, 3, . . . }, negative whole numbers {-1, -2, -3, . . . }, and zero {0}.
+        Since a computer is limited, the computer representation of it can have 32 or 64 bits of precision.
 
     Ising Smoothing Parameter
 
@@ -376,6 +411,10 @@ Glossary
             LDA is an example of a topic model and was first presented as a graphical model for topic discovery by
             David Blei, Andrew Ng, and Michael Jordan in 2003.
 
+    list
+
+        A sequence of objects in a single dimension array.
+
     Loopy Belief Propagation
 
         Belief Propagation is an algorithm that makes inferences on graph models, like a Bayesian network or Markov Random Fields.
@@ -453,6 +492,10 @@ Glossary
 
         For more information see: :term:`Supervised Learning`, and :term:`Unsupervised Learning`.
 
+    Schema
+
+        A computer structure that defines the structure of something else.
+
     Simple Random Sampling
 
         In statistics, a simple random sample (SRS) is a subset of individuals (a sample) chosen from a larger set (a population).
@@ -489,6 +532,14 @@ Glossary
 
         For more information see: `Wikipedia\: Stratified Sampling`_.
 
+    str
+
+        A string data type in Python using the ASCII encoding.
+
+    string
+
+        A string data type in Python using the UTF-8 encoding.
+
     Supervised Learning
 
         Supervised learning refers to algorithms where the input data are all labeled, and the outcome of the calculation is known.
@@ -521,6 +572,10 @@ Glossary
         Contrast with :term:`Directed Acyclic Graph (DAG)`.
 
         For more information see: `Wikipedia\: Undirected Graph`_.
+
+    Unicode
+
+        A data type consisting of a string of characters where each character could be represented in the computer within 16 bits.
 
     Unsupervised Learning
 
