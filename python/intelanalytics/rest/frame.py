@@ -194,6 +194,14 @@ class FrameBackendRest(object):
         arguments = self._get_load_arguments(frame, data)
         execute_update_frame_command("load", arguments, frame)
 
+    def calculate_percentiles(self, frame, column_name, percentiles):
+        if isinstance(percentiles, int):
+            percentiles = [percentiles]
+        arguments = {'frameId': frame._id, "columnName": column_name, "percentiles": percentiles}
+        command = CommandRequest("dataframe/calculate_percentiles", arguments)
+        return executor.issue(command)
+
+
     def count(self, frame):
         raise NotImplementedError  # TODO - implement count
 

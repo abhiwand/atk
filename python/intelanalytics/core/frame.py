@@ -472,6 +472,27 @@ class BigFrame(CommandSupport):
         except:
             raise IaError(logger)
 
+    def calculate_percentiles(self, column_name, percentiles):
+        """
+        Calculate percentiles on given column
+
+        Parameters
+        ----------
+            column_name : str
+                The column to calculate percentile
+            percentiles : int OR list of int
+
+        Examples
+        --------
+        >>> frame.calculate_percentiles('final_sale_price', [10, 50, 100])
+        """
+        try:
+            percentiles_result = self._backend.calculate_percentiles(self, column_name, percentiles).result.get('percentiles')
+            for p in percentiles_result:
+                print "%s percentile: %s"%(str(p.get("percentile")), str(p.get("value")))
+        except:
+            raise IaError(logger)
+
     def copy(self):
         """
         Creates a full copy of the current frame.
