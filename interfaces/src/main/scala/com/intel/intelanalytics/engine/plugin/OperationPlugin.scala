@@ -23,7 +23,7 @@
 
 package com.intel.intelanalytics.engine.plugin
 
-import com.intel.intelanalytics.component.{ClassLoaderAware, Plugin, Component}
+import com.intel.intelanalytics.component.{ ClassLoaderAware, Plugin, Component }
 import com.intel.intelanalytics.security.UserPrincipal
 import com.typesafe.config.Config
 import spray.json.JsObject
