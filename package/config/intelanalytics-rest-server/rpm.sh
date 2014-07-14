@@ -36,7 +36,8 @@ hadoop fs -ls /user/iauser 2>/dev/null
 if [ \$? -eq 1 ]; then
 	echo create \$restUser hdfs home directory
 	su -c \"hadoop fs -mkdir /user/\$restUser\" hdfs
-	su -c \"hadoop fs -chown iauser:iauser\" hdfs
+	su -c \"hadoop fs -chown iauser:iauser /user/\$restUser\" hdfs
+	su -c \"hadoop fs -chmod 755 /user/\$restUser\" hdfs
 fi
 "
 
