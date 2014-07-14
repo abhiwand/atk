@@ -21,20 +21,17 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.graphbuilder.elements
+package com.intel.intelanalytics.domain.frame
 
-/**
- * Marker interface for GraphElements (Vertices and Edges).
- * <p>
- * This can be used if you want to parse both Edges and Vertices in one pass over the input into a single stream.
- * </p>
- */
-trait GraphElement {
-
-  /**
-   * Find a property in the property list by key
-   * @param key Property key
-   * @return Matching property
-   */
-  def getProperty(key: String): Option[Property]
+case class ClassificationMetric[FrameRef](frameId: FrameRef, metricType: String, labelColumn: String, predColumn: String, posLabel: String, beta: Double) {
+  require(metricType.equals("accuracy") ||
+    metricType.equals("precision") ||
+    metricType.equals("recall") ||
+    metricType.equals("fmeasure"), "valid metric type is required")
+  require(labelColumn != null && !labelColumn.equals(""), "label column is required")
+  require(predColumn != null && !predColumn.equals(""), "predict column is required")
+  require(posLabel != null && !posLabel.equals(""), "invalid positive label")
+  require(beta > 0, "invalid beta value for f measure")
 }
+
+case class ClassificationMetricValue(metricValue: Double)

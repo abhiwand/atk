@@ -122,4 +122,8 @@ trait Engine {
    */
   def calculatePercentiles(percentiles: CalculatePercentiles)(implicit user: UserPrincipal): Execution
 
+  // Model performance measures
+
+  def classificationMetric(arguments: ClassificationMetric[Long])(implicit user: UserPrincipal): Execution
+
 }
