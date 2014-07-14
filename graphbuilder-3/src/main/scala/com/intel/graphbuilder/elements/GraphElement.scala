@@ -31,4 +31,10 @@ package com.intel.graphbuilder.elements
  */
 trait GraphElement {
 
+  /**
+   * Find a property in the property list by key
+   * @param key Property key
+   * @return Matching property
+   */
+  def getProperty(key: String): Option[Property]
 }
