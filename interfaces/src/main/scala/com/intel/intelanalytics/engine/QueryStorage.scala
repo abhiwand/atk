@@ -25,20 +25,19 @@ package com.intel.intelanalytics.engine
 
 import com.intel.intelanalytics.domain.query.{ QueryTemplate, Query }
 import scala.util.Try
-import spray.json.JsObject
 
 trait QueryStorage {
   def lookup(id: Long): Option[Query]
   def create(frame: QueryTemplate): Query
   def scan(offset: Int, count: Int): Seq[Query]
   def start(id: Long): Unit
-  def complete(id: Long, result: Try[JsObject]): Unit
+  def complete(id: Long, result: Try[Long]): Unit
 
   /**
-   * update command info regarding progress of jobs initiated by this command
-   * @param id command id
+   * update query info regarding progress of jobs initiated by this command
+   * @param id query id
    * @param progress progress of jobs initiated by this command
    */
-  def updateProgress(id: Long, progress: List[Float]): Unit
+  def updateProgress(id: Long, progress: List[Float], detailedProgress: List[ProgressInfo]): Unit
 }
 

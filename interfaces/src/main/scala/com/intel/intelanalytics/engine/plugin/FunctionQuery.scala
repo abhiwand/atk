@@ -34,13 +34,10 @@ import scala.concurrent.ExecutionContext
  * @param name the name to assign to the query
  * @param function the function to call when the query executes
  * @tparam Arguments the argument type of the query
- * @tparam Return the return type of the query
  */
-case class FunctionQuery[Arguments: JsonFormat, Return: JsonFormat](name: String, function: (Arguments, UserPrincipal) => Return) extends QueryPlugin[Arguments, Return] {
+case class FunctionQuery[Arguments: JsonFormat](name: String, function: (Arguments, UserPrincipal) => Any) extends QueryPlugin[Arguments] {
 
   override def parseArguments(arguments: JsObject) = arguments.convertTo[Arguments]
-
-  override def serializeReturn(returnValue: Return): JsObject = returnValue.toJson.asJsObject
 
   override def serializeArguments(arguments: Arguments): JsObject = arguments.toJson.asJsObject()
 
@@ -50,7 +47,7 @@ case class FunctionQuery[Arguments: JsonFormat, Return: JsonFormat](name: String
    * @param arguments the arguments supplied by the caller
    * @return a value of type declared as the Return type.
    */
-  override def execute(invocation: Invocation, arguments: Arguments)(implicit user: UserPrincipal, executionContext: ExecutionContext): Return = {
+  override def execute(invocation: Invocation, arguments: Arguments)(implicit user: UserPrincipal, executionContext: ExecutionContext): Any = {
     //Since the function may come from any class loader, we use the function's
     //class loader, not our own
     withLoader(function.getClass.getClassLoader) {

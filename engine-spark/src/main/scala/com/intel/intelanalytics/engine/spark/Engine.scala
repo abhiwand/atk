@@ -28,7 +28,7 @@ import java.util.{ ArrayList => JArrayList, List => JList }
 
 import com.intel.intelanalytics.domain._
 import com.intel.intelanalytics.domain.command.{ Command, CommandTemplate, Execution }
-import com.intel.intelanalytics.domain.query.{ Execution => QueryExecution, QueryResult, TableQuery, Query, QueryTemplate }
+import com.intel.intelanalytics.domain.query.{ Execution => QueryExecution, RowQuery, Query, QueryTemplate }
 import com.intel.intelanalytics.domain.frame._
 import com.intel.intelanalytics.domain.frame.load.{ LineParserArguments, LineParser, LoadSource, Load }
 
@@ -38,7 +38,7 @@ import com.intel.intelanalytics.domain.schema.{ DataTypes, Schema, SchemaUtil }
 import com.intel.intelanalytics.engine.Rows._
 import com.intel.intelanalytics.engine._
 import com.intel.intelanalytics.engine.spark.command.CommandExecutor
-import com.intel.intelanalytics.engine.spark.queries.QueryExecutor
+import com.intel.intelanalytics.engine.spark.queries.{ SparkQueryStorage, QueryExecutor }
 import com.intel.intelanalytics.{ ClassLoaderAware, NotFoundException }
 import com.intel.intelanalytics.engine.spark.context.SparkContextManager
 import com.intel.intelanalytics.engine.spark.frame.{ RDDJoinParam, RowParser, SparkFrameStorage }
@@ -66,7 +66,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
                   commandStorage: CommandStorage,
                   frames: SparkFrameStorage,
                   graphs: GraphStorage,
-                  queryStorage: QueryStorage,
+                  queryStorage: SparkQueryStorage,
                   queries: QueryExecutor) extends Engine
     with EventLogging
     with ClassLoaderAware {
@@ -100,16 +100,35 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     }
   }
 
-  override def getQueries(offset: Int, count: Int): Future[Seq[Query]] = withContext("se.getCommands") {
+  override def getQueries(offset: Int, count: Int): Future[Seq[Query]] = withContext("se.getQueries") {
     future {
       queryStorage.scan(offset, count)
     }
   }
 
-  override def getQuery(id: Long): Future[Option[Query]] = withContext("se.getCommand") {
+  /**
+   *
+   * @param id
+   * @return
+   */
+  override def getQuery(id: Long): Future[Option[Query]] = withContext("se.getQuery") {
     future {
       queryStorage.lookup(id)
     }
+  }
+
+  /**
+   * returns the data found in a specific query result partition
+   *
+   * @param id query id
+   * @param partition partition id
+   * @param user current user
+   * @return data of specific partition
+   */
+  override def getQueryPartition(id: Long, partition: Long)(implicit user: UserPrincipal) = withContext("se.getQueryPartition") {
+    val ctx = sparkContextManager.context(user)
+    val data = queryStorage.getQueryPartition(ctx.sparkContext, id, partition)
+    data
   }
 
   /**
@@ -617,21 +636,16 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     newFrame
   }
 
-  def getRows(arguments: TableQuery[Identifier])(implicit user: UserPrincipal): QueryExecution = {
+  def getRows(arguments: RowQuery[Identifier])(implicit user: UserPrincipal): QueryExecution = {
     queries.execute(getRowsQuery, arguments, user, implicitly[ExecutionContext])
   }
   val getRowsQuery = queries.registerQuery("dataframes/data", getRowsSimple)
 
-  def getRowsSimple(arguments: TableQuery[Identifier], user: UserPrincipal) = {
+  def getRowsSimple(arguments: RowQuery[Identifier], user: UserPrincipal) = {
     implicit val impUser: UserPrincipal = user
     val frame = frames.lookup(arguments.id).getOrElse(throw new IllegalArgumentException("Requested frame does not exist"))
-    val rows = frames.getRows(frame, arguments.offset, arguments.count)
+    val rows = frames.getRowsRDD(frame, arguments.offset, arguments.count)
     rows
-//    QueryResult.buildFromRows(rows)
-    //    QueryResult(rows)
-    //    QueryResult(rows.map(r => r.map {
-    //      case a => a.toString
-    //    }.toList).toList)
   }
 
   def getFrame(id: Identifier): Future[Option[DataFrame]] =

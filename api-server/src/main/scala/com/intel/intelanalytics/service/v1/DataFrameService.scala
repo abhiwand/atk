@@ -24,7 +24,7 @@
 package com.intel.intelanalytics.service.v1
 
 import com.intel.intelanalytics.domain._
-import com.intel.intelanalytics.domain.query.TableQuery
+import com.intel.intelanalytics.domain.query.{ RowQuery }
 import spray.json._
 import spray.http.Uri
 import scala.Some
@@ -36,11 +36,14 @@ import scala.util._
 import com.intel.intelanalytics.service.v1.viewmodels.GetDataFrame
 import com.intel.intelanalytics.shared.EventLogging
 import com.intel.intelanalytics.security.UserPrincipal
-import com.intel.intelanalytics.domain.frame.{ DataFrameTemplate, DataFrame }
+import com.intel.intelanalytics.domain.frame.DataFrameTemplate
+import com.intel.intelanalytics.domain.frame.DataFrame
 import com.intel.intelanalytics.domain.DomainJsonProtocol.DataTypeFormat
 import com.intel.intelanalytics.service.{ ApiServiceConfig, CommonDirectives, AuthenticationDirective }
 import spray.routing.Directives
-import com.intel.intelanalytics.service.v1.decorators.{ QueryDecorator, FrameDecorator }
+import com.intel.intelanalytics.service.v1.decorators.{ QueryDecorator, CommandDecorator, FrameDecorator }
+
+import scala.util.matching.Regex
 
 //TODO: Is this right execution context for us?
 import ExecutionContext.Implicits.global
@@ -111,16 +114,20 @@ class DataFrameService(commonDirectives: CommonDirectives, engine: Engine) exten
                     case Failure(ex) => throw ex
                   }
                 }
-            }
-            ~(path("data") & get) {
+            } ~ (path("data") & get) {
               parameters('offset.as[Int], 'count.as[Int]) {
-                (offset, count) => {
-                  import ViewModelJsonImplicits._
-                  val exec = engine.getRows(TableQuery[Long](id, offset, count))
-                  complete(QueryDecorator.decorateEntity(exec.start.id.toString, List(Rel.self(exec.start.id.toString)), exec.start))
-                }
+                (offset, count) =>
+                  {
+                    import ViewModelJsonImplicits._
+                    val exec = engine.getRows(RowQuery[Long](id, offset, count))
+                    //we require a commands uri to point the query completion to.
+                    val pattern = new Regex(prefix + ".*")
+                    val commandUri = pattern.replaceFirstIn(uri.toString, QueryService.prefix + "/") + exec.start.id
+                    complete(QueryDecorator.decorateEntity(commandUri, List(Rel.self(commandUri)), exec.start))
+                  }
               }
             }
+
           }
         }
     }

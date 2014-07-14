@@ -359,8 +359,7 @@ class FrameBackendRest(object):
 
     def take(self, frame, n, offset):
         url = 'dataframes/{0}/data?offset={2}&count={1}'.format(frame._id,n, offset)
-        print(url)
-        return executor.query(url).result['data']
+        return executor.query(url)
 
 
 

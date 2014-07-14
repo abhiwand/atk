@@ -42,8 +42,34 @@ import org.apache.spark.SparkContext._
 
 private[spark] object SparkOps extends Serializable {
 
+  /**
+   *
+   * @param rdd rdd to pull from
+   * @param offset offset to start pulling from
+   * @param count number of objects to include in result
+   * @param limit maximum allowed size of local object
+   * @return Sequence of Row objectes
+   */
   def getRows(rdd: RDD[Row], offset: Long, count: Int, limit: Int): Seq[Row] = {
+    val rowsRDD = getRowsRdd(rdd, offset, count)
+    val rows: Seq[Row] = if (rowsRDD.count() > limit) {
+      rowsRDD.take(limit)
+    }
+    else {
+      rowsRDD.collect()
+    }
+    rows
+  }
 
+  /**
+   * return an RDD containing the specified rows
+   *
+   * @param rdd rdd to pull from
+   * @param offset offset to start pulling from
+   * @param count number of objects to include in result
+   * @return RDD of Row objects
+   */
+  def getRowsRdd(rdd: RDD[Row], offset: Long, count: Int): RDD[Row] = {
     //Count the rows in each partition, then order the counts by partition number
     val counts = rdd.mapPartitionsWithIndex(
       (i: Int, rows: Iterator[Row]) => Iterator.single((i, rows.size)))
@@ -63,26 +89,22 @@ private[spark] object SparkOps extends Serializable {
       case (part, count) => (part, (count, sums(part)))
     }.toMap
 
-    //println(sumsAndCounts)
-    val capped = count
-
     //Start getting rows. We use the sums and counts to figure out which
     //partitions we need to read from and which to just ignore
-    val rows: Seq[Row] = rdd.mapPartitionsWithIndex((i, rows) => {
+    rdd.mapPartitionsWithIndex((i, rows) => {
       val (ct: Int, sum: Int) = sumsAndCounts(i)
       val thisPartStart = sum - ct
-      if (sum < offset || thisPartStart >= offset + capped) {
+      if (sum < offset || thisPartStart >= offset + count) {
         //println("skipping partition " + i)
         Iterator.empty
       }
       else {
         val start = Math.max(offset - thisPartStart, 0)
-        val numToTake = Math.min((capped + offset) - thisPartStart, ct) - start
+        val numToTake = Math.min((count + offset) - thisPartStart, ct) - start
         //println(s"partition $i: starting at $start and taking $numToTake")
         rows.drop(start.toInt).take(numToTake.toInt)
       }
-    }).collect()
-    rows
+    })
   }
 
   /**

@@ -564,9 +564,11 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
 
       def progress = column[List[Float]]("progress")
 
+      def detailedProgress = column[List[ProgressInfo]]("detailedProgress")
+
       def complete = column[Boolean]("complete", O.Default(false))
 
-      def result = column[Option[JsObject]]("result")
+      def totalPartitions = column[Option[Long]]("total_partitions")
 
       def createdOn = column[DateTime]("created_on")
 
@@ -575,7 +577,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
       def createdById = column[Option[Long]]("created_by")
 
       /** projection to/from the database */
-      def * = (id, name, arguments, error, progress, complete, result, createdOn, modifiedOn, createdById) <> (gaoQuery.tupled, gaoQuery.unapply)
+      def * = (id, name, arguments, error, progress, detailedProgress, complete, totalPartitions, createdOn, modifiedOn, createdById) <> (gaoQuery.tupled, gaoQuery.unapply)
 
       def createdBy = foreignKey("query_created_by", createdById, users)(_.id)
     }
@@ -588,7 +590,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
 
     override def insert(query: QueryTemplate)(implicit session: Session): Try[gaoQuery] = Try {
       // TODO: add createdBy user id
-      val c = gaoQuery(0, query.name, query.arguments, None, List(), false, None, new DateTime(), new DateTime(), None)
+      val c = gaoQuery(0, query.name, query.arguments, None, List(), List(), false, None, new DateTime(), new DateTime(), None)
       queriesAutoInc.insert(c)
     }
 
@@ -641,7 +643,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
      * @param progress progress for the command
      * @param session session to db
      */
-    override def updateProgress(id: Long, progress: List[Float])(implicit session: Session): Try[Unit] = Try {
+    override def updateProgress(id: Long, progress: List[Float], detailedProgress: List[ProgressInfo])(implicit session: Session): Try[Unit] = Try {
       val q = for { c <- queries if c.id === id } yield c.progress
       q.update(progress)
     }
