@@ -182,7 +182,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
         new FrameRDD(frame.schema, frames.getFrameRdd(ctx, source.uri.toInt))
       case "file" =>
         val parser = source.parser.get
-        val parseResult = SparkOps.loadAndParseLines(ctx, fsRoot + "/" + source.uri, parser)
+        val parseResult = LoadRDDFunctions.loadAndParseLines(ctx, fsRoot + "/" + source.uri, parser)
         parseResult.parsedLines
       case _ => ???
     }
