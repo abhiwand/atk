@@ -28,7 +28,7 @@ import org.scalatest.Matchers
 
 import scala.collection.mutable.ArrayBuffer
 
-class SparkOpsSpec extends TestingSparkContext with Matchers {
+class SparkOpsTest extends TestingSparkContext with Matchers {
 
   val max = 20
   val array = (1 to max * 2).map(i => Array(i, i.toString, i.toDouble * 0.1))
