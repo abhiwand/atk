@@ -300,10 +300,28 @@ class ProgressListenerSpec extends Specification with Mockito {
     stage.id.returns(1)
     jobEnd.jobResult.returns(JobFailed(null, Some(stage)))
 
-    listener.activeStages.get(1) shouldNotEqual None
+    listener.unfinishedStages.get(1) shouldNotEqual None
     listener.onJobEnd(jobEnd)
     listener.getCommandProgress(1) shouldEqual List(0)
-    listener.activeStages.get(1) shouldEqual None
+  }
+
+  "failed at middle of stage" in {
+    val listener = createListener_one_job("1")
+    sendStageSubmittedToListener(listener, 1, 10)
+    sendTaskEndToListener(listener, 1, 6, true)
+    listener.getCommandProgress(1) shouldEqual List(20)
+
+    val jobEnd = mock[SparkListenerJobEnd]
+    val stage = mock[Stage]
+    stage.id.returns(1)
+    jobEnd.jobResult.returns(JobFailed(null, Some(stage)))
+
+    listener.unfinishedStages.get(1) shouldNotEqual None
+    listener.onJobEnd(jobEnd)
+
+    //send second time, make sure no exception thrown
+    listener.onJobEnd(jobEnd)
+    listener.getCommandProgress(1) shouldEqual List(20)
   }
 
   "job1: finish second task in second stage, job2: finish first task in first stage" in {

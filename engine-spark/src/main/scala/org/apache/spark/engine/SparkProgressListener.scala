@@ -48,7 +48,7 @@ class SparkProgressListener(val progressUpdater: CommandProgressUpdater) extends
 
   val jobIdToStagesIds = new HashMap[Int, Array[Int]]
   val stageIdStageMapping = new HashMap[Int, Stage]
-  val activeStages = new HashMap[Int, StageInfo]()
+  val unfinishedStages = new HashMap[Int, StageInfo]()
   val completedStages = ListBuffer[Int]()
   val stageIdToTasksComplete = HashMap[Int, Int]()
   val stageIdToTasksFailed = HashMap[Int, Int]()
@@ -91,13 +91,13 @@ class SparkProgressListener(val progressUpdater: CommandProgressUpdater) extends
 
   override def onStageSubmitted(stageSubmitted: SparkListenerStageSubmitted) {
     val stage = stageSubmitted.stage
-    activeStages(stage.stageId) = stage
+    unfinishedStages(stage.stageId) = stage
   }
 
   override def onStageCompleted(stageCompleted: SparkListenerStageCompleted) {
 
     val stageInfo = stageCompleted.stage
-    activeStages -= stageInfo.stageId
+    unfinishedStages -= stageInfo.stageId
     completedStages += stageInfo.stageId
 
     //make sure all the parent stages are marked to complete
@@ -119,31 +119,11 @@ class SparkProgressListener(val progressUpdater: CommandProgressUpdater) extends
     updateProgress(sid)
   }
 
-  override def onJobEnd(jobEnd: SparkListenerJobEnd) {
-
-    jobEnd match {
-      case end: SparkListenerJobEnd =>
-        end.jobResult match {
-          case JobFailed(ex, Some(stage)) =>
-            /* If two jobs share a stage we could get this failure message twice. So we first
-            *  check whether we've already retired this stage. */
-            val stageInfo = activeStages.get(stage.id)
-            stageInfo match {
-              case Some(s) => activeStages -= s.stageId
-              case _ => //do nothing
-            }
-
-          case _ =>
-        }
-      case _ =>
-    }
-  }
-
   /* calculate progress for the job */
   private def getProgress(jobId: Int): Float = {
     val stageIds = jobIdToStagesIds(jobId)
     val finishedStages = stageIds.count(i => completedStages.contains(i))
-    val currentActiveStages = activeStages.filter(s => stageIds.contains(s._1)).map(pair => pair._2)
+    val currentActiveStages = unfinishedStages.filter(s => stageIds.contains(s._1)).map(pair => pair._2)
 
     var progress: Float = (100 * finishedStages.toFloat) / stageIds.length.toFloat
 
