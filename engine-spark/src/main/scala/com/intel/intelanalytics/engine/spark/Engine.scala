@@ -119,13 +119,13 @@ class SparkEngine(sparkContextManager: SparkContextManager,
    * returns the data found in a specific query result partition
    *
    * @param id query id
-   * @param partition partition id
+   * @param pageId page id
    * @param user current user
    * @return data of specific partition
    */
-  override def getQueryPartition(id: Long, partition: Long)(implicit user: UserPrincipal) = withContext("se.getQueryPartition") {
+  override def getQueryPage(id: Long, pageId: Long)(implicit user: UserPrincipal) = withContext("se.getQueryPage") {
     val ctx = sparkContextManager.context(user)
-    val data = queryStorage.getQueryPartition(ctx.sparkContext, id, partition)
+    val data = queryStorage.getQueryPage(ctx.sparkContext, id, pageId)
     data
   }
 

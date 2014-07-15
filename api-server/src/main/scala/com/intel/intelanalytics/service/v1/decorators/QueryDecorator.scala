@@ -46,9 +46,9 @@ object QueryDecorator extends EntityDecorator[Query, GetQueries, GetQuery] {
     val detailedProgressMessage = entity.detailedProgress.map(progress => progress.toString)
 
     GetQuery(id = entity.id, name = entity.name,
-      arguments = entity.arguments, error = entity.error, progress = entity.progress, progressMessage = detailedProgressMessage, complete = entity.complete,
+      arguments = entity.arguments, error = entity.error, complete = entity.complete,
       result = if (entity.complete) {
-        Some(GetQueryPartition(None, None, entity.totalPartitions))
+        Some(GetQueryPage(None, None, entity.totalPages))
       }
       else {
         None
@@ -75,13 +75,13 @@ object QueryDecorator extends EntityDecorator[Query, GetQueries, GetQuery] {
    * @param entity query to display partitions
    * @return the View/Model
    */
-  def decoratePartitions(uri: String, entity: Query): List[GetQueryPartitions] = {
+  def decoratePages(uri: String, entity: Query): List[GetQueryPages] = {
     require(entity.complete)
-    val partitions = new ListBuffer[GetQueryPartitions]();
-    for (i <- 1 to entity.totalPartitions.get.toInt) {
-      partitions += new GetQueryPartitions(id = i, url = uri + "/" + i)
+    val pages = new ListBuffer[GetQueryPages]();
+    for (i <- 1 to entity.totalPages.get.toInt) {
+      pages += new GetQueryPages(id = i, url = uri + "/" + i)
     }
-    partitions.toList
+    pages.toList
   }
 
   /**
@@ -90,16 +90,15 @@ object QueryDecorator extends EntityDecorator[Query, GetQueries, GetQuery] {
    * @param uri uri of the query
    * @param links related links
    * @param entity query retrieved
-   * @param partition partition requested
+   * @param parges page requested
    * @param data data found in the partitiion as a List of JsValues
    * @return the View/Model
    */
-  def decoratePartition(uri: String, links: Iterable[RelLink], entity: Query, partition: Long, data: List[JsValue]): GetQuery = {
+  def decoratePages(uri: String, links: Iterable[RelLink], entity: Query, parges: Long, data: List[JsValue]): GetQuery = {
     require(entity.complete)
-    val detailedProgressMessage = entity.detailedProgress.map(progress => progress.toString)
 
     GetQuery(id = entity.id, name = entity.name,
-      arguments = entity.arguments, error = entity.error, progress = entity.progress, progressMessage = detailedProgressMessage, complete = entity.complete,
-      result = Some(new GetQueryPartition(Some(data), Some(partition), entity.totalPartitions)), links = links.toList)
+      arguments = entity.arguments, error = entity.error, complete = entity.complete,
+      result = Some(new GetQueryPage(Some(data), Some(parges), entity.totalPages)), links = links.toList)
   }
 }

@@ -37,8 +37,8 @@ import spray.json.JsObject
  * @param result result of the query
  * @param links
  */
-case class GetQuery(id: Long, name: String, arguments: Option[JsObject], error: Option[Error], progress: List[Float],
-                    progressMessage: List[String], complete: Boolean, result: Option[GetQueryPartition], links: List[RelLink]) {
+case class GetQuery(id: Long, name: String, arguments: Option[JsObject], error: Option[Error],
+                    complete: Boolean, result: Option[GetQueryPage], links: List[RelLink]) {
   require(id > 0)
   require(name != null)
   require(arguments != null)

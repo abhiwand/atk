@@ -25,7 +25,7 @@ package com.intel.intelanalytics.engine.spark.queries
 
 import com.intel.intelanalytics.component.{ ArchiveName, Boot }
 import com.intel.intelanalytics.domain.query.{ Query, QueryTemplate, Execution }
-import com.intel.intelanalytics.engine.plugin.{ FunctionQuery, QueryPlugin }
+import com.intel.intelanalytics.engine.plugin.{ QueryPluginResults, FunctionQuery, QueryPlugin }
 import com.intel.intelanalytics.engine.spark.context.SparkContextManager
 import com.intel.intelanalytics.engine.spark.plugin.SparkInvocation
 import com.intel.intelanalytics.engine.spark.{ SparkEngine, SparkEngineConfig }
@@ -123,11 +123,13 @@ class QueryExecutor(engine: => SparkEngine, queries: SparkQueryStorage, contextM
           val context: SparkContext = contextManager.context(user).sparkContext
           val cmdFuture = future {
             withQuery(q) {
+              import com.intel.intelanalytics.domain.DomainJsonProtocol._
               val invocation: SparkInvocation = SparkInvocation(engine, commandId = q.id, arguments = q.arguments,
                 user = user, executionContext = implicitly[ExecutionContext],
                 sparkContext = context)
 
-              context.setLocalProperty("query-id", q.id.toString)
+              context.setLocalProperty("command-id", q.id.toString)
+              context.setLocalProperty("command-type", "QueryPlugin")
 
               val funcResult = query(invocation, arguments)
 
@@ -140,7 +142,9 @@ class QueryExecutor(engine: => SparkEngine, queries: SparkQueryStorage, contextM
               val location = queries.getAbsoluteFrameDirectory(q.id)
 
               rdd.saveAsObjectFile(location)
-              math.ceil(rdd.count().toDouble / SparkEngineConfig.maxRows).toInt
+              val pageSize = SparkEngineConfig.pageSize
+              val totalPages = math.ceil(rdd.count().toDouble / pageSize).toInt
+              QueryPluginResults(totalPages, pageSize).toJson.asJsObject()
             }
             queries.lookup(q.id).get
           }
@@ -193,9 +197,10 @@ class QueryExecutor(engine: => SparkEngine, queries: SparkQueryStorage, contextM
     execute(function, convertedArgs, user, executionContext)
   }
 
-  private def withQuery[T](query: Query)(block: => Long): Unit = {
+  private def withQuery[T](query: Query)(block: => JsObject): Unit = {
     queries.complete(query.id, Try {
       block
     })
+
   }
 }

@@ -43,9 +43,9 @@ object ViewModelJsonImplicits extends DefaultJsonProtocol with SprayJsonSupport 
   implicit val getDataFrameFormat = jsonFormat4(GetDataFrame)
   implicit val getGraphsFormat = jsonFormat3(GetGraphs)
   implicit val getGraphFormat = jsonFormat3(GetGraph)
-  implicit val getQueryPartitionFormat = jsonFormat3(GetQueryPartition)
-  implicit val getQueryPartitionsFormat = jsonFormat2(GetQueryPartitions)
+  implicit val getQueryPageFormat = jsonFormat3(GetQueryPage)
+  implicit val getQueryPagesFormat = jsonFormat2(GetQueryPages)
   implicit val getQueriesFormat = jsonFormat3(GetQueries)
-  implicit val getQueryFormat = jsonFormat9(GetQuery)
+  implicit val getQueryFormat = jsonFormat7(GetQuery)
   implicit val jsonTransformFormat = jsonFormat2(JsonTransform)
 }

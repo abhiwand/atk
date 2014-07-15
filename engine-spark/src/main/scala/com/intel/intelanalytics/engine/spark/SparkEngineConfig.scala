@@ -83,7 +83,7 @@ object SparkEngineConfig extends SharedConfig with EventLogging {
 
   val fsRoot: String = config.getString("intel.analytics.engine.fs.root")
 
-  val maxRows: Int = config.getInt("intel.analytics.engine.max-rows")
+  val pageSize: Int = config.getInt("intel.analytics.engine.page-size")
 
   /**
    * A list of archives that will be searched for command plugins

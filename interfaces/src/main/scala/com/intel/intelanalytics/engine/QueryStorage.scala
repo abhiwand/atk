@@ -24,6 +24,7 @@
 package com.intel.intelanalytics.engine
 
 import com.intel.intelanalytics.domain.query.{ QueryTemplate, Query }
+import spray.json.JsObject
 import scala.util.Try
 
 trait QueryStorage {
@@ -31,7 +32,7 @@ trait QueryStorage {
   def create(frame: QueryTemplate): Query
   def scan(offset: Int, count: Int): Seq[Query]
   def start(id: Long): Unit
-  def complete(id: Long, result: Try[Long]): Unit
+  def complete(id: Long, result: Try[JsObject]): Unit
 
   /**
    * update query info regarding progress of jobs initiated by this command

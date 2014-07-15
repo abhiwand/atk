@@ -27,6 +27,7 @@ import java.nio.file.Paths
 
 import com.intel.intelanalytics.domain.query.{ Query, QueryTemplate }
 import com.intel.intelanalytics.engine.Rows._
+import com.intel.intelanalytics.engine.plugin.QueryPluginResults
 import com.intel.intelanalytics.engine.spark.{ SparkOps, HdfsFileStorage, SparkEngineConfig }
 import com.intel.intelanalytics.engine.{ ProgressInfo, QueryStorage }
 import com.intel.intelanalytics.repository.SlickMetaStoreComponent
@@ -46,7 +47,7 @@ class SparkQueryStorage(val metaStore: SlickMetaStoreComponent#SlickMetaStore, f
    * @param queryId primary key of the query record
    * @return the newly created RDD
    */
-  def getQueryRdd(ctx: SparkContext, queryId: Long): RDD[Row] = {
+  def getQueryRdd(ctx: SparkContext, queryId: Long): RDD[Any] = {
     ctx.objectFile(getAbsoluteFrameDirectory(queryId))
   }
 
@@ -54,17 +55,17 @@ class SparkQueryStorage(val metaStore: SlickMetaStoreComponent#SlickMetaStore, f
    * Returns the data found in a single partition
    * @param ctx spark context
    * @param queryId primary key of the query record
-   * @param partitionId partition number to return
+   * @param pageId partition number to return
    * @return data from partition as a local object
    */
-  def getQueryPartition(ctx: SparkContext, queryId: Long, partitionId: Long): Iterable[Any] = {
+  def getQueryPage(ctx: SparkContext, queryId: Long, pageId: Long): Iterable[Any] = {
     val rdd = getQueryRdd(ctx, queryId)
-    //    rdd.mapPartitionsWithIndex((i, rows) => {
-    //      if (i == partitionId) rows
-    //      else Iterator.empty
-    //    }).collect()
-    val maxRows = SparkEngineConfig.maxRows
-    SparkOps.getRows(rdd, partitionId * maxRows, maxRows, maxRows)
+    val query = lookup(queryId)
+    val pageSize: Int = query match {
+      case Some(q) => q.pageSize.getOrElse(SparkEngineConfig.pageSize.toLong).toInt
+      case None => SparkEngineConfig.pageSize
+    }
+    SparkOps.getElements[Any](rdd, pageId * pageSize, pageSize, pageSize)
   }
 
   override def lookup(id: Long): Option[Query] =
@@ -84,7 +85,7 @@ class SparkQueryStorage(val metaStore: SlickMetaStoreComponent#SlickMetaStore, f
         query
     }
 
-  override def scan(offset: Int, count: Int): Seq[Query] = metaStore.withSession("se.query.getQuerys") {
+  override def scan(offset: Int, count: Int): Seq[Query] = metaStore.withSession("se.query.getQueries") {
     implicit session =>
       repo.scan(offset, count)
   }
@@ -93,9 +94,8 @@ class SparkQueryStorage(val metaStore: SlickMetaStoreComponent#SlickMetaStore, f
     //TODO: set start date
   }
 
-  override def complete(id: Long, totalPartitions: Try[Long]): Unit = {
+  override def complete(id: Long, result: Try[JsObject]): Unit = {
     require(id > 0, "invalid ID")
-    require(totalPartitions != null)
     metaStore.withSession("se.query.complete") {
       implicit session =>
         val query = repo.lookup(id).getOrElse(throw new IllegalArgumentException(s"Query $id not found"))
@@ -104,9 +104,11 @@ class SparkQueryStorage(val metaStore: SlickMetaStoreComponent#SlickMetaStore, f
         }
         //TODO: Update dates
         import com.intel.intelanalytics.domain.throwableToError
-        val changed = totalPartitions match {
+        val changed = result match {
           case Failure(ex) => query.copy(complete = true, error = Some(throwableToError(ex)))
           case Success(r) => {
+
+            import com.intel.intelanalytics.domain.DomainJsonProtocol._
             /**
              * update progress to 100 since the query is complete. This step is necessary
              * because the actually progress notification events are sent to SparkProgressListener.
@@ -114,7 +116,8 @@ class SparkQueryStorage(val metaStore: SlickMetaStoreComponent#SlickMetaStore, f
              */
 
             val progress = query.progress.map(i => 100f)
-            query.copy(complete = true, progress = progress, totalPartitions = Some(r))
+            val pluginResults = Some(r).get.convertTo[QueryPluginResults]
+            query.copy(complete = true, progress = progress, totalPages = Some(pluginResults.totalPages), pageSize = Some(pluginResults.pageSize))
           }
         }
         repo.update(changed)
