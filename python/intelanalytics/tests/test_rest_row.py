@@ -26,9 +26,8 @@ iatest.init()
 
 import unittest
 
-
 from intelanalytics.core.iatypes import *
-from ordereddict import OrderedDict
+from intelanalytics.core.orddict  import OrderedDict
 from intelanalytics.rest.frame import RowWrapper
 
 
