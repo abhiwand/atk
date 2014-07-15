@@ -52,3 +52,4 @@ case class Status(id: Long, name: String, description: String, createdOn: DateTi
   /** Underlying storage has been reclaimed, no un-delete is possible */
   def isDeleteFinal: Boolean = id.equals(5)
 }
+

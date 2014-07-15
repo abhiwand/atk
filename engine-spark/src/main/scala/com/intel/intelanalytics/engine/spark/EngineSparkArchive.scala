@@ -44,7 +44,7 @@ class EngineSparkArchive extends Archive {
    */
   override def getAll[T: ClassTag](descriptor: String): Seq[T] = descriptor match {
     //TODO: move the plumbing parts to the Archive trait and make this just a simple PartialFunction
-    case "CommandPlugin" => commands
+    case "command" => commands
       .map(c => load(c.getName))
       .filter(i => i.isInstanceOf[T])
       .map(i => i.asInstanceOf[T])
@@ -60,23 +60,7 @@ class EngineSparkArchive extends Archive {
 
   }
 
-  /**
-   * The location at which this component should be installed in the component
-   * tree. For example, a graph machine learning algorithm called Loopy Belief
-   * Propagation might wish to be installed at
-   * "commands/graphs/ml/loopy_belief_propagation". However, it might not actually
-   * get installed there if the system has been configured to override that
-   * default placement.
-   */
-  override def defaultLocation: String = "engine"
-
-  /**
-   * Called before processing any requests.
-   *
-   * @param configuration Configuration information, scoped to that required by the
-   *                      plugin based on its installed paths.
-   */
-  override def start(configuration: Config): Unit = {
+  override def start(): Unit = {
     SparkEngineConfig.logSettings()
   }
 }

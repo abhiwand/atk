@@ -21,9 +21,13 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.component
+package com.intel.intelanalytics.domain.frame
 
-/**
- * Encapsulates all data needed to load an archive
- */
-case class ArchiveName(archive: String, archiveClass: String)
+case class ConfusionMatrix[FrameRef](frameId: FrameRef, labelColumn: String, predColumn: String, posLabel: String) {
+  require(frameId != null, "frame is required")
+  require(labelColumn != null && !labelColumn.equals(""), "label column is required")
+  require(predColumn != null && !predColumn.equals(""), "predict column is required")
+  require(posLabel != null && !posLabel.equals(""), "valid positive label is required")
+}
+
+case class ConfusionMatrixValues(valueList: Seq[Long])

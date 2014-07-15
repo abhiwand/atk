@@ -23,10 +23,8 @@
 
 package com.intel.intelanalytics.engine
 
-import com.intel.intelanalytics.ClassLoaderAware
-import com.intel.intelanalytics.component.Archive
+import com.intel.intelanalytics.component.{ ClassLoaderAware, Archive }
 import com.intel.intelanalytics.shared.EventLogging
-import com.typesafe.config.Config
 
 import scala.reflect.ClassTag
 import scala.util.control.NonFatal
@@ -42,18 +40,18 @@ class EngineApplication extends Archive with EventLogging with ClassLoaderAware 
     }
   }
 
-  def stop() = {
+  override def stop() = {
     info("Shutting down engine")
     engine.engine.shutdown
   }
 
-  def start(configuration: Config) = {
+  override def start() = {
 
     try {
       //TODO: when Engine moves to its own process, it will need to start its own Akka actor system.
 
       val sparkLoader = {
-        com.intel.intelanalytics.component.Boot.getClassLoader("engine-spark")
+        com.intel.intelanalytics.component.Boot.getArchive("engine-spark").getClass.getClassLoader
       }
 
       engine = {
@@ -71,13 +69,4 @@ class EngineApplication extends Archive with EventLogging with ClassLoaderAware 
     }
   }
 
-  /**
-   * The location at which this component should be installed in the component
-   * tree. For example, a graph machine learning algorithm called Loopy Belief
-   * Propagation might wish to be installed at
-   * "commands/graphs/ml/loopy_belief_propagation". However, it might not actually
-   * get installed there if the system has been configured to override that
-   * default placement.
-   */
-  override def defaultLocation: String = "engine"
 }

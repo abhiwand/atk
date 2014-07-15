@@ -21,30 +21,51 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.component
+package com.intel.spark.graphon
 
-import scala.reflect.ClassTag
+import java.util.Date
 
-trait Locator {
+import com.intel.testutils._
+import org.apache.spark.{ SparkConf, SparkContext }
+import org.scalatest.{ BeforeAndAfterAll, WordSpec }
+
+trait GraphonSparkContext extends WordSpec with BeforeAndAfterAll {
+  LogUtils.silenceSpark()
+
+  val conf = new SparkConf()
+    .setMaster("local")
+    .setAppName(this.getClass.getSimpleName + " " + new Date())
+  conf.set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
+  conf.set("spark.kryo.registrator", "com.intel.graphbuilder.driver.spark.titan.GraphBuilderKryoRegistrator")
+
+  var sparkContext: SparkContext = null
+
+  override def beforeAll = {
+    // Ensure only one Spark local context is running at a time
+    TestingSparkContext.lock.acquire()
+    sparkContext = new SparkContext(conf)
+  }
 
   /**
-   * Obtain instances of a given class. The keys are established purely
-   * by convention.
-   *
-   * @param descriptor the string key of the desired class instance.
-   * @tparam T the type of the requested instances
-   * @return the requested instances, or the empty sequence if no such instances could be produced.
+   * Clean up after the test is done
    */
-  def getAll[T: ClassTag](descriptor: String): Seq[T]
+  override def afterAll = {
+    cleanupSpark()
+  }
 
   /**
-   * Obtain a single instance of a given class. The keys are established purely
-   * by convention.
-   *
-   * @param descriptor the string key of the desired class instance.
-   * @tparam T the type of the requested instances
-   * @return the requested instance, or the first such instance if the locator provides more than one
-   * @throws NoSuchElementException if no instances were found
+   * Shutdown spark and release the lock
    */
-  def get[T: ClassTag](descriptor: String): T = getAll(descriptor).head
+  def cleanupSpark(): Unit = {
+    try {
+      if (sparkContext != null) {
+        sparkContext.stop()
+      }
+    }
+    finally {
+      // To avoid Akka rebinding to the same port, since it doesn't unbind immediately on shutdown
+      System.clearProperty("spark.driver.port")
+      TestingSparkContext.lock.release()
+    }
+  }
 }
