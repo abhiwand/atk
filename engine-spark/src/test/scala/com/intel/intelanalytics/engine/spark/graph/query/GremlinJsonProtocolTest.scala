@@ -2,8 +2,8 @@ package com.intel.intelanalytics.engine.spark.graph.query
 
 import com.intel.intelanalytics.engine.spark.graph.TestingTitan
 import com.tinkerpop.blueprints.util.io.graphson.GraphSONTokens
-import com.tinkerpop.blueprints.{Element, Vertex, Edge}
-import org.scalatest.{FlatSpec, Matchers}
+import com.tinkerpop.blueprints.{ Element, Vertex, Edge }
+import org.scalatest.{ FlatSpec, Matchers }
 import spray.json._
 
 class GremlinJsonProtocolTest extends FlatSpec with Matchers with TestingTitan {
@@ -60,7 +60,7 @@ class GremlinJsonProtocolTest extends FlatSpec with Matchers with TestingTitan {
     val edge = JsonParser(edgeJson1).convertTo[Element]
 
     edge.isInstanceOf[Edge] should be(true)
-    edge.getProperty[Float]("weight") should equal (10)
+    edge.getProperty[Float]("weight") should equal(10)
     edge.asInstanceOf[Edge].getLabel() should be("test")
 
   }
@@ -71,4 +71,12 @@ class GremlinJsonProtocolTest extends FlatSpec with Matchers with TestingTitan {
       JsonParser(json).convertTo[Element]
     }
   }
+  /*"GremlinFormat" should "dgas" in {
+    implicit val gremlinJsonFormat = new GremlinJsonFormat(graph)
+    val vertex = graph.addVertex(1)
+    vertex.setProperty("name", "marko")
+    vertex.setProperty("age", 29)
+
+    val json = vertex.asInstanceOf[Element].toJson
+  } */
 }
