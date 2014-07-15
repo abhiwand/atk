@@ -287,44 +287,45 @@ class SparkEngine(sparkContextManager: SparkContextManager,
   }
 
   /**
-   * Randomly splits data into classes given a vector of percentages. Modifies the current table by adding a
-   * column (called "sample bin" by default).
+   * Randomly assigns sample lables to rows of a table, with probabilities for each label given by an incoming
+   * probability distribution. Modifies the current table by adding a  column (called "sample bin" by default) that
+   * contains the sample labels.
    *
-   * @param arguments SplitData command payload
+   * @param arguments AssignSample command payload
    * @param user the current user
    * @return
    */
-  def splitData(arguments: SplitData)(implicit user: UserPrincipal): Execution =
-    commands.execute(splitDataCommand, arguments, user, implicitly[ExecutionContext])
+  def assignSample(arguments: AssignSample)(implicit user: UserPrincipal): Execution =
+    commands.execute(assignSampleCommand, arguments, user, implicitly[ExecutionContext])
 
-  val splitDataCommand = commands.registerCommand("dataframe/split_data", splitDataSimple)
+  val assignSampleCommand = commands.registerCommand("dataframe/assign_sample", assignSampleSimple)
 
-  def splitDataSimple(arguments: SplitData, user: UserPrincipal) = {
+  def assignSampleSimple(arguments: AssignSample, user: UserPrincipal) = {
 
     val ctx = sparkContextManager.context(user).sparkContext
 
     val frameID = arguments.frame.id
     val frame = expectFrame(frameID)
 
-    val splitPercentages = arguments.split_percentages.toArray
+    val splitPercentages = arguments.sample_percentages.toArray
 
-    val outputColumn = arguments.output_column.getOrElse("split_class")
+    val outputColumn = arguments.output_column.getOrElse("sample_bin")
 
     if (frame.schema.columns.indexWhere(columnTuple => columnTuple._1 == outputColumn) >= 0)
       throw new IllegalArgumentException(s"Duplicate column name: ${outputColumn}")
 
     val seed = arguments.random_seed.getOrElse(0)
 
-    val splitLabels: Array[String] = if (arguments.split_labels.isEmpty) {
+    val splitLabels: Array[String] = if (arguments.sample_labels.isEmpty) {
       if (splitPercentages.length == 3) {
         Array("TR", "TE", "VA")
       }
       else {
-        (0 to splitPercentages.length - 1).map(i => "Split#" + i).toArray
+        (0 to splitPercentages.length - 1).map(i => "Sample#" + i).toArray
       }
     }
     else {
-      arguments.split_labels.get.toArray
+      arguments.sample_labels.get.toArray
     }
 
     val splitter = new MLDataSplitter(splitPercentages, splitLabels, seed)
