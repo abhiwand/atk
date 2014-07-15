@@ -172,9 +172,9 @@ class SparkFrameStorage(context: UserPrincipal => Context, fsRoot: String, files
     }
   }
 
-  override def create(frame: DataFrameTemplate): DataFrame = withContext("frame.create") {
+  override def create(frame: DataFrameTemplate)(implicit user: UserPrincipal): DataFrame = withContext("frame.create") {
     val id = nextFrameId()
-    // TODO: wire this up better.  For example, status Id should be looked up, user supplied, etc.
+    // TODO: Status Id should be looked up.
     val frame2 = new DataFrame(id = id,
       name = frame.name,
       description = frame.description,
@@ -182,8 +182,8 @@ class SparkFrameStorage(context: UserPrincipal => Context, fsRoot: String, files
       status = 1L,
       createdOn = new DateTime(),
       modifiedOn = new DateTime(),
-      createdBy = None,
-      modifiedBy = None)
+      createdBy = Some(user.user.id),
+      modifiedBy = Some(user.user.id))
     drop(frame2) //remove any existing artifacts to prevent collisions when a database is reinitialized.
     val meta = File(Paths.get(getFrameMetaDataFile(id)))
     info(s"Saving metadata to $meta")
