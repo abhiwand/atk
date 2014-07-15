@@ -40,6 +40,7 @@ import spray.json._
 import scala.concurrent._
 import scala.collection.JavaConverters._
 import com.intel.intelanalytics.engine.spark.graph.GraphName
+import com.intel.intelanalytics.component.Boot
 
 case class KClique(graph: GraphReference,
                    cliqueSize: Int,
@@ -60,6 +61,7 @@ class KCliquePercolation extends SparkCommandPlugin[KClique, KCliqueResult] {
 
     // Get the SparkContext as one the input parameters for KCliquePercolationDriver
     val sc = sparkInvocation.sparkContext
+    sc.addJar(Boot.getJar("graphon").getPath)
 
     // Titan Settings
     val config = configuration
@@ -76,10 +78,13 @@ class KCliquePercolation extends SparkCommandPlugin[KClique, KCliqueResult] {
     val iatGraphName = GraphName.convertGraphUserNameToBackendName(graph.name)
     titanConfig.setProperty("storage.tablename", iatGraphName)
 
+    System.out.println("*********Created TitanConnector********")
     val titanConnector = new TitanGraphConnector(titanConfig)
 
+    System.out.println("*********Starting KClique Percolation********")
     KCliquePercolationDriver.run(titanConnector, sc, arguments.cliqueSize, arguments.communityPropertyDefaultLabel)
 
+    System.out.println("*********Finished execution of KCliquePercolation********")
     val time = (System.currentTimeMillis() - start).toDouble / 1000.0
     KCliqueResult(time)
 

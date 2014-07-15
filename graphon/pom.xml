@@ -71,7 +71,7 @@
             <groupId>org.apache.spark</groupId>
             <artifactId>spark-graphx_${scala.short.version}</artifactId>
             <version>0.9.0-cdh5.0.1</version>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
