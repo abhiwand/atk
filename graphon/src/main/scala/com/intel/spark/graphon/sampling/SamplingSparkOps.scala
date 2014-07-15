@@ -163,8 +163,8 @@ object SamplingSparkOps extends Serializable {
    */
   def sampleEdges(vertices: RDD[Vertex], edges: RDD[Edge]): RDD[Edge] = {
     // TODO: graphX is welcome here...it has a subgraph function...and the current approach is inefficient
-    val vertexArray = vertices.map(v => v.physicalId.asInstanceOf[Long]).collect()
-    edges.filter(e => vertexArray.contains(e.headPhysicalId.asInstanceOf[Long]) && vertexArray.contains(e.tailPhysicalId.asInstanceOf[Long]))
+    val vertexArray = vertices.map(v => v.physicalId).collect()
+    edges.filter(e => vertexArray.contains(e.headPhysicalId) && vertexArray.contains(e.tailPhysicalId))
   }
 
   /**
