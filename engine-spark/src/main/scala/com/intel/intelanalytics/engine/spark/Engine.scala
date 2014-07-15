@@ -483,32 +483,34 @@ class SparkEngine(sparkContextManager: SparkContextManager,
    * @param arguments input specification for column mean
    * @param user current user
    */
-  override def columnStatistic(arguments: ColumnStatistic[Long])(implicit user: UserPrincipal): Execution =
+  override def columnSummaryStatistics(arguments: ColumnSummaryStatistics)(implicit user: UserPrincipal): Execution =
     commands.execute(columnStatisticCommand, arguments, user, implicitly[ExecutionContext])
 
-  val columnStatisticCommand: CommandPlugin[ColumnStatistic[Long], ColumnStatisticReturn] = commands.registerCommand("dataframe/columnStatistics", columnStatisticSimple)
-  def columnStatisticSimple(arguments: ColumnStatistic[Long], user: UserPrincipal): ColumnStatisticReturn = {
+  val columnStatisticCommand: CommandPlugin[ColumnSummaryStatistics, ColumnSummaryStatisticsReturn] =
+    commands.registerCommand("dataframe/column_summary_statistics", columnStatisticSimple)
+
+  def columnStatisticSimple(arguments: ColumnSummaryStatistics, user: UserPrincipal): ColumnSummaryStatisticsReturn = {
 
     implicit val u = user
 
-    val frameId: Long = arguments.frame
+    val frameId: Long = arguments.frame.id
 
-    val realFrame = expectFrame(frameId)
+    val frame = expectFrame(frameId)
 
     val ctx = sparkContextManager.context(user).sparkContext
 
     val rdd = frames.getFrameRdd(ctx, frameId)
 
-    val columnIndex = realFrame.schema.columnIndex(arguments.columnName)
+    val columnIndex = frame.schema.columnIndex(arguments.data_column)
 
-    val multiplierColumnIndexOption = if (arguments.multiplierColumnName.isEmpty) {
+    val weightsColumnIndexOption = if (arguments.weights_column.isEmpty) {
       None
     }
     else {
-      Some(realFrame.schema.columnIndex(arguments.multiplierColumnName.get))
+      Some(frame.schema.columnIndex(arguments.weights_column.get))
     }
 
-    ColumnStatisticReturn(SparkOps.columnStatistic(columnIndex, multiplierColumnIndexOption, rdd, arguments.operation))
+    SparkOps.columnSummaryStatistics(columnIndex, weightsColumnIndexOption, rdd)
   }
 
   def filter(arguments: FilterPredicate[JsObject, Long])(implicit user: UserPrincipal): Execution =

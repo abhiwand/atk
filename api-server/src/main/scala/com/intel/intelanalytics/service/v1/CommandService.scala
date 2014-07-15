@@ -170,7 +170,6 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
       case ("dataframe/groupby") => runFrameGroupByColumn(uri, xform)
       case ("dataframe/drop_duplicates") => runDropDuplicates(uri, xform)
       case ("dataframe/binColumn") => runBinColumn(uri, xform)
-      case ("dataframe/columnStatistic") => runColumnStatistic(uri, xform)
       case ("dataframe/classification_metric") => runClassificationMetric(uri, xform)
       case ("dataframe/confusion_matrix") => runConfusionMatrix(uri, xform)
       case s: String => illegalArg("Command name is not supported: " + s)
@@ -330,18 +329,6 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
     }
   }
 
-  def runColumnStatistic(uri: Uri, xform: JsonTransform)(implicit user: UserPrincipal) = {
-    val test = Try {
-      xform.arguments.get.convertTo[ColumnStatistic[Long]]
-    }
-
-    validate(test.isSuccess, "Failed to parse mean column descriptor: " + getErrorMessage(test)) {
-      val args = test.get
-      val result = engine.columnStatistic(args)
-      val command: Command = result.start
-      complete(decorate(uri + "/" + command.id, command))
-    }
-  }
   /**
    * Receive drop duplicates request and executing drop duplicates
    */

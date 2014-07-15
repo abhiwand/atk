@@ -99,7 +99,7 @@ trait Engine {
 
   def binColumn(arguments: BinColumn[Long])(implicit user: UserPrincipal): Execution
 
-  def columnStatistic(arguments: ColumnStatistic[Long])(implicit user: UserPrincipal): Execution
+  def columnSummaryStatistics(arguments: ColumnSummaryStatistics)(implicit user: UserPrincipal): Execution
 
   def columnMode(arguments: ColumnMode)(implicit user: UserPrincipal): Execution
 

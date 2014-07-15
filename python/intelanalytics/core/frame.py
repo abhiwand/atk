@@ -867,26 +867,37 @@ class BigFrame(CommandSupport):
         return self._backend.bin_column(self, column_name, num_bins, bin_type, bin_column_name)
 
 
-
-    def mean_column(self, column_name, multiplier_column_name = None):
+    @doc_stub
+    def column_summary_statistics(self, column_name, weights_column_name = None):
         """
-        Calculate the mean value of a column.
+        Calculate summary statistics of a column.
 
         Parameters
         ----------
-        column_name : str
-            The column whose mean value is to be calculated
+        data_column : str
+            The column to be statistically summarized. Must contain numerical data.
+
+        weights_colum : str
+            Optional. The column that provides weights (frequencies) for the data being summarized.
+            Must contain numerical data.
 
         Returns
         -------
-        mean : Double
-            The mean of the values in the column
+        summary : Dict
+            Dictionary containing summary statistics in the following entries:
+                 mean : Arithmetic mean of the data.
+                 geometric_mean : Geometric mean of the data.
+                 variance : Variance of the data where weighted sum of squared distance from the mean is divided by count - 1
+                 standard_deviation : Standard deviation of the data.
+                 minimum : Minimum value in the data.
+                 maximum : Maximum value in the data.
+                 count : The number of entries - not necessarily distinct. Equivalently, the number of rows in the input table.
 
         Examples
         --------
-        >>> mean = frame.mean_column('interesting column')
+        >>> mean = frame.column_summary_statistics('data column', 'weight column')
         """
-        return self._backend.column_statistic(self, column_name, multiplier_column_name, 'MEAN')
+        pass
 
     @doc_stub
     def column_mode (self, column_name, multiplier_column_name = None):
@@ -929,125 +940,7 @@ class BigFrame(CommandSupport):
         """
         return self._backend.column_statistic(self, column_name, multiplier_column_name, 'MEDIAN')
 
-    def sum_column(self, column_name, multiplier_column_name = None):
-            """
-            Calculate the sum of a column.
 
-            Parameters
-            ----------
-            column_name : str
-                The column whose values are to be summed
-
-            Returns
-            -------
-            mean : Double
-                The sum of the values in the column
-
-            Examples
-            --------
-            >>> sum = frame.sum_column('interesting column')
-            """
-            return self._backend.column_statistic(self, column_name, multiplier_column_name, 'SUM')
-
-    def max_column(self, column_name, multiplier_column_name = None):
-        """
-        Calculate the maximum value of a column.
-
-        Parameters
-        ----------
-        column_name : str
-            The column whose maximum is to be found
-
-        Returns
-        -------
-        max : Double
-            The maximum value of the column
-
-        Examples
-        --------
-        >>> max = frame.max_column('interesting column')
-        """
-        return self._backend.column_statistic(self, column_name, multiplier_column_name, 'MAX')
-
-    def min_column(self, column_name, multiplier_column_name = None):
-        """
-        Calculate the minimum value of a column.
-
-        Parameters
-        ----------
-        column_name : str
-            The column whose minimum is to be found
-
-        Returns
-        -------
-        min : Double
-            The minimum value of the column
-
-        Examples
-        --------
-        >>> min = frame.min_column('interesting column')
-        """
-        return self._backend.column_statistic(self, column_name, multiplier_column_name, 'MIN')
-
-    def variance_column(self, column_name, multiplier_column_name = None):
-        """
-        Calculate the variance of a column.
-
-        Parameters
-        ----------
-        column_name : str
-            The column whose variance is to be calculated
-
-        Returns
-        -------
-        variance : Double
-            The variance of the values in the column
-
-        Examples
-        --------
-        >>> variance = frame.variance_column('interesting column')
-        """
-        return self._backend.column_statistic(self, column_name, multiplier_column_name, 'VARIANCE')
-
-    def stdev_column(self, column_name, multiplier_column_name = None):
-        """
-        Calculate the standard deviation of a column.
-
-        Parameters
-        ----------
-        column_name : str
-            The column whose standard deviation is to be calculated
-
-        Returns
-        -------
-        stdev : Double
-            The standard deviation of the values in the column
-
-        Examples
-        --------
-        >>> stdev = frame.stdev_column('interesting column')
-        """
-        return self._backend.column_statistic(self, column_name, multiplier_column_name, 'STDEV')
-
-    def geomean_column(self, column_name, multiplier_column_name = None):
-        """
-        Calculate the geometric mean of a column.
-
-        Parameters
-        ----------
-        column_name : str
-            The column whose geometric mean is to be calculated
-
-        Returns
-        -------
-        geomean : Double
-            The geometric mean of the values in the column
-
-        Examples
-        --------
-        >>> geomean = frame.geomean_column('interesting column')
-        """
-        return self._backend.column_statistic(self, column_name, multiplier_column_name, 'GEOMEAN')
 
     def drop(self, predicate):
         """

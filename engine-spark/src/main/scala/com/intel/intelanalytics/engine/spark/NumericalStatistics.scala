@@ -3,11 +3,12 @@ package com.intel.intelanalytics.engine.spark
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.RDD
+import com.intel.intelanalytics.domain.frame.ColumnSummaryStatisticsReturn
 
-case class SimpleStatistics(weightedSum: Double, weightedProduct: Double, weightedMin: Double,
-                            weightedMax: Double, totalWeight: Double, count: Long)
+case class SimpleStatistics(weightedSum: Double, weightedProduct: Double, minimum: Double,
+                            maximum: Double, totalWeight: Double, count: Long)
 
-class NumericalStatistics(dataWeightPairs: RDD[(Double, Double)]) {
+class NumericalStatistics(dataWeightPairs: RDD[(Double, Double)]) extends Serializable {
 
   lazy val simpleStatistics: SimpleStatistics = generateFirstOrderStats(dataWeightPairs)
 
@@ -15,15 +16,21 @@ class NumericalStatistics(dataWeightPairs: RDD[(Double, Double)]) {
 
   lazy val weightedMean: Double = simpleStatistics.weightedSum / simpleStatistics.totalWeight
 
-  lazy val weightedMin: Double = simpleStatistics.weightedMin
-
-  lazy val weightedMax: Double = simpleStatistics.weightedMax
-
   lazy val weightedGeometricMean: Double = Math.pow(simpleStatistics.weightedProduct, 1 / simpleStatistics.totalWeight)
 
   lazy val weightedVariance: Double = generateVariance()
 
   lazy val weightedStandardDeviation: Double = Math.sqrt(weightedVariance)
+
+  lazy val min = simpleStatistics.minimum
+
+  lazy val max = simpleStatistics.maximum
+
+  lazy val count = simpleStatistics.count
+
+  lazy val summaryStatistics: ColumnSummaryStatisticsReturn = ColumnSummaryStatisticsReturn(mean = weightedMean,
+    geometric_mean = weightedGeometricMean, variance = weightedVariance, standard_deviation = weightedStandardDeviation,
+    minimum = min, maximum = max, count = count)
 
   lazy val weightedSkewness: Double = generateSkewness()
 
@@ -34,7 +41,7 @@ class NumericalStatistics(dataWeightPairs: RDD[(Double, Double)]) {
     val weight = p._2
 
     SimpleStatistics(weightedSum = data * weight,
-      weightedProduct = Math.pow(data, weight), weightedMin = data * weight, weightedMax = data * weight,
+      weightedProduct = Math.pow(data, weight), minimum = data, maximum = data,
       totalWeight = weight, count = 1.toLong)
   }
 
@@ -42,8 +49,8 @@ class NumericalStatistics(dataWeightPairs: RDD[(Double, Double)]) {
 
     val weightedSum = stats1.weightedSum + stats2.weightedSum
     val weightedProduct = stats1.weightedProduct * stats2.weightedProduct
-    val weightedMin = Math.min(stats1.weightedMin, stats2.weightedMin)
-    val weightedMax = Math.max(stats1.weightedMax, stats2.weightedMax)
+    val weightedMin = Math.min(stats1.minimum, stats2.minimum)
+    val weightedMax = Math.max(stats1.maximum, stats2.maximum)
     val totalWeight = stats1.totalWeight + stats2.totalWeight
     val count = stats1.count + stats2.count
 

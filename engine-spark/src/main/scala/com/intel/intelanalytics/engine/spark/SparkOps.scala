@@ -34,6 +34,7 @@ import spray.json.JsObject
 
 import scala.collection.mutable
 import scala.math.pow
+import com.intel.intelanalytics.domain.frame.{ ColumnSummaryStatisticsReturn, ColumnSummaryStatistics }
 
 private[spark] object SparkOps extends Serializable {
 
@@ -608,11 +609,11 @@ private[spark] object SparkOps extends Serializable {
           + cce.toString)
       }
 
-    val weighted = multiplierIndexOption.isEmpty
+    val weighted = !multiplierIndexOption.isEmpty
 
     val weightsRDD = if (weighted) {
       try {
-        rowRDD.map(row => java.lang.Double.parseDouble(row(index).toString))
+        rowRDD.map(row => java.lang.Double.parseDouble(row(multiplierIndexOption.get).toString))
       }
       catch {
         case cce: NumberFormatException => throw new NumberFormatException("Column values cannot be used as weights for "
@@ -636,31 +637,32 @@ private[spark] object SparkOps extends Serializable {
   }
 
   /**
-   * Calculate scalar statistic of column at index.
+   * Calculate summary statistics of data column, possibly weighted by an optional weights column.
    *
-   * @param index column index
+   * @param dataColumnIndex Index of column providing the data. Must be numerical data.
+   * @param weightsColumnIndexOption Option for index of column providing the weights. Must be numerical data.
    * @param rowRDD RDD of input rows
-   * @param operation The operation to be performed
-   * @return the  value of the column
+   * @return summary statistics of the column
    */
-  def columnStatistic(index: Int, multiplierIndexOption: Option[Int], rowRDD: RDD[Row], operation: String): Double = {
+  def columnSummaryStatistics(dataColumnIndex: Int, weightsColumnIndexOption: Option[Int], rowRDD: RDD[Row]): ColumnSummaryStatisticsReturn = {
+
     val dataRDD = try {
-      rowRDD.map(row => java.lang.Double.parseDouble(row(index).toString))
+      rowRDD.map(row => java.lang.Double.parseDouble(row(dataColumnIndex).toString))
     }
     catch {
-      case cce: NumberFormatException => throw new NumberFormatException("Column values cannot be analyzed using "
-        + operation + ":" + cce.toString)
+      case cce: NumberFormatException => throw new NumberFormatException("Column values are non-numeric :"
+        + cce.toString)
     }
 
-    val weighted = multiplierIndexOption.isEmpty
+    val weighted = !weightsColumnIndexOption.isEmpty
 
     val weightsRDD = if (weighted) {
       try {
-        rowRDD.map(row => java.lang.Double.parseDouble(row(index).toString))
+        rowRDD.map(row => java.lang.Double.parseDouble(row(weightsColumnIndexOption.get).toString))
       }
       catch {
-        case cce: NumberFormatException => throw new NumberFormatException("Column values cannot be used as weights for "
-          + operation + ":" + cce.toString)
+        case cce: NumberFormatException => throw new NumberFormatException("Column values are non-numeric :"
+          + cce.toString)
       }
     }
     else {
@@ -674,6 +676,7 @@ private[spark] object SparkOps extends Serializable {
       dataRDD.map(x => (x, 1.toDouble))
     }
 
+    /*
     if (operation equals "MEDIAN") {
       val count: Long = dataRDD.stats().count
       val medianIndex: Long = count / 2
@@ -709,39 +712,11 @@ private[spark] object SparkOps extends Serializable {
 
       segmentContainingMedian.apply(indexOfMedianInsidePartition)._1
     }
-    else {
+    */
 
-      val statisticsEngine = new NumericalStatistics(dataWeightPairs)
+    val statisticsEngine = new NumericalStatistics(dataWeightPairs)
 
-      if (operation equals "MEAN") {
-        statisticsEngine.weightedMean
-      }
-      else if (operation equals "MIN") {
-        statisticsEngine.weightedMin
-      }
-      else if (operation equals "MAX") {
-        statisticsEngine.weightedMax
-      }
-      else if (operation equals "STDEV") {
-        statisticsEngine.weightedStandardDeviation
-      }
-      else if (operation equals "VARIANCE") {
-        statisticsEngine.weightedVariance
-      }
-      else if (operation equals "GEOMEAN") {
-        statisticsEngine.weightedGeometricMean
-      }
-      else if (operation == "SKEWNESS") {
-        statisticsEngine.weightedSkewness
-      }
-      else if (operation == "KURTOSIS") {
-        statisticsEngine.weightedKurtosis
-      }
-      else {
-        require(operation equals "SUM", "illegal column statistic operation specified")
-        statisticsEngine.weightedSum
-      }
-    }
+    statisticsEngine.summaryStatistics
   }
 
   def aggregation_functions(elem: Seq[Array[Any]],
