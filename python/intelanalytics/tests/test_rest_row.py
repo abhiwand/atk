@@ -25,13 +25,8 @@ iatest.init()
 #iatest.set_logging("intelanalytics.rest.connection", 20)
 
 import unittest
-
-from collections import OrderedDict
 from intelanalytics.core.iatypes import *
-
-from intelanalytics.core.iatypes import *
-from ordereddict import OrderedDict
-
+from intelanalytics.core.orddict  import OrderedDict
 from intelanalytics.rest.frame import RowWrapper
 
 

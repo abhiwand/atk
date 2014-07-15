@@ -449,7 +449,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
 
       def progress = column[List[Float]]("progress")
 
-      def detailedProgress = column[List[ProgressInfo]]("detailedProgress")
+      def detailedProgress = column[List[ProgressInfo]]("detailed_progress")
 
       def complete = column[Boolean]("complete", O.Default(false))
 
