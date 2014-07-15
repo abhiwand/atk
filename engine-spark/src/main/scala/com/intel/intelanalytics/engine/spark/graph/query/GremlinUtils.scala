@@ -36,7 +36,7 @@ object GremlinUtils {
    *
    * @return Serialized query results
    */
-  def serializeGremlinToJson[T: JsonFormat : ClassTag](graph: TitanGraph, obj: T, mode: GraphSONMode = GraphSONMode.NORMAL): JsValue = {
+  def serializeGremlinToJson[T: JsonFormat: ClassTag](graph: TitanGraph, obj: T, mode: GraphSONMode = GraphSONMode.NORMAL): JsValue = {
     import com.intel.intelanalytics.engine.spark.graph.query.GremlinJsonProtocol._
     implicit val gremlinFormat = new GremlinJsonFormat[T](graph)
     obj.toJson

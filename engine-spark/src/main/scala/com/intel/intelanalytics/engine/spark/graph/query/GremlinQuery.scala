@@ -6,14 +6,14 @@ import javax.script.Bindings
 import com.intel.graphbuilder.graph.titan.TitanGraphConnector
 import com.intel.graphbuilder.util.SerializableBaseConfiguration
 import com.intel.intelanalytics.domain.graph.GraphReference
-import com.intel.intelanalytics.engine.plugin.{CommandPlugin, Invocation}
+import com.intel.intelanalytics.engine.plugin.{ CommandPlugin, Invocation }
 import com.intel.intelanalytics.security.UserPrincipal
 import com.thinkaurelius.titan.core.TitanGraph
 import com.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine
 import spray.json._
 
 import scala.collection.JavaConversions._
-import scala.concurrent.{Await, ExecutionContext}
+import scala.concurrent.{ Await, ExecutionContext }
 
 case class QueryArgs(graph: GraphReference, gremlin: String)
 
@@ -67,7 +67,6 @@ class GremlinQuery extends CommandPlugin[QueryArgs, QueryResult] {
     resultIterator
   }
 
-
   /**
    *
    * @param invocation information about the user and the circumstances at the time of the call
@@ -80,7 +79,7 @@ class GremlinQuery extends CommandPlugin[QueryArgs, QueryResult] {
     import scala.concurrent.duration._
 
     val start = System.currentTimeMillis()
-    val config = configuration().get
+    val config = configuration
     val graphSONMode = GremlinUtils.getGraphSONMode(config.getString("graphson-mode"))
 
     val graphFuture = invocation.engine.getGraph(arguments.graph.id)
