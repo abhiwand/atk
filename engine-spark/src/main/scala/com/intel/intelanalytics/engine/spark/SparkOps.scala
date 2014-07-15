@@ -597,7 +597,7 @@ private[spark] object SparkOps extends Serializable {
    * @param rowRDD RDD of input rows
    * @return the  mode of the column (as a string)
    */
-  def columnMode(index: Int, multiplierIndexOption: Option[Int], rowRDD: RDD[Row]): (String, Double) = {
+  def columnMode(index: Int, multiplierIndexOption: Option[Int], rowRDD: RDD[Row]): (String, Double, Double) = {
 
     val dataRDD: RDD[String] =
       try {
@@ -631,8 +631,8 @@ private[spark] object SparkOps extends Serializable {
     }
 
     val frequencyStatistics = new FrequencyStatistics(dataWeightPairs, "no items found")
-    println(" the weights of the mode is " + frequencyStatistics.modeAndNetWeight._2)
-    frequencyStatistics.modeAndNetWeight
+    println(" the weights of the mode is " + frequencyStatistics.modeItsWeightTotalWeightTriple._2)
+    frequencyStatistics.modeItsWeightTotalWeightTriple
   }
 
   /**

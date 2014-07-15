@@ -445,8 +445,8 @@ class SparkEngine(sparkContextManager: SparkContextManager,
   }
 
   /**
-   * Calculate the mean of the specified column.
-   * @param arguments input specification for column mean
+   * Calculate the mode of the specified column.
+   * @param arguments input specification for column mode
    * @param user current user
    */
   override def columnMode(arguments: ColumnMode)(implicit user: UserPrincipal): Execution =
@@ -475,7 +475,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     }
 
     val x = SparkOps.columnMode(columnIndex, weightsColumnIndexOption, rdd)
-    ColumnModeReturn(x._1, x._2)
+    ColumnModeReturn(x._1, x._2, x._3)
   }
 
   /**
