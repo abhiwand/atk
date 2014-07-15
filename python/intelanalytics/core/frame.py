@@ -588,6 +588,7 @@ class BigFrame(CommandSupport):
         data.
         The frame referred to by *f_2* is then added to the bottom.
 
+        For further example, see :ref:`Data flow <example_frame.append>`.
         """
         # TODO - Review examples
         try:
@@ -1516,10 +1517,10 @@ class BigFrame(CommandSupport):
         recall.
         If we let:
         
-            * beta :math:`\\equiv \\beta`,
-            * :math:`T_{P}` denote the number of true positives,
-            * :math:`F_{P}` denote the number of false positives, and
-            * :math:`F_{N}` denote the number of false negatives,
+        * beta :math:`\\equiv \\beta`,
+        * :math:`T_{P}` denote the number of true positives,
+        * :math:`F_{P}` denote the number of false positives, and
+        * :math:`F_{N}` denote the number of false negatives,
             
         then:
         
