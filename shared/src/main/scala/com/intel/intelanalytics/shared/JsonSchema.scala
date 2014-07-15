@@ -30,7 +30,6 @@ import com.intel.intelanalytics.domain.graph.GraphReference
 import com.intel.intelanalytics.schema._
 import org.joda.time.DateTime
 import spray.json.{ AdditionalFormats, StandardFormats, ProductFormats }
-import scala.reflect.api.JavaUniverse
 import scala.reflect.runtime.{ universe => ru }
 import ru._
 
