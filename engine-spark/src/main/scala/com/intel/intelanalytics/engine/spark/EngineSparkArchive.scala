@@ -31,7 +31,8 @@ import scala.reflect.ClassTag
 
 class EngineSparkArchive extends Archive {
 
-  val commands: Seq[Class[_]] = Seq(classOf[com.intel.intelanalytics.engine.spark.graph.query.roc.HistogramRocQuery])
+  val commands: Seq[Class[_]] = Seq(classOf[com.intel.intelanalytics.engine.spark.graph.query.GremlinQuery],
+    classOf[com.intel.intelanalytics.engine.spark.graph.query.roc.HistogramRocQuery])
 
   /**
    * Obtain instances of a given class. The keys are established purely
