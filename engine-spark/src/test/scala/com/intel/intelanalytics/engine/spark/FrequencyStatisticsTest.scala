@@ -8,25 +8,67 @@ class FrequencyStatisticsITest extends TestingSparkContext with Matchers {
 
   trait FrequencyStatisticsTest {
 
-    val integers = List(1, 2, 3, 3, 2, 3, 1, 1, 1, 3, 5, 7, 7, 3)
-    val strings = List("a", "b", "c", "c", "b", "c", "a", "a", "a", "c", "e", "g", "g", "c")
+    val integers =1 to 7
 
-    require(integers.length == strings.length, "Error in test data: length of integer and string lists differs.")
+    val strings = 'List("a", "b", "c", "d", "e", "f", "g")
 
-    val uniformWeights = integers.map(x => 1.toDouble)
-    val nonUniformWrights = (1 to integers.length).map(x => x.toDouble)
+    val integerFrequencies = List(1, 1, 5, 1, 1, 2, 3).map(_.toDouble)
+
+    val fractionalFrequencies = integerFrequencies.map(x => x / 14.0)
+
   }
 
-  "modeAndWeight" should "handle uniformly weighted integers correctly" in new FrequencyStatisticsTest {
+  "modeAndWeight" should "handle integer data with integer frequencies" in new FrequencyStatisticsTest {
 
-    val dataWeightPairs = sc.parallelize(integers.zip(uniformWeights))
 
-    val frequencyStats = new FrequencyStatistics[Int](dataWeightPairs, 0)
+    val dataWeightPairs = sc.parallelize(integers.zip(integerFrequencies))
 
-    val (testMode, testWeight) = frequencyStats.modeAndNetWeight
+    val frequencyStats = new FrequencyStatistics(dataWeightPairs, 0)
+
+    val (testMode, testModeWeight, testTotalWeight) = frequencyStats.modeItsWeightTotalWeightTriple
 
     testMode shouldBe 3
-    testWeight shouldBe (5.toDouble / 14.toDouble)
+    testModeWeight shouldBe 5
+    testTotalWeight shouldBe 14
   }
 
+  "modeAndWeight" should "handle strings with integer frequencies" in new FrequencyStatisticsTest {
+
+    val dataWeightPairs = sc.parallelize(strings.zip(integerFrequencies))
+
+    val frequencyStats = new FrequencyStatistics(dataWeightPairs, "<<no strings seen>>")
+
+    val (testMode, testModeWeight, testTotalWeight) = frequencyStats.modeItsWeightTotalWeightTriple
+
+    testMode shouldBe "c"
+    testModeWeight shouldBe 5
+    testTotalWeight shouldBe 14
+  }
+
+  "modeAndWeight" should "handle integer data with fractional weights" in new FrequencyStatisticsTest {
+
+    val dataWeightPairs = sc.parallelize(integers.zip(fractionalFrequencies))
+
+    val frequencyStats = new FrequencyStatistics(dataWeightPairs, 0)
+
+    val (testMode, testModeWeight, testTotalWeight) = frequencyStats.modeItsWeightTotalWeightTriple
+
+    testMode shouldBe 3
+    testModeWeight shouldBe (5.toDouble / 14.toDouble)
+    testTotalWeight shouldBe 1.toDouble
+
+  }
+
+  "modeAndWeight" should "handle weighted strings" in new FrequencyStatisticsTest {
+
+    val dataWeightPairs = sc.parallelize(strings.zip(fractionalFrequencies))
+
+    val frequencyStats = new FrequencyStatistics(dataWeightPairs, "<<no strings seen>>")
+
+    val (testMode, testModeWeight, testTotalWeight) = frequencyStats.modeItsWeightTotalWeightTriple
+
+    testMode shouldBe "c"
+    testModeWeight shouldBe (5.toDouble / 14.toDouble)
+    testTotalWeight shouldBe 1.toDouble
+  }
 }
