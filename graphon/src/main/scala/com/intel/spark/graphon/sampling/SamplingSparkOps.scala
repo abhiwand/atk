@@ -54,7 +54,7 @@ object SamplingSparkOps extends Serializable {
       vertices
     }
     else {
-      // currently without replacement
+      // sample without replacement from large graph should give almost-zero covariance
       val vertexSample = vertices.takeSample(false, size, seed)
       vertices.sparkContext.parallelize(vertexSample)
     }
