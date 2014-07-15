@@ -77,16 +77,6 @@ class SparkFrameStorage(context: UserPrincipal => Context, fsRoot: String, files
     files.delete(Paths.get(getFrameDirectory(frame.id)))
   }
 
-  override def appendRows(startWith: DataFrame, append: Iterable[Row]): Unit =
-    withContext("frame.appendRows") {
-      ???
-    }
-
-  override def removeRows(frame: DataFrame, predicate: (Row) => Boolean): Unit =
-    withContext("frame.removeRows") {
-      ???
-    }
-
   override def removeColumn(frame: DataFrame, columnIndex: Seq[Int]): DataFrame =
     withContext("frame.removeColumn") {
 
@@ -99,11 +89,6 @@ class SparkFrameStorage(context: UserPrincipal => Context, fsRoot: String, files
         }
       }
       updateSchema(frame, remainingColumns)
-    }
-
-  override def addColumnWithValue[T](frame: DataFrame, column: Column[T], default: T): Unit =
-    withContext("frame.addColumnWithValue") {
-      ???
     }
 
   override def renameFrame(frame: DataFrame, newName: String): DataFrame =

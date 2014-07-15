@@ -148,7 +148,6 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     val realFrame = expectFrame(frameId)
     val ctx = sparkContextManager.context(user)
 
-    //get Data
     val (schema, newData) = getLoadData(ctx.sparkContext, arguments.source)
     val rdd = frames.getFrameRdd(ctx.sparkContext, realFrame.id)
 
@@ -174,6 +173,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
    * @return A tuple containing a schema object describing the RDD loaded as well as the RDD itself.
    */
   def getLoadData(ctx: SparkContext, source: LoadSource): (Schema, RDD[Row]) = {
+
     source.source_type match {
       case "dataframe" => {
         val frame = frames.lookup(source.uri.toInt).getOrElse(
@@ -185,12 +185,13 @@ class SparkEngine(sparkContextManager: SparkContextManager,
         val parserFunction = getLineParser(parser)
         val schema = parser.arguments.schema
         val converter = DataTypes.parseMany(schema.columns.map(_._2).toArray)(_)
+        val absoluteFile = if (source.uri.contains("://")) { source.uri } else { fsRoot + "/" + source.uri }
 
         (schema,
-          SparkOps.loadLines(ctx, fsRoot + "/" + source.uri,
+          SparkOps.loadLines(ctx, absoluteFile,
             parser.arguments.skip_rows, parserFunction, converter))
       }
-      case _ => ???
+      case _ => illegalArg(s"Unsupported source_type: '${source.source_type}'")
     }
   }
 
