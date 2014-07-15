@@ -21,7 +21,7 @@
 # must be express and approved by Intel in writing.
 ##############################################################################
 
-from ordereddict import OrderedDict
+from intelanalytics.core.orddict import OrderedDict
 import json
 
 import logging
@@ -34,10 +34,10 @@ from intelanalytics.core.aggregation import *
 from intelanalytics.core.errorhandle import IaError
 from intelanalytics.core.command import CommandSupport, doc_stub
 
+
 def _get_backend():
     from intelanalytics.core.config import get_frame_backend
     return get_frame_backend()
-
 
 
 def get_frame_names():
@@ -79,6 +79,7 @@ def get_frame_names():
         return _get_backend().get_frame_names()
     except:
         raise IaError(logger)
+
 
 def get_frame(name):
     """
@@ -125,6 +126,7 @@ def get_frame(name):
     except:
         raise IaError(logger)
 
+
 def delete_frame(name):
     """
     Summary
@@ -168,6 +170,7 @@ def delete_frame(name):
         return _get_backend().delete_frame(name)
     except:
         raise IaError(logger)
+
 
 class BigFrame(CommandSupport):
     """
@@ -343,33 +346,6 @@ class BigFrame(CommandSupport):
 
         """
         return self._columns.keys()
-
-    @property
-    def data_type(self):
-        """
-        Summary
-        -------
-        BigFrame type
-        
-        .. versionadded:: 0.8
-
-        Extended Summary
-        ----------------
-        The type of object this is.
-
-        Returns
-        -------
-        type : type
-            The type of object this is
-        """
-        # TODO - what to do about data_type on BigFrame?  is it really necessary?
-        # TODO - Review Docstring
-        return type(self)
-
-    #@property
-    # TODO - should we expose the frame ID publically?
-    #def frame_id(self):
-    #    return self._id
 
     @property
     def name(self):
