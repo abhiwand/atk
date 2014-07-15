@@ -50,6 +50,7 @@ import com.intel.intelanalytics.domain.command.CommandTemplate
 import com.intel.intelanalytics.domain.Error
 import com.intel.intelanalytics.domain.graph.GraphTemplate
 import com.intel.intelanalytics.domain.UserTemplate
+import scala.collection.mutable.ListBuffer
 
 trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
   msc: MetaStoreComponent with DbProfileComponent =>
@@ -530,7 +531,14 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
      */
     override def updateProgress(id: Long, progress: List[Float], detailedProgress: List[ProgressInfo])(implicit session: Session): Try[Unit] = Try {
       val q = for { c <- commands if c.id === id } yield (c.progress, c.detailedProgress)
-      q.update(progress, detailedProgress)
+      val existingProgress = q.firstOption.get._1
+      val progressBuffer = progress.to[ListBuffer]
+
+      for (i <- 0 to (existingProgress.length - 1)) {
+        progressBuffer(i) = math.max(existingProgress(i), progress(i))
+      }
+
+      q.update(progressBuffer.toList, detailedProgress)
     }
   }
 
