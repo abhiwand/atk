@@ -23,15 +23,15 @@
 
 package com.intel.intelanalytics.domain.frame
 
-case class SplitData(frame: FrameReference,
-                     split_percentages: List[Double],
-                     split_labels: Option[List[String]],
-                     output_column: Option[String],
-                     random_seed: Option[Int]) {
-  require(frame != null, "SplitData requires a non-null dataframe.")
+case class AssignSample(frame: FrameReference,
+                        sample_percentages: List[Double],
+                        sample_labels: Option[List[String]],
+                        output_column: Option[String],
+                        random_seed: Option[Int]) {
+  require(frame != null, "AssignSample requires a non-null dataframe.")
 
-  require(split_percentages != null, "SplitData requires that the percentages vector be non-null.")
+  require(sample_percentages != null, "AssignSample requires that the percentages vector be non-null.")
 
-  require(split_percentages.forall(x => (x >= 0)), "SplitData requires that all percentages be non-negative")
-  require(split_percentages.reduce(_ + _) <= 1, "SplitData requires that percentages sum to no more than 1")
+  require(sample_percentages.forall(x => (x >= 0)), "AssignSample requires that all percentages be non-negative")
+  require(sample_percentages.reduce(_ + _) <= 1, "AssignSample requires that percentages sum to no more than 1")
 }
