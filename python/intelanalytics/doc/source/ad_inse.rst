@@ -81,6 +81,7 @@ Install the Cloudera Manager. See `Cloudera Manager`_ and `Cloudera Documentatio
 
 The minimum Clouder version required is CDH-5.0.2-1.
 To check your version, do one of the following:
+
     #. From command line run: ``ll /opt/cloudera/parcels/`` and check for CDH softlink and where it is pointing to.
     #. Or from where you have the CDH installed look under 'http://<HOSTNAME_OF_CDH_MASTER>:7180/cmf/parcels/status' and check your version.
 
