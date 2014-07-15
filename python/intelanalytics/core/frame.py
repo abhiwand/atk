@@ -1503,23 +1503,30 @@ class BigFrame(CommandSupport):
         """
         Summary
         -------
-        Model f-beta measure
+        Model :math:`F_{\\beta}` measure
 
         .. versionadded:: 0.8
 
         Extended Summary
         ----------------
-        Computes the f-beta measure for a classification model
+        Computes the :math:`F_{\\beta}` measure for a classification model.
         A column containing the correct labels for each instance and a column containing the predictions made by the
-        model are specified.  The f-beta measure of a binary classification model is the harmonic mean of precision and
-        recall. If we let beta :math:`\\equiv \\beta`, :math:`T_{P` denote the number of true positives, :math:`F_{P` denote the number of
-        false positives, and :math:`F_{N` denote the number of false negatives, then the model f-beta measure is given by:
+        model are specified.
+        The :math:`F_{\\beta}` measure of a binary classification model is the harmonic mean of precision and
+        recall.
+        If we let:
         
-        (1 + beta^2) * (((TP / (TP + FP)) * (TP / (TP + FN))) / (beta^2 * ((TP / (TP + FP)) + (TP / (TP + FN))))).
+            * beta :math:`\\equiv \\beta`,
+            * :math:`T_{P}` denote the number of true positives,
+            * :math:`F_{P}` denote the number of false positives, and
+            * :math:`F_{N}` denote the number of false negatives,
+            
+        then:
+        
+        .. math::
+            F_{\\beta} = (1 + \\beta ^ 2) * \\frac{\\frac{T_{P}}{T_{P} + F_{P}} * \\frac{T_{P}}{T_{P} + F_{N}}}{\\beta ^ 2 * (\\frac{T_{P}}{T_{P} + F_{P}} + \\frac{T_{P}}{T_{P} + F_{N}})}
 
-        :math:`(1 + \\beta ^ 2) * (\\frac{(\\frac{(T_{P)}{(T_{P) + (F_{P)}) * (\\frac{(T_{P)}{((T_{P) + (F_{N))}}{(\\beta ^ 2 * ((\\frac{(T_{P)}{(T_{P) + (F_{P)}) + (\\frac{(T_{P)}{(T_{P) + (F_{N)})))}))`
-
-        For multi-class classification, the f-beta measure is computed as the weighted average of the f-beta measure
+        For multi-class classification, the :math:`F_{\\beta}` measure is computed as the weighted average of the :math:`F_{\\beta}` measure
         for each label, where the weight is the number of instance with each label in the labeled column.  The
         determination of binary vs. multi-class is automatically inferred from the data.
 
@@ -1529,15 +1536,15 @@ class BigFrame(CommandSupport):
             the name of the column containing the correct label for each instance
         pred_column : str
             the name of the column containing the predicted label for each instance
-        pos_label : int or str, (optional, default=1)
+        pos_label : int or str, (optional)
             the value to be interpreted as a positive instance (only for binary, ignored for multi-class)
-        beta : float, (optional, default=1)
-            beta value to use for f-beta measure (default f1 measure is computed); must be greater than 0
+        beta : float, (optional)
+            beta value to use for :math:`F_{\\beta}` measure (default F1 measure is computed); must be greater than 0
 
         Returns
         ----------
         float64
-            the f-beta measure for the classifier
+            the :math:`F_{\\beta}` measure for the classifier
 
         Examples
         ----------
