@@ -1,10 +1,9 @@
 package com.intel.intelanalytics.engine.spark.graph.query
 
 import com.tinkerpop.blueprints.util.io.graphson._
-import com.tinkerpop.blueprints.{Element, Graph}
+import com.tinkerpop.blueprints.{ Element, Graph }
 import com.tinkerpop.pipes.util.structures.Row
 import spray.json._
-
 import scala.collection.JavaConversions._
 import scala.reflect.ClassTag
 
@@ -21,10 +20,10 @@ object GremlinJsonProtocol extends DefaultJsonProtocol {
    * @param graph Graph used for de-serializing JSON (not needed when serializing elements to JSON)
    * @param mode GraphSON mode
    */
-  class GraphSONFormat(graph: Graph = None, mode: GraphSONMode = GraphSONMode.NORMAL) extends JsonFormat[Element] {
+  class GraphSONFormat(graph: Graph = null, mode: GraphSONMode = GraphSONMode.NORMAL) extends JsonFormat[Element] {
 
     override def read(json: JsValue): Element = json match {
-      case x if graph == None => deserializationError(s"No valid graph specified for de-serializing graph elements")
+      case x if graph == null => deserializationError(s"No valid graph specified for de-serializing graph elements")
       case x if isGraphElement(x) => elementFromJson(graph, x, mode)
       case x => deserializationError(s"Expected a Blueprints graph element, but received: $x")
     }
@@ -43,7 +42,7 @@ object GremlinJsonProtocol extends DefaultJsonProtocol {
    *
    * A Blueprints row is a list of column names and values.
    */
-  implicit def blueprintsRowFormat[T: JsonFormat : ClassTag] = new JsonFormat[Row[T]] {
+  implicit def blueprintsRowFormat[T: JsonFormat: ClassTag] = new JsonFormat[Row[T]] {
     override def read(json: JsValue): Row[T] = json match {
       case obj: JsObject => {
         val rowMap = obj.fields.map { field =>
@@ -71,11 +70,15 @@ object GremlinJsonProtocol extends DefaultJsonProtocol {
    * Convert objects returned from Gremlin queries to JSON
    *
    * @param graph Graph for de-serializing graph elements
+   * @param mode GraphSON mode
    */
-  class GremlinJsonFormat[T: JsonFormat : ClassTag](graph: Graph = None) extends JsonFormat[T] {
-    implicit val graphSONFormat = new GraphSONFormat(graph)
+  class GremlinJsonFormat[T: JsonFormat: ClassTag](graph: Graph = null, mode: GraphSONMode = GraphSONMode.NORMAL) extends JsonFormat[T] {
+    implicit val graphSONFormat = new GraphSONFormat(graph, mode)
 
-    override def read(json: JsValue): T = json.convertTo[T]
+    override def read(json: JsValue): T = json match {
+      case x if isGraphElement(x) => elementFromJson(graph, x).asInstanceOf[T]
+      case x => x.convertTo[T]
+    }
 
     override def write(obj: T): JsValue = {
       obj match {
@@ -106,25 +109,36 @@ object GremlinJsonProtocol extends DefaultJsonProtocol {
     }
   }
 
-
+  /**
+   * Check if GraphSON contains a Blueprints edge
+   */
   private def isEdge(json: JsValue): Boolean = json match {
     case obj: JsObject => {
-      val elementType = obj.fields.get(GraphSONTokens._TYPE).getOrElse("").toString
+      val elementType = obj.fields.get(GraphSONTokens._TYPE).get.convertTo[String]
       elementType.toLowerCase == GraphSONTokens.EDGE
     }
     case _ => false
   }
 
+  /**
+   * Check if GraphSON contains a Blueprints vertex
+   */
   private def isVertex(json: JsValue): Boolean = json match {
     case obj: JsObject => {
-      val elementType = obj.fields.get(GraphSONTokens._TYPE).getOrElse("").toString
-      elementType.toLowerCase == GraphSONTokens.VERTEX
+      val elementType = obj.fields.get(GraphSONTokens._TYPE).get.convertTo[String]
+      elementType.equalsIgnoreCase(GraphSONTokens.VERTEX)
     }
     case _ => false
   }
 
+  /**
+   * Check if GraphSON contains a Blueprints graph elements
+   */
   private def isGraphElement(json: JsValue): Boolean = isEdge(json) | isVertex(json)
 
+  /**
+   * Get element ID from GraphSON
+   */
   private def getElementId(json: JsValue, idName: String): AnyRef = json.asJsObject.fields.get(idName).getOrElse(null)
 
 }
