@@ -31,21 +31,15 @@ import com.intel.intelanalytics.security.UserPrincipal
 trait FrameStorage {
   def lookup(id: Long): Option[DataFrame]
 
-  def create(frame: DataFrameTemplate): DataFrame
+  def create(frame: DataFrameTemplate)(implicit user: UserPrincipal): DataFrame
 
   def addColumn[T](frame: DataFrame, column: Column[T], columnType: DataTypes.DataType): DataFrame
-
-  def addColumnWithValue[T](frame: DataFrame, column: Column[T], default: T): Unit
 
   def removeColumn(frame: DataFrame, columnIndex: Seq[Int]): DataFrame
 
   def renameFrame(frame: DataFrame, newName: String): DataFrame
 
   def renameColumn(frame: DataFrame, name_pairs: Seq[(String, String)]): DataFrame
-
-  def removeRows(frame: DataFrame, predicate: Row => Boolean)
-
-  def appendRows(startWith: DataFrame, append: Iterable[Row])
 
   def getRows(frame: DataFrame, offset: Long, count: Int)(implicit user: UserPrincipal): Iterable[Row]
 

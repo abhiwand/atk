@@ -25,6 +25,7 @@ package com.intel.intelanalytics.engine.spark
 
 import java.util.{ ArrayList => JArrayList, List => JList }
 
+import com.intel.intelanalytics.component.ClassLoaderAware
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
 import com.intel.intelanalytics.domain._
 import com.intel.intelanalytics.domain.command.{ Command, CommandDefinition, CommandTemplate, Execution }
@@ -42,7 +43,7 @@ import com.intel.intelanalytics.engine.spark.context.SparkContextManager
 import com.intel.intelanalytics.engine.spark.frame.{ RDDJoinParam, RowParser, SparkFrameStorage }
 import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.shared.EventLogging
-import com.intel.intelanalytics.{ ClassLoaderAware, NotFoundException }
+import com.intel.intelanalytics.NotFoundException
 import org.apache.spark.SparkContext
 import org.apache.spark.api.python.{ EnginePythonAccumulatorParam, EnginePythonRDD }
 import org.apache.spark.broadcast.Broadcast
@@ -147,7 +148,6 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     val realFrame = expectFrame(frameId)
     val ctx = sparkContextManager.context(user)
 
-    //get Data
     val (schema, newData) = getLoadData(ctx.sparkContext, arguments.source)
     val rdd = frames.getFrameRdd(ctx.sparkContext, realFrame.id)
 
@@ -173,6 +173,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
    * @return A tuple containing a schema object describing the RDD loaded as well as the RDD itself.
    */
   def getLoadData(ctx: SparkContext, source: LoadSource): (Schema, RDD[Row]) = {
+
     source.source_type match {
       case "dataframe" => {
         val frame = frames.lookup(source.uri.toInt).getOrElse(
@@ -184,12 +185,13 @@ class SparkEngine(sparkContextManager: SparkContextManager,
         val parserFunction = getLineParser(parser)
         val schema = parser.arguments.schema
         val converter = DataTypes.parseMany(schema.columns.map(_._2).toArray)(_)
+        val absoluteFile = if (source.uri.contains("://")) { source.uri } else { fsRoot + "/" + source.uri }
 
         (schema,
-          SparkOps.loadLines(ctx, fsRoot + "/" + source.uri,
+          SparkOps.loadLines(ctx, absoluteFile,
             parser.arguments.skip_rows, parserFunction, converter))
       }
-      case _ => ???
+      case _ => illegalArg(s"Unsupported source_type: '${source.source_type}'")
     }
   }
 
@@ -350,7 +352,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
           case _ => t.toString
         }).mkString(SparkEngine.pythonRddDelimiter))
 
-      val pythonExec = "python" //TODO: take from env var or config
+      val pythonExec = SparkEngineConfig.pythonWorkerExec
       val environment = new java.util.HashMap[String, String]()
 
       val accumulator = ctx.accumulator[JList[Array[Byte]]](new JArrayList[Array[Byte]]())(new EnginePythonAccumulatorParam())
@@ -693,15 +695,6 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     }
   }
 
-  //TODO: We'll probably return an Iterable[Vertex] instead of rows at some point.
-  override def getVertices(graph: Identifier,
-                           offset: Int,
-                           count: Int,
-                           queryName: String,
-                           parameters: Map[String, String]): Future[Iterable[Row]] = {
-    ???
-  }
-
   override def dropDuplicates(arguments: DropDuplicates)(implicit user: UserPrincipal): Execution =
     commands.execute(dropDuplicateCommand, arguments, user, implicitly[ExecutionContext])
 
@@ -751,6 +744,28 @@ class SparkEngine(sparkContextManager: SparkContextManager,
       case _ => throw new IllegalArgumentException() // TODO: this exception needs to be handled differently
     }
     ClassificationMetricValue(metric_value)
+  }
+
+  override def confusionMatrix(arguments: ConfusionMatrix[Long])(implicit user: UserPrincipal): Execution =
+    commands.execute(confusionMatrixCommand, arguments, user, implicitly[ExecutionContext])
+
+  val confusionMatrixCommand: CommandPlugin[ConfusionMatrix[Long], ConfusionMatrixValues] = commands.registerCommand("dataframe/confusion_matrix", confusionMatrixSimple)
+
+  def confusionMatrixSimple(arguments: ConfusionMatrix[Long], user: UserPrincipal): ConfusionMatrixValues = {
+    val frameId: Long = arguments.frameId
+    val realFrame: DataFrame = getDataFrameById(frameId)
+
+    val ctx = sparkContextManager.context(user).sparkContext
+
+    val frameSchema = realFrame.schema
+    val frameRdd = frames.getFrameRdd(ctx, frameId)
+
+    val labelColumnIndex = frameSchema.columnIndex(arguments.labelColumn)
+    val predColumnIndex = frameSchema.columnIndex(arguments.predColumn)
+
+    val valueList = SparkOps.confusionMatrix(frameRdd, labelColumnIndex, predColumnIndex, arguments.posLabel)
+
+    ConfusionMatrixValues(valueList)
   }
 
   /**

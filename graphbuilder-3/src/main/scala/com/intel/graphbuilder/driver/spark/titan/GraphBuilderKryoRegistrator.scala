@@ -65,5 +65,8 @@ class GraphBuilderKryoRegistrator extends KryoRegistrator {
     // reader package
     kryo.register(classOf[ImmutableBytesWritable])
     kryo.register(classOf[Result])
+
+    // avoid Spark top(n) issue with Kryo serializer:
+    kryo.register(classOf[org.apache.spark.util.BoundedPriorityQueue[(Double, (Double, Vertex))]])
   }
 }

@@ -28,6 +28,7 @@ import java.text.NumberFormat
 import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRDDImplicits._
 import com.intel.graphbuilder.graph.titan.TitanGraphConnector
 import com.intel.graphbuilder.parser.rule._
+import com.intel.graphbuilder.elements.{ Edge, Vertex }
 import org.apache.spark.rdd.RDD
 import org.apache.spark.storage.StorageLevel
 
@@ -66,20 +67,24 @@ class GraphBuilder(config: GraphBuilderConfig) extends Serializable {
     if (config.inferSchema) {
       titanSchemaManager.writeSchemaFromRules()
     }
-    buildGraphWithSpark(vertexInputRdd, edgeInputRdd)
+
+    println("Parse and Write Vertices")
+    val vertices = vertexInputRdd.parseVertices(vertexParser)
+    val edges = edgeInputRdd.parseEdges(edgeParser)
+
+    buildGraphWithSpark(vertices, edges)
   }
 
   /**
    * Build the Graph using Spark
    *
-   * @param vertexInputRdd the input rows to create the vertices from
-   * @param edgeInputRdd the input rows to create the edges from
+   * @param vertexRdd RDD of Vertex objects
+   * @param edgeRdd RDD of Edge objects
    */
-  def buildGraphWithSpark(vertexInputRdd: RDD[Seq[_]], edgeInputRdd: RDD[Seq[_]]) {
+  def buildGraphWithSpark(vertexRdd: RDD[Vertex], edgeRdd: RDD[Edge]) {
 
-    println("Parse and Write Vertices")
-    var vertices = vertexInputRdd.parseVertices(vertexParser)
-    var edges = edgeInputRdd.parseEdges(edgeParser)
+    var vertices = vertexRdd
+    var edges = edgeRdd
 
     if (config.retainDanglingEdges) {
       println("retain dangling edges was true so we'll create extra vertices from edges")
@@ -109,7 +114,7 @@ class GraphBuilder(config: GraphBuilderConfig) extends Serializable {
       val vertexMap = ids.map(gbIdToPhysicalId => gbIdToPhysicalId.toTuple).toMap
 
       println("broadcasting vertex ids")
-      val gbIdToPhysicalIdMap = vertexInputRdd.sparkContext.broadcast(vertexMap)
+      val gbIdToPhysicalIdMap = vertexRdd.sparkContext.broadcast(vertexMap)
 
       println("starting write of edges")
       mergedEdges.write(titanConnector, gbIdToPhysicalIdMap, config.append)

@@ -88,10 +88,9 @@ object SparkEngineConfig extends SharedConfig with EventLogging {
   /**
    * A list of archives that will be searched for command plugins
    */
-  val archives: List[(String, String)] = {
-    val cfg = config.getConfig("intel.analytics.engine.archives")
-    cfg.entrySet().asScala
-      .map(e => (e.getKey, e.getValue.unwrapped().asInstanceOf[String]))
+  val archives: List[String] = {
+    config.getStringList("intel.analytics.engine.plugin.command.archives")
+      .asScala
       .toList
   }
 
@@ -134,4 +133,6 @@ object SparkEngineConfig extends SharedConfig with EventLogging {
     }
   }
 
+  // Python execution command for workers
+  val pythonWorkerExec: String = config.getString("intel.analytics.engine.spark.pythonWorkerExec")
 }

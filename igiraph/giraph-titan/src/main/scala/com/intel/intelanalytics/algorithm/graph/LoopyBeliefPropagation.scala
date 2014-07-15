@@ -37,10 +37,13 @@ import com.typesafe.config.{ Config, ConfigObject, ConfigValue }
 import org.apache.giraph.conf.GiraphConfiguration
 import org.apache.giraph.job.GiraphJob
 import org.apache.hadoop.conf.Configuration
+import org.apache.hadoop.fs.FileSystem
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.mapreduce.Job
 import spray.json.DefaultJsonProtocol._
 import spray.json._
+import scala.concurrent.duration._
+import java.net.URI
 
 import scala.concurrent._
 import scala.collection.JavaConverters._
@@ -61,7 +64,7 @@ case class Lbp(graph: GraphReference,
                max_product: Option[Boolean] = None,
                power: Option[Double] = None)
 
-case class LbpResult(runTimeSeconds: Double) //TODO
+case class LbpResult(value: String) //TODO
 
 class LoopyBeliefPropagation
     extends CommandPlugin[Lbp, LbpResult] {
@@ -120,17 +123,12 @@ class LoopyBeliefPropagation
   }
 
   override def execute(invocation: Invocation, arguments: Lbp)(implicit user: UserPrincipal, executionContext: ExecutionContext): LbpResult = {
-    val start = System.currentTimeMillis()
 
-    System.out.println("*********In Execute method of LBP********")
-
-    val config = configuration().get
+    val config = configuration
     val hConf = newHadoopConfigurationFrom(config, "giraph")
     val titanConf = flattenConfig(config.getConfig("titan"), "titan.")
 
     val graphFuture = invocation.engine.getGraph(arguments.graph.id)
-    // Change this to read from default-timeout
-    import scala.concurrent.duration._
     val graph = Await.result(graphFuture, config.getInt("default-timeout") seconds)
 
     //    These parameters are set from the arguments passed in, or defaulted from
@@ -172,13 +170,25 @@ class LoopyBeliefPropagation
     val algorithm = giraphLoader.loadClass(classOf[LoopyBeliefPropagationComputation].getCanonicalName)
     internalJob.setJarByClass(algorithm)
 
+    val output_dir_path = config.getString("fs.root") + "/" + config.getString("output.dir") + "/" + invocation.commandId
+    val output_dir = new URI(output_dir_path)
+    if (config.getBoolean("output.overwrite")) {
+      val fs = FileSystem.get(new Configuration())
+      fs.delete(new Path(output_dir), true)
+    }
+
     org.apache.hadoop.mapreduce.lib.output.FileOutputFormat.setOutputPath(internalJob,
-      new Path("/user/hadoop/lbp/out/" + invocation.commandId))
+      new Path(output_dir))
 
-    job.run(true)
-
-    val time = (System.currentTimeMillis() - start).toDouble / 1000.0
-    LbpResult(time)
+    if (job.run(true)) {
+      val fs = FileSystem.get(new Configuration())
+      val stream = fs.open(new Path(output_dir_path + "/" + "lbp-learning-report_0"))
+      def readLines = Stream.cons(stream.readLine, Stream.continually(stream.readLine))
+      val result = readLines.takeWhile(_ != null).toList.mkString("\n")
+      fs.close()
+      LbpResult(result)
+    }
+    else LbpResult("Error: No Learning Report found!!")
   }
 
   //TODO: Replace with generic code that works on any case class
