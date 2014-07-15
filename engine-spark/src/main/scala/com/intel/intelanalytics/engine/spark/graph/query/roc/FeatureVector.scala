@@ -67,7 +67,7 @@ object FeatureVector {
     val property = graphElement.getProperty(propertyName)
     if (property != None) {
       property.get.value.toString.split(sep).map(p => {
-        try { p.toDouble } catch { case _ => 0d }
+        try { p.toDouble } catch { case _: Throwable => 0d }
       })
     }
     else {
