@@ -8,9 +8,11 @@ class FrequencyStatisticsITest extends TestingSparkContext with Matchers {
 
   trait FrequencyStatisticsTest {
 
-    val integers =1 to 7
+    val epsilon = 0.000000001
 
-    val strings = 'List("a", "b", "c", "d", "e", "f", "g")
+    val integers = 1 to 7
+
+    val strings = List("a", "b", "c", "d", "e", "f", "g")
 
     val integerFrequencies = List(1, 1, 5, 1, 1, 2, 3).map(_.toDouble)
 
@@ -19,7 +21,6 @@ class FrequencyStatisticsITest extends TestingSparkContext with Matchers {
   }
 
   "modeAndWeight" should "handle integer data with integer frequencies" in new FrequencyStatisticsTest {
-
 
     val dataWeightPairs = sc.parallelize(integers.zip(integerFrequencies))
 
@@ -54,8 +55,8 @@ class FrequencyStatisticsITest extends TestingSparkContext with Matchers {
     val (testMode, testModeWeight, testTotalWeight) = frequencyStats.modeItsWeightTotalWeightTriple
 
     testMode shouldBe 3
-    testModeWeight shouldBe (5.toDouble / 14.toDouble)
-    testTotalWeight shouldBe 1.toDouble
+    (testModeWeight - (5.toDouble / 14.toDouble)) should be < epsilon
+    (testTotalWeight - 1.toDouble) should be < epsilon
 
   }
 
@@ -68,7 +69,7 @@ class FrequencyStatisticsITest extends TestingSparkContext with Matchers {
     val (testMode, testModeWeight, testTotalWeight) = frequencyStats.modeItsWeightTotalWeightTriple
 
     testMode shouldBe "c"
-    testModeWeight shouldBe (5.toDouble / 14.toDouble)
-    testTotalWeight shouldBe 1.toDouble
+    (testModeWeight - (5.toDouble / 14.toDouble)) should be < epsilon
+    (testTotalWeight - 1.toDouble) should be < epsilon
   }
 }
