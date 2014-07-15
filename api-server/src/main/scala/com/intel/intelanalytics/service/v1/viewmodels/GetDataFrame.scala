@@ -33,9 +33,10 @@ import com.intel.intelanalytics.domain.schema.Schema
  * @param schema the schema of the frame (defines columns, etc)
  * @param links
  */
-case class GetDataFrame(id: Long, name: String, schema: Schema, links: List[RelLink]) {
+case class GetDataFrame(id: Long, name: String, schema: Schema, links: List[RelLink], errorFrameId: Option[Long]) {
   require(id > 0)
   require(name != null)
   require(schema != null)
   require(links != null)
+  require(errorFrameId != null)
 }

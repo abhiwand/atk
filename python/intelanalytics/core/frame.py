@@ -204,6 +204,7 @@ class BigFrame(CommandSupport):
             self._id = 0
             self._uri = ""
             self._name = ""
+            self._error_frame_id = None
             if not hasattr(self, '_backend'):  # if a subclass has not already set the _backend
                 self._backend = _get_backend()
             self._backend.create(self, source, name)
@@ -470,6 +471,22 @@ class BigFrame(CommandSupport):
             copied_frame = BigFrame()
             self._backend.project_columns(self, copied_frame, self.column_names)
             return copied_frame
+        except:
+            raise IaError(logger)
+
+    def get_error_frame(self):
+        """
+        When a frame is loaded, parse errors go into a separate data frame so they can be
+        inspected.  No error frame is created if there were no parse errors.
+
+        Returns
+        -------
+        frame : BigFrame
+            A new frame object that contains the parse errors of the currently active BigFrame
+            or None if no error frame exists
+        """
+        try:
+            return self._backend.get_frame_by_id(self._error_frame_id)
         except:
             raise IaError(logger)
 
