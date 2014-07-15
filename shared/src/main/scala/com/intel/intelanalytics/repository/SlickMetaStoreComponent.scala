@@ -568,7 +568,9 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
 
       def complete = column[Boolean]("complete", O.Default(false))
 
-      def totalPartitions = column[Option[Long]]("total_partitions")
+      def totalPages = column[Option[Long]]("total_pages")
+
+      def pageSize = column[Option[Long]]("page_size")
 
       def createdOn = column[DateTime]("created_on")
 
@@ -577,7 +579,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
       def createdById = column[Option[Long]]("created_by")
 
       /** projection to/from the database */
-      def * = (id, name, arguments, error, progress, detailedProgress, complete, totalPartitions, createdOn, modifiedOn, createdById) <> (gaoQuery.tupled, gaoQuery.unapply)
+      def * = (id, name, arguments, error, progress, detailedProgress, complete, totalPages, pageSize, createdOn, modifiedOn, createdById) <> (gaoQuery.tupled, gaoQuery.unapply)
 
       def createdBy = foreignKey("query_created_by", createdById, users)(_.id)
     }
@@ -590,7 +592,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
 
     override def insert(query: QueryTemplate)(implicit session: Session): Try[gaoQuery] = Try {
       // TODO: add createdBy user id
-      val c = gaoQuery(0, query.name, query.arguments, None, List(), List(), false, None, new DateTime(), new DateTime(), None)
+      val c = gaoQuery(0, query.name, query.arguments, None, List(), List(), false, None, None, new DateTime(), new DateTime(), None)
       queriesAutoInc.insert(c)
     }
 

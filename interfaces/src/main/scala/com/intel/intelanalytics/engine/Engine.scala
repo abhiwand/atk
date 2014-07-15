@@ -70,7 +70,7 @@ trait Engine {
 
   def getQuery(id: Identifier): Future[Option[Query]]
 
-  def getQueryPartition(id: Identifier, partition: Identifier)(implicit user: UserPrincipal): Iterable[Any]
+  def getQueryPage(id: Identifier, pageId: Identifier)(implicit user: UserPrincipal): Iterable[Any]
 
   def getFrame(id: Identifier): Future[Option[DataFrame]]
 

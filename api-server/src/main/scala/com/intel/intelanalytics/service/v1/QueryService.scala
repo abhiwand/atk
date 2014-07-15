@@ -112,13 +112,13 @@ class QueryService(commonDirectives: CommonDirectives, engine: Engine) extends D
                       get {
                         import ViewModelJsonImplicits._
                         onComplete(engine.getQuery(id)) {
-                          case Success(Some(query)) => complete(QueryDecorator.decoratePartitions(uri.toString, query))
+                          case Success(Some(query)) => complete(QueryDecorator.decoratePages(uri.toString, query))
                           case _ => reject()
                         }
                       }
                     }
                   } ~ pathPrefix("data" / IntNumber) {
-                    partition =>
+                    page =>
                       {
                         get {
 
@@ -126,8 +126,8 @@ class QueryService(commonDirectives: CommonDirectives, engine: Engine) extends D
                           onComplete(engine.getQuery(id)) {
                             case Success(Some(query)) => complete(if (query.complete) {
 
-                              val rdd = engine.getQueryPartition(query.id, partition - 1)
-                              QueryDecorator.decoratePartition(uri.toString, links, query, partition, updateData(rdd))
+                              val rdd = engine.getQueryPage(query.id, page - 1)
+                              QueryDecorator.decoratePages(uri.toString, links, query, page, updateData(rdd))
                             }
                             else {
                               QueryDecorator.decorateEntity(uri.toString(), links, query)

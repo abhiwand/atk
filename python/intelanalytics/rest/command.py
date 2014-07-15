@@ -61,6 +61,8 @@ class ProgressPrinter(object):
         finished : boolean
             Indicate whether the command is finished
         """
+        if not progress:
+            return
 
         total_job_count = len(progress)
         new_added_job_count = total_job_count - self.job_count
@@ -373,7 +375,7 @@ class Executor(object):
         command = self.poll_command_info(response)
         data = []
 
-        total_pages = command.result["totalPartitions"] + 1
+        total_pages = command.result["totalPages"] + 1
 
         def get_query_response(id, partition):
             """
@@ -384,7 +386,7 @@ class Executor(object):
             max_retries = 10
             for i in range(0, max_retries):
                 try:
-                    info =  CommandInfo(http.get("queries/%s/data/%s" % (id, partition)).json())
+                    info = CommandInfo(http.get("queries/%s/data/%s" % (id, partition)).json())
                     return info
                 except HTTPError as e:
                     time.sleep(i)

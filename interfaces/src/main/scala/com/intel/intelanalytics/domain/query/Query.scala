@@ -40,7 +40,7 @@ import spray.json.JsObject
  * @param error StackTrace and/or other error text if it exists
  * @param progress List of progress for the jobs initiated by this command
  * @param complete True if this command is completed
- * @param totalPartitions total Partitions of the result object.
+ * @param totalPages total Partitions of the result object.
  * @param createdOn date/time this record was created
  * @param modifiedOn date/time this record was last modified
  * @param createdById user who created this row
@@ -52,7 +52,8 @@ case class Query(id: Long,
                  progress: List[Float],
                  detailedProgress: List[ProgressInfo] = List(),
                  complete: Boolean = false,
-                 totalPartitions: Option[Long] = None,
+                 totalPages: Option[Long] = None,
+                 pageSize: Option[Long] = None,
                  createdOn: DateTime,
                  modifiedOn: DateTime,
                  createdById: Option[Long] = None) extends HasId

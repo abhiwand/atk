@@ -30,6 +30,7 @@ import com.intel.intelanalytics.domain.frame.load.{ Load, LineParser, LoadSource
 import com.intel.intelanalytics.domain.query.{ RowQuery }
 import com.intel.intelanalytics.domain.schema.{ Schema, DataTypes }
 import DataTypes.DataType
+import com.intel.intelanalytics.engine.plugin.QueryPluginResults
 import com.intel.intelanalytics.schema._
 import spray.json._
 import com.intel.intelanalytics.domain.frame._
@@ -158,6 +159,8 @@ object DomainJsonProtocol extends DefaultJsonProtocol {
   implicit val binColumnLongFormat = jsonFormat6(BinColumn[Long])
 
   implicit val rowQueryFormat = jsonFormat3(RowQuery[Long])
+
+  implicit val queryResultsFormat = jsonFormat2(QueryPluginResults)
 
   // model performance formats
 
