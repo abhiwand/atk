@@ -753,6 +753,28 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     ClassificationMetricValue(metric_value)
   }
 
+  override def confusionMatrix(arguments: ConfusionMatrix[Long])(implicit user: UserPrincipal): Execution =
+    commands.execute(confusionMatrixCommand, arguments, user, implicitly[ExecutionContext])
+
+  val confusionMatrixCommand: CommandPlugin[ConfusionMatrix[Long], ConfusionMatrixValues] = commands.registerCommand("dataframe/confusion_matrix", confusionMatrixSimple)
+
+  def confusionMatrixSimple(arguments: ConfusionMatrix[Long], user: UserPrincipal): ConfusionMatrixValues = {
+    val frameId: Long = arguments.frameId
+    val realFrame: DataFrame = getDataFrameById(frameId)
+
+    val ctx = sparkContextManager.context(user).sparkContext
+
+    val frameSchema = realFrame.schema
+    val frameRdd = frames.getFrameRdd(ctx, frameId)
+
+    val labelColumnIndex = frameSchema.columnIndex(arguments.labelColumn)
+    val predColumnIndex = frameSchema.columnIndex(arguments.predColumn)
+
+    val valueList = SparkOps.confusionMatrix(frameRdd, labelColumnIndex, predColumnIndex, arguments.posLabel)
+
+    ConfusionMatrixValues(valueList)
+  }
+
   /**
    * Retrieve DataFrame object by frame id
    * @param frameId id of the dataframe

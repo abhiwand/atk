@@ -1555,3 +1555,32 @@ class BigFrame(CommandSupport):
 
         """
         return self._backend.classification_metric(self, 'fmeasure', label_column, pred_column, pos_label, beta)
+
+    def confusion_matrix(self, label_column, pred_column, pos_label=1):
+        """
+        Outputs a confusion matrix for a binary classifier
+
+        Parameters
+        ----------
+        label_column : str
+            the name of the column containing the correct label for each instance
+        pred_column : str
+            the name of the column containing the predicted label for each instance
+        pos_label : int or str, (optional, default=1)
+            the value to be interpreted as a positive instance
+
+        Returns
+        ----------
+            displays the formatted confusion matrix
+
+        Examples
+        ----------
+        >>> print(frame.confusion_matrix('labels', 'predictions'))
+                         Predicted
+                       __pos__ _neg___
+         Actual   pos | 1     | 4
+                  neg | 3     | 2
+
+        """
+
+        return self._backend.confusion_matrix(self, label_column, pred_column, pos_label)
