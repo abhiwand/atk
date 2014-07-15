@@ -3,59 +3,44 @@
 -------------------
 
 This section describes the capabilities of the 0.8 version of the Intel Analytics Toolkit, and in particular the graph analytics capabilities.
-Additional capabilities referenced in the :ref:`capabilities <ia_intro_1_capabilities>` section (like :ref:`entity based <ia_intro_1_entity_based>` analytics) will be added in a subsequent release.
-
-Base Platform Dependencies
-==========================
-
-The toolkit uses the analytics “engines” and storage capabilities provided by the Hadoop data platform.
-
-Major platform elements utilized by the toolkit include: 
-
-* Storage: HBase and HDFS  
-* Distributed processing: 
-*   Apache Spark and Mlib: Open source engine and algorithms for machine learning and real-time scoring. 
-*   Apache Giraph: Open source engine for graph analytics algorithm processing
+Other capabilities referenced in the :ref:`capabilities <ia_intro_1_capabilities>` section (like :ref:`entity based <ia_intro_1_entity_based>` analytics) will be added soon after.
 
 Data Import, Data Cleaning, and Feature Engineering
 ===================================================
 
 The Intel Analytics Toolkit provides a baseline set of capabilities for importing data into the framework, enabling data scientists to operate on
-the data using the friendlier “Big Data Frame” format that can be operated on using familiar Python APIs.
-This functionality is executed at cluster scale using Apache Spark.   
+the data using the friendlier “Big Data Frame” referenced through familiar Python APIs.
+All functionality is performed on the cluster, at scale, using Apache Spark.   
 
 Functionality provided includes:
 
-* Parsing for CSV, XML, JSON data types.   
-* Cleaning functions to remove duplicates, drop rows of invalid data, and process data into a new columns.
+* Parsing for CSV and JSON data types.   
+* Cleaning functions to remove duplicates, drop rows, filter, copy data into a new columns and concatenate data columns.
 * Summary calculations for data inspection, such as counts, central tendencies, distributions, percentiles, dispersions, binning.  
 * Joining of multiple data sources based on record relationships such as intersection (inner join),  union (outer join), and lookup inclusion or exclusion (left and right joins)
 * Date and time functions to convert formats and simplify engineering the desired feature, such as conversion to year/month/day/hour/minute/second/etc., filtering by date, and calculating durations
-* String manipulation functions such as regular expression matching, tokenization, query and replace, upper/lower case manipulations, splitting and trimming
-* Common math functions including absolute value, exponentiation, logarithms, square root, rounding, integer operations (such as division, modulo, floor and ceiling), and random number generation
-* Aggregation and evaluation functions, including basic functions like averaging, counting total or unique values, summing, finding the min and max, variance, and standard deviation, plus advanced transforms like exponentially weighted average.  
+* String manipulation such as regular expression matching, tokenization, query and replace, upper/lower case manipulations, splitting and trimming
+* Common math including absolute value, exponentiation, logarithms, square root, rounding, integer operations (such as division, modulo, floor and ceiling), and random number generation
+* Overall and "GroupBy" level aggregation and evaluation through functions like averaging, counting total or unique values, summing, finding the min and max, variance, and standard deviation, plus advanced transforms like exponentially weighted average.  
 * Most functions can be applied using filters of data ranges, numeric ranges, or value lookups. 
-* Custom user developed transformations (:term:`lambda functions`, row-based) using Python  
+* Custom user developed parsing and transformations (:term:`lambda functions`, row-based) using Python  
 
 Graph Construction
 ==================
 
-To use graph tools (such as graphs, graph analytics and machine learning, or graph visualization) data must be structured into the network
+For graph tools (in other words, graph databases, graph analytics and machine learning, or graph visualization) data is first structured into the network
 of vertices and edges.
-The Intel Analytics Toolkit makes this process simple through pre-built routines for assembling even very large data sets into graphs using cluster
+The Intel Analytics Toolkit makes this process simpler through pre-built routines for assembling even very large data sets into graphs using cluster
 computing for high throughput.
-Property graphs (in which edges and vertices can additionally have properties assigned) are supported, as are bipartite graphs in which a graph edge
+The toolkit support flexibility of graph data structures, including fully flesible property graphs with arbitrary edges and vertices that can optionally have properties assigned, as well as bipartite graphs in which a graph edge
 always connects two different classes of vertices, such as connecting “items” to “purchasers”.  
 
-The developer assigns which features to use for vertices, which to use for edges, the respective labeling, and their associated properties, and the
-toolkit routine assembles the individual records into the properly formed graph.
-Duplicate edges are removed if data is incorrectly replicated, and the graph is checked for incorrect form, such as dangling (i.e. mal-connected)
-edges that will prevent analytic algorithms from operating.
-The final graph can be bulk loaded into the Intel Analytics Toolkit’s graph database.
+To build a graph, once feature engineering has been complete, the developer assigns which features to use for vertices, which to use for edges, their respective labeling, and any associated properties.
+The toolkit routine then assembles the individual records into the properly formed graph using the computing cluster for fast throughput.
+In this process, duplicate edges are removed if data is incorrectly replicated, and the graph is checked for correct form, to eliminate presence of dangling (in other words, mal-connected)
+edges that can prevent analytic algorithms from operating.
+The final graph is bulk loaded into the Intel Analytics Toolkit’s graph database.
 Additionally, existing graphs can be updated using the graph construction routines.   
-
-The Analytic Toolkit also supports output of the constructed graph using :term:`RDF` and :term:`adjacency list` formats used by other graph tools,
-which offers the opportunity to make data preparation simpler using the toolkit even when using other 3rd-party graphs. 
 
 Modeling Set Preparation
 ========================
@@ -75,7 +60,7 @@ Additionally the toolkit provides a friendly, persistent data store for the grap
 
 Commonly used queries are simplified into Python APIs for uses such as top co-occurrences, extracting sub-graphs, and finding shortest paths.
 Complex, rich queries are supported through the broadly used :term:`Gremlin` graph query language.
-Results are returned as Python objects so that they are easily incorporated into the user’s workflow.
+Queries are returned as Python objects so that they are easily incorporated into the user’s workflow.
 Some of the commonly used capabilities of :term:`Gremlin` queries include navigating the graph, updating vertex properties,
 adding edges, removing vertices, and other transactional manipulations.
 :term:`Gremlin` simplifies graph data query through succinct expressions that chain together a series of steps and logical function such as transform,
@@ -95,15 +80,16 @@ in addition to common graph statistics.
 Each is easy to invoke using the Python environment and parameters for the desired algorithm configuration.
 Each algorithm also provides necessary metrics, facilitating assessment of model performance, accuracy, and configuration of the model for its
 intended usage (including :term:`confusion matrices`, ROC, :term:`K-S tests`, and accuracy metrics including :term:`precision/recall`
-and :term:`F-measure`.)
+and :term:`F-measure`).
 
 Graph mining and machine learning algorithms include:
 
-* :term:`Loopy Belief Propagation` (LBP): Used for classification on sparse data and sometimes for removing noise from an image. It has a wide range of applications in structured prediction, such as influence spread in social networks where there are prior noisy predictions for a large set of random entities and a graph encoding similarity relationships exists between them.
+* :term:`Loopy Belief Propagation` (LBP): Used for classification on sparse data and sometimes for removing noise from an image. It has a wide range of applications in structured prediction, such as influence spread in social networks where there are prior noisy predictions for a large set of random entities and similarity relationships exists between them.
+* :term:`Gaussian Belief Propagation` (GaBP): Similar to LBP, GaBP provides better modeling for systems where the underlying distributions are Gaussian instead of discrete variables.
 * :term:`Label Propagation` (LP): Used for many classification problems where a ‘similarity measure’ between instances can be exploited for inference.  It propagates labels from labeled data to unlabeled data in a graph that encodes similarity relationships across all data points.  As an example, in social network analysis, label propagation is used to probabilistically infer data fields that are blank by analyzing data about a user’s friends, family, likes and online behavior.  
 * :term:`Alternating Least Squares` (ALS): Used in collaborative filtering, such as recommender systems.
-* :term:`Conjugate Gradient Descent` (CGD): Also used in recommender systems with rich item and user preferences.
-* :term:`Topic Modeling`:  :term:`Latent Dirichlet Allocation`: used for topic and key word extraction, text processing, natural language processing, and clustering with non-exclusive membership.
+* :term:`Conjugate Gradient Descent` (CGD): Also used in recommender systems, particularly those requiring rich item and user preferences because it consumes less memory than ALS.
+* :term:`Topic Modeling` using :term:`Latent Dirichlet Allocation` (LDA): Used for topic and key word extraction, text processing, natural language processing, and clustering with non-exclusive membership.
 
 For graph statistics, algorithms provided include:
 
@@ -112,29 +98,38 @@ For graph statistics, algorithms provided include:
 * :term:`Vertex degree`
 * :term:`Vertex degree distribution`
 * Shortest path from a vertex to all other vertices
-* :term:`Centrality (Katz)`
 * :term:`Centrality (PageRank)`
 
-The graph engine utilized for this release of the toolkit is Apache Giraph, and it is integrated into the complete graph processing pipeline to
-provide usability and utility substantially enhanced over the naked open source libraries.
+The graph engine utilized in this release is Apache Giraph, which has been integrated with the complete graph processing pipeline to
+provide out-of-the-box usability and utility substantially enhanced over naked open source distributions.
 This allows data scientists to focus on the analytics efficiency and effectiveness.
 As an example, the toolkit allows easy splitting of graph data into training, validation, and testing sets of data and persisting calculated
 parameters such as edge weights for later query and use.
-Future releases of the toolkits will incorporate new graph engines, enabling the data scientist to easily adopt the system without resetting
+Future releases of the toolkit will incorporate new graph engines, enabling the data scientist to easily adopt the system without resetting
 their learning curve.
 
 Visualization
 =============
 
-In the 0.8 release, graph data visualization will need to be accommodated by 3rd party or open source tools (like Gephi) or user written routines.
+In the 0.8 release, graph data visualization will be accommodated by 3rd party or open source tools (like Gephi) or user written routines.
 
 Toolkit Deployment
 ==================
 
-The Intel Analytics Toolkit 0.8 beta has dependencies on the Cloudera cluster, particularly for managing version dependencies in Spark, HBase, and
-additional platform components.
-Currently, Cloudera version 5.0.2-patch 13 (CDH 5.0.3-1.cdh5.0.2.p0.13, runs the required minimum versions of the platform components.
+The toolkit relies on analytics "engines" and storage capabilities provided by the Hadoop data platform.
+Major platform elements utilized by the toolkit include:
+
+* Storage: HBase and HDFS
+* Distributed processing:
+    * Apache Spark and Mlib: Open source engine and algorithms for machine learning and real-time scoring
+    * Apache Giraph: Open source engine for graph analytics algorithm processing
+
+Consequently, the toolkit has version dependencies on the Hadoop cluster for Spark, HBase, and
+additional data platform components.
+Initially, Hadoop clusters, running CDH 5.0.3 are required to support the minimum versions of the platform components.
 The toolkit installer checks for the proper dependencies existing in the Hadoop platform, and any other installation dependencies for the toolkit itself.
+Most of the toolkit is installed as a "head unit" that can be installed on an edge node to the cluster if it is not desired to install on a cluster node itself.
+Note that in the 0.8 beta release there are some libraries (particularly Python libraries) that need to be present on the cluster processing nodes.
 
 .. rubric:: Footnotes
 
