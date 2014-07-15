@@ -65,17 +65,19 @@ object Boot extends App with ClassLoaderAware {
       config.getConfig(configKey)
     }.getOrElse(
       {
-        println("No config found, using empty"); ConfigFactory.empty()
+        Archive.logger("No config found, using empty")
+        ConfigFactory.empty()
       })
     val parent = Try {
       restricted.getString("parent")
     }.getOrElse({
-      println("Using default value for archive parent"); "interfaces"
+      Archive.logger("Using default value for archive parent")
+      "interfaces"
     })
     val className = Try {
       restricted.getString("class")
     }.getOrElse({
-      println("No class entry found, using default archive class");
+      Archive.logger("No class entry found, using default archive class")
       "com.intel.intelanalytics.component.DefaultArchive"
     })
 
@@ -83,7 +85,8 @@ object Boot extends App with ClassLoaderAware {
       restricted.getString("config-path")
     }.getOrElse(
       {
-        println("No config-path found, using default"); configKey
+        Archive.logger("No config-path found, using default")
+        configKey
       })
     ArchiveDefinition(archiveName, parent, className, configPath)
   }
@@ -140,11 +143,9 @@ object Boot extends App with ClassLoaderAware {
     //interfaces class loader)
     val probe = buildClassLoader(archiveName, getClass.getClassLoader)
     val additionalConfig = ConfigFactory.defaultReference(probe)
-    //println("==============Base config===========")
-    //println(config.root().render())
+
     val augmented = config.withFallback(additionalConfig)
-    //println("==============Augmented config===========")
-    //println(augmented.root().render())
+
     val definition = readArchiveDefinition(archiveName, augmented)
 
     //Now that we know the parent, we build the real classloader we're going to use for this archive.
@@ -163,7 +164,7 @@ object Boot extends App with ClassLoaderAware {
     withLoader(loader) {
       initializeArchive(definition, archiveLoader, augmented.getConfig(definition.configPath), archiveInstance)
       archives += (archiveName -> archiveInstance)
-      println(s"Registered archive $archiveName with parent ${definition.parent}")
+      Archive.logger(s"Registered archive $archiveName with parent ${definition.parent}")
       archiveInstance.start()
     }
 
@@ -216,23 +217,23 @@ object Boot extends App with ClassLoaderAware {
     val deployedJar: Path = Directory.Current.get / "lib" / (archive + ".jar")
     val urls = Array(
       Directory(classDirectory).exists.option {
-        println(s"Found class directory at $classDirectory")
+        Archive.logger(s"Found class directory at $classDirectory")
         classDirectory.toURL
       },
       Directory(giraphClassDirectory).exists.option {
-        println(s"Found class directory at $giraphClassDirectory")
+        Archive.logger(s"Found class directory at $giraphClassDirectory")
         giraphClassDirectory.toURL
       },
       File(developmentJar).exists.option {
-        println(s"Found jar at $developmentJar")
+        Archive.logger(s"Found jar at $developmentJar")
         developmentJar.toURL
       },
       File(giraphJar).exists.option {
-        println(s"Found jar at $giraphJar")
+        Archive.logger(s"Found jar at $giraphJar")
         giraphJar.toURL
       },
       File(deployedJar).exists.option {
-        println(s"Found jar at $deployedJar")
+        Archive.logger(s"Found jar at $deployedJar")
         deployedJar.toURL
       }).flatten
 
