@@ -71,7 +71,7 @@ class KCliquePercolation extends SparkCommandPlugin[KClique, KCliqueResult] {
     titanConfig.setProperty("storage.port", titanConfigInput.getString("storage.port"))
 
     import scala.concurrent.duration._
-    val graph = Await.result(invocation.engine.getGraph(arguments.graph.id), config.getInt("default-timeout") seconds)
+    val graph = Await.result(sparkInvocation.engine.getGraph(arguments.graph.id), config.getInt("default-timeout") seconds)
 
     val iatGraphName = GraphName.convertGraphUserNameToBackendName(graph.name)
     titanConfig.setProperty("storage.tablename", iatGraphName)
