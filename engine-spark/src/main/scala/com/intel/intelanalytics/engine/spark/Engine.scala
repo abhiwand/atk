@@ -695,15 +695,6 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     }
   }
 
-  //TODO: We'll probably return an Iterable[Vertex] instead of rows at some point.
-  override def getVertices(graph: Identifier,
-                           offset: Int,
-                           count: Int,
-                           queryName: String,
-                           parameters: Map[String, String]): Future[Iterable[Row]] = {
-    ???
-  }
-
   override def dropDuplicates(arguments: DropDuplicates)(implicit user: UserPrincipal): Execution =
     commands.execute(dropDuplicateCommand, arguments, user, implicitly[ExecutionContext])
 
