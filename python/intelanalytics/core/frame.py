@@ -21,7 +21,7 @@
 # must be express and approved by Intel in writing.
 ##############################################################################
 
-from ordereddict import OrderedDict
+from intelanalytics.core.orddict import OrderedDict
 import json
 
 import logging
@@ -34,15 +34,25 @@ from intelanalytics.core.aggregation import *
 from intelanalytics.core.errorhandle import IaError
 from intelanalytics.core.command import CommandSupport, doc_stub
 
+
 def _get_backend():
     from intelanalytics.core.config import get_frame_backend
     return get_frame_backend()
 
 
-
 def get_frame_names():
     """
-    Gets the names of BigFrame objects available for retrieval.
+    Summary
+    -------
+    BigFrame names
+
+    Extended Summary
+    ----------------
+    Gets the names of BigFrame objects available for retrieval
+
+    Raises
+    ------
+    IaError
 
     Returns
     -------
@@ -51,8 +61,16 @@ def get_frame_names():
 
     Examples
     --------
-    >>> get_frame_names()
-    ["my_frame_1", "my_frame_2", "my_frame_3"] # a list of names of BigFrame objects
+    ::
+
+        frame1 = BigFrame(csv_schema_1, "BigFrame1")
+        frame2 = BigFrame(csv_schema_2, "BigFrame2")
+        frame_names = get_frame_names()
+        print frame_names
+
+    Result would be::
+
+        ["BigFrame1", "BigFrame2"]
     """
     # TODO - Review docstring
     try:
@@ -60,24 +78,42 @@ def get_frame_names():
     except:
         raise IaError(logger)
 
+
 def get_frame(name):
     """
-    Retrieves the named BigFrame object.
+    Summary
+    -------
+    Get BigFrame
+
+    Extended Summary
+    ----------------
+    Retrieves a BigFrame class object to allow you to address the data
 
     Parameters
     ----------
     name : string
         String containing the name of the BigFrame object
 
+    Raises
+    ------
+    IaError
+
     Returns
     -------
-    BigFrame
-        Named object
+    class
+        BigFrame class object
 
     Examples
     --------
-    >>> my_frame = get_frame( "my_frame_1" )
-    my_frame is now a proxy of the BigFrame object
+    ::
+
+        BigFrame1a = BigFrame(my_csv, "BF1")
+        BigFrame1b = get_frame("BF1")
+        print BigFrame1a == BigFrame1b
+
+    Result would be::
+
+        True
 
     """
     # TODO - Review docstring
@@ -86,14 +122,25 @@ def get_frame(name):
     except:
         raise IaError(logger)
 
+
 def delete_frame(name):
     """
-    Deletes the frame from backing store.
+    Summary
+    -------
+    Erases data
+
+    Extended Summary
+    ----------------
+    Deletes the frame from backing store
 
     Parameters
     ----------
     name : string
         The name of the BigFrame object to delete.
+
+    Raises
+    ------
+    IaError
 
     Returns
     -------
@@ -102,10 +149,15 @@ def delete_frame(name):
 
     Examples
     --------
-    >>> my_frame = BigFrame("raw_data.csv", my_csv)
-    >>> deleted_frame = delete_frame( my_frame )
-    deleted_frame is now a string with the value of the name of the frame which was deleted
+    ::
 
+        my_frame = BigFrame(my_csv, 'BF1')
+        deleted_frame = delete_frame('BF1')
+        print deleted_frame
+
+    The result would be::
+
+        BF1
     """
     # TODO - Review examples and parameter
     try:
@@ -113,9 +165,17 @@ def delete_frame(name):
     except:
         raise IaError(logger)
 
+
 class BigFrame(CommandSupport):
     """
-    Proxy for a large 2D container to work with table data at scale.
+    Summary
+    -------
+    Data handle
+
+    Extended Summary
+    ----------------
+    Class with information about a large 2D table of data.
+    Has information needed to modify data and table structure.
 
     Parameters
     ----------
@@ -127,8 +187,8 @@ class BigFrame(CommandSupport):
     Notes
     -----
     If no name is provided for the BigFrame object, it will generate one.
-    If a data source *X* was specified, it will try to generate the frame name as *_X*.
-    If for some reason *_X* would be illegal
+    A automatically generated name will be the word "frame_" followed by the uuid.uuid4().hex and
+    if allowed, an "_" character then the name of the data source.
 
     Examples
     --------
@@ -255,24 +315,6 @@ class BigFrame(CommandSupport):
         """
         return self._columns.keys()
 
-    @property
-    def data_type(self):
-        """
-        The type of object this is.
-        
-        Returns
-        -------
-        type : type
-            The type of object this is
-        """
-        # TODO - what to do about data_type on BigFrame?  is it really necessary?
-        # TODO - Review Docstring
-        return type(self)
-
-    #@property
-    # TODO - should we expose the frame ID publically?
-    #def frame_id(self):
-    #    return self._id
 
     @property
     def name(self):
@@ -367,7 +409,7 @@ class BigFrame(CommandSupport):
         Now, we want to add another column that is empty
         >>> my_frame.add_columns(lambda row: '', ('empty', str))
         The BigFrame object 'my_frame' now has four columns named "column1", "column2", "column3", and "new0". The first three columns are int32 and the fourth column is string.  Column "new0" has an empty string ('') in every row.
-        >>> my_frame.add_columns(lambda row: (row.a * row.b, row.a + row.b), [("a_times_b", float32), ("a_plus_b", float32))
+        >>> my_frame.add_columns(lambda row: (row.a * row.b, row.a + row.b), [("a_times_b", float32), ("a_plus_b", float32)])
         # Two new columns are created, "a_times_b" and "a_plus_b"
         <BLANKLINE>
         Now, let us start with a BigFrame with some existing rows of data.
@@ -385,7 +427,7 @@ class BigFrame(CommandSupport):
         >>> my_frame.add_columns(function_c, [('column_C', int)])
         And these would work fine:
         >>> def function_c: return 12
-        >>> my_frame.add_columns(function_c, ('column_C, int))
+        >>> my_frame.add_columns(function_c, ('column_C', int))
         >>> my_frame.add_columns(function_c, int, 'column_C')
 
         """

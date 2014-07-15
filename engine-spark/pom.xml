@@ -54,6 +54,10 @@
             <groupId>com.intel.ia</groupId>
             <artifactId>shared</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.intel.ia</groupId>
+            <artifactId>testutils</artifactId>
+        </dependency>
 		<dependency>
             <groupId>com.intel.ia</groupId>
             <artifactId>graphbuilder-3</artifactId>
