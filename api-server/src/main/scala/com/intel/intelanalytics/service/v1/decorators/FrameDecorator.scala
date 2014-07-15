@@ -52,7 +52,7 @@ object FrameDecorator extends EntityDecorator[DataFrame, GetDataFrames, GetDataF
       links = RelLink("errorFrame", baseUri + "/" + entity.errorFrameId.get, "GET") :: links
     }
 
-    GetDataFrame(id = entity.id, name = entity.name, schema = entity.schema, links)
+    GetDataFrame(id = entity.id, name = entity.name, schema = entity.schema, links, entity.errorFrameId)
   }
 
   /**

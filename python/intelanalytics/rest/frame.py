@@ -29,6 +29,8 @@ logger = logging.getLogger(__name__)
 from intelanalytics.core.orddict import OrderedDict
 from collections import defaultdict
 import json
+import sys
+
 
 from intelanalytics.core.frame import BigFrame
 from intelanalytics.core.column import BigColumn
@@ -71,6 +73,17 @@ class FrameBackendRest(object):
         return json.dumps(payload, indent=2)
 
         #raise NotImplemented  # TODO - implement get_frame
+
+    def get_frame_by_id(self, id):
+        logger.info("REST Backend: get_frame_by_id")
+        if id is None:
+            return None
+        else:
+            r = self.rest_http.get('dataframes/' + str(id))
+            payload = r.json()
+            frame = BigFrame()
+            initialize_frame(frame, FrameInfo(payload))
+            return frame
 
     def delete_frame(self, frame):
         logger.info("REST Backend: Delete frame {0}".format(repr(frame)))
@@ -181,7 +194,7 @@ class FrameBackendRest(object):
                      'column_types': [supported_types.get_type_string(t) for t in data_types],
                      'expression': http_ready_function}
 
-        return execute_update_frame_command('add_columns', arguments, frame)
+        execute_update_frame_command('add_columns', arguments, frame)
 
     def append(self, frame, data):
         logger.info("REST Backend: append data to frame {0}: {1}".format(frame.name, repr(data)))
@@ -192,7 +205,10 @@ class FrameBackendRest(object):
             return
 
         arguments = self._get_load_arguments(frame, data)
-        execute_update_frame_command("load", arguments, frame)
+        result = execute_update_frame_command("load", arguments, frame)
+        if result.has_key("errorFrameId"):
+            sys.stderr.write("There were parse errors during load, please see frame.get_error_frame()\n")
+            logger.warn("There were parse errors during load, please see frame.get_error_frame()")
 
     def count(self, frame):
         raise NotImplementedError  # TODO - implement count
@@ -201,7 +217,7 @@ class FrameBackendRest(object):
         from itertools import ifilterfalse  # use the REST API filter, with a ifilterfalse iterator
         http_ready_function = prepare_row_function(frame, predicate, ifilterfalse)
         arguments = {'frame': frame.uri, 'predicate': http_ready_function}
-        return execute_update_frame_command("filter", arguments, frame)
+        execute_update_frame_command("filter", arguments, frame)
 
     def drop_duplicates(self, frame, columns):
         if isinstance(columns, basestring):
@@ -214,7 +230,7 @@ class FrameBackendRest(object):
         from itertools import ifilter
         http_ready_function = prepare_row_function(frame, predicate, ifilter)
         arguments = {'frame': frame.uri, 'predicate': http_ready_function}
-        return execute_update_frame_command("filter", arguments, frame)
+        execute_update_frame_command("filter", arguments, frame)
 
     def flatten_column(self, frame, column_name):
         name = self._get_new_frame_name()
@@ -298,7 +314,7 @@ class FrameBackendRest(object):
         else:
             new_names = list(columns)
         arguments = {'frame': frame.uri, 'projected_frame': projected_frame.uri, 'columns': columns, "new_column_names": new_names}
-        return execute_update_frame_command('project', arguments, projected_frame)
+        execute_update_frame_command('project', arguments, projected_frame)
 
     def groupby(self, frame, groupby_columns, aggregation):
         if groupby_columns is None:
@@ -335,7 +351,7 @@ class FrameBackendRest(object):
     # def remove_columns(self, frame, name):
     #     columns = ",".join(name) if isinstance(name, list) else name
     #     arguments = {'frame': frame.uri, 'column': columns}
-    #     return execute_update_frame_command('removecolumn', arguments, frame)
+    #     execute_update_frame_command('removecolumn', arguments, frame)
 
     def rename_columns(self, frame, column_names, new_names):
         if isinstance(column_names, basestring) and isinstance(new_names, basestring):
@@ -348,7 +364,7 @@ class FrameBackendRest(object):
             if nn in current_names:
                 raise ValueError("Cannot use rename to '{0}' because another column already exists with that name".format(nn))
         arguments = {'frame': frame.uri, "original_names": column_names, "new_names": new_names}
-        return execute_update_frame_command('rename_column', arguments, frame)
+        execute_update_frame_command('rename_column', arguments, frame)
 
     # def rename_frame(self, frame, name):
     #     r= self.rest_http.get('dataframes')
@@ -360,7 +376,7 @@ class FrameBackendRest(object):
     #
     #         else:
     #             arguments = {'frame': frame.uri, "new_name": name}
-    #             return execute_update_frame_command('rename_frame', arguments, frame)
+    #             execute_update_frame_command('rename_frame', arguments, frame)
 
     def take(self, frame, n, offset):
         r = self.rest_http.get('dataframes/{0}/data?offset={2}&count={1}'.format(frame._id,n, offset))
@@ -416,6 +432,13 @@ class FrameInfo(object):
         return [BigColumn(pair[0], supported_types.get_type_from_string(pair[1]))
                 for pair in self._payload['schema']['columns']]
 
+    @property
+    def error_frame_id(self):
+        try:
+            return self._payload['errorFrameId']
+        except:
+            return None
+
     def update(self, payload):
         if self._payload and self.id_number != payload['id']:
             msg = "Invalid payload, frame ID mismatch %d when expecting %d" \
@@ -431,10 +454,10 @@ def initialize_frame(frame, frame_info):
     # TODO - update uri from result (this is a TODO in the engine)
     frame._uri = http._get_uri("dataframes/" + str(frame._id))
     frame._name = frame_info.name
+    frame._error_frame_id = frame_info.error_frame_id
     frame._columns.clear()
     for column in frame_info.columns:
         FrameBackendRest._accept_column(frame, column)
-
 
 def execute_update_frame_command(command_name, arguments, frame):
     """Executes command and updates frame with server response"""
@@ -445,7 +468,6 @@ def execute_update_frame_command(command_name, arguments, frame):
     command_info = executor.issue(command_request)
     if command_info.result.has_key('name') and command_info.result.has_key('schema'):
         initialize_frame(frame, FrameInfo(command_info.result))
-        return None
     return command_info.result
 
 
