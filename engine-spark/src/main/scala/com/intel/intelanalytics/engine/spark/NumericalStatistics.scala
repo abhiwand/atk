@@ -1,22 +1,48 @@
 package com.intel.intelanalytics.engine.spark
 
-import org.apache.spark.{ AccumulatorParam, SparkContext }
-import org.apache.spark.SparkContext._
+import org.apache.spark.AccumulatorParam
 import org.apache.spark.rdd.RDD
 import com.intel.intelanalytics.domain.frame.{ ColumnFullStatisticsReturn, ColumnSummaryStatisticsReturn }
 
+/**
+ * Statistics calculator for weighted numerical data.
+ *
+ * TODO: TRIB-3134  Investigate one-pass algorithms for weighted skewness and kurtosis.
+ * If we could do this, we could simplify this datastructure by unifying full and summary statistics.
+ *
+ *
+ * @param dataWeightPairs RDD of pairs of  the form (data, weight)
+ */
 class NumericalStatistics(dataWeightPairs: RDD[(Double, Double)]) extends Serializable {
 
-  lazy val summaryStatistics: ColumnSummaryStatisticsReturn = ColumnSummaryStatisticsReturn(mean = weightedMean,
-    geometric_mean = weightedGeometricMean, variance = weightedVariance, standard_deviation = weightedStandardDeviation,
-    mode = weightedMode, minimum = min, maximum = max, count = count)
+  /**
+   * Statistics that can be calculated in a single pass over the data.
+   */
+  lazy val summaryStatistics: ColumnSummaryStatisticsReturn =
+    ColumnSummaryStatisticsReturn(mean = weightedMean,
+      geometric_mean = weightedGeometricMean,
+      variance = weightedVariance,
+      standard_deviation = weightedStandardDeviation,
+      mode = weightedMode,
+      minimum = min,
+      maximum = max,
+      count = count)
+  /**
+   * All statistics that we support. Calculation of this field requires multiple passes over the data.
+   */
+  lazy val fullStatistics: ColumnFullStatisticsReturn =
+    ColumnFullStatisticsReturn(mean = weightedMean,
+      geometric_mean = weightedGeometricMean,
+      variance = weightedVariance,
+      standard_deviation = weightedStandardDeviation,
+      skewness = weightedSkewness,
+      kurtosis = weightedKurtosis,
+      mode = weightedMode,
+      minimum = min,
+      maximum = max,
+      count = count)
 
-  lazy val fullStatistics: ColumnFullStatisticsReturn = ColumnFullStatisticsReturn(mean = weightedMean,
-    geometric_mean = weightedGeometricMean, variance = weightedVariance, standard_deviation = weightedStandardDeviation,
-    skewness = weightedSkewness, kurtosis = weightedKurtosis, mode = weightedMode, minimum = min, maximum = max,
-    count = count)
-
-  private lazy val singlePassStatistics: SinglePassStatistics = generateSinglePassStatistics(dataWeightPairs)
+  private lazy val singlePassStatistics: SinglePassStatistics = generateSinglePassStatistics()
 
   private lazy val weightedMean: Double = singlePassStatistics.weightedSum / singlePassStatistics.totalWeight
 
@@ -38,24 +64,36 @@ class NumericalStatistics(dataWeightPairs: RDD[(Double, Double)]) extends Serial
 
   private lazy val weightedKurtosis: Double = generateKurtosis()
 
-  private def convertWeightedPairToStats(p: (Double, Double)): SinglePassStatistics = {
+  private def convertDataWeightPairToStats(p: (Double, Double)): SinglePassStatistics = {
     val data = p._1
     val weight = p._2
 
     SinglePassStatistics(weightedSum = data * weight,
-      weightedProduct = Math.pow(data, weight), minimum = data, maximum = data, mode = data, weightAtMode = weight,
-      totalWeight = weight, count = 1.toLong)
+      weightedProduct = Math.pow(data, weight),
+      minimum = data,
+      maximum = data,
+      mode = data,
+      weightAtMode = weight,
+      totalWeight = weight,
+      count = 1.toLong)
   }
 
-  private def generateSinglePassStatistics(dataWeightPairs: RDD[(Double, Double)]): SinglePassStatistics = {
+  private def generateSinglePassStatistics(): SinglePassStatistics = {
 
     val accumulatorParam = new SinglePassStatisticsAccumulatorParam()
-    val initialValue = new SinglePassStatistics(0, weightedProduct = 1.toDouble,
+
+    val initialValue = new SinglePassStatistics(0,
+      weightedProduct = 1.toDouble,
       minimum = Double.PositiveInfinity,
-      maximum = Double.NegativeInfinity, 0, 0, 0, 0)
+      maximum = Double.NegativeInfinity,
+      mode = 0,
+      weightAtMode = 0,
+      totalWeight = 0,
+      count = 0)
+
     val accumulator = dataWeightPairs.sparkContext.accumulator[SinglePassStatistics](initialValue)(accumulatorParam)
 
-    dataWeightPairs.map(convertWeightedPairToStats).foreach(x => accumulator.add(x))
+    dataWeightPairs.map(convertDataWeightPairToStats).foreach(x => accumulator.add(x))
 
     accumulator.value
   }
@@ -71,7 +109,7 @@ class NumericalStatistics(dataWeightPairs: RDD[(Double, Double)]) extends Serial
 
   private def generateSkewness(): Double = {
     val n = singlePassStatistics.count
-    require(n > 2, "Cannot calcualte skew of fewer than 3 samples")
+    require(n > 2, "Cannot calculate skew of fewer than 3 samples")
 
     val xw = weightedMean
 
@@ -102,15 +140,36 @@ class NumericalStatistics(dataWeightPairs: RDD[(Double, Double)]) extends Serial
   }
 }
 
+/**
+ * Contains all statistics that are computed in single pass over the data.
+ * @param weightedSum
+ * @param weightedProduct
+ * @param minimum
+ * @param maximum
+ * @param mode
+ * @param weightAtMode
+ * @param totalWeight
+ * @param count
+ */
 case class SinglePassStatistics(weightedSum: Double, weightedProduct: Double, minimum: Double,
                                 maximum: Double, mode: Double, weightAtMode: Double, totalWeight: Double, count: Long)
     extends Serializable
 
+
+/**
+ * Accumulator settings for gathering single pass statistics.
+ */
 class SinglePassStatisticsAccumulatorParam extends AccumulatorParam[SinglePassStatistics] with Serializable {
 
-  override def zero(initialValue: SinglePassStatistics) = SinglePassStatistics(0, weightedProduct = 1.toDouble,
-    minimum = Double.PositiveInfinity,
-    maximum = Double.NegativeInfinity, 0, 0, 0, 0)
+  override def zero(initialValue: SinglePassStatistics) =
+    SinglePassStatistics(weightedSum = 0,
+      weightedProduct = 1.toDouble,
+      minimum = Double.PositiveInfinity,
+      maximum = Double.NegativeInfinity,
+      mode = 0,
+      weightAtMode = 0,
+      totalWeight = 0,
+      count = 0)
 
   override def addInPlace(stats1: SinglePassStatistics, stats2: SinglePassStatistics): SinglePassStatistics = {
 
@@ -126,4 +185,5 @@ class SinglePassStatisticsAccumulatorParam extends AccumulatorParam[SinglePassSt
       (stats2.mode, stats2.weightAtMode)
     SinglePassStatistics(weightedSum, weightedProduct, weightedMin, weightedMax, mode, weightAtMode, totalWeight, count)
   }
+
 }
