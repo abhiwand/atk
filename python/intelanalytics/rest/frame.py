@@ -408,6 +408,19 @@ class FrameBackendRest(object):
 
         return formattedMatrix
 
+    def cumulative_dist(self, frame, sample_col, dist_type, count_value=1):
+        if not sample_col in frame.column_names:
+            raise ValueError("sample_col does not exist in frame")
+        if not dict(frame.schema).get(sample_col) in ['int32', 'int64', 'float32', 'float64']:
+            raise ValueError("invalid sample_col type")
+        if not dict(frame.schema).get(sample_col) in ['int32', 'int64', 'float32', 'float64']:
+            raise ValueError("invalid sample_col type")
+        if not dist_type in ['cumulative_sum', 'cumulative_count', 'cumulative_percent_sum', 'cumulative_percent_count']:
+            raise ValueError("invalid distribution type")
+        # TODO: check count_value
+        name = self._get_new_frame_name()
+        arguments = {'frameId': frame._id, 'name': name, 'sampleCol': sample_col, 'distType': dist_type, 'countValue': count_value}
+        return execute_new_frame_command('cumulative_dist', arguments)
 
 class FrameInfo(object):
     """
