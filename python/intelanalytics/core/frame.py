@@ -887,11 +887,15 @@ class BigFrame(CommandSupport):
             Dictionary containing summary statistics in the following entries:
                  mean : Arithmetic mean of the data.
                  geometric_mean : Geometric mean of the data.
-                 variance : Variance of the data where weighted sum of squared distance from the mean is divided by count - 1
+                 variance : Variance of the data where weighted sum of squared distance from the mean is divided by
+                  count - 1
                  standard_deviation : Standard deviation of the data.
+                 mode : A mode of the data; that is, an item with the greatest weight (largest frequency).
+                  Ties are resolved arbitrarily.
                  minimum : Minimum value in the data.
                  maximum : Maximum value in the data.
-                 count : The number of entries - not necessarily distinct. Equivalently, the number of rows in the input table.
+                 count : The number of entries - not necessarily distinct. Equivalently, the number of rows in the input
+                  table.
 
         Examples
         --------

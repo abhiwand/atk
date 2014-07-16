@@ -44,6 +44,7 @@ case class ColumnSummaryStatistics(frame: FrameReference, data_column: String, w
  * @param geometric_mean Geometric mean of the data.
  * @param variance Variance of the data where weighted sum of squared distance from the mean is divided by count - 1
  * @param standard_deviation Standard deviation of the data.
+ * @param mode A mode of the data; that is, an item with the greatest weight (largest frequency). Ties resolved arbitrarily.
  * @param minimum Minimum value in the data.
  * @param maximum Maximum value in the data.
  * @param count The number of entries - not necessarily distinct. Equivalently, the number of rows in the input table.
@@ -52,6 +53,7 @@ case class ColumnSummaryStatisticsReturn(mean: Double,
                                          geometric_mean: Double,
                                          variance: Double,
                                          standard_deviation: Double,
+                                         mode: Double,
                                          minimum: Double,
                                          maximum: Double,
                                          count: Long)
