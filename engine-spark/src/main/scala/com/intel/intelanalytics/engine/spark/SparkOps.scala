@@ -744,7 +744,7 @@ private[spark] object SparkOps extends Serializable {
     pairedRdd.mapPartitionsWithIndex {
       case (index, partition) => {
         var startValue = 0.0
-        for { i <- 0 to index } startValue += partSums(i).asInstanceOf[Double]
+        for { i <- 0 to index } startValue += java.lang.Double.parseDouble(partSums(i).toString)
         partition.scanLeft((0.0, startValue))((prev, curr) => (curr._1, prev._2 + curr._2)).drop(1)
       }
     }.map(x => Array(x._1.asInstanceOf[Any], x._2.asInstanceOf[Any]))
@@ -802,7 +802,7 @@ private[spark] object SparkOps extends Serializable {
     pairedRdd.mapPartitionsWithIndex {
       case (index, partition) => {
         var startValue = 0.0
-        for { i <- 0 to index } startValue += partSums(i).asInstanceOf[Double]
+        for { i <- 0 to index } startValue += java.lang.Double.parseDouble(partSums(i).toString)
         partition.scanLeft((0.0, startValue))((prev, curr) => (curr._1, prev._2 + curr._2)).drop(1)
       }
     }.map(x => Array(x._1.asInstanceOf[Any], (x._2 / n.toDouble).asInstanceOf[Any]))
