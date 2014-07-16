@@ -165,6 +165,14 @@ object SamplingSparkOps extends Serializable {
     // TODO: graphX is welcome here...it has a subgraph function...and the current approach is inefficient
     val vertexArray = vertices.map(v => v.physicalId).collect()
     edges.filter(e => vertexArray.contains(e.headPhysicalId) && vertexArray.contains(e.tailPhysicalId))
+
+    /*    val vertexPairRdd = vertices.map(v => (v.physicalId, v.physicalId))
+    // this doubles size...not a good idea
+    val edgesWithVertexRdd = edges.map(edge => Seq((edge.headPhysicalId, edge), (edge.tailPhysicalId, edge))).flatMap(pair => pair)
+    val edgeVerticesRdd = edgesWithVertexRdd.map(pair => (pair._1, pair._1))
+    val diffVerticesRdd = edgeVerticesRdd.subtractByKey(vertexPairRdd)
+    val sampleEdges = edgesWithVertexRdd.subtractByKey(diffVerticesRdd).map(pair => pair._2).distinct()*/
+
   }
 
   /**
@@ -186,6 +194,11 @@ object SamplingSparkOps extends Serializable {
     val vertexRDD = titanReaderRDD.filterVertices()
     val edgeRDD = titanReaderRDD.filterEdges()
 
+    val test1 = vertexRDD.collect()
+    val test2 = edgeRDD.collect()
+
+    val tmp = ""
+
     (vertexRDD, edgeRDD)
   }
 
@@ -196,6 +209,9 @@ object SamplingSparkOps extends Serializable {
    * @param edges the edges to write to Titan
    */
   def writeToTitan(vertices: RDD[Vertex], edges: RDD[Edge], titanConfig: SerializableBaseConfiguration) = {
+    val test3 = vertices.collect()
+    val test4 = edges.collect()
+
     val gb = new GraphBuilder(new GraphBuilderConfig(new InputSchema(Seq.empty), List.empty, List.empty, titanConfig))
     gb.buildGraphWithSpark(vertices, edges)
   }

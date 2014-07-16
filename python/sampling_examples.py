@@ -24,7 +24,13 @@
 
 from intelanalytics import *
 
-csv_file = CsvFile('datasets/netflix/netflix_2million.csv', [('userId', str),
+# csv_file = CsvFile('datasets/netflix/netflix_2million.csv', [('userId', str),
+#                                                              ('vertexType', str),
+#                                                              ('movieId', str),
+#                                                              ('rating', str),
+#                                                              ('splits', str)])
+
+csv_file = CsvFile('datasets/netflix/movie_data_1mb_noheader.csv', [('userId', str),
                                                              ('vertexType', str),
                                                              ('movieId', str),
                                                              ('rating', str),

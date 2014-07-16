@@ -58,10 +58,21 @@ class VertexSample extends SparkCommandPlugin[VS, VSResult] {
     val config = configuration
     val titanConfigInput = config.getConfig("titan.load")
 
+    // TODO: dynamically read this in, since these could easily get out of sync
     val titanConfig = new SerializableBaseConfiguration()
     titanConfig.setProperty("storage.backend", titanConfigInput.getString("storage.backend"))
     titanConfig.setProperty("storage.hostname", titanConfigInput.getString("storage.hostname"))
     titanConfig.setProperty("storage.port", titanConfigInput.getString("storage.port"))
+    titanConfig.setProperty("storage.batch-loading", titanConfigInput.getString("storage.batch-loading"))
+    titanConfig.setProperty("storage.buffer-size", titanConfigInput.getString("storage.buffer-size"))
+    titanConfig.setProperty("storage.attempt-wait", titanConfigInput.getString("storage.attempt-wait"))
+    titanConfig.setProperty("storage.lock-wait-time", titanConfigInput.getString("storage.lock-wait-time"))
+    titanConfig.setProperty("storage.lock-retries", titanConfigInput.getString("storage.lock-retries"))
+    titanConfig.setProperty("storage.idauthority-retries", titanConfigInput.getString("storage.idauthority-retries"))
+    titanConfig.setProperty("storage.read-attempts", titanConfigInput.getString("storage.read-attempts"))
+    titanConfig.setProperty("autotype", titanConfigInput.getString("autotype"))
+    titanConfig.setProperty("ids.block-size", titanConfigInput.getString("ids.block-size"))
+    titanConfig.setProperty("ids.renew-timeout", titanConfigInput.getString("ids.renew-timeout"))
 
     import scala.concurrent.duration._
     val graph = Await.result(invocation.engine.getGraph(arguments.graph.id), config.getInt("default-timeout") seconds)
@@ -79,7 +90,12 @@ class VertexSample extends SparkCommandPlugin[VS, VSResult] {
       case _ => throw new IllegalArgumentException("Invalid sample type")
     }
 
+    val test5 = vertexSample.collect()
+    val test6 = edgeRDD.collect()
+
     val edgeSample = sampleEdges(vertexSample, edgeRDD)
+
+    val test7 = edgeSample.collect()
 
     val iatSubgraphName = GraphName.convertGraphUserNameToBackendName("graph_" + UUID.randomUUID.toString)
     titanConfig.setProperty("storage.tablename", iatSubgraphName)
