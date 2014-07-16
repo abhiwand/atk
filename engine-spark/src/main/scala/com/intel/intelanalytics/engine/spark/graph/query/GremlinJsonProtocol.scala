@@ -1,11 +1,11 @@
 package com.intel.intelanalytics.engine.spark.graph.query
 
 import com.tinkerpop.blueprints.util.io.graphson._
-import com.tinkerpop.blueprints.{ Element, Graph }
+import com.tinkerpop.blueprints.{Element, Graph}
 import com.tinkerpop.pipes.util.structures.Row
 import spray.json._
+
 import scala.collection.JavaConversions._
-import scala.reflect.ClassTag
 
 /**
  * Implicit conversions for Gremlin query objects to JSON
@@ -60,87 +60,86 @@ object GremlinJsonProtocol extends DefaultJsonProtocol {
       case row: Row[T] => {
         val obj = row.getColumnNames().map(column => {
           new JsField(column, row.getColumn(column).toJson)
-        }).toList
+        }).toMap
         obj.toJson
       }
       case x => serializationError(s"Expected a blueprints graph element, but received: $x")
     }
   }
 
-  /*
   /**
-   * Convert objects returned from Gremlin queries to JSON
-   *
-   * @param graph Graph for de-serializing graph elements
-   * @param mode GraphSON mode
+   * Check if JSON contains a Blueprints graph element encoded in GraphSON format.
    */
-  class GremlinJsonFormat[T: JsonFormat: ClassTag](graph: Graph = null, mode: GraphSONMode = GraphSONMode.NORMAL) extends JsonFormat[T] {
-    implicit val graphSONFormat = new GraphSONFormat(graph, mode)
-
-    override def read(json: JsValue): T = json match {
-      case x if isGraphElement(x) => elementFromJson(graph, x).asInstanceOf[T]
-      case x => x.convertTo[T]
-    }
-
-    override def write(obj: T): JsValue = {
-      obj match {
-        case e: Element => e.toJson
-        case r: Row[T] => r.toJson
-        case x => x.toJson
-      }
-    }
-  } */
+  def isGraphElement(json: JsValue): Boolean = isEdge(json) | isVertex(json)
 
   /**
-   * Create Blueprints graph element from JSON. Returns null if not a valid graph element
+   * Check if JSON contains a Blueprints edge encoded in GraphSON format.
    */
-  def elementFromJson(graph: Graph, json: JsValue, mode: GraphSONMode = GraphSONMode.NORMAL): Element = {
-    val factory = new GraphElementFactory(graph)
-
-    json match {
-      case v if isVertex(v) => GraphSONUtility.vertexFromJson(v.toString, factory, mode, null)
-      case e if isEdge(e) => {
-        val outVertex = graph.getVertex(getElementId(e, GraphSONTokens._OUT_V))
-        val inVertex = graph.getVertex(getElementId(e, GraphSONTokens._IN_V))
-        if (inVertex != null && outVertex != null) {
-          GraphSONUtility.edgeFromJson(e.toString, outVertex, inVertex, factory, mode, null)
-        }
-        else null
-      }
-      case _ => null
-    }
-  }
-
-  /**
-   * Check if GraphSON contains a Blueprints edge
-   */
-  def isEdge(json: JsValue): Boolean = json match {
+  private def isEdge(json: JsValue): Boolean = json match {
     case obj: JsObject => {
       val elementType = obj.fields.get(GraphSONTokens._TYPE).get.convertTo[String]
-      elementType.toLowerCase == GraphSONTokens.EDGE
+      elementType.equalsIgnoreCase(GraphSONTokens.EDGE)
     }
     case _ => false
   }
 
   /**
-   * Check if GraphSON contains a Blueprints vertex
+   * Check if JSON contains a Blueprints vertex encoded in GraphSON format.
    */
-  def isVertex(json: JsValue): Boolean = json match {
+  private def isVertex(json: JsValue): Boolean = json match {
     case obj: JsObject => {
-      val elementType = obj.fields.get(GraphSONTokens._TYPE).get.convertTo[String]
+      val elementType = obj.fields.get(GraphSONTokens._TYPE).getOrElse(
+        throw new RuntimeException(s"Expected valid GraphSON, but received: ${obj}")
+      ).toString
       elementType.equalsIgnoreCase(GraphSONTokens.VERTEX)
     }
     case _ => false
   }
 
   /**
-   * Check if GraphSON contains a Blueprints graph elements
+   * Create Blueprints graph element from JSON. Returns null if not a valid graph element
    */
-  def isGraphElement(json: JsValue): Boolean = isEdge(json) | isVertex(json)
+  private def elementFromJson(graph: Graph, json: JsValue, mode: GraphSONMode = GraphSONMode.NORMAL): Element = {
+    val factory = new GraphElementFactory(graph)
+
+    json match {
+      case v if isVertex(v) => GraphSONUtility.vertexFromJson(v.toString, factory, mode, null)
+      case e if isEdge(e) => {
+        val inId = getElementIdFromGraphSON(e, GraphSONTokens._IN_V)
+        val outId = getElementIdFromGraphSON(e, GraphSONTokens._OUT_V)
+        val outVertex = graph.getVertex(inId)
+        val inVertex = graph.getVertex(outId)
+
+        if (inVertex != null && outVertex != null) {
+          GraphSONUtility.edgeFromJson(e.toString, outVertex, inVertex, factory, mode, null)
+        }
+        else throw new RuntimeException(s"Unable to convert JSON to Blueprint's edge: ${e}")
+      }
+      case x => throw new RuntimeException(s"Unable to convert JSON to Blueprint's graph element: ${x}")
+    }
+  }
 
   /**
    * Get element ID from GraphSON
    */
-  def getElementId(json: JsValue, idName: String): AnyRef = json.asJsObject.fields.get(idName).getOrElse(null)
+  private def getElementIdFromGraphSON(json: JsValue, idName: String): Long = {
+    try {
+      getJsonFieldValue(json, idName).toString.toLong
+    }
+    catch {
+      case e: Exception => throw new RuntimeException(s"Unable to get element Id from GraphSON: ${json}", e)
+    }
+  }
 
+  /**
+   * Get field value from JSON object using key.
+   */
+  private def getJsonFieldValue(json: JsValue, key: String): Any = json match {
+    case obj: JsObject => {
+      obj.fields.get(key).getOrElse(
+        throw new RuntimeException(s"${key} does not exist in JSON object: ${json}")
+      )
+    }
+    case _ => throw new RuntimeException("Invalid JSON object: ${json}")
+  }
 }

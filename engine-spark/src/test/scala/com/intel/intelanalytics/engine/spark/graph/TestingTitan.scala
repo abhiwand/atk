@@ -49,7 +49,7 @@ trait TestingTitan extends FlatSpec with BeforeAndAfter {
   val titanConfig = new SerializableBaseConfiguration()
   titanConfig.setProperty("storage.directory", "inmemory")
   var titanGraph: TitanGraph = null
-  var graph : Graph = null
+  var graph: Graph = null
 
   before {
     // Using ID graph

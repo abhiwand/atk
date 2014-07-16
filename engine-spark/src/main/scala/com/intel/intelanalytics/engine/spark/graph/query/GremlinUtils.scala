@@ -42,7 +42,7 @@ object GremlinUtils {
                                                       obj: T,
                                                       mode: GraphSONMode = GraphSONMode.NORMAL): JsValue = {
     import com.intel.intelanalytics.engine.spark.graph.query.GremlinJsonProtocol._
-    implicit val gremlinFormat = new GraphSONFormat(graph)
+    implicit val graphSONFormat = new GraphSONFormat(graph)
     val json = obj match {
       case e: Element => e.toJson
       case r: Row[T] => r.toJson
@@ -64,9 +64,9 @@ object GremlinUtils {
                                                         json: JsValue,
                                                         mode: GraphSONMode = GraphSONMode.NORMAL): T = {
     import com.intel.intelanalytics.engine.spark.graph.query.GremlinJsonProtocol._
-    implicit val gremlinFormat = new GraphSONFormat(graph)
+    implicit val graphSONFormat = new GraphSONFormat(graph)
     val obj = json match {
-      case x if isGraphElement(x) => elementFromJson(graph, x).asInstanceOf[T]
+      case x if isGraphElement(x) => graphSONFormat.read(json).asInstanceOf[T]
       case x => x.convertTo[T]
     }
     obj
