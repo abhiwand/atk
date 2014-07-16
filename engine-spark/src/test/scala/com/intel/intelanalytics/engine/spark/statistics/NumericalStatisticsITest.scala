@@ -1,6 +1,6 @@
-package com.intel.intelanalytics.engine.spark
+package com.intel.intelanalytics.engine.spark.statistics
 
-import org.scalatest.{ Matchers, FunSuite }
+import org.scalatest.Matchers
 import com.intel.intelanalytics.engine.TestingSparkContext
 
 class NumericalStatisticsITest extends TestingSparkContext with Matchers {

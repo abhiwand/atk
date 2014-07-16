@@ -35,6 +35,7 @@ import spray.json.JsObject
 import scala.collection.mutable
 import scala.math.pow
 import com.intel.intelanalytics.domain.frame.{ ColumnFullStatisticsReturn, ColumnSummaryStatisticsReturn, ColumnSummaryStatistics }
+import com.intel.intelanalytics.engine.spark.statistics.{ FrequencyStatistics, NumericalStatistics }
 
 private[spark] object SparkOps extends Serializable {
 
