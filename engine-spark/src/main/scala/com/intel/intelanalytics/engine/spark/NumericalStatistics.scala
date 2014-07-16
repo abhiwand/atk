@@ -6,7 +6,7 @@ import org.apache.spark.rdd.RDD
 import com.intel.intelanalytics.domain.frame.ColumnSummaryStatisticsReturn
 
 case class SimpleStatistics(weightedSum: Double, weightedProduct: Double, minimum: Double,
-                            maximum: Double, totalWeight: Double, count: Long)
+                            maximum: Double, mode: Double, weightAtMode: Double, totalWeight: Double, count: Long)
 
 class NumericalStatistics(dataWeightPairs: RDD[(Double, Double)]) extends Serializable {
 
@@ -22,6 +22,8 @@ class NumericalStatistics(dataWeightPairs: RDD[(Double, Double)]) extends Serial
 
   lazy val weightedStandardDeviation: Double = Math.sqrt(weightedVariance)
 
+  lazy val weightedMode: Double = simpleStatistics.mode
+
   lazy val min = simpleStatistics.minimum
 
   lazy val max = simpleStatistics.maximum
@@ -30,7 +32,7 @@ class NumericalStatistics(dataWeightPairs: RDD[(Double, Double)]) extends Serial
 
   lazy val summaryStatistics: ColumnSummaryStatisticsReturn = ColumnSummaryStatisticsReturn(mean = weightedMean,
     geometric_mean = weightedGeometricMean, variance = weightedVariance, standard_deviation = weightedStandardDeviation,
-    minimum = min, maximum = max, count = count)
+    mode = weightedMode, minimum = min, maximum = max, count = count)
 
   lazy val weightedSkewness: Double = generateSkewness()
 
@@ -41,7 +43,7 @@ class NumericalStatistics(dataWeightPairs: RDD[(Double, Double)]) extends Serial
     val weight = p._2
 
     SimpleStatistics(weightedSum = data * weight,
-      weightedProduct = Math.pow(data, weight), minimum = data, maximum = data,
+      weightedProduct = Math.pow(data, weight), minimum = data, maximum = data, mode = data, weightAtMode = weight,
       totalWeight = weight, count = 1.toLong)
   }
 
@@ -53,8 +55,12 @@ class NumericalStatistics(dataWeightPairs: RDD[(Double, Double)]) extends Serial
     val weightedMax = Math.max(stats1.maximum, stats2.maximum)
     val totalWeight = stats1.totalWeight + stats2.totalWeight
     val count = stats1.count + stats2.count
+    val (mode, weightAtMode) = if (stats1.weightAtMode > stats2.weightAtMode)
+      (stats1.mode, stats1.weightAtMode)
+    else
+      (stats2.mode, stats2.weightAtMode)
 
-    SimpleStatistics(weightedSum, weightedProduct, weightedMin, weightedMax, totalWeight, count)
+    SimpleStatistics(weightedSum, weightedProduct, weightedMin, weightedMax, mode, weightAtMode, totalWeight, count)
   }
 
   private def generateFirstOrderStats(dataWeightPairs: RDD[(Double, Double)]): SimpleStatistics = {

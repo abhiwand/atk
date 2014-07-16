@@ -55,8 +55,8 @@ class FrequencyStatisticsITest extends TestingSparkContext with Matchers {
     val (testMode, testModeWeight, testTotalWeight) = frequencyStats.modeItsWeightTotalWeightTriple
 
     testMode shouldBe 3
-    (testModeWeight - (5.toDouble / 14.toDouble)) should be < epsilon
-    (testTotalWeight - 1.toDouble) should be < epsilon
+    Math.abs(testModeWeight - (5.toDouble / 14.toDouble)) should be < epsilon
+    Math.abs(testTotalWeight - 1.toDouble) should be < epsilon
 
   }
 
@@ -69,7 +69,7 @@ class FrequencyStatisticsITest extends TestingSparkContext with Matchers {
     val (testMode, testModeWeight, testTotalWeight) = frequencyStats.modeItsWeightTotalWeightTriple
 
     testMode shouldBe "c"
-    (testModeWeight - (5.toDouble / 14.toDouble)) should be < epsilon
-    (testTotalWeight - 1.toDouble) should be < epsilon
+    Math.abs(testModeWeight - (5.toDouble / 14.toDouble)) should be < epsilon
+    Math.abs(testTotalWeight - 1.toDouble) should be < epsilon
   }
 }
