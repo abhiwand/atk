@@ -458,7 +458,7 @@ private[spark] object SparkOps extends Serializable {
   /**
    * Bin column at index using equal width binning.
    *
-   * This uses the Spark histogram function to get the cutoffs, then map each input rdd column value to a bin number
+   * Determine cutoffs by finding upper/lower bounds, then map each input rdd column value to a bin number
    * based on the cutoff ranges.
    *
    * @param index column index

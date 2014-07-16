@@ -791,7 +791,7 @@ class BigFrame(CommandSupport):
         ----------
         column_name : str
             The column to be flattened
-                                                  n
+
         Raises
         ------
         IaError
@@ -833,12 +833,23 @@ class BigFrame(CommandSupport):
         """
         Summary
         -------
-        Evenly separate columns
+        Place column values into bins
 
         .. versionadded:: 0.8
 
         Extended Summary
         ----------------
+        Two types of binning are provided: `equalwidth` and `equaldepth`.
+
+        Equal width binning places column values into bins such that the values in each bin fall within the same
+        interval and the interval width for each bin is equal.
+
+        Equal depth binning attempts to place column values into bins such that each bin contains the same number of
+        elements.  For n bins of a column C of length m, the bin number is determined by:
+            ceiling(n * f(C) / m)
+        where f is a tie-adjusted ranking function over values of C.  If there are multiple of the same value in C,
+        then their tie-adjusted rank is the average of their ordered rank values.
+
         The numBins parameter is an upper-bound on the number of bins since the data may justify fewer bins.
         With :term:`equal depth binning`, for example, if the column to be binned has 10 elements with
         only 2 distinct values and numBins > 2, then the number of actual bins will only be 2.
