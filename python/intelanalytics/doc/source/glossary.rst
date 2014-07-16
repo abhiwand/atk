@@ -210,7 +210,9 @@ Glossary
 
         For more information see: :term:`Vertex`, and `Tinkerpop\: Property Graph Model`_.
 
-    Equal Depth Binning
+    EqualDepth
+    EqualWidth
+    Equal Binning
 
         TBD
 

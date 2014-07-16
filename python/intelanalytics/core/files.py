@@ -91,11 +91,12 @@ class CsvFile(DataFile):
             or
         CsvFile("raw_data.csv", csv_schema, delimiter = ':')
 
-    If our data had some lines of header at the beginning of the file, we chould have skipped these lines::
+    If our data had some lines of header at the beginning of the file, we could have skipped these lines::
 
         csv_data = CsvFile("raw_data.csv", csv_schema, skip_header_lines=2)
 
-    For other examples see :ref:`example_files.csvfile`.
+    For other examples see :ref:`Data Flow <example_files.csvfile>`.
+
     """
 
     # TODO - Review docstring
