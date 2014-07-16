@@ -82,8 +82,8 @@ You need to bring your data into the database file in a way that the toolkit can
 The first thing to do is to tell the toolkit how your data is formatted.
 
 A database file can be viewed as a table with rows and columns.
-Each column has a unique name, each row holds data, and the data in each column & row intersection relates to other data in the row.
-The data in each column must be the same data type.
+Each column has a unique name and holds a specific data type.
+Each row holds a set of data.
 
 To import CSV data you need a :term:`schema` defining the structure of your data.
 The schema is constructed as a list of tuples, each defining a column in the database.
@@ -210,21 +210,34 @@ Now we create a "CsvFile" object used to define the data layout::
 BigFrame
 --------
 
-A BigFrame is a class of objects capable of accessing and controlling "big data".
-The data is visualized as a table structure of rows and columns.
+A :term:`BigFrame` is a class of objects capable of accessing and controlling a :term:`frame` containing "big data".
+The frame is visualized as a table structure of rows and columns.
 It can handle huge amounts of data because it is designed to handle data spread over multiple clusters.
 
 Create A BigFrame
 =================
 
-A new frame is created: 1. as empty, 2. as defined by a CSV schema, or 3. by copying (all or a part of) another frame::
+A new frame is created: 1. as empty, 2. as defined by a CSV schema, or 3. by copying (all or a part of) another frame.
 
-           f = BigFrame()               # create an empty frame
-    my_frame = BigFrame(my_csv, 'bf')   # create a frame a CSV file and name it *bf*
-          f2 = BigFrame(my_frame)       # create a new frame, identical to the original, except for the name
-          f3 = BigFrame(f2[['a', 'c']]) # create a new frame with only columns *a* and *c* from the original
+Create an empty frame and a BigFrame *f* to access it::
 
-The BigFrame returned is not the data, but a proxy (descriptive pointer) for the data.
+    f = BigFrame()
+
+Create a frame defined by my CsvFile object *my_csv*; fill it with data; name the frame "bf"; create a BigFrame *my_frame* to access it::
+
+    my_frame = BigFrame(my_csv, 'bf')
+
+Create a new frame, identical to *bf*, except for the name::
+
+    f2 = BigFrame(my_frame)
+
+Create a new frame with only columns *a* and *c* from the original::
+
+    f3 = BigFrame(my_frame[['a', 'c']])
+
+The BigFrame is not the same thing as the frame.
+The frame is the data, viewed as similar to a table.
+The BigFrame is not the data, but a proxy (descriptive pointer) for the data.
 Commands such as ``f4 = my_frame`` will only give you a copy of the BigFrame proxy, pointing to the same data.
 
 .. _example_frame.append:
@@ -235,9 +248,41 @@ The "append" function adds more rows, and columns, of data to a frame, typically
 If columns are the same in both name and data type, the appended data will go into the existing column.
 If the column of data in the new source is not in the original structure, it will be added to the structure and all existing rows will have *None*
 assigned to the new column and the new data will be added to the bottom with *None* in all of the previously existing, non-identical columns.
-::
 
-    my_frame.append(CsvFile("bonus_ab_data.csv", schema_ab))
+As an example, let's start with a frame containing two columns *a* and *b*.
+The frame can be accessed by BigFrame *BF1*::
+
+    a str       b int32
+    -------------------
+    apple           182
+    bear             71
+    car            2048
+
+To this frame we combine another frame with one column *c*.
+This frame can be accessed by BigFrame *BF2*::
+
+    c str
+    -----
+    dog
+    cat
+
+With *append*::
+
+    BF1.append(BF2)
+
+The result is that the first frame would have the data from both frames.
+It would still be accessed by BigFrame *BF1*::
+
+    a str       b int32     c str
+    -----------------------------
+    apple           182     None
+    bear             71     None
+    car            2048     None
+    None           None     dog
+    None           None     cat
+
+For further details see the append method in the :doc:`API <ds_apic>` section.
+See also the join method.
 
 .. _example_frame.inspect:
 
@@ -245,13 +290,24 @@ Inspect The Data
 ================
 
 You next look over the data to fix any problems it has.
-It could be missing values in some fields; bad values; other nasties that will not help the analysis later.
-::
+It could be missing values in some fields; bad values; other problems that will not help the analysis later.
 
-    my_frame.count()               # row count
-    len(my_frame)                  # column count
-    my_frame.inspect(5)            # pretty-print first 5 rows
-    my_frame.take(10, offset=200)  # retrieve a list of 10 rows, starting at row 200
+Count the number of rows of data::
+
+    my_frame.count()
+
+How many columns are there::
+
+    len(my_frame)
+
+Print the first five rows of data::
+
+    my_frame.inspect(5)
+
+Create a new frame using the existing frame.
+The data should start at row 200 and should be 10 rows::
+
+    my_frame.take(10, offset=200)
  
 Clean The Data
 ==============
@@ -266,7 +322,12 @@ For details about row selection based upon its data see :doc:`ds_apir`
 .. warning::
 
     Unless stated otherwise, cleaning functions use the BigFrame proxy to operate directly on the data,
-    so it changes the data in the database, rather than return a new database with the changed data.
+    so it changes the data in the frame, rather than return a new frame with the changed data.
+    It is recommended that you copy the data to a new frame on a regular basis and work on the new frame.
+    This way, you have a fall-back if something does not work as expected::
+
+        next_frame = BigFrame(last_frame)
+
 
 .. _example_frame.drop:
 
@@ -409,12 +470,11 @@ Add Columns
                 return None
             return m * x + c
 
-        my_frame.add_columns(transform_a, float32, 'a_lpt')
+        my_frame.add_columns(transform_a, ('a_lpt', float32))
 
-    Create multiple columns at once by making a function return a tuple of cell values for the new frame columns, and then providing a tuple of
-    types and a tuple of names::
+    Create multiple columns at once by making a function return a list of values for the new frame columns::
 
-        my_frame.add_columns(lambda row: (abs(row.a), abs(row.b)), (int32, int32), ('a_abs', 'b_abs'))
+        my_frame.add_columns(lambda row: [abs(row.a), abs(row.b)], [('a_abs', int32), ('b_abs', int32)])
 
 .. TODO:: There is no map command
 
@@ -452,54 +512,58 @@ Groupby (and Aggregate)
 
     This needs two parameters:
 
-        (1) the column(s) to group on
-        (2) the aggregation function(s)
+    #. the column(s) to group on
+    #. the aggregation function(s)
 
     Aggregation based on columns:
+        Given a frame with columns *a*, *b*, *c*, and *d*;
+        Create a new frame and a BigFrame *grouped_data* to access it;
+        Group by unique values in columns *a* and *b*;
+        Average the grouped values in column *c* and save it in a new column *c_avg*;
+        Add up the grouped values in column *c* and save it in a new column *c_sum*;
+        Get the standard deviation of the grouped values in column *c* and save it in a new column *c_stdev*;
+        Average the grouped values in column *d* and save it in a new column *d_avg*;
+        Add up the grouped values in column *d* and save it in a new column *d_sum*::
 
-        | Given a frame with columns *a*, *b*, *c*, and *d*, minimum:
-        | Group by unique values in columns *a* and *b*;
-        | Average the grouped values in column *c* and save it in a new column *c_avg*;
-        | Add up the grouped values in column *c* and save it in a new column *c_sum*;
-        | Get the standard deviation of the grouped values in column *c* and save it in a new column *c_stdev*;
-        | Average the grouped values in column *d* and save it in a new column *d_avg*;
-        | Add up the grouped values in column *d* and save it in a new column *d_sum*::
-
-            my_frame.groupby(['a', 'b'], { 'c': [agg.avg, agg.sum, agg.stdev], 'd': [agg.avg, agg.sum]})
+            grouped_data = my_frame.groupby(['a', 'b'], { 'c': [agg.avg, agg.sum, agg.stdev], 'd': [agg.avg, agg.sum]})
 
         Note:
             The only columns in the new frame will be the grouping columns and the generated columns. In this case, regardless of the original frame size,
-            you will get seven columns::
+            you will get seven columns:
 
-                *a*
-                *b*
-                *c_avg*
-                *c_sum*
-                *c_stdev*
-                *d_avg*
-                *d_sum*
+            .. hlist::
+                :columns: 7
+
+                * *a*
+                * *b*
+                * *c_avg*
+                * *c_sum*
+                * *c_stdev*
+                * *d_avg*
+                * *d_sum*
 
     Aggregation based on full row:
 
-        | Given a frame with columns *a*, and *b*, minimum:
-        | Group by unique values in columns *a* and *b*;
-        | Count the number of rows in each group and put that value in column *count*::
+        Given a frame with columns *a*, and *b*;
+        Create a new frame and a Bigframe *gr_data* to access it;
+        Group by unique values in columns *a* and *b*;
+        Count the number of rows in each group and put that value in column *count*::
 
-            my_frame.groupby(['a', 'b'], agg.count)
+            gr_data = my_frame.groupby(['a', 'b'], agg.count)
 
         Note:
-            agg.count is the only one supported at this time
+            agg.count is the only full row aggregation function supported at this time
 
     Aggregation based on both column and row together:
 
-        | Given a frame with columns *a*, *b*, *c*, and *d*, minimum:
-        | Group by unique values in columns *a* and *b*;
-        | Count the number of rows in each group and put that value in column *count*:
-        | Average the grouped values in column *c* and save it in a new column *c_avg*;
-        | Add up the grouped values in column *c* and save it in a new column *c_sum*;
-        | Get the standard deviation of the grouped values in column *c* and save it in a new column *c_stdev*;
-        | Average the grouped values in column *d* and save it in a new column *d_avg*;
-        | Add up the grouped values in column *d* and save it in a new column *d_sum*::
+        Given a frame with columns *a*, *b*, *c*, and *d*;
+        Group by unique values in columns *a* and *b*;
+        Count the number of rows in each group and put that value in column *count*:
+        Average the grouped values in column *c* and save it in a new column *c_avg*;
+        Add up the grouped values in column *c* and save it in a new column *c_sum*;
+        Get the standard deviation of the grouped values in column *c* and save it in a new column *c_stdev*;
+        Average the grouped values in column *d* and save it in a new column *d_avg*;
+        Add up the grouped values in column *d* and save it in a new column *d_sum*::
 
             my_frame.groupby(['a', 'b'], [agg.count, { 'c': [agg.avg, agg.sum, agg.stdev], 'd': [agg.avg, agg.sum]}])
 
@@ -676,14 +740,14 @@ give the :term:`vertex` a unique identification property *vid*;
 assign *vid* the value from column *a*;
 give the :term:`vertex` a property *x*, with a value from column *b*::
 
-     my_vertex_rule_1 = VertexRule( 'vid', my_frame['a'], ('x', my_frame('b')))
+     my_vertex_rule_1 = VertexRule('vid', my_frame['a'], {'x', my_frame['b']})
 
 Make a rule *my_vertex_rule_2* that makes a :term:`vertex` for every row in the frame *my_frame*;
 give the :term:`vertex` a unique identification property *yid*;
 assign *yid* the value from column *c*;
 give the :term:`vertex` a property *y*, with a value from column *d*::
 
-     my_vertex_rule_2 = VertexRule( 'yid', my_frame['c'], ('y', my_frame('d')))
+     my_vertex_rule_2 = VertexRule('yid', my_frame['c'], {'y', my_frame['d']})
 
 .. _example_graph.edgerule:
 
@@ -693,7 +757,7 @@ Edge Rules
 Edge rules connect the :term:`vertices` in the :term:`graph`.
 
 Make a rule *my_edge_rule*;
-assign the rule a label combining the values in columns *a* and *c*;
+assign the rule a label from the values in columns *a*;
 tell it that it goes from *my_vertex_rule_1* to *my_vertex_rule_2*;
 give it a propery *z* with a value from column *e*;
 and tell it that it is a directed edge::

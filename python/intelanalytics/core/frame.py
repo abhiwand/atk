@@ -588,6 +588,7 @@ class BigFrame(CommandSupport):
         data.
         The frame referred to by *f_2* is then added to the bottom.
 
+        For further example, see :ref:`Data flow <example_frame.append>`.
         """
         # TODO - Review examples
         try:
@@ -790,7 +791,7 @@ class BigFrame(CommandSupport):
         ----------
         column_name : str
             The column to be flattened
-                                                  n
+
         Raises
         ------
         IaError
@@ -832,12 +833,23 @@ class BigFrame(CommandSupport):
         """
         Summary
         -------
-        Evenly separate columns
+        Place column values into bins
 
         .. versionadded:: 0.8
 
         Extended Summary
         ----------------
+        Two types of binning are provided: `equalwidth` and `equaldepth`.
+
+        Equal width binning places column values into bins such that the values in each bin fall within the same
+        interval and the interval width for each bin is equal.
+
+        Equal depth binning attempts to place column values into bins such that each bin contains the same number of
+        elements.  For n bins of a column C of length m, the bin number is determined by:
+            ceiling(n * f(C) / m)
+        where f is a tie-adjusted ranking function over values of C.  If there are multiple of the same value in C,
+        then their tie-adjusted rank is the average of their ordered rank values.
+
         The numBins parameter is an upper-bound on the number of bins since the data may justify fewer bins.
         With :term:`equal depth binning`, for example, if the column to be binned has 10 elements with
         only 2 distinct values and numBins > 2, then the number of actual bins will only be 2.
@@ -1549,10 +1561,10 @@ class BigFrame(CommandSupport):
         recall.
         If we let:
         
-            * beta :math:`\\equiv \\beta`,
-            * :math:`T_{P}` denote the number of true positives,
-            * :math:`F_{P}` denote the number of false positives, and
-            * :math:`F_{N}` denote the number of false negatives,
+        * beta :math:`\\equiv \\beta`,
+        * :math:`T_{P}` denote the number of true positives,
+        * :math:`F_{P}` denote the number of false positives, and
+        * :math:`F_{N}` denote the number of false negatives,
             
         then:
         
@@ -1587,3 +1599,32 @@ class BigFrame(CommandSupport):
 
         """
         return self._backend.classification_metric(self, 'fmeasure', label_column, pred_column, pos_label, beta)
+
+    def confusion_matrix(self, label_column, pred_column, pos_label=1):
+        """
+        Outputs a confusion matrix for a binary classifier
+
+        Parameters
+        ----------
+        label_column : str
+            the name of the column containing the correct label for each instance
+        pred_column : str
+            the name of the column containing the predicted label for each instance
+        pos_label : int or str, (optional, default=1)
+            the value to be interpreted as a positive instance
+
+        Returns
+        ----------
+            displays the formatted confusion matrix
+
+        Examples
+        ----------
+        >>> print(frame.confusion_matrix('labels', 'predictions'))
+                         Predicted
+                       __pos__ _neg___
+         Actual   pos | 1     | 4
+                  neg | 3     | 2
+
+        """
+
+        return self._backend.confusion_matrix(self, label_column, pred_column, pos_label)
