@@ -50,17 +50,10 @@ class EngineApplication extends Archive with EventLogging with ClassLoaderAware 
     try {
       //TODO: when Engine moves to its own process, it will need to start its own Akka actor system.
 
-      val sparkLoader = {
-        com.intel.intelanalytics.component.Boot.getArchive("engine-spark").getClass.getClassLoader
-      }
+      engine = com.intel.intelanalytics.component.Boot.getArchive("engine-spark")
+        .load("com.intel.intelanalytics.engine.spark.SparkComponent")
+        .asInstanceOf[EngineComponent with FrameComponent with CommandComponent]
 
-      engine = {
-        withLoader(sparkLoader) {
-          val class_ = sparkLoader.loadClass("com.intel.intelanalytics.engine.spark.SparkComponent")
-          val instance = class_.newInstance()
-          instance.asInstanceOf[EngineComponent with FrameComponent with CommandComponent]
-        }
-      }
     }
     catch {
       case NonFatal(e) =>
