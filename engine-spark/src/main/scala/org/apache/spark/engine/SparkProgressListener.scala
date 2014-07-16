@@ -179,8 +179,7 @@ class SparkProgressListener(val progressUpdater: CommandProgressUpdater) extends
    */
   private def updateProgress(stageId: Int) {
     val jobIdStagePairOption = jobIdToStagesIds.find {
-      e =>
-        val stagesIds = e._2
+      case (_, stagesIds) =>
         stagesIds.contains(stageId)
     }
 
@@ -189,18 +188,15 @@ class SparkProgressListener(val progressUpdater: CommandProgressUpdater) extends
         val jobId = r._1
         val fnGetListJobId = (jobs: List[ActiveJob]) => jobs.map(job => job.jobId)
 
-        val commandIdJobOption = commandIdJobs.find(e => fnGetListJobId(e._2).contains(jobId))
-        commandIdJobOption match {
-          case Some(c) => {
-            val commandId = c._1
-            val progress = getCommandProgress(commandId)
-            updateDetailedProgress(commandId)
-            val detailedProgress = getDetailedCommandProgress(commandId)
-            progressUpdater.updateProgress(commandId, progress, detailedProgress)
+        commandIdJobs.find(e => fnGetListJobId(e._2).contains(jobId)).
+          foreach {
+            case (commandId, _) => {
+              val progress = getCommandProgress(commandId)
+              updateDetailedProgress(commandId)
+              val detailedProgress = getDetailedCommandProgress(commandId)
+              progressUpdater.updateProgress(commandId, progress, detailedProgress)
+            }
           }
-
-          case None =>
-        }
       }
       case _ => println(s"missing command id for stage $stageId")
     }
