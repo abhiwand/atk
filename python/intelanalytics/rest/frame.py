@@ -26,7 +26,7 @@ REST backend for frames
 import uuid
 import logging
 logger = logging.getLogger(__name__)
-from ordereddict import OrderedDict
+from intelanalytics.core.orddict import OrderedDict
 from collections import defaultdict
 import json
 
@@ -381,9 +381,36 @@ class FrameBackendRest(object):
             raise ValueError("invalid pred_column types")
         if not beta > 0:
             raise ValueError("invalid beta value for f measure")
-
         arguments = {'frameId': frame._id, 'metricType': metric_type, 'labelColumn': label_column, 'predColumn': pred_column, 'posLabel': str(pos_label), 'beta': beta}
-        return get_command_output_value('classification_metric', arguments).get('metricValue')
+        return get_command_output('classification_metric', arguments).get('metricValue')
+    
+    def confusion_matrix(self, frame, label_column, pred_column, pos_label):
+        if label_column.strip() == "":
+            raise ValueError("label_column can not be empty string")
+        if not label_column in frame.column_names:
+            raise ValueError("label_column does not exist in frame")
+        if dict(frame.schema).get(label_column) in ['float32', 'float64']:
+            raise ValueError("invalid label_column types")
+        if pred_column.strip() == "":
+            raise ValueError("pred_column can not be empty string")
+        if not pred_column in frame.column_names:
+            raise ValueError("pred_column does not exist in frame")
+        if dict(frame.schema).get(pred_column) in ['float32', 'float64']:
+            raise ValueError("invalid pred_column types")
+        if str(pos_label).strip() == "":
+            raise ValueError("invalid pos_label")
+        arguments = {'frameId': frame._id, 'labelColumn': label_column, 'predColumn': pred_column, 'posLabel': str(pos_label)}
+        # valueList = (tp, tn, fp, fn)
+        valueList = get_command_output('confusion_matrix', arguments).get('valueList')
+        # the following output formatting code is ugly, but it works for now...
+        maxLength = len(max((str(x) for x in valueList), key=len))
+        topRowLen = max([maxLength*2 - 7, 1])
+        formattedMatrix = "\n         " + " " * len(str(pos_label)) + "   " + " Predicted" + " " * topRowLen + "  \n"
+        formattedMatrix += "         " + " " * len(str(pos_label)) + "  _pos" + "_" * max([maxLength - 2, 1]) + " _neg" + "_" * max([maxLength - 3, 1]) + "_\n"
+        formattedMatrix += "Actual   pos | " + str(valueList[0]) + " " * max([maxLength - len(str(valueList[0])), 0]) + "   " + str(valueList[3]) + " " * max([maxLength - len(str(valueList[3])), 0]) + " \n"
+        formattedMatrix += "         neg | " + str(valueList[2]) + " " * max([maxLength - len(str(valueList[2])), 0]) + "   " + str(valueList[1]) + " " * max([maxLength - len(str(valueList[1])), 0]) + " \n"
+
+        return formattedMatrix
 
 
 class FrameInfo(object):
@@ -455,8 +482,8 @@ def execute_new_frame_command(command_name, arguments):
     frame_info = FrameInfo(command_info.result)
     return BigFrame(frame_info)
 
-def get_command_output_value(command_name, arguments):
-    """Executes command and returns the computed value"""
+def get_command_output(command_name, arguments):
+    """Executes command and returns the output"""
     command_request = CommandRequest('dataframe/' + command_name, arguments)
     command_info = executor.issue(command_request)
     return command_info.result
