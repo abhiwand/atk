@@ -31,7 +31,6 @@ from collections import defaultdict
 import json
 import sys
 
-
 from intelanalytics.core.frame import BigFrame
 from intelanalytics.core.column import BigColumn
 from intelanalytics.core.files import CsvFile
@@ -67,10 +66,10 @@ class FrameBackendRest(object):
         return [f['name'] for f in payload]
 
     def get_frame(self, name):
-        logger.info("REST Backend: get_frame")
-        r = self.rest_http.get('dataframes?name='+name)
-        payload = r.json()
-        return json.dumps(payload, indent=2)
+        """Retrieves the named BigFrame object"""
+        logger.info("REST Backend: get_frame:",name)
+        r=self.rest_http.get(name)
+
 
         #raise NotImplemented  # TODO - implement get_frame
 
@@ -401,9 +400,36 @@ class FrameBackendRest(object):
             raise ValueError("invalid pred_column types")
         if not beta > 0:
             raise ValueError("invalid beta value for f measure")
-
         arguments = {'frame_id': frame._id, 'metric_type': metric_type, 'label_column': label_column, 'pred_column': pred_column, 'pos_label': str(pos_label), 'beta': beta}
-        return get_command_output_value('classification_metric', arguments).get('metricValue')
+        return get_command_output('classification_metric', arguments).get('metric_value')
+    
+    def confusion_matrix(self, frame, label_column, pred_column, pos_label):
+        if label_column.strip() == "":
+            raise ValueError("label_column can not be empty string")
+        if not label_column in frame.column_names:
+            raise ValueError("label_column does not exist in frame")
+        if dict(frame.schema).get(label_column) in ['float32', 'float64']:
+            raise ValueError("invalid label_column types")
+        if pred_column.strip() == "":
+            raise ValueError("pred_column can not be empty string")
+        if not pred_column in frame.column_names:
+            raise ValueError("pred_column does not exist in frame")
+        if dict(frame.schema).get(pred_column) in ['float32', 'float64']:
+            raise ValueError("invalid pred_column types")
+        if str(pos_label).strip() == "":
+            raise ValueError("invalid pos_label")
+        arguments = {'frame_id': frame._id, 'label_column': label_column, 'pred_column': pred_column, 'pos_label': str(pos_label)}
+        # valueList = (tp, tn, fp, fn)
+        valueList = get_command_output('confusion_matrix', arguments).get('value_list')
+        # the following output formatting code is ugly, but it works for now...
+        maxLength = len(max((str(x) for x in valueList), key=len))
+        topRowLen = max([maxLength*2 - 7, 1])
+        formattedMatrix = "\n         " + " " * len(str(pos_label)) + "   " + " Predicted" + " " * topRowLen + "  \n"
+        formattedMatrix += "         " + " " * len(str(pos_label)) + "  _pos" + "_" * max([maxLength - 2, 1]) + " _neg" + "_" * max([maxLength - 3, 1]) + "_\n"
+        formattedMatrix += "Actual   pos | " + str(valueList[0]) + " " * max([maxLength - len(str(valueList[0])), 0]) + "   " + str(valueList[3]) + " " * max([maxLength - len(str(valueList[3])), 0]) + " \n"
+        formattedMatrix += "         neg | " + str(valueList[2]) + " " * max([maxLength - len(str(valueList[2])), 0]) + "   " + str(valueList[1]) + " " * max([maxLength - len(str(valueList[1])), 0]) + " \n"
+
+        return formattedMatrix
 
 
 class FrameInfo(object):
@@ -481,8 +507,8 @@ def execute_new_frame_command(command_name, arguments):
     frame_info = FrameInfo(command_info.result)
     return BigFrame(frame_info)
 
-def get_command_output_value(command_name, arguments):
-    """Executes command and returns the computed value"""
+def get_command_output(command_name, arguments):
+    """Executes command and returns the output"""
     command_request = CommandRequest('dataframe/' + command_name, arguments)
     command_info = executor.issue(command_request)
     return command_info.result
