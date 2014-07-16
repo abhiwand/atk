@@ -31,7 +31,8 @@ import scala.reflect.ClassTag
 
 class IGiraphArchive extends Archive {
 
-  val commands: Seq[Class[_]] = Seq(classOf[com.intel.intelanalytics.algorithm.graph.LoopyBeliefPropagation])
+  val commands: Seq[Class[_]] = Seq(classOf[com.intel.intelanalytics.algorithm.graph.LoopyBeliefPropagation],
+    classOf[com.intel.intelanalytics.algorithm.graph.AlternatingLeastSquares])
   val queries: Seq[Class[_]] = Seq()
 
   /**
