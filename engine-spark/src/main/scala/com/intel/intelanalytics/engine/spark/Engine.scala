@@ -783,6 +783,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
   val confusionMatrixCommand: CommandPlugin[ConfusionMatrix[Long], ConfusionMatrixValues] = commands.registerCommand("dataframe/confusion_matrix", confusionMatrixSimple)
 
   def confusionMatrixSimple(arguments: ConfusionMatrix[Long], user: UserPrincipal): ConfusionMatrixValues = {
+    implicit val u = user
     val frameId: Long = arguments.frameId
     val realFrame: DataFrame = getDataFrameById(frameId)
 
