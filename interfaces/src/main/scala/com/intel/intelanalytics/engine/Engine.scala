@@ -77,6 +77,8 @@ trait Engine {
 
   def project(arguments: FrameProject[JsObject, Long])(implicit user: UserPrincipal): Execution
 
+  def assignSample(arguments: AssignSample)(implicit user: UserPrincipal): Execution
+
   def renameFrame(arguments: FrameRenameFrame)(implicit user: UserPrincipal): Execution
 
   def renameColumn(arguments: FrameRenameColumn[JsObject, Long])(implicit user: UserPrincipal): Execution
@@ -98,6 +100,8 @@ trait Engine {
   def flattenColumn(argument: FlattenColumn)(implicit user: UserPrincipal): Execution
 
   def binColumn(arguments: BinColumn[Long])(implicit user: UserPrincipal): Execution
+
+  def confusionMatrix(arguments: ConfusionMatrix[Long])(implicit user: UserPrincipal): Execution
 
   def groupBy(arguments: FrameGroupByColumn[JsObject, Long])(implicit user: UserPrincipal): Execution
 

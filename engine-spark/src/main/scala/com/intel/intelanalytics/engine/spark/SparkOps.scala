@@ -458,7 +458,7 @@ private[spark] object SparkOps extends Serializable {
   /**
    * Bin column at index using equal width binning.
    *
-   * This uses the Spark histogram function to get the cutoffs, then map each input rdd column value to a bin number
+   * Determine cutoffs by finding upper/lower bounds, then map each input rdd column value to a bin number
    * based on the cutoff ranges.
    *
    * @param index column index
@@ -693,6 +693,37 @@ private[spark] object SparkOps extends Serializable {
       firstEntry
     })
     duplicatesRemoved
+  }
+
+  def confusionMatrix(frameRdd: RDD[Row], labelColumnIndex: Int, predColumnIndex: Int, posLabel: String): Seq[Long] = {
+    require(labelColumnIndex >= 0)
+    require(predColumnIndex >= 0)
+
+    val tp = frameRdd.sparkContext.accumulator[Long](0)
+    val tn = frameRdd.sparkContext.accumulator[Long](0)
+    val fp = frameRdd.sparkContext.accumulator[Long](0)
+    val fn = frameRdd.sparkContext.accumulator[Long](0)
+
+    frameRdd.foreach { row =>
+      if (row(labelColumnIndex).toString.equals(posLabel) && row(predColumnIndex).toString.equals(posLabel)) {
+        tp.add(1)
+      }
+      else if (!row(labelColumnIndex).toString.equals(posLabel) && !row(predColumnIndex).toString.equals(posLabel)) {
+        tn.add(1)
+      }
+      else if (!row(labelColumnIndex).toString.equals(posLabel) && row(predColumnIndex).toString.equals(posLabel)) {
+        fp.add(1)
+      }
+      else if (row(labelColumnIndex).toString.equals(posLabel) && !row(predColumnIndex).toString.equals(posLabel)) {
+        fn.add(1)
+      }
+    }
+
+    val labels = frameRdd.map(row => row(labelColumnIndex)).distinct().collect()
+    labels.size match {
+      case x if x == 1 || x == 2 => Seq(tp.value, tn.value, fp.value, fn.value)
+      case _ => throw new IllegalArgumentException("Confusion matrix only supports binary classifiers")
+    }
   }
 
 }
