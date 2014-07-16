@@ -162,6 +162,8 @@ object DomainJsonProtocol extends DefaultJsonProtocol {
 
   implicit val queryResultsFormat = jsonFormat2(QueryPluginResults)
 
+  implicit val assignSampleFormat = jsonFormat5(AssignSample)
+
   // model performance formats
 
   implicit val classificationMetricLongFormat = jsonFormat6(ClassificationMetric[Long])
