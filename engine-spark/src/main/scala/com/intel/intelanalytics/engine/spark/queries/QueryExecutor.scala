@@ -121,15 +121,15 @@ class QueryExecutor(engine: => SparkEngine, queries: SparkQueryStorage, contextM
       withContext("ce.execute") {
         withContext(query.name) {
           val context: SparkContext = contextManager.context(user).sparkContext
-          val cmdFuture = future {
+          val qFuture = future {
             withQuery(q) {
               import com.intel.intelanalytics.domain.DomainJsonProtocol._
-              val invocation: SparkInvocation = SparkInvocation(engine, commandId = q.id, arguments = q.arguments,
+              val invocation: SparkInvocation = SparkInvocation(engine, commandId = 0, arguments = q.arguments,
                 user = user, executionContext = implicitly[ExecutionContext],
                 sparkContext = context)
 
-              context.setLocalProperty("command-id", q.id.toString)
-              context.setLocalProperty("command-type", "QueryPlugin")
+              //unset the command-id local property so that the query does edit the commands progress
+              context.setLocalProperty("command-id", null)
 
               val funcResult = query(invocation, arguments)
 
@@ -148,7 +148,7 @@ class QueryExecutor(engine: => SparkEngine, queries: SparkQueryStorage, contextM
             }
             queries.lookup(q.id).get
           }
-          Execution(q, cmdFuture)
+          Execution(q, qFuture)
         }
       }
     }

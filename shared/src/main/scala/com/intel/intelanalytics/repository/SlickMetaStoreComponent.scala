@@ -553,7 +553,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
      * A slick implementation of the 'Query' table that defines
      * the columns and conversion to/from Scala beans.
      */
-    class QueryTable(tag: Tag) extends Table[gaoQuery](tag, "query") {
+    class QueryTable(tag: Tag) extends Table[gaoQuery](tag, "queries") {
       def id = column[Long]("query_id", O.PrimaryKey, O.AutoInc)
 
       def name = column[String]("name")
@@ -564,7 +564,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
 
       def progress = column[List[Float]]("progress")
 
-      def detailedProgress = column[List[ProgressInfo]]("detailedProgress")
+      def detailedProgress = column[List[ProgressInfo]]("detailed_progress")
 
       def complete = column[Boolean]("complete", O.Default(false))
 

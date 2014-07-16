@@ -144,7 +144,6 @@ class CommandExecutor(engine: => SparkEngine, commands: SparkCommandStorage, con
                 sparkContext = context)
 
               context.setLocalProperty("command-id", cmd.id.toString)
-              context.setLocalProperty("command-type", "CommandPlugin")
 
               val funcResult = command(invocation, arguments)
               command.serializeReturn(funcResult)
