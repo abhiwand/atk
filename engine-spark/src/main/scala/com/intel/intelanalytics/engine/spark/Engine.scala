@@ -781,6 +781,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
   val cumulativeDistCommand = commands.registerCommand("dataframe/cumulative_dist", cumulativeDistSimple)
 
   def cumulativeDistSimple(arguments: CumulativeDist[Long], user: UserPrincipal) = {
+    implicit val u = user
     val frameId: Long = arguments.frameId
     val realFrame = expectFrame(frameId)
 

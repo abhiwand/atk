@@ -729,24 +729,22 @@ private[spark] object SparkOps extends Serializable {
   def cumulativeSum(frameRdd: RDD[Row], sampleIndex: Int): RDD[Row] = {
     // parse values
     val pairedRdd = try {
-      frameRdd.map(row => (java.lang.Double.parseDouble(row(sampleIndex).toString), 1))
+      frameRdd.map(row => (java.lang.Double.parseDouble(row(sampleIndex).toString), java.lang.Double.parseDouble(row(sampleIndex).toString)))
     }
     catch {
       case cce: NumberFormatException => throw new NumberFormatException("Non-numeric column: " + cce.toString)
     }
 
-    val sortedRdd = pairedRdd.sortByKey()
-
     // compute the partition sums
-    val partSums = 0 +: sortedRdd.mapPartitionsWithIndex {
+    val partSums = 0 +: pairedRdd.mapPartitionsWithIndex {
       case (index, partition) => Iterator(partition.map(pair => pair._2).sum)
     }.collect()
 
     // compute cumulative sum
-    sortedRdd.mapPartitionsWithIndex {
+    pairedRdd.mapPartitionsWithIndex {
       case (index, partition) => {
-        var startValue = 0
-        for { i <- 0 to index } startValue += partSums(i)
+        var startValue = 0.0
+        for { i <- 0 to index } startValue += partSums(i).asInstanceOf[Double]
         partition.scanLeft((0.0, startValue))((prev, curr) => (curr._1, prev._2 + curr._2)).drop(1)
       }
     }.map(x => Array(x._1.asInstanceOf[Any], x._2.asInstanceOf[Any]))
@@ -769,21 +767,79 @@ private[spark] object SparkOps extends Serializable {
       case cce: NumberFormatException => throw new NumberFormatException("Non-numeric column: " + cce.toString)
     }
 
-    val sortedRdd = pairedRdd.sortByKey()
-
     // compute the partition sums
-    val partSums = 0 +: sortedRdd.mapPartitionsWithIndex {
+    val partSums = 0 +: pairedRdd.mapPartitionsWithIndex {
       case (index, partition) => Iterator(partition.map(pair => pair._2).sum)
     }.collect()
 
     // compute cumulative count
-    sortedRdd.mapPartitionsWithIndex {
+    pairedRdd.mapPartitionsWithIndex {
       case (index, partition) => {
         var startValue = 0
         for { i <- 0 to index } startValue += partSums(i)
         partition.scanLeft((0.0, startValue))((prev, curr) => (curr._1, prev._2 + curr._2)).drop(1)
       }
     }.map(x => Array(x._1.asInstanceOf[Any], x._2.asInstanceOf[Any]))
+  }
+
+  def cumulativePercentSum(frameRdd: RDD[Row], sampleIndex: Int): RDD[Row] = {
+    // parse values
+    val pairedRdd = try {
+      frameRdd.map(row => (java.lang.Double.parseDouble(row(sampleIndex).toString), java.lang.Double.parseDouble(row(sampleIndex).toString)))
+    }
+    catch {
+      case cce: NumberFormatException => throw new NumberFormatException("Non-numeric column: " + cce.toString)
+    }
+
+    // compute the partition sums
+    val partSums = 0 +: pairedRdd.mapPartitionsWithIndex {
+      case (index, partition) => Iterator(partition.map(pair => pair._2).sum)
+    }.collect()
+
+    val n = pairedRdd.count()
+
+    // compute cumulative sum
+    pairedRdd.mapPartitionsWithIndex {
+      case (index, partition) => {
+        var startValue = 0.0
+        for { i <- 0 to index } startValue += partSums(i).asInstanceOf[Double]
+        partition.scanLeft((0.0, startValue))((prev, curr) => (curr._1, prev._2 + curr._2)).drop(1)
+      }
+    }.map(x => Array(x._1.asInstanceOf[Any], (x._2 / n.toDouble).asInstanceOf[Any]))
+  }
+
+  def cumulativePercentCount(frameRdd: RDD[Row], sampleIndex: Int, countValue: String): RDD[Row] = {
+    // parse values
+    val pairedRdd = try {
+      frameRdd.map(row => {
+        val sampleValue = row(sampleIndex).toString
+        if (sampleValue.equals(countValue)) {
+          (java.lang.Double.parseDouble(sampleValue), 1)
+        }
+        else {
+          (java.lang.Double.parseDouble(sampleValue), 0)
+        }
+      })
+    }
+    catch {
+      case cce: NumberFormatException => throw new NumberFormatException("Non-numeric column: " + cce.toString)
+    }
+
+    // compute the partition sums
+    val partSums = 0 +: pairedRdd.mapPartitionsWithIndex {
+      case (index, partition) => Iterator(partition.map(pair => pair._2).sum)
+    }.collect()
+
+    val n = pairedRdd.count()
+
+    // compute cumulative count
+    pairedRdd.mapPartitionsWithIndex {
+      case (index, partition) => {
+        var startValue = 0
+        for { i <- 0 to index } startValue += partSums(i)
+        partition.scanLeft((0.0, startValue))((prev, curr) => (curr._1, prev._2 + curr._2)).drop(1)
+      }
+    }.map(x => Array(x._1.asInstanceOf[Any], (x._2 / n.toDouble).asInstanceOf[Any]))
   }
 
 }
