@@ -21,7 +21,7 @@ class GremlinJsonProtocolTest extends FlatSpec with Matchers with TestingTitan {
     val json = vertex.asInstanceOf[Element].toJson
     val jsonFields = json.asJsObject.fields
 
-    jsonFields should contain key GraphSONTokens._ID
+    jsonFields should contain (GraphSONTokens._ID, JsNumber(1))
     jsonFields should contain(GraphSONTokens._TYPE, JsString(GraphSONTokens.VERTEX))
     jsonFields should contain("name", JsString("marko"))
     jsonFields should contain("age", JsNumber(29))

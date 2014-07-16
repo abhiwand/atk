@@ -25,29 +25,37 @@ package com.intel.intelanalytics.engine.spark.graph
 
 import com.intel.graphbuilder.util.SerializableBaseConfiguration
 import com.intel.testutils.LogUtils
+import com.thinkaurelius.titan.core.util.TitanCleanup
 import com.thinkaurelius.titan.core.{ TitanFactory, TitanGraph }
 import com.tinkerpop.blueprints.Graph
 import com.tinkerpop.blueprints.util.wrappers.id.IdGraph
 import org.scalatest.{ BeforeAndAfter, FlatSpec }
 
+import scala.concurrent.Lock
+
 /**
- * This trait can be mixed into Specifications to get a TitanGraph backed by Berkeley for testing purposes.
+ * This trait can be mixed into Specifications to get a TitanGraph backed by an in-memory database
+ * for testing purposes.
  *
- * IMPORTANT! only one thread can use the graph below at a time. This isn't normally an issue because
- * each test usually gets its own copy.
+ * The TitanGraph is wrapped by IdGraph to allow tests to create vertices and edges with specific Ids.
+ * @see com.tinkerpop.blueprints.util.wrappers.id.IdGraph
+ *
+ * IMPORTANT! only one thread can use the graph below at a time.
  */
 trait TestingTitan extends FlatSpec with BeforeAndAfter {
 
   LogUtils.silenceTitan()
 
-  var titanConfig = new SerializableBaseConfiguration()
+  val titanConfig = new SerializableBaseConfiguration()
   titanConfig.setProperty("storage.directory", "inmemory")
-
-  var graph: Graph = null
+  var titanGraph: TitanGraph = null
+  var graph : Graph = null
 
   before {
-    // Using ID graph to allow tests to create vertices and edges with specific Ids
-    graph = new IdGraph(TitanFactory.open(titanConfig), true, false)
+    // Using ID graph
+    TestingTitan.lock.acquire()
+    titanGraph = TitanFactory.open(titanConfig)
+    graph = new IdGraph(titanGraph, true, false)
   }
 
   after {
@@ -64,8 +72,14 @@ trait TestingTitan extends FlatSpec with BeforeAndAfter {
       }
     }
     finally {
+      TitanCleanup.clear(titanGraph)
       graph = null
+      TestingTitan.lock.release()
     }
+
   }
 }
 
+object TestingTitan {
+  private val lock = new Lock()
+}
