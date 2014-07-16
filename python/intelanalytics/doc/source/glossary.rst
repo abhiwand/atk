@@ -212,7 +212,7 @@ Glossary
 
     EqualDepth
     EqualWidth
-    Equal Binning
+    Equal Depth Binning
 
         TBD
 

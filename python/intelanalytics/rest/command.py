@@ -299,8 +299,10 @@ class Polling(object):
                     interval_secs = min(max_interval_secs, interval_secs * backoff_factor)
 
                 last_progress = progress
-            end_time = time.time()
-            logger.info("polling %s completed after %0.2f seconds" % (uri, end_time - start_time))
+
+                end_time = time.time()
+                logger.info("polling %s completed after %0.2f seconds" % (uri, end_time - start_time))
+
         return command_info
 
     @staticmethod
