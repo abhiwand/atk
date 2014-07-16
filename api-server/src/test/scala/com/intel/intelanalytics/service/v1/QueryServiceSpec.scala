@@ -81,8 +81,6 @@ class QueryServiceSpec extends ServiceSpec {
       assert(r == """{
                     |  "id": 1,
                     |  "name": "dataframes/data",
-                    |  "progress": [1.0],
-                    |  "progressMessage": [],
                     |  "complete": false,
                     |  "links": [{
                     |    "rel": "self",
@@ -139,8 +137,6 @@ class QueryServiceSpec extends ServiceSpec {
       assert(r == """{
                     |  "id": 1,
                     |  "name": "dataframes/data",
-                    |  "progress": [1.0],
-                    |  "progressMessage": [],
                     |  "complete": true,
                     |  "result": {
                     |    "data": [],
