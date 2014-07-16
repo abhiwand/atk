@@ -1,4 +1,4 @@
-package com.intel.intelanalytics.engine.spark
+package com.intel.intelanalytics.engine.spark.statistics
 
 import org.apache.spark.AccumulatorParam
 import org.apache.spark.rdd.RDD
@@ -154,7 +154,6 @@ class NumericalStatistics(dataWeightPairs: RDD[(Double, Double)]) extends Serial
 case class SinglePassStatistics(weightedSum: Double, weightedProduct: Double, minimum: Double,
                                 maximum: Double, mode: Double, weightAtMode: Double, totalWeight: Double, count: Long)
     extends Serializable
-
 
 /**
  * Accumulator settings for gathering single pass statistics.

@@ -1,8 +1,7 @@
-package com.intel.intelanalytics.engine.spark
+package com.intel.intelanalytics.engine.spark.statistics
 
-import org.scalatest.{ Matchers, FunSuite }
+import org.scalatest.Matchers
 import com.intel.intelanalytics.engine.TestingSparkContext
-import org.apache.spark.SparkException
 
 class FrequencyStatisticsITest extends TestingSparkContext with Matchers {
 

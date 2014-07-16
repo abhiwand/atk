@@ -1,7 +1,6 @@
-package com.intel.intelanalytics.engine.spark
+package com.intel.intelanalytics.engine.spark.statistics
 
-import org.apache.spark.{ AccumulatorParam, Accumulator, SparkContext }
-import org.apache.spark.SparkContext._
+import org.apache.spark.AccumulatorParam
 import org.apache.spark.rdd._
 
 /**
