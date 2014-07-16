@@ -3,7 +3,7 @@ package com.intel.intelanalytics.engine.spark
 import org.apache.spark.{ AccumulatorParam, SparkContext }
 import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.RDD
-import com.intel.intelanalytics.domain.frame.ColumnSummaryStatisticsReturn
+import com.intel.intelanalytics.domain.frame.{ ColumnFullStatisticsReturn, ColumnSummaryStatisticsReturn }
 
 class NumericalStatistics(dataWeightPairs: RDD[(Double, Double)]) extends Serializable {
 
@@ -11,23 +11,28 @@ class NumericalStatistics(dataWeightPairs: RDD[(Double, Double)]) extends Serial
     geometric_mean = weightedGeometricMean, variance = weightedVariance, standard_deviation = weightedStandardDeviation,
     mode = weightedMode, minimum = min, maximum = max, count = count)
 
-  private lazy val simpleStatistics: SinglePassStatistics = generateSinglePassStatistics(dataWeightPairs)
+  lazy val fullStatistics: ColumnFullStatisticsReturn = ColumnFullStatisticsReturn(mean = weightedMean,
+    geometric_mean = weightedGeometricMean, variance = weightedVariance, standard_deviation = weightedStandardDeviation,
+    skewness = weightedSkewness, kurtosis = weightedKurtosis, mode = weightedMode, minimum = min, maximum = max,
+    count = count)
 
-  private lazy val weightedMean: Double = simpleStatistics.weightedSum / simpleStatistics.totalWeight
+  private lazy val singlePassStatistics: SinglePassStatistics = generateSinglePassStatistics(dataWeightPairs)
 
-  private lazy val weightedGeometricMean: Double = Math.pow(simpleStatistics.weightedProduct, 1 / simpleStatistics.totalWeight)
+  private lazy val weightedMean: Double = singlePassStatistics.weightedSum / singlePassStatistics.totalWeight
+
+  private lazy val weightedGeometricMean: Double = Math.pow(singlePassStatistics.weightedProduct, 1 / singlePassStatistics.totalWeight)
 
   private lazy val weightedVariance: Double = generateVariance()
 
   private lazy val weightedStandardDeviation: Double = Math.sqrt(weightedVariance)
 
-  private lazy val weightedMode: Double = simpleStatistics.mode
+  private lazy val weightedMode: Double = singlePassStatistics.mode
 
-  private lazy val min: Double = simpleStatistics.minimum
+  private lazy val min: Double = singlePassStatistics.minimum
 
-  private lazy val max: Double = simpleStatistics.maximum
+  private lazy val max: Double = singlePassStatistics.maximum
 
-  private lazy val count: Long = simpleStatistics.count
+  private lazy val count: Long = singlePassStatistics.count
 
   private lazy val weightedSkewness: Double = generateSkewness()
 
@@ -56,16 +61,16 @@ class NumericalStatistics(dataWeightPairs: RDD[(Double, Double)]) extends Serial
   }
 
   private def generateVariance(): Double = {
-    require(simpleStatistics.count > 1, "Cannot compute variance of one value")
+    require(singlePassStatistics.count > 1, "Cannot compute variance of one value")
 
-    val n = simpleStatistics.count
+    val n = singlePassStatistics.count
     val xw = weightedMean
 
     (1.toDouble / (n - 1).toDouble) * dataWeightPairs.map({ case (x, w) => w * (x - xw) * (x - xw) }).reduce(_ + _)
   }
 
   private def generateSkewness(): Double = {
-    val n = simpleStatistics.count
+    val n = singlePassStatistics.count
     require(n > 2, "Cannot calcualte skew of fewer than 3 samples")
 
     val xw = weightedMean
@@ -80,7 +85,7 @@ class NumericalStatistics(dataWeightPairs: RDD[(Double, Double)]) extends Serial
   }
 
   private def generateKurtosis(): Double = {
-    val n = simpleStatistics.count
+    val n = singlePassStatistics.count
     require(n > 3, "Cannot calculate kurtosis of fewer than 4 samples")
 
     val xw = weightedMean

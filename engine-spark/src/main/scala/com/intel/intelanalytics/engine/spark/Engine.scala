@@ -479,8 +479,8 @@ class SparkEngine(sparkContextManager: SparkContextManager,
   }
 
   /**
-   * Calculate the mean of the specified column.
-   * @param arguments input specification for column mean
+   * Calculate summary statistics of the specified column.
+   * @param arguments input specification for column summary statistics
    * @param user current user
    */
   override def columnSummaryStatistics(arguments: ColumnSummaryStatistics)(implicit user: UserPrincipal): Execution =
@@ -511,6 +511,41 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     }
 
     SparkOps.columnSummaryStatistics(columnIndex, weightsColumnIndexOption, rdd)
+  }
+
+  /**
+   * Calculate full statistics of the specified column.
+   * @param arguments input specification for column statistics
+   * @param user current user
+   */
+  override def columnFullStatistics(arguments: ColumnFullStatistics)(implicit user: UserPrincipal): Execution =
+    commands.execute(columnFullStatisticsCommand, arguments, user, implicitly[ExecutionContext])
+
+  val columnFullStatisticsCommand: CommandPlugin[ColumnFullStatistics, ColumnFullStatisticsReturn] =
+    commands.registerCommand("dataframe/column_full_statistics", columnFullStatisticSimple)
+
+  def columnFullStatisticSimple(arguments: ColumnFullStatistics, user: UserPrincipal): ColumnFullStatisticsReturn = {
+
+    implicit val u = user
+
+    val frameId: Long = arguments.frame.id
+
+    val frame = expectFrame(frameId)
+
+    val ctx = sparkContextManager.context(user).sparkContext
+
+    val rdd = frames.getFrameRdd(ctx, frameId)
+
+    val columnIndex = frame.schema.columnIndex(arguments.data_column)
+
+    val weightsColumnIndexOption = if (arguments.weights_column.isEmpty) {
+      None
+    }
+    else {
+      Some(frame.schema.columnIndex(arguments.weights_column.get))
+    }
+
+    SparkOps.columnFullStatistics(columnIndex, weightsColumnIndexOption, rdd)
   }
 
   def filter(arguments: FilterPredicate[JsObject, Long])(implicit user: UserPrincipal): Execution =

@@ -34,7 +34,7 @@ import spray.json.JsObject
 
 import scala.collection.mutable
 import scala.math.pow
-import com.intel.intelanalytics.domain.frame.{ ColumnSummaryStatisticsReturn, ColumnSummaryStatistics }
+import com.intel.intelanalytics.domain.frame.{ ColumnFullStatisticsReturn, ColumnSummaryStatisticsReturn, ColumnSummaryStatistics }
 
 private[spark] object SparkOps extends Serializable {
 
@@ -644,7 +644,9 @@ private[spark] object SparkOps extends Serializable {
    * @param rowRDD RDD of input rows
    * @return summary statistics of the column
    */
-  def columnSummaryStatistics(dataColumnIndex: Int, weightsColumnIndexOption: Option[Int], rowRDD: RDD[Row]): ColumnSummaryStatisticsReturn = {
+  def columnSummaryStatistics(dataColumnIndex: Int,
+                              weightsColumnIndexOption: Option[Int],
+                              rowRDD: RDD[Row]): ColumnSummaryStatisticsReturn = {
 
     val dataRDD = try {
       rowRDD.map(row => java.lang.Double.parseDouble(row(dataColumnIndex).toString))
@@ -717,6 +719,53 @@ private[spark] object SparkOps extends Serializable {
     val statisticsEngine = new NumericalStatistics(dataWeightPairs)
 
     statisticsEngine.summaryStatistics
+  }
+
+  /**
+   * Calculate full statistics of data column, possibly weighted by an optional weights column.
+   *
+   * @param dataColumnIndex Index of column providing the data. Must be numerical data.
+   * @param weightsColumnIndexOption Option for index of column providing the weights. Must be numerical data.
+   * @param rowRDD RDD of input rows
+   * @return  statistics of the column
+   */
+  def columnFullStatistics(dataColumnIndex: Int,
+                           weightsColumnIndexOption: Option[Int],
+                           rowRDD: RDD[Row]): ColumnFullStatisticsReturn = {
+
+    val dataRDD = try {
+      rowRDD.map(row => java.lang.Double.parseDouble(row(dataColumnIndex).toString))
+    }
+    catch {
+      case cce: NumberFormatException => throw new NumberFormatException("Column values are non-numeric :"
+        + cce.toString)
+    }
+
+    val weighted = !weightsColumnIndexOption.isEmpty
+
+    val weightsRDD = if (weighted) {
+      try {
+        rowRDD.map(row => java.lang.Double.parseDouble(row(weightsColumnIndexOption.get).toString))
+      }
+      catch {
+        case cce: NumberFormatException => throw new NumberFormatException("Column values are non-numeric :"
+          + cce.toString)
+      }
+    }
+    else {
+      null
+    }
+
+    val dataWeightPairs = if (weighted) {
+      dataRDD.zip(weightsRDD)
+    }
+    else {
+      dataRDD.map(x => (x, 1.toDouble))
+    }
+
+    val statisticsEngine = new NumericalStatistics(dataWeightPairs)
+
+    statisticsEngine.fullStatistics
   }
 
   def aggregation_functions(elem: Seq[Array[Any]],
