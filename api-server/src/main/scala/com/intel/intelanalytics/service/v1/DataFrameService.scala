@@ -42,6 +42,7 @@ import com.intel.intelanalytics.service.{ ApiServiceConfig, CommonDirectives, Au
 import spray.routing.Directives
 import com.intel.intelanalytics.service.v1.decorators.FrameDecorator
 import org.apache.commons.lang.StringUtils
+import com.intel.intelanalytics.spray.json.IADefaultJsonProtocol
 
 //TODO: Is this right execution context for us?
 import ExecutionContext.Implicits.global
@@ -75,7 +76,7 @@ class DataFrameService(commonDirectives: CommonDirectives, engine: Engine) exten
                 case _ =>
                   onComplete(engine.getFrames(0, ApiServiceConfig.defaultCount)) {
                     case Success(frames) =>
-                      import DefaultJsonProtocol._
+                      import IADefaultJsonProtocol._
                       implicit val indexFormat = ViewModelJsonImplicits.getDataFramesFormat
                       complete(FrameDecorator.decorateForIndex(uri.toString(), frames))
                     case Failure(ex) => throw ex
