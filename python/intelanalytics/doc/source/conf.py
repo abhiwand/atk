@@ -122,7 +122,7 @@ def setup(app):
 #    app.connect("autodoc-skip-member", skip)
     app.add_config_value('internal_docs', '', True)
 
-internal_docs = False
+internal_docs = True
 
 # -- Options for HTML output ----------------------------------------------
 
@@ -232,7 +232,7 @@ latex_elements = {
 #'pointsize': '10pt',
 
 # Additional stuff for the LaTeX preamble.
-#'preamble': '',
+'preamble': '\usepackage{amsmath}',
 }
 
 # Grouping the document tree into LaTeX files. List of tuples

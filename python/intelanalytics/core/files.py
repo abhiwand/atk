@@ -20,10 +20,8 @@
 # estoppel or otherwise. Any license under such intellectual property rights
 # must be express and approved by Intel in writing.
 ##############################################################################
-import warnings
-from iatypes import supported_types
-from ordereddict import OrderedDict
-from collections import defaultdict
+
+from intelanalytics.core.iatypes import supported_types
 
 
 class DataFile(object):
@@ -36,6 +34,8 @@ class CsvFile(DataFile):
     Summary
     -------
     Define a CSV file
+
+    .. versionadded:: 0.8
 
     Parameters
     ----------
@@ -64,10 +64,11 @@ class CsvFile(DataFile):
 
     Examples
     --------
-
     For this example, we are going to use a raw data file named "raw_data.csv".
-    The data is described in the first two rows.
-    The first row is the column names: "a", "b", "c", and the second row has the column types: "int32", "int32", "str".
+    It consists of three columns named: *a*, *b*, *c*.
+    The columns have the data types: *int32*, *int32*, *str*.
+    The fields of data are separated by commas.
+    There is no header to the file.
 
     First bring in the stuff::
 
@@ -91,10 +92,9 @@ class CsvFile(DataFile):
             or
         CsvFile("raw_data.csv", csv_schema, delimiter = ':')
 
-    Our example data file had two lines at the top which were not data.
-    Therefore, we should have skipped these lines::
+    If our data had some lines of header at the beginning of the file, we chould have skipped these lines::
 
-        csv_data = CsvFile("<path to>raw_data.csv", csv_schema, skip_header_lines=2)
+        csv_data = CsvFile("raw_data.csv", csv_schema, skip_header_lines=2)
 
     For other examples see :ref:`example_files.csvfile`.
     """
@@ -129,6 +129,8 @@ class CsvFile(DataFile):
         -------
         Schema field names
 
+        .. versionadded:: 0.8
+
         Extended Summary
         ----------------
         List of field names from the schema stored in the CsvFile object
@@ -141,10 +143,10 @@ class CsvFile(DataFile):
         Examples
         --------
         For this example, we are going to use a raw data file called 'my_data.csv'.
-        It will have two columns named 'col1' and 'col2' with types of int32 and float32 respectively::
+        It will have two columns *col1* and *col2* with types of *int32* and *float32* respectively::
 
-            my_csv = CsvFile("my_data.csv", [("col1", int32), ("col2", float32)])
-            print(my_csv.field_names)
+            my_csv = CsvFile("my_data.csv", schema=[("col1", int32), ("col2", float32)])
+            print(my_csv.field_names())
 
         The output would be::
 
@@ -161,6 +163,8 @@ class CsvFile(DataFile):
         -------
         Schema field types
 
+        .. versionadded:: 0.8
+
         Extended Summary
         ----------------
         List of field types from the schema stored in the CsvFile object.
@@ -173,10 +177,10 @@ class CsvFile(DataFile):
         Examples
         --------
         For this example, we are going to use a raw data file called 'my_data.csv'.
-        It will have two columns named 'col1' and 'col2' with types of int32 and float32 respectively::
+        It will have two columns *col1* and *col2* with types of *int32* and *float32* respectively::
 
-            my_csv = CsvFile("my_data.csv", [("col1", int32), ("col2", float32)])
-            print(my_csv.field_types)
+            my_csv = CsvFile("my_data.csv", schema=[("col1", int32), ("col2", float32)])
+            print(my_csv.field_types())
 
         The output would be::
 
