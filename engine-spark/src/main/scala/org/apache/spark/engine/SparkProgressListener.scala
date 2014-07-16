@@ -238,7 +238,6 @@ class SparkProgressListener(val progressUpdater: CommandProgressUpdater) extends
    */
   def addToCommandIdJobs(job: ActiveJob) {
     val id = job.properties.getProperty("command-id").toLong
-    println("COMMANDID: " + id.toString)
     if (!commandIdJobs.contains(id))
       commandIdJobs(id) = List(job)
     else
