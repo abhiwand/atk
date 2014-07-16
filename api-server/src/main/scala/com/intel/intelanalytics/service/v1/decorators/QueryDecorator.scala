@@ -43,8 +43,6 @@ object QueryDecorator extends EntityDecorator[Query, GetQueries, GetQuery] {
    * @return the View/Model
    */
   override def decorateEntity(uri: String, links: Iterable[RelLink], entity: Query): GetQuery = {
-    val detailedProgressMessage = entity.detailedProgress.map(progress => progress.toString)
-
     GetQuery(id = entity.id, name = entity.name,
       arguments = entity.arguments, error = entity.error, complete = entity.complete,
       result = if (entity.complete) {
@@ -90,15 +88,15 @@ object QueryDecorator extends EntityDecorator[Query, GetQueries, GetQuery] {
    * @param uri uri of the query
    * @param links related links
    * @param entity query retrieved
-   * @param parges page requested
+   * @param page page requested
    * @param data data found in the partitiion as a List of JsValues
    * @return the View/Model
    */
-  def decoratePages(uri: String, links: Iterable[RelLink], entity: Query, parges: Long, data: List[JsValue]): GetQuery = {
+  def decoratePage(uri: String, links: Iterable[RelLink], entity: Query, page: Long, data: List[JsValue]): GetQuery = {
     require(entity.complete)
 
     GetQuery(id = entity.id, name = entity.name,
       arguments = entity.arguments, error = entity.error, complete = entity.complete,
-      result = Some(new GetQueryPage(Some(data), Some(parges), entity.totalPages)), links = links.toList)
+      result = Some(new GetQueryPage(Some(data), Some(page), entity.totalPages)), links = links.toList)
   }
 }
