@@ -26,6 +26,8 @@ package com.intel.intelanalytics.engine.spark.graph
 import com.intel.graphbuilder.util.SerializableBaseConfiguration
 import com.intel.testutils.LogUtils
 import com.thinkaurelius.titan.core.{ TitanFactory, TitanGraph }
+import com.tinkerpop.blueprints.Graph
+import com.tinkerpop.blueprints.util.wrappers.id.IdGraph
 import org.scalatest.{ BeforeAndAfter, FlatSpec }
 
 /**
@@ -41,10 +43,11 @@ trait TestingTitan extends FlatSpec with BeforeAndAfter {
   var titanConfig = new SerializableBaseConfiguration()
   titanConfig.setProperty("storage.directory", "inmemory")
 
-  var graph: TitanGraph = null
+  var graph: Graph = null
 
   before {
-    graph = TitanFactory.open(titanConfig)
+    // Using ID graph to allow tests to create vertices and edges with specific Ids
+    graph = new IdGraph(TitanFactory.open(titanConfig), true, false)
   }
 
   after {
