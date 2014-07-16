@@ -206,7 +206,7 @@ class FrameBackendRest(object):
 
         arguments = self._get_load_arguments(frame, data)
         result = execute_update_frame_command("load", arguments, frame)
-        if result.has_key("errorFrameId"):
+        if result.has_key("error_frame_id"):
             sys.stderr.write("There were parse errors during load, please see frame.get_error_frame()\n")
             logger.warn("There were parse errors during load, please see frame.get_error_frame()")
 
@@ -222,7 +222,7 @@ class FrameBackendRest(object):
     def drop_duplicates(self, frame, columns):
         if isinstance(columns, basestring):
             columns = [columns]
-        arguments = {'frameId': frame._id, "unique_columns": columns}
+        arguments = {'frame_id': frame._id, "unique_columns": columns}
         command = CommandRequest("dataframe/drop_duplicates", arguments)
         executor.issue(command)
 
@@ -234,8 +234,8 @@ class FrameBackendRest(object):
 
     def flatten_column(self, frame, column_name):
         name = self._get_new_frame_name()
-        arguments = {'name': name, 'frameId': frame._id, 'column': column_name, 'separator': ',' }
-        return execute_new_frame_command('flattenColumn', arguments)
+        arguments = {'name': name, 'frame_fd': frame._id, 'column': column_name, 'separator': ',' }
+        return execute_new_frame_command('flatten_column', arguments)
 
     def bin_column(self, frame, column_name, num_bins, bin_type='equalwidth', bin_column_name='binned'):
         import numpy as np
@@ -249,8 +249,8 @@ class FrameBackendRest(object):
         if not colTypes[column_name] in [np.float32, np.float64, np.int32, np.int64]:
             raise ValueError("unable to bin non-numeric values")
         name = self._get_new_frame_name()
-        arguments = {'name': name, 'frame': frame._id, 'columnName': column_name, 'numBins': num_bins, 'binType': bin_type, 'binColumnName': bin_column_name}
-        return execute_new_frame_command('binColumn', arguments)
+        arguments = {'name': name, 'frame': frame._id, 'column_name': column_name, 'num_bins': num_bins, 'bin_type': bin_type, 'bin_column_name': bin_column_name}
+        return execute_new_frame_command('bin_column', arguments)
 
     class InspectionTable(object):
         """
@@ -402,7 +402,7 @@ class FrameBackendRest(object):
         if not beta > 0:
             raise ValueError("invalid beta value for f measure")
 
-        arguments = {'frameId': frame._id, 'metricType': metric_type, 'labelColumn': label_column, 'predColumn': pred_column, 'posLabel': str(pos_label), 'beta': beta}
+        arguments = {'frame_id': frame._id, 'metric_type': metric_type, 'label_column': label_column, 'pred_column': pred_column, 'pos_label': str(pos_label), 'beta': beta}
         return get_command_output_value('classification_metric', arguments).get('metricValue')
 
 
@@ -435,7 +435,7 @@ class FrameInfo(object):
     @property
     def error_frame_id(self):
         try:
-            return self._payload['errorFrameId']
+            return self._payload['error_frame_id']
         except:
             return None
 

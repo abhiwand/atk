@@ -27,11 +27,12 @@ import com.intel.intelanalytics.domain.command.CommandDefinition
 import com.intel.intelanalytics.domain.frame.FrameReference
 import spray.httpx.SprayJsonSupport
 import spray.json._
+import com.intel.intelanalytics.spray.json.IADefaultJsonProtocol
 
 /**
  * Implicit Conversions for View/Models to JSON
  */
-object ViewModelJsonImplicits extends DefaultJsonProtocol with SprayJsonSupport {
+object ViewModelJsonImplicits extends IADefaultJsonProtocol with SprayJsonSupport {
 
   //this is needed for implicits
   import com.intel.intelanalytics.domain.DomainJsonProtocol._

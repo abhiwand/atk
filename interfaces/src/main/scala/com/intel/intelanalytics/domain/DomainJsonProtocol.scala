@@ -41,11 +41,12 @@ import spray.json._
 import com.intel.intelanalytics.engine.ProgressInfo
 
 import scala.util.matching.Regex
+import com.intel.intelanalytics.spray.json.IADefaultJsonProtocol
 
 /**
  * Implicit conversions for domain objects to JSON
  */
-object DomainJsonProtocol extends DefaultJsonProtocol {
+object DomainJsonProtocol extends IADefaultJsonProtocol {
 
   implicit object DataTypeFormat extends JsonFormat[DataTypes.DataType] {
     override def read(json: JsValue): DataType = {
@@ -57,7 +58,6 @@ object DomainJsonProtocol extends DefaultJsonProtocol {
     override def write(obj: DataType): JsValue = new JsString(obj.toString)
   }
 
-  // TODO: this was added for Joda DateTimes - not sure this is right?
   trait DateTimeJsonFormat extends JsonFormat[DateTime] {
     private val dateTimeFmt = org.joda.time.format.ISODateTimeFormat.dateTime
     def write(x: DateTime) = JsString(dateTimeFmt.print(x))

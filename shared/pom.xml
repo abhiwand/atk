@@ -101,6 +101,10 @@
             <artifactId>json-simple</artifactId>
         </dependency>
         <dependency>
+            <groupId>io.spray</groupId>
+            <artifactId>spray-json_${scala.short.version}</artifactId>
+        </dependency>
+        <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
         </dependency>

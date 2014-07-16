@@ -43,6 +43,7 @@ import com.intel.intelanalytics.service.v1.decorators.GraphDecorator
 
 import com.intel.intelanalytics.service.v1.viewmodels.ViewModelJsonImplicits
 import com.intel.intelanalytics.service.v1.viewmodels.Rel
+import com.intel.intelanalytics.spray.json.IADefaultJsonProtocol
 
 //TODO: Is this right execution context for us?
 
@@ -102,7 +103,7 @@ class GraphService(commonDirectives: CommonDirectives, engine: Engine) extends D
                       //TODO: cursor
                       onComplete(engine.getGraphs(0, 20)) {
                         case Success(graphs) =>
-                          import DefaultJsonProtocol._
+                          import IADefaultJsonProtocol._
                           implicit val indexFormat = ViewModelJsonImplicits.getGraphsFormat
                           complete(GraphDecorator.decorateForIndex(uri.toString(), graphs))
                         case Failure(ex) => throw ex

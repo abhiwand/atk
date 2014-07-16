@@ -40,7 +40,7 @@ import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.FileSystem
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.mapreduce.Job
-import spray.json.DefaultJsonProtocol._
+import com.intel.intelanalytics.spray.json.IADefaultJsonProtocol._
 import spray.json._
 import scala.concurrent.duration._
 import java.net.URI
