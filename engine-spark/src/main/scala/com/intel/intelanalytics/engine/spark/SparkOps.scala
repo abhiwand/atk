@@ -798,14 +798,20 @@ private[spark] object SparkOps extends Serializable {
 
     val n = pairedRdd.count()
 
+    val groupedRdd = pairedRdd.groupByKey().map(value => (value._1, value._2.size))
+
+    val sortedRdd = groupedRdd.sortByKey()
+
     // compute cumulative sum
-    pairedRdd.mapPartitionsWithIndex {
+    sortedRdd.mapPartitionsWithIndex {
       case (index, partition) => {
         var startValue = 0.0
         for { i <- 0 to index } startValue += java.lang.Double.parseDouble(partSums(i).toString)
-        partition.scanLeft((0.0, startValue))((prev, curr) => (curr._1, prev._2 + curr._2)).drop(1)
+        partition.scanLeft((0.0, 0.0, startValue))((prev, curr) => (curr._1, curr._2, prev._2 + (curr._1 * curr._2))).drop(1)
       }
-    }.map(x => Array(x._1.asInstanceOf[Any], (x._2 / n.toDouble).asInstanceOf[Any]))
+    }.flatMap(x => {
+      for { i <- 0 to x._2.asInstanceOf[Int] } yield Array(x._1.asInstanceOf[Any], (x._3 / n.toDouble).asInstanceOf[Any])
+    })
   }
 
   def cumulativePercentCount(frameRdd: RDD[Row], sampleIndex: Int, countValue: String): RDD[Row] = {
@@ -830,7 +836,7 @@ private[spark] object SparkOps extends Serializable {
       case (index, partition) => Iterator(partition.map(pair => pair._2).sum)
     }.collect()
 
-    val n = pairedRdd.count()
+    val n = pairedRdd.map(pair => pair._2).sum()
 
     // compute cumulative count
     pairedRdd.mapPartitionsWithIndex {
