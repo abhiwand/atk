@@ -158,6 +158,8 @@ object DomainJsonProtocol extends DefaultJsonProtocol {
 
   implicit val cumulativeDistLongFormat = jsonFormat5(CumulativeDist[Long])
 
+  implicit val assignSampleFormat = jsonFormat5(AssignSample)
+
   // model performance formats
 
   implicit val classificationMetricLongFormat = jsonFormat6(ClassificationMetric[Long])
