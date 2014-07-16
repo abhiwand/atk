@@ -108,6 +108,12 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     }
   }
 
+  /**
+   * return a list of the existing queries
+   * @param offset First query to obtain.
+   * @param count Number of queries to obtain.
+   * @return sequence of queries
+   */
   override def getQueries(offset: Int, count: Int): Future[Seq[Query]] = withContext("se.getQueries") {
     future {
       queryStorage.scan(offset, count)
@@ -115,9 +121,9 @@ class SparkEngine(sparkContextManager: SparkContextManager,
   }
 
   /**
-   *
-   * @param id
-   * @return
+   *  return a query object
+   * @param id query id
+   * @return Query
    */
   override def getQuery(id: Long): Future[Option[Query]] = withContext("se.getQuery") {
     future {
@@ -708,11 +714,25 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     newFrame
   }
 
+  /**
+   * Execute getRows Query plugin
+   * @param arguments RowQuery object describing id, offset, and count
+   * @param user current user
+   * @return the QueryExecution
+   */
   def getRows(arguments: RowQuery[Identifier])(implicit user: UserPrincipal): QueryExecution = {
     queries.execute(getRowsQuery, arguments, user, implicitly[ExecutionContext])
   }
   val getRowsQuery = queries.registerQuery("dataframes/data", getRowsSimple)
 
+  /**
+   * Create an intermediate RDD containing the results of a getRows call.
+   * This will be used for pagination after completion of the query
+   *
+   * @param arguments RowQuery object describing id, offset, and count
+   * @param user current user
+   * @return RDD consisting of the requested number of rows
+   */
   def getRowsSimple(arguments: RowQuery[Identifier], user: UserPrincipal) = {
     implicit val impUser: UserPrincipal = user
     val frame = frames.lookup(arguments.id).getOrElse(throw new IllegalArgumentException("Requested frame does not exist"))

@@ -35,7 +35,7 @@ import spray.json.JsObject
  * @param error StackTrace and/or other error text if it exists
  * @param complete True if this query is completed
  * @param result result of the query
- * @param links
+ * @param links relevant links
  */
 case class GetQuery(id: Long, name: String, arguments: Option[JsObject], error: Option[Error],
                     complete: Boolean, result: Option[GetQueryPage], links: List[RelLink]) {

@@ -38,6 +38,11 @@ import spray.json.JsObject
 
 import scala.util.{ Failure, Success, Try }
 
+/**
+ * Class Responsible for coordinating Query Storage with Spark
+ * @param metaStore metastore to save DB related info
+ * @param files  Object for saving FileSystem related Data
+ */
 class SparkQueryStorage(val metaStore: SlickMetaStoreComponent#SlickMetaStore, files: HdfsFileStorage) extends QueryStorage with EventLogging {
   val repo = metaStore.queryRepo
 
@@ -68,6 +73,11 @@ class SparkQueryStorage(val metaStore: SlickMetaStoreComponent#SlickMetaStore, f
     SparkOps.getElements[Any](rdd, pageId * pageSize, pageSize, pageSize)
   }
 
+  /**
+   * Retrieve a query from the database 
+   * @param id  query_id
+   * @return The specified Query
+   */
   override def lookup(id: Long): Option[Query] =
     metaStore.withSession("se.query.lookup") {
       implicit session =>
@@ -75,16 +85,27 @@ class SparkQueryStorage(val metaStore: SlickMetaStoreComponent#SlickMetaStore, f
         repo.lookup(id)
     }
 
+  /**
+   * Create a new Query based off of the existing template
+   * @param createQuery Template describing the new query
+   * @return the new Query
+   */
   override def create(createQuery: QueryTemplate): Query =
     metaStore.withSession("se.query.create") {
       implicit session =>
 
         val created = repo.insert(createQuery)
         val query = repo.lookup(created.get.id).getOrElse(throw new Exception("Query not found immediately after creation"))
-        drop(query.id)
+        dropFiles(query.id) //delete any old query info in case of file system conflicts
         query
     }
 
+  /**
+   * Select multiple queries from the db
+   * @param offset offset to begin from
+   * @param count number of queries to return
+   * @return the requested number of query
+   */
   override def scan(offset: Int, count: Int): Seq[Query] = metaStore.withSession("se.query.getQueries") {
     implicit session =>
       repo.scan(offset, count)
@@ -94,6 +115,11 @@ class SparkQueryStorage(val metaStore: SlickMetaStoreComponent#SlickMetaStore, f
     //TODO: set start date
   }
 
+  /**
+   * Complete a query object. To be executed after execution
+   * @param id Query ID
+   * @param result Object Describing Query Result
+   */
   override def complete(id: Long, result: Try[JsObject]): Unit = {
     require(id > 0, "invalid ID")
     metaStore.withSession("se.query.complete") {
@@ -138,16 +164,30 @@ class SparkQueryStorage(val metaStore: SlickMetaStoreComponent#SlickMetaStore, f
 
   val queryResultBase = "/intelanalytics/queryresults"
 
+  /**
+   * Retrieve the directory that the Query RDDs should be stored in
+   * @param id query id
+   * @return directory path
+   */
   def getFrameDirectory(id: Long): String = {
     val path = Paths.get(s"$queryResultBase/$id")
     path.toString
   }
 
+  /**
+   * Retrieve the absolute directory path that the Query RDDs should be stored in
+   * @param id query id
+   * @return absolute directory path
+   */
   def getAbsoluteFrameDirectory(id: Long): String = {
     SparkEngineConfig.fsRoot + "/" + getFrameDirectory(id)
   }
 
-  def drop(queryId: Long): Unit = withContext("frame.drop") {
+  /**
+   * remove existing queries files
+   * @param queryId
+   */
+  def dropFiles(queryId: Long): Unit = withContext("frame.drop") {
     files.delete(Paths.get(getFrameDirectory(queryId)))
   }
 
