@@ -53,6 +53,7 @@ import spray.json._
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent._
 import com.intel.intelanalytics.engine.plugin.CommandPlugin
+import com.intel.intelanalytics.engine.spark.statistics.ColumnStatistics
 
 object SparkEngine {
   private val pythonRddDelimiter = "\0"
@@ -474,7 +475,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
       Some(realFrame.schema.columnIndex(arguments.weights_column.get))
     }
 
-    val x = SparkOps.columnMode(columnIndex, weightsColumnIndexOption, rdd)
+    val x = ColumnStatistics.columnMode(columnIndex, weightsColumnIndexOption, rdd)
     ColumnModeReturn(x._1, x._2, x._3)
   }
 
@@ -510,7 +511,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
       Some(frame.schema.columnIndex(arguments.weights_column.get))
     }
 
-    SparkOps.columnSummaryStatistics(columnIndex, weightsColumnIndexOption, rdd)
+    ColumnStatistics.columnSummaryStatistics(columnIndex, weightsColumnIndexOption, rdd)
   }
 
   /**
@@ -545,7 +546,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
       Some(frame.schema.columnIndex(arguments.weights_column.get))
     }
 
-    SparkOps.columnFullStatistics(columnIndex, weightsColumnIndexOption, rdd)
+    ColumnStatistics.columnFullStatistics(columnIndex, weightsColumnIndexOption, rdd)
   }
 
   def filter(arguments: FilterPredicate[JsObject, Long])(implicit user: UserPrincipal): Execution =

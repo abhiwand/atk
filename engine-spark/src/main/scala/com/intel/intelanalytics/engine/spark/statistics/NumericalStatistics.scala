@@ -27,6 +27,7 @@ class NumericalStatistics(dataWeightPairs: RDD[(Double, Double)]) extends Serial
       minimum = min,
       maximum = max,
       count = count)
+
   /**
    * All statistics that we support. Calculation of this field requires multiple passes over the data.
    */
