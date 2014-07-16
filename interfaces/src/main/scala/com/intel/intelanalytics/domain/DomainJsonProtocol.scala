@@ -156,6 +156,8 @@ object DomainJsonProtocol extends DefaultJsonProtocol {
   implicit val progressInfoFormat = jsonFormat2(ProgressInfo)
   implicit val binColumnLongFormat = jsonFormat6(BinColumn[Long])
 
+  implicit val cumulativeDistLongFormat = jsonFormat5(CumulativeDist[Long])
+
   // model performance formats
 
   implicit val classificationMetricLongFormat = jsonFormat6(ClassificationMetric[Long])

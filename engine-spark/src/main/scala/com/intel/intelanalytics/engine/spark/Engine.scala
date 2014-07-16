@@ -775,6 +775,38 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     ConfusionMatrixValues(valueList)
   }
 
+  override def cumulativeDist(arguments: CumulativeDist[Long])(implicit user: UserPrincipal): Execution =
+    commands.execute(cumulativeDistCommand, arguments, user, implicitly[ExecutionContext])
+
+  val cumulativeDistCommand = commands.registerCommand("dataframe/cumulative_dist", cumulativeDistSimple)
+
+  def cumulativeDistSimple(arguments: CumulativeDist[Long], user: UserPrincipal) = {
+    val frameId: Long = arguments.frameId
+    val realFrame = expectFrame(frameId)
+
+    val ctx = sparkContextManager.context(user).sparkContext
+
+    val frameRdd = frames.getFrameRdd(ctx, frameId)
+
+    val sampleIndex = realFrame.schema.columnIndex(arguments.sampleCol)
+
+    val newFrame = Await.result(create(DataFrameTemplate(arguments.name, None)), SparkEngineConfig.defaultTimeout)
+
+    val cumulativeDistRdd = arguments.distType match {
+      case "cumulative_sum" => SparkOps.cumulativeSum(frameRdd, sampleIndex)
+      case "cumulative_count" => SparkOps.cumulativeCount(frameRdd, sampleIndex, arguments.countValue)
+      case "cumulative_percent_sum" => SparkOps.cumulativePercentSum(frameRdd, sampleIndex)
+      case "cumulative_percent_count" => SparkOps.cumulativePercentCount(frameRdd, sampleIndex, arguments.countValue)
+      case _ => throw new IllegalArgumentException()
+    }
+
+    cumulativeDistRdd.saveAsObjectFile(fsRoot + frames.getFrameDataFile(newFrame.id))
+
+    val allColumns = List((arguments.sampleCol, DataTypes.float64), (arguments.sampleCol + "CumulativeSum", DataTypes.float64))
+    frames.updateSchema(newFrame, allColumns)
+    newFrame.copy(schema = Schema(allColumns))
+  }
+
   /**
    * Retrieve DataFrame object by frame id
    * @param frameId id of the dataframe

@@ -1595,3 +1595,27 @@ class BigFrame(CommandSupport):
         """
 
         return self._backend.confusion_matrix(self, label_column, pred_column, pos_label)
+
+    def cumulative_sum(self, sample_col):
+        try:
+            return self._backend.cumulative_dist(self, sample_col, 'cumulative_sum')
+        except:
+            raise IaError(logger)
+
+    def cumulative_count(self, sample_col, count_value):
+        try:
+            return self._backend.cumulative_dist(self, sample_col, 'cumulative_count', count_value)
+        except:
+            raise IaError(logger)
+
+    def cumulative_percent_sum(self, sample_col):
+        try:
+            return self._backend.cumulative_dist(self, sample_col, 'cumulative_percent_sum')
+        except:
+            raise IaError(logger)
+
+    def cumulative_percent_count(self, sample_col, count_value):
+        try:
+            return self._backend.cumulative_dist(self, sample_col, 'cumulative_percent_count', count_value)
+        except:
+            raise IaError(logger)
