@@ -172,6 +172,7 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
       case ("dataframe/binColumn") => runBinColumn(uri, xform)
       case ("dataframe/classification_metric") => runClassificationMetric(uri, xform)
       case ("dataframe/confusion_matrix") => runConfusionMatrix(uri, xform)
+      case ("dataframe/cumulative_dist") => runCumulativeDist(uri, xform)
       case s: String => illegalArg("Command name is not supported: " + s)
       case _ => illegalArg("Command name was NOT a string")
     }
@@ -402,6 +403,21 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
       validate(test.isSuccess, "Failed to parse confusion matrix descriptor: " + getErrorMessage(test)) {
         val args = test.get
         val result = engine.confusionMatrix(args)
+        val command: Command = result.start
+        complete(decorate(uri + "/" + command.id, command))
+      }
+    }
+  }
+
+  def runCumulativeDist(uri: Uri, xform: JsonTransform)(implicit user: UserPrincipal) = {
+    {
+      val test = Try {
+        xform.arguments.get.convertTo[CumulativeDist[Long]]
+      }
+
+      validate(test.isSuccess, "Failed to parse cumulative distribution descriptor: " + getErrorMessage(test)) {
+        val args = test.get
+        val result = engine.cumulativeDist(args)
         val command: Command = result.start
         complete(decorate(uri + "/" + command.id, command))
       }
