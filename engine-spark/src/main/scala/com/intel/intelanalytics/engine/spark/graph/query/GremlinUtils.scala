@@ -2,7 +2,9 @@ package com.intel.intelanalytics.engine.spark.graph.query
 
 import com.intel.graphbuilder.util.SerializableBaseConfiguration
 import com.thinkaurelius.titan.core.TitanGraph
+import com.tinkerpop.blueprints.Element
 import com.tinkerpop.blueprints.util.io.graphson.GraphSONMode
+import com.tinkerpop.pipes.util.structures.Row
 import com.typesafe.config.Config
 import spray.json._
 
@@ -32,14 +34,42 @@ object GremlinUtils {
    *
    * @param graph Titan graph
    * @param obj Results of Gremlin query
-   * @param mode GraphSON mode
+   * @param mode GraphSON mode which can be either normal, compact or extended
    *
    * @return Serialized query results
    */
-  def serializeGremlinToJson[T: JsonFormat: ClassTag](graph: TitanGraph, obj: T, mode: GraphSONMode = GraphSONMode.NORMAL): JsValue = {
+  def serializeGremlinToJson[T: JsonFormat: ClassTag](graph: TitanGraph,
+                                                      obj: T,
+                                                      mode: GraphSONMode = GraphSONMode.NORMAL): JsValue = {
     import com.intel.intelanalytics.engine.spark.graph.query.GremlinJsonProtocol._
-    implicit val gremlinFormat = new GremlinJsonFormat[T](graph)
-    obj.toJson
+    implicit val gremlinFormat = new GraphSONFormat(graph)
+    val json = obj match {
+      case e: Element => e.toJson
+      case r: Row[T] => r.toJson
+      case x => x.toJson
+    }
+    json
+  }
+
+  /**
+   * Deserializes JSON into a Scala object.
+   *
+   * @param graph Titan graph
+   * @param json Json objects
+   * @param mode GraphSON mode which can be either normal, compact or extended
+   *
+   * @return Deserialized query results
+   */
+  def deserializeJsonToGremlin[T: JsonFormat: ClassTag](graph: TitanGraph,
+                                                        json: JsValue,
+                                                        mode: GraphSONMode = GraphSONMode.NORMAL): T = {
+    import com.intel.intelanalytics.engine.spark.graph.query.GremlinJsonProtocol._
+    implicit val gremlinFormat = new GraphSONFormat(graph)
+    val obj = json match {
+      case x if isGraphElement(x) => elementFromJson(graph, x).asInstanceOf[T]
+      case x => x.convertTo[T]
+    }
+    obj
   }
 
   /**

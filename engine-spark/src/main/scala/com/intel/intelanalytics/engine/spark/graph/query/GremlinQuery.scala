@@ -84,12 +84,13 @@ class GremlinQuery extends CommandPlugin[QueryArgs, QueryResult] {
 
     val graphFuture = invocation.engine.getGraph(arguments.graph.id)
     val graph = Await.result(graphFuture, config.getInt("default-timeout") seconds)
+
+    // TODO - graph should provide backend to retrieve the stored table name in hbase
     val graphName = "iat_graph_" + graph.name
 
     // Create graph connection
     val titanConfiguration = GremlinUtils.getTitanConfiguration(config, "titan.query")
     val titanGraph: TitanGraph = getTitanGraph(graphName, titanConfiguration)
-
     val bindings = engine.createBindings()
     bindings.put("g", titanGraph)
 

@@ -13,7 +13,7 @@ import scala.reflect.ClassTag
 object GremlinJsonProtocol extends DefaultJsonProtocol {
 
   /**
-   * Convert Blueprints graph elements to GraphSON
+   * Convert Blueprints graph elements to GraphSON.
    *
    * GraphSON is a JSON-based format for individual graph elements (i.e. vertices and edges).
    *
@@ -38,11 +38,12 @@ object GremlinJsonProtocol extends DefaultJsonProtocol {
   }
 
   /**
-   * Convert Blueprints rows to Json.
+   * Convert Blueprints rows to a Json.
    *
-   * A Blueprints row is a list of column names and values.
+   * A Blueprints row is a list of column names and values. The row is serialized to
+   * a Json Map where the column names are keys, and the column values are values.
    */
-  implicit def blueprintsRowFormat[T: JsonFormat: ClassTag] = new JsonFormat[Row[T]] {
+  implicit def blueprintsRowFormat[T: JsonFormat] = new JsonFormat[Row[T]] {
     override def read(json: JsValue): Row[T] = json match {
       case obj: JsObject => {
         val rowMap = obj.fields.map { field =>
@@ -66,6 +67,7 @@ object GremlinJsonProtocol extends DefaultJsonProtocol {
     }
   }
 
+  /*
   /**
    * Convert objects returned from Gremlin queries to JSON
    *
@@ -87,12 +89,12 @@ object GremlinJsonProtocol extends DefaultJsonProtocol {
         case x => x.toJson
       }
     }
-  }
+  } */
 
   /**
    * Create Blueprints graph element from JSON. Returns null if not a valid graph element
    */
-  private def elementFromJson(graph: Graph, json: JsValue, mode: GraphSONMode = GraphSONMode.NORMAL): Element = {
+  def elementFromJson(graph: Graph, json: JsValue, mode: GraphSONMode = GraphSONMode.NORMAL): Element = {
     val factory = new GraphElementFactory(graph)
 
     json match {
@@ -112,7 +114,7 @@ object GremlinJsonProtocol extends DefaultJsonProtocol {
   /**
    * Check if GraphSON contains a Blueprints edge
    */
-  private def isEdge(json: JsValue): Boolean = json match {
+  def isEdge(json: JsValue): Boolean = json match {
     case obj: JsObject => {
       val elementType = obj.fields.get(GraphSONTokens._TYPE).get.convertTo[String]
       elementType.toLowerCase == GraphSONTokens.EDGE
@@ -123,7 +125,7 @@ object GremlinJsonProtocol extends DefaultJsonProtocol {
   /**
    * Check if GraphSON contains a Blueprints vertex
    */
-  private def isVertex(json: JsValue): Boolean = json match {
+  def isVertex(json: JsValue): Boolean = json match {
     case obj: JsObject => {
       val elementType = obj.fields.get(GraphSONTokens._TYPE).get.convertTo[String]
       elementType.equalsIgnoreCase(GraphSONTokens.VERTEX)
@@ -134,11 +136,11 @@ object GremlinJsonProtocol extends DefaultJsonProtocol {
   /**
    * Check if GraphSON contains a Blueprints graph elements
    */
-  private def isGraphElement(json: JsValue): Boolean = isEdge(json) | isVertex(json)
+  def isGraphElement(json: JsValue): Boolean = isEdge(json) | isVertex(json)
 
   /**
    * Get element ID from GraphSON
    */
-  private def getElementId(json: JsValue, idName: String): AnyRef = json.asJsObject.fields.get(idName).getOrElse(null)
+  def getElementId(json: JsValue, idName: String): AnyRef = json.asJsObject.fields.get(idName).getOrElse(null)
 
 }
