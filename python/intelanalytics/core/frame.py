@@ -187,15 +187,20 @@ class BigFrame(CommandSupport):
 
     Parameters
     ----------
-    source : source
-        A source of initial data, like a CsvFile or another BigFrame
+    source : CsvFile, BigFrame, or BigColumn(s)
+        A source of initial data
     name : string
-        The name of the newly created BigFrame object
+        The name of the newly created frame
+
+    Returns
+    -------
+    BigFrame
+        An object with access to the frame
 
     Notes
     -----
     If no name is provided for the BigFrame object, it will generate one.
-    A automatically generated name will be the word "frame_" followed by the uuid.uuid4().hex and
+    An automatically generated name will be the word "frame_" followed by the uuid.uuid4().hex and
     if allowed, an "_" character then the name of the data source.
 
     Examples
@@ -211,6 +216,8 @@ class BigFrame(CommandSupport):
         h = BigFrame(name='BF2')
 
     A BigFrame object has been created and *h* is its proxy. It has no data yet, but it does have the name *BF2*.
+
+    For other examples, see :ref:`example_frame.bigframe`.
 
     """
     # TODO - Review Parameters, Examples
@@ -476,6 +483,44 @@ class BigFrame(CommandSupport):
     def _as_json_obj(self):
         return self._backend._as_json_obj(self)
 
+    def accuracy(self, label_column, pred_column):
+        """
+        Summary
+        -------
+        Model accuracy
+
+        .. versionadded:: 0.8
+
+        Extended Summary
+        ----------------
+        Computes the accuracy measure for a classification model
+        A column containing the correct labels for each instance and a column containing the predictions made by the classifier are specified.
+        The accuracy of a classification model is the proportion of predictions that are correct.
+        If we let :math:`TP` denote the number of true positives, :math:`TN` denote the number of true negatives, and :math:`K`
+        denote the total number of classified instances, then the model accuracy is given by: :math:`(TP + TN) / K`.
+
+        This measure applies to binary and multi-class classifiers.
+
+        Parameters
+        ----------
+        label_column : str
+            the name of the column containing the correct label for each instance
+        pred_column : str
+            the name of the column containing the predicted label for each instance
+
+        Returns
+        ----------
+        float64
+            the accuracy measure for the classifier
+
+        Examples
+        ----------
+        >>> acc = frame.accuracy('labels', 'predictions')
+
+        """
+        return self._backend.classification_metric(self, 'accuracy', label_column, pred_column, '1', 1)
+
+
     def add_columns(self, func, schema):
         """
         Summary
@@ -549,6 +594,8 @@ class BigFrame(CommandSupport):
 
             my_frame.add_columns(function_b, (["calculated_b"], float32))
         
+        For further examples, see :ref:`example_frame.add_columns`.
+
         """
         try:
             self._backend.add_columns(self, func, schema)
@@ -574,7 +621,7 @@ class BigFrame(CommandSupport):
         Examples
         --------
         Given a frame with a single column *col_1* and a frame with two columns *col_1* and *col_2*.
-        Column "col_1* is the same data type in both frames.
+        Column *col_1* means the same thing in both frames.
         BigFrame *f_1* points to the first frame and *f_2* points to the second.
         Add the contents of the *f_2* to *f_1*::
 
@@ -584,6 +631,7 @@ class BigFrame(CommandSupport):
         Column *col_1* has the data from *col_1* in both frames.
         Column *col_2* has None (undefined) in all of the rows in the original first frame, and has the value of the second frame column *col_2* in
         the rows matching the new data in *col_1*.
+
         Breaking it down differently, the original rows refered to by *f_1* have a new column *col_2* and this new column is filled with non-defined
         data.
         The frame referred to by *f_2* is then added to the bottom.
@@ -595,6 +643,90 @@ class BigFrame(CommandSupport):
             self._backend.append(self, data)
         except:
             raise IaError(logger)
+
+    def bin_column(self, column_name, num_bins, bin_type='equalwidth', bin_column_name='binned'):
+        """
+        Summary
+        -------
+        Evenly separate data
+
+        .. versionadded:: 0.8
+
+        Extended Summary
+        ----------------
+        The num_bins parameter is an upper-bound on the number of bins since the data may justify fewer bins.
+        With equal binning, for example, if the column to be binned has 10 elements with
+        only 2 distinct values and numBins > 2, then the number of actual bins will only be 2.
+        This is due to a restriction that elements with an identical value must belong to the same bin.
+
+        Parameters
+        ----------
+        column_name : str
+            The column whose values are to be binned
+        num_bins : int
+            The requested number of bins
+        bin_type : str (optional)
+            The binning algorithm to use
+            [':term:`equalwidth`' | ':term:`equaldepth`']
+        bin_column_name : str, (optional)
+            The name for the new binned column
+
+        Returns
+        -------
+        BigFrame
+            A BigFrame accessing a new frame with binned column appended to original frame
+
+        Examples
+        --------
+        ::
+
+            binnedEW = frame.bin_column('a', 5, 'equalwidth', 'aEWBinned')
+            binnedED = frame.bin_column('a', 5, 'equaldepth', 'aEDBinned')
+
+        """
+        return self._backend.bin_column(self, column_name, num_bins, bin_type, bin_column_name)
+
+    def confusion_matrix(self, label_column, pred_column, pos_label=1):
+        """
+        Summary
+        -------
+        Builds matrix
+
+        .. versionadded:: 0.8
+
+        Extended Summary
+        ----------------
+        Outputs a confusion matrix for a binary classifier
+
+        Parameters
+        ----------
+        label_column : str
+            the name of the column containing the correct label for each instance
+        pred_column : str
+            the name of the column containing the predicted label for each instance
+        pos_label : int or str, (optional)
+            the value to be interpreted as a positive instance
+
+        Returns
+        -------
+        Formatted confusion matrix
+
+        Examples
+        --------
+        ::
+
+            print(frame.confusion_matrix('labels', 'predictions'))
+
+        The resultant output is::
+
+                             Predicted
+                           __pos__ _neg___
+             Actual   pos | 1     | 4
+                      neg | 3     | 2
+
+        """
+
+        return self._backend.confusion_matrix(self, label_column, pred_column, pos_label)
 
     def copy(self):
         """
@@ -643,8 +775,8 @@ class BigFrame(CommandSupport):
 
         Now we have two frames of data, each with 5 million rows. Checking the names::
 
-            print BF1.get_name()
-            print BF2.get_name()
+            print BF1.name()
+            print BF2.name()
 
         Gives the results::
 
@@ -679,7 +811,7 @@ class BigFrame(CommandSupport):
         Returns
         -------
         int32
-            The number of rows in the currently active BigFrame
+            The number of rows in the frame
 
         Examples
         --------
@@ -691,7 +823,7 @@ class BigFrame(CommandSupport):
 
         The result could be::
 
-            298376527645
+            298376527
 
         """
         try:
@@ -729,175 +861,10 @@ class BigFrame(CommandSupport):
 
         Now the frame only has information about *ligers*.
 
-        """
-        # TODO - Review docstring
-        try:
-            self._backend.drop(self, predicate)
-        except:
-            raise IaError(logger)
-
-    def filter(self, predicate):
-        """
-        Summary
-        -------
-        Select data
-
-        .. versionadded:: 0.8
-
-        Extended Summary
-        ----------------
-        Select all rows which satisfy a predicate.
-
-        Parameters
-        ----------
-        predicate: function
-            function definition or lambda which takes a row argument and evaluates to a boolean value
-
-        Raises
-        ------
-        IaError
-
-        Examples
-        --------
-        For this example, my_frame is a BigFrame object with lots of data for the attributes of *lizards*, *frogs*, and *snakes*.
-        Get rid of everything, except information about *lizards* and *frogs*::
-
-            my_frame.filter(animal_type == "lizard" or animal_type == "frog")
-
-        The frame now only has data about lizards and frogs
+        For further examples, see :ref:`example_frame.drop`
 
         """
         # TODO - Review docstring
-        try:
-            self._backend.filter(self, predicate)
-        except:
-            raise IaError(logger)
-
-    def flatten_column(self, column_name):
-        """
-        Summary
-        -------
-        Spread out data
-
-        .. versionadded:: 0.8
-
-        Extended Summary
-        ----------------
-        Search through the currently active BigFrame for multiple items in a single specified column.
-        When it finds multiple values in the column, it replicates the row and separates the multiple items across the existing and new rows.
-        Multiple items is defined in this case as being things separated by commas.
-
-        Parameters
-        ----------
-        column_name : str
-            The column to be flattened
-                                                  n
-        Raises
-        ------
-        IaError
-
-        Returns
-        -------
-        BigFrame
-            A BigFrame object proxy for the new flattened frame
-
-        Examples
-        --------
-        For this example, we have a BigFrame *frame1* accessing a frame with a columns *a* and *b*.
-        The rows are in no particular order::
-
-            Row 1, column *a* is "trumpet", column *b* is "x"
-            Row 2, column *a* is "bassoon, oboe, flute", column *b* is "y"
-            Row 3, column *a* is "clarinet", column *b* is "z, e, r, o"
-
-        Now run the flatten command on column *a*::
-
-            flattened_frame = frame1.flatten_column('a')
-
-        The original frame still exists without change, but now there is a new frame.
-        The rows are in no particular order::
-
-            Row 1, column *a* is "trumpet", column *b* is "x"
-            Row 2, column *a* is "bassoon", column *b* is "y"
-            Row 3, column *a* is "clarinet", column *b* is "z, e, r, o"
-            Row 4, column *a* is "oboe", column *b* is "y"
-            Row 5, column *a* is "flute", column *b* is "y"
-
-        """
-        try:
-            return self._backend.flatten_column(self, column_name)
-        except:
-            raise IaError(logger)
-
-    def bin_column(self, column_name, num_bins, bin_type='equalwidth', bin_column_name='binned'):
-        """
-        Summary
-        -------
-        Evenly separate columns
-
-        .. versionadded:: 0.8
-
-        Extended Summary
-        ----------------
-        The numBins parameter is an upper-bound on the number of bins since the data may justify fewer bins.
-        With :term:`equal depth binning`, for example, if the column to be binned has 10 elements with
-        only 2 distinct values and numBins > 2, then the number of actual bins will only be 2.
-        This is due to a restriction that elements with an identical value must belong to the same bin.
-
-        Parameters
-        ----------
-        column_name : str
-            The column whose values are to be binned
-        num_bins : int
-            The requested number of bins
-        bin_type : 'equalwidth' or 'equaldepth', (optional, default 'equalwidth')
-            The binning algorithm to use
-        bin_column_name : str, (optional, default 'binned')
-            The name for the new binned column
-
-        Returns
-        -------
-        frame : BigFrame
-            A new frame with binned column appended to original frame
-
-        Examples
-        --------
-        >>> binnedEW = frame.bin_column('a', 5, 'equalwidth', 'aEWBinned')
-        >>> binnedED = frame.bin_column('a', 5, 'equaldepth', 'aEDBinned')
-        """
-        return self._backend.bin_column(self, column_name, num_bins, bin_type, bin_column_name)
-
-    def drop(self, predicate):
-        """
-        Summary
-        -------
-        Drop data
-
-        .. versionadded:: 0.8
-
-        Extended Summary
-        ----------------
-        Drop rows that match a requirement.
-
-        Parameters
-        ----------
-        predicate : function
-            The requirement that the rows must match
-
-        Raises
-        ------
-        IaError
-
-        Examples
-        --------
-        For this example, my_frame is a BigFrame object accessing a frame with a boolean column *important*.
-
-            my_frame.drop( important == False )
-
-        The frame's data now only contains important data.
-
-        """
-        # TODO - review docstring
         try:
             self._backend.drop(self, predicate)
         except:
@@ -945,97 +912,71 @@ class BigFrame(CommandSupport):
         The result is a frame where something is different in every row from every other row.
         Each row is unique.
 
+        For further examples, see :ref:`example_frame.drop_duplicates`
+
         """
         try:
             self._backend.drop_duplicates(self, columns)
         except:
             raise IaError(logger)
 
-    def inspect(self, n=10, offset=0):
+    def filter(self, predicate):
         """
         Summary
         -------
-        Print data
+        Select data
 
         .. versionadded:: 0.8
 
         Extended Summary
         ----------------
-        Print the data in readable format.
+        Select all rows which satisfy a predicate.
 
         Parameters
         ----------
-        n : int
-            The number of rows to print
-        offset : int
-            The number of rows to skip before printing
-            
+        predicate: function
+            function definition or lambda which takes a row argument and evaluates to a boolean value
+
         Raises
         ------
         IaError
 
-        Returns
-        -------
-        data
-            Formatted for ease of human inspection
-            
         Examples
         --------
-        For this example, my_frame is a BigFrame object accessing a frame with two columns *a* and *b*.
-        Column *a* is float32 and *b* is int64.
-        Show me the data::
+        For this example, my_frame is a BigFrame object with lots of data for the attributes of *lizards*, *frogs*, and *snakes*.
+        Get rid of everything, except information about *lizards* and *frogs*::
 
-            print my_frame.inspect()
+            my_frame.filter(animal_type == "lizard" or animal_type == "frog")
 
-        Output would be something like::
+        The frame now only has data about lizards and frogs
 
-           +----------------+-------------+
-           | a float32      |   b int64   |
-           +================+=============+
-           |   12.3000      |       500   |
-           +----------------+-------------+
-           |  195.1230      |    183954   |
-           +----------------+-------------+
-        
+        For further examples, see :ref:`example_frame.filter`
+
         """
         # TODO - Review docstring
         try:
-            return self._backend.inspect(self, n, offset)
+            self._backend.filter(self, predicate)
         except:
             raise IaError(logger)
 
-    def join(self, right, left_on, right_on=None, how='inner'):
+    def flatten_column(self, column_name):
         """
         Summary
         -------
-        Combine frames
+        Spread out data
 
         .. versionadded:: 0.8
 
         Extended Summary
         ----------------
-        Create a new BigFrame from a SQL JOIN operation with another BigFrame.
-        The BigFrame on the 'left' is the currently active frame.
-        The BigFrame on the 'right' is another frame.
-        This function takes a column in the left frame and matches it's values with a column in the right frame.
-        Using the default 'how' option ['inner'] will only allow data in the resultant frame if both the left and right
-        frames have the same value in the matching column.
-        Using the 'left' 'how' option will allow any data in the resultant frame if it exists in the left frame, but
-        will allow any data from the right frame if it has a value in it's column which matches the value in the left frame column.
-        Using the 'right' option works similarly, except it keeps all the data from the right frame and only the
-        data from the left frame when it matches.
+        Search through the currently active BigFrame for multiple items in a single specified column.
+        When it finds multiple values in the column, it replicates the row and separates the multiple items across the existing and new rows.
+        Multiple items is defined in this case as being things separated by commas.
 
         Parameters
         ----------
-        right : BigFrame
-            Another frame to join with
-        left_on : str
-            Name of the column in the left frame used to match up the two frames.
-        right_on : str
-            Name of the column in the right frame used to match up the two frames.
-            If not provided, then the column name used must be the same in both frames.
-        how : str
-            {'left', 'right', 'inner'}
+        column_name : str
+            The column to be flattened
 
         Raises
         ------
@@ -1044,103 +985,76 @@ class BigFrame(CommandSupport):
         Returns
         -------
         BigFrame
-            BigFrame accessing a new joined frame
+            A BigFrame object proxy for the new flattened frame
 
         Examples
         --------
-        For this example, we will use a BigFrame *frame1* accessing a frame with columns *a*, *b*, *c*, and a BigFrame *frame2* accessing
-        a frame with columns *a*, *d*, *e*.
-        Join the two frames keeping only those rows having the same value in column *a*::
-
-            frame1 = BigFrame(schema1)
-            frame2 = BigFrame(schema2)
-            joined_frame = frame1.join(frame2, 'a')
-
-        Now, joined_frame is a BigFrame accessing a frame with the columns *a*, *b*, *c*, *d*, and *e*.
-        The data in the new frame will be from the rows where column 'a' was the same in both frames.
-
-        Now, using a single BigFrame *my_frame* accessing a frame with the columns *b* and *book*.
-        Build a new frame, but remove any rows where the values in *b* and *book* do not match::
-
-            joined_frame = frame2.join(frame2, left_on='b', right_on='book', how='inner')
-
-        We end up with a new BigFrame *joined_frame* accessing a new frame with all the original columns, but only those rows where the data in the
-        original frame in column *b* matched the data in column *book*.
+        See :ref:`example_frame.flatten_column`.
 
         """
+
         try:
-            return self._backend.join(self, right, left_on, right_on, how)
+            return self._backend.flatten_column(self, column_name)
         except:
             raise IaError(logger)
 
-    def project_columns(self, column_names, new_names=None):
+    def fmeasure(self, label_column, pred_column, pos_label=1, beta=1):
         """
         Summary
         -------
-        Create frame from columns
+        Model :math:`F_{\\beta}` measure
 
         .. versionadded:: 0.8
 
         Extended Summary
         ----------------
-        Copies specified columns into a new BigFrame object, optionally renaming them.
+        Computes the :math:`F_{\\beta}` measure for a classification model.
+        A column containing the correct labels for each instance and a column containing the predictions made by the
+        model are specified.
+        The :math:`F_{\\beta}` measure of a binary classification model is the harmonic mean of precision and
+        recall.
+        If we let:
+        
+        * beta :math:`\\equiv \\beta`,
+        * :math:`T_{P}` denote the number of true positives,
+        * :math:`F_{P}` denote the number of false positives, and
+        * :math:`F_{N}` denote the number of false negatives,
+            
+        then:
+        
+        .. math::
+            F_{\\beta} = (1 + \\beta ^ 2) * \\frac{\\frac{T_{P}}{T_{P} + F_{P}} * \\frac{T_{P}}{T_{P} + F_{N}}}{\\beta ^ 2 * (\\frac{T_{P}}{T_{P} + F_{P}} + \\frac{T_{P}}{T_{P} + F_{N}})}
+
+        For multi-class classification, the :math:`F_{\\beta}` measure is computed as the weighted average of the :math:`F_{\\beta}` measure
+        for each label, where the weight is the number of instance with each label in the labeled column.  The
+        determination of binary vs. multi-class is automatically inferred from the data.
 
         Parameters
         ----------
-
-        column_names : str OR list of str
-            column name OR list of column names to be copied from the currently active frame
-        new_names : str OR list of str
-            The new name(s) for the column(s)
-
-        Notes
-        -----
-        If new column names are specified, the quantity of column names must match the quantity of new names,
-        though if you are only using a single column, it does not matter whether that column is declared in string
-        fashion, or as a single string in a list.
-
-        Raises
-        ------
-        ValueError
-            number of columns specified in column_names does not match the number of columns specified in new_names
-        Raises
-        ------
-        IaError
-
+        label_column : str
+            the name of the column containing the correct label for each instance
+        pred_column : str
+            the name of the column containing the predicted label for each instance
+        pos_label : int or str, (optional)
+            the value to be interpreted as a positive instance (only for binary, ignored for multi-class)
+        beta : float, (optional)
+            beta value to use for :math:`F_{\\beta}` measure (default F1 measure is computed); must be greater than 0
 
         Returns
-        -------
-        frame : BigFrame
-            A new frame object containing copies of the specified columns
+        ----------
+        float64
+            the :math:`F_{\\beta}` measure for the classifier
 
         Examples
-        --------
-        Given a BigFrame *frame1*, accessing a frame with columns named *a*, *b*, *c*, *d*.
-        Create a new frame with three columns *apple*, *boat*, and *frog*, where for each row of the original frame, the data from column *a* is copied
-        to the new column *apple*, the data from column *b* is copied to the column *boat*, and the data from column *c* is copied
-        to the column *frog*::
-
-            new_frame = frame1.project_columns( ['a', 'b', 'c'], ['apple', 'boat', 'frog'])
-
-        And the result is a new BigFrame named 'new_name' accessing a new frame with columns *apple*, *boat*, *frog*, and the data from *frame1*,
-        column *a* is now copied in column *apple*, the data from column *b* is now copied in column *boat* and the data from column *c* is now
-        copied in column *frog*.
-
-        Continuing::
-
-            frog_frame = new_frame.project_columns('frog')
-
-        And the new BigFrame *frog_frame* is accessing a frame with a single column *frog* which has a copy of all the data from the original
-        column *c* in *frame1*.
+        ----------
+        ::
+        
+            f1 = frame.fmeasure('labels', 'predictions')
+            f2 = frame.fmeasure('labels', 'predictions', beta=2)
+            f1_binary = frame.fmeasure('labels', 'predictions', pos_label='good')
 
         """
-        # TODO - need example in docstring
-        try:
-            projected_frame = BigFrame()
-            self._backend.project_columns(self, projected_frame, column_names, new_names)
-            return projected_frame
-        except:
-            raise IaError(logger)
+        return self._backend.classification_metric(self, 'fmeasure', label_column, pred_column, pos_label, beta)
 
     def groupby(self, groupby_columns, *aggregation_arguments):
         """
@@ -1241,13 +1155,290 @@ class BigFrame(CommandSupport):
             *a* is 'ape', *c* is 1, *count* is 2, *d_avg* is 6.0, *d_sum* is 12.0, *d_min* is 4.0, *e_max* is 9
             *a* is 'big', *c* is 1, *count* is 3, *d_avg* is 6.333333, *d_sum* is 19.0, *d_min* is 5.0, *e_max* is 7
 
-
+        For further examples, see :ref:`example_frame.groupby`.
         """
 
         try:
             return self._backend.groupby(self, groupby_columns, aggregation_arguments)
         except:
             raise IaError(logger)
+
+
+    def inspect(self, n=10, offset=0):
+        """
+        Summary
+        -------
+        Print data
+
+        .. versionadded:: 0.8
+
+        Extended Summary
+        ----------------
+        Print the data in readable format.
+
+        Parameters
+        ----------
+        n : int
+            The number of rows to print
+        offset : int
+            The number of rows to skip before printing
+            
+        Raises
+        ------
+        IaError
+
+        Returns
+        -------
+        data
+            Formatted for ease of human inspection
+            
+        Examples
+        --------
+        For an example, see :ref:`example_frame.inspect`
+        
+        """
+        # TODO - Review docstring
+        try:
+            return self._backend.inspect(self, n, offset)
+        except:
+            raise IaError(logger)
+
+    def join(self, right, left_on, right_on=None, how='inner'):
+        """
+        Summary
+        -------
+        Combine frames
+
+        .. versionadded:: 0.8
+
+        Extended Summary
+        ----------------
+        Create a new BigFrame from a SQL JOIN operation with another BigFrame.
+        The BigFrame on the 'left' is the currently active frame.
+        The BigFrame on the 'right' is another frame.
+        This function takes a column in the left frame and matches it's values with a column in the right frame.
+        Using the default 'how' option ['inner'] will only allow data in the resultant frame if both the left and right
+        frames have the same value in the matching column.
+        Using the 'left' 'how' option will allow any data in the resultant frame if it exists in the left frame, but
+        will allow any data from the right frame if it has a value in it's column which matches the value in the left frame column.
+        Using the 'right' option works similarly, except it keeps all the data from the right frame and only the
+        data from the left frame when it matches.
+
+        Parameters
+        ----------
+        right : BigFrame
+            Another frame to join with
+        left_on : str
+            Name of the column in the left frame used to match up the two frames.
+        right_on : str (optional)
+            Name of the column in the right frame used to match up the two frames.
+            If not provided, then the column name used must be the same in both frames.
+        how : str (optional)
+            ['left' | 'right' | 'inner']
+
+        Raises
+        ------
+        IaError
+
+        Returns
+        -------
+        BigFrame
+            BigFrame accessing a new joined frame
+
+        Notes
+        -----
+        When a column is named the same in both frames, it will result in two columns in the new frame.
+        The column from the *left* frame will be copied and the column name will have the string "_L" added to it.
+        The same thing will happen with the column from the *right* frame, except its name has the string "_R" appended.
+
+        It is recommended that you rename the columns to meaningful terms prior to using the ``join`` method.
+
+        Examples
+        --------
+        For this example, we will use a BigFrame *frame1* accessing a frame with columns *a*, *b*, *c*, and a BigFrame *frame2* accessing
+        a frame with columns *a*, *d*, *e*.
+        Join the two frames keeping only those rows having the same value in column *a*::
+
+            frame1 = BigFrame(schema1)
+            frame2 = BigFrame(schema2)
+            joined_frame = frame1.join(frame2, 'a')
+
+        Now, joined_frame is a BigFrame accessing a frame with the columns *a*, *b*, *c*, *d*, and *e*.
+        The data in the new frame will be from the rows where column 'a' was the same in both frames.
+
+        Now, using a single BigFrame *my_frame* accessing a frame with the columns *b* and *book*.
+        Build a new frame, but remove any rows where the values in *b* and *book* do not match::
+
+            joined_frame = frame2.join(frame2, left_on='b', right_on='book', how='inner')
+
+        We end up with a new BigFrame *joined_frame* accessing a new frame with all the original columns, but only those rows where the data in the
+        original frame in column *b* matched the data in column *book*.
+
+        For further examples, see :ref:`example_frame.join`.
+
+        """
+        try:
+            return self._backend.join(self, right, left_on, right_on, how)
+        except:
+            raise IaError(logger)
+
+    def precision(self, label_column, pred_column, pos_label=1):
+        """
+        Summary
+        -------
+        Model precision
+
+        .. versionadded:: 0.8
+
+        Extended Summary
+        ----------------
+        Computes the precision measure for a classification model
+        A column containing the correct labels for each instance and a column containing the predictions made by the
+        model are specified.  The precision of a binary classification model is the proportion of predicted positive
+        instances that are correct.  If we let :math:`TP` denote the number of true positives and :math:`FP` denote the number of false
+        positives, then the model precision is given by: :math:`TP / (TP + FP)`.
+
+        For multi-class classification, the precision measure is computed as the weighted average of the precision
+        for each label, where the weight is the number of instances with each label in the labeled column.  The
+        determination of binary vs. multi-class is automatically inferred from the data.
+
+        Parameters
+        ----------
+        label_column : str
+            the name of the column containing the correct label for each instance
+        pred_column : str
+            the name of the column containing the predicted label for each instance
+        pos_label : int or str, (optional, default=1)
+            the value to be interpreted as a positive instance (only for binary, ignored for multi-class)
+
+        Returns
+        -------
+        float64
+            the precision measure for the classifier
+
+        Examples
+        --------
+        ::
+        
+            prec = frame.precision('labels', 'predictions')
+            prec2 = frame.precision('labels', 'predictions', 'yes')
+
+        """
+        return self._backend.classification_metric(self, 'precision', label_column, pred_column, pos_label, 1)
+
+
+    def project_columns(self, column_names, new_names=None):
+        """
+        Summary
+        -------
+        Create frame from columns
+
+        .. versionadded:: 0.8
+
+        Extended Summary
+        ----------------
+        Copies specified columns into a new BigFrame object, optionally renaming them.
+
+        Parameters
+        ----------
+
+        column_names : str OR list of str
+            column name OR list of column names to be copied from the currently active frame
+        new_names : str OR list of str
+            The new name(s) for the column(s)
+
+        Notes
+        -----
+        If new column names are specified, the quantity of column names must match the quantity of new names,
+        though if you are only using a single column, it does not matter whether that column is declared in string
+        fashion, or as a single string in a list.
+
+        Raises
+        ------
+        ValueError
+            number of columns specified in column_names does not match the number of columns specified in new_names
+        Raises
+        ------
+        IaError
+
+
+        Returns
+        -------
+        frame : BigFrame
+            A new frame object containing copies of the specified columns
+
+        Examples
+        --------
+        Given a BigFrame *frame1*, accessing a frame with columns named *a*, *b*, *c*, *d*.
+        Create a new frame with three columns *apple*, *boat*, and *frog*, where for each row of the original frame, the data from column *a* is copied
+        to the new column *apple*, the data from column *b* is copied to the column *boat*, and the data from column *c* is copied
+        to the column *frog*::
+
+            new_frame = frame1.project_columns( ['a', 'b', 'c'], ['apple', 'boat', 'frog'])
+
+        And the result is a new BigFrame named 'new_name' accessing a new frame with columns *apple*, *boat*, *frog*, and the data from *frame1*,
+        column *a* is now copied in column *apple*, the data from column *b* is now copied in column *boat* and the data from column *c* is now
+        copied in column *frog*.
+
+        Continuing::
+
+            frog_frame = new_frame.project_columns('frog')
+
+        And the new BigFrame *frog_frame* is accessing a frame with a single column *frog* which has a copy of all the data from the original
+        column *c* in *frame1*.
+
+        """
+        # TODO - need example in docstring
+        try:
+            projected_frame = BigFrame()
+            self._backend.project_columns(self, projected_frame, column_names, new_names)
+            return projected_frame
+        except:
+            raise IaError(logger)
+
+    def recall(self, label_column, pred_column, pos_label=1):
+        """
+        Summary
+        -------
+        Model measure
+
+        .. versionadded:: 0.8
+
+        Extended Summary
+        ----------------
+        Computes the recall measure for a classification model
+        A column containing the correct labels for each instance and a column containing the predictions made by the
+        model are specified.  The recall of a binary classification model is the proportion of positive instances that
+        are correctly identified.  If we let :math:`TP` denote the number of true positives and :math:`FN` denote the number of false
+        negatives, then the model recall is given by: :math:`TP / (TP + FN)`.
+
+        For multi-class classification, the recall measure is computed as the weighted average of the recall
+        for each label, where the weight is the number of instance with each label in the labeled column.  The
+        determination of binary vs. multi-class is automatically inferred from the data.
+
+        Parameters
+        ----------
+        label_column : str
+            the name of the column containing the correct label for each instance
+        pred_column : str
+            the name of the column containing the predicted label for each instance
+        pos_label : int or str, (optional)
+            the value to be interpreted as a positive instance (only for binary, ignored for multi-class)
+
+        Returns
+        ----------
+        float64
+            the recall measure for the classifier
+
+        Examples
+        ----------
+        ::
+
+            rec = frame.recall('labels', 'predictions')
+            rec2 = frame.recall('labels', 'predictions', 'pos')
+
+        """
+        return self._backend.classification_metric(self, 'recall', label_column, pred_column, pos_label, 1)
 
     @doc_stub
     def remove_columns(self, name):
@@ -1287,6 +1478,7 @@ class BigFrame(CommandSupport):
 
         Now the frame only has the columns *column_a* and *column_c*.
 
+        For further examples, see :ref:`example_frame.remove_columns`
         """
         pass
         # TODO - Review examples
@@ -1323,6 +1515,7 @@ class BigFrame(CommandSupport):
 
         Now, what was *Wrong* is now *Right* and what was *Wong* is now *Wite*.
 
+        For further examples, see :ref:`example_frame.rename_columns`
         """
         try:
             self._backend.rename_columns(self, column_names, new_names)
@@ -1379,208 +1572,4 @@ class BigFrame(CommandSupport):
         except:
             raise IaError(logger)
 
-    def accuracy(self, label_column, pred_column):
-        """
-        Summary
-        -------
-        Model accuracy
 
-        .. versionadded:: 0.8
-
-        Extended Summary
-        ----------------
-        Computes the accuracy measure for a classification model
-        A column containing the correct labels for each instance and a column containing the predictions made by the classifier are specified.
-        The accuracy of a classification model is the proportion of predictions that are correct.
-        If we let :math:`TP` denote the number of true positives, :math:`TN` denote the number of true negatives, and :math:`K`
-        denote the total number of classified instances, then the model accuracy is given by: :math:`(TP + TN) / K`.
-
-        This measure applies to binary and multi-class classifiers.
-
-        Parameters
-        ----------
-        label_column : str
-            the name of the column containing the correct label for each instance
-        pred_column : str
-            the name of the column containing the predicted label for each instance
-
-        Returns
-        ----------
-        float64
-            the accuracy measure for the classifier
-
-        Examples
-        ----------
-        >>> acc = frame.accuracy('labels', 'predictions')
-
-        """
-        return self._backend.classification_metric(self, 'accuracy', label_column, pred_column, '1', 1)
-
-    def precision(self, label_column, pred_column, pos_label=1):
-        """
-        Summary
-        -------
-        Model precision
-
-        .. versionadded:: 0.8
-
-        Extended Summary
-        ----------------
-        Computes the precision measure for a classification model
-        A column containing the correct labels for each instance and a column containing the predictions made by the
-        model are specified.  The precision of a binary classification model is the proportion of predicted positive
-        instances that are correct.  If we let :math:`TP` denote the number of true positives and :math:`FP` denote the number of false
-        positives, then the model precision is given by: :math:`TP / (TP + FP)`.
-
-        For multi-class classification, the precision measure is computed as the weighted average of the precision
-        for each label, where the weight is the number of instances with each label in the labeled column.  The
-        determination of binary vs. multi-class is automatically inferred from the data.
-
-        Parameters
-        ----------
-        label_column : str
-            the name of the column containing the correct label for each instance
-        pred_column : str
-            the name of the column containing the predicted label for each instance
-        pos_label : int or str, (optional, default=1)
-            the value to be interpreted as a positive instance (only for binary, ignored for multi-class)
-
-        Returns
-        ----------
-        float64
-            the precision measure for the classifier
-
-        Examples
-        ----------
-        >>> prec = frame.precision('labels', 'predictions')
-        >>> prec2 = frame.precision('labels', 'predictions', 'yes')
-
-        """
-        return self._backend.classification_metric(self, 'precision', label_column, pred_column, pos_label, 1)
-
-    def recall(self, label_column, pred_column, pos_label=1):
-        """
-        Summary
-        -------
-        Model measure
-
-        .. versionadded:: 0.8
-
-        Extended Summary
-        ----------------
-        Computes the recall measure for a classification model
-        A column containing the correct labels for each instance and a column containing the predictions made by the
-        model are specified.  The recall of a binary classification model is the proportion of positive instances that
-        are correctly identified.  If we let :math:`TP` denote the number of true positives and :math:`FN` denote the number of false
-        negatives, then the model recall is given by: :math:`TP / (TP + FN)`.
-
-        For multi-class classification, the recall measure is computed as the weighted average of the recall
-        for each label, where the weight is the number of instance with each label in the labeled column.  The
-        determination of binary vs. multi-class is automatically inferred from the data.
-
-        Parameters
-        ----------
-        label_column : str
-            the name of the column containing the correct label for each instance
-        pred_column : str
-            the name of the column containing the predicted label for each instance
-        pos_label : int or str, (optional, default=1)
-            the value to be interpreted as a positive instance (only for binary, ignored for multi-class)
-
-        Returns
-        ----------
-        float64
-            the recall measure for the classifier
-
-        Examples
-        ----------
-        >>> rec = frame.recall('labels', 'predictions')
-        >>> rec2 = frame.recall('labels', 'predictions', 'pos')
-
-        """
-        return self._backend.classification_metric(self, 'recall', label_column, pred_column, pos_label, 1)
-
-    def fmeasure(self, label_column, pred_column, pos_label=1, beta=1):
-        """
-        Summary
-        -------
-        Model :math:`F_{\\beta}` measure
-
-        .. versionadded:: 0.8
-
-        Extended Summary
-        ----------------
-        Computes the :math:`F_{\\beta}` measure for a classification model.
-        A column containing the correct labels for each instance and a column containing the predictions made by the
-        model are specified.
-        The :math:`F_{\\beta}` measure of a binary classification model is the harmonic mean of precision and
-        recall.
-        If we let:
-        
-        * beta :math:`\\equiv \\beta`,
-        * :math:`T_{P}` denote the number of true positives,
-        * :math:`F_{P}` denote the number of false positives, and
-        * :math:`F_{N}` denote the number of false negatives,
-            
-        then:
-        
-        .. math::
-            F_{\\beta} = (1 + \\beta ^ 2) * \\frac{\\frac{T_{P}}{T_{P} + F_{P}} * \\frac{T_{P}}{T_{P} + F_{N}}}{\\beta ^ 2 * (\\frac{T_{P}}{T_{P} + F_{P}} + \\frac{T_{P}}{T_{P} + F_{N}})}
-
-        For multi-class classification, the :math:`F_{\\beta}` measure is computed as the weighted average of the :math:`F_{\\beta}` measure
-        for each label, where the weight is the number of instance with each label in the labeled column.  The
-        determination of binary vs. multi-class is automatically inferred from the data.
-
-        Parameters
-        ----------
-        label_column : str
-            the name of the column containing the correct label for each instance
-        pred_column : str
-            the name of the column containing the predicted label for each instance
-        pos_label : int or str, (optional)
-            the value to be interpreted as a positive instance (only for binary, ignored for multi-class)
-        beta : float, (optional)
-            beta value to use for :math:`F_{\\beta}` measure (default F1 measure is computed); must be greater than 0
-
-        Returns
-        ----------
-        float64
-            the :math:`F_{\\beta}` measure for the classifier
-
-        Examples
-        ----------
-        >>> f1 = frame.fmeasure('labels', 'predictions')
-        >>> f2 = frame.fmeasure('labels', 'predictions', beta=2)
-        >>> f1_binary = frame.fmeasure('labels', 'predictions', pos_label='good')
-
-        """
-        return self._backend.classification_metric(self, 'fmeasure', label_column, pred_column, pos_label, beta)
-
-    def confusion_matrix(self, label_column, pred_column, pos_label=1):
-        """
-        Outputs a confusion matrix for a binary classifier
-
-        Parameters
-        ----------
-        label_column : str
-            the name of the column containing the correct label for each instance
-        pred_column : str
-            the name of the column containing the predicted label for each instance
-        pos_label : int or str, (optional, default=1)
-            the value to be interpreted as a positive instance
-
-        Returns
-        ----------
-            displays the formatted confusion matrix
-
-        Examples
-        ----------
-        >>> print(frame.confusion_matrix('labels', 'predictions'))
-                         Predicted
-                       __pos__ _neg___
-         Actual   pos | 1     | 4
-                  neg | 3     | 2
-
-        """
-
-        return self._backend.confusion_matrix(self, label_column, pred_column, pos_label)
