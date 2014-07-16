@@ -3,19 +3,27 @@ package com.intel.intelanalytics.engine.spark
 import org.scalatest.{ Matchers, FunSuite }
 import com.intel.intelanalytics.engine.TestingSparkContext
 
-/**
- * Tests the distributed implementation of the statistics calculator against the standard definitions.
- */
 class NumericalStatisticsITest extends TestingSparkContext with Matchers {
 
-  trait NumericalStatisticsTest {
+  /**
+   * Tests the distributed implementation of the statistics calculator against the formulae used by SAS.
+   * This (hopefully) is the same as testing against the values provided by SAS on the same data, except that
+   * we can get the formulae from the SAS documentation, whereas we do not have a license to actually run SAS.
+   *
+   * It tests whether or not the distributed implementations (with the accumulators and
+   * whatnot) match the naively implemented formulae on a small data set.
+   */
+  trait NumericalStatisticsTestAgainstFormulas {
 
     val epsilon = 0.000000001
 
-    // the only restriction on the test data is that the mode should be unique, otherwise it's very hard to test
+    // restrictions on the test data:
+    //  - the mode should be unique, otherwise the correctness test is unreliable
+
     val data = List(1, 2, 3, 4, 5, 6, 7, 8).map(x => x.toDouble)
     val frequencies = List(3, 2, 3, 1, 9, 4, 3, 1).map(x => x.toDouble)
 
+    require(data.length > 3, "Test Data in Error: Data should have at least four elements.")
     require(data.length == frequencies.length, "Test Data in Error: Data length and frequencies length are mismatched")
     val totalWeight = frequencies.reduce(_ + _)
 
@@ -27,22 +35,25 @@ class NumericalStatisticsITest extends TestingSparkContext with Matchers {
     val dataWeightPairs: List[(Double, Double)] = data.zip(normalizedWeights)
     val dataWeightRDD = sc.parallelize(dataWeightPairs)
 
+    val numericalStatisticsFrequencies = new NumericalStatistics(dataFrequencyRDD)
+
+    val numericalStatisticsWeights = new NumericalStatistics(dataWeightRDD)
+
     // Formulas for statistics are expected to adhere to the DEFAULT formulas used by SAS in
     // http://support.sas.com/documentation/cdl/en/procstat/63104/HTML/default/viewer.htm#procstat_univariate_sect026.ht
 
     val expectedMean: Double = dataWeightPairs.map({ case (x, w) => x * w }).reduce(_ + _)
     val expectedMax: Double = data.reduce(Math.max(_, _))
     val expectedMin: Double = data.reduce(Math.min(_, _))
-    val expectedCount: Double = data.length
+    val dataCount: Double = data.length
 
     val expectedGeometricMean = dataWeightPairs.map({ case (x, w) => Math.pow(x, w) }).reduce(_ * _)
 
     val expectedMode = dataWeightPairs.reduce(findMode)._1
     private def findMode(x: (Double, Double), y: (Double, Double)) = if (x._2 > y._2) x else y
 
-    // variance and standard deviation are calculated by the formulas from:
-
-    //  !!! with the default setting, d = 1/(n-1), so that the results differ for frequency and normalized weights)
+    //  !!! with SAS default settings, variance, standard deviation, kurtosis and skewness differ
+    //  depending on whether the weights are normalized or not... this is by design
 
     val expectedVariancesFrequencies = (1.toDouble / (data.length - 1).toDouble) *
       dataFrequencyPairs.map({ case (x, w) => w * (x - expectedMean) * (x - expectedMean) }).reduce(_ + _)
@@ -52,149 +63,165 @@ class NumericalStatisticsITest extends TestingSparkContext with Matchers {
 
     val expectedStandardDeviationFrequencies = Math.sqrt(expectedVariancesFrequencies)
     val expectedStandardDeviationWeights = Math.sqrt(expectedVarianceWeights)
+
+    val expectedSkewnessFrequencies = (dataCount / ((dataCount - 1) * (dataCount - 2))) *
+      dataFrequencyPairs.map(
+        { case (x, w) => Math.pow(w, 1.5) * Math.pow(((x - expectedMean) / expectedStandardDeviationFrequencies), 3) })
+      .reduce(_ + _)
+
+    val expectedSkewnessWeights = (dataCount / ((dataCount - 1) * (dataCount - 2))) *
+      dataWeightPairs.map(
+        { case (x, w) => Math.pow(w, 1.5) * Math.pow(((x - expectedMean) / expectedStandardDeviationWeights), 3) })
+      .reduce(_ + _)
+
+    val kurtosisMultiplier = dataCount * (dataCount + 1) / ((dataCount - 1) * (dataCount - 2) * (dataCount - 3))
+    val kurtosisSubtrahend = 3 * (dataCount - 1) * (dataCount - 1) / ((dataCount - 2) * (dataCount - 3))
+
+    val expectedKurtosisFrequencies = kurtosisMultiplier * dataFrequencyPairs.map(
+      { case (x, w) => Math.pow(w, 2) * Math.pow(((x - expectedMean) / expectedStandardDeviationFrequencies), 4) })
+      .reduce(_ + _) - kurtosisSubtrahend
+
+    val expectedKurtosisWeights = kurtosisMultiplier * dataWeightPairs.map(
+      { case (x, w) => Math.pow(w, 2) * Math.pow(((x - expectedMean) / expectedStandardDeviationWeights), 4) })
+      .reduce(_ + _) - kurtosisSubtrahend
   }
 
-  "mean" should "handle data with integer frequencies" in new NumericalStatisticsTest {
+  "mean" should "handle data with integer frequencies" in new NumericalStatisticsTestAgainstFormulas {
 
-    val numericalStatistics = new NumericalStatistics(dataFrequencyRDD)
-
-    val testMean = numericalStatistics.summaryStatistics.mean
+    val testMean = numericalStatisticsFrequencies.summaryStatistics.mean
 
     Math.abs(testMean - expectedMean) should be < epsilon
   }
 
-  "mean" should "handle data with fractional weights" in new NumericalStatisticsTest {
+  "mean" should "handle data with fractional weights" in new NumericalStatisticsTestAgainstFormulas {
 
-    val numericalStatistics = new NumericalStatistics(dataWeightRDD)
-
-    val testMean = numericalStatistics.summaryStatistics.mean
+    val testMean = numericalStatisticsWeights.summaryStatistics.mean
 
     Math.abs(testMean - expectedMean) should be < epsilon
   }
 
-  "geometricMean" should "handle data with integer frequencies" in new NumericalStatisticsTest {
+  "geometricMean" should "handle data with integer frequencies" in new NumericalStatisticsTestAgainstFormulas {
 
-    val numericalStatistics = new NumericalStatistics(dataFrequencyRDD)
-
-    val testGeometricMean = numericalStatistics.summaryStatistics.geometric_mean
+    val testGeometricMean = numericalStatisticsFrequencies.summaryStatistics.geometric_mean
 
     Math.abs(testGeometricMean - expectedGeometricMean) should be < epsilon
   }
 
-  "geometricMean" should "handle data with fractional weights" in new NumericalStatisticsTest {
-
-    val numericalStatistics = new NumericalStatistics(dataWeightRDD)
-
-    val testGeometricMean = numericalStatistics.summaryStatistics.geometric_mean
+  "geometricMean" should "handle data with fractional weights" in new NumericalStatisticsTestAgainstFormulas {
+    val testGeometricMean = numericalStatisticsWeights.summaryStatistics.geometric_mean
 
     Math.abs(testGeometricMean - expectedGeometricMean) should be < epsilon
   }
 
-  "variance" should "handle data with integer frequencies" in new NumericalStatisticsTest {
+  "variance" should "handle data with integer frequencies" in new NumericalStatisticsTestAgainstFormulas {
 
-    val numericalStatistics = new NumericalStatistics(dataFrequencyRDD)
-
-    val testVariance = numericalStatistics.summaryStatistics.variance
+    val testVariance = numericalStatisticsFrequencies.summaryStatistics.variance
 
     Math.abs(testVariance - expectedVariancesFrequencies) should be < epsilon
   }
 
-  "variance" should "handle data with fractional weights" in new NumericalStatisticsTest {
+  "variance" should "handle data with fractional weights" in new NumericalStatisticsTestAgainstFormulas {
 
-    val numericalStatistics = new NumericalStatistics(dataWeightRDD)
-
-    val testVariance = numericalStatistics.summaryStatistics.variance
+    val testVariance = numericalStatisticsWeights.summaryStatistics.variance
 
     Math.abs(testVariance - expectedVarianceWeights) should be < epsilon
   }
 
-  "standard deviation" should "handle data with integer frequencies" in new NumericalStatisticsTest {
+  "standard deviation" should "handle data with integer frequencies" in new NumericalStatisticsTestAgainstFormulas {
 
-    val numericalStatistics = new NumericalStatistics(dataFrequencyRDD)
-
-    val testStandardDeviation = numericalStatistics.summaryStatistics.standard_deviation
+    val testStandardDeviation = numericalStatisticsFrequencies.summaryStatistics.standard_deviation
 
     Math.abs(testStandardDeviation - expectedStandardDeviationFrequencies) should be < epsilon
   }
 
-  "standard deviation" should "handle data with fractional weights" in new NumericalStatisticsTest {
+  "standard deviation" should "handle data with fractional weights" in new NumericalStatisticsTestAgainstFormulas {
 
-    val numericalStatistics = new NumericalStatistics(dataWeightRDD)
-
-    val testStandardDeviation = numericalStatistics.summaryStatistics.standard_deviation
+    val testStandardDeviation = numericalStatisticsWeights.summaryStatistics.standard_deviation
 
     Math.abs(testStandardDeviation - expectedStandardDeviationWeights) should be < epsilon
   }
 
-  "max" should "handle data with integer frequencies" in new NumericalStatisticsTest {
+  "max" should "handle data with integer frequencies" in new NumericalStatisticsTestAgainstFormulas {
 
-    val numericalStatistics = new NumericalStatistics(dataFrequencyRDD)
-
-    val testMax = numericalStatistics.summaryStatistics.maximum
+    val testMax = numericalStatisticsFrequencies.summaryStatistics.maximum
 
     testMax shouldBe expectedMax
   }
 
-  "max" should "handle data with fractional weights" in new NumericalStatisticsTest {
+  "max" should "handle data with fractional weights" in new NumericalStatisticsTestAgainstFormulas {
 
-    val numericalStatistics = new NumericalStatistics(dataWeightRDD)
-
-    val testMax = numericalStatistics.summaryStatistics.maximum
+    val testMax = numericalStatisticsWeights.summaryStatistics.maximum
 
     testMax shouldBe expectedMax
   }
 
-  "min" should "handle data with integer frequencies" in new NumericalStatisticsTest {
+  "min" should "handle data with integer frequencies" in new NumericalStatisticsTestAgainstFormulas {
 
-    val numericalStatistics = new NumericalStatistics(dataFrequencyRDD)
-
-    val testMin = numericalStatistics.summaryStatistics.minimum
+    val testMin = numericalStatisticsFrequencies.summaryStatistics.minimum
 
     testMin shouldBe expectedMin
   }
 
-  "min" should "handle data with fractional weights" in new NumericalStatisticsTest {
+  "min" should "handle data with fractional weights" in new NumericalStatisticsTestAgainstFormulas {
 
-    val numericalStatistics = new NumericalStatistics(dataWeightRDD)
-
-    val testMin = numericalStatistics.summaryStatistics.minimum
+    val testMin = numericalStatisticsWeights.summaryStatistics.minimum
 
     testMin shouldBe expectedMin
   }
 
-  "count" should "handle data with integer frequencies" in new NumericalStatisticsTest {
+  "count" should "handle data with integer frequencies" in new NumericalStatisticsTestAgainstFormulas {
 
-    val numericalStatistics = new NumericalStatistics(dataFrequencyRDD)
+    val testCount = numericalStatisticsFrequencies.summaryStatistics.count
 
-    val testCount = numericalStatistics.summaryStatistics.count
-
-    testCount shouldBe expectedCount
+    testCount shouldBe dataCount
   }
 
-  "count" should "handle data with fractional weights" in new NumericalStatisticsTest {
+  "count" should "handle data with fractional weights" in new NumericalStatisticsTestAgainstFormulas {
 
-    val numericalStatistics = new NumericalStatistics(dataWeightRDD)
+    val testCount = numericalStatisticsWeights.summaryStatistics.count
 
-    val testCount = numericalStatistics.summaryStatistics.count
-
-    testCount shouldBe expectedCount
+    testCount shouldBe dataCount
   }
 
-  "mode" should "handle data with integer frequencies" in new NumericalStatisticsTest {
+  "mode" should "handle data with integer frequencies" in new NumericalStatisticsTestAgainstFormulas {
 
-    val numericalStatistics = new NumericalStatistics(dataFrequencyRDD)
-
-    val testMode = numericalStatistics.summaryStatistics.mode
+    val testMode = numericalStatisticsFrequencies.summaryStatistics.mode
 
     testMode shouldBe expectedMode
   }
 
-  "mode" should "handle data with fractional weights" in new NumericalStatisticsTest {
+  "mode" should "handle data with fractional weights" in new NumericalStatisticsTestAgainstFormulas {
 
-    val numericalStatistics = new NumericalStatistics(dataWeightRDD)
-
-    val testMode = numericalStatistics.summaryStatistics.mode
+    val testMode = numericalStatisticsWeights.summaryStatistics.mode
 
     testMode shouldBe expectedMode
+  }
+
+  "skewness" should "handle data with integer frequencies" in new NumericalStatisticsTestAgainstFormulas {
+
+    val testSkewness = numericalStatisticsFrequencies.fullStatistics.skewness
+
+    Math.abs(testSkewness - expectedSkewnessFrequencies) should be < epsilon
+  }
+
+  "skewness" should "handle data with fractional weights" in new NumericalStatisticsTestAgainstFormulas {
+
+    val testSkewness = numericalStatisticsWeights.fullStatistics.skewness
+
+    Math.abs(testSkewness - expectedSkewnessWeights) should be < epsilon
+  }
+
+  "kurtosis" should "handle data with integer frequencies" in new NumericalStatisticsTestAgainstFormulas {
+
+    val testKurtosis = numericalStatisticsFrequencies.fullStatistics.kurtosis
+
+    Math.abs(testKurtosis - expectedKurtosisFrequencies) should be < epsilon
+  }
+
+  "kurtosis" should "handle data with fractional weights" in new NumericalStatisticsTestAgainstFormulas {
+
+    val testKurtosis = numericalStatisticsWeights.fullStatistics.kurtosis
+
+    Math.abs(testKurtosis - expectedKurtosisWeights) should be < epsilon
   }
 }
