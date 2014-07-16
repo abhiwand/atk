@@ -23,20 +23,18 @@
 
 package com.intel.intelanalytics.shared
 
-
 import java.net.URI
 
 import com.intel.intelanalytics.domain.frame.FrameReference
 import com.intel.intelanalytics.domain.graph.GraphReference
 import com.intel.intelanalytics.schema._
 import spray.json.{ AdditionalFormats, StandardFormats }
-import com.intel.intelanalytics.spray.json.{JsonPropertyNameConverter, CustomProductFormats}
+import com.intel.intelanalytics.spray.json.{ JsonPropertyNameConverter, CustomProductFormats }
 import org.joda.time.DateTime
 import scala.reflect.api.JavaUniverse
 import scala.reflect.runtime.{ universe => ru }
 import ru._
 import scala.reflect.ClassTag
-
 
 /**
  * Helper to allow access to spray-json utility so that we can ensure we're
