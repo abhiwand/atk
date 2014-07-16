@@ -27,10 +27,10 @@ import com.intel.intelanalytics.domain.command.{ CommandTemplate, Command }
 import scala.util.Try
 import spray.json.JsObject
 
-trait OperationStorage[Entity, EntityTemplate] {
-  def lookup(id: Long): Option[Entity]
-  def create(frame: EntityTemplate): Entity
-  def scan(offset: Int, count: Int): Seq[Entity]
+trait CommandStorage {
+  def lookup(id: Long): Option[Command]
+  def create(frame: CommandTemplate): Command
+  def scan(offset: Int, count: Int): Seq[Command]
   def start(id: Long): Unit
   def complete(id: Long, result: Try[JsObject]): Unit
 
@@ -42,6 +42,3 @@ trait OperationStorage[Entity, EntityTemplate] {
    */
   def updateProgress(id: Long, progress: List[Float], detailedProgress: List[ProgressInfo]): Unit
 }
-
-trait CommandStorage extends OperationStorage[Command, CommandTemplate]
-
