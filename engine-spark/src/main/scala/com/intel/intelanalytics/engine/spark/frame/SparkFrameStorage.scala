@@ -33,6 +33,7 @@ import scala.io.{ Codec, Source }
 import org.apache.spark.rdd.RDD
 import com.intel.intelanalytics.engine.spark.{ SparkEngineConfig, HdfsFileStorage, SparkOps, SparkComponent }
 import org.apache.spark.SparkContext
+import scala.util.Try
 import scala.util.matching.Regex
 import java.util.concurrent.atomic.AtomicLong
 import com.intel.intelanalytics.domain.frame.{ Column, DataFrame, DataFrameTemplate }
@@ -59,6 +60,7 @@ class SparkFrameStorage(context: UserPrincipal => Context, fsRoot: String, files
   }
 
   override def drop(frame: DataFrame): Unit = {
+    deleteFrameFile(frame.id)
     metaStore.withSession("frame.drop") {
       implicit session =>
         {
@@ -67,6 +69,14 @@ class SparkFrameStorage(context: UserPrincipal => Context, fsRoot: String, files
 
         }
     }
+  }
+
+  /**
+   * Remove the underlying data file from HDFS.
+   * @param frameId primary key from Frame Table
+   */
+  private def deleteFrameFile(frameId: Long): Unit = {
+    files.delete(Paths.get(getFrameDirectory(frameId)))
   }
 
   override def appendRows(startWith: DataFrame, append: Iterable[Row]): Unit = {
@@ -108,8 +118,7 @@ class SparkFrameStorage(context: UserPrincipal => Context, fsRoot: String, files
       implicit session =>
         {
           val newFrame = frame.copy(name = newName)
-          metaStore.frameRepo.update(newFrame)
-          frame
+          metaStore.frameRepo.update(newFrame).get
         }
     }
   }
@@ -131,7 +140,7 @@ class SparkFrameStorage(context: UserPrincipal => Context, fsRoot: String, files
 
           val newColumns = frame.schema.columns.map(col => (generateNewColumnTuple(col._1, columnsToRename, newColumnNames), col._2))
           metaStore.frameRepo.updateSchema(frame, newColumns)
-          frame
+
         }
     }
 
@@ -142,7 +151,6 @@ class SparkFrameStorage(context: UserPrincipal => Context, fsRoot: String, files
         {
           val newColumns = frame.schema.columns :+ (column.name, columnType)
           metaStore.frameRepo.updateSchema(frame, newColumns)
-          frame
         }
     }
   override def getRows(frame: DataFrame, offset: Long, count: Int)(implicit user: UserPrincipal): Iterable[Row] =
@@ -200,11 +208,13 @@ class SparkFrameStorage(context: UserPrincipal => Context, fsRoot: String, files
     }
   }
 
-  override def create(frame: DataFrameTemplate)(implicit user: UserPrincipal): DataFrame = {
+  override def create(frameTemplate: DataFrameTemplate)(implicit user: UserPrincipal): DataFrame = {
     metaStore.withSession("frame.createFrame") {
       implicit session =>
         {
-          metaStore.frameRepo.insert(frame).get
+          val frame = metaStore.frameRepo.insert(frameTemplate).get
+          deleteFrameFile(frame.id)
+          frame
         }
     }
   }
