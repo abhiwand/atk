@@ -26,9 +26,7 @@ package org.apache.spark.engine
 import org.apache.spark.scheduler._
 import scala.collection.mutable.{ ListBuffer, HashMap, HashSet }
 import org.apache.spark.scheduler.SparkListenerTaskEnd
-import org.apache.spark.scheduler.SparkListenerJobEnd
 import org.apache.spark.scheduler.SparkListenerStageSubmitted
-import org.apache.spark.scheduler.JobFailed
 import org.apache.spark.scheduler.SparkListenerStageCompleted
 import scala.Some
 import org.apache.spark.scheduler.SparkListenerJobStart
