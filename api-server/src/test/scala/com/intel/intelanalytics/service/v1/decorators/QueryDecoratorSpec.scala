@@ -27,15 +27,14 @@ import com.intel.intelanalytics.domain.command.Command
 import com.intel.intelanalytics.domain.query.Query
 import com.intel.intelanalytics.service.v1.viewmodels.RelLink
 import org.joda.time.DateTime
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.{ FlatSpec, Matchers }
 
 class QueryDecoratorSpec extends FlatSpec with Matchers {
 
   val uri = "http://www.example.com/queries"
   val relLinks = Seq(RelLink("foo", uri, "GET"))
-  val query = new Query(1, "name", None, None, List(20.00f), List(), true, Some(2), None, new DateTime, new DateTime)
-  val query2 = new Query(2, "name2", None, None, List(20.00f), List(), true, Some(3), None, new DateTime, new DateTime)
-
+  val query = new Query(1, "name", None, None, true, Some(2), None, new DateTime, new DateTime)
+  val query2 = new Query(2, "name2", None, None, true, Some(3), None, new DateTime, new DateTime)
 
   "QueryDecorator" should "be able to decorate a query" in {
     val decoratedQuery = QueryDecorator.decorateEntity(null, relLinks, query)
@@ -62,7 +61,7 @@ class QueryDecoratorSpec extends FlatSpec with Matchers {
   it should "return data when requesting a single page" in {
     val decoratedPage = QueryDecorator.decoratePage(uri, relLinks, query, 1, List())
     decoratedPage.links.head.uri should be(uri)
-    decoratedPage.result should not be(None)
+    decoratedPage.result should not be (None)
     decoratedPage.result.get.page should be(Some(1))
     decoratedPage.result.get.totalPages should be(Some(2))
     decoratedPage.result.get.data should be(Some(List()))

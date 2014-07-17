@@ -15,8 +15,6 @@ CREATE TABLE queries (
   name character varying(254) NOT NULL,
   arguments text,
   error text,
-  progress text NOT NULL DEFAULT '[]',
-  detailed_progress text NOT NULL DEFAULT '[]',
   complete boolean DEFAULT false NOT NULL,
   total_pages bigint,
   page_size bigint,

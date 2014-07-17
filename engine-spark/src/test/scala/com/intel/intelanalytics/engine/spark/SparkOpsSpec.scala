@@ -84,4 +84,11 @@ class SparkOpsTest extends TestingSparkContext with Matchers {
 
     results.groupBy { case Array(index, _, _) => index }.count(_._2.length > 1) should equal(0)
   }
+
+  "getElements" should "be able to return non row objects" in {
+    val data = sc.parallelize(List.range(0, 100))
+
+    val results = SparkOps.getElements(data, 0, max, max)
+    results(0).getClass should equal(Integer.TYPE)
+  }
 }

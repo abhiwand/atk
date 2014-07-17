@@ -56,7 +56,7 @@ class QueryServiceSpec extends ServiceSpec {
     val queryService = new QueryService(commonDirectives, engine)
 
     when(engine.getQueries(0, 20)).thenReturn(
-      Future.successful(Seq(Query(1, "dataframes/data", None, None, List(1), List(), false, Some(5), Some(10), new DateTime(), new DateTime(), None))))
+      Future.successful(Seq(Query(1, "dataframes/data", None, None, false, Some(5), Some(10), new DateTime(), new DateTime(), None))))
 
     Get("/queries") ~> queryService.queryRoutes() ~> check {
       val r = responseAs[String]
@@ -74,7 +74,7 @@ class QueryServiceSpec extends ServiceSpec {
     val queryService = new QueryService(commonDirectives, engine)
 
     when(engine.getQuery(1)).thenReturn(
-      Future.successful(Some(Query(1, "dataframes/data", None, None, List(1), List(), false, Some(5), None, new DateTime(), new DateTime(), None))))
+      Future.successful(Some(Query(1, "dataframes/data", None, None, false, Some(5), None, new DateTime(), new DateTime(), None))))
 
     Get("/queries/1") ~> queryService.queryRoutes() ~> check {
       val r = responseAs[String]
@@ -97,7 +97,7 @@ class QueryServiceSpec extends ServiceSpec {
     val queryService = new QueryService(commonDirectives, engine)
 
     when(engine.getQuery(1)).thenReturn(
-      Future.successful(Some(Query(1, "dataframes/data", None, None, List(1), List(), true, Some(5), None, new DateTime(), new DateTime(), None))))
+      Future.successful(Some(Query(1, "dataframes/data", None, None, true, Some(5), None, new DateTime(), new DateTime(), None))))
 
     Get("/queries/1/data") ~> queryService.queryRoutes() ~> check {
       val r = responseAs[String]
@@ -120,13 +120,13 @@ class QueryServiceSpec extends ServiceSpec {
     }
   }
 
-  "QueryService" should "give a the data when requesting query partitions" in {
+  "QueryService" should "give the data when requesting query partitions" in {
 
     val engine = mock[Engine]
     val queryService = new QueryService(commonDirectives, engine)
 
     when(engine.getQuery(1)).thenReturn(
-      Future.successful(Some(Query(1, "dataframes/data", None, None, List(1), List(), true, Some(5), None, new DateTime(), new DateTime(), None))))
+      Future.successful(Some(Query(1, "dataframes/data", None, None, true, Some(5), None, new DateTime(), new DateTime(), None))))
 
     when(engine.getQueryPage(1, 0)).thenReturn(
       List()
@@ -140,7 +140,7 @@ class QueryServiceSpec extends ServiceSpec {
                     |  "complete": true,
                     |  "result": {
                     |    "data": [],
-                    |    "pages": 1,
+                    |    "page": 1,
                     |    "totalPages": 5
                     |  },
                     |  "links": [{
