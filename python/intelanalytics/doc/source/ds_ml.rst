@@ -2,12 +2,11 @@
 Machine Learning
 ================
 
-:term:`Machine learning` is a branch of artificial intelligence.
-It is about constructing and studying software that can "learn" from data.
+:term:`Machine learning` is about constructing and studying software that can "learn" from data.
 
 When you enter a search phrase or question in an internet search tool, you get a list of websites ranked in order of relevance.
 The search engine bases its list on the content of the site, the links in each sites' webpages, how often users visit these sites,
-"how often users follow the suggested links in a query, and examples of queries and manually ranked webpages."
+how often users follow the suggested links in a query, and examples of queries and manually ranked webpages.
 More and more, :term:`machine learning` is being used to automate search engines.
 (See `Introduction to Machine Learning`_ [#f1]_ )
 
@@ -25,10 +24,6 @@ It is possible to use examples of pre-translated to text to enable an algorithm 
 This requires many good examples of translations, but ultimately, the software learns how to translate, at least for specific languages.
 
 To solve these and other problems, we need to be able to build software that can "learn" from data.
-We also want to consider each problem by the type of data involved.
-That way, when we encounter new problems, we can look at the type of data and previous solutions.
-Even when we have similar problems, the data may use different measures, feet, inches, meters, pounds, kilograms, Euros, yen, dollars, or pesos.
-To automate these problems and the solutions, we need to normalize the data.
 
 ---------------
 Other Resources
@@ -53,7 +48,6 @@ For more information `Wikipedia\: Machine Learning / Algorithm Types`_ has a lon
 Then the generalized learning is applied to new problems.
 
 :term:`Unsupervised Learning` - Here the algorithm learns from data where the outcome is unknown.
-The idea here is to find new structure in the data.
 
 :term:`Semi-Supervised Learning` - In this case, some of the data given to the algorithm are known, as in supervised learning,
 and some are unknown, as in unsupervised learning.

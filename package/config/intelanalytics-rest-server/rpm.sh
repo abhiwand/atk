@@ -25,11 +25,29 @@ log files live in /var/log/intelanalytics/rest-server"
 
 REQUIRES=" java >= 1.7, intelanalytics-python-rest-client >= 0.8-${BUILD_NUMBER}, intelanalytics-graphbuilder >= 0.8-${BUILD_NUMBER}"
 
+PRE="
+restUser=iauser
+if [ \"\`cat /etc/passwd | grep \$restUser\`\" == \"\" ]; then
+	echo create \$restUser
+	useradd -G hadoop \$restUser	
+fi
+
+hadoop fs -ls /user/iauser 2>/dev/null
+if [ \$? -eq 1 ]; then
+	echo create \$restUser hdfs home directory
+	su -c \"hadoop fs -mkdir /user/\$restUser\" hdfs
+	su -c \"hadoop fs -chown iauser:iauser /user/\$restUser\" hdfs
+	su -c \"hadoop fs -chmod 755 /user/\$restUser\" hdfs
+fi
+"
+
 POST="
+
  if [ \$1 -eq 2 ]; then
     echo start intelanalytics-rest-server
     service intelanalytics-rest-server restart
  fi
+ 
 "
 
 PREUN="
