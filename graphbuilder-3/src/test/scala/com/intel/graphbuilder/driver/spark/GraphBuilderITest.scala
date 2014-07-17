@@ -90,7 +90,7 @@ class GraphBuilderITest extends Specification {
       val inputRdd2 = sc.parallelize(additionalInputRows.asInstanceOf[Seq[_]]).asInstanceOf[RDD[Seq[_]]]
 
       // Append to the existing Graph
-      val gb2 = new GraphBuilder(config.copy(append = true, retainDanglingEdges = true, biDirectional = true, inferSchema = false))
+      val gb2 = new GraphBuilder(config.copy(append = true, retainDanglingEdges = true, inferSchema = false))
       gb2.build(inputRdd2)
 
       // Validate

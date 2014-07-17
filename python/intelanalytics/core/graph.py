@@ -412,6 +412,18 @@ class BigGraph(CommandSupport):
         """
         return self._uri
 
+    def append(self, rules=None):
+        """
+        Append frame data to the current graph
+
+        Parameters
+        ----------
+        rules : list of Rule
+            list of rules which specify how the graph will be added to; if empty
+            no data will be added.
+        """
+        self._backend.append(self, rules)
+
     def _get_new_graph_name(self):
         return "graph_" + uuid.uuid4().hex
 
