@@ -229,7 +229,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
 
   val renameFrameCommand = commands.registerCommand("dataframe/rename_frame", renameFrameSimple)
 
-  private def renameFrameSimple(arguments: FrameRenameFrame, user: UserPrincipal) = {
+  private def renameFrameSimple(arguments: FrameRenameFrame, user: UserPrincipal): DataFrame = {
     val frame = expectFrame(arguments.frame)
     val newName = arguments.new_name
     frames.renameFrame(frame, newName)
@@ -781,7 +781,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
 
   def confusionMatrixSimple(arguments: ConfusionMatrix[Long], user: UserPrincipal): ConfusionMatrixValues = {
     val frameId: Long = arguments.frameId
-    val realFrame: DataFrame = getDataFrameById(frameId)
+    val realFrame: DataFrame = getDataFrameById(frameId)(user)
 
     val ctx = sparkContextManager.context(user).sparkContext
 
