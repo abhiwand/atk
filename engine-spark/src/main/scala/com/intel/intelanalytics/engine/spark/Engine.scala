@@ -859,10 +859,10 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     val newFrame = Await.result(create(DataFrameTemplate(arguments.name, None)), SparkEngineConfig.defaultTimeout)
 
     val cumulativeDistRdd = arguments.distType match {
-      case "cumulative_sum" => SparkOps.cumulativeSum(frameRdd, sampleIndex)
-      case "cumulative_count" => SparkOps.cumulativeCount(frameRdd, sampleIndex, arguments.countValue)
-      case "cumulative_percent_sum" => SparkOps.cumulativePercentSum(frameRdd, sampleIndex)
-      case "cumulative_percent_count" => SparkOps.cumulativePercentCount(frameRdd, sampleIndex, arguments.countValue)
+      case "cumulative_sum" => SparkOps.cumulativeSum(frameRdd, sampleIndex, arguments.dataType)
+      case "cumulative_count" => SparkOps.cumulativeCount(frameRdd, sampleIndex, arguments.countValue, arguments.dataType)
+      case "cumulative_percent_sum" => SparkOps.cumulativePercentSum(frameRdd, sampleIndex, arguments.dataType)
+      case "cumulative_percent_count" => SparkOps.cumulativePercentCount(frameRdd, sampleIndex, arguments.countValue, arguments.dataType)
       case _ => throw new IllegalArgumentException()
     }
 

@@ -726,7 +726,7 @@ private[spark] object SparkOps extends Serializable {
     }
   }
 
-  def cumulativeSum(frameRdd: RDD[Row], sampleIndex: Int): RDD[Row] = {
+  def cumulativeSum(frameRdd: RDD[Row], sampleIndex: Int, dataType: String): RDD[Row] = {
     // parse values
     val pairedRdd = try {
       frameRdd.map(row => (java.lang.Double.parseDouble(row(sampleIndex).toString), java.lang.Double.parseDouble(row(sampleIndex).toString)))
@@ -748,10 +748,17 @@ private[spark] object SparkOps extends Serializable {
         for { i <- 0 to index } startValue += java.lang.Double.parseDouble(partSums(i).toString)
         partition.scanLeft((0.0, startValue))((prev, curr) => (curr._1, prev._2 + curr._2)).drop(1)
       }
-    }.map(x => Array(x._1.asInstanceOf[Any], x._2.asInstanceOf[Any]))
+    }.map(x => {
+      dataType match {
+        case "int32" => Array(x._1.toInt.asInstanceOf[Any], x._2.asInstanceOf[Any])
+        case "int64" => Array(x._1.toLong.asInstanceOf[Any], x._2.asInstanceOf[Any])
+        case "float32" => Array(x._1.toFloat.asInstanceOf[Any], x._2.asInstanceOf[Any])
+        case "float64" => Array(x._1.toDouble.asInstanceOf[Any], x._2.asInstanceOf[Any])
+      }
+    })
   }
 
-  def cumulativeCount(frameRdd: RDD[Row], sampleIndex: Int, countValue: String): RDD[Row] = {
+  def cumulativeCount(frameRdd: RDD[Row], sampleIndex: Int, countValue: String, dataType: String): RDD[Row] = {
     // parse values
     val pairedRdd = frameRdd.map(row => {
       val sampleValue = row(sampleIndex).toString
@@ -775,10 +782,18 @@ private[spark] object SparkOps extends Serializable {
         for { i <- 0 to index } startValue += partSums(i)
         partition.scanLeft(("0", startValue))((prev, curr) => (curr._1, prev._2 + curr._2)).drop(1)
       }
-    }.map(x => Array(x._1.asInstanceOf[Any], x._2.asInstanceOf[Any]))
+    }.map(x => {
+      dataType match {
+        case "int32" => Array(x._1.toInt.asInstanceOf[Any], x._2.asInstanceOf[Any])
+        case "int64" => Array(x._1.toLong.asInstanceOf[Any], x._2.asInstanceOf[Any])
+        case "float32" => Array(x._1.toFloat.asInstanceOf[Any], x._2.asInstanceOf[Any])
+        case "float64" => Array(x._1.toDouble.asInstanceOf[Any], x._2.asInstanceOf[Any])
+        case _ => Array(x._1.asInstanceOf[Any], x._2.asInstanceOf[Any])
+      }
+    })
   }
 
-  def cumulativePercentSum(frameRdd: RDD[Row], sampleIndex: Int): RDD[Row] = {
+  def cumulativePercentSum(frameRdd: RDD[Row], sampleIndex: Int, dataType: String): RDD[Row] = {
     // parse values
     val pairedRdd = try {
       frameRdd.map(row => (java.lang.Double.parseDouble(row(sampleIndex).toString), java.lang.Double.parseDouble(row(sampleIndex).toString)))
@@ -803,13 +818,27 @@ private[spark] object SparkOps extends Serializable {
       }
     }.map(x => {
       n match {
-        case 0 => Array(x._1.asInstanceOf[Any], 1.asInstanceOf[Any])
-        case _ => Array(x._1.asInstanceOf[Any], (x._2 / n.toDouble).asInstanceOf[Any])
+        case 0 => {
+          dataType match {
+            case "int32" => Array(x._1.toInt.asInstanceOf[Any], 1.asInstanceOf[Any])
+            case "int64" => Array(x._1.toLong.asInstanceOf[Any], 1.asInstanceOf[Any])
+            case "float32" => Array(x._1.toFloat.asInstanceOf[Any], 1.asInstanceOf[Any])
+            case "float64" => Array(x._1.toDouble.asInstanceOf[Any], 1.asInstanceOf[Any])
+          }
+        }
+        case _ => {
+          dataType match {
+            case "int32" => Array(x._1.toInt.asInstanceOf[Any], (x._2 / n.toDouble).asInstanceOf[Any])
+            case "int64" => Array(x._1.toLong.asInstanceOf[Any], (x._2 / n.toDouble).asInstanceOf[Any])
+            case "float32" => Array(x._1.toFloat.asInstanceOf[Any], (x._2 / n.toDouble).asInstanceOf[Any])
+            case "float64" => Array(x._1.toDouble.asInstanceOf[Any], (x._2 / n.toDouble).asInstanceOf[Any])
+          }
+        }
       }
     })
   }
 
-  def cumulativePercentCount(frameRdd: RDD[Row], sampleIndex: Int, countValue: String): RDD[Row] = {
+  def cumulativePercentCount(frameRdd: RDD[Row], sampleIndex: Int, countValue: String, dataType: String): RDD[Row] = {
     // parse values
     val pairedRdd = frameRdd.map(row => {
       val sampleValue = row(sampleIndex).toString
@@ -837,8 +866,24 @@ private[spark] object SparkOps extends Serializable {
       }
     }.map(x => {
       n match {
-        case 0 => Array(x._1.asInstanceOf[Any], 1.asInstanceOf[Any])
-        case _ => Array(x._1.asInstanceOf[Any], (x._2 / n.toDouble).asInstanceOf[Any])
+        case 0 => {
+          dataType match {
+            case "int32" => Array(x._1.toInt.asInstanceOf[Any], 1.asInstanceOf[Any])
+            case "int64" => Array(x._1.toLong.asInstanceOf[Any], 1.asInstanceOf[Any])
+            case "float32" => Array(x._1.toFloat.asInstanceOf[Any], 1.asInstanceOf[Any])
+            case "float64" => Array(x._1.toDouble.asInstanceOf[Any], 1.asInstanceOf[Any])
+            case _ => Array(x._1.asInstanceOf[Any], 1.asInstanceOf[Any])
+          }
+        }
+        case _ => {
+          dataType match {
+            case "int32" => Array(x._1.toInt.asInstanceOf[Any], (x._2 / n.toDouble).asInstanceOf[Any])
+            case "int64" => Array(x._1.toLong.asInstanceOf[Any], (x._2 / n.toDouble).asInstanceOf[Any])
+            case "float32" => Array(x._1.toFloat.asInstanceOf[Any], (x._2 / n.toDouble).asInstanceOf[Any])
+            case "float64" => Array(x._1.toDouble.asInstanceOf[Any], (x._2 / n.toDouble).asInstanceOf[Any])
+            case _ => Array(x._1.asInstanceOf[Any], (x._2 / n.toDouble).asInstanceOf[Any])
+          }
+        }
       }
     })
   }
