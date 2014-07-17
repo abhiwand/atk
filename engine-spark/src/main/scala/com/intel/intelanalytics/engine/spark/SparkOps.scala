@@ -27,7 +27,7 @@ import com.intel.intelanalytics.domain.frame.load.Load
 import com.intel.intelanalytics.domain.schema.DataTypes
 import com.intel.intelanalytics.engine.Rows._
 import com.intel.intelanalytics.engine.spark.frame.RDDJoinParam
-import org.apache.spark.SparkContext
+import org.apache.spark.{ SparkException, SparkContext }
 import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.RDD
 import spray.json.JsObject
@@ -732,6 +732,7 @@ private[spark] object SparkOps extends Serializable {
       frameRdd.map(row => (java.lang.Double.parseDouble(row(sampleIndex).toString), java.lang.Double.parseDouble(row(sampleIndex).toString)))
     }
     catch {
+      case se: SparkException => throw new SparkException("Non-numeric column: " + se.toString)
       case cce: NumberFormatException => throw new NumberFormatException("Non-numeric column: " + cce.toString)
     }
 
@@ -752,20 +753,15 @@ private[spark] object SparkOps extends Serializable {
 
   def cumulativeCount(frameRdd: RDD[Row], sampleIndex: Int, countValue: String): RDD[Row] = {
     // parse values
-    val pairedRdd = try {
-      frameRdd.map(row => {
-        val sampleValue = row(sampleIndex).toString
-        if (sampleValue.equals(countValue)) {
-          (java.lang.Double.parseDouble(sampleValue), 1)
-        }
-        else {
-          (java.lang.Double.parseDouble(sampleValue), 0)
-        }
-      })
-    }
-    catch {
-      case cce: NumberFormatException => throw new NumberFormatException("Non-numeric column: " + cce.toString)
-    }
+    val pairedRdd = frameRdd.map(row => {
+      val sampleValue = row(sampleIndex).toString
+      if (sampleValue.equals(countValue)) {
+        (sampleValue, 1)
+      }
+      else {
+        (sampleValue, 0)
+      }
+    })
 
     // compute the partition sums
     val partSums = 0 +: pairedRdd.mapPartitionsWithIndex {
@@ -777,7 +773,7 @@ private[spark] object SparkOps extends Serializable {
       case (index, partition) => {
         var startValue = 0
         for { i <- 0 to index } startValue += partSums(i)
-        partition.scanLeft((0.0, startValue))((prev, curr) => (curr._1, prev._2 + curr._2)).drop(1)
+        partition.scanLeft(("0", startValue))((prev, curr) => (curr._1, prev._2 + curr._2)).drop(1)
       }
     }.map(x => Array(x._1.asInstanceOf[Any], x._2.asInstanceOf[Any]))
   }
@@ -796,40 +792,34 @@ private[spark] object SparkOps extends Serializable {
       case (index, partition) => Iterator(partition.map(pair => pair._2).sum)
     }.collect()
 
-    val n = pairedRdd.count()
-
-    val groupedRdd = pairedRdd.groupByKey().map(value => (value._1, value._2.size))
-
-    val sortedRdd = groupedRdd.sortByKey()
+    val n = pairedRdd.map(pair => pair._2).sum()
 
     // compute cumulative sum
-    sortedRdd.mapPartitionsWithIndex {
+    pairedRdd.mapPartitionsWithIndex {
       case (index, partition) => {
         var startValue = 0.0
         for { i <- 0 to index } startValue += java.lang.Double.parseDouble(partSums(i).toString)
-        partition.scanLeft((0.0, 0.0, startValue))((prev, curr) => (curr._1, curr._2, prev._2 + (curr._1 * curr._2))).drop(1)
+        partition.scanLeft((0.0, startValue))((prev, curr) => (curr._1, prev._2 + curr._2)).drop(1)
       }
-    }.flatMap(x => {
-      for { i <- 0 to x._2.asInstanceOf[Int] } yield Array(x._1.asInstanceOf[Any], (x._3 / n.toDouble).asInstanceOf[Any])
+    }.map(x => {
+      n match {
+        case 0 => Array(x._1.asInstanceOf[Any], 1.asInstanceOf[Any])
+        case _ => Array(x._1.asInstanceOf[Any], (x._2 / n.toDouble).asInstanceOf[Any])
+      }
     })
   }
 
   def cumulativePercentCount(frameRdd: RDD[Row], sampleIndex: Int, countValue: String): RDD[Row] = {
     // parse values
-    val pairedRdd = try {
-      frameRdd.map(row => {
-        val sampleValue = row(sampleIndex).toString
-        if (sampleValue.equals(countValue)) {
-          (java.lang.Double.parseDouble(sampleValue), 1)
-        }
-        else {
-          (java.lang.Double.parseDouble(sampleValue), 0)
-        }
-      })
-    }
-    catch {
-      case cce: NumberFormatException => throw new NumberFormatException("Non-numeric column: " + cce.toString)
-    }
+    val pairedRdd = frameRdd.map(row => {
+      val sampleValue = row(sampleIndex).toString
+      if (sampleValue.equals(countValue)) {
+        (sampleValue, 1)
+      }
+      else {
+        (sampleValue, 0)
+      }
+    })
 
     // compute the partition sums
     val partSums = 0 +: pairedRdd.mapPartitionsWithIndex {
@@ -843,9 +833,14 @@ private[spark] object SparkOps extends Serializable {
       case (index, partition) => {
         var startValue = 0
         for { i <- 0 to index } startValue += partSums(i)
-        partition.scanLeft((0.0, startValue))((prev, curr) => (curr._1, prev._2 + curr._2)).drop(1)
+        partition.scanLeft(("0", startValue))((prev, curr) => (curr._1, prev._2 + curr._2)).drop(1)
       }
-    }.map(x => Array(x._1.asInstanceOf[Any], (x._2 / n.toDouble).asInstanceOf[Any]))
+    }.map(x => {
+      n match {
+        case 0 => Array(x._1.asInstanceOf[Any], 1.asInstanceOf[Any])
+        case _ => Array(x._1.asInstanceOf[Any], (x._2 / n.toDouble).asInstanceOf[Any])
+      }
+    })
   }
 
 }

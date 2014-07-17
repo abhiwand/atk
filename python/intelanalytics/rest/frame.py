@@ -411,15 +411,15 @@ class FrameBackendRest(object):
     def cumulative_dist(self, frame, sample_col, dist_type, count_value="1"):
         if not sample_col in frame.column_names:
             raise ValueError("sample_col does not exist in frame")
-        import numpy as np
         col_types = dict(frame.schema)
-        if not col_types[sample_col] in [np.float32, np.float64, np.int32, np.int64]:
-            raise ValueError("invalid sample_col type")
+        data_type = col_types.get(sample_col)
+        if dist_type in ['cumulative_sum', 'cumulative_percent_sum'] and not data_type in ['float32', 'float64', 'int32', 'int64']:
+            raise ValueError("invalid sample_col type for the specified dist_type")
         if not dist_type in ['cumulative_sum', 'cumulative_count', 'cumulative_percent_sum', 'cumulative_percent_count']:
             raise ValueError("invalid distribution type")
         # TODO: check count_value
         name = self._get_new_frame_name()
-        arguments = {'frameId': frame._id, 'name': name, 'sampleCol': sample_col, 'distType': dist_type, 'countValue': str(count_value)}
+        arguments = {'frameId': frame._id, 'name': name, 'sampleCol': sample_col, 'distType': dist_type, 'dataType': str(data_type), 'countValue': str(count_value)}
         return execute_new_frame_command('cumulative_dist', arguments)
 
 class FrameInfo(object):

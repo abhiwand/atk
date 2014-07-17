@@ -868,7 +868,21 @@ class SparkEngine(sparkContextManager: SparkContextManager,
 
     cumulativeDistRdd.saveAsObjectFile(fsRoot + frames.getFrameDataFile(newFrame.id))
 
-    val allColumns = List((arguments.sampleCol, DataTypes.float64), (arguments.sampleCol + "CumulativeSum", DataTypes.float64))
+    val columnName = arguments.distType match {
+      case "cumulative_sum" => "CumulativeSum"
+      case "cumulative_count" => "CumulativeCount"
+      case "cumulative_percent_sum" => "CumulativePercentSum"
+      case "cumulative_percent_count" => "CumulativePercentCount"
+      case _ => throw new IllegalArgumentException()
+    }
+
+    val allColumns = arguments.dataType match {
+      case "int32" => List((arguments.sampleCol, DataTypes.int32), (arguments.sampleCol + columnName, DataTypes.float64))
+      case "int64" => List((arguments.sampleCol, DataTypes.int64), (arguments.sampleCol + columnName, DataTypes.float64))
+      case "float32" => List((arguments.sampleCol, DataTypes.float32), (arguments.sampleCol + columnName, DataTypes.float64))
+      case "float64" => List((arguments.sampleCol, DataTypes.float64), (arguments.sampleCol + columnName, DataTypes.float64))
+      case _ => List((arguments.sampleCol, DataTypes.string), (arguments.sampleCol + columnName, DataTypes.float64))
+    }
     frames.updateSchema(newFrame, allColumns)
     newFrame.copy(schema = Schema(allColumns))
   }
