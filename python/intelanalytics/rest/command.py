@@ -159,12 +159,11 @@ class CommandRequest(object):
 
 
 class CommandInfo(object):
-    __commands_regex = re.compile("""^http.+/[queries|commands]/\d+""")
+    __commands_regex = re.compile("""^http.+/(queries|commands)/\d+""")
 
     @staticmethod
     def is_valid_command_uri(uri):
-        return True
-        # return CommandInfo.__commands_regex.match(uri) is not None
+        return CommandInfo.__commands_regex.match(uri) is not None
 
     def __init__(self, response_payload):
         self._payload = response_payload
