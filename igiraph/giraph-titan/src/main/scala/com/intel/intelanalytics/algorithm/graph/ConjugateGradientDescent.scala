@@ -23,8 +23,8 @@
 
 package com.intel.intelanalytics.algorithm.graph
 
-import com.intel.giraph.algorithms.als.AlternatingLeastSquaresComputation
-import com.intel.giraph.io.titan.hbase.TitanHBaseVertexInputFormatPropertyGraph4CF
+import com.intel.giraph.algorithms.cgd.ConjugateGradientDescentComputation
+import com.intel.giraph.io.titan.hbase.{ TitanHBaseVertexInputFormatPropertyGraph4CFCGD, TitanHBaseVertexInputFormatPropertyGraph4CF }
 import com.intel.giraph.io.titan.TitanVertexOutputFormatPropertyGraph4CF
 import com.intel.intelanalytics.domain.DomainJsonProtocol
 import com.intel.intelanalytics.domain.graph.GraphReference
@@ -39,7 +39,7 @@ import scala.concurrent.duration._
 import scala.concurrent._
 import scala.collection.JavaConverters._
 
-case class Als(graph: GraphReference,
+case class Cgd(graph: GraphReference,
                edge_value_property_list: Option[String],
                input_edge_label_list: Option[String],
                output_vertex_property_list: Option[String],
@@ -48,23 +48,24 @@ case class Als(graph: GraphReference,
                vector_value: Option[String],
                max_supersteps: Option[Int] = None,
                convergence_threshold: Option[Double] = None,
-               als_lambda: Option[Float] = None,
+               cgd_lambda: Option[Float] = None,
                feature_dimension: Option[Int] = None,
                learning_curve_output_interval: Option[Int] = None,
                bidirectional_check: Option[Boolean] = None,
                bias_on: Option[Boolean] = None,
                max_value: Option[Float] = None,
-               min_value: Option[Float] = None)
+               min_value: Option[Float] = None,
+               num_iters: Option[Int] = None)
 
-case class AlsResult(value: String)
+case class CgdResult(value: String)
 
-class AlternatingLeastSquares
-    extends CommandPlugin[Als, AlsResult] {
+class ConjugateGradientDescent
+    extends CommandPlugin[Cgd, CgdResult] {
   import DomainJsonProtocol._
-  implicit val alsFormat = jsonFormat16(Als)
-  implicit val alsResultFormat = jsonFormat1(AlsResult)
+  implicit val cgdFormat = jsonFormat17(Cgd)
+  implicit val cgdResultFormat = jsonFormat1(CgdResult)
 
-  override def execute(invocation: Invocation, arguments: Als)(implicit user: UserPrincipal, executionContext: ExecutionContext): AlsResult = {
+  override def execute(invocation: Invocation, arguments: Cgd)(implicit user: UserPrincipal, executionContext: ExecutionContext): CgdResult = {
 
     val config = configuration().get
     val hConf = GiraphConfigurationUtil.newHadoopConfigurationFrom(config, "giraph")
@@ -75,15 +76,16 @@ class AlternatingLeastSquares
 
     //    These parameters are set from the arguments passed in, or defaulted from
     //    the engine configuration if not passed.
-    GiraphConfigurationUtil.set(hConf, "als.maxSuperSteps", arguments.max_supersteps)
-    GiraphConfigurationUtil.set(hConf, "als.convergenceThreshold", arguments.convergence_threshold)
-    GiraphConfigurationUtil.set(hConf, "als.featureDimension", arguments.feature_dimension)
-    GiraphConfigurationUtil.set(hConf, "als.bidirectionalCheck", arguments.bidirectional_check)
-    GiraphConfigurationUtil.set(hConf, "als.biasOn", arguments.bias_on)
-    GiraphConfigurationUtil.set(hConf, "als.lambda", arguments.als_lambda)
-    GiraphConfigurationUtil.set(hConf, "als.learningCurveOutputInterval", arguments.learning_curve_output_interval)
-    GiraphConfigurationUtil.set(hConf, "als.maxVal", arguments.max_value)
-    GiraphConfigurationUtil.set(hConf, "als.minVal", arguments.min_value)
+    GiraphConfigurationUtil.set(hConf, "cgd.maxSuperSteps", arguments.max_supersteps)
+    GiraphConfigurationUtil.set(hConf, "cgd.convergenceThreshold", arguments.convergence_threshold)
+    GiraphConfigurationUtil.set(hConf, "cgd.featureDimension", arguments.feature_dimension)
+    GiraphConfigurationUtil.set(hConf, "cgd.bidirectionalCheck", arguments.bidirectional_check)
+    GiraphConfigurationUtil.set(hConf, "cgd.biasOn", arguments.bias_on)
+    GiraphConfigurationUtil.set(hConf, "cgd.lambda", arguments.cgd_lambda)
+    GiraphConfigurationUtil.set(hConf, "cgd.learningCurveOutputInterval", arguments.learning_curve_output_interval)
+    GiraphConfigurationUtil.set(hConf, "cgd.maxVal", arguments.max_value)
+    GiraphConfigurationUtil.set(hConf, "cgd.minVal", arguments.min_value)
+    GiraphConfigurationUtil.set(hConf, "cgd.numCGDIters", arguments.num_iters)
 
     GiraphConfigurationUtil.initializeTitanConfig(hConf, titanConf, graph)
 
@@ -96,28 +98,28 @@ class AlternatingLeastSquares
 
     val giraphConf = new GiraphConfiguration(hConf)
 
-    giraphConf.setVertexInputFormatClass(classOf[TitanHBaseVertexInputFormatPropertyGraph4CF])
+    giraphConf.setVertexInputFormatClass(classOf[TitanHBaseVertexInputFormatPropertyGraph4CFCGD])
     giraphConf.setVertexOutputFormatClass(classOf[TitanVertexOutputFormatPropertyGraph4CF[_ <: org.apache.hadoop.io.WritableComparable[_], _ <: org.apache.hadoop.io.Writable, _ <: org.apache.hadoop.io.Writable]])
-    giraphConf.setMasterComputeClass(classOf[AlternatingLeastSquaresComputation.AlternatingLeastSquaresMasterCompute])
-    giraphConf.setComputationClass(classOf[AlternatingLeastSquaresComputation])
-    giraphConf.setAggregatorWriterClass(classOf[AlternatingLeastSquaresComputation.AlternatingLeastSquaresAggregatorWriter])
+    giraphConf.setMasterComputeClass(classOf[ConjugateGradientDescentComputation.ConjugateGradientDescentMasterCompute])
+    giraphConf.setComputationClass(classOf[ConjugateGradientDescentComputation])
+    giraphConf.setAggregatorWriterClass(classOf[ConjugateGradientDescentComputation.ConjugateGradientDescentAggregatorWriter])
 
-    AlsResult(GiraphJobDriver.run("ia_giraph_als",
-      classOf[AlternatingLeastSquaresComputation].getCanonicalName,
+    CgdResult(GiraphJobDriver.run("ia_giraph_cgd",
+      classOf[ConjugateGradientDescentComputation].getCanonicalName,
       config, giraphConf, invocation.commandId))
   }
 
   //TODO: Replace with generic code that works on any case class
-  def parseArguments(arguments: JsObject) = arguments.convertTo[Als]
+  def parseArguments(arguments: JsObject) = arguments.convertTo[Cgd]
 
   //TODO: Replace with generic code that works on any case class
-  def serializeReturn(returnValue: AlsResult): JsObject = returnValue.toJson.asJsObject
+  def serializeReturn(returnValue: CgdResult): JsObject = returnValue.toJson.asJsObject
 
   /**
    * The name of the command, e.g. graphs/ml/alternating_least_squares
    */
-  override def name: String = "graphs/ml/alternating_least_squares"
+  override def name: String = "graphs/ml/conjugate_gradient_descent"
 
   //TODO: Replace with generic code that works on any case class
-  override def serializeArguments(arguments: Als): JsObject = arguments.toJson.asJsObject()
+  override def serializeArguments(arguments: Cgd): JsObject = arguments.toJson.asJsObject()
 }
