@@ -101,9 +101,9 @@ class ProgressPrinter(object):
         for index in range(0, len(progress)):
             p = progress[index]['progress']
             success_tasks = progress[index]['tasksInfo']['succeeded']
-            failed_tasks = progress[index]['tasksInfo']['retried']
+            retried_tasks = progress[index]['tasksInfo']['retried']
 
-            message = "Tasks:%s, Retries:%s" %(success_tasks, failed_tasks)
+            message = "Tasks:%s, Retries:%s" %(success_tasks, retried_tasks)
 
             total_bar_length = 25
             factor = 100 / total_bar_length
