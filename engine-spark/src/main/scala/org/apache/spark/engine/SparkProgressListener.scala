@@ -65,7 +65,7 @@ class SparkProgressListener(val progressUpdater: CommandProgressUpdater) extends
       addToCommandIdJobs(job)
 
       //update initial progress to 0
-      progressUpdater.updateProgress(job.properties.getProperty("command-id").toLong, List(ProgressInfo(0.00f, TaskProgressInfo(0, 0))))
+      progressUpdater.updateProgress(job.properties.getProperty("command-id").toLong, List(ProgressInfo(0.00f, TaskProgressInfo(0))))
     }
   }
 
@@ -138,14 +138,12 @@ class SparkProgressListener(val progressUpdater: CommandProgressUpdater) extends
    */
   private def getDetailedProgress(jobId: Int): TaskProgressInfo = {
     val stageIds = jobIdToStagesIds(jobId)
-    var totalSucceeded = 0
     var totalFailed = 0
     for (stageId <- stageIds) {
-      totalSucceeded += stageIdToTasksComplete.getOrElse(stageId, 0)
       totalFailed += stageIdToTasksFailed.getOrElse(stageId, 0)
     }
 
-    TaskProgressInfo(totalSucceeded, totalFailed)
+    TaskProgressInfo(totalFailed)
   }
 
   /**

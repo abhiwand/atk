@@ -61,9 +61,9 @@ class CommandRepositorySpec extends SlickMetaStoreH2Testing with Matchers {
 
         // create a command
         val command = commandRepo.insert(new CommandTemplate(name, None))
-        commandRepo.updateProgress(command.get.id, List(ProgressInfo(100, TaskProgressInfo(100, 5))))
+        commandRepo.updateProgress(command.get.id, List(ProgressInfo(100, TaskProgressInfo(5))))
         val command2 = commandRepo.lookup(command.get.id)
-        command2.get.progress shouldBe List(ProgressInfo(100, TaskProgressInfo(100, 5)))
+        command2.get.progress shouldBe List(ProgressInfo(100, TaskProgressInfo(5)))
     }
   }
 
@@ -77,13 +77,13 @@ class CommandRepositorySpec extends SlickMetaStoreH2Testing with Matchers {
 
         // create a command
         val command = commandRepo.insert(new CommandTemplate(name, None))
-        commandRepo.updateProgress(command.get.id, List(ProgressInfo(100, TaskProgressInfo(30, 5)), ProgressInfo(50, TaskProgressInfo(20, 5))))
+        commandRepo.updateProgress(command.get.id, List(ProgressInfo(100, TaskProgressInfo(5)), ProgressInfo(50, TaskProgressInfo(5))))
         val command2 = commandRepo.lookup(command.get.id)
-        command2.get.progress shouldBe List(ProgressInfo(100, TaskProgressInfo(30, 5)), ProgressInfo(50, TaskProgressInfo(20, 5)))
+        command2.get.progress shouldBe List(ProgressInfo(100, TaskProgressInfo(5)), ProgressInfo(50, TaskProgressInfo(5)))
 
-        commandRepo.updateProgress(command.get.id, List(ProgressInfo(40, TaskProgressInfo(40, 5)), ProgressInfo(70, TaskProgressInfo(50, 7))))
+        commandRepo.updateProgress(command.get.id, List(ProgressInfo(40, TaskProgressInfo(5)), ProgressInfo(70, TaskProgressInfo(7))))
         val command3 = commandRepo.lookup(command.get.id)
-        command3.get.progress shouldBe List(ProgressInfo(100, TaskProgressInfo(40, 5)), ProgressInfo(70, TaskProgressInfo(50, 7)))
+        command3.get.progress shouldBe List(ProgressInfo(100, TaskProgressInfo(5)), ProgressInfo(70, TaskProgressInfo(7)))
     }
   }
 
