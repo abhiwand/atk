@@ -33,12 +33,5 @@ trait QueryStorage {
   def scan(offset: Int, count: Int): Seq[Query]
   def start(id: Long): Unit
   def complete(id: Long, result: Try[JsObject]): Unit
-
-  /**
-   * update query info regarding progress of jobs initiated by this command
-   * @param id query id
-   * @param progress progress of jobs initiated by this command
-   */
-  def updateProgress(id: Long, progress: List[Float], detailedProgress: List[ProgressInfo]): Unit
 }
 

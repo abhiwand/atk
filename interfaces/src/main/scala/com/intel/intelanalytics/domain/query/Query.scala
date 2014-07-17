@@ -38,9 +38,9 @@ import spray.json.JsObject
  *                  arguments that configure the parser before any input arrives. In other cases, such as training an
  *                  ML algorithm, the parameters are used to execute the function directly.
  * @param error StackTrace and/or other error text if it exists
- * @param progress List of progress for the jobs initiated by this command
  * @param complete True if this command is completed
  * @param totalPages total Partitions of the result object.
+ * @param pageSize number of records per page. This is equal to page-size at time of query execution
  * @param createdOn date/time this record was created
  * @param modifiedOn date/time this record was last modified
  * @param createdById user who created this row
@@ -49,8 +49,6 @@ case class Query(id: Long,
                  name: String,
                  arguments: Option[JsObject],
                  error: Option[Error] = None,
-                 progress: List[Float],
-                 detailedProgress: List[ProgressInfo] = List(),
                  complete: Boolean = false,
                  totalPages: Option[Long] = None,
                  pageSize: Option[Long] = None,

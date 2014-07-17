@@ -74,7 +74,7 @@ class SparkQueryStorage(val metaStore: SlickMetaStoreComponent#SlickMetaStore, f
   }
 
   /**
-   * Retrieve a query from the database 
+   * Retrieve a query from the database
    * @param id  query_id
    * @return The specified Query
    */
@@ -135,30 +135,12 @@ class SparkQueryStorage(val metaStore: SlickMetaStoreComponent#SlickMetaStore, f
           case Success(r) => {
 
             import com.intel.intelanalytics.domain.DomainJsonProtocol._
-            /**
-             * update progress to 100 since the query is complete. This step is necessary
-             * because the actually progress notification events are sent to SparkProgressListener.
-             * The exact timing of the events arrival can not be determined.
-             */
 
-            val progress = query.progress.map(i => 100f)
             val pluginResults = Some(r).get.convertTo[QueryPluginResults]
-            query.copy(complete = true, progress = progress, totalPages = Some(pluginResults.totalPages), pageSize = Some(pluginResults.pageSize))
+            query.copy(complete = true, totalPages = Some(pluginResults.totalPages), pageSize = Some(pluginResults.pageSize))
           }
         }
         repo.update(changed)
-    }
-  }
-
-  /**
-   * update progress information for the query
-   * @param id query id
-   * @param progress progress
-   */
-  override def updateProgress(id: Long, progress: List[Float], detailedProgress: List[ProgressInfo]): Unit = {
-    metaStore.withSession("se.query.updateProgress") {
-      implicit session =>
-        repo.updateProgress(id, progress, detailedProgress)
     }
   }
 
