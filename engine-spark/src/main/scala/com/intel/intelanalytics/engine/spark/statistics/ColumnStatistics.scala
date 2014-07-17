@@ -3,6 +3,7 @@ package com.intel.intelanalytics.engine.spark.statistics
 import org.apache.spark.rdd.RDD
 import com.intel.intelanalytics.engine.Rows._
 import com.intel.intelanalytics.domain.frame.{ ColumnMedianReturn, ColumnModeReturn, ColumnFullStatisticsReturn, ColumnSummaryStatisticsReturn }
+import com.intel.intelanalytics.engine.spark.frame.FrameRDDFunctions
 
 private[spark] object ColumnStatistics extends Serializable {
 
@@ -32,7 +33,10 @@ private[spark] object ColumnStatistics extends Serializable {
    * @param rowRDD RDD of input rows
    * @return the  median of the column (as a double)
    */
-  def columnMedian(dataColumnIndex: Int, weightsColumnIndexOption: Option[Int], rowRDD: RDD[Row]): ColumnMedianReturn = {
+  def columnMedian(dataColumnIndex: Int,
+                   weightsColumnIndexOption: Option[Int],
+                   rowRDD: RDD[Row]): ColumnMedianReturn = {
+
     val dataWeightPairs: RDD[(Double, Double)] = getDoubleWeightPairs(dataColumnIndex, weightsColumnIndexOption, rowRDD)
 
     val orderStatistics = new OrderStatistics[Double](dataWeightPairs)
@@ -98,11 +102,12 @@ private[spark] object ColumnStatistics extends Serializable {
                                    weightsColumnIndexOption: Option[Int],
                                    rowRDD: RDD[Row]): RDD[(Double, Double)] = {
 
-    val dataRDD = getNumericalColumnAsRDD(rowRDD, dataColumnIndex)
+    val dataRDD = FrameRDDFunctions.getColumnAsDoubleRDD(rowRDD, dataColumnIndex)
 
     val weighted = !weightsColumnIndexOption.isEmpty
 
-    val weightsRDD = if (weighted) getNumericalColumnAsRDD(rowRDD, weightsColumnIndexOption.get) else null
+    val weightsRDD =
+      if (weighted) FrameRDDFunctions.getColumnAsDoubleRDD(rowRDD, weightsColumnIndexOption.get) else null
 
     if (weighted) dataRDD.zip(weightsRDD) else dataRDD.map(x => (x, 1.toDouble))
   }
@@ -111,32 +116,13 @@ private[spark] object ColumnStatistics extends Serializable {
                                    weightsColumnIndexOption: Option[Int],
                                    rowRDD: RDD[Row]): RDD[(String, Double)] = {
 
-    val dataRDD: RDD[String] = getStringColumnAsRDD(rowRDD, dataColumnIndex)
+    val dataRDD: RDD[String] = FrameRDDFunctions.getColumnAsStringRDD(rowRDD, dataColumnIndex)
 
     val weighted = !weightsColumnIndexOption.isEmpty
 
-    val weightsRDD = if (weighted) getNumericalColumnAsRDD(rowRDD, weightsColumnIndexOption.get) else null
+    val weightsRDD =
+      if (weighted) FrameRDDFunctions.getColumnAsDoubleRDD(rowRDD, weightsColumnIndexOption.get) else null
 
     if (weighted) dataRDD.zip(weightsRDD) else dataRDD.map(x => (x, 1.toDouble))
-  }
-
-  private def getNumericalColumnAsRDD(rowRDD: RDD[Row], weightsColumnIndex: Int): RDD[Double] = {
-    try {
-      rowRDD.map(row => java.lang.Double.parseDouble(row(weightsColumnIndex).toString))
-    }
-    catch {
-      case cce: NumberFormatException =>
-        throw new NumberFormatException("Column values cannot be parsed as numbers. " + cce.toString)
-    }
-  }
-
-  private def getStringColumnAsRDD(rowRDD: RDD[Row], dataColumnIndex: Int): RDD[String] = {
-    try {
-      rowRDD.map(row => row(dataColumnIndex).toString)
-    }
-    catch {
-      case cce: NumberFormatException =>
-        throw new NumberFormatException("Column values from cannot be parsed as strings." + cce.toString)
-    }
   }
 }
