@@ -60,8 +60,13 @@ case class VertexRule(gbId: PropertyRule, propertyRules: List[PropertyRule] = Ni
  * @param headVertexGbId the rule describing how to parse the destination Vertex unique Id
  * @param label the value of the Edge label
  * @param propertyRules rules describing how to parse properties
+ * @param biDirectional true if this rule should produce edges in both directions
  */
-case class EdgeRule(tailVertexGbId: PropertyRule, headVertexGbId: PropertyRule, label: Value, propertyRules: List[PropertyRule] = Nil) extends ParseRule {
+case class EdgeRule(tailVertexGbId: PropertyRule,
+                    headVertexGbId: PropertyRule,
+                    label: Value,
+                    propertyRules: List[PropertyRule] = Nil,
+                    biDirectional: Boolean = false) extends ParseRule {
 
   /**
    * Does this rule apply to the supplied row

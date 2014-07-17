@@ -96,10 +96,6 @@ class GraphBuilder(config: GraphBuilderConfig) extends Serializable {
     idMap.persist(StorageLevel.MEMORY_AND_DISK_SER)
     println("done parsing and writing, vertices count: " + NumberFormat.getInstance().format(idMap.count()))
 
-    if (config.biDirectional) {
-      println("creating bi-directional edges")
-      edges = edges.biDirectional()
-    }
     val mergedEdges = edges.mergeDuplicates()
 
     if (config.broadcastVertexIds) {
