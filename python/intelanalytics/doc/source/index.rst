@@ -1,5 +1,5 @@
-Intel® Big Data Platform: Analytics Toolkit
-===========================================
+Intel® Analytics Toolkit
+========================
 
 Contents:
 
