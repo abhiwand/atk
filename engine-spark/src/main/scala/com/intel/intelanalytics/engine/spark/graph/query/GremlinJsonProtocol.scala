@@ -1,7 +1,7 @@
 package com.intel.intelanalytics.engine.spark.graph.query
 
 import com.tinkerpop.blueprints.util.io.graphson._
-import com.tinkerpop.blueprints.{Element, Graph}
+import com.tinkerpop.blueprints.{ Element, Graph }
 import com.tinkerpop.pipes.util.structures.Row
 import spray.json._
 
@@ -122,7 +122,7 @@ object GremlinJsonProtocol extends DefaultJsonProtocol {
    * @tparam T
    * @return
    */
-  private def getJsonFieldValue[T: JsonFormat : ClassTag](json: JsValue, key: String): Option[T] = json match {
+  private def getJsonFieldValue[T: JsonFormat: ClassTag](json: JsValue, key: String): Option[T] = json match {
     case obj: JsObject => {
       val value = obj.fields.get(key).orNull
       value match {

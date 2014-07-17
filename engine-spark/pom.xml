@@ -70,6 +70,17 @@
         </dependency>
         <dependency>
             <groupId>com.intel.ia</groupId>
+            <artifactId>imllib</artifactId>
+            <version>0.8.0-SNAPSHOT</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.intel.ia</groupId>
+                    <artifactId>graphbuilder-3</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.intel.ia</groupId>
             <artifactId>testutils</artifactId>
             <scope>test</scope>
         </dependency>
@@ -152,7 +163,6 @@
         <dependency>
             <groupId>com.tinkerpop.gremlin</groupId>
             <artifactId>gremlin-groovy</artifactId>
-            <version>2.4.0</version>
         </dependency>
 
     </dependencies>
