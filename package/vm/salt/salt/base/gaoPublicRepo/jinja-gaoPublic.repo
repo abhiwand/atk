@@ -1,0 +1,7 @@
+[gao-public]
+name=gao-public-yum
+baseurl={{ baseUrl }}/yum
+gpgcheck=0
+priority=1
+enabled=1
+
