@@ -33,7 +33,9 @@ class IGiraphArchive extends Archive {
 
   val commands: Seq[Class[_]] = Seq(classOf[com.intel.intelanalytics.algorithm.graph.LoopyBeliefPropagation],
     classOf[com.intel.intelanalytics.algorithm.graph.LabelPropagation],
-    classOf[com.intel.intelanalytics.algorithm.graph.AlternatingLeastSquares])
+    classOf[com.intel.intelanalytics.algorithm.graph.AlternatingLeastSquares],
+    classOf[com.intel.intelanalytics.algorithm.graph.ConjugateGradientDescent]
+  )
   /**
    * Obtain instances of a given class. The keys are established purely
    * by convention.
