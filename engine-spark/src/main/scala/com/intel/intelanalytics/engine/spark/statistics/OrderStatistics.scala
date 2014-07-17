@@ -5,21 +5,28 @@ import org.apache.spark.SparkContext._
 import org.apache.spark.rdd._
 import scala.reflect.ClassTag
 
+/**
+ * Calculate order statistics for any weighted RDD of data that provides an ordering function.
+ * @param dataWeightPairs RDD of (data, weight) pairs
+ * @param ordering Ordering on the data items
+ * @tparam T The type of the data objects. It must have an ordering function in scope.
+ */
 class OrderStatistics[T: ClassTag](dataWeightPairs: RDD[(T, Double)])(implicit ordering: Ordering[T])
     extends Serializable {
 
   lazy val median: T = computeMedian
 
+  /*
+   * Computes the median via a sort and scan approach, although the nature of RDDs greatly complicates the "simple scan"
+   *
+   * TODO: investigate the use of a sort-free (aka "linear time") median algorithm, TRIB-3151
+   */
   private def computeMedian: T = {
 
     val sortedDataWeightPairs: RDD[(T, Double)] = dataWeightPairs.sortByKey(ascending = true)
 
-    def sumIterator(it: Iterator[(T, Double)]): Iterator[Double] = {
-      if (it.nonEmpty)
-        Iterator(it.map({ case (x, w) => w }).reduce(_ + _))
-      else
-        Iterator(0)
-    }
+    def sumIterator(it: Iterator[(T, Double)]): Iterator[Double] =
+      if (it.nonEmpty) Iterator(it.map({ case (x, w) => w }).reduce(_ + _)) else Iterator(0)
 
     val partitionWeights: Array[Double] = sortedDataWeightPairs.
       mapPartitions(sumIterator).collect()

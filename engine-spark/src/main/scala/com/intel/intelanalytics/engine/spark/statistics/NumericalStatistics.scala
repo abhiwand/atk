@@ -33,6 +33,10 @@ class NumericalStatistics(dataWeightPairs: RDD[(Double, Double)]) extends Serial
 
   lazy val count: Long = singlePassStatistics.count
 
+  lazy val meanConfidenceLower: Double = weightedMean - (1.96) * (weightedStandardDeviation / Math.sqrt(count))
+
+  lazy val meanConfidenceUpper: Double = weightedMean + (1.96) * (weightedStandardDeviation / Math.sqrt(count))
+
   lazy val weightedSkewness: Double = generateSkewness()
 
   lazy val weightedKurtosis: Double = generateKurtosis()
