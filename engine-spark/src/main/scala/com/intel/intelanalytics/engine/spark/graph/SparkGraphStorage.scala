@@ -80,7 +80,8 @@ class SparkGraphStorage(context: (UserPrincipal) => Context,
             val frameRules = graphLoad.frame_rules
 
             // TODO graphbuilder only supports one input frame at present
-            require(frameRules.size == 1)
+            require(frameRules.size == 1, "only one frame rule per call is supported in this version")
+
             val theOnlySourceFrameID = frameRules.head.frame.id
 
             val dataFrame = frameStorage.lookup(theOnlySourceFrameID)
