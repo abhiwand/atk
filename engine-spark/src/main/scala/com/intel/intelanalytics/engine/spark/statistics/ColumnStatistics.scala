@@ -2,12 +2,12 @@ package com.intel.intelanalytics.engine.spark.statistics
 
 import org.apache.spark.rdd.RDD
 import com.intel.intelanalytics.engine.Rows._
-import com.intel.intelanalytics.domain.frame.{ ColumnFullStatisticsReturn, ColumnSummaryStatisticsReturn }
+import com.intel.intelanalytics.domain.frame.{ ColumnMedianReturn, ColumnModeReturn, ColumnFullStatisticsReturn, ColumnSummaryStatisticsReturn }
 
 private[spark] object ColumnStatistics extends Serializable {
 
   /**
-   * Calculate (weighted) mode of column at index.
+   * Calculate (weighted) mode of a data column.
    *
    * @param dataColumnIndex column index
    * @param weightsColumnIndexOption Option for index of column providing  weights. Must be numerical data.
@@ -16,12 +16,28 @@ private[spark] object ColumnStatistics extends Serializable {
    */
   def columnMode(dataColumnIndex: Int,
                  weightsColumnIndexOption: Option[Int],
-                 rowRDD: RDD[Row]): (String, Double, Double) = {
+                 rowRDD: RDD[Row]): ColumnModeReturn = {
 
     val dataWeightPairs: RDD[(String, Double)] = getStringWeightPairs(dataColumnIndex, weightsColumnIndexOption, rowRDD)
 
     val frequencyStatistics = new FrequencyStatistics(dataWeightPairs, "no items found")
-    frequencyStatistics.modeItsWeightTotalWeightTriple
+    val (mode, modeWeight, totalWeight) = frequencyStatistics.modeItsWeightTotalWeightTriple
+    ColumnModeReturn(mode, modeWeight, totalWeight)
+  }
+
+  /**
+   * Calculate the median of a data column containing numerical data.
+   * @param dataColumnIndex column index
+   * @param weightsColumnIndexOption  Option for index of column providing  weights. Must be numerical data.
+   * @param rowRDD RDD of input rows
+   * @return the  median of the column (as a double)
+   */
+  def columnMedian(dataColumnIndex: Int, weightsColumnIndexOption: Option[Int], rowRDD: RDD[Row]): ColumnMedianReturn = {
+    val dataWeightPairs: RDD[(Double, Double)] = getDoubleWeightPairs(dataColumnIndex, weightsColumnIndexOption, rowRDD)
+
+    val orderStatistics = new OrderStatistics[Double](dataWeightPairs)
+
+    ColumnMedianReturn(orderStatistics.median)
   }
 
   /**
@@ -37,44 +53,6 @@ private[spark] object ColumnStatistics extends Serializable {
                               rowRDD: RDD[Row]): ColumnSummaryStatisticsReturn = {
 
     val dataWeightPairs: RDD[(Double, Double)] = getDoubleWeightPairs(dataColumnIndex, weightsColumnIndexOption, rowRDD)
-
-    /*
-    if (operation equals "MEDIAN") {
-      val count: Long = dataRDD.stats().count
-      val medianIndex: Long = count / 2
-
-      val workingRDD = if (weighted) {
-        dataRDD.zip(weightsRDD).map({ case (d, w) => d * w })
-      }
-      else {
-        dataRDD
-      }
-
-      val sortedRdd = workingRDD.map(x => (x, x)).sortByKey(ascending = true)
-
-      val partitionCounts: Array[Int] = sortedRdd.glom().map(a => a.length).collect()
-
-      var partitionIndex = 0
-      var totalCountSeenPrevious = 0
-
-      while (medianIndex >= totalCountSeenPrevious + partitionCounts.apply(partitionIndex)) {
-        partitionIndex += 1
-        totalCountSeenPrevious += partitionCounts.apply(partitionIndex)
-      }
-
-      val indexOfMedianInsidePartition = (medianIndex - totalCountSeenPrevious).toInt
-
-      def partitionSelector(index: Int, partitionIterator: Iterator[(Double, Double)]) = {
-        if (index == partitionIndex) partitionIterator else Iterator[(Double, Double)]()
-      }
-
-      val partRdd = sortedRdd.mapPartitionsWithIndex(partitionSelector, true)
-
-      val segmentContainingMedian = partRdd.collect
-
-      segmentContainingMedian.apply(indexOfMedianInsidePartition)._1
-    }
-    */
 
     val numericalStatistics = new NumericalStatistics(dataWeightPairs)
 
