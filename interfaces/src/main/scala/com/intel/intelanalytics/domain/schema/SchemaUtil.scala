@@ -32,7 +32,7 @@ object SchemaUtil {
   /**
    * Schema for Error Frames
    */
-  val ErrorFrameSchema = new Schema(List(("originalRow", DataTypes.str), ("errorMessage", DataTypes.str)))
+  val ErrorFrameSchema = new Schema(List(("original_row", DataTypes.str), ("error_message", DataTypes.str)))
 
   /**
    * Resolve naming conflicts when both left and right side of join operation have same column names
