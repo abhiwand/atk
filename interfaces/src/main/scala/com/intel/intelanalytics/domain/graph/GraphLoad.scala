@@ -32,10 +32,12 @@ import com.intel.intelanalytics.domain.graph.construction.FrameRule
  * @param frame_rules List of handles to the dataframe to be used as a data source.
  * @param retain_dangling_edges When true, dangling edges are retained by adding dummy vertices, when false, dangling
  *                              edges are deleted.
+ * @param append true to append to an existing graph, false otherwise.
  */
 case class GraphLoad(graph: GraphReference,
                      frame_rules: List[FrameRule],
-                     retain_dangling_edges: Boolean) {
+                     retain_dangling_edges: Boolean = false,
+                     append: Boolean = false) {
   require(graph != null)
   require(frame_rules != null)
 }
