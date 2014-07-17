@@ -42,7 +42,7 @@ class GraphBuilderConfigFactory(val schema: Schema, val graphLoad: GraphLoad, gr
       getGBEdgeRules(theOnlyFrameRule.edge_rules),
       getTitanConfiguration(graph.name),
       biDirectional = theOnlyBidirctionalityBit,
-      append = false,
+      append = graphLoad.append,
       retainDanglingEdges = graphLoad.retain_dangling_edges,
       inferSchema = true,
       broadcastVertexIds = false)
