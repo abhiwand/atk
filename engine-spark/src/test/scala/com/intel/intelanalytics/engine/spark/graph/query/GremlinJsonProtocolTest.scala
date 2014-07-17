@@ -1,10 +1,12 @@
 package com.intel.intelanalytics.engine.spark.graph.query
 
 import com.intel.intelanalytics.engine.spark.graph.TestingTitan
+import com.thinkaurelius.titan.core.TitanGraph
 import com.tinkerpop.blueprints.util.io.graphson.GraphSONTokens
-import com.tinkerpop.blueprints.{Edge, Element, Vertex}
+import com.tinkerpop.blueprints.util.wrappers.id.IdVertex
+import com.tinkerpop.blueprints.{ Edge, Element, Vertex }
 import com.tinkerpop.pipes.util.structures.Row
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.{ FlatSpec, Matchers }
 import spray.json._
 
 import scala.collection.JavaConversions._
@@ -58,9 +60,9 @@ class GremlinJsonProtocolTest extends FlatSpec with Matchers with TestingTitan {
   }
 
   it should "convert GraphSON into a Blueprint's edge" in {
-    implicit val graphSONFormat = new GraphSONFormat(graph)
-    val vertex1 = graph.addVertex(1)
-    val vertex2 = graph.addVertex(2)
+    implicit val graphSONFormat = new GraphSONFormat(titanGraph)
+    val vertex1 = titanGraph.addVertex(null)
+    val vertex2 = titanGraph.addVertex(null)
 
     val edgeJson1 = s"""{"weight": 10, "_label":"test", "_outV":${vertex1.getId}, "_inV":${vertex2.getId}, "_type":"edge"}"""
     val edge = JsonParser(edgeJson1).convertTo[Element]
@@ -106,6 +108,11 @@ class GremlinJsonProtocolTest extends FlatSpec with Matchers with TestingTitan {
       val json = """["test1", "test2"]"""
       JsonParser(json).convertTo[Row[String]]
     }
+  }
+
+  "GremlinJsonProtocol" should "return true if GraphSON refers to a graph element" in {
+    val vertexJson1 = """{"name":"saturn",  "_id":10, "_type":"vertex" }"""
+    val edgeJson1 = """{"name":"saturn",  "_id":10, "_type":"vertex" }"""
   }
 
 }
