@@ -17,11 +17,12 @@ class NumericalStatistics(dataWeightPairs: RDD[(Double, Double)]) extends Serial
 
   lazy val singlePassStatistics: SinglePassStatistics = generateSinglePassStatistics()
 
-  lazy val weightedMean: Double = singlePassStatistics.weightedSum / singlePassStatistics.totalWeight
+  lazy val weightedMean: Double = singlePassStatistics.mean
 
-  lazy val weightedGeometricMean: Double = Math.pow(singlePassStatistics.weightedProduct, 1 / singlePassStatistics.totalWeight)
+  lazy val weightedGeometricMean: Double = Math.pow(singlePassStatistics.product, 1 / singlePassStatistics.totalWeight)
 
-  lazy val weightedVariance: Double = generateVariance()
+  lazy val weightedVariance: Double =
+    singlePassStatistics.weightedSumOfSquaredDistancesFromMean / (singlePassStatistics.count - 1)
 
   lazy val weightedStandardDeviation: Double = Math.sqrt(weightedVariance)
 
@@ -45,8 +46,10 @@ class NumericalStatistics(dataWeightPairs: RDD[(Double, Double)]) extends Serial
     val data = p._1
     val weight = p._2
 
-    SinglePassStatistics(weightedSum = data * weight,
-      weightedProduct = Math.pow(data, weight),
+    SinglePassStatistics(mean = data,
+      weightedSumOfSquares = weight * data * data,
+      weightedSumOfSquaredDistancesFromMean = 0,
+      product = Math.pow(data, weight),
       minimum = data,
       maximum = data,
       mode = data,
@@ -59,8 +62,10 @@ class NumericalStatistics(dataWeightPairs: RDD[(Double, Double)]) extends Serial
 
     val accumulatorParam = new SinglePassStatisticsAccumulatorParam()
 
-    val initialValue = new SinglePassStatistics(0,
-      weightedProduct = 1.toDouble,
+    val initialValue = new SinglePassStatistics(mean = 0,
+      weightedSumOfSquares = 0,
+      weightedSumOfSquaredDistancesFromMean = 0,
+      product = 1.toDouble,
       minimum = Double.PositiveInfinity,
       maximum = Double.NegativeInfinity,
       mode = 0,
@@ -118,9 +123,11 @@ class NumericalStatistics(dataWeightPairs: RDD[(Double, Double)]) extends Serial
 }
 
 /**
- * Contains all statistics that are computed in single pass over the data.
- * @param weightedSum
- * @param weightedProduct
+ * Contains all statistics that are computed in single pass over the data. All parameters are in their weighted form.
+ * @param mean
+ * @param weightedSumOfSquares
+ * @param weightedSumOfSquaredDistancesFromMean
+ * @param product
  * @param minimum
  * @param maximum
  * @param mode
@@ -128,8 +135,16 @@ class NumericalStatistics(dataWeightPairs: RDD[(Double, Double)]) extends Serial
  * @param totalWeight
  * @param count
  */
-case class SinglePassStatistics(weightedSum: Double, weightedProduct: Double, minimum: Double,
-                                maximum: Double, mode: Double, weightAtMode: Double, totalWeight: Double, count: Long)
+case class SinglePassStatistics(mean: Double,
+                                weightedSumOfSquares: Double,
+                                weightedSumOfSquaredDistancesFromMean: Double,
+                                product: Double,
+                                minimum: Double,
+                                maximum: Double,
+                                mode: Double,
+                                weightAtMode: Double,
+                                totalWeight: Double,
+                                count: Long)
     extends Serializable
 
 /**
@@ -138,8 +153,10 @@ case class SinglePassStatistics(weightedSum: Double, weightedProduct: Double, mi
 class SinglePassStatisticsAccumulatorParam extends AccumulatorParam[SinglePassStatistics] with Serializable {
 
   override def zero(initialValue: SinglePassStatistics) =
-    SinglePassStatistics(weightedSum = 0,
-      weightedProduct = 1.toDouble,
+    SinglePassStatistics(mean = 0,
+      weightedSumOfSquares = 0,
+      weightedSumOfSquaredDistancesFromMean = 0,
+      product = 1.toDouble,
       minimum = Double.PositiveInfinity,
       maximum = Double.NegativeInfinity,
       mode = 0,
@@ -149,17 +166,32 @@ class SinglePassStatisticsAccumulatorParam extends AccumulatorParam[SinglePassSt
 
   override def addInPlace(stats1: SinglePassStatistics, stats2: SinglePassStatistics): SinglePassStatistics = {
 
-    val weightedSum = stats1.weightedSum + stats2.weightedSum
-    val weightedProduct = stats1.weightedProduct * stats2.weightedProduct
-    val weightedMin = Math.min(stats1.minimum, stats2.minimum)
-    val weightedMax = Math.max(stats1.maximum, stats2.maximum)
     val totalWeight = stats1.totalWeight + stats2.totalWeight
+    val mean = (stats1.mean * stats1.totalWeight + stats2.mean * stats2.totalWeight) / totalWeight
+
+    val weightedSumOfSquares = stats1.weightedSumOfSquares + stats2.weightedSumOfSquares
+
+    val sumOfSquaredDistancesFromMean = weightedSumOfSquares  -2 * mean * mean * totalWeight + mean * mean * totalWeight
+
+    val product = stats1.product * stats2.product
+    val min = Math.min(stats1.minimum, stats2.minimum)
+    val max = Math.max(stats1.maximum, stats2.maximum)
+
     val count = stats1.count + stats2.count
     val (mode, weightAtMode) = if (stats1.weightAtMode > stats2.weightAtMode)
       (stats1.mode, stats1.weightAtMode)
     else
       (stats2.mode, stats2.weightAtMode)
-    SinglePassStatistics(weightedSum, weightedProduct, weightedMin, weightedMax, mode, weightAtMode, totalWeight, count)
+
+    SinglePassStatistics(mean = mean,
+      weightedSumOfSquares = weightedSumOfSquares,
+      weightedSumOfSquaredDistancesFromMean = sumOfSquaredDistancesFromMean,
+      product = product,
+      minimum = min,
+      maximum = max,
+      mode = mode,
+      weightAtMode = weightAtMode, totalWeight = totalWeight,
+      count = count)
   }
 
 }
