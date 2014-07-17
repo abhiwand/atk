@@ -67,7 +67,7 @@ class CommandRepositorySpec extends SlickMetaStoreH2Testing with Matchers {
     }
   }
 
-  "CommandRepository" should "not update progress if the progress is smaller than existing progress" in {
+  "CommandRepository" should "not update progress if command is complete" in {
     val commandRepo = slickMetaStoreComponent.metaStore.commandRepo
 
     slickMetaStoreComponent.metaStore.withSession("command-test") {
@@ -79,11 +79,12 @@ class CommandRepositorySpec extends SlickMetaStoreH2Testing with Matchers {
         val command = commandRepo.insert(new CommandTemplate(name, None))
         commandRepo.updateProgress(command.get.id, List(ProgressInfo(100, TaskProgressInfo(5)), ProgressInfo(50, TaskProgressInfo(5))))
         val command2 = commandRepo.lookup(command.get.id)
-        command2.get.progress shouldBe List(ProgressInfo(100, TaskProgressInfo(5)), ProgressInfo(50, TaskProgressInfo(5)))
+//        command2.get.progress shouldBe List(ProgressInfo(100, TaskProgressInfo(5)), ProgressInfo(50, TaskProgressInfo(5)))
+        commandRepo.update(command2.get.copy(complete = true,progress = List(ProgressInfo(100, TaskProgressInfo(5)), ProgressInfo(50, TaskProgressInfo(5)))))
 
         commandRepo.updateProgress(command.get.id, List(ProgressInfo(40, TaskProgressInfo(5)), ProgressInfo(70, TaskProgressInfo(7))))
         val command3 = commandRepo.lookup(command.get.id)
-        command3.get.progress shouldBe List(ProgressInfo(100, TaskProgressInfo(5)), ProgressInfo(70, TaskProgressInfo(7)))
+        command3.get.progress shouldBe List(ProgressInfo(100, TaskProgressInfo(5)), ProgressInfo(100, TaskProgressInfo(7)))
     }
   }
 
