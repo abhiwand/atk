@@ -233,7 +233,7 @@ class FrameBackendRest(object):
 
     def flatten_column(self, frame, column_name):
         name = self._get_new_frame_name()
-        arguments = {'name': name, 'frame_fd': frame._id, 'column': column_name, 'separator': ',' }
+        arguments = {'name': name, 'frame_id': frame._id, 'column': column_name, 'separator': ',' }
         return execute_new_frame_command('flatten_column', arguments)
 
     def bin_column(self, frame, column_name, num_bins, bin_type='equalwidth', bin_column_name='binned'):
