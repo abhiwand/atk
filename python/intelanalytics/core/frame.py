@@ -880,7 +880,7 @@ class BigFrame(CommandSupport):
 
 
     @doc_stub
-    def column_summary_statistics(self, column_name, weights_column_name = None):
+    def column_summary_statistics(self, data_column, weights_column_name = None):
         """
         Calculate summary statistics of a column.
 
@@ -889,9 +889,10 @@ class BigFrame(CommandSupport):
         data_column : str
             The column to be statistically summarized. Must contain numerical data.
 
-        weights_colum : str
+        weights_column : str
             Optional. The column that provides weights (frequencies) for the data being summarized.
-            Must contain numerical data.
+            Must contain numerical data. Uniform weights of 1 for all items will be used for the calculation if this
+                parameter is not provided.
 
         Returns
         -------
@@ -916,19 +917,28 @@ class BigFrame(CommandSupport):
         pass
 
     @doc_stub
-    def column_mode (self, column_name, multiplier_column_name = None):
+    def column_mode (self, data_column, weights_column = None):
         """
         Calculate the mode of a column.
 
         Parameters
         ----------
-        column_name : str
+        data_column : str
             The column whose mode is to be calculated
+
+        weights_column : str
+            Optional. The column that provides weights (frequencies) for the mode calculation.
+            Must contain numerical data. Uniform weights of 1 for all items will be used for the calculation if this
+                parameter is not provided.
 
         Returns
         -------
-        mode : Double
-            The mode of the values in the column
+        mode : Dict
+            Dictionary containing summary statistics in the following entries:
+                mode : Mode of the data. (Ties resolved arbitrarily.
+                weight_of_mode : Weight of the mode.
+                total_weight : Sum of all weights in the weight column. (This will be the row count if no weights are
+                    given.)
 
         Examples
         --------
@@ -936,25 +946,31 @@ class BigFrame(CommandSupport):
         """
         pass
 
-    def median_column(self, column_name, multiplier_column_name = None):
+    @doc_stub
+    def column_median(self, data_column, weights_column = None):
         """
         Calculate the median of a column.
 
         Parameters
         ----------
-        column_name : str
+        data_column : str
             The column whose median is to be calculated
+
+        weights_column : str
+            Optional. The column that provides weights (frequencies) for the median calculation.
+            Must contain numerical data. Uniform weights of 1 for all items will be used for the calculation if this
+                parameter is not provided.
 
         Returns
         -------
         median : Double
-            The median of the values in the column
+            The median of the values.
 
         Examples
         --------
-        >>> median = frame.median_column('interesting column')
+        >>> median = frame.column_median('interesting column')
         """
-        return self._backend.column_statistic(self, column_name, multiplier_column_name, 'MEDIAN')
+        pass
 
 
     @doc_stub

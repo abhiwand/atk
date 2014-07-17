@@ -24,17 +24,17 @@
 package com.intel.intelanalytics.domain.frame
 
 /**
- * Represents a ModeColumn command
+ * Represents a ColumnMedian command
  * @param frame identifier for the input dataframe
  */
-case class ColumnMode(frame: FrameReference, data_column: String, weights_column: Option[String]) {
+case class ColumnMedian(frame: FrameReference, data_column: String, weights_column: Option[String]) {
 
   require(frame != null, "frame is required")
   require(data_column != null, "column is required")
 }
 
 /**
- * Represents a ColumnMode return object... it returns the mode of the column
+ * The data returned from a median calculation: The median.
  */
-case class ColumnModeReturn(mode: String, weight_of_mode: Double, total_weight: Double) {
+case class ColumnMedianReturn(value: Double) {
 }

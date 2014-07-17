@@ -107,6 +107,8 @@ trait Engine {
 
   def columnMode(arguments: ColumnMode)(implicit user: UserPrincipal): Execution
 
+  def columnMedian(arguments: ColumnMedian)(implicit user: UserPrincipal): Execution
+
   def confusionMatrix(arguments: ConfusionMatrix[Long])(implicit user: UserPrincipal): Execution
 
   def groupBy(arguments: FrameGroupByColumn[JsObject, Long])(implicit user: UserPrincipal): Execution

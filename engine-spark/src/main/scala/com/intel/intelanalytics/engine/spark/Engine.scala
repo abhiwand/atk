@@ -518,7 +518,9 @@ class SparkEngine(sparkContextManager: SparkContextManager,
   override def columnMode(arguments: ColumnMode)(implicit user: UserPrincipal): Execution =
     commands.execute(columnModeCommand, arguments, user, implicitly[ExecutionContext])
 
-  val columnModeCommand: CommandPlugin[ColumnMode, ColumnModeReturn] = commands.registerCommand("dataframe/column_mode", columnModeSimple)
+  val columnModeCommand: CommandPlugin[ColumnMode, ColumnModeReturn] =
+    commands.registerCommand("dataframe/column_mode", columnModeSimple)
+
   def columnModeSimple(arguments: ColumnMode, user: UserPrincipal): ColumnModeReturn = {
 
     implicit val u = user
@@ -531,7 +533,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
 
     val rdd = frames.getFrameRdd(ctx, frameId.id)
 
-    val columnIndex = realFrame.schema.columnIndex(arguments.column)
+    val columnIndex = realFrame.schema.columnIndex(arguments.data_column)
 
     val weightsColumnIndexOption = if (arguments.weights_column.isEmpty) {
       None
@@ -540,8 +542,42 @@ class SparkEngine(sparkContextManager: SparkContextManager,
       Some(realFrame.schema.columnIndex(arguments.weights_column.get))
     }
 
-    val x = ColumnStatistics.columnMode(columnIndex, weightsColumnIndexOption, rdd)
-    ColumnModeReturn(x._1, x._2, x._3)
+    ColumnStatistics.columnMode(columnIndex, weightsColumnIndexOption, rdd)
+  }
+
+  /**
+   * Calculate the median of the specified column.
+   * @param arguments input specification for column median
+   * @param user current user
+   */
+  override def columnMedian(arguments: ColumnMedian)(implicit user: UserPrincipal): Execution =
+    commands.execute(columnMedianCommand, arguments, user, implicitly[ExecutionContext])
+
+  val columnMedianCommand: CommandPlugin[ColumnMedian, ColumnMedianReturn] =
+    commands.registerCommand("dataframe/column_median", columnMedianSimple)
+
+  def columnMedianSimple(arguments: ColumnMedian, user: UserPrincipal): ColumnMedianReturn = {
+
+    implicit val u = user
+
+    val frameId = arguments.frame
+
+    val realFrame = expectFrame(frameId)
+
+    val ctx = sparkContextManager.context(user).sparkContext
+
+    val rdd = frames.getFrameRdd(ctx, frameId.id)
+
+    val columnIndex = realFrame.schema.columnIndex(arguments.data_column)
+
+    val weightsColumnIndexOption = if (arguments.weights_column.isEmpty) {
+      None
+    }
+    else {
+      Some(realFrame.schema.columnIndex(arguments.weights_column.get))
+    }
+
+    ColumnStatistics.columnMedian(columnIndex, weightsColumnIndexOption, rdd)
   }
 
   /**
