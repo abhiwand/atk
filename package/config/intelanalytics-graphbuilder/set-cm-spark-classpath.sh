@@ -3,6 +3,7 @@
 #The host must be a valid cloudera cluster and it needs to run spark.
 #All request are through the cloudera managers rest api version 6
 
+INTERACTIVE=true
 API_VERSION="v6"
 API_PREFIX="api"
 API_BASE_URL="${API_PREFIX}/${API_VERSION}"
@@ -16,12 +17,60 @@ red=$(tput setaf 1)
 yellow=$(tput setaf 3)
 normal=$(tput sgr0)
 
-
+CM_PORT=7180
 CM_HOST=$(cat /etc/cloudera-scm-agent/config.ini | grep server_host | awk -F"=" '{print $2}')
+USERNAME="admin"
+PASSWORD="admin"
+CLUSTERNAME=""
+RESTART=false
+while true; do
+    case "$1" in
+		--interactive)
+			echo "interactive, $2"
+			INTERACTIVE=$2
+			shift 2 ;;
+		--host)
+			echo "host, '$2'"
+			CM_HOST=$2
+			shift 2 ;;
+		--port)
+			echo "port, '$2'"
+			CM_PORT=$2
+			shift 2 ;;
+		--username)
+			echo "username, '$2'"
+			USERNAME=$2
+			shift 2 ;;
+		--password)
+			echo "password, '$2'"
+ 			PASSWORD=$2
+			shift 2 ;;
+		--clustername)
+			echo "clustername, '$2'"
+			CLUSTERNAME=$2
+			shift 2 ;;
+		--restart)
+			echo "restart, '$2'"
+			RESTART=$2
+			shift 2 ;;
+		--) shift ; break ;;
+		*) break ;;
+    esac
+done
+
+reader=""
+function readIn(){
+	reader=""
+	if [ "$INTERACTIVE" == "true" ]; then
+		read $1 reader 
+	fi
+}
+
+
 echo "What is the cloudera manager's host address? will default to ${CM_HOST}:"
-read CM_HOST
-if [ "$CM_HOST" == "" ]; then
-	CM_HOST=$(cat /etc/cloudera-scm-agent/config.ini | grep server_host | awk -F"=" '{print $2}')
+readIn
+if [ "$reader" != "" ]; then
+	CM_HOST=$reader
 fi
 
 if [ ! -d /etc/cloudera-scm-agent/config.ini ] && [ "$CM_HOST" == "" ]; then
@@ -30,25 +79,24 @@ if [ ! -d /etc/cloudera-scm-agent/config.ini ] && [ "$CM_HOST" == "" ]; then
 fi
 
 echo "What is the cloudera manager port? will default to 7180:"
-read CM_PORT
-if [ "$CM_PORT" == "" ]; then
-	CM_PORT=7180
+readIn
+if [ "$reader" != "" ]; then
+	CM_PORT=$reader
 fi
 
 echo "What is the cloudera manager user? will default to admin:"
-read USERNAME
-if [ "$USERNAME" == "" ]; then
-	USERNAME="admin"
+readIn
+if [ "$reader" != "" ]; then
+	USERNAME=$reader
 fi
 
 echo "What is the cloudera manager password? will default to admin:"
-read -s PASSWORD
-if [ "$PASSWORD" == "" ]; then
-        PASSWORD="admin"
+readIn -s
+if [ "$reader" != "" ]; then
+        PASSWORD=$reader
 fi
 
 HOST=$(cat /etc/cloudera-scm-agent/config.ini | grep server_host | awk -F"=" '{print $2}')
-CLUSTERNAME=""
 if [ "$HOST" == "" ]; then
     echo "This script is not running on a cloudera cluster please specify the cluster's name as it appears in the cloudera manager?"
     read CLUSTERNAME
@@ -121,9 +169,13 @@ function deployConfig(){
 
 function restartSpark(){
     echo "The spark service must be restarted for the changes to take affect."
-    read -p "If you want to restart spark service type 'yes': " restart
+    echo "If you want to restart spark service type 'yes'"
+    readIn
+    if [ "$reader" != "" ]; then
+    	RESTART=$reader
+    fi
 
-    if [ "$restart" == "yes" ]; then
+    if [ "$RESTART" == "yes" ]; then
 
         createUrl clusters/${clusterNameEncoded}/services/${sparkService}/commands/restart
         response=$(curl -s -H "Content-Type: application/json" -X POST  ${curlLoginOpt} ${url} | jq -c -r '{id,active}')
@@ -334,7 +386,6 @@ else
 	echo "${red}Spark is not runing on the cluster no classpath to set/update, exitting ${normal}"
 	exit 1
 fi
-
 
 
 
