@@ -1144,6 +1144,53 @@ class BigFrame(CommandSupport):
                   Ties are resolved arbitrarily.
                  minimum : Minimum value in the data.
                  maximum : Maximum value in the data.
+                 mean_confidence_lower : Lower limit of the 95% confidence interval about the mean.
+                  Assumes a Gaussian distribution.
+                 mean_confidence_upper: Upper limit of the 95% confidence interval about the mean.
+                  Assumes a Gaussian distribution.
+                 count : The number of entries - not necessarily distinct. Equivalently, the number of rows in the input
+                  table.
+
+        Examples
+        --------
+        >>> mean = frame.column_summary_statistics('data column', 'weight column')
+        """
+        pass
+
+    @doc_stub
+    def column_full_statistics(self, data_column, weights_column_name = None):
+        """
+        Calculate summary statistics of a column.
+
+        Parameters
+        ----------
+        data_column : str
+            The column to be statistically summarized. Must contain numerical data.
+
+        weights_column : str
+            Optional. The column that provides weights (frequencies) for the data being summarized.
+            Must contain numerical data. Uniform weights of 1 for all items will be used for the calculation if this
+                parameter is not provided.
+
+        Returns
+        -------
+        summary : Dict
+            Dictionary containing summary statistics in the following entries:
+                 mean : Arithmetic mean of the data.
+                 geometric_mean : Geometric mean of the data.
+                 variance : Variance of the data where weighted sum of squared distance from the mean is divided by
+                  count - 1
+                 standard_deviation : Standard deviation of the data.
+                 skewness : The skewness of the data.
+                 kurtosis : The kurtosis of the data.
+                 mode : A mode of the data; that is, an item with the greatest weight (largest frequency).
+                  Ties are resolved arbitrarily.
+                 minimum : Minimum value in the data.
+                 maximum : Maximum value in the data.
+                 mean_confidence_lower : Lower limit of the 95% confidence interval about the mean.
+                  Assumes a Gaussian distribution.
+                 mean_confidence_upper: Upper limit of the 95% confidence interval about the mean.
+                  Assumes a Gaussian distribution.
                  count : The number of entries - not necessarily distinct. Equivalently, the number of rows in the input
                   table.
 

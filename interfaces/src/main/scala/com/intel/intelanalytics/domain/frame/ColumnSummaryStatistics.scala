@@ -47,6 +47,8 @@ case class ColumnSummaryStatistics(frame: FrameReference, data_column: String, w
  * @param mode A mode of the data; that is, an item with the greatest weight (largest frequency). Ties resolved arbitrarily.
  * @param minimum Minimum value in the data.
  * @param maximum Maximum value in the data.
+ * @param mean_confidence_lower: Lower limit of the 95% confidence interval about the mean. Assumes a Gaussian RV.
+ * @param mean_confidence_upper: Upper limit of the 95% confidence interval about the mean. Assumes a Gaussian RV.
  * @param count The number of entries - not necessarily distinct. Equivalently, the number of rows in the input table.
  */
 case class ColumnSummaryStatisticsReturn(mean: Double,
@@ -56,5 +58,7 @@ case class ColumnSummaryStatisticsReturn(mean: Double,
                                          mode: Double,
                                          minimum: Double,
                                          maximum: Double,
+                                         mean_confidence_lower: Double,
+                                         mean_confidence_upper: Double,
                                          count: Long)
 

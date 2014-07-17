@@ -65,6 +65,8 @@ private[spark] object ColumnStatistics extends Serializable {
       variance = stats.weightedVariance,
       standard_deviation = stats.weightedStandardDeviation,
       mode = stats.weightedMode,
+      mean_confidence_lower = stats.meanConfidenceLower,
+      mean_confidence_upper = stats.meanConfidenceUpper,
       minimum = stats.min,
       maximum = stats.max,
       count = stats.count)
@@ -93,6 +95,8 @@ private[spark] object ColumnStatistics extends Serializable {
       skewness = stats.weightedSkewness,
       kurtosis = stats.weightedKurtosis,
       mode = stats.weightedMode,
+      mean_confidence_lower = stats.meanConfidenceLower,
+      mean_confidence_upper = stats.meanConfidenceUpper,
       minimum = stats.min,
       maximum = stats.max,
       count = stats.count)
