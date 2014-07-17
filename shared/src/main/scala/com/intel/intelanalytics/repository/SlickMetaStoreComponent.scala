@@ -37,7 +37,6 @@ import spray.json._
 
 import scala.util.Try
 import com.intel.intelanalytics.engine.ProgressInfo
-import com.intel.intelanalytics.engine.ProgressInfo
 import scala.Some
 import com.intel.intelanalytics.domain.frame.DataFrameTemplate
 import com.intel.intelanalytics.domain.User
@@ -50,9 +49,9 @@ import com.intel.intelanalytics.domain.command.CommandTemplate
 import com.intel.intelanalytics.domain.Error
 import com.intel.intelanalytics.domain.graph.GraphTemplate
 import com.intel.intelanalytics.domain.UserTemplate
-import scala.collection.mutable.ListBuffer
 
 trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
+
   msc: MetaStoreComponent with DbProfileComponent =>
 
   import com.intel.intelanalytics.domain.DomainJsonProtocol._
@@ -79,13 +78,8 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
     { string => JsonParser(string).convertTo[Error] }
   )
 
-  implicit val commandProgressType = MappedColumnType.base[List[Float], String](
+  implicit val commandProgressType = MappedColumnType.base[List[ProgressInfo], String](
     { progress => progress.toJson.prettyPrint },
-    { string => JsonParser(string).convertTo[List[Float]] }
-  )
-
-  implicit val detailedProgressType = MappedColumnType.base[List[ProgressInfo], String](
-    { detailedProgress => detailedProgress.toJson.prettyPrint },
     { string => JsonParser(string).convertTo[List[ProgressInfo]] }
   )
 
@@ -448,9 +442,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
 
       def error = column[Option[Error]]("error")
 
-      def progress = column[List[Float]]("progress")
-
-      def detailedProgress = column[List[ProgressInfo]]("detailed_progress")
+      def progress = column[List[ProgressInfo]]("progress")
 
       def complete = column[Boolean]("complete", O.Default(false))
 
@@ -463,7 +455,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
       def createdById = column[Option[Long]]("created_by")
 
       /** projection to/from the database */
-      def * = (id, name, arguments, error, progress, detailedProgress, complete, result, createdOn, modifiedOn, createdById) <> (Command.tupled, Command.unapply)
+      def * = (id, name, arguments, error, progress, complete, result, createdOn, modifiedOn, createdById) <> (Command.tupled, Command.unapply)
 
       def createdBy = foreignKey("command_created_by", createdById, users)(_.id)
     }
@@ -476,7 +468,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
 
     override def insert(command: CommandTemplate)(implicit session: Session): Try[Command] = Try {
       // TODO: add createdBy user id
-      val c = Command(0, command.name, command.arguments, None, List(), List(), false, None, new DateTime(), new DateTime(), None)
+      val c = Command(0, command.name, command.arguments, None, List(), false, None, new DateTime(), new DateTime(), None)
       commandsAutoInc.insert(c)
     }
 
@@ -529,16 +521,13 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
      * @param progress progress for the command
      * @param session session to db
      */
-    override def updateProgress(id: Long, progress: List[Float], detailedProgress: List[ProgressInfo])(implicit session: Session): Try[Unit] = Try {
-      val q = for { c <- commands if c.id === id } yield (c.progress, c.detailedProgress)
-      val existingProgress = q.firstOption.get._1
-      val progressBuffer = progress.to[ListBuffer]
+    override def updateProgress(id: Long, progress: List[ProgressInfo])(implicit session: Session): Try[Unit] = Try {
+      val q = for { c <- commands if c.id === id && c.complete === false } yield c.progress
+      q.update(progress)
 
-      for (i <- 0 to (existingProgress.length - 1)) {
-        progressBuffer(i) = math.max(existingProgress(i), progress(i))
-      }
-
-      q.update(progressBuffer.toList, detailedProgress)
+      val c = for { c <- commands if c.id === id && c.complete === true } yield c.progress
+      val completeProgress = progress.map(p => p.copy(progress = 100f))
+      c.update(completeProgress)
     }
   }
 

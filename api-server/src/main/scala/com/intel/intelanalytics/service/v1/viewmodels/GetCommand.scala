@@ -38,13 +38,12 @@ import com.intel.intelanalytics.engine.ProgressInfo
  *                  ML algorithm, the parameters are used to execute the function directly.
  * @param error StackTrace and/or other error text if it exists
  * @param progress List of progress for each job initiated by the command
- * @param progressMessage List of detailed progress message for each job initiated by the command
  * @param complete True if this command is completed
  * @param result result data for executing the command
  * @param links
  */
-case class GetCommand(id: Long, name: String, arguments: Option[JsObject], error: Option[Error], progress: List[Float],
-                      progressMessage: List[String], complete: Boolean, result: Option[JsObject], links: List[RelLink]) {
+case class GetCommand(id: Long, name: String, arguments: Option[JsObject], error: Option[Error], progress: List[ProgressInfo],
+                      complete: Boolean, result: Option[JsObject], links: List[RelLink]) {
   require(id > 0)
   require(name != null)
   require(arguments != null)

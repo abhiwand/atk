@@ -33,7 +33,7 @@ import org.apache.spark.scheduler.SparkListenerStageCompleted
 import scala.Some
 import org.apache.spark.scheduler.SparkListenerJobStart
 import com.intel.intelanalytics.engine.spark.CommandProgressUpdater
-import com.intel.intelanalytics.engine.ProgressInfo
+import com.intel.intelanalytics.engine.{ ProgressInfo, TaskProgressInfo }
 
 /**
  * Listens to progress on Spark Jobs.
@@ -53,7 +53,6 @@ class SparkProgressListener(val progressUpdater: CommandProgressUpdater) extends
   val stageIdToTasksComplete = HashMap[Int, Int]()
   val stageIdToTasksFailed = HashMap[Int, Int]()
   val commandIdJobs = new HashMap[Long, List[ActiveJob]]
-  val jobIdDetailedProgressInfo = new HashMap[Int, ProgressInfo]()
 
   override def onJobStart(jobStart: SparkListenerJobStart) {
     val stages = addStageAndAncestorStagesToCollection(jobStart.job.finalStage)
@@ -68,7 +67,7 @@ class SparkProgressListener(val progressUpdater: CommandProgressUpdater) extends
       addToCommandIdJobs(job)
 
       //update initial progress to 0
-      progressUpdater.updateProgress(job.properties.getProperty("command-id").toLong, List(0.00f), List())
+      progressUpdater.updateProgress(job.properties.getProperty("command-id").toLong, List(ProgressInfo(0.00f, TaskProgressInfo(0, 0))))
     }
   }
 
@@ -139,7 +138,7 @@ class SparkProgressListener(val progressUpdater: CommandProgressUpdater) extends
   /**
    * return a detailed progress info about current job.
    */
-  private def getDetailedProgress(jobId: Int): ProgressInfo = {
+  private def getDetailedProgress(jobId: Int): TaskProgressInfo = {
     val stageIds = jobIdToStagesIds(jobId)
     var totalSucceeded = 0
     var totalFailed = 0
@@ -148,29 +147,18 @@ class SparkProgressListener(val progressUpdater: CommandProgressUpdater) extends
       totalFailed += stageIdToTasksFailed.getOrElse(stageId, 0)
     }
 
-    ProgressInfo(totalSucceeded, totalFailed)
+    TaskProgressInfo(totalSucceeded, totalFailed)
   }
 
   /**
    * calculate progress for the command
    */
-  def getCommandProgress(commandId: Long): List[Float] = {
+  def getCommandProgress(commandId: Long): List[ProgressInfo] = {
     val jobList = commandIdJobs.getOrElse(commandId, throw new IllegalArgumentException(s"No such command: $commandId"))
-    jobList.map(job => getProgress(job.jobId))
-  }
-
-  /**
-   * return detailed info about the command's progress
-   */
-  def getDetailedCommandProgress(commandId: Long): List[ProgressInfo] = {
-    val jobList = commandIdJobs.getOrElse(commandId, throw new IllegalArgumentException(s"No such command: $commandId")).filter(job => jobIdDetailedProgressInfo.contains(job.jobId))
-    jobList.map(job => jobIdDetailedProgressInfo(job.jobId))
-  }
-
-  def updateDetailedProgress(commandId: Long) = {
-    val jobList = commandIdJobs.getOrElse(commandId, throw new IllegalArgumentException(s"No such command: $commandId"))
-    jobList.foreach(job => {
-      jobIdDetailedProgressInfo(job.jobId) = getDetailedProgress(job.jobId)
+    jobList.map(job => {
+      val progress = getProgress(job.jobId)
+      val taskInfo = getDetailedProgress(job.jobId)
+      ProgressInfo(progress, taskInfo)
     })
   }
 
@@ -191,10 +179,8 @@ class SparkProgressListener(val progressUpdater: CommandProgressUpdater) extends
         commandIdJobs.find(e => fnGetListJobId(e._2).contains(jobId)).
           foreach {
             case (commandId, _) => {
-              val progress = getCommandProgress(commandId)
-              updateDetailedProgress(commandId)
-              val detailedProgress = getDetailedCommandProgress(commandId)
-              progressUpdater.updateProgress(commandId, progress, detailedProgress)
+              val progressInfo = getCommandProgress(commandId)
+              progressUpdater.updateProgress(commandId, progressInfo)
             }
           }
       }

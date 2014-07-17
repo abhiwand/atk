@@ -1,15 +1,8 @@
 package com.intel.intelanalytics.engine
 
 /**
- * represent extra progress information
- * @param successTasks current number of succeeded tasks
- * @param failedTasks current number of failed tasks
+ * Progress info for job
+ * @param progress current progress
+ * @param tasksInfo information regarding task details
  */
-case class ProgressInfo(successTasks: Int, failedTasks: Int) {
-  /**
-   * return the string representation of the progress info
-   */
-  override def toString() = {
-    s"Tasks Succeeded: $successTasks Failed: $failedTasks"
-  }
-}
+case class ProgressInfo(progress: Float, tasksInfo: TaskProgressInfo)
