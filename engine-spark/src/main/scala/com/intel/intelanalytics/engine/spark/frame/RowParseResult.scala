@@ -10,7 +10,6 @@ package com.intel.intelanalytics.engine.spark.frame
  */
 case class RowParseResult(parseSuccess: Boolean, row: Array[Any]) {
   if (!parseSuccess) {
-    // error rows have two columns: the original un-parsed line and the error message
-    require(row.length == 2)
+    require(row.length == 2, "error rows have two columns: the original un-parsed line and the error message")
   }
 }

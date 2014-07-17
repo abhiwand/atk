@@ -54,7 +54,7 @@ class FrameDecoratorSpec extends FlatSpec with Matchers {
     decoratedFrame.links.size should be(2)
 
     // error frame link
-    decoratedFrame.links.head.rel should be("errorFrame")
+    decoratedFrame.links.head.rel should be("ia-error-frame")
     decoratedFrame.links.head.uri should be("http://www.example.com/dataframes/5")
 
     // self link
