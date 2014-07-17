@@ -54,9 +54,16 @@ private[spark] object ColumnStatistics extends Serializable {
 
     val dataWeightPairs: RDD[(Double, Double)] = getDoubleWeightPairs(dataColumnIndex, weightsColumnIndexOption, rowRDD)
 
-    val numericalStatistics = new NumericalStatistics(dataWeightPairs)
+    val stats = new NumericalStatistics(dataWeightPairs)
 
-    numericalStatistics.summaryStatistics
+    ColumnSummaryStatisticsReturn(mean = stats.weightedMean,
+      geometric_mean = stats.weightedGeometricMean,
+      variance = stats.weightedVariance,
+      standard_deviation = stats.weightedStandardDeviation,
+      mode = stats.weightedMode,
+      minimum = stats.min,
+      maximum = stats.max,
+      count = stats.count)
   }
 
   /**
@@ -73,81 +80,63 @@ private[spark] object ColumnStatistics extends Serializable {
 
     val dataWeightPairs: RDD[(Double, Double)] = getDoubleWeightPairs(dataColumnIndex, weightsColumnIndexOption, rowRDD)
 
-    val numericalStatistics = new NumericalStatistics(dataWeightPairs)
+    val stats = new NumericalStatistics(dataWeightPairs)
 
-    numericalStatistics.fullStatistics
+    ColumnFullStatisticsReturn(mean = stats.weightedMean,
+      geometric_mean = stats.weightedGeometricMean,
+      variance = stats.weightedVariance,
+      standard_deviation = stats.weightedStandardDeviation,
+      skewness = stats.weightedSkewness,
+      kurtosis = stats.weightedKurtosis,
+      mode = stats.weightedMode,
+      minimum = stats.min,
+      maximum = stats.max,
+      count = stats.count)
   }
 
   private def getDoubleWeightPairs(dataColumnIndex: Int,
                                    weightsColumnIndexOption: Option[Int],
                                    rowRDD: RDD[Row]): RDD[(Double, Double)] = {
 
-    val dataRDD = try {
-      rowRDD.map(row => java.lang.Double.parseDouble(row(dataColumnIndex).toString))
-    }
-    catch {
-      case cce: NumberFormatException => throw new NumberFormatException("Column values are non-numeric :"
-        + cce.toString)
-    }
+    val dataRDD = getNumericalColumnAsRDD(rowRDD, dataColumnIndex)
 
     val weighted = !weightsColumnIndexOption.isEmpty
 
-    val weightsRDD = if (weighted) {
-      try {
-        rowRDD.map(row => java.lang.Double.parseDouble(row(weightsColumnIndexOption.get).toString))
-      }
-      catch {
-        case cce: NumberFormatException => throw new NumberFormatException("Column values are non-numeric :"
-          + cce.toString)
-      }
-    }
-    else {
-      null
-    }
+    val weightsRDD = if (weighted) getNumericalColumnAsRDD(rowRDD, weightsColumnIndexOption.get) else null
 
-    val dataWeightPairs = if (weighted) {
-      dataRDD.zip(weightsRDD)
-    }
-    else {
-      dataRDD.map(x => (x, 1.toDouble))
-    }
-    dataWeightPairs
+    if (weighted) dataRDD.zip(weightsRDD) else dataRDD.map(x => (x, 1.toDouble))
   }
 
   private def getStringWeightPairs(dataColumnIndex: Int,
                                    weightsColumnIndexOption: Option[Int],
                                    rowRDD: RDD[Row]): RDD[(String, Double)] = {
 
-    val dataRDD: RDD[String] =
-      try {
-        rowRDD.map(row => row(dataColumnIndex).toString)
-      }
-      catch {
-        case cce: NumberFormatException => throw new NumberFormatException("Column values  from cannot be parsed :"
-          + cce.toString)
-      }
+    val dataRDD: RDD[String] = getStringColumnAsRDD(rowRDD, dataColumnIndex)
 
     val weighted = !weightsColumnIndexOption.isEmpty
 
-    val weightsRDD = if (weighted) {
-      try {
-        rowRDD.map(row => java.lang.Double.parseDouble(row(weightsColumnIndexOption.get).toString))
-      }
-      catch {
-        case cce: NumberFormatException => throw new NumberFormatException("Column values cannot be used as weights for "
-          + "mode calculation:" + cce.toString)
-      }
-    }
-    else {
-      null
-    }
+    val weightsRDD = if (weighted) getNumericalColumnAsRDD(rowRDD, weightsColumnIndexOption.get) else null
 
-    val dataWeightPairs = if (weighted) {
-      dataRDD.zip(weightsRDD)
+    if (weighted) dataRDD.zip(weightsRDD) else dataRDD.map(x => (x, 1.toDouble))
+  }
+
+  private def getNumericalColumnAsRDD(rowRDD: RDD[Row], weightsColumnIndex: Int): RDD[Double] = {
+    try {
+      rowRDD.map(row => java.lang.Double.parseDouble(row(weightsColumnIndex).toString))
     }
-    else {
-      dataRDD.map(x => (x, 1.toDouble))
+    catch {
+      case cce: NumberFormatException =>
+        throw new NumberFormatException("Column values cannot be parsed as numbers. " + cce.toString)
     }
-    dataWeightPairs
+  }
+
+  private def getStringColumnAsRDD(rowRDD: RDD[Row], dataColumnIndex: Int): RDD[String] = {
+    try {
+      rowRDD.map(row => row(dataColumnIndex).toString)
+    }
+    catch {
+      case cce: NumberFormatException =>
+        throw new NumberFormatException("Column values from cannot be parsed as strings." + cce.toString)
+    }
   }
 }

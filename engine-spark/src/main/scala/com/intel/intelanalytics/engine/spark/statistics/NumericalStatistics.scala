@@ -15,55 +15,27 @@ import com.intel.intelanalytics.domain.frame.{ ColumnFullStatisticsReturn, Colum
  */
 class NumericalStatistics(dataWeightPairs: RDD[(Double, Double)]) extends Serializable {
 
-  /**
-   * Statistics that can be calculated in a single pass over the data.
-   */
-  lazy val summaryStatistics: ColumnSummaryStatisticsReturn =
-    ColumnSummaryStatisticsReturn(mean = weightedMean,
-      geometric_mean = weightedGeometricMean,
-      variance = weightedVariance,
-      standard_deviation = weightedStandardDeviation,
-      mode = weightedMode,
-      minimum = min,
-      maximum = max,
-      count = count)
+  lazy val singlePassStatistics: SinglePassStatistics = generateSinglePassStatistics()
 
-  /**
-   * All statistics that we support. Calculation of this field requires multiple passes over the data.
-   */
-  lazy val fullStatistics: ColumnFullStatisticsReturn =
-    ColumnFullStatisticsReturn(mean = weightedMean,
-      geometric_mean = weightedGeometricMean,
-      variance = weightedVariance,
-      standard_deviation = weightedStandardDeviation,
-      skewness = weightedSkewness,
-      kurtosis = weightedKurtosis,
-      mode = weightedMode,
-      minimum = min,
-      maximum = max,
-      count = count)
+  lazy val weightedMean: Double = singlePassStatistics.weightedSum / singlePassStatistics.totalWeight
 
-  private lazy val singlePassStatistics: SinglePassStatistics = generateSinglePassStatistics()
+  lazy val weightedGeometricMean: Double = Math.pow(singlePassStatistics.weightedProduct, 1 / singlePassStatistics.totalWeight)
 
-  private lazy val weightedMean: Double = singlePassStatistics.weightedSum / singlePassStatistics.totalWeight
+  lazy val weightedVariance: Double = generateVariance()
 
-  private lazy val weightedGeometricMean: Double = Math.pow(singlePassStatistics.weightedProduct, 1 / singlePassStatistics.totalWeight)
+  lazy val weightedStandardDeviation: Double = Math.sqrt(weightedVariance)
 
-  private lazy val weightedVariance: Double = generateVariance()
+  lazy val weightedMode: Double = singlePassStatistics.mode
 
-  private lazy val weightedStandardDeviation: Double = Math.sqrt(weightedVariance)
+  lazy val min: Double = singlePassStatistics.minimum
 
-  private lazy val weightedMode: Double = singlePassStatistics.mode
+  lazy val max: Double = singlePassStatistics.maximum
 
-  private lazy val min: Double = singlePassStatistics.minimum
+  lazy val count: Long = singlePassStatistics.count
 
-  private lazy val max: Double = singlePassStatistics.maximum
+  lazy val weightedSkewness: Double = generateSkewness()
 
-  private lazy val count: Long = singlePassStatistics.count
-
-  private lazy val weightedSkewness: Double = generateSkewness()
-
-  private lazy val weightedKurtosis: Double = generateKurtosis()
+  lazy val weightedKurtosis: Double = generateKurtosis()
 
   private def convertDataWeightPairToStats(p: (Double, Double)): SinglePassStatistics = {
     val data = p._1
