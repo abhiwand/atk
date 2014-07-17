@@ -46,6 +46,7 @@ class MLDataSplitterSuite extends FunSuite with BeforeAndAfterAll with ShouldMat
 
     val nPoints = 10000
     val percentages = Array(0.7, 0.1, 0.2)
+    val labels = Array("bin #1", "bin #2", "bin #3")
 
     // generate testRDD
     val rnd = new Random(41)
@@ -57,13 +58,13 @@ class MLDataSplitterSuite extends FunSuite with BeforeAndAfterAll with ShouldMat
     assert(nTotal == nPoints, "# data points generated isn't equal to specified.")
 
     // split the RDD by labelling
-    val splitter = new MLDataSplitter(percentages, 42)
+    val splitter = new MLDataSplitter(percentages, labels, 42)
     val labeledRDD = splitter.randomlyLabelRDD(testRDD)
 
     // collect the size of each partition
     val partitionSizes = new Array[Long](percentages.size)
     (0 until percentages.size).foreach { i =>
-      val partitionRDD = labeledRDD.filter(p => p.label == i).map(_.entry)
+      val partitionRDD = labeledRDD.filter(p => p.label == labels.apply(i)).map(_.entry)
       partitionSizes(i) = partitionRDD.count
     }
 

@@ -50,6 +50,16 @@ import org.apache.spark.engine.SparkProgressListener
 import org.apache.spark.rdd.RDD
 import spray.json._
 
+import com.intel.intelanalytics.domain.frame.LoadLines
+
+import DomainJsonProtocol._
+
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent._
+import scala.util.Try
+import org.apache.spark.engine.SparkProgressListener
+import com.intel.spark.mllib.util.{ LabeledLine, MLDataSplitter }
+
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent._
 
@@ -285,6 +295,61 @@ class SparkEngine(sparkContextManager: SparkContextManager,
           yield (arguments.new_column_names(i), schema.columns(columnIndices(i))._2)
     }
     frames.updateSchema(projectedFrame, projectedColumns.toList)
+  }
+
+  /**
+   * Randomly assigns sample lables to rows of a table, with probabilities for each label given by an incoming
+   * probability distribution. Modifies the current table by adding a  column (called "sample bin" by default) that
+   * contains the sample labels.
+   *
+   * @param arguments AssignSample command payload
+   * @param user the current user
+   * @return
+   */
+  def assignSample(arguments: AssignSample)(implicit user: UserPrincipal): Execution =
+    commands.execute(assignSampleCommand, arguments, user, implicitly[ExecutionContext])
+
+  val assignSampleCommand = commands.registerCommand("dataframe/assign_sample", assignSampleSimple)
+
+  def assignSampleSimple(arguments: AssignSample, user: UserPrincipal) = {
+
+    val ctx = sparkContextManager.context(user).sparkContext
+
+    val frameID = arguments.frame.id
+    val frame = expectFrame(frameID)
+
+    val splitPercentages = arguments.sample_percentages.toArray
+
+    val outputColumn = arguments.output_column.getOrElse("sample_bin")
+
+    if (frame.schema.columns.indexWhere(columnTuple => columnTuple._1 == outputColumn) >= 0)
+      throw new IllegalArgumentException(s"Duplicate column name: ${outputColumn}")
+
+    val seed = arguments.random_seed.getOrElse(0)
+
+    val splitLabels: Array[String] = if (arguments.sample_labels.isEmpty) {
+      if (splitPercentages.length == 3) {
+        Array("TR", "TE", "VA")
+      }
+      else {
+        (0 to splitPercentages.length - 1).map(i => "Sample#" + i).toArray
+      }
+    }
+    else {
+      arguments.sample_labels.get.toArray
+    }
+
+    val splitter = new MLDataSplitter(splitPercentages, splitLabels, seed)
+
+    val labeledRDD = splitter.randomlyLabelRDD(frames.getFrameRdd(ctx, frameID))
+
+    val splitRDD = labeledRDD.map(labeledRow => labeledRow.entry :+ labeledRow.label.asInstanceOf[Any])
+
+    splitRDD.saveAsObjectFile(fsRoot + frames.getFrameDataFile(frame.id))
+
+    val allColumns = frame.schema.columns :+ (outputColumn, DataTypes.string)
+    frames.updateSchema(frame, allColumns)
+    frame.copy(schema = Schema(allColumns))
   }
 
   def groupBy(arguments: FrameGroupByColumn[JsObject, Long])(implicit user: UserPrincipal): Execution =
