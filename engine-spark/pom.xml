@@ -54,7 +54,7 @@
             <groupId>com.intel.ia</groupId>
             <artifactId>shared</artifactId>
         </dependency>
-		<dependency>
+        <dependency>
             <groupId>com.intel.ia</groupId>
             <artifactId>graphbuilder-3</artifactId>
             <exclusions>
@@ -145,7 +145,7 @@
                 </exclusion>
             </exclusions>
         </dependency>
-		<dependency>
+        <dependency>
             <groupId>commons-lang</groupId>
             <artifactId>commons-lang</artifactId>
         </dependency>

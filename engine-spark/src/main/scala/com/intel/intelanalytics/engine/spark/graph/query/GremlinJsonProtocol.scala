@@ -6,6 +6,8 @@ import com.tinkerpop.pipes.util.structures.Row
 import spray.json._
 
 import scala.collection.JavaConversions._
+import scala.reflect.ClassTag
+import scala.util.Try
 
 /**
  * Implicit conversions for Gremlin query objects to JSON
@@ -25,7 +27,7 @@ object GremlinJsonProtocol extends DefaultJsonProtocol {
     override def read(json: JsValue): Element = json match {
       case x if graph == null => deserializationError(s"No valid graph specified for de-serializing graph elements")
       case x if isGraphElement(x) => elementFromJson(graph, x, mode)
-      case x => deserializationError(s"Expected a Blueprints graph element, but received: $x")
+      case x => deserializationError(s"Expected valid GraphSON, but received: $x")
     }
 
     override def write(obj: Element): JsValue = obj match {
@@ -75,40 +77,33 @@ object GremlinJsonProtocol extends DefaultJsonProtocol {
   /**
    * Check if JSON contains a Blueprints edge encoded in GraphSON format.
    */
-  private def isEdge(json: JsValue): Boolean = json match {
-    case obj: JsObject => {
-      val elementType = obj.fields.get(GraphSONTokens._TYPE).get.convertTo[String]
-      elementType.equalsIgnoreCase(GraphSONTokens.EDGE)
-    }
-    case _ => false
+  private def isEdge(json: JsValue): Boolean = {
+    val elementType = getJsonFieldValue[String](json, GraphSONTokens._TYPE).getOrElse("")
+    elementType.equalsIgnoreCase(GraphSONTokens.EDGE)
   }
 
   /**
    * Check if JSON contains a Blueprints vertex encoded in GraphSON format.
    */
-  private def isVertex(json: JsValue): Boolean = json match {
-    case obj: JsObject => {
-      val elementType = obj.fields.get(GraphSONTokens._TYPE).getOrElse(
-        throw new RuntimeException(s"Expected valid GraphSON, but received: ${obj}")
-      ).toString
-      elementType.equalsIgnoreCase(GraphSONTokens.VERTEX)
-    }
-    case _ => false
+  private def isVertex(json: JsValue): Boolean = {
+    val elementType = getJsonFieldValue[String](json, GraphSONTokens._TYPE).getOrElse("")
+    elementType.equalsIgnoreCase(GraphSONTokens.VERTEX)
   }
 
   /**
    * Create Blueprints graph element from JSON. Returns null if not a valid graph element
    */
   private def elementFromJson(graph: Graph, json: JsValue, mode: GraphSONMode = GraphSONMode.NORMAL): Element = {
+    require(graph != null)
     val factory = new GraphElementFactory(graph)
 
     json match {
       case v if isVertex(v) => GraphSONUtility.vertexFromJson(v.toString, factory, mode, null)
       case e if isEdge(e) => {
-        val inId = getElementIdFromGraphSON(e, GraphSONTokens._IN_V)
-        val outId = getElementIdFromGraphSON(e, GraphSONTokens._OUT_V)
-        val outVertex = graph.getVertex(inId)
-        val inVertex = graph.getVertex(outId)
+        val inId = getJsonFieldValue[Long](e, GraphSONTokens._IN_V)
+        val outId = getJsonFieldValue[Long](e, GraphSONTokens._OUT_V)
+        val inVertex = if (inId != None) graph.getVertex(inId.get) else null
+        val outVertex = if (outId != None) graph.getVertex(outId.get) else null
 
         if (inVertex != null && outVertex != null) {
           GraphSONUtility.edgeFromJson(e.toString, outVertex, inVertex, factory, mode, null)
@@ -120,26 +115,24 @@ object GremlinJsonProtocol extends DefaultJsonProtocol {
   }
 
   /**
-   * Get element ID from GraphSON
-   */
-  private def getElementIdFromGraphSON(json: JsValue, idName: String): Long = {
-    try {
-      getJsonFieldValue(json, idName).toString.toLong
-    }
-    catch {
-      case e: Exception => throw new RuntimeException(s"Unable to get element Id from GraphSON: ${json}", e)
-    }
-  }
-
-  /**
    * Get field value from JSON object using key.
+   *
+   * @param json Json object
+   * @param key key
+   * @tparam T
+   * @return
    */
-  private def getJsonFieldValue(json: JsValue, key: String): Any = json match {
+  private def getJsonFieldValue[T: JsonFormat : ClassTag](json: JsValue, key: String): Option[T] = json match {
     case obj: JsObject => {
-      obj.fields.get(key).getOrElse(
-        throw new RuntimeException(s"${key} does not exist in JSON object: ${json}")
-      )
+      val value = obj.fields.get(key).orNull
+      value match {
+        case x: JsValue => Try {
+          Some(x.convertTo[T])
+        }.getOrElse(
+          throw new RuntimeException(s"Could not convert ${key} to type T from JSON string: ${json}"))
+        case _ => None
+      }
     }
-    case _ => throw new RuntimeException("Invalid JSON object: ${json}")
+    case _ => None
   }
 }
