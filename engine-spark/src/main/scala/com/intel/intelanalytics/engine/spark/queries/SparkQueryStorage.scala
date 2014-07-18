@@ -53,7 +53,7 @@ class SparkQueryStorage(val metaStore: SlickMetaStoreComponent#SlickMetaStore, f
    * @return the newly created RDD
    */
   def getQueryRdd(ctx: SparkContext, queryId: Long): RDD[Any] = {
-    ctx.objectFile(getAbsoluteFrameDirectory(queryId))
+    ctx.objectFile(getAbsoluteQueryDirectory(queryId))
   }
 
   /**
@@ -151,7 +151,7 @@ class SparkQueryStorage(val metaStore: SlickMetaStoreComponent#SlickMetaStore, f
    * @param id query id
    * @return directory path
    */
-  def getFrameDirectory(id: Long): String = {
+  def getQueryDirectory(id: Long): String = {
     val path = Paths.get(s"$queryResultBase/$id")
     path.toString
   }
@@ -161,8 +161,8 @@ class SparkQueryStorage(val metaStore: SlickMetaStoreComponent#SlickMetaStore, f
    * @param id query id
    * @return absolute directory path
    */
-  def getAbsoluteFrameDirectory(id: Long): String = {
-    SparkEngineConfig.fsRoot + "/" + getFrameDirectory(id)
+  def getAbsoluteQueryDirectory(id: Long): String = {
+    SparkEngineConfig.fsRoot + "/" + getQueryDirectory(id)
   }
 
   /**
@@ -170,7 +170,7 @@ class SparkQueryStorage(val metaStore: SlickMetaStoreComponent#SlickMetaStore, f
    * @param queryId
    */
   def dropFiles(queryId: Long): Unit = withContext("frame.drop") {
-    files.delete(Paths.get(getFrameDirectory(queryId)))
+    files.delete(Paths.get(getQueryDirectory(queryId)))
   }
 
 }

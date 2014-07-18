@@ -139,7 +139,7 @@ class QueryExecutor(engine: => SparkEngine, queries: SparkQueryStorage, contextM
                 case x: Iterable[Any] => context.parallelize(x.toSeq)
                 case _ => ???
               }
-              val location = queries.getAbsoluteFrameDirectory(q.id)
+              val location = queries.getAbsoluteQueryDirectory(q.id)
 
               rdd.saveAsObjectFile(location)
               val pageSize = SparkEngineConfig.pageSize
