@@ -2,7 +2,7 @@
 Getting Started
 ===============
 
-The Intel® Data Platform: Analytics Toolkit is a scalable database and analytics tool for examining and analyzing "Big Data."
+The Intel® Analytics Toolkit is a scalable database and analytics tool for examining and analyzing "Big Data."
 The Analytics Toolkit gives data scientists the tools to take raw data, clean it appropriately, build graphs,
 examine the relationships between data, and view the data in different ways.
 The Analytics Toolkit includes powerful algorithms for transforming your data and a built-in
@@ -35,7 +35,7 @@ Before You Start
 
 You should be familiar with some of the Python packages already available in the open source community.
 
-The Intel® Data Platform: Analytics Toolkit provides a set of functionality exposed through a Python API.
+The Intel® Analytics Toolkit provides a set of functionality exposed through a Python API.
 You can access this API through iPython© notebooks, so familiarizing yourself with iPython_ will be helpful to you.
 
 You'll want to know about `Apache™ Hadoop®`_ and its various components. We use HDFS™, MapReduce, and YARN.

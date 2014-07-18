@@ -41,14 +41,8 @@ def _get_backend():
 
 def get_frame_names():
     """
-    Summary
-    -------
-    BigFrame names
+    BigFrame names.
 
-    .. versionadded:: 0.8
-
-    Extended Summary
-    ----------------
     Gets the names of BigFrame objects available for retrieval
 
     Raises
@@ -72,6 +66,9 @@ def get_frame_names():
     Result would be::
 
         ["BigFrame1", "BigFrame2"]
+
+    .. versionadded:: 0.8
+
     """
     # TODO - Review docstring
     try:
@@ -82,14 +79,8 @@ def get_frame_names():
 
 def get_frame(name):
     """
-    Summary
-    -------
-    Get BigFrame
+    Get BigFrame.
 
-    .. versionadded:: 0.8
-
-    Extended Summary
-    ----------------
     Retrieves a BigFrame class object to allow access to the data frame
 
     Parameters
@@ -118,6 +109,8 @@ def get_frame(name):
 
         True
 
+    .. versionadded:: 0.8
+
     """
     # TODO - Review docstring
     try:
@@ -128,14 +121,8 @@ def get_frame(name):
 
 def delete_frame(name):
     """
-    Summary
-    -------
-    Erases data
+    Erases data.
 
-    .. versionadded:: 0.8
-
-    Extended Summary
-    ----------------
     Deletes the frame from backing store
 
     Parameters
@@ -163,6 +150,9 @@ def delete_frame(name):
     The result would be::
 
         BF1
+
+    .. versionadded:: 0.8
+
     """
     # TODO - Review examples and parameter
     try:
@@ -173,14 +163,8 @@ def delete_frame(name):
 
 class BigFrame(CommandSupport):
     """
-    Summary
-    -------
-    Data handle
+    Data handle.
 
-    .. versionadded:: 0.8
-
-    Extended Summary
-    ----------------
     Class with information about a large 2D table of data.
     Has information needed to modify data and table structure.
 
@@ -201,6 +185,7 @@ class BigFrame(CommandSupport):
     If no name is provided for the BigFrame object, it will generate one.
     An automatically generated name will be the word "frame_" followed by the uuid.uuid4().hex and
     if allowed, an "_" character then the name of the data source.
+    For example, "
 
     Examples
     --------
@@ -217,6 +202,8 @@ class BigFrame(CommandSupport):
     A BigFrame object has been created and *h* is its proxy. It has no data yet, but it does have the name *BF2*.
 
     For other examples, see :ref:`example_frame.bigframe`.
+
+    .. versionadded:: 0.8
 
     """
     # TODO - Review Parameters, Examples
@@ -320,14 +307,8 @@ class BigFrame(CommandSupport):
     @property
     def column_names(self):
         """
-        Summary
-        -------
-        Column names
+        Column names.
 
-        .. versionadded:: 0.8
-
-        Extended Summary
-        ----------------
         The names of all the columns in the current BigFrame object.
 
         Returns
@@ -346,6 +327,8 @@ class BigFrame(CommandSupport):
 
             ["col1", "col2", "col3"]
 
+        .. versionadded:: 0.8
+
         """
         try:
             return [name for name, data_type in self._backend.get_schema(self)]
@@ -355,14 +338,8 @@ class BigFrame(CommandSupport):
     @property
     def name(self):
         """
-        Summary
-        -------
-        Frame name
+        Frame name.
 
-        .. versionadded:: 0.8
-
-        Extended Summary
-        ----------------
         The name of the data frame.
 
         Returns
@@ -382,6 +359,8 @@ class BigFrame(CommandSupport):
 
             "Flavor Recipes"
 
+        .. versionadded:: 0.8
+
         """
         try:
             return self._backend.get_name(self)
@@ -391,14 +370,8 @@ class BigFrame(CommandSupport):
     @name.setter
     def name(self, value):
         """
-        Summary
-        -------
-        Set frame name
+        Set frame name.
 
-        .. versionadded:: 0.8
-
-        Extended Summary
-        ----------------
         Assigns a name to a data frame.
 
         Examples
@@ -406,6 +379,8 @@ class BigFrame(CommandSupport):
         Assign the name "movies" to the current frame::
 
             my_frame.name("movies")
+
+        .. versionadded:: 0.8
 
         """
         try:
@@ -416,14 +391,8 @@ class BigFrame(CommandSupport):
     @property
     def schema(self):
         """
-        Summary
-        -------
-        BigFrame schema
+        BigFrame schema.
 
-        .. versionadded:: 0.8
-
-        Extended Summary
-        ----------------
         The schema of the current BigFrame object.
 
         Returns
@@ -444,6 +413,8 @@ class BigFrame(CommandSupport):
 
             [("col1", str), ("col1", numpy.int32)]
 
+        .. versionadded:: 0.8
+
         """
         try:
             return self._backend.get_schema(self)
@@ -452,14 +423,8 @@ class BigFrame(CommandSupport):
 
     def accuracy(self, label_column, pred_column):
         """
-        Summary
-        -------
-        Model accuracy
+        Model accuracy.
 
-        .. versionadded:: 0.8
-
-        Extended Summary
-        ----------------
         Computes the accuracy measure for a classification model
         A column containing the correct labels for each instance and a column containing the predictions made by the classifier are specified.
         The accuracy of a classification model is the proportion of predictions that are correct.
@@ -482,7 +447,11 @@ class BigFrame(CommandSupport):
 
         Examples
         ----------
-        >>> acc = frame.accuracy('labels', 'predictions')
+        Get the frame accuracy::
+
+            acc = frame.accuracy('labels', 'predictions')
+
+        .. versionadded:: 0.8
 
         """
         try:
@@ -493,14 +462,8 @@ class BigFrame(CommandSupport):
 
     def add_columns(self, func, schema):
         """
-        Summary
-        -------
-        Add column
+        Add column.
         
-        .. versionadded:: 0.8
-
-        Extended Summary
-        ----------------
         Adds one or more new columns to the frame by evaluating the given
         func on each row.
 
@@ -566,6 +529,8 @@ class BigFrame(CommandSupport):
         
         For further examples, see :ref:`example_frame.add_columns`.
 
+        .. versionadded:: 0.8
+
         """
         try:
             self._backend.add_columns(self, func, schema)
@@ -574,14 +539,8 @@ class BigFrame(CommandSupport):
 
     def append(self, data):
         """
-        Summary
-        -------
-        Add data
+        Add data.
 
-        .. versionadded:: 0.8
-
-        Extended Summary
-        ----------------
         Adds more data (rows and/or columns) to the BigFrame object.
 
         Parameters
@@ -607,6 +566,9 @@ class BigFrame(CommandSupport):
         The frame referred to by *f_2* is then added to the bottom.
 
         For further example, see :ref:`Data flow <example_frame.append>`.
+
+        .. versionadded:: 0.8
+
         """
         # TODO - Review examples
         try:
@@ -617,14 +579,8 @@ class BigFrame(CommandSupport):
     @doc_stub
     def assign_sample(self, name):
         """
-        Summary
-        -------
-        Assign classes to rows
+        Assign classes to rows.
 
-        .. versionadded:: 0.8
-
-        Extended Summary
-        ----------------
         Randomly assign classes to rows given a vector of percentages:
         The table receives an additional column that contains a random label generated by the probability distribution
         function specified by a list of floating point values. The labels are non-negative integers drawn from the range
@@ -656,19 +612,15 @@ class BigFrame(CommandSupport):
         "test", or "validate".
         Values in the other columns are unaffected.
 
+        .. versionadded:: 0.8
+
         """
         pass
 
     def bin_column(self, column_name, num_bins, bin_type='equalwidth', bin_column_name='binned'):
         """
-        Summary
-        -------
-        Column values into bins
+        Column values into bins.
 
-        .. versionadded:: 0.8
-
-        Extended Summary
-        ----------------
         Two types of binning are provided: `equalwidth` and `equaldepth`.
 
         Equal width binning places column values into bins such that the values in each bin fall within the same
@@ -713,19 +665,15 @@ class BigFrame(CommandSupport):
             binnedEW = frame.bin_column('a', 5, 'equalwidth', 'aEWBinned')
             binnedED = frame.bin_column('a', 5, 'equaldepth', 'aEDBinned')
 
+        .. versionadded:: 0.8
+
         """
         return self._backend.bin_column(self, column_name, num_bins, bin_type, bin_column_name)
 
     def confusion_matrix(self, label_column, pred_column, pos_label=1):
         """
-        Summary
-        -------
-        Builds matrix
+        Builds matrix.
 
-        .. versionadded:: 0.8
-
-        Extended Summary
-        ----------------
         Outputs a confusion matrix for a binary classifier
 
         Parameters
@@ -754,20 +702,16 @@ class BigFrame(CommandSupport):
              Actual   pos | 1     | 4
                       neg | 3     | 2
 
+        .. versionadded:: 0.8
+
         """
 
         return self._backend.confusion_matrix(self, label_column, pred_column, pos_label)
 
     def copy(self):
         """
-        Summary
-        -------
-        Copy frame
+        Copy frame.
 
-        .. versionadded:: 0.8
-
-        Extended Summary
-        ----------------
         Creates a full copy of the current frame.
 
         Raises
@@ -813,6 +757,7 @@ class BigFrame(CommandSupport):
             "cust"
             (a very long computer-generated name)
 
+        .. versionadded:: 0.8
 
         """
         try:
@@ -824,14 +769,8 @@ class BigFrame(CommandSupport):
 
     def count(self):
         """
-        Summary
-        -------
-        Row count
+        Row count.
 
-        .. versionadded:: 0.8
-
-        Extended Summary
-        ----------------
         Count the number of rows that exist in this object.
 
         Raises
@@ -855,6 +794,8 @@ class BigFrame(CommandSupport):
 
             298376527
 
+        .. versionadded:: 0.8
+
         """
         try:
             return self._backend.count(self)
@@ -863,14 +804,8 @@ class BigFrame(CommandSupport):
 
     def drop(self, predicate):
         """
-        Summary
-        -------
-        Drop rows
+        Drop rows.
 
-        .. versionadded:: 0.8
-
-        Extended Summary
-        ----------------
         Remove all rows from the frame which satisfy the predicate.
 
         Parameters
@@ -893,6 +828,8 @@ class BigFrame(CommandSupport):
 
         For further examples, see :ref:`example_frame.drop`
 
+        .. versionadded:: 0.8
+
         """
         # TODO - Review docstring
         try:
@@ -902,14 +839,8 @@ class BigFrame(CommandSupport):
 
     def drop_duplicates(self, columns=[]):
         """
-        Summary
-        -------
-        Remove duplicates
+        Remove duplicates.
 
-        .. versionadded:: 0.8
-
-        Extended Summary
-        ----------------
         Remove duplicate rows, keeping only one row per uniqueness criteria match
 
         Parameters
@@ -944,6 +875,8 @@ class BigFrame(CommandSupport):
 
         For further examples, see :ref:`example_frame.drop_duplicates`
 
+        .. versionadded:: 0.8
+
         """
         try:
             self._backend.drop_duplicates(self, columns)
@@ -952,14 +885,8 @@ class BigFrame(CommandSupport):
 
     def filter(self, predicate):
         """
-        Summary
-        -------
-        Select data
+        Select data.
 
-        .. versionadded:: 0.8
-
-        Extended Summary
-        ----------------
         Select all rows which satisfy a predicate.
 
         Parameters
@@ -982,6 +909,8 @@ class BigFrame(CommandSupport):
 
         For further examples, see :ref:`example_frame.filter`
 
+        .. versionadded:: 0.8
+
         """
         # TODO - Review docstring
         try:
@@ -991,14 +920,8 @@ class BigFrame(CommandSupport):
 
     def flatten_column(self, column_name):
         """
-        Summary
-        -------
-        Spread out data
+        Spread out data.
 
-        .. versionadded:: 0.8
-
-        Extended Summary
-        ----------------
         Search through the currently active BigFrame for multiple items in a single specified column.
         When it finds multiple values in the column, it replicates the row and separates the multiple items across the existing and new rows.
         Multiple items is defined in this case as being things separated by commas.
@@ -1021,6 +944,8 @@ class BigFrame(CommandSupport):
         --------
         See :ref:`example_frame.flatten_column`.
 
+        .. versionadded:: 0.8
+
         """
 
         try:
@@ -1030,14 +955,8 @@ class BigFrame(CommandSupport):
 
     def fmeasure(self, label_column, pred_column, pos_label=1, beta=1):
         """
-        Summary
-        -------
-        Model :math:`F_{\\beta}` measure
+        Model :math:`F_{\\beta}` measure.
 
-        .. versionadded:: 0.8
-
-        Extended Summary
-        ----------------
         Computes the :math:`F_{\\beta}` measure for a classification model.
         A column containing the correct labels for each instance and a column containing the predictions made by the
         model are specified.
@@ -1083,19 +1002,15 @@ class BigFrame(CommandSupport):
             f2 = frame.fmeasure('labels', 'predictions', beta=2)
             f1_binary = frame.fmeasure('labels', 'predictions', pos_label='good')
 
+        .. versionadded:: 0.8
+
         """
         return self._backend.classification_metric(self, 'fmeasure', label_column, pred_column, pos_label, beta)
 
     def groupby(self, groupby_columns, *aggregation_arguments):
         """
-        Summary
-        -------
-        Create summarized frame
+        Create summarized frame.
 
-        .. versionadded:: 0.8
-
-        Extended Summary
-        ----------------
         Creates a new frame and returns a BigFrame object to access it.
         Takes a column or group of columns, finds the unique combination of values, and creates unique rows with these column values.
         The other columns are combined according to the aggregation argument(s).
@@ -1185,6 +1100,8 @@ class BigFrame(CommandSupport):
 
         For further examples, see :ref:`example_frame.groupby`.
 
+        .. versionadded:: 0.8
+
         """
         try:
             return self._backend.groupby(self, groupby_columns, aggregation_arguments)
@@ -1194,14 +1111,8 @@ class BigFrame(CommandSupport):
 
     def inspect(self, n=10, offset=0):
         """
-        Summary
-        -------
-        Print data
+        Print data.
 
-        .. versionadded:: 0.8
-
-        Extended Summary
-        ----------------
         Print the data in readable format.
 
         Parameters
@@ -1223,7 +1134,9 @@ class BigFrame(CommandSupport):
         Examples
         --------
         For an example, see :ref:`example_frame.inspect`
-        
+
+        .. versionadded:: 0.8
+
         """
         # TODO - Review docstring
         try:
@@ -1233,14 +1146,8 @@ class BigFrame(CommandSupport):
 
     def join(self, right, left_on, right_on=None, how='inner'):
         """
-        Summary
-        -------
-        Combine frames
+        Combine frames.
 
-        .. versionadded:: 0.8
-
-        Extended Summary
-        ----------------
         Create a new BigFrame from a SQL JOIN operation with another BigFrame.
         The BigFrame on the 'left' is the currently active frame.
         The BigFrame on the 'right' is another frame.
@@ -1304,6 +1211,8 @@ class BigFrame(CommandSupport):
 
         For further examples, see :ref:`example_frame.join`.
 
+        .. versionadded:: 0.8
+
         """
         try:
             return self._backend.join(self, right, left_on, right_on, how)
@@ -1312,14 +1221,8 @@ class BigFrame(CommandSupport):
 
     def precision(self, label_column, pred_column, pos_label=1):
         """
-        Summary
-        -------
-        Model precision
+        Model precision.
 
-        .. versionadded:: 0.8
-
-        Extended Summary
-        ----------------
         Computes the precision measure for a classification model
         A column containing the correct labels for each instance and a column containing the predictions made by the
         model are specified.  The precision of a binary classification model is the proportion of predicted positive
@@ -1351,20 +1254,16 @@ class BigFrame(CommandSupport):
             prec = frame.precision('labels', 'predictions')
             prec2 = frame.precision('labels', 'predictions', 'yes')
 
+        .. versionadded:: 0.8
+
         """
         return self._backend.classification_metric(self, 'precision', label_column, pred_column, pos_label, 1)
 
 
     def project_columns(self, column_names, new_names=None):
         """
-        Summary
-        -------
-        Create frame from columns
+        Create frame from columns.
 
-        .. versionadded:: 0.8
-
-        Extended Summary
-        ----------------
         Copies specified columns into a new BigFrame object, optionally renaming them.
 
         Parameters
@@ -1415,6 +1314,8 @@ class BigFrame(CommandSupport):
         And the new BigFrame *frog_frame* is accessing a frame with a single column *frog* which has a copy of all the data from the original
         column *c* in *frame1*.
 
+        .. versionadded:: 0.8
+
         """
         # TODO - need example in docstring
         try:
@@ -1426,14 +1327,8 @@ class BigFrame(CommandSupport):
 
     def recall(self, label_column, pred_column, pos_label=1):
         """
-        Summary
-        -------
-        Model measure
+        Model measure.
 
-        .. versionadded:: 0.8
-
-        Extended Summary
-        ----------------
         Computes the recall measure for a classification model
         A column containing the correct labels for each instance and a column containing the predictions made by the
         model are specified.  The recall of a binary classification model is the proportion of positive instances that
@@ -1465,20 +1360,16 @@ class BigFrame(CommandSupport):
             rec = frame.recall('labels', 'predictions')
             rec2 = frame.recall('labels', 'predictions', 'pos')
 
+        .. versionadded:: 0.8
+
         """
         return self._backend.classification_metric(self, 'recall', label_column, pred_column, pos_label, 1)
 
     @doc_stub
     def remove_columns(self, name):
         """
-        Summary
-        -------
-        Delete columns
+        Delete columns.
 
-        .. versionadded:: 0.8
-
-        Extended Summary
-        ----------------
         Remove columns from the BigFrame object.
 
         Parameters
@@ -1507,6 +1398,9 @@ class BigFrame(CommandSupport):
         Now the frame only has the columns *column_a* and *column_c*.
 
         For further examples, see :ref:`example_frame.remove_columns`
+
+        .. versionadded:: 0.8
+
         """
         pass
         # TODO - Review examples
@@ -1517,14 +1411,8 @@ class BigFrame(CommandSupport):
 
     def rename_columns(self, column_names, new_names):
         """
-        Summary
-        -------
-        Rename column
+        Rename column.
 
-        .. versionadded:: 0.8
-
-        Extended Summary
-        ----------------
         Renames columns in a frame.
 
         Parameters
@@ -1544,6 +1432,9 @@ class BigFrame(CommandSupport):
         Now, what was *Wrong* is now *Right* and what was *Wong* is now *Wite*.
 
         For further examples, see :ref:`example_frame.rename_columns`
+
+        .. versionadded:: 0.8
+
         """
         try:
             self._backend.rename_columns(self, column_names, new_names)
@@ -1552,14 +1443,8 @@ class BigFrame(CommandSupport):
 
     def take(self, n, offset=0):
         """
-        Summary
-        -------
-        Get data subset
+        Get data subset.
 
-        .. versionadded:: 0.8
-
-        Extended Summary
-        ----------------
         Take a subset of the currently active BigFrame.
 
         Parameters
@@ -1592,7 +1477,9 @@ class BigFrame(CommandSupport):
             r = my_frame.take( 5000, 1000 )
 
         We end up with a new frame accessed by the BigFrame *r* again, but this time it has a copy of rows 1001 to 5000 of the original frame.
-        
+
+        .. versionadded:: 0.8
+
         """
         # TODO - Review and complete docstring
         try:
