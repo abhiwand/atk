@@ -153,24 +153,7 @@ class GraphService(commonDirectives: CommonDirectives, engine: Engine) extends D
                         }
                       }
                 }
-              } ~
-                (path("vertices") & get) {
-                  parameters('qname.as[String], 'offset.as[Int], 'count.as[Int]) {
-                    (queryName, offset, count) =>
-                      parameterMap {
-                        params =>
-                          onComplete(for { r <- engine.getVertices(id, offset, count, queryName, params) } yield r) {
-                            case Success(rows: Iterable[Array[Any]]) => {
-                              import spray.httpx.SprayJsonSupport._
-                              import DomainJsonProtocol._
-                              val strings = rows.map(r => r.map(a => a.toJson).toList).toList
-                              complete(strings)
-                            }
-                            case Failure(ex) => throw ex
-                          }
-                      }
-                  }
-                }
+              } 
           }
     }
 

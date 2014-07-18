@@ -23,7 +23,39 @@
 
 package com.intel.intelanalytics.component
 
-/**
- * Encapsulates all data needed to load an archive
- */
-case class ArchiveName(archive: String, archiveClass: String)
+import com.typesafe.config.Config
+
+import scala.reflect.ClassTag
+
+import scala.collection.JavaConverters._
+import scala.util.control.NonFatal
+import scala.util.{ Failure, Success, Try }
+
+class DefaultArchive extends Archive {
+
+  /**
+   * Obtain instances of a given class. The keys are established purely
+   * by convention.
+   *
+   * @param descriptor the string key of the desired class instance.
+   * @tparam T the type of the requested instances
+   * @return the requested instances, or the empty sequence if no such instances could be produced.
+   */
+  override def getAll[T: ClassTag](descriptor: String): Seq[T] = {
+    val array = try {
+      Archive.logger(s"Archive ${definition.name} getting all '$descriptor'")
+      val stringList = configuration.getStringList(descriptor + ".available").asScala
+      Archive.logger(s"Found: $stringList")
+      val components = stringList.map(componentName => loadComponent(descriptor + "." + componentName))
+      components.map(_.asInstanceOf[T]).toArray
+    }
+    catch {
+      case NonFatal(e) =>
+        Archive.logger(e.toString)
+        Archive.logger(configuration.root().render())
+        throw e
+    }
+    array
+  }
+
+}

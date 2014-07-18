@@ -82,7 +82,7 @@ class HistogramRocQuery extends SparkCommandPlugin[HistogramRocParams, Histogram
     import scala.concurrent.duration._
 
     System.out.println("*********In Execute method of Histogram ROC query********")
-    val config = configuration().get
+    val config = configuration
     val graphFuture = invocation.engine.getGraph(arguments.graph.id)
     val graph = Await.result(graphFuture, config.getInt("default-timeout") seconds)
 
