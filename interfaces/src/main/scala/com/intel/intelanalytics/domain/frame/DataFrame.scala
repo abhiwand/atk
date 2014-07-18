@@ -49,7 +49,7 @@ case class DataFrame(id: Long,
                      modifiedOn: DateTime,
                      createdBy: Option[Long] = None,
                      modifiedBy: Option[Long] = None) extends HasId {
-  require(id >= 0)
-  require(name != null)
-  require(name.trim.length > 0)
+  require(id >= 0, "id must be zero or greater")
+  require(name != null, "name must not be null")
+  require(name.trim.length > 0, "name must not be empty or whitespace")
 }
