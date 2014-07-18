@@ -3,5 +3,5 @@
     daily
     missingok
     size 1m
-
+    copytruncate
 }
