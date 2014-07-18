@@ -16,12 +16,13 @@ class PercentileCalculationITest extends TestingSparkContext with Matchers {
     )
 
     val rdd = sc.parallelize(numbers, 3)
-    val result = SparkOps.calculatePercentiles(rdd, Seq(0, 5, 40, 100), 0, DataTypes.int32)
-    result.length shouldBe 4
+    val result = SparkOps.calculatePercentiles(rdd, Seq(0, 3, 5, 40, 100), 0, DataTypes.int32)
+    result.length shouldBe 5
     result(0) shouldBe Percentile(0, 1)
-    result(1) shouldBe Percentile(5, 1.25)
-    result(2) shouldBe Percentile(40, 10)
-    result(3) shouldBe Percentile(100, 25)
+    result(1) shouldBe Percentile(3, 1)
+    result(2) shouldBe Percentile(5, 1.25)
+    result(3) shouldBe Percentile(40, 10)
+    result(4) shouldBe Percentile(100, 25)
   }
 
   //   Large scale test takes longer time. uncomment it when needed.
