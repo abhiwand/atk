@@ -97,7 +97,7 @@ class SparkFrameStorage(context: UserPrincipal => Context, fsRoot: String, files
           }
           metaStore.frameRepo.updateSchema(frame, remainingColumns)
         }
-    }  
+    }
 
   override def renameFrame(frame: DataFrame, newName: String): DataFrame = {
     metaStore.withSession("frame.rename") {
@@ -231,7 +231,7 @@ class SparkFrameStorage(context: UserPrincipal => Context, fsRoot: String, files
   def getFrameDataFile(id: Long): String = {
     getFrameDirectory(id) + "/data"
   }
-  
+
   def getFrameMetaDataFile(id: Long): String = {
     getFrameDirectory(id) + "/meta"
   }
