@@ -32,16 +32,13 @@ class DataFile(object):
 
 class CsvFile(DataFile):
     """
-    Summary
-    -------
-    Define a CSV file
-
-    .. versionadded:: 0.8
+    Define a CSV file.
 
     Parameters
     ----------
     file_name : string
-        name of data input file
+        name of data input file. Relative paths are interpreted relative to the intel.analytics.engine.fs.root
+        configuration. Absolute paths (beginning with hdfs://...) are also supported.
     schema : list of tuples of the form (string, type)
         schema description of the fields for a given line.  It is a list of
         tuples which describe each field, (field name, field type), where
@@ -49,9 +46,9 @@ class CsvFile(DataFile):
         (See supported_types from the types module)
         The type ``ignore`` may also be used if the field should be ignored
         on loads
-    delimiter : string
-        string indicator of the delimiter for the fields, the comma character is the default
-    skip_header_lines : int32
+    delimiter : string (optional)
+        string indicator of the delimiter for the fields
+    skip_header_lines : int (optional)
         indicates numbers of lines to skip before parsing records
 
     Raises
@@ -99,6 +96,8 @@ class CsvFile(DataFile):
 
     For other examples see :ref:`Data Flow <example_files.csvfile>`.
 
+    .. versionadded:: 0.8
+
     """
 
     # TODO - Review docstring
@@ -127,14 +126,8 @@ class CsvFile(DataFile):
     @property
     def field_names(self):
         """
-        Summary
-        -------
-        Schema field names
+        Schema field names.
 
-        .. versionadded:: 0.8
-
-        Extended Summary
-        ----------------
         List of field names from the schema stored in the CsvFile object
 
         Returns
@@ -154,6 +147,8 @@ class CsvFile(DataFile):
 
             ["col1", "col2"]
 
+        .. versionadded:: 0.8
+
         """
         # TODO - Review docstring
         return [x[0] for x in self.schema]
@@ -161,14 +156,8 @@ class CsvFile(DataFile):
     @property
     def field_types(self):
         """
-        Summary
-        -------
         Schema field types
 
-        .. versionadded:: 0.8
-
-        Extended Summary
-        ----------------
         List of field types from the schema stored in the CsvFile object.
         
         Returns
@@ -187,6 +176,9 @@ class CsvFile(DataFile):
         The output would be::
 
             [numpy.int32, numpy.float32]
+
+        .. versionadded:: 0.8
+
         """
         # TODO - Review docstring
         return [x[1] for x in self.schema]

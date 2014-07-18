@@ -41,13 +41,13 @@ import com.intel.intelanalytics.engine.ProgressInfo
  * @param progressMessage List of detailed progress message for each job initiated by the command
  * @param complete True if this command is completed
  * @param result result data for executing the command
- * @param links
+ * @param links hyperlinks to related URIs
  */
 case class GetCommand(id: Long, name: String, arguments: Option[JsObject], error: Option[Error], progress: List[Float],
                       progressMessage: List[String], complete: Boolean, result: Option[JsObject], links: List[RelLink]) {
-  require(id > 0)
-  require(name != null)
-  require(arguments != null)
-  require(links != null)
-  require(error != null)
+  require(id > 0, "id must be greater than zero")
+  require(name != null, "name may not be null")
+  require(arguments != null, "arguments may not be null")
+  require(links != null, "links may not be null")
+  require(error != null, "links may not be null")
 }
