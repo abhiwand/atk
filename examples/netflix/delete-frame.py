@@ -27,12 +27,15 @@ csv = CsvFile("/netflix.csv", schema= [('user', int32),
                                               ('rating', str),
                                               ('splits', str)], skip_header_lines=1)
 
-print("create big frame")
-frame = BigFrame(csv)
+print("create big frames")
+frame1 = BigFrame(csv)
+frame2 = BigFrame(csv, "myframe")
 
-print("inspect frame")
-print frame.inspect(10)
+print("inspect frame 1")
+print frame1.inspect(10)
 
-print("delete the frame")
-deleted_frame = delete_frame(frame)
-print("deleted frame: " + deleted_frame)
+print("delete frame1 passing BigFrame")
+print delete_frame(frame1)
+
+print("delete frame2 passing the name")
+print delete_frame("myframe")
