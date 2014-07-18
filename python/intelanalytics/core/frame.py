@@ -120,7 +120,7 @@ def get_frame(name):
         raise IaError(logger)
 
 
-def delete_frame(name):
+def delete_frame(frame):
     """
     Erases data.
 
@@ -128,8 +128,8 @@ def delete_frame(name):
 
     Parameters
     ----------
-    name : string
-        The name of the BigFrame object to delete.
+    frame : string or BigFrame
+        Either the name of the BigFrame object to delete or the BigFrame object itself
 
     Raises
     ------
@@ -155,9 +155,8 @@ def delete_frame(name):
     .. versionadded:: 0.8
 
     """
-    # TODO - Review examples and parameter
     try:
-        return _get_backend().delete_frame(name)
+        return _get_backend().delete_frame(frame)
     except:
         raise IaError(logger)
 

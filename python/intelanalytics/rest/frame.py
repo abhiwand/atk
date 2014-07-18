@@ -72,11 +72,17 @@ class FrameBackendRest(object):
 
     def delete_frame(self, frame):
         if isinstance(frame, BigFrame):
-            logger.info("REST Backend: Delete frame {0}".format(repr(frame)))
-            r = self.rest_http.delete("dataframes/" + str(frame._id))
-            return frame.name
+            return self._delete_frame(frame)
+        elif isinstance(frame, str):
+            # delete by name
+            return self._delete_frame(self.get_frame(frame))
         else:
-            raise TypeError("Excepted argument of type BigFrame")
+            raise TypeError("Excepted argument of type BigFrame or the frame name")
+
+    def _delete_frame(self, frame):
+        logger.info("REST Backend: Delete frame {0}".format(repr(frame)))
+        r = self.rest_http.delete("dataframes/" + str(frame._id))
+        return frame.name
 
     def create(self, frame, source, name):
         logger.info("REST Backend: create frame: " + frame.name)
