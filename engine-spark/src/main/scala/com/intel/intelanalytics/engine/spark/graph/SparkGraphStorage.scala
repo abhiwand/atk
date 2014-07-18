@@ -80,7 +80,8 @@ class SparkGraphStorage(context: (UserPrincipal) => Context,
             val frameRules = graphLoad.frame_rules
 
             // TODO graphbuilder only supports one input frame at present
-            require(frameRules.size == 1)
+            require(frameRules.size == 1, "only one frame rule per call is supported in this version")
+
             val theOnlySourceFrameID = frameRules.head.frame.id
 
             val dataFrame = frameStorage.lookup(theOnlySourceFrameID)
@@ -120,6 +121,14 @@ class SparkGraphStorage(context: (UserPrincipal) => Context,
     }
   }
 
+  override def getGraphByName(name: String)(implicit user: UserPrincipal): Option[Graph] = {
+    metaStore.withSession("spark.graphstorage.getGraphByName") {
+      implicit session =>
+        {
+          metaStore.graphRepo.lookupByName(name)
+        }
+    }
+  }
   /**
    * Get the metadata for a graph from its unique ID.
    * @param id ID being looked up.
