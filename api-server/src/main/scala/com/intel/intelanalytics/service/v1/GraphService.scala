@@ -153,7 +153,7 @@ class GraphService(commonDirectives: CommonDirectives, engine: Engine) extends D
                         }
                       }
                 }
-              } 
+              }
           }
     }
 
