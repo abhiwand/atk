@@ -4,6 +4,7 @@ import com.intel.graphbuilder.elements.GraphElement
 import org.apache.spark.rdd.RDD
 import org.apache.spark.SparkContext._
 import scala.collection.mutable.ArrayBuffer
+import scala.util.Try
 
 object FeatureVector {
 
@@ -67,7 +68,7 @@ object FeatureVector {
     val property = graphElement.getProperty(propertyName)
     if (property != None) {
       property.get.value.toString.split(sep).map(p => {
-        try { p.toDouble } catch { case _ => 0d }
+        Try { p.toDouble }.getOrElse(0d)
       })
     }
     else {

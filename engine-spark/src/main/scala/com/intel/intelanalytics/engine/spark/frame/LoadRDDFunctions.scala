@@ -63,7 +63,7 @@ object LoadRDDFunctions extends Serializable {
 
     if (failedRatio >= threshold)
       throw new Exception(s"Parse failed on $failedCount rows out of the first $sampleRowsCount, " +
-                          " please ensure your schema is correct")
+        " please ensure your schema is correct")
   }
 
   /**

@@ -21,38 +21,46 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics
+package com.intel.graphbuilder.schema
 
-trait ClassLoaderAware {
+import org.apache.spark.AccumulableParam
+import com.intel.graphbuilder.elements.{ GraphElement, Vertex, Edge }
+
+/**
+ * Implements AccumulableParam to allow inferring graph schema from data.
+ */
+class SchemaAccumulableParam extends AccumulableParam[InferSchemaFromData, GraphElement] {
 
   /**
-   * Execute a code block using specified class loader
-   * rather than the ClassLoader of the currentThread()
+   * Add a new edge or vertex to infer schema object accumulator
+   *
+   * @param schema the current infer schema object
+   * @param element the graph element to add to the current infer schema object
+   * @return
    */
-  def withLoader[T](loader: ClassLoader)(expr: => T): T = {
-    val prior = Thread.currentThread().getContextClassLoader
-    try {
-      Thread.currentThread().setContextClassLoader(loader)
-      expr
+  override def addAccumulator(schema: InferSchemaFromData, element: GraphElement): InferSchemaFromData = {
+    element match {
+      case v: Vertex => schema.add(v)
+      case e: Edge => schema.add(e)
     }
-    finally {
-      Thread.currentThread().setContextClassLoader(prior)
-    }
+    schema
   }
 
   /**
-   * Execute a code block using the ClassLoader of 'this'
-   * rather than the ClassLoader of the currentThread()
+   * Merges two accumulated graph schemas (as InferSchemaFromData) together
+   *
+   * @param schemaOne accumulated infer schema object one
+   * @param schemaTwo accumulated infer schema object two
+   * @return the merged infer schema object
    */
-  def withMyClassLoader[T](expression: => T): T = {
-    val prior = Thread.currentThread().getContextClassLoader
-    try {
-      val loader = this.getClass.getClassLoader
-      Thread.currentThread setContextClassLoader loader
-      expression
-    }
-    finally {
-      Thread.currentThread setContextClassLoader prior
-    }
+  override def addInPlace(schemaOne: InferSchemaFromData, schemaTwo: InferSchemaFromData): InferSchemaFromData = {
+    schemaOne.edgeLabelDefsMap ++= schemaTwo.edgeLabelDefsMap
+    schemaOne.propertyDefsMap ++= schemaTwo.propertyDefsMap
+    schemaOne
   }
+
+  override def zero(initialValue: InferSchemaFromData): InferSchemaFromData = {
+    initialValue
+  }
+
 }
