@@ -234,7 +234,7 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
 
           val graphLoad = GraphLoad(GraphReference(graphID),
             args.frame_rules,
-            args.retain_dangling_edges)
+            args.append)
           val exec = engine.loadGraph(graphLoad)
           complete(decorate(uri + "/" + exec.start.id, exec.start))
         }
