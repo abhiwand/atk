@@ -28,7 +28,7 @@ import com.intel.intelanalytics.domain._
 import com.intel.intelanalytics.domain.command.{ Command, CommandTemplate }
 import com.intel.intelanalytics.domain.frame.{ DataFrame, DataFrameTemplate }
 import com.intel.intelanalytics.domain.graph.{ Graph, GraphTemplate }
-import com.intel.intelanalytics.domain.query.{ QueryTemplate, Query }
+import com.intel.intelanalytics.domain.query.{ QueryTemplate, Query => QueryRecord }
 import com.intel.intelanalytics.domain.schema.Schema
 import com.intel.intelanalytics.shared.EventLogging
 import org.joda.time.DateTime
@@ -547,14 +547,15 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
    */
   class SlickQueryRepository extends QueryRepository[Session]
       with EventLogging {
-    this: Repository[Session, QueryTemplate, Query] =>
+    this: Repository[Session, QueryTemplate, QueryRecord] =>
 
     /**
      * A slick implementation of the 'Query' table that defines
      * the columns and conversion to/from Scala beans.
      */
-    class QueryTable(tag: Tag) extends Table[Query](tag, "query") {
+    class QueryTable(tag: Tag) extends Table[QueryRecord](tag, "query") {
       def id = column[Long]("query_id", O.PrimaryKey, O.AutoInc)
+      Query
 
       def name = column[String]("name")
 
@@ -575,7 +576,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
       def createdById = column[Option[Long]]("created_by")
 
       /** projection to/from the database */
-      def * = (id, name, arguments, error, complete, totalPages, pageSize, createdOn, modifiedOn, createdById) <> (Query.tupled, Query.unapply)
+      def * = (id, name, arguments, error, complete, totalPages, pageSize, createdOn, modifiedOn, createdById) <> (QueryRecord.tupled, QueryRecord.unapply)
 
       def createdBy = foreignKey("query_created_by", createdById, users)(_.id)
     }
@@ -586,9 +587,9 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
       case (f, id) => f.copy(id = id)
     }
 
-    override def insert(query: QueryTemplate)(implicit session: Session): Try[Query] = Try {
+    override def insert(query: QueryTemplate)(implicit session: Session): Try[QueryRecord] = Try {
       // TODO: add createdBy user id
-      val c = Query(0, query.name, query.arguments, None, false, None, None, new DateTime(), new DateTime(), None)
+      val c = QueryRecord(0, query.name, query.arguments, None, false, None, None, new DateTime(), new DateTime(), None)
       queriesAutoInc.insert(c)
     }
 
@@ -596,21 +597,21 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
       queries.where(_.id === id).mutate(f => f.delete())
     }
 
-    override def update(query: Query)(implicit session: Session): Try[Query] = Try {
+    override def update(query: QueryRecord)(implicit session: Session): Try[QueryRecord] = Try {
       val updatedQuery = query.copy(modifiedOn = new DateTime())
       val updated = queries.where(_.id === query.id).update(updatedQuery)
       updatedQuery
     }
 
-    override def scan(offset: Int = 0, count: Int = defaultScanCount)(implicit session: Session): Seq[Query] = {
+    override def scan(offset: Int = 0, count: Int = defaultScanCount)(implicit session: Session): Seq[QueryRecord] = {
       queries.drop(offset).take(count).list
     }
 
-    override def lookup(id: Long)(implicit session: Session): Option[Query] = {
+    override def lookup(id: Long)(implicit session: Session): Option[QueryRecord] = {
       queries.where(_.id === id).firstOption
     }
 
-    override def lookupByName(name: String)(implicit session: Session): Option[Query] = {
+    override def lookupByName(name: String)(implicit session: Session): Option[QueryRecord] = {
       queries.where(_.name === name).firstOption
     }
 
