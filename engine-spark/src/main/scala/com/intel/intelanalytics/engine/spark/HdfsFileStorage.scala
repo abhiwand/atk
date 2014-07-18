@@ -46,7 +46,8 @@ class HdfsFileStorage(fsRoot: String) extends FileStorage with EventLogging {
       hadoopConfig.set("fs.defaultFS", fsRoot)
     }
 
-    require(hadoopConfig.getClassByNameOrNull(classOf[LocalFileSystem].getName) != null)
+    require(hadoopConfig.getClassByNameOrNull(classOf[LocalFileSystem].getName) != null,
+      "Could not load local filesystem for Hadoop")
     hadoopConfig
   }
 

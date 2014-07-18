@@ -744,64 +744,156 @@ Now I check again and my result is::
 BigGraph
 --------
 
-You have imported your data into a frame, cleaned it, corrected the data as necessary,
-and now you are at the point where you can make a :term:`graph`.
-
-There are two main steps to :term:`graph` construction.
-First, you will build a set of rules to describe the transformation from table to :term:`graph`, and then you build it,
-copying the data into it at that point.
-
 Building Rules
 ==============
 
-First make rule objects.
-These are the criteria for transforming the table data to :term:`graph` data.
+First make rule objects. These are the criteria for transforming the table data to graph data.
 
-.. _example_graph.vertexrule:
+Vertex Rule
+-----------
 
-Vertex Rules
-------------
-Make a rule *my_vertex_rule_1* that makes a :term:`vertex` for every row in the frame *my_frame*;
-give the :term:`vertex` a unique identification property *vid*;
-assign *vid* the value from column *a*;
-give the :term:`vertex` a property *x*, with a value from column *b*::
+To create a rule for a vertex, one needs to define:
 
-     my_vertex_rule_1 = VertexRule('vid', my_frame['a'], {'x', my_frame['b']})
+#. The label or identification for the vertex, for example, the string “empID”.
+#. The value of the vertex, for example, the column “emp_id” of a frame.
+#. The property of the vertex:
 
-Make a rule *my_vertex_rule_2* that makes a :term:`vertex` for every row in the frame *my_frame*;
-give the :term:`vertex` a unique identification property *yid*;
-assign *yid* the value from column *c*;
-give the :term:`vertex` a property *y*, with a value from column *d*::
+    * consists of a label and its value, for example, the property “name” with value taken from column “name” of a frame
+    * is optional which means a vertex might have zero or more properties
 
-     my_vertex_rule_2 = VertexRule('yid', my_frame['c'], {'y', my_frame['d']})
+Example:
+~~~~~~~~
 
-.. _example_graph.edgerule:
+Frame “my_frame” consists of the following columns::
 
-Edge Rules
-----------
+    ╔═══════════╤═══════════╤═══════════╤═══════════╗
+    ║ emp_id    │ name      │ manager   │ years     ║
+    ╠═══════════╪═══════════╪═══════════╪═══════════╣
+    ║ 00001     │ john      │           | 5         ║
+    ║ 00002     │ paul      │ 00001     │ 4         ║
+    ║ 00003     │ george    │ 00001     │ 3         ║
+    ║ 00004     │ ringo     │ 00001     │ 2         ║
+    ╚═══════════╧═══════════╧═══════════╧═══════════╝
 
-Edge rules connect the :term:`vertices` in the :term:`graph`.
+To create a vertex rule called “employee” from the above frame::
 
-Make a rule *my_edge_rule*;
-assign the rule a label from the values in columns *a*;
-tell it that it goes from *my_vertex_rule_1* to *my_vertex_rule_2*;
-give it a propery *z* with a value from column *e*;
-and tell it that it is a directed edge::
+    employee = VertexRule(‘empID”, my_frame[“emp_id”], {“name”: my_frame[“name”], “years”: my_frame[“years”]})
 
-    my_edge_rule = EdgeRule( my_frame['a'] + my_frame['c'], my_vertex_rule_1, my_vertex_rule_2, {'z' : my_frame['e'], True)
+The created vertices will be grouped under label “empID” and will have property “name” and “years” defined from their specified frame columns.
 
-.. _example_graph.biggraph:
+To create another vertex rule called “manager”::
+
+    manager = VertexRule(‘empID”, my_frame[“manager”])
+
+The created vertices will also be grouped under label “empID” (we assume managers are basically considered employees in the above example),
+and their values will be taken from column “manager” of “my_frame” which is basically the same format as column “emp_id”.
+
+Edge Rule
+---------
+ 
+An edge is a link that connects two vertices, in our case they are called tail and head. An edge can have properties similar to a vertex.
+
+To create a rule for an edge, one needs to define:
+
+#. The label or identification for the edge, for example, the string “worksUnder”
+#. The tail vertex specified in the previously defined vertex rule.
+#. The head vertex specified in the previously defined vertex rule.
+#. The property of the edge:
+
+    * consists of a label and its value, for example, the property “name” with value taken from column “name” of a frame
+    * is optional which means an edge might have zero or more properties
+
+Example:
+~~~~~~~~
+
+To create an edge called “reports” from the same frame “my_frame” above using previously defined “employee” and “manager” rules and link them together::
+
+    reports = EdgeRule("worksUnder", employee, manager, { "years": f[“years”] })
+
+Rule of directed/non-directed edge
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+In the edge rule, user can specify whether or not the edge is directed.
+
+In the example above (employee and manager vertices), there is an edge created to link both of them with label “worksUnder”.
+This edge is considered “directed” since an employee reports to a manager but not vice versa.
+To make an edge a directed one, user needs to use parameter “is_directed” in the edge rule and set it to “True”, as shown in example below::
+
+    reports = EdgeRule("worksUnder", employee, manager, { "years": f[“years”]}, is_directed = True)
 
 Building A Graph
 ================
 
-Now that you have built some rules, let us put them to use and create a :term:`BigGraph` and give it the name *bg*:
+Now that you have built some rules, let us put them to use and create a graph by calling BigGraph and give it the name “employee_graph”::
 
-    my_graph = BigGraph([my_vertex_rule_1, my_vertex_rule_2, my_edge_rule], 'bg')
+    my_graph = BigGraph([employee, manager, reports], “employee_graph”)
 
-The table database has now been copied into a :term:`BigGraph` object and is ready to be analyzed using the advanced
-functionality of the :term:`BigGraph` API.
+The graph is then created in a table in the underlying graph database and the content of this table is copied into a BigGraph object
+and is ready to be analyzed using the advanced functionality of the BigGraph API, for example, the use of machine learning algorithms.
 
 Similar to what was discussed for BigFrame, what gets returned is not all the data, but a proxy (descriptive pointer) for the data.
-Commands such as ``g4 = my_graph`` will only give you a copy of the proxy, pointing to the same graph.
+Commands such as g4 = my_graph will only give you a copy of the proxy, pointing to the same graph.
+
+.. TODO:: Remove the remainder of this file if the first part checks out. 
+
+    You have imported your data into a frame, cleaned it, corrected the data as necessary,
+    and now you are at the point where you can make a :term:`graph`.
+
+    There are two main steps to :term:`graph` construction.
+    First, you will build a set of rules to describe the transformation from table to :term:`graph`, and then you build it,
+    copying the data into it at that point.
+
+    Building Rules
+
+
+    First make rule objects.
+    These are the criteria for transforming the table data to :term:`graph` data.
+
+    .. _example_graph.vertexrule:
+
+    Vertex Rules
+
+    Make a rule *my_vertex_rule_1* that makes a :term:`vertex` for every row in the frame *my_frame*;
+    give the :term:`vertex` a unique identification property *vid*;
+    assign *vid* the value from column *a*;
+    give the :term:`vertex` a property *x*, with a value from column *b*::
+
+         my_vertex_rule_1 = VertexRule('vid', my_frame['a'], {'x', my_frame['b']})
+
+    Make a rule *my_vertex_rule_2* that makes a :term:`vertex` for every row in the frame *my_frame*;
+    give the :term:`vertex` a unique identification property *yid*;
+    assign *yid* the value from column *c*;
+    give the :term:`vertex` a property *y*, with a value from column *d*::
+
+         my_vertex_rule_2 = VertexRule('yid', my_frame['c'], {'y', my_frame['d']})
+
+    .. _example_graph.edgerule:
+
+    Edge Rules
+
+
+    Edge rules connect the :term:`vertices` in the :term:`graph`.
+
+    Make a rule *my_edge_rule*;
+    assign the rule a label from the values in columns *a*;
+    tell it that it goes from *my_vertex_rule_1* to *my_vertex_rule_2*;
+    give it a propery *z* with a value from column *e*;
+    and tell it that it is a directed edge::
+
+        my_edge_rule = EdgeRule( my_frame['a'] + my_frame['c'], my_vertex_rule_1, my_vertex_rule_2, {'z' : my_frame['e'], True)
+
+    .. _example_graph.biggraph:
+
+    Building A Graph
+
+
+    Now that you have built some rules, let us put them to use and create a :term:`BigGraph` and give it the name *bg*:
+
+        my_graph = BigGraph([my_vertex_rule_1, my_vertex_rule_2, my_edge_rule], 'bg')
+
+    The table database has now been copied into a :term:`BigGraph` object and is ready to be analyzed using the advanced
+    functionality of the :term:`BigGraph` API.
+
+    Similar to what was discussed for BigFrame, what gets returned is not all the data, but a proxy (descriptive pointer) for the data.
+    Commands such as ``g4 = my_graph`` will only give you a copy of the proxy, pointing to the same graph.
 
