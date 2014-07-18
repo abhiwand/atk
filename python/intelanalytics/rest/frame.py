@@ -447,10 +447,6 @@ class FrameInfo(object):
         return self._payload['name']
 
     @property
-    def columns(self):
-        return [BigColumn(name, data_type) for name, data_type in self.schema]
-
-    @property
     def schema(self):
         return FrameSchema.from_strings_to_types(self._payload['schema']['columns'])
 
@@ -484,22 +480,7 @@ class FrameSchema:
     def from_strings_to_types(s):
         return [(name, supported_types.get_type_from_string(data_type)) for name, data_type in s]
 
-    @staticmethod
-    def from_types_to_columns(s):
-        return [BigColumn(name, data_type) for name, data_type in s]
-
-    @staticmethod
-    def from_strings_to_columns(s):
-        return [BigColumn(name, supported_types.get_type_from_string(data_type)) for name, data_type in s]
-
-    @staticmethod
-    def from_dict_to_types(s):
-        return [(name, data_type) for name, data_type in s.items()]
-
-    @staticmethod
-    def from_types_to_dict(s):
-        return OrderedDict([(name, data_type) for name, data_type in s])
-
+    # Add more if necessary
 
 def initialize_frame(frame, frame_info):
     """Initializes a frame according to given frame_info"""
