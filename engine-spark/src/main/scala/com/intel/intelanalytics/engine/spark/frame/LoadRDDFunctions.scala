@@ -62,7 +62,8 @@ object LoadRDDFunctions extends Serializable {
     sampleRdd.unpersist()
 
     if (failedRatio >= threshold)
-      throw new Exception(s"Parse failed on $failedCount rows out of the first $sampleRowsCount")
+      throw new Exception(s"Parse failed on $failedCount rows out of the first $sampleRowsCount, " +
+                          " please ensure your schema is correct")
   }
 
   /**
