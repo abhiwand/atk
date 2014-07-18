@@ -23,12 +23,15 @@
 
 package com.intel.intelanalytics.engine.spark.frame
 
-import com.intel.intelanalytics.ClassLoaderAware
-import com.intel.intelanalytics.shared.EventLogging
+import java.nio.file.Paths
+import java.util.concurrent.atomic.AtomicLong
+import com.intel.intelanalytics.component.ClassLoaderAware
 import com.intel.intelanalytics.engine._
 import com.intel.intelanalytics.domain.schema.{ DataTypes, Schema }
 import DataTypes.DataType
 import java.nio.file.Paths
+import com.intel.intelanalytics.shared.EventLogging
+
 import scala.io.{ Codec, Source }
 import org.apache.spark.rdd.RDD
 import com.intel.intelanalytics.engine.spark.{ SparkEngineConfig, HdfsFileStorage, SparkOps, SparkComponent }
@@ -78,18 +81,6 @@ class SparkFrameStorage(context: UserPrincipal => Context, fsRoot: String, files
     files.delete(Paths.get(getFrameDirectory(frameId)))
   }
 
-  override def appendRows(startWith: DataFrame, append: Iterable[Row]): Unit = {
-    withContext("frame.appendRows") {
-      ???
-    }
-  }
-
-  override def removeRows(frame: DataFrame, predicate: (Row) => Boolean): Unit = {
-    withContext("frame.removeRows") {
-      ???
-    }
-  }
-
   override def removeColumn(frame: DataFrame, columnIndex: Seq[Int])(implicit user: UserPrincipal): DataFrame =
     //withContext("frame.removeColumn") {
     metaStore.withSession("frame.removeColumn") {
@@ -105,11 +96,6 @@ class SparkFrameStorage(context: UserPrincipal => Context, fsRoot: String, files
           }
           metaStore.frameRepo.updateSchema(frame, remainingColumns)
         }
-    }
-
-  override def addColumnWithValue[T](frame: DataFrame, column: Column[T], default: T): Unit =
-    withContext("frame.addColumnWithValue") {
-      ???
     }
 
   override def renameFrame(frame: DataFrame, newName: String): DataFrame = {
@@ -152,6 +138,7 @@ class SparkFrameStorage(context: UserPrincipal => Context, fsRoot: String, files
           metaStore.frameRepo.updateSchema(frame, newColumns)
         }
     }
+
   override def getRows(frame: DataFrame, offset: Long, count: Int)(implicit user: UserPrincipal): Iterable[Row] =
     withContext("frame.getRows") {
       require(frame != null, "frame is required")
@@ -333,7 +320,7 @@ class SparkFrameStorage(context: UserPrincipal => Context, fsRoot: String, files
   def getFrameDataFile(id: Long): String = {
     getFrameDirectory(id) + "/data"
   }
-  //
+
   def getFrameMetaDataFile(id: Long): String = {
     getFrameDirectory(id) + "/meta"
   }
