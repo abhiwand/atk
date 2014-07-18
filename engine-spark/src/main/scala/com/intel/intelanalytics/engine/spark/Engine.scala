@@ -25,6 +25,7 @@ package com.intel.intelanalytics.engine.spark
 
 import java.util.{ ArrayList => JArrayList, List => JList }
 
+import com.intel.intelanalytics.component.ClassLoaderAware
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
 import com.intel.intelanalytics.domain._
 import com.intel.intelanalytics.domain.command.{ Command, CommandDefinition, CommandTemplate, Execution }
@@ -42,7 +43,7 @@ import com.intel.intelanalytics.engine.spark.context.SparkContextManager
 import com.intel.intelanalytics.engine.spark.frame.{ RDDJoinParam, RowParser, SparkFrameStorage }
 import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.shared.EventLogging
-import com.intel.intelanalytics.{ ClassLoaderAware, NotFoundException }
+import com.intel.intelanalytics.NotFoundException
 import org.apache.spark.SparkContext
 import org.apache.spark.api.python.{ EnginePythonAccumulatorParam, EnginePythonRDD }
 import org.apache.spark.broadcast.Broadcast
@@ -186,7 +187,6 @@ class SparkEngine(sparkContextManager: SparkContextManager,
   def getLoadData(ctx: SparkContext, source: LoadSource)(implicit user: UserPrincipal): (Schema, RDD[Row]) = {
     source.source_type match {
       case "dataframe" => {
-
         val frame = frames.lookup(source.uri.toInt).getOrElse(
           throw new IllegalArgumentException(s"No such data frame: ${source.uri}"))
         (frame.schema, frames.getFrameRdd(ctx, source.uri.toInt))
@@ -196,12 +196,13 @@ class SparkEngine(sparkContextManager: SparkContextManager,
         val parserFunction = getLineParser(parser)
         val schema = parser.arguments.schema
         val converter = DataTypes.parseMany(schema.columns.map(_._2).toArray)(_)
+        val absoluteFile = if (source.uri.contains("://")) { source.uri } else { fsRoot + "/" + source.uri }
 
         (schema,
-          SparkOps.loadLines(ctx, fsRoot + "/" + source.uri,
+          SparkOps.loadLines(ctx, absoluteFile,
             parser.arguments.skip_rows, parserFunction, converter))
       }
-      case _ => ???
+      case _ => illegalArg(s"Unsupported source_type: '${source.source_type}'")
     }
   }
 
@@ -775,15 +776,6 @@ class SparkEngine(sparkContextManager: SparkContextManager,
         graphs.drop(graph)
       }
     }
-  }
-
-  //TODO: We'll probably return an Iterable[Vertex] instead of rows at some point.
-  override def getVertices(graph: Identifier,
-                           offset: Int,
-                           count: Int,
-                           queryName: String,
-                           parameters: Map[String, String]): Future[Iterable[Row]] = {
-    ???
   }
 
   override def dropDuplicates(arguments: DropDuplicates)(implicit user: UserPrincipal): Execution =

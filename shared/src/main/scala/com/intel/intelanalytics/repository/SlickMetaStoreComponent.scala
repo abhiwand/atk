@@ -112,10 +112,10 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
      */
     override def initializeSchema(): Unit = {
 
-      withSession("Creating tables") {
+      withSession("Verifying schema") {
         implicit session =>
           if (profile.isH2) {
-            info("Creating schema using Slick")
+            info("Creating schema")
             // Tables that are dependencies for other tables need to go first
             statusRepo.asInstanceOf[SlickStatusRepository].createTable
             statusRepo.asInstanceOf[SlickStatusRepository].initializeValues
@@ -126,7 +126,8 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
             info("Schema creation completed")
           }
           else {
-            info("Running migrations to create/update schema as needed, jdbcUrl: " + profile.connectionString + ", user: " + profile.username)
+            info("Running migrations to create/update schema as needed, jdbcUrl: " + profile.connectionString +
+              ", user: " + profile.username)
             val flyway = new Flyway()
             flyway.setDataSource(profile.connectionString, profile.username, profile.password)
             flyway.migrate()
@@ -271,7 +272,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
   val statuses = TableQuery[StatusTable]
 
   /**
-   * A slick implementation of the graph repository. It stores metadata for statuses.
+   * A slick implementation of the status repository. It stores metadata for statuses.
    */
   class SlickStatusRepository extends Repository[Session, Status, Status]
       with EventLogging {

@@ -66,7 +66,7 @@ class AlternatingLeastSquares
 
   override def execute(invocation: Invocation, arguments: Als)(implicit user: UserPrincipal, executionContext: ExecutionContext): AlsResult = {
 
-    val config = configuration().get
+    val config = configuration
     val hConf = GiraphConfigurationUtil.newHadoopConfigurationFrom(config, "giraph")
     val titanConf = GiraphConfigurationUtil.flattenConfig(config.getConfig("titan"), "titan.")
 
