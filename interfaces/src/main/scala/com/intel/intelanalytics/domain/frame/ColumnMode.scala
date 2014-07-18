@@ -36,5 +36,5 @@ case class ColumnMode(frame: FrameReference, data_column: String, weights_column
 /**
  * Represents a ColumnMode return object... it returns the mode of the column
  */
-case class ColumnModeReturn(mode: String, weight_of_mode: Double, total_weight: Double) {
+case class ColumnModeReturn(mode: Option[String], weight_of_mode: Option[Double], total_weight: Double) {
 }

@@ -7,7 +7,7 @@ import org.apache.spark.rdd._
  * Object for calculating the frequency statistics of a collection of (data,weight) pairs, represented as an
  * RDD of (T,Double) pairs, where T is a type parameter.
  *
- * It is the responsibility of the caller to ensure
+ * All data items with weights <= 0 are excluded from these calculations.
  *
  * @param dataWeightPairs RDD containing pairs (data, weight) where the each "data" entry is unique.
  * @param nonValue The "mode" of an empty collection.
@@ -17,9 +17,28 @@ import org.apache.spark.rdd._
  */
 class FrequencyStatistics[T: ClassManifest](dataWeightPairs: RDD[(T, Double)], nonValue: T) extends Serializable {
 
-  lazy val modeItsWeightTotalWeightTriple: (T, Double, Double) = generateMode()
+  /**
+   * Option for an item with maximum weight. If there is no item with positive weight,
+   * the value None is used for the mode.
+   */
+  lazy val mode: Option[T] = modeItsWeightTotalWeightTriple._1
 
-  private def generateMode(): (T, Double, Double) = {
+  /**
+   * Option for the weight of a mode of the input. It is either strictly positive, or,
+   * if there is no item with positive weight, weightOfMode is None .
+   */
+  lazy val weightOfMode: Option[Double] = modeItsWeightTotalWeightTriple._2
+
+  /**
+   * Sum all weights.
+   */
+  lazy val totalWeight: Double = modeItsWeightTotalWeightTriple._3
+
+  private lazy val modeItsWeightTotalWeightTriple: (Option[T], Option[Double], Double) = generateMode()
+
+  private val distributionUtils = new DistributionUtils[T]()
+
+  private def generateMode(): (Option[T], Option[Double], Double) = {
 
     val acumulatorParam = new FrequencyStatsAccumulatorParam(nonValue)
     val initialValue = FrequencyStatsCounter(nonValue, -1, 0)
@@ -27,10 +46,17 @@ class FrequencyStatistics[T: ClassManifest](dataWeightPairs: RDD[(T, Double)], n
     val accumulator =
       dataWeightPairs.sparkContext.accumulator[FrequencyStatsCounter[T]](initialValue)(acumulatorParam)
 
-    dataWeightPairs.foreach(
+    val dataWeightPairsSupport = dataWeightPairs.filter(distributionUtils.hasPositiveWeight)
+
+    dataWeightPairsSupport.foreach(
       { case (value, weightAtValue) => accumulator.add(FrequencyStatsCounter(value, weightAtValue, weightAtValue)) })
 
-    (accumulator.value.mode, accumulator.value.weightOfMode, accumulator.value.totalWeight)
+    if (accumulator.value.totalWeight == 0) {
+      (None, None, 0)
+    }
+    else {
+      (Some(accumulator.value.mode), Some(accumulator.value.weightOfMode), accumulator.value.totalWeight)
+    }
   }
 }
 
@@ -41,7 +67,7 @@ class FrequencyStatistics[T: ClassManifest](dataWeightPairs: RDD[(T, Double)], n
  * @param totalWeight Sum of the weights of all values seen so far.
  * @tparam T Type of the input data. (In particular, the type of the mode.)
  */
-case class FrequencyStatsCounter[T](mode: T, weightOfMode: Double, totalWeight: Double) extends Serializable
+private case class FrequencyStatsCounter[T](mode: T, weightOfMode: Double, totalWeight: Double) extends Serializable
 
 /**
  * Configures the spark accumulator for gathering frequency statistics.
@@ -49,7 +75,7 @@ case class FrequencyStatsCounter[T](mode: T, weightOfMode: Double, totalWeight: 
  *                 only on non-empty collections and thus the particular value of nonValue is irrelevant.
  * @tparam T The type of the input data.
  */
-class FrequencyStatsAccumulatorParam[T](nonValue: T) extends AccumulatorParam[FrequencyStatsCounter[T]] with Serializable {
+private class FrequencyStatsAccumulatorParam[T](nonValue: T) extends AccumulatorParam[FrequencyStatsCounter[T]] with Serializable {
 
   override def zero(initialValue: FrequencyStatsCounter[T]) = FrequencyStatsCounter(nonValue, -1, 0)
 

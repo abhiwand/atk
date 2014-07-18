@@ -8,17 +8,16 @@ import com.intel.intelanalytics.engine.spark.frame.FrameRDDFunctions
 private[spark] object ColumnStatistics extends Serializable {
 
   /**
-   * Calculate (weighted) mode of a data column. The median is the least value X in the range of the
-   * distribution so that the cumulative weight strictly below X is < 1/2  the total weight and the cumulative
-   * distribution up to and including X is >= 1/2 the total weight.
+   * Calculate (weighted) mode of a data column, the weight of the mode, and the total weight of the column.
+   * A mode is a value that has maximum weight. Values with non-positive weights are thrown out before the calculation
+   * is performed.
    *
-   * Values with non-positive weights are thrown out before the calculation is performed.
-   * The option None is returned when the total weight is 0.
+   * When the total weight is 0, the option None is given for the mode and the weight of the mode.
    *
    * @param dataColumnIndex Index of the column providing data.
    * @param weightsColumnIndexOption Option for index of column providing weights. Must be numerical data.
    * @param rowRDD RDD of input rows
-   * @return The  mode of the column (as a string)
+   * @return The mode of the column (as a string), the weight of the mode, and the total weight of the data.
    */
   def columnMode(dataColumnIndex: Int,
                  weightsColumnIndexOption: Option[Int],
@@ -27,12 +26,18 @@ private[spark] object ColumnStatistics extends Serializable {
     val dataWeightPairs: RDD[(String, Double)] = getStringWeightPairs(dataColumnIndex, weightsColumnIndexOption, rowRDD)
 
     val frequencyStatistics = new FrequencyStatistics(dataWeightPairs, "no items found")
-    val (mode, modeWeight, totalWeight) = frequencyStatistics.modeItsWeightTotalWeightTriple
-    ColumnModeReturn(mode, modeWeight, totalWeight)
+
+    ColumnModeReturn(frequencyStatistics.mode, frequencyStatistics.weightOfMode, frequencyStatistics.totalWeight)
   }
 
   /**
-   * Calculate the median of a data column containing numerical data.
+   * Calculate the median of a data column containing numerical data. The median is the least value X in the range of the
+   * distribution so that the cumulative weight strictly below X is < 1/2  the total weight and the cumulative
+   * distribution up to and including X is >= 1/2 the total weight.
+   *
+   * Values with non-positive weights are thrown out before the calculation is performed.
+   * The option None is returned when the total weight is 0.
+   *
    * @param dataColumnIndex column index
    * @param weightsColumnIndexOption  Option for index of column providing  weights. Must be numerical data.
    * @param rowRDD RDD of input rows
