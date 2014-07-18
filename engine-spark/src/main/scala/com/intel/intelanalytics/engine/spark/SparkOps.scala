@@ -775,13 +775,10 @@ private[spark] object SparkOps extends Serializable {
 
     val result = mutable.ListBuffer[PercentileComposingElement]()
 
-    //element starts from 1. therefore X0 equals X1
-    if (integerPosition == 0)
-      integerPosition = 1
-
     val addPercentileComposingElement = (position: Long, percentile: Int, weight: BigDecimal) => {
+      //element starts from 1. therefore X0 equals X1
       if (weight > 0)
-        result += PercentileComposingElement(position, PercentileTarget(percentile, weight))
+        result += PercentileComposingElement(if(position != 0) position else 1, PercentileTarget(percentile, weight))
     }
 
     addPercentileComposingElement(integerPosition, percentile, 1 - fractionPosition)
