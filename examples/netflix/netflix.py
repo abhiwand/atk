@@ -1,7 +1,7 @@
 #
 # Netflix example - create a frame and load a graph
 #
-# Depends on a netflix.csv file (see sample in data/netflix.csv)
+# Depends on a netflix.csv file
 #
 # Usage:
 #
