@@ -2,8 +2,8 @@
 Graph Sampling
 ==============
 
-Analyzing a massive :term:`graph` with millions or billions of nodes is a tedious and expensive process,
-so most initial analysis is done on a subset of the data.
+Analyzing a massive :term:`graph` with millions or billions of nodes is a time-intensive, hence, expensive process.
+Often analysis is done on a subset of the data.
 Sampling is the process whereby a subset of the data is obtained.
 
 Traditional data sampling methods, such as :term:`simple random sampling` and :term:`stratified sampling`, assume that the data is
@@ -23,8 +23,7 @@ These techniques are categorized as either node-based, edge-based, or exploratio
 
 Node-based sampling is a relational data sampling technique that is most similar to the traditional non-relational data sampling techniques.
 
-Although uniform-weighted node sampling is often used for certain types of data (for example, single type of :term:`edge`, no attributes),
-there are other types of weighted node sampling.
+Although uniform-weighted node sampling is often used for certain types of data, there are other types of weighted node sampling.
 Degree-weighted node sampling preserves the degree distribution of a :term:`graph` better than uniform-weighted node sampling.
 Similarly, :term:`PageRank`-weighted node sampling can be used if we are concerned about preserving personal :term:`PageRank` values.
 
@@ -35,6 +34,10 @@ Therefore, a random selection of edges is more likely to sample edges that are i
 Exploration-based sampling is useful in cases where we want to best preserve common structural properties of a
 :term:`graph` (for example: degree distribution, clustering coefficient, density).
 Random Walk, Random Jump, and Forest Fire have been used to sample :term:`graph` data with good results.
+
+.. TODO::
+    
+    Add references that show good results from these types of sampling.
 
 Application of each algorithm and its variants (for example, Metropolis-Hasting Random Walk) should take into account the
 properties of the :term:`graph` being sampled.
