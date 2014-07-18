@@ -36,7 +36,7 @@ from intelanalytics.core.files import CsvFile
 from intelanalytics.core.iatypes import *
 from intelanalytics.core.aggregation import agg
 from intelanalytics.rest.connection import http
-from intelanalytics.rest.command import CommandRequest, executor
+from intelanalytics.rest.command import CommandRequest, CommandInfo, executor
 from intelanalytics.rest.spark import prepare_row_function, get_add_one_column_function, get_add_many_columns_function
 
 
@@ -65,12 +65,10 @@ class FrameBackendRest(object):
         return [f['name'] for f in payload]
 
     def get_frame(self, name):
-        """Retrieves the named BigFrame object"""
-        logger.info("REST Backend: get_frame:",name)
-        r=self.rest_http.get(name)
-
-
-        #raise NotImplemented  # TODO - implement get_frame
+        logger.info("REST Backend: get_frame")
+        r = self.rest_http.get('dataframes?name='+name)
+        frame_info = FrameInfo(r.json())
+        return BigFrame(frame_info)
 
     def delete_frame(self, frame):
         logger.info("REST Backend: Delete frame {0}".format(repr(frame)))

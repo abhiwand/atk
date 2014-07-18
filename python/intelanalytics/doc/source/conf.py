@@ -121,8 +121,16 @@ html_use_modindex = True
 def setup(app):
 #    app.connect("autodoc-skip-member", skip)
     app.add_config_value('internal_docs', '', True)
+    app.connect('autodoc-skip-member', autodoc_skip_member)
 
 internal_docs = True
+
+autodoc_default_flags = ['members']
+
+def autodoc_skip_member(app, what, name, obj, skip, options):
+    exclusions = ('Rule')
+    exclude = name in exclusions and not internal_docs
+    return skip or exclude
 
 # -- Options for HTML output ----------------------------------------------
 

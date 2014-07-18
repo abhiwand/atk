@@ -25,6 +25,7 @@ package com.intel.intelanalytics.engine.spark
 
 import java.util.{ ArrayList => JArrayList, List => JList }
 
+import com.intel.intelanalytics.component.ClassLoaderAware
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
 import com.intel.intelanalytics.domain._
 import com.intel.intelanalytics.domain.command.{ Command, CommandDefinition, CommandTemplate, Execution }
@@ -42,7 +43,7 @@ import com.intel.intelanalytics.engine.spark.context.SparkContextManager
 import com.intel.intelanalytics.engine.spark.frame.{ RDDJoinParam, RowParser, SparkFrameStorage }
 import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.shared.EventLogging
-import com.intel.intelanalytics.{ ClassLoaderAware, NotFoundException }
+import com.intel.intelanalytics.NotFoundException
 import org.apache.spark.SparkContext
 import org.apache.spark.api.python.{ EnginePythonAccumulatorParam, EnginePythonRDD }
 import org.apache.spark.broadcast.Broadcast
@@ -152,11 +153,12 @@ class SparkEngine(sparkContextManager: SparkContextManager,
    * @param arguments Load command object
    * @param user current user
    */
-  def loadSimple(arguments: Load, user: UserPrincipal) = {
+  def loadSimple(arguments: Load, user: UserPrincipal): DataFrame = {
     val frameId = arguments.destination.id
     val realFrame = expectFrame(frameId)
     val ctx = sparkContextManager.context(user)
 
+    implicit val u = user
     //get Data
     val (schema, newData) = getLoadData(ctx.sparkContext, arguments.source)
     val rdd = frames.getFrameRdd(ctx.sparkContext, realFrame.id)
@@ -182,7 +184,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
    * @param source LoadSource object with information on what data to load
    * @return A tuple containing a schema object describing the RDD loaded as well as the RDD itself.
    */
-  def getLoadData(ctx: SparkContext, source: LoadSource): (Schema, RDD[Row]) = {
+  def getLoadData(ctx: SparkContext, source: LoadSource)(implicit user: UserPrincipal): (Schema, RDD[Row]) = {
     source.source_type match {
       case "dataframe" => {
         val frame = frames.lookup(source.uri.toInt).getOrElse(
@@ -194,12 +196,13 @@ class SparkEngine(sparkContextManager: SparkContextManager,
         val parserFunction = getLineParser(parser)
         val schema = parser.arguments.schema
         val converter = DataTypes.parseMany(schema.columns.map(_._2).toArray)(_)
+        val absoluteFile = if (source.uri.contains("://")) { source.uri } else { fsRoot + "/" + source.uri }
 
         (schema,
-          SparkOps.loadLines(ctx, fsRoot + "/" + source.uri,
+          SparkOps.loadLines(ctx, absoluteFile,
             parser.arguments.skip_rows, parserFunction, converter))
       }
-      case _ => ???
+      case _ => illegalArg(s"Unsupported source_type: '${source.source_type}'")
     }
   }
 
@@ -220,6 +223,12 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     }
   }
 
+  def getFrameByName(name: String)(implicit p: UserPrincipal): Future[Option[DataFrame]] = withContext("se.getFrameByName") {
+    future {
+      frames.lookupByName(name)
+    }
+  }
+
   def expectFrame(frameId: Long): DataFrame = {
     frames.lookup(frameId).getOrElse(throw new NotFoundException("dataframe", frameId.toString))
   }
@@ -230,7 +239,8 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     commands.execute(renameFrameCommand, arguments, user, implicitly[ExecutionContext])
 
   val renameFrameCommand = commands.registerCommand("dataframe/rename_frame", renameFrameSimple)
-  private def renameFrameSimple(arguments: FrameRenameFrame, user: UserPrincipal) = {
+
+  private def renameFrameSimple(arguments: FrameRenameFrame, user: UserPrincipal): DataFrame = {
     val frame = expectFrame(arguments.frame)
     val newName = arguments.new_name
     frames.renameFrame(frame, newName)
@@ -250,7 +260,9 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     commands.execute(projectCommand, arguments, user, implicitly[ExecutionContext])
 
   val projectCommand = commands.registerCommand("dataframe/project", projectSimple)
-  def projectSimple(arguments: FrameProject[JsObject, Long], user: UserPrincipal) = {
+  def projectSimple(arguments: FrameProject[JsObject, Long], user: UserPrincipal): DataFrame = {
+
+    implicit val u = user
 
     val sourceFrameID = arguments.frame
     val sourceFrame = expectFrame(sourceFrameID)
@@ -604,6 +616,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
   val removeColumnCommand = commands.registerCommand("dataframe/remove_columns", removeColumnSimple)
   def removeColumnSimple(arguments: FrameRemoveColumn, user: UserPrincipal) = {
 
+    implicit val u = user
     val ctx = sparkContextManager.context(user).sparkContext
     val frameId = arguments.frame.id
     val columns = arguments.columns
@@ -681,7 +694,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     }
   }
 
-  def getFrame(id: Identifier): Future[Option[DataFrame]] =
+  def getFrame(id: Identifier)(implicit user: UserPrincipal): Future[Option[DataFrame]] =
     withContext("se.getFrame") {
       future {
         frames.lookup(id)
@@ -745,6 +758,13 @@ class SparkEngine(sparkContextManager: SparkContextManager,
       }
     }
 
+  def getGraphByName(name: String)(implicit user: UserPrincipal): Future[Option[Graph]] =
+    withContext("se.getGraphByName") {
+      future {
+        graphs.getGraphByName(name)
+      }
+    }
+
   /**
    * Delete a graph from the graph database.
    * @param graph The graph to be deleted.
@@ -758,21 +778,14 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     }
   }
 
-  //TODO: We'll probably return an Iterable[Vertex] instead of rows at some point.
-  override def getVertices(graph: Identifier,
-                           offset: Int,
-                           count: Int,
-                           queryName: String,
-                           parameters: Map[String, String]): Future[Iterable[Row]] = {
-    ???
-  }
-
   override def dropDuplicates(arguments: DropDuplicates)(implicit user: UserPrincipal): Execution =
     commands.execute(dropDuplicateCommand, arguments, user, implicitly[ExecutionContext])
 
   val dropDuplicateCommand = commands.registerCommand("dataframe/drop_duplicates", dropDuplicateSimple)
 
   def dropDuplicateSimple(dropDuplicateCommand: DropDuplicates, user: UserPrincipal) = {
+    implicit val u = user
+
     val frameId: Long = dropDuplicateCommand.frameId
     val realFrame: DataFrame = getDataFrameById(frameId)
 
@@ -825,7 +838,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
 
   def confusionMatrixSimple(arguments: ConfusionMatrix[Long], user: UserPrincipal): ConfusionMatrixValues = {
     val frameId: Long = arguments.frameId
-    val realFrame: DataFrame = getDataFrameById(frameId)
+    val realFrame: DataFrame = getDataFrameById(frameId)(user)
 
     val ctx = sparkContextManager.context(user).sparkContext
 
@@ -844,7 +857,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
    * Retrieve DataFrame object by frame id
    * @param frameId id of the dataframe
    */
-  def getDataFrameById(frameId: Long): DataFrame = {
+  def getDataFrameById(frameId: Long)(implicit user: UserPrincipal): DataFrame = {
     val realFrame = frames.lookup(frameId).getOrElse(
       throw new IllegalArgumentException(s"No such data frame $frameId"))
     realFrame

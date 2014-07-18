@@ -32,7 +32,7 @@ package com.intel.intelanalytics.service.v1.viewmodels
  * @param url the URI for 'this' command in terms of the REST API
  */
 case class GetCommands(id: Long, name: String, url: String) {
-  require(id > 0)
-  require(name != null)
-  require(url != null)
+  require(id > 0, "id must be greater than zero")
+  require(name != null, "name must not be null")
+  require(url != null, "url must not be null")
 }

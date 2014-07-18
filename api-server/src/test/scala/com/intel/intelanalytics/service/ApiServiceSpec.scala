@@ -24,7 +24,6 @@
 package com.intel.intelanalytics.service
 
 import com.intel.intelanalytics.service.v1.ApiV1Service
-import com.intel.intelanalytics.service.{ AuthenticationDirective, CommonDirectives }
 
 class ApiServiceSpec extends ServiceSpec {
 

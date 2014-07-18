@@ -23,23 +23,26 @@
 
 package com.intel.intelanalytics.service.v1
 
+import com.intel.intelanalytics.domain._
 import spray.json._
 import spray.http.Uri
+import scala.Some
 import com.intel.intelanalytics.repository.MetaStoreComponent
 import com.intel.intelanalytics.service.v1.viewmodels._
 import com.intel.intelanalytics.engine.{ Engine, EngineComponent }
-import scala.concurrent.ExecutionContext
-import scala.util.Failure
-import scala.util.Success
-import com.intel.intelanalytics.service.v1.viewmodels.ViewModelJsonImplicits
-import com.intel.intelanalytics.service.v1.viewmodels.Rel
-import com.intel.intelanalytics.domain.DomainJsonProtocol
+import scala.concurrent._
+import scala.util._
+import com.intel.intelanalytics.service.v1.viewmodels.GetGraph
+import com.intel.intelanalytics.shared.EventLogging
 import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.domain.graph.{ GraphTemplate, Graph }
-import com.intel.intelanalytics.shared.EventLogging
-import com.intel.intelanalytics.service.{ CommonDirectives, AuthenticationDirective }
+import com.intel.intelanalytics.domain.DomainJsonProtocol.DataTypeFormat
+import com.intel.intelanalytics.service.{ ApiServiceConfig, CommonDirectives, AuthenticationDirective }
 import spray.routing.Directives
 import com.intel.intelanalytics.service.v1.decorators.GraphDecorator
+
+import com.intel.intelanalytics.service.v1.viewmodels.ViewModelJsonImplicits
+import com.intel.intelanalytics.service.v1.viewmodels.Rel
 
 //TODO: Is this right execution context for us?
 
@@ -54,7 +57,7 @@ class GraphService(commonDirectives: CommonDirectives, engine: Engine) extends D
    * The spray routes defining the Graph service.
    */
   def graphRoutes() = {
-    import ViewModelJsonImplicits._
+    //import ViewModelJsonImplicits._
     val prefix = "graphs"
 
     /**
@@ -76,69 +79,83 @@ class GraphService(commonDirectives: CommonDirectives, engine: Engine) extends D
     // note: delete is partly asynchronous - it wraps its backend delete in a future but blocks on deleting the graph
     // from the metastore
 
-    commonDirectives(prefix) { implicit userProfile: UserPrincipal =>
-      (path(prefix) & pathEnd) {
-        requestUri { uri =>
-          get {
-            //TODO: cursor
-            onComplete(engine.getGraphs(0, 20)) {
-              case Success(graphs) => complete(GraphDecorator.decorateForIndex(uri.toString(), graphs))
-              case Failure(ex) => throw ex
-            }
-          } ~
-            post {
-              import DomainJsonProtocol._
-              entity(as[GraphTemplate]) {
-                graph =>
-                  onComplete(engine.createGraph(graph)) {
-                    case Success(graph) => complete(decorate(uri + "/" + graph.id, graph))
-                    case Failure(ex) => throw ex
-                  }
-              }
-            }
-        }
-      } ~
-        pathPrefix(prefix / LongNumber) { id =>
-          pathEnd {
-            requestUri { uri =>
+    commonDirectives(prefix) {
+      implicit userProfile: UserPrincipal =>
+        (path(prefix) & pathEnd) {
+          requestUri {
+            uri =>
               get {
-                onComplete(engine.getGraph(id)) {
-                  case Success(graph) => {
-                    val decorated = decorate(uri, graph)
-                    complete {
-                      decorated
-                    }
-                  }
-                  case _ => reject()
-                }
-              } ~
-                delete {
-                  onComplete(for {
-                    graph <- engine.getGraph(id)
-                    res <- engine.deleteGraph(graph)
-                  } yield res) {
-                    case Success(frames) => complete("OK")
-                    case Failure(ex) => throw ex
-                  }
-                } ~
-                (path("vertices") & get) {
-                  parameters('qname.as[String], 'offset.as[Int], 'count.as[Int]) { (queryName, offset, count) =>
-                    parameterMap { params =>
-                      onComplete(for { r <- engine.getVertices(id, offset, count, queryName, params) } yield r) {
-                        case Success(rows: Iterable[Array[Any]]) => {
-                          import DomainJsonProtocol._
-                          val strings = rows.map(r => r.map(a => a.toJson).toList).toList
-                          complete(strings)
+                parameters('name.?) {
+                  import spray.httpx.SprayJsonSupport._
+                  implicit val indexFormat = ViewModelJsonImplicits.getGraphFormat
+                  (name) => name match {
+                    case Some(name) => {
+                      onComplete(engine.getGraphByName(name)) {
+                        case Success(Some(graph)) => {
+                          val links = List(Rel.self(uri.toString))
+                          complete(GraphDecorator.decorateEntity(uri.toString(), links, graph))
                         }
-                        case Failure(ex) => throw ex
+                        case _ => reject()
                       }
                     }
+                    case _ =>
+                      //TODO: cursor
+                      onComplete(engine.getGraphs(0, 20)) {
+                        case Success(graphs) =>
+                          import DefaultJsonProtocol._
+                          implicit val indexFormat = ViewModelJsonImplicits.getGraphsFormat
+                          complete(GraphDecorator.decorateForIndex(uri.toString(), graphs))
+                        case Failure(ex) => throw ex
+                      }
                   }
                 }
-            }
+              } ~
+                post {
+                  implicit val format = DomainJsonProtocol.graphTemplateFormat
+                  implicit val indexFormat = ViewModelJsonImplicits.getGraphFormat
+                  import spray.httpx.SprayJsonSupport._
+                  entity(as[GraphTemplate]) {
+                    graph =>
+                      onComplete(engine.createGraph(graph)) {
+                        case Success(graph) => complete(decorate(uri + "/" + graph.id, graph))
+                        case Failure(ex) => throw ex
+                      }
+                  }
+                }
           }
-        }
+        } ~
+          pathPrefix(prefix / LongNumber) {
+            id =>
+              pathEnd {
+                requestUri {
+                  uri =>
+                    get {
+                      onComplete(engine.getGraph(id)) {
+                        case Success(graph) => {
+                          val decorated = decorate(uri, graph)
+                          complete {
+                            import spray.httpx.SprayJsonSupport._
+                            implicit val format = DomainJsonProtocol.graphTemplateFormat
+                            implicit val indexFormat = ViewModelJsonImplicits.getGraphFormat
+                            decorated
+                          }
+                        }
+                        case _ => reject()
+                      }
+                    } ~
+                      delete {
+                        onComplete(for {
+                          graph <- engine.getGraph(id)
+                          res <- engine.deleteGraph(graph)
+                        } yield res) {
+                          case Success(frames) => complete("OK")
+                          case Failure(ex) => throw ex
+                        }
+                      }
+                }
+              } 
+          }
     }
-  }
 
+  }
 }

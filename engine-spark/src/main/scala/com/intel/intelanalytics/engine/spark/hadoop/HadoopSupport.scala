@@ -68,7 +68,6 @@ trait HadoopSupport extends EventLogging {
       classOf[DistributedFileSystem].getName)
     hadoopConfig.setIfUnset("fs.file.impl",
       classOf[LocalFileSystem].getName)
-    //require(hadoopConfig.getClassByNameOrNull(classOf[LocalFileSystem].getName) != null)
 
     hadoopConfig
   }
