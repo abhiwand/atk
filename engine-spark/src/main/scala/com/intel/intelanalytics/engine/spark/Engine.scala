@@ -879,23 +879,15 @@ class SparkEngine(sparkContextManager: SparkContextManager,
 
     val newFrame = Await.result(create(DataFrameTemplate(arguments.name, None)), SparkEngineConfig.defaultTimeout)
 
-    val cumulativeDistRdd = arguments.distType match {
-      case "cumulative_sum" => SparkOps.cumulativeSum(frameRdd, sampleIndex, arguments.dataType)
-      case "cumulative_count" => SparkOps.cumulativeCount(frameRdd, sampleIndex, arguments.countValue, arguments.dataType)
-      case "cumulative_percent_sum" => SparkOps.cumulativePercentSum(frameRdd, sampleIndex, arguments.dataType)
-      case "cumulative_percent_count" => SparkOps.cumulativePercentCount(frameRdd, sampleIndex, arguments.countValue, arguments.dataType)
-      case _ => throw new IllegalArgumentException()
+    val (cumulativeDistRdd, columnName) = arguments.distType match {
+      case "cumulative_sum" => (CumulativeDistFunctions.cumulativeSum(frameRdd, sampleIndex, arguments.dataType), "_cumulative_sum")
+      case "cumulative_count" => (CumulativeDistFunctions.cumulativeCount(frameRdd, sampleIndex, arguments.countValue, arguments.dataType), "_cumulative_count")
+      case "cumulative_percent_sum" => (CumulativeDistFunctions.cumulativePercentSum(frameRdd, sampleIndex, arguments.dataType), "_cumulative_percent_sum")
+      case "cumulative_percent_count" => (CumulativeDistFunctions.cumulativePercentCount(frameRdd, sampleIndex, arguments.countValue, arguments.dataType), "_cumulative_percent_count")
+      case _ => throw new IllegalArgumentException("Invalid distType specified")
     }
 
     cumulativeDistRdd.saveAsObjectFile(fsRoot + frames.getFrameDataFile(newFrame.id))
-
-    val columnName = arguments.distType match {
-      case "cumulative_sum" => "CumulativeSum"
-      case "cumulative_count" => "CumulativeCount"
-      case "cumulative_percent_sum" => "CumulativePercentSum"
-      case "cumulative_percent_count" => "CumulativePercentCount"
-      case _ => throw new IllegalArgumentException()
-    }
 
     val allColumns = arguments.dataType match {
       case "int32" => List((arguments.sampleCol, DataTypes.int32), (arguments.sampleCol + columnName, DataTypes.float64))
