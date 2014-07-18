@@ -555,7 +555,6 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
      */
     class QueryTable(tag: Tag) extends Table[QueryRecord](tag, "query") {
       def id = column[Long]("query_id", O.PrimaryKey, O.AutoInc)
-      Query
 
       def name = column[String]("name")
 
