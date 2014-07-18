@@ -32,7 +32,12 @@ import com.intel.intelanalytics.engine.plugin.{ CommandPlugin, Invocation }
 import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.algorithm.util.{ GiraphConfigurationUtil, GiraphJobDriver }
 import org.apache.giraph.conf.GiraphConfiguration
-import spray.json.DefaultJsonProtocol._
+import org.apache.giraph.job.GiraphJob
+import org.apache.hadoop.conf.Configuration
+import org.apache.hadoop.fs.FileSystem
+import org.apache.hadoop.fs.Path
+import org.apache.hadoop.mapreduce.Job
+import com.intel.intelanalytics.spray.json.IADefaultJsonProtocol._
 import spray.json._
 import scala.concurrent.duration._
 
@@ -109,6 +114,9 @@ class LoopyBeliefPropagation
   //TODO: Replace with generic code that works on any case class
   def serializeReturn(returnValue: LbpResult): JsObject = returnValue.toJson.asJsObject
 
+  /**
+   * The name of the command, e.g. graphs/ml/loopy_belief_propagation
+   */
   override def name: String = "graphs/ml/loopy_belief_propagation"
 
   //TODO: Replace with generic code that works on any case class

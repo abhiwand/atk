@@ -47,7 +47,7 @@ class ProgressPrinter(object):
         self.job_start_times = []
         self.initializing = True
 
-    def print_progress(self, progress, progressMessage, finished):
+    def print_progress(self, progress, progress_message, finished):
         """
         Print progress information on progress bar
 
@@ -75,9 +75,9 @@ class ProgressPrinter(object):
             self.job_start_times.append(time.time())
 
         self.job_count = total_job_count
-        self.print_progress_as_text(progress, progressMessage, number_of_new_lines, self.job_start_times, finished)
+        self.print_progress_as_text(progress, progress_message, number_of_new_lines, self.job_start_times, finished)
 
-    def print_progress_as_text(self, progress, progressMessage, number_of_new_lines, start_times, finished):
+    def print_progress_as_text(self, progress, progress_message, number_of_new_lines, start_times, finished):
         """
         Print progress information on command line progress bar
 
@@ -85,7 +85,7 @@ class ProgressPrinter(object):
         ----------
         progress : List of float
             The progresses of the jobs initiated by the command
-        progressMessage : List of str
+        progress_message : List of str
             Detailed progress information for the jobs initiated by the command
         number_of_new_lines: int
             number of new lines to print in the command line
@@ -104,7 +104,7 @@ class ProgressPrinter(object):
 
         for index in range(0, len(progress)):
             p = progress[index]
-            message = progressMessage[index] if(index < len(progressMessage)) else ''
+            message = progress_message[index] if(index < len(progress_message)) else ''
 
             num_star = int(p / 2)
             num_dot = 50 - num_star
@@ -217,9 +217,9 @@ class CommandInfo(object):
             return False
 
     @property
-    def progressMessage(self):
+    def progress_message(self):
         try:
-            return self._payload['progressMessage']
+            return self._payload['progress_message']
         except KeyError:
             return False
 
@@ -290,7 +290,7 @@ class Polling(object):
 
                 next_poll_time = time.time() + interval_secs
                 progress = command_info.progress
-                printer.print_progress(progress, command_info.progressMessage, finish)
+                printer.print_progress(progress, command_info.progress_message, finish)
 
                 if finish:
                     break
