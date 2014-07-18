@@ -1120,7 +1120,8 @@ class BigFrame(CommandSupport):
     @doc_stub
     def column_mode (self, data_column, weights_column = None):
         """
-        Calculate the mode of a column.
+        Calculate a mode of a column.  A mode is a data element of maximum weight. All data elements of weight <= 0
+        are excluded from the calculation. If the total weight of the weights column is 0, no mode is returned.
 
         Parameters
         ----------
@@ -1136,10 +1137,13 @@ class BigFrame(CommandSupport):
         -------
         mode : Dict
             Dictionary containing summary statistics in the following entries:
-                mode : Mode of the data. (Ties resolved arbitrarily.
-                weight_of_mode : Weight of the mode.
-                total_weight : Sum of all weights in the weight column. (This will be the row count if no weights are
-                    given.)
+                If the total weight is > 0:
+                    mode : Mode of the data. (Ties resolved arbitrarily.
+                    weight_of_mode : Weight of the mode.
+                    total_weight : Sum of all weights in the weight column. (This will be the row count if no weights
+                     are given.)
+                If the total weight is 0:
+                    total_weight : 0
 
         Examples
         --------

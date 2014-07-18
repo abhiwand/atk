@@ -39,7 +39,6 @@ class OrderStatisticsITest extends TestingSparkContext with Matchers {
 
   "median" should "return None when weights are all 0 or negative" in {
 
-
     val data: List[Int] = List(1, 2, 3, 4, 5, 6, 7, 8)
     val frequencies: List[Double] = List(-3, 0, -3, 0, 0, 0, 0, 0).map(x => x.toDouble)
 
@@ -54,7 +53,6 @@ class OrderStatisticsITest extends TestingSparkContext with Matchers {
   }
 
   "median" should "return None when weights and data are empty" in {
-
 
     val data: List[Int] = List()
     val frequencies: List[Double] = List()
