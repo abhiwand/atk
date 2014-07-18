@@ -35,4 +35,4 @@ print frame.inspect(10)
 
 print("delete the frame")
 deleted_frame = delete_frame(frame)
-print deleted_frame
+print("deleted frame: " + deleted_frame)
