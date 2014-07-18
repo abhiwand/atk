@@ -27,15 +27,6 @@ class GraphBuilderConfigFactory(val schema: Schema, val graphLoad: GraphLoad, gr
 
   val theOnlyFrameRule = graphLoad.frame_rules.head
 
-  // TODO graphbuilder does not yet support per-edge bidirectionality
-  require((theOnlyFrameRule.edge_rules.forall(erule => (erule.bidirectional == true))) ||
-    (theOnlyFrameRule.edge_rules.forall(erule => (erule.bidirectional == false))))
-
-  val theOnlyBidirctionalityBit = if (theOnlyFrameRule.edge_rules.size == 0) {
-    true
-  }
-  else { theOnlyFrameRule.edge_rules.head.bidirectional }
-
   val graphConfig: GraphBuilderConfig = {
     new GraphBuilderConfig(getInputSchema(schema),
       getGBVertexRules(theOnlyFrameRule.vertex_rules),
@@ -130,7 +121,7 @@ class GraphBuilderConfigFactory(val schema: Schema, val graphLoad: GraphLoad, gr
    */
   private def getGBEdgeRule(edgeRule: EdgeRule): GBEdgeRule = {
     new GBEdgeRule(getGBPropertyRule(edgeRule.tail), getGBPropertyRule(edgeRule.head),
-      getGBValue(edgeRule.label), (edgeRule.properties map getGBPropertyRule))
+      getGBValue(edgeRule.label), (edgeRule.properties map getGBPropertyRule), biDirectional = edgeRule.bidirectional)
   }
 
   /**
