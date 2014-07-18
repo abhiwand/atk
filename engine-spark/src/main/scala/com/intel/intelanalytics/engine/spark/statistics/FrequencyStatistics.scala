@@ -27,9 +27,8 @@ class FrequencyStatistics[T: ClassManifest](dataWeightPairs: RDD[(T, Double)], n
     val accumulator =
       dataWeightPairs.sparkContext.accumulator[FrequencyStatsCounter[T]](initialValue)(acumulatorParam)
 
-    dataWeightPairs.foreach({
-      case (value, weightAtValue) => accumulator.add(FrequencyStatsCounter(value, weightAtValue, weightAtValue))
-    })
+    dataWeightPairs.foreach(
+      { case (value, weightAtValue) => accumulator.add(FrequencyStatsCounter(value, weightAtValue, weightAtValue)) })
 
     (accumulator.value.mode, accumulator.value.weightOfMode, accumulator.value.totalWeight)
   }
