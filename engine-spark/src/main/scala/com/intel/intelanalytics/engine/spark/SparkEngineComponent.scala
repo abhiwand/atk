@@ -64,7 +64,7 @@ class SparkComponent extends EngineComponent
   val files = new HdfsFileStorage(SparkEngineConfig.fsRoot)
 
   val frames = new SparkFrameStorage(sparkContextManager.context(_),
-    SparkEngineConfig.fsRoot, files, SparkEngineConfig.pageSize)
+    SparkEngineConfig.fsRoot, files, SparkEngineConfig.pageSize, metaStore.asInstanceOf[SlickMetaStore])
 
   private lazy val admin = new HBaseAdmin(HBaseConfiguration.create())
 

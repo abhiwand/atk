@@ -7,6 +7,6 @@ package com.intel.intelanalytics.domain.graph.construction
  */
 case class PropertyRule(key: ValueRule, value: ValueRule) {
 
-  require(key != null)
-  require(value != null)
+  require(key != null, "key must not be null")
+  require(value != null, "key must not be null")
 }

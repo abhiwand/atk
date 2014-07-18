@@ -36,7 +36,7 @@ from intelanalytics.core.files import CsvFile
 from intelanalytics.core.iatypes import *
 from intelanalytics.core.aggregation import agg
 from intelanalytics.rest.connection import http
-from intelanalytics.rest.command import CommandRequest, executor
+from intelanalytics.rest.command import CommandRequest, CommandInfo, executor
 from intelanalytics.rest.spark import prepare_row_function, get_add_one_column_function, get_add_many_columns_function
 
 
@@ -65,12 +65,10 @@ class FrameBackendRest(object):
         return [f['name'] for f in payload]
 
     def get_frame(self, name):
-        """Retrieves the named BigFrame object"""
-        logger.info("REST Backend: get_frame:",name)
-        r=self.rest_http.get(name)
-
-
-        #raise NotImplemented  # TODO - implement get_frame
+        logger.info("REST Backend: get_frame")
+        r = self.rest_http.get('dataframes?name='+name)
+        frame_info = FrameInfo(r.json())
+        return BigFrame(frame_info)
 
     def delete_frame(self, frame):
         logger.info("REST Backend: Delete frame {0}".format(repr(frame)))
@@ -350,9 +348,15 @@ class FrameBackendRest(object):
         arguments = {'frame': frame.uri, "original_names": column_names, "new_names": new_names}
         return execute_update_frame_command('rename_column', arguments, frame)
 
-    # def rename_frame(self, frame, name):
-    #     arguments = {'frame': frame.uri, "new_name": name}
-    #     return execute_update_frame_command('rename_frame', arguments, frame)
+    def rename_frame(self, frame, name):
+        # TODO - move uniqueness checking to server
+        r = self.rest_http.get('dataframes')
+        payload = r.json()
+        frame_names = [f['name'] for f in payload]
+        if name in frame_names:
+            raise ValueError("A frame with this name already exists. Rename failed")
+        arguments = {'frame': frame.uri, "new_name": name}
+        return execute_update_frame_command('rename_frame', arguments, frame)
 
     def take(self, frame, n, offset):
         url = 'dataframes/{0}/data?offset={2}&count={1}'.format(frame._id,n, offset)

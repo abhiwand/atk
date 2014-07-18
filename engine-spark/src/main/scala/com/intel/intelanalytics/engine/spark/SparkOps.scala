@@ -238,8 +238,8 @@ private[spark] object SparkOps extends Serializable {
    * @return a Double of the model accuracy measure
    */
   def modelAccuracy(frameRdd: RDD[Row], labelColumnIndex: Int, predColumnIndex: Int): Double = {
-    require(labelColumnIndex >= 0)
-    require(predColumnIndex >= 0)
+    require(labelColumnIndex >= 0, "label column index must be greater than or equal to zero")
+    require(predColumnIndex >= 0, "prediction column index must be greater than or equal to zero")
 
     val k = frameRdd.count()
     val t = frameRdd.sparkContext.accumulator[Long](0)
@@ -405,8 +405,8 @@ private[spark] object SparkOps extends Serializable {
    * @return a Double of the model f measure
    */
   def modelFMeasure(frameRdd: RDD[Row], labelColumnIndex: Int, predColumnIndex: Int, posLabel: String, beta: Double): Double = {
-    require(labelColumnIndex >= 0)
-    require(predColumnIndex >= 0)
+    require(labelColumnIndex >= 0, "label column index must be greater than or equal to zero")
+    require(predColumnIndex >= 0, "prediction column index must be greater than or equal to zero")
 
     /**
      * compute recall for binary classifier
