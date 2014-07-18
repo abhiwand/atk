@@ -23,6 +23,7 @@
 """
 REST backend for graphs
 """
+import json
 import logging
 logger = logging.getLogger(__name__)
 
@@ -61,7 +62,12 @@ class GraphBackendRest(object):
         payload = r.json()
         return [f['name'] for f in payload]
 
-    # def get_graph(name):
+    def get_graph(self,name):
+        logger.info("REST Backend: get_graph")
+        r = self.rest_http.get('graphs?name='+name)
+        payload = r.json()
+        return json.dumps(payload, indent=2)
+
     #     """Retrieves the named BigGraph object"""
     #     raise NotImplemented
     #
