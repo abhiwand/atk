@@ -8,9 +8,9 @@
 --
 
 --
--- Name: queries; Type: TABLE; Schema: public; Owner: metastore; Tablespace:
+-- Name: query; Type: TABLE; Schema: public; Owner: metastore; Tablespace:
 --
-CREATE TABLE queries (
+CREATE TABLE query (
   query_id bigint PRIMARY KEY,
   name character varying(254) NOT NULL,
   arguments text,
@@ -23,35 +23,35 @@ CREATE TABLE queries (
   created_by bigint
 );
 
-ALTER TABLE public.queries OWNER TO metastore;
+ALTER TABLE public.query OWNER TO metastore;
 
 --
--- Name: queries_query_id_seq; Type: SEQUENCE; Schema: public; Owner: metastore
+-- Name: query_query_id_seq; Type: SEQUENCE; Schema: public; Owner: metastore
 --
-CREATE SEQUENCE queries_query_id_seq
+CREATE SEQUENCE query_query_id_seq
   START WITH 1
   INCREMENT BY 1
   NO MAXVALUE
   NO MINVALUE
   CACHE 1;
 
-ALTER TABLE public.queries_query_id_seq OWNER TO metastore;
+ALTER TABLE public.query_query_id_seq OWNER TO metastore;
 
 --
--- Name: queries_query_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: metastore
+-- Name: query_query_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: metastore
 --
 
-ALTER SEQUENCE queries_query_id_seq OWNED BY queries.query_id;
+ALTER SEQUENCE query_query_id_seq OWNED BY query.query_id;
 
 
 --
--- Name: queries_query_id_seq; Type: SEQUENCE SET; Schema: public; Owner: metastore
+-- Name: query_query_id_seq; Type: SEQUENCE SET; Schema: public; Owner: metastore
 --
 
-SELECT pg_catalog.setval('queries_query_id_seq', 1, false);
+SELECT pg_catalog.setval('query_query_id_seq', 1, false);
 
 --
 -- Name: query_id; Type: DEFAULT; Schema: public; Owner: metastore
 --
 
-ALTER TABLE ONLY queries ALTER COLUMN query_id SET DEFAULT nextval('queries_query_id_seq'::regclass);
+ALTER TABLE ONLY query ALTER COLUMN query_id SET DEFAULT nextval('query_query_id_seq'::regclass);

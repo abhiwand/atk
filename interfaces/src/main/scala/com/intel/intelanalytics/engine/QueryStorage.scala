@@ -27,6 +27,9 @@ import com.intel.intelanalytics.domain.query.{ QueryTemplate, Query }
 import spray.json.JsObject
 import scala.util.Try
 
+/**
+ * Interface describing the management of Query database storage
+ */
 trait QueryStorage {
   def lookup(id: Long): Option[Query]
   def create(frame: QueryTemplate): Query
