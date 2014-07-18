@@ -45,3 +45,4 @@ rates = EdgeRule("rating", user, movie, { "splits": frame.splits }, is_directed 
 
 print("create graph")
 graph = BigGraph([user, movie, rates])
+print("created graph " + graph.name)
