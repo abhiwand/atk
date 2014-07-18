@@ -117,8 +117,7 @@ class SparkFrameStorage(context: UserPrincipal => Context, fsRoot: String, files
       implicit session =>
         {
           val newFrame = frame.copy(name = newName)
-          metaStore.frameRepo.update(newFrame)
-          frame
+          metaStore.frameRepo.update(newFrame).get
         }
     }
   }
@@ -140,7 +139,7 @@ class SparkFrameStorage(context: UserPrincipal => Context, fsRoot: String, files
 
           val newColumns = frame.schema.columns.map(col => (generateNewColumnTuple(col._1, columnsToRename, newColumnNames), col._2))
           metaStore.frameRepo.updateSchema(frame, newColumns)
-          frame
+
         }
     }
 
@@ -151,7 +150,6 @@ class SparkFrameStorage(context: UserPrincipal => Context, fsRoot: String, files
         {
           val newColumns = frame.schema.columns :+ (column.name, columnType)
           metaStore.frameRepo.updateSchema(frame, newColumns)
-          frame
         }
     }
   override def getRows(frame: DataFrame, offset: Long, count: Int)(implicit user: UserPrincipal): Iterable[Row] =

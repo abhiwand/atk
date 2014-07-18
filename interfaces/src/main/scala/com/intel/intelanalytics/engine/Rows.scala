@@ -37,12 +37,3 @@ object Rows {
 
 }
 
-//object EngineMessages {
-//  case class AppendFile(id: Long, fileName: String, rowGenerator: Functional)
-//  case class DropColumn(id: Long, name: String)                 JP
-//  case class AddColumn(id: Long, name: String, map: Option[RowFunction[Any]])
-//  case class DropRows(id: Long, filter: RowFunction[Boolean])
-//}
-
-// TODO: Move classes from cake to dependency injection.
-

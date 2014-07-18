@@ -34,9 +34,9 @@ import com.intel.intelanalytics.domain.schema.Schema
  * @param links
  */
 case class GetDataFrame(id: Long, name: String, schema: Schema, links: List[RelLink], errorFrameId: Option[Long]) {
-  require(id > 0)
-  require(name != null)
-  require(schema != null)
-  require(links != null)
-  require(errorFrameId != null)
+  require(id > 0, "id must be greater than zero")
+  require(name != null, "name must not be null")
+  require(schema != null, "schema must not be null")
+  require(links != null, "links must not be null")
+  require(errorFrameId != null, "errorFrameId must not be null")
 }
