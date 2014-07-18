@@ -35,7 +35,7 @@ Glossary
     Alternating Least Squares
 
         The "Alternating Least Squares with Bias for collaborative filtering algorithms" is an algorithm used by the
-        Intel Data Platform: Analytics Toolkit.
+        Intel Analytics Toolkit.
 
         For more information see:
 
@@ -172,8 +172,7 @@ Glossary
 
     Conjugate Gradient Descent
 
-        The "Congugate Gradient Descent with Bias for Collaborative Filtering algorithm is an algorithm used by the Intel Data Platform:
-        Analytics Toolkit.
+        The "Congugate Gradient Descent with Bias for Collaborative Filtering algorithm is an algorithm used by the Intel Analytics Toolkit.
 
         For more information: `Factorization Meets the Neighborhood (pdf)`_ (see equation 5).
 
@@ -479,6 +478,14 @@ Glossary
         Both edges and vertices have property maps.
 
         For more information see: `Tinkerpop\: Property Graph Model`_.
+
+    PUF
+    Python User Function
+    Python User Function (PUF)
+
+        A Python User Function (PUF) is a python function written by the user on the client-side which can execute in a distributed fashion
+        on the cluster.
+        For further explanation, see :doc:`ds_apir`
 
     Recommendation Systems
 
