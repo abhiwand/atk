@@ -15,7 +15,7 @@
 
 from intelanalytics import *
 
-loggers.set_http()
+#loggers.set_http()
 
 print("server ping")
 server.ping()
@@ -49,4 +49,5 @@ user2 = VertexRule("user", frame2.user, {"vertexType": frame2.vertexType})
 rates2 = EdgeRule("rating", user2, movie2, { "splits": frame2.splits }, is_directed = True)
 graph.append([user2, movie2, rates2])
 
+print("grame name: " + graph.name)
 print("done")
