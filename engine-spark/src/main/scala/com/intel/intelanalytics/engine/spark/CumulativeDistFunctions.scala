@@ -45,6 +45,13 @@ private[spark] object CumulativeDistFunctions extends Serializable {
     }.collect()
   }
 
+  /**
+   * Compute the cumulative sums across partitions
+   *
+   * @param rdd the input RDD
+   * @param partSums the sums for each partition
+   * @return RDD of (value, cumulativeSum)
+   */
   def totalPartitionSums(rdd: RDD[(String, Double)], partSums: Array[Double]): RDD[(String, Double)] = {
     rdd.mapPartitionsWithIndex {
       case (index, partition) => {
@@ -58,6 +65,13 @@ private[spark] object CumulativeDistFunctions extends Serializable {
     }
   }
 
+  /**
+   * Compute the cumulative counts across partitions
+   *
+   * @param rdd the input RDD
+   * @param partSums the counts for each partition
+   * @return RDD of (value, cumulativeCount)
+   */
   def totalPartitionCounts(rdd: RDD[(String, Double)], partSums: Array[Double]): RDD[(String, Double)] = {
     rdd.mapPartitionsWithIndex {
       case (index, partition) => {
@@ -70,6 +84,13 @@ private[spark] object CumulativeDistFunctions extends Serializable {
     }
   }
 
+  /**
+   * Casts the input data types back to the original input type
+   *
+   * @param rdd the RDD containing (value, cumulativeDistValue)
+   * @param dataType data type for the original input column
+   * @return RDD containing Array[Any] (i.e., Rows)
+   */
   def revertTypes(rdd: RDD[(String, Double)], dataType: String): RDD[Array[Any]] = {
     rdd.map {
       case (value, valueSum) => {
@@ -84,6 +105,14 @@ private[spark] object CumulativeDistFunctions extends Serializable {
     }
   }
 
+  /**
+   * Casts the input data types for cumulative percents back to the original input type.  This includes check for
+   * divide-by-zero error.
+   *
+   * @param rdd the RDD containing (value, cumulativeDistValue)
+   * @param dataType data type for the original input column
+   * @return RDD containing Array[Any] (i.e., Rows)
+   */
   def revertPercentTypes(rdd: RDD[(String, Double)], dataType: String, numValues: Double): RDD[Array[Any]] = {
     rdd.map {
       case (value, valueSum) => {
