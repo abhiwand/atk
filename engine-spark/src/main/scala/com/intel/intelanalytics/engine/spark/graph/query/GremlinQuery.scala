@@ -6,9 +6,11 @@ import com.intel.graphbuilder.graph.titan.TitanGraphConnector
 import com.intel.graphbuilder.util.SerializableBaseConfiguration
 import com.intel.intelanalytics.domain.graph.GraphReference
 import com.intel.intelanalytics.engine.plugin.{ CommandPlugin, Invocation }
+import com.intel.intelanalytics.engine.spark.SparkEngineConfig
 import com.intel.intelanalytics.security.UserPrincipal
 import com.thinkaurelius.titan.core.TitanGraph
 import com.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine
+
 import spray.json._
 
 import scala.collection.JavaConversions._
@@ -24,9 +26,9 @@ case class QueryArgs(graph: GraphReference, gremlin: String)
 /**
  *
  * @param results
- * @param runTimeSeconds
+ * @param run_time_seconds
  */
-case class QueryResult(results: Iterable[JsValue], runTimeSeconds: Double)
+case class QueryResult(results: Iterable[JsValue], run_time_seconds: Double)
 
 /**
  *
@@ -50,7 +52,7 @@ class GremlinQuery extends CommandPlugin[QueryArgs, QueryResult] {
    */
   def executeGremlinQuery(gremlinScript: String, bindings: Bindings): Iterable[Any] = {
     val obj = gremlinExecutor.eval(gremlinScript, bindings)
-    if (obj == null) throw new RuntimeException(s"Unable to execute Gremlin query: ${gremlinScript}")
+    if (obj == null) throw new RuntimeException(s"No results for Gremlin query: ${gremlinScript}")
 
     val resultIterator = obj match {
       case x: java.lang.Iterable[_] => x.toIterable
@@ -81,7 +83,8 @@ class GremlinQuery extends CommandPlugin[QueryArgs, QueryResult] {
     val graphName = "iat_graph_" + graph.name
 
     // Create graph connection
-    val titanConfiguration = GremlinUtils.getTitanConfiguration(config, "titan.query")
+    val titanConfiguration = SparkEngineConfig.createTitanConfiguration(config, "titan.query")
+
     titanConfiguration.setProperty("storage.tablename", "iat_graph_" + graph.name)
     val titanGraph: TitanGraph = getTitanGraph(graphName, titanConfiguration)
     val bindings = gremlinExecutor.createBindings()
@@ -90,9 +93,9 @@ class GremlinQuery extends CommandPlugin[QueryArgs, QueryResult] {
     // Get results
     val resultIterator: Iterable[Any] = executeGremlinQuery(arguments.gremlin, bindings)
     val json = resultIterator.map(GremlinUtils.serializeGremlinToJson(titanGraph, _, graphSONMode))
-    val time = (System.currentTimeMillis() - start).toDouble / 1000.0
+    val runtimeInSeconds = (System.currentTimeMillis() - start).toDouble / 1000.0
 
-    QueryResult(json, time)
+    QueryResult(json, runtimeInSeconds)
   }
 
   //TODO: Replace with generic code that works on any case class
