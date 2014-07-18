@@ -29,5 +29,5 @@ package com.intel.intelanalytics.domain.graph.construction
  * @param properties List of rules for specifying properties of the vertices.
  */
 case class VertexRule(id: PropertyRule, properties: List[PropertyRule]) {
-  require(id != null)
+  require(id != null, "id must not be null")
 }
