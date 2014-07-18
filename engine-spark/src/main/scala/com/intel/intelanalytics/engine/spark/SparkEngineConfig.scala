@@ -24,9 +24,9 @@
 package com.intel.intelanalytics.engine.spark
 
 import com.intel.graphbuilder.util.SerializableBaseConfiguration
-import scala.collection.JavaConverters._
 import com.intel.intelanalytics.shared.{ EventLogging, SharedConfig }
-
+import com.typesafe.config.Config
+import scala.collection.JavaConverters._
 import scala.concurrent.duration._
 import java.net.InetAddress
 import java.io.File
@@ -100,10 +100,24 @@ object SparkEngineConfig extends SharedConfig with EventLogging {
    * Creates a new configuration bean each time so it can be modified by the caller (like setting the table name).
    */
   def titanLoadConfiguration: SerializableBaseConfiguration = {
+    createTitanConfiguration(config, "intel.analytics.engine.titan.load")
+  }
+
+  /**
+   * Create new configuration for Titan using properties specified in path expression.
+   *
+   * This method can also be used by command plugins in the Spark engine which might use
+   * a different configuration object.
+   *
+   * @param commandConfig Configuration object for command.
+   * @param titanPath Dot-separated expressions with Titan config, e.g., intel.analytics.engine.titan.load
+   * @return Titan configuration
+   */
+  def createTitanConfiguration(commandConfig: Config, titanPath: String): SerializableBaseConfiguration = {
     val titanConfiguration = new SerializableBaseConfiguration
-    val titanLoadConfig = config.getConfig("intel.analytics.engine.titan.load")
-    for (entry <- titanLoadConfig.entrySet().asScala) {
-      titanConfiguration.addProperty(entry.getKey, titanLoadConfig.getString(entry.getKey))
+    val titanDefaultConfig = commandConfig.getConfig(titanPath)
+    for (entry <- titanDefaultConfig.entrySet().asScala) {
+      titanConfiguration.addProperty(entry.getKey, titanDefaultConfig.getString(entry.getKey))
     }
     titanConfiguration
   }

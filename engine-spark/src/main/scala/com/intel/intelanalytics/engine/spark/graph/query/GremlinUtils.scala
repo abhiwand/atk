@@ -1,33 +1,14 @@
 package com.intel.intelanalytics.engine.spark.graph.query
 
-import com.intel.graphbuilder.util.SerializableBaseConfiguration
 import com.thinkaurelius.titan.core.TitanGraph
 import com.tinkerpop.blueprints.Element
 import com.tinkerpop.blueprints.util.io.graphson.GraphSONMode
 import com.tinkerpop.pipes.util.structures.Row
-import com.typesafe.config.Config
 import spray.json._
 
-import scala.collection.JavaConverters._
 import scala.reflect.ClassTag
 
 object GremlinUtils {
-
-  /**
-   * Default settings for Gremlin queries.
-   *
-   * @param config Default configuration
-   * @param path Paths are dot-separated expressions such as foo.bar.baz
-   * @return Titan configuration with default settings specified in the path expression.
-   */
-  def getTitanConfiguration(config: Config, path: String): SerializableBaseConfiguration = {
-    val titanConfiguration = new SerializableBaseConfiguration
-    val titanLoadConfig = config.getConfig(path)
-    for (entry <- titanLoadConfig.entrySet().asScala) {
-      titanConfiguration.addProperty(entry.getKey, titanLoadConfig.getString(entry.getKey))
-    }
-    titanConfiguration
-  }
 
   /**
    * Serializes results of Gremlin query to JSON.
