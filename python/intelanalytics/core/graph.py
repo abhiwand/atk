@@ -37,7 +37,9 @@ def _get_backend():
 
 def get_graph_names():
     """
-    Gets the names of BigGraph objects available for retrieval
+    Get graph names.
+
+    Gets the names of BigGraph objects available for retrieval.
     
     Returns
     -------
@@ -46,11 +48,15 @@ def get_graph_names():
         
     Examples
     --------
-    >>>
-    If we have these BigGraph objects defined: movies, incomes, virus
-    >>> my_names = get_graph_names()
+    We have these graphs defined: movies, incomes, virus.
+    Get the graph names::
+
+        my_names = get_graph_names()
+
     my_names is now ["incomes", "movies", "virus"]
-    
+
+    .. versionadded:: 0.8
+
     """
     # TODO - Review docstring
     return _get_backend().get_graph_names()
@@ -58,12 +64,14 @@ def get_graph_names():
 
 def get_graph(name):
     """
-    Retrieves the named BigGraph object
+    Get graph access.
+
+    Creates a BigGraph access point to the named graph.
     
     Parameters
     ----------
     name : string
-        The name of the BigGraph object you are obtaining
+        The name of the graph you are obtaining
         
     Returns
     -------
@@ -72,11 +80,15 @@ def get_graph(name):
     
     Examples
     --------
-    >>>
-    If we have these BigGraph objects defined: movies, incomes, virus
-    >>> my_graph = get_graph("virus")
-    my_graph is now a BigGraph object with the name "virus"
-        
+    We have these graphs defined: movies, incomes, virus.
+    Get access to the graph *virus*::
+
+        my_graph = get_graph("virus")
+
+    my_graph is now a BigGraph object with access to the graph *virus*.
+
+    .. versionadded:: 0.8
+
     """
     # TODO - Review docstring
     return _get_backend().get_graph(name)
@@ -84,25 +96,29 @@ def get_graph(name):
 
 def delete_graph(name):
     """
-    Deletes the graph from backing store
+    Deletes the graph from backing store.
     
     Parameters
     ----------
     name : string
-        The name of the BigGraph object you are erasing
+        The name of the graph you are erasing
         
     Returns
     -------
     string
-        The name of the BigGraph object you erased
+        The name of the graph you erased
     
     Examples
     --------
-    >>>
-    If we have these BigGraph objects defined: movies, incomes, virus
-    >>> my_gone = delete_graph("incomes")
+    We have these graphs defined: movies, incomes, virus.
+    Delete the graph *incomes*::
+
+        my_gone = delete_graph("incomes")
+
     my_gone is now a string with the value "incomes"
-    
+
+    .. versionadded:: 0.8
+
     """
     # TODO - Review docstring
     return _get_backend().delete_graph(name)
@@ -116,8 +132,14 @@ class RuleWithDifferentFramesError(ValueError):
 
 # TODO - make an Abstract Class
 class Rule(object):
-    """Graph rule base class"""
-    # TODO - Add docstring
+    """
+    Graph rule base class.
+
+        .. versionadded:: 0.8
+
+        """
+        # TODO - Docstrings
+
     def __init__(self):
         self.source_frame = self.validate()
 
@@ -127,15 +149,23 @@ class Rule(object):
 
     # Must be overridden:
     def validate(self):
+        """
+
+        .. versionadded:: 0.8
+
+        """
+        # TODO - Docstrings
         raise NotImplementedError
 
     @staticmethod
     def validate_source(source, frame):
         """
+        Source: String or BigColumn.
+
         Checks that source is a BigColumn or a string. If it is neither, it raises an error.
         If the frame is None, it is assigned the frame from the source.
         If the frame is named and it differs from the source.frame, it raises an error.
-        
+
         Parameters
         ----------
         source
@@ -147,16 +177,18 @@ class Rule(object):
         ------
         RuleWithDifferentFramesError()
         TypeError
-        
+
         Returns
         -------
         string
             The name of the frame
-            
+
         Examples
         --------
         >>>
-        
+
+        .. versionadded:: 0.8
+
         """
         # TODO - Add examples
         if isinstance(source, BigColumn):
@@ -170,14 +202,24 @@ class Rule(object):
 
     @staticmethod
     def validate_property(key, value, frame):
-        # TODO - Add docstring
+        """
+
+        .. versionadded:: 0.8
+
+        """
+        # TODO - Docstrings
         frame = Rule.validate_source(key, frame)
         frame = Rule.validate_source(value, frame)
         return frame
 
     @staticmethod
     def validate_properties(properties):
-        # TODO - Add docstring
+        """
+
+        .. versionadded:: 0.8
+
+        """
+        # TODO - Docstrings
         frame = None
         if properties:
             for k, v in properties.items():
@@ -186,8 +228,13 @@ class Rule(object):
 
     @staticmethod
     def validate_same_frame(*frames):
-        """Assures all non-None frames provided are in fact the same frame"""
-        # TODO - Add docstring
+        """
+        Assures all non-None frames provided are in fact the same frame.
+
+        .. versionadded:: 0.8
+
+        """
+        # TODO - Docstrings
         same = None
         for f in frames:
             if f:
@@ -200,7 +247,7 @@ class Rule(object):
 
 class VertexRule(Rule):
     """
-    Specifies a vertex and vertex properties
+    Specifies a vertex and vertex properties.
 
     Parameters
     ----------
@@ -209,16 +256,20 @@ class VertexRule(Rule):
         uniquely identifying property for the vertex.
     id_value: BigColumn source
         vertex value; the unique value to identify this vertex
-    properties: dictionary
+    properties: dictionary (optional)
         vertex properties of the form property_name:property_value
         property_name is a string, and property_value is a literal value
         or a BigColumn source, which must be from same BigFrame as value arg
 
     Examples
     --------
-    >>> movie_vertex = VertexRule('movie', f['movie'], {'genre': f['genre']})
-    >>> user_vertex = VertexRule('user', f['user'], {'age': f['age_1']})
-    
+    ::
+
+        movie_vertex = VertexRule('movie', f['movie'], {'genre': f['genre']})
+        user_vertex = VertexRule('user', f['user'], {'age': f['age_1']})
+
+        .. versionadded:: 0.8
+
     """
     def __init__(self, id_key, id_value, properties=None):
         self.id_key = id_key
@@ -237,7 +288,7 @@ class VertexRule(Rule):
 
     def validate(self):
         """
-        Checks that the rule has what it needs
+        Checks that the rule has what it needs.
 
         Returns
         -------
@@ -245,6 +296,8 @@ class VertexRule(Rule):
         Examples
         --------
         >>>
+
+        .. versionadded:: 0.8
 
         """
 
@@ -256,7 +309,7 @@ class VertexRule(Rule):
 
 class EdgeRule(Rule):
     """
-    Specifies an edge and edge properties
+    Specifies an edge and edge properties.
 
     Parameters
     ----------
@@ -278,8 +331,12 @@ class EdgeRule(Rule):
 
     Examples
     --------
-    >>> rating_edge = EdgeRule('rating', movie_vertex, user_vertex, {'weight': f['score']})
+    ::
     
+        rating_edge = EdgeRule('rating', movie_vertex, user_vertex, {'weight': f['score']})
+
+    .. versionadded:: 0.8
+
     """
     def __init__(self, label, tail, head, properties=None, is_directed=False):
         self.label = label
@@ -302,7 +359,7 @@ class EdgeRule(Rule):
 
     def validate(self):
         """
-        Checks that the rule has what it needs
+        Checks that the rule has what it needs.
 
         Raises
         ------
@@ -315,6 +372,8 @@ class EdgeRule(Rule):
         Examples
         --------
         >>>
+
+        .. versionadded:: 0.8
 
         """
         # TODO - Add docstring
@@ -331,19 +390,23 @@ class EdgeRule(Rule):
 
 class BigGraph(CommandSupport):
     """
-    Creates a big graph
+    Creates a big graph.
 
     Parameters
     ----------
-    rules : list of Rule
+    rules : list of Rule (optional)
          list of rules which specify how the graph will be created; if empty
          an empty graph will be created
-    name : str
+    name : str (optional)
          name for the new graph; if not provided a default name is generated
 
     Examples
     --------
-    >>> g = BigGraph([user_vertex, movie_vertex, rating_edge, extra_movie_rule])
+    ::
+
+        g = BigGraph([user_vertex, movie_vertex, rating_edge, extra_movie_rule])
+
+    .. versionadded:: 0.8
 
     """
     def __init__(self, rules=None, name=""):
@@ -364,18 +427,23 @@ class BigGraph(CommandSupport):
     def name(self):
         """
         Get the name of the current ojbect.
-        
+
         Returns
         -------
         string
             The name of the current object.
-            
+
         Examples
         --------
-        >>> my_graph = BigGraph( , "my_data")
-        >>> my_name = my_graph.name
+        ::
+
+            my_graph = BigGraph( , "my_data")
+            my_name = my_graph.name
+
         my_name is now a string with the value "my_data"
-        
+
+        .. versionadded:: 0.8
+
         """
         # TODO - Review Docstring
         return self._name
@@ -384,18 +452,23 @@ class BigGraph(CommandSupport):
     def name(self, value):
         """
         Set the name of the current object.
-        
+
         Parameters
         ----------
         value : string
             The name for the current object.
-            
+
         Examples
         --------
-        >>> my_graph = BigGraph()
-        >>> my_graph.name("my_data")
+        ::
+
+            my_graph = BigGraph()
+            my_graph.name("my_data")
+
         my_graph is now a BigGraph object with the name "my_data"
-        
+
+        .. versionadded:: 0.8
+
         """
         # TODO - Review Docstring
         self._backend.set_name(value)
@@ -403,12 +476,15 @@ class BigGraph(CommandSupport):
     @property
     def uri(self):
         """
-        Provides the URI of the BigGraph
+        Provides the URI of the BigGraph.
 
         Returns
         -------
         URI
             See http://en.wikipedia.org/wiki/Uniform_Resource_Identifier
+
+        .. versionadded:: 0.8
+
         """
         return self._uri
 
@@ -423,6 +499,11 @@ class BigGraph(CommandSupport):
 
 
 class GraphMachineLearning(object):
+    """
+
+    .. versionadded:: 0.8
+
+    """
     # TODO - Docstrings
     def __init__(self, graph):
         self.graph = graph
@@ -435,6 +516,12 @@ class GraphMachineLearning(object):
             output_vertex_property_list,
             vertex_type,
             edge_type):
+        """
+
+        .. versionadded:: 0.8
+
+        """
+        # TODO - Docstrings
         self._backend.als(self.graph,
                           input_edge_property_list,
                           input_edge_label,
@@ -443,4 +530,10 @@ class GraphMachineLearning(object):
                           edge_type)
 
     def recommend(self, vertex_id):
+        """
+
+        .. versionadded:: 0.8
+
+        """
+        # TODO - Docstrings
         return self._backend.recommend(self.graph, vertex_id)

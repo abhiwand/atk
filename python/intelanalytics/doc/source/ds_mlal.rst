@@ -1160,7 +1160,7 @@ The last commands you can run for this part of analytics are looking at the runs
 
 Figure 6, Cost, Validate, and Test
 
-As you can see from the examples above, the Intel® Data Platform: Analytics Toolkit makes data transformations and running prebuilt algorithms easier and faster with the simple Python interface.
+As you can see from the examples above, the Intel® Analytics Toolkit makes data transformations and running prebuilt algorithms easier and faster with the simple Python interface.
 
 This last figure shows a recommendation based on trained learning.
 We look at the recommendation for a user, in this case, 10001, and what the top 10 recommended movies and ratings are for that user.

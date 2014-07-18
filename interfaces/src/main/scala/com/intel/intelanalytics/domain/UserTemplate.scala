@@ -24,5 +24,5 @@
 package com.intel.intelanalytics.domain
 
 case class UserTemplate(api_key: String) {
-  require(api_key != null && !api_key.isEmpty)
+  require(api_key != null && !api_key.isEmpty, "api key is required and may not be empty")
 }

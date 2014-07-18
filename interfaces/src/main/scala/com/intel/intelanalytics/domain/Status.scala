@@ -35,7 +35,7 @@ import org.joda.time.DateTime
  */
 case class Status(id: Long, name: String, description: String, createdOn: DateTime, modifiedOn: DateTime) extends HasId {
 
-  require(name != null)
+  require(name != null, "name must not be null")
 
   /** Initial Status, currently building or initializing */
   def isInit: Boolean = id.equals(1)
