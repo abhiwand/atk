@@ -7,49 +7,143 @@ import com.intel.intelanalytics.domain.frame.{ ColumnFullStatisticsReturn, Colum
 /**
  * Statistics calculator for weighted numerical data.
  *
- * TODO: TRIB-3134  Investigate one-pass algorithms for weighted skewness and kurtosis.
- * If we could do this, we could simplify this datastructure by unifying full and summary statistics.
+ * TODO: TRIB-3134  Investigate one-pass algorithms for weighted skewness and kurtosis. (Currently these parameters
+ *  are handled in the second pass statistics, and this accounts for our separation of summary and full statistics
+ *  at the API level.)
  *
+ * Formulas for statistics are expected to adhere to the DEFAULT formulas used by SAS in
+ * http://support.sas.com/documentation/cdl/en/procstat/63104/HTML/default/viewer.htm#procstat_univariate_sect026.htm
  *
  * @param dataWeightPairs RDD of pairs of  the form (data, weight)
  */
 class NumericalStatistics(dataWeightPairs: RDD[(Double, Double)]) extends Serializable {
 
-  lazy val singlePassStatistics: SinglePassStatistics = generateSinglePassStatistics()
+  private lazy val singlePassStatistics: FirstPassStatistics = generateSinglePassStatistics()
 
+  private lazy val secondPassStatistics: SecondPassStatistics = generateSecondPassStatistics()
+
+  /**
+   * The weighted mean of the data.
+   */
   lazy val weightedMean: Double = singlePassStatistics.mean
 
-  lazy val weightedGeometricMean: Double = Math.pow(singlePassStatistics.product, 1 / singlePassStatistics.totalWeight)
+  /**
+   * The weighted geometric mean of the data.
+   */
+  lazy val weightedGeometricMean: Double =
+    Math.exp(singlePassStatistics.weightedSumOfLogs / singlePassStatistics.totalWeight)
 
+  /**
+   * The weighted variance of the data.
+   */
   lazy val weightedVariance: Double =
     singlePassStatistics.weightedSumOfSquaredDistancesFromMean / (singlePassStatistics.count - 1)
 
+  /**
+   * The weighted standard deviation of the data.
+   */
   lazy val weightedStandardDeviation: Double = Math.sqrt(weightedVariance)
 
+  /**
+   * The weighted mode of the data.
+   */
   lazy val weightedMode: Double = singlePassStatistics.mode
 
+  /**
+   * The minimum value of the data.
+   */
   lazy val min: Double = singlePassStatistics.minimum
 
+  /**
+   * The maximum value of the data.
+   */
   lazy val max: Double = singlePassStatistics.maximum
 
+  /**
+   * The number of elements in the data set.
+   */
   lazy val count: Long = singlePassStatistics.count
 
+  /**
+   * The lower limit of the 95% confidence interval about the mean. (Assumes that the distribution is normal.)
+   */
   lazy val meanConfidenceLower: Double = weightedMean - (1.96) * (weightedStandardDeviation / Math.sqrt(count))
 
+  /**
+   * The lower limit of the 95% confidence interval about the mean. (Assumes that the distribution is normal.)
+   */
   lazy val meanConfidenceUpper: Double = weightedMean + (1.96) * (weightedStandardDeviation / Math.sqrt(count))
 
-  lazy val weightedSkewness: Double = generateSkewness()
+  /**
+   * The weighted skewness of the dataset.
+   */
+  lazy val weightedSkewness: Double = {
+    val n = singlePassStatistics.count
+    require(n > 2, "Cannot calculate skew of fewer than 3 samples")
 
-  lazy val weightedKurtosis: Double = generateKurtosis()
+    (n.toDouble / ((n - 1) * (n - 2)).toDouble) * secondPassStatistics.sumOfThirdWeighted
+  }
 
-  private def convertDataWeightPairToStats(p: (Double, Double)): SinglePassStatistics = {
+  /**
+   * The weighted kurtosis of the dataset.
+   */
+  lazy val weightedKurtosis: Double = {
+    val n = singlePassStatistics.count
+    require(n > 3, "Cannot calculate kurtosis of fewer than 4 samples")
+
+    val leadingCoefficient = (n * (n + 1)).toDouble / ((n - 1) * (n - 2) * (n - 3)).toDouble
+
+    val subtrahend = (3 * (n - 1) * (n - 1)).toDouble / ((n - 2) * (n - 3)).toDouble
+
+    (leadingCoefficient * secondPassStatistics.sumOfFourthWeighted) - subtrahend
+  }
+
+  private def generateSinglePassStatistics(): FirstPassStatistics = {
+
+    val accumulatorParam = new FirstPassStatisticsAccumulatorParam()
+
+    val initialValue = new FirstPassStatistics(mean = 0,
+      weightedSumOfSquares = 0,
+      weightedSumOfSquaredDistancesFromMean = 0,
+      weightedSumOfLogs = 0,
+      minimum = Double.PositiveInfinity,
+      maximum = Double.NegativeInfinity,
+      mode = 0,
+      weightAtMode = 0,
+      totalWeight = 0,
+      count = 0)
+
+    val accumulator = dataWeightPairs.sparkContext.accumulator[FirstPassStatistics](initialValue)(accumulatorParam)
+
+    dataWeightPairs.map(convertDataWeightPairToFirstPassStats).foreach(x => accumulator.add(x))
+
+    accumulator.value
+  }
+
+  private def generateSecondPassStatistics(): SecondPassStatistics = {
+
+    val mean = weightedMean
+    val stddev = weightedStandardDeviation
+
+    val accumulatorParam = new SecondPassStatisticsAccumulatorParam()
+
+    val initialValue = new SecondPassStatistics(0, 0)
+
+    val accumulator = dataWeightPairs.sparkContext.accumulator[SecondPassStatistics](initialValue)(accumulatorParam)
+
+    dataWeightPairs.map(x => convertDataWeightPairToSecondPassStats(x, mean, stddev)).foreach(x => accumulator.add(x))
+
+    accumulator.value
+  }
+
+  private def convertDataWeightPairToFirstPassStats(p: (Double, Double)): FirstPassStatistics = {
     val data = p._1
     val weight = p._2
 
-    SinglePassStatistics(mean = data,
+    FirstPassStatistics(mean = data,
       weightedSumOfSquares = weight * data * data,
       weightedSumOfSquaredDistancesFromMean = 0,
-      product = Math.pow(data, weight),
+      weightedSumOfLogs = weight * Math.log(data),
       minimum = data,
       maximum = data,
       mode = data,
@@ -58,76 +152,22 @@ class NumericalStatistics(dataWeightPairs: RDD[(Double, Double)]) extends Serial
       count = 1.toLong)
   }
 
-  private def generateSinglePassStatistics(): SinglePassStatistics = {
+  private def convertDataWeightPairToSecondPassStats(p: (Double, Double), mean: Double, stddev: Double): SecondPassStatistics = {
+    val x = p._1
+    val w = p._2
 
-    val accumulatorParam = new SinglePassStatisticsAccumulatorParam()
-
-    val initialValue = new SinglePassStatistics(mean = 0,
-      weightedSumOfSquares = 0,
-      weightedSumOfSquaredDistancesFromMean = 0,
-      product = 1.toDouble,
-      minimum = Double.PositiveInfinity,
-      maximum = Double.NegativeInfinity,
-      mode = 0,
-      weightAtMode = 0,
-      totalWeight = 0,
-      count = 0)
-
-    val accumulator = dataWeightPairs.sparkContext.accumulator[SinglePassStatistics](initialValue)(accumulatorParam)
-
-    dataWeightPairs.map(convertDataWeightPairToStats).foreach(x => accumulator.add(x))
-
-    accumulator.value
-  }
-
-  private def generateVariance(): Double = {
-    require(singlePassStatistics.count > 1, "Cannot compute variance of one value")
-
-    val n = singlePassStatistics.count
-    val xw = weightedMean
-
-    (1.toDouble / (n - 1).toDouble) * dataWeightPairs.map({ case (x, w) => w * (x - xw) * (x - xw) }).reduce(_ + _)
-  }
-
-  private def generateSkewness(): Double = {
-    val n = singlePassStatistics.count
-    require(n > 2, "Cannot calculate skew of fewer than 3 samples")
-
-    val xw = weightedMean
-
-    val sw = weightedStandardDeviation
-
-    (n.toDouble / ((n - 1) * (n - 2)).toDouble) *
-      dataWeightPairs.map({
-        case (x, w) =>
-          Math.pow(w, 1.5) * Math.pow((x - xw) / sw, 3)
-      }).reduce(_ + _)
-  }
-
-  private def generateKurtosis(): Double = {
-    val n = singlePassStatistics.count
-    require(n > 3, "Cannot calculate kurtosis of fewer than 4 samples")
-
-    val xw = weightedMean
-
-    val sw = weightedStandardDeviation
-
-    val leadingCoefficient = (n * (n + 1)).toDouble / ((n - 1) * (n - 2) * (n - 3)).toDouble
-
-    val theSum = dataWeightPairs.map({ case (x, w) => Math.pow(w, 2) * Math.pow(((x - xw) / sw), 4) }).reduce(_ + _)
-
-    val subtrahend = (3 * (n - 1) * (n - 1)).toDouble / ((n - 2) * (n - 3)).toDouble
-
-    (leadingCoefficient * theSum) - subtrahend
+    val thirdWeighted = Math.pow(w, 1.5) * Math.pow((x - mean) / stddev, 3)
+    val fourthWeighted = Math.pow(w, 2) * Math.pow((x - mean) / stddev, 4)
+    SecondPassStatistics(sumOfThirdWeighted = thirdWeighted, sumOfFourthWeighted = fourthWeighted)
   }
 }
 
 /**
- * Contains all statistics that are computed in single pass over the data. All parameters are in their weighted form.
+ * Contains all statistics that are computed in a single pass over the data. All statistics are in their weighted form.
  * @param mean
  * @param weightedSumOfSquares
  * @param weightedSumOfSquaredDistancesFromMean
- * @param product
+ * @param weightedSumOfLogs
  * @param minimum
  * @param maximum
  * @param mode
@@ -135,28 +175,28 @@ class NumericalStatistics(dataWeightPairs: RDD[(Double, Double)]) extends Serial
  * @param totalWeight
  * @param count
  */
-case class SinglePassStatistics(mean: Double,
-                                weightedSumOfSquares: Double,
-                                weightedSumOfSquaredDistancesFromMean: Double,
-                                product: Double,
-                                minimum: Double,
-                                maximum: Double,
-                                mode: Double,
-                                weightAtMode: Double,
-                                totalWeight: Double,
-                                count: Long)
+case class FirstPassStatistics(mean: Double,
+                               weightedSumOfSquares: Double,
+                               weightedSumOfSquaredDistancesFromMean: Double,
+                               weightedSumOfLogs: Double,
+                               minimum: Double,
+                               maximum: Double,
+                               mode: Double,
+                               weightAtMode: Double,
+                               totalWeight: Double,
+                               count: Long)
     extends Serializable
 
 /**
  * Accumulator settings for gathering single pass statistics.
  */
-class SinglePassStatisticsAccumulatorParam extends AccumulatorParam[SinglePassStatistics] with Serializable {
+class FirstPassStatisticsAccumulatorParam extends AccumulatorParam[FirstPassStatistics] with Serializable {
 
-  override def zero(initialValue: SinglePassStatistics) =
-    SinglePassStatistics(mean = 0,
+  override def zero(initialValue: FirstPassStatistics) =
+    FirstPassStatistics(mean = 0,
       weightedSumOfSquares = 0,
       weightedSumOfSquaredDistancesFromMean = 0,
-      product = 1.toDouble,
+      weightedSumOfLogs = 0,
       minimum = Double.PositiveInfinity,
       maximum = Double.NegativeInfinity,
       mode = 0,
@@ -164,16 +204,16 @@ class SinglePassStatisticsAccumulatorParam extends AccumulatorParam[SinglePassSt
       totalWeight = 0,
       count = 0)
 
-  override def addInPlace(stats1: SinglePassStatistics, stats2: SinglePassStatistics): SinglePassStatistics = {
+  override def addInPlace(stats1: FirstPassStatistics, stats2: FirstPassStatistics): FirstPassStatistics = {
 
     val totalWeight = stats1.totalWeight + stats2.totalWeight
     val mean = (stats1.mean * stats1.totalWeight + stats2.mean * stats2.totalWeight) / totalWeight
 
     val weightedSumOfSquares = stats1.weightedSumOfSquares + stats2.weightedSumOfSquares
 
-    val sumOfSquaredDistancesFromMean = weightedSumOfSquares  -2 * mean * mean * totalWeight + mean * mean * totalWeight
+    val sumOfSquaredDistancesFromMean = weightedSumOfSquares - 2 * mean * mean * totalWeight + mean * mean * totalWeight
 
-    val product = stats1.product * stats2.product
+    val weightedSumOfLogs = stats1.weightedSumOfLogs + stats2.weightedSumOfLogs
     val min = Math.min(stats1.minimum, stats2.minimum)
     val max = Math.max(stats1.maximum, stats2.maximum)
 
@@ -183,15 +223,38 @@ class SinglePassStatisticsAccumulatorParam extends AccumulatorParam[SinglePassSt
     else
       (stats2.mode, stats2.weightAtMode)
 
-    SinglePassStatistics(mean = mean,
+    FirstPassStatistics(mean = mean,
       weightedSumOfSquares = weightedSumOfSquares,
       weightedSumOfSquaredDistancesFromMean = sumOfSquaredDistancesFromMean,
-      product = product,
+      weightedSumOfLogs = weightedSumOfLogs,
       minimum = min,
       maximum = max,
       mode = mode,
       weightAtMode = weightAtMode, totalWeight = totalWeight,
       count = count)
+  }
+}
+
+/**
+ * Second pass statistics - for computing higher moments from the mean.
+ *
+ * @param sumOfThirdWeighted  dataWeightPairs.map({case (x, w) => Math.pow(w, 1.5) * Math.pow((x - xw) / sw, 3)
+ * }).reduce(_ + _)
+ * @param sumOfFourthWeighted dataWeightPairs.map({ case (x, w) => Math.pow(w, 2) * Math.pow(((x - xw) / sw), 4) }).reduce(_ + _)
+ */
+case class SecondPassStatistics(sumOfThirdWeighted: Double, sumOfFourthWeighted: Double) extends Serializable
+
+class SecondPassStatisticsAccumulatorParam() extends AccumulatorParam[SecondPassStatistics] with Serializable {
+
+  override def zero(initialValue: SecondPassStatistics) = SecondPassStatistics(0, 0)
+
+  override def addInPlace(stats1: SecondPassStatistics, stats2: SecondPassStatistics): SecondPassStatistics = {
+
+    val sumOfThirdWeighted = stats1.sumOfThirdWeighted + stats2.sumOfThirdWeighted
+
+    val sumOfFourthWeighted = stats1.sumOfFourthWeighted + stats2.sumOfFourthWeighted
+
+    SecondPassStatistics(sumOfThirdWeighted = sumOfThirdWeighted, sumOfFourthWeighted = sumOfFourthWeighted)
   }
 
 }
