@@ -111,8 +111,9 @@ def _wrap_row_function(frame, row_function):
     that it will be evaluated with using the expected 'row' object rather than
     whatever raw form the engine is using.  Ideally, this belong in the engine
     """
+    schema = frame.schema  # must grab schema now so frame is not closed over
     def row_func(row):
-        row_wrapper = RowWrapper(frame.schema)
+        row_wrapper = RowWrapper(schema)
         row_wrapper.load_row(row)
         return row_function(row_wrapper)
     return row_func
