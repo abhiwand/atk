@@ -29,5 +29,9 @@ import DataTypes.DataType
 import com.intel.intelanalytics.security.UserPrincipal
 
 trait FrameRepository[Session] extends Repository[Session, DataFrameTemplate, DataFrame] {
+
   def updateSchema(frame: DataFrame, columns: List[(String, DataType)])(implicit session: Session): DataFrame
+
+  /** Update the errorFrameId column */
+  def updateErrorFrameId(frame: DataFrame, errorFrameId: Option[Long])(implicit session: Session): DataFrame
 }

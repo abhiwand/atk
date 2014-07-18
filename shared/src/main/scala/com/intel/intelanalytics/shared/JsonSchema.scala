@@ -28,18 +28,19 @@ import java.net.URI
 import com.intel.intelanalytics.domain.frame.FrameReference
 import com.intel.intelanalytics.domain.graph.GraphReference
 import com.intel.intelanalytics.schema._
+import spray.json.{ AdditionalFormats, StandardFormats }
+import com.intel.intelanalytics.spray.json.{ JsonPropertyNameConverter, CustomProductFormats }
 import org.joda.time.DateTime
-import spray.json.{ AdditionalFormats, StandardFormats, ProductFormats }
+import scala.reflect.api.JavaUniverse
 import scala.reflect.runtime.{ universe => ru }
 import ru._
-
 import scala.reflect.ClassTag
 
 /**
  * Helper to allow access to spray-json utility so that we can ensure we're
  * accessing case class vals in exactly the same way that it will
  */
-private[intelanalytics] class ProductFormatsAccessor extends ProductFormats
+private[intelanalytics] class ProductFormatsAccessor extends CustomProductFormats
     with StandardFormats
     with AdditionalFormats {
   override def extractFieldNames(classManifest: ClassManifest[_]): Array[String] =
@@ -59,19 +60,23 @@ private[intelanalytics] object JsonSchemaExtractor {
    * @tparam T the type for which to generate a JSON schema
    */
   def getProductSchema[T](tag: ClassTag[T]): ObjectSchema = {
+    // double check that Spray serialization will work
     val manifest: ClassManifest[T] = tag
-    val names = fieldHelper.extractFieldNames(manifest)
+    fieldHelper.extractFieldNames(manifest)
+
     val mirror = ru.runtimeMirror(tag.runtimeClass.getClassLoader)
     val typ: ru.Type = mirror.classSymbol(tag.runtimeClass).toType
     val members: Array[ru.Symbol] = typ.members.filter(m => !m.isMethod).toArray.reverse
     val func = getFieldSchema(typ)(_, _)
     val ordered = Array.tabulate(members.length) { i => (members(i), i) }
-    val propertyInfo = ordered.map({ case (sym, i) => sym.name.decoded.trim -> func(sym, i) })
+    val propertyInfo = ordered.map({
+      case (sym, i) => JsonPropertyNameConverter.camelCaseToUnderscores(sym.name.decoded) -> func(sym, i)
+    })
     val required = propertyInfo.filter { case (name, (_, optional)) => !optional }.map { case (n, _) => n }.toArray
     val properties = propertyInfo.map { case (name, (schema, _)) => name -> schema }.toMap
     ObjectSchema(properties = Some(properties),
       required = Some(required),
-      order = Some(members.map(sym => sym.name.decoded.trim).toArray))
+      order = Some(members.map(sym => JsonPropertyNameConverter.camelCaseToUnderscores(sym.name.decoded)).toArray))
   }
 
   /**
@@ -84,8 +89,7 @@ private[intelanalytics] object JsonSchemaExtractor {
    */
   private def getFieldSchema(clazz: ru.Type)(symbol: ru.Symbol, order: Int): (JsonSchema, Boolean) = {
     val typeSignature: ru.Type = symbol.typeSignatureIn(clazz)
-    val name = symbol.name.decoded.toLowerCase.trim
-    val schema = getSchemaForType(name, typeSignature, order)
+    val schema = getSchemaForType(typeSignature, order)
     schema
   }
 
@@ -95,12 +99,11 @@ private[intelanalytics] object JsonSchemaExtractor {
    * FrameReference and GraphReference types that appear at position zero are marked
    * as "self" arguments.
    *
-   * @param name the field name
    * @param typeSignature the type
    * @param order the numeric order of the field within its containing class
    * @return
    */
-  def getSchemaForType(name: String, typeSignature: ru.Type, order: Int): (JsonSchema, Boolean) = {
+  def getSchemaForType(typeSignature: ru.Type, order: Int): (JsonSchema, Boolean) = {
     val schema = typeSignature match {
       case t if t =:= typeTag[URI].tpe => StringSchema(format = Some("uri"))
       case t if t =:= typeTag[String].tpe => StringSchema()
@@ -120,7 +123,7 @@ private[intelanalytics] object JsonSchemaExtractor {
         }
         else s
       case t if t.erasure =:= typeTag[Option[Any]].tpe =>
-        val (subSchema, _) = getSchemaForType(name, t.asInstanceOf[TypeRefApi].args.head, order)
+        val (subSchema, _) = getSchemaForType(t.asInstanceOf[TypeRefApi].args.head, order)
         subSchema
       //parameterized types need special handling
       case t if t.erasure =:= typeTag[Map[Any, Any]].tpe => ObjectSchema()
