@@ -8,12 +8,17 @@ import com.intel.intelanalytics.engine.spark.frame.FrameRDDFunctions
 private[spark] object ColumnStatistics extends Serializable {
 
   /**
-   * Calculate (weighted) mode of a data column.
+   * Calculate (weighted) mode of a data column. The median is the least value X in the range of the
+   * distribution so that the cumulative weight strictly below X is < 1/2  the total weight and the cumulative
+   * distribution up to and including X is >= 1/2 the total weight.
    *
-   * @param dataColumnIndex column index
-   * @param weightsColumnIndexOption Option for index of column providing  weights. Must be numerical data.
+   * Values with non-positive weights are thrown out before the calculation is performed.
+   * The option None is returned when the total weight is 0.
+   *
+   * @param dataColumnIndex Index of the column providing data.
+   * @param weightsColumnIndexOption Option for index of column providing weights. Must be numerical data.
    * @param rowRDD RDD of input rows
-   * @return the  mode of the column (as a string)
+   * @return The  mode of the column (as a string)
    */
   def columnMode(dataColumnIndex: Int,
                  weightsColumnIndexOption: Option[Int],
@@ -41,7 +46,7 @@ private[spark] object ColumnStatistics extends Serializable {
 
     val orderStatistics = new OrderStatistics[Double](dataWeightPairs)
 
-    ColumnMedianReturn(orderStatistics.median)
+    ColumnMedianReturn(orderStatistics.medianOption)
   }
 
   /**
