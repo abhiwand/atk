@@ -17,7 +17,7 @@ class OrderStatisticsITest extends TestingSparkContext with Matchers {
 
     val dataFrequenciesOrderStatistics: OrderStatistics[Int] = new OrderStatistics[Int](dataFrequenciesRDD)
 
-    val testMedian = dataFrequenciesOrderStatistics.median
+    val testMedian = dataFrequenciesOrderStatistics.medianOption.get
 
     testMedian shouldBe expectedMedian
   }
@@ -32,8 +32,40 @@ class OrderStatisticsITest extends TestingSparkContext with Matchers {
     val oneRDD: RDD[(Int, Double)] = sc.parallelize(oneThing.zip(oneFrequency), numPartitions)
 
     val orderStatisticsForOne: OrderStatistics[Int] = new OrderStatistics[Int](oneRDD)
-    val testMedian = orderStatisticsForOne.median
+    val testMedian = orderStatisticsForOne.medianOption.get
 
     testMedian shouldBe medianOfOne
+  }
+
+  "median" should "return None when weights are all 0 or negative" in {
+
+
+    val data: List[Int] = List(1, 2, 3, 4, 5, 6, 7, 8)
+    val frequencies: List[Double] = List(-3, 0, -3, 0, 0, 0, 0, 0).map(x => x.toDouble)
+
+    val numPartitions = 3
+    val dataFrequenciesRDD: RDD[(Int, Double)] = sc.parallelize(data.zip(frequencies), numPartitions)
+
+    val dataFrequenciesOrderStatistics: OrderStatistics[Int] = new OrderStatistics[Int](dataFrequenciesRDD)
+
+    val testMedian = dataFrequenciesOrderStatistics.medianOption
+
+    testMedian shouldBe None
+  }
+
+  "median" should "return None when weights and data are empty" in {
+
+
+    val data: List[Int] = List()
+    val frequencies: List[Double] = List()
+
+    val numPartitions = 3
+    val dataFrequenciesRDD: RDD[(Int, Double)] = sc.parallelize(data.zip(frequencies), numPartitions)
+
+    val dataFrequenciesOrderStatistics: OrderStatistics[Int] = new OrderStatistics[Int](dataFrequenciesRDD)
+
+    val testMedian = dataFrequenciesOrderStatistics.medianOption
+
+    testMedian shouldBe None
   }
 }

@@ -1150,7 +1150,12 @@ class BigFrame(CommandSupport):
     @doc_stub
     def column_median(self, data_column, weights_column = None):
         """
-        Calculate the median of a column.
+        Calculate the (weighted) median of a column. The median is the least value X in the range of the distribution so
+         that the cumulative weight strictly below X is < 1/2  the total weight and the cumulative
+         distribution up to and including X is >= 1/2 the total weight.
+
+        Values with non-positive weights are thrown out before the calculation is performed.
+        If a weight column is provided and the sum of the weights is 0, {} is returned.
 
         Parameters
         ----------
@@ -1165,7 +1170,7 @@ class BigFrame(CommandSupport):
         Returns
         -------
         median : Double
-            The median of the values.
+            The median of the values.  If a weight column is provided and the sum of the weights is 0, {} is returned.
 
         Examples
         --------

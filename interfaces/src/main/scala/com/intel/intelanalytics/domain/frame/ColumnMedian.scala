@@ -36,5 +36,5 @@ case class ColumnMedian(frame: FrameReference, data_column: String, weights_colu
 /**
  * The data returned from a median calculation: The median.
  */
-case class ColumnMedianReturn(value: Double) {
+case class ColumnMedianReturn(value: Option[Double]) {
 }

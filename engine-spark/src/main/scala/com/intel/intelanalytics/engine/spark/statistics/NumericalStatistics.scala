@@ -124,7 +124,7 @@ class NumericalStatistics(dataWeightPairs: RDD[(Double, Double)]) extends Serial
 
     val accumulator = dataWeightPairs.sparkContext.accumulator[FirstPassStatistics](initialValue)(accumulatorParam)
 
-    dataWeightPairs.filter(distributionUtils.hasPositiveWeight()).
+    dataWeightPairs.filter(distributionUtils.hasPositiveWeight).
       map(convertDataWeightPairToFirstPassStats).foreach(x => accumulator.add(x))
 
     accumulator.value
@@ -141,7 +141,7 @@ class NumericalStatistics(dataWeightPairs: RDD[(Double, Double)]) extends Serial
 
     val accumulator = dataWeightPairs.sparkContext.accumulator[SecondPassStatistics](initialValue)(accumulatorParam)
 
-    dataWeightPairs.filter(distributionUtils.hasPositiveWeight()).
+    dataWeightPairs.filter(distributionUtils.hasPositiveWeight).
       map(x => convertDataWeightPairToSecondPassStats(x, mean, stddev)).foreach(x => accumulator.add(x))
 
     accumulator.value
