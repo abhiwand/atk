@@ -21,27 +21,13 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.engine
+package com.intel.intelanalytics.repository
 
-import com.intel.intelanalytics.domain.graph.{ Graph, GraphLoad, GraphTemplate }
+import com.intel.intelanalytics.domain.frame.{ DataFrame, DataFrameTemplate }
+import com.intel.intelanalytics.domain.schema.{ DataTypes }
+import DataTypes.DataType
 import com.intel.intelanalytics.security.UserPrincipal
-import spray.json.JsObject
 
-/**
- * Manages multiple graphs in the underlying graph database.
- */
-trait GraphStorage {
-
-  def lookup(id: Long): Option[Graph]
-
-  def createGraph(graph: GraphTemplate)(implicit user: UserPrincipal): Graph
-
-  def loadGraph(graph: GraphLoad)(implicit user: UserPrincipal): Graph
-
-  def drop(graph: Graph)
-
-  def getGraphs(offset: Int, count: Int)(implicit user: UserPrincipal): Seq[Graph]
-
-  def getGraphByName(name: String)(implicit user: UserPrincipal): Option[Graph]
-
+trait FrameRepository[Session] extends Repository[Session, DataFrameTemplate, DataFrame] {
+  def updateSchema(frame: DataFrame, columns: List[(String, DataType)])(implicit session: Session): DataFrame
 }

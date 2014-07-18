@@ -31,7 +31,7 @@ package com.intel.intelanalytics.service.v1.viewmodels
  * @param url the URI to 'this' dataFrame in terms of the REST API
  */
 case class GetDataFrames(id: Long, name: String, url: String) {
-  require(id > 0)
-  require(name != null)
-  require(url != null)
+  require(id > 0, "id must be greater than zero")
+  require(name != null, "name must not be null")
+  require(url != null, "url must not be null")
 }

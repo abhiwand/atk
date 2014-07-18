@@ -23,6 +23,12 @@
 
 package com.intel.intelanalytics.service.v1.viewmodels
 
+/**
+ * Links with relations
+ * @param rel the relationship of the link to the current document
+ * @param uri the link
+ * @param method the HTTP method that should be used to retrieve the link
+ */
 case class RelLink(rel: String, uri: String, method: String) {
   require(rel != null)
   require(uri != null)
@@ -30,6 +36,12 @@ case class RelLink(rel: String, uri: String, method: String) {
   require(List("GET", "PUT", "POST", "HEAD", "DELETE", "OPTIONS").contains(method))
 }
 
+/**
+ * Convenience methods for constructing RelLinks
+ */
 object Rel {
+  /**
+   * Self links
+   */
   def self(uri: String) = RelLink(rel = "self", uri = uri, method = "GET")
 }
