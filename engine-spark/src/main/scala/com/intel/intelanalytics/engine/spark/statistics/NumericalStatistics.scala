@@ -22,6 +22,8 @@ class NumericalStatistics(dataWeightPairs: RDD[(Double, Double)]) extends Serial
 
   private lazy val secondPassStatistics: SecondPassStatistics = generateSecondPassStatistics()
 
+  private val distributionUtils = new DistributionUtils[Double]
+
   /**
    * The weighted mean of the data.
    */
@@ -31,13 +33,18 @@ class NumericalStatistics(dataWeightPairs: RDD[(Double, Double)]) extends Serial
    * The weighted geometric mean of the data.
    */
   lazy val weightedGeometricMean: Double =
-    Math.exp(singlePassStatistics.weightedSumOfLogs / singlePassStatistics.totalWeight)
+    if (singlePassStatistics.totalWeight > 0)
+      Math.exp(singlePassStatistics.weightedSumOfLogs / singlePassStatistics.totalWeight)
+    else
+      1.toDouble
 
   /**
    * The weighted variance of the data.
    */
-  lazy val weightedVariance: Double =
-    singlePassStatistics.weightedSumOfSquaredDistancesFromMean / (singlePassStatistics.count - 1)
+  lazy val weightedVariance: Double = {
+    val n = singlePassStatistics.count
+    if (n > 1) singlePassStatistics.weightedSumOfSquaredDistancesFromMean / (n - 1) else Double.NaN
+  }
 
   /**
    * The weighted standard deviation of the data.
@@ -79,9 +86,8 @@ class NumericalStatistics(dataWeightPairs: RDD[(Double, Double)]) extends Serial
    */
   lazy val weightedSkewness: Double = {
     val n = singlePassStatistics.count
-    require(n > 2, "Cannot calculate skew of fewer than 3 samples")
 
-    (n.toDouble / ((n - 1) * (n - 2)).toDouble) * secondPassStatistics.sumOfThirdWeighted
+    if (n > 2) (n.toDouble / ((n - 1) * (n - 2)).toDouble) * secondPassStatistics.sumOfThirdWeighted else Double.NaN
   }
 
   /**
@@ -89,13 +95,16 @@ class NumericalStatistics(dataWeightPairs: RDD[(Double, Double)]) extends Serial
    */
   lazy val weightedKurtosis: Double = {
     val n = singlePassStatistics.count
-    require(n > 3, "Cannot calculate kurtosis of fewer than 4 samples")
+    if (n > 3) {
+      val leadingCoefficient = (n * (n + 1)).toDouble / ((n - 1) * (n - 2) * (n - 3)).toDouble
 
-    val leadingCoefficient = (n * (n + 1)).toDouble / ((n - 1) * (n - 2) * (n - 3)).toDouble
+      val subtrahend = (3 * (n - 1) * (n - 1)).toDouble / ((n - 2) * (n - 3)).toDouble
 
-    val subtrahend = (3 * (n - 1) * (n - 1)).toDouble / ((n - 2) * (n - 3)).toDouble
-
-    (leadingCoefficient * secondPassStatistics.sumOfFourthWeighted) - subtrahend
+      (leadingCoefficient * secondPassStatistics.sumOfFourthWeighted) - subtrahend
+    }
+    else {
+      Double.NaN
+    }
   }
 
   private def generateSinglePassStatistics(): FirstPassStatistics = {
@@ -115,7 +124,8 @@ class NumericalStatistics(dataWeightPairs: RDD[(Double, Double)]) extends Serial
 
     val accumulator = dataWeightPairs.sparkContext.accumulator[FirstPassStatistics](initialValue)(accumulatorParam)
 
-    dataWeightPairs.map(convertDataWeightPairToFirstPassStats).foreach(x => accumulator.add(x))
+    dataWeightPairs.filter(distributionUtils.hasPositiveWeight()).
+      map(convertDataWeightPairToFirstPassStats).foreach(x => accumulator.add(x))
 
     accumulator.value
   }
@@ -131,7 +141,8 @@ class NumericalStatistics(dataWeightPairs: RDD[(Double, Double)]) extends Serial
 
     val accumulator = dataWeightPairs.sparkContext.accumulator[SecondPassStatistics](initialValue)(accumulatorParam)
 
-    dataWeightPairs.map(x => convertDataWeightPairToSecondPassStats(x, mean, stddev)).foreach(x => accumulator.add(x))
+    dataWeightPairs.filter(distributionUtils.hasPositiveWeight()).
+      map(x => convertDataWeightPairToSecondPassStats(x, mean, stddev)).foreach(x => accumulator.add(x))
 
     accumulator.value
   }
@@ -140,10 +151,12 @@ class NumericalStatistics(dataWeightPairs: RDD[(Double, Double)]) extends Serial
     val data = p._1
     val weight = p._2
 
+    val weightedLog = if (data <= 0) Double.NaN else weight * Math.log(data)
+
     FirstPassStatistics(mean = data,
       weightedSumOfSquares = weight * data * data,
       weightedSumOfSquaredDistancesFromMean = 0,
-      weightedSumOfLogs = weight * Math.log(data),
+      weightedSumOfLogs = weightedLog,
       minimum = data,
       maximum = data,
       mode = data,
