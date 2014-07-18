@@ -1,11 +1,16 @@
 #
-# Netflix example
+# Netflix example - create a frame and load a graph
 #
-# Depends on a netflix.csv file (see sample in data/netflix.csv)
+# Depends on a netflix.csv file
 #
 # Usage:
-#   import os
-#   execfile('/path/to/netflix.py')
+#
+#   Copy data to HDFS
+#       hadoop fs -copyFromLocal netflix.csv {fsRoot in HDFS}
+#
+#   At Python prompt
+#       import os
+#       execfile('/path/to/netflix.py')
 #
 
 from intelanalytics import *
