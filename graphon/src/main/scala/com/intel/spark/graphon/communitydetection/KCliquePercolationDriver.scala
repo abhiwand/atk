@@ -25,10 +25,11 @@
 package com.intel.spark.graphon.communitydetection
 
 import org.apache.spark.rdd.RDD
-import com.intel.graphbuilder.elements.{ Edge => GBEdge, GraphElement }
+import com.intel.graphbuilder.elements.{ Edge => GBEdge, Vertex => GBVertex, GraphElement }
 import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRDDImplicits._
 import com.intel.spark.graphon.communitydetection.KCliquePercolationDataTypes._
 import org.apache.spark.SparkContext
+import org.apache.spark.SparkContext._
 import com.intel.graphbuilder.graph.titan.TitanGraphConnector
 import com.intel.spark.graphon.communitydetection.KCliqueGraphGenerator._
 import com.intel.graphbuilder.driver.spark.titan.reader.TitanReader
@@ -52,6 +53,9 @@ object KCliquePercolationDriver {
     val titanReader = new TitanReader(sc, titanConnector)
     val titanReaderRDD = titanReader.read()
 
+    //    Get the GraphBuilder vertex list
+    val gbVertexIDs = titanReaderRDD.filterVertices().map((v: GBVertex) => v.physicalId.asInstanceOf[Long])
+
     //    Get the GraphBuilder edge list
     val gbEdgeList = titanReaderRDD.filterEdges()
 
@@ -67,13 +71,27 @@ object KCliquePercolationDriver {
     //    Run connected component analysis to get the communities
     val cliquesAndConnectedComponent = GetConnectedComponents.run(kCliqueGraphGeneratorOutput, sc)
 
+    //    Define an empty set of Long
+    val emptySet: Set[Long] = Set()
+
+    //    Map the GB Vertex IDs to key-value pairs where the key is the GB Vertex ID set and the value is the emptySet.Don't care
+    //    The empty set will be considered as the empty communities for the vetices that don't belong to any communities.
+    val vertexIDEmptySetPairs: RDD[(Long, Set[Long])] = gbVertexIDs.map(id => (id, emptySet))
+
     //    Associate each vertex with a list of the communities to which it belongs
     val vertexAndCommunitySet: RDD[(Long, Set[Long])] =
       AssignCommunitiesToVertex.run(cliquesAndConnectedComponent.connectedComponents, cliquesAndConnectedComponent.newVertexIdToOldVertexIdOfCliqueGraph)
 
+    //    Combine the vertices having communities with the vertices having no communities together, to have
+    //    complete list of vertices
+    val vertexAndCommunitiesWithEmptyCommunity: RDD[(Long, Set[Long])] =
+        vertexIDEmptySetPairs.union(vertexAndCommunitySet).combineByKey((x => x),
+          ({ case (x, y) => y.union(x) }),
+          ({ case (x, y) => y.union(x) }))
+
     //    Write back to each vertex in Titan graph the set of communities to which it belongs in the property with name "communities"
     val kCliqueCommunityWriterInTitan = new KCliqueCommunityWriterInTitan()
-    kCliqueCommunityWriterInTitan.run(vertexAndCommunitySet, communityPropertyDefaultLabel, titanConnector)
+    kCliqueCommunityWriterInTitan.run(vertexAndCommunitiesWithEmptyCommunity, communityPropertyDefaultLabel, titanConnector)
 
   }
 
