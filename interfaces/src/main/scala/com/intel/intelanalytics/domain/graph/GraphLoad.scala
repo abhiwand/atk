@@ -35,6 +35,6 @@ import com.intel.intelanalytics.domain.graph.construction.FrameRule
 case class GraphLoad(graph: GraphReference,
                      frame_rules: List[FrameRule],
                      append: Boolean = false) {
-  require(graph != null)
-  require(frame_rules != null)
+  require(graph != null, "graph must not be null")
+  require(frame_rules != null, "frame rules must not be null")
 }

@@ -16,9 +16,10 @@ case class User(id: Long,
                 apiKey: Option[String],
                 createdOn: DateTime,
                 modifiedOn: DateTime) extends HasId {
-  require(id >= 0)
-  require(username != null)
-  require(apiKey != null)
+
+  require(id >= 0, "id must be greater than or equal to zero")
+  require(username != null, "username must not be null")
+  require(apiKey != null, "api key must not be null")
 
   if (apiKey.isDefined) {
     require(!apiKey.get.isEmpty)
