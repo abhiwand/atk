@@ -26,12 +26,15 @@ from intelanalytics.core.iatypes import unknown, supported_types
 
 class BigColumn(object):
     """Column in a BigFrame"""
-    def __init__(self, name, data_type=unknown):
+    def __init__(self, frame, name, data_type=unknown):
         self.name = name
         if data_type is not unknown:
             supported_types.validate_is_supported_type(data_type)
         self.data_type = data_type
-        self._frame = None
+        self._frame = frame
+
+    def __repr__(self):
+        return '{ "name" : "%s", "data_type" : "%s" }' % (self.name, supported_types.get_type_string(self.data_type))
 
     def _as_json_obj(self):
         return { "name": self.name,
