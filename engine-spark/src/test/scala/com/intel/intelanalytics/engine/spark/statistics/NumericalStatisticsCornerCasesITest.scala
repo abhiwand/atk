@@ -181,10 +181,34 @@ class NumericalStatisticsCornerCasesITest extends TestingSparkContext with Match
     numericalStatistics.max shouldBe 2
     Math.abs(numericalStatistics.weightedVariance - 0.3333333333) should be < epsilon
     Math.abs(numericalStatistics.weightedStandardDeviation - 0.5773502691896255) should be < epsilon
-    (numericalStatistics.weightedSkewness -1.7320508075688807) should be < epsilon
+    (numericalStatistics.weightedSkewness - 1.7320508075688807) should be < epsilon
     numericalStatistics.weightedKurtosis.isNaN() shouldBe true
     numericalStatistics.weightedMode shouldBe 1
-    Math.abs(numericalStatistics.meanConfidenceLower -  (1.333333333 - (1.96) * (0.5773502691896255 / Math.sqrt(3)))) should be < epsilon
+    Math.abs(numericalStatistics.meanConfidenceLower - (1.333333333 - (1.96) * (0.5773502691896255 / Math.sqrt(3)))) should be < epsilon
     Math.abs(numericalStatistics.meanConfidenceUpper - (1.333333333 + (1.96) * (0.5773502691896255 / Math.sqrt(3)))) should be < epsilon
   }
+
+  "numerical statistics" should "correctly handle uniform data" in new NumericalStatisticsCornerCaseTest() {
+
+    val data: List[Double] = List(2, 2, 2, 2, 2).map(x => x.toDouble)
+    val frequencies: List[Double] = List(3, 3, 3, 3, 3).map(x => x.toDouble)
+
+    val dataFrequencies = sc.parallelize(data.zip(frequencies))
+
+    val numericalStatistics = new NumericalStatistics(dataFrequencies)
+
+    numericalStatistics.count shouldBe 5
+    Math.abs(numericalStatistics.weightedMean - 2) should be < epsilon
+    Math.abs(numericalStatistics.weightedGeometricMean - 2) should be < epsilon
+    numericalStatistics.min shouldBe 2
+    numericalStatistics.max shouldBe 2
+    numericalStatistics.weightedVariance shouldBe 0
+    numericalStatistics.weightedStandardDeviation shouldBe 0
+    numericalStatistics.weightedSkewness.isNaN() shouldBe true
+    numericalStatistics.weightedKurtosis.isNaN() shouldBe true
+    numericalStatistics.weightedMode shouldBe 2
+    numericalStatistics.meanConfidenceLower shouldBe 2
+    numericalStatistics.meanConfidenceUpper shouldBe 2
+  }
+
 }

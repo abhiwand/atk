@@ -154,10 +154,10 @@ class NumericalStatistics(dataWeightPairs: RDD[(Double, Double)]) extends Serial
         map(x => convertDataWeightPairToSecondPassStats(x, mean, stddev)).foreach(x => accumulator.add(x))
 
       accumulator.value
-    } else {
+    }
+    else {
       SecondPassStatistics(Double.NaN, Double.NaN)
     }
-
 
   }
 
@@ -184,7 +184,7 @@ class NumericalStatistics(dataWeightPairs: RDD[(Double, Double)]) extends Serial
     val w = p._2
 
     val thirdWeighted = if (stddev != 0) Math.pow(w, 1.5) * Math.pow((x - mean) / stddev, 3) else Double.NaN
-    val fourthWeighted =if (stddev != 0) Math.pow(w, 2) * Math.pow((x - mean) / stddev, 4) else Double.NaN
+    val fourthWeighted = if (stddev != 0) Math.pow(w, 2) * Math.pow((x - mean) / stddev, 4) else Double.NaN
     SecondPassStatistics(sumOfThirdWeighted = thirdWeighted, sumOfFourthWeighted = fourthWeighted)
   }
 }
