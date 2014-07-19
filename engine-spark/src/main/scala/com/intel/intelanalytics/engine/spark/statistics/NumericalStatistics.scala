@@ -7,16 +7,18 @@ import com.intel.intelanalytics.domain.frame.{ ColumnFullStatisticsReturn, Colum
 /**
  * Statistics calculator for weighted numerical data.
  *
- * TODO: TRIB-3134  Investigate one-pass algorithms for weighted skewness and kurtosis. (Currently these parameters
- *  are handled in the second pass statistics, and this accounts for our separation of summary and full statistics
- *  at the API level.)
- *
  * Formulas for statistics are expected to adhere to the DEFAULT formulas used by SAS in
  * http://support.sas.com/documentation/cdl/en/procstat/63104/HTML/default/viewer.htm#procstat_univariate_sect026.htm
  *
  * @param dataWeightPairs RDD of pairs of  the form (data, weight)
  */
 class NumericalStatistics(dataWeightPairs: RDD[(Double, Double)]) extends Serializable {
+
+  /*
+   * TODO: TRIB-3134  Investigate one-pass algorithms for weighted skewness and kurtosis. (Currently these parameters
+   *  are handled in the second pass statistics, and this accounts for our separation of summary and full statistics
+   *  at the API level.)
+   */
 
   private lazy val singlePassStatistics: FirstPassStatistics = generateSinglePassStatistics()
 
