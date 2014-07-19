@@ -27,6 +27,7 @@ import com.intel.graphbuilder.driver.spark.titan.{ GraphBuilder, GraphBuilderCon
 import com.intel.graphbuilder.parser.rule.RuleParserDSL._
 import com.intel.graphbuilder.parser.rule.{ EdgeRule, VertexRule }
 import com.intel.graphbuilder.parser.{ ColumnDef, InputSchema }
+import com.intel.graphbuilder.elements.{ Edge, Vertex, Property }
 import com.intel.testutils.TestingSparkContext
 import com.tinkerpop.blueprints.Direction
 import org.apache.spark.rdd.RDD
@@ -90,7 +91,7 @@ class GraphBuilderITest extends Specification {
       val inputRdd2 = sc.parallelize(additionalInputRows.asInstanceOf[Seq[_]]).asInstanceOf[RDD[Seq[_]]]
 
       // Append to the existing Graph
-      val gb2 = new GraphBuilder(config.copy(append = true, retainDanglingEdges = true, biDirectional = true, inferSchema = false))
+      val gb2 = new GraphBuilder(config.copy(append = true, retainDanglingEdges = true, inferSchema = false))
       gb2.build(inputRdd2)
 
       // Validate
@@ -148,6 +149,57 @@ class GraphBuilderITest extends Specification {
       val obama = graph.getVertices("userId", 1001L).iterator().next()
       obama.getProperty("name").asInstanceOf[String] mustEqual "President Obama"
       obama.getEdges(Direction.OUT).size mustEqual 3
+    }
+
+    "support inferring schema from the data" in new TestingSparkContext with TestingTitan {
+
+      // Input data, as edge list
+      val inputEdges = List(
+        "1 2",
+        "1 3",
+        "1 4",
+        "2 1",
+        "2 5",
+        "3 1",
+        "3 4",
+        "3 6",
+        "3 7",
+        "3 8",
+        "4 1",
+        "4 3",
+        "5 2",
+        "5 6",
+        "5 7",
+        "6 3",
+        "6 5",
+        "7 3",
+        "7 5",
+        "8 3")
+
+      val inputRows = sc.parallelize(inputEdges)
+
+      // Create edge set RDD, make up properties
+      val inputRdd = inputRows.map(row => row.split(" "): Seq[String])
+      val edgeRdd = inputRdd.map(e => new Edge(new Property("userId", e(0)), new Property("userId", e(1)), "tweeted", Seq(new Property("tweet", "blah blah blah..."))))
+
+      // Create vertex set RDD, make up properties
+      val rawVertexRdd = inputRdd.flatMap(row => row).distinct()
+      val vertexRdd = rawVertexRdd.map(v => new Vertex(new Property("userId", v), Seq(new Property("location", "Oregon"))))
+
+      // Build the graph
+      val gb = new GraphBuilder(new GraphBuilderConfig(new InputSchema(Seq.empty), List.empty, List.empty, titanConfig))
+      gb.buildGraphWithSpark(vertexRdd, edgeRdd)
+
+      // Validate
+      graph = titanConnector.connect()
+
+      graph.getEdges.size mustEqual 20
+      graph.getVertices.size mustEqual 8
+
+      val vertexOne = graph.getVertices("userId", "1").iterator().next()
+      vertexOne.getProperty("location").asInstanceOf[String] mustEqual "Oregon"
+      vertexOne.getEdges(Direction.OUT).size mustEqual 3
+      vertexOne.getEdges(Direction.OUT).iterator().next().getProperty("tweet").asInstanceOf[String] mustEqual "blah blah blah..."
     }
 
   }

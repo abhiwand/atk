@@ -23,17 +23,19 @@
 
 package com.intel.intelanalytics.engine.spark.frame
 
-import com.intel.intelanalytics.ClassLoaderAware
-import com.intel.intelanalytics.shared.EventLogging
+import java.nio.file.Paths
+import java.util.concurrent.atomic.AtomicLong
+import com.intel.intelanalytics.component.ClassLoaderAware
 import com.intel.intelanalytics.engine._
 import com.intel.intelanalytics.domain.schema.{ DataTypes, Schema }
 import DataTypes.DataType
 import java.nio.file.Paths
+import com.intel.intelanalytics.shared.EventLogging
+
 import scala.io.{ Codec, Source }
 import org.apache.spark.rdd.RDD
 import com.intel.intelanalytics.engine.spark.{ SparkEngineConfig, HdfsFileStorage, SparkOps, SparkComponent }
 import org.apache.spark.SparkContext
-import scala.util.Try
 import scala.util.matching.Regex
 import java.util.concurrent.atomic.AtomicLong
 import com.intel.intelanalytics.domain.frame.{ Column, DataFrame, DataFrameTemplate }
@@ -73,22 +75,10 @@ class SparkFrameStorage(context: UserPrincipal => Context, fsRoot: String, files
 
   /**
    * Remove the underlying data file from HDFS.
-   * @param frameId primary key from Frame Table
+   * @param frameId primary key from Frame table
    */
   private def deleteFrameFile(frameId: Long): Unit = {
     files.delete(Paths.get(getFrameDirectory(frameId)))
-  }
-
-  override def appendRows(startWith: DataFrame, append: Iterable[Row]): Unit = {
-    withContext("frame.appendRows") {
-      ???
-    }
-  }
-
-  override def removeRows(frame: DataFrame, predicate: (Row) => Boolean): Unit = {
-    withContext("frame.removeRows") {
-      ???
-    }
   }
 
   override def removeColumn(frame: DataFrame, columnIndex: Seq[Int])(implicit user: UserPrincipal): DataFrame =
@@ -106,11 +96,6 @@ class SparkFrameStorage(context: UserPrincipal => Context, fsRoot: String, files
           }
           metaStore.frameRepo.updateSchema(frame, remainingColumns)
         }
-    }
-
-  override def addColumnWithValue[T](frame: DataFrame, column: Column[T], default: T): Unit =
-    withContext("frame.addColumnWithValue") {
-      ???
     }
 
   override def renameFrame(frame: DataFrame, newName: String): DataFrame = {
@@ -153,6 +138,7 @@ class SparkFrameStorage(context: UserPrincipal => Context, fsRoot: String, files
           metaStore.frameRepo.updateSchema(frame, newColumns)
         }
     }
+
   override def getRows(frame: DataFrame, offset: Long, count: Int)(implicit user: UserPrincipal): Iterable[Row] =
     withContext("frame.getRows") {
       require(frame != null, "frame is required")
@@ -160,11 +146,33 @@ class SparkFrameStorage(context: UserPrincipal => Context, fsRoot: String, files
       require(count > 0, "count must be zero or greater")
       withMyClassLoader {
         val ctx = context(user).sparkContext
-        val rdd: RDD[Row] = getFrameRdd(ctx, frame.id)
+        val rdd: RDD[Row] = getFrameRowRdd(ctx, frame.id)
         val rows = SparkOps.getRows(rdd, offset, count, maxRows)
         rows
       }
     }
+
+  /**
+   * Create a FrameRDD or throw an exception if bad frameId is given
+   * @param ctx spark context
+   * @param frameId primary key of the frame record
+   * @return the newly created RDD
+   */
+  def getFrameRdd(ctx: SparkContext, frameId: Long): FrameRDD = {
+    val frame = lookup(frameId).getOrElse(
+      throw new IllegalArgumentException(s"No such data frame: ${frameId}"))
+    getFrameRdd(ctx, frame)
+  }
+
+  /**
+   * Create an FrameRDD from a frame data file
+   * @param ctx spark context
+   * @param frame the model for the frame
+   * @return the newly created FrameRDD
+   */
+  def getFrameRdd(ctx: SparkContext, frame: DataFrame): FrameRDD = {
+    new FrameRDD(frame.schema, getFrameRowRdd(ctx, frame.id))
+  }
 
   /**
    * Create an RDD from a frame data file.
@@ -172,7 +180,7 @@ class SparkFrameStorage(context: UserPrincipal => Context, fsRoot: String, files
    * @param frameId primary key of the frame record
    * @return the newly created RDD
    */
-  def getFrameRdd(ctx: SparkContext, frameId: Long): RDD[Row] = {
+  def getFrameRowRdd(ctx: SparkContext, frameId: Long): RDD[Row] = {
     val path: String = getFrameDataFile(frameId)
     val absPath = fsRoot + path
     files.getMetaData(Paths.get(path)) match {
@@ -187,6 +195,27 @@ class SparkFrameStorage(context: UserPrincipal => Context, fsRoot: String, files
         {
           metaStore.frameRepo.lookupByName(name)
         }
+    }
+  }
+
+  /**
+   * Get the pair of FrameRDD's that were the result of a parse
+   * @param ctx spark context
+   * @param frame the model of the frame that was the successfully parsed lines
+   * @param errorFrame the model for the frame that was the parse errors
+   */
+  def getParseResult(ctx: SparkContext, frame: DataFrame, errorFrame: DataFrame): ParseResultRddWrapper = {
+    val frameRdd = getFrameRdd(ctx, frame)
+    val errorFrameRdd = getFrameRdd(ctx, errorFrame)
+    new ParseResultRddWrapper(frameRdd, errorFrameRdd)
+  }
+
+  def getOrCreateDirectory(name: String): Directory = {
+    val path = Paths.get(name)
+    val meta = files.getMetaData(path).getOrElse(files.createDirectory(path))
+    meta match {
+      case File(f, s) => throw new IllegalArgumentException(path + " is not a directory")
+      case d: Directory => d
     }
   }
 
@@ -213,10 +242,56 @@ class SparkFrameStorage(context: UserPrincipal => Context, fsRoot: String, files
       implicit session =>
         {
           val frame = metaStore.frameRepo.insert(frameTemplate).get
+
+          //remove any existing artifacts to prevent collisions when a database is reinitialized.
           deleteFrameFile(frame.id)
+
           frame
         }
     }
+  }
+
+  /**
+   * Get the error frame of the supplied frame or create one if it doesn't exist
+   * @param frame the 'good' frame
+   * @return the parse errors for the 'good' frame
+   */
+  override def lookupOrCreateErrorFrame(frame: DataFrame): DataFrame = {
+    val errorFrame = lookupErrorFrame(frame)
+    if (!errorFrame.isDefined) {
+      metaStore.withSession("frame.lookupOrCreateErrorFrame") {
+        implicit session =>
+          {
+            // TODO: remove hard-coded strings
+            val errorTemplate = new DataFrameTemplate(frame.name + "-parse-errors", Some("This frame was automatically created to capture parse errors for " + frame.name))
+            val newlyCreateErrorFrame = metaStore.frameRepo.insert(errorTemplate).get
+            metaStore.frameRepo.updateErrorFrameId(frame, Some(newlyCreateErrorFrame.id))
+            newlyCreateErrorFrame
+          }
+      }
+    }
+    else {
+      errorFrame.get
+    }
+  }
+
+  /**
+   * Get the error frame of the supplied frame
+   * @param frame the 'good' frame
+   * @return the parse errors for the 'good' frame
+   */
+  override def lookupErrorFrame(frame: DataFrame): Option[DataFrame] = {
+    if (frame.errorFrameId.isDefined) {
+      val errorFrame = lookup(frame.errorFrameId.get)
+      if (!errorFrame.isDefined) {
+        error("Frame referenced an error frame that does NOT exist: " + frame.errorFrameId.get)
+      }
+      errorFrame
+    }
+    else {
+      None
+    }
+
   }
 
   val idRegex: Regex = "^\\d+$".r
@@ -241,10 +316,11 @@ class SparkFrameStorage(context: UserPrincipal => Context, fsRoot: String, files
   //    path.toString
   //  }
   //
+
   def getFrameDataFile(id: Long): String = {
     getFrameDirectory(id) + "/data"
   }
-  //
+
   def getFrameMetaDataFile(id: Long): String = {
     getFrameDirectory(id) + "/meta"
   }

@@ -43,6 +43,7 @@ import com.intel.intelanalytics.service.v1.decorators.GraphDecorator
 
 import com.intel.intelanalytics.service.v1.viewmodels.ViewModelJsonImplicits
 import com.intel.intelanalytics.service.v1.viewmodels.Rel
+import com.intel.intelanalytics.spray.json.IADefaultJsonProtocol
 
 //TODO: Is this right execution context for us?
 
@@ -102,7 +103,7 @@ class GraphService(commonDirectives: CommonDirectives, engine: Engine) extends D
                       //TODO: cursor
                       onComplete(engine.getGraphs(0, 20)) {
                         case Success(graphs) =>
-                          import DefaultJsonProtocol._
+                          import IADefaultJsonProtocol._
                           implicit val indexFormat = ViewModelJsonImplicits.getGraphsFormat
                           complete(GraphDecorator.decorateForIndex(uri.toString(), graphs))
                         case Failure(ex) => throw ex
@@ -153,24 +154,7 @@ class GraphService(commonDirectives: CommonDirectives, engine: Engine) extends D
                         }
                       }
                 }
-              } ~
-                (path("vertices") & get) {
-                  parameters('qname.as[String], 'offset.as[Int], 'count.as[Int]) {
-                    (queryName, offset, count) =>
-                      parameterMap {
-                        params =>
-                          onComplete(for { r <- engine.getVertices(id, offset, count, queryName, params) } yield r) {
-                            case Success(rows: Iterable[Array[Any]]) => {
-                              import spray.httpx.SprayJsonSupport._
-                              import DomainJsonProtocol._
-                              val strings = rows.map(r => r.map(a => a.toJson).toList).toList
-                              complete(strings)
-                            }
-                            case Failure(ex) => throw ex
-                          }
-                      }
-                  }
-                }
+              }
           }
     }
 

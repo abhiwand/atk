@@ -77,15 +77,6 @@ class HdfsFileStorage(fsRoot: String) extends FileStorage with EventLogging {
     fs.open(path)
   }
 
-  //TODO: switch file methods to strings instead of Path?
-  override def copy(source: Path, destination: Path): Unit = withContext("file.copy") {
-    ???
-  }
-
-  override def move(source: Path, destination: Path): Unit = withContext("file.move") {
-    ???
-  }
-
   override def getMetaData(path: Path): Option[Entry] = withContext("file.getMetaData") {
     val hPath: HPath = new HPath(fsRoot + path.toString)
     val exists = fs.exists(hPath)
