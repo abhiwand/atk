@@ -37,6 +37,21 @@ class OrderStatisticsITest extends TestingSparkContext with Matchers {
     testMedian shouldBe medianOfOne
   }
 
+  "median" should "result in first of two uniformly weighted items" in {
+
+    val twoThings: List[Int] = List(8,9)
+    val frequencies: List[Double] = List(0.2, 0.2).map(x => x.toDouble)
+    val expectedMedian: Int = 8
+
+    val numPartitions = 3
+    val oneRDD: RDD[(Int, Double)] = sc.parallelize(twoThings.zip(frequencies), numPartitions)
+
+    val orderStatisticsForOne: OrderStatistics[Int] = new OrderStatistics[Int](oneRDD)
+    val testMedian = orderStatisticsForOne.medianOption.get
+
+    testMedian shouldBe expectedMedian
+  }
+
   "median" should "return None when weights are all 0 or negative" in {
 
     val data: List[Int] = List(1, 2, 3, 4, 5, 6, 7, 8)
