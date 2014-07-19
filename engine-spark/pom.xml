@@ -56,10 +56,6 @@
         </dependency>
         <dependency>
             <groupId>com.intel.ia</groupId>
-            <artifactId>testutils</artifactId>
-        </dependency>
-		<dependency>
-            <groupId>com.intel.ia</groupId>
             <artifactId>graphbuilder-3</artifactId>
             <exclusions>
                 <exclusion>
@@ -72,7 +68,6 @@
                 </exclusion>
             </exclusions>
         </dependency>
-
         <dependency>
             <groupId>com.intel.ia</groupId>
             <artifactId>imllib</artifactId>
@@ -83,6 +78,11 @@
                     <artifactId>graphbuilder-3</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.intel.ia</groupId>
+            <artifactId>testutils</artifactId>
+            <scope>test</scope>
         </dependency>
         <!--END BDA dependencies to our modules-->
 
@@ -113,6 +113,10 @@
                 <exclusion>
                     <groupId>ch.qos.logback</groupId>
                     <artifactId>logback-classic</artifactId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>asm</artifactId>
+                    <groupId>org.ow2.asm</groupId>
                 </exclusion>
             </exclusions>
         </dependency>
@@ -152,9 +156,14 @@
                 </exclusion>
             </exclusions>
         </dependency>
-		<dependency>
+        <dependency>
             <groupId>commons-lang</groupId>
             <artifactId>commons-lang</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.tinkerpop.gremlin</groupId>
+            <artifactId>gremlin-groovy</artifactId>
+        </dependency>
+
     </dependencies>
 </project>

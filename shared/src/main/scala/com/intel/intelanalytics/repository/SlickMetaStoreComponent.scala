@@ -112,10 +112,10 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
      */
     override def initializeSchema(): Unit = {
 
-      withSession("Creating tables") {
+      withSession("Verifying schema") {
         implicit session =>
           if (profile.isH2) {
-            info("Creating schema using Slick")
+            info("Creating schema")
             // Tables that are dependencies for other tables need to go first
             statusRepo.asInstanceOf[SlickStatusRepository].createTable
             statusRepo.asInstanceOf[SlickStatusRepository].initializeValues
@@ -126,7 +126,8 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
             info("Schema creation completed")
           }
           else {
-            info("Running migrations to create/update schema as needed, jdbcUrl: " + profile.connectionString + ", user: " + profile.username)
+            info("Running migrations to create/update schema as needed, jdbcUrl: " + profile.connectionString +
+              ", user: " + profile.username)
             val flyway = new Flyway()
             flyway.setDataSource(profile.connectionString, profile.username, profile.password)
             flyway.migrate()
@@ -271,7 +272,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
   val statuses = TableQuery[StatusTable]
 
   /**
-   * A slick implementation of the graph repository. It stores metadata for statuses.
+   * A slick implementation of the status repository. It stores metadata for statuses.
    */
   class SlickStatusRepository extends Repository[Session, Status, Status]
       with EventLogging {
@@ -365,8 +366,10 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
 
       def modifiedById = column[Option[Long]]("modified_by")
 
+      def errorFrameId = column[Option[Long]]("error_frame_id")
+
       /** projection to/from the database */
-      override def * = (id, name, description, schema, statusId, createdOn, modifiedOn, createdById, modifiedById) <>
+      override def * = (id, name, description, schema, statusId, createdOn, modifiedOn, createdById, modifiedById, errorFrameId) <>
         (DataFrame.tupled, DataFrame.unapply)
 
       // foreign key relationships
@@ -376,6 +379,8 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
       def createdBy = foreignKey("frame_created_by", createdById, users)(_.id)
 
       def modifiedBy = foreignKey("frame_modified_by", modifiedById, users)(_.id)
+
+      def errorFrame = foreignKey("frame_error_frame_id", errorFrameId, frames)(_.id)
 
     }
 
@@ -401,10 +406,18 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
     }
 
     override def updateSchema(frame: DataFrame, columns: List[(String, DataType)])(implicit session: Session): DataFrame = {
-      val newSchema = frame.schema.copy(columns = columns)
-      val updatedFrame = frame.copy(schema = newSchema, modifiedOn = new DateTime)
-      frames.where(_.id === frame.id).update(updatedFrame)
-      updatedFrame
+      // this looks crazy but it is how you update only one column
+      val schemaColumn = for (f <- frames if f.id === frame.id) yield f.schema
+      schemaColumn.update(frame.schema.copy(columns = columns))
+      frames.where(_.id === frame.id).firstOption.get
+    }
+
+    /** Update the errorFrameId column */
+    override def updateErrorFrameId(frame: DataFrame, errorFrameId: Option[Long])(implicit session: Session): DataFrame = {
+      // this looks crazy but it is how you update only one column
+      val errorFrameIdColumn = for (f <- frames if f.id === frame.id) yield f.errorFrameId
+      errorFrameIdColumn.update(errorFrameId)
+      frames.where(_.id === frame.id).firstOption.get
     }
 
     override def insert(frame: DataFrameTemplate)(implicit session: Session): Try[DataFrame] = Try {
