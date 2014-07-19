@@ -30,16 +30,19 @@ class NumericalStatistics(dataWeightPairs: RDD[(Double, Double)]) extends Serial
   lazy val weightedMean: Double = singlePassStatistics.mean
 
   /**
-   * The weighted geometric mean of the data.
+   * The weighted geometric mean of the data. NaN when a data element is <= 0.
    */
-  lazy val weightedGeometricMean: Double =
-    if (singlePassStatistics.totalWeight > 0)
-      Math.exp(singlePassStatistics.weightedSumOfLogs / singlePassStatistics.totalWeight)
-    else
-      1.toDouble
+  lazy val weightedGeometricMean: Double = if (singlePassStatistics.totalWeight > 0)
+    Math.exp(singlePassStatistics.weightedSumOfLogs / singlePassStatistics.totalWeight)
+  else if (singlePassStatistics.weightedSumOfLogs equals Double.NaN) {
+    Double.NaN
+  }
+  else {
+    1.toDouble
+  }
 
   /**
-   * The weighted variance of the data.
+   * The weighted variance of the data. NaN when there are <=1 data elements.
    */
   lazy val weightedVariance: Double = {
     val n = singlePassStatistics.count
@@ -47,42 +50,47 @@ class NumericalStatistics(dataWeightPairs: RDD[(Double, Double)]) extends Serial
   }
 
   /**
-   * The weighted standard deviation of the data.
+   * The weighted standard deviation of the data. NaN when there are <=1 data elements of nonzero weight.
    */
   lazy val weightedStandardDeviation: Double = Math.sqrt(weightedVariance)
 
   /**
-   * The weighted mode of the data.
+   * The weighted mode of the data. NaN when there are no data elements of nonzero weight.
    */
   lazy val weightedMode: Double = singlePassStatistics.mode
 
   /**
-   * The minimum value of the data.
+   * The minimum value of the data. Positive infinity when there are no data elements of nonzero weight.
    */
   lazy val min: Double = singlePassStatistics.minimum
 
   /**
-   * The maximum value of the data.
+   * The maximum value of the data. Negative infinity when there are no data elements of nonzero weight.
    */
   lazy val max: Double = singlePassStatistics.maximum
 
   /**
-   * The number of elements in the data set.
+   * The number of elements in the data set of nonzero weight.
    */
   lazy val count: Long = singlePassStatistics.count
 
   /**
    * The lower limit of the 95% confidence interval about the mean. (Assumes that the distribution is normal.)
+   * NaN when there are <= 1 data elements of nonzero weight.
    */
-  lazy val meanConfidenceLower: Double = weightedMean - (1.96) * (weightedStandardDeviation / Math.sqrt(count))
+  lazy val meanConfidenceLower: Double =
+    if (count > 1) weightedMean - (1.96) * (weightedStandardDeviation / Math.sqrt(count)) else Double.NaN
 
   /**
    * The lower limit of the 95% confidence interval about the mean. (Assumes that the distribution is normal.)
+   * NaN when there are <= 1 data elements of nonzero weight.
    */
-  lazy val meanConfidenceUpper: Double = weightedMean + (1.96) * (weightedStandardDeviation / Math.sqrt(count))
+  lazy val meanConfidenceUpper: Double =
+    if (count > 1) weightedMean + (1.96) * (weightedStandardDeviation / Math.sqrt(count)) else Double.NaN
 
   /**
    * The weighted skewness of the dataset.
+   * NaN when there are <= 2 data elements of nonzero weight.
    */
   lazy val weightedSkewness: Double = {
     val n = singlePassStatistics.count
@@ -91,7 +99,7 @@ class NumericalStatistics(dataWeightPairs: RDD[(Double, Double)]) extends Serial
   }
 
   /**
-   * The weighted kurtosis of the dataset.
+   * The weighted kurtosis of the dataset. NaN when there are <= 3 data elements of nonzero weight.
    */
   lazy val weightedKurtosis: Double = {
     val n = singlePassStatistics.count
@@ -117,7 +125,7 @@ class NumericalStatistics(dataWeightPairs: RDD[(Double, Double)]) extends Serial
       weightedSumOfLogs = 0,
       minimum = Double.PositiveInfinity,
       maximum = Double.NegativeInfinity,
-      mode = 0,
+      mode = Double.NaN,
       weightAtMode = 0,
       totalWeight = 0,
       count = 0)
@@ -135,16 +143,20 @@ class NumericalStatistics(dataWeightPairs: RDD[(Double, Double)]) extends Serial
     val mean = weightedMean
     val stddev = weightedStandardDeviation
 
-    val accumulatorParam = new SecondPassStatisticsAccumulatorParam()
+    if (stddev != 0) {
+      val accumulatorParam = new SecondPassStatisticsAccumulatorParam()
+      val initialValue = new SecondPassStatistics(0, 0)
+      val accumulator = dataWeightPairs.sparkContext.accumulator[SecondPassStatistics](initialValue)(accumulatorParam)
 
-    val initialValue = new SecondPassStatistics(0, 0)
+      dataWeightPairs.filter(distributionUtils.hasPositiveWeight).
+        map(x => convertDataWeightPairToSecondPassStats(x, mean, stddev)).foreach(x => accumulator.add(x))
 
-    val accumulator = dataWeightPairs.sparkContext.accumulator[SecondPassStatistics](initialValue)(accumulatorParam)
+      accumulator.value
+    } else {
+      SecondPassStatistics(Double.NaN, Double.NaN)
+    }
 
-    dataWeightPairs.filter(distributionUtils.hasPositiveWeight).
-      map(x => convertDataWeightPairToSecondPassStats(x, mean, stddev)).foreach(x => accumulator.add(x))
 
-    accumulator.value
   }
 
   private def convertDataWeightPairToFirstPassStats(p: (Double, Double)): FirstPassStatistics = {
@@ -169,8 +181,8 @@ class NumericalStatistics(dataWeightPairs: RDD[(Double, Double)]) extends Serial
     val x = p._1
     val w = p._2
 
-    val thirdWeighted = Math.pow(w, 1.5) * Math.pow((x - mean) / stddev, 3)
-    val fourthWeighted = Math.pow(w, 2) * Math.pow((x - mean) / stddev, 4)
+    val thirdWeighted = if (stddev != 0) Math.pow(w, 1.5) * Math.pow((x - mean) / stddev, 3) else Double.NaN
+    val fourthWeighted =if (stddev != 0) Math.pow(w, 2) * Math.pow((x - mean) / stddev, 4) else Double.NaN
     SecondPassStatistics(sumOfThirdWeighted = thirdWeighted, sumOfFourthWeighted = fourthWeighted)
   }
 }
@@ -188,22 +200,22 @@ class NumericalStatistics(dataWeightPairs: RDD[(Double, Double)]) extends Serial
  * @param totalWeight
  * @param count
  */
-case class FirstPassStatistics(mean: Double,
-                               weightedSumOfSquares: Double,
-                               weightedSumOfSquaredDistancesFromMean: Double,
-                               weightedSumOfLogs: Double,
-                               minimum: Double,
-                               maximum: Double,
-                               mode: Double,
-                               weightAtMode: Double,
-                               totalWeight: Double,
-                               count: Long)
+private case class FirstPassStatistics(mean: Double,
+                                       weightedSumOfSquares: Double,
+                                       weightedSumOfSquaredDistancesFromMean: Double,
+                                       weightedSumOfLogs: Double,
+                                       minimum: Double,
+                                       maximum: Double,
+                                       mode: Double,
+                                       weightAtMode: Double,
+                                       totalWeight: Double,
+                                       count: Long)
     extends Serializable
 
 /**
  * Accumulator settings for gathering single pass statistics.
  */
-class FirstPassStatisticsAccumulatorParam extends AccumulatorParam[FirstPassStatistics] with Serializable {
+private class FirstPassStatisticsAccumulatorParam extends AccumulatorParam[FirstPassStatistics] with Serializable {
 
   override def zero(initialValue: FirstPassStatistics) =
     FirstPassStatistics(mean = 0,
@@ -212,7 +224,7 @@ class FirstPassStatisticsAccumulatorParam extends AccumulatorParam[FirstPassStat
       weightedSumOfLogs = 0,
       minimum = Double.PositiveInfinity,
       maximum = Double.NegativeInfinity,
-      mode = 0,
+      mode = Double.NaN,
       weightAtMode = 0,
       totalWeight = 0,
       count = 0)
@@ -220,7 +232,8 @@ class FirstPassStatisticsAccumulatorParam extends AccumulatorParam[FirstPassStat
   override def addInPlace(stats1: FirstPassStatistics, stats2: FirstPassStatistics): FirstPassStatistics = {
 
     val totalWeight = stats1.totalWeight + stats2.totalWeight
-    val mean = (stats1.mean * stats1.totalWeight + stats2.mean * stats2.totalWeight) / totalWeight
+    val mean =
+      if (totalWeight > 0) (stats1.mean * stats1.totalWeight + stats2.mean * stats2.totalWeight) / totalWeight else 0
 
     val weightedSumOfSquares = stats1.weightedSumOfSquares + stats2.weightedSumOfSquares
 
@@ -251,13 +264,18 @@ class FirstPassStatisticsAccumulatorParam extends AccumulatorParam[FirstPassStat
 /**
  * Second pass statistics - for computing higher moments from the mean.
  *
- * @param sumOfThirdWeighted  dataWeightPairs.map({case (x, w) => Math.pow(w, 1.5) * Math.pow((x - xw) / sw, 3)
- * }).reduce(_ + _)
- * @param sumOfFourthWeighted dataWeightPairs.map({ case (x, w) => Math.pow(w, 2) * Math.pow(((x - xw) / sw), 4) }).reduce(_ + _)
+ * In the notation of:
+ * http://support.sas.com/documentation/cdl/en/procstat/63104/HTML/default/viewer.htm#procstat_univariate_sect026.htm
+ *
+ * xw : the weighted mean of the data
+ * sw: the weighted standard deviation of the data
+ *
+ * @param sumOfThirdWeighted  Sum over data-weight pairs (x, w) of  Math.pow(w, 1.5) * Math.pow((x - xw) / sw, 3)
+ * @param sumOfFourthWeighted Sum over data-weight pairs (x, w) of Math.pow(w, 2) * Math.pow(((x - xw) / sw), 4) })
  */
-case class SecondPassStatistics(sumOfThirdWeighted: Double, sumOfFourthWeighted: Double) extends Serializable
+private case class SecondPassStatistics(sumOfThirdWeighted: Double, sumOfFourthWeighted: Double) extends Serializable
 
-class SecondPassStatisticsAccumulatorParam() extends AccumulatorParam[SecondPassStatistics] with Serializable {
+private class SecondPassStatisticsAccumulatorParam() extends AccumulatorParam[SecondPassStatistics] with Serializable {
 
   override def zero(initialValue: SecondPassStatistics) = SecondPassStatistics(0, 0)
 
@@ -269,5 +287,4 @@ class SecondPassStatisticsAccumulatorParam() extends AccumulatorParam[SecondPass
 
     SecondPassStatistics(sumOfThirdWeighted = sumOfThirdWeighted, sumOfFourthWeighted = sumOfFourthWeighted)
   }
-
 }
