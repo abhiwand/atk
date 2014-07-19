@@ -4,6 +4,8 @@ import org.apache.spark.rdd.RDD
 import com.intel.intelanalytics.engine.Rows._
 import com.intel.intelanalytics.domain.frame.{ ColumnMedianReturn, ColumnModeReturn, ColumnFullStatisticsReturn, ColumnSummaryStatisticsReturn }
 import com.intel.intelanalytics.engine.spark.frame.FrameRDDFunctions
+import spray.json._
+import DefaultJsonProtocol._
 
 private[spark] object ColumnStatistics extends Serializable {
 
@@ -27,7 +29,7 @@ private[spark] object ColumnStatistics extends Serializable {
 
     val frequencyStatistics = new FrequencyStatistics(dataWeightPairs, "no items found")
 
-    ColumnModeReturn(frequencyStatistics.mode, frequencyStatistics.weightOfMode, frequencyStatistics.totalWeight)
+    ColumnModeReturn(frequencyStatistics.mode.toJson, frequencyStatistics.weightOfMode, frequencyStatistics.totalWeight)
   }
 
   /**

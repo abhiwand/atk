@@ -51,9 +51,9 @@ case class ColumnSummaryStatistics(frame: FrameReference, data_column: String, w
  * @param mode A mode of the data; that is, an item with the greatest weight (largest frequency).
  *             Ties resolved arbitrarily. NaN when there are no data elements of positive weight.
  * @param minimum Minimum value in the data. Positive infinity when there are no data elements of positive
-                 weight.
+ * weight.
  * @param maximum Maximum value in the data. Negative infinity when there are no data elements of positive
-                  weight.
+ * weight.
  * @param mean_confidence_lower: Lower limit of the 95% confidence interval about the mean. Assumes a Gaussian RV.
  *                             NaN when there are <= 1 data elements of positive weight.
  * @param mean_confidence_upper: Upper limit of the 95% confidence interval about the mean. Assumes a Gaussian RV.
