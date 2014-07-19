@@ -36,46 +36,54 @@ class OrderStatistics[T: ClassTag](dataWeightPairs: RDD[(T, Double)])(implicit o
     val sortedDataWeightPairs: RDD[(T, Double)] =
       dataWeightPairs.filter(distributionUtils.hasPositiveWeight).sortByKey(ascending = true)
 
-    def sumIterator(it: Iterator[(T, Double)]): Iterator[Double] =
-      if (it.nonEmpty) Iterator(it.map({ case (x, w) => w }).reduce(_ + _)) else Iterator(0)
+    val weightsOfPartitions: Array[Double] = sortedDataWeightPairs.mapPartitions(sumWeightsInPartition).collect()
 
-    val partitionWeights: Array[Double] = sortedDataWeightPairs.
-      mapPartitions(sumIterator).collect()
-
-    val totalWeight = partitionWeights.reduce(_ + _)
+    val totalWeight :Double = weightsOfPartitions.reduce(_ + _)
 
     if (totalWeight <= 0) {
       None
-    }
-    else {
+    } else {
 
-      var partitionIndexContainingMedian: Int = 0
+      // the "median partition" is the partition the contains the median
+      val (indexOfMedianPartition, weightInPrecedingPartitions) = findMedianPartition(weightsOfPartitions, totalWeight)
+      val medianPartition: Array[(T, Double)] =
+        sortedDataWeightPairs.mapPartitionsWithIndex(partitionSelector(indexOfMedianPartition), true).collect()
+
+      // now we find where the median value of the dataset resides inside the median partition
+      val weightPrecedingMedian = (totalWeight / 2) - weightInPrecedingPartitions
+      var indexOfMedian: Int = 0
       var weightSoFar: Double = 0
 
-      while (weightSoFar + partitionWeights(partitionIndexContainingMedian) < totalWeight / 2) {
-        partitionIndexContainingMedian += 1
-        weightSoFar += partitionWeights(partitionIndexContainingMedian)
+      while (weightSoFar + medianPartition(indexOfMedian)._2 < weightPrecedingMedian) {
+        weightSoFar += medianPartition(indexOfMedian)._2
+        indexOfMedian += 1
       }
 
-      def partitionSelector(index: Int, partitionIterator: Iterator[(T, Double)]): Iterator[(T, Double)] = {
-        if (index == partitionIndexContainingMedian) partitionIterator else Iterator[(T, Double)]()
-      }
-
-      val segmentContainingMedian: Array[(T, Double)] =
-        sortedDataWeightPairs.mapPartitionsWithIndex(partitionSelector, true).collect()
-
-      val weightPrecedingMedianInSegment = (totalWeight / 2) - weightSoFar
-      var indexOfMedianInsideSegment: Int = 0
-      var weightSoFarInsideSegment: Double = 0
-
-      while (weightSoFarInsideSegment + segmentContainingMedian(indexOfMedianInsideSegment)._2
-        < weightPrecedingMedianInSegment) {
-        weightSoFarInsideSegment += segmentContainingMedian(indexOfMedianInsideSegment)._2
-        indexOfMedianInsideSegment += 1
-      }
-
-      Some(segmentContainingMedian(indexOfMedianInsideSegment)._1)
+      Some(medianPartition(indexOfMedian)._1)
     }
+  }
+
+  // Sums the weights in an individual partition of an RDD[(T, Double)] where second coordinate is "weight'
+  private def sumWeightsInPartition(it: Iterator[(T, Double)]): Iterator[Double] =
+    if (it.nonEmpty) Iterator(it.map({ case (x, w) => w }).reduce(_ + _)) else Iterator(0)
+
+  // Given a desired partition, an index of a partition and its iterator, this returns the iterator of the incoming
+  // partition if it is the descired partition, and empty iterator if it is not the desired partition.
+  private def partitionSelector(selectedPartition : Int)(index: Int, partitionIterator: Iterator[(T, Double)]):
+  Iterator[(T, Double)] = {
+    if (index == selectedPartition) partitionIterator else Iterator[(T, Double)]()
+  }
+
+  // Find the index of the partition that contains the median of the of the dataset, as well as the net weight of the
+  // partitions that precede it.
+  private def findMedianPartition(weightsOfPartitions: Array[Double], totalWeight: Double) : (Int, Double) = {
+    var currentPartition: Int = 0
+    var weightInPrecedingPartitions: Double = 0
+    while (weightInPrecedingPartitions + weightsOfPartitions(currentPartition) < totalWeight / 2) {
+      currentPartition += 1
+      weightInPrecedingPartitions += weightsOfPartitions(currentPartition)
+    }
+    (currentPartition, weightInPrecedingPartitions)
   }
 
 }
