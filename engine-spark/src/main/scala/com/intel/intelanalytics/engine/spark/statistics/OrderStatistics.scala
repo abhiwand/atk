@@ -38,11 +38,12 @@ class OrderStatistics[T: ClassTag](dataWeightPairs: RDD[(T, Double)])(implicit o
 
     val weightsOfPartitions: Array[Double] = sortedDataWeightPairs.mapPartitions(sumWeightsInPartition).collect()
 
-    val totalWeight :Double = weightsOfPartitions.reduce(_ + _)
+    val totalWeight: Double = weightsOfPartitions.reduce(_ + _)
 
     if (totalWeight <= 0) {
       None
-    } else {
+    }
+    else {
 
       // the "median partition" is the partition the contains the median
       val (indexOfMedianPartition, weightInPrecedingPartitions) = findMedianPartition(weightsOfPartitions, totalWeight)
@@ -69,14 +70,13 @@ class OrderStatistics[T: ClassTag](dataWeightPairs: RDD[(T, Double)])(implicit o
 
   // Given a desired partition, an index of a partition and its iterator, this returns the iterator of the incoming
   // partition if it is the descired partition, and empty iterator if it is not the desired partition.
-  private def partitionSelector(selectedPartition : Int)(index: Int, partitionIterator: Iterator[(T, Double)]):
-  Iterator[(T, Double)] = {
+  private def partitionSelector(selectedPartition: Int)(index: Int, partitionIterator: Iterator[(T, Double)]): Iterator[(T, Double)] = {
     if (index == selectedPartition) partitionIterator else Iterator[(T, Double)]()
   }
 
   // Find the index of the partition that contains the median of the of the dataset, as well as the net weight of the
   // partitions that precede it.
-  private def findMedianPartition(weightsOfPartitions: Array[Double], totalWeight: Double) : (Int, Double) = {
+  private def findMedianPartition(weightsOfPartitions: Array[Double], totalWeight: Double): (Int, Double) = {
     var currentPartition: Int = 0
     var weightInPrecedingPartitions: Double = 0
     while (weightInPrecedingPartitions + weightsOfPartitions(currentPartition) < totalWeight / 2) {

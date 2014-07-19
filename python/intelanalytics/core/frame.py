@@ -1069,20 +1069,22 @@ class BigFrame(CommandSupport):
         summary : Dict
             Dictionary containing summary statistics in the following entries:
                  mean : Arithmetic mean of the data.
-                 geometric_mean : Geometric mean of the data.
+                 geometric_mean : Geometric mean of the data. NaN when there is a data element <= 0,
+                 1 when there are no data elements.
                  variance : Variance of the data where weighted sum of squared distance from the mean is divided by
-                  count - 1
-                 standard_deviation : Standard deviation of the data.
+                  count - 1. NaN when there are <= 1 many data elements.
+                 standard_deviation : Standard deviation of the data. NaN when there are <= 1 many data elements.
                  mode : A mode of the data; that is, an item with the greatest weight (largest frequency).
-                  Ties are resolved arbitrarily.
-                 minimum : Minimum value in the data.
-                 maximum : Maximum value in the data.
+                  Ties are resolved arbitrarily. NaN when there are no data elements of positive weight.
+                 minimum : Minimum value in the data. Positive infinity when there are no data elements of positive
+                 weight.
+                 maximum : Maximum value in the data. Negative infinity when there are no data elements of positive
+                  weight.
                  mean_confidence_lower : Lower limit of the 95% confidence interval about the mean.
-                  Assumes a Gaussian distribution.
+                  Assumes a Gaussian distribution. NaN when there are <= 1 data elements of positive weight.
                  mean_confidence_upper: Upper limit of the 95% confidence interval about the mean.
-                  Assumes a Gaussian distribution.
-                 count : The number of entries - not necessarily distinct. Equivalently, the number of rows in the input
-                  table.
+                  Assumes a Gaussian distribution. NaN when there are <= 1 data elements of positive weight.
+                 count :The number of entries of positive weight.
 
         Examples
         --------
@@ -1110,22 +1112,28 @@ class BigFrame(CommandSupport):
         summary : Dict
             Dictionary containing summary statistics in the following entries:
                  mean : Arithmetic mean of the data.
-                 geometric_mean : Geometric mean of the data.
+                 geometric_mean : Geometric mean of the data. NaN when there is a data element <= 0,
+                 1 when there are no data elements of positive weight.
                  variance : Variance of the data where weighted sum of squared distance from the mean is divided by
-                  count - 1
-                 standard_deviation : Standard deviation of the data.
-                 skewness : The skewness of the data.
-                 kurtosis : The kurtosis of the data.
+                  count - 1. NaN when there are <= 1 many data elements.
+                 standard_deviation : Standard deviation of the data. NaN when there are <= 1 many data elements.
                  mode : A mode of the data; that is, an item with the greatest weight (largest frequency).
-                  Ties are resolved arbitrarily.
-                 minimum : Minimum value in the data.
-                 maximum : Maximum value in the data.
+                  Ties are resolved arbitrarily. NaN when there are no data elements of nonzero weight.
+                 skewness : The skewness of the data. NaN when there are <= 2 many data elements of positive weight or
+                  if the distribution is uniform.
+                 kurtosis : The kurtosis of the data. NaN when there are <= 3 many data elements of positive weight or
+                  if the distribution is uniform.
+                 mode : A mode of the data; that is, an item with the greatest weight (largest frequency).
+                  Ties are resolved arbitrarily. NaN when there are no data elements of positive weight.
+                 minimum : Minimum value in the data. Positive infinity when there are no data elements of positive
+                 weight.
+                 maximum : Maximum value in the data. Negative infinity when there are no data elements of positive
+                  weight.
                  mean_confidence_lower : Lower limit of the 95% confidence interval about the mean.
-                  Assumes a Gaussian distribution.
+                  Assumes a Gaussian distribution. NaN when there are <= 1 data elements of positive weight.
                  mean_confidence_upper: Upper limit of the 95% confidence interval about the mean.
-                  Assumes a Gaussian distribution.
-                 count : The number of entries - not necessarily distinct. Equivalently, the number of rows in the input
-                  table.
+                  Assumes a Gaussian distribution. NaN when there are <= 1 data elements of positive weight.
+                 count : The number of entries of positive weight.
 
         Examples
         --------
