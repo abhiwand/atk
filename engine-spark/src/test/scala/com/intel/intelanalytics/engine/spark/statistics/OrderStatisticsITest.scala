@@ -39,7 +39,7 @@ class OrderStatisticsITest extends TestingSparkContext with Matchers {
 
   "median" should "result in first of two uniformly weighted items" in {
 
-    val twoThings: List[Int] = List(8,9)
+    val twoThings: List[Int] = List(8, 9)
     val frequencies: List[Double] = List(0.2, 0.2).map(x => x.toDouble)
     val expectedMedian: Int = 8
 

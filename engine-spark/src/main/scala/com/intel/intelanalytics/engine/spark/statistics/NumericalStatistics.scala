@@ -32,7 +32,8 @@ class NumericalStatistics(dataWeightPairs: RDD[(Double, Double)]) extends Serial
   lazy val weightedMean: Double = singlePassStatistics.mean
 
   /**
-   * The weighted geometric mean of the data. NaN when a data element is <= 0.
+   * The weighted geometric mean of the data. NaN when a data element is <= 0,
+   * 1 when there are no data elements of positive weight.
    */
   lazy val weightedGeometricMean: Double = if (singlePassStatistics.totalWeight > 0)
     Math.exp(singlePassStatistics.weightedSumOfLogs / singlePassStatistics.totalWeight)
@@ -62,12 +63,12 @@ class NumericalStatistics(dataWeightPairs: RDD[(Double, Double)]) extends Serial
   lazy val weightedMode: Double = singlePassStatistics.mode
 
   /**
-   * The minimum value of the data. Positive infinity when there are no data elements of nonzero weight.
+   * The minimum value of the data. Positive infinity when there are no data elements of positive weight.
    */
   lazy val min: Double = singlePassStatistics.minimum
 
   /**
-   * The maximum value of the data. Negative infinity when there are no data elements of nonzero weight.
+   * The maximum value of the data. Negative infinity when there are no data elements of positive weight.
    */
   lazy val max: Double = singlePassStatistics.maximum
 
@@ -78,14 +79,14 @@ class NumericalStatistics(dataWeightPairs: RDD[(Double, Double)]) extends Serial
 
   /**
    * The lower limit of the 95% confidence interval about the mean. (Assumes that the distribution is normal.)
-   * NaN when there are <= 1 data elements of nonzero weight.
+   * NaN when there are <= 1 data elements of positive weight.
    */
   lazy val meanConfidenceLower: Double =
     if (count > 1) weightedMean - (1.96) * (weightedStandardDeviation / Math.sqrt(count)) else Double.NaN
 
   /**
    * The lower limit of the 95% confidence interval about the mean. (Assumes that the distribution is normal.)
-   * NaN when there are <= 1 data elements of nonzero weight.
+   * NaN when there are <= 1 data elements of positive weight.
    */
   lazy val meanConfidenceUpper: Double =
     if (count > 1) weightedMean + (1.96) * (weightedStandardDeviation / Math.sqrt(count)) else Double.NaN

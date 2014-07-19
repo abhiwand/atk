@@ -36,22 +36,34 @@ case class ColumnFullStatistics(frame: FrameReference, data_column: String, weig
 }
 
 /**
- * Satistics for a numerical dataframe column. All values are optionally weighted by a second column.
+ * Statistics for a dataframe column. All values are optionally weighted by a second column. If no weights are
+ * provided, all elements receive a uniform weight of 1. If any element receives a weight <= 0, that element is thrown
+ * out of the calculation.
  *
  * Values follow default settings specified by SAS
  * http://support.sas.com/documentation/cdl/en/procstat/63104/HTML/default/viewer.htm#procstat_univariate_sect026.htm
  * @param mean Arithmetic mean of the data.
- * @param geometric_mean Geometric mean of the data.
- * @param variance Variance of the data where weighted sum of squared distance from the mean is divided by count - 1
- * @param standard_deviation Standard deviation of the data.
- * @param skewness The skewness of the data.
- * @param kurtosis The kurtosis of the data.
+ * @param geometric_mean Geometric mean of the data. NaN when there is a non-positive data element, 1 if there are no
+ *                       data elements.
+ * @param variance Variance of the data where weighted sum of squared distance from the mean is divided by the number of
+ *                 data elements minus 1. NaN when the number of data elements is < 2.
+ * @param standard_deviation Standard deviation of the data. NaN when the number of data elements is < 2.
+ * @param skewness The skewness of the data. NaN when the number of data elements is < 3
+ *                 or if the distribution is uniform.
+ * @param kurtosis The kurtosis of the data. NaN when the number of data elements is < 4
+ *                 or if the distribution is uniform.
  * @param mode A mode of the data; that is, an item with the greatest weight (largest frequency). Ties resolved arbitrarily.
- * @param minimum Minimum value in the data.
- * @param maximum Maximum value in the data.
+ *             NaN when there are no data elements of positive weight.
+ * @param minimum Minimum value in the data. Positive infinity when there are no data elements of positive
+                 weight.
+ * @param maximum Maximum value in the data. Negative infinity when there are no data elements of positive
+                  weight.
  * @param mean_confidence_lower: Lower limit of the 95% confidence interval about the mean. Assumes a Gaussian RV.
+ *                             NaN when there are <= 1 data elements of positive weight.
  * @param mean_confidence_upper: Upper limit of the 95% confidence interval about the mean. Assumes a Gaussian RV.
- * @param count The number of entries - not necessarily distinct. Equivalently, the number of rows in the input table.
+ *                              NaN when there are <= 1 data elements of positive weight.
+ * @param count The number data elements. Because elements of non-positive weight are discarded,
+ *              this is the count of all elements with positive weight, not necessarily the count of rows in the column.
  */
 case class ColumnFullStatisticsReturn(mean: Double,
                                       geometric_mean: Double,
