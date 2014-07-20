@@ -94,7 +94,7 @@ object NetflixExampleDriver {
     val inputRdd = inputRows.map(row => row.split(","): Seq[_])
 
     // Build the Graph
-    val config = new GraphBuilderConfig(inputSchema, vertexRules, edgeRules, titanConfig, biDirectional = false, append = false, broadcastVertexIds = false)
+    val config = new GraphBuilderConfig(inputSchema, vertexRules, edgeRules, titanConfig, append = false, broadcastVertexIds = false)
     val gb = new GraphBuilder(config)
     gb.build(inputRdd)
 
