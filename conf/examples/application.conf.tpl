@@ -41,7 +41,7 @@ intel.analytics {
       #
       # If running in local mode, this might be a better choice:
       # root = ${user.home}
-      root = "hdfs://master/user/hadoop"
+      root = "hdfs://localhost/user/iauser"
     }
 
     spark {
@@ -162,7 +162,7 @@ intel.analytics {
         storage {
           //backend = "hbase"
           # with clusters the hostname should be a comma separated list of host names with zookeeper role assigned
-          //hostname = "master"
+          //hostname = "localhost"
           //port = "2181"
           //batch-loading = "true"
           //buffer-size = 2048
