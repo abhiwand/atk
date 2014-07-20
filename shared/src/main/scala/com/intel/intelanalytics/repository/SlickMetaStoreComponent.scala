@@ -34,8 +34,9 @@ import org.joda.time.DateTime
 import scala.slick.driver.{ JdbcDriver, JdbcProfile }
 import org.flywaydb.core.Flyway
 import spray.json._
-
 import scala.util.Try
+import com.intel.intelanalytics.security.UserPrincipal
+import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 import com.intel.intelanalytics.engine.ProgressInfo
 import com.intel.intelanalytics.engine.ProgressInfo
 import scala.Some
@@ -160,7 +161,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
 
     override lazy val graphRepo: Repository[Session, GraphTemplate, Graph] = new SlickGraphRepository
 
-    override lazy val frameRepo: Repository[Session, DataFrameTemplate, DataFrame] = new SlickFrameRepository
+    override lazy val frameRepo: FrameRepository[Session] = new SlickFrameRepository
 
     /** Repository for CRUD on 'command' table */
     override lazy val commandRepo: CommandRepository[Session] = new SlickCommandRepository
@@ -337,9 +338,10 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
    *
    * Provides methods for modifying and querying the frame table.
    */
-  class SlickFrameRepository extends Repository[Session, DataFrameTemplate, DataFrame]
+  class SlickFrameRepository extends FrameRepository[Session]
       with EventLogging {
     this: Repository[Session, DataFrameTemplate, DataFrame] =>
+    type Session = msc.Session
 
     /**
      * A slick implementation of the 'Frame' table that defines
@@ -399,6 +401,13 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
       updatedFrame
     }
 
+    override def updateSchema(frame: DataFrame, columns: List[(String, DataType)])(implicit session: Session): DataFrame = {
+      val newSchema = frame.schema.copy(columns = columns)
+      val updatedFrame = frame.copy(schema = newSchema, modifiedOn = new DateTime)
+      frames.where(_.id === frame.id).update(updatedFrame)
+      updatedFrame
+    }
+
     override def insert(frame: DataFrameTemplate)(implicit session: Session): Try[DataFrame] = Try {
       _insertFrame(frame)(session)
     }
@@ -423,7 +432,6 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
     def dropTable()(implicit session: Session) = {
       frames.ddl.drop
     }
-
   }
 
   /**

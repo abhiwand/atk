@@ -29,7 +29,8 @@ package com.intel.intelanalytics.domain.graph.construction
  * @param value If a constant, the value taken. If a varying, the name of the column from which the data is parsed.
  */
 case class ValueRule(source: String, value: String) {
-  require(source.equals(GBValueSourcing.CONSTANT) || source.equals(GBValueSourcing.VARYING))
-  require(value != null)
+  require(source.equals(GBValueSourcing.CONSTANT) || source.equals(GBValueSourcing.VARYING),
+    s"source must be one of (${GBValueSourcing.CONSTANT}, ${GBValueSourcing.VARYING})")
+  require(value != null, "value must not be null")
 }
 

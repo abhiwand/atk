@@ -28,6 +28,7 @@ package com.intel.intelanalytics.domain.graph
  * @param name The user's name for the graph.
  */
 case class GraphTemplate(name: String) {
-  require(name != null)
-  require(name.trim.length > 0)
+  require(name != null, "name must not be null")
+  require(name.trim.length > 0, "name must not be empty or whitespace")
+
 }
