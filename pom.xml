@@ -196,6 +196,7 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 <module>engine</module>
                 <module>engine-spark</module><!-- scoverage -->
                 <module>api-server</module>
+		<module>conf</module>
                 <module>imahout</module>
                 <module>igiraph/giraph-core</module>
                 <module>igiraph/giraph-algorithms</module>
@@ -709,13 +710,11 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 <groupId>com.intel.ia</groupId>
                 <artifactId>engine</artifactId>
                 <version>${project.version}</version>
-                <scope>provided</scope>
             </dependency>
             <dependency>
                 <groupId>com.intel.ia</groupId>
                 <artifactId>engine-spark</artifactId>
                 <version>${project.version}</version>
-                <scope>provided</scope>
             </dependency>
             <dependency>
                 <groupId>com.intel.ia</groupId>
