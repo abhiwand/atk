@@ -92,5 +92,5 @@ pushd $SCRIPTPATH/tarballs/$package
 tar -pczf ../../$package-source.tar.gz .
 
 popd
-scp -o  ProxyCommand="nc -x  proxy-socks.jf.intel.com:1080 %h %p" -i ~/.ssh/IntelAnalytics_Adm.pem $package-source.tar.gz ec2-user@ec2-54-191-64-17.us-west-2.compute.amazonaws.com:~
+
 #rm -rf tarballs
