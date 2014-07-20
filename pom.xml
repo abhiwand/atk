@@ -242,7 +242,7 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                                                 The -Yrangepos flag was causing issues with a ScalaTest in imllib.
                                                 It is needed for scoverage but hopefully not needed here.
                                              -->
-                                            <!--arg>-Yrangepos</arg-->
+                                            <arg>-Yrangepos</arg>
                                         </args>
                                     </configuration>
                                 </execution>
