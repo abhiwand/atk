@@ -1,3 +1,7 @@
+spray.can.server {
+  request-timeout = 29s
+}
+
 intel.analytics {
   api {
       //identifier = "ia"
@@ -28,7 +32,7 @@ intel.analytics {
 	
 	engine {
 	
-	//default-timeout = 30
+	default-timeout = 30
     //max-rows = 20
 	
     fs {
