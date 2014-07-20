@@ -31,8 +31,8 @@ intel.analytics {
     
 	
 	engine {
-	
-	default-timeout = 30
+	defaultTimeout = 30
+
     //max-rows = 20
 	
     fs {
