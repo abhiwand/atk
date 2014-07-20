@@ -8,10 +8,29 @@ intel.analytics {
       //defaultCount = 20
       //defaultTimeout = 30
     }
+	
+	metastore {
+		connection {
+		  // H2 is a in-memory Java database useful for testing
+		  url = "jdbc:h2:mem:iatest;DB_CLOSE_DELAY=-1"
+		  driver = "org.h2.Driver"
+		  username = "" // leave blank, no user or password is needed for H2
+		  password = "" // leave blank, no user or password is needed for H2
 
-    //default-timeout = 30
+		  // PostgreSQL is an open source database that comes with Cloudera
+		  //url = "jdbc:postgresql://localhost:5432/metastore"
+		  //driver = "org.postgresql.Driver"
+		  //username = "metastore"
+		  //password = "Tribeca123"
+		}
+	}
+    
+	
+	engine {
+	
+	//default-timeout = 30
     //max-rows = 20
-
+	
     fs {
       # the system will create an "intelanalytics" folder at this location, if set,
       # or at the root of the filesystem, if not. All Intel Analytics Toolkit files will
