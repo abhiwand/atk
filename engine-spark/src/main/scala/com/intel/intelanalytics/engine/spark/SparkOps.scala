@@ -778,7 +778,7 @@ private[spark] object SparkOps extends Serializable {
     val addPercentileComposingElement = (position: Long, percentile: Int, weight: BigDecimal) => {
       //element starts from 1. therefore X0 equals X1
       if (weight > 0)
-        result += PercentileComposingElement(if(position != 0) position else 1, PercentileTarget(percentile, weight))
+        result += PercentileComposingElement(if (position != 0) position else 1, PercentileTarget(percentile, weight))
     }
 
     addPercentileComposingElement(integerPosition, percentile, 1 - fractionPosition)
