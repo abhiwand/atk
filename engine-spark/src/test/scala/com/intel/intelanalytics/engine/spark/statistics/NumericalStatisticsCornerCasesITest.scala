@@ -4,6 +4,7 @@ import com.intel.intelanalytics.engine.TestingSparkContext
 import org.scalatest.Matchers
 import org.scalatest.Assertions
 import org.scalacheck.Prop.True
+import com.intel.intelanalytics.engine.spark.statistics.numericalstatistics.NumericalStatistics
 
 class NumericalStatisticsCornerCasesITest extends TestingSparkContext with Matchers {
 
