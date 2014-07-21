@@ -31,6 +31,13 @@ private[numericalstatistics] object SecondPassStatistics {
 
   private val distributionUtils = new DistributionUtils[Double]
 
+  /**
+   * Calculate the second pass statistics for a distribution -- given its mean and standard deviation.
+   * @param dataWeightPairs The (data, weight) pairs of the distribution.
+   * @param mean The mean of the distribution.
+   * @param stddev The standard deviation of the distribution.
+   * @return Second-pass statistics.
+   */
   def generateSecondPassStatistics(dataWeightPairs: RDD[(Double, Double)], mean: Double, stddev: Double): SecondPassStatistics = {
 
     if (stddev != 0) {
