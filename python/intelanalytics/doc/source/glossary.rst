@@ -35,7 +35,7 @@ Glossary
     Alternating Least Squares
 
         The "Alternating Least Squares with Bias for collaborative filtering algorithms" is an algorithm used by the
-        Intel Data Platform: Analytics Toolkit.
+        Intel Analytics Toolkit.
 
         For more information see:
 
@@ -172,8 +172,7 @@ Glossary
 
     Conjugate Gradient Descent
 
-        The "Congugate Gradient Descent with Bias for Collaborative Filtering algorithm is an algorithm used by the Intel Data Platform:
-        Analytics Toolkit.
+        The "Congugate Gradient Descent with Bias for Collaborative Filtering algorithm is an algorithm used by the Intel Analytics Toolkit.
 
         For more information: `Factorization Meets the Neighborhood (pdf)`_ (see equation 5).
 
@@ -209,6 +208,12 @@ Glossary
         An edge can be uniquely identified from its source, destination, and label.
 
         For more information see: :term:`Vertex`, and `Tinkerpop\: Property Graph Model`_.
+
+    EqualDepth
+    EqualWidth
+    Equal Depth Binning
+
+        TBD
 
     ETL
     
@@ -247,21 +252,26 @@ Glossary
 
         A table database with rows and columns containing data.
 
+    GaBP
+    Gaussian Belief Propagation
+
+        Gaussian belief propagation is a variant of the belief propagation algorithm when the underlying distributions are Gaussian.
+        The first work analyzing this special model was the seminal work of Weiss and Freeman [#f11]_ .
+
     Gaussian Random Fields
 
         From `Wikipedia\: Gaussian Random Fields`_:
 
-            A Gaussian random field (GRF) is a random field involving Gaussian probability density functions of the variables.
-            A one-dimensional GRF is also called a Gaussian process.
+        A Gaussian random field (GRF) is a random field involving Gaussian probability density functions of the variables.
+        A one-dimensional GRF is also called a Gaussian process.
 
-        \ 
-            One way of constructing a GRF is by assuming that the field is the sum of a large number of plane, cylindrical, or
-            spherical waves with uniformly distributed random phase.
-            Where applicable, the central limit theorem dictates that at any point, the sum of these individual plane-wave
-            contributions will exhibit a Gaussian distribution.
-            This type of GRF is completely described by its power spectral density, and hence, through the Wiener-Khinchin theorem,
-            by its two-point autocorrelation function, which is related to the power spectral density through a Fourier transformation.
-            For details on the generation of Gaussian random fields using Matlab, see the circulant embedding method for Gaussian random field.
+        One way of constructing a GRF is by assuming that the field is the sum of a large number of plane, cylindrical, or
+        spherical waves with uniformly distributed random phase.
+        Where applicable, the central limit theorem dictates that at any point, the sum of these individual plane-wave
+        contributions will exhibit a Gaussian distribution.
+        This type of GRF is completely described by its power spectral density, and hence, through the Wiener-Khinchin theorem,
+        by its two-point autocorrelation function, which is related to the power spectral density through a Fourier transformation.
+        For details on the generation of Gaussian random fields using Matlab, see the circulant embedding method for Gaussian random field.
 
     Graph
 
@@ -469,6 +479,14 @@ Glossary
 
         For more information see: `Tinkerpop\: Property Graph Model`_.
 
+    PUF
+    Python User Function
+    Python User Function (PUF)
+
+        A Python User Function (PUF) is a python function written by the user on the client-side which can execute in a distributed fashion
+        on the cluster.
+        For further explanation, see :doc:`ds_apir`
+
     Recommendation Systems
 
         From `Wikipedia\: Recommender System`_:
@@ -675,3 +693,4 @@ Glossary
 .. [#f8] Katz, L. (1953). A New Status Index Derived from Sociometric Index. Psychometrika, 39-43.
 .. [#f9] Hanneman, R. A., & Riddle, M. (2005). `Introduction to Social Network Methods`_.
 .. [#f10] Newman, M.E.J. 2010. Networks: An Introduction. Oxford, UK: Oxford University Press.
+.. [#f11] Weiss, Yair; Freeman, William T. (October 2001). "Correctness of Belief Propagation in Gaussian Graphical Models of Arbitrary Topology". Neural Computation 13 (10): 2173–2200. doi:10.1162/089976601750541769. PMID 11570995.

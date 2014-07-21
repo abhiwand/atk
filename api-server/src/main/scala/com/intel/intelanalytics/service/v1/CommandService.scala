@@ -47,6 +47,7 @@ import com.intel.intelanalytics.domain.command.{ Execution, CommandTemplate, Com
 import com.intel.intelanalytics.shared.EventLogging
 import com.intel.intelanalytics.service.{ ApiServiceConfig, UrlParser, CommonDirectives, AuthenticationDirective }
 import com.intel.intelanalytics.service.v1.decorators.CommandDecorator
+import com.intel.intelanalytics.spray.json.IADefaultJsonProtocol
 
 //TODO: Is this right execution context for us?
 
@@ -92,7 +93,7 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
         pathPrefix("commands") {
           path("definitions") {
             get {
-              import DefaultJsonProtocol.listFormat
+              import IADefaultJsonProtocol.listFormat
               import DomainJsonProtocol.commandDefinitionFormat
               complete(engine.getCommandDefinitions().toList)
             }
@@ -234,7 +235,7 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
 
           val graphLoad = GraphLoad(GraphReference(graphID),
             args.frame_rules,
-            args.retain_dangling_edges)
+            args.append)
           val exec = engine.loadGraph(graphLoad)
           complete(decorate(uri + "/" + exec.start.id, exec.start))
         }

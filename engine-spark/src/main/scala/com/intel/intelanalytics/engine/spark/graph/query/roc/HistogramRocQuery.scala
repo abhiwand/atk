@@ -55,7 +55,6 @@ case class HistogramRocParams(graph: GraphReference,
                               split_types: Option[List[String]],
                               histogram_buckets: Option[Int]) {
   require(roc_threshold == None || roc_threshold.get.size == 3, "Please input roc_threshold using [min, step, max] format")
-  //require(enable_roc == None || (enable_roc.get && posterior_property_list == None), "Please input posterior_property_list to compute ROC curves")
 }
 
 /**
@@ -83,7 +82,7 @@ class HistogramRocQuery extends SparkCommandPlugin[HistogramRocParams, Histogram
     import scala.concurrent.duration._
 
     System.out.println("*********In Execute method of Histogram ROC query********")
-    val config = configuration().get
+    val config = configuration
     val graphFuture = invocation.engine.getGraph(arguments.graph.id)
     val graph = Await.result(graphFuture, config.getInt("default-timeout") seconds)
 
