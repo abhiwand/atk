@@ -34,113 +34,6 @@ import org.apache.spark.rdd.RDD
 private[spark] object CumulativeDistFunctions extends Serializable {
 
   /**
-   * Compute the sum for each partition in RDD
-   *
-   * @param rdd the input RDD
-   * @return an Array[Double] that contains the partition sums
-   */
-  def partitionSums(rdd: RDD[(String, Double)]): Array[Double] = {
-    0.0 +: rdd.mapPartitionsWithIndex {
-      case (index, partition) => Iterator(partition.map(pair => pair._2).sum)
-    }.collect()
-  }
-
-  /**
-   * Compute the cumulative sums across partitions
-   *
-   * @param rdd the input RDD
-   * @param partSums the sums for each partition
-   * @return RDD of (value, cumulativeSum)
-   */
-  def totalPartitionSums(rdd: RDD[(String, Double)], partSums: Array[Double]): RDD[(String, Double)] = {
-    rdd.mapPartitionsWithIndex {
-      case (index, partition) => {
-        var startValue = 0.0
-        for (i <- 0 to index) {
-          startValue += partSums(i)
-        }
-        // startValue updated, so drop first value
-        partition.scanLeft(("", startValue))((prev, curr) => (curr._1, prev._2 + curr._2)).drop(1)
-      }
-    }
-  }
-
-  /**
-   * Compute the cumulative counts across partitions
-   *
-   * @param rdd the input RDD
-   * @param partSums the counts for each partition
-   * @return RDD of (value, cumulativeCount)
-   */
-  def totalPartitionCounts(rdd: RDD[(String, Double)], partSums: Array[Double]): RDD[(String, Double)] = {
-    rdd.mapPartitionsWithIndex {
-      case (index, partition) => {
-        var startValue = 0.0
-        for (i <- 0 to index) {
-          startValue += partSums(i)
-        }
-        partition.scanLeft(("", startValue))((prev, curr) => (curr._1, prev._2 + curr._2)).drop(1)
-      }
-    }
-  }
-
-  /**
-   * Casts the input data types back to the original input type
-   *
-   * @param rdd the RDD containing (value, cumulativeDistValue)
-   * @param dataType data type for the original input column
-   * @return RDD containing Array[Any] (i.e., Rows)
-   */
-  def revertTypes(rdd: RDD[(String, Double)], dataType: String): RDD[Array[Any]] = {
-    rdd.map {
-      case (value, valueSum) => {
-        dataType match {
-          case "int32" => Array(value.toInt.asInstanceOf[Any], valueSum.asInstanceOf[Any])
-          case "int64" => Array(value.toLong.asInstanceOf[Any], valueSum.asInstanceOf[Any])
-          case "float32" => Array(value.toFloat.asInstanceOf[Any], valueSum.asInstanceOf[Any])
-          case "float64" => Array(value.toDouble.asInstanceOf[Any], valueSum.asInstanceOf[Any])
-          case _ => Array(value.asInstanceOf[Any], valueSum.asInstanceOf[Any])
-        }
-      }
-    }
-  }
-
-  /**
-   * Casts the input data types for cumulative percents back to the original input type.  This includes check for
-   * divide-by-zero error.
-   *
-   * @param rdd the RDD containing (value, cumulativeDistValue)
-   * @param dataType data type for the original input column
-   * @return RDD containing Array[Any] (i.e., Rows)
-   */
-  def revertPercentTypes(rdd: RDD[(String, Double)], dataType: String, numValues: Double): RDD[Array[Any]] = {
-    rdd.map {
-      case (value, valueSum) => {
-        numValues match {
-          case 0 => {
-            dataType match {
-              case "int32" => Array(value.toInt.asInstanceOf[Any], 1.asInstanceOf[Any])
-              case "int64" => Array(value.toLong.asInstanceOf[Any], 1.asInstanceOf[Any])
-              case "float32" => Array(value.toFloat.asInstanceOf[Any], 1.asInstanceOf[Any])
-              case "float64" => Array(value.toDouble.asInstanceOf[Any], 1.asInstanceOf[Any])
-              case _ => Array(value, 1.asInstanceOf[Any])
-            }
-          }
-          case _ => {
-            dataType match {
-              case "int32" => Array(value.toInt.asInstanceOf[Any], (valueSum / numValues).asInstanceOf[Any])
-              case "int64" => Array(value.toLong.asInstanceOf[Any], (valueSum / numValues).asInstanceOf[Any])
-              case "float32" => Array(value.toFloat.asInstanceOf[Any], (valueSum / numValues).asInstanceOf[Any])
-              case "float64" => Array(value.toDouble.asInstanceOf[Any], (valueSum / numValues).asInstanceOf[Any])
-              case _ => Array(value, (valueSum / numValues).asInstanceOf[Any])
-            }
-          }
-        }
-      }
-    }
-  }
-
-  /**
    * Compute the cumulative sum of the input frameRdd for the specified column index
    *
    * @param frameRdd input frame RDD
@@ -255,6 +148,113 @@ private[spark] object CumulativeDistFunctions extends Serializable {
     val cumulativeCounts = totalPartitionCounts(pairedRdd, partSums)
 
     revertPercentTypes(cumulativeCounts, dataType, numValues)
+  }
+
+  /**
+   * Compute the sum for each partition in RDD
+   *
+   * @param rdd the input RDD
+   * @return an Array[Double] that contains the partition sums
+   */
+  private def partitionSums(rdd: RDD[(String, Double)]): Array[Double] = {
+    0.0 +: rdd.mapPartitionsWithIndex {
+      case (index, partition) => Iterator(partition.map(pair => pair._2).sum)
+    }.collect()
+  }
+
+  /**
+   * Compute the cumulative sums across partitions
+   *
+   * @param rdd the input RDD
+   * @param partSums the sums for each partition
+   * @return RDD of (value, cumulativeSum)
+   */
+  private def totalPartitionSums(rdd: RDD[(String, Double)], partSums: Array[Double]): RDD[(String, Double)] = {
+    rdd.mapPartitionsWithIndex {
+      case (index, partition) => {
+        var startValue = 0.0
+        for (i <- 0 to index) {
+          startValue += partSums(i)
+        }
+        // startValue updated, so drop first value
+        partition.scanLeft(("", startValue))((prev, curr) => (curr._1, prev._2 + curr._2)).drop(1)
+      }
+    }
+  }
+
+  /**
+   * Compute the cumulative counts across partitions
+   *
+   * @param rdd the input RDD
+   * @param partSums the counts for each partition
+   * @return RDD of (value, cumulativeCount)
+   */
+  private def totalPartitionCounts(rdd: RDD[(String, Double)], partSums: Array[Double]): RDD[(String, Double)] = {
+    rdd.mapPartitionsWithIndex {
+      case (index, partition) => {
+        var startValue = 0.0
+        for (i <- 0 to index) {
+          startValue += partSums(i)
+        }
+        partition.scanLeft(("", startValue))((prev, curr) => (curr._1, prev._2 + curr._2)).drop(1)
+      }
+    }
+  }
+
+  /**
+   * Casts the input data types back to the original input type
+   *
+   * @param rdd the RDD containing (value, cumulativeDistValue)
+   * @param dataType data type for the original input column
+   * @return RDD containing Array[Any] (i.e., Rows)
+   */
+  private def revertTypes(rdd: RDD[(String, Double)], dataType: String): RDD[Array[Any]] = {
+    rdd.map {
+      case (value, valueSum) => {
+        dataType match {
+          case "int32" => Array(value.toInt.asInstanceOf[Any], valueSum.asInstanceOf[Any])
+          case "int64" => Array(value.toLong.asInstanceOf[Any], valueSum.asInstanceOf[Any])
+          case "float32" => Array(value.toFloat.asInstanceOf[Any], valueSum.asInstanceOf[Any])
+          case "float64" => Array(value.toDouble.asInstanceOf[Any], valueSum.asInstanceOf[Any])
+          case _ => Array(value.asInstanceOf[Any], valueSum.asInstanceOf[Any])
+        }
+      }
+    }
+  }
+
+  /**
+   * Casts the input data types for cumulative percents back to the original input type.  This includes check for
+   * divide-by-zero error.
+   *
+   * @param rdd the RDD containing (value, cumulativeDistValue)
+   * @param dataType data type for the original input column
+   * @return RDD containing Array[Any] (i.e., Rows)
+   */
+  private def revertPercentTypes(rdd: RDD[(String, Double)], dataType: String, numValues: Double): RDD[Array[Any]] = {
+    rdd.map {
+      case (value, valueSum) => {
+        numValues match {
+          case 0 => {
+            dataType match {
+              case "int32" => Array(value.toInt.asInstanceOf[Any], 1.asInstanceOf[Any])
+              case "int64" => Array(value.toLong.asInstanceOf[Any], 1.asInstanceOf[Any])
+              case "float32" => Array(value.toFloat.asInstanceOf[Any], 1.asInstanceOf[Any])
+              case "float64" => Array(value.toDouble.asInstanceOf[Any], 1.asInstanceOf[Any])
+              case _ => Array(value, 1.asInstanceOf[Any])
+            }
+          }
+          case _ => {
+            dataType match {
+              case "int32" => Array(value.toInt.asInstanceOf[Any], (valueSum / numValues).asInstanceOf[Any])
+              case "int64" => Array(value.toLong.asInstanceOf[Any], (valueSum / numValues).asInstanceOf[Any])
+              case "float32" => Array(value.toFloat.asInstanceOf[Any], (valueSum / numValues).asInstanceOf[Any])
+              case "float64" => Array(value.toDouble.asInstanceOf[Any], (valueSum / numValues).asInstanceOf[Any])
+              case _ => Array(value, (valueSum / numValues).asInstanceOf[Any])
+            }
+          }
+        }
+      }
+    }
   }
 
 }
