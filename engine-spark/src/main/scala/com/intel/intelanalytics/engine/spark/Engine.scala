@@ -548,13 +548,13 @@ class SparkEngine(sparkContextManager: SparkContextManager,
 
     val rdd = frames.getFrameRdd(ctx, frameId.id)
 
-    val columnIndex = realFrame.schema.columnIndex(arguments.data_column)
+    val columnIndex = realFrame.schema.columnIndex(arguments.dataColumn)
 
-    val weightsColumnIndexOption = if (arguments.weights_column.isEmpty) {
+    val weightsColumnIndexOption = if (arguments.weightsColumn.isEmpty) {
       None
     }
     else {
-      Some(realFrame.schema.columnIndex(arguments.weights_column.get))
+      Some(realFrame.schema.columnIndex(arguments.weightsColumn.get))
     }
 
     ColumnStatistics.columnMode(columnIndex, weightsColumnIndexOption, rdd)
@@ -583,13 +583,13 @@ class SparkEngine(sparkContextManager: SparkContextManager,
 
     val rdd = frames.getFrameRdd(ctx, frameId.id)
 
-    val columnIndex = realFrame.schema.columnIndex(arguments.data_column)
+    val columnIndex = realFrame.schema.columnIndex(arguments.dataColumn)
 
-    val weightsColumnIndexOption = if (arguments.weights_column.isEmpty) {
+    val weightsColumnIndexOption = if (arguments.weightsColumn.isEmpty) {
       None
     }
     else {
-      Some(realFrame.schema.columnIndex(arguments.weights_column.get))
+      Some(realFrame.schema.columnIndex(arguments.weightsColumn.get))
     }
 
     ColumnStatistics.columnMedian(columnIndex, weightsColumnIndexOption, rdd)
@@ -618,13 +618,13 @@ class SparkEngine(sparkContextManager: SparkContextManager,
 
     val rdd = frames.getFrameRdd(ctx, frameId)
 
-    val columnIndex = frame.schema.columnIndex(arguments.data_column)
+    val columnIndex = frame.schema.columnIndex(arguments.dataColumn)
 
-    val weightsColumnIndexOption = if (arguments.weights_column.isEmpty) {
+    val weightsColumnIndexOption = if (arguments.weightsColumn.isEmpty) {
       None
     }
     else {
-      Some(frame.schema.columnIndex(arguments.weights_column.get))
+      Some(frame.schema.columnIndex(arguments.weightsColumn.get))
     }
 
     ColumnStatistics.columnSummaryStatistics(columnIndex, weightsColumnIndexOption, rdd)
@@ -653,13 +653,13 @@ class SparkEngine(sparkContextManager: SparkContextManager,
 
     val rdd = frames.getFrameRdd(ctx, frameId)
 
-    val columnIndex = frame.schema.columnIndex(arguments.data_column)
+    val columnIndex = frame.schema.columnIndex(arguments.dataColumn)
 
-    val weightsColumnIndexOption = if (arguments.weights_column.isEmpty) {
+    val weightsColumnIndexOption = if (arguments.weightsColumn.isEmpty) {
       None
     }
     else {
-      Some(frame.schema.columnIndex(arguments.weights_column.get))
+      Some(frame.schema.columnIndex(arguments.weightsColumn.get))
     }
 
     ColumnStatistics.columnFullStatistics(columnIndex, weightsColumnIndexOption, rdd)

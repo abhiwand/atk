@@ -26,13 +26,13 @@ package com.intel.intelanalytics.domain.frame
 /**
  * Command specification for calculating statistics for a dataframe column.
  * @param frame Identifier for the input dataframe.
- * @param data_column Name of the column to statistically summarize. Must contain numerical data.
- * @param weights_column Optional. Name of the column that provides weights (frequencies).
+ * @param dataColumn Name of the column to statistically summarize. Must contain numerical data.
+ * @param weightsColumn Optional. Name of the column that provides weights (frequencies).
  */
-case class ColumnFullStatistics(frame: FrameReference, data_column: String, weights_column: Option[String]) {
+case class ColumnFullStatistics(frame: FrameReference, dataColumn: String, weightsColumn: Option[String]) {
 
   require(frame != null, "frame is required but not provided")
-  require(data_column != null, "data_column is required but not provided")
+  require(dataColumn != null, "data column is required but not provided")
 }
 
 /**
