@@ -88,7 +88,7 @@ object SparkTitanCassandraExampleDriver {
     val inputRdd = sc.parallelize(inputRows.asInstanceOf[Seq[_]]).asInstanceOf[RDD[Seq[_]]]
 
     // Build the Graph
-    val config = new GraphBuilderConfig(inputSchema, vertexRules, edgeRules, titanConfig, biDirectional = false, append = false)
+    val config = new GraphBuilderConfig(inputSchema, vertexRules, edgeRules, titanConfig, append = false)
     val gb = new GraphBuilder(config)
     gb.build(inputRdd)
 

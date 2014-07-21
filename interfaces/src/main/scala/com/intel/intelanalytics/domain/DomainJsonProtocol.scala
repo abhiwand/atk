@@ -42,11 +42,12 @@ import com.intel.intelanalytics.engine.ProgressInfo
 
 import scala.util.matching.Regex
 import com.intel.intelanalytics.algorithm.Percentile
+import com.intel.intelanalytics.spray.json.IADefaultJsonProtocol
 
 /**
  * Implicit conversions for domain objects to JSON
  */
-object DomainJsonProtocol extends DefaultJsonProtocol {
+object DomainJsonProtocol extends IADefaultJsonProtocol {
 
   implicit object DataTypeFormat extends JsonFormat[DataTypes.DataType] {
     override def read(json: JsValue): DataType = {
@@ -58,7 +59,6 @@ object DomainJsonProtocol extends DefaultJsonProtocol {
     override def write(obj: DataType): JsValue = new JsString(obj.toString)
   }
 
-  // TODO: this was added for Joda DateTimes - not sure this is right?
   trait DateTimeJsonFormat extends JsonFormat[DateTime] {
     private val dateTimeFmt = org.joda.time.format.ISODateTimeFormat.dateTime
     def write(x: DateTime) = JsString(dateTimeFmt.print(x))
@@ -125,7 +125,7 @@ object DomainJsonProtocol extends DefaultJsonProtocol {
 
   implicit val userFormat = jsonFormat5(User)
   implicit val statusFormat = jsonFormat5(Status)
-  implicit val dataFrameFormat = jsonFormat9(DataFrame)
+  implicit val dataFrameFormat = jsonFormat10(DataFrame)
   implicit val dataFrameTemplateFormat = jsonFormat2(DataFrameTemplate)
   implicit val separatorArgsJsonFormat = jsonFormat1(SeparatorArgs)
   implicit val definitionFormat = jsonFormat3(Definition)
@@ -156,6 +156,8 @@ object DomainJsonProtocol extends DefaultJsonProtocol {
   implicit val dropDuplicatesFormat = jsonFormat2(DropDuplicates)
   implicit val progressInfoFormat = jsonFormat2(ProgressInfo)
   implicit val binColumnLongFormat = jsonFormat6(BinColumn[Long])
+
+  implicit val assignSampleFormat = jsonFormat5(AssignSample)
   implicit val calculatePercentilesFormat = jsonFormat3(CalculatePercentiles)
 
   // model performance formats

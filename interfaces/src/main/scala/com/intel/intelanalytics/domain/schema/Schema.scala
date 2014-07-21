@@ -30,7 +30,7 @@ import com.intel.intelanalytics.domain.schema.DataTypes.DataType
  * @param columns the columns in the data frame
  */
 case class Schema(columns: List[(String, DataType)] = List[(String, DataType)]()) {
-  require(columns != null)
+  require(columns != null, "columns must not be null")
 
   /**
    * get column index by column name
