@@ -603,7 +603,7 @@ class BigFrame(CommandSupport):
         ----------
             column_name : str
                 The column to calculate percentile
-            percentiles : int OR list of int
+            percentiles : int OR list of int. If float is provided, it will be rounded to int
 
         Examples
         --------

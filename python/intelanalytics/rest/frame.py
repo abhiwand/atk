@@ -197,6 +197,15 @@ class FrameBackendRest(object):
     def calculate_percentiles(self, frame, column_name, percentiles):
         if isinstance(percentiles, int):
             percentiles = [percentiles]
+
+        invalid_percentiles = []
+        for p in percentiles:
+            if p > 100 or p < 0:
+                invalid_percentiles.append(str(p))
+
+        if len(invalid_percentiles) > 0:
+            raise ValueError("Invalid number for percentile:" + ','.join(invalid_percentiles))
+
         arguments = {'frameId': frame._id, "columnName": column_name, "percentiles": percentiles}
         command = CommandRequest("dataframe/calculate_percentiles", arguments)
         return executor.issue(command)
