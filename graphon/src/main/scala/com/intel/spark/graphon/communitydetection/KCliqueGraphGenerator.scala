@@ -28,7 +28,7 @@ import com.intel.spark.graphon.communitydetection.KCliquePercolationDataTypes._
 import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.RDD
 
-object KCliqueGraphGenerator {
+object KCliqueGraphGenerator extends Serializable {
 
   def run(cliqueAndExtenders: RDD[ExtendersFact]) = {
 

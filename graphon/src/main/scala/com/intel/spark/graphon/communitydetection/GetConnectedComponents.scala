@@ -12,7 +12,7 @@ import com.intel.spark.graphon.communitydetection.KCliqueGraphGenerator._
  * new vertices and run connected components to get communities
  */
 
-object GetConnectedComponents {
+object GetConnectedComponents extends Serializable {
 
   /**
    * Run the connected components and get the community IDs along with mapping between new Long IDs and original k-cliques

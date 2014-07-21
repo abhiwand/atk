@@ -34,7 +34,7 @@ import org.apache.spark.SparkContext._
  * connected components algorithm
  */
 
-object AssignCommunitiesToVertex {
+object AssignCommunitiesToVertex extends Serializable {
 
   /**
    * Emit pairs of vertex ID and community ID from k-clique graph vertex (having a new Long ID) which is originally a set of vertices.
