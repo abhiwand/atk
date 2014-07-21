@@ -29,14 +29,14 @@ import spray.json.{ JsValue, JsObject }
  * Represents a ModeColumn command
  * @param frame identifier for the input dataframe
  */
-case class ColumnMode(frame: FrameReference, data_column: String, weights_column: Option[String]) {
+case class ColumnMode(frame: FrameReference, dataColumn: String, weightsColumn: Option[String]) {
 
   require(frame != null, "frame is required")
-  require(data_column != null, "column is required")
+  require(dataColumn != null, "data column is required")
 }
 
 /**
  * Represents a ColumnMode return object... it returns the mode of the column.
  */
-case class ColumnModeReturn(mode: JsValue, weight_of_mode: Option[Double], total_weight: Double) {
+case class ColumnModeReturn(mode: JsValue, weightOfMode: Option[Double], totalWeight: Double) {
 }
