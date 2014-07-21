@@ -32,7 +32,7 @@ import com.intel.intelanalytics.security.UserPrincipal
 import scala.concurrent.{ Await, ExecutionContext }
 import com.intel.graphbuilder.util.SerializableBaseConfiguration
 import com.intel.graphbuilder.graph.titan.TitanGraphConnector
-import com.intel.intelanalytics.domain.graph.{GraphTemplate, GraphReference}
+import com.intel.intelanalytics.domain.graph.{ GraphTemplate, GraphReference }
 import spray.json.JsObject
 import com.intel.intelanalytics.domain.DomainJsonProtocol
 import spray.json.DefaultJsonProtocol._
@@ -46,7 +46,7 @@ import java.util.UUID
 case class KClique(graph: GraphReference,
                    cliqueSize: Int,
                    communityPropertyDefaultLabel: String,
-                   outputGraphName: String )
+                   outputGraphName: String)
 
 case class KCliqueResult(outputGraph: GraphReference)
 
@@ -84,7 +84,6 @@ class KCliquePercolation extends SparkCommandPlugin[KClique, KCliqueResult] {
     titanConfigInput.setProperty("ids.block-size", titanConfig.getString("ids.block-size"))
     titanConfigInput.setProperty("ids.renew-timeout", titanConfig.getString("ids.renew-timeout"))
 
-
     import scala.concurrent.duration._
     val graph = Await.result(sparkInvocation.engine.getGraph(arguments.graph.id), config.getInt("default-timeout") seconds)
 
@@ -119,7 +118,7 @@ class KCliquePercolation extends SparkCommandPlugin[KClique, KCliqueResult] {
     val time = (System.currentTimeMillis() - start).toDouble / 1000.0
     System.out.println("*********Finished execution of KCliquePercolation********")
     System.out.println(f"*********Execution Time = $time%.3f seconds********")
-    KCliqueResult(time)
+    KCliqueResult(new GraphReference(outputGraph.id))
   }
 
   //TODO: Replace with generic code that works on any case class

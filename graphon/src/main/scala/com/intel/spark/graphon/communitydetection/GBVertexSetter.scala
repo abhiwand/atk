@@ -1,10 +1,9 @@
 package com.intel.spark.graphon.communitydetection
 
-import com.intel.graphbuilder.elements.{Vertex => GBVertex, Property}
+import com.intel.graphbuilder.elements.{ Vertex => GBVertex, Property }
 import org.apache.spark.rdd.RDD
 import org.apache.spark.SparkContext._
 import com.intel.graphbuilder.driver.spark.titan.reader.TitanReader
-
 
 class GBVertexSetter(gbVertexList: RDD[GBVertex], vertexCommunitySet: RDD[(Long, Set[Long])]) extends Serializable {
 
@@ -48,20 +47,16 @@ class GBVertexSetter(gbVertexList: RDD[GBVertex], vertexCommunitySet: RDD[(Long,
     val gbVertexIDOldPropertiesCogroupCommunityProperty: RDD[(Long, (Seq[Seq[Property]], Seq[Seq[Property]]))] = gbVertexIDOldPropertiesPairs.cogroup(gbVertexIDCommunityPropertyPairs)
 
     val gbVertexIDNewProperties: RDD[(Long, Seq[Property])] = gbVertexIDOldPropertiesCogroupCommunityProperty
-      .map({ case(vertexId, (Seq(seqOfOldProperties),Seq(seqOfCommunityProperty))) => (vertexId, (seqOfOldProperties,seqOfCommunityProperty) ) })
-      .map({ case(vertexId, (seqOfOldProperties,seqOfCommunityProperty)) => (vertexId, seqOfOldProperties ++ seqOfCommunityProperty) })
+      .map({ case (vertexId, (Seq(seqOfOldProperties), Seq(seqOfCommunityProperty))) => (vertexId, (seqOfOldProperties, seqOfCommunityProperty)) })
+      .map({ case (vertexId, (seqOfOldProperties, seqOfCommunityProperty)) => (vertexId, seqOfOldProperties ++ seqOfCommunityProperty) })
 
     val updatedGBVertices: RDD[GBVertex] = gbVertexIDNewProperties.map({
-      case(vertexId, newSeqOfProperties) => GBVertex(
+      case (vertexId, newSeqOfProperties) => GBVertex(
         vertexId,
         Property(TitanReader.TITAN_READER_DEFAULT_GB_ID, vertexId),
         newSeqOfProperties)
     })
     updatedGBVertices
   }
-
-
-
-
 
 }
