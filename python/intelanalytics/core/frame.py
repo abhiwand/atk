@@ -119,7 +119,7 @@ def get_frame(name):
         raise IaError(logger)
 
 
-def delete_frame(name):
+def delete_frame(frame):
     """
     Erases data.
 
@@ -127,8 +127,8 @@ def delete_frame(name):
 
     Parameters
     ----------
-    name : string
-        The name of the BigFrame object to delete.
+    frame : string or BigFrame
+        Either the name of the BigFrame object to delete or the BigFrame object itself
 
     Raises
     ------
@@ -154,9 +154,8 @@ def delete_frame(name):
     .. versionadded:: 0.8
 
     """
-    # TODO - Review examples and parameter
     try:
-        return _get_backend().delete_frame(name)
+        return _get_backend().delete_frame(frame)
     except:
         raise IaError(logger)
 
@@ -211,6 +210,7 @@ class BigFrame(CommandSupport):
     def __init__(self, source=None, name=None):
         try:
             self._id = 0
+            self._error_frame_id = None
             if not hasattr(self, '_backend'):  # if a subclass has not already set the _backend
                 self._backend = _get_backend()
             new_frame_name = self._backend.create(self, source, name)
@@ -764,6 +764,22 @@ class BigFrame(CommandSupport):
             copied_frame = BigFrame()
             self._backend.project_columns(self, copied_frame, self.column_names)
             return copied_frame
+        except:
+            raise IaError(logger)
+
+    def get_error_frame(self):
+        """
+        When a frame is loaded, parse errors go into a separate data frame so they can be
+        inspected.  No error frame is created if there were no parse errors.
+
+        Returns
+        -------
+        frame : BigFrame
+            A new frame object that contains the parse errors of the currently active BigFrame
+            or None if no error frame exists
+        """
+        try:
+            return self._backend.get_frame_by_id(self._error_frame_id)
         except:
             raise IaError(logger)
 

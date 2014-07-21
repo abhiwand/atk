@@ -23,25 +23,42 @@
 
 package com.intel.intelanalytics.engine.spark
 
-import com.intel.intelanalytics.domain.frame.load.Load
-import com.intel.intelanalytics.domain.schema.DataTypes
+import com.intel.intelanalytics.domain.frame.load.{ LineParserArguments, LineParser, Load }
+import com.intel.intelanalytics.domain.schema.{ SchemaUtil, DataTypes }
 import com.intel.intelanalytics.engine.Rows._
-import com.intel.intelanalytics.engine.spark.frame.RDDJoinParam
+import com.intel.intelanalytics.engine.spark.frame._
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.RDD
 import spray.json.JsObject
 
 import scala.collection.mutable
+import scala.Some
+import scala.reflect.ClassTag
 import scala.math.pow
+import scala.Some
+import com.intel.intelanalytics.engine.spark.frame.ParseResultRddWrapper
+import com.intel.intelanalytics.domain.frame.load.LineParserArguments
+import com.intel.intelanalytics.engine.spark.frame.RowParseResult
+import com.intel.intelanalytics.domain.frame.load.LineParser
+import com.intel.intelanalytics.engine.spark.frame.RDDJoinParam
+
+//implicit conversion for PairRDD
+import org.apache.spark.SparkContext._
 
 private[spark] object SparkOps extends Serializable {
 
-  def getRows(rdd: RDD[Row], offset: Long, count: Int, limit: Int): Seq[Row] = {
-
+  /**
+   * take an input RDD and return another RDD which contains the subset of the original contents
+   * @param rdd input RDD
+   * @param offset rows to be skipped before including rows in the new RDD
+   * @param count total rows to be included in the new RDD
+   * @param limit limit on number of rows to be included in the new RDD
+   */
+  def getPagedRdd[T: ClassTag](rdd: RDD[T], offset: Long, count: Int, limit: Int): RDD[T] = {
     //Count the rows in each partition, then order the counts by partition number
     val counts = rdd.mapPartitionsWithIndex(
-      (i: Int, rows: Iterator[Row]) => Iterator.single((i, rows.size)))
+      (i: Int, rows: Iterator[T]) => Iterator.single((i, rows.size)))
       .collect()
       .sortBy(_._1)
 
@@ -63,7 +80,7 @@ private[spark] object SparkOps extends Serializable {
 
     //Start getting rows. We use the sums and counts to figure out which
     //partitions we need to read from and which to just ignore
-    val rows: Seq[Row] = rdd.mapPartitionsWithIndex((i, rows) => {
+    val pagedRdd: RDD[T] = rdd.mapPartitionsWithIndex((i, rows) => {
       val (ct: Int, sum: Int) = sumsAndCounts(i)
       val thisPartStart = sum - ct
       if (sum < offset || thisPartStart >= offset + capped) {
@@ -76,36 +93,22 @@ private[spark] object SparkOps extends Serializable {
         //println(s"partition $i: starting at $start and taking $numToTake")
         rows.drop(start.toInt).take(numToTake.toInt)
       }
-    }).collect()
-    rows
+    })
+
+    pagedRdd
   }
 
   /**
-   * Load each line from CSV file into an RDD of Row objects.
-   * @param ctx SparkContext used for textFile reading
-   * @param fileName name of file to parse
-   * @param skipRows number of rows to skip before beginning parsing
-   * @param parserFunction function used for parsing lines into Row objects
-   * @param converter function used for converting parsed strings into DataTypes
-   * @return  RDD of Row objects
+   * take input RDD and return the subset of the original content
+   * @param rdd input RDD
+   * @param offset  rows to be skipped before including rows in the result
+   * @param count total rows to be included in the result
+   * @param limit limit on number of rows to be included in the result
    */
-  def loadLines(ctx: SparkContext,
-                fileName: String,
-                skipRows: Option[Int],
-                parserFunction: String => Array[String],
-                converter: Array[String] => Array[Any]): RDD[Row] = {
-    ctx.textFile(fileName)
-      .mapPartitionsWithIndex {
-        case (partition, lines) => {
-          if (partition == 0) {
-            lines.drop(skipRows.getOrElse(0)).map(parserFunction)
-          }
-          else {
-            lines.map(parserFunction)
-          }
-        }
-      }
-      .map(converter)
+  def getRows[T: ClassTag](rdd: RDD[T], offset: Long, count: Int, limit: Int): Seq[T] = {
+    val pagedRdd = getPagedRdd(rdd, offset, count, limit)
+    val rows: Seq[T] = pagedRdd.collect()
+    rows
   }
 
   /**
