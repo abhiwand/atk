@@ -53,6 +53,10 @@
             <groupId>com.intel.ia</groupId>
             <artifactId>api-server</artifactId>
         </dependency>
+		<dependency>
+            <groupId>com.intel.ia</groupId>
+            <artifactId>igiraph/giraph-titan</artifactId>
+        </dependency>
         <!--END BDA dependencies to our modules-->
     </dependencies>
 </project>
