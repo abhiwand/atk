@@ -460,7 +460,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
   override def flattenColumn(arguments: FlattenColumn)(implicit user: UserPrincipal): Execution =
     commands.execute(flattenColumnCommand, arguments, user, implicitly[ExecutionContext])
 
-  val flattenColumnCommand = commands.registerCommand("dataframe/flattenColumn", flattenColumnSimple)
+  val flattenColumnCommand = commands.registerCommand("dataframe/flatten_column", flattenColumnSimple)
   def flattenColumnSimple(arguments: FlattenColumn, user: UserPrincipal) = {
     implicit val u = user
     val frameId: Long = arguments.frameId
@@ -489,7 +489,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
   override def binColumn(arguments: BinColumn[Long])(implicit user: UserPrincipal): Execution =
     commands.execute(binColumnCommand, arguments, user, implicitly[ExecutionContext])
 
-  val binColumnCommand = commands.registerCommand("dataframe/binColumn", binColumnSimple)
+  val binColumnCommand = commands.registerCommand("dataframe/bin_column", binColumnSimple)
   def binColumnSimple(arguments: BinColumn[Long], user: UserPrincipal) = {
     implicit val u = user
     val frameId: Long = arguments.frame
