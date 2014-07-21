@@ -611,8 +611,11 @@ class BigFrame(CommandSupport):
         """
         try:
             percentiles_result = self._backend.calculate_percentiles(self, column_name, percentiles).result.get('percentiles')
+            result_dict = {}
             for p in percentiles_result:
-                print "%s percentile: %s"%(str(p.get("percentile")), str(p.get("value")))
+                result_dict[p.get("percentile")] = p.get("value")
+
+            return result_dict
         except:
             raise IaError(logger)
 
