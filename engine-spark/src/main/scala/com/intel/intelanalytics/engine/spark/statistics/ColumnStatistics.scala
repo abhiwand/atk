@@ -4,6 +4,7 @@ import org.apache.spark.rdd.RDD
 import com.intel.intelanalytics.engine.Rows._
 import com.intel.intelanalytics.domain.frame.{ ColumnMedianReturn, ColumnModeReturn, ColumnFullStatisticsReturn, ColumnSummaryStatisticsReturn }
 import com.intel.intelanalytics.engine.spark.frame.FrameRDDFunctions
+import com.intel.intelanalytics.engine.spark.statistics.numericalstatistics._
 import spray.json._
 import DefaultJsonProtocol._
 

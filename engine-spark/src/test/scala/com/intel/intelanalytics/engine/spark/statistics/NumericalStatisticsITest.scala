@@ -2,6 +2,7 @@ package com.intel.intelanalytics.engine.spark.statistics
 
 import org.scalatest.Matchers
 import com.intel.intelanalytics.engine.TestingSparkContext
+import com.intel.intelanalytics.engine.spark.statistics.numericalstatistics.NumericalStatistics
 
 class NumericalStatisticsITest extends TestingSparkContext with Matchers {
 
