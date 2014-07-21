@@ -811,4 +811,35 @@ private[spark] object SparkOps extends Serializable {
     //convert the map to immutable map
     mapping.map { case (elementIndex, targets) => (elementIndex, targets.toSeq) }.toMap
   }
+  def confusionMatrix(frameRdd: RDD[Row], labelColumnIndex: Int, predColumnIndex: Int, posLabel: String): Seq[Long] = {
+    require(labelColumnIndex >= 0)
+    require(predColumnIndex >= 0)
+
+    val tp = frameRdd.sparkContext.accumulator[Long](0)
+    val tn = frameRdd.sparkContext.accumulator[Long](0)
+    val fp = frameRdd.sparkContext.accumulator[Long](0)
+    val fn = frameRdd.sparkContext.accumulator[Long](0)
+
+    frameRdd.foreach { row =>
+      if (row(labelColumnIndex).toString.equals(posLabel) && row(predColumnIndex).toString.equals(posLabel)) {
+        tp.add(1)
+      }
+      else if (!row(labelColumnIndex).toString.equals(posLabel) && !row(predColumnIndex).toString.equals(posLabel)) {
+        tn.add(1)
+      }
+      else if (!row(labelColumnIndex).toString.equals(posLabel) && row(predColumnIndex).toString.equals(posLabel)) {
+        fp.add(1)
+      }
+      else if (row(labelColumnIndex).toString.equals(posLabel) && !row(predColumnIndex).toString.equals(posLabel)) {
+        fn.add(1)
+      }
+    }
+
+    val labels = frameRdd.map(row => row(labelColumnIndex)).distinct().collect()
+    labels.size match {
+      case x if x == 1 || x == 2 => Seq(tp.value, tn.value, fp.value, fn.value)
+      case _ => throw new IllegalArgumentException("Confusion matrix only supports binary classifiers")
+    }
+  }
+
 }
