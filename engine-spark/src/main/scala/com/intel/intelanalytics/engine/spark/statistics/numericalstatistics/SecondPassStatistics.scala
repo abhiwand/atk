@@ -4,7 +4,6 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.AccumulatorParam
 import com.intel.intelanalytics.engine.spark.statistics.DistributionUtils
 
-
 /**
  * Second pass statistics - for computing higher moments about the mean.
  *
@@ -45,6 +44,8 @@ private[numericalstatistics] object SecondPassStatistics {
       val initialValue = new SecondPassStatistics(Some(BigDecimal(0)), Some(BigDecimal(0)))
       val accumulator = dataWeightPairs.sparkContext.accumulator[SecondPassStatistics](initialValue)(accumulatorParam)
 
+      // for second pass statistics, there's no need to keep around the data elements with non-positive weight,
+      // since the first pass statistics track the count of those
       dataWeightPairs.filter(distributionUtils.hasPositiveWeight).
         map(x => convertDataWeightPairToSecondPassStats(x, mean, stddev)).foreach(x => accumulator.add(x))
 
@@ -56,21 +57,20 @@ private[numericalstatistics] object SecondPassStatistics {
 
   }
 
-
   private def convertDataWeightPairToSecondPassStats(p: (Double, Double), mean: Double, stddev: Double): SecondPassStatistics = {
 
-    val dataAsDouble: Double = p._1
-    val weightAsDouble: Double = p._2
+    val data: Double = p._1
+    val weight: Double = p._2
 
     val thirdWeighted: Option[BigDecimal] =
       if (stddev != 0 && !stddev.isNaN())
-        Some(BigDecimal(Math.pow(weightAsDouble, 1.5) * Math.pow((dataAsDouble - mean) / stddev, 3)))
+        Some(BigDecimal(Math.pow(weight, 1.5) * Math.pow((data - mean) / stddev, 3)))
       else
         None
 
     val fourthWeighted: Option[BigDecimal] =
       if (stddev != 0 && !stddev.isNaN())
-        Some(BigDecimal(Math.pow(weightAsDouble, 2) * Math.pow((dataAsDouble - mean) / stddev, 4)))
+        Some(BigDecimal(Math.pow(weight, 2) * Math.pow((data - mean) / stddev, 4)))
       else
         None
 

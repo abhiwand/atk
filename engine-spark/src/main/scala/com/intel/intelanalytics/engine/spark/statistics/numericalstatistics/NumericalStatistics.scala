@@ -66,7 +66,7 @@ class NumericalStatistics(dataWeightPairs: RDD[(Double, Double)]) extends Serial
    * The weighted variance of the data. NaN when there are <=1 data elements.
    */
   lazy val weightedVariance: Double = {
-    val n: BigDecimal = BigDecimal(singlePassStatistics.count)
+    val n: BigDecimal = BigDecimal(singlePassStatistics.totalCount)
     if (n > 1) (singlePassStatistics.weightedSumOfSquaredDistancesFromMean / (n - 1)).toDouble else Double.NaN
   }
 
@@ -91,9 +91,14 @@ class NumericalStatistics(dataWeightPairs: RDD[(Double, Double)]) extends Serial
   lazy val max: Double = singlePassStatistics.maximum
 
   /**
-   * The number of elements in the data set of nonzero weight.
+   * The number of elements in the data set.
    */
-  lazy val count: Long = singlePassStatistics.count
+  lazy val count: Long = singlePassStatistics.totalCount
+
+  /**
+   * The number of elements in the data set of nonpositive weight.
+   */
+  lazy val nonPositiveWeightCount: Long = singlePassStatistics.nonPositiveWeightCount
 
   /**
    * The lower limit of the 95% confidence interval about the mean. (Assumes that the distribution is normal.)
@@ -114,7 +119,7 @@ class NumericalStatistics(dataWeightPairs: RDD[(Double, Double)]) extends Serial
    * NaN when there are <= 2 data elements of nonzero weight.
    */
   lazy val weightedSkewness: Double = {
-    val n: BigDecimal = BigDecimal(singlePassStatistics.count)
+    val n: BigDecimal = BigDecimal(singlePassStatistics.totalCount)
     val sumOfThirdWeighted: Option[BigDecimal] = secondPassStatistics.sumOfThirdWeighted
     if ((n > 2) && sumOfThirdWeighted.nonEmpty)
       ((n / ((n - 1) * (n - 2))) * sumOfThirdWeighted.get).toDouble
@@ -125,7 +130,7 @@ class NumericalStatistics(dataWeightPairs: RDD[(Double, Double)]) extends Serial
    * The weighted kurtosis of the dataset. NaN when there are <= 3 data elements of nonzero weight.
    */
   lazy val weightedKurtosis: Double = {
-    val n = BigDecimal(singlePassStatistics.count)
+    val n = BigDecimal(singlePassStatistics.totalCount)
     val sumOfFourthWeighted: Option[BigDecimal] = secondPassStatistics.sumOfFourthWeighted
     if ((n > 3) && sumOfFourthWeighted.nonEmpty) {
       val leadingCoefficient: BigDecimal = (n * (n + 1)) / ((n - 1) * (n - 2) * (n - 3))

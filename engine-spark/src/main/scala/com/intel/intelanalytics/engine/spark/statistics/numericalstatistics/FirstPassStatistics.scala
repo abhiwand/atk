@@ -22,7 +22,7 @@ import com.intel.intelanalytics.engine.spark.statistics.DistributionUtils
  * @param mode
  * @param weightAtMode
  * @param totalWeight
- * @param count
+ * @param totalCount
  */
 private[numericalstatistics] case class FirstPassStatistics(mean: BigDecimal,
                                                             weightedSumOfSquares: BigDecimal,
@@ -33,7 +33,8 @@ private[numericalstatistics] case class FirstPassStatistics(mean: BigDecimal,
                                                             mode: Double,
                                                             weightAtMode: Double,
                                                             totalWeight: BigDecimal,
-                                                            count: Long)
+                                                            totalCount: Long,
+                                                            nonPositiveWeightCount: Long)
 
 private[numericalstatistics] object FirstPassStatistics {
 
@@ -57,12 +58,12 @@ private[numericalstatistics] object FirstPassStatistics {
       mode = Double.NaN,
       weightAtMode = 0,
       totalWeight = 0,
-      count = 0)
+      totalCount = 0,
+      nonPositiveWeightCount = 0)
 
     val accumulator = dataWeightPairs.sparkContext.accumulator[FirstPassStatistics](initialValue)(accumulatorParam)
 
-    dataWeightPairs.filter(distributionUtils.hasPositiveWeight).
-      map(FirstPassStatistics.convertDataWeightPairToFirstPassStats).foreach(x => accumulator.add(x))
+    dataWeightPairs.map(FirstPassStatistics.convertDataWeightPairToFirstPassStats).foreach(x => accumulator.add(x))
 
     accumulator.value
   }
@@ -74,18 +75,38 @@ private[numericalstatistics] object FirstPassStatistics {
     val dataAsBigDecimal: BigDecimal = BigDecimal(dataAsDouble)
     val weightAsBigDecimal: BigDecimal = BigDecimal(weightAsDouble)
 
-    val weightedLog = if (dataAsDouble <= 0) None else Some(weightAsBigDecimal * BigDecimal(Math.log(dataAsDouble)))
+    if (weightAsDouble > 0) {
+      val weightedLog = if (dataAsDouble <= 0) None else Some(weightAsBigDecimal * BigDecimal(Math.log(dataAsDouble)))
 
-    FirstPassStatistics(mean = dataAsBigDecimal,
-      weightedSumOfSquares = weightAsBigDecimal * dataAsBigDecimal * dataAsBigDecimal,
-      weightedSumOfSquaredDistancesFromMean = BigDecimal(0),
-      weightedSumOfLogs = weightedLog,
-      minimum = dataAsDouble,
-      maximum = dataAsDouble,
-      mode = dataAsDouble,
-      weightAtMode = weightAsDouble,
-      totalWeight = weightAsBigDecimal,
-      count = 1.toLong)
+      FirstPassStatistics(mean = dataAsBigDecimal,
+        weightedSumOfSquares = weightAsBigDecimal * dataAsBigDecimal * dataAsBigDecimal,
+        weightedSumOfSquaredDistancesFromMean = BigDecimal(0),
+        weightedSumOfLogs = weightedLog,
+        minimum = dataAsDouble,
+        maximum = dataAsDouble,
+        mode = dataAsDouble,
+        weightAtMode = weightAsDouble,
+        totalWeight = weightAsBigDecimal,
+        totalCount = 1.toLong,
+        nonPositiveWeightCount = 0)
+    }
+    else {
+      FirstPassStatistics(
+        nonPositiveWeightCount = 1,
+
+        // entries of non-positive weight are discarded, so that the statistics for such an entry
+        // are simply those of an empty collection
+        mean = BigDecimal(0),
+        weightedSumOfSquares = BigDecimal(0),
+        weightedSumOfSquaredDistancesFromMean = BigDecimal(0),
+        weightedSumOfLogs = Some(BigDecimal(0)),
+        minimum = Double.PositiveInfinity,
+        maximum = Double.NegativeInfinity,
+        mode = Double.NaN,
+        weightAtMode = 0,
+        totalWeight = BigDecimal(0),
+        totalCount = 0)
+    }
   }
 
   /*
@@ -103,46 +124,74 @@ private[numericalstatistics] object FirstPassStatistics {
         mode = Double.NaN,
         weightAtMode = 0,
         totalWeight = 0,
-        count = 0)
+        totalCount = 0,
+        nonPositiveWeightCount = 0)
 
     override def addInPlace(stats1: FirstPassStatistics, stats2: FirstPassStatistics): FirstPassStatistics = {
 
-      val totalWeight = stats1.totalWeight + stats2.totalWeight
-      val mean =
-        if (totalWeight > 0)
-          (stats1.mean * stats1.totalWeight + stats2.mean * stats2.totalWeight) / totalWeight
-        else BigDecimal(0)
+      if (stats1.totalWeight equals BigDecimal(0)) {
+        FirstPassStatistics(mean = stats2.mean,
+          weightedSumOfSquares = stats2.weightedSumOfSquares,
+          weightedSumOfSquaredDistancesFromMean = stats2.weightedSumOfSquaredDistancesFromMean,
+          weightedSumOfLogs = stats2.weightedSumOfLogs,
+          minimum = stats2.minimum,
+          maximum = stats2.maximum,
+          mode = stats2.mode,
+          weightAtMode = stats2.weightAtMode,
+          totalWeight = stats2.totalWeight,
+          totalCount = stats1.totalCount + stats2.totalCount,
+          nonPositiveWeightCount = stats1.nonPositiveWeightCount + stats2.nonPositiveWeightCount)
+      }
+      else if (stats2.totalWeight equals BigDecimal(0)) {
+        FirstPassStatistics(mean = stats1.mean,
+          weightedSumOfSquares = stats1.weightedSumOfSquares,
+          weightedSumOfSquaredDistancesFromMean = stats1.weightedSumOfSquaredDistancesFromMean,
+          weightedSumOfLogs = stats1.weightedSumOfLogs,
+          minimum = stats1.minimum,
+          maximum = stats1.maximum,
+          mode = stats1.mode,
+          weightAtMode = stats1.weightAtMode,
+          totalWeight = stats1.totalWeight,
+          totalCount = stats1.totalCount + stats2.totalCount,
+          nonPositiveWeightCount = stats1.nonPositiveWeightCount + stats2.nonPositiveWeightCount)
+      }
+      else {
 
-      val weightedSumOfSquares = stats1.weightedSumOfSquares + stats2.weightedSumOfSquares
+        val totalWeight = stats1.totalWeight + stats2.totalWeight
+        val mean =
+          if (totalWeight > 0)
+            (stats1.mean * stats1.totalWeight + stats2.mean * stats2.totalWeight) / totalWeight
+          else BigDecimal(0)
 
-      val sumOfSquaredDistancesFromMean = weightedSumOfSquares - 2 * mean * mean * totalWeight + mean * mean * totalWeight
+        val weightedSumOfSquares = stats1.weightedSumOfSquares + stats2.weightedSumOfSquares
 
-      val weightedSumOfLogs: Option[BigDecimal] =
-        if (stats1.weightedSumOfLogs.nonEmpty && stats2.weightedSumOfLogs.nonEmpty) {
-          Some(stats1.weightedSumOfLogs.get + stats2.weightedSumOfLogs.get)
-        }
-        else {
-          None
-        }
+        val sumOfSquaredDistancesFromMean =
+          weightedSumOfSquares - BigDecimal(2) * mean * mean * totalWeight + mean * mean * totalWeight
 
-      val min = Math.min(stats1.minimum, stats2.minimum)
-      val max = Math.max(stats1.maximum, stats2.maximum)
+        val weightedSumOfLogs: Option[BigDecimal] =
+          if (stats1.weightedSumOfLogs.nonEmpty && stats2.weightedSumOfLogs.nonEmpty) {
+            Some(stats1.weightedSumOfLogs.get + stats2.weightedSumOfLogs.get)
+          }
+          else {
+            None
+          }
 
-      val count = stats1.count + stats2.count
-      val (mode, weightAtMode) = if (stats1.weightAtMode > stats2.weightAtMode)
-        (stats1.mode, stats1.weightAtMode)
-      else
-        (stats2.mode, stats2.weightAtMode)
+        val (mode, weightAtMode) = if (stats1.weightAtMode > stats2.weightAtMode)
+          (stats1.mode, stats1.weightAtMode)
+        else
+          (stats2.mode, stats2.weightAtMode)
 
-      FirstPassStatistics(mean = mean,
-        weightedSumOfSquares = weightedSumOfSquares,
-        weightedSumOfSquaredDistancesFromMean = sumOfSquaredDistancesFromMean,
-        weightedSumOfLogs = weightedSumOfLogs,
-        minimum = min,
-        maximum = max,
-        mode = mode,
-        weightAtMode = weightAtMode, totalWeight = totalWeight,
-        count = count)
+        FirstPassStatistics(mean = mean,
+          weightedSumOfSquares = weightedSumOfSquares,
+          weightedSumOfSquaredDistancesFromMean = sumOfSquaredDistancesFromMean,
+          weightedSumOfLogs = weightedSumOfLogs,
+          minimum = Math.min(stats1.minimum, stats2.minimum),
+          maximum = Math.max(stats1.maximum, stats2.maximum),
+          mode = mode,
+          weightAtMode = weightAtMode, totalWeight = totalWeight,
+          totalCount = stats1.totalCount + stats2.totalCount,
+          nonPositiveWeightCount = stats1.nonPositiveWeightCount + stats2.nonPositiveWeightCount)
+      }
     }
   }
 

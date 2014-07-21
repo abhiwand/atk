@@ -58,8 +58,8 @@ case class ColumnSummaryStatistics(frame: FrameReference, data_column: String, w
  *                             NaN when there are <= 1 data elements of positive weight.
  * @param mean_confidence_upper: Upper limit of the 95% confidence interval about the mean. Assumes a Gaussian RV.
  *                              NaN when there are <= 1 data elements of positive weight.
- * @param count The number data elements. Because elements of non-positive weight are discarded,
- *              this is the count of all elements with positive weight, not necessarily the count of rows in the column.
+ * @param count The number data elements. Equivalently, the count of rows in the column.
+ * @param non_positive_weight_count The number data elements with weight <= 0.
  */
 case class ColumnSummaryStatisticsReturn(mean: Double,
                                          geometric_mean: Double,
@@ -70,5 +70,6 @@ case class ColumnSummaryStatisticsReturn(mean: Double,
                                          maximum: Double,
                                          mean_confidence_lower: Double,
                                          mean_confidence_upper: Double,
-                                         count: Long)
+                                         count: Long,
+                                         non_positive_weight_count: Long)
 
