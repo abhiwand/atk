@@ -196,13 +196,13 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 <module>engine</module>
                 <module>engine-spark</module><!-- scoverage -->
                 <module>api-server</module>
-		<module>conf</module>
                 <module>imahout</module>
                 <module>igiraph/giraph-core</module>
                 <module>igiraph/giraph-algorithms</module>
                 <module>igiraph/giraph-titan</module>
                 <module>igiraph</module>
                 <module>imllib</module>
+				<module>conf</module>
                 <module>package</module>
             </modules>
         </profile>

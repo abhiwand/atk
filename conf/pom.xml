@@ -57,6 +57,10 @@
             <groupId>com.intel.ia</groupId>
             <artifactId>igiraph-titan</artifactId>
         </dependency>
+		<dependency>
+            <groupId>com.intel.ia</groupId>
+            <artifactId>graphon</artifactId>
+        </dependency>
         <!--END BDA dependencies to our modules-->
     </dependencies>
 </project>
