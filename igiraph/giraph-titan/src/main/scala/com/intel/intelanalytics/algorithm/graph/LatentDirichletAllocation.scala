@@ -104,7 +104,7 @@ class LatentDirichletAllocation
 
     LdaResult(GiraphJobDriver.run("ia_giraph_lda",
       classOf[CVB0LDAComputation].getCanonicalName,
-      config, giraphConf, invocation.commandId))
+      config, giraphConf, invocation.commandId, "lda-learning-report_0"))
   }
 
   //TODO: Replace with generic code that works on any case class
