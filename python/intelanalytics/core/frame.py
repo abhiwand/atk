@@ -696,6 +696,30 @@ class BigFrame(CommandSupport):
         """
         return self._backend.bin_column(self, column_name, num_bins, bin_type, bin_column_name)
 
+    def calculate_percentiles(self, column_name, percentiles):
+        """
+        Calculate percentiles on given column
+
+        Parameters
+        ----------
+            column_name : str
+                The column to calculate percentile
+            percentiles : int OR list of int. If float is provided, it will be rounded to int
+
+        Examples
+        --------
+        >>> frame.calculate_percentiles('final_sale_price', [10, 50, 100])
+        """
+        try:
+            percentiles_result = self._backend.calculate_percentiles(self, column_name, percentiles).result.get('percentiles')
+            result_dict = {}
+            for p in percentiles_result:
+                result_dict[p.get("percentile")] = p.get("value")
+
+            return result_dict
+        except:
+            raise IaError(logger)
+
     def confusion_matrix(self, label_column, pred_column, pos_label=1):
         """
         Builds matrix.
