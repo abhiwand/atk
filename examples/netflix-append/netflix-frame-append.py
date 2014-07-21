@@ -1,5 +1,5 @@
 #
-# Netflix example where we append data to an existing graph
+# Netflix example where we append two frames together
 #
 # Depends on a netflix1.csv and netflix2.csv files that each contain some overlapping data and some unique data.
 #
@@ -10,7 +10,7 @@
 #
 #   At Python prompt
 #       import os
-#       execfile('/path/to/netflix-append.py')
+#       execfile('/path/to/netflix-frame-append.py')
 #
 
 from intelanalytics import *
@@ -37,17 +37,11 @@ print frame1.inspect(10)
 print("inspect 2nd frame")
 print frame2.inspect(10)
 
-print("create graph")
-movie1 = VertexRule("movie", frame1.movie)
-user1 = VertexRule("user", frame1.user, {"vertexType": frame1.vertexType})
-rates1 = EdgeRule("rating", user1, movie1, { "splits": frame1.splits }, is_directed = True)
-graph = BigGraph([user1, movie1, rates1])
+print("append csv2 to frame1")
+frame1.append(csv2)
 
-print("append more data to the graph")
-movie2 = VertexRule("movie", frame2.movie)
-user2 = VertexRule("user", frame2.user, {"vertexType": frame2.vertexType})
-rates2 = EdgeRule("rating", user2, movie2, { "splits": frame2.splits }, is_directed = True)
-graph.append([user2, movie2, rates2])
+# didn't work?
+#frame1.append(frame2)
 
-print("grame name: " + graph.name)
-print("done")
+print("inspect appended frame")
+print frame1.inspect(10)
