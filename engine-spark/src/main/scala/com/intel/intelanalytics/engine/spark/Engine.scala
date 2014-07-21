@@ -205,8 +205,10 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     val existingRdd = frames.getFrameRdd(sparkContext, existingFrame)
     val unionedRdd = existingRdd.union(additionalData)
     val location = fsRoot + frames.getFrameDataFile(existingFrame.id)
+    val rowCount = unionedRdd.count()
     unionedRdd.rows.saveAsObjectFile(location)
     frames.updateSchema(existingFrame, unionedRdd.schema.columns)
+    frames.updateRowCount(existingFrame, rowCount)
   }
 
   def create(frame: DataFrameTemplate)(implicit user: UserPrincipal): Future[DataFrame] =
@@ -298,6 +300,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
         for { i <- 0 until columnIndices.size }
           yield (arguments.new_column_names(i), schema.columns(columnIndices(i))._2)
     }
+
     frames.updateSchema(projectedFrame, projectedColumns.toList)
   }
 
@@ -530,6 +533,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
   def filterSimple(arguments: FilterPredicate[JsObject, Long], user: UserPrincipal) = {
     implicit val u = user
     val pyRdd = createPythonRDD(arguments.frame, arguments.predicate)
+    val rowCount = pyRdd.count()
 
     val location = fsRoot + frames.getFrameDataFile(arguments.frame)
 
@@ -538,6 +542,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     val schema = realFrame.schema
     val converter = DataTypes.parseMany(schema.columns.map(_._2).toArray)(_)
     persistPythonRDD(pyRdd, converter, location)
+    frames.updateRowCount(realFrame, rowCount)
     realFrame
   }
 
@@ -608,8 +613,10 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     val joinResultRDD = SparkOps.joinRDDs(RDDJoinParam(pairRdds(0), leftColumns.length),
       RDDJoinParam(pairRdds(1), rightColumns.length),
       arguments.how)
+    val joinRowCount = joinResultRDD.count()
     joinResultRDD.saveAsObjectFile(fsRoot + frames.getFrameDataFile(newJoinFrame.id))
     frames.updateSchema(newJoinFrame, allColumns)
+    frames.updateRowCount(newJoinFrame, joinRowCount)
     newJoinFrame.copy(schema = Schema(allColumns))
   }
 
