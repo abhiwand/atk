@@ -21,7 +21,7 @@
 # must be express and approved by Intel in writing.
 ##############################################################################
 
-from ordereddict import OrderedDict
+from intelanalytics.core.orddict import OrderedDict
 import json
 
 import logging
@@ -34,10 +34,10 @@ from intelanalytics.core.aggregation import *
 from intelanalytics.core.errorhandle import IaError
 from intelanalytics.core.command import CommandSupport, doc_stub
 
+
 def _get_backend():
     from intelanalytics.core.config import get_frame_backend
     return get_frame_backend()
-
 
 
 def get_frame_names():
@@ -45,6 +45,8 @@ def get_frame_names():
     Summary
     -------
     BigFrame names
+
+    .. versionadded:: 0.8
 
     Extended Summary
     ----------------
@@ -61,7 +63,7 @@ def get_frame_names():
 
     Examples
     --------
-    ::
+    Create two BigFrame objects and get their names::
 
         frame1 = BigFrame(csv_schema_1, "BigFrame1")
         frame2 = BigFrame(csv_schema_2, "BigFrame2")
@@ -78,15 +80,18 @@ def get_frame_names():
     except:
         raise IaError(logger)
 
+
 def get_frame(name):
     """
     Summary
     -------
     Get BigFrame
 
+    .. versionadded:: 0.8
+
     Extended Summary
     ----------------
-    Retrieves a BigFrame class object to allow you to address the data
+    Retrieves a BigFrame class object to allow access to the data frame
 
     Parameters
     ----------
@@ -104,11 +109,11 @@ def get_frame(name):
 
     Examples
     --------
-    ::
+    Create a frame *BF1*; create a BigFrame proxy for it; check that the new BigFrame is equivalent to the original::
 
-        BigFrame1a = BigFrame(my_csv, "BF1")
-        BigFrame1b = get_frame("BF1")
-        print BigFrame1a == BigFrame1b
+        BF1a = BigFrame(my_csv, "BF1")
+        BF1b = get_frame("BF1")
+        print BF1a == BF1b
 
     Result would be::
 
@@ -121,11 +126,14 @@ def get_frame(name):
     except:
         raise IaError(logger)
 
+
 def delete_frame(name):
     """
     Summary
     -------
     Erases data
+
+    .. versionadded:: 0.8
 
     Extended Summary
     ----------------
@@ -147,7 +155,7 @@ def delete_frame(name):
 
     Examples
     --------
-    ::
+    Create a new frame; delete it; print what gets returned from the function::
 
         my_frame = BigFrame(my_csv, 'BF1')
         deleted_frame = delete_frame('BF1')
@@ -163,11 +171,14 @@ def delete_frame(name):
     except:
         raise IaError(logger)
 
+
 class BigFrame(CommandSupport):
     """
     Summary
     -------
     Data handle
+
+    .. versionadded:: 0.8
 
     Extended Summary
     ----------------
@@ -189,8 +200,17 @@ class BigFrame(CommandSupport):
 
     Examples
     --------
-    >>> g = BigFrame(None, "my_data")
-    A BigFrame object has been created and 'g' is its proxy. It has no data, but it has the name "my_data".
+    Create a BigFrame object; name it "BF1"::
+
+        g = BigFrame(my_csv_schema, "BF1")
+
+    A BigFrame object has been created and *g* is its proxy. It brought in the data described by *my_csv_schema*. It is named *BF1*.
+
+    Create an empty frame; name it "BF2"::
+
+        h = BigFrame(name='BF2')
+
+    A BigFrame object has been created and *h* is its proxy. It has no data yet, but it does have the name *BF2*.
 
     """
     # TODO - Review Parameters, Examples
@@ -298,6 +318,14 @@ class BigFrame(CommandSupport):
     @property
     def column_names(self):
         """
+        Summary
+        -------
+        Column names
+
+        .. versionadded:: 0.8
+
+        Extended Summary
+        ----------------
         The names of all the columns in the current BigFrame object.
 
         Returns
@@ -306,52 +334,72 @@ class BigFrame(CommandSupport):
 
         Examples
         --------
-        >>> frame.column_names()
-        ["col1", "col2", "col3"]
+        Create a BigFrame object from the data described by schema *my_csv*; get the column names::
+
+            my_frame = BigFrame(source='my_csv')
+            my_columns = my_frame.column_names()
+            print my_columns
+
+        Now, assuming the schema *my_csv* described three columns *col1*, *col2*, and *col3*, our result is::
+
+            ["col1", "col2", "col3"]
 
         """
         return self._columns.keys()
 
     @property
-    def data_type(self):
-        """
-        The type of object this is.
-        
-        Returns
-        -------
-        type : type
-            The type of object this is
-        """
-        # TODO - what to do about data_type on BigFrame?  is it really necessary?
-        # TODO - Review Docstring
-        return type(self)
-
-    #@property
-    # TODO - should we expose the frame ID publically?
-    #def frame_id(self):
-    #    return self._id
-
-    @property
     def name(self):
         """
-        The name of the BigFrame.
-        
+        Summary
+        -------
+        Frame name
+
+        .. versionadded:: 0.8
+
+        Extended Summary
+        ----------------
+        The name of the data frame.
+
         Returns
         -------
         name : str
-            The name of the BigFrame
+            The name of the frame
 
         Examples
         --------
-        >>> csv = CsvFile("my_data.csv", csv_schema)
-        >>> frame = BigFrame(csv, "my_frame")
-        >>> frame.name
-        "my_frame"
+        Create a frame and give it the name "Flavor Recipes"; read the name back to check it::
+
+            frame = BigFrame(name="Flavor Recipes")
+            given_name = frame.name()
+            print given_name
+
+        The result given is::
+
+            "Flavor Recipes"
+
         """
         return self._name
 
     @name.setter
     def name(self, value):
+        """
+        Summary
+        -------
+        Set frame name
+
+        .. versionadded:: 0.8
+
+        Extended Summary
+        ----------------
+        Assigns a name to a data frame.
+
+        Examples
+        --------
+        Assign the name "movies" to the current frame::
+
+            my_frame.name("movies")
+
+        """
         try:
             self._backend.rename_frame(self, value)
             self._name = value  # TODO - update from backend
@@ -361,7 +409,15 @@ class BigFrame(CommandSupport):
     @property
     def schema(self):
         """
-        The schema of the current object.
+        Summary
+        -------
+        BigFrame schema
+
+        .. versionadded:: 0.8
+
+        Extended Summary
+        ----------------
+        The schema of the current BigFrame object.
 
         Returns
         -------
@@ -371,20 +427,49 @@ class BigFrame(CommandSupport):
 
         Examples
         --------
-        >>> frame.schema
-        [("col1", str), ("col1", numpy.int32)]
+        Given that we have an existing data frame *my_data*, get the BigFrame proxy then the frame schema::
+
+            BF = get_frame('my_data')
+            my_schema = BF.schema()
+            print my_schema
+
+        The result is::
+
+            [("col1", str), ("col1", numpy.int32)]
+
         """
         return [(col.name, col.data_type) for col in self._columns.values()]
 
     @property
     def uri(self):
         """
-        The uniform resource identifier of the current object.
+        Summary
+        -------
+        Uniform Resource Identifier
+
+        .. versionadded:: 0.8
+
+        Extended Summary
+        ----------------
+        The uniform resource identifier of the data frame.
 
         Returns
         -------
         uri : str
             The value of the uri
+
+        Examples
+        --------
+        Given that we have an existing data frame *my_data*, get the BigFrame proxy then the frame uri::
+
+            BF = get_frame('my_data')
+            my_uri = BF.uri()
+            print my_uri
+
+        The result is::
+
+            TBD
+
         """
         return self._uri
 
@@ -393,8 +478,14 @@ class BigFrame(CommandSupport):
 
     def add_columns(self, func, schema):
         """
-        Add column(s).
+        Summary
+        -------
+        Add column
         
+        .. versionadded:: 0.8
+
+        Extended Summary
+        ----------------
         Adds one or more new columns to the frame by evaluating the given
         func on each row.
 
@@ -410,41 +501,54 @@ class BigFrame(CommandSupport):
 
         Notes
         -----
-        The row function ('func') must return a value in the same format as specified by the data type ('types').
-        See examples below and glossary.
+        The row function ('func') must return a value in the same format as specified by the schema.
+        See :doc:ds_apir.
         
         Examples
         --------
-        >>> my_frame = BigFrame(data)
-        For this example my_frame is a BigFrame object with two int32 columns named "column1" and "column2".
-        We want to add a third column named "column3" as an int32 and fill it with the contents of column1 and column2 multiplied together
-        >>> my_frame.add_columns(lambda row: row.column1*row.column2, ('column3', int32))
-        The variable my_frame now has three columns, named "column1", "column2" and "column3". The type of column3 is an int32, and the value is the product of column1 and column2.
-        <BLANKLINE>
-        Now, we want to add another column that is empty
-        >>> my_frame.add_columns(lambda row: '', ('empty', str))
-        The BigFrame object 'my_frame' now has four columns named "column1", "column2", "column3", and "new0". The first three columns are int32 and the fourth column is string.  Column "new0" has an empty string ('') in every row.
-        >>> my_frame.add_columns(lambda row: (row.a * row.b, row.a + row.b), [("a_times_b", float32), ("a_plus_b", float32))
-        # Two new columns are created, "a_times_b" and "a_plus_b"
-        <BLANKLINE>
-        Now, let us start with a BigFrame with some existing rows of data.
-        >>> my_frame.add_columns( function_a, ("calculated_a", int))
-        It is our responsibility to insure that function_a returns an int value.
-        >>> my_columns = [("calculated_b", float), ("calculated_c", str)]
-        >>> my_frame.add_columns(function_b, my_columns)
-        In this case function_b would have to return an array of two elements so the program can figure out which result goes into which column.
-        It is not obvious though that if you have an array with a single tuple describing the column, your function must provide the result as an array with a single value matching the column type.
-        This would cause an error:
-        >>> def function_c: return 12
-        >>> my_frame.add_columns(function_c, [('column_C', int)])
-        However, this would work fine:
-        >>> def function_c: return [12]
-        >>> my_frame.add_columns(function_c, [('column_C', int)])
-        And these would work fine:
-        >>> def function_c: return 12
-        >>> my_frame.add_columns(function_c, ('column_C, int))
-        >>> my_frame.add_columns(function_c, int, 'column_C')
+        Given a BigFrame proxy *my_frame* identifying a data frame with two int32 columns *column1* and *column2*.
+        Add a third column named "column3" as an int32 and fill it with the contents of *column1* and *column2* multiplied together::
 
+            my_frame.add_columns(lambda row: row.column1*row.column2, ('column3', int32))
+
+        The frame now has three columns, *column1*, *column2* and *column3*.
+        The type of *column3* is an int32, and the value is the product of *column1* and *column2*.
+
+        Add a string column *column4* that is empty::
+
+            my_frame.add_columns(lambda row: '', ('column4', str))
+
+        The BigFrame object *my_frame* now has four columns *column1*, *column2*, *column3*, and *column4*.
+        The first three columns are int32 and the fourth column is string.  Column *column4* has an empty string ('') in every row.
+
+        Multiple columns can be added at the same time.
+        Add a column *a_times_b* and fill it with the contents of column *a* multiplied by the contents of column *b*.
+        At the same time, add a column *a_plus_b* and fill it with the contents of column *a* plus the contents of column *b*::
+
+            my_frame.add_columns(lambda row: [row.a * row.b, row.a + row.b], [("a_times_b", float32), ("a_plus_b", float32))
+
+        Two new columns are created, "a_times_b" and "a_plus_b", with the appropriate contents.
+
+        Given a frame of data and BigFrame *my_frame* points to it.
+        In addition we have defined a function *func*.
+        Run *func* on each row of the frame and put the result in a new integer column *calculated_a*::
+
+            my_frame.add_columns( func, ("calculated_a", int))
+
+        Now the frame has a column *calculated_a* which has been filled with the results of the function *func*.
+
+        Functions must return their value in the same format as the column is defined.
+        In most cases this is automatically the case, but sometimes it is less obvious.
+        Given a function *function_b* which returns a value in a list, store the result in a new column *calculated_b*::
+
+            my_frame.add_columns(function_b, ("calculated_b", float32))
+        
+        This would result in an error because function_b is returning a value as a single element list like [2.4], but our column is defined as
+        a tuple.
+        The column must be defined as a list::
+
+            my_frame.add_columns(function_b, (["calculated_b"], float32))
+        
         """
         try:
             self._backend.add_columns(self, func, schema)
@@ -453,18 +557,37 @@ class BigFrame(CommandSupport):
 
     def append(self, data):
         """
-        Adds more data to the BigFrame object.
+        Summary
+        -------
+        Add data
+
+        .. versionadded:: 0.8
+
+        Extended Summary
+        ----------------
+        Adds more data (rows and/or columns) to the BigFrame object.
 
         Parameters
         ----------
-            data : a schema describing the data being added
+            data : a BigFrame describing the data being added
 
         Examples
         --------
-        >>> my_frame = BigFrame(my_csv)
-        >>> my_other_frame = BigFrame(my_other_csv)
-        >>> my_frame.append(my_other_frame)
-        # my_frame now has the data from my_other_frame as well
+        Given a frame with a single column *col_1* and a frame with two columns *col_1* and *col_2*.
+        Column "col_1* is the same data type in both frames.
+        BigFrame *f_1* points to the first frame and *f_2* points to the second.
+        Add the contents of the *f_2* to *f_1*::
+
+            f_1.append(f_2)
+
+        Now the first frame has two columns, *col_1* and *col_2*.
+        Column *col_1* has the data from *col_1* in both frames.
+        Column *col_2* has None (undefined) in all of the rows in the original first frame, and has the value of the second frame column *col_2* in
+        the rows matching the new data in *col_1*.
+        Breaking it down differently, the original rows refered to by *f_1* have a new column *col_2* and this new column is filled with non-defined
+        data.
+        The frame referred to by *f_2* is then added to the bottom.
+
         """
         # TODO - Review examples
         try:
@@ -495,12 +618,60 @@ class BigFrame(CommandSupport):
 
     def copy(self):
         """
+        Summary
+        -------
+        Copy frame
+
+        .. versionadded:: 0.8
+
+        Extended Summary
+        ----------------
         Creates a full copy of the current frame.
+
+        Raises
+        ------
+        IaError
 
         Returns
         -------
         frame : BigFrame
             A new frame object which is a copy of the currently active BigFrame
+
+        Examples
+        --------
+        Build a BigFrame from a csv file with 5 million rows of data; call the frame "cust".
+        Copy the BigFrame; name the frame "serv".
+        Copy the frame; check its name::
+
+            BF1 = BigFrame(source="my_data.csv")
+            BF1.name("cust")
+
+        At this point we have one frame of data, which is now called "cust".
+        ::
+
+            BF2 = BF1
+
+        We still have one frame of data called "cust".
+        ::
+
+            BF2.name("serv")
+
+        We now have one frame of data called "serv". We probably wanted a second frame named "serv", with the first named "cust".
+        ::
+
+            BF2 = BF2.copy()
+
+        Now we have two frames of data, each with 5 million rows. Checking the names::
+
+            print BF1.get_name()
+            print BF2.get_name()
+
+        Gives the results::
+
+            "cust"
+            (a very long computer-generated name)
+
+
         """
         try:
             copied_frame = BigFrame()
@@ -511,7 +682,19 @@ class BigFrame(CommandSupport):
 
     def count(self):
         """
+        Summary
+        -------
+        Row count
+
+        .. versionadded:: 0.8
+
+        Extended Summary
+        ----------------
         Count the number of rows that exist in this object.
+
+        Raises
+        ------
+        IaError
 
         Returns
         -------
@@ -520,10 +703,15 @@ class BigFrame(CommandSupport):
 
         Examples
         --------
-        >>>
-        # For this example, my_frame is a BigFrame object with lots of data
-        >>> num_rows = my_frame.count()
-        # num_rows is now the count of rows of data in my_frame
+        Build a frame from a huge CSV file; report the number of rows of data::
+
+            my_frame = BigFrame(source="my_csv")
+            num_rows = my_frame.count()
+            print num_rows
+
+        The result could be::
+
+            298376527645
 
         """
         try:
@@ -533,19 +721,34 @@ class BigFrame(CommandSupport):
 
     def drop(self, predicate):
         """
+        Summary
+        -------
+        Drop rows
+
+        .. versionadded:: 0.8
+
+        Extended Summary
+        ----------------
         Remove all rows from the frame which satisfy the predicate.
 
         Parameters
         ----------
         predicate : function
-        function or lambda which takes a row argument and evaluates to a boolean value
+            function or :term:`lambda` which takes a row argument and evaluates to a boolean value
+
+        Raises
+        ------
+        IaError
 
         Examples
         --------
-        >>>
-        # For this example, my_frame is a BigFrame object with lots of data and columns for the attributes of animals.
-        # We want to get rid of the lions and tigers
-        >>> my_frame.drop(lambda row: row.animal_type == "lion" or row.animal_type == "tiger")
+        For this example, my_frame is a BigFrame object accessing a frame with lots of data for the attributes of *lions*, *tigers*, and *ligers*.
+        Get rid of the *lions* and *tigers*::
+
+            my_frame.drop(lambda row: row.animal_type == "lion" or row.animal_type == "tiger")
+
+        Now the frame only has information about *ligers*.
+
         """
         # TODO - Review docstring
         try:
@@ -555,6 +758,14 @@ class BigFrame(CommandSupport):
 
     def filter(self, predicate):
         """
+        Summary
+        -------
+        Select data
+
+        .. versionadded:: 0.8
+
+        Extended Summary
+        ----------------
         Select all rows which satisfy a predicate.
 
         Parameters
@@ -562,13 +773,18 @@ class BigFrame(CommandSupport):
         predicate: function
             function definition or lambda which takes a row argument and evaluates to a boolean value
 
+        Raises
+        ------
+        IaError
+
         Examples
         --------
-        >>>
-        For this example, my_frame is a BigFrame object with lots of data and columns for the attributes of animals.
-        We do not want all this data, just the data for lizards and frogs, so ...
-        >>> my_frame.filter(animal_type == "lizard" or animal_type == "frog")
-        BigFrame 'my_frame' now only has data about lizards and frogs
+        For this example, my_frame is a BigFrame object with lots of data for the attributes of *lizards*, *frogs*, and *snakes*.
+        Get rid of everything, except information about *lizards* and *frogs*::
+
+            my_frame.filter(animal_type == "lizard" or animal_type == "frog")
+
+        The frame now only has data about lizards and frogs
 
         """
         # TODO - Review docstring
@@ -579,8 +795,14 @@ class BigFrame(CommandSupport):
 
     def flatten_column(self, column_name):
         """
-        Flatten a column.
+        Summary
+        -------
+        Spread out data
 
+        .. versionadded:: 0.8
+
+        Extended Summary
+        ----------------
         Search through the currently active BigFrame for multiple items in a single specified column.
         When it finds multiple values in the column, it replicates the row and separates the multiple items across the existing and new rows.
         Multiple items is defined in this case as being things separated by commas.
@@ -590,26 +812,37 @@ class BigFrame(CommandSupport):
         column_name : str
             The column to be flattened
                                                   n
+        Raises
+        ------
+        IaError
+
         Returns
         -------
-        frame : BigFrame
-            The new flattened frame
+        BigFrame
+            A BigFrame object proxy for the new flattened frame
 
         Examples
         --------
-        >>>
-        For this example, we have a BigFrame called 'frame1' with a column called 'a' and a column called 'b'.
-        Row 1, column 'a' is "me", column 'b' is "x"
-        Row 2, column 'a' is "oh, oh, you", column 'b' is "y"
-        Row 3, column 'a' is "my", column 'b' is "z, e, r, o"
-        <BLANKLINE>
-        >>> flattened_frame = frame1.flatten_column('a')
-        <BLANKLINE>
-        Row 1, column 'a' is "me", column 'b' is "x"
-        Row 2, column 'a' is "oh", column 'b' is "y"
-        Row 3, column 'a' is "my", column 'b' is "z, e, r, o"
-        Row 4, column 'a' is "oh", column 'b' is "y"
-        Row 5, column 'a' is "you", column 'b' is "y"
+        For this example, we have a BigFrame *frame1* accessing a frame with a columns *a* and *b*.
+        The rows are in no particular order::
+
+            Row 1, column *a* is "trumpet", column *b* is "x"
+            Row 2, column *a* is "bassoon, oboe, flute", column *b* is "y"
+            Row 3, column *a* is "clarinet", column *b* is "z, e, r, o"
+
+        Now run the flatten command on column *a*::
+
+            flattened_frame = frame1.flatten_column('a')
+
+        The original frame still exists without change, but now there is a new frame.
+        The rows are in no particular order::
+
+            Row 1, column *a* is "trumpet", column *b* is "x"
+            Row 2, column *a* is "bassoon", column *b* is "y"
+            Row 3, column *a* is "clarinet", column *b* is "z, e, r, o"
+            Row 4, column *a* is "oboe", column *b* is "y"
+            Row 5, column *a* is "flute", column *b* is "y"
+
         """
         try:
             return self._backend.flatten_column(self, column_name)
@@ -618,12 +851,18 @@ class BigFrame(CommandSupport):
 
     def bin_column(self, column_name, num_bins, bin_type='equalwidth', bin_column_name='binned'):
         """
-        Bin column values into equal width or equal depth bins.
+        Summary
+        -------
+        Evenly separate columns
 
-        The numBins parameter is an upper-bound on the number of bins since the data
-        may justify fewer bins.  With equal depth binning, for example, if the column to be binned has 10 elements with
-        only 2 distinct values and numBins > 2, then the number of actual bins will only be 2.  This is due to a
-        restriction that elements with an identical value must belong to the same bin.
+        .. versionadded:: 0.8
+
+        Extended Summary
+        ----------------
+        The numBins parameter is an upper-bound on the number of bins since the data may justify fewer bins.
+        With :term:`equal depth binning`, for example, if the column to be binned has 10 elements with
+        only 2 distinct values and numBins > 2, then the number of actual bins will only be 2.
+        This is due to a restriction that elements with an identical value must belong to the same bin.
 
         Parameters
         ----------
@@ -650,6 +889,14 @@ class BigFrame(CommandSupport):
 
     def drop(self, predicate):
         """
+        Summary
+        -------
+        Drop data
+
+        .. versionadded:: 0.8
+
+        Extended Summary
+        ----------------
         Drop rows that match a requirement.
 
         Parameters
@@ -657,12 +904,17 @@ class BigFrame(CommandSupport):
         predicate : function
             The requirement that the rows must match
 
+        Raises
+        ------
+        IaError
+
         Examples
         --------
-        >>>
-        For this example, my_frame is a BigFrame object with a boolean column called "unimportant".
-        >>> my_frame.drop( unimportant == True )
-        my_frame's data is now empty of any data with where the column "unimportant" was true.
+        For this example, my_frame is a BigFrame object accessing a frame with a boolean column *important*.
+
+            my_frame.drop( important == False )
+
+        The frame's data now only contains important data.
 
         """
         # TODO - review docstring
@@ -673,24 +925,46 @@ class BigFrame(CommandSupport):
 
     def drop_duplicates(self, columns=[]):
         """
+        Summary
+        -------
+        Remove duplicates
+
+        .. versionadded:: 0.8
+
+        Extended Summary
+        ----------------
         Remove duplicate rows, keeping only one row per uniqueness criteria match
-    
+
         Parameters
         ----------
         columns : str OR list of str
             column name(s) to identify duplicates. If empty, will remove duplicates that have whole row data identical.
     
+        Raises
+        ------
+        IaError
+
         Examples
         --------
-        >>>
-        Remove duplicate rows that have same data on column b.
-        >>> my_frame.drop_duplicates("b")
-        <BLANKLINE>
-        Remove duplicate rows that have same data on column a and b
-        >>> my_frame.drop_duplicates(["a", "b"])
-        <BLANKLINE>
-        Remove duplicates that have whole row data identical
-        >>> my_frame.drop_duplicates()
+        Remove any rows that have the same data in column *b* as a previously checked row::
+
+            my_frame.drop_duplicates("b")
+
+        The result is a frame with unique values in column *b*.
+
+        Remove any rows that have the same data in columns *a* and *b* as a previously checked row::
+
+            my_frame.drop_duplicates(["a", "b"])
+
+        The result is a frame with unique values for the combination of columns *a* and *b*.
+
+        Remove any rows that have the whole row identical::
+
+            my_frame.drop_duplicates()
+
+        The result is a frame where something is different in every row from every other row.
+        Each row is unique.
+
         """
         try:
             self._backend.drop_duplicates(self, columns)
@@ -699,8 +973,16 @@ class BigFrame(CommandSupport):
 
     def inspect(self, n=10, offset=0):
         """
+        Summary
+        -------
+        Print data
+
+        .. versionadded:: 0.8
+
+        Extended Summary
+        ----------------
         Print the data in readable format.
-        
+
         Parameters
         ----------
         n : int
@@ -708,6 +990,10 @@ class BigFrame(CommandSupport):
         offset : int
             The number of rows to skip before printing
             
+        Raises
+        ------
+        IaError
+
         Returns
         -------
         data
@@ -715,16 +1001,21 @@ class BigFrame(CommandSupport):
             
         Examples
         --------
-        >>>
-        For this example, my_frame is a BigFrame object with two columns 'a' and 'b'.
-        Column 'a' is float32 and 'b' is int64.
-        >>> print my_frame.inspect()
-        Output would be something like:
-        <BLANKLINE>
-         a float32          b int64
-        -----------------------------
-           12.3000              500
-          195.1230           183954
+        For this example, my_frame is a BigFrame object accessing a frame with two columns *a* and *b*.
+        Column *a* is float32 and *b* is int64.
+        Show me the data::
+
+            print my_frame.inspect()
+
+        Output would be something like::
+
+           +----------------+-------------+
+           | a float32      |   b int64   |
+           +================+=============+
+           |   12.3000      |       500   |
+           +----------------+-------------+
+           |  195.1230      |    183954   |
+           +----------------+-------------+
         
         """
         # TODO - Review docstring
@@ -735,8 +1026,14 @@ class BigFrame(CommandSupport):
 
     def join(self, right, left_on, right_on=None, how='inner'):
         """
-        Build a new BigFrame from two others.
+        Summary
+        -------
+        Combine frames
 
+        .. versionadded:: 0.8
+
+        Extended Summary
+        ----------------
         Create a new BigFrame from a SQL JOIN operation with another BigFrame.
         The BigFrame on the 'left' is the currently active frame.
         The BigFrame on the 'right' is another frame.
@@ -760,23 +1057,35 @@ class BigFrame(CommandSupport):
         how : str
             {'left', 'right', 'inner'}
 
+        Raises
+        ------
+        IaError
+
         Returns
         -------
-        frame : BigFrame
-            The new joined frame
+        BigFrame
+            BigFrame accessing a new joined frame
 
         Examples
         --------
-        >>>
-        For this example, we will used a frame called 'frame1' with columns 'a', 'b', 'c', and a frame called 'frame2' with columns 'a', 'd', 'e'.
-        >>> frame1 = BigFrame(schema1)
-        ... frame2 = BigFrame(schema2)
-        ... joined_frame = frame1.join(frame2, 'a')
-        Now, joined_frame is a BigFrame with the columns 'a', 'b', 'c', 'd', 'e'. The data in the new frame will be from the rows where column 'a' was the same in both 'frame1' and 'frame2'.
-        <BLANKLINE>
-        Now, using a single BigFrame called 'frame2' with the columns 'b' and 'book':
-        >>> joined_frame = frame2.join(frame2, left_on='b', right_on='book', how='inner')
-        We end up with a new BigFrame with the columns 'b' and 'book', but only those rows where the data in the original frame in column 'b' matched the data in column 'book'.  Note that there are still the original number of columns, with the original column names, but any rows of data where 'b' and 'book' did not match are now gone.
+        For this example, we will use a BigFrame *frame1* accessing a frame with columns *a*, *b*, *c*, and a BigFrame *frame2* accessing
+        a frame with columns *a*, *d*, *e*.
+        Join the two frames keeping only those rows having the same value in column *a*::
+
+            frame1 = BigFrame(schema1)
+            frame2 = BigFrame(schema2)
+            joined_frame = frame1.join(frame2, 'a')
+
+        Now, joined_frame is a BigFrame accessing a frame with the columns *a*, *b*, *c*, *d*, and *e*.
+        The data in the new frame will be from the rows where column 'a' was the same in both frames.
+
+        Now, using a single BigFrame *my_frame* accessing a frame with the columns *b* and *book*.
+        Build a new frame, but remove any rows where the values in *b* and *book* do not match::
+
+            joined_frame = frame2.join(frame2, left_on='b', right_on='book', how='inner')
+
+        We end up with a new BigFrame *joined_frame* accessing a new frame with all the original columns, but only those rows where the data in the
+        original frame in column *b* matched the data in column *book*.
 
         """
         try:
@@ -786,6 +1095,14 @@ class BigFrame(CommandSupport):
 
     def project_columns(self, column_names, new_names=None):
         """
+        Summary
+        -------
+        Create frame from columns
+
+        .. versionadded:: 0.8
+
+        Extended Summary
+        ----------------
         Copies specified columns into a new BigFrame object, optionally renaming them.
 
         Parameters
@@ -806,6 +1123,10 @@ class BigFrame(CommandSupport):
         ------
         ValueError
             number of columns specified in column_names does not match the number of columns specified in new_names
+        Raises
+        ------
+        IaError
+
 
         Returns
         -------
@@ -814,13 +1135,23 @@ class BigFrame(CommandSupport):
 
         Examples
         --------
-        >>>
-        For this example, our original BigFrame called 'frame1' has columns named 'a', 'b', 'c', 'd'.
-        >>> new_frame = frame1.project_columns( ['a', 'b', 'c'], ['apple', 'boat', 'frog'])
-        And the result is a new BigFrame named 'new_name' with columns 'apple', 'boat', 'frog', and the data from 'frame1', column 'a' is now copied in column 'apple', the data from column 'b' is now copied in column 'boat' and the data from column 'c' is now copied in column 'frog'.
-        Continuing:
-        >>> frog_frame = new_frame.project_columns('frog')
-        And the new BigFrame called 'frog_frame' has a single column called 'frog' with a copy of all the data from the original column 'c' in 'frame1'.
+        Given a BigFrame *frame1*, accessing a frame with columns named *a*, *b*, *c*, *d*.
+        Create a new frame with three columns *apple*, *boat*, and *frog*, where for each row of the original frame, the data from column *a* is copied
+        to the new column *apple*, the data from column *b* is copied to the column *boat*, and the data from column *c* is copied
+        to the column *frog*::
+
+            new_frame = frame1.project_columns( ['a', 'b', 'c'], ['apple', 'boat', 'frog'])
+
+        And the result is a new BigFrame named 'new_name' accessing a new frame with columns *apple*, *boat*, *frog*, and the data from *frame1*,
+        column *a* is now copied in column *apple*, the data from column *b* is now copied in column *boat* and the data from column *c* is now
+        copied in column *frog*.
+
+        Continuing::
+
+            frog_frame = new_frame.project_columns('frog')
+
+        And the new BigFrame *frog_frame* is accessing a frame with a single column *frog* which has a copy of all the data from the original
+        column *c* in *frame1*.
 
         """
         # TODO - need example in docstring
@@ -833,9 +1164,15 @@ class BigFrame(CommandSupport):
 
     def groupby(self, groupby_columns, *aggregation_arguments):
         """
-        Create a new BigFrame using an existing frame, compressed by groups.
-        
-        Creates a new BigFrame.
+        Summary
+        -------
+        Create summarized frame
+
+        .. versionadded:: 0.8
+
+        Extended Summary
+        ----------------
+        Creates a new frame and returns a BigFrame object to access it.
         Takes a column or group of columns, finds the unique combination of values, and creates unique rows with these column values.
         The other columns are combined according to the aggregation argument(s).
 
@@ -845,6 +1182,10 @@ class BigFrame(CommandSupport):
             columns or result of a function will be used to create grouping
         aggregation: one or more aggregation functions or dictionaries of
             (column,aggregation function) pairs
+
+        Raises
+        ------
+        IaError
 
         Returns
         -------
@@ -858,45 +1199,67 @@ class BigFrame(CommandSupport):
 
         Examples
         --------
-        >>>
-        For this example, we will use a BigFrame called 'my_frame', with a column called 'a'.
-        Column 'a' has the values 'cat', 'apple', 'bat', 'cat', 'bat', 'cat'.
-        >>> column_a = my_frame.a
-        >>> new_frame = my_frame.groupBy(column_a, count)
-        The new BigFrame 'new_frame' has two columns named 'a' and 'count'.
-        In a row of 'new_frame', column 'a' is 'apple' and column 'count' is 1.
-        In another row of 'new_frame', column 'a' is 'bat' and column 'count' is 2.
-        In another row of 'new_frame', column 'a' is 'cat' and column 'count' is 3.
-        <BLANKLINE>
-        In this example, 'my_frame' has three columns, named 'a', 'b', and 'c'. The data in these columns is:
-        'a' is 1, 'b' is 'alpha', 'c' is 3.0
-        'a' is 1, 'b' is 'bravo', 'c' is 5.0
-        'a' is 1, 'b' is 'alpha', 'c' is 5.0
-        'a' is 2, 'b' is 'bravo', 'c' is 8.0
-        'a' is 2, 'b' is 'bravo', 'c' is 12.0
-        >>> column_a = my_frame.a
-        >>> column_b = my_frame.b
-        >>> column_c = my_frame.c
-        >>> new_frame = my_frame.groupBy([column_a, column_b], {column_c: avg})
-        The new BigFrame 'new_frame' has three columns named 'a', 'b', and 'c_avg'. The data is:
-        'a' is 1, 'b' is 'alpha', 'c_avg' is 4.0
-        'a' is 1, 'b' is 'bravo', 'c_avg' is 5.0
-        'a' is 2, 'b' is 'bravo', 'c_avg' is 10.0
-        <BLANKLINE>
-        For this example, we use 'my_frame' with columns 'a', 'c', 'd', and 'e'. Column types will be str, int, float, int. The data is:
-        'a' is 'ape', 'c' is 1, 'd' is 4.0, 'e' is 9
-        'a' is 'ape', 'c' is 1, 'd' is 8.0, 'e' is 8
-        'a' is 'big', 'c' is 1, 'd' is 5.0, 'e' is 7
-        'a' is 'big', 'c' is 1, 'd' is 6.0, 'e' is 6
-        'a' is 'big', 'c' is 1, 'd' is 8.0, 'e' is 5
-        >>> column_d = my_frame.d
-        >>> column_e = my_frame.e
-        >>> new_frame = my_frame.groupBy(my_frame[['a', 'c']], count, {column_d: [avg, sum, min], column_e: [max]})
-        The new BigFrame 'new_frame' has columns 'a', 'c', 'count', 'd_avg', 'd_sum', 'd_min', 'e_max'.
+        For setup, we will use a BigFrame *my_frame* accessing a frame with a column *a*.
+        Column *a* has the values 'cat', 'apple', 'bat', 'cat', 'bat', 'cat'.
+        Create a new frame, combining similar values of column *a*, and count how many of each value is in the original frame::
+
+            column_a = my_frame.a
+            new_frame = my_frame.groupBy(column_a, count)
+
+        The new BigFrame *new_frame* can access a new frame with two columns *a* and *count*.
+        The data, in no particular order, is::
+
+            Column *a* is 'apple' and column *count* is 1.
+            Column *a* is 'bat' and column *count* is 2.
+            Column *a* is 'cat' and column *count* is 3.
+
+        In this example, 'my_frame' is accessing a frame with three columns, *a*, *b*, and *c*.
+        The data in these columns is::
+
+            *a* is 1, *b* is 'alpha', *c* is 3.0
+            *a* is 1, *b* is 'bravo', *c* is 5.0
+            *a* is 1, *b* is 'alpha', *c* is 5.0
+            *a* is 2, *b* is 'bravo', *c* is 8.0
+            *a* is 2, *b* is 'bravo', *c* is 12.0
+
+        Break out the three columns for clarity; create a new frame from this data, grouping the rows by unique combinations of column *a* and *b*;
+        average the value in *c* for each group::
+
+            column_a = my_frame.a
+            column_b = my_frame.b
+            column_c = my_frame.c
+            new_frame = my_frame.groupBy([column_a, column_b], {column_c: avg})
+
+        The new frame accessed by the BigFrame *new_frame* has three columns named *a*, *b*, and *c_avg*.
+        The resultant data is::
+
+            *a* is 1, *b* is 'alpha', *c_avg* is 4.0
+            *a* is 1, *b* is 'bravo', *c_avg* is 5.0
+            *a* is 2, *b* is 'bravo', *c_avg* is 10.0
+
+        For this example, we use *my_frame* with columns *a*, *c*, *d*, and *e*.
+        Column types will be str, int, float, int.
+        The data is::
+
+            *a* is 'ape', *c* is 1, *d* is 4.0, *e* is 9
+            *a* is 'ape', *c* is 1, *d* is 8.0, *e* is 8
+            *a* is 'big', *c* is 1, *d* is 5.0, *e* is 7
+            *a* is 'big', *c* is 1, *d* is 6.0, *e* is 6
+            *a* is 'big', *c* is 1, *d* is 8.0, *e* is 5
+
+        Break out the columns for clarity; create a new frame from this data, grouping the rows by unique combinations of column *a* and *c*;
+        count each group; for column *d* calculate the average, sum and minimum value; for column *e*, save the maximum value::
+
+            column_d = my_frame.d
+            column_e = my_frame.e
+            new_frame = my_frame.groupBy(my_frame[['a', 'c']], count, {column_d: [avg, sum, min], column_e: [max]})
+
+        The new frame accessed by BigFrame *new_frame* has columns *a*, *c*, *count*, *d_avg*, *d_sum*, *d_min*, and *e_max*.
         The column types are (respectively): str, int, int, float, float, float, int.
-        The data is:
-        'a' is 'ape', 'c' is 1, 'count' is 2, 'd_avg' is 6.0, 'd_sum' is 12.0, 'd_min' is 4.0, 'e_max' is 9
-        'a' is 'big', 'c' is 1, 'count' is 3, 'd_avg' is 6.333333, 'd_sum' is 19.0, 'd_min' is 5.0, 'e_max' is 7
+        The data is::
+
+            *a* is 'ape', *c* is 1, *count* is 2, *d_avg* is 6.0, *d_sum* is 12.0, *d_min* is 4.0, *e_max* is 9
+            *a* is 'big', *c* is 1, *count* is 3, *d_avg* is 6.333333, *d_sum* is 19.0, *d_min* is 5.0, *e_max* is 7
 
 
         """
@@ -909,6 +1272,14 @@ class BigFrame(CommandSupport):
     @doc_stub
     def remove_columns(self, name):
         """
+        Summary
+        -------
+        Delete columns
+
+        .. versionadded:: 0.8
+
+        Extended Summary
+        ----------------
         Remove columns from the BigFrame object.
 
         Parameters
@@ -916,17 +1287,25 @@ class BigFrame(CommandSupport):
         name : str OR list of str
             column name OR list of column names to be removed from the frame
 
+        Raises
+        ------
+        KeyError
+            Attempting deletion of non-existant column
+            Check column name spelling
+        IaError
+
         Notes
         -----
-        * Deleting a non-existant column raises a KeyError.
-        * Deleting the last column in a frame leaves the frame empty.
+        Deleting the last column in a frame leaves the frame empty.
 
         Examples
         --------
-        >>>
-        # For this example, my_frame is a BigFrame object with columns titled "column_a", "column_b", column_c and "column_d".
-        >>> my_frame.remove_columns([ column_b, column_d ])
-        # Now my_frame only has the columns named "column_a" and "column_c"
+        For this example, BigFrame object *my_frame* accesses a frame with columns *column_a*, *column_b*, *column_c* and *column_d*.
+        Eliminate columns *column_b* and *column_d*::
+
+            my_frame.remove_columns([ column_b, column_d ])
+
+        Now the frame only has the columns *column_a* and *column_c*.
 
         """
         pass
@@ -938,6 +1317,14 @@ class BigFrame(CommandSupport):
 
     def rename_columns(self, column_names, new_names):
         """
+        Summary
+        -------
+        Rename column
+
+        .. versionadded:: 0.8
+
+        Extended Summary
+        ----------------
         Renames columns in a frame.
 
         Parameters
@@ -949,9 +1336,13 @@ class BigFrame(CommandSupport):
 
         Examples
         --------
-        If we start with a BigFrame with columns named "Wrong" and "Wong"
-        >>> frame.rename_columns( [ "Wrong", "Wong" ], [ "Right", "Wite" ] )
-        # now, what was Wrong is now Right and what was Wong is now Wite
+        Start with a frame with columns *Wrong* and *Wong*.
+        Rename the columns to *Right* and *Wite*::
+
+            frame.rename_columns(["Wrong", "Wong"], ["Right", "Wite"])
+
+        Now, what was *Wrong* is now *Right* and what was *Wong* is now *Wite*.
+
         """
         try:
             self._backend.rename_columns(self, column_names, new_names)
@@ -960,6 +1351,14 @@ class BigFrame(CommandSupport):
 
     def take(self, n, offset=0):
         """
+        Summary
+        -------
+        Get data subset
+
+        .. versionadded:: 0.8
+
+        Extended Summary
+        ----------------
         Take a subset of the currently active BigFrame.
 
         Parameters
@@ -969,20 +1368,29 @@ class BigFrame(CommandSupport):
         offset : int
             The number of rows to skip before copying
 
+        Raises
+        ------
+        IaError
+
         Notes
         -----
-        The data is considered 'unstructured', therefore taking a certain number of rows, the rows obtained 
+        The data is considered 'unstructured', therefore taking a certain number of rows, the rows obtained may be different every time the
+        command is executed, even if the parameters do not change.
 
         Examples
         --------
-        >>>
-        Let's say we have a frame called 'my_frame' with millions of rows of data
-        >>> r = my_frame.take( 5000 )
-        We now have a separate BigFrame called 'r' with a copy of the first 5000 rows of 'my_frame'
-        <BLANKLINE>
-        If we use the function like:
-        >>> r = my_frame.take( 5000, 1000 )
-        We end up with the BigFrame called 'r' again, but this time it has a copy of rows 1001 to 5000 of 'my_frame'
+        BigFrame *my_frame* accesses a frame with millions of rows of data.
+        Get a sample of 5000 rows::
+
+            r = my_frame.take( 5000 )
+
+        We now have a separate frame accessed by a BigFrame *r* with a copy of the first 5000 rows of the original frame.
+
+        If we use the function with an offset like::
+
+            r = my_frame.take( 5000, 1000 )
+
+        We end up with a new frame accessed by the BigFrame *r* again, but this time it has a copy of rows 1001 to 5000 of the original frame.
         
         """
         # TODO - Review and complete docstring
@@ -993,12 +1401,19 @@ class BigFrame(CommandSupport):
 
     def accuracy(self, label_column, pred_column):
         """
-        Computes the accuracy measure for a classification model
+        Summary
+        -------
+        Model accuracy
 
-        A column containing the correct labels for each instance and a column containing the predictions made by the
-        classifier are specified.  The accuracy of a classification model is the proportion of predictions that are
-        correct.  If we let TP denote the number of true positives, TN denote the number of true negatives, and K
-        denote the total number of classified instances, then the model accuracy is given by: (TP + TN) / K.
+        .. versionadded:: 0.8
+
+        Extended Summary
+        ----------------
+        Computes the accuracy measure for a classification model
+        A column containing the correct labels for each instance and a column containing the predictions made by the classifier are specified.
+        The accuracy of a classification model is the proportion of predictions that are correct.
+        If we let :math:`TP` denote the number of true positives, :math:`TN` denote the number of true negatives, and :math:`K`
+        denote the total number of classified instances, then the model accuracy is given by: :math:`(TP + TN) / K`.
 
         This measure applies to binary and multi-class classifiers.
 
@@ -1023,12 +1438,19 @@ class BigFrame(CommandSupport):
 
     def precision(self, label_column, pred_column, pos_label=1):
         """
-        Computes the precision measure for a classification model
+        Summary
+        -------
+        Model precision
 
+        .. versionadded:: 0.8
+
+        Extended Summary
+        ----------------
+        Computes the precision measure for a classification model
         A column containing the correct labels for each instance and a column containing the predictions made by the
         model are specified.  The precision of a binary classification model is the proportion of predicted positive
-        instances that are correct.  If we let TP denote the number of true positives and FP denote the number of false
-        positives, then the model precision is given by: TP / (TP + FP).
+        instances that are correct.  If we let :math:`TP` denote the number of true positives and :math:`FP` denote the number of false
+        positives, then the model precision is given by: :math:`TP / (TP + FP)`.
 
         For multi-class classification, the precision measure is computed as the weighted average of the precision
         for each label, where the weight is the number of instances with each label in the labeled column.  The
@@ -1058,12 +1480,19 @@ class BigFrame(CommandSupport):
 
     def recall(self, label_column, pred_column, pos_label=1):
         """
-        Computes the recall measure for a classification model
+        Summary
+        -------
+        Model measure
 
+        .. versionadded:: 0.8
+
+        Extended Summary
+        ----------------
+        Computes the recall measure for a classification model
         A column containing the correct labels for each instance and a column containing the predictions made by the
         model are specified.  The recall of a binary classification model is the proportion of positive instances that
-        are correctly identified.  If we let TP denote the number of true positives and FN denote the number of false
-        negatives, then the model recall is given by: TP / (TP + FN).
+        are correctly identified.  If we let :math:`TP` denote the number of true positives and :math:`FN` denote the number of false
+        negatives, then the model recall is given by: :math:`TP / (TP + FN)`.
 
         For multi-class classification, the recall measure is computed as the weighted average of the recall
         for each label, where the weight is the number of instance with each label in the labeled column.  The
@@ -1093,15 +1522,32 @@ class BigFrame(CommandSupport):
 
     def fmeasure(self, label_column, pred_column, pos_label=1, beta=1):
         """
-        Computes the f-beta measure for a classification model
+        Summary
+        -------
+        Model :math:`F_{\\beta}` measure
 
+        .. versionadded:: 0.8
+
+        Extended Summary
+        ----------------
+        Computes the :math:`F_{\\beta}` measure for a classification model.
         A column containing the correct labels for each instance and a column containing the predictions made by the
-        model are specified.  The f-beta measure of a binary classification model is the harmonic mean of precision and
-        recall. If we let TP denote the number of true positives, FP denote the number of false positives, and FN
-        denote the number of false negatives, then the model f-beta measure is given by:
-        (1 + beta^2) * (((TP / (TP + FP)) * (TP / (TP + FN))) / (beta^2 * ((TP / (TP + FP)) + (TP / (TP + FN))))).
+        model are specified.
+        The :math:`F_{\\beta}` measure of a binary classification model is the harmonic mean of precision and
+        recall.
+        If we let:
+        
+            * beta :math:`\\equiv \\beta`,
+            * :math:`T_{P}` denote the number of true positives,
+            * :math:`F_{P}` denote the number of false positives, and
+            * :math:`F_{N}` denote the number of false negatives,
+            
+        then:
+        
+        .. math::
+            F_{\\beta} = (1 + \\beta ^ 2) * \\frac{\\frac{T_{P}}{T_{P} + F_{P}} * \\frac{T_{P}}{T_{P} + F_{N}}}{\\beta ^ 2 * (\\frac{T_{P}}{T_{P} + F_{P}} + \\frac{T_{P}}{T_{P} + F_{N}})}
 
-        For multi-class classification, the f-beta measure is computed as the weighted average of the f-beta measure
+        For multi-class classification, the :math:`F_{\\beta}` measure is computed as the weighted average of the :math:`F_{\\beta}` measure
         for each label, where the weight is the number of instance with each label in the labeled column.  The
         determination of binary vs. multi-class is automatically inferred from the data.
 
@@ -1111,15 +1557,15 @@ class BigFrame(CommandSupport):
             the name of the column containing the correct label for each instance
         pred_column : str
             the name of the column containing the predicted label for each instance
-        pos_label : int or str, (optional, default=1)
+        pos_label : int or str, (optional)
             the value to be interpreted as a positive instance (only for binary, ignored for multi-class)
-        beta : float, (optional, default=1)
-            beta value to use for f-beta measure (default f1 measure is computed); must be greater than 0
+        beta : float, (optional)
+            beta value to use for :math:`F_{\\beta}` measure (default F1 measure is computed); must be greater than 0
 
         Returns
         ----------
         float64
-            the f-beta measure for the classifier
+            the :math:`F_{\\beta}` measure for the classifier
 
         Examples
         ----------
@@ -1129,3 +1575,32 @@ class BigFrame(CommandSupport):
 
         """
         return self._backend.classification_metric(self, 'fmeasure', label_column, pred_column, pos_label, beta)
+
+    def confusion_matrix(self, label_column, pred_column, pos_label=1):
+        """
+        Outputs a confusion matrix for a binary classifier
+
+        Parameters
+        ----------
+        label_column : str
+            the name of the column containing the correct label for each instance
+        pred_column : str
+            the name of the column containing the predicted label for each instance
+        pos_label : int or str, (optional, default=1)
+            the value to be interpreted as a positive instance
+
+        Returns
+        ----------
+            displays the formatted confusion matrix
+
+        Examples
+        ----------
+        >>> print(frame.confusion_matrix('labels', 'predictions'))
+                         Predicted
+                       __pos__ _neg___
+         Actual   pos | 1     | 4
+                  neg | 3     | 2
+
+        """
+
+        return self._backend.confusion_matrix(self, label_column, pred_column, pos_label)
