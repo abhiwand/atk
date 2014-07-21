@@ -23,27 +23,18 @@ import spray.json.JsObject
 class GraphBuilderConfigFactory(val schema: Schema, val graphLoad: GraphLoad, graph: Graph) {
 
   // TODO graphbuilder does not yet support taking multiple frames as input
-  require(graphLoad.frame_rules.size == 1)
+  require(graphLoad.frame_rules.size == 1, "only one frame rule per call is supported in this version")
 
   val theOnlyFrameRule = graphLoad.frame_rules.head
-
-  // TODO graphbuilder does not yet support per-edge bidirectionality
-  require((theOnlyFrameRule.edge_rules.forall(erule => (erule.bidirectional == true))) ||
-    (theOnlyFrameRule.edge_rules.forall(erule => (erule.bidirectional == false))))
-
-  val theOnlyBidirctionalityBit = if (theOnlyFrameRule.edge_rules.size == 0) {
-    true
-  }
-  else { theOnlyFrameRule.edge_rules.head.bidirectional }
 
   val graphConfig: GraphBuilderConfig = {
     new GraphBuilderConfig(getInputSchema(schema),
       getGBVertexRules(theOnlyFrameRule.vertex_rules),
       getGBEdgeRules(theOnlyFrameRule.edge_rules),
       getTitanConfiguration(graph.name),
-      biDirectional = theOnlyBidirctionalityBit,
-      append = false,
-      retainDanglingEdges = graphLoad.retain_dangling_edges,
+      append = graphLoad.append,
+      // The retainDanglingEdges option doesn't make sense for Python Layer because of how the rules get defined
+      retainDanglingEdges = false,
       inferSchema = true,
       broadcastVertexIds = false)
   }
@@ -130,7 +121,7 @@ class GraphBuilderConfigFactory(val schema: Schema, val graphLoad: GraphLoad, gr
    */
   private def getGBEdgeRule(edgeRule: EdgeRule): GBEdgeRule = {
     new GBEdgeRule(getGBPropertyRule(edgeRule.tail), getGBPropertyRule(edgeRule.head),
-      getGBValue(edgeRule.label), (edgeRule.properties map getGBPropertyRule))
+      getGBValue(edgeRule.label), (edgeRule.properties map getGBPropertyRule), biDirectional = edgeRule.bidirectional)
   }
 
   /**

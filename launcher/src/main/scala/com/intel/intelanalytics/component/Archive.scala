@@ -78,7 +78,7 @@ trait Archive extends Component {
    * @param className the class name to instantiate and configure
    * @return the new instance
    */
-  protected def load(className: String): Any = {
+  def load(className: String): Any = {
     Archive.logger(s"Loading class $className")
     loader(className)
   }
