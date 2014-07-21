@@ -23,8 +23,10 @@
 
 package com.intel.graphbuilder.parser.rule
 
-import com.intel.graphbuilder.elements.Edge
 import com.intel.graphbuilder.parser._
+import com.intel.graphbuilder.parser.InputSchema
+import com.intel.graphbuilder.elements.Edge
+import scala.collection.mutable.ListBuffer
 
 /**
  * Parse InputRow's into Edges using EdgeRules
@@ -38,10 +40,18 @@ case class EdgeRuleParser(inputSchema: InputSchema, edgeRules: List[EdgeRule]) e
    * Parse the supplied InputRow into zero or more Edges using all applicable rules
    */
   def parse(row: InputRow): Seq[Edge] = {
+    val edges = ListBuffer[Edge]()
     for {
-      rule ← edgeRules
+      rule <- edgeRules
       if rule appliesTo row
-    } yield edgeParsers(rule).parse(row)
+    } {
+      val edge = edgeParsers(rule).parse(row)
+      edges += edge
+      if (rule.biDirectional) {
+        edges += edge.reverse()
+      }
+    }
+    edges
   }
 }
 

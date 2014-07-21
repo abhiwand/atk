@@ -23,11 +23,12 @@
 
 package com.intel.graphbuilder.driver.spark.titan
 
-import com.intel.graphbuilder.elements.{ Edge, Vertex }
+import com.intel.graphbuilder.elements.{ GraphElement, Edge, Vertex }
 import com.intel.graphbuilder.graph.titan.TitanGraphConnector
 import com.intel.graphbuilder.parser.rule.DataTypeResolver
-import com.intel.graphbuilder.schema.{ GraphSchema, InferSchemaFromData, InferSchemaFromRules }
+import com.intel.graphbuilder.schema.{ SchemaAccumulableParam, GraphSchema, InferSchemaFromData, InferSchemaFromRules }
 import com.intel.graphbuilder.write.titan.TitanSchemaWriter
+import org.apache.spark.Accumulable
 import org.apache.spark.rdd.RDD
 
 /**
@@ -58,9 +59,10 @@ class InferSchemaManager(config: GraphBuilderConfig) extends Serializable {
    * Infer the schema by passing over each edge and vertex.
    */
   def writeSchemaFromData(edges: RDD[Edge], vertices: RDD[Vertex]) = {
-    edges.foreach(edge => inferSchemaFromData.add(edge))
-    vertices.foreach(vertex => inferSchemaFromData.add(vertex))
-    writeSchema(inferSchemaFromData.graphSchema)
+    val accum = new Accumulable[InferSchemaFromData, GraphElement](new InferSchemaFromData, new SchemaAccumulableParam)
+    edges.foreach(edge => accum.add(edge))
+    vertices.foreach(vertex => accum.add(vertex))
+    writeSchema(accum.value.graphSchema)
   }
 
   /**
