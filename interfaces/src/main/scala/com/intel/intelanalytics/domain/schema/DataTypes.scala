@@ -196,4 +196,20 @@ object DataTypes {
     }
   }
 
+  /**
+   * Attempt to cast Any type to Double
+   *
+   * @param value input Any type to be cast
+   * @return value cast as Double, if possible
+   */
+  def toDouble(value: Any): Double = {
+    value match {
+      case i: Int => i.toDouble
+      case l: Long => l.toDouble
+      case f: Float => f.toDouble
+      case d: Double => d
+      case _ => throw new IllegalArgumentException(s"The following value is not a numeric data type: $value")
+    }
+  }
+
 }

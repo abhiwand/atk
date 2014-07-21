@@ -23,6 +23,7 @@
 
 package com.intel.intelanalytics.engine.spark
 
+import com.intel.intelanalytics.domain.schema.DataTypes
 import com.intel.intelanalytics.engine.Rows._
 import org.apache.spark.SparkException
 import org.apache.spark.SparkContext._
@@ -44,7 +45,7 @@ private[spark] object CumulativeDistFunctions extends Serializable {
   def cumulativeSum(frameRdd: RDD[Row], sampleIndex: Int, dataType: String): RDD[Row] = {
     // parse values
     val pairedRdd = try {
-      frameRdd.map(row => (row(sampleIndex).toString, java.lang.Double.parseDouble(row(sampleIndex).toString)))
+      frameRdd.map(row => (row(sampleIndex).toString, DataTypes.toDouble(row(sampleIndex))))
     }
     catch {
       case se: SparkException => throw new SparkException("Non-numeric column: " + se.toString)
@@ -101,7 +102,7 @@ private[spark] object CumulativeDistFunctions extends Serializable {
   def cumulativePercentSum(frameRdd: RDD[Row], sampleIndex: Int, dataType: String): RDD[Row] = {
     // parse values
     val pairedRdd = try {
-      frameRdd.map(row => (row(sampleIndex).toString, java.lang.Double.parseDouble(row(sampleIndex).toString)))
+      frameRdd.map(row => (row(sampleIndex).toString, DataTypes.toDouble(row(sampleIndex))))
     }
     catch {
       case cce: NumberFormatException => throw new NumberFormatException("Non-numeric column: " + cce.toString)
