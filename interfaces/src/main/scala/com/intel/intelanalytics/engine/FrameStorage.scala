@@ -37,14 +37,25 @@ trait FrameStorage {
   def getFrames(offset: Int, count: Int)(implicit user: UserPrincipal): Seq[DataFrame]
   def create(frameTemplate: DataFrameTemplate)(implicit user: UserPrincipal): DataFrame
   def addColumn[T](frame: DataFrame, column: Column[T], columnType: DataTypes.DataType): DataFrame
-  def addColumnWithValue[T](frame: DataFrame, column: Column[T], default: T): Unit
   def removeColumn(frame: DataFrame, columnIndex: Seq[Int])(implicit user: UserPrincipal): DataFrame
   def renameFrame(frame: DataFrame, newName: String): DataFrame
   def renameColumn(frame: DataFrame, name_pairs: Seq[(String, String)]): DataFrame
-  def removeRows(frame: DataFrame, predicate: Row => Boolean)
-  def appendRows(startWith: DataFrame, append: Iterable[Row])
   def getRows(frame: DataFrame, offset: Long, count: Int)(implicit user: UserPrincipal): Iterable[Row]
   def drop(frame: DataFrame)
   //def updateName(frame: DataFrame, newName: String)(implicit user: UserPrincipal): DataFrame
   def updateSchema(frame: DataFrame, columns: List[(String, DataType)]): DataFrame
+
+  /**
+   * Get the error frame of the supplied frame or create one if it doesn't exist
+   * @param frame the 'good' frame
+   * @return the parse errors for the 'good' frame
+   */
+  def lookupOrCreateErrorFrame(frame: DataFrame): DataFrame
+
+  /**
+   * Get the error frame of the supplied frame
+   * @param frame the 'good' frame
+   * @return the parse errors for the 'good' frame
+   */
+  def lookupErrorFrame(frame: DataFrame): Option[DataFrame]
 }
