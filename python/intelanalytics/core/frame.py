@@ -1084,7 +1084,8 @@ class BigFrame(CommandSupport):
                   Assumes a Gaussian distribution. NaN when there are <= 1 data elements of positive weight.
                  mean_confidence_upper: Upper limit of the 95% confidence interval about the mean.
                   Assumes a Gaussian distribution. NaN when there are <= 1 data elements of positive weight.
-                 count :The number of entries of positive weight.
+                 count : The number of data entries; equivalently, the number of rows in the table.
+                 non_positive_weight_count : The number data elements with weight <= 0.
 
         Examples
         --------
@@ -1133,7 +1134,8 @@ class BigFrame(CommandSupport):
                   Assumes a Gaussian distribution. NaN when there are <= 1 data elements of positive weight.
                  mean_confidence_upper: Upper limit of the 95% confidence interval about the mean.
                   Assumes a Gaussian distribution. NaN when there are <= 1 data elements of positive weight.
-                 count : The number of entries of positive weight.
+                 count : The number of data entries; equivalently, the number of rows in the table.
+                 non_positive_weight_count : The number data elements with wei
 
         Examples
         --------

@@ -82,7 +82,8 @@ private[spark] object ColumnStatistics extends Serializable {
       mean_confidence_upper = stats.meanConfidenceUpper,
       minimum = stats.min,
       maximum = stats.max,
-      count = stats.count)
+      count = stats.count,
+      non_positive_weight_count = stats.nonPositiveWeightCount)
   }
 
   /**
@@ -112,7 +113,8 @@ private[spark] object ColumnStatistics extends Serializable {
       mean_confidence_upper = stats.meanConfidenceUpper,
       minimum = stats.min,
       maximum = stats.max,
-      count = stats.count)
+      count = stats.count,
+      non_positive_weight_count = stats.nonPositiveWeightCount)
   }
 
   private def getDoubleWeightPairs(dataColumnIndex: Int,
