@@ -55,7 +55,7 @@
         </dependency>
 		<dependency>
             <groupId>com.intel.ia</groupId>
-            <artifactId>igiraph/giraph-titan</artifactId>
+            <artifactId>igiraph-titan</artifactId>
         </dependency>
         <!--END BDA dependencies to our modules-->
     </dependencies>
