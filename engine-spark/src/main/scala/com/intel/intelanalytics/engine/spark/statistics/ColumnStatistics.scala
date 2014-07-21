@@ -74,16 +74,16 @@ private[spark] object ColumnStatistics extends Serializable {
     val stats = new NumericalStatistics(dataWeightPairs)
 
     ColumnSummaryStatisticsReturn(mean = stats.weightedMean,
-      geometric_mean = stats.weightedGeometricMean,
+      geometricMean = stats.weightedGeometricMean,
       variance = stats.weightedVariance,
-      standard_deviation = stats.weightedStandardDeviation,
+      standardDeviation = stats.weightedStandardDeviation,
       mode = stats.weightedMode,
-      mean_confidence_lower = stats.meanConfidenceLower,
-      mean_confidence_upper = stats.meanConfidenceUpper,
+      meanConfidenceLowerBound = stats.meanConfidenceLower,
+      meanConfidenceUpperBound = stats.meanConfidenceUpper,
       minimum = stats.min,
       maximum = stats.max,
-      count = stats.count,
-      non_positive_weight_count = stats.nonPositiveWeightCount)
+      positiveWeightCount = stats.count,
+      nonPositiveWeightCount = stats.nonPositiveWeightCount)
   }
 
   /**
@@ -103,18 +103,18 @@ private[spark] object ColumnStatistics extends Serializable {
     val stats = new NumericalStatistics(dataWeightPairs)
 
     ColumnFullStatisticsReturn(mean = stats.weightedMean,
-      geometric_mean = stats.weightedGeometricMean,
+      geometricMean = stats.weightedGeometricMean,
       variance = stats.weightedVariance,
-      standard_deviation = stats.weightedStandardDeviation,
+      standardDeviation = stats.weightedStandardDeviation,
       skewness = stats.weightedSkewness,
       kurtosis = stats.weightedKurtosis,
       mode = stats.weightedMode,
-      mean_confidence_lower = stats.meanConfidenceLower,
-      mean_confidence_upper = stats.meanConfidenceUpper,
+      meanConfidenceLowerBound = stats.meanConfidenceLower,
+      meanConfidenceUpperBound = stats.meanConfidenceUpper,
       minimum = stats.min,
       maximum = stats.max,
-      count = stats.count,
-      non_positive_weight_count = stats.nonPositiveWeightCount)
+      positiveWeightCount = stats.count,
+      nonPositiveWeightCount = stats.nonPositiveWeightCount)
   }
 
   private def getDoubleWeightPairs(dataColumnIndex: Int,

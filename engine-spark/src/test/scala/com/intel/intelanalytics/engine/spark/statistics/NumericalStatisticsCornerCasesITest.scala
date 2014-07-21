@@ -103,6 +103,31 @@ class NumericalStatisticsCornerCasesITest extends TestingSparkContext with Match
     numericalStatistics.meanConfidenceUpper.isNaN() shouldBe true
   }
 
+  "all data has negative weights" should "be like empty data but with correct counts" in new NumericalStatisticsCornerCaseTest() {
+
+    val data = List(1, 2, 3, 4, 5, 6, 7, -18).map(x => x.toDouble)
+    val frequencies = List(-3, -2, -3, -1, -9, -4, -3, -1).map(x => x.toDouble)
+
+    val dataFrequencies = sc.parallelize(data.zip(frequencies))
+
+    val numericalStatistics = new NumericalStatistics(dataFrequencies)
+
+    numericalStatistics.count shouldBe 0
+    numericalStatistics.nonPositiveWeightCount shouldBe data.length
+    Math.abs(numericalStatistics.weightedMean - 0) should be < epsilon
+    Math.abs(numericalStatistics.weightedGeometricMean - 1) should be < epsilon
+    numericalStatistics.min shouldBe Double.PositiveInfinity
+    numericalStatistics.max shouldBe Double.NegativeInfinity
+    numericalStatistics.weightedVariance.isNaN() shouldBe true
+    numericalStatistics.weightedStandardDeviation.isNaN() shouldBe true
+    numericalStatistics.weightedSkewness.isNaN() shouldBe true
+    numericalStatistics.weightedKurtosis.isNaN() shouldBe true
+    numericalStatistics.weightedMode.isNaN() shouldBe true
+    numericalStatistics.meanConfidenceLower.isNaN() shouldBe true
+    numericalStatistics.meanConfidenceUpper.isNaN() shouldBe true
+
+  }
+
   "numerical statistics" should "correctly handle data of length 1" in new NumericalStatisticsCornerCaseTest() {
 
     val data: List[Double] = List(1.toDouble)

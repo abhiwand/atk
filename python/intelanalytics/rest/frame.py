@@ -212,7 +212,7 @@ class FrameBackendRest(object):
 
         arguments = self._get_load_arguments(frame, data)
         result = execute_update_frame_command("load", arguments, frame)
-        if result.has_key("error_frame_id"):
+        if result and result.has_key("error_frame_id"):
             sys.stderr.write("There were parse errors during load, please see frame.get_error_frame()\n")
             logger.warn("There were parse errors during load, please see frame.get_error_frame()")
 
