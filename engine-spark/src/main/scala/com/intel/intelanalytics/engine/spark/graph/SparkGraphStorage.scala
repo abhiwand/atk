@@ -58,6 +58,10 @@ class SparkGraphStorage(context: (UserPrincipal) => Context,
     metaStore.withSession("spark.graphstorage.drop") {
       implicit session =>
         {
+          val check = metaStore.graphRepo.lookupByName(graph.name)
+          if (check.isDefined) {
+            throw new RuntimeException("Graph with same name exists. Rename aborted")
+          }
           metaStore.graphRepo.insert(graph).get
         }
     }
