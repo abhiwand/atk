@@ -43,11 +43,11 @@ case class ColumnFullStatistics(frame: FrameReference, data_column: String, weig
  * Values follow default settings specified by SAS
  * http://support.sas.com/documentation/cdl/en/procstat/63104/HTML/default/viewer.htm#procstat_univariate_sect026.htm
  * @param mean Arithmetic mean of the data.
- * @param geometric_mean Geometric mean of the data. NaN when there is a non-positive data element, 1 if there are no
+ * @param geometricMean Geometric mean of the data. NaN when there is a non-positive data element, 1 if there are no
  *                       data elements.
  * @param variance Variance of the data where weighted sum of squared distance from the mean is divided by the number of
  *                 data elements minus 1. NaN when the number of data elements is < 2.
- * @param standard_deviation Standard deviation of the data. NaN when the number of data elements is < 2.
+ * @param standardDeviation Standard deviation of the data. NaN when the number of data elements is < 2.
  * @param skewness The skewness of the data. NaN when the number of data elements is < 3
  *                 or if the distribution is uniform.
  * @param kurtosis The kurtosis of the data. NaN when the number of data elements is < 4
@@ -58,23 +58,23 @@ case class ColumnFullStatistics(frame: FrameReference, data_column: String, weig
  * weight.
  * @param maximum Maximum value in the data. Negative infinity when there are no data elements of positive
  * weight.
- * @param mean_confidence_lower: Lower limit of the 95% confidence interval about the mean. Assumes a Gaussian RV.
+ * @param meanConfidenceLowerBound: Lower limit of the 95% confidence interval about the mean. Assumes a Gaussian RV.
  *                             NaN when there are <= 1 data elements of positive weight.
- * @param mean_confidence_upper: Upper limit of the 95% confidence interval about the mean. Assumes a Gaussian RV.
+ * @param meanConfidenceUpperBound: Upper limit of the 95% confidence interval about the mean. Assumes a Gaussian RV.
  *                              NaN when there are <= 1 data elements of positive weight.
- * @param count The number data elements. Equivalently, the count of rows in the column.
- * @param non_positive_weight_count The number data elements with weight <= 0.
+ * @param positiveWeightCount The number data elements with weights > 0.
+ * @param nonPositiveWeightCount The number data elements with weight <= 0.
  */
 case class ColumnFullStatisticsReturn(mean: Double,
-                                      geometric_mean: Double,
+                                      geometricMean: Double,
                                       variance: Double,
-                                      standard_deviation: Double,
+                                      standardDeviation: Double,
                                       skewness: Double,
                                       kurtosis: Double,
                                       mode: Double,
                                       minimum: Double,
                                       maximum: Double,
-                                      mean_confidence_lower: Double,
-                                      mean_confidence_upper: Double,
-                                      count: Long,
-                                      non_positive_weight_count: Long)
+                                      meanConfidenceLowerBound: Double,
+                                      meanConfidenceUpperBound: Double,
+                                      positiveWeightCount: Long,
+                                      nonPositiveWeightCount: Long)

@@ -87,15 +87,15 @@ private[numericalstatistics] object FirstPassStatistics {
         mode = dataAsDouble,
         weightAtMode = weightAsDouble,
         totalWeight = weightAsBigDecimal,
-        totalCount = 1.toLong,
+        totalCount = 1,
         nonPositiveWeightCount = 0)
     }
     else {
       FirstPassStatistics(
         nonPositiveWeightCount = 1,
-
         // entries of non-positive weight are discarded, so that the statistics for such an entry
         // are simply those of an empty collection
+        totalCount = 0,
         mean = BigDecimal(0),
         weightedSumOfSquares = BigDecimal(0),
         weightedSumOfSquaredDistancesFromMean = BigDecimal(0),
@@ -104,8 +104,7 @@ private[numericalstatistics] object FirstPassStatistics {
         maximum = Double.NegativeInfinity,
         mode = Double.NaN,
         weightAtMode = 0,
-        totalWeight = BigDecimal(0),
-        totalCount = 0)
+        totalWeight = BigDecimal(0))
     }
   }
 
@@ -139,7 +138,7 @@ private[numericalstatistics] object FirstPassStatistics {
           mode = stats2.mode,
           weightAtMode = stats2.weightAtMode,
           totalWeight = stats2.totalWeight,
-          totalCount = stats1.totalCount + stats2.totalCount,
+          totalCount = stats2.totalCount,
           nonPositiveWeightCount = stats1.nonPositiveWeightCount + stats2.nonPositiveWeightCount)
       }
       else if (stats2.totalWeight equals BigDecimal(0)) {
@@ -152,7 +151,7 @@ private[numericalstatistics] object FirstPassStatistics {
           mode = stats1.mode,
           weightAtMode = stats1.weightAtMode,
           totalWeight = stats1.totalWeight,
-          totalCount = stats1.totalCount + stats2.totalCount,
+          totalCount = stats1.totalCount,
           nonPositiveWeightCount = stats1.nonPositiveWeightCount + stats2.nonPositiveWeightCount)
       }
       else {
