@@ -727,8 +727,8 @@ private[spark] object SparkOps extends Serializable {
    */
   def calculatePercentiles(rdd: RDD[Row], percentiles: Seq[Int], columnIndex: Int, dataType: DataType): Seq[Percentile] = {
     val totalRows = rdd.count()
-    val pairRdd = rdd.map(row => SparkOps.createKeyValuePairFromRow(row, List(columnIndex))).map { case (keyColumns, data) => (keyColumns(0), data) }
-    val sorted = pairRdd.asInstanceOf[RDD[(Int, Row)]].sortByKey(true)
+    val pairRdd = rdd.map(row => SparkOps.createKeyValuePairFromRow(row, List(columnIndex))).map { case (keyColumns, data) => (keyColumns(0).toString.toDouble, data) }
+    val sorted = pairRdd.asInstanceOf[RDD[(Double, Row)]].sortByKey(true)
 
     val percentileTargetMapping = getPercentileTargetMapping(totalRows, percentiles)
     val sumsAndCounts: Map[Int, (Int, Int)] = getPerPartitionCountAndAccumulatedSum(sorted)
