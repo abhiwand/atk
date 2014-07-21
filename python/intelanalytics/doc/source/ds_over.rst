@@ -12,10 +12,10 @@ Contents:
     ds_dflw
     ds_samp
     ds_ml
+    ds_mlal
     ds_apic
 
 .. TODO::
-    ds_mlal # Machine learning algorithms
     ds_misc # Miscellaneous
     ds_supp # Supplemental
     ds_bkm # BKM

@@ -22,5 +22,4 @@ Gremlin
 Think about it as SQL queries for :term:`graph` databases.
 
 .. _Wikipedia\: Graph Data Structure: http://en.wikipedia.org/wiki/Graph_data_structure
-.. _Gremlin: https://github.com/tinkerpop/gremlin/wiki
 
