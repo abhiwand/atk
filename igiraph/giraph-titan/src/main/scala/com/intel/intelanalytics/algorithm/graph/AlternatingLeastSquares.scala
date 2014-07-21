@@ -104,7 +104,7 @@ class AlternatingLeastSquares
 
     AlsResult(GiraphJobDriver.run("ia_giraph_als",
       classOf[AlternatingLeastSquaresComputation].getCanonicalName,
-      config, giraphConf, invocation.commandId))
+      config, giraphConf, invocation.commandId, "als-learning-report_0"))
   }
 
   //TODO: Replace with generic code that works on any case class
