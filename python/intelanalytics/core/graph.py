@@ -387,7 +387,6 @@ class EdgeRule(Rule):
         properties_frame = self.validate_properties(self.properties)
         return self.validate_same_frame(label_frame, tail_frame, head_frame, properties_frame)
 
-
 class BigGraph(CommandSupport):
     """
     Creates a big graph.
