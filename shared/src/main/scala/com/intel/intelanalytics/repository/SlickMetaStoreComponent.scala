@@ -34,8 +34,9 @@ import org.joda.time.DateTime
 import scala.slick.driver.{ JdbcDriver, JdbcProfile }
 import org.flywaydb.core.Flyway
 import spray.json._
-
 import scala.util.Try
+import com.intel.intelanalytics.security.UserPrincipal
+import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 import com.intel.intelanalytics.engine.ProgressInfo
 import com.intel.intelanalytics.engine.ProgressInfo
 import scala.Some
@@ -160,7 +161,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
 
     override lazy val graphRepo: Repository[Session, GraphTemplate, Graph] = new SlickGraphRepository
 
-    override lazy val frameRepo: Repository[Session, DataFrameTemplate, DataFrame] = new SlickFrameRepository
+    override lazy val frameRepo: FrameRepository[Session] = new SlickFrameRepository
 
     /** Repository for CRUD on 'command' table */
     override lazy val commandRepo: CommandRepository[Session] = new SlickCommandRepository
@@ -337,9 +338,10 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
    *
    * Provides methods for modifying and querying the frame table.
    */
-  class SlickFrameRepository extends Repository[Session, DataFrameTemplate, DataFrame]
+  class SlickFrameRepository extends FrameRepository[Session]
       with EventLogging {
     this: Repository[Session, DataFrameTemplate, DataFrame] =>
+    type Session = msc.Session
 
     /**
      * A slick implementation of the 'Frame' table that defines
@@ -364,8 +366,10 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
 
       def modifiedById = column[Option[Long]]("modified_by")
 
+      def errorFrameId = column[Option[Long]]("error_frame_id")
+
       /** projection to/from the database */
-      override def * = (id, name, description, schema, statusId, createdOn, modifiedOn, createdById, modifiedById) <>
+      override def * = (id, name, description, schema, statusId, createdOn, modifiedOn, createdById, modifiedById, errorFrameId) <>
         (DataFrame.tupled, DataFrame.unapply)
 
       // foreign key relationships
@@ -375,6 +379,8 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
       def createdBy = foreignKey("frame_created_by", createdById, users)(_.id)
 
       def modifiedBy = foreignKey("frame_modified_by", modifiedById, users)(_.id)
+
+      def errorFrame = foreignKey("frame_error_frame_id", errorFrameId, frames)(_.id)
 
     }
 
@@ -397,6 +403,21 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
       val updatedFrame = frame.copy(modifiedOn = new DateTime)
       frames.where(_.id === frame.id).update(updatedFrame)
       updatedFrame
+    }
+
+    override def updateSchema(frame: DataFrame, columns: List[(String, DataType)])(implicit session: Session): DataFrame = {
+      // this looks crazy but it is how you update only one column
+      val schemaColumn = for (f <- frames if f.id === frame.id) yield f.schema
+      schemaColumn.update(frame.schema.copy(columns = columns))
+      frames.where(_.id === frame.id).firstOption.get
+    }
+
+    /** Update the errorFrameId column */
+    override def updateErrorFrameId(frame: DataFrame, errorFrameId: Option[Long])(implicit session: Session): DataFrame = {
+      // this looks crazy but it is how you update only one column
+      val errorFrameIdColumn = for (f <- frames if f.id === frame.id) yield f.errorFrameId
+      errorFrameIdColumn.update(errorFrameId)
+      frames.where(_.id === frame.id).firstOption.get
     }
 
     override def insert(frame: DataFrameTemplate)(implicit session: Session): Try[DataFrame] = Try {
@@ -423,7 +444,6 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
     def dropTable()(implicit session: Session) = {
       frames.ddl.drop
     }
-
   }
 
   /**

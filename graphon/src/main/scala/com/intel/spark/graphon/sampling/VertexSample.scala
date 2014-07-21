@@ -41,7 +41,12 @@ import com.intel.spark.graphon.sampling.SamplingSparkOps._
  * @param sampleType type of vertex sampling to use
  * @param seed random seed value
  */
-case class VS(graph: GraphReference, size: Int, sampleType: String, seed: Int = 1)
+case class VS(graph: GraphReference, size: Int, sampleType: String, seed: Option[Long] = None) {
+  require(size >= 1, "Invalid sample size")
+  require(sampleType.equals("uniform") ||
+    sampleType.equals("degree") ||
+    sampleType.equals("degreedist"), "Invalid sample type")
+}
 
 case class VSResult(subgraph: GraphReference)
 
@@ -90,19 +95,29 @@ class VertexSample extends SparkCommandPlugin[VS, VSResult] {
       case _ => throw new IllegalArgumentException("Invalid sample type")
     }
 
-    val test5 = vertexSample.collect()
-    val test6 = edgeRDD.collect()
-
     val edgeSample = sampleEdges(vertexSample, edgeRDD)
 
-    val test7 = edgeSample.collect()
-
     val iatSubgraphName = GraphName.convertGraphUserNameToBackendName("graph_" + UUID.randomUUID.toString)
-    titanConfig.setProperty("storage.tablename", iatSubgraphName)
+
+    val subgraphTitanConfig = new SerializableBaseConfiguration()
+    subgraphTitanConfig.setProperty("storage.backend", titanConfigInput.getString("storage.backend"))
+    subgraphTitanConfig.setProperty("storage.hostname", titanConfigInput.getString("storage.hostname"))
+    subgraphTitanConfig.setProperty("storage.port", titanConfigInput.getString("storage.port"))
+    subgraphTitanConfig.setProperty("storage.batch-loading", titanConfigInput.getString("storage.batch-loading"))
+    subgraphTitanConfig.setProperty("storage.buffer-size", titanConfigInput.getString("storage.buffer-size"))
+    subgraphTitanConfig.setProperty("storage.attempt-wait", titanConfigInput.getString("storage.attempt-wait"))
+    subgraphTitanConfig.setProperty("storage.lock-wait-time", titanConfigInput.getString("storage.lock-wait-time"))
+    subgraphTitanConfig.setProperty("storage.lock-retries", titanConfigInput.getString("storage.lock-retries"))
+    subgraphTitanConfig.setProperty("storage.idauthority-retries", titanConfigInput.getString("storage.idauthority-retries"))
+    subgraphTitanConfig.setProperty("storage.read-attempts", titanConfigInput.getString("storage.read-attempts"))
+    subgraphTitanConfig.setProperty("autotype", titanConfigInput.getString("autotype"))
+    subgraphTitanConfig.setProperty("ids.block-size", titanConfigInput.getString("ids.block-size"))
+    subgraphTitanConfig.setProperty("ids.renew-timeout", titanConfigInput.getString("ids.renew-timeout"))
+    subgraphTitanConfig.setProperty("storage.tablename", iatSubgraphName)
 
     val subgraph = Await.result(invocation.engine.createGraph(GraphTemplate(iatSubgraphName)), config.getInt("default-timeout") seconds)
 
-    writeToTitan(vertexSample, edgeSample, titanConfig)
+    writeToTitan(vertexSample, edgeSample, subgraphTitanConfig)
 
     VSResult(new GraphReference(subgraph.id))
   }

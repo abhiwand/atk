@@ -81,20 +81,20 @@ class VertexSampleITest extends Specification {
     "contain correct number of vertices in sample" in new TestingSparkContext {
       val vertexRdd = sc.parallelize(inputVertexList.toSeq, 2)
 
-      val sampleVerticesRdd = SamplingSparkOps.sampleVerticesUniform(vertexRdd, 5)
+      val sampleVerticesRdd = SamplingSparkOps.sampleVerticesUniform(vertexRdd, 5, None)
       sampleVerticesRdd.count() mustEqual 5
     }
 
     "give error if sample size less than 1" in new TestingSparkContext {
       val vertexRdd = sc.parallelize(inputVertexList.toSeq, 2)
 
-      SamplingSparkOps.sampleVerticesUniform(vertexRdd, 0) must throwAn[IllegalArgumentException]
+      SamplingSparkOps.sampleVerticesUniform(vertexRdd, 0, None) must throwAn[IllegalArgumentException]
     }
 
     "returns entire dataset if sample size is greater than or equal to dataset size" in new TestingSparkContext {
       val vertexRdd = sc.parallelize(inputVertexList.toSeq, 2)
 
-      SamplingSparkOps.sampleVerticesUniform(vertexRdd, 200) mustEqual vertexRdd
+      SamplingSparkOps.sampleVerticesUniform(vertexRdd, 200, None) mustEqual vertexRdd
     }
   }
 
@@ -104,7 +104,7 @@ class VertexSampleITest extends Specification {
       val vertexRdd = sc.parallelize(inputVertexList.toSeq, 2)
       val edgeRdd = sc.parallelize(inputEdgeList.toSeq, 2)
 
-      val sampleVerticesRdd = SamplingSparkOps.sampleVerticesDegree(vertexRdd, edgeRdd, 5)
+      val sampleVerticesRdd = SamplingSparkOps.sampleVerticesDegree(vertexRdd, edgeRdd, 5, None)
       sampleVerticesRdd.count() mustEqual 5
     }
 
@@ -112,14 +112,14 @@ class VertexSampleITest extends Specification {
       val vertexRdd = sc.parallelize(inputVertexList.toSeq, 2)
       val edgeRdd = sc.parallelize(inputEdgeList.toSeq, 2)
 
-      SamplingSparkOps.sampleVerticesDegree(vertexRdd, edgeRdd, 0) must throwAn[IllegalArgumentException]
+      SamplingSparkOps.sampleVerticesDegree(vertexRdd, edgeRdd, 0, None) must throwAn[IllegalArgumentException]
     }
 
     "returns entire dataset if sample size is greater than or equal to dataset size" in new TestingSparkContext {
       val vertexRdd = sc.parallelize(inputVertexList.toSeq, 2)
       val edgeRdd = sc.parallelize(inputEdgeList.toSeq, 2)
 
-      SamplingSparkOps.sampleVerticesDegree(vertexRdd, edgeRdd, 200) mustEqual vertexRdd
+      SamplingSparkOps.sampleVerticesDegree(vertexRdd, edgeRdd, 200, None) mustEqual vertexRdd
     }
   }
 
@@ -129,7 +129,7 @@ class VertexSampleITest extends Specification {
       val vertexRdd = sc.parallelize(inputVertexList.toSeq, 2)
       val edgeRdd = sc.parallelize(inputEdgeList.toSeq, 2)
 
-      val sampleVerticesRdd = SamplingSparkOps.sampleVerticesDegreeDist(vertexRdd, edgeRdd, 5)
+      val sampleVerticesRdd = SamplingSparkOps.sampleVerticesDegreeDist(vertexRdd, edgeRdd, 5, None)
       sampleVerticesRdd.count() mustEqual 5
     }
 
@@ -137,14 +137,14 @@ class VertexSampleITest extends Specification {
       val vertexRdd = sc.parallelize(inputVertexList.toSeq, 2)
       val edgeRdd = sc.parallelize(inputEdgeList.toSeq, 2)
 
-      SamplingSparkOps.sampleVerticesDegreeDist(vertexRdd, edgeRdd, 0) must throwAn[IllegalArgumentException]
+      SamplingSparkOps.sampleVerticesDegreeDist(vertexRdd, edgeRdd, 0, None) must throwAn[IllegalArgumentException]
     }
 
     "returns entire dataset if sample size is greater than or equal to dataset size" in new TestingSparkContext {
       val vertexRdd = sc.parallelize(inputVertexList.toSeq, 2)
       val edgeRdd = sc.parallelize(inputEdgeList.toSeq, 2)
 
-      SamplingSparkOps.sampleVerticesDegreeDist(vertexRdd, edgeRdd, 200) mustEqual vertexRdd
+      SamplingSparkOps.sampleVerticesDegreeDist(vertexRdd, edgeRdd, 200, None) mustEqual vertexRdd
     }
   }
 

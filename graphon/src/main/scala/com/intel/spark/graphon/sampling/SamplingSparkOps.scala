@@ -47,16 +47,23 @@ object SamplingSparkOps extends Serializable {
    * @param seed random seed value
    * @return the vertices in the sample
    */
-  def sampleVerticesUniform(vertices: RDD[Vertex], size: Int, seed: Int = 1): RDD[Vertex] = {
+  def sampleVerticesUniform(vertices: RDD[Vertex], size: Int, seed: Option[Long]): RDD[Vertex] = {
     require(size >= 1, "Invalid sample size: " + size)
     // TODO: Currently, all vertices are treated the same.  This should be extended to allow the user to specify, for example, different sample weights for different vertex types.
     if (size >= vertices.count()) {
       vertices
     }
     else {
-      // sample without replacement from large graph should give almost-zero covariance
-      val vertexSample = vertices.takeSample(false, size, seed)
-      vertices.sparkContext.parallelize(vertexSample)
+      seed match {
+        case Some(l) => Random.setSeed(l)
+        case None => None
+      }
+      val weightedVertices = vertices.map(vertex => (Random.nextDouble(), vertex))
+
+      val vertexSampleArray = weightedVertices.top(size)(Ordering.by(pair => pair._1))
+      val vertexSampleRdd = vertices.sparkContext.parallelize(vertexSampleArray)
+
+      vertexSampleRdd.map(pair => pair._2)
     }
   }
 
@@ -71,13 +78,16 @@ object SamplingSparkOps extends Serializable {
    * @param seed random seed value
    * @return the vertices in the sample
    */
-  def sampleVerticesDegree(vertices: RDD[Vertex], edges: RDD[Edge], size: Int, seed: Int = 1): RDD[Vertex] = {
+  def sampleVerticesDegree(vertices: RDD[Vertex], edges: RDD[Edge], size: Int, seed: Option[Long]): RDD[Vertex] = {
     require(size >= 1, "Invalid sample size: " + size)
     if (size >= vertices.count()) {
       vertices
     }
     else {
-      // NOTE: The current implementation here is for unordered sampling without replacement
+      seed match {
+        case Some(l) => Random.setSeed(l)
+        case None => None
+      }
       // create tuple of (vertexDegree, vertex)
       val vertexDegreeRdd = addVertexDegreeWeights(vertices, edges)
 
@@ -86,13 +96,16 @@ object SamplingSparkOps extends Serializable {
 
       val vertexSampleArray = weightedVertices.top(size)(Ordering.by(pair => pair._1))
       val vertexSamplePairRdd = vertices.sparkContext.parallelize(vertexSampleArray)
+
       vertexSamplePairRdd.map(pair => pair._2)
     }
   }
 
   /**
    * Produce a weighted vertex sample using the size of the degree histogram bin as the weight for a vertex, instead
-   * of just the degree value itself.  This will result in a bias toward vertices with more frequent degree values.
+   * of just the degree value itself.
+   *
+   * This will result in a bias toward vertices with more frequent degree values.
    *
    * @param size the specified sample size
    * @param vertices the vertices to sample
@@ -100,13 +113,16 @@ object SamplingSparkOps extends Serializable {
    * @param seed random seed value
    * @return the vertices in the sample
    */
-  def sampleVerticesDegreeDist(vertices: RDD[Vertex], edges: RDD[Edge], size: Int, seed: Int = 1): RDD[Vertex] = {
+  def sampleVerticesDegreeDist(vertices: RDD[Vertex], edges: RDD[Edge], size: Int, seed: Option[Long]): RDD[Vertex] = {
     require(size >= 1, "Invalid sample size: " + size)
     if (size >= vertices.count()) {
       vertices
     }
     else {
-      // NOTE: The current implementation here is for unordered sampling without replacement
+      seed match {
+        case Some(l) => Random.setSeed(l)
+        case None => None
+      }
       // create tuple of (vertexDegree, vertex)
       val vertexDegreeRdd = addVertexDegreeDistWeights(vertices, edges)
 
@@ -162,17 +178,8 @@ object SamplingSparkOps extends Serializable {
    * @return the edge set RDD for the vertex induced subgraph
    */
   def sampleEdges(vertices: RDD[Vertex], edges: RDD[Edge]): RDD[Edge] = {
-    // TODO: graphX is welcome here...it has a subgraph function...and the current approach is inefficient
     val vertexArray = vertices.map(v => v.physicalId).collect()
     edges.filter(e => vertexArray.contains(e.headPhysicalId) && vertexArray.contains(e.tailPhysicalId))
-
-    /*    val vertexPairRdd = vertices.map(v => (v.physicalId, v.physicalId))
-    // this doubles size...not a good idea
-    val edgesWithVertexRdd = edges.map(edge => Seq((edge.headPhysicalId, edge), (edge.tailPhysicalId, edge))).flatMap(pair => pair)
-    val edgeVerticesRdd = edgesWithVertexRdd.map(pair => (pair._1, pair._1))
-    val diffVerticesRdd = edgeVerticesRdd.subtractByKey(vertexPairRdd)
-    val sampleEdges = edgesWithVertexRdd.subtractByKey(diffVerticesRdd).map(pair => pair._2).distinct()*/
-
   }
 
   /**
@@ -194,11 +201,6 @@ object SamplingSparkOps extends Serializable {
     val vertexRDD = titanReaderRDD.filterVertices()
     val edgeRDD = titanReaderRDD.filterEdges()
 
-    val test1 = vertexRDD.collect()
-    val test2 = edgeRDD.collect()
-
-    val tmp = ""
-
     (vertexRDD, edgeRDD)
   }
 
@@ -209,9 +211,6 @@ object SamplingSparkOps extends Serializable {
    * @param edges the edges to write to Titan
    */
   def writeToTitan(vertices: RDD[Vertex], edges: RDD[Edge], titanConfig: SerializableBaseConfiguration) = {
-    val test3 = vertices.collect()
-    val test4 = edges.collect()
-
     val gb = new GraphBuilder(new GraphBuilderConfig(new InputSchema(Seq.empty), List.empty, List.empty, titanConfig))
     gb.buildGraphWithSpark(vertices, edges)
   }
