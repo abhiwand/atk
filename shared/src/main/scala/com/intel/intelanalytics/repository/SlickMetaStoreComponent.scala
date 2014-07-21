@@ -533,10 +533,6 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
       //TODO: verify slick generate a single command for the query and update
       val q = for { c <- commands if c.id === id && c.complete === false } yield c.progress
       q.update(progress)
-
-      val c = for { c <- commands if c.id === id && c.complete === true } yield c.progress
-      val completeProgress = progress.map(p => p.copy(progress = 100f))
-      c.update(completeProgress)
     }
   }
 
