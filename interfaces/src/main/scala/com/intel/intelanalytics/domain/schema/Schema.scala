@@ -53,5 +53,5 @@ case class Schema(columns: List[(String, DataType)] = List[(String, DataType)]()
    * get column datatype by column name
    * @param columnName name of the column
    */
-  def columnDataType(columnName: String): DataType = columns.filter(c => c._1 == columnName).head._2
+  def columnDataType(columnName: String): DataType = columns.filter(c => c._1 == columnName).headOption.getOrElse(throw new IllegalArgumentException("No column named $columnName"))._2
 }
