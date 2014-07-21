@@ -21,10 +21,9 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.graphon
+package com.intel.spark.graphon
 
-import com.intel.graphbuilder.elements.{ Property, Edge, Vertex }
-import com.intel.spark.graphon.GraphStatistics
+import com.intel.graphbuilder.elements.{ Edge, Property, Vertex }
 import org.scalatest.{ Matchers, WordSpec }
 
 class GraphStatisticsSpec extends WordSpec with Matchers with GraphonSparkContext {
