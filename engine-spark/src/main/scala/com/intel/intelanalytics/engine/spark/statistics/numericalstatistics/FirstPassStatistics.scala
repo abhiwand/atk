@@ -39,27 +39,11 @@ private[numericalstatistics] object FirstPassStatistics {
 
   private val distributionUtils = new DistributionUtils[Double]
 
-  private def convertDataWeightPairToFirstPassStats(p: (Double, Double)): FirstPassStatistics = {
-    val dataAsDouble: Double = p._1
-    val weightAsDouble: Double = p._2
-
-    val dataAsBigDecimal: BigDecimal = BigDecimal(dataAsDouble)
-    val weightAsBigDecimal: BigDecimal = BigDecimal(weightAsDouble)
-
-    val weightedLog = if (dataAsDouble <= 0) None else Some(weightAsBigDecimal * BigDecimal(Math.log(dataAsDouble)))
-
-    FirstPassStatistics(mean = dataAsBigDecimal,
-      weightedSumOfSquares = weightAsBigDecimal * dataAsBigDecimal * dataAsBigDecimal,
-      weightedSumOfSquaredDistancesFromMean = BigDecimal(0),
-      weightedSumOfLogs = weightedLog,
-      minimum = dataAsDouble,
-      maximum = dataAsDouble,
-      mode = dataAsDouble,
-      weightAtMode = weightAsDouble,
-      totalWeight = weightAsBigDecimal,
-      count = 1.toLong)
-  }
-
+  /**
+   * Generates the first-pass statistics for a given distribution.
+   * @param dataWeightPairs The (data, weight) pairs of the distribution.
+   * @return The first-pass statistics of the distribution.
+   */
   def generate(dataWeightPairs: RDD[(Double, Double)]): FirstPassStatistics = {
 
     val accumulatorParam = new FirstPassStatisticsAccumulatorParam()
@@ -83,9 +67,30 @@ private[numericalstatistics] object FirstPassStatistics {
     accumulator.value
   }
 
+  private def convertDataWeightPairToFirstPassStats(p: (Double, Double)): FirstPassStatistics = {
+    val dataAsDouble: Double = p._1
+    val weightAsDouble: Double = p._2
+
+    val dataAsBigDecimal: BigDecimal = BigDecimal(dataAsDouble)
+    val weightAsBigDecimal: BigDecimal = BigDecimal(weightAsDouble)
+
+    val weightedLog = if (dataAsDouble <= 0) None else Some(weightAsBigDecimal * BigDecimal(Math.log(dataAsDouble)))
+
+    FirstPassStatistics(mean = dataAsBigDecimal,
+      weightedSumOfSquares = weightAsBigDecimal * dataAsBigDecimal * dataAsBigDecimal,
+      weightedSumOfSquaredDistancesFromMean = BigDecimal(0),
+      weightedSumOfLogs = weightedLog,
+      minimum = dataAsDouble,
+      maximum = dataAsDouble,
+      mode = dataAsDouble,
+      weightAtMode = weightAsDouble,
+      totalWeight = weightAsBigDecimal,
+      count = 1.toLong)
+  }
+
   /*
- * Accumulator settings for gathering single pass statistics.
- */
+   * Accumulator settings for gathering single pass statistics.
+   */
   private class FirstPassStatisticsAccumulatorParam extends AccumulatorParam[FirstPassStatistics] with Serializable {
 
     override def zero(initialValue: FirstPassStatistics) =
@@ -140,5 +145,6 @@ private[numericalstatistics] object FirstPassStatistics {
         count = count)
     }
   }
+
 }
 
