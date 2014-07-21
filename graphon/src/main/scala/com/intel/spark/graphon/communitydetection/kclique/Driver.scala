@@ -22,27 +22,22 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.spark.graphon.communitydetection
+package com.intel.spark.graphon.communitydetection.kclique
 
 import org.apache.spark.rdd.RDD
-import com.intel.graphbuilder.elements.{ Edge => GBEdge, Vertex => GBVertex, Property, GraphElement }
+import com.intel.graphbuilder.elements.{ Edge => GBEdge, Vertex => GBVertex }
 import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRDDImplicits._
-import com.intel.spark.graphon.communitydetection.KCliquePercolationDataTypes._
+import com.intel.spark.graphon.communitydetection.kclique.DataTypes._
 import org.apache.spark.SparkContext
-import org.apache.spark.SparkContext._
 import com.intel.graphbuilder.graph.titan.TitanGraphConnector
-import com.intel.spark.graphon.communitydetection.KCliqueGraphGenerator._
+import com.intel.spark.graphon.communitydetection.kclique.GraphGenerator._
 import com.intel.graphbuilder.driver.spark.titan.reader.TitanReader
 import com.intel.graphbuilder.util.SerializableBaseConfiguration
-import com.intel.intelanalytics.engine.spark.graph.GraphName
-import scala.concurrent._
-import com.intel.intelanalytics.domain.graph.{ GraphTemplate, GraphReference }
-import java.util.UUID
 
 /**
  * The driver for running the k-clique percolation algorithm
  */
-object KCliquePercolationDriver {
+object Driver {
 
   /**
    * The main driver to execute k-clique percolation algorithm
@@ -74,23 +69,23 @@ object KCliquePercolationDriver {
     val edgeList: RDD[Edge] = edgeListFromGBEdgeList(gbEdges)
 
     //    Get all enumerated K-Cliques using the edge list
-    val enumeratedKCliques: RDD[ExtendersFact] = KCliqueEnumeration.applyToEdgeList(edgeList, cliqueSize)
+    val enumeratedKCliques: RDD[ExtendersFact] = CliqueEnumerator.applyToEdgeList(edgeList, cliqueSize)
 
     //    Construct the clique graph that will be input for connected components
-    val kCliqueGraphGeneratorOutput: KCliqueGraphGeneratorOutput = KCliqueGraphGenerator.run(enumeratedKCliques)
+    val kCliqueGraphGeneratorOutput: KCliqueGraphGeneratorOutput = GraphGenerator.run(enumeratedKCliques)
 
     //    Run connected component analysis to get the communities
     val cliquesAndConnectedComponent = GetConnectedComponents.run(kCliqueGraphGeneratorOutput, sc)
 
     //    Associate each vertex with a list of the communities to which it belongs
     val vertexCommunitySet: RDD[(Long, Set[Long])] =
-      AssignCommunitiesToVertex.run(cliquesAndConnectedComponent.connectedComponents, cliquesAndConnectedComponent.newVertexIdToOldVertexIdOfCliqueGraph)
+      CommunityAssigner.run(cliquesAndConnectedComponent.connectedComponents, cliquesAndConnectedComponent.newVertexIdToOldVertexIdOfCliqueGraph)
 
     val gbVertexSetter: GBVertexSetter = new GBVertexSetter(gbVertices, vertexCommunitySet)
     val newGBVertices = gbVertexSetter.setVertex(communityPropertyDefaultLabel)
 
     //    Write back to each vertex in Titan graph the set of communities to which it belongs in the property with name "communities"
-    val kCliqueCommunityWriterInTitan = new KCliqueCommunityWriterInTitan()
+    val kCliqueCommunityWriterInTitan = new CommunityWriterInTitan()
     kCliqueCommunityWriterInTitan.run(newGBVertices, gbEdges, titanConfigOutput)
 
   }
@@ -103,7 +98,7 @@ object KCliquePercolationDriver {
   def edgeListFromGBEdgeList(gbEdgeList: RDD[GBEdge]): RDD[Edge] = {
 
     gbEdgeList.filter(e => (e.tailPhysicalId.asInstanceOf[Long] < e.headPhysicalId.asInstanceOf[Long])).
-      map(e => KCliquePercolationDataTypes.Edge(e.tailPhysicalId.asInstanceOf[Long], e.headPhysicalId.asInstanceOf[Long]))
+      map(e => DataTypes.Edge(e.tailPhysicalId.asInstanceOf[Long], e.headPhysicalId.asInstanceOf[Long]))
 
   }
 }

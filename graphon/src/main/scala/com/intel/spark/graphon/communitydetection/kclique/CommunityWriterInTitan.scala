@@ -22,15 +22,32 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.spark.graphon.communitydetection
+package com.intel.spark.graphon.communitydetection.kclique
 
-import scala.collection.JavaConversions._
+import com.intel.graphbuilder.elements._
+import org.apache.spark.rdd.RDD
+import com.intel.graphbuilder.driver.spark.titan.{ GraphBuilderConfig, GraphBuilder }
+import com.intel.graphbuilder.util.SerializableBaseConfiguration
+import com.intel.graphbuilder.parser.InputSchema
 
-object ScalaToJavaCollectionConverter extends Serializable {
-  def convertSet(scalaSet: Set[Long]): java.util.Set[Long] = {
-    val javaSet = new java.util.HashSet[Long]()
-    scalaSet.foreach(entry => javaSet.add(entry))
-    javaSet
+/**
+ * Write back to each vertex in Titan graph the set of communities to which it
+ * belongs in some property specified by the user
+ */
+
+class CommunityWriterInTitan extends Serializable {
+
+  /**
+   *
+   * @param gbVertices updated GB vertices list
+   * @param gbEdges GB Edge list
+   * @param titanConfig The titan configuration
+   */
+  def run(gbVertices: RDD[Vertex], gbEdges: RDD[Edge], titanConfig: SerializableBaseConfiguration) {
+
+    val gb = new GraphBuilder(new GraphBuilderConfig(new InputSchema(Seq.empty), List.empty, List.empty, titanConfig))
+    gb.buildGraphWithSpark(gbVertices, gbEdges)
+
   }
 
 }

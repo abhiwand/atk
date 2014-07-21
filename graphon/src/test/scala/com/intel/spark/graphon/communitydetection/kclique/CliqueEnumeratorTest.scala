@@ -1,12 +1,11 @@
-package com.intel.spark.graphon.communitydetection
+package com.intel.spark.graphon.communitydetection.kclique
 
-import org.scalatest.{ Matchers, FlatSpec, FunSuite }
+import org.scalatest.{ Matchers, FlatSpec }
 import com.intel.spark.graphon.connectedcomponents.TestingSparkContext
-import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.RDD
-import com.intel.spark.graphon.communitydetection.KCliquePercolationDataTypes._
+import DataTypes._
 
-class KCliqueEnumerationTest extends FlatSpec with Matchers with TestingSparkContext {
+class CliqueEnumeratorTest extends FlatSpec with Matchers with TestingSparkContext {
 
   trait KCliqueEnumTest {
 
@@ -25,7 +24,7 @@ class KCliqueEnumerationTest extends FlatSpec with Matchers with TestingSparkCon
       val rddOfVertexWithAdjacencyList: RDD[VertexInAdjacencyFormat] = sc.parallelize(vertexWithAdjacencyList).map(keyval => VertexInAdjacencyFormat(keyval._1, keyval._2))
       val rddOfEdgeList: RDD[Edge] = sc.parallelize(edgeList).map(keyval => Edge(keyval._1, keyval._2))
 
-      val kcliqueEdgeList = KCliqueEnumeration.createEdgeListFromParsedAdjList(rddOfVertexWithAdjacencyList)
+      val kcliqueEdgeList = CliqueEnumerator.createEdgeListFromParsedAdjList(rddOfVertexWithAdjacencyList)
 
       kcliqueEdgeList.collect().toSet shouldEqual rddOfEdgeList.collect().toSet
 
@@ -37,7 +36,7 @@ class KCliqueEnumerationTest extends FlatSpec with Matchers with TestingSparkCon
       val rddOfVertexWithAdjacencyList: RDD[VertexInAdjacencyFormat] = sc.parallelize(vertexWithAdjacencyList).map(keyval => VertexInAdjacencyFormat(keyval._1, keyval._2))
       val rddOfFourCliques = sc.parallelize(fourCliques).map({ case (x, y) => ExtendersFact(CliqueFact(x), y, true) })
 
-      val enumeratedFourCliques = KCliqueEnumeration.applyToAdjacencyList(rddOfVertexWithAdjacencyList, 4)
+      val enumeratedFourCliques = CliqueEnumerator.applyToAdjacencyList(rddOfVertexWithAdjacencyList, 4)
 
       enumeratedFourCliques.collect().toSet shouldEqual rddOfFourCliques.collect().toSet
 
