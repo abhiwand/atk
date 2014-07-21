@@ -28,6 +28,8 @@ import logging
 
 # add a null handler to root logger to avoid handler warning messages
 class NullHandler(logging.Handler):
+    def name = "NullHandler"
+
     def emit(self, record):
         pass
 
