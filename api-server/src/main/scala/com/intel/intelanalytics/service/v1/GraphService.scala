@@ -118,7 +118,9 @@ class GraphService(commonDirectives: CommonDirectives, engine: Engine) extends D
                     graph =>
                       onComplete(engine.createGraph(graph)) {
                         case Success(graph) => complete(decorate(uri + "/" + graph.id, graph))
-                        case Failure(ex) => throw ex
+                        case Failure(ex) => ctx => {
+                          ctx.complete(500, ex.getMessage)
+                        }
                       }
                   }
                 }

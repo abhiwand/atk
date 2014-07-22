@@ -60,7 +60,7 @@ class SparkGraphStorage(context: (UserPrincipal) => Context,
         {
           val check = metaStore.graphRepo.lookupByName(graph.name)
           if (check.isDefined) {
-            throw new RuntimeException("Graph with same name exists. Rename aborted")
+            throw new RuntimeException("Graph with same name exists. Create aborted")
           }
           metaStore.graphRepo.insert(graph).get
         }
