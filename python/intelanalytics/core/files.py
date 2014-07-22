@@ -37,7 +37,7 @@ class CsvFile(DataFile):
     ----------
     file_name : string
         name of data input file. Relative paths are interpreted relative to the intel.analytics.engine.fs.root
-        configuration. Absolute paths (beginning with hdfs://...) are also supported.
+        configuration. Absolute paths (beginning with hdfs://..., for example) are also supported.
     schema : list of tuples of the form (string, type)
         schema description of the fields for a given line.  It is a list of
         tuples which describe each field, (field name, field type), where

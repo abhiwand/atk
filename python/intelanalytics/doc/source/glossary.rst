@@ -409,6 +409,7 @@ Glossary
         what it should put into the new column based on data in other columns.
         A function must return the same type of data that the column definition supplies.
         For example, if a column is defined as a float within an array, the function must return the data as a float in an array.
+        Further examples and explanations can be found at :doc:`ds_apir`.
 
     Latent Dirichlet Allocation
 
@@ -502,6 +503,10 @@ Glossary
         in web resources, using a variety of syntax notations and data serialization formats.
 
         For more information see: `Wikipedia\: Resource Description Framework`_.
+
+    Row Functions
+
+        Refer to :term:`Lambda Functions`.
 
     Semi-Supervised Learning
 
