@@ -550,6 +550,8 @@ class SparkEngine(sparkContextManager: SparkContextManager,
 
     val columnIndex = realFrame.schema.columnIndex(arguments.dataColumn)
 
+    val valueDataType: DataType = realFrame.schema.columns(columnIndex)._2
+
     val weightsColumnIndexOption = if (arguments.weightsColumn.isEmpty) {
       None
     }
@@ -557,7 +559,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
       Some(realFrame.schema.columnIndex(arguments.weightsColumn.get))
     }
 
-    ColumnStatistics.columnMode(columnIndex, weightsColumnIndexOption, rdd)
+    ColumnStatistics.columnMode(columnIndex, valueDataType, weightsColumnIndexOption, rdd)
   }
 
   /**
