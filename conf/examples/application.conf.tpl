@@ -324,3 +324,31 @@ intel.analytics.igiraph-titan {
     }
   }
 }
+
+intel.analytics.engine-spark {
+  command {
+    available = ["graphs.query.gremlin", "graphs.query.histogram_roc"]
+    graphs {
+      query {
+        gremlin {
+          class = "com.intel.intelanalytics.engine.spark.graph.query.GremlinQuery"
+          config {
+            default-timeout = ${intel.analytics.engine.default-timeout}
+            titan = ${intel.analytics.engine.titan}
+            graphson-mode = "normal" // Valid values: "normal", "compact", "extended"
+          }
+        }
+        histogram_roc {
+          class = "com.intel.intelanalytics.engine.spark.graph.query.roc.HistogramRocQuery"
+          config {
+            default-timeout = ${intel.analytics.engine.default-timeout}
+            titan = ${intel.analytics.engine.titan}
+            histogram-buckets = 30
+            enable-roc = "false"
+            roc-threshold = [0, 0.05, 1]
+          }
+        }
+      }
+    }
+  }
+}
