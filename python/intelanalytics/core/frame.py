@@ -29,7 +29,7 @@ import logging
 import uuid, sys
 logger = logging.getLogger(__name__)
 
-from intelanalytics.core.iatypes import supported_types
+from intelanalytics.core.iatypes import valid_data_types
 from intelanalytics.core.aggregation import *
 from intelanalytics.core.errorhandle import IaError
 from intelanalytics.core.command import CommandSupport, doc_stub
@@ -260,7 +260,7 @@ class BigFrame(CommandSupport):
             raise IaError(logger)
 
     def _schema_as_json_obj(self):
-        return [(col.name, supported_types.get_type_string(col.data_type)) for col in self._columns.values()]
+        return [(col.name, valid_data_types.to_string(col.data_type)) for col in self._columns.values()]
 
     def __len__(self):
         return len(self._columns)

@@ -24,8 +24,8 @@
 package com.intel.intelanalytics.engine
 
 /**
- * Progress info for job
- * @param progress current progress
- * @param tasksInfo information regarding task details
+ * represent extra progress information
+ * @param retries current number of failed tasks. This is same as error in Spark.
+ *                Call it retries because it is a better user experience.
  */
-case class ProgressInfo(progress: Float, tasksInfo: Option[TaskProgressInfo])
+case class TaskProgressInfo(retries: Int)
