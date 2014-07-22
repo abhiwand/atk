@@ -23,6 +23,8 @@
 
 package com.intel.intelanalytics.domain.frame
 
+import spray.json.JsValue
+
 /**
  * Represents a ColumnMedian command
  * @param frame identifier for the input dataframe
@@ -34,6 +36,6 @@ case class ColumnMedian(frame: FrameReference, dataColumn: String, weightsColumn
 }
 
 /**
- * The data returned from a median calculation: The median.
+ * The data returned from a median calculation: An option for the median.
  */
-case class ColumnMedianReturn(value: Option[Double])
+case class ColumnMedianReturn(value: JsValue)
