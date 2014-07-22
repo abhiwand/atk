@@ -37,10 +37,10 @@ from intelanalytics.core.files import CsvFile
 from intelanalytics.core.iatypes import *
 from intelanalytics.core.aggregation import agg
 from intelanalytics.rest.connection import http
+
+from intelanalytics.rest.iatypes import get_data_type_from_rest_str, get_rest_str_from_data_type
 from intelanalytics.rest.command import CommandRequest, CommandInfo, executor
 from intelanalytics.rest.spark import prepare_row_function, get_add_one_column_function, get_add_many_columns_function
-
-
 
 
 class FrameBackendRest(object):
@@ -146,7 +146,7 @@ class FrameBackendRest(object):
             }
         if isinstance(data, BigFrame):
             return {'source': { 'source_type': 'dataframe',
-                                'uri': data.uri},
+                                'uri': str(data._id)},
                     'destination': frame.uri}
         raise TypeError("Unsupported data source " + type(data).__name__)
 
@@ -176,7 +176,7 @@ class FrameBackendRest(object):
         for tup in schema:
             if not isinstance(tup[0], basestring):
                 raise ValueError("First value in schema tuple must be a string")
-            supported_types.validate_is_supported_type(tup[1])
+            valid_data_types.validate(tup[1])
 
     def add_columns(self, frame, expression, schema):
         if not schema or not hasattr(schema, "__iter__"):
@@ -197,7 +197,7 @@ class FrameBackendRest(object):
 
         arguments = {'frame': frame.uri,
                      'column_names': names,
-                     'column_types': [supported_types.get_type_string(t) for t in data_types],
+                     'column_types': [get_rest_str_from_data_type(t) for t in data_types],
                      'expression': http_ready_function}
 
         execute_update_frame_command('add_columns', arguments, frame)
@@ -215,6 +215,23 @@ class FrameBackendRest(object):
         if result.has_key("error_frame_id"):
             sys.stderr.write("There were parse errors during load, please see frame.get_error_frame()\n")
             logger.warn("There were parse errors during load, please see frame.get_error_frame()")
+
+    def calculate_percentiles(self, frame, column_name, percentiles):
+        if isinstance(percentiles, int):
+            percentiles = [percentiles]
+
+        invalid_percentiles = []
+        for p in percentiles:
+            if p > 100 or p < 0:
+                invalid_percentiles.append(str(p))
+
+        if len(invalid_percentiles) > 0:
+            raise ValueError("Invalid number for percentile:" + ','.join(invalid_percentiles))
+
+        arguments = {'frame_id': frame._id, "column_name": column_name, "percentiles": percentiles}
+        command = CommandRequest("dataframe/calculate_percentiles", arguments)
+        return executor.issue(command)
+
 
     def count(self, frame):
         raise NotImplementedError  # TODO - implement count
@@ -282,7 +299,7 @@ class FrameBackendRest(object):
             # keep the import localized, as serialization doesn't like prettytable
             import intelanalytics.rest.prettytable as prettytable
             table = prettytable.PrettyTable()
-            fields = OrderedDict([("{0}:{1}".format(n, supported_types.get_type_string(t)), self._align[t]) for n, t in self.schema])
+            fields = OrderedDict([("{0}:{1}".format(n, valid_data_types.to_string(t)), self._align[t]) for n, t in self.schema])
             table.field_names = fields.keys()
             table.align.update(fields)
             table.hrules = prettytable.HEADER
@@ -460,7 +477,7 @@ class FrameInfo(object):
 
     @property
     def columns(self):
-        return [BigColumn(pair[0], supported_types.get_type_from_string(pair[1]))
+        return [BigColumn(pair[0], get_data_type_from_rest_str(pair[1]))
                 for pair in self._payload['schema']['columns']]
 
     @property

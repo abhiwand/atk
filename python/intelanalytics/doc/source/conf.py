@@ -123,7 +123,7 @@ def setup(app):
     app.add_config_value('internal_docs', '', True)
     app.connect('autodoc-skip-member', autodoc_skip_member)
 
-internal_docs = True
+internal_docs = False
 
 autodoc_default_flags = ['members']
 

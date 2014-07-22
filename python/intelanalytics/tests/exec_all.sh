@@ -23,36 +23,13 @@
 # must be express and approved by Intel in writing.
 ##############################################################################
 
-#This script executes all of the tests located in this folder through the use of the nosetests api. Coverage is provided by coverage.py
-#This script requires the installation of the install_pyenv.sh script
+# This script executes all of the tests located in this folder through the use
+# of the nosetests api. Coverage is provided by coverage.py
+# This script requires the installation of the install_pyenv.sh script
 
 # '-x' to exclude dirs from coverage, requires nose-exclude to be installed
 
 export IN_UNIT_TESTS='true'
-
-if [[ -f /usr/lib/IntelAnalytics/virtpy/bin/activate ]]; then
-    ACTIVATE_FILE=/usr/lib/IntelAnalytics/virtpy/bin/activate
-else
-    ACTIVATE_FILE=/usr/local/virtpy/bin/activate
-fi
-
-if [[ ! -f $ACTIVATE_FILE ]]; then
-    echo "Virtual Environment is not installed please execute install_pyenv.sh to install."
-    exit 1
-fi
-
-source $ACTIVATE_FILE
-
-#check if the python libraries are correctly installed by importing them through python. If there is no output then the module exists.
-if [[ -e $(python -c "import nose") ]]; then
-    echo "Nosetests is not installed into your python virtual environment please install nose."
-    exit 1
-fi
-
-if [[ -e $(python -c "import coverage") ]]; then
-    echo "Coverage.py is not installed into your python virtual environment please install coverage."
-    exit 1
-fi
 
 TESTS_DIR="$( cd "$( dirname "$BASH_SOURCE[0]}" )" && pwd )"
 INTELANALYTICS_DIR=`dirname $TESTS_DIR`
@@ -63,7 +40,26 @@ echo INTELANALYTICS_DIR=$INTELANALYTICS_DIR
 echo PYTHON_DIR=$PYTHON_DIR
 
 cd $PYTHON_DIR
-#pushd $INTEL_ANALYTICS_HOME > /dev/null
+export PYTHONPATH=$PYTHONPATH:$PYTHON_DIR
+#python -c "import sys; print 'sys.path=' +  str(sys.path)"
+
+# check if the python libraries are correctly installed by importing
+# them through python. If there is no output then the module exists.
+if [[ -e $(python -c "import intelanalytics") ]]; then
+    echo "intelanalytics cannot be found"
+    exit 1
+fi
+
+if [[ -e $(python -c "import nose") ]]; then
+    echo "Nosetests is not installed into your python virtual environment please install nose."
+    exit 1
+fi
+
+if [[ -e $(python -c "import coverage") ]]; then
+    echo "Coverage.py is not installed into your python virtual environment please install coverage."
+    exit 1
+fi
+
 
 rm -rf $PYTHON_DIR/cover
 
@@ -87,8 +83,6 @@ COVERAGE_ARCHIVE=$PYTHON_DIR/python-coverage.zip
 rm *.log 2> /dev/null
 rm -rf $COVERAGE_ARCHIVE 
 zip -rq $COVERAGE_ARCHIVE .
-
-deactivate
 
 RESULT_FILE=$PYTHON_DIR/nosetests.xml
 COVERAGE_HTML=$PYTHON_DIR/cover/index.html

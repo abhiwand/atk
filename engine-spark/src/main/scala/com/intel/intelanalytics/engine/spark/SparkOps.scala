@@ -23,25 +23,19 @@
 
 package com.intel.intelanalytics.engine.spark
 
-import com.intel.intelanalytics.domain.frame.load.{ LineParserArguments, LineParser, Load }
-import com.intel.intelanalytics.domain.schema.{ SchemaUtil, DataTypes }
+import com.intel.intelanalytics.domain.schema.DataTypes
 import com.intel.intelanalytics.engine.Rows._
-import com.intel.intelanalytics.engine.spark.frame._
 import org.apache.spark.SparkContext
-import org.apache.spark.SparkContext._
-import org.apache.spark.rdd.RDD
-import spray.json.JsObject
 
 import scala.collection.mutable
-import scala.Some
 import scala.reflect.ClassTag
-import scala.math.pow
 import scala.Some
-import com.intel.intelanalytics.engine.spark.frame.ParseResultRddWrapper
-import com.intel.intelanalytics.domain.frame.load.LineParserArguments
-import com.intel.intelanalytics.engine.spark.frame.RowParseResult
-import com.intel.intelanalytics.domain.frame.load.LineParser
 import com.intel.intelanalytics.engine.spark.frame.RDDJoinParam
+import com.intel.intelanalytics.algorithm.{ Percentile, PercentileTarget, PercentileComposingElement }
+import scala.collection.mutable.ListBuffer
+import org.apache.spark.rdd.RDD
+import com.intel.intelanalytics.domain.schema.DataTypes.DataType
+import scala.math.pow
 
 //implicit conversion for PairRDD
 import org.apache.spark.SparkContext._
@@ -56,26 +50,8 @@ private[spark] object SparkOps extends Serializable {
    * @param limit limit on number of rows to be included in the new RDD
    */
   def getPagedRdd[T: ClassTag](rdd: RDD[T], offset: Long, count: Int, limit: Int): RDD[T] = {
-    //Count the rows in each partition, then order the counts by partition number
-    val counts = rdd.mapPartitionsWithIndex(
-      (i: Int, rows: Iterator[T]) => Iterator.single((i, rows.size)))
-      .collect()
-      .sortBy(_._1)
 
-    //Create cumulative sums of row counts by partition, e.g. 1 -> 200, 2-> 400, 3-> 412
-    //if there were 412 rows divided into two 200 row partitions and one 12 row partition
-    val sums = counts.scanLeft((0, 0)) {
-      (t1, t2) => (t2._1, t1._2 + t2._2)
-    }
-      .drop(1) //first one is (0,0), drop that
-      .toMap
-
-    //Put the per-partition counts and cumulative counts together
-    val sumsAndCounts = counts.map {
-      case (part, count) => (part, (count, sums(part)))
-    }.toMap
-
-    //println(sumsAndCounts)
+    val sumsAndCounts = SparkOps.getPerPartitionCountAndAccumulatedSum(rdd)
     val capped = Math.min(count, limit)
 
     //Start getting rows. We use the sums and counts to figure out which
@@ -109,6 +85,59 @@ private[spark] object SparkOps extends Serializable {
     val pagedRdd = getPagedRdd(rdd, offset, count, limit)
     val rows: Seq[T] = pagedRdd.collect()
     rows
+  }
+
+  /**
+   * Return the count and accumulated sum of rows in each partition
+   */
+  def getPerPartitionCountAndAccumulatedSum[T](rdd: RDD[T]): Map[Int, (Int, Int)] = {
+    //Count the rows in each partition, then order the counts by partition number
+    val counts = rdd.mapPartitionsWithIndex(
+      (i: Int, rows: Iterator[T]) => Iterator.single((i, rows.size)))
+      .collect()
+      .sortBy(_._1)
+
+    //Create cumulative sums of row counts by partition, e.g. 1 -> 200, 2-> 400, 3-> 412
+    //if there were 412 rows divided into two 200 row partitions and one 12 row partition
+    val sums = counts.scanLeft((0, 0)) {
+      (t1, t2) => (t2._1, t1._2 + t2._2)
+    }
+      .drop(1) //first one is (0,0), drop that
+      .toMap
+
+    //Put the per-partition counts and cumulative counts together
+    val sumsAndCounts = counts.map {
+      case (part, count) => (part, (count, sums(part)))
+    }.toMap
+    sumsAndCounts
+  }
+
+  /**
+   * Load each line from CSV file into an RDD of Row objects.
+   * @param ctx SparkContext used for textFile reading
+   * @param fileName name of file to parse
+   * @param skipRows number of rows to skip before beginning parsing
+   * @param parserFunction function used for parsing lines into Row objects
+   * @param converter function used for converting parsed strings into DataTypes
+   * @return  RDD of Row objects
+   */
+  def loadLines(ctx: SparkContext,
+                fileName: String,
+                skipRows: Option[Int],
+                parserFunction: String => Array[String],
+                converter: Array[String] => Array[Any]): RDD[Row] = {
+    ctx.textFile(fileName)
+      .mapPartitionsWithIndex {
+        case (partition, lines) => {
+          if (partition == 0) {
+            lines.drop(skipRows.getOrElse(0)).map(parserFunction)
+          }
+          else {
+            lines.map(parserFunction)
+          }
+        }
+      }
+      .map(converter)
   }
 
   /**
@@ -698,6 +727,113 @@ private[spark] object SparkOps extends Serializable {
     duplicatesRemoved
   }
 
+  /**
+   * Calculate percentile values
+   * @param rdd input rdd
+   * @param percentiles seq of percentiles to find value for
+   * @param columnIndex the index of column to calculate percentile
+   * @param dataType data type of the column
+   *
+   * Currently calculate percentiles with weight average. n be the number of total elements which is ordered,
+   * T th percentile can be calculated in the following way.
+   * n * T / 100 = i + j   i is the integer part and j is the fractional part
+   * The percentile is Xi * (1- j) + Xi+1 * j
+   *
+   * Calculating a list of percentiles follows the following process:
+   * 1. calculate components for each percentile. If T th percentile is Xi * (1- j) + Xi+1 * j, output
+   * (i, (1 - j)), (i + 1, j).
+   * 2. transform the components. Take component (i, (1 - j)) and transform to (i, (T, 1 - j)), where (T, 1 -j) is
+   * a percentile target for element i. Create mapping i -> seq(percentile targets)
+   * 3. iterate through all elements in each partition. for element i, find sequence of percentile targets from
+   * the mapping created earlier. emit (T, i * (1 - j))
+   * 4. reduce by key, which is percentile. Sum all partial results to get the final percentile values.
+   */
+  def calculatePercentiles(rdd: RDD[Row], percentiles: Seq[Int], columnIndex: Int, dataType: DataType): Seq[Percentile] = {
+    val totalRows = rdd.count()
+    val pairRdd = rdd.map(row => SparkOps.createKeyValuePairFromRow(row, List(columnIndex))).map { case (keyColumns, data) => (keyColumns(0).toString.toDouble, data) }
+    val sorted = pairRdd.asInstanceOf[RDD[(Double, Row)]].sortByKey(true)
+
+    val percentileTargetMapping = getPercentileTargetMapping(totalRows, percentiles)
+    val sumsAndCounts: Map[Int, (Int, Int)] = getPerPartitionCountAndAccumulatedSum(sorted)
+
+    //this is the first stage of calculating percentile
+    //generate data that has keys as percentiles and values as column data times weight
+    val percentilesComponentsRDD = sorted.mapPartitionsWithIndex((partitionIndex, rows) => {
+      var rowIndex: Long = (if (partitionIndex == 0) 0 else sumsAndCounts(partitionIndex - 1)._2) + 1
+      val perPartitionResult = ListBuffer[(Int, BigDecimal)]()
+
+      for (row <- rows) {
+        if (percentileTargetMapping.contains(rowIndex)) {
+          val targets: Seq[PercentileTarget] = percentileTargetMapping(rowIndex)
+
+          for (percentileTarget <- targets) {
+            val value = row._1
+            val numericVal = DataTypes.toBigDecimal(value)
+            perPartitionResult += ((percentileTarget.percentile, numericVal * percentileTarget.weight))
+          }
+        }
+
+        rowIndex = rowIndex + 1
+      }
+
+      perPartitionResult.toIterator
+    })
+
+    percentilesComponentsRDD.reduceByKey(_ + _).sortByKey(true).collect().map { case (percentile, value) => Percentile(percentile, value) }
+  }
+
+  /**
+   * calculate and return elements for calculating percentile
+   * For example, 25th percentile out of 10 rows(X1, X2, X3, ... X10) will be
+   * 0.5 * x2 + 0.5 * x3. The method will return x2 and x3 with weight as 0.5
+   *
+   * For whole percentile calculation process, please refer to doc of method calculatePercentiles
+   * @param totalRows
+   * @param percentile
+   */
+  def getPercentileComposingElements(totalRows: Long, percentile: Int): Seq[PercentileComposingElement] = {
+    val position = (BigDecimal(percentile) * totalRows) / 100
+    var integerPosition = position.toLong
+    val fractionPosition = position - integerPosition
+
+    val result = mutable.ListBuffer[PercentileComposingElement]()
+
+    val addPercentileComposingElement = (position: Long, percentile: Int, weight: BigDecimal) => {
+      //element starts from 1. therefore X0 equals X1
+      if (weight > 0)
+        result += PercentileComposingElement(if (position != 0) position else 1, PercentileTarget(percentile, weight))
+    }
+
+    addPercentileComposingElement(integerPosition, percentile, 1 - fractionPosition)
+    addPercentileComposingElement(integerPosition + 1, percentile, fractionPosition)
+    result.toSeq
+  }
+
+  /**
+   * Calculate mapping between an element's position and Seq of percentiles that the element can contribute to
+   * @param totalRows total number of rows in the data
+   * @param percentiles Sequence of percentiles to search
+   *
+   * For whole percentile calculation process, please refer to doc of method calculatePercentiles
+   */
+  def getPercentileTargetMapping(totalRows: Long, percentiles: Seq[Int]): Map[Long, Seq[PercentileTarget]] = {
+
+    val composingElements: Seq[PercentileComposingElement] = percentiles.flatMap(percentile => getPercentileComposingElements(totalRows, percentile))
+
+    val mapping = mutable.Map[Long, ListBuffer[PercentileTarget]]()
+    for (element <- composingElements) {
+      val elementIndex: Long = element.index
+
+      if (!mapping.contains(elementIndex))
+        mapping(elementIndex) = ListBuffer[PercentileTarget]()
+
+      mapping(elementIndex) += element.percentileTarget
+    }
+
+    //for each element's percentile targets, convert from ListBuffer to Seq
+    //convert the map to immutable map
+    mapping.map { case (elementIndex, targets) => (elementIndex, targets.toSeq) }.toMap
+  }
   def confusionMatrix(frameRdd: RDD[Row], labelColumnIndex: Int, predColumnIndex: Int, posLabel: String): Seq[Long] = {
     require(labelColumnIndex >= 0)
     require(predColumnIndex >= 0)

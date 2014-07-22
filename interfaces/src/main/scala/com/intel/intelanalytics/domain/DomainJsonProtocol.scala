@@ -27,7 +27,7 @@ import java.net.URI
 
 import com.intel.intelanalytics.domain.command.CommandDefinition
 import com.intel.intelanalytics.domain.frame.load.{ Load, LineParser, LoadSource, LineParserArguments }
-import com.intel.intelanalytics.domain.schema.{ Schema, DataTypes }
+import com.intel.intelanalytics.domain.schema.DataTypes
 import DataTypes.DataType
 import com.intel.intelanalytics.schema._
 import spray.json._
@@ -38,9 +38,10 @@ import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 import com.intel.intelanalytics.domain.schema.{ DataTypes, Schema }
 import org.joda.time.DateTime
 import spray.json._
-import com.intel.intelanalytics.engine.ProgressInfo
+import com.intel.intelanalytics.engine.{ ProgressInfo, TaskProgressInfo }
 
 import scala.util.matching.Regex
+import com.intel.intelanalytics.algorithm.Percentile
 import com.intel.intelanalytics.spray.json.IADefaultJsonProtocol
 
 /**
@@ -153,10 +154,12 @@ object DomainJsonProtocol extends IADefaultJsonProtocol {
   implicit val errorFormat = jsonFormat5(Error)
   implicit val flattenColumnLongFormat = jsonFormat4(FlattenColumn)
   implicit val dropDuplicatesFormat = jsonFormat2(DropDuplicates)
+  implicit val taskInfoFormat = jsonFormat1(TaskProgressInfo)
   implicit val progressInfoFormat = jsonFormat2(ProgressInfo)
   implicit val binColumnLongFormat = jsonFormat6(BinColumn[Long])
 
   implicit val assignSampleFormat = jsonFormat5(AssignSample)
+  implicit val calculatePercentilesFormat = jsonFormat3(CalculatePercentiles)
 
   // model performance formats
 
@@ -178,6 +181,8 @@ object DomainJsonProtocol extends IADefaultJsonProtocol {
   implicit val vertexRuleFormat = jsonFormat2(VertexRule)
   implicit val frameRuleFormat = jsonFormat3(FrameRule)
   implicit val graphLoadFormat = jsonFormat3(GraphLoad)
+  implicit val percentileFormat = jsonFormat2(Percentile)
+  implicit val PercentileCalculationResultFormat = jsonFormat1(PercentileValues)
 
   implicit object DataTypeJsonFormat extends JsonFormat[Any] {
     override def write(obj: Any): JsValue = {
