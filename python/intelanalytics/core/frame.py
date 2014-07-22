@@ -1163,13 +1163,11 @@ class BigFrame(CommandSupport):
         -------
         mode : Dict
             Dictionary containing summary statistics in the following entries:
-                If the total weight is > 0:
-                    mode : Mode of the data. (Ties resolved arbitrarily.)
-                    weight_of_mode : Weight of the mode.
-                    total_weight : Sum of all weights in the weight column. (This will be the row count if no weights
-                     are given.)
-                If the total weight is 0:
-                    total_weight : 0
+                mode : Mode of the data. (Ties resolved arbitrarily.)
+                    If the sum of the weights is 0, the there is no mode.
+                weight_of_mode : Weight of the mode. If the sum of the weights is 0, the weight of the mode is 0.
+                total_weight : Sum of all weights in the weight column. This is the row count if no weights
+                 are given.
 
         Examples
         --------

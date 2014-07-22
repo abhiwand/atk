@@ -53,7 +53,7 @@ class FrequencyStatisticsITest extends TestingSparkContext with Matchers {
     testTotalWeight shouldBe 14
   }
 
-  "strings with integer frequencies" should "work" in new FrequencyStatisticsTest {
+  "string data with integer frequencies" should "work" in new FrequencyStatisticsTest {
 
     val dataWeightPairs = sc.parallelize(strings.zip(integerFrequencies))
 
@@ -84,7 +84,7 @@ class FrequencyStatisticsITest extends TestingSparkContext with Matchers {
 
   }
 
-  "strings with fractional weights" should "work" in new FrequencyStatisticsTest {
+  "string data  with fractional weights" should "work" in new FrequencyStatisticsTest {
 
     val dataWeightPairs = sc.parallelize(strings.zip(fractionalFrequencies))
 
