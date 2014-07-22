@@ -32,12 +32,7 @@ import com.intel.intelanalytics.engine.plugin.{ CommandPlugin, Invocation }
 import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.algorithm.util.{ GiraphConfigurationUtil, GiraphJobDriver }
 import org.apache.giraph.conf.GiraphConfiguration
-import org.apache.giraph.job.GiraphJob
-import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.FileSystem
-import org.apache.hadoop.fs.Path
-import org.apache.hadoop.mapreduce.Job
-import com.intel.intelanalytics.spray.json.IADefaultJsonProtocol._
+import spray.json.DefaultJsonProtocol._
 import spray.json._
 import scala.concurrent.duration._
 
@@ -105,7 +100,7 @@ class LoopyBeliefPropagation
 
     LbpResult(GiraphJobDriver.run("ia_giraph_lbp",
       classOf[LoopyBeliefPropagationComputation].getCanonicalName,
-      config, giraphConf, invocation.commandId))
+      config, giraphConf, invocation.commandId, "lbp-learning-report_0"))
   }
 
   //TODO: Replace with generic code that works on any case class
