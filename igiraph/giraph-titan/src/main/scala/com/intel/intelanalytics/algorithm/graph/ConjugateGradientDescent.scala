@@ -106,7 +106,7 @@ class ConjugateGradientDescent
 
     CgdResult(GiraphJobDriver.run("ia_giraph_cgd",
       classOf[ConjugateGradientDescentComputation].getCanonicalName,
-      config, giraphConf, invocation.commandId))
+      config, giraphConf, invocation.commandId, "cgd-learning-report_0"))
   }
 
   //TODO: Replace with generic code that works on any case class
