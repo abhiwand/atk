@@ -20,7 +20,7 @@ class FrequencyStatisticsITest extends TestingSparkContext with Matchers {
 
   }
 
-  "mode" should "handle empty data" in new FrequencyStatisticsTest {
+  "empty data" should "produce mode == None and weights equal to 0" in new FrequencyStatisticsTest {
 
     val dataList: List[Double] = List()
     val weightList: List[Double] = List()
@@ -34,18 +34,18 @@ class FrequencyStatisticsITest extends TestingSparkContext with Matchers {
     val testTotalWeight = frequencyStats.totalWeight
 
     testMode shouldBe None
-    testModeWeight shouldBe None
+    testModeWeight shouldBe 0
     testTotalWeight shouldBe 0
   }
 
-  "mode" should "handle integer data with integer frequencies" in new FrequencyStatisticsTest {
+  "integer data with integer frequencies" should "work" in new FrequencyStatisticsTest {
 
     val dataWeightPairs = sc.parallelize(integers.zip(integerFrequencies))
 
     val frequencyStats = new FrequencyStatistics(dataWeightPairs)
 
     val testMode = frequencyStats.mode.get
-    val testModeWeight = frequencyStats.weightOfMode.get
+    val testModeWeight = frequencyStats.weightOfMode
     val testTotalWeight = frequencyStats.totalWeight
 
     testMode shouldBe 3
@@ -53,14 +53,14 @@ class FrequencyStatisticsITest extends TestingSparkContext with Matchers {
     testTotalWeight shouldBe 14
   }
 
-  "mode" should "handle strings with integer frequencies" in new FrequencyStatisticsTest {
+  "strings with integer frequencies" should "work" in new FrequencyStatisticsTest {
 
     val dataWeightPairs = sc.parallelize(strings.zip(integerFrequencies))
 
     val frequencyStats = new FrequencyStatistics(dataWeightPairs)
 
     val testMode = frequencyStats.mode.get
-    val testModeWeight = frequencyStats.weightOfMode.get
+    val testModeWeight = frequencyStats.weightOfMode
     val testTotalWeight = frequencyStats.totalWeight
 
     testMode shouldBe "c"
@@ -68,14 +68,14 @@ class FrequencyStatisticsITest extends TestingSparkContext with Matchers {
     testTotalWeight shouldBe 14
   }
 
-  "mode" should "handle integer data with fractional weights" in new FrequencyStatisticsTest {
+  "integer data with fractional weights" should "work" in new FrequencyStatisticsTest {
 
     val dataWeightPairs = sc.parallelize(integers.zip(fractionalFrequencies))
 
     val frequencyStats = new FrequencyStatistics(dataWeightPairs)
 
     val testMode = frequencyStats.mode.get
-    val testModeWeight = frequencyStats.weightOfMode.get
+    val testModeWeight = frequencyStats.weightOfMode
     val testTotalWeight = frequencyStats.totalWeight
 
     testMode shouldBe 3
@@ -84,14 +84,14 @@ class FrequencyStatisticsITest extends TestingSparkContext with Matchers {
 
   }
 
-  "mode" should "handle weighted strings" in new FrequencyStatisticsTest {
+  "strings with fractional weights" should "work" in new FrequencyStatisticsTest {
 
     val dataWeightPairs = sc.parallelize(strings.zip(fractionalFrequencies))
 
     val frequencyStats = new FrequencyStatistics(dataWeightPairs)
 
     val testMode = frequencyStats.mode.get
-    val testModeWeight = frequencyStats.weightOfMode.get
+    val testModeWeight = frequencyStats.weightOfMode
     val testTotalWeight = frequencyStats.totalWeight
 
     testMode shouldBe "c"
@@ -99,15 +99,15 @@ class FrequencyStatisticsITest extends TestingSparkContext with Matchers {
     Math.abs(testTotalWeight - 1.toDouble) should be < epsilon
   }
 
-  "mode" should "should ignore items with negative weights" in new FrequencyStatisticsTest {
+  "items with negative weights" should "not affect mode or total weight" in new FrequencyStatisticsTest {
 
     val dataWeightPairs: RDD[(String, Double)] =
-      sc.parallelize((strings :+ "haha").zip(fractionalFrequencies :+ ((-10.0).toDouble)))
+      sc.parallelize((strings :+ "haha").zip(fractionalFrequencies :+ ((-10.0))))
 
     val frequencyStats = new FrequencyStatistics[String](dataWeightPairs)
 
     val testMode = frequencyStats.mode.get
-    val testModeWeight = frequencyStats.weightOfMode.get
+    val testModeWeight = frequencyStats.weightOfMode
     val testTotalWeight = frequencyStats.totalWeight
 
     testMode shouldBe "c"

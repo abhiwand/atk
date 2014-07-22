@@ -30,54 +30,35 @@ private[spark] object ColumnStatistics extends Serializable {
                  weightsColumnIndexOption: Option[Int],
                  rowRDD: RDD[Row]): ColumnModeReturn = {
 
-    val (modeJSObject, weightOfMode, totalWeight) = if (dataType == DataTypes.string) {
+    val dataWeightPairs: RDD[(Any, Double)] =
+      getDataWeightPairs(dataColumnIndex, weightsColumnIndexOption, rowRDD)
+    val frequencyStatistics = new FrequencyStatistics(dataWeightPairs)
 
-      val dataWeightPairs: RDD[(String, Double)] =
-        getStringWeightPairs(dataColumnIndex, weightsColumnIndexOption, rowRDD)
-      val frequencyStatistics = new FrequencyStatistics(dataWeightPairs)
-
-      (frequencyStatistics.mode.toJson, frequencyStatistics.weightOfMode, frequencyStatistics.totalWeight)
-
-    }
-    else if (dataType == DataTypes.int32) {
-
-      val dataWeightPairs: RDD[(Int, Double)] =
-        getIntegerWeightPairs(dataColumnIndex, weightsColumnIndexOption, rowRDD)
-      val frequencyStatistics = new FrequencyStatistics(dataWeightPairs)
-
-      (frequencyStatistics.mode.toJson, frequencyStatistics.weightOfMode, frequencyStatistics.totalWeight)
-    }
-    else if (dataType == DataTypes.int64) {
-
-      val dataWeightPairs: RDD[(Long, Double)] =
-        getLongWeightPairs(dataColumnIndex, weightsColumnIndexOption, rowRDD)
-      val frequencyStatistics = new FrequencyStatistics(dataWeightPairs)
-
-      (frequencyStatistics.mode.toJson, frequencyStatistics.weightOfMode, frequencyStatistics.totalWeight)
-    }
-    else if (dataType == DataTypes.float32) {
-
-      val dataWeightPairs: RDD[(Float, Double)] =
-        getFloatWeightPairs(dataColumnIndex, weightsColumnIndexOption, rowRDD)
-      val frequencyStatistics = new FrequencyStatistics(dataWeightPairs)
-
-      (frequencyStatistics.mode.toJson, frequencyStatistics.weightOfMode, frequencyStatistics.totalWeight)
-
-    }
-    else if (dataType == DataTypes.float64) {
-
-      val dataWeightPairs: RDD[(Double, Double)] =
-        getDoubleWeightPairs(dataColumnIndex, weightsColumnIndexOption, rowRDD)
-      val frequencyStatistics = new FrequencyStatistics(dataWeightPairs)
-
-      (frequencyStatistics.mode.toJson, frequencyStatistics.weightOfMode, frequencyStatistics.totalWeight)
-
+    val modeJsValue: JsValue = if (frequencyStatistics.mode.isEmpty) {
+      None.asInstanceOf[Option[String]].toJson
     }
     else {
-      throw new IllegalArgumentException("Mode calculation cannot handle datatype " + dataType.toString)
+      if (dataType == DataTypes.string) {
+        frequencyStatistics.mode.get.asInstanceOf[String].toJson
+      }
+      else if (dataType == DataTypes.int32) {
+        frequencyStatistics.mode.get.asInstanceOf[Int].toJson
+      }
+      else if (dataType == DataTypes.int64) {
+        frequencyStatistics.mode.get.asInstanceOf[Long].toJson
+      }
+      else if (dataType == DataTypes.float32) {
+        frequencyStatistics.mode.get.asInstanceOf[Float].toJson
+      }
+      else if (dataType == DataTypes.float64) {
+        frequencyStatistics.mode.get.asInstanceOf[Double].toJson
+      }
+      else {
+        throw new IllegalArgumentException("Mode calculation cannot handle datatype " + dataType.toString)
+      }
     }
 
-    ColumnModeReturn(modeJSObject, weightOfMode, totalWeight)
+    ColumnModeReturn(modeJsValue, frequencyStatistics.weightOfMode, frequencyStatistics.totalWeight)
 
   }
 
@@ -165,67 +146,42 @@ private[spark] object ColumnStatistics extends Serializable {
       nonPositiveWeightCount = stats.nonPositiveWeightCount)
   }
 
+  private def getDataWeightPairs(dataColumnIndex: Int,
+                                 weightsColumnIndexOption: Option[Int],
+                                 rowRDD: RDD[Row]): RDD[(Any, Double)] = {
+
+    val dataRDD: RDD[Any] = rowRDD.map(row => row(dataColumnIndex))
+
+    val weighted = !weightsColumnIndexOption.isEmpty
+
+    val weightsRDD = if (weighted) rowRDD.map(row => doubleConversion(row(weightsColumnIndexOption.get))) else null
+
+    if (weighted) dataRDD.zip(weightsRDD) else dataRDD.map(x => (x, 1.toDouble))
+  }
+
+  private def doubleConversion(x: Any) = {
+    if (x.isInstanceOf[Int]) {
+      x.asInstanceOf[Int].toDouble
+    }
+    else if (x.isInstanceOf[Long]) {
+      x.asInstanceOf[Long].toDouble
+    }
+    else if (x.isInstanceOf[Float]) {
+      x.asInstanceOf[Float].toDouble
+    }
+    else if (x.isInstanceOf[Double]) {
+      x.asInstanceOf[Double]
+    }
+    else {
+      throw new IllegalArgumentException("Cannot convert " + x + " to a double.")
+    }
+  }
+
   private def getDoubleWeightPairs(dataColumnIndex: Int,
                                    weightsColumnIndexOption: Option[Int],
                                    rowRDD: RDD[Row]): RDD[(Double, Double)] = {
 
-    val dataRDD = FrameRDDFunctions.getColumnAsDoubleRDD(rowRDD, dataColumnIndex)
-
-    val weighted = !weightsColumnIndexOption.isEmpty
-
-    val weightsRDD =
-      if (weighted) FrameRDDFunctions.getColumnAsDoubleRDD(rowRDD, weightsColumnIndexOption.get) else null
-
-    if (weighted) dataRDD.zip(weightsRDD) else dataRDD.map(x => (x, 1.toDouble))
-  }
-
-  private def getFloatWeightPairs(dataColumnIndex: Int,
-                                  weightsColumnIndexOption: Option[Int],
-                                  rowRDD: RDD[Row]): RDD[(Float, Double)] = {
-
-    val dataRDD = FrameRDDFunctions.getColumnAsFloatRDD(rowRDD, dataColumnIndex)
-
-    val weighted = !weightsColumnIndexOption.isEmpty
-
-    val weightsRDD =
-      if (weighted) FrameRDDFunctions.getColumnAsDoubleRDD(rowRDD, weightsColumnIndexOption.get) else null
-
-    if (weighted) dataRDD.zip(weightsRDD) else dataRDD.map(x => (x, 1.toDouble))
-  }
-
-  private def getLongWeightPairs(dataColumnIndex: Int,
-                                 weightsColumnIndexOption: Option[Int],
-                                 rowRDD: RDD[Row]): RDD[(Long, Double)] = {
-
-    val dataRDD = FrameRDDFunctions.getColumnAsLongRDD(rowRDD, dataColumnIndex)
-
-    val weighted = !weightsColumnIndexOption.isEmpty
-
-    val weightsRDD =
-      if (weighted) FrameRDDFunctions.getColumnAsDoubleRDD(rowRDD, weightsColumnIndexOption.get) else null
-
-    if (weighted) dataRDD.zip(weightsRDD) else dataRDD.map(x => (x, 1.toDouble))
-  }
-
-  private def getIntegerWeightPairs(dataColumnIndex: Int,
-                                    weightsColumnIndexOption: Option[Int],
-                                    rowRDD: RDD[Row]): RDD[(Int, Double)] = {
-
-    val dataRDD = FrameRDDFunctions.getColumnAsIntRDD(rowRDD, dataColumnIndex)
-
-    val weighted = !weightsColumnIndexOption.isEmpty
-
-    val weightsRDD =
-      if (weighted) FrameRDDFunctions.getColumnAsDoubleRDD(rowRDD, weightsColumnIndexOption.get) else null
-
-    if (weighted) dataRDD.zip(weightsRDD) else dataRDD.map(x => (x, 1.toDouble))
-  }
-
-  private def getStringWeightPairs(dataColumnIndex: Int,
-                                   weightsColumnIndexOption: Option[Int],
-                                   rowRDD: RDD[Row]): RDD[(String, Double)] = {
-
-    val dataRDD: RDD[String] = FrameRDDFunctions.getColumnAsStringRDD(rowRDD, dataColumnIndex)
+    val dataRDD: RDD[Double] = rowRDD.map(row => doubleConversion(row(dataColumnIndex)))
 
     val weighted = !weightsColumnIndexOption.isEmpty
 

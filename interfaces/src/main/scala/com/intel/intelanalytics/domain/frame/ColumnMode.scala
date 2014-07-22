@@ -23,7 +23,7 @@
 
 package com.intel.intelanalytics.domain.frame
 
-import spray.json.{ JsValue, JsObject }
+import spray.json.JsValue
 
 /**
  * Represents a ModeColumn command
@@ -38,5 +38,5 @@ case class ColumnMode(frame: FrameReference, dataColumn: String, weightsColumn: 
 /**
  * Represents a ColumnMode return object... it returns the mode of the column.
  */
-case class ColumnModeReturn(mode: JsValue, weightOfMode: Option[Double], totalWeight: Double) {
+case class ColumnModeReturn(mode: JsValue, weightOfMode: Double, totalWeight: Double) {
 }

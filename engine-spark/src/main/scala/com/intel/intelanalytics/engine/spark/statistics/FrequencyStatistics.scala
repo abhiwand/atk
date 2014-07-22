@@ -24,23 +24,23 @@ class FrequencyStatistics[T: ClassManifest](dataWeightPairs: RDD[(T, Double)]) e
 
   /**
    * Option for the weight of a mode of the input. It is either strictly positive, or,
-   * if there is no item with positive weight, weightOfMode is None .
+   * if there is no item with positive weight, weightOfMode is 0 .
    */
-  lazy val weightOfMode: Option[Double] = modeItsWeightTotalWeightTriple._2
+  lazy val weightOfMode: Double = modeItsWeightTotalWeightTriple._2
 
   /**
    * Sum all weights.
    */
   lazy val totalWeight: Double = modeItsWeightTotalWeightTriple._3
 
-  private lazy val modeItsWeightTotalWeightTriple: (Option[T], Option[Double], Double) = generateMode()
+  private lazy val modeItsWeightTotalWeightTriple: (Option[T], Double, Double) = generateMode()
 
   private val distributionUtils = new DistributionUtils[T]()
 
-  private def generateMode(): (Option[T], Option[Double], Double) = {
+  private def generateMode(): (Option[T], Double, Double) = {
 
-    val acumulatorParam  = new FrequencyStatsAccumulatorParam[T]()
-    val initialValue = FrequencyStatsCounter[T](None, None, 0)
+    val acumulatorParam = new FrequencyStatsAccumulatorParam[T]()
+    val initialValue = FrequencyStatsCounter[T](None, 0, 0)
 
     val accumulator =
       dataWeightPairs.sparkContext.accumulator[FrequencyStatsCounter[T]](initialValue)(acumulatorParam)
@@ -48,10 +48,9 @@ class FrequencyStatistics[T: ClassManifest](dataWeightPairs: RDD[(T, Double)]) e
     val dataWeightPairsSupport = dataWeightPairs.filter(distributionUtils.hasPositiveWeight)
 
     dataWeightPairsSupport.foreach(
-      { case (value, weightAtValue) => accumulator.add(FrequencyStatsCounter(Some(value), Some(weightAtValue), weightAtValue)) })
+      { case (value, weightAtValue) => accumulator.add(FrequencyStatsCounter(Some(value), weightAtValue, weightAtValue)) })
 
-
-      (accumulator.value.mode, accumulator.value.weightOfMode, accumulator.value.totalWeight)
+    (accumulator.value.mode, accumulator.value.weightOfMode, accumulator.value.totalWeight)
 
   }
 }
@@ -59,11 +58,11 @@ class FrequencyStatistics[T: ClassManifest](dataWeightPairs: RDD[(T, Double)]) e
 /**
  * Class for accumulating frequency statistics in one pass over the data.
  * @param mode Option for value with the most weight seen so far. None when run over empty data.
- * @param weightOfMode The weight of the mode. None when run over empty data.
+ * @param weightOfMode The weight of the mode. 0 when run over empty data.
  * @param totalWeight Sum of the weights of all values seen so far.
  * @tparam T Type of the input data. (In particular, the type of the mode.)
  */
-private case class FrequencyStatsCounter[T](mode: Option[T], weightOfMode: Option[Double], totalWeight: Double) 
+private case class FrequencyStatsCounter[T](mode: Option[T], weightOfMode: Double, totalWeight: Double)
   extends Serializable
 
 /**
@@ -72,17 +71,20 @@ private case class FrequencyStatsCounter[T](mode: Option[T], weightOfMode: Optio
  */
 private class FrequencyStatsAccumulatorParam[T] extends AccumulatorParam[FrequencyStatsCounter[T]] with Serializable {
 
-  override def zero(initialValue: FrequencyStatsCounter[T]) = FrequencyStatsCounter(None, None, 0)
+  override def zero(initialValue: FrequencyStatsCounter[T]) = FrequencyStatsCounter(None, 0, 0)
 
   override def addInPlace(stats1: FrequencyStatsCounter[T], stats2: FrequencyStatsCounter[T]): FrequencyStatsCounter[T] = {
     if (stats1.mode.isEmpty) {
       stats2
-    } else if (stats2.mode.isEmpty) {
+    }
+    else if (stats2.mode.isEmpty) {
       stats1
-    } else {
-      if (stats1.weightOfMode.get > stats2.weightOfMode.get) {
+    }
+    else {
+      if (stats1.weightOfMode > stats2.weightOfMode) {
         FrequencyStatsCounter(stats1.mode, stats1.weightOfMode, stats1.totalWeight + stats2.totalWeight)
-      } else {
+      }
+      else {
         FrequencyStatsCounter(stats2.mode, stats2.weightOfMode, stats1.totalWeight + stats2.totalWeight)
       }
     }
