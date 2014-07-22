@@ -9,7 +9,8 @@ import com.intel.intelanalytics.engine.spark.statistics.numericalstatistics.Nume
 class NumericalStatisticsCornerCasesITest extends TestingSparkContext with Matchers {
 
   /**
-   * Tests some of the corner cases of the numerical statistics routines.
+   * Tests some of the corner cases of the numerical statistics routines: NaNs, infinite values, divide by 0,
+   * logarithms of negative numbers, etc. Floating point exceptions, if you catch my drift.
    */
   trait NumericalStatisticsCornerCaseTest {
 

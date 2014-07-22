@@ -4,6 +4,10 @@ import org.scalatest.Matchers
 import com.intel.intelanalytics.engine.TestingSparkContext
 import org.apache.spark.rdd.RDD
 
+/**
+ * Tests the frequency statistics package through several corner cases and bad-data cases, as well as "happy path"
+ * use cases with both normalized and un-normalized weights.
+ */
 class FrequencyStatisticsITest extends TestingSparkContext with Matchers {
 
   trait FrequencyStatisticsTest {

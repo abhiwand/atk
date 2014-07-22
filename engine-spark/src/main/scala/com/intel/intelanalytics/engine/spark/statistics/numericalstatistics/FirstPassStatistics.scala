@@ -190,10 +190,7 @@ private[numericalstatistics] object FirstPassStatistics {
       else {
 
         val totalWeight = stats1.totalWeight + stats2.totalWeight
-        val mean =
-          if (totalWeight > 0)
-            (stats1.mean * stats1.totalWeight + stats2.mean * stats2.totalWeight) / totalWeight
-          else BigDecimal(0)
+        val mean = (stats1.mean * stats1.totalWeight + stats2.mean * stats2.totalWeight) / totalWeight
 
         val weightedSumOfSquares = stats1.weightedSumOfSquares + stats2.weightedSumOfSquares
 
