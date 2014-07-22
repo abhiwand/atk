@@ -58,12 +58,14 @@ object SamplingSparkOps extends Serializable {
         case Some(l) => Random.setSeed(l)
         case None => None
       }
-      val weightedVertices = vertices.map(vertex => (Random.nextDouble(), vertex))
+      val vertexSampleArray = vertices.takeSample(false, size, 1)
+      vertices.sparkContext.parallelize(vertexSampleArray)
+      /*val weightedVertices = vertices.map(vertex => (Random.nextDouble(), vertex))
 
       val vertexSampleArray = weightedVertices.top(size)(Ordering.by(pair => pair._1))
       val vertexSampleRdd = vertices.sparkContext.parallelize(vertexSampleArray)
 
-      vertexSampleRdd.map(pair => pair._2)
+      vertexSampleRdd.map(pair => pair._2)*/
     }
   }
 
