@@ -16,7 +16,7 @@ class NumericalStatisticsCornerCasesITest extends TestingSparkContext with Match
     val epsilon = 0.000000001
   }
 
-  "numerical statistics" should "ignore values with non-positive weights, except for calculating count of non-positive weight data " in new NumericalStatisticsCornerCaseTest() {
+  "values with non-positive weights" should "be ignored , except for calculating count of non-positive weight data " in new NumericalStatisticsCornerCaseTest() {
 
     val data = List(1, 2, 3, 4, 5, 6, 7, 8).map(x => x.toDouble)
     val frequencies = List(3, 2, 3, 1, 9, 4, 3, 1).map(x => x.toDouble)
@@ -53,7 +53,7 @@ class NumericalStatisticsCornerCasesITest extends TestingSparkContext with Match
 
   }
 
-  "numerical statistics" should "give a NaN geometric mean when a data value is negative" in new NumericalStatisticsCornerCaseTest() {
+  "when a data value is negative" should "give a NaN geometric mean" in new NumericalStatisticsCornerCaseTest() {
 
     val data = List(1, 2, 3, 4, 5, 6, 7, -18).map(x => x.toDouble)
     val frequencies = List(3, 2, 3, 1, 9, 4, 3, 1).map(x => x.toDouble)
@@ -66,7 +66,7 @@ class NumericalStatisticsCornerCasesITest extends TestingSparkContext with Match
 
   }
 
-  "numerical statistics" should "give a NaN geometric mean when a data value is 0" in new NumericalStatisticsCornerCaseTest() {
+  "a data value is 0" should "give a NaN geometric mean " in new NumericalStatisticsCornerCaseTest() {
 
     val data = List(1, 2, 3, 4, 5, 0, 7, 18).map(x => x.toDouble)
     val frequencies = List(3, 2, 3, 1, 9, 4, 3, 1).map(x => x.toDouble)
@@ -79,7 +79,7 @@ class NumericalStatisticsCornerCasesITest extends TestingSparkContext with Match
 
   }
 
-  "numerical statistics" should "correctly handle empty data" in new NumericalStatisticsCornerCaseTest() {
+  "empty data" should "provide expected statistics" in new NumericalStatisticsCornerCaseTest() {
 
     val data: List[Double] = List()
     val frequencies: List[Double] = List()
@@ -128,7 +128,7 @@ class NumericalStatisticsCornerCasesITest extends TestingSparkContext with Match
 
   }
 
-  "numerical statistics" should "correctly handle data of length 1" in new NumericalStatisticsCornerCaseTest() {
+  "data of length 1" should "work" in new NumericalStatisticsCornerCaseTest() {
 
     val data: List[Double] = List(1.toDouble)
     val frequencies: List[Double] = List(1.toDouble)
@@ -152,7 +152,7 @@ class NumericalStatisticsCornerCasesITest extends TestingSparkContext with Match
     numericalStatistics.meanConfidenceUpper.isNaN() shouldBe true
   }
 
-  "numerical statistics" should "correctly handle data of length 2" in new NumericalStatisticsCornerCaseTest() {
+  "data of length 2" should "work" in new NumericalStatisticsCornerCaseTest() {
 
     val data: List[Double] = List(1.toDouble, 1.toDouble)
     val frequencies: List[Double] = List(1.toDouble, 2.toDouble)
@@ -176,7 +176,7 @@ class NumericalStatisticsCornerCasesITest extends TestingSparkContext with Match
     numericalStatistics.meanConfidenceUpper shouldBe 1
   }
 
-  "numerical statistics" should "correctly handle data of length 3, variance 0" in new NumericalStatisticsCornerCaseTest() {
+  "data of length 3, variance 0" should "work" in new NumericalStatisticsCornerCaseTest() {
 
     val data: List[Double] = List(1.toDouble, 1.toDouble, 1.toDouble)
     val frequencies: List[Double] = List(1.toDouble, 1.toDouble, 1.toDouble)
@@ -200,7 +200,7 @@ class NumericalStatisticsCornerCasesITest extends TestingSparkContext with Match
     numericalStatistics.meanConfidenceUpper shouldBe 1
   }
 
-  "numerical statistics" should "correctly handle data of length 3, nonzero variance" in new NumericalStatisticsCornerCaseTest() {
+  "data of length 3, nonzero variance" should "work" in new NumericalStatisticsCornerCaseTest() {
 
     val data: List[Double] = List(1.toDouble, 2.toDouble, 1.toDouble)
     val frequencies: List[Double] = List(1.toDouble, 1.toDouble, 1.toDouble)
@@ -224,7 +224,7 @@ class NumericalStatisticsCornerCasesITest extends TestingSparkContext with Match
     Math.abs(numericalStatistics.meanConfidenceUpper - (1.333333333 + (1.96) * (0.5773502691896255 / Math.sqrt(3)))) should be < epsilon
   }
 
-  "numerical statistics" should "correctly handle uniform data" in new NumericalStatisticsCornerCaseTest() {
+  "uniform data" should "work" in new NumericalStatisticsCornerCaseTest() {
 
     val data: List[Double] = List(2, 2, 2, 2, 2).map(x => x.toDouble)
     val frequencies: List[Double] = List(3, 3, 3, 3, 3).map(x => x.toDouble)

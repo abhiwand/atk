@@ -6,7 +6,7 @@ import org.apache.spark.rdd.RDD
 
 class OrderStatisticsITest extends TestingSparkContext with Matchers {
 
-  "median" should "compute the median of an even number of things" in {
+  "even number of data elements" should "work" in {
 
     val data: List[Int] = List(1, 2, 3, 4, 5, 6, 7, 8)
     val frequencies: List[Double] = List(3, 2, 3, 1, 9, 4, 3, 1).map(x => x.toDouble)
@@ -22,7 +22,7 @@ class OrderStatisticsITest extends TestingSparkContext with Matchers {
     testMedian shouldBe expectedMedian
   }
 
-  "median" should "compute the median of one thing" in {
+  "one data element" should "work" in {
 
     val oneThing: List[Int] = List(8)
     val oneFrequency: List[Double] = List(0.1).map(x => x.toDouble)
@@ -37,7 +37,7 @@ class OrderStatisticsITest extends TestingSparkContext with Matchers {
     testMedian shouldBe medianOfOne
   }
 
-  "median" should "result in first of two uniformly weighted items" in {
+  "input is two uniformly weighted items" should "result in lesser of the two values" in {
 
     val twoThings: List[Int] = List(8, 9)
     val frequencies: List[Double] = List(0.2, 0.2).map(x => x.toDouble)
@@ -52,7 +52,7 @@ class OrderStatisticsITest extends TestingSparkContext with Matchers {
     testMedian shouldBe expectedMedian
   }
 
-  "median" should "return None when weights are all 0 or negative" in {
+  " weights are all 0 or negative" should "return None" in {
 
     val data: List[Int] = List(1, 2, 3, 4, 5, 6, 7, 8)
     val frequencies: List[Double] = List(-3, 0, -3, 0, 0, 0, 0, 0).map(x => x.toDouble)
@@ -67,7 +67,7 @@ class OrderStatisticsITest extends TestingSparkContext with Matchers {
     testMedian shouldBe None
   }
 
-  "median" should "return None when weights and data are empty" in {
+  "when weights and data are all empty" should "return None " in {
 
     val data: List[Int] = List()
     val frequencies: List[Double] = List()
