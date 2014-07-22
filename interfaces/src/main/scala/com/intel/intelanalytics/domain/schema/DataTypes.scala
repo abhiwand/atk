@@ -196,4 +196,13 @@ object DataTypes {
     }
   }
 
+  def toBigDecimal(value: Any): BigDecimal = {
+    value match {
+      case i: Int => BigDecimal(i)
+      case l: Long => BigDecimal(l)
+      case f: Float => BigDecimal(f)
+      case d: Double => BigDecimal(d)
+      case _ => throw new IllegalArgumentException(s"The following value is not of numeric data type: $value")
+    }
+  }
 }

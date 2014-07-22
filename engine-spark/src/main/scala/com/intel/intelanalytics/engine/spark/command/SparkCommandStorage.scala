@@ -59,7 +59,7 @@ class SparkCommandStorage(val metaStore: SlickMetaStoreComponent#SlickMetaStore)
 
   override def complete(id: Long, result: Try[JsObject]): Unit = {
     require(id > 0, "invalid ID")
-    require(result != null)
+    require(result != null, "result must not be null")
     metaStore.withSession("se.command.complete") {
       implicit session =>
         val command = repo.lookup(id).getOrElse(throw new IllegalArgumentException(s"Command $id not found"))
