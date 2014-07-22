@@ -23,27 +23,20 @@
 
 package com.intel.intelanalytics.algorithm.graph
 
-import java.util.Date
-
 import com.intel.giraph.algorithms.lbp.LoopyBeliefPropagationComputation
 import com.intel.giraph.io.titan.TitanVertexOutputFormatPropertyGraph4LBP
 import com.intel.giraph.io.titan.hbase.TitanHBaseVertexInputFormatPropertyGraph4LBP
-import com.intel.intelanalytics.component.Boot
 import com.intel.intelanalytics.domain.DomainJsonProtocol
 import com.intel.intelanalytics.domain.graph.GraphReference
 import com.intel.intelanalytics.engine.plugin.{ CommandPlugin, Invocation }
 import com.intel.intelanalytics.security.UserPrincipal
-import com.typesafe.config.{ Config, ConfigObject, ConfigValue }
+import com.intel.intelanalytics.algorithm.util.{ GiraphConfigurationUtil, GiraphJobDriver }
 import org.apache.giraph.conf.GiraphConfiguration
-import org.apache.giraph.job.GiraphJob
-import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.Path
-import org.apache.hadoop.mapreduce.Job
 import spray.json.DefaultJsonProtocol._
 import spray.json._
+import scala.concurrent.duration._
 
 import scala.concurrent._
-import scala.collection.JavaConverters._
 
 case class Lbp(graph: GraphReference,
                vertex_value_property_list: Option[String],
@@ -61,7 +54,7 @@ case class Lbp(graph: GraphReference,
                max_product: Option[Boolean] = None,
                power: Option[Double] = None)
 
-case class LbpResult(runTimeSeconds: Double) //TODO
+case class LbpResult(value: String) //TODO
 
 class LoopyBeliefPropagation
     extends CommandPlugin[Lbp, LbpResult] {
@@ -69,94 +62,34 @@ class LoopyBeliefPropagation
   implicit val lbpFormat = jsonFormat15(Lbp)
   implicit val lbpResultFormat = jsonFormat1(LbpResult)
 
-  /**
-   * Set a value in the hadoop configuration, if the argument is not None.
-   * @param hadoopConfiguration the configuration to update
-   * @param hadoopKey the key name to set
-   * @param arg the value to use, if it is defined
-   */
-  def set(hadoopConfiguration: Configuration, hadoopKey: String, arg: Option[Any]) = arg.foreach { value =>
-    hadoopConfiguration.set(hadoopKey, value.toString)
-  }
-
-  /**
-   * Create new Hadoop Configuration object, preloaded with the properties
-   * specified in the given Config object under the provided key.
-   * @param config the Config object from which to copy properties to the Hadoop Configuration
-   * @param key the starting point in the Config object. Defaults to "hadoop".
-   * @return a populated Hadoop Configuration object.
-   */
-  def newHadoopConfigurationFrom(config: Config, key: String = "hadoop") = {
-    require(config != null, "Config cannot be null")
-    require(key != null, "Key cannot be null")
-    val hConf = new Configuration()
-    val properties = flattenConfig(config.getConfig(key))
-    properties.foreach { kv =>
-      println(s"Setting ${kv._1} to ${kv._2}")
-      hConf.set(kv._1, kv._2)
-    }
-    hConf
-  }
-
-  /**
-   * Flatten a nested Config structure down to a simple dictionary that maps complex keys to
-   * a string value, similar to java.util.Properties.
-   *
-   * @param config the config to flatten
-   * @return a map of property names to values
-   */
-  private def flattenConfig(config: Config, prefix: String = ""): Map[String, String] = {
-    val result = config.root.asScala.foldLeft(Map.empty[String, String]) {
-      (map, kv) =>
-        kv._2 match {
-          case co: ConfigObject =>
-            val nested = flattenConfig(co.toConfig, prefix = prefix + kv._1 + ".")
-            map ++ nested
-          case value: ConfigValue =>
-            map + (prefix + kv._1 -> value.unwrapped().toString)
-        }
-    }
-    result
-  }
-
   override def execute(invocation: Invocation, arguments: Lbp)(implicit user: UserPrincipal, executionContext: ExecutionContext): LbpResult = {
-    val start = System.currentTimeMillis()
 
-    System.out.println("*********In Execute method of LBP********")
-
-    val config = configuration().get
-    val hConf = newHadoopConfigurationFrom(config, "giraph")
-    val titanConf = flattenConfig(config.getConfig("titan"), "titan.")
+    val config = configuration
+    val hConf = GiraphConfigurationUtil.newHadoopConfigurationFrom(config, "giraph")
+    val titanConf = GiraphConfigurationUtil.flattenConfig(config.getConfig("titan"), "titan.")
 
     val graphFuture = invocation.engine.getGraph(arguments.graph.id)
-    // Change this to read from default-timeout
-    import scala.concurrent.duration._
     val graph = Await.result(graphFuture, config.getInt("default-timeout") seconds)
 
     //    These parameters are set from the arguments passed in, or defaulted from
     //    the engine configuration if not passed.
-    set(hConf, "lbp.maxSuperSteps", arguments.max_supersteps)
-    set(hConf, "lbp.convergenceThreshold", arguments.convergence_threshold)
-    set(hConf, "lbp.anchorThreshold", arguments.anchor_threshold)
-    set(hConf, "lbp.bidirectionalCheck", arguments.bidirectional_check)
-    set(hConf, "lbp.power", arguments.power)
-    set(hConf, "lbp.smoothing", arguments.smoothing)
-    set(hConf, "lbp.ignoreVertexType", arguments.ignore_vertex_type)
+    GiraphConfigurationUtil.set(hConf, "lbp.maxSuperSteps", arguments.max_supersteps)
+    GiraphConfigurationUtil.set(hConf, "lbp.convergenceThreshold", arguments.convergence_threshold)
+    GiraphConfigurationUtil.set(hConf, "lbp.anchorThreshold", arguments.anchor_threshold)
+    GiraphConfigurationUtil.set(hConf, "lbp.bidirectionalCheck", arguments.bidirectional_check)
+    GiraphConfigurationUtil.set(hConf, "lbp.power", arguments.power)
+    GiraphConfigurationUtil.set(hConf, "lbp.smoothing", arguments.smoothing)
+    GiraphConfigurationUtil.set(hConf, "lbp.ignoreVertexType", arguments.ignore_vertex_type)
 
-    set(hConf, "giraph.titan.input.storage.backend", titanConf.get("titan.load.storage.backend"))
-    set(hConf, "giraph.titan.input.storage.hostname", titanConf.get("titan.load.storage.hostname"))
-    // TODO - graph should provide backend to retrieve the stored table name in hbase
-    set(hConf, "giraph.titan.input.storage.tablename", Option[Any]("iat_graph_" + graph.name))
-    set(hConf, "giraph.titan.input.storage.port", titanConf.get("titan.load.storage.port"))
+    GiraphConfigurationUtil.initializeTitanConfig(hConf, titanConf, graph)
 
-    set(hConf, "input.vertex.value.property.key.list", arguments.vertex_value_property_list)
-    set(hConf, "input.edge.value.property.key.list", arguments.edge_value_property_list)
-    set(hConf, "input.edge.label.list", arguments.input_edge_label_list)
-    set(hConf, "output.vertex.property.key.list", arguments.output_vertex_property_list)
-    set(hConf, "vertex.type.property.key", arguments.vertex_type_property_key)
-    set(hConf, "vector.value", arguments.vector_value)
+    GiraphConfigurationUtil.set(hConf, "input.vertex.value.property.key.list", arguments.vertex_value_property_list)
+    GiraphConfigurationUtil.set(hConf, "input.edge.value.property.key.list", arguments.edge_value_property_list)
+    GiraphConfigurationUtil.set(hConf, "input.edge.label.list", arguments.input_edge_label_list)
+    GiraphConfigurationUtil.set(hConf, "output.vertex.property.key.list", arguments.output_vertex_property_list)
+    GiraphConfigurationUtil.set(hConf, "vertex.type.property.key", arguments.vertex_type_property_key)
+    GiraphConfigurationUtil.set(hConf, "vector.value", arguments.vector_value)
 
-    val giraphLoader = Boot.getClassLoader(config.getString("giraph.archive.name"))
     val giraphConf = new GiraphConfiguration(hConf)
 
     giraphConf.setVertexInputFormatClass(classOf[TitanHBaseVertexInputFormatPropertyGraph4LBP])
@@ -165,20 +98,9 @@ class LoopyBeliefPropagation
     giraphConf.setComputationClass(classOf[LoopyBeliefPropagationComputation])
     giraphConf.setAggregatorWriterClass(classOf[LoopyBeliefPropagationComputation.LoopyBeliefPropagationAggregatorWriter])
 
-    Thread.currentThread().setContextClassLoader(giraphLoader)
-
-    val job = new GiraphJob(giraphConf, "iat-giraph-lbp")
-    val internalJob: Job = job.getInternalJob
-    val algorithm = giraphLoader.loadClass(classOf[LoopyBeliefPropagationComputation].getCanonicalName)
-    internalJob.setJarByClass(algorithm)
-
-    org.apache.hadoop.mapreduce.lib.output.FileOutputFormat.setOutputPath(internalJob,
-      new Path("/user/hadoop/lbp/out/" + invocation.commandId))
-
-    job.run(true)
-
-    val time = (System.currentTimeMillis() - start).toDouble / 1000.0
-    LbpResult(time)
+    LbpResult(GiraphJobDriver.run("ia_giraph_lbp",
+      classOf[LoopyBeliefPropagationComputation].getCanonicalName,
+      config, giraphConf, invocation.commandId, "lbp-learning-report_0"))
   }
 
   //TODO: Replace with generic code that works on any case class

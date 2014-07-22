@@ -2,7 +2,7 @@
 Graph Database
 ==============
 
-The Intel® Data Platform: Analytics Toolkit uses a :term:`graph` database to handle complex, non-tabular data.
+The Intel® Analytics Toolkit uses a :term:`graph` database to handle complex, non-tabular data.
 :term:`Graph` databases are described as a series of vertices connected by edges.
 Each :term:`vertex` is a data element, like a field in a tabular database.
 Each data element (:term:`vertex`) has a pointer (:term:`edge`) to the element adjacent to it.
@@ -22,5 +22,4 @@ Gremlin
 Think about it as SQL queries for :term:`graph` databases.
 
 .. _Wikipedia\: Graph Data Structure: http://en.wikipedia.org/wiki/Graph_data_structure
-.. _Gremlin: https://github.com/tinkerpop/gremlin/wiki
 

@@ -23,25 +23,77 @@
 
 package com.intel.intelanalytics.engine.spark
 
-import com.intel.intelanalytics.domain.frame.load.Load
 import com.intel.intelanalytics.domain.schema.DataTypes
 import com.intel.intelanalytics.engine.Rows._
-import com.intel.intelanalytics.engine.spark.frame.RDDJoinParam
 import org.apache.spark.SparkContext
-import org.apache.spark.SparkContext._
-import org.apache.spark.rdd.RDD
-import spray.json.JsObject
 
 import scala.collection.mutable
+import scala.reflect.ClassTag
+import scala.Some
+import com.intel.intelanalytics.engine.spark.frame.RDDJoinParam
+import com.intel.intelanalytics.algorithm.{ Percentile, PercentileTarget, PercentileComposingElement }
+import scala.collection.mutable.ListBuffer
+import org.apache.spark.rdd.RDD
+import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 import scala.math.pow
+
+//implicit conversion for PairRDD
+import org.apache.spark.SparkContext._
 
 private[spark] object SparkOps extends Serializable {
 
-  def getRows(rdd: RDD[Row], offset: Long, count: Int, limit: Int): Seq[Row] = {
+  /**
+   * take an input RDD and return another RDD which contains the subset of the original contents
+   * @param rdd input RDD
+   * @param offset rows to be skipped before including rows in the new RDD
+   * @param count total rows to be included in the new RDD
+   * @param limit limit on number of rows to be included in the new RDD
+   */
+  def getPagedRdd[T: ClassTag](rdd: RDD[T], offset: Long, count: Int, limit: Int): RDD[T] = {
 
+    val sumsAndCounts = SparkOps.getPerPartitionCountAndAccumulatedSum(rdd)
+    val capped = Math.min(count, limit)
+
+    //Start getting rows. We use the sums and counts to figure out which
+    //partitions we need to read from and which to just ignore
+    val pagedRdd: RDD[T] = rdd.mapPartitionsWithIndex((i, rows) => {
+      val (ct: Int, sum: Int) = sumsAndCounts(i)
+      val thisPartStart = sum - ct
+      if (sum < offset || thisPartStart >= offset + capped) {
+        //println("skipping partition " + i)
+        Iterator.empty
+      }
+      else {
+        val start = Math.max(offset - thisPartStart, 0)
+        val numToTake = Math.min((capped + offset) - thisPartStart, ct) - start
+        //println(s"partition $i: starting at $start and taking $numToTake")
+        rows.drop(start.toInt).take(numToTake.toInt)
+      }
+    })
+
+    pagedRdd
+  }
+
+  /**
+   * take input RDD and return the subset of the original content
+   * @param rdd input RDD
+   * @param offset  rows to be skipped before including rows in the result
+   * @param count total rows to be included in the result
+   * @param limit limit on number of rows to be included in the result
+   */
+  def getRows[T: ClassTag](rdd: RDD[T], offset: Long, count: Int, limit: Int): Seq[T] = {
+    val pagedRdd = getPagedRdd(rdd, offset, count, limit)
+    val rows: Seq[T] = pagedRdd.collect()
+    rows
+  }
+
+  /**
+   * Return the count and accumulated sum of rows in each partition
+   */
+  def getPerPartitionCountAndAccumulatedSum[T](rdd: RDD[T]): Map[Int, (Int, Int)] = {
     //Count the rows in each partition, then order the counts by partition number
     val counts = rdd.mapPartitionsWithIndex(
-      (i: Int, rows: Iterator[Row]) => Iterator.single((i, rows.size)))
+      (i: Int, rows: Iterator[T]) => Iterator.single((i, rows.size)))
       .collect()
       .sortBy(_._1)
 
@@ -57,27 +109,7 @@ private[spark] object SparkOps extends Serializable {
     val sumsAndCounts = counts.map {
       case (part, count) => (part, (count, sums(part)))
     }.toMap
-
-    //println(sumsAndCounts)
-    val capped = Math.min(count, limit)
-
-    //Start getting rows. We use the sums and counts to figure out which
-    //partitions we need to read from and which to just ignore
-    val rows: Seq[Row] = rdd.mapPartitionsWithIndex((i, rows) => {
-      val (ct: Int, sum: Int) = sumsAndCounts(i)
-      val thisPartStart = sum - ct
-      if (sum < offset || thisPartStart >= offset + capped) {
-        //println("skipping partition " + i)
-        Iterator.empty
-      }
-      else {
-        val start = Math.max(offset - thisPartStart, 0)
-        val numToTake = Math.min((capped + offset) - thisPartStart, ct) - start
-        //println(s"partition $i: starting at $start and taking $numToTake")
-        rows.drop(start.toInt).take(numToTake.toInt)
-      }
-    }).collect()
-    rows
+    sumsAndCounts
   }
 
   /**
@@ -200,8 +232,8 @@ private[spark] object SparkOps extends Serializable {
    * @return a Double of the model accuracy measure
    */
   def modelAccuracy(frameRdd: RDD[Row], labelColumnIndex: Int, predColumnIndex: Int): Double = {
-    require(labelColumnIndex >= 0)
-    require(predColumnIndex >= 0)
+    require(labelColumnIndex >= 0, "label column index must be greater than or equal to zero")
+    require(predColumnIndex >= 0, "prediction column index must be greater than or equal to zero")
 
     val k = frameRdd.count()
     val t = frameRdd.sparkContext.accumulator[Long](0)
@@ -367,8 +399,8 @@ private[spark] object SparkOps extends Serializable {
    * @return a Double of the model f measure
    */
   def modelFMeasure(frameRdd: RDD[Row], labelColumnIndex: Int, predColumnIndex: Int, posLabel: String, beta: Double): Double = {
-    require(labelColumnIndex >= 0)
-    require(predColumnIndex >= 0)
+    require(labelColumnIndex >= 0, "label column index must be greater than or equal to zero")
+    require(predColumnIndex >= 0, "prediction column index must be greater than or equal to zero")
 
     /**
      * compute recall for binary classifier
@@ -458,7 +490,7 @@ private[spark] object SparkOps extends Serializable {
   /**
    * Bin column at index using equal width binning.
    *
-   * This uses the Spark histogram function to get the cutoffs, then map each input rdd column value to a bin number
+   * Determine cutoffs by finding upper/lower bounds, then map each input rdd column value to a bin number
    * based on the cutoff ranges.
    *
    * @param index column index
@@ -595,19 +627,20 @@ private[spark] object SparkOps extends Serializable {
    *
    * @param frameRdd rdd for a BigFrame
    * @param sampleIndex index of the column containing the sample data
+   * @param dataType the data type of the input column
    * @return a new RDD of tuples containing each distinct sample value and its ecdf value
    */
-  def ecdf(frameRdd: RDD[Row], sampleIndex: Int): RDD[Row] = {
+  def ecdf(frameRdd: RDD[Row], sampleIndex: Int, dataType: String): RDD[Row] = {
     // parse values
     val pairedRdd = try {
-      frameRdd.map(row => (java.lang.Double.parseDouble(row(sampleIndex).toString), java.lang.Double.parseDouble(row(sampleIndex).toString)))
+      frameRdd.map(row => (row(sampleIndex).toString, java.lang.Double.parseDouble(row(sampleIndex).toString)))
     }
     catch {
       case cce: NumberFormatException => throw new NumberFormatException("Non-numeric column: " + cce.toString)
     }
 
     // get sample size
-    val n = pairedRdd.count()
+    val numValues = pairedRdd.count().toDouble
 
     // group identical values together
     val groupedRdd = pairedRdd.groupByKey()
@@ -621,13 +654,25 @@ private[spark] object SparkOps extends Serializable {
     }.collect()
 
     // compute empirical cumulative distribution
-    sortedRdd.mapPartitionsWithIndex {
+    val sumsRdd = sortedRdd.mapPartitionsWithIndex {
       case (index, partition) => {
         var startValue = 0
         for { i <- 0 to index } startValue += partSums(i)
-        partition.scanLeft((0.0, startValue))((prev, curr) => (curr._1, prev._2 + curr._2)).drop(1)
+        partition.scanLeft(("", startValue))((prev, curr) => (curr._1, prev._2 + curr._2)).drop(1)
       }
-    }.map(x => Array(x._1.asInstanceOf[Any], (x._2 / n.toDouble).asInstanceOf[Any]))
+    }
+
+    sumsRdd.map {
+      case (value, valueSum) => {
+        dataType match {
+          case "int32" => Array(value.toInt.asInstanceOf[Any], (valueSum / numValues).asInstanceOf[Any])
+          case "int64" => Array(value.toLong.asInstanceOf[Any], (valueSum / numValues).asInstanceOf[Any])
+          case "float32" => Array(value.toFloat.asInstanceOf[Any], (valueSum / numValues).asInstanceOf[Any])
+          case "float64" => Array(value.toDouble.asInstanceOf[Any], (valueSum / numValues).asInstanceOf[Any])
+          case _ => Array(value.asInstanceOf[Any], (valueSum / numValues).asInstanceOf[Any])
+        }
+      }
+    }
   }
 
   def aggregation_functions(elem: Seq[Array[Any]],
@@ -733,6 +778,144 @@ private[spark] object SparkOps extends Serializable {
       firstEntry
     })
     duplicatesRemoved
+  }
+
+  /**
+   * Calculate percentile values
+   * @param rdd input rdd
+   * @param percentiles seq of percentiles to find value for
+   * @param columnIndex the index of column to calculate percentile
+   * @param dataType data type of the column
+   *
+   * Currently calculate percentiles with weight average. n be the number of total elements which is ordered,
+   * T th percentile can be calculated in the following way.
+   * n * T / 100 = i + j   i is the integer part and j is the fractional part
+   * The percentile is Xi * (1- j) + Xi+1 * j
+   *
+   * Calculating a list of percentiles follows the following process:
+   * 1. calculate components for each percentile. If T th percentile is Xi * (1- j) + Xi+1 * j, output
+   * (i, (1 - j)), (i + 1, j).
+   * 2. transform the components. Take component (i, (1 - j)) and transform to (i, (T, 1 - j)), where (T, 1 -j) is
+   * a percentile target for element i. Create mapping i -> seq(percentile targets)
+   * 3. iterate through all elements in each partition. for element i, find sequence of percentile targets from
+   * the mapping created earlier. emit (T, i * (1 - j))
+   * 4. reduce by key, which is percentile. Sum all partial results to get the final percentile values.
+   */
+  def calculatePercentiles(rdd: RDD[Row], percentiles: Seq[Int], columnIndex: Int, dataType: DataType): Seq[Percentile] = {
+    val totalRows = rdd.count()
+    val pairRdd = rdd.map(row => SparkOps.createKeyValuePairFromRow(row, List(columnIndex))).map { case (keyColumns, data) => (keyColumns(0).toString.toDouble, data) }
+    val sorted = pairRdd.asInstanceOf[RDD[(Double, Row)]].sortByKey(true)
+
+    val percentileTargetMapping = getPercentileTargetMapping(totalRows, percentiles)
+    val sumsAndCounts: Map[Int, (Int, Int)] = getPerPartitionCountAndAccumulatedSum(sorted)
+
+    //this is the first stage of calculating percentile
+    //generate data that has keys as percentiles and values as column data times weight
+    val percentilesComponentsRDD = sorted.mapPartitionsWithIndex((partitionIndex, rows) => {
+      var rowIndex: Long = (if (partitionIndex == 0) 0 else sumsAndCounts(partitionIndex - 1)._2) + 1
+      val perPartitionResult = ListBuffer[(Int, BigDecimal)]()
+
+      for (row <- rows) {
+        if (percentileTargetMapping.contains(rowIndex)) {
+          val targets: Seq[PercentileTarget] = percentileTargetMapping(rowIndex)
+
+          for (percentileTarget <- targets) {
+            val value = row._1
+            val numericVal = DataTypes.toBigDecimal(value)
+            perPartitionResult += ((percentileTarget.percentile, numericVal * percentileTarget.weight))
+          }
+        }
+
+        rowIndex = rowIndex + 1
+      }
+
+      perPartitionResult.toIterator
+    })
+
+    percentilesComponentsRDD.reduceByKey(_ + _).sortByKey(true).collect().map { case (percentile, value) => Percentile(percentile, value) }
+  }
+
+  /**
+   * calculate and return elements for calculating percentile
+   * For example, 25th percentile out of 10 rows(X1, X2, X3, ... X10) will be
+   * 0.5 * x2 + 0.5 * x3. The method will return x2 and x3 with weight as 0.5
+   *
+   * For whole percentile calculation process, please refer to doc of method calculatePercentiles
+   * @param totalRows
+   * @param percentile
+   */
+  def getPercentileComposingElements(totalRows: Long, percentile: Int): Seq[PercentileComposingElement] = {
+    val position = (BigDecimal(percentile) * totalRows) / 100
+    var integerPosition = position.toLong
+    val fractionPosition = position - integerPosition
+
+    val result = mutable.ListBuffer[PercentileComposingElement]()
+
+    val addPercentileComposingElement = (position: Long, percentile: Int, weight: BigDecimal) => {
+      //element starts from 1. therefore X0 equals X1
+      if (weight > 0)
+        result += PercentileComposingElement(if (position != 0) position else 1, PercentileTarget(percentile, weight))
+    }
+
+    addPercentileComposingElement(integerPosition, percentile, 1 - fractionPosition)
+    addPercentileComposingElement(integerPosition + 1, percentile, fractionPosition)
+    result.toSeq
+  }
+
+  /**
+   * Calculate mapping between an element's position and Seq of percentiles that the element can contribute to
+   * @param totalRows total number of rows in the data
+   * @param percentiles Sequence of percentiles to search
+   *
+   * For whole percentile calculation process, please refer to doc of method calculatePercentiles
+   */
+  def getPercentileTargetMapping(totalRows: Long, percentiles: Seq[Int]): Map[Long, Seq[PercentileTarget]] = {
+
+    val composingElements: Seq[PercentileComposingElement] = percentiles.flatMap(percentile => getPercentileComposingElements(totalRows, percentile))
+
+    val mapping = mutable.Map[Long, ListBuffer[PercentileTarget]]()
+    for (element <- composingElements) {
+      val elementIndex: Long = element.index
+
+      if (!mapping.contains(elementIndex))
+        mapping(elementIndex) = ListBuffer[PercentileTarget]()
+
+      mapping(elementIndex) += element.percentileTarget
+    }
+
+    //for each element's percentile targets, convert from ListBuffer to Seq
+    //convert the map to immutable map
+    mapping.map { case (elementIndex, targets) => (elementIndex, targets.toSeq) }.toMap
+  }
+  def confusionMatrix(frameRdd: RDD[Row], labelColumnIndex: Int, predColumnIndex: Int, posLabel: String): Seq[Long] = {
+    require(labelColumnIndex >= 0)
+    require(predColumnIndex >= 0)
+
+    val tp = frameRdd.sparkContext.accumulator[Long](0)
+    val tn = frameRdd.sparkContext.accumulator[Long](0)
+    val fp = frameRdd.sparkContext.accumulator[Long](0)
+    val fn = frameRdd.sparkContext.accumulator[Long](0)
+
+    frameRdd.foreach { row =>
+      if (row(labelColumnIndex).toString.equals(posLabel) && row(predColumnIndex).toString.equals(posLabel)) {
+        tp.add(1)
+      }
+      else if (!row(labelColumnIndex).toString.equals(posLabel) && !row(predColumnIndex).toString.equals(posLabel)) {
+        tn.add(1)
+      }
+      else if (!row(labelColumnIndex).toString.equals(posLabel) && row(predColumnIndex).toString.equals(posLabel)) {
+        fp.add(1)
+      }
+      else if (row(labelColumnIndex).toString.equals(posLabel) && !row(predColumnIndex).toString.equals(posLabel)) {
+        fn.add(1)
+      }
+    }
+
+    val labels = frameRdd.map(row => row(labelColumnIndex)).distinct().collect()
+    labels.size match {
+      case x if x == 1 || x == 2 => Seq(tp.value, tn.value, fp.value, fn.value)
+      case _ => throw new IllegalArgumentException("Confusion matrix only supports binary classifiers")
+    }
   }
 
 }

@@ -1,0 +1,34 @@
+In the examples directory you can find application.conf.tpl file 
+that has configurations you might want to configure outside of the packaged jar.
+If you feel like it's important for customers to know about the configuration please add it here with a comment. 
+This is the template configuration file is shipped out to customers. 
+If you know what a configuration does please add a comment about its function.
+If you feel like a configuration should be removed from the template remove it.
+
+
+PLEASE
+	comments should start with a pound #
+	commented config that can be enabled should start with //
+	
+	a good example would be
+	
+	fs {
+	  # the system will create an "intelanalytics" folder at this location, if set,
+      # or at the root of the filesystem, if not. All Intel Analytics Toolkit files will
+      # be stored somehwere under that base location.
+      #
+      # For example, if using HDFS, set the root to hdfs path
+      # root = "hdfs://MASTER_HOSTNAME/some/path"
+      #
+      # If running in local mode, this might be a better choice:
+	  //root = ${user.home}
+	  
+	  #Host name must be a fully qualified domain
+      //root = "hdfs://master/user/hadoop"
+	}
+
+to use the base config copy it and rename to the conf directory
+
+cp source_code/conf/examples/application.conf.tpl source_code/conf/examples/application.conf
+
+application.conf is being ignored by git so no worries about commiting in by mistake

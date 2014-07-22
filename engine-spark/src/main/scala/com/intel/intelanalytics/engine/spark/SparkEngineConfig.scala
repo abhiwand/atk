@@ -24,9 +24,9 @@
 package com.intel.intelanalytics.engine.spark
 
 import com.intel.graphbuilder.util.SerializableBaseConfiguration
-import scala.collection.JavaConverters._
 import com.intel.intelanalytics.shared.{ EventLogging, SharedConfig }
-
+import com.typesafe.config.Config
+import scala.collection.JavaConverters._
 import scala.concurrent.duration._
 import java.net.InetAddress
 import java.io.File
@@ -85,13 +85,18 @@ object SparkEngineConfig extends SharedConfig with EventLogging {
 
   val maxRows: Int = config.getInt("intel.analytics.engine.max-rows")
 
+  /* number of rows taken for sample test during frame loading */
+  val frameLoadTestSampleSize: Int = config.getInt("intel.analytics.engine.commands.dataframes.load.schema-validation-sample-rows")
+
+  /* percentage of maximum rows fail in parsing in sampling test. 50 means up 50% is allowed */
+  val frameLoadTestFailThresholdPercentage: Int = config.getInt("intel.analytics.engine.commands.dataframes.load.schema-validation-fail-threshold-percentage")
+
   /**
    * A list of archives that will be searched for command plugins
    */
-  val archives: List[(String, String)] = {
-    val cfg = config.getConfig("intel.analytics.engine.archives")
-    cfg.entrySet().asScala
-      .map(e => (e.getKey, e.getValue.unwrapped().asInstanceOf[String]))
+  val archives: List[String] = {
+    config.getStringList("intel.analytics.engine.plugin.command.archives")
+      .asScala
       .toList
   }
 
@@ -101,10 +106,24 @@ object SparkEngineConfig extends SharedConfig with EventLogging {
    * Creates a new configuration bean each time so it can be modified by the caller (like setting the table name).
    */
   def titanLoadConfiguration: SerializableBaseConfiguration = {
+    createTitanConfiguration(config, "intel.analytics.engine.titan.load")
+  }
+
+  /**
+   * Create new configuration for Titan using properties specified in path expression.
+   *
+   * This method can also be used by command plugins in the Spark engine which might use
+   * a different configuration object.
+   *
+   * @param commandConfig Configuration object for command.
+   * @param titanPath Dot-separated expressions with Titan config, e.g., intel.analytics.engine.titan.load
+   * @return Titan configuration
+   */
+  def createTitanConfiguration(commandConfig: Config, titanPath: String): SerializableBaseConfiguration = {
     val titanConfiguration = new SerializableBaseConfiguration
-    val titanLoadConfig = config.getConfig("intel.analytics.engine.titan.load")
-    for (entry <- titanLoadConfig.entrySet().asScala) {
-      titanConfiguration.addProperty(entry.getKey, titanLoadConfig.getString(entry.getKey))
+    val titanDefaultConfig = commandConfig.getConfig(titanPath)
+    for (entry <- titanDefaultConfig.entrySet().asScala) {
+      titanConfiguration.addProperty(entry.getKey, titanDefaultConfig.getString(entry.getKey))
     }
     titanConfiguration
   }
@@ -134,4 +153,6 @@ object SparkEngineConfig extends SharedConfig with EventLogging {
     }
   }
 
+  // Python execution command for workers
+  val pythonWorkerExec: String = config.getString("intel.analytics.engine.spark.pythonWorkerExec")
 }

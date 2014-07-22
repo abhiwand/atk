@@ -77,10 +77,31 @@ If you are running on RedHat, keep it from defragmenting the hard drive.
 ----------------
 Cloudera Manager
 ----------------
+.. ifconfig:: internal_docs
+
+    Things to worry about during the installation of Cloudera internal to Intel:
+
+    #. The installation program presents a thank you screen, "Thank you for choosing Cloudera Manager and CDH."
+    #. At this point, click on where it says "Cloudera Manager" at the top of the screen.
+    #. The top bar is replaced by a menu.
+    #. Select *Administration*, then *Settings*.
+    #. New screen, new menu. Select *Network* under *Category*.
+    #. Enter "proxy.jf.intel.com" in the box for *Proxy Server*.
+    #. Enter "911" in the box for *Proxy Port*.
+    #. Click on the button to *Save Changes*.
+    #. Click on *admin* in the upper bar menu and *logout*.
+    #. Log back in and go through the normal steps until you get to the screen *Cluster Installation*.
+    #. Select *parcels*.
+    #. If it says it can not find the *parcels repository*, it gives a box where you can enter the search path to find them.
+        Under the box it gives an example: http://archive.cloudera.com/cdh5/parcels/latest. Copy this address into the box and click on *Add*.
+    #. Now it will allow you to select the revision of Cloudera to install.
+        Go back to the normal installation flow.
+
 Install the Cloudera Manager. See `Cloudera Manager`_ and `Cloudera Documentation`_.
 
 The minimum Clouder version required is CDH-5.0.2-1.
 To check your version, do one of the following:
+
     #. From command line run: ``ll /opt/cloudera/parcels/`` and check for CDH softlink and where it is pointing to.
     #. Or from where you have the CDH installed look under 'http://<HOSTNAME_OF_CDH_MASTER>:7180/cmf/parcels/status' and check your version.
 

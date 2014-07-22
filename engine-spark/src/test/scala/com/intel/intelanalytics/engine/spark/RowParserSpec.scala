@@ -25,40 +25,41 @@ package com.intel.intelanalytics.engine.spark
 
 import org.specs2.mutable.Specification
 import com.intel.intelanalytics.engine.spark.frame.RowParser
+import com.intel.intelanalytics.domain.schema.DataTypes
 
 class RowParserSpec extends Specification {
-  val csvRowParser = new RowParser(',')
+  val csvRowParser = new RowParser(',', Array[DataTypes.DataType]())
   "RowParser" should {
     "parse a String" in {
-      csvRowParser.apply("a,b") shouldEqual Array("a", "b")
+      csvRowParser.splitLineIntoParts("a,b") shouldEqual Array("a", "b")
     }
   }
   "RowParser" should {
     "parse a String with single quotes" in {
-      csvRowParser.apply("foo and bar,bar and foo,'foo, is bar'") shouldEqual Array("foo and bar", "bar and foo", "foo, is bar")
+      csvRowParser.splitLineIntoParts("foo and bar,bar and foo,'foo, is bar'") shouldEqual Array("foo and bar", "bar and foo", "foo, is bar")
     }
   }
   "RowParser" should {
     "parse an empty string" in {
-      csvRowParser.apply("") shouldEqual Array("")
+      csvRowParser.splitLineIntoParts("") shouldEqual Array("")
     }
   }
   "RowParser" should {
     "parse a nested double quotes string" in {
-      csvRowParser.apply("foo and bar,bar and foo,\"foo, is bar\"") shouldEqual Array("foo and bar", "bar and foo", "foo, is bar")
+      csvRowParser.splitLineIntoParts("foo and bar,bar and foo,\"foo, is bar\"") shouldEqual Array("foo and bar", "bar and foo", "foo, is bar")
     }
   }
   "RowParser" should {
     "parse a string with empty fields" in {
-      csvRowParser.apply("foo,bar,,,baz") shouldEqual Array("foo", "bar", "", "", "baz")
+      csvRowParser.splitLineIntoParts("foo,bar,,,baz") shouldEqual Array("foo", "bar", "", "", "baz")
     }
   }
-  val trow = new RowParser('\t')
+  val trow = new RowParser('\t', Array[DataTypes.DataType]())
 
   "RowParser" should {
 
     "parse a tab separated string" in {
-      trow.apply("foo\tbar\tbaz") shouldEqual Array("foo", "bar", "baz")
+      trow.splitLineIntoParts("foo\tbar\tbaz") shouldEqual Array("foo", "bar", "baz")
     }
   }
 }

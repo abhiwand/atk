@@ -32,8 +32,8 @@ class TitanHBaseReader(sparkContext: SparkContext, titanConnector: TitanGraphCon
 
   import com.intel.graphbuilder.driver.spark.titan.reader.TitanHBaseReader._
 
-  require(titanConfig.containsKey(TITAN_STORAGE_HOSTNAME))
-  require(titanConfig.containsKey(TITAN_STORAGE_TABLENAME))
+  require(titanConfig.containsKey(TITAN_STORAGE_HOSTNAME), "could not find key " + TITAN_STORAGE_HOSTNAME)
+  require(titanConfig.containsKey(TITAN_STORAGE_TABLENAME), "could not find key " + TITAN_STORAGE_TABLENAME)
 
   /**
    * Read Titan graph from a HBase storage backend into a Spark RDD of graph elements.
