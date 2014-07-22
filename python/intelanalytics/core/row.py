@@ -1,5 +1,5 @@
 from intelanalytics.core.orddict import OrderedDict
-from intelanalytics.core.iatypes import supported_types
+from intelanalytics.core.iatypes import valid_data_types
 
 
 class Row(object):
@@ -56,4 +56,4 @@ class Row(object):
     def _get_cell_value_by_index(self, index):
         # converts the value into the proper data type
         dtype = self.schema_dict.values()[index]
-        return supported_types.cast(self.data[index], dtype)
+        return valid_data_types.cast(self.data[index], dtype)
