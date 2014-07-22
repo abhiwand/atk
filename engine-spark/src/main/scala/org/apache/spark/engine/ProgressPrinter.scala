@@ -35,23 +35,21 @@ import org.apache.spark.scheduler.{ SparkListenerJobEnd, SparkListenerTaskEnd, S
  */
 class ProgressPrinter(progressListener: SparkProgressListener) extends SparkListener {
   override def onStageCompleted(stageCompleted: SparkListenerStageCompleted) {
-    printJobProgress()
-  }
-
-  override def onTaskEnd(taskEnd: SparkListenerTaskEnd) {
     //    printJobProgress()
   }
 
-  override def onJobEnd(jobEnd: SparkListenerJobEnd) {
+  override def onTaskEnd(taskEnd: SparkListenerTaskEnd) {
     printJobProgress()
+  }
+
+  override def onJobEnd(jobEnd: SparkListenerJobEnd) {
+    //    printJobProgress()
   }
 
   def printJobProgress() {
     println("PRINTING PROGRESS........................................................")
     for (commandId <- progressListener.commandIdJobs.keys.toList.sorted) {
-      for (job <- progressListener.commandIdJobs(commandId)) {
-        println("command:" + commandId + ", job: " + job.jobId + ", progress: " + progressListener.getCommandProgress(commandId) + "%")
-      }
+      println("command:" + commandId + ", progress: " + progressListener.getCommandProgress(commandId) + "%")
     }
     println("END.......................................................................")
   }

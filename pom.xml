@@ -202,6 +202,7 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 <module>igiraph/giraph-titan</module>
                 <module>igiraph</module>
                 <module>imllib</module>
+				<module>conf</module>
                 <module>package</module>
             </modules>
         </profile>
@@ -709,13 +710,11 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 <groupId>com.intel.ia</groupId>
                 <artifactId>engine</artifactId>
                 <version>${project.version}</version>
-                <scope>provided</scope>
             </dependency>
             <dependency>
                 <groupId>com.intel.ia</groupId>
                 <artifactId>engine-spark</artifactId>
                 <version>${project.version}</version>
-                <scope>provided</scope>
             </dependency>
             <dependency>
                 <groupId>com.intel.ia</groupId>
