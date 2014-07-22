@@ -21,16 +21,14 @@
 # must be express and approved by Intel in writing.
 ##############################################################################
 
-from intelanalytics.core.iatypes import unknown, supported_types
+from intelanalytics.core.iatypes import valid_data_types
 
 
 class BigColumn(object):
     """Column in a BigFrame"""
-    def __init__(self, frame, name, data_type=unknown):
+    def __init__(self, frame, name, data_type):
         self.name = name
-        if data_type is not unknown:
-            supported_types.validate_is_supported_type(data_type)
-        self.data_type = data_type
+        self.data_type = valid_data_types.get_from_type(data_type)
         self._frame = frame
 
     def __repr__(self):
@@ -38,7 +36,7 @@ class BigColumn(object):
 
     def _as_json_obj(self):
         return { "name": self.name,
-                 "data_type": supported_types.get_type_string(self.data_type),
+                 "data_type": valid_data_types.to_string(self.data_type),
                  "frame": None if not self.frame else self.frame._id}
 
     @property

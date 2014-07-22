@@ -39,6 +39,7 @@ import com.intel.intelanalytics.engine.Rows._
 import com.intel.intelanalytics.engine._
 import com.intel.intelanalytics.engine.plugin.CommandPlugin
 import com.intel.intelanalytics.engine.spark.command.CommandExecutor
+import com.intel.intelanalytics.engine.spark.frame.{ RDDJoinParam, RowParser, SparkFrameStorage }
 import com.intel.intelanalytics.engine.spark.context.SparkContextManager
 import com.intel.intelanalytics.engine.spark.frame._
 import com.intel.intelanalytics.security.UserPrincipal
@@ -57,6 +58,7 @@ import DomainJsonProtocol._
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent._
+import com.intel.intelanalytics.engine.spark.context.SparkContextManager
 import scala.util.Try
 import org.apache.spark.engine.SparkProgressListener
 import com.intel.spark.mllib.util.{ LabeledLine, MLDataSplitter }
@@ -114,10 +116,9 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     /**
      * save the progress update
      * @param commandId id of the command
-     * @param progress list of progress for jobs initiated by the command
-     * @param detailedProgress list of extra progress info for jobs initiated by the command
+     * @param progressInfo list of progress for jobs initiated by the command
      */
-    override def updateProgress(commandId: Long, progress: List[Float], detailedProgress: List[ProgressInfo]): Unit = commandStorage.updateProgress(commandId, progress, detailedProgress)
+    override def updateProgress(commandId: Long, progressInfo: List[ProgressInfo]): Unit = commandStorage.updateProgress(commandId, progressInfo)
   }
 
   def shutdown: Unit = {
@@ -804,6 +805,23 @@ class SparkEngine(sparkContextManager: SparkContextManager,
 
     duplicatesRemoved.saveAsObjectFile(fsRoot + frames.getFrameDataFile(frameId))
     realFrame
+  }
+
+  val calculatePercentileCommand = commands.registerCommand("dataframe/calculate_percentiles", calculatePercentilesSimple)
+
+  def calculatePercentilesSimple(percentiles: CalculatePercentiles, user: UserPrincipal): PercentileValues = {
+    implicit val u = user
+    val frameId: Long = percentiles.frameId
+    val ctx = sparkContextManager.context(user).sparkContext
+
+    val realFrame: DataFrame = getDataFrameById(frameId)
+    val frameSchema = realFrame.schema
+    val columnIndex = frameSchema.columnIndex(percentiles.columnName)
+    val columnDataType = frameSchema.columnDataType(percentiles.columnName)
+
+    val rdd = frames.getFrameRdd(ctx, frameId)
+    val percentileValues = SparkOps.calculatePercentiles(rdd, percentiles.percentiles, columnIndex, columnDataType).toList
+    PercentileValues(percentileValues)
   }
 
   override def classificationMetric(arguments: ClassificationMetric[Long])(implicit user: UserPrincipal): Execution =

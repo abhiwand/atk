@@ -28,11 +28,11 @@ Note:
     It may not object initially, but there are some things which will not work.
     To test whether you have imported the toolkit properly type::
 
-        print supported_types
+        print valid_data_types
 
     You should see something like this::
 
-        bool, bytearray, dict, float32, float64, int32, int64, list, str, string, unicode
+        float32, float64, int32, int64, str, unicode
 
 --------------
 Importing Data
