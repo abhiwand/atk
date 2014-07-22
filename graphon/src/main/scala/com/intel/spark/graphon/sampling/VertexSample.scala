@@ -39,7 +39,7 @@ import com.intel.spark.graphon.sampling.SamplingSparkOps._
  * @param graph reference to the graph to be sampled
  * @param size the requested sample size
  * @param sampleType type of vertex sampling to use
- * @param seed random seed value
+ * @param seed optional random seed value
  */
 case class VS(graph: GraphReference, size: Int, sampleType: String, seed: Option[Long] = None) {
   require(size >= 1, "Invalid sample size")
@@ -69,9 +69,6 @@ class VertexSample extends SparkCommandPlugin[VS, VSResult] {
     titanConfig.setProperty("storage.hostname", titanConfigInput.getString("storage.hostname"))
     titanConfig.setProperty("storage.port", titanConfigInput.getString("storage.port"))
 
-    val subgraphTitanConfig = new SerializableBaseConfiguration()
-    subgraphTitanConfig.copy(titanConfig)
-
     import scala.concurrent.duration._
     val graph = Await.result(invocation.engine.getGraph(arguments.graph.id), config.getInt("default-timeout") seconds)
 
@@ -91,9 +88,12 @@ class VertexSample extends SparkCommandPlugin[VS, VSResult] {
     val edgeSample = sampleEdges(vertexSample, edgeRDD)
 
     val iatSubgraphName = GraphName.convertGraphUserNameToBackendName("graph_" + UUID.randomUUID.toString)
-    subgraphTitanConfig.setProperty("storage.tablename", iatSubgraphName)
 
     val subgraph = Await.result(invocation.engine.createGraph(GraphTemplate(iatSubgraphName)), config.getInt("default-timeout") seconds)
+
+    val subgraphTitanConfig = new SerializableBaseConfiguration()
+    subgraphTitanConfig.copy(titanConfig)
+    subgraphTitanConfig.setProperty("storage.tablename", iatSubgraphName)
 
     writeToTitan(vertexSample, edgeSample, subgraphTitanConfig)
 
