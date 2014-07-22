@@ -532,11 +532,11 @@ class FrameSchema:
 
     @staticmethod
     def from_types_to_strings(s):
-        return [(name, supported_types.get_type_string(data_type)) for name, data_type in s]
+        return [(name, get_rest_str_from_data_type(data_type)) for name, data_type in s]
 
     @staticmethod
     def from_strings_to_types(s):
-        return [(name, supported_types.get_type_from_string(data_type)) for name, data_type in s]
+        return [(name, get_data_type_from_rest_str(data_type)) for name, data_type in s]
 
     # Add more if necessary
 

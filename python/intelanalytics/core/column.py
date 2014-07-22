@@ -32,7 +32,7 @@ class BigColumn(object):
         self._frame = frame
 
     def __repr__(self):
-        return '{ "name" : "%s", "data_type" : "%s" }' % (self.name, supported_types.get_type_string(self.data_type))
+        return '{ "name" : "%s", "data_type" : "%s" }' % (self.name, valid_data_types.to_string(self.data_type))
 
     def _as_json_obj(self):
         return { "name": self.name,
