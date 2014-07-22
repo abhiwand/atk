@@ -28,11 +28,11 @@ Note:
     It may not object initially, but there are some things which will not work.
     To test whether you have imported the toolkit properly type::
 
-        print supported_types
+        print valid_data_types
 
     You should see something like this::
 
-        bool, bytearray, dict, float32, float64, int32, int64, list, str, string, unicode
+        float32, float64, int32, int64, str, unicode
 
 --------------
 Importing Data
@@ -70,8 +70,8 @@ Planned for future release are JSON and XML formats.
 
 .. _example_files.csvfile:
 
-Importing a CSV File
---------------------
+Importing a CSV File.
+---------------------
 
 A CSV file looks similar to this::
 
@@ -107,7 +107,7 @@ Create the schema *schema_ab* with two columns identified: *a* as an int32, and 
 
     schema_ab = [('a', int32), ('b', string)]
 
-When defining schemas, if the parser should ignore the field, the type is assigned *ignore* and the name assigned an empty string ''::
+When defining schemas, if the parser should ignore the field, the type is assigned *ignore* and the name assigned an empty string ``''``::
 
     schema_2 = [('column_a', str), ('', ignore), ('more_data', str)]
 
@@ -116,7 +116,7 @@ This would be a benefit if the delimiter is something other than a comma.
 
 Another option is to use the key word ``skip_header_lines`` and skip the first *n* lines of the file, so it will ignore a header.
 
-Now we create a "CsvFile" object used to define the data layout::
+Now we create some "CsvFile" objects used to define the data layouts::
 
     my_csv = CsvFile('Data.csv', schema_ab)
     csv1 = CsvFile("data.txt", schema_ab)
@@ -245,8 +245,8 @@ Commands such as ``f4 = my_frame`` will only give you a copy of the BigFrame pro
 
 .. _example_frame.append:
 
-Append
-------
+Append:
+-------
 The ``append`` function adds more rows, and columns, of data to a frame, typically from a different data source.
 If columns are the same in both name and data type, the appended data will go into the existing column.
 If the column of data in the new source is not in the original structure, it will be added to the structure and all existing rows will have *None*
@@ -345,8 +345,8 @@ For details about row selection based upon its data see :doc:`ds_apir`
 
 .. _example_frame.drop:
 
-Drop Rows
----------
+Drop Rows:
+----------
 
 The ``drop`` function takes a predicate function and removes all rows for which the predicate evaluates to ``True``.
 
@@ -364,8 +364,8 @@ Drop all rows where any column is empty::
 
 .. _example_frame.filter:
 
-Filter Rows
------------
+Filter Rows:
+------------
 
 The ``filter`` function is like ``drop``, except it removes all rows for which the predicate evaluates False.
 
@@ -375,8 +375,8 @@ Keep only those rows where field *b* is in the range 0 to 10::
 
 .. _example_frame.drop_duplicates:
 
-Drop Duplicates
----------------
+Drop Duplicates:
+----------------
 
 The ``drop_duplicates`` function performs a row uniqueness comparison across the whole table.
 
@@ -390,8 +390,8 @@ Drop any rows where the data matches some previously evaluated row in all column
  
 .. _example_frame.remove_columns:
 
-Remove Columns
---------------
+Remove Columns:
+---------------
 
 Columns can be removed either with a string matching the column name or a list of strings::
 
@@ -400,8 +400,8 @@ Columns can be removed either with a string matching the column name or a list o
 
 .. _example_frame.rename_columns:
 
-Rename Columns
---------------
+Rename Columns:
+---------------
 
 Columns can be renamed by giving the existing column name and the new name,
 or by giving a list of columns and a list of new names.
@@ -424,8 +424,8 @@ you need the average age of teenagers who attend college.
 
 .. _example_frame.add_columns:
 
-Add Columns
------------
+Add Columns:
+------------
 
 Columns can be added to the frame using values (usually manipulated) from other columns as their value.
 
@@ -481,8 +481,8 @@ Create multiple columns at once by making a function return a list of values for
 
 .. _example_frame.groupby:
 
-Groupby (and Aggregate)
------------------------
+Groupby (and Aggregate):
+------------------------
 
 Group rows together based on matching column values and then apply aggregation
 functions on each group, producing a **new** frame.
@@ -603,8 +603,8 @@ Aggregation based on both column and row together:
 
 .. _example_frame.join:
 
-Join
-----
+Join:
+-----
 
 Create a **new** frame from a JOIN operation with another frame.
 
@@ -692,8 +692,8 @@ Result is *right_frame*::
 
 .. _example_frame.flatten_column:
 
-Flatten Column
---------------
+Flatten Column:
+---------------
 
 The function ``flatten_column`` creates a **new** frame by splitting a particular column and returns a BigFrame object.
 The column is searched for rows where there is more than one value, separated by commas.
@@ -744,92 +744,104 @@ Now I check again and my result is::
 BigGraph
 --------
 
+For the examples below, we will use a BigFrame *my_frame*, which accesses an arbitrary frame of data consisting of the following columns:
+
+    +-----------+-----------+-----------+-----------+
+    | emp_id    | name      | manager   | years     |
+    +===========+===========+===========+===========+
+    | 00001     | john      |           | 5         |
+    +-----------+-----------+-----------+-----------+
+    | 00002     | paul      | 00001     | 4         |
+    +-----------+-----------+-----------+-----------+
+    | 00003     | george    | 00001     | 3         |
+    +-----------+-----------+-----------+-----------+
+    | 00004     | ringo     | 00001     | 2         |
+    +-----------+-----------+-----------+-----------+
+
 Building Rules
 ==============
 
-First make rule objects. These are the criteria for transforming the table data to graph data.
+First we make rule objects. These are the criteria for transforming the table data to graph data.
 
-Vertex Rule
------------
+Vertex Rule:
+------------
 
-To create a rule for a vertex, one needs to define:
+To create a rule for :term:`vertices`, one needs to define:
 
-#. The label or identification for the vertex, for example, the string “empID”.
-#. The value of the vertex, for example, the column “emp_id” of a frame.
-#. The property of the vertex:
+#. The label for the vertices, for example, the string “empID”.
+#. The identification value of each vertex, for example, the column “emp_id” of our frame.
+#. The properties of the vertex.
 
-    * consists of a label and its value, for example, the property “name” with value taken from column “name” of a frame
-    * is optional which means a vertex might have zero or more properties
+Note:
+    The properties of a vertex:
+
+    #. Consist of a label and its value. For example, the property *name* with its value taken from column *name* of our frame.
+    #. Are optional, which means a vertex might have zero or more properties.
 
 Example:
 ~~~~~~~~
 
-Frame “my_frame” consists of the following columns::
+Create a vertex rule called “employee” from the above frame::
 
-    ╔═══════════╤═══════════╤═══════════╤═══════════╗
-    ║ emp_id    │ name      │ manager   │ years     ║
-    ╠═══════════╪═══════════╪═══════════╪═══════════╣
-    ║ 00001     │ john      │           | 5         ║
-    ║ 00002     │ paul      │ 00001     │ 4         ║
-    ║ 00003     │ george    │ 00001     │ 3         ║
-    ║ 00004     │ ringo     │ 00001     │ 2         ║
-    ╚═══════════╧═══════════╧═══════════╧═══════════╝
+    employee = VertexRule(‘empID”, my_frame[“emp_id”], {“name”: my_frame[“name”]})
 
-To create a vertex rule called “employee” from the above frame::
+The created vertices will be grouped under the label “empID”, will have an identification based on the values from the column *emp_id*,
+and will have a property *name* with its value from the specified frame column *name*.
 
-    employee = VertexRule(‘empID”, my_frame[“emp_id”], {“name”: my_frame[“name”], “years”: my_frame[“years”]})
-
-The created vertices will be grouped under label “empID” and will have property “name” and “years” defined from their specified frame columns.
-
-To create another vertex rule called “manager”::
+Create another vertex rule called “manager”::
 
     manager = VertexRule(‘empID”, my_frame[“manager”])
 
-The created vertices will also be grouped under label “empID” (we assume managers are basically considered employees in the above example),
-and their values will be taken from column “manager” of “my_frame” which is basically the same format as column “emp_id”.
+The identification values for these vertices will be taken from column *manager* of the frame.
 
-Edge Rule
----------
+Both vertex rules will be grouped under label *empID* (we will consider managers to also be employees in these examples).
+
+Edge Rule:
+----------
  
-An edge is a link that connects two vertices, in our case they are called tail and head. An edge can have properties similar to a vertex.
+An edge is a link that connects two vertices, in our case, they are *tail* and *head*. An edge can have properties similar to a vertex.
 
 To create a rule for an edge, one needs to define:
 
 #. The label or identification for the edge, for example, the string “worksUnder”
 #. The tail vertex specified in the previously defined vertex rule.
 #. The head vertex specified in the previously defined vertex rule.
-#. The property of the edge:
+#. The properties of the edge:
 
-    * consists of a label and its value, for example, the property “name” with value taken from column “name” of a frame
-    * is optional which means an edge might have zero or more properties
+    * consist of a label and its value, for example, the property *name* with value taken from column *name* of a frame
+    * are optional, which means an edge might have zero or more properties
 
 Example:
 ~~~~~~~~
 
-To create an edge called “reports” from the same frame “my_frame” above using previously defined “employee” and “manager” rules and link them together::
+Create an edge called “reports” from the same frame (accessed by BigFrame *my_frame*) as above, using previously defined *employee* and *manager*
+rules, and link them together::
 
     reports = EdgeRule("worksUnder", employee, manager, { "years": f[“years”] })
 
-Rule of directed/non-directed edge
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+This rule ties the vertices together, and also defines the property *years*, so the edges created will have this property with the value from the frame
+column *years*.
 
-In the edge rule, user can specify whether or not the edge is directed.
+Rule of directed/non-directed edge:
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-In the example above (employee and manager vertices), there is an edge created to link both of them with label “worksUnder”.
+In the edge rule, the user can specify whether or not the edge is :term:`directed <Undirected Graph>`.
+
+In the example above, using the *employee* and *manager* vertices, there is an edge created to link both of them with label “worksUnder”.
 This edge is considered “directed” since an employee reports to a manager but not vice versa.
-To make an edge a directed one, user needs to use parameter “is_directed” in the edge rule and set it to “True”, as shown in example below::
+To make an edge a directed one, the user needs to use the parameter ``is_directed`` in the edge rule and set it to ``True``, as shown in example below::
 
     reports = EdgeRule("worksUnder", employee, manager, { "years": f[“years”]}, is_directed = True)
 
 Building A Graph
 ================
 
-Now that you have built some rules, let us put them to use and create a graph by calling BigGraph and give it the name “employee_graph”::
+Now that you have built some rules, let us put them to use and create a graph by calling BigGraph. We will give the graph the name “employee_graph”::
 
     my_graph = BigGraph([employee, manager, reports], “employee_graph”)
 
-The graph is then created in a table in the underlying graph database and the content of this table is copied into a BigGraph object
-and is ready to be analyzed using the advanced functionality of the BigGraph API, for example, the use of machine learning algorithms.
+The graph is then created in the underlying graph database structure and the access control information is saved into the BigGraph object *my_graph*.
+The data is ready to be analyzed using the advanced functionality of the BigGraph API, for example, the use of machine learning algorithms.
 
 Similar to what was discussed for BigFrame, what gets returned is not all the data, but a proxy (descriptive pointer) for the data.
 Commands such as g4 = my_graph will only give you a copy of the proxy, pointing to the same graph.
