@@ -42,13 +42,12 @@ object Driver {
   /**
    * The main driver to execute k-clique percolation algorithm
    * @param titanConfigInput The titan configuration for input
-   * @param titanConfigOutput The titan configuration for input
    * @param sc SparkContext
    * @param cliqueSize Parameter determining clique-size used to determine communities. Must be at least 1.
    *                   Large values of cliqueSize result in fewer, smaller communities that are more connected
    * @param communityPropertyDefaultLabel name of the community property of vertex that will be updated/created in the input graph
    */
-  def run(titanConfigInput: SerializableBaseConfiguration, titanConfigOutput: SerializableBaseConfiguration, sc: SparkContext, cliqueSize: Int, communityPropertyDefaultLabel: String) = {
+  def run(titanConfigInput: SerializableBaseConfiguration, sc: SparkContext, cliqueSize: Int, communityPropertyDefaultLabel: String) = {
 
     //    Create the Titan connection
     val titanConnector = new TitanGraphConnector(titanConfigInput)
@@ -82,11 +81,11 @@ object Driver {
       CommunityAssigner.run(cliquesAndConnectedComponent.connectedComponents, cliquesAndConnectedComponent.newVertexIdToOldVertexIdOfCliqueGraph)
 
     val gbVertexSetter: GBVertexSetter = new GBVertexSetter(gbVertices, vertexCommunitySet)
-    val newGBVertices = gbVertexSetter.setVertex(communityPropertyDefaultLabel)
+    val newGBVertices: RDD[GBVertex] = gbVertexSetter.setVertex(communityPropertyDefaultLabel)
 
     //    Write back to each vertex in Titan graph the set of communities to which it belongs in the property with name "communities"
-    val kCliqueCommunityWriterInTitan = new CommunityWriterInTitan()
-    kCliqueCommunityWriterInTitan.run(newGBVertices, gbEdges, titanConfigOutput)
+    val communityWriterInTitan = new CommunityWriterInTitan()
+    communityWriterInTitan.run(newGBVertices, gbEdges, titanConfigInput)
 
   }
 

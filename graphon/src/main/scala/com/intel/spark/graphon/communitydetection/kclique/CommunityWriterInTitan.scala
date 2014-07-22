@@ -29,7 +29,10 @@ import org.apache.spark.rdd.RDD
 import com.intel.graphbuilder.driver.spark.titan.{ GraphBuilderConfig, GraphBuilder }
 import com.intel.graphbuilder.util.SerializableBaseConfiguration
 import com.intel.graphbuilder.parser.InputSchema
-
+import com.intel.graphbuilder.write.dao.VertexDAO
+import com.tinkerpop.blueprints
+import com.tinkerpop.blueprints.Graph
+import com.intel.graphbuilder.graph.titan.TitanGraphConnector
 /**
  * Write back to each vertex in Titan graph the set of communities to which it
  * belongs in some property specified by the user
@@ -41,11 +44,11 @@ class CommunityWriterInTitan extends Serializable {
    *
    * @param gbVertices updated GB vertices list
    * @param gbEdges GB Edge list
-   * @param titanConfig The titan configuration
+   * @param titanConfigInput The titan configuration
    */
-  def run(gbVertices: RDD[Vertex], gbEdges: RDD[Edge], titanConfig: SerializableBaseConfiguration) {
+  def run(gbVertices: RDD[Vertex], gbEdges: RDD[Edge], titanConfigInput: SerializableBaseConfiguration) {
 
-    val gb = new GraphBuilder(new GraphBuilderConfig(new InputSchema(Seq.empty), List.empty, List.empty, titanConfig))
+    val gb = new GraphBuilder(new GraphBuilderConfig(new InputSchema(Seq.empty), List.empty, List.empty, titanConfigInput))
     gb.buildGraphWithSpark(gbVertices, gbEdges)
 
   }

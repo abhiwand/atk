@@ -18,15 +18,14 @@ import java.util.UUID
 
 case class KClique(graph: GraphReference,
                    cliqueSize: Int,
-                   communityPropertyDefaultLabel: String,
-                   outputGraphName: String)
+                   communityPropertyDefaultLabel: String)
 
-case class KCliqueResult(outputGraph: GraphReference)
+case class KCliqueResult(time: Double)
 
 class KCliquePercolation extends SparkCommandPlugin[KClique, KCliqueResult] {
 
   import DomainJsonProtocol._
-  implicit val kcliqueFormat = jsonFormat4(KClique)
+  implicit val kcliqueFormat = jsonFormat3(KClique)
   implicit val kcliqueResultFormat = jsonFormat1(KCliqueResult)
 
   override def execute(sparkInvocation: SparkInvocation, arguments: KClique)(implicit user: UserPrincipal, executionContext: ExecutionContext): KCliqueResult = {
@@ -63,35 +62,14 @@ class KCliquePercolation extends SparkCommandPlugin[KClique, KCliqueResult] {
     val iatGraphName = GraphName.convertGraphUserNameToBackendName(graph.name)
     titanConfigInput.setProperty("storage.tablename", iatGraphName)
 
-    //    Create the output graph in Titan
-    val iatOutputGraphName = GraphName.convertGraphUserNameToBackendName(arguments.outputGraphName)
-    val outputGraph = Await.result(sparkInvocation.engine.createGraph(GraphTemplate(iatOutputGraphName)), config.getInt("default-timeout") seconds)
-
-    //    Titan settings for output
-    val titanConfigOutput = new SerializableBaseConfiguration()
-    titanConfigOutput.setProperty("storage.backend", titanConfig.getString("storage.backend"))
-    titanConfigOutput.setProperty("storage.hostname", titanConfig.getString("storage.hostname"))
-    titanConfigOutput.setProperty("storage.port", titanConfig.getString("storage.port"))
-    titanConfigOutput.setProperty("storage.batch-loading", titanConfig.getString("storage.batch-loading"))
-    titanConfigOutput.setProperty("storage.buffer-size", titanConfig.getString("storage.buffer-size"))
-    titanConfigOutput.setProperty("storage.attempt-wait", titanConfig.getString("storage.attempt-wait"))
-    titanConfigOutput.setProperty("storage.lock-wait-time", titanConfig.getString("storage.lock-wait-time"))
-    titanConfigOutput.setProperty("storage.lock-retries", titanConfig.getString("storage.lock-retries"))
-    titanConfigOutput.setProperty("storage.idauthority-retries", titanConfig.getString("storage.idauthority-retries"))
-    titanConfigOutput.setProperty("storage.read-attempts", titanConfig.getString("storage.read-attempts"))
-    titanConfigOutput.setProperty("autotype", titanConfig.getString("autotype"))
-    titanConfigOutput.setProperty("ids.block-size", titanConfig.getString("ids.block-size"))
-    titanConfigOutput.setProperty("ids.renew-timeout", titanConfig.getString("ids.renew-timeout"))
-    titanConfigOutput.setProperty("storage.tablename", iatOutputGraphName)
-
     //    Start KClique Percolation
     System.out.println("*********Starting KClique Percolation********")
-    Driver.run(titanConfigInput, titanConfigOutput, sc, arguments.cliqueSize, arguments.communityPropertyDefaultLabel)
+    Driver.run(titanConfigInput, sc, arguments.cliqueSize, arguments.communityPropertyDefaultLabel)
 
     val time = (System.currentTimeMillis() - start).toDouble / 1000.0
     System.out.println("*********Finished execution of KCliquePercolation********")
     System.out.println(f"*********Execution Time = $time%.3f seconds********")
-    KCliqueResult(new GraphReference(outputGraph.id))
+    KCliqueResult(time)
   }
 
   //TODO: Replace with generic code that works on any case class
