@@ -29,8 +29,8 @@ class NumericalStatisticsCornerCasesITest extends TestingSparkContext with Match
     val numericalStatistics = new NumericalStatistics(dataFrequencies)
     val numericalStatisticsWithNegs = new NumericalStatistics(dataFrequenciesWithNegs)
 
-    numericalStatistics.count shouldBe data.length
-    numericalStatisticsWithNegs.count shouldBe data.length
+    numericalStatistics.positiveWeightCount shouldBe data.length
+    numericalStatisticsWithNegs.positiveWeightCount shouldBe data.length
 
     Math.abs(numericalStatistics.weightedMean - numericalStatisticsWithNegs.weightedMean) should be < epsilon
     Math.abs(numericalStatistics.weightedGeometricMean
@@ -53,6 +53,51 @@ class NumericalStatisticsCornerCasesITest extends TestingSparkContext with Match
 
   }
 
+  "values with NaN or infinite weights" should "be ignored , except for calculating count of bad rows " in new NumericalStatisticsCornerCaseTest() {
+
+    val data = List(1, 2, 3, 4, 5, 6, 7, 8).map(x => x.toDouble)
+    val frequencies = List(3, 2, 3, 1, 9, 4, 3, 1).map(x => x.toDouble)
+
+    val goodDataBadWeights = (1 to 3).map(x => x.toDouble).zip(List(Double.NaN, Double.PositiveInfinity, Double.NegativeInfinity))
+    val badDataGoodWeights = List(Double.NaN, Double.PositiveInfinity, Double.NegativeInfinity).zip((1 to 3).map(x => x.toDouble))
+
+    val dataFrequencies = sc.parallelize(data.zip(frequencies))
+
+    val dataFrequenciesWithBadGuys =
+      sc.parallelize(data.zip(frequencies) ++ badDataGoodWeights ++ goodDataBadWeights)
+
+    val numericalStatistics = new NumericalStatistics(dataFrequencies)
+    val numericalStatisticsWithBadGuys = new NumericalStatistics(dataFrequenciesWithBadGuys)
+
+    numericalStatistics.positiveWeightCount shouldBe data.length
+    numericalStatisticsWithBadGuys.positiveWeightCount shouldBe data.length
+
+    numericalStatistics.badRowCount shouldBe 0
+    numericalStatistics.goodRowCount shouldBe data.length
+
+    numericalStatisticsWithBadGuys.badRowCount shouldBe 6
+    numericalStatisticsWithBadGuys.goodRowCount shouldBe data.length
+
+    Math.abs(numericalStatistics.weightedMean - numericalStatisticsWithBadGuys.weightedMean) should be < epsilon
+    Math.abs(numericalStatistics.weightedGeometricMean
+      - numericalStatisticsWithBadGuys.weightedGeometricMean) should be < epsilon
+    Math.abs(numericalStatistics.min - numericalStatisticsWithBadGuys.min) should be < epsilon
+    Math.abs(numericalStatistics.max - numericalStatisticsWithBadGuys.max) should be < epsilon
+    Math.abs(numericalStatistics.weightedVariance - numericalStatisticsWithBadGuys.weightedVariance) should be < epsilon
+    Math.abs(numericalStatistics.weightedStandardDeviation
+      - numericalStatisticsWithBadGuys.weightedStandardDeviation) should be < epsilon
+    Math.abs(numericalStatistics.weightedSkewness - numericalStatisticsWithBadGuys.weightedSkewness) should be < epsilon
+    Math.abs(numericalStatistics.weightedKurtosis - numericalStatisticsWithBadGuys.weightedKurtosis) should be < epsilon
+    Math.abs(numericalStatistics.weightedMode - numericalStatisticsWithBadGuys.weightedMode) should be < epsilon
+    Math.abs(numericalStatistics.meanConfidenceLower
+      - numericalStatisticsWithBadGuys.meanConfidenceLower) should be < epsilon
+    Math.abs(numericalStatistics.meanConfidenceUpper
+      - numericalStatisticsWithBadGuys.meanConfidenceUpper) should be < epsilon
+
+    numericalStatistics.nonPositiveWeightCount shouldBe 0
+    numericalStatisticsWithBadGuys.nonPositiveWeightCount shouldBe 0
+
+  }
   "when a data value is negative" should "give a NaN geometric mean" in new NumericalStatisticsCornerCaseTest() {
 
     val data = List(1, 2, 3, 4, 5, 6, 7, -18).map(x => x.toDouble)
@@ -88,7 +133,7 @@ class NumericalStatisticsCornerCasesITest extends TestingSparkContext with Match
 
     val numericalStatistics = new NumericalStatistics(dataFrequencies)
 
-    numericalStatistics.count shouldBe 0
+    numericalStatistics.positiveWeightCount shouldBe 0
     numericalStatistics.nonPositiveWeightCount shouldBe 0
     Math.abs(numericalStatistics.weightedMean - 0) should be < epsilon
     Math.abs(numericalStatistics.weightedGeometricMean - 1) should be < epsilon
@@ -112,7 +157,7 @@ class NumericalStatisticsCornerCasesITest extends TestingSparkContext with Match
 
     val numericalStatistics = new NumericalStatistics(dataFrequencies)
 
-    numericalStatistics.count shouldBe 0
+    numericalStatistics.positiveWeightCount shouldBe 0
     numericalStatistics.nonPositiveWeightCount shouldBe data.length
     Math.abs(numericalStatistics.weightedMean - 0) should be < epsilon
     Math.abs(numericalStatistics.weightedGeometricMean - 1) should be < epsilon
@@ -137,7 +182,7 @@ class NumericalStatisticsCornerCasesITest extends TestingSparkContext with Match
 
     val numericalStatistics = new NumericalStatistics(dataFrequencies)
 
-    numericalStatistics.count shouldBe 1
+    numericalStatistics.positiveWeightCount shouldBe 1
     numericalStatistics.nonPositiveWeightCount shouldBe 0
     Math.abs(numericalStatistics.weightedMean - 1) should be < epsilon
     Math.abs(numericalStatistics.weightedGeometricMean - 1) should be < epsilon
@@ -161,7 +206,7 @@ class NumericalStatisticsCornerCasesITest extends TestingSparkContext with Match
 
     val numericalStatistics = new NumericalStatistics(dataFrequencies)
 
-    numericalStatistics.count shouldBe 2
+    numericalStatistics.positiveWeightCount shouldBe 2
     numericalStatistics.nonPositiveWeightCount shouldBe 0
     Math.abs(numericalStatistics.weightedMean - 1) should be < epsilon
     Math.abs(numericalStatistics.weightedGeometricMean - 1) should be < epsilon
@@ -185,7 +230,7 @@ class NumericalStatisticsCornerCasesITest extends TestingSparkContext with Match
 
     val numericalStatistics = new NumericalStatistics(dataFrequencies)
 
-    numericalStatistics.count shouldBe 3
+    numericalStatistics.positiveWeightCount shouldBe 3
     numericalStatistics.nonPositiveWeightCount shouldBe 0
     Math.abs(numericalStatistics.weightedMean - 1) should be < epsilon
     Math.abs(numericalStatistics.weightedGeometricMean - 1) should be < epsilon
@@ -209,7 +254,7 @@ class NumericalStatisticsCornerCasesITest extends TestingSparkContext with Match
 
     val numericalStatistics = new NumericalStatistics(dataFrequencies)
 
-    numericalStatistics.count shouldBe 3
+    numericalStatistics.positiveWeightCount shouldBe 3
     numericalStatistics.nonPositiveWeightCount shouldBe 0
     Math.abs(numericalStatistics.weightedMean - 1.333333333) should be < epsilon
     Math.abs(numericalStatistics.weightedGeometricMean - 1.2599210498948732) should be < epsilon
@@ -233,7 +278,7 @@ class NumericalStatisticsCornerCasesITest extends TestingSparkContext with Match
 
     val numericalStatistics = new NumericalStatistics(dataFrequencies)
 
-    numericalStatistics.count shouldBe 5
+    numericalStatistics.positiveWeightCount shouldBe 5
     numericalStatistics.nonPositiveWeightCount shouldBe 0
     Math.abs(numericalStatistics.weightedMean - 2) should be < epsilon
     Math.abs(numericalStatistics.weightedGeometricMean - 2) should be < epsilon

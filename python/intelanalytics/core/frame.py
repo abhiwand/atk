@@ -1064,6 +1064,13 @@ class BigFrame(CommandSupport):
             Must contain numerical data. Uniform weights of 1 for all items will be used for the calculation if this
                 parameter is not provided.
 
+        Handling of Malformed Data
+        --------------------------
+        If a row contains a NaN or infinite value in either the data or weights column, that row is
+         skipped and a count of bad rows is incremented. If a row contains only finite numbers for the data and weight,
+         and the weight of a row is <= 0 , that row is skipped and a count of non positive weighs is incremented.
+
+
         Returns
         -------
         summary : Dict
@@ -1086,6 +1093,8 @@ class BigFrame(CommandSupport):
                   Assumes a Gaussian distribution. NaN when there are <= 1 data elements of positive weight.
                  positive_weight_count : The number of data elements with weight > 0.
                  non_positive_weight_count : The number data elements with weight <= 0.
+                 bad_row_count : The number of rows containing a NaN or infinite value in either the data or weights column.
+                 good_row_count : The number of rows containing a NaN or infinite value in either the data or weights column.
 
         Examples
         --------
@@ -1107,6 +1116,12 @@ class BigFrame(CommandSupport):
             Optional. The column that provides weights (frequencies) for the data being summarized.
             Must contain numerical data. Uniform weights of 1 for all items will be used for the calculation if this
                 parameter is not provided.
+
+        Handling of Malformed Data
+        --------------------------
+        If a row contains a NaN or infinite value in either the data or weights column, that row is
+         skipped and a count of bad rows is incremented. If a row contains only finite numbers for the data and weight,
+         and the weight of a row is <= 0 , that row is skipped and a count of non positive weighs is incremented.
 
         Returns
         -------
@@ -1136,6 +1151,8 @@ class BigFrame(CommandSupport):
                   Assumes a Gaussian distribution. NaN when there are <= 1 data elements of positive weight.
                  positive_weight_count : The number of data elements with weight > 0.
                  non_positive_weight_count : The number data elements with weight <= 0.
+                 bad_row_count : The number of rows containing a NaN or infinite value in either the data or weights column.
+                 good_row_count : The number of rows containing a NaN or infinite value in either the data or weights column.
 
         Examples
         --------

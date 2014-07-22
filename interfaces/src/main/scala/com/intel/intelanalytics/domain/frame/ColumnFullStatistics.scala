@@ -38,7 +38,8 @@ case class ColumnFullStatistics(frame: FrameReference, dataColumn: String, weigh
 /**
  * Statistics for a dataframe column. All values are optionally weighted by a second column. If no weights are
  * provided, all elements receive a uniform weight of 1. If any element receives a weight <= 0, that element is thrown
- * out of the calculation.
+ * out of the calculation. If a row contains a NaN or infinite value in either the data or weights column, that row is
+ * skipped and a count of bad rows is incremented.
  *
  * Values follow default settings specified by SAS
  * http://support.sas.com/documentation/cdl/en/procstat/63104/HTML/default/viewer.htm#procstat_univariate_sect026.htm
@@ -64,6 +65,9 @@ case class ColumnFullStatistics(frame: FrameReference, dataColumn: String, weigh
  *                              NaN when there are <= 1 data elements of positive weight.
  * @param positiveWeightCount The number data elements with weights > 0.
  * @param nonPositiveWeightCount The number data elements with weight <= 0.
+ * @param badRowCount The number of rows containing a NaN or infinite value in either the data or weights column.
+ * @param goodRowCount The number of rows containing a NaN or infinite value in either the data or weights column.
+ *
  */
 case class ColumnFullStatisticsReturn(mean: Double,
                                       geometricMean: Double,
@@ -77,4 +81,6 @@ case class ColumnFullStatisticsReturn(mean: Double,
                                       meanConfidenceLowerBound: Double,
                                       meanConfidenceUpperBound: Double,
                                       positiveWeightCount: Long,
-                                      nonPositiveWeightCount: Long)
+                                      nonPositiveWeightCount: Long,
+                                      badRowCount: Long,
+                                      goodRowCount: Long)

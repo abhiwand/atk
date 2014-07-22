@@ -46,7 +46,7 @@ private[numericalstatistics] object SecondPassStatistics {
 
       // for second pass statistics, there's no need to keep around the data elements with non-positive weight,
       // since the first pass statistics track the count of those
-      dataWeightPairs.filter(distributionUtils.hasPositiveWeight).
+      dataWeightPairs.filter(distributionUtils.isFiniteDataWeightDoublePair).filter(distributionUtils.hasPositiveWeight).
         map(x => convertDataWeightPairToSecondPassStats(x, mean, stddev)).foreach(x => accumulator.add(x))
 
       accumulator.value
