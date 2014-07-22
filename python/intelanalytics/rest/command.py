@@ -378,26 +378,26 @@ class Executor(object):
 
         total_pages = command.result["totalPages"] + 1
 
-        def get_query_response(id, partition):
+        def get_query_response(id, partition, ):
             """
             Attempt to get the next partition of data as a CommandInfo Object. Allow for several retries
             :param id: Query ID
             :param partition: Partition number to pull
             """
-            max_retries = 10
-            for i in range(0, max_retries):
+            max_retries = 100
+            for i in range(max_retries):
                 try:
                     info = CommandInfo(http.get("queries/%s/data/%s" % (id, partition)).json())
                     return info
                 except HTTPError as e:
-                    time.sleep(i)
+                    time.sleep(5)
                     if i == max_retries - 1:
                         raise e
 
         #retreive the data
         printer = ProgressPrinter()
         for i in range(1, total_pages):
-            next_partition = get_query_response(command.id_number, i)
+            next_partition = get_query_response(command.id_number, i, )
             data.extend(next_partition.result["data"])
 
             #if the total pages is greater than 10 display a progress bar
