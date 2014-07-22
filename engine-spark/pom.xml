@@ -40,6 +40,10 @@
         <!--START BDA dependencies to our modules-->
         <dependency>
             <groupId>com.intel.ia</groupId>
+            <artifactId>engine</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.intel.ia</groupId>
             <artifactId>event</artifactId>
         </dependency>
         <dependency>

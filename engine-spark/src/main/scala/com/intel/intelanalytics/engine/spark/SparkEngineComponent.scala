@@ -50,7 +50,7 @@ class SparkComponent extends EngineComponent
     with EventLogging {
 
   lazy val engine = new SparkEngine(sparkContextManager,
-    commandExecutor, commands, frames, graphs) {}
+    commandExecutor, commands, frames, graphs, sparkAutoPartitioner) {}
 
   override lazy val profile = withContext("engine connecting to metastore") {
     Profile.initializeFromConfig(SparkEngineConfig)
@@ -60,10 +60,12 @@ class SparkComponent extends EngineComponent
 
   val sparkContextManager = new SparkContextManager(SparkEngineConfig.config, new SparkContextFactory)
 
-  val files = new HdfsFileStorage(SparkEngineConfig.fsRoot)
+  val fileStorage = new HdfsFileStorage(SparkEngineConfig.fsRoot)
 
-  val frames = new SparkFrameStorage(sparkContextManager.context(_),
-    SparkEngineConfig.fsRoot, files, SparkEngineConfig.maxRows, metaStore.asInstanceOf[SlickMetaStore])
+  val sparkAutoPartitioner = new SparkAutoPartitioner(fileStorage)
+
+  val frames = new SparkFrameStorage(sparkContextManager.context(_), SparkEngineConfig.fsRoot, fileStorage,
+    SparkEngineConfig.maxRows, metaStore.asInstanceOf[SlickMetaStore], sparkAutoPartitioner)
 
   private lazy val admin = new HBaseAdmin(HBaseConfiguration.create())
 
