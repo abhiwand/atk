@@ -44,7 +44,7 @@ intel.analytics {
       # root = "hdfs://MASTER_HOSTNAME/some/path"
       #
       # If running in local mode, this might be a better choice:
-      # root = ${user.home}
+      //root = ${user.home}
       root = "hdfs://localhost/user/iauser"
     }
 
@@ -335,7 +335,8 @@ intel.analytics.engine-spark {
           config {
             default-timeout = ${intel.analytics.engine.default-timeout}
             titan = ${intel.analytics.engine.titan}
-            graphson-mode = "normal" // Valid values: "normal", "compact", "extended"
+			# Valid values: "normal", "compact", "extended"
+            graphson-mode = "normal" 
           }
         }
         histogram_roc {
