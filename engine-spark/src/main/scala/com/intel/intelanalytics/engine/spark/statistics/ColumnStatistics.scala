@@ -3,7 +3,6 @@ package com.intel.intelanalytics.engine.spark.statistics
 import org.apache.spark.rdd.RDD
 import com.intel.intelanalytics.engine.Rows._
 import com.intel.intelanalytics.domain.frame.{ ColumnMedianReturn, ColumnModeReturn, ColumnFullStatisticsReturn, ColumnSummaryStatisticsReturn }
-import com.intel.intelanalytics.engine.spark.frame.FrameRDDFunctions
 import com.intel.intelanalytics.engine.spark.statistics.numericalstatistics._
 import spray.json._
 import DefaultJsonProtocol._
@@ -186,7 +185,7 @@ private[spark] object ColumnStatistics extends Serializable {
     val weighted = !weightsColumnIndexOption.isEmpty
 
     val weightsRDD =
-      if (weighted) FrameRDDFunctions.getColumnAsDoubleRDD(rowRDD, weightsColumnIndexOption.get) else null
+      if (weighted) rowRDD.map(row => doubleConversion(weightsColumnIndexOption.get)) else null
 
     if (weighted) dataRDD.zip(weightsRDD) else dataRDD.map(x => (x, 1.toDouble))
   }
