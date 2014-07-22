@@ -34,7 +34,7 @@ private[spark] object ColumnStatistics extends Serializable {
 
       val dataWeightPairs: RDD[(String, Double)] =
         getStringWeightPairs(dataColumnIndex, weightsColumnIndexOption, rowRDD)
-      val frequencyStatistics = new FrequencyStatistics(dataWeightPairs, "no items found")
+      val frequencyStatistics = new FrequencyStatistics(dataWeightPairs)
 
       (frequencyStatistics.mode.toJson, frequencyStatistics.weightOfMode, frequencyStatistics.totalWeight)
 
@@ -43,7 +43,7 @@ private[spark] object ColumnStatistics extends Serializable {
 
       val dataWeightPairs: RDD[(Int, Double)] =
         getIntegerWeightPairs(dataColumnIndex, weightsColumnIndexOption, rowRDD)
-      val frequencyStatistics = new FrequencyStatistics(dataWeightPairs, 0xdeadbeef)
+      val frequencyStatistics = new FrequencyStatistics(dataWeightPairs)
 
       (frequencyStatistics.mode.toJson, frequencyStatistics.weightOfMode, frequencyStatistics.totalWeight)
     }
@@ -51,7 +51,7 @@ private[spark] object ColumnStatistics extends Serializable {
 
       val dataWeightPairs: RDD[(Long, Double)] =
         getLongWeightPairs(dataColumnIndex, weightsColumnIndexOption, rowRDD)
-      val frequencyStatistics = new FrequencyStatistics(dataWeightPairs, 0xdeadbeef.toLong)
+      val frequencyStatistics = new FrequencyStatistics(dataWeightPairs)
 
       (frequencyStatistics.mode.toJson, frequencyStatistics.weightOfMode, frequencyStatistics.totalWeight)
     }
@@ -59,7 +59,7 @@ private[spark] object ColumnStatistics extends Serializable {
 
       val dataWeightPairs: RDD[(Float, Double)] =
         getFloatWeightPairs(dataColumnIndex, weightsColumnIndexOption, rowRDD)
-      val frequencyStatistics = new FrequencyStatistics(dataWeightPairs, Float.NaN)
+      val frequencyStatistics = new FrequencyStatistics(dataWeightPairs)
 
       (frequencyStatistics.mode.toJson, frequencyStatistics.weightOfMode, frequencyStatistics.totalWeight)
 
@@ -68,7 +68,7 @@ private[spark] object ColumnStatistics extends Serializable {
 
       val dataWeightPairs: RDD[(Double, Double)] =
         getDoubleWeightPairs(dataColumnIndex, weightsColumnIndexOption, rowRDD)
-      val frequencyStatistics = new FrequencyStatistics(dataWeightPairs, Double.NaN)
+      val frequencyStatistics = new FrequencyStatistics(dataWeightPairs)
 
       (frequencyStatistics.mode.toJson, frequencyStatistics.weightOfMode, frequencyStatistics.totalWeight)
 
