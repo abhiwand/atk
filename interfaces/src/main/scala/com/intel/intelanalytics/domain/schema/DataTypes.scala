@@ -51,7 +51,7 @@ object DataTypes {
     override type ScalaType = Int
 
     override def parse(s: String) = Try {
-      s.toInt
+      s.trim().toInt
     }
 
     override def scalaType = classOf[Int]
@@ -64,7 +64,7 @@ object DataTypes {
     override type ScalaType = Long
 
     override def parse(s: String): Try[int64.ScalaType] = Try {
-      s.toLong
+      s.trim().toLong
     }
 
     override def scalaType = classOf[Long]
@@ -77,7 +77,7 @@ object DataTypes {
     override type ScalaType = Float
 
     override def parse(s: String): Try[float32.ScalaType] = Try {
-      s.toFloat
+      s.trim().toFloat
     }
 
     override def scalaType = classOf[Float]
@@ -91,7 +91,7 @@ object DataTypes {
     override type ScalaType = Double
 
     override def parse(s: String): Try[float64.ScalaType] = Try {
-      s.toDouble
+      s.trim().toDouble
     }
 
     override def scalaType = classOf[Double]
