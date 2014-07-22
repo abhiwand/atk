@@ -146,7 +146,7 @@ class FrameBackendRest(object):
             }
         if isinstance(data, BigFrame):
             return {'source': { 'source_type': 'dataframe',
-                                'uri': data.uri},
+                                'uri': str(data._id)},
                     'destination': frame.uri}
         raise TypeError("Unsupported data source " + type(data).__name__)
 
@@ -215,6 +215,23 @@ class FrameBackendRest(object):
         if result.has_key("error_frame_id"):
             sys.stderr.write("There were parse errors during load, please see frame.get_error_frame()\n")
             logger.warn("There were parse errors during load, please see frame.get_error_frame()")
+
+    def calculate_percentiles(self, frame, column_name, percentiles):
+        if isinstance(percentiles, int):
+            percentiles = [percentiles]
+
+        invalid_percentiles = []
+        for p in percentiles:
+            if p > 100 or p < 0:
+                invalid_percentiles.append(str(p))
+
+        if len(invalid_percentiles) > 0:
+            raise ValueError("Invalid number for percentile:" + ','.join(invalid_percentiles))
+
+        arguments = {'frame_id': frame._id, "column_name": column_name, "percentiles": percentiles}
+        command = CommandRequest("dataframe/calculate_percentiles", arguments)
+        return executor.issue(command)
+
 
     def count(self, frame):
         raise NotImplementedError  # TODO - implement count
@@ -451,7 +468,7 @@ class FrameBackendRest(object):
             raise ValueError("invalid distribution type")
         # TODO: check count_value
         name = self._get_new_frame_name()
-        arguments = {'frameId': frame._id, 'name': name, 'sampleCol': sample_col, 'distType': dist_type, 'dataType': str(data_type), 'countValue': str(count_value)}
+        arguments = {'frame_id': frame._id, 'name': name, 'sample_col': sample_col, 'dist_type': dist_type, 'data_type': str(data_type), 'count_value': str(count_value)}
         return execute_new_frame_command('cumulative_dist', arguments)
 
 class FrameInfo(object):

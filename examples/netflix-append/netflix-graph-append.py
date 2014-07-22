@@ -10,7 +10,7 @@
 #
 #   At Python prompt
 #       import os
-#       execfile('/path/to/netflix-append.py')
+#       execfile('/path/to/netflix-graph-append.py')
 #
 
 from intelanalytics import *
