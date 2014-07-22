@@ -371,7 +371,7 @@ class ProgressListenerSpec extends Specification with Mockito {
 
     sendTaskEndToListener(listener, 3, 10, true)
     sendStageCompletedToListener(listener, 3)
-    listener.getCommandProgress(1).map(info => info.tasksInfo) shouldEqual List(TaskProgressInfo(1), TaskProgressInfo(1))
+    listener.getCommandProgress(1).map(info => info.tasksInfo) shouldEqual List(Some(TaskProgressInfo(1)), Some(TaskProgressInfo(1)))
   }
 
   "mark parent stage to complete when child stage is starting" in {
