@@ -40,8 +40,8 @@ print frame2.inspect(10)
 print("append csv2 to frame1")
 frame1.append(csv2)
 
-# didn't work?
-#frame1.append(frame2)
+print("append frame2 to frame1")
+frame1.append(frame2)
 
 print("inspect appended frame")
 print frame1.inspect(10)

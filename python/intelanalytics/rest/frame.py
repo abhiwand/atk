@@ -146,7 +146,7 @@ class FrameBackendRest(object):
             }
         if isinstance(data, BigFrame):
             return {'source': { 'source_type': 'dataframe',
-                                'uri': data.uri},
+                                'uri': str(data._id)},
                     'destination': frame.uri}
         raise TypeError("Unsupported data source " + type(data).__name__)
 
