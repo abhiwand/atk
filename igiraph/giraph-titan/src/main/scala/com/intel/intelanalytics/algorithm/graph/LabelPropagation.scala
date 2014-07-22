@@ -91,7 +91,7 @@ class LabelPropagation
 
     LpResult(GiraphJobDriver.run("ia_giraph_lp",
       classOf[LabelPropagationComputation].getCanonicalName,
-      config, giraphConf, invocation.commandId))
+      config, giraphConf, invocation.commandId, "lp-learning-report_0"))
   }
 
   //TODO: Replace with generic code that works on any case class
