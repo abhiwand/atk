@@ -351,7 +351,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
 
       def schema = column[Schema]("schema")
 
-      def rowCount = column[Long]("rowCount")
+      def rowCount = column[Long]("row_count")
 
       def statusId = column[Long]("status_id", O.Default(1))
 
