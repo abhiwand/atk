@@ -43,9 +43,9 @@ import com.intel.graphbuilder.util.StringUtils
 class InferSchemaFromRules(dataTypeParser: DataTypeResolver, vertexRules: List[VertexRule], edgeRules: List[EdgeRule]) extends Serializable {
 
   /**
-   * True if the entire schema can be inferred from the supplied inputSchema and rules.
+   * True if the entire schema can be inferred from the supplied inputSchema and rules, and both the vertexRules and edgeRules are nonempty
    */
-  def canInferAll: Boolean = canInferEdgeLabels && canInferAllPropertyKeyNames
+  def canInferAll: Boolean = !(vertexRules.isEmpty && edgeRules.isEmpty) && canInferEdgeLabels && canInferAllPropertyKeyNames
 
   /**
    * True if all Edge labels are defined as constants in the rules
