@@ -23,14 +23,14 @@
 
 package com.intel.intelanalytics.algorithm.graph
 
-import com.intel.giraph.algorithms.lp.LabelPropagationComputation
-import com.intel.giraph.io.titan.TitanVertexOutputFormatPropertyGraph4LP
-import com.intel.giraph.io.titan.hbase.TitanHBaseVertexInputFormatPropertyGraph4LP
-import com.intel.intelanalytics.algorithm.util.{ GiraphJobDriver, GiraphConfigurationUtil }
+import com.intel.giraph.algorithms.pr.PageRankComputation
+import com.intel.giraph.io.titan.TitanVertexOutputFormatLongIDDoubleValue
+import com.intel.giraph.io.titan.hbase.TitanHBaseVertexInputFormatLongDoubleNull
 import com.intel.intelanalytics.domain.DomainJsonProtocol
 import com.intel.intelanalytics.domain.graph.GraphReference
 import com.intel.intelanalytics.engine.plugin.{ CommandPlugin, Invocation }
 import com.intel.intelanalytics.security.UserPrincipal
+import com.intel.intelanalytics.algorithm.util.{ GiraphConfigurationUtil, GiraphJobDriver }
 import org.apache.giraph.conf.GiraphConfiguration
 import spray.json.DefaultJsonProtocol._
 import spray.json._
@@ -38,26 +38,23 @@ import scala.concurrent.duration._
 
 import scala.concurrent._
 
-case class Lp(graph: GraphReference,
-              vertex_value_property_list: Option[String],
-              edge_value_property_list: Option[String],
+case class Pr(graph: GraphReference,
               input_edge_label_list: Option[String],
               output_vertex_property_list: Option[String],
-              vector_value: Option[String],
               max_supersteps: Option[Int] = None,
               convergence_threshold: Option[Double] = None,
-              anchor_threshold: Option[Double] = None,
-              lp_lambda: Option[Double] = None,
-              bidirectional_check: Option[Boolean] = None)
-case class LpResult(value: String) //TODO
+              reset_probability: Option[Double] = None,
+              convergence_progress_output_interval: Option[Int] = None)
 
-class LabelPropagation
-    extends CommandPlugin[Lp, LpResult] {
+case class PrResult(value: String) //TODO
+
+class PageRank
+    extends CommandPlugin[Pr, PrResult] {
   import DomainJsonProtocol._
-  implicit val lbpFormat = jsonFormat11(Lp)
-  implicit val lbpResultFormat = jsonFormat1(LpResult)
+  implicit val prFormat = jsonFormat7(Pr)
+  implicit val prResultFormat = jsonFormat1(PrResult)
 
-  override def execute(invocation: Invocation, arguments: Lp)(implicit user: UserPrincipal, executionContext: ExecutionContext): LpResult = {
+  override def execute(invocation: Invocation, arguments: Pr)(implicit user: UserPrincipal, executionContext: ExecutionContext): PrResult = {
 
     val config = configuration
     val hConf = GiraphConfigurationUtil.newHadoopConfigurationFrom(config, "giraph")
@@ -68,40 +65,37 @@ class LabelPropagation
 
     //    These parameters are set from the arguments passed in, or defaulted from
     //    the engine configuration if not passed.
-    GiraphConfigurationUtil.set(hConf, "lp.maxSuperSteps", arguments.max_supersteps)
-    GiraphConfigurationUtil.set(hConf, "lp.convergenceThreshold", arguments.convergence_threshold)
-    GiraphConfigurationUtil.set(hConf, "lp.anchorThreshold", arguments.anchor_threshold)
-    GiraphConfigurationUtil.set(hConf, "lp.bidirectionalCheck", arguments.bidirectional_check)
+    GiraphConfigurationUtil.set(hConf, "pr.maxSuperSteps", arguments.max_supersteps)
+    GiraphConfigurationUtil.set(hConf, "pr.convergenceThreshold", arguments.convergence_threshold)
+    GiraphConfigurationUtil.set(hConf, "pr.resetProbability", arguments.reset_probability)
+    GiraphConfigurationUtil.set(hConf, "pr.convergenceProgressOutputInterval", arguments.convergence_progress_output_interval)
 
     GiraphConfigurationUtil.initializeTitanConfig(hConf, titanConf, graph)
 
-    GiraphConfigurationUtil.set(hConf, "input.vertex.value.property.key.list", arguments.vertex_value_property_list)
-    GiraphConfigurationUtil.set(hConf, "input.edge.value.property.key.list", arguments.edge_value_property_list)
     GiraphConfigurationUtil.set(hConf, "input.edge.label.list", arguments.input_edge_label_list)
     GiraphConfigurationUtil.set(hConf, "output.vertex.property.key.list", arguments.output_vertex_property_list)
-    GiraphConfigurationUtil.set(hConf, "vector.value", arguments.vector_value)
 
     val giraphConf = new GiraphConfiguration(hConf)
 
-    giraphConf.setVertexInputFormatClass(classOf[TitanHBaseVertexInputFormatPropertyGraph4LP])
-    giraphConf.setVertexOutputFormatClass(classOf[TitanVertexOutputFormatPropertyGraph4LP[_ <: org.apache.hadoop.io.LongWritable, _ <: com.intel.giraph.io.VertexData4LPWritable, _ <: org.apache.hadoop.io.Writable]])
-    giraphConf.setMasterComputeClass(classOf[LabelPropagationComputation.LabelPropagationMasterCompute])
-    giraphConf.setComputationClass(classOf[LabelPropagationComputation])
-    giraphConf.setAggregatorWriterClass(classOf[LabelPropagationComputation.LabelPropagationAggregatorWriter])
+    giraphConf.setVertexInputFormatClass(classOf[TitanHBaseVertexInputFormatLongDoubleNull])
+    giraphConf.setVertexOutputFormatClass(classOf[TitanVertexOutputFormatLongIDDoubleValue[_ <: org.apache.hadoop.io.LongWritable, _ <: org.apache.hadoop.io.DoubleWritable, _ <: org.apache.hadoop.io.Writable]])
+    giraphConf.setMasterComputeClass(classOf[PageRankComputation.PageRankMasterCompute])
+    giraphConf.setComputationClass(classOf[PageRankComputation])
+    giraphConf.setAggregatorWriterClass(classOf[PageRankComputation.PageRankAggregatorWriter])
 
-    LpResult(GiraphJobDriver.run("ia_giraph_lp",
-      classOf[LabelPropagationComputation].getCanonicalName,
-      config, giraphConf, invocation.commandId, "lp-learning-report_0"))
+    PrResult(GiraphJobDriver.run("ia_giraph_pr",
+      classOf[PageRankComputation].getCanonicalName,
+      config, giraphConf, invocation.commandId, "pr-convergence-report_0"))
   }
 
   //TODO: Replace with generic code that works on any case class
-  def parseArguments(arguments: JsObject) = arguments.convertTo[Lp]
+  def parseArguments(arguments: JsObject) = arguments.convertTo[Pr]
 
   //TODO: Replace with generic code that works on any case class
-  def serializeReturn(returnValue: LpResult): JsObject = returnValue.toJson.asJsObject
+  def serializeReturn(returnValue: PrResult): JsObject = returnValue.toJson.asJsObject
 
-  override def name: String = "graphs/ml/label_propagation"
+  override def name: String = "graphs/ml/page_rank"
 
   //TODO: Replace with generic code that works on any case class
-  override def serializeArguments(arguments: Lp): JsObject = arguments.toJson.asJsObject()
+  override def serializeArguments(arguments: Pr): JsObject = arguments.toJson.asJsObject()
 }

@@ -551,7 +551,9 @@ class BigFrame(CommandSupport):
         a tuple.
         The column must be defined as a list::
 
-            my_frame.add_columns(function_b, (["calculated_b"], float32))
+            my_frame.add_columns(function_b, [("calculated_b", float32)])
+        
+        More information on row functions can be found at :doc:`ds_apir`.
         
         For further examples, see :ref:`example_frame.add_columns`.
 
@@ -696,6 +698,30 @@ class BigFrame(CommandSupport):
         """
         return self._backend.bin_column(self, column_name, num_bins, bin_type, bin_column_name)
 
+    def calculate_percentiles(self, column_name, percentiles):
+        """
+        Calculate percentiles on given column
+
+        Parameters
+        ----------
+            column_name : str
+                The column to calculate percentile
+            percentiles : int OR list of int. If float is provided, it will be rounded to int
+
+        Examples
+        --------
+        >>> frame.calculate_percentiles('final_sale_price', [10, 50, 100])
+        """
+        try:
+            percentiles_result = self._backend.calculate_percentiles(self, column_name, percentiles).result.get('percentiles')
+            result_dict = {}
+            for p in percentiles_result:
+                result_dict[p.get("percentile")] = p.get("value")
+
+            return result_dict
+        except:
+            raise IaError(logger)
+
     def confusion_matrix(self, label_column, pred_column, pos_label=1):
         """
         Builds matrix.
@@ -793,22 +819,6 @@ class BigFrame(CommandSupport):
         except:
             raise IaError(logger)
 
-    def get_error_frame(self):
-        """
-        When a frame is loaded, parse errors go into a separate data frame so they can be
-        inspected.  No error frame is created if there were no parse errors.
-
-        Returns
-        -------
-        frame : BigFrame
-            A new frame object that contains the parse errors of the currently active BigFrame
-            or None if no error frame exists
-        """
-        try:
-            return self._backend.get_frame_by_id(self._error_frame_id)
-        except:
-            raise IaError(logger)
-
     def count(self):
         """
         Row count.
@@ -868,6 +878,8 @@ class BigFrame(CommandSupport):
 
         Now the frame only has information about *ligers*.
 
+        More information on row functions can be found at :doc:`ds_apir`.
+        
         For further examples, see :ref:`example_frame.drop`
 
         .. versionadded:: 0.8
@@ -949,6 +961,8 @@ class BigFrame(CommandSupport):
 
         The frame now only has data about lizards and frogs
 
+        More information on row functions can be found at :doc:`ds_apir`.
+        
         For further examples, see :ref:`example_frame.filter`
 
         .. versionadded:: 0.8
@@ -1014,7 +1028,8 @@ class BigFrame(CommandSupport):
         then:
         
         .. math::
-            F_{\\beta} = (1 + \\beta ^ 2) * \\frac{\\frac{T_{P}}{T_{P} + F_{P}} * \\frac{T_{P}}{T_{P} + F_{N}}}{\\beta ^ 2 * (\\frac{T_{P}}{T_{P} + F_{P}} + \\frac{T_{P}}{T_{P} + F_{N}})}
+            F_{\\beta} = (1 + \\beta ^ 2) * \\frac{\\frac{T_{P}}{T_{P} + F_{P}} * \\frac{T_{P}}{T_{P} + F_{N}}}{\\beta ^ 2 * \\
+            (\\frac{T_{P}}{T_{P} + F_{P}} + \\frac{T_{P}}{T_{P} + F_{N}})}
 
         For multi-class classification, the :math:`F_{\\beta}` measure is computed as the weighted average of the :math:`F_{\\beta}` measure
         for each label, where the weight is the number of instance with each label in the labeled column.  The
@@ -1049,6 +1064,22 @@ class BigFrame(CommandSupport):
         """
         return self._backend.classification_metric(self, 'fmeasure', label_column, pred_column, pos_label, beta)
 
+    def get_error_frame(self):
+        """
+        When a frame is loaded, parse errors go into a separate data frame so they can be
+        inspected.  No error frame is created if there were no parse errors.
+
+        Returns
+        -------
+        frame : BigFrame
+            A new frame object that contains the parse errors of the currently active BigFrame
+            or None if no error frame exists
+        """
+        try:
+            return self._backend.get_frame_by_id(self._error_frame_id)
+        except:
+            raise IaError(logger)
+
     def groupby(self, groupby_columns, *aggregation_arguments):
         """
         Create summarized frame.
@@ -1059,10 +1090,11 @@ class BigFrame(CommandSupport):
 
         Parameters
         ----------
-        groupby_columns: column name or list of column names (or function TODO)
-            columns or result of a function will be used to create grouping
-        aggregation: one or more aggregation functions or dictionaries of
-            (column,aggregation function) pairs
+        groupby_columns: str
+            column name or list of column names
+        aggregation:
+            | agg.count, and/or
+            | dictionaries (one or more) of { column name string : aggregation function(s) }
 
         Raises
         ------
@@ -1075,72 +1107,116 @@ class BigFrame(CommandSupport):
 
         Notes
         -----
-        * The column names created by aggregation functions in the returned frame are the original column name appended with the '_' character and the aggregation function. For example, if the original field is 'a' and the function is 'avg', the resultant column is named 'a_avg'.
-        * An aggregation argument of 'count' results in a column named 'count'
+        * The column names created by aggregation functions in the returned frame are the original column name appended with the '_' character
+            and the aggregation function.
+            For example, if the original field is 'a' and the function is 'avg', the resultant column is named 'a_avg'.
+        * An aggregation argument of 'count' results in a column named 'count'.
 
         Examples
         --------
         For setup, we will use a BigFrame *my_frame* accessing a frame with a column *a*.
-        Column *a* has the values 'cat', 'apple', 'bat', 'cat', 'bat', 'cat'.
+
+        +-------+
+        | a     |
+        +=======+
+        | cat   |
+        +-------+
+        | apple |
+        +-------+
+        | bat   |
+        +-------+
+        | cat   |
+        +-------+
+        | bat   |
+        +-------+
+        | cat   |
+        +-------+
+
         Create a new frame, combining similar values of column *a*, and count how many of each value is in the original frame::
 
-            column_a = my_frame.a
-            new_frame = my_frame.groupBy(column_a, count)
+            new_frame = my_frame.groupBy('a', count)
 
-        The new BigFrame *new_frame* can access a new frame with two columns *a* and *count*.
-        The data, in no particular order, is::
+        The new BigFrame *new_frame* can access a new frame with two columns *a* and *count*:
 
-            Column *a* is 'apple' and column *count* is 1.
-            Column *a* is 'bat' and column *count* is 2.
-            Column *a* is 'cat' and column *count* is 3.
+        +-------+-------+
+        | a     | count |
+        +=======+=======+
+        | cat   | 3     |
+        +-------+-------+
+        | apple | 1     |
+        +-------+-------+
+        | bat   | 2     |
+        +-------+-------+
 
         In this example, 'my_frame' is accessing a frame with three columns, *a*, *b*, and *c*.
-        The data in these columns is::
+        The data in these columns is:
 
-            *a* is 1, *b* is 'alpha', *c* is 3.0
-            *a* is 1, *b* is 'bravo', *c* is 5.0
-            *a* is 1, *b* is 'alpha', *c* is 5.0
-            *a* is 2, *b* is 'bravo', *c* is 8.0
-            *a* is 2, *b* is 'bravo', *c* is 12.0
+        +---+-------+------+
+        | a | b     | c    |
+        +===+=======+======+
+        | 1 | alpha |  3.0 |
+        +---+-------+------+
+        | 1 | bravo |  5.0 |
+        +---+-------+------+
+        | 1 | alpha |  5.0 |
+        +---+-------+------+
+        | 2 | bravo |  8.0 |
+        +---+-------+------+
+        | 2 | bravo | 12.0 |
+        +---+-------+------+
 
-        Break out the three columns for clarity; create a new frame from this data, grouping the rows by unique combinations of column *a* and *b*;
+        Create a new frame from this data, grouping the rows by unique combinations of column *a* and *b*;
         average the value in *c* for each group::
 
-            column_a = my_frame.a
-            column_b = my_frame.b
-            column_c = my_frame.c
-            new_frame = my_frame.groupBy([column_a, column_b], {column_c: avg})
+            new_frame = my_frame.groupBy(['a', 'b'], {'c' : avg})
 
         The new frame accessed by the BigFrame *new_frame* has three columns named *a*, *b*, and *c_avg*.
-        The resultant data is::
+        The resultant data is:
 
-            *a* is 1, *b* is 'alpha', *c_avg* is 4.0
-            *a* is 1, *b* is 'bravo', *c_avg* is 5.0
-            *a* is 2, *b* is 'bravo', *c_avg* is 10.0
+        +---+-------+------+
+        | a | b     | c    |
+        +===+=======+======+
+        | 1 | alpha |  4.0 |
+        +---+-------+------+
+        | 1 | bravo |  5.0 |
+        +---+-------+------+
+        | 2 | bravo | 10.0 |
+        +---+-------+------+
 
         For this example, we use *my_frame* with columns *a*, *c*, *d*, and *e*.
         Column types will be str, int, float, int.
-        The data is::
+        The data is:
 
-            *a* is 'ape', *c* is 1, *d* is 4.0, *e* is 9
-            *a* is 'ape', *c* is 1, *d* is 8.0, *e* is 8
-            *a* is 'big', *c* is 1, *d* is 5.0, *e* is 7
-            *a* is 'big', *c* is 1, *d* is 6.0, *e* is 6
-            *a* is 'big', *c* is 1, *d* is 8.0, *e* is 5
+        +-----+---+-----+---+
+        | a   | c | d   | e |
+        +=====+===+=====+===+
+        | ape | 1 | 4.0 | 9 |
+        +-----+---+-----+---+
+        | ape | 1 | 8.0 | 8 |
+        +-----+---+-----+---+
+        | big | 1 | 5.0 | 7 |
+        +-----+---+-----+---+
+        | big | 1 | 6.0 | 6 |
+        +-----+---+-----+---+
+        | big | 1 | 8.0 | 5 |
+        +-----+---+-----+---+
 
-        Break out the columns for clarity; create a new frame from this data, grouping the rows by unique combinations of column *a* and *c*;
+        Create a new frame from this data, grouping the rows by unique combinations of column *a* and *c*;
         count each group; for column *d* calculate the average, sum and minimum value; for column *e*, save the maximum value::
 
-            column_d = my_frame.d
-            column_e = my_frame.e
-            new_frame = my_frame.groupBy(my_frame[['a', 'c']], count, {column_d: [avg, sum, min], column_e: [max]})
+            new_frame = my_frame.groupBy(['a', 'c'], count, {'d' : avg }, {'d' : sum}, {'d' : min}, {'e' : max})
 
         The new frame accessed by BigFrame *new_frame* has columns *a*, *c*, *count*, *d_avg*, *d_sum*, *d_min*, and *e_max*.
         The column types are (respectively): str, int, int, float, float, float, int.
-        The data is::
+        The data is:
 
-            *a* is 'ape', *c* is 1, *count* is 2, *d_avg* is 6.0, *d_sum* is 12.0, *d_min* is 4.0, *e_max* is 9
-            *a* is 'big', *c* is 1, *count* is 3, *d_avg* is 6.333333, *d_sum* is 19.0, *d_min* is 5.0, *e_max* is 7
+        +-----+---+-------+----------+-------+-------+-------+
+        | a   | c | count | d_avg    | d_sum | d_min | e_max |
+        +=====+===+=======+==========+=======+=======+=======+
+        | ape | 1 | 2     | 6.0      | 12.0  | 4.0   | 9     |
+        +-----+---+-------+----------+-------+-------+-------+
+        | big | 1 | 3     | 6.333333 | 19.0  | 5.0   | 7     |
+        +-----+---+-------+----------+-------+-------+-------+
 
         For further examples, see :ref:`example_frame.groupby`.
 
