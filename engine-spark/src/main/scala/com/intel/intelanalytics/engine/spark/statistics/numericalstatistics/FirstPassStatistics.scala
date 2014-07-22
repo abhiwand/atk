@@ -22,7 +22,7 @@ import com.intel.intelanalytics.engine.spark.statistics.DistributionUtils
  * @param mode
  * @param weightAtMode
  * @param totalWeight
- * @param totalCount
+ * @param positiveWeightCount
  */
 private[numericalstatistics] case class FirstPassStatistics(mean: BigDecimal,
                                                             weightedSumOfSquares: BigDecimal,
@@ -33,8 +33,10 @@ private[numericalstatistics] case class FirstPassStatistics(mean: BigDecimal,
                                                             mode: Double,
                                                             weightAtMode: Double,
                                                             totalWeight: BigDecimal,
-                                                            totalCount: Long,
-                                                            nonPositiveWeightCount: Long)
+                                                            positiveWeightCount: Long,
+                                                            nonPositiveWeightCount: Long,
+                                                            badRowCount: Long,
+                                                            goodRowCount: Long)
 
 private[numericalstatistics] object FirstPassStatistics {
 
@@ -58,8 +60,10 @@ private[numericalstatistics] object FirstPassStatistics {
       mode = Double.NaN,
       weightAtMode = 0,
       totalWeight = 0,
-      totalCount = 0,
-      nonPositiveWeightCount = 0)
+      positiveWeightCount = 0,
+      nonPositiveWeightCount = 0,
+      badRowCount = 0,
+      goodRowCount = 0)
 
     val accumulator = dataWeightPairs.sparkContext.accumulator[FirstPassStatistics](initialValue)(accumulatorParam)
 
@@ -72,30 +76,53 @@ private[numericalstatistics] object FirstPassStatistics {
     val dataAsDouble: Double = p._1
     val weightAsDouble: Double = p._2
 
-    val dataAsBigDecimal: BigDecimal = BigDecimal(dataAsDouble)
-    val weightAsBigDecimal: BigDecimal = BigDecimal(weightAsDouble)
+    if (distributionUtils.isFiniteNumber(dataAsDouble) && distributionUtils.isFiniteNumber(weightAsDouble)) {
+      val dataAsBigDecimal: BigDecimal = BigDecimal(dataAsDouble)
+      val weightAsBigDecimal: BigDecimal = BigDecimal(weightAsDouble)
 
-    if (weightAsDouble > 0) {
-      val weightedLog = if (dataAsDouble <= 0) None else Some(weightAsBigDecimal * BigDecimal(Math.log(dataAsDouble)))
+      if (weightAsDouble > 0) {
+        val weightedLog = if (dataAsDouble <= 0) None else Some(weightAsBigDecimal * BigDecimal(Math.log(dataAsDouble)))
 
-      FirstPassStatistics(mean = dataAsBigDecimal,
-        weightedSumOfSquares = weightAsBigDecimal * dataAsBigDecimal * dataAsBigDecimal,
-        weightedSumOfSquaredDistancesFromMean = BigDecimal(0),
-        weightedSumOfLogs = weightedLog,
-        minimum = dataAsDouble,
-        maximum = dataAsDouble,
-        mode = dataAsDouble,
-        weightAtMode = weightAsDouble,
-        totalWeight = weightAsBigDecimal,
-        totalCount = 1,
-        nonPositiveWeightCount = 0)
+        FirstPassStatistics(mean = dataAsBigDecimal,
+          weightedSumOfSquares = weightAsBigDecimal * dataAsBigDecimal * dataAsBigDecimal,
+          weightedSumOfSquaredDistancesFromMean = BigDecimal(0),
+          weightedSumOfLogs = weightedLog,
+          minimum = dataAsDouble,
+          maximum = dataAsDouble,
+          mode = dataAsDouble,
+          weightAtMode = weightAsDouble,
+          totalWeight = weightAsBigDecimal,
+          positiveWeightCount = 1,
+          nonPositiveWeightCount = 0,
+          badRowCount = 0,
+          goodRowCount = 1)
+      }
+      else {
+        FirstPassStatistics(
+          nonPositiveWeightCount = 1,
+          positiveWeightCount = 0,
+          badRowCount = 0,
+          goodRowCount = 1,
+          // entries of non-positive weight are discarded, so that the statistics for such an entry
+          // are simply those of an empty collection
+          mean = BigDecimal(0),
+          weightedSumOfSquares = BigDecimal(0),
+          weightedSumOfSquaredDistancesFromMean = BigDecimal(0),
+          weightedSumOfLogs = Some(BigDecimal(0)),
+          minimum = Double.PositiveInfinity,
+          maximum = Double.NegativeInfinity,
+          mode = Double.NaN,
+          weightAtMode = 0,
+          totalWeight = BigDecimal(0))
+      }
     }
     else {
-      FirstPassStatistics(
-        nonPositiveWeightCount = 1,
-        // entries of non-positive weight are discarded, so that the statistics for such an entry
+      FirstPassStatistics(badRowCount = 1,
+        goodRowCount = 0,
+        // rows with illegal doubles are discarded, so that the statistics for such an entry
         // are simply those of an empty collection
-        totalCount = 0,
+        nonPositiveWeightCount = 0,
+        positiveWeightCount = 0,
         mean = BigDecimal(0),
         weightedSumOfSquares = BigDecimal(0),
         weightedSumOfSquaredDistancesFromMean = BigDecimal(0),
@@ -123,8 +150,10 @@ private[numericalstatistics] object FirstPassStatistics {
         mode = Double.NaN,
         weightAtMode = 0,
         totalWeight = 0,
-        totalCount = 0,
-        nonPositiveWeightCount = 0)
+        positiveWeightCount = 0,
+        nonPositiveWeightCount = 0,
+        badRowCount = 0,
+        goodRowCount = 0)
 
     override def addInPlace(stats1: FirstPassStatistics, stats2: FirstPassStatistics): FirstPassStatistics = {
 
@@ -138,8 +167,10 @@ private[numericalstatistics] object FirstPassStatistics {
           mode = stats2.mode,
           weightAtMode = stats2.weightAtMode,
           totalWeight = stats2.totalWeight,
-          totalCount = stats2.totalCount,
-          nonPositiveWeightCount = stats1.nonPositiveWeightCount + stats2.nonPositiveWeightCount)
+          positiveWeightCount = stats2.positiveWeightCount,
+          nonPositiveWeightCount = stats1.nonPositiveWeightCount + stats2.nonPositiveWeightCount,
+          badRowCount = stats1.badRowCount + stats2.badRowCount,
+          goodRowCount = stats1.goodRowCount + stats2.goodRowCount)
       }
       else if (stats2.totalWeight equals BigDecimal(0)) {
         FirstPassStatistics(mean = stats1.mean,
@@ -151,8 +182,10 @@ private[numericalstatistics] object FirstPassStatistics {
           mode = stats1.mode,
           weightAtMode = stats1.weightAtMode,
           totalWeight = stats1.totalWeight,
-          totalCount = stats1.totalCount,
-          nonPositiveWeightCount = stats1.nonPositiveWeightCount + stats2.nonPositiveWeightCount)
+          positiveWeightCount = stats1.positiveWeightCount,
+          nonPositiveWeightCount = stats1.nonPositiveWeightCount + stats2.nonPositiveWeightCount,
+          badRowCount = stats1.badRowCount + stats2.badRowCount,
+          goodRowCount = stats1.goodRowCount + stats2.goodRowCount)
       }
       else {
 
@@ -188,8 +221,10 @@ private[numericalstatistics] object FirstPassStatistics {
           maximum = Math.max(stats1.maximum, stats2.maximum),
           mode = mode,
           weightAtMode = weightAtMode, totalWeight = totalWeight,
-          totalCount = stats1.totalCount + stats2.totalCount,
-          nonPositiveWeightCount = stats1.nonPositiveWeightCount + stats2.nonPositiveWeightCount)
+          positiveWeightCount = stats1.positiveWeightCount + stats2.positiveWeightCount,
+          nonPositiveWeightCount = stats1.nonPositiveWeightCount + stats2.nonPositiveWeightCount,
+          badRowCount = stats1.badRowCount + stats2.badRowCount,
+          goodRowCount = stats1.goodRowCount + stats2.goodRowCount)
       }
     }
   }

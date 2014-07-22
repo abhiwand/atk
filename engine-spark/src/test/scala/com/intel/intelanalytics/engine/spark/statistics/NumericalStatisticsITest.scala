@@ -172,14 +172,14 @@ class NumericalStatisticsITest extends TestingSparkContext with Matchers {
 
   "count" should "handle data with integer frequencies" in new NumericalStatisticsTestAgainstFormulas {
 
-    val testCount = numericalStatisticsFrequencies.count
+    val testCount = numericalStatisticsFrequencies.positiveWeightCount
 
     testCount shouldBe dataCount
   }
 
   "count" should "handle data with fractional weights" in new NumericalStatisticsTestAgainstFormulas {
 
-    val testCount = numericalStatisticsWeights.count
+    val testCount = numericalStatisticsWeights.positiveWeightCount
 
     testCount shouldBe dataCount
   }

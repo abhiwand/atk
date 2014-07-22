@@ -67,7 +67,7 @@ class NumericalStatistics(dataWeightPairs: RDD[(Double, Double)]) extends Serial
    * The weighted variance of the data. NaN when there are <=1 data elements.
    */
   lazy val weightedVariance: Double = {
-    val n: BigDecimal = BigDecimal(singlePassStatistics.totalCount)
+    val n: BigDecimal = BigDecimal(singlePassStatistics.positiveWeightCount)
     if (n > 1) (singlePassStatistics.weightedSumOfSquaredDistancesFromMean / (n - 1)).toDouble else Double.NaN
   }
 
@@ -94,7 +94,17 @@ class NumericalStatistics(dataWeightPairs: RDD[(Double, Double)]) extends Serial
   /**
    * The number of elements in the data set with weight > 0.
    */
-  lazy val count: Long = singlePassStatistics.totalCount
+  lazy val positiveWeightCount: Long = singlePassStatistics.positiveWeightCount
+
+  /**
+   * The number of pairs that contained NaNs or infinite values for a data column or a weight column (if the weight column
+   */
+  lazy val badRowCount: Long = singlePassStatistics.badRowCount
+
+  /**
+   * The number of pairs that contained proper finite numbers for the data column and the weight column.
+   */
+  lazy val goodRowCount: Long = singlePassStatistics.goodRowCount
 
   /**
    * The number of elements in the data set with weight <= 0.
@@ -106,21 +116,21 @@ class NumericalStatistics(dataWeightPairs: RDD[(Double, Double)]) extends Serial
    * NaN when there are <= 1 data elements of positive weight.
    */
   lazy val meanConfidenceLower: Double =
-    if (count > 1) weightedMean - (1.96) * (weightedStandardDeviation / Math.sqrt(count)) else Double.NaN
+    if (positiveWeightCount > 1) weightedMean - (1.96) * (weightedStandardDeviation / Math.sqrt(positiveWeightCount)) else Double.NaN
 
   /**
    * The lower limit of the 95% confidence interval about the mean. (Assumes that the distribution is normal.)
    * NaN when there are <= 1 data elements of positive weight.
    */
   lazy val meanConfidenceUpper: Double =
-    if (count > 1) weightedMean + (1.96) * (weightedStandardDeviation / Math.sqrt(count)) else Double.NaN
+    if (positiveWeightCount > 1) weightedMean + (1.96) * (weightedStandardDeviation / Math.sqrt(positiveWeightCount)) else Double.NaN
 
   /**
    * The weighted skewness of the dataset.
    * NaN when there are <= 2 data elements of nonzero weight.
    */
   lazy val weightedSkewness: Double = {
-    val n: BigDecimal = BigDecimal(singlePassStatistics.totalCount)
+    val n: BigDecimal = BigDecimal(singlePassStatistics.positiveWeightCount)
     val sumOfThirdWeighted: Option[BigDecimal] = secondPassStatistics.sumOfThirdWeighted
     if ((n > 2) && sumOfThirdWeighted.nonEmpty)
       ((n / ((n - 1) * (n - 2))) * sumOfThirdWeighted.get).toDouble
@@ -131,7 +141,7 @@ class NumericalStatistics(dataWeightPairs: RDD[(Double, Double)]) extends Serial
    * The weighted kurtosis of the dataset. NaN when there are <= 3 data elements of nonzero weight.
    */
   lazy val weightedKurtosis: Double = {
-    val n = BigDecimal(singlePassStatistics.totalCount)
+    val n = BigDecimal(singlePassStatistics.positiveWeightCount)
     val sumOfFourthWeighted: Option[BigDecimal] = secondPassStatistics.sumOfFourthWeighted
     if ((n > 3) && sumOfFourthWeighted.nonEmpty) {
       val leadingCoefficient: BigDecimal = (n * (n + 1)) / ((n - 1) * (n - 2) * (n - 3))

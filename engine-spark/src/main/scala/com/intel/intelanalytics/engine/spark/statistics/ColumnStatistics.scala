@@ -120,8 +120,10 @@ private[spark] object ColumnStatistics extends Serializable {
       meanConfidenceUpperBound = stats.meanConfidenceUpper,
       minimum = stats.min,
       maximum = stats.max,
-      positiveWeightCount = stats.count,
-      nonPositiveWeightCount = stats.nonPositiveWeightCount)
+      positiveWeightCount = stats.positiveWeightCount,
+      nonPositiveWeightCount = stats.nonPositiveWeightCount,
+      badRowCount = stats.badRowCount,
+      goodRowCount = stats.goodRowCount)
   }
 
   /**
@@ -156,8 +158,10 @@ private[spark] object ColumnStatistics extends Serializable {
       meanConfidenceUpperBound = stats.meanConfidenceUpper,
       minimum = stats.min,
       maximum = stats.max,
-      positiveWeightCount = stats.count,
-      nonPositiveWeightCount = stats.nonPositiveWeightCount)
+      positiveWeightCount = stats.positiveWeightCount,
+      nonPositiveWeightCount = stats.nonPositiveWeightCount,
+      badRowCount = stats.badRowCount,
+      goodRowCount = stats.goodRowCount)
   }
 
   private def getDataWeightPairs(dataColumnIndex: Int,
