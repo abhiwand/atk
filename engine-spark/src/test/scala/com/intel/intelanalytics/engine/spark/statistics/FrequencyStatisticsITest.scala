@@ -27,7 +27,7 @@ class FrequencyStatisticsITest extends TestingSparkContext with Matchers {
 
     val dataWeightPairs = sc.parallelize(dataList.zip(weightList))
 
-    val frequencyStats = new FrequencyStatistics[Double](dataWeightPairs, 0)
+    val frequencyStats = new FrequencyStatistics[Double](dataWeightPairs)
 
     val testMode = frequencyStats.mode
     val testModeWeight = frequencyStats.weightOfMode
@@ -42,7 +42,7 @@ class FrequencyStatisticsITest extends TestingSparkContext with Matchers {
 
     val dataWeightPairs = sc.parallelize(integers.zip(integerFrequencies))
 
-    val frequencyStats = new FrequencyStatistics(dataWeightPairs, 0)
+    val frequencyStats = new FrequencyStatistics(dataWeightPairs)
 
     val testMode = frequencyStats.mode.get
     val testModeWeight = frequencyStats.weightOfMode.get
@@ -57,7 +57,7 @@ class FrequencyStatisticsITest extends TestingSparkContext with Matchers {
 
     val dataWeightPairs = sc.parallelize(strings.zip(integerFrequencies))
 
-    val frequencyStats = new FrequencyStatistics(dataWeightPairs, "<<no strings seen>>")
+    val frequencyStats = new FrequencyStatistics(dataWeightPairs)
 
     val testMode = frequencyStats.mode.get
     val testModeWeight = frequencyStats.weightOfMode.get
@@ -72,7 +72,7 @@ class FrequencyStatisticsITest extends TestingSparkContext with Matchers {
 
     val dataWeightPairs = sc.parallelize(integers.zip(fractionalFrequencies))
 
-    val frequencyStats = new FrequencyStatistics(dataWeightPairs, 0)
+    val frequencyStats = new FrequencyStatistics(dataWeightPairs)
 
     val testMode = frequencyStats.mode.get
     val testModeWeight = frequencyStats.weightOfMode.get
@@ -88,7 +88,7 @@ class FrequencyStatisticsITest extends TestingSparkContext with Matchers {
 
     val dataWeightPairs = sc.parallelize(strings.zip(fractionalFrequencies))
 
-    val frequencyStats = new FrequencyStatistics(dataWeightPairs, "<<no strings seen>>")
+    val frequencyStats = new FrequencyStatistics(dataWeightPairs)
 
     val testMode = frequencyStats.mode.get
     val testModeWeight = frequencyStats.weightOfMode.get
@@ -104,7 +104,7 @@ class FrequencyStatisticsITest extends TestingSparkContext with Matchers {
     val dataWeightPairs: RDD[(String, Double)] =
       sc.parallelize((strings :+ "haha").zip(fractionalFrequencies :+ ((-10.0).toDouble)))
 
-    val frequencyStats = new FrequencyStatistics[String](dataWeightPairs, "<<no strings seen>>")
+    val frequencyStats = new FrequencyStatistics[String](dataWeightPairs)
 
     val testMode = frequencyStats.mode.get
     val testModeWeight = frequencyStats.weightOfMode.get
