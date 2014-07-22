@@ -199,7 +199,7 @@ class ProgressListenerSpec extends Specification with Mockito {
 
     sendStageSubmittedToListener(listener, 1, 10)
 
-    listener.getCommandProgress(1) shouldEqual List(ProgressInfo(0, TaskProgressInfo(0)))
+    listener.getCommandProgress(1) shouldEqual List(ProgressInfo(0, Some(TaskProgressInfo(0))))
   }
 
   "finish first stage" in {
@@ -239,7 +239,7 @@ class ProgressListenerSpec extends Specification with Mockito {
     val listener = createListener_one_job("1")
     sendStageSubmittedToListener(listener, 1, 10)
     sendTaskEndToListener(listener, 1, 1, true)
-    listener.getCommandProgress(1) shouldEqual List(ProgressInfo(3.33f, TaskProgressInfo(0)))
+    listener.getCommandProgress(1) shouldEqual List(ProgressInfo(3.33f, Some(TaskProgressInfo(0))))
   }
 
   "finish second task in second stage" in {
@@ -249,7 +249,7 @@ class ProgressListenerSpec extends Specification with Mockito {
     sendStageSubmittedToListener(listener, 2, 10)
     sendTaskEndToListener(listener, 2, 2, true)
 
-    listener.getCommandProgress(1) shouldEqual List(ProgressInfo(40f, TaskProgressInfo(0)))
+    listener.getCommandProgress(1) shouldEqual List(ProgressInfo(40f, Some(TaskProgressInfo(0))))
   }
 
   "finish second task in second stage, second task in third stage" in {
@@ -357,14 +357,14 @@ class ProgressListenerSpec extends Specification with Mockito {
     sendTaskEndToListener(listener, 2, 2, true)
     sendTaskEndToListener(listener, 2, 1, false)
 
-    listener.getCommandProgress(1) shouldEqual List(ProgressInfo(40f, TaskProgressInfo(1)), ProgressInfo(0f, TaskProgressInfo(0)))
+    listener.getCommandProgress(1) shouldEqual List(ProgressInfo(40f, Some(TaskProgressInfo(1))), ProgressInfo(0f, Some(TaskProgressInfo(0))))
 
     sendStageSubmittedToListener(listener, 4, 10)
 
     sendTaskEndToListener(listener, 4, 1, false)
-    listener.getCommandProgress(1) shouldEqual List(ProgressInfo(40f, TaskProgressInfo(1)), ProgressInfo(0f, TaskProgressInfo(1)))
+    listener.getCommandProgress(1) shouldEqual List(ProgressInfo(40f, Some(TaskProgressInfo(1))), ProgressInfo(0f, Some(TaskProgressInfo(1))))
     sendTaskEndToListener(listener, 4, 1, true)
-    listener.getCommandProgress(1) shouldEqual List(ProgressInfo(40f, TaskProgressInfo(1)), ProgressInfo(2.5f, TaskProgressInfo(1)))
+    listener.getCommandProgress(1) shouldEqual List(ProgressInfo(40f, Some(TaskProgressInfo(1))), ProgressInfo(2.5f, Some(TaskProgressInfo(1))))
 
     sendStageCompletedToListener(listener, 2)
     sendStageSubmittedToListener(listener, 3, 10)
@@ -381,6 +381,6 @@ class ProgressListenerSpec extends Specification with Mockito {
     sendTaskEndToListener(listener, 2, 3, false)
     sendTaskEndToListener(listener, 2, 10, true)
     sendStageCompletedToListener(listener, 2)
-    listener.getCommandProgress(1) shouldEqual List(ProgressInfo(66.66f, TaskProgressInfo(3)))
+    listener.getCommandProgress(1) shouldEqual List(ProgressInfo(66.66f, Some(TaskProgressInfo(3))))
   }
 }

@@ -65,7 +65,7 @@ class SparkProgressListener(val progressUpdater: CommandProgressUpdater) extends
       addToCommandIdJobs(job)
 
       //update initial progress to 0
-      progressUpdater.updateProgress(job.properties.getProperty("command-id").toLong, List(ProgressInfo(0.00f, TaskProgressInfo(0))))
+      progressUpdater.updateProgress(job.properties.getProperty("command-id").toLong, List(ProgressInfo(0.00f, Some(TaskProgressInfo(0)))))
     }
   }
 
@@ -154,7 +154,7 @@ class SparkProgressListener(val progressUpdater: CommandProgressUpdater) extends
     jobList.map(job => {
       val progress = getProgress(job.jobId)
       val taskInfo = getDetailedProgress(job.jobId)
-      ProgressInfo(progress, taskInfo)
+      ProgressInfo(progress, Some(taskInfo))
     })
   }
 

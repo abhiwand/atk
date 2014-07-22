@@ -61,9 +61,9 @@ class CommandRepositorySpec extends SlickMetaStoreH2Testing with Matchers {
 
         // create a command
         val command = commandRepo.insert(new CommandTemplate(name, None))
-        commandRepo.updateProgress(command.get.id, List(ProgressInfo(100, TaskProgressInfo(5))))
+        commandRepo.updateProgress(command.get.id, List(ProgressInfo(100, Some(TaskProgressInfo(5)))))
         val command2 = commandRepo.lookup(command.get.id)
-        command2.get.progress shouldBe List(ProgressInfo(100, TaskProgressInfo(5)))
+        command2.get.progress shouldBe List(ProgressInfo(100, Some(TaskProgressInfo(5))))
     }
   }
 
@@ -77,13 +77,13 @@ class CommandRepositorySpec extends SlickMetaStoreH2Testing with Matchers {
 
         // create a command
         val command = commandRepo.insert(new CommandTemplate(name, None))
-        commandRepo.updateProgress(command.get.id, List(ProgressInfo(100, TaskProgressInfo(5)), ProgressInfo(50, TaskProgressInfo(5))))
+        commandRepo.updateProgress(command.get.id, List(ProgressInfo(100, Some(TaskProgressInfo(5))), ProgressInfo(50, Some(TaskProgressInfo(5)))))
         val command2 = commandRepo.lookup(command.get.id)
-        commandRepo.update(command2.get.copy(complete = true, progress = List(ProgressInfo(100, TaskProgressInfo(5)), ProgressInfo(50, TaskProgressInfo(5)))))
+        commandRepo.update(command2.get.copy(complete = true, progress = List(ProgressInfo(100, Some(TaskProgressInfo(5))), ProgressInfo(50, Some(TaskProgressInfo(5))))))
 
-        commandRepo.updateProgress(command.get.id, List(ProgressInfo(40, TaskProgressInfo(5)), ProgressInfo(70, TaskProgressInfo(7))))
+        commandRepo.updateProgress(command.get.id, List(ProgressInfo(40, Some(TaskProgressInfo(5))), ProgressInfo(70, Some(TaskProgressInfo(7)))))
         val command3 = commandRepo.lookup(command.get.id)
-        command3.get.progress shouldBe List(ProgressInfo(100, TaskProgressInfo(5)), ProgressInfo(50, TaskProgressInfo(5)))
+        command3.get.progress shouldBe List(ProgressInfo(100, Some(TaskProgressInfo(5))), ProgressInfo(50, Some(TaskProgressInfo(5))))
     }
   }
 
