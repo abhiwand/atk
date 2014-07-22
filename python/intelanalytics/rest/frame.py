@@ -481,6 +481,10 @@ class FrameInfo(object):
                 for pair in self._payload['schema']['columns']]
 
     @property
+    def row_count(self):
+        return int(self._payload['row_count'])
+
+    @property
     def error_frame_id(self):
         try:
             return self._payload['error_frame_id']

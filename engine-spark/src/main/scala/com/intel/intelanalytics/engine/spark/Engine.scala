@@ -357,7 +357,6 @@ class SparkEngine(sparkContextManager: SparkContextManager,
 
     val allColumns = frame.schema.columns :+ (outputColumn, DataTypes.string)
     frames.updateSchema(frame, allColumns)
-    frame.copy(schema = Schema(allColumns))
   }
 
   def groupBy(arguments: FrameGroupByColumn[JsObject, Long])(implicit user: UserPrincipal): Execution =
@@ -406,7 +405,6 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     }
     val new_schema = new_column_names.zip(new_data_types)
     frames.updateSchema(newFrame, new_schema)
-    newFrame.copy(schema = Schema(new_schema))
   }
 
   def decodePythonBase64EncodedStrToBytes(byteStr: String): Array[Byte] = {
@@ -481,8 +479,6 @@ class SparkEngine(sparkContextManager: SparkContextManager,
 
     flattenedRDD.saveAsObjectFile(fsRoot + frames.getFrameDataFile(newFrame.id))
     frames.updateSchema(newFrame, realFrame.schema.columns)
-    newFrame.copy(schema = realFrame.schema)
-
   }
 
   /**
@@ -524,7 +520,6 @@ class SparkEngine(sparkContextManager: SparkContextManager,
 
     val allColumns = realFrame.schema.columns :+ (arguments.binColumnName, DataTypes.int32)
     frames.updateSchema(newFrame, allColumns)
-    newFrame.copy(schema = Schema(allColumns))
   }
 
   def filter(arguments: FilterPredicate[JsObject, Long])(implicit user: UserPrincipal): Execution =
@@ -544,7 +539,6 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     val converter = DataTypes.parseMany(schema.columns.map(_._2).toArray)(_)
     persistPythonRDD(pyRdd, converter, location)
     frames.updateRowCount(realFrame, rowCount)
-    realFrame
   }
 
   /**
@@ -618,7 +612,6 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     joinResultRDD.saveAsObjectFile(fsRoot + frames.getFrameDataFile(newJoinFrame.id))
     frames.updateSchema(newJoinFrame, allColumns)
     frames.updateRowCount(newJoinFrame, joinRowCount)
-    newJoinFrame.copy(schema = Schema(allColumns))
   }
 
   def removeColumn(arguments: FrameRemoveColumn)(implicit user: UserPrincipal): Execution =
