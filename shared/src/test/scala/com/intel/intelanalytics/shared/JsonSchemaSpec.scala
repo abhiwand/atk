@@ -59,6 +59,7 @@ class JsonSchemaSpec extends FlatSpec with Matchers {
   it should "make non-Option types required" in {
     schema.properties.get("string") should equal(reference.properties.get("string"))
     schema.required.get should contain("string")
+
   }
 
   it should "detect frames in first position as self members" in {

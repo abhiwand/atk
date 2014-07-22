@@ -25,115 +25,118 @@ package com.intel.intelanalytics.engine.spark.frame
 
 import java.nio.file.Paths
 import java.util.concurrent.atomic.AtomicLong
-
-import com.intel.intelanalytics.ClassLoaderAware
+import com.intel.intelanalytics.component.ClassLoaderAware
 import com.intel.intelanalytics.engine._
-import com.intel.intelanalytics.domain.frame.{ Column, DataFrame, DataFrameTemplate }
-import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 import com.intel.intelanalytics.domain.schema.{ DataTypes, Schema }
-import com.intel.intelanalytics.engine.spark.context.Context
-import com.intel.intelanalytics.engine.spark.{ SparkEngineConfig, HdfsFileStorage, SparkOps }
-import com.intel.intelanalytics.security.UserPrincipal
+import DataTypes.DataType
+import java.nio.file.Paths
 import com.intel.intelanalytics.shared.EventLogging
-import org.apache.spark.SparkContext
-import org.apache.spark.rdd.RDD
-import org.joda.time.DateTime
-import scala.io.{ Codec, Source }
-import scala.util.matching.Regex
-import com.intel.intelanalytics.domain.DomainJsonProtocol._
 
-class SparkFrameStorage(context: UserPrincipal => Context, fsRoot: String, files: HdfsFileStorage, maxRows: Int)
+import scala.io.{ Codec, Source }
+import org.apache.spark.rdd.RDD
+import com.intel.intelanalytics.engine.spark.{ SparkEngineConfig, HdfsFileStorage, SparkOps, SparkComponent }
+import org.apache.spark.SparkContext
+import scala.util.matching.Regex
+import java.util.concurrent.atomic.AtomicLong
+import com.intel.intelanalytics.domain.frame.{ Column, DataFrame, DataFrameTemplate }
+import com.intel.intelanalytics.engine.spark.context.{ Context }
+import com.intel.intelanalytics.engine.File
+import com.intel.intelanalytics.security.UserPrincipal
+import org.joda.time.DateTime
+import com.intel.intelanalytics.engine.{ FrameStorage, FrameComponent }
+import com.intel.intelanalytics.repository.{ SlickMetaStoreComponent, MetaStore, MetaStoreComponent }
+
+class SparkFrameStorage(context: UserPrincipal => Context, fsRoot: String, files: HdfsFileStorage, maxRows: Int, val metaStore: SlickMetaStoreComponent#SlickMetaStore)
     extends FrameStorage with EventLogging with ClassLoaderAware {
 
-  import com.intel.intelanalytics.engine.Rows.Row
   import spray.json._
-
-  def updateName(frame: DataFrame, newName: String): DataFrame = {
-    val newFrame = frame.copy(name = newName)
-    updateMeta(newFrame)
-  }
+  import Rows.Row
 
   def updateSchema(frame: DataFrame, columns: List[(String, DataType)]): DataFrame = {
-    val newSchema = frame.schema.copy(columns = columns)
-    val newFrame = frame.copy(schema = newSchema)
-    updateMeta(newFrame)
-  }
-
-  private def updateMeta(newFrame: DataFrame): DataFrame = {
-    val meta = File(Paths.get(getFrameMetaDataFile(newFrame.id)))
-    info(s"Saving metadata to $meta")
-    val f = files.write(meta)
-    try {
-      val json: String = newFrame.toJson.prettyPrint
-      debug(json)
-      f.write(json.getBytes(Codec.UTF8.name))
-    }
-    finally {
-      f.close()
-    }
-    newFrame
-  }
-
-  override def drop(frame: DataFrame): Unit = withContext("frame.drop") {
-    files.delete(Paths.get(getFrameDirectory(frame.id)))
-  }
-
-  override def appendRows(startWith: DataFrame, append: Iterable[Row]): Unit =
-    withContext("frame.appendRows") {
-      ???
-    }
-
-  override def removeRows(frame: DataFrame, predicate: (Row) => Boolean): Unit =
-    withContext("frame.removeRows") {
-      ???
-    }
-
-  override def removeColumn(frame: DataFrame, columnIndex: Seq[Int]): DataFrame =
-    withContext("frame.removeColumn") {
-
-      val remainingColumns = {
-        columnIndex match {
-          case singleColumn if singleColumn.length == 1 =>
-            frame.schema.columns.take(singleColumn(0)) ++ frame.schema.columns.drop(singleColumn(0) + 1)
-          case _ =>
-            frame.schema.columns.zipWithIndex.filter(elem => !columnIndex.contains(elem._2)).map(_._1)
+    metaStore.withSession("frame.updateSchema") {
+      implicit session =>
+        {
+          metaStore.frameRepo.updateSchema(frame, columns)
         }
-      }
-      updateSchema(frame, remainingColumns)
+    }
+  }
+
+  override def drop(frame: DataFrame): Unit = {
+    deleteFrameFile(frame.id)
+    metaStore.withSession("frame.drop") {
+      implicit session =>
+        {
+          metaStore.frameRepo.delete(frame.id)
+          Unit
+
+        }
+    }
+  }
+
+  /**
+   * Remove the underlying data file from HDFS.
+   * @param frameId primary key from Frame table
+   */
+  private def deleteFrameFile(frameId: Long): Unit = {
+    files.delete(Paths.get(getFrameDirectory(frameId)))
+  }
+
+  override def removeColumn(frame: DataFrame, columnIndex: Seq[Int])(implicit user: UserPrincipal): DataFrame =
+    //withContext("frame.removeColumn") {
+    metaStore.withSession("frame.removeColumn") {
+      implicit session =>
+        {
+          val remainingColumns = {
+            columnIndex match {
+              case singleColumn if singleColumn.length == 1 =>
+                frame.schema.columns.take(singleColumn(0)) ++ frame.schema.columns.drop(singleColumn(0) + 1)
+              case _ =>
+                frame.schema.columns.zipWithIndex.filter(elem => !columnIndex.contains(elem._2)).map(_._1)
+            }
+          }
+          metaStore.frameRepo.updateSchema(frame, remainingColumns)
+        }
     }
 
-  override def addColumnWithValue[T](frame: DataFrame, column: Column[T], default: T): Unit =
-    withContext("frame.addColumnWithValue") {
-      ???
+  override def renameFrame(frame: DataFrame, newName: String): DataFrame = {
+    metaStore.withSession("frame.rename") {
+      implicit session =>
+        {
+          val newFrame = frame.copy(name = newName)
+          metaStore.frameRepo.update(newFrame).get
+        }
     }
-
-  override def renameFrame(frame: DataFrame, newName: String): DataFrame =
-    withContext("frame.rename") {
-      updateName(frame, newName)
-      frame
-    }
-
+  }
   override def renameColumn(frame: DataFrame, name_pairs: Seq[(String, String)]): DataFrame =
-    withContext("frame.renameColumn") {
-      val columnsToRename: Seq[String] = name_pairs.map(_._1)
-      val newColumnNames: Seq[String] = name_pairs.map(_._2)
+    //withContext("frame.renameColumn") {
+    metaStore.withSession("frame.renameColumn") {
+      implicit session =>
+        {
+          val columnsToRename: Seq[String] = name_pairs.map(_._1)
+          val newColumnNames: Seq[String] = name_pairs.map(_._2)
 
-      def generateNewColumnTuple(oldColumn: String, columnsToRename: Seq[String], newColumnNames: Seq[String]): String = {
-        val result = columnsToRename.indexOf(oldColumn) match {
-          case notFound if notFound < 0 => oldColumn
-          case found => newColumnNames(found)
+          def generateNewColumnTuple(oldColumn: String, columnsToRename: Seq[String], newColumnNames: Seq[String]): String = {
+            val result = columnsToRename.indexOf(oldColumn) match {
+              case notFound if notFound < 0 => oldColumn
+              case found => newColumnNames(found)
+            }
+            result
+          }
+
+          val newColumns = frame.schema.columns.map(col => (generateNewColumnTuple(col._1, columnsToRename, newColumnNames), col._2))
+          metaStore.frameRepo.updateSchema(frame, newColumns)
+
         }
-        result
-      }
-
-      val newColumns = frame.schema.columns.map(col => (generateNewColumnTuple(col._1, columnsToRename, newColumnNames), col._2))
-      updateSchema(frame, newColumns)
     }
 
   override def addColumn[T](frame: DataFrame, column: Column[T], columnType: DataTypes.DataType): DataFrame =
-    withContext("frame.addColumn") {
-      val newColumns = frame.schema.columns :+ (column.name, columnType)
-      updateSchema(frame, newColumns)
+    //withContext("frame.addColumn") {
+    metaStore.withSession("frame.addColumn") {
+      implicit session =>
+        {
+          val newColumns = frame.schema.columns :+ (column.name, columnType)
+          metaStore.frameRepo.updateSchema(frame, newColumns)
+        }
     }
 
   override def getRows(frame: DataFrame, offset: Long, count: Int)(implicit user: UserPrincipal): Iterable[Row] =
@@ -143,11 +146,33 @@ class SparkFrameStorage(context: UserPrincipal => Context, fsRoot: String, files
       require(count > 0, "count must be zero or greater")
       withMyClassLoader {
         val ctx = context(user).sparkContext
-        val rdd: RDD[Row] = getFrameRdd(ctx, frame.id)
+        val rdd: RDD[Row] = getFrameRowRdd(ctx, frame.id)
         val rows = SparkOps.getRows(rdd, offset, count, maxRows)
         rows
       }
     }
+
+  /**
+   * Create a FrameRDD or throw an exception if bad frameId is given
+   * @param ctx spark context
+   * @param frameId primary key of the frame record
+   * @return the newly created RDD
+   */
+  def getFrameRdd(ctx: SparkContext, frameId: Long): FrameRDD = {
+    val frame = lookup(frameId).getOrElse(
+      throw new IllegalArgumentException(s"No such data frame: ${frameId}"))
+    getFrameRdd(ctx, frame)
+  }
+
+  /**
+   * Create an FrameRDD from a frame data file
+   * @param ctx spark context
+   * @param frame the model for the frame
+   * @return the newly created FrameRDD
+   */
+  def getFrameRdd(ctx: SparkContext, frame: DataFrame): FrameRDD = {
+    new FrameRDD(frame.schema, getFrameRowRdd(ctx, frame.id))
+  }
 
   /**
    * Create an RDD from a frame data file.
@@ -155,13 +180,34 @@ class SparkFrameStorage(context: UserPrincipal => Context, fsRoot: String, files
    * @param frameId primary key of the frame record
    * @return the newly created RDD
    */
-  def getFrameRdd(ctx: SparkContext, frameId: Long): RDD[Row] = {
+  def getFrameRowRdd(ctx: SparkContext, frameId: Long): RDD[Row] = {
     val path: String = getFrameDataFile(frameId)
     val absPath = fsRoot + path
     files.getMetaData(Paths.get(path)) match {
       case None => ctx.parallelize(Nil)
       case _ => ctx.objectFile[Row](absPath, SparkEngineConfig.sparkDefaultPartitions)
     }
+  }
+
+  override def lookupByName(name: String)(implicit user: UserPrincipal): Option[DataFrame] = {
+    metaStore.withSession("frame.lookupByName") {
+      implicit session =>
+        {
+          metaStore.frameRepo.lookupByName(name)
+        }
+    }
+  }
+
+  /**
+   * Get the pair of FrameRDD's that were the result of a parse
+   * @param ctx spark context
+   * @param frame the model of the frame that was the successfully parsed lines
+   * @param errorFrame the model for the frame that was the parse errors
+   */
+  def getParseResult(ctx: SparkContext, frame: DataFrame, errorFrame: DataFrame): ParseResultRddWrapper = {
+    val frameRdd = getFrameRdd(ctx, frame)
+    val errorFrameRdd = getFrameRdd(ctx, errorFrame)
+    new ParseResultRddWrapper(frameRdd, errorFrameRdd)
   }
 
   def getOrCreateDirectory(name: String): Directory = {
@@ -173,80 +219,103 @@ class SparkFrameStorage(context: UserPrincipal => Context, fsRoot: String, files
     }
   }
 
-  override def create(frame: DataFrameTemplate): DataFrame = withContext("frame.create") {
-    val id = nextFrameId()
-    // TODO: wire this up better.  For example, status Id should be looked up, user supplied, etc.
-    val frame2 = new DataFrame(id = id,
-      name = frame.name,
-      description = frame.description,
-      schema = Schema(),
-      status = 1L,
-      createdOn = new DateTime(),
-      modifiedOn = new DateTime(),
-      createdBy = None,
-      modifiedBy = None)
-    drop(frame2) //remove any existing artifacts to prevent collisions when a database is reinitialized.
-    val meta = File(Paths.get(getFrameMetaDataFile(id)))
-    info(s"Saving metadata to $meta")
-    val f = files.write(meta)
-    try {
-      val json: String = frame2.toJson.prettyPrint
-      debug(json)
-      f.write(json.getBytes(Codec.UTF8.name))
+  override def lookup(id: Long): Option[DataFrame] = {
+    metaStore.withSession("frame.lookup") {
+      implicit session =>
+        {
+          metaStore.frameRepo.lookup(id)
+        }
     }
-    finally {
-      f.close()
-    }
-    frame2
   }
 
-  override def lookup(id: Long): Option[DataFrame] = withContext("frame.lookup") {
-    val path = getFrameDirectory(id)
-    val meta = File(Paths.get(path, "meta"))
-    if (files.getMetaData(meta.path).isEmpty) {
-      return None
+  override def getFrames(offset: Int, count: Int)(implicit user: UserPrincipal): Seq[DataFrame] = {
+    metaStore.withSession("frame.getFrames") {
+      implicit session =>
+        {
+          metaStore.frameRepo.scan(offset, count)
+        }
     }
-    val f = files.read(meta)
-    try {
-      val src = Source.fromInputStream(f)(Codec.UTF8).getLines().mkString("")
-      val json = JsonParser(src)
-      return Some(json.convertTo[DataFrame])
+  }
+
+  override def create(frameTemplate: DataFrameTemplate)(implicit user: UserPrincipal): DataFrame = {
+    metaStore.withSession("frame.createFrame") {
+      implicit session =>
+        {
+          val frame = metaStore.frameRepo.insert(frameTemplate).get
+
+          //remove any existing artifacts to prevent collisions when a database is reinitialized.
+          deleteFrameFile(frame.id)
+
+          frame
+        }
     }
-    finally {
-      f.close()
+  }
+
+  /**
+   * Get the error frame of the supplied frame or create one if it doesn't exist
+   * @param frame the 'good' frame
+   * @return the parse errors for the 'good' frame
+   */
+  override def lookupOrCreateErrorFrame(frame: DataFrame): DataFrame = {
+    val errorFrame = lookupErrorFrame(frame)
+    if (!errorFrame.isDefined) {
+      metaStore.withSession("frame.lookupOrCreateErrorFrame") {
+        implicit session =>
+          {
+            // TODO: remove hard-coded strings
+            val errorTemplate = new DataFrameTemplate(frame.name + "-parse-errors", Some("This frame was automatically created to capture parse errors for " + frame.name))
+            val newlyCreateErrorFrame = metaStore.frameRepo.insert(errorTemplate).get
+            metaStore.frameRepo.updateErrorFrameId(frame, Some(newlyCreateErrorFrame.id))
+            newlyCreateErrorFrame
+          }
+      }
     }
+    else {
+      errorFrame.get
+    }
+  }
+
+  /**
+   * Get the error frame of the supplied frame
+   * @param frame the 'good' frame
+   * @return the parse errors for the 'good' frame
+   */
+  override def lookupErrorFrame(frame: DataFrame): Option[DataFrame] = {
+    if (frame.errorFrameId.isDefined) {
+      val errorFrame = lookup(frame.errorFrameId.get)
+      if (!errorFrame.isDefined) {
+        error("Frame referenced an error frame that does NOT exist: " + frame.errorFrameId.get)
+      }
+      errorFrame
+    }
+    else {
+      None
+    }
+
   }
 
   val idRegex: Regex = "^\\d+$".r
-
-  def getFrames(offset: Int, count: Int): Seq[DataFrame] = withContext("frame.getFrames") {
-    files.list(getOrCreateDirectory(frameBase))
-      .flatMap {
-        case Directory(p) => Some(p.getName(p.getNameCount - 1).toString)
-        case _ => None
-      }
-      .filter(idRegex.findFirstMatchIn(_).isDefined) //may want to extract a method for this
-      .flatMap(sid => lookup(sid.toLong))
-  }
 
   val frameBase = "/intelanalytics/dataframes"
   //temporary
   var frameId = new AtomicLong(1)
 
-  def nextFrameId() = {
-    //Just a temporary implementation, only appropriate for scaffolding.
-    frameId.getAndIncrement
-  }
-
+  //  def nextFrameId() = {
+  //    //Just a temporary implementation, only appropriate for scaffolding.
+  //    frameId.getAndIncrement
+  //  }
+  //
   def getFrameDirectory(id: Long): String = {
     val path = Paths.get(s"$frameBase/$id")
     path.toString
   }
-
-  def getFrameDirectoryByName(name: String): String = {
-    val path = Paths.get(s"$frameBase/$name")
-    path.toString
-  }
+  //
+  //  def getFrameDirectoryByName(name: String): String = {
+  //    //val path = Paths.get(s"something")
+  //    val path = Paths.get(s"$frameBase/$name")
+  //    path.toString
+  //  }
+  //
 
   def getFrameDataFile(id: Long): String = {
     getFrameDirectory(id) + "/data"
@@ -255,4 +324,12 @@ class SparkFrameStorage(context: UserPrincipal => Context, fsRoot: String, files
   def getFrameMetaDataFile(id: Long): String = {
     getFrameDirectory(id) + "/meta"
   }
+  //
+  //  def getFrameMetaDataFileByName(name: String): String = {
+  //    getFrameDirectoryByName(name) + "/meta"
+  //  }
+  //
+  //  def getFrameDataFileByName(name: String): String = {
+  //    getFrameDirectoryByName(name) + "/data"
+  //  }
 }

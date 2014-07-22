@@ -30,7 +30,7 @@ import com.intel.intelanalytics.domain.schema.DataTypes.DataType
  * @param columns the columns in the data frame
  */
 case class Schema(columns: List[(String, DataType)] = List[(String, DataType)]()) {
-  require(columns != null)
+  require(columns != null, "columns must not be null")
 
   /**
    * get column index by column name
@@ -48,4 +48,10 @@ case class Schema(columns: List[(String, DataType)] = List[(String, DataType)]()
     else
       columnNames.map(col => columns.indexWhere(columnTuple => columnTuple._1 == col))
   }
+
+  /**
+   * get column datatype by column name
+   * @param columnName name of the column
+   */
+  def columnDataType(columnName: String): DataType = columns.filter(c => c._1 == columnName).headOption.getOrElse(throw new IllegalArgumentException("No column named $columnName"))._2
 }

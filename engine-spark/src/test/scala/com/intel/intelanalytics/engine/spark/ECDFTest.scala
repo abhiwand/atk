@@ -56,10 +56,10 @@ class ECDFTest extends TestingSparkContext with Matchers {
     val sampleTwoRdd = sc.parallelize(sampleTwoList, 2)
 
     // Get binned results
-    val sampleOneECDF = SparkOps.ecdf(sampleOneRdd, 0)
+    val sampleOneECDF = SparkOps.ecdf(sampleOneRdd, 0, "int32")
     val resultOne = sampleOneECDF.take(10)
 
-    val sampleTwoECDF = SparkOps.ecdf(sampleTwoRdd, 0)
+    val sampleTwoECDF = SparkOps.ecdf(sampleTwoRdd, 0, "int32")
     val resultTwo = sampleTwoECDF.take(5)
 
     // Validate

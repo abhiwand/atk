@@ -6,6 +6,10 @@ Glossary
 ..  glossary::
     :sorted:
 
+    ASCII
+
+        A data type consisting of a character which be represented in the computer within 7 bits.
+
     Adjacency List
 
         From `Wikipedia\: Adjacency List`_:
@@ -31,7 +35,7 @@ Glossary
     Alternating Least Squares
 
         The "Alternating Least Squares with Bias for collaborative filtering algorithms" is an algorithm used by the
-        Intel Data Platform: Analytics Toolkit.
+        Intel Analytics Toolkit.
 
         For more information see:
 
@@ -89,11 +93,21 @@ Glossary
 
     BigGraph
 
-        A graph database object with functions to manipulate the data.
+        A class object with the functionality to manipulate the data in a :term:`graph`.
 
     BigFrame
 
-        A table database object with function to manipulate the data.
+        A class object with the functionality to manipulate the data in a :term:`frame`.
+
+    bool
+    Boolean
+    Booleans
+
+        A variable that can hold a single "True" or "False" value. In Python, it can also be "None" meaning that it is not defined.
+
+    bytearray
+
+        A sequence of integers in the range 0 <= x < 256.
 
     Centrality
     Centrality (PageRank)
@@ -158,8 +172,7 @@ Glossary
 
     Conjugate Gradient Descent
 
-        The "Congugate Gradient Descent with Bias for Collaborative Filtering algorithm is an algorithm used by the Intel Data Platform:
-        Analytics Toolkit.
+        The "Congugate Gradient Descent with Bias for Collaborative Filtering algorithm is an algorithm used by the Intel Analytics Toolkit.
 
         For more information: `Factorization Meets the Neighborhood (pdf)`_ (see equation 5).
 
@@ -168,6 +181,11 @@ Glossary
         Where a calculation (often an iterative calculation) reaches a certain value.
 
         For more information see: `Wikipedia\: Convergence (mathematics)`_.
+
+    dict
+    Dictionary
+
+        A class of data composed of key/value pairs.
 
     Directed Acyclic Graph (DAG)
 
@@ -180,6 +198,7 @@ Glossary
         Contrast with :term:`Undirected Graph`.
 
     Edge
+    Edges
 
         An edge is the link between two vertices in a graph database.
         Edges can have direction, or be undirected.
@@ -189,6 +208,12 @@ Glossary
         An edge can be uniquely identified from its source, destination, and label.
 
         For more information see: :term:`Vertex`, and `Tinkerpop\: Property Graph Model`_.
+
+    EqualDepth
+    EqualWidth
+    Equal Depth Binning
+
+        TBD
 
     ETL
     
@@ -218,21 +243,35 @@ Glossary
 
         In statistical analysis of binary classification, the F1 score (also F-score or F-measure) is a measure of a test's accuracy.
 
+    float32
+    float64
+
+        A real non-integer number with 32 or 64 bits of precision as appropriate.
+
+    Frame
+
+        A table database with rows and columns containing data.
+
+    GaBP
+    Gaussian Belief Propagation
+
+        Gaussian belief propagation is a variant of the belief propagation algorithm when the underlying distributions are Gaussian.
+        The first work analyzing this special model was the seminal work of Weiss and Freeman [#f11]_ .
+
     Gaussian Random Fields
 
         From `Wikipedia\: Gaussian Random Fields`_:
 
-            A Gaussian random field (GRF) is a random field involving Gaussian probability density functions of the variables.
-            A one-dimensional GRF is also called a Gaussian process.
+        A Gaussian random field (GRF) is a random field involving Gaussian probability density functions of the variables.
+        A one-dimensional GRF is also called a Gaussian process.
 
-        \ 
-            One way of constructing a GRF is by assuming that the field is the sum of a large number of plane, cylindrical, or
-            spherical waves with uniformly distributed random phase.
-            Where applicable, the central limit theorem dictates that at any point, the sum of these individual plane-wave
-            contributions will exhibit a Gaussian distribution.
-            This type of GRF is completely described by its power spectral density, and hence, through the Wiener-Khinchin theorem,
-            by its two-point autocorrelation function, which is related to the power spectral density through a Fourier transformation.
-            For details on the generation of Gaussian random fields using Matlab, see the circulant embedding method for Gaussian random field.
+        One way of constructing a GRF is by assuming that the field is the sum of a large number of plane, cylindrical, or
+        spherical waves with uniformly distributed random phase.
+        Where applicable, the central limit theorem dictates that at any point, the sum of these individual plane-wave
+        contributions will exhibit a Gaussian distribution.
+        This type of GRF is completely described by its power spectral density, and hence, through the Wiener-Khinchin theorem,
+        by its two-point autocorrelation function, which is related to the power spectral density through a Fourier transformation.
+        For details on the generation of Gaussian random fields using Matlab, see the circulant embedding method for Gaussian random field.
 
     Graph
 
@@ -285,6 +324,12 @@ Glossary
         Gremlin is a graph query language, akin to SQL, that enables users to manipulate and query a graph.
         Gremlin works with the Titan Graph Database, though it is made by a different company.
         For more information see: `Gremlin Wiki`_.
+
+    int32
+    int64
+
+        An integer is a member of the set of positive whole numbers {1, 2, 3, . . . }, negative whole numbers {-1, -2, -3, . . . }, and zero {0}.
+        Since a computer is limited, the computer representation of it can have 32 or 64 bits of precision.
 
     Ising Smoothing Parameter
 
@@ -364,6 +409,7 @@ Glossary
         what it should put into the new column based on data in other columns.
         A function must return the same type of data that the column definition supplies.
         For example, if a column is defined as a float within an array, the function must return the data as a float in an array.
+        Further examples and explanations can be found at :doc:`ds_apir`.
 
     Latent Dirichlet Allocation
 
@@ -375,6 +421,10 @@ Glossary
             a small number of topics and that each word's creation is attributable to one of the document's topics.
             LDA is an example of a topic model and was first presented as a graphical model for topic discovery by
             David Blei, Andrew Ng, and Michael Jordan in 2003.
+
+    list
+
+        A sequence of objects in a single dimension array.
 
     Loopy Belief Propagation
 
@@ -430,6 +480,14 @@ Glossary
 
         For more information see: `Tinkerpop\: Property Graph Model`_.
 
+    PUF
+    Python User Function
+    Python User Function (PUF)
+
+        A Python User Function (PUF) is a python function written by the user on the client-side which can execute in a distributed fashion
+        on the cluster.
+        For further explanation, see :doc:`ds_apir`
+
     Recommendation Systems
 
         From `Wikipedia\: Recommender System`_:
@@ -446,12 +504,20 @@ Glossary
 
         For more information see: `Wikipedia\: Resource Description Framework`_.
 
+    Row Functions
+
+        Refer to :term:`Lambda Functions`.
+
     Semi-Supervised Learning
 
         In Semi-Supervised learning algorithms, most the input data are not labeled and a small amount are labeled.
         The expectation is that the software "learns" to calculate faster than in either supervised or unsupervised algorithms.
 
         For more information see: :term:`Supervised Learning`, and :term:`Unsupervised Learning`.
+
+    Schema
+
+        A computer structure that defines the structure of something else.
 
     Simple Random Sampling
 
@@ -489,6 +555,14 @@ Glossary
 
         For more information see: `Wikipedia\: Stratified Sampling`_.
 
+    str
+
+        A string data type in Python using the ASCII encoding.
+
+    string
+
+        A string data type in Python using the UTF-8 encoding.
+
     Supervised Learning
 
         Supervised learning refers to algorithms where the input data are all labeled, and the outcome of the calculation is known.
@@ -521,6 +595,10 @@ Glossary
         Contrast with :term:`Directed Acyclic Graph (DAG)`.
 
         For more information see: `Wikipedia\: Undirected Graph`_.
+
+    Unicode
+
+        A data type consisting of a string of characters where each character could be represented in the computer within 16 bits.
 
     Unsupervised Learning
 
@@ -620,3 +698,4 @@ Glossary
 .. [#f8] Katz, L. (1953). A New Status Index Derived from Sociometric Index. Psychometrika, 39-43.
 .. [#f9] Hanneman, R. A., & Riddle, M. (2005). `Introduction to Social Network Methods`_.
 .. [#f10] Newman, M.E.J. 2010. Networks: An Introduction. Oxford, UK: Oxford University Press.
+.. [#f11] Weiss, Yair; Freeman, William T. (October 2001). "Correctness of Belief Propagation in Gaussian Graphical Models of Arbitrary Topology". Neural Computation 13 (10): 2173–2200. doi:10.1162/089976601750541769. PMID 11570995.

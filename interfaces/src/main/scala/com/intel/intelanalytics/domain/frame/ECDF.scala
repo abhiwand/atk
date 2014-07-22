@@ -23,8 +23,17 @@
 
 package com.intel.intelanalytics.domain.frame
 
-case class ECDF[FrameRef](name: String, frameId: FrameRef, sampleCol: String) {
-  require(name != null, "new frame name is required")
+/**
+ * Representation of an ECDF object for empirical cumulative distribution function
+ *
+ * @param frameId id of the input frame object
+ * @param name name of the frame object to return
+ * @param sampleCol the column name to use for ecdf
+ * @param dataType the data type of the input column
+ * @tparam FrameRef
+ */
+case class ECDF[FrameRef](frameId: FrameRef, name: String, sampleCol: String, dataType: String) {
   require(frameId != null, "frame is required")
+  require(name != null, "new frame name is required")
   require(sampleCol != null, "column name for sample is required")
 }

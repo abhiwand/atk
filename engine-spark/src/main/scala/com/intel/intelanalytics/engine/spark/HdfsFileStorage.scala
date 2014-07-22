@@ -46,7 +46,8 @@ class HdfsFileStorage(fsRoot: String) extends FileStorage with EventLogging {
       hadoopConfig.set("fs.defaultFS", fsRoot)
     }
 
-    require(hadoopConfig.getClassByNameOrNull(classOf[LocalFileSystem].getName) != null)
+    require(hadoopConfig.getClassByNameOrNull(classOf[LocalFileSystem].getName) != null,
+      "Could not load local filesystem for Hadoop")
     hadoopConfig
   }
 
@@ -74,15 +75,6 @@ class HdfsFileStorage(fsRoot: String) extends FileStorage with EventLogging {
   override def read(source: File): InputStream = withContext("file.read") {
     val path: HPath = new HPath(fsRoot + source.path.toString)
     fs.open(path)
-  }
-
-  //TODO: switch file methods to strings instead of Path?
-  override def copy(source: Path, destination: Path): Unit = withContext("file.copy") {
-    ???
-  }
-
-  override def move(source: Path, destination: Path): Unit = withContext("file.move") {
-    ???
   }
 
   override def getMetaData(path: Path): Option[Entry] = withContext("file.getMetaData") {
