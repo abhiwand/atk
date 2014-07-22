@@ -413,7 +413,7 @@ class FrameBackendRest(object):
         if col_types[sample_col] in data_type_dict:
             data_type = data_type_dict[col_types[sample_col]]
         name = self._get_new_frame_name()
-        arguments = {'frameId': frame._id, 'name': name, 'sampleCol': sample_col, 'dataType': data_type}
+        arguments = {'frame_id': frame._id, 'name': name, 'sample_col': sample_col, 'data_type': data_type}
         return execute_new_frame_command('ecdf', arguments)
 
     def classification_metric(self, frame, metric_type, label_column, pred_column, pos_label, beta):
