@@ -21,37 +21,11 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.domain.schema
-
-import com.intel.intelanalytics.domain.schema.DataTypes.DataType
+package com.intel.intelanalytics.algorithm
 
 /**
- * Schema for a data frame. Contains the columns with names and data types.
- * @param columns the columns in the data frame
+ * percentile target that will be applied to an element
+ * @param percentile percentile. For eg, 40 means 40th percentile
+ * @param weight weight that will be applied to the element
  */
-case class Schema(columns: List[(String, DataType)] = List[(String, DataType)]()) {
-  require(columns != null, "columns must not be null")
-
-  /**
-   * get column index by column name
-   * @param columnName name of the column to find index
-   */
-  def columnIndex(columnName: String): Int = columnIndex(Seq(columnName))(0)
-
-  /**
-   * Retrieve list of column index based on column names
-   * @param columnNames input column names
-   */
-  def columnIndex(columnNames: Seq[String]): Seq[Int] = {
-    if (columnNames.isEmpty)
-      (0 to (columns.length - 1)).toList
-    else
-      columnNames.map(col => columns.indexWhere(columnTuple => columnTuple._1 == col))
-  }
-
-  /**
-   * get column datatype by column name
-   * @param columnName name of the column
-   */
-  def columnDataType(columnName: String): DataType = columns.filter(c => c._1 == columnName).headOption.getOrElse(throw new IllegalArgumentException("No column named $columnName"))._2
-}
+case class PercentileTarget(percentile: Int, weight: BigDecimal)
