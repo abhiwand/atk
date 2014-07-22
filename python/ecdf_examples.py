@@ -1,6 +1,6 @@
 from intelanalytics import *
 
-#loggers.set('DEBUG', 'intelanalytics.rest.connection','/home/hadoop/logOutput','True')
+#loggers.set('DEBUG', 'intelanalytics.rest.connection','/home/awwicker/logOutput','True')
 
 input_fileA = "datasets/ecdfDataA.csv"
 input_fileB = "datasets/ecdfDataB.csv"

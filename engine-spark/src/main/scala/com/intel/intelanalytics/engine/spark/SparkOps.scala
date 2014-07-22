@@ -649,15 +649,17 @@ private[spark] object SparkOps extends Serializable {
     val sortedRdd = groupedRdd.map(pair => (pair._1, pair._2.size)).sortByKey()
 
     // compute the partition sums
-    val partSums = 0 +: sortedRdd.mapPartitionsWithIndex {
-      case (index, partition) => Iterator(partition.map(pair => pair._2).sum)
+    val partSums: Array[Double] = 0.0 +: sortedRdd.mapPartitionsWithIndex {
+      case (index, partition) => Iterator(partition.map(pair => pair._2).sum.toDouble)
     }.collect()
 
     // compute empirical cumulative distribution
     val sumsRdd = sortedRdd.mapPartitionsWithIndex {
       case (index, partition) => {
-        var startValue = 0
-        for { i <- 0 to index } startValue += partSums(i)
+        var startValue = 0.0
+        for (i <- 0 to index) {
+          startValue += partSums(i)
+        }
         partition.scanLeft(("", startValue))((prev, curr) => (curr._1, prev._2 + curr._2)).drop(1)
       }
     }
