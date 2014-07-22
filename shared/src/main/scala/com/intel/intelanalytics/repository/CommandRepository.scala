@@ -8,6 +8,6 @@ import com.intel.intelanalytics.engine.ProgressInfo
  */
 trait CommandRepository[Session] extends Repository[Session, CommandTemplate, Command] {
   def updateComplete(id: Long, complete: Boolean)(implicit session: Session): Try[Unit]
-  def updateProgress(id: Long, progress: List[Float], detailedProgress: List[ProgressInfo])(implicit session: Session): Try[Unit]
+  def updateProgress(id: Long, progressInfo: List[ProgressInfo])(implicit session: Session): Try[Unit]
 }
 
