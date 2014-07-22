@@ -4,7 +4,7 @@ import org.scalatest.Matchers
 import com.intel.intelanalytics.engine.TestingSparkContext
 import com.intel.intelanalytics.engine.spark.statistics.numericalstatistics.NumericalStatistics
 
-class NumericalStatisticsITest extends TestingSparkContext with Matchers {
+class NumericalStatisticsCheckFormulasITest extends TestingSparkContext with Matchers {
 
   /**
    * Tests the distributed implementation of the statistics calculator against the formulae used by SAS.
@@ -12,7 +12,7 @@ class NumericalStatisticsITest extends TestingSparkContext with Matchers {
    * we can get the formulae from the SAS documentation, whereas we do not have a license to actually run SAS.
    *
    * It tests whether or not the distributed implementations (with the accumulators and
-   * whatnot) match the naively implemented formulae on a small data set.
+   * whatnot) match the SAS (aka textbook) formulae on a small data set.
    */
   trait NumericalStatisticsTestAgainstFormulas {
 

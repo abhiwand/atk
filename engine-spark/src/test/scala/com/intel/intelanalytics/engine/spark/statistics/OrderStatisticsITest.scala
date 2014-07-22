@@ -4,6 +4,10 @@ import org.scalatest.{ BeforeAndAfter, Matchers }
 import com.intel.intelanalytics.engine.TestingSparkContext
 import org.apache.spark.rdd.RDD
 
+/**
+ * Exercises the order statistics engine through some happy paths and a few corner cases (primarily for the case of
+ * bad weights).
+ */
 class OrderStatisticsITest extends TestingSparkContext with Matchers {
 
   "even number of data elements" should "work" in {
@@ -52,10 +56,11 @@ class OrderStatisticsITest extends TestingSparkContext with Matchers {
     testMedian shouldBe expectedMedian
   }
 
-  " weights are all 0 or negative" should "return None" in {
+  " weights are all 0 or negative or NaN or infinite" should "return None" in {
 
-    val data: List[Int] = List(1, 2, 3, 4, 5, 6, 7, 8)
-    val frequencies: List[Double] = List(-3, 0, -3, 0, 0, 0, 0, 0).map(x => x.toDouble)
+    val data: List[Int] = List(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11)
+    val frequencies: List[Double] = List(-3, 0, -3, 0, 0, 0, 0, 0).map(x => x.toDouble) ++
+      List(Double.NaN, Double.PositiveInfinity, Double.NegativeInfinity)
 
     val numPartitions = 3
     val dataFrequenciesRDD: RDD[(Int, Double)] = sc.parallelize(data.zip(frequencies), numPartitions)

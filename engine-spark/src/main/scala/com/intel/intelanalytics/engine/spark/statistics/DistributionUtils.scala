@@ -26,11 +26,11 @@ class DistributionUtils[T] extends Serializable {
 
   /**
    * True if both the data and the weight are finite numbers.
-   * @param dataWeightPair A (data, weight) pair.
+   * @param pair A pair of doubles.
    * @return
    */
-  def isFiniteDataWeightDoublePair(dataWeightPair: (Double, Double)) = {
+  def isFiniteDoublePair(pair: (Double, Double)) = {
 
-    isFiniteNumber(dataWeightPair._1) && isFiniteNumber(dataWeightPair._2)
+    isFiniteNumber(pair._1) && isFiniteNumber(pair._2)
   }
 }
