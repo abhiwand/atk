@@ -100,7 +100,7 @@ class ProgressPrinter(object):
 
         for index in range(0, len(progress)):
             p = progress[index]['progress']
-            retried_tasks = progress[index]['tasksInfo']['retries']
+            retried_tasks = progress[index]['tasks_info']['retries']
 
             message = "Tasks retries:%s" %(retried_tasks)
 
