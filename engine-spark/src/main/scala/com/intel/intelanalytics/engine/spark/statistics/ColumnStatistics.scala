@@ -21,40 +21,26 @@ private[spark] object ColumnStatistics extends Serializable {
    * @param dataColumnIndex Index of the column providing data.
    * @param dataType The type of the data column.
    * @param weightsColumnIndexOption Option for index of column providing weights. Must be numerical data.
+   * @param weightsTypeOption Option for the datatype of the weights.
    * @param rowRDD RDD of input rows
    * @return The mode of the column (as a string), the weight of the mode, and the total weight of the data.
    */
   def columnMode(dataColumnIndex: Int,
                  dataType: DataType,
                  weightsColumnIndexOption: Option[Int],
+                 weightsTypeOption: Option[DataType],
                  rowRDD: RDD[Row]): ColumnModeReturn = {
 
     val dataWeightPairs: RDD[(Any, Double)] =
-      getDataWeightPairs(dataColumnIndex, weightsColumnIndexOption, rowRDD)
+      getDataWeightPairs(dataColumnIndex, weightsColumnIndexOption, weightsTypeOption, rowRDD)
+
     val frequencyStatistics = new FrequencyStatistics(dataWeightPairs)
 
     val modeJsValue: JsValue = if (frequencyStatistics.mode.isEmpty) {
       None.asInstanceOf[Option[String]].toJson
     }
     else {
-      if (dataType == DataTypes.string) {
-        frequencyStatistics.mode.get.asInstanceOf[String].toJson
-      }
-      else if (dataType == DataTypes.int32) {
-        frequencyStatistics.mode.get.asInstanceOf[Int].toJson
-      }
-      else if (dataType == DataTypes.int64) {
-        frequencyStatistics.mode.get.asInstanceOf[Long].toJson
-      }
-      else if (dataType == DataTypes.float32) {
-        frequencyStatistics.mode.get.asInstanceOf[Float].toJson
-      }
-      else if (dataType == DataTypes.float64) {
-        frequencyStatistics.mode.get.asInstanceOf[Double].toJson
-      }
-      else {
-        throw new IllegalArgumentException("Mode calculation cannot handle datatype " + dataType.toString)
-      }
+      dataType.json(frequencyStatistics.mode.get)
     }
 
     ColumnModeReturn(modeJsValue, frequencyStatistics.weightOfMode, frequencyStatistics.totalWeight)
@@ -70,34 +56,58 @@ private[spark] object ColumnStatistics extends Serializable {
    * The option None is returned when the total weight is 0.
    *
    * @param dataColumnIndex column index
+   * @param dataType The type of the data column.
    * @param weightsColumnIndexOption  Option for index of column providing  weights. Must be numerical data.
+   * @param weightsTypeOption Option for the datatype of the weights.
    * @param rowRDD RDD of input rows
    * @return the  median of the column (as a double)
    */
   def columnMedian(dataColumnIndex: Int,
+                   dataType: DataType,
                    weightsColumnIndexOption: Option[Int],
+                   weightsTypeOption: Option[DataType],
                    rowRDD: RDD[Row]): ColumnMedianReturn = {
 
-    val dataWeightPairs: RDD[(Double, Double)] = getDoubleWeightPairs(dataColumnIndex, weightsColumnIndexOption, rowRDD)
+    val dataWeightPairs: RDD[(Any, Double)] =
+      getDataWeightPairs(dataColumnIndex, weightsColumnIndexOption, weightsTypeOption, rowRDD)
 
-    val orderStatistics = new OrderStatistics[Double](dataWeightPairs)
+    implicit val ordering: Ordering[Any] = new RealOrdering(dataType)
 
-    ColumnMedianReturn(orderStatistics.medianOption)
+    val orderStatistics = new OrderStatistics[Any](dataWeightPairs)
+
+    val medianReturn: JsValue = if (orderStatistics.medianOption.isEmpty) {
+      None.asInstanceOf[Option[Double]].toJson
+    }
+    else {
+      dataType.json(orderStatistics.medianOption.get)
+    }
+    ColumnMedianReturn(medianReturn)
+  }
+
+  private class RealOrdering(dataType: DataType) extends Ordering[Any] {
+    override def compare(x: Any, y: Any): Int = {
+      dataType.asDouble(x).compareTo(dataType.asDouble(y))
+    }
   }
 
   /**
    * Calculate summary statistics of data column, possibly weighted by an optional weights column.
    *
    * @param dataColumnIndex Index of column providing the data. Must be numerical data.
+   * @param dataType The type of the data column.
    * @param weightsColumnIndexOption Option for index of column providing the weights. Must be numerical data.
+   * @param weightsTypeOption Option for the datatype of the weights.
    * @param rowRDD RDD of input rows
    * @return summary statistics of the column
    */
   def columnSummaryStatistics(dataColumnIndex: Int,
+                              dataType: DataType,
                               weightsColumnIndexOption: Option[Int],
+                              weightsTypeOption: Option[DataType],
                               rowRDD: RDD[Row]): ColumnSummaryStatisticsReturn = {
 
-    val dataWeightPairs: RDD[(Double, Double)] = getDoubleWeightPairs(dataColumnIndex, weightsColumnIndexOption, rowRDD)
+    val dataWeightPairs: RDD[(Double, Double)] =
+      getDoubleWeightPairs(dataColumnIndex, dataType, weightsColumnIndexOption, weightsTypeOption, rowRDD)
 
     val stats = new NumericalStatistics(dataWeightPairs)
 
@@ -118,15 +128,20 @@ private[spark] object ColumnStatistics extends Serializable {
    * Calculate full statistics of data column, possibly weighted by an optional weights column.
    *
    * @param dataColumnIndex Index of column providing the data. Must be numerical data.
+   * @param dataType The type of the data column.
    * @param weightsColumnIndexOption Option for index of column providing the weights. Must be numerical data.
+   * @param weightsTypeOption Option for the datatype of the weights.
    * @param rowRDD RDD of input rows
    * @return  statistics of the column
    */
   def columnFullStatistics(dataColumnIndex: Int,
+                           dataType: DataType,
                            weightsColumnIndexOption: Option[Int],
+                           weightsTypeOption: Option[DataType],
                            rowRDD: RDD[Row]): ColumnFullStatisticsReturn = {
 
-    val dataWeightPairs: RDD[(Double, Double)] = getDoubleWeightPairs(dataColumnIndex, weightsColumnIndexOption, rowRDD)
+    val dataWeightPairs: RDD[(Double, Double)] =
+      getDoubleWeightPairs(dataColumnIndex, dataType, weightsColumnIndexOption, weightsTypeOption, rowRDD)
 
     val stats = new NumericalStatistics(dataWeightPairs)
 
@@ -147,46 +162,45 @@ private[spark] object ColumnStatistics extends Serializable {
 
   private def getDataWeightPairs(dataColumnIndex: Int,
                                  weightsColumnIndexOption: Option[Int],
+                                 weightsTypeOption: Option[DataType],
                                  rowRDD: RDD[Row]): RDD[(Any, Double)] = {
 
     val dataRDD: RDD[Any] = rowRDD.map(row => row(dataColumnIndex))
 
     val weighted = !weightsColumnIndexOption.isEmpty
 
-    val weightsRDD = if (weighted) rowRDD.map(row => doubleConversion(row(weightsColumnIndexOption.get))) else null
+    if (weightsColumnIndexOption.nonEmpty && weightsTypeOption.isEmpty) {
+      throw new IllegalArgumentException("Cannot specify weights column without specifying its datatype.")
+    }
+
+    val weightsRDD = if (weighted)
+      rowRDD.map(row => weightsTypeOption.get.asDouble(row(weightsColumnIndexOption.get)))
+    else
+      null
 
     if (weighted) dataRDD.zip(weightsRDD) else dataRDD.map(x => (x, 1.toDouble))
-  }
-
-  private def doubleConversion(x: Any) = {
-    if (x.isInstanceOf[Int]) {
-      x.asInstanceOf[Int].toDouble
-    }
-    else if (x.isInstanceOf[Long]) {
-      x.asInstanceOf[Long].toDouble
-    }
-    else if (x.isInstanceOf[Float]) {
-      x.asInstanceOf[Float].toDouble
-    }
-    else if (x.isInstanceOf[Double]) {
-      x.asInstanceOf[Double]
-    }
-    else {
-      throw new IllegalArgumentException("Cannot convert " + x + " to a double.")
-    }
   }
 
   private def getDoubleWeightPairs(dataColumnIndex: Int,
+                                   dataType: DataType,
                                    weightsColumnIndexOption: Option[Int],
+                                   weightsTypeOption: Option[DataType],
                                    rowRDD: RDD[Row]): RDD[(Double, Double)] = {
 
-    val dataRDD: RDD[Double] = rowRDD.map(row => doubleConversion(row(dataColumnIndex)))
+    val dataRDD: RDD[Double] = rowRDD.map(row => dataType.asDouble(row(dataColumnIndex)))
 
     val weighted = !weightsColumnIndexOption.isEmpty
 
-    val weightsRDD =
-      if (weighted) rowRDD.map(row => doubleConversion(weightsColumnIndexOption.get)) else null
+    if (weightsColumnIndexOption.nonEmpty && weightsTypeOption.isEmpty) {
+      throw new IllegalArgumentException("Cannot specify weights column without specifying its datatype.")
+    }
+
+    val weightsRDD = if (weighted)
+      rowRDD.map(row => weightsTypeOption.get.asDouble(row(weightsColumnIndexOption.get)))
+    else
+      null
 
     if (weighted) dataRDD.zip(weightsRDD) else dataRDD.map(x => (x, 1.toDouble))
   }
+
 }

@@ -552,14 +552,15 @@ class SparkEngine(sparkContextManager: SparkContextManager,
 
     val valueDataType: DataType = realFrame.schema.columns(columnIndex)._2
 
-    val weightsColumnIndexOption = if (arguments.weightsColumn.isEmpty) {
-      None
+    val (weightsColumnIndexOption, weightsDataTypeOption) = if (arguments.weightsColumn.isEmpty) {
+      (None, None)
     }
     else {
-      Some(realFrame.schema.columnIndex(arguments.weightsColumn.get))
+      val weightsColumnIndex = realFrame.schema.columnIndex(arguments.weightsColumn.get)
+      (Some(weightsColumnIndex), Some(realFrame.schema.columns(weightsColumnIndex)._2))
     }
 
-    ColumnStatistics.columnMode(columnIndex, valueDataType, weightsColumnIndexOption, rdd)
+    ColumnStatistics.columnMode(columnIndex, valueDataType, weightsColumnIndexOption, weightsDataTypeOption, rdd)
   }
 
   /**
@@ -587,14 +588,17 @@ class SparkEngine(sparkContextManager: SparkContextManager,
 
     val columnIndex = realFrame.schema.columnIndex(arguments.dataColumn)
 
-    val weightsColumnIndexOption = if (arguments.weightsColumn.isEmpty) {
-      None
+    val valueDataType: DataType = realFrame.schema.columns(columnIndex)._2
+
+    val (weightsColumnIndexOption, weightsDataTypeOption) = if (arguments.weightsColumn.isEmpty) {
+      (None, None)
     }
     else {
-      Some(realFrame.schema.columnIndex(arguments.weightsColumn.get))
+      val weightsColumnIndex = realFrame.schema.columnIndex(arguments.weightsColumn.get)
+      (Some(weightsColumnIndex), Some(realFrame.schema.columns(weightsColumnIndex)._2))
     }
 
-    ColumnStatistics.columnMedian(columnIndex, weightsColumnIndexOption, rdd)
+    ColumnStatistics.columnMedian(columnIndex, valueDataType, weightsColumnIndexOption, weightsDataTypeOption, rdd)
   }
 
   /**
@@ -622,14 +626,17 @@ class SparkEngine(sparkContextManager: SparkContextManager,
 
     val columnIndex = frame.schema.columnIndex(arguments.dataColumn)
 
-    val weightsColumnIndexOption = if (arguments.weightsColumn.isEmpty) {
-      None
+    val valueDataType: DataType = frame.schema.columns(columnIndex)._2
+
+    val (weightsColumnIndexOption, weightsDataTypeOption) = if (arguments.weightsColumn.isEmpty) {
+      (None, None)
     }
     else {
-      Some(frame.schema.columnIndex(arguments.weightsColumn.get))
+      val weightsColumnIndex = frame.schema.columnIndex(arguments.weightsColumn.get)
+      (Some(weightsColumnIndex), Some(frame.schema.columns(weightsColumnIndex)._2))
     }
 
-    ColumnStatistics.columnSummaryStatistics(columnIndex, weightsColumnIndexOption, rdd)
+    ColumnStatistics.columnSummaryStatistics(columnIndex, valueDataType, weightsColumnIndexOption, weightsDataTypeOption, rdd)
   }
 
   /**
@@ -657,14 +664,17 @@ class SparkEngine(sparkContextManager: SparkContextManager,
 
     val columnIndex = frame.schema.columnIndex(arguments.dataColumn)
 
-    val weightsColumnIndexOption = if (arguments.weightsColumn.isEmpty) {
-      None
+    val valueDataType: DataType = frame.schema.columns(columnIndex)._2
+
+    val (weightsColumnIndexOption, weightsDataTypeOption) = if (arguments.weightsColumn.isEmpty) {
+      (None, None)
     }
     else {
-      Some(frame.schema.columnIndex(arguments.weightsColumn.get))
+      val weightsColumnIndex = frame.schema.columnIndex(arguments.weightsColumn.get)
+      (Some(weightsColumnIndex), Some(frame.schema.columns(weightsColumnIndex)._2))
     }
 
-    ColumnStatistics.columnFullStatistics(columnIndex, weightsColumnIndexOption, rdd)
+    ColumnStatistics.columnFullStatistics(columnIndex, valueDataType, weightsColumnIndexOption, weightsDataTypeOption, rdd)
   }
 
   def filter(arguments: FilterPredicate[JsObject, Long])(implicit user: UserPrincipal): Execution =
