@@ -103,7 +103,8 @@ class SparkEngine(sparkContextManager: SparkContextManager,
                   commands: CommandExecutor,
                   commandStorage: CommandStorage,
                   frames: SparkFrameStorage,
-                  graphs: GraphStorage) extends Engine
+                  graphs: GraphStorage,
+                  sparkAutoPartitioner: SparkAutoPartitioner) extends Engine
     with EventLogging
     with ClassLoaderAware {
 
@@ -177,7 +178,8 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     }
     else if (load.source.isFile) {
       val parser = load.source.parser.get
-      val parseResult = LoadRDDFunctions.loadAndParseLines(ctx.sparkContext, fsRoot + "/" + load.source.uri, parser)
+      val partitions = sparkAutoPartitioner.partitionsForFile(load.source.uri)
+      val parseResult = LoadRDDFunctions.loadAndParseLines(ctx.sparkContext, fsRoot + "/" + load.source.uri, parser, partitions)
 
       // parse failures go to their own data frame
       if (parseResult.errorLines.count() > 0) {
