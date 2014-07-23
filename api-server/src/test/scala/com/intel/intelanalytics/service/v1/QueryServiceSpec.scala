@@ -141,7 +141,7 @@ class QueryServiceSpec extends ServiceSpec {
                     |  "result": {
                     |    "data": [],
                     |    "page": 1,
-                    |    "totalPages": 5
+                    |    "total_pages": 5
                     |  },
                     |  "links": [{
                     |    "rel": "self",
