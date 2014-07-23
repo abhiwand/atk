@@ -88,4 +88,30 @@ case class Edge(var tailPhysicalId: Any, var headPhysicalId: Any, tailVertexGbId
     properties.find(p => p.key == key)
   }
 
+  /**
+   * Get a property value if this key exists and the value is String type
+   * @param key Property key
+   * @return Matching property value, or empty string is no such property
+   */
+  override def getStringPropertyValue(key: String): String = {
+    val result = for {
+      property <- this.getProperty(key)
+    } yield property.value.toString.toUpperCase
+    result.getOrElse("")
+  }
+
+  /**
+   * @return head vertex from this edge
+   */
+  def getHeadVertexGbId(): Property = {
+    this.headVertexGbId
+  }
+
+  /**
+   * @return tail vertex from this edge
+   */
+  def getTailVertexGbId(): Property = {
+    this.tailVertexGbId
+  }
+
 }
