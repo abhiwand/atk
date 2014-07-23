@@ -24,12 +24,12 @@
 package com.intel.intelanalytics.engine.spark
 
 import org.scalatest.{ BeforeAndAfterEach, Matchers, FlatSpec }
-import com.intel.intelanalytics.engine.TestingSparkContext
+import com.intel.testutils.TestingSparkContextFlatSpec
 import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.RDD
 import com.intel.intelanalytics.engine.spark.frame.RDDJoinParam
 
-class SparkJoinITest extends TestingSparkContext with Matchers {
+class SparkJoinITest extends TestingSparkContextFlatSpec with Matchers {
 
   "joinRDDs" should "join two RDD with inner join" in {
     val id_country_codes = List(Array[Any](1, 354), Array[Any](2, 91), Array[Any](3, 47), Array[Any](4, 968))
