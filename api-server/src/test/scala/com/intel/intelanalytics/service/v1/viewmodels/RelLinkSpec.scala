@@ -44,7 +44,7 @@ class RelLinkSpec extends FlatSpec with Matchers {
     }
     catch {
       case e: IllegalArgumentException => // pass
-      case _ => fail("expected exception not thrown")
+      case _: Exception => fail("expected exception not thrown")
     }
 
   }

@@ -38,7 +38,7 @@ class PercentileCalculationITest extends TestingSparkContextFlatSpec with Matche
       (Array[Any](24, "")), (Array[Any](12, "")), (Array[Any](2, "")), (Array[Any](14, "")), (Array[Any](25, ""))
     )
 
-    val rdd = sc.parallelize(numbers, 3)
+    val rdd = sparkContext.parallelize(numbers, 3)
     val result = SparkOps.calculatePercentiles(rdd, Seq(0, 3, 5, 40, 100), 0, DataTypes.int32)
     result.length shouldBe 5
     result(0) shouldBe Percentile(0, 1)
