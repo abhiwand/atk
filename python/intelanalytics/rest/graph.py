@@ -25,6 +25,8 @@ REST backend for graphs
 """
 import json
 import logging
+import uuid
+
 logger = logging.getLogger(__name__)
 
 from intelanalytics.core.graph import VertexRule, EdgeRule, BigGraph, Rule
@@ -77,7 +79,7 @@ class GraphBackendRest(object):
     #     """Deletes the graph from backing store"""
     #     raise NotImplemented
 
-    def create(self, graph,rules):
+    def create(self, graph,rules,name):
         logger.info("REST Backend: create graph: " + graph.name)
         if isinstance(rules, GraphInfo):
             initialize_graph(graph,rules)
@@ -91,6 +93,7 @@ class GraphBackendRest(object):
             payload = r.json()
             graph._id = payload['id']
             graph._uri = "%s" % (self._get_uri(payload))
+            graph._name = name or self._get_new_graph_name()
             payload = JsonPayload(graph, rules)
 
             if logger.level == logging.DEBUG:
@@ -100,6 +103,12 @@ class GraphBackendRest(object):
             self.load(graph, payload['frame_rules'], False)
         #execute_update_graph_command(graph, name = "graph/load", arguments=payload)
 
+    def _get_new_graph_name(source=None):
+        try:
+            annotation ="_" + source.annotation
+        except:
+            annotation= ''
+        return "graph_" + uuid.uuid4().hex + annotation
 
     def _get_uri(self, payload):
         links = payload['links']
