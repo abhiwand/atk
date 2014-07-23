@@ -38,7 +38,7 @@ import scala.concurrent.ExecutionContext
  */
 case class FunctionCommand[Arguments <: Product: JsonFormat: ClassManifest, Return <: Product: JsonFormat: ClassManifest](name: String,
                                                                                                                           function: (Arguments, UserPrincipal) => Return,
-                                                                                                                           numberOfJobsFunc: (Arguments) => Int)
+                                                                                                                          numberOfJobsFunc: (Arguments) => Int)
     extends CommandPlugin[Arguments, Return] {
 
   override def parseArguments(arguments: JsObject) = arguments.convertTo[Arguments]

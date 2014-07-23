@@ -51,6 +51,7 @@ class SparkProgressListener(val progressUpdater: CommandProgressUpdater) extends
   val stageIdToTasksComplete = HashMap[Int, Int]()
   val stageIdToTasksFailed = HashMap[Int, Int]()
   val commandIdJobs = new HashMap[Long, List[ActiveJob]]
+  val commandIdJobCount = new HashMap[Long, Int]()
 
   override def onJobStart(jobStart: SparkListenerJobStart) {
     val stages = addStageAndAncestorStagesToCollection(jobStart.job.finalStage)
@@ -67,6 +68,10 @@ class SparkProgressListener(val progressUpdater: CommandProgressUpdater) extends
       //update initial progress to 0
       progressUpdater.updateProgress(job.properties.getProperty("command-id").toLong, List(ProgressInfo(0.00f, Some(TaskProgressInfo(0)))))
     }
+  }
+
+  def setJobCountForCommand(commandId: Long, jobCount: Int) {
+    commandIdJobCount(commandId) = jobCount
   }
 
   /**
@@ -151,11 +156,28 @@ class SparkProgressListener(val progressUpdater: CommandProgressUpdater) extends
    */
   def getCommandProgress(commandId: Long): List[ProgressInfo] = {
     val jobList = commandIdJobs.getOrElse(commandId, throw new IllegalArgumentException(s"No such command: $commandId"))
-    jobList.map(job => {
+    val jobCount = commandIdJobCount(commandId)
+
+    var progress = 0f
+    var retriedCounts = 0
+
+    jobList.zip(1 to jobCount).foreach {
+      case (job, _) =>
+        progress += getProgress(job.jobId)
+        retriedCounts += getDetailedProgress(job.jobId).retries
+    }
+
+    val result = new ListBuffer[ProgressInfo]()
+    result += ProgressInfo(progress / jobCount.toFloat, Some(TaskProgressInfo(retriedCounts)))
+
+    for (i <- jobCount to (jobList.length - 1)) {
+      val job = jobList(i)
       val progress = getProgress(job.jobId)
       val taskInfo = getDetailedProgress(job.jobId)
-      ProgressInfo(progress, Some(taskInfo))
-    })
+      result += ProgressInfo(progress, Some(taskInfo))
+    }
+
+    result.toList
   }
 
   /**
