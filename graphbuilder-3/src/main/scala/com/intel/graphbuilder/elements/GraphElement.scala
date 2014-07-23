@@ -37,4 +37,12 @@ trait GraphElement {
    * @return Matching property
    */
   def getProperty(key: String): Option[Property]
+
+  /**
+   * Get a property value if this key exists and the value is String type
+   * @param key Property key
+   * @return Matching property value, or empty string is no such property
+   */
+  def getStringPropertyValue(key: String): String
+
 }
