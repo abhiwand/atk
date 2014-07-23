@@ -80,9 +80,9 @@ class RowParser(separator: Char, columnTypes: Array[DataType]) extends RegexPars
   lazy val doubleQuotes: Parser[String] = "\"" ~> "[^\"]+".r <~ "\""
   /** function to evaluate normal tokens*/
   lazy val unquotes = ("[^" + separator + "]+").r
-  /** function to evaluate normal tokens*/
+  /** function to evaluate space/s followed by single quote*/
   lazy val spaceWithSingleQuotes = space ~> "'" ~> "[^']+".r <~ "'" <~ space
-  /** function to evaluate normal tokens*/
+  /** function to evaluate space/s followed by double quote*/
   lazy val spaceWithQuotes = space ~> '"' ~> "[^\"]+".r <~ '"' <~ space
 
 }
