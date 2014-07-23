@@ -704,9 +704,9 @@ class BigFrame(CommandSupport):
 
         Parameters
         ----------
-            column_name : str
-                The column to calculate percentile
-            percentiles : int OR list of int. If float is provided, it will be rounded to int
+        column_name : str
+            The column to calculate percentile
+        percentiles : int OR list of int. If float is provided, it will be rounded to int
 
         Examples
         --------
