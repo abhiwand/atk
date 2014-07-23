@@ -70,7 +70,7 @@ class SparkQueryStorage(val metaStore: SlickMetaStoreComponent#SlickMetaStore, f
       case Some(q) => q.pageSize.getOrElse(SparkEngineConfig.pageSize.toLong).toInt
       case None => SparkEngineConfig.pageSize
     }
-    SparkOps.getElements[Any](rdd, pageId * pageSize, pageSize, pageSize)
+    SparkOps.getRows[Any](rdd, pageId * pageSize, pageSize, pageSize)
   }
 
   /**

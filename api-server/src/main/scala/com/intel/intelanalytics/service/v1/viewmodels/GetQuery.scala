@@ -39,9 +39,9 @@ import spray.json.JsObject
  */
 case class GetQuery(id: Long, name: String, arguments: Option[JsObject], error: Option[Error],
                     complete: Boolean, result: Option[GetQueryPage], links: List[RelLink]) {
-  require(id > 0)
-  require(name != null)
-  require(arguments != null)
-  require(links != null)
-  require(error != null)
+  require(id > 0, "id must be greater than 0")
+  require(name != null, "name must not be null")
+  require(arguments != null, "arguments may not be null")
+  require(links != null, "links may not be null")
+  require(error != null, "error must not be null")
 }

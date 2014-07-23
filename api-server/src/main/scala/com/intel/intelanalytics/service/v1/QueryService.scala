@@ -69,7 +69,7 @@ class QueryService(commonDirectives: CommonDirectives, engine: Engine) extends D
    * @param data iterable to return in response
    * @return JSON friendly version of data
    */
-  def updateData(data: Iterable[Any]): List[JsValue] = {
+  def dataToJson(data: Iterable[Any]): List[JsValue] = {
     import com.intel.intelanalytics.domain.DomainJsonProtocol._
     data match {
       case x: Iterable[Array[Any]] => {
@@ -124,14 +124,14 @@ class QueryService(commonDirectives: CommonDirectives, engine: Engine) extends D
 
                           val links = List(Rel.self(uri.toString()))
                           onComplete(engine.getQuery(id)) {
-                            case Success(Some(query)) => complete(if (query.complete) {
-
-                              val rdd = engine.getQueryPage(query.id, page - 1)
-                              QueryDecorator.decoratePage(uri.toString, links, query, page, updateData(rdd))
-                            }
-                            else {
-                              QueryDecorator.decorateEntity(uri.toString(), links, query)
-                            })
+                            case Success(Some(query)) =>
+                              complete(if (query.complete) {
+                                val rdd = engine.getQueryPage(query.id, page - 1)
+                                QueryDecorator.decoratePage(uri.toString, links, query, page, dataToJson(rdd))
+                              }
+                              else {
+                                QueryDecorator.decorateEntity(uri.toString(), links, query)
+                              })
                             case _ => reject()
                           }
                         }

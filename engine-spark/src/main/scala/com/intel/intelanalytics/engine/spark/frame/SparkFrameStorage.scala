@@ -160,7 +160,7 @@ class SparkFrameStorage(context: UserPrincipal => Context, fsRoot: String, files
       withMyClassLoader {
         val ctx = context(user).sparkContext
         val rdd: RDD[Row] = getFrameRdd(ctx, frame.id)
-        val rows = SparkOps.getElementsRdd[Row](rdd, offset, count)
+        val rows = SparkOps.getPagedRdd[Row](rdd, offset, count, -1)
         rows
       }
     }
