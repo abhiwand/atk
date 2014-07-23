@@ -222,6 +222,8 @@ class BigFrame(CommandSupport):
     def __getattr__(self, name):
         """After regular attribute access, try looking up the name of a column.
         This allows simpler access to columns for interactive use."""
+        if name == '_backend':
+            raise AttributeError('_backend')
         try:
             return super(BigFrame, self).__getattribute__(name)
         except AttributeError:

@@ -107,9 +107,9 @@ class SparkFrameStorage(context: UserPrincipal => Context, fsRoot: String, files
         }
     }
   }
-  override def renameColumn(frame: DataFrame, name_pairs: Seq[(String, String)]): DataFrame =
-    //withContext("frame.renameColumn") {
-    metaStore.withSession("frame.renameColumn") {
+  override def renameColumns(frame: DataFrame, name_pairs: Seq[(String, String)]): DataFrame =
+    //withContext("frame.renameColumns") {
+    metaStore.withSession("frame.renameColumns") {
       implicit session =>
         {
           val columnsToRename: Seq[String] = name_pairs.map(_._1)
