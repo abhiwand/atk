@@ -21,11 +21,33 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.domain.frame
+package com.intel.testutils
 
-case class FrameRenameColumn[+Arguments, FrameRef](frame: FrameRef, original_names: List[String], new_names: List[String]) {
-  require(frame != null, "frame is required")
-  require(original_names != null, "original column name(s) required")
-  require(new_names != null, "new column name(s) required")
-  require(original_names.size == new_names.size, "equal number of original names and new names required")
+import java.util.Date
+import org.apache.spark.{ SparkConf, SparkContext }
+import scala.concurrent.Lock
+
+/**
+ * This trait case be mixed into Specifications to create a SparkContext for testing.
+ * <p>
+ * IMPORTANT! This adds a couple seconds to your unit test!
+ * </p>
+ * <p>
+ * Lock is used because you can only have one local SparkContext running at a time.
+ * Other option is to use "parallelExecution in Test := false" but locking seems to be faster.
+ * </p>
+ * @deprecated we're switching to ScalaTest, shouldn't use Specs2 any more
+ */
+trait Specs2TestingSparkContext extends MultipleAfter {
+
+  lazy val sc = TestingSparkContext.sparkContext
+
+  /**
+   * Clean up after the test is done
+   */
+  override def after: Any = {
+    TestingSparkContext.cleanUp()
+    super.after
+  }
+
 }

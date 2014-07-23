@@ -1,11 +1,11 @@
 package com.intel.intelanalytics.engine.spark.graph.query.roc
 
-import com.intel.intelanalytics.engine.TestingSparkContext
+import com.intel.testutils.TestingSparkContextFlatSpec
 import org.scalatest.matchers.{ MatchResult, Matcher }
 import org.scalatest.{ FlatSpec, Matchers }
 import com.intel.testutils.MatcherUtils._
 
-class HistogramTest extends FlatSpec with Matchers with TestingSparkContext {
+class HistogramTest extends FlatSpec with Matchers with TestingSparkContextFlatSpec {
   val tolerance = 0.001
 
   "Histogram" should "create evenly-spaced buckets" in {

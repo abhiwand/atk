@@ -23,11 +23,11 @@
 
 package com.intel.intelanalytics.engine.spark
 
-import com.intel.intelanalytics.engine.TestingSparkContext
+import com.intel.testutils.TestingSparkContextFlatSpec
 import org.apache.spark.SparkException
 import org.scalatest.Matchers
 
-class BinColumnITest extends TestingSparkContext with Matchers {
+class BinColumnITest extends TestingSparkContextFlatSpec with Matchers {
 
   "binEqualWidth" should "append new column" in {
     // Input data

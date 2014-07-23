@@ -21,51 +21,11 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.spark.graphon
+package com.intel.intelanalytics.domain.frame
 
-import java.util.Date
-
-import com.intel.testutils._
-import org.apache.spark.{ SparkConf, SparkContext }
-import org.scalatest.{ BeforeAndAfterAll, WordSpec }
-
-trait GraphonSparkContext extends WordSpec with BeforeAndAfterAll {
-  LogUtils.silenceSpark()
-
-  val conf = new SparkConf()
-    .setMaster("local")
-    .setAppName(this.getClass.getSimpleName + " " + new Date())
-  conf.set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
-  conf.set("spark.kryo.registrator", "com.intel.graphbuilder.driver.spark.titan.GraphBuilderKryoRegistrator")
-
-  var sparkContext: SparkContext = null
-
-  override def beforeAll = {
-    // Ensure only one Spark local context is running at a time
-    TestingSparkContext.lock.acquire()
-    sparkContext = new SparkContext(conf)
-  }
-
-  /**
-   * Clean up after the test is done
-   */
-  override def afterAll = {
-    cleanupSpark()
-  }
-
-  /**
-   * Shutdown spark and release the lock
-   */
-  def cleanupSpark(): Unit = {
-    try {
-      if (sparkContext != null) {
-        sparkContext.stop()
-      }
-    }
-    finally {
-      // To avoid Akka rebinding to the same port, since it doesn't unbind immediately on shutdown
-      System.clearProperty("spark.driver.port")
-      TestingSparkContext.lock.release()
-    }
-  }
+case class FrameRenameColumns[+Arguments, FrameRef](frame: FrameRef, original_names: List[String], new_names: List[String]) {
+  require(frame != null, "frame is required")
+  require(original_names != null, "original column name(s) required")
+  require(new_names != null, "new column name(s) required")
+  require(original_names.size == new_names.size, "equal number of original names and new names required")
 }

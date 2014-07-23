@@ -21,66 +21,24 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.engine
+package com.intel.testutils
 
-import java.util.Date
 import org.apache.spark.SparkContext
-import scala.concurrent.Lock
 import org.scalatest.{ FlatSpec, BeforeAndAfter }
-import org.apache.log4j.{ Logger, Level }
-import org.scalacheck.Prop.{ False, True }
 
-trait TestingSparkContext extends FlatSpec with BeforeAndAfter {
-
-  val useGlobalSparkContext: Boolean = System.getProperty("useGlobalSparkContext", "false").toBoolean
+trait TestingSparkContextFlatSpec extends FlatSpec with BeforeAndAfter {
 
   var sc: SparkContext = null
 
   before {
-    if (useGlobalSparkContext) {
-      sc = TestingSparkContext.sc
-    }
-    else {
-      TestingSparkContext.lock.acquire()
-      sc = TestingSparkContext.createSparkContext
-    }
+    sc = TestingSparkContext.sparkContext
   }
 
   /**
    * Clean up after the test is done
    */
   after {
-    if (!useGlobalSparkContext) cleanupSpark()
+    TestingSparkContext.cleanUp()
   }
 
-  /**
-   * Shutdown spark and release the lock
-   */
-  private def cleanupSpark(): Unit = {
-    try {
-      if (sc != null) {
-        sc.stop()
-      }
-    }
-    finally {
-      // To avoid Akka rebinding to the same port, since it doesn't unbind immediately on shutdown
-      System.clearProperty("spark.driver.port")
-
-      TestingSparkContext.lock.release()
-    }
-  }
-}
-
-object TestingSparkContext {
-  private val lock = new Lock()
-  private lazy val sc: SparkContext = createSparkContext
-
-  def createSparkContext: SparkContext = {
-    setLogLevels(Level.WARN, Seq("spark", "org.eclipse.jetty", "akka"))
-    new SparkContext("local", "test " + new Date())
-  }
-
-  private def setLogLevels(level: org.apache.log4j.Level, loggers: TraversableOnce[String]): Unit = {
-    loggers.foreach(loggerName => Logger.getLogger(loggerName).setLevel(level))
-  }
 }
