@@ -414,10 +414,11 @@ class BigGraph(CommandSupport):
             self._backend = _get_backend()
         self._name = name or self._get_new_graph_name()
         self._uri = ""
-        self._backend.create(self,rules)
+        self._backend.create(self, rules)
 
         CommandSupport.__init__(self)
         #self.ml = GraphMachineLearning(self)
+        self.sampling = GraphSampling(self)
         logger.info('Created new graph "%s"', self._name)
 
     def __repr__(self):
@@ -508,6 +509,42 @@ class BigGraph(CommandSupport):
     #def remove(self, rules)
     #def add_props(self, rules)
     #def remove_props(self, rules)
+
+class GraphSampling(object):
+    """
+
+    .. versionadded:: 0.8
+
+    """
+
+    def __init__(self, graph):
+        self.graph = graph
+        if not hasattr(self, '_backend'):
+            self._backend = _get_backend()
+
+    def vertex_sample(self, size, sample_type, **kwargs):
+        """
+        Create a vertex induced subgraph obtained by vertex sampling.
+
+        Parameters
+        ----------
+        size : int
+            number of vertices to sample from the graph
+        sample_type : 'uniform', 'degree', or 'degreedist'
+            the type of vertex sample
+        seed : (optional) int
+            random seed value
+
+        Returns
+        -------
+        BigGraph
+            a new BigGraph object representing the vertex induced subgraph
+
+        Examples
+        --------
+
+        """
+        self._backend.vertex_sample(self.graph, size, sample_type, **kwargs)
 
 
 class GraphMachineLearning(object):

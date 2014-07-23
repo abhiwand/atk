@@ -67,7 +67,7 @@ class GraphBackendRest(object):
         payload = r.json()
         return [f['name'] for f in payload]
 
-    def get_graph(self,name):
+    def get_graph(self, name):
         logger.info("REST Backend: get_graph")
         r = http.get('graphs?name='+name)
         graph_info = GraphInfo(r.json())
@@ -129,6 +129,16 @@ class GraphBackendRest(object):
         json = r.json()
         logger.debug("REST Backend: run als response: " + json)
         return json
+
+    def vertex_sample(self, graph, size, sample_type, **kwargs):
+        arguments = {'graph': graph._id, 'size': size, 'sample_type': sample_type}
+        if 'seed' in kwargs:
+            arguments['seed'] = kwargs['seed']
+        command_name = 'graphs/sampling/vertex_sample'
+        command_request = CommandRequest(command_name, arguments)
+        command_info = executor.issue(command_request)
+        subgraph_name = command_info.result['name']
+        return self.get_graph(subgraph_name)
 
 
 class JsonAlsPayload(object):
