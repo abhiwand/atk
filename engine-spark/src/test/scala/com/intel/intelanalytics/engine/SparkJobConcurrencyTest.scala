@@ -1,10 +1,9 @@
 package com.intel.intelanalytics.engine.spark
 
 import org.scalatest.Matchers
-import org.apache.spark.engine.{ ProgressPrinter, SparkProgressListener }
+import org.apache.spark.engine.SparkProgressListener
 import java.util.concurrent.Semaphore
-import com.intel.intelanalytics.engine.spark.{ CommandProgressUpdater, SparkOps }
-import com.intel.intelanalytics.engine.{ ProgressInfo, TaskProgressInfo, TestingSparkContext }
+import com.intel.intelanalytics.engine.{ ProgressInfo, TestingSparkContext }
 import java.io.File
 import org.apache.commons.io.FileUtils
 
