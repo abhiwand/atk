@@ -58,9 +58,6 @@ trait Engine {
    */
   def getCommandDefinitions()(implicit user: UserPrincipal): Iterable[CommandDefinition]
 
-  //TODO: We'll probably return an Iterable[Vertex] instead of rows at some point.
-  def getVertices(graph: Identifier, offset: Int, count: Int, queryName: String, parameters: Map[String, String]): Future[Iterable[Row]]
-
   def getCommands(offset: Int, count: Int): Future[Seq[Command]]
 
   def getCommand(id: Identifier): Future[Option[Command]]
@@ -76,6 +73,8 @@ trait Engine {
   def filter(arguments: FilterPredicate[JsObject, Long])(implicit user: UserPrincipal): Execution
 
   def project(arguments: FrameProject[JsObject, Long])(implicit user: UserPrincipal): Execution
+
+  def assignSample(arguments: AssignSample)(implicit user: UserPrincipal): Execution
 
   def renameFrame(arguments: FrameRenameFrame)(implicit user: UserPrincipal): Execution
 

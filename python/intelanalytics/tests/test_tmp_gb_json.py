@@ -20,13 +20,13 @@ class TestGraphBackendRest(unittest.TestCase):
 
     expected_json_str_raw = """
 {
-    "graphName":  "movieGraph",
-    "dataFrameId": 1,
-    "outputConfig" : { "storeName" : "Titan",
+    "graph_name":  "movieGraph",
+    "data_frame_id": 1,
+    "output_config" : { "storeName" : "Titan",
                        "configuration" : {}
                       },
 
-    "vertexRules" : [
+    "vertex_rules" : [
 
       {"id" : { "key" : { "source" : "CONSTANT", "value" : "user" },
                   "value" : { "source" : "VARYING", "value" : "user" }  },
@@ -40,7 +40,7 @@ class TestGraphBackendRest(unittest.TestCase):
       }
       ],
 
-    "edgeRules"   : [
+    "edge_rules"   : [
 
      {   "head": { "key" : { "source" : "CONSTANT", "value" : "user" },
                   "value" : { "source" : "VARYING", "value" : "user" }  },
@@ -54,7 +54,7 @@ class TestGraphBackendRest(unittest.TestCase):
     ],
 
 
-    "retainDanglingEdges" : false,
+    "retain_dangling_edges" : false,
     "bidirectional" : false
 }"""
     expected_json_str = get_sorted_json_str_from_str(expected_json_str_raw)
@@ -77,7 +77,7 @@ class TestGraphBackendRest(unittest.TestCase):
                                        "hardcoded.com:9999/v1/dataframes/0")
 
         movie_vertex = VertexRule("movie", frame.movie)
-        user_vertex = VertexRule("user", frame.user, {"vertexType": frame.vertexType})
+        user_vertex = VertexRule("user", frame.user, {"vertex_type": frame.vertexType})
         rules = [user_vertex,
                  movie_vertex,
                  EdgeRule('rating',

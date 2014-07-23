@@ -24,6 +24,8 @@
 package com.intel.intelanalytics.engine.spark.frame
 
 import util.parsing.combinator.RegexParsers
+import com.intel.intelanalytics.domain.schema.DataTypes.DataType
+import com.intel.intelanalytics.domain.schema.DataTypes
 
 /**
  * Split a string based on delimiter into List[String]
@@ -37,14 +39,33 @@ import util.parsing.combinator.RegexParsers
  *
  * @param separator delimiter character
  */
-class RowParser(separator: Char) extends RegexParsers with Serializable {
+class RowParser(separator: Char, columnTypes: Array[DataType]) extends RegexParsers with Serializable {
 
   override def skipWhitespace = false
+
+  val converter = DataTypes.parseMany(columnTypes)(_)
+
+  /**
+   * Parse a line into a RowParseResult
+   * @param line a single line
+   * @return the result - either a success row or an error row
+   */
+  def apply(line: String): RowParseResult = {
+    try {
+      val parts = splitLineIntoParts(line)
+      RowParseResult(parseSuccess = true, converter(parts))
+    }
+    catch {
+      case e: Exception =>
+        RowParseResult(parseSuccess = false, Array(line, e.toString))
+    }
+  }
+
   /**
    * Apply method parses the string and returns a list of String tokens
    * @param line to be parsed
    */
-  def apply(line: String): Array[String] = parseAll(record, line) match {
+  def splitLineIntoParts(line: String): Array[String] = parseAll(record, line) match {
     case Success(result, _) => result.toArray
     case failure: NoSuccess => { throw new Exception("Parse Failed") }
   }
