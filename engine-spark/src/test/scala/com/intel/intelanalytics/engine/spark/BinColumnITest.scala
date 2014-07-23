@@ -37,7 +37,7 @@ class BinColumnITest extends TestingSparkContextFlatSpec with Matchers {
       Array[Any]("C", 3),
       Array[Any]("D", 4),
       Array[Any]("E", 5))
-    val rdd = sc.parallelize(inputList)
+    val rdd = sparkContext.parallelize(inputList)
 
     // Get binned results
     val binnedRdd = SparkOps.binEqualWidth(1, 2, rdd)
@@ -59,7 +59,7 @@ class BinColumnITest extends TestingSparkContextFlatSpec with Matchers {
       Array[Any]("C", 3),
       Array[Any]("D", 4),
       Array[Any]("E", 5))
-    val rdd = sc.parallelize(inputList)
+    val rdd = sparkContext.parallelize(inputList)
 
     // Get binned results
     val binnedRdd = SparkOps.binEqualWidth(1, 2, rdd)
@@ -77,7 +77,7 @@ class BinColumnITest extends TestingSparkContextFlatSpec with Matchers {
       Array[Any]("D", 3),
       Array[Any]("E", 4),
       Array[Any]("F", 4.5))
-    val rdd = sc.parallelize(inputList, 2)
+    val rdd = sparkContext.parallelize(inputList, 2)
 
     // Get binned results
     val binnedRdd = SparkOps.binEqualWidth(1, 4, rdd)
@@ -101,7 +101,7 @@ class BinColumnITest extends TestingSparkContextFlatSpec with Matchers {
       Array[Any]("D", 3),
       Array[Any]("E", 4),
       Array[Any]("F", 4.5))
-    val rdd = sc.parallelize(inputList)
+    val rdd = sparkContext.parallelize(inputList)
 
     // Get binned results
     an[IllegalArgumentException] shouldBe thrownBy(SparkOps.binEqualWidth(1, 0, rdd))
@@ -116,7 +116,7 @@ class BinColumnITest extends TestingSparkContextFlatSpec with Matchers {
       Array[Any]("D", 3),
       Array[Any]("E", 4),
       Array[Any]("F", 4.5))
-    val rdd = sc.parallelize(inputList)
+    val rdd = sparkContext.parallelize(inputList)
 
     // Get binned results
     a[SparkException] shouldBe thrownBy(SparkOps.binEqualWidth(0, 4, rdd))
@@ -135,7 +135,7 @@ class BinColumnITest extends TestingSparkContextFlatSpec with Matchers {
       Array[Any]("H", 8),
       Array[Any]("I", 9),
       Array[Any]("J", 10))
-    val rdd = sc.parallelize(inputList, 2)
+    val rdd = sparkContext.parallelize(inputList, 2)
 
     // Get binned results
     val binnedRdd = SparkOps.binEqualWidth(1, 20, rdd) // note this creates bins of width 0.55 for this dataset
@@ -162,7 +162,7 @@ class BinColumnITest extends TestingSparkContextFlatSpec with Matchers {
       Array[Any]("C", 3),
       Array[Any]("D", 4),
       Array[Any]("E", 5))
-    val rdd = sc.parallelize(inputList, 2)
+    val rdd = sparkContext.parallelize(inputList, 2)
 
     // Get binned results
     val binnedRdd = SparkOps.binEqualDepth(1, 2, rdd)
@@ -184,7 +184,7 @@ class BinColumnITest extends TestingSparkContextFlatSpec with Matchers {
       Array[Any]("C", 3),
       Array[Any]("D", 4),
       Array[Any]("E", 5))
-    val rdd = sc.parallelize(inputList, 2)
+    val rdd = sparkContext.parallelize(inputList, 2)
 
     // Get binned results
     val binnedRdd = SparkOps.binEqualDepth(1, 2, rdd)
@@ -201,7 +201,7 @@ class BinColumnITest extends TestingSparkContextFlatSpec with Matchers {
       Array[Any]("C", 1),
       Array[Any]("D", 1),
       Array[Any]("E", 5))
-    val rdd = sc.parallelize(inputList, 2)
+    val rdd = sparkContext.parallelize(inputList, 2)
 
     // Get binned results
     val binnedRdd = SparkOps.binEqualDepth(1, 3, rdd)
@@ -224,7 +224,7 @@ class BinColumnITest extends TestingSparkContextFlatSpec with Matchers {
       Array[Any]("D", 1.6),
       Array[Any]("E", 3),
       Array[Any]("F", 6))
-    val rdd = sc.parallelize(inputList, 2)
+    val rdd = sparkContext.parallelize(inputList, 2)
 
     // Get binned results
     val binnedRdd = SparkOps.binEqualDepth(1, 3, rdd)
@@ -252,7 +252,7 @@ class BinColumnITest extends TestingSparkContextFlatSpec with Matchers {
       Array[Any]("H", 8),
       Array[Any]("I", 9),
       Array[Any]("J", 10))
-    val rdd = sc.parallelize(inputList, 2)
+    val rdd = sparkContext.parallelize(inputList, 2)
 
     // Get binned results
     val binnedRdd = SparkOps.binEqualDepth(1, 2, rdd)
@@ -284,7 +284,7 @@ class BinColumnITest extends TestingSparkContextFlatSpec with Matchers {
       Array[Any]("H", 8),
       Array[Any]("I", 9),
       Array[Any]("J", 10))
-    val rdd = sc.parallelize(inputList, 2)
+    val rdd = sparkContext.parallelize(inputList, 2)
 
     // Get binned results
     val binnedRdd = SparkOps.binEqualDepth(1, 20, rdd)

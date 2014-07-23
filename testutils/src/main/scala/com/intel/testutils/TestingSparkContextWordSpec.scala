@@ -7,14 +7,15 @@ trait TestingSparkContextWordSpec extends WordSpec with BeforeAndAfterAll {
 
   var sparkContext: SparkContext = null
 
-  override def beforeAll = {
+  override def beforeAll() = {
     sparkContext = TestingSparkContext.sparkContext
   }
 
   /**
    * Clean up after the test is done
    */
-  override def afterAll = {
+  override def afterAll() = {
+    sparkContext = null
     TestingSparkContext.cleanUp()
   }
 
