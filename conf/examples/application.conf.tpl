@@ -43,8 +43,6 @@ intel.analytics {
       # For example, if using HDFS, set the root to hdfs path
       # root = "hdfs://MASTER_HOSTNAME/some/path"
       #
-      # If running in local mode, this might be a better choice:
-      //root = ${user.home}
       root = "hdfs://localhost/user/iauser"
     }
 
