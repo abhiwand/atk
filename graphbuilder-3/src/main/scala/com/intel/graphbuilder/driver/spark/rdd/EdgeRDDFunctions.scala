@@ -71,14 +71,14 @@ class EdgeRDDFunctions(self: RDD[Edge], val maxEdgesPerCommit: Long = 50000L) ex
    * For every Edge, output its head Vertex GbId
    */
   def headVerticesGbIds(): RDD[Property] = {
-    self.map(edge => edge.getHeadVertexGbId() /*.value.toString*/ )
+    self.map(edge => edge.getHeadVertexGbId())
   }
 
   /**
    * For every Edge, output its tail Vertex GbId
    */
   def tailVerticesGbIds(): RDD[Property] = {
-    self.map(edge => edge.getTailVertexGbId() /*.value.toString*/ )
+    self.map(edge => edge.getTailVertexGbId())
   }
 
   /**
