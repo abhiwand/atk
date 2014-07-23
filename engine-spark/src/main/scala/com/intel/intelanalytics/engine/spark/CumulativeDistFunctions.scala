@@ -151,12 +151,12 @@ private[spark] object CumulativeDistFunctions extends Serializable {
    * Compute the sum for each partition in RDD
    *
    * @param rdd the input RDD
-   * @return an Array[Double] that contains the partition sums
+   * @return an Map[Int, Double] that maps the partition index to the partition sums
    */
-  private def partitionSums(rdd: RDD[(Row, Double)]): Array[Double] = {
+  private def partitionSums(rdd: RDD[(Row, Double)]): Map[Int, Double] = {
     0.0 +: rdd.mapPartitionsWithIndex {
-      case (index, partition) => Iterator(partition.map(pair => pair._2).sum)
-    }.collect()
+      case (index, partition) => Iterator((index, partition.map(pair => pair._2).sum))
+    }.collect().toMap
   }
 
   /**
@@ -166,7 +166,7 @@ private[spark] object CumulativeDistFunctions extends Serializable {
    * @param partSums the sums for each partition
    * @return RDD of (value, cumulativeSum)
    */
-  private def totalPartitionSums(rdd: RDD[(Row, Double)], partSums: Array[Double]): RDD[(Row, Double)] = {
+  private def totalPartitionSums(rdd: RDD[(Row, Double)], partSums: Map[Int, Double]): RDD[(Row, Double)] = {
     rdd.mapPartitionsWithIndex {
       case (index, partition) => {
         var startValue = 0.0
@@ -186,7 +186,7 @@ private[spark] object CumulativeDistFunctions extends Serializable {
    * @param partSums the counts for each partition
    * @return RDD of (value, cumulativeCount)
    */
-  private def totalPartitionCounts(rdd: RDD[(Row, Double)], partSums: Array[Double]): RDD[(Row, Double)] = {
+  private def totalPartitionCounts(rdd: RDD[(Row, Double)], partSums: Map[Int, Double]): RDD[(Row, Double)] = {
     rdd.mapPartitionsWithIndex {
       case (index, partition) => {
         var startValue = 0.0
