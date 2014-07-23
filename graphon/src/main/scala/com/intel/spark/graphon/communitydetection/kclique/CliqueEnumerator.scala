@@ -216,6 +216,7 @@ object CliqueEnumerator {
 
     val verticesInAdjListForm: RDD[VertexInAdjacencyFormat] = data
 
+    //Derive the edge list from the parse adjacency list of vertices Ids
     val edgeList: RDD[Edge] = createEdgeListFromParsedAdjList(verticesInAdjListForm)
 
     applyToEdgeList(edgeList, K)
