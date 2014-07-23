@@ -1,11 +1,11 @@
 package com.intel.intelanalytics.engine.spark
 
 import org.scalatest.{ BeforeAndAfterEach, Matchers, FlatSpec }
-import com.intel.intelanalytics.engine.TestingSparkContext
 import org.apache.spark.rdd.RDD
 import org.apache.spark.SparkContext._
+import com.intel.testutils.TestingSparkContextFlatSpec
 
-class DropDuplicatesITest extends FlatSpec with Matchers with BeforeAndAfterEach with TestingSparkContext {
+class DropDuplicatesITest extends FlatSpec with Matchers with BeforeAndAfterEach with TestingSparkContextFlatSpec {
   "removeDuplicatesByKey" should "keep only 1 rows per key" in {
 
     //setup test data

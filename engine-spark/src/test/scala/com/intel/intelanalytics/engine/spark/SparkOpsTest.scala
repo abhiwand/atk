@@ -23,12 +23,12 @@
 
 package com.intel.intelanalytics.engine.spark
 
-import com.intel.intelanalytics.engine.TestingSparkContext
+import com.intel.testutils.TestingSparkContextFlatSpec
 import org.scalatest.Matchers
 
 import scala.collection.mutable.ArrayBuffer
 
-class SparkOpsTest extends TestingSparkContext with Matchers {
+class SparkOpsTest extends TestingSparkContextFlatSpec with Matchers {
 
   val max = 20
   val array = (1 to max * 2).map(i => Array(i, i.toString, i.toDouble * 0.1))

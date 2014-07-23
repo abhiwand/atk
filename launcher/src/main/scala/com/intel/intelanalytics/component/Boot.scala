@@ -213,14 +213,23 @@ object Boot extends App with ClassLoaderAware {
    * @return Array of URLs to the found class folder and jar files
    */
   def getCodePathUrls(archive: String): Array[URL] = {
-    //TODO: Allow directory to be passed in, or otherwise abstracted?
-    //TODO: Make sensitive to actual scala version rather than hard coding.
+    // Development environment support - loose class files, source resources, jars where initially built
     val classDirectory: Path = Directory.Current.get / archive / "target" / "classes"
-    val giraphClassDirectory: Path = Directory.Current.get / "igiraph" / archive.substring(1) / "target" / "classes"
+    val sourceResourceDirectory: Path = Directory.Current.get / archive / "src" / "main" / "resources"
     val developmentJar: Path = Directory.Current.get / archive / "target" / (archive + ".jar")
+
+    //Special case for igiraph since it follows a non-standard folder layout
+    val giraphClassDirectory: Path = Directory.Current.get / "igiraph" / archive.substring(1) / "target" / "classes"
     val giraphJar: Path = Directory.Current.get / "igiraph" / archive.substring(1) / "target" / (archive + ".jar")
+
+    // Deployed environment - all jars in lib folder
     val deployedJar: Path = Directory.Current.get / "lib" / (archive + ".jar")
+
     val urls = Array(
+      Directory(sourceResourceDirectory).exists.option {
+        Archive.logger(s"Found source resource directory at $sourceResourceDirectory")
+        sourceResourceDirectory.toURL
+      },
       Directory(classDirectory).exists.option {
         Archive.logger(s"Found class directory at $classDirectory")
         classDirectory.toURL
