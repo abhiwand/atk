@@ -7,8 +7,8 @@ import scala.reflect.ClassTag
 
 /**
  * Calculate order statistics for any weighted RDD of data that provides an ordering function.
- * @param dataWeightPairs RDD of (data, weight) pairs
- * @param ordering Ordering on the data items
+ * @param dataWeightPairs RDD of (data, weight) pairs.
+ * @param ordering Ordering on the data items.
  * @tparam T The type of the data objects. It must have an ordering function in scope.
  */
 class OrderStatistics[T: ClassTag](dataWeightPairs: RDD[(T, Double)])(implicit ordering: Ordering[T])
