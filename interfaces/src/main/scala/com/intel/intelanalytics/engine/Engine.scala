@@ -59,9 +59,6 @@ trait Engine {
    */
   def getCommandDefinitions()(implicit user: UserPrincipal): Iterable[CommandDefinition]
 
-  //TODO: We'll probably return an Iterable[Vertex] instead of rows at some point.
-  def getVertices(graph: Identifier, offset: Int, count: Int, queryName: String, parameters: Map[String, String]): Future[Iterable[Row]]
-
   def getCommands(offset: Int, count: Int): Future[Seq[Command]]
 
   def getCommand(id: Identifier): Future[Option[Command]]
