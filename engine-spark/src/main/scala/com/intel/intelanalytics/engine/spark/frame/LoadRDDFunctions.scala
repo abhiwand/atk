@@ -26,7 +26,7 @@ object LoadRDDFunctions extends Serializable {
     parseSampleOfFile(sc, fileName, parser)
 
     // re-parse the entire file
-    parse(sc.textFile(fileName, SparkEngineConfig.sparkDefaultPartitions), parser)
+    parse(sc.textFile(fileName, SparkEngineConfig.sparkDefaultPartitions).filter(_.trim() != ""), parser)
 
   }
 
