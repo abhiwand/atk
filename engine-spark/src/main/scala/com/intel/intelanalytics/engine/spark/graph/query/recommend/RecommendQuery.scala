@@ -88,12 +88,12 @@ class RecommendQuery extends SparkCommandPlugin[RecommendParams, RecommendResult
     val outputVertexPropertyList = arguments.output_vertex_property_list.getOrElse(
       config.getString("output_vertex_property_list"))
     val resultPropertyList = outputVertexPropertyList.split(pattern)
-    val vectorValue = arguments.vector_value.getOrElse(config.getString("vector_value"))
-    val biasOn = arguments.bias_on.getOrElse(config.getString("bias_on"))
+    val vectorValue = arguments.vector_value.getOrElse(config.getString("vector_value")).toBoolean
+    val biasOn = arguments.bias_on.getOrElse(config.getString("bias_on")).toBoolean
     require(resultPropertyList.size >= 1,
       "Please input at least one vertex property name for ALS/CGD results")
-    require(vectorValue == "false" || biasOn == "false" ||
-      (vectorValue == "true" && biasOn == "true" && resultPropertyList.size == 2),
+    require(!vectorValue || !biasOn ||
+      (vectorValue && biasOn && resultPropertyList.size == 2),
       "Please input one property name for bias and one property name for results when both vector_value " +
         "and bias_on are enabled")
 
@@ -206,7 +206,7 @@ class RecommendQuery extends SparkCommandPlugin[RecommendParams, RecommendResult
       sourceVertex, resultPropertyList, vectorValue, biasOn)
 
     val ratingResultRDD = RecommendFeatureVector
-      .predict(sourceVector, targetVectorRDD)
+      .predict(sourceVector, targetVectorRDD, biasOn)
       .collect()
       .sortBy(-_.score)
       .take(numOutputResults)
