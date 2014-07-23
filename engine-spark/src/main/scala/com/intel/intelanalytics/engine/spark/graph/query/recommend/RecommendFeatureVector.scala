@@ -59,18 +59,18 @@ object RecommendFeatureVector {
    * @return Array of feature probabilities
    */
   def parseResultArray(graphElement: GraphElement, resultPropertyList: Array[String],
-                       vectorValue: String, biasOn: String, sep: String = ","): Array[Double] = {
+                       vectorValue: Boolean, biasOn: Boolean, sep: String = ","): Array[Double] = {
     val results = ArrayBuffer[Double]()
     val length = resultPropertyList.length
     var valueLength = length
 
-    if (biasOn == "true") {
+    if (biasOn) {
       results += parseDoubleValue(graphElement, resultPropertyList(length - 1))
       valueLength = length - 1
     }
 
     //then add the results
-    if (vectorValue == "true") {
+    if (vectorValue) {
       results ++= parseDoubleArray(graphElement, resultPropertyList(0), sep)
     }
     else {
@@ -88,18 +88,32 @@ object RecommendFeatureVector {
    * @param targetVectorRDD  RDD of (vertexId, resultVector) pairs.
    * @return RDD of (vertexId, score) pairs.
    */
-  def predict(sourceVector: Array[Double], targetVectorRDD: RDD[TargetTuple]): RDD[Rating] = {
-    val sourceVectorValue = new DoubleMatrix(sourceVector)
+  def predict(sourceVector: Array[Double], targetVectorRDD: RDD[TargetTuple], biasOn: Boolean): RDD[Rating] = {
+    var sum = if (biasOn) {
+      sourceVector.head
+    } else 0
+
+    val sourceVectorValue = if (biasOn) {
+      new DoubleMatrix(sourceVector.tail)
+    } else new DoubleMatrix(sourceVector)
+
     targetVectorRDD.map {
       case targetTuple =>
-        {
+      {
           val targetVector = targetTuple.resultVector
           if (sourceVector.size != targetVector.size) {
             throw new RuntimeException("the vector size of left-side vertex and right-side vertex does not match")
           }
-          val targetVectorValue = new DoubleMatrix(targetVector)
-          Rating(targetTuple.targetVertexId, sourceVectorValue.dot(targetVectorValue))
-        }
+          val targetVectorValue = if (biasOn) {
+            new DoubleMatrix(targetVector.tail)
+          } else new DoubleMatrix(targetVector)
+
+          sum = if (biasOn) {
+            sum + targetVector.head + sourceVectorValue.dot(targetVectorValue)
+          } else sourceVectorValue.dot(targetVectorValue)
+
+          Rating(targetTuple.targetVertexId, sum)
+      }
     }
   }
 
