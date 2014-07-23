@@ -38,7 +38,6 @@ import scala.util.Try
 import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 import com.intel.intelanalytics.engine.ProgressInfo
-import com.intel.intelanalytics.engine.ProgressInfo
 import scala.Some
 import com.intel.intelanalytics.domain.frame.DataFrameTemplate
 import com.intel.intelanalytics.domain.User
@@ -53,6 +52,7 @@ import com.intel.intelanalytics.domain.graph.GraphTemplate
 import com.intel.intelanalytics.domain.UserTemplate
 
 trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
+
   msc: MetaStoreComponent with DbProfileComponent =>
 
   import com.intel.intelanalytics.domain.DomainJsonProtocol._
@@ -79,13 +79,8 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
     { string => JsonParser(string).convertTo[Error] }
   )
 
-  implicit val commandProgressType = MappedColumnType.base[List[Float], String](
+  implicit val commandProgressType = MappedColumnType.base[List[ProgressInfo], String](
     { progress => progress.toJson.prettyPrint },
-    { string => JsonParser(string).convertTo[List[Float]] }
-  )
-
-  implicit val detailedProgressType = MappedColumnType.base[List[ProgressInfo], String](
-    { detailedProgress => detailedProgress.toJson.prettyPrint },
     { string => JsonParser(string).convertTo[List[ProgressInfo]] }
   )
 
@@ -468,9 +463,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
 
       def error = column[Option[Error]]("error")
 
-      def progress = column[List[Float]]("progress")
-
-      def detailedProgress = column[List[ProgressInfo]]("detailed_progress")
+      def progress = column[List[ProgressInfo]]("progress")
 
       def complete = column[Boolean]("complete", O.Default(false))
 
@@ -483,7 +476,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
       def createdById = column[Option[Long]]("created_by")
 
       /** projection to/from the database */
-      def * = (id, name, arguments, error, progress, detailedProgress, complete, result, createdOn, modifiedOn, createdById) <> (Command.tupled, Command.unapply)
+      def * = (id, name, arguments, error, progress, complete, result, createdOn, modifiedOn, createdById) <> (Command.tupled, Command.unapply)
 
       def createdBy = foreignKey("command_created_by", createdById, users)(_.id)
     }
@@ -496,7 +489,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
 
     override def insert(command: CommandTemplate)(implicit session: Session): Try[Command] = Try {
       // TODO: add createdBy user id
-      val c = Command(0, command.name, command.arguments, None, List(), List(), false, None, new DateTime(), new DateTime(), None)
+      val c = Command(0, command.name, command.arguments, None, List(), false, None, new DateTime(), new DateTime(), None)
       commandsAutoInc.insert(c)
     }
 
@@ -549,9 +542,18 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
      * @param progress progress for the command
      * @param session session to db
      */
-    override def updateProgress(id: Long, progress: List[Float], detailedProgress: List[ProgressInfo])(implicit session: Session): Try[Unit] = Try {
-      val q = for { c <- commands if c.id === id } yield (c.progress, c.detailedProgress)
-      q.update(progress, detailedProgress)
+    override def updateProgress(id: Long, progress: List[ProgressInfo])(implicit session: Session): Try[Unit] = Try {
+      //doing 2 updates with different filter conditions
+      //this is to make sure not to set the progress to lower value
+      //if new progress event is sent to the listener while the progress
+      //has been set to 100 earlier in the complete method.
+
+      //doing two queries instead of just one and analyze the content is to avoid race condition
+      //for example another thread update the row after the query and before the update.
+
+      //TODO: verify slick generate a single command for the query and update
+      val q = for { c <- commands if c.id === id && c.complete === false } yield c.progress
+      q.update(progress)
     }
   }
 

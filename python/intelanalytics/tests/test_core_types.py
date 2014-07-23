@@ -27,18 +27,81 @@ import unittest
 from intelanalytics.core.iatypes import *
 
 
-class SupportedTypes(unittest.TestCase):
+class ValidDataTypes(unittest.TestCase):
 
-    def test_supported_types(self):
-        self.assertTrue(ignore not in supported_types)
-        self.assertTrue(string in supported_types)
-        self.assertTrue(int32 in supported_types)
-        self.assertTrue(int not in supported_types)
-        self.assertTrue(float not in supported_types)
+    def test_is_frozenset(self):
+        self.assertTrue(isinstance(valid_data_types, frozenset))
 
-    def test_supported_types_repr(self):
-        self.assertEqual(len(supported_types.__repr__().split(',')),
-                         len(supported_types))
+    def test_contains(self):
+        self.assertTrue(int32 in valid_data_types)
+        self.assertTrue(float64 in valid_data_types)
+        self.assertFalse(dict in valid_data_types)  # not supported yet!
+        self.assertFalse(list in valid_data_types)  # not supported yet!
+        self.assertFalse(int in valid_data_types)
+        self.assertFalse(float in valid_data_types)
+        self.assertFalse(ignore in valid_data_types)
+        self.assertFalse(unknown in valid_data_types)
+
+    def test_repr(self):
+        r = valid_data_types.__repr__()
+        self.assertTrue(len(valid_data_types) > 0)
+        self.assertEqual(len(r.split(',')), len(valid_data_types))
+
+    def test_get_from_string(self):
+        self.assertEqual(int64, valid_data_types.get_from_string("int64"))
+        self.assertEqual(int32, valid_data_types.get_from_string("int32"))
+        self.assertEqual(str, valid_data_types.get_from_string("str"))
+        for bad_str in ["int", "string"]:
+            try:
+                valid_data_types.get_from_string(bad_str)
+            except ValueError:
+                pass
+            else:
+                self.fail("Expected exception!")
+
+    def test_get_from_type(self):
+        self.assertEqual(int64, valid_data_types.get_from_type(int64))
+        self.assertEqual(float64, valid_data_types.get_from_type(float))
+        try:
+            valid_data_types.get_from_type(ignore)
+        except ValueError:
+            pass
+        else:
+            self.fail("Expected exception!")
+
+    def test_validate(self):
+        valid_data_types.validate(float64)
+        valid_data_types.validate(int)
+        try:
+            valid_data_types.validate(ignore)
+        except ValueError:
+            pass
+        else:
+            self.fail("Expected exception!")
+
+
+    def test_to_string(self):
+        self.assertEqual('int32', valid_data_types.to_string(int32))
+        self.assertEqual('float64', valid_data_types.to_string(float64))
+        self.assertEqual('str', valid_data_types.to_string(str))
+        try:
+            valid_data_types.to_string(ignore)
+        except ValueError:
+            pass
+        else:
+            self.fail("Expected exception!")
+
+    def test_cast(self):
+        self.assertEqual(float32(1.0), valid_data_types.cast(1.0, float32))
+        self.assertEqual('jim', valid_data_types.cast('jim', str))
+        self.assertTrue(valid_data_types.cast(None, unicode) is None)
+        try:
+            valid_data_types.cast(3, set)
+        except ValueError:
+            pass
+        else:
+            self.fail("Expected exception!")
+
 
 if __name__ == '__main__':
     unittest.main()
