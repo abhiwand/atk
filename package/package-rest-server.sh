@@ -56,7 +56,7 @@ echo copy new jar
 pwd
 
 
-
+cp -Rv vm/salt/salt/base/intelanalytics-rest-server/examples $SCRIPTPATH/tarballs/$package/usr/lib/intelanalytics/rest-server/
 cp -v launcher/launcher.jar $SCRIPTPATH/tarballs/$package/usr/lib/intelanalytics/rest-server/
 rm -rf launcher
 cp -v ../conf/examples/application.conf.tpl tarballs/$package/etc/intelanalytics/rest-server
