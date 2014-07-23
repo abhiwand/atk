@@ -795,40 +795,57 @@ class BigFrame(CommandSupport):
         except:
             raise IaError(logger)
 
-    def count(self):
+    def get_error_frame(self):
         """
-        Row count.
-
-        Count the number of rows that exist in this object.
-
-        Raises
-        ------
-        IaError
+        When a frame is loaded, parse errors go into a separate data frame so they can be
+        inspected.  No error frame is created if there were no parse errors.
 
         Returns
         -------
-        int32
-            The number of rows in the frame
-
-        Examples
-        --------
-        Build a frame from a huge CSV file; report the number of rows of data::
-
-            my_frame = BigFrame(source="my_csv")
-            num_rows = my_frame.count()
-            print num_rows
-
-        The result could be::
-
-            298376527
-
-        .. versionadded:: 0.8
-
+        frame : BigFrame
+            A new frame object that contains the parse errors of the currently active BigFrame
+            or None if no error frame exists
         """
         try:
-            return self._backend.count(self)
+            return self._backend.get_frame_by_id(self._error_frame_id)
         except:
             raise IaError(logger)
+
+# Removed function for version 0.8 release
+#   def count(self):
+#       """
+#       Row count.
+
+#       Count the number of rows that exist in this object.
+
+#       Raises
+#       ------
+#       IaError
+
+#       Returns
+#       -------
+#       int32
+#           The number of rows in the frame
+
+#       Examples
+#       --------
+#       Build a frame from a huge CSV file; report the number of rows of data::
+
+#           my_frame = BigFrame(source="my_csv")
+#           num_rows = my_frame.count()
+#           print num_rows
+
+#       The result could be::
+
+#           298376527
+
+#       .. versionadded:: 0.8
+
+#       """
+#       try:
+#           return self._backend.count(self)
+#       except:
+#           raise IaError(logger)
 
     def drop(self, predicate):
         """
