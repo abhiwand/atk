@@ -140,7 +140,6 @@ class CommandExecutor(engine: => SparkEngine, commands: SparkCommandStorage, con
     registerCommand(FunctionCommand(name, function, numberOfJobsFunc))
   }
 
-
   private def getCommandDefinition(name: String): Option[CommandPlugin[_, _]] = {
     commandPlugins.get(name)
   }
@@ -171,8 +170,8 @@ class CommandExecutor(engine: => SparkEngine, commands: SparkCommandStorage, con
                 sparkContext = context)
 
               context.setLocalProperty("command-id", cmd.id.toString)
-              context.setLocalProperty("command-job-count", command.numberOfJobs(arguments).toString)
-
+              val progressListener = contextManager.context(user).progressMonitor
+              progressListener.setJobCountForCommand(cmd.id, command.numberOfJobs(arguments))
               val funcResult = command(invocation, arguments)
               command.serializeReturn(funcResult)
             }
