@@ -39,7 +39,6 @@ import scala.util.Try
 import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 import com.intel.intelanalytics.engine.ProgressInfo
-import com.intel.intelanalytics.engine.ProgressInfo
 import scala.Some
 import com.intel.intelanalytics.domain.frame.DataFrameTemplate
 import com.intel.intelanalytics.domain.User
@@ -54,6 +53,7 @@ import com.intel.intelanalytics.domain.graph.GraphTemplate
 import com.intel.intelanalytics.domain.UserTemplate
 
 trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
+
   msc: MetaStoreComponent with DbProfileComponent =>
 
   import com.intel.intelanalytics.domain.DomainJsonProtocol._
@@ -80,13 +80,8 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
     { string => JsonParser(string).convertTo[Error] }
   )
 
-  implicit val commandProgressType = MappedColumnType.base[List[Float], String](
+  implicit val commandProgressType = MappedColumnType.base[List[ProgressInfo], String](
     { progress => progress.toJson.prettyPrint },
-    { string => JsonParser(string).convertTo[List[Float]] }
-  )
-
-  implicit val detailedProgressType = MappedColumnType.base[List[ProgressInfo], String](
-    { detailedProgress => detailedProgress.toJson.prettyPrint },
     { string => JsonParser(string).convertTo[List[ProgressInfo]] }
   )
 
@@ -113,10 +108,10 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
      */
     override def initializeSchema(): Unit = {
 
-      withSession("Creating tables") {
+      withSession("Verifying schema") {
         implicit session =>
           if (profile.isH2) {
-            info("Creating schema using Slick")
+            info("Creating schema")
             // Tables that are dependencies for other tables need to go first
             statusRepo.asInstanceOf[SlickStatusRepository].createTable
             statusRepo.asInstanceOf[SlickStatusRepository].initializeValues
@@ -128,7 +123,8 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
             info("Schema creation completed")
           }
           else {
-            info("Running migrations to create/update schema as needed, jdbcUrl: " + profile.connectionString + ", user: " + profile.username)
+            info("Running migrations to create/update schema as needed, jdbcUrl: " + profile.connectionString +
+              ", user: " + profile.username)
             val flyway = new Flyway()
             flyway.setDataSource(profile.connectionString, profile.username, profile.password)
             flyway.migrate()
@@ -277,7 +273,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
   val statuses = TableQuery[StatusTable]
 
   /**
-   * A slick implementation of the graph repository. It stores metadata for statuses.
+   * A slick implementation of the status repository. It stores metadata for statuses.
    */
   class SlickStatusRepository extends Repository[Session, Status, Status]
       with EventLogging {
@@ -371,8 +367,10 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
 
       def modifiedById = column[Option[Long]]("modified_by")
 
+      def errorFrameId = column[Option[Long]]("error_frame_id")
+
       /** projection to/from the database */
-      override def * = (id, name, description, schema, statusId, createdOn, modifiedOn, createdById, modifiedById) <>
+      override def * = (id, name, description, schema, statusId, createdOn, modifiedOn, createdById, modifiedById, errorFrameId) <>
         (DataFrame.tupled, DataFrame.unapply)
 
       // foreign key relationships
@@ -382,6 +380,8 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
       def createdBy = foreignKey("frame_created_by", createdById, users)(_.id)
 
       def modifiedBy = foreignKey("frame_modified_by", modifiedById, users)(_.id)
+
+      def errorFrame = foreignKey("frame_error_frame_id", errorFrameId, frames)(_.id)
 
     }
 
@@ -407,10 +407,18 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
     }
 
     override def updateSchema(frame: DataFrame, columns: List[(String, DataType)])(implicit session: Session): DataFrame = {
-      val newSchema = frame.schema.copy(columns = columns)
-      val updatedFrame = frame.copy(schema = newSchema, modifiedOn = new DateTime)
-      frames.where(_.id === frame.id).update(updatedFrame)
-      updatedFrame
+      // this looks crazy but it is how you update only one column
+      val schemaColumn = for (f <- frames if f.id === frame.id) yield f.schema
+      schemaColumn.update(frame.schema.copy(columns = columns))
+      frames.where(_.id === frame.id).firstOption.get
+    }
+
+    /** Update the errorFrameId column */
+    override def updateErrorFrameId(frame: DataFrame, errorFrameId: Option[Long])(implicit session: Session): DataFrame = {
+      // this looks crazy but it is how you update only one column
+      val errorFrameIdColumn = for (f <- frames if f.id === frame.id) yield f.errorFrameId
+      errorFrameIdColumn.update(errorFrameId)
+      frames.where(_.id === frame.id).firstOption.get
     }
 
     override def insert(frame: DataFrameTemplate)(implicit session: Session): Try[DataFrame] = Try {
@@ -461,9 +469,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
 
       def error = column[Option[Error]]("error")
 
-      def progress = column[List[Float]]("progress")
-
-      def detailedProgress = column[List[ProgressInfo]]("detailed_progress")
+      def progress = column[List[ProgressInfo]]("progress")
 
       def complete = column[Boolean]("complete", O.Default(false))
 
@@ -476,7 +482,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
       def createdById = column[Option[Long]]("created_by")
 
       /** projection to/from the database */
-      def * = (id, name, arguments, error, progress, detailedProgress, complete, result, createdOn, modifiedOn, createdById) <> (Command.tupled, Command.unapply)
+      def * = (id, name, arguments, error, progress, complete, result, createdOn, modifiedOn, createdById) <> (Command.tupled, Command.unapply)
 
       def createdBy = foreignKey("command_created_by", createdById, users)(_.id)
     }
@@ -489,7 +495,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
 
     override def insert(command: CommandTemplate)(implicit session: Session): Try[Command] = Try {
       // TODO: add createdBy user id
-      val c = Command(0, command.name, command.arguments, None, List(), List(), false, None, new DateTime(), new DateTime(), None)
+      val c = Command(0, command.name, command.arguments, None, List(), false, None, new DateTime(), new DateTime(), None)
       commandsAutoInc.insert(c)
     }
 
@@ -542,9 +548,18 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
      * @param progress progress for the command
      * @param session session to db
      */
-    override def updateProgress(id: Long, progress: List[Float], detailedProgress: List[ProgressInfo])(implicit session: Session): Try[Unit] = Try {
-      val q = for { c <- commands if c.id === id } yield (c.progress, c.detailedProgress)
-      q.update(progress, detailedProgress)
+    override def updateProgress(id: Long, progress: List[ProgressInfo])(implicit session: Session): Try[Unit] = Try {
+      //doing 2 updates with different filter conditions
+      //this is to make sure not to set the progress to lower value
+      //if new progress event is sent to the listener while the progress
+      //has been set to 100 earlier in the complete method.
+
+      //doing two queries instead of just one and analyze the content is to avoid race condition
+      //for example another thread update the row after the query and before the update.
+
+      //TODO: verify slick generate a single command for the query and update
+      val q = for { c <- commands if c.id === id && c.complete === false } yield c.progress
+      q.update(progress)
     }
   }
 

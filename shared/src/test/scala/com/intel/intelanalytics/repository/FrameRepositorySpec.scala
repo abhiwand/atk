@@ -49,6 +49,26 @@ class FrameRepositorySpec extends SlickMetaStoreH2Testing with Matchers {
         frame2.get.createdOn should not be null
         frame2.get.modifiedOn should not be null
     }
+
   }
 
+  it should "be able to update errorFrameIds in" in {
+    val frameRepo = slickMetaStoreComponent.metaStore.frameRepo
+    slickMetaStoreComponent.metaStore.withSession("frame-test") {
+      implicit session =>
+
+        val frameName = "frame-name"
+
+        // create the frames
+        val frame = frameRepo.insert(new DataFrameTemplate(frameName, None)).get
+        val errorFrame = frameRepo.insert(new DataFrameTemplate(frameName + "-errors", None)).get
+
+        // invoke method under test
+        frameRepo.updateErrorFrameId(frame, Some(errorFrame.id))
+
+        // look it up and validate expected values
+        val frame2 = frameRepo.lookup(frame.id)
+        frame2.get.errorFrameId.get shouldBe errorFrame.id
+    }
+  }
 }

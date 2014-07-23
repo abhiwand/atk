@@ -66,7 +66,7 @@ class AlternatingLeastSquares
 
   override def execute(invocation: Invocation, arguments: Als)(implicit user: UserPrincipal, executionContext: ExecutionContext): AlsResult = {
 
-    val config = configuration().get
+    val config = configuration
     val hConf = GiraphConfigurationUtil.newHadoopConfigurationFrom(config, "giraph")
     val titanConf = GiraphConfigurationUtil.flattenConfig(config.getConfig("titan"), "titan.")
 
@@ -104,7 +104,7 @@ class AlternatingLeastSquares
 
     AlsResult(GiraphJobDriver.run("ia_giraph_als",
       classOf[AlternatingLeastSquaresComputation].getCanonicalName,
-      config, giraphConf, invocation.commandId))
+      config, giraphConf, invocation.commandId, "als-learning-report_0"))
   }
 
   //TODO: Replace with generic code that works on any case class

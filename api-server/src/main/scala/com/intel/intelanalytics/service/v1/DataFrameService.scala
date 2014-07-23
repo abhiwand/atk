@@ -41,6 +41,9 @@ import com.intel.intelanalytics.domain.frame.DataFrame
 import com.intel.intelanalytics.domain.DomainJsonProtocol.DataTypeFormat
 import com.intel.intelanalytics.service.{ ApiServiceConfig, CommonDirectives, AuthenticationDirective }
 import spray.routing.Directives
+import com.intel.intelanalytics.service.v1.decorators.FrameDecorator
+import org.apache.commons.lang.StringUtils
+import com.intel.intelanalytics.spray.json.IADefaultJsonProtocol
 import com.intel.intelanalytics.service.v1.decorators.{ QueryDecorator, CommandDecorator, FrameDecorator }
 
 import scala.util.matching.Regex
@@ -56,12 +59,6 @@ class DataFrameService(commonDirectives: CommonDirectives, engine: Engine) exten
   def frameRoutes() = {
     val prefix = "dataframes"
 
-    def decorate(uri: Uri, frame: DataFrame): GetDataFrame = {
-      //TODO: add other relevant links
-      val links = List(Rel.self(uri.toString))
-      FrameDecorator.decorateEntity(uri.toString, links, frame)
-    }
-
     commonDirectives(prefix) { implicit p: UserPrincipal =>
       (path(prefix) & pathEnd) {
         requestUri { uri =>
@@ -73,9 +70,9 @@ class DataFrameService(commonDirectives: CommonDirectives, engine: Engine) exten
                 case Some(name) => {
                   onComplete(engine.getFrameByName(name)) {
                     case Success(Some(frame)) => {
-
-                      val links = List(Rel.self(uri.toString))
-                      complete(FrameDecorator.decorateEntity(uri.toString(), links, frame))
+                      // uri comes in looking like /dataframes?name=abc
+                      val baseUri = StringUtils.substringBeforeLast(uri.toString(), "/")
+                      complete(FrameDecorator.decorateEntity(baseUri + "/" + frame.id, Nil, frame))
                     }
                     case _ => reject()
                   }
@@ -83,7 +80,7 @@ class DataFrameService(commonDirectives: CommonDirectives, engine: Engine) exten
                 case _ =>
                   onComplete(engine.getFrames(0, ApiServiceConfig.defaultCount)) {
                     case Success(frames) =>
-                      import DefaultJsonProtocol._
+                      import IADefaultJsonProtocol._
                       implicit val indexFormat = ViewModelJsonImplicits.getDataFramesFormat
                       complete(FrameDecorator.decorateForIndex(uri.toString(), frames))
                     case Failure(ex) => throw ex
@@ -98,7 +95,7 @@ class DataFrameService(commonDirectives: CommonDirectives, engine: Engine) exten
               entity(as[DataFrameTemplate]) {
                 frame =>
                   onComplete(engine.create(frame)) {
-                    case Success(createdFrame) => complete(decorate(uri + "/" + createdFrame.id, createdFrame))
+                    case Success(createdFrame) => complete(FrameDecorator.decorateEntity(uri + "/" + createdFrame.id, Nil, createdFrame))
                     case Failure(ex) => throw ex
                   }
               }
@@ -112,7 +109,7 @@ class DataFrameService(commonDirectives: CommonDirectives, engine: Engine) exten
               get {
                 onComplete(engine.getFrame(id)) {
                   case Success(Some(frame)) => {
-                    val decorated = decorate(uri, frame)
+                    val decorated = FrameDecorator.decorateEntity(uri.toString(), Nil, frame)
                     complete {
                       import spray.httpx.SprayJsonSupport._
                       implicit val format = DomainJsonProtocol.dataFrameTemplateFormat

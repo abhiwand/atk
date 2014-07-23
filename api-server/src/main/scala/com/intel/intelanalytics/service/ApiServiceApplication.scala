@@ -25,13 +25,14 @@ package com.intel.intelanalytics.service
 
 import akka.actor.{ ActorRef, ActorSystem, Props }
 import akka.io.IO
+import com.intel.intelanalytics.shared.EventLogging
 import spray.can.Http
 import akka.pattern.ask
 import akka.util.Timeout
 import scala.concurrent.duration._
 import com.intel.event.EventLogger
 import com.intel.event.adapter.SLF4JLogAdapter
-import com.intel.intelanalytics.component.{ Archive, ArchiveName }
+import com.intel.intelanalytics.component.{ Archive }
 import com.intel.intelanalytics.engine.Engine
 import com.typesafe.config.{ Config, ConfigFactory }
 import scala.concurrent.Await
@@ -42,22 +43,18 @@ import scala.reflect.ClassTag
  *
  * See the 'api_server.sh' to see how the launcher starts the application.
  */
-class ApiServiceApplication extends Archive {
+class ApiServiceApplication extends Archive with EventLogging {
 
   // TODO: implement or remove get()
   def get[T](descriptor: String): T = {
     throw new IllegalArgumentException("This component provides no services")
   }
 
-  def stop() = {}
-
-  // TODO: delete configuration param?
-
   /**
    * Main entry point to start the API Service Application
    */
-  def start(configuration: Config) = {
-
+  override def start() = {
+    Archive.logger = (s: String) => debug(s)
     val apiService = initializeDependencies()
     createActorSystemAndBindToHttp(apiService)
   }
@@ -68,8 +65,7 @@ class ApiServiceApplication extends Archive {
   private def initializeDependencies(): ApiService = {
 
     //TODO: later engine will be initialized in a separate JVM
-    lazy val engine = com.intel.intelanalytics.component.Boot.getArchive(
-      ArchiveName("engine", "com.intel.intelanalytics.engine.EngineApplication"))
+    lazy val engine = com.intel.intelanalytics.component.Boot.getArchive("engine")
       .get[Engine]("engine")
 
     //make sure engine is initialized
@@ -106,16 +102,6 @@ class ApiServiceApplication extends Archive {
     // start a new HTTP server with our service actor as the handler
     IO(Http) ? Http.Bind(service, interface = ApiServiceConfig.host, port = ApiServiceConfig.port)
   }
-
-  /**
-   * The location at which this component should be installed in the component
-   * tree. For example, a graph machine learning algorithm called Loopy Belief
-   * Propagation might wish to be installed at
-   * "commands/graphs/ml/loopy_belief_propagation". However, it might not actually
-   * get installed there if the system has been configured to override that
-   * default placement.
-   */
-  override def defaultLocation: String = "api"
 
   /**
    * Obtain instances of a given class. The keys are established purely

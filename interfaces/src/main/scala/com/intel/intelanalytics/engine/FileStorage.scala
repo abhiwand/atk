@@ -35,10 +35,6 @@ trait FileStorage {
 
   def getMetaData(path: Path): Option[Entry]
 
-  def move(source: Path, destination: Path)
-
-  def copy(source: Path, destination: Path)
-
   def read(source: File): InputStream
 
   def list(source: Directory): Seq[Entry]

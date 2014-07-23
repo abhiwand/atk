@@ -64,7 +64,7 @@ class LoopyBeliefPropagation
 
   override def execute(invocation: Invocation, arguments: Lbp)(implicit user: UserPrincipal, executionContext: ExecutionContext): LbpResult = {
 
-    val config = configuration().get
+    val config = configuration
     val hConf = GiraphConfigurationUtil.newHadoopConfigurationFrom(config, "giraph")
     val titanConf = GiraphConfigurationUtil.flattenConfig(config.getConfig("titan"), "titan.")
 
@@ -100,7 +100,7 @@ class LoopyBeliefPropagation
 
     LbpResult(GiraphJobDriver.run("ia_giraph_lbp",
       classOf[LoopyBeliefPropagationComputation].getCanonicalName,
-      config, giraphConf, invocation.commandId))
+      config, giraphConf, invocation.commandId, "lbp-learning-report_0"))
   }
 
   //TODO: Replace with generic code that works on any case class
@@ -109,6 +109,9 @@ class LoopyBeliefPropagation
   //TODO: Replace with generic code that works on any case class
   def serializeReturn(returnValue: LbpResult): JsObject = returnValue.toJson.asJsObject
 
+  /**
+   * The name of the command, e.g. graphs/ml/loopy_belief_propagation
+   */
   override def name: String = "graphs/ml/loopy_belief_propagation"
 
   //TODO: Replace with generic code that works on any case class
