@@ -39,13 +39,12 @@ private[spark] object CumulativeDistFunctions extends Serializable {
    *
    * @param frameRdd input frame RDD
    * @param sampleIndex index of the column to compute cumulative sum
-   * @param dataType the data type of the column
    * @return an RDD of tuples containing (originalValue, cumulativeSumAtThisValue)
    */
-  def cumulativeSum(frameRdd: RDD[Row], sampleIndex: Int, dataType: String): RDD[Row] = {
+  def cumulativeSum(frameRdd: RDD[Row], sampleIndex: Int): RDD[Row] = {
     // parse values
     val pairedRdd = try {
-      frameRdd.map(row => (row(sampleIndex).toString, DataTypes.toDouble(row(sampleIndex))))
+      frameRdd.map(row => (row, DataTypes.toDouble(row(sampleIndex))))
     }
     catch {
       case se: SparkException => throw new SparkException("Non-numeric column: " + se.toString)
@@ -58,7 +57,7 @@ private[spark] object CumulativeDistFunctions extends Serializable {
     // compute cumulative sum
     val cumulativeSums = totalPartitionSums(pairedRdd, partSums)
 
-    revertTypes(cumulativeSums, dataType)
+    revertTypes(cumulativeSums)
   }
 
   /**
@@ -67,18 +66,17 @@ private[spark] object CumulativeDistFunctions extends Serializable {
    * @param frameRdd input frame RDD
    * @param sampleIndex index of the column to compute cumulative count
    * @param countValue the value to count
-   * @param dataType the data type of the column
    * @return an RDD of tuples containing (originalValue, cumulativeCountAtThisValue)
    */
-  def cumulativeCount(frameRdd: RDD[Row], sampleIndex: Int, countValue: String, dataType: String): RDD[Row] = {
+  def cumulativeCount(frameRdd: RDD[Row], sampleIndex: Int, countValue: String): RDD[Row] = {
     // parse values
     val pairedRdd = frameRdd.map(row => {
       val sampleValue = row(sampleIndex).toString
       if (sampleValue.equals(countValue)) {
-        (sampleValue, 1.0)
+        (row, 1.0)
       }
       else {
-        (sampleValue, 0.0)
+        (row, 0.0)
       }
     })
 
@@ -88,7 +86,7 @@ private[spark] object CumulativeDistFunctions extends Serializable {
     // compute cumulative count
     val cumulativeCounts = totalPartitionCounts(pairedRdd, partSums)
 
-    revertTypes(cumulativeCounts, dataType)
+    revertTypes(cumulativeCounts)
   }
 
   /**
@@ -96,13 +94,12 @@ private[spark] object CumulativeDistFunctions extends Serializable {
    *
    * @param frameRdd input frame RDD
    * @param sampleIndex index of the column to compute cumulative percent sum
-   * @param dataType the data type of the column
    * @return an RDD of tuples containing (originalValue, cumulativePercentSumAtThisValue)
    */
-  def cumulativePercentSum(frameRdd: RDD[Row], sampleIndex: Int, dataType: String): RDD[Row] = {
+  def cumulativePercentSum(frameRdd: RDD[Row], sampleIndex: Int): RDD[Row] = {
     // parse values
     val pairedRdd = try {
-      frameRdd.map(row => (row(sampleIndex).toString, DataTypes.toDouble(row(sampleIndex))))
+      frameRdd.map(row => (row, DataTypes.toDouble(row(sampleIndex))))
     }
     catch {
       case cce: NumberFormatException => throw new NumberFormatException("Non-numeric column: " + cce.toString)
@@ -116,7 +113,7 @@ private[spark] object CumulativeDistFunctions extends Serializable {
     // compute cumulative sum
     val cumulativeSums = totalPartitionSums(pairedRdd, partSums)
 
-    revertPercentTypes(cumulativeSums, dataType, numValues)
+    revertPercentTypes(cumulativeSums, numValues)
   }
 
   /**
@@ -125,18 +122,17 @@ private[spark] object CumulativeDistFunctions extends Serializable {
    * @param frameRdd input frame RDD
    * @param sampleIndex index of the column to compute cumulative percent count
    * @param countValue the value to count
-   * @param dataType the data type of the column
    * @return an RDD of tuples containing (originalValue, cumulativePercentCountAtThisValue)
    */
-  def cumulativePercentCount(frameRdd: RDD[Row], sampleIndex: Int, countValue: String, dataType: String): RDD[Row] = {
+  def cumulativePercentCount(frameRdd: RDD[Row], sampleIndex: Int, countValue: String): RDD[Row] = {
     // parse values
     val pairedRdd = frameRdd.map(row => {
       val sampleValue = row(sampleIndex).toString
       if (sampleValue.equals(countValue)) {
-        (sampleValue, 1.0)
+        (row, 1.0)
       }
       else {
-        (sampleValue, 0.0)
+        (row, 0.0)
       }
     })
 
@@ -148,7 +144,7 @@ private[spark] object CumulativeDistFunctions extends Serializable {
     // compute cumulative count
     val cumulativeCounts = totalPartitionCounts(pairedRdd, partSums)
 
-    revertPercentTypes(cumulativeCounts, dataType, numValues)
+    revertPercentTypes(cumulativeCounts, numValues)
   }
 
   /**
@@ -157,7 +153,7 @@ private[spark] object CumulativeDistFunctions extends Serializable {
    * @param rdd the input RDD
    * @return an Array[Double] that contains the partition sums
    */
-  private def partitionSums(rdd: RDD[(String, Double)]): Array[Double] = {
+  private def partitionSums(rdd: RDD[(Row, Double)]): Array[Double] = {
     0.0 +: rdd.mapPartitionsWithIndex {
       case (index, partition) => Iterator(partition.map(pair => pair._2).sum)
     }.collect()
@@ -170,7 +166,7 @@ private[spark] object CumulativeDistFunctions extends Serializable {
    * @param partSums the sums for each partition
    * @return RDD of (value, cumulativeSum)
    */
-  private def totalPartitionSums(rdd: RDD[(String, Double)], partSums: Array[Double]): RDD[(String, Double)] = {
+  private def totalPartitionSums(rdd: RDD[(Row, Double)], partSums: Array[Double]): RDD[(Row, Double)] = {
     rdd.mapPartitionsWithIndex {
       case (index, partition) => {
         var startValue = 0.0
@@ -178,7 +174,7 @@ private[spark] object CumulativeDistFunctions extends Serializable {
           startValue += partSums(i)
         }
         // startValue updated, so drop first value
-        partition.scanLeft(("", startValue))((prev, curr) => (curr._1, prev._2 + curr._2)).drop(1)
+        partition.scanLeft((Array[Any](), startValue))((prev, curr) => (curr._1, prev._2 + curr._2)).drop(1)
       }
     }
   }
@@ -190,14 +186,14 @@ private[spark] object CumulativeDistFunctions extends Serializable {
    * @param partSums the counts for each partition
    * @return RDD of (value, cumulativeCount)
    */
-  private def totalPartitionCounts(rdd: RDD[(String, Double)], partSums: Array[Double]): RDD[(String, Double)] = {
+  private def totalPartitionCounts(rdd: RDD[(Row, Double)], partSums: Array[Double]): RDD[(Row, Double)] = {
     rdd.mapPartitionsWithIndex {
       case (index, partition) => {
         var startValue = 0.0
         for (i <- 0 to index) {
           startValue += partSums(i)
         }
-        partition.scanLeft(("", startValue))((prev, curr) => (curr._1, prev._2 + curr._2)).drop(1)
+        partition.scanLeft((Array[Any](), startValue))((prev, curr) => (curr._1, prev._2 + curr._2)).drop(1)
       }
     }
   }
@@ -206,19 +202,12 @@ private[spark] object CumulativeDistFunctions extends Serializable {
    * Casts the input data types back to the original input type
    *
    * @param rdd the RDD containing (value, cumulativeDistValue)
-   * @param dataType data type for the original input column
    * @return RDD containing Array[Any] (i.e., Rows)
    */
-  private def revertTypes(rdd: RDD[(String, Double)], dataType: String): RDD[Array[Any]] = {
+  private def revertTypes(rdd: RDD[(Row, Double)]): RDD[Array[Any]] = {
     rdd.map {
-      case (value, valueSum) => {
-        dataType match {
-          case "int32" => Array(value.toInt.asInstanceOf[Any], valueSum.asInstanceOf[Any])
-          case "int64" => Array(value.toLong.asInstanceOf[Any], valueSum.asInstanceOf[Any])
-          case "float32" => Array(value.toFloat.asInstanceOf[Any], valueSum.asInstanceOf[Any])
-          case "float64" => Array(value.toDouble.asInstanceOf[Any], valueSum.asInstanceOf[Any])
-          case _ => Array(value.asInstanceOf[Any], valueSum.asInstanceOf[Any])
-        }
+      case (row, valueSum) => {
+        row.asInstanceOf[Array[Any]] :+ valueSum.asInstanceOf[Any]
       }
     }
   }
@@ -228,31 +217,14 @@ private[spark] object CumulativeDistFunctions extends Serializable {
    * divide-by-zero error.
    *
    * @param rdd the RDD containing (value, cumulativeDistValue)
-   * @param dataType data type for the original input column
    * @return RDD containing Array[Any] (i.e., Rows)
    */
-  private def revertPercentTypes(rdd: RDD[(String, Double)], dataType: String, numValues: Double): RDD[Array[Any]] = {
+  private def revertPercentTypes(rdd: RDD[(Row, Double)], numValues: Double): RDD[Array[Any]] = {
     rdd.map {
-      case (value, valueSum) => {
+      case (row, valueSum) => {
         numValues match {
-          case 0 => {
-            dataType match {
-              case "int32" => Array(value.toInt.asInstanceOf[Any], 1.asInstanceOf[Any])
-              case "int64" => Array(value.toLong.asInstanceOf[Any], 1.asInstanceOf[Any])
-              case "float32" => Array(value.toFloat.asInstanceOf[Any], 1.asInstanceOf[Any])
-              case "float64" => Array(value.toDouble.asInstanceOf[Any], 1.asInstanceOf[Any])
-              case _ => Array(value, 1.asInstanceOf[Any])
-            }
-          }
-          case _ => {
-            dataType match {
-              case "int32" => Array(value.toInt.asInstanceOf[Any], (valueSum / numValues).asInstanceOf[Any])
-              case "int64" => Array(value.toLong.asInstanceOf[Any], (valueSum / numValues).asInstanceOf[Any])
-              case "float32" => Array(value.toFloat.asInstanceOf[Any], (valueSum / numValues).asInstanceOf[Any])
-              case "float64" => Array(value.toDouble.asInstanceOf[Any], (valueSum / numValues).asInstanceOf[Any])
-              case _ => Array(value, (valueSum / numValues).asInstanceOf[Any])
-            }
-          }
+          case 0 => row.asInstanceOf[Array[Any]] :+ 1.asInstanceOf[Any]
+          case _ => row.asInstanceOf[Array[Any]] :+ (valueSum / numValues).asInstanceOf[Any]
         }
       }
     }

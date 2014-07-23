@@ -894,22 +894,18 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     val newFrame = Await.result(create(DataFrameTemplate(arguments.name, None)), SparkEngineConfig.defaultTimeout)
 
     val (cumulativeDistRdd, columnName) = arguments.distType match {
-      case "cumulative_sum" => (CumulativeDistFunctions.cumulativeSum(frameRdd, sampleIndex, arguments.dataType), "_cumulative_sum")
-      case "cumulative_count" => (CumulativeDistFunctions.cumulativeCount(frameRdd, sampleIndex, arguments.countValue, arguments.dataType), "_cumulative_count")
-      case "cumulative_percent_sum" => (CumulativeDistFunctions.cumulativePercentSum(frameRdd, sampleIndex, arguments.dataType), "_cumulative_percent_sum")
-      case "cumulative_percent_count" => (CumulativeDistFunctions.cumulativePercentCount(frameRdd, sampleIndex, arguments.countValue, arguments.dataType), "_cumulative_percent_count")
+      case "cumulative_sum" => (CumulativeDistFunctions.cumulativeSum(frameRdd, sampleIndex), "_cumulative_sum")
+      case "cumulative_count" => (CumulativeDistFunctions.cumulativeCount(frameRdd, sampleIndex, arguments.countValue), "_cumulative_count")
+      case "cumulative_percent_sum" => (CumulativeDistFunctions.cumulativePercentSum(frameRdd, sampleIndex), "_cumulative_percent_sum")
+      case "cumulative_percent_count" => (CumulativeDistFunctions.cumulativePercentCount(frameRdd, sampleIndex, arguments.countValue), "_cumulative_percent_count")
       case _ => throw new IllegalArgumentException("Invalid distType specified")
     }
 
     cumulativeDistRdd.saveAsObjectFile(fsRoot + frames.getFrameDataFile(newFrame.id))
 
-    val allColumns = arguments.dataType match {
-      case "int32" => List((arguments.sampleCol, DataTypes.int32), (arguments.sampleCol + columnName, DataTypes.float64))
-      case "int64" => List((arguments.sampleCol, DataTypes.int64), (arguments.sampleCol + columnName, DataTypes.float64))
-      case "float32" => List((arguments.sampleCol, DataTypes.float32), (arguments.sampleCol + columnName, DataTypes.float64))
-      case "float64" => List((arguments.sampleCol, DataTypes.float64), (arguments.sampleCol + columnName, DataTypes.float64))
-      case _ => List((arguments.sampleCol, DataTypes.string), (arguments.sampleCol + columnName, DataTypes.float64))
-    }
+    val frameSchema = realFrame.schema
+    val allColumns = frameSchema.columns :+ (arguments.sampleCol + columnName, DataTypes.float64)
+
     frames.updateSchema(newFrame, allColumns)
     newFrame.copy(schema = Schema(allColumns))
   }

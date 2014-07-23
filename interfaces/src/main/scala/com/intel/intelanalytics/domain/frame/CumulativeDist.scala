@@ -11,7 +11,7 @@ package com.intel.intelanalytics.domain.frame
  * @param countValue the value to count in the input data frame column (only used for cumulative count and cumulative percent count)
  * @tparam FrameRef
  */
-case class CumulativeDist[FrameRef](frameId: FrameRef, name: String, sampleCol: String, distType: String, dataType: String, countValue: String) {
+case class CumulativeDist[FrameRef](frameId: FrameRef, name: String, sampleCol: String, distType: String, countValue: String) {
   require(name != null, "new frame name is required")
   require(frameId != null, "frame is required")
   require(sampleCol != null, "column name for sample is required")
