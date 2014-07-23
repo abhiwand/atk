@@ -10,9 +10,7 @@ import org.apache.spark.rdd._
  * All data items with weights <= 0 are excluded from these calculations.
  *
  * @param dataWeightPairs RDD containing pairs (data, weight) where the each "data" entry is unique.
- * @tparam T Datatype of values.
- *
- * @return triple consisting of the mode, its weight, and the total weight of all values in the input
+ * @tparam T Value type.
  */
 class FrequencyStatistics[T: ClassManifest](dataWeightPairs: RDD[(T, Double)]) extends Serializable {
 
@@ -55,7 +53,7 @@ class FrequencyStatistics[T: ClassManifest](dataWeightPairs: RDD[(T, Double)]) e
   }
 }
 
-/**
+/*
  * Class for accumulating frequency statistics in one pass over the data.
  * @param mode Option for value with the most weight seen so far. None when run over empty data.
  * @param weightOfMode The weight of the mode. 0 when run over empty data.
@@ -65,7 +63,7 @@ class FrequencyStatistics[T: ClassManifest](dataWeightPairs: RDD[(T, Double)]) e
 private case class FrequencyStatsCounter[T](mode: Option[T], weightOfMode: Double, totalWeight: Double)
   extends Serializable
 
-/**
+/*
  * Configures the spark accumulator for gathering frequency statistics.
  * @tparam T The type of the input data.
  */

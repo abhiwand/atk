@@ -9,12 +9,16 @@ import DefaultJsonProtocol._
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 import com.intel.intelanalytics.domain.schema.DataTypes
 
+/**
+ * Provides functions for taking statistics on column data.
+ */
 private[spark] object ColumnStatistics extends Serializable {
 
   /**
    * Calculate (weighted) mode of a data column, the weight of the mode, and the total weight of the column.
-   * A mode is a value that has maximum weight. Values with non-positive weights are thrown out before the calculation
-   * is performed.
+   * A mode is a value that has maximum weight. Ties are resolved arbitrarily.
+   * Values with non-positive weights (including NaNs and infinite values) are thrown out before the calculation is
+   * performed.
    *
    * When the total weight is 0, the option None is given for the mode and the weight of the mode.
    *
@@ -22,7 +26,7 @@ private[spark] object ColumnStatistics extends Serializable {
    * @param dataType The type of the data column.
    * @param weightsColumnIndexOption Option for index of column providing weights. Must be numerical data.
    * @param weightsTypeOption Option for the datatype of the weights.
-   * @param rowRDD RDD of input rows
+   * @param rowRDD RDD of input rows.
    * @return The mode of the column (as a string), the weight of the mode, and the total weight of the data.
    */
   def columnMode(dataColumnIndex: Int,
@@ -52,15 +56,15 @@ private[spark] object ColumnStatistics extends Serializable {
    * distribution so that the cumulative weight strictly below X is < 1/2  the total weight and the cumulative
    * distribution up to and including X is >= 1/2 the total weight.
    *
-   * Values with non-positive weights are thrown out before the calculation is performed.
-   * The option None is returned when the total weight is 0.
+   * Values with non-positive weights(including NaNs and infinite values) are thrown out before the calculation is
+   * performed. The option None is returned when the total weight is 0.
    *
-   * @param dataColumnIndex column index
+   * @param dataColumnIndex Index of the data column.
    * @param dataType The type of the data column.
    * @param weightsColumnIndexOption  Option for index of column providing  weights. Must be numerical data.
    * @param weightsTypeOption Option for the datatype of the weights.
-   * @param rowRDD RDD of input rows
-   * @return the  median of the column (as a double)
+   * @param rowRDD RDD of input rows.
+   * @return The  median of the column.
    */
   def columnMedian(dataColumnIndex: Int,
                    dataType: DataType,
@@ -71,7 +75,7 @@ private[spark] object ColumnStatistics extends Serializable {
     val dataWeightPairs: RDD[(Any, Double)] =
       getDataWeightPairs(dataColumnIndex, weightsColumnIndexOption, weightsTypeOption, rowRDD)
 
-    implicit val ordering: Ordering[Any] = new RealOrdering(dataType)
+    implicit val ordering: Ordering[Any] = new NumericalOrdering(dataType)
 
     val orderStatistics = new OrderStatistics[Any](dataWeightPairs)
 
@@ -84,7 +88,7 @@ private[spark] object ColumnStatistics extends Serializable {
     ColumnMedianReturn(medianReturn)
   }
 
-  private class RealOrdering(dataType: DataType) extends Ordering[Any] {
+  private class NumericalOrdering(dataType: DataType) extends Ordering[Any] {
     override def compare(x: Any, y: Any): Int = {
       dataType.asDouble(x).compareTo(dataType.asDouble(y))
     }
@@ -93,12 +97,16 @@ private[spark] object ColumnStatistics extends Serializable {
   /**
    * Calculate summary statistics of data column, possibly weighted by an optional weights column.
    *
+   * Values with non-positive weights(including NaNs and infinite values) are thrown out before the calculation is
+   * performed, however, they are logged as "bad rows" (when a row contain a datum or a weight that is not a finite
+   * number) or as "non positive weight" (when a row's weight entry is <= 0).
+   *
    * @param dataColumnIndex Index of column providing the data. Must be numerical data.
    * @param dataType The type of the data column.
    * @param weightsColumnIndexOption Option for index of column providing the weights. Must be numerical data.
    * @param weightsTypeOption Option for the datatype of the weights.
-   * @param rowRDD RDD of input rows
-   * @return summary statistics of the column
+   * @param rowRDD RDD of input rows.
+   * @return Summary statistics of the column.
    */
   def columnSummaryStatistics(dataColumnIndex: Int,
                               dataType: DataType,
@@ -129,12 +137,16 @@ private[spark] object ColumnStatistics extends Serializable {
   /**
    * Calculate full statistics of data column, possibly weighted by an optional weights column.
    *
+   * Values with non-positive weights(including NaNs and infinite values) are thrown out before the calculation is
+   * performed, however, they are logged as "bad rows" (when a row contain a datum or a weight that is not a finite
+   * number) or as "non positive weight" (when a row's weight entry is <= 0).
+   *
    * @param dataColumnIndex Index of column providing the data. Must be numerical data.
    * @param dataType The type of the data column.
    * @param weightsColumnIndexOption Option for index of column providing the weights. Must be numerical data.
    * @param weightsTypeOption Option for the datatype of the weights.
-   * @param rowRDD RDD of input rows
-   * @return  statistics of the column
+   * @param rowRDD RDD of input rows.
+   * @return  Full statistics of the column.
    */
   def columnFullStatistics(dataColumnIndex: Int,
                            dataType: DataType,

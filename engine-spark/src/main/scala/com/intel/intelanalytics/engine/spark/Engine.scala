@@ -527,8 +527,8 @@ class SparkEngine(sparkContextManager: SparkContextManager,
 
   /**
    * Calculate the mode of the specified column.
-   * @param arguments input specification for column mode
-   * @param user current user
+   * @param arguments Input specification for column mode.
+   * @param user Current user.
    */
   override def columnMode(arguments: ColumnMode)(implicit user: UserPrincipal): Execution =
     commands.execute(columnModeCommand, arguments, user, implicitly[ExecutionContext])
@@ -542,22 +542,22 @@ class SparkEngine(sparkContextManager: SparkContextManager,
 
     val frameId = arguments.frame
 
-    val realFrame = expectFrame(frameId)
+    val frame = expectFrame(frameId)
 
     val ctx = sparkContextManager.context(user).sparkContext
 
     val rdd = frames.getFrameRdd(ctx, frameId.id)
 
-    val columnIndex = realFrame.schema.columnIndex(arguments.dataColumn)
+    val columnIndex = frame.schema.columnIndex(arguments.dataColumn)
 
-    val valueDataType: DataType = realFrame.schema.columns(columnIndex)._2
+    val valueDataType: DataType = frame.schema.columns(columnIndex)._2
 
     val (weightsColumnIndexOption, weightsDataTypeOption) = if (arguments.weightsColumn.isEmpty) {
       (None, None)
     }
     else {
-      val weightsColumnIndex = realFrame.schema.columnIndex(arguments.weightsColumn.get)
-      (Some(weightsColumnIndex), Some(realFrame.schema.columns(weightsColumnIndex)._2))
+      val weightsColumnIndex = frame.schema.columnIndex(arguments.weightsColumn.get)
+      (Some(weightsColumnIndex), Some(frame.schema.columns(weightsColumnIndex)._2))
     }
 
     ColumnStatistics.columnMode(columnIndex, valueDataType, weightsColumnIndexOption, weightsDataTypeOption, rdd)
@@ -565,8 +565,8 @@ class SparkEngine(sparkContextManager: SparkContextManager,
 
   /**
    * Calculate the median of the specified column.
-   * @param arguments input specification for column median
-   * @param user current user
+   * @param arguments Input specification for column median.
+   * @param user Current user.
    */
   override def columnMedian(arguments: ColumnMedian)(implicit user: UserPrincipal): Execution =
     commands.execute(columnMedianCommand, arguments, user, implicitly[ExecutionContext])
@@ -580,22 +580,22 @@ class SparkEngine(sparkContextManager: SparkContextManager,
 
     val frameId = arguments.frame
 
-    val realFrame = expectFrame(frameId)
+    val frame = expectFrame(frameId)
 
     val ctx = sparkContextManager.context(user).sparkContext
 
     val rdd = frames.getFrameRdd(ctx, frameId.id)
 
-    val columnIndex = realFrame.schema.columnIndex(arguments.dataColumn)
+    val columnIndex = frame.schema.columnIndex(arguments.dataColumn)
 
-    val valueDataType: DataType = realFrame.schema.columns(columnIndex)._2
+    val valueDataType: DataType = frame.schema.columns(columnIndex)._2
 
     val (weightsColumnIndexOption, weightsDataTypeOption) = if (arguments.weightsColumn.isEmpty) {
       (None, None)
     }
     else {
-      val weightsColumnIndex = realFrame.schema.columnIndex(arguments.weightsColumn.get)
-      (Some(weightsColumnIndex), Some(realFrame.schema.columns(weightsColumnIndex)._2))
+      val weightsColumnIndex = frame.schema.columnIndex(arguments.weightsColumn.get)
+      (Some(weightsColumnIndex), Some(frame.schema.columns(weightsColumnIndex)._2))
     }
 
     ColumnStatistics.columnMedian(columnIndex, valueDataType, weightsColumnIndexOption, weightsDataTypeOption, rdd)
@@ -603,8 +603,8 @@ class SparkEngine(sparkContextManager: SparkContextManager,
 
   /**
    * Calculate summary statistics of the specified column.
-   * @param arguments input specification for column summary statistics
-   * @param user current user
+   * @param arguments Input specification for column summary statistics.
+   * @param user Current user.
    */
   override def columnSummaryStatistics(arguments: ColumnSummaryStatistics)(implicit user: UserPrincipal): Execution =
     commands.execute(columnStatisticCommand, arguments, user, implicitly[ExecutionContext])
@@ -641,8 +641,8 @@ class SparkEngine(sparkContextManager: SparkContextManager,
 
   /**
    * Calculate full statistics of the specified column.
-   * @param arguments input specification for column statistics
-   * @param user current user
+   * @param arguments Input specification for column statistics.
+   * @param user Current user.
    */
   override def columnFullStatistics(arguments: ColumnFullStatistics)(implicit user: UserPrincipal): Execution =
     commands.execute(columnFullStatisticsCommand, arguments, user, implicitly[ExecutionContext])

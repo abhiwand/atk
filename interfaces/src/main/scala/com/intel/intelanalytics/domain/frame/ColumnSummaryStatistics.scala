@@ -24,7 +24,7 @@
 package com.intel.intelanalytics.domain.frame
 
 /**
- * Command specification for calculating summary statistics for a dataframe column.
+ * Command for calculating summary statistics for a dataframe column.
  * @param frame Identifier for the input dataframe.
  * @param dataColumn Name of the column to statistically summarize. Must contain numerical data.
  * @param weightsColumn Optional. Name of the column that provides weights (frequencies).

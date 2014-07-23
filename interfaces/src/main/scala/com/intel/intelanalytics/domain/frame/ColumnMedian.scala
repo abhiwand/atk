@@ -26,7 +26,7 @@ package com.intel.intelanalytics.domain.frame
 import spray.json.JsValue
 
 /**
- * Represents a ColumnMedian command
+ * Command for calculating the median of a (possibly weighted) dataframe column.
  * @param frame identifier for the input dataframe
  */
 case class ColumnMedian(frame: FrameReference, dataColumn: String, weightsColumn: Option[String]) {
@@ -36,6 +36,12 @@ case class ColumnMedian(frame: FrameReference, dataColumn: String, weightsColumn
 }
 
 /**
- * The data returned from a median calculation: An option for the median.
+ * The median value of the (possibly weighted) column. None when the sum of the weights is 0.
+ *
+ * If no weights are provided, all elements receive a uniform weight of 1.
+ *
+ * If any element receives a weight that is NaN, infinite or <= 0, that element is thrown
+ * out of the calculation.
+ * @param value The median. None if the net weight of the column is 0.
  */
 case class ColumnMedianReturn(value: JsValue)
