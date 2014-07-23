@@ -29,10 +29,7 @@ import org.apache.spark.rdd.RDD
 import com.intel.graphbuilder.driver.spark.titan.{ GraphBuilderConfig, GraphBuilder }
 import com.intel.graphbuilder.util.SerializableBaseConfiguration
 import com.intel.graphbuilder.parser.InputSchema
-import com.intel.graphbuilder.write.dao.VertexDAO
-import com.tinkerpop.blueprints
-import com.tinkerpop.blueprints.Graph
-import com.intel.graphbuilder.graph.titan.TitanGraphConnector
+
 /**
  * Write back to each vertex in Titan graph the set of communities to which it
  * belongs in some property specified by the user
@@ -41,14 +38,18 @@ import com.intel.graphbuilder.graph.titan.TitanGraphConnector
 class CommunityWriterInTitan extends Serializable {
 
   /**
-   *
-   * @param gbVertices updated GB vertices list
-   * @param gbEdges GB Edge list
-   * @param titanConfigInput The titan configuration
+   * Update the graph by updating the vertices properties
+   * @param gbVertices RDD of updated Graph Builder vertices list having new community property
+   * @param gbEdges RDD of Graph Builder Edge list
+   * @param titanConfig The titan configuration
    */
-  def run(gbVertices: RDD[Vertex], gbEdges: RDD[Edge], titanConfigInput: SerializableBaseConfiguration) {
+  def run(gbVertices: RDD[Vertex], gbEdges: RDD[Edge], titanConfig: SerializableBaseConfiguration) {
 
-    val gb = new GraphBuilder(new GraphBuilderConfig(new InputSchema(Seq.empty), List.empty, List.empty, titanConfigInput))
+    // Create the GraphBuilder object
+    // Setting true to append for updating existing graph
+    val gb = new GraphBuilder(new GraphBuilderConfig(new InputSchema(Seq.empty), List.empty, List.empty, titanConfig, append = true))
+
+    // Build the graph using spark
     gb.buildGraphWithSpark(gbVertices, gbEdges)
 
   }

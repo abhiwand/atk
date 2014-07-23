@@ -2,19 +2,15 @@ package com.intel.spark.graphon.communitydetection.kclique
 
 import java.util.Date
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkInvocation, SparkCommandPlugin }
-import com.typesafe.config.ConfigValue
 import com.intel.intelanalytics.security.UserPrincipal
 import scala.concurrent.{ Await, ExecutionContext }
 import com.intel.graphbuilder.util.SerializableBaseConfiguration
-import com.intel.graphbuilder.graph.titan.TitanGraphConnector
-import com.intel.intelanalytics.domain.graph.{ GraphTemplate, GraphReference }
-import spray.json.JsObject
+import com.intel.intelanalytics.domain.graph.GraphReference
 import com.intel.intelanalytics.domain.DomainJsonProtocol
 import spray.json._
 import scala.concurrent._
 import com.intel.intelanalytics.engine.spark.graph.GraphName
 import com.intel.intelanalytics.component.Boot
-import java.util.UUID
 
 case class KClique(graph: GraphReference,
                    cliqueSize: Int,
@@ -39,36 +35,40 @@ class KCliquePercolation extends SparkCommandPlugin[KClique, KCliqueResult] {
 
     // Titan Settings for input
     val config = configuration
-    val titanConfig = config.getConfig("titan.load")
+    val titanConfigInput = config.getConfig("titan.load")
 
-    val titanConfigInput = new SerializableBaseConfiguration()
-    titanConfigInput.setProperty("storage.backend", titanConfig.getString("storage.backend"))
-    titanConfigInput.setProperty("storage.hostname", titanConfig.getString("storage.hostname"))
-    titanConfigInput.setProperty("storage.port", titanConfig.getString("storage.port"))
-    titanConfigInput.setProperty("storage.batch-loading", titanConfig.getString("storage.batch-loading"))
-    titanConfigInput.setProperty("storage.buffer-size", titanConfig.getString("storage.buffer-size"))
-    titanConfigInput.setProperty("storage.attempt-wait", titanConfig.getString("storage.attempt-wait"))
-    titanConfigInput.setProperty("storage.lock-wait-time", titanConfig.getString("storage.lock-wait-time"))
-    titanConfigInput.setProperty("storage.lock-retries", titanConfig.getString("storage.lock-retries"))
-    titanConfigInput.setProperty("storage.idauthority-retries", titanConfig.getString("storage.idauthority-retries"))
-    titanConfigInput.setProperty("storage.read-attempts", titanConfig.getString("storage.read-attempts"))
-    titanConfigInput.setProperty("autotype", titanConfig.getString("autotype"))
-    titanConfigInput.setProperty("ids.block-size", titanConfig.getString("ids.block-size"))
-    titanConfigInput.setProperty("ids.renew-timeout", titanConfig.getString("ids.renew-timeout"))
+    val titanConfig = new SerializableBaseConfiguration()
+    titanConfig.setProperty("storage.backend", titanConfigInput.getString("storage.backend"))
+    titanConfig.setProperty("storage.hostname", titanConfigInput.getString("storage.hostname"))
+    titanConfig.setProperty("storage.port", titanConfigInput.getString("storage.port"))
+    titanConfig.setProperty("storage.batch-loading", titanConfigInput.getString("storage.batch-loading"))
+    titanConfig.setProperty("storage.buffer-size", titanConfigInput.getString("storage.buffer-size"))
+    titanConfig.setProperty("storage.attempt-wait", titanConfigInput.getString("storage.attempt-wait"))
+    titanConfig.setProperty("storage.lock-wait-time", titanConfigInput.getString("storage.lock-wait-time"))
+    titanConfig.setProperty("storage.lock-retries", titanConfigInput.getString("storage.lock-retries"))
+    titanConfig.setProperty("storage.idauthority-retries", titanConfigInput.getString("storage.idauthority-retries"))
+    titanConfig.setProperty("storage.read-attempts", titanConfigInput.getString("storage.read-attempts"))
+    titanConfig.setProperty("autotype", titanConfigInput.getString("autotype"))
+    titanConfig.setProperty("ids.block-size", titanConfigInput.getString("ids.block-size"))
+    titanConfig.setProperty("ids.renew-timeout", titanConfigInput.getString("ids.renew-timeout"))
 
+    // Get the graph
     import scala.concurrent.duration._
     val graph = Await.result(sparkInvocation.engine.getGraph(arguments.graph.id), config.getInt("default-timeout") seconds)
 
+    // Set the graph in Titan
     val iatGraphName = GraphName.convertGraphUserNameToBackendName(graph.name)
-    titanConfigInput.setProperty("storage.tablename", iatGraphName)
+    titanConfig.setProperty("storage.tablename", iatGraphName)
 
-    //    Start KClique Percolation
+    // Start KClique Percolation
     System.out.println("*********Starting KClique Percolation********")
-    Driver.run(titanConfigInput, sc, arguments.cliqueSize, arguments.communityPropertyDefaultLabel)
+    Driver.run(titanConfig, sc, arguments.cliqueSize, arguments.communityPropertyDefaultLabel)
 
+    // Get the execution time and print it
     val time = (System.currentTimeMillis() - start).toDouble / 1000.0
     System.out.println("*********Finished execution of KCliquePercolation********")
     System.out.println(f"*********Execution Time = $time%.3f seconds********")
+
     KCliqueResult(time)
   }
 

@@ -24,38 +24,48 @@
 
 package com.intel.spark.graphon.communitydetection.kclique
 
-import com.intel.graphbuilder.elements.{ Vertex => GBVertex, Property }
+import com.intel.graphbuilder.elements.{ Vertex, Property }
 import org.apache.spark.rdd.RDD
 import org.apache.spark.SparkContext._
 import com.intel.graphbuilder.driver.spark.titan.reader.TitanReader
 import com.intel.spark.graphon.communitydetection.ScalaToJavaCollectionConverter
 
-class GBVertexSetter(gbVertexList: RDD[GBVertex], vertexCommunitySet: RDD[(Long, Set[Long])]) extends Serializable {
+/**
+ * Class to set the vertex Ids as required by Graph Builder, by formatting as (physicalId, gbId, propertyList)
+ * @param gbVertices graph builder vertices list of the input graph
+ * @param vertexCommunitySet pair of vertex Id and set of communities
+ */
+class GBVertexSetter(gbVertices: RDD[Vertex], vertexCommunitySet: RDD[(Long, Set[Long])]) extends Serializable {
 
-  def setVertex(communityPropertyDefaultLabel: String): RDD[GBVertex] = {
+  /**
+   * Set the vertex as required by graph builder with new community property
+   * @param communityPropertyDefaultLabel the label of the community property (provided by user)
+   * @return
+   */
+  def setVertex(communityPropertyDefaultLabel: String): RDD[Vertex] = {
 
-    //    Define an empty set of Long
+    // Define an empty set of Long
     val emptySet: Set[Long] = Set()
 
-    //    Map the GB Vertex IDs to key-value pairs where the key is the GB Vertex ID set and the value is the emptySet.
-    //    The empty set will be considered as the empty communities for the vetices that don't belong to any communities.
-    val gbVertexIDEmptySetPairs: RDD[(Long, Set[Long])] = gbVertexList
-      .map((v: GBVertex) => v.physicalId.asInstanceOf[Long])
+    // Map the GB Vertex IDs to key-value pairs where the key is the GB Vertex ID set and the value is the emptySet.
+    // The empty set will be considered as the empty communities for the vertices that don't belong to any communities.
+    val gbVertexIDEmptySetPairs: RDD[(Long, Set[Long])] = gbVertices
+      .map((v: Vertex) => v.physicalId.asInstanceOf[Long])
       .map(id => (id, emptySet))
 
-    //    Combine the vertices having communities with the vertices having no communities together, to have
-    //    complete list of vertices
-    val gbVertexCombinedWithEmptyCommunity: RDD[(Long, Set[Long])] =
+    // Combine the vertices having communities with the vertices having no communities together, to have
+    // the complete list of vertices
+    val gbVertexIdCombinedWithEmptyCommunity: RDD[(Long, Set[Long])] =
       gbVertexIDEmptySetPairs.union(vertexCommunitySet).combineByKey(
         (x => x),
         ({ case (x, y) => y.union(x) }),
         ({ case (x, y) => y.union(x) }))
 
-    //    Convert the pairs of vertex and community set into a GB Vertex
-    val newGBVertices: RDD[GBVertex] = gbVertexCombinedWithEmptyCommunity.map({
-      case (vertexId, communitySet) => GBVertex(
+    // Convert the pair of vertex and community set into a GB Vertex
+    val newGBVertices: RDD[Vertex] = gbVertexIdCombinedWithEmptyCommunity.map({
+      case (vertexId, communitySet) => Vertex(
         java.lang.Long.valueOf(vertexId),
-        Property(TitanReader.TITAN_READER_DEFAULT_GB_ID, java.lang.Long.valueOf(vertexId)),
+        Property(TitanReader.TITAN_READER_DEFAULT_GB_ID, vertexId),
         Seq(Property(communityPropertyDefaultLabel, ScalaToJavaCollectionConverter.convertSet(communitySet))))
     })
     newGBVertices

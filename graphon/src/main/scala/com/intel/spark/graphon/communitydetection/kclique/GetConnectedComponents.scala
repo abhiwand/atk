@@ -56,10 +56,16 @@ object GetConnectedComponents extends Serializable {
     val graphIDAssigner = new GraphIDAssigner[VertexSet](sc)
     val graphIDAssignerOutput = graphIDAssigner.run(cliqueGraphVertices, cliqueGraphEdges)
 
+    // Get the vertices of the k-clique graph
     val newVerticesOfCliqueGraph = graphIDAssignerOutput.vertices
+
+    // Get the edges of the k-clique graph
     val newEdgesOfCliqueGraph = graphIDAssignerOutput.edges
+
+    // Get the pair of the new vertex Id and the corresponding set of k-clique vertices
     val newVertexIdToOldVertexIdOfCliqueGraph: RDD[(Long, VertexSet)] = graphIDAssignerOutput.newIdsToOld
 
+    // Run the connected components of the new k-clique graph
     val connectedComponents = ConnectedComponentsGraphXDefault.run(newVerticesOfCliqueGraph, newEdgesOfCliqueGraph)
 
     new ConnectedComponentsOutput(connectedComponents, newVertexIdToOldVertexIdOfCliqueGraph)

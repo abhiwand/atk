@@ -26,7 +26,16 @@ package com.intel.spark.graphon.communitydetection
 
 import scala.collection.JavaConversions._
 
+/**
+ * Scala collection to java collection converter with serialization
+ */
 object ScalaToJavaCollectionConverter extends Serializable {
+
+  /**
+   * convert the scala.collection.Set[Long] to java.util.Set[Long]
+   * @param scalaSet
+   * @return
+   */
   def convertSet(scalaSet: Set[Long]): java.util.Set[Long] = {
     val javaSet = new java.util.HashSet[Long]()
     scalaSet.foreach(entry => javaSet.add(entry))

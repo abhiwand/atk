@@ -41,51 +41,62 @@ object Driver {
 
   /**
    * The main driver to execute k-clique percolation algorithm
-   * @param titanConfigInput The titan configuration for input
+   * @param titanConfig The titan configuration for input
    * @param sc SparkContext
    * @param cliqueSize Parameter determining clique-size used to determine communities. Must be at least 1.
    *                   Large values of cliqueSize result in fewer, smaller communities that are more connected
    * @param communityPropertyDefaultLabel name of the community property of vertex that will be updated/created in the input graph
    */
-  def run(titanConfigInput: SerializableBaseConfiguration, sc: SparkContext, cliqueSize: Int, communityPropertyDefaultLabel: String) = {
+  def run(titanConfig: SerializableBaseConfiguration, sc: SparkContext, cliqueSize: Int, communityPropertyDefaultLabel: String) = {
 
-    //    Create the Titan connection
-    val titanConnector = new TitanGraphConnector(titanConfigInput)
+    // Create the Titan connection
+    val titanConnector = new TitanGraphConnector(titanConfig)
     System.out.println("*********Created TitanConnector********")
 
-    //    Read the graph from Titan
+    // Read the graph from Titan
     val titanReader = new TitanReader(sc, titanConnector)
     val titanReaderRDD = titanReader.read()
     System.out.println("*********Read the graph from Titan********")
 
-    //    Get the GraphBuilder vertex list
-    val gbVertices: RDD[GBVertex] = titanReaderRDD.filterVertices()
+    // Get the GraphBuilder vertex list
+    val gbVertices = titanReaderRDD.filterVertices()
 
-    //    Get the GraphBuilder edge list
-    val gbEdges: RDD[GBEdge] = titanReaderRDD.filterEdges()
+    // Get the GraphBuilder edge list
+    val gbEdges = titanReaderRDD.filterEdges()
 
-    //    Convert the graph builder edge list to the edge list that can be used in KClique Percolation
-    val edgeList: RDD[Edge] = edgeListFromGBEdgeList(gbEdges)
+    // Convert the graph builder edge list to the edge list as a pair of vertices Ids
+    // that can be used in KClique Percolation
+    val edgeList = edgeListFromGBEdgeList(gbEdges)
 
-    //    Get all enumerated K-Cliques using the edge list
-    val enumeratedKCliques: RDD[ExtendersFact] = CliqueEnumerator.applyToEdgeList(edgeList, cliqueSize)
+    // Get all enumerated K-Cliques using the edge list
+    val enumeratedKCliques = CliqueEnumerator.applyToEdgeList(edgeList, cliqueSize)
+    System.out.println("*********Completed K-Cliques Enumeration********")
 
-    //    Construct the clique graph that will be input for connected components
-    val kCliqueGraphGeneratorOutput: KCliqueGraphGeneratorOutput = GraphGenerator.run(enumeratedKCliques)
+    // Construct the clique graph that will be input for connected components
+    val kCliqueGraphGeneratorOutput = GraphGenerator.run(enumeratedKCliques)
+    System.out.println("*********Generated K-Clique Graph********")
 
-    //    Run connected component analysis to get the communities
+    // Run connected component analysis to get the cliques and corresponding communities
     val cliquesAndConnectedComponent = GetConnectedComponents.run(kCliqueGraphGeneratorOutput, sc)
+    System.out.println("*********Completed Execution of Connected Components********")
 
-    //    Associate each vertex with a list of the communities to which it belongs
-    val vertexCommunitySet: RDD[(Long, Set[Long])] =
+    // Pair each vertex with a set of the communities to which it belongs
+    val vertexCommunitySet =
       CommunityAssigner.run(cliquesAndConnectedComponent.connectedComponents, cliquesAndConnectedComponent.newVertexIdToOldVertexIdOfCliqueGraph)
 
+    // Set the vertex Ids as required by Graph Builder
+    // A Graph Builder vertex is described by three components -
+    //    a unique Physical ID (in this case this vertex Id)
+    //    a unique gb Id, and
+    //    the properties of vertex (in this case the community property)
     val gbVertexSetter: GBVertexSetter = new GBVertexSetter(gbVertices, vertexCommunitySet)
     val newGBVertices: RDD[GBVertex] = gbVertexSetter.setVertex(communityPropertyDefaultLabel)
 
-    //    Write back to each vertex in Titan graph the set of communities to which it belongs in the property with name "communities"
+    // Update back each vertex in the input Titan graph and the write the community property
+    // as the set of communities to which it belongs
     val communityWriterInTitan = new CommunityWriterInTitan()
-    communityWriterInTitan.run(newGBVertices, gbEdges, titanConfigInput)
+    communityWriterInTitan.run(newGBVertices, gbEdges, titanConfig)
+    System.out.println("*********Updated Graph With Community Property********")
 
   }
 

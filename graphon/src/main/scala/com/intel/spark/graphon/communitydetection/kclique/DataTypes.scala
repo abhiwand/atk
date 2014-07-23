@@ -105,5 +105,4 @@ object DataTypes {
    */
   case class VertexCommunity(vertexID: Long, communityID: Long) extends Serializable
 
-  case class CommunityList(communityList: Set[Long]) extends Serializable
 }
