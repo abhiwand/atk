@@ -390,7 +390,7 @@ class FrameBackendRest(object):
         execute_update_frame_command('rename_column', arguments, frame)
 
     def rename_frame(self, frame, name):
-        # TODO - move uniqueness checking to server
+        #TODO - move uniqueness checking to server
         r = self.rest_http.get('dataframes')
         payload = r.json()
         frame_names = [f['name'] for f in payload]

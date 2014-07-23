@@ -25,7 +25,7 @@ package com.intel.intelanalytics.service.v1
 
 import com.intel.intelanalytics.domain._
 import spray.json._
-import spray.http.Uri
+import spray.http.{ StatusCodes, HttpResponse, Uri }
 import scala.Some
 import com.intel.intelanalytics.repository.MetaStoreComponent
 import com.intel.intelanalytics.service.v1.viewmodels._

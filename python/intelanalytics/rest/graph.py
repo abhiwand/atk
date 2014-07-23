@@ -27,7 +27,7 @@ import json
 import logging
 logger = logging.getLogger(__name__)
 
-from intelanalytics.core.graph import VertexRule, EdgeRule, BigGraph
+from intelanalytics.core.graph import VertexRule, EdgeRule, BigGraph, Rule
 from intelanalytics.core.column import BigColumn
 from intelanalytics.rest.connection import http
 from intelanalytics.rest.command import CommandRequest, executor
@@ -42,6 +42,12 @@ def execute_update_graph_command(command_name, arguments, graph):
     return command_info.result
 
 execute_new_graph_command = execute_update_graph_command
+
+
+def initialize_graph(graph, graph_info):
+    graph._id = graph_info.id_number
+    graph._uri= http._get_uri("graphs/"+ str(graph._id))
+    #return graph
 
 class GraphBackendRest(object):
 
@@ -63,38 +69,37 @@ class GraphBackendRest(object):
 
     def get_graph(self,name):
         logger.info("REST Backend: get_graph")
-        r = self.rest_http.get('graphs?name='+name)
-        payload = r.json()
-        return json.dumps(payload, indent=2)
+        r = http.get('graphs?name='+name)
+        graph_info = GraphInfo(r.json())
+        return BigGraph(graph_info)
 
-    #     """Retrieves the named BigGraph object"""
-    #     raise NotImplemented
-    #
     # def delete_graph(name):
     #     """Deletes the graph from backing store"""
     #     raise NotImplemented
 
-    def create(self, graph, rules):
+    def create(self, graph,rules):
         logger.info("REST Backend: create graph: " + graph.name)
+        if isinstance(rules, GraphInfo):
+            initialize_graph(graph,rules)
+            return  # Early exit here
 
-        r = http.post('graphs', { 'name': graph.name })
+        if rules and (not isinstance(rules, list) or not all([isinstance(rule, Rule) for rule in rules])):
+            raise TypeError("rules must be a list of Rule objects")
+        else:
+            r = http.post('graphs', { 'name': graph.name })
+            logger.info("REST Backend: create response: " + r.text)
+            payload = r.json()
+            graph._id = payload['id']
+            graph._uri = "%s" % (self._get_uri(payload))
+            payload = JsonPayload(graph, rules)
 
-        logger.info("REST Backend: create response: " + r.text)
-        payload = r.json()
-        graph._id = payload['id']
-        graph._uri = "%s" % (self._get_uri(payload))
-        frame_rules = JsonRules(rules)
+            if logger.level == logging.DEBUG:
+                import json
+                payload_json = json.dumps(payload, indent=2, sort_keys=True)
+                logger.debug("REST Backend: create graph payload: " + payload_json)
+            self.load(graph, payload['frame_rules'], False)
+        #execute_update_graph_command(graph, name = "graph/load", arguments=payload)
 
-        if logger.level == logging.DEBUG:
-            import json
-            payload_json = json.dumps(frame_rules, indent=2, sort_keys=True)
-            logger.debug("REST Backend: create graph payload: " + payload_json)
-        self.load(graph, frame_rules, append=False)
-
-    def append(self, graph, rules):
-        logger.info("REST Backend: append_frame graph: " + graph.name)
-        frame_rules = JsonRules(rules)
-        self.load(graph, frame_rules, append=True)
 
     def _get_uri(self, payload):
         links = payload['links']
@@ -193,20 +198,17 @@ class JsonFrame(object):
                 'edge_rules': []}
 
 
-class JsonRules(object):
-    """
-        We want to keep these objects because we need to do a conversion
-        from how the user defines the rules to how our service defines
-        these rules.
-    """
-    def __new__(cls, rules):
-        return JsonRules._get_frames(rules)
+class JsonPayload(object):
+    def __new__(cls, graph, rules):
+        return {'graph': graph._id,
+                'frame_rules': JsonPayload._get_frames(rules),
+                'retain_dangling_edges':False } # TODO
 
     @staticmethod
     def _get_frames(rules):
         frames_dict = {}
         for rule in rules:
-            frame = JsonRules._get_frame(rule, frames_dict)
+            frame = JsonPayload._get_frame(rule, frames_dict)
             # TODO - capture rule.__repr__ is a creation history for the graph
             if isinstance(rule, VertexRule):
                 frame['vertex_rules'].append(JsonVertexRule(rule))
@@ -226,5 +228,35 @@ class JsonRules(object):
             frames_dict[uri] = frame
         return frame
 
+class GraphInfo(object):
+    """
+    JSON based Server description of a BigGraph
+    """
+    def __init__(self, graph_json_payload):
+        self._payload = graph_json_payload
 
+    def __repr__(self):
+        return json.dumps(self._payload, indent =2, sort_keys=True)
 
+    def __str__(self):
+        return '%s "%s "%s""' % (self.id_number, self.name,self.links)
+
+    @property
+    def id_number(self):
+        return self._payload['id']
+
+    @property
+    def name(self):
+        return self._payload['name']
+
+    @property
+    def links(self):
+        return self._links['links']
+
+    def update(self,payload):
+        if self._payload and self.id_number != payload['id']:
+            msg = "Invalid payload, graph ID mismatch %d when expecting %d" \
+                % (payload['id'], self.id_number)
+            logger.error(msg)
+            raise RuntimeError(msg)
+        self._payload=payload
