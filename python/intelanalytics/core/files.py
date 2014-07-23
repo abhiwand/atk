@@ -20,8 +20,7 @@
 # estoppel or otherwise. Any license under such intellectual property rights
 # must be express and approved by Intel in writing.
 ##############################################################################
-
-from intelanalytics.core.iatypes import supported_types
+from intelanalytics.core.iatypes import valid_data_types
 
 
 
@@ -38,12 +37,12 @@ class CsvFile(DataFile):
     ----------
     file_name : string
         name of data input file. Relative paths are interpreted relative to the intel.analytics.engine.fs.root
-        configuration. Absolute paths (beginning with hdfs://...) are also supported.
+        configuration. Absolute paths (beginning with hdfs://..., for example) are also supported.
     schema : list of tuples of the form (string, type)
         schema description of the fields for a given line.  It is a list of
         tuples which describe each field, (field name, field type), where
         the field name is a string, and file is a supported type
-        (See supported_types from the types module)
+        (See data_types from the iatypes module)
         The type ``ignore`` may also be used if the field should be ignored
         on loads
     delimiter : string (optional)
@@ -76,7 +75,7 @@ class CsvFile(DataFile):
 
         csv_schema = [("a", int32),
                       ("b", int32),
-                      ("c", string)]
+                      ("c", str)]
 
     Now build a CsvFile object with this schema::
 
@@ -120,7 +119,7 @@ class CsvFile(DataFile):
         return repr(self.schema)
 
     def _schema_to_json(self):
-        return [(field[0], supported_types.get_type_string(field[1]))
+        return [(field[0], valid_data_types.to_string(field[1]))
                 for field in self.schema]
 
     @property
@@ -184,8 +183,16 @@ class CsvFile(DataFile):
         return [x[1] for x in self.schema]
 
     def _validate(self):
-        for t in self.schema:
-            if not isinstance(t[0], basestring):
+        validated_schema = []
+        for field in self.schema:
+            name = field[0]
+            if not isinstance(name, basestring):
                 raise ValueError("First item in CSV schema tuple must be a string")
-            if t[1] not in supported_types:
-                raise ValueError("Second item in CSV schema tuple must be a supported type: " + str(supported_types))
+            try:
+                data_type = valid_data_types.get_from_type(field[1])
+            except ValueError:
+                raise ValueError("Second item in CSV schema tuple must be a supported type: " + str(valid_data_types))
+            else:
+                validated_schema.append((name, data_type))
+        self.schema = validated_schema
+
