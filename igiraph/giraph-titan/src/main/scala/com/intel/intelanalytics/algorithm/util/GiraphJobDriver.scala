@@ -12,7 +12,7 @@ import java.net.URI
 object GiraphJobDriver {
 
   def run(jobName: String, computationClassCanonicalName: String,
-          config: Config, giraphConf: GiraphConfiguration, commandId: Long): String = {
+          config: Config, giraphConf: GiraphConfiguration, commandId: Long, reportName: String): String = {
 
     val giraphLoader = Boot.getClassLoader(config.getString("giraph.archive.name"))
     Thread.currentThread().setContextClassLoader(giraphLoader)
@@ -34,7 +34,7 @@ object GiraphJobDriver {
 
     if (job.run(true)) {
       val fs = FileSystem.get(new Configuration())
-      val stream = fs.open(new Path(output_dir_path + "/" + config.getString("output.dir") + "-learning-report_0"))
+      val stream = fs.open(new Path(output_dir_path + "/" + reportName))
       def readLines = Stream.cons(stream.readLine, Stream.continually(stream.readLine))
       val result = readLines.takeWhile(_ != null).toList.mkString("\n")
       fs.close()
