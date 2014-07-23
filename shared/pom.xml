@@ -64,6 +64,11 @@
         <!--END BDA dependencies to our modules-->
 
         <dependency>
+            <groupId>org.scala-lang</groupId>
+            <artifactId>scala-reflect</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>com.typesafe.slick</groupId>
             <artifactId>slick_${scala.short.version}</artifactId>
         </dependency>
@@ -99,6 +104,10 @@
         <dependency>
             <groupId>com.googlecode.json-simple</groupId>
             <artifactId>json-simple</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.spray</groupId>
+            <artifactId>spray-json_${scala.short.version}</artifactId>
         </dependency>
         <dependency>
             <groupId>ch.qos.logback</groupId>
