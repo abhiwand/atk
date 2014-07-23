@@ -29,7 +29,6 @@ import spray.json.DefaultJsonProtocol._
  *                     on user, please input "L" because user is your left-side vertex. Similarly, please input
  *                     "R if you want to get recommendation for movie.
  *                     The default value is "L"
- * @param vertex_id_property_key The property name for vertex id. The default value is "user_id".
  * @param output_vertex_property_list The property name for ALS/CGD results. The default value is "als_result"
  *                                    When bias is enabled, the last property name in the output_vertex_property_list
  *                                    is for bias.
@@ -41,6 +40,11 @@ import spray.json.DefaultJsonProtocol._
  *                When bias is enabled, the last property name in the output_vertex_property_list is for bias.
  *                The default value is "false"
  * @param train_str The label for training data. The default value is "tr"
+ * @param num_output_results The number of recommendations to output. The default value is 10
+ * @param left_vertex_name The real name for left side vertex. The default value is "user".
+ * @param right_vertex_name The real name for right side vertex. The default value is "movie".
+ * @param left_vertex_id_property_key The property name for left side vertex id. The default value is "user_id".
+ * @param right_vertex_id_property_key The property name for right side vertex id. The default value is "movie_id".
  */
 case class RecommendParams(graph: GraphReference,
                            vertex_id: Long,
