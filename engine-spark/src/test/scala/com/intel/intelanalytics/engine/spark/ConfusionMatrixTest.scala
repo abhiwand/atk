@@ -54,7 +54,7 @@ class ConfusionMatrixTest extends TestingSparkContextFlatSpec with Matchers {
     Array[Any](2, 1))
 
   "confusion matrix" should "compute correct TP, TN, FP, FN values" in {
-    val rdd = sc.parallelize(inputListBinary)
+    val rdd = sparkContext.parallelize(inputListBinary)
 
     val valueList = SparkOps.confusionMatrix(rdd, 0, 1, "1")
     valueList(0) shouldEqual 1
@@ -64,7 +64,7 @@ class ConfusionMatrixTest extends TestingSparkContextFlatSpec with Matchers {
   }
 
   "confusion matrix" should "compute correct TP, TN, FP, FN values for string labels" in {
-    val rdd = sc.parallelize(inputListBinaryChar)
+    val rdd = sparkContext.parallelize(inputListBinaryChar)
 
     val valueList = SparkOps.confusionMatrix(rdd, 0, 1, "yes")
     valueList(0) shouldEqual 1
@@ -74,7 +74,7 @@ class ConfusionMatrixTest extends TestingSparkContextFlatSpec with Matchers {
   }
 
   "confusion matrix" should "throw IllegalArgumentException if user gives multi-class data as input" in {
-    val rdd = sc.parallelize(inputListMulti)
+    val rdd = sparkContext.parallelize(inputListMulti)
 
     an[IllegalArgumentException] shouldBe thrownBy(SparkOps.confusionMatrix(rdd, 0, 1, "1"))
   }

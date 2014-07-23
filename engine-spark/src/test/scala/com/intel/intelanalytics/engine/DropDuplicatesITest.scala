@@ -10,7 +10,7 @@ class DropDuplicatesITest extends FlatSpec with Matchers with BeforeAndAfterEach
 
     //setup test data
     val favoriteMovies = List(Array[Any]("John", 1, "Titanic"), Array[Any]("Kathy", 2, "Jurassic Park"), Array[Any]("John", 1, "The kite runner"), Array[Any]("Kathy", 2, "Toy Story 3"), Array[Any]("Peter", 3, "Star War"))
-    val rdd = sc.parallelize(favoriteMovies)
+    val rdd = sparkContext.parallelize(favoriteMovies)
 
     rdd.count() shouldBe 5
 
