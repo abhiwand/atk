@@ -809,40 +809,41 @@ class BigFrame(CommandSupport):
         except:
             raise IaError(logger)
 
-    def count(self):
-        """
-        Row count.
+# Removed function for version 0.8 release
+#   def count(self):
+#       """
+#       Row count.
 
-        Count the number of rows that exist in this object.
+#       Count the number of rows that exist in this object.
 
-        Raises
-        ------
-        IaError
+#       Raises
+#       ------
+#       IaError
 
-        Returns
-        -------
-        int32
-            The number of rows in the frame
+#       Returns
+#       -------
+#       int32
+#           The number of rows in the frame
 
-        Examples
-        --------
-        Build a frame from a huge CSV file; report the number of rows of data::
+#       Examples
+#       --------
+#       Build a frame from a huge CSV file; report the number of rows of data::
 
-            my_frame = BigFrame(source="my_csv")
-            num_rows = my_frame.count()
-            print num_rows
+#           my_frame = BigFrame(source="my_csv")
+#           num_rows = my_frame.count()
+#           print num_rows
 
-        The result could be::
+#       The result could be::
 
-            298376527
+#           298376527
 
-        .. versionadded:: 0.8
+#       .. versionadded:: 0.8
 
-        """
-        try:
-            return self._backend.count(self)
-        except:
-            raise IaError(logger)
+#       """
+#       try:
+#           return self._backend.count(self)
+#       except:
+#           raise IaError(logger)
 
     def drop(self, predicate):
         """
