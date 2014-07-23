@@ -23,7 +23,8 @@
 
 package com.intel.intelanalytics.engine.spark.queries
 
-import com.intel.intelanalytics.component.{ ArchiveName, Boot }
+import com.intel.intelanalytics.NotFoundException
+import com.intel.intelanalytics.component.{ Boot, ClassLoaderAware }
 import com.intel.intelanalytics.domain.query.{ Query, QueryTemplate, Execution }
 import com.intel.intelanalytics.engine.plugin.{ QueryPluginResults, FunctionQuery, QueryPlugin }
 import com.intel.intelanalytics.engine.spark.context.SparkContextManager
@@ -31,7 +32,6 @@ import com.intel.intelanalytics.engine.spark.plugin.SparkInvocation
 import com.intel.intelanalytics.engine.spark.{ SparkEngine, SparkEngineConfig }
 import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.shared.EventLogging
-import com.intel.intelanalytics.{ ClassLoaderAware, NotFoundException }
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import spray.json._
@@ -66,8 +66,8 @@ class QueryExecutor(engine: => SparkEngine, queries: SparkQueryStorage, contextM
     with ClassLoaderAware {
 
   private var queryPlugins: Map[String, QueryPlugin[_]] = SparkEngineConfig.archives.flatMap {
-    case (archive, className) => Boot.getArchive(ArchiveName(archive, className))
-      .getAll[QueryPlugin[_]]("QueryPlugin")
+    case archive => Boot.getArchive(archive)
+      .getAll[QueryPlugin[_]]("queries")
       .map(p => (p.name, p))
   }.toMap
 

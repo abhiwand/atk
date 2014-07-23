@@ -104,10 +104,6 @@ abstract class CommandPlugin[Argument <: Product: ClassManifest, Return <: Produ
  * Base trait for query plugins
  */
 abstract class QueryPlugin[Argument <: Product: ClassManifest] extends OperationPlugin[Argument, Any] {
-
-  //TODO: move this override to an engine-specific class
-  final override def defaultLocation = "engine/queries/" + name
-
   /**
    * Convert the given JsObject to an instance of the Argument type
    */

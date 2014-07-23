@@ -43,88 +43,6 @@ import org.apache.spark.SparkContext._
 
 private[spark] object SparkOps extends Serializable {
 
-
-  /**
-   * Take a specified number of Rows starting from a specified offset.
-   * @param rdd rdd to pull from
-   * @param offset offset to start pulling from
-   * @param count number of objects to include in result
-   * @param limit maximum allowed size of local object
-   * @return Sequence of Row objects
-   */
-  def getRows(rdd: RDD[Row], offset: Long, count: Int, limit: Int): Seq[Row] = {
-    getElements[Row](rdd, offset, count, limit)
-  }
-
-  /**
-   * Take a specified number of Elements starting from a specified offset
-   * @param rdd rdd to pull from
-   * @param offset offset to start pulling from
-   * @param count number of objects to include in result
-   * @param limit maximum allowed size of local object
-   * @tparam T
-   * @return Sequence of T objects
-   */
-  def getElements[T: ClassTag](rdd: RDD[T], offset: Long, count: Int, limit: Int): Seq[T] = {
-    val rowsRDD = getElementsRdd[T](rdd, offset, count)
-    val rows: Seq[T] = if (rowsRDD.count() > limit) {
-      rowsRDD.take(limit)
-    }
-    else {
-      rowsRDD.collect()
-    }
-    rows
-  }
-
-  /**
-   * return an RDD containing the specified Elements
-   *
-   * @param rdd rdd to pull from
-   * @param offset offset to start pulling from
-   * @param count number of objects to include in result
-   * @return RDD of T objects
-   */
-  def getElementsRdd[T: ClassTag](rdd: RDD[T], offset: Long, count: Int): RDD[T] = {
-    //Count the rows in each partition, then order the counts by partition number
-    val counts = rdd.mapPartitionsWithIndex(
-      (i: Int, rows: Iterator[T]) => Iterator.single((i, rows.size)))
-      .collect()
-      .sortBy(_._1)
-
-    //Create cumulative sums of row counts by partition, e.g. 1 -> 200, 2-> 400, 3-> 412
-    //if there were 412 rows divided into two 200 row partitions and one 12 row partition
-    val sums = counts.scanLeft((0, 0)) {
-      (t1, t2) => (t2._1, t1._2 + t2._2)
-    }
-      .drop(1) //first one is (0,0), drop that
-      .toMap
-
-    //Put the per-partition counts and cumulative counts together
-    val sumsAndCounts = counts.map {
-      case (part, count) => (part, (count, sums(part)))
-    }.toMap
-
-    //Start getting rows. We use the sums and counts to figure out which
-    //partitions we need to read from and which to just ignore
-    val newRDD: RDD[T] = rdd.mapPartitionsWithIndex[T]((i, rows) => {
-      val (ct: Int, sum: Int) = sumsAndCounts(i)
-      val thisPartStart = sum - ct
-      if (sum < offset || thisPartStart >= offset + count) {
-        //println("skipping partition " + i)
-        Iterator.empty
-      }
-      else {
-        val start = Math.max(offset - thisPartStart, 0)
-        val numToTake = Math.min((count + offset) - thisPartStart, ct) - start
-        //println(s"partition $i: starting at $start and taking $numToTake")
-        rows.drop(start.toInt).take(numToTake.toInt)
-      }
-    })
-
-    newRDD
-  }
-
-
   /**
    * take an input RDD and return another RDD which contains the subset of the original contents
    * @param rdd input RDD
@@ -135,8 +53,10 @@ private[spark] object SparkOps extends Serializable {
   def getPagedRdd[T: ClassTag](rdd: RDD[T], offset: Long, count: Int, limit: Int): RDD[T] = {
 
     val sumsAndCounts = SparkOps.getPerPartitionCountAndAccumulatedSum(rdd)
-    val capped = Math.min(count, limit)
-
+    val capped = limit match {
+      case -1 => count
+      case _ => Math.min(count, limit)
+    }
     //Start getting rows. We use the sums and counts to figure out which
     //partitions we need to read from and which to just ignore
     val pagedRdd: RDD[T] = rdd.mapPartitionsWithIndex((i, rows) => {
