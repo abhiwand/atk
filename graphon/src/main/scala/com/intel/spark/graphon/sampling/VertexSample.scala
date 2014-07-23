@@ -48,14 +48,23 @@ case class VS(graph: GraphReference, size: Int, sampleType: String, seed: Option
     sampleType.equals("degreedist"), "Invalid sample type")
 }
 
-case class VSResult(subgraph: GraphReference)
+/**
+ * The result object.
+ *
+ * Note: For now, return the GraphReference and the name, since the name is required to get a new BigFrame reference
+ * in Python.
+ *
+ * @param ref GraphReference to the subgraph
+ * @param name name of the subgraph
+ */
+case class VSResult(ref: GraphReference, name: String)
 
 class VertexSample extends SparkCommandPlugin[VS, VSResult] {
 
   import DomainJsonProtocol._
 
   implicit val vsFormat = jsonFormat4(VS)
-  implicit val vsResultFormat = jsonFormat1(VSResult)
+  implicit val vsResultFormat = jsonFormat2(VSResult)
 
   override def execute(invocation: SparkInvocation, arguments: VS)(implicit user: UserPrincipal, executionContext: ExecutionContext): VSResult = {
 
@@ -97,7 +106,7 @@ class VertexSample extends SparkCommandPlugin[VS, VSResult] {
 
     writeToTitan(vertexSample, edgeSample, subgraphTitanConfig)
 
-    VSResult(new GraphReference(subgraph.id))
+    VSResult(new GraphReference(subgraph.id), iatSubgraphName)
   }
 
   /**
