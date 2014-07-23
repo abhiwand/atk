@@ -819,7 +819,6 @@ class BigFrame(CommandSupport):
         except:
             raise IaError(logger)
 
-<<<<<<< HEAD
     def get_error_frame(self):
         """
         When a frame is loaded, parse errors go into a separate data frame so they can be
