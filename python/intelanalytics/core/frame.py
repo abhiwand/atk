@@ -1628,7 +1628,7 @@ class BigFrame(CommandSupport):
         Returns
         ----------
         frame : BigFrame
-            A new frame object containing the column specified by sample_col and a column containing the cumulative sums
+            A new frame object containing the original columns appended with a column containing the cumulative sums
 
         Raises
         ------
@@ -1640,8 +1640,8 @@ class BigFrame(CommandSupport):
 
         Examples
         --------
-        Consider BigFrame *frame* that contains a column named *obs* with the following values: *(0, 1, 2, 0, 1, 2)*.
-        The cumulative sum for column *obs* is obtained by:
+        Consider BigFrame *frame* that contains a single column named *obs* with the following values:
+        *(0, 1, 2, 0, 1, 2)*.  The cumulative sum for column *obs* is obtained by:
 
             cs_frame = frame.cumulative_sum('obs')
 
@@ -1674,14 +1674,19 @@ class BigFrame(CommandSupport):
         count_value : any
             The column value to be used for the counts
 
+        Returns
+        ----------
+        frame : BigFrame
+            A new frame object containing the original columns appended with a column containing the cumulative counts
+
         Raises
         ------
         IaError
 
         Examples
         --------
-        Consider BigFrame *frame* that contains a column named *obs* with the following values: *(0, 1, 2, 0, 1, 2)*.
-        The cumulative count for column *obs* using *count_value = 1* is obtained by:
+        Consider BigFrame *frame* that contains a single column named *obs* with the following values:
+        *(0, 1, 2, 0, 1, 2)*.  The cumulative count for column *obs* using *count_value = 1* is obtained by:
 
             cc_frame = frame.cumulative_sum('obs', 1)
 
@@ -1712,6 +1717,11 @@ class BigFrame(CommandSupport):
         sample_col : string
             The name of the column from which to compute the cumulative percent sum
 
+        Returns
+        ----------
+        frame : BigFrame
+            A new frame object containing the original columns appended with a column containing the cumulative percent sums
+
         Raises
         ------
         IaError
@@ -1722,8 +1732,8 @@ class BigFrame(CommandSupport):
 
         Examples
         --------
-        Consider BigFrame *frame* that contains a column named *obs* with the following values: *(0, 1, 2, 0, 1, 2)*.
-        The cumulative percent sum for column *obs* is obtained by:
+        Consider BigFrame *frame* that contains a single column named *obs* with the following values:
+        *(0, 1, 2, 0, 1, 2)*.  The cumulative percent sum for column *obs* is obtained by:
 
             cps_frame = frame.cumulative_percent_sum('obs')
 
@@ -1758,14 +1768,19 @@ class BigFrame(CommandSupport):
         count_value : any
             The column value to be used for the counts
 
+        Returns
+        ----------
+        frame : BigFrame
+            A new frame object containing the original columns appended with a column containing the cumulative percent counts
+
         Raises
         ------
         IaError
 
         Examples
         --------
-        Consider BigFrame *frame* that contains a column named *obs* with the following values: *(0, 1, 2, 0, 1, 2)*.
-        The cumulative percent count for column *obs* is obtained by:
+        Consider BigFrame *frame* that contains a single column named *obs* with the following values:
+        *(0, 1, 2, 0, 1, 2)*.  The cumulative percent count for column *obs* is obtained by:
 
             cpc_frame = frame.cumulative_percent_count('obs', 1)
 
