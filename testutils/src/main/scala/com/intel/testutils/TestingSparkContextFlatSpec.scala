@@ -28,16 +28,17 @@ import org.scalatest.{ FlatSpec, BeforeAndAfter }
 
 trait TestingSparkContextFlatSpec extends FlatSpec with BeforeAndAfter {
 
-  var sc: SparkContext = null
+  var sparkContext: SparkContext = null
 
   before {
-    sc = TestingSparkContext.sparkContext
+    sparkContext = TestingSparkContext.sparkContext
   }
 
   /**
    * Clean up after the test is done
    */
   after {
+    sparkContext = null
     TestingSparkContext.cleanUp()
   }
 
