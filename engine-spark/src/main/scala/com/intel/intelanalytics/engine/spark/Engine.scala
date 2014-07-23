@@ -116,10 +116,9 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     /**
      * save the progress update
      * @param commandId id of the command
-     * @param progress list of progress for jobs initiated by the command
-     * @param detailedProgress list of extra progress info for jobs initiated by the command
+     * @param progressInfo list of progress for jobs initiated by the command
      */
-    override def updateProgress(commandId: Long, progress: List[Float], detailedProgress: List[ProgressInfo]): Unit = commandStorage.updateProgress(commandId, progress, detailedProgress)
+    override def updateProgress(commandId: Long, progressInfo: List[ProgressInfo]): Unit = commandStorage.updateProgress(commandId, progressInfo)
   }
 
   def shutdown: Unit = {

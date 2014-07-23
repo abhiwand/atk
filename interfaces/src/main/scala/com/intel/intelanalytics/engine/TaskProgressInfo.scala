@@ -21,31 +21,11 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.service.v1.viewmodels
+package com.intel.intelanalytics.engine
 
-import org.scalatest.{ Matchers, FlatSpec }
-
-class RelLinkSpec extends FlatSpec with Matchers {
-
-  "RelLink" should "be able to create a self link" in {
-
-    val uri = "http://www.example.com/"
-    val relLink = Rel.self(uri)
-
-    relLink.rel should be("self")
-    relLink.method should be("GET")
-    relLink.uri should be(uri)
-  }
-
-  it should "not allow invalid methods" in {
-    try {
-      RelLink("ia-foo", "uri", "WHACK")
-      fail("expected exception not thrown")
-    }
-    catch {
-      case e: IllegalArgumentException => // pass
-      case _ => fail("expected exception not thrown")
-    }
-
-  }
-}
+/**
+ * represent extra progress information
+ * @param retries current number of failed tasks. This is same as error in Spark.
+ *                Call it retries because it is a better user experience.
+ */
+case class TaskProgressInfo(retries: Int)
