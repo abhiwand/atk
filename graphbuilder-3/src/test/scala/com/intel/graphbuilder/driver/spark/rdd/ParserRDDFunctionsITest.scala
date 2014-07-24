@@ -27,7 +27,7 @@ import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRDDImplicits._
 import com.intel.graphbuilder.parser.rule.RuleParserDSL._
 import com.intel.graphbuilder.parser.rule.{ EdgeRule, EdgeRuleParser, VertexRule, VertexRuleParser }
 import com.intel.graphbuilder.parser.{ ColumnDef, CombinedParser, InputSchema }
-import com.intel.testutils.TestingSparkContext
+import com.intel.testutils.Specs2TestingSparkContext
 import org.apache.spark.rdd.RDD
 import org.specs2.mock.Mockito
 import org.specs2.mutable.Specification
@@ -36,7 +36,7 @@ class ParserRDDFunctionsITest extends Specification with Mockito {
 
   "ParserRDDFunctions" should {
 
-    "support a combined parser (one that goes over the input in one step)" in new TestingSparkContext {
+    "support a combined parser (one that goes over the input in one step)" in new Specs2TestingSparkContext {
 
       // Input Data
       val inputRows = List(
