@@ -61,6 +61,15 @@ class SparkFrameStorage(context: UserPrincipal => Context, fsRoot: String, files
     }
   }
 
+  def updateRowCount(frame: DataFrame, rowCount: Long): DataFrame = {
+    metaStore.withSession("frame.updateCount") {
+      implicit session =>
+        {
+          metaStore.frameRepo.updateRowCount(frame, rowCount)
+        }
+    }
+  }
+
   override def drop(frame: DataFrame): Unit = {
     deleteFrameFile(frame.id)
     metaStore.withSession("frame.drop") {

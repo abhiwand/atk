@@ -21,14 +21,10 @@
 # must be express and approved by Intel in writing.
 ##############################################################################
 
-from intelanalytics.core.orddict import OrderedDict
-import json
-
 import logging
 
 logger = logging.getLogger(__name__)
 
-from intelanalytics.core.iatypes import valid_data_types
 from intelanalytics.core.column import BigColumn
 from intelanalytics.core.errorhandle import IaError
 from intelanalytics.core.command import CommandSupport, doc_stub
@@ -253,8 +249,7 @@ class BigFrame(CommandSupport):
         try:
             return self._backend.get_repr(self)
         except:
-            raise IaError(logger)
-
+            return super(BigFrame, self).__repr__() + " (Unable to collect metadata from server)"
 
     def __len__(self):
         try:
@@ -686,7 +681,9 @@ class BigFrame(CommandSupport):
 
         Examples
         --------
-        >>> frame.calculate_percentiles('final_sale_price', [10, 50, 100])
+        ::
+
+            frame.calculate_percentiles('final_sale_price', [10, 50, 100])
         """
         try:
             percentiles_result = self._backend.calculate_percentiles(self, column_name, percentiles).result.get('percentiles')
@@ -795,57 +792,17 @@ class BigFrame(CommandSupport):
         except:
             raise IaError(logger)
 
-    def get_error_frame(self):
+    @property
+    def row_count(self):
         """
-        When a frame is loaded, parse errors go into a separate data frame so they can be
-        inspected.  No error frame is created if there were no parse errors.
+        Returns the number of rows in the frame
 
-        Returns
-        -------
-        frame : BigFrame
-            A new frame object that contains the parse errors of the currently active BigFrame
-            or None if no error frame exists
+        .. versionadded:: 0.8
         """
         try:
-            return self._backend.get_frame_by_id(self._error_frame_id)
+            return self._backend.get_row_count(self)
         except:
             raise IaError(logger)
-
-# Removed function for version 0.8 release
-#   def count(self):
-#       """
-#       Row count.
-
-#       Count the number of rows that exist in this object.
-
-#       Raises
-#       ------
-#       IaError
-
-#       Returns
-#       -------
-#       int32
-#           The number of rows in the frame
-
-#       Examples
-#       --------
-#       Build a frame from a huge CSV file; report the number of rows of data::
-
-#           my_frame = BigFrame(source="my_csv")
-#           num_rows = my_frame.count()
-#           print num_rows
-
-#       The result could be::
-
-#           298376527
-
-#       .. versionadded:: 0.8
-
-#       """
-#       try:
-#           return self._backend.count(self)
-#       except:
-#           raise IaError(logger)
 
     def drop(self, predicate):
         """
@@ -884,7 +841,7 @@ class BigFrame(CommandSupport):
         except:
             raise IaError(logger)
 
-    def drop_duplicates(self, columns=[]):
+    def drop_duplicates(self, columns=None):
         """
         Remove duplicates.
 

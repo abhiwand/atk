@@ -248,8 +248,10 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     val existingRdd = frames.getFrameRdd(sparkContext, existingFrame)
     val unionedRdd = existingRdd.union(additionalData)
     val location = fsRoot + frames.getFrameDataFile(existingFrame.id)
+    val rowCount = unionedRdd.count()
     unionedRdd.rows.saveAsObjectFile(location)
     frames.updateSchema(existingFrame, unionedRdd.schema.columns)
+    frames.updateRowCount(existingFrame, rowCount)
   }
 
   def create(frame: DataFrameTemplate)(implicit user: UserPrincipal): Future[DataFrame] =
@@ -341,6 +343,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
         for { i <- 0 until columnIndices.size }
           yield (arguments.new_column_names(i), schema.columns(columnIndices(i))._2)
     }
+
     frames.updateSchema(projectedFrame, projectedColumns.toList)
   }
 
@@ -396,7 +399,6 @@ class SparkEngine(sparkContextManager: SparkContextManager,
 
     val allColumns = frame.schema.columns :+ (outputColumn, DataTypes.string)
     frames.updateSchema(frame, allColumns)
-    frame.copy(schema = Schema(allColumns))
   }
 
   def groupBy(arguments: FrameGroupByColumn[JsObject, Long])(implicit user: UserPrincipal): Execution =
@@ -445,7 +447,6 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     }
     val new_schema = new_column_names.zip(new_data_types)
     frames.updateSchema(newFrame, new_schema)
-    newFrame.copy(schema = Schema(new_schema))
   }
 
   def decodePythonBase64EncodedStrToBytes(byteStr: String): Array[Byte] = {
@@ -517,11 +518,11 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     val columnIndex = realFrame.schema.columnIndex(arguments.column)
 
     val flattenedRDD = SparkOps.flattenRddByColumnIndex(columnIndex, arguments.separator, rdd)
+    val rowCount = flattenedRDD.count()
 
     flattenedRDD.saveAsObjectFile(fsRoot + frames.getFrameDataFile(newFrame.id))
     frames.updateSchema(newFrame, realFrame.schema.columns)
-    newFrame.copy(schema = realFrame.schema)
-
+    frames.updateRowCount(newFrame, rowCount)
   }
 
   /**
@@ -563,7 +564,6 @@ class SparkEngine(sparkContextManager: SparkContextManager,
 
     val allColumns = realFrame.schema.columns :+ (arguments.binColumnName, DataTypes.int32)
     frames.updateSchema(newFrame, allColumns)
-    newFrame.copy(schema = Schema(allColumns))
   }
 
   def filter(arguments: FilterPredicate[JsObject, Long])(implicit user: UserPrincipal): Execution =
@@ -573,6 +573,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
   def filterSimple(arguments: FilterPredicate[JsObject, Long], user: UserPrincipal) = {
     implicit val u = user
     val pyRdd = createPythonRDD(arguments.frame, arguments.predicate)
+    val rowCount = pyRdd.count()
 
     val location = fsRoot + frames.getFrameDataFile(arguments.frame)
 
@@ -581,7 +582,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     val schema = realFrame.schema
     val converter = DataTypes.parseMany(schema.columns.map(_._2).toArray)(_)
     persistPythonRDD(pyRdd, converter, location)
-    realFrame
+    frames.updateRowCount(realFrame, rowCount)
   }
 
   /**
@@ -651,9 +652,10 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     val joinResultRDD = SparkOps.joinRDDs(RDDJoinParam(pairRdds(0), leftColumns.length),
       RDDJoinParam(pairRdds(1), rightColumns.length),
       arguments.how)
+    val joinRowCount = joinResultRDD.count()
     joinResultRDD.saveAsObjectFile(fsRoot + frames.getFrameDataFile(newJoinFrame.id))
     frames.updateSchema(newJoinFrame, allColumns)
-    newJoinFrame.copy(schema = Schema(allColumns))
+    frames.updateRowCount(newJoinFrame, joinRowCount)
   }
 
   def removeColumn(arguments: FrameRemoveColumn)(implicit user: UserPrincipal): Execution =
@@ -862,9 +864,10 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     val pairRdd = rdd.map(row => SparkOps.createKeyValuePairFromRow(row, columnIndices))
 
     val duplicatesRemoved: RDD[Array[Any]] = SparkOps.removeDuplicatesByKey(pairRdd)
+    val rowCount = duplicatesRemoved.count()
 
     duplicatesRemoved.saveAsObjectFile(fsRoot + frames.getFrameDataFile(frameId))
-    realFrame
+    frames.updateRowCount(realFrame, rowCount)
   }
 
   val calculatePercentileCommand = commands.registerCommand("dataframe/calculate_percentiles", calculatePercentilesSimple)

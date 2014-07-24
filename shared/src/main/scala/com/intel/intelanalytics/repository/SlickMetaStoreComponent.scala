@@ -357,6 +357,8 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
 
       def schema = column[Schema]("schema")
 
+      def rowCount = column[Long]("row_count")
+
       def statusId = column[Long]("status_id", O.Default(1))
 
       def createdOn = column[DateTime]("created_on")
@@ -370,7 +372,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
       def errorFrameId = column[Option[Long]]("error_frame_id")
 
       /** projection to/from the database */
-      override def * = (id, name, description, schema, statusId, createdOn, modifiedOn, createdById, modifiedById, errorFrameId) <>
+      override def * = (id, name, description, schema, rowCount, statusId, createdOn, modifiedOn, createdById, modifiedById, errorFrameId) <>
         (DataFrame.tupled, DataFrame.unapply)
 
       // foreign key relationships
@@ -392,7 +394,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
     }
 
     def _insertFrame(frame: DataFrameTemplate)(implicit session: Session) = {
-      val f = DataFrame(0, frame.name, frame.description, Schema(), 1L, new DateTime(), new DateTime(), None, None)
+      val f = DataFrame(0, frame.name, frame.description, Schema(), 0L, 1L, new DateTime(), new DateTime(), None, None)
       framesAutoInc.insert(f)
     }
 
@@ -410,6 +412,13 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
       // this looks crazy but it is how you update only one column
       val schemaColumn = for (f <- frames if f.id === frame.id) yield f.schema
       schemaColumn.update(frame.schema.copy(columns = columns))
+      frames.where(_.id === frame.id).firstOption.get
+    }
+
+    override def updateRowCount(frame: DataFrame, rowCount: Long)(implicit session: Session): DataFrame = {
+      // this looks crazy but it is how you update only one column
+      val rowCountColumn = for (f <- frames if f.id === frame.id) yield f.rowCount
+      rowCountColumn.update(rowCount)
       frames.where(_.id === frame.id).firstOption.get
     }
 
