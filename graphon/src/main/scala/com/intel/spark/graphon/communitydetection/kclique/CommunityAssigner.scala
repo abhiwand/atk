@@ -25,8 +25,9 @@
 package com.intel.spark.graphon.communitydetection.kclique
 
 import org.apache.spark.rdd.RDD
-import com.intel.spark.graphon.communitydetection.kclique.DataTypes._
+import com.intel.spark.graphon.communitydetection.kclique.datatypes.datatypes.VertexSet
 import org.apache.spark.SparkContext._
+import com.intel.spark.graphon.communitydetection.kclique.datatypes._
 
 /**
  * Get the mapping pair between vertices of each k-cliques and set of community IDs that has been generated from
@@ -40,22 +41,27 @@ object CommunityAssigner extends Serializable {
    * Group by vertex IDs so that each vertex ID gets a set (possibly empty) of the community IDs to which it belongs
    *
    * @param connectedComponents pair of new Long IDs (corresponding to each k-cliques) and community ID
-   * @param newVertexIdToOldVertexIdOfCliqueGraph pair of new Long IDs and corresponding k-cliques
+   * @param cliqueGraphVertexIdToCliqueSet pair of new Long IDs and corresponding k-cliques
    * @return an RDD of pair of original vertex ID and set of community IDs to which it belongs
    */
-  def run(connectedComponents: RDD[(Long, Long)], newVertexIdToOldVertexIdOfCliqueGraph: RDD[(Long, VertexSet)]): RDD[(Long, Set[Long])] = {
+  def run(connectedComponents: RDD[(Long, Long)], cliqueGraphVertexIdToCliqueSet: RDD[(Long, VertexSet)]): RDD[(Long, Set[Long])] = {
 
-    // Cogroups connected components (new vertices and community Id pair) and
-    // new vertices Id to old vertices Id (of k-clique) pair by identical new vertices Id
-    val communityCoGroupedWithVerticesList = connectedComponents.cogroup(newVertexIdToOldVertexIdOfCliqueGraph).map(_._2)
+    // Pair of seq of community Id and seq of k-cliques by cogrouping
+    // connected components (new vertices and community Id pair) and new vertices Id to
+    // old vertices Id (of k-clique) pair
+    val seqOfCommunityIdToSeqOfCliques: RDD[(Seq[Long], Seq[Set[Long]])] = connectedComponents.cogroup(cliqueGraphVertexIdToCliqueSet).map(_._2)
 
     // Get community Id and corresponding set of old vertex Ids of the k-clique
-    val communityVerticesSet: RDD[(Long, Set[Long])] = communityCoGroupedWithVerticesList.flatMap({ case (communityIdList, verticesList) => communityIdList.flatMap(communityID => verticesList.map(vertices => (communityID, vertices))) })
+    val communityIdToVertexIdSet: RDD[(Long, Set[Long])] = seqOfCommunityIdToSeqOfCliques.flatMap({
+      case (communityIdList, verticesList) =>
+        communityIdList.flatMap(communityID =>
+          verticesList.map(vertices => (communityID, vertices)))
+    })
 
     // Emit community Id and old vertex vertex Id (of k-clique) pair from the set of vertex Id
-    val communityVertexPair = communityVerticesSet.flatMap(communityVertices =>
-      communityVertices._2.map(vertex =>
-        VertexCommunity(vertex, communityVertices._1)))
+    val communityVertexPair = communityIdToVertexIdSet.flatMap(communityIdVertices =>
+      communityIdVertices._2.map(vertex =>
+        VertexCommunity(vertex, communityIdVertices._1)))
 
     // group the communities for each k-clique vertices and get pair of vertex Id and set of community Ids
     val vertexCommunitySet: RDD[(Long, Set[Long])] = communityVertexPair.groupBy(_.vertexID).mapValues(_.map(_.communityID).toSet)

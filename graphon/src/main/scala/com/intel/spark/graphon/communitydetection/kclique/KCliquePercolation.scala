@@ -35,13 +35,35 @@ import spray.json._
 import scala.concurrent._
 import com.intel.intelanalytics.engine.spark.graph.GraphName
 import com.intel.intelanalytics.component.Boot
+import com.typesafe.config.Config
 
+/**
+ * Represents the arguments for KClique Percolation algorithm
+ *
+ * @param graph reference to the graph for which communities has to be determined
+ * @param cliqueSize Parameter determining clique-size and used to find communities. Must be at least 2.
+ *                   Large values of cliqueSize result in fewer, smaller communities that are more connected
+ * @param communityPropertyLabel name of the community property of vertex that will be
+ *                               updated/created in the input graph
+ */
 case class KClique(graph: GraphReference,
                    cliqueSize: Int,
-                   communityPropertyDefaultLabel: String)
+                   communityPropertyLabel: String) {
+  require(cliqueSize > 1, "Invalid clique size; must be at least 2")
+}
 
+/**
+ * The result object
+ *
+ * Note: For now it is returning the execution time
+ *
+ * @param time execution time
+ */
 case class KCliqueResult(time: Double)
 
+/**
+ * KClique Percolation launcher class. Takes the command from python layer
+ */
 class KCliquePercolation extends SparkCommandPlugin[KClique, KCliqueResult] {
 
   import DomainJsonProtocol._
@@ -51,7 +73,6 @@ class KCliquePercolation extends SparkCommandPlugin[KClique, KCliqueResult] {
   override def execute(sparkInvocation: SparkInvocation, arguments: KClique)(implicit user: UserPrincipal, executionContext: ExecutionContext): KCliqueResult = {
 
     val start = System.currentTimeMillis()
-    System.out.println("*********In Execute method of KCliquePercolation********")
 
     // Get the SparkContext as one the input parameters for Driver
     val sc = sparkInvocation.sparkContext
@@ -59,22 +80,8 @@ class KCliquePercolation extends SparkCommandPlugin[KClique, KCliqueResult] {
 
     // Titan Settings for input
     val config = configuration
-    val titanConfigInput = config.getConfig("titan.load")
-
-    val titanConfig = new SerializableBaseConfiguration()
-    titanConfig.setProperty("storage.backend", titanConfigInput.getString("storage.backend"))
-    titanConfig.setProperty("storage.hostname", titanConfigInput.getString("storage.hostname"))
-    titanConfig.setProperty("storage.port", titanConfigInput.getString("storage.port"))
-    titanConfig.setProperty("storage.batch-loading", titanConfigInput.getString("storage.batch-loading"))
-    titanConfig.setProperty("storage.buffer-size", titanConfigInput.getString("storage.buffer-size"))
-    titanConfig.setProperty("storage.attempt-wait", titanConfigInput.getString("storage.attempt-wait"))
-    titanConfig.setProperty("storage.lock-wait-time", titanConfigInput.getString("storage.lock-wait-time"))
-    titanConfig.setProperty("storage.lock-retries", titanConfigInput.getString("storage.lock-retries"))
-    titanConfig.setProperty("storage.idauthority-retries", titanConfigInput.getString("storage.idauthority-retries"))
-    titanConfig.setProperty("storage.read-attempts", titanConfigInput.getString("storage.read-attempts"))
-    titanConfig.setProperty("autotype", titanConfigInput.getString("autotype"))
-    titanConfig.setProperty("ids.block-size", titanConfigInput.getString("ids.block-size"))
-    titanConfig.setProperty("ids.renew-timeout", titanConfigInput.getString("ids.renew-timeout"))
+    val titanConfigurator = new TitanConfigurator(config)
+    val titanConfig = titanConfigurator.configure()
 
     // Get the graph
     import scala.concurrent.duration._
@@ -85,21 +92,16 @@ class KCliquePercolation extends SparkCommandPlugin[KClique, KCliqueResult] {
     titanConfig.setProperty("storage.tablename", iatGraphName)
 
     // Start KClique Percolation
-    System.out.println("*********Starting KClique Percolation********")
-    Driver.run(titanConfig, sc, arguments.cliqueSize, arguments.communityPropertyDefaultLabel)
+    Driver.run(titanConfig, sc, arguments.cliqueSize, arguments.communityPropertyLabel)
 
     // Get the execution time and print it
     val time = (System.currentTimeMillis() - start).toDouble / 1000.0
-    System.out.println("*********Finished execution of KCliquePercolation********")
-    System.out.println(f"*********Execution Time = $time%.3f seconds********")
 
     KCliqueResult(time)
   }
 
-  //TODO: Replace with generic code that works on any case class
   def parseArguments(arguments: JsObject) = arguments.convertTo[KClique]
 
-  //TODO: Replace with generic code that works on any case class
   def serializeReturn(returnValue: KCliqueResult): JsObject = returnValue.toJson.asJsObject()
 
   /**
@@ -107,7 +109,6 @@ class KCliquePercolation extends SparkCommandPlugin[KClique, KCliqueResult] {
    */
   override def name: String = "graphs/ml/kclique_percolation"
 
-  //TODO: Replace with generic code that works on any case class
   override def serializeArguments(arguments: KClique): JsObject = arguments.toJson.asJsObject()
 
 }

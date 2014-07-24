@@ -24,14 +24,23 @@
 
 package com.intel.spark.graphon.communitydetection.kclique
 
-import com.intel.spark.graphon.communitydetection.kclique.DataTypes._
 import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.RDD
+import com.intel.spark.graphon.communitydetection.kclique.datatypes.{ ExtendersFact, CliqueFact }
+import com.intel.spark.graphon.communitydetection.kclique.datatypes.datatypes.VertexSet
 
 object GraphGenerator extends Serializable {
 
   /**
-   * Generate the k-clique graph from the set of k-cliques
+   * Return value of KClique Graph generator
+   * @param cliqueGraphVertices List of vertices of new graph where vertices are k-cliques
+   * @param cliqueGraphEdges List of edges between the vertices of new graph of k-cliques
+   */
+  case class KCliqueGraphGeneratorOutput(val cliqueGraphVertices: RDD[VertexSet],
+                                         val cliqueGraphEdges: RDD[(VertexSet, VertexSet)])
+
+  /**
+   * Generate the k-clique graph from the (k-1) extenders fact
    * @param cliqueAndExtenders RDD of pair of clique and extenders of that clique
    * @return
    */
@@ -39,24 +48,31 @@ object GraphGenerator extends Serializable {
 
     // Derive the key value pairs of k-1 cliques in the graph and k cliques that extend them
     // and drop the boolean variable neighborHigh that describes whether the neighbors are of higher order
-    val cliqueAndExtendedClique: RDD[(CliqueFact, CliqueFact)] =
-      cliqueAndExtenders.flatMap({ case ExtendersFact(clique, extenders, neighborHigh) => extenders.map(extendedBy => (CliqueFact(clique.members), CliqueFact(clique.members + extendedBy))) })
+    val cliqueAndExtendedClique = cliqueAndExtenders.flatMap({
+      case ExtendersFact(clique, extenders, neighborHigh) =>
+        extenders.map(extendedBy =>
+          (CliqueFact(clique.members), CliqueFact(clique.members + extendedBy)))
+    })
 
     // Get the distinct CliqueFact set as the new vertex list of k-clique graph
-    val cliqueFactVertexList: RDD[CliqueFact] = cliqueAndExtenders.flatMap({ case ExtendersFact(clique, extenders, neighborHigh) => extenders.map(extendedBy => CliqueFact(clique.members + extendedBy)) }).distinct()
+    val cliqueFactVertexList = cliqueAndExtenders.flatMap({
+      case ExtendersFact(clique, extenders, neighborHigh) =>
+        extenders.map(extendedBy => CliqueFact(clique.members + extendedBy))
+    }).distinct()
 
-    // Group those pairs by their keys (the k-1) sets, so in each group we get
-    // (U, Seq(V_1, . V_m)), where the U is a k-1 clique and each V_i is a k-clique extending it
-    val cliqueAndExtendedCliqueSet: RDD[(CliqueFact, Set[CliqueFact])] = cliqueAndExtendedClique.groupBy(_._1).mapValues(_.map(_._2).toSet)
+    // Group those pairs by their keys (the k-1) sets, so in each group
+    // we get (U, Seq(V_1, . V_m)), where the U is a k-1 clique and each V_i is a k-clique extending it
+    val cliqueAndExtendedCliqueSet = cliqueAndExtendedClique.groupBy(_._1).mapValues(_.map(_._2).toSet)
 
     // Each V_i becomes a vertex of the clique graph. Create edge list as ( V_i, V_j )
-    val pairsOfAdjacentCliques = cliqueAndExtendedCliqueSet.flatMap({ case (clique, setOfCliques) => setOfCliques.subsets(2) })
+    val pairsOfAdjacentCliques = cliqueAndExtendedCliqueSet.flatMap({
+      case (clique, setOfCliques) => setOfCliques.subsets(2)
+    })
+
     val cliqueFactEdgeList = pairsOfAdjacentCliques.map(subset => (subset.head, subset.last))
 
     // Get the list of vertices of the k-clique graph
-    val cliqueGraphVertices = cliqueFactVertexList.map({
-      case (CliqueFact(cliqueVertex)) => cliqueVertex
-    })
+    val cliqueGraphVertices = cliqueFactVertexList.map({ case (CliqueFact(cliqueVertex)) => cliqueVertex })
 
     // Get the list of edges of the k-clique graph
     val cliqueGraphEdges: RDD[(VertexSet, VertexSet)] = cliqueFactEdgeList.map({
@@ -65,12 +81,5 @@ object GraphGenerator extends Serializable {
 
     new KCliqueGraphGeneratorOutput(cliqueGraphVertices, cliqueGraphEdges)
   }
-
-  /**
-   * Return value of KClique Graph generator
-   * @param cliqueGraphVertices List of vertices of new graph where vertices are k-cliques
-   * @param cliqueGraphEdges List of edges between the vertices of new graph of k-cliques
-   */
-  case class KCliqueGraphGeneratorOutput(val cliqueGraphVertices: RDD[VertexSet], val cliqueGraphEdges: RDD[(VertexSet, VertexSet)])
 
 }

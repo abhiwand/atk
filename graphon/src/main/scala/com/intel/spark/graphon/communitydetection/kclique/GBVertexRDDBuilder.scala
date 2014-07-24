@@ -35,16 +35,15 @@ import com.intel.spark.graphon.communitydetection.ScalaToJavaCollectionConverter
  * @param gbVertices graph builder vertices list of the input graph
  * @param vertexCommunitySet pair of vertex Id and set of communities
  */
-class GBVertexSetter(gbVertices: RDD[Vertex], vertexCommunitySet: RDD[(Long, Set[Long])]) extends Serializable {
+class GBVertexRDDBuilder(gbVertices: RDD[Vertex], vertexCommunitySet: RDD[(Long, Set[Long])]) extends Serializable {
 
   /**
    * Set the vertex as required by graph builder with new community property
-   * @param communityPropertyDefaultLabel the label of the community property (provided by user)
-   * @return
+   * @param communityPropertyLabel the label of the community property (provided by user)
+   * @return RDD of graph builder Vertices having new community property
    */
-  def setVertex(communityPropertyDefaultLabel: String): RDD[Vertex] = {
+  def setVertex(communityPropertyLabel: String): RDD[Vertex] = {
 
-    // Define an empty set of Long
     val emptySet: Set[Long] = Set()
 
     // Map the GB Vertex IDs to key-value pairs where the key is the GB Vertex ID set and the value is the emptySet.
@@ -66,7 +65,7 @@ class GBVertexSetter(gbVertices: RDD[Vertex], vertexCommunitySet: RDD[(Long, Set
       case (vertexId, communitySet) => Vertex(
         java.lang.Long.valueOf(vertexId),
         Property(TitanReader.TITAN_READER_DEFAULT_GB_ID, vertexId),
-        Seq(Property(communityPropertyDefaultLabel, ScalaToJavaCollectionConverter.convertSet(communitySet))))
+        Seq(Property(communityPropertyLabel, ScalaToJavaCollectionConverter.convertSet(communitySet))))
     })
     newGBVertices
   }

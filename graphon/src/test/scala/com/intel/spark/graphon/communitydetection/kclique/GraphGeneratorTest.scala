@@ -26,8 +26,8 @@ package com.intel.spark.graphon.communitydetection.kclique
 
 import org.scalatest.{ Matchers, FlatSpec, FunSuite }
 import com.intel.spark.graphon.connectedcomponents.TestingSparkContext
-import com.intel.spark.graphon.communitydetection.kclique.{ GraphGenerator, DataTypes }
-import DataTypes._
+import com.intel.spark.graphon.communitydetection.kclique.GraphGenerator
+import com.intel.spark.graphon.communitydetection.kclique.datatypes.{ ExtendersFact, CliqueFact }
 
 class GraphGeneratorTest extends FlatSpec with Matchers with TestingSparkContext {
 

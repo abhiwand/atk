@@ -22,24 +22,14 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.spark.graphon.communitydetection
+package com.intel.spark.graphon.communitydetection.kclique.datatypes
 
-import scala.collection.JavaConversions._
-
-/**
- * Scala collection to java collection converter with serialization
- */
-object ScalaToJavaCollectionConverter extends Serializable {
+package object datatypes {
 
   /**
-   * convert the scala.collection.Set[Long] to java.util.Set[Long]
-   * @param scalaSet a scala set of Long
-   * @return java.util.Set of Long
+   * A set of vertices, as manipulated by the k-clique percolation algorithm.
+   * These sets should contain no more than k vertices.
    */
-  def convertSet(scalaSet: Set[Long]): java.util.Set[Long] = {
-    val javaSet = new java.util.HashSet[Long]()
-    scalaSet.foreach(entry => javaSet.add(entry))
-    javaSet
-  }
-
+  type VertexSet = Set[Long]
 }
+

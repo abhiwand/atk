@@ -22,24 +22,19 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.spark.graphon.communitydetection
+package com.intel.spark.graphon.communitydetection.kclique.datatypes
 
-import scala.collection.JavaConversions._
-
+import com.intel.spark.graphon.communitydetection.kclique.datatypes.datatypes.VertexSet
 /**
- * Scala collection to java collection converter with serialization
+ * Encodes the fact that a given VertexSet forms a clique, and that the clique can be extended by adding
+ * any one of the vertices from the ExtendersSet.
+ *
+ * A k clique-extension fact is a clique extension fact where the vertex set contains exactly k vertices.
+ * These are the extension facts obtained after the k'th round of the algorithm.
+ *
+ * INVARIANT:
+ * when k is odd, every vertex ID in the VertexSet is less than every vertex ID in the ExtendersSet.
+ * when k is even, every vertex ID in the VertexSet is greater than every vertex ID in the ExtenderSet.
+ *
  */
-object ScalaToJavaCollectionConverter extends Serializable {
-
-  /**
-   * convert the scala.collection.Set[Long] to java.util.Set[Long]
-   * @param scalaSet a scala set of Long
-   * @return java.util.Set of Long
-   */
-  def convertSet(scalaSet: Set[Long]): java.util.Set[Long] = {
-    val javaSet = new java.util.HashSet[Long]()
-    scalaSet.foreach(entry => javaSet.add(entry))
-    javaSet
-  }
-
-}
+case class ExtendersFact(clique: CliqueFact, neighbors: VertexSet, neighborsHigh: Boolean) extends Serializable

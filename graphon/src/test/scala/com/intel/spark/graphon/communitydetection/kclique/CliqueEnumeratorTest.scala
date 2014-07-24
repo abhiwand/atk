@@ -27,7 +27,7 @@ package com.intel.spark.graphon.communitydetection.kclique
 import org.scalatest.{ Matchers, FlatSpec }
 import com.intel.spark.graphon.connectedcomponents.TestingSparkContext
 import org.apache.spark.rdd.RDD
-import DataTypes._
+import com.intel.spark.graphon.communitydetection.kclique.datatypes.{ ExtendersFact, CliqueFact, Edge }
 
 class CliqueEnumeratorTest extends FlatSpec with Matchers with TestingSparkContext {
 
@@ -42,25 +42,13 @@ class CliqueEnumeratorTest extends FlatSpec with Matchers with TestingSparkConte
 
   }
 
-  "Creating edge list from adjacency list" should
-    "create correct edge list" in new KCliqueEnumTest {
-
-      val rddOfVertexWithAdjacencyList: RDD[VertexInAdjacencyFormat] = sc.parallelize(vertexWithAdjacencyList).map(keyval => VertexInAdjacencyFormat(keyval._1, keyval._2))
-      val rddOfEdgeList: RDD[Edge] = sc.parallelize(edgeList).map(keyval => Edge(keyval._1, keyval._2))
-
-      val kcliqueEdgeList = CliqueEnumerator.createEdgeListFromParsedAdjList(rddOfVertexWithAdjacencyList)
-
-      kcliqueEdgeList.collect().toSet shouldEqual rddOfEdgeList.collect().toSet
-
-    }
-
   "K-Clique enumeration" should
     "create all set of k-cliques" in new KCliqueEnumTest {
 
-      val rddOfVertexWithAdjacencyList: RDD[VertexInAdjacencyFormat] = sc.parallelize(vertexWithAdjacencyList).map(keyval => VertexInAdjacencyFormat(keyval._1, keyval._2))
+      val rddOfEdgeList: RDD[Edge] = sc.parallelize(edgeList).map(keyval => Edge(keyval._1, keyval._2))
       val rddOfFourCliques = sc.parallelize(fourCliques).map({ case (x, y) => ExtendersFact(CliqueFact(x), y, true) })
 
-      val enumeratedFourCliques = CliqueEnumerator.applyToAdjacencyList(rddOfVertexWithAdjacencyList, 4)
+      val enumeratedFourCliques = CliqueEnumerator.run(rddOfEdgeList, 4)
 
       enumeratedFourCliques.collect().toSet shouldEqual rddOfFourCliques.collect().toSet
 

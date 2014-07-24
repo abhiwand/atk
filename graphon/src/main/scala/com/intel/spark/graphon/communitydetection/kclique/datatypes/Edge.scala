@@ -22,24 +22,27 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.spark.graphon.communitydetection
-
-import scala.collection.JavaConversions._
+package com.intel.spark.graphon.communitydetection.kclique.datatypes
 
 /**
- * Scala collection to java collection converter with serialization
+ * Represents an undirected edge as a pair of vertex identifiers.
+ * To avoid duplicate entries of (v,u) and (u,v) for the edge {u,v} we require that the source be less than the
+ * destination.
+ *
+ * @param source Source of the edge.
+ * @param destination Destination of the edge.
  */
-object ScalaToJavaCollectionConverter extends Serializable {
-
-  /**
-   * convert the scala.collection.Set[Long] to java.util.Set[Long]
-   * @param scalaSet a scala set of Long
-   * @return java.util.Set of Long
-   */
-  def convertSet(scalaSet: Set[Long]): java.util.Set[Long] = {
-    val javaSet = new java.util.HashSet[Long]()
-    scalaSet.foreach(entry => javaSet.add(entry))
-    javaSet
-  }
-
+case class Edge(source: Long, destination: Long) extends Serializable {
+  require(source < destination)
 }
+
+/**
+ * Companion object for Edge class that provides constructor.
+ */
+object Edge {
+  def edgeFactory(u: Long, v: Long) = {
+    require(u != v)
+    new Edge(math.min(u, v), math.max(u, v))
+  }
+}
+
