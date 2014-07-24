@@ -61,6 +61,15 @@ class SparkFrameStorage(context: UserPrincipal => Context, fsRoot: String, files
     }
   }
 
+  def updateRowCount(frame: DataFrame, rowCount: Long): DataFrame = {
+    metaStore.withSession("frame.updateCount") {
+      implicit session =>
+        {
+          metaStore.frameRepo.updateRowCount(frame, rowCount)
+        }
+    }
+  }
+
   override def drop(frame: DataFrame): Unit = {
     deleteFrameFile(frame.id)
     metaStore.withSession("frame.drop") {
@@ -148,6 +157,19 @@ class SparkFrameStorage(context: UserPrincipal => Context, fsRoot: String, files
         val ctx = context(user).sparkContext
         val rdd: RDD[Row] = getFrameRowRdd(ctx, frame.id)
         val rows = SparkOps.getRows(rdd, offset, count, maxRows)
+        rows
+      }
+    }
+
+  def getRowsRDD(frame: DataFrame, offset: Long, count: Int)(implicit user: UserPrincipal): RDD[Row] =
+    withContext("frame.getRows") {
+      require(frame != null, "frame is required")
+      require(offset >= 0, "offset must be zero or greater")
+      require(count > 0, "count must be zero or greater")
+      withMyClassLoader {
+        val ctx = context(user).sparkContext
+        val rdd: RDD[Row] = getFrameRdd(ctx, frame.id)
+        val rows = SparkOps.getPagedRdd[Row](rdd, offset, count, -1)
         rows
       }
     }
