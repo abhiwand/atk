@@ -155,7 +155,12 @@ object DataTypes {
     }
 
     override def asDouble(raw: Any): Double = {
-      java.lang.Double.parseDouble(raw.asInstanceOf[String])
+      try {
+        java.lang.Double.parseDouble(raw.asInstanceOf[String])
+      }
+      catch {
+        case e: Exception => throw new IllegalArgumentException("Could not parse " + raw + " as a Double.")
+      }
     }
   }
 
