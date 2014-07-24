@@ -142,7 +142,7 @@ class CommandExecutor(engine: => SparkEngine, commands: SparkCommandStorage, con
             withCommand(cmd) {
               val invocation: SparkInvocation = SparkInvocation(engine, commandId = cmd.id, arguments = cmd.arguments,
                 user = user, executionContext = implicitly[ExecutionContext],
-                sparkContext = context)
+                sparkContext = context, commandStorage = commands)
 
               context.setLocalProperty("command-id", cmd.id.toString)
 
