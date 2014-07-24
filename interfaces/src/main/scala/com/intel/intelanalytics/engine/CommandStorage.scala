@@ -41,4 +41,3 @@ trait CommandStorage {
    */
   def updateProgress(id: Long, progressInfo: List[ProgressInfo]): Unit
 }
-
