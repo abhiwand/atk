@@ -26,9 +26,10 @@ REST backend for frames
 import uuid
 import logging
 logger = logging.getLogger(__name__)
-from ordereddict import OrderedDict
+from intelanalytics.core.orddict import OrderedDict
 from collections import defaultdict
 import json
+import sys
 
 from intelanalytics.core.frame import BigFrame
 from intelanalytics.core.column import BigColumn
@@ -36,10 +37,10 @@ from intelanalytics.core.files import CsvFile
 from intelanalytics.core.iatypes import *
 from intelanalytics.core.aggregation import agg
 from intelanalytics.rest.connection import http
-from intelanalytics.rest.command import CommandRequest, executor
+
+from intelanalytics.rest.iatypes import get_data_type_from_rest_str, get_rest_str_from_data_type
+from intelanalytics.rest.command import CommandRequest, CommandInfo, executor
 from intelanalytics.rest.spark import prepare_row_function, get_add_one_column_function, get_add_many_columns_function
-
-
 
 
 class FrameBackendRest(object):
@@ -65,26 +66,43 @@ class FrameBackendRest(object):
         return [f['name'] for f in payload]
 
     def get_frame(self, name):
-        """Retrieves the named BigFrame object"""
-        logger.info("REST Backend: get_frame:",name)
-        r=self.rest_http.get(name)
+        logger.info("REST Backend: get_frame")
+        r = self.rest_http.get('dataframes?name='+name)
+        frame_info = FrameInfo(r.json())
+        return BigFrame(frame_info)
 
-
-        #raise NotImplemented  # TODO - implement get_frame
+    def get_frame_by_id(self, id):
+        logger.info("REST Backend: get_frame_by_id")
+        if id is None:
+            return None
+        else:
+            r = self.rest_http.get('dataframes/' + str(id))
+            payload = r.json()
+            frame = BigFrame()
+            initialize_frame(frame, FrameInfo(payload))
+            return frame
 
     def delete_frame(self, frame):
+        if isinstance(frame, BigFrame):
+            return self._delete_frame(frame)
+        elif isinstance(frame, str):
+            # delete by name
+            return self._delete_frame(self.get_frame(frame))
+        else:
+            raise TypeError("Excepted argument of type BigFrame or the frame name")
+
+    def _delete_frame(self, frame):
         logger.info("REST Backend: Delete frame {0}".format(repr(frame)))
         r = self.rest_http.delete("dataframes/" + str(frame._id))
-        return r
+        return frame.name
 
     def create(self, frame, source, name):
-        logger.info("REST Backend: create frame: " + frame.name)
+        logger.info("REST Backend: create frame with name %s" % name)
         if isinstance(source, FrameInfo):
             initialize_frame(frame, source)
             return  # early exit here
 
-        frame._name = name or self._get_new_frame_name(source)
-        self._create_new_frame(frame)
+        new_frame_name = self._create_new_frame(frame, name or self._get_new_frame_name(source))
 
         # TODO - change project such that server creates the new frame, instead of passing one in
         if isinstance(source, BigFrame):
@@ -97,17 +115,37 @@ class FrameBackendRest(object):
             if source:
                 self.append(frame, source)
 
+        return new_frame_name
 
-    def _create_new_frame(self, frame):
-        payload = {'name': frame.name }
+    def _create_new_frame(self, frame, name):
+        """create helper method to call http and initialize frame with results"""
+        payload = {'name': name }
         r = self.rest_http.post('dataframes', payload)
         logger.info("REST Backend: create frame response: " + r.text)
-        payload = r.json()
-        frame._id = payload['id']
-        frame._uri = self._get_uri(payload)
+        frame_info = FrameInfo(r.json())
+        initialize_frame(frame, frame_info)
+        return frame_info.name
 
-    @staticmethod
-    def _get_load_arguments(frame, data):
+    def get_name(self, frame):
+        return self._get_frame_info(frame).name
+
+    def get_schema(self, frame):
+        return self._get_frame_info(frame).schema
+
+    def get_repr(self, frame):
+        frame_info = self._get_frame_info(frame)
+        return "\n".join(['"%s"' % frame_info.name] +
+                         ["%s:%s" % (name, data_type)
+                          for name, data_type in FrameSchema.from_types_to_strings(frame_info.schema)])
+
+    def _get_frame_info(self, frame):
+        response = self.rest_http.get_full_uri(self._get_frame_full_uri(frame))
+        return FrameInfo(response.json())
+
+    def _get_frame_full_uri(self, frame):
+        return self.rest_http.create_full_uri('dataframes/%d' % frame._id)
+
+    def _get_load_arguments(self, frame, data):
         if isinstance(data, CsvFile):
             return {'destination': frame._id,
                     'source': {
@@ -127,14 +165,9 @@ class FrameBackendRest(object):
             }
         if isinstance(data, BigFrame):
             return {'source': { 'source_type': 'dataframe',
-                                'uri': data.uri},
-                    'destination': frame.uri}
+                                'uri': str(data._id)},  # TODO - be consistent about _id vs. uri in these calls
+                    'destination': self._get_frame_full_uri(frame)}
         raise TypeError("Unsupported data source " + type(data).__name__)
-
-    @staticmethod
-    def _accept_column(frame, column):
-        frame._columns[column.name] = column
-        column._frame = frame
 
     @staticmethod
     def _get_new_frame_name(source=None):
@@ -145,19 +178,11 @@ class FrameBackendRest(object):
         return "frame_" + uuid.uuid4().hex + annotation
 
     @staticmethod
-    def _get_uri(payload):
-        links = payload['links']
-        for link in links:
-            if link['rel'] == 'self':
-               return link['uri']
-        raise Exception('Unable to find uri for frame')
-
-    @staticmethod
     def _validate_schema(schema):
         for tup in schema:
             if not isinstance(tup[0], basestring):
                 raise ValueError("First value in schema tuple must be a string")
-            supported_types.validate_is_supported_type(tup[1])
+            valid_data_types.validate(tup[1])
 
     def add_columns(self, frame, expression, schema):
         if not schema or not hasattr(schema, "__iter__"):
@@ -176,15 +201,15 @@ class FrameBackendRest(object):
         from itertools import imap
         http_ready_function = prepare_row_function(frame, add_columns_function, imap)
 
-        arguments = {'frame': frame.uri,
+        arguments = {'frame': self._get_frame_full_uri(frame),
                      'column_names': names,
-                     'column_types': [supported_types.get_type_string(t) for t in data_types],
+                     'column_types': [get_rest_str_from_data_type(t) for t in data_types],
                      'expression': http_ready_function}
 
-        return execute_update_frame_command('add_columns', arguments, frame)
+        execute_update_frame_command('add_columns', arguments, frame)
 
     def append(self, frame, data):
-        logger.info("REST Backend: append data to frame {0}: {1}".format(frame.name, repr(data)))
+        logger.info("REST Backend: append data to frame {0}: {1}".format(frame._id, repr(data)))
         # for now, many data sources requires many calls to append
         if isinstance(data, list) or isinstance(data, tuple):
             for d in data:
@@ -192,7 +217,27 @@ class FrameBackendRest(object):
             return
 
         arguments = self._get_load_arguments(frame, data)
-        execute_update_frame_command("load", arguments, frame)
+        result = execute_update_frame_command("load", arguments, frame)
+        if result and result.has_key("error_frame_id"):
+            sys.stderr.write("There were parse errors during load, please see frame.get_error_frame()\n")
+            logger.warn("There were parse errors during load, please see frame.get_error_frame()")
+
+    def calculate_percentiles(self, frame, column_name, percentiles):
+        if isinstance(percentiles, int):
+            percentiles = [percentiles]
+
+        invalid_percentiles = []
+        for p in percentiles:
+            if p > 100 or p < 0:
+                invalid_percentiles.append(str(p))
+
+        if len(invalid_percentiles) > 0:
+            raise ValueError("Invalid number for percentile:" + ','.join(invalid_percentiles))
+
+        arguments = {'frame_id': frame._id, "column_name": column_name, "percentiles": percentiles}
+        command = CommandRequest("dataframe/calculate_percentiles", arguments)
+        return executor.issue(command)
+
 
     def count(self, frame):
         raise NotImplementedError  # TODO - implement count
@@ -200,26 +245,27 @@ class FrameBackendRest(object):
     def drop(self, frame, predicate):
         from itertools import ifilterfalse  # use the REST API filter, with a ifilterfalse iterator
         http_ready_function = prepare_row_function(frame, predicate, ifilterfalse)
-        arguments = {'frame': frame.uri, 'predicate': http_ready_function}
-        return execute_update_frame_command("filter", arguments, frame)
+        arguments = {'frame': self._get_frame_full_uri(frame), 'predicate': http_ready_function}
+        execute_update_frame_command("filter", arguments, frame)
 
     def drop_duplicates(self, frame, columns):
         if isinstance(columns, basestring):
             columns = [columns]
-        arguments = {'frameId': frame._id, "unique_columns": columns}
+        arguments = {'frame_id': frame._id, "unique_columns": columns}
         command = CommandRequest("dataframe/drop_duplicates", arguments)
         executor.issue(command)
 
     def filter(self, frame, predicate):
         from itertools import ifilter
         http_ready_function = prepare_row_function(frame, predicate, ifilter)
-        arguments = {'frame': frame.uri, 'predicate': http_ready_function}
-        return execute_update_frame_command("filter", arguments, frame)
+        arguments = {'frame': self._get_frame_full_uri(frame), 'predicate': http_ready_function}
+        execute_update_frame_command("filter", arguments, frame)
 
     def flatten_column(self, frame, column_name):
         name = self._get_new_frame_name()
-        arguments = {'name': name, 'frameId': frame._id, 'column': column_name, 'separator': ',' }
-        return execute_new_frame_command('flattenColumn', arguments)
+        arguments = {'name': name, 'frame_id': frame._id, 'column': column_name, 'separator': ',' }
+        return execute_new_frame_command('flatten_column', arguments)
+
 
     def bin_column(self, frame, column_name, num_bins, bin_type='equalwidth', bin_column_name='binned'):
         import numpy as np
@@ -233,8 +279,8 @@ class FrameBackendRest(object):
         if not colTypes[column_name] in [np.float32, np.float64, np.int32, np.int64]:
             raise ValueError("unable to bin non-numeric values")
         name = self._get_new_frame_name()
-        arguments = {'name': name, 'frame': frame._id, 'columnName': column_name, 'numBins': num_bins, 'binType': bin_type, 'binColumnName': bin_column_name}
-        return execute_new_frame_command('binColumn', arguments)
+        arguments = {'name': name, 'frame': frame._id, 'column_name': column_name, 'num_bins': num_bins, 'bin_type': bin_type, 'bin_column_name': bin_column_name}
+        return execute_new_frame_command('bin_column', arguments)
 
     class InspectionTable(object):
         """
@@ -260,7 +306,7 @@ class FrameBackendRest(object):
             # keep the import localized, as serialization doesn't like prettytable
             import intelanalytics.rest.prettytable as prettytable
             table = prettytable.PrettyTable()
-            fields = OrderedDict([("{0}:{1}".format(n, supported_types.get_type_string(t)), self._align[t]) for n, t in self.schema])
+            fields = OrderedDict([("{0}:{1}".format(n, valid_data_types.to_string(t)), self._align[t]) for n, t in self.schema])
             table.field_names = fields.keys()
             table.align.update(fields)
             table.hrules = prettytable.HEADER
@@ -288,17 +334,24 @@ class FrameBackendRest(object):
         # TODO - change project_columns so the server creates the new frame, like join
         if isinstance(columns, basestring):
             columns = [columns]
+        elif isinstance(columns, dict):
+            if new_names is not None:
+                raise ValueError("'new_names' argument must be None since 'columns' argument is a dictionary, ")
+            columns, new_names = zip(*columns.items())
+
         if new_names is not None:
             if isinstance(new_names, basestring):
                 new_names = [new_names]
             if len(columns) != len(new_names):
                 raise ValueError("new_names list argument must be the same length as the column_names")
-        # TODO - create a general method to validate lists of column names, such that they exist, are all from the same frame, and not duplicated
         # TODO - fix REST server to accept nulls, for now we'll pass an empty list
         else:
             new_names = list(columns)
-        arguments = {'frame': frame.uri, 'projected_frame': projected_frame.uri, 'columns': columns, "new_column_names": new_names}
-        return execute_update_frame_command('project', arguments, projected_frame)
+        arguments = {'frame': self._get_frame_full_uri(frame),
+                     'projected_frame': self._get_frame_full_uri(projected_frame),
+                     'columns': columns,
+                     'new_column_names': new_names}
+        execute_update_frame_command('project', arguments, projected_frame)
 
     def groupby(self, frame, groupby_columns, aggregation):
         if groupby_columns is None:
@@ -306,14 +359,17 @@ class FrameBackendRest(object):
         elif isinstance(groupby_columns, basestring):
             groupby_columns = [groupby_columns]
 
+        first_column_name = None
         aggregation_list = []
+
         for arg in aggregation:
             if arg == agg.count:
-                aggregation_list.append((agg.count, frame.column_names[0], "count"))
+                if not first_column_name:
+                    first_column_name = frame.column_names[0]  #only make this call once, since it goes to http - TODO, ultimately should be handled server-side
+                aggregation_list.append((agg.count, first_column_name, "count"))
             elif isinstance(arg, dict):
                 for k,v in arg.iteritems():
-                    if k not in frame._columns:
-                        raise ValueError("%s is not a valid column name for this frame" % k)
+                    # leave the valid column check to the server
                     if isinstance(v, list) or isinstance(v, tuple):
                         for j in v:
                             if j not in agg:
@@ -325,7 +381,7 @@ class FrameBackendRest(object):
                 raise TypeError("Bad type %s provided in aggregation arguments; expecting an aggregation function or a dictionary of column_name:[func]" % type(arg))
 
         name = self._get_new_frame_name()
-        arguments = {'frame': frame.uri,
+        arguments = {'frame': self._get_frame_full_uri(frame),
                      'name': name,
                      'group_by_columns': groupby_columns,
                      'aggregations': aggregation_list}
@@ -335,7 +391,7 @@ class FrameBackendRest(object):
     # def remove_columns(self, frame, name):
     #     columns = ",".join(name) if isinstance(name, list) else name
     #     arguments = {'frame': frame.uri, 'column': columns}
-    #     return execute_update_frame_command('removecolumn', arguments, frame)
+    #     execute_update_frame_command('removecolumn', arguments, frame)
 
     def rename_columns(self, frame, column_names, new_names):
         if isinstance(column_names, basestring) and isinstance(new_names, basestring):
@@ -343,22 +399,29 @@ class FrameBackendRest(object):
             new_names = [new_names]
         if len(column_names) != len(new_names):
             raise ValueError("rename requires name lists of equal length")
-        current_names = frame._columns.keys()
+        current_names = frame.column_names
         for nn in new_names:
             if nn in current_names:
                 raise ValueError("Cannot use rename to '{0}' because another column already exists with that name".format(nn))
-        arguments = {'frame': frame.uri, "original_names": column_names, "new_names": new_names}
-        return execute_update_frame_command('rename_column', arguments, frame)
+        arguments = {'frame': self._get_frame_full_uri(frame), "original_names": column_names, "new_names": new_names}
+        execute_update_frame_command('rename_columns', arguments, frame)
 
-    # def rename_frame(self, frame, name):
-    #     arguments = {'frame': frame.uri, "new_name": name}
-    #     return execute_update_frame_command('rename_frame', arguments, frame)
+    def rename_frame(self, frame, name):
+        # TODO - move uniqueness checking to server
+        r = self.rest_http.get('dataframes')
+        payload = r.json()
+        frame_names = [f['name'] for f in payload]
+        if name in frame_names:
+            raise ValueError("A frame with this name already exists. Rename failed")
+        arguments = {'frame': frame.uri, "new_name": name}
+        execute_update_frame_command('rename_frame', arguments, frame)
 
     def take(self, frame, n, offset):
         r = self.rest_http.get('dataframes/{0}/data?offset={2}&count={1}'.format(frame._id,n, offset))
         return r.json()
 
     def classification_metric(self, frame, metric_type, label_column, pred_column, pos_label, beta):
+        # TODO - remove error handling, leave to server (or move to plugin)
         if metric_type not in ['accuracy', 'precision', 'recall', 'fmeasure']:
             raise ValueError("metric_type must be one of: 'accuracy'")
         if label_column.strip() == "":
@@ -367,19 +430,50 @@ class FrameBackendRest(object):
             raise ValueError("pred_column can not be empty string")
         if str(pos_label).strip() == "":
             raise ValueError("invalid pos_label")
-        if not label_column in frame.column_names:
+        schema_dict = dict(frame.schema)
+        column_names = schema_dict.keys()
+        if not label_column in column_names:
             raise ValueError("label_column does not exist in frame")
-        if not pred_column in frame.column_names:
+        if not pred_column in column_names:
             raise ValueError("pred_column does not exist in frame")
-        if dict(frame.schema).get(label_column) in ['float32', 'float64']:
+        if supported_types.get_type_string(schema_dict[label_column]) in ['float32', 'float64']:
             raise ValueError("invalid label_column types")
-        if dict(frame.schema).get(pred_column) in ['float32', 'float64']:
+        if supported_types.get_type_string(schema_dict[pred_column]) in ['float32', 'float64']:
             raise ValueError("invalid pred_column types")
         if not beta > 0:
             raise ValueError("invalid beta value for f measure")
+        arguments = {'frame_id': frame._id, 'metric_type': metric_type, 'label_column': label_column, 'pred_column': pred_column, 'pos_label': str(pos_label), 'beta': beta}
+        return get_command_output('classification_metric', arguments).get('metric_value')
+    
+    def confusion_matrix(self, frame, label_column, pred_column, pos_label):
+        if label_column.strip() == "":
+            raise ValueError("label_column can not be empty string")
+        schema_dict = dict(frame.schema)
+        column_names = schema_dict.keys()
+        if not label_column in column_names:
+            raise ValueError("label_column does not exist in frame")
+        if schema_dict.get(label_column) in ['float32', 'float64']:
+            raise ValueError("invalid label_column types")
+        if pred_column.strip() == "":
+            raise ValueError("pred_column can not be empty string")
+        if not pred_column in column_names:
+            raise ValueError("pred_column does not exist in frame")
+        if schema_dict.get(pred_column) in ['float32', 'float64']:
+            raise ValueError("invalid pred_column types")
+        if str(pos_label).strip() == "":
+            raise ValueError("invalid pos_label")
+        arguments = {'frame_id': frame._id, 'label_column': label_column, 'pred_column': pred_column, 'pos_label': str(pos_label)}
+        # valueList = (tp, tn, fp, fn)
+        valueList = get_command_output('confusion_matrix', arguments).get('value_list')
+        # the following output formatting code is ugly, but it works for now...
+        maxLength = len(max((str(x) for x in valueList), key=len))
+        topRowLen = max([maxLength*2 - 7, 1])
+        formattedMatrix = "\n         " + " " * len(str(pos_label)) + "   " + " Predicted" + " " * topRowLen + "  \n"
+        formattedMatrix += "         " + " " * len(str(pos_label)) + "  _pos" + "_" * max([maxLength - 2, 1]) + " _neg" + "_" * max([maxLength - 3, 1]) + "_\n"
+        formattedMatrix += "Actual   pos | " + str(valueList[0]) + " " * max([maxLength - len(str(valueList[0])), 0]) + "   " + str(valueList[3]) + " " * max([maxLength - len(str(valueList[3])), 0]) + " \n"
+        formattedMatrix += "         neg | " + str(valueList[2]) + " " * max([maxLength - len(str(valueList[2])), 0]) + "   " + str(valueList[1]) + " " * max([maxLength - len(str(valueList[1])), 0]) + " \n"
 
-        arguments = {'frameId': frame._id, 'metricType': metric_type, 'labelColumn': label_column, 'predColumn': pred_column, 'posLabel': str(pos_label), 'beta': beta}
-        return get_command_output_value('classification_metric', arguments).get('metricValue')
+        return formattedMatrix
 
 
 class FrameInfo(object):
@@ -404,9 +498,15 @@ class FrameInfo(object):
         return self._payload['name']
 
     @property
-    def columns(self):
-        return [BigColumn(pair[0], supported_types.get_type_from_string(pair[1]))
-                for pair in self._payload['schema']['columns']]
+    def schema(self):
+        return FrameSchema.from_strings_to_types(self._payload['schema']['columns'])
+
+    @property
+    def error_frame_id(self):
+        try:
+            return self._payload['error_frame_id']
+        except:
+            return None
 
     def update(self, payload):
         if self._payload and self.id_number != payload['id']:
@@ -417,16 +517,33 @@ class FrameInfo(object):
         self._payload = payload
 
 
+class FrameSchema:
+    """
+    Conversion functions for schema representations
+
+    The standard schema representation is
+    1. A list of (name, data_type) tuples of the form (str, type) [types]
+
+    Other representations include:
+    2.  A list tuples of the form (str, str)  --used in JSON      [strings]
+    3.  A list of BigColumn objects                               [columns]
+    4.  An OrderedDict of name: data_type of the form str: type   [dict]
+    """
+
+    @staticmethod
+    def from_types_to_strings(s):
+        return [(name, get_rest_str_from_data_type(data_type)) for name, data_type in s]
+
+    @staticmethod
+    def from_strings_to_types(s):
+        return [(name, get_data_type_from_rest_str(data_type)) for name, data_type in s]
+
+    # Add more if necessary
+
 def initialize_frame(frame, frame_info):
     """Initializes a frame according to given frame_info"""
     frame._id = frame_info.id_number
-    # TODO - update uri from result (this is a TODO in the engine)
-    frame._uri = http._get_uri("dataframes/" + str(frame._id))
-    frame._name = frame_info.name
-    frame._columns.clear()
-    for column in frame_info.columns:
-        FrameBackendRest._accept_column(frame, column)
-
+    frame._error_frame_id = frame_info.error_frame_id
 
 def execute_update_frame_command(command_name, arguments, frame):
     """Executes command and updates frame with server response"""
@@ -437,7 +554,6 @@ def execute_update_frame_command(command_name, arguments, frame):
     command_info = executor.issue(command_request)
     if command_info.result.has_key('name') and command_info.result.has_key('schema'):
         initialize_frame(frame, FrameInfo(command_info.result))
-        return None
     return command_info.result
 
 
@@ -451,8 +567,9 @@ def execute_new_frame_command(command_name, arguments):
     frame_info = FrameInfo(command_info.result)
     return BigFrame(frame_info)
 
-def get_command_output_value(command_name, arguments):
-    """Executes command and returns the computed value"""
+
+def get_command_output(command_name, arguments):
+    """Executes command and returns the output"""
     command_request = CommandRequest('dataframe/' + command_name, arguments)
     command_info = executor.issue(command_request)
     return command_info.result

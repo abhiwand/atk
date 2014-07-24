@@ -29,6 +29,7 @@ import spray.http._
 import MediaTypes._
 import akka.event.Logging
 import com.intel.intelanalytics.service.v1.ApiV1Service
+import com.intel.intelanalytics.spray.json.IADefaultJsonProtocol
 
 /**
  * We don't implement our route structure directly in the service actor because
@@ -78,7 +79,7 @@ class ApiService(val commonDirectives: CommonDirectives, val apiV1Service: ApiV1
 
   import spray.json._
   import spray.httpx.SprayJsonSupport._
-  import DefaultJsonProtocol._
+  import IADefaultJsonProtocol._
   implicit val descFormat = jsonFormat3(ServiceDescription)
 
   /**

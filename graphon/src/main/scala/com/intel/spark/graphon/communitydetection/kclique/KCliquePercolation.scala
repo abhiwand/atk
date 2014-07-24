@@ -36,6 +36,7 @@ import scala.concurrent._
 import com.intel.intelanalytics.engine.spark.graph.GraphName
 import com.intel.intelanalytics.component.Boot
 import com.typesafe.config.Config
+import com.intel.intelanalytics.engine.spark.SparkEngineConfig
 
 /**
  * Represents the arguments for KClique Percolation algorithm
@@ -80,8 +81,7 @@ class KCliquePercolation extends SparkCommandPlugin[KClique, KCliqueResult] {
 
     // Titan Settings for input
     val config = configuration
-    val titanConfigurator = new TitanConfigurator(config)
-    val titanConfig = titanConfigurator.configure()
+    val titanConfig = SparkEngineConfig.titanLoadConfiguration
 
     // Get the graph
     import scala.concurrent.duration._
