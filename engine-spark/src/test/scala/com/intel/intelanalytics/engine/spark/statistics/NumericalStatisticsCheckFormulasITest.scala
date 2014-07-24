@@ -1,10 +1,10 @@
 package com.intel.intelanalytics.engine.spark.statistics
 
 import org.scalatest.Matchers
-import com.intel.intelanalytics.engine.TestingSparkContext
+import com.intel.testutils.TestingSparkContextFlatSpec
 import com.intel.intelanalytics.engine.spark.statistics.numericalstatistics.NumericalStatistics
 
-class NumericalStatisticsCheckFormulasITest extends TestingSparkContext with Matchers {
+class NumericalStatisticsCheckFormulasITest extends TestingSparkContextFlatSpec with Matchers {
 
   /**
    * Tests the distributed implementation of the statistics calculator against the formulae used by SAS.
@@ -31,10 +31,10 @@ class NumericalStatisticsCheckFormulasITest extends TestingSparkContext with Mat
     val normalizedWeights = frequencies.map(x => x / (totalWeight.toDouble))
 
     val dataFrequencyPairs: List[(Double, Double)] = data.zip(frequencies)
-    val dataFrequencyRDD = sc.parallelize(dataFrequencyPairs)
+    val dataFrequencyRDD = sparkContext.parallelize(dataFrequencyPairs)
 
     val dataWeightPairs: List[(Double, Double)] = data.zip(normalizedWeights)
-    val dataWeightRDD = sc.parallelize(dataWeightPairs)
+    val dataWeightRDD = sparkContext.parallelize(dataWeightPairs)
 
     val numericalStatisticsFrequencies = new NumericalStatistics(dataFrequencyRDD)
 

@@ -1,14 +1,14 @@
 package com.intel.intelanalytics.engine.spark.statistics
 
 import org.scalatest.Matchers
-import com.intel.intelanalytics.engine.TestingSparkContext
+import com.intel.testutils.TestingSparkContextFlatSpec
 import org.apache.spark.rdd.RDD
 
 /**
  * Tests the frequency statistics package through several corner cases and bad-data cases, as well as "happy path"
  * use cases with both normalized and un-normalized weights.
  */
-class FrequencyStatisticsITest extends TestingSparkContext with Matchers {
+class FrequencyStatisticsITest extends TestingSparkContextFlatSpec with Matchers {
 
   trait FrequencyStatisticsTest {
 
@@ -29,7 +29,7 @@ class FrequencyStatisticsITest extends TestingSparkContext with Matchers {
     val dataList: List[Double] = List()
     val weightList: List[Double] = List()
 
-    val dataWeightPairs = sc.parallelize(dataList.zip(weightList))
+    val dataWeightPairs = sparkContext.parallelize(dataList.zip(weightList))
 
     val frequencyStats = new FrequencyStatistics[Double](dataWeightPairs)
 
@@ -44,7 +44,7 @@ class FrequencyStatisticsITest extends TestingSparkContext with Matchers {
 
   "integer data with integer frequencies" should "work" in new FrequencyStatisticsTest {
 
-    val dataWeightPairs = sc.parallelize(integers.zip(integerFrequencies))
+    val dataWeightPairs = sparkContext.parallelize(integers.zip(integerFrequencies))
 
     val frequencyStats = new FrequencyStatistics(dataWeightPairs)
 
@@ -59,7 +59,7 @@ class FrequencyStatisticsITest extends TestingSparkContext with Matchers {
 
   "string data with integer frequencies" should "work" in new FrequencyStatisticsTest {
 
-    val dataWeightPairs = sc.parallelize(strings.zip(integerFrequencies))
+    val dataWeightPairs = sparkContext.parallelize(strings.zip(integerFrequencies))
 
     val frequencyStats = new FrequencyStatistics(dataWeightPairs)
 
@@ -74,7 +74,7 @@ class FrequencyStatisticsITest extends TestingSparkContext with Matchers {
 
   "integer data with fractional weights" should "work" in new FrequencyStatisticsTest {
 
-    val dataWeightPairs = sc.parallelize(integers.zip(fractionalFrequencies))
+    val dataWeightPairs = sparkContext.parallelize(integers.zip(fractionalFrequencies))
 
     val frequencyStats = new FrequencyStatistics(dataWeightPairs)
 
@@ -90,7 +90,7 @@ class FrequencyStatisticsITest extends TestingSparkContext with Matchers {
 
   "string data  with fractional weights" should "work" in new FrequencyStatisticsTest {
 
-    val dataWeightPairs = sc.parallelize(strings.zip(fractionalFrequencies))
+    val dataWeightPairs = sparkContext.parallelize(strings.zip(fractionalFrequencies))
 
     val frequencyStats = new FrequencyStatistics(dataWeightPairs)
 
@@ -106,7 +106,7 @@ class FrequencyStatisticsITest extends TestingSparkContext with Matchers {
   "items with negative weights" should "not affect mode or total weight" in new FrequencyStatisticsTest {
 
     val dataWeightPairs: RDD[(String, Double)] =
-      sc.parallelize((strings :+ "haha").zip(fractionalFrequencies :+ ((-10.0))))
+      sparkContext.parallelize((strings :+ "haha").zip(fractionalFrequencies :+ ((-10.0))))
 
     val frequencyStats = new FrequencyStatistics[String](dataWeightPairs)
 

@@ -38,4 +38,9 @@ class GraphSchema(val edgeLabelDefs: List[EdgeLabelDef], val propertyDefs: List[
     propertyDefs.filter(propertyDef => propertyDef.name == propertyName)
   }
 
+  /**
+   * The number of items defined in this GraphSchema
+   */
+  val count: Int = edgeLabelDefs.size + propertyDefs.size
+
 }
