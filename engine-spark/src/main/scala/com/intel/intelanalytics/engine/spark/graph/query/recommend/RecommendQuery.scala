@@ -84,7 +84,7 @@ class RecommendQuery extends SparkCommandPlugin[RecommendParams, RecommendResult
     val config = configuration
     val graphFuture = invocation.engine.getGraph(arguments.graph.id)
     val graph = Await.result(graphFuture, config.getInt("default-timeout") seconds)
-    val pattern = ","
+    val pattern = "[\\s,\\t]+"
     val outputVertexPropertyList = arguments.output_vertex_property_list.getOrElse(
       config.getString("output_vertex_property_list"))
     val resultPropertyList = outputVertexPropertyList.split(pattern)
@@ -137,11 +137,9 @@ class RecommendQuery extends SparkCommandPlugin[RecommendParams, RecommendResult
 
     //get the source vertex based on its id
     val sourceVertexRDD = vertexRDD.filter(
-      vertex => {
-        if (vertex.getStringPropertyValue(sourceIdPropertyKey) == vertexId &&
-          vertex.getStringPropertyValue(vertexTypePropertyKey).toLowerCase == vertexType) true
-        else false
-      })
+      vertex => vertex.getPropertyValueAsString(sourceIdPropertyKey) == vertexId &&
+        vertex.getPropertyValueAsString(vertexTypePropertyKey).toLowerCase == vertexType
+    )
     sourceVertexRDD.persist(StorageLevel.MEMORY_AND_DISK)
 
     val sourceVertexArray = sourceVertexRDD.toArray()
@@ -161,26 +159,22 @@ class RecommendQuery extends SparkCommandPlugin[RecommendParams, RecommendResult
     // when there is "TR" data between source vertex and target vertex,
     // it means source vertex knew target vertex already.
     // The target vertex cannot shown up in recommendation results
-    val avoidTargetEdgeRDD = edgeRDD.filter {
-      edge =>
-        {
-          if (edge.getHeadVertexGbId() == sourceGbId &&
-            edge.getStringPropertyValue(edgeTypePropertyKey).toLowerCase == trainStr) true
-          else false
-        }
-    }
+    val avoidTargetEdgeRDD = edgeRDD.filter(
+      edge => edge.getHeadVertexGbId() == sourceGbId &&
+        edge.getPropertyValueAsString(edgeTypePropertyKey).toLowerCase == trainStr
+    )
 
-    //get valid target vertices' gbIds                                                      s
+    //get valid target vertices' gbIds
     val avoidTargetGbIdsRDD = avoidTargetEdgeRDD.tailVerticesGbIds()
 
     //get unique target vertices' gbIds
-    val avoidGbIdsArray = avoidTargetGbIdsRDD.distinct().toArray
+    val avoidGbIdsArray = avoidTargetGbIdsRDD.distinct().toArray()
 
     //filter target vertex RDD
     val targetVertexRDD = vertexRDD.filter {
       case vertex =>
         var keep = false
-        if (vertex.getStringPropertyValue(vertexTypePropertyKey).toLowerCase == targetVertexType) {
+        if (vertex.getPropertyValueAsString(vertexTypePropertyKey).toLowerCase == targetVertexType) {
           keep = true
           for (i <- 0 until avoidGbIdsArray.length) {
             if (vertex.gbId == avoidGbIdsArray(i)) {
@@ -194,7 +188,7 @@ class RecommendQuery extends SparkCommandPlugin[RecommendParams, RecommendResult
     // get the result vector of each target vertex
     val targetVectorRDD = targetVertexRDD.map {
       case vertex =>
-        val targetVertexId = vertex.getStringPropertyValue(targetIdPropertyKey)
+        val targetVertexId = vertex.getPropertyValueAsString(targetIdPropertyKey)
         val resultVector = RecommendFeatureVector.parseResultArray(vertex,
           resultPropertyList, vectorValue, biasOn)
         TargetTuple(targetVertexId, resultVector)
@@ -211,12 +205,10 @@ class RecommendQuery extends SparkCommandPlugin[RecommendParams, RecommendResult
       .sortBy(-_.score)
       .take(numOutputResults)
 
-    var i = 1
     var results = "================Top " + numOutputResults + " recommendations for " +
       sourceVertexName + " " + vertexId + "==========\n"
     ratingResultRDD.foreach { rating: Rating =>
       results += targetVertexName + "\t" + rating.vertexId + "\tscore\t" + rating.score + "\n"
-      i += 1
     }
 
     targetVectorRDD.unpersist()

@@ -25,7 +25,7 @@ package com.intel.graphbuilder.driver.spark.rdd
 
 import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRDDImplicits._
 import com.intel.graphbuilder.elements.{ Edge, Vertex, _ }
-import com.intel.testutils.TestingSparkContext
+import com.intel.testutils.Specs2TestingSparkContext
 import org.specs2.mutable.Specification
 
 class GraphElementRDDFunctionsITest extends Specification {
@@ -34,7 +34,7 @@ class GraphElementRDDFunctionsITest extends Specification {
 
     // A lot of tests are being grouped together here because it
     // is somewhat expensive to spin up a testing SparkContext
-    "pass integration test" in new TestingSparkContext {
+    "pass integration test" in new Specs2TestingSparkContext {
 
       val edge1 = new Edge(Property("gbId", 1L), Property("gbId", 2L), "myLabel", List(Property("key", "value")))
       val edge2 = new Edge(Property("gbId", 2L), Property("gbId", 3L), "myLabel", List(Property("key", "value")))

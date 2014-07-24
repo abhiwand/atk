@@ -28,8 +28,11 @@ import spray.routing._
 /**
  * Single entry point for classes that implement the Intel Analytics V1 REST API
  */
-class ApiV1Service(val dataFrameService: DataFrameService, val commandService: CommandService, val graphService: GraphService) extends Directives {
+class ApiV1Service(val dataFrameService: DataFrameService,
+                   val commandService: CommandService,
+                   val graphService: GraphService,
+                   val queryService: QueryService) extends Directives {
   def route: Route = {
-    dataFrameService.frameRoutes() ~ commandService.commandRoutes() ~ graphService.graphRoutes()
+    dataFrameService.frameRoutes() ~ commandService.commandRoutes() ~ graphService.graphRoutes() ~ queryService.queryRoutes()
   }
 }
