@@ -13,10 +13,10 @@ object RecommendFeatureVector {
    *
    * @param graphElement Graph element which can be a vertex or an edge
    * @param propertyName Property name for prior probabilities
-   * @return property value in Double type                                                                      s
+   * @return property value in Double type
    */
   def parseDoubleValue(graphElement: GraphElement, propertyName: String): Double = {
-    val value = graphElement.getStringPropertyValue(propertyName)
+    val value = graphElement.getPropertyValueAsString(propertyName)
     if (value != "") {
       Try { value.toDouble }.getOrElse(0d)
     }
@@ -34,8 +34,8 @@ object RecommendFeatureVector {
    * @return property value in Double Array type
    */
   def parseDoubleArray(graphElement: GraphElement, propertyName: String,
-                       sep: String = ","): Array[Double] = {
-    val result = graphElement.getStringPropertyValue(propertyName)
+                       sep: String = "[\\s,\\t]+"): Array[Double] = {
+    val result = graphElement.getPropertyValueAsString(propertyName)
     if (result != "") {
       result.split(sep).map(v => {
         Try { v.toDouble }.getOrElse(0d)
@@ -59,7 +59,7 @@ object RecommendFeatureVector {
    * @return Array of feature probabilities
    */
   def parseResultArray(graphElement: GraphElement, resultPropertyList: Array[String],
-                       vectorValue: Boolean, biasOn: Boolean, sep: String = ","): Array[Double] = {
+                       vectorValue: Boolean, biasOn: Boolean, sep: String = "[\\s,\\t]+"): Array[Double] = {
     val results = ArrayBuffer[Double]()
     val length = resultPropertyList.length
     var valueLength = length
@@ -83,7 +83,7 @@ object RecommendFeatureVector {
 
   /**
    * Predict the top selections for input vertex Id.
-   * <p>
+   *
    * @param sourceVector  vectorValue of source vertex
    * @param targetVectorRDD  RDD of (vertexId, resultVector) pairs.
    * @return RDD of (vertexId, score) pairs.
