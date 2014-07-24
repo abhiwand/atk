@@ -43,6 +43,6 @@ trait GraphElement {
    * @param key Property key
    * @return Matching property value, or empty string is no such property
    */
-  def getStringPropertyValue(key: String): String
+  def getPropertyValueAsString(key: String): String
 
 }
