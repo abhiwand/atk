@@ -51,7 +51,6 @@ class CommunityWriterInTitan extends Serializable {
 
     // Build the graph using spark
     gb.buildGraphWithSpark(gbVertices, gbEdges)
-
   }
 
 }

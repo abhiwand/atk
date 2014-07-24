@@ -22,24 +22,12 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.spark.graphon.communitydetection
-
-import scala.collection.JavaConversions._
+package com.intel.spark.graphon.communitydetection.kclique.datatypes
 
 /**
- * Scala collection to java collection converter with serialization
+ * Represents a vertex in adjacency list form
+ *
+ * @param id The unique identifier of this vertex.
+ * @param neighbors The list of this vertex's neighbors.
  */
-object ScalaToJavaCollectionConverter extends Serializable {
-
-  /**
-   * convert the scala.collection.Set[Long] to java.util.Set[Long]
-   * @param scalaSet a scala set of Long
-   * @return java.util.Set of Long
-   */
-  def convertSet(scalaSet: Set[Long]): java.util.Set[Long] = {
-    val javaSet = new java.util.HashSet[Long]()
-    scalaSet.foreach(entry => javaSet.add(entry))
-    javaSet
-  }
-
-}
+case class VertexInAdjacencyFormat(id: Long, neighbors: Array[Long]) extends Serializable

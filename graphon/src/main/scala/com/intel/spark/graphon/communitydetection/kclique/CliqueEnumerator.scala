@@ -24,36 +24,52 @@
 
 package com.intel.spark.graphon.communitydetection.kclique
 
-import com.intel.spark.graphon.communitydetection.kclique.DataTypes._
 import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.RDD
+import com.intel.spark.graphon.communitydetection.kclique.datatypes._
+import com.intel.spark.graphon.communitydetection.kclique.datatypes.datatypes.VertexSet
 
 /**
- * K-Clique enumeration
- * One of the core component of K-Clique Community detection Algorithm
- * The algorithm is described in the paper:
- * "Distributed Clique Percolation based Community Detection on Social Networks using MapReduce" by
- * Varamesh, A.; Akbari, M.K. ; Fereiduni, M. ; Sharifian, S. ; Bagheri, A.
- * The paper is available at
- * http://ieeexplore.ieee.org/xpls/abs_all.jsp?arnumber=6620116
+ * CliqueEnumerator is responsible for enumerating k-clique extension facts from (k-1) clique extension facts.
+ * A k-clique extension fact is a clique extension fact where the vertex set contains exactly k vertices.
+ * These are the extension facts obtained after the k'th round of the algorithm. It encodes the fact that a
+ * given VertexSet forms a clique, and that the clique can be extended by adding any one of the vertices
+ * from the ExtendersSet
  */
 
 object CliqueEnumerator {
 
   /**
-   * Transform graph from adjacency list representation to edge list representation.
-   *
-   * @param vertices RDD of vertices in adjacency list format.
-   * @return Edge set representation of the graph
+   * Entry point of the clique enumerator. It invokes a recursive call that extends a k-clique to a (k+1)-clique
+   * @param edgeList RDD of edge list of the underlying graph
+   * @param cliqueSize Parameter determining the size of clique. It has been used to determine
+   *                   the connected communities. The minimum value must be 2
+   * @return RDD of extenders fact obtained after running 'k' number of iterations, where the value of 'k' is
+   *         same as (cliqueSize - 1). The extenders fact is a pair of a (cliqueSize - 1)-Clique and the set of
+   *         vertices that extend it to a cliqueSize-Clique
    */
+  def run(edgeList: RDD[Edge], cliqueSize: Int): RDD[ExtendersFact] = {
 
-  def createEdgeListFromParsedAdjList(vertices: RDD[VertexInAdjacencyFormat]): RDD[Edge] = {
-    val edgeListWithDuplicates = vertices.flatMap(vertex => {
-      vertex.neighbors.map(nbr => Edge.edgeFactory(vertex.id, nbr))
-    })
+    /**
+     * Recursive method that extends a k-clique to a (k+1)-clique
+     * @param k the iteration number of the recursive call for extending cliques
+     * @return RDD of the extended (k+1) clique as an extenders fact, where the extension is a k-clique
+     *         and the set of vertices extending it to form a (k+1)-clique
+     */
+    def cliqueExtension(k: Int): RDD[ExtendersFact] = {
+      if (k == 1) {
+        initialExtendByMappingFrom(edgeList)
+      }
+      else {
+        val kMinusOneExtensionFacts = cliqueExtension(k - 1)
+        val kCliques = deriveKCliquesFromKMinusOneExtensions(kMinusOneExtensionFacts)
+        val kNeighborsOfFacts = deriveNeighborsFromExtensions(kMinusOneExtensionFacts, k % 2 == 1)
+        deriveNextExtensionsFromCliquesAndNeighbors(kCliques, kNeighborsOfFacts)
+      }
+    }
 
-    val distinctEdgeList = edgeListWithDuplicates.distinct()
-    distinctEdgeList
+    // Recursive call to extend a k-clique to a (k+1)-clique
+    cliqueExtension(cliqueSize - 1)
   }
 
   /**
@@ -70,7 +86,7 @@ object CliqueEnumerator {
    * @return RDD of extended-by facts.
    */
 
-  def initialExtendByMappingFrom(edgeList: RDD[Edge]): RDD[ExtendersFact] = {
+  private def initialExtendByMappingFrom(edgeList: RDD[Edge]): RDD[ExtendersFact] = {
     //A map of source vertices to a set of destination vertices connected from the source
     val initMap = edgeList.groupBy(_.source).mapValues(_.map(_.destination).toSet)
 
@@ -85,7 +101,7 @@ object CliqueEnumerator {
    * @param extensionFacts the k-cliques and extenders
    * @return an RDD of k+1 cliques
    */
-  def deriveKCliquesFromKMinusOneExtensions(extensionFacts: RDD[ExtendersFact]): RDD[CliqueFact] = {
+  private def deriveKCliquesFromKMinusOneExtensions(extensionFacts: RDD[ExtendersFact]): RDD[CliqueFact] = {
     extensionFacts.flatMap(extendClique)
   }
 
@@ -96,7 +112,7 @@ object CliqueEnumerator {
    * @param extendersFact the k-clique and the vertices that are connected to every vertex in the k-clique
    * @return a k+1 clique
    */
-  def extendClique(extendersFact: ExtendersFact): Set[CliqueFact] = {
+  private def extendClique(extendersFact: ExtendersFact): Set[CliqueFact] = {
     extendersFact match {
       case ExtendersFact(clique, extenders, neighborHigh: Boolean) =>
         extenders.map(extendByVertex => CliqueFact(clique.members + extendByVertex))
@@ -115,8 +131,8 @@ object CliqueEnumerator {
    * @param extensionFacts RDD of ExtendersFacts from round k-1
    * @return The neighbors-of facts for this extender fact
    */
-  def deriveNeighborsFromExtensions(extensionFacts: RDD[ExtendersFact],
-                                    verticesLessThanNeighbor: Boolean): RDD[NeighborsOfFact] = {
+  private def deriveNeighborsFromExtensions(extensionFacts: RDD[ExtendersFact],
+                                            verticesLessThanNeighbor: Boolean): RDD[NeighborsOfFact] = {
     extensionFacts.flatMap(deriveNeighbors)
   }
 
@@ -132,7 +148,7 @@ object CliqueEnumerator {
    * @param extenderFact ExtendersFact from round k-1
    * @return The neighbors-of facts for this extender fact
    */
-  def deriveNeighbors(extenderFact: ExtendersFact): Iterator[NeighborsOfFact] = {
+  private def deriveNeighbors(extenderFact: ExtendersFact): Iterator[NeighborsOfFact] = {
     extenderFact match {
       case ExtendersFact(clique, extenders: VertexSet, _) =>
 
@@ -164,7 +180,7 @@ object CliqueEnumerator {
    * @param neighborFacts The set of neighbors-of facts of k-sets in the graph.
    * @return Set of (k+1) clique extension facts.
    */
-  def deriveNextExtensionsFromCliquesAndNeighbors(cliques: RDD[CliqueFact], neighborFacts: RDD[NeighborsOfFact]): RDD[ExtendersFact] = {
+  private def deriveNextExtensionsFromCliquesAndNeighbors(cliques: RDD[CliqueFact], neighborFacts: RDD[NeighborsOfFact]): RDD[ExtendersFact] = {
 
     //Map cliques to key-value pairs where the key is the vertex set and the value is a 0. Don't care
     //about the zero because it's just to get us into a pair so we can call cogroup later.
@@ -205,47 +221,4 @@ object CliqueEnumerator {
     cliquesAndNeighbors
   }
 
-  /**
-   * Driver for the k-clique percolation algorithm.
-   *
-   * @param data The RDD of vertices in adjacency list format
-   * @param K The clique enumeration number to find K-Cliques
-   * @return An RDD of extended-by facts.
-   */
-  def applyToAdjacencyList(data: RDD[VertexInAdjacencyFormat], K: Int) = {
-
-    val verticesInAdjListForm: RDD[VertexInAdjacencyFormat] = data
-
-    //Derive the edge list from the parse adjacency list of vertices Ids
-    val edgeList: RDD[Edge] = createEdgeListFromParsedAdjList(verticesInAdjListForm)
-
-    applyToEdgeList(edgeList, K)
-  }
-
-  def applyToEdgeList(edgeList: RDD[Edge], K: Int): RDD[ExtendersFact] = {
-    /**
-     * Derive  k-clique-extension facts from (k-1) clique extension facts.
-     * @param k  The sizes of the cliques under consideration, ie. the current iteration of the algorithm.
-     * @param edgeList The edge list of the underlying graph.
-     * @return The k clique extension facts.
-     */
-
-    def cliqueExtension(k: Int, edgeList: RDD[Edge]): RDD[ExtendersFact] = {
-      if (k == 1) {
-        initialExtendByMappingFrom(edgeList)
-      }
-      else {
-
-        val kMinusOneExtensionFacts = cliqueExtension(k - 1, edgeList)
-
-        val kCliques = deriveKCliquesFromKMinusOneExtensions(kMinusOneExtensionFacts)
-
-        val kNeighborsOfFacts = deriveNeighborsFromExtensions(kMinusOneExtensionFacts, k % 2 == 1)
-
-        deriveNextExtensionsFromCliquesAndNeighbors(kCliques, kNeighborsOfFacts)
-      }
-    }
-
-    cliqueExtension(K - 1, edgeList)
-  }
 }

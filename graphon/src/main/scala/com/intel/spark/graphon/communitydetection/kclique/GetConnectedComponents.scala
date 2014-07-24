@@ -24,12 +24,12 @@
 
 package com.intel.spark.graphon.communitydetection.kclique
 
-import com.intel.spark.graphon.communitydetection.kclique.DataTypes._
 import org.apache.spark.rdd.RDD
 import com.intel.spark.graphon.idassigner._
 import com.intel.spark.graphon.connectedcomponents.ConnectedComponentsGraphXDefault
 import org.apache.spark.SparkContext
 import com.intel.spark.graphon.communitydetection.kclique.GraphGenerator._
+import com.intel.spark.graphon.communitydetection.kclique.datatypes.datatypes.VertexSet
 
 /**
  * Assign new Long IDs for each K-cliques of the k-clique graphs. Create a new graph using these Long IDs as

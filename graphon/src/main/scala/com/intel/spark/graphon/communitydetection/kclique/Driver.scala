@@ -27,12 +27,11 @@ package com.intel.spark.graphon.communitydetection.kclique
 import org.apache.spark.rdd.RDD
 import com.intel.graphbuilder.elements.{ Edge => GBEdge, Vertex => GBVertex }
 import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRDDImplicits._
-import com.intel.spark.graphon.communitydetection.kclique.DataTypes._
 import org.apache.spark.SparkContext
 import com.intel.graphbuilder.graph.titan.TitanGraphConnector
-import com.intel.spark.graphon.communitydetection.kclique.GraphGenerator._
 import com.intel.graphbuilder.driver.spark.titan.reader.TitanReader
 import com.intel.graphbuilder.util.SerializableBaseConfiguration
+import com.intel.spark.graphon.communitydetection.kclique.datatypes.Edge
 
 /**
  * The driver for running the k-clique percolation algorithm
@@ -43,20 +42,19 @@ object Driver {
    * The main driver to execute k-clique percolation algorithm
    * @param titanConfig The titan configuration for input
    * @param sc SparkContext
-   * @param cliqueSize Parameter determining clique-size used to determine communities. Must be at least 1.
+   * @param cliqueSize Parameter determining clique-size used to determine communities. Must be at least 2.
    *                   Large values of cliqueSize result in fewer, smaller communities that are more connected
-   * @param communityPropertyDefaultLabel name of the community property of vertex that will be updated/created in the input graph
+   * @param communityPropertyLabel name of the community property of vertex that will be
+   *                               updated/created in the input graph
    */
-  def run(titanConfig: SerializableBaseConfiguration, sc: SparkContext, cliqueSize: Int, communityPropertyDefaultLabel: String) = {
+  def run(titanConfig: SerializableBaseConfiguration, sc: SparkContext, cliqueSize: Int, communityPropertyLabel: String) = {
 
     // Create the Titan connection
     val titanConnector = new TitanGraphConnector(titanConfig)
-    System.out.println("*********Created TitanConnector********")
 
     // Read the graph from Titan
     val titanReader = new TitanReader(sc, titanConnector)
     val titanReaderRDD = titanReader.read()
-    System.out.println("*********Read the graph from Titan********")
 
     // Get the GraphBuilder vertex list
     val gbVertices = titanReaderRDD.filterVertices()
@@ -69,16 +67,13 @@ object Driver {
     val edgeList = edgeListFromGBEdgeList(gbEdges)
 
     // Get all enumerated K-Cliques using the edge list
-    val enumeratedKCliques = CliqueEnumerator.applyToEdgeList(edgeList, cliqueSize)
-    System.out.println("*********Completed K-Cliques Enumeration********")
+    val enumeratedKCliques = CliqueEnumerator.run(edgeList, cliqueSize)
 
     // Construct the clique graph that will be input for connected components
     val kCliqueGraphGeneratorOutput = GraphGenerator.run(enumeratedKCliques)
-    System.out.println("*********Generated K-Clique Graph********")
 
     // Run connected component analysis to get the cliques and corresponding communities
     val cliquesAndConnectedComponent = GetConnectedComponents.run(kCliqueGraphGeneratorOutput, sc)
-    System.out.println("*********Completed Execution of Connected Components********")
 
     // Pair each vertex with a set of the communities to which it belongs
     val vertexCommunitySet =
@@ -89,14 +84,13 @@ object Driver {
     //    a unique Physical ID (in this case this vertex Id)
     //    a unique gb Id, and
     //    the properties of vertex (in this case the community property)
-    val gbVertexSetter: GBVertexSetter = new GBVertexSetter(gbVertices, vertexCommunitySet)
-    val newGBVertices: RDD[GBVertex] = gbVertexSetter.setVertex(communityPropertyDefaultLabel)
+    val gbVertexRDDBuilder: GBVertexRDDBuilder = new GBVertexRDDBuilder(gbVertices, vertexCommunitySet)
+    val newGBVertices: RDD[GBVertex] = gbVertexRDDBuilder.setVertex(communityPropertyLabel)
 
     // Update back each vertex in the input Titan graph and the write the community property
     // as the set of communities to which it belongs
     val communityWriterInTitan = new CommunityWriterInTitan()
     communityWriterInTitan.run(newGBVertices, gbEdges, titanConfig)
-    System.out.println("*********Updated Graph With Community Property********")
 
   }
 
@@ -108,7 +102,6 @@ object Driver {
   def edgeListFromGBEdgeList(gbEdgeList: RDD[GBEdge]): RDD[Edge] = {
 
     gbEdgeList.filter(e => (e.tailPhysicalId.asInstanceOf[Long] < e.headPhysicalId.asInstanceOf[Long])).
-      map(e => DataTypes.Edge(e.tailPhysicalId.asInstanceOf[Long], e.headPhysicalId.asInstanceOf[Long]))
-
+      map(e => datatypes.Edge(e.tailPhysicalId.asInstanceOf[Long], e.headPhysicalId.asInstanceOf[Long]))
   }
 }
