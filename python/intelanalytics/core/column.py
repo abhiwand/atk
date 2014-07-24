@@ -26,10 +26,13 @@ from intelanalytics.core.iatypes import valid_data_types
 
 class BigColumn(object):
     """Column in a BigFrame"""
-    def __init__(self, name, data_type):
+    def __init__(self, frame, name, data_type):
         self.name = name
         self.data_type = valid_data_types.get_from_type(data_type)
-        self._frame = None
+        self._frame = frame
+
+    def __repr__(self):
+        return '{ "name" : "%s", "data_type" : "%s" }' % (self.name, valid_data_types.to_string(self.data_type))
 
     def _as_json_obj(self):
         return { "name": self.name,

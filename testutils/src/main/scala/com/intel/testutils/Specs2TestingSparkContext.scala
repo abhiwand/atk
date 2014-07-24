@@ -21,27 +21,33 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.engine.spark
+package com.intel.testutils
 
-import org.scalatest.{ BeforeAndAfterEach, Matchers, FlatSpec }
-import com.intel.testutils.TestingSparkContextFlatSpec
+import java.util.Date
+import org.apache.spark.{ SparkConf, SparkContext }
+import scala.concurrent.Lock
 
-class FlattenColumnITest extends FlatSpec with Matchers with BeforeAndAfterEach with TestingSparkContextFlatSpec {
-  "flattenRddByColumnIndex" should "create separate rows when flattening entries" in {
-    val carOwnerShips = List(Array[Any]("Bob", "Mustang,Camry"), Array[Any]("Josh", "Neon,CLK"), Array[Any]("Alice", "PT Cruiser,Avalon,F-150"), Array[Any]("Tim", "Beatle"), Array[Any]("Becky", ""))
-    val rdd = sparkContext.parallelize(carOwnerShips)
-    val flattened = SparkOps.flattenRddByColumnIndex(1, ",", rdd)
-    val result = flattened.take(9)
-    result.apply(0) shouldBe Array[Any]("Bob", "Mustang")
-    result.apply(1) shouldBe Array[Any]("Bob", "Camry")
-    result.apply(2) shouldBe Array[Any]("Josh", "Neon")
-    result.apply(3) shouldBe Array[Any]("Josh", "CLK")
-    result.apply(4) shouldBe Array[Any]("Alice", "PT Cruiser")
-    result.apply(5) shouldBe Array[Any]("Alice", "Avalon")
-    result.apply(6) shouldBe Array[Any]("Alice", "F-150")
-    result.apply(7) shouldBe Array[Any]("Tim", "Beatle")
-    result.apply(8) shouldBe Array[Any]("Becky", "")
+/**
+ * This trait case be mixed into Specifications to create a SparkContext for testing.
+ * <p>
+ * IMPORTANT! This adds a couple seconds to your unit test!
+ * </p>
+ * <p>
+ * Lock is used because you can only have one local SparkContext running at a time.
+ * Other option is to use "parallelExecution in Test := false" but locking seems to be faster.
+ * </p>
+ * @deprecated we're switching to ScalaTest, shouldn't use Specs2 any more
+ */
+trait Specs2TestingSparkContext extends MultipleAfter {
 
+  lazy val sc = TestingSparkContext.sparkContext
+
+  /**
+   * Clean up after the test is done
+   */
+  override def after: Any = {
+    TestingSparkContext.cleanUp()
+    super.after
   }
 
 }

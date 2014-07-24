@@ -260,8 +260,8 @@ private[spark] object SparkOps extends Serializable {
    * @return a Double of the model precision measure
    */
   def modelPrecision(frameRdd: RDD[Row], labelColumnIndex: Int, predColumnIndex: Int, posLabel: String): Double = {
-    require(labelColumnIndex >= 0)
-    require(predColumnIndex >= 0)
+    require(labelColumnIndex >= 0, "label column index must be greater than or equal to zero")
+    require(predColumnIndex >= 0, "prediction column index must be greater than or equal to zero")
 
     /**
      * compute precision for binary classifier: TP / (TP + FP)
@@ -333,8 +333,8 @@ private[spark] object SparkOps extends Serializable {
    * @return a Double of the model recall measure
    */
   def modelRecall(frameRdd: RDD[Row], labelColumnIndex: Int, predColumnIndex: Int, posLabel: String): Double = {
-    require(labelColumnIndex >= 0)
-    require(predColumnIndex >= 0)
+    require(labelColumnIndex >= 0, "label column index must be greater than or equal to zero")
+    require(predColumnIndex >= 0, "prediction column index must be greater than or equal to zero")
 
     /**
      * compute recall for binary classifier: TP / (TP + FN)
@@ -835,8 +835,8 @@ private[spark] object SparkOps extends Serializable {
     mapping.map { case (elementIndex, targets) => (elementIndex, targets.toSeq) }.toMap
   }
   def confusionMatrix(frameRdd: RDD[Row], labelColumnIndex: Int, predColumnIndex: Int, posLabel: String): Seq[Long] = {
-    require(labelColumnIndex >= 0)
-    require(predColumnIndex >= 0)
+    require(labelColumnIndex >= 0, "label column index must be greater than or equal to zero")
+    require(predColumnIndex >= 0, "prediction column index must be greater than or equal to zero")
 
     val tp = frameRdd.sparkContext.accumulator[Long](0)
     val tn = frameRdd.sparkContext.accumulator[Long](0)
