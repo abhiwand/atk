@@ -230,16 +230,5 @@ class VertexSampleITest extends TestingSparkContext with TestingTitan with Match
     topVertexArray.contains(inputVertexList(6)) shouldEqual true
     topVertexArray.contains(inputVertexList(7)) shouldEqual true
   }
-  /*
-  5, 2, 6, 7
-
-    (0.5, Vertex(gbIds(1), gbIds(1), Seq(new Property("location", "Oregon")))), 0
-    (0.1, Vertex(gbIds(2), gbIds(2), Seq(new Property("location", "Oregon")))), 1
-    (2.0, Vertex(gbIds(3), gbIds(3), Seq(new Property("location", "Oregon")))), 2
-    (1.1, Vertex(gbIds(4), gbIds(4), Seq(new Property("location", "Oregon")))), 3
-    (0.3, Vertex(gbIds(5), gbIds(5), Seq(new Property("location", "Oregon")))), 4
-    (3.6, Vertex(gbIds(6), gbIds(6), Seq(new Property("location", "Oregon")))), 5
-    (1.5, Vertex(gbIds(7), gbIds(7), Seq(new Property("location", "Oregon")))), 6
-    (1.4, Vertex(gbIds(8), gbIds(8), Seq(new Property("location", "Oregon"))))) 7*/
 
 }
