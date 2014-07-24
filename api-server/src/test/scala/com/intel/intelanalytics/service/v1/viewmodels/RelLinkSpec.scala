@@ -36,4 +36,16 @@ class RelLinkSpec extends FlatSpec with Matchers {
     relLink.method should be("GET")
     relLink.uri should be(uri)
   }
+
+  it should "not allow invalid methods" in {
+    try {
+      RelLink("ia-foo", "uri", "WHACK")
+      fail("expected exception not thrown")
+    }
+    catch {
+      case e: IllegalArgumentException => // pass
+      case _: Exception => fail("expected exception not thrown")
+    }
+
+  }
 }

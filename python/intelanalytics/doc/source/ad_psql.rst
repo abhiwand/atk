@@ -1,6 +1,6 @@
-=======
-PostSQL
-=======
+==========
+PostgreSQL
+==========
 
 The Intel Analytics application uses H2, an in-memory database that is lost on application restart.
 This is convenient for testing.
@@ -92,7 +92,8 @@ Comment out H2 configuration
 
 Uncomment PostgreSQL configuration
 
-If the engine and PostgreSQL are on different nodes replace the 
+Restart the api-server.
+The api-server will automatically initialize the database at start-up time.
 
 .. ifconfig:: internal_docs
 
