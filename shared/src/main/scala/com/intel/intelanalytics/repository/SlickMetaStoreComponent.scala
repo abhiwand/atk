@@ -543,15 +543,6 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
      * @param session session to db
      */
     override def updateProgress(id: Long, progress: List[ProgressInfo])(implicit session: Session): Try[Unit] = Try {
-      //doing 2 updates with different filter conditions
-      //this is to make sure not to set the progress to lower value
-      //if new progress event is sent to the listener while the progress
-      //has been set to 100 earlier in the complete method.
-
-      //doing two queries instead of just one and analyze the content is to avoid race condition
-      //for example another thread update the row after the query and before the update.
-
-      //TODO: verify slick generate a single command for the query and update
       val q = for { c <- commands if c.id === id && c.complete === false } yield c.progress
       q.update(progress)
     }
