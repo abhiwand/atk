@@ -476,9 +476,11 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     val columnIndex = realFrame.schema.columnIndex(arguments.column)
 
     val flattenedRDD = SparkOps.flattenRddByColumnIndex(columnIndex, arguments.separator, rdd)
+    val rowCount = flattenedRDD.count()
 
     flattenedRDD.saveAsObjectFile(fsRoot + frames.getFrameDataFile(newFrame.id))
     frames.updateSchema(newFrame, realFrame.schema.columns)
+    frames.updateRowCount(newFrame, rowCount)
   }
 
   /**
