@@ -40,10 +40,9 @@ object CommandDecorator extends EntityDecorator[Command, GetCommands, GetCommand
    * @return the View/Model
    */
   override def decorateEntity(uri: String, links: Iterable[RelLink], entity: Command): GetCommand = {
-    val detailedProgressMessage = entity.detailedProgress.map(progress => progress.toString)
 
     GetCommand(id = entity.id, name = entity.name,
-      arguments = entity.arguments, error = entity.error, progress = entity.progress, progressMessage = detailedProgressMessage, complete = entity.complete,
+      arguments = entity.arguments, error = entity.error, progress = entity.progress, complete = entity.complete,
       result = entity.result, links = links.toList)
   }
 

@@ -36,7 +36,7 @@ case class EdgeRule(head: PropertyRule,
                     label: ValueRule,
                     properties: List[PropertyRule],
                     bidirectional: Boolean) {
-  require(head != null)
-  require(tail != null)
-  require(label != null)
+  require(head != null, "head must not be null")
+  require(tail != null, "tail must not be null")
+  require(label != null, "lavel must not be null")
 }

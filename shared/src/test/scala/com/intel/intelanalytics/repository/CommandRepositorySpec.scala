@@ -25,7 +25,7 @@ package com.intel.intelanalytics.repository
 
 import com.intel.intelanalytics.domain.command.CommandTemplate
 import org.scalatest.Matchers
-import com.intel.intelanalytics.engine.ProgressInfo
+import com.intel.intelanalytics.engine.{ ProgressInfo, TaskProgressInfo }
 
 class CommandRepositorySpec extends SlickMetaStoreH2Testing with Matchers {
 
@@ -61,10 +61,29 @@ class CommandRepositorySpec extends SlickMetaStoreH2Testing with Matchers {
 
         // create a command
         val command = commandRepo.insert(new CommandTemplate(name, None))
-        commandRepo.updateProgress(command.get.id, List(100), List(ProgressInfo(100, 5)))
+        commandRepo.updateProgress(command.get.id, List(ProgressInfo(100, Some(TaskProgressInfo(5)))))
         val command2 = commandRepo.lookup(command.get.id)
-        command2.get.progress shouldBe List(100)
-        command2.get.detailedProgress shouldBe List(ProgressInfo(100, 5))
+        command2.get.progress shouldBe List(ProgressInfo(100, Some(TaskProgressInfo(5))))
+    }
+  }
+
+  "CommandRepository" should "not update progress if command is complete" in {
+    val commandRepo = slickMetaStoreComponent.metaStore.commandRepo
+
+    slickMetaStoreComponent.metaStore.withSession("command-test") {
+      implicit session =>
+
+        val name = "my-name"
+
+        // create a command
+        val command = commandRepo.insert(new CommandTemplate(name, None))
+        commandRepo.updateProgress(command.get.id, List(ProgressInfo(100, Some(TaskProgressInfo(5))), ProgressInfo(50, Some(TaskProgressInfo(5)))))
+        val command2 = commandRepo.lookup(command.get.id)
+        commandRepo.update(command2.get.copy(complete = true, progress = List(ProgressInfo(100, Some(TaskProgressInfo(5))), ProgressInfo(50, Some(TaskProgressInfo(5))))))
+
+        commandRepo.updateProgress(command.get.id, List(ProgressInfo(40, Some(TaskProgressInfo(5))), ProgressInfo(70, Some(TaskProgressInfo(7)))))
+        val command3 = commandRepo.lookup(command.get.id)
+        command3.get.progress shouldBe List(ProgressInfo(100, Some(TaskProgressInfo(5))), ProgressInfo(50, Some(TaskProgressInfo(5))))
     }
   }
 

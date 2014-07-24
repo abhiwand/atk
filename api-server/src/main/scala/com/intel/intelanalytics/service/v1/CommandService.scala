@@ -47,6 +47,7 @@ import com.intel.intelanalytics.domain.command.{ Execution, CommandTemplate, Com
 import com.intel.intelanalytics.shared.EventLogging
 import com.intel.intelanalytics.service.{ ApiServiceConfig, UrlParser, CommonDirectives, AuthenticationDirective }
 import com.intel.intelanalytics.service.v1.decorators.CommandDecorator
+import com.intel.intelanalytics.spray.json.IADefaultJsonProtocol
 
 //TODO: Is this right execution context for us?
 
@@ -92,7 +93,7 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
         pathPrefix("commands") {
           path("definitions") {
             get {
-              import DefaultJsonProtocol.listFormat
+              import IADefaultJsonProtocol.listFormat
               import DomainJsonProtocol.commandDefinitionFormat
               complete(engine.getCommandDefinitions().toList)
             }
@@ -164,13 +165,14 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
       //case ("dataframe/rename_frame") => runFrameRenameFrame(uri, xform)
       case ("dataframe/add_columns") => runFrameAddColumns(uri, xform)
       case ("dataframe/project") => runFrameProject(uri, xform)
-      case ("dataframe/rename_column") => runFrameRenameColumn(uri, xform)
+      case ("dataframe/rename_columns") => runFrameRenameColumns(uri, xform)
       case ("dataframe/join") => runJoinFrames(uri, xform)
-      case ("dataframe/flattenColumn") => runflattenColumn(uri, xform)
+      case ("dataframe/flatten_column") => runflattenColumn(uri, xform)
       case ("dataframe/groupby") => runFrameGroupByColumn(uri, xform)
       case ("dataframe/drop_duplicates") => runDropDuplicates(uri, xform)
-      case ("dataframe/binColumn") => runBinColumn(uri, xform)
+      case ("dataframe/bin_column") => runBinColumn(uri, xform)
       case ("dataframe/classification_metric") => runClassificationMetric(uri, xform)
+      case ("dataframe/confusion_matrix") => runConfusionMatrix(uri, xform)
       case s: String => illegalArg("Command name is not supported: " + s)
       case _ => illegalArg("Command name was NOT a string")
     }
@@ -233,7 +235,7 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
 
           val graphLoad = GraphLoad(GraphReference(graphID),
             args.frame_rules,
-            args.retain_dangling_edges)
+            args.append)
           val exec = engine.loadGraph(graphLoad)
           complete(decorate(uri + "/" + exec.start.id, exec.start))
         }
@@ -254,16 +256,16 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
       }
   }
 
-  def runFrameRenameColumn(uri: Uri, xform: JsonTransform)(implicit user: UserPrincipal) = {
+  def runFrameRenameColumns(uri: Uri, xform: JsonTransform)(implicit user: UserPrincipal) = {
     val test = Try {
-      xform.arguments.get.convertTo[FrameRenameColumn[JsObject, String]]
+      xform.arguments.get.convertTo[FrameRenameColumns[JsObject, String]]
     }
     val idOpt = test.toOption.flatMap(args => UrlParser.getFrameId(args.frame))
     (validate(test.isSuccess, "Failed to parse file load descriptor: " + getErrorMessage(test))
       & validate(idOpt.isDefined, "Destination is not a valid data frame URL")) {
         val args = test.get
         val id = idOpt.get
-        val exec = engine.renameColumn(FrameRenameColumn[JsObject, Long](id, args.original_names, args.new_names))
+        val exec = engine.renameColumns(FrameRenameColumns[JsObject, Long](id, args.original_names, args.new_names))
         complete(decorate(uri + "/" + exec.start.id, exec.start))
       }
   }
@@ -386,6 +388,21 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
       validate(test.isSuccess, "Failed to parse file load descriptor: " + getErrorMessage(test)) {
         val args = test.get
         val result = engine.classificationMetric(args)
+        val command: Command = result.start
+        complete(decorate(uri + "/" + command.id, command))
+      }
+    }
+  }
+
+  def runConfusionMatrix(uri: Uri, xform: JsonTransform)(implicit user: UserPrincipal) = {
+    {
+      val test = Try {
+        xform.arguments.get.convertTo[ConfusionMatrix[Long]]
+      }
+
+      validate(test.isSuccess, "Failed to parse confusion matrix descriptor: " + getErrorMessage(test)) {
+        val args = test.get
+        val result = engine.confusionMatrix(args)
         val command: Command = result.start
         complete(decorate(uri + "/" + command.id, command))
       }

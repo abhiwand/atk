@@ -27,12 +27,13 @@ import org.scalatest.{ Matchers, FlatSpec }
 import com.intel.intelanalytics.service.v1.viewmodels.RelLink
 import org.joda.time.DateTime
 import com.intel.intelanalytics.domain.command.Command
+import com.intel.intelanalytics.engine.{ TaskProgressInfo, ProgressInfo }
 
 class CommandDecoratorSpec extends FlatSpec with Matchers {
 
   val uri = "http://www.example.com/commands"
   val relLinks = Seq(RelLink("foo", uri, "GET"))
-  val command = new Command(1, "name", None, None, List(20.00f), List(), false, None, new DateTime, new DateTime)
+  val command = new Command(1, "name", None, None, List(ProgressInfo(20.00f, Some(TaskProgressInfo(0)))), false, None, new DateTime, new DateTime)
 
   "CommandDecorator" should "be able to decorate a command" in {
     val decoratedCommand = CommandDecorator.decorateEntity(null, relLinks, command)
