@@ -27,14 +27,14 @@ package com.intel.spark.graphon.communitydetection.kclique
 import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.RDD
 import com.intel.spark.graphon.communitydetection.kclique.datatypes._
-import com.intel.spark.graphon.communitydetection.kclique.datatypes.datatypes.VertexSet
+import com.intel.spark.graphon.communitydetection.kclique.datatypes.Datatypes.VertexSet
 
 /**
  * CliqueEnumerator is responsible for enumerating k-clique extension facts from (k-1) clique extension facts.
  * A k-clique extension fact is a clique extension fact where the vertex set contains exactly k vertices.
  * These are the extension facts obtained after the k'th round of the algorithm. It encodes the fact that a
  * given VertexSet forms a clique, and that the clique can be extended by adding any one of the vertices
- * from the ExtendersSet
+ * from the ExtendersSet and that the clique can be extended to a k+1 clique
  */
 
 object CliqueEnumerator {

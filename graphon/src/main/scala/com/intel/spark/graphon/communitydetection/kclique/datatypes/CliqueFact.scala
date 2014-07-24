@@ -24,6 +24,6 @@
 
 package com.intel.spark.graphon.communitydetection.kclique.datatypes
 
-import com.intel.spark.graphon.communitydetection.kclique.datatypes.datatypes.VertexSet
+import com.intel.spark.graphon.communitydetection.kclique.datatypes.Datatypes.VertexSet
 
 case class CliqueFact(members: VertexSet) extends Serializable

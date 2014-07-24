@@ -28,6 +28,13 @@ import scala.collection.JavaConversions._
 
 /**
  * Scala collection to java collection converter with serialization
+ *
+ * This converter has been added to work with serialization. The serialization issue with
+ * the scala.collection.JavaConvertions/JavaConverters is that these converters are wrappers that use
+ * the underlying (scala/java) object. For it to be effectively serializable,
+ * they must have a warranty that the underlying structure is serializable.
+ *
+ * One of the easiest way to work this out is to implement a structural copy of the conversion method
  */
 object ScalaToJavaCollectionConverter extends Serializable {
 
