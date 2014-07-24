@@ -18,20 +18,20 @@ import spray.json.DefaultJsonProtocol._
 
 /**
  * Get recommendation to either left-side or right-side vertices
- * The prerequsite is at least one of two algorithms (ALS or CGD) has been run before this query
+ * The prerequisite is at least one of two algorithms (ALS or CGD) has been run before this query
  *
  * @param graph The graph reference
- * @param vertex_id The vertex id to get recommendation for.   *
+ * @param vertex_id The vertex id to get recommendation for.
  * @param vertex_type The vertex type to get recommendation for. The valid value is either "L" or "R".
  *                     "L" stands for left-side vertices of a bipartite graph.
  *                     "R" stands for right-side vertices of a bipartite graph.
- *                     For example, if your input data is "user,movie,rating" and you want to get recommendation
- *                     on user, please input "L" because user is your left-side vertex. Similarly, please input
- *                     "R if you want to get recommendation for movie.
- *                     The default value is "L"
- * @param output_vertex_property_list The property name for ALS/CGD results. The default value is "als_result"
- *                                    When bias is enabled, the last property name in the output_vertex_property_list
- *                                    is for bias.
+ *                     For example, if your input data is "user,movie,rating" and you want to
+ *                     get recommendation on user, please input "L" because user is your left-side
+ *                     vertex. Similarly, please input "R if you want to get recommendation for movie.
+ *                     The default value is "L".
+ * @param output_vertex_property_list The property name for ALS/CGD results.When bias is enabled,
+ *                                    the last property name in the output_vertex_property_list is for bias.
+ *                                    The default value is "als_result".
  * @param vertex_type_property_key  The property name for vertex type. The default value is "vertex_type"
  * @param edge_type_property_key The property name for edge type. The default value "splits".
  *                                 We need this name to know data is in train, validation or test splits
@@ -39,8 +39,8 @@ import spray.json.DefaultJsonProtocol._
  * @param bias_on Whether bias turned on/off for ALS/CDG calculation.
  *                When bias is enabled, the last property name in the output_vertex_property_list is for bias.
  *                The default value is "false"
- * @param train_str The label for training data. The default value is "tr"
- * @param num_output_results The number of recommendations to output. The default value is 10
+ * @param train_str The label for training data. The default value is "tr".
+ * @param num_output_results The number of recommendations to output. The default value is 10.
  * @param left_vertex_name The real name for left side vertex. The default value is "user".
  * @param right_vertex_name The real name for right side vertex. The default value is "movie".
  * @param left_vertex_id_property_key The property name for left side vertex id. The default value is "user_id".
@@ -76,23 +76,24 @@ class RecommendQuery extends SparkCommandPlugin[RecommendParams, RecommendResult
   implicit val recommendParamsFormat = jsonFormat14(RecommendParams)
   implicit val recommendResultFormat = jsonFormat1(RecommendResult)
 
-  override def execute(invocation: SparkInvocation, arguments: RecommendParams)(implicit user: UserPrincipal, executionContext: ExecutionContext): RecommendResult = {
+  override def execute(invocation: SparkInvocation, arguments: RecommendParams)(
+    implicit user: UserPrincipal, executionContext: ExecutionContext): RecommendResult = {
     import scala.concurrent.duration._
 
     System.out.println("*********Start to execute Recommend query********")
     val config = configuration
     val graphFuture = invocation.engine.getGraph(arguments.graph.id)
     val graph = Await.result(graphFuture, config.getInt("default-timeout") seconds)
-    val pattern = ","
+    val pattern = "[\\s,\\t]+"
     val outputVertexPropertyList = arguments.output_vertex_property_list.getOrElse(
       config.getString("output_vertex_property_list"))
     val resultPropertyList = outputVertexPropertyList.split(pattern)
-    val vectorValue = arguments.vector_value.getOrElse(config.getString("vector_value"))
-    val biasOn = arguments.bias_on.getOrElse(config.getString("bias_on"))
+    val vectorValue = arguments.vector_value.getOrElse(config.getString("vector_value")).toBoolean
+    val biasOn = arguments.bias_on.getOrElse(config.getString("bias_on")).toBoolean
     require(resultPropertyList.size >= 1,
       "Please input at least one vertex property name for ALS/CGD results")
-    require(vectorValue == "false" || biasOn == "false" ||
-      (vectorValue == "true" && biasOn == "true" && resultPropertyList.size == 2),
+    require(!vectorValue || !biasOn ||
+      (vectorValue && biasOn && resultPropertyList.size == 2),
       "Please input one property name for bias and one property name for results when both vector_value " +
         "and bias_on are enabled")
 
@@ -136,11 +137,9 @@ class RecommendQuery extends SparkCommandPlugin[RecommendParams, RecommendResult
 
     //get the source vertex based on its id
     val sourceVertexRDD = vertexRDD.filter(
-      vertex => {
-        if (vertex.getStringPropertyValue(sourceIdPropertyKey) == vertexId &&
-          vertex.getStringPropertyValue(vertexTypePropertyKey).toLowerCase == vertexType) true
-        else false
-      })
+      vertex => vertex.getPropertyValueAsString(sourceIdPropertyKey) == vertexId &&
+        vertex.getPropertyValueAsString(vertexTypePropertyKey).toLowerCase == vertexType
+    )
     sourceVertexRDD.persist(StorageLevel.MEMORY_AND_DISK)
 
     val sourceVertexArray = sourceVertexRDD.toArray()
@@ -154,35 +153,31 @@ class RecommendQuery extends SparkCommandPlugin[RecommendParams, RecommendResult
     }
 
     val sourceVertex = sourceVertexArray(0)
-    val sourceGbId = sourceVertex.gbId //.value.toString
+    val sourceGbId = sourceVertex.gbId
 
     // get the target edges
     // when there is "TR" data between source vertex and target vertex,
     // it means source vertex knew target vertex already.
     // The target vertex cannot shown up in recommendation results
-    val avoidTargetEdgeRDD = edgeRDD.filter {
-      edge =>
-        {
-          if (edge.getHeadVertexGbId() /*.value.toString*/ == sourceGbId &&
-            edge.getStringPropertyValue(edgeTypePropertyKey).toLowerCase == trainStr) true
-          else false
-        }
-    }
+    val avoidTargetEdgeRDD = edgeRDD.filter(
+      edge => edge.getHeadVertexGbId() == sourceGbId &&
+        edge.getPropertyValueAsString(edgeTypePropertyKey).toLowerCase == trainStr
+    )
 
     //get valid target vertices' gbIds
     val avoidTargetGbIdsRDD = avoidTargetEdgeRDD.tailVerticesGbIds()
 
     //get unique target vertices' gbIds
-    val avoidGbIdsArray = avoidTargetGbIdsRDD.distinct().toArray
+    val avoidGbIdsArray = avoidTargetGbIdsRDD.distinct().toArray()
 
     //filter target vertex RDD
     val targetVertexRDD = vertexRDD.filter {
       case vertex =>
         var keep = false
-        if (vertex.getStringPropertyValue(vertexTypePropertyKey).toLowerCase == targetVertexType) {
+        if (vertex.getPropertyValueAsString(vertexTypePropertyKey).toLowerCase == targetVertexType) {
           keep = true
           for (i <- 0 until avoidGbIdsArray.length) {
-            if (vertex.gbId /*.value.toString*/ == avoidGbIdsArray(i)) {
+            if (vertex.gbId == avoidGbIdsArray(i)) {
               keep = false
             }
           }
@@ -193,8 +188,9 @@ class RecommendQuery extends SparkCommandPlugin[RecommendParams, RecommendResult
     // get the result vector of each target vertex
     val targetVectorRDD = targetVertexRDD.map {
       case vertex =>
-        val targetVertexId = vertex.getStringPropertyValue(targetIdPropertyKey)
-        val resultVector = RecommendFeatureVector.parseResultArray(vertex, resultPropertyList, vectorValue, biasOn)
+        val targetVertexId = vertex.getPropertyValueAsString(targetIdPropertyKey)
+        val resultVector = RecommendFeatureVector.parseResultArray(vertex,
+          resultPropertyList, vectorValue, biasOn)
         TargetTuple(targetVertexId, resultVector)
     }
     targetVectorRDD.persist(StorageLevel.MEMORY_AND_DISK)
@@ -204,24 +200,20 @@ class RecommendQuery extends SparkCommandPlugin[RecommendParams, RecommendResult
       sourceVertex, resultPropertyList, vectorValue, biasOn)
 
     val ratingResultRDD = RecommendFeatureVector
-      .predict(sourceVector, targetVectorRDD)
+      .predict(sourceVector, targetVectorRDD, biasOn)
       .collect()
       .sortBy(-_.score)
       .take(numOutputResults)
 
-    var i = 1
-    var results = "Top " + numOutputResults + " recommendation for " + sourceVertexName + " " + vertexId + "\n"
+    var results = "================Top " + numOutputResults + " recommendations for " +
+      sourceVertexName + " " + vertexId + "==========\n"
     ratingResultRDD.foreach { rating: Rating =>
       results += targetVertexName + "\t" + rating.vertexId + "\tscore\t" + rating.score + "\n"
-      i += 1
     }
 
     targetVectorRDD.unpersist()
     sourceVertexRDD.unpersist()
-
-    //RecommendResult(ratingResultRDD.toString)
     RecommendResult(results)
-
   }
 
   //TODO: Replace with generic code that works on any case class

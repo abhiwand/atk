@@ -36,6 +36,7 @@ import scala.collection.mutable.ListBuffer
 import org.apache.spark.rdd.RDD
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 import scala.math.pow
+import scala.reflect.ClassTag
 
 //implicit conversion for PairRDD
 import org.apache.spark.SparkContext._
@@ -52,8 +53,10 @@ private[spark] object SparkOps extends Serializable {
   def getPagedRdd[T: ClassTag](rdd: RDD[T], offset: Long, count: Int, limit: Int): RDD[T] = {
 
     val sumsAndCounts = SparkOps.getPerPartitionCountAndAccumulatedSum(rdd)
-    val capped = Math.min(count, limit)
-
+    val capped = limit match {
+      case -1 => count
+      case _ => Math.min(count, limit)
+    }
     //Start getting rows. We use the sums and counts to figure out which
     //partitions we need to read from and which to just ignore
     val pagedRdd: RDD[T] = rdd.mapPartitionsWithIndex((i, rows) => {
