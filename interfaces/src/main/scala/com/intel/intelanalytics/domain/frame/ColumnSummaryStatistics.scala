@@ -51,10 +51,8 @@ case class ColumnSummaryStatistics(frame: FrameReference, dataColumn: String, we
  * @param standardDeviation Standard deviation of the data. NaN when the number of data elements is < 2.
  * @param mode A mode of the data; that is, an item with the greatest weight (largest frequency).
  *             Ties resolved arbitrarily. NaN when there are no data elements of positive weight.
- * @param minimum Minimum value in the data. Positive infinity when there are no data elements of positive
- * weight.
- * @param maximum Maximum value in the data. Negative infinity when there are no data elements of positive
- * weight.
+ * @param minimum Minimum value in the data. NaN when there are no data elements of positive weight.
+ * @param maximum Maximum value in the data. NaN when there are no data elements of positive weight.
  * @param meanConfidenceLowerBound: Lower limit of the 95% confidence interval about the mean. Assumes a Gaussian RV.
  *                             NaN when there are <= 1 data elements of positive weight.
  * @param meanConfidenceUpperBound: Upper limit of the 95% confidence interval about the mean. Assumes a Gaussian RV.
@@ -62,7 +60,8 @@ case class ColumnSummaryStatistics(frame: FrameReference, dataColumn: String, we
  * @param positiveWeightCount  The number data elements with weights > 0.
  * @param nonPositiveWeightCount The number data elements with weight <= 0.
  * @param badRowCount The number of rows containing a NaN or infinite value in either the data or weights column.
- * @param goodRowCount The number of rows containing a NaN or infinite value in either the data or weights column.
+ * @param validDataWeightPairCount The number of rows containing a NaN or infinite value in either the data or weights
+ *                             column. This is the number of entries used for the calculation of the statistics.
  */
 case class ColumnSummaryStatisticsReturn(mean: Double,
                                          geometricMean: Double,
@@ -76,5 +75,5 @@ case class ColumnSummaryStatisticsReturn(mean: Double,
                                          positiveWeightCount: Long,
                                          nonPositiveWeightCount: Long,
                                          badRowCount: Long,
-                                         goodRowCount: Long)
+                                         validDataWeightPairCount: Long)
 

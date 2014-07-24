@@ -18,24 +18,22 @@ class FrequencyStatistics[T: ClassManifest](dataWeightPairs: RDD[(T, Double)]) e
    * Option for an item with maximum weight. If there is no item with positive weight,
    * the value None is used for the mode.
    */
-  lazy val mode: Option[T] = modeItsWeightTotalWeightTriple._1
+  lazy val mode: Option[T] = frequencyStatistics.mode
 
   /**
    * Option for the weight of a mode of the input. It is either strictly positive, or,
    * if there is no item with positive weight, weightOfMode is 0 .
    */
-  lazy val weightOfMode: Double = modeItsWeightTotalWeightTriple._2
+  lazy val weightOfMode: Double = frequencyStatistics.weightOfMode
 
   /**
    * Sum all weights.
    */
-  lazy val totalWeight: Double = modeItsWeightTotalWeightTriple._3
+  lazy val totalWeight: Double = frequencyStatistics.totalWeight
 
-  private lazy val modeItsWeightTotalWeightTriple: (Option[T], Double, Double) = generateMode()
+  private lazy val frequencyStatistics: FrequencyStatsCounter[T] = generateMode()
 
-  private val distributionUtils = new DistributionUtils[T]()
-
-  private def generateMode(): (Option[T], Double, Double) = {
+  private def generateMode(): FrequencyStatsCounter[T] = {
 
     val acumulatorParam = new FrequencyStatsAccumulatorParam[T]()
     val initialValue = FrequencyStatsCounter[T](None, 0, 0)
@@ -43,12 +41,13 @@ class FrequencyStatistics[T: ClassManifest](dataWeightPairs: RDD[(T, Double)]) e
     val accumulator =
       dataWeightPairs.sparkContext.accumulator[FrequencyStatsCounter[T]](initialValue)(acumulatorParam)
 
-    val dataWeightPairsSupport = dataWeightPairs.filter(distributionUtils.hasPositiveWeight)
+    val dataWeightPairsSupport =
+      dataWeightPairs.filter({ case (data, weight) => NumericValidationUtils.isFinitePositive(weight) })
 
     dataWeightPairsSupport.foreach(
       { case (value, weightAtValue) => accumulator.add(FrequencyStatsCounter(Some(value), weightAtValue, weightAtValue)) })
 
-    (accumulator.value.mode, accumulator.value.weightOfMode, accumulator.value.totalWeight)
+    FrequencyStatsCounter[T](accumulator.value.mode, accumulator.value.weightOfMode, accumulator.value.totalWeight)
 
   }
 }

@@ -543,15 +543,10 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     implicit val u = user
 
     val frameId = arguments.frame
-
     val frame = expectFrame(frameId)
-
     val ctx = sparkContextManager.context(user).sparkContext
-
     val rdd = frames.getFrameRdd(ctx, frameId.id)
-
     val columnIndex = frame.schema.columnIndex(arguments.dataColumn)
-
     val valueDataType: DataType = frame.schema.columns(columnIndex)._2
 
     val (weightsColumnIndexOption, weightsDataTypeOption) = if (arguments.weightsColumn.isEmpty) {
@@ -581,15 +576,10 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     implicit val u = user
 
     val frameId = arguments.frame
-
     val frame = expectFrame(frameId)
-
     val ctx = sparkContextManager.context(user).sparkContext
-
     val rdd = frames.getFrameRdd(ctx, frameId.id)
-
     val columnIndex = frame.schema.columnIndex(arguments.dataColumn)
-
     val valueDataType: DataType = frame.schema.columns(columnIndex)._2
 
     val (weightsColumnIndexOption, weightsDataTypeOption) = if (arguments.weightsColumn.isEmpty) {
@@ -619,17 +609,11 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     implicit val u = user
 
     val frameId: Long = arguments.frame.id
-
     val frame = expectFrame(frameId)
-
     val ctx = sparkContextManager.context(user).sparkContext
-
     val rdd = frames.getFrameRdd(ctx, frameId)
-
     val columnIndex = frame.schema.columnIndex(arguments.dataColumn)
-
     val valueDataType: DataType = frame.schema.columns(columnIndex)._2
-
     val (weightsColumnIndexOption, weightsDataTypeOption) = if (arguments.weightsColumn.isEmpty) {
       (None, None)
     }
@@ -657,15 +641,10 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     implicit val u = user
 
     val frameId: Long = arguments.frame.id
-
     val frame = expectFrame(frameId)
-
     val ctx = sparkContextManager.context(user).sparkContext
-
     val rdd = frames.getFrameRdd(ctx, frameId)
-
     val columnIndex = frame.schema.columnIndex(arguments.dataColumn)
-
     val valueDataType: DataType = frame.schema.columns(columnIndex)._2
 
     val (weightsColumnIndexOption, weightsDataTypeOption) = if (arguments.weightsColumn.isEmpty) {
