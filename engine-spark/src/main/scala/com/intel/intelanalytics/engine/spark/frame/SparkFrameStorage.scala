@@ -68,6 +68,7 @@ class SparkFrameStorage(context: UserPrincipal => Context, fsRoot: String, files
         {
           metaStore.frameRepo.delete(frame.id)
           Unit
+
         }
     }
   }
@@ -101,20 +102,14 @@ class SparkFrameStorage(context: UserPrincipal => Context, fsRoot: String, files
     metaStore.withSession("frame.rename") {
       implicit session =>
         {
-          val check = metaStore.frameRepo.lookupByName(frame.name)
-          if (check.isDefined) {
-            throw new RuntimeException("Frame with same name exists. Rename aborted.")
-          }
           val newFrame = frame.copy(name = newName)
           metaStore.frameRepo.update(newFrame).get
-
         }
     }
   }
-
-  override def renameColumn(frame: DataFrame, name_pairs: Seq[(String, String)]): DataFrame =
-    //withContext("frame.renameColumn") {
-    metaStore.withSession("frame.renameColumn") {
+  override def renameColumns(frame: DataFrame, name_pairs: Seq[(String, String)]): DataFrame =
+    //withContext("frame.renameColumns") {
+    metaStore.withSession("frame.renameColumns") {
       implicit session =>
         {
           val columnsToRename: Seq[String] = name_pairs.map(_._1)
@@ -246,10 +241,6 @@ class SparkFrameStorage(context: UserPrincipal => Context, fsRoot: String, files
     metaStore.withSession("frame.createFrame") {
       implicit session =>
         {
-          val check = metaStore.frameRepo.lookupByName(frameTemplate.name)
-          if (check.isDefined) {
-            throw new RuntimeException("Frame with same name exists. Create aborted.")
-          }
           val frame = metaStore.frameRepo.insert(frameTemplate).get
 
           //remove any existing artifacts to prevent collisions when a database is reinitialized.

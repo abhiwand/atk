@@ -45,23 +45,6 @@ It could be composed of strings, integers, logic(True or False), floating point 
 Each row of data is probably a combination of these.
 To maintain a database structure, each column of data can only hold one type of data.
 
-The following data types are supported by the Analytics Toolkit:
-
-.. hlist::
-    :columns: 6
-
-    * :term:`bool`
-    * :term:`bytearray`
-    * :term:`dict`
-    * :term:`float32`
-    * :term:`float64`
-    * :term:`int32`
-    * :term:`int64`
-    * :term:`list`
-    * :term:`str`
-    * :term:`string`
-    * :term:`unicode`
-
 Types Of Raw Data
 =================
 
@@ -489,7 +472,7 @@ functions on each group, producing a **new** frame.
 
 This needs two parameters:
 
-#. the column(s) to group on
+1. the column(s) to group on
 #. the aggregation function(s)
 
 Aggregation based on columns:
@@ -577,25 +560,26 @@ Aggregation based on both column and row together:
 
     Stuff to consider for >= 1.0
 
-    . Use a 'stats' builtin to get all the basic statistical calculations:
+    Use a 'stats' builtin to get all the basic statistical calculations::
 
-    >>> f.groupby(['a', 'b'], { 'c': stats, 'd': stats })
-    >>> f.groupby(['a', 'b'], stats)  # on all columns besides the groupby columns
+        f.groupby(['a', 'b'], { 'c': stats, 'd': stats })
+        f.groupby(['a', 'b'], stats)  # on all columns besides the groupby columns
 
-    . Use lambdas for custom groupby operations --i.e. first parameter can be a lambda
+    Use lambdas for custom groupby operations --i.e. first parameter can be a lambda
 
-    . Customer reducers:
+    Customer reducers::
 
-    >>> f.groupby(['a', 'b'], ReducerByRow('my_row_lambda_col', lambda acc, row_upd: acc + row_upd.c - row_upd.d))
+        f.groupby(['a', 'b'], ReducerByRow('my_row_lambda_col', lambda acc, row_upd: acc + row_upd.c - row_upd.d))
 
     Produces a frame with 3 columns: ``"a", "b", "my_row_lambda_col"``
 
-    . Mixed-combo:
-    >>> f.groupby(['a', 'b'],
-    >>>           stats,
-    >>>           ReducerByRow('my_row_lambda_col', lambda acc, row_upd: acc + row_upd.c - row_upd.d))
-    >>>           { 'c': ReducerByCell('c_fuzz', lambda acc, cell_upd: acc * cell_upd / 2),
-    >>>             'd': ReducerByCell('d_fuzz', lambda acc, cell_upd: acc * cell_upd / 3.14)})
+    Mixed-combo::
+
+        f.groupby(['a', 'b'],
+                  stats,
+                  ReducerByRow('my_row_lambda_col', lambda acc, row_upd: acc + row_upd.c - row_upd.d))
+                  { 'c': ReducerByCell('c_fuzz', lambda acc, cell_upd: acc * cell_upd / 2),
+                    'd': ReducerByCell('d_fuzz', lambda acc, cell_upd: acc * cell_upd / 3.14)})
 
     Produces a frame with several columns:
     ``"a", "b", "c_avg", "c_stdev", "c_ ..., "d_avg", "d_stdev", "d_ ..., "my_row_lambda_col", "c_fuzz", "d_fuzz"``
@@ -768,14 +752,14 @@ Vertex Rule:
 
 To create a rule for :term:`vertices`, one needs to define:
 
-#. The label for the vertices, for example, the string “empID”.
+1. The label for the vertices, for example, the string “empID”.
 #. The identification value of each vertex, for example, the column “emp_id” of our frame.
 #. The properties of the vertex.
 
 Note:
     The properties of a vertex:
 
-    #. Consist of a label and its value. For example, the property *name* with its value taken from column *name* of our frame.
+    1. Consist of a label and its value. For example, the property *name* with its value taken from column *name* of our frame.
     #. Are optional, which means a vertex might have zero or more properties.
 
 Example:
@@ -803,13 +787,12 @@ An edge is a link that connects two vertices, in our case, they are *tail* and *
 
 To create a rule for an edge, one needs to define:
 
-#. The label or identification for the edge, for example, the string “worksUnder”
+1. The label or identification for the edge, for example, the string “worksUnder”
 #. The tail vertex specified in the previously defined vertex rule.
 #. The head vertex specified in the previously defined vertex rule.
 #. The properties of the edge:
-
-    * consist of a label and its value, for example, the property *name* with value taken from column *name* of a frame
-    * are optional, which means an edge might have zero or more properties
+    A. consist of a label and its value, for example, the property *name* with value taken from column *name* of a frame
+    #. are optional, which means an edge might have zero or more properties
 
 Example:
 ~~~~~~~~

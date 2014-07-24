@@ -24,9 +24,10 @@
 package com.intel.spark.graphon
 
 import com.intel.graphbuilder.elements.{ Edge, Property, Vertex }
-import org.scalatest.{ Matchers, WordSpec }
+import org.scalatest.Matchers
+import com.intel.testutils.TestingSparkContextWordSpec
 
-class GraphStatisticsSpec extends WordSpec with Matchers with GraphonSparkContext {
+class GraphStatisticsSpec extends TestingSparkContextWordSpec with Matchers {
 
   private val validEdgeLabel = "worksWith"
   private val invalidEdgeLabel = "LIKES"
