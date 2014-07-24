@@ -19,8 +19,6 @@ rm -rf ../bin/stage
 rm -rf tarballs/$package
 rm $package-source.tar.gz
 
-
-#START reference.conf repack
 mkdir confunpack
 jarPath=$(find ..  -path ./package -prune -o -name conf.jar -print )
 echo $jarPath
@@ -46,7 +44,6 @@ cp reference.conf launcher/
 pushd launcher
 jar -cvf launcher.jar *
 popd
-#END reference.conf repack
 
 
 
@@ -54,11 +51,9 @@ mkdir -p  tarballs/$package/etc/intelanalytics/rest-server
 
 mkdir -p  tarballs/$package/usr/lib/intelanalytics/rest-server/lib
 
-#START reference.conf repack
 ls -l launcher/launcher.jar
 echo copy new jar
 pwd
-#END reference.conf repack
 
 
 cp -Rv vm/salt/salt/base/intelanalytics-rest-server/examples $SCRIPTPATH/tarballs/$package/usr/lib/intelanalytics/rest-server/
