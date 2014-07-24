@@ -1,18 +1,15 @@
 package com.intel.graphbuilder.driver.spark.titan.reader
 
-import java.util.Date
-
 import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRDDImplicits._
 import com.intel.graphbuilder.driver.spark.rdd.TitanHBaseReaderRDD
 import com.intel.graphbuilder.driver.spark.titan.reader.TitanReaderTestData._
 import com.intel.graphbuilder.driver.spark.titan.reader.TitanReaderUtils.sortGraphElementProperties
 import com.intel.graphbuilder.elements.GraphElement
-import com.intel.testutils.{ LogUtils, TestingSparkContext }
+import com.intel.testutils.TestingSparkContextWordSpec
 import org.apache.hadoop.hbase.CellUtil
 import org.apache.hadoop.hbase.client.Result
 import org.apache.hadoop.hbase.io.ImmutableBytesWritable
-import org.apache.spark.{ SparkConf, SparkContext }
-import org.scalatest.{ BeforeAndAfterAll, Matchers, WordSpec }
+import org.scalatest.{ Matchers, WordSpec }
 
 import scala.collection.JavaConversions._
 
@@ -20,7 +17,7 @@ import scala.collection.JavaConversions._
  * End-to-end integration test for Titan reader
  * @todo Use Stephen's TestingSparkContext class for scalatest
  */
-class TitanReaderITest extends WordSpec with Matchers with TitanReaderSparkContext {
+class TitanReaderITest extends TestingSparkContextWordSpec with Matchers {
 
   "Reading a Titan graph from HBase should" should {
     "return an empty list of graph elements if the HBase table is empty" in {
@@ -71,47 +68,6 @@ class TitanReaderITest extends WordSpec with Matchers with TitanReaderSparkConte
       sortedGraphElements should contain theSameElementsAs List[GraphElement](plutoGbVertex, seaGbVertex, neptuneGbVertex, plutoGbEdge, seaGbEdge)
       sortedVertices should contain theSameElementsAs List[GraphElement](plutoGbVertex, seaGbVertex, neptuneGbVertex)
       sortedEdges should contain theSameElementsAs List[GraphElement](plutoGbEdge, seaGbEdge)
-    }
-  }
-}
-
-trait TitanReaderSparkContext extends WordSpec with BeforeAndAfterAll {
-  LogUtils.silenceSpark()
-
-  val conf = new SparkConf()
-    .setMaster("local")
-    .setAppName(this.getClass.getSimpleName + " " + new Date())
-  conf.set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
-  conf.set("spark.kryo.registrator", "com.intel.graphbuilder.driver.spark.titan.GraphBuilderKryoRegistrator")
-
-  var sparkContext: SparkContext = null
-
-  override def beforeAll = {
-    // Ensure only one Spark local context is running at a time
-    TestingSparkContext.lock.acquire()
-    sparkContext = new SparkContext(conf)
-  }
-
-  /**
-   * Clean up after the test is done
-   */
-  override def afterAll = {
-    cleanupSpark()
-  }
-
-  /**
-   * Shutdown spark and release the lock
-   */
-  def cleanupSpark(): Unit = {
-    try {
-      if (sparkContext != null) {
-        sparkContext.stop()
-      }
-    }
-    finally {
-      // To avoid Akka rebinding to the same port, since it doesn't unbind immediately on shutdown
-      System.clearProperty("spark.driver.port")
-      TestingSparkContext.lock.release()
     }
   }
 }
