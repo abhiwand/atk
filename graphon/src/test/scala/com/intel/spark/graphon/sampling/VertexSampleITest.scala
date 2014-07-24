@@ -31,7 +31,7 @@ import scala.collection.JavaConversions._
 /**
  * Integration testing for uniform vertex sampling
  */
-class VertexSampleITest extends TestingSparkContext with TestingTitan with Matchers {
+class VertexSampleITest extends TestingSparkContext with Matchers {
 
   // generate sample data
   val gbIds = Map((1, new Property("gbId", 1)),
@@ -172,7 +172,7 @@ class VertexSampleITest extends TestingSparkContext with TestingTitan with Match
     subgraphEdges.subtract(sampleEdgeRdd).count() shouldEqual 0l
   }
 
-  "Generating a vertex sample" should "correctly write the vertex induced subgraph to Titan" in {
+  "Generating a vertex sample" should "correctly write the vertex induced subgraph to Titan" in new TestingTitan {
     val vertexRdd = sc.parallelize(inputVertexList, 2)
     val edgeRdd = sc.parallelize(inputEdgeList, 2)
 

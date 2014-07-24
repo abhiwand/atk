@@ -56,6 +56,10 @@ trait TestingTitan extends FlatSpec with BeforeAndAfter {
   var titanConnector = new TitanGraphConnector(titanConfig)
   var graph = titanConnector.connect()
 
+  after (
+    cleanupTitan()
+  )
+
   /**
    * IMPORTANT! Closes in-memory graph used for testing
    */
