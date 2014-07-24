@@ -19,6 +19,7 @@ private[testutils] object TestingSparkContext {
   /** lock allows non-Spark tests to still run concurrently */
   private val lock = new Lock()
 
+  /** global SparkContext that can be re-used between tests */
   private lazy val sc: SparkContext = createLocalSparkContext()
 
   /** System property can be used to turn off globalSparkContext easily */
@@ -29,11 +30,13 @@ private[testutils] object TestingSparkContext {
    */
   def sparkContext: SparkContext = {
     if (useGlobalSparkContext) {
+      // reuse the global SparkContext
       sc
     }
     else {
+      // create a new SparkContext each time
       lock.acquire()
-      createLocalSparkContext
+      createLocalSparkContext()
     }
   }
 
