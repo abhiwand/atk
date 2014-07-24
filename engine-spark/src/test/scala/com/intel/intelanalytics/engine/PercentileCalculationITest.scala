@@ -24,12 +24,12 @@
 package com.intel.intelanalytics.engine.spark
 
 import org.scalatest.Matchers
-import com.intel.intelanalytics.engine.TestingSparkContext
+import com.intel.testutils.TestingSparkContextFlatSpec
 import com.intel.intelanalytics.domain.schema.DataTypes
 import scala.collection.mutable.ListBuffer
 import com.intel.intelanalytics.algorithm.Percentile
 
-class PercentileCalculationITest extends TestingSparkContext with Matchers {
+class PercentileCalculationITest extends TestingSparkContextFlatSpec with Matchers {
   "Calculation percentile in small data set" should "return the correct values" in {
     val numbers = List((Array[Any](3, "")), (Array[Any](5, "")),
       (Array[Any](6, "")), (Array[Any](7, "")), (Array[Any](23, "")), (Array[Any](8, "")), (Array[Any](21, "")), (Array[Any](9, "")), (Array[Any](11, "")),
@@ -38,7 +38,7 @@ class PercentileCalculationITest extends TestingSparkContext with Matchers {
       (Array[Any](24, "")), (Array[Any](12, "")), (Array[Any](2, "")), (Array[Any](14, "")), (Array[Any](25, ""))
     )
 
-    val rdd = sc.parallelize(numbers, 3)
+    val rdd = sparkContext.parallelize(numbers, 3)
     val result = SparkOps.calculatePercentiles(rdd, Seq(0, 3, 5, 40, 100), 0, DataTypes.int32)
     result.length shouldBe 5
     result(0) shouldBe Percentile(0, 1)

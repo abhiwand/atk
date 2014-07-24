@@ -21,51 +21,25 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.spark.graphon
+package com.intel.testutils
 
-import java.util.Date
+import org.apache.spark.SparkContext
+import org.scalatest.{ FlatSpec, BeforeAndAfter }
 
-import com.intel.testutils._
-import org.apache.spark.{ SparkConf, SparkContext }
-import org.scalatest.{ BeforeAndAfterAll, WordSpec }
-
-trait GraphonSparkContext extends WordSpec with BeforeAndAfterAll {
-  LogUtils.silenceSpark()
-
-  val conf = new SparkConf()
-    .setMaster("local")
-    .setAppName(this.getClass.getSimpleName + " " + new Date())
-  conf.set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
-  conf.set("spark.kryo.registrator", "com.intel.graphbuilder.driver.spark.titan.GraphBuilderKryoRegistrator")
+trait TestingSparkContextFlatSpec extends FlatSpec with BeforeAndAfter {
 
   var sparkContext: SparkContext = null
 
-  override def beforeAll = {
-    // Ensure only one Spark local context is running at a time
-    TestingSparkContext.lock.acquire()
-    sparkContext = new SparkContext(conf)
+  before {
+    sparkContext = TestingSparkContext.sparkContext
   }
 
   /**
    * Clean up after the test is done
    */
-  override def afterAll = {
-    cleanupSpark()
+  after {
+    sparkContext = null
+    TestingSparkContext.cleanUp()
   }
 
-  /**
-   * Shutdown spark and release the lock
-   */
-  def cleanupSpark(): Unit = {
-    try {
-      if (sparkContext != null) {
-        sparkContext.stop()
-      }
-    }
-    finally {
-      // To avoid Akka rebinding to the same port, since it doesn't unbind immediately on shutdown
-      System.clearProperty("spark.driver.port")
-      TestingSparkContext.lock.release()
-    }
-  }
 }
