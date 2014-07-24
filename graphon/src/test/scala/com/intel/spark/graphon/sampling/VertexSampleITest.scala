@@ -23,10 +23,7 @@
 
 package com.intel.spark.graphon.sampling
 
-import com.intel.graphbuilder.graph.titan.TitanGraphConnector
-import com.intel.graphbuilder.util.SerializableBaseConfiguration
 import com.intel.spark.graphon.testutils.{ TestingSparkContext, TestingTitan }
-import org.apache.spark.rdd.RDD
 import org.scalatest.Matchers
 import com.intel.graphbuilder.elements.{ Property, Vertex, Edge }
 import scala.collection.JavaConversions._

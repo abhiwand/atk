@@ -106,7 +106,7 @@ class HttpMethods(object):
     def __init__(self, server):
         self.server = server
 
-    def _get_uri(self, path):
+    def create_full_uri(self, path):
         return self.server.get_base_uri() + path
 
     @staticmethod
@@ -133,7 +133,7 @@ class HttpMethods(object):
             except KeyError:
                 raise RuntimeError("Server response did not provide a build ID.  " + build_id_help_msg)
             else:
-                if config.build_id != build_id:
+                if str(config.build_id) != build_id:
                     raise RuntimeError("Client build ID '%s' does not match server build ID '%s'.  "
                                        % (config.build_id, build_id) + build_id_help_msg)
 
@@ -145,7 +145,7 @@ class HttpMethods(object):
    # HTTP commands
 
     def get(self, uri_path):
-        uri = self._get_uri(uri_path)
+        uri = self.create_full_uri(uri_path)
         return self.get_full_uri(uri)
 
     def get_full_uri(self, uri):
@@ -158,7 +158,7 @@ class HttpMethods(object):
         return r
 
     def delete(self, uri_path):
-        uri = self._get_uri(uri_path)
+        uri = self.create_full_uri(uri_path)
         return self.delete_full_uri(uri)
 
     def delete_full_uri(self, uri):
@@ -170,7 +170,7 @@ class HttpMethods(object):
         return r
 
     def post(self, uri_path, payload):
-        uri = self._get_uri(uri_path)
+        uri = self.create_full_uri(uri_path)
         return self.post_full_uri(uri, payload)
 
     def post_full_uri(self, uri, payload):

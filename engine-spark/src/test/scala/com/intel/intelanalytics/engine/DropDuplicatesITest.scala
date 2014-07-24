@@ -1,16 +1,16 @@
 package com.intel.intelanalytics.engine.spark
 
 import org.scalatest.{ BeforeAndAfterEach, Matchers, FlatSpec }
-import com.intel.intelanalytics.engine.TestingSparkContext
 import org.apache.spark.rdd.RDD
 import org.apache.spark.SparkContext._
+import com.intel.testutils.TestingSparkContextFlatSpec
 
-class DropDuplicatesITest extends FlatSpec with Matchers with BeforeAndAfterEach with TestingSparkContext {
+class DropDuplicatesITest extends FlatSpec with Matchers with BeforeAndAfterEach with TestingSparkContextFlatSpec {
   "removeDuplicatesByKey" should "keep only 1 rows per key" in {
 
     //setup test data
     val favoriteMovies = List(Array[Any]("John", 1, "Titanic"), Array[Any]("Kathy", 2, "Jurassic Park"), Array[Any]("John", 1, "The kite runner"), Array[Any]("Kathy", 2, "Toy Story 3"), Array[Any]("Peter", 3, "Star War"))
-    val rdd = sc.parallelize(favoriteMovies)
+    val rdd = sparkContext.parallelize(favoriteMovies)
 
     rdd.count() shouldBe 5
 
