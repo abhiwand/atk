@@ -544,7 +544,12 @@ class GraphSampling(object):
         --------
 
         """
-        self._backend.vertex_sample(self.graph, size, sample_type, **kwargs)
+        if 'seed' in kwargs:
+            result = self._backend.vertex_sample(self.graph, size, sample_type, kwargs['seed'])
+            return self._backend.get_graph(result['name'])
+        else:
+            result = self._backend.vertex_sample(self.graph, size, sample_type)
+            return self._backend.get_graph(result['name'])
 
 
 class GraphMachineLearning(object):

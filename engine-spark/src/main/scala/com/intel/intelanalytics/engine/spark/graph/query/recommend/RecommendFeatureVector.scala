@@ -91,29 +91,33 @@ object RecommendFeatureVector {
   def predict(sourceVector: Array[Double], targetVectorRDD: RDD[TargetTuple], biasOn: Boolean): RDD[Rating] = {
     var sum = if (biasOn) {
       sourceVector.head
-    } else 0
+    }
+    else 0
 
     val sourceVectorValue = if (biasOn) {
       new DoubleMatrix(sourceVector.tail)
-    } else new DoubleMatrix(sourceVector)
+    }
+    else new DoubleMatrix(sourceVector)
 
     targetVectorRDD.map {
       case targetTuple =>
-      {
+        {
           val targetVector = targetTuple.resultVector
           if (sourceVector.size != targetVector.size) {
             throw new RuntimeException("the vector size of left-side vertex and right-side vertex does not match")
           }
           val targetVectorValue = if (biasOn) {
             new DoubleMatrix(targetVector.tail)
-          } else new DoubleMatrix(targetVector)
+          }
+          else new DoubleMatrix(targetVector)
 
           sum = if (biasOn) {
             sum + targetVector.head + sourceVectorValue.dot(targetVectorValue)
-          } else sourceVectorValue.dot(targetVectorValue)
+          }
+          else sourceVectorValue.dot(targetVectorValue)
 
           Rating(targetTuple.targetVertexId, sum)
-      }
+        }
     }
   }
 

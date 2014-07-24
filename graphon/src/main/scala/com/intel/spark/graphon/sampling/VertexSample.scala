@@ -36,6 +36,8 @@ import java.util.UUID
 import com.intel.spark.graphon.sampling.SamplingSparkOps._
 
 /**
+ * Represents the arguments for vertex sampling
+ *
  * @param graph reference to the graph to be sampled
  * @param size the requested sample size
  * @param sampleType type of vertex sampling to use
@@ -49,43 +51,45 @@ case class VS(graph: GraphReference, size: Int, sampleType: String, seed: Option
 }
 
 /**
- * The result object.
+ * The result object
  *
- * Note: For now, return the GraphReference and the name, since the name is required to get a new BigFrame reference
- * in Python.
+ * Note: For now, return the subgraph name, since the current state of things requires the name in order to return a
+ * new BigFrame instance in Python.
  *
- * @param ref GraphReference to the subgraph
  * @param name name of the subgraph
  */
-case class VSResult(ref: GraphReference, name: String)
+case class VSResult(name: String)
 
 class VertexSample extends SparkCommandPlugin[VS, VSResult] {
 
   import DomainJsonProtocol._
 
   implicit val vsFormat = jsonFormat4(VS)
-  implicit val vsResultFormat = jsonFormat2(VSResult)
+  implicit val vsResultFormat = jsonFormat1(VSResult)
 
   override def execute(invocation: SparkInvocation, arguments: VS)(implicit user: UserPrincipal, executionContext: ExecutionContext): VSResult = {
-
     // Titan Settings
     val config = configuration
     val titanConfigInput = config.getConfig("titan.load")
 
-    // create titanConfig and a copy for the subgraph write-back
+    // create titanConfig
     val titanConfig = new SerializableBaseConfiguration()
     titanConfig.setProperty("storage.backend", titanConfigInput.getString("storage.backend"))
     titanConfig.setProperty("storage.hostname", titanConfigInput.getString("storage.hostname"))
     titanConfig.setProperty("storage.port", titanConfigInput.getString("storage.port"))
 
+    // get the input graph object
     import scala.concurrent.duration._
     val graph = Await.result(invocation.engine.getGraph(arguments.graph.id), config.getInt("default-timeout") seconds)
 
+    // get SparkContext and add the graphon jar
     val sc = invocation.sparkContext
     sc.addJar(Boot.getJar("graphon").getPath)
 
+    // convert graph name and get the graph vertex and edge RDDs
     val iatGraphName = GraphName.convertGraphUserNameToBackendName(graph.name)
-    val (vertexRDD, edgeRDD) = getGraph(iatGraphName, sc, titanConfig)
+    titanConfig.setProperty("storage.tablename", iatGraphName)
+    val (vertexRDD, edgeRDD) = getGraphRdds(sc, titanConfig)
 
     val vertexSample = arguments.sampleType match {
       case "uniform" => sampleVerticesUniform(vertexRDD, arguments.size, arguments.seed)
@@ -94,19 +98,23 @@ class VertexSample extends SparkCommandPlugin[VS, VSResult] {
       case _ => throw new IllegalArgumentException("Invalid sample type")
     }
 
+    // get the vertex induced subgraph edges
     val edgeSample = sampleEdges(vertexSample, edgeRDD)
 
-    val iatSubgraphName = GraphName.convertGraphUserNameToBackendName("graph_" + UUID.randomUUID.toString)
+    // strip '-' character so UUID format is consistent with the Python generated UUID format
+    val subgraphName = "graph_" + UUID.randomUUID.toString.filter(c => c != '-')
+    val iatSubgraphName = GraphName.convertGraphUserNameToBackendName(subgraphName)
 
-    val subgraph = Await.result(invocation.engine.createGraph(GraphTemplate(iatSubgraphName)), config.getInt("default-timeout") seconds)
+    val subgraph = Await.result(invocation.engine.createGraph(GraphTemplate(subgraphName)), config.getInt("default-timeout") seconds)
 
+    // create titan config copy for subgraph write-back
     val subgraphTitanConfig = new SerializableBaseConfiguration()
     subgraphTitanConfig.copy(titanConfig)
     subgraphTitanConfig.setProperty("storage.tablename", iatSubgraphName)
 
     writeToTitan(vertexSample, edgeSample, subgraphTitanConfig)
 
-    VSResult(new GraphReference(subgraph.id), iatSubgraphName)
+    VSResult(subgraphName)
   }
 
   /**
