@@ -35,7 +35,7 @@ import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import org.apache.spark.SparkContext._
 
-import scala.util.Random
+import java.util.Random // scala.util.Random is not serializable ???
 
 object SamplingSparkOps extends Serializable {
 
@@ -44,8 +44,8 @@ object SamplingSparkOps extends Serializable {
    *
    * @param size the specified sample size
    * @param vertices the vertices to sample
-   * @param seed random seed value
-   * @return the vertices in the sample
+   * @param seed optional random seed value
+   * @return RDD containing the vertices in the sample
    */
   def sampleVerticesUniform(vertices: RDD[Vertex], size: Int, seed: Option[Long]): RDD[Vertex] = {
     require(size >= 1, "Invalid sample size: " + size)
@@ -54,18 +54,12 @@ object SamplingSparkOps extends Serializable {
       vertices
     }
     else {
-      seed match {
-        case Some(l) => Random.setSeed(l)
-        case None => None
-      }
-      val vertexSampleArray = vertices.takeSample(false, size, 1)
-      vertices.sparkContext.parallelize(vertexSampleArray)
-      /*val weightedVertices = vertices.map(vertex => (Random.nextDouble(), vertex))
+      val rand = checkSeed(seed)
 
-      val vertexSampleArray = weightedVertices.top(size)(Ordering.by(pair => pair._1))
-      val vertexSampleRdd = vertices.sparkContext.parallelize(vertexSampleArray)
+      // create tuple of (sampleWeight, vertex)
+      val weightedVertexRdd = vertices.map(vertex => (rand.nextDouble(), vertex))
 
-      vertexSampleRdd.map(pair => pair._2)*/
+      getTopVertices(weightedVertexRdd, size)
     }
   }
 
@@ -77,8 +71,8 @@ object SamplingSparkOps extends Serializable {
    * @param size the specified sample size
    * @param vertices the vertices to sample
    * @param edges RDD of all edges
-   * @param seed random seed value
-   * @return the vertices in the sample
+   * @param seed optional random seed value
+   * @return RDD containing the vertices in the sample
    */
   def sampleVerticesDegree(vertices: RDD[Vertex], edges: RDD[Edge], size: Int, seed: Option[Long]): RDD[Vertex] = {
     require(size >= 1, "Invalid sample size: " + size)
@@ -86,34 +80,29 @@ object SamplingSparkOps extends Serializable {
       vertices
     }
     else {
-      seed match {
-        case Some(l) => Random.setSeed(l)
-        case None => None
-      }
+      val rand = checkSeed(seed)
+
       // create tuple of (vertexDegree, vertex)
       val vertexDegreeRdd = addVertexDegreeWeights(vertices, edges)
 
-      // create tuple of (sampleWeight, vertex), where sampleWeight give degree-weighted probability of being sampled
-      val weightedVertices = vertexDegreeRdd.map(pair => (Random.nextDouble() * pair._1, pair._2))
+      // create tuple of (sampleWeight, vertex)
+      val weightedVertexRdd = vertexDegreeRdd.map(pair => (rand.nextDouble() * pair._1, pair._2))
 
-      val vertexSampleArray = weightedVertices.top(size)(Ordering.by(pair => pair._1))
-      val vertexSamplePairRdd = vertices.sparkContext.parallelize(vertexSampleArray)
-
-      vertexSamplePairRdd.map(pair => pair._2)
+      getTopVertices(weightedVertexRdd, size)
     }
   }
 
   /**
    * Produce a weighted vertex sample using the size of the degree histogram bin as the weight for a vertex, instead
-   * of just the degree value itself.
+   * of just the degree value itself
    *
    * This will result in a bias toward vertices with more frequent degree values.
    *
    * @param size the specified sample size
    * @param vertices the vertices to sample
    * @param edges RDD of all edges
-   * @param seed random seed value
-   * @return the vertices in the sample
+   * @param seed optional random seed value
+   * @return RDD containing the vertices in the sample
    */
   def sampleVerticesDegreeDist(vertices: RDD[Vertex], edges: RDD[Edge], size: Int, seed: Option[Long]): RDD[Vertex] = {
     require(size >= 1, "Invalid sample size: " + size)
@@ -121,46 +110,69 @@ object SamplingSparkOps extends Serializable {
       vertices
     }
     else {
-      seed match {
-        case Some(l) => Random.setSeed(l)
-        case None => None
-      }
+      val rand = checkSeed(seed)
+
       // create tuple of (vertexDegree, vertex)
       val vertexDegreeRdd = addVertexDegreeDistWeights(vertices, edges)
 
-      // create tuple of (sampleWeight, vertex), where sampleWeight give degree-weighted probability of being sampled
-      val weightedVertices = vertexDegreeRdd.map(pair => (Random.nextDouble() * pair._1, pair._2))
+      // create tuple of (sampleWeight, vertex)
+      val weightedVertexRdd = vertexDegreeRdd.map(pair => (rand.nextDouble() * pair._1, pair._2))
 
-      val vertexSampleArray = weightedVertices.top(size)(Ordering.by(pair => pair._1))
-      val vertexSamplePairRdd = vertices.sparkContext.parallelize(vertexSampleArray)
-      vertexSamplePairRdd.map(pair => pair._2)
+      getTopVertices(weightedVertexRdd, size)
     }
   }
 
   /**
-   * Add the degree histogram bin size for each vertex as the degree weight.
+   * Check the optional seed and set if necessary
+   *
+   * @param seed optional random seed
+   * @return a new Random instance
+   */
+  def checkSeed(seed: Option[Long]): Random = {
+    seed match {
+      case Some(l) => new Random(l)
+      case None => new Random
+    }
+  }
+
+  /**
+   * Get the top *size* number of vertices sorted by weight
+   *
+   * @param weightedVertexRdd RDD of (vertexWeight, vertex)
+   * @param size number of vertices to take
+   * @return RDD of vertices
+   */
+  def getTopVertices(weightedVertexRdd: RDD[(Double, Vertex)], size: Int): RDD[Vertex] = {
+    val sortedByWeightRdd = weightedVertexRdd.sortByKey()
+    val vertexSampleArray = sortedByWeightRdd.take(size)
+    val vertexSamplePairRdd = weightedVertexRdd.sparkContext.parallelize(vertexSampleArray)
+
+    vertexSamplePairRdd.map(pair => pair._2)
+  }
+
+  /**
+   * Add the degree histogram bin size for each vertex as the degree weight
    *
    * @param vertices RDD of all vertices
    * @param edges RDD of all edges
-   * @return RDD of tuples that contain vertex weights
+   * @return RDD of tuples that contain vertex degree histogram bin size as weight for each vertex
    */
   def addVertexDegreeDistWeights(vertices: RDD[Vertex], edges: RDD[Edge]): RDD[(Long, Vertex)] = {
-    val vertexIdDegrees = GraphStatistics.outDegrees(edges)
-    val vertexIds = vertices.map(vertex => (vertex.physicalId, vertex))
+    // get tuples of (vertexDegree, Vertex)
+    val vertexDegreeRdd = addVertexDegreeWeights(vertices, edges)
 
-    val joinedRdd = vertexIdDegrees.join(vertexIds)
+    // get tuples of (vertexDegreeDist, Vertex)
+    val degreeDistRdd = vertexDegreeRdd.groupBy(pair => pair._1).map(group => (group._1, group._2.size.toLong))
 
-    val vertexDegreeRdd = joinedRdd.map(pair => pair._2) // tuples for (vertexDegree, Vertex)
-    val degreeDistRdd = vertexDegreeRdd.groupBy(pair => pair._1).map(group => (group._1, group._2.size.toLong)) // tuples of (vertexDegreeDist, Vertex)
     degreeDistRdd.join(vertexDegreeRdd).map(pair => pair._2)
   }
 
   /**
-   * Add the out-degree for each vertex as the degree weight.
+   * Add the out-degree for each vertex as the degree weight
    *
    * @param vertices RDD of all vertices
    * @param edges RDD of all edges
-   * @return RDD of tuples that contain vertex weights
+   * @return RDD of tuples that contain vertex degree as weight for each vertex
    */
   def addVertexDegreeWeights(vertices: RDD[Vertex], edges: RDD[Edge]): RDD[(Long, Vertex)] = {
     val vertexIdDegrees = GraphStatistics.outDegrees(edges)
@@ -168,38 +180,37 @@ object SamplingSparkOps extends Serializable {
 
     val joinedRdd = vertexIdDegrees.join(vertexIds)
 
-    val vertexDegreeRdd = joinedRdd.map(pair => pair._2)
-    vertexDegreeRdd
+    joinedRdd.map(pair => pair._2)
   }
 
   /**
-   * Gets the edges for the vertex induced subgraph
+   * Get the edges for the vertex induced subgraph
    *
-   * @param vertices the set of sampled vertices to restrict the graph to
-   * @param edges the full graph's set of edges
-   * @return the edge set RDD for the vertex induced subgraph
+   * @param vertices the set of sampled vertices from which to construct the vertex induced subgraph
+   * @param edges the set of edges for the input graph
+   * @return the edge RDD for the vertex induced subgraph
    */
   def sampleEdges(vertices: RDD[Vertex], edges: RDD[Edge]): RDD[Edge] = {
+    // TODO: there should be a more efficient way of doing this...
     val vertexArray = vertices.map(v => v.physicalId).collect()
     edges.filter(e => vertexArray.contains(e.headPhysicalId) && vertexArray.contains(e.tailPhysicalId))
   }
 
   /**
-   * Read in the graph vertices and edges for the specified graphId
+   * Read in the graph vertices and edges for the specified graphName
    *
-   * @param graphName storage table name for the graph
    * @param sc access to SparkContext
+   * @param titanConfig the config for Titan
    * @return tuple containing RDDs of vertices and edges
    */
-  def getGraph(graphName: String, sc: SparkContext, titanConfig: SerializableBaseConfiguration): (RDD[Vertex], RDD[Edge]) = {
-    titanConfig.setProperty("storage.tablename", graphName)
-
+  def getGraphRdds(sc: SparkContext, titanConfig: SerializableBaseConfiguration): (RDD[Vertex], RDD[Edge]) = {
     val titanConnector = new TitanGraphConnector(titanConfig)
 
-    // Read graph
+    // read graph
     val titanReader = new TitanReader(sc, titanConnector)
     val titanReaderRDD = titanReader.read()
 
+    // filter the vertices and edges
     val vertexRDD = titanReaderRDD.filterVertices()
     val edgeRDD = titanReaderRDD.filterEdges()
 
@@ -211,6 +222,7 @@ object SamplingSparkOps extends Serializable {
    *
    * @param vertices the vertices to write to Titan
    * @param edges the edges to write to Titan
+   * @param titanConfig the config for Titan
    */
   def writeToTitan(vertices: RDD[Vertex], edges: RDD[Edge], titanConfig: SerializableBaseConfiguration) = {
     val gb = new GraphBuilder(new GraphBuilderConfig(new InputSchema(Seq.empty), List.empty, List.empty, titanConfig))

@@ -23,18 +23,18 @@
 
 package com.intel.spark.graphon.sampling
 
+import com.intel.graphbuilder.graph.titan.TitanGraphConnector
 import com.intel.graphbuilder.util.SerializableBaseConfiguration
+import com.intel.spark.graphon.testutils.{ TestingSparkContext, TestingTitan }
 import org.apache.spark.rdd.RDD
-import org.specs2.mutable.Specification
-import com.intel.testutils.TestingSparkContext
-import com.intel.spark.graphon.testutils.TestingTitan
+import org.scalatest.Matchers
 import com.intel.graphbuilder.elements.{ Property, Vertex, Edge }
 import scala.collection.JavaConversions._
 
 /**
  * Integration testing for uniform vertex sampling
  */
-class VertexSampleITest extends Specification {
+class VertexSampleITest extends TestingSparkContext with TestingTitan with Matchers {
 
   // generate sample data
   val gbIds = Map((1, new Property("gbId", 1)),
@@ -76,140 +76,107 @@ class VertexSampleITest extends Specification {
     Edge(gbIds(7), gbIds(5), gbIds(7), gbIds(5), "tweeted", Seq(new Property("tweet", "blah blah blah..."))),
     Edge(gbIds(8), gbIds(3), gbIds(8), gbIds(3), "tweeted", Seq(new Property("tweet", "blah blah blah..."))))
 
-  "Generating a uniform vertex sample" should {
+  "Generating a uniform vertex sample" should "contain correct number of vertices in sample" in {
+    val vertexRdd = sc.parallelize(inputVertexList.toSeq, 2)
 
-    "contain correct number of vertices in sample" in new TestingSparkContext {
-      val vertexRdd = sc.parallelize(inputVertexList.toSeq, 2)
-
-      val sampleVerticesRdd = SamplingSparkOps.sampleVerticesUniform(vertexRdd, 5, None)
-      sampleVerticesRdd.count() mustEqual 5
-    }
-
-    "give error if sample size less than 1" in new TestingSparkContext {
-      val vertexRdd = sc.parallelize(inputVertexList.toSeq, 2)
-
-      SamplingSparkOps.sampleVerticesUniform(vertexRdd, 0, None) must throwAn[IllegalArgumentException]
-    }
-
-    "returns entire dataset if sample size is greater than or equal to dataset size" in new TestingSparkContext {
-      val vertexRdd = sc.parallelize(inputVertexList.toSeq, 2)
-
-      SamplingSparkOps.sampleVerticesUniform(vertexRdd, 200, None) mustEqual vertexRdd
-    }
+    val sampleVerticesRdd = SamplingSparkOps.sampleVerticesUniform(vertexRdd, 5, None)
+    sampleVerticesRdd.count() shouldEqual 5
   }
 
-  "Generating a degree-weighted vertex sample" should {
+  "Generating a uniform vertex sample" should "give error if sample size less than 1" in {
+    val vertexRdd = sc.parallelize(inputVertexList.toSeq, 2)
 
-    "contain correct number of vertices in sample" in new TestingSparkContext with TestingTitan {
-      val vertexRdd = sc.parallelize(inputVertexList.toSeq, 2)
-      val edgeRdd = sc.parallelize(inputEdgeList.toSeq, 2)
-
-      val sampleVerticesRdd = SamplingSparkOps.sampleVerticesDegree(vertexRdd, edgeRdd, 5, None)
-      sampleVerticesRdd.count() mustEqual 5
-    }
-
-    "give error if sample size less than 1" in new TestingSparkContext {
-      val vertexRdd = sc.parallelize(inputVertexList.toSeq, 2)
-      val edgeRdd = sc.parallelize(inputEdgeList.toSeq, 2)
-
-      SamplingSparkOps.sampleVerticesDegree(vertexRdd, edgeRdd, 0, None) must throwAn[IllegalArgumentException]
-    }
-
-    "returns entire dataset if sample size is greater than or equal to dataset size" in new TestingSparkContext {
-      val vertexRdd = sc.parallelize(inputVertexList.toSeq, 2)
-      val edgeRdd = sc.parallelize(inputEdgeList.toSeq, 2)
-
-      SamplingSparkOps.sampleVerticesDegree(vertexRdd, edgeRdd, 200, None) mustEqual vertexRdd
-    }
+    an[IllegalArgumentException] shouldBe thrownBy(SamplingSparkOps.sampleVerticesUniform(vertexRdd, 0, None))
   }
 
-  "Generating a degree distribution-weighted vertex sample" should {
+  "Generating a uniform vertex sample" should "returns entire dataset if sample size is greater than or equal to dataset size" in {
+    val vertexRdd = sc.parallelize(inputVertexList.toSeq, 2)
 
-    "contain correct number of vertices in sample" in new TestingSparkContext {
-      val vertexRdd = sc.parallelize(inputVertexList.toSeq, 2)
-      val edgeRdd = sc.parallelize(inputEdgeList.toSeq, 2)
-
-      val sampleVerticesRdd = SamplingSparkOps.sampleVerticesDegreeDist(vertexRdd, edgeRdd, 5, None)
-      sampleVerticesRdd.count() mustEqual 5
-    }
-
-    "give error if sample size less than 1" in new TestingSparkContext {
-      val vertexRdd = sc.parallelize(inputVertexList.toSeq, 2)
-      val edgeRdd = sc.parallelize(inputEdgeList.toSeq, 2)
-
-      SamplingSparkOps.sampleVerticesDegreeDist(vertexRdd, edgeRdd, 0, None) must throwAn[IllegalArgumentException]
-    }
-
-    "returns entire dataset if sample size is greater than or equal to dataset size" in new TestingSparkContext {
-      val vertexRdd = sc.parallelize(inputVertexList.toSeq, 2)
-      val edgeRdd = sc.parallelize(inputEdgeList.toSeq, 2)
-
-      SamplingSparkOps.sampleVerticesDegreeDist(vertexRdd, edgeRdd, 200, None) mustEqual vertexRdd
-    }
+    SamplingSparkOps.sampleVerticesUniform(vertexRdd, 200, None) shouldEqual vertexRdd
   }
 
-  "Generating a vertex sample" should {
+  "Generating a degree-weighted vertex sample" should "contain correct number of vertices in sample" in {
+    val vertexRdd = sc.parallelize(inputVertexList.toSeq, 2)
+    val edgeRdd = sc.parallelize(inputEdgeList.toSeq, 2)
 
-    "generate correct vertex induced subgraph" in new TestingSparkContext {
+    val sampleVerticesRdd = SamplingSparkOps.sampleVerticesDegree(vertexRdd, edgeRdd, 5, None)
+    sampleVerticesRdd.count() shouldEqual 5
+  }
 
-      val vertexRdd = sc.parallelize(inputVertexList.toSeq, 2)
-      val edgeRdd = sc.parallelize(inputEdgeList.toSeq, 2)
+  "Generating a degree-weighted vertex sample" should "give error if sample size less than 1" in {
+    val vertexRdd = sc.parallelize(inputVertexList.toSeq, 2)
+    val edgeRdd = sc.parallelize(inputEdgeList.toSeq, 2)
 
-      val sampleVertexList = Seq(Vertex(gbIds(1), gbIds(1), Seq(new Property("location", "Oregon"))),
-        Vertex(gbIds(2), gbIds(2), Seq(new Property("location", "Oregon"))),
-        Vertex(gbIds(3), gbIds(3), Seq(new Property("location", "Oregon"))),
-        Vertex(gbIds(4), gbIds(4), Seq(new Property("location", "Oregon"))))
+    an[IllegalArgumentException] shouldBe thrownBy(SamplingSparkOps.sampleVerticesDegree(vertexRdd, edgeRdd, 0, None))
+  }
 
-      val sampleEdgeList = Seq(Edge(gbIds(1), gbIds(2), gbIds(1), gbIds(2), "tweeted", Seq(new Property("tweet", "blah blah blah..."))),
-        Edge(gbIds(1), gbIds(3), gbIds(1), gbIds(3), "tweeted", Seq(new Property("tweet", "blah blah blah..."))),
-        Edge(gbIds(1), gbIds(4), gbIds(1), gbIds(4), "tweeted", Seq(new Property("tweet", "blah blah blah..."))),
-        Edge(gbIds(2), gbIds(1), gbIds(2), gbIds(1), "tweeted", Seq(new Property("tweet", "blah blah blah..."))),
-        Edge(gbIds(3), gbIds(1), gbIds(3), gbIds(1), "tweeted", Seq(new Property("tweet", "blah blah blah..."))),
-        Edge(gbIds(3), gbIds(4), gbIds(3), gbIds(4), "tweeted", Seq(new Property("tweet", "blah blah blah..."))),
-        Edge(gbIds(4), gbIds(1), gbIds(4), gbIds(1), "tweeted", Seq(new Property("tweet", "blah blah blah..."))),
-        Edge(gbIds(4), gbIds(3), gbIds(4), gbIds(3), "tweeted", Seq(new Property("tweet", "blah blah blah..."))))
+  "Generating a degree-weighted vertex sample" should "returns entire dataset if sample size is greater than or equal to dataset size" in {
+    val vertexRdd = sc.parallelize(inputVertexList.toSeq, 2)
+    val edgeRdd = sc.parallelize(inputEdgeList.toSeq, 2)
 
-      val sampleVertexRdd = sc.parallelize(sampleVertexList.toSeq, 2)
-      val sampleEdgeRdd = sc.parallelize(sampleEdgeList.toSeq, 2)
+    SamplingSparkOps.sampleVerticesDegree(vertexRdd, edgeRdd, 200, None) shouldEqual vertexRdd
+  }
 
-      val subgraphEdges = SamplingSparkOps.sampleEdges(sampleVertexRdd, edgeRdd)
+  "Generating a degree distribution-weighted vertex sample" should "contain correct number of vertices in sample" in {
+    val vertexRdd = sc.parallelize(inputVertexList.toSeq, 2)
+    val edgeRdd = sc.parallelize(inputEdgeList.toSeq, 2)
 
-      subgraphEdges.count() mustEqual sampleEdgeRdd.count()
-      subgraphEdges.subtract(sampleEdgeRdd).count() mustEqual 0
-    }
+    val sampleVerticesRdd = SamplingSparkOps.sampleVerticesDegreeDist(vertexRdd, edgeRdd, 5, None)
+    sampleVerticesRdd.count() shouldEqual 5
+  }
 
-    "correctly write the vertex induced subgraph to Titan" in new TestingSparkContext with TestingTitan {
-      val vertexRdd = sc.parallelize(inputVertexList.toSeq, 2)
-      val edgeRdd = sc.parallelize(inputEdgeList.toSeq, 2)
+  "Generating a degree distribution-weighted vertex sample" should "give error if sample size less than 1" in {
+    val vertexRdd = sc.parallelize(inputVertexList.toSeq, 2)
+    val edgeRdd = sc.parallelize(inputEdgeList.toSeq, 2)
 
-      SamplingSparkOps.writeToTitan(vertexRdd, edgeRdd, titanConfig)
+    an[IllegalArgumentException] shouldBe thrownBy(SamplingSparkOps.sampleVerticesDegreeDist(vertexRdd, edgeRdd, 0, None))
+  }
 
-      graph = titanConnector.connect()
+  "Generating a degree distribution-weighted vertex sample" should "returns entire dataset if sample size is greater than or equal to dataset size" in {
+    val vertexRdd = sc.parallelize(inputVertexList.toSeq, 2)
+    val edgeRdd = sc.parallelize(inputEdgeList.toSeq, 2)
 
-      graph.getEdges.size mustEqual 20
-      graph.getVertices.size mustEqual 8
-    }
+    SamplingSparkOps.sampleVerticesDegreeDist(vertexRdd, edgeRdd, 200, None) shouldEqual vertexRdd
+  }
 
-    /*    "correctly read the input graph from Titan into Vertex and Edge RDDs" in new TestingSparkContext {
-      val vertexRdd = sc.parallelize(inputVertexList.toSeq, 2)
-      val edgeRdd = sc.parallelize(inputEdgeList.toSeq, 2)
+  "Generating a vertex sample" should "generate correct vertex induced subgraph" in {
 
-      val titanConfig = new SerializableBaseConfiguration()
-      titanConfig.setProperty("storage.backend", "hbase")
-      titanConfig.setProperty("storage.hostname", "fairlane")
-      titanConfig.setProperty("storage.port", "2181")
-      titanConfig.setProperty("storage.tablename", "titanTestGraph")
+    val vertexRdd = sc.parallelize(inputVertexList.toSeq, 2)
+    val edgeRdd = sc.parallelize(inputEdgeList.toSeq, 2)
 
-      // TODO: delete preexisting graph or it will simply append and cause test to fail
-      SamplingSparkOps.writeToTitan(vertexRdd, edgeRdd, titanConfig)
+    val sampleVertexList = Seq(Vertex(gbIds(1), gbIds(1), Seq(new Property("location", "Oregon"))),
+      Vertex(gbIds(2), gbIds(2), Seq(new Property("location", "Oregon"))),
+      Vertex(gbIds(3), gbIds(3), Seq(new Property("location", "Oregon"))),
+      Vertex(gbIds(4), gbIds(4), Seq(new Property("location", "Oregon"))))
 
-      titanConfig.clearProperty("storage.tablename")
+    val sampleEdgeList = Seq(Edge(gbIds(1), gbIds(2), gbIds(1), gbIds(2), "tweeted", Seq(new Property("tweet", "blah blah blah..."))),
+      Edge(gbIds(1), gbIds(3), gbIds(1), gbIds(3), "tweeted", Seq(new Property("tweet", "blah blah blah..."))),
+      Edge(gbIds(1), gbIds(4), gbIds(1), gbIds(4), "tweeted", Seq(new Property("tweet", "blah blah blah..."))),
+      Edge(gbIds(2), gbIds(1), gbIds(2), gbIds(1), "tweeted", Seq(new Property("tweet", "blah blah blah..."))),
+      Edge(gbIds(3), gbIds(1), gbIds(3), gbIds(1), "tweeted", Seq(new Property("tweet", "blah blah blah..."))),
+      Edge(gbIds(3), gbIds(4), gbIds(3), gbIds(4), "tweeted", Seq(new Property("tweet", "blah blah blah..."))),
+      Edge(gbIds(4), gbIds(1), gbIds(4), gbIds(1), "tweeted", Seq(new Property("tweet", "blah blah blah..."))),
+      Edge(gbIds(4), gbIds(3), gbIds(4), gbIds(3), "tweeted", Seq(new Property("tweet", "blah blah blah..."))))
 
-      val (readVertexRdd: RDD[Vertex], readEdgeRdd: RDD[Edge]) = SamplingSparkOps.getGraph("titanTestGraph", sc, titanConfig)
+    val sampleVertexRdd = sc.parallelize(sampleVertexList.toSeq, 2)
+    val sampleEdgeRdd = sc.parallelize(sampleEdgeList.toSeq, 2)
 
-      readEdgeRdd.count() mustEqual 20
-      readVertexRdd.count() mustEqual 8
-    }*/
+    val subgraphEdges = SamplingSparkOps.sampleEdges(sampleVertexRdd, edgeRdd)
+
+    subgraphEdges.count() shouldEqual sampleEdgeRdd.count()
+    subgraphEdges.subtract(sampleEdgeRdd).count() shouldEqual 0
+  }
+
+  "Generating a vertex sample" should "correctly write the vertex induced subgraph to Titan" in {
+    val vertexRdd = sc.parallelize(inputVertexList.toSeq, 2)
+    val edgeRdd = sc.parallelize(inputEdgeList.toSeq, 2)
+
+    SamplingSparkOps.writeToTitan(vertexRdd, edgeRdd, titanConfig)
+
+    graph = titanConnector.connect()
+
+    graph.getEdges.size shouldEqual 20
+    graph.getVertices.size shouldEqual 8
   }
 
 }

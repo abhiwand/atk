@@ -23,56 +23,64 @@
 
 package com.intel.spark.graphon.testutils
 
-import com.intel.graphbuilder.graph.titan.TitanGraphConnector
-import com.intel.graphbuilder.util.SerializableBaseConfiguration
-import com.intel.testutils.{ LogUtils, DirectoryUtils }
-import com.thinkaurelius.titan.core.util.TitanCleanup
-import com.thinkaurelius.titan.core.{ TitanFactory, TitanGraph }
-import com.tinkerpop.blueprints.Graph
-import com.tinkerpop.blueprints.util.wrappers.id.IdGraph
-import org.scalatest.{ BeforeAndAfter, FlatSpec }
-import java.io.File
-
+import java.util.Date
+import org.apache.spark.SparkContext
 import scala.concurrent.Lock
+import org.scalatest.{ FlatSpec, BeforeAndAfter }
+import org.apache.log4j.{ Logger, Level }
+import org.scalacheck.Prop.{ False, True }
 
-/**
- * This trait can be mixed into Specifications to get a TitanGraph backed by an in-memory database
- * for testing purposes.
- *
- * The TitanGraph is wrapped by IdGraph to allow tests to create vertices and edges with specific Ids.
- * @see com.tinkerpop.blueprints.util.wrappers.id.IdGraph
- *
- * IMPORTANT! only one thread can use the graph below at a time.
- */
-trait TestingTitan extends FlatSpec with BeforeAndAfter {
+trait TestingSparkContext extends FlatSpec with BeforeAndAfter {
 
-  LogUtils.silenceTitan()
+  val useGlobalSparkContext: Boolean = System.getProperty("useGlobalSparkContext", "false").toBoolean
 
-  var tmpDir: File = DirectoryUtils.createTempDirectory("titan-graph-for-unit-testing-")
+  var sc: SparkContext = null
 
-  val titanConfig = new SerializableBaseConfiguration()
-  titanConfig.setProperty("storage.directory", tmpDir.getAbsolutePath)
-
-  var titanConnector = new TitanGraphConnector(titanConfig)
-  var graph = titanConnector.connect()
+  before {
+    if (useGlobalSparkContext) {
+      sc = TestingSparkContext.sc
+    }
+    else {
+      TestingSparkContext.lock.acquire()
+      sc = TestingSparkContext.createSparkContext
+    }
+  }
 
   /**
-   * IMPORTANT! Closes in-memory graph used for testing
+   * Clean up after the test is done
    */
-  def cleanupTitan(): Unit = {
+  after {
+    if (!useGlobalSparkContext) cleanupSpark()
+  }
+
+  /**
+   * Shutdown spark and release the lock
+   */
+  private def cleanupSpark(): Unit = {
     try {
-      if (graph != null) {
-        graph.shutdown()
+      if (sc != null) {
+        sc.stop()
       }
     }
     finally {
-      graph = null
-      TestingTitan.lock.release()
-    }
+      // To avoid Akka rebinding to the same port, since it doesn't unbind immediately on shutdown
+      System.clearProperty("spark.driver.port")
 
+      TestingSparkContext.lock.release()
+    }
   }
 }
 
-object TestingTitan {
+object TestingSparkContext {
   private val lock = new Lock()
+  private lazy val sc: SparkContext = createSparkContext
+
+  def createSparkContext: SparkContext = {
+    setLogLevels(Level.WARN, Seq("spark", "org.eclipse.jetty", "akka"))
+    new SparkContext("local", "test " + new Date())
+  }
+
+  private def setLogLevels(level: org.apache.log4j.Level, loggers: TraversableOnce[String]): Unit = {
+    loggers.foreach(loggerName => Logger.getLogger(loggerName).setLevel(level))
+  }
 }
