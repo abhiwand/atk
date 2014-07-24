@@ -27,7 +27,7 @@ import com.intel.intelanalytics.domain.Error
 import scala.util.{ Success, Failure, Try }
 import spray.json.JsObject
 import com.intel.intelanalytics.domain.command.{ CommandTemplate, Command }
-import com.intel.intelanalytics.engine.{ ProgressInfo, CommandStorage }
+import com.intel.intelanalytics.engine.{ ProgressInfo, TaskProgressInfo, CommandStorage }
 import com.intel.intelanalytics.repository.{ SlickMetaStoreComponent }
 import com.intel.intelanalytics.shared.EventLogging
 
@@ -59,7 +59,7 @@ class SparkCommandStorage(val metaStore: SlickMetaStoreComponent#SlickMetaStore)
 
   override def complete(id: Long, result: Try[JsObject]): Unit = {
     require(id > 0, "invalid ID")
-    require(result != null)
+    require(result != null, "result must not be null")
     metaStore.withSession("se.command.complete") {
       implicit session =>
         val command = repo.lookup(id).getOrElse(throw new IllegalArgumentException(s"Command $id not found"))
@@ -77,7 +77,7 @@ class SparkCommandStorage(val metaStore: SlickMetaStoreComponent#SlickMetaStore)
              * The exact timing of the events arrival can not be determined.
              */
 
-            val progress = command.progress.map(i => 100f)
+            val progress = command.progress.map(info => info.copy(progress = 100f))
             command.copy(complete = true, progress = progress, result = Some(r))
           }
         }
@@ -88,13 +88,12 @@ class SparkCommandStorage(val metaStore: SlickMetaStoreComponent#SlickMetaStore)
   /**
    * update progress information for the command
    * @param id command id
-   * @param progress progress
-   * @param detailedProgress extra progress information
+   * @param progressInfo progress
    */
-  override def updateProgress(id: Long, progress: List[Float], detailedProgress: List[ProgressInfo]): Unit = {
+  override def updateProgress(id: Long, progressInfo: List[ProgressInfo]): Unit = {
     metaStore.withSession("se.command.updateProgress") {
       implicit session =>
-        repo.updateProgress(id, progress, detailedProgress)
+        repo.updateProgress(id, progressInfo)
     }
   }
 }

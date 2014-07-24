@@ -110,7 +110,7 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
         <dep.aurelius.version>0.4.5-SNAPSHOT</dep.aurelius.version>
-
+        <dep.gremlin.version>2.4.0</dep.gremlin.version>
         <dep.hbase.version>0.96.1.1-cdh5.0.2</dep.hbase.version>
         <dep.hadoop2.version>2.3.0-cdh5.0.2</dep.hadoop2.version>
 
@@ -202,6 +202,7 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 <module>igiraph/giraph-titan</module>
                 <module>igiraph</module>
                 <module>imllib</module>
+				<module>conf</module>
                 <module>package</module>
             </modules>
         </profile>
@@ -687,7 +688,7 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 <groupId>com.intel.ia</groupId>
                 <artifactId>interfaces</artifactId>
                 <version>${project.version}</version>
-                <scope>provided</scope>
+               <!-- <scope>provided</scope> -->
             </dependency>
             <dependency>
                 <groupId>com.intel.ia</groupId>
@@ -709,13 +710,11 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 <groupId>com.intel.ia</groupId>
                 <artifactId>engine</artifactId>
                 <version>${project.version}</version>
-                <scope>provided</scope>
             </dependency>
             <dependency>
                 <groupId>com.intel.ia</groupId>
                 <artifactId>engine-spark</artifactId>
                 <version>${project.version}</version>
-                <scope>provided</scope>
             </dependency>
             <dependency>
                 <groupId>com.intel.ia</groupId>
@@ -798,6 +797,13 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
             </dependency>
             <!--ENDititan-->
 
+            <!--STARTgremlin-groovy -->
+            <dependency>
+                <groupId>com.tinkerpop.gremlin</groupId>
+                <artifactId>gremlin-groovy</artifactId>
+                <version>${dep.gremlin.version}</version>
+            </dependency>
+            <!--ENDgremlin-groovy -->
             <!--org.scala-->
             <dependency>
                 <groupId>org.scala-lang</groupId>

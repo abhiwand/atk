@@ -53,7 +53,7 @@ class DefaultArchive extends Archive {
       case NonFatal(e) =>
         Archive.logger(e.toString)
         Archive.logger(configuration.root().render())
-        Array[T]()
+        throw e
     }
     array
   }

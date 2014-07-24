@@ -47,16 +47,14 @@ class ProgressPrinter(object):
         self.job_start_times = []
         self.initializing = True
 
-    def print_progress(self, progress, progressMessage, finished):
+    def print_progress(self, progress, finished):
         """
         Print progress information on progress bar
 
         Parameters
         ----------
-        progress : List of float
+        progress : List of dictionary
             The progresses of the jobs initiated by the command
-        progressMessage : List of str
-            Detailed progress information for the jobs initiated by the command
         finished : boolean
             Indicate whether the command is finished
         """
@@ -75,18 +73,16 @@ class ProgressPrinter(object):
             self.job_start_times.append(time.time())
 
         self.job_count = total_job_count
-        self.print_progress_as_text(progress, progressMessage, number_of_new_lines, self.job_start_times, finished)
+        self.print_progress_as_text(progress, number_of_new_lines, self.job_start_times, finished)
 
-    def print_progress_as_text(self, progress, progressMessage, number_of_new_lines, start_times, finished):
+    def print_progress_as_text(self, progress, number_of_new_lines, start_times, finished):
         """
         Print progress information on command line progress bar
 
         Parameters
         ----------
-        progress : List of float
+        progress : List of dictionary
             The progresses of the jobs initiated by the command
-        progressMessage : List of str
-            Detailed progress information for the jobs initiated by the command
         number_of_new_lines: int
             number of new lines to print in the command line
         start_times: List of time
@@ -103,15 +99,20 @@ class ProgressPrinter(object):
         progress_summary = []
 
         for index in range(0, len(progress)):
-            p = progress[index]
-            message = progressMessage[index] if(index < len(progressMessage)) else ''
+            p = progress[index]['progress']
+            retried_tasks = progress[index]['tasks_info']['retries']
 
-            num_star = int(p / 2)
-            num_dot = 50 - num_star
+            message = "Tasks retries:%s" %(retried_tasks)
+
+            total_bar_length = 25
+            factor = 100 / total_bar_length
+
+            num_star = int(p / factor)
+            num_dot = total_bar_length - num_star
             number = "%3.2f" % p
 
             time_string = datetime.timedelta(seconds = int(time.time() - start_times[index]))
-            progress_summary.append("\r%6s%% [%s%s] %s [Elapsed Time %s]" % (number, '=' * num_star, '.' * num_dot, message, time_string))
+            progress_summary.append("\r[%s%s] %6s%% %s Time %s" % ('=' * num_star, '.' * num_dot, number, message, time_string))
 
         for i in range(0, number_of_new_lines):
             # calculate the index for fetch from the list from the end
@@ -216,13 +217,6 @@ class CommandInfo(object):
         except KeyError:
             return False
 
-    @property
-    def progressMessage(self):
-        try:
-            return self._payload['progressMessage']
-        except KeyError:
-            return False
-
     def update(self, payload):
         if self._payload and self.id_number != payload['id']:
             msg = "Invalid payload, command ID mismatch %d when expecting %d"\
@@ -290,7 +284,7 @@ class Polling(object):
 
                 next_poll_time = time.time() + interval_secs
                 progress = command_info.progress
-                printer.print_progress(progress, command_info.progressMessage, finish)
+                printer.print_progress(progress, finish)
 
                 if finish:
                     break
