@@ -85,7 +85,7 @@ class FrameBackendRest(object):
     def delete_frame(self, frame):
         if isinstance(frame, BigFrame):
             return self._delete_frame(frame)
-        elif isinstance(frame, str):
+        elif isinstance(frame, basestring):
             # delete by name
             return self._delete_frame(self.get_frame(frame))
         else:
