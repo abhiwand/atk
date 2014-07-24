@@ -23,10 +23,10 @@
 
 package com.intel.intelanalytics.engine.spark
 
-import com.intel.intelanalytics.engine.TestingSparkContext
+import com.intel.testutils.TestingSparkContextFlatSpec
 import org.scalatest.Matchers
 
-class ClassificationMetricTest extends TestingSparkContext with Matchers {
+class ClassificationMetricTest extends TestingSparkContextFlatSpec with Matchers {
 
   // posLabel = 1
   // tp = 1
