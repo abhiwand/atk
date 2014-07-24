@@ -83,4 +83,15 @@ case class Vertex(physicalId: Any, gbId: Property, properties: Seq[Property]) ex
     properties.find(p => p.key == key)
   }
 
+  /**
+   * Get a property value as String if this key exists
+   * @param key Property key
+   * @return Matching property value, or empty string if no such property
+   */
+  override def getPropertyValueAsString(key: String): String = {
+    val result = for {
+      property <- this.getProperty(key)
+    } yield property.value.toString
+    result.getOrElse("")
+  }
 }

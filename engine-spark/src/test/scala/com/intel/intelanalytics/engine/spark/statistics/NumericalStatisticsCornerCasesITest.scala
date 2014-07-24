@@ -1,12 +1,12 @@
 package com.intel.intelanalytics.engine.spark.statistics
 
-import com.intel.intelanalytics.engine.TestingSparkContext
+import com.intel.testutils.TestingSparkContextFlatSpec
 import org.scalatest.Matchers
 import org.scalatest.Assertions
 import org.scalacheck.Prop.True
 import com.intel.intelanalytics.engine.spark.statistics.numericalstatistics.NumericalStatistics
 
-class NumericalStatisticsCornerCasesITest extends TestingSparkContext with Matchers {
+class NumericalStatisticsCornerCasesITest extends TestingSparkContextFlatSpec with Matchers {
 
   /**
    * Tests some of the corner cases of the numerical statistics routines: NaNs, infinite values, divide by 0,
@@ -22,10 +22,10 @@ class NumericalStatisticsCornerCasesITest extends TestingSparkContext with Match
     val data = List(1, 2, 3, 4, 5, 6, 7, 8).map(x => x.toDouble)
     val frequencies = List(3, 2, 3, 1, 9, 4, 3, 1).map(x => x.toDouble)
 
-    val dataFrequencies = sc.parallelize(data.zip(frequencies))
+    val dataFrequencies = sparkContext.parallelize(data.zip(frequencies))
 
     val dataFrequenciesWithNegs =
-      sc.parallelize((data :+ 1000.toDouble :+ (-10000).toDouble).zip((frequencies :+ (-1).toDouble :+ 0.toDouble)))
+      sparkContext.parallelize((data :+ 1000.toDouble :+ (-10000).toDouble).zip((frequencies :+ (-1).toDouble :+ 0.toDouble)))
 
     val numericalStatistics = new NumericalStatistics(dataFrequencies)
     val numericalStatisticsWithNegs = new NumericalStatistics(dataFrequenciesWithNegs)
@@ -62,10 +62,10 @@ class NumericalStatisticsCornerCasesITest extends TestingSparkContext with Match
     val goodDataBadWeights = (1 to 3).map(x => x.toDouble).zip(List(Double.NaN, Double.PositiveInfinity, Double.NegativeInfinity))
     val badDataGoodWeights = List(Double.NaN, Double.PositiveInfinity, Double.NegativeInfinity).zip((1 to 3).map(x => x.toDouble))
 
-    val dataFrequencies = sc.parallelize(data.zip(frequencies))
+    val dataFrequencies = sparkContext.parallelize(data.zip(frequencies))
 
     val dataFrequenciesWithBadGuys =
-      sc.parallelize(data.zip(frequencies) ++ badDataGoodWeights ++ goodDataBadWeights)
+      sparkContext.parallelize(data.zip(frequencies) ++ badDataGoodWeights ++ goodDataBadWeights)
 
     val numericalStatistics = new NumericalStatistics(dataFrequencies)
     val numericalStatisticsWithBadGuys = new NumericalStatistics(dataFrequenciesWithBadGuys)
@@ -104,7 +104,7 @@ class NumericalStatisticsCornerCasesITest extends TestingSparkContext with Match
     val data = List(1, 2, 3, 4, 5, 6, 7, -18).map(x => x.toDouble)
     val frequencies = List(3, 2, 3, 1, 9, 4, 3, 1).map(x => x.toDouble)
 
-    val dataFrequencies = sc.parallelize(data.zip(frequencies))
+    val dataFrequencies = sparkContext.parallelize(data.zip(frequencies))
 
     val numericalStatistics = new NumericalStatistics(dataFrequencies)
 
@@ -117,7 +117,7 @@ class NumericalStatisticsCornerCasesITest extends TestingSparkContext with Match
     val data = List(1, 2, 3, 4, 5, 0, 7, 18).map(x => x.toDouble)
     val frequencies = List(3, 2, 3, 1, 9, 4, 3, 1).map(x => x.toDouble)
 
-    val dataFrequencies = sc.parallelize(data.zip(frequencies))
+    val dataFrequencies = sparkContext.parallelize(data.zip(frequencies))
 
     val numericalStatistics = new NumericalStatistics(dataFrequencies)
 
@@ -130,7 +130,7 @@ class NumericalStatisticsCornerCasesITest extends TestingSparkContext with Match
     val data: List[Double] = List()
     val frequencies: List[Double] = List()
 
-    val dataFrequencies = sc.parallelize(data.zip(frequencies))
+    val dataFrequencies = sparkContext.parallelize(data.zip(frequencies))
 
     val numericalStatistics = new NumericalStatistics(dataFrequencies)
 
@@ -154,7 +154,7 @@ class NumericalStatisticsCornerCasesITest extends TestingSparkContext with Match
     val data = List(1, 2, 3, 4, 5, 6, 7, -18).map(x => x.toDouble)
     val frequencies = List(-3, -2, -3, -1, -9, -4, -3, -1).map(x => x.toDouble)
 
-    val dataFrequencies = sc.parallelize(data.zip(frequencies))
+    val dataFrequencies = sparkContext.parallelize(data.zip(frequencies))
 
     val numericalStatistics = new NumericalStatistics(dataFrequencies)
 
@@ -179,7 +179,7 @@ class NumericalStatisticsCornerCasesITest extends TestingSparkContext with Match
     val data: List[Double] = List(1.toDouble)
     val frequencies: List[Double] = List(1.toDouble)
 
-    val dataFrequencies = sc.parallelize(data.zip(frequencies))
+    val dataFrequencies = sparkContext.parallelize(data.zip(frequencies))
 
     val numericalStatistics = new NumericalStatistics(dataFrequencies)
 
@@ -203,7 +203,7 @@ class NumericalStatisticsCornerCasesITest extends TestingSparkContext with Match
     val data: List[Double] = List(1.toDouble, 1.toDouble)
     val frequencies: List[Double] = List(1.toDouble, 2.toDouble)
 
-    val dataFrequencies = sc.parallelize(data.zip(frequencies))
+    val dataFrequencies = sparkContext.parallelize(data.zip(frequencies))
 
     val numericalStatistics = new NumericalStatistics(dataFrequencies)
 
@@ -227,7 +227,7 @@ class NumericalStatisticsCornerCasesITest extends TestingSparkContext with Match
     val data: List[Double] = List(1.toDouble, 1.toDouble, 1.toDouble)
     val frequencies: List[Double] = List(1.toDouble, 1.toDouble, 1.toDouble)
 
-    val dataFrequencies = sc.parallelize(data.zip(frequencies))
+    val dataFrequencies = sparkContext.parallelize(data.zip(frequencies))
 
     val numericalStatistics = new NumericalStatistics(dataFrequencies)
 
@@ -251,7 +251,7 @@ class NumericalStatisticsCornerCasesITest extends TestingSparkContext with Match
     val data: List[Double] = List(1.toDouble, 2.toDouble, 1.toDouble)
     val frequencies: List[Double] = List(1.toDouble, 1.toDouble, 1.toDouble)
 
-    val dataFrequencies = sc.parallelize(data.zip(frequencies))
+    val dataFrequencies = sparkContext.parallelize(data.zip(frequencies))
 
     val numericalStatistics = new NumericalStatistics(dataFrequencies)
 
@@ -275,7 +275,7 @@ class NumericalStatisticsCornerCasesITest extends TestingSparkContext with Match
     val data: List[Double] = List(2, 2, 2, 2, 2).map(x => x.toDouble)
     val frequencies: List[Double] = List(3, 3, 3, 3, 3).map(x => x.toDouble)
 
-    val dataFrequencies = sc.parallelize(data.zip(frequencies))
+    val dataFrequencies = sparkContext.parallelize(data.zip(frequencies))
 
     val numericalStatistics = new NumericalStatistics(dataFrequencies)
 

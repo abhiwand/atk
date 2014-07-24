@@ -1,14 +1,14 @@
 package com.intel.intelanalytics.engine.spark.statistics
 
 import org.scalatest.{ BeforeAndAfter, Matchers }
-import com.intel.intelanalytics.engine.TestingSparkContext
+import com.intel.testutils.TestingSparkContextFlatSpec
 import org.apache.spark.rdd.RDD
 
 /**
  * Exercises the order statistics engine through some happy paths and a few corner cases (primarily for the case of
  * bad weights).
  */
-class OrderStatisticsITest extends TestingSparkContext with Matchers {
+class OrderStatisticsITest extends TestingSparkContextFlatSpec with Matchers {
 
   "even number of data elements" should "work" in {
 
@@ -17,7 +17,7 @@ class OrderStatisticsITest extends TestingSparkContext with Matchers {
     val expectedMedian: Int = 5
 
     val numPartitions = 3
-    val dataFrequenciesRDD: RDD[(Int, Double)] = sc.parallelize(data.zip(frequencies), numPartitions)
+    val dataFrequenciesRDD: RDD[(Int, Double)] = sparkContext.parallelize(data.zip(frequencies), numPartitions)
 
     val dataFrequenciesOrderStatistics: OrderStatistics[Int] = new OrderStatistics[Int](dataFrequenciesRDD)
 
@@ -33,7 +33,7 @@ class OrderStatisticsITest extends TestingSparkContext with Matchers {
     val medianOfOne: Int = 8
 
     val numPartitions = 3
-    val oneRDD: RDD[(Int, Double)] = sc.parallelize(oneThing.zip(oneFrequency), numPartitions)
+    val oneRDD: RDD[(Int, Double)] = sparkContext.parallelize(oneThing.zip(oneFrequency), numPartitions)
 
     val orderStatisticsForOne: OrderStatistics[Int] = new OrderStatistics[Int](oneRDD)
     val testMedian = orderStatisticsForOne.medianOption.get
@@ -48,7 +48,7 @@ class OrderStatisticsITest extends TestingSparkContext with Matchers {
     val expectedMedian: Int = 8
 
     val numPartitions = 3
-    val oneRDD: RDD[(Int, Double)] = sc.parallelize(twoThings.zip(frequencies), numPartitions)
+    val oneRDD: RDD[(Int, Double)] = sparkContext.parallelize(twoThings.zip(frequencies), numPartitions)
 
     val orderStatisticsForOne: OrderStatistics[Int] = new OrderStatistics[Int](oneRDD)
     val testMedian = orderStatisticsForOne.medianOption.get
@@ -63,7 +63,7 @@ class OrderStatisticsITest extends TestingSparkContext with Matchers {
       List(Double.NaN, Double.PositiveInfinity, Double.NegativeInfinity)
 
     val numPartitions = 3
-    val dataFrequenciesRDD: RDD[(Int, Double)] = sc.parallelize(data.zip(frequencies), numPartitions)
+    val dataFrequenciesRDD: RDD[(Int, Double)] = sparkContext.parallelize(data.zip(frequencies), numPartitions)
 
     val dataFrequenciesOrderStatistics: OrderStatistics[Int] = new OrderStatistics[Int](dataFrequenciesRDD)
 
@@ -78,7 +78,7 @@ class OrderStatisticsITest extends TestingSparkContext with Matchers {
     val frequencies: List[Double] = List()
 
     val numPartitions = 3
-    val dataFrequenciesRDD: RDD[(Int, Double)] = sc.parallelize(data.zip(frequencies), numPartitions)
+    val dataFrequenciesRDD: RDD[(Int, Double)] = sparkContext.parallelize(data.zip(frequencies), numPartitions)
 
     val dataFrequenciesOrderStatistics: OrderStatistics[Int] = new OrderStatistics[Int](dataFrequenciesRDD)
 

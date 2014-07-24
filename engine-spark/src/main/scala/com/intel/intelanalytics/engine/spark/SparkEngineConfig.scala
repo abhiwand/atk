@@ -83,7 +83,7 @@ object SparkEngineConfig extends SharedConfig with EventLogging {
 
   val fsRoot: String = config.getString("intel.analytics.engine.fs.root")
 
-  val maxRows: Int = config.getInt("intel.analytics.engine.max-rows")
+  val pageSize: Int = config.getInt("intel.analytics.engine.page-size")
 
   /* number of rows taken for sample test during frame loading */
   val frameLoadTestSampleSize: Int = config.getInt("intel.analytics.engine.commands.dataframes.load.schema-validation-sample-rows")

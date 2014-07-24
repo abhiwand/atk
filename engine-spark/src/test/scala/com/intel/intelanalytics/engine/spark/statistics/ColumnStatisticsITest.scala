@@ -2,7 +2,6 @@ package com.intel.intelanalytics.engine.spark.statistics
 
 import org.scalatest.FunSuite
 
-import com.intel.intelanalytics.engine.TestingSparkContext
 import org.apache.spark.SparkException
 import org.scalatest.Matchers
 import org.apache.spark.rdd.RDD
@@ -11,13 +10,17 @@ import com.intel.intelanalytics.engine.Rows._
 import spray.json._
 import DefaultJsonProtocol._
 import com.intel.intelanalytics.domain.frame.{ ColumnMedianReturn, ColumnSummaryStatisticsReturn, ColumnFullStatisticsReturn, ColumnFullStatistics }
-
+import com.intel.testutils.TestingSparkContextFlatSpec
+import com.intel.testutils.TestingSparkContextFlatSpec
+import org.apache.spark.SparkException
+import org.scalatest.Matchers
 /**
  * Exercises the column statistics functions. Primarily checks that correct column indices and options are piped
  * through to the underlying statistics engines. Thorough evaluation of the statistical operations is done by the
  * tests for the respective statistics engines.
  */
-class ColumnStatisticsITest extends TestingSparkContext with Matchers {
+class ColumnStatisticsITest extends TestingSparkContextFlatSpec with Matchers {
+
   trait ColumnStatisticsTest {
 
     val epsilon = 0.000000001
@@ -29,7 +32,7 @@ class ColumnStatisticsITest extends TestingSparkContext with Matchers {
     val row3: Row = Array[Any]("D", 1, 2.0f, 1, 1, 1.0f, 0, 0)
     val row4: Row = Array[Any]("E", 1, 2.0f, 1, 1, 2.0f, 0, 0)
 
-    val rowRDD: RDD[Row] = sc.parallelize(List(row0, row1, row2, row3, row4))
+    val rowRDD: RDD[Row] = sparkContext.parallelize(List(row0, row1, row2, row3, row4))
   }
 
   "mode with no net weights" should "return none as json" in new ColumnStatisticsTest() {
