@@ -137,8 +137,8 @@ class FrameBackendRest(object):
 
     def get_repr(self, frame):
         frame_info = self._get_frame_info(frame)
-        return "\n".join(['BigFrame "%s"\nrow_count = %d"' % (frame_info.name, frame_info.row_count)] +
-                         ["%s:%s" % (name, data_type)
+        return "\n".join(['BigFrame "%s"\nrow_count = %d\nschema = ' % (frame_info.name, frame_info.row_count)] +
+                         ["  %s:%s" % (name, data_type)
                           for name, data_type in FrameSchema.from_types_to_strings(frame_info.schema)])
 
     def _get_frame_info(self, frame):

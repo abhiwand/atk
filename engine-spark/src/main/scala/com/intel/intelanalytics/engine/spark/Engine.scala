@@ -802,9 +802,10 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     val pairRdd = rdd.map(row => SparkOps.createKeyValuePairFromRow(row, columnIndices))
 
     val duplicatesRemoved: RDD[Array[Any]] = SparkOps.removeDuplicatesByKey(pairRdd)
+    val rowCount = duplicatesRemoved.count()
 
     duplicatesRemoved.saveAsObjectFile(fsRoot + frames.getFrameDataFile(frameId))
-    realFrame
+    frames.updateRowCount(realFrame, rowCount)
   }
 
   val calculatePercentileCommand = commands.registerCommand("dataframe/calculate_percentiles", calculatePercentilesSimple)
