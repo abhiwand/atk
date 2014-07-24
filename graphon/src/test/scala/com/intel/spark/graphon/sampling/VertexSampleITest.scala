@@ -83,72 +83,71 @@ class VertexSampleITest extends TestingSparkContext with TestingTitan with Match
     Edge(gbIds(8), gbIds(3), gbIds(8), gbIds(3), "tweeted", Seq(new Property("tweet", "blah blah blah..."))))
 
   "Generating a uniform vertex sample" should "contain correct number of vertices in sample" in {
-    val vertexRdd = sc.parallelize(inputVertexList.toSeq, 2)
+    val vertexRdd = sc.parallelize(inputVertexList, 2)
 
     val sampleVerticesRdd = VertexSampleSparkOps.sampleVerticesUniform(vertexRdd, 5, None)
-    sampleVerticesRdd.count() shouldEqual 5
+    sampleVerticesRdd.count() shouldEqual 5l
   }
 
   "Generating a uniform vertex sample" should "give error if sample size less than 1" in {
-    val vertexRdd = sc.parallelize(inputVertexList.toSeq, 2)
+    val vertexRdd = sc.parallelize(inputVertexList, 2)
 
     an[IllegalArgumentException] shouldBe thrownBy(VertexSampleSparkOps.sampleVerticesUniform(vertexRdd, 0, None))
   }
 
   "Generating a uniform vertex sample" should "returns entire dataset if sample size is greater than or equal to dataset size" in {
-    val vertexRdd = sc.parallelize(inputVertexList.toSeq, 2)
+    val vertexRdd = sc.parallelize(inputVertexList, 2)
 
     VertexSampleSparkOps.sampleVerticesUniform(vertexRdd, 200, None) shouldEqual vertexRdd
   }
 
   "Generating a degree-weighted vertex sample" should "contain correct number of vertices in sample" in {
-    val vertexRdd = sc.parallelize(inputVertexList.toSeq, 2)
-    val edgeRdd = sc.parallelize(inputEdgeList.toSeq, 2)
+    val vertexRdd = sc.parallelize(inputVertexList, 2)
+    val edgeRdd = sc.parallelize(inputEdgeList, 2)
 
     val sampleVerticesRdd = VertexSampleSparkOps.sampleVerticesDegree(vertexRdd, edgeRdd, 5, None)
-    sampleVerticesRdd.count() shouldEqual 5
+    sampleVerticesRdd.count() shouldEqual 5l
   }
 
   "Generating a degree-weighted vertex sample" should "give error if sample size less than 1" in {
-    val vertexRdd = sc.parallelize(inputVertexList.toSeq, 2)
-    val edgeRdd = sc.parallelize(inputEdgeList.toSeq, 2)
+    val vertexRdd = sc.parallelize(inputVertexList, 2)
+    val edgeRdd = sc.parallelize(inputEdgeList, 2)
 
     an[IllegalArgumentException] shouldBe thrownBy(VertexSampleSparkOps.sampleVerticesDegree(vertexRdd, edgeRdd, 0, None))
   }
 
   "Generating a degree-weighted vertex sample" should "returns entire dataset if sample size is greater than or equal to dataset size" in {
-    val vertexRdd = sc.parallelize(inputVertexList.toSeq, 2)
-    val edgeRdd = sc.parallelize(inputEdgeList.toSeq, 2)
+    val vertexRdd = sc.parallelize(inputVertexList, 2)
+    val edgeRdd = sc.parallelize(inputEdgeList, 2)
 
     VertexSampleSparkOps.sampleVerticesDegree(vertexRdd, edgeRdd, 200, None) shouldEqual vertexRdd
   }
 
   "Generating a degree distribution-weighted vertex sample" should "contain correct number of vertices in sample" in {
-    val vertexRdd = sc.parallelize(inputVertexList.toSeq, 2)
-    val edgeRdd = sc.parallelize(inputEdgeList.toSeq, 2)
+    val vertexRdd = sc.parallelize(inputVertexList, 2)
+    val edgeRdd = sc.parallelize(inputEdgeList, 2)
 
     val sampleVerticesRdd = VertexSampleSparkOps.sampleVerticesDegreeDist(vertexRdd, edgeRdd, 5, None)
-    sampleVerticesRdd.count() shouldEqual 5
+    sampleVerticesRdd.count() shouldEqual 5l
   }
 
   "Generating a degree distribution-weighted vertex sample" should "give error if sample size less than 1" in {
-    val vertexRdd = sc.parallelize(inputVertexList.toSeq, 2)
-    val edgeRdd = sc.parallelize(inputEdgeList.toSeq, 2)
+    val vertexRdd = sc.parallelize(inputVertexList, 2)
+    val edgeRdd = sc.parallelize(inputEdgeList, 2)
 
     an[IllegalArgumentException] shouldBe thrownBy(VertexSampleSparkOps.sampleVerticesDegreeDist(vertexRdd, edgeRdd, 0, None))
   }
 
   "Generating a degree distribution-weighted vertex sample" should "returns entire dataset if sample size is greater than or equal to dataset size" in {
-    val vertexRdd = sc.parallelize(inputVertexList.toSeq, 2)
-    val edgeRdd = sc.parallelize(inputEdgeList.toSeq, 2)
+    val vertexRdd = sc.parallelize(inputVertexList, 2)
+    val edgeRdd = sc.parallelize(inputEdgeList, 2)
 
     VertexSampleSparkOps.sampleVerticesDegreeDist(vertexRdd, edgeRdd, 200, None) shouldEqual vertexRdd
   }
 
   "Generating a vertex sample" should "generate correct vertex induced subgraph" in {
 
-    val vertexRdd = sc.parallelize(inputVertexList.toSeq, 2)
-    val edgeRdd = sc.parallelize(inputEdgeList.toSeq, 2)
+    val edgeRdd = sc.parallelize(inputEdgeList, 2)
 
     val sampleVertexList = Seq(Vertex(gbIds(1), gbIds(1), Seq(new Property("location", "Oregon"))),
       Vertex(gbIds(2), gbIds(2), Seq(new Property("location", "Oregon"))),
@@ -164,18 +163,18 @@ class VertexSampleITest extends TestingSparkContext with TestingTitan with Match
       Edge(gbIds(4), gbIds(1), gbIds(4), gbIds(1), "tweeted", Seq(new Property("tweet", "blah blah blah..."))),
       Edge(gbIds(4), gbIds(3), gbIds(4), gbIds(3), "tweeted", Seq(new Property("tweet", "blah blah blah..."))))
 
-    val sampleVertexRdd = sc.parallelize(sampleVertexList.toSeq, 2)
-    val sampleEdgeRdd = sc.parallelize(sampleEdgeList.toSeq, 2)
+    val sampleVertexRdd = sc.parallelize(sampleVertexList, 2)
+    val sampleEdgeRdd = sc.parallelize(sampleEdgeList, 2)
 
     val subgraphEdges = VertexSampleSparkOps.vertexInducedEdgeSet(sampleVertexRdd, edgeRdd)
 
     subgraphEdges.count() shouldEqual sampleEdgeRdd.count()
-    subgraphEdges.subtract(sampleEdgeRdd).count() shouldEqual 0
+    subgraphEdges.subtract(sampleEdgeRdd).count() shouldEqual 0l
   }
 
   "Generating a vertex sample" should "correctly write the vertex induced subgraph to Titan" in {
-    val vertexRdd = sc.parallelize(inputVertexList.toSeq, 2)
-    val edgeRdd = sc.parallelize(inputEdgeList.toSeq, 2)
+    val vertexRdd = sc.parallelize(inputVertexList, 2)
+    val edgeRdd = sc.parallelize(inputEdgeList, 2)
 
     VertexSampleSparkOps.writeToTitan(vertexRdd, edgeRdd, titanConfig)
 
@@ -186,41 +185,41 @@ class VertexSampleITest extends TestingSparkContext with TestingTitan with Match
   }
 
   "Degree weighted sampling" should "add correct vertex weights" in {
-    val vertexRdd = sc.parallelize(inputVertexList.toSeq, 2)
-    val edgeRdd = sc.parallelize(inputEdgeList.toSeq, 2)
+    val vertexRdd = sc.parallelize(inputVertexList, 2)
+    val edgeRdd = sc.parallelize(inputEdgeList, 2)
 
     val weightedVertexRdd = VertexSampleSparkOps.addVertexDegreeWeights(vertexRdd, edgeRdd)
     val weightedVertexArray = weightedVertexRdd.take(8).map { case (weight, vertex) => (vertex, weight) }.toMap
 
-    weightedVertexArray(inputVertexList(0)) shouldEqual 3
-    weightedVertexArray(inputVertexList(1)) shouldEqual 2
-    weightedVertexArray(inputVertexList(2)) shouldEqual 5
-    weightedVertexArray(inputVertexList(3)) shouldEqual 2
-    weightedVertexArray(inputVertexList(4)) shouldEqual 3
-    weightedVertexArray(inputVertexList(5)) shouldEqual 2
-    weightedVertexArray(inputVertexList(6)) shouldEqual 2
-    weightedVertexArray(inputVertexList(7)) shouldEqual 1
+    weightedVertexArray(inputVertexList(0)) shouldEqual 3l
+    weightedVertexArray(inputVertexList(1)) shouldEqual 2l
+    weightedVertexArray(inputVertexList(2)) shouldEqual 5l
+    weightedVertexArray(inputVertexList(3)) shouldEqual 2l
+    weightedVertexArray(inputVertexList(4)) shouldEqual 3l
+    weightedVertexArray(inputVertexList(5)) shouldEqual 2l
+    weightedVertexArray(inputVertexList(6)) shouldEqual 2l
+    weightedVertexArray(inputVertexList(7)) shouldEqual 1l
   }
 
   "DegreeDist weighted sampling" should "add correct vertex weights" in {
-    val vertexRdd = sc.parallelize(inputVertexList.toSeq, 2)
-    val edgeRdd = sc.parallelize(inputEdgeList.toSeq, 2)
+    val vertexRdd = sc.parallelize(inputVertexList, 2)
+    val edgeRdd = sc.parallelize(inputEdgeList, 2)
 
     val weightedVertexRdd = VertexSampleSparkOps.addVertexDegreeDistWeights(vertexRdd, edgeRdd)
     val weightedVertexArray = weightedVertexRdd.take(8).map { case (weight, vertex) => (vertex, weight) }.toMap
 
-    weightedVertexArray(inputVertexList(0)) shouldEqual 2
-    weightedVertexArray(inputVertexList(1)) shouldEqual 4
-    weightedVertexArray(inputVertexList(2)) shouldEqual 1
-    weightedVertexArray(inputVertexList(3)) shouldEqual 4
-    weightedVertexArray(inputVertexList(4)) shouldEqual 2
-    weightedVertexArray(inputVertexList(5)) shouldEqual 4
-    weightedVertexArray(inputVertexList(6)) shouldEqual 4
-    weightedVertexArray(inputVertexList(7)) shouldEqual 1
+    weightedVertexArray(inputVertexList(0)) shouldEqual 2l
+    weightedVertexArray(inputVertexList(1)) shouldEqual 4l
+    weightedVertexArray(inputVertexList(2)) shouldEqual 1l
+    weightedVertexArray(inputVertexList(3)) shouldEqual 4l
+    weightedVertexArray(inputVertexList(4)) shouldEqual 2l
+    weightedVertexArray(inputVertexList(5)) shouldEqual 4l
+    weightedVertexArray(inputVertexList(6)) shouldEqual 4l
+    weightedVertexArray(inputVertexList(7)) shouldEqual 1l
   }
 
   "Any sample" should "select the correct weighted vertices" in {
-    val vertexRdd = sc.parallelize(inputVertexListWeighted.toSeq, 2)
+    val vertexRdd = sc.parallelize(inputVertexListWeighted, 2)
 
     val topVertexRdd = VertexSampleSparkOps.getTopVertices(vertexRdd, 4)
     val topVertexArray = topVertexRdd.collect()
