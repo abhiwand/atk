@@ -24,7 +24,7 @@
 
 package com.intel.spark.graphon.communitydetection.kclique.datatypes
 
-import com.intel.spark.graphon.communitydetection.kclique.datatypes.datatypes.VertexSet
+import com.intel.spark.graphon.communitydetection.kclique.datatypes.Datatypes.VertexSet
 /**
  * Encodes the fact that a given VertexSet forms a clique, and that the clique can be extended by adding
  * any one of the vertices from the ExtendersSet.

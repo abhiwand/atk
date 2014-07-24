@@ -27,7 +27,7 @@ package com.intel.spark.graphon.communitydetection.kclique
 import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.RDD
 import com.intel.spark.graphon.communitydetection.kclique.datatypes.{ ExtendersFact, CliqueFact }
-import com.intel.spark.graphon.communitydetection.kclique.datatypes.datatypes.VertexSet
+import com.intel.spark.graphon.communitydetection.kclique.datatypes.Datatypes.VertexSet
 
 object GraphGenerator extends Serializable {
 

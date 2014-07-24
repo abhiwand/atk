@@ -1,6 +1,6 @@
 package com.intel.spark.graphon.communitydetection.kclique.datatypes
 
-import com.intel.spark.graphon.communitydetection.kclique.datatypes.datatypes.VertexSet
+import com.intel.spark.graphon.communitydetection.kclique.datatypes.Datatypes.VertexSet
 /**
  * Encodes the fact that all vertices of a given vertex set are neighbors of the vertex specified
  * by the NeighborsOf fact.
