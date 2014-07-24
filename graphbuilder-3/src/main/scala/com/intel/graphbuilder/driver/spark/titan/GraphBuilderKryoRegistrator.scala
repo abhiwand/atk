@@ -67,6 +67,6 @@ class GraphBuilderKryoRegistrator extends KryoRegistrator {
     kryo.register(classOf[Result])
 
     // avoid Spark top(n) issue with Kryo serializer:
-    kryo.register(classOf[org.apache.spark.util.BoundedPriorityQueue[(Double, (Double, Vertex))]])
+    kryo.register(classOf[org.apache.spark.util.BoundedPriorityQueue[(Double, Vertex)]])
   }
 }

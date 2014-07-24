@@ -33,7 +33,7 @@ import com.intel.intelanalytics.domain.graph.{ GraphTemplate, GraphReference }
 import spray.json._
 import scala.concurrent._
 import java.util.UUID
-import com.intel.spark.graphon.sampling.SamplingSparkOps._
+import com.intel.spark.graphon.sampling.VertexSampleSparkOps._
 
 /**
  * Represents the arguments for vertex sampling
@@ -43,7 +43,7 @@ import com.intel.spark.graphon.sampling.SamplingSparkOps._
  * @param sampleType type of vertex sampling to use
  * @param seed optional random seed value
  */
-case class VS(graph: GraphReference, size: Int, sampleType: String, seed: Option[Long] = None) {
+case class VertexSampleArguments(graph: GraphReference, size: Int, sampleType: String, seed: Option[Long] = None) {
   require(size >= 1, "Invalid sample size")
   require(sampleType.equals("uniform") ||
     sampleType.equals("degree") ||
@@ -58,16 +58,16 @@ case class VS(graph: GraphReference, size: Int, sampleType: String, seed: Option
  *
  * @param name name of the subgraph
  */
-case class VSResult(name: String)
+case class VertexSampleResult(name: String)
 
-class VertexSample extends SparkCommandPlugin[VS, VSResult] {
+class VertexSample extends SparkCommandPlugin[VertexSampleArguments, VertexSampleResult] {
 
   import DomainJsonProtocol._
 
-  implicit val vsFormat = jsonFormat4(VS)
-  implicit val vsResultFormat = jsonFormat1(VSResult)
+  implicit val vertexSamplFormat = jsonFormat4(VertexSampleArguments)
+  implicit val vertexSampleResultFormat = jsonFormat1(VertexSampleResult)
 
-  override def execute(invocation: SparkInvocation, arguments: VS)(implicit user: UserPrincipal, executionContext: ExecutionContext): VSResult = {
+  override def execute(invocation: SparkInvocation, arguments: VertexSampleArguments)(implicit user: UserPrincipal, executionContext: ExecutionContext): VertexSampleResult = {
     // Titan Settings
     val config = configuration
     val titanConfigInput = config.getConfig("titan.load")
@@ -99,7 +99,7 @@ class VertexSample extends SparkCommandPlugin[VS, VSResult] {
     }
 
     // get the vertex induced subgraph edges
-    val edgeSample = sampleEdges(vertexSample, edgeRDD)
+    val edgeSample = vertexInducedEdgeSet(vertexSample, edgeRDD)
 
     // strip '-' character so UUID format is consistent with the Python generated UUID format
     val subgraphName = "graph_" + UUID.randomUUID.toString.filter(c => c != '-')
@@ -114,7 +114,7 @@ class VertexSample extends SparkCommandPlugin[VS, VSResult] {
 
     writeToTitan(vertexSample, edgeSample, subgraphTitanConfig)
 
-    VSResult(subgraphName)
+    VertexSampleResult(subgraphName)
   }
 
   /**
@@ -123,12 +123,12 @@ class VertexSample extends SparkCommandPlugin[VS, VSResult] {
   override def name: String = "graphs/sampling/vertex_sample"
 
   //TODO: Replace with generic code that works on any case class
-  def parseArguments(arguments: JsObject) = arguments.convertTo[VS]
+  def parseArguments(arguments: JsObject) = arguments.convertTo[VertexSampleArguments]
 
   //TODO: Replace with generic code that works on any case class
-  def serializeReturn(returnValue: VSResult): JsObject = returnValue.toJson.asJsObject
+  def serializeReturn(returnValue: VertexSampleResult): JsObject = returnValue.toJson.asJsObject
 
   //TODO: Replace with generic code that works on any case class
-  override def serializeArguments(arguments: VS): JsObject = arguments.toJson.asJsObject()
+  override def serializeArguments(arguments: VertexSampleArguments): JsObject = arguments.toJson.asJsObject()
 
 }

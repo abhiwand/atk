@@ -37,7 +37,7 @@ import org.apache.spark.SparkContext._
 
 import java.util.Random // scala.util.Random is not serializable ???
 
-object SamplingSparkOps extends Serializable {
+object VertexSampleSparkOps extends Serializable {
 
   /**
    * Produce a uniform vertex sample
@@ -143,8 +143,7 @@ object SamplingSparkOps extends Serializable {
    * @return RDD of vertices
    */
   def getTopVertices(weightedVertexRdd: RDD[(Double, Vertex)], size: Int): RDD[Vertex] = {
-    val sortedByWeightRdd = weightedVertexRdd.sortByKey()
-    val vertexSampleArray = sortedByWeightRdd.take(size)
+    val vertexSampleArray = weightedVertexRdd.top(size)(Ordering.by { case (weight, vertex) => weight })
     val vertexSamplePairRdd = weightedVertexRdd.sparkContext.parallelize(vertexSampleArray)
 
     vertexSamplePairRdd.map(pair => pair._2)
@@ -178,9 +177,9 @@ object SamplingSparkOps extends Serializable {
     val vertexIdDegrees = GraphStatistics.outDegrees(edges)
     val vertexIds = vertices.map(vertex => (vertex.physicalId, vertex))
 
-    val joinedRdd = vertexIdDegrees.join(vertexIds)
+    val degreeVertexPairsRdd = vertexIdDegrees.join(vertexIds)
 
-    joinedRdd.map(pair => pair._2)
+    degreeVertexPairsRdd.map { case (degree, degreeVertexPair) => degreeVertexPair }
   }
 
   /**
@@ -190,8 +189,8 @@ object SamplingSparkOps extends Serializable {
    * @param edges the set of edges for the input graph
    * @return the edge RDD for the vertex induced subgraph
    */
-  def sampleEdges(vertices: RDD[Vertex], edges: RDD[Edge]): RDD[Edge] = {
-    // TODO: there should be a more efficient way of doing this...
+  def vertexInducedEdgeSet(vertices: RDD[Vertex], edges: RDD[Edge]): RDD[Edge] = {
+    // TODO: Find more efficient way of doing this that does not involve collecting sampled vertices
     val vertexArray = vertices.map(v => v.physicalId).collect()
     edges.filter(e => vertexArray.contains(e.headPhysicalId) && vertexArray.contains(e.tailPhysicalId))
   }
