@@ -23,45 +23,37 @@
 
 package com.intel.spark.graphon.testutils
 
+import com.intel.testutils.DirectoryUtils._
+import com.intel.testutils.{ MultipleAfter, LogUtils }
 import com.intel.graphbuilder.graph.titan.TitanGraphConnector
 import com.intel.graphbuilder.util.SerializableBaseConfiguration
-import com.intel.testutils.{ LogUtils, DirectoryUtils }
-import com.thinkaurelius.titan.core.util.TitanCleanup
-import com.thinkaurelius.titan.core.{ TitanFactory, TitanGraph }
-import com.tinkerpop.blueprints.Graph
-import com.tinkerpop.blueprints.util.wrappers.id.IdGraph
-import org.scalatest.{ BeforeAndAfter, FlatSpec }
 import java.io.File
 
-import scala.concurrent.Lock
-
 /**
- * This trait can be mixed into Specifications to get a TitanGraph backed by an in-memory database
- * for testing purposes.
+ * This trait can be mixed into Specifications to get a TitanGraph backed by Berkeley for testing purposes.
  *
- * The TitanGraph is wrapped by IdGraph to allow tests to create vertices and edges with specific Ids.
- * @see com.tinkerpop.blueprints.util.wrappers.id.IdGraph
- *
- * IMPORTANT! only one thread can use the graph below at a time.
+ * IMPORTANT! only one thread can use the graph below at a time. This isn't normally an issue because
+ * each test usually gets its own copy.
  */
-trait TestingTitan extends FlatSpec with BeforeAndAfter {
+trait TestingTitan extends MultipleAfter {
 
   LogUtils.silenceTitan()
 
-  var tmpDir: File = DirectoryUtils.createTempDirectory("titan-graph-for-unit-testing-")
+  private var tmpDir: File = createTempDirectory("titan-graph-for-unit-testing-")
 
-  val titanConfig = new SerializableBaseConfiguration()
+  var titanConfig = new SerializableBaseConfiguration()
   titanConfig.setProperty("storage.directory", tmpDir.getAbsolutePath)
 
   var titanConnector = new TitanGraphConnector(titanConfig)
   var graph = titanConnector.connect()
 
-  after (
+  override def after: Unit = {
     cleanupTitan()
-  )
+    super.after
+  }
 
   /**
-   * IMPORTANT! Closes in-memory graph used for testing
+   * IMPORTANT! removes temporary files
    */
   def cleanupTitan(): Unit = {
     try {
@@ -70,13 +62,14 @@ trait TestingTitan extends FlatSpec with BeforeAndAfter {
       }
     }
     finally {
-      graph = null
-      TestingTitan.lock.release()
+      deleteTempDirectory(tmpDir)
     }
 
+    // make sure this class is unusable when we're done
+    titanConfig = null
+    titanConnector = null
+    graph = null
+    tmpDir = null
   }
-}
 
-object TestingTitan {
-  private val lock = new Lock()
 }

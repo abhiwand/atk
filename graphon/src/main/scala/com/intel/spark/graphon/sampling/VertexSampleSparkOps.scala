@@ -131,7 +131,7 @@ object VertexSampleSparkOps extends Serializable {
   def checkSeed(seed: Option[Long]): Random = {
     seed match {
       case Some(l) => new Random(l)
-      case None => new Random
+      case _ => new Random
     }
   }
 
