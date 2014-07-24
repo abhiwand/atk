@@ -138,8 +138,8 @@ class NumericalStatisticsCornerCasesITest extends TestingSparkContext with Match
     numericalStatistics.nonPositiveWeightCount shouldBe 0
     Math.abs(numericalStatistics.weightedMean - 0) should be < epsilon
     Math.abs(numericalStatistics.weightedGeometricMean - 1) should be < epsilon
-    numericalStatistics.min shouldBe Double.PositiveInfinity
-    numericalStatistics.max shouldBe Double.NegativeInfinity
+    numericalStatistics.min.isNaN() shouldBe true
+    numericalStatistics.max.isNaN() shouldBe true
     numericalStatistics.weightedVariance.isNaN() shouldBe true
     numericalStatistics.weightedStandardDeviation.isNaN() shouldBe true
     numericalStatistics.weightedSkewness.isNaN() shouldBe true
@@ -162,8 +162,8 @@ class NumericalStatisticsCornerCasesITest extends TestingSparkContext with Match
     numericalStatistics.nonPositiveWeightCount shouldBe data.length
     Math.abs(numericalStatistics.weightedMean - 0) should be < epsilon
     Math.abs(numericalStatistics.weightedGeometricMean - 1) should be < epsilon
-    numericalStatistics.min shouldBe Double.PositiveInfinity
-    numericalStatistics.max shouldBe Double.NegativeInfinity
+    numericalStatistics.min.isNaN() shouldBe true
+    numericalStatistics.max.isNaN() shouldBe true
     numericalStatistics.weightedVariance.isNaN() shouldBe true
     numericalStatistics.weightedStandardDeviation.isNaN() shouldBe true
     numericalStatistics.weightedSkewness.isNaN() shouldBe true

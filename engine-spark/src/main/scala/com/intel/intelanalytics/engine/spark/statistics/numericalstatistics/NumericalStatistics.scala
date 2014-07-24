@@ -3,7 +3,6 @@ package com.intel.intelanalytics.engine.spark.statistics.numericalstatistics
 import org.apache.spark.AccumulatorParam
 import org.apache.spark.rdd.RDD
 import com.intel.intelanalytics.domain.frame.ColumnFullStatisticsReturn
-import com.intel.intelanalytics.engine.spark.statistics.DistributionUtils
 
 /**
  * Statistics calculator for weighted numerical data. Data elements with non-positive weights are thrown out and do
@@ -25,7 +24,7 @@ class NumericalStatistics(dataWeightPairs: RDD[(Double, Double)]) extends Serial
    * values over many, many entries.
    */
 
-  private lazy val singlePassStatistics: FirstPassStatistics = FirstPassStatistics.generate(dataWeightPairs)
+  private lazy val singlePassStatistics: FirstPassStatistics = StatisticsRDDFunctions.generateFirstPassStatistics(dataWeightPairs)
 
   /*
    * Second pass statistics are used to calculate higher moments about the mean. We can probably get away with just
@@ -36,7 +35,7 @@ class NumericalStatistics(dataWeightPairs: RDD[(Double, Double)]) extends Serial
    */
 
   private lazy val secondPassStatistics: SecondPassStatistics =
-    SecondPassStatistics.generateSecondPassStatistics(dataWeightPairs, weightedMean, weightedStandardDeviation)
+    StatisticsRDDFunctions.generateSecondPassStatistics(dataWeightPairs, weightedMean, weightedStandardDeviation)
 
   /**
    * The weighted mean of the data.
@@ -84,12 +83,12 @@ class NumericalStatistics(dataWeightPairs: RDD[(Double, Double)]) extends Serial
   /**
    * The minimum value of the data. Positive infinity when there are no data elements of positive weight.
    */
-  lazy val min: Double = singlePassStatistics.minimum
+  lazy val min: Double = if (singlePassStatistics.minimum.isInfinity) Double.NaN else singlePassStatistics.minimum
 
   /**
    * The maximum value of the data. Negative infinity when there are no data elements of positive weight.
    */
-  lazy val max: Double = singlePassStatistics.maximum
+  lazy val max: Double = if (singlePassStatistics.maximum.isInfinity) Double.NaN else singlePassStatistics.maximum
 
   /**
    * The number of elements in the data set with weight > 0.

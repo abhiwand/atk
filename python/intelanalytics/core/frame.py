@@ -1079,13 +1079,6 @@ class BigFrame(CommandSupport):
             Must contain numerical data. Uniform weights of 1 for all items will be used for the calculation if this
                 parameter is not provided.
 
-        Handling of Malformed Data
-        --------------------------
-        If a row contains a NaN or infinite value in either the data or weights column, that row is
-         skipped and a count of bad rows is incremented. If a row contains only finite numbers for the data and weight,
-         and the weight of a row is <= 0 , that row is skipped and a count of non positive weighs is incremented.
-
-
         Returns
         -------
         summary : Dict
@@ -1098,22 +1091,37 @@ class BigFrame(CommandSupport):
                  standard_deviation : Standard deviation of the data. NaN when there are <= 1 many data elements.
                  mode : A mode of the data; that is, an item with the greatest weight (largest frequency).
                   Ties are resolved arbitrarily. NaN when there are no data elements of positive weight.
-                 minimum : Minimum value in the data. Positive infinity when there are no data elements of positive
+                 minimum : Minimum value in the data. NaN when there are no data elements of positive
                  weight.
-                 maximum : Maximum value in the data. Negative infinity when there are no data elements of positive
+                 maximum : Maximum value in the data. NaN when there are no data elements of positive
                   weight.
                  mean_confidence_lower : Lower limit of the 95% confidence interval about the mean.
                   Assumes a Gaussian distribution. NaN when there are <= 1 data elements of positive weight.
                  mean_confidence_upper: Upper limit of the 95% confidence interval about the mean.
                   Assumes a Gaussian distribution. NaN when there are <= 1 data elements of positive weight.
-                 positive_weight_count : The number of data elements with weight > 0.
-                 non_positive_weight_count : The number data elements with weight <= 0.
+                 valid_data_weight_pair_count : The number of valid data elements with weight > 0.
+                  This is the number of entries used in the statistical calculation.
+                 non_positive_weight_count : The number data elements with finite weight <= 0.
                  bad_row_count : The number of rows containing a NaN or infinite value in either the data or weights column.
                  good_row_count : The number of rows containing a NaN or infinite value in either the data or weights column.
 
-        Examples
-        --------
-        >>> mean = frame.column_summary_statistics('data column', 'weight column')
+        Logging Invalid Data
+        --------------------
+
+        A row is bad when it contains a NaN or infinite value in either its data or weights column.  In this case, it
+         contributes to bad_row_count; otherwise it contributes to good row count.
+
+        A good row can be skipped because the value in its weight column is <=0. In this case, it contributes to
+         non_positive_weight_count, otherwise it contributes to valid_data_weight_pair_count.
+
+            Equations
+            ---------
+            bad_row_count + good_row_count = # rows in the frame
+            valid_data_weight_pair_count + non_positive_weight_count = good_row_count
+
+        Example
+        -------
+        >>> stats = frame.column_summary_statistics('data column', 'weight column')
         """
         pass
 
@@ -1131,12 +1139,6 @@ class BigFrame(CommandSupport):
             Optional. The column that provides weights (frequencies) for the data being summarized.
             Must contain numerical data. Uniform weights of 1 for all items will be used for the calculation if this
                 parameter is not provided.
-
-        Handling of Malformed Data
-        --------------------------
-        If a row contains a NaN or infinite value in either the data or weights column, that row is
-         skipped and a count of bad rows is incremented. If a row contains only finite numbers for the data and weight,
-         and the weight of a row is <= 0 , that row is skipped and a count of non positive weighs is incremented.
 
         Returns
         -------
@@ -1164,14 +1166,29 @@ class BigFrame(CommandSupport):
                   Assumes a Gaussian distribution. NaN when there are <= 1 data elements of positive weight.
                  mean_confidence_upper: Upper limit of the 95% confidence interval about the mean.
                   Assumes a Gaussian distribution. NaN when there are <= 1 data elements of positive weight.
-                 positive_weight_count : The number of data elements with weight > 0.
-                 non_positive_weight_count : The number data elements with weight <= 0.
+                 valid_data_weight_pair_count : The number of valid data elements with weight > 0.
+                  This is the number of entries used in the statistical calculation.
+                 non_positive_weight_count : The number data elements with finite weight <= 0.
                  bad_row_count : The number of rows containing a NaN or infinite value in either the data or weights column.
                  good_row_count : The number of rows containing a NaN or infinite value in either the data or weights column.
 
-        Examples
-        --------
-        >>> mean = frame.column_summary_statistics('data column', 'weight column')
+        Logging Invalid Data
+        --------------------
+
+        A row is bad when it contains a NaN or infinite value in either its data or weights column.  In this case, it
+         contributes to bad_row_count; otherwise it contributes to good row count.
+
+        A good row can be skipped because the value in its weight column is <=0. In this case, it contributes to
+         non_positive_weight_count, otherwise it contributes to valid_data_weight_pair_count.
+
+            Equations
+            ---------
+            bad_row_count + good_row_count = # rows in the frame
+            valid_data_weight_pair_count + non_positive_weight_count = good_row_count
+
+        Example
+        -------
+        >>> stats = frame.column_summary_statistics('data column', 'weight column')
         """
         pass
 
@@ -1180,7 +1197,7 @@ class BigFrame(CommandSupport):
         """
         Calculate a mode of a column.  A mode is a data element of maximum weight. All data elements of weight <= 0
         are excluded from the calculation, as are all data elements whose weight is NaN or infinite.
-        If the sum of all  weights is 0, no mode is returned.
+        If there are no data elements of finite weight > 0, no mode is returned.
 
         Parameters
         ----------
@@ -1198,13 +1215,14 @@ class BigFrame(CommandSupport):
             Dictionary containing summary statistics in the following entries:
                 mode : Mode of the data. (Ties resolved arbitrarily.)
                     If the sum of the weights is 0, the there is no mode.
-                weight_of_mode : Weight of the mode. If the sum of the weights is 0, the weight of the mode is 0.
-                    If no weights column is given, this is the number of appearances of the mode in the column.
+                weight_of_mode : Weight of the mode. If there are no data elements of finite weight > 0,
+                 the weight of the mode is 0. If no weights column is given, this is the number of appearances of the
+                 mode in the column.
                 total_weight : Sum of all weights in the weight column. This is the row count if no weights
                  are given. If no weights column is given, this is the number of rows in the table with non-zero weight.
 
-        Examples
-        --------
+        Example
+        -------
         >>> mode = frame.column_mode('interesting column')
         """
         pass
@@ -1218,7 +1236,7 @@ class BigFrame(CommandSupport):
 
         All data elements of weight <= 0 are excluded from the calculation, as are all data elements whose weight
          is NaN or infinite.
-        If a weight column is provided and the sum of the weights is 0, None is returned.
+        If a weight column is provided and no weights are finite numbers > 0,, None is returned.
 
         Parameters
         ----------
@@ -1233,10 +1251,11 @@ class BigFrame(CommandSupport):
         Returns
         -------
         median : Double
-            The median of the values.  If a weight column is provided and the sum of the weights is 0, None is returned.
+            The median of the values.  If a weight column is provided and no weights are finite numbers > 0,
+             None is returned.
 
-        Examples
-        --------
+        Example
+        -------
         >>> median = frame.column_median('interesting column')
         """
         pass

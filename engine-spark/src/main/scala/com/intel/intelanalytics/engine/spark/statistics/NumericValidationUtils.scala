@@ -2,9 +2,8 @@ package com.intel.intelanalytics.engine.spark.statistics
 
 /**
  * Library for creating, cleaning and processing weighted data.
- * @tparam T Datatype for data elements.
  */
-class DistributionUtils[T] extends Serializable {
+object NumericValidationUtils extends Serializable {
 
   /**
    * True iff a double is a finite number.
@@ -14,15 +13,11 @@ class DistributionUtils[T] extends Serializable {
   def isFiniteNumber(double: Double) = { !double.isNaN && !double.isInfinite }
 
   /**
-   * True iff the pair has weight that is a finite number > 0.
-   * @param dataWeightPair A (data, weight) pair.
+   * True iff the double is a finite number > 0.
+   * @param x A double.
    * @return
    */
-  def hasPositiveWeight(dataWeightPair: (T, Double)) = {
-    val weight = dataWeightPair._2
-
-    isFiniteNumber(weight) && (weight > 0)
-  }
+  def isFinitePositive(x: Double) = isFiniteNumber(x) && (x > 0)
 
   /**
    * True if both the data and the weight are finite numbers.

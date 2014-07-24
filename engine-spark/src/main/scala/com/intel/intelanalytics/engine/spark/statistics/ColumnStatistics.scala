@@ -131,7 +131,7 @@ private[spark] object ColumnStatistics extends Serializable {
       positiveWeightCount = stats.positiveWeightCount,
       nonPositiveWeightCount = stats.nonPositiveWeightCount,
       badRowCount = stats.badRowCount,
-      goodRowCount = stats.goodRowCount)
+      validDataWeightPairCount = stats.goodRowCount)
   }
 
   /**
@@ -173,7 +173,7 @@ private[spark] object ColumnStatistics extends Serializable {
       positiveWeightCount = stats.positiveWeightCount,
       nonPositiveWeightCount = stats.nonPositiveWeightCount,
       badRowCount = stats.badRowCount,
-      goodRowCount = stats.goodRowCount)
+      validDataWeightPairCount = stats.goodRowCount)
   }
 
   private def getDataWeightPairs(dataColumnIndex: Int,

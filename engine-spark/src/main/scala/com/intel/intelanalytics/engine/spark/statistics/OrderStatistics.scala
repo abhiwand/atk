@@ -24,8 +24,6 @@ class OrderStatistics[T: ClassTag](dataWeightPairs: RDD[(T, Double)])(implicit o
    */
   lazy val medianOption: Option[T] = computeMedian
 
-  private val distributionUtils = new DistributionUtils[T]
-
   /*
    * Computes the median via a sort and scan approach, although the nature of RDDs greatly complicates the "simple scan"
    *
@@ -34,7 +32,7 @@ class OrderStatistics[T: ClassTag](dataWeightPairs: RDD[(T, Double)])(implicit o
   private def computeMedian: Option[T] = {
 
     val sortedDataWeightPairs: RDD[(T, BigDecimal)] =
-      dataWeightPairs.filter(distributionUtils.hasPositiveWeight).
+      dataWeightPairs.filter({ case (data, weight) => NumericValidationUtils.isFinitePositive(weight) }).
         map({ case (data, weight) => (data, BigDecimal(weight)) }).sortByKey(ascending = true)
 
     val weightsOfPartitions: Array[BigDecimal] = sortedDataWeightPairs.mapPartitions(sumWeightsInPartition).collect()
