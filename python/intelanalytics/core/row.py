@@ -1,6 +1,5 @@
-from ordereddict import OrderedDict
-
-from intelanalytics.core.iatypes import supported_types
+from intelanalytics.core.orddict import OrderedDict
+from intelanalytics.core.iatypes import valid_data_types
 
 
 class Row(object):
@@ -29,54 +28,32 @@ class Row(object):
         except KeyError:
             raise KeyError("Column name " + str(key) + " not present.")
 
-    def _is_cell_empty(self, column):
-        # todo - flesh this out according to the schema (what is considered 'empty' for each dtype?)
-        #t = self.schema[column]
-        return self._get_cell_value(column) is None
+    def __len__(self):
+        return len(self.schema_dict)
 
-    def is_empty(self, choice, subset=None):
-        """
-        Determines if the row has empty cells, according to column data type
+    def __iter__(self):
+        return self.items().__iter__()
 
-        Parameters
-        ----------
-        choice : any, all, str
-            Indicates the cell candidates.  any means if any cell in the row is empty, return True.
-            all means only if all the cells in the row are empty will the method return True.
-            A single column name be also be used, and the answer depends only on that column
+    def keys(self):
+        return self.schema_dict.keys()
 
-        subset : list of str, optional
-            The column names of the cells to consider.  If specified, choice must be any or all
+    def values(self):
+        return [self._get_cell_value(k) for k in self.keys()]
 
-        Returns
-        -------
-        result : bool
-            Whether the row, cell, or cell set is empty
+    def types(self):
+        return self.schema_dict.values()
 
-        >>> row = Row()
+    def items(self):
+        return zip(self.keys(), self.values())
 
-        Examples
-        --------
-        >>> row.is_empty('a')
-        >>> row.is_empty(any)
-        >>> row.is_empty(all)
-        >>> row.is_empty(any, ['a', 'b'])
-        >>> row.is_empty(all, ['a', 'b'])
-        """
-        if isinstance(choice, basestring):
-            return self._is_cell_empty(choice)
-        elif choice is any or choice is all:
-            subset = self.schema_dict.keys() if subset is None else subset
-            return choice(map(self._is_cell_empty, subset))
-        else:
-            raise ValueError("Bad choice; must be any, all, or a column name")
+    def get_cell_type(self, key):
+        return self.schema_dict[key]
 
     def _get_cell_value(self, key):
-        # converts the string into the proper data type
         index = self.schema_dict.keys().index(key)  # could improve speed here...
         return self._get_cell_value_by_index(index)
 
     def _get_cell_value_by_index(self, index):
-        # converts the string into the proper data type
+        # converts the value into the proper data type
         dtype = self.schema_dict.values()[index]
-        return supported_types.cast(self.data[index], dtype)
+        return valid_data_types.cast(self.data[index], dtype)

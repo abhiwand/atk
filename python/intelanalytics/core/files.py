@@ -20,10 +20,7 @@
 # estoppel or otherwise. Any license under such intellectual property rights
 # must be express and approved by Intel in writing.
 ##############################################################################
-import warnings
-from iatypes import supported_types
-from ordereddict import OrderedDict
-from collections import defaultdict
+from intelanalytics.core.iatypes import valid_data_types
 
 
 class DataFile(object):
@@ -33,24 +30,23 @@ class DataFile(object):
 
 class CsvFile(DataFile):
     """
-    Summary
-    -------
-    Define a CSV file
+    Define a CSV file.
 
     Parameters
     ----------
     file_name : string
-        name of data input file
+        name of data input file. Relative paths are interpreted relative to the intel.analytics.engine.fs.root
+        configuration. Absolute paths (beginning with hdfs://..., for example) are also supported.
     schema : list of tuples of the form (string, type)
         schema description of the fields for a given line.  It is a list of
         tuples which describe each field, (field name, field type), where
         the field name is a string, and file is a supported type
-        (See supported_types from the types module)
+        (See data_types from the iatypes module)
         The type ``ignore`` may also be used if the field should be ignored
         on loads
-    delimiter : string
-        string indicator of the delimiter for the fields, the comma character is the default
-    skip_header_lines : int32
+    delimiter : string (optional)
+        string indicator of the delimiter for the fields
+    skip_header_lines : int (optional)
         indicates numbers of lines to skip before parsing records
 
     Raises
@@ -64,10 +60,11 @@ class CsvFile(DataFile):
 
     Examples
     --------
-
     For this example, we are going to use a raw data file named "raw_data.csv".
-    The data is described in the first two rows.
-    The first row is the column names: "a", "b", "c", and the second row has the column types: "int32", "int32", "str".
+    It consists of three columns named: *a*, *b*, *c*.
+    The columns have the data types: *int32*, *int32*, *str*.
+    The fields of data are separated by commas.
+    There is no header to the file.
 
     First bring in the stuff::
 
@@ -77,7 +74,7 @@ class CsvFile(DataFile):
 
         csv_schema = [("a", int32),
                       ("b", int32),
-                      ("c", string)]
+                      ("c", str)]
 
     Now build a CsvFile object with this schema::
 
@@ -91,12 +88,14 @@ class CsvFile(DataFile):
             or
         CsvFile("raw_data.csv", csv_schema, delimiter = ':')
 
-    Our example data file had two lines at the top which were not data.
-    Therefore, we should have skipped these lines::
+    If our data had some lines of header at the beginning of the file, we could have skipped these lines::
 
-        csv_data = CsvFile("<path to>raw_data.csv", csv_schema, skip_header_lines=2)
+        csv_data = CsvFile("raw_data.csv", csv_schema, skip_header_lines=2)
 
-    For other examples see :ref:`example_files.csvfile`.
+    For other examples see :ref:`Data Flow <example_files.csvfile>`.
+
+    .. versionadded:: 0.8
+
     """
 
     # TODO - Review docstring
@@ -119,18 +118,14 @@ class CsvFile(DataFile):
         return repr(self.schema)
 
     def _schema_to_json(self):
-        return [(field[0], supported_types.get_type_string(field[1]))
+        return [(field[0], valid_data_types.to_string(field[1]))
                 for field in self.schema]
 
     @property
     def field_names(self):
         """
-        Summary
-        -------
-        Schema field names
+        Schema field names.
 
-        Extended Summary
-        ----------------
         List of field names from the schema stored in the CsvFile object
 
         Returns
@@ -141,14 +136,16 @@ class CsvFile(DataFile):
         Examples
         --------
         For this example, we are going to use a raw data file called 'my_data.csv'.
-        It will have two columns named 'col1' and 'col2' with types of int32 and float32 respectively::
+        It will have two columns *col1* and *col2* with types of *int32* and *float32* respectively::
 
-            my_csv = CsvFile("my_data.csv", [("col1", int32), ("col2", float32)])
-            print(my_csv.field_names)
+            my_csv = CsvFile("my_data.csv", schema=[("col1", int32), ("col2", float32)])
+            print(my_csv.field_names())
 
         The output would be::
 
             ["col1", "col2"]
+
+        .. versionadded:: 0.8
 
         """
         # TODO - Review docstring
@@ -157,12 +154,8 @@ class CsvFile(DataFile):
     @property
     def field_types(self):
         """
-        Summary
-        -------
         Schema field types
 
-        Extended Summary
-        ----------------
         List of field types from the schema stored in the CsvFile object.
         
         Returns
@@ -173,21 +166,32 @@ class CsvFile(DataFile):
         Examples
         --------
         For this example, we are going to use a raw data file called 'my_data.csv'.
-        It will have two columns named 'col1' and 'col2' with types of int32 and float32 respectively::
+        It will have two columns *col1* and *col2* with types of *int32* and *float32* respectively::
 
-            my_csv = CsvFile("my_data.csv", [("col1", int32), ("col2", float32)])
-            print(my_csv.field_types)
+            my_csv = CsvFile("my_data.csv", schema=[("col1", int32), ("col2", float32)])
+            print(my_csv.field_types())
 
         The output would be::
 
             [numpy.int32, numpy.float32]
+
+        .. versionadded:: 0.8
+
         """
         # TODO - Review docstring
         return [x[1] for x in self.schema]
 
     def _validate(self):
-        for t in self.schema:
-            if not isinstance(t[0], basestring):
+        validated_schema = []
+        for field in self.schema:
+            name = field[0]
+            if not isinstance(name, basestring):
                 raise ValueError("First item in CSV schema tuple must be a string")
-            if t[1] not in supported_types:
-                raise ValueError("Second item in CSV schema tuple must be a supported type: " + str(supported_types))
+            try:
+                data_type = valid_data_types.get_from_type(field[1])
+            except ValueError:
+                raise ValueError("Second item in CSV schema tuple must be a supported type: " + str(valid_data_types))
+            else:
+                validated_schema.append((name, data_type))
+        self.schema = validated_schema
+

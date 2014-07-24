@@ -4,21 +4,22 @@ import org.scalatest.Matchers
 import org.apache.spark.engine.{ ProgressPrinter, SparkProgressListener }
 import java.util.concurrent.Semaphore
 import com.intel.intelanalytics.engine.spark.{ CommandProgressUpdater, SparkOps }
-import com.intel.intelanalytics.engine.{ ProgressInfo, TestingSparkContext }
+import com.intel.intelanalytics.engine.{ ProgressInfo, TaskProgressInfo }
 import java.io.File
 import org.apache.commons.io.FileUtils
+import com.intel.testutils.TestingSparkContextFlatSpec
 
-class SparkJobConcurrencyTest extends TestingSparkContext with Matchers {
+class SparkJobConcurrencyTest extends TestingSparkContextFlatSpec with Matchers {
   "Running multiple thread" should "keep isolation between threads when setting properties" in {
 
     val updater = new CommandProgressUpdater {
-      override def updateProgress(commandId: Long, progress: List[Float], detailedProgress: List[ProgressInfo]): Unit = {
+      override def updateProgress(commandId: Long, progress: List[ProgressInfo]): Unit = {
         //do nothing
       }
     }
 
     val listener = new SparkProgressListener(updater)
-    sc.addSparkListener(listener)
+    sparkContext.addSparkListener(listener)
 
     def createTempDir: File = {
       val file = File.createTempFile("test", "-tmp")
@@ -43,9 +44,9 @@ class SparkJobConcurrencyTest extends TestingSparkContext with Matchers {
       i =>
         new Thread() {
           override def run() {
-            sc.setLocalProperty("command-id", i.toString)
+            sparkContext.setLocalProperty("command-id", i.toString)
             val carOwnerShips = List(Array[Any]("Bob", "Mustang,Camry"), Array[Any]("Josh", "Neon,CLK"), Array[Any]("Alice", "PT Cruiser,Avalon,F-150"), Array[Any]("Tim", "Beatle"), Array[Any]("Becky", ""))
-            val rdd = sc.parallelize(carOwnerShips)
+            val rdd = sparkContext.parallelize(carOwnerShips)
             val flattened = SparkOps.flattenRddByColumnIndex(1, ",", rdd)
             flattened.saveAsTextFile(new File(path, "command-" + i.toString).toString)
             sem.release()

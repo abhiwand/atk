@@ -40,7 +40,7 @@ if spark_python not in sys.path:
 from serializers import PickleSerializer, BatchedSerializer, UTF8Deserializer, CloudPickleSerializer, write_int
 
 from intelanalytics.core.row import Row
-from intelanalytics.core.iatypes import supported_types
+from intelanalytics.core.iatypes import valid_data_types
 
 rdd_delimiter = '\0'
 rdd_null_indicator = 'YoMeNull'
@@ -55,7 +55,7 @@ def get_add_one_column_function(row_function, data_type):
     """Returns a function which adds a column to a row based on given row function"""
     def add_one_column(row):
         result = row_function(row)
-        cast_value = supported_types.cast(result, data_type)
+        cast_value = valid_data_types.cast(result, data_type)
         if cast_value is None:
             cast_value = rdd_null_indicator
         row.data.append(cast_value)
@@ -69,7 +69,7 @@ def get_add_many_columns_function(row_function, data_types):
     def add_many_columns(row):
         result = row_function(row)
         for i, data_type in enumerate(data_types):
-            cast_value = supported_types.cast(result[i], data_type)
+            cast_value = valid_data_types.cast(result[i], data_type)
             if cast_value is None:
                 cast_value = rdd_null_indicator
             row.data.append(cast_value)
@@ -111,8 +111,9 @@ def _wrap_row_function(frame, row_function):
     that it will be evaluated with using the expected 'row' object rather than
     whatever raw form the engine is using.  Ideally, this belong in the engine
     """
+    schema = frame.schema  # must grab schema now so frame is not closed over
     def row_func(row):
-        row_wrapper = RowWrapper(frame.schema)
+        row_wrapper = RowWrapper(schema)
         row_wrapper.load_row(row)
         return row_function(row_wrapper)
     return row_func

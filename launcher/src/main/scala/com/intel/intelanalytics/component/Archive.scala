@@ -1,7 +1,5 @@
 package com.intel.intelanalytics.component
 
-import com.intel.intelanalytics.component.Boot.ArchiveDefinition
-
 import scala.reflect.ClassTag
 
 //////////////////////////////////////////////////////////////////////////////
@@ -32,19 +30,37 @@ trait Archive extends Component {
   private var _loader: Option[String => Any] = None
   private var _definition: Option[ArchiveDefinition] = None
 
+  /**
+   * Configuration / definition of the archive, including name and other
+   * useful information
+   */
   def definition: ArchiveDefinition = _definition.getOrElse(
     throw new Exception("Archive has not been initialized"))
 
+  /**
+   * The archive's loader function for loading classes.
+   */
   private def loader: String => Any = _loader.getOrElse(
     throw new Exception("Archive has not been initialized")
   )
 
+  /**
+   * Called on archive creation to initialize the archive
+   */
   private[intelanalytics] def initializeArchive(definition: ArchiveDefinition,
                                                 loader: String => Any) = {
     this._loader = Some(loader)
     this._definition = Some(definition)
   }
 
+  /**
+   * Load and initialize a `Component` based on configuration path.
+   *
+   * @param path the config path to look up. The path should contain a "class" entry
+   *             that holds the string name of the class that should be instantiated,
+   *             which should be a class that's visible from this archive's class loader.
+   * @return an initialized and started instance of the component
+   */
   protected def loadComponent(path: String): Component = {
     Archive.logger(s"Loading component $path")
     val className = configuration.getString(path.replace("/", ".") + ".class")
@@ -62,7 +78,7 @@ trait Archive extends Component {
    * @param className the class name to instantiate and configure
    * @return the new instance
    */
-  protected def load(className: String): Any = {
+  def load(className: String): Any = {
     Archive.logger(s"Loading class $className")
     loader(className)
   }
@@ -92,6 +108,9 @@ trait Archive extends Component {
 
 }
 
+/**
+ * Companion object for Archives.
+ */
 object Archive {
   private var _logger: Option[String => Unit] = Some(println)
 
