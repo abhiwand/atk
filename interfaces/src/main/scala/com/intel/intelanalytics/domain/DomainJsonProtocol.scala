@@ -38,7 +38,7 @@ import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 import com.intel.intelanalytics.domain.schema.{ DataTypes, Schema }
 import org.joda.time.DateTime
 import spray.json._
-import com.intel.intelanalytics.engine.ProgressInfo
+import com.intel.intelanalytics.engine.{ ProgressInfo, TaskProgressInfo }
 
 import scala.util.matching.Regex
 import com.intel.intelanalytics.algorithm.Percentile
@@ -145,8 +145,8 @@ object DomainJsonProtocol extends IADefaultJsonProtocol {
   implicit val projectColumnFormat = jsonFormat4(FrameProject[JsObject, String])
   implicit val projectColumnLongFormat = jsonFormat4(FrameProject[JsObject, Long])
   implicit val renameFrameFormat = jsonFormat2(FrameRenameFrame)
-  implicit val renameColumnFormat = jsonFormat3(FrameRenameColumn[JsObject, String])
-  implicit val renameColumnLongFormat = jsonFormat3(FrameRenameColumn[JsObject, Long])
+  implicit val renameColumnsFormat = jsonFormat3(FrameRenameColumns[JsObject, String])
+  implicit val renameColumnsLongFormat = jsonFormat3(FrameRenameColumns[JsObject, Long])
   implicit val joinFrameLongFormat = jsonFormat3(FrameJoin)
   implicit val groupByColumnFormat = jsonFormat4(FrameGroupByColumn[JsObject, String])
   implicit val groupByColumnLongFormat = jsonFormat4(FrameGroupByColumn[JsObject, Long])
@@ -154,6 +154,7 @@ object DomainJsonProtocol extends IADefaultJsonProtocol {
   implicit val errorFormat = jsonFormat5(Error)
   implicit val flattenColumnLongFormat = jsonFormat4(FlattenColumn)
   implicit val dropDuplicatesFormat = jsonFormat2(DropDuplicates)
+  implicit val taskInfoFormat = jsonFormat1(TaskProgressInfo)
   implicit val progressInfoFormat = jsonFormat2(ProgressInfo)
   implicit val binColumnLongFormat = jsonFormat6(BinColumn[Long])
 
