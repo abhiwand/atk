@@ -28,7 +28,7 @@ import com.intel.graphbuilder.parser.rule.RuleParserDSL._
 import com.intel.graphbuilder.parser.rule.{ EdgeRule, VertexRule }
 import com.intel.graphbuilder.parser.{ ColumnDef, InputSchema }
 import com.intel.graphbuilder.elements.{ Edge, Vertex, Property }
-import com.intel.testutils.TestingSparkContext
+import com.intel.testutils.Specs2TestingSparkContext
 import com.tinkerpop.blueprints.Direction
 import org.apache.spark.rdd.RDD
 import org.specs2.mutable.Specification
@@ -42,7 +42,7 @@ class GraphBuilderITest extends Specification {
 
   "GraphBuilder" should {
 
-    "support an end-to-end flow of the numbers example with append" in new TestingSparkContext with TestingTitan {
+    "support an end-to-end flow of the numbers example with append" in new Specs2TestingSparkContext with TestingTitan {
 
       // Input Data
       val inputRows = List(
@@ -101,7 +101,7 @@ class GraphBuilderITest extends Specification {
 
     }
 
-    "support unusual cases of dynamic parsing, dangling edges" in new TestingSparkContext with TestingTitan {
+    "support unusual cases of dynamic parsing, dangling edges" in new Specs2TestingSparkContext with TestingTitan {
 
       // Input Data
       val inputRows = List(
@@ -151,7 +151,7 @@ class GraphBuilderITest extends Specification {
       obama.getEdges(Direction.OUT).size mustEqual 3
     }
 
-    "support inferring schema from the data" in new TestingSparkContext with TestingTitan {
+    "support inferring schema from the data" in new Specs2TestingSparkContext with TestingTitan {
 
       // Input data, as edge list
       val inputEdges = List(
