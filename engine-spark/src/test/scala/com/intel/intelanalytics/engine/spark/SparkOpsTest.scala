@@ -23,18 +23,18 @@
 
 package com.intel.intelanalytics.engine.spark
 
-import com.intel.intelanalytics.engine.TestingSparkContext
+import com.intel.testutils.TestingSparkContextFlatSpec
 import org.scalatest.Matchers
 
 import scala.collection.mutable.ArrayBuffer
 
-class SparkOpsTest extends TestingSparkContext with Matchers {
+class SparkOpsTest extends TestingSparkContextFlatSpec with Matchers {
 
   val max = 20
   val array = (1 to max * 2).map(i => Array(i, i.toString, i.toDouble * 0.1))
 
   def fetchAllData(): ArrayBuffer[Array[Any]] = {
-    val data = sc.parallelize(array)
+    val data = sparkContext.parallelize(array)
     val results = new ArrayBuffer[Array[Any]]()
     var offset = 0
     var loop = true
@@ -49,27 +49,27 @@ class SparkOpsTest extends TestingSparkContext with Matchers {
   }
 
   "getRows" should "return the requested number of rows" in {
-    val data = sc.parallelize(array)
+    val data = sparkContext.parallelize(array)
     SparkOps.getRows(data, 0, max, max).length should equal(max)
   }
 
   it should "limit the returned rows based on configured restrictions" in {
-    val data = sc.parallelize(array)
+    val data = sparkContext.parallelize(array)
     SparkOps.getRows(data, 0, max + 5, max).length should equal(max)
   }
 
   it should "return no more rows than are available" in {
-    val data = sc.parallelize(array)
+    val data = sparkContext.parallelize(array)
     SparkOps.getRows(data, max * 2 - 5, max, max).length should equal(5)
   }
 
   it should "start at the requested offset" in {
-    val data = sc.parallelize(array)
+    val data = sparkContext.parallelize(array)
     SparkOps.getRows(data, max * 2 - 10, 5, max).length should equal(5)
   }
 
   it should "return no rows when a zero count is requested" in {
-    val data = sc.parallelize(array)
+    val data = sparkContext.parallelize(array)
     SparkOps.getRows(data, max * 2 - 10, 0, max).length should equal(0)
   }
 
