@@ -52,7 +52,6 @@ class SparkProgressListener(val progressUpdater: CommandProgressUpdater) extends
   val stageIdToTasksFailed = HashMap[Int, Int]()
   val commandIdJobs = new HashMap[Long, List[ActiveJob]]
   val commandIdJobCount = new HashMap[Long, Int]()
-  var lastUpdateTime = System.currentTimeMillis()
 
   override def onJobStart(jobStart: SparkListenerJobStart) {
     val stages = addStageAndAncestorStagesToCollection(jobStart.job.finalStage)
@@ -193,12 +192,6 @@ class SparkProgressListener(val progressUpdater: CommandProgressUpdater) extends
    * Update the progress information and send it to progress updater
    */
   private def updateProgress(stageId: Int) {
-
-    val currentTime = System.currentTimeMillis()
-    if (currentTime - lastUpdateTime < 1000)
-      return
-    else
-      lastUpdateTime = currentTime
 
     val jobIdStagePairOption = jobIdToStagesIds.find {
       case (_, stagesIds) =>

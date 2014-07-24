@@ -113,12 +113,20 @@ class SparkEngine(sparkContextManager: SparkContextManager,
 
   /* This progress listener saves progress update to command table */
   SparkProgressListener.progressUpdater = new CommandProgressUpdater {
+
+    var lastUpdateTime = System.currentTimeMillis()
     /**
      * save the progress update
      * @param commandId id of the command
      * @param progressInfo list of progress for jobs initiated by the command
      */
-    override def updateProgress(commandId: Long, progressInfo: List[ProgressInfo]): Unit = commandStorage.updateProgress(commandId, progressInfo)
+    override def updateProgress(commandId: Long, progressInfo: List[ProgressInfo]): Unit = {
+      val currentTime = System.currentTimeMillis()
+      if (currentTime - lastUpdateTime > 1000) {
+        lastUpdateTime = currentTime
+        commandStorage.updateProgress(commandId, progressInfo)
+      }
+    }
   }
 
   def shutdown: Unit = {
