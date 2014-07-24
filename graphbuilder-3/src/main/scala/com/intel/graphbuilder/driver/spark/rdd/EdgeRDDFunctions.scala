@@ -85,7 +85,7 @@ class EdgeRDDFunctions(self: RDD[Edge], val maxEdgesPerCommit: Long = 50000L) ex
    * For every Edge, create two vertices, one from the tail Vertex GbId, and one from the
    * head Vertex GbId.
    * <p>
-   * This functionality was called "reain dangling edges" in GB version 2.
+   * This functionality was called "retain dangling edges" in GB version 2.
    * </p>
    */
   def verticesFromEdges(): RDD[Vertex] = {
