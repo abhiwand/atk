@@ -205,12 +205,10 @@ class RecommendQuery extends SparkCommandPlugin[RecommendParams, RecommendResult
       .sortBy(-_.score)
       .take(numOutputResults)
 
-    var i = 1
     var results = "================Top " + numOutputResults + " recommendations for " +
       sourceVertexName + " " + vertexId + "==========\n"
     ratingResultRDD.foreach { rating: Rating =>
       results += targetVertexName + "\t" + rating.vertexId + "\tscore\t" + rating.score + "\n"
-      i += 1
     }
 
     targetVectorRDD.unpersist()
