@@ -89,9 +89,9 @@ case class Edge(var tailPhysicalId: Any, var headPhysicalId: Any, tailVertexGbId
   }
 
   /**
-   * Get a property value if this key exists and the value is String type
+   * Get a property value as String if this key exists
    * @param key Property key
-   * @return Matching property value, or empty string is no such property
+   * @return Matching property value, or empty string if no such property
    */
   override def getPropertyValueAsString(key: String): String = {
     val result = for {
