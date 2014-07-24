@@ -86,7 +86,7 @@ class SparkOpsTest extends TestingSparkContextFlatSpec with Matchers {
   }
 
   "getRows" should "be able to return non row objects" in {
-    val data = sc.parallelize(List.range(0, 100))
+    val data = sparkContext.parallelize(List.range(0, 100))
 
     val results = SparkOps.getRows(data, 0, max, max)
     results(0).getClass should equal(Integer.TYPE)
