@@ -800,7 +800,7 @@ class BigFrame(CommandSupport):
         .. versionadded:: 0.8
         """
         try:
-            return self._backend.get_count(self)
+            return self._backend.get_row_count(self)
         except:
             raise IaError(logger)
 
