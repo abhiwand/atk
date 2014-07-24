@@ -165,7 +165,7 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
       //case ("dataframe/rename_frame") => runFrameRenameFrame(uri, xform)
       case ("dataframe/add_columns") => runFrameAddColumns(uri, xform)
       case ("dataframe/project") => runFrameProject(uri, xform)
-      case ("dataframe/rename_column") => runFrameRenameColumn(uri, xform)
+      case ("dataframe/rename_columns") => runFrameRenameColumns(uri, xform)
       case ("dataframe/join") => runJoinFrames(uri, xform)
       case ("dataframe/flatten_column") => runflattenColumn(uri, xform)
       case ("dataframe/groupby") => runFrameGroupByColumn(uri, xform)
@@ -256,16 +256,16 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
       }
   }
 
-  def runFrameRenameColumn(uri: Uri, xform: JsonTransform)(implicit user: UserPrincipal) = {
+  def runFrameRenameColumns(uri: Uri, xform: JsonTransform)(implicit user: UserPrincipal) = {
     val test = Try {
-      xform.arguments.get.convertTo[FrameRenameColumn[JsObject, String]]
+      xform.arguments.get.convertTo[FrameRenameColumns[JsObject, String]]
     }
     val idOpt = test.toOption.flatMap(args => UrlParser.getFrameId(args.frame))
     (validate(test.isSuccess, "Failed to parse file load descriptor: " + getErrorMessage(test))
       & validate(idOpt.isDefined, "Destination is not a valid data frame URL")) {
         val args = test.get
         val id = idOpt.get
-        val exec = engine.renameColumn(FrameRenameColumn[JsObject, Long](id, args.original_names, args.new_names))
+        val exec = engine.renameColumns(FrameRenameColumns[JsObject, Long](id, args.original_names, args.new_names))
         complete(decorate(uri + "/" + exec.start.id, exec.start))
       }
   }
