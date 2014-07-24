@@ -88,7 +88,7 @@ import com.intel.intelanalytics.domain.graph.GraphTemplate
 import com.intel.intelanalytics.domain.frame.load.LoadSource
 import com.intel.intelanalytics.domain.frame.DataFrameTemplate
 import com.intel.intelanalytics.engine.ProgressInfo
-import com.intel.intelanalytics.domain.frame.FrameRenameColumn
+import com.intel.intelanalytics.domain.frame.FrameRenameColumns
 import com.intel.intelanalytics.domain.frame.BinColumn
 import com.intel.intelanalytics.domain.frame.DataFrame
 import com.intel.intelanalytics.domain.command.Execution
@@ -116,10 +116,9 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     /**
      * save the progress update
      * @param commandId id of the command
-     * @param progress list of progress for jobs initiated by the command
-     * @param detailedProgress list of extra progress info for jobs initiated by the command
+     * @param progressInfo list of progress for jobs initiated by the command
      */
-    override def updateProgress(commandId: Long, progress: List[Float], detailedProgress: List[ProgressInfo]): Unit = commandStorage.updateProgress(commandId, progress, detailedProgress)
+    override def updateProgress(commandId: Long, progressInfo: List[ProgressInfo]): Unit = commandStorage.updateProgress(commandId, progressInfo)
   }
 
   def shutdown: Unit = {
@@ -251,14 +250,14 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     frames.renameFrame(frame, newName)
   }
 
-  def renameColumn(arguments: FrameRenameColumn[JsObject, Long])(implicit user: UserPrincipal): Execution =
-    commands.execute(renameColumnCommand, arguments, user, implicitly[ExecutionContext])
+  def renameColumns(arguments: FrameRenameColumns[JsObject, Long])(implicit user: UserPrincipal): Execution =
+    commands.execute(renameColumnsCommand, arguments, user, implicitly[ExecutionContext])
 
-  val renameColumnCommand = commands.registerCommand("dataframe/rename_column", renameColumnSimple)
-  def renameColumnSimple(arguments: FrameRenameColumn[JsObject, Long], user: UserPrincipal) = {
+  val renameColumnsCommand = commands.registerCommand("dataframe/rename_columns", renameColumnsSimple)
+  def renameColumnsSimple(arguments: FrameRenameColumns[JsObject, Long], user: UserPrincipal) = {
     val frameID = arguments.frame
     val frame = expectFrame(frameID)
-    frames.renameColumn(frame, arguments.original_names.zip(arguments.new_names))
+    frames.renameColumns(frame, arguments.original_names.zip(arguments.new_names))
   }
 
   def project(arguments: FrameProject[JsObject, Long])(implicit user: UserPrincipal): Execution =

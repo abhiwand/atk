@@ -94,7 +94,7 @@ object GremlinJsonProtocol extends DefaultJsonProtocol {
    * Create Blueprints graph element from JSON. Returns null if not a valid graph element
    */
   private def elementFromJson(graph: Graph, json: JsValue, mode: GraphSONMode = GraphSONMode.NORMAL): Element = {
-    require(graph != null)
+    require(graph != null, "graph must not be null")
     val factory = new GraphElementFactory(graph)
 
     json match {
