@@ -101,6 +101,7 @@ trait Engine {
   def dropDuplicates(dropDuplicateCommand: DropDuplicates)(implicit user: UserPrincipal): Execution
 
   def join(argument: FrameJoin)(implicit user: UserPrincipal): Execution
+
   def flattenColumn(argument: FlattenColumn)(implicit user: UserPrincipal): Execution
 
   def binColumn(arguments: BinColumn[Long])(implicit user: UserPrincipal): Execution
