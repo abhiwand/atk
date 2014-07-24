@@ -48,7 +48,12 @@ object Boot extends App with ClassLoaderAware {
 
   private var archives: Map[String, Archive] = Map.empty
 
-  private[intelanalytics] val config = ConfigFactory.load()
+  /**
+   * This one is crucial to build first
+   */
+  private val interfaces = buildClassLoader("interfaces", getClass.getClassLoader)
+
+  private val config: Config = ConfigFactory.load(interfaces)
 
   def attempt[T](expr: => T, failureMessage: => String) = {
     try {
@@ -217,6 +222,8 @@ object Boot extends App with ClassLoaderAware {
 
     //Special case for igiraph since it follows a non-standard folder layout
     val giraphClassDirectory: Path = Directory.Current.get / "igiraph" / archive.substring(1) / "target" / "classes"
+    val giraphSourceResourceDirectory: Path =
+      Directory.Current.get / "igiraph" / archive.substring(1) / "src" / "main" / "resources"
     val giraphJar: Path = Directory.Current.get / "igiraph" / archive.substring(1) / "target" / (archive + ".jar")
 
     // Deployed environment - all jars in lib folder
@@ -226,6 +233,10 @@ object Boot extends App with ClassLoaderAware {
       Directory(sourceResourceDirectory).exists.option {
         Archive.logger(s"Found source resource directory at $sourceResourceDirectory")
         sourceResourceDirectory.toURL
+      },
+      Directory(giraphSourceResourceDirectory).exists.option {
+        Archive.logger(s"Found source resource directory at $giraphSourceResourceDirectory")
+        giraphSourceResourceDirectory.toURL
       },
       Directory(classDirectory).exists.option {
         Archive.logger(s"Found class directory at $classDirectory")
@@ -261,8 +272,6 @@ object Boot extends App with ClassLoaderAware {
    * @return a class loader
    */
   private def buildClassLoader(archive: String, parent: ClassLoader): ClassLoader = {
-    //TODO: Allow directory to be passed in, or otherwise abstracted?
-    //TODO: Make sensitive to actual scala version rather than hard coding.
     val urls = getCodePathUrls(archive)
     val loader = urls match {
       case u if u.length > 0 => new URLClassLoader(u, parent)
@@ -273,11 +282,6 @@ object Boot extends App with ClassLoaderAware {
     }
     loader
   }
-
-  /**
-   * This one is crucial to build first
-   */
-  private val interfaces = buildClassLoader("interfaces", getClass.getClassLoader)
 
   def usage() = println("Usage: java -jar launcher.jar <archive> <application>")
 
