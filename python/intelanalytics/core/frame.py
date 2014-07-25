@@ -1052,8 +1052,10 @@ class BigFrame(CommandSupport):
                  valid_data_weight_pair_count : The number of valid data elements with weight > 0.
                   This is the number of entries used in the statistical calculation.
                  non_positive_weight_count : The number data elements with finite weight <= 0.
-                 bad_row_count : The number of rows containing a NaN or infinite value in either the data or weights column.
-                 good_row_count : The number of rows containing a NaN or infinite value in either the data or weights column.
+                 bad_row_count : The number of rows containing a NaN or infinite value in either the data
+                  or weights column.
+                 good_row_count : The number of rows not containing a NaN or infinite value in either the data
+                  or weights column.
 
         Logging Invalid Data
         --------------------
@@ -1072,6 +1074,15 @@ class BigFrame(CommandSupport):
         Example
         -------
         >>> stats = frame.column_summary_statistics('data column', 'weight column')
+
+        Comparison between column_summary_statistics and column_full_statistics
+        -----------------------------------------------------------------------
+
+        column_summary_statistics has faster execution time than column_full_statistics (because it makes one pass
+         over the data rather than two, as column_full_statistics does)
+
+        However, column_full_statistics provides the higher moments, skewness and kurtosis,
+         that column_summary_statistics does not provide.
         """
         pass
 
@@ -1108,19 +1119,21 @@ class BigFrame(CommandSupport):
                   if the distribution is uniform.
                  mode : A mode of the data; that is, an item with the greatest weight (largest frequency).
                   Ties are resolved arbitrarily. NaN when there are no data elements of positive weight.
-                 minimum : Minimum value in the data. Positive infinity when there are no data elements of positive
+                 minimum : Minimum value in the data. NaN when there are no data elements of positive
                  weight.
-                 maximum : Maximum value in the data. Negative infinity when there are no data elements of positive
+                 maximum : Maximum value in the data. NaN when there are no data elements of positive
                   weight.
                  mean_confidence_lower : Lower limit of the 95% confidence interval about the mean.
                   Assumes a Gaussian distribution. NaN when there are <= 1 data elements of positive weight.
                  mean_confidence_upper: Upper limit of the 95% confidence interval about the mean.
                   Assumes a Gaussian distribution. NaN when there are <= 1 data elements of positive weight.
-                 valid_data_weight_pair_count : The number of valid data elements with weight > 0.
+                 positive_weight_count : The number of valid data elements with weight > 0.
                   This is the number of entries used in the statistical calculation.
                  non_positive_weight_count : The number data elements with finite weight <= 0.
-                 bad_row_count : The number of rows containing a NaN or infinite value in either the data or weights column.
-                 good_row_count : The number of rows containing a NaN or infinite value in either the data or weights column.
+                 bad_row_count : The number of rows containing a NaN or infinite value in either the data or
+                  weights column.
+                 good_row_count : The number of rows not containing a NaN or infinite value in either the data
+                  or weights column.
 
         Logging Invalid Data
         --------------------
@@ -1139,6 +1152,15 @@ class BigFrame(CommandSupport):
         Example
         -------
         >>> stats = frame.column_summary_statistics('data column', 'weight column')
+
+        Comparison between column_summary_statistics and column_full_statistics
+        -----------------------------------------------------------------------
+
+        column_summary_statistics has faster execution time than column_full_statistics (because it makes one pass
+         over the data rather than two, as column_full_statistics does)
+
+        However, column_full_statistics provides the higher moments, skewness and kurtosis,
+         that column_summary_statistics does not provide.
         """
         pass
 

@@ -59,16 +59,16 @@ case class ColumnFullStatistics(frame: FrameReference, dataColumn: String, weigh
  * weight.
  * @param maximum Maximum value in the data. NaN when there are no data elements of positive
  * weight.
- * @param meanConfidenceLowerBound: Lower limit of the 95% confidence interval about the mean. Assumes a Gaussian RV.
+ * @param meanConfidenceLower: Lower limit of the 95% confidence interval about the mean. Assumes a Gaussian RV.
  *                             NaN when there are <= 1 data elements of positive weight.
- * @param meanConfidenceUpperBound: Upper limit of the 95% confidence interval about the mean. Assumes a Gaussian RV.
+ * @param meanConfidenceUpper: Upper limit of the 95% confidence interval about the mean. Assumes a Gaussian RV.
  *                              NaN when there are <= 1 data elements of positive weight.
- * @param positiveWeightCount The number data elements with weights > 0.
- * @param nonPositiveWeightCount The number data elements with weight <= 0.
+ * @param positiveWeightCount The number valid data elements with weights > 0.
+ *                            This is the number of entries used for the calculation of the statistics.
+ * @param nonPositiveWeightCount The number valid data elements with weight <= 0.
  * @param badRowCount The number of rows containing a NaN or infinite value in either the data or weights column.
- * @param validDataWeightPairCount The number of rows containing a NaN or infinite value in either the data or weights
- *                             column. This is the number of entries used for the calculation of the statistics.
- *
+ * @param validDataWeightPairCount The number of rows not containing a NaN or infinite value in either the data or weights
+ *                             column.
  */
 case class ColumnFullStatisticsReturn(mean: Double,
                                       geometricMean: Double,
@@ -79,8 +79,8 @@ case class ColumnFullStatisticsReturn(mean: Double,
                                       mode: Double,
                                       minimum: Double,
                                       maximum: Double,
-                                      meanConfidenceLowerBound: Double,
-                                      meanConfidenceUpperBound: Double,
+                                      meanConfidenceLower: Double,
+                                      meanConfidenceUpper: Double,
                                       positiveWeightCount: Long,
                                       nonPositiveWeightCount: Long,
                                       badRowCount: Long,

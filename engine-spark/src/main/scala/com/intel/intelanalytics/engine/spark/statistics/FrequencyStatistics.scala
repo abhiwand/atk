@@ -70,6 +70,13 @@ private class FrequencyStatsAccumulatorParam[T] extends AccumulatorParam[Frequen
 
   override def zero(initialValue: FrequencyStatsCounter[T]) = FrequencyStatsCounter(None, 0, 0)
 
+  // to get (more) reproducible results, in the case that two modes have the same weight, we opt for the mode with the
+  // lesser hashcode...
+  // of course, this is not perfect since there can and will be collisions in the 32 bit hashes
+  // TODO: investigate requiring that the type parameter T for the FrequencyStats class implement the Ordered trait
+  // not sure if we want to add that over head... it may be that we simply opt for a slicker way of handling
+  // vastly multimodal data
+
   override def addInPlace(stats1: FrequencyStatsCounter[T], stats2: FrequencyStatsCounter[T]): FrequencyStatsCounter[T] = {
     if (stats1.mode.isEmpty) {
       stats2
@@ -79,6 +86,12 @@ private class FrequencyStatsAccumulatorParam[T] extends AccumulatorParam[Frequen
     }
     else {
       if (stats1.weightOfMode > stats2.weightOfMode) {
+        FrequencyStatsCounter(stats1.mode, stats1.weightOfMode, stats1.totalWeight + stats2.totalWeight)
+      }
+      else if (stats1.weightOfMode < stats2.weightOfMode) {
+        FrequencyStatsCounter(stats2.mode, stats2.weightOfMode, stats1.totalWeight + stats2.totalWeight)
+      }
+      else if (stats1.mode.hashCode() < stats2.mode.hashCode()) {
         FrequencyStatsCounter(stats1.mode, stats1.weightOfMode, stats1.totalWeight + stats2.totalWeight)
       }
       else {

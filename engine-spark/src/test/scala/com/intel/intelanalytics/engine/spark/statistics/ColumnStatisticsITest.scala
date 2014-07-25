@@ -26,16 +26,16 @@ class ColumnStatisticsITest extends TestingSparkContextFlatSpec with Matchers {
     val epsilon = 0.000000001
 
     // Input data
-    val row0: Row = Array[Any]("A", 1, 2.0f, 2, 1, 1.0f, 0, 0)
+    val row0: Row = Array[Any]("A", 1, 2.0f, 2, 3, 1.0f, 0, 0)
     val row1: Row = Array[Any]("B", 1, 2.0f, 1, 3, 2.0f, 0, 0)
-    val row2: Row = Array[Any]("C", 1, 2.0f, 1, 2, 0.0f, 10, 0)
-    val row3: Row = Array[Any]("D", 1, 2.0f, 1, 1, 1.0f, 0, 0)
-    val row4: Row = Array[Any]("E", 1, 2.0f, 1, 1, 2.0f, 0, 0)
+    val row2: Row = Array[Any]("C", 1, 2.0f, 3, 2, 0.0f, 10, 0)
+    val row3: Row = Array[Any]("D", 1, 2.0f, 6, 1, 1.0f, 0, 0)
+    val row4: Row = Array[Any]("E", 1, 2.0f, 7, 1, 2.0f, 0, 0)
 
     val rowRDD: RDD[Row] = sparkContext.parallelize(List(row0, row1, row2, row3, row4))
   }
 
-  "mode with no net weights" should "return none as json" in new ColumnStatisticsTest() {
+  "mode with no net weight" should "return none as json" in new ColumnStatisticsTest() {
     val testMode = ColumnStatistics.columnMode(0, DataTypes.string, Some(7), Some(DataTypes.int32), rowRDD)
 
     testMode.mode shouldBe None.asInstanceOf[Option[String]].toJson
@@ -45,14 +45,7 @@ class ColumnStatisticsITest extends TestingSparkContextFlatSpec with Matchers {
 
     val testMode = ColumnStatistics.columnMode(0, DataTypes.string, Some(3), Some(DataTypes.int32), rowRDD)
 
-    testMode.mode shouldBe "A".toJson
-  }
-
-  "unweighted mode" should "work" in new ColumnStatisticsTest() {
-
-    val testMode = ColumnStatistics.columnMode(3, DataTypes.int32, None, None, rowRDD)
-
-    testMode.mode shouldBe 1.toJson
+    testMode.mode shouldBe "E".toJson
   }
 
   "unweighted full statistics" should "work" in new ColumnStatisticsTest() {
@@ -68,7 +61,7 @@ class ColumnStatisticsITest extends TestingSparkContextFlatSpec with Matchers {
     val stats: ColumnFullStatisticsReturn =
       ColumnStatistics.columnFullStatistics(5, DataTypes.float32, Some(4), Some(DataTypes.int32), rowRDD)
 
-    Math.abs(stats.mean - 1.25) should be < epsilon
+    Math.abs(stats.mean - 1.2) should be < epsilon
   }
 
   "unweighted summary statistics" should "work" in new ColumnStatisticsTest() {
@@ -83,7 +76,7 @@ class ColumnStatisticsITest extends TestingSparkContextFlatSpec with Matchers {
     val stats: ColumnSummaryStatisticsReturn =
       ColumnStatistics.columnSummaryStatistics(5, DataTypes.float32, Some(4), Some(DataTypes.int32), rowRDD)
 
-    Math.abs(stats.mean - 1.25) should be < epsilon
+    Math.abs(stats.mean - 1.2) should be < epsilon
   }
 
   "unweighted median" should "work" in new ColumnStatisticsTest() {
