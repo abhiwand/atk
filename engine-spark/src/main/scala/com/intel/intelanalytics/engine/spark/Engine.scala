@@ -115,6 +115,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     with ClassLoaderAware {
 
   private val fsRoot = SparkEngineConfig.fsRoot
+  override val pageSize: Int = SparkEngineConfig.pageSize
 
   /* This progress listener saves progress update to command table */
   SparkProgressListener.progressUpdater = new CommandProgressUpdater {
