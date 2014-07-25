@@ -21,11 +21,20 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.domain.frame
+package com.intel.intelanalytics.engine
 
-case class FrameRenameColumn[+Arguments, FrameRef](frame: FrameRef, original_names: List[String], new_names: List[String]) {
-  require(frame != null, "frame is required")
-  require(original_names != null, "original column name(s) required")
-  require(new_names != null, "new column name(s) required")
-  require(original_names.size == new_names.size, "equal number of original names and new names required")
+import com.intel.intelanalytics.domain.query.{ QueryTemplate, Query }
+import spray.json.JsObject
+import scala.util.Try
+
+/**
+ * Interface describing the management of Query database storage
+ */
+trait QueryStorage {
+  def lookup(id: Long): Option[Query]
+  def create(frame: QueryTemplate): Query
+  def scan(offset: Int, count: Int): Seq[Query]
+  def start(id: Long): Unit
+  def complete(id: Long, result: Try[JsObject]): Unit
 }
+

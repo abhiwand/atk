@@ -45,13 +45,15 @@ class ValidDataTypes(unittest.TestCase):
     def test_repr(self):
         r = valid_data_types.__repr__()
         self.assertTrue(len(valid_data_types) > 0)
-        self.assertEqual(len(r.split(',')), len(valid_data_types))
+        lines = r.split('\n')
+        self.assertEqual(len(lines[0].split(',')), len(valid_data_types))
+        self.assertTrue(lines[1].startswith("(and aliases:"))
 
     def test_get_from_string(self):
         self.assertEqual(int64, valid_data_types.get_from_string("int64"))
         self.assertEqual(int32, valid_data_types.get_from_string("int32"))
-        self.assertEqual(str, valid_data_types.get_from_string("str"))
-        for bad_str in ["int", "string"]:
+        self.assertEqual(unicode, valid_data_types.get_from_string("str"))
+        for bad_str in ["string"]:
             try:
                 valid_data_types.get_from_string(bad_str)
             except ValueError:
@@ -83,7 +85,7 @@ class ValidDataTypes(unittest.TestCase):
     def test_to_string(self):
         self.assertEqual('int32', valid_data_types.to_string(int32))
         self.assertEqual('float64', valid_data_types.to_string(float64))
-        self.assertEqual('str', valid_data_types.to_string(str))
+        self.assertEqual('unicode', valid_data_types.to_string(str))
         try:
             valid_data_types.to_string(ignore)
         except ValueError:
