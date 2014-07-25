@@ -84,7 +84,7 @@ private[spark] object CumulativeDistFunctions extends Serializable {
     val partSums = partitionSums(pairedRdd)
 
     // compute cumulative count
-    val cumulativeCounts = totalPartitionCounts(pairedRdd, partSums)
+    val cumulativeCounts = totalPartitionSums(pairedRdd, partSums)
 
     revertTypes(cumulativeCounts)
   }
@@ -108,7 +108,7 @@ private[spark] object CumulativeDistFunctions extends Serializable {
     // compute the partition sums
     val partSums = partitionSums(pairedRdd)
 
-    val numValues = pairedRdd.map(pair => pair._2).sum()
+    val numValues = pairedRdd.map { case (row, columnValue) => columnValue }.sum()
 
     // compute cumulative sum
     val cumulativeSums = totalPartitionSums(pairedRdd, partSums)
@@ -139,10 +139,10 @@ private[spark] object CumulativeDistFunctions extends Serializable {
     // compute the partition sums
     val partSums = partitionSums(pairedRdd)
 
-    val numValues = pairedRdd.map(pair => pair._2).sum()
+    val numValues = pairedRdd.map { case (row, columnValue) => columnValue }.sum()
 
     // compute cumulative count
-    val cumulativeCounts = totalPartitionCounts(pairedRdd, partSums)
+    val cumulativeCounts = totalPartitionSums(pairedRdd, partSums)
 
     revertPercentTypes(cumulativeCounts, numValues)
   }
@@ -155,12 +155,12 @@ private[spark] object CumulativeDistFunctions extends Serializable {
    */
   private def partitionSums(rdd: RDD[(Row, Double)]): Array[Double] = {
     0.0 +: rdd.mapPartitionsWithIndex {
-      case (index, partition) => Iterator(partition.map(pair => pair._2).sum)
+      case (index, partition) => Iterator(partition.map { case (row, columnValue) => columnValue }.sum)
     }.collect()
   }
 
   /**
-   * Compute the cumulative sums across partitions
+   * Compute the total sums across partitions
    *
    * @param rdd the input RDD
    * @param partSums the sums for each partition
@@ -180,26 +180,7 @@ private[spark] object CumulativeDistFunctions extends Serializable {
   }
 
   /**
-   * Compute the cumulative counts across partitions
-   *
-   * @param rdd the input RDD
-   * @param partSums the counts for each partition
-   * @return RDD of (value, cumulativeCount)
-   */
-  private def totalPartitionCounts(rdd: RDD[(Row, Double)], partSums: Array[Double]): RDD[(Row, Double)] = {
-    rdd.mapPartitionsWithIndex {
-      case (index, partition) => {
-        var startValue = 0.0
-        for (i <- 0 to index) {
-          startValue += partSums(i)
-        }
-        partition.scanLeft((Array[Any](), startValue))((prev, curr) => (curr._1, prev._2 + curr._2)).drop(1)
-      }
-    }
-  }
-
-  /**
-   * Casts the input data types back to the original input type
+   * Casts the input data back to the original input type
    *
    * @param rdd the RDD containing (value, cumulativeDistValue)
    * @return RDD containing Array[Any] (i.e., Rows)
@@ -213,10 +194,11 @@ private[spark] object CumulativeDistFunctions extends Serializable {
   }
 
   /**
-   * Casts the input data types for cumulative percents back to the original input type.  This includes check for
+   * Casts the input data for cumulative percents back to the original input type.  This includes check for
    * divide-by-zero error.
    *
    * @param rdd the RDD containing (value, cumulativeDistValue)
+   * @param numValues number of values in the user-specified column
    * @return RDD containing Array[Any] (i.e., Rows)
    */
   private def revertPercentTypes(rdd: RDD[(Row, Double)], numValues: Double): RDD[Array[Any]] = {
