@@ -55,7 +55,7 @@ class SparkGraphStorage(metaStore: MetaStore,
    * @return Graph metadata.
    */
   override def createGraph(graph: GraphTemplate)(implicit user: UserPrincipal): Graph = {
-    metaStore.withSession("spark.graphstorage.drop") {
+    metaStore.withSession("spark.graphstorage.create") {
       implicit session =>
         {
           metaStore.graphRepo.insert(graph).get
@@ -72,7 +72,7 @@ class SparkGraphStorage(metaStore: MetaStore,
    */
   override def loadGraph(graphLoad: GraphLoad, invocation: Invocation)(implicit user: UserPrincipal): Graph = {
     withContext("se.loadgraph") {
-      metaStore.withSession("spark.graphstorage.createGraph") {
+      metaStore.withSession("spark.graphstorage.load") {
         implicit session =>
           {
             val sparkContext = invocation.asInstanceOf[SparkInvocation].sparkContext
