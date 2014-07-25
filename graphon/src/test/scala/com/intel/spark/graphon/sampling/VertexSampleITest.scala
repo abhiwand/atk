@@ -92,7 +92,7 @@ class VertexSampleITest extends TestingSparkContextWordSpec with Matchers {
       sampleVerticesRdd.count() shouldEqual 5
     }
 
-    "give error if sample size less than 1" in  {
+    "give error if sample size less than 1" in {
       val vertexRdd = sparkContext.parallelize(inputVertexList, 2)
 
       intercept[IllegalArgumentException] {
