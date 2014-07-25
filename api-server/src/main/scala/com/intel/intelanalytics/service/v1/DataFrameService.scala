@@ -136,7 +136,7 @@ class DataFrameService(commonDirectives: CommonDirectives, engine: Engine) exten
                     import ViewModelJsonImplicits._
                     val queryArgs = RowQuery[Long](id, offset, count)
                     // if there will only be a single page just return the data this will be much faster
-                    if (count <= ApiServiceConfig.pageSize) {
+                    if (count <= engine.pageSize) {
                       onComplete(engine.getRows(queryArgs)) {
                         case Success(rows: Iterable[Array[Any]]) => {
                           import spray.httpx.SprayJsonSupport._

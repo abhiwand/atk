@@ -31,6 +31,4 @@ object ApiServiceConfig extends SharedConfig {
   val testUsersFile: String = config.getString("intel.analytics.test.users.file")
 
   val buildId = config.getString("intel.analytics.api.buildId")
-
-  val pageSize: Int = config.getInt("intel.analytics.engine.page-size")
 }

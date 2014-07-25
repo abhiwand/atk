@@ -42,6 +42,7 @@ import scala.concurrent.Future
 trait Engine {
 
   type Identifier = Long //TODO: make more generic?
+  val pageSize: Int
 
   /**
    * Executes the given command template, managing all necessary auditing, contexts, class loaders, etc.
