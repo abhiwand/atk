@@ -44,24 +44,16 @@ object SparkContextPerUserStrategy extends SparkContextManagementStrategy with E
   //Is there some way of sharing a context across two different Engine instances?
 
   override def getContext(user: String): Context = {
-    contextMap.get(user) match {
-      case Some(ctx) => ctx
-      case None => {
-        //we need to clean/update some properties to get rid of Spark's port binding problems
-        //when creating multiple SparkContexts within the same JVM
-        System.clearProperty("spark.driver.port") //need to clear this to get rid of port bind problems
-        System.setProperty("spark.ui.port", String.valueOf(4041 + contextMap.size)) //need to uniquely set this to get rid of bind problems
-        val context = sparkContextFactory.createSparkContext(configuration, "intel-analytics:" + user)
-        val listener = new SparkProgressListener(SparkProgressListener.progressUpdater)
-        val progressPrinter = new ProgressPrinter(listener)
-        context.addSparkListener(listener)
-        context.addSparkListener(progressPrinter)
-        Context(context, listener)
-        val ctx = Context(context, listener)
-        contextMap += (user -> ctx)
-        ctx
-      }
-    }
+    System.clearProperty("spark.driver.port") //need to clear this to get rid of port bind problems
+    System.setProperty("spark.ui.port", String.valueOf(4041 + contextMap.size)) //need to uniquely set this to get rid of bind problems
+    val context = sparkContextFactory.createSparkContext(configuration, "intel-analytics:" + user)
+    val listener = new SparkProgressListener(SparkProgressListener.progressUpdater)
+    val progressPrinter = new ProgressPrinter(listener)
+    context.addSparkListener(listener)
+    context.addSparkListener(progressPrinter)
+    val ctx = Context(context, listener)
+    contextMap += (user -> ctx)
+    ctx
   }
 
   /**
