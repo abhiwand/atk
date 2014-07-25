@@ -27,9 +27,11 @@ intel.analytics {
             # The URL for connecting to the Spark master server
             master = "spark://invalid-spark-master:7077"
 
-            # Memory should be same or lower than what is listed as available in Cloudera Manager.
-            # Values should generally be in gigabytes, e.g. "8g"
-            spark.executor.memory = "invalid executor memory"
+            conf.properties {
+                # Memory should be same or lower than what is listed as available in Cloudera Manager.
+                # Values should generally be in gigabytes, e.g. "8g"
+                spark.executor.memory = "invalid executor memory"
+            }
         }
     }
 
