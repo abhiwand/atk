@@ -36,6 +36,7 @@ import scala.collection.mutable.ListBuffer
 import org.apache.spark.rdd.RDD
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 import scala.math.pow
+import scala.reflect.ClassTag
 
 //implicit conversion for PairRDD
 import org.apache.spark.SparkContext._
@@ -52,8 +53,10 @@ private[spark] object SparkOps extends Serializable {
   def getPagedRdd[T: ClassTag](rdd: RDD[T], offset: Long, count: Int, limit: Int): RDD[T] = {
 
     val sumsAndCounts = SparkOps.getPerPartitionCountAndAccumulatedSum(rdd)
-    val capped = Math.min(count, limit)
-
+    val capped = limit match {
+      case -1 => count
+      case _ => Math.min(count, limit)
+    }
     //Start getting rows. We use the sums and counts to figure out which
     //partitions we need to read from and which to just ignore
     val pagedRdd: RDD[T] = rdd.mapPartitionsWithIndex((i, rows) => {
@@ -260,8 +263,8 @@ private[spark] object SparkOps extends Serializable {
    * @return a Double of the model precision measure
    */
   def modelPrecision(frameRdd: RDD[Row], labelColumnIndex: Int, predColumnIndex: Int, posLabel: String): Double = {
-    require(labelColumnIndex >= 0)
-    require(predColumnIndex >= 0)
+    require(labelColumnIndex >= 0, "label column index must be greater than or equal to zero")
+    require(predColumnIndex >= 0, "prediction column index must be greater than or equal to zero")
 
     /**
      * compute precision for binary classifier: TP / (TP + FP)
@@ -333,8 +336,8 @@ private[spark] object SparkOps extends Serializable {
    * @return a Double of the model recall measure
    */
   def modelRecall(frameRdd: RDD[Row], labelColumnIndex: Int, predColumnIndex: Int, posLabel: String): Double = {
-    require(labelColumnIndex >= 0)
-    require(predColumnIndex >= 0)
+    require(labelColumnIndex >= 0, "label column index must be greater than or equal to zero")
+    require(predColumnIndex >= 0, "prediction column index must be greater than or equal to zero")
 
     /**
      * compute recall for binary classifier: TP / (TP + FN)
@@ -835,8 +838,8 @@ private[spark] object SparkOps extends Serializable {
     mapping.map { case (elementIndex, targets) => (elementIndex, targets.toSeq) }.toMap
   }
   def confusionMatrix(frameRdd: RDD[Row], labelColumnIndex: Int, predColumnIndex: Int, posLabel: String): Seq[Long] = {
-    require(labelColumnIndex >= 0)
-    require(predColumnIndex >= 0)
+    require(labelColumnIndex >= 0, "label column index must be greater than or equal to zero")
+    require(predColumnIndex >= 0, "prediction column index must be greater than or equal to zero")
 
     val tp = frameRdd.sparkContext.accumulator[Long](0)
     val tn = frameRdd.sparkContext.accumulator[Long](0)

@@ -1,10 +1,10 @@
 package com.intel.intelanalytics.engine.spark
 
-import com.intel.intelanalytics.engine.TestingSparkContext
+import com.intel.testutils.TestingSparkContextFlatSpec
 import org.apache.spark.SparkException
 import org.scalatest.Matchers
 
-class CumulativeDistTest extends TestingSparkContext with Matchers {
+class CumulativeDistTest extends TestingSparkContextFlatSpec with Matchers {
 
   val inputList = List(
     Array[Any](0, "a", 0),
@@ -15,7 +15,7 @@ class CumulativeDistTest extends TestingSparkContext with Matchers {
     Array[Any](2, "c", 0))
 
   "cumulative sum" should "compute correct distribution" in {
-    val rdd = sc.parallelize(inputList)
+    val rdd = sparkContext.parallelize(inputList)
 
     val resultRdd = CumulativeDistFunctions.cumulativeSum(rdd, 0)
     val result = resultRdd.take(6)
@@ -29,13 +29,13 @@ class CumulativeDistTest extends TestingSparkContext with Matchers {
   }
 
   "cumulative sum" should "throw error for non-numeric columns" in {
-    val rdd = sc.parallelize(inputList)
+    val rdd = sparkContext.parallelize(inputList)
 
     a[SparkException] shouldBe thrownBy(CumulativeDistFunctions.cumulativeSum(rdd, 1))
   }
 
   "cumulative sum" should "compute correct distribution for column of all zero" in {
-    val rdd = sc.parallelize(inputList)
+    val rdd = sparkContext.parallelize(inputList)
 
     val resultRdd = CumulativeDistFunctions.cumulativeSum(rdd, 2)
     val result = resultRdd.take(6)
@@ -49,7 +49,7 @@ class CumulativeDistTest extends TestingSparkContext with Matchers {
   }
 
   "cumulative count" should "compute correct distribution" in {
-    val rdd = sc.parallelize(inputList)
+    val rdd = sparkContext.parallelize(inputList)
 
     val resultRdd = CumulativeDistFunctions.cumulativeCount(rdd, 0, "1")
     val result = resultRdd.take(6)
@@ -63,7 +63,7 @@ class CumulativeDistTest extends TestingSparkContext with Matchers {
   }
 
   "cumulative count" should "compute correct distribution for column of all zero" in {
-    val rdd = sc.parallelize(inputList)
+    val rdd = sparkContext.parallelize(inputList)
 
     val resultRdd = CumulativeDistFunctions.cumulativeCount(rdd, 2, "0")
     val result = resultRdd.take(6)
@@ -77,7 +77,7 @@ class CumulativeDistTest extends TestingSparkContext with Matchers {
   }
 
   "cumulative count" should "compute correct distribution for column of strings" in {
-    val rdd = sc.parallelize(inputList)
+    val rdd = sparkContext.parallelize(inputList)
 
     val resultRdd = CumulativeDistFunctions.cumulativeCount(rdd, 1, "b")
     val result = resultRdd.take(6)
@@ -91,7 +91,7 @@ class CumulativeDistTest extends TestingSparkContext with Matchers {
   }
 
   "cumulative percent sum" should "compute correct distribution" in {
-    val rdd = sc.parallelize(inputList)
+    val rdd = sparkContext.parallelize(inputList)
 
     val resultRdd = CumulativeDistFunctions.cumulativePercentSum(rdd, 0)
     val result = resultRdd.take(6)
@@ -107,13 +107,13 @@ class CumulativeDistTest extends TestingSparkContext with Matchers {
   }
 
   "cumulative percent sum" should "throw error for non-numeric columns" in {
-    val rdd = sc.parallelize(inputList)
+    val rdd = sparkContext.parallelize(inputList)
 
     a[SparkException] shouldBe thrownBy(CumulativeDistFunctions.cumulativePercentSum(rdd, 1))
   }
 
   "cumulative percent sum" should "compute correct distribution for column of all zero" in {
-    val rdd = sc.parallelize(inputList)
+    val rdd = sparkContext.parallelize(inputList)
 
     val resultRdd = CumulativeDistFunctions.cumulativePercentSum(rdd, 2)
     val result = resultRdd.take(6)
@@ -127,7 +127,7 @@ class CumulativeDistTest extends TestingSparkContext with Matchers {
   }
 
   "cumulative percent count" should "compute correct distribution" in {
-    val rdd = sc.parallelize(inputList)
+    val rdd = sparkContext.parallelize(inputList)
 
     val resultRdd = CumulativeDistFunctions.cumulativePercentCount(rdd, 0, "1")
     val result = resultRdd.take(6)
@@ -141,7 +141,7 @@ class CumulativeDistTest extends TestingSparkContext with Matchers {
   }
 
   "cumulative percent count" should "compute correct distribution for column of all zero" in {
-    val rdd = sc.parallelize(inputList)
+    val rdd = sparkContext.parallelize(inputList)
 
     val resultRdd = CumulativeDistFunctions.cumulativePercentCount(rdd, 2, "0")
     val result = resultRdd.take(6)
@@ -159,7 +159,7 @@ class CumulativeDistTest extends TestingSparkContext with Matchers {
   }
 
   "cumulative percent count" should "compute correct distribution for column of strings" in {
-    val rdd = sc.parallelize(inputList)
+    val rdd = sparkContext.parallelize(inputList)
 
     val resultRdd = CumulativeDistFunctions.cumulativePercentCount(rdd, 1, "b")
     val result = resultRdd.take(6)

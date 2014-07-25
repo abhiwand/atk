@@ -21,16 +21,11 @@
 # must be express and approved by Intel in writing.
 ##############################################################################
 
-from intelanalytics.core.orddict import OrderedDict
-import json
-
 import logging
 
-import uuid, sys
 logger = logging.getLogger(__name__)
 
-from intelanalytics.core.iatypes import valid_data_types
-from intelanalytics.core.aggregation import *
+from intelanalytics.core.column import BigColumn
 from intelanalytics.core.errorhandle import IaError
 from intelanalytics.core.command import CommandSupport, doc_stub
 
@@ -210,42 +205,41 @@ class BigFrame(CommandSupport):
 
     def __init__(self, source=None, name=None):
         try:
-            self._columns = OrderedDict()  # self._columns must be the first attribute to be assigned (see __setattr__)
             self._id = 0
-            self._uri = ""
-            self._name = ""
             self._error_frame_id = None
             if not hasattr(self, '_backend'):  # if a subclass has not already set the _backend
                 self._backend = _get_backend()
-            self._backend.create(self, source, name)
+            new_frame_name = self._backend.create(self, source, name)
             CommandSupport.__init__(self)
-            logger.info('Created new frame "%s"', self._name)
+            logger.info('Created new frame "%s"', new_frame_name)
         except:
             raise IaError(logger)
-
 
     def __getattr__(self, name):
         """After regular attribute access, try looking up the name of a column.
         This allows simpler access to columns for interactive use."""
+        if name == '_backend':
+            raise AttributeError('_backend')
         try:
-            if name != "_columns" and name in self._columns:
-                return self[name]
             return super(BigFrame, self).__getattribute__(name)
-        except:
-            raise IaError(logger)
-
+        except AttributeError:
+            return self._get_column(name, AttributeError, "Attribute '%s' not found")
 
     # We are not defining __setattr__.  Columns must be added explicitly
 
     def __getitem__(self, key):
+        if isinstance(key, slice):
+            raise TypeError("Slicing not supported")
+        return self._get_column(key, KeyError, '%s')
+
+    def _get_column(self, column_name, error_type, error_msg):
+        data_type_dict = dict(self.schema)
         try:
-            if isinstance(key, slice):
-                raise TypeError("Slicing not supported")
-            if isinstance(key, list):
-                return [self._columns[k] for k in key]
-            return self._columns[key]
+            if isinstance(column_name, list):
+                return [BigColumn(self, name, data_type_dict[name]) for name in column_name]
+            return BigColumn(self, column_name, data_type_dict[column_name])
         except KeyError:
-            raise KeyError("Column name " + str(key) + " not present.")
+            raise error_type(error_msg % column_name)
 
     # We are not defining __setitem__.  Columns must be added explicitly
 
@@ -253,29 +247,23 @@ class BigFrame(CommandSupport):
 
     def __repr__(self):
         try:
-            return json.dumps({'uri': self.uri,
-                               'name': self.name,
-                               'schema': self._schema_as_json_obj()}, indent=2, separators=(', ', ': '))
+            return self._backend.get_repr(self)
         except:
-            raise IaError(logger)
-
-    def _schema_as_json_obj(self):
-        return [(col.name, valid_data_types.to_string(col.data_type)) for col in self._columns.values()]
+            return super(BigFrame, self).__repr__() + " (Unable to collect metadata from server)"
 
     def __len__(self):
-        return len(self._columns)
+        try:
+            return len(self.schema)
+        except:
+            IaError(logger)
 
     def __contains__(self, key):
-        return self._columns.__contains__(key)
-
-    def _validate_key(self, key):
-        if key in dir(self) and key not in self._columns:
-            raise KeyError("Invalid column name '%s'" % key)
+        return key in self.column_names  # not very efficient, usage discouraged
 
     class _FrameIter(object):
         """
         (Private)
-        Iterator for BigFrame - frame iteration works on the columns
+        Iterator for BigFrame - frame iteration works on the columns, returns BigColumn objects
         (see BigFrame.__iter__)
 
         Parameters
@@ -286,14 +274,18 @@ class BigFrame(CommandSupport):
 
         def __init__(self, frame):
             self.frame = frame
-            self.i = 0
+            # Grab schema once for the duration of the iteration
+            # Consider the behavior here --alternative is to ask
+            # the backend on each iteration (and there's still a race condition)
+            self.schema = frame.schema
+            self.i = 0  # the iteration index
 
         def __iter__(self):
             return self
 
         def next(self):
-            if self.i < len(self.frame):
-                column = self.frame._columns.values()[self.i]
+            if self.i < len(self.schema):
+                column = BigColumn(self.frame, self.schema[self.i][0], self.schema[self.i][1])
                 self.i += 1
                 return column
             raise StopIteration
@@ -335,7 +327,10 @@ class BigFrame(CommandSupport):
         .. versionadded:: 0.8
 
         """
-        return self._columns.keys()
+        try:
+            return [name for name, data_type in self._backend.get_schema(self)]
+        except:
+            raise IaError(logger)
 
     @property
     def name(self):
@@ -364,7 +359,10 @@ class BigFrame(CommandSupport):
         .. versionadded:: 0.8
 
         """
-        return self._name
+        try:
+            return self._backend.get_name(self)
+        except:
+            IaError(logger)
 
     @name.setter
     def name(self, value):
@@ -384,7 +382,6 @@ class BigFrame(CommandSupport):
         """
         try:
             self._backend.rename_frame(self, value)
-            self._name = value  # TODO - update from backend
         except:
             raise IaError(logger)
 
@@ -416,39 +413,10 @@ class BigFrame(CommandSupport):
         .. versionadded:: 0.8
 
         """
-        return [(col.name, col.data_type) for col in self._columns.values()]
-
-    @property
-    def uri(self):
-        """
-        Uniform Resource Identifier.
-
-        The uniform resource identifier of the data frame.
-
-        Returns
-        -------
-        uri : str
-            The value of the uri
-
-        Examples
-        --------
-        Given that we have an existing data frame *my_data*, get the BigFrame proxy then the frame uri::
-
-            BF = get_frame('my_data')
-            my_uri = BF.uri()
-            print my_uri
-
-        The result is similar to::
-
-            24cfc4d5fc44432fb394d98e78251111
-
-        .. versionadded:: 0.8
-
-        """
-        return self._uri
-
-    def _as_json_obj(self):
-        return self._backend._as_json_obj(self)
+        try:
+            return self._backend.get_schema(self)
+        except:
+            raise IaError(logger)
 
     def accuracy(self, label_column, pred_column):
         """
@@ -457,8 +425,8 @@ class BigFrame(CommandSupport):
         Computes the accuracy measure for a classification model
         A column containing the correct labels for each instance and a column containing the predictions made by the classifier are specified.
         The accuracy of a classification model is the proportion of predictions that are correct.
-        If we let :math:`TP` denote the number of true positives, :math:`TN` denote the number of true negatives, and :math:`K`
-        denote the total number of classified instances, then the model accuracy is given by: :math:`(TP + TN) / K`.
+        If we let :math:`T_{P}` denote the number of true positives, :math:`T_{N}` denote the number of true negatives, and :math:`K`
+        denote the total number of classified instances, then the model accuracy is given by: :math:`\\frac{T_{P} + T_{N}}{K}`.
 
         This measure applies to binary and multi-class classifiers.
 
@@ -483,7 +451,10 @@ class BigFrame(CommandSupport):
         .. versionadded:: 0.8
 
         """
-        return self._backend.classification_metric(self, 'accuracy', label_column, pred_column, '1', 1)
+        try:
+            return self._backend.classification_metric(self, 'accuracy', label_column, pred_column, '1', 1)
+        except:
+            raise IaError(logger)
 
 
     def add_columns(self, func, schema):
@@ -700,17 +671,19 @@ class BigFrame(CommandSupport):
 
     def calculate_percentiles(self, column_name, percentiles):
         """
-        Calculate percentiles on given column
+        Calculate percentiles on given column.
 
         Parameters
         ----------
-            column_name : str
-                The column to calculate percentile
-            percentiles : int OR list of int. If float is provided, it will be rounded to int
+        column_name : str
+            The column to calculate percentile
+        percentiles : int OR list of int. If float is provided, it will be rounded to int
 
         Examples
         --------
-        >>> frame.calculate_percentiles('final_sale_price', [10, 50, 100])
+        ::
+
+            frame.calculate_percentiles('final_sale_price', [10, 50, 100])
         """
         try:
             percentiles_result = self._backend.calculate_percentiles(self, column_name, percentiles).result.get('percentiles')
@@ -819,57 +792,17 @@ class BigFrame(CommandSupport):
         except:
             raise IaError(logger)
 
-    def get_error_frame(self):
+    @property
+    def row_count(self):
         """
-        When a frame is loaded, parse errors go into a separate data frame so they can be
-        inspected.  No error frame is created if there were no parse errors.
+        Returns the number of rows in the frame
 
-        Returns
-        -------
-        frame : BigFrame
-            A new frame object that contains the parse errors of the currently active BigFrame
-            or None if no error frame exists
+        .. versionadded:: 0.8
         """
         try:
-            return self._backend.get_frame_by_id(self._error_frame_id)
+            return self._backend.get_row_count(self)
         except:
             raise IaError(logger)
-
-# Removed function for version 0.8 release
-#   def count(self):
-#       """
-#       Row count.
-
-#       Count the number of rows that exist in this object.
-
-#       Raises
-#       ------
-#       IaError
-
-#       Returns
-#       -------
-#       int32
-#           The number of rows in the frame
-
-#       Examples
-#       --------
-#       Build a frame from a huge CSV file; report the number of rows of data::
-
-#           my_frame = BigFrame(source="my_csv")
-#           num_rows = my_frame.count()
-#           print num_rows
-
-#       The result could be::
-
-#           298376527
-
-#       .. versionadded:: 0.8
-
-#       """
-#       try:
-#           return self._backend.count(self)
-#       except:
-#           raise IaError(logger)
 
     def drop(self, predicate):
         """
@@ -908,7 +841,7 @@ class BigFrame(CommandSupport):
         except:
             raise IaError(logger)
 
-    def drop_duplicates(self, columns=[]):
+    def drop_duplicates(self, columns=None):
         """
         Remove duplicates.
 
@@ -1221,7 +1154,7 @@ class BigFrame(CommandSupport):
         Create a new frame from this data, grouping the rows by unique combinations of column *a* and *c*;
         count each group; for column *d* calculate the average, sum and minimum value; for column *e*, save the maximum value::
 
-            new_frame = my_frame.groupBy(['a', 'c'], count, {'d' : avg }, {'d' : sum}, {'d' : min}, {'e' : max})
+            new_frame = my_frame.groupBy(['a', 'c'], agg.count, {'d': [agg.avg, agg.sum, agg.min], 'e': agg.max})
 
         The new frame accessed by BigFrame *new_frame* has columns *a*, *c*, *count*, *d_avg*, *d_sum*, *d_min*, and *e_max*.
         The column types are (respectively): str, int, int, float, float, float, int.

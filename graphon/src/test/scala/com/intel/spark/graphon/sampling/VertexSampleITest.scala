@@ -26,7 +26,7 @@ package com.intel.spark.graphon.sampling
 import com.intel.graphbuilder.util.SerializableBaseConfiguration
 import org.apache.spark.rdd.RDD
 import org.specs2.mutable.Specification
-import com.intel.testutils.TestingSparkContext
+import com.intel.testutils.Specs2TestingSparkContext
 import com.intel.spark.graphon.testutils.TestingTitan
 import com.intel.graphbuilder.elements.{ Property, Vertex, Edge }
 import scala.collection.JavaConversions._
@@ -78,7 +78,7 @@ class VertexSampleITest extends Specification {
 
   "Generating a uniform vertex sample" should {
 
-    "contain correct number of vertices in sample" in new TestingSparkContext {
+    "contain correct number of vertices in sample" in new Specs2TestingSparkContext {
       val vertexRdd = sc.parallelize(inputVertexList.toSeq, 2)
 
       val vs = new VertexSample
@@ -86,14 +86,14 @@ class VertexSampleITest extends Specification {
       sampleVerticesRdd.count() mustEqual 5
     }
 
-    "give error if sample size less than 1" in new TestingSparkContext {
+    "give error if sample size less than 1" in new Specs2TestingSparkContext {
       val vertexRdd = sc.parallelize(inputVertexList.toSeq, 2)
 
       val vs = new VertexSample
       vs.sampleVerticesUniform(vertexRdd, 0) must throwAn[IllegalArgumentException]
     }
 
-    "returns entire dataset if sample size is greater than or equal to dataset size" in new TestingSparkContext {
+    "returns entire dataset if sample size is greater than or equal to dataset size" in new Specs2TestingSparkContext {
       val vertexRdd = sc.parallelize(inputVertexList.toSeq, 2)
 
       val vs = new VertexSample
@@ -103,7 +103,7 @@ class VertexSampleITest extends Specification {
 
   "Generating a degree-weighted vertex sample" should {
 
-    "contain correct number of vertices in sample" in new TestingSparkContext with TestingTitan {
+    "contain correct number of vertices in sample" in new Specs2TestingSparkContext with TestingTitan {
       val vertexRdd = sc.parallelize(inputVertexList.toSeq, 2)
       val edgeRdd = sc.parallelize(inputEdgeList.toSeq, 2)
 
@@ -112,7 +112,7 @@ class VertexSampleITest extends Specification {
       sampleVerticesRdd.count() mustEqual 5
     }
 
-    "give error if sample size less than 1" in new TestingSparkContext {
+    "give error if sample size less than 1" in new Specs2TestingSparkContext {
       val vertexRdd = sc.parallelize(inputVertexList.toSeq, 2)
       val edgeRdd = sc.parallelize(inputEdgeList.toSeq, 2)
 
@@ -120,7 +120,7 @@ class VertexSampleITest extends Specification {
       vs.sampleVerticesDegree(vertexRdd, edgeRdd, 0) must throwAn[IllegalArgumentException]
     }
 
-    "returns entire dataset if sample size is greater than or equal to dataset size" in new TestingSparkContext {
+    "returns entire dataset if sample size is greater than or equal to dataset size" in new Specs2TestingSparkContext {
       val vertexRdd = sc.parallelize(inputVertexList.toSeq, 2)
       val edgeRdd = sc.parallelize(inputEdgeList.toSeq, 2)
 
@@ -131,7 +131,7 @@ class VertexSampleITest extends Specification {
 
   "Generating a degree distribution-weighted vertex sample" should {
 
-    "contain correct number of vertices in sample" in new TestingSparkContext {
+    "contain correct number of vertices in sample" in new Specs2TestingSparkContext {
       val vertexRdd = sc.parallelize(inputVertexList.toSeq, 2)
       val edgeRdd = sc.parallelize(inputEdgeList.toSeq, 2)
 
@@ -140,7 +140,7 @@ class VertexSampleITest extends Specification {
       sampleVerticesRdd.count() mustEqual 5
     }
 
-    "give error if sample size less than 1" in new TestingSparkContext {
+    "give error if sample size less than 1" in new Specs2TestingSparkContext {
       val vertexRdd = sc.parallelize(inputVertexList.toSeq, 2)
       val edgeRdd = sc.parallelize(inputEdgeList.toSeq, 2)
 
@@ -148,7 +148,7 @@ class VertexSampleITest extends Specification {
       vs.sampleVerticesDegreeDist(vertexRdd, edgeRdd, 0) must throwAn[IllegalArgumentException]
     }
 
-    "returns entire dataset if sample size is greater than or equal to dataset size" in new TestingSparkContext {
+    "returns entire dataset if sample size is greater than or equal to dataset size" in new Specs2TestingSparkContext {
       val vertexRdd = sc.parallelize(inputVertexList.toSeq, 2)
       val edgeRdd = sc.parallelize(inputEdgeList.toSeq, 2)
 
@@ -159,7 +159,7 @@ class VertexSampleITest extends Specification {
 
   "Generating a vertex sample" should {
 
-    "generate correct vertex induced subgraph" in new TestingSparkContext {
+    "generate correct vertex induced subgraph" in new Specs2TestingSparkContext {
 
       val vertexRdd = sc.parallelize(inputVertexList.toSeq, 2)
       val edgeRdd = sc.parallelize(inputEdgeList.toSeq, 2)
@@ -188,7 +188,7 @@ class VertexSampleITest extends Specification {
       subgraphEdges.subtract(sampleEdgeRdd).count() mustEqual 0
     }
 
-    "correctly write the vertex induced subgraph to Titan" in new TestingSparkContext with TestingTitan {
+    "correctly write the vertex induced subgraph to Titan" in new Specs2TestingSparkContext with TestingTitan {
       val vertexRdd = sc.parallelize(inputVertexList.toSeq, 2)
       val edgeRdd = sc.parallelize(inputEdgeList.toSeq, 2)
 

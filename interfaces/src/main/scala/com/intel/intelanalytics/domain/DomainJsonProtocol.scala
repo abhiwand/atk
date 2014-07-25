@@ -28,7 +28,9 @@ import java.net.URI
 import com.intel.intelanalytics.domain.command.CommandDefinition
 import com.intel.intelanalytics.domain.frame.load.{ Load, LineParser, LoadSource, LineParserArguments }
 import com.intel.intelanalytics.domain.schema.DataTypes
+import com.intel.intelanalytics.domain.query.{ RowQuery }
 import DataTypes.DataType
+import com.intel.intelanalytics.engine.plugin.QueryPluginResults
 import com.intel.intelanalytics.schema._
 import spray.json._
 import com.intel.intelanalytics.domain.frame._
@@ -125,7 +127,7 @@ object DomainJsonProtocol extends IADefaultJsonProtocol {
 
   implicit val userFormat = jsonFormat5(User)
   implicit val statusFormat = jsonFormat5(Status)
-  implicit val dataFrameFormat = jsonFormat10(DataFrame)
+  implicit val dataFrameFormat = jsonFormat11(DataFrame)
   implicit val dataFrameTemplateFormat = jsonFormat2(DataFrameTemplate)
   implicit val separatorArgsJsonFormat = jsonFormat1(SeparatorArgs)
   implicit val definitionFormat = jsonFormat3(Definition)
@@ -145,8 +147,8 @@ object DomainJsonProtocol extends IADefaultJsonProtocol {
   implicit val projectColumnFormat = jsonFormat4(FrameProject[JsObject, String])
   implicit val projectColumnLongFormat = jsonFormat4(FrameProject[JsObject, Long])
   implicit val renameFrameFormat = jsonFormat2(FrameRenameFrame)
-  implicit val renameColumnFormat = jsonFormat3(FrameRenameColumn[JsObject, String])
-  implicit val renameColumnLongFormat = jsonFormat3(FrameRenameColumn[JsObject, Long])
+  implicit val renameColumnsFormat = jsonFormat3(FrameRenameColumns[JsObject, String])
+  implicit val renameColumnsLongFormat = jsonFormat3(FrameRenameColumns[JsObject, Long])
   implicit val joinFrameLongFormat = jsonFormat3(FrameJoin)
   implicit val groupByColumnFormat = jsonFormat4(FrameGroupByColumn[JsObject, String])
   implicit val groupByColumnLongFormat = jsonFormat4(FrameGroupByColumn[JsObject, Long])
@@ -157,6 +159,9 @@ object DomainJsonProtocol extends IADefaultJsonProtocol {
   implicit val taskInfoFormat = jsonFormat1(TaskProgressInfo)
   implicit val progressInfoFormat = jsonFormat2(ProgressInfo)
   implicit val binColumnLongFormat = jsonFormat6(BinColumn[Long])
+
+  implicit val rowQueryFormat = jsonFormat3(RowQuery[Long])
+  implicit val queryResultsFormat = jsonFormat2(QueryPluginResults)
 
   implicit val cumulativeDistLongFormat = jsonFormat5(CumulativeDist[Long])
 

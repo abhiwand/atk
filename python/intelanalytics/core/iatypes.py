@@ -60,7 +60,6 @@ _types = {
     int32: "int32",
     int64: "int64",
     #list: "list", TODO
-    str: "str",
     unicode: "unicode",
 }
 
@@ -70,7 +69,10 @@ _alias_types = {
     float: float64,
     int: int32,
     long: int64,
+    str: unicode,
 }
+
+_alias_strings = dict([(alias.__name__, t) for alias, t in _alias_types.iteritems()])
 
 
 class _DataTypes(frozenset):
@@ -126,7 +128,10 @@ class _DataTypes(frozenset):
         try:
             return _strings[data_type_str]
         except KeyError:
-            raise ValueError("Unsupported type string '%s' " % data_type_str)
+            try:
+                return _alias_strings[data_type_str]
+            except KeyError:
+                raise ValueError("Unsupported type string '%s' " % data_type_str)
 
     @staticmethod
     def get_from_type(data_type):
@@ -196,7 +201,8 @@ class _DataTypes(frozenset):
             raise ValueError(("Unable to cast to type %s\n" % to_type) + str(e))
 
     def __repr__(self):
-        return ", ".join(sorted(_strings.keys()))
+        aliases = "\n(and aliases: %s)" % (", ".join(sorted(["%s->%s" % (alias.__name__, self.to_string(data_type)) for alias, data_type in _alias_types.iteritems()])))
+        return ", ".join(sorted(_strings.keys())) + aliases
 
 
 valid_data_types = _DataTypes(_types.keys())
