@@ -77,7 +77,7 @@ object SparkEngineConfig extends SharedConfig with EventLogging {
   }
 
   /** Default number for partitioning data */
-  val sparkDefaultPartitions: Int = config.getInt("intel.analytics.engine.spark.defaultPartitions")
+  val sparkDefaultPartitions: Int = config.getInt("intel.analytics.engine.spark.default-partitions")
 
   val defaultTimeout: FiniteDuration = config.getInt("intel.analytics.engine.default-timeout").seconds
 
@@ -156,5 +156,5 @@ object SparkEngineConfig extends SharedConfig with EventLogging {
   }
 
   // Python execution command for workers
-  val pythonWorkerExec: String = config.getString("intel.analytics.engine.spark.pythonWorkerExec")
+  val pythonWorkerExec: String = config.getString("intel.analytics.engine.spark.python-worker-exec")
 }
