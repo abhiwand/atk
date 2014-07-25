@@ -63,7 +63,8 @@ class ConnectedComponents
 
     //    These parameters are set from the arguments passed in, or defaulted from
     //    the engine configuration if not passed.
-    GiraphConfigurationUtil.set(hConf, "cc.convergenceProgressOutputInterval", arguments.convergence_progress_output_interval)
+    GiraphConfigurationUtil.set(hConf, "cc.convergenceProgressOutputInterval",
+      arguments.convergence_progress_output_interval)
 
     GiraphConfigurationUtil.initializeTitanConfig(hConf, titanConf, graph)
 
@@ -73,7 +74,8 @@ class ConnectedComponents
     val giraphConf = new GiraphConfiguration(hConf)
 
     giraphConf.setVertexInputFormatClass(classOf[TitanHBaseVertexInputFormatLongLongNull])
-    giraphConf.setVertexOutputFormatClass(classOf[TitanVertexOutputFormatLongIDDoubleValue[_ <: org.apache.hadoop.io.LongWritable, _ <: org.apache.hadoop.io.LongWritable, _ <: org.apache.hadoop.io.NullWritable]])
+    giraphConf.
+      setVertexOutputFormatClass(classOf[TitanVertexOutputFormatLongIDDoubleValue[_ <: org.apache.hadoop.io.LongWritable, _ <: org.apache.hadoop.io.LongWritable, _ <: org.apache.hadoop.io.NullWritable]])
     giraphConf.setMasterComputeClass(classOf[ConnectedComponentsComputation.ConnectedComponentsMasterCompute])
     giraphConf.setComputationClass(classOf[ConnectedComponentsComputation])
     giraphConf.setAggregatorWriterClass(classOf[ConnectedComponentsComputation.ConnectedComponentsAggregatorWriter])
