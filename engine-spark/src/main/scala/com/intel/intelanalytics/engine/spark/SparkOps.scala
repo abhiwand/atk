@@ -636,7 +636,7 @@ private[spark] object SparkOps extends Serializable {
   def ecdf(frameRdd: RDD[Row], sampleIndex: Int, dataType: String): RDD[Row] = {
     // parse values
     val pairedRdd = try {
-      frameRdd.map(row => (row(sampleIndex).toString, java.lang.Double.parseDouble(row(sampleIndex).toString)))
+      frameRdd.map(row => (java.lang.Double.parseDouble(row(sampleIndex).toString), java.lang.Double.parseDouble(row(sampleIndex).toString)))
     }
     catch {
       case cce: NumberFormatException => throw new NumberFormatException("Non-numeric column: " + cce.toString)
@@ -663,7 +663,7 @@ private[spark] object SparkOps extends Serializable {
         for (i <- 0 to index) {
           startValue += partSums(i)
         }
-        partition.scanLeft(("", startValue))((prev, curr) => (curr._1, prev._2 + curr._2)).drop(1)
+        partition.scanLeft((0.0, startValue))((prev, curr) => (curr._1, prev._2 + curr._2)).drop(1)
       }
     }
 
