@@ -21,14 +21,10 @@
 # must be express and approved by Intel in writing.
 ##############################################################################
 
-from intelanalytics.core.orddict import OrderedDict
-import json
-
 import logging
 
 logger = logging.getLogger(__name__)
 
-from intelanalytics.core.iatypes import valid_data_types
 from intelanalytics.core.column import BigColumn
 from intelanalytics.core.errorhandle import IaError
 from intelanalytics.core.command import CommandSupport, doc_stub
@@ -253,8 +249,7 @@ class BigFrame(CommandSupport):
         try:
             return self._backend.get_repr(self)
         except:
-            raise IaError(logger)
-
+            return super(BigFrame, self).__repr__() + " (Unable to collect metadata from server)"
 
     def __len__(self):
         try:
@@ -430,8 +425,8 @@ class BigFrame(CommandSupport):
         Computes the accuracy measure for a classification model
         A column containing the correct labels for each instance and a column containing the predictions made by the classifier are specified.
         The accuracy of a classification model is the proportion of predictions that are correct.
-        If we let :math:`TP` denote the number of true positives, :math:`TN` denote the number of true negatives, and :math:`K`
-        denote the total number of classified instances, then the model accuracy is given by: :math:`(TP + TN) / K`.
+        If we let :math:`T_{P}` denote the number of true positives, :math:`T_{N}` denote the number of true negatives, and :math:`K`
+        denote the total number of classified instances, then the model accuracy is given by: :math:`\\frac{T_{P} + T_{N}}{K}`.
 
         This measure applies to binary and multi-class classifiers.
 
@@ -672,11 +667,14 @@ class BigFrame(CommandSupport):
         .. versionadded:: 0.8
 
         """
-        return self._backend.bin_column(self, column_name, num_bins, bin_type, bin_column_name)
+        try:
+            return self._backend.bin_column(self, column_name, num_bins, bin_type, bin_column_name)
+        except:
+            raise IaError(logger)
 
     def calculate_percentiles(self, column_name, percentiles):
         """
-        Calculate percentiles on given column
+        Calculate percentiles on given column.
 
         Parameters
         ----------
@@ -686,7 +684,9 @@ class BigFrame(CommandSupport):
 
         Examples
         --------
-        >>> frame.calculate_percentiles('final_sale_price', [10, 50, 100])
+        ::
+
+            frame.calculate_percentiles('final_sale_price', [10, 50, 100])
         """
         try:
             percentiles_result = self._backend.calculate_percentiles(self, column_name, percentiles).result.get('percentiles')
@@ -795,57 +795,17 @@ class BigFrame(CommandSupport):
         except:
             raise IaError(logger)
 
-    def get_error_frame(self):
+    @property
+    def row_count(self):
         """
-        When a frame is loaded, parse errors go into a separate data frame so they can be
-        inspected.  No error frame is created if there were no parse errors.
+        Returns the number of rows in the frame
 
-        Returns
-        -------
-        frame : BigFrame
-            A new frame object that contains the parse errors of the currently active BigFrame
-            or None if no error frame exists
+        .. versionadded:: 0.8
         """
         try:
-            return self._backend.get_frame_by_id(self._error_frame_id)
+            return self._backend.get_row_count(self)
         except:
             raise IaError(logger)
-
-# Removed function for version 0.8 release
-#   def count(self):
-#       """
-#       Row count.
-
-#       Count the number of rows that exist in this object.
-
-#       Raises
-#       ------
-#       IaError
-
-#       Returns
-#       -------
-#       int32
-#           The number of rows in the frame
-
-#       Examples
-#       --------
-#       Build a frame from a huge CSV file; report the number of rows of data::
-
-#           my_frame = BigFrame(source="my_csv")
-#           num_rows = my_frame.count()
-#           print num_rows
-
-#       The result could be::
-
-#           298376527
-
-#       .. versionadded:: 0.8
-
-#       """
-#       try:
-#           return self._backend.count(self)
-#       except:
-#           raise IaError(logger)
 
     def drop(self, predicate):
         """
@@ -884,7 +844,7 @@ class BigFrame(CommandSupport):
         except:
             raise IaError(logger)
 
-    def drop_duplicates(self, columns=[]):
+    def drop_duplicates(self, columns=None):
         """
         Remove duplicates.
 
@@ -1478,6 +1438,30 @@ class BigFrame(CommandSupport):
         """
         return self._backend.classification_metric(self, 'recall', label_column, pred_column, pos_label, 1)
 
+    def ecdf(self, sample_col):
+        """
+        Generates the empirical cumulative distribution for the input column
+
+        Parameters
+        ----------
+        sample_col : str
+            the name of the column containing sample
+
+        Returns
+        --------
+        list
+            list of tuples containing each distinct value in the sample and its corresponding ecdf value
+
+        Examples
+        --------
+        >>> ecdf_frame = frame.ecdf('sample')
+
+        """
+        try:
+            return self._backend.ecdf(self, sample_col)
+        except:
+            raise IaError(logger)
+
     @doc_stub
     def remove_columns(self, name):
         """
@@ -1600,4 +1584,189 @@ class BigFrame(CommandSupport):
         except:
             raise IaError(logger)
 
+    def cumulative_sum(self, sample_col):
+        """
+        Summary
+        -------
+        Compute a cumulative sum
 
+        .. versionadded:: 0.8
+
+        Extended Summary
+        ----------------
+        A cumulative sum is computed by sequentially stepping through the column values and keeping track of the current
+        cumulative sum for each value.
+
+        Parameters
+        ----------
+        sample_col : string
+            The name of the column from which to compute the cumulative sum
+
+        Returns
+        ----------
+        frame : BigFrame
+            A new frame object containing the original columns appended with a column containing the cumulative sums
+
+        Raises
+        ------
+        IaError
+
+        Notes
+        -----
+        This function applies only to columns containing numerical data.
+
+        Examples
+        --------
+        Consider BigFrame *frame* that contains a single column named *obs* with the following values:
+        *(0, 1, 2, 0, 1, 2)*.  The cumulative sum for column *obs* is obtained by:
+
+            cs_frame = frame.cumulative_sum('obs')
+
+        The BigFrame *cs_frame* contains two columns: one named *obs* that contains the original column values, and
+        another named *obsCumulativeSum* that contains the cumulative sums.  For example, the *obs* column contains
+        *(0, 1, 2, 0, 1, 2)* and the *obsCumulativeSum* column contains *(0, 1, 3, 3, 4, 6)*.
+        """
+        try:
+            return self._backend.cumulative_dist(self, sample_col, 'cumulative_sum')
+        except:
+            raise IaError(logger)
+
+    def cumulative_count(self, sample_col, count_value):
+        """
+        Summary
+        -------
+        Compute a cumulative count
+
+        .. versionadded:: 0.8
+
+        Extended Summary
+        ----------------
+        A cumulative count is computed by sequentially stepping through the column values and keeping track of the
+        the number of times the specified *count_value* has been seen up to the current value.
+
+        Parameters
+        ----------
+        sample_col : string
+            The name of the column from which to compute the cumulative count
+        count_value : any
+            The column value to be used for the counts
+
+        Returns
+        ----------
+        frame : BigFrame
+            A new frame object containing the original columns appended with a column containing the cumulative counts
+
+        Raises
+        ------
+        IaError
+
+        Examples
+        --------
+        Consider BigFrame *frame* that contains a single column named *obs* with the following values:
+        *(0, 1, 2, 0, 1, 2)*.  The cumulative count for column *obs* using *count_value = 1* is obtained by:
+
+            cc_frame = frame.cumulative_sum('obs', 1)
+
+        The BigFrame *cc_frame* contains two columns: one named *obs* that contains the original column values, and
+        another named *obsCumulativeCount* that contains the cumulative counts.  For example, the *obs* column contains
+        *(0, 1, 2, 0, 1, 2)* and the *obsCumulativeCount* column contains *(0, 1, 1, 1, 2, 2)*.
+        """
+        try:
+            return self._backend.cumulative_dist(self, sample_col, 'cumulative_count', count_value)
+        except:
+            raise IaError(logger)
+
+    def cumulative_percent_sum(self, sample_col):
+        """
+        Summary
+        -------
+        Compute a cumulative percent sum
+
+        .. versionadded:: 0.8
+
+        Extended Summary
+        ----------------
+        A cumulative percent sum is computed by sequentially stepping through the column values and keeping track of the
+        current percentage of the total sum accounted for at the current value.
+
+        Parameters
+        ----------
+        sample_col : string
+            The name of the column from which to compute the cumulative percent sum
+
+        Returns
+        ----------
+        frame : BigFrame
+            A new frame object containing the original columns appended with a column containing the cumulative percent sums
+
+        Raises
+        ------
+        IaError
+
+        Notes
+        -----
+        This function applies only to columns containing numerical data.
+
+        Examples
+        --------
+        Consider BigFrame *frame* that contains a single column named *obs* with the following values:
+        *(0, 1, 2, 0, 1, 2)*.  The cumulative percent sum for column *obs* is obtained by:
+
+            cps_frame = frame.cumulative_percent_sum('obs')
+
+        The BigFrame *cps_frame* contains two columns: one named *obs* that contains the original column values, and
+        another named *obsCumulativePercentSum* that contains the cumulative percent sum.  For example, the *obs* column
+        contains *(0, 1, 2, 0, 1, 2)* and the *obsCumulativePercentSum* column contains
+        *(0, 0.16666666, 0.5, 0.5, 0.66666666, 1)*.
+        """
+        try:
+            return self._backend.cumulative_dist(self, sample_col, 'cumulative_percent_sum')
+        except:
+            raise IaError(logger)
+
+    def cumulative_percent_count(self, sample_col, count_value):
+        """
+        Summary
+        -------
+        Compute a cumulative percent count
+
+        .. versionadded:: 0.8
+
+        Extended Summary
+        ----------------
+        A cumulative percent count is computed by sequentially stepping through the column values and keeping track of
+        the current percentage of the total number of times the specified *count_value* has been seen up to the current
+        value.
+
+        Parameters
+        ----------
+        sample_col : string
+            The name of the column from which to compute the cumulative sum
+        count_value : any
+            The column value to be used for the counts
+
+        Returns
+        ----------
+        frame : BigFrame
+            A new frame object containing the original columns appended with a column containing the cumulative percent counts
+
+        Raises
+        ------
+        IaError
+
+        Examples
+        --------
+        Consider BigFrame *frame* that contains a single column named *obs* with the following values:
+        *(0, 1, 2, 0, 1, 2)*.  The cumulative percent count for column *obs* is obtained by:
+
+            cpc_frame = frame.cumulative_percent_count('obs', 1)
+
+        The BigFrame *cpc_frame* contains two columns: one named *obs* that contains the original column values, and
+        another named *obsCumulativePercentCount* that contains the cumulative percent count.  For example, the *obs*
+        column contains *(0, 1, 2, 0, 1, 2)* and the *obsCumulativePercentCount* column contains
+        *(0, 0.5, 0.5, 0.5, 1, 1)*.
+        """
+        try:
+            return self._backend.cumulative_dist(self, sample_col, 'cumulative_percent_count', count_value)
+        except:
+            raise IaError(logger)
