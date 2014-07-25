@@ -163,6 +163,8 @@ object DomainJsonProtocol extends IADefaultJsonProtocol {
   implicit val rowQueryFormat = jsonFormat3(RowQuery[Long])
   implicit val queryResultsFormat = jsonFormat2(QueryPluginResults)
 
+  implicit val cumulativeDistLongFormat = jsonFormat5(CumulativeDist[Long])
+
   implicit val assignSampleFormat = jsonFormat5(AssignSample)
   implicit val calculatePercentilesFormat = jsonFormat3(CalculatePercentiles)
 
@@ -172,6 +174,7 @@ object DomainJsonProtocol extends IADefaultJsonProtocol {
   implicit val classificationMetricValueLongFormat = jsonFormat1(ClassificationMetricValue)
   implicit val confusionMatrixLongFormat = jsonFormat4(ConfusionMatrix[Long])
   implicit val confusionMatrixValuesLongFormat = jsonFormat1(ConfusionMatrixValues)
+  implicit val ecdfLongFormat = jsonFormat4(ECDF[Long])
 
   // graph service formats
 
