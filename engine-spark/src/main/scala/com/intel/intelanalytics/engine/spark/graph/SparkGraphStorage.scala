@@ -12,16 +12,16 @@ import ExecutionContext.Implicits.global
 import com.intel.intelanalytics.domain.graph.{ GraphLoad, GraphTemplate, Graph }
 import com.intel.intelanalytics.engine.spark.context.Context
 import com.intel.intelanalytics.engine.spark.frame.SparkFrameStorage
+import com.intel.intelanalytics.engine.plugin.Invocation
+import com.intel.intelanalytics.engine.spark.plugin.SparkInvocation
 
 /**
  * Front end for Spark to create and manage graphs using GraphBuilder3
- * @param context User context.
  * @param metaStore Repository for graph and frame meta data.
  * @param backendStorage Backend store the graph database.
  * @param frameStorage Provides dataframe services.
  */
-class SparkGraphStorage(context: (UserPrincipal) => Context,
-                        metaStore: MetaStore,
+class SparkGraphStorage(metaStore: MetaStore,
                         backendStorage: GraphBackendStorage,
                         frameStorage: SparkFrameStorage)
     extends GraphStorage with EventLogging {
@@ -70,12 +70,12 @@ class SparkGraphStorage(context: (UserPrincipal) => Context,
    * @param user The user loading the graph.
    * @return
    */
-  override def loadGraph(graphLoad: GraphLoad)(implicit user: UserPrincipal): Graph = {
+  override def loadGraph(graphLoad: GraphLoad, invocation: Invocation)(implicit user: UserPrincipal): Graph = {
     withContext("se.loadgraph") {
       metaStore.withSession("spark.graphstorage.createGraph") {
         implicit session =>
           {
-            val sparkContext = context(user).sparkContext
+            val sparkContext = invocation.asInstanceOf[SparkInvocation].sparkContext
 
             val frameRules = graphLoad.frame_rules
 

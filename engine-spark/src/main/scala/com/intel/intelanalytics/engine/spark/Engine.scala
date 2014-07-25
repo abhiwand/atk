@@ -762,10 +762,10 @@ class SparkEngine(sparkContextManager: SparkContextManager,
    * @param user current user
    * @return RDD consisting of the requested number of rows
    */
-  def getRowsSimple(arguments: RowQuery[Identifier], user: UserPrincipal) = {
+  def getRowsSimple(arguments: RowQuery[Identifier], user: UserPrincipal, invocation: SparkInvocation) = {
     implicit val impUser: UserPrincipal = user
     val frame = frames.lookup(arguments.id).getOrElse(throw new IllegalArgumentException("Requested frame does not exist"))
-    val rows = frames.getRowsRDD(frame, arguments.offset, arguments.count)
+    val rows = frames.getRowsRDD(frame, arguments.offset, arguments.count, invocation.sparkContext)
     rows
   }
 
@@ -804,7 +804,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     // validating frames
     arguments.frame_rules.foreach(frule => expectFrame(frule.frame))
 
-    val graph = graphs.loadGraph(arguments)(user)
+    val graph = graphs.loadGraph(arguments, invocation)(user)
     graph
   }
 

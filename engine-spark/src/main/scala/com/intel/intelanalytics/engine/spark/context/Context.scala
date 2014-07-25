@@ -26,4 +26,4 @@ package com.intel.intelanalytics.engine.spark.context
 import org.apache.spark.SparkContext
 import org.apache.spark.engine.SparkProgressListener
 
-case class Context(sparkContext: SparkContext, progressMonitor: SparkProgressListener)
+case class Context(sparkContext: SparkContext)

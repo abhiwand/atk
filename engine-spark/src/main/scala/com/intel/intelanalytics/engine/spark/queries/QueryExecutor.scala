@@ -26,7 +26,7 @@ package com.intel.intelanalytics.engine.spark.queries
 import com.intel.intelanalytics.NotFoundException
 import com.intel.intelanalytics.component.{ Boot, ClassLoaderAware }
 import com.intel.intelanalytics.domain.query.{ Query, QueryTemplate, Execution }
-import com.intel.intelanalytics.engine.plugin.{ QueryPluginResults, FunctionQuery, QueryPlugin }
+import com.intel.intelanalytics.engine.plugin.{ Invocation, QueryPluginResults, FunctionQuery, QueryPlugin }
 import com.intel.intelanalytics.engine.spark.context.SparkContextManager
 import com.intel.intelanalytics.engine.spark.plugin.SparkInvocation
 import com.intel.intelanalytics.engine.spark.{ SparkEngine, SparkEngineConfig }
@@ -82,8 +82,8 @@ class QueryExecutor(engine: => SparkEngine, queries: SparkQueryStorage, contextM
    * @return the QueryPlugin instance created during the registration process.
    */
   def registerQuery[A <: Product: JsonFormat: ClassManifest](name: String,
-                                                             function: (A, UserPrincipal) => Any): QueryPlugin[A] =
-    registerQuery(FunctionQuery(name, function))
+                                                             function: (A, UserPrincipal, SparkInvocation) => Any): QueryPlugin[A] =
+    registerQuery(FunctionQuery(name, function.asInstanceOf[(A, UserPrincipal, Invocation) => Any]))
 
   /**
    * Adds the given query to the registry.
