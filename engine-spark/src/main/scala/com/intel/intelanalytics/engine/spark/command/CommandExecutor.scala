@@ -26,7 +26,7 @@ package com.intel.intelanalytics.engine.spark.command
 import com.intel.intelanalytics.component.{ ClassLoaderAware, Boot }
 import com.intel.intelanalytics.domain.command.{ CommandDefinition, Command, CommandTemplate, Execution }
 import com.intel.intelanalytics.engine.plugin.{ Invocation, FunctionCommand, CommandPlugin }
-import com.intel.intelanalytics.engine.spark.context.{ Context, SparkContextManager }
+import com.intel.intelanalytics.engine.spark.context.{ SparkContextFactory, Context, SparkContextManager }
 import com.intel.intelanalytics.engine.spark.plugin.SparkInvocation
 import com.intel.intelanalytics.engine.spark.{ SparkEngine, SparkEngineConfig }
 import com.intel.intelanalytics.security.UserPrincipal
@@ -37,6 +37,7 @@ import spray.json._
 
 import scala.concurrent._
 import scala.util.Try
+import org.apache.spark.engine.{ ProgressPrinter, SparkProgressListener }
 
 /**
  * CommandExecutor manages a registry of CommandPlugins and executes them on request.
@@ -162,20 +163,26 @@ class CommandExecutor(engine: => SparkEngine, commands: SparkCommandStorage, con
     withMyClassLoader {
       withContext("ce.execute") {
         withContext(command.name) {
-          val context: Context = contextManager.context(user)
+
           val cmdFuture = future {
             withCommand(cmd) {
-              val invocation: SparkInvocation = SparkInvocation(engine, commandId = cmd.id, arguments = cmd.arguments,
-                user = user, executionContext = implicitly[ExecutionContext],
-                sparkContext = context.sparkContext)
+              val context = new SparkContextFactory().createSparkContext(SparkEngineConfig.config, "intel-analytics:" + user)
+              try {
+                val invocation: SparkInvocation = SparkInvocation(engine, commandId = cmd.id, arguments = cmd.arguments,
+                  user = user, executionContext = implicitly[ExecutionContext],
+                  sparkContext = context)
 
-              context.sparkContext.setLocalProperty("command-id", cmd.id.toString)
-              val progressListener = context.progressMonitor
-              progressListener.setJobCountForCommand(cmd.id, command.numberOfJobs(arguments))
-              val funcResult = command(invocation, arguments)
-              context.sparkContext.setLocalProperty("command-id", null)
-              contextManager.removeContext(user.user.apiKey.get)
-              command.serializeReturn(funcResult)
+                val listener = new SparkProgressListener(SparkProgressListener.progressUpdater, cmd.id, command.numberOfJobs(arguments))
+                val progressPrinter = new ProgressPrinter(listener)
+                context.addSparkListener(listener)
+                context.addSparkListener(progressPrinter)
+
+                val funcResult = command(invocation, arguments)
+                command.serializeReturn(funcResult)
+              }
+              finally {
+                context.stop()
+              }
             }
             commands.lookup(cmd.id).get
           }
