@@ -2,9 +2,43 @@
 # Copy this to application.conf and edit to suit your system.
 # Comments begin with a '#' character.
 # Default values are 'commented' out with //.
-# The default configuration works for a single machine setup. To configure for a cluster,
-# look for configuration entries below with the word CLUSTER in all capital letters - these
+# To configure for your system, look for configuration entries below with the word
+# REQUIRED in all capital letters - these
 # MUST be configured for the system to work.
+
+# BEGIN REQUIRED SETTINGS
+
+intel.analytics {
+
+    # The host name for the Postgresql database in which the metadata will be stored
+    metastore.connection-postgresql.host = "invalid-postgresql-host"
+
+    engine {
+
+        # The hdfs URL where the intelanalytics folder will be created
+        # and which will be used as the starting point for any relative URLs
+        fs.root = "hdfs://invalid-fsroot-host/user/iauser"
+
+        # The (comma separated, no spaces) Zookeeper hosts that
+        # Titan needs to be able to connect to HBase
+        titan.load.hostname = "invalid-titan-host"
+
+        spark {
+            # The URL for connecting to the Spark master server
+            master = "spark://invalid-spark-master:7077"
+
+            # Memory should be same or lower than what is listed as available in Cloudera Manager.
+            # Values should generally be in gigabytes, e.g. "8g"
+            spark.executor.memory = "invalid executor memory"
+        }
+    }
+
+}
+
+# END REQUIRED SETTINGS
+
+# The settings below are all optional. Some may need to be configured depending on the
+# specifics of your cluster and workload.
 
 intel.analytics {
 
@@ -33,8 +67,6 @@ intel.analytics {
 	#Connection information for the database where IAT will store its system metadata
 	metastore {
 	    connection-postgresql {
-	      # Database host. Required for CLUSTER
-	      //host = ${HOSTNAME}
           //port = 5432
           //database = "metastore"
 		  //username = "metastore"
@@ -49,18 +81,6 @@ intel.analytics {
 	    //default-timeout = 30s
         //max-rows = 20
 	
-        fs {
-          # the system will create an "intelanalytics" folder at this location.
-          # Filepaths will be relative to this location.
-          # All Intel Analytics Toolkit files will be stored somehwere under that base location.
-          #
-          # For example, if using HDFS, set the root to hdfs path
-          # root = "hdfs://MASTER_HOSTNAME/some/path"
-
-          # Required for CLUSTER
-          //root = "hdfs://${HOSTNAME}/user/iauser"
-        }
-
     spark {
 
       # When master is empty the system defaults to spark://`hostname`:7070 where hostname is calculated from the current system
@@ -68,9 +88,6 @@ intel.analytics {
       # in cluster mode, set master and home like the example
       # master = "spark://MASTER_HOSTNAME:7077"
       # home = "/opt/cloudera/parcels/CDH/lib/spark"
-
-      # Required for CLUSTER
-      //master = ""
 
       # When home is empty the system will check expected locations on the local system and use the first one it finds
       # ("/usr/lib/spark","/opt/cloudera/parcels/CDH/lib/spark/", etc)
@@ -82,18 +99,13 @@ intel.analytics {
 
 
       # path to python worker execution, usually to toggle 2.6 and 2.7
-      //python-Worker-exec = "python" #Other valid values: "python2.7"
+      //python-worker-exec = "python" #Other valid values: "python2.7"
 
       conf {
         properties {
           # These key/value pairs will be parsed dynamically and provided to SparkConf()
           # See Spark docs for possible values http://spark.apache.org/docs/0.9.0/configuration.html
           # All values should be convertible to Strings
-
-          # Memory should be same or lower than what is listed as available in Cloudera Manager
-          # Required for CLUSTER
-          //spark.executor.memory = "8g"
-
 
           #Examples of other useful properties to edit for performance tuning:
 
@@ -130,9 +142,6 @@ intel.analytics {
         # documentation for these settings is available on Titan website
         storage {
           //backend = "hbase"
-          # with clusters the hostname should be a comma separated list of host names with zookeeper role assigned
-          # Required for CLUSTER
-          //hostname = "${HOSTNAME}"
           //port = "2181"
 
           #Performance tuning parameters:

@@ -159,7 +159,7 @@ object Boot extends App with ClassLoaderAware {
 
     val loader = buildClassLoader(archiveName, parentLoader)
 
-    val augmentedConfig = config.withFallback(ConfigFactory.defaultReference(loader))
+    val augmentedConfig = config.withFallback(ConfigFactory.defaultReference(loader)).resolve()
 
     val archiveLoader = ArchiveClassLoader(archiveName, loader)
 
