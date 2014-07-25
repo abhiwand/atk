@@ -265,10 +265,10 @@ class VertexRule(Rule):
     --------
     ::
 
-        movie_vertex = VertexRule('movie', f['movie'], {'genre': f['genre']})
-        user_vertex = VertexRule('user', f['user'], {'age': f['age_1']})
+        movie_vertex = VertexRule('movie', my_frame['movie'], {'genre': my_frame['genre']})
+        user_vertex = VertexRule('user', my_frame['user'], {'age': my_frame['age_1']})
 
-        .. versionadded:: 0.8
+    .. versionadded:: 0.8
 
     """
     def __init__(self, id_key, id_value, properties=None):
@@ -295,7 +295,9 @@ class VertexRule(Rule):
 
         Examples
         --------
-        >>>
+        ::
+
+            Example
 
         .. versionadded:: 0.8
 
@@ -333,7 +335,7 @@ class EdgeRule(Rule):
     --------
     ::
     
-        rating_edge = EdgeRule('rating', movie_vertex, user_vertex, {'weight': f['score']})
+        rating_edge = EdgeRule('rating', movie_vertex, user_vertex, {'weight': my_frame['score']})
 
     .. versionadded:: 0.8
 
@@ -371,7 +373,9 @@ class EdgeRule(Rule):
 
         Examples
         --------
-        >>>
+        ::
+
+            Example
 
         .. versionadded:: 0.8
 
@@ -482,6 +486,12 @@ class BigGraph(CommandSupport):
         URI
             See http://en.wikipedia.org/wiki/Uniform_Resource_Identifier
 
+        Examples
+        --------
+        ::
+
+            Example
+
         .. versionadded:: 0.8
 
         """
@@ -489,13 +499,21 @@ class BigGraph(CommandSupport):
 
     def append(self, rules=None):
         """
-        Append frame data to the current graph
+        Append frame data to the current graph.
 
         Parameters
         ----------
         rules : list of Rule
             list of rules which specify how the graph will be added to; if empty
             no data will be added.
+
+        examples
+        --------
+        ::
+
+            Example
+
+        .. versionadded:: 0.8
         """
         self._backend.append(self, rules)
 
