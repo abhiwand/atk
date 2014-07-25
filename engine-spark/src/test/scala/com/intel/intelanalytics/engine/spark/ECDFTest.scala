@@ -23,37 +23,46 @@
 
 package com.intel.intelanalytics.engine.spark
 
-import com.intel.intelanalytics.engine.TestingSparkContext
+import com.intel.testutils.TestingSparkContextFlatSpec
 import org.scalatest.Matchers
 
-class ECDFTest extends TestingSparkContext with Matchers {
+class ECDFTest extends TestingSparkContextFlatSpec with Matchers {
+
+  // Input data
+  val sampleOneList = List(
+    Array[Any](0),
+    Array[Any](1),
+    Array[Any](2),
+    Array[Any](3),
+    Array[Any](4),
+    Array[Any](5),
+    Array[Any](6),
+    Array[Any](7),
+    Array[Any](8),
+    Array[Any](9))
+
+  val sampleTwoList = List(
+    Array[Any](0),
+    Array[Any](0),
+    Array[Any](0),
+    Array[Any](0),
+    Array[Any](4),
+    Array[Any](5),
+    Array[Any](6),
+    Array[Any](7))
+
+  val sampleThreeList = List(
+    Array[Any](-2),
+    Array[Any](-1),
+    Array[Any](0),
+    Array[Any](1),
+    Array[Any](2))
 
   "ecdf" should "compute correct ecdf" in {
-    // Input data
-    val sampleOneList = List(
-      Array[Any](0),
-      Array[Any](1),
-      Array[Any](2),
-      Array[Any](3),
-      Array[Any](4),
-      Array[Any](5),
-      Array[Any](6),
-      Array[Any](7),
-      Array[Any](8),
-      Array[Any](9))
 
-    val sampleTwoList = List(
-      Array[Any](0),
-      Array[Any](0),
-      Array[Any](0),
-      Array[Any](0),
-      Array[Any](4),
-      Array[Any](5),
-      Array[Any](6),
-      Array[Any](7))
-
-    val sampleOneRdd = sc.parallelize(sampleOneList, 2)
-    val sampleTwoRdd = sc.parallelize(sampleTwoList, 2)
+    val sampleOneRdd = sparkContext.parallelize(sampleOneList, 2)
+    val sampleTwoRdd = sparkContext.parallelize(sampleTwoList, 2)
+    val sampleThreeRdd = sparkContext.parallelize(sampleThreeList, 2)
 
     // Get binned results
     val sampleOneECDF = SparkOps.ecdf(sampleOneRdd, 0, "int32")
@@ -61,6 +70,9 @@ class ECDFTest extends TestingSparkContext with Matchers {
 
     val sampleTwoECDF = SparkOps.ecdf(sampleTwoRdd, 0, "int32")
     val resultTwo = sampleTwoECDF.take(5)
+
+    val sampleThreeECDF = SparkOps.ecdf(sampleThreeRdd, 0, "int32")
+    val resultThree = sampleThreeECDF.take(5)
 
     // Validate
     resultOne.apply(0) shouldBe Array[Any](0, 0.1)
@@ -79,6 +91,12 @@ class ECDFTest extends TestingSparkContext with Matchers {
     resultTwo.apply(2) shouldBe Array[Any](5, 0.75)
     resultTwo.apply(3) shouldBe Array[Any](6, 0.875)
     resultTwo.apply(4) shouldBe Array[Any](7, 1.0)
+
+    resultThree.apply(0) shouldBe Array[Any](-2, 0.2)
+    resultThree.apply(1) shouldBe Array[Any](-1, 0.4)
+    resultThree.apply(2) shouldBe Array[Any](0, 0.6)
+    resultThree.apply(3) shouldBe Array[Any](1, 0.8)
+    resultThree.apply(4) shouldBe Array[Any](2, 1.0)
   }
 
 }

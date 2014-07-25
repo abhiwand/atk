@@ -649,7 +649,7 @@ private[spark] object SparkOps extends Serializable {
     val groupedRdd = pairedRdd.groupByKey()
 
     // count number of each distinct value and sort by distinct value
-    val sortedRdd = groupedRdd.map(pair => (pair._1, pair._2.size)).sortByKey()
+    val sortedRdd = groupedRdd.map { case (value, seqOfValue) => (value, seqOfValue.size) }.sortByKey()
 
     // compute the partition sums
     val partSums: Array[Double] = 0.0 +: sortedRdd.mapPartitionsWithIndex {
