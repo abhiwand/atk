@@ -81,6 +81,16 @@ class NumericalStatistics(dataWeightPairs: RDD[(Double, Double)]) extends Serial
   lazy val weightedMode: Double = singlePassStatistics.mode
 
   /**
+   * The weight of the mode.
+   */
+  lazy val weightAtMode: Double = singlePassStatistics.weightAtMode
+
+  /**
+   * Sum of all weights that are finite numbers  > 0.
+   */
+  lazy val totalWeight: Double = singlePassStatistics.totalWeight.toDouble
+
+  /**
    * The minimum value of the data. Positive infinity when there are no data elements of positive weight.
    */
   lazy val min: Double = if (singlePassStatistics.minimum.isInfinity) Double.NaN else singlePassStatistics.minimum

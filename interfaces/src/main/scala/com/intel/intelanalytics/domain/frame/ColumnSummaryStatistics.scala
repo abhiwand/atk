@@ -52,6 +52,8 @@ case class ColumnSummaryStatistics(frame: FrameReference, dataColumn: String, we
  * @param mode A mode of the data; that is, an item with the greatest weight (largest frequency).
  *              When there is more than one mode, the one of least numerical value is taken.
  *              NaN when there are no data elements of positive weight.
+ * @param weightAtMode The weight of the mode.
+ * @param totalWeight Sum of all weights that are finite numbers > 0.
  * @param minimum Minimum value in the data. NaN when there are no data elements of positive weight.
  * @param maximum Maximum value in the data. NaN when there are no data elements of positive weight.
  * @param meanConfidenceLower: Lower limit of the 95% confidence interval about the mean. Assumes a Gaussian RV.
@@ -70,6 +72,8 @@ case class ColumnSummaryStatisticsReturn(mean: Double,
                                          variance: Double,
                                          standardDeviation: Double,
                                          mode: Double,
+                                         weightAtMode: Double,
+                                         totalWeight: Double,
                                          minimum: Double,
                                          maximum: Double,
                                          meanConfidenceLower: Double,
