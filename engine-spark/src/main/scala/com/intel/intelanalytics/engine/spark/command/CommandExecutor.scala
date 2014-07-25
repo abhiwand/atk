@@ -174,6 +174,7 @@ class CommandExecutor(engine: => SparkEngine, commands: SparkCommandStorage, con
               progressListener.setJobCountForCommand(cmd.id, command.numberOfJobs(arguments))
               val funcResult = command(invocation, arguments)
               context.sparkContext.setLocalProperty("command-id", null)
+              contextManager.removeContext(user.user.apiKey.get)
               command.serializeReturn(funcResult)
             }
             commands.lookup(cmd.id).get
