@@ -18,7 +18,7 @@ Requirements
 
 1. RHEL/Centos 6.4 OS
 #. Sudo access is required to install the various IA packages since they are installed through Yum and for the editing of root owned configuration files
-#. Cloudera cluster with CDH-5.0.2-p0.13 or greater up to CDH-5.0.3-p0.35 with the following services installed and running:
+#. Cloudera cluster with CDH-5.0.2-p0.13 or greater up to CDH-5.0.3-p0.35 with the following services installed and running.
 
     A. HDFS
     #. SPARK
@@ -385,7 +385,8 @@ If it isn't already set add::
 Then restart the spark service.
 
 .. image:: ad_inst_IA_1.png
-
+    :width: 80%
+    :align: center
 
 Wait until IA spark deps and IA python rest client are installed before you start the rest server.
 
