@@ -369,13 +369,12 @@ class Executor(object):
             # do a single retry
             response = http.get(query_url)
 
-        if isinstance(response.json(), (list, tuple)):
-            return response.json()
+        response_json = response.json()
+
+        if response_json["complete"]:
+            return response_json["result"]["data"]
 
         command = self.poll_command_info(response)
-        data = []
-
-        total_pages = command.result["total_pages"] + 1
 
         def get_query_response(id, partition):
             """
@@ -395,7 +394,10 @@ class Executor(object):
 
         #retreive the data
         printer = ProgressPrinter()
-        for i in range(1, total_pages):
+        total_pages = command.result["total_pages"] + 1
+        data = []
+        start = 1
+        for i in range(start, total_pages):
             next_partition = get_query_response(command.id_number, i)
             data.extend(next_partition.result["data"])
 

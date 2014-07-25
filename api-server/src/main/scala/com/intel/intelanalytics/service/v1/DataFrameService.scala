@@ -24,7 +24,8 @@
 package com.intel.intelanalytics.service.v1
 
 import com.intel.intelanalytics.domain._
-import com.intel.intelanalytics.domain.query.{ RowQuery }
+import com.intel.intelanalytics.domain.query.{ Query, RowQuery }
+import org.joda.time.DateTime
 import spray.json._
 import spray.http.Uri
 import scala.Some
@@ -145,8 +146,11 @@ class DataFrameService(commonDirectives: CommonDirectives, engine: Engine) exten
                           val strings = rows.map(r => r.map {
                             case null => JsNull
                             case a => a.toJson
-                          }.toList).toList
-                          complete(strings)
+                          }.toJson).toList
+                          val tempQuery = Query(-1, "dataframe/load", Some(queryArgs.toJson.asJsObject), None, true,
+                            Some(1), Some(count), new DateTime(), new DateTime(), None)
+                          complete(QueryDecorator.decoratePage(uri.toString, List(Rel.self(uri.toString)),
+                            tempQuery, 1, strings))
                         }
                         case Failure(ex) => throw ex
                       }
