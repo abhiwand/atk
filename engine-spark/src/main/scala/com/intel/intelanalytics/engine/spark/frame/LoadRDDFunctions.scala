@@ -20,13 +20,14 @@ object LoadRDDFunctions extends Serializable {
    */
   def loadAndParseLines(sc: SparkContext,
                         fileName: String,
-                        parser: LineParser): ParseResultRddWrapper = {
+                        parser: LineParser,
+                        partitions: Int): ParseResultRddWrapper = {
 
     // parse a sample so we can bail early if needed
-    parseSampleOfFile(sc, fileName, parser)
+    parseSampleOfFile(sc, fileName, parser, partitions)
 
     // re-parse the entire file
-    parse(sc.textFile(fileName, SparkEngineConfig.sparkDefaultPartitions), parser)
+    parse(sc.textFile(fileName, partitions), parser)
 
   }
 
@@ -41,13 +42,14 @@ object LoadRDDFunctions extends Serializable {
    */
   private[frame] def parseSampleOfFile(ctx: SparkContext,
                                        fileName: String,
-                                       parser: LineParser): Unit = {
+                                       parser: LineParser,
+                                       partitions: Int): Unit = {
 
     //parse the first number of lines specified as sample size and make sure the file is acceptable
     val sampleSize = SparkEngineConfig.frameLoadTestSampleSize
     val threshold = SparkEngineConfig.frameLoadTestFailThresholdPercentage
 
-    val fileContentRdd: RDD[String] = ctx.textFile(fileName, SparkEngineConfig.sparkDefaultPartitions)
+    val fileContentRdd: RDD[String] = ctx.textFile(fileName, partitions)
     val sampleRdd = SparkOps.getPagedRdd(fileContentRdd, 0, sampleSize, sampleSize)
 
     //cache the RDD since it will be used multiple times

@@ -111,7 +111,8 @@ class SparkEngine(sparkContextManager: SparkContextManager,
                   frames: SparkFrameStorage,
                   graphs: GraphStorage,
                   queryStorage: SparkQueryStorage,
-                  queries: QueryExecutor) extends Engine
+                  queries: QueryExecutor,
+                  sparkAutoPartitioner: SparkAutoPartitioner) extends Engine
     with EventLogging
     with ClassLoaderAware {
 
@@ -229,7 +230,8 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     }
     else if (load.source.isFile) {
       val parser = load.source.parser.get
-      val parseResult = LoadRDDFunctions.loadAndParseLines(ctx, fsRoot + "/" + load.source.uri, parser)
+      val partitions = sparkAutoPartitioner.partitionsForFile(load.source.uri)
+      val parseResult = LoadRDDFunctions.loadAndParseLines(ctx, fsRoot + "/" + load.source.uri, parser, partitions)
 
       // parse failures go to their own data frame
       if (parseResult.errorLines.count() > 0) {
@@ -945,6 +947,74 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     val valueList = SparkOps.confusionMatrix(frameRdd, labelColumnIndex, predColumnIndex, arguments.posLabel)
 
     ConfusionMatrixValues(valueList)
+  }
+
+  override def ecdf(arguments: ECDF[Long])(implicit user: UserPrincipal): Execution =
+    commands.execute(ecdfCommand, arguments, user, implicitly[ExecutionContext])
+
+  val ecdfCommand = commands.registerCommand("dataframe/ecdf", ecdfSimple)
+
+  def ecdfSimple(arguments: ECDF[Long], user: UserPrincipal) = {
+    implicit val u = user
+    val frameId: Long = arguments.frameId
+    val realFrame = expectFrame(frameId)
+
+    val ctx = sparkContextManager.context(user).sparkContext
+
+    val rdd = frames.getFrameRdd(ctx, frameId)
+
+    val sampleIndex = realFrame.schema.columnIndex(arguments.sampleCol)
+
+    val newFrame = Await.result(create(DataFrameTemplate(arguments.name, None)), SparkEngineConfig.defaultTimeout)
+
+    val ecdfRdd = SparkOps.ecdf(rdd, sampleIndex, arguments.dataType)
+    ecdfRdd.saveAsObjectFile(fsRoot + frames.getFrameDataFile(newFrame.id))
+
+    val columnName = "_ECDF"
+    val allColumns = arguments.dataType match {
+      case "int32" => List((arguments.sampleCol, DataTypes.int32), (arguments.sampleCol + columnName, DataTypes.float64))
+      case "int64" => List((arguments.sampleCol, DataTypes.int64), (arguments.sampleCol + columnName, DataTypes.float64))
+      case "float32" => List((arguments.sampleCol, DataTypes.float32), (arguments.sampleCol + columnName, DataTypes.float64))
+      case "float64" => List((arguments.sampleCol, DataTypes.float64), (arguments.sampleCol + columnName, DataTypes.float64))
+      case _ => List((arguments.sampleCol, DataTypes.string), (arguments.sampleCol + columnName, DataTypes.float64))
+    }
+    frames.updateSchema(newFrame, allColumns)
+    newFrame.copy(schema = Schema(allColumns))
+  }
+
+  override def cumulativeDist(arguments: CumulativeDist[Long])(implicit user: UserPrincipal): Execution =
+    commands.execute(cumulativeDistCommand, arguments, user, implicitly[ExecutionContext])
+
+  val cumulativeDistCommand = commands.registerCommand("dataframe/cumulative_dist", cumulativeDistSimple)
+
+  def cumulativeDistSimple(arguments: CumulativeDist[Long], user: UserPrincipal) = {
+    implicit val u = user
+    val frameId: Long = arguments.frameId
+    val realFrame = expectFrame(frameId)
+
+    val ctx = sparkContextManager.context(user).sparkContext
+
+    val frameRdd = frames.getFrameRdd(ctx, frameId)
+
+    val sampleIndex = realFrame.schema.columnIndex(arguments.sampleCol)
+
+    val newFrame = Await.result(create(DataFrameTemplate(arguments.name, None)), SparkEngineConfig.defaultTimeout)
+
+    val (cumulativeDistRdd, columnName) = arguments.distType match {
+      case "cumulative_sum" => (CumulativeDistFunctions.cumulativeSum(frameRdd, sampleIndex), "_cumulative_sum")
+      case "cumulative_count" => (CumulativeDistFunctions.cumulativeCount(frameRdd, sampleIndex, arguments.countValue), "_cumulative_count")
+      case "cumulative_percent_sum" => (CumulativeDistFunctions.cumulativePercentSum(frameRdd, sampleIndex), "_cumulative_percent_sum")
+      case "cumulative_percent_count" => (CumulativeDistFunctions.cumulativePercentCount(frameRdd, sampleIndex, arguments.countValue), "_cumulative_percent_count")
+      case _ => throw new IllegalArgumentException("Invalid distType specified")
+    }
+
+    cumulativeDistRdd.saveAsObjectFile(fsRoot + frames.getFrameDataFile(newFrame.id))
+
+    val frameSchema = realFrame.schema
+    val allColumns = frameSchema.columns :+ (arguments.sampleCol + columnName, DataTypes.float64)
+
+    frames.updateSchema(newFrame, allColumns)
+    newFrame.copy(schema = Schema(allColumns))
   }
 
   /**

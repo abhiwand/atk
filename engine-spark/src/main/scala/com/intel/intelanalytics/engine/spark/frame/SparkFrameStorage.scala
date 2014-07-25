@@ -47,8 +47,19 @@ import com.intel.intelanalytics.engine.{ FrameStorage, FrameComponent }
 import com.intel.intelanalytics.repository.{ SlickMetaStoreComponent, MetaStore, MetaStoreComponent }
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.plugin.SparkInvocation
+import scala.Some
+import com.intel.intelanalytics.domain.frame.DataFrameTemplate
+import com.intel.intelanalytics.engine.File
+import com.intel.intelanalytics.engine.Directory
+import com.intel.intelanalytics.security.UserPrincipal
+import com.intel.intelanalytics.domain.frame.DataFrame
+import com.intel.intelanalytics.engine.spark.context.Context
 
-class SparkFrameStorage(fsRoot: String, files: HdfsFileStorage, maxRows: Int, val metaStore: SlickMetaStoreComponent#SlickMetaStore)
+class SparkFrameStorage(fsRoot: String,
+                        fileStorage: FileStorage,
+                        maxRows: Int,
+                        val metaStore: SlickMetaStoreComponent#SlickMetaStore,
+                        sparkAutoPartitioner: SparkAutoPartitioner)
     extends FrameStorage with EventLogging with ClassLoaderAware {
 
   import spray.json._
@@ -89,7 +100,7 @@ class SparkFrameStorage(fsRoot: String, files: HdfsFileStorage, maxRows: Int, va
    * @param frameId primary key from Frame table
    */
   private def deleteFrameFile(frameId: Long): Unit = {
-    files.delete(Paths.get(getFrameDirectory(frameId)))
+    fileStorage.delete(Paths.get(getFrameDirectory(frameId)))
   }
 
   override def removeColumn(frame: DataFrame, columnIndex: Seq[Int])(implicit user: UserPrincipal): DataFrame =
@@ -206,9 +217,9 @@ class SparkFrameStorage(fsRoot: String, files: HdfsFileStorage, maxRows: Int, va
   def getFrameRowRdd(ctx: SparkContext, frameId: Long): RDD[Row] = {
     val path: String = getFrameDataFile(frameId)
     val absPath = fsRoot + path
-    files.getMetaData(Paths.get(path)) match {
+    fileStorage.getMetaData(Paths.get(path)) match {
       case None => ctx.parallelize(Nil)
-      case _ => ctx.objectFile[Row](absPath, SparkEngineConfig.sparkDefaultPartitions)
+      case _ => ctx.objectFile[Row](absPath, sparkAutoPartitioner.partitionsForFile(path))
     }
   }
 
@@ -235,7 +246,7 @@ class SparkFrameStorage(fsRoot: String, files: HdfsFileStorage, maxRows: Int, va
 
   def getOrCreateDirectory(name: String): Directory = {
     val path = Paths.get(name)
-    val meta = files.getMetaData(path).getOrElse(files.createDirectory(path))
+    val meta = fileStorage.getMetaData(path).getOrElse(fileStorage.createDirectory(path))
     meta match {
       case File(f, s) => throw new IllegalArgumentException(path + " is not a directory")
       case d: Directory => d
