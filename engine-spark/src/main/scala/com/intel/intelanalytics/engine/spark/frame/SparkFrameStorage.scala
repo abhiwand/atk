@@ -102,8 +102,10 @@ class SparkFrameStorage(context: UserPrincipal => Context, fsRoot: String, files
     metaStore.withSession("frame.rename") {
       implicit session =>
         {
-          val check = metaStore.frameRepo.lookupByName(frame.name)
+          val check = metaStore.frameRepo.lookupByName(newName)
           if (check.isDefined) {
+
+            //metaStore.frameRepo.scan(0,20).foreach(println)
             throw new RuntimeException("Frame with same name exists. Rename aborted.")
           }
           val newFrame = frame.copy(name = newName)
