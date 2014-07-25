@@ -53,7 +53,8 @@ case class ColumnFullStatistics(frame: FrameReference, dataColumn: String, weigh
  *                 or if the distribution is uniform.
  * @param kurtosis The kurtosis of the data. NaN when the number of data elements is < 4
  *                 or if the distribution is uniform.
- * @param mode A mode of the data; that is, an item with the greatest weight (largest frequency). Ties resolved arbitrarily.
+ * @param mode A mode of the data; that is, an item with the greatest weight (largest frequency).
+ *             When there is more than one mode, the one of least numerical value is taken.
  *             NaN when there are no data elements of positive weight.
  * @param minimum Minimum value in the data. NaN when there are no data elements of positive
  * weight.
