@@ -25,8 +25,8 @@ package com.intel.intelanalytics.engine.spark.command
 
 import com.intel.intelanalytics.component.{ ClassLoaderAware, Boot }
 import com.intel.intelanalytics.domain.command.{ CommandDefinition, Command, CommandTemplate, Execution }
-import com.intel.intelanalytics.engine.plugin.{ FunctionCommand, CommandPlugin }
-import com.intel.intelanalytics.engine.spark.context.SparkContextManager
+import com.intel.intelanalytics.engine.plugin.{ Invocation, FunctionCommand, CommandPlugin }
+import com.intel.intelanalytics.engine.spark.context.{ Context, SparkContextManager }
 import com.intel.intelanalytics.engine.spark.plugin.SparkInvocation
 import com.intel.intelanalytics.engine.spark.{ SparkEngine, SparkEngineConfig }
 import com.intel.intelanalytics.security.UserPrincipal
@@ -115,7 +115,7 @@ class CommandExecutor(engine: => SparkEngine, commands: SparkCommandStorage, con
    * @return the CommandPlugin instance created during the registration process.
    */
   def registerCommand[A <: Product: JsonFormat: ClassManifest, R <: Product: JsonFormat: ClassManifest](name: String,
-                                                                                                        function: (A, UserPrincipal) => R,
+                                                                                                        function: (A, UserPrincipal, SparkInvocation) => R,
                                                                                                         numberOfJobs: Int = 1): CommandPlugin[A, R] = {
     registerCommand(name, function, (A) => numberOfJobs)
   }
@@ -135,9 +135,9 @@ class CommandExecutor(engine: => SparkEngine, commands: SparkCommandStorage, con
    * @return the CommandPlugin instance created during the registration process.
    */
   def registerCommand[A <: Product: JsonFormat: ClassManifest, R <: Product: JsonFormat: ClassManifest](name: String,
-                                                                                                        function: (A, UserPrincipal) => R,
+                                                                                                        function: (A, UserPrincipal, SparkInvocation) => R,
                                                                                                         numberOfJobsFunc: (A) => Int): CommandPlugin[A, R] = {
-    registerCommand(FunctionCommand(name, function, numberOfJobsFunc))
+    registerCommand(FunctionCommand(name, function.asInstanceOf[(A, UserPrincipal, Invocation) => R], numberOfJobsFunc))
   }
 
   private def getCommandDefinition(name: String): Option[CommandPlugin[_, _]] = {
@@ -162,18 +162,18 @@ class CommandExecutor(engine: => SparkEngine, commands: SparkCommandStorage, con
     withMyClassLoader {
       withContext("ce.execute") {
         withContext(command.name) {
-          val context: SparkContext = contextManager.context(user).sparkContext
+          val context: Context = contextManager.context(user)
           val cmdFuture = future {
             withCommand(cmd) {
               val invocation: SparkInvocation = SparkInvocation(engine, commandId = cmd.id, arguments = cmd.arguments,
                 user = user, executionContext = implicitly[ExecutionContext],
-                sparkContext = context)
+                sparkContext = context.sparkContext)
 
-              context.setLocalProperty("command-id", cmd.id.toString)
-              val progressListener = contextManager.context(user).progressMonitor
+              context.sparkContext.setLocalProperty("command-id", cmd.id.toString)
+              val progressListener = context.progressMonitor
               progressListener.setJobCountForCommand(cmd.id, command.numberOfJobs(arguments))
               val funcResult = command(invocation, arguments)
-              context.setLocalProperty("command-id", null)
+              context.sparkContext.setLocalProperty("command-id", null)
               command.serializeReturn(funcResult)
             }
             commands.lookup(cmd.id).get
