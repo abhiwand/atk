@@ -363,7 +363,15 @@ class Executor(object):
         Issues the query_request to the server
         """
         logger.info("Issuing query " + query_url)
-        response = http.get(query_url)
+        try:
+            response = http.get(query_url)
+        except:
+            # do a single retry
+            response = http.get(query_url)
+
+        if isinstance(response.json(), (list, tuple)):
+            return response.json()
+
         command = self.poll_command_info(response)
         data = []
 
