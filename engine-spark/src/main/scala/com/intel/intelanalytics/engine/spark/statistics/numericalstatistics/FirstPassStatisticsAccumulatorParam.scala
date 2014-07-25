@@ -47,6 +47,10 @@ private[numericalstatistics] class FirstPassStatisticsAccumulatorParam
 
     val (mode, weightAtMode) = if (stats1.weightAtMode > stats2.weightAtMode)
       (stats1.mode, stats1.weightAtMode)
+    else if (stats1.weightAtMode < stats2.weightAtMode)
+      (stats2.mode, stats2.weightAtMode)
+    else if (stats1.mode <= stats2.mode)
+      (stats1.mode, stats1.weightAtMode)
     else
       (stats2.mode, stats2.weightAtMode)
 

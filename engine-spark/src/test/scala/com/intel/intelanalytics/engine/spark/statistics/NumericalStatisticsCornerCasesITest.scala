@@ -149,7 +149,7 @@ class NumericalStatisticsCornerCasesITest extends TestingSparkContextFlatSpec wi
     numericalStatistics.meanConfidenceUpper.isNaN() shouldBe true
   }
 
-  "all data has negative weights" should "be like empty data but with correct counts" in new NumericalStatisticsCornerCaseTest() {
+  "all data has negative weights" should "be like empty data but with correct non-positive count" in new NumericalStatisticsCornerCaseTest() {
 
     val data = List(1, 2, 3, 4, 5, 6, 7, -18).map(x => x.toDouble)
     val frequencies = List(-3, -2, -3, -1, -9, -4, -3, -1).map(x => x.toDouble)
@@ -294,4 +294,15 @@ class NumericalStatisticsCornerCasesITest extends TestingSparkContextFlatSpec wi
     numericalStatistics.meanConfidenceUpper shouldBe 2
   }
 
+  "competing modes" should "result in the least mode" in new NumericalStatisticsCornerCaseTest() {
+
+    val data: List[Double] = List(3, 1, 4, 5, 2).map(x => x.toDouble)
+    val frequencies: List[Double] = List(1, 1, 2, 1, 2).map(x => x.toDouble)
+
+    val dataFrequencies = sparkContext.parallelize(data.zip(frequencies))
+
+    val numericalStatistics = new NumericalStatistics(dataFrequencies)
+
+    numericalStatistics.weightedMode shouldBe 2
+  }
 }
