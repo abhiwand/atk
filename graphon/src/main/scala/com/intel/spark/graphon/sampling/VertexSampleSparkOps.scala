@@ -86,7 +86,7 @@ object VertexSampleSparkOps extends Serializable {
       val vertexDegreeRdd = addVertexDegreeWeights(vertices, edges)
 
       // create tuple of (sampleWeight, vertex)
-      val weightedVertexRdd = vertexDegreeRdd.map{ case(vertexDegree, vertex) => (rand.nextDouble() * vertexDegree, vertex) }
+      val weightedVertexRdd = vertexDegreeRdd.map { case (vertexDegree, vertex) => (rand.nextDouble() * vertexDegree, vertex) }
 
       getTopVertices(weightedVertexRdd, size)
     }
@@ -116,7 +116,7 @@ object VertexSampleSparkOps extends Serializable {
       val vertexDegreeRdd = addVertexDegreeDistWeights(vertices, edges)
 
       // create tuple of (sampleWeight, vertex)
-      val weightedVertexRdd = vertexDegreeRdd.map{ case(vertexDegreeBinSize, vertex) => (rand.nextDouble() * vertexDegreeBinSize, vertex) }
+      val weightedVertexRdd = vertexDegreeRdd.map { case (vertexDegreeBinSize, vertex) => (rand.nextDouble() * vertexDegreeBinSize, vertex) }
 
       getTopVertices(weightedVertexRdd, size)
     }
@@ -163,7 +163,7 @@ object VertexSampleSparkOps extends Serializable {
    * @param edges the edges to write to Titan
    * @param titanConfig the config for Titan
    */
-  def writeToTitan(vertices: RDD[Vertex], edges: RDD[Edge], titanConfig: SerializableBaseConfiguration) = {
+  def writeToTitan(vertices: RDD[Vertex], edges: RDD[Edge], titanConfig: SerializableBaseConfiguration): Unit = {
     val gb = new GraphBuilder(new GraphBuilderConfig(new InputSchema(Seq.empty), List.empty, List.empty, titanConfig))
     gb.buildGraphWithSpark(vertices, edges)
   }
@@ -174,7 +174,7 @@ object VertexSampleSparkOps extends Serializable {
    * @param seed optional random seed
    * @return a new Random instance
    */
-  private def checkSeed(seed: Option[Long]): Random = {
+  def checkSeed(seed: Option[Long]): Random = {
     seed match {
       case Some(l) => new Random(l)
       case _ => new Random
@@ -188,11 +188,11 @@ object VertexSampleSparkOps extends Serializable {
    * @param size number of vertices to take
    * @return RDD of vertices
    */
-  private def getTopVertices(weightedVertexRdd: RDD[(Double, Vertex)], size: Int): RDD[Vertex] = {
+  def getTopVertices(weightedVertexRdd: RDD[(Double, Vertex)], size: Int): RDD[Vertex] = {
     val vertexSampleArray = weightedVertexRdd.top(size)(Ordering.by { case (vertexWeight, vertex) => vertexWeight })
     val vertexSamplePairRdd = weightedVertexRdd.sparkContext.parallelize(vertexSampleArray)
 
-    vertexSamplePairRdd.map{ case(vertexWeight, vertex) => vertex }
+    vertexSamplePairRdd.map { case (vertexWeight, vertex) => vertex }
   }
 
   /**
@@ -202,15 +202,15 @@ object VertexSampleSparkOps extends Serializable {
    * @param edges RDD of all edges
    * @return RDD of tuples that contain vertex degree histogram bin size as weight for each vertex
    */
-  private def addVertexDegreeDistWeights(vertices: RDD[Vertex], edges: RDD[Edge]): RDD[(Long, Vertex)] = {
+  def addVertexDegreeDistWeights(vertices: RDD[Vertex], edges: RDD[Edge]): RDD[(Long, Vertex)] = {
     // get tuples of (vertexDegree, vertex)
     val vertexDegreeRdd = addVertexDegreeWeights(vertices, edges)
 
     // get tuples of (vertexDegreeBinSize, vertex)
-    val groupedByBinSizeRdd = vertexDegreeRdd.groupBy{ case(vertexDegreeBinSize, vertex) => vertexDegreeBinSize }
-    val degreeDistRdd = groupedByBinSizeRdd.map{ case(vertexDegreeBinSize, vertexSeq) => (vertexDegreeBinSize, vertexSeq.size.toLong) }
+    val groupedByBinSizeRdd = vertexDegreeRdd.groupBy { case (vertexDegreeBinSize, vertex) => vertexDegreeBinSize }
+    val degreeDistRdd = groupedByBinSizeRdd.map { case (vertexDegreeBinSize, vertexSeq) => (vertexDegreeBinSize, vertexSeq.size.toLong) }
 
-    degreeDistRdd.join(vertexDegreeRdd).map{ case(vertexDegreeBinSize, degreeVertexPair) => degreeVertexPair }
+    degreeDistRdd.join(vertexDegreeRdd).map { case (vertexDegreeBinSize, degreeVertexPair) => degreeVertexPair }
   }
 
   /**
@@ -220,7 +220,7 @@ object VertexSampleSparkOps extends Serializable {
    * @param edges RDD of all edges
    * @return RDD of tuples that contain vertex degree as weight for each vertex
    */
-  private def addVertexDegreeWeights(vertices: RDD[Vertex], edges: RDD[Edge]): RDD[(Long, Vertex)] = {
+  def addVertexDegreeWeights(vertices: RDD[Vertex], edges: RDD[Edge]): RDD[(Long, Vertex)] = {
     val vertexIdDegrees = GraphStatistics.outDegrees(edges)
     val vertexIds = vertices.map(vertex => (vertex.physicalId, vertex))
 
