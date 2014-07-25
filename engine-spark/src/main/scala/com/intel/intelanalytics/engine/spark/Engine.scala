@@ -345,6 +345,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     }
 
     frames.updateSchema(projectedFrame, projectedColumns.toList)
+    frames.updateRowCount(projectedFrame, sourceFrame.rowCount)
   }
 
   /**

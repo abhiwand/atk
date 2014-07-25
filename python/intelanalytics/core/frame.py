@@ -425,8 +425,8 @@ class BigFrame(CommandSupport):
         Computes the accuracy measure for a classification model
         A column containing the correct labels for each instance and a column containing the predictions made by the classifier are specified.
         The accuracy of a classification model is the proportion of predictions that are correct.
-        If we let :math:`TP` denote the number of true positives, :math:`TN` denote the number of true negatives, and :math:`K`
-        denote the total number of classified instances, then the model accuracy is given by: :math:`(TP + TN) / K`.
+        If we let :math:`T_{P}` denote the number of true positives, :math:`T_{N}` denote the number of true negatives, and :math:`K`
+        denote the total number of classified instances, then the model accuracy is given by: :math:`\\frac{T_{P} + T_{N}}{K}`.
 
         This measure applies to binary and multi-class classifiers.
 
@@ -671,7 +671,7 @@ class BigFrame(CommandSupport):
 
     def calculate_percentiles(self, column_name, percentiles):
         """
-        Calculate percentiles on given column
+        Calculate percentiles on given column.
 
         Parameters
         ----------
