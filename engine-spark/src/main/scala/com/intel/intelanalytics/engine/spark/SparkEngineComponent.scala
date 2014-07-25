@@ -64,9 +64,9 @@ class SparkComponent extends EngineComponent
   val fileStorage = new HdfsFileStorage(SparkEngineConfig.fsRoot)
 
   val sparkAutoPartitioner = new SparkAutoPartitioner(fileStorage)
-  
+
   val frames = new SparkFrameStorage(sparkContextManager.context(_),
-    SparkEngineConfig.fsRoot, files, SparkEngineConfig.pageSize, metaStore.asInstanceOf[SlickMetaStore], sparkAutoPartitioner)
+    SparkEngineConfig.fsRoot, fileStorage, SparkEngineConfig.pageSize, metaStore.asInstanceOf[SlickMetaStore], sparkAutoPartitioner)
 
   private lazy val admin = new HBaseAdmin(HBaseConfiguration.create())
 
