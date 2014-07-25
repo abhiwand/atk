@@ -625,6 +625,61 @@ private[spark] object SparkOps extends Serializable {
     rdd.map(row => row :+ (binMap.get(java.lang.Double.parseDouble(row(index).toString)).get - 1).asInstanceOf[Any])
   }
 
+  /**
+   * Generate the empirical cumulative distribution for an input dataframe column
+   *
+   * @param frameRdd rdd for a BigFrame
+   * @param sampleIndex index of the column containing the sample data
+   * @param dataType the data type of the input column
+   * @return a new RDD of tuples containing each distinct sample value and its ecdf value
+   */
+  def ecdf(frameRdd: RDD[Row], sampleIndex: Int, dataType: String): RDD[Row] = {
+    // parse values
+    val pairedRdd = try {
+      frameRdd.map(row => (java.lang.Double.parseDouble(row(sampleIndex).toString), java.lang.Double.parseDouble(row(sampleIndex).toString)))
+    }
+    catch {
+      case cce: NumberFormatException => throw new NumberFormatException("Non-numeric column: " + cce.toString)
+    }
+
+    // get sample size
+    val numValues = pairedRdd.count().toDouble
+
+    // group identical values together
+    val groupedRdd = pairedRdd.groupByKey()
+
+    // count number of each distinct value and sort by distinct value
+    val sortedRdd = groupedRdd.map { case (value, seqOfValue) => (value, seqOfValue.size) }.sortByKey()
+
+    // compute the partition sums
+    val partSums: Array[Double] = 0.0 +: sortedRdd.mapPartitionsWithIndex {
+      case (index, partition) => Iterator(partition.map(pair => pair._2).sum.toDouble)
+    }.collect()
+
+    // compute empirical cumulative distribution
+    val sumsRdd = sortedRdd.mapPartitionsWithIndex {
+      case (index, partition) => {
+        var startValue = 0.0
+        for (i <- 0 to index) {
+          startValue += partSums(i)
+        }
+        partition.scanLeft((0.0, startValue))((prev, curr) => (curr._1, prev._2 + curr._2)).drop(1)
+      }
+    }
+
+    sumsRdd.map {
+      case (value, valueSum) => {
+        dataType match {
+          case "int32" => Array(value.toInt.asInstanceOf[Any], (valueSum / numValues).asInstanceOf[Any])
+          case "int64" => Array(value.toLong.asInstanceOf[Any], (valueSum / numValues).asInstanceOf[Any])
+          case "float32" => Array(value.toFloat.asInstanceOf[Any], (valueSum / numValues).asInstanceOf[Any])
+          case "float64" => Array(value.toDouble.asInstanceOf[Any], (valueSum / numValues).asInstanceOf[Any])
+          case _ => Array(value.asInstanceOf[Any], (valueSum / numValues).asInstanceOf[Any])
+        }
+      }
+    }
+  }
+
   def aggregation_functions(elem: Seq[Array[Any]],
                             args_pair: Seq[(Int, String)],
                             schema: List[(String, DataTypes.DataType)]): Seq[Any] = {
