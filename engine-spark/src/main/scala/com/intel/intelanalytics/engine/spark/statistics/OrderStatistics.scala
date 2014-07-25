@@ -79,8 +79,8 @@ class OrderStatistics[T: ClassTag](dataWeightPairs: RDD[(T, Double)])(implicit o
     var currentPartition: Int = 0
     var weightInPrecedingPartitions: BigDecimal = 0
     while (weightInPrecedingPartitions + weightsOfPartitions(currentPartition) < totalWeight / 2) {
-      currentPartition += 1
       weightInPrecedingPartitions += weightsOfPartitions(currentPartition)
+      currentPartition += 1
     }
     (currentPartition, weightInPrecedingPartitions)
   }

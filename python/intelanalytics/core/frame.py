@@ -1042,6 +1042,8 @@ class BigFrame(CommandSupport):
                  mode : A mode of the data; that is, an item with the greatest weight (largest frequency).
                   When there is more than one mode, the one of least numerical value is taken.
                   NaN when there are no data elements of positive weight.
+                 weight_at_mode : The weight of the mode.
+                 total_weight: The sum of all weights that are finite numbers > 0.
                  minimum : Minimum value in the data. NaN when there are no data elements of positive
                  weight.
                  maximum : Maximum value in the data. NaN when there are no data elements of positive
@@ -1121,6 +1123,8 @@ class BigFrame(CommandSupport):
                   if the distribution is uniform.
                  mode : A mode of the data; that is, an item with the greatest weight (largest frequency).
                   Ties are resolved arbitrarily. NaN when there are no data elements of positive weight.
+                 weight_at_mode : The weight of the mode.
+                 total_weight: The sum of all weights that are finite numbers > 0.
                  minimum : Minimum value in the data. NaN when there are no data elements of positive
                  weight.
                  maximum : Maximum value in the data. NaN when there are no data elements of positive
@@ -1172,6 +1176,10 @@ class BigFrame(CommandSupport):
         Calculate a mode of a column.  A mode is a data element of maximum weight. All data elements of weight <= 0
         are excluded from the calculation, as are all data elements whose weight is NaN or infinite.
         If there are no data elements of finite weight > 0, no mode is returned.
+
+        The mode of a column is the first value x so that the sum of weights for all data elements y <= x is >= 1/2
+
+        For example: The mode of 1 to 100000 is 50000, the mode of 1 to 10001 is 50001
 
         Parameters
         ----------

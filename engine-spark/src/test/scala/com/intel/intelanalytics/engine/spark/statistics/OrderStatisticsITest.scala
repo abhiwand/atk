@@ -86,4 +86,34 @@ class OrderStatisticsITest extends TestingSparkContextFlatSpec with Matchers {
 
     testMedian shouldBe None
   }
+
+  "median of 1 to 100000" should "be 50,000 " in {
+
+    val data: List[Int] = (1 to 100000).toList
+    val frequencies: List[Double] = (1 to data.length).toList.map(x => 1.toDouble)
+
+    val numPartitions = 3
+    val dataFrequenciesRDD: RDD[(Int, Double)] = sparkContext.parallelize(data.zip(frequencies), numPartitions)
+
+    val dataFrequenciesOrderStatistics: OrderStatistics[Int] = new OrderStatistics[Int](dataFrequenciesRDD)
+
+    val testMedian = dataFrequenciesOrderStatistics.medianOption.get
+
+    testMedian shouldBe 50000
+  }
+
+  "median of 1 to 100001" should "be 50,001 " in {
+
+    val data: List[Int] = (1 to 100001).toList
+    val frequencies: List[Double] = (1 to data.length).toList.map(x => 1.toDouble)
+
+    val numPartitions = 3
+    val dataFrequenciesRDD: RDD[(Int, Double)] = sparkContext.parallelize(data.zip(frequencies), numPartitions)
+
+    val dataFrequenciesOrderStatistics: OrderStatistics[Int] = new OrderStatistics[Int](dataFrequenciesRDD)
+
+    val testMedian = dataFrequenciesOrderStatistics.medianOption.get
+
+    testMedian shouldBe 50001
+  }
 }
