@@ -1040,7 +1040,8 @@ class BigFrame(CommandSupport):
                   count - 1. NaN when there are <= 1 many data elements.
                  standard_deviation : Standard deviation of the data. NaN when there are <= 1 many data elements.
                  mode : A mode of the data; that is, an item with the greatest weight (largest frequency).
-                  Ties are resolved arbitrarily. NaN when there are no data elements of positive weight.
+                  When there is more than one mode, the one of least numerical value is taken.
+                  NaN when there are no data elements of positive weight.
                  minimum : Minimum value in the data. NaN when there are no data elements of positive
                  weight.
                  maximum : Maximum value in the data. NaN when there are no data elements of positive
@@ -1112,7 +1113,8 @@ class BigFrame(CommandSupport):
                   count - 1. NaN when there are <= 1 many data elements.
                  standard_deviation : Standard deviation of the data. NaN when there are <= 1 many data elements.
                  mode : A mode of the data; that is, an item with the greatest weight (largest frequency).
-                  Ties are resolved arbitrarily. NaN when there are no data elements of nonzero weight.
+                  When there is more than one mode, the one of least numerical value is taken.
+                  NaN when there are no data elements of nonzero weight.
                  skewness : The skewness of the data. NaN when there are <= 2 many data elements of positive weight or
                   if the distribution is uniform.
                  kurtosis : The kurtosis of the data. NaN when there are <= 3 many data elements of positive weight or

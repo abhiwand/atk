@@ -50,7 +50,8 @@ case class ColumnSummaryStatistics(frame: FrameReference, dataColumn: String, we
  *                 data elements minus 1. NaN when the number of data elements is < 2.
  * @param standardDeviation Standard deviation of the data. NaN when the number of data elements is < 2.
  * @param mode A mode of the data; that is, an item with the greatest weight (largest frequency).
- *             Ties resolved arbitrarily. NaN when there are no data elements of positive weight.
+ *              When there is more than one mode, the one of least numerical value is taken.
+ *              NaN when there are no data elements of positive weight.
  * @param minimum Minimum value in the data. NaN when there are no data elements of positive weight.
  * @param maximum Maximum value in the data. NaN when there are no data elements of positive weight.
  * @param meanConfidenceLower: Lower limit of the 95% confidence interval about the mean. Assumes a Gaussian RV.
