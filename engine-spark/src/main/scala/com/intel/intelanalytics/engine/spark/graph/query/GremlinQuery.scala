@@ -9,11 +9,13 @@ import com.intel.intelanalytics.engine.plugin.{CommandPlugin, Invocation}
 import com.intel.intelanalytics.engine.spark.SparkEngineConfig
 import com.intel.intelanalytics.security.UserPrincipal
 import com.thinkaurelius.titan.core.TitanGraph
+import com.tinkerpop.blueprints.util.io.graphson.GraphSONMode
 import com.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine
 import spray.json._
 
 import scala.collection.JavaConversions._
 import scala.concurrent.{Await, ExecutionContext, Lock}
+import scala.util.Try
 
 /**
  * Arguments for Gremlin query.
@@ -85,16 +87,15 @@ class GremlinQuery extends CommandPlugin[QueryArgs, QueryResult] {
     val titanConfiguration = SparkEngineConfig.createTitanConfiguration(config, "titan.query")
 
     titanConfiguration.setProperty("storage.tablename", "iat_graph_" + graph.name)
-    val titanGraph: TitanGraph = getTitanGraph(graphName, titanConfiguration)
+    val titanGraph = getTitanGraph(graphName, titanConfiguration)
     val bindings = gremlinExecutor.createBindings()
     bindings.put("g", titanGraph)
 
     // Get results
-    val resultIterator: Iterable[Any] = executeGremlinQuery(arguments.gremlin, bindings)
-    val json = resultIterator.map(GremlinUtils.serializeGremlinToJson(titanGraph, _, graphSONMode))
+    val resultIterator = executeGremlinQuery(titanGraph, arguments.gremlin, bindings, graphSONMode)
     val runtimeInSeconds = (System.currentTimeMillis() - start).toDouble / 1000.0
 
-    QueryResult(json, runtimeInSeconds)
+    QueryResult(resultIterator, runtimeInSeconds)
   }
 
   //TODO: Replace with generic code that works on any case class
@@ -118,15 +119,18 @@ class GremlinQuery extends CommandPlugin[QueryArgs, QueryResult] {
    * @param bindings Bindings for Gremlin engine
    * @return Iterable of query results
    */
-  private def executeGremlinQuery(gremlinScript: String, bindings: Bindings): Iterable[Any] = {
-    val obj = gremlinExecutor.eval(gremlinScript, bindings)
-    if (obj == null) throw new RuntimeException(s"No results for Gremlin query: ${gremlinScript}")
+  def executeGremlinQuery(titanGraph: TitanGraph, gremlinScript: String,
+                          bindings: Bindings,
+                          graphSONMode: GraphSONMode = GraphSONMode.NORMAL): Iterable[JsValue] = {
+    val results = Try(gremlinExecutor.eval(gremlinScript, bindings))
+      .getOrElse(throw new RuntimeException(s"Could not execute Gremlin query: ${gremlinScript}"))
 
-    val resultIterator = obj match {
+    val resultIterator = results match {
       case x: java.lang.Iterable[_] => x.toIterable
       case x => List(x).toIterable
     }
-    resultIterator
+    resultIterator.map(GremlinUtils.serializeGremlinToJson(titanGraph, _, graphSONMode))
+
   }
 
   /**
