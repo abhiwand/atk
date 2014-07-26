@@ -202,7 +202,7 @@ intel.analytics {
 
 intel.analytics.igiraph-titan {
   command {
-    available = ["graphs.ml.loopy_belief_propagation", "graphs.ml.alternating_least_squares", "graphs.ml.conjugate_gradient_descent", "graphs.ml.label_propagation", "graphs.ml.latent_dirichlet_allocation"]
+    available = ["graphs.ml.loopy_belief_propagation", "graphs.ml.alternating_least_squares", "graphs.ml.conjugate_gradient_descent", "graphs.ml.label_propagation", "graphs.ml.latent_dirichlet_allocation", "graphs.ml.page_rank", "graphs.ml.average_path_length"]
     graphs {
       ml {
         loopy_belief_propagation {
@@ -224,6 +224,43 @@ intel.analytics.igiraph-titan {
               lbp.power = 0.5
               lbp.smoothing = 2.0
               lbp.ignoreVertexType = false
+            }
+          }
+        }
+
+        page_rank {
+          class = "com.intel.intelanalytics.algorithm.graph.PageRank"
+          config {
+            fs = ${intel.analytics.engine.fs}
+            default-timeout = ${intel.analytics.engine.default-timeout}
+            giraph = ${intel.analytics.engine.giraph}
+            titan = ${intel.analytics.engine.titan}
+            output {
+              dir = "pr"
+              overwrite = "true"
+            }
+            giraph {
+              pr.maxSuperSteps = 20
+              pr.convergenceThreshold = 0.001
+              pr.resetProbability = 0.15
+              pr.convergenceProgressOutputInterval = 1
+            }
+          }
+        }
+
+        average_path_length {
+          class = "com.intel.intelanalytics.algorithm.graph.AveragePathLength"
+          config {
+            fs = ${intel.analytics.engine.fs}
+            default-timeout = ${intel.analytics.engine.default-timeout}
+            giraph = ${intel.analytics.engine.giraph}
+            titan = ${intel.analytics.engine.titan}
+            output {
+              dir = "apl"
+              overwrite = "true"
+            }
+            giraph {
+              pr.convergenceProgressOutputInterval = 1
             }
           }
         }
