@@ -160,13 +160,16 @@ class CommandExecutor(engine: => SparkEngine, commands: SparkCommandStorage, con
                                           executionContext: ExecutionContext): Execution = {
     implicit val ec = executionContext
     val cmd = commands.create(CommandTemplate(command.name, Some(command.serializeArguments(arguments))))
+    println("################  CLASS LOADER IN EXECUTOR -1  :" + cmd.getClass.getClassLoader.toString)
     withMyClassLoader {
       withContext("ce.execute") {
         withContext(command.name) {
-
+          println("################  CLASS LOADER IN EXECUTOR -2  :" + this.getClass.getClassLoader.toString)
+          val context: SparkContext = contextManager.context(user).sparkContext
+          println("################  CLASS LOADER IN EXECUTOR -3  :" + context.getClass.getClassLoader.toString)
           val cmdFuture = future {
             withCommand(cmd) {
-              val context = new SparkContextFactory().createSparkContext(SparkEngineConfig.config, "intel-analytics:" + user)
+
               try {
                 val invocation: SparkInvocation = SparkInvocation(engine, commandId = cmd.id, arguments = cmd.arguments,
                   user = user, executionContext = implicitly[ExecutionContext],

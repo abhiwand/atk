@@ -167,9 +167,13 @@ class SparkEngine(sparkContextManager: SparkContextManager,
    * @return data of specific page
    */
   override def getQueryPage(id: Long, pageId: Long)(implicit user: UserPrincipal) = withContext("se.getQueryPage") {
-    val ctx = sparkContextManager.context(user)
-    val data = queryStorage.getQueryPage(ctx.sparkContext, id, pageId)
-    data
+    println("################  CLASS LOADER IN QUERY: " + this.getClass.getClassLoader.toString)
+    withMyClassLoader {
+      val ctx = sparkContextManager.context(user)
+      val data = queryStorage.getQueryPage(ctx.sparkContext, id, pageId)
+      ctx.sparkContext.stop()
+      data
+    }
   }
 
   /**
