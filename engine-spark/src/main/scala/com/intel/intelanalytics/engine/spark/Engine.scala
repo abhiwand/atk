@@ -28,67 +28,50 @@ import java.util.{ ArrayList => JArrayList, List => JList }
 import com.intel.intelanalytics.component.ClassLoaderAware
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
 import com.intel.intelanalytics.domain._
-import com.intel.intelanalytics.domain.query.{ Execution => QueryExecution, RowQuery, Query, QueryTemplate }
-import com.intel.intelanalytics.domain.command.{ Command, CommandDefinition, CommandTemplate, Execution }
+import com.intel.intelanalytics.domain.query.{ Execution => QueryExecution, RowQuery, Query }
+import com.intel.intelanalytics.domain.command.CommandDefinition
 import com.intel.intelanalytics.domain.frame._
-import com.intel.intelanalytics.domain.frame.load.{ LineParserArguments, LineParser, LoadSource, Load }
 
-import com.intel.intelanalytics.domain.graph.{ Graph, GraphLoad, GraphTemplate }
+import com.intel.intelanalytics.domain.graph.GraphLoad
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 import com.intel.intelanalytics.domain.schema.{ DataTypes, Schema, SchemaUtil }
-import com.intel.intelanalytics.engine.Rows._
 import com.intel.intelanalytics.engine._
-import com.intel.intelanalytics.engine.plugin.{ Invocation, CommandPlugin }
+import com.intel.intelanalytics.engine.plugin.CommandPlugin
 import com.intel.intelanalytics.engine.spark.command.CommandExecutor
 import com.intel.intelanalytics.engine.spark.queries.{ SparkQueryStorage, QueryExecutor }
-import com.intel.intelanalytics.engine.spark.context.SparkContextManager
-import com.intel.intelanalytics.engine.spark.frame.{ RDDJoinParam, RowParser, SparkFrameStorage }
-import com.intel.intelanalytics.engine.spark.context.SparkContextManager
 import com.intel.intelanalytics.engine.spark.frame._
-import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.shared.EventLogging
 import com.intel.intelanalytics.NotFoundException
 import org.apache.spark.SparkContext
 import org.apache.spark.api.python.{ EnginePythonAccumulatorParam, EnginePythonRDD }
 import org.apache.spark.broadcast.Broadcast
-import org.apache.spark.engine.SparkProgressListener
 import org.apache.spark.rdd.RDD
 import spray.json._
 
 import com.intel.intelanalytics.domain.frame.LoadLines
 
 import DomainJsonProtocol._
-
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent._
 import com.intel.intelanalytics.engine.spark.context.SparkContextManager
-import scala.util.Try
-import org.apache.spark.engine.SparkProgressListener
-import com.intel.spark.mllib.util.{ LabeledLine, MLDataSplitter }
+import com.intel.spark.mllib.util.MLDataSplitter
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent._
-import scala.util.Try
 import org.apache.spark.engine.SparkProgressListener
 import com.intel.intelanalytics.domain.frame.FrameAddColumns
 import com.intel.intelanalytics.domain.frame.FrameRenameFrame
-import com.intel.intelanalytics.domain.frame.load.LineParserArguments
 import com.intel.intelanalytics.domain.graph.GraphLoad
 import com.intel.intelanalytics.domain.schema.Schema
 import com.intel.intelanalytics.domain.frame.DropDuplicates
-import com.intel.intelanalytics.engine.spark.frame.RowParseResult
 import com.intel.intelanalytics.domain.frame.FrameProject
 import com.intel.intelanalytics.domain.graph.Graph
 import com.intel.intelanalytics.domain.FilterPredicate
 import com.intel.intelanalytics.domain.frame.load.Load
-import com.intel.intelanalytics.domain.frame.load.LineParser
 import com.intel.intelanalytics.domain.frame.BigColumn
 import com.intel.intelanalytics.domain.frame.FrameGroupByColumn
 import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.domain.frame.FrameRemoveColumn
 import com.intel.intelanalytics.engine.spark.frame.RDDJoinParam
 import com.intel.intelanalytics.domain.graph.GraphTemplate
-import com.intel.intelanalytics.domain.frame.load.LoadSource
 import com.intel.intelanalytics.domain.frame.DataFrameTemplate
 import com.intel.intelanalytics.engine.ProgressInfo
 import com.intel.intelanalytics.domain.frame.FrameRenameColumns
@@ -954,12 +937,12 @@ class SparkEngine(sparkContextManager: SparkContextManager,
 
   val ecdfCommand = commands.registerCommand("dataframe/ecdf", ecdfSimple)
 
-  def ecdfSimple(arguments: ECDF[Long], user: UserPrincipal) = {
+  def ecdfSimple(arguments: ECDF[Long], user: UserPrincipal, invocation: SparkInvocation) = {
     implicit val u = user
     val frameId: Long = arguments.frameId
     val realFrame = expectFrame(frameId)
 
-    val ctx = sparkContextManager.context(user).sparkContext
+    val ctx = invocation.sparkContext
 
     val rdd = frames.getFrameRdd(ctx, frameId)
 
@@ -987,12 +970,12 @@ class SparkEngine(sparkContextManager: SparkContextManager,
 
   val cumulativeDistCommand = commands.registerCommand("dataframe/cumulative_dist", cumulativeDistSimple)
 
-  def cumulativeDistSimple(arguments: CumulativeDist[Long], user: UserPrincipal) = {
+  def cumulativeDistSimple(arguments: CumulativeDist[Long], user: UserPrincipal, invocation: SparkInvocation) = {
     implicit val u = user
     val frameId: Long = arguments.frameId
     val realFrame = expectFrame(frameId)
 
-    val ctx = sparkContextManager.context(user).sparkContext
+    val ctx = invocation.sparkContext
 
     val frameRdd = frames.getFrameRdd(ctx, frameId)
 
