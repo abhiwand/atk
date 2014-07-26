@@ -123,6 +123,12 @@ class SparkFrameStorage(context: UserPrincipal => Context,
     metaStore.withSession("frame.rename") {
       implicit session =>
         {
+          val check = metaStore.frameRepo.lookupByName(newName)
+          if (check.isDefined) {
+
+            //metaStore.frameRepo.scan(0,20).foreach(println)
+            throw new RuntimeException("Frame with same name exists. Rename aborted.")
+          }
           val newFrame = frame.copy(name = newName)
           metaStore.frameRepo.update(newFrame).get
         }
@@ -275,6 +281,10 @@ class SparkFrameStorage(context: UserPrincipal => Context,
     metaStore.withSession("frame.createFrame") {
       implicit session =>
         {
+          val check = metaStore.frameRepo.lookupByName(frameTemplate.name)
+          if (check.isDefined) {
+            throw new RuntimeException("Frame with same name exists. Create aborted.")
+          }
           val frame = metaStore.frameRepo.insert(frameTemplate).get
 
           //remove any existing artifacts to prevent collisions when a database is reinitialized.
