@@ -329,13 +329,10 @@ intel.analytics.engine-spark {
     graphs {
       query {
         gremlin {
-          class = "com.intel.intelanalytics.engine.spark.graph.query.GremlinQuery"
-          config {
-            default-timeout = ${intel.analytics.engine.default-timeout}
+            //default-timeout = ${intel.analytics.engine.default-timeout}
             titan = ${intel.analytics.engine.titan}
 			# Valid values: "normal", "compact", "extended"
-            graphson-mode = "normal" 
-          }
+            //graphson-mode = "normal" 
         }
         histogram_roc {
           class = "com.intel.intelanalytics.engine.spark.graph.query.roc.HistogramRocQuery"

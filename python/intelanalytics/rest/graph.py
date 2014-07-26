@@ -1,4 +1,4 @@
-##############################################################################
+     ##############################################################################
 # INTEL CONFIDENTIAL
 #
 # Copyright 2014 Intel Corporation All Rights Reserved.
@@ -41,6 +41,7 @@ def execute_update_graph_command(command_name, arguments, graph):
         command_name = 'graph/' + command_name
     command = CommandRequest(command_name, arguments=arguments)
     command_info = executor.issue(command)
+
     return command_info.result
 
 execute_new_graph_command = execute_update_graph_command
@@ -48,7 +49,7 @@ execute_new_graph_command = execute_update_graph_command
 
 def initialize_graph(graph, graph_info):
     graph._id = graph_info.id_number
-    graph._uri= http._get_uri("graphs/"+ str(graph._id))
+    graph._uri= http.create_full_uri("graphs/"+ str(graph._id))
     #return graph
 
 class GraphBackendRest(object):
