@@ -36,7 +36,7 @@ import scala.collection.mutable
 object SparkContextPerUserStrategy extends SparkContextManagementStrategy with EventLogging {
 
   //TODO: take a look at spark.cleaner.ttl parameter, the doc says that this param is useful for long running contexts
-  val contextMap = new mutable.HashMap[String, Context] with mutable.SynchronizedMap[String, Context] {}
+  //  val contextMap = new mutable.HashMap[String, Context] with mutable.SynchronizedMap[String, Context] {}
 
   //TODO: how to run jobs as a particular user
   //TODO: Decide on spark context life cycle - should it be torn down after every operation,
@@ -46,7 +46,7 @@ object SparkContextPerUserStrategy extends SparkContextManagementStrategy with E
   override def getContext(user: String): Context = {
     val context = sparkContextFactory.createSparkContext(configuration, "intel-analytics:" + user)
     val ctx = Context(context)
-    contextMap += (user -> ctx)
+    //    contextMap += (user -> ctx)
     ctx
   }
 
@@ -54,23 +54,24 @@ object SparkContextPerUserStrategy extends SparkContextManagementStrategy with E
    * stop all managed SparkContexts
    */
   override def cleanup(): Unit = {
-    contextMap.keys.foreach { key =>
-      contextMap(key).sparkContext.stop()
-    }
+    //    contextMap.keys.foreach { key =>
+    //      contextMap(key).sparkContext.stop()
+    //    }
   }
 
   /**
    * removes the SparkContext for the given user (key) if it exists
    */
   override def removeContext(user: String): Unit = {
-    if (contextMap contains user) {
-      contextMap(user).sparkContext.stop()
-      contextMap -= user
-    }
+    //    if (contextMap contains user) {
+    //      contextMap(user).sparkContext.stop()
+    //      contextMap -= user
+    //    }
   }
 
   def getAllContexts(): List[Context] = {
-    contextMap.values.toList
+    ////    contextMap.values.toList
+    Nil
   }
 
 }
