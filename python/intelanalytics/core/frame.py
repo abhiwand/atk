@@ -1034,24 +1034,24 @@ class BigFrame(CommandSupport):
         summary : Dict
             Dictionary containing summary statistics in the following entries:
                  mean : Arithmetic mean of the data.
-                 geometric_mean : Geometric mean of the data. NaN when there is a data element <= 0,
+                 geometric_mean : Geometric mean of the data. None when there is a data element <= 0,
                  1 when there are no data elements.
                  variance : Variance of the data where weighted sum of squared distance from the mean is divided by
-                  count - 1. NaN when there are <= 1 many data elements.
-                 standard_deviation : Standard deviation of the data. NaN when there are <= 1 many data elements.
+                  count - 1. None when there are <= 1 many data elements.
+                 standard_deviation : Standard deviation of the data. None when there are <= 1 many data elements.
                  mode : A mode of the data; that is, an item with the greatest weight (largest frequency).
                   When there is more than one mode, the one of least numerical value is taken.
-                  NaN when there are no data elements of positive weight.
+                  None when there are no data elements of positive weight.
                  weight_at_mode : The weight of the mode.
                  total_weight: The sum of all weights that are finite numbers > 0.
-                 minimum : Minimum value in the data. NaN when there are no data elements of positive
+                 minimum : Minimum value in the data. None when there are no data elements of positive
                  weight.
-                 maximum : Maximum value in the data. NaN when there are no data elements of positive
+                 maximum : Maximum value in the data. None when there are no data elements of positive
                   weight.
                  mean_confidence_lower : Lower limit of the 95% confidence interval about the mean.
-                  Assumes a Gaussian distribution. NaN when there are <= 1 data elements of positive weight.
+                  Assumes a Gaussian distribution. None when there are <= 1 data elements of positive weight.
                  mean_confidence_upper: Upper limit of the 95% confidence interval about the mean.
-                  Assumes a Gaussian distribution. NaN when there are <= 1 data elements of positive weight.
+                  Assumes a Gaussian distribution. None when there are <= 1 data elements of positive weight.
                  valid_data_weight_pair_count : The number of valid data elements with weight > 0.
                   This is the number of entries used in the statistical calculation.
                  non_positive_weight_count : The number data elements with finite weight <= 0.
@@ -1109,30 +1109,30 @@ class BigFrame(CommandSupport):
         summary : Dict
             Dictionary containing summary statistics in the following entries:
                  mean : Arithmetic mean of the data.
-                 geometric_mean : Geometric mean of the data. NaN when there is a data element <= 0,
+                 geometric_mean : Geometric mean of the data. None when there is a data element <= 0,
                  1 when there are no data elements of positive weight.
                  variance : Variance of the data where weighted sum of squared distance from the mean is divided by
-                  count - 1. NaN when there are <= 1 many data elements.
-                 standard_deviation : Standard deviation of the data. NaN when there are <= 1 many data elements.
+                  count - 1. None when there are <= 1 many data elements.
+                 standard_deviation : Standard deviation of the data. None when there are <= 1 many data elements.
                  mode : A mode of the data; that is, an item with the greatest weight (largest frequency).
                   When there is more than one mode, the one of least numerical value is taken.
-                  NaN when there are no data elements of nonzero weight.
-                 skewness : The skewness of the data. NaN when there are <= 2 many data elements of positive weight or
+                  None when there are no data elements of nonzero weight.
+                 skewness : The skewness of the data. None when there are <= 2 many data elements of positive weight or
                   if the distribution is uniform.
-                 kurtosis : The kurtosis of the data. NaN when there are <= 3 many data elements of positive weight or
+                 kurtosis : The kurtosis of the data. None when there are <= 3 many data elements of positive weight or
                   if the distribution is uniform.
                  mode : A mode of the data; that is, an item with the greatest weight (largest frequency).
-                  Ties are resolved arbitrarily. NaN when there are no data elements of positive weight.
+                  Ties are resolved arbitrarily. None when there are no data elements of positive weight.
                  weight_at_mode : The weight of the mode.
                  total_weight: The sum of all weights that are finite numbers > 0.
-                 minimum : Minimum value in the data. NaN when there are no data elements of positive
+                 minimum : Minimum value in the data. None when there are no data elements of positive
                  weight.
-                 maximum : Maximum value in the data. NaN when there are no data elements of positive
+                 maximum : Maximum value in the data. None when there are no data elements of positive
                   weight.
                  mean_confidence_lower : Lower limit of the 95% confidence interval about the mean.
-                  Assumes a Gaussian distribution. NaN when there are <= 1 data elements of positive weight.
+                  Assumes a Gaussian distribution. None when there are <= 1 data elements of positive weight.
                  mean_confidence_upper: Upper limit of the 95% confidence interval about the mean.
-                  Assumes a Gaussian distribution. NaN when there are <= 1 data elements of positive weight.
+                  Assumes a Gaussian distribution. None when there are <= 1 data elements of positive weight.
                  positive_weight_count : The number of valid data elements with weight > 0.
                   This is the number of entries used in the statistical calculation.
                  non_positive_weight_count : The number data elements with finite weight <= 0.
@@ -1154,6 +1154,16 @@ class BigFrame(CommandSupport):
             ---------
             bad_row_count + good_row_count = # rows in the frame
             valid_data_weight_pair_count + non_positive_weight_count = good_row_count
+
+        The Kurtosis Formula
+        --------------------
+        Kurtosis is computed by the following unbiased estimator for Fisher's kurtosis:
+            ((n * (n + 1)) / ((n - 1) * (n - 2) * (n - 3))
+             * sum_i  (w_i **2 ( x_i - M)**4 / V**2)
+             - (3 * (n - 1) * (n - 1)) / ((n - 2) * (n - 3))
+
+             where n is the number of valid elements with positive weight,
+             V is the weighted variance and M is the weighted mean
 
         Example
         -------
