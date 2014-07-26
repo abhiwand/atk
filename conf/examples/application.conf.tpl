@@ -318,6 +318,23 @@ intel.analytics.igiraph-titan {
             }
           }
         }
+
+        connected_components {
+            class = "com.intel.intelanalytics.algorithm.graph.ConnectedComponents"
+            config {
+                fs = ${intel.analytics.engine.fs}
+                default-timeout = ${intel.analytics.engine.default-timeout}
+                giraph = ${intel.analytics.engine.giraph}
+                titan = ${intel.analytics.engine.titan}
+                output {
+                    dir = "connectedcomponents"
+                    overwrite = "true"
+                }
+            giraph {
+                pr.maxSuperSteps = 20
+                pr.convergenceProgressOutputInterval = 1
+            }
+        }
       }
     }
   }

@@ -41,7 +41,7 @@ import com.intel.giraph.algorithms.cc.ConnectedComponentsComputation
 
 case class ConnectedComponentsCommand(graph: GraphReference,
                                       input_edge_label: String,
-                                      output_vertex_property_list: List[String],
+                                      output_vertex_property: String,
                                       convergence_progress_output_interval: Option[Int] = None)
 
 case class ConnectedComponentsResult(value: String) //TODO
@@ -69,7 +69,7 @@ class ConnectedComponents
     GiraphConfigurationUtil.initializeTitanConfig(hConf, titanConf, graph)
 
     GiraphConfigurationUtil.set(hConf, "input.edge.label.list", Some(List(arguments.input_edge_label)))
-    GiraphConfigurationUtil.set(hConf, "output.vertex.property.key.list", Some(arguments.output_vertex_property_list))
+    GiraphConfigurationUtil.set(hConf, "output.vertex.property.key.list", Some(List(arguments.output_vertex_property)))
 
     val giraphConf = new GiraphConfiguration(hConf)
 
@@ -91,7 +91,7 @@ class ConnectedComponents
   //TODO: Replace with generic code that works on any case class
   def serializeReturn(returnValue: ConnectedComponentsResult): JsObject = returnValue.toJson.asJsObject
 
-  override def name: String = "graphs/ml/connectedcomponents"
+  override def name: String = "graphs/ml/connected_components"
 
   //TODO: Replace with generic code that works on any case class
   override def serializeArguments(arguments: ConnectedComponentsCommand): JsObject = arguments.toJson.asJsObject()
