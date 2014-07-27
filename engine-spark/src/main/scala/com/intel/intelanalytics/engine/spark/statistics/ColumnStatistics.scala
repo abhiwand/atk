@@ -122,17 +122,21 @@ private[spark] object ColumnStatistics extends Serializable {
       geometricMean = stats.weightedGeometricMean,
       variance = stats.weightedVariance,
       standardDeviation = stats.weightedStandardDeviation,
-      mode = if (stats.weightedMode.isNaN) None else Some(stats.weightedMode),
-      weightAtMode = stats.weightAtMode,
-      totalWeight = stats.totalWeight,
+      // TODO TRIB-3211 modes only make sense when there are weights
+      // mode = if (stats.weightedMode.isNaN) None else Some(stats.weightedMode),
+      // weightAtMode = stats.weightAtMode,
+      validDataCount = stats.totalWeight.toLong,
       meanConfidenceLower = if (stats.meanConfidenceLower.isNaN) None else Some(stats.meanConfidenceLower),
       meanConfidenceUpper = if (stats.meanConfidenceUpper.isNaN) None else Some(stats.meanConfidenceUpper),
       minimum = if (stats.min.isNaN) None else Some(stats.min),
-      maximum = if (stats.max.isNaN) None else Some(stats.max),
-      positiveWeightCount = stats.positiveWeightCount,
-      nonPositiveWeightCount = stats.nonPositiveWeightCount,
-      badRowCount = stats.badRowCount,
-      goodRowCount = stats.goodRowCount)
+      maximum = if (stats.max.isNaN) None else Some(stats.max)
+    // TODO TRIB-3211
+    //positiveWeightCount = stats.positiveWeightCount,
+    //nonPositiveWeightCount = stats.nonPositiveWeightCount,
+    // badRowCount = stats.badRowCount,
+    //goodRowCount = stats.goodRowCount
+    //
+    )
   }
 
   /**

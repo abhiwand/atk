@@ -570,6 +570,8 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     frames.updateSchema(newFrame, allColumns)
   }
 
+  // TRIB-3211
+  /*
   /**
    * Calculate the mode of the specified column.
    * @param arguments Input specification for column mode.
@@ -602,7 +604,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
 
     ColumnStatistics.columnMode(columnIndex, valueDataType, weightsColumnIndexOption, weightsDataTypeOption, rdd)
   }
-
+*/
   /**
    * Calculate the median of the specified column.
    * @param arguments Input specification for column median.
@@ -625,13 +627,16 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     val columnIndex = frame.schema.columnIndex(arguments.dataColumn)
     val valueDataType: DataType = frame.schema.columns(columnIndex)._2
 
+    // TODO TRIB-3211
+    /*
     val (weightsColumnIndexOption, weightsDataTypeOption) = if (arguments.weightsColumn.isEmpty) {
       (None, None)
     }
     else {
       val weightsColumnIndex = frame.schema.columnIndex(arguments.weightsColumn.get)
       (Some(weightsColumnIndex), Some(frame.schema.columns(weightsColumnIndex)._2))
-    }
+    }*/
+    val (weightsColumnIndexOption, weightsDataTypeOption) = (None, None)
 
     ColumnStatistics.columnMedian(columnIndex, valueDataType, weightsColumnIndexOption, weightsDataTypeOption, rdd)
   }
@@ -657,17 +662,22 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     val rdd = frames.getFrameRdd(ctx, frameId)
     val columnIndex = frame.schema.columnIndex(arguments.dataColumn)
     val valueDataType: DataType = frame.schema.columns(columnIndex)._2
+    // TODO TRIB-3211
+    /*
     val (weightsColumnIndexOption, weightsDataTypeOption) = if (arguments.weightsColumn.isEmpty) {
       (None, None)
     }
     else {
       val weightsColumnIndex = frame.schema.columnIndex(arguments.weightsColumn.get)
       (Some(weightsColumnIndex), Some(frame.schema.columns(weightsColumnIndex)._2))
-    }
+    }*/
+    val (weightsColumnIndexOption, weightsDataTypeOption) = (None, None)
 
     ColumnStatistics.columnSummaryStatistics(columnIndex, valueDataType, weightsColumnIndexOption, weightsDataTypeOption, rdd)
   }
 
+  // TODO TRIB-3211
+  /*
   /**
    * Calculate full statistics of the specified column.
    * @param arguments Input specification for column statistics.
@@ -700,6 +710,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
 
     ColumnStatistics.columnFullStatistics(columnIndex, valueDataType, weightsColumnIndexOption, weightsDataTypeOption, rdd)
   }
+ */
 
   def filter(arguments: FilterPredicate[JsObject, Long])(implicit user: UserPrincipal): Execution =
     commands.execute(filterCommand, arguments, user, implicitly[ExecutionContext])
