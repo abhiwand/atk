@@ -23,6 +23,8 @@
 
 package com.intel.intelanalytics.domain.frame
 
+import spray.json.JsValue
+
 /**
  * Command for calculating statistics for a (possibly weighted) dataframe column.
  * @param frame Identifier for the input dataframe.
@@ -55,12 +57,12 @@ case class ColumnFullStatistics(frame: FrameReference, dataColumn: String, weigh
  *                 or if the distribution is uniform.
  * @param mode A mode of the data; that is, an item with the greatest weight (largest frequency).
  *             When there is more than one mode, the one of least numerical value is taken.
- *             NaN when there are no data elements of positive weight.
+ *             None when there are no data elements of positive weight.
  * @param weightAtMode The weight of the mode.
  * @param totalWeight Sum of all weights that are finite numbers > 0.
- * @param minimum Minimum value in the data. NaN when there are no data elements of positive
+ * @param minimum Minimum value in the data. None when there are no data elements of positive
  *                weight.
- * @param maximum Maximum value in the data. NaN when there are no data elements of positive
+ * @param maximum Maximum value in the data. None when there are no data elements of positive
  *                weight.
  * @param meanConfidenceLower: Lower limit of the 95% confidence interval about the mean. Assumes a Gaussian RV.
  *                           NaN when there are <= 1 data elements of positive weight.
@@ -70,7 +72,7 @@ case class ColumnFullStatistics(frame: FrameReference, dataColumn: String, weigh
  *                            This is the number of entries used for the calculation of the statistics.
  * @param nonPositiveWeightCount The number valid data elements with weight <= 0.
  * @param badRowCount The number of rows containing a NaN or infinite value in either the data or weights column.
- * @param validDataWeightPairCount The number of rows not containing a NaN or infinite value in either the data or weights
+ * @param goodRowCount The number of rows not containing a NaN or infinite value in either the data or weights
  *                                 column.
  */
 case class ColumnFullStatisticsReturn(mean: Double,
@@ -79,14 +81,14 @@ case class ColumnFullStatisticsReturn(mean: Double,
                                       standardDeviation: Double,
                                       skewness: Double,
                                       kurtosis: Double,
-                                      mode: Double,
+                                      mode: Option[Double],
                                       weightAtMode: Double,
                                       totalWeight: Double,
-                                      minimum: Double,
-                                      maximum: Double,
-                                      meanConfidenceLower: Double,
-                                      meanConfidenceUpper: Double,
+                                      minimum: Option[Double],
+                                      maximum: Option[Double],
+                                      meanConfidenceLower: Option[Double],
+                                      meanConfidenceUpper: Option[Double],
                                       positiveWeightCount: Long,
                                       nonPositiveWeightCount: Long,
                                       badRowCount: Long,
-                                      validDataWeightPairCount: Long)
+                                      goodRowCount: Long)
