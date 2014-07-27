@@ -1022,12 +1022,8 @@ class BigFrame(CommandSupport):
         Parameters
         ----------
         data_column : str
-            The column to be statistically summarized. Must contain numerical data.
-
-        weights_column : str
-            Optional. The column that provides weights (frequencies) for the data being summarized.
-            Must contain numerical data. Uniform weights of 1 for all items will be used for the calculation if this
-                parameter is not provided.
+            The column to be statistically summarized. Must contain numerical data; all NaNs and infinite values
+             are excluded from the calculation.
 
         Returns
         -------
@@ -1035,258 +1031,69 @@ class BigFrame(CommandSupport):
             Dictionary containing summary statistics in the following entries:
                  mean : Arithmetic mean of the data.
                  geometric_mean : Geometric mean of the data. None when there is a data element <= 0,
-                 1 when there are no data elements.
-                 variance : Variance of the data where weighted sum of squared distance from the mean is divided by
+                  1.0 when there are no data elements.
+                 variance : Variance of the data where  sum of squared distance from the mean is divided by
                   count - 1. None when there are <= 1 many data elements.
                  standard_deviation : Standard deviation of the data. None when there are <= 1 many data elements.
-                 mode : A mode of the data; that is, an item with the greatest weight (largest frequency).
-                  When there is more than one mode, the one of least numerical value is taken.
-                  None when there are no data elements of positive weight.
-                 weight_at_mode : The weight of the mode.
-                 total_weight: The sum of all weights that are finite numbers > 0.
-                 minimum : Minimum value in the data. None when there are no data elements of positive
-                 weight.
-                 maximum : Maximum value in the data. None when there are no data elements of positive
-                  weight.
+                 valid_data_count: The count of all data elements that are finite numbers.
+                  (Ie. after excluding NaNs and infinite values.)
+                 minimum : Minimum value in the data. None when there are no data elements.
+                 maximum : Maximum value in the data. None when there are no data elements.
                  mean_confidence_lower : Lower limit of the 95% confidence interval about the mean.
-                  Assumes a Gaussian distribution. None when there are <= 1 data elements of positive weight.
+                  Assumes a Gaussian distribution. None when there are 0 or 1 data elements.
                  mean_confidence_upper: Upper limit of the 95% confidence interval about the mean.
-                  Assumes a Gaussian distribution. None when there are <= 1 data elements of positive weight.
-                 valid_data_weight_pair_count : The number of valid data elements with weight > 0.
-                  This is the number of entries used in the statistical calculation.
-                 non_positive_weight_count : The number data elements with finite weight <= 0.
-                 bad_row_count : The number of rows containing a NaN or infinite value in either the data
-                  or weights column.
-                 good_row_count : The number of rows not containing a NaN or infinite value in either the data
-                  or weights column.
+                  Assumes a Gaussian distribution. None when there are 0 or 1 data elements.
 
-        Logging Invalid Data
-        --------------------
-
-        A row is bad when it contains a NaN or infinite value in either its data or weights column.  In this case, it
-         contributes to bad_row_count; otherwise it contributes to good row count.
-
-        A good row can be skipped because the value in its weight column is <=0. In this case, it contributes to
-         non_positive_weight_count, otherwise it contributes to valid_data_weight_pair_count.
-
-            Equations
-            ---------
-            bad_row_count + good_row_count = # rows in the frame
-            valid_data_weight_pair_count + non_positive_weight_count = good_row_count
-
+        Return Types
+        ------------
+            valid_data_count returns a Long.
+            All other values are returned as Doubles or None.
 
         Variance
         --------
 
         Variance is computed by the following formula:
 
-        (1 / (n - 1)) * sum_i w_i * (x_i - M)**2
+        (1 / (n - 1)) * sum_i  (x_i - M)**2
 
-            where n is the number of valid elements of positive weight, and M is the weighted mean
-
-        Standard Deviation
-        ------------------
-
-        The square root of the variance.
-
-
-        Example
-        -------
-        >>> stats = frame.column_summary_statistics('data column', 'weight column')
-
-        Comparison between column_summary_statistics and column_full_statistics
-        -----------------------------------------------------------------------
-
-        column_summary_statistics has faster execution time than column_full_statistics (because it makes one pass
-         over the data rather than two, as column_full_statistics does)
-
-        However, column_full_statistics provides the higher moments, skewness and kurtosis,
-         that column_summary_statistics does not provide.
-        """
-        pass
-
-    @doc_stub
-    def column_full_statistics(self, data_column, weights_column_name = None):
-        """
-        Calculate summary statistics of a column.
-
-        Parameters
-        ----------
-        data_column : str
-            The column to be statistically summarized. Must contain numerical data.
-
-        weights_column : str
-            Optional. The column that provides weights (frequencies) for the data being summarized.
-            Must contain numerical data. Uniform weights of 1 for all items will be used for the calculation if this
-                parameter is not provided.
-
-        Returns
-        -------
-        summary : Dict
-            Dictionary containing summary statistics in the following entries:
-                 mean : Arithmetic mean of the data.
-                 geometric_mean : Geometric mean of the data. None when there is a data element <= 0,
-                 1 when there are no data elements of positive weight.
-                 variance : Variance of the data where weighted sum of squared distance from the mean is divided by
-                  count - 1. None when there are <= 1 many data elements.
-                 standard_deviation : Standard deviation of the data. None when there are <= 1 many data elements.
-                 mode : A mode of the data; that is, an item with the greatest weight (largest frequency).
-                  When there is more than one mode, the one of least numerical value is taken.
-                  None when there are no data elements of nonzero weight.
-                 skewness : The skewness of the data. None when there are <= 2 many data elements of positive weight or
-                  if the distribution is uniform.
-                 kurtosis : The kurtosis of the data. None when there are <= 3 many data elements of positive weight or
-                  if the distribution is uniform.
-                 mode : A mode of the data; that is, an item with the greatest weight (largest frequency).
-                  Ties are resolved arbitrarily. None when there are no data elements of positive weight.
-                 weight_at_mode : The weight of the mode.
-                 total_weight: The sum of all weights that are finite numbers > 0.
-                 minimum : Minimum value in the data. None when there are no data elements of positive
-                 weight.
-                 maximum : Maximum value in the data. None when there are no data elements of positive
-                  weight.
-                 mean_confidence_lower : Lower limit of the 95% confidence interval about the mean.
-                  Assumes a Gaussian distribution. None when there are <= 1 data elements of positive weight.
-                 mean_confidence_upper: Upper limit of the 95% confidence interval about the mean.
-                  Assumes a Gaussian distribution. None when there are <= 1 data elements of positive weight.
-                 positive_weight_count : The number of valid data elements with weight > 0.
-                  This is the number of entries used in the statistical calculation.
-                 non_positive_weight_count : The number data elements with finite weight <= 0.
-                 bad_row_count : The number of rows containing a NaN or infinite value in either the data or
-                  weights column.
-                 good_row_count : The number of rows not containing a NaN or infinite value in either the data
-                  or weights column.
-
-        Logging Invalid Data
-        --------------------
-
-        A row is bad when it contains a NaN or infinite value in either its data or weights column.  In this case, it
-         contributes to bad_row_count; otherwise it contributes to good row count.
-
-        A good row can be skipped because the value in its weight column is <=0. In this case, it contributes to
-         non_positive_weight_count, otherwise it contributes to valid_data_weight_pair_count.
-
-            Equations
-            ---------
-            bad_row_count + good_row_count = # rows in the frame
-            valid_data_weight_pair_count + non_positive_weight_count = good_row_count
-
-        Variance
-        --------
-
-        Variance is computed by the following formula:
-
-        (1 / (n - 1)) * sum_i w_i * (x_i - M)**2
-
-            where n is the number of valid elements of positive weight, and M is the weighted mean
+            where n is the number of valid elements of positive weight, and M is the  mean
 
         Standard Deviation
         ------------------
 
         The square root of the variance.
 
-        Skewness
-        --------
-        Skewness is computed by the following formula:
-            ( n / (n- 1) * (n - 2)) *  sum_i  (w_i **(1.5)( x_i - M)**3 / V**(1.5))
-
-             where n is the number of valid elements with positive weight,
-             V is the weighted variance and M is the weighted mean
-
-        Kurtosis
-        --------
-        Kurtosis is computed by the following unbiased estimator for Fisher's kurtosis:
-            ((n * (n + 1)) / ((n - 1) * (n - 2) * (n - 3))
-             * sum_i  (w_i **2 ( x_i - M)**4 / V**2)
-             - (3 * (n - 1) * (n - 1)) / ((n - 2) * (n - 3))
-
-             where n is the number of valid elements with positive weight,
-             V is the weighted variance and M is the weighted mean
-
         Example
         -------
         >>> stats = frame.column_summary_statistics('data column', 'weight column')
 
-        Comparison between column_summary_statistics and column_full_statistics
-        -----------------------------------------------------------------------
-
-        column_summary_statistics has faster execution time than column_full_statistics (because it makes one pass
-         over the data rather than two, as column_full_statistics does)
-
-        However, column_full_statistics provides the higher moments, skewness and kurtosis,
-         that column_summary_statistics does not provide.
         """
         pass
 
-    @doc_stub
-    def column_mode (self, data_column, weights_column = None):
-        """
-        Calculate a mode of a column.  A mode is a data element of maximum weight. All data elements of weight <= 0
-        are excluded from the calculation, as are all data elements whose weight is NaN or infinite.
-        If there are no data elements of finite weight > 0, no mode is returned.
 
-        The mode of a column is the first value x so that the sum of weights for all data elements y <= x is >= 1/2
 
-        For example: The mode of 1 to 100000 is 50000, the mode of 1 to 10001 is 50001
-
-        Parameters
-        ----------
-        data_column : str
-            The column whose mode is to be calculated
-
-        weights_column : str
-            Optional. The column that provides weights (frequencies) for the mode calculation.
-            Must contain numerical data. Uniform weights of 1 for all items will be used for the calculation if this
-                parameter is not provided.
-
-        Returns
-        -------
-        mode : Dict
-            Dictionary containing summary statistics in the following entries:
-                mode : Mode of the data. (Ties resolved arbitrarily.)
-                    If the sum of the weights is 0, the there is no mode.
-                weight_of_mode : Weight of the mode. If there are no data elements of finite weight > 0,
-                 the weight of the mode is 0. If no weights column is given, this is the number of appearances of the
-                 mode in the column.
-                total_weight : Sum of all weights in the weight column. This is the row count if no weights
-                 are given. If no weights column is given, this is the number of rows in the table with non-zero weight.
-
-        Example
-        -------
-        >>> mode = frame.column_mode('interesting column')
-        """
-        pass
 
     @doc_stub
-    def column_median(self, data_column, weights_column = None):
+    def column_median(self, data_column):
         """
-        Calculate the (weighted) median of a column. The median is the least value X in the range of the distribution so
-         that the cumulative weight strictly below X is < 1/2  the total weight and the cumulative
-         distribution up to and including X is >= 1/2 the total weight.
+        Calculate the median of a column. If there are n data items, the median is the data element that appears at
+         position ceil(n/2) when column is sorted.
 
-        All data elements of weight <= 0 are excluded from the calculation, as are all data elements whose weight
-         is NaN or infinite.
-        If a weight column is provided and no weights are finite numbers > 0,, None is returned.
+        All  all data elements that are NaN or infinite are excluded from the calculation.
 
         Parameters
         ----------
         data_column : str
             The column whose median is to be calculated
 
-        weights_column : str
-            Optional. The column that provides weights (frequencies) for the median calculation.
-            Must contain numerical data. Uniform weights of 1 for all items will be used for the calculation if this
-                parameter is not provided.
-
         Returns
         -------
         median : Double
-            The median of the values.  If a weight column is provided and no weights are finite numbers > 0,
-             None is returned.
+            The median of the values.  If an empty column is provided, the value None is returned for the median.
 
         Example
         -------
-        >>> median = frame.column_median('interesting column')
+        >>> median = frame.column_median('middling column')
         """
         pass
 

@@ -51,37 +51,45 @@ case class ColumnSummaryStatistics(frame: FrameReference, dataColumn: String, we
  * @param variance Variance of the data where weighted sum of squared distance from the mean is divided by the number of
  *                 data elements minus 1. NaN when the number of data elements is < 2.
  * @param standardDeviation Standard deviation of the data. NaN when the number of data elements is < 2.
- * @param mode A mode of the data; that is, an item with the greatest weight (largest frequency).
- *              When there is more than one mode, the one of least numerical value is taken.
- *              None when there are no data elements of positive weight.
- * @param weightAtMode The weight of the mode.
- * @param totalWeight Sum of all weights that are finite numbers > 0.
+ * @param validDataCount The number of data elements that are finite numbers. (Ie. after NaNs and infinite values have
+ *                       been excluded.)
  * @param minimum Minimum value in the data. None when there are no data elements of positive weight.
  * @param maximum Maximum value in the data. None when there are no data elements of positive weight.
  * @param meanConfidenceLower: Lower limit of the 95% confidence interval about the mean. Assumes a Gaussian RV.
  *                             NaN when there are <= 1 data elements of positive weight.
  * @param meanConfidenceUpper: Upper limit of the 95% confidence interval about the mean. Assumes a Gaussian RV.
  *                              NaN when there are <= 1 data elements of positive weight.
- * @param positiveWeightCount  The number valid data elements with weights > 0.
- *                             This is the number of entries used for the calculation of the statistics.
- * @param nonPositiveWeightCount The number valid data elements with weight <= 0.
- * @param badRowCount The number of rows containing a NaN or infinite value in either the data or weights column.
- * @param goodRowCount The number of rows containing a NaN or infinite value in either the data or weights
- *                             column.
  */
 case class ColumnSummaryStatisticsReturn(mean: Double,
                                          geometricMean: Double,
                                          variance: Double,
                                          standardDeviation: Double,
-                                         mode: Option[Double],
-                                         weightAtMode: Double,
-                                         totalWeight: Double,
+                                         //mode: Option[Double],
+                                         //weightAtMode: Double,
+                                         validDataCount: Long,
                                          minimum: Option[Double],
                                          maximum: Option[Double],
                                          meanConfidenceLower: Option[Double],
-                                         meanConfidenceUpper: Option[Double],
-                                         positiveWeightCount: Long,
-                                         nonPositiveWeightCount: Long,
-                                         badRowCount: Long,
-                                         goodRowCount: Long)
+                                         meanConfidenceUpper: Option[Double] //positiveWeightCount: Long,
+                                         //nonPositiveWeightCount: Long,
+                                         //badRowCount: Long,
+                                         //goodRowCount: Long
+                                         )
+
+/* TODO TRIB-3211
+ * modes only make sense when there are weights
+ *
+ *  * @param mode A mode of the data; that is, an item with the greatest weight (largest frequency).
+ *              When there is more than one mode, the one of least numerical value is taken.
+ *              None when there are no data elements of positive weight.
+ * @param weightAtMode The weight of the mode.
+ *
+ * logging of "indigestible data" will come later
+* @param positiveWeightCount  The number valid data elements with weights > 0.
+*                             This is the number of entries used for the calculation of the statistics.
+* @param nonPositiveWeightCount The number valid data elements with weight <= 0.
+* @param badRowCount The number of rows containing a NaN or infinite value in either the data or weights column.
+* @param goodRowCount The number of rows containing a NaN or infinite value in either the data or weights
+*                             column.
+*                             */
 
