@@ -1074,6 +1074,22 @@ class BigFrame(CommandSupport):
             bad_row_count + good_row_count = # rows in the frame
             valid_data_weight_pair_count + non_positive_weight_count = good_row_count
 
+
+        Variance
+        --------
+
+        Variance is computed by the following formula:
+
+        (1 / (n - 1)) * sum_i w_i * (x_i - M)**2
+
+            where n is the number of valid elements of positive weight, and M is the weighted mean
+
+        Standard Deviation
+        ------------------
+
+        The square root of the variance.
+
+
         Example
         -------
         >>> stats = frame.column_summary_statistics('data column', 'weight column')
@@ -1155,8 +1171,30 @@ class BigFrame(CommandSupport):
             bad_row_count + good_row_count = # rows in the frame
             valid_data_weight_pair_count + non_positive_weight_count = good_row_count
 
-        The Kurtosis Formula
-        --------------------
+        Variance
+        --------
+
+        Variance is computed by the following formula:
+
+        (1 / (n - 1)) * sum_i w_i * (x_i - M)**2
+
+            where n is the number of valid elements of positive weight, and M is the weighted mean
+
+        Standard Deviation
+        ------------------
+
+        The square root of the variance.
+
+        Skewness
+        --------
+        Skewness is computed by the following formula:
+            ( n / (n- 1) * (n - 2)) *  sum_i  (w_i **(1.5)( x_i - M)**3 / V**(1.5))
+
+             where n is the number of valid elements with positive weight,
+             V is the weighted variance and M is the weighted mean
+
+        Kurtosis
+        --------
         Kurtosis is computed by the following unbiased estimator for Fisher's kurtosis:
             ((n * (n + 1)) / ((n - 1) * (n - 2) * (n - 3))
              * sum_i  (w_i **2 ( x_i - M)**4 / V**2)
