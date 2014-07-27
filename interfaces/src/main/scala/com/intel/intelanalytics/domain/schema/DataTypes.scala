@@ -46,7 +46,7 @@ object DataTypes {
 
     def scalaType: Class[ScalaType]
 
-    def json(raw: Any): JsValue
+    def typedJson(raw: Any): JsValue
 
     def asDouble(raw: Any): Double
 
@@ -64,7 +64,7 @@ object DataTypes {
 
     override def scalaType = classOf[Int]
 
-    override def json(raw: Any) = {
+    override def typedJson(raw: Any) = {
       raw.asInstanceOf[Int].toJson
     }
 
@@ -86,7 +86,7 @@ object DataTypes {
 
     override def scalaType = classOf[Long]
 
-    override def json(raw: Any) = {
+    override def typedJson(raw: Any) = {
       raw.asInstanceOf[Long].toJson
     }
 
@@ -107,7 +107,7 @@ object DataTypes {
 
     override def scalaType = classOf[Float]
 
-    override def json(raw: Any) = {
+    override def typedJson(raw: Any) = {
       raw.asInstanceOf[Float].toJson
     }
 
@@ -129,7 +129,7 @@ object DataTypes {
 
     override def scalaType = classOf[Double]
 
-    override def json(raw: Any) = {
+    override def typedJson(raw: Any) = {
       raw.asInstanceOf[Double].toJson
     }
 
@@ -150,7 +150,7 @@ object DataTypes {
 
     override def scalaType = classOf[String]
 
-    override def json(raw: Any) = {
+    override def typedJson(raw: Any) = {
       raw.asInstanceOf[String].toJson
     }
 

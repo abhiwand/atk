@@ -44,11 +44,10 @@ private[spark] object ColumnStatistics extends Serializable {
       None.asInstanceOf[Option[String]].toJson
     }
     else {
-      dataType.json(frequencyStatistics.mode.get)
+      dataType.typedJson(frequencyStatistics.mode.get)
     }
 
     ColumnModeReturn(modeJsValue, frequencyStatistics.weightOfMode, frequencyStatistics.totalWeight)
-
   }
 
   /**
@@ -83,7 +82,7 @@ private[spark] object ColumnStatistics extends Serializable {
       None.asInstanceOf[Option[Double]].toJson
     }
     else {
-      dataType.json(orderStatistics.medianOption.get)
+      dataType.typedJson(orderStatistics.medianOption.get)
     }
     ColumnMedianReturn(medianReturn)
   }
@@ -123,17 +122,17 @@ private[spark] object ColumnStatistics extends Serializable {
       geometricMean = stats.weightedGeometricMean,
       variance = stats.weightedVariance,
       standardDeviation = stats.weightedStandardDeviation,
-      mode = stats.weightedMode,
+      mode = if (stats.weightedMode.isNaN) None else Some(stats.weightedMode),
       weightAtMode = stats.weightAtMode,
       totalWeight = stats.totalWeight,
-      meanConfidenceLower = stats.meanConfidenceLower,
-      meanConfidenceUpper = stats.meanConfidenceUpper,
-      minimum = stats.min,
-      maximum = stats.max,
+      meanConfidenceLower = if (stats.meanConfidenceLower.isNaN) None else Some(stats.meanConfidenceLower),
+      meanConfidenceUpper = if (stats.meanConfidenceUpper.isNaN) None else Some(stats.meanConfidenceUpper),
+      minimum = if (stats.min.isNaN) None else Some(stats.min),
+      maximum = if (stats.max.isNaN) None else Some(stats.max),
       positiveWeightCount = stats.positiveWeightCount,
       nonPositiveWeightCount = stats.nonPositiveWeightCount,
       badRowCount = stats.badRowCount,
-      validDataWeightPairCount = stats.goodRowCount)
+      goodRowCount = stats.goodRowCount)
   }
 
   /**
@@ -167,17 +166,17 @@ private[spark] object ColumnStatistics extends Serializable {
       standardDeviation = stats.weightedStandardDeviation,
       skewness = stats.weightedSkewness,
       kurtosis = stats.weightedKurtosis,
-      mode = stats.weightedMode,
+      mode = if (stats.weightedMode.isNaN) None else Some(stats.weightedMode),
       weightAtMode = stats.weightAtMode,
       totalWeight = stats.totalWeight,
-      meanConfidenceLower = stats.meanConfidenceLower,
-      meanConfidenceUpper = stats.meanConfidenceUpper,
-      minimum = stats.min,
-      maximum = stats.max,
+      meanConfidenceLower = if (stats.meanConfidenceLower.isNaN) None else Some(stats.meanConfidenceLower),
+      meanConfidenceUpper = if (stats.meanConfidenceUpper.isNaN) None else Some(stats.meanConfidenceUpper),
+      minimum = if (stats.min.isNaN) None else Some(stats.min),
+      maximum = if (stats.max.isNaN) None else Some(stats.max),
       positiveWeightCount = stats.positiveWeightCount,
       nonPositiveWeightCount = stats.nonPositiveWeightCount,
       badRowCount = stats.badRowCount,
-      validDataWeightPairCount = stats.goodRowCount)
+      goodRowCount = stats.goodRowCount)
   }
 
   private def getDataWeightPairs(dataColumnIndex: Int,
