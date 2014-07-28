@@ -25,6 +25,7 @@ package com.intel.intelanalytics.engine.spark.plugin
 
 import com.intel.intelanalytics.engine.Engine
 import com.intel.intelanalytics.engine.plugin.Invocation
+import com.intel.intelanalytics.engine.spark.command.SparkCommandStorage
 import com.intel.intelanalytics.security.UserPrincipal
 import org.apache.spark.SparkContext
 import spray.json.JsObject
@@ -47,4 +48,5 @@ case class SparkInvocation(engine: Engine,
                            commandId: Long,
                            executionContext: ExecutionContext,
                            arguments: Option[JsObject],
-                           sparkContext: SparkContext) extends Invocation
+                           sparkContext: SparkContext,
+                           commandStorage: SparkCommandStorage) extends Invocation
