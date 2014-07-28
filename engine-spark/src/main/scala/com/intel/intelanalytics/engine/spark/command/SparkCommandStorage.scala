@@ -24,6 +24,7 @@
 package com.intel.intelanalytics.engine.spark.command
 
 import com.intel.intelanalytics.domain.Error
+import org.joda.time.DateTime
 import scala.util.{ Success, Failure, Try }
 import spray.json.JsObject
 import com.intel.intelanalytics.domain.command.{ CommandTemplate, Command }
@@ -66,16 +67,16 @@ class SparkCommandStorage(val metaStore: SlickMetaStoreComponent#SlickMetaStore)
         if (command.complete) {
           warn(s"Ignoring completion attempt for command $id, already completed")
         }
-        //TODO: Update dates
         import com.intel.intelanalytics.domain.throwableToError
         val changed = result match {
-          case Failure(ex) => command.copy(complete = true, error = Some(throwableToError(ex)))
+          case Failure(ex) =>
+            error(ex.toString, exception = ex)
+            command.copy(complete = true,
+              error = Some(throwableToError(ex)))
           case Success(r) => {
-            /**
-             * update progress to 100 since the command is complete. This step is necessary
-             * because the actually progress notification events are sent to SparkProgressListener.
-             * The exact timing of the events arrival can not be determined.
-             */
+            // update progress to 100 since the command is complete. This step is necessary
+            // because the actually progress notification events are sent to SparkProgressListener.
+            // The exact timing of the events arrival can not be determined.
 
             val progress = command.progress.map(info => info.copy(progress = 100f))
             command.copy(complete = true, progress = progress, result = Some(r))

@@ -25,7 +25,7 @@ package com.intel.intelanalytics.component
 
 import java.net.{ URL, URLClassLoader }
 
-import com.typesafe.config.{ Config, ConfigFactory }
+import com.typesafe.config.{ConfigParseOptions, ConfigResolveOptions, Config, ConfigFactory}
 
 import scala.reflect.io.{ Directory, File, Path }
 import scala.util.Try
@@ -137,29 +137,55 @@ object Boot extends App with ClassLoaderAware {
   }
 
   /**
+   * For debugging only
+   */
+  private[component] def writeFile(fileName: String, content: String) {
+    import java.io._
+    val file = new java.io.File(fileName)
+    val parent = file.getParentFile
+    if (!parent.exists()) {
+      parent.mkdirs()
+    }
+    val writer = new PrintWriter(file)
+    try {
+      writer.append(content)
+    }
+    finally {
+      writer.close()
+    }
+  }
+
+  /**
    * Main entry point for archive creation
    *
    * @param archiveName the archive to create
    * @return the created, running, `Archive`
    */
   private def buildArchive(archiveName: String): Archive = {
-    //We first create a standard plugin classloader, which we will use to query the config
+    //We first create a standard plugin class loader, which we will use to query the config
     //to see if this archive needs special treatment (i.e. a parent class loader other than the
     //interfaces class loader)
-    val probe = buildClassLoader(archiveName, getClass.getClassLoader)
-    val additionalConfig = ConfigFactory.defaultReference(probe)
+    val probe = buildClassLoader(archiveName, interfaces)
 
-    val augmentedConfigForProbe = config.withFallback(additionalConfig)
+    val parseOptions = ConfigParseOptions.defaults()
+    parseOptions.setAllowMissing(true)
+
+    val augmentedConfigForProbe = ConfigFactory.defaultReference(probe)
 
     val definition = readArchiveDefinition(archiveName, augmentedConfigForProbe)
 
-    //Now that we know the parent, we build the real classloader we're going to use for this archive.
+    //Now that we know the parent, we build the real class loader we're going to use for this archive.
     val parentLoader = loaders.getOrElse(definition.parent, throw new IllegalArgumentException(
       s"Archive ${definition.parent} not found when searching for parent archive for $archiveName"))
 
     val loader = buildClassLoader(archiveName, parentLoader)
 
-    val augmentedConfig = config.withFallback(ConfigFactory.defaultReference(loader)).resolve()
+    ConfigFactory.invalidateCaches()
+
+    val augmentedConfig = config.withFallback(
+      ConfigFactory.parseResources(loader, "reference.conf", parseOptions).withFallback(config)).resolve()
+
+    writeFile("/tmp/iat/" + archiveName + ".effective-conf", augmentedConfig.root().render())
 
     val archiveLoader = ArchiveClassLoader(archiveName, loader)
 
