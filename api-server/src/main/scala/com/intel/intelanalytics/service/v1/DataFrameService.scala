@@ -24,8 +24,9 @@
 package com.intel.intelanalytics.service.v1
 
 import com.intel.intelanalytics.domain._
+import com.intel.intelanalytics.domain.query.{ RowQuery }
 import spray.json._
-import spray.http.Uri
+import spray.http.{ StatusCodes, HttpResponse, Uri }
 import scala.Some
 import com.intel.intelanalytics.repository.MetaStoreComponent
 import com.intel.intelanalytics.service.v1.viewmodels._
@@ -43,6 +44,9 @@ import spray.routing.Directives
 import com.intel.intelanalytics.service.v1.decorators.FrameDecorator
 import org.apache.commons.lang.StringUtils
 import com.intel.intelanalytics.spray.json.IADefaultJsonProtocol
+import com.intel.intelanalytics.service.v1.decorators.{ QueryDecorator, CommandDecorator, FrameDecorator }
+
+import scala.util.matching.Regex
 
 //TODO: Is this right execution context for us?
 import ExecutionContext.Implicits.global
@@ -92,7 +96,9 @@ class DataFrameService(commonDirectives: CommonDirectives, engine: Engine) exten
                 frame =>
                   onComplete(engine.create(frame)) {
                     case Success(createdFrame) => complete(FrameDecorator.decorateEntity(uri + "/" + createdFrame.id, Nil, createdFrame))
-                    case Failure(ex) => throw ex
+                    case Failure(ex) => ctx => {
+                      ctx.complete(500, ex.getMessage)
+                    }
                   }
               }
             }
@@ -100,8 +106,8 @@ class DataFrameService(commonDirectives: CommonDirectives, engine: Engine) exten
         }
       } ~
         pathPrefix(prefix / LongNumber) { id =>
-          pathEnd {
-            requestUri { uri =>
+          requestUri { uri =>
+            pathEnd {
               get {
                 onComplete(engine.getFrame(id)) {
                   case Success(Some(frame)) => {
@@ -125,26 +131,21 @@ class DataFrameService(commonDirectives: CommonDirectives, engine: Engine) exten
                     case Failure(ex) => throw ex
                   }
                 }
-            }
-          } ~
-            (path("data") & get) {
+            } ~ (path("data") & get) {
               parameters('offset.as[Int], 'count.as[Int]) {
                 (offset, count) =>
-                  onComplete(engine.getRows(id, offset, count)) {
-                    case Success(rows: Iterable[Array[Any]]) => {
-                      import spray.httpx.SprayJsonSupport._
-                      import spray.json._
-                      import DomainJsonProtocol._
-                      val strings = rows.map(r => r.map {
-                        case null => JsNull
-                        case a => a.toJson
-                      }.toList).toList
-                      complete(strings)
-                    }
-                    case Failure(ex) => throw ex
+                  {
+                    import ViewModelJsonImplicits._
+                    val exec = engine.getRows(RowQuery[Long](id, offset, count))
+                    //we require a commands uri to point the query completion to.
+                    val pattern = new Regex(prefix + ".*")
+                    val commandUri = pattern.replaceFirstIn(uri.toString, QueryService.prefix + "/") + exec.start.id
+                    complete(QueryDecorator.decorateEntity(commandUri, List(Rel.self(commandUri)), exec.start))
                   }
               }
             }
+
+          }
         }
     }
   }

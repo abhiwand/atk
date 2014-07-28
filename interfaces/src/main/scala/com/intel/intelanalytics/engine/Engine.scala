@@ -28,6 +28,7 @@ import com.intel.intelanalytics.domain.FilterPredicate
 import com.intel.intelanalytics.domain.frame._
 import com.intel.intelanalytics.domain.frame.load.Load
 import com.intel.intelanalytics.domain.graph.{ Graph, GraphLoad, GraphTemplate }
+import com.intel.intelanalytics.domain.query.{ Execution => QueryExecution, RowQuery, Query }
 import com.intel.intelanalytics.engine.Rows._
 import com.intel.intelanalytics.security.UserPrincipal
 import spray.json.JsObject
@@ -62,9 +63,15 @@ trait Engine {
 
   def getCommand(id: Identifier): Future[Option[Command]]
 
+  def getQueries(offset: Int, count: Int): Future[Seq[Query]]
+
+  def getQuery(id: Identifier): Future[Option[Query]]
+
+  def getQueryPage(id: Identifier, pageId: Identifier)(implicit user: UserPrincipal): Iterable[Any]
+
   def getFrame(id: Identifier)(implicit user: UserPrincipal): Future[Option[DataFrame]]
 
-  def getRows(id: Identifier, offset: Long, count: Int)(implicit user: UserPrincipal): Future[Iterable[Row]]
+  def getRows(arguments: RowQuery[Identifier])(implicit user: UserPrincipal): QueryExecution
 
   def create(frame: DataFrameTemplate)(implicit user: UserPrincipal): Future[DataFrame]
 
@@ -78,7 +85,7 @@ trait Engine {
 
   def renameFrame(arguments: FrameRenameFrame)(implicit user: UserPrincipal): Execution
 
-  def renameColumn(arguments: FrameRenameColumn[JsObject, Long])(implicit user: UserPrincipal): Execution
+  def renameColumns(arguments: FrameRenameColumns[JsObject, Long])(implicit user: UserPrincipal): Execution
 
   def removeColumn(arguments: FrameRemoveColumn)(implicit user: UserPrincipal): Execution
 
@@ -94,6 +101,7 @@ trait Engine {
   def dropDuplicates(dropDuplicateCommand: DropDuplicates)(implicit user: UserPrincipal): Execution
 
   def join(argument: FrameJoin)(implicit user: UserPrincipal): Execution
+
   def flattenColumn(argument: FlattenColumn)(implicit user: UserPrincipal): Execution
 
   def binColumn(arguments: BinColumn[Long])(implicit user: UserPrincipal): Execution
@@ -120,8 +128,12 @@ trait Engine {
 
   def deleteGraph(graph: Graph): Future[Unit]
 
+  def cumulativeDist(arguments: CumulativeDist[Long])(implicit user: UserPrincipal): Execution
+
   // Model performance measures
 
   def classificationMetric(arguments: ClassificationMetric[Long])(implicit user: UserPrincipal): Execution
+
+  def ecdf(arguments: ECDF[Long])(implicit user: UserPrincipal): Execution
 
 }

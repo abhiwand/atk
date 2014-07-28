@@ -30,7 +30,7 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol
 import com.intel.intelanalytics.domain.graph.GraphReference
 import com.intel.intelanalytics.engine.plugin.{ CommandPlugin, Invocation }
 import com.intel.intelanalytics.security.UserPrincipal
-import com.intel.intelanalytics.algorithm.util.{ GiraphConfigurationUtil, GiraphJobDriver }
+import com.intel.intelanalytics.algorithm.util.{ GiraphJobManager, GiraphConfigurationUtil }
 import org.apache.giraph.conf.GiraphConfiguration
 import spray.json.DefaultJsonProtocol._
 import spray.json._
@@ -67,6 +67,18 @@ class AlternatingLeastSquares
   override def execute(invocation: Invocation, arguments: Als)(implicit user: UserPrincipal, executionContext: ExecutionContext): AlsResult = {
 
     val config = configuration
+    val pattern = "[\\s,\\t]+"
+    val outputVertexPropertyList = arguments.output_vertex_property_list.getOrElse(
+      config.getString("output_vertex_property_list"))
+    val resultPropertyList = outputVertexPropertyList.split(pattern)
+    val vectorValue = arguments.vector_value.getOrElse(config.getString("vector_value")).toBoolean
+    val biasOn = arguments.bias_on.getOrElse(false)
+    require(resultPropertyList.size >= 1,
+      "Please input at least one vertex property name for ALS/CGD results")
+    require(!vectorValue || !biasOn ||
+      (vectorValue && biasOn && resultPropertyList.size == 2),
+      "Please input one property name for bias and one property name for results when both vector_value " +
+        "and bias_on are enabled")
     val hConf = GiraphConfigurationUtil.newHadoopConfigurationFrom(config, "giraph")
     val titanConf = GiraphConfigurationUtil.flattenConfig(config.getConfig("titan"), "titan.")
 
@@ -102,9 +114,9 @@ class AlternatingLeastSquares
     giraphConf.setComputationClass(classOf[AlternatingLeastSquaresComputation])
     giraphConf.setAggregatorWriterClass(classOf[AlternatingLeastSquaresComputation.AlternatingLeastSquaresAggregatorWriter])
 
-    AlsResult(GiraphJobDriver.run("ia_giraph_als",
+    AlsResult(GiraphJobManager.run("ia_giraph_als",
       classOf[AlternatingLeastSquaresComputation].getCanonicalName,
-      config, giraphConf, invocation.commandId, "als-learning-report_0"))
+      config, giraphConf, invocation, "als-learning-report_0"))
   }
 
   //TODO: Replace with generic code that works on any case class
