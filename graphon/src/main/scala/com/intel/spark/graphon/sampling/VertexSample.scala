@@ -64,7 +64,7 @@ class VertexSample extends SparkCommandPlugin[VertexSampleArguments, VertexSampl
 
   import DomainJsonProtocol._
 
-  implicit val vertexSamplFormat = jsonFormat4(VertexSampleArguments)
+  implicit val vertexSampleFormat = jsonFormat4(VertexSampleArguments)
   implicit val vertexSampleResultFormat = jsonFormat1(VertexSampleResult)
 
   override def execute(invocation: SparkInvocation, arguments: VertexSampleArguments)(implicit user: UserPrincipal, executionContext: ExecutionContext): VertexSampleResult = {
