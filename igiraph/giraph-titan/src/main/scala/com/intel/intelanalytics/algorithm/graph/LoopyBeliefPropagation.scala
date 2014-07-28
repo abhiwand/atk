@@ -30,7 +30,7 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol
 import com.intel.intelanalytics.domain.graph.GraphReference
 import com.intel.intelanalytics.engine.plugin.{ CommandPlugin, Invocation }
 import com.intel.intelanalytics.security.UserPrincipal
-import com.intel.intelanalytics.algorithm.util.{ GiraphConfigurationUtil, GiraphJobDriver }
+import com.intel.intelanalytics.algorithm.util.{ GiraphJobManager, GiraphConfigurationUtil }
 import org.apache.giraph.conf.GiraphConfiguration
 import spray.json.DefaultJsonProtocol._
 import spray.json._
@@ -98,9 +98,9 @@ class LoopyBeliefPropagation
     giraphConf.setComputationClass(classOf[LoopyBeliefPropagationComputation])
     giraphConf.setAggregatorWriterClass(classOf[LoopyBeliefPropagationComputation.LoopyBeliefPropagationAggregatorWriter])
 
-    LbpResult(GiraphJobDriver.run("ia_giraph_lbp",
+    LbpResult(GiraphJobManager.run("ia_giraph_lbp",
       classOf[LoopyBeliefPropagationComputation].getCanonicalName,
-      config, giraphConf, invocation.commandId, "lbp-learning-report_0"))
+      config, giraphConf, invocation, "lbp-learning-report_0"))
   }
 
   //TODO: Replace with generic code that works on any case class

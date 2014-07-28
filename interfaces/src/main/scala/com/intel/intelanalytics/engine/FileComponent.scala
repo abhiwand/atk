@@ -24,5 +24,5 @@
 package com.intel.intelanalytics.engine
 
 trait FileComponent {
-  def files: FileStorage
+  def fileStorage: FileStorage
 }

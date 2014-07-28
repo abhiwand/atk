@@ -55,9 +55,13 @@ class SparkGraphStorage(context: (UserPrincipal) => Context,
    * @return Graph metadata.
    */
   override def createGraph(graph: GraphTemplate)(implicit user: UserPrincipal): Graph = {
-    metaStore.withSession("spark.graphstorage.drop") {
+    metaStore.withSession("spark.graphstorage.create") {
       implicit session =>
         {
+          val check = metaStore.graphRepo.lookupByName(graph.name)
+          if (check.isDefined) {
+            throw new RuntimeException("Graph with same name exists. Create aborted")
+          }
           metaStore.graphRepo.insert(graph).get
         }
     }
@@ -72,7 +76,7 @@ class SparkGraphStorage(context: (UserPrincipal) => Context,
    */
   override def loadGraph(graphLoad: GraphLoad)(implicit user: UserPrincipal): Graph = {
     withContext("se.loadgraph") {
-      metaStore.withSession("spark.graphstorage.createGraph") {
+      metaStore.withSession("spark.graphstorage.load") {
         implicit session =>
           {
             val sparkContext = context(user).sparkContext
