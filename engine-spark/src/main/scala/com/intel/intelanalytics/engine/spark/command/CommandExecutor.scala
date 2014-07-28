@@ -105,15 +105,40 @@ class CommandExecutor(engine: => SparkEngine, commands: SparkCommandStorage, con
    * it is also possible to construct a FunctionCommand explicitly and pass it to the
    * registerCommand method that takes a CommandPlugin.
    *
+   * For where numberOfJobs is constant for a command.
+   *
    * @param name the name of the command
    * @param function the function to be called when running the command
+   * @param numberOfJobs the number of jobs that this command will create (constant)
    * @tparam A the argument type of the command
    * @tparam R the return type of the command
    * @return the CommandPlugin instance created during the registration process.
    */
   def registerCommand[A <: Product: JsonFormat: ClassManifest, R <: Product: JsonFormat: ClassManifest](name: String,
-                                                                                                        function: (A, UserPrincipal) => R): CommandPlugin[A, R] =
-    registerCommand(FunctionCommand(name, function))
+                                                                                                        function: (A, UserPrincipal) => R,
+                                                                                                        numberOfJobs: Int = 1): CommandPlugin[A, R] = {
+    registerCommand(name, function, (A) => numberOfJobs)
+  }
+
+  /**
+   * Registers a function as a command using FunctionCommand. This is a convenience method,
+   * it is also possible to construct a FunctionCommand explicitly and pass it to the
+   * registerCommand method that takes a CommandPlugin.
+   *
+   * For where numberOfJobs can change based on the arguments to a command.
+   *
+   * @param name the name of the command
+   * @param function the function to be called when running the command
+   * @param numberOfJobsFunc function for determining the number of jobs that this command will create
+   * @tparam A the argument type of the command
+   * @tparam R the return type of the command
+   * @return the CommandPlugin instance created during the registration process.
+   */
+  def registerCommand[A <: Product: JsonFormat: ClassManifest, R <: Product: JsonFormat: ClassManifest](name: String,
+                                                                                                        function: (A, UserPrincipal) => R,
+                                                                                                        numberOfJobsFunc: (A) => Int): CommandPlugin[A, R] = {
+    registerCommand(FunctionCommand(name, function, numberOfJobsFunc))
+  }
 
   private def getCommandDefinition(name: String): Option[CommandPlugin[_, _]] = {
     commandPlugins.get(name)
@@ -145,8 +170,10 @@ class CommandExecutor(engine: => SparkEngine, commands: SparkCommandStorage, con
                 sparkContext = context, commandStorage = commands)
 
               context.setLocalProperty("command-id", cmd.id.toString)
-
+              val progressListener = contextManager.context(user).progressMonitor
+              progressListener.setJobCountForCommand(cmd.id, command.numberOfJobs(arguments))
               val funcResult = command(invocation, arguments)
+              context.setLocalProperty("command-id", null)
               command.serializeReturn(funcResult)
             }
             commands.lookup(cmd.id).get

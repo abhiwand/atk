@@ -98,6 +98,13 @@ abstract class CommandPlugin[Argument <: Product: ClassManifest, Return <: Produ
    * Convert the given object to a JsObject
    */
   def serializeReturn(returnValue: Return): JsObject
+
+  /**
+   * Number of jobs needs to be known to give a single progress bar
+   * @param arguments command arguments: used if a command can produce variable number of jobs
+   * @return number of jobs in this command
+   */
+  def numberOfJobs(arguments: Argument): Int = 1
 }
 
 /**
