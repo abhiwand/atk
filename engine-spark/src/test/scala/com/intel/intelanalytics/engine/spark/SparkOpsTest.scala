@@ -84,4 +84,11 @@ class SparkOpsTest extends TestingSparkContextFlatSpec with Matchers {
 
     results.groupBy { case Array(index, _, _) => index }.count(_._2.length > 1) should equal(0)
   }
+
+  "getRows" should "be able to return non row objects" in {
+    val data = sparkContext.parallelize(List.range(0, 100))
+
+    val results = SparkOps.getRows(data, 0, max, max)
+    results(0).getClass should equal(Integer.TYPE)
+  }
 }
