@@ -65,11 +65,11 @@ trait Archive extends Component {
     Archive.logger(s"Loading component $path")
     val className = configuration.getString(path.replace("/", ".") + ".class")
     val component = load(className).asInstanceOf[Component]
-    val restricted = configuration.getConfig(path + ".config")
+    val restricted = configuration.getConfig(path + ".config").withFallback(configuration).resolve()
     Archive.logger(s"Component config for $path follows:")
     Archive.logger(restricted.root().render())
     Archive.logger(s"End component config for $path")
-    Boot.writeFile("/tmp/iars/" + path.replace("/", "_") + ".effective-conf", restricted.root().render())
+    Boot.writeFile("/tmp/iat/" + path.replace("/", "_") + ".effective-conf", restricted.root().render())
     component.init(path, restricted)
     component.start()
     component

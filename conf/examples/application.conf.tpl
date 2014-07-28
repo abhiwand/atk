@@ -81,7 +81,7 @@ intel.analytics {
 	#Configuration for the IAT processing engine
 	engine {
 	    //default-timeout = 30s
-        //max-rows = 20
+        //page-size = 1000
 	
     spark {
 
