@@ -25,6 +25,8 @@ REST backend for graphs
 """
 import json
 import logging
+import uuid
+
 logger = logging.getLogger(__name__)
 
 from intelanalytics.core.graph import VertexRule, EdgeRule, BigGraph, Rule
@@ -47,7 +49,7 @@ execute_new_graph_command = execute_update_graph_command
 
 def initialize_graph(graph, graph_info):
     graph._id = graph_info.id_number
-    graph._uri= http._get_uri("graphs/"+ str(graph._id))
+    graph._uri= http.create_full_uri("graphs/"+ str(graph._id))
     #return graph
 
 class GraphBackendRest(object):
@@ -68,7 +70,7 @@ class GraphBackendRest(object):
         payload = r.json()
         return [f['name'] for f in payload]
 
-    def get_graph(self, name):
+    def get_graph(self,name):
         logger.info("REST Backend: get_graph")
         r = http.get('graphs?name='+name)
         graph_info = GraphInfo(r.json())
@@ -78,7 +80,7 @@ class GraphBackendRest(object):
     #     """Deletes the graph from backing store"""
     #     raise NotImplemented
 
-    def create(self, graph,rules):
+    def create(self, graph,rules,name):
         logger.info("REST Backend: create graph: " + graph.name)
         if isinstance(rules, GraphInfo):
             initialize_graph(graph,rules)
@@ -92,15 +94,27 @@ class GraphBackendRest(object):
             payload = r.json()
             graph._id = payload['id']
             graph._uri = "%s" % (self._get_uri(payload))
-            payload = JsonPayload(graph, rules)
+            graph._name = name or self._get_new_graph_name()
+            frame_rules=JsonRules(rules)
+            #payload = JsonPayload(graph, rules)
 
             if logger.level == logging.DEBUG:
                 import json
-                payload_json = json.dumps(payload, indent=2, sort_keys=True)
+                payload_json = json.dumps(frame_rules, indent=2, sort_keys=True)
                 logger.debug("REST Backend: create graph payload: " + payload_json)
-            self.load(graph, payload['frame_rules'], False)
+            self.load(graph,frame_rules, append= False)
         #execute_update_graph_command(graph, name = "graph/load", arguments=payload)
-
+    
+    def _get_new_graph_name(source=None):
+        try:
+            annotation ="_" + source.annotation
+        except:
+            annotation= ''
+        return "graph_" + uuid.uuid4().hex + annotation
+    def append(self, graph, rules):
+        logger.info("REST Backend: append_frame graph: " + graph.name)
+        frame_rules = JsonRules(rules)
+        self.load(graph, frame_rules, append=True)
 
     def _get_uri(self, payload):
         links = payload['links']
@@ -199,17 +213,20 @@ class JsonFrame(object):
                 'edge_rules': []}
 
 
-class JsonPayload(object):
-    def __new__(cls, graph, rules):
-        return {'graph': graph._id,
-                'frame_rules': JsonPayload._get_frames(rules),
-                'retain_dangling_edges':False } # TODO
+class JsonRules(object):
+    """
+        We want to keep these objects because we need to do a conversion
+        from how the user defines the rules to how our service defines
+        these rules.
+    """
+    def __new__(cls, rules):
+        return JsonRules._get_frames(rules)
 
     @staticmethod
     def _get_frames(rules):
         frames_dict = {}
         for rule in rules:
-            frame = JsonPayload._get_frame(rule, frames_dict)
+            frame = JsonRules._get_frame(rule, frames_dict)
             # TODO - capture rule.__repr__ is a creation history for the graph
             if isinstance(rule, VertexRule):
                 frame['vertex_rules'].append(JsonVertexRule(rule))

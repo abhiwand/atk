@@ -110,7 +110,8 @@ class SparkEngine(sparkContextManager: SparkContextManager,
                   frames: SparkFrameStorage,
                   graphs: GraphStorage,
                   queryStorage: SparkQueryStorage,
-                  queries: QueryExecutor) extends Engine
+                  queries: QueryExecutor,
+                  sparkAutoPartitioner: SparkAutoPartitioner) extends Engine
     with EventLogging
     with ClassLoaderAware {
 
@@ -118,12 +119,20 @@ class SparkEngine(sparkContextManager: SparkContextManager,
 
   /* This progress listener saves progress update to command table */
   SparkProgressListener.progressUpdater = new CommandProgressUpdater {
+
+    var lastUpdateTime = System.currentTimeMillis()
     /**
      * save the progress update
      * @param commandId id of the command
      * @param progressInfo list of progress for jobs initiated by the command
      */
-    override def updateProgress(commandId: Long, progressInfo: List[ProgressInfo]): Unit = commandStorage.updateProgress(commandId, progressInfo)
+    override def updateProgress(commandId: Long, progressInfo: List[ProgressInfo]): Unit = {
+      val currentTime = System.currentTimeMillis()
+      if (currentTime - lastUpdateTime > 1000) {
+        lastUpdateTime = currentTime
+        commandStorage.updateProgress(commandId, progressInfo)
+      }
+    }
   }
 
   def shutdown: Unit = {
@@ -201,7 +210,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
   def load(arguments: Load)(implicit user: UserPrincipal): Execution =
     commands.execute(loadCommand, arguments, user, implicitly[ExecutionContext])
 
-  val loadCommand = commands.registerCommand(name = "dataframe/load", loadSimple)
+  val loadCommand = commands.registerCommand("dataframe/load", loadSimple _, numberOfJobs = 6)
 
   /**
    * Load data from a LoadSource object to an existing destination described in the Load object
@@ -220,7 +229,8 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     }
     else if (load.source.isFile) {
       val parser = load.source.parser.get
-      val parseResult = LoadRDDFunctions.loadAndParseLines(ctx.sparkContext, fsRoot + "/" + load.source.uri, parser)
+      val partitions = sparkAutoPartitioner.partitionsForFile(load.source.uri)
+      val parseResult = LoadRDDFunctions.loadAndParseLines(ctx.sparkContext, fsRoot + "/" + load.source.uri, parser, partitions)
 
       // parse failures go to their own data frame
       if (parseResult.errorLines.count() > 0) {
@@ -534,7 +544,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
   override def binColumn(arguments: BinColumn[Long])(implicit user: UserPrincipal): Execution =
     commands.execute(binColumnCommand, arguments, user, implicitly[ExecutionContext])
 
-  val binColumnCommand = commands.registerCommand("dataframe/bin_column", binColumnSimple)
+  val binColumnCommand = commands.registerCommand("dataframe/bin_column", binColumnSimple _, 7)
   def binColumnSimple(arguments: BinColumn[Long], user: UserPrincipal) = {
     implicit val u = user
     val frameId: Long = arguments.frame
@@ -570,7 +580,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
   def filter(arguments: FilterPredicate[JsObject, Long])(implicit user: UserPrincipal): Execution =
     commands.execute(filterCommand, arguments, user, implicitly[ExecutionContext])
 
-  val filterCommand = commands.registerCommand("dataframe/filter", filterSimple)
+  val filterCommand = commands.registerCommand("dataframe/filter", filterSimple _, numberOfJobs = 2)
   def filterSimple(arguments: FilterPredicate[JsObject, Long], user: UserPrincipal) = {
     implicit val u = user
     val pyRdd = createPythonRDD(arguments.frame, arguments.predicate)
@@ -791,7 +801,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
   def loadGraph(arguments: GraphLoad)(implicit user: UserPrincipal): Execution =
     commands.execute(loadGraphCommand, arguments, user, implicitly[ExecutionContext])
 
-  val loadGraphCommand = commands.registerCommand("graph/load", loadGraphSimple)
+  val loadGraphCommand = commands.registerCommand("graph/load", loadGraphSimple _, 2)
   def loadGraphSimple(arguments: GraphLoad, user: UserPrincipal) = {
     // validating frames
     arguments.frame_rules.foreach(frule => expectFrame(frule.frame))
@@ -848,7 +858,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
   override def dropDuplicates(arguments: DropDuplicates)(implicit user: UserPrincipal): Execution =
     commands.execute(dropDuplicateCommand, arguments, user, implicitly[ExecutionContext])
 
-  val dropDuplicateCommand = commands.registerCommand("dataframe/drop_duplicates", dropDuplicateSimple)
+  val dropDuplicateCommand = commands.registerCommand("dataframe/drop_duplicates", dropDuplicateSimple _, numberOfJobs = 2)
 
   def dropDuplicateSimple(dropDuplicateCommand: DropDuplicates, user: UserPrincipal) = {
     implicit val u = user
@@ -871,7 +881,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     frames.updateRowCount(realFrame, rowCount)
   }
 
-  val calculatePercentileCommand = commands.registerCommand("dataframe/calculate_percentiles", calculatePercentilesSimple)
+  val calculatePercentileCommand = commands.registerCommand("dataframe/calculate_percentiles", calculatePercentilesSimple _, 7)
 
   def calculatePercentilesSimple(percentiles: CalculatePercentiles, user: UserPrincipal): PercentileValues = {
     implicit val u = user

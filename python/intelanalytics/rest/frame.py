@@ -85,7 +85,7 @@ class FrameBackendRest(object):
     def delete_frame(self, frame):
         if isinstance(frame, BigFrame):
             return self._delete_frame(frame)
-        elif isinstance(frame, str):
+        elif isinstance(frame, basestring):
             # delete by name
             return self._delete_frame(self.get_frame(frame))
         else:
@@ -405,13 +405,7 @@ class FrameBackendRest(object):
         execute_update_frame_command('rename_columns', arguments, frame)
 
     def rename_frame(self, frame, name):
-        #TODO - move uniqueness checking to server
-        r = self.rest_http.get('dataframes')
-        payload = r.json()
-        frame_names = [f['name'] for f in payload]
-        if name in frame_names:
-            raise ValueError("A frame with this name already exists. Rename failed")
-        arguments = {'frame': frame.uri, "new_name": name}
+        arguments = {'frame': self._get_frame_full_uri(frame), "new_name": name}
         execute_update_frame_command('rename_frame', arguments, frame)
 
     def take(self, frame, n, offset):

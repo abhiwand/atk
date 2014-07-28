@@ -414,7 +414,7 @@ class BigGraph(CommandSupport):
             self._backend = _get_backend()
         self._name = name or self._get_new_graph_name()
         self._uri = ""
-        self._backend.create(self, rules)
+        self._backend.create(self,rules,name)
 
         CommandSupport.__init__(self)
         #self.ml = GraphMachineLearning(self)

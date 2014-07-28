@@ -64,21 +64,21 @@ class InferSchemaFromRulesSpec extends Specification {
     "infer the date edge property" in {
       schema.propertiesWithName("date").size mustEqual 1
       val actualPropertyDef = schema.propertiesWithName("date").head
-      val expectedPropertyDef = new PropertyDef(PropertyType.Edge, "date", classOf[String], false, false)
+      val expectedPropertyDef = new PropertyDef(PropertyType.Edge, "date", classOf[String], false, true)
       actualPropertyDef mustEqual expectedPropertyDef
     }
 
     "infer the userName vertex property" in {
       schema.propertiesWithName("name").size mustEqual 1
       val actualPropertyDef = schema.propertiesWithName("name").head
-      val expectedPropertyDef = new PropertyDef(PropertyType.Vertex, "name", classOf[String], false, false)
+      val expectedPropertyDef = new PropertyDef(PropertyType.Vertex, "name", classOf[String], false, true)
       actualPropertyDef mustEqual expectedPropertyDef
     }
 
     "infer the movieTitle vertex property" in {
       schema.propertiesWithName("title").size mustEqual 1
       val actualPropertyDef = schema.propertiesWithName("title").head
-      val expectedPropertyDef = new PropertyDef(PropertyType.Vertex, "title", classOf[String], false, false)
+      val expectedPropertyDef = new PropertyDef(PropertyType.Vertex, "title", classOf[String], false, true)
       actualPropertyDef mustEqual expectedPropertyDef
     }
 

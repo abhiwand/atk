@@ -30,7 +30,7 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol
 import com.intel.intelanalytics.domain.graph.GraphReference
 import com.intel.intelanalytics.engine.plugin.{ CommandPlugin, Invocation }
 import com.intel.intelanalytics.security.UserPrincipal
-import com.intel.intelanalytics.algorithm.util.{ GiraphConfigurationUtil, GiraphJobDriver }
+import com.intel.intelanalytics.algorithm.util.{ GiraphJobManager, GiraphConfigurationUtil }
 import org.apache.giraph.conf.GiraphConfiguration
 import spray.json.DefaultJsonProtocol._
 import spray.json._
@@ -114,9 +114,9 @@ class AlternatingLeastSquares
     giraphConf.setComputationClass(classOf[AlternatingLeastSquaresComputation])
     giraphConf.setAggregatorWriterClass(classOf[AlternatingLeastSquaresComputation.AlternatingLeastSquaresAggregatorWriter])
 
-    AlsResult(GiraphJobDriver.run("ia_giraph_als",
+    AlsResult(GiraphJobManager.run("ia_giraph_als",
       classOf[AlternatingLeastSquaresComputation].getCanonicalName,
-      config, giraphConf, invocation.commandId, "als-learning-report_0"))
+      config, giraphConf, invocation, "als-learning-report_0"))
   }
 
   //TODO: Replace with generic code that works on any case class
