@@ -59,7 +59,7 @@ class ProgressPrinter(object):
         finished : boolean
             Indicate whether the command is finished
         """
-        if not progress:
+        if progress == False:
             return
 
         total_job_count = len(progress)
@@ -365,11 +365,18 @@ class Executor(object):
         Issues the query_request to the server
         """
         logger.info("Issuing query " + query_url)
-        response = http.get(query_url)
-        command = self.poll_command_info(response)
-        data = []
+        try:
+            response = http.get(query_url)
+        except:
+            # do a single retry
+            response = http.get(query_url)
 
-        total_pages = command.result["total_pages"] + 1
+        response_json = response.json()
+
+        if response_json["complete"]:
+            return response_json["result"]["data"]
+
+        command = self.poll_command_info(response)
 
         def get_query_response(id, partition):
             """
@@ -389,7 +396,10 @@ class Executor(object):
 
         #retreive the data
         printer = ProgressPrinter()
-        for i in range(1, total_pages):
+        total_pages = command.result["total_pages"] + 1
+        data = []
+        start = 1
+        for i in range(start, total_pages):
             next_partition = get_query_response(command.id_number, i)
             data.extend(next_partition.result["data"])
 
