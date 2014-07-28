@@ -30,7 +30,7 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol
 import com.intel.intelanalytics.domain.graph.GraphReference
 import com.intel.intelanalytics.engine.plugin.{ CommandPlugin, Invocation }
 import com.intel.intelanalytics.security.UserPrincipal
-import com.intel.intelanalytics.algorithm.util.{ GiraphConfigurationUtil, GiraphJobDriver }
+import com.intel.intelanalytics.algorithm.util.{ GiraphJobManager, GiraphConfigurationUtil }
 import org.apache.giraph.conf.GiraphConfiguration
 import spray.json.DefaultJsonProtocol._
 import spray.json._
@@ -55,7 +55,6 @@ class PageRank
   implicit val prResultFormat = jsonFormat1(PrResult)
 
   override def execute(invocation: Invocation, arguments: Pr)(implicit user: UserPrincipal, executionContext: ExecutionContext): PrResult = {
-
     val config = configuration
     val hConf = GiraphConfigurationUtil.newHadoopConfigurationFrom(config, "giraph")
     val titanConf = GiraphConfigurationUtil.flattenConfig(config.getConfig("titan"), "titan.")
@@ -83,9 +82,10 @@ class PageRank
     giraphConf.setComputationClass(classOf[PageRankComputation])
     giraphConf.setAggregatorWriterClass(classOf[PageRankComputation.PageRankAggregatorWriter])
 
-    PrResult(GiraphJobDriver.run("ia_giraph_pr",
+    PrResult(GiraphJobManager.run("ia_giraph_pr",
       classOf[PageRankComputation].getCanonicalName,
-      config, giraphConf, invocation.commandId, "pr-convergence-report_0"))
+      config, giraphConf, invocation, "pr-convergence-report_0"))
+
   }
 
   //TODO: Replace with generic code that works on any case class

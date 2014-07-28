@@ -96,7 +96,9 @@ class DataFrameService(commonDirectives: CommonDirectives, engine: Engine) exten
                 frame =>
                   onComplete(engine.create(frame)) {
                     case Success(createdFrame) => complete(FrameDecorator.decorateEntity(uri + "/" + createdFrame.id, Nil, createdFrame))
-                    case Failure(ex) => throw ex
+                    case Failure(ex) => ctx => {
+                      ctx.complete(500, ex.getMessage)
+                    }
                   }
               }
             }

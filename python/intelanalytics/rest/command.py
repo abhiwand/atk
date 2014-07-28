@@ -103,9 +103,11 @@ class ProgressPrinter(object):
 
         for index in range(0, len(progress)):
             p = progress[index]['progress']
-            retried_tasks = progress[index]['tasks_info']['retries']
-
-            message = "Tasks retries:%s" %(retried_tasks)
+            # Check if the Progress has tasks_info field
+            message = ''
+            if 'tasks_info' in progress[index].keys():
+                retried_tasks = progress[index]['tasks_info']['retries']
+                message = "Tasks retries:%s" %(retried_tasks)
 
             total_bar_length = 25
             factor = 100 / total_bar_length
