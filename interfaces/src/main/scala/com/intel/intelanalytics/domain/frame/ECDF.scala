@@ -21,46 +21,19 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.engine.plugin
-
-import com.intel.intelanalytics.engine.{ CommandStorage, Engine }
-import com.intel.intelanalytics.security.UserPrincipal
-import spray.json.JsObject
-
-import scala.concurrent.ExecutionContext
+package com.intel.intelanalytics.domain.frame
 
 /**
- * Provides context for an invocation of a command or query.
+ * Representation of an ECDF object for empirical cumulative distribution function
  *
+ * @param frameId id of the input frame object
+ * @param name name of the frame object to return
+ * @param sampleCol the column name to use for ecdf
+ * @param dataType the data type of the input column
+ * @tparam FrameRef
  */
-trait Invocation {
-  /**
-   * An instance of the engine that the plugin can use to execute its work
-   */
-  def engine: Engine
-
-  /**
-   * The identifier of this execution
-   */
-  def commandId: Long
-
-  /**
-   * The original arguments as supplied by the user
-   */
-  def arguments: Option[JsObject]
-
-  /**
-   * The user that invoked the operation
-   */
-  def user: UserPrincipal
-
-  /**
-   * A Scala execution context for use with methods that require one
-   */
-  def executionContext: ExecutionContext
-
-  /**
-   * Command Storage to read/update command progress
-   */
-  def commandStorage: CommandStorage
+case class ECDF[FrameRef](frameId: FrameRef, name: String, sampleCol: String, dataType: String) {
+  require(frameId != null, "frame is required")
+  require(name != null, "new frame name is required")
+  require(sampleCol != null, "column name for sample is required")
 }

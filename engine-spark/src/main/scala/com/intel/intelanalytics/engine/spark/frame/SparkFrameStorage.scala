@@ -34,7 +34,7 @@ import com.intel.intelanalytics.shared.EventLogging
 
 import scala.io.{ Codec, Source }
 import org.apache.spark.rdd.RDD
-import com.intel.intelanalytics.engine.spark.{ SparkEngineConfig, HdfsFileStorage, SparkOps, SparkComponent }
+import com.intel.intelanalytics.engine.spark._
 import org.apache.spark.SparkContext
 import scala.util.matching.Regex
 import java.util.concurrent.atomic.AtomicLong
@@ -45,8 +45,20 @@ import com.intel.intelanalytics.security.UserPrincipal
 import org.joda.time.DateTime
 import com.intel.intelanalytics.engine.{ FrameStorage, FrameComponent }
 import com.intel.intelanalytics.repository.{ SlickMetaStoreComponent, MetaStore, MetaStoreComponent }
+import scala.Some
+import com.intel.intelanalytics.domain.frame.DataFrameTemplate
+import com.intel.intelanalytics.engine.File
+import com.intel.intelanalytics.engine.Directory
+import com.intel.intelanalytics.security.UserPrincipal
+import com.intel.intelanalytics.domain.frame.DataFrame
+import com.intel.intelanalytics.engine.spark.context.Context
 
-class SparkFrameStorage(context: UserPrincipal => Context, fsRoot: String, files: HdfsFileStorage, maxRows: Int, val metaStore: SlickMetaStoreComponent#SlickMetaStore)
+class SparkFrameStorage(context: UserPrincipal => Context,
+                        fsRoot: String,
+                        fileStorage: FileStorage,
+                        maxRows: Int,
+                        val metaStore: SlickMetaStoreComponent#SlickMetaStore,
+                        sparkAutoPartitioner: SparkAutoPartitioner)
     extends FrameStorage with EventLogging with ClassLoaderAware {
 
   import spray.json._
@@ -87,7 +99,7 @@ class SparkFrameStorage(context: UserPrincipal => Context, fsRoot: String, files
    * @param frameId primary key from Frame table
    */
   private def deleteFrameFile(frameId: Long): Unit = {
-    files.delete(Paths.get(getFrameDirectory(frameId)))
+    fileStorage.delete(Paths.get(getFrameDirectory(frameId)))
   }
 
   override def removeColumn(frame: DataFrame, columnIndex: Seq[Int])(implicit user: UserPrincipal): DataFrame =
@@ -111,6 +123,12 @@ class SparkFrameStorage(context: UserPrincipal => Context, fsRoot: String, files
     metaStore.withSession("frame.rename") {
       implicit session =>
         {
+          val check = metaStore.frameRepo.lookupByName(newName)
+          if (check.isDefined) {
+
+            //metaStore.frameRepo.scan(0,20).foreach(println)
+            throw new RuntimeException("Frame with same name exists. Rename aborted.")
+          }
           val newFrame = frame.copy(name = newName)
           metaStore.frameRepo.update(newFrame).get
         }
@@ -205,9 +223,9 @@ class SparkFrameStorage(context: UserPrincipal => Context, fsRoot: String, files
   def getFrameRowRdd(ctx: SparkContext, frameId: Long): RDD[Row] = {
     val path: String = getFrameDataFile(frameId)
     val absPath = fsRoot + path
-    files.getMetaData(Paths.get(path)) match {
+    fileStorage.getMetaData(Paths.get(path)) match {
       case None => ctx.parallelize(Nil)
-      case _ => ctx.objectFile[Row](absPath, SparkEngineConfig.sparkDefaultPartitions)
+      case _ => ctx.objectFile[Row](absPath, sparkAutoPartitioner.partitionsForFile(path))
     }
   }
 
@@ -234,7 +252,7 @@ class SparkFrameStorage(context: UserPrincipal => Context, fsRoot: String, files
 
   def getOrCreateDirectory(name: String): Directory = {
     val path = Paths.get(name)
-    val meta = files.getMetaData(path).getOrElse(files.createDirectory(path))
+    val meta = fileStorage.getMetaData(path).getOrElse(fileStorage.createDirectory(path))
     meta match {
       case File(f, s) => throw new IllegalArgumentException(path + " is not a directory")
       case d: Directory => d
@@ -263,6 +281,10 @@ class SparkFrameStorage(context: UserPrincipal => Context, fsRoot: String, files
     metaStore.withSession("frame.createFrame") {
       implicit session =>
         {
+          val check = metaStore.frameRepo.lookupByName(frameTemplate.name)
+          if (check.isDefined) {
+            throw new RuntimeException("Frame with same name exists. Create aborted.")
+          }
           val frame = metaStore.frameRepo.insert(frameTemplate).get
 
           //remove any existing artifacts to prevent collisions when a database is reinitialized.
