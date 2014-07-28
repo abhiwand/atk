@@ -42,6 +42,7 @@ import scala.concurrent.Future
 trait Engine {
 
   type Identifier = Long //TODO: make more generic?
+  val pageSize: Int
 
   /**
    * Executes the given command template, managing all necessary auditing, contexts, class loaders, etc.
@@ -71,7 +72,9 @@ trait Engine {
 
   def getFrame(id: Identifier)(implicit user: UserPrincipal): Future[Option[DataFrame]]
 
-  def getRows(arguments: RowQuery[Identifier])(implicit user: UserPrincipal): QueryExecution
+  def getRows(arguments: RowQuery[Identifier])(implicit user: UserPrincipal): Future[Iterable[Any]]
+
+  def getRowsLarge(arguments: RowQuery[Identifier])(implicit user: UserPrincipal): QueryExecution
 
   def create(frame: DataFrameTemplate)(implicit user: UserPrincipal): Future[DataFrame]
 
