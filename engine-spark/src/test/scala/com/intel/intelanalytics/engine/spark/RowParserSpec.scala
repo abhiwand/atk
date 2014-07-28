@@ -54,6 +54,16 @@ class RowParserSpec extends Specification {
       csvRowParser.splitLineIntoParts("foo,bar,,,baz") shouldEqual Array("foo", "bar", "", "", "baz")
     }
   }
+  "RowParser" should {
+    "parse a nested space/s followed by double quotes in a string" in {
+      csvRowParser.splitLineIntoParts("foo,bar, \"baz\"  ") shouldEqual Array("foo", "bar", "baz")
+    }
+  }
+  "RowParser" should {
+    "parse a nested space/s followed by single quotes in a string" in {
+      csvRowParser.splitLineIntoParts("foo,bar,  \'baz\'   ") shouldEqual Array("foo", "bar", "baz")
+    }
+  }
   val trow = new RowParser('\t', Array[DataTypes.DataType]())
 
   "RowParser" should {
