@@ -30,7 +30,7 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol
 import com.intel.intelanalytics.domain.graph.GraphReference
 import com.intel.intelanalytics.engine.plugin.{ CommandPlugin, Invocation }
 import com.intel.intelanalytics.security.UserPrincipal
-import com.intel.intelanalytics.algorithm.util.{ GiraphConfigurationUtil, GiraphJobDriver }
+import com.intel.intelanalytics.algorithm.util.{ GiraphConfigurationUtil, GiraphJobManager }
 import org.apache.giraph.conf.GiraphConfiguration
 import spray.json.DefaultJsonProtocol._
 import spray.json._
@@ -80,9 +80,9 @@ class AveragePathLength
     giraphConf.setComputationClass(classOf[AveragePathLengthComputation])
     giraphConf.setAggregatorWriterClass(classOf[AveragePathLengthComputation.AveragePathLengthAggregatorWriter])
 
-    AplResult(GiraphJobDriver.run("ia_giraph_apl",
+    AplResult(GiraphJobManager.run("ia_giraph_apl",
       classOf[AveragePathLengthComputation].getCanonicalName,
-      config, giraphConf, invocation.commandId, "apl-convergence-report_0"))
+      config, giraphConf, invocation, "apl-convergence-report_0"))
   }
 
   //TODO: Replace with generic code that works on any case class
