@@ -59,7 +59,7 @@ class ProgressPrinter(object):
         finished : boolean
             Indicate whether the command is finished
         """
-        if not progress:
+        if progress == False:
             return
 
         total_job_count = len(progress)
