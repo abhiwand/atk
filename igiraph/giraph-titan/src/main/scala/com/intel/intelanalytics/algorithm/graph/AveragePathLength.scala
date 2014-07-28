@@ -23,14 +23,14 @@
 
 package com.intel.intelanalytics.algorithm.graph
 
-import com.intel.giraph.algorithms.pr.PageRankComputation
-import com.intel.giraph.io.titan.TitanVertexOutputFormatLongIDDoubleValue
-import com.intel.giraph.io.titan.hbase.TitanHBaseVertexInputFormatLongDoubleNull
+import com.intel.giraph.algorithms.apl.AveragePathLengthComputation
+import com.intel.giraph.io.titan.TitanVertexOutputFormatLongIDDistanceMap
+import com.intel.giraph.io.titan.hbase.TitanHBaseVertexInputFormatLongDistanceMapNull
 import com.intel.intelanalytics.domain.DomainJsonProtocol
 import com.intel.intelanalytics.domain.graph.GraphReference
 import com.intel.intelanalytics.engine.plugin.{ CommandPlugin, Invocation }
 import com.intel.intelanalytics.security.UserPrincipal
-import com.intel.intelanalytics.algorithm.util.{ GiraphJobManager, GiraphConfigurationUtil }
+import com.intel.intelanalytics.algorithm.util.{ GiraphConfigurationUtil, GiraphJobManager }
 import org.apache.giraph.conf.GiraphConfiguration
 import spray.json.DefaultJsonProtocol._
 import spray.json._
@@ -38,23 +38,24 @@ import scala.concurrent.duration._
 
 import scala.concurrent._
 
-case class Pr(graph: GraphReference,
-              input_edge_label_list: Option[String],
-              output_vertex_property_list: Option[String],
-              max_supersteps: Option[Int] = None,
-              convergence_threshold: Option[Double] = None,
-              reset_probability: Option[Double] = None,
-              convergence_progress_output_interval: Option[Int] = None)
+case class Apl(graph: GraphReference,
+               input_edge_label_list: Option[String],
+               output_vertex_property_list: Option[List[String]],
+               convergence_progress_output_interval: Option[Int] = None) {
+  require(output_vertex_property_list.get != null && output_vertex_property_list.get.size == 2,
+    "output_vertex_property_list should enlist 2 properties (comma-separated) to store path sum and path count")
+}
 
-case class PrResult(value: String) //TODO
+case class AplResult(value: String) //TODO
 
-class PageRank
-    extends CommandPlugin[Pr, PrResult] {
+class AveragePathLength
+    extends CommandPlugin[Apl, AplResult] {
   import DomainJsonProtocol._
-  implicit val prFormat = jsonFormat7(Pr)
-  implicit val prResultFormat = jsonFormat1(PrResult)
+  implicit val aplFormat = jsonFormat4(Apl)
+  implicit val aplResultFormat = jsonFormat1(AplResult)
 
-  override def execute(invocation: Invocation, arguments: Pr)(implicit user: UserPrincipal, executionContext: ExecutionContext): PrResult = {
+  override def execute(invocation: Invocation, arguments: Apl)(implicit user: UserPrincipal, executionContext: ExecutionContext): AplResult = {
+
     val config = configuration
     val hConf = GiraphConfigurationUtil.newHadoopConfigurationFrom(config, "giraph")
     val titanConf = GiraphConfigurationUtil.flattenConfig(config.getConfig("titan"), "titan.")
@@ -64,38 +65,34 @@ class PageRank
 
     //    These parameters are set from the arguments passed in, or defaulted from
     //    the engine configuration if not passed.
-    GiraphConfigurationUtil.set(hConf, "pr.maxSuperSteps", arguments.max_supersteps)
-    GiraphConfigurationUtil.set(hConf, "pr.convergenceThreshold", arguments.convergence_threshold)
-    GiraphConfigurationUtil.set(hConf, "pr.resetProbability", arguments.reset_probability)
-    GiraphConfigurationUtil.set(hConf, "pr.convergenceProgressOutputInterval", arguments.convergence_progress_output_interval)
+    GiraphConfigurationUtil.set(hConf, "apl.convergenceProgressOutputInterval", arguments.convergence_progress_output_interval)
 
     GiraphConfigurationUtil.initializeTitanConfig(hConf, titanConf, graph)
 
     GiraphConfigurationUtil.set(hConf, "input.edge.label.list", arguments.input_edge_label_list)
-    GiraphConfigurationUtil.set(hConf, "output.vertex.property.key.list", arguments.output_vertex_property_list)
+    GiraphConfigurationUtil.set(hConf, "output.vertex.property.key.list", Option[Any](arguments.output_vertex_property_list.get.mkString(",")))
 
     val giraphConf = new GiraphConfiguration(hConf)
 
-    giraphConf.setVertexInputFormatClass(classOf[TitanHBaseVertexInputFormatLongDoubleNull])
-    giraphConf.setVertexOutputFormatClass(classOf[TitanVertexOutputFormatLongIDDoubleValue[_ <: org.apache.hadoop.io.LongWritable, _ <: org.apache.hadoop.io.DoubleWritable, _ <: org.apache.hadoop.io.Writable]])
-    giraphConf.setMasterComputeClass(classOf[PageRankComputation.PageRankMasterCompute])
-    giraphConf.setComputationClass(classOf[PageRankComputation])
-    giraphConf.setAggregatorWriterClass(classOf[PageRankComputation.PageRankAggregatorWriter])
+    giraphConf.setVertexInputFormatClass(classOf[TitanHBaseVertexInputFormatLongDistanceMapNull])
+    giraphConf.setVertexOutputFormatClass(classOf[TitanVertexOutputFormatLongIDDistanceMap[_ <: org.apache.hadoop.io.LongWritable, _ <: com.intel.giraph.io.DistanceMapWritable, _ <: org.apache.hadoop.io.NullWritable]])
+    giraphConf.setMasterComputeClass(classOf[AveragePathLengthComputation.AveragePathLengthMasterCompute])
+    giraphConf.setComputationClass(classOf[AveragePathLengthComputation])
+    giraphConf.setAggregatorWriterClass(classOf[AveragePathLengthComputation.AveragePathLengthAggregatorWriter])
 
-    PrResult(GiraphJobManager.run("ia_giraph_pr",
-      classOf[PageRankComputation].getCanonicalName,
-      config, giraphConf, invocation, "pr-convergence-report_0"))
-
+    AplResult(GiraphJobManager.run("ia_giraph_apl",
+      classOf[AveragePathLengthComputation].getCanonicalName,
+      config, giraphConf, invocation, "apl-convergence-report_0"))
   }
 
   //TODO: Replace with generic code that works on any case class
-  def parseArguments(arguments: JsObject) = arguments.convertTo[Pr]
+  def parseArguments(arguments: JsObject) = arguments.convertTo[Apl]
 
   //TODO: Replace with generic code that works on any case class
-  def serializeReturn(returnValue: PrResult): JsObject = returnValue.toJson.asJsObject
+  def serializeReturn(returnValue: AplResult): JsObject = returnValue.toJson.asJsObject
 
-  override def name: String = "graphs/ml/page_rank"
+  override def name: String = "graphs/ml/average_path_length"
 
   //TODO: Replace with generic code that works on any case class
-  override def serializeArguments(arguments: Pr): JsObject = arguments.toJson.asJsObject()
+  override def serializeArguments(arguments: Apl): JsObject = arguments.toJson.asJsObject()
 }
