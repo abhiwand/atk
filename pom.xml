@@ -784,6 +784,11 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
             </dependency>
             <dependency>
                 <groupId>com.thinkaurelius.titan</groupId>
+                <artifactId>titan-es</artifactId>
+                <version>${dep.aurelius.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.thinkaurelius.titan</groupId>
                 <artifactId>titan-hbase</artifactId>
                 <version>${dep.aurelius.version}</version>
             </dependency>

@@ -118,6 +118,10 @@ public class TitanVertexOutputFormatPropertyGraph4CF<I extends LongWritable,
          * Enable vector value
          */
         private String enableVectorValue = "true";
+        /**
+         * regular expression of the deliminators for a property list
+         */
+        private String regexp = "[\\s,\\t]+";     //.split("/,?\s+/");
 
         @Override
         public void initialize(TaskAttemptContext context) throws IOException,
@@ -127,7 +131,7 @@ public class TitanVertexOutputFormatPropertyGraph4CF<I extends LongWritable,
             LOG.info(OPENED_GRAPH);
             enableVertexBias = OUTPUT_VERTEX_BIAS.get(context.getConfiguration());
             enableVectorValue = VECTOR_VALUE.get(context.getConfiguration());
-            vertexValuePropertyKeyList = OUTPUT_VERTEX_PROPERTY_KEY_LIST.get(context.getConfiguration()).split(",");
+            vertexValuePropertyKeyList = OUTPUT_VERTEX_PROPERTY_KEY_LIST.get(context.getConfiguration()).split(regexp);
         }
 
 
