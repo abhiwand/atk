@@ -107,5 +107,14 @@ class HdfsFileStorage(fsRoot: String) extends FileStorage with EventLogging {
     fs.mkdirs(new HPath(adjusted))
     getMetaData(Paths.get(directory.toString)).get.asInstanceOf[Directory]
   }
+
+  /**
+   * File size
+   * @param path relative path
+   */
+  override def size(path: String): Long = {
+    val hPath: HPath = new HPath(fsRoot + path.toString)
+    fs.getFileStatus(hPath).getLen
+  }
 }
 

@@ -26,7 +26,7 @@ package com.intel.intelanalytics.algorithm.graph
 import com.intel.giraph.algorithms.lp.LabelPropagationComputation
 import com.intel.giraph.io.titan.TitanVertexOutputFormatPropertyGraph4LP
 import com.intel.giraph.io.titan.hbase.TitanHBaseVertexInputFormatPropertyGraph4LP
-import com.intel.intelanalytics.algorithm.util.{ GiraphJobDriver, GiraphConfigurationUtil }
+import com.intel.intelanalytics.algorithm.util.{ GiraphJobManager, GiraphConfigurationUtil }
 import com.intel.intelanalytics.domain.DomainJsonProtocol
 import com.intel.intelanalytics.domain.graph.GraphReference
 import com.intel.intelanalytics.engine.plugin.{ CommandPlugin, Invocation }
@@ -89,9 +89,9 @@ class LabelPropagation
     giraphConf.setComputationClass(classOf[LabelPropagationComputation])
     giraphConf.setAggregatorWriterClass(classOf[LabelPropagationComputation.LabelPropagationAggregatorWriter])
 
-    LpResult(GiraphJobDriver.run("ia_giraph_lp",
+    LpResult(GiraphJobManager.run("ia_giraph_lp",
       classOf[LabelPropagationComputation].getCanonicalName,
-      config, giraphConf, invocation.commandId, "lp-learning-report_0"))
+      config, giraphConf, invocation, "lp-learning-report_0"))
   }
 
   //TODO: Replace with generic code that works on any case class

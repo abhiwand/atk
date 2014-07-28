@@ -36,15 +36,13 @@ intel.analytics {
     //max-rows = 20
 	
     fs {
-      # the system will create an "intelanalytics" folder at this location, if set,
-      # or at the root of the filesystem, if not. All Intel Analytics Toolkit files will
-      # be stored somehwere under that base location.
+      # the system will create an "intelanalytics" folder at this location.
+      # Filepaths will be relative to this location.
+      # All Intel Analytics Toolkit files will be stored somehwere under that base location.
       #
       # For example, if using HDFS, set the root to hdfs path
       # root = "hdfs://MASTER_HOSTNAME/some/path"
       #
-      # If running in local mode, this might be a better choice:
-      //root = ${user.home}
       root = "hdfs://localhost/user/iauser"
     }
 
@@ -204,7 +202,7 @@ intel.analytics {
 
 intel.analytics.igiraph-titan {
   command {
-    available = ["graphs.ml.loopy_belief_propagation", "graphs.ml.alternating_least_squares", "graphs.ml.conjugate_gradient_descent", "graphs.ml.label_propagation", "graphs.ml.latent_dirichlet_allocation"]
+    available = ["graphs.ml.loopy_belief_propagation", "graphs.ml.alternating_least_squares", "graphs.ml.conjugate_gradient_descent", "graphs.ml.label_propagation", "graphs.ml.latent_dirichlet_allocation", "graphs.ml.page_rank", "graphs.ml.average_path_length"]
     graphs {
       ml {
         loopy_belief_propagation {
@@ -226,6 +224,43 @@ intel.analytics.igiraph-titan {
               lbp.power = 0.5
               lbp.smoothing = 2.0
               lbp.ignoreVertexType = false
+            }
+          }
+        }
+
+        page_rank {
+          class = "com.intel.intelanalytics.algorithm.graph.PageRank"
+          config {
+            fs = ${intel.analytics.engine.fs}
+            default-timeout = ${intel.analytics.engine.default-timeout}
+            giraph = ${intel.analytics.engine.giraph}
+            titan = ${intel.analytics.engine.titan}
+            output {
+              dir = "pr"
+              overwrite = "true"
+            }
+            giraph {
+              pr.maxSuperSteps = 20
+              pr.convergenceThreshold = 0.001
+              pr.resetProbability = 0.15
+              pr.convergenceProgressOutputInterval = 1
+            }
+          }
+        }
+
+        average_path_length {
+          class = "com.intel.intelanalytics.algorithm.graph.AveragePathLength"
+          config {
+            fs = ${intel.analytics.engine.fs}
+            default-timeout = ${intel.analytics.engine.default-timeout}
+            giraph = ${intel.analytics.engine.giraph}
+            titan = ${intel.analytics.engine.titan}
+            output {
+              dir = "apl"
+              overwrite = "true"
+            }
+            giraph {
+              pr.convergenceProgressOutputInterval = 1
             }
           }
         }
@@ -331,13 +366,10 @@ intel.analytics.engine-spark {
     graphs {
       query {
         gremlin {
-          class = "com.intel.intelanalytics.engine.spark.graph.query.GremlinQuery"
-          config {
-            default-timeout = ${intel.analytics.engine.default-timeout}
+            //default-timeout = ${intel.analytics.engine.default-timeout}
             titan = ${intel.analytics.engine.titan}
 			# Valid values: "normal", "compact", "extended"
-            graphson-mode = "normal" 
-          }
+            //graphson-mode = "normal" 
         }
         histogram_roc {
           class = "com.intel.intelanalytics.engine.spark.graph.query.roc.HistogramRocQuery"
