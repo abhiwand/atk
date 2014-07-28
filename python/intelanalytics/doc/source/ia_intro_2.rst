@@ -11,7 +11,7 @@ Data Import, Data Cleaning, and Feature Engineering
 The Intel Analytics Toolkit provides a baseline set of capabilities for importing data into the framework.
 This enables data scientists to operate on the data using the friendlier “Big Data Frame” concept, referenced through Python API documentation laid out
 in a familiar fashion.
-All functionality is performed on the cluster, at scale, using `Apache Spark <apache_spark>`_.   
+All functionality is performed on the cluster, at scale, using `Apache Spark <http://spark.apache.org/docs/0.9.0/index.html>`_.   
 
 Functionality provided includes:
 
@@ -146,5 +146,3 @@ Note that in the 0.8 beta release there are some libraries (particularly Python 
 .. rubric:: Footnotes
 
 .. [#f1] Aurelius (thinkaurelius.com) is the creator of the Titan open source graph database
-
-.. _apache_spark: http://spark.apache.org/docs/0.9.0/index.html

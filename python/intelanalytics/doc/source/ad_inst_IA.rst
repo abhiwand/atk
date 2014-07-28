@@ -27,9 +27,10 @@ Requirements
     #. Zookeeper
 
 #. Python 2.6
-#. EPEL yum repository -- All the nodes on the cluster must have the EPEL yum repository. Adding the EPEL repository is straight forward and can be acomplished with a few simple steps.
+#. EPEL yum repository -- All the nodes on the cluster must have the EPEL yum repository.
+   Adding the EPEL repository is straight forward and can be acomplished with a few simple steps.
 
-Before trying to install the epel repo run the following command to see if it's already available on the machine you are working on::
+Before trying to install the EPEL repo run the following command to see if it's already available on the machine you are working on::
 
     sudo yum repolist
 
@@ -148,7 +149,7 @@ To add the dependency repository run the following command::
 
     sudo cp ia-deps.repo /etc/yum.repos.d/
 
-If you have issues running the above command try::
+If you have issues running the above command, try entering the following, being careful about the placement of the \" characters::
 
     sudo touch /etc/yum.repos.d/ia-deps.repo
     echo "[intel-analytics-deps]
