@@ -414,17 +414,18 @@ class BigGraph(CommandSupport):
     """
     def __init__(self, rules=None, name=""):
 
-        if rules and (not isinstance(rules, list) or not all([isinstance(rule, Rule) for rule in rules])):
-            raise TypeError("rules must be a list of Rule objects")
         if not hasattr(self, '_backend'):
             self._backend = _get_backend()
         self._name = name or self._get_new_graph_name()
         self._uri = ""
-        self._backend.create(self, rules)
+        self._backend.create(self,rules,name)
 
         CommandSupport.__init__(self)
         #self.ml = GraphMachineLearning(self)
         logger.info('Created new graph "%s"', self._name)
+
+    def __repr__(self):
+        return self._name
 
     @property
     def name(self):

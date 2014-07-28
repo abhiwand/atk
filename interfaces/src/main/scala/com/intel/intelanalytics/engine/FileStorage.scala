@@ -40,4 +40,10 @@ trait FileStorage {
   def list(source: Directory): Seq[Entry]
 
   def write(sink: File, append: Boolean = false): OutputStream
+
+  /**
+   * File size
+   * @param path relative path
+   */
+  def size(path: String): Long
 }
