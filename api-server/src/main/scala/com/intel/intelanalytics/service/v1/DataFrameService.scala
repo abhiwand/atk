@@ -27,7 +27,7 @@ import com.intel.intelanalytics.domain._
 import com.intel.intelanalytics.domain.query.{ Query, RowQuery }
 import org.joda.time.DateTime
 import spray.json._
-import spray.http.Uri
+import spray.http.{ StatusCodes, HttpResponse, Uri }
 import scala.Some
 import com.intel.intelanalytics.repository.MetaStoreComponent
 import com.intel.intelanalytics.service.v1.viewmodels._
@@ -97,7 +97,9 @@ class DataFrameService(commonDirectives: CommonDirectives, engine: Engine) exten
                 frame =>
                   onComplete(engine.create(frame)) {
                     case Success(createdFrame) => complete(FrameDecorator.decorateEntity(uri + "/" + createdFrame.id, Nil, createdFrame))
-                    case Failure(ex) => throw ex
+                    case Failure(ex) => ctx => {
+                      ctx.complete(500, ex.getMessage)
+                    }
                   }
               }
             }
