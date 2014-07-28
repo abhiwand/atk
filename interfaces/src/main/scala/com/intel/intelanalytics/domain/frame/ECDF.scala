@@ -21,8 +21,19 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.engine
+package com.intel.intelanalytics.domain.frame
 
-trait FileComponent {
-  def fileStorage: FileStorage
+/**
+ * Representation of an ECDF object for empirical cumulative distribution function
+ *
+ * @param frameId id of the input frame object
+ * @param name name of the frame object to return
+ * @param sampleCol the column name to use for ecdf
+ * @param dataType the data type of the input column
+ * @tparam FrameRef
+ */
+case class ECDF[FrameRef](frameId: FrameRef, name: String, sampleCol: String, dataType: String) {
+  require(frameId != null, "frame is required")
+  require(name != null, "new frame name is required")
+  require(sampleCol != null, "column name for sample is required")
 }

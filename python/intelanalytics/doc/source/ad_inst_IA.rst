@@ -384,7 +384,7 @@ If it isn't already set add::
 
 Then restart the spark service.
 
-.. figure:: ad_inse_1.png
+.. image:: ad_inst_IA_1.png
 
 
 Wait until IA spark deps and IA python rest client are installed before you start the rest server.
