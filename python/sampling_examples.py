@@ -24,7 +24,13 @@
 
 from intelanalytics import *
 
-csv_file = CsvFile('datasets/netflix/netflix_2million.csv', [('userId', str),
+# csv_file = CsvFile('datasets/netflix/netflix_2million.csv', [('userId', str),
+#                                                              ('vertexType', str),
+#                                                              ('movieId', str),
+#                                                              ('rating', str),
+#                                                              ('splits', str)])
+
+csv_file = CsvFile('datasets/netflix/movie_data_1mb_noheader.csv', [('userId', str),
                                                              ('vertexType', str),
                                                              ('movieId', str),
                                                              ('rating', str),
@@ -33,12 +39,15 @@ frame = BigFrame(csv_file)
 
 print(frame.inspect())
 
-user_vertex_rule = VertexRule('userId', frame['vertexType'])
+user_vertex_rule = VertexRule('userId', frame['userId'])
 movie_vertex_rule = VertexRule('movieId', frame['movieId'])
 
-edge_rule = EdgeRule('rates', user_vertex_rule, movie_vertex_rule)
+edge_rule = EdgeRule('rating', user_vertex_rule, movie_vertex_rule)
 
 graph = BigGraph([user_vertex_rule, movie_vertex_rule, edge_rule])
 
-subgraph = graph.sampling.vertex_sample(50, 'uniform', 1)
-print(subgraph.name)
+subgraph = graph.sampling.vertex_sample(50, 'uniform')
+
+#subgraph = graph.sampling.vertex_sample(50, 'degree')
+
+#subgraph = graph.sampling.vertex_sample(50, 'degreedist')
