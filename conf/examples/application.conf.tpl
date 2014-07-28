@@ -15,7 +15,7 @@ intel.analytics {
 
     engine {
 
-        # The hdfs URL where the intelanalytics foleder will be created
+        # The hdfs URL where the intelanalytics folder will be created
         # and which will be used as the starting point for any relative URLs
         fs.root = "hdfs://invalid-fsroot-host/user/iauser"
 
