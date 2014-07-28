@@ -5,7 +5,7 @@ import javax.script.Bindings
 import com.intel.graphbuilder.graph.titan.TitanGraphConnector
 import com.intel.graphbuilder.util.SerializableBaseConfiguration
 import com.intel.intelanalytics.domain.graph.GraphReference
-import com.intel.intelanalytics.engine.plugin.{CommandPlugin, Invocation}
+import com.intel.intelanalytics.engine.plugin.{ CommandPlugin, Invocation }
 import com.intel.intelanalytics.engine.spark.SparkEngineConfig
 import com.intel.intelanalytics.security.UserPrincipal
 import com.thinkaurelius.titan.core.TitanGraph
@@ -14,7 +14,7 @@ import com.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine
 import spray.json._
 
 import scala.collection.JavaConversions._
-import scala.concurrent.{Await, ExecutionContext, Lock}
+import scala.concurrent.{ Await, ExecutionContext, Lock }
 import scala.util.Try
 
 /**

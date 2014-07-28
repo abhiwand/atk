@@ -116,6 +116,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     with ClassLoaderAware {
 
   private val fsRoot = SparkEngineConfig.fsRoot
+  override val pageSize: Int = SparkEngineConfig.pageSize
 
   /* This progress listener saves progress update to command table */
   SparkProgressListener.progressUpdater = new CommandProgressUpdater {
@@ -751,7 +752,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
    * @param user current user
    * @return the QueryExecution
    */
-  def getRows(arguments: RowQuery[Identifier])(implicit user: UserPrincipal): QueryExecution = {
+  def getRowsLarge(arguments: RowQuery[Identifier])(implicit user: UserPrincipal): QueryExecution = {
     queries.execute(getRowsQuery, arguments, user, implicitly[ExecutionContext])
   }
   val getRowsQuery = queries.registerQuery("dataframes/data", getRowsSimple)
@@ -769,6 +770,21 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     val frame = frames.lookup(arguments.id).getOrElse(throw new IllegalArgumentException("Requested frame does not exist"))
     val rows = frames.getRowsRDD(frame, arguments.offset, arguments.count)
     rows
+  }
+
+  /**
+   * Return a sequence of Rows from an RDD starting from a supplied offset
+   *
+   * @param arguments RowQuery object describing id, offset, and count
+   * @param user current user
+   * @return RDD consisting of the requested number of rows
+   */
+  def getRows(arguments: RowQuery[Identifier])(implicit user: UserPrincipal): Future[Iterable[Row]] = {
+    future {
+      val frame = frames.lookup(arguments.id).getOrElse(throw new IllegalArgumentException("Requested frame does not exist"))
+      val rows = frames.getRows(frame, arguments.offset, arguments.count)
+      rows
+    }
   }
 
   def getFrame(id: Identifier)(implicit user: UserPrincipal): Future[Option[DataFrame]] =
