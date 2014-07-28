@@ -166,14 +166,10 @@ class CommandExecutor(engine: => SparkEngine, commands: SparkCommandStorage, con
           val context: SparkContext = contextManager.context(user).sparkContext
           val cmdFuture = future {
             withCommand(cmd) {
-              val invocation: SparkInvocation = SparkInvocation(engine, commandId = cmd.id, arguments = cmd.arguments,
-                user = user, executionContext = implicitly[ExecutionContext],
-                sparkContext = context)
-
               try {
                 val invocation: SparkInvocation = SparkInvocation(engine, commandId = cmd.id, arguments = cmd.arguments,
                   user = user, executionContext = implicitly[ExecutionContext],
-                  sparkContext = context)
+                  sparkContext = context, commandStorage = commands)
 
                 val listener = new SparkProgressListener(SparkProgressListener.progressUpdater, cmd.id, command.numberOfJobs(arguments))
                 val progressPrinter = new ProgressPrinter(listener)
