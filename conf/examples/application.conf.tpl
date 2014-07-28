@@ -49,8 +49,6 @@ intel.analytics {
     spark {
 
       # When master is empty the system defaults to spark://`hostname`:7070 where hostname is calculated from the current system
-      master = "spark://gao-ws9.hf.intel.com:7077"
-      home = "/opt/cloudera/parcels/CDH/lib/spark"
       //master = ""
       # When home is empty the system will check expected locations on the local system and use the first one it finds
       # ("/usr/lib/spark","/opt/cloudera/parcels/CDH/lib/spark/", etc)
@@ -144,7 +142,7 @@ intel.analytics {
         storage {
           //backend = "hbase"
           # with clusters the hostname should be a comma separated list of host names with zookeeper role assigned
-          hostname = "master"
+          //hostname = "localhost"
           //port = "2181"
           //batch-loading = "true"
           //buffer-size = 2048
