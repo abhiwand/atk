@@ -119,19 +119,6 @@ intel.analytics {
       //archive.name = "igiraph-titan" #name of the plugin jar (without suffix) to launch
     }
 
-    commands {
-      dataframes.create = {}
-      graphs.query {
-      histogram_roc {
-        default-timeout = ${intel.analytics.engine.default-timeout}
-        titan = ${intel.analytics.engine.titan}
-        histogram-buckets = 30
-        enable-roc = "false"
-        roc-threshold = [0, 0.05, 1]
-      }
-    }
-    }
-
     //  query {
     //    ALSQuery {
     //      key-name = "id"
@@ -177,24 +164,25 @@ intel.analytics {
           //renew-timeout = 150000
         }
       }
-    }
-    query {
-      storage {
-        # query does use the batch load settings in titan.load
-        # TODO: should these variables be under intel.analytics.engine.titan or is this ok?
-        //backend = ${intel.analytics.engine.titan.load.storage.backend}
-        //hostname =  ${intel.analytics.engine.titan.load.storage.hostname}
-        //port =  ${intel.analytics.engine.titan.load.storage.port}
-      }
-      cache {
-        # Adjust cache size parameters if you experience OutOfMemory errors during Titan queries
-        # Either increase heap allocation for IntelAnalytics Engine, or reduce db-cache-size
-        # Reducing db-cache will result in cache misses and increased reads from disk
-        //db-cache = true
-        //db-cache-clean-wait = 20
-        //db-cache-time = 180000
-		#Allocates 30% of available heap to Titan (default is 50%)
-        //db-cache-size = 0.3 
+
+      query {
+        storage {
+          # query does use the batch load settings in titan.load
+          # TODO: should these variables be under intel.analytics.engine.titan or is this ok?
+          //backend = ${intel.analytics.engine.titan.load.storage.backend}
+          hostname =  ${intel.analytics.engine.titan.load.storage.hostname}
+          //port =  ${intel.analytics.engine.titan.load.storage.port}
+        }
+        cache {
+          # Adjust cache size parameters if you experience OutOfMemory errors during Titan queries
+          # Either increase heap allocation for IntelAnalytics Engine, or reduce db-cache-size
+          # Reducing db-cache will result in cache misses and increased reads from disk
+          //db-cache = true
+          //db-cache-clean-wait = 20
+          //db-cache-time = 180000
+          #Allocates 30% of available heap to Titan (default is 50%)
+          //db-cache-size = 0.3
+        }
       }
     }
   }
@@ -202,7 +190,7 @@ intel.analytics {
 
 intel.analytics.igiraph-titan {
   command {
-    available = ["graphs.ml.loopy_belief_propagation", "graphs.ml.alternating_least_squares", "graphs.ml.conjugate_gradient_descent", "graphs.ml.label_propagation", "graphs.ml.latent_dirichlet_allocation"]
+    available = ["graphs.ml.loopy_belief_propagation", "graphs.ml.alternating_least_squares", "graphs.ml.conjugate_gradient_descent", "graphs.ml.label_propagation", "graphs.ml.latent_dirichlet_allocation", "graphs.ml.page_rank", "graphs.ml.average_path_length"]
     graphs {
       ml {
         loopy_belief_propagation {
@@ -224,6 +212,43 @@ intel.analytics.igiraph-titan {
               lbp.power = 0.5
               lbp.smoothing = 2.0
               lbp.ignoreVertexType = false
+            }
+          }
+        }
+
+        page_rank {
+          class = "com.intel.intelanalytics.algorithm.graph.PageRank"
+          config {
+            fs = ${intel.analytics.engine.fs}
+            default-timeout = ${intel.analytics.engine.default-timeout}
+            giraph = ${intel.analytics.engine.giraph}
+            titan = ${intel.analytics.engine.titan}
+            output {
+              dir = "pr"
+              overwrite = "true"
+            }
+            giraph {
+              pr.maxSuperSteps = 20
+              pr.convergenceThreshold = 0.001
+              pr.resetProbability = 0.15
+              pr.convergenceProgressOutputInterval = 1
+            }
+          }
+        }
+
+        average_path_length {
+          class = "com.intel.intelanalytics.algorithm.graph.AveragePathLength"
+          config {
+            fs = ${intel.analytics.engine.fs}
+            default-timeout = ${intel.analytics.engine.default-timeout}
+            giraph = ${intel.analytics.engine.giraph}
+            titan = ${intel.analytics.engine.titan}
+            output {
+              dir = "apl"
+              overwrite = "true"
+            }
+            giraph {
+              pr.convergenceProgressOutputInterval = 1
             }
           }
         }
@@ -331,20 +356,38 @@ intel.analytics.engine-spark {
         gremlin {
           class = "com.intel.intelanalytics.engine.spark.graph.query.GremlinQuery"
           config {
-            default-timeout = ${intel.analytics.engine.default-timeout}
+            //default-timeout = ${intel.analytics.engine.default-timeout}
             titan = ${intel.analytics.engine.titan}
-			# Valid values: "normal", "compact", "extended"
-            graphson-mode = "normal" 
+			//graphson-mode = "normal"
           }
         }
         histogram_roc {
           class = "com.intel.intelanalytics.engine.spark.graph.query.roc.HistogramRocQuery"
           config {
-            default-timeout = ${intel.analytics.engine.default-timeout}
+            //default-timeout = ${intel.analytics.engine.default-timeout}
             titan = ${intel.analytics.engine.titan}
-            histogram-buckets = 30
-            enable-roc = "false"
-            roc-threshold = [0, 0.05, 1]
+            //histogram-buckets = 30
+            //enable-roc = "false"
+            //roc-threshold = [0, 0.05, 1]
+          }
+        }
+        recommend {
+          class = "com.intel.intelanalytics.engine.spark.graph.query.recommend.RecommendQuery"
+          config {
+            //default-timeout = ${intel.analytics.engine.default-timeout}
+            titan = ${intel.analytics.engine.titan}
+            //vertex_type = "l"
+            //output_vertex_property_list = "als_result"
+            //vertex_type_property_key = "vertex_type"
+            //edge_type_property_key = "splits"
+            //vector_value = "true"
+            //bias_on = "false"
+            //train_str = "tr"
+            //num_output_results = 10
+            //left_vertex_name = "user"
+            //right_vertex_name = "movie"
+            //left_vertex_id_property_key = "user_id"
+            //right_vertex_id_property_key = "movie_id"
           }
         }
       }

@@ -30,7 +30,7 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol
 import com.intel.intelanalytics.domain.graph.GraphReference
 import com.intel.intelanalytics.engine.plugin.{ CommandPlugin, Invocation }
 import com.intel.intelanalytics.security.UserPrincipal
-import com.intel.intelanalytics.algorithm.util.{ GiraphConfigurationUtil, GiraphJobDriver }
+import com.intel.intelanalytics.algorithm.util.{ GiraphJobManager, GiraphConfigurationUtil }
 import org.apache.giraph.conf.GiraphConfiguration
 import spray.json.DefaultJsonProtocol._
 import spray.json._
@@ -118,9 +118,9 @@ class ConjugateGradientDescent
     giraphConf.setComputationClass(classOf[ConjugateGradientDescentComputation])
     giraphConf.setAggregatorWriterClass(classOf[ConjugateGradientDescentComputation.ConjugateGradientDescentAggregatorWriter])
 
-    CgdResult(GiraphJobDriver.run("ia_giraph_cgd",
+    CgdResult(GiraphJobManager.run("ia_giraph_cgd",
       classOf[ConjugateGradientDescentComputation].getCanonicalName,
-      config, giraphConf, invocation.commandId, "cgd-learning-report_0"))
+      config, giraphConf, invocation, "cgd-learning-report_0"))
   }
 
   //TODO: Replace with generic code that works on any case class

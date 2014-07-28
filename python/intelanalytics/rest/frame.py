@@ -39,7 +39,7 @@ from intelanalytics.core.aggregation import agg
 from intelanalytics.rest.connection import http
 
 from intelanalytics.rest.iatypes import get_data_type_from_rest_str, get_rest_str_from_data_type
-from intelanalytics.rest.command import CommandRequest, CommandInfo, executor
+from intelanalytics.rest.command import CommandRequest, executor
 from intelanalytics.rest.spark import prepare_row_function, get_add_one_column_function, get_add_many_columns_function
 
 
@@ -85,7 +85,7 @@ class FrameBackendRest(object):
     def delete_frame(self, frame):
         if isinstance(frame, BigFrame):
             return self._delete_frame(frame)
-        elif isinstance(frame, str):
+        elif isinstance(frame, basestring):
             # delete by name
             return self._delete_frame(self.get_frame(frame))
         else:
@@ -132,10 +132,13 @@ class FrameBackendRest(object):
     def get_schema(self, frame):
         return self._get_frame_info(frame).schema
 
+    def get_row_count(self, frame):
+        return self._get_frame_info(frame).row_count
+
     def get_repr(self, frame):
         frame_info = self._get_frame_info(frame)
-        return "\n".join(['"%s"' % frame_info.name] +
-                         ["%s:%s" % (name, data_type)
+        return "\n".join(['BigFrame "%s"\nrow_count = %d\nschema = ' % (frame_info.name, frame_info.row_count)] +
+                         ["  %s:%s" % (name, data_type)
                           for name, data_type in FrameSchema.from_types_to_strings(frame_info.schema)])
 
     def _get_frame_info(self, frame):
@@ -235,12 +238,7 @@ class FrameBackendRest(object):
             raise ValueError("Invalid number for percentile:" + ','.join(invalid_percentiles))
 
         arguments = {'frame_id': frame._id, "column_name": column_name, "percentiles": percentiles}
-        command = CommandRequest("dataframe/calculate_percentiles", arguments)
-        return executor.issue(command)
-
-
-    def count(self, frame):
-        raise NotImplementedError  # TODO - implement count
+        execute_update_frame_command('calculate_percentiles', arguments, frame)
 
     def drop(self, frame, predicate):
         from itertools import ifilterfalse  # use the REST API filter, with a ifilterfalse iterator
@@ -249,11 +247,12 @@ class FrameBackendRest(object):
         execute_update_frame_command("filter", arguments, frame)
 
     def drop_duplicates(self, frame, columns):
-        if isinstance(columns, basestring):
+        if columns is None:
+            columns = []
+        elif isinstance(columns, basestring):
             columns = [columns]
         arguments = {'frame_id': frame._id, "unique_columns": columns}
-        command = CommandRequest("dataframe/drop_duplicates", arguments)
-        executor.issue(command)
+        execute_update_frame_command('drop_duplicates', arguments, frame)
 
     def filter(self, frame, predicate):
         from itertools import ifilter
@@ -265,7 +264,6 @@ class FrameBackendRest(object):
         name = self._get_new_frame_name()
         arguments = {'name': name, 'frame_id': frame._id, 'column': column_name, 'separator': ',' }
         return execute_new_frame_command('flatten_column', arguments)
-
 
     def bin_column(self, frame, column_name, num_bins, bin_type='equalwidth', bin_column_name='binned'):
         import numpy as np
@@ -407,18 +405,26 @@ class FrameBackendRest(object):
         execute_update_frame_command('rename_columns', arguments, frame)
 
     def rename_frame(self, frame, name):
-        # TODO - move uniqueness checking to server
-        r = self.rest_http.get('dataframes')
-        payload = r.json()
-        frame_names = [f['name'] for f in payload]
-        if name in frame_names:
-            raise ValueError("A frame with this name already exists. Rename failed")
-        arguments = {'frame': frame.uri, "new_name": name}
+        arguments = {'frame': self._get_frame_full_uri(frame), "new_name": name}
         execute_update_frame_command('rename_frame', arguments, frame)
 
     def take(self, frame, n, offset):
-        r = self.rest_http.get('dataframes/{0}/data?offset={2}&count={1}'.format(frame._id,n, offset))
-        return r.json()
+        url = 'dataframes/{0}/data?offset={2}&count={1}'.format(frame._id,n, offset)
+        return executor.query(url)
+
+
+    def ecdf(self, frame, sample_col):
+        import numpy as np
+        col_types = dict(frame.schema)
+        if not col_types[sample_col] in [np.float32, np.float64, np.int32, np.int64]:
+            raise ValueError("unable to generate ecdf for non-numeric values")
+        data_type_dict = {np.float32: 'float32', np.float64: 'float64', np.int32: 'int32', np.int64: 'int64'}
+        data_type = 'string'
+        if col_types[sample_col] in data_type_dict:
+            data_type = data_type_dict[col_types[sample_col]]
+        name = self._get_new_frame_name()
+        arguments = {'frame_id': frame._id, 'name': name, 'sample_col': sample_col, 'data_type': data_type}
+        return execute_new_frame_command('ecdf', arguments)
 
     def classification_metric(self, frame, metric_type, label_column, pred_column, pos_label, beta):
         # TODO - remove error handling, leave to server (or move to plugin)
@@ -475,6 +481,19 @@ class FrameBackendRest(object):
 
         return formattedMatrix
 
+    def cumulative_dist(self, frame, sample_col, dist_type, count_value="1"):
+        import numpy as np
+        if not sample_col in frame.column_names:
+            raise ValueError("sample_col does not exist in frame")
+        col_types = dict(frame.schema)
+        if dist_type in ['cumulative_sum', 'cumulative_percent_sum'] and not col_types[sample_col] in [np.float32, np.float64, np.int32, np.int64]:
+            raise ValueError("invalid sample_col type for the specified dist_type")
+        if not dist_type in ['cumulative_sum', 'cumulative_count', 'cumulative_percent_sum', 'cumulative_percent_count']:
+            raise ValueError("invalid distribution type")
+        # TODO: check count_value
+        name = self._get_new_frame_name()
+        arguments = {'frame_id': frame._id, 'name': name, 'sample_col': sample_col, 'dist_type': dist_type, 'count_value': str(count_value)}
+        return execute_new_frame_command('cumulative_dist', arguments)
 
 class FrameInfo(object):
     """
@@ -500,6 +519,10 @@ class FrameInfo(object):
     @property
     def schema(self):
         return FrameSchema.from_strings_to_types(self._payload['schema']['columns'])
+
+    @property
+    def row_count(self):
+        return int(self._payload['row_count'])
 
     @property
     def error_frame_id(self):

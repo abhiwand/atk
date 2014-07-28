@@ -654,6 +654,14 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 </configuration>
             </plugin>
         </plugins>
+        <testResources>
+            <testResource>
+                <directory>src/main/resources</directory>
+                <includes>
+                    <include>reference.conf</include>
+                </includes>
+            </testResource>
+        </testResources>
     </build>
 
     <dependencyManagement>

@@ -33,20 +33,16 @@ It provides the functionality that allows data scientists to easily manipulate d
 Before You Start
 ----------------
 
-You should be familiar with some of the Python packages already available in the open source community.
-
 The Intel® Analytics Toolkit provides a set of functionality exposed through a Python API.
-You can access this API through iPython© notebooks, so familiarizing yourself with iPython_ will be helpful to you.
 
-You'll want to know about `Apache™ Hadoop®`_ and its various components. We use HDFS™, MapReduce, and YARN.
+You'll want to know about `Apache™ Hadoop®`_ and its various components.
 
 We use `Apache™ Giraph©`_ for graph-based machine learning.
 
-We use the `Cloudera Graph Database`_ because it is flexible and highly scalable.
+When using the database with the `Gremlin®`_ graph query language from TinkerPop™.
+You can write Gremlin® queries to investigate and manipulate your graphs.
 
-When using the database with the `Gremlin®`_ graph query language from TinkerPop™. You can write Gremlin® queries to investigate and manipulate your graphs.
-
-The toolkit notebooks run Python 2.7 and come with several python packages installed, ready to import in your interactive sessions:
+You should be familiar with some of the other Python packages already available in the open source community.
 
 +---------------------+-----------------------------+--------------------------------------------+
 | **Python Package**  | **Description**             | **URL**                                    |
@@ -75,8 +71,6 @@ The toolkit notebooks run Python 2.7 and come with several python packages insta
 +---------------------+-----------------------------+--------------------------------------------+
 
 
-.. _iPython: http://ipython.org/
 .. _Apache™ Hadoop®: http://hadoop.apache.org/docs/current/index.html 
 .. _Apache™ Giraph©: http://giraph.apache.org/ 
-.. _Cloudera Graph Database: http://www.cloudera.com/
 .. _Gremlin®: https://github.com/tinkerpop/gremlin/wiki

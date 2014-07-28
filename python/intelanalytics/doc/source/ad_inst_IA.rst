@@ -18,23 +18,26 @@ Requirements
 
 1. RHEL/Centos 6.4 OS
 #. Sudo access is required to install the various IA packages since they are installed through Yum and for the editing of root owned configuration files
-#. Cloudera cluster with CDH-5.0.2-p0.13 or greater with the following services installed and running
+#. Cloudera cluster with CDH-5.0.2-p0.13 or greater up to CDH-5.0.3-p0.35 with the following services installed and running.
+
     A. HDFS
     #. SPARK
     #. Hbase
     #. Yarn(MR2)
     #. Zookeeper
-#. Python 2.6
-#. EPEL yum repository -- All the nodes on the cluster must have the EPEL yum repository. Adding the EPEL repository is straight forward and can be acomplished with a few simple steps.
 
-Before trying to install the epel repo run the following command to see if it's already available on the machine you are working on::
+#. Python 2.6
+#. EPEL yum repository -- All the nodes on the cluster must have the EPEL yum repository.
+   Adding the EPEL repository is straight forward and can be acomplished with a few simple steps.
+
+Before trying to install the EPEL repo run the following command to see if it's already available on the machine you are working on::
 
     sudo yum repolist
 
 Sample output::
 
     cloudera-cdh5                              Cloudera CDH, Version 5                                              141
-    cloudera-manager                           Cloudera Manager, Version 5.1.0                                        7
+    cloudera-manager                           Cloudera Manager, Version 5.0.2                                        7
     epel                                       Extra Packages for Enterprise Linux 6 - x86_64                    11,022
     rhui-REGION-client-config-server-6         Red Hat Update Infrastructure 2.0 Client Configuration Server 6        2
     rhui-REGION-rhel-server-releases           Red Hat Enterprise Linux Server 6 (RPMs)                          12,690
@@ -146,7 +149,7 @@ To add the dependency repository run the following command::
 
     sudo cp ia-deps.repo /etc/yum.repos.d/
 
-If you have issues running the above command try::
+If you have issues running the above command, try entering the following, being careful about the placement of the \" characters::
 
     sudo touch /etc/yum.repos.d/ia-deps.repo
     echo "[intel-analytics-deps]
@@ -382,8 +385,9 @@ If it isn't already set add::
 
 Then restart the spark service.
 
-.. figure:: ad_inse_1.png
-
+.. image:: ad_inst_IA_1.png
+    :width: 80%
+    :align: center
 
 Wait until IA spark deps and IA python rest client are installed before you start the rest server.
 
