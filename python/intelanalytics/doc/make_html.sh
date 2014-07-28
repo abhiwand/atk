@@ -23,6 +23,9 @@ if [ $? == 0 ]; then
     exit 0
 fi
 
+# This is stupid, but sometimes numpy chokes on these files.
+rm ../core/*.pyc
+
 SCRIPT=$(readlink -f "$0")
 SCRIPTPATH=$(dirname "$SCRIPT")
 pushd $SCRIPTPATH > /dev/null
