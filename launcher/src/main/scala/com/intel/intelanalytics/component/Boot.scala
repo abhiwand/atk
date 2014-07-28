@@ -25,7 +25,7 @@ package com.intel.intelanalytics.component
 
 import java.net.{ URL, URLClassLoader }
 
-import com.typesafe.config.{ConfigParseOptions, ConfigResolveOptions, Config, ConfigFactory}
+import com.typesafe.config.{ ConfigParseOptions, Config, ConfigFactory }
 
 import scala.reflect.io.{ Directory, File, Path }
 import scala.util.Try
@@ -162,46 +162,51 @@ object Boot extends App with ClassLoaderAware {
    * @return the created, running, `Archive`
    */
   private def buildArchive(archiveName: String): Archive = {
-    //We first create a standard plugin class loader, which we will use to query the config
-    //to see if this archive needs special treatment (i.e. a parent class loader other than the
-    //interfaces class loader)
-    val probe = buildClassLoader(archiveName, interfaces)
+    try {
+      //We first create a standard plugin class loader, which we will use to query the config
+      //to see if this archive needs special treatment (i.e. a parent class loader other than the
+      //interfaces class loader)
+      val probe = buildClassLoader(archiveName, interfaces)
 
-    val parseOptions = ConfigParseOptions.defaults()
-    parseOptions.setAllowMissing(true)
+      val parseOptions = ConfigParseOptions.defaults()
+      parseOptions.setAllowMissing(true)
 
-    val augmentedConfigForProbe = ConfigFactory.defaultReference(probe)
+      val augmentedConfigForProbe = ConfigFactory.defaultReference(probe)
 
-    val definition = readArchiveDefinition(archiveName, augmentedConfigForProbe)
+      val definition = readArchiveDefinition(archiveName, augmentedConfigForProbe)
 
-    //Now that we know the parent, we build the real class loader we're going to use for this archive.
-    val parentLoader = loaders.getOrElse(definition.parent, throw new IllegalArgumentException(
-      s"Archive ${definition.parent} not found when searching for parent archive for $archiveName"))
+      //Now that we know the parent, we build the real class loader we're going to use for this archive.
+      val parentLoader = loaders.getOrElse(definition.parent, throw new IllegalArgumentException(
+        s"Archive ${definition.parent} not found when searching for parent archive for $archiveName"))
 
-    val loader = buildClassLoader(archiveName, parentLoader)
+      val loader = buildClassLoader(archiveName, parentLoader)
 
-    ConfigFactory.invalidateCaches()
+      ConfigFactory.invalidateCaches()
 
-    val augmentedConfig = config.withFallback(
-      ConfigFactory.parseResources(loader, "reference.conf", parseOptions).withFallback(config)).resolve()
+      val augmentedConfig = config.withFallback(
+        ConfigFactory.parseResources(loader, "reference.conf", parseOptions).withFallback(config)).resolve()
 
-    writeFile("/tmp/iat/" + archiveName + ".effective-conf", augmentedConfig.root().render())
+      writeFile("/tmp/iat/" + archiveName + ".effective-conf", augmentedConfig.root().render())
 
-    val archiveLoader = ArchiveClassLoader(archiveName, loader)
+      val archiveLoader = ArchiveClassLoader(archiveName, loader)
 
-    val instance = archiveLoader(definition.className)
+      val instance = archiveLoader(definition.className)
 
-    val archiveInstance = attempt(instance.asInstanceOf[Archive],
-      s"Loaded class ${instance.getClass.getName} in archive ${definition.name}, but it is not an Archive")
+      val archiveInstance = attempt(instance.asInstanceOf[Archive],
+        s"Loaded class ${instance.getClass.getName} in archive ${definition.name}, but it is not an Archive")
 
-    withLoader(loader) {
-      initializeArchive(definition, archiveLoader, augmentedConfig.getConfig(definition.configPath), archiveInstance)
-      archives += (archiveName -> archiveInstance)
-      Archive.logger(s"Registered archive $archiveName with parent ${definition.parent}")
-      archiveInstance.start()
+      withLoader(loader) {
+        initializeArchive(definition, archiveLoader, augmentedConfig.getConfig(definition.configPath), archiveInstance)
+        archives += (archiveName -> archiveInstance)
+        Archive.logger(s"Registered archive $archiveName with parent ${definition.parent}")
+        archiveInstance.start()
+      }
+
+      archiveInstance
     }
-
-    archiveInstance
+    catch {
+      case e: Exception => throw new ArchiveInitException("building archive: " + archiveName, e)
+    }
   }
 
   /**

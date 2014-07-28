@@ -39,12 +39,14 @@ import org.joda.time.DateTime
  * @param modifiedOn date/time this record was last modified
  * @param createdBy user who created this row
  * @param modifiedBy user who last modified this row
+ * @param rowCount number of rows in the frame
  * @param errorFrameId foreign key for the error data frame associated with this frame (parse errors go into this frame)
  */
 case class DataFrame(id: Long,
                      name: String,
                      description: Option[String] = None,
                      schema: Schema = Schema(),
+                     rowCount: Long,
                      status: Long,
                      createdOn: DateTime,
                      modifiedOn: DateTime,

@@ -83,7 +83,7 @@ object SparkEngineConfig extends SharedConfig with EventLogging {
 
   val fsRoot: String = config.getString("intel.analytics.engine.fs.root")
 
-  val maxRows: Int = config.getInt("intel.analytics.engine.max-rows")
+  val pageSize: Int = config.getInt("intel.analytics.engine.page-size")
 
   /* number of rows taken for sample test during frame loading */
   val frameLoadTestSampleSize: Int =
@@ -140,6 +140,31 @@ object SparkEngineConfig extends SharedConfig with EventLogging {
       sparkConfProperties += entry.getKey -> properties.getString(entry.getKey)
     }
     sparkConfProperties
+  }
+
+  /**
+   * Max partitions if file is larger than limit specified in autoPartitionConfig
+   */
+  val maxPartitions: Int = {
+    config.getInt("intel.analytics.engine-spark.auto-partitioner.max-partitions")
+  }
+
+  /**
+   * Sorted list of mappings for file size to partition size (larger file sizes first)
+   */
+  val autoPartitionerConfig: List[FileSizeToPartitionSize] = {
+    import scala.collection.JavaConverters._
+    val key = "intel.analytics.engine-spark.auto-partitioner.file-size-to-partition-size"
+    val configs = config.getConfigList(key).asScala.toList
+    val unsorted = configs.map(config => {
+      val partitions = config.getInt("partitions")
+      if (partitions > maxPartitions) {
+        throw new RuntimeException("Invalid value partitions:" + partitions +
+          " shouldn't be larger than max-partitions:" + maxPartitions + ", under:" + key)
+      }
+      FileSizeToPartitionSize(config.getBytes("upper-bound"), partitions)
+    })
+    unsorted.sortWith((leftConfig, rightConfig) => leftConfig.fileSizeUpperBound > rightConfig.fileSizeUpperBound)
   }
 
   /** Hostname for current system */

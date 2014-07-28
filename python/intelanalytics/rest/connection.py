@@ -181,7 +181,11 @@ class HttpMethods(object):
         r = requests.post(uri, data=data, headers=self.server.headers)
         if logger.level <= logging.DEBUG:
             logger.debug("[HTTP Post Response] %s", r.text)
-        self._check_response(r, {406: 'long initialization time'})
+            self.reason = r.text
+        try:
+            self._check_response(r, {406: 'long initialization time'})
+        except Exception as e:
+            raise requests.exceptions.HTTPError(str(e) + " "+ r.text)
         return r
 
 build_id_help_msg = """

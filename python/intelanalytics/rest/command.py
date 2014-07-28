@@ -31,6 +31,7 @@ import logging
 import sys
 import re
 import collections
+from requests import HTTPError
 
 logger = logging.getLogger(__name__)
 
@@ -58,6 +59,8 @@ class ProgressPrinter(object):
         finished : boolean
             Indicate whether the command is finished
         """
+        if progress == False:
+            return
 
         total_job_count = len(progress)
         new_added_job_count = total_job_count - self.job_count
@@ -100,9 +103,11 @@ class ProgressPrinter(object):
 
         for index in range(0, len(progress)):
             p = progress[index]['progress']
-            retried_tasks = progress[index]['tasks_info']['retries']
-
-            message = "Tasks retries:%s" %(retried_tasks)
+            # Check if the Progress has tasks_info field
+            message = ''
+            if 'tasks_info' in progress[index].keys():
+                retried_tasks = progress[index]['tasks_info']['retries']
+                message = "Tasks retries:%s" %(retried_tasks)
 
             total_bar_length = 25
             factor = 100 / total_bar_length
@@ -157,7 +162,7 @@ class CommandRequest(object):
 
 
 class CommandInfo(object):
-    __commands_regex = re.compile("""^http.+/commands/\d+""")
+    __commands_regex = re.compile("""^http.+/(queries|commands)/\d+""")
 
     @staticmethod
     def is_valid_command_uri(uri):
@@ -333,6 +338,14 @@ class Executor(object):
         """
         logger.info("Issuing command " + command_request.name)
         response = http.post("commands", command_request.to_json_obj())
+        return self.poll_command_info(response)
+
+    def poll_command_info(self, response):
+        """
+        poll command_info until the command is completed and return results
+        :param response: response from original command
+        :return: :raise CommandServerError:
+        """
         command_info = CommandInfo(response.json())
         # For now, we just poll until the command completes
         try:
@@ -346,6 +359,65 @@ class Executor(object):
         if command_info.error:
             raise CommandServerError(command_info)
         return command_info
+
+    def query(self, query_url):
+        """
+        Issues the query_request to the server
+        """
+        logger.info("Issuing query " + query_url)
+        try:
+            response = http.get(query_url)
+        except:
+            # do a single retry
+            response = http.get(query_url)
+
+        response_json = response.json()
+
+        if response_json["complete"]:
+            return response_json["result"]["data"]
+
+        command = self.poll_command_info(response)
+
+        def get_query_response(id, partition):
+            """
+            Attempt to get the next partition of data as a CommandInfo Object. Allow for several retries
+            :param id: Query ID
+            :param partition: Partition number to pull
+            """
+            max_retries = 20
+            for i in range(max_retries):
+                try:
+                    info = CommandInfo(http.get("queries/%s/data/%s" % (id, partition)).json())
+                    return info
+                except HTTPError as e:
+                    time.sleep(5)
+                    if i == max_retries - 1:
+                        raise e
+
+        #retreive the data
+        printer = ProgressPrinter()
+        total_pages = command.result["total_pages"] + 1
+        data = []
+        start = 1
+        for i in range(start, total_pages):
+            next_partition = get_query_response(command.id_number, i)
+            data.extend(next_partition.result["data"])
+
+            #if the total pages is greater than 10 display a progress bar
+            if total_pages > 5:
+                finished = i == (total_pages - 1)
+                if not finished:
+                    time.sleep(.5)
+                progress = [{
+                    "progress": (float(i)/(total_pages - 1)) * 100,
+                    "tasks_info": {
+                        "retries": 0
+                    }
+                }]
+                printer.print_progress(progress, finished)
+        return data
+
+
 
     def cancel(self, command_id):
         """
