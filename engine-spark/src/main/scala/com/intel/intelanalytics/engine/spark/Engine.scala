@@ -28,31 +28,43 @@ import java.util.{ ArrayList => JArrayList, List => JList }
 import com.intel.intelanalytics.component.ClassLoaderAware
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
 import com.intel.intelanalytics.domain._
-import com.intel.intelanalytics.domain.query.{ Execution => QueryExecution, RowQuery, Query }
-import com.intel.intelanalytics.domain.command.CommandDefinition
+import com.intel.intelanalytics.domain.query.{ Execution => QueryExecution, RowQuery, Query, QueryTemplate }
+import com.intel.intelanalytics.domain.command.{ Command, CommandDefinition, CommandTemplate, Execution }
 import com.intel.intelanalytics.domain.frame._
+import com.intel.intelanalytics.domain.frame.load.{ LineParserArguments, LineParser, LoadSource, Load }
 
-import com.intel.intelanalytics.domain.graph.GraphLoad
+import com.intel.intelanalytics.domain.graph.{ Graph, GraphLoad, GraphTemplate }
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 import com.intel.intelanalytics.domain.schema.{ DataTypes, Schema, SchemaUtil }
+import com.intel.intelanalytics.engine.Rows._
 import com.intel.intelanalytics.engine._
 import com.intel.intelanalytics.engine.plugin.CommandPlugin
 import com.intel.intelanalytics.engine.spark.command.CommandExecutor
 import com.intel.intelanalytics.engine.spark.queries.{ SparkQueryStorage, QueryExecutor }
+import com.intel.intelanalytics.engine.spark.context.SparkContextManager
+import com.intel.intelanalytics.engine.spark.frame.{ RDDJoinParam, RowParser, SparkFrameStorage }
+import com.intel.intelanalytics.engine.spark.context.SparkContextManager
 import com.intel.intelanalytics.engine.spark.frame._
+import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.shared.EventLogging
 import com.intel.intelanalytics.NotFoundException
 import org.apache.spark.SparkContext
 import org.apache.spark.api.python.{ EnginePythonAccumulatorParam, EnginePythonRDD }
 import org.apache.spark.broadcast.Broadcast
+import org.apache.spark.engine.SparkProgressListener
 import org.apache.spark.rdd.RDD
 import spray.json._
 
 import com.intel.intelanalytics.domain.frame.LoadLines
 
 import DomainJsonProtocol._
+
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent._
 import com.intel.intelanalytics.engine.spark.context.SparkContextManager
-import com.intel.spark.mllib.util.MLDataSplitter
+import scala.util.Try
+import org.apache.spark.engine.SparkProgressListener
+import com.intel.spark.mllib.util.{ LabeledLine, MLDataSplitter }
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent._
@@ -744,7 +756,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
    * @param user current user
    * @return the QueryExecution
    */
-  def getRows(arguments: RowQuery[Identifier])(implicit user: UserPrincipal): QueryExecution = {
+  def getRowsLarge(arguments: RowQuery[Identifier])(implicit user: UserPrincipal): QueryExecution = {
     queries.execute(getRowsQuery, arguments, user, implicitly[ExecutionContext])
   }
   val getRowsQuery = queries.registerQuery("dataframes/data", getRowsSimple)
@@ -762,6 +774,28 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     val frame = frames.lookup(arguments.id).getOrElse(throw new IllegalArgumentException("Requested frame does not exist"))
     val rows = frames.getRowsRDD(frame, arguments.offset, arguments.count, invocation.sparkContext)
     rows
+  }
+
+  /**
+   * Return a sequence of Rows from an RDD starting from a supplied offset
+   *
+   * @param arguments RowQuery object describing id, offset, and count
+   * @param user current user
+   * @return RDD consisting of the requested number of rows
+   */
+  def getRows(arguments: RowQuery[Identifier])(implicit user: UserPrincipal): Future[Iterable[Row]] = {
+    future {
+      withMyClassLoader {
+        val ctx = sparkContextManager.context(user)
+        val invocation: SparkInvocation = SparkInvocation(null, commandId = 0, arguments = null,
+          user = null, executionContext = null,
+          sparkContext = ctx.sparkContext, commandStorage = null)
+
+        val frame = frames.lookup(arguments.id).getOrElse(throw new IllegalArgumentException("Requested frame does not exist"))
+        val rows = frames.getRows(frame, arguments.offset, arguments.count, invocation)
+        rows
+      }
+    }
   }
 
   def getFrame(id: Identifier)(implicit user: UserPrincipal): Future[Option[DataFrame]] =
