@@ -24,7 +24,7 @@ mkdir -p  tarballs/$package/etc/intelanalytics/rest-server
 mkdir -p  tarballs/$package/usr/lib/intelanalytics/rest-server/lib
 
 cp -v ../conf/examples/application.conf.tpl tarballs/$package/etc/intelanalytics/rest-server
-cp -v ../conf/examples/application.conf.single-systempv.tpl tarballs/$package/etc/intelanalytics/rest-server
+cp -v ../conf/examples/application.conf.single-system.tpl tarballs/$package/etc/intelanalytics/rest-server
 #cp -Rv ../api-server/src/main/resources/* tarballs/$package/etc/intelanalytics/rest-server
 #cp -Rv ../engine/src/main/resources/* tarballs/$package/etc/intelanalytics/rest-server
 cp -Rv config/intelanalytics-rest-server/assets/* tarballs/$package/

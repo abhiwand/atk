@@ -45,6 +45,10 @@ import scala.reflect.ClassTag
  */
 class ApiServiceApplication extends Archive with EventLogging {
 
+  //Direct subsequent archive messages to the normal log
+  Archive.logger = s => info(s)
+  Archive.logger("Archive logger installed")
+
   // TODO: implement or remove get()
   def get[T](descriptor: String): T = {
     throw new IllegalArgumentException("This component provides no services")

@@ -15,13 +15,13 @@ intel.analytics {
 
     engine {
 
-        # The hdfs URL where the intelanalytics folder will be created
+        # The hdfs URL where the intelanalytics foleder will be created
         # and which will be used as the starting point for any relative URLs
         fs.root = "hdfs://invalid-fsroot-host/user/iauser"
 
         # The (comma separated, no spaces) Zookeeper hosts that
         # Titan needs to be able to connect to HBase
-        titan.load.hostname = "invalid-titan-host"
+        titan.load.storage.hostname = "invalid-titan-host"
 
         spark {
             # The URL for connecting to the Spark master server
