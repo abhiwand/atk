@@ -32,7 +32,6 @@ import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{ Path, FileSystem }
 import org.apache.hadoop.mapreduce.Job
 import com.typesafe.config.Config
-import java.net.URI
 
 import scala.concurrent._
 
@@ -64,6 +63,9 @@ class GiraphJobListener extends DefaultJobObserver {
  */
 object GiraphJobManager {
 
+  def getFullyQualifiedPath(path: String, fs: FileSystem): Path =
+    fs.makeQualified(Path.getPathWithoutSchemeAndAuthority(new Path(path)))
+
   def run(jobName: String, computationClassCanonicalName: String,
           config: Config, giraphConf: GiraphConfiguration, invocation: Invocation, reportName: String): String = {
 
@@ -77,21 +79,19 @@ object GiraphJobManager {
     val internalJob: Job = job.getInternalJob
 
     // Clear Giraph Report Directory
+    val fs = FileSystem.get(new Configuration())
     val output_dir_path = config.getString("fs.root") + "/" + config.getString("output.dir") + "/" + invocation.commandId
-    val output_dir = new URI(output_dir_path)
     if (config.getBoolean("output.overwrite")) {
-      val fs = FileSystem.get(new Configuration())
-      fs.delete(new Path(output_dir), true)
+      fs.delete(getFullyQualifiedPath(output_dir_path, fs), true)
     }
 
     org.apache.hadoop.mapreduce.lib.output.FileOutputFormat.setOutputPath(internalJob,
-      new Path(output_dir))
+      getFullyQualifiedPath(output_dir_path, fs))
 
     job.run(true) match {
       case false => "Error: No Learning Report found!!"
       case true =>
-        val fs = FileSystem.get(new Configuration())
-        val stream = fs.open(new Path(output_dir_path + "/" + reportName))
+        val stream = fs.open(getFullyQualifiedPath(output_dir_path + "/" + reportName, fs))
         def readLines = Stream.cons(stream.readLine, Stream.continually(stream.readLine))
         val result = readLines.takeWhile(_ != null).toList.mkString("\n")
         fs.close()
