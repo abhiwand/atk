@@ -56,22 +56,27 @@ import com.intel.spark.mllib.util.MLDataSplitter
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent._
+import scala.util.Try
 import org.apache.spark.engine.SparkProgressListener
 import com.intel.intelanalytics.domain.frame.FrameAddColumns
 import com.intel.intelanalytics.domain.frame.FrameRenameFrame
+import com.intel.intelanalytics.domain.frame.load.LineParserArguments
 import com.intel.intelanalytics.domain.graph.GraphLoad
 import com.intel.intelanalytics.domain.schema.Schema
 import com.intel.intelanalytics.domain.frame.DropDuplicates
+import com.intel.intelanalytics.engine.spark.frame.RowParseResult
 import com.intel.intelanalytics.domain.frame.FrameProject
 import com.intel.intelanalytics.domain.graph.Graph
 import com.intel.intelanalytics.domain.FilterPredicate
 import com.intel.intelanalytics.domain.frame.load.Load
+import com.intel.intelanalytics.domain.frame.load.LineParser
 import com.intel.intelanalytics.domain.frame.BigColumn
 import com.intel.intelanalytics.domain.frame.FrameGroupByColumn
 import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.domain.frame.FrameRemoveColumn
 import com.intel.intelanalytics.engine.spark.frame.RDDJoinParam
 import com.intel.intelanalytics.domain.graph.GraphTemplate
+import com.intel.intelanalytics.domain.frame.load.LoadSource
 import com.intel.intelanalytics.domain.frame.DataFrameTemplate
 import com.intel.intelanalytics.engine.ProgressInfo
 import com.intel.intelanalytics.domain.frame.FrameRenameColumns
@@ -100,6 +105,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     with ClassLoaderAware {
 
   private val fsRoot = SparkEngineConfig.fsRoot
+  override val pageSize: Int = SparkEngineConfig.pageSize
 
   /* This progress listener saves progress update to command table */
   SparkProgressListener.progressUpdater = new CommandProgressUpdater {
@@ -198,7 +204,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
   def load(arguments: Load)(implicit user: UserPrincipal): Execution =
     commands.execute(loadCommand, arguments, user, implicitly[ExecutionContext])
 
-  val loadCommand = commands.registerCommand("dataframe/load", loadSimple _, 6)
+  val loadCommand = commands.registerCommand("dataframe/load", loadSimple _, numberOfJobs = 7)
 
   /**
    * Load data from a LoadSource object to an existing destination described in the Load object

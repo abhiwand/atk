@@ -27,7 +27,7 @@ object LoadRDDFunctions extends Serializable {
     parseSampleOfFile(sc, fileName, parser, partitions)
 
     // re-parse the entire file
-    parse(sc.textFile(fileName, partitions), parser)
+    parse(sc.textFile(fileName, partitions).filter(_.trim() != ""), parser)
 
   }
 

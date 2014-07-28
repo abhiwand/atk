@@ -123,11 +123,10 @@ class QueryExecutor(engine: => SparkEngine, queries: SparkQueryStorage, contextM
           val context: SparkContext = contextManager.context(user).sparkContext
           val qFuture = future {
             withQuery(q) {
-              try {
-                import com.intel.intelanalytics.domain.DomainJsonProtocol._
-                val invocation: SparkInvocation = SparkInvocation(engine, commandId = 0, arguments = q.arguments,
-                  user = user, executionContext = implicitly[ExecutionContext],
-                  sparkContext = context)
+              import com.intel.intelanalytics.domain.DomainJsonProtocol._
+              val invocation: SparkInvocation = SparkInvocation(engine, commandId = 0, arguments = q.arguments,
+                user = user, executionContext = implicitly[ExecutionContext],
+                sparkContext = context, commandStorage = null)
 
                 val funcResult = query(invocation, arguments)
 
