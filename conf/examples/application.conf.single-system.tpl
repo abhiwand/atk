@@ -11,6 +11,10 @@
 # Memory should be same or lower than what is listed as available in Cloudera Manager.
 # Values should generally be in gigabytes, e.g. "8g"
 intel.analytics.engine.spark.conf.properties.spark.executor.memory = "2g"
+intel.analytics.giraph.mapreduce.map {
+      memory.mb = 2048
+      java.opts = "-Xmx2g"
+}
 
 # END REQUIRED SETTINGS
 
