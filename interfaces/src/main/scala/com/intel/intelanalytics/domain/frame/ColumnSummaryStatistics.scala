@@ -76,7 +76,7 @@ case class ColumnSummaryStatisticsReturn(mean: Double,
                                          //goodRowCount: Long
                                          )
 
-/* TODO TRIB-3211
+/* TODO TRIB-2245
  * modes only make sense when there are weights
  *
  *  * @param mode A mode of the data; that is, an item with the greatest weight (largest frequency).
