@@ -112,14 +112,16 @@ class GraphService(commonDirectives: CommonDirectives, engine: Engine) extends D
                 }
               } ~
                 post {
+                  import spray.httpx.SprayJsonSupport._
                   implicit val format = DomainJsonProtocol.graphTemplateFormat
                   implicit val indexFormat = ViewModelJsonImplicits.getGraphFormat
-                  import spray.httpx.SprayJsonSupport._
                   entity(as[GraphTemplate]) {
                     graph =>
                       onComplete(engine.createGraph(graph)) {
                         case Success(graph) => complete(decorate(uri + "/" + graph.id, graph))
-                        case Failure(ex) => throw ex
+                        case Failure(ex) => ctx => {
+                          ctx.complete(500, ex.getMessage)
+                        }
                       }
                   }
                 }

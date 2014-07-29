@@ -112,20 +112,30 @@ class SparkEngine(sparkContextManager: SparkContextManager,
                   frames: SparkFrameStorage,
                   graphs: GraphStorage,
                   queryStorage: SparkQueryStorage,
-                  queries: QueryExecutor) extends Engine
+                  queries: QueryExecutor,
+                  sparkAutoPartitioner: SparkAutoPartitioner) extends Engine
     with EventLogging
     with ClassLoaderAware {
 
   private val fsRoot = SparkEngineConfig.fsRoot
+  override val pageSize: Int = SparkEngineConfig.pageSize
 
   /* This progress listener saves progress update to command table */
   SparkProgressListener.progressUpdater = new CommandProgressUpdater {
+
+    var lastUpdateTime = System.currentTimeMillis()
     /**
      * save the progress update
      * @param commandId id of the command
      * @param progressInfo list of progress for jobs initiated by the command
      */
-    override def updateProgress(commandId: Long, progressInfo: List[ProgressInfo]): Unit = commandStorage.updateProgress(commandId, progressInfo)
+    override def updateProgress(commandId: Long, progressInfo: List[ProgressInfo]): Unit = {
+      val currentTime = System.currentTimeMillis()
+      if (currentTime - lastUpdateTime > 1000) {
+        lastUpdateTime = currentTime
+        commandStorage.updateProgress(commandId, progressInfo)
+      }
+    }
   }
 
   def shutdown: Unit = {
@@ -203,7 +213,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
   def load(arguments: Load)(implicit user: UserPrincipal): Execution =
     commands.execute(loadCommand, arguments, user, implicitly[ExecutionContext])
 
-  val loadCommand = commands.registerCommand(name = "dataframe/load", loadSimple)
+  val loadCommand = commands.registerCommand("dataframe/load", loadSimple _, numberOfJobs = 7)
 
   /**
    * Load data from a LoadSource object to an existing destination described in the Load object
@@ -222,7 +232,8 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     }
     else if (load.source.isFile) {
       val parser = load.source.parser.get
-      val parseResult = LoadRDDFunctions.loadAndParseLines(ctx.sparkContext, fsRoot + "/" + load.source.uri, parser)
+      val partitions = sparkAutoPartitioner.partitionsForFile(load.source.uri)
+      val parseResult = LoadRDDFunctions.loadAndParseLines(ctx.sparkContext, fsRoot + "/" + load.source.uri, parser, partitions)
 
       // parse failures go to their own data frame
       if (parseResult.errorLines.count() > 0) {
@@ -536,7 +547,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
   override def binColumn(arguments: BinColumn[Long])(implicit user: UserPrincipal): Execution =
     commands.execute(binColumnCommand, arguments, user, implicitly[ExecutionContext])
 
-  val binColumnCommand = commands.registerCommand("dataframe/bin_column", binColumnSimple)
+  val binColumnCommand = commands.registerCommand("dataframe/bin_column", binColumnSimple _, 7)
 
   def binColumnSimple(arguments: BinColumn[Long], user: UserPrincipal) = {
     implicit val u = user
@@ -714,7 +725,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
   def filter(arguments: FilterPredicate[JsObject, Long])(implicit user: UserPrincipal): Execution =
     commands.execute(filterCommand, arguments, user, implicitly[ExecutionContext])
 
-  val filterCommand = commands.registerCommand("dataframe/filter", filterSimple)
+  val filterCommand = commands.registerCommand("dataframe/filter", filterSimple _, numberOfJobs = 2)
   def filterSimple(arguments: FilterPredicate[JsObject, Long], user: UserPrincipal) = {
     implicit val u = user
     val pyRdd = createPythonRDD(arguments.frame, arguments.predicate)
@@ -885,7 +896,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
    * @param user current user
    * @return the QueryExecution
    */
-  def getRows(arguments: RowQuery[Identifier])(implicit user: UserPrincipal): QueryExecution = {
+  def getRowsLarge(arguments: RowQuery[Identifier])(implicit user: UserPrincipal): QueryExecution = {
     queries.execute(getRowsQuery, arguments, user, implicitly[ExecutionContext])
   }
   val getRowsQuery = queries.registerQuery("dataframes/data", getRowsSimple)
@@ -903,6 +914,21 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     val frame = frames.lookup(arguments.id).getOrElse(throw new IllegalArgumentException("Requested frame does not exist"))
     val rows = frames.getRowsRDD(frame, arguments.offset, arguments.count)
     rows
+  }
+
+  /**
+   * Return a sequence of Rows from an RDD starting from a supplied offset
+   *
+   * @param arguments RowQuery object describing id, offset, and count
+   * @param user current user
+   * @return RDD consisting of the requested number of rows
+   */
+  def getRows(arguments: RowQuery[Identifier])(implicit user: UserPrincipal): Future[Iterable[Row]] = {
+    future {
+      val frame = frames.lookup(arguments.id).getOrElse(throw new IllegalArgumentException("Requested frame does not exist"))
+      val rows = frames.getRows(frame, arguments.offset, arguments.count)
+      rows
+    }
   }
 
   def getFrame(id: Identifier)(implicit user: UserPrincipal): Future[Option[DataFrame]] =
@@ -935,7 +961,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
   def loadGraph(arguments: GraphLoad)(implicit user: UserPrincipal): Execution =
     commands.execute(loadGraphCommand, arguments, user, implicitly[ExecutionContext])
 
-  val loadGraphCommand = commands.registerCommand("graph/load", loadGraphSimple)
+  val loadGraphCommand = commands.registerCommand("graph/load", loadGraphSimple _, numberOfJobs = 4)
   def loadGraphSimple(arguments: GraphLoad, user: UserPrincipal) = {
     // validating frames
     arguments.frame_rules.foreach(frule => expectFrame(frule.frame))
@@ -992,7 +1018,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
   override def dropDuplicates(arguments: DropDuplicates)(implicit user: UserPrincipal): Execution =
     commands.execute(dropDuplicateCommand, arguments, user, implicitly[ExecutionContext])
 
-  val dropDuplicateCommand = commands.registerCommand("dataframe/drop_duplicates", dropDuplicateSimple)
+  val dropDuplicateCommand = commands.registerCommand("dataframe/drop_duplicates", dropDuplicateSimple _, numberOfJobs = 2)
 
   def dropDuplicateSimple(dropDuplicateCommand: DropDuplicates, user: UserPrincipal) = {
     implicit val u = user
@@ -1015,7 +1041,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     frames.updateRowCount(realFrame, rowCount)
   }
 
-  val calculatePercentileCommand = commands.registerCommand("dataframe/calculate_percentiles", calculatePercentilesSimple)
+  val calculatePercentileCommand = commands.registerCommand("dataframe/calculate_percentiles", calculatePercentilesSimple _, 7)
 
   def calculatePercentilesSimple(percentiles: CalculatePercentiles, user: UserPrincipal): PercentileValues = {
     implicit val u = user
@@ -1081,6 +1107,74 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     val valueList = SparkOps.confusionMatrix(frameRdd, labelColumnIndex, predColumnIndex, arguments.posLabel)
 
     ConfusionMatrixValues(valueList)
+  }
+
+  override def ecdf(arguments: ECDF[Long])(implicit user: UserPrincipal): Execution =
+    commands.execute(ecdfCommand, arguments, user, implicitly[ExecutionContext])
+
+  val ecdfCommand = commands.registerCommand("dataframe/ecdf", ecdfSimple)
+
+  def ecdfSimple(arguments: ECDF[Long], user: UserPrincipal) = {
+    implicit val u = user
+    val frameId: Long = arguments.frameId
+    val realFrame = expectFrame(frameId)
+
+    val ctx = sparkContextManager.context(user).sparkContext
+
+    val rdd = frames.getFrameRdd(ctx, frameId)
+
+    val sampleIndex = realFrame.schema.columnIndex(arguments.sampleCol)
+
+    val newFrame = Await.result(create(DataFrameTemplate(arguments.name, None)), SparkEngineConfig.defaultTimeout)
+
+    val ecdfRdd = SparkOps.ecdf(rdd, sampleIndex, arguments.dataType)
+    ecdfRdd.saveAsObjectFile(fsRoot + frames.getFrameDataFile(newFrame.id))
+
+    val columnName = "_ECDF"
+    val allColumns = arguments.dataType match {
+      case "int32" => List((arguments.sampleCol, DataTypes.int32), (arguments.sampleCol + columnName, DataTypes.float64))
+      case "int64" => List((arguments.sampleCol, DataTypes.int64), (arguments.sampleCol + columnName, DataTypes.float64))
+      case "float32" => List((arguments.sampleCol, DataTypes.float32), (arguments.sampleCol + columnName, DataTypes.float64))
+      case "float64" => List((arguments.sampleCol, DataTypes.float64), (arguments.sampleCol + columnName, DataTypes.float64))
+      case _ => List((arguments.sampleCol, DataTypes.string), (arguments.sampleCol + columnName, DataTypes.float64))
+    }
+    frames.updateSchema(newFrame, allColumns)
+    newFrame.copy(schema = Schema(allColumns))
+  }
+
+  override def cumulativeDist(arguments: CumulativeDist[Long])(implicit user: UserPrincipal): Execution =
+    commands.execute(cumulativeDistCommand, arguments, user, implicitly[ExecutionContext])
+
+  val cumulativeDistCommand = commands.registerCommand("dataframe/cumulative_dist", cumulativeDistSimple)
+
+  def cumulativeDistSimple(arguments: CumulativeDist[Long], user: UserPrincipal) = {
+    implicit val u = user
+    val frameId: Long = arguments.frameId
+    val realFrame = expectFrame(frameId)
+
+    val ctx = sparkContextManager.context(user).sparkContext
+
+    val frameRdd = frames.getFrameRdd(ctx, frameId)
+
+    val sampleIndex = realFrame.schema.columnIndex(arguments.sampleCol)
+
+    val newFrame = Await.result(create(DataFrameTemplate(arguments.name, None)), SparkEngineConfig.defaultTimeout)
+
+    val (cumulativeDistRdd, columnName) = arguments.distType match {
+      case "cumulative_sum" => (CumulativeDistFunctions.cumulativeSum(frameRdd, sampleIndex), "_cumulative_sum")
+      case "cumulative_count" => (CumulativeDistFunctions.cumulativeCount(frameRdd, sampleIndex, arguments.countValue), "_cumulative_count")
+      case "cumulative_percent_sum" => (CumulativeDistFunctions.cumulativePercentSum(frameRdd, sampleIndex), "_cumulative_percent_sum")
+      case "cumulative_percent_count" => (CumulativeDistFunctions.cumulativePercentCount(frameRdd, sampleIndex, arguments.countValue), "_cumulative_percent_count")
+      case _ => throw new IllegalArgumentException("Invalid distType specified")
+    }
+
+    cumulativeDistRdd.saveAsObjectFile(fsRoot + frames.getFrameDataFile(newFrame.id))
+
+    val frameSchema = realFrame.schema
+    val allColumns = frameSchema.columns :+ (arguments.sampleCol + columnName, DataTypes.float64)
+
+    frames.updateSchema(newFrame, allColumns)
+    newFrame.copy(schema = Schema(allColumns))
   }
 
   /**
