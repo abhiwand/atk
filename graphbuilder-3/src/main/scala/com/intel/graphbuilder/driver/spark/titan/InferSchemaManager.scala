@@ -71,7 +71,7 @@ class InferSchemaManager(config: GraphBuilderConfig) extends Serializable {
   private def writeSchema(graphSchema: GraphSchema) = {
     val graph = titanConnector.connect()
     try {
-      println("Writing the schema to Titan")
+      println("Writing the schema to Titan: " + graphSchema.count + " items")
       val writer = new TitanSchemaWriter(graph)
       writer.write(graphSchema)
       graph.commit()

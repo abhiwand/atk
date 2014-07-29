@@ -1,7 +1,7 @@
 #intelanalytics-rest-server env file
 #Set all your environment variables needed for the rest server here
 
-# depending on the CDH install method used, set the appropriate SPARK_HMOE below:
+# depending on the CDH install method used, set the appropriate SPARK_HOME below:
 
 #RPM cloudera installations will place spark in /usr/lib/spark
 #export SPARK_HOME="/usr/lib/spark"

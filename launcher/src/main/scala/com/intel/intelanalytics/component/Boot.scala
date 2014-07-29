@@ -138,37 +138,42 @@ object Boot extends App with ClassLoaderAware {
    * @return the created, running, `Archive`
    */
   private def buildArchive(archiveName: String): Archive = {
-    //We first create a standard plugin classloader, which we will use to query the config
-    //to see if this archive needs special treatment (i.e. a parent class loader other than the
-    //interfaces class loader)
-    val probe = buildClassLoader(archiveName, getClass.getClassLoader)
-    val additionalConfig = ConfigFactory.defaultReference(probe)
+    try {
+      //We first create a standard plugin classloader, which we will use to query the config
+      //to see if this archive needs special treatment (i.e. a parent class loader other than the
+      //interfaces class loader)
+      val probe = buildClassLoader(archiveName, getClass.getClassLoader)
+      val additionalConfig = ConfigFactory.defaultReference(probe)
 
-    val augmented = config.withFallback(additionalConfig)
+      val augmented = config.withFallback(additionalConfig)
 
-    val definition = readArchiveDefinition(archiveName, augmented)
+      val definition = readArchiveDefinition(archiveName, augmented)
 
-    //Now that we know the parent, we build the real classloader we're going to use for this archive.
-    val parentLoader = loaders.getOrElse(definition.parent, throw new IllegalArgumentException(
-      s"Archive ${definition.parent} not found when searching for parent archive for $archiveName"))
+      //Now that we know the parent, we build the real classloader we're going to use for this archive.
+      val parentLoader = loaders.getOrElse(definition.parent, throw new IllegalArgumentException(
+        s"Archive ${definition.parent} not found when searching for parent archive for $archiveName"))
 
-    val loader = buildClassLoader(archiveName, parentLoader)
+      val loader = buildClassLoader(archiveName, parentLoader)
 
-    val archiveLoader = ArchiveClassLoader(archiveName, loader)
+      val archiveLoader = ArchiveClassLoader(archiveName, loader)
 
-    val instance = archiveLoader(definition.className)
+      val instance = archiveLoader(definition.className)
 
-    val archiveInstance = attempt(instance.asInstanceOf[Archive],
-      s"Loaded class ${instance.getClass.getName} in archive ${definition.name}, but it is not an Archive")
+      val archiveInstance = attempt(instance.asInstanceOf[Archive],
+        s"Loaded class ${instance.getClass.getName} in archive ${definition.name}, but it is not an Archive")
 
-    withLoader(loader) {
-      initializeArchive(definition, archiveLoader, augmented.getConfig(definition.configPath), archiveInstance)
-      archives += (archiveName -> archiveInstance)
-      Archive.logger(s"Registered archive $archiveName with parent ${definition.parent}")
-      archiveInstance.start()
+      withLoader(loader) {
+        initializeArchive(definition, archiveLoader, augmented.getConfig(definition.configPath), archiveInstance)
+        archives += (archiveName -> archiveInstance)
+        Archive.logger(s"Registered archive $archiveName with parent ${definition.parent}")
+        archiveInstance.start()
+      }
+
+      archiveInstance
     }
-
-    archiveInstance
+    catch {
+      case e: Exception => throw new ArchiveInitException("building archive: " + archiveName, e)
+    }
   }
 
   /**
@@ -208,14 +213,23 @@ object Boot extends App with ClassLoaderAware {
    * @return Array of URLs to the found class folder and jar files
    */
   def getCodePathUrls(archive: String): Array[URL] = {
-    //TODO: Allow directory to be passed in, or otherwise abstracted?
-    //TODO: Make sensitive to actual scala version rather than hard coding.
+    // Development environment support - loose class files, source resources, jars where initially built
     val classDirectory: Path = Directory.Current.get / archive / "target" / "classes"
-    val giraphClassDirectory: Path = Directory.Current.get / "igiraph" / archive.substring(1) / "target" / "classes"
+    val sourceResourceDirectory: Path = Directory.Current.get / archive / "src" / "main" / "resources"
     val developmentJar: Path = Directory.Current.get / archive / "target" / (archive + ".jar")
+
+    //Special case for igiraph since it follows a non-standard folder layout
+    val giraphClassDirectory: Path = Directory.Current.get / "igiraph" / archive.substring(1) / "target" / "classes"
     val giraphJar: Path = Directory.Current.get / "igiraph" / archive.substring(1) / "target" / (archive + ".jar")
+
+    // Deployed environment - all jars in lib folder
     val deployedJar: Path = Directory.Current.get / "lib" / (archive + ".jar")
+
     val urls = Array(
+      Directory(sourceResourceDirectory).exists.option {
+        Archive.logger(s"Found source resource directory at $sourceResourceDirectory")
+        sourceResourceDirectory.toURL
+      },
       Directory(classDirectory).exists.option {
         Archive.logger(s"Found class directory at $classDirectory")
         classDirectory.toURL

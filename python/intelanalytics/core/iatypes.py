@@ -23,9 +23,14 @@
 """
 intel_analytics definitions for Data Types
 """
+
+# TODO - consider server providing types, similar to commands
+
+__all__ = ['valid_data_types', 'ignore', 'unknown', 'float32', 'float64', 'int32', 'int64', 'supported_types']
+
 import numpy as np
 
-# alias numpy and unicode
+# alias numpy types
 float32 = np.float32
 float64 = np.float64
 int32 = np.int32
@@ -46,97 +51,164 @@ class _Unknown(object):
 unknown = _Unknown
 
 
-class _Types(frozenset):
+_types = {
+    #bool: "bool", TODO
+    #bytearray: "bytearray", TODO
+    #dict: "dict", TODO
+    float32: "float32",
+    float64: "float64",
+    int32: "int32",
+    int64: "int64",
+    #list: "list", TODO
+    unicode: "unicode",
+}
 
-    _ia_types = {"bool": bool,
-                 "bytearray": bytearray,
-                 "dict": dict,
-                 "float32": float32,
-                 "float64": float64,
-                 "int32": int32,
-                 "int64": int64,
-                 "list": list,
-                 "str": str,
-                 "string": unicode,
-                 "unicode": unicode}
+_strings = dict([(s, t) for t, s in _types.iteritems()])
 
-    _python_to_ia = {int: int64,
-                     long: int64,
-                     float: float64}
+_alias_types = {
+    float: float64,
+    int: int32,
+    long: int64,
+    str: unicode,
+}
 
-    _cast_methods = {bool: bool,
-                     bytearray: bytearray,
-                     dict: dict,
-                     float: float,
-                     float32: float,
-                     float64: float,
-                     int: int,
-                     int32: int,
-                     int64: int,
-                     list: list,
-                     str: str,
-                     unicode: unicode}
+_alias_strings = dict([(alias.__name__, t) for alias, t in _alias_types.iteritems()])
 
-    def validate_is_supported_type(self, data_type):
-        self.get_type_string(data_type)
+
+class _DataTypes(frozenset):
+    """
+    Acts as frozenset of valid data types along with some conversion functions
+    """
 
     @staticmethod
-    def get_type_string(t):
-        for k, v in _Types._ia_types.items():
-            if v is t:
-                return k
-        raise TypeError("Unsupported type " + str(t))
+    def to_string(data_type):
+        """
+        Returns the string representation of the given type
 
-    def try_get_type_string(self, t):
+        Parameters
+        ----------
+        data_type : type
+            valid data type; if invalid, a ValueError is raised
+
+        Returns
+        -------
+        result : str
+            string representation
+
+        Examples
+        --------
+        >>> valid_data_types.to_string(float32)
+        'float32'
+        """
         try:
-            return self.get_type_string(t)
-        except TypeError:
-            return type(t).__name__
+            return _types[_DataTypes.get_from_type(data_type)]
+        except ValueError:
+            raise ValueError("Unsupported type %s" % data_type)
 
     @staticmethod
-    def get_type(obj):
-        t = type(obj)
-        if t in _Types._ia_types.values():
-            return t
-        return _Types._python_to_ia[t]
+    def get_from_string(data_type_str):
+        """
+        Returns the data type for the given type string representation
 
-    def try_get_type(self, obj):
+        Parameters
+        ----------
+        data_type_str : str
+            valid data type str; if invalid, a ValueError is raised
+
+        Returns
+        -------
+        result : type
+            type represented by the string
+
+        Examples
+        --------
+        >>> valid_data_types.get_from_string('unicode')
+        unicode
+        """
         try:
-            return self.get_type(obj)
+            return _strings[data_type_str]
         except KeyError:
-            return unknown
+            try:
+                return _alias_strings[data_type_str]
+            except KeyError:
+                raise ValueError("Unsupported type string '%s' " % data_type_str)
 
     @staticmethod
-    def get_type_from_string(type_string):
-        return _Types._ia_types[type_string]
+    def get_from_type(data_type):
+        """
+        Returns the data type for the given type (often it will return the same type)
 
-    def try_get_type_from_string(self, type_string):
+        Parameters
+        ----------
+        data_type : type
+            valid data type or type that may be aliased for a valid data type;
+            if invalid, a ValueError is raised
+
+        Returns
+        -------
+        result : type
+            valid data type for given type
+
+        Examples
+        --------
+        >>> valid_data_types.get_from_type(int)
+        numpy.int32
+        """
+        if data_type in _types:
+            return data_type
         try:
-            return self.get_type_from_string(type_string)
+            return _alias_types[data_type]
         except KeyError:
-            return unknown
+            raise ValueError("Unsupported type %s" % data_type)
+
+    @staticmethod
+    def validate(data_type):
+        """Raises a ValueError if data_type is not a valid data_type"""
+        _DataTypes.get_from_type(data_type)
+
+    @staticmethod
+    def cast(value, to_type):
+        """
+        Returns the given value cast to the given type.  None is always returned as None
+
+        Parameters
+        ----------
+        value : object
+            value to convert by casting
+
+        to_type : type
+            valid data type to use for the cast
+
+        Returns
+        -------
+        results : object
+            the value cast to the to_type
+
+        Examples
+        --------
+        >>> valid_data_types.cast(3, float64)
+        3.0
+        >>> valid_data_types.cast(4.5, str)
+        '4.5'
+        >>> valid_data_types.cast(None, str)
+        None
+        """
+        if value is None or type(value) is to_type:
+            return value
+        try:
+            return to_type(value)
+        except Exception as e:
+            raise ValueError(("Unable to cast to type %s\n" % to_type) + str(e))
 
     def __repr__(self):
-        return ", ".join(sorted(_Types._ia_types.keys()))
-
-    @staticmethod
-    def _get_list():
-        return _Types._ia_types.values()
-
-    cast_methods = {
-        int32: int,
-        int64: int,
-
-    }
-
-    @staticmethod
-    def cast(value, t):
-        if value is None:
-            return value
-        v_type = _Types.get_type(value)
-        if v_type is t:
-            return value
-        return _Types._cast_methods[t](value)
+        aliases = "\n(and aliases: %s)" % (", ".join(sorted(["%s->%s" % (alias.__name__, self.to_string(data_type)) for alias, data_type in _alias_types.iteritems()])))
+        return ", ".join(sorted(_strings.keys())) + aliases
 
 
-supported_types = _Types(_Types._get_list())
+valid_data_types = _DataTypes(_types.keys())
+# Awkward passing of the _types.keys().  Encapsulating these values
+# inside _DataTypes requires overriding  __new__ because frozenset
+# is immutable.  Doing so broke execution in Spark.  An alternative
+# was to provide them in the constructor call here.  TODO - improve
+
+supported_types = valid_data_types  # creating alias for now, until to we TODO - deprecate supported_types

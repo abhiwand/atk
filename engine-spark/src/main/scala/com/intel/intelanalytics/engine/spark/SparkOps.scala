@@ -29,6 +29,7 @@ import org.apache.spark.SparkContext
 
 import scala.collection.mutable
 import scala.reflect.ClassTag
+
 import scala.Some
 import com.intel.intelanalytics.engine.spark.frame.RDDJoinParam
 import com.intel.intelanalytics.algorithm.{ Percentile, PercentileTarget, PercentileComposingElement }
@@ -36,6 +37,7 @@ import scala.collection.mutable.ListBuffer
 import org.apache.spark.rdd.RDD
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 import scala.math.pow
+import scala.reflect.ClassTag
 
 //implicit conversion for PairRDD
 import org.apache.spark.SparkContext._
@@ -52,8 +54,10 @@ private[spark] object SparkOps extends Serializable {
   def getPagedRdd[T: ClassTag](rdd: RDD[T], offset: Long, count: Int, limit: Int): RDD[T] = {
 
     val sumsAndCounts = SparkOps.getPerPartitionCountAndAccumulatedSum(rdd)
-    val capped = Math.min(count, limit)
-
+    val capped = limit match {
+      case -1 => count
+      case _ => Math.min(count, limit)
+    }
     //Start getting rows. We use the sums and counts to figure out which
     //partitions we need to read from and which to just ignore
     val pagedRdd: RDD[T] = rdd.mapPartitionsWithIndex((i, rows) => {
@@ -260,8 +264,8 @@ private[spark] object SparkOps extends Serializable {
    * @return a Double of the model precision measure
    */
   def modelPrecision(frameRdd: RDD[Row], labelColumnIndex: Int, predColumnIndex: Int, posLabel: String): Double = {
-    require(labelColumnIndex >= 0)
-    require(predColumnIndex >= 0)
+    require(labelColumnIndex >= 0, "label column index must be greater than or equal to zero")
+    require(predColumnIndex >= 0, "prediction column index must be greater than or equal to zero")
 
     /**
      * compute precision for binary classifier: TP / (TP + FP)
@@ -333,8 +337,8 @@ private[spark] object SparkOps extends Serializable {
    * @return a Double of the model recall measure
    */
   def modelRecall(frameRdd: RDD[Row], labelColumnIndex: Int, predColumnIndex: Int, posLabel: String): Double = {
-    require(labelColumnIndex >= 0)
-    require(predColumnIndex >= 0)
+    require(labelColumnIndex >= 0, "label column index must be greater than or equal to zero")
+    require(predColumnIndex >= 0, "prediction column index must be greater than or equal to zero")
 
     /**
      * compute recall for binary classifier: TP / (TP + FN)
@@ -622,6 +626,61 @@ private[spark] object SparkOps extends Serializable {
     rdd.map(row => row :+ (binMap.get(java.lang.Double.parseDouble(row(index).toString)).get - 1).asInstanceOf[Any])
   }
 
+  /**
+   * Generate the empirical cumulative distribution for an input dataframe column
+   *
+   * @param frameRdd rdd for a BigFrame
+   * @param sampleIndex index of the column containing the sample data
+   * @param dataType the data type of the input column
+   * @return a new RDD of tuples containing each distinct sample value and its ecdf value
+   */
+  def ecdf(frameRdd: RDD[Row], sampleIndex: Int, dataType: String): RDD[Row] = {
+    // parse values
+    val pairedRdd = try {
+      frameRdd.map(row => (java.lang.Double.parseDouble(row(sampleIndex).toString), java.lang.Double.parseDouble(row(sampleIndex).toString)))
+    }
+    catch {
+      case cce: NumberFormatException => throw new NumberFormatException("Non-numeric column: " + cce.toString)
+    }
+
+    // get sample size
+    val numValues = pairedRdd.count().toDouble
+
+    // group identical values together
+    val groupedRdd = pairedRdd.groupByKey()
+
+    // count number of each distinct value and sort by distinct value
+    val sortedRdd = groupedRdd.map { case (value, seqOfValue) => (value, seqOfValue.size) }.sortByKey()
+
+    // compute the partition sums
+    val partSums: Array[Double] = 0.0 +: sortedRdd.mapPartitionsWithIndex {
+      case (index, partition) => Iterator(partition.map(pair => pair._2).sum.toDouble)
+    }.collect()
+
+    // compute empirical cumulative distribution
+    val sumsRdd = sortedRdd.mapPartitionsWithIndex {
+      case (index, partition) => {
+        var startValue = 0.0
+        for (i <- 0 to index) {
+          startValue += partSums(i)
+        }
+        partition.scanLeft((0.0, startValue))((prev, curr) => (curr._1, prev._2 + curr._2)).drop(1)
+      }
+    }
+
+    sumsRdd.map {
+      case (value, valueSum) => {
+        dataType match {
+          case "int32" => Array(value.toInt.asInstanceOf[Any], (valueSum / numValues).asInstanceOf[Any])
+          case "int64" => Array(value.toLong.asInstanceOf[Any], (valueSum / numValues).asInstanceOf[Any])
+          case "float32" => Array(value.toFloat.asInstanceOf[Any], (valueSum / numValues).asInstanceOf[Any])
+          case "float64" => Array(value.toDouble.asInstanceOf[Any], (valueSum / numValues).asInstanceOf[Any])
+          case _ => Array(value.asInstanceOf[Any], (valueSum / numValues).asInstanceOf[Any])
+        }
+      }
+    }
+  }
+
   def aggregation_functions(elem: Seq[Array[Any]],
                             args_pair: Seq[(Int, String)],
                             schema: List[(String, DataTypes.DataType)]): Seq[Any] = {
@@ -835,8 +894,8 @@ private[spark] object SparkOps extends Serializable {
     mapping.map { case (elementIndex, targets) => (elementIndex, targets.toSeq) }.toMap
   }
   def confusionMatrix(frameRdd: RDD[Row], labelColumnIndex: Int, predColumnIndex: Int, posLabel: String): Seq[Long] = {
-    require(labelColumnIndex >= 0)
-    require(predColumnIndex >= 0)
+    require(labelColumnIndex >= 0, "label column index must be greater than or equal to zero")
+    require(predColumnIndex >= 0, "prediction column index must be greater than or equal to zero")
 
     val tp = frameRdd.sparkContext.accumulator[Long](0)
     val tn = frameRdd.sparkContext.accumulator[Long](0)

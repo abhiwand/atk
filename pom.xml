@@ -654,6 +654,14 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 </configuration>
             </plugin>
         </plugins>
+        <testResources>
+            <testResource>
+                <directory>src/main/resources</directory>
+                <includes>
+                    <include>reference.conf</include>
+                </includes>
+            </testResource>
+        </testResources>
     </build>
 
     <dependencyManagement>
@@ -772,6 +780,11 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
             <dependency>
                 <groupId>com.thinkaurelius.faunus</groupId>
                 <artifactId>faunus</artifactId>
+                <version>${dep.aurelius.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.thinkaurelius.titan</groupId>
+                <artifactId>titan-es</artifactId>
                 <version>${dep.aurelius.version}</version>
             </dependency>
             <dependency>

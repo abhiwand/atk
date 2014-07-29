@@ -19,6 +19,7 @@ rm -rf ../bin/stage
 rm -rf tarballs/$package
 rm $package-source.tar.gz
 
+#START ref repack
 mkdir confunpack
 jarPath=$(find ..  -path ./package -prune -o -name conf.jar -print )
 echo $jarPath
@@ -44,21 +45,24 @@ cp reference.conf launcher/
 pushd launcher
 jar -cvf launcher.jar *
 popd
-
+#END ref repack
 
 
 mkdir -p  tarballs/$package/etc/intelanalytics/rest-server
 
 mkdir -p  tarballs/$package/usr/lib/intelanalytics/rest-server/lib
 
+#START ref repack
 ls -l launcher/launcher.jar
 echo copy new jar
 pwd
 
-
-cp -Rv vm/salt/salt/base/intelanalytics-rest-server/examples $SCRIPTPATH/tarballs/$package/usr/lib/intelanalytics/rest-server/
 cp -v launcher/launcher.jar $SCRIPTPATH/tarballs/$package/usr/lib/intelanalytics/rest-server/
+
+
 rm -rf launcher
+#END ref repack
+
 cp -v ../conf/examples/application.conf.tpl tarballs/$package/etc/intelanalytics/rest-server
 #cp -Rv ../api-server/src/main/resources/* tarballs/$package/etc/intelanalytics/rest-server
 #cp -Rv ../engine/src/main/resources/* tarballs/$package/etc/intelanalytics/rest-server
@@ -79,11 +83,13 @@ do
 	cp -v $jarPath $SCRIPTPATH/tarballs/$package/usr/lib/intelanalytics/rest-server/lib/
 
 done
+    #enable this to grab the regular launcher.jar
 #	jarPath=$(find .  -path ./package -prune -o -name launcher.jar -print)
 
 #	echo $jarPath
+    #enable this to copy the regular launcher.jar to the correct place
 #	cp -v $jarPath $SCRIPTPATH/tarballs/$package/usr/lib/intelanalytics/rest-server/launcher.jar
-#	cp -v $jarPath $SCRIPTPATH/tarballs/$package/usr/lib/intelanalytics/rest-server/lib/
+
 
 popd
 
