@@ -280,6 +280,16 @@ class FrameBackendRest(object):
         arguments = {'name': name, 'frame': frame._id, 'column_name': column_name, 'num_bins': num_bins, 'bin_type': bin_type, 'bin_column_name': bin_column_name}
         return execute_new_frame_command('bin_column', arguments)
 
+
+    def column_statistic(self, frame, column_name, multiplier_column_name, operation):
+        import numpy as np
+        colTypes = dict(frame.schema)
+        if not colTypes[column_name] in [np.float32, np.float64, np.int32, np.int64]:
+            raise ValueError("unable to take statistics of non-numeric values")
+        arguments = {'columnName': column_name, 'multiplierColumnName' : multiplier_column_name,
+                     'operation' : operation}
+        return execute_update_frame_command('columnStatistic', arguments, frame)
+
     class InspectionTable(object):
         """
         Inline class used specifically for inspect, where the __repr__ is king
@@ -577,6 +587,9 @@ def execute_update_frame_command(command_name, arguments, frame):
     command_info = executor.issue(command_request)
     if command_info.result.has_key('name') and command_info.result.has_key('schema'):
         initialize_frame(frame, FrameInfo(command_info.result))
+        return None
+    if (command_info.result.has_key('value') and len(command_info.result) == 1):
+        return command_info.result.get('value')
     return command_info.result
 
 
