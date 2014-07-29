@@ -26,7 +26,7 @@ package com.intel.intelanalytics.engine.spark.command
 import com.intel.intelanalytics.component.{ ClassLoaderAware, Boot }
 import com.intel.intelanalytics.domain.command.{ CommandDefinition, Command, CommandTemplate, Execution }
 import com.intel.intelanalytics.engine.plugin.{ Invocation, FunctionCommand, CommandPlugin }
-import com.intel.intelanalytics.engine.spark.context.{ SparkContextFactory, Context, SparkContextManager }
+import com.intel.intelanalytics.engine.spark.context.SparkContextManager
 import com.intel.intelanalytics.engine.spark.plugin.SparkInvocation
 import com.intel.intelanalytics.engine.spark.{ SparkEngine, SparkEngineConfig }
 import com.intel.intelanalytics.security.UserPrincipal
@@ -163,7 +163,7 @@ class CommandExecutor(engine: => SparkEngine, commands: SparkCommandStorage, con
     withMyClassLoader {
       withContext("ce.execute") {
         withContext(command.name) {
-          val context: SparkContext = contextManager.context(user).sparkContext
+          val context: SparkContext = contextManager.context(user)
           val cmdFuture = future {
             withCommand(cmd) {
               try {

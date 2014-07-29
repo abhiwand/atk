@@ -27,6 +27,7 @@ import com.intel.intelanalytics.shared.EventLogging
 import org.apache.spark.engine.{ ProgressPrinter, SparkProgressListener }
 
 import scala.collection.mutable
+import org.apache.spark.SparkContext
 
 /**
  * This context management strategy creates a context per user if it doesn't exist, else returns the existing context
@@ -43,35 +44,7 @@ object SparkContextPerUserStrategy extends SparkContextManagementStrategy with E
   //or left open for some time, and reused if a request from the same user comes in?
   //Is there some way of sharing a context across two different Engine instances?
 
-  override def getContext(user: String): Context = {
-    val context = sparkContextFactory.createSparkContext(configuration, "intel-analytics:" + user)
-    val ctx = Context(context)
-    //    contextMap += (user -> ctx)
-    ctx
+  override def getContext(user: String): SparkContext = {
+    sparkContextFactory.createSparkContext(configuration, "intel-analytics:" + user)
   }
-
-  /**
-   * stop all managed SparkContexts
-   */
-  override def cleanup(): Unit = {
-    //    contextMap.keys.foreach { key =>
-    //      contextMap(key).sparkContext.stop()
-    //    }
-  }
-
-  /**
-   * removes the SparkContext for the given user (key) if it exists
-   */
-  override def removeContext(user: String): Unit = {
-    //    if (contextMap contains user) {
-    //      contextMap(user).sparkContext.stop()
-    //      contextMap -= user
-    //    }
-  }
-
-  def getAllContexts(): List[Context] = {
-    ////    contextMap.values.toList
-    Nil
-  }
-
 }

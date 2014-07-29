@@ -120,7 +120,7 @@ class QueryExecutor(engine: => SparkEngine, queries: SparkQueryStorage, contextM
     withMyClassLoader {
       withContext("ce.execute") {
         withContext(query.name) {
-          val context: SparkContext = contextManager.context(user).sparkContext
+          val context: SparkContext = contextManager.context(user)
           val qFuture = future {
             withQuery(q) {
 

@@ -137,10 +137,6 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     }
   }
 
-  def shutdown: Unit = {
-    sparkContextManager.cleanup()
-  }
-
   override def getCommands(offset: Int, count: Int): Future[Seq[Command]] = withContext("se.getCommands") {
     future {
       commandStorage.scan(offset, count)
@@ -186,7 +182,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
    */
   override def getQueryPage(id: Long, pageId: Long)(implicit user: UserPrincipal) = withContext("se.getQueryPage") {
     withMyClassLoader {
-      val ctx = sparkContextManager.context(user).sparkContext
+      val ctx = sparkContextManager.context(user)
       try {
         val data = queryStorage.getQueryPage(ctx, id, pageId)
         data
@@ -789,10 +785,10 @@ class SparkEngine(sparkContextManager: SparkContextManager,
   def getRows(arguments: RowQuery[Identifier])(implicit user: UserPrincipal): Future[Iterable[Row]] = {
     future {
       withMyClassLoader {
-        val ctx = sparkContextManager.context(user).sparkContext
+        val ctx = sparkContextManager.context(user)
         try {
-          val invocation: SparkInvocation = SparkInvocation(null, commandId = 0, arguments = null,
-            user = null, executionContext = null,
+          val invocation: SparkInvocation = SparkInvocation(this, commandId = 0, arguments = null,
+            user = user, executionContext = implicitly[ExecutionContext],
             sparkContext = ctx, commandStorage = null)
 
           val frame = frames.lookup(arguments.id).getOrElse(throw new IllegalArgumentException("Requested frame does not exist"))
@@ -1062,4 +1058,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     realFrame
   }
 
+  override def shutdown(): Unit = {
+    //do nothing
+  }
 }
