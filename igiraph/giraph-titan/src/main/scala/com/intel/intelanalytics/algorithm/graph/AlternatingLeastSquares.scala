@@ -84,6 +84,7 @@ class AlternatingLeastSquares
 
     val graphFuture = invocation.engine.getGraph(arguments.graph.id)
     val graph = Await.result(graphFuture, config.getInt("default-timeout") seconds)
+    val biasOnOption = if (biasOn) Option(biasOn.toString().toLowerCase()) else None
 
     //    These parameters are set from the arguments passed in, or defaulted from
     //    the engine configuration if not passed.
@@ -105,6 +106,7 @@ class AlternatingLeastSquares
     GiraphConfigurationUtil.set(hConf, "vertex.type.property.key", arguments.vertex_type_property_key)
     GiraphConfigurationUtil.set(hConf, "edge.type.property.key", arguments.edge_type_property_key)
     GiraphConfigurationUtil.set(hConf, "vector.value", arguments.vector_value)
+    GiraphConfigurationUtil.set(hConf, "output.vertex.bias", biasOnOption)
 
     val giraphConf = new GiraphConfiguration(hConf)
 
