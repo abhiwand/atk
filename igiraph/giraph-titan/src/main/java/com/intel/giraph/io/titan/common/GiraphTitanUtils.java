@@ -135,7 +135,8 @@ public class GiraphTitanUtils {
      * @param conf : Giraph configuration
      */
     public static void sanityCheckOutputParameters(ImmutableClassesGiraphConfiguration conf) {
-        String[] vertexValuePropertyKeyList = OUTPUT_VERTEX_PROPERTY_KEY_LIST.get(conf).split(",");
+        String regexp = "[\\s,\\t]+";
+        String[] vertexValuePropertyKeyList = OUTPUT_VERTEX_PROPERTY_KEY_LIST.get(conf).split(regexp);
         if (vertexValuePropertyKeyList.length == 0) {
             throw new IllegalArgumentException(CONFIG_VERTEX_PROPERTY + CONFIG_PREFIX +
                 OUTPUT_VERTEX_PROPERTY_KEY_LIST.getKey() + NO_VERTEX_READ);
@@ -225,6 +226,7 @@ public class GiraphTitanUtils {
      */
     public static void createTitanKeys(ImmutableClassesGiraphConfiguration conf) {
         TitanGraph graph;
+        String regexp = "[\\s,\\t]+";
 
         try {
             graph = TitanGraphWriter.open(conf);
@@ -239,7 +241,7 @@ public class GiraphTitanUtils {
             throw new RuntimeException(TITAN_TX_NOT_OPEN);
         }
         LOG.info(OPENED_GRAPH);
-        String[] vertexValuePropertyKeyList = OUTPUT_VERTEX_PROPERTY_KEY_LIST.get(conf).split(",");
+        String[] vertexValuePropertyKeyList = OUTPUT_VERTEX_PROPERTY_KEY_LIST.get(conf).split(regexp);
         Lock dbLock = FakeLock.INSTANCE;
         dbLock.lock();
         for (int i = 0; i < vertexValuePropertyKeyList.length; i++) {

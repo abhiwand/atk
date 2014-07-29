@@ -26,8 +26,6 @@ iatest.init()
 
 import unittest
 
-
-
 from intelanalytics.core.iatypes import *
 from intelanalytics.core.orddict  import OrderedDict
 from intelanalytics.rest.frame import FrameBackendRest
