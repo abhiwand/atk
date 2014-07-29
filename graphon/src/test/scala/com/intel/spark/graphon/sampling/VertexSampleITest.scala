@@ -1,3 +1,4 @@
+/*
 ////////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
@@ -257,3 +258,4 @@ class VertexSampleITest extends TestingSparkContextWordSpec with Matchers {
   }
 
 }
+*/
