@@ -1007,7 +1007,7 @@ class BigFrame(CommandSupport):
         Examples
         ----------
         ::
-        
+
             f1 = frame.fmeasure('labels', 'predictions')
             f2 = frame.fmeasure('labels', 'predictions', beta=2)
             f1_binary = frame.fmeasure('labels', 'predictions', pos_label='good')
@@ -1016,6 +1016,64 @@ class BigFrame(CommandSupport):
 
         """
         return self._backend.classification_metric(self, 'fmeasure', label_column, pred_column, pos_label, beta)
+
+    @doc_stub
+    def column_summary_statistics(self, data_column, weights_column_name = None):
+        """
+        Calculate summary statistics of a column.
+
+        Parameters
+        ----------
+        data_column : str
+            The column to be statistically summarized. Must contain numerical data; all NaNs and infinite values
+             are excluded from the calculation.
+
+        Returns
+        -------
+        summary : Dict
+            Dictionary containing summary statistics in the following entries:
+                 mean : Arithmetic mean of the data.
+                 geometric_mean : Geometric mean of the data. None when there is a data element <= 0,
+                  1.0 when there are no data elements.
+                 variance : Variance of the data where  sum of squared distance from the mean is divided by
+                  count - 1. None when there are <= 1 many data elements.
+                 standard_deviation : Standard deviation of the data. None when there are <= 1 many data elements.
+                 valid_data_count: The count of all data elements that are finite numbers.
+                  (Ie. after excluding NaNs and infinite values.)
+                 minimum : Minimum value in the data. None when there are no data elements.
+                 maximum : Maximum value in the data. None when there are no data elements.
+                 mean_confidence_lower : Lower limit of the 95% confidence interval about the mean.
+                  Assumes a Gaussian distribution. None when there are 0 or 1 data elements.
+                 mean_confidence_upper: Upper limit of the 95% confidence interval about the mean.
+                  Assumes a Gaussian distribution. None when there are 0 or 1 data elements.
+
+        Return Types
+        ------------
+            valid_data_count returns a Long.
+            All other values are returned as Doubles or None.
+
+        Variance
+        --------
+
+        Variance is computed by the following formula:
+
+        (1 / (n - 1)) * sum_i  (x_i - M)**2
+
+            where n is the number of valid elements of positive weight, and M is the  mean
+
+        Standard Deviation
+        ------------------
+
+        The square root of the variance.
+
+        Example
+        -------
+        >>> stats = frame.column_summary_statistics('data column', 'weight column')
+
+        """
+        pass
+
+
 
     def get_error_frame(self):
         """

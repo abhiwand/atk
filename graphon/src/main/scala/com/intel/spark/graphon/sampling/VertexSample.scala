@@ -1,3 +1,4 @@
+/*
 ////////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
@@ -132,3 +133,4 @@ class VertexSample extends SparkCommandPlugin[VertexSampleArguments, VertexSampl
   override def serializeArguments(arguments: VertexSampleArguments): JsObject = arguments.toJson.asJsObject()
 
 }
+*/
