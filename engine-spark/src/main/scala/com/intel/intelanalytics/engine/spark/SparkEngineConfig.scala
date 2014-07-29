@@ -162,8 +162,8 @@ object SparkEngineConfig extends SharedConfig with EventLogging {
     unsorted.sortWith((leftConfig, rightConfig) => leftConfig.fileSizeUpperBound > rightConfig.fileSizeUpperBound)
   }
 
-  /** Hostname for current system */
-  private def hostname: String = InetAddress.getLocalHost.getHostName
+  /** Fully qualified Hostname for current system */
+  private def hostname: String = InetAddress.getLocalHost.getCanonicalHostName
 
   // log important settings
   def logSettings(): Unit = withContext("SparkEngineConfig") {

@@ -37,11 +37,20 @@ print frame1.inspect(10)
 print("inspect 2nd frame")
 print frame2.inspect(10)
 
+print("frame1 row count " + str(frame1.row_count))
+print("frame2 row count " + str(frame2.row_count))
+
 print("append csv2 to frame1")
 frame1.append(csv2)
 
+print("frame1 row count " + str(frame1.row_count))
+print("frame2 row count " + str(frame2.row_count))
+
 print("append frame2 to frame1")
 frame1.append(frame2)
+
+print("frame1 row count " + str(frame1.row_count))
+print("frame2 row count " + str(frame2.row_count))
 
 print("inspect appended frame")
 print frame1.inspect(10)
