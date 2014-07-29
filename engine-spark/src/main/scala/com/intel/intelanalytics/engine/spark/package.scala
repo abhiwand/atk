@@ -1,3 +1,5 @@
+package com.intel.intelanalytics.engine
+
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
@@ -20,45 +22,17 @@
 // estoppel or otherwise. Any license under such intellectual property rights
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
+package object spark {
 
-package com.intel.intelanalytics.engine
-
-import com.intel.intelanalytics.component.{ ClassLoaderAware, Archive }
-import com.intel.intelanalytics.shared.EventLogging
-
-import scala.reflect.ClassTag
-import scala.util.control.NonFatal
-
-class EngineApplication extends Archive with EventLogging with ClassLoaderAware {
-
-  var engine: EngineComponent with FrameComponent with CommandComponent = null
-
-  override def getAll[T: ClassTag](descriptor: String) = {
-    descriptor match {
-      case "engine" => Seq(engine.engine.asInstanceOf[T])
-      case _ => Seq()
+  /**
+   * Concatenates two paths, adding an extra slash in between if necessary.
+   */
+  private[spark] def concatPaths(first: String, second: String) = {
+    if (first.endsWith("/") || second.startsWith("/")) {
+      first + second
+    }
+    else {
+      first + "/" + second
     }
   }
-
-  override def stop() = {
-    info("Shutting down engine")
-    engine.engine.shutdown
-  }
-
-  override def start() = {
-
-    try {
-      //TODO: when Engine moves to its own process, it will need to start its own Akka actor system.
-      engine = com.intel.intelanalytics.component.Boot.getArchive("engine-spark")
-        .load("com.intel.intelanalytics.engine.spark.SparkComponent")
-        .asInstanceOf[EngineComponent with FrameComponent with CommandComponent]
-
-    }
-    catch {
-      case NonFatal(e) =>
-        error("An error occurred while starting the engine.", exception = e)
-        throw e
-    }
-  }
-
 }

@@ -27,7 +27,10 @@ else
 fi
 
 pushd $DIR/..
-pwd
+pwd                             i
+
+export HOSTNAME=`hostname`
+
 
 echo java $@ -XX:MaxPermSize=256m -cp "$CONF:$LAUNCHER" com.intel.intelanalytics.component.Boot api-server com.intel.intelanalytics.service.ApiServiceApplication
 java $@ -XX:MaxPermSize=256m -cp "$CONF:$LAUNCHER" com.intel.intelanalytics.component.Boot api-server com.intel.intelanalytics.service.ApiServiceApplication
