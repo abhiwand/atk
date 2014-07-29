@@ -185,12 +185,15 @@ class SparkEngine(sparkContextManager: SparkContextManager,
    * @return data of specific page
    */
   override def getQueryPage(id: Long, pageId: Long)(implicit user: UserPrincipal) = withContext("se.getQueryPage") {
-    println("################  CLASS LOADER IN QUERY: " + this.getClass.getClassLoader.toString)
     withMyClassLoader {
-      val ctx = sparkContextManager.context(user)
-      val data = queryStorage.getQueryPage(ctx.sparkContext, id, pageId)
-      ctx.sparkContext.stop()
-      data
+      val ctx = sparkContextManager.context(user).sparkContext
+      try {
+        val data = queryStorage.getQueryPage(ctx, id, pageId)
+        data
+      }
+      finally {
+        ctx.stop()
+      }
     }
   }
 
@@ -786,14 +789,19 @@ class SparkEngine(sparkContextManager: SparkContextManager,
   def getRows(arguments: RowQuery[Identifier])(implicit user: UserPrincipal): Future[Iterable[Row]] = {
     future {
       withMyClassLoader {
-        val ctx = sparkContextManager.context(user)
-        val invocation: SparkInvocation = SparkInvocation(null, commandId = 0, arguments = null,
-          user = null, executionContext = null,
-          sparkContext = ctx.sparkContext, commandStorage = null)
+        val ctx = sparkContextManager.context(user).sparkContext
+        try {
+          val invocation: SparkInvocation = SparkInvocation(null, commandId = 0, arguments = null,
+            user = null, executionContext = null,
+            sparkContext = ctx, commandStorage = null)
 
-        val frame = frames.lookup(arguments.id).getOrElse(throw new IllegalArgumentException("Requested frame does not exist"))
-        val rows = frames.getRows(frame, arguments.offset, arguments.count, invocation)
-        rows
+          val frame = frames.lookup(arguments.id).getOrElse(throw new IllegalArgumentException("Requested frame does not exist"))
+          val rows = frames.getRows(frame, arguments.offset, arguments.count, invocation)
+          rows
+        }
+        finally {
+          ctx.stop()
+        }
       }
     }
   }
