@@ -1,5 +1,6 @@
 package com.intel.intelanalytics.engine.spark
 
+import com.intel.graphbuilder.elements.Vertex
 import org.apache.spark.serializer.KryoRegistrator
 import com.esotericsoftware.kryo.Kryo
 import com.intel.graphbuilder.driver.spark.titan.GraphBuilderKryoRegistrator
@@ -28,6 +29,9 @@ class EngineKryoRegistrator extends KryoRegistrator {
     kryo.register(classOf[Row])
     kryo.register(classOf[RowParseResult])
     kryo.register(classOf[FrameRDD])
+
+    // avoid Spark top(n) issue with Kryo serializer:
+    kryo.register(classOf[org.apache.spark.util.BoundedPriorityQueue[(Double, Vertex)]])
 
     // register GraphBuilder classes
     val gbRegistrator = new GraphBuilderKryoRegistrator()
