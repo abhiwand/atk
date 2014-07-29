@@ -29,6 +29,7 @@ import org.apache.spark.SparkContext
 
 import scala.collection.mutable
 import scala.reflect.ClassTag
+
 import scala.Some
 import com.intel.intelanalytics.engine.spark.frame.RDDJoinParam
 import com.intel.intelanalytics.algorithm.{ Percentile, PercentileTarget, PercentileComposingElement }
