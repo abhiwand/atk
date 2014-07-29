@@ -25,7 +25,10 @@ package com.intel.intelanalytics.domain.schema
 
 import scala.collection.immutable.Set
 import scala.util.Try
+import spray.json.JsValue
 
+import spray.json._
+import DefaultJsonProtocol._
 /**
  * Datatypes supported for dataframes, graphs, etc.
  */
@@ -42,6 +45,11 @@ object DataTypes {
     def parse(s: String): Try[ScalaType]
 
     def scalaType: Class[ScalaType]
+
+    def typedJson(raw: Any): JsValue
+
+    def asDouble(raw: Any): Double
+
   }
 
   /**
@@ -55,6 +63,15 @@ object DataTypes {
     }
 
     override def scalaType = classOf[Int]
+
+    override def typedJson(raw: Any) = {
+      raw.asInstanceOf[Int].toJson
+    }
+
+    override def asDouble(raw: Any): Double = {
+      raw.asInstanceOf[Int].toDouble
+    }
+
   }
 
   /**
@@ -68,6 +85,14 @@ object DataTypes {
     }
 
     override def scalaType = classOf[Long]
+
+    override def typedJson(raw: Any) = {
+      raw.asInstanceOf[Long].toJson
+    }
+
+    override def asDouble(raw: Any): Double = {
+      raw.asInstanceOf[Long].toDouble
+    }
   }
 
   /**
@@ -81,6 +106,14 @@ object DataTypes {
     }
 
     override def scalaType = classOf[Float]
+
+    override def typedJson(raw: Any) = {
+      raw.asInstanceOf[Float].toJson
+    }
+
+    override def asDouble(raw: Any): Double = {
+      raw.asInstanceOf[Float].toDouble
+    }
   }
 
   /**
@@ -95,6 +128,14 @@ object DataTypes {
     }
 
     override def scalaType = classOf[Double]
+
+    override def typedJson(raw: Any) = {
+      raw.asInstanceOf[Double].toJson
+    }
+
+    override def asDouble(raw: Any): Double = {
+      raw.asInstanceOf[Double]
+    }
   }
 
   /**
@@ -108,6 +149,19 @@ object DataTypes {
     }
 
     override def scalaType = classOf[String]
+
+    override def typedJson(raw: Any) = {
+      raw.asInstanceOf[String].toJson
+    }
+
+    override def asDouble(raw: Any): Double = {
+      try {
+        java.lang.Double.parseDouble(raw.asInstanceOf[String])
+      }
+      catch {
+        case e: Exception => throw new IllegalArgumentException("Could not parse " + raw + " as a Double.")
+      }
+    }
   }
 
   /**

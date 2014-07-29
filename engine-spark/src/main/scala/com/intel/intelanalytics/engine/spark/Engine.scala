@@ -68,6 +68,8 @@ import com.intel.spark.mllib.util.{ LabeledLine, MLDataSplitter }
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent._
+import com.intel.intelanalytics.engine.plugin.CommandPlugin
+import com.intel.intelanalytics.engine.spark.statistics.ColumnStatistics
 import scala.util.Try
 import org.apache.spark.engine.SparkProgressListener
 import com.intel.intelanalytics.domain.frame.FrameAddColumns
@@ -546,6 +548,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     commands.execute(binColumnCommand, arguments, user, implicitly[ExecutionContext])
 
   val binColumnCommand = commands.registerCommand("dataframe/bin_column", binColumnSimple _, 7)
+
   def binColumnSimple(arguments: BinColumn[Long], user: UserPrincipal) = {
     implicit val u = user
     val frameId: Long = arguments.frame
@@ -577,6 +580,147 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     val allColumns = realFrame.schema.columns :+ (arguments.binColumnName, DataTypes.int32)
     frames.updateSchema(newFrame, allColumns)
   }
+
+  // TRIB-2245
+  /*
+  /**
+   * Calculate the mode of the specified column.
+   * @param arguments Input specification for column mode.
+   * @param user Current user.
+   */
+  override def columnMode(arguments: ColumnMode)(implicit user: UserPrincipal): Execution =
+    commands.execute(columnModeCommand, arguments, user, implicitly[ExecutionContext])
+
+  val columnModeCommand: CommandPlugin[ColumnMode, ColumnModeReturn] =
+    commands.registerCommand("dataframe/column_mode", columnModeSimple)
+
+  def columnModeSimple(arguments: ColumnMode, user: UserPrincipal): ColumnModeReturn = {
+
+    implicit val u = user
+
+    val frameId = arguments.frame
+    val frame = expectFrame(frameId)
+    val ctx = sparkContextManager.context(user).sparkContext
+    val rdd = frames.getFrameRdd(ctx, frameId.id)
+    val columnIndex = frame.schema.columnIndex(arguments.dataColumn)
+    val valueDataType: DataType = frame.schema.columns(columnIndex)._2
+
+    val (weightsColumnIndexOption, weightsDataTypeOption) = if (arguments.weightsColumn.isEmpty) {
+      (None, None)
+    }
+    else {
+      val weightsColumnIndex = frame.schema.columnIndex(arguments.weightsColumn.get)
+      (Some(weightsColumnIndex), Some(frame.schema.columns(weightsColumnIndex)._2))
+    }
+
+    ColumnStatistics.columnMode(columnIndex, valueDataType, weightsColumnIndexOption, weightsDataTypeOption, rdd)
+  }
+*/
+  // TODO TRIB-2245
+  /**
+   * Calculate the median of the specified column.
+   * @param arguments Input specification for column median.
+   * @param user Current user.
+   *
+   * override def columnMedian(arguments: ColumnMedian)(implicit user: UserPrincipal): Execution =
+   * commands.execute(columnMedianCommand, arguments, user, implicitly[ExecutionContext])
+   *
+   * val columnMedianCommand: CommandPlugin[ColumnMedian, ColumnMedianReturn] =
+   * commands.registerCommand("dataframe/column_median", columnMedianSimple)
+   *
+   * def columnMedianSimple(arguments: ColumnMedian, user: UserPrincipal): ColumnMedianReturn = {
+   *
+   * implicit val u = user
+   *
+   * val frameId = arguments.frame
+   * val frame = expectFrame(frameId)
+   * val ctx = sparkContextManager.context(user).sparkContext
+   * val rdd = frames.getFrameRdd(ctx, frameId.id)
+   * val columnIndex = frame.schema.columnIndex(arguments.dataColumn)
+   * val valueDataType: DataType = frame.schema.columns(columnIndex)._2
+   *
+   * val (weightsColumnIndexOption, weightsDataTypeOption) = if (arguments.weightsColumn.isEmpty) {
+   * (None, None)
+   * }
+   * else {
+   * val weightsColumnIndex = frame.schema.columnIndex(arguments.weightsColumn.get)
+   * (Some(weightsColumnIndex), Some(frame.schema.columns(weightsColumnIndex)._2))
+   * }
+   * val (weightsColumnIndexOption, weightsDataTypeOption) = (None, None)
+   *
+   * ColumnStatistics.columnMedian(columnIndex, valueDataType, weightsColumnIndexOption, weightsDataTypeOption, rdd)
+   * }
+   */
+  /**
+   * Calculate summary statistics of the specified column.
+   * @param arguments Input specification for column summary statistics.
+   * @param user Current user.
+   */
+  override def columnSummaryStatistics(arguments: ColumnSummaryStatistics)(implicit user: UserPrincipal): Execution =
+    commands.execute(columnStatisticCommand, arguments, user, implicitly[ExecutionContext])
+
+  val columnStatisticCommand: CommandPlugin[ColumnSummaryStatistics, ColumnSummaryStatisticsReturn] =
+    commands.registerCommand("dataframe/column_summary_statistics", columnStatisticSimple)
+
+  def columnStatisticSimple(arguments: ColumnSummaryStatistics, user: UserPrincipal): ColumnSummaryStatisticsReturn = {
+
+    implicit val u = user
+
+    val frameId: Long = arguments.frame.id
+    val frame = expectFrame(frameId)
+    val ctx = sparkContextManager.context(user).sparkContext
+    val rdd = frames.getFrameRdd(ctx, frameId)
+    val columnIndex = frame.schema.columnIndex(arguments.dataColumn)
+    val valueDataType: DataType = frame.schema.columns(columnIndex)._2
+    // TODO TRIB-2245
+    /*
+    val (weightsColumnIndexOption, weightsDataTypeOption) = if (arguments.weightsColumn.isEmpty) {
+      (None, None)
+    }
+    else {
+      val weightsColumnIndex = frame.schema.columnIndex(arguments.weightsColumn.get)
+      (Some(weightsColumnIndex), Some(frame.schema.columns(weightsColumnIndex)._2))
+    }*/
+    val (weightsColumnIndexOption, weightsDataTypeOption) = (None, None)
+
+    ColumnStatistics.columnSummaryStatistics(columnIndex, valueDataType, weightsColumnIndexOption, weightsDataTypeOption, rdd)
+  }
+
+  // TODO TRIB-2245
+  /*
+  /**
+   * Calculate full statistics of the specified column.
+   * @param arguments Input specification for column statistics.
+   * @param user Current user.
+   */
+  override def columnFullStatistics(arguments: ColumnFullStatistics)(implicit user: UserPrincipal): Execution =
+    commands.execute(columnFullStatisticsCommand, arguments, user, implicitly[ExecutionContext])
+
+  val columnFullStatisticsCommand: CommandPlugin[ColumnFullStatistics, ColumnFullStatisticsReturn] =
+    commands.registerCommand("dataframe/column_full_statistics", columnFullStatisticSimple)
+
+  def columnFullStatisticSimple(arguments: ColumnFullStatistics, user: UserPrincipal): ColumnFullStatisticsReturn = {
+
+    implicit val u = user
+
+    val frameId: Long = arguments.frame.id
+    val frame = expectFrame(frameId)
+    val ctx = sparkContextManager.context(user).sparkContext
+    val rdd = frames.getFrameRdd(ctx, frameId)
+    val columnIndex = frame.schema.columnIndex(arguments.dataColumn)
+    val valueDataType: DataType = frame.schema.columns(columnIndex)._2
+
+    val (weightsColumnIndexOption, weightsDataTypeOption) = if (arguments.weightsColumn.isEmpty) {
+      (None, None)
+    }
+    else {
+      val weightsColumnIndex = frame.schema.columnIndex(arguments.weightsColumn.get)
+      (Some(weightsColumnIndex), Some(frame.schema.columns(weightsColumnIndex)._2))
+    }
+
+    ColumnStatistics.columnFullStatistics(columnIndex, valueDataType, weightsColumnIndexOption, weightsDataTypeOption, rdd)
+  }
+ */
 
   def filter(arguments: FilterPredicate[JsObject, Long])(implicit user: UserPrincipal): Execution =
     commands.execute(filterCommand, arguments, user, implicitly[ExecutionContext])
