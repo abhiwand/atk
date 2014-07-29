@@ -31,7 +31,7 @@ import spray.json.JsValue
  */
 case class ColumnMedian(frame: FrameReference, dataColumn: String) {
 
-  // TODO TRIB-3211
+  // TODO TRIB-2245
   // weightsColumn: Option[String]) {
 
   require(frame != null, "frame is required")

@@ -1072,31 +1072,6 @@ class BigFrame(CommandSupport):
 
 
 
-
-    @doc_stub
-    def column_median(self, data_column):
-        """
-        Calculate the median of a column. If there are n data items, the median is the data element that appears at
-         position ceil(n/2) when column is sorted.
-
-        All  all data elements that are NaN or infinite are excluded from the calculation.
-
-        Parameters
-        ----------
-        data_column : str
-            The column whose median is to be calculated
-
-        Returns
-        -------
-        median : Double
-            The median of the values.  If an empty column is provided, the value None is returned for the median.
-
-        Example
-        -------
-        >>> median = frame.column_median('middling column')
-        """
-        pass
-
     def get_error_frame(self):
         """
         When a frame is loaded, parse errors go into a separate data frame so they can be

@@ -570,7 +570,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     frames.updateSchema(newFrame, allColumns)
   }
 
-  // TRIB-3211
+  // TRIB-2245
   /*
   /**
    * Calculate the mode of the specified column.
@@ -605,42 +605,41 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     ColumnStatistics.columnMode(columnIndex, valueDataType, weightsColumnIndexOption, weightsDataTypeOption, rdd)
   }
 */
+  // TODO TRIB-2245
   /**
    * Calculate the median of the specified column.
    * @param arguments Input specification for column median.
    * @param user Current user.
+   *
+   * override def columnMedian(arguments: ColumnMedian)(implicit user: UserPrincipal): Execution =
+   * commands.execute(columnMedianCommand, arguments, user, implicitly[ExecutionContext])
+   *
+   * val columnMedianCommand: CommandPlugin[ColumnMedian, ColumnMedianReturn] =
+   * commands.registerCommand("dataframe/column_median", columnMedianSimple)
+   *
+   * def columnMedianSimple(arguments: ColumnMedian, user: UserPrincipal): ColumnMedianReturn = {
+   *
+   * implicit val u = user
+   *
+   * val frameId = arguments.frame
+   * val frame = expectFrame(frameId)
+   * val ctx = sparkContextManager.context(user).sparkContext
+   * val rdd = frames.getFrameRdd(ctx, frameId.id)
+   * val columnIndex = frame.schema.columnIndex(arguments.dataColumn)
+   * val valueDataType: DataType = frame.schema.columns(columnIndex)._2
+   *
+   * val (weightsColumnIndexOption, weightsDataTypeOption) = if (arguments.weightsColumn.isEmpty) {
+   * (None, None)
+   * }
+   * else {
+   * val weightsColumnIndex = frame.schema.columnIndex(arguments.weightsColumn.get)
+   * (Some(weightsColumnIndex), Some(frame.schema.columns(weightsColumnIndex)._2))
+   * }
+   * val (weightsColumnIndexOption, weightsDataTypeOption) = (None, None)
+   *
+   * ColumnStatistics.columnMedian(columnIndex, valueDataType, weightsColumnIndexOption, weightsDataTypeOption, rdd)
+   * }
    */
-  override def columnMedian(arguments: ColumnMedian)(implicit user: UserPrincipal): Execution =
-    commands.execute(columnMedianCommand, arguments, user, implicitly[ExecutionContext])
-
-  val columnMedianCommand: CommandPlugin[ColumnMedian, ColumnMedianReturn] =
-    commands.registerCommand("dataframe/column_median", columnMedianSimple)
-
-  def columnMedianSimple(arguments: ColumnMedian, user: UserPrincipal): ColumnMedianReturn = {
-
-    implicit val u = user
-
-    val frameId = arguments.frame
-    val frame = expectFrame(frameId)
-    val ctx = sparkContextManager.context(user).sparkContext
-    val rdd = frames.getFrameRdd(ctx, frameId.id)
-    val columnIndex = frame.schema.columnIndex(arguments.dataColumn)
-    val valueDataType: DataType = frame.schema.columns(columnIndex)._2
-
-    // TODO TRIB-3211
-    /*
-    val (weightsColumnIndexOption, weightsDataTypeOption) = if (arguments.weightsColumn.isEmpty) {
-      (None, None)
-    }
-    else {
-      val weightsColumnIndex = frame.schema.columnIndex(arguments.weightsColumn.get)
-      (Some(weightsColumnIndex), Some(frame.schema.columns(weightsColumnIndex)._2))
-    }*/
-    val (weightsColumnIndexOption, weightsDataTypeOption) = (None, None)
-
-    ColumnStatistics.columnMedian(columnIndex, valueDataType, weightsColumnIndexOption, weightsDataTypeOption, rdd)
-  }
-
   /**
    * Calculate summary statistics of the specified column.
    * @param arguments Input specification for column summary statistics.
@@ -662,7 +661,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     val rdd = frames.getFrameRdd(ctx, frameId)
     val columnIndex = frame.schema.columnIndex(arguments.dataColumn)
     val valueDataType: DataType = frame.schema.columns(columnIndex)._2
-    // TODO TRIB-3211
+    // TODO TRIB-2245
     /*
     val (weightsColumnIndexOption, weightsDataTypeOption) = if (arguments.weightsColumn.isEmpty) {
       (None, None)
@@ -676,7 +675,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     ColumnStatistics.columnSummaryStatistics(columnIndex, valueDataType, weightsColumnIndexOption, weightsDataTypeOption, rdd)
   }
 
-  // TODO TRIB-3211
+  // TODO TRIB-2245
   /*
   /**
    * Calculate full statistics of the specified column.
