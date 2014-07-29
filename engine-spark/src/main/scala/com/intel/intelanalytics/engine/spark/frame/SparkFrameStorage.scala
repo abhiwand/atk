@@ -214,7 +214,7 @@ class SparkFrameStorage(fsRoot: String,
    */
   def getFrameRowRdd(ctx: SparkContext, frameId: Long): RDD[Row] = {
     val path: String = getFrameDataFile(frameId)
-    val absPath = fsRoot + path
+    val absPath = concatPaths(fsRoot, path)
     fileStorage.getMetaData(Paths.get(path)) match {
       case None => ctx.parallelize(Nil)
       case _ => ctx.objectFile[Row](absPath, sparkAutoPartitioner.partitionsForFile(path))
