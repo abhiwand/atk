@@ -34,9 +34,11 @@ errors = frame.get_error_frame()
 
 print("inspect frame")
 print frame.inspect(10)
+print("frame row count " + str(frame.row_count))
 
 print("inspect frame errors")
 print errors.inspect(10)
+print("frame row count " + str(errors.row_count))
 
 print("define graph parsing rules")
 movie = VertexRule("movie", frame.movie)
