@@ -8,9 +8,6 @@ import com.intel.intelanalytics.domain.frame.ColumnFullStatisticsReturn
  * Statistics calculator for weighted numerical data. Data elements with non-positive weights are thrown out and do
  * not affect stastics (excepting the count of entries with non-postive weights).
  *
- * Formulas for statistics are expected to adhere to the DEFAULT formulas used by SAS in
- * http://support.sas.com/documentation/cdl/en/procstat/63104/HTML/default/viewer.htm#procstat_univariate_sect026.htm
- *
  * @param dataWeightPairs RDD of pairs of  the form (data, weight)
  */
 class NumericalStatistics(dataWeightPairs: RDD[(Double, Double)]) extends Serializable {
