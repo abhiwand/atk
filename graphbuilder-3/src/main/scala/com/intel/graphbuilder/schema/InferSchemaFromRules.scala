@@ -120,13 +120,13 @@ class InferSchemaFromRules(dataTypeParser: DataTypeResolver, vertexRules: List[V
       vertexRule ← vertexRules
       propertyRule ← vertexRule.propertyRules
       if propertyRule.key.isNotParsed
-    } yield PropertyDef(PropertyType.Vertex, safeValue(propertyRule.key), dataTypeParser.get(propertyRule.value), unique = false, indexed = false)
+    } yield PropertyDef(PropertyType.Vertex, safeValue(propertyRule.key), dataTypeParser.get(propertyRule.value), unique = false, indexed = true)
 
     val edgePropertyDefs = for {
       edgeRule ← edgeRules
       propertyRule ← edgeRule.propertyRules
       if propertyRule.key.isNotParsed
-    } yield PropertyDef(PropertyType.Edge, safeValue(propertyRule.key), dataTypeParser.get(propertyRule.value), unique = false, indexed = false)
+    } yield PropertyDef(PropertyType.Edge, safeValue(propertyRule.key), dataTypeParser.get(propertyRule.value), unique = false, indexed = true)
 
     vertexGbIdPropertyDefs ++ vertexPropertyDefs ++ edgePropertyDefs
   }

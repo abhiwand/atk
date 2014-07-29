@@ -30,7 +30,7 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol
 import com.intel.intelanalytics.domain.graph.GraphReference
 import com.intel.intelanalytics.engine.plugin.{ CommandPlugin, Invocation }
 import com.intel.intelanalytics.security.UserPrincipal
-import com.intel.intelanalytics.algorithm.util.{ GiraphConfigurationUtil, GiraphJobDriver }
+import com.intel.intelanalytics.algorithm.util.{ GiraphJobManager, GiraphConfigurationUtil }
 import org.apache.giraph.conf.GiraphConfiguration
 import spray.json.DefaultJsonProtocol._
 import spray.json._
@@ -67,11 +67,24 @@ class AlternatingLeastSquares
   override def execute(invocation: Invocation, arguments: Als)(implicit user: UserPrincipal, executionContext: ExecutionContext): AlsResult = {
 
     val config = configuration
+    val pattern = "[\\s,\\t]+"
+    val outputVertexPropertyList = arguments.output_vertex_property_list.getOrElse(
+      config.getString("output_vertex_property_list"))
+    val resultPropertyList = outputVertexPropertyList.split(pattern)
+    val vectorValue = arguments.vector_value.getOrElse(config.getString("vector_value")).toBoolean
+    val biasOn = arguments.bias_on.getOrElse(false)
+    require(resultPropertyList.size >= 1,
+      "Please input at least one vertex property name for ALS/CGD results")
+    require(!vectorValue || !biasOn ||
+      (vectorValue && biasOn && resultPropertyList.size == 2),
+      "Please input one property name for bias and one property name for results when both vector_value " +
+        "and bias_on are enabled")
     val hConf = GiraphConfigurationUtil.newHadoopConfigurationFrom(config, "giraph")
     val titanConf = GiraphConfigurationUtil.flattenConfig(config.getConfig("titan"), "titan.")
 
     val graphFuture = invocation.engine.getGraph(arguments.graph.id)
     val graph = Await.result(graphFuture, config.getInt("default-timeout") seconds)
+    val biasOnOption = if (biasOn) Option(biasOn.toString().toLowerCase()) else None
 
     //    These parameters are set from the arguments passed in, or defaulted from
     //    the engine configuration if not passed.
@@ -93,6 +106,7 @@ class AlternatingLeastSquares
     GiraphConfigurationUtil.set(hConf, "vertex.type.property.key", arguments.vertex_type_property_key)
     GiraphConfigurationUtil.set(hConf, "edge.type.property.key", arguments.edge_type_property_key)
     GiraphConfigurationUtil.set(hConf, "vector.value", arguments.vector_value)
+    GiraphConfigurationUtil.set(hConf, "output.vertex.bias", biasOnOption)
 
     val giraphConf = new GiraphConfiguration(hConf)
 
@@ -102,9 +116,9 @@ class AlternatingLeastSquares
     giraphConf.setComputationClass(classOf[AlternatingLeastSquaresComputation])
     giraphConf.setAggregatorWriterClass(classOf[AlternatingLeastSquaresComputation.AlternatingLeastSquaresAggregatorWriter])
 
-    AlsResult(GiraphJobDriver.run("ia_giraph_als",
+    AlsResult(GiraphJobManager.run("ia_giraph_als",
       classOf[AlternatingLeastSquaresComputation].getCanonicalName,
-      config, giraphConf, invocation.commandId, "als-learning-report_0"))
+      config, giraphConf, invocation, "als-learning-report_0"))
   }
 
   //TODO: Replace with generic code that works on any case class

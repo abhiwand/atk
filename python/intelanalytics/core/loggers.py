@@ -28,11 +28,15 @@ import logging
 
 # add a null handler to root logger to avoid handler warning messages
 class NullHandler(logging.Handler):
+    name = "NullHandler"
+
     def emit(self, record):
         pass
 
 # this line avoids the 'no handler' warning msg when no logging is set at all
-logging.getLogger('').addHandler(NullHandler())
+_null_handler = NullHandler()
+_null_handler.name = ''  # add name explicitly for python 2.6
+logging.getLogger('').addHandler(_null_handler)
 
 
 class Loggers(object):

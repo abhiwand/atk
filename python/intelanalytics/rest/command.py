@@ -31,6 +31,7 @@ import logging
 import sys
 import re
 import collections
+from requests import HTTPError
 
 logger = logging.getLogger(__name__)
 
@@ -47,19 +48,19 @@ class ProgressPrinter(object):
         self.job_start_times = []
         self.initializing = True
 
-    def print_progress(self, progress, progress_message, finished):
+    def print_progress(self, progress, finished):
         """
         Print progress information on progress bar
 
         Parameters
         ----------
-        progress : List of float
+        progress : List of dictionary
             The progresses of the jobs initiated by the command
-        progressMessage : List of str
-            Detailed progress information for the jobs initiated by the command
         finished : boolean
             Indicate whether the command is finished
         """
+        if progress == False:
+            return
 
         total_job_count = len(progress)
         new_added_job_count = total_job_count - self.job_count
@@ -75,18 +76,16 @@ class ProgressPrinter(object):
             self.job_start_times.append(time.time())
 
         self.job_count = total_job_count
-        self.print_progress_as_text(progress, progress_message, number_of_new_lines, self.job_start_times, finished)
+        self.print_progress_as_text(progress, number_of_new_lines, self.job_start_times, finished)
 
-    def print_progress_as_text(self, progress, progress_message, number_of_new_lines, start_times, finished):
+    def print_progress_as_text(self, progress, number_of_new_lines, start_times, finished):
         """
         Print progress information on command line progress bar
 
         Parameters
         ----------
-        progress : List of float
+        progress : List of dictionary
             The progresses of the jobs initiated by the command
-        progress_message : List of str
-            Detailed progress information for the jobs initiated by the command
         number_of_new_lines: int
             number of new lines to print in the command line
         start_times: List of time
@@ -103,15 +102,22 @@ class ProgressPrinter(object):
         progress_summary = []
 
         for index in range(0, len(progress)):
-            p = progress[index]
-            message = progress_message[index] if(index < len(progress_message)) else ''
+            p = progress[index]['progress']
+            # Check if the Progress has tasks_info field
+            message = ''
+            if 'tasks_info' in progress[index].keys():
+                retried_tasks = progress[index]['tasks_info']['retries']
+                message = "Tasks retries:%s" %(retried_tasks)
 
-            num_star = int(p / 2)
-            num_dot = 50 - num_star
+            total_bar_length = 25
+            factor = 100 / total_bar_length
+
+            num_star = int(p / factor)
+            num_dot = total_bar_length - num_star
             number = "%3.2f" % p
 
             time_string = datetime.timedelta(seconds = int(time.time() - start_times[index]))
-            progress_summary.append("\r%6s%% [%s%s] %s [Elapsed Time %s]" % (number, '=' * num_star, '.' * num_dot, message, time_string))
+            progress_summary.append("\r[%s%s] %6s%% %s Time %s" % ('=' * num_star, '.' * num_dot, number, message, time_string))
 
         for i in range(0, number_of_new_lines):
             # calculate the index for fetch from the list from the end
@@ -156,7 +162,7 @@ class CommandRequest(object):
 
 
 class CommandInfo(object):
-    __commands_regex = re.compile("""^http.+/commands/\d+""")
+    __commands_regex = re.compile("""^http.+/(queries|commands)/\d+""")
 
     @staticmethod
     def is_valid_command_uri(uri):
@@ -213,13 +219,6 @@ class CommandInfo(object):
     def progress(self):
         try:
             return self._payload['progress']
-        except KeyError:
-            return False
-
-    @property
-    def progress_message(self):
-        try:
-            return self._payload['progress_message']
         except KeyError:
             return False
 
@@ -290,7 +289,7 @@ class Polling(object):
 
                 next_poll_time = time.time() + interval_secs
                 progress = command_info.progress
-                printer.print_progress(progress, command_info.progress_message, finish)
+                printer.print_progress(progress, finish)
 
                 if finish:
                     break
@@ -299,10 +298,8 @@ class Polling(object):
                     interval_secs = min(max_interval_secs, interval_secs * backoff_factor)
 
                 last_progress = progress
-
-                end_time = time.time()
-                logger.info("polling %s completed after %0.2f seconds" % (uri, end_time - start_time))
-
+            end_time = time.time()
+            logger.info("polling %s completed after %0.2f seconds" % (uri, end_time - start_time))
         return command_info
 
     @staticmethod
@@ -341,6 +338,14 @@ class Executor(object):
         """
         logger.info("Issuing command " + command_request.name)
         response = http.post("commands", command_request.to_json_obj())
+        return self.poll_command_info(response)
+
+    def poll_command_info(self, response):
+        """
+        poll command_info until the command is completed and return results
+        :param response: response from original command
+        :return: :raise CommandServerError:
+        """
         command_info = CommandInfo(response.json())
         # For now, we just poll until the command completes
         try:
@@ -354,6 +359,65 @@ class Executor(object):
         if command_info.error:
             raise CommandServerError(command_info)
         return command_info
+
+    def query(self, query_url):
+        """
+        Issues the query_request to the server
+        """
+        logger.info("Issuing query " + query_url)
+        try:
+            response = http.get(query_url)
+        except:
+            # do a single retry
+            response = http.get(query_url)
+
+        response_json = response.json()
+
+        if response_json["complete"]:
+            return response_json["result"]["data"]
+
+        command = self.poll_command_info(response)
+
+        def get_query_response(id, partition):
+            """
+            Attempt to get the next partition of data as a CommandInfo Object. Allow for several retries
+            :param id: Query ID
+            :param partition: Partition number to pull
+            """
+            max_retries = 20
+            for i in range(max_retries):
+                try:
+                    info = CommandInfo(http.get("queries/%s/data/%s" % (id, partition)).json())
+                    return info
+                except HTTPError as e:
+                    time.sleep(5)
+                    if i == max_retries - 1:
+                        raise e
+
+        #retreive the data
+        printer = ProgressPrinter()
+        total_pages = command.result["total_pages"] + 1
+        data = []
+        start = 1
+        for i in range(start, total_pages):
+            next_partition = get_query_response(command.id_number, i)
+            data.extend(next_partition.result["data"])
+
+            #if the total pages is greater than 10 display a progress bar
+            if total_pages > 5:
+                finished = i == (total_pages - 1)
+                if not finished:
+                    time.sleep(.5)
+                progress = [{
+                    "progress": (float(i)/(total_pages - 1)) * 100,
+                    "tasks_info": {
+                        "retries": 0
+                    }
+                }]
+                printer.print_progress(progress, finished)
+        return data
+
+
 
     def cancel(self, command_id):
         """

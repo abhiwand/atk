@@ -35,7 +35,7 @@ import org.apache.spark.{ TaskContext, Success }
 import com.intel.intelanalytics.engine.spark.CommandProgressUpdater
 import org.apache.spark.engine.SparkProgressListener
 import java.util.Properties
-import com.intel.intelanalytics.engine.ProgressInfo
+import com.intel.intelanalytics.engine.{ ProgressInfo, TaskProgressInfo }
 
 class ProgressListenerSpec extends Specification with Mockito {
 
@@ -47,7 +47,7 @@ class ProgressListenerSpec extends Specification with Mockito {
 
     val commandProgress = scala.collection.mutable.Map[Long, List[Float]]()
 
-    override def updateProgress(commandId: Long, progress: List[Float], detailedProgress: List[ProgressInfo]): Unit = { commandProgress(commandId) = progress }
+    override def updateProgress(commandId: Long, progress: List[ProgressInfo]): Unit = { commandProgress(commandId) = progress.map(info => info.progress) }
   }
 
   def createListener_one_job(commandId: String): SparkProgressListener = {
@@ -75,6 +75,7 @@ class ProgressListenerSpec extends Specification with Mockito {
 
     val jobStart = SparkListenerJobStart(job, stageIds)
 
+    listener.setJobCountForCommand(commandId.toLong, 1)
     listener onJobStart jobStart
     listener
   }
@@ -136,7 +137,9 @@ class ProgressListenerSpec extends Specification with Mockito {
 
   def createListener_two_jobs_one_command(commandId: String): SparkProgressListener = {
 
-    createListener_two_jobs(commandId, commandId)
+    val listener = createListener_two_jobs(commandId, commandId)
+    listener.setJobCountForCommand(commandId.toLong, 2)
+    listener
   }
 
   private def sendStageSubmittedToListener(listener: SparkProgressListener, stageId: Int, numTasks: Int) {
@@ -199,8 +202,7 @@ class ProgressListenerSpec extends Specification with Mockito {
 
     sendStageSubmittedToListener(listener, 1, 10)
 
-    listener.getCommandProgress(1) shouldEqual List(0)
-    listener.getDetailedCommandProgress(1) shouldEqual List()
+    listener.getCommandProgress(1) shouldEqual List(ProgressInfo(0, Some(TaskProgressInfo(0))))
   }
 
   "finish first stage" in {
@@ -208,7 +210,7 @@ class ProgressListenerSpec extends Specification with Mockito {
     sendStageSubmittedToListener(listener, 1, 10)
     sendStageCompletedToListener(listener, 1)
 
-    listener.getCommandProgress(1) shouldEqual List(33.33f)
+    listener.getCommandProgress(1).map(info => info.progress) shouldEqual List(33.33f)
   }
 
   "finish second stage" in {
@@ -216,9 +218,9 @@ class ProgressListenerSpec extends Specification with Mockito {
 
     sendStageSubmittedToListener(listener, 1, 10)
     sendStageCompletedToListener(listener, 1)
-    listener.getCommandProgress(1) shouldEqual List(33.33f)
+    listener.getCommandProgress(1).map(info => info.progress) shouldEqual List(33.33f)
     sendStageCompletedToListener(listener, 2)
-    listener.getCommandProgress(1) shouldEqual List(66.66f)
+    listener.getCommandProgress(1).map(info => info.progress) shouldEqual List(66.66f)
   }
 
   "finish all stages" in {
@@ -228,20 +230,19 @@ class ProgressListenerSpec extends Specification with Mockito {
     sendStageCompletedToListener(listener, 1)
     sendStageCompletedToListener(listener, 2)
     sendStageCompletedToListener(listener, 3)
-    listener.getCommandProgress(1) shouldEqual List(100f)
+    listener.getCommandProgress(1).map(info => info.progress) shouldEqual List(100f)
 
     val jobEnd = mock[SparkListenerJobEnd]
     jobEnd.jobResult.returns(JobSucceeded)
     listener.onJobEnd(jobEnd)
-    listener.getCommandProgress(1) shouldEqual List(100)
+    listener.getCommandProgress(1).map(info => info.progress) shouldEqual List(100)
   }
 
   "finish first task in first stage" in {
     val listener = createListener_one_job("1")
     sendStageSubmittedToListener(listener, 1, 10)
     sendTaskEndToListener(listener, 1, 1, true)
-    listener.getCommandProgress(1) shouldEqual List(3.33f)
-    listener.getDetailedCommandProgress(1) shouldEqual List(ProgressInfo(1, 0))
+    listener.getCommandProgress(1) shouldEqual List(ProgressInfo(3.33f, Some(TaskProgressInfo(0))))
   }
 
   "finish second task in second stage" in {
@@ -251,8 +252,7 @@ class ProgressListenerSpec extends Specification with Mockito {
     sendStageSubmittedToListener(listener, 2, 10)
     sendTaskEndToListener(listener, 2, 2, true)
 
-    listener.getCommandProgress(1) shouldEqual List(40f)
-    listener.getDetailedCommandProgress(1) shouldEqual List(ProgressInfo(2, 0))
+    listener.getCommandProgress(1) shouldEqual List(ProgressInfo(40f, Some(TaskProgressInfo(0))))
   }
 
   "finish second task in second stage, second task in third stage" in {
@@ -263,12 +263,12 @@ class ProgressListenerSpec extends Specification with Mockito {
 
     sendStageSubmittedToListener(listener, 3, 10)
     sendTaskEndToListener(listener, 3, 2, true)
-    listener.getCommandProgress(1) shouldEqual List(46.66f)
+    listener.getCommandProgress(1).map(info => info.progress) shouldEqual List(46.66f)
   }
 
   "finish all tasks in second stage" in {
     val listener: SparkProgressListener = finishAllTasksInSecondStage
-    listener.getCommandProgress(1) shouldEqual List(66.66f)
+    listener.getCommandProgress(1).map(info => info.progress) shouldEqual List(66.66f)
   }
 
   private def finishAllTasksInSecondStage: SparkProgressListener = {
@@ -286,9 +286,9 @@ class ProgressListenerSpec extends Specification with Mockito {
     sendStageSubmittedToListener(listener, 2, 3)
     sendTaskEndToListener(listener, 2, 3, true)
 
-    listener.getCommandProgress(1) shouldEqual List(66.66f)
+    listener.getCommandProgress(1).map(info => info.progress) shouldEqual List(66.66f)
     sendStageCompletedToListener(listener, 2)
-    listener.getCommandProgress(1) shouldEqual List(66.66f)
+    listener.getCommandProgress(1).map(info => info.progress) shouldEqual List(66.66f)
   }
 
   "failed at first stage" in {
@@ -300,26 +300,46 @@ class ProgressListenerSpec extends Specification with Mockito {
     stage.id.returns(1)
     jobEnd.jobResult.returns(JobFailed(null, Some(stage)))
 
-    listener.activeStages.get(1) shouldNotEqual None
+    listener.unfinishedStages.get(1) shouldNotEqual None
     listener.onJobEnd(jobEnd)
-    listener.getCommandProgress(1) shouldEqual List(0)
-    listener.activeStages.get(1) shouldEqual None
+    listener.getCommandProgress(1).map(info => info.progress) shouldEqual List(0)
+  }
+
+  "failed at middle of stage" in {
+    val listener = createListener_one_job("1")
+    sendStageSubmittedToListener(listener, 1, 10)
+    sendTaskEndToListener(listener, 1, 6, true)
+    listener.getCommandProgress(1).map(info => info.progress) shouldEqual List(20)
+
+    val jobEnd = mock[SparkListenerJobEnd]
+    val stage = mock[Stage]
+    stage.id.returns(1)
+    jobEnd.jobResult.returns(JobFailed(null, Some(stage)))
+
+    listener.unfinishedStages.get(1) shouldNotEqual None
+    listener.onJobEnd(jobEnd)
+
+    //send second time, make sure no exception thrown
+    listener.onJobEnd(jobEnd)
+    listener.getCommandProgress(1).map(info => info.progress) shouldEqual List(20)
   }
 
   "job1: finish second task in second stage, job2: finish first task in first stage" in {
 
     val listener = createListener_two_jobs_two_commands("1", "2")
+    listener.setJobCountForCommand(1, 1)
+    listener.setJobCountForCommand(2, 1)
     sendStageCompletedToListener(listener, 1)
     sendStageSubmittedToListener(listener, 2, 10)
 
     sendTaskEndToListener(listener, 2, 2, true)
-    listener.getCommandProgress(1) shouldEqual List(40f)
+    listener.getCommandProgress(1).map(info => info.progress) shouldEqual List(40f)
     sendStageSubmittedToListener(listener, 4, 10)
 
     sendTaskEndToListener(listener, 4, 1, false)
-    listener.getCommandProgress(2) shouldEqual List(0)
+    listener.getCommandProgress(2).map(info => info.progress) shouldEqual List(0)
     sendTaskEndToListener(listener, 4, 1, true)
-    listener.getCommandProgress(2) shouldEqual List(2.5f)
+    listener.getCommandProgress(2).map(info => info.progress) shouldEqual List(2.5f)
   }
 
   "query wrong command id should receive exception" in {
@@ -342,34 +362,36 @@ class ProgressListenerSpec extends Specification with Mockito {
     sendTaskEndToListener(listener, 2, 2, true)
     sendTaskEndToListener(listener, 2, 1, false)
 
-    listener.getCommandProgress(1) shouldEqual List(40f, 0f)
-    listener.getDetailedCommandProgress(1) shouldEqual List(ProgressInfo(2, 1), ProgressInfo(0, 0))
+    listener.setJobCountForCommand(1, 2)
+    listener.getCommandProgress(1) shouldEqual List(ProgressInfo(20f, Some(TaskProgressInfo(1))))
 
     sendStageSubmittedToListener(listener, 4, 10)
 
     sendTaskEndToListener(listener, 4, 1, false)
-    listener.getCommandProgress(1) shouldEqual List(40f, 0f)
+    listener.getCommandProgress(1) shouldEqual List(ProgressInfo(20f, Some(TaskProgressInfo(2))))
     sendTaskEndToListener(listener, 4, 1, true)
-    listener.getCommandProgress(1) shouldEqual List(40f, 2.5f)
-
-    listener.getDetailedCommandProgress(1) shouldEqual List(ProgressInfo(2, 1), ProgressInfo(1, 1))
+    listener.getCommandProgress(1) shouldEqual List(ProgressInfo(21.25f, Some(TaskProgressInfo(2))))
 
     sendStageCompletedToListener(listener, 2)
     sendStageSubmittedToListener(listener, 3, 10)
 
     sendTaskEndToListener(listener, 3, 10, true)
     sendStageCompletedToListener(listener, 3)
-    listener.getDetailedCommandProgress(1) shouldEqual List(ProgressInfo(12, 1), ProgressInfo(1, 1))
+    listener.getCommandProgress(1).map(info => info.tasksInfo) shouldEqual List(Some(TaskProgressInfo(2)))
+
+    //set expected jobs to 1, should see 2 progress since one is expected and the other one is not.
+    listener.setJobCountForCommand(1, 1)
+    listener.getCommandProgress(1) shouldEqual List(ProgressInfo(100f, Some(TaskProgressInfo(1))), ProgressInfo(2.5f, Some(TaskProgressInfo(1))))
   }
 
   "mark parent stage to complete when child stage is starting" in {
     val listener = createListener_one_job("1")
     sendStageSubmittedToListener(listener, 2, 10)
-    listener.getCommandProgress(1) shouldEqual List(0f)
+    listener.getCommandProgress(1).map(info => info.progress) shouldEqual List(0f)
     sendTaskEndToListener(listener, 2, 3, false)
     sendTaskEndToListener(listener, 2, 10, true)
     sendStageCompletedToListener(listener, 2)
-    listener.getCommandProgress(1) shouldEqual List(66.66f)
-    listener.getDetailedCommandProgress(1) shouldEqual List(ProgressInfo(10, 3))
+    listener.getCommandProgress(1) shouldEqual List(ProgressInfo(66.66f, Some(TaskProgressInfo(3))))
   }
+
 }
