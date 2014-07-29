@@ -95,13 +95,17 @@ public class TitanVertexOutputFormatLongIDLongValue<I extends LongWritable,
          * Vertex value properties to filter
          */
         private String[] vertexValuePropertyKeyList = null;
+        /**
+         * regular expression of the deliminators for a property list
+         */
+        private String regexp = "[\\s,\\t]+";     //.split("/,?\s+/");
 
         @Override
         public void initialize(TaskAttemptContext context) throws IOException,
             InterruptedException {
             super.initialize(context);
             this.graph = TitanGraphWriter.open(context);
-            vertexValuePropertyKeyList = OUTPUT_VERTEX_PROPERTY_KEY_LIST.get(context.getConfiguration()).split(",");
+            vertexValuePropertyKeyList = OUTPUT_VERTEX_PROPERTY_KEY_LIST.get(context.getConfiguration()).split(regexp);
         }
 
 
