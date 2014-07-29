@@ -126,7 +126,7 @@ class QueryExecutor(engine: => SparkEngine, queries: SparkQueryStorage, contextM
               import com.intel.intelanalytics.domain.DomainJsonProtocol._
               val invocation: SparkInvocation = SparkInvocation(engine, commandId = 0, arguments = q.arguments,
                 user = user, executionContext = implicitly[ExecutionContext],
-                sparkContext = context)
+                sparkContext = context, commandStorage = null)
 
               //unset the command-id local property so that the query does edit the commands progress
               context.setLocalProperty("command-id", null)

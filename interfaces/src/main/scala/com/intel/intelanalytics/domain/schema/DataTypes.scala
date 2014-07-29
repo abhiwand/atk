@@ -59,7 +59,7 @@ object DataTypes {
     override type ScalaType = Int
 
     override def parse(s: String) = Try {
-      s.toInt
+      s.trim().toInt
     }
 
     override def scalaType = classOf[Int]
@@ -81,7 +81,7 @@ object DataTypes {
     override type ScalaType = Long
 
     override def parse(s: String): Try[int64.ScalaType] = Try {
-      s.toLong
+      s.trim().toLong
     }
 
     override def scalaType = classOf[Long]
@@ -102,7 +102,7 @@ object DataTypes {
     override type ScalaType = Float
 
     override def parse(s: String): Try[float32.ScalaType] = Try {
-      s.toFloat
+      s.trim().toFloat
     }
 
     override def scalaType = classOf[Float]
@@ -124,7 +124,7 @@ object DataTypes {
     override type ScalaType = Double
 
     override def parse(s: String): Try[float64.ScalaType] = Try {
-      s.toDouble
+      s.trim().toDouble
     }
 
     override def scalaType = classOf[Double]
@@ -250,6 +250,22 @@ object DataTypes {
     }
   }
 
+  /**
+   * Attempt to cast Any type to Double
+   *
+   * @param value input Any type to be cast
+   * @return value cast as Double, if possible
+   */
+  def toDouble(value: Any): Double = {
+    value match {
+      case i: Int => i.toDouble
+      case l: Long => l.toDouble
+      case f: Float => f.toDouble
+      case d: Double => d
+      case _ => throw new IllegalArgumentException(s"The following value is not a numeric data type: $value")
+    }
+  }
+
   def toBigDecimal(value: Any): BigDecimal = {
     value match {
       case i: Int => BigDecimal(i)
@@ -259,4 +275,5 @@ object DataTypes {
       case _ => throw new IllegalArgumentException(s"The following value is not of numeric data type: $value")
     }
   }
+
 }

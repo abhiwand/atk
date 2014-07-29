@@ -85,7 +85,7 @@ class FrameBackendRest(object):
     def delete_frame(self, frame):
         if isinstance(frame, BigFrame):
             return self._delete_frame(frame)
-        elif isinstance(frame, str):
+        elif isinstance(frame, basestring):
             # delete by name
             return self._delete_frame(self.get_frame(frame))
         else:
@@ -415,19 +415,26 @@ class FrameBackendRest(object):
         execute_update_frame_command('rename_columns', arguments, frame)
 
     def rename_frame(self, frame, name):
-        # TODO - move uniqueness checking to server
-        r = self.rest_http.get('dataframes')
-        payload = r.json()
-        frame_names = [f['name'] for f in payload]
-        if name in frame_names:
-            raise ValueError("A frame with this name already exists. Rename failed")
-        arguments = {'frame': frame.uri, "new_name": name}
+        arguments = {'frame': self._get_frame_full_uri(frame), "new_name": name}
         execute_update_frame_command('rename_frame', arguments, frame)
 
     def take(self, frame, n, offset):
         url = 'dataframes/{0}/data?offset={2}&count={1}'.format(frame._id,n, offset)
         return executor.query(url)
 
+
+    def ecdf(self, frame, sample_col):
+        import numpy as np
+        col_types = dict(frame.schema)
+        if not col_types[sample_col] in [np.float32, np.float64, np.int32, np.int64]:
+            raise ValueError("unable to generate ecdf for non-numeric values")
+        data_type_dict = {np.float32: 'float32', np.float64: 'float64', np.int32: 'int32', np.int64: 'int64'}
+        data_type = 'string'
+        if col_types[sample_col] in data_type_dict:
+            data_type = data_type_dict[col_types[sample_col]]
+        name = self._get_new_frame_name()
+        arguments = {'frame_id': frame._id, 'name': name, 'sample_col': sample_col, 'data_type': data_type}
+        return execute_new_frame_command('ecdf', arguments)
 
     def classification_metric(self, frame, metric_type, label_column, pred_column, pos_label, beta):
         # TODO - remove error handling, leave to server (or move to plugin)
@@ -484,6 +491,19 @@ class FrameBackendRest(object):
 
         return formattedMatrix
 
+    def cumulative_dist(self, frame, sample_col, dist_type, count_value="1"):
+        import numpy as np
+        if not sample_col in frame.column_names:
+            raise ValueError("sample_col does not exist in frame")
+        col_types = dict(frame.schema)
+        if dist_type in ['cumulative_sum', 'cumulative_percent_sum'] and not col_types[sample_col] in [np.float32, np.float64, np.int32, np.int64]:
+            raise ValueError("invalid sample_col type for the specified dist_type")
+        if not dist_type in ['cumulative_sum', 'cumulative_count', 'cumulative_percent_sum', 'cumulative_percent_count']:
+            raise ValueError("invalid distribution type")
+        # TODO: check count_value
+        name = self._get_new_frame_name()
+        arguments = {'frame_id': frame._id, 'name': name, 'sample_col': sample_col, 'dist_type': dist_type, 'count_value': str(count_value)}
+        return execute_new_frame_command('cumulative_dist', arguments)
 
 class FrameInfo(object):
     """
