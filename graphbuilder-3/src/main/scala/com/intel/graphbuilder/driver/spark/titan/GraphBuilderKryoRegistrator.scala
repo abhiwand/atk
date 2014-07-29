@@ -93,8 +93,5 @@ class GraphBuilderKryoRegistrator extends KryoRegistrator {
     kryo.register(classOf[GraphSchema])
     kryo.register(classOf[InferSchemaFromData])
     kryo.register(classOf[SchemaAccumulableParam])
-
-    // avoid Spark top(n) issue with Kryo serializer:
-    kryo.register(classOf[org.apache.spark.util.BoundedPriorityQueue[(Double, Vertex)]])
   }
 }
