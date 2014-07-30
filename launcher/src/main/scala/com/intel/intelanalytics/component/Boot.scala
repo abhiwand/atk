@@ -25,7 +25,7 @@ package com.intel.intelanalytics.component
 
 import java.net.{ URL, URLClassLoader }
 
-import com.typesafe.config.{ Config, ConfigFactory }
+import com.typesafe.config.{ ConfigParseOptions, Config, ConfigFactory }
 
 import scala.reflect.io.{ Directory, File, Path }
 import scala.util.Try
@@ -48,7 +48,12 @@ object Boot extends App with ClassLoaderAware {
 
   private var archives: Map[String, Archive] = Map.empty
 
-  private[intelanalytics] val config = ConfigFactory.load()
+  /**
+   * This one is crucial to build first
+   */
+  private val interfaces = buildClassLoader("interfaces", getClass.getClassLoader)
+
+  private val config: Config = ConfigFactory.load(interfaces)
 
   def attempt[T](expr: => T, failureMessage: => String) = {
     try {
@@ -132,6 +137,25 @@ object Boot extends App with ClassLoaderAware {
   }
 
   /**
+   * For debugging only
+   */
+  private[component] def writeFile(fileName: String, content: String) {
+    import java.io._
+    val file = new java.io.File(fileName)
+    val parent = file.getParentFile
+    if (!parent.exists()) {
+      parent.mkdirs()
+    }
+    val writer = new PrintWriter(file)
+    try {
+      writer.append(content)
+    }
+    finally {
+      writer.close()
+    }
+  }
+
+  /**
    * Main entry point for archive creation
    *
    * @param archiveName the archive to create
@@ -139,21 +163,30 @@ object Boot extends App with ClassLoaderAware {
    */
   private def buildArchive(archiveName: String): Archive = {
     try {
-      //We first create a standard plugin classloader, which we will use to query the config
+      //We first create a standard plugin class loader, which we will use to query the config
       //to see if this archive needs special treatment (i.e. a parent class loader other than the
       //interfaces class loader)
-      val probe = buildClassLoader(archiveName, getClass.getClassLoader)
-      val additionalConfig = ConfigFactory.defaultReference(probe)
+      val probe = buildClassLoader(archiveName, interfaces)
 
-      val augmented = config.withFallback(additionalConfig)
+      val parseOptions = ConfigParseOptions.defaults()
+      parseOptions.setAllowMissing(true)
 
-      val definition = readArchiveDefinition(archiveName, augmented)
+      val augmentedConfigForProbe = ConfigFactory.defaultReference(probe)
 
-      //Now that we know the parent, we build the real classloader we're going to use for this archive.
+      val definition = readArchiveDefinition(archiveName, augmentedConfigForProbe)
+
+      //Now that we know the parent, we build the real class loader we're going to use for this archive.
       val parentLoader = loaders.getOrElse(definition.parent, throw new IllegalArgumentException(
         s"Archive ${definition.parent} not found when searching for parent archive for $archiveName"))
 
       val loader = buildClassLoader(archiveName, parentLoader)
+
+      ConfigFactory.invalidateCaches()
+
+      val augmentedConfig = config.withFallback(
+        ConfigFactory.parseResources(loader, "reference.conf", parseOptions).withFallback(config)).resolve()
+
+      writeFile("/tmp/iat/" + archiveName + ".effective-conf", augmentedConfig.root().render())
 
       val archiveLoader = ArchiveClassLoader(archiveName, loader)
 
@@ -163,7 +196,7 @@ object Boot extends App with ClassLoaderAware {
         s"Loaded class ${instance.getClass.getName} in archive ${definition.name}, but it is not an Archive")
 
       withLoader(loader) {
-        initializeArchive(definition, archiveLoader, augmented.getConfig(definition.configPath), archiveInstance)
+        initializeArchive(definition, archiveLoader, augmentedConfig.getConfig(definition.configPath), archiveInstance)
         archives += (archiveName -> archiveInstance)
         Archive.logger(s"Registered archive $archiveName with parent ${definition.parent}")
         archiveInstance.start()
@@ -220,6 +253,8 @@ object Boot extends App with ClassLoaderAware {
 
     //Special case for igiraph since it follows a non-standard folder layout
     val giraphClassDirectory: Path = Directory.Current.get / "igiraph" / archive.substring(1) / "target" / "classes"
+    val giraphSourceResourceDirectory: Path =
+      Directory.Current.get / "igiraph" / archive.substring(1) / "src" / "main" / "resources"
     val giraphJar: Path = Directory.Current.get / "igiraph" / archive.substring(1) / "target" / (archive + ".jar")
 
     // Deployed environment - all jars in lib folder
@@ -229,6 +264,10 @@ object Boot extends App with ClassLoaderAware {
       Directory(sourceResourceDirectory).exists.option {
         Archive.logger(s"Found source resource directory at $sourceResourceDirectory")
         sourceResourceDirectory.toURL
+      },
+      Directory(giraphSourceResourceDirectory).exists.option {
+        Archive.logger(s"Found source resource directory at $giraphSourceResourceDirectory")
+        giraphSourceResourceDirectory.toURL
       },
       Directory(classDirectory).exists.option {
         Archive.logger(s"Found class directory at $classDirectory")
@@ -264,8 +303,6 @@ object Boot extends App with ClassLoaderAware {
    * @return a class loader
    */
   private def buildClassLoader(archive: String, parent: ClassLoader): ClassLoader = {
-    //TODO: Allow directory to be passed in, or otherwise abstracted?
-    //TODO: Make sensitive to actual scala version rather than hard coding.
     val urls = getCodePathUrls(archive)
     val loader = urls match {
       case u if u.length > 0 => new URLClassLoader(u, parent)
@@ -276,11 +313,6 @@ object Boot extends App with ClassLoaderAware {
     }
     loader
   }
-
-  /**
-   * This one is crucial to build first
-   */
-  private val interfaces = buildClassLoader("interfaces", getClass.getClassLoader)
 
   def usage() = println("Usage: java -jar launcher.jar <archive> <application>")
 

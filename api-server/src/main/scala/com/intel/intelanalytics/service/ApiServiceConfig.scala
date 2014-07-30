@@ -1,5 +1,7 @@
 package com.intel.intelanalytics.service
 
+import java.util.concurrent.TimeUnit
+
 import com.intel.intelanalytics.shared.SharedConfig
 import scala.concurrent.duration._
 
@@ -22,10 +24,10 @@ object ApiServiceConfig extends SharedConfig {
   val identifier: String = config.getString("intel.analytics.api.identifier")
 
   /** Default timeout for actors */
-  val defaultTimeout: FiniteDuration = config.getInt("intel.analytics.api.defaultTimeout").seconds
+  val defaultTimeout: FiniteDuration = config.getDuration("intel.analytics.api.default-timeout", TimeUnit.SECONDS).seconds
 
   /** Default number of items to return in service index when not specified. E.g. GET /v1/commands */
-  val defaultCount: Int = config.getInt("intel.analytics.api.defaultCount")
+  val defaultCount: Int = config.getInt("intel.analytics.api.default-count")
 
   /** Input file for creating test users for local development */
   val testUsersFile: String = config.getString("intel.analytics.test.users.file")
