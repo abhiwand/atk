@@ -24,7 +24,9 @@ if [ $? == 0 ]; then
 fi
 
 # This is stupid, but sometimes numpy chokes on these files.
-rm ../core/*.pyc
+if [[ -f ../core/*.pyc ]]; then
+    rm ../core/*.pyc
+fi
 
 SCRIPT=$(readlink -f "$0")
 SCRIPTPATH=$(dirname "$SCRIPT")
