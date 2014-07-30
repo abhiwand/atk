@@ -22,6 +22,7 @@ intel.analytics {
         # The (comma separated, no spaces) Zookeeper hosts that
         # Titan needs to be able to connect to HBase
         titan.load.storage.hostname = "invalid-titan-host"
+        titan.query.storage.hostname = ${intel.analytics.engine.titan.load.storage.hostname}
 
         spark {
             # The URL for connecting to the Spark master server
@@ -83,6 +84,17 @@ intel.analytics {
 	    //default-timeout = 30s
         //page-size = 1000
 	
+    fs {
+      # the system will create an "intelanalytics" folder at this location.
+      # Filepaths will be relative to this location.
+      # All Intel Analytics Toolkit files will be stored somehwere under that base location.
+      #
+      # For example, if using HDFS, set the root to hdfs path
+      # root = "hdfs://MASTER_HOSTNAME/some/path"
+      #
+      root = "hdfs://localhost/user/iauser"
+    }
+
     spark {
 
       # When master is empty the system defaults to spark://`hostname`:7070 where hostname is calculated from the current system
@@ -167,23 +179,24 @@ intel.analytics {
           //renew-timeout = 150000
         }
       }
-    }
-    query {
-      storage {
-        # query does use the batch load settings in titan.load
-        //backend = ${intel.analytics.engine.titan.load.storage.backend}
-        //hostname =  ${intel.analytics.engine.titan.load.storage.hostname}
-        //port =  ${intel.analytics.engine.titan.load.storage.port}
-      }
-      cache {
-        # Adjust cache size parameters if you experience OutOfMemory errors during Titan queries
-        # Either increase heap allocation for IntelAnalytics Engine, or reduce db-cache-size
-        # Reducing db-cache will result in cache misses and increased reads from disk
-        //db-cache = true
-        //db-cache-clean-wait = 20
-        //db-cache-time = 180000
-		#Allocates 30% of available heap to Titan (default is 50%)
-        //db-cache-size = 0.3 
+
+      query {
+        storage {
+          # query does use the batch load settings in titan.load
+          //backend = ${intel.analytics.engine.titan.load.storage.backend}
+          //hostname =  ${intel.analytics.engine.titan.load.storage.hostname}
+          //port =  ${intel.analytics.engine.titan.load.storage.port}
+        }
+        cache {
+          # Adjust cache size parameters if you experience OutOfMemory errors during Titan queries
+          # Either increase heap allocation for IntelAnalytics Engine, or reduce db-cache-size
+          # Reducing db-cache will result in cache misses and increased reads from disk
+          //db-cache = true
+          //db-cache-clean-wait = 20
+          //db-cache-time = 180000
+          #Allocates 30% of available heap to Titan (default is 50%)
+          //db-cache-size = 0.3
+        }
       }
     }
   }
