@@ -239,5 +239,35 @@ Final Settings and Tests
 ------------------------ 
 Test functionality of hdfs.
 
+------
+Tweaks
+------
+
+The graph machine learning algorithms in our toolkit use the Giraph graph-processing framework.
+Giraph is designed to run the whole graph computation in memory, and requires large amounts of memory to process big graphs.
+We recommend at least 4GB of memory per map task to cater for graphs with supernodes.
+Giraph jobs are scheduled using Yarn.
+If a Giraph job requests twice the amount of memory configured in Yarn, then the Yarn resource manager will not schedule it causing the job to hang.
+
+To run Giraph jobs, ensure that the memory settings in CDH match those in application.conf using one of the following approaches: 
+
+1.  Modify the following Yarn configuration in CDH to match the setting under intel.analytics.giraph in application.conf.
+    Under the Yarn section in CDH, click on “Configuration” and select “View and Edit”.
+
+    a.  Search for “mapreduce.map.memory.mb” in the search box on the upper left corner.
+        Modify “mapreduce.map.memory.mb” to match mapreduce.map.memory.mb in application.conf (currently 8192 MB)
+    #.  Search for “mapreduce.map.java.opts.max” in the search box.
+        Modify this setting to match “mapreduce.map.java.opts” in the application.conf (currently 6554MB).
+        The rule of thumb is that mapreduce.map.java.opts.max should be at most 0.85* mapreduce.map.memory.mb
+    #.  Save these changes.
+    #.  Click on “Actions”, on the top-right corner and then “Deploy Client Configuration” to update the configurations across the cluster.
+    #.  Restart Yarn.
+
+#.  Limit the Giraph memory allocation in application.conf to match the configured CDH settings in Yarn.
+    The relevant settings in our application.conf file are in intel.analytics.giraph:
+
+    a.  mapreduce.map.memory.mb. This setting should match mapreduce.map.memory.mb in Yarn.
+    #.  mapreduce.map.java.opts. This setting should match mapreduce.map.java.opts.max in Yarn.
+
 
 .. _Cloudera Manager: http://www.cloudera.com/content/support/en/downloads/cloudera_manager/cm-5-1-0.html

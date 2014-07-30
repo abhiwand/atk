@@ -5,12 +5,12 @@ index
     ad_over: Overview
         ad_reqs: Requirements
         ad_inst: Installation
-            ad_yum: Procedures for systems using yum
-            ad_apt: Procedures for systems using apt-get (future)
-        ad_plug: Plug-ins
-        ad_conf: Configuration (future)
-        ad_mntc: Maintenance (future)
-        ad_trbl: Troubleshooting (future)
+            ad_inst_pre_cloudera
+            ad_inst_cloudera
+            ad_inst_IA
+            ad_psql
+            ad_psql_cs
+            ad_plug
     ds_over: Overview
         ds_strt: Getting Started
         ds_db: Databases

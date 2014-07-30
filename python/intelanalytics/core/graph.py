@@ -121,7 +121,8 @@ def delete_graph(name):
 
     """
     # TODO - Review docstring
-    return _get_backend().delete_graph(name)
+    #return _get_backend().delete_graph(name)
+    raise NotImplemented
 
 
 class RuleWithDifferentFramesError(ValueError):
@@ -135,10 +136,10 @@ class Rule(object):
     """
     Graph rule base class.
 
-        .. versionadded:: 0.8
+    .. versionadded:: 0.8
 
-        """
-        # TODO - Docstrings
+    """
+    # TODO - Docstrings
 
     def __init__(self):
         self.source_frame = self.validate()
@@ -185,7 +186,9 @@ class Rule(object):
 
         Examples
         --------
-        >>>
+        ::
+
+            Example
 
         .. versionadded:: 0.8
 
