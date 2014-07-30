@@ -76,6 +76,9 @@ object SparkEngineConfig extends SharedConfig with EventLogging {
     }
   }
 
+  /** Default number for partitioning data */
+  val sparkDefaultPartitions: Int = config.getInt("intel.analytics.engine.spark.default-partitions")
+
   val defaultTimeout: FiniteDuration = config.getInt("intel.analytics.engine.default-timeout").seconds
 
   val fsRoot: String = config.getString("intel.analytics.engine.fs.root")
@@ -83,10 +86,12 @@ object SparkEngineConfig extends SharedConfig with EventLogging {
   val pageSize: Int = config.getInt("intel.analytics.engine.page-size")
 
   /* number of rows taken for sample test during frame loading */
-  val frameLoadTestSampleSize: Int = config.getInt("intel.analytics.engine.commands.dataframes.load.schema-validation-sample-rows")
+  val frameLoadTestSampleSize: Int =
+    config.getInt("intel.analytics.engine-spark.command.dataframes.load.config.schema-validation-sample-rows")
 
   /* percentage of maximum rows fail in parsing in sampling test. 50 means up 50% is allowed */
-  val frameLoadTestFailThresholdPercentage: Int = config.getInt("intel.analytics.engine.commands.dataframes.load.schema-validation-fail-threshold-percentage")
+  val frameLoadTestFailThresholdPercentage: Int =
+    config.getInt("intel.analytics.engine-spark.command.dataframes.load.config.schema-validation-fail-threshold-percentage")
 
   /**
    * A list of archives that will be searched for command plugins
@@ -176,5 +181,5 @@ object SparkEngineConfig extends SharedConfig with EventLogging {
   }
 
   // Python execution command for workers
-  val pythonWorkerExec: String = config.getString("intel.analytics.engine.spark.pythonWorkerExec")
+  val pythonWorkerExec: String = config.getString("intel.analytics.engine.spark.python-worker-exec")
 }
