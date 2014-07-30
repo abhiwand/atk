@@ -39,7 +39,7 @@ import spray.json.DefaultJsonProtocol._
  * @param bias_on Whether bias turned on/off for ALS/CDG calculation.
  *                When bias is enabled, the last property name in the output_vertex_property_list is for bias.
  *                The default value is "false"
- * @param train_str The label for training data. The default value is "tr".
+ * @param train_str The label for training data. The default value is "TR".
  * @param num_output_results The number of recommendations to output. The default value is 10.
  * @param left_vertex_name The real name for left side vertex. The default value is "user".
  * @param right_vertex_name The real name for right side vertex. The default value is "movie".
