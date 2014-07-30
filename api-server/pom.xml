@@ -67,7 +67,9 @@
                                     <include>com.google.*:*</include>
                                     <include>com.chuusai:*</include>
                                     <include>com.chuusai:*</include>
+                                    <!--
                                     <include>org.apache.hadoop:*</include>
+                                    -->
                                     <include>com.github.tototoshi:*</include>
                                     <include>org.joda:*</include>
                                     <include>joda-time:*</include>
