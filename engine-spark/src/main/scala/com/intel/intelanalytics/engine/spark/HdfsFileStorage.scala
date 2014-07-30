@@ -98,8 +98,15 @@ class HdfsFileStorage(fsRoot: String) extends FileStorage with EventLogging {
     }
   }
 
+  /**
+   * Recursive delete
+   */
   override def delete(path: Path): Unit = withContext("file.delete") {
-    fs.delete(hPath(fsRoot, path.toString), true)
+    val fullPath = hPath(fsRoot, path.toString)
+    val success = fs.delete(fullPath, true) // recursive
+    if (!success) {
+      error("Could not delete path: " + fullPath.toUri)
+    }
   }
 
   override def create(file: Path): Unit = withContext("file.create") {
