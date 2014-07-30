@@ -238,7 +238,8 @@ class FrameBackendRest(object):
             raise ValueError("Invalid number for percentile:" + ','.join(invalid_percentiles))
 
         arguments = {'frame_id': frame._id, "column_name": column_name, "percentiles": percentiles}
-        execute_update_frame_command('calculate_percentiles', arguments, frame)
+        command = CommandRequest("dataframe/calculate_percentiles", arguments)
+        return executor.issue(command)
 
     def drop(self, frame, predicate):
         from itertools import ifilterfalse  # use the REST API filter, with a ifilterfalse iterator
@@ -419,6 +420,8 @@ class FrameBackendRest(object):
         execute_update_frame_command('rename_frame', arguments, frame)
 
     def take(self, frame, n, offset):
+        if n==0:
+            return []
         url = 'dataframes/{0}/data?offset={2}&count={1}'.format(frame._id,n, offset)
         return executor.query(url)
 
