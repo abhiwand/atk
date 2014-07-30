@@ -23,7 +23,7 @@ K-Clique Percolation
 K-clique percolation is one of many different methods for detecting community structure in graphs.
 Here we provide mathematical background on how communities are defined in the context of the k-clique percolation algorithm.
 
-A k-clique is with :math:`k` vertices in which all :math:`\\left( \\frac {k}{2} \\right)` possible edges are present.
+A k-clique is with :math:`k` vertices in which all :math:`\left( \frac {k}{2} \right)` possible edges are present.
 A k-clique is certainly a community in the sense that its nodes are all connected , but, it is too restrictive for most purposes,
 since it is natural that a few members of the community may not interact.
 The k-clique percolation method forms communities by taking unions of k-cliques that overlap in :math:`k - 1` vertices.
@@ -33,7 +33,7 @@ Example:
 In the graph below, the 3-clique communities are {1,2,3, 4} and {4, 5, 6, 7, 8}. Note that the nodes 9, 10, 11, 12 belong to no community at all,
 whereas 4 belongs to two distinct (but overlapping) communities.
 
-.. image:: ds_mlal_01.png
+.. image:: ds_mlal_a1.png
 
 Distributed Implementation of K-Clique Community Detection
 ==========================================================
@@ -59,16 +59,18 @@ Usage:
                                      communityPropertyDefaultLabel
                                      )
 
-    Arguments::
+    Arguments:
 
         cliqueSize
-            parameter determining clique-size (the number :math:`k`) used to determine communities. \
-			Must be at least 1. \
-			Large values of cliqueSize result in fewer, smaller communities that are more connected.
+
+            Parameter determining clique-size (the number :math:`k`) used to determine communities.
+            Must be at least 1.
+            Large values of cliqueSize result in fewer, smaller communities that are more connected.
 
         communityPropertyDefaultLabel
+
             name of the community property of vertex that will be updated/created in the input graph
-	
+
 The algorithm updates the input graph vertex with updated property named in “communityPropertyDefaultLabel”, mentioned in the argument list.
 
     Example::

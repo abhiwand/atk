@@ -135,10 +135,10 @@ class Rule(object):
     """
     Graph rule base class.
 
-        .. versionadded:: 0.8
+    .. versionadded:: 0.8
 
-        """
-        # TODO - Docstrings
+    """
+    # TODO - Docstrings
 
     def __init__(self):
         self.source_frame = self.validate()
@@ -185,7 +185,9 @@ class Rule(object):
 
         Examples
         --------
-        >>>
+        ::
+
+            Example
 
         .. versionadded:: 0.8
 
