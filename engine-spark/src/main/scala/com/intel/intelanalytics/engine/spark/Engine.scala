@@ -551,7 +551,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
   override def binColumn(arguments: BinColumn[Long])(implicit user: UserPrincipal): Execution =
     commands.execute(binColumnCommand, arguments, user, implicitly[ExecutionContext])
 
-  val binColumnCommand = commands.registerCommand("dataframe/bin_column", binColumnSimple _, 7)
+  val binColumnCommand = commands.registerCommand("dataframe/bin_column", binColumnSimple _, numberOfJobs = 7)
   def binColumnSimple(arguments: BinColumn[Long], user: UserPrincipal, invocation: SparkInvocation) = {
     implicit val u = user
     val frameId: Long = arguments.frame
@@ -728,7 +728,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
   def filter(arguments: FilterPredicate[JsObject, Long])(implicit user: UserPrincipal): Execution =
     commands.execute(filterCommand, arguments, user, implicitly[ExecutionContext])
 
-  val filterCommand = commands.registerCommand("dataframe/filter", filterSimple _, 2)
+  val filterCommand = commands.registerCommand("dataframe/filter", filterSimple _, numberOfJobs = 2)
   def filterSimple(arguments: FilterPredicate[JsObject, Long], user: UserPrincipal, invocation: SparkInvocation) = {
     implicit val u = user
     val pyRdd = createPythonRDD(arguments.frame, arguments.predicate, invocation.sparkContext)
@@ -976,7 +976,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
   def loadGraph(arguments: GraphLoad)(implicit user: UserPrincipal): Execution =
     commands.execute(loadGraphCommand, arguments, user, implicitly[ExecutionContext])
 
-  val loadGraphCommand = commands.registerCommand("graph/load", loadGraphSimple _, 2)
+  val loadGraphCommand = commands.registerCommand("graph/load", loadGraphSimple _, numberOfJobs = 2)
   def loadGraphSimple(arguments: GraphLoad, user: UserPrincipal, invocation: SparkInvocation) = {
     // validating frames
     arguments.frame_rules.foreach(frule => expectFrame(frule.frame))
@@ -1033,7 +1033,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
   override def dropDuplicates(arguments: DropDuplicates)(implicit user: UserPrincipal): Execution =
     commands.execute(dropDuplicateCommand, arguments, user, implicitly[ExecutionContext])
 
-  val dropDuplicateCommand = commands.registerCommand("dataframe/drop_duplicates", dropDuplicateSimple _, 2)
+  val dropDuplicateCommand = commands.registerCommand("dataframe/drop_duplicates", dropDuplicateSimple _, numberOfJobs = 2)
 
   def dropDuplicateSimple(dropDuplicateCommand: DropDuplicates, user: UserPrincipal, invocation: SparkInvocation) = {
     implicit val u = user
@@ -1056,7 +1056,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     frames.updateRowCount(realFrame, rowCount)
   }
 
-  val calculatePercentileCommand = commands.registerCommand("dataframe/calculate_percentiles", calculatePercentilesSimple _, 7)
+  val calculatePercentileCommand = commands.registerCommand("dataframe/calculate_percentiles", calculatePercentilesSimple _, numberOfJobs = 7)
 
   def calculatePercentilesSimple(percentiles: CalculatePercentiles, user: UserPrincipal, invocation: SparkInvocation): PercentileValues = {
     implicit val u = user
