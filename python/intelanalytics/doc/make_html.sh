@@ -2,73 +2,97 @@
 # to build in python 2.7 on a RedHat distribution of Linux. RedHat needs
 # version 2.6 to run properly, so we create a virtual environment with
 # python 2.7 in the PYTHONPATH when we create the documents.
+
+# Running on Ubuntu, we don't need virtpy because Ubuntu is awesome!
+UBUNTU_OS=$(cat /etc/*-release | grep -i ubuntu)
+
+# Look for help
+echo "$1 $2 $3 $4 $5 $6 $7 $8 $9" | grep -i -e "-h" > /dev/null
+if [ $? == 0 ]; then
+    echo
+    echo $0
+    echo
+    echo "-h, --help: Print this and exit"
+    if [ "$UBUNTU_OS" == "" ]; then
+        echo "-f, --force:Allow compile without virtual environment"jjj
+    fi
+    echo "html, blank:Compile to html"
+    echo "latexpdf:   Compile to pdf"
+    echo "packages:   Check for installed packages"
+    echo
+    exit 0
+fi
+
+# This is stupid, but sometimes numpy chokes on these files.
+if [[ -f ../core/*.pyc ]]; then
+    rm ../core/*.pyc
+fi
+
 SCRIPT=$(readlink -f "$0")
 SCRIPTPATH=$(dirname "$SCRIPT")
+pushd $SCRIPTPATH > /dev/null
 
-echo $SCRIPT
+if [ "$UBUNTU_OS" == "" ]; then
+    # This is not Ubuntu, so look for a virtual environment
+    if [[ -f /usr/lib/IntelAnalytics/virtpy/bin/activate ]]; then
+        ACTIVATE_FILE=/usr/lib/IntelAnalytics/virtpy/bin/activate
+    else
+        ACTIVATE_FILE=/usr/local/virtpy/bin/activate
+    fi
 
-
-OS=$(cat /etc/*-release | grep ubuntu)
-
-function no_virtpy_exit_os_check()
-{
-	if [ "$OS" == "" ]; then
-		exit 1
-	fi
-	echo "running on ubuntu we don't need virtpy because ubuntu is awesome"
-}
-
-if [[ -f /usr/lib/IntelAnalytics/virtpy/bin/activate ]]; then
-    ACTIVATE_FILE=/usr/lib/IntelAnalytics/virtpy/bin/activate
-else
-    ACTIVATE_FILE=/usr/local/virtpy/bin/activate
-fi
-
-if [[ ! -f $ACTIVATE_FILE ]]; then
-    echo "Virtual Environment is not installed please execute install_pyenv.sh to install."
-	no_virtpy_exit_os_check
-fi
-
-if [ "$OS" == "" ]; then
-	source $ACTIVATE_FILE
-fi
-
-pushd $SCRIPTPATH
-
-# if the individual running this script is a techwriter and has started the script with 
-# the key word 'packages', check that the packages have been installed.
-if [ -f techwriters ]
-then
-    HUMAN=$( pwd | grep -c --file=techwriters)
-    if [ $HUMAN -gt 0 ]
-    then
-        COMPILE=$( echo $1 | grep -ic "packages" )
-        if [ $COMPILE -gt 0 ]; then
-            clear
-            # We need to check the installed packages and insure they are complete.
-            # The packages need superuser rights to install properly.
-            sudo ./install_packages
+    if [[ -f $ACTIVATE_FILE ]]; then
+        source $ACTIVATE_FILE > /dev/null
+    else
+        echo "$1 $2 $3 $4 $5 $6 $7 $8 $9" | grep -i -e "-f" > /dev/null
+        if [ $? == 1 ]; then
+            echo "Virtual Environment is not installed."
+            echo "Please execute install_pyenv.sh to install."
+            popd > /dev/null
+            exit 1
         fi
     fi
 fi
 
-# We assume we are running from the doc directory. Ignore all toctree warnings.
-# Check for weird stuff first
-if
-    weird=$( echo $1 | grep -ic -e "text" -e "doctest" -e "latexpdf" -e "latex")
-then
-    make -B $1 2>&1 | grep -v -f toctreeWarnings
-else
-    # Delete previously automatically built files
-    if [[ -d build/html ]]; then
-        rm -R build/html
-        rm -R ../core/*.pyc
+# Look for packages if the individual is a techwriter
+echo "$1 $2 $3 $4 $5 $6 $7 $8 $9" | grep -i "packages" > /dev/null
+if [ $? == 0 ]; then
+    # Yes for "packages", check for permissions
+    if [ -f techwriters ]; then
+        echo $USERNAME | grep --file=techwriters > /dev/null
+        if [ $? == 0 ]; then
+            clear
+            # Check the installed packages and insure they are complete.
+            # The packages need superuser rights to install properly.
+            sudo $SCRIPTPATH/install_packages.sh
+        fi
     fi
+fi
 
+# Look for html
+COMPILE_HTML="Yes"
+if [ "$#" -ne  "0" ]; then
+    echo "$1 $2 $3 $4 $5 $6 $7 $8 $9" | grep -i "html" > /dev/null
+    if [ $? -ne 0 ]; then
+        # No for "html"
+        COMPILE_HTML="No"
+    fi
+fi
+
+if [ "$COMPILE_HTML" == "Yes" ]; then
+    # Ignore all toctree warnings.
     make -B html 2>&1 | grep -v -f toctreeWarnings
 fi
-# Make a zip file of that which was just built
-if [[ -d build ]]; then
-    zip -rq intel_analytics_docs.zip build
+
+# Look for latexpdf
+echo "$1 $2 $3 $4 $5 $6 $7 $8 $9" | grep -i "latexpdf" > /dev/null
+if [ $? == 0 ]; then
+    # Yes for "latexpdf"
+    make -B latexpdf 2>&1 | grep -v -f toctreeWarnings
 fi
-popd
+# Look for text
+echo "$1 $2 $3 $4 $5 $6 $7 $8 $9" | grep -i "text" > /dev/null
+if [ $? == 0 ]; then
+    # Yes for "text"
+    make -B text 2>&1 | grep -v -f toctreeWarnings
+fi
+exit 0
