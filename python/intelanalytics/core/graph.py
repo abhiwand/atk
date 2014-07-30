@@ -121,8 +121,8 @@ def delete_graph(name):
 
     """
     # TODO - Review docstring
-    return _get_backend().delete_graph(name)
-
+    #return _get_backend().delete_graph(name)
+    raise NotImplemented
 
 class RuleWithDifferentFramesError(ValueError):
     # TODO - Add docstring if this is really a user-desired function
