@@ -87,10 +87,10 @@ def get_frame(name):
 
     Examples
     --------
-    Create a frame *BF1*; create a BigFrame proxy for it; check that the new BigFrame is equivalent to the original::
+    Create a frame *my_frame*; create a BigFrame proxy for it; check that the new BigFrame is equivalent to the original::
 
-        my_frame = BigFrame(my_csv, "BF1")
-        your_frame = get_frame("BF1")
+        my_frame = BigFrame(my_csv, "my_frame")
+        your_frame = get_frame("my_frame")
         print my_frame == your_frame
 
     Result would be::
@@ -127,13 +127,13 @@ def delete_frame(frame):
     --------
     Create a new frame; delete it; print what gets returned from the function::
 
-        my_frame = BigFrame(my_csv, 'BF1')
-        deleted_frame = delete_frame('BF1')
+        my_frame = BigFrame(my_csv, 'my_frame')
+        deleted_frame = delete_frame('my_frame')
         print deleted_frame
 
     The result would be::
 
-        "BF1"
+        "my_frame"
 
     .. versionadded:: 0.8
 
@@ -172,17 +172,17 @@ class BigFrame(CommandSupport):
 
     Examples
     --------
-    Create a BigFrame object; name it "BF1"::
+    Create a BigFrame object; name it "my_frame"::
 
-        g = BigFrame(my_csv_schema, "BF1")
+        g = BigFrame(my_csv_schema, "my_frame")
 
-    A BigFrame object has been created and *g* is its proxy. It brought in the data described by *my_csv_schema*. It is named *BF1*.
+    A BigFrame object has been created and *g* is its proxy. It brought in the data described by *my_csv_schema*. It is named *my_frame*.
 
-    Create an empty frame; name it "BF2"::
+    Create an empty frame; name it "your_frame"::
 
-        h = BigFrame(name='BF2')
+        h = BigFrame(name='your_frame')
 
-    A BigFrame object has been created and *h* is its proxy. It has no data yet, but it does have the name *BF2*.
+    A BigFrame object has been created and *h* is its proxy. It has no data yet, but it does have the name *your_frame*.
 
     For other examples, see :ref:`example_frame.bigframe`.
 
@@ -552,19 +552,19 @@ class BigFrame(CommandSupport):
         --------
         Given a frame with a single column *col_1* and a frame with two columns *col_1* and *col_2*.
         Column *col_1* means the same thing in both frames.
-        BigFrame *f_1* points to the first frame and *f_2* points to the second.
-        Add the contents of the *f_2* to *f_1*::
+        BigFrame *my_frame* points to the first frame and *your_frame* points to the second.
+        Add the contents of the *your_frame* to *my_frame*::
 
-            f_1.append(f_2)
+            my_frame.append(your_frame)
 
         Now the first frame has two columns, *col_1* and *col_2*.
         Column *col_1* has the data from *col_1* in both frames.
         Column *col_2* has None (undefined) in all of the rows in the original first frame, and has the value of the second frame column *col_2* in
         the rows matching the new data in *col_1*.
 
-        Breaking it down differently, the original rows refered to by *f_1* have a new column *col_2* and this new column is filled with non-defined
-        data.
-        The frame referred to by *f_2* is then added to the bottom.
+        Breaking it down differently, the original rows refered to by *my_frame* have a new column *col_2* and this new column is
+        filled with non-defined data.
+        The frame referred to by *your_frame* is then added to the bottom.
 
         For further example, see :ref:`Data flow <example_frame.append>`.
 
@@ -665,8 +665,8 @@ class BigFrame(CommandSupport):
 
             my_frame.inspect( n=11 )
 
-             a int32       \ 
-            -------
+             a int32                \
+            --------
              1
              1
              2
@@ -703,7 +703,7 @@ class BigFrame(CommandSupport):
         The data should be separated into a maximum of five bins and the bins should be *equaldepth*::
 
 
-            binnedED = frame.bin_column('a', 5, 'equaldepth', 'aEDBinned')
+            binnedED = my_frame.bin_column('a', 5, 'equaldepth', 'aEDBinned')
             binnedED.inspect( n=11 )
 
              a int32     aEDBinned int32       \ 
@@ -738,11 +738,15 @@ class BigFrame(CommandSupport):
             The column to calculate percentile
         percentiles : int OR list of int. If float is provided, it will be rounded to int
 
+        Returns
+        -------
+        dictionary
+
         Examples
         --------
         ::
 
-            frame.calculate_percentiles('final_sale_price', [10, 50, 100])
+            my_frame.calculate_percentiles('final_sale_price', [10, 50, 100])
 
         .. versionadded:: 0.8
 
@@ -761,7 +765,7 @@ class BigFrame(CommandSupport):
         """
         Builds matrix.
 
-        Outputs a confusion matrix for a binary classifier
+        Outputs a :term:`confusion matrix` for a :term:`binary classifier`
 
         Parameters
         ----------
@@ -780,7 +784,7 @@ class BigFrame(CommandSupport):
         --------
         ::
 
-            print(frame.confusion_matrix('labels', 'predictions'))
+            print(my_frame.confusion_matrix('labels', 'predictions'))
 
         The resultant output is::
 
@@ -810,18 +814,18 @@ class BigFrame(CommandSupport):
         --------
         Build a BigFrame from a csv file with 5 million rows of data; call the frame "cust"::
 
-            BF1 = BigFrame(source="my_data.csv")
-            BF1.name("cust")
+            my_frame = BigFrame(source="my_data.csv")
+            my_frame.name("cust")
 
         At this point we have one frame of data, which is now called "cust".
         Let's copy it to a new frame::
 
-            BF2 = BF1.copy()
+            your_frame = my_frame.copy()
 
         Now we have two frames of data, each with 5 million rows. Checking the names::
 
-            print BF1.name()
-            print BF2.name()
+            print my_frame.name()
+            print your_frame.name()
 
         Gives the results::
 
@@ -1162,7 +1166,7 @@ class BigFrame(CommandSupport):
         """
         Empirical Cumulative Distribution.
 
-        Generates the empirical cumulative distribution for the input column.
+        Generates the :term:`empirical cumulative distribution` for the input column.
 
         Parameters
         ----------
@@ -1320,43 +1324,44 @@ class BigFrame(CommandSupport):
         -------
         summary : Dict
             Dictionary containing summary statistics in the following entries:
-                 mean : Arithmetic mean of the data.
-                 geometric_mean : Geometric mean of the data. None when there is a data element <= 0,
-                  1.0 when there are no data elements.
-                 variance : Variance of the data where  sum of squared distance from the mean is divided by
-                  count - 1. None when there are <= 1 many data elements.
-                 standard_deviation : Standard deviation of the data. None when there are <= 1 many data elements.
-                 valid_data_count: The count of all data elements that are finite numbers.
-                  (Ie. after excluding NaNs and infinite values.)
-                 minimum : Minimum value in the data. None when there are no data elements.
-                 maximum : Maximum value in the data. None when there are no data elements.
-                 mean_confidence_lower : Lower limit of the 95% confidence interval about the mean.
-                  Assumes a Gaussian distribution. None when there are 0 or 1 data elements.
-                 mean_confidence_upper: Upper limit of the 95% confidence interval about the mean.
-                  Assumes a Gaussian distribution. None when there are 0 or 1 data elements.
+                 | mean : Arithmetic mean of the data.
+                 | geometric_mean : Geometric mean of the data. None when there is a data element <= 0,
+                    1.0 when there are no data elements.
+                 | variance : Variance of the data where  sum of squared distance from the mean is divided by
+                    count - 1. None when there are <= 1 many data elements.
+                 | standard_deviation : Standard deviation of the data. None when there are <= 1 many data elements.
+                 | valid_data_count: The count of all data elements that are finite numbers.
+                    (In other words, after excluding NaNs and infinite values.)
+                 | minimum : Minimum value in the data. None when there are no data elements.
+                 | maximum : Maximum value in the data. None when there are no data elements.
+                 | mean_confidence_lower : Lower limit of the 95% confidence interval about the mean.
+                    Assumes a Gaussian distribution. None when there are 0 or 1 data elements.
+                 | mean_confidence_upper: Upper limit of the 95% confidence interval about the mean.
+                    Assumes a Gaussian distribution. None when there are 0 or 1 data elements.
 
-        Return Types
-        ------------
-            valid_data_count returns a Long.
-            All other values are returned as Doubles or None.
+        Return Types:
+            | valid_data_count returns a Long.
+            | All other values are returned as Doubles or None.
 
-        Variance
+        Variance:
+            Variance is computed by the following formula:
+
+        .. math::
+
+            \\left( \\frac{1}{n - 1} \\right) * sum_{i}  \\left(x_{i} - M \\right)^_{2}
+
+        where :math:`n` is the number of valid elements of positive weight, and :math:`M` is the  mean
+
+        Standard Deviation:
+            The square root of the variance.
+
+        Examples
         --------
+        ::
 
-        Variance is computed by the following formula:
+            stats = frame.column_summary_statistics('data column', 'weight column')
 
-        (1 / (n - 1)) * sum_i  (x_i - M)**2
-
-            where n is the number of valid elements of positive weight, and M is the  mean
-
-        Standard Deviation
-        ------------------
-
-        The square root of the variance.
-
-        Example
-        -------
-        >>> stats = frame.column_summary_statistics('data column', 'weight column')
+        .. versionadded:: 0.8
 
         """
         pass
@@ -1565,13 +1570,13 @@ class BigFrame(CommandSupport):
 
         Examples
         --------
-        For this example, we will use a BigFrame *frame1* accessing a frame with columns *a*, *b*, *c*, and a BigFrame *frame2* accessing
+        For this example, we will use a BigFrame *my_frame* accessing a frame with columns *a*, *b*, *c*, and a BigFrame *your_frame* accessing
         a frame with columns *a*, *d*, *e*.
         Join the two frames keeping only those rows having the same value in column *a*::
 
-            frame1 = BigFrame(schema1)
-            frame2 = BigFrame(schema2)
-            joined_frame = frame1.join(frame2, 'a')
+            my_frame = BigFrame(schema1)
+            your_frame = BigFrame(schema2)
+            joined_frame = my_frame.join(your_frame, 'a')
 
         Now, joined_frame is a BigFrame accessing a frame with the columns *a_L*, *a_R*, *b*, *c*, *d*, and *e*.
         The data in the new frame will be from the rows where column 'a' was the same in both frames.
@@ -1579,7 +1584,7 @@ class BigFrame(CommandSupport):
         Now, using a single BigFrame *my_frame* accessing a frame with the columns *b* and *book*.
         Build a new frame, but remove any rows where the values in *b* and *book* do not match::
 
-            joined_frame = frame2.join(frame2, left_on='b', right_on='book', how='inner')
+            joined_frame = your_frame.join(your_frame, left_on='b', right_on='book', how='inner')
 
         We end up with a new BigFrame *joined_frame* accessing a new frame with all the original columns, but only those rows where the data in the
         original frame in column *b* matched the data in column *book*.
@@ -1626,8 +1631,8 @@ class BigFrame(CommandSupport):
         --------
         ::
         
-            prec = frame.precision('labels', 'predictions')
-            prec2 = frame.precision('labels', 'predictions', 'yes')
+            prec = my_frame.precision('labels', 'predictions')
+            prec2 = my_frame.precision('labels', 'predictions', 'yes')
 
         .. versionadded:: 0.8
 
@@ -1786,7 +1791,7 @@ class BigFrame(CommandSupport):
         Start with a frame with columns *Wrong* and *Wong*.
         Rename the columns to *Right* and *Wite*::
 
-            frame.rename_columns(["Wrong", "Wong"], ["Right", "Wite"])
+            my_frame.rename_columns(["Wrong", "Wong"], ["Right", "Wite"])
 
         Now, what was *Wrong* is now *Right* and what was *Wong* is now *Wite*.
 

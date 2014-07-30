@@ -41,16 +41,17 @@ def execute_update_graph_command(command_name, arguments, graph):
         command_name = 'graph/' + command_name
     command = CommandRequest(command_name, arguments=arguments)
     command_info = executor.issue(command)
-
     return command_info.result
 
 execute_new_graph_command = execute_update_graph_command
 
 
 def initialize_graph(graph, graph_info):
+    """Initializes a graph according to given graph_info"""
     graph._id = graph_info.id_number
+    graph._name = graph_info.name
     graph._uri= http.create_full_uri("graphs/"+ str(graph._id))
-    #return graph
+    return graph
 
 class GraphBackendRest(object):
 
@@ -76,9 +77,9 @@ class GraphBackendRest(object):
         graph_info = GraphInfo(r.json())
         return BigGraph(graph_info)
 
-    # def delete_graph(name):
+    def delete_graph(name):
     #     """Deletes the graph from backing store"""
-    #     raise NotImplemented
+         raise NotImplemented
 
     def create(self, graph,rules,name):
         logger.info("REST Backend: create graph: " + graph.name)
@@ -86,31 +87,31 @@ class GraphBackendRest(object):
             initialize_graph(graph,rules)
             return  # Early exit here
 
+        new_graph_name=self._create_new_graph(graph,rules,name or self._get_new_graph_name(rules))
+        return new_graph_name
+
+
+    def _create_new_graph(self,graph,rules,name):
         if rules and (not isinstance(rules, list) or not all([isinstance(rule, Rule) for rule in rules])):
             raise TypeError("rules must be a list of Rule objects")
         else:
-            r = http.post('graphs', { 'name': graph.name })
-            logger.info("REST Backend: create response: " + r.text)
-            payload = r.json()
-            graph._id = payload['id']
-            graph._uri = "%s" % (self._get_uri(payload))
-            graph._name = name or self._get_new_graph_name()
+            payload = {'name': name}
+            r=http.post('graphs', payload)
+            logger.info("REST Backend: create graph response: " + r.text)
+            graph_info = GraphInfo(r.json())
+            initialized_graph=initialize_graph(graph,graph_info)
             frame_rules=JsonRules(rules)
-            #payload = JsonPayload(graph, rules)
+            self.load(initialized_graph,frame_rules, append= False)
+            return graph_info.name
 
-            if logger.level == logging.DEBUG:
-                import json
-                payload_json = json.dumps(frame_rules, indent=2, sort_keys=True)
-                logger.debug("REST Backend: create graph payload: " + payload_json)
-            self.load(graph,frame_rules, append= False)
-        #execute_update_graph_command(graph, name = "graph/load", arguments=payload)
     
-    def _get_new_graph_name(source=None):
+    def _get_new_graph_name(self,source=None):
         try:
             annotation ="_" + source.annotation
         except:
             annotation= ''
         return "graph_" + uuid.uuid4().hex + annotation
+
     def append(self, graph, rules):
         logger.info("REST Backend: append_frame graph: " + graph.name)
         frame_rules = JsonRules(rules)
@@ -257,7 +258,7 @@ class GraphInfo(object):
         return json.dumps(self._payload, indent =2, sort_keys=True)
 
     def __str__(self):
-        return '%s "%s "%s""' % (self.id_number, self.name,self.links)
+        return '%s "%s"' % (self.id_number, self.name)
 
     @property
     def id_number(self):

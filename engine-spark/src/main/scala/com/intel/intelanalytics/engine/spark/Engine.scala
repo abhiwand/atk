@@ -869,25 +869,25 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     val location = fsRoot + frames.getFrameDataFile(frameId)
 
     var newFrame = realFrame
+    var newColumns = schema.columns
     for {
       i <- 0 until column_names.size
     } {
       val column_name = column_names(i)
       val column_type = column_types(i)
-      val columnObject = new BigColumn(column_name)
 
       if (schema.columns.indexWhere(columnTuple => columnTuple._1 == column_name) >= 0)
         throw new IllegalArgumentException(s"Duplicate column name: $column_name")
 
       // Update the schema
-      newFrame = frames.addColumn(newFrame, columnObject, DataTypes.toDataType(column_type))
+      newColumns = newColumns :+ (column_name, DataTypes.toDataType(column_type))
     }
 
     // Update the data
     val pyRdd = createPythonRDD(frameId, expression)
-    val converter = DataTypes.parseMany(newFrame.schema.columns.map(_._2).toArray)(_)
+    val converter = DataTypes.parseMany(newColumns.map(_._2).toArray)(_)
     persistPythonRDD(pyRdd, converter, location)
-    newFrame
+    frames.updateSchema(newFrame, newColumns)
   }
 
   /**

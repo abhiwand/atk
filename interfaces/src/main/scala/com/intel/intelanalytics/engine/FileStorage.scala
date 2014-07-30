@@ -31,7 +31,7 @@ trait FileStorage {
 
   def create(name: Path)
 
-  def delete(path: Path)
+  def delete(path: Path): Unit
 
   def getMetaData(path: Path): Option[Entry]
 

@@ -24,7 +24,9 @@ if [ $? == 0 ]; then
 fi
 
 # This is stupid, but sometimes numpy chokes on these files.
-rm ../core/*.pyc
+if [[ -f ../core/*.pyc ]]; then
+    rm ../core/*.pyc
+fi
 
 SCRIPT=$(readlink -f "$0")
 SCRIPTPATH=$(dirname "$SCRIPT")
@@ -86,5 +88,11 @@ echo "$1 $2 $3 $4 $5 $6 $7 $8 $9" | grep -i "latexpdf" > /dev/null
 if [ $? == 0 ]; then
     # Yes for "latexpdf"
     make -B latexpdf 2>&1 | grep -v -f toctreeWarnings
+fi
+# Look for text
+echo "$1 $2 $3 $4 $5 $6 $7 $8 $9" | grep -i "text" > /dev/null
+if [ $? == 0 ]; then
+    # Yes for "text"
+    make -B text 2>&1 | grep -v -f toctreeWarnings
 fi
 exit 0
