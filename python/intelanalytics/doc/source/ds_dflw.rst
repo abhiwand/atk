@@ -2,8 +2,6 @@
 Process Flow Examples
 =====================
 
-Now, we will cover the path a typical user might follow with the Analytics Toolkit.
-
 When using the toolkit, you will import your data, perform cleaning operations on it, possibly combine it with other data sets,
 and finally, analyze it.
 
@@ -12,7 +10,7 @@ This is stored in the intelanalytics folder and it's sub-folders.
 
 .. _pythonpath:
 
-It is recommended that you add the intelanalytics folder to the PYTHONPATH environmental variable prior to starting Python.
+It is recommended that you add the location of the *intelanalytics* directory to the PYTHONPATH environmental variable prior to starting Python.
 This can be done from a shell script, similar to::
 
     PYTHONPATH=/usr/lib/
@@ -63,22 +61,18 @@ A CSV file looks similar to this::
     ,1,False,"again?",
 
 Lines of data, with individual pieces of data separated by a delimiter, in this case the comma character.
-
-You need to bring your data into the database file in a way that the toolkit can understand and access it.
+You need to import your data into the database file in a way that the toolkit can understand and access it.
 The first thing to do is to tell the toolkit how your data is formatted.
-
 A database file can be viewed as a table with rows and columns.
 Each column has a unique name and holds a specific data type.
 Each row holds a set of data.
 
 To import CSV data you need a :term:`schema` defining the structure of your data.
-The schema is constructed as a list of tuples, each defining a column in the database.
-Each tuple is composed of a string and a data type.
-The string is the name of the column.
-See :ref:`Valid Data Types <valid_data_types>`.
-The order of the columns defined in the schema must match the order of the data.
+Schemas are constructed as a list of tuples, each defining a column in the database, each tuple being composed of a string and a data type.
+The string is the name of the column (see :ref:`Valid Data Types <valid_data_types>`).
+The order of the columns in the schema must match the order of columns in the data.
 
-Let's start with some data *Data.csv* that looks like this::
+Let's start with a file *Data.csv* whose contents look like this::
 
     1,"Easy on My Mind"
     2,"No Rest For The Wicked"
@@ -86,20 +80,20 @@ Let's start with some data *Data.csv* that looks like this::
     4,
     5,""
 
-Create the schema *schema_ab* with two columns identified: *a* as an int32, and *b* as a string::
+Create the schema *schema_ab* with two columns: *a* (int32), and *b* (string)::
 
     schema_ab = [('a', int32), ('b', string)]
 
-When defining schemas, if the parser should ignore the field, the type is assigned *ignore* and the name assigned an empty string ``''``::
+When defining schemas, if the parser should ignore the field, the type is assigned *ignore*, and the name should be an empty string ``''``::
 
     schema_2 = [('column_a', str), ('', ignore), ('more_data', str)]
 
-Optionally, the delimiter could be declared using the key word ``delimiter``.
-This would be a benefit if the delimiter is something other than a comma.
+The delimiter can be declared using the key word ``delimiter``.
+This would be a benefit if the delimiter is something other than a comma, for example, ``\t`` for tab-delimited records.
+If there are lines at the beginning of the file that should be skipped, the number of lines to skip can be passed in with
+the ``skip_header_lines`` parameter.
 
-Another option is to use the key word ``skip_header_lines`` and skip the first *n* lines of the file, so it will ignore a header.
-
-Now we create some "CsvFile" objects used to define the data layouts::
+Now we use the schema and the file name to create objects used to define the data layouts::
 
     my_csv = CsvFile('Data.csv', schema_ab)
     csv1 = CsvFile("data.txt", schema_ab)
@@ -203,40 +197,45 @@ It can handle huge amounts of data because it is designed to handle data spread 
 Create A BigFrame
 =================
 
-A new frame is created: 1. as empty, 2. as defined by a CSV schema, or 3. by copying (all or a part of) another frame.
+A new frame is created:
+1. as empty, with no columns defined,
+#. as defined by a schema, or
+#. by copying (all or a part of) another frame.
 
-Create an empty frame and a BigFrame *f* to access it::
+Examples:
+---------
+Create an empty frame and a BigFrame object, *f*, to access it::
 
     f = BigFrame()
 
-Create a frame defined by my CsvFile object *my_csv*; fill it with data; name the frame "bf"; create a BigFrame *my_frame* to access it::
+Create a frame defined by the schema *my_csv*, import the data, name the frame "bf", and create a BigFrame object, *my_frame*, to access it::
 
     my_frame = BigFrame(my_csv, 'bf')
 
-Create a new frame, identical to the frame referenced by *bf*, except for the name; create a BigFrame *f2* to access it::
+Create a new frame, identical to the frame named *bf* (except for the name, because the name must always be unique),
+and create a BigFrame object *f2* to access it::
 
     f2 = BigFrame(my_frame)
 
-Create a new frame with only columns *a* and *c* from the original; save the BigFrame as *f3*::
+Create a new frame with only columns *a* and *c* from the original frame *bf*, and save the BigFrame object as *f3*::
 
     f3 = BigFrame(my_frame[['a', 'c']])
 
-The BigFrame is not the same thing as the frame.
-The frame is the data, viewed as similar to a table.
-The BigFrame is not the data, but a proxy (descriptive pointer) for the data.
-Commands such as ``f4 = my_frame`` will only give you a copy of the BigFrame proxy, pointing to the same data.
+BigFrames are not the same thing as frames.
+Frames contain data, viewed similarly to a table, while BigFrames are descriptive pointers to the data.
+Commands such as ``f4 = my_frame`` will only give you a copy of the BigFrame proxy pointing to the same data.
 
 .. _example_frame.append:
 
 Append:
 -------
-The ``append`` function adds more rows, and columns, of data to a frame, typically from a different data source.
+The ``append`` function adds more rows and columns to a frame.
 If columns are the same in both name and data type, the appended data will go into the existing column.
-If the column of data in the new source is not in the original structure, it will be added to the structure and all existing rows will have *None*
-assigned to the new column and the new data will be added to the bottom with *None* in all of the previously existing, non-identical columns.
+Columns and rows are added to the database structure, and data is imported as appropriate.
 
 As an example, let's start with a frame containing two columns *a* and *b*.
-The frame can be accessed by BigFrame *BF1*::
+The frame can be accessed by BigFrame *BF1*.
+We can look at the data and structure of the database by using the ``inspect`` function::
 
     BF1.inspect()
 

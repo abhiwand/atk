@@ -1,44 +1,92 @@
-spray.can.server {
-  request-timeout = 29s
-}
+# This (application.conf.tpl) is a configuration template for the Intel Analytics Toolkit.
+# Copy this to application.conf and edit to suit your system.
+# Comments begin with a '#' character.
+# Default values are 'commented' out with //.
+# To configure for your system, look for configuration entries below with the word
+# REQUIRED in all capital letters - these
+# MUST be configured for the system to work.
+
+# BEGIN REQUIRED SETTINGS
 
 intel.analytics {
+
+    # The host name for the Postgresql database in which the metadata will be stored
+    metastore.connection-postgresql.host = "invalid-postgresql-host"
+
+    engine {
+
+        # The hdfs URL where the intelanalytics folder will be created
+        # and which will be used as the starting point for any relative URLs
+        fs.root = "hdfs://invalid-fsroot-host/user/iauser"
+
+        # The (comma separated, no spaces) Zookeeper hosts that
+        # Titan needs to be able to connect to HBase
+        titan.load.storage.hostname = "invalid-titan-host"
+
+        spark {
+            # The URL for connecting to the Spark master server
+            master = "spark://invalid-spark-master:7077"
+
+            conf.properties {
+                # Memory should be same or lower than what is listed as available in Cloudera Manager.
+                # Values should generally be in gigabytes, e.g. "8g"
+                spark.executor.memory = "invalid executor memory"
+            }
+        }
+    }
+
+}
+
+# END REQUIRED SETTINGS
+
+# The settings below are all optional. Some may need to be configured depending on the
+# specifics of your cluster and workload.
+
+intel.analytics {
+
+  # Configuration for the Intel Analytics REST API server
   api {
+      #this is reported by the API server in the /info results - it can be used to identify
+      #a particular server or cluster
       //identifier = "ia"
-	  #bind address
+
+	  #bind address - change to 0.0.0.0 to listen on all interfaces
       //host = "127.0.0.1"
+
 	  #bind port
       //port = 9099
-      //defaultCount = 20
-      //defaultTimeout = 30
-    }
-	
-	metastore {
-		connection {
-		  // H2 is a in-memory Java database useful for testing
-		  url = "jdbc:h2:mem:iatest;DB_CLOSE_DELAY=-1"
-		  driver = "org.h2.Driver"
-		  username = "" // leave blank, no user or password is needed for H2
-		  password = "" // leave blank, no user or password is needed for H2
 
-		  // PostgreSQL is an open source database that comes with Cloudera
-		  //url = "jdbc:postgresql://localhost:5432/metastore"
-		  //driver = "org.postgresql.Driver"
+      #The default page size for result pagination
+      //default-count = 20
+
+      #Timeout for waiting for results from the engine
+      //default-timeout = 30s
+
+      #HTTP request timeout for the api server
+      //request-timeout = 29s
+    }
+
+	#Connection information for the database where IAT will store its system metadata
+	metastore {
+	    connection-postgresql {
+          //port = 5432
+          //database = "metastore"
 		  //username = "metastore"
 		  //password = "Tribeca123"
-		}
-	}
-    
-	
-	engine {
-	defaultTimeout = 30
+	    }
 
-    //max-rows = 20
+		//connection = ${intel.analytics.metastore.connection-postgresql}
+	}
+
+	#Configuration for the IAT processing engine
+	engine {
+	    //default-timeout = 30s
+        //page-size = 1000
 	
     fs {
       # the system will create an "intelanalytics" folder at this location.
       # Filepaths will be relative to this location.
-      # All Intel Analytics Toolkit files will be stored somewhere under that base location.
+      # All Intel Analytics Toolkit files will be stored somehwere under that base location.
       #
       # For example, if using HDFS, set the root to hdfs path
       # root = "hdfs://MASTER_HOSTNAME/some/path"
@@ -49,40 +97,35 @@ intel.analytics {
     spark {
 
       # When master is empty the system defaults to spark://`hostname`:7070 where hostname is calculated from the current system
-      //master = ""
+      # For local mode (useful only for development testing) set master = "local[4]"
+      # in cluster mode, set master and home like the example
+      # master = "spark://MASTER_HOSTNAME:7077"
+      # home = "/opt/cloudera/parcels/CDH/lib/spark"
+
       # When home is empty the system will check expected locations on the local system and use the first one it finds
       # ("/usr/lib/spark","/opt/cloudera/parcels/CDH/lib/spark/", etc)
       //home = ""
 
-      # in cluster mode, set master and home like the example
-      # master = "spark://MASTER_HOSTNAME:7077"
-      # home = "/opt/cloudera/parcels/CDH/lib/spark"
-      # home = "/usr/lib/spark"
-
-      # local mode
-      // master = "local[4]"
 
       # this is the default number of partitions that will be used for RDDs
-      defaultPartitions = 90
+      default-partitions = 90
 
 
       # path to python worker execution, usually to toggle 2.6 and 2.7
-      //pythonWorkerExec = "python2.7"
-      //pythonWorkerExec = "python"
+      //python-worker-exec = "python" #Other valid values: "python2.7"
 
       conf {
         properties {
-          # These key/value pairs will be parsed dynamica2ostlly and provided to SparkConf()
+          # These key/value pairs will be parsed dynamically and provided to SparkConf()
           # See Spark docs for possible values http://spark.apache.org/docs/0.9.0/configuration.html
           # All values should be convertible to Strings
 
-          #spark.akka.frameSize=10000
-          #spark.akka.retry.wait=30000
-          #spark.akka.timeout=200
-          #spark.akka.timeout=30000
+          #Examples of other useful properties to edit for performance tuning:
 
-          # Memory should be same or lower than what is listed as available in Cloudera Manager
-          //spark.executor.memory = "8g"
+          //spark.akka.frameSize=10000
+          //spark.akka.retry.wait=30000
+          //spark.akka.timeout=200
+          //spark.akka.timeout=30000
 
           //spark.shuffle.consolidateFiles=true
 
@@ -96,17 +139,6 @@ intel.analytics {
       }
     }
 
-    #This section provides overrides to the default Hadoop configuration
-    hadoop {
-      #The path from which to load base configurations (e.g. core-site.xml would be in this folder)
-      //configuration.path = "ignore/etc/hadoop/conf"
-      mapreduce {
-        //job.user.classpath.first = true
-        //framework.name = "yarn"
-      }
-      //yarn.resourcemanager.address  = "master:8032"
-    }
-
     giraph {
       #Overrides of normal Hadoop settings that are used when running Giraph jobs
       //giraph.maxWorkers = 1
@@ -115,35 +147,17 @@ intel.analytics {
       //mapreduce.map.memory.mb = 8192
       //mapreduce.map.java.opts = "-Xmx6554m"
       //giraph.zkIsExternal = false
-      //mapred.job.tracker = "not used" #not used - this can be set to anything but 'local' to make Giraph work
-      //archive.name = "igiraph-titan" #name of the plugin jar (without suffix) to launch
     }
 
-    //  query {
-    //    ALSQuery {
-    //      key-name = "id"
-    //      vertex-type-name = "vertex_type"
-    //      bias-on = true
-    //      edge-type-name = "edge_type"
-    //      edge-type = "edge"
-    //      feature-dimensions = 1
-    //      left-type = "L"
-    //      right-type = "R"
-    //      left-name = "user"
-    //      right-name = "item"
-    //      result-property-list = "als_p0;als_p1;als_p3;als_bias"
-    //      train = "TR"
-    //    }
-    //  }
 
     titan {
       load {
         # documentation for these settings is available on Titan website
         storage {
           //backend = "hbase"
-          # with clusters the hostname should be a comma separated list of host names with zookeeper role assigned
-          //hostname = "localhost"
           //port = "2181"
+
+          #Performance tuning parameters:
           //batch-loading = "true"
           //buffer-size = 2048
           //attempt-wait = 300
@@ -164,233 +178,25 @@ intel.analytics {
           //renew-timeout = 150000
         }
       }
-
-      query {
-        storage {
-          # query does use the batch load settings in titan.load
-          # TODO: should these variables be under intel.analytics.engine.titan or is this ok?
-          //backend = ${intel.analytics.engine.titan.load.storage.backend}
-          hostname =  ${intel.analytics.engine.titan.load.storage.hostname}
-          //port =  ${intel.analytics.engine.titan.load.storage.port}
-        }
-        cache {
-          # Adjust cache size parameters if you experience OutOfMemory errors during Titan queries
-          # Either increase heap allocation for IntelAnalytics Engine, or reduce db-cache-size
-          # Reducing db-cache will result in cache misses and increased reads from disk
-          //db-cache = true
-          //db-cache-clean-wait = 20
-          //db-cache-time = 180000
-          #Allocates 30% of available heap to Titan (default is 50%)
-          //db-cache-size = 0.3
-        }
+    }
+    query {
+      storage {
+        # query does use the batch load settings in titan.load
+        //backend = ${intel.analytics.engine.titan.load.storage.backend}
+        //hostname =  ${intel.analytics.engine.titan.load.storage.hostname}
+        //port =  ${intel.analytics.engine.titan.load.storage.port}
+      }
+      cache {
+        # Adjust cache size parameters if you experience OutOfMemory errors during Titan queries
+        # Either increase heap allocation for IntelAnalytics Engine, or reduce db-cache-size
+        # Reducing db-cache will result in cache misses and increased reads from disk
+        //db-cache = true
+        //db-cache-clean-wait = 20
+        //db-cache-time = 180000
+		#Allocates 30% of available heap to Titan (default is 50%)
+        //db-cache-size = 0.3 
       }
     }
   }
 }
 
-intel.analytics.igiraph-titan {
-  command {
-    available = ["graphs.ml.loopy_belief_propagation", "graphs.ml.alternating_least_squares", "graphs.ml.conjugate_gradient_descent", "graphs.ml.label_propagation", "graphs.ml.latent_dirichlet_allocation", "graphs.ml.page_rank", "graphs.ml.average_path_length"]
-    graphs {
-      ml {
-        loopy_belief_propagation {
-          class = "com.intel.intelanalytics.algorithm.graph.LoopyBeliefPropagation"
-          config {
-            fs = ${intel.analytics.engine.fs}
-            default-timeout = ${intel.analytics.engine.default-timeout}
-            giraph = ${intel.analytics.engine.giraph}
-            titan = ${intel.analytics.engine.titan}
-            output {
-              dir = "lbp"
-              overwrite = "true"
-            }
-            giraph {
-              lbp.maxSuperSteps = 10
-              lbp.convergenceThreshold = 0
-              lbp.anchorThreshold = 0.9
-              lbp.bidirectionalCheck = false
-              lbp.power = 0.5
-              lbp.smoothing = 2.0
-              lbp.ignoreVertexType = false
-            }
-          }
-        }
-
-        page_rank {
-          class = "com.intel.intelanalytics.algorithm.graph.PageRank"
-          config {
-            fs = ${intel.analytics.engine.fs}
-            default-timeout = ${intel.analytics.engine.default-timeout}
-            giraph = ${intel.analytics.engine.giraph}
-            titan = ${intel.analytics.engine.titan}
-            output {
-              dir = "pr"
-              overwrite = "true"
-            }
-            giraph {
-              pr.maxSuperSteps = 20
-              pr.convergenceThreshold = 0.001
-              pr.resetProbability = 0.15
-              pr.convergenceProgressOutputInterval = 1
-            }
-          }
-        }
-
-        average_path_length {
-          class = "com.intel.intelanalytics.algorithm.graph.AveragePathLength"
-          config {
-            fs = ${intel.analytics.engine.fs}
-            default-timeout = ${intel.analytics.engine.default-timeout}
-            giraph = ${intel.analytics.engine.giraph}
-            titan = ${intel.analytics.engine.titan}
-            output {
-              dir = "apl"
-              overwrite = "true"
-            }
-            giraph {
-              pr.convergenceProgressOutputInterval = 1
-            }
-          }
-        }
-
-        alternating_least_squares {
-          class = "com.intel.intelanalytics.algorithm.graph.AlternatingLeastSquares"
-          config {
-            fs = ${intel.analytics.engine.fs}
-            default-timeout = ${intel.analytics.engine.default-timeout}
-            giraph = ${intel.analytics.engine.giraph}
-            titan = ${intel.analytics.engine.titan}
-            output {
-              dir = "als"
-              overwrite = "true"
-            }
-            giraph {
-              als.maxSuperSteps = 20
-              als.convergenceThreshold = 0
-              als.lambda = 0.065f
-              als.featureDimension = 3
-              als.learningCurveOutputInterval = 1
-              als.bidirectionalCheck = false
-              als.biasOn = false
-              als.maxVal = "Infinity"
-              als.minVal = "-Infinity"
-            }
-          }
-        }
-
-        conjugate_gradient_descent {
-          class = "com.intel.intelanalytics.algorithm.graph.ConjugateGradientDescent"
-          config {
-            fs = ${intel.analytics.engine.fs}
-            default-timeout = ${intel.analytics.engine.default-timeout}
-            giraph = ${intel.analytics.engine.giraph}
-            titan = ${intel.analytics.engine.titan}
-            output {
-              dir = "cgd"
-              overwrite = "true"
-            }
-            giraph {
-              cgd.maxSuperSteps = 20
-              cgd.convergenceThreshold = 0
-              cgd.lambda = 0.065f
-              cgd.featureDimension = 3
-              cgd.learningCurveOutputInterval = 1
-              cgd.bidirectionalCheck = false
-              cgd.biasOn = false
-              cgd.maxVal = "Infinity"
-              cgd.minVal = "-Infinity"
-              cgd.numCGDIters = 5
-            }
-          }
-        }
-
-        latent_dirichlet_allocation {
-          class = "com.intel.intelanalytics.algorithm.graph.LatentDirichletAllocation"
-          config {
-            fs = ${intel.analytics.engine.fs}
-            default-timeout = ${intel.analytics.engine.default-timeout}
-            giraph = ${intel.analytics.engine.giraph}
-            titan = ${intel.analytics.engine.titan}
-            output {
-              dir = "lda"
-              overwrite = "true"
-            }
-            giraph {
-              lda.maxSuperSteps = 20
-              lda.alpha = 0.1
-              lda.beta = 0.1
-              lda.convergenceThreshold = 0
-              lda.evaluateCost = false
-              lda.bidirectionalCheck = false
-              lda.maxVal = "Infinity"
-              lda.minVal = "-Infinity"
-              lda.numTopics = 10
-            }
-          }
-        }
-
-
-        label_propagation {
-          class = "com.intel.intelanalytics.algorithm.graph.LabelPropagation"
-          config {
-            fs = ${intel.analytics.engine.fs}
-            default-timeout = ${intel.analytics.engine.default-timeout}
-            giraph = ${intel.analytics.engine.giraph}
-            titan = ${intel.analytics.engine.titan}
-            output {
-              dir = "lp"
-              overwrite = "true"
-            }
-          }
-        }
-      }
-    }
-  }
-}
-
-intel.analytics.engine-spark {
-  command {
-    available = ["graphs.query.gremlin", "graphs.query.histogram_roc"]
-    graphs {
-      query {
-        gremlin {
-          class = "com.intel.intelanalytics.engine.spark.graph.query.GremlinQuery"
-          config {
-            //default-timeout = ${intel.analytics.engine.default-timeout}
-            titan = ${intel.analytics.engine.titan}
-			//graphson-mode = "normal"
-          }
-        }
-        histogram_roc {
-          class = "com.intel.intelanalytics.engine.spark.graph.query.roc.HistogramRocQuery"
-          config {
-            //default-timeout = ${intel.analytics.engine.default-timeout}
-            titan = ${intel.analytics.engine.titan}
-            //histogram-buckets = 30
-            //enable-roc = "false"
-            //roc-threshold = [0, 0.05, 1]
-          }
-        }
-        recommend {
-          class = "com.intel.intelanalytics.engine.spark.graph.query.recommend.RecommendQuery"
-          config {
-            //default-timeout = ${intel.analytics.engine.default-timeout}
-            titan = ${intel.analytics.engine.titan}
-            //vertex_type = "l"
-            //output_vertex_property_list = "als_result"
-            //vertex_type_property_key = "vertex_type"
-            //edge_type_property_key = "splits"
-            //vector_value = "true"
-            //bias_on = "false"
-            //train_str = "tr"
-            //num_output_results = 10
-            //left_vertex_name = "user"
-            //right_vertex_name = "movie"
-            //left_vertex_id_property_key = "user_id"
-            //right_vertex_id_property_key = "movie_id"
-          }
-        }
-      }
-    }
-  }
-}

@@ -1,3 +1,5 @@
+package com.intel.intelanalytics.engine
+
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
@@ -20,30 +22,17 @@
 // estoppel or otherwise. Any license under such intellectual property rights
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
-
-package com.intel.intelanalytics.engine
-
-import java.nio.file.Path
-import java.io.{ OutputStream, InputStream }
-
-trait FileStorage {
-  def createDirectory(name: Path): Directory
-
-  def create(name: Path)
-
-  def delete(path: Path): Unit
-
-  def getMetaData(path: Path): Option[Entry]
-
-  def read(source: File): InputStream
-
-  def list(source: Directory): Seq[Entry]
-
-  def write(sink: File, append: Boolean = false): OutputStream
+package object spark {
 
   /**
-   * File size
-   * @param path relative path
+   * Concatenates two paths, adding an extra slash in between if necessary.
    */
-  def size(path: String): Long
+  private[spark] def concatPaths(first: String, second: String) = {
+    if (first.endsWith("/") || second.startsWith("/")) {
+      first + second
+    }
+    else {
+      first + "/" + second
+    }
+  }
 }
