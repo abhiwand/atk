@@ -705,8 +705,8 @@ The cost function for a node is given by:
 
 .. math::
 
-    cost = \sum_k w_{i,k} * \left [ \left ( 1 - \lambda \right ) * previous\ belief_{i}^{2} - w_{i,k} * previous\ belief_{i} * previous\ belief_{k}
-    + 0.5 * \lambda * \left ( previous\ belief_{i} - prior_{i} \right ) ^{2} \right ]
+    cost = \sum_k w_{i,k} * \left [ \left ( 1 - \lambda \right ) * \left [ previous\ belief_{i}^{2} - w_{i,k} * previous\ belief_{i} * previous\
+    belief_{k} \right ] + 0.5 * \lambda * \left ( previous\ belief_{i} - prior_{i} \right ) ^{2} \right ]
 
 Convergence is a local phenomenon; not all nodes will converge at the same time. 
 It is also possible for some (most) nodes to converge and others to never converge. 
