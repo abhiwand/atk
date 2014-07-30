@@ -23,7 +23,7 @@
 
 package com.intel.intelanalytics.engine.plugin
 
-import com.intel.intelanalytics.engine.Engine
+import com.intel.intelanalytics.engine.{ CommandStorage, Engine }
 import com.intel.intelanalytics.security.UserPrincipal
 import spray.json.JsObject
 
@@ -58,4 +58,9 @@ trait Invocation {
    * A Scala execution context for use with methods that require one
    */
   def executionContext: ExecutionContext
+
+  /**
+   * Command Storage to read/update command progress
+   */
+  def commandStorage: CommandStorage
 }
