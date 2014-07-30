@@ -44,6 +44,7 @@ object SparkEngineConfig extends SharedConfig with EventLogging {
   val sparkHome: String = {
     val sparkHome = config.getString("intel.analytics.engine.spark.home")
     if (sparkHome == "") {
+      info("Spark Home is NOT configured so guessing where it is")
       guessSparkHome
     }
     else {
@@ -55,10 +56,11 @@ object SparkEngineConfig extends SharedConfig with EventLogging {
    * Check for sparkHome in the expected locations
    */
   private def guessSparkHome: String = {
-    val possibleSparkHomes = List("/usr/lib/spark", "/opt/cloudera/parcels/CDH/lib/spark/")
+    val possibleSparkHomes = List("/opt/cloudera/parcels/CDH/lib/spark/", "/usr/lib/spark")
     possibleSparkHomes.foreach(dir => {
       val path = new File(dir)
       if (path.exists()) {
+        info("Using Spark Home found at " + path.getAbsolutePath)
         return path.getAbsolutePath
       }
     })
