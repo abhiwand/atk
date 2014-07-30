@@ -30,7 +30,7 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol
 import com.intel.intelanalytics.domain.graph.GraphReference
 import com.intel.intelanalytics.engine.plugin.{ CommandPlugin, Invocation }
 import com.intel.intelanalytics.security.UserPrincipal
-import com.intel.intelanalytics.algorithm.util.{ GiraphConfigurationUtil, GiraphJobDriver }
+import com.intel.intelanalytics.algorithm.util.{ GiraphJobManager, GiraphConfigurationUtil }
 import org.apache.giraph.conf.GiraphConfiguration
 import spray.json.DefaultJsonProtocol._
 import spray.json._
@@ -84,6 +84,7 @@ class AlternatingLeastSquares
 
     val graphFuture = invocation.engine.getGraph(arguments.graph.id)
     val graph = Await.result(graphFuture, config.getInt("default-timeout") seconds)
+    val biasOnOption = if (biasOn) Option(biasOn.toString().toLowerCase()) else None
 
     //    These parameters are set from the arguments passed in, or defaulted from
     //    the engine configuration if not passed.
@@ -105,6 +106,7 @@ class AlternatingLeastSquares
     GiraphConfigurationUtil.set(hConf, "vertex.type.property.key", arguments.vertex_type_property_key)
     GiraphConfigurationUtil.set(hConf, "edge.type.property.key", arguments.edge_type_property_key)
     GiraphConfigurationUtil.set(hConf, "vector.value", arguments.vector_value)
+    GiraphConfigurationUtil.set(hConf, "output.vertex.bias", biasOnOption)
 
     val giraphConf = new GiraphConfiguration(hConf)
 
@@ -114,9 +116,9 @@ class AlternatingLeastSquares
     giraphConf.setComputationClass(classOf[AlternatingLeastSquaresComputation])
     giraphConf.setAggregatorWriterClass(classOf[AlternatingLeastSquaresComputation.AlternatingLeastSquaresAggregatorWriter])
 
-    AlsResult(GiraphJobDriver.run("ia_giraph_als",
+    AlsResult(GiraphJobManager.run("ia_giraph_als",
       classOf[AlternatingLeastSquaresComputation].getCanonicalName,
-      config, giraphConf, invocation.commandId, "als-learning-report_0"))
+      config, giraphConf, invocation, "als-learning-report_0"))
   }
 
   //TODO: Replace with generic code that works on any case class

@@ -42,6 +42,8 @@ import com.intel.intelanalytics.domain.schema.DataTypes
 class RowParser(separator: Char, columnTypes: Array[DataType]) extends RegexParsers with Serializable {
 
   override def skipWhitespace = false
+  private def space = regex("[ \\n]*".r)
+  private def tab = regex("[ \\t]*".r)
 
   val converter = DataTypes.parseMany(columnTypes)(_)
 
@@ -71,7 +73,7 @@ class RowParser(separator: Char, columnTypes: Array[DataType]) extends RegexPars
   }
 
   def record = repsep(mainToken, separator.toString)
-  def mainToken = doubleQuotes | singleQuotes | unquotes | empty
+  def mainToken = spaceWithSingleQuotes | tabWithQuotes | spaceWithQuotes | tabWithSingleQuotes | doubleQuotes | singleQuotes | unquotes | empty
   /** function to evaluate empty fields*/
   lazy val empty = success("")
   /** function to evaluate single quotes*/
@@ -80,5 +82,13 @@ class RowParser(separator: Char, columnTypes: Array[DataType]) extends RegexPars
   lazy val doubleQuotes: Parser[String] = "\"" ~> "[^\"]+".r <~ "\""
   /** function to evaluate normal tokens*/
   lazy val unquotes = ("[^" + separator + "]+").r
+  /** function to evaluate space/s followed by single quote*/
+  lazy val spaceWithSingleQuotes = space ~> "'" ~> "[^']+".r <~ "'" <~ space
+  /** function to evaluate space/s followed by double quote*/
+  lazy val spaceWithQuotes = space ~> '"' ~> "[^\"]+".r <~ '"' <~ space
+  /** function to evaluate tab/s followed by double quote*/
+  lazy val tabWithQuotes = tab ~> '"' ~> "[^\"]+".r <~ '"' <~ tab
+  /** function to evaluate tab/s followed by single quote*/
+  lazy val tabWithSingleQuotes = tab ~> "'" ~> "[^\']+".r <~ "'" <~ tab
 
 }
