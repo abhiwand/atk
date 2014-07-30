@@ -84,17 +84,6 @@ intel.analytics {
 	    //default-timeout = 30s
         //page-size = 1000
 	
-    fs {
-      # the system will create an "intelanalytics" folder at this location.
-      # Filepaths will be relative to this location.
-      # All Intel Analytics Toolkit files will be stored somehwere under that base location.
-      #
-      # For example, if using HDFS, set the root to hdfs path
-      # root = "hdfs://MASTER_HOSTNAME/some/path"
-      #
-      root = "hdfs://localhost/user/iauser"
-    }
-
     spark {
 
       # When master is empty the system defaults to spark://`hostname`:7070 where hostname is calculated from the current system
