@@ -13,8 +13,10 @@ From a functionality point of view, they fall into these categories: *Collaborat
 
 * :ref:`Graph_Analytics`
 
+.. TODO::
     * :ref:`APL`
     * :ref:`CC`
+\ 
     * :ref:`PR`
 
 * :ref:`Graphical_Models`
@@ -489,101 +491,101 @@ The bias result will be stored in cgd_bias.
 ---------------
 Graph Analytics
 ---------------
+..TODO::
+    We support three algorithms in this category, :ref:`APL`, :ref:`CC`, and :ref:`PR`
 
-We support three algorithms in this category, :ref:`APL`, :ref:`CC`, and :ref:`PR`
+    .. _APL:
 
-.. _APL:
+    Average Path Length (APL)
+    =========================
 
-Average Path Length (APL)
-=========================
+    The average path length algorithm calculates the average path length from a vertex to any other vertices.
 
-The average path length algorithm calculates the average path length from a vertex to any other vertices.
+    >>> Parameters
+    >>> ----------
+    >>> input_edge_label : String
+            The edge property which contains the edge label.
+    >>> output_vertex_property_list : List (comma-separated list of strings)
+            The vertex properties which contain the output vertex values.
+            If you use more than one vertex property, we expect a comma-separated string list.
 
->>> Parameters
->>> ----------
->>> input_edge_label : String
-        The edge property which contains the edge label.
->>> output_vertex_property_list : List (comma-separated list of strings)
-        The vertex properties which contain the output vertex values.
-        If you use more than one vertex property, we expect a comma-separated string list.
+    >>> num_mapper : String, optional
+            A reconfigured Hadoop parameter mapred.tasktracker.map.tasks.maximum.
+            Use on the fly when needed for your data sets.
+    >>> mapper_memory : String, optional
+            A reconfigured Hadoop parameter mapred.map.child.java.opts.
+            Use on the fly when needed for your data sets.
+    >>> convergence_output_interval : String, optional
+            The convergence progress output interval.
+            The default value is 1, which means output every super step.
+    >>> num_worker : String, optional
+            The number of Giraph workers.
+            The default value is 15.
 
->>> num_mapper : String, optional
-        A reconfigured Hadoop parameter mapred.tasktracker.map.tasks.maximum.
-        Use on the fly when needed for your data sets.
->>> mapper_memory : String, optional
-        A reconfigured Hadoop parameter mapred.map.child.java.opts.
-        Use on the fly when needed for your data sets.
->>> convergence_output_interval : String, optional
-        The convergence progress output interval.
-        The default value is 1, which means output every super step.
->>> num_worker : String, optional
-        The number of Giraph workers.
-        The default value is 15.
-
-Returns
+    Returns
 
 
-Output : AlgorithmReport
+    Output : AlgorithmReport
 
->>>     The algorith's results in the database.
+    >>>     The algorith's results in the database.
+            The progress curve is accessible through the report object.
+
+    Example
+
+
+    >>> graph.ml.avg_path_len(
+                    input_edge_label="edge",
+                    output_vertex_property_list="apl_num, apl_sum",
+                    convergence_output_interval="1",
+                    num_worker="3"
+        )
+
+
+    .. _CC:
+
+    Connected Components (CC)
+    =========================
+
+    The connected components algorithm finds all connected components in graph.
+    The implementation is inspired by PEGASUS paper.
+
+    >>> Parameters
+    >>> ----------
+    >>> input_edge_label : String
+            The edge property which contains the edge label.
+    >>> output_vertex_property_list : List (comma-separated string list)
+            The vertex properties which contain the output vertex values.
+            If you use more than one vertex property, we expect a comma-separated string list.
+
+    >>> num_mapper : String, optional
+            A reconfigured Hadoop parameter mapred.tasktracker.map.tasks.maximum.
+            Use on the fly when needed for your data sets.
+    >>> mapper_memory : String, optional
+            A reconfigured Hadoop parameter mapred.map.child.java.opts.
+            Use on the fly when needed for your data sets.
+    >>> convergence_output_interval : String, optional
+            The convergence progress output interval.
+            The default value is 1, which means output every super step.
+    >>> num_worker : String, optional
+            The number of Giraph workers.
+            The default value is 15.
+
+    Returns
+
+
+    >>>output : AlgorithmReport
+        The algorithm's results in the database.
         The progress curve is accessible through the report object.
 
-Example
+    Example
 
 
->>> graph.ml.avg_path_len(
-                input_edge_label="edge",
-                output_vertex_property_list="apl_num, apl_sum",
-                convergence_output_interval="1",
-                num_worker="3"
-    )
-
-
-.. _CC:
-
-Connected Components (CC)
-=========================
-
-The connected components algorithm finds all connected components in graph.
-The implementation is inspired by PEGASUS paper.
-
->>> Parameters
->>> ----------
->>> input_edge_label : String
-        The edge property which contains the edge label.
->>> output_vertex_property_list : List (comma-separated string list)
-        The vertex properties which contain the output vertex values.
-        If you use more than one vertex property, we expect a comma-separated string list.
-
->>> num_mapper : String, optional
-        A reconfigured Hadoop parameter mapred.tasktracker.map.tasks.maximum.
-        Use on the fly when needed for your data sets.
->>> mapper_memory : String, optional
-        A reconfigured Hadoop parameter mapred.map.child.java.opts.
-        Use on the fly when needed for your data sets.
->>> convergence_output_interval : String, optional
-        The convergence progress output interval.
-        The default value is 1, which means output every super step.
->>> num_worker : String, optional
-        The number of Giraph workers.
-        The default value is 15.
-
-Returns
-
-
->>>output : AlgorithmReport
-    The algorithm's results in the database.
-    The progress curve is accessible through the report object.
-
-Example
-
-
->>> graph.ml.connected_components(
-                input_edge_label="connects",
-                output_vertex_property_list="component_id",
-                convergence_output_interval="1",
-                num_worker="3"
-    )
+    >>> graph.ml.connected_components(
+                    input_edge_label="connects",
+                    output_vertex_property_list="component_id",
+                    convergence_output_interval="1",
+                    num_worker="3"
+        )
 
 
 .. _PR:
