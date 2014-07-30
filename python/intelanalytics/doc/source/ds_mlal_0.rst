@@ -16,8 +16,8 @@ From a functionality point of view, they fall into these categories: *Collaborat
     * :ref:`PR`
 
 .. TODO::
-    * :ref:`APL`
-    * :ref:`CC`
+    * : ref:`APL`
+    * : ref:`CC`
 
 * :ref:`Graphical_Models`
 
@@ -492,7 +492,7 @@ The bias result will be stored in cgd_bias.
 Graph Analytics
 ---------------
 ..TODO::
-    We support three algorithms in this category, :ref:`APL`, :ref:`CC`, and :ref:`PR`
+    We support three algorithms in this category, :ref :`APL`, :ref :`CC`, and :ref:`PR`
 
     .. _APL:
 
@@ -660,22 +660,21 @@ We currently support :ref:`LP` and :ref:`LBP`
 Label Propagation (LP)
 ======================
 
-Label propagation (LP) is a message passing technique for imputing or smoothing labels in partially labelled datasets. 
-Labels are propagated from "labeled" data to unlabeled data along a graph encoding similarity relationships among data points.
-The labels of known data can be probabilistic. 
-In other words: a "known" point can be represented with fuzzy labels such as 90% label 0 and 10% label 1.
-Distance between data points is represented by edge weights, with closer points having a stronger influence than points farther away. 
-LP has been used in many contexts problems where a similarity measure between instances is available and can be exploited.
-    
-Our implementation is based on this paper: X. Zhu and Z. Ghahramani. 
-Learning from labeled and unlabeled data with label propagation. 
-Technical Report CMU-CALD-02-107, CMU, 2002. See: http://www.cs.cmu.edu/~zhuxj/pub/CMU-CALD-02-107.pdf
+Label propagation (LP) is a message passing technique for inputing or smoothing labels in partially-labelled datasets. 
+Labels are propagated from *labeled* data to *unlabeled* data along a graph encoding similarity relationships among data points.
+The labels of known data can be probabilistic 
+in other words, a known point can be represented with fuzzy labels such as 90% label 0 and 10% label 1.
+The inverse distance between data points is represented by edge weights, with closer points having a higher weight (stronger influence
+on posterior estimates) than points farther away. 
+LP has been used for many problems, particularly those involving a similarity measure between data points.
+Our implementation is based on Zhu and Ghahramani's 2002 paper, "Learning from labeled and unlabeled data" [1]_.
   
-The Label Propagation Algorithm
+The Label Propagation Algorithm:
+--------------------------------
      
-In LP, all nodes start with a prior distribution of states and the initial messages that vertices pass to their neighbors are simply their prior beliefs. 
+In LP, all nodes start with a prior distribution of states and the initial messages vertices pass to their neighbors are simply their prior beliefs. 
 If certain observations have states that are known deterministically, they can be given a prior probability of 100% for their true state and 0% for 
-all other states.
+all others.
 Unknown observations should be given uninformative priors.
     
 Each node, :math:`i`, receives messages from their :math:`k` neighbors and updates their beliefs by taking a weighted average of their current beliefs
@@ -687,19 +686,17 @@ The updated beliefs for node :math:`i` are:
 
     updated\ beliefs_{i} = \lambda * (prior\ belief_{i} ) + (1 - \lambda ) * \sum_k w_{i,k} * previous\ belief_{k}
 
-Where :math:`w_{i,k}` is the distance between nodes :math:`i` and :math:`k` such that the sum of all distances to neighbors sums to one,
+where :math:`w_{i,k}` is the normalized weight between nodes :math:`i` and :math:`k` such that the sum of all weights to neighbors is one,
 and :math:`\lambda` is a learning parameter.
 If :math:`\lambda` is greater than zero, updated probabilities will be anchored in the direction of prior beliefs.
 The final distribution of state probabilities will also tend to be biased in the direction of the distribution of initial beliefs. 
-For the first iteration of updates, nodes' previous beliefs are equal to the priors and in each future iteration,
+For the first iteration of updates, nodes' previous beliefs are equal to the priors, and, in each future iteration,
 previous beliefs are equal to their beliefs as of the last iteration.
+All beliefs for every node will be updated in this fashion, including known observations, unless ``anchor_threshold`` is set.
+The ``anchor_threshold`` parameter specifies a probability threshold above which beliefs should no longer be updated. 
+Hence, with an ``anchor_threshold`` of 0.99, observations with states known with 100% certainty will not be updated by this algorithm.
 
-All beliefs for every node will be updated in this fashion, including known observations, unless anchor_threshold is set.
-The anchor_threshold parameter specifies a probability threshold above which beliefs should no longer be updated. 
-Hence, with an anchor_threshold of 0.99, observations with states known with 100% certainty will not be updated by this algorithm.
-
-This process of updating and message passing continues until the convergence criteria is met or the maximum number of super steps is reached 
-without converging.
+This process of updating and message passing continues until the convergence criteria is met, or the maximum number of super steps is reached.
 A node is said to converge if the total change in its cost function is below the convergence threshold.
 The cost function for a node is given by:
 
@@ -1096,3 +1093,6 @@ Figure 7, Trained Learning and Error Message
 .. _Factorization Meets the Neighborhood\: a Multifaceted Collaborative Filtering Model: http://public.research.att.com/~volinsky/netflix/kdd08koren.pdf
 .. _Large-Scale Parallel Collaborative Filtering for the Netflix Prize: http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.173.2797
 
+.. rubric:: footnotes
+
+.. [1] http://www.cs.cmu.edu/~zhuxj/pub/CMU-CALD-02-107.pdf
