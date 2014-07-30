@@ -51,7 +51,7 @@ def initialize_graph(graph, graph_info):
     graph._id = graph_info.id_number
     graph._name = graph_info.name
     graph._uri= http.create_full_uri("graphs/"+ str(graph._id))
-    #return graph
+    return graph
 
 class GraphBackendRest(object):
 
@@ -99,16 +99,11 @@ class GraphBackendRest(object):
             r=http.post('graphs', payload)
             logger.info("REST Backend: create graph response: " + r.text)
             graph_info = GraphInfo(r.json())
-            initialize_graph(graph,graph_info)
+            initialized_graph=initialize_graph(graph,graph_info)
+            frame_rules=JsonRules(rules)
+            self.load(initialized_graph,frame_rules, append= False)
             return graph_info.name
 
-
-            # if logger.level == logging.DEBUG:
-            #     import json
-            #     payload_json = json.dumps(frame_rules, indent=2, sort_keys=True)
-            #     logger.debug("REST Backend: create graph payload: " + payload_json)
-            # self.load(graph,frame_rules, append= False)
-        #execute_update_graph_command(graph, name = "graph/load", arguments=payload)
     
     def _get_new_graph_name(self,source=None):
         try:
