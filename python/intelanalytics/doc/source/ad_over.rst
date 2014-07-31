@@ -4,9 +4,8 @@ Administration
 Contents:
 
 ..  toctree::
-    :maxdepth: 2
+    :maxdepth: 3
 
-    ad_legl
     ad_reqs
     ad_inst
 

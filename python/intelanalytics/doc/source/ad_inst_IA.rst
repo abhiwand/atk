@@ -408,8 +408,8 @@ After setting up the IA repositories, run the following command on every host wi
 After installing IA spark deps and IA python rest client, you can start the rest server and start submitting requests.
 
 
-Staring IA Rest Server:
------------------------
+Starting IA Rest Server:
+------------------------
 
 Starting the Rest server is very easy.
 It can be started like any other linux service::
