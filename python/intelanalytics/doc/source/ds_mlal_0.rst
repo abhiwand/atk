@@ -13,9 +13,11 @@ From a functionality point of view, they fall into these categories: *Collaborat
 
 * :ref:`Graph_Analytics`
 
-    * :ref:`APL`
-    * :ref:`CC`
     * :ref:`PR`
+
+.. TODO::
+    * : ref:`APL`
+    * : ref:`CC`
 
 * :ref:`Graphical_Models`
 
@@ -489,101 +491,101 @@ The bias result will be stored in cgd_bias.
 ---------------
 Graph Analytics
 ---------------
+..TODO::
+    We support three algorithms in this category, :ref :`APL`, :ref :`CC`, and :ref:`PR`
 
-We support three algorithms in this category, :ref:`APL`, :ref:`CC`, and :ref:`PR`
+    .. _APL:
 
-.. _APL:
+    Average Path Length (APL)
+    = ========================
 
-Average Path Length (APL)
-=========================
+    The average path length algorithm calculates the average path length from a vertex to any other vertices.
 
-The average path length algorithm calculates the average path length from a vertex to any other vertices.
+    >>> Parameters
+    >>> ----------
+    >>> input_edge_label : String
+            The edge property which contains the edge label.
+    >>> output_vertex_property_list : List (comma-separated list of strings)
+            The vertex properties which contain the output vertex values.
+            If you use more than one vertex property, we expect a comma-separated string list.
 
->>> Parameters
->>> ----------
->>> input_edge_label : String
-        The edge property which contains the edge label.
->>> output_vertex_property_list : List (comma-separated list of strings)
-        The vertex properties which contain the output vertex values.
-        If you use more than one vertex property, we expect a comma-separated string list.
+    >>> num_mapper : String, optional
+            A reconfigured Hadoop parameter mapred.tasktracker.map.tasks.maximum.
+            Use on the fly when needed for your data sets.
+    >>> mapper_memory : String, optional
+            A reconfigured Hadoop parameter mapred.map.child.java.opts.
+            Use on the fly when needed for your data sets.
+    >>> convergence_output_interval : String, optional
+            The convergence progress output interval.
+            The default value is 1, which means output every super step.
+    >>> num_worker : String, optional
+            The number of Giraph workers.
+            The default value is 15.
 
->>> num_mapper : String, optional
-        A reconfigured Hadoop parameter mapred.tasktracker.map.tasks.maximum.
-        Use on the fly when needed for your data sets.
->>> mapper_memory : String, optional
-        A reconfigured Hadoop parameter mapred.map.child.java.opts.
-        Use on the fly when needed for your data sets.
->>> convergence_output_interval : String, optional
-        The convergence progress output interval.
-        The default value is 1, which means output every super step.
->>> num_worker : String, optional
-        The number of Giraph workers.
-        The default value is 15.
-
-Returns
+    Returns
 
 
-Output : AlgorithmReport
+    Output : AlgorithmReport
 
->>>     The algorith's results in the database.
+    >>>     The algorith's results in the database.
+            The progress curve is accessible through the report object.
+
+    Example
+
+
+    >>> graph.ml.avg_path_len(
+                    input_edge_label="edge",
+                    output_vertex_property_list="apl_num, apl_sum",
+                    convergence_output_interval="1",
+                    num_worker="3"
+        )
+
+
+    .. _CC:
+
+    Connected Components (CC)
+    = ========================
+
+    The connected components algorithm finds all connected components in graph.
+    The implementation is inspired by PEGASUS paper.
+
+    >>> Parameters
+    >>> ----------
+    >>> input_edge_label : String
+            The edge property which contains the edge label.
+    >>> output_vertex_property_list : List (comma-separated string list)
+            The vertex properties which contain the output vertex values.
+            If you use more than one vertex property, we expect a comma-separated string list.
+
+    >>> num_mapper : String, optional
+            A reconfigured Hadoop parameter mapred.tasktracker.map.tasks.maximum.
+            Use on the fly when needed for your data sets.
+    >>> mapper_memory : String, optional
+            A reconfigured Hadoop parameter mapred.map.child.java.opts.
+            Use on the fly when needed for your data sets.
+    >>> convergence_output_interval : String, optional
+            The convergence progress output interval.
+            The default value is 1, which means output every super step.
+    >>> num_worker : String, optional
+            The number of Giraph workers.
+            The default value is 15.
+
+    Returns
+
+
+    >>>output : AlgorithmReport
+        The algorithm's results in the database.
         The progress curve is accessible through the report object.
 
-Example
+    Example
 
 
->>> graph.ml.avg_path_len(
-                input_edge_label="edge",
-                output_vertex_property_list="apl_num, apl_sum",
-                convergence_output_interval="1",
-                num_worker="3"
-    )
-
-
-.. _CC:
-
-Connected Components (CC)
-=========================
-
-The connected components algorithm finds all connected components in graph.
-The implementation is inspired by PEGASUS paper.
-
->>> Parameters
->>> ----------
->>> input_edge_label : String
-        The edge property which contains the edge label.
->>> output_vertex_property_list : List (comma-separated string list)
-        The vertex properties which contain the output vertex values.
-        If you use more than one vertex property, we expect a comma-separated string list.
-
->>> num_mapper : String, optional
-        A reconfigured Hadoop parameter mapred.tasktracker.map.tasks.maximum.
-        Use on the fly when needed for your data sets.
->>> mapper_memory : String, optional
-        A reconfigured Hadoop parameter mapred.map.child.java.opts.
-        Use on the fly when needed for your data sets.
->>> convergence_output_interval : String, optional
-        The convergence progress output interval.
-        The default value is 1, which means output every super step.
->>> num_worker : String, optional
-        The number of Giraph workers.
-        The default value is 15.
-
-Returns
-
-
->>>output : AlgorithmReport
-    The algorithm's results in the database.
-    The progress curve is accessible through the report object.
-
-Example
-
-
->>> graph.ml.connected_components(
-                input_edge_label="connects",
-                output_vertex_property_list="component_id",
-                convergence_output_interval="1",
-                num_worker="3"
-    )
+    >>> graph.ml.connected_components(
+                    input_edge_label="connects",
+                    output_vertex_property_list="component_id",
+                    convergence_output_interval="1",
+                    num_worker="3"
+        )
 
 
 .. _PR:
@@ -658,161 +660,55 @@ We currently support :ref:`LP` and :ref:`LBP`
 Label Propagation (LP)
 ======================
 
-Originally proposed as a semi-supervised learning algorithm, label propagation propagates labels from labeled data to unlabeled data along a graph encoding similarity relationships among all data points.
-It has been used in many classification problems where a similarity measure between instances is available and can be exploited for inference.
-Specifically, in social network analysis label propagation is used to probabilistically infer data fields that are blank by analyzing data about a user's friends, family, likes and online behavior.
+Label propagation (LP) is a message passing technique for inputing or smoothing labels in partially-labelled datasets. 
+Labels are propagated from *labeled* data to *unlabeled* data along a graph encoding similarity relationships among data points.
+The labels of known data can be probabilistic 
+in other words, a known point can be represented with fuzzy labels such as 90% label 0 and 10% label 1.
+The inverse distance between data points is represented by edge weights, with closer points having a higher weight (stronger influence
+on posterior estimates) than points farther away. 
+LP has been used for many problems, particularly those involving a similarity measure between data points.
+Our implementation is based on Zhu and Ghahramani's 2002 paper, "Learning from labeled and unlabeled data" [1]_.
+  
+The Label Propagation Algorithm:
+--------------------------------
+     
+In LP, all nodes start with a prior distribution of states and the initial messages vertices pass to their neighbors are simply their prior beliefs. 
+If certain observations have states that are known deterministically, they can be given a prior probability of 100% for their true state and 0% for 
+all others.
+Unknown observations should be given uninformative priors.
+    
+Each node, :math:`i`, receives messages from their :math:`k` neighbors and updates their beliefs by taking a weighted average of their current beliefs
+and a weighted average of the messages received from its neighbors.
+    
+The updated beliefs for node :math:`i` are:
 
-Label Propagation on Gaussian Random Fields.
-Our implementation is based on this paper:
+.. math::
 
-X. Zhu and Z. Ghahramani. Learning from labeled and unlabeled data with label propagation. Technical Report CMU-CALD-02-107, CMU, 2002.
-See: http://www.cs.cmu.edu/~zhuxj/pub/CMU-CALD-02-107.pdf
+    updated\ beliefs_{i} = \lambda * (prior\ belief_{i} ) + (1 - \lambda ) * \sum_k w_{i,k} * previous\ belief_{k}
 
-The Label Propagation Model
----------------------------
+where :math:`w_{i,k}` is the normalized weight between nodes :math:`i` and :math:`k` such that the sum of all weights to neighbors is one,
+and :math:`\lambda` is a learning parameter.
+If :math:`\lambda` is greater than zero, updated probabilities will be anchored in the direction of prior beliefs.
+The final distribution of state probabilities will also tend to be biased in the direction of the distribution of initial beliefs. 
+For the first iteration of updates, nodes' previous beliefs are equal to the priors, and, in each future iteration,
+previous beliefs are equal to their beliefs as of the last iteration.
+All beliefs for every node will be updated in this fashion, including known observations, unless ``anchor_threshold`` is set.
+The ``anchor_threshold`` parameter specifies a probability threshold above which beliefs should no longer be updated. 
+Hence, with an ``anchor_threshold`` of 0.99, observations with states known with 100% certainty will not be updated by this algorithm.
 
-A typical representation of the Label Propagation (LP) model is a general graph (see the figure below), where nodes are a set of labeled examples (blue) or unlabeled examples (red) and the edges encode the similarity among examples, such that more similar examples are connected by edges with higher weights.
-For a labeled example, the label probability Pi is attached to the node.
-The algorithm then propagates labels from blue nodes on the graph to unlabeled examples (red nodes).
-The underlying assumption is that similar nodes should have similar labels.
-The solution can be found with simple matrix operations that iteratively conduct matrix multiplication until convergence.
+This process of updating and message passing continues until the convergence criteria is met, or the maximum number of super steps is reached.
+A node is said to converge if the total change in its cost function is below the convergence threshold.
+The cost function for a node is given by:
 
-LP Example Usage
-----------------
+.. math::
 
-Input data format
-~~~~~~~~~~~~~~~~~
+    cost = \sum_k w_{i,k} * \left [ \left ( 1 - \lambda \right ) * \left [ previous\ belief_{i}^{2} - w_{i,k} * previous\ belief_{i} * previous\
+    belief_{k} \right ] + 0.5 * \lambda * \left ( previous\ belief_{i} - prior_{i} \right ) ^{2} \right ]
 
-The Label Propagation (LP) algorithm takes as input data represented in CSV, JSON, or XML format.
-In this example, we use a CSV file.
-Each CSV file consists of at least four columns as shown in the example below.
-The source column is a list of source IDs.
-The input_value column is the prior value for the source vertex.
-In this example, it is vector with two elements in it.
-The sum of the elements in this vector is 1.
-The target column is a list of target IDs.
-The weight column is the weight on the edge from the source to the target.
-
-Data import
-~~~~~~~~~~~
-
-To import the LP input data, use the following ipython calls we provide.
-
-The example above loads the LP input data from the CSV file.
-The first line imports the related python modules.
-The second line gets the frame builder into the fb object.
-The third line specifies the path to the input file.
-The rest of the lines import the input data.
-Here is detailed description of the build_from_csv method.
-
-The first argument is the name you want to give to the frame, in this example, LpFrame.
-
-The second argument is the path to your input file, here /user/hadoop/lp.csv.
-
-The third argument is the schema for the input data.
-You need to name each column, and specify the data type of each column in your input CSV input data.
-
-The fourth argument is whether to overwrite the frame if you have imported data to the LpFrame frame before.
-
-Graph Construction
-~~~~~~~~~~~~~~~~~~
-
-After you import the raw data, you register which fields to use for the source vertex, which fields to use for the target vertex, and then construct a graph from your input data.
-
-In the example above, the first line imports the graph construction related python modules.
-The second line gets the graph builder object into gb.
-Lines three to five register your graph.
-Line three registers the source column as the source vertex, and registers the value vertex property to this vertex.
-Line four registers the target column as the target vertex.
-Line five registers each edge from source to target, with the label links.
-And weight is the edge property registered for this algorithm.
-Line six builds a graph based on your input data and graph registration, with the graph name LpGraph.
-The overwrite=True in this line means that if you have previously built a graph with the same name, you want to overwrite the old graph.
-
-Run LP algorithm
-~~~~~~~~~~~~~~~~
-
-After graph construction, you are able to run the LP algorithm.
-Here is an example of it.
-
-In the example above, the first line calls the algorithm.
-The second line specifies a list of vertex properties where you stored prior values for LP algorithm.
-In our example, the prior values are stored in the vertex property named input_value.
-We also registered this property during graph registration.
-Line three specifies which edge label you want to use for this algorithm.
-During graph registration, links was the edge label we registered.
-Line four specifies that the maximum number of super steps to run is 100.
-Line five sets the convergence threshold to 0.
-Line six sets the lamda value for LP to 0.
-Line seven sets the anchor threshold to 1.0.
-Line nine specifies which vertex property will be used to store LP results.
-Because the input prior value for each vertex is a vector with two elements, we expect to see that lp_posterior is also a vector with two elements.
-
->>> Required Parameters
-
->>> input_vertex_property_list : List (comma-separated string list)
-        The vertex properties which contain the prior vertex values.
-        If you use more than one vertex property, we expect a comma-separated string list.
->>> input_edge_property_list : List (comma-separated string list)
-        The edge properties which contain the input edge values.
-        If you use more than one edge property, we expect a comma-separated string list.
->>> input_edge_label : String
-        The edge property which contains the edge label.
->>> output_vertex_property_list : List (comma-separated string list)
-        The vertex properties which contain the output vertex values.
-        If you use more than one vertex property, we expect a comma-separated string list.
->>> vertex_type : String
-        The vertex property which contains the vertext type.
-
->>> num_mapper : String, optional
-        A reconfigured Hadoop parameter mapred.tasktracker.map.tasks.maximum.
-        Use on the fly when needed for your data sets.
->>> mapper_memory : String, optional
-        A reconfigured Hadoop parameter mapred.map.child.java.opts.
-        Use on the fly when needed for your data sets.
->>> num_worker : String, optional
-        The number of Giraph workers.
-        The default value is 15.
->>> max_supersteps : String, optional
-        The number of super steps to run in Giraph.
-        The default value is 10.
->>> lambda : String, optional
-        The tradeoff parameter: f = (1-lambda)Pf + lambda*h
-        The default value is 0.
->>> convergence_threshold : String, optional
-        The convergence threshold which controls how small the change in belief
-        value must be in order to meet the convergence criteria.
-        The default value is 0.001.
->>> bidirectional_check : String, optional
-        If set to true, Giraph checks whether each edge is bidirectional.
-        The default value is false.
->>> anchor_threshold : String, optional
-        The anchor threshold [0, 1].
-        Those vertices whose normalized prior values are greater than 
-        this threshold will not be updated.
-        The default value is 1.
-
-Returns
-
->>> output : AlgorithmReport
-        The algorithm's results in the database.
-
-Example
-
-
->>> graph.ml.label_prop(
-                input_vertex_property_list="value",
-                input_edge_property_list="weight",
-                input_edge_label="links",
-                output_vertex_property_list="lbp_results",
-                num_worker="3",
-                max_supersteps="20",
-                convergence_threshold="0.0",
-                lp_lambda="0.0",
-                bidirectional_check="false",
-                anchor_threshold="1"
-    )
-
+Convergence is a local phenomenon; not all nodes will converge at the same time. 
+It is also possible for some (most) nodes to converge and others to never converge. 
+The algorithm requires all nodes to converge before declaring that the algorithm has converged overall. 
+If this condition is not met, the algorithm will continue up to the maximum number of super steps.
 
 .. _LBP:
 
@@ -821,96 +717,112 @@ Loopy Belief Propagation (LBP)
 
 See: http://en.wikipedia.org/wiki/Belief_propagation.
 
-This is a message passing algorithm for performing approximate inference on a pair-wise Markov Random Field encoding the classic Potts Model.
-It has a wide range of applications in structured prediction, such as low-level vision and influence spread in social networks, where we have prior noisy predictions for a large set of random variables and a graph encoding similarity relationships between those variables.
-The algorithm then infers the posterior distribution for each variable by incorporating prior information and graph similarity structure.
+Loopy Belief Propagation (LBP) is a message passing algorithm for inferring state probabilities given a graph and a set of noisy initial
+estimates of state probabilities.
+The Intel Analytics Toolkit provides two implementations of LBP, which differ in their assumptions about the joint distribution of the data.
+The standard LBP implementation assumes that the joint distribution of the data is given by a Boltzmann distribution, while Gaussian LBP
+assumes that the data is continuous and distributed according to a multivariate normal distribution.
+For more information about LBP, see: "K. Murphy, Y. Weiss, and M. Jordan, Loopy-belief Propagation for Approximate Inference: An Empirical Study, UAI 1999."
 
-The algorithm is described in "K. Murphy, Y. Weiss, and M. Jordan, Loopy-belief Propagation for Approximate Inference: An Empirical Study, UAI 1999".
-(http://arxiv.org/ftp/arxiv/papers/1301/1301.6725.pdf)
-We also extended it to support training, validation and test, a common practice in machine learning.
+LBP has a wide range of applications in structured prediction, such as low-level vision and influence spread in social networks,
+where we have prior noisy predictions for a large set of random variables and a graph encoding relationships between those variables.
 
-The Loopy Belief Propagation Model
+The algorithm performs approximate inference on an undirected graph of hidden variables, where each variable is represented as a node,
+and edges encode relations to its neighbors.
+Initially, a prior noisy estimate of state probabilities is given to each node, then the algorithm infers the posterior distribution of
+each node by propagating and collecting messages to and from its neighbors and updating the beliefs.
+
+In graphs containing loops, convergence is not guaranteed, though LBP has demonstrated empirical success in many areas and in practice
+often converges close to the true joint probability distribution.
+
+Discrete Loopy Belief Propagation:
 ----------------------------------
 
-The algorithm performs approximate inference on an undirected graph of hidden variables, where each variable is represented as a node, and edges encode the similarity of it to its neighbors.
-Initially a prior noisy prediction Pri is attached to each node, then the algorithm infers the posterior distribution Poi of each node by propagating and collecting messages to and from its neighbors and updating the beliefs.
-Even though its convergence is not guaranteed for graphs containing loops, LBP has demonstrated empirical success in many areas, especially in turbo codes, and in practice these approximations often perform well.
+LBP is typically considered a semi-supervised machine learning algorithm as
+    1) there is typically no ground truth observation of states and
+    #) the algorithm is primarily concerned with estimating a joint probability function rather than with classification or point prediction.
 
-The original Loopy Belief Propagation (LBP) algorithm was designed for approximate inference in general graphs.
-It lacks functionality to make predictions for nodes in hold-out sets that are often excluded from the training graph.
-Inserting hold-out sets into training graph and launching LBP would have an undesirable impact, because in this case the hold-out sets would participate in the training or inference.
-To support the training, validation, and test scenario, we extend the original LBP algorithm by annotating each node as "TR", "VA", or "TE" (see the figure above).
-For "TR" nodes, their behavior is the same as before, for example, propagating or collecting messages to or from their neighbors at each iteration.
-But for "VA" and "TE" nodes, they cannot propagate any message to their neighbors, but can only collect messages (see the red arrows representing message passing in the figure above).
-This makes "VA" and "TE" nodes great listeners but not messengers, and therefore mitigates their impact on the training process.
-Annotating all nodes as "TR" causes the algorithm to degenerate to the original LBP.
+The standard (discrete) LBP algorithm requires a set of probability thresholds to be considered a classifier.
+Nonetheless, the discrete LBP algorithm allows Test/Train/Validate splits of the data and the algorithm will treat "Train" observations
+differently from "Test" and "Validate" observations.
+Vertices labelled with "Test" or "Validate" will be treated as though they have uninformative (uniform) priors and are allowed to receive messages,
+but not send messages.
+This simulates a "scoring scenario" in which a new observation is added to a graph containing fully trained LBP posteriors,
+the new vertex is scored based on received messages, but the full LBP algorithm is not repeated in full.
+This behavior can be turned off by setting the ``ignore_vertex_type`` parameter to True.
+When ``ignore_vertex_type=True``, all nodes will be considered "Train" regardless of their sample type designation.
+The Gaussian (continuous) version of LBP does not allow Train/Test/Validate splits.
 
-Loopy belief propagation on Markov Random Fields(MRF).
-This algorithm was originally designed for acyclic graphical models, then it was found that the Belief Propagation algorithm can be used in general graphs.
-The algorithm is then sometimes called "loopy" belief propagation, because graphs typically contain cycles, or loops.
-In Giraph, we run the algorithm in iterations until it converges.
+The standard LBP algorithm included with the toolkit assumes an ordinal and cardinal set of discrete states.
+For notational convenience, we'll denote the value of state :math:`s_{i}` as :math:`i`, and the prior probability of state
+:math:`s_{i}` as :math:`prior_{i}`.
 
->>> Required Parameters
->>> input_vertex_property_list : List (comma-separated list of strings)
->>>     The vertex properties which contain prior vertex values.
-        If you use more than one vertex property, we expect a comma-separated string list.
->>> input_edge_property_list : List (comma-separated list of strings)
-        The edge properties which contain the input edge values.
-        If you use more than one edge property, we expect a comma-separated string list.
->>> input_edge_label : String
-        The edge property which contains the edge label.
->>> output_vertex_property_list : List (comma-separated list of strings)
-        The vertex properties which contain the output vertex values.
-        If you use more than one vertex property, we expect a comma-separated string list.
->>> num_mapper : String, optional
-        A reconfigured Hadoop parameter mapred.tasktracker.map.tasks.maximum.
-        Use on the fly when needed for your data sets.
->>> mapper_memory : String, optional
-        A reconfigured Hadoop parameter mapred.map.child.java.opts.
-        Use on the fly when needed for your data sets.
->>> num_worker : String, optional
-        The number of Giraph workers.
-        The default value is 15.
->>> max_supersteps : String, optional
-        The number of super steps to run in Giraph.
-        The default value is 10.
->>> smoothing : String, optional
-        The Ising smoothing parameter.
-        The default value is 2.
->>> convergence_threshold : String, optional
-        The convergence threshold which controls how small the change in validation error must be in order to meet the convergence criteria.
-        The default value is 0.001.
->>> bidirectional_check : String, optional
-        If set to true, Giraph checks whether each edge is bidirectional.
-        The default value is false.
->>> anchor_threshold : String, optional
-        The anchor threshold [0, 1].
-        Those vertices whose normalized prior values are greater than this threshold will not be updated.
-        The default value is 1.
+Each node sends out initial messages of the form:
 
-Returns
+.. math::
 
-output : AlgorithmReport
-    The algorithm's results in the database.
+   \ln \left ( \sum_{s_{j}} \exp \left ( - \frac { | i - j | ^{p} }{ n - 1 } * w * s + \ln (prior_{i}) \right ) \right )
 
-Example
+Where :math:`w` is equal to the weight between the messages destination and origin vertices, :math:`s` is equal to the smoothing parameter,
+:math:`p` is the power parameter, and :math:`n` is the number of states.
+The larger the weight between two nodes or the higher the smoothing parameter, the more neighboring vertices are assumed to "agree" on states.
+(Here, we represent messages as sums of log probabilities rather than products of non-logged probabilities as it makes it easier to subtract
+messages in the future steps of the algorithm.)
+Also note that the states are cardinal in the sense that the "pull" of state :math:`i` on state :math:`j` depends on the distance
+between :math:`i` and :math:`j`.
+The *power* parameter intensifies the rate at which the pull of distant states drop off.
 
+In order for the algorithm to work properly, all edges of the graph must be bidirectional.
+In other words, messages need to be able to flow in both directions across every edge.
+Bidirectional edges can be enforced during graph building, but the LBP function provides an option to do an initial check for
+bidirectionality using the ``bidirectional_check=True`` option.
+If not all the edges of the graph are bidirectional, the algorithm will return an error.
 
->>> graph.ml.belief_prop(
-                        input_vertex_property_list="values",
-                        input_edge_property_list="weight",
-                        input_edge_label="links",
-                        output_vertex_property_list="lbp_results",
-                        num_worker="3",
-                        max_supersteps="10",
-                        convergence_threshold="0.0001",
-                        smoothing="2",
-                        bidirectional_check="false",
-                        anchor_threshold="1"
-    )
+For example, in a two state case in which a node has prior probabilities 0.8 and 0.2 for states 0 and 1 respectively, uniform weights of 1,
+power of 1 and a smoothing parameter of 2, we would have a vector valued initial message equal to:
+:math:`\textstyle \left [ \ln \left ( 0.2 + 0.8 e ^{-2} \right ), \ln \left ( 0.8 + 0.2 e ^{-2} \right ) \right ]`,
+which gets sent to each of that node's neighbors.
+Note that messages will typically not be proper probability distributions, hence each message is normalized so that the probability
+of all states sum to 1 before being sent out.
+For simplicity, we will consider all messages going forward as normalized messages.
 
-For a more complete definition of the Ising Smoothing parameter, see :term:`Ising Smoothing Parameter`.
+After nodes have sent out their initial messages, they then update their beliefs based on messages that they have received from their neighbors,
+denoted by the set :math:`k`.
 
+Updated Posterior Beliefs:
+
+.. math::
+
+   \ln (newbelief) = \propto \exp \left [ \ln (prior) + \sum_k message _{k} \right ]
+
+Note that the messages in the above equation are still in log form.
+Nodes then send out new messages which take the same form as their initial messages,
+with updated beliefs in place of priors and subtracting out the information previously received from the new message's recipient.
+The recipient's prior message is subtracted out to prevent feedback loops of nodes "learning" from themselves.
+
+In updating beliefs, new beliefs tend to be most influenced by the largest message.
+Setting the ``max_product`` option to "True" ignores all incoming messages other than the strongest signal.
+Doing this results in approximate solutions, but requires significantly less memory and run-time than the more exact computation.
+Users should consider this option when processing power is a constraint and approximate solutions to LBP will be sufficient.
+
+.. math::
+
+   \ln \left ( \sum_{s_{j}} \exp \left ( - \frac { | i - j | ^{p} }{ n - 1 } * w * s + \ln (newbelief_{i}) -
+   previous\ message\ from\ recipient \right ) \right )
+
+This process of updating and message passing continues until the convergence criteria is met or the maximum number of super steps is
+reached without converging.
+A node is said to converge if the total change in its distribution (the sum of absolute value changes in state probabilities) is less than
+the ``convergence_threshold`` parameter.
+Convergence is a local phenomenon; not all nodes will converge at the same time.
+It is also possible for some (most) nodes to converge and others to never converge.
+The algorithm requires all nodes to converge before declaring that the algorithm has converged overall.
+If this condition is not met, the algorithm will continue up to the maximum number of super steps.
+
+Gaussian Loopy Belief Propagation:
+----------------------------------
+
+Gaussian Loopy Belief Propagation will be included in later releases, but is not available in 0.8.0.
 
 .. _Topic_Modeling:
 
@@ -1181,3 +1093,6 @@ Figure 7, Trained Learning and Error Message
 .. _Factorization Meets the Neighborhood\: a Multifaceted Collaborative Filtering Model: http://public.research.att.com/~volinsky/netflix/kdd08koren.pdf
 .. _Large-Scale Parallel Collaborative Filtering for the Netflix Prize: http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.173.2797
 
+.. rubric:: footnotes
+
+.. [1] http://www.cs.cmu.edu/~zhuxj/pub/CMU-CALD-02-107.pdf
