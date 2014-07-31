@@ -765,7 +765,7 @@ class BigFrame(CommandSupport):
         """
         Builds matrix.
 
-        Outputs a :term:`confusion matrix` for a :term:`binary classifier`
+        Outputs a confusion matrix for a binary classifier
 
         Parameters
         ----------
@@ -1166,7 +1166,7 @@ class BigFrame(CommandSupport):
         """
         Empirical Cumulative Distribution.
 
-        Generates the :term:`empirical cumulative distribution` for the input column.
+        Generates the empirical cumulative distribution for the input column.
 
         Parameters
         ----------
