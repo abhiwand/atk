@@ -1317,42 +1317,52 @@ class BigFrame(CommandSupport):
         Parameters
         ----------
         data_column : str
-            The column to be statistically summarized. Must contain numerical data; all NaNs and infinite values
-             are excluded from the calculation.
+            The column to be statistically summarized. Must contain numerical data; all rows containing
+             NaNs and infinite values in the data column are excluded from the statistical calculations and
+             logged to counters. (See bad_row_count and good_row_count below.)
 
         weights_column : str
             Optional. The column that provides weights (frequencies) for the data being summarized.
-            Must contain numerical data. Uniform weights of 1 for all items will be used for the calculation if this
-                parameter is not provided.
+            Must contain numerical data. All rows containing NaNs and infinite values in the weights column are
+             excluded from the statistical calculations and  logged to counters. (See bad_row_count and good_row_count
+             below.)
+             Uniform weights of 1 for all items will be used for the calculation if this
+                parameter is not provided. Data elements with weights <= 0 are excluded from the calculation
+                but the count is logged (see positive_weight_count and non_positive_weight_count below).
 
         Returns
         -------
         summary : Dict
             Dictionary containing summary statistics in the following entries:
-                 | mean : Arithmetic mean of the data.
-                 | geometric_mean : Geometric mean of the data. None when there is a data element <= 0,
-                    1.0 when there are no data elements.
-                 | variance : Variance of the data where  sum of squared distance from the mean is divided by
-                    count - 1. None when there are <= 1 many data elements.
-                 | standard_deviation : Standard deviation of the data. None when there are <= 1 many data elements.
+                 mean : Weighted arithmetic mean of the data.
+                 geometric_mean : Weighted geometric mean of the data. None when there is a data element <= 0,
+                   1.0 when there are no data elements.
+                 variance : Weighted variance of the data where weighted sum of squared distance from the mean is
+                  divided by the number of valid entries - 1. None when there are <= 1 many data elements.
+                 standard_deviation : Standard deviation of the data. None when there are <= 1 many data elements.
                  mode : A mode of the data; that is, an item with the greatest weight (largest frequency),
-                  When there is more than one mode, the one of least numerical value is returned.
-                  None when there are no data elements of positive weight.
-                 weight_at_mode : The weight of the mode.
-                 | valid_data_count: The count of all data elements that are finite numbers.
-                    (In other words, after excluding NaNs and infinite values.)
-                 | minimum : Minimum value in the data. None when there are no data elements.
-                 | maximum : Maximum value in the data. None when there are no data elements.
-                 | mean_confidence_lower : Lower limit of the 95% confidence interval about the mean.
-                    Assumes a Gaussian distribution. None when there are 0 or 1 data elements.
-                 | mean_confidence_upper: Upper limit of the 95% confidence interval about the mean.
-                    Assumes a Gaussian distribution. None when there are 0 or 1 data elements.
+                   When there is more than one mode, the one of least numerical value is returned.
+                   None when there are no data elements of positive weight.
+                 mode_count: The number of distinct modes. 0 when there are no data elements of positive weight.
+                 weight_at_mode : The weight of a mode. 0 when there are no data elements of positive weight.
+                 total_weight The sum of all weights over from valid input rows.
+                  (Ie. neither data nor weight is NaN, or infinity, and weight is > 0.)
+                 minimum : Minimum value in the data. None when there are no data elements.
+                 maximum : Maximum value in the data. None when there are no data elements.
+                 mean_confidence_lower : Lower limit of the 95% confidence interval about the mean.
+                   Assumes a Gaussian distribution. None when there are 0 or 1 data elements.
+                 mean_confidence_upper: Upper limit of the 95% confidence interval about the mean.
+                  Assumes a Gaussian distribution. None when there are 0 or 1 data elements.
+                 bad_row_count : The number of rows containing a NaN or infinite value in either the data
+                  or weights column.
+                 good_row_count : The number of rows not containing a NaN or infinite value in either the data
+                  or weights column.
                  positive_weight_count : The number of valid data elements with weight > 0.
-                  This is the number of entries used in the statistical calculation.
+                   This is the number of entries used in the statistical calculation.
                  non_positive_weight_count : The number valid data elements with finite weight <= 0.
 
         Return Types:
-            | valid_data_count returns a Long.
+            | good_row_count, bad_row_count, positive_weight_count and non_positive_weight_count return Longs.
             | All other values are returned as Doubles or None.
 
         Variance:
@@ -1360,12 +1370,29 @@ class BigFrame(CommandSupport):
 
         .. math::
 
-            \\left( \\frac{1}{n - 1} \\right) * sum_{i}  \\left(x_{i} - M \\right)^_{2}
+            \\left( \\frac{1}{n - 1} \\right) * sum_{i} w_{i} * \\left(x_{i} - M \\right)^_{2}
 
-        where :math:`n` is the number of valid elements of positive weight, and :math:`M` is the  mean
+        where :math:`n` is the number of valid elements of positive weight, and :math:`M` is the  weighted mean
 
         Standard Deviation:
             The square root of the variance.
+
+        Logging Invalid Data
+        --------------------
+
+        A row is bad when it contains a NaN or infinite value in either its data or weights column.  In this case, it
+         contributes to bad_row_count; otherwise it contributes to good row count.
+
+        A good row can be skipped because the value in its weight column is <=0. In this case, it contributes to
+         non_positive_weight_count, otherwise (when the weight is > 0) it contributes to valid_data_weight_pair_count.
+
+            Equations
+            ---------
+            bad_row_count + good_row_count = # rows in the frame
+            positive_weight_count + non_positive_weight_count = good_row_count
+
+        In particular, when no weights column is provided and all weights are 1.0, non_positive_weight_count = 0 and
+         positive_weight_count = good_row_count
 
         Examples
         --------

@@ -672,16 +672,14 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     val rdd = frames.getFrameRdd(ctx, frameId)
     val columnIndex = frame.schema.columnIndex(arguments.dataColumn)
     val valueDataType: DataType = frame.schema.columns(columnIndex)._2
-    // TODO TRIB-2245
-    /*
+
     val (weightsColumnIndexOption, weightsDataTypeOption) = if (arguments.weightsColumn.isEmpty) {
       (None, None)
     }
     else {
       val weightsColumnIndex = frame.schema.columnIndex(arguments.weightsColumn.get)
       (Some(weightsColumnIndex), Some(frame.schema.columns(weightsColumnIndex)._2))
-    }*/
-    val (weightsColumnIndexOption, weightsDataTypeOption) = (None, None)
+    }
 
     ColumnStatistics.columnSummaryStatistics(columnIndex, valueDataType, weightsColumnIndexOption, weightsDataTypeOption, rdd)
   }
