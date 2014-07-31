@@ -37,6 +37,8 @@ import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
 import scala.math.{log, pow}
 import scala.reflect.ClassTag
+import scala.util.Try
+
 private[spark] object SparkOps extends Serializable {
 
   /**
@@ -563,7 +565,6 @@ private[spark] object SparkOps extends Serializable {
    */
   def binEqualDepth(index: Int, numBins: Int, rdd: RDD[Row]): RDD[Row] = {
     import scala.math.ceil
-import scala.math.ceilDD[Double] from column
     val columnRdd = try {
       rdd.map(row => java.lang.Double.parseDouble(row(index).toString))
     }
@@ -945,13 +946,22 @@ import scala.math.ceilDD[Double] from column
     treeMap.iterator
   }
 
+  /**
+   * Calculate the empirical entropy for a column in a data frame.
+   *
+   * @param frameRdd RDD for a BigFrame
+   * @param columnIndex Column index
+   * @return Empirical entropy
+   */
   def entropy(frameRdd: RDD[Row], columnIndex: Int): Double = {
-    require(columnIndex >= 0, "label column index must be greater than or equal to zero")
+    require(columnIndex >= 0, "column index must be greater than or equal to zero")
     val groupedRDD = frameRdd.groupBy(row => row(columnIndex))
-    val frequencyRDD = groupedRDD.map({ case (distinctValue, rows) => rows.size})
-    val totalFrequency = frequencyRDD.sum()
+    val groupedCountRDD = groupedRDD.map({ case (distinctValue, rows) => rows.size})
 
-    val probabilityRDD = frequencyRDD.map(freq => freq / totalFrequency)
+    val totalCount = Try(groupedCountRDD.sum()).getOrElse(0d)
+    if (totalCount == 0) throw new RuntimeException("Unable to compute entropy on empty frame")
+
+    val probabilityRDD = groupedCountRDD.map(count => count / totalCount)
     val entropy = -probabilityRDD.map(probability => if (probability > 0) probability * log(probability) else 0).sum()
     entropy
   }

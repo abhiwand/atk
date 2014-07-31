@@ -251,10 +251,10 @@ class SparkEngine(sparkContextManager: SparkContextManager,
   /**
    * Union the additionalData onto the end of the existingFrame
    * @param sparkContext Spark Context
-   * @param existingFrame the target DataFrame that may or may not already have data
-   * @param additionalData the data to add to the existingFrame
+   * @param existingFrame the target DataFrame d to the existingFrame
    * @return the frame with updated schema
-   */
+   */that may or may not already have data
+   * @param additionalData the data to ad
   private def unionAndSave(sparkContext: SparkContext, existingFrame: DataFrame, additionalData: FrameRDD): DataFrame = {
     val existingRdd = frames.getFrameRdd(sparkContext, existingFrame)
     val unionedRdd = existingRdd.union(additionalData)
@@ -1032,6 +1032,13 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     frames.updateSchema(newFrame, allColumns)
     newFrame.copy(schema = Schema(allColumns))
   }
+
+  override def entropy(arguments: Entropy[Long])(implicit user: UserPrincipal): Execution =
+    commands.execute(entropyCommand, arguments, user, implicitly[ExecutionContext])
+
+  val entropyCommand = commands.registerCommand("dataframe/entropy", entropySimple)
+
+  def entropySimple = ???
 
   /**
    * Retrieve DataFrame object by frame id
