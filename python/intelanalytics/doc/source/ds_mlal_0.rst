@@ -1011,8 +1011,8 @@ Intel Analytics Toolkit (IAT) uses a bipartite graph, to learn an LDA topic mode
 This graph contains vertices in two columns.
 The left-hand column contains unique ids, each corresponding to a document in the training collection, while the right-hand column contains
 unique ids corresponding to each word in the entire training set, following any pre-processing steps that were used.
-Connections between these columns, or for examples, denote the number of times a particular word appears in a document,
-with the we get on the for example in question denoting the number of times the word was found there.
+Connections between these columns, or edges, denote the number of times a particular word appears in a document,
+with the we get on the edge in question denoting the number of times the word was found there.
 After graph construction, many analysts choose to normalize the weights using one of a variety of normalization schemes.
 One approach is to normalize the weights to sum to 1, while another is to use an approach called term frequency-inverse document frequency (tfidf),
 where the resultant weights are meant to reflect how important a word is to a document in the corpus.
@@ -1022,8 +1022,8 @@ Typical text analytics experiments will try a variety of approaches on a small s
 
 Figure 1 depicts an example layout of a bipartite graph used for topic modeling with LDA.
 The left-hand column contains one vertex for each document in the input corpus, while the right-hand column contains vertices for each unique word found in them.
-Edges connecting left- and right-hand columns denote the number of times the word was found in the document the for example connects.
-The weights of the for examples used in this example were not normalized.
+Edges connecting left- and right-hand columns denote the number of times the word was found in the document the edge connects.
+The weights of the edges used in this example were not normalized.
 
 
 
@@ -1033,7 +1033,7 @@ The weights of the for examples used in this example were not normalized.
     Figure 1 - Example layout of a bipartite graph for LDA.
     The left-hand column contains one vertex for each document in the input corpus, while the right-hand column contains vertices for each
     unique word found in them.
-    Edges connecting left- and right-hand columns denote the number of times the word was found in the document the for example connects.
+    Edges connecting left- and right-hand columns denote the number of times the word was found in the document the edge connects.
 
 Training LDA
 ------------
@@ -1092,15 +1092,15 @@ It can take several parameters, each of which are explained below.
 ::
 
         latent_dirichlet_allocation(
-                                    for example_value_property_list,
-                                    input_for example_label_list,
+                                    edge_value_property_list,
+                                    input_edge_label_list,
                                     output_vertex_property_list,
                                     vertex_type_property_key,
                                     vector_value,
                                     max_supersteps = 20,
                                     alpha = 0.1,
                                     beta = 0.1,
-                                    convfor examplence_threshold = 0.001,
+                                    convergence_threshold = 0.001,
                                     evaluation_cost = False,
                                     max_value,
                                     min_value,
@@ -1111,16 +1111,16 @@ It can take several parameters, each of which are explained below.
 Parameters
 ----------
 
-for example_value_property_list:
+edge_value_property_list:
     Comma-separated String
 
-    The for example properties containing the input for example values.
-    We expect comma-separated list of property names if you use more than one for example property.
+    The edge properties containing the input edge values.
+    We expect comma-separated list of property names if you use more than one edge property.
  
-input_for example_label_list:
+input_edge_label_list:
     Comma-separated String
 
-    The name of for example label.
+    The name of edge label.
  
 output_vertex_property_list:
     Comma-separated List
@@ -1159,10 +1159,10 @@ beta:
 
     Defaults to 0.1, but all positive floating-point numbers are acceptable.
  
-convfor examplence_threshold:
+convergence_threshold:
     Float (optional)
 
-    Sets the maximum change for convfor examplence to be achieved.
+    Sets the maximum change for convergence to be achieved.
     Defaults to 0.001, but floating-point values greater than or equal to zero are acceptable.
 
 evaluate_cost:
@@ -1176,16 +1176,16 @@ evaluate_cost:
 max_val:
     Float (optional)
 
-    The maximum value for for example weights.
-    If an for example wfor examplet is larger than this, the algorithm will throw an exception and terminate.
+    The maximum value for edge weights.
+    If an edge weight is larger than this, the algorithm will throw an exception and terminate.
     This option is used for graph integrity checks.
     The defaults to infinity, but all floating-point numbers are acceptable.
  
 min_val:
     Float (optional)
 
-    The minimum value for for example weights.
-    If an for example wfor examplet is smaller than this, the algorithm will throw an exception and terminate.
+    The minimum value for edge weights.
+    If an edge weight is smaller than this, the algorithm will throw an exception and terminate.
     This option is used for graph integrity check.
     Negative infinity is the default value, but all floating-point numbers are acceptable.
 
@@ -1193,7 +1193,7 @@ bidirectional_check:
     Boolean (optional)
 
     Turns bidirectional check on and off.
-    LDA expects a bi-partite input graph, so each for example should be bi-directional.
+    LDA expects a bi-partite input graph, so each edge should be bi-directional.
     This option is mainly for graph integrity check.
 
 num_topics:
@@ -1216,9 +1216,9 @@ Examples
 ::
 
     g.ml.latent_dirichlet_allocation(
-            for example_value_property_list = "word_count",
+            edge_value_property_list = "word_count",
             vertex_type_property_key = "vertex_type",
-            input_for example_label_list = "contains",
+            input_edge_label_list = "contains",
             output_vertex_property_list = "lda_result ",
             vector_value = "true",
             num_topics = 3,
@@ -1229,13 +1229,13 @@ An example output follows::
 
        {u'value': u'======Graph Statistics======
        Number of vertices: 12 (doc: 6, word: 6)
-       Number of for examples: 12
+       Number of edges: 12
 
        ======LDA Configuration======
        numTopics: 3
        alpha: 0.100000
        beta: 0.100000
-       convfor examplenceThreshold: 0.000000
+       convergenceThreshold: 0.000000
        bidirectionalCheck: false
        maxSupersteps: 5
        maxVal: Infinity
