@@ -27,7 +27,6 @@ class SparkContextManagerSpec extends Specification with Mockito {
 
   "SparkContextManager" should {
 
-
     "create a new context everytime" in {
 
       val sparkContextManager = createMockSparkContextManager()
