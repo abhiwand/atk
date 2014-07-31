@@ -149,16 +149,6 @@ class SparkFrameStorage(fsRoot: String,
         }
     }
 
-  override def addColumn[T](frame: DataFrame, column: Column[T], columnType: DataTypes.DataType): DataFrame =
-    //withContext("frame.addColumn") {
-    metaStore.withSession("frame.addColumn") {
-      implicit session =>
-        {
-          val newColumns = frame.schema.columns :+ (column.name, columnType)
-          metaStore.frameRepo.updateSchema(frame, newColumns)
-        }
-    }
-
   override def getRows(frame: DataFrame, offset: Long, count: Int, invocation: Invocation)(implicit user: UserPrincipal): Iterable[Row] =
     withContext("frame.getRows") {
       require(frame != null, "frame is required")
