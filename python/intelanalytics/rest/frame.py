@@ -455,9 +455,9 @@ class FrameBackendRest(object):
             raise ValueError("label_column does not exist in frame")
         if not pred_column in column_names:
             raise ValueError("pred_column does not exist in frame")
-        if supported_types.get_type_string(schema_dict[label_column]) in ['float32', 'float64']:
+        if schema_dict[label_column] in [float32, float64]:
             raise ValueError("invalid label_column types")
-        if supported_types.get_type_string(schema_dict[pred_column]) in ['float32', 'float64']:
+        if schema_dict[pred_column] in [float32, float64]:
             raise ValueError("invalid pred_column types")
         if not beta > 0:
             raise ValueError("invalid beta value for f measure")
@@ -471,13 +471,13 @@ class FrameBackendRest(object):
         column_names = schema_dict.keys()
         if not label_column in column_names:
             raise ValueError("label_column does not exist in frame")
-        if schema_dict.get(label_column) in ['float32', 'float64']:
+        if schema_dict.get(label_column) in [float32, float64]:
             raise ValueError("invalid label_column types")
         if pred_column.strip() == "":
             raise ValueError("pred_column can not be empty string")
         if not pred_column in column_names:
             raise ValueError("pred_column does not exist in frame")
-        if schema_dict.get(pred_column) in ['float32', 'float64']:
+        if schema_dict.get(pred_column) in [float32, float64]:
             raise ValueError("invalid pred_column types")
         if str(pos_label).strip() == "":
             raise ValueError("invalid pos_label")
