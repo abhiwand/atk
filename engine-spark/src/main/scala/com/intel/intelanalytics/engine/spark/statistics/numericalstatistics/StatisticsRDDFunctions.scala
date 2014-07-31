@@ -31,8 +31,9 @@ private[numericalstatistics] object StatisticsRDDFunctions {
       weightedSumOfLogs = Some(BigDecimal(0)),
       minimum = Double.PositiveInfinity,
       maximum = Double.NegativeInfinity,
-      mode = Double.NaN,
+      modeOfLeastValue = Double.NaN,
       weightAtMode = 0,
+      modeCount = 0,
       totalWeight = 0,
       positiveWeightCount = 0,
       nonPositiveWeightCount = 0,
@@ -70,8 +71,9 @@ private[numericalstatistics] object StatisticsRDDFunctions {
           weightedSumOfLogs = weightedLog,
           minimum = dataAsDouble,
           maximum = dataAsDouble,
-          mode = dataAsDouble,
+          modeOfLeastValue = dataAsDouble,
           weightAtMode = weightAsDouble,
+          modeCount = 1,
           totalWeight = weightAsBigDecimal,
           positiveWeightCount = 1,
           nonPositiveWeightCount = 0,
@@ -93,8 +95,9 @@ private[numericalstatistics] object StatisticsRDDFunctions {
     weightedSumOfLogs = Some(BigDecimal(0)),
     minimum = Double.PositiveInfinity,
     maximum = Double.NegativeInfinity,
-    mode = Double.NaN,
+    modeOfLeastValue = Double.NaN,
     weightAtMode = 0,
+    modeCount = 0,
     totalWeight = BigDecimal(0))
 
   private val firstPassStatsOfGoodEntryNonPositiveWeight = FirstPassStatistics(
@@ -110,7 +113,8 @@ private[numericalstatistics] object StatisticsRDDFunctions {
     weightedSumOfLogs = Some(BigDecimal(0)),
     minimum = Double.PositiveInfinity,
     maximum = Double.NegativeInfinity,
-    mode = Double.NaN,
+    modeOfLeastValue = Double.NaN,
+    modeCount = 0,
     weightAtMode = 0,
     totalWeight = BigDecimal(0))
 

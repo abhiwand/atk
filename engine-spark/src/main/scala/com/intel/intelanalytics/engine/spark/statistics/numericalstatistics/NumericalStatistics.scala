@@ -73,14 +73,22 @@ class NumericalStatistics(dataWeightPairs: RDD[(Double, Double)]) extends Serial
   lazy val weightedStandardDeviation: Double = Math.sqrt(weightedVariance)
 
   /**
-   * The weighted mode of the data. NaN when there are no data elements of nonzero weight.
+   * The weighted mode of the least numerical value. NaN when there are no data elements of nonzero weight.
+   *  We choose the mode of the least numerical value simply to make the value returned deterministic on multimodal
+   *  inputs.
    */
-  lazy val weightedMode: Double = singlePassStatistics.mode
+  lazy val weightedMode: Double = singlePassStatistics.modeOfLeastValue
 
   /**
    * The weight of the mode.
    */
   lazy val weightAtMode: Double = singlePassStatistics.weightAtMode
+
+  /**
+   * The number of distinct modes in the data.
+   */
+
+  lazy val modeCount: Long = singlePassStatistics.modeCount
 
   /**
    * Sum of all weights that are finite numbers  > 0.
