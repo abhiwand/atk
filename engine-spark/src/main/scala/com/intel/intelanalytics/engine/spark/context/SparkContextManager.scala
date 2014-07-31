@@ -29,11 +29,11 @@ import org.apache.spark.SparkContext
 
 class SparkContextManager(conf: Config, factory: SparkContextFactory) extends SparkContextManagementStrategy {
   //TODO read the strategy from the config file
-  val contextManagementStrategy: SparkContextManagementStrategy = SparkContextPerUserStrategy
+  val contextManagementStrategy: SparkContextManagementStrategy = SparkContextPerActionStrategy
   contextManagementStrategy.configuration = conf
   contextManagementStrategy.sparkContextFactory = factory
 
-  def getContext(user: String): SparkContext = contextManagementStrategy.getContext(user)
-  def context(implicit user: UserPrincipal): SparkContext = getContext(user.user.apiKey.getOrElse(
-    throw new RuntimeException("User didn't have an apiKey which shouldn't be possible if they were authenticated")))
+  def getContext(user: String, description: String): SparkContext = contextManagementStrategy.getContext(user, description)
+  def context(implicit user: UserPrincipal, description: String): SparkContext = getContext(user.user.apiKey.getOrElse(
+    throw new RuntimeException("User didn't have an apiKey which shouldn't be possible if they were authenticated")), description)
 }

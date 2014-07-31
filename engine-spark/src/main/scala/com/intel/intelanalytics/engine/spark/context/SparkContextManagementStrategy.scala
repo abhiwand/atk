@@ -33,5 +33,5 @@ trait SparkContextManagementStrategy {
   var configuration: Config = null
   var sparkContextFactory: SparkContextFactory = null
 
-  def getContext(user: String): SparkContext
+  def getContext(user: String, description: String): SparkContext
 }
