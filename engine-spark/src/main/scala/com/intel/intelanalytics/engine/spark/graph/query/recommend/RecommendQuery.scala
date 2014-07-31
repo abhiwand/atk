@@ -113,7 +113,7 @@ class RecommendQuery extends SparkCommandPlugin[RecommendParams, RecommendResult
     val numOutputResults = arguments.num_output_results.getOrElse(config.getInt("num_output_results"))
 
     val (targetVertexType, sourceVertexName, targetVertexName, sourceIdPropertyKey, targetIdPropertyKey) =
-      if (vertexType == config.getString("vertex_type")) {
+      if (vertexType == config.getString("vertex_type").toLowerCase) {
         ("r", leftVertexName, rightVertexName, leftVertexIdPropertyKey, rightVertexIdPropertyKey)
       }
       else {
