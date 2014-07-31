@@ -1320,6 +1320,11 @@ class BigFrame(CommandSupport):
             The column to be statistically summarized. Must contain numerical data; all NaNs and infinite values
              are excluded from the calculation.
 
+        weights_column : str
+            Optional. The column that provides weights (frequencies) for the data being summarized.
+            Must contain numerical data. Uniform weights of 1 for all items will be used for the calculation if this
+                parameter is not provided.
+
         Returns
         -------
         summary : Dict
@@ -1330,6 +1335,10 @@ class BigFrame(CommandSupport):
                  | variance : Variance of the data where  sum of squared distance from the mean is divided by
                     count - 1. None when there are <= 1 many data elements.
                  | standard_deviation : Standard deviation of the data. None when there are <= 1 many data elements.
+                 mode : A mode of the data; that is, an item with the greatest weight (largest frequency),
+                  When there is more than one mode, the one of least numerical value is returned.
+                  None when there are no data elements of positive weight.
+                 weight_at_mode : The weight of the mode.
                  | valid_data_count: The count of all data elements that are finite numbers.
                     (In other words, after excluding NaNs and infinite values.)
                  | minimum : Minimum value in the data. None when there are no data elements.
@@ -1338,6 +1347,9 @@ class BigFrame(CommandSupport):
                     Assumes a Gaussian distribution. None when there are 0 or 1 data elements.
                  | mean_confidence_upper: Upper limit of the 95% confidence interval about the mean.
                     Assumes a Gaussian distribution. None when there are 0 or 1 data elements.
+                 positive_weight_count : The number of valid data elements with weight > 0.
+                  This is the number of entries used in the statistical calculation.
+                 non_positive_weight_count : The number valid data elements with finite weight <= 0.
 
         Return Types:
             | valid_data_count returns a Long.
