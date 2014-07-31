@@ -125,18 +125,15 @@ private[spark] object ColumnStatistics extends Serializable {
       mode = if (stats.weightedMode.isNaN) None else Some(stats.weightedMode),
       weightAtMode = stats.weightAtMode,
       modeCount = stats.modeCount,
-      validDataCount = stats.totalWeight.toLong,
+      totalWeight = stats.totalWeight,
       meanConfidenceLower = if (stats.meanConfidenceLower.isNaN) None else Some(stats.meanConfidenceLower),
       meanConfidenceUpper = if (stats.meanConfidenceUpper.isNaN) None else Some(stats.meanConfidenceUpper),
       minimum = if (stats.min.isNaN) None else Some(stats.min),
       maximum = if (stats.max.isNaN) None else Some(stats.max),
       positiveWeightCount = stats.positiveWeightCount,
-      nonPositiveWeightCount = stats.nonPositiveWeightCount
-    // TODO TRIB-2245
-    // badRowCount = stats.badRowCount,
-    //goodRowCount = stats.goodRowCount
-    //
-    )
+      nonPositiveWeightCount = stats.nonPositiveWeightCount,
+      badRowCount = stats.badRowCount,
+      goodRowCount = stats.goodRowCount)
   }
 
   /**

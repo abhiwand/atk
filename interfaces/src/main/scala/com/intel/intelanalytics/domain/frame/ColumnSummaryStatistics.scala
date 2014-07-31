@@ -53,15 +53,17 @@ case class ColumnSummaryStatistics(frame: FrameReference, dataColumn: String, we
  *              When there is more than one mode, the one of least numerical value is taken.
  *              None when there are no data elements of positive weight.
  * @param modeCount The number of distinct modes. 0 when there are no data elements of positive weight.
- * @param weightAtMode The weight of the mode.
- * @param validDataCount The number of rows in which both the data and weight (if a weights column is provided)
- *                        are finite numbers. (eg. neither is a NaN or an infinite value).
+ * @param weightAtMode The weight of the mode. 0 when there are no data elements of positive weight.
+ * @param totalWeight The sum of all weights over valid input rows. (Ie. neither data nor weight is NaN, or infinity,
+ *                    and weight is > 0).
  * @param minimum Minimum value in the data. None when there are no data elements of positive weight.
  * @param maximum Maximum value in the data. None when there are no data elements of positive weight.
  * @param meanConfidenceLower: Lower limit of the 95% confidence interval about the mean. Assumes a Gaussian RV.
  *                             None when there are <= 1 data elements of positive weight.
  * @param meanConfidenceUpper: Upper limit of the 95% confidence interval about the mean. Assumes a Gaussian RV.
  *                              None when there are <= 1 data elements of positive weight.
+ * @param badRowCount The number of rows containing a NaN or infinite value in either the data or weights column.
+ * @param goodRowCount The number of rows containing a NaN or infinite value in either the data or weight
  * @param positiveWeightCount  The number valid data elements with weights > 0.
  *                             This is the number of entries used for the calculation of the statistics.
  * @param nonPositiveWeightCount The number valid data elements with weight <= 0.
@@ -73,25 +75,13 @@ case class ColumnSummaryStatisticsReturn(mean: Double,
                                          mode: Option[Double],
                                          weightAtMode: Double,
                                          modeCount: Long,
-                                         validDataCount: Long,
+                                         totalWeight: Double,
                                          minimum: Option[Double],
                                          maximum: Option[Double],
                                          meanConfidenceLower: Option[Double],
                                          meanConfidenceUpper: Option[Double],
+                                         badRowCount: Long,
+                                         goodRowCount: Long,
                                          positiveWeightCount: Long,
-                                         nonPositiveWeightCount: Long //badRowCount: Long,
-                                         //goodRowCount: Long
-                                         )
-
-/* TODO TRIB-2245
- * modes only make sense when there are weights
- *
-
- *
- * logging of "indigestible data" will come later
-
-* @param badRowCount The number of rows containing a NaN or infinite value in either the data or weights column.
-* @param goodRowCount The number of rows containing a NaN or infinite value in either the data or weights
-*                             column.
-*                             */
+                                         nonPositiveWeightCount: Long)
 
