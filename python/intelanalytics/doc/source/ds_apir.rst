@@ -8,9 +8,6 @@ The function is serialized and copies are distributed throughout the cluster as 
 Various API command methods accept PUFs as parameters.
 All PUFs run under the constraints of the particular command.
 
-Note:
-    These are sometimes inappropriately called *goat-duh* functions.
-
 -------------
 Frame Row PUF
 -------------
@@ -103,8 +100,6 @@ Here are some guidelines to follow when writing a PUF:
     a default value or performs a benign side effect.
     See the ``row_sum`` function example above, where we used a ``try: except:`` block and produced a -1 for rows which caused errors.
 
-    [Ed. - We should put some rudimentary default error handling in place for the user, such that an exception won't kill the job;
-    tie into to our 'sanity check the first 100 lines' strategy]
 #. Dependencies:
     All dependencies used in the PUF must be available in **the same Python code file** as the PUF or available in the server's
     installed Python libraries.

@@ -37,7 +37,6 @@ trait FrameStorage {
   def lookupByName(name: String)(implicit user: UserPrincipal): Option[DataFrame]
   def getFrames(offset: Int, count: Int)(implicit user: UserPrincipal): Seq[DataFrame]
   def create(frameTemplate: DataFrameTemplate)(implicit user: UserPrincipal): DataFrame
-  def addColumn[T](frame: DataFrame, column: Column[T], columnType: DataTypes.DataType): DataFrame
   def removeColumn(frame: DataFrame, columnIndex: Seq[Int])(implicit user: UserPrincipal): DataFrame
   def renameFrame(frame: DataFrame, newName: String): DataFrame
   def renameColumns(frame: DataFrame, name_pairs: Seq[(String, String)]): DataFrame

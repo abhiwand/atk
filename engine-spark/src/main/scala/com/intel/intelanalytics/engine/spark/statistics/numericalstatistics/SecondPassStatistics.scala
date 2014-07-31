@@ -7,9 +7,6 @@ import com.intel.intelanalytics.engine.spark.statistics.NumericValidationUtils
 /**
  * Second pass statistics - for computing higher moments about the mean.
  *
- * In the notation of:
- * http://support.sas.com/documentation/cdl/en/procstat/63104/HTML/default/viewer.htm#procstat_univariate_sect026.htm
- *
  * xw : the weighted mean of the data
  * sw: the weighted standard deviation of the data
  *
