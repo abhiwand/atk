@@ -378,7 +378,7 @@ class BigFrame(CommandSupport):
         """
         Returns
         -------
-        The number of rows in the frame
+        The number of rows in the frame.
 
         .. versionadded:: 0.8
         """
@@ -665,19 +665,19 @@ class BigFrame(CommandSupport):
 
             my_frame.inspect( n=11 )
 
-             a int32                \
-            --------
-             1
-             1
-             2
-             3
-             5
-             8
-            13
-            21
-            34
-            55
-            89
+              a int32
+            |--------|
+              1
+              1
+              2
+              3
+              5
+              8
+             13
+             21
+             34
+             55
+             89
 
         Create a new frame with a column showing what bin the data is in.
         The data should be separated into a maximum of five bins and the bins should be *equalwidth*::
@@ -685,19 +685,19 @@ class BigFrame(CommandSupport):
             binnedEW = my_frame.bin_column('a', 5, 'equalwidth', 'aEWBinned')
             binnedEW.inspect( n=11 )
 
-             a int32     aEWBinned int32     \ 
-            ----------------------------
-             1                   1
-             1                   1
-             2                   1
-             3                   1
-             5                   1
-             8                   1
-            13                   1
-            21                   2
-            34                   2
-            55                   4
-            89                   5
+              a int32     aEWBinned int32
+            |----------------------------|
+              1                   1
+              1                   1
+              2                   1
+              3                   1
+              5                   1
+              8                   1
+             13                   1
+             21                   2
+             34                   2
+             55                   4
+             89                   5
 
         Create a new frame with a column showing what bin the data is in.
         The data should be separated into a maximum of five bins and the bins should be *equaldepth*::
@@ -706,19 +706,19 @@ class BigFrame(CommandSupport):
             binnedED = my_frame.bin_column('a', 5, 'equaldepth', 'aEDBinned')
             binnedED.inspect( n=11 )
 
-             a int32     aEDBinned int32       \ 
-            ----------------------------
-             1                   1
-             1                   1
-             2                   1
-             3                   2
-             5                   2
-             8                   3
-            13                   3
-            21                   4
-            34                   4
-            55                   5
-            89                   5
+              a int32     aEDBinned int32
+            |----------------------------|
+              1                   1
+              1                   1
+              2                   1
+              3                   2
+              5                   2
+              8                   3
+             13                   3
+             21                   4
+             34                   4
+             55                   5
+             89                   5
 
         .. versionadded:: 0.8
 
@@ -760,6 +760,84 @@ class BigFrame(CommandSupport):
             return result_dict
         except:
             raise IaError(logger)
+
+    @doc_stub
+    def column_summary_statistics(self, data_column, weights_column_name = None):
+        """
+        Calculate summary statistics of a column.
+
+        Parameters
+        ----------
+        data_column : str
+            The column to be statistically summarized.
+            Must contain numerical data; all NaNs and infinite values are excluded from the calculation.
+        weights_column_name : str (optional)
+            Name of column holding weights of column values
+
+        Returns
+        -------
+        summary : Dict
+            Dictionary containing summary statistics in the following entries:
+
+            | mean:
+                  Arithmetic mean of the data.
+
+            | geometric_mean:
+                  Geometric mean of the data. None when there is a data element <= 0, 1.0 when there are no data elements.
+
+            | variance:
+                  Variance of the data where  sum of squared distance from the mean is divided by count - 1.
+                  None when there are <= 1 many data elements.
+
+            | standard_deviation:
+                  Standard deviation of the data. None when there are <= 1 many data elements.
+
+            | valid_data_count:
+                  The count of all data elements that are finite numbers.
+                  (In other words, after excluding NaNs and infinite values.)
+
+            | minimum:
+                  Minimum value in the data. None when there are no data elements.
+
+            | maximum:
+                  Maximum value in the data. None when there are no data elements.
+
+            | mean_confidence_lower:
+                  Lower limit of the 95% confidence interval about the mean.
+                  Assumes a Gaussian distribution. None when there are 0 or 1 data elements.
+
+            | mean_confidence_upper:
+                  Upper limit of the 95% confidence interval about the mean.
+                  Assumes a Gaussian distribution. None when there are 0 or 1 data elements.
+
+        Notes
+        -----
+        Return Types
+            | valid_data_count returns a Long.
+            | All other values are returned as Doubles or None.
+
+        Variance
+            Variance is computed by the following formula:
+
+        .. math::
+
+            \\left( \\frac{1}{n - 1} \\right) * sum_{i}  \\left(x_{i} - M \\right) ^{2}
+
+        where :math:`n` is the number of valid elements of positive weight, and :math:`M` is the mean.
+
+        Standard Deviation
+            The square root of the variance.
+
+        Examples
+        --------
+        ::
+
+            stats = frame.column_summary_statistics('data column', 'weight column')
+
+        .. versionadded:: 0.8
+
+        """
+        pass
 
     def confusion_matrix(self, label_column, pred_column, pos_label=1):
         """
@@ -867,14 +945,14 @@ class BigFrame(CommandSupport):
 
             my_frame.inspect()
 
-            obs int32               \ 
-            ---------
-              0
-              1
-              2
-              0
-              1
-              2
+             obs int32
+            |---------|
+               0
+               1
+               2
+               0
+               1
+               2
               
         The cumulative count for column *obs* using *count_value = 1* is obtained by:
 
@@ -885,14 +963,14 @@ class BigFrame(CommandSupport):
 
             cc_frame.inspect()
 
-            obs int32   obsCumulativeCount int32              \ 
-            ------------------------------------
-              0                          0
-              1                          1
-              2                          1
-              0                          1
-              1                          2
-              2                          2
+             obs int32   obsCumulativeCount int32
+            |------------------------------------|
+               0                          0
+               1                          1
+               2                          1
+               0                          1
+               1                          2
+               2                          2
 
         .. versionadded:: 0.8
 
@@ -929,14 +1007,14 @@ class BigFrame(CommandSupport):
 
             my_frame.inspect()
 
-            obs int32               \ 
-            ---------
-              0
-              1
-              2
-              0
-              1
-              2
+             obs int32
+            |---------|
+               0
+               1
+               2
+               0
+               1
+               2
  
         The cumulative percent sum for column *obs* is obtained by::
 
@@ -947,14 +1025,14 @@ class BigFrame(CommandSupport):
 
             cps_frame.inspect()
 
-            obs int32   obsCumulativePercentSum float64              \ 
-            -------------------------------------------
-              0                          0.0
-              1                          0.16666666
-              2                          0.5
-              0                          0.5
-              1                          0.66666666
-              2                          1.0
+             obs int32   obsCumulativePercentSum float64
+            |-------------------------------------------|
+               0                          0.0
+               1                          0.16666666
+               2                          0.5
+               0                          0.5
+               1                          0.66666666
+               2                          1.0
         
         .. versionadded:: 0.8
 
@@ -990,14 +1068,14 @@ class BigFrame(CommandSupport):
 
             my_frame.inspect()
 
-            obs int32               \ 
-            ---------
-              0
-              1
-              2
-              0
-              1
-              2
+             obs int32
+            |---------|
+               0
+               1
+               2
+               0
+               1
+               2
 
         The cumulative percent count for column *obs* is obtained by::
 
@@ -1008,14 +1086,14 @@ class BigFrame(CommandSupport):
 
             cpc_frame.inspect()
 
-            obs int32   obsCumulativePercentCount float64              \ 
-            ---------------------------------------------
-              0                          0.0
-              1                          0.5
-              2                          0.5
-              0                          0.5
-              1                          1.0
-              2                          1.0
+             obs int32   obsCumulativePercentCount float64
+            |---------------------------------------------|
+               0                          0.0
+               1                          0.5
+               2                          0.5
+               0                          0.5
+               1                          1.0
+               2                          1.0
          
         .. versionadded:: 0.8
 
@@ -1052,14 +1130,14 @@ class BigFrame(CommandSupport):
 
             my_frame.inspect()
 
-            obs int32               \ 
-            ---------
-              0
-              1
-              2
-              0
-              1
-              2
+             obs int32
+            |---------|
+               0
+               1
+               2
+               0
+               1
+               2
 
         The cumulative percent count for column *obs* is obtained by::
 
@@ -1070,14 +1148,14 @@ class BigFrame(CommandSupport):
 
             cs_frame.inspect()
 
-            obs int32   obsCumulativeSum int32           \ 
-            ----------------------------------
-              0                     0
-              1                     1
-              2                     3
-              0                     3
-              1                     4
-              2                     6
+             obs int32   obsCumulativeSum int32
+            |----------------------------------|
+               0                     0
+               1                     1
+               2                     3
+               0                     3
+               1                     4
+               2                     6
 
         .. versionadded:: 0.8
 
@@ -1180,7 +1258,8 @@ class BigFrame(CommandSupport):
 
         Examples
         --------
-        >>> ecdf_frame = frame.ecdf('sample')
+        ::
+            ecdf_frame = frame.ecdf('sample')
 
         .. versionadded:: 0.8
 
@@ -1309,64 +1388,6 @@ class BigFrame(CommandSupport):
         """
         return self._backend.classification_metric(self, 'fmeasure', label_column, pred_column, pos_label, beta)
 
-    @doc_stub
-    def column_summary_statistics(self, data_column, weights_column_name = None):
-        """
-        Calculate summary statistics of a column.
-
-        Parameters
-        ----------
-        data_column : str
-            The column to be statistically summarized. Must contain numerical data; all NaNs and infinite values
-             are excluded from the calculation.
-
-        Returns
-        -------
-        summary : Dict
-            Dictionary containing summary statistics in the following entries:
-                 | mean : Arithmetic mean of the data.
-                 | geometric_mean : Geometric mean of the data. None when there is a data element <= 0,
-                    1.0 when there are no data elements.
-                 | variance : Variance of the data where  sum of squared distance from the mean is divided by
-                    count - 1. None when there are <= 1 many data elements.
-                 | standard_deviation : Standard deviation of the data. None when there are <= 1 many data elements.
-                 | valid_data_count: The count of all data elements that are finite numbers.
-                    (In other words, after excluding NaNs and infinite values.)
-                 | minimum : Minimum value in the data. None when there are no data elements.
-                 | maximum : Maximum value in the data. None when there are no data elements.
-                 | mean_confidence_lower : Lower limit of the 95% confidence interval about the mean.
-                    Assumes a Gaussian distribution. None when there are 0 or 1 data elements.
-                 | mean_confidence_upper: Upper limit of the 95% confidence interval about the mean.
-                    Assumes a Gaussian distribution. None when there are 0 or 1 data elements.
-
-        Return Types:
-            | valid_data_count returns a Long.
-            | All other values are returned as Doubles or None.
-
-        Variance:
-            Variance is computed by the following formula:
-
-        .. math::
-
-            \\left( \\frac{1}{n - 1} \\right) * sum_{i}  \\left(x_{i} - M \\right)^_{2}
-
-        where :math:`n` is the number of valid elements of positive weight, and :math:`M` is the  mean
-
-        Standard Deviation:
-            The square root of the variance.
-
-        Examples
-        --------
-        ::
-
-            stats = frame.column_summary_statistics('data column', 'weight column')
-
-        .. versionadded:: 0.8
-
-        """
-        pass
-
-
 
     def get_error_frame(self):
         """
@@ -1420,37 +1441,37 @@ class BigFrame(CommandSupport):
 
             my_frame.inspect()
 
-            a str   \ 
-            -----
-            cat
-            apple
-            bat
-            cat
-            bat
-            cat
+             a str
+            |-----|
+             cat
+             apple
+             bat
+             cat
+             bat
+             cat
 
         Create a new frame, combining similar values of column *a*, and count how many of each value is in the original frame::
 
             new_frame = my_frame.groupBy('a', count)
             new_frame.inspect()
 
-            a str       count int       \ 
-            ---------------------
-            cat             3
-            apple           1
-            bat             2
+             a str       count int
+            |---------------------|
+             cat             3
+             apple           1
+             bat             2
 
         In this example, 'my_frame' is accessing a frame with three columns, *a*, *b*, and *c*::
 
             my_frame.inspect()
 
-            a int   b str       c float     \ 
-            ---------------------------
-            1       alpha     3.0
-            1       bravo     5.0
-            1       alpha     5.0
-            2       bravo     8.0
-            2       bravo    12.0
+             a int   b str       c float
+            |---------------------------|
+             1       alpha     3.0
+             1       bravo     5.0
+             1       alpha     5.0
+             2       bravo     8.0
+             2       bravo    12.0
 
         Create a new frame from this data, grouping the rows by unique combinations of column *a* and *b*;
         average the value in *c* for each group::
@@ -1458,33 +1479,33 @@ class BigFrame(CommandSupport):
             new_frame = my_frame.groupBy(['a', 'b'], {'c' : avg})
             new_frame.inspect()
 
-            a int   b str   c_avg float         \ 
-            ---------------------------
-            1       alpha     4.0
-            1       bravo     5.0
-            2       bravo    10.0
+             a int   b str   c_avg float
+            |---------------------------|
+             1       alpha     4.0
+             1       bravo     5.0
+             2       bravo    10.0
 
         For this example, we use *my_frame* with columns *a*, *c*, *d*, and *e*::
 
             my_frame.inspect()
 
-            a str   c int   d float e int         \ 
-            -----------------------------
-            ape     1     4.0       9
-            ape     1     8.0       8
-            big     1     5.0       7
-            big     1     6.0       6
-            big     1     8.0       5
+             a str   c int   d float e int
+            |-----------------------------|
+             ape     1     4.0       9
+             ape     1     8.0       8
+             big     1     5.0       7
+             big     1     6.0       6
+             big     1     8.0       5
 
         Create a new frame from this data, grouping the rows by unique combinations of column *a* and *c*;
         count each group; for column *d* calculate the average, sum and minimum value; for column *e*, save the maximum value::
 
             new_frame = my_frame.groupBy(['a', 'c'], agg.count, {'d': [agg.avg, agg.sum, agg.min], 'e': agg.max})
 
-            a str   c int   count int  d_avg float  d_sum float     d_min float e_max int               \ 
-            -----------------------------------------------------------------------------
-            ape     1           2        6.0         12.0             4.0           9
-            big     1           3        6.333333    19.0             5.0           7
+             a str   c int   count int  d_avg float  d_sum float     d_min float e_max int
+            |-----------------------------------------------------------------------------|
+             ape     1           2        6.0         12.0             4.0           9
+             big     1           3        6.333333    19.0             5.0           7
 
         For further examples, see :ref:`example_frame.groupby`.
 
