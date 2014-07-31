@@ -184,7 +184,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
    */
   override def getQueryPage(id: Long, pageId: Long)(implicit user: UserPrincipal) = withContext("se.getQueryPage") {
     withMyClassLoader {
-      val ctx = sparkContextManager.context(user)
+      val ctx = sparkContextManager.context(user, "query")
       try {
         val data = queryStorage.getQueryPage(ctx, id, pageId)
         data
@@ -246,7 +246,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
       }
 
       // successfully parsed lines get added to the destination frame
-      unionAndSave(ctx.sparkContext, destinationFrame, parseResult.parsedLines)
+      unionAndSave(ctx, destinationFrame, parseResult.parsedLines)
     }
     else {
       throw new IllegalArgumentException("Unsupported load source: " + load.source.source_type)
@@ -483,7 +483,6 @@ class SparkEngine(sparkContextManager: SparkContextManager,
    */
   private def createPythonRDD(frameId: Long, py_expression: String, ctx: SparkContext)(implicit user: UserPrincipal): EnginePythonRDD[String] = {
     withMyClassLoader {
-      val ctx = sparkContextManager.context(user).sparkContext
       val predicateInBytes = decodePythonBase64EncodedStrToBytes(py_expression)
 
       val baseRdd: RDD[String] = frames.getFrameRowRdd(ctx, frameId)
@@ -665,13 +664,13 @@ class SparkEngine(sparkContextManager: SparkContextManager,
   val columnStatisticCommand: CommandPlugin[ColumnSummaryStatistics, ColumnSummaryStatisticsReturn] =
     commands.registerCommand("dataframe/column_summary_statistics", columnStatisticSimple)
 
-  def columnStatisticSimple(arguments: ColumnSummaryStatistics, user: UserPrincipal): ColumnSummaryStatisticsReturn = {
+  def columnStatisticSimple(arguments: ColumnSummaryStatistics, user: UserPrincipal, invocation: SparkInvocation): ColumnSummaryStatisticsReturn = {
 
     implicit val u = user
 
     val frameId: Long = arguments.frame.id
     val frame = expectFrame(frameId)
-    val ctx = sparkContextManager.context(user).sparkContext
+    val ctx = invocation.sparkContext
     val rdd = frames.getFrameRdd(ctx, frameId)
     val columnIndex = frame.schema.columnIndex(arguments.dataColumn)
     val valueDataType: DataType = frame.schema.columns(columnIndex)._2
@@ -929,7 +928,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
   def getRows(arguments: RowQuery[Identifier])(implicit user: UserPrincipal): Future[Iterable[Row]] = {
     future {
       withMyClassLoader {
-        val ctx = sparkContextManager.context(user)
+        val ctx = sparkContextManager.context(user, "query")
         try {
           val invocation: SparkInvocation = SparkInvocation(this, commandId = 0, arguments = null,
             user = user, executionContext = implicitly[ExecutionContext],

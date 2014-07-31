@@ -34,17 +34,16 @@ import org.apache.spark.SparkContext
  * SparkContext is not a lightweight object, I had to increase max procs and max users limits in the OS to
  * create in the order of hundreds of SparkContetxs pre JVM
  */
-object SparkContextPerUserStrategy extends SparkContextManagementStrategy with EventLogging {
+object SparkContextPerActionStrategy extends SparkContextManagementStrategy with EventLogging {
 
   //TODO: take a look at spark.cleaner.ttl parameter, the doc says that this param is useful for long running contexts
-  //  val contextMap = new mutable.HashMap[String, Context] with mutable.SynchronizedMap[String, Context] {}
 
   //TODO: how to run jobs as a particular user
   //TODO: Decide on spark context life cycle - should it be torn down after every operation,
   //or left open for some time, and reused if a request from the same user comes in?
   //Is there some way of sharing a context across two different Engine instances?
 
-  override def getContext(user: String): SparkContext = {
-    sparkContextFactory.createSparkContext(configuration, "intel-analytics:" + user)
+  override def getContext(user: String, description: String): SparkContext = {
+    sparkContextFactory.createSparkContext(configuration, s"intel-analytics:$user:$description")
   }
 }

@@ -163,7 +163,7 @@ class CommandExecutor(engine: => SparkEngine, commands: SparkCommandStorage, con
     withMyClassLoader {
       withContext("ce.execute") {
         withContext(command.name) {
-          val context: SparkContext = contextManager.context(user)
+          val context: SparkContext = contextManager.context(user, cmd.id.toString)
           val cmdFuture = future {
             withCommand(cmd) {
               try {
