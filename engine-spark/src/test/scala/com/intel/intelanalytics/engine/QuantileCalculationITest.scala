@@ -39,13 +39,14 @@ class QuantileCalculationITest extends TestingSparkContextFlatSpec with Matchers
     )
 
     val rdd = sparkContext.parallelize(numbers, 3)
-    val result = SparkOps.calculateQuantiles(rdd, Seq(0, 3, 5, 40, 100), 0, DataTypes.int32)
-    result.length shouldBe 5
+    val result = SparkOps.calculateQuantiles(rdd, Seq(0, 3, 5, 40, 40.5, 100), 0, DataTypes.int32)
+    result.length shouldBe 6
     result(0) shouldBe Quantile(0, 1)
     result(1) shouldBe Quantile(3, 1)
     result(2) shouldBe Quantile(5, 1.25)
     result(3) shouldBe Quantile(40, 10)
-    result(4) shouldBe Quantile(100, 25)
+    result(4) shouldBe Quantile(40.5, 10.125)
+    result(5) shouldBe Quantile(100, 25)
   }
 
   //   Large scale test takes longer time. uncomment it when needed.
