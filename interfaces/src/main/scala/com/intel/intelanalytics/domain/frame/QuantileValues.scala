@@ -21,11 +21,12 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.algorithm
+package com.intel.intelanalytics.domain.frame
+
+import com.intel.intelanalytics.algorithm.Quantile
 
 /**
- * Represent a percentile and its value
- * @param percentile percentile
- * @param value value at the percentile
+ * The result object for quantile calculation
+ * @param quantiles value for the quantiles
  */
-case class Percentile(percentile: Int, value: BigDecimal)
+case class QuantileValues(quantiles: List[Quantile])

@@ -43,7 +43,7 @@ import spray.json._
 import com.intel.intelanalytics.engine.{ ProgressInfo, TaskProgressInfo }
 
 import scala.util.matching.Regex
-import com.intel.intelanalytics.algorithm.Percentile
+import com.intel.intelanalytics.algorithm.Quantile
 import com.intel.intelanalytics.spray.json.IADefaultJsonProtocol
 
 /**
@@ -177,7 +177,7 @@ object DomainJsonProtocol extends IADefaultJsonProtocol {
   implicit val cumulativeDistLongFormat = jsonFormat5(CumulativeDist[Long])
 
   implicit val assignSampleFormat = jsonFormat5(AssignSample)
-  implicit val calculatePercentilesFormat = jsonFormat3(CalculatePercentiles)
+  implicit val calculateQuantilesFormat = jsonFormat3(CalculateQuantiles)
 
   // model performance formats
 
@@ -200,8 +200,8 @@ object DomainJsonProtocol extends IADefaultJsonProtocol {
   implicit val vertexRuleFormat = jsonFormat2(VertexRule)
   implicit val frameRuleFormat = jsonFormat3(FrameRule)
   implicit val graphLoadFormat = jsonFormat3(GraphLoad)
-  implicit val percentileFormat = jsonFormat2(Percentile)
-  implicit val PercentileCalculationResultFormat = jsonFormat1(PercentileValues)
+  implicit val quantileFormat = jsonFormat2(Quantile)
+  implicit val QuantileCalculationResultFormat = jsonFormat1(QuantileValues)
 
   implicit object DataTypeJsonFormat extends JsonFormat[Any] {
     override def write(obj: Any): JsValue = {

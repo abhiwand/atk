@@ -1041,21 +1041,21 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     frames.updateRowCount(realFrame, rowCount)
   }
 
-  val calculatePercentileCommand = commands.registerCommand("dataframe/calculate_percentiles", calculatePercentilesSimple _, 7)
+  val calculateQuantileCommand = commands.registerCommand("dataframe/calculate_quantiles", calculateQuantilesSimple _, 7)
 
-  def calculatePercentilesSimple(percentiles: CalculatePercentiles, user: UserPrincipal): PercentileValues = {
+  def calculateQuantilesSimple(quantiles: CalculateQuantiles, user: UserPrincipal): QuantileValues = {
     implicit val u = user
-    val frameId: Long = percentiles.frameId
+    val frameId: Long = quantiles.frameId
     val ctx = sparkContextManager.context(user).sparkContext
 
     val realFrame: DataFrame = getDataFrameById(frameId)
     val frameSchema = realFrame.schema
-    val columnIndex = frameSchema.columnIndex(percentiles.columnName)
-    val columnDataType = frameSchema.columnDataType(percentiles.columnName)
+    val columnIndex = frameSchema.columnIndex(quantiles.columnName)
+    val columnDataType = frameSchema.columnDataType(quantiles.columnName)
 
     val rdd = frames.getFrameRdd(ctx, frameId)
-    val percentileValues = SparkOps.calculatePercentiles(rdd, percentiles.percentiles, columnIndex, columnDataType).toList
-    PercentileValues(percentileValues)
+    val quantileValues = SparkOps.calculateQuantiles(rdd, quantiles.quantiles, columnIndex, columnDataType).toList
+    QuantileValues(quantileValues)
   }
 
   override def classificationMetric(arguments: ClassificationMetric[Long])(implicit user: UserPrincipal): Execution =

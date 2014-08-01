@@ -728,15 +728,15 @@ class BigFrame(CommandSupport):
         except:
             raise IaError(logger)
 
-    def calculate_percentiles(self, column_name, percentiles):
+    def calculate_quantiles(self, column_name, quantiles):
         """
-        Calculate percentiles on given column.
+        Calculate quantiles on given column.
 
         Parameters
         ----------
         column_name : str
-            The column to calculate percentile
-        percentiles : int OR list of int. If float is provided, it will be rounded to int
+            The column to calculate quantile
+        quantiles : float OR list of float.
 
         Returns
         -------
@@ -746,18 +746,13 @@ class BigFrame(CommandSupport):
         --------
         ::
 
-            my_frame.calculate_percentiles('final_sale_price', [10, 50, 100])
+            my_frame.calculate_quantiles('final_sale_price', [10, 50, 100])
 
         .. versionadded:: 0.8
 
         """
         try:
-            percentiles_result = self._backend.calculate_percentiles(self, column_name, percentiles).result.get('percentiles')
-            result_dict = {}
-            for p in percentiles_result:
-                result_dict[p.get("percentile")] = p.get("value")
-
-            return result_dict
+            return self._backend.calculate_quantiles(self, column_name, quantiles)
         except:
             raise IaError(logger)
 
