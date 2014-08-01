@@ -399,7 +399,7 @@ class FrameBackendRest(object):
 
     # def remove_columns(self, frame, name):
     #     columns = ",".join(name) if isinstance(name, list) else name
-    #     arguments = {'frame': frame.uri, 'column': columns}
+    #     : frame.uri, 'column': columns}
     #     execute_update_frame_command('removecolumn', arguments, frame)
 
     def rename_columns(self, frame, column_names, new_names):

@@ -77,9 +77,18 @@ class GraphBackendRest(object):
         graph_info = GraphInfo(r.json())
         return BigGraph(graph_info)
 
-    def delete_graph(name):
-    #     """Deletes the graph from backing store"""
-         raise NotImplemented
+    def delete_graph(self,graph):
+        if isinstance(graph,BigGraph):
+            return self._delete_graph(graph)
+        elif isinstance(graph, basestring):
+            #delete by name
+            return self._delete_graph(self.get_graph(graph))
+        #raise NotImplemented
+
+    def _delete_graph(self,graph):
+        logger.info("REST Backend: Delete graph {0}".format(repr(graph)))
+        r=http.delete("graphs/"+str(graph.id))
+        return "Deleted "+graph.name
 
     def create(self, graph,rules,name):
         logger.info("REST Backend: create graph: " + graph.name)

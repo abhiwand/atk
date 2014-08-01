@@ -20,6 +20,8 @@
 # estoppel or otherwise. Any license under such intellectual property rights
 # must be express and approved by Intel in writing.
 ##############################################################################
+from intelanalytics.core.errorhandle import IaError
+
 f, f2 = {}, {}
 
 import logging
@@ -93,8 +95,6 @@ def get_graph(name):
     # TODO - Review docstring
     return _get_backend().get_graph(name)
 
-def rename_graph(graph,name):
-    return _get_backend().rename_graph(graph,name)
 
 def delete_graph(name):
     """
@@ -123,8 +123,7 @@ def delete_graph(name):
 
     """
     # TODO - Review docstring
-    #return _get_backend().delete_graph(name)
-    raise NotImplemented
+    return _get_backend().delete_graph(name)
 
 
 class RuleWithDifferentFramesError(ValueError):
@@ -423,6 +422,7 @@ class BigGraph(CommandSupport):
             self._backend = _get_backend()
         self._name = name or self._get_new_graph_name()
         self._uri = ""
+        self._id = 0
         self._backend.create(self,rules,name)
 
         CommandSupport.__init__(self)
@@ -481,7 +481,10 @@ class BigGraph(CommandSupport):
 
         """
         # TODO - Review Docstring
-        self._backend.set_name(value)
+        try:
+            self._backend.rename_graph(self,value)
+        except:
+            raise IaError(logger)
 
     @property
     def uri(self):
@@ -503,6 +506,10 @@ class BigGraph(CommandSupport):
 
         """
         return self._uri
+
+    @property
+    def id(self):
+        return self._id
 
     def append(self, rules=None):
         """
