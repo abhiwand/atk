@@ -43,7 +43,6 @@ class NumericalStatisticsCornerCasesITest extends TestingSparkContextFlatSpec wi
       - numericalStatisticsWithNegs.weightedStandardDeviation) should be < epsilon
     Math.abs(numericalStatistics.weightedSkewness - numericalStatisticsWithNegs.weightedSkewness) should be < epsilon
     Math.abs(numericalStatistics.weightedKurtosis - numericalStatisticsWithNegs.weightedKurtosis) should be < epsilon
-    Math.abs(numericalStatistics.weightedMode - numericalStatisticsWithNegs.weightedMode) should be < epsilon
     Math.abs(numericalStatistics.meanConfidenceLower
       - numericalStatisticsWithNegs.meanConfidenceLower) should be < epsilon
     Math.abs(numericalStatistics.meanConfidenceUpper
@@ -89,7 +88,6 @@ class NumericalStatisticsCornerCasesITest extends TestingSparkContextFlatSpec wi
       - numericalStatisticsWithBadGuys.weightedStandardDeviation) should be < epsilon
     Math.abs(numericalStatistics.weightedSkewness - numericalStatisticsWithBadGuys.weightedSkewness) should be < epsilon
     Math.abs(numericalStatistics.weightedKurtosis - numericalStatisticsWithBadGuys.weightedKurtosis) should be < epsilon
-    Math.abs(numericalStatistics.weightedMode - numericalStatisticsWithBadGuys.weightedMode) should be < epsilon
     Math.abs(numericalStatistics.meanConfidenceLower
       - numericalStatisticsWithBadGuys.meanConfidenceLower) should be < epsilon
     Math.abs(numericalStatistics.meanConfidenceUpper
@@ -144,7 +142,6 @@ class NumericalStatisticsCornerCasesITest extends TestingSparkContextFlatSpec wi
     numericalStatistics.weightedStandardDeviation.isNaN() shouldBe true
     numericalStatistics.weightedSkewness.isNaN() shouldBe true
     numericalStatistics.weightedKurtosis.isNaN() shouldBe true
-    numericalStatistics.weightedMode.isNaN() shouldBe true
     numericalStatistics.meanConfidenceLower.isNaN() shouldBe true
     numericalStatistics.meanConfidenceUpper.isNaN() shouldBe true
   }
@@ -168,7 +165,6 @@ class NumericalStatisticsCornerCasesITest extends TestingSparkContextFlatSpec wi
     numericalStatistics.weightedStandardDeviation.isNaN() shouldBe true
     numericalStatistics.weightedSkewness.isNaN() shouldBe true
     numericalStatistics.weightedKurtosis.isNaN() shouldBe true
-    numericalStatistics.weightedMode.isNaN() shouldBe true
     numericalStatistics.meanConfidenceLower.isNaN() shouldBe true
     numericalStatistics.meanConfidenceUpper.isNaN() shouldBe true
 
@@ -193,7 +189,6 @@ class NumericalStatisticsCornerCasesITest extends TestingSparkContextFlatSpec wi
     numericalStatistics.weightedStandardDeviation.isNaN() shouldBe true
     numericalStatistics.weightedSkewness.isNaN() shouldBe true
     numericalStatistics.weightedKurtosis.isNaN() shouldBe true
-    numericalStatistics.weightedMode shouldBe 1
     numericalStatistics.meanConfidenceLower.isNaN() shouldBe true
     numericalStatistics.meanConfidenceUpper.isNaN() shouldBe true
   }
@@ -217,8 +212,6 @@ class NumericalStatisticsCornerCasesITest extends TestingSparkContextFlatSpec wi
     Math.abs(numericalStatistics.weightedStandardDeviation - Math.sqrt(0.5)) should be < epsilon
     numericalStatistics.weightedSkewness.isNaN() shouldBe true
     numericalStatistics.weightedKurtosis.isNaN() shouldBe true
-    numericalStatistics.weightedMode shouldBe 1
-    numericalStatistics.modeCount shouldBe 2
     Math.abs(numericalStatistics.meanConfidenceLower - (1.5 - 1.96 * Math.sqrt(0.5) / Math.sqrt(2))) should be < epsilon
     Math.abs(numericalStatistics.meanConfidenceUpper - (1.5 + 1.96 * Math.sqrt(0.5) / Math.sqrt(2))) should be < epsilon
   }
@@ -242,21 +235,8 @@ class NumericalStatisticsCornerCasesITest extends TestingSparkContextFlatSpec wi
     Math.abs(numericalStatistics.weightedStandardDeviation - 1.0) should be < epsilon
     (numericalStatistics.weightedSkewness - 1.7320508075688807) should be < epsilon
     numericalStatistics.weightedKurtosis.isNaN() shouldBe true
-    numericalStatistics.weightedMode shouldBe 1
     Math.abs(numericalStatistics.meanConfidenceLower - (2.0 - (1.96) * (1.0 / Math.sqrt(3)))) should be < epsilon
     Math.abs(numericalStatistics.meanConfidenceUpper - (2.0 + (1.96) * (1.0 / Math.sqrt(3)))) should be < epsilon
   }
 
-  "competing modes" should "result in the least mode" in new NumericalStatisticsCornerCaseTest() {
-
-    val data: List[Double] = List(3, 1, 4, 5, 2).map(x => x.toDouble)
-    val frequencies: List[Double] = List(1, 1, 2, 1, 2).map(x => x.toDouble)
-
-    val dataFrequencies = sparkContext.parallelize(data.zip(frequencies))
-
-    val numericalStatistics = new NumericalStatistics(dataFrequencies)
-
-    numericalStatistics.weightedMode shouldBe 2
-    numericalStatistics.modeCount shouldBe 2
-  }
 }

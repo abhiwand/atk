@@ -18,13 +18,10 @@ class NumericalStatisticsCheckFormulasITest extends TestingSparkContextFlatSpec 
 
     val epsilon = 0.000000001
 
-    // restrictions on the test data:
-    //  - the mode should be unique, otherwise the correctness test is unreliable
-
     val data = List(1, 2, 3, 4, 5, 6, 7, 8, 9).map(x => x.toDouble)
     val frequencies = List(3, 2, 3, 1, 9, 4, 3, 1, 9).map(x => x.toDouble)
 
-    require(data.length > 3, "Test Data in Error: Data should have at least four elements.")
+    require(data.length > 3, "Test Data in Error: Data should have at least four elements, lest the kurtosis be trivialized.")
     require(data.length == frequencies.length, "Test Data in Error: Data length and frequencies length are mismatched")
     val netFrequencies = frequencies.reduce(_ + _)
 
@@ -47,15 +44,6 @@ class NumericalStatisticsCheckFormulasITest extends TestingSparkContextFlatSpec 
     val dataCount: Double = data.length
 
     val expectedGeometricMean = dataWeightPairs.map({ case (x, w) => Math.pow(x, w) }).reduce(_ * _)
-
-    val expectedMode = dataWeightPairs.reduce(findMode)._1
-    private def findMode(x: (Double, Double), y: (Double, Double)) =
-      if (x._2 > y._2) x else if (x._2 < y._2) y else if (x._1 < y._1) x else y
-
-    val frequencyOfMode: Double = frequencies.reduce((x, y) => math.max(x, y))
-    val weightOfMode: Double = normalizedWeights.reduce((x, y) => math.max(x, y))
-
-    val modeCount = frequencies.count(x => (x equals frequencyOfMode))
 
     //  !!! with SAS default settings, variance, standard deviation, kurtosis and skewness differ
     //  depending on whether the weights are normalized or not... this is by design
@@ -186,48 +174,6 @@ class NumericalStatisticsCheckFormulasITest extends TestingSparkContextFlatSpec 
     val testCount = numericalStatisticsWeights.positiveWeightCount
 
     testCount shouldBe dataCount
-  }
-
-  "mode" should "handle data with integer frequencies" in new NumericalStatisticsTestAgainstFormulas {
-
-    val testMode = numericalStatisticsFrequencies.weightedMode
-
-    testMode shouldBe expectedMode
-  }
-
-  "mode" should "handle data with fractional weights" in new NumericalStatisticsTestAgainstFormulas {
-
-    val testMode = numericalStatisticsWeights.weightedMode
-
-    testMode shouldBe expectedMode
-  }
-
-  "mode count" should "handle data with integer frequencies" in new NumericalStatisticsTestAgainstFormulas {
-
-    val testModeCount = numericalStatisticsFrequencies.modeCount
-
-    testModeCount shouldBe modeCount
-  }
-
-  "mode count" should "handle data with fractional weights" in new NumericalStatisticsTestAgainstFormulas {
-
-    val testModeCount = numericalStatisticsWeights.modeCount
-
-    testModeCount shouldBe modeCount
-  }
-
-  "weight at mode" should "handle data with integer frequencies" in new NumericalStatisticsTestAgainstFormulas {
-
-    val testWeightAtMode = numericalStatisticsFrequencies.weightAtMode
-
-    testWeightAtMode shouldBe frequencyOfMode
-  }
-
-  "weight at mode" should "handle data with fractional weights" in new NumericalStatisticsTestAgainstFormulas {
-
-    val testWeightAtMode = numericalStatisticsWeights.weightAtMode
-
-    Math.abs(testWeightAtMode - weightOfMode) should be < epsilon
   }
 
   "total weight" should "handle data with integer frequencies" in new NumericalStatisticsTestAgainstFormulas {
