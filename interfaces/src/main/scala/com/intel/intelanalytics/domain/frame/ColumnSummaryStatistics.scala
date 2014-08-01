@@ -43,8 +43,6 @@ case class ColumnSummaryStatistics(frame: FrameReference, dataColumn: String, we
  * out of the calculation. If a row contains a NaN or infinite value in either the data or weights column, that row is
  * skipped and a count of bad rows is incremented.
  *
- * It is assumed that the values in the data column are unique. If the data values are not unique,
- * some statistics will be incorrect.
  *
  * @param mean Arithmetic mean of the data.
  * @param geometricMean Geometric mean of the data. None when there is a non-positive data element, 1 if there are no
@@ -52,11 +50,6 @@ case class ColumnSummaryStatistics(frame: FrameReference, dataColumn: String, we
  * @param variance Variance of the data where weighted sum of squared distance from the mean is divided by the number of
  *                 data elements minus 1. None when the number of data elements is < 2.
  * @param standardDeviation Standard deviation of the data. None when the number of data elements is < 2.
- * @param mode A mode of the data; that is, an item with the greatest weight (largest frequency).
- *              When there is more than one mode, the one of least numerical value is taken.
- *              None when there are no data elements of positive weight.
- * @param modeCount The number of distinct modes. 0 when there are no data elements of positive weight.
- * @param weightAtMode The weight of the mode. 0 when there are no data elements of positive weight.
  * @param totalWeight The sum of all weights over valid input rows. (Ie. neither data nor weight is NaN, or infinity,
  *                    and weight is > 0).
  * @param minimum Minimum value in the data. None when there are no data elements of positive weight.
@@ -75,9 +68,6 @@ case class ColumnSummaryStatisticsReturn(mean: Double,
                                          geometricMean: Double,
                                          variance: Double,
                                          standardDeviation: Double,
-                                         mode: Option[Double],
-                                         weightAtMode: Double,
-                                         modeCount: Long,
                                          totalWeight: Double,
                                          minimum: Option[Double],
                                          maximum: Option[Double],

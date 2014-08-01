@@ -18,9 +18,6 @@ import com.intel.intelanalytics.engine.spark.statistics.NumericValidationUtils
  * @param weightedSumOfLogs Weighted sum of logarithms of the data.
  * @param minimum The minimum data value of finite weight > 0.
  * @param maximum The minimum data value of finite weight > 0.
- * @param modeOfLeastValue The the least data value with maximum finite weight. (The mode of least numerical value.)
- * @param weightAtMode The weight of the mode.
- * @param modeCount The number of distinct modes.
  * @param totalWeight The total weight in the column, excepting data pairs whose data is not a finite number, or whose
  *                    weight is either not a finite number or <= 0.
  * @param positiveWeightCount Number of entries whose weight is a finite number > 0.
@@ -34,9 +31,6 @@ private[numericalstatistics] case class FirstPassStatistics(mean: BigDecimal,
                                                             weightedSumOfLogs: Option[BigDecimal],
                                                             minimum: Double,
                                                             maximum: Double,
-                                                            modeOfLeastValue: Double,
-                                                            weightAtMode: Double,
-                                                            modeCount: Long,
                                                             totalWeight: BigDecimal,
                                                             positiveWeightCount: Long,
                                                             nonPositiveWeightCount: Long,

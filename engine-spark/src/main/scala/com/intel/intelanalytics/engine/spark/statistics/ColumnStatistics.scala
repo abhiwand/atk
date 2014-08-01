@@ -100,9 +100,6 @@ private[spark] object ColumnStatistics extends Serializable {
    * performed, however, they are logged as "bad rows" (when a row contain a datum or a weight that is not a finite
    * number) or as "non positive weight" (when a row's weight entry is <= 0).
    *
-   * It is assumed that the values in the data column are unique. If the data values are not unique,
-   * some statistics will be incorrect.
-   *
    * @param dataColumnIndex Index of column providing the data. Must be numerical data.
    * @param dataType The type of the data column.
    * @param weightsColumnIndexOption Option for index of column providing the weights. Must be numerical data.
@@ -125,9 +122,6 @@ private[spark] object ColumnStatistics extends Serializable {
       geometricMean = stats.weightedGeometricMean,
       variance = stats.weightedVariance,
       standardDeviation = stats.weightedStandardDeviation,
-      mode = if (stats.weightedMode.isNaN) None else Some(stats.weightedMode),
-      weightAtMode = stats.weightAtMode,
-      modeCount = stats.modeCount,
       totalWeight = stats.totalWeight,
       meanConfidenceLower = if (stats.meanConfidenceLower.isNaN) None else Some(stats.meanConfidenceLower),
       meanConfidenceUpper = if (stats.meanConfidenceUpper.isNaN) None else Some(stats.meanConfidenceUpper),
@@ -173,8 +167,6 @@ private[spark] object ColumnStatistics extends Serializable {
       standardDeviation = stats.weightedStandardDeviation,
       skewness = stats.weightedSkewness,
       kurtosis = stats.weightedKurtosis,
-      mode = if (stats.weightedMode.isNaN) None else Some(stats.weightedMode),
-      weightAtMode = stats.weightAtMode,
       totalWeight = stats.totalWeight,
       meanConfidenceLower = if (stats.meanConfidenceLower.isNaN) None else Some(stats.meanConfidenceLower),
       meanConfidenceUpper = if (stats.meanConfidenceUpper.isNaN) None else Some(stats.meanConfidenceUpper),
