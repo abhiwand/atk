@@ -11,7 +11,7 @@ log "package name: $packageName, tar file: $tarFile, version: $version, script p
 log "copy tar.gz and rename for packaing"
 expandTarDeb
 
-DEPENDS="java (>=1.7), $DEPENDS"
+DEPENDS="openjdk-7-jdk, $DEPENDS"
 SOURCE=$packageName
 SUMMARY="zombies "
 DESCRIPTION=$SUMMARY

@@ -74,7 +74,7 @@ Defaulting Arguments
 ====================
 
 Authors should represent arguments that are not required using Option values.
-The system will supply default values for these optional values from the configuration system when the users invocation does not provide them.
+The system will supply default values for these optional values from the configuration system when the user's invocation does not provide them.
 
 Configuration for commands and queries should be included in the Typesafe Config configuration file associated with the application
 (defaults can be provided by a reference.conf in the plugin's deployment jar).
