@@ -985,7 +985,6 @@ class SparkEngine(sparkContextManager: SparkContextManager,
   def renameGraph(arguments: GraphRenameGraph)(implicit user: UserPrincipal): Execution =
     commands.execute(renameGraphCommand, arguments, user, implicitly[ExecutionContext])
 
-
   /**
    * Obtains a graph's metadata from its identifier.
    * @param id Unique identifier for the graph provided by the metastore.
