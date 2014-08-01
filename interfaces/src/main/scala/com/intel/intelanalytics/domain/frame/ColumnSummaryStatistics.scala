@@ -43,6 +43,9 @@ case class ColumnSummaryStatistics(frame: FrameReference, dataColumn: String, we
  * out of the calculation. If a row contains a NaN or infinite value in either the data or weights column, that row is
  * skipped and a count of bad rows is incremented.
  *
+ * It is assumed that the values in the data column are unique. If the data values are not unique,
+ * some statistics will be incorrect.
+ *
  * @param mean Arithmetic mean of the data.
  * @param geometricMean Geometric mean of the data. None when there is a non-positive data element, 1 if there are no
  *                       data elements.

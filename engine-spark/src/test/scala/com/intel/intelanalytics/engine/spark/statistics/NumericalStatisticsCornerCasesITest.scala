@@ -200,8 +200,8 @@ class NumericalStatisticsCornerCasesITest extends TestingSparkContextFlatSpec wi
 
   "data of length 2" should "work" in new NumericalStatisticsCornerCaseTest() {
 
-    val data: List[Double] = List(1.toDouble, 1.toDouble)
-    val frequencies: List[Double] = List(1.toDouble, 2.toDouble)
+    val data: List[Double] = List(1.toDouble, 2.toDouble)
+    val frequencies: List[Double] = List(1.toDouble, 1.toDouble)
 
     val dataFrequencies = sparkContext.parallelize(data.zip(frequencies))
 
@@ -209,89 +209,42 @@ class NumericalStatisticsCornerCasesITest extends TestingSparkContextFlatSpec wi
 
     numericalStatistics.positiveWeightCount shouldBe 2
     numericalStatistics.nonPositiveWeightCount shouldBe 0
-    Math.abs(numericalStatistics.weightedMean - 1) should be < epsilon
-    Math.abs(numericalStatistics.weightedGeometricMean - 1) should be < epsilon
-    numericalStatistics.min shouldBe 1
-    numericalStatistics.max shouldBe 1
-    numericalStatistics.weightedVariance shouldBe 0
-    numericalStatistics.weightedStandardDeviation shouldBe 0
-    numericalStatistics.weightedSkewness.isNaN() shouldBe true
-    numericalStatistics.weightedKurtosis.isNaN() shouldBe true
-    numericalStatistics.weightedMode shouldBe 1
-    numericalStatistics.meanConfidenceLower shouldBe 1
-    numericalStatistics.meanConfidenceUpper shouldBe 1
-  }
-
-  "data of length 3, variance 0" should "work" in new NumericalStatisticsCornerCaseTest() {
-
-    val data: List[Double] = List(1.toDouble, 1.toDouble, 1.toDouble)
-    val frequencies: List[Double] = List(1.toDouble, 1.toDouble, 1.toDouble)
-
-    val dataFrequencies = sparkContext.parallelize(data.zip(frequencies))
-
-    val numericalStatistics = new NumericalStatistics(dataFrequencies)
-
-    numericalStatistics.positiveWeightCount shouldBe 3
-    numericalStatistics.nonPositiveWeightCount shouldBe 0
-    Math.abs(numericalStatistics.weightedMean - 1) should be < epsilon
-    Math.abs(numericalStatistics.weightedGeometricMean - 1) should be < epsilon
-    numericalStatistics.min shouldBe 1
-    numericalStatistics.max shouldBe 1
-    numericalStatistics.weightedVariance shouldBe 0
-    numericalStatistics.weightedStandardDeviation shouldBe 0
-    numericalStatistics.weightedSkewness.isNaN() shouldBe true
-    numericalStatistics.weightedKurtosis.isNaN() shouldBe true
-    numericalStatistics.weightedMode shouldBe 1
-    numericalStatistics.meanConfidenceLower shouldBe 1
-    numericalStatistics.meanConfidenceUpper shouldBe 1
-  }
-
-  "data of length 3, nonzero variance" should "work" in new NumericalStatisticsCornerCaseTest() {
-
-    val data: List[Double] = List(1.toDouble, 2.toDouble, 1.toDouble)
-    val frequencies: List[Double] = List(1.toDouble, 1.toDouble, 1.toDouble)
-
-    val dataFrequencies = sparkContext.parallelize(data.zip(frequencies))
-
-    val numericalStatistics = new NumericalStatistics(dataFrequencies)
-
-    numericalStatistics.positiveWeightCount shouldBe 3
-    numericalStatistics.nonPositiveWeightCount shouldBe 0
-    Math.abs(numericalStatistics.weightedMean - 1.333333333) should be < epsilon
-    Math.abs(numericalStatistics.weightedGeometricMean - 1.2599210498948732) should be < epsilon
+    Math.abs(numericalStatistics.weightedMean - 1.5) should be < epsilon
+    Math.abs(numericalStatistics.weightedGeometricMean - Math.sqrt(2)) should be < epsilon
     numericalStatistics.min shouldBe 1
     numericalStatistics.max shouldBe 2
-    Math.abs(numericalStatistics.weightedVariance - 0.3333333333) should be < epsilon
-    Math.abs(numericalStatistics.weightedStandardDeviation - 0.5773502691896255) should be < epsilon
+    Math.abs(numericalStatistics.weightedVariance - 0.5) should be < epsilon
+    Math.abs(numericalStatistics.weightedStandardDeviation - Math.sqrt(0.5)) should be < epsilon
+    numericalStatistics.weightedSkewness.isNaN() shouldBe true
+    numericalStatistics.weightedKurtosis.isNaN() shouldBe true
+    numericalStatistics.weightedMode shouldBe 1
+    numericalStatistics.modeCount shouldBe 2
+    Math.abs(numericalStatistics.meanConfidenceLower - (1.5 - 1.96 * Math.sqrt(0.5) / Math.sqrt(2))) should be < epsilon
+    Math.abs(numericalStatistics.meanConfidenceUpper - (1.5 + 1.96 * Math.sqrt(0.5) / Math.sqrt(2))) should be < epsilon
+  }
+
+  "data of length 3" should "work" in new NumericalStatisticsCornerCaseTest() {
+
+    val data: List[Double] = List(1.toDouble, 2.toDouble, 3.toDouble)
+    val frequencies: List[Double] = List(1.toDouble, 1.toDouble, 1.toDouble)
+
+    val dataFrequencies = sparkContext.parallelize(data.zip(frequencies))
+
+    val numericalStatistics = new NumericalStatistics(dataFrequencies)
+
+    numericalStatistics.positiveWeightCount shouldBe 3
+    numericalStatistics.nonPositiveWeightCount shouldBe 0
+    Math.abs(numericalStatistics.weightedMean - 2.0) should be < epsilon
+    Math.abs(numericalStatistics.weightedGeometricMean - 1.817120593) should be < epsilon
+    numericalStatistics.min shouldBe 1
+    numericalStatistics.max shouldBe 3
+    Math.abs(numericalStatistics.weightedVariance - 1.0) should be < epsilon
+    Math.abs(numericalStatistics.weightedStandardDeviation - 1.0) should be < epsilon
     (numericalStatistics.weightedSkewness - 1.7320508075688807) should be < epsilon
     numericalStatistics.weightedKurtosis.isNaN() shouldBe true
     numericalStatistics.weightedMode shouldBe 1
-    Math.abs(numericalStatistics.meanConfidenceLower - (1.333333333 - (1.96) * (0.5773502691896255 / Math.sqrt(3)))) should be < epsilon
-    Math.abs(numericalStatistics.meanConfidenceUpper - (1.333333333 + (1.96) * (0.5773502691896255 / Math.sqrt(3)))) should be < epsilon
-  }
-
-  "uniform data" should "work" in new NumericalStatisticsCornerCaseTest() {
-
-    val data: List[Double] = List(2, 2, 2, 2, 2).map(x => x.toDouble)
-    val frequencies: List[Double] = List(3, 3, 3, 3, 3).map(x => x.toDouble)
-
-    val dataFrequencies = sparkContext.parallelize(data.zip(frequencies))
-
-    val numericalStatistics = new NumericalStatistics(dataFrequencies)
-
-    numericalStatistics.positiveWeightCount shouldBe 5
-    numericalStatistics.nonPositiveWeightCount shouldBe 0
-    Math.abs(numericalStatistics.weightedMean - 2) should be < epsilon
-    Math.abs(numericalStatistics.weightedGeometricMean - 2) should be < epsilon
-    numericalStatistics.min shouldBe 2
-    numericalStatistics.max shouldBe 2
-    numericalStatistics.weightedVariance shouldBe 0
-    numericalStatistics.weightedStandardDeviation shouldBe 0
-    numericalStatistics.weightedSkewness.isNaN() shouldBe true
-    numericalStatistics.weightedKurtosis.isNaN() shouldBe true
-    numericalStatistics.weightedMode shouldBe 2
-    numericalStatistics.meanConfidenceLower shouldBe 2
-    numericalStatistics.meanConfidenceUpper shouldBe 2
+    Math.abs(numericalStatistics.meanConfidenceLower - (2.0 - (1.96) * (1.0 / Math.sqrt(3)))) should be < epsilon
+    Math.abs(numericalStatistics.meanConfidenceUpper - (2.0 + (1.96) * (1.0 / Math.sqrt(3)))) should be < epsilon
   }
 
   "competing modes" should "result in the least mode" in new NumericalStatisticsCornerCaseTest() {
@@ -304,5 +257,6 @@ class NumericalStatisticsCornerCasesITest extends TestingSparkContextFlatSpec wi
     val numericalStatistics = new NumericalStatistics(dataFrequencies)
 
     numericalStatistics.weightedMode shouldBe 2
+    numericalStatistics.modeCount shouldBe 2
   }
 }

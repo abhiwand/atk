@@ -1321,6 +1321,9 @@ class BigFrame(CommandSupport):
              NaNs and infinite values in the data column are excluded from the statistical calculations and
              logged to counters. (See bad_row_count and good_row_count below.)
 
+            It is assumed that the values in the data column are unique. If the data values are not unique,
+            some statistics will be incorrect.
+
         weights_column : str
             Optional. The column that provides weights (frequencies) for the data being summarized.
             Must contain numerical data. All rows containing NaNs and infinite values in the weights column are

@@ -100,6 +100,9 @@ private[spark] object ColumnStatistics extends Serializable {
    * performed, however, they are logged as "bad rows" (when a row contain a datum or a weight that is not a finite
    * number) or as "non positive weight" (when a row's weight entry is <= 0).
    *
+   * It is assumed that the values in the data column are unique. If the data values are not unique,
+   * some statistics will be incorrect.
+   *
    * @param dataColumnIndex Index of column providing the data. Must be numerical data.
    * @param dataType The type of the data column.
    * @param weightsColumnIndexOption Option for index of column providing the weights. Must be numerical data.
@@ -138,6 +141,9 @@ private[spark] object ColumnStatistics extends Serializable {
 
   /**
    * Calculate full statistics of data column, possibly weighted by an optional weights column.
+   *
+   * It is assumed that the values in the data column are unique. If the data values are not unique,
+   * some statistics will be incorrect.
    *
    * Values with non-positive weights(including NaNs and infinite values) are thrown out before the calculation is
    * performed, however, they are logged as "bad rows" (when a row contain a datum or a weight that is not a finite
