@@ -52,7 +52,8 @@ class SparkFrameStorage(fsRoot: String,
                         fileStorage: FileStorage,
                         maxRows: Int,
                         val metaStore: SlickMetaStoreComponent#SlickMetaStore,
-                        sparkAutoPartitioner: SparkAutoPartitioner)
+                        sparkAutoPartitioner: SparkAutoPartitioner,
+                        getContext: (UserPrincipal) => SparkContext)
     extends FrameStorage with EventLogging with ClassLoaderAware {
 
   import Rows.Row
@@ -149,16 +150,21 @@ class SparkFrameStorage(fsRoot: String,
         }
     }
 
-  override def getRows(frame: DataFrame, offset: Long, count: Int, invocation: Invocation)(implicit user: UserPrincipal): Iterable[Row] =
+  override def getRows(frame: DataFrame, offset: Long, count: Int)(implicit user: UserPrincipal): Iterable[Row] =
     withContext("frame.getRows") {
       require(frame != null, "frame is required")
       require(offset >= 0, "offset must be zero or greater")
       require(count > 0, "count must be zero or greater")
       withMyClassLoader {
-        val ctx = invocation.asInstanceOf[SparkInvocation].sparkContext
-        val rdd: RDD[Row] = getFrameRowRdd(ctx, frame.id)
-        val rows = SparkOps.getRows(rdd, offset, count, maxRows)
-        rows
+        val ctx = getContext(user)
+        try {
+          val rdd: RDD[Row] = getFrameRowRdd(ctx, frame.id)
+          val rows = SparkOps.getRows(rdd, offset, count, maxRows)
+          rows
+        }
+        finally {
+          ctx.stop()
+        }
       }
     }
 
