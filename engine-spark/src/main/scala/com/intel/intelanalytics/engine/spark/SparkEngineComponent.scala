@@ -44,6 +44,7 @@ import org.apache.hadoop.hbase.client.HBaseAdmin
 
 class SparkComponent extends EngineComponent
     with FrameComponent
+    with GraphComponent
     with CommandComponent
     with FileComponent
     with DbProfileComponent
@@ -70,10 +71,10 @@ class SparkComponent extends EngineComponent
 
   private lazy val admin = new HBaseAdmin(HBaseConfiguration.create())
 
-  val graphs: GraphStorage =
-    new SparkGraphStorage(sparkContextManager.context(_),
-      metaStore,
-      new SparkGraphHBaseBackend(admin), frames)
+  //val graphs: GraphStorage =
+  val graphs = new SparkGraphStorage(sparkContextManager.context(_),
+    metaStore,
+    new SparkGraphHBaseBackend(admin), frames)
 
   val commands = new SparkCommandStorage(metaStore.asInstanceOf[SlickMetaStore])
 

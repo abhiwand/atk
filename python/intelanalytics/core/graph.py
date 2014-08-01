@@ -93,6 +93,8 @@ def get_graph(name):
     # TODO - Review docstring
     return _get_backend().get_graph(name)
 
+def rename_graph(graph,name):
+    return _get_backend().rename_graph(graph,name)
 
 def delete_graph(name):
     """
