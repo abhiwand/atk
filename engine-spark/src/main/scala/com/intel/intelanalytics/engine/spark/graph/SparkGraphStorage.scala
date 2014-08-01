@@ -1,5 +1,6 @@
 package com.intel.intelanalytics.engine.spark.graph
 
+import com.intel.intelanalytics.domain.frame.DataFrame
 import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.engine.{ Rows, GraphBackendStorage, GraphStorage }
 import com.intel.graphbuilder.driver.spark.titan.GraphBuilder
@@ -40,9 +41,7 @@ class SparkGraphStorage(context: (UserPrincipal) => Context,
           future {
             backendStorage.deleteUnderlyingTable(graph.name)
           }
-
           metaStore.graphRepo.delete(graph.id)
-
           Unit
         }
     }
@@ -63,6 +62,20 @@ class SparkGraphStorage(context: (UserPrincipal) => Context,
             throw new RuntimeException("Graph with same name exists. Create aborted")
           }
           metaStore.graphRepo.insert(graph).get
+        }
+    }
+  }
+
+  override def renameGraph(graph: Graph, newName: String): Graph = {
+    metaStore.withSession("spark.graphstorage.rename") {
+      implicit session =>
+        {
+          val check = metaStore.graphRepo.lookupByName(newName)
+          if (check.isDefined) {
+            throw new RuntimeException("Graph with same name exists. Rename aborted.")
+          }
+          val newGraph = graph.copy(name = newName)
+          metaStore.graphRepo.update(newGraph).get
         }
     }
   }

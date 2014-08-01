@@ -61,7 +61,7 @@ class GraphBackendRest(object):
         if not self.__class__.commands_loaded:
             self.__class__.commands_loaded.update(executor.get_command_functions(('graph', 'graphs'),
                                                                                  execute_update_graph_command,
-                                                                                 execute_new_graph_command))
+                                                                                execute_new_graph_command))
             executor.install_static_methods(self.__class__, self.__class__.commands_loaded)
             BigGraph._commands = self.__class__.commands_loaded
 
@@ -103,7 +103,6 @@ class GraphBackendRest(object):
             frame_rules=JsonRules(rules)
             self.load(initialized_graph,frame_rules, append= False)
             return graph_info.name
-
     
     def _get_new_graph_name(self,source=None):
         try:
@@ -111,6 +110,13 @@ class GraphBackendRest(object):
         except:
             annotation= ''
         return "graph_" + uuid.uuid4().hex + annotation
+
+    def rename_graph(self, graph, name):
+        arguments = {'graph': self._get_graph_full_uri(graph), "new name": name}
+        execute_update_graph_command('rename_graph', arguments,graph)
+
+    def _get_graph_full_uri(self,graph):
+        return self.rest_http.create_full_uri('graphs/%d' % graph._id)
 
     def append(self, graph, rules):
         logger.info("REST Backend: append_frame graph: " + graph.name)

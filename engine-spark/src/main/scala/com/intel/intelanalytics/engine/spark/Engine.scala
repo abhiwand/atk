@@ -33,13 +33,14 @@ import com.intel.intelanalytics.domain.command.{ Command, CommandDefinition, Com
 import com.intel.intelanalytics.domain.frame._
 import com.intel.intelanalytics.domain.frame.load.{ LineParserArguments, LineParser, LoadSource, Load }
 
-import com.intel.intelanalytics.domain.graph.{ Graph, GraphLoad, GraphTemplate }
+import com.intel.intelanalytics.domain.graph._
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 import com.intel.intelanalytics.domain.schema.{ DataTypes, Schema, SchemaUtil }
 import com.intel.intelanalytics.engine.Rows._
 import com.intel.intelanalytics.engine._
 import com.intel.intelanalytics.engine.plugin.CommandPlugin
 import com.intel.intelanalytics.engine.spark.command.CommandExecutor
+import com.intel.intelanalytics.engine.spark.graph.SparkGraphStorage
 import com.intel.intelanalytics.engine.spark.queries.{ SparkQueryStorage, QueryExecutor }
 import com.intel.intelanalytics.engine.spark.context.SparkContextManager
 import com.intel.intelanalytics.engine.spark.frame.{ RDDJoinParam, RowParser, SparkFrameStorage }
@@ -74,13 +75,12 @@ import scala.util.Try
 import org.apache.spark.engine.SparkProgressListener
 import com.intel.intelanalytics.domain.frame.FrameAddColumns
 import com.intel.intelanalytics.domain.frame.FrameRenameFrame
+import com.intel.intelanalytics.domain.graph.GraphRenameGraph
 import com.intel.intelanalytics.domain.frame.load.LineParserArguments
-import com.intel.intelanalytics.domain.graph.GraphLoad
 import com.intel.intelanalytics.domain.schema.Schema
 import com.intel.intelanalytics.domain.frame.DropDuplicates
 import com.intel.intelanalytics.engine.spark.frame.RowParseResult
 import com.intel.intelanalytics.domain.frame.FrameProject
-import com.intel.intelanalytics.domain.graph.Graph
 import com.intel.intelanalytics.domain.FilterPredicate
 import com.intel.intelanalytics.domain.frame.load.Load
 import com.intel.intelanalytics.domain.frame.load.LineParser
@@ -89,7 +89,6 @@ import com.intel.intelanalytics.domain.frame.FrameGroupByColumn
 import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.domain.frame.FrameRemoveColumn
 import com.intel.intelanalytics.engine.spark.frame.RDDJoinParam
-import com.intel.intelanalytics.domain.graph.GraphTemplate
 import com.intel.intelanalytics.domain.frame.load.LoadSource
 import com.intel.intelanalytics.domain.frame.DataFrameTemplate
 import com.intel.intelanalytics.engine.ProgressInfo
@@ -110,7 +109,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
                   commands: CommandExecutor,
                   commandStorage: CommandStorage,
                   frames: SparkFrameStorage,
-                  graphs: GraphStorage,
+                  graphs: SparkGraphStorage,
                   queryStorage: SparkQueryStorage,
                   queries: QueryExecutor,
                   sparkAutoPartitioner: SparkAutoPartitioner) extends Engine
@@ -963,12 +962,29 @@ class SparkEngine(sparkContextManager: SparkContextManager,
 
   val loadGraphCommand = commands.registerCommand("graph/load", loadGraphSimple _, numberOfJobs = 4)
   def loadGraphSimple(arguments: GraphLoad, user: UserPrincipal) = {
-    // validating frames
+    // validating graph?
     arguments.frame_rules.foreach(frule => expectFrame(frule.frame))
-
     val graph = graphs.loadGraph(arguments)(user)
     graph
   }
+
+  def renameGraphSimple(arguments: GraphRenameGraph, user: UserPrincipal): Graph = {
+    val graph = expectGraph(arguments.graph)
+    val newName = arguments.new_name
+    graphs.renameGraph(graph, newName)
+  }
+
+  def expectGraph(graphId: Long): Graph = {
+    graphs.lookup(graphId).getOrElse(throw new NotFoundException("graph", graphId.toString))
+  }
+
+  def expectGraph(graphRef: GraphReference): Graph = expectGraph(graphRef.id)
+
+  val renameGraphCommand = commands.registerCommand("graph/rename_graph", renameGraphSimple)
+
+  def renameGraph(arguments: GraphRenameGraph)(implicit user: UserPrincipal): Execution =
+    commands.execute(renameGraphCommand, arguments, user, implicitly[ExecutionContext])
+
 
   /**
    * Obtains a graph's metadata from its identifier.

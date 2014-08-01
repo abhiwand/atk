@@ -34,7 +34,7 @@ import com.intel.intelanalytics.engine.plugin.QueryPluginResults
 import com.intel.intelanalytics.schema._
 import spray.json._
 import com.intel.intelanalytics.domain.frame._
-import com.intel.intelanalytics.domain.graph.{ GraphReference, Graph, GraphLoad, GraphTemplate }
+import com.intel.intelanalytics.domain.graph._
 import com.intel.intelanalytics.domain.graph.construction.{ EdgeRule, FrameRule, PropertyRule, ValueRule, VertexRule }
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 import com.intel.intelanalytics.domain.schema.{ DataTypes, Schema }
@@ -191,6 +191,7 @@ object DomainJsonProtocol extends IADefaultJsonProtocol {
 
   implicit val graphTemplateFormat = jsonFormat1(GraphTemplate)
   implicit val graphFormat = jsonFormat9(Graph)
+  implicit val graphRenameFormat = jsonFormat2(GraphRenameGraph)
 
   // graph loading formats for specifying graphbuilder and graphload rules
 
