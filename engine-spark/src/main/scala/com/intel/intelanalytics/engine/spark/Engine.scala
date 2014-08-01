@@ -928,19 +928,9 @@ class SparkEngine(sparkContextManager: SparkContextManager,
   def getRows(arguments: RowQuery[Identifier])(implicit user: UserPrincipal): Future[Iterable[Row]] = {
     future {
       withMyClassLoader {
-        val ctx = sparkContextManager.context(user, "query")
-        try {
-          val invocation: SparkInvocation = SparkInvocation(this, commandId = 0, arguments = null,
-            user = user, executionContext = implicitly[ExecutionContext],
-            sparkContext = ctx, commandStorage = null)
-
-          val frame = frames.lookup(arguments.id).getOrElse(throw new IllegalArgumentException("Requested frame does not exist"))
-          val rows = frames.getRows(frame, arguments.offset, arguments.count, invocation)
-          rows
-        }
-        finally {
-          ctx.stop()
-        }
+        val frame = frames.lookup(arguments.id).getOrElse(throw new IllegalArgumentException("Requested frame does not exist"))
+        val rows = frames.getRows(frame, arguments.offset, arguments.count)
+        rows
       }
     }
   }
