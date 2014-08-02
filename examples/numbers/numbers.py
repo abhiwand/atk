@@ -31,12 +31,12 @@ frame = BigFrame(csv)
 
 print("inspect frame")
 print frame.inspect(10)
-#print("frame row count " + frame.count())
+print("frame row count " + str(frame.row_count))
 
 print("flatten factor column")
 frame = frame.flatten_column("factor")
 print frame.inspect(10)
-#print("frame row count " + frame.count())
+print("frame row count " + str(frame.row_count))
 
 print("define graph parsing rules")
 number = VertexRule("number", frame["number"],{ "isPrime": frame["isPrime"], "isPalindrome": frame["isPalindrome"]})

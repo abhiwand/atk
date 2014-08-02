@@ -21,28 +21,33 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.graphbuilder.util
+package com.intel.intelanalytics.domain.frame
 
-import org.specs2.mutable.Specification
+import spray.json.JsValue
 
-class StringUtilsSpec extends Specification {
+/**
+ * Command for calculating the mode of a (possibly weighted) column.
+ * @param frame Identifier for the input dataframe.
+ */
+case class ColumnMode(frame: FrameReference, dataColumn: String, weightsColumn: Option[String]) {
 
-  "StringUtils.nullSafeToString()" should {
+  require(frame != null, "frame is required")
+  require(dataColumn != null, "data column is required")
+}
 
-    "handle null objects" in {
-      StringUtils.nullSafeToString(null) mustEqual null
-    }
-
-    "handle Strings" in {
-      StringUtils.nullSafeToString("anyString") mustEqual "anyString"
-    }
-
-    "handle Ints" in {
-      StringUtils.nullSafeToString(1) mustEqual "1"
-    }
-
-    "handle complex objects" in {
-      StringUtils.nullSafeToString(Map("my-key" -> "my-value")) mustEqual "Map(my-key -> my-value)"
-    }
-  }
+/**
+ * Mode data for a dataframe column.
+ *
+ * If no weights are provided, all elements receive a uniform weight of 1.
+ * If any element receives a weight that is NaN, infinite or <= 0, that element is thrown
+ * out of the calculation.
+ *
+ * @param mode A data value of maximum weight. Ties are resolved arbitrarily.
+ *             None is returned when the sum of the weights is 0.
+ * @param weightOfMode Weight of the mode. (If no weight column is specified,
+ *                     this is the number of appearances of the mode.)
+ * @param totalWeight Total weight in the column. (If no weight column is specified, this is the number of entries
+ *                    with finite, non-zero weight.)
+ */
+case class ColumnModeReturn(mode: JsValue, weightOfMode: Double, totalWeight: Double) {
 }

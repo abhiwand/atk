@@ -238,7 +238,8 @@ class FrameBackendRest(object):
             raise ValueError("Invalid number for percentile:" + ','.join(invalid_percentiles))
 
         arguments = {'frame_id': frame._id, "column_name": column_name, "percentiles": percentiles}
-        execute_update_frame_command('calculate_percentiles', arguments, frame)
+        command = CommandRequest("dataframe/calculate_percentiles", arguments)
+        return executor.issue(command)
 
     def drop(self, frame, predicate):
         from itertools import ifilterfalse  # use the REST API filter, with a ifilterfalse iterator
@@ -279,6 +280,16 @@ class FrameBackendRest(object):
         name = self._get_new_frame_name()
         arguments = {'name': name, 'frame': frame._id, 'column_name': column_name, 'num_bins': num_bins, 'bin_type': bin_type, 'bin_column_name': bin_column_name}
         return execute_new_frame_command('bin_column', arguments)
+
+
+    def column_statistic(self, frame, column_name, multiplier_column_name, operation):
+        import numpy as np
+        colTypes = dict(frame.schema)
+        if not colTypes[column_name] in [np.float32, np.float64, np.int32, np.int64]:
+            raise ValueError("unable to take statistics of non-numeric values")
+        arguments = {'columnName': column_name, 'multiplierColumnName' : multiplier_column_name,
+                     'operation' : operation}
+        return execute_update_frame_command('columnStatistic', arguments, frame)
 
     class InspectionTable(object):
         """
@@ -409,6 +420,8 @@ class FrameBackendRest(object):
         execute_update_frame_command('rename_frame', arguments, frame)
 
     def take(self, frame, n, offset):
+        if n==0:
+            return []
         url = 'dataframes/{0}/data?offset={2}&count={1}'.format(frame._id,n, offset)
         return executor.query(url)
 
@@ -442,9 +455,9 @@ class FrameBackendRest(object):
             raise ValueError("label_column does not exist in frame")
         if not pred_column in column_names:
             raise ValueError("pred_column does not exist in frame")
-        if supported_types.get_type_string(schema_dict[label_column]) in ['float32', 'float64']:
+        if schema_dict[label_column] in [float32, float64]:
             raise ValueError("invalid label_column types")
-        if supported_types.get_type_string(schema_dict[pred_column]) in ['float32', 'float64']:
+        if schema_dict[pred_column] in [float32, float64]:
             raise ValueError("invalid pred_column types")
         if not beta > 0:
             raise ValueError("invalid beta value for f measure")
@@ -458,13 +471,13 @@ class FrameBackendRest(object):
         column_names = schema_dict.keys()
         if not label_column in column_names:
             raise ValueError("label_column does not exist in frame")
-        if schema_dict.get(label_column) in ['float32', 'float64']:
+        if schema_dict.get(label_column) in [float32, float64]:
             raise ValueError("invalid label_column types")
         if pred_column.strip() == "":
             raise ValueError("pred_column can not be empty string")
         if not pred_column in column_names:
             raise ValueError("pred_column does not exist in frame")
-        if schema_dict.get(pred_column) in ['float32', 'float64']:
+        if schema_dict.get(pred_column) in [float32, float64]:
             raise ValueError("invalid pred_column types")
         if str(pos_label).strip() == "":
             raise ValueError("invalid pos_label")
@@ -577,6 +590,9 @@ def execute_update_frame_command(command_name, arguments, frame):
     command_info = executor.issue(command_request)
     if command_info.result.has_key('name') and command_info.result.has_key('schema'):
         initialize_frame(frame, FrameInfo(command_info.result))
+        return None
+    if (command_info.result.has_key('value') and len(command_info.result) == 1):
+        return command_info.result.get('value')
     return command_info.result
 
 
