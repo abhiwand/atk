@@ -34,10 +34,18 @@ import org.apache.spark.rdd.RDD
 
 import scala.collection.immutable.TreeMap
 import scala.collection.mutable
-import scala.collection.mutable.ListBuffer
-import scala.math.{log, pow}
 import scala.reflect.ClassTag
-import scala.util.Try
+import scala.Some
+import com.intel.intelanalytics.engine.spark.frame.RDDJoinParam
+import com.intel.intelanalytics.algorithm.{ Percentile, PercentileTarget, PercentileComposingElement }
+import scala.collection.mutable.ListBuffer
+import org.apache.spark.rdd.RDD
+import com.intel.intelanalytics.domain.schema.DataTypes.DataType
+import scala.math.pow
+import scala.reflect.ClassTag
+
+//implicit conversion for PairRDD
+import org.apache.spark.SparkContext._
 
 private[spark] object SparkOps extends Serializable {
 
@@ -129,15 +137,15 @@ private[spark] object SparkOps extends Serializable {
                 converter: Array[String] => Array[Any]): RDD[Row] = {
     ctx.textFile(fileName)
       .mapPartitionsWithIndex {
-      case (partition, lines) => {
-        if (partition == 0) {
-          lines.drop(skipRows.getOrElse(0)).map(parserFunction)
-        }
-        else {
-          lines.map(parserFunction)
+        case (partition, lines) => {
+          if (partition == 0) {
+            lines.drop(skipRows.getOrElse(0)).map(parserFunction)
+          }
+          else {
+            lines.map(parserFunction)
+          }
         }
       }
-    }
       .map(converter)
   }
 
@@ -300,7 +308,7 @@ private[spark] object SparkOps extends Serializable {
       val weightedPrecisionRdd: RDD[Double] = joinedRdd.map { label =>
         // label is tuple of (labelValue, (SeqOfInstancesWithThisActualLabel, SeqOfInstancesWithThisPredictedLabel))
         val labelCount = label._2._1.size // get the number of instances with this label as the actual label
-      var correctPredict: Long = 0
+        var correctPredict: Long = 0
         val totalPredict = label._2._2.size
 
         label._2._1.map { prediction =>
@@ -453,7 +461,7 @@ private[spark] object SparkOps extends Serializable {
       val weightedFMeasureRdd: RDD[Double] = joinedRdd.map { label =>
         // label is tuple of (labelValue, (SeqOfInstancesWithThisActualLabel, SeqOfInstancesWithThisPredictedLabel))
         val labelCount = label._2._1.size // get the number of instances with this label as the actual label
-      var correctPredict: Long = 0
+        var correctPredict: Long = 0
         val totalPredict = label._2._2.size
 
         label._2._1.map { prediction =>
@@ -565,6 +573,8 @@ private[spark] object SparkOps extends Serializable {
    */
   def binEqualDepth(index: Int, numBins: Int, rdd: RDD[Row]): RDD[Row] = {
     import scala.math.ceil
+
+    // try creating RDD[Double] from column
     val columnRdd = try {
       rdd.map(row => java.lang.Double.parseDouble(row(index).toString))
     }
@@ -645,7 +655,7 @@ private[spark] object SparkOps extends Serializable {
     val groupedRdd = pairedRdd.groupByKey()
 
     // count number of each distinct value and sort by distinct value
-    val sortedRdd = groupedRdd.map { case (value, seqOfValue) => (value, seqOfValue.size)}.sortByKey()
+    val sortedRdd = groupedRdd.map { case (value, seqOfValue) => (value, seqOfValue.size) }.sortByKey()
 
     // compute the partition sums
     val partSums: Array[Double] = 0.0 +: sortedRdd.mapPartitionsWithIndex {
@@ -788,23 +798,23 @@ private[spark] object SparkOps extends Serializable {
    * @param columnIndex the index of column to calculate percentile
    * @param dataType data type of the column
    *
-   *                 Currently calculate percentiles with weight average. n be the number of total elements which is ordered,
-   *                 T th percentile can be calculated in the following way.
-   *                 n * T / 100 = i + j   i is the integer part and j is the fractional part
-   *                 The percentile is Xi * (1- j) + Xi+1 * j
+   * Currently calculate percentiles with weight average. n be the number of total elements which is ordered,
+   * T th percentile can be calculated in the following way.
+   * n * T / 100 = i + j   i is the integer part and j is the fractional part
+   * The percentile is Xi * (1- j) + Xi+1 * j
    *
-   *                 Calculating a list of percentiles follows the following process:
-   *                 1. calculate components for each percentile. If T th percentile is Xi * (1- j) + Xi+1 * j, output
-   *                 (i, (1 - j)), (i + 1, j).
-   *                 2. transform the components. Take component (i, (1 - j)) and transform to (i, (T, 1 - j)), where (T, 1 -j) is
-   *                 a percentile target for element i. Create mapping i -> seq(percentile targets)
-   *                 3. iterate through all elements in each partition. for element i, find sequence of percentile targets from
-   *                 the mapping created earlier. emit (T, i * (1 - j))
-   *                 4. reduce by key, which is percentile. Sum all partial results to get the final percentile values.
+   * Calculating a list of percentiles follows the following process:
+   * 1. calculate components for each percentile. If T th percentile is Xi * (1- j) + Xi+1 * j, output
+   * (i, (1 - j)), (i + 1, j).
+   * 2. transform the components. Take component (i, (1 - j)) and transform to (i, (T, 1 - j)), where (T, 1 -j) is
+   * a percentile target for element i. Create mapping i -> seq(percentile targets)
+   * 3. iterate through all elements in each partition. for element i, find sequence of percentile targets from
+   * the mapping created earlier. emit (T, i * (1 - j))
+   * 4. reduce by key, which is percentile. Sum all partial results to get the final percentile values.
    */
   def calculatePercentiles(rdd: RDD[Row], percentiles: Seq[Int], columnIndex: Int, dataType: DataType): Seq[Percentile] = {
     val totalRows = rdd.count()
-    val pairRdd = rdd.map(row => SparkOps.createKeyValuePairFromRow(row, List(columnIndex))).map { case (keyColumns, data) => (keyColumns(0).toString.toDouble, data)}
+    val pairRdd = rdd.map(row => SparkOps.createKeyValuePairFromRow(row, List(columnIndex))).map { case (keyColumns, data) => (keyColumns(0).toString.toDouble, data) }
     val sorted = pairRdd.asInstanceOf[RDD[(Double, Row)]].sortByKey(true)
 
     val percentileTargetMapping = getPercentileTargetMapping(totalRows, percentiles)
@@ -833,7 +843,7 @@ private[spark] object SparkOps extends Serializable {
       perPartitionResult.toIterator
     })
 
-    percentilesComponentsRDD.reduceByKey(_ + _).sortByKey(true).collect().map { case (percentile, value) => Percentile(percentile, value)}
+    percentilesComponentsRDD.reduceByKey(_ + _).sortByKey(true).collect().map { case (percentile, value) => Percentile(percentile, value) }
   }
 
   /**
@@ -868,7 +878,7 @@ private[spark] object SparkOps extends Serializable {
    * @param totalRows total number of rows in the data
    * @param percentiles Sequence of percentiles to search
    *
-   *                    For whole percentile calculation process, please refer to doc of method calculatePercentiles
+   * For whole percentile calculation process, please refer to doc of method calculatePercentiles
    */
   def getPercentileTargetMapping(totalRows: Long, percentiles: Seq[Int]): Map[Long, Seq[PercentileTarget]] = {
 
@@ -886,9 +896,8 @@ private[spark] object SparkOps extends Serializable {
 
     //for each element's percentile targets, convert from ListBuffer to Seq
     //convert the map to immutable map
-    mapping.map { case (elementIndex, targets) => (elementIndex, targets.toSeq)}.toMap
+    mapping.map { case (elementIndex, targets) => (elementIndex, targets.toSeq) }.toMap
   }
-
   def confusionMatrix(frameRdd: RDD[Row], labelColumnIndex: Int, predColumnIndex: Int, posLabel: String): Seq[Long] = {
     require(labelColumnIndex >= 0, "label column index must be greater than or equal to zero")
     require(predColumnIndex >= 0, "prediction column index must be greater than or equal to zero")

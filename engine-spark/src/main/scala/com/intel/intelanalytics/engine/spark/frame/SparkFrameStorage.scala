@@ -156,16 +156,6 @@ class SparkFrameStorage(context: UserPrincipal => Context,
         }
     }
 
-  override def addColumn[T](frame: DataFrame, column: Column[T], columnType: DataTypes.DataType): DataFrame =
-    //withContext("frame.addColumn") {
-    metaStore.withSession("frame.addColumn") {
-      implicit session =>
-        {
-          val newColumns = frame.schema.columns :+ (column.name, columnType)
-          metaStore.frameRepo.updateSchema(frame, newColumns)
-        }
-    }
-
   override def getRows(frame: DataFrame, offset: Long, count: Int)(implicit user: UserPrincipal): Iterable[Row] =
     withContext("frame.getRows") {
       require(frame != null, "frame is required")
@@ -222,7 +212,7 @@ class SparkFrameStorage(context: UserPrincipal => Context,
    */
   def getFrameRowRdd(ctx: SparkContext, frameId: Long): RDD[Row] = {
     val path: String = getFrameDataFile(frameId)
-    val absPath = fsRoot + path
+    val absPath = concatPaths(fsRoot, path)
     fileStorage.getMetaData(Paths.get(path)) match {
       case None => ctx.parallelize(Nil)
       case _ => ctx.objectFile[Row](absPath, sparkAutoPartitioner.partitionsForFile(path))
