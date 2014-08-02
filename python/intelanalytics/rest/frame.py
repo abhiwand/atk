@@ -584,6 +584,7 @@ def initialize_frame(frame, frame_info):
 def execute_update_frame_command(command_name, arguments, frame):
     """Executes command and updates frame with server response"""
     #support for non-plugin methods that may not supply the full name
+    print "executing execute_update_frame_command"
     if not command_name.startswith('dataframe'):
         command_name = 'dataframe/' + command_name
     command_request = CommandRequest(command_name, arguments)
@@ -599,16 +600,30 @@ def execute_update_frame_command(command_name, arguments, frame):
 def execute_new_frame_command(command_name, arguments):
     """Executes command and creates a new BigFrame object from server response"""
     #support for non-plugin methods that may not supply the full name
+    print "executing execute_new_frame_command"
     if not command_name.startswith('dataframe'):
         command_name = 'dataframe/' + command_name
     command_request = CommandRequest(command_name, arguments)
     command_info = executor.issue(command_request)
+    if 'frame' in command_info.result:
+        # grab uri and create new frame...
+        from intelanalytics.rest.connection import http
+        id = command_info.result['frame'].split('/')[-1]
+        r = http.get('dataframes/' + str(id))
+        payload = r.json()
+        frame = BigFrame()
+        initialize_frame(frame, FrameInfo(payload))
+        return frame
+
+
     frame_info = FrameInfo(command_info.result)
+    print repr(frame_info)
     return BigFrame(frame_info)
 
 
 def get_command_output(command_name, arguments):
     """Executes command and returns the output"""
+    print "executing get_command_output"
     command_request = CommandRequest('dataframe/' + command_name, arguments)
     command_info = executor.issue(command_request)
     return command_info.result

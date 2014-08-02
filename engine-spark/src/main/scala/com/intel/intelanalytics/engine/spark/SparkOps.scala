@@ -23,26 +23,20 @@
 
 package com.intel.intelanalytics.engine.spark
 
-import com.intel.intelanalytics.algorithm.{Percentile, PercentileComposingElement, PercentileTarget}
 import com.intel.intelanalytics.domain.schema.DataTypes
-import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 import com.intel.intelanalytics.engine.Rows._
-import com.intel.intelanalytics.engine.spark.frame.RDDJoinParam
 import org.apache.spark.SparkContext
-import org.apache.spark.SparkContext._
-import org.apache.spark.rdd.RDD
 
 import scala.collection.immutable.TreeMap
 import scala.collection.mutable
-import scala.reflect.ClassTag
-import scala.Some
 import com.intel.intelanalytics.engine.spark.frame.RDDJoinParam
 import com.intel.intelanalytics.algorithm.{ Percentile, PercentileTarget, PercentileComposingElement }
 import scala.collection.mutable.ListBuffer
 import org.apache.spark.rdd.RDD
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
-import scala.math.pow
+import scala.math.{ pow, log }
 import scala.reflect.ClassTag
+import scala.util.Try
 
 //implicit conversion for PairRDD
 import org.apache.spark.SparkContext._
@@ -929,49 +923,82 @@ private[spark] object SparkOps extends Serializable {
     }
   }
 
-
-  def topk(frameRdd: RDD[Row], columnIndex: Int, dataType: DataType, k: Int, reverse: Boolean = false): Seq[(Any, Long)] = {
+  /**
+   * Returns the top (or bottom) K distinct values by count for specified data column.
+   *
+   * @param frameRdd RDD for data frame
+   * @param columnIndex Index of data column
+   * @param k Number of entries to return
+   * @param reverse Return bottom K entries if true, else return top K
+   * @return Top (or bottom) K distinct values by count for specified column
+   */
+  def topK(frameRdd: RDD[Row], columnIndex: Int, k: Int, reverse: Boolean = false): RDD[Row] = {
     require(columnIndex >= 0, "label column index must be greater than or equal to zero")
     val groupedRDD = frameRdd.groupBy(row => row(columnIndex))
-    val distinctCountRDD = groupedRDD.map({ case (distinctValue, rows) => ( rows.size.toLong, distinctValue)})
+    val distinctCountRDD = groupedRDD.map({ case (distinctValue, rows) => (distinctValue, rows.size.toLong) })
 
+    //Sort by descending order to get top K
+    val isDescendingSort = !reverse
+
+    // Efficiently get the top (or bottom) K entries by first sorting the top (or bottom) K entries in each partition
     val topKByPartition = distinctCountRDD.mapPartitions(countIterator => {
-      sortTopK(countIterator, k)
+      sortTopKByValue(countIterator, k, isDescendingSort)
     })
 
-    val topK = sortTopK(topKByPartition.collect().toIterator, k)
-    topK.map({ case (count, distinctValue) => (distinctValue, count)}).toSeq
-  }
-
-
-  def sortTopK(countIterator: Iterator[(Long, Any)], k: Int): Iterator[(Long, Any)] = {
-    var treeMap = new TreeMap[Long, Any]()
-    countIterator.foreach({ case (count, distinctValue) =>
-      treeMap += (count -> distinctValue)
-      if (treeMap.size > k) {
-        treeMap.drop(1)
-      }
-    })
-    treeMap.iterator
+    // Get the overall top (or bottom) K entries from partitions
+    // Works when K*num_partitions fits in memory of single machine.
+    // TODO: Figure out more efficient way to sort by value in Spark
+    val topIterator = sortTopKByValue(topKByPartition.collect().toIterator, k, isDescendingSort)
+    val topRows = for ((distinctValue, count) <- topIterator) yield Array(distinctValue, count)
+    frameRdd.sparkContext.parallelize(topRows.toSeq)
   }
 
   /**
-   * Calculate the empirical entropy for a column in a data frame.
+   * Returns top K entries sorted by value.
    *
-   * @param frameRdd RDD for a BigFrame
-   * @param columnIndex Column index
+   * The sort ordering may either be ascending or descending.
+   *
+   * @param inputIterator Iterator of key-value pairs to sort
+   * @param k Number of top sorted entries to return
+   * @param descending Sort in descending order if true, else sort in ascending order
+   * @return Top K sorted entries
+   */
+  def sortTopKByValue[K, V: Ordering](inputIterator: Iterator[(K, V)],
+                                      k: Int, descending: Boolean = false): Iterator[(K, V)] = {
+    val ordering = if (descending) implicitly[Ordering[V]].reverse else implicitly[Ordering[V]]
+    var treeMap = new TreeMap[V, K]()(ordering)
+
+    inputIterator.foreach({
+      case (key, value) =>
+        treeMap += (value -> key)
+        if (treeMap.size > k) treeMap = treeMap.dropRight(1)
+    })
+
+    val sortedK = for ((value, key) <- treeMap.toSeq) yield (key, value)
+    sortedK.toIterator
+  }
+
+  /**
+   * Calculate the empirical entropy for specified column in data frame.
+   *
+   * @param frameRdd RDD for a data frame
+   * @param columnIndex Index of data column
    * @return Empirical entropy
    */
   def entropy(frameRdd: RDD[Row], columnIndex: Int): Double = {
     require(columnIndex >= 0, "column index must be greater than or equal to zero")
     val groupedRDD = frameRdd.groupBy(row => row(columnIndex))
-    val groupedCountRDD = groupedRDD.map({ case (distinctValue, rows) => rows.size})
+    val groupedCountRDD = groupedRDD.map({ case (distinctValue, rows) => rows.size })
 
+    // sum() throws an exception if RDD is empty so catching it and returning zero
     val totalCount = Try(groupedCountRDD.sum()).getOrElse(0d)
-    if (totalCount == 0) throw new RuntimeException("Unable to compute entropy on empty frame")
 
-    val probabilityRDD = groupedCountRDD.map(count => count / totalCount)
-    val entropy = -probabilityRDD.map(probability => if (probability > 0) probability * log(probability) else 0).sum()
+    val entropy = if (totalCount > 0) {
+      val probabilityRDD = groupedCountRDD.map(count => count / totalCount)
+      -probabilityRDD.map(probability => if (probability > 0) probability * log(probability) else 0).sum()
+    }
+    else 0d
+
     entropy
   }
 }

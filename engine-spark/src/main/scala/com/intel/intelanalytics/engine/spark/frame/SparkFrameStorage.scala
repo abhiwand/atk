@@ -366,4 +366,7 @@ class SparkFrameStorage(context: UserPrincipal => Context,
   //  def getFrameDataFileByName(name: String): String = {
   //    getFrameDirectoryByName(name) + "/data"
   //  }
+
+  def generateFrameName(): String = java.util.UUID.randomUUID().toString
+
 }

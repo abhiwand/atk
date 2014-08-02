@@ -500,7 +500,7 @@ class Executor(object):
                             kwargs[k] = v
                         validated = CommandRequest.validate_arguments(parameters, kwargs)
                         if return_self:
-                            return new_function(full_name, validated, s)
+                            return new_function(full_name, validated)
                         else:
                             return update_function(full_name, validated, s)
                     except:

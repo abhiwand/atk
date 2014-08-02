@@ -119,6 +119,10 @@ trait Engine {
 
   def columnMedian(arguments: ColumnMedian)(implicit user: UserPrincipal): Execution
 */
+  def entropy(arguments: Entropy)(implicit user: UserPrincipal): Execution
+
+  def topK(arguments: TopK)(implicit user: UserPrincipal): Execution
+
   def confusionMatrix(arguments: ConfusionMatrix[Long])(implicit user: UserPrincipal): Execution
 
   def groupBy(arguments: FrameGroupByColumn[JsObject, Long])(implicit user: UserPrincipal): Execution

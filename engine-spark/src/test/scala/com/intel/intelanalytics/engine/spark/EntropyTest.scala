@@ -25,10 +25,9 @@ class EntropyTest extends TestingSparkContextFlatSpec with Matchers {
     entropy2 should equal(1.011404 +- epsilon)
     entropy3 should equal(0)
   }
-  "entropy" should "should throw a runtime exception if the frame is empty" in {
-    intercept[java.lang.RuntimeException] {
-      val frameRdd = sparkContext.parallelize(emptyList, 2)
-      SparkOps.entropy(frameRdd, 0)
-    }
+  "entropy" should "should return zero if frame is empty" in {
+    val frameRdd = sparkContext.parallelize(emptyList, 2)
+    val entropy = SparkOps.entropy(frameRdd, 0)
+    entropy should equal(0)
   }
 }
