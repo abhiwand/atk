@@ -253,10 +253,10 @@ class SparkEngine(sparkContextManager: SparkContextManager,
   /**
    * Union the additionalData onto the end of the existingFrame
    * @param sparkContext Spark Context
-   * @param existingFrame the target DataFrame d to the existingFrame
+   * @param existingFrame the target DataFrame that may or may not already have data
+   * @param additionalData the data to add to the existingFrame
    * @return the frame with updated schema
-   */that may or may not already have data
-   * @param additionalData the data to ad
+   */
   private def unionAndSave(sparkContext: SparkContext, existingFrame: DataFrame, additionalData: FrameRDD): DataFrame = {
     val existingRdd = frames.getFrameRdd(sparkContext, existingFrame)
     val unionedRdd = existingRdd.union(additionalData)
@@ -1177,12 +1177,69 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     newFrame.copy(schema = Schema(allColumns))
   }
 
-  override def entropy(arguments: Entropy[Long])(implicit user: UserPrincipal): Execution =
+  /**
+   * Calculate the entropy of the specified column.
+   *
+   * @param arguments Input specification for column entropy
+   * @param user Current user
+   */
+  override def entropy(arguments: Entropy)(implicit user: UserPrincipal): Execution =
     commands.execute(entropyCommand, arguments, user, implicitly[ExecutionContext])
 
-  val entropyCommand = commands.registerCommand("dataframe/entropy", entropySimple)
+  val entropyCommand: CommandPlugin[Entropy, EntropyReturn] =
+    commands.registerCommand("dataframe/entropy", entropyCommandSimple _, numberOfJobs = 3)
 
-  def entropySimple = ???
+  def entropyCommandSimple(arguments: Entropy, user: UserPrincipal): EntropyReturn = {
+    implicit val u = user
+
+    val frameId = arguments.frame
+    val frame = expectFrame(frameId)
+    val ctx = sparkContextManager.context(user).sparkContext
+    val frameRdd = frames.getFrameRdd(ctx, frameId.id)
+    val columnIndex = frame.schema.columnIndex(arguments.columnName)
+
+    val entropy = SparkOps.entropy(frameRdd, columnIndex)
+    EntropyReturn(entropy)
+  }
+
+  /**
+   * Calculate the entropy of the specified column.
+   *
+   * @param arguments Input specification for column entropy
+   * @param user Current user
+   */
+  override def topK(arguments: TopK)(implicit user: UserPrincipal): Execution =
+    commands.execute(topKCommand, arguments, user, implicitly[ExecutionContext])
+
+  val topKCommand: CommandPlugin[TopK, TopKReturn] =
+    commands.registerCommand("dataframe/topk", topKCommandSimple _, numberOfJobs = 3)
+
+  def topKCommandSimple(arguments: TopK, user: UserPrincipal): TopKReturn = {
+    implicit val u = user
+
+    val frameId = arguments.frame
+    val frame = expectFrame(frameId)
+    val ctx = sparkContextManager.context(user).sparkContext
+    val frameRdd = frames.getFrameRdd(ctx, frameId.id)
+    val columnIndex = frame.schema.columnIndex(arguments.columnName)
+    val valueDataType = frame.schema.columns(columnIndex)._2
+
+    val newFrameName = frames.generateFrameName()
+
+    val newFrame = Await.result(create(DataFrameTemplate(newFrameName, None)), SparkEngineConfig.defaultTimeout)
+    val location = fsRoot + frames.getFrameDataFile(newFrame.id)
+
+    val topRdd = SparkOps.topK(frameRdd, columnIndex, arguments.k, arguments.reverse.getOrElse(false))
+    topRdd.saveAsObjectFile(location)
+
+    val newSchema = Schema(List(
+      (arguments.columnName, valueDataType),
+      ("count", DataTypes.int64)
+    ))
+
+    frames.updateSchema(newFrame, newSchema.columns)
+    TopKReturn(FrameReference(newFrame.id))
+  }
 
   /**
    * Retrieve DataFrame object by frame id

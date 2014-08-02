@@ -25,26 +25,23 @@ package com.intel.intelanalytics.domain
 
 import java.net.URI
 
+import com.intel.intelanalytics.algorithm.Percentile
 import com.intel.intelanalytics.domain.command.CommandDefinition
-import com.intel.intelanalytics.domain.frame.load.{ Load, LineParser, LoadSource, LineParserArguments }
-import com.intel.intelanalytics.domain.schema.DataTypes
-import com.intel.intelanalytics.domain.query.{ RowQuery }
-import DataTypes.DataType
-import com.intel.intelanalytics.engine.plugin.QueryPluginResults
-import com.intel.intelanalytics.schema._
-import spray.json._
 import com.intel.intelanalytics.domain.frame._
-import com.intel.intelanalytics.domain.graph.{ GraphReference, Graph, GraphLoad, GraphTemplate }
+import com.intel.intelanalytics.domain.frame.load.{ LineParser, LineParserArguments, Load, LoadSource }
 import com.intel.intelanalytics.domain.graph.construction.{ EdgeRule, FrameRule, PropertyRule, ValueRule, VertexRule }
+import com.intel.intelanalytics.domain.graph.{ Graph, GraphLoad, GraphReference, GraphTemplate }
+import com.intel.intelanalytics.domain.query.RowQuery
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 import com.intel.intelanalytics.domain.schema.{ DataTypes, Schema }
+import com.intel.intelanalytics.engine.plugin.QueryPluginResults
+import com.intel.intelanalytics.engine.{ ProgressInfo, TaskProgressInfo }
+import com.intel.intelanalytics.schema._
+import com.intel.intelanalytics.spray.json.IADefaultJsonProtocol
 import org.joda.time.DateTime
 import spray.json._
-import com.intel.intelanalytics.engine.{ ProgressInfo, TaskProgressInfo }
 
 import scala.util.matching.Regex
-import com.intel.intelanalytics.algorithm.Percentile
-import com.intel.intelanalytics.spray.json.IADefaultJsonProtocol
 
 /**
  * Implicit conversions for domain objects to JSON
@@ -63,7 +60,9 @@ object DomainJsonProtocol extends IADefaultJsonProtocol {
 
   trait DateTimeJsonFormat extends JsonFormat[DateTime] {
     private val dateTimeFmt = org.joda.time.format.ISODateTimeFormat.dateTime
+
     def write(x: DateTime) = JsString(dateTimeFmt.print(x))
+
     def read(value: JsValue) = value match {
       case JsString(x) => dateTimeFmt.parseDateTime(x)
       case x => deserializationError("Expected DateTime as JsString, but got " + x)
@@ -179,6 +178,12 @@ object DomainJsonProtocol extends IADefaultJsonProtocol {
   implicit val assignSampleFormat = jsonFormat5(AssignSample)
   implicit val calculatePercentilesFormat = jsonFormat3(CalculatePercentiles)
 
+  implicit val entropyFormat = jsonFormat2(Entropy)
+  implicit val entropyReturnFormat = jsonFormat1(EntropyReturn)
+
+  implicit val topKFormat = jsonFormat4(TopK)
+  implicit val topKReturnFormat = jsonFormat1(TopKReturn)
+
   // model performance formats
 
   implicit val classificationMetricLongFormat = jsonFormat6(ClassificationMetric[Long])
@@ -227,6 +232,7 @@ object DomainJsonProtocol extends IADefaultJsonProtocol {
     }
 
   }
+
   implicit object UriFormat extends JsonFormat[URI] {
     override def read(json: JsValue): URI = json match {
       case JsString(value) => new URI(value)
