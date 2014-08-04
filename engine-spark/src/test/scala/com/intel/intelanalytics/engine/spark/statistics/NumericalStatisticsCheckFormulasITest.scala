@@ -40,9 +40,6 @@ class NumericalStatisticsCheckFormulasITest extends TestingSparkContextFlatSpec 
 
     val numericalStatisticsWeights = new NumericalStatistics(dataWeightRDD)
 
-    // Formulas for statistics are expected to adhere to the DEFAULT formulas used by SAS in
-    // http://support.sas.com/documentation/cdl/en/procstat/63104/HTML/default/viewer.htm#procstat_univariate_sect026.htm
-
     val expectedMean: Double = dataWeightPairs.map({ case (x, w) => x * w }).reduce(_ + _)
     val expectedMax: Double = data.reduce(Math.max(_, _))
     val expectedMin: Double = data.reduce(Math.min(_, _))

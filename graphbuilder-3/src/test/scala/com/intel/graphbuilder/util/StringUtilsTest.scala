@@ -23,26 +23,26 @@
 
 package com.intel.graphbuilder.util
 
-import org.specs2.mutable.Specification
+import org.scalatest.{ Matchers, WordSpec }
 
-class StringUtilsSpec extends Specification {
+class StringUtilsTest extends WordSpec with Matchers {
 
   "StringUtils.nullSafeToString()" should {
 
     "handle null objects" in {
-      StringUtils.nullSafeToString(null) mustEqual null
+      StringUtils.nullSafeToString(null) shouldBe null
     }
 
     "handle Strings" in {
-      StringUtils.nullSafeToString("anyString") mustEqual "anyString"
+      StringUtils.nullSafeToString("anyString") shouldBe "anyString"
     }
 
     "handle Ints" in {
-      StringUtils.nullSafeToString(1) mustEqual "1"
+      StringUtils.nullSafeToString(1) shouldBe "1"
     }
 
     "handle complex objects" in {
-      StringUtils.nullSafeToString(Map("my-key" -> "my-value")) mustEqual "Map(my-key -> my-value)"
+      StringUtils.nullSafeToString(Map("my-key" -> "my-value")) shouldBe "Map(my-key -> my-value)"
     }
   }
 }
