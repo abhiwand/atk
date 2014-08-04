@@ -1,6 +1,8 @@
 ===============
 Set Up A Server
 ===============
+Note:
+    **Bold lines are new/modified for release 0.8.1**
 
 ------------
 Introduction
@@ -276,7 +278,10 @@ Open the file with your editor of choice (we use vim for example)::
 
     sudo vim /etc/intelanalytics/rest-server/application.conf
 
-**All the changes that need to be made are at the top of the file.
+Note:
+    **The following has been revised for release 0.8.1.**
+
+All the changes that need to be made are at the top of the file.
 This is the section you want to look at::
 
     # BEGIN REQUIRED SETTINGS
@@ -350,9 +355,40 @@ If have any doubts you can always verify the executor memory in Cloudera manager
 
     spark.executor.memory = "invalid executor memory"
 
-Click on the spark service then configuration in Cloudera manager to get executor memory.**
+Click on the spark service then configuration in Cloudera manager to get executor memory.
 
 .. image:: ad_inst_IA_1.png
+    :width: 80%
+    :align: center
+
+6. Set the bind ip address (optional)
+
+If you would like the Intel Analytics server to bind to all ip address and not just localhost update the following lines.
+And follow the commented instructions.
+This configuration section is also near the top of the file.
+::
+
+    #bind address - change to 0.0.0.0 to listen on all interfaces
+    //host = "127.0.0.1"
+
+Set the spark classpath
+~~~~~~~~~~~~~~~~~~~~~~~
+
+Run the following command to set the spark class path::
+
+    /usr/lib/intelanalytics/graphbuilder/set-cm-spark-classpath.sh
+    
+Follow the prompts and make corrections where necessary.
+
+If you have problems running the script you can update the spark class path through Cloudera manager.
+If you log into Cloudera manager under the spark configuration you can find the spark-conf/spark-env.sh setting.
+If it isn't already set add::
+
+    export SPARK_CLASSPATH="/usr/lib/intelanalytics/graphbuilder/lib/*"
+    
+then restart the spark service.
+
+.. image:: ad_inst_IA_2.png
     :width: 80%
     :align: center
 
