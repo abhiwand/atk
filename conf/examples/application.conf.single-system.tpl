@@ -36,8 +36,9 @@ intel.analytics {
         # The (comma separated, no spaces) Zookeeper hosts that
         # Titan needs to be able to connect to HBase
         titan.load.storage.hostname = ${HOSTNAME}
-
-        spark {
+        titan.query.storage.hostname = ${intel.analytics.engine.titan.load.storage.hostname}
+        
+	spark {
             # The URL for connecting to the Spark master server
             master = "spark://"${HOSTNAME}":7077"
         }

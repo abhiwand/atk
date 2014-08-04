@@ -238,7 +238,8 @@ class FrameBackendRest(object):
             raise ValueError("Invalid number for percentile:" + ','.join(invalid_percentiles))
 
         arguments = {'frame_id': frame._id, "column_name": column_name, "percentiles": percentiles}
-        execute_update_frame_command('calculate_percentiles', arguments, frame)
+        command = CommandRequest("dataframe/calculate_percentiles", arguments)
+        return executor.issue(command)
 
     def drop(self, frame, predicate):
         from itertools import ifilterfalse  # use the REST API filter, with a ifilterfalse iterator
@@ -419,6 +420,8 @@ class FrameBackendRest(object):
         execute_update_frame_command('rename_frame', arguments, frame)
 
     def take(self, frame, n, offset):
+        if n==0:
+            return []
         url = 'dataframes/{0}/data?offset={2}&count={1}'.format(frame._id,n, offset)
         return executor.query(url)
 
@@ -452,9 +455,9 @@ class FrameBackendRest(object):
             raise ValueError("label_column does not exist in frame")
         if not pred_column in column_names:
             raise ValueError("pred_column does not exist in frame")
-        if supported_types.get_type_string(schema_dict[label_column]) in ['float32', 'float64']:
+        if schema_dict[label_column] in [float32, float64]:
             raise ValueError("invalid label_column types")
-        if supported_types.get_type_string(schema_dict[pred_column]) in ['float32', 'float64']:
+        if schema_dict[pred_column] in [float32, float64]:
             raise ValueError("invalid pred_column types")
         if not beta > 0:
             raise ValueError("invalid beta value for f measure")
@@ -468,13 +471,13 @@ class FrameBackendRest(object):
         column_names = schema_dict.keys()
         if not label_column in column_names:
             raise ValueError("label_column does not exist in frame")
-        if schema_dict.get(label_column) in ['float32', 'float64']:
+        if schema_dict.get(label_column) in [float32, float64]:
             raise ValueError("invalid label_column types")
         if pred_column.strip() == "":
             raise ValueError("pred_column can not be empty string")
         if not pred_column in column_names:
             raise ValueError("pred_column does not exist in frame")
-        if schema_dict.get(pred_column) in ['float32', 'float64']:
+        if schema_dict.get(pred_column) in [float32, float64]:
             raise ValueError("invalid pred_column types")
         if str(pos_label).strip() == "":
             raise ValueError("invalid pos_label")

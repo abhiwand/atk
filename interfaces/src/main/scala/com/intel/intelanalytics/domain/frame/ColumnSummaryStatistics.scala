@@ -43,8 +43,6 @@ case class ColumnSummaryStatistics(frame: FrameReference, dataColumn: String, we
  * out of the calculation. If a row contains a NaN or infinite value in either the data or weights column, that row is
  * skipped and a count of bad rows is incremented.
  *
- * Values follow default settings specified by SAS
- * http://support.sas.com/documentation/cdl/en/procstat/63104/HTML/default/viewer.htm#procstat_univariate_sect026.htm
  * @param mean Arithmetic mean of the data.
  * @param geometricMean Geometric mean of the data. NaN when there is a non-positive data element, 1 if there are no
  *                       data elements.
