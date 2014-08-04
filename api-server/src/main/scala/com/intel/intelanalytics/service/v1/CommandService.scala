@@ -86,7 +86,12 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
                     case Success(Some(command)) => complete(decorate(uri, command))
                     case _ => reject()
                   }
-                }
+                } ~
+                  delete {
+                    onComplete(engine.cancelCommand(id)) {
+                      case _ => complete("command cancelled!")
+                    }
+                  }
             }
           }
       } ~

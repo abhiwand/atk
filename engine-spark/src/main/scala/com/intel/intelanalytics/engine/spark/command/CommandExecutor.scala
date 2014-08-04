@@ -24,7 +24,7 @@
 package com.intel.intelanalytics.engine.spark.command
 
 import com.intel.intelanalytics.component.{ ClassLoaderAware, Boot }
-import com.intel.intelanalytics.domain.command.{ CommandDefinition, Command, CommandTemplate, Execution }
+import com.intel.intelanalytics.domain.command._
 import com.intel.intelanalytics.engine.plugin.{ Invocation, FunctionCommand, CommandPlugin }
 import com.intel.intelanalytics.engine.spark.context.SparkContextManager
 import com.intel.intelanalytics.engine.spark.plugin.SparkInvocation
@@ -38,6 +38,15 @@ import spray.json._
 import scala.concurrent._
 import scala.util.Try
 import org.apache.spark.engine.{ ProgressPrinter, SparkProgressListener }
+import scala.Some
+import com.intel.intelanalytics.domain.command.CommandDefinition
+import com.intel.intelanalytics.engine.plugin.FunctionCommand
+import com.intel.intelanalytics.domain.command.CommandTemplate
+import com.intel.intelanalytics.security.UserPrincipal
+import com.intel.intelanalytics.domain.command.Execution
+import com.intel.intelanalytics.engine.spark.plugin.SparkInvocation
+import com.intel.intelanalytics.domain.command.Command
+import scala.collection.mutable
 
 /**
  * CommandExecutor manages a registry of CommandPlugins and executes them on request.
@@ -64,6 +73,8 @@ import org.apache.spark.engine.{ ProgressPrinter, SparkProgressListener }
 class CommandExecutor(engine: => SparkEngine, commands: SparkCommandStorage, contextManager: SparkContextManager)
     extends EventLogging
     with ClassLoaderAware {
+
+  val commandIdContextMapping = new mutable.HashMap[Long, SparkContext]()
 
   /**
    * Returns all the command definitions registered with this command executor.
@@ -166,6 +177,7 @@ class CommandExecutor(engine: => SparkEngine, commands: SparkCommandStorage, con
           val commandId = cmd.id
           val commandName = cmd.name
           val context: SparkContext = contextManager.context(user, s"(id:$commandId,name:$commandName)")
+          commandIdContextMapping += (commandId -> context)
           val cmdFuture = future {
             withCommand(cmd) {
               try {
@@ -183,6 +195,7 @@ class CommandExecutor(engine: => SparkEngine, commands: SparkCommandStorage, con
               }
               finally {
                 context.stop()
+                commandIdContextMapping -= commandId
               }
             }
             commands.lookup(cmd.id).get
@@ -240,5 +253,14 @@ class CommandExecutor(engine: => SparkEngine, commands: SparkCommandStorage, con
     commands.complete(command.id, Try {
       block
     })
+  }
+
+  /**
+   * Cancel a running command
+   * @param commandId command id
+   */
+  def cancel(commandId: Long): Unit = {
+    commandIdContextMapping.get(commandId).foreach { case (context) => context.stop() }
+    commandIdContextMapping -= commandId
   }
 }
