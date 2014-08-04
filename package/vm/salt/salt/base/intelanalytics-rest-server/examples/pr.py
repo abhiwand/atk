@@ -1,6 +1,6 @@
 from intelanalytics import *
-dataset = r"netflix.csv"
-schema = [("user_id", int32), ("movie_id", int32), ("rating", int32), ("splits", str)]
+dataset = r"datasets/movie_sample_data_5mb.csv"
+schema = [("user_id", int32), ("ignore_column", str), ("movie_id", int32), ("rating", int32), ("splits", str)]
 csv_file = CsvFile(dataset, schema, skip_header_lines = 0)
 f = BigFrame(csv_file)
 user = VertexRule("user_id", f.user_id, { "vertex_type": "L"})

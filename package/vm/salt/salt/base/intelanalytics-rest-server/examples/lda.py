@@ -1,5 +1,5 @@
 from intelanalytics import *
-dataset = r"test_lda_sample.csv"
+dataset = r"datasets/test_lda.csv"
 schema = [("doc", str), ("vertex_type", str), ("word", str), ("word_count", int64)]
 csv_file = CsvFile(dataset, schema, skip_header_lines = 0)
 f = BigFrame(csv_file)

@@ -1,6 +1,6 @@
 from intelanalytics import *
 
-dataset = r"apl.csv"
+dataset = r"datasets/apl.csv"
 schema = [("user", int64), ("vertex_type", str), ("movie", int64), ("rating", int64), ("splits", str)]
 csv_file = CsvFile(dataset, schema, skip_header_lines = 0)
 print "Creating Frame"
