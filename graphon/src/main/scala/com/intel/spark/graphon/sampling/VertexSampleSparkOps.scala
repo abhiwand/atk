@@ -189,7 +189,12 @@ object VertexSampleSparkOps extends Serializable {
    * @return RDD of vertices
    */
   def getTopVertices(weightedVertexRdd: RDD[(Double, Vertex)], size: Int): RDD[Vertex] = {
-    val vertexSampleArray = weightedVertexRdd.top(size)(Ordering.by { case (vertexWeight, vertex) => vertexWeight })
+    // TODO: There is a bug with Spark top function that is resolved in Spark 1.1.0, so use less efficient sortByKey() for now
+    //val vertexSampleArray = weightedVertexRdd.top(size)(Ordering.by { case (vertexWeight, vertex) => vertexWeight })
+
+    val sortedBySampleWeightRdd = weightedVertexRdd.sortByKey(ascending = false)
+    val vertexSampleArray = sortedBySampleWeightRdd.take(size)
+
     val vertexSamplePairRdd = weightedVertexRdd.sparkContext.parallelize(vertexSampleArray)
 
     vertexSamplePairRdd.map { case (vertexWeight, vertex) => vertex }

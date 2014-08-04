@@ -544,7 +544,7 @@ class GraphSampling(object):
         if not hasattr(self, '_backend'):
             self._backend = _get_backend()
 
-    def vertex_sample(self, size, sample_type, **kwargs):
+    def vertex_sample(self, size, sample_type, seed=None):
         """
         Create a vertex induced subgraph obtained by vertex sampling
 
@@ -560,7 +560,7 @@ class GraphSampling(object):
             the number of vertices to sample from the graph
         sample_type : str
             the type of vertex sample among: ['uniform', 'degree', 'degreedist']
-        seed : (optional keyword argument) int
+        seed : (optional) int
             random seed value
 
         Returns
@@ -577,12 +577,8 @@ class GraphSampling(object):
             subgraph = graph.sampling.vertex_sample(1000, 'uniform')
 
         """
-        if 'seed' in kwargs:
-            result = self._backend.vertex_sample(self.graph, size, sample_type, kwargs['seed'])
-            return self._backend.get_graph(result['name'])
-        else:
-            result = self._backend.vertex_sample(self.graph, size, sample_type)
-            return self._backend.get_graph(result['name'])
+        result = self._backend.vertex_sample(self.graph, size, sample_type, seed)
+        return self._backend.get_graph(result['name'])
 
 
 class GraphMachineLearning(object):
