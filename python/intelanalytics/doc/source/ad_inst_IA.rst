@@ -252,7 +252,7 @@ If you open the file it will look something like this::
     #intelanalytics-rest-server env file
     #Set all your environment variables needed for the rest server here
     
-    # depending on the CDH install method used, set the appropriate SPARK_HMOE below
+    # depending on the CDH install method used, set the appropriate SPARK_HOME below
 
     #export SPARK_HOME="/usr/lib/spark"
     **export SPARK_HOME="/opt/cloudera/parcels/CDH/lib/spark"**
