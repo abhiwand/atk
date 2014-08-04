@@ -24,7 +24,7 @@
 package com.intel.intelanalytics.algorithm.util
 
 import com.intel.intelanalytics.component.Boot
-import com.intel.intelanalytics.engine.ProgressInfo
+import com.intel.intelanalytics.engine.{ CommandStorage, ProgressInfo }
 import com.intel.intelanalytics.engine.plugin.Invocation
 import org.apache.giraph.conf.GiraphConfiguration
 import org.apache.giraph.job.{ DefaultJobObserver, GiraphJob }
@@ -32,11 +32,12 @@ import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{ Path, FileSystem }
 import org.apache.hadoop.mapreduce.Job
 import com.typesafe.config.Config
+import scala.collection.mutable.HashMap
 
 import scala.concurrent._
 
 object GiraphJobListener {
-  var invocation: Invocation = null
+  var commandIdMap = new HashMap[Long, CommandStorage]
 }
 
 /**
@@ -45,16 +46,29 @@ object GiraphJobListener {
  */
 class GiraphJobListener extends DefaultJobObserver {
 
+  override def launchingJob(jobToSubmit: Job) = {
+    val commandId = getCommandId(jobToSubmit)
+    val commandStorage = getCommandStorage(commandId)
+    commandStorage.updateProgress(commandId, List(ProgressInfo(0.0f, None)))
+  }
+
   override def jobRunning(submittedJob: Job) = {
-    implicit val ec = GiraphJobListener.invocation.executionContext
-    val commandId = GiraphJobListener.invocation.commandId
-    val commandStorage = GiraphJobListener.invocation.commandStorage
-    Future {
-      Stream.continually(submittedJob.isComplete).takeWhile(_ == false).foreach {
-        _ => commandStorage.updateProgress(commandId, List(ProgressInfo(submittedJob.mapProgress() * 100, None)))
-      }
+    val commandId = getCommandId(submittedJob)
+    val commandStorage = getCommandStorage(commandId)
+    Stream.continually(submittedJob.isComplete).takeWhile(_ == false).foreach {
+      _ => commandStorage.updateProgress(commandId, List(ProgressInfo(submittedJob.mapProgress() * 100, None)))
     }
   }
+
+  override def jobFinished(jobToSubmit: Job, passed: Boolean) = {
+    val commandId = getCommandId(jobToSubmit)
+    GiraphJobListener.commandIdMap.-(commandId)
+    println(jobToSubmit.toString)
+  }
+
+  private def getCommandId(job: Job): Long = job.getConfiguration.getLong("giraph.ml.commandId", 0)
+  private def getCommandStorage(commandId: Long): CommandStorage = GiraphJobListener.commandIdMap.getOrElse(commandId, null)
+
 }
 
 /**
@@ -72,8 +86,10 @@ object GiraphJobManager {
     val giraphLoader = Boot.getClassLoader(config.getString("giraph.archive.name"))
     Thread.currentThread().setContextClassLoader(giraphLoader)
 
-    GiraphJobListener.invocation = invocation
+    GiraphJobListener.commandIdMap(invocation.commandId) = invocation.commandStorage
     giraphConf.setJobObserverClass(classOf[GiraphJobListener])
+
+    giraphConf.setLong("giraph.ml.commandId", invocation.commandId)
 
     val job = new GiraphJob(giraphConf, jobName)
     val internalJob: Job = job.getInternalJob
