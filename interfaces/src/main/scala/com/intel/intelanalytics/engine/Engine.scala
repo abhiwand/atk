@@ -149,4 +149,11 @@ trait Engine {
 
   def ecdf(arguments: ECDF[Long])(implicit user: UserPrincipal): Execution
 
+  /**
+   * Cancel a running command
+   * @param id command id
+   * @param user current user
+   * @return optional command instance
+   */
+  def cancelCommand(id: Identifier)(implicit user: UserPrincipal): Future[Option[Command]]
 }

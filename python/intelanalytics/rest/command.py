@@ -424,6 +424,7 @@ class Executor(object):
         Tries to cancel the given command
         """
         logger.info("Executor cancelling command " + str(command_id))
+        http.delete("commands/" + str(command_id))
         # TODO - implement command cancellation (like a DELETE to commands/id?)
 
     def fetch(self):
