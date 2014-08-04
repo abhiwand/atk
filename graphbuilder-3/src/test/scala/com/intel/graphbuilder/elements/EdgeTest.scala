@@ -23,45 +23,52 @@
 
 package com.intel.graphbuilder.elements
 
-import org.specs2.mutable.Specification
+import org.scalatest.{ Matchers, WordSpec }
 
-class VertexSpec extends Specification {
+class EdgeTest extends WordSpec with Matchers {
 
-  val gbId = new Property("gbId", 10001)
-  val vertex = new Vertex(gbId, List(new Property("key", "value")))
+  val tailId = new Property("gbId", 10001)
+  val headId = new Property("gbId", 10002)
+  val label = "myLabel"
+  val edge = new Edge(tailId, headId, label, List(new Property("key", "value")))
 
-  "Vertex" should {
-    "have a unique id that is the gbId" in {
-      vertex.id mustEqual gbId
+  "Edge" should {
+
+    "be reverse-able" in {
+      // invoke method under test
+      val reversedEdge = edge.reverse()
+
+      // should be opposite
+      edge.headVertexGbId shouldBe reversedEdge.tailVertexGbId
+      edge.tailVertexGbId shouldBe reversedEdge.headVertexGbId
+
+      // should be same same
+      edge.label shouldBe reversedEdge.label
+      edge.properties shouldBe reversedEdge.properties
     }
 
-    "be mergeable with another vertex" in {
-      val vertex2 = new Vertex(gbId, List(new Property("anotherKey", "anotherValue")))
+    "have a unique id made up of the tailId, headId, and label" in {
+      edge.id shouldBe (tailId, headId, label)
+    }
+
+    "be mergeable" in {
+      val edge2 = new Edge(tailId, headId, label, List(new Property("otherKey", "otherValue")))
 
       // invoke method under test
-      val merged = vertex.merge(vertex2)
+      val merged = edge.merge(edge2)
 
-      merged.gbId mustEqual gbId
-      merged.properties.size mustEqual 2
-
-      merged.properties(0).key mustEqual "key"
-      merged.properties(0).value mustEqual "value"
-
-      merged.properties(1).key mustEqual "anotherKey"
-      merged.properties(1).value mustEqual "anotherValue"
+      merged.properties.size shouldBe 2
+      merged.properties(0).key shouldBe "key"
+      merged.properties(1).key shouldBe "otherKey"
     }
 
-    "not allow null gbIds" in {
-      new Vertex(null, Nil) must throwA[IllegalArgumentException]
-    }
+    "not allow merging of edges with different ids" in {
+      val diffId = new Property("gbId", 9999)
+      val edge2 = new Edge(tailId, diffId, label, List(new Property("otherKey", "otherValue")))
 
-    "not allow merging of vertices with different ids" in {
-      val diffId = new Property("gbId", 10002)
-      val vertex2 = new Vertex(diffId, List(new Property("anotherKey", "anotherValue")))
-
-      // invoke method under test
-      vertex.merge(vertex2) must throwA[IllegalArgumentException]
+      intercept[IllegalArgumentException] {
+        edge.merge(edge2)
+      }
     }
   }
-
 }
