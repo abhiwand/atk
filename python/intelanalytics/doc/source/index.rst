@@ -1,17 +1,21 @@
+========================
 Intel® Analytics Toolkit
 ========================
 
-Contents:
+--------
+Contents
+--------
 
 .. toctree::
-   :maxdepth: 2
+    :maxdepth: 2
 
-   ia_intro
-   ad_over
-   ds_over
-   glossary
-   ia_legal
+    ia_intro
+    ad_over
+    ds_over
+    glossary
+    ia_legal
 
+----------
 References
 ----------
 .. toctree::
@@ -21,3 +25,4 @@ References
 * :doc:`ia_legal`
 * :ref:`genindex`
 * :ref:`search`
+
