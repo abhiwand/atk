@@ -354,8 +354,7 @@ class Executor(object):
                 # Polling.print_progress(command_info.progress)
 
         except KeyboardInterrupt:
-            self.cancel(command_info.id_number)
-            raise
+            command_info = self.cancel(command_info.id_number)
 
         if command_info.error:
             raise CommandServerError(command_info)
@@ -428,7 +427,8 @@ class Executor(object):
 
         arguments = {'status': 'cancel'}
         command_request = CommandRequest("", arguments)
-        http.post("commands/%s" %(str(command_id)), command_request.to_json_obj())
+        response = http.post("commands/%s" %(str(command_id)), command_request.to_json_obj())
+        return CommandInfo(response.json())
 
     def fetch(self):
         """
