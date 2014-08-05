@@ -104,4 +104,8 @@ if [ $? == 0 ]; then
     # Yes for "text"
     make -B text 2>&1 | grep -v -f toctreeWarnings
 fi
+
+echo Zipping Results...
+zip -q -9 -r intel_analytics_docs build/*
+
 exit 0
