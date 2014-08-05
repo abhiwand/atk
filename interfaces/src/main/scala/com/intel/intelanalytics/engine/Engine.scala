@@ -111,14 +111,16 @@ trait Engine {
 
   def columnSummaryStatistics(arguments: ColumnSummaryStatistics)(implicit user: UserPrincipal): Execution
 
+  def columnMedian(arguments: ColumnMedian)(implicit user: UserPrincipal): Execution
+
   // TODO TRIB-2245
   /*
   def columnFullStatistics(arguments: ColumnFullStatistics)(implicit user: UserPrincipal): Execution
 
   def columnMode(arguments: ColumnMode)(implicit user: UserPrincipal): Execution
 
-  def columnMedian(arguments: ColumnMedian)(implicit user: UserPrincipal): Execution
-*/
+  */
+
   def confusionMatrix(arguments: ConfusionMatrix[Long])(implicit user: UserPrincipal): Execution
 
   def groupBy(arguments: FrameGroupByColumn[JsObject, Long])(implicit user: UserPrincipal): Execution
