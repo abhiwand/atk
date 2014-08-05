@@ -26,14 +26,14 @@ Functionality provided includes:
 * Common math and calculations, including absolute value, exponentiation, logarithm, square root, rounding, integer operations (such as division,
   modulo, floor and ceiling), and random number generation
 * Overall-level and "GroupBy"-level aggregation, and evaluation through functions like averaging, counting total or unique values, summing,
-  finding the min and max, variance, and standard deviation, plus advanced transforms like exponentially weighted average.  
+  finding the min and max, :term:`variance <Bias-variance tradeoff>`, and standard deviation, plus advanced transforms like exponentially weighted average.  
 * Most functions can be applied using filters of data ranges, numeric ranges, or value lookups. 
 * Custom user-developed parsing and transformations (:term:`lambda functions`, row-based) using Python  
 
 Graph Construction
 ==================
 
-To use graph tools, such as graph databases, graph analytics and machine learning, or graph visualization, data must first be structured
+To use graph tools, such as graph databases, graph analytics and :term:`machine learning`, or graph visualization, data must first be structured
 into a network of vertices and edges.
 The Intel Analytics Toolkit makes this process simple, through pre-built routines for assembling data sets of all sizes into graphs, using cluster
 computing for high-throughput.
@@ -111,7 +111,7 @@ For graph statistics, algorithms provided include:
 * :term:`Vertex degree`
 * :term:`Vertex degree distribution`
 * Shortest path from a vertex to all other vertices
-* :term:`Centrality (PageRank)`
+* :term:`Centrality` (:term:`PageRank`)
 
 The graph engine utilized in this release is Apache Giraph, which has been integrated with the complete graph processing pipeline to
 provide out-of-the-box usability and substantially-enhanced features over the standard open source distributions.
