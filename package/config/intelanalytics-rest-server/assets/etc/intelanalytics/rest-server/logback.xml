@@ -16,6 +16,14 @@
     <logger name="play" level="INFO" />
     <logger name="application" level="INFO" />
 
+    <!--
+        log levels
+        TRACE
+        DEBUG
+        INFO
+        WARN
+        ERROR
+    -->
     <root level="INFO">
         <appender-ref ref="FILE" />
         <appender-ref ref="STDOUT" />
