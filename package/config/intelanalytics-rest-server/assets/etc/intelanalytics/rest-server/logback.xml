@@ -1,4 +1,4 @@
-<configuration>
+<configuration scan="true">
 
     <appender name="FILE" class="ch.qos.logback.core.FileAppender">
         <file>/var/log/intelanalytics/rest-server/application.log</file>
