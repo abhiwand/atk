@@ -13,7 +13,7 @@ For more information about LBP, see: "K. Murphy, Y. Weiss, and M. Jordan, Loopy-
 LBP has a wide range of applications in structured prediction, such as low-level vision and influence spread in social networks,
 where we have prior noisy predictions for a large set of random variables and a graph encoding relationships between those variables.
 
-The algorithm performs approximate inference on an undirected graph of hidden variables, where each variable is represented as a node,
+The algorithm performs approximate inference on an :term:`undirected graph` of hidden variables, where each variable is represented as a node,
 and edges encode relations to its neighbors.
 Initially, a prior noisy estimate of state probabilities is given to each node, then the algorithm infers the posterior distribution of
 each node by propagating and collecting messages to and from its neighbors and updating the beliefs.
@@ -24,9 +24,10 @@ often converges close to the true joint probability distribution.
 Discrete Loopy Belief Propagation:
 ----------------------------------
 
-LBP is typically considered a semi-supervised machine learning algorithm as
+LBP is typically considered a :term:`semi-supervised machine learning <Semi-Supervised Learning>` algorithm as
     1) there is typically no ground truth observation of states and
-    #) the algorithm is primarily concerned with estimating a joint probability function rather than with classification or point prediction.
+    #) the algorithm is primarily concerned with estimating a joint probability function rather than
+        with :term:`classification` or point prediction.
 
 The standard (discrete) LBP algorithm requires a set of probability thresholds to be considered a classifier.
 Nonetheless, the discrete LBP algorithm allows Test/Train/Validate splits of the data and the algorithm will treat "Train" observations
@@ -49,8 +50,8 @@ Each node sends out initial messages of the form:
 
    \ln \left ( \sum_{s_{j}} \exp \left ( - \frac { | i - j | ^{p} }{ n - 1 } * w * s + \ln (prior_{i}) \right ) \right )
 
-Where :math:`w` is equal to the weight between the messages destination and origin vertices, :math:`s` is equal to the smoothing parameter,
-:math:`p` is the power parameter, and :math:`n` is the number of states.
+Where :math:`w` is equal to the weight between the messages destination and origin vertices, :math:`s` is equal to the
+:term:`smoothing` parameter, :math:`p` is the power parameter, and :math:`n` is the number of states.
 The larger the weight between two nodes or the higher the smoothing parameter, the more neighboring vertices are assumed to "agree" on states.
 (Here, we represent messages as sums of log probabilities rather than products of non-logged probabilities as it makes it easier to subtract
 messages in the future steps of the algorithm.)

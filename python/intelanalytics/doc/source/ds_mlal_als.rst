@@ -8,7 +8,7 @@ Our implementation is based on the following papers:
     Y. Zhou, D. Wilkinson, R. Schreiber and R. Pan. `Large-Scale Parallel Collaborative Filtering for the Netflix Prize`_. 2008.
     Y. Koren. `Factorization Meets the Neighborhood\: a Multifaceted Collaborative Filtering Model`_. In ACM KDD 2008. (Equation 5)
 
-This algorithm for collaborative filtering is widely used in recommendation systems to suggest items
+This algorithm for collaborative filtering is widely used in :term:`recommendation systems` to suggest items
 (products, movies, articles, and so on) to potential users based on historical records of items that
 all users have purchased, rated, or viewed.
 The records are usually organized as a preference matrix P, which is a sparse matrix holding the preferences

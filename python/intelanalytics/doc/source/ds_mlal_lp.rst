@@ -1,14 +1,14 @@
 Label Propagation (LP)
 ======================
 
-Label propagation (LP) is a message passing technique for inputing or smoothing labels in partially-labelled datasets. 
+Label propagation (LP) is a message passing technique for inputing or :term:`smoothing` labels in partially-labelled datasets. 
 Labels are propagated from *labeled* data to *unlabeled* data along a graph encoding similarity relationships among data points.
 The labels of known data can be probabilistic 
 in other words, a known point can be represented with fuzzy labels such as 90% label 0 and 10% label 1.
 The inverse distance between data points is represented by edge weights, with closer points having a higher weight (stronger influence
 on posterior estimates) than points farther away. 
 LP has been used for many problems, particularly those involving a similarity measure between data points.
-Our implementation is based on Zhu and Ghahramani's 2002 paper, "Learning from labeled and unlabeled data" [1]_.
+Our implementation is based on Zhu and Ghahramani's 2002 paper, "Learning from labeled and unlabeled data" [#LP1]_.
   
 The Label Propagation Algorithm:
 --------------------------------

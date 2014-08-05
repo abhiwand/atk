@@ -1,7 +1,7 @@
     Average Path Length (APL)
     = =======================
 
-    The average path length algorithm calculates the average path length from a vertex to any other vertices.
+    The :term:`average path length` algorithm calculates the average path length from a vertex to any other vertices.
 
         Parameters
         - --------

@@ -1,12 +1,12 @@
 Topic Modeling with Latent Dirichlet Allocation (LDA)
 =====================================================
 
-Topic modeling algorithms are a class of statistical approaches to partitioning items in a data set into subgroups.
+:term:`Topic modeling` algorithms are a class of statistical approaches to partitioning items in a data set into subgroups.
 As the name implies, these algorithms are often used on corpora of textual data, where they are used to group documents
 in the collection into semantically-meaningful groupings.
 For an overall introduction to topic modeling, we refer the reader to the work of David Blei and Michael Jordan,
 who are credited with creating and popularizing topic modeling in the machine learning community.
-In particular, Blei's 2011 paper provides a nice introduction, and is freely-available online [#]_ .
+In particular, Blei's 2011 paper provides a nice introduction, and is freely-available online [#LDA1]_ .
 
 Latent Dirichlet Allocation (LDA) is a commonly-used algorithm for topic modeling, but, more broadly,
 is considered a dimensionality reduction technique.
@@ -54,13 +54,13 @@ Depending on the characteristics of the data being analyzed, there are different
 so it's important that the data scientist familiarizes him or herself with the standard procedures for analytics in the domain from which
 the text originated.
 For example, in the biomedical text analytics community, it is common practice for text analytics workflows to involve pre-processing for
-identifying negation statements (Chapman et al., 2001 [#]_ ).
+identifying negation statements (Chapman et al., 2001 [#LDA2]_ ).
 The reason for this is many analysts in that domain are examining text for diagnostic statements :math:`-` thus, failing to identify
 a negated statement in which a disease is mentioned could lead to undesirable false-positives, but this phenomenon may not arise in every domain.
 In general, both stemming and stop word filtering are recommended steps for topic modeling pre-processing.
 Stemming refers to a set of methods used to normalize different tenses and variations of the same word (for example, stemmer, stemming, stemmed, and stem).
 Stemming algorithms will normalize all variations of a word to one common form (for example, stem).
-There are many approaches to stemming, but the Porter Stemming (Porter, 2006 [#]_ ) is one of the most commonly-used.
+There are many approaches to stemming, but the Porter Stemming (Porter, 2006 [#LDA3]_ ) is one of the most commonly-used.
 
 Removing common, uninformative words, or stop word filtering, is another commonly-used step in data pre-processing for topic modeling.
 Stop words include words like *the*, *and*, or *a*, but the full list of uninformative words can be quite long and depend on the domain producing the text in question.
@@ -69,7 +69,7 @@ Example stop word lists online4 can be a great place to start, but being aware o
 Removing common, uninformative words, or stop word filtering, is another commonly-used step in data pre-processing for topic modeling.
 Stop words include words like the, and, or a, but the full list of uninformative words can be quite long and depend on the domain producing
 the text in question.
-Example stop word lists online [#]_ can be a great place to start, but being aware of the best-practices in ones field will be necessary,
+Example stop word lists online [#LDA4]_ can be a great place to start, but being aware of the best-practices in ones field will be necessary,
 to expand upon these.
 
 There may be other pre-processing steps needed, depending on the type of text you are working with.
@@ -153,9 +153,9 @@ The generative process for LDA, then, is the joint distribution of hidden and ob
 This distribution depicts several dependencies: topic assignment :math:`z_{d,n}` depends on the topic proportions :math:`\theta_d`,
 and the observed word :math:`w_{d,n}` depends on topic assignment :math:`z_{d,n}` and all the topics :math:`\beta_{1:K}`, for example.
 Although there are no analytical solutions to learning the LDA model, there are a variety of approximate solutions that are used,
-most of which are based on Gibbs Sampling (for example, Porteous et al., 2008 [#]_ ).
+most of which are based on Gibbs Sampling (for example, Porteous et al., 2008 [#LDA5]_ ).
 The IAT uses an implementation related to this.
-We refer the interested reader to the primary source on this approach to learn more (Teh et al., 2006 [#]_ ).
+We refer the interested reader to the primary source on this approach to learn more (Teh et al., 2006 [#LDA6]_ ).
 
 Evaluation
 ----------
@@ -169,7 +169,7 @@ This makes sense, if we consider with LDA we're using an algorithm to blindly id
 and we don't *a priori* know the best grouping that can be found.
 Evaluation, then, should proceed with this in mind, and an examination of homogeneity of the words comprising the documents in
 each grouping is often done.
-This issue is discussed further in Blei's 2011 introduction to topic modeling [#]_ .
+This issue is discussed further in Blei's 2011 introduction to topic modeling [#LDA7]_ .
 It is of course possible to evaluate a topic model from a statistical perspective using our hold-out testing document
 collection :math:`-` and this is a recommended best practice :math:`-` however, such an evaluation does not assess the topic model
 in terms of how they are typically used.
@@ -232,7 +232,7 @@ vertex_type:
     The name of the vertex type.
  
 vector_value:
-    Boolean
+    :term:`Boolean`
 
     Denotes whether a vector can be passed as a vertex value.
  
