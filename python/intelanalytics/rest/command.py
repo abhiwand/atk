@@ -355,6 +355,7 @@ class Executor(object):
 
         except KeyboardInterrupt:
             self.cancel(command_info.id_number)
+            raise
 
         if command_info.error:
             raise CommandServerError(command_info)
@@ -424,8 +425,10 @@ class Executor(object):
         Tries to cancel the given command
         """
         logger.info("Executor cancelling command " + str(command_id))
-        http.delete("commands/" + str(command_id))
-        # TODO - implement command cancellation (like a DELETE to commands/id?)
+
+        arguments = {'status': 'cancel'}
+        command_request = CommandRequest("", arguments)
+        http.post("commands/%s" %(str(command_id)), command_request.to_json_obj())
 
     def fetch(self):
         """

@@ -43,7 +43,7 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol._
 import com.intel.intelanalytics.service.v1.viewmodels._
 import com.intel.intelanalytics.service.v1.viewmodels.ViewModelJsonImplicits._
 import com.intel.intelanalytics.domain.graph.{ GraphReference, GraphLoad }
-import com.intel.intelanalytics.domain.command.{ Execution, CommandTemplate, Command }
+import com.intel.intelanalytics.domain.command.{ CommandAction, Execution, CommandTemplate, Command }
 import com.intel.intelanalytics.shared.EventLogging
 import com.intel.intelanalytics.service.{ ApiServiceConfig, UrlParser, CommonDirectives, AuthenticationDirective }
 import com.intel.intelanalytics.service.v1.decorators.CommandDecorator
@@ -87,10 +87,15 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
                     case _ => reject()
                   }
                 } ~
-                  delete {
-                    onComplete(engine.cancelCommand(id)) {
-                      case _ => complete("command cancelled")
+                  post {
+                    entity(as[JsonTransform]) {
+                      xform =>
+                        {
+                          val action = xform.arguments.get.convertTo[CommandAction]
+                          executeCommandAction(id, action)
+                        }
                     }
+
                   }
             }
           }
@@ -150,8 +155,19 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
     }
   }
 
-  //TODO: disentangle the command dispatch from the routing
-  //TODO: this method is going away soon.
+  /**
+   * Execute action on command
+   * @param id command id
+   * @param action action to operate on command. eg, cancel
+   */
+  def executeCommandAction(id: Long, action: CommandAction) {
+    action.status match {
+      case "cancel" => complete(engine.cancelCommand(id)) {
+        case _ => complete("command cancelled")
+      }
+    }
+  }
+
   /**
    * Command dispatcher that translates from HTTP pathname to command invocation
    * @param uri Path of command.
