@@ -79,6 +79,9 @@ if [ "$#" -ne  "0" ]; then
 fi
 
 if [ "$COMPILE_HTML" == "Yes" ]; then
+    if [[ -d build/html ]]; then
+        rm -r build/html
+    fi
     # Ignore all toctree warnings.
     make -B html 2>&1 | grep -v -f toctreeWarnings
 fi
@@ -86,13 +89,23 @@ fi
 # Look for latexpdf
 echo "$1 $2 $3 $4 $5 $6 $7 $8 $9" | grep -i "latexpdf" > /dev/null
 if [ $? == 0 ]; then
+    if [[ -d build/latex ]]; then
+        rm -r build/latex
+    fi
     # Yes for "latexpdf"
     make -B latexpdf 2>&1 | grep -v -f toctreeWarnings
 fi
 # Look for text
 echo "$1 $2 $3 $4 $5 $6 $7 $8 $9" | grep -i "text" > /dev/null
 if [ $? == 0 ]; then
+    if [[ -d build/text ]]; then
+        rm -r build/text
+    fi
     # Yes for "text"
     make -B text 2>&1 | grep -v -f toctreeWarnings
 fi
+
+echo Zipping Results...
+zip -q -9 -r intel_analytics_docs build/*
+
 exit 0
