@@ -37,7 +37,7 @@ import scala.concurrent.ExecutionContext
  * @tparam Return the return type of the command
  */
 case class FunctionCommand[Arguments <: Product: JsonFormat: ClassManifest, Return <: Product: JsonFormat: ClassManifest](name: String,
-                                                                                                                          function: (Arguments, UserPrincipal) => Return,
+                                                                                                                          function: (Arguments, UserPrincipal, Invocation) => Return,
                                                                                                                           numberOfJobsFunc: (Arguments) => Int)
     extends CommandPlugin[Arguments, Return] {
 
@@ -59,7 +59,7 @@ case class FunctionCommand[Arguments <: Product: JsonFormat: ClassManifest, Retu
     //Since the function may come from any class loader, we use the function's
     //class loader, not our own
     withLoader(function.getClass.getClassLoader) {
-      function(arguments, user)
+      function(arguments, user, invocation)
     }
   }
 }
