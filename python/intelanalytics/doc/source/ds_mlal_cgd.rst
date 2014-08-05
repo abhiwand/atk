@@ -10,7 +10,7 @@ Our implementation is based on the following paper.
 Y. Koren. Factorization Meets the Neighborhood: a Multifaceted Collaborative Filtering Model. In ACM KDD 2008. (Equation 5)
 http://public.research.att.com/~volinsky/netflix/kdd08koren.pdf
 
-This algorithm for collaborative filtering is used in recommendation systems to suggest items (products, movies, articles, and so on) to potential users based on historical records of items that all users have purchased, rated, or viewed.
+This algorithm for collaborative filtering is used in :term:`recommendation systems` to suggest items (products, movies, articles, and so on) to potential users based on historical records of items that all users have purchased, rated, or viewed.
 The records are usually organized as a preference matrix P, which is a sparse matrix holding the preferences (such as, ratings) given by users to items.
 Similar to ALS, CGD falls in the category of matrix factorization/latent factor model that infers user profiles and item profiles in low-dimension space, such that the original matrix P can be approximated by a linear model.
 
