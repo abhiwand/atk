@@ -618,41 +618,41 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     ColumnStatistics.columnMode(columnIndex, valueDataType, weightsColumnIndexOption, weightsDataTypeOption, rdd)
   }
 */
-  // TODO TRIB-2245
+
   /**
    * Calculate the median of the specified column.
    * @param arguments Input specification for column median.
    * @param user Current user.
-   *
-   * override def columnMedian(arguments: ColumnMedian)(implicit user: UserPrincipal): Execution =
-   * commands.execute(columnMedianCommand, arguments, user, implicitly[ExecutionContext])
-   *
-   * val columnMedianCommand: CommandPlugin[ColumnMedian, ColumnMedianReturn] =
-   * commands.registerCommand("dataframe/column_median", columnMedianSimple)
-   *
-   * def columnMedianSimple(arguments: ColumnMedian, user: UserPrincipal): ColumnMedianReturn = {
-   *
-   * implicit val u = user
-   *
-   * val frameId = arguments.frame
-   * val frame = expectFrame(frameId)
-   * val ctx = sparkContextManager.context(user).sparkContext
-   * val rdd = frames.getFrameRdd(ctx, frameId.id)
-   * val columnIndex = frame.schema.columnIndex(arguments.dataColumn)
-   * val valueDataType: DataType = frame.schema.columns(columnIndex)._2
-   *
-   * val (weightsColumnIndexOption, weightsDataTypeOption) = if (arguments.weightsColumn.isEmpty) {
-   * (None, None)
-   * }
-   * else {
-   * val weightsColumnIndex = frame.schema.columnIndex(arguments.weightsColumn.get)
-   * (Some(weightsColumnIndex), Some(frame.schema.columns(weightsColumnIndex)._2))
-   * }
-   * val (weightsColumnIndexOption, weightsDataTypeOption) = (None, None)
-   *
-   * ColumnStatistics.columnMedian(columnIndex, valueDataType, weightsColumnIndexOption, weightsDataTypeOption, rdd)
-   * }
    */
+
+  override def columnMedian(arguments: ColumnMedian)(implicit user: UserPrincipal): Execution =
+    commands.execute(columnMedianCommand, arguments, user, implicitly[ExecutionContext])
+
+  val columnMedianCommand: CommandPlugin[ColumnMedian, ColumnMedianReturn] =
+    commands.registerCommand("dataframe/column_median", columnMedianSimple)
+
+  def columnMedianSimple(arguments: ColumnMedian, user: UserPrincipal, invocation: SparkInvocation): ColumnMedianReturn = {
+
+    implicit val u = user
+
+    val frameId = arguments.frame
+    val frame = expectFrame(frameId)
+    val ctx = invocation.sparkContext
+    val rdd = frames.getFrameRdd(ctx, frameId.id)
+    val columnIndex = frame.schema.columnIndex(arguments.dataColumn)
+    val valueDataType: DataType = frame.schema.columns(columnIndex)._2
+
+    val (weightsColumnIndexOption, weightsDataTypeOption) = if (arguments.weightsColumn.isEmpty) {
+      (None, None)
+    }
+    else {
+      val weightsColumnIndex = frame.schema.columnIndex(arguments.weightsColumn.get)
+      (Some(weightsColumnIndex), Some(frame.schema.columns(weightsColumnIndex)._2))
+    }
+
+    ColumnStatistics.columnMedian(columnIndex, valueDataType, weightsColumnIndexOption, weightsDataTypeOption, rdd)
+  }
+
   /**
    * Calculate summary statistics of the specified column.
    * @param arguments Input specification for column summary statistics.
