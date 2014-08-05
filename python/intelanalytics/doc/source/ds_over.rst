@@ -4,7 +4,7 @@ User Manual
 
 Contents:
 
-..  toctree::
+.. toctree::
     :maxdepth: 2
 
     ds_strt

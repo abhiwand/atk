@@ -13,13 +13,9 @@ PostgreSQL is only required if your engine and API server are on different nodes
 --------------------------------------
 Verify PostgreSQL is already installed
 --------------------------------------
-+---------------------------------------+---------------------------------------+
-| RedHat/CentOS                         | Ubuntu                                |
-+=======================================+=======================================+
-| ::                                    | ::                                    |
-|                                       |                                       |
-|     yum info postgresql               |     TBD                               |
-+---------------------------------------+---------------------------------------+
+::
+
+    yum info postgresql
 
 --------------------
 Configure PostgreSQL
@@ -37,13 +33,9 @@ Change to the data folder::
 
 If the data folder is empty, you need to initialize it.
 
-+---------------------------------------+---------------------------------------+
-| RedHat/CentOS                         | Ubuntu                                |
-+=======================================+=======================================+
-| ::                                    | ::                                    |
-|                                       |                                       |
-|     sudo service postgresql initdb    |     TBD                               |
-+---------------------------------------+---------------------------------------+
+::
+
+    sudo service postgresql initdb
 
 
 Tell PostgreSQL where to listen
