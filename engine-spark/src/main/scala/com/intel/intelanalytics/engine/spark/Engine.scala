@@ -1174,9 +1174,10 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     newFrame.copy(schema = Schema(allColumns))
   }
 
-  override def cancelCommand(id: Long)(implicit user: UserPrincipal): Future[Unit] = withContext("se.deleteCommand") {
+  override def cancelCommand(id: Long)(implicit user: UserPrincipal): Future[Command] = withContext("se.deleteCommand") {
     future {
       commands.cancel(id)
+      commandStorage.lookup(id).get.copy(complete = true, error = Some(Error("Cancelled by client", None, None, None, None)))
     }
   }
 

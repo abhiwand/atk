@@ -155,5 +155,5 @@ trait Engine {
    * @param user current user
    * @return optional command instance
    */
-  def cancelCommand(id: Identifier)(implicit user: UserPrincipal): Future[Unit]
+  def cancelCommand(id: Identifier)(implicit user: UserPrincipal): Future[Command]
 }
