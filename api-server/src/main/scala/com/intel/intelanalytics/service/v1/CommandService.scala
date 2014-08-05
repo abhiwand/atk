@@ -89,7 +89,7 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
                 } ~
                   delete {
                     onComplete(engine.cancelCommand(id)) {
-                      case _ => complete("command cancelled!")
+                      case _ => complete("command cancelled")
                     }
                   }
             }
