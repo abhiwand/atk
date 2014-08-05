@@ -21,47 +21,29 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.graphbuilder.elements
+package com.intel.intelanalytics.engine.spark.context
 
-import org.specs2.mutable.Specification
+import com.intel.intelanalytics.shared.EventLogging
+import org.apache.spark.engine.{ ProgressPrinter, SparkProgressListener }
 
-class VertexSpec extends Specification {
+import scala.collection.mutable
+import org.apache.spark.SparkContext
 
-  val gbId = new Property("gbId", 10001)
-  val vertex = new Vertex(gbId, List(new Property("key", "value")))
+/**
+ * This context management strategy creates a context per user if it doesn't exist, else returns the existing context
+ * SparkContext is not a lightweight object, I had to increase max procs and max users limits in the OS to
+ * create in the order of hundreds of SparkContetxs pre JVM
+ */
+object SparkContextPerActionStrategy extends SparkContextManagementStrategy with EventLogging {
 
-  "Vertex" should {
-    "have a unique id that is the gbId" in {
-      vertex.id mustEqual gbId
-    }
+  //TODO: take a look at spark.cleaner.ttl parameter, the doc says that this param is useful for long running contexts
 
-    "be mergeable with another vertex" in {
-      val vertex2 = new Vertex(gbId, List(new Property("anotherKey", "anotherValue")))
+  //TODO: how to run jobs as a particular user
+  //TODO: Decide on spark context life cycle - should it be torn down after every operation,
+  //or left open for some time, and reused if a request from the same user comes in?
+  //Is there some way of sharing a context across two different Engine instances?
 
-      // invoke method under test
-      val merged = vertex.merge(vertex2)
-
-      merged.gbId mustEqual gbId
-      merged.properties.size mustEqual 2
-
-      merged.properties(0).key mustEqual "key"
-      merged.properties(0).value mustEqual "value"
-
-      merged.properties(1).key mustEqual "anotherKey"
-      merged.properties(1).value mustEqual "anotherValue"
-    }
-
-    "not allow null gbIds" in {
-      new Vertex(null, Nil) must throwA[IllegalArgumentException]
-    }
-
-    "not allow merging of vertices with different ids" in {
-      val diffId = new Property("gbId", 10002)
-      val vertex2 = new Vertex(diffId, List(new Property("anotherKey", "anotherValue")))
-
-      // invoke method under test
-      vertex.merge(vertex2) must throwA[IllegalArgumentException]
-    }
+  override def getContext(user: String, description: String): SparkContext = {
+    sparkContextFactory.createSparkContext(configuration, s"intel-analytics:$user:$description")
   }
-
 }
