@@ -25,17 +25,15 @@ package com.intel.intelanalytics.engine.spark.context
 
 import com.intel.intelanalytics.security.UserPrincipal
 import com.typesafe.config.Config
+import org.apache.spark.SparkContext
 
 class SparkContextManager(conf: Config, factory: SparkContextFactory) extends SparkContextManagementStrategy {
   //TODO read the strategy from the config file
-  val contextManagementStrategy: SparkContextManagementStrategy = SparkContextPerUserStrategy
+  val contextManagementStrategy: SparkContextManagementStrategy = SparkContextPerActionStrategy
   contextManagementStrategy.configuration = conf
   contextManagementStrategy.sparkContextFactory = factory
 
-  def getContext(user: String): Context = contextManagementStrategy.getContext(user)
-  def context(implicit user: UserPrincipal): Context = getContext(user.user.apiKey.getOrElse(
-    throw new RuntimeException("User didn't have an apiKey which shouldn't be possible if they were authenticated")))
-  def cleanup(): Unit = contextManagementStrategy.cleanup()
-  def removeContext(user: String): Unit = contextManagementStrategy.removeContext(user)
-  def getAllContexts(): List[Context] = contextManagementStrategy.getAllContexts()
+  def getContext(user: String, description: String): SparkContext = contextManagementStrategy.getContext(user, description)
+  def context(implicit user: UserPrincipal, description: String): SparkContext = getContext(user.user.apiKey.getOrElse(
+    throw new RuntimeException("User didn't have an apiKey which shouldn't be possible if they were authenticated")), description)
 }
