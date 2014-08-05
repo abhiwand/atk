@@ -30,6 +30,7 @@ import com.intel.intelanalytics.engine.Rows._
 import com.intel.intelanalytics.security.UserPrincipal
 
 import scala.util.Try
+import com.intel.intelanalytics.engine.plugin.Invocation
 
 trait FrameStorage {
   def lookup(id: Long): Option[DataFrame]
