@@ -68,8 +68,8 @@ class ConnectedComponents
 
     GiraphConfigurationUtil.initializeTitanConfig(hConf, titanConf, graph)
 
-    GiraphConfigurationUtil.set(hConf, "input.edge.label.list", Some(List(arguments.input_edge_label)))
-    GiraphConfigurationUtil.set(hConf, "output.vertex.property.key.list", Some(List(arguments.output_vertex_property)))
+    GiraphConfigurationUtil.set(hConf, "input.edge.label.list", Some(arguments.input_edge_label))
+    GiraphConfigurationUtil.set(hConf, "output.vertex.property.key.list", Some(arguments.output_vertex_property))
 
     val giraphConf = new GiraphConfiguration(hConf)
 
