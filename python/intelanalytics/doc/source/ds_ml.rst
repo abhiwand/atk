@@ -59,26 +59,26 @@ The idea here is that the software learns faster.
 
     The ``recommend()`` method is for making recommendations, such as movies, books, or guitars the user might find interesting.
 
-    The ``belief_prop()`` method performs belief propagation in a loop until the algorithm converges.
-    You can use this for performing inference on graphical models, such as Bayesian networks and Markov random fields.
+    The ``belief_prop()`` method performs :term:`belief propagation` in a loop until the algorithm converges.
+    You can use this for performing inference on graphical models, such as Bayesian networks and :term:`Markov random fields`.
 
     The ``page_rank()`` method is for ranking pages, as in a websearch.
     You can find details on this algorithm here:
     http://en.wikipedia.org/wiki/PageRank.
 
-    The ``avg_path_len()`` method calculates the average path length, that is, "the average number of steps along the shortest
+    The ``avg_path_len()`` method calculates the :term:`average path length`, that is, "the average number of steps along the shortest
     paths for all possible pairs of network nodes."
 
     See http://en.wikipedia.org/wiki/Average_path_length.
 
-    The ``label_prop()`` method performs label propagation on Gaussian random fields.
+    The ``label_prop()`` method performs label propagation on :term:`Gaussian random fields`.
     Use this method to detect community structure in networks.
     For more details, see http://reports-archive.adm.cs.cmu.edu/anon/cald/abstracts/02-107.html.
 
     The lda() method performs latent Dirichlet allocation.
     For more information, see http://en.wikipedia.org/wiki/Latent_Dirichlet_allocation.
 
-    The als() method performs the Alternating Least Squares with Bias for collaborative filtering algorithms.
+    The als() method performs the :term:`Alternating Least Squares` with Bias for collaborative filtering algorithms.
     Use this for recommendation calculations.
     For more details,
     see: http://www.hpl.hp.com/personal/Robert_Schreiber/papers/2008%20AAIM%20Netflix/netflix_aaim08(submitted).pdf

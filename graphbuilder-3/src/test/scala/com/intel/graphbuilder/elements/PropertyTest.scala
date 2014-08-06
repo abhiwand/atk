@@ -23,9 +23,9 @@
 
 package com.intel.graphbuilder.elements
 
-import org.specs2.mutable.Specification
+import org.scalatest.{ WordSpec, Matchers }
 
-class PropertySpec extends Specification {
+class PropertyTest extends WordSpec with Matchers {
 
   "Property" should {
 
@@ -35,9 +35,9 @@ class PropertySpec extends Specification {
 
       val result = Property.merge(List(p1), List(p2))
 
-      result.size mustEqual 1
-      result(0).key mustEqual "keyA"
-      result(0).value mustEqual "valueA"
+      result.size shouldBe 1
+      result(0).key shouldBe "keyA"
+      result(0).value shouldBe "valueA"
     }
 
     "merge 2 properties with different keys to 2" in {
@@ -46,11 +46,11 @@ class PropertySpec extends Specification {
 
       val result = Property.merge(List(p1), List(p2))
 
-      result.size mustEqual 2
-      result(0).key mustEqual "keyA"
-      result(0).value mustEqual "valueA"
-      result(1).key mustEqual "keyB"
-      result(1).value mustEqual "valueB"
+      result.size shouldBe 2
+      result(0).key shouldBe "keyA"
+      result(0).value shouldBe "valueA"
+      result(1).key shouldBe "keyB"
+      result(1).value shouldBe "valueB"
     }
 
     "merge 7 properties with mixture of same/different keys to 5" in {
@@ -64,13 +64,13 @@ class PropertySpec extends Specification {
 
       val result = Property.merge(List(p1, p2, p3, p4), List(p5, p6, p7))
 
-      result.size mustEqual 5
+      result.size shouldBe 5
     }
 
     "provide convenience constructor" in {
       val p = new Property(1, 2)
-      p.key mustEqual "1" // key 1 is converted to a String
-      p.value mustEqual 2
+      p.key shouldBe "1" // key 1 is converted to a String
+      p.value shouldBe 2
     }
   }
 }

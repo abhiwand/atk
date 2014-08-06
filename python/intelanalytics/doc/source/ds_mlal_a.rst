@@ -46,7 +46,7 @@ It has the following steps:
 1.  A k-clique enumeration method is used to enumerate all k-cliques.
 #.  k-cliques are used to build  a “clique graph” by declaring each k-clique to be a vertex in a new graph and placing edges between
     k-cliques that share k-1 vertices in the base graph.
-#.  A connected components analysis is performed on the clique graph.
+#.  A :term:`connected component` analysis is performed on the clique graph.
     Connected components of the clique graph correspond to k-clique communities in the base graph.
 #.  The connected components information for the clique graph is projected back down to the base graph,
     providing each vertex with the set of k-clique communities to which it belongs.

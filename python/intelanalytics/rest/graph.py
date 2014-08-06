@@ -129,7 +129,8 @@ class GraphBackendRest(object):
 
     def get_repr(self, graph):
         graph_info = self._get_graph_info(graph)
-        return "\n".join(['BigFrame "%s"\nGraph Id Number = %d' % (graph_info.name, graph_info.id_number)])
+        #return "\n".join(['BigGraph "%s"\nGraph Id Number = %d' % (graph_info.name, graph_info.id_number)])
+        return "\n".join(['BigGraph "%s"' % (graph_info.name)])
 
     def _get_graph_info(self, graph):
         response = self.rest_http.get_full_uri(self._get_graph_full_uri(graph))
