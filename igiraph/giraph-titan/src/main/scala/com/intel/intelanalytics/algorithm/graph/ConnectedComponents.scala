@@ -24,7 +24,7 @@
 package com.intel.intelanalytics.algorithm.graph
 
 import com.intel.giraph.algorithms.pr.PageRankComputation
-import com.intel.giraph.io.titan.TitanVertexOutputFormatLongIDDoubleValue
+import com.intel.giraph.io.titan.TitanVertexOutputFormatLongIDLongValue
 import com.intel.giraph.io.titan.hbase.{ TitanHBaseVertexInputFormatLongLongNull, TitanHBaseVertexInputFormatLongDoubleNull }
 import com.intel.intelanalytics.domain.DomainJsonProtocol
 import com.intel.intelanalytics.domain.graph.GraphReference
@@ -75,14 +75,14 @@ class ConnectedComponents
 
     giraphConf.setVertexInputFormatClass(classOf[TitanHBaseVertexInputFormatLongLongNull])
     giraphConf.
-      setVertexOutputFormatClass(classOf[TitanVertexOutputFormatLongIDDoubleValue[_ <: org.apache.hadoop.io.LongWritable, _ <: org.apache.hadoop.io.LongWritable, _ <: org.apache.hadoop.io.NullWritable]])
+      setVertexOutputFormatClass(classOf[TitanVertexOutputFormatLongIDLongValue[_ <: org.apache.hadoop.io.LongWritable, _ <: org.apache.hadoop.io.LongWritable, _ <: org.apache.hadoop.io.Writable]])
     giraphConf.setMasterComputeClass(classOf[ConnectedComponentsComputation.ConnectedComponentsMasterCompute])
     giraphConf.setComputationClass(classOf[ConnectedComponentsComputation])
     giraphConf.setAggregatorWriterClass(classOf[ConnectedComponentsComputation.ConnectedComponentsAggregatorWriter])
 
     ConnectedComponentsResult(GiraphJobManager.run("ia_giraph_conncectedcomponents",
       classOf[ConnectedComponentsComputation].getCanonicalName,
-      config, giraphConf, invocation, "connectedcomponents-convergence-report_0"))
+      config, giraphConf, invocation, "cc-convergence-report_0"))
   }
 
   //TODO: Replace with generic code that works on any case class
