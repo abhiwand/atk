@@ -92,13 +92,12 @@ Package Name: intelanalytics-python-client
 
 Dependencies
 
-* python 2.6
-* python-ordereddict
-* python-pip
-* numpy >= 1.8.1
-* python-pandas >= 0.13.1
-* python-bottle >= 0.12
-* python-requests >= 2.2.1
+* `python 2.6 <https://docs.python.org/release/2.6.6/>`_
+* `python-ordereddict <https://pypi.python.org/pypi/ordereddict>`_
+* `python-pip <https://pip.pypa.io/en/latest/>`_
+* `numpy >= 1.8.1 <http://www.numpy.org/>`_
+* `python-bottle >= 0.12 <http://bottlepy.org/docs/dev/index.html>`_
+* `python-requests >= 2.2.1 <http://docs.python-requests.org/en/latest/>`_
 
 IA Graph Builder
 ================
@@ -110,8 +109,8 @@ Package Name: intelanalytics-graphbuilder
 Dependencies
 
 * intelanalytics-spark-deps
-* jq *
-* perl-URI *
+* `jq * <http://stedolan.github.io/jq/>`_
+* `perl-URI * <http://search.cpan.org/dist/URI/>`_
 
 \* These dependenicies are only used in a helper script that updates the spark class path in Cloudera manager.
 They are not used for any data processing.
