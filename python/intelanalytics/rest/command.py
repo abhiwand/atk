@@ -39,6 +39,8 @@ import intelanalytics.rest.config as config
 from intelanalytics.rest.connection import http
 from intelanalytics.core.errorhandle import IaError
 
+class OperationCancelException(Exception):
+    pass
 
 class ProgressPrinter(object):
 
@@ -354,7 +356,8 @@ class Executor(object):
                 # Polling.print_progress(command_info.progress)
 
         except KeyboardInterrupt:
-            command_info = self.cancel(command_info.id_number)
+            self.cancel(command_info.id_number)
+            raise OperationCancelException("command cancelled by user")
 
         if command_info.error:
             raise CommandServerError(command_info)
@@ -427,8 +430,7 @@ class Executor(object):
 
         arguments = {'status': 'cancel'}
         command_request = CommandRequest("", arguments)
-        response = http.post("commands/%s" %(str(command_id)), command_request.to_json_obj())
-        return CommandInfo(response.json())
+        http.post("commands/%s" %(str(command_id)), command_request.to_json_obj())
 
     def fetch(self):
         """
