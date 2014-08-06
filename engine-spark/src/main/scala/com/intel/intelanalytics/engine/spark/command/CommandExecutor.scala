@@ -23,13 +23,10 @@
 
 package com.intel.intelanalytics.engine.spark.command
 
-import com.intel.intelanalytics.component.{ ClassLoaderAware, Boot }
-import com.intel.intelanalytics.domain.command._
-import com.intel.intelanalytics.engine.plugin.{ Invocation, FunctionCommand, CommandPlugin }
-import com.intel.intelanalytics.engine.spark.context.SparkContextManager
-import com.intel.intelanalytics.engine.spark.plugin.SparkInvocation
-import com.intel.intelanalytics.engine.spark.{ SparkEngine, SparkEngineConfig }
-import com.intel.intelanalytics.security.UserPrincipal
+import com.intel.intelanalytics.component.ClassLoaderAware
+import com.intel.intelanalytics.engine.plugin.{ Invocation, CommandPlugin }
+import com.intel.intelanalytics.engine.spark.context.{ SparkContextManager, SparkContextManagementStrategy }
+import com.intel.intelanalytics.engine.spark.SparkEngine
 import com.intel.intelanalytics.shared.{ JsonSchemaExtractor, EventLogging }
 import com.intel.intelanalytics.NotFoundException
 import org.apache.spark.SparkContext
@@ -70,7 +67,7 @@ import scala.collection.mutable
  * @param commands a command storage that the executor can use for audit logging command execution
  * @param contextManager a SparkContext factory that can be passed to SparkCommandPlugins during execution
  */
-class CommandExecutor(engine: => SparkEngine, commands: SparkCommandStorage, contextManager: SparkContextManager)
+class CommandExecutor(engine: => SparkEngine, commands: SparkCommandStorage, contextManager: SparkContextManager, pluginLoader: CommandPluginLoader)
     extends EventLogging
     with ClassLoaderAware {
 
@@ -91,12 +88,7 @@ class CommandExecutor(engine: => SparkEngine, commands: SparkCommandStorage, con
     (JsonSchemaExtractor.getProductSchema(arg), JsonSchemaExtractor.getProductSchema(ret))
   }
 
-  private var commandPlugins: Map[String, CommandPlugin[_, _]] = SparkEngineConfig.archives.flatMap {
-    archive =>
-      Boot.getArchive(archive)
-        .getAll[CommandPlugin[_ <: Product, _ <: Product]]("command")
-        .map(p => (p.name, p))
-  }.toMap
+  private var commandPlugins: Map[String, CommandPlugin[_, _]] = pluginLoader.loadFromConfig()
 
   /**
    * Adds the given command to the registry.
@@ -174,10 +166,9 @@ class CommandExecutor(engine: => SparkEngine, commands: SparkCommandStorage, con
     withMyClassLoader {
       withContext("ce.execute") {
         withContext(command.name) {
-          val commandId = cmd.id
-          val commandName = cmd.name
-          val context: SparkContext = contextManager.context(user, s"(id:$commandId,name:$commandName)")
-          commandIdContextMapping += (commandId -> context)
+
+          val context: SparkContext = createContextForCommand(command, arguments, user, cmd)
+
           val cmdFuture = future {
             withCommand(cmd) {
               try {
@@ -185,17 +176,10 @@ class CommandExecutor(engine: => SparkEngine, commands: SparkCommandStorage, con
                   user = user, executionContext = implicitly[ExecutionContext],
                   sparkContext = context, commandStorage = commands)
 
-                val listener = new SparkProgressListener(SparkProgressListener.progressUpdater, cmd.id, command.numberOfJobs(arguments))
-                val progressPrinter = new ProgressPrinter(listener)
-                context.addSparkListener(listener)
-                context.addSparkListener(progressPrinter)
-
-                val funcResult = command(invocation, arguments)
-                command.serializeReturn(funcResult)
+                executeCommand(command, arguments, invocation)
               }
               finally {
-                context.stop()
-                commandIdContextMapping -= commandId
+                stopCommand(cmd.id)
               }
             }
             commands.lookup(cmd.id).get
@@ -204,6 +188,32 @@ class CommandExecutor(engine: => SparkEngine, commands: SparkCommandStorage, con
         }
       }
     }
+  }
+
+  /**
+   * Execute command and return serialized result
+   * @param command command
+   * @param arguments input argument
+   * @param invocation invocation data
+   * @tparam R return type
+   * @tparam A argument type
+   * @return command result
+   */
+  def executeCommand[R <: Product, A <: Product](command: CommandPlugin[A, R], arguments: A, invocation: SparkInvocation): JsObject = {
+    val funcResult = command(invocation, arguments)
+    command.serializeReturn(funcResult)
+  }
+
+  def createContextForCommand[R <: Product, A <: Product](command: CommandPlugin[A, R], arguments: A, user: UserPrincipal, cmd: Command): SparkContext = {
+    val commandId = cmd.id
+    val commandName = cmd.name
+    val context: SparkContext = contextManager.context(user, s"(id:$commandId,name:$commandName)")
+    val listener = new SparkProgressListener(SparkProgressListener.progressUpdater, cmd.id, command.numberOfJobs(arguments))
+    val progressPrinter = new ProgressPrinter(listener)
+    context.addSparkListener(listener)
+    context.addSparkListener(progressPrinter)
+    commandIdContextMapping += (commandId -> context)
+    context
   }
 
   /**
@@ -256,10 +266,10 @@ class CommandExecutor(engine: => SparkEngine, commands: SparkCommandStorage, con
   }
 
   /**
-   * Cancel a running command
+   * Stop a command
    * @param commandId command id
    */
-  def cancel(commandId: Long): Unit = {
+  def stopCommand(commandId: Long): Unit = {
     commandIdContextMapping.get(commandId).foreach { case (context) => context.stop() }
     commandIdContextMapping -= commandId
   }

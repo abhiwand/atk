@@ -26,7 +26,7 @@ package com.intel.intelanalytics.engine.spark
 import java.util.{ ArrayList => JArrayList, List => JList, Map => JMap }
 
 import com.intel.intelanalytics.engine._
-import com.intel.intelanalytics.engine.spark.command.{ CommandExecutor, SparkCommandStorage }
+import com.intel.intelanalytics.engine.spark.command.{ CommandPluginLoader, CommandExecutor, SparkCommandStorage }
 import com.intel.intelanalytics.engine.spark.context.{ SparkContextFactory, SparkContextManager }
 import com.intel.intelanalytics.engine.spark.frame.SparkFrameStorage
 import com.intel.intelanalytics.engine.spark.graph.{ SparkGraphHBaseBackend, SparkGraphStorage }
@@ -77,7 +77,7 @@ class SparkComponent extends EngineComponent
 
   val commands = new SparkCommandStorage(metaStore.asInstanceOf[SlickMetaStore])
 
-  lazy val commandExecutor: CommandExecutor = new CommandExecutor(engine, commands, sparkContextManager)
+  lazy val commandExecutor: CommandExecutor = new CommandExecutor(engine, commands, sparkContextManager, new CommandPluginLoader)
 
   val queries = new SparkQueryStorage(metaStore.asInstanceOf[SlickMetaStore], fileStorage)
 
