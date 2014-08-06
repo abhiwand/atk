@@ -25,7 +25,7 @@ package com.intel.intelanalytics.engine.spark.command
 
 import com.intel.intelanalytics.component.{ ClassLoaderAware, Boot }
 import com.intel.intelanalytics.domain.command.{ CommandDefinition, Command, CommandTemplate, Execution }
-import com.intel.intelanalytics.engine.plugin.{ FunctionCommand, CommandPlugin }
+import com.intel.intelanalytics.engine.plugin.{ Invocation, FunctionCommand, CommandPlugin }
 import com.intel.intelanalytics.engine.spark.context.SparkContextManager
 import com.intel.intelanalytics.engine.spark.plugin.SparkInvocation
 import com.intel.intelanalytics.engine.spark.{ SparkEngine, SparkEngineConfig }
@@ -37,6 +37,7 @@ import spray.json._
 
 import scala.concurrent._
 import scala.util.Try
+import org.apache.spark.engine.{ ProgressPrinter, SparkProgressListener }
 
 /**
  * CommandExecutor manages a registry of CommandPlugins and executes them on request.
@@ -115,7 +116,7 @@ class CommandExecutor(engine: => SparkEngine, commands: SparkCommandStorage, con
    * @return the CommandPlugin instance created during the registration process.
    */
   def registerCommand[A <: Product: JsonFormat: ClassManifest, R <: Product: JsonFormat: ClassManifest](name: String,
-                                                                                                        function: (A, UserPrincipal) => R,
+                                                                                                        function: (A, UserPrincipal, SparkInvocation) => R,
                                                                                                         numberOfJobs: Int = 1): CommandPlugin[A, R] = {
     registerCommand(name, function, (A) => numberOfJobs)
   }
@@ -135,9 +136,9 @@ class CommandExecutor(engine: => SparkEngine, commands: SparkCommandStorage, con
    * @return the CommandPlugin instance created during the registration process.
    */
   def registerCommand[A <: Product: JsonFormat: ClassManifest, R <: Product: JsonFormat: ClassManifest](name: String,
-                                                                                                        function: (A, UserPrincipal) => R,
+                                                                                                        function: (A, UserPrincipal, SparkInvocation) => R,
                                                                                                         numberOfJobsFunc: (A) => Int): CommandPlugin[A, R] = {
-    registerCommand(FunctionCommand(name, function, numberOfJobsFunc))
+    registerCommand(FunctionCommand(name, function.asInstanceOf[(A, UserPrincipal, Invocation) => R], numberOfJobsFunc))
   }
 
   private def getCommandDefinition(name: String): Option[CommandPlugin[_, _]] = {
@@ -162,19 +163,27 @@ class CommandExecutor(engine: => SparkEngine, commands: SparkCommandStorage, con
     withMyClassLoader {
       withContext("ce.execute") {
         withContext(command.name) {
-          val context: SparkContext = contextManager.context(user).sparkContext
+          val commandId = cmd.id
+          val commandName = cmd.name
+          val context: SparkContext = contextManager.context(user, s"(id:$commandId,name:$commandName)")
           val cmdFuture = future {
             withCommand(cmd) {
-              val invocation: SparkInvocation = SparkInvocation(engine, commandId = cmd.id, arguments = cmd.arguments,
-                user = user, executionContext = implicitly[ExecutionContext],
-                sparkContext = context, commandStorage = commands)
+              try {
+                val invocation: SparkInvocation = SparkInvocation(engine, commandId = cmd.id, arguments = cmd.arguments,
+                  user = user, executionContext = implicitly[ExecutionContext],
+                  sparkContext = context, commandStorage = commands)
 
-              context.setLocalProperty("command-id", cmd.id.toString)
-              val progressListener = contextManager.context(user).progressMonitor
-              progressListener.setJobCountForCommand(cmd.id, command.numberOfJobs(arguments))
-              val funcResult = command(invocation, arguments)
-              context.setLocalProperty("command-id", null)
-              command.serializeReturn(funcResult)
+                val listener = new SparkProgressListener(SparkProgressListener.progressUpdater, cmd.id, command.numberOfJobs(arguments))
+                val progressPrinter = new ProgressPrinter(listener)
+                context.addSparkListener(listener)
+                context.addSparkListener(progressPrinter)
+
+                val funcResult = command(invocation, arguments)
+                command.serializeReturn(funcResult)
+              }
+              finally {
+                context.stop()
+              }
             }
             commands.lookup(cmd.id).get
           }

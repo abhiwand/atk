@@ -36,6 +36,7 @@ import com.intel.intelanalytics.shared.EventLogging
 import org.apache.hadoop.fs.{ Path => HPath }
 import org.apache.hadoop.hbase.HBaseConfiguration
 import org.apache.hadoop.hbase.client.HBaseAdmin
+import com.intel.intelanalytics.security.UserPrincipal
 
 //TODO documentation
 //TODO progress notification
@@ -66,13 +67,12 @@ class SparkComponent extends EngineComponent
 
   val sparkAutoPartitioner = new SparkAutoPartitioner(fileStorage)
 
-  val frames = new SparkFrameStorage(sparkContextManager.context(_),
-    SparkEngineConfig.fsRoot, fileStorage, SparkEngineConfig.pageSize, metaStore.asInstanceOf[SlickMetaStore], sparkAutoPartitioner)
+  val getContextFunc = (user: UserPrincipal) => sparkContextManager.context(user, "query")
+  val frames = new SparkFrameStorage(SparkEngineConfig.fsRoot, fileStorage, SparkEngineConfig.pageSize, metaStore.asInstanceOf[SlickMetaStore], sparkAutoPartitioner, getContextFunc)
 
   private lazy val admin = new HBaseAdmin(HBaseConfiguration.create())
 
-  val graphs = new SparkGraphStorage(sparkContextManager.context(_),
-    metaStore,
+  val graphs: SparkGraphStorage = new SparkGraphStorage(metaStore,
     new SparkGraphHBaseBackend(admin), frames)
 
   val commands = new SparkCommandStorage(metaStore.asInstanceOf[SlickMetaStore])

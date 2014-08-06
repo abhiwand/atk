@@ -611,8 +611,7 @@ class BigFrame(CommandSupport):
 
             my_frame.assign_sample([0.3, 0.3, 0.4], ["train", "test", "validate"])
 
-        Now the frame accessed by BigFrame *my_frame* has a new column named "sample_bin" and each row
-         contains one of the values "train",
+        Now the frame accessed by BigFrame *my_frame* has a new column named "sample_bin" and each row contains one of the values "train",
         "test", or "validate".  Values in the other columns are unaffected.
 
         .. versionadded:: 0.8

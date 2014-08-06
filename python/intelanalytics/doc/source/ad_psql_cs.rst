@@ -38,7 +38,7 @@ PSQL has a really nice command-line interface with full help and documentation b
     * drop database metastore;
     * create database metastore;
 
-    Restart the API server and Flyway_ (a library) will automatically recreate the schema.
+    Restart the API server and Flyway_ (a library) will automatically recreate the :term:`schema`.
 
     -------------------
     Flyway Introduction
