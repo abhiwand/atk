@@ -1,8 +1,5 @@
 from intelanalytics import *
 
-import intelanalytics.rest.config as c
-c.build_id = None
-
 dataset = r"netflix.csv"
 schema = [("user_id", int64), ("movie_id", int64), ("rating", int64), ("splits", str)]
 csv_file = CsvFile(dataset, schema, skip_header_lines = 0)
