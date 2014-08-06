@@ -1,14 +1,13 @@
 package com.intel.intelanalytics.engine.spark.command
 
+import com.intel.intelanalytics.engine.plugin.CommandPlugin
 import com.intel.intelanalytics.engine.spark.SparkEngineConfig
 import com.intel.intelanalytics.component.Boot
-import com.intel.intelanalytics.engine.plugin.CommandPlugin
 
 /**
- *
+ * Load command plugin
  */
-class CommandPluginLoader {
-
+class CommandLoader {
   /**
    * Load plugins from the config
    * @return mapping between name and plugin

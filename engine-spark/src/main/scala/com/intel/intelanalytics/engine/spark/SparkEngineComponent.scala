@@ -26,7 +26,7 @@ package com.intel.intelanalytics.engine.spark
 import java.util.{ ArrayList => JArrayList, List => JList, Map => JMap }
 
 import com.intel.intelanalytics.engine._
-import com.intel.intelanalytics.engine.spark.command.{ CommandPluginLoader, CommandExecutor, SparkCommandStorage }
+import com.intel.intelanalytics.engine.spark.command.{ CommandLoader, CommandRegistry, CommandExecutor, SparkCommandStorage }
 import com.intel.intelanalytics.engine.spark.context.{ SparkContextFactory, SparkContextManager }
 import com.intel.intelanalytics.engine.spark.frame.SparkFrameStorage
 import com.intel.intelanalytics.engine.spark.graph.{ SparkGraphHBaseBackend, SparkGraphStorage }
@@ -52,7 +52,7 @@ class SparkComponent extends EngineComponent
     with EventLogging {
 
   lazy val engine = new SparkEngine(sparkContextManager,
-    commandExecutor, commands, frames, graphs, queries, queryExecutor, sparkAutoPartitioner) {}
+    commandExecutor, commands, frames, graphs, queries, queryExecutor, sparkAutoPartitioner, new CommandRegistry(new CommandLoader)) {}
 
   override lazy val profile = withContext("engine connecting to metastore") {
     Profile.initializeFromConfig(SparkEngineConfig)
@@ -77,7 +77,7 @@ class SparkComponent extends EngineComponent
 
   val commands = new SparkCommandStorage(metaStore.asInstanceOf[SlickMetaStore])
 
-  lazy val commandExecutor: CommandExecutor = new CommandExecutor(engine, commands, sparkContextManager, new CommandPluginLoader)
+  lazy val commandExecutor: CommandExecutor = new CommandExecutor(engine, commands, sparkContextManager)
 
   val queries = new SparkQueryStorage(metaStore.asInstanceOf[SlickMetaStore], fileStorage)
 
