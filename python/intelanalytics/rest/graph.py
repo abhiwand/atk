@@ -90,7 +90,7 @@ class GraphBackendRest(object):
     def _delete_graph(self, graph):
         logger.info("REST Backend: Delete graph {0}".format(repr(graph)))
         r=self.rest_http.delete("graphs/"+str(graph._id))
-        return graph.name
+        return None
 
     def create(self, graph,rules,name):
         logger.info("REST Backend: create graph with name %s: " % name)
