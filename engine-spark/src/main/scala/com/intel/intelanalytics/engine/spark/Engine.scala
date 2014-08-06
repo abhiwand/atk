@@ -929,7 +929,10 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     future {
       withMyClassLoader {
         val frame = frames.lookup(arguments.id).getOrElse(throw new IllegalArgumentException("Requested frame does not exist"))
-        val rows = frames.getRows(frame, arguments.offset, arguments.count)
+        val ctx = sparkContextManager.context(user, "query")
+        val rdd: RDD[Row] = frames.getFrameRdd(ctx, frame).rows
+
+        val rows = rdd.take(arguments.count + arguments.offset.toInt).drop(arguments.offset.toInt)
         rows
       }
     }
