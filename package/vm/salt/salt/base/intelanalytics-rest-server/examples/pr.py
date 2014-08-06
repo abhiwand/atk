@@ -1,5 +1,5 @@
 from intelanalytics import *
-dataset = r"netflix.csv"
+dataset = r"test.csv"
 schema = [("user_id", int32), ("movie_id", int32), ("rating", int32), ("splits", str)]
 csv_file = CsvFile(dataset, schema, skip_header_lines = 0)
 f = BigFrame(csv_file)
