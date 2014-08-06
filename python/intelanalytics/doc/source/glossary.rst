@@ -55,6 +55,7 @@ Glossary
         See :term:`Loopy Belief Propagation`.
 
     Beysian Network
+    Beysian Networks
 
          From `Wikipedia\: Bayesian Network`_:
 
@@ -213,7 +214,24 @@ Glossary
     EqualWidth
     Equal Depth Binning
 
-        TBD
+        Equal width binning places column values into bins such that the values in each bin fall within the same
+        interval and the interval width for each bin is equal.
+
+        Equal depth binning attempts to place column values into bins such that each bin contains the same number of
+        elements.  For :math:`n` bins of a column :math:`C` of length :math:`m`, the bin number is determined by:
+
+        .. math::
+
+            ceiling \\left( n * \\frac {f(C)}{m} \\right)
+
+        where :math:`f` is a tie-adjusted ranking function over values of :math:`C`.
+        If there are multiple of the same value in :math:`C`, then their tie-adjusted rank is the average of their ordered rank values.
+
+        The num_bins parameter is upper-bound on the number of bins since the data may justify fewer bins.
+        With equal depth binning, for example, if the column to be binned has 10 elements with
+        only 2 distinct values and num_bins > 2, then the number of actual bins will only be 2.
+        This is due to a restriction that elements with an identical value must belong to the same bin.
+        The type of the new column will be int32 and the bin numbers start at 1.
 
     ETL
     
@@ -454,7 +472,7 @@ Glossary
     Markov Random Fields
 
         Markov Random fields, or Markov Network, are an undirected graph model that may be cyclic.
-        This contrasts with Beysian Networks, which are directed and acyclic.
+        This contrasts with :term:`Beysian Networks`, which are directed and acyclic.
 
         For more information see: `Wikipedia\: Markov Random Field`_.
 
@@ -557,7 +575,7 @@ Glossary
 
     str
 
-        A string data type in Python using the ASCII encoding.
+        A string data type in Python using the :term:`ASCII` encoding.
 
     string
 
