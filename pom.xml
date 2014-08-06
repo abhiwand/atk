@@ -159,6 +159,7 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
             </activation>
             <modules>
                 <module>event</module>
+                <module>python</module>
                 <module>ispark-deps</module>
                 <module>testutils</module>
                 <module>graphbuilder-3</module><!-- scoverage -->
