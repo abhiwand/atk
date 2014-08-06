@@ -1,7 +1,7 @@
 package com.intel.intelanalytics.engine.spark
 
 import org.scalatest.{ Matchers, FlatSpec }
-import com.intel.intelanalytics.engine.spark.command.{ SparkCommandStorage, CommandPluginLoader, CommandExecutor }
+import com.intel.intelanalytics.engine.spark.command.{ CommandLoader, SparkCommandStorage, CommandRegistry, CommandExecutor }
 import org.specs2.mock.Mockito
 import com.intel.intelanalytics.engine.{ ProgressInfo, CommandStorage }
 import com.intel.intelanalytics.domain.command.{ Command, CommandTemplate }
@@ -21,6 +21,10 @@ import scala.collection.immutable.HashMap
 
 class CommandExecutorTest extends FlatSpec with Matchers with Mockito {
 
+  val loader = mock[CommandLoader]
+  loader.loadFromConfig().returns(new HashMap[String, CommandPlugin[_, _]])
+
+  val pluginRegistry = new CommandRegistry(loader)
   def createCommandExecutor(): CommandExecutor = {
     val engine = mock[SparkEngine]
     val commandStorage = mock[SparkCommandStorage]
@@ -30,10 +34,7 @@ class CommandExecutorTest extends FlatSpec with Matchers with Mockito {
     val contextManager = mock[SparkContextManager]
     contextManager.context(any[UserPrincipal], anyString).returns(mock[SparkContext])
 
-    val loader = mock[CommandPluginLoader]
-    loader.loadFromConfig().returns(new HashMap[String, CommandPlugin[_, _]])
-
-    new CommandExecutor(engine, commandStorage, contextManager, loader)
+    new CommandExecutor(engine, commandStorage, contextManager)
   }
 
   "create spark context" should "add a entry in command id and context mapping" in {
@@ -49,7 +50,7 @@ class CommandExecutorTest extends FlatSpec with Matchers with Mockito {
       mock[DataFrame]
     }
 
-    val plugin = executor.registerCommand("dummy", dummyFunc)
+    val plugin = pluginRegistry.registerCommand("dummy", dummyFunc)
     val user = mock[UserPrincipal]
     val execution = executor.execute(plugin, args, user, implicitly[ExecutionContext])
     Await.ready(execution.end, 10 seconds)
@@ -71,7 +72,7 @@ class CommandExecutorTest extends FlatSpec with Matchers with Mockito {
       mock[DataFrame]
     }
 
-    val plugin = executor.registerCommand("dummy", dummyFunc)
+    val plugin = pluginRegistry.registerCommand("dummy", dummyFunc)
     val user = mock[UserPrincipal]
     val execution = executor.execute(plugin, args, user, implicitly[ExecutionContext])
     Await.ready(execution.end, 10 seconds)
