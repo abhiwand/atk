@@ -102,8 +102,8 @@ def delete_graph(name):
     
     Parameters
     ----------
-    name : string
-        The name of the graph you are erasing
+    graph : string or BigGraph
+        Either the name of the BigGraph object to delete or the BigGraph object itself
         
     Returns
     -------
@@ -417,21 +417,23 @@ class BigGraph(CommandSupport):
 
     """
     def __init__(self, rules=None, name=""):
-
-        if not hasattr(self, '_backend'):
-            self._backend = _get_backend()
-        self._name = name or self._get_new_graph_name()
-        self._uri = ""
-        self._id = 0
-        self._backend.create(self,rules,name)
-
-        CommandSupport.__init__(self)
-        #self.ml = GraphMachineLearning(self)
-        #self.sampling = GraphSampling(self)
-        logger.info('Created new graph "%s"', self._name)
+        try:
+            self._id = 0
+            if not hasattr(self, '_backend'):
+                self._backend = _get_backend()
+            new_graph_name= self._backend.create(self, rules, name)
+            CommandSupport.__init__(self)
+            #self.ml = GraphMachineLearning(self)
+            #self.sampling = GraphSampling(self)
+            logger.info('Created new graph "%s"', new_graph_name)
+        except:
+            raise IaError(logger)
 
     def __repr__(self):
-        return self._name
+        try:
+            return self._backend.get_repr(self)
+        except:
+            return super(BigGraph,self).__repr__() + "(Unable to collect metadeta from server)"
 
     @property
     def name(self):
@@ -456,7 +458,10 @@ class BigGraph(CommandSupport):
 
         """
         # TODO - Review Docstring
-        return self._name
+        try:
+            return self._backend.get_name(self)
+        except:
+            IaError(logger)
 
     @name.setter
     def name(self, value):
@@ -486,30 +491,30 @@ class BigGraph(CommandSupport):
         except:
             raise IaError(logger)
 
-    @property
-    def uri(self):
-        """
-        Provides the URI of the BigGraph.
+    # @property
+    # def uri(self):
+    #     """
+    #     Provides the URI of the BigGraph.
+    #
+    #     Returns
+    #     -------
+    #     URI
+    #         See http://en.wikipedia.org/wiki/Uniform_Resource_Identifier
+    #
+    #     Examples
+    #     --------
+    #     ::
+    #
+    #         Example
+    #
+    #     .. versionadded:: 0.8
+    #
+    #     """
+    #     return self._uri
 
-        Returns
-        -------
-        URI
-            See http://en.wikipedia.org/wiki/Uniform_Resource_Identifier
-
-        Examples
-        --------
-        ::
-
-            Example
-
-        .. versionadded:: 0.8
-
-        """
-        return self._uri
-
-    @property
-    def id(self):
-        return self._id
+    # @property
+    # def id(self):
+    #     return self._id
 
     def append(self, rules=None):
         """
