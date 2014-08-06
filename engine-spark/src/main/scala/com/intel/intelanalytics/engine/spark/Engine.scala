@@ -933,7 +933,9 @@ class SparkEngine(sparkContextManager: SparkContextManager,
         val rdd: RDD[Row] = frames.getFrameRdd(ctx, frame).rows
 
         val rows = rdd.take(arguments.count + arguments.offset.toInt).drop(arguments.offset.toInt)
+        ctx.stop()
         rows
+
       }
     }
   }
