@@ -315,7 +315,7 @@ class FrameBackendRest(object):
             # keep the import localized, as serialization doesn't like prettytable
             import intelanalytics.rest.prettytable as prettytable
             table = prettytable.PrettyTable()
-            fields = OrderedDict([("{0}:{1}".format(n, valid_data_types.to_string(t)), self._align[t]) for n, t in self.schema])
+            fields = OrderedDict([("{0}:{1}".format(key, valid_data_types.to_string(val)), self._align[val]) for key, val in self.schema.iteritems()])
             table.field_names = fields.keys()
             table.align.update(fields)
             table.hrules = prettytable.HEADER
