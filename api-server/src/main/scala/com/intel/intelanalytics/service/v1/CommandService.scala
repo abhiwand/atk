@@ -94,7 +94,7 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
                           val action = xform.arguments.get.convertTo[CommandAction]
                           action.status match {
                             case "cancel" => onComplete(engine.cancelCommand(id)) {
-                              case Success(command) => complete(decorate(uri + "/" + command.id, command))
+                              case Success(command) => complete("Command cancelled by client")
                               case _ => reject()
                             }
                           }
