@@ -27,6 +27,7 @@
                         </goals>
                         <configuration>
                             <executable>chmod</executable>
+                            <workingDirectory>${basedir}</workingDirectory>
                             <arguments>
                                 <argument>+x</argument>
                                 <argument>intelanalytics/tests/exec_all.sh</argument>
@@ -34,7 +35,7 @@
                         </configuration>
                     </execution>
                     <execution>
-                        <id>zip-rest-server</id>
+                        <id>python-tests</id>
                         <phase>test</phase>
                         <goals>
                             <goal>exec</goal>
@@ -43,7 +44,7 @@
                             <executable>bash</executable>
                             <workingDirectory>${basedir}</workingDirectory>
                             <arguments>
-                                <argument>intelanalytics/test/exec_all.sh</argument>
+                                <argument>intelanalytics/tests/exec_all.sh</argument>
                             </arguments>
                         </configuration>
                     </execution>
