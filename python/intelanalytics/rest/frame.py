@@ -94,7 +94,7 @@ class FrameBackendRest(object):
     def _delete_frame(self, frame):
         logger.info("REST Backend: Delete frame {0}".format(repr(frame)))
         r = self.rest_http.delete("dataframes/" + str(frame._id))
-        return frame.name
+        return None
 
     def create(self, frame, source, name):
         logger.info("REST Backend: create frame with name %s" % name)
