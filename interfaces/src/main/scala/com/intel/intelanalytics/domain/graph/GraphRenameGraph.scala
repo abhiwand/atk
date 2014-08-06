@@ -23,8 +23,8 @@
 
 package com.intel.intelanalytics.domain.graph
 
-case class GraphRenameGraph(graph: GraphReference, new_name: String) {
+case class RenameGraph(graph: GraphReference, newName: String) {
   require(graph != null, "graph is required")
-  require(new_name != null && new_name.size > 0, "new_name is required")
+  require(newName != null && newName.size > 0, "newName is required")
 }
 

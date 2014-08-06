@@ -74,8 +74,8 @@ import com.intel.intelanalytics.engine.spark.statistics.ColumnStatistics
 import scala.util.Try
 import org.apache.spark.engine.SparkProgressListener
 import com.intel.intelanalytics.domain.frame.FrameAddColumns
-import com.intel.intelanalytics.domain.frame.FrameRenameFrame
-import com.intel.intelanalytics.domain.graph.GraphRenameGraph
+import com.intel.intelanalytics.domain.frame.RenameFrame
+import com.intel.intelanalytics.domain.graph.RenameGraph
 import com.intel.intelanalytics.domain.frame.load.LineParserArguments
 import com.intel.intelanalytics.domain.schema.Schema
 import com.intel.intelanalytics.domain.frame.DropDuplicates
@@ -295,14 +295,14 @@ class SparkEngine(sparkContextManager: SparkContextManager,
 
   def expectFrame(frameRef: FrameReference): DataFrame = expectFrame(frameRef.id)
 
-  def renameFrame(arguments: FrameRenameFrame)(implicit user: UserPrincipal): Execution =
+  def renameFrame(arguments: RenameFrame)(implicit user: UserPrincipal): Execution =
     commands.execute(renameFrameCommand, arguments, user, implicitly[ExecutionContext])
 
   val renameFrameCommand = commands.registerCommand("dataframe/rename_frame", renameFrameSimple)
 
-  private def renameFrameSimple(arguments: FrameRenameFrame, user: UserPrincipal): DataFrame = {
+  private def renameFrameSimple(arguments: RenameFrame, user: UserPrincipal): DataFrame = {
     val frame = expectFrame(arguments.frame)
-    val newName = arguments.new_name
+    val newName = arguments.newName
     frames.renameFrame(frame, newName)
   }
 
@@ -968,22 +968,23 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     graph
   }
 
-  def renameGraphSimple(arguments: GraphRenameGraph, user: UserPrincipal): Graph = {
-    val graph = expectGraph(arguments.graph)
-    val newName = arguments.new_name
-    graphs.renameGraph(graph, newName)
-  }
+  /**
+   * Renames a graph in the database
+   * @param rename RenameGraph object storing the graph and the newName
+   * @param user IMPLICIT. The user loading the graph
+   * @return Graph object
+   */
 
-  def expectGraph(graphId: Long): Graph = {
-    graphs.lookup(graphId).getOrElse(throw new NotFoundException("graph", graphId.toString))
-  }
-
-  def expectGraph(graphRef: GraphReference): Graph = expectGraph(graphRef.id)
+  def renameGraph(rename: RenameGraph)(implicit user: UserPrincipal): Execution =
+    commands.execute(renameGraphCommand, rename, user, implicitly[ExecutionContext])
 
   val renameGraphCommand = commands.registerCommand("graph/rename_graph", renameGraphSimple)
-
-  def renameGraph(arguments: GraphRenameGraph)(implicit user: UserPrincipal): Execution =
-    commands.execute(renameGraphCommand, arguments, user, implicitly[ExecutionContext])
+  def renameGraphSimple(rename: RenameGraph, user: UserPrincipal): Graph = {
+    val graphId = rename.graph.id
+    val graph = graphs.lookup(graphId).getOrElse(throw new NotFoundException("graph", graphId.toString))
+    val newName = rename.newName
+    graphs.renameGraph(graph, newName)
+  }
 
   /**
    * Obtains a graph's metadata from its identifier.
