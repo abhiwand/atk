@@ -32,4 +32,5 @@ package com.intel.intelanalytics.engine
  */
 trait GraphBackendStorage {
   def deleteUnderlyingTable(graphName: String)
+  def renameUnderlyingTable(graphName: String, newName: String)
 }
