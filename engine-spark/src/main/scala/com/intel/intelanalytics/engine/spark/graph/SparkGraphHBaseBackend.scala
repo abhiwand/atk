@@ -31,7 +31,7 @@ class SparkGraphHBaseBackend(hbaseAdmin: => HBaseAdmin) extends GraphBackendStor
   override def renameUnderlyingTable(graphName: String, newName: String): Unit = {
     val tableName: String = GraphName.convertGraphUserNameToBackendName(graphName)
     val newTableName: String = GraphName.convertGraphUserNameToBackendName(newName)
-    val snapShotName: String = "someName"
+    val snapShotName: String = "snapShot"
 
     if (hbaseAdmin.tableExists(tableName)) {
       hbaseAdmin.disableTable(tableName)
