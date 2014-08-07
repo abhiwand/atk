@@ -20,16 +20,21 @@ rm -rf tarballs/$package
 rm $package-source.tar.gz
 
 mkdir -p  tarballs/$package/etc/intelanalytics/rest-server
-
 mkdir -p  tarballs/$package/usr/lib/intelanalytics/rest-server/lib
+
+#copy example scripts
+cp -Rv vm/salt/salt/base/$package/examples tarballs/$package/usr/lib/intelanalytics/rest-server
+
+if [ -d /home/agent/datasets ]; then
+    #copy datasets from agent home if it exists into the rpm tar.gz source
+    cp -Rv /home/agent/datasets tarballs/$package/usr/lib/intelanalytics/rest-server/examples
+fi
+
 
 cp -v ../conf/examples/application.conf.tpl tarballs/$package/etc/intelanalytics/rest-server
 cp -v ../conf/examples/application.conf.single-system.tpl tarballs/$package/etc/intelanalytics/rest-server
-#cp -Rv ../api-server/src/main/resources/* tarballs/$package/etc/intelanalytics/rest-server
-#cp -Rv ../engine/src/main/resources/* tarballs/$package/etc/intelanalytics/rest-server
 cp -Rv config/intelanalytics-rest-server/assets/* tarballs/$package/
-#log "add build number to application conf"
-#sed -i "s/^intel.analytics.api.buildId.*/intel.analytics.api.buildId = \"$BUILD_NUMBER\"/g" tarballs/$package/etc/intelanalytics/rest-server/application.conf
+
 
 
 jars="engine-spark.jar api-server.jar engine.jar interfaces.jar igiraph-titan.jar graphon.jar"
@@ -48,7 +53,7 @@ done
 jarPath=$(find .  -path ./package -prune -o -name launcher.jar -print)
 
 echo $jarPath
-enable this to copy the regular launcher.jar to the correct place
+#enable this to copy the regular launcher.jar to the correct place
 cp -v $jarPath $SCRIPTPATH/tarballs/$package/usr/lib/intelanalytics/rest-server/launcher.jar
 
 
@@ -60,4 +65,4 @@ tar -pczf ../../$package-source.tar.gz .
 
 popd
 
-#rm -rf tarballs
+rm -rf tarballs
