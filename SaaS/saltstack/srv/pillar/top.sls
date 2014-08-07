@@ -1,5 +1,0 @@
-base:
-  '*':
-    - bdarepo
-  'dockerrepo':
-    - dockerRepo
