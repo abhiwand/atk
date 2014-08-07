@@ -218,20 +218,7 @@ Glossary
         interval and the interval width for each bin is equal.
 
         Equal depth binning attempts to place column values into bins such that each bin contains the same number of
-        elements.  For :math:`n` bins of a column :math:`C` of length :math:`m`, the bin number is determined by:
-
-        .. math::
-
-            ceiling \\left( n * \\frac {f(C)}{m} \\right)
-
-        where :math:`f` is a tie-adjusted ranking function over values of :math:`C`.
-        If there are multiple of the same value in :math:`C`, then their tie-adjusted rank is the average of their ordered rank values.
-
-        The num_bins parameter is upper-bound on the number of bins since the data may justify fewer bins.
-        With equal depth binning, for example, if the column to be binned has 10 elements with
-        only 2 distinct values and num_bins > 2, then the number of actual bins will only be 2.
-        This is due to a restriction that elements with an identical value must belong to the same bin.
-        The type of the new column will be int32 and the bin numbers start at 1.
+        elements.
 
     ETL
     
