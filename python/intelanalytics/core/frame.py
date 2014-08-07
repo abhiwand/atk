@@ -226,7 +226,8 @@ class BigFrame(CommandSupport):
                 return [BigColumn(self, name, data_type_dict[name]) for name in column_name]
             return BigColumn(self, column_name, data_type_dict[column_name])
         except KeyError:
-            raise error_type(error_msg % column_name)
+            #raise error_type(error_msg % column_name)
+            raise KeyError("Incorrect column name: " + column_name)
 
     # We are not defining __setitem__.  Columns must be added explicitly
 

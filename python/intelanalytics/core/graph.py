@@ -308,9 +308,13 @@ class VertexRule(Rule):
         """
 
         # TODO - Add docstring
-        id_frame = self.validate_property(self.id_key, self.id_value, None)
-        properties_frame = self.validate_properties(self.properties)
-        return self.validate_same_frame(id_frame, properties_frame)
+        try:
+            id_frame = self.validate_property(self.id_key, self.id_value, None)
+            properties_frame = self.validate_properties(self.properties)
+            return self.validate_same_frame(id_frame, properties_frame)
+        except:
+            raise AttributeError("Incorrect number of arguments in Vertex Rule")
+
 
 
 class EdgeRule(Rule):
@@ -385,15 +389,18 @@ class EdgeRule(Rule):
 
         """
         # TODO - Add docstring
-        label_frame = None
-        if isinstance(self.label, BigColumn):
-            label_frame = VertexRule('label', self.label).validate()
-        elif not self.label or not isinstance(self.label, basestring):
-            raise TypeError("label argument must be a column or non-empty string")
-        tail_frame = self.tail.validate()
-        head_frame = self.head.validate()
-        properties_frame = self.validate_properties(self.properties)
-        return self.validate_same_frame(label_frame, tail_frame, head_frame, properties_frame)
+        try:
+            label_frame = None
+            if isinstance(self.label, BigColumn):
+                label_frame = VertexRule('label', self.label).validate()
+            elif not self.label or not isinstance(self.label, basestring):
+                raise TypeError("label argument must be a column or non-empty string")
+            tail_frame = self.tail.validate()
+            head_frame = self.head.validate()
+            properties_frame = self.validate_properties(self.properties)
+            return self.validate_same_frame(label_frame, tail_frame, head_frame, properties_frame)
+        except:
+            raise AttributeError("Incorrect number of arguments in Edge Rule")
 
 class BigGraph(CommandSupport):
     """
