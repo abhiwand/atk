@@ -43,7 +43,7 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol._
 import com.intel.intelanalytics.service.v1.viewmodels._
 import com.intel.intelanalytics.service.v1.viewmodels.ViewModelJsonImplicits._
 import com.intel.intelanalytics.domain.graph.{ GraphReference, GraphLoad }
-import com.intel.intelanalytics.domain.command.{ CommandAction, Execution, CommandTemplate, Command }
+import com.intel.intelanalytics.domain.command.{ CommandPost, Execution, CommandTemplate, Command }
 import com.intel.intelanalytics.shared.EventLogging
 import com.intel.intelanalytics.service.{ ApiServiceConfig, UrlParser, CommonDirectives, AuthenticationDirective }
 import com.intel.intelanalytics.service.v1.decorators.CommandDecorator
@@ -91,7 +91,7 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
                     entity(as[JsonTransform]) {
                       xform =>
                         {
-                          val action = xform.arguments.get.convertTo[CommandAction]
+                          val action = xform.arguments.get.convertTo[CommandPost]
                           action.status match {
                             case "cancel" => onComplete(engine.cancelCommand(id)) {
                               case Success(command) => complete("Command cancelled by client")

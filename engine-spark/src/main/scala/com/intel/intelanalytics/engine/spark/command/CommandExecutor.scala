@@ -155,8 +155,8 @@ class CommandExecutor(engine: => SparkEngine, commands: SparkCommandStorage, con
                                           arguments: A,
                                           user: UserPrincipal,
                                           executionContext: ExecutionContext,
-                                          pluginRegistry: CommandRegistry): Execution = {
-    val function = pluginRegistry.getCommandDefinition(name)
+                                          commandPluginRegistry: CommandPluginRegistry): Execution = {
+    val function = commandPluginRegistry.getCommandDefinition(name)
       .getOrElse(throw new NotFoundException("command definition", name))
       .asInstanceOf[CommandPlugin[A, R]]
     execute(function, arguments, user, executionContext)
@@ -176,8 +176,8 @@ class CommandExecutor(engine: => SparkEngine, commands: SparkCommandStorage, con
   def execute[A <: Product, R <: Product](command: CommandTemplate,
                                           user: UserPrincipal,
                                           executionContext: ExecutionContext,
-                                          pluginRegistry: CommandRegistry): Execution = {
-    val function = pluginRegistry.getCommandDefinition(command.name)
+                                          commandPluginRegistry: CommandPluginRegistry): Execution = {
+    val function = commandPluginRegistry.getCommandDefinition(command.name)
       .getOrElse(throw new NotFoundException("command definition", command.name))
       .asInstanceOf[CommandPlugin[A, R]]
     val convertedArgs = function.parseArguments(command.arguments.get)

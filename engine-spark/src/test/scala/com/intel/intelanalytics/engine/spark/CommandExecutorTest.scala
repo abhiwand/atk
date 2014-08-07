@@ -1,17 +1,16 @@
 package com.intel.intelanalytics.engine.spark
 
 import org.scalatest.{ Matchers, FlatSpec }
-import com.intel.intelanalytics.engine.spark.command.{ CommandLoader, SparkCommandStorage, CommandRegistry, CommandExecutor }
+import com.intel.intelanalytics.engine.spark.command.{ CommandLoader, SparkCommandStorage, CommandPluginRegistry, CommandExecutor }
 import org.specs2.mock.Mockito
-import com.intel.intelanalytics.engine.{ ProgressInfo, CommandStorage }
 import com.intel.intelanalytics.domain.command.{ Command, CommandTemplate }
 import scala.concurrent.duration._
-import com.intel.intelanalytics.engine.spark.context.{ SparkContextManager, SparkContextManagementStrategy }
+import com.intel.intelanalytics.engine.spark.context.SparkContextManager
 import org.apache.spark.SparkContext
 import scala.concurrent.ExecutionContext.Implicits.global
 import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.engine.spark.plugin.SparkInvocation
-import com.intel.intelanalytics.domain.frame.{ CumulativeDist, FrameReference, DataFrame }
+import com.intel.intelanalytics.domain.frame.{ CumulativeDist, DataFrame }
 import scala.concurrent.{ Await, ExecutionContext }
 import spray.json._
 import com.intel.intelanalytics.domain.DomainJsonProtocol
@@ -24,7 +23,7 @@ class CommandExecutorTest extends FlatSpec with Matchers with Mockito {
   val loader = mock[CommandLoader]
   loader.loadFromConfig().returns(new HashMap[String, CommandPlugin[_, _]])
 
-  val pluginRegistry = new CommandRegistry(loader)
+  val commandPluginRegistry = new CommandPluginRegistry(loader)
   def createCommandExecutor(): CommandExecutor = {
     val engine = mock[SparkEngine]
     val commandStorage = mock[SparkCommandStorage]
@@ -50,7 +49,7 @@ class CommandExecutorTest extends FlatSpec with Matchers with Mockito {
       mock[DataFrame]
     }
 
-    val plugin = pluginRegistry.registerCommand("dummy", dummyFunc)
+    val plugin = commandPluginRegistry.registerCommand("dummy", dummyFunc)
     val user = mock[UserPrincipal]
     val execution = executor.execute(plugin, args, user, implicitly[ExecutionContext])
     Await.ready(execution.end, 10 seconds)
@@ -72,7 +71,7 @@ class CommandExecutorTest extends FlatSpec with Matchers with Mockito {
       mock[DataFrame]
     }
 
-    val plugin = pluginRegistry.registerCommand("dummy", dummyFunc)
+    val plugin = commandPluginRegistry.registerCommand("dummy", dummyFunc)
     val user = mock[UserPrincipal]
     val execution = executor.execute(plugin, args, user, implicitly[ExecutionContext])
     Await.ready(execution.end, 10 seconds)
