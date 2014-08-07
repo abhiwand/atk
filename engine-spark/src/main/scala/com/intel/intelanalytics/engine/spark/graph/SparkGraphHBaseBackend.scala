@@ -27,4 +27,18 @@ class SparkGraphHBaseBackend(hbaseAdmin: => HBaseAdmin) extends GraphBackendStor
         "SparkGraphHBaseBackend.deleteTable:  HBase table " + tableName + " requested for deletion does not exist.")
     }
   }
+
+  override def renameUnderlyingTable(graphName: String, newName: String): Unit = {
+    val tableName: String = GraphName.convertGraphUserNameToBackendName(graphName)
+    val newTableName: String = GraphName.convertGraphUserNameToBackendName(newName)
+    val snapShotName: String = "someName"
+
+    if (hbaseAdmin.tableExists(tableName)) {
+      hbaseAdmin.disableTable(tableName)
+      hbaseAdmin.snapshot(snapShotName, tableName)
+      hbaseAdmin.cloneSnapshot(snapShotName, newTableName)
+      hbaseAdmin.deleteSnapshot(snapShotName)
+      hbaseAdmin.deleteTable(tableName)
+    }
+  }
 }
