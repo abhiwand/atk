@@ -14,14 +14,20 @@ class FrequencyStatisticsITest extends TestingSparkContextFlatSpec with Matchers
 
     val epsilon = 0.000000001
 
-    val integers = 1 to 7
+    val integers = (1 to 7) :+ 3
 
-    val strings = List("a", "b", "c", "d", "e", "f", "g")
+    val strings = List("a", "b", "c", "d", "e", "f", "g", "c")
 
-    val integerFrequencies = List(1, 1, 5, 1, 1, 2, 3).map(_.toDouble)
+    val integerFrequencies = List(1, 1, 2, 1, 5, 2, 3, 3).map(_.toDouble)
 
-    val fractionalFrequencies: List[Double] = integerFrequencies.map(x => x / 14.toDouble)
+    val expectedModesStrings = Set("c", "e")
+    val expectedModesInts = Set(3, 5)
 
+    val expectedModeCount = 2
+    val expectedModeWeight = 5.0d
+
+    val netFrequencies = integerFrequencies.reduce(_ + _)
+    val fractionalFrequencies: List[Double] = integerFrequencies.map(x => x / netFrequencies)
   }
 
   "empty data" should "produce mode == None and weights equal to 0" in new FrequencyStatisticsTest {
@@ -36,10 +42,12 @@ class FrequencyStatisticsITest extends TestingSparkContextFlatSpec with Matchers
     val testMode = frequencyStats.mode
     val testModeWeight = frequencyStats.weightOfMode
     val testTotalWeight = frequencyStats.totalWeight
+    val testModeCount = frequencyStats.modeCount
 
     testMode shouldBe None
     testModeWeight shouldBe 0
     testTotalWeight shouldBe 0
+    testModeCount shouldBe 0
   }
 
   "integer data with integer frequencies" should "work" in new FrequencyStatisticsTest {
@@ -51,10 +59,13 @@ class FrequencyStatisticsITest extends TestingSparkContextFlatSpec with Matchers
     val testMode = frequencyStats.mode.get
     val testModeWeight = frequencyStats.weightOfMode
     val testTotalWeight = frequencyStats.totalWeight
+    val testModeCount = frequencyStats.modeCount
 
-    testMode shouldBe 3
-    testModeWeight shouldBe 5
-    testTotalWeight shouldBe 14
+    expectedModesInts should contain(testMode)
+    testModeWeight shouldBe expectedModeWeight
+    testTotalWeight shouldBe netFrequencies
+    testModeCount shouldBe expectedModeCount
+
   }
 
   "string data with integer frequencies" should "work" in new FrequencyStatisticsTest {
@@ -66,10 +77,12 @@ class FrequencyStatisticsITest extends TestingSparkContextFlatSpec with Matchers
     val testMode = frequencyStats.mode.get
     val testModeWeight = frequencyStats.weightOfMode
     val testTotalWeight = frequencyStats.totalWeight
+    val testModeCount = frequencyStats.modeCount
 
-    testMode shouldBe "c"
-    testModeWeight shouldBe 5
-    testTotalWeight shouldBe 14
+    expectedModesStrings should contain(testMode)
+    testModeWeight shouldBe expectedModeWeight
+    testTotalWeight shouldBe netFrequencies
+    testModeCount shouldBe expectedModeCount
   }
 
   "integer data with fractional weights" should "work" in new FrequencyStatisticsTest {
@@ -81,10 +94,12 @@ class FrequencyStatisticsITest extends TestingSparkContextFlatSpec with Matchers
     val testMode = frequencyStats.mode.get
     val testModeWeight = frequencyStats.weightOfMode
     val testTotalWeight = frequencyStats.totalWeight
+    val testModeCount = frequencyStats.modeCount
 
-    testMode shouldBe 3
-    Math.abs(testModeWeight - (5.toDouble / 14.toDouble)) should be < epsilon
+    expectedModesInts should contain(testMode)
+    Math.abs(testModeWeight - (expectedModeWeight / netFrequencies.toDouble)) should be < epsilon
     Math.abs(testTotalWeight - 1.toDouble) should be < epsilon
+    testModeCount shouldBe expectedModeCount
 
   }
 
@@ -97,10 +112,12 @@ class FrequencyStatisticsITest extends TestingSparkContextFlatSpec with Matchers
     val testMode = frequencyStats.mode.get
     val testModeWeight = frequencyStats.weightOfMode
     val testTotalWeight = frequencyStats.totalWeight
+    val testModeCount = frequencyStats.modeCount
 
-    testMode shouldBe "c"
-    Math.abs(testModeWeight - (5.toDouble / 14.toDouble)) should be < epsilon
+    expectedModesStrings should contain(testMode)
+    Math.abs(testModeWeight - (expectedModeWeight / netFrequencies)) should be < epsilon
     Math.abs(testTotalWeight - 1.toDouble) should be < epsilon
+    testModeCount shouldBe expectedModeCount
   }
 
   "items with negative weights" should "not affect mode or total weight" in new FrequencyStatisticsTest {
@@ -113,9 +130,11 @@ class FrequencyStatisticsITest extends TestingSparkContextFlatSpec with Matchers
     val testMode = frequencyStats.mode.get
     val testModeWeight = frequencyStats.weightOfMode
     val testTotalWeight = frequencyStats.totalWeight
+    val testModeCount = frequencyStats.modeCount
 
-    testMode shouldBe "c"
-    Math.abs(testModeWeight - (5.toDouble / 14.toDouble)) should be < epsilon
+    expectedModesStrings should contain(testMode)
+    Math.abs(testModeWeight - (expectedModeWeight / netFrequencies)) should be < epsilon
     Math.abs(testTotalWeight - 1.toDouble) should be < epsilon
+    testModeCount shouldBe expectedModeCount
   }
 }

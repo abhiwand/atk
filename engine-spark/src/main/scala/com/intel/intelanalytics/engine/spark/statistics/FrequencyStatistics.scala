@@ -27,7 +27,12 @@ class FrequencyStatistics[T: ClassManifest](dataWeightPairs: RDD[(T, Double)]) e
   lazy val weightOfMode: Double = frequencyStatistics.weightOfMode
 
   /**
-   * Sum all weights.
+   * The number of modes in the data.
+   */
+  lazy val modeCount: Long = frequencyStatistics.modeCount
+
+  /**
+   * Sum of all weights.
    */
   lazy val totalWeight: Double = frequencyStatistics.totalWeight
 
@@ -36,19 +41,32 @@ class FrequencyStatistics[T: ClassManifest](dataWeightPairs: RDD[(T, Double)]) e
   private def generateMode(): FrequencyStatsCounter[T] = {
 
     val acumulatorParam = new FrequencyStatsAccumulatorParam[T]()
-    val initialValue = FrequencyStatsCounter[T](None, 0, 0)
+    val initialValue = FrequencyStatsCounter[T](None, 0, 0, 0)
 
     val accumulator =
       dataWeightPairs.sparkContext.accumulator[FrequencyStatsCounter[T]](initialValue)(acumulatorParam)
 
-    val dataWeightPairsSupport =
+    val dataWeightPairsPositiveWeights =
       dataWeightPairs.filter({ case (data, weight) => NumericValidationUtils.isFinitePositive(weight) })
 
-    dataWeightPairsSupport.foreach(
-      { case (value, weightAtValue) => accumulator.add(FrequencyStatsCounter(Some(value), weightAtValue, weightAtValue)) })
+    val uniqueValuesPositiveWeights: RDD[(T, Double)] =
+      dataWeightPairsPositiveWeights.groupBy(_._1).map({ case (data, weights) => aggregateWeights(data, weights) })
 
-    FrequencyStatsCounter[T](accumulator.value.mode, accumulator.value.weightOfMode, accumulator.value.totalWeight)
+    uniqueValuesPositiveWeights.foreach(
+      {
+        case (value, weightAtValue) =>
+          accumulator.add(FrequencyStatsCounter(Some(value), weightAtValue, weightAtValue, 1))
+      })
 
+    FrequencyStatsCounter[T](accumulator.value.mode,
+      accumulator.value.weightOfMode,
+      accumulator.value.totalWeight,
+      accumulator.value.modeCount)
+
+  }
+
+  private def aggregateWeights(data: T, dataWeightPairs: Seq[(T, Double)]): (T, Double) = {
+    (data, dataWeightPairs.map({ case (data, weight) => weight }).reduce(_ + _))
   }
 }
 
@@ -59,7 +77,7 @@ class FrequencyStatistics[T: ClassManifest](dataWeightPairs: RDD[(T, Double)]) e
  * @param totalWeight Sum of the weights of all values seen so far.
  * @tparam T Type of the input data. (In particular, the type of the mode.)
  */
-private case class FrequencyStatsCounter[T](mode: Option[T], weightOfMode: Double, totalWeight: Double)
+private case class FrequencyStatsCounter[T](mode: Option[T], weightOfMode: Double, totalWeight: Double, modeCount: Long)
   extends Serializable
 
 /*
@@ -68,7 +86,7 @@ private case class FrequencyStatsCounter[T](mode: Option[T], weightOfMode: Doubl
  */
 private class FrequencyStatsAccumulatorParam[T] extends AccumulatorParam[FrequencyStatsCounter[T]] with Serializable {
 
-  override def zero(initialValue: FrequencyStatsCounter[T]) = FrequencyStatsCounter(None, 0, 0)
+  override def zero(initialValue: FrequencyStatsCounter[T]) = FrequencyStatsCounter(None, 0, 0, 0)
 
   // to get (more) reproducible results, in the case that two modes have the same weight, we opt for the mode with the
   // lesser hashcode...
@@ -86,16 +104,27 @@ private class FrequencyStatsAccumulatorParam[T] extends AccumulatorParam[Frequen
     }
     else {
       if (stats1.weightOfMode > stats2.weightOfMode) {
-        FrequencyStatsCounter(stats1.mode, stats1.weightOfMode, stats1.totalWeight + stats2.totalWeight)
+        FrequencyStatsCounter(stats1.mode, stats1.weightOfMode,
+          stats1.totalWeight + stats2.totalWeight,
+          stats1.modeCount)
       }
       else if (stats1.weightOfMode < stats2.weightOfMode) {
-        FrequencyStatsCounter(stats2.mode, stats2.weightOfMode, stats1.totalWeight + stats2.totalWeight)
+        FrequencyStatsCounter(stats2.mode,
+          stats2.weightOfMode,
+          stats1.totalWeight + stats2.totalWeight,
+          stats2.modeCount)
       }
       else if (stats1.mode.hashCode() < stats2.mode.hashCode()) {
-        FrequencyStatsCounter(stats1.mode, stats1.weightOfMode, stats1.totalWeight + stats2.totalWeight)
+        FrequencyStatsCounter(stats1.mode,
+          stats1.weightOfMode,
+          stats1.totalWeight + stats2.totalWeight,
+          stats1.modeCount + stats2.modeCount)
       }
       else {
-        FrequencyStatsCounter(stats2.mode, stats2.weightOfMode, stats1.totalWeight + stats2.totalWeight)
+        FrequencyStatsCounter(stats2.mode,
+          stats2.weightOfMode,
+          stats1.totalWeight + stats2.totalWeight,
+          stats1.modeCount + stats2.modeCount)
       }
     }
   }
