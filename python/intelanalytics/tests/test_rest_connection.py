@@ -31,40 +31,29 @@ from intelanalytics.rest.connection import Server
 from intelanalytics.rest.connection import http
 
 
-conn1 = {'host': 'good', 'port': '7', 'scheme': 'http', 'version': 'v08'}
-conn2 = {'host': 'solo', 'port': None, 'scheme': 'http', 'version': 'v08'}
-
+conn1 = {'host': 'localhost', 'port': 9099, 'scheme': 'http', 'version': 'v1'}
 
 def create_conn1():
-    return Server(conn1['host'], conn1['port'], conn1['scheme'], conn1['version'])
-
-
-def create_conn2():
-    return Server(**conn2)
+    return Server()
 
 
 class TestRestConnection(unittest.TestCase):
 
     def test_connection_creation(self):
-        c = create_conn1()
+        c = Server()
         self.assertEquals(conn1['host'], c.host)
         self.assertEquals(conn1['port'], c.port)
         self.assertEquals(conn1['scheme'], c.scheme)
         self.assertEquals(conn1['version'], c.version)
 
     def test_connection_repr(self):
-        c = create_conn1()
-        expected = '{"host": "good", "port": "7", "scheme": "http", "version": "v08"}'
+        c = Server()
+        expected = '{"host": "localhost", "port": "9099", "scheme": "http", "version": "v1"}'
         self.assertEquals(expected, repr(c))
 
     def test_connection_get_scheme_and_authority(self):
-        c = create_conn1()
-        expected = 'http://good:7'
-        self.assertEquals(expected, c._get_scheme_and_authority())
-
-    def test_connection_get_scheme_and_authority_2(self):
-        c = create_conn2()
-        expected = 'http://solo'
+        c = Server()
+        expected = 'http://localhost:9099'
         self.assertEquals(expected, c._get_scheme_and_authority())
 
     @patch('intelanalytics.rest.connection.requests')
@@ -75,25 +64,27 @@ class TestRestConnection(unittest.TestCase):
         c = create_conn1()
         c.ping()
 
-    def bad_ping_conn1(self):
+    def bad_ping_conn2(self):
         try:
             create_conn1().ping()
         except Exception as e:
-            self.assertTrue(e.message.startswith("Failed to ping Intel Analytics at http://good:7"))
+            self.assertTrue(str(e).startswith("Failed to ping Intel Analytics at http://localhost:"))
         else:
             self.fail()
 
     @patch('intelanalytics.rest.connection.requests')
     def test_invalid_ping(self, mock_requests):
         mock_requests.get.side_effect = Exception("Expected Exception")
-        self.bad_ping_conn1()
+        self.bad_ping_conn2()
 
+'''
     @patch('intelanalytics.rest.connection.requests')
     def test_invalid_ping_bad_info(self, mock_requests):
         mock_response = Mock()
         mock_response.json.return_value = {'name': 'Intel Aardvarks'}
         mock_requests.get.return_value = mock_response
         self.bad_ping_conn1()
+        '''
 
 
 class MockRequests(MagicMock):

@@ -16,8 +16,6 @@ intel.analytics.giraph.mapreduce.map {
       java.opts = "-Xmx2g"
 }
 
-# END REQUIRED SETTINGS
-
 # In a single machine configuration, all services are on the same host.
 # This configuration uses the HOSTNAME environment variable (which is preconfigured
 # in the startup scripts of the rest server) as the name for all the service hosts.

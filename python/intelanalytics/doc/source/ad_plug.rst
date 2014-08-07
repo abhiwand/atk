@@ -41,7 +41,7 @@ When to Write a Plugin
 Many of the operations and algorithms that you will want to express can be written in Python using the Python client.
 However, some kinds of operations are inconvenient to express in that format, or require better performance than Python can provide.
 
-Anytime you have a new function such as an analytical or machine learning algorithm that you want to publish for use via the Python
+Anytime you have a new function such as an analytical or :term:`machine learning` algorithm that you want to publish for use via the Python
 client or REST server, you should consider writing a CommandPlugin.
 
 -----------------------
@@ -110,7 +110,7 @@ name you specify for your plugin.
 
 Name components are separated by slashes.
 For instance, the command that removes columns from a dataframe is called dataframe/remove_column.
-The Python client sees that name, knows that dataframe commands are associated with the BigFrame class, and therefore generates a
+The Python client sees that name, knows that dataframe commands are associated with the :term:`BigFrame` class, and therefore generates a
 function named remove_column on BigFrame.
 When the user calls that function, its arguments will be converted to JSON, sent to the REST server, and then on to the engine for processing.
 The results from the engine flow back through the REST server, and are converted back to Python objects.
@@ -142,7 +142,7 @@ Self Arguments
 
 Use a FrameReference as the type, and place this parameter first in the case class definition if you want this parameter to be filled
 by the BigFrame instance whose method is being invoked by the user.
-Similarly, if the method is on a graph, using  a GraphReference in the first position will do the trick for BigGraph instances.
+Similarly, if the method is on a graph, using  a GraphReference in the first position will do the trick for :term:`BigGraph` instances.
 
 Single Value Results
 ====================

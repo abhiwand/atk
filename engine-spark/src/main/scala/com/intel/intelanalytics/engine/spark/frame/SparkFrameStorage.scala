@@ -23,45 +23,39 @@
 
 package com.intel.intelanalytics.engine.spark.frame
 
-import java.nio.file.Paths
-import java.util.concurrent.atomic.AtomicLong
 import com.intel.intelanalytics.component.ClassLoaderAware
 import com.intel.intelanalytics.engine._
-import com.intel.intelanalytics.domain.schema.{ DataTypes, Schema }
+import com.intel.intelanalytics.domain.schema.DataTypes
 import DataTypes.DataType
 import java.nio.file.Paths
 import com.intel.intelanalytics.shared.EventLogging
 
-import scala.io.{ Codec, Source }
+import scala.io.Codec
 import org.apache.spark.rdd.RDD
 import com.intel.intelanalytics.engine.spark._
 import org.apache.spark.SparkContext
 import scala.util.matching.Regex
 import java.util.concurrent.atomic.AtomicLong
-import com.intel.intelanalytics.domain.frame.{ Column, DataFrame, DataFrameTemplate }
-import com.intel.intelanalytics.engine.spark.context.{ Context }
-import com.intel.intelanalytics.engine.File
-import com.intel.intelanalytics.security.UserPrincipal
-import org.joda.time.DateTime
-import com.intel.intelanalytics.engine.{ FrameStorage, FrameComponent }
-import com.intel.intelanalytics.repository.{ SlickMetaStoreComponent, MetaStore, MetaStoreComponent }
+import com.intel.intelanalytics.domain.frame.Column
+import com.intel.intelanalytics.engine.FrameStorage
+import com.intel.intelanalytics.repository.{ SlickMetaStoreComponent, MetaStoreComponent }
+import com.intel.intelanalytics.engine.plugin.Invocation
 import scala.Some
 import com.intel.intelanalytics.domain.frame.DataFrameTemplate
 import com.intel.intelanalytics.engine.File
 import com.intel.intelanalytics.engine.Directory
 import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.domain.frame.DataFrame
-import com.intel.intelanalytics.engine.spark.context.Context
+import com.intel.intelanalytics.engine.spark.plugin.SparkInvocation
 
-class SparkFrameStorage(context: UserPrincipal => Context,
-                        fsRoot: String,
+class SparkFrameStorage(fsRoot: String,
                         fileStorage: FileStorage,
                         maxRows: Int,
                         val metaStore: SlickMetaStoreComponent#SlickMetaStore,
-                        sparkAutoPartitioner: SparkAutoPartitioner)
+                        sparkAutoPartitioner: SparkAutoPartitioner,
+                        getContext: (UserPrincipal) => SparkContext)
     extends FrameStorage with EventLogging with ClassLoaderAware {
 
-  import spray.json._
   import Rows.Row
 
   def updateSchema(frame: DataFrame, columns: List[(String, DataType)]): DataFrame = {
@@ -162,20 +156,24 @@ class SparkFrameStorage(context: UserPrincipal => Context,
       require(offset >= 0, "offset must be zero or greater")
       require(count > 0, "count must be zero or greater")
       withMyClassLoader {
-        val ctx = context(user).sparkContext
-        val rdd: RDD[Row] = getFrameRowRdd(ctx, frame.id)
-        val rows = SparkOps.getRows(rdd, offset, count, maxRows)
-        rows
+        val ctx = getContext(user)
+        try {
+          val rdd: RDD[Row] = getFrameRowRdd(ctx, frame.id)
+          val rows = SparkOps.getRows(rdd, offset, count, maxRows)
+          rows
+        }
+        finally {
+          ctx.stop()
+        }
       }
     }
 
-  def getRowsRDD(frame: DataFrame, offset: Long, count: Int)(implicit user: UserPrincipal): RDD[Row] =
+  def getRowsRDD(frame: DataFrame, offset: Long, count: Int, ctx: SparkContext)(implicit user: UserPrincipal): RDD[Row] =
     withContext("frame.getRows") {
       require(frame != null, "frame is required")
       require(offset >= 0, "offset must be zero or greater")
       require(count > 0, "count must be zero or greater")
       withMyClassLoader {
-        val ctx = context(user).sparkContext
         val rdd: RDD[Row] = getFrameRdd(ctx, frame.id)
         val rows = SparkOps.getPagedRdd[Row](rdd, offset, count, -1)
         rows
