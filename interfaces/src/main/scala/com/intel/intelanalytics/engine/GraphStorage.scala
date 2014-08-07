@@ -26,6 +26,7 @@ package com.intel.intelanalytics.engine
 import com.intel.intelanalytics.domain.graph.{ Graph, GraphLoad, GraphTemplate }
 import com.intel.intelanalytics.security.UserPrincipal
 import spray.json.JsObject
+import com.intel.intelanalytics.engine.plugin.Invocation
 
 /**
  * Manages multiple graphs in the underlying graph database.
@@ -36,7 +37,7 @@ trait GraphStorage {
 
   def createGraph(graph: GraphTemplate)(implicit user: UserPrincipal): Graph
 
-  def loadGraph(graph: GraphLoad)(implicit user: UserPrincipal): Graph
+  def loadGraph(graph: GraphLoad, invocation: Invocation)(implicit user: UserPrincipal): Graph
 
   def drop(graph: Graph)
 
