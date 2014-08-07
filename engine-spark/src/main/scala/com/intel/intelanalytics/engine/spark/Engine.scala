@@ -35,7 +35,7 @@ import com.intel.intelanalytics.domain.schema.{ DataTypes, SchemaUtil }
 import com.intel.intelanalytics.engine.Rows._
 import com.intel.intelanalytics.engine._
 import com.intel.intelanalytics.engine.plugin.{ Invocation, CommandPlugin }
-import com.intel.intelanalytics.engine.spark.command.{ CommandRegistry, CommandExecutor }
+import com.intel.intelanalytics.engine.spark.command.{ CommandPluginRegistry, CommandExecutor }
 import com.intel.intelanalytics.engine.spark.queries.{ SparkQueryStorage, QueryExecutor }
 import com.intel.intelanalytics.engine.spark.frame._
 import com.intel.intelanalytics.shared.EventLogging
@@ -108,7 +108,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
                   queryStorage: SparkQueryStorage,
                   queries: QueryExecutor,
                   sparkAutoPartitioner: SparkAutoPartitioner,
-                  pluginRegistry: CommandRegistry) extends Engine
+                  commandPluginRegistry: CommandPluginRegistry) extends Engine
     with EventLogging
     with ClassLoaderAware {
 
@@ -199,19 +199,19 @@ class SparkEngine(sparkContextManager: SparkContextManager,
    * @return an Execution that can be used to track the completion of the command
    */
   def execute(command: CommandTemplate)(implicit user: UserPrincipal): Execution =
-    commands.execute(command, user, implicitly[ExecutionContext], pluginRegistry)
+    commands.execute(command, user, implicitly[ExecutionContext], commandPluginRegistry)
 
   /**
    * All the command definitions available
    */
   override def getCommandDefinitions()(implicit user: UserPrincipal): Iterable[CommandDefinition] = {
-    pluginRegistry.getCommandDefinitions()
+    commandPluginRegistry.getCommandDefinitions()
   }
 
   def load(arguments: Load)(implicit user: UserPrincipal): Execution =
     commands.execute(loadCommand, arguments, user, implicitly[ExecutionContext])
 
-  val loadCommand = pluginRegistry.registerCommand("dataframe/load", loadSimple _, numberOfJobs = 7)
+  val loadCommand = commandPluginRegistry.registerCommand("dataframe/load", loadSimple _, numberOfJobs = 7)
 
   /**
    * Load data from a LoadSource object to an existing destination described in the Load object
@@ -297,7 +297,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
   def renameFrame(arguments: FrameRenameFrame)(implicit user: UserPrincipal): Execution =
     commands.execute(renameFrameCommand, arguments, user, implicitly[ExecutionContext])
 
-  val renameFrameCommand = pluginRegistry.registerCommand("dataframe/rename_frame", renameFrameSimple _)
+  val renameFrameCommand = commandPluginRegistry.registerCommand("dataframe/rename_frame", renameFrameSimple _)
 
   private def renameFrameSimple(arguments: FrameRenameFrame, user: UserPrincipal, invocation: SparkInvocation): DataFrame = {
     val frame = expectFrame(arguments.frame)
@@ -308,7 +308,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
   def renameColumns(arguments: FrameRenameColumns[JsObject, Long])(implicit user: UserPrincipal): Execution =
     commands.execute(renameColumnsCommand, arguments, user, implicitly[ExecutionContext])
 
-  val renameColumnsCommand = pluginRegistry.registerCommand("dataframe/rename_columns", renameColumnsSimple _)
+  val renameColumnsCommand = commandPluginRegistry.registerCommand("dataframe/rename_columns", renameColumnsSimple _)
   def renameColumnsSimple(arguments: FrameRenameColumns[JsObject, Long], user: UserPrincipal, invocation: SparkInvocation) = {
     val frameID = arguments.frame
     val frame = expectFrame(frameID)
@@ -318,7 +318,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
   def project(arguments: FrameProject[JsObject, Long])(implicit user: UserPrincipal): Execution =
     commands.execute(projectCommand, arguments, user, implicitly[ExecutionContext])
 
-  val projectCommand = pluginRegistry.registerCommand("dataframe/project", projectSimple _)
+  val projectCommand = commandPluginRegistry.registerCommand("dataframe/project", projectSimple _)
   def projectSimple(arguments: FrameProject[JsObject, Long], user: UserPrincipal, invocation: SparkInvocation): DataFrame = {
 
     implicit val u = user
@@ -371,7 +371,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
   def assignSample(arguments: AssignSample)(implicit user: UserPrincipal): Execution =
     commands.execute(assignSampleCommand, arguments, user, implicitly[ExecutionContext])
 
-  val assignSampleCommand = pluginRegistry.registerCommand("dataframe/assign_sample", assignSampleSimple _)
+  val assignSampleCommand = commandPluginRegistry.registerCommand("dataframe/assign_sample", assignSampleSimple _)
 
   def assignSampleSimple(arguments: AssignSample, user: UserPrincipal, invocation: SparkInvocation) = {
 
@@ -416,7 +416,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
   def groupBy(arguments: FrameGroupByColumn[JsObject, Long])(implicit user: UserPrincipal): Execution =
     commands.execute(groupByCommand, arguments, user, implicitly[ExecutionContext])
 
-  val groupByCommand = pluginRegistry.registerCommand("dataframe/groupby", groupBySimple _)
+  val groupByCommand = commandPluginRegistry.registerCommand("dataframe/groupby", groupBySimple _)
   def groupBySimple(arguments: FrameGroupByColumn[JsObject, Long], user: UserPrincipal, invocation: SparkInvocation) = {
     implicit val u = user
     val originalFrameID = arguments.frame
@@ -515,7 +515,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
   override def flattenColumn(arguments: FlattenColumn)(implicit user: UserPrincipal): Execution =
     commands.execute(flattenColumnCommand, arguments, user, implicitly[ExecutionContext])
 
-  val flattenColumnCommand = pluginRegistry.registerCommand("dataframe/flatten_column", flattenColumnSimple _)
+  val flattenColumnCommand = commandPluginRegistry.registerCommand("dataframe/flatten_column", flattenColumnSimple _)
   def flattenColumnSimple(arguments: FlattenColumn, user: UserPrincipal, invocation: SparkInvocation) = {
     implicit val u = user
     val frameId: Long = arguments.frameId
@@ -544,7 +544,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
   override def binColumn(arguments: BinColumn[Long])(implicit user: UserPrincipal): Execution =
     commands.execute(binColumnCommand, arguments, user, implicitly[ExecutionContext])
 
-  val binColumnCommand = pluginRegistry.registerCommand("dataframe/bin_column", binColumnSimple _, numberOfJobs = 7)
+  val binColumnCommand = commandPluginRegistry.registerCommand("dataframe/bin_column", binColumnSimple _, numberOfJobs = 7)
   def binColumnSimple(arguments: BinColumn[Long], user: UserPrincipal, invocation: SparkInvocation) = {
     implicit val u = user
     val frameId: Long = arguments.frame
@@ -656,7 +656,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     commands.execute(columnStatisticCommand, arguments, user, implicitly[ExecutionContext])
 
   val columnStatisticCommand: CommandPlugin[ColumnSummaryStatistics, ColumnSummaryStatisticsReturn] =
-    pluginRegistry.registerCommand("dataframe/column_summary_statistics", columnStatisticSimple _)
+    commandPluginRegistry.registerCommand("dataframe/column_summary_statistics", columnStatisticSimple _)
 
   def columnStatisticSimple(arguments: ColumnSummaryStatistics, user: UserPrincipal, invocation: SparkInvocation): ColumnSummaryStatisticsReturn = {
 
@@ -721,7 +721,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
   def filter(arguments: FilterPredicate[JsObject, Long])(implicit user: UserPrincipal): Execution =
     commands.execute(filterCommand, arguments, user, implicitly[ExecutionContext])
 
-  val filterCommand = pluginRegistry.registerCommand("dataframe/filter", filterSimple _, numberOfJobs = 2)
+  val filterCommand = commandPluginRegistry.registerCommand("dataframe/filter", filterSimple _, numberOfJobs = 2)
   def filterSimple(arguments: FilterPredicate[JsObject, Long], user: UserPrincipal, invocation: SparkInvocation) = {
     implicit val u = user
     val pyRdd = createPythonRDD(arguments.frame, arguments.predicate, invocation.sparkContext)
@@ -745,7 +745,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
   override def join(arguments: FrameJoin)(implicit user: UserPrincipal): Execution =
     commands.execute(joinCommand, arguments, user, implicitly[ExecutionContext])
 
-  val joinCommand = pluginRegistry.registerCommand("dataframe/join", joinSimple _)
+  val joinCommand = commandPluginRegistry.registerCommand("dataframe/join", joinSimple _)
   def joinSimple(arguments: FrameJoin, user: UserPrincipal, invocation: SparkInvocation) = {
     implicit val u = user
     def createPairRddForJoin(arguments: FrameJoin, ctx: SparkContext): List[RDD[(Any, Array[Any])]] = {
@@ -813,7 +813,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
   def removeColumn(arguments: FrameRemoveColumn)(implicit user: UserPrincipal): Execution =
     commands.execute(removeColumnCommand, arguments, user, implicitly[ExecutionContext])
 
-  val removeColumnCommand = pluginRegistry.registerCommand("dataframe/remove_columns", removeColumnSimple _)
+  val removeColumnCommand = commandPluginRegistry.registerCommand("dataframe/remove_columns", removeColumnSimple _)
   def removeColumnSimple(arguments: FrameRemoveColumn, user: UserPrincipal, invocation: SparkInvocation) = {
 
     implicit val u = user
@@ -851,7 +851,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
   def addColumns(arguments: FrameAddColumns[JsObject, Long])(implicit user: UserPrincipal): Execution =
     commands.execute(addColumnsCommand, arguments, user, implicitly[ExecutionContext])
 
-  val addColumnsCommand = pluginRegistry.registerCommand("dataframe/add_columns", addColumnsSimple _)
+  val addColumnsCommand = commandPluginRegistry.registerCommand("dataframe/add_columns", addColumnsSimple _)
   def addColumnsSimple(arguments: FrameAddColumns[JsObject, Long], user: UserPrincipal, invocation: SparkInvocation) = {
     implicit val u = user
     val ctx = invocation.sparkContext
@@ -959,7 +959,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
   def loadGraph(arguments: GraphLoad)(implicit user: UserPrincipal): Execution =
     commands.execute(loadGraphCommand, arguments, user, implicitly[ExecutionContext])
 
-  val loadGraphCommand = pluginRegistry.registerCommand("graph/load", loadGraphSimple _, numberOfJobs = 2)
+  val loadGraphCommand = commandPluginRegistry.registerCommand("graph/load", loadGraphSimple _, numberOfJobs = 2)
   def loadGraphSimple(arguments: GraphLoad, user: UserPrincipal, invocation: SparkInvocation) = {
     // validating frames
     arguments.frame_rules.foreach(frule => expectFrame(frule.frame))
@@ -1016,7 +1016,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
   override def dropDuplicates(arguments: DropDuplicates)(implicit user: UserPrincipal): Execution =
     commands.execute(dropDuplicateCommand, arguments, user, implicitly[ExecutionContext])
 
-  val dropDuplicateCommand = pluginRegistry.registerCommand("dataframe/drop_duplicates", dropDuplicateSimple _, numberOfJobs = 2)
+  val dropDuplicateCommand = commandPluginRegistry.registerCommand("dataframe/drop_duplicates", dropDuplicateSimple _, numberOfJobs = 2)
 
   def dropDuplicateSimple(dropDuplicateCommand: DropDuplicates, user: UserPrincipal, invocation: SparkInvocation) = {
     implicit val u = user
@@ -1039,7 +1039,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     frames.updateRowCount(realFrame, rowCount)
   }
 
-  val calculatePercentileCommand = pluginRegistry.registerCommand("dataframe/calculate_percentiles", calculatePercentilesSimple _, numberOfJobs = 7)
+  val calculatePercentileCommand = commandPluginRegistry.registerCommand("dataframe/calculate_percentiles", calculatePercentilesSimple _, numberOfJobs = 7)
 
   def calculatePercentilesSimple(percentiles: CalculatePercentiles, user: UserPrincipal, invocation: SparkInvocation): PercentileValues = {
     implicit val u = user
@@ -1059,7 +1059,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
   override def classificationMetric(arguments: ClassificationMetric[Long])(implicit user: UserPrincipal): Execution =
     commands.execute(classificationMetricCommand, arguments, user, implicitly[ExecutionContext])
 
-  val classificationMetricCommand: CommandPlugin[ClassificationMetric[Long], ClassificationMetricValue] = pluginRegistry.registerCommand("dataframe/classification_metric", classificationMetricSimple _)
+  val classificationMetricCommand: CommandPlugin[ClassificationMetric[Long], ClassificationMetricValue] = commandPluginRegistry.registerCommand("dataframe/classification_metric", classificationMetricSimple _)
 
   def classificationMetricSimple(arguments: ClassificationMetric[Long], user: UserPrincipal, invocation: SparkInvocation): ClassificationMetricValue = {
     implicit val u = user
@@ -1087,7 +1087,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
   override def confusionMatrix(arguments: ConfusionMatrix[Long])(implicit user: UserPrincipal): Execution =
     commands.execute(confusionMatrixCommand, arguments, user, implicitly[ExecutionContext])
 
-  val confusionMatrixCommand: CommandPlugin[ConfusionMatrix[Long], ConfusionMatrixValues] = pluginRegistry.registerCommand("dataframe/confusion_matrix", confusionMatrixSimple _)
+  val confusionMatrixCommand: CommandPlugin[ConfusionMatrix[Long], ConfusionMatrixValues] = commandPluginRegistry.registerCommand("dataframe/confusion_matrix", confusionMatrixSimple _)
 
   def confusionMatrixSimple(arguments: ConfusionMatrix[Long], user: UserPrincipal, invocation: SparkInvocation): ConfusionMatrixValues = {
     implicit val u = user
@@ -1110,7 +1110,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
   override def ecdf(arguments: ECDF[Long])(implicit user: UserPrincipal): Execution =
     commands.execute(ecdfCommand, arguments, user, implicitly[ExecutionContext])
 
-  val ecdfCommand = pluginRegistry.registerCommand("dataframe/ecdf", ecdfSimple _)
+  val ecdfCommand = commandPluginRegistry.registerCommand("dataframe/ecdf", ecdfSimple _)
 
   def ecdfSimple(arguments: ECDF[Long], user: UserPrincipal, invocation: SparkInvocation) = {
     implicit val u = user
@@ -1143,7 +1143,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
   override def cumulativeDist(arguments: CumulativeDist[Long])(implicit user: UserPrincipal): Execution =
     commands.execute(cumulativeDistCommand, arguments, user, implicitly[ExecutionContext])
 
-  val cumulativeDistCommand = pluginRegistry.registerCommand("dataframe/cumulative_dist", cumulativeDistSimple _)
+  val cumulativeDistCommand = commandPluginRegistry.registerCommand("dataframe/cumulative_dist", cumulativeDistSimple _)
 
   def cumulativeDistSimple(arguments: CumulativeDist[Long], user: UserPrincipal, invocation: SparkInvocation) = {
     implicit val u = user

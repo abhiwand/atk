@@ -1,7 +1,5 @@
 package com.intel.intelanalytics.engine.spark.command
 
-import com.intel.intelanalytics.engine.spark.SparkEngineConfig
-import com.intel.intelanalytics.component.Boot
 import com.intel.intelanalytics.engine.plugin.{ Invocation, FunctionCommand, CommandPlugin }
 import spray.json.JsonFormat
 import com.intel.intelanalytics.security.UserPrincipal
@@ -12,9 +10,18 @@ import com.intel.intelanalytics.shared.JsonSchemaExtractor
 /**
  * Register and store command plugin
  */
-class CommandRegistry(loader: CommandLoader) {
+class CommandPluginRegistry(loader: CommandLoader) {
 
-  var commandPlugins: Map[String, CommandPlugin[_, _]] = loader.loadFromConfig()
+  private var commandPlugins: Map[String, CommandPlugin[_, _]] = loader.loadFromConfig()
+
+  /**
+   * Get command plugin by name
+   * @param name command name
+   * @return optional value of command plugin
+   */
+  def getCommandPlugin(name: String): Option[CommandPlugin[_, _]] = {
+    commandPlugins.get(name)
+  }
 
   /**
    * Adds the given command to the registry.
