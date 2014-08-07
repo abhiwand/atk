@@ -48,6 +48,7 @@ case class ColumnMode(frame: FrameReference, dataColumn: String, weightsColumn: 
  *                     this is the number of appearances of the mode.)
  * @param totalWeight Total weight in the column. (If no weight column is specified, this is the number of entries
  *                    with finite, non-zero weight.)
+ * @param modeCount The number of modes in the data.
  */
-case class ColumnModeReturn(mode: JsValue, weightOfMode: Double, totalWeight: Double) {
+case class ColumnModeReturn(mode: JsValue, weightOfMode: Double, totalWeight: Double, modeCount: Long) {
 }

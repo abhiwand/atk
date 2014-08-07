@@ -47,7 +47,10 @@ private[spark] object ColumnStatistics extends Serializable {
       dataType.typedJson(frequencyStatistics.mode.get)
     }
 
-    ColumnModeReturn(modeJsValue, frequencyStatistics.weightOfMode, frequencyStatistics.totalWeight)
+    ColumnModeReturn(modeJsValue,
+      frequencyStatistics.weightOfMode,
+      frequencyStatistics.totalWeight,
+      frequencyStatistics.modeCount)
   }
 
   /**

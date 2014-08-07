@@ -583,8 +583,6 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     frames.updateSchema(newFrame, allColumns)
   }
 
-  // TRIB-2245
-  /*
   /**
    * Calculate the mode of the specified column.
    * @param arguments Input specification for column mode.
@@ -596,13 +594,13 @@ class SparkEngine(sparkContextManager: SparkContextManager,
   val columnModeCommand: CommandPlugin[ColumnMode, ColumnModeReturn] =
     commands.registerCommand("dataframe/column_mode", columnModeSimple)
 
-  def columnModeSimple(arguments: ColumnMode, user: UserPrincipal): ColumnModeReturn = {
+  def columnModeSimple(arguments: ColumnMode, user: UserPrincipal, invocation: SparkInvocation): ColumnModeReturn = {
 
     implicit val u = user
 
     val frameId = arguments.frame
     val frame = expectFrame(frameId)
-    val ctx = sparkContextManager.context(user).sparkContext
+    val ctx = invocation.sparkContext
     val rdd = frames.getFrameRdd(ctx, frameId.id)
     val columnIndex = frame.schema.columnIndex(arguments.dataColumn)
     val valueDataType: DataType = frame.schema.columns(columnIndex)._2
@@ -617,7 +615,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
 
     ColumnStatistics.columnMode(columnIndex, valueDataType, weightsColumnIndexOption, weightsDataTypeOption, rdd)
   }
-*/
+
   // TODO TRIB-2245
   /**
    * Calculate the median of the specified column.

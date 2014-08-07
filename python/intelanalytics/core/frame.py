@@ -765,6 +765,46 @@ class BigFrame(CommandSupport):
             raise IaError(logger)
 
     @doc_stub
+    def column_mode (self, data_column, weights_column = None):
+        """
+        Calculate a mode of a column.  A mode is a data element of maximum weight. All data elements of weight <= 0
+        are excluded from the calculation, as are all data elements whose weight is NaN or infinite.
+        If there are no data elements of finite weight > 0, no mode is returned.
+
+        The mode of a column is the first value x so that the sum of weights for all data elements y <= x is >= 1/2
+
+        For example: The mode of 1 to 100000 is 50000, the mode of 1 to 10001 is 50001
+
+        Parameters
+        ----------
+        data_column : str
+            The column whose mode is to be calculated
+
+        weights_column : str
+            Optional. The column that provides weights (frequencies) for the mode calculation.
+            Must contain numerical data. Uniform weights of 1 for all items will be used for the calculation if this
+                parameter is not provided.
+
+        Returns
+        -------
+        mode : Dict
+            Dictionary containing summary statistics in the following entries:
+                mode : Mode of the data. (Ties resolved arbitrarily.)
+                    If the sum of the weights is 0, the there is no mode.
+                weight_of_mode : Weight of the mode. If there are no data elements of finite weight > 0,
+                 the weight of the mode is 0. If no weights column is given, this is the number of appearances of the
+                 mode in the column.
+                total_weight : Sum of all weights in the weight column. This is the row count if no weights
+                 are given. If no weights column is given, this is the number of rows in the table with non-zero weight.
+                mode_count : The number of modes in the data.
+
+        Example
+        -------
+        >>> mode = frame.column_mode('interesting column')
+        """
+        pass
+
+    @doc_stub
     def column_summary_statistics(self, data_column, weights_column_name = None):
         """
         Calculate summary statistics of a column.

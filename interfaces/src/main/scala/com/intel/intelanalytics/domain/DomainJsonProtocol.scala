@@ -166,7 +166,7 @@ object DomainJsonProtocol extends IADefaultJsonProtocol {
   implicit val columnFullStatisticsReturnFormat = jsonFormat17(ColumnFullStatisticsReturn)
 
   implicit val columnModeFormat = jsonFormat3(ColumnMode)
-  implicit val columnModeReturnFormat = jsonFormat3(ColumnModeReturn)
+  implicit val columnModeReturnFormat = jsonFormat4(ColumnModeReturn)
 
   implicit val columnMedianFormat = jsonFormat2(ColumnMedian)
   implicit val columnMedianReturnFormat = jsonFormat1(ColumnMedianReturn)
