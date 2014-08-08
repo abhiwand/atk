@@ -40,7 +40,7 @@ initctlFunc() {
 verifySparkHome
 
 #change ownership log directory so logback has permissions to create application log
-chown $IAUSER:$IAUSER /var/log/intelanalytics/rest-server/application.log
+chown $IAUSER:$IAUSER /var/log/intelanalytics/rest-server
 
 # See how we were called.
 case "$1" in
