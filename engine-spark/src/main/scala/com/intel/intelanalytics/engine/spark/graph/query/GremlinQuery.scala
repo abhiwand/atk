@@ -122,15 +122,22 @@ class GremlinQuery extends CommandPlugin[QueryArgs, QueryResult] {
   def executeGremlinQuery(titanGraph: TitanGraph, gremlinScript: String,
                           bindings: Bindings,
                           graphSONMode: GraphSONMode = GraphSONMode.NORMAL): Iterable[JsValue] = {
-    val results = Try(gremlinExecutor.eval(gremlinScript, bindings))
-      .getOrElse(throw new RuntimeException(s"Could not execute Gremlin query: ${gremlinScript}"))
+    val results = Try(gremlinExecutor.eval(gremlinScript, bindings)).getOrElse({
+      throw new RuntimeException(s"Invalid syntax for Gremlin query: ${gremlinScript}")
+    })
 
     val resultIterator = results match {
       case x: java.lang.Iterable[_] => x.toIterable
       case x => List(x).toIterable
     }
-    resultIterator.map(GremlinUtils.serializeGremlinToJson(titanGraph, _, graphSONMode))
 
+    val jsResultsIterator = Try({
+      resultIterator.filter(x => x != null).map(GremlinUtils.serializeGremlinToJson(titanGraph, _, graphSONMode))
+    }).getOrElse({
+      throw new RuntimeException(s"Invalid syntax for Gremlin query: ${gremlinScript}")
+    })
+
+    jsResultsIterator
   }
 
   /**
@@ -143,9 +150,7 @@ class GremlinQuery extends CommandPlugin[QueryArgs, QueryResult] {
   private def getTitanGraph(graphName: String, titanConfiguration: SerializableBaseConfiguration): TitanGraph = {
     val titanConnector = new TitanGraphConnector(titanConfiguration)
 
-    val titanGraph = titanGraphs.get(graphName).getOrElse({
-      connectToTitanGraph(graphName, titanConnector)
-    })
+    val titanGraph = titanGraphs.getOrElse(graphName, connectToTitanGraph(graphName, titanConnector))
 
     titanGraph
   }
