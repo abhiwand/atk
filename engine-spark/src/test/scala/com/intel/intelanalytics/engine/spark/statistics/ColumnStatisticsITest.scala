@@ -38,14 +38,14 @@ class ColumnStatisticsITest extends TestingSparkContextFlatSpec with Matchers {
   "mode with no net weight" should "return none as json" in new ColumnStatisticsTest() {
     val testMode = ColumnStatistics.columnMode(0, DataTypes.string, Some(7), Some(DataTypes.int32), None, rowRDD)
 
-    testMode.mode shouldBe Set.empty[String].toJson
+    testMode.modes shouldBe Set.empty[String].toJson
   }
 
   "weighted mode" should "work" in new ColumnStatisticsTest() {
 
     val testMode = ColumnStatistics.columnMode(0, DataTypes.string, Some(3), Some(DataTypes.int32), None, rowRDD)
 
-    testMode.mode shouldBe Set("E").toJson
+    testMode.modes shouldBe Set("E").toJson
   }
 
   "unweighted full statistics" should "work" in new ColumnStatisticsTest() {

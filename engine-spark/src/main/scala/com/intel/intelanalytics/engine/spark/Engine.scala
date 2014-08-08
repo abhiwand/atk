@@ -613,7 +613,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
       (Some(weightsColumnIndex), Some(frame.schema.columns(weightsColumnIndex)._2))
     }
 
-    val modeCountOption = arguments.modeCount
+    val modeCountOption = arguments.maxNumberOfModesReturned
 
     ColumnStatistics.columnMode(columnIndex,
       valueDataType,
