@@ -499,7 +499,7 @@ class BigGraph(CommandSupport):
         """
         # TODO - Review Docstring
         try:
-            self._backend.rename_graph(self,value)
+            self.rename_graph(value)
         except:
             raise IaError(logger)
 
