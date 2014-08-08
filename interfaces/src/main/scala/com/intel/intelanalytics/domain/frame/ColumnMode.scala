@@ -42,8 +42,8 @@ case class ColumnMode(frame: FrameReference, dataColumn: String, weightsColumn: 
  * If any element receives a weight that is NaN, infinite or <= 0, that element is thrown
  * out of the calculation.
  *
- * @param mode A data value of maximum weight. Ties are resolved arbitrarily.
- *             None is returned when the sum of the weights is 0.
+ * @param mode A mode is a data element of maximum net weight. A set of modes is returned.
+ *             The empty set is returned when the sum of the weights is 0.
  * @param weightOfMode Weight of the mode. (If no weight column is specified,
  *                     this is the number of appearances of the mode.)
  * @param totalWeight Total weight in the column. (If no weight column is specified, this is the number of entries
