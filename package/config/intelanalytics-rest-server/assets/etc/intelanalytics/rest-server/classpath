@@ -1,0 +1,9 @@
+#START REQUIRED
+#this includes our config in the classpath
+/etc/intelanalytics/rest-server
+#the launcher jar that boots the server
+/usr/lib/intelanalytics/rest-server/launcher.jar
+#END REQUIRED
+
+/etc/hbase/conf
+/etc/hadoop/conf

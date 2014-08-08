@@ -31,54 +31,6 @@
                 <groupId>org.scoverage</groupId>
                 <artifactId>maven-scoverage-plugin</artifactId>
             </plugin>
-            <plugin>
-                <inherited>true</inherited>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-shade-plugin</artifactId>
-
-                <executions>
-                    <execution>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>shade</goal>
-                        </goals>
-                        <configuration>
-                            <artifactSet>
-                                <includes>
-                                    <include>org.scala-lang:scala-reflect</include>
-                                    <include>io.spray:*</include>
-                                    <!--<include>io.spray:spray-routing</include>
-                                    <include>io.spray:spray-json_${scala.short.version}</include>
-                                    <include>io.spray:spray-testkit</include>-->
-                                    <include>com.typesafe.akka:*</include>
-                                    <!--<include>com.typesafe.akka:akka-slf4j_${scala.short.version}</include>
-                                    <include>com.typesafe.akka:akka-testkit_${scala.short.version}</include>
-                                    <include>com.typesafe.slick:slick_${scala.short.version}</include>-->
-                                    <include>com.typesafe.*:*</include>
-                                    <include>com.typesafe:*</include>
-                                    <include>com.h2database:h2</include>
-                                    <include>ch.qos.*:*</include>
-                                    <include>org.slf4j:slf4j-api</include>
-                                    <include>com.intel*:*</include>
-                                    <include>org.jvnet.*:*</include>
-                                    <!--<include>com.intel.intelanalytics:interfaces</include>
-                                    <include>com.intel:launcher</include>
-                                    <include>com.intel:shared</include>-->
-                                    <include>com.google.*:*</include>
-                                    <include>com.chuusai:*</include>
-                                    <include>com.chuusai:*</include>
-                                    <include>org.apache.hadoop:*</include>
-                                    <include>com.github.tototoshi:*</include>
-                                    <include>org.joda:*</include>
-                                    <include>joda-time:*</include>
-                                    <include>postgresql:*</include>
-                                    <include>commons-lang:*</include>
-                                </includes>
-                            </artifactSet>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
         </plugins>
     </build>
 

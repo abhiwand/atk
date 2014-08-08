@@ -39,7 +39,7 @@ import scala.concurrent.ExecutionContext
  *           the user
  * @tparam Return the type of the data that this plugin will return when invoked.
  */
-sealed abstract class OperationPlugin[Argument <: Product: ClassManifest, Return <: Product: ClassManifest] extends ((Invocation, Any) => Return)
+sealed abstract class OperationPlugin[Argument <: Product: ClassManifest, Return] extends ((Invocation, Any) => Return)
     with Plugin
     with ClassLoaderAware {
 
@@ -98,11 +98,27 @@ abstract class CommandPlugin[Argument <: Product: ClassManifest, Return <: Produ
    * Convert the given object to a JsObject
    */
   def serializeReturn(returnValue: Return): JsObject
+
+  /**
+   * Number of jobs needs to be known to give a single progress bar
+   * @param arguments command arguments: used if a command can produce variable number of jobs
+   * @return number of jobs in this command
+   */
+  def numberOfJobs(arguments: Argument): Int = 1
 }
 
 /**
  * Base trait for query plugins
  */
-//trait QueryPlugin[Argument, Return] extends OperationPlugin[Argument, Return] {
+abstract class QueryPlugin[Argument <: Product: ClassManifest] extends OperationPlugin[Argument, Any] {
+  /**
+   * Convert the given JsObject to an instance of the Argument type
+   */
+  def parseArguments(arguments: JsObject): Argument
 
-//}
+  /**
+   * Convert the given argument to a JsObject
+   */
+  def serializeArguments(arguments: Argument): JsObject
+
+}

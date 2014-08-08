@@ -113,6 +113,10 @@ public class TitanVertexOutputFormatPropertyGraph4LDA<I extends LongWritable,
          * Enable vector value
          */
         private String enableVectorValue = "true";
+        /**
+         * regular expression of the deliminators for a property list
+         */
+        private String regexp = "[\\s,\\t]+";     //.split("/,?\s+/");
 
 
         @Override
@@ -122,7 +126,7 @@ public class TitanVertexOutputFormatPropertyGraph4LDA<I extends LongWritable,
             this.graph = TitanGraphWriter.open(context);
             LOG.info(OPENED_GRAPH);
             enableVectorValue = VECTOR_VALUE.get(context.getConfiguration());
-            vertexValuePropertyKeyList = OUTPUT_VERTEX_PROPERTY_KEY_LIST.get(context.getConfiguration()).split(",");
+            vertexValuePropertyKeyList = OUTPUT_VERTEX_PROPERTY_KEY_LIST.get(context.getConfiguration()).split(regexp);
         }
 
 

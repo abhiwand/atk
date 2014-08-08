@@ -9,7 +9,7 @@ if [ "$DIR/stage" != "" ]; then
 fi
 
 
-CONFDIR=$DIR/../conf
+CONFDIR=$DIR/../api-server/src/main/resources:$DIR/../engine/src/main/resources:$DIR/../conf/application.conf
 
 if [[ -f $DIR/../launcher/target/launcher.jar ]]; then
 	LAUNCHER=$DIR/../launcher/target/launcher.jar
@@ -27,7 +27,10 @@ else
 fi
 
 pushd $DIR/..
-pwd
+pwd                             i
+
+export HOSTNAME=`hostname`
+
 
 echo java $@ -XX:MaxPermSize=256m -cp "$CONF:$LAUNCHER" com.intel.intelanalytics.component.Boot api-server com.intel.intelanalytics.service.ApiServiceApplication
 java $@ -XX:MaxPermSize=256m -cp "$CONF:$LAUNCHER" com.intel.intelanalytics.component.Boot api-server com.intel.intelanalytics.service.ApiServiceApplication

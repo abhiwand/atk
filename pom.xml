@@ -111,12 +111,12 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
 
         <dep.aurelius.version>0.4.5-SNAPSHOT</dep.aurelius.version>
         <dep.gremlin.version>2.4.0</dep.gremlin.version>
-        <dep.hbase.version>0.96.1.1-cdh5.0.2</dep.hbase.version>
-        <dep.hadoop2.version>2.3.0-cdh5.0.2</dep.hadoop2.version>
+        <dep.hbase.version>0.96.1.1-cdh5.0.3</dep.hbase.version>
+        <dep.hadoop2.version>2.3.0-cdh5.0.3</dep.hadoop2.version>
 
         <dep.mahout.version>0.9</dep.mahout.version>
 
-        <dep.spark.version>0.9.1</dep.spark.version>
+        <dep.spark.version>0.9.0-cdh5.0.3</dep.spark.version>
 
         <dep.typesafe-config.version>1.2.1</dep.typesafe-config.version>
         <!--START GAO MAVEN -->
@@ -180,12 +180,14 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
             <activation>
                 <activeByDefault>true</activeByDefault>
                 <property>
-                    <name>env.build_number</name>
+
+                    <name>!NEVERSETME</name>
                 </property>
             </activation>
             <modules>
                 <!--<module>ititan</module>-->
                 <module>event</module>
+                <!--module>python</module-->
                 <module>ispark-deps</module>
                 <module>testutils</module>
                 <module>graphbuilder-3</module><!-- scoverage -->
@@ -202,8 +204,19 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 <module>igiraph/giraph-titan</module>
                 <module>igiraph</module>
                 <module>imllib</module>
-				<module>conf</module>
                 <module>package</module>
+            </modules>
+        </profile>
+
+        <profile>
+            <id>python-unittests</id>
+            <activation>
+                <property>
+                    <name>!skipTests</name>
+                </property>
+            </activation>
+            <modules>
+                <module>python</module>
             </modules>
         </profile>
 
@@ -212,7 +225,7 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
             <activation>
                 <activeByDefault>true</activeByDefault>
                 <property>
-                    <name>env.BUILD_NUMBER</name>
+                    <name>!NEVERSETME</name>
                 </property>
             </activation>
             <build>
@@ -275,7 +288,7 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
             <activation>
                 <activeByDefault>true</activeByDefault>
                 <property>
-                    <name>env.BUILD_NUMBER</name>
+                    <name>!NEVERSETME</name>
                 </property>
             </activation>
             <build>
@@ -521,6 +534,7 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                                 <artifactSet>
                                     <excludes>
                                         <exclude>org.apache.maven:*</exclude>
+                                        <exclude>org.apache.hadoop:hadoop-core:jar:*mr1*</exclude>
                                     </excludes>
                                 </artifactSet>
                                 <filters>
@@ -654,6 +668,14 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 </configuration>
             </plugin>
         </plugins>
+        <testResources>
+            <testResource>
+                <directory>src/main/resources</directory>
+                <includes>
+                    <include>reference.conf</include>
+                </includes>
+            </testResource>
+        </testResources>
     </build>
 
     <dependencyManagement>
@@ -688,7 +710,7 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 <groupId>com.intel.ia</groupId>
                 <artifactId>interfaces</artifactId>
                 <version>${project.version}</version>
-               <!-- <scope>provided</scope> -->
+                <!-- <scope>provided</scope> -->
             </dependency>
             <dependency>
                 <groupId>com.intel.ia</groupId>
@@ -776,6 +798,11 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
             </dependency>
             <dependency>
                 <groupId>com.thinkaurelius.titan</groupId>
+                <artifactId>titan-es</artifactId>
+                <version>${dep.aurelius.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.thinkaurelius.titan</groupId>
                 <artifactId>titan-hbase</artifactId>
                 <version>${dep.aurelius.version}</version>
             </dependency>
@@ -838,11 +865,15 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 <artifactId>hadoop-mapreduce-client-app</artifactId>
                 <version>${dep.hadoop2.version}</version>
             </dependency>
-            <dependency>
+            <!--<dependency>
+                don't use hadoop-core you will break everything. We use yarn you shouldn't need the
+                mr1 hadoop-core jar.
+                use one of the hadoop-mapreduce variants
                 <groupId>org.apache.hadoop</groupId>
                 <artifactId>hadoop-core</artifactId>
-                <version>2.3.0-mr1-cdh5.0.2</version>
-            </dependency>
+                <version>2.3.0-mr1-cdh5.0.3</version>
+                <scope>provided</scope>
+            </dependency>-->
             <dependency>
                 <groupId>org.apache.hadoop</groupId>
                 <artifactId>hadoop-mapreduce-client-hs</artifactId>
@@ -910,6 +941,12 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 <groupId>org.apache.mahout</groupId>
                 <artifactId>mahout-core</artifactId>
                 <version>${dep.mahout.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.apache.hadoop</groupId>
+                        <artifactId>hadoop-core</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.apache.mahout</groupId>
@@ -921,6 +958,12 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 <groupId>org.apache.giraph</groupId>
                 <artifactId>giraph-core</artifactId>
                 <version>${dep.giraph-core.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.apache.hadoop</groupId>
+                        <artifactId>hadoop-core</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.apache.giraph</groupId>
@@ -932,6 +975,12 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 <groupId>org.apache.giraph</groupId>
                 <artifactId>giraph-hbase</artifactId>
                 <version>${dep.giraph-hbase.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.apache.hadoop</groupId>
+                        <artifactId>hadoop-core</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.apache.giraph</groupId>
@@ -949,11 +998,23 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 <groupId>org.apache.hbase</groupId>
                 <artifactId>hbase-common</artifactId>
                 <version>${dep.hbase.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.apache.hadoop</groupId>
+                        <artifactId>hadoop-core</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.apache.hbase</groupId>
                 <artifactId>hbase-server</artifactId>
                 <version>${dep.hbase.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.apache.hadoop</groupId>
+                        <artifactId>hadoop-core</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.apache.hbase</groupId>

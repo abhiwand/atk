@@ -99,19 +99,4 @@ case class Edge(var tailPhysicalId: Any, var headPhysicalId: Any, tailVertexGbId
     } yield property.value.toString
     result.getOrElse("")
   }
-
-  /**
-   * @return head vertex from this edge
-   */
-  def getHeadVertexGbId(): Property = {
-    this.headVertexGbId
-  }
-
-  /**
-   * @return tail vertex from this edge
-   */
-  def getTailVertexGbId(): Property = {
-    this.tailVertexGbId
-  }
-
 }

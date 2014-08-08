@@ -21,7 +21,7 @@ class SimpleDataSource(object):
                 if key not in names:
                     raise ValueError("names in schema do not all match the names in the columns provided")
 
-
+"""
     def to_pandas_dataframe(self):
         import numpy as np
         from pandas import DataFrame
@@ -31,7 +31,7 @@ class SimpleDataSource(object):
         else:  # columns
             df = DataFrame(self.columns)
         return df
-
+"""
 def _schema_as_numpy_dtype(schema):
     return [(c, _get_numpy_dtype_from_core_type(t)) for c, t in schema.items()]
 
