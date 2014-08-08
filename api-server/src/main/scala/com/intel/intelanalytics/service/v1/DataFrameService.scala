@@ -154,7 +154,9 @@ class DataFrameService(commonDirectives: CommonDirectives, engine: Engine) exten
                           complete(QueryDecorator.decoratePage(uri.toString, List(Rel.self(uri.toString)),
                             tempQuery, 1, strings))
                         }
-                        case Failure(ex) => throw ex
+                        case Failure(ex) => ctx => {
+                          ctx.complete(400, ex.getMessage)
+                        }
                       }
                     }
                     else {
