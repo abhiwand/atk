@@ -613,7 +613,14 @@ class SparkEngine(sparkContextManager: SparkContextManager,
       (Some(weightsColumnIndex), Some(frame.schema.columns(weightsColumnIndex)._2))
     }
 
-    ColumnStatistics.columnMode(columnIndex, valueDataType, weightsColumnIndexOption, weightsDataTypeOption, rdd)
+    val modeCountOption = arguments.modeCount
+
+    ColumnStatistics.columnMode(columnIndex,
+      valueDataType,
+      weightsColumnIndexOption,
+      weightsDataTypeOption,
+      modeCountOption,
+      rdd)
   }
 
   // TODO TRIB-2245

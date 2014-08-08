@@ -14,92 +14,117 @@ class FrequencyStatisticsITest extends TestingSparkContextFlatSpec with Matchers
 
     val epsilon = 0.000000001
 
-    val integers = (1 to 7) :+ 3
+    val integers = (1 to 6) :+ 1 :+ 7 :+ 3
 
-    val strings = List("a", "b", "c", "d", "e", "f", "g", "c")
+    val strings = List("a", "b", "c", "d", "e", "f", "a", "g", "c")
 
-    val integerFrequencies = List(1, 1, 2, 1, 5, 2, 3, 3).map(_.toDouble)
+    val integerFrequencies = List(1, 1, 5, 1, 7, 2, 2, 3, 2).map(_.toDouble)
 
-    val expectedModesStrings = Set("c", "e")
-    val expectedModesInts = Set(3, 5)
+    val modeFrequency = 7.toDouble
+    val totalFrequencies = integerFrequencies.reduce(_ + _)
 
-    val expectedModeCount = 2
-    val expectedModeWeight = 5.0d
+    val fractionalFrequencies: List[Double] = integerFrequencies.map(x => x / totalFrequencies)
 
-    val netFrequencies = integerFrequencies.reduce(_ + _)
-    val fractionalFrequencies: List[Double] = integerFrequencies.map(x => x / netFrequencies)
+    val modeSetInts = Set(3, 5)
+    val modeSetStrings = Set("c", "e")
+
+    val firstModeInts = Set(3)
+    val firstModeStrings = Set("c")
+    val maxReturnCount = 10
+
   }
 
-  "empty data" should "produce mode == None, with weights and counts equal to 0" in new FrequencyStatisticsTest {
+  "empty data" should "produce mode == None and weights equal to 0" in new FrequencyStatisticsTest {
 
     val dataList: List[Double] = List()
     val weightList: List[Double] = List()
 
     val dataWeightPairs = sparkContext.parallelize(dataList.zip(weightList))
 
-    val frequencyStats = new FrequencyStatistics[Double](dataWeightPairs)
+    val frequencyStats = new FrequencyStatistics[Double](dataWeightPairs, maxReturnCount)
 
-    val testMode = frequencyStats.modeSet
+    val testModeSet = frequencyStats.modeSet
     val testModeWeight = frequencyStats.weightOfMode
     val testTotalWeight = frequencyStats.totalWeight
-    val testModeCount = frequencyStats.modeCount
 
-    testMode shouldBe None
+    testModeSet should be('empty)
     testModeWeight shouldBe 0
     testTotalWeight shouldBe 0
-    testModeCount shouldBe 0
   }
 
   "integer data with integer frequencies" should "work" in new FrequencyStatisticsTest {
 
     val dataWeightPairs = sparkContext.parallelize(integers.zip(integerFrequencies))
 
-    val frequencyStats = new FrequencyStatistics(dataWeightPairs)
+    val frequencyStats = new FrequencyStatistics(dataWeightPairs, maxReturnCount)
 
-    val testMode = frequencyStats.modeSet.get
+    val testModeSet = frequencyStats.modeSet
     val testModeWeight = frequencyStats.weightOfMode
     val testTotalWeight = frequencyStats.totalWeight
-    val testModeCount = frequencyStats.modeCount
 
-    expectedModesInts should contain(testMode)
-    testModeWeight shouldBe expectedModeWeight
-    testTotalWeight shouldBe netFrequencies
-    testModeCount shouldBe expectedModeCount
-
+    testModeSet shouldBe modeSetInts
+    testModeWeight shouldBe modeFrequency
+    testTotalWeight shouldBe totalFrequencies
   }
 
   "string data with integer frequencies" should "work" in new FrequencyStatisticsTest {
 
     val dataWeightPairs = sparkContext.parallelize(strings.zip(integerFrequencies))
 
-    val frequencyStats = new FrequencyStatistics(dataWeightPairs)
+    val frequencyStats = new FrequencyStatistics(dataWeightPairs, maxReturnCount)
 
-    val testMode = frequencyStats.modeSet.get
+    val testModeSet = frequencyStats.modeSet
     val testModeWeight = frequencyStats.weightOfMode
     val testTotalWeight = frequencyStats.totalWeight
-    val testModeCount = frequencyStats.modeCount
 
-    expectedModesStrings should contain(testMode)
-    testModeWeight shouldBe expectedModeWeight
-    testTotalWeight shouldBe netFrequencies
-    testModeCount shouldBe expectedModeCount
+    testModeSet shouldBe modeSetStrings
+    testModeWeight shouldBe modeFrequency
+    testTotalWeight shouldBe totalFrequencies
+  }
+
+  "integer data with integer frequencies" should "get least mode when asking for just one" in new FrequencyStatisticsTest {
+
+    val dataWeightPairs = sparkContext.parallelize(integers.zip(integerFrequencies))
+
+    val frequencyStats = new FrequencyStatistics(dataWeightPairs, 1)
+
+    val testModeSet = frequencyStats.modeSet
+    val testModeWeight = frequencyStats.weightOfMode
+    val testTotalWeight = frequencyStats.totalWeight
+
+    testModeSet shouldBe firstModeInts
+    testModeWeight shouldBe modeFrequency
+    testTotalWeight shouldBe totalFrequencies
+  }
+
+  "string data with integer frequencies" should "get least mode when asking for just one" in new FrequencyStatisticsTest {
+
+    val dataWeightPairs = sparkContext.parallelize(strings.zip(integerFrequencies))
+
+    val frequencyStats = new FrequencyStatistics(dataWeightPairs, 1)
+
+    val testModeSet = frequencyStats.modeSet
+    val testModeWeight = frequencyStats.weightOfMode
+    val testTotalWeight = frequencyStats.totalWeight
+
+    testModeSet shouldBe firstModeStrings
+    testModeWeight shouldBe modeFrequency
+    testTotalWeight shouldBe totalFrequencies
   }
 
   "integer data with fractional weights" should "work" in new FrequencyStatisticsTest {
 
     val dataWeightPairs = sparkContext.parallelize(integers.zip(fractionalFrequencies))
 
-    val frequencyStats = new FrequencyStatistics(dataWeightPairs)
+    val frequencyStats = new FrequencyStatistics(dataWeightPairs, maxReturnCount)
 
-    val testMode = frequencyStats.modeSet.get
+    val testModeSet = frequencyStats.modeSet
     val testModeWeight = frequencyStats.weightOfMode
     val testTotalWeight = frequencyStats.totalWeight
-    val testModeCount = frequencyStats.modeCount
 
-    expectedModesInts should contain(testMode)
-    Math.abs(testModeWeight - (expectedModeWeight / netFrequencies.toDouble)) should be < epsilon
+    testModeSet shouldBe modeSetInts
+    Math.abs(testModeWeight - (modeFrequency / totalFrequencies)) should be < epsilon
     Math.abs(testTotalWeight - 1.toDouble) should be < epsilon
-    testModeCount shouldBe expectedModeCount
 
   }
 
@@ -107,17 +132,15 @@ class FrequencyStatisticsITest extends TestingSparkContextFlatSpec with Matchers
 
     val dataWeightPairs = sparkContext.parallelize(strings.zip(fractionalFrequencies))
 
-    val frequencyStats = new FrequencyStatistics(dataWeightPairs)
+    val frequencyStats = new FrequencyStatistics(dataWeightPairs, maxReturnCount)
 
-    val testMode = frequencyStats.modeSet.get
+    val testModeSet = frequencyStats.modeSet
     val testModeWeight = frequencyStats.weightOfMode
     val testTotalWeight = frequencyStats.totalWeight
-    val testModeCount = frequencyStats.modeCount
 
-    expectedModesStrings should contain(testMode)
-    Math.abs(testModeWeight - (expectedModeWeight / netFrequencies)) should be < epsilon
+    testModeSet shouldBe modeSetStrings
+    Math.abs(testModeWeight - (modeFrequency / totalFrequencies)) should be < epsilon
     Math.abs(testTotalWeight - 1.toDouble) should be < epsilon
-    testModeCount shouldBe expectedModeCount
   }
 
   "items with negative weights" should "not affect mode or total weight" in new FrequencyStatisticsTest {
@@ -125,16 +148,14 @@ class FrequencyStatisticsITest extends TestingSparkContextFlatSpec with Matchers
     val dataWeightPairs: RDD[(String, Double)] =
       sparkContext.parallelize((strings :+ "haha").zip(fractionalFrequencies :+ ((-10.0))))
 
-    val frequencyStats = new FrequencyStatistics[String](dataWeightPairs)
+    val frequencyStats = new FrequencyStatistics[String](dataWeightPairs, maxReturnCount)
 
-    val testMode = frequencyStats.modeSet.get
+    val testMode = frequencyStats.modeSet
     val testModeWeight = frequencyStats.weightOfMode
     val testTotalWeight = frequencyStats.totalWeight
-    val testModeCount = frequencyStats.modeCount
 
-    expectedModesStrings should contain(testMode)
-    Math.abs(testModeWeight - (expectedModeWeight / netFrequencies)) should be < epsilon
+    testMode shouldBe modeSetStrings
+    Math.abs(testModeWeight - (modeFrequency / totalFrequencies)) should be < epsilon
     Math.abs(testTotalWeight - 1.toDouble) should be < epsilon
-    testModeCount shouldBe expectedModeCount
   }
 }

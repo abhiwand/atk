@@ -11,15 +11,17 @@ import scala.collection.immutable.TreeMap
  * All data items with weights <= 0 are excluded from these calculations.
  *
  * @param dataWeightPairs RDD containing pairs (data, weight) where the each "data" entry is unique.
+ * @param k Maximum number of items returned.
  * @tparam T Value type.
  */
-class FrequencyStatistics[T: ClassManifest](dataWeightPairs: RDD[(T, Double)]) extends Serializable {
+class FrequencyStatistics[T: ClassManifest](dataWeightPairs: RDD[(T, Double)], k: Int)
+    extends Serializable {
 
   /**
    * Set of at most k modes. A mode is an item with maximum weight. If there is no item with positive weight,
    * the returned set is empty.
    */
-  lazy val modeSet: Set[T] = frequencyStatistics.mode
+  lazy val modeSet: Set[T] = frequencyStatistics.modes.toSet[T]
 
   /**
    * The weight of a mode of the input. It is either strictly positive, or,
@@ -37,12 +39,12 @@ class FrequencyStatistics[T: ClassManifest](dataWeightPairs: RDD[(T, Double)]) e
    */
   lazy val totalWeight: Double = frequencyStatistics.totalWeight
 
-  private lazy val frequencyStatistics: FrequencyStatsCounter[T] = generateMode()
+  private lazy val frequencyStatistics: FrequencyStatsCounter[T] = generateMode(k)
 
-  private def generateMode(): FrequencyStatsCounter[T] = {
+  private def generateMode(k: Int): FrequencyStatsCounter[T] = {
 
-    val acumulatorParam = new FrequencyStatsAccumulatorParam[T]()
-    val initialValue = FrequencyStatsCounter[T](Set.empty[T], 0, 0, 0)
+    val acumulatorParam = new FrequencyStatsAccumulatorParam[T](k)
+    val initialValue = FrequencyStatsCounter[T](List.empty[T], 0, 0, 0)
 
     val accumulator =
       dataWeightPairs.sparkContext.accumulator[FrequencyStatsCounter[T]](initialValue)(acumulatorParam)
@@ -56,10 +58,10 @@ class FrequencyStatistics[T: ClassManifest](dataWeightPairs: RDD[(T, Double)]) e
     uniqueValuesPositiveWeights.foreach(
       {
         case (value, weightAtValue) =>
-          accumulator.add(FrequencyStatsCounter(Set(value), weightAtValue, weightAtValue, 1))
+          accumulator.add(FrequencyStatsCounter(List(value), weightAtValue, weightAtValue, 1))
       })
 
-    FrequencyStatsCounter[T](accumulator.value.modeSet,
+    FrequencyStatsCounter[T](accumulator.value.modes,
       accumulator.value.weightOfMode,
       accumulator.value.totalWeight,
       accumulator.value.modeCount)
@@ -69,6 +71,7 @@ class FrequencyStatistics[T: ClassManifest](dataWeightPairs: RDD[(T, Double)]) e
   private def aggregateWeights(data: T, dataWeightPairs: Seq[(T, Double)]): (T, Double) = {
     (data, dataWeightPairs.map({ case (data, weight) => weight }).reduce(_ + _))
   }
+
 }
 
 /*
@@ -78,16 +81,18 @@ class FrequencyStatistics[T: ClassManifest](dataWeightPairs: RDD[(T, Double)]) e
  * @param totalWeight Sum of the weights of all values seen so far.
  * @tparam T Type of the input data. (In particular, the type of the mode.)
  */
-private case class FrequencyStatsCounter[T](modeSet: Set[T], weightOfMode: Double, totalWeight: Double, modeCount: Long)
+private case class FrequencyStatsCounter[T](modes: List[T], weightOfMode: Double, totalWeight: Double, modeCount: Long)
   extends Serializable
 
 /*
  * Configures the spark accumulator for gathering frequency statistics.
  * @tparam T The type of the input data.
  */
-private class FrequencyStatsAccumulatorParam[T] extends AccumulatorParam[FrequencyStatsCounter[T]] with Serializable {
+private class FrequencyStatsAccumulatorParam[T](k: Int) extends AccumulatorParam[FrequencyStatsCounter[T]] with Serializable {
 
-  override def zero(initialValue: FrequencyStatsCounter[T]) = FrequencyStatsCounter(Set.empty[T], 0, 0, 0)
+  private val ordering = new canonicalOrdering[T]
+
+  override def zero(initialValue: FrequencyStatsCounter[T]) = FrequencyStatsCounter(List.empty[T], 0, 0, 0)
 
   // to get (more) reproducible results, in the case that two modes have the same weight, we opt for the mode with the
   // lesser hashcode...
@@ -97,27 +102,27 @@ private class FrequencyStatsAccumulatorParam[T] extends AccumulatorParam[Frequen
   // vastly multimodal data
 
   override def addInPlace(stats1: FrequencyStatsCounter[T], stats2: FrequencyStatsCounter[T]): FrequencyStatsCounter[T] = {
-    if (stats1.mode.isEmpty) {
+    if (stats1.modes.isEmpty) {
       stats2
     }
-    else if (stats2.mode.isEmpty) {
+    else if (stats2.modes.isEmpty) {
       stats1
     }
     else {
       if (stats1.weightOfMode > stats2.weightOfMode) {
-        FrequencyStatsCounter(stats1.mode, stats1.weightOfMode,
+        FrequencyStatsCounter(stats1.modes, stats1.weightOfMode,
           stats1.totalWeight + stats2.totalWeight,
           stats1.modeCount)
       }
       else if (stats1.weightOfMode < stats2.weightOfMode) {
-        FrequencyStatsCounter(stats2.mode,
+        FrequencyStatsCounter(stats2.modes,
           stats2.weightOfMode,
           stats1.totalWeight + stats2.totalWeight,
           stats2.modeCount)
       }
       else {
-        val kLeastModes = getFirstKOfTwoKSets()
-        FrequencyStatsCounter(stats1.mode,
+        val kLeastModes = merge(stats1.modes, stats2.modes, k)(ordering)
+        FrequencyStatsCounter(kLeastModes,
           stats1.weightOfMode,
           stats1.totalWeight + stats2.totalWeight,
           stats1.modeCount + stats2.modeCount)
@@ -125,20 +130,44 @@ private class FrequencyStatsAccumulatorParam[T] extends AccumulatorParam[Frequen
     }
   }
 
-  def getFirstKOfTwoKSets[K, V: Ordering](inputIterator: Iterator[(K, V)], k: Int): Iterator[(K, V)] = {
-
-    val ordering = implicitly[Ordering[V]]
-
-    var treeMap = new TreeMap[V, K]()(ordering)
-
-    inputIterator.foreach({
-      case (key, value) =>
-        treeMap += (value -> key)
-        if (treeMap.size > k) treeMap = treeMap.dropRight(1)
-    })
-
-    val sortedK = for ((value, key) <- treeMap.toSeq) yield (key, value)
-    sortedK.toIterator
+  private def merge(list1: List[T], list2: List[T], k: Int)(implicit order: Ordering[T]): List[T] = {
+    if (k <= 0) {
+      List.empty[T]
+    }
+    else if (list1.isEmpty) {
+      list2.take(k)
+    }
+    else if (list2.isEmpty) {
+      list1.take(k)
+    }
+    else if (order.lt(list1.head, list2.head)) {
+      list1.head :: merge(list1.drop(1), list2, k - 1)
+    }
+    else {
+      list2.head :: merge(list1, list2.drop(1), k - 1)
+    }
   }
 
+  private class canonicalOrdering[T] extends Ordering[T] {
+    def compare(a: T, b: T) = {
+      if (a.isInstanceOf[Int]) {
+        a.asInstanceOf[Int].compareTo(b.asInstanceOf[Int])
+      }
+      else if (a.isInstanceOf[Long]) {
+        a.asInstanceOf[Long].compareTo(b.asInstanceOf[Long])
+      }
+      else if (a.isInstanceOf[Float]) {
+        a.asInstanceOf[Float].compareTo(b.asInstanceOf[Float])
+      }
+      else if (a.isInstanceOf[Double]) {
+        a.asInstanceOf[Double].compareTo(b.asInstanceOf[Double])
+      }
+      else if (a.isInstanceOf[String]) {
+        a.asInstanceOf[String].compareTo(b.asInstanceOf[String])
+      }
+      else {
+        throw new IllegalArgumentException("Attempt to get frequency statistics for unsupported datatypes.")
+      }
+    }
+  }
 }

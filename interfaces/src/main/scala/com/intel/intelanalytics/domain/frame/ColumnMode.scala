@@ -29,7 +29,10 @@ import spray.json.JsValue
  * Command for calculating the mode of a (possibly weighted) column.
  * @param frame Identifier for the input dataframe.
  */
-case class ColumnMode(frame: FrameReference, dataColumn: String, weightsColumn: Option[String]) {
+case class ColumnMode(frame: FrameReference,
+                      dataColumn: String,
+                      weightsColumn: Option[String],
+                      modeCount: Option[Int]) {
 
   require(frame != null, "frame is required")
   require(dataColumn != null, "data column is required")
