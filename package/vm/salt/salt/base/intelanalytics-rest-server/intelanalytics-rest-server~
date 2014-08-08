@@ -1,0 +1,6 @@
+#intelanalytics-rest-server env file
+#Set all your environment variables needed for the rest server here
+
+export SPARK_HOME="/opt/cloudera/parcels/CDH/lib/spark"
+export IA_JVM_OPT="-XX:MaxPermSize=256m"
+export EXTRA_CONF=`hbase classpath`

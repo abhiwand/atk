@@ -23,6 +23,7 @@ object GremlinUtils {
     import com.intel.intelanalytics.engine.spark.graph.query.GremlinJsonProtocol._
     implicit val graphSONFormat = new GraphSONFormat(graph)
     val json = obj match {
+      case null => JsNull
       case e: Element => e.toJson // Needed to identify correct implicit for Blueprint's vertices and edges
       case x => x.toJson
     }
