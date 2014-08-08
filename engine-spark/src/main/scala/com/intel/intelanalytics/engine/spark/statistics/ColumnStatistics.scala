@@ -33,23 +33,21 @@ private[spark] object ColumnStatistics extends Serializable {
                  dataType: DataType,
                  weightsColumnIndexOption: Option[Int],
                  weightsTypeOption: Option[DataType],
+                 modeCountOption: Option[Int],
                  rowRDD: RDD[Row]): ColumnModeReturn = {
 
     val dataWeightPairs: RDD[(Any, Double)] =
       getDataWeightPairs(dataColumnIndex, weightsColumnIndexOption, weightsTypeOption, rowRDD)
 
-    val frequencyStatistics = new FrequencyStatistics(dataWeightPairs)
+    val modeCount = modeCountOption.getOrElse(1)
 
-    val modeJsValue: JsValue = frequencyStatistics.modeSet.map(x => x.asInstanceOf[JsWritable]).toJson
+    val frequencyStatistics = new FrequencyStatistics(dataWeightPairs, modeCount)
 
-    /*if (frequencyStatistics.modeSet.isEmpty) {
-      None.asInstanceOf[Set[String]].toJson
-    }
-    else {
-      dataType.typedJson(frequencyStatistics.modeSet)
-    } */
+    val modeSet = frequencyStatistics.modeSet
 
-    ColumnModeReturn(modeJsValue,
+    val modeSetJsValue = modeSet.map(x => dataType.typedJson(x)).toJson
+
+    ColumnModeReturn(modeSetJsValue,
       frequencyStatistics.weightOfMode,
       frequencyStatistics.totalWeight,
       frequencyStatistics.modeCount)
