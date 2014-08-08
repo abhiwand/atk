@@ -212,6 +212,7 @@ class Rule(object):
 
         """
         # TODO - Docstrings
+
         frame = Rule.validate_source(key, frame)
         frame = Rule.validate_source(value, frame)
         return frame
@@ -230,7 +231,6 @@ class Rule(object):
             for k, v in properties.items():
                 frame = Rule.validate_property(k, v, frame)
         return frame
-
 
     @staticmethod
     def validate_same_frame(*frames):
@@ -313,7 +313,6 @@ class VertexRule(Rule):
         id_frame = self.validate_property(self.id_key, self.id_value, None)
         properties_frame = self.validate_properties(self.properties)
         return self.validate_same_frame(id_frame, properties_frame)
-
 
 class EdgeRule(Rule):
     """
@@ -441,6 +440,7 @@ class BigGraph(CommandSupport):
         except:
             raise IaError(logger)
 
+
     def __repr__(self):
         try:
             return self._backend.get_repr(self)
@@ -503,30 +503,6 @@ class BigGraph(CommandSupport):
         except:
             raise IaError(logger)
 
-    # @property
-    # def uri(self):
-    #     """
-    #     Provides the URI of the BigGraph.
-    #
-    #     Returns
-    #     -------
-    #     URI
-    #         See http://en.wikipedia.org/wiki/Uniform_Resource_Identifier
-    #
-    #     Examples
-    #     --------
-    #     ::
-    #
-    #         Example
-    #
-    #     .. versionadded:: 0.8
-    #
-    #     """
-    #     return self._uri
-
-    # @property
-    # def id(self):
-    #     return self._id
 
     def append(self, rules=None):
         """
