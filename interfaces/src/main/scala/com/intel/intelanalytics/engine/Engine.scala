@@ -28,6 +28,7 @@ import com.intel.intelanalytics.domain.FilterPredicate
 import com.intel.intelanalytics.domain.frame._
 import com.intel.intelanalytics.domain.frame.load.Load
 import com.intel.intelanalytics.domain.graph.{ Graph, GraphLoad, GraphTemplate }
+import com.intel.intelanalytics.domain.query.{ Execution => QueryExecution, RowQuery, Query }
 import com.intel.intelanalytics.engine.Rows._
 import com.intel.intelanalytics.security.UserPrincipal
 import spray.json.JsObject
@@ -41,6 +42,7 @@ import scala.concurrent.Future
 trait Engine {
 
   type Identifier = Long //TODO: make more generic?
+  val pageSize: Int
 
   /**
    * Executes the given command template, managing all necessary auditing, contexts, class loaders, etc.
@@ -62,9 +64,17 @@ trait Engine {
 
   def getCommand(id: Identifier): Future[Option[Command]]
 
+  def getQueries(offset: Int, count: Int): Future[Seq[Query]]
+
+  def getQuery(id: Identifier): Future[Option[Query]]
+
+  def getQueryPage(id: Identifier, pageId: Identifier)(implicit user: UserPrincipal): Iterable[Any]
+
   def getFrame(id: Identifier)(implicit user: UserPrincipal): Future[Option[DataFrame]]
 
-  def getRows(id: Identifier, offset: Long, count: Int)(implicit user: UserPrincipal): Future[Iterable[Row]]
+  def getRows(arguments: RowQuery[Identifier])(implicit user: UserPrincipal): Future[Iterable[Any]]
+
+  def getRowsLarge(arguments: RowQuery[Identifier])(implicit user: UserPrincipal): QueryExecution
 
   def create(frame: DataFrameTemplate)(implicit user: UserPrincipal): Future[DataFrame]
 
@@ -94,10 +104,21 @@ trait Engine {
   def dropDuplicates(dropDuplicateCommand: DropDuplicates)(implicit user: UserPrincipal): Execution
 
   def join(argument: FrameJoin)(implicit user: UserPrincipal): Execution
+
   def flattenColumn(argument: FlattenColumn)(implicit user: UserPrincipal): Execution
 
   def binColumn(arguments: BinColumn[Long])(implicit user: UserPrincipal): Execution
 
+  def columnSummaryStatistics(arguments: ColumnSummaryStatistics)(implicit user: UserPrincipal): Execution
+
+  // TODO TRIB-2245
+  /*
+  def columnFullStatistics(arguments: ColumnFullStatistics)(implicit user: UserPrincipal): Execution
+
+  def columnMode(arguments: ColumnMode)(implicit user: UserPrincipal): Execution
+
+  def columnMedian(arguments: ColumnMedian)(implicit user: UserPrincipal): Execution
+*/
   def confusionMatrix(arguments: ConfusionMatrix[Long])(implicit user: UserPrincipal): Execution
 
   def groupBy(arguments: FrameGroupByColumn[JsObject, Long])(implicit user: UserPrincipal): Execution
@@ -120,8 +141,12 @@ trait Engine {
 
   def deleteGraph(graph: Graph): Future[Unit]
 
+  def cumulativeDist(arguments: CumulativeDist[Long])(implicit user: UserPrincipal): Execution
+
   // Model performance measures
 
   def classificationMetric(arguments: ClassificationMetric[Long])(implicit user: UserPrincipal): Execution
+
+  def ecdf(arguments: ECDF[Long])(implicit user: UserPrincipal): Execution
 
 }

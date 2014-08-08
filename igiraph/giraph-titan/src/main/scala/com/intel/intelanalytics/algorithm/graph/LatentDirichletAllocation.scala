@@ -31,7 +31,7 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol
 import com.intel.intelanalytics.domain.graph.GraphReference
 import com.intel.intelanalytics.engine.plugin.{ CommandPlugin, Invocation }
 import com.intel.intelanalytics.security.UserPrincipal
-import com.intel.intelanalytics.algorithm.util.{ GiraphConfigurationUtil, GiraphJobDriver }
+import com.intel.intelanalytics.algorithm.util.{ GiraphJobManager, GiraphConfigurationUtil }
 import com.intel.mahout.math.DoubleWithVectorWritable
 import org.apache.giraph.conf.GiraphConfiguration
 import spray.json.DefaultJsonProtocol._
@@ -102,9 +102,9 @@ class LatentDirichletAllocation
     giraphConf.setComputationClass(classOf[CVB0LDAComputation])
     giraphConf.setAggregatorWriterClass(classOf[CVB0LDAComputation.CVB0LDAAggregatorWriter])
 
-    LdaResult(GiraphJobDriver.run("ia_giraph_lda",
+    LdaResult(GiraphJobManager.run("ia_giraph_lda",
       classOf[CVB0LDAComputation].getCanonicalName,
-      config, giraphConf, invocation.commandId, "lda-learning-report_0"))
+      config, giraphConf, invocation, "lda-learning-report_0"))
   }
 
   //TODO: Replace with generic code that works on any case class

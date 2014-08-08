@@ -44,6 +44,7 @@ object SparkEngineConfig extends SharedConfig with EventLogging {
   val sparkHome: String = {
     val sparkHome = config.getString("intel.analytics.engine.spark.home")
     if (sparkHome == "") {
+      info("Spark Home is NOT configured so guessing where it is")
       guessSparkHome
     }
     else {
@@ -55,10 +56,11 @@ object SparkEngineConfig extends SharedConfig with EventLogging {
    * Check for sparkHome in the expected locations
    */
   private def guessSparkHome: String = {
-    val possibleSparkHomes = List("/usr/lib/spark", "/opt/cloudera/parcels/CDH/lib/spark/")
+    val possibleSparkHomes = List("/opt/cloudera/parcels/CDH/lib/spark/", "/usr/lib/spark")
     possibleSparkHomes.foreach(dir => {
       val path = new File(dir)
       if (path.exists()) {
+        info("Using Spark Home found at " + path.getAbsolutePath)
         return path.getAbsolutePath
       }
     })
@@ -77,19 +79,21 @@ object SparkEngineConfig extends SharedConfig with EventLogging {
   }
 
   /** Default number for partitioning data */
-  val sparkDefaultPartitions: Int = config.getInt("intel.analytics.engine.spark.defaultPartitions")
+  val sparkDefaultPartitions: Int = config.getInt("intel.analytics.engine.spark.default-partitions")
 
-  val defaultTimeout: FiniteDuration = config.getInt("intel.analytics.engine.defaultTimeout").seconds
+  val defaultTimeout: FiniteDuration = config.getInt("intel.analytics.engine.default-timeout").seconds
 
   val fsRoot: String = config.getString("intel.analytics.engine.fs.root")
 
-  val maxRows: Int = config.getInt("intel.analytics.engine.max-rows")
+  val pageSize: Int = config.getInt("intel.analytics.engine.page-size")
 
   /* number of rows taken for sample test during frame loading */
-  val frameLoadTestSampleSize: Int = config.getInt("intel.analytics.engine.commands.dataframes.load.schema-validation-sample-rows")
+  val frameLoadTestSampleSize: Int =
+    config.getInt("intel.analytics.engine-spark.command.dataframes.load.config.schema-validation-sample-rows")
 
   /* percentage of maximum rows fail in parsing in sampling test. 50 means up 50% is allowed */
-  val frameLoadTestFailThresholdPercentage: Int = config.getInt("intel.analytics.engine.commands.dataframes.load.schema-validation-fail-threshold-percentage")
+  val frameLoadTestFailThresholdPercentage: Int =
+    config.getInt("intel.analytics.engine-spark.command.dataframes.load.config.schema-validation-fail-threshold-percentage")
 
   /**
    * A list of archives that will be searched for command plugins
@@ -140,8 +144,33 @@ object SparkEngineConfig extends SharedConfig with EventLogging {
     sparkConfProperties
   }
 
-  /** Hostname for current system */
-  private def hostname: String = InetAddress.getLocalHost.getHostName
+  /**
+   * Max partitions if file is larger than limit specified in autoPartitionConfig
+   */
+  val maxPartitions: Int = {
+    config.getInt("intel.analytics.engine-spark.auto-partitioner.max-partitions")
+  }
+
+  /**
+   * Sorted list of mappings for file size to partition size (larger file sizes first)
+   */
+  val autoPartitionerConfig: List[FileSizeToPartitionSize] = {
+    import scala.collection.JavaConverters._
+    val key = "intel.analytics.engine-spark.auto-partitioner.file-size-to-partition-size"
+    val configs = config.getConfigList(key).asScala.toList
+    val unsorted = configs.map(config => {
+      val partitions = config.getInt("partitions")
+      if (partitions > maxPartitions) {
+        throw new RuntimeException("Invalid value partitions:" + partitions +
+          " shouldn't be larger than max-partitions:" + maxPartitions + ", under:" + key)
+      }
+      FileSizeToPartitionSize(config.getBytes("upper-bound"), partitions)
+    })
+    unsorted.sortWith((leftConfig, rightConfig) => leftConfig.fileSizeUpperBound > rightConfig.fileSizeUpperBound)
+  }
+
+  /** Fully qualified Hostname for current system */
+  private def hostname: String = InetAddress.getLocalHost.getCanonicalHostName
 
   // log important settings
   def logSettings(): Unit = withContext("SparkEngineConfig") {
@@ -154,5 +183,5 @@ object SparkEngineConfig extends SharedConfig with EventLogging {
   }
 
   // Python execution command for workers
-  val pythonWorkerExec: String = config.getString("intel.analytics.engine.spark.pythonWorkerExec")
+  val pythonWorkerExec: String = config.getString("intel.analytics.engine.spark.python-worker-exec")
 }

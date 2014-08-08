@@ -53,8 +53,12 @@ class HdfsFileStorage(fsRoot: String) extends FileStorage with EventLogging {
 
   val fs = FileSystem.get(configuration)
 
+  def hPath(first: String, second: String): HPath = {
+    new HPath(concatPaths(first, second))
+  }
+
   override def write(sink: File, append: Boolean): OutputStream = withContext("file.write") {
-    val path: HPath = new HPath(fsRoot + sink.path.toString)
+    val path: HPath = hPath(fsRoot, sink.path.toString)
     if (append) {
       fs.append(path)
     }
@@ -64,7 +68,7 @@ class HdfsFileStorage(fsRoot: String) extends FileStorage with EventLogging {
   }
 
   override def list(source: Directory): Seq[Entry] = withContext("file.list") {
-    fs.listStatus(new HPath(fsRoot + source.path.toString))
+    fs.listStatus(hPath(fsRoot, source.path.toString))
       .map {
         case s if s.isDirectory => Directory(path = Paths.get(s.getPath.toString))
         case f if f.isDirectory => File(path = Paths.get(f.getPath.toString), size = f.getLen)
@@ -73,19 +77,19 @@ class HdfsFileStorage(fsRoot: String) extends FileStorage with EventLogging {
   }
 
   override def read(source: File): InputStream = withContext("file.read") {
-    val path: HPath = new HPath(fsRoot + source.path.toString)
+    val path: HPath = hPath(fsRoot, source.path.toString)
     fs.open(path)
   }
 
   override def getMetaData(path: Path): Option[Entry] = withContext("file.getMetaData") {
-    val hPath: HPath = new HPath(fsRoot + path.toString)
-    val exists = fs.exists(hPath)
+    val p: HPath = hPath(fsRoot, path.toString)
+    val exists = fs.exists(p)
     if (!exists) {
       None
     }
     else {
-      val status = fs.getStatus(hPath)
-      if (status == null || fs.isDirectory(hPath)) {
+      val status = fs.getStatus(p)
+      if (status == null || fs.isDirectory(p)) {
         Some(Directory(path))
       }
       else {
@@ -94,18 +98,34 @@ class HdfsFileStorage(fsRoot: String) extends FileStorage with EventLogging {
     }
   }
 
+  /**
+   * Recursive delete
+   */
   override def delete(path: Path): Unit = withContext("file.delete") {
-    fs.delete(new HPath(fsRoot + path.toString), true)
+    val fullPath = hPath(fsRoot, path.toString)
+    val success = fs.delete(fullPath, true) // recursive
+    if (!success) {
+      error("Could not delete path: " + fullPath.toUri)
+    }
   }
 
   override def create(file: Path): Unit = withContext("file.create") {
-    fs.create(new HPath(fsRoot + file.toString))
+    fs.create(hPath(fsRoot, file.toString))
   }
 
   override def createDirectory(directory: Path): Directory = withContext("file.createDirectory") {
-    val adjusted = fsRoot + directory.toString
-    fs.mkdirs(new HPath(adjusted))
+    val adjusted = hPath(fsRoot, directory.toString)
+    fs.mkdirs(adjusted)
     getMetaData(Paths.get(directory.toString)).get.asInstanceOf[Directory]
+  }
+
+  /**
+   * File size
+   * @param path relative path
+   */
+  override def size(path: String): Long = {
+    val p: HPath = hPath(fsRoot, path.toString)
+    fs.getFileStatus(p).getLen
   }
 }
 

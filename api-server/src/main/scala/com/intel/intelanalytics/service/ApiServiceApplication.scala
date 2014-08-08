@@ -45,6 +45,10 @@ import scala.reflect.ClassTag
  */
 class ApiServiceApplication extends Archive with EventLogging {
 
+  //Direct subsequent archive messages to the normal log
+  Archive.logger = s => info(s)
+  Archive.logger("Archive logger installed")
+
   // TODO: implement or remove get()
   def get[T](descriptor: String): T = {
     throw new IllegalArgumentException("This component provides no services")
@@ -81,7 +85,8 @@ class ApiServiceApplication extends Archive with EventLogging {
     val commandService = new v1.CommandService(commonDirectives, engine)
     val dataFrameService = new v1.DataFrameService(commonDirectives, engine)
     val graphService = new v1.GraphService(commonDirectives, engine)
-    val apiV1Service = new v1.ApiV1Service(dataFrameService, commandService, graphService)
+    val queryService = new v1.QueryService(commonDirectives, engine)
+    val apiV1Service = new v1.ApiV1Service(dataFrameService, commandService, graphService, queryService)
 
     // setup main entry point
     new ApiService(commonDirectives, apiV1Service)

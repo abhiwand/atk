@@ -37,7 +37,8 @@ import scala.concurrent.ExecutionContext
  * @tparam Return the return type of the command
  */
 case class FunctionCommand[Arguments <: Product: JsonFormat: ClassManifest, Return <: Product: JsonFormat: ClassManifest](name: String,
-                                                                                                                          function: (Arguments, UserPrincipal) => Return)
+                                                                                                                          function: (Arguments, UserPrincipal, Invocation) => Return,
+                                                                                                                          numberOfJobsFunc: (Arguments) => Int)
     extends CommandPlugin[Arguments, Return] {
 
   override def parseArguments(arguments: JsObject) = arguments.convertTo[Arguments]
@@ -45,6 +46,8 @@ case class FunctionCommand[Arguments <: Product: JsonFormat: ClassManifest, Retu
   override def serializeReturn(returnValue: Return): JsObject = returnValue.toJson.asJsObject
 
   override def serializeArguments(arguments: Arguments): JsObject = arguments.toJson.asJsObject()
+
+  override def numberOfJobs(arguments: Arguments) = numberOfJobsFunc(arguments)
 
   /**
    * Operation plugins must implement this method to do the work requested by the user.
@@ -56,7 +59,7 @@ case class FunctionCommand[Arguments <: Product: JsonFormat: ClassManifest, Retu
     //Since the function may come from any class loader, we use the function's
     //class loader, not our own
     withLoader(function.getClass.getClassLoader) {
-      function(arguments, user)
+      function(arguments, user, invocation)
     }
   }
 }

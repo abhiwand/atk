@@ -1,7 +1,3 @@
-package com.intel.intelanalytics.component
-
-import scala.reflect.ClassTag
-
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
@@ -24,6 +20,10 @@ import scala.reflect.ClassTag
 // estoppel or otherwise. Any license under such intellectual property rights
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
+
+package com.intel.intelanalytics.component
+
+import scala.reflect.ClassTag
 
 trait Archive extends Component {
 
@@ -65,7 +65,11 @@ trait Archive extends Component {
     Archive.logger(s"Loading component $path")
     val className = configuration.getString(path.replace("/", ".") + ".class")
     val component = load(className).asInstanceOf[Component]
-    val restricted = configuration.getConfig(path + ".config")
+    val restricted = configuration.getConfig(path + ".config").withFallback(configuration).resolve()
+    Archive.logger(s"Component config for $path follows:")
+    Archive.logger(restricted.root().render())
+    Archive.logger(s"End component config for $path")
+    Boot.writeFile("/tmp/iat/" + path.replace("/", "_") + ".effective-conf", restricted.root().render())
     component.init(path, restricted)
     component.start()
     component
@@ -112,18 +116,5 @@ trait Archive extends Component {
  * Companion object for Archives.
  */
 object Archive {
-  private var _logger: Option[String => Unit] = Some(println)
-
-  /**
-   * A function that the archive can use to log debug information.
-   */
-  def logger_=(function: String => Unit): Unit = {
-    _logger = Some(function)
-  }
-
-  /**
-   * A function that the archive can use to log debug information.
-   */
-  def logger = _logger.getOrElse(throw new Exception("Archive logger not initialized"))
-
+  var logger: String => Unit = println
 }

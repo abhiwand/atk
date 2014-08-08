@@ -42,7 +42,7 @@ object SparkProgressListener {
   var progressUpdater: CommandProgressUpdater = null
 }
 
-class SparkProgressListener(val progressUpdater: CommandProgressUpdater) extends SparkListener {
+class SparkProgressListener(val progressUpdater: CommandProgressUpdater, val commandId: Long, val jobCount: Int) extends SparkListener {
 
   val jobIdToStagesIds = new HashMap[Int, Array[Int]]
   val stageIdStageMapping = new HashMap[Int, Stage]
@@ -50,27 +50,20 @@ class SparkProgressListener(val progressUpdater: CommandProgressUpdater) extends
   val completedStages = ListBuffer[Int]()
   val stageIdToTasksComplete = HashMap[Int, Int]()
   val stageIdToTasksFailed = HashMap[Int, Int]()
-  val commandIdJobs = new HashMap[Long, List[ActiveJob]]
+  val jobs = new ListBuffer[ActiveJob]
 
   override def onJobStart(jobStart: SparkListenerJobStart) {
-    val stages = addStageAndAncestorStagesToCollection(jobStart.job.finalStage)
+    val job = jobStart.job
+    val stages = addStageAndAncestorStagesToCollection(job.finalStage)
 
     val stageIds = stages.map(s => s.id)
-    jobIdToStagesIds(jobStart.job.jobId) = stageIds.toArray
+    jobIdToStagesIds(job.jobId) = stageIds.toArray
     stageIdStageMapping ++= stages.map(stage => (stage.id, stage))
-
-    val job = jobStart.job
-
-    if (hasCommandId(job)) {
-      addToCommandIdJobs(job)
-
-      //update initial progress to 0
-      progressUpdater.updateProgress(job.properties.getProperty("command-id").toLong, List(ProgressInfo(0.00f, Some(TaskProgressInfo(0)))))
-    }
+    jobs += job
   }
 
   /**
-   * return all the ancestors stages and the stage itself
+   * Return all the ancestors stages and the stage itself
    * @param stage the stage to find all the ancestors
    */
   def addStageAndAncestorStagesToCollection(stage: Stage): Seq[Stage] = {
@@ -113,28 +106,29 @@ class SparkProgressListener(val progressUpdater: CommandProgressUpdater) extends
       case false => stageIdToTasksFailed(sid) = stageIdToTasksFailed.getOrElse(sid, 0) + 1
     }
 
-    updateProgress(sid)
+    updateProgress()
   }
 
-  /* calculate progress for the job */
+  /* Calculate progress for the job */
   private def getProgress(jobId: Int): Float = {
-    val stageIds = jobIdToStagesIds(jobId)
-    val finishedStages = stageIds.count(i => completedStages.contains(i))
-    val currentActiveStages = unfinishedStages.filter(s => stageIds.contains(s._1)).map(pair => pair._2)
+    val totalStageIds = jobIdToStagesIds(jobId)
+    val finished = totalStageIds.count(i => completedStages.contains(i))
+    val unfinished = unfinishedStages.filter { case (id, _) => totalStageIds.contains(id) }.map { case (id, stage) => stage }
 
-    var progress: Float = (100 * finishedStages.toFloat) / stageIds.length.toFloat
+    val totalStageCount: Int = totalStageIds.length
+    var progress: Float = (100 * finished.toFloat) / totalStageCount.toFloat
 
-    currentActiveStages.foreach(currentActiveStage => {
-      val totalTaskForStage = currentActiveStage.numTasks
-      val successCount = stageIdToTasksComplete.getOrElse(currentActiveStage.stageId, 0)
-      progress += (100 * successCount.toFloat / (totalTaskForStage * stageIds.length).toFloat)
+    unfinished.foreach(stage => {
+      val totalTasksCount = stage.numTasks
+      val successCount = stageIdToTasksComplete.getOrElse(stage.stageId, 0)
+      progress += (100 * successCount.toFloat / (totalTasksCount * totalStageCount).toFloat)
     })
 
     BigDecimal(progress).setScale(2, BigDecimal.RoundingMode.DOWN).toFloat
   }
 
   /**
-   * return a detailed progress info about current job.
+   * Return a detailed progress info about current job.
    */
   private def getDetailedProgress(jobId: Int): TaskProgressInfo = {
     val stageIds = jobIdToStagesIds(jobId)
@@ -147,59 +141,38 @@ class SparkProgressListener(val progressUpdater: CommandProgressUpdater) extends
   }
 
   /**
-   * calculate progress for the command
+   * Calculate progress for the command
    */
-  def getCommandProgress(commandId: Long): List[ProgressInfo] = {
-    val jobList = commandIdJobs.getOrElse(commandId, throw new IllegalArgumentException(s"No such command: $commandId"))
-    jobList.map(job => {
-      val progress = getProgress(job.jobId)
-      val taskInfo = getDetailedProgress(job.jobId)
-      ProgressInfo(progress, Some(taskInfo))
-    })
-  }
+  def getCommandProgress(): List[ProgressInfo] = {
+    var progress = 0f
+    var retriedCounts = 0
 
-  /**
-   * update the progress information and send it to progress updater
-   */
-  private def updateProgress(stageId: Int) {
-    val jobIdStagePairOption = jobIdToStagesIds.find {
-      case (_, stagesIds) =>
-        stagesIds.contains(stageId)
+    jobs.zip(1 to jobCount).foreach {
+      case (job, _) =>
+        progress += getProgress(job.jobId)
+        retriedCounts += getDetailedProgress(job.jobId).retries
     }
 
-    jobIdStagePairOption match {
-      case Some(r) => {
-        val jobId = r._1
-        val fnGetListJobId = (jobs: List[ActiveJob]) => jobs.map(job => job.jobId)
+    val result = new ListBuffer[ProgressInfo]()
+    result += ProgressInfo(progress / jobCount.toFloat, Some(TaskProgressInfo(retriedCounts)))
 
-        commandIdJobs.find(e => fnGetListJobId(e._2).contains(jobId)).
-          foreach {
-            case (commandId, _) => {
-              val progressInfo = getCommandProgress(commandId)
-              progressUpdater.updateProgress(commandId, progressInfo)
-            }
-          }
-      }
-      case _ => println(s"missing command id for stage $stageId")
-    }
+    val unexpected = for {
+      i <- jobCount to (jobs.length - 1)
+      job = jobs(i)
+      progress = getProgress(job.jobId)
+      taskInfo = getDetailedProgress(job.jobId)
+    } yield ProgressInfo(progress, Some(taskInfo))
+
+    result ++= unexpected
+    result.toList
   }
 
   /**
-   * Some jobs don't have command id, explain
+   * Update the progress information and send it to progress updater
    */
-  def hasCommandId(job: ActiveJob): Boolean = {
-    job.properties != null && job.properties.containsKey("command-id")
-  }
-
-  /**
-   * Keep track of id's to jobs in a Map
-   */
-  def addToCommandIdJobs(job: ActiveJob) {
-    val id = job.properties.getProperty("command-id").toLong
-    if (!commandIdJobs.contains(id))
-      commandIdJobs(id) = List(job)
-    else
-      commandIdJobs(id) = commandIdJobs(id) ++ List(job)
+  private def updateProgress() {
+    val progressInfo = getCommandProgress()
+    progressUpdater.updateProgress(commandId, progressInfo)
   }
 }
 

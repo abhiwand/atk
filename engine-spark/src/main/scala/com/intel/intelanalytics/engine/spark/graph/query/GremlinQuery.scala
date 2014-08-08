@@ -9,29 +9,47 @@ import com.intel.intelanalytics.engine.plugin.{ CommandPlugin, Invocation }
 import com.intel.intelanalytics.engine.spark.SparkEngineConfig
 import com.intel.intelanalytics.security.UserPrincipal
 import com.thinkaurelius.titan.core.TitanGraph
+import com.tinkerpop.blueprints.util.io.graphson.GraphSONMode
 import com.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine
-
 import spray.json._
 
 import scala.collection.JavaConversions._
 import scala.concurrent.{ Await, ExecutionContext, Lock }
+import scala.util.Try
 
 /**
+ * Arguments for Gremlin query.
  *
- * @param graph
- * @param gremlin
+ * Examples of Gremlin queries:
+ * g.V[0..9] - Returns the first 10 vertices in graph
+ * g.V.userId - Returns the userId property from vertices
+ * g.V('name','hercules').out('father').out('father').name - Returns the name of Hercules' grandfather
+ *
+ * @param graph Graph reference
+ * @param gremlin Gremlin script to execute
  */
 case class QueryArgs(graph: GraphReference, gremlin: String)
 
 /**
+ * Results of Gremlin query.
  *
- * @param results
- * @param run_time_seconds
+ * The results of the Gremlin query are serialized to GraphSON (for vertices or edges) or JSON (for other results
+ * like counts, property values). GraphSON is a JSON-based graph format for property graphs. GraphSON uses reserved
+ * keys which begin with underscores to encode vertex and edge metadata.
+ *
+ * Examples of valid GraphSON:
+ * { "name": "lop", "lang": "java","_id": "3", "_type": "vertex" }
+ * { "weight": 1, "_id": "8", "_type": "edge", "_outV": "1",  "_inV": "4", "_label": "knows" }
+ *
+ * @see https://github.com/tinkerpop/blueprints/wiki/GraphSON-Reader-and-Writer-Library
+ *
+ * @param results Results of Gremlin query serialized to JSON
+ * @param run_time_seconds Runtime of Gremlin query in seconds
  */
 case class QueryResult(results: Iterable[JsValue], run_time_seconds: Double)
 
 /**
- *
+ * Command plugin for executing Gremlin queries.
  */
 class GremlinQuery extends CommandPlugin[QueryArgs, QueryResult] {
 
@@ -44,30 +62,13 @@ class GremlinQuery extends CommandPlugin[QueryArgs, QueryResult] {
   var titanGraphs = Map[String, TitanGraph]()
 
   /**
-   * Execute gremlin query.
-   *
-   * @param gremlinScript Gremlin query
-   * @param bindings Bindings for Gremlin engine
-   * @return Iterable of query results
-   */
-  def executeGremlinQuery(gremlinScript: String, bindings: Bindings): Iterable[Any] = {
-    val obj = gremlinExecutor.eval(gremlinScript, bindings)
-    if (obj == null) throw new RuntimeException(s"No results for Gremlin query: ${gremlinScript}")
-
-    val resultIterator = obj match {
-      case x: java.lang.Iterable[_] => x.toIterable
-      case x => List(x).toIterable
-    }
-    resultIterator
-  }
-
-  /**
+   * Executes a Gremlin query.
    *
    * @param invocation information about the user and the circumstances at the time of the call
-   * @param arguments the arguments supplied by the caller
-   * @param user
-   * @param executionContext
-   * @return a value of type declared as the Return type.
+   * @param arguments Gremlin script to execute
+   * @param user Principal representing an authenticated API user
+   * @param executionContext Execution context
+   * @return Results of executing Gremlin query
    */
   override def execute(invocation: Invocation, arguments: QueryArgs)(implicit user: UserPrincipal, executionContext: ExecutionContext): QueryResult = {
     import scala.concurrent.duration._
@@ -86,16 +87,15 @@ class GremlinQuery extends CommandPlugin[QueryArgs, QueryResult] {
     val titanConfiguration = SparkEngineConfig.createTitanConfiguration(config, "titan.query")
 
     titanConfiguration.setProperty("storage.tablename", "iat_graph_" + graph.name)
-    val titanGraph: TitanGraph = getTitanGraph(graphName, titanConfiguration)
+    val titanGraph = getTitanGraph(graphName, titanConfiguration)
     val bindings = gremlinExecutor.createBindings()
     bindings.put("g", titanGraph)
 
     // Get results
-    val resultIterator: Iterable[Any] = executeGremlinQuery(arguments.gremlin, bindings)
-    val json = resultIterator.map(GremlinUtils.serializeGremlinToJson(titanGraph, _, graphSONMode))
+    val resultIterator = executeGremlinQuery(titanGraph, arguments.gremlin, bindings, graphSONMode)
     val runtimeInSeconds = (System.currentTimeMillis() - start).toDouble / 1000.0
 
-    QueryResult(json, runtimeInSeconds)
+    QueryResult(resultIterator, runtimeInSeconds)
   }
 
   //TODO: Replace with generic code that works on any case class
@@ -113,6 +113,34 @@ class GremlinQuery extends CommandPlugin[QueryArgs, QueryResult] {
   override def serializeArguments(arguments: QueryArgs): JsObject = arguments.toJson.asJsObject()
 
   /**
+   * Execute gremlin query.
+   *
+   * @param gremlinScript Gremlin query
+   * @param bindings Bindings for Gremlin engine
+   * @return Iterable of query results
+   */
+  def executeGremlinQuery(titanGraph: TitanGraph, gremlinScript: String,
+                          bindings: Bindings,
+                          graphSONMode: GraphSONMode = GraphSONMode.NORMAL): Iterable[JsValue] = {
+    val results = Try(gremlinExecutor.eval(gremlinScript, bindings)).getOrElse({
+      throw new RuntimeException(s"Invalid syntax for Gremlin query: ${gremlinScript}")
+    })
+
+    val resultIterator = results match {
+      case x: java.lang.Iterable[_] => x.toIterable
+      case x => List(x).toIterable
+    }
+
+    val jsResultsIterator = Try({
+      resultIterator.filter(x => x != null).map(GremlinUtils.serializeGremlinToJson(titanGraph, _, graphSONMode))
+    }).getOrElse({
+      throw new RuntimeException(s"Invalid syntax for Gremlin query: ${gremlinScript}")
+    })
+
+    jsResultsIterator
+  }
+
+  /**
    * Gets Titan graph, and caches graph connection to reduce overhead of future accesses.
    *
    * @param graphName Name of graph
@@ -122,13 +150,17 @@ class GremlinQuery extends CommandPlugin[QueryArgs, QueryResult] {
   private def getTitanGraph(graphName: String, titanConfiguration: SerializableBaseConfiguration): TitanGraph = {
     val titanConnector = new TitanGraphConnector(titanConfiguration)
 
-    val titanGraph = titanGraphs.get(graphName).getOrElse({
-      connectToTitanGraph(graphName, titanConnector)
-    })
+    val titanGraph = titanGraphs.getOrElse(graphName, connectToTitanGraph(graphName, titanConnector))
 
     titanGraph
   }
 
+  /**
+   * Connects to a Titan Graph and caches it.
+   * @param graphName Name of graph
+   * @param titanConnector Titan graph connector
+   * @return Titan graph
+   */
   private def connectToTitanGraph(graphName: String, titanConnector: TitanGraphConnector): TitanGraph = {
     GremlinQuery.lock.acquire()
     val titanGraph = titanConnector.connect()
