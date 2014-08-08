@@ -154,7 +154,12 @@ class HttpMethods(object):
         r = requests.get(uri, headers=self.server.headers)
         if logger.level <= logging.DEBUG:
             logger.debug("[HTTP Get Response] %s\n%s", r.text, r.headers)
-        self._check_response(r)
+
+        try:
+            self._check_response(r)
+        except Exception as e:
+            raise requests.exceptions.HTTPError(str(e) + " "+ r.text)
+
         return r
 
     def delete(self, uri_path):
