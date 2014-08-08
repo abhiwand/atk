@@ -26,12 +26,13 @@ LittleFrame object (BigFrame without Big backend, i.e. all Python memory space)
 (wraps Pandas DataFrame)
 """
 
-from pandas import Series
-from intelanalytics.core.orddict import OrderedDict
+#from pandas import Series
+#from intelanalytics.core.orddict import OrderedDict
 from intelanalytics.core.frame import BigFrame
 from intelanalytics.core.column import BigColumn
-from intelanalytics.core.sources import SimpleDataSource
+#from intelanalytics.core.sources import SimpleDataSource
 from intelanalytics.core.iatypes import *
+from intelanalytics.core.iatypes import valid_data_types
 
 _little_frame_backend = None
 
@@ -158,7 +159,7 @@ class LittleFramePandasBackend(object):
             raise NotImplemented("LittleFrame doesn't support offset yet")
         df = frame._df[:n]
         # rewrite the column names to "include" the data type
-        df.columns = ["{0}:{1}".format(n, supported_types.get_type_string(t))
+        df.columns = ["{0}:{1}".format(n, valid_data_types.get_type_string(t))
                       for n, t in frame.schema.items()]
         return self.InspectionTable(df)
 
