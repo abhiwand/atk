@@ -2,6 +2,7 @@ package com.intel.intelanalytics.engine.spark.statistics
 
 import org.apache.spark.AccumulatorParam
 import org.apache.spark.rdd._
+import scala.collection.immutable.TreeMap
 
 /**
  * Object for calculating the frequency statistics of a collection of (data,weight) pairs, represented as an
@@ -15,13 +16,13 @@ import org.apache.spark.rdd._
 class FrequencyStatistics[T: ClassManifest](dataWeightPairs: RDD[(T, Double)]) extends Serializable {
 
   /**
-   * Option for an item with maximum weight. If there is no item with positive weight,
-   * the value None is used for the mode.
+   * Set of at most k modes. A mode is an item with maximum weight. If there is no item with positive weight,
+   * the returned set is empty.
    */
-  lazy val mode: Option[T] = frequencyStatistics.mode
+  lazy val modeSet: Set[T] = frequencyStatistics.mode
 
   /**
-   * Option for the weight of a mode of the input. It is either strictly positive, or,
+   * The weight of a mode of the input. It is either strictly positive, or,
    * if there is no item with positive weight, weightOfMode is 0 .
    */
   lazy val weightOfMode: Double = frequencyStatistics.weightOfMode
@@ -41,7 +42,7 @@ class FrequencyStatistics[T: ClassManifest](dataWeightPairs: RDD[(T, Double)]) e
   private def generateMode(): FrequencyStatsCounter[T] = {
 
     val acumulatorParam = new FrequencyStatsAccumulatorParam[T]()
-    val initialValue = FrequencyStatsCounter[T](None, 0, 0, 0)
+    val initialValue = FrequencyStatsCounter[T](Set.empty[T], 0, 0, 0)
 
     val accumulator =
       dataWeightPairs.sparkContext.accumulator[FrequencyStatsCounter[T]](initialValue)(acumulatorParam)
@@ -55,10 +56,10 @@ class FrequencyStatistics[T: ClassManifest](dataWeightPairs: RDD[(T, Double)]) e
     uniqueValuesPositiveWeights.foreach(
       {
         case (value, weightAtValue) =>
-          accumulator.add(FrequencyStatsCounter(Some(value), weightAtValue, weightAtValue, 1))
+          accumulator.add(FrequencyStatsCounter(Set(value), weightAtValue, weightAtValue, 1))
       })
 
-    FrequencyStatsCounter[T](accumulator.value.mode,
+    FrequencyStatsCounter[T](accumulator.value.modeSet,
       accumulator.value.weightOfMode,
       accumulator.value.totalWeight,
       accumulator.value.modeCount)
@@ -72,12 +73,12 @@ class FrequencyStatistics[T: ClassManifest](dataWeightPairs: RDD[(T, Double)]) e
 
 /*
  * Class for accumulating frequency statistics in one pass over the data.
- * @param mode Option for value with the most weight seen so far. None when run over empty data.
+ * @param mode Set of <= k modes seen so far.
  * @param weightOfMode The weight of the mode. 0 when run over empty data.
  * @param totalWeight Sum of the weights of all values seen so far.
  * @tparam T Type of the input data. (In particular, the type of the mode.)
  */
-private case class FrequencyStatsCounter[T](mode: Option[T], weightOfMode: Double, totalWeight: Double, modeCount: Long)
+private case class FrequencyStatsCounter[T](modeSet: Set[T], weightOfMode: Double, totalWeight: Double, modeCount: Long)
   extends Serializable
 
 /*
@@ -86,7 +87,7 @@ private case class FrequencyStatsCounter[T](mode: Option[T], weightOfMode: Doubl
  */
 private class FrequencyStatsAccumulatorParam[T] extends AccumulatorParam[FrequencyStatsCounter[T]] with Serializable {
 
-  override def zero(initialValue: FrequencyStatsCounter[T]) = FrequencyStatsCounter(None, 0, 0, 0)
+  override def zero(initialValue: FrequencyStatsCounter[T]) = FrequencyStatsCounter(Set.empty[T], 0, 0, 0)
 
   // to get (more) reproducible results, in the case that two modes have the same weight, we opt for the mode with the
   // lesser hashcode...
@@ -114,18 +115,30 @@ private class FrequencyStatsAccumulatorParam[T] extends AccumulatorParam[Frequen
           stats1.totalWeight + stats2.totalWeight,
           stats2.modeCount)
       }
-      else if (stats1.mode.hashCode() < stats2.mode.hashCode()) {
+      else {
+        val kLeastModes = getFirstKOfTwoKSets()
         FrequencyStatsCounter(stats1.mode,
           stats1.weightOfMode,
           stats1.totalWeight + stats2.totalWeight,
           stats1.modeCount + stats2.modeCount)
       }
-      else {
-        FrequencyStatsCounter(stats2.mode,
-          stats2.weightOfMode,
-          stats1.totalWeight + stats2.totalWeight,
-          stats1.modeCount + stats2.modeCount)
-      }
     }
   }
+
+  def getFirstKOfTwoKSets[K, V: Ordering](inputIterator: Iterator[(K, V)], k: Int): Iterator[(K, V)] = {
+
+    val ordering = implicitly[Ordering[V]]
+
+    var treeMap = new TreeMap[V, K]()(ordering)
+
+    inputIterator.foreach({
+      case (key, value) =>
+        treeMap += (value -> key)
+        if (treeMap.size > k) treeMap = treeMap.dropRight(1)
+    })
+
+    val sortedK = for ((value, key) <- treeMap.toSeq) yield (key, value)
+    sortedK.toIterator
+  }
+
 }

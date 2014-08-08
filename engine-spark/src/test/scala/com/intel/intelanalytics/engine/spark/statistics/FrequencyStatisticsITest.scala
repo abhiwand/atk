@@ -30,7 +30,7 @@ class FrequencyStatisticsITest extends TestingSparkContextFlatSpec with Matchers
     val fractionalFrequencies: List[Double] = integerFrequencies.map(x => x / netFrequencies)
   }
 
-  "empty data" should "produce mode == None and weights equal to 0" in new FrequencyStatisticsTest {
+  "empty data" should "produce mode == None, with weights and counts equal to 0" in new FrequencyStatisticsTest {
 
     val dataList: List[Double] = List()
     val weightList: List[Double] = List()
@@ -39,7 +39,7 @@ class FrequencyStatisticsITest extends TestingSparkContextFlatSpec with Matchers
 
     val frequencyStats = new FrequencyStatistics[Double](dataWeightPairs)
 
-    val testMode = frequencyStats.mode
+    val testMode = frequencyStats.modeSet
     val testModeWeight = frequencyStats.weightOfMode
     val testTotalWeight = frequencyStats.totalWeight
     val testModeCount = frequencyStats.modeCount
@@ -56,7 +56,7 @@ class FrequencyStatisticsITest extends TestingSparkContextFlatSpec with Matchers
 
     val frequencyStats = new FrequencyStatistics(dataWeightPairs)
 
-    val testMode = frequencyStats.mode.get
+    val testMode = frequencyStats.modeSet.get
     val testModeWeight = frequencyStats.weightOfMode
     val testTotalWeight = frequencyStats.totalWeight
     val testModeCount = frequencyStats.modeCount
@@ -74,7 +74,7 @@ class FrequencyStatisticsITest extends TestingSparkContextFlatSpec with Matchers
 
     val frequencyStats = new FrequencyStatistics(dataWeightPairs)
 
-    val testMode = frequencyStats.mode.get
+    val testMode = frequencyStats.modeSet.get
     val testModeWeight = frequencyStats.weightOfMode
     val testTotalWeight = frequencyStats.totalWeight
     val testModeCount = frequencyStats.modeCount
@@ -91,7 +91,7 @@ class FrequencyStatisticsITest extends TestingSparkContextFlatSpec with Matchers
 
     val frequencyStats = new FrequencyStatistics(dataWeightPairs)
 
-    val testMode = frequencyStats.mode.get
+    val testMode = frequencyStats.modeSet.get
     val testModeWeight = frequencyStats.weightOfMode
     val testTotalWeight = frequencyStats.totalWeight
     val testModeCount = frequencyStats.modeCount
@@ -109,7 +109,7 @@ class FrequencyStatisticsITest extends TestingSparkContextFlatSpec with Matchers
 
     val frequencyStats = new FrequencyStatistics(dataWeightPairs)
 
-    val testMode = frequencyStats.mode.get
+    val testMode = frequencyStats.modeSet.get
     val testModeWeight = frequencyStats.weightOfMode
     val testTotalWeight = frequencyStats.totalWeight
     val testModeCount = frequencyStats.modeCount
@@ -127,7 +127,7 @@ class FrequencyStatisticsITest extends TestingSparkContextFlatSpec with Matchers
 
     val frequencyStats = new FrequencyStatistics[String](dataWeightPairs)
 
-    val testMode = frequencyStats.mode.get
+    val testMode = frequencyStats.modeSet.get
     val testModeWeight = frequencyStats.weightOfMode
     val testTotalWeight = frequencyStats.totalWeight
     val testModeCount = frequencyStats.modeCount

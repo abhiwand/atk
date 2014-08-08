@@ -40,12 +40,14 @@ private[spark] object ColumnStatistics extends Serializable {
 
     val frequencyStatistics = new FrequencyStatistics(dataWeightPairs)
 
-    val modeJsValue: JsValue = if (frequencyStatistics.mode.isEmpty) {
-      None.asInstanceOf[Option[String]].toJson
+    val modeJsValue: JsValue = frequencyStatistics.modeSet.map(x => x.asInstanceOf[JsWritable]).toJson
+
+    /*if (frequencyStatistics.modeSet.isEmpty) {
+      None.asInstanceOf[Set[String]].toJson
     }
     else {
-      dataType.typedJson(frequencyStatistics.mode.get)
-    }
+      dataType.typedJson(frequencyStatistics.modeSet)
+    } */
 
     ColumnModeReturn(modeJsValue,
       frequencyStatistics.weightOfMode,
