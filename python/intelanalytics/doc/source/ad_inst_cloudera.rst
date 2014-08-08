@@ -85,7 +85,7 @@ Check below images for examples.
 If all correct hosts are selected, hit Continue.
 Otherwise, click New Search. 
 
-.. image:: ad_inst_cloudera_04.png
+.. image:: ad_inst_cloudera_04.*
    :width: 80%
    :align: center
 
@@ -102,7 +102,7 @@ In Custom Repository field (NOT "Custom Repository" button drop-down), enter::
 Hit the Add button to the right of the text field.
 Wait around a minute then hit the Continue button when it lights up.
 
-.. image:: ad_inst_cloudera_05.png
+.. image:: ad_inst_cloudera_05.*
    :width: 80%
    :align: center
 
@@ -126,7 +126,7 @@ Hit Continue button when it lights up after the progress bar fills.
 You will be greeted by more progress bars.
 Wait and hit Continue when they finish too.   
 
-.. image:: ad_inst_cloudera_07.png
+.. image:: ad_inst_cloudera_07.*
    :width: 80%
    :align: center
 
@@ -138,7 +138,7 @@ Take note of anything else that doesn't have a green check mark next to it and r
 
 Click Finish
 
-.. image:: ad_inst_cloudera_08.png
+.. image:: ad_inst_cloudera_08.*
    :width: 80%
    :align: center
 
@@ -162,7 +162,7 @@ In the drop-down menu, mark the following boxes:
 
 Click Continue.                
 
-.. image:: ad_inst_cloudera_09.png
+.. image:: ad_inst_cloudera_09.*
    :width: 80%
    :align: center
 
@@ -182,14 +182,14 @@ Leave all other fields in their default values and click Continue.
 
 Changes to make near the top:
 
-.. image:: ad_inst_cloudera_10a.png
+.. image:: ad_inst_cloudera_10a.*
    :width: 80%
    :align: center
  
 
 Changes to make near the bottom:
 
-.. image:: ad_inst_cloudera_10b.png
+.. image:: ad_inst_cloudera_10b.*
    :width: 80%
    :align: center
  
@@ -203,7 +203,7 @@ If not, fill that in.
 Click Test Connection.
 If successful, click Continue.
 
-.. image:: ad_inst_cloudera_11.png
+.. image:: ad_inst_cloudera_11.*
    :width: 80%
    :align: center
  
@@ -230,7 +230,7 @@ The next page requires no interaction. Just more loading bars.
 #. In the Cloudera Manager, hit the admin drop-down at the top right corner of the screen and select Change Password.
    Change the password as desired
 
-.. image:: ad_inst_cloudera_13.png
+.. image:: ad_inst_cloudera_13.*
    :width: 50%
    :align: center
  
