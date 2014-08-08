@@ -28,30 +28,38 @@ import spray.json.JsValue
 /**
  * Command for calculating the mode of a (possibly weighted) column.
  * @param frame Identifier for the input dataframe.
+ * @param dataColumn Name of the column supplying the data.
+ * @param weightsColumn Optional. Name of the column supplying the weights. Weights default to uniform (all 1's)
+ *                      if no weights column is provided.
+ * @param maxNumberOfModesReturned Optional. Maximum number of modes returned. If this parameter is not provided, it
+ *                                 defaults to 1.
  */
 case class ColumnMode(frame: FrameReference,
                       dataColumn: String,
                       weightsColumn: Option[String],
-                      modeCount: Option[Int]) {
+                      maxNumberOfModesReturned: Option[Int]) {
 
   require(frame != null, "frame is required")
   require(dataColumn != null, "data column is required")
 }
 
 /**
- * Mode data for a dataframe column.
+ *  * Mode data for a dataframe column.
  *
  * If no weights are provided, all elements receive a uniform weight of 1.
  * If any element receives a weight that is NaN, infinite or <= 0, that element is thrown
  * out of the calculation.
  *
- * @param mode A mode is a data element of maximum net weight. A set of modes is returned.
- *             The empty set is returned when the sum of the weights is 0.
+ * @param modes A mode is a data element of maximum net weight. A set of modes is returned.
+ *             The empty set is returned when the sum of the weights is 0. If the number of modes is <= the parameter
+ *             maxNumberOfModesReturned, then all modes of the data are returned.If the number of modes is
+ *             > maxNumberOfModesReturned, then only the first maxNumberOfModesReturned many modes
+ *             (per a canonical ordering) are returned.
  * @param weightOfMode Weight of the mode. (If no weight column is specified,
  *                     this is the number of appearances of the mode.)
  * @param totalWeight Total weight in the column. (If no weight column is specified, this is the number of entries
  *                    with finite, non-zero weight.)
  * @param modeCount The number of modes in the data.
  */
-case class ColumnModeReturn(mode: JsValue, weightOfMode: Double, totalWeight: Double, modeCount: Long) {
+case class ColumnModeReturn(modes: JsValue, weightOfMode: Double, totalWeight: Double, modeCount: Long) {
 }
