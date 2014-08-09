@@ -30,7 +30,7 @@
     <name>IntelAnalytics iGiraph Parent</name>
     <description>IntelAnalytics iGiraph : Large Scale Graph Processing on Hadoop</description>
     <inceptionYear>2013</inceptionYear>
-    <artifactId>IntelAnalytics-igiraph</artifactId>
+    <artifactId>igiraph</artifactId>
 
     <packaging>jar</packaging>
 
