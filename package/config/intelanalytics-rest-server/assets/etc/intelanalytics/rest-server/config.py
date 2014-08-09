@@ -3,18 +3,24 @@ from cm_api.endpoints import hosts
 from cm_api.endpoints import role_config_groups
 import re
 
-clouderaAgentConfig = open("config.ini", "r").read()
+clouderaManagerHost = None
+clouderaAgentConfig = None
+try:
+    #/etc/cloudera-scm-agent
+    clouderaAgentConfig = open("/etc/cloudera-scm-agent/config.ini", "r")
+    clouderaManagerHost = re.search('(?<=server_host=).*',clouderaAgentConfig.read()).group(0)
+    clouderaAgentConfig.close()
+except IOError:
+    clouderaManagerHost = raw_input("What the hostname of your cloudera manager instance? ")
 
-#server_host=slsls
-clouderaManagerHost = re.search('(?<=server_host=).*',clouderaAgentConfig).group(0)
-print clouderaManagerHost
 
-clouderaManagerHost = "ec2-54-186-8-119.us-west-2.compute.amazonaws.com"
-#clouderaManagerHost = "10.54.10.137"
+clouderaManagerPort = raw_input("What port is Cloudera manager listening on? defaults to 7180 if nothing is entered")
+if clouderaManagerPort == "" or clouderaManagerPort == None:
+    clouderaManagerPort = 7180
 
-api = ApiResource(clouderaManagerHost, username="admin", password="admin")
+api = ApiResource(clouderaManagerHost, server_port=clouderaManagerPort, username="admin", password="admin")
 
-#the user picked cluster
+#the user picked cluster or the only cluster managed by cloudera manager
 cluster = None
 # Get a list of all clusters
 clusters=api.get_all_clusters()
@@ -101,11 +107,21 @@ def getSparkDetails(services):
 
     spark_config_groups = role_config_groups.get_all_role_config_groups(api, spark_service.name, cluster.name)
 
+#    for configGroup in spark_config_groups:
+#        print configGroup
+#        for name, config in configGroup.get_config(view='full').items():
+#            print name
+
+
     spark_config_executor_total_max_heapsize = find_config(spark_config_groups, "spark-SPARK_WORKER-BASE",
                                                            "executor_total_max_heapsize")
 
     spark_config_master_port = find_config(spark_config_groups, "spark-SPARK_MASTER-BASE", "master_port")
 
+    sparkConfigEnvSh = find_config(spark_config_groups, "spark-GATEWAY-BASE",
+                                   "spark-conf/spark-env.sh_client_config_safety_valve")
+
+    print sparkConfigEnvSh
     return spark_service, spark_roles, spark_master_roles, spark_master_role_hostnames, spark_config_groups, \
            spark_config_executor_total_max_heapsize, spark_config_master_port
 
@@ -114,20 +130,24 @@ def updateIntelAnalyticsConfig( hdfsHost, zookeeperHost, sparkHost, sparkPort, s
     configFileTplPath = "application.conf.tpl"
     configFilePath = "application.conf"
 
-    configTpl = open( configFileTplPath, "r").read()
+    configTpl = open( configFileTplPath, "r")
+    configTplText = configTpl.read()
+    configTpl.close()
 
     #set fs.root
-    configTpl = re.sub(r'fs.root = .*', 'fs.root = "hdfs://' + hdfsHost[0] + '/user/iauser"', configTpl)
+    configTplText = re.sub(r'fs.root = .*', 'fs.root = "hdfs://' + hdfsHost[0] + '/user/iauser"', configTplText)
     #set titan zookeeper list titan.load.storage.hostname
-    configTpl = re.sub(r'titan.load.storage.hostname = .*',
-                       'titan.load.storage.hostname = "' + ','.join(zookeeperHost) + '"', configTpl)
+    configTplText = re.sub(r'titan.load.storage.hostname = .*',
+                       'titan.load.storage.hostname = "' + ','.join(zookeeperHost) + '"', configTplText)
     #set spark master
-    configTpl = re.sub(r'spark.master = .*',
-                       'spark.master = "spark://' + sparkHost[0] + ':' + sparkPort + '"', configTpl)
+    configTplText = re.sub(r'spark.master = .*',
+                       'spark.master = "spark://' + sparkHost[0] + ':' + sparkPort + '"', configTplText)
     #set spark executor memory
-    configTpl = re.sub(r'spark.executor.memory = .*', 'spark.executor.memory = "' + sparkMemory + '"', configTpl)
+    configTplText = re.sub(r'spark.executor.memory = .*', 'spark.executor.memory = "' + sparkMemory + '"', configTplText)
 
-    open(configFilePath, "w").write(configTpl)
+    config = open(configFilePath, "w")
+    config.write(configTplText)
+    config.close()
 
 #if we have more than one cluster prompt the user to pick a cluster
 if len(clusters) > 1:
