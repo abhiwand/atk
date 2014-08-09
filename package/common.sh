@@ -200,7 +200,7 @@ if [ ! -z "$URL" ]; then
 fi
 echo "%description"
 echo -e $DESCRIPTION
-echo $gitLog
+
 echo "%define TIMESTAMP %(echo $TIMESTAMP)"
 echo "%define TAR_FILE %(echo $TAR_FILE)"
 echo "%build"
