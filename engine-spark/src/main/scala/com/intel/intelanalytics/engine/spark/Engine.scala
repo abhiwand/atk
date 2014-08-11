@@ -913,7 +913,8 @@ class SparkEngine(sparkContextManager: SparkContextManager,
    */
   def getRowsSimple(arguments: RowQuery[Identifier], user: UserPrincipal, invocation: SparkInvocation) = {
     val rdd = frames.getFrameRdd(invocation.sparkContext, arguments.id).rows
-    rdd.take(arguments.count + arguments.offset.toInt).drop(arguments.offset.toInt)
+    val takenRows = rdd.take(arguments.count + arguments.offset.toInt).drop(arguments.offset.toInt)
+    invocation.sparkContext.parallelize(takenRows)
   }
 
   /**
