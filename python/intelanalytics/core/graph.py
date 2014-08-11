@@ -212,7 +212,6 @@ class Rule(object):
 
         """
         # TODO - Docstrings
-
         frame = Rule.validate_source(key, frame)
         frame = Rule.validate_source(value, frame)
         return frame
@@ -225,7 +224,6 @@ class Rule(object):
 
         """
         # TODO - Docstrings
-
         frame = None
         if properties:
             for k, v in properties.items():
@@ -313,6 +311,7 @@ class VertexRule(Rule):
         id_frame = self.validate_property(self.id_key, self.id_value, None)
         properties_frame = self.validate_properties(self.properties)
         return self.validate_same_frame(id_frame, properties_frame)
+
 
 class EdgeRule(Rule):
     """
@@ -435,10 +434,11 @@ class BigGraph(CommandSupport):
             new_graph_name= self._backend.create(self, rules, name)
             CommandSupport.__init__(self)
             #self.ml = GraphMachineLearning(self)
-            #self.sampling = GraphSampling(self)
+            self.sampling = GraphSampling(self)
             logger.info('Created new graph "%s"', new_graph_name)
         except:
             raise IaError(logger)
+
 
 
     def __repr__(self):
@@ -533,58 +533,54 @@ class BigGraph(CommandSupport):
     #def add_props(self, rules)
     #def remove_props(self, rules)
 
-# class GraphSampling(object):
-#     """
-#     Functionality for creating a graph sample
-#
-#     .. versionadded:: 0.8
-#
-#     """
-#
-#     def __init__(self, graph):
-#         self.graph = graph
-#         if not hasattr(self, '_backend'):
-#             self._backend = _get_backend()
-#
-#     def vertex_sample(self, size, sample_type, **kwargs):
-#         """
-#         Create a vertex induced subgraph obtained by vertex sampling
-#
-#         Three types of vertex sampling are provided: 'uniform', 'degree', and 'degreedist'.  A 'uniform' vertex sample
-#         is obtained by sampling vertices uniformly at random.  For 'degree' vertex sampling, each vertex is weighted by
-#         its out-degree.  For 'degreedist' vertex sampling, each vertex is weighted by the total number of vertices that
-#         have the same out-degree as it.  That is, the weight applied to each vertex for 'degreedist' vertex sampling is
-#         given by the out-degree histogram bin size.
-#
-#         Parameters
-#         ----------
-#         size : int
-#             the number of vertices to sample from the graph
-#         sample_type : str
-#             the type of vertex sample among: ['uniform', 'degree', 'degreedist']
-#         seed : (optional keyword argument) int
-#             random seed value
-#
-#         Returns
-#         -------
-#         BigGraph
-#             a new BigGraph object representing the vertex induced subgraph
-#
-#         Examples
-#         --------
-#         Assume a set of rules created on a BigFrame that specifies 'user' and 'product' vertices as well as an edge
-#         rule.  The BigGraph created from this data can be vertex sampled to obtained a vertex induced subgraph:
-#
-#             graph = BigGraph([user_vertex_rule, product_vertex_rule, edge_rule])
-#             subgraph = graph.sampling.vertex_sample(1000, 'uniform')
-#
-#         """
-#         if 'seed' in kwargs:
-#             result = self._backend.vertex_sample(self.graph, size, sample_type, kwargs['seed'])
-#             return self._backend.get_graph(result['name'])
-#         else:
-#             result = self._backend.vertex_sample(self.graph, size, sample_type)
-#             return self._backend.get_graph(result['name'])
+class GraphSampling(object):
+    """
+    Functionality for creating a graph sample
+
+    .. versionadded:: 0.8
+
+    """
+
+    def __init__(self, graph):
+        self.graph = graph
+        if not hasattr(self, '_backend'):
+            self._backend = _get_backend()
+
+    def vertex_sample(self, size, sample_type, seed=None):
+        """
+        Create a vertex induced subgraph obtained by vertex sampling
+
+        Three types of vertex sampling are provided: 'uniform', 'degree', and 'degreedist'.  A 'uniform' vertex sample
+        is obtained by sampling vertices uniformly at random.  For 'degree' vertex sampling, each vertex is weighted by
+        its out-degree.  For 'degreedist' vertex sampling, each vertex is weighted by the total number of vertices that
+        have the same out-degree as it.  That is, the weight applied to each vertex for 'degreedist' vertex sampling is
+        given by the out-degree histogram bin size.
+
+        Parameters
+        ----------
+        size : int
+            the number of vertices to sample from the graph
+        sample_type : str
+            the type of vertex sample among: ['uniform', 'degree', 'degreedist']
+        seed : (optional) int
+            random seed value
+
+        Returns
+        -------
+        BigGraph
+            a new BigGraph object representing the vertex induced subgraph
+
+        Examples
+        --------
+        Assume a set of rules created on a BigFrame that specifies 'user' and 'product' vertices as well as an edge
+        rule.  The BigGraph created from this data can be vertex sampled to obtained a vertex induced subgraph:
+
+            graph = BigGraph([user_vertex_rule, product_vertex_rule, edge_rule])
+            subgraph = graph.sampling.vertex_sample(1000, 'uniform')
+
+        """
+        result = self._backend.vertex_sample(self.graph, size, sample_type, seed)
+        return self._backend.get_graph(result['name'])
 
 
 class GraphMachineLearning(object):

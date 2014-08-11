@@ -1,16 +1,16 @@
 #
-# Netflix example - create a frame and load a graph
+# Movie example - create a frame and load a graph
 #
-# Depends on a netflix.csv file
+# Depends on a movie.csv file
 #
 # Usage:
 #
 #   Copy data to HDFS
-#       hadoop fs -copyFromLocal netflix.csv {fsRoot in HDFS}
+#       hadoop fs -copyFromLocal movie.csv {fsRoot in HDFS}
 #
 #   At Python prompt
 #       import os
-#       execfile('/path/to/netflix.py')
+#       execfile('/path/to/movie.py')
 #
 
 from intelanalytics import *
@@ -21,7 +21,7 @@ print("server ping")
 server.ping()
 
 print("define csv file")
-csv = CsvFile("/netflix.csv", schema= [('user', int32),
+csv = CsvFile("/movie.csv", schema= [('user', int32),
                                               ('vertexType', str),
                                               ('movie', int32),
                                               ('rating', str),
