@@ -181,11 +181,14 @@ class FrameBackendRest(object):
         return "frame_" + uuid.uuid4().hex + annotation
 
     @staticmethod
-    def _validate_schema(schema):
-        for tup in schema:
-            if not isinstance(tup[0], basestring):
+    def _format_schema(schema):
+        formatted_schema = []
+        for name, data_type in schema:
+            if not isinstance(name, basestring):
                 raise ValueError("First value in schema tuple must be a string")
-            valid_data_types.validate(tup[1])
+            formatted_data_type = valid_data_types.get_from_type(data_type)
+            formatted_schema.append((name, formatted_data_type))
+        return formatted_schema
 
     def add_columns(self, frame, expression, schema):
         if not schema or not hasattr(schema, "__iter__"):
@@ -196,7 +199,7 @@ class FrameBackendRest(object):
             only_one_column = True
             schema = [schema]
 
-        self._validate_schema(schema)
+        schema = self._format_schema(schema)
         names, data_types = zip(*schema)
 
         add_columns_function = get_add_one_column_function(expression, data_types[0]) if only_one_column \
@@ -315,7 +318,7 @@ class FrameBackendRest(object):
             # keep the import localized, as serialization doesn't like prettytable
             import intelanalytics.rest.prettytable as prettytable
             table = prettytable.PrettyTable()
-            fields = OrderedDict([("{0}:{1}".format(key, valid_data_types.to_string(val)), self._align[val]) for key, val in self.schema.iteritems()])
+            fields = OrderedDict([("{0}:{1}".format(key, valid_data_types.to_string(val)), self._align[val]) for key, val in self.schema])
             table.field_names = fields.keys()
             table.align.update(fields)
             table.hrules = prettytable.HEADER
