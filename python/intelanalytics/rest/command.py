@@ -376,14 +376,13 @@ class Executor(object):
             raise CommandServerError(command_info)
         return command_info
 
-    def extractDataFromSelectedColumns(self, data_in_page, indices, selected_columns):
+    def extract_data_from_selected_columns(self, data_in_page, indices):
         new_data = []
         for row in data_in_page:
-            if selected_columns is not None:
-                new_row = []
-                for index in indices:
-                    new_row.append(row[index])
-                row = new_row
+            new_row = []
+            for index in indices:
+                new_row.append(row[index])
+            row = new_row
 
             new_data.append(row)
         return new_data
@@ -413,7 +412,7 @@ class Executor(object):
         if response_json["complete"]:
             result_data = response_json["result"]["data"]
             if selected_columns is not None:
-                result_data = self.extractDataFromSelectedColumns(result_data, indices, selected_columns)
+                result_data = self.extract_data_from_selected_columns(result_data, indices)
             data.extend(result_data)
         else:
             command = self.poll_command_info(response)
@@ -428,7 +427,7 @@ class Executor(object):
                 data_in_page = next_partition.result["data"]
 
                 if selected_columns is not None:
-                    data_in_page = self.extractDataFromSelectedColumns(data_in_page, indices, selected_columns)
+                    data_in_page = self.extract_data_from_selected_columns(data_in_page, indices)
 
                 data.extend(data_in_page)
 
