@@ -392,11 +392,13 @@ class Executor(object):
         """
         Issues the query_request to the server
         """
+        if isinstance(selected_columns, basestring):
+            selected_columns = [selected_columns]
+
         if selected_columns is not None:
             temp = [f for f in schema if f[0] in selected_columns]
             indices = [schema.index(f) for f in temp]
             schema = temp
-
 
         logger.info("Issuing query " + query_url)
         try:
