@@ -136,7 +136,7 @@ class QueryExecutor(engine: => SparkEngine, queries: SparkQueryStorage, contextM
                   case x: RDD[Any] => x
                   case x: Seq[Any] => context.parallelize(x)
                   case x: Iterable[Any] => context.parallelize(x.toSeq)
-                  case _ => context.parallelize(x)
+                  case _ => ???
                 }
                 val location = queries.getAbsoluteQueryDirectory(q.id)
 
