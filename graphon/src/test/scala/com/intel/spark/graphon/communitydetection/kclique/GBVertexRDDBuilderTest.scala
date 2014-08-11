@@ -25,12 +25,12 @@
 package com.intel.spark.graphon.communitydetection.kclique
 
 import org.scalatest.{ Matchers, FlatSpec }
-import com.intel.spark.graphon.connectedcomponents.TestingSparkContext
+import com.intel.testutils.TestingSparkContextFlatSpec
 import org.apache.spark.rdd.RDD
 import com.intel.graphbuilder.elements.{ Property, Vertex }
 import com.intel.spark.graphon.communitydetection.ScalaToJavaCollectionConverter
 
-class GBVertexRDDBuilderTest extends FlatSpec with Matchers with TestingSparkContext {
+class GBVertexRDDBuilderTest extends FlatSpec with Matchers with TestingSparkContextFlatSpec {
 
   trait GBVertexSetTest {
 
@@ -64,8 +64,8 @@ class GBVertexRDDBuilderTest extends FlatSpec with Matchers with TestingSparkCon
   "Number of vertices coming out" should
     "be same with original input graph" in new GBVertexSetTest {
 
-      val rddOfGbVerticesList: RDD[Vertex] = sc.parallelize(gbVerticesList)
-      val rddOfVertexCommunitySet: RDD[(Long, Set[Long])] = sc.parallelize(vertexCommunitySet)
+      val rddOfGbVerticesList: RDD[Vertex] = sparkContext.parallelize(gbVerticesList)
+      val rddOfVertexCommunitySet: RDD[(Long, Set[Long])] = sparkContext.parallelize(vertexCommunitySet)
 
       val gbVertexSetter: GBVertexRDDBuilder = new GBVertexRDDBuilder(rddOfGbVerticesList, rddOfVertexCommunitySet)
       val newGBVerticesAsGBVertexSetterOutput: RDD[Vertex] = gbVertexSetter.setVertex(communityPropertyDefaultLabel)
@@ -77,13 +77,13 @@ class GBVertexRDDBuilderTest extends FlatSpec with Matchers with TestingSparkCon
   "The GB vertex list" should
     "include empty community property, if the vertex doesn't belong to any community" in new GBVertexSetTest {
 
-      val rddOfGbVerticesList: RDD[Vertex] = sc.parallelize(gbVerticesList)
-      val rddOfVertexCommunitySet: RDD[(Long, Set[Long])] = sc.parallelize(vertexCommunitySet)
+      val rddOfGbVerticesList: RDD[Vertex] = sparkContext.parallelize(gbVerticesList)
+      val rddOfVertexCommunitySet: RDD[(Long, Set[Long])] = sparkContext.parallelize(vertexCommunitySet)
 
       val gbVertexSetter: GBVertexRDDBuilder = new GBVertexRDDBuilder(rddOfGbVerticesList, rddOfVertexCommunitySet)
       val newGBVerticesAsGBVertexSetterOutput: RDD[Vertex] = gbVertexSetter.setVertex(communityPropertyDefaultLabel)
 
-      val rddOfNewGBVertexList: RDD[Vertex] = sc.parallelize(newGBVertexList)
+      val rddOfNewGBVertexList: RDD[Vertex] = sparkContext.parallelize(newGBVertexList)
 
       rddOfNewGBVertexList.collect().toSet shouldEqual newGBVerticesAsGBVertexSetterOutput.collect().toSet
 

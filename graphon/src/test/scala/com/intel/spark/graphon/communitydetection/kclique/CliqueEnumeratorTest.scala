@@ -25,11 +25,11 @@
 package com.intel.spark.graphon.communitydetection.kclique
 
 import org.scalatest.{ Matchers, FlatSpec }
-import com.intel.spark.graphon.connectedcomponents.TestingSparkContext
+import com.intel.testutils.TestingSparkContextFlatSpec
 import org.apache.spark.rdd.RDD
 import com.intel.spark.graphon.communitydetection.kclique.datatypes.{ ExtendersFact, CliqueFact, Edge }
 
-class CliqueEnumeratorTest extends FlatSpec with Matchers with TestingSparkContext {
+class CliqueEnumeratorTest extends FlatSpec with Matchers with TestingSparkContextFlatSpec {
 
   trait KCliqueEnumTest {
 
@@ -45,8 +45,8 @@ class CliqueEnumeratorTest extends FlatSpec with Matchers with TestingSparkConte
   "K-Clique enumeration" should
     "create all set of k-cliques" in new KCliqueEnumTest {
 
-      val rddOfEdgeList: RDD[Edge] = sc.parallelize(edgeList).map(keyval => Edge(keyval._1, keyval._2))
-      val rddOfFourCliques = sc.parallelize(fourCliques).map({ case (x, y) => ExtendersFact(CliqueFact(x), y, true) })
+      val rddOfEdgeList: RDD[Edge] = sparkContext.parallelize(edgeList).map(keyval => Edge(keyval._1, keyval._2))
+      val rddOfFourCliques = sparkContext.parallelize(fourCliques).map({ case (x, y) => ExtendersFact(CliqueFact(x), y, true) })
 
       val enumeratedFourCliques = CliqueEnumerator.run(rddOfEdgeList, 4)
 

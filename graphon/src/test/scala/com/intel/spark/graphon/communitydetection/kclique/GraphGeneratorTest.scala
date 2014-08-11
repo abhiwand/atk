@@ -25,11 +25,11 @@
 package com.intel.spark.graphon.communitydetection.kclique
 
 import org.scalatest.{ Matchers, FlatSpec, FunSuite }
-import com.intel.spark.graphon.connectedcomponents.TestingSparkContext
 import com.intel.spark.graphon.communitydetection.kclique.GraphGenerator
 import com.intel.spark.graphon.communitydetection.kclique.datatypes.{ ExtendersFact, CliqueFact }
+import com.intel.testutils.TestingSparkContextFlatSpec
 
-class GraphGeneratorTest extends FlatSpec with Matchers with TestingSparkContext {
+class GraphGeneratorTest extends FlatSpec with Matchers with TestingSparkContextFlatSpec {
 
   trait KCliqueGraphGenTest {
     val fourCliques = List((Array(2, 3, 4), Array(5, 7, 8)), (Array(3, 5, 6), Array(7, 8)))
@@ -49,8 +49,8 @@ class GraphGeneratorTest extends FlatSpec with Matchers with TestingSparkContext
   "K-Clique graph" should
     "have each k-cliques as the vertex of the new graph " in new KCliqueGraphGenTest {
 
-      val rddOfFourCliques = sc.parallelize(fourCliques).map({ case (x, y) => ExtendersFact(CliqueFact(x), y, true) })
-      val rddOfVertexListOfFourCliqueGraph = sc.parallelize(vertexListOfFourCliqueGraph)
+      val rddOfFourCliques = sparkContext.parallelize(fourCliques).map({ case (x, y) => ExtendersFact(CliqueFact(x), y, true) })
+      val rddOfVertexListOfFourCliqueGraph = sparkContext.parallelize(vertexListOfFourCliqueGraph)
 
       val fourCliqueGraphFromCreateGraphOutput = GraphGenerator.run(rddOfFourCliques)
       val vertexListFromCreateGraphOutput = fourCliqueGraphFromCreateGraphOutput.cliqueGraphVertices
@@ -61,8 +61,8 @@ class GraphGeneratorTest extends FlatSpec with Matchers with TestingSparkContext
   "K-Clique graph" should
     "produce correct edge list where edges between two k-cliques (which is the vertices of new graph) exists if they share (k-1) elements" in new KCliqueGraphGenTest {
 
-      val rddOfFourCliques = sc.parallelize(fourCliques).map({ case (x, y) => ExtendersFact(CliqueFact(x), y, true) })
-      val rddOfEdgeListOfFourCliqueGraph = sc.parallelize(edgeListOfFourCliqueGraph).map(subset => (subset.head, subset.last))
+      val rddOfFourCliques = sparkContext.parallelize(fourCliques).map({ case (x, y) => ExtendersFact(CliqueFact(x), y, true) })
+      val rddOfEdgeListOfFourCliqueGraph = sparkContext.parallelize(edgeListOfFourCliqueGraph).map(subset => (subset.head, subset.last))
 
       val fourCliqueGraphFromCreateGraphOutput = GraphGenerator.run(rddOfFourCliques)
       val edgeListFromCreateGraphOutput = fourCliqueGraphFromCreateGraphOutput.cliqueGraphEdges

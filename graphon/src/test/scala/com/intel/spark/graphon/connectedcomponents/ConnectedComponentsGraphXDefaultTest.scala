@@ -2,8 +2,9 @@ package com.intel.spark.graphon.connectedcomponents
 
 import org.scalatest.{ FlatSpec, Matchers }
 import org.apache.spark.rdd.RDD
+import com.intel.testutils.TestingSparkContextFlatSpec
 
-class ConnectedComponentsGraphXDefaultTest extends FlatSpec with Matchers with TestingSparkContext {
+class ConnectedComponentsGraphXDefaultTest extends FlatSpec with Matchers with TestingSparkContextFlatSpec {
 
   trait ConnectedComponentsTest {
     val vertexList: List[Long] = List(1, 2, 3, 5, 6, 7)
@@ -19,7 +20,7 @@ class ConnectedComponentsGraphXDefaultTest extends FlatSpec with Matchers with T
     "allocate component IDs according to connectivity equivalence classes" in new ConnectedComponentsTest {
 
       val rddOfComponentLabeledVertices: RDD[(Long, Long)] =
-        ConnectedComponentsGraphXDefault.run(sc.parallelize(vertexList), sc.parallelize(edgeList))
+        ConnectedComponentsGraphXDefault.run(sparkContext.parallelize(vertexList), sparkContext.parallelize(edgeList))
 
       val vertexIdToComponentMap = rddOfComponentLabeledVertices.collect().toMap
 

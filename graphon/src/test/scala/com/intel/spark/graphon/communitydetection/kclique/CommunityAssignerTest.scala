@@ -25,10 +25,10 @@
 package com.intel.spark.graphon.communitydetection.kclique
 
 import org.scalatest.{ Matchers, FlatSpec, FunSuite }
-import com.intel.spark.graphon.connectedcomponents.TestingSparkContext
+import com.intel.testutils.TestingSparkContextFlatSpec
 import com.intel.spark.graphon.communitydetection.kclique.CommunityAssigner
 
-class CommunityAssignerTest extends FlatSpec with Matchers with TestingSparkContext {
+class CommunityAssignerTest extends FlatSpec with Matchers with TestingSparkContextFlatSpec {
 
   trait kCliqueVertexWithCommunityListTest {
     val renamedIDWithCommunity = List((1001, 1), (1002, 1), (1003, 1), (1004, 2), (1005, 2))
@@ -57,10 +57,10 @@ class CommunityAssignerTest extends FlatSpec with Matchers with TestingSparkCont
   "Assignment of communities to the vertices" should
     "produce the pair of original k-clique vertex and set of communities it belongs to" in new kCliqueVertexWithCommunityListTest {
 
-      val rddOfVertexWithCommunityList = sc.parallelize(vertexWithCommunityList)
+      val rddOfVertexWithCommunityList = sparkContext.parallelize(vertexWithCommunityList)
 
-      val rddOfRenamedIDWithCommunity = sc.parallelize(renamedIDWithCommunity)
-      val rddOfRenamedIDWithOriginalKClique = sc.parallelize(renamedIDWithOriginalKClique)
+      val rddOfRenamedIDWithCommunity = sparkContext.parallelize(renamedIDWithCommunity)
+      val rddOfRenamedIDWithOriginalKClique = sparkContext.parallelize(renamedIDWithOriginalKClique)
 
       val vertexWithAssignedCommunities = CommunityAssigner.run(rddOfRenamedIDWithCommunity, rddOfRenamedIDWithOriginalKClique)
 

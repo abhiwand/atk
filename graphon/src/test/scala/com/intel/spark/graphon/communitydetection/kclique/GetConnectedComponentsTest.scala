@@ -25,11 +25,11 @@
 package com.intel.spark.graphon.communitydetection.kclique
 
 import org.scalatest.{ Matchers, FlatSpec, FunSuite }
-import com.intel.spark.graphon.connectedcomponents.TestingSparkContext
 import com.intel.spark.graphon.communitydetection.kclique.{ GraphGenerator, GetConnectedComponents }
 import com.intel.spark.graphon.communitydetection.kclique.datatypes.{ ExtendersFact, CliqueFact }
+import com.intel.testutils.TestingSparkContextFlatSpec
 
-class GetConnectedComponentsTest extends FlatSpec with Matchers with TestingSparkContext {
+class GetConnectedComponentsTest extends FlatSpec with Matchers with TestingSparkContextFlatSpec {
 
   trait getConnectedComponentsTest {
     val fourCliques = List((Array(2, 3, 4), Array(5, 7, 8)), (Array(3, 5, 6), Array(7, 8)))
@@ -42,10 +42,10 @@ class GetConnectedComponentsTest extends FlatSpec with Matchers with TestingSpar
   "K-Clique Connected Components" should
     "produce the same number of pairs of vertices and component ID as the number of vertices in the input graph" in new getConnectedComponentsTest {
 
-      val rddOfFourCliques = sc.parallelize(fourCliques).map({ case (x, y) => ExtendersFact(CliqueFact(x), y, true) })
+      val rddOfFourCliques = sparkContext.parallelize(fourCliques).map({ case (x, y) => ExtendersFact(CliqueFact(x), y, true) })
 
       val fourCliqueGraphFromCreateGraphOutput = GraphGenerator.run(rddOfFourCliques)
-      val fourCliqueGraphCCOutput = GetConnectedComponents.run(fourCliqueGraphFromCreateGraphOutput, sc)
+      val fourCliqueGraphCCOutput = GetConnectedComponents.run(fourCliqueGraphFromCreateGraphOutput, sparkContext)
       val fourCliqueGraphCC = fourCliqueGraphCCOutput.connectedComponents
 
       fourCliqueGraphCC.count() shouldEqual vertexListOfFourCliqueGraph.size
