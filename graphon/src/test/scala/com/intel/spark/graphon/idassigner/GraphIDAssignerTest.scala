@@ -1,12 +1,12 @@
 package com.intel.spark.graphon.idassigner
 
-import com.intel.spark.graphon.connectedcomponents.{ TestingSparkContext }
 import org.scalatest.{ FlatSpec, Matchers }
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.RDD
+import com.intel.testutils.TestingSparkContextFlatSpec
 
-class GraphIDAssignerTest extends FlatSpec with Matchers with TestingSparkContext {
+class GraphIDAssignerTest extends FlatSpec with Matchers with TestingSparkContextFlatSpec {
 
   trait GraphIDAssignerTest {
     val vertexList: List[Long] = List(1, 2, 3, 4, 5, 6, 7)
@@ -16,13 +16,13 @@ class GraphIDAssignerTest extends FlatSpec with Matchers with TestingSparkContex
     val edgeList: List[(Long, Long)] = List((2.toLong, 6.toLong), (2.toLong, 4.toLong), (4.toLong, 6.toLong),
       (3.toLong, 5.toLong), (3.toLong, 7.toLong), (5.toLong, 7.toLong)).flatMap({ case (x, y) => Set((x, y), (y, x)) })
 
-    val idAssigner = new GraphIDAssigner[Long](sc)
+    val idAssigner = new GraphIDAssigner[Long](sparkContext)
   }
 
   "ID assigner" should
     "produce distinct IDs" in new GraphIDAssignerTest {
 
-      val out = idAssigner.run(sc.parallelize(vertexList), sc.parallelize(edgeList))
+      val out = idAssigner.run(sparkContext.parallelize(vertexList), sparkContext.parallelize(edgeList))
 
       out.vertices.distinct().count() shouldEqual out.vertices.count()
     }
@@ -30,7 +30,7 @@ class GraphIDAssignerTest extends FlatSpec with Matchers with TestingSparkContex
   "ID assigner" should
     "produce one  ID for each incoming vertex" in new GraphIDAssignerTest {
 
-      val out = idAssigner.run(sc.parallelize(vertexList), sc.parallelize(edgeList))
+      val out = idAssigner.run(sparkContext.parallelize(vertexList), sparkContext.parallelize(edgeList))
 
       out.vertices.count() shouldEqual vertexList.size
     }
@@ -38,7 +38,7 @@ class GraphIDAssignerTest extends FlatSpec with Matchers with TestingSparkContex
   "ID assigner" should
     "produce the same number of edges in the renamed graph as in the input graph" in new GraphIDAssignerTest {
 
-      val out = idAssigner.run(sc.parallelize(vertexList), sc.parallelize(edgeList))
+      val out = idAssigner.run(sparkContext.parallelize(vertexList), sparkContext.parallelize(edgeList))
 
       out.edges.count() shouldEqual edgeList.size
     }
@@ -47,7 +47,7 @@ class GraphIDAssignerTest extends FlatSpec with Matchers with TestingSparkContex
     "have every edge in the renamed graph correspond to an edge in the old graph under the provided inverse renaming " in
     new GraphIDAssignerTest {
 
-      val out = idAssigner.run(sc.parallelize(vertexList), sc.parallelize(edgeList))
+      val out = idAssigner.run(sparkContext.parallelize(vertexList), sparkContext.parallelize(edgeList))
 
       val renamedEdges: Array[(Long, Long)] = out.edges.toArray()
 

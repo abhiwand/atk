@@ -7,8 +7,9 @@ import org.apache.spark.SparkContext
 import scala.concurrent.Lock
 import org.scalatest.{ FlatSpec, BeforeAndAfter }
 import org.apache.log4j.{ Logger, Level }
+import com.intel.testutils.TestingSparkContextFlatSpec
 
-class NormalizeConnectedComponentsTest extends FlatSpec with Matchers with TestingSparkContext {
+class NormalizeConnectedComponentsTest extends FlatSpec with Matchers with TestingSparkContextFlatSpec {
 
   trait ConnectedComponentsTest {
     val vertexList: List[Long] = List(4, 8, 12, 16, 20, 24, 28, 32)
@@ -20,8 +21,8 @@ class NormalizeConnectedComponentsTest extends FlatSpec with Matchers with Testi
 
   "normalize connected components" should "not have any gaps in the range of component IDs returned" in new ConnectedComponentsTest {
 
-    val verticesToComponentsRDD = sc.parallelize(originalVertexToComponent).map(x => (x._1.toLong, x._2.toLong))
-    val normalizeOut = NormalizeConnectedComponents.normalize(verticesToComponentsRDD, sc)
+    val verticesToComponentsRDD = sparkContext.parallelize(originalVertexToComponent).map(x => (x._1.toLong, x._2.toLong))
+    val normalizeOut = NormalizeConnectedComponents.normalize(verticesToComponentsRDD, sparkContext)
 
     val normalizeOutComponents = normalizeOut._2.map(x => x._2).distinct()
 
@@ -30,8 +31,8 @@ class NormalizeConnectedComponentsTest extends FlatSpec with Matchers with Testi
 
   "normalize connected components" should "create correct equivalence classes" in new ConnectedComponentsTest {
 
-    val verticesToComponentsRDD = sc.parallelize(originalVertexToComponent).map(x => (x._1.toLong, x._2.toLong))
-    val normalizedCCROutput = NormalizeConnectedComponents.normalize(verticesToComponentsRDD, sc)
+    val verticesToComponentsRDD = sparkContext.parallelize(originalVertexToComponent).map(x => (x._1.toLong, x._2.toLong))
+    val normalizedCCROutput = NormalizeConnectedComponents.normalize(verticesToComponentsRDD, sparkContext)
 
     val vertexComponentPairs = normalizedCCROutput._2.collect()
 
@@ -45,61 +46,3 @@ class NormalizeConnectedComponentsTest extends FlatSpec with Matchers with Testi
   }
 
 }
-
-// TODO: get TestingSparkContext from a shared location
-
-trait TestingSparkContext extends FlatSpec with BeforeAndAfter {
-
-  val useGlobalSparkContext: Boolean = System.getProperty("useGlobalSparkContext", "false").toBoolean
-
-  var sc: SparkContext = null
-
-  before {
-    if (useGlobalSparkContext) {
-      sc = TestingSparkContext.sc
-    }
-    else {
-      TestingSparkContext.lock.acquire()
-      sc = TestingSparkContext.createSparkContext
-    }
-  }
-
-  /**
-   * Clean up after the test is done
-   */
-  after {
-    if (!useGlobalSparkContext) cleanupSpark()
-  }
-
-  /**
-   * Shutdown spark and release the lock
-   */
-  private def cleanupSpark(): Unit = {
-    try {
-      if (sc != null) {
-        sc.stop()
-      }
-    }
-    finally {
-      // To avoid Akka rebinding to the same port, since it doesn't unbind immediately on shutdown
-      System.clearProperty("spark.driver.port")
-
-      TestingSparkContext.lock.release()
-    }
-  }
-}
-
-object TestingSparkContext {
-  private val lock = new Lock()
-  private lazy val sc: SparkContext = createSparkContext
-
-  def createSparkContext: SparkContext = {
-    setLogLevels(Level.WARN, Seq("spark", "org.eclipse.jetty", "akka"))
-    new SparkContext("local", "test " + new Date())
-  }
-
-  private def setLogLevels(level: org.apache.log4j.Level, loggers: TraversableOnce[String]): Unit = {
-    loggers.foreach(loggerName => Logger.getLogger(loggerName).setLevel(level))
-  }
-}
-
