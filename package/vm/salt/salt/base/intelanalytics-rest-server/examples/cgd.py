@@ -4,7 +4,7 @@ dataset = r"datasets/movie_sample_data_5mb.csv"
 
 schema = [("user_id", int32), ("direction", str), ("movie_id", int32), ("rating", int32), ("splits", str)]
 
-csv_file = CsvFile(dataset, schema, skip_header_lines = 0)
+csv_file = CsvFile(dataset, schema, skip_header_lines = 1)
 
 print("Creating DataFrame")
 

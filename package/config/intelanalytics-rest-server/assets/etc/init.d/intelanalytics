@@ -1,0 +1,63 @@
+#!/bin/bash
+
+#
+#intelanalytics init script
+#
+#chkconfig: 345 99 25
+#description: intel analytics rest server for doing big data analytics
+#
+
+# Source function library.
+. /etc/init.d/functions
+
+
+prog=intelanalytics-rest-server
+#lockfile=/var/lock/subsys/$prog
+
+green=$(tput setaf 2)
+red=$(tput setaf 1)
+yellow=$(tput setaf 3)
+normal=$(tput sgr0)
+
+verifySparkHome(){
+	[ -f /etc/default/${prog} ] && . /etc/default/${prog}
+	if [ -z "$SPARK_HOME" ]; then
+			echo "${yellow}SPARK_HOME is not set, please set it in /etc/default/${prog}${normal}"
+	fi
+	if [ ! -d $SPARK_HOME ]; then
+			echo "${red}SPARK_HOME directory doesn't exist, please correct the issue in /etc/default/${prog}${normal}"
+			exit 1
+	fi
+}
+
+initctlFunc() {
+	local event=$1
+	initctl $event $prog 
+	RETVAL=$?
+	return $RETVAL
+}
+
+verifySparkHome
+
+#change ownership log directory so logback has permissions to create application log
+chown $IAUSER:$IAUSER /var/log/intelanalytics/rest-server
+
+# See how we were called.
+case "$1" in
+  start)
+	initctlFunc start
+	;;
+  stop)
+	initctlFunc stop
+	;;
+  status)
+	initctlFunc status
+	;;
+  restart|force-reload)
+	initctlFunc stop
+	initctlFunc start
+	;;
+  *)
+	echo $"Usage: $0 {start|stop|status|restart|force-reload}"
+	exit 2
+esac

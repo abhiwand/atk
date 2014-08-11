@@ -5,3 +5,5 @@ base:
     - gaoPrivateRepo
     - intelanalytics-rest-server
     - intelanalytics-graphbuilder
+  '*prod*':
+    - cleanVM

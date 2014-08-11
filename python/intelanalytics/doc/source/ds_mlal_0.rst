@@ -30,15 +30,7 @@ From a functionality point of view, they fall into these categories: *Collaborat
 
 
 .. _Collaborative_Filtering:
-
------------------------
-Collaborative Filtering
------------------------
-
-Collaborative Filtering is widely used in recommender systems.
-For more information see: `Wikipedia\: Collaborative Filtering`_.
-
-We support two methods in this category, :ref:`ALS` and :ref:`CGD`
+.. include:: ds_mlal_cf.rst
 
 .. _ALS:
 .. include:: ds_mlal_als.rst
@@ -106,13 +98,6 @@ For Topic Modeling, see: http://en.wikipedia.org/wiki/Topic_model
 .. _LDA:
 .. include:: ds_mlal_lda.rst
 
-
-
-
-.. _Wikipedia\: Collaborative Filtering: http://en.wikipedia.org/wiki/Collaborative_filtering
-.. _Columbia Data Science\: Blog Week-7: http://columbiadatascience.com/2012/10/18/week-7-hunch-com-recommendation-engines-svd-alternating-least-squares-convexity-filter-bubbles/
-.. _Factorization Meets the Neighborhood\: a Multifaceted Collaborative Filtering Model: http://public.research.att.com/~volinsky/netflix/kdd08koren.pdf
-.. _Large-Scale Parallel Collaborative Filtering for the Netflix Prize: http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.173.2797
 
 .. rubric:: footnotes
 
