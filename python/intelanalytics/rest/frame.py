@@ -329,11 +329,11 @@ class FrameBackendRest(object):
 
          #def _repr_html_(self): TODO - Add this method for ipython notebooks
 
-    def inspect(self, frame, n, offset):
+    def inspect(self, frame, n, offset, columns):
         # inspect is just a pretty-print of take, we'll do it on the client
         # side until there's a good reason not to
-        rows = self.take(frame, n, offset)
-        return FrameBackendRest.InspectionTable(frame.schema, rows)
+        result = self.take(frame, n, offset, columns)
+        return FrameBackendRest.InspectionTable(result['schema'], result['data'])
 
     def join(self, left, right, left_on, right_on, how):
         if right_on is None:
@@ -422,11 +422,11 @@ class FrameBackendRest(object):
         arguments = {'frame': self._get_frame_full_uri(frame), "new_name": name}
         execute_update_frame_command('rename_frame', arguments, frame)
 
-    def take(self, frame, n, offset):
+    def take(self, frame, n, offset, columns):
         if n==0:
             return []
         url = 'dataframes/{0}/data?offset={2}&count={1}'.format(frame._id,n, offset)
-        return executor.query(url)
+        return executor.query(url, frame.schema, columns)
 
 
     def ecdf(self, frame, sample_col):
