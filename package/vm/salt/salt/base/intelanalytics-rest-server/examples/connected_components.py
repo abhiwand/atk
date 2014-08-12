@@ -1,7 +1,9 @@
 from intelanalytics import *
 
-dataset = r"movie_data_randoms.csv"
+dataset = r"datasets/movie_data_random.csv"
+
 schema = [("user_id", int64), ("movie_id", int64), ("rating", int64), ("splits", str)]
+
 csv_file = CsvFile(dataset, schema, skip_header_lines = 0)
 
 print("Creating Frame")
