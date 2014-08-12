@@ -332,6 +332,17 @@ class Executor(object):
 
     __commands = []
 
+    def extract_data_from_selected_columns(self, data_in_page, indices):
+        new_data = []
+        for row in data_in_page:
+            new_row = []
+            for index in indices:
+                new_row.append(row[index])
+            row = new_row
+
+            new_data.append(row)
+        return new_data
+
     def get_query_response(id, partition):
         """
         Attempt to get the next partition of data as a CommandInfo Object. Allow for several retries
@@ -375,17 +386,6 @@ class Executor(object):
         if command_info.error:
             raise CommandServerError(command_info)
         return command_info
-
-    def extract_data_from_selected_columns(self, data_in_page, indices):
-        new_data = []
-        for row in data_in_page:
-            new_row = []
-            for index in indices:
-                new_row.append(row[index])
-            row = new_row
-
-            new_data.append(row)
-        return new_data
 
     def query(self, query_url, schema, selected_columns):
         """

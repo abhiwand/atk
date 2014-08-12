@@ -25,6 +25,7 @@ package com.intel.intelanalytics.service.v1.viewmodels
 
 import com.intel.intelanalytics.domain.Error
 import spray.json.JsObject
+import com.intel.intelanalytics.domain.schema.Schema
 
 /**
  * The REST service response for single command in "GET ../query/id"
@@ -38,7 +39,7 @@ import spray.json.JsObject
  * @param links relevant links
  */
 case class GetQuery(id: Long, name: String, arguments: Option[JsObject], error: Option[Error],
-                    complete: Boolean, result: Option[GetQueryPage], links: List[RelLink]) {
+                    complete: Boolean, result: Option[GetQueryPage], links: List[RelLink], schema: Schema) {
   require(name != null, "name must not be null")
   require(arguments != null, "arguments may not be null")
   require(links != null, "links may not be null")
