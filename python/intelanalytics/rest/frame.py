@@ -30,6 +30,7 @@ from intelanalytics.core.orddict import OrderedDict
 from collections import defaultdict
 import json
 import sys
+import codecs
 
 from intelanalytics.core.frame import BigFrame
 from intelanalytics.core.column import BigColumn
@@ -333,7 +334,9 @@ class FrameBackendRest(object):
         # inspect is just a pretty-print of take, we'll do it on the client
         # side until there's a good reason not to
         rows = self.take(frame, n, offset)
-        return FrameBackendRest.InspectionTable(frame.schema, rows)
+        UTF8Writer = codecs.getwriter('utf8')
+        sys.stdout = UTF8Writer(sys.stdout)
+        return unicode(FrameBackendRest.InspectionTable(frame.schema, rows))
 
     def join(self, left, right, left_on, right_on, how):
         if right_on is None:
