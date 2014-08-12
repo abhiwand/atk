@@ -16,7 +16,7 @@ cp $tarFile $SCRIPTPATH/rpm/SOURCES/${packageName}-${version}.tar.gz
 LICENSE="Confidential"
 SUMMARY="$packageName-$version Build number: $BUILD_NUMBER. TimeStamp $TIMESTAMP"
 DESCRIPTION=$SUMMARY 
-REQUIRES="java >= 1.7, intelanalytics-spark-deps >= 0.8-${BUILD_NUMBER}, jq, perl-URI"
+REQUIRES="java-1.7.0-openjdk, intelanalytics-spark-deps >= ${version}-${BUILD_NUMBER}, jq, perl-URI"
 
 POST="
  #sim link to python sites packages
