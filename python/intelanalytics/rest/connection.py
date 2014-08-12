@@ -112,13 +112,14 @@ class HttpMethods(object):
     @staticmethod
     def _check_response(response, ignore=None):
         HttpMethods._check_response_for_build_id(response)
-        if not ignore or response.status_code not in ignore:
+
+        try:
             response.raise_for_status()
-        else:
-            try:
-                response.raise_for_status()
-            except Exception as e:
-                m = "Ignoring HTTP Response ERROR probably due to {0}:\n\t{1}".\
+        except Exception as e:
+            if not ignore or response.status_code not in ignore:
+                raise requests.exceptions.HTTPError(str(e) + " "+ response.text)
+            else:
+                m = "Ignoring HTTP Response ERROR probably due to {0}:\n\t{1}". \
                     format(ignore[response.status_code], e)
                 logger.warn(m)
                 sys.stderr.write(m)
@@ -155,11 +156,7 @@ class HttpMethods(object):
         if logger.level <= logging.DEBUG:
             logger.debug("[HTTP Get Response] %s\n%s", r.text, r.headers)
 
-        try:
-            self._check_response(r)
-        except Exception as e:
-            raise requests.exceptions.HTTPError(str(e) + " "+ r.text)
-
+        self._check_response(r)
         return r
 
     def delete(self, uri_path):
@@ -187,10 +184,8 @@ class HttpMethods(object):
         if logger.level <= logging.DEBUG:
             logger.debug("[HTTP Post Response] %s", r.text)
             self.reason = r.text
-        try:
-            self._check_response(r, {406: 'long initialization time'})
-        except Exception as e:
-            raise requests.exceptions.HTTPError(str(e) + " "+ r.text)
+
+        self._check_response(r, {406: 'long initialization time'})
         return r
 
 build_id_help_msg = """
