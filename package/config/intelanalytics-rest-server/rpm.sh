@@ -23,7 +23,7 @@ start the server with 'service intelanalytics-rest-server status'
 config files are in /etc/intelanalytics/rest-server
 log files live in /var/log/intelanalytics/rest-server"
 
-REQUIRES=" java >= 1.7, intelanalytics-python-rest-client >= 0.8-${BUILD_NUMBER}, intelanalytics-graphbuilder >= 0.8-${BUILD_NUMBER}"
+REQUIRES=" java-1.7.0-openjdk, intelanalytics-python-rest-client >= ${version}-${BUILD_NUMBER}, intelanalytics-graphbuilder >= ${version}-${BUILD_NUMBER}"
 
 PRE="
 restUser=iauser
