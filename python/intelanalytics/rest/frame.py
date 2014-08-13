@@ -326,7 +326,7 @@ class FrameBackendRest(object):
             table.vrules = prettytable.NONE
             for r in self.rows:
                 table.add_row(r)
-            return table.get_string()
+            return unicode(table.get_string())
 
          #def _repr_html_(self): TODO - Add this method for ipython notebooks
 
@@ -334,9 +334,7 @@ class FrameBackendRest(object):
         # inspect is just a pretty-print of take, we'll do it on the client
         # side until there's a good reason not to
         rows = self.take(frame, n, offset)
-        UTF8Writer = codecs.getwriter('utf8')
-        sys.stdout = UTF8Writer(sys.stdout)
-        return unicode(FrameBackendRest.InspectionTable(frame.schema, rows))
+        return FrameBackendRest.InspectionTable(frame.schema, rows)
 
     def join(self, left, right, left_on, right_on, how):
         if right_on is None:
