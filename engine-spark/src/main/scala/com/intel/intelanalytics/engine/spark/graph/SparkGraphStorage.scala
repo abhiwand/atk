@@ -57,6 +57,7 @@ class SparkGraphStorage(metaStore: MetaStore,
           if (check.isDefined) {
             throw new RuntimeException("Graph with same name exists. Create aborted")
           }
+          backendStorage.deleteUnderlyingTable(graph.name)
           metaStore.graphRepo.insert(graph).get
         }
     }
