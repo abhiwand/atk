@@ -1,4 +1,31 @@
+##############################################################################
+# INTEL CONFIDENTIAL
+#
+# Copyright 2014 Intel Corporation All Rights Reserved.
+#
+# The source code contained or described herein and all documents related to
+# the source code (Material) are owned by Intel Corporation or its suppliers
+# or licensors. Title to the Material remains with Intel Corporation or its
+# suppliers and licensors. The Material may contain trade secrets and
+# proprietary and confidential information of Intel Corporation and its
+# suppliers and licensors, and is protected by worldwide copyright and trade
+# secret laws and treaty provisions. No part of the Material may be used,
+# copied, reproduced, modified, published, uploaded, posted, transmitted,
+# distributed, or disclosed in any way without Intel's prior express written
+# permission.
+#
+# No license under any patent, copyright, trade secret or other intellectual
+# property right is granted to or conferred upon you by disclosure or
+# delivery of the Materials, either expressly, by implication, inducement,
+# estoppel or otherwise. Any license under such intellectual property rights
+# must be express and approved by Intel in writing.
+##############################################################################
 """
+Requirements:
+    Clouderas python cm-api http://cloudera.github.io/cm_api/
+    working Cloudera manager with at least a single cluster
+    Intel Analytics installation
+
 This script queries Cloudera manager to get the host names of the machines running the following roles.
  -ZOOKEEPER server(the zookeeper role is actually called 'server')
  -HDFS name node
@@ -28,6 +55,8 @@ Command Line Arguments
     gets updated we deploy the new config but we also need to restart the spark service for the changes to take effect
     on all the master and worker nodes. This is left to the user to decide in case spark is currently busy running some
     jobs
+
+    TODO: Configure database when the configuration script is done.
 """
 
 from cm_api.api_client import ApiResource
@@ -71,11 +100,8 @@ def get_arg(question, default, arg):
     :param arg: the parsed argument from the command line
     :return: argument if it exist, user input, or the default value
     """
-    if arg is None:
-        value = user_info_prompt(question + " defaults to " + str(default) + " if nothing is entered: ", default)
-    else:
-        value = arg
-    return value
+    return user_info_prompt(question + " defaults to " + str(default) + " if nothing is entered: ", default) \
+        if arg is None else arg
 
 def select_cluster(clusters, command_line_cluster):
     """
@@ -182,11 +208,7 @@ def find_exported_class_path(spark_config_env_sh):
     :param spark_config_env_sh: all the text from the cloudera manager spark_env.sh
     :return: the entire line containing the exported class path
     """
-
-    if spark_config_env_sh is None:
-        return None
-    else:
-        return re.search('export.*SPARK_CLASSPATH=.*', spark_config_env_sh)
+    return re.search('export.*SPARK_CLASSPATH=.*', spark_config_env_sh) if spark_config_env_sh else None
 
 def find_class_path_value(spark_config_env_sh):
     """
@@ -196,9 +218,8 @@ def find_class_path_value(spark_config_env_sh):
     :return: found class path value
     """
 
-    #i tried adding \number to only get a single group but it breaks everything so i search all groups after the match
-    #to find the one that only has the value
-    find_class_path = re.search('export.*SPARK_CLASSPATH=(\".*\"|[^\r\n]*).*',spark_config_env_sh)
+    #i search all groups after the match to find the one that only has the value
+    find_class_path = re.search('export.*SPARK_CLASSPATH=(\".*\"|[^\r\n]*).*', spark_config_env_sh)
     class_path = None
     #get only the value not the 'export SPARK_CLASSPATH' chaff. find the group that only has the export value
     if find_class_path is not None:
@@ -240,17 +261,18 @@ def poll_commands(service, command_name):
     :param command_name: the command we will be looking for, ie 'Restart'
     """
     active = True
-    while active and True:
+    while active:
         time.sleep(1)
         print " . ",
         commands = service.get_commands(view="full")
-        if commands is None or len(commands) <= 0:
-            break
-        else:
+        if commands:
             for c in commands:
                 if c.name == command_name:
                     active = c.active
                     break
+        else:
+            break
+
 
 def deploy_config(service, roles):
     """
@@ -271,10 +293,8 @@ def restart_service(service):
 
     """
     print "\nYou need to restart " + service.name + " service for the config changes to take affect."
-    spark_restart = get_arg("would you like to restart now?", "no", args.restart)
-    #answer = raw_input("would you like to restart now? type yes to restart: ")
-    print "spark_restart", spark_restart
-    if spark_restart is not None and spark_restart.strip().lower() == "yes":
+    service_restart = get_arg("would you like to restart now?", "no", args.restart)
+    if service_restart is not None and service_restart.strip().lower() == "yes":
         print "Restarting " + service.name,
         service.restart()
         poll_commands(service, "Restart")
@@ -438,14 +458,12 @@ def create_intel_analytics_config( hdfs_host_name, zookeeper_host_names, spark_m
     config.close()
 
 #get the Cloudera manager host
-cloudera_manager_host = None
-if args.host is not None:
-    cloudera_manager_host = args.host
+cloudera_manager_host = args.host if args.host else None
 
 if cloudera_manager_host is None:
     try:
-        #look for in the Cloudere agent config.ini file before prompting the user
-        #/etc/cloudera-scm-agent
+        #look for in the Cloudera agent config.ini file before prompting the user
+        #config dir for Cloudera agent /etc/cloudera-scm-agent
         cloudera_agent_config = open("/etc/cloudera-scm-agent/config.ini", "r")
         cloudera_manager_host = re.search('(?<=server_host=).*',cloudera_agent_config.read()).group(0)
         cloudera_agent_config.close()
@@ -457,7 +475,6 @@ cloudera_manager_port = cloudera_manager_username = get_arg("What port is Cloude
                                                             args.port)
 
 cloudera_manager_username = get_arg("What is the Cloudera manager username?", "admin", args.username)
-print cloudera_manager_username
 
 cloudera_manager_password = get_arg("What is the Cloudera manager password?", "admin", args.password)
 
@@ -473,10 +490,10 @@ clusters=api.get_all_clusters()
 #if we have more than one cluster prompt the user to pick a cluster
 if len(clusters) > 1:
     cluster = select_cluster(clusters, args.cluster)
-else:
+elif len(clusters) == 1:
     cluster = clusters[0]
 
-if cluster is not None:
+if cluster:
 
     #get a list of the services running on the this cluster
     services = cluster.get_all_services()
@@ -496,5 +513,3 @@ if cluster is not None:
 else:
     print "No cluster selected"
     exit(1)
-
-
