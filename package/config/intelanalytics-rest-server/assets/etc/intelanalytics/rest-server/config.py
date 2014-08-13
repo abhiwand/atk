@@ -259,32 +259,42 @@ def poll_commands(service, command_name):
                     break
 
 def deploy_config(service, roles):
+    """
+    deploy configuration for the given service and roles
+
+    :param service: Service that is going to have it's configuration deployed
+    :param roles: the roles that are going to have their configuration deployed
+    :return:
+    """
     print "Deploying config ",
     service.deploy_client_config(*get_service_names(roles))
     poll_commands(service, "deployClientConfig")
 
 def restart_service(service):
+    """
+    restart the service
+    :param service: service we are going to restart
+
+    """
     print "\nYou need to restart " + service.name + " service for the config changes to take affect."
-    spark_restart = get_arg("would you like to restart now?", "no", argparse.restart)
+    spark_restart = get_arg("would you like to restart now?", "no", args.restart)
     #answer = raw_input("would you like to restart now? type yes to restart: ")
-    if spark_restart is not None and spark_restart.strip().lower == "yes":
+    print "spark_restart", spark_restart
+    if spark_restart is not None and spark_restart.strip().lower() == "yes":
         print "Restarting " + service.name,
         service.restart()
-        active = True
-        while active and True:
-            time.sleep(1)
-            print " . ",
-            commands = service.get_commands(view="full")
-            if commands is None or len(commands) <= 0:
-                active = False
-                print "Done"
-            else:
-                for c in commands:
-                    if c.name == "Restart":
-                        active = c.active
-                        break
+        poll_commands(service, "Restart")
+
 
 def update_spark_env(group, spark_config_env_sh):
+    """
+    update the park env configuration in Cloudera manager
+
+    :param group: the group that spark_env.sh belongs too
+    :param spark_config_env_sh: the current spark_env.sh value
+    :return:
+    """
+
     #look for any current SPARK_CLASSPATH
     found_class_path = find_exported_class_path(spark_config_env_sh)
 
@@ -320,6 +330,12 @@ def update_spark_env(group, spark_config_env_sh):
     return False
 
 def get_hdfs_details(services):
+    """
+    We need various hdfs details to eventually get to the name node host name
+    
+    :param services: all the cluster services
+    :return: name node host name
+    """
     #get hdfs service details
     hdfs_service = find_service(services, "HDFS")
     if hdfs_service is None:
@@ -335,6 +351,12 @@ def get_hdfs_details(services):
     return hdfs_namenode_role_hostnames
 
 def get_zookeeper_details(services):
+    """
+    get the various zookeeper service details and eventually return the zookeeper host names
+    
+    :param services: all the cluster services
+    :return: list of zookeeper host names
+    """
     zookeeper_service = find_service(services, "ZOOKEEPER")
     if zookeeper_service is None:
         print "no zookeeper service found"
@@ -349,6 +371,12 @@ def get_zookeeper_details(services):
     return zookeeper_server_role_hostnames
 
 def get_spark_details(services):
+    """
+    Look for the spark master host name, spark master port, executor memory and update the spark_env.sh with the
+    necessary class path to build graphs
+    :param services: all the cluster services
+    :return: spark master host name, port and executor max memory
+    """
     spark_service = find_service(services, "SPARK")
     if spark_service is None:
        print "no spark service found"
@@ -378,7 +406,17 @@ def get_spark_details(services):
 
     return spark_master_role_hostnames, spark_config_executor_total_max_heapsize, spark_config_master_port
 
-def create_intel_analytics_config( hdfsHost, zookeeperHost, sparkHost, sparkPort, sparkMemory):
+def create_intel_analytics_config( hdfs_host_name, zookeeper_host_names, spark_master_host, spark_master_port, spark_worker_memory):
+    """
+    create a new application.conf file from the tempalte
+    
+    :param hdfs_host_name: hdfs host name 
+    :param zookeeper_host_names: zookeeper host names
+    :param spark_master_host: spark master host
+    :param spark_master_port: spakr master port
+    :param spark_worker_memory: spark worker executor max memory
+    :return:
+    """
     config_file_tpl_path = "application.conf.tpl"
     config_file_path = "application.conf"
 
@@ -387,15 +425,15 @@ def create_intel_analytics_config( hdfsHost, zookeeperHost, sparkHost, sparkPort
     config_tpl.close()
 
     #set fs.root
-    config_tpl_text = re.sub(r'fs.root = .*', 'fs.root = "hdfs://' + hdfsHost[0] + '/user/' + IAUSER + '"', config_tpl_text)
+    config_tpl_text = re.sub(r'fs.root = .*', 'fs.root = "hdfs://' + hdfs_host_name[0] + '/user/' + IAUSER + '"', config_tpl_text)
     #set titan zookeeper list titan.load.storage.hostname
     config_tpl_text = re.sub(r'titan.load.storage.hostname = .*',
-                       'titan.load.storage.hostname = "' + ','.join(zookeeperHost) + '"', config_tpl_text)
+                       'titan.load.storage.hostname = "' + ','.join(zookeeper_host_names) + '"', config_tpl_text)
     #set spark master
     config_tpl_text = re.sub(r'spark.master = .*',
-                       'spark.master = "spark://' + sparkHost[0] + ':' + sparkPort + '"', config_tpl_text)
+                       'spark.master = "spark://' + spark_master_host[0] + ':' + spark_master_port + '"', config_tpl_text)
     #set spark executor memory
-    config_tpl_text = re.sub(r'spark.executor.memory = .*', 'spark.executor.memory = "' + sparkMemory + '"', config_tpl_text)
+    config_tpl_text = re.sub(r'spark.executor.memory = .*', 'spark.executor.memory = "' + spark_worker_memory + '"', config_tpl_text)
 
     config = open(config_file_path, "w")
     config.write(config_tpl_text)
