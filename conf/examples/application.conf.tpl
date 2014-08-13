@@ -11,7 +11,10 @@
 intel.analytics {
 
     # The host name for the Postgresql database in which the metadata will be stored
-    metastore.connection-postgresql.host = "invalid-postgresql-host"
+    //metastore.connection-postgresql.host = "invalid-postgresql-host"
+    # This allows the use of an in memory data store. Restarting the rest server will create a fresh database and any
+    # changes will be lost
+    metastore.connection = ${intel.analytics.metastore.connection-h2}
 
     engine {
 
