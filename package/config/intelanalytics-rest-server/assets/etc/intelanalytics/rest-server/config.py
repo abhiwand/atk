@@ -100,7 +100,7 @@ def get_arg(question, default, arg):
     :param arg: the parsed argument from the command line
     :return: argument if it exist, user input, or the default value
     """
-    return user_info_prompt(question + " defaults to " + str(default) + " if nothing is entered: ", default) \
+    return user_info_prompt(question + " defaults to '" + str(default) + "' if nothing is entered: ", default) \
         if arg is None else arg
 
 def select_cluster(clusters, command_line_cluster):
@@ -435,13 +435,16 @@ def create_intel_analytics_config( hdfs_host_name, zookeeper_host_names, spark_m
     :param spark_worker_memory: spark worker executor max memory
     :return:
     """
+    print "Creating application.conf file from application.conf.tpl"
     config_file_tpl_path = "application.conf.tpl"
     config_file_path = "application.conf"
 
+    print "Reading application.conf.tpl"
     config_tpl = open( config_file_tpl_path, "r")
     config_tpl_text = config_tpl.read()
     config_tpl.close()
 
+    print "Updating configuration"
     #set fs.root
     config_tpl_text = re.sub(r'fs.root = .*', 'fs.root = "hdfs://' + hdfs_host_name[0] + '/user/' + IAUSER + '"', config_tpl_text)
     #set titan zookeeper list titan.load.storage.hostname
@@ -453,6 +456,7 @@ def create_intel_analytics_config( hdfs_host_name, zookeeper_host_names, spark_m
     #set spark executor memory
     config_tpl_text = re.sub(r'spark.executor.memory = .*', 'spark.executor.memory = "' + spark_worker_memory + '"', config_tpl_text)
 
+    print "Writing application.conf"
     config = open(config_file_path, "w")
     config.write(config_tpl_text)
     config.close()
@@ -513,3 +517,5 @@ if cluster:
 else:
     print "No cluster selected"
     exit(1)
+
+
