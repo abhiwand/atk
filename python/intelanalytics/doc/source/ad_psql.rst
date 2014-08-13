@@ -97,7 +97,11 @@ Insert a user
 ::
 
     psql metastore
-    insert into users (username, api_key, created_on, modified_on) values( 'my-test-user', 'test_api_key_1', now(), now() );
+    insert into users (username, api_key, created_on, modified_on)
+        values( 'my-test-user', 'test_api_key_1', now(), now() );
+
+Note: The line above beginning with ``insert`` has been split into two lines for readability on certain media.
+It should be joined with the line below it starting with ``values`` with a space separating them.
 
 See also:
 

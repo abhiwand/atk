@@ -8,7 +8,8 @@ estimates of state probabilities.
 The Intel Analytics Toolkit provides two implementations of LBP, which differ in their assumptions about the joint distribution of the data.
 The standard LBP implementation assumes that the joint distribution of the data is given by a Boltzmann distribution, while Gaussian LBP
 assumes that the data is continuous and distributed according to a multivariate normal distribution.
-For more information about LBP, see: "K. Murphy, Y. Weiss, and M. Jordan, Loopy-belief Propagation for Approximate Inference: An Empirical Study, UAI 1999."
+For more information about LBP, see: "K. Murphy, Y. Weiss, and M. Jordan, Loopy-belief Propagation for Approximate Inference:
+An Empirical Study, UAI 1999."
 
 LBP has a wide range of applications in structured prediction, such as low-level vision and influence spread in social networks,
 where we have prior noisy predictions for a large set of random variables and a graph encoding relationships between those variables.
@@ -25,15 +26,16 @@ Discrete Loopy Belief Propagation:
 ----------------------------------
 
 LBP is typically considered a :term:`semi-supervised machine learning <Semi-Supervised Learning>` algorithm as
+
     1) there is typically no ground truth observation of states and
     #) the algorithm is primarily concerned with estimating a joint probability function rather than
-        with :term:`classification` or point prediction.
+    with :term:`classification` or point prediction.
 
 The standard (discrete) LBP algorithm requires a set of probability thresholds to be considered a classifier.
 Nonetheless, the discrete LBP algorithm allows Test/Train/Validate splits of the data and the algorithm will treat "Train" observations
 differently from "Test" and "Validate" observations.
-Vertices labelled with "Test" or "Validate" will be treated as though they have uninformative (uniform) priors and are allowed to receive messages,
-but not send messages.
+Vertices labelled with "Test" or "Validate" will be treated as though they have uninformative (uniform) priors and are
+allowed to receive messages, but not send messages.
 This simulates a "scoring scenario" in which a new observation is added to a graph containing fully trained LBP posteriors,
 the new vertex is scored based on received messages, but the full LBP algorithm is not repeated in full.
 This behavior can be turned off by setting the ``ignore_vertex_type`` parameter to True.

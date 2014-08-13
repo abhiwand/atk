@@ -1,8 +1,6 @@
 ===============
 Set Up A Server
 ===============
-Note:
-    **Bold lines are new/modified for release 0.8.1**
 
 ------------
 Introduction
@@ -36,12 +34,12 @@ Before trying to install the EPEL repo run the following command to see if it's 
 
     sudo yum repolist
 
-    cloudera-cdh5                              Cloudera CDH, Version 5                                              141
-    cloudera-manager                           Cloudera Manager, Version 5.0.2                                        7
-    epel                                       Extra Packages for Enterprise Linux 6 - x86_64                    11,022
-    rhui-REGION-client-config-server-6         Red Hat Update Infrastructure 2.0 Client Configuration Server 6        2
-    rhui-REGION-rhel-server-releases           Red Hat Enterprise Linux Server 6 (RPMs)                          12,690
-    rhui-REGION-rhel-server-releases-optional  Red Hat Enterprise Linux Server 6 Optional (RPMs)                  7,168
+    cloudera-cdh5                              ...
+    cloudera-manager                           ...
+    epel                                       ...
+    rhui-REGION-client-config-server-6         ...
+    rhui-REGION-rhel-server-releases           ...
+    rhui-REGION-rhel-server-releases-optional  ...
 
 If the epel repo is missing, run these commands to install the necessary files::
 
@@ -52,14 +50,14 @@ To verify the installation run::
 
     sudo yum repolist
 
-    epel                                             Extra Packages for Enterprise Linux 6 - x86_64                       11,018
-    rhui-REGION-client-config-server-6               Red Hat Update Infrastructure 2.0 Client Configuration Server 6           2
-    rhui-REGION-rhel-server-releases                 Red Hat Enterprise Linux Server 6 (RPMs)                             12,663
+    epel                                             ...  
+    rhui-REGION-client-config-server-6               ...
+    rhui-REGION-rhel-server-releases                 ...
     rhui-REGION-rhel-server-releases-optional    
 
-    Red Hat Update Infrastructure 2.0 Client Configuration Server 6                       rhui-REGION-rhel-server-releases
-    Red Hat Enterprise Linux Server 6 (RPMs)                                              12,663rhui-REGION-rhel-server-releases-optional
-    Red Hat Enterprise Linux Server 6 Optional (RPMs)                                      7,16
+    Red Hat Update Infrastructure 2.0 Client Configuration Server 6   ...
+    Red Hat Enterprise Linux Server 6 (RPMs)                          ...
+    Red Hat Enterprise Linux Server 6 Optional (RPMs)                 ...
 
 
 ------------------------
@@ -143,7 +141,6 @@ In some cases we pre-packaged newer versions from what is available in RHEL or E
 To add the dependency repository run the following command::
 
     wget https://intel-analytics-dependencies.s3-us-west-2.amazonaws.com/ia-deps.repo
-
     sudo cp ia-deps.repo /etc/yum.repos.d/
 
 If you have issues running the above command, try entering the following, being careful about the placement of the \" characters::
@@ -170,7 +167,6 @@ To test the installation of the dependencies repository run the following comman
     URL         : git@github.com:NumberFour/yum-s3-plugin.git
     License     : Apache License 2.0
 
-
 If you get a similar output install yum-s3 package::
 
     sudo yum -y install yum-s3
@@ -185,7 +181,7 @@ The name of the file doesn't matter as long as it has the .repo file extension.
 
     [intel-analytics]
     name=intel analytics
-    **baseurl=https://intel-analytics-repo.s3-us-west-2.amazonaws.com/release/0.8.0/yum/dists/rhel/6 **
+    baseurl=https://intel-analytics-repo.s3-us-west-2.amazonaws.com/release/0.8.0/yum/dists/rhel/6
     gpgcheck=0
     priority=1
     s3_enabled=1
@@ -197,7 +193,7 @@ Alternatively you can run::
 
     echo "[intel-analytics]
     name=intel analytics
-    **baseurl=https://intel-analytics-repo.s3-us-west-2.amazonaws.com/release/0.8.0/yum/dists/rhel/6 **
+    baseurl=https://intel-analytics-repo.s3-us-west-2.amazonaws.com/release/0.8.0/yum/dists/rhel/6
     gpgcheck=0
     priority=1
     s3_enabled=1
@@ -206,7 +202,7 @@ Alternatively you can run::
     secret_key=YOUR_SECRET" | sudo tee -a /etc/yum.repos.d/ia.repo
 
 Note:
-    Don't forget to replace YOUR_KEY, and YOUR_SECRET with the keys that were given to you.
+| Don't forget to replace YOUR_KEY, and YOUR_SECRET with the keys that were given to you.
 
 Verify the installation of the IA repository by running::
 
@@ -245,6 +241,7 @@ Before starting the server you must edit two config files /etc/default/intelanal
 /etc/default/intelanalytics-rest-server:
 ----------------------------------------
 
+
 In /etc/default/intelanalytics-rest-server we need to set ``spark_home`` to the correct location according to your Cloudera installation.
 If you open the file it will look something like this::
 
@@ -254,7 +251,7 @@ If you open the file it will look something like this::
     # depending on the CDH install method used, set the appropriate SPARK_HOME below
 
     #export SPARK_HOME="/usr/lib/spark"
-    **export SPARK_HOME="/opt/cloudera/parcels/CDH/lib/spark"**
+    export SPARK_HOME="/opt/cloudera/parcels/CDH/lib/spark"
 
     export IA_JVM_OPT="-XX:MaxPermSize=256m"
     export EXTRA_CONF=`hbase classpath`
@@ -267,18 +264,21 @@ If your Cloudera cluster is packaged-based, like RPM or DEB, use "/usr/lib/spark
 /etc/intelanalytics/rest-server/application.conf.tpl:
 -----------------------------------------------------
 
+
 The rest-server package only provides a configuration template called application.conf.tpl.
-**We need to copy and rename this file to application.conf and update host names and memory configurations.**
+We need to copy and rename this file to application.conf and update host names and memory configurations.
 First let's rename the file::
 
-    sudo cp /etc/intelanalytics/rest-server/application.conf.tpl /etc/intelanalytics/rest-server/application.conf
+    sudo cp /etc/intelanalytics/rest-server/application.conf.tpl
+        /etc/intelanalytics/rest-server/application.conf
+
+Note:
+The above command has been split for enhanced readability in some medias.
+It should be entered as a single line.
 
 Open the file with your editor of choice (we use vim for example)::
 
     sudo vim /etc/intelanalytics/rest-server/application.conf
-
-Note:
-    **The following has been revised for release 0.8.1.**
 
 All the changes that need to be made are at the top of the file.
 This is the section you want to look at::
@@ -306,7 +306,8 @@ This is the section you want to look at::
                 master = "spark://invalid-spark-master:7077"
 
                 conf.properties {
-                    # Memory should be same or lower than what is listed as available in Cloudera Manager.
+                    # Memory should be same or lower than what is listed as available
+                    #in Cloudera Manager.
                     # Values should generally be in gigabytes, e.g. "8g"
                     spark.executor.memory = "invalid executor memory"
                 }
@@ -413,9 +414,10 @@ Starting IA Rest Server:
 ------------------------
 
 Starting the Rest server is very easy.
-It can be started like any other linux service::
+It can be started like any other linux service.
+::
 
-    sudo service intelanalytics-rest-server start
+    sudo service intelanalytics start
 
 After starting the rest server, you can browse to the host on port 9099 to see if the server started successfully.
 
