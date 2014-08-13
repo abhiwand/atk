@@ -71,7 +71,7 @@ def get_arg(question, default, arg):
     :param arg: the parsed argument from the command line
     :return: argument if it exist, user input, or the default value
     """
-    if args is None:
+    if arg is None:
         value = user_info_prompt(question + " defaults to " + str(default) + " if nothing is entered: ", default)
     else:
         value = arg
@@ -89,7 +89,7 @@ def select_cluster(clusters, command_line_cluster):
     :return: The cluster selected by the user or the cluster that maches the name parsed from the command line
     """
     cluster = None
-    if command_line_cluster is not None:
+    if command_line_cluster:
         for c in clusters:
             if c.displayName == command_line_cluster or c.name == command_line_cluster:
                 cluster = c
@@ -125,10 +125,7 @@ def get_service_names(roles):
     :param roles: list of roles from a service. example SPARK_WORKER, SPARK_MASTER
     :return: only the service names. will list of something like this 'spark-SPARK_WORKER-207e4bfb96a401eb77c8a78f'
     """
-    role_names = []
-    for role in roles:
-        role_names.append(role.name)
-    return role_names
+    return [role.name for role in roles]
 
 def find_service_roles(roles, type):
     """
@@ -139,11 +136,13 @@ def find_service_roles(roles, type):
     :param type: the type of role we are looking for, ie "SPARK_MASTER"
     :return: list of all roles matching the type
     """
+    """
     found_roles = []
     for role in roles:
         if role.type == type:
             found_roles.append(role)
-    return found_roles
+    """
+    return [role for role in roles]
 
 def get_role_host_names(api, roles):
     """
@@ -192,7 +191,11 @@ def find_exported_class_path(spark_config_env_sh):
     :param spark_config_env_sh: all the text from the cloudera manager spark_env.sh
     :return: the entire line containing the exported class path
     """
-    return re.search('export.*SPARK_CLASSPATH=.*', spark_config_env_sh)
+
+    if spark_config_env_sh is None:
+        return None
+    else:
+        return re.search('export.*SPARK_CLASSPATH=.*', spark_config_env_sh)
 
 def find_class_path_value(spark_config_env_sh):
     """
@@ -295,6 +298,10 @@ def update_spark_env(group, spark_config_env_sh):
     :return:
     """
 
+
+    if spark_config_env_sh is None:
+        spark_config_env_sh = ""
+
     #look for any current SPARK_CLASSPATH
     found_class_path = find_exported_class_path(spark_config_env_sh)
 
@@ -332,7 +339,7 @@ def update_spark_env(group, spark_config_env_sh):
 def get_hdfs_details(services):
     """
     We need various hdfs details to eventually get to the name node host name
-    
+
     :param services: all the cluster services
     :return: name node host name
     """
@@ -353,7 +360,7 @@ def get_hdfs_details(services):
 def get_zookeeper_details(services):
     """
     get the various zookeeper service details and eventually return the zookeeper host names
-    
+
     :param services: all the cluster services
     :return: list of zookeeper host names
     """
@@ -409,8 +416,8 @@ def get_spark_details(services):
 def create_intel_analytics_config( hdfs_host_name, zookeeper_host_names, spark_master_host, spark_master_port, spark_worker_memory):
     """
     create a new application.conf file from the tempalte
-    
-    :param hdfs_host_name: hdfs host name 
+
+    :param hdfs_host_name: hdfs host name
     :param zookeeper_host_names: zookeeper host names
     :param spark_master_host: spark master host
     :param spark_master_port: spakr master port
@@ -459,6 +466,7 @@ cloudera_manager_port = cloudera_manager_username = get_arg("What port is Cloude
                                                             args.port)
 
 cloudera_manager_username = get_arg("What is the Cloudera manager username?", "admin", args.username)
+print cloudera_manager_username
 
 cloudera_manager_password = get_arg("What is the Cloudera manager password?", "admin", args.password)
 
