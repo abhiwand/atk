@@ -106,7 +106,7 @@ import com.intel.intelanalytics.domain.frame.FlattenColumn
 import com.intel.intelanalytics.domain.frame.FrameJoin
 
 object SparkEngine {
-  private val pythonRddDelimiter = "\0"
+  private val pythonRddDelimiter = "YoMeDelimiter"
 }
 
 class SparkEngine(sparkContextManager: SparkContextManager,
