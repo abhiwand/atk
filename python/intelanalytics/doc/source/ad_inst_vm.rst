@@ -61,9 +61,9 @@ To download the VM run::
     
 Depending on the release you would like to download, you can change '0.8.0' to the latest release, or another you would like to try.
 
-================================
+--------------------------------
 Running Intel Analytics VM image
-================================
+--------------------------------
 
 To jump start usage of the IA toolkit we have modified the base Cloudera Virtual Box VM with the IA toolkit.
 Currently the Intel Analytics toolkit VM only supports `Virtual Box <https://www.virtualbox.org/>`.
@@ -71,9 +71,8 @@ We will not cover the installation of Virtual Box.
 Virtual Box supports many platforms and can be `downloaded <https://www.virtualbox.org/wiki/Downloads]>` for free.
 The installation documentation is also `available online <https://www.virtualbox.org/manual/UserManual.html]>`.
 
-------------
 Installation
-------------
+============
 
 After acquiring the VM extract the archive::
 
@@ -84,9 +83,8 @@ You should have two files after extracting::
     IntelAnalytics-0.8.0-CDH-5.0.3-disk1.vmdk
     IntelAnalytics-0.8.0-CDH-5.0.3.ovf
 
-------
 Import
-------
+======
 
 In Virtual Box go to the file menu then import appliance.
 
@@ -110,18 +108,16 @@ Once the VM is imported go ahead and boot the VM by selecting the VM and clickin
 
 .. image:: ad_inst_vm_05.*
 
-----------------
 Before you start
-----------------
+================
 
 After every reboot of the VM you must restart the IA server.
 ::
 
     sudo service intelanalytics restart
 
---------
 Examples
---------
+========
 
 The VM is pre-configured and installed with IA toolkit.
 It has many examples and datasets to get you started as soon as the VM is booted.
@@ -152,18 +148,16 @@ To run any of the python example scripts, make sure you are in the examples dire
 
 where SCRIPT_NAME is any of the scripts in '/home/cloudera/example'.
 
-----
 Logs
-----
+====
 
 If you need to debug changes to the scripts (or peak behind the curtain) the log files are located at '/var/log/intelanalytics/rest-server/output.log'.
 ::
 
     sudo tail -f /var/log/intelanalytics/rest-server/output.log
 
---------
 Updating
---------
+========
 
 If you have been given access and secret keys, edit '/etc/yum.repos.d/ia.repo' and replace *myKey* and *mySecret*.
 Now you will be able to run Yum commands to check for and do updates.
