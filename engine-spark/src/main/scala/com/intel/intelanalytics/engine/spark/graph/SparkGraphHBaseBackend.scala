@@ -19,7 +19,9 @@ class SparkGraphHBaseBackend(hbaseAdmin: => HBaseAdmin) extends GraphBackendStor
     val tableName: String = GraphName.convertGraphUserNameToBackendName(graphName)
 
     if (hbaseAdmin.tableExists(tableName)) {
-      hbaseAdmin.disableTable(tableName)
+      if (hbaseAdmin.isTableEnabled(tableName)) {
+        hbaseAdmin.disableTable(tableName)
+      }
       hbaseAdmin.deleteTable(tableName)
     }
     //else {
