@@ -104,7 +104,7 @@ import com.intel.intelanalytics.domain.frame.FrameJoin
 import com.intel.intelanalytics.engine.spark.plugin.SparkInvocation
 
 object SparkEngine {
-  private val pythonRddDelimiter = "\0"
+  private val pythonRddDelimiter = "YoMeDelimiter"
 }
 
 class SparkEngine(sparkContextManager: SparkContextManager,
