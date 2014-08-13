@@ -912,9 +912,16 @@ class SparkEngine(sparkContextManager: SparkContextManager,
    * @return RDD consisting of the requested number of rows
    */
   def getRowsSimple(arguments: RowQuery[Identifier], user: UserPrincipal, invocation: SparkInvocation) = {
-    val rdd = frames.getFrameRdd(invocation.sparkContext, arguments.id).rows
-    val takenRows = rdd.take(arguments.count + arguments.offset.toInt).drop(arguments.offset.toInt)
-    invocation.sparkContext.parallelize(takenRows)
+    if(arguments.count + arguments.offset <= SparkEngineConfig.pageSize) {
+      val rdd = frames.getFrameRdd(invocation.sparkContext, arguments.id).rows
+      val takenRows = rdd.take(arguments.count + arguments.offset.toInt).drop(arguments.offset.toInt)
+      invocation.sparkContext.parallelize(takenRows)
+    }else{
+      implicit val impUser: UserPrincipal = user
+      val frame = frames.lookup(arguments.id).getOrElse(throw new IllegalArgumentException("Requested frame does not exist"))
+      val rows = frames.getRowsRDD(frame, arguments.offset, arguments.count, invocation.sparkContext)
+      rows
+    }
   }
 
   /**
