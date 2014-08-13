@@ -13,7 +13,7 @@ intel.analytics {
     # The host name for the Postgresql database in which the metadata will be stored
     //metastore.connection-postgresql.host = "invalid-postgresql-host"
     # This allows the use of an in memory data store. Restarting the rest server will create a fresh database and any
-    # changes will be lost
+    # data in the h2 DB will be lost
     metastore.connection = ${intel.analytics.metastore.connection-h2}
 
     engine {
@@ -27,16 +27,14 @@ intel.analytics {
         titan.load.storage.hostname = "invalid-titan-host"
         titan.query.storage.hostname = ${intel.analytics.engine.titan.load.storage.hostname}
 
-        spark {
-            # The URL for connecting to the Spark master server
-            master = "spark://invalid-spark-master:7077"
+         # The URL for connecting to the Spark master server
+         spark.master = "spark://invalid-spark-master:7077"
 
-            conf.properties {
-                # Memory should be same or lower than what is listed as available in Cloudera Manager.
-                # Values should generally be in gigabytes, e.g. "8g"
-                spark.executor.memory = "invalid executor memory"
-            }
-        }
+         spark.conf.properties {
+            # Memory should be same or lower than what is listed as available in Cloudera Manager.
+            # Values should generally be in gigabytes, e.g. "8g"
+            spark.executor.memory = "invalid executor memory"
+         }
     }
 
 }
