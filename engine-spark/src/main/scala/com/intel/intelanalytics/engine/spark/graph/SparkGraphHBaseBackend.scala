@@ -22,10 +22,10 @@ class SparkGraphHBaseBackend(hbaseAdmin: => HBaseAdmin) extends GraphBackendStor
       hbaseAdmin.disableTable(tableName)
       hbaseAdmin.deleteTable(tableName)
     }
-    else {
-      throw new IllegalArgumentException(
-        "SparkGraphHBaseBackend.deleteTable:  HBase table " + tableName + " requested for deletion does not exist.")
-    }
+    //else {
+    //  throw new IllegalArgumentException(
+    //    "SparkGraphHBaseBackend.deleteTable:  HBase table " + tableName + " requested for deletion does not exist.")
+    //}
   }
 
   override def renameUnderlyingTable(graphName: String, newName: String): Unit = {
