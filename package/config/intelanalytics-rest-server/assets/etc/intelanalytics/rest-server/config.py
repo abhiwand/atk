@@ -99,7 +99,7 @@ def select_cluster(clusters, command_line_cluster):
           print(str(count) + ": Cluster Name: {0:20} Version: {1}".format(c.name, c.version))
           count += 1
         cluster_index = input("Enter the clusters index number: ")
-        print ("you picked cluster " + str(cluster_index))
+        print ("You picked cluster " + str(cluster_index))
         cluster = clusters[(cluster_index-1)]
     return cluster
 
@@ -136,12 +136,6 @@ def find_service_roles(roles, type):
     :param type: the type of role we are looking for, ie "SPARK_MASTER"
     :return: list of all roles matching the type
     """
-    """
-    found_roles = []
-    for role in roles:
-        if role.type == type:
-            found_roles.append(role)
-    """
     return [role for role in roles]
 
 def get_role_host_names(api, roles):
@@ -152,10 +146,7 @@ def get_role_host_names(api, roles):
     :param roles: the list of service roles
     :return: list of machine host names
     """
-    host_names = []
-    for role in roles:
-        host_names.append(hosts.get_host(api, role.hostRef.hostId).hostname)
-    return host_names
+    return [hosts.get_host(api, role.hostRef.hostId).hostname for role in roles]
 
 def find_config(groups, group_name, config_name):
     """
