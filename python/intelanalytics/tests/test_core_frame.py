@@ -65,6 +65,7 @@ class FrameConstruction(unittest.TestCase):
         self.assertEqual(0, f._id)
         self.assertEqual(None, f._error_frame_id)
 
+    '''
 
     def test_create_from_csv(self, get_frame_backend):
         f = BigFrame(CsvFile("dummy.csv", [('A', int32), ('B', int64)]))
@@ -75,7 +76,7 @@ class FrameConstruction(unittest.TestCase):
         except KeyError:
             pass
 
-        '''
+
     def test_slice_columns_with_list(self):
         f = get_simple_frame_abcde()
         cols = f[['B', 'C']]
