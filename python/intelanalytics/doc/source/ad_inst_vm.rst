@@ -57,7 +57,7 @@ When prompted for default output format use 'json'.
 
 To download the VM run::
 
-    aws s3 cp s3://intel-analytics-repo/release/0.8.0/VM/index.html
+    aws s3 cp s3://intel-analytics-repo/release/latest/vm/IntelAnalytics-0.8.0-CDH-5.0.3.tar.gz
     
 Depending on the release you would like to download, you can change '0.8.0' to the latest release, or another you would like to try.
 
