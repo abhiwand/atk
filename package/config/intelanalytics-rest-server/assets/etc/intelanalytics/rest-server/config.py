@@ -162,7 +162,7 @@ def find_service_roles(roles, type):
     :param type: the type of role we are looking for, ie "SPARK_MASTER"
     :return: list of all roles matching the type
     """
-    return [role for role in roles]
+    return [role for role in roles if role.type == type]
 
 def get_role_host_names(api, roles):
     """
