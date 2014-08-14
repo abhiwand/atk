@@ -332,8 +332,10 @@ class FrameBackendRest(object):
     def inspect(self, frame, n, offset):
         # inspect is just a pretty-print of take, we'll do it on the client
         # side until there's a good reason not to
-        rows = self.take(frame, n, offset)
-        return FrameBackendRest.InspectionTable(frame.schema, rows)
+        result = self.take(frame, n, offset)
+        data = result[0]
+        schema = result[1]
+        return FrameBackendRest.InspectionTable(schema, data)
 
     def join(self, left, right, left_on, right_on, how):
         if right_on is None:
@@ -426,7 +428,11 @@ class FrameBackendRest(object):
         if n==0:
             return []
         url = 'dataframes/{0}/data?offset={2}&count={1}'.format(frame._id,n, offset)
-        return executor.query(url)
+        result = executor.query(url)
+        schema_json = result[1]
+        schema = FrameSchema.from_strings_to_types(schema_json)
+        data = result[0]
+        return (data, schema)
 
 
     def ecdf(self, frame, sample_col):

@@ -52,7 +52,7 @@ class SparkQueryStorage(val metaStore: SlickMetaStoreComponent#SlickMetaStore, f
    * @param queryId primary key of the query record
    * @return the newly created RDD
    */
-  def getQueryRdd(ctx: SparkContext, queryId: Long): RDD[Any] = {
+  def getQueryRdd(ctx: SparkContext, queryId: Long): RDD[Array[Any]] = {
     ctx.objectFile(getAbsoluteQueryDirectory(queryId))
   }
 
@@ -63,14 +63,14 @@ class SparkQueryStorage(val metaStore: SlickMetaStoreComponent#SlickMetaStore, f
    * @param pageId partition number to return
    * @return data from partition as a local object
    */
-  def getQueryPage(ctx: SparkContext, queryId: Long, pageId: Long): Iterable[Any] = {
+  def getQueryPage(ctx: SparkContext, queryId: Long, pageId: Long): Iterable[Array[Any]] = {
     val rdd = getQueryRdd(ctx, queryId)
     val query = lookup(queryId)
     val pageSize: Int = query match {
       case Some(q) => q.pageSize.getOrElse(SparkEngineConfig.pageSize.toLong).toInt
       case None => SparkEngineConfig.pageSize
     }
-    SparkOps.getRows[Any](rdd, pageId * pageSize, pageSize, pageSize)
+    SparkOps.getRows[Array[Any]](rdd, pageId * pageSize, pageSize, pageSize)
   }
 
   /**

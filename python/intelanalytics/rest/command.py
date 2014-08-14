@@ -373,8 +373,10 @@ class Executor(object):
 
         response_json = response.json()
 
+        schema = response_json["result"]["schema"]['columns']
+
         if response_json["complete"]:
-            return response_json["result"]["data"]
+            return (response_json["result"]["data"], schema)
 
         command = self.poll_command_info(response)
 
@@ -415,7 +417,7 @@ class Executor(object):
                     }
                 }]
                 printer.print_progress(progress, finished)
-        return data
+        return (data, schema)
 
 
 
