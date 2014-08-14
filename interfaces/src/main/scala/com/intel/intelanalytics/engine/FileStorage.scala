@@ -25,15 +25,16 @@ package com.intel.intelanalytics.engine
 
 import java.nio.file.Path
 import java.io.{ OutputStream, InputStream }
+import java.net.URI
 
 trait FileStorage {
-  def createDirectory(name: Path): Directory
+  def createDirectory(name: URI): Unit
 
   def create(name: Path)
 
-  def delete(path: Path): Unit
+  def delete(path: URI): Unit
 
-  def getMetaData(path: Path): Option[Entry]
+  def exists(path: URI): Boolean
 
   def read(source: File): InputStream
 

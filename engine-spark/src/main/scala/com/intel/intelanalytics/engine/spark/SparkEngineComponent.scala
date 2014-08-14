@@ -28,7 +28,7 @@ import java.util.{ ArrayList => JArrayList, List => JList, Map => JMap }
 import com.intel.intelanalytics.engine._
 import com.intel.intelanalytics.engine.spark.command.{ CommandExecutor, SparkCommandStorage }
 import com.intel.intelanalytics.engine.spark.context.{ SparkContextFactory, SparkContextManager }
-import com.intel.intelanalytics.engine.spark.frame.SparkFrameStorage
+import com.intel.intelanalytics.engine.spark.frame.{ FrameFileStorage, SparkFrameStorage }
 import com.intel.intelanalytics.engine.spark.graph.{ SparkGraphHBaseBackend, SparkGraphStorage }
 import com.intel.intelanalytics.engine.spark.queries.{ QueryExecutor, SparkQueryStorage }
 import com.intel.intelanalytics.repository.{ DbProfileComponent, Profile, SlickMetaStoreComponent }
@@ -66,8 +66,10 @@ class SparkComponent extends EngineComponent
 
   val sparkAutoPartitioner = new SparkAutoPartitioner(fileStorage)
 
+  val frameFileStorage = new FrameFileStorage(SparkEngineConfig.fsRoot, fileStorage)
+
   val getContextFunc = (user: UserPrincipal) => sparkContextManager.context(user, "query")
-  val frames = new SparkFrameStorage(SparkEngineConfig.fsRoot, fileStorage, SparkEngineConfig.pageSize, metaStore.asInstanceOf[SlickMetaStore], sparkAutoPartitioner, getContextFunc)
+  val frames = new SparkFrameStorage(frameFileStorage, SparkEngineConfig.pageSize, metaStore.asInstanceOf[SlickMetaStore], sparkAutoPartitioner, getContextFunc)
 
   private lazy val admin = new HBaseAdmin(HBaseConfiguration.create())
 
