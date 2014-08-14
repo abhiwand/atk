@@ -1750,10 +1750,25 @@ class BigFrame(CommandSupport):
 
         Examples
         --------
-        ::
+        Consider the following sample data set in *frame* with actual data labels specified in the *labels* column and
+        the predicted labels in the *predictions* column:
 
-            rec = frame.recall('labels', 'predictions')
-            rec2 = frame.recall('labels', 'predictions', 'pos')
+            >>> frame.inspect()
+
+             a str   b int32   labels int32  predictions int32
+            |-------------------------------------------------|
+             red       1          0              0
+             blue      3          1              0
+             blue      1          0              0
+             green     0          1              1
+
+            >>> rec = frame.recall('labels', 'predictions')
+
+            0.5
+
+            >>> rec2 = frame.recall('labels', 'predictions', '0')
+
+            1.0
 
         .. versionadded:: 0.8
 
