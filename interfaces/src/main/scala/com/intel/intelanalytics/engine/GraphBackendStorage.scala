@@ -31,6 +31,6 @@ package com.intel.intelanalytics.engine
  * Titan can not or will not.
  */
 trait GraphBackendStorage {
-  def deleteUnderlyingTable(graphName: String)
+  def deleteUnderlyingTable(graphName: String, quiet: Boolean)
   def renameUnderlyingTable(graphName: String, newName: String)
 }

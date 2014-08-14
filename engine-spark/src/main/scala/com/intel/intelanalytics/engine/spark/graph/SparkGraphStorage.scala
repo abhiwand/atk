@@ -31,11 +31,13 @@ class SparkGraphStorage(metaStore: MetaStore,
    * @param graph Graph metadata object.
    */
   override def drop(graph: Graph): Unit = {
+
     metaStore.withSession("spark.graphstorage.drop") {
       implicit session =>
         {
+          val quiet: Boolean = false
           future {
-            backendStorage.deleteUnderlyingTable(graph.name)
+            backendStorage.deleteUnderlyingTable(graph.name, quiet)
           }
           metaStore.graphRepo.delete(graph.id)
           Unit
@@ -50,6 +52,7 @@ class SparkGraphStorage(metaStore: MetaStore,
    * @return Graph metadata.
    */
   override def createGraph(graph: GraphTemplate)(implicit user: UserPrincipal): Graph = {
+
     metaStore.withSession("spark.graphstorage.create") {
       implicit session =>
         {
@@ -57,7 +60,8 @@ class SparkGraphStorage(metaStore: MetaStore,
           if (check.isDefined) {
             throw new RuntimeException("Graph with same name exists. Create aborted")
           }
-          backendStorage.deleteUnderlyingTable(graph.name)
+          val quiet: Boolean = true
+          backendStorage.deleteUnderlyingTable(graph.name, quiet)
           metaStore.graphRepo.insert(graph).get
         }
     }
