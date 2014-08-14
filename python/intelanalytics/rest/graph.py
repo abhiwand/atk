@@ -41,7 +41,8 @@ def execute_update_graph_command(command_name, arguments, graph):
         command_name = 'graph/' + command_name
     command = CommandRequest(command_name, arguments=arguments)
     command_info = executor.issue(command)
-    return command_info.result
+    #return command_info.result
+    return None
 
 execute_new_graph_command = execute_update_graph_command
 
@@ -129,7 +130,6 @@ class GraphBackendRest(object):
 
     def get_repr(self, graph):
         graph_info = self._get_graph_info(graph)
-        #return "\n".join(['BigGraph "%s"\nGraph Id Number = %d' % (graph_info.name, graph_info.id_number)])
         return "\n".join(['BigGraph "%s"' % (graph_info.name)])
 
     def _get_graph_info(self, graph):
