@@ -12,10 +12,11 @@ import java.net.URI
 /**
  * Frame storage in HDFS.
  *
- * Each fr
+ * Each frame revision is stored into a new location so that we don't get problems
+ * with reading and writing to the same location at the same time.
  *
- * @param fsRoot
- * @param fileStorage
+ * @param fsRoot root for our application, e.g. "hdfs://hostname/user/iauser"
+ * @param fileStorage methods for interacting with underlying storage (e.g. HDFS)
  */
 class FrameFileStorage(fsRoot: String,
                        fileStorage: FileStorage) extends EventLogging {
@@ -36,7 +37,7 @@ class FrameFileStorage(fsRoot: String,
   /**
    * Create the Next revision for a frame.
    */
-  def createFrameRevision(dataFrame: DataFrame, revision: Int): URI = {
+  def createFrameRevision(dataFrame: DataFrame, revision: Int): URI = withContext("createFrameRevision") {
     require(revision > 0, "Revision should be larger than zero")
     require(revision > dataFrame.revision, s"New revision should be larger than the old revision: $dataFrame $revision")
 
@@ -52,6 +53,11 @@ class FrameFileStorage(fsRoot: String,
     path
   }
 
+  /**
+   * Remove the directory and underlying data for a particular revision of a data frame
+   * @param dataFrame the data frame to act on
+   * @param revision the revision to remove
+   */
   def deleteFrameRevision(dataFrame: DataFrame, revision: Int): Unit = {
     if (revision > 0) {
       fileStorage.delete(frameRevisionDirectory(dataFrame.id, revision))
@@ -59,7 +65,7 @@ class FrameFileStorage(fsRoot: String,
   }
 
   /**
-   * Remove the underlying data file from HDFS.
+   * Remove the underlying data file from HDFS - remove any revision that exists
    *
    * @param dataFrame the frame to completely remove
    */
