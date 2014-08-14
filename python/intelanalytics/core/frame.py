@@ -1872,7 +1872,9 @@ class BigFrame(CommandSupport):
         """
         # TODO - Review and complete docstring
         try:
-            return self._backend.take(self, n, offset)
+            result = self._backend.take(self, n, offset)
+            data = result[0]
+            return data
         except:
             raise IaError(logger)
 

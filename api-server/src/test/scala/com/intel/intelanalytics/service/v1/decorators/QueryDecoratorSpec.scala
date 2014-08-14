@@ -59,7 +59,7 @@ class QueryDecoratorSpec extends FlatSpec with Matchers {
   }
 
   it should "return data when requesting a single page" in {
-    val decoratedPage = QueryDecorator.decoratePage(uri, relLinks, query, 1, List())
+    val decoratedPage = QueryDecorator.decoratePage(uri, relLinks, query, 1, List(), None)
     decoratedPage.links.head.uri should be(uri)
     decoratedPage.result should not be (None)
     decoratedPage.result.get.page should be(Some(1))

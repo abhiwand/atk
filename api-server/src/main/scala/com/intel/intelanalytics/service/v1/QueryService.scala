@@ -126,8 +126,8 @@ class QueryService(commonDirectives: CommonDirectives, engine: Engine) extends D
                           onComplete(engine.getQuery(id)) {
                             case Success(Some(query)) =>
                               complete(if (query.complete) {
-                                val rdd = engine.getQueryPage(query.id, page - 1)
-                                QueryDecorator.decoratePage(uri.toString, links, query, page, dataToJson(rdd))
+                                val result = engine.getQueryPage(query.id, page - 1)
+                                QueryDecorator.decoratePage(uri.toString, links, query, page, dataToJson(result.data), result.schema)
                               }
                               else {
                                 QueryDecorator.decorateEntity(uri.toString(), links, query)
