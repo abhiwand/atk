@@ -359,6 +359,19 @@ class Executor(object):
                 if i == max_retries - 1:
                     raise e
 
+    def get_schema_for_selected_columns(self, schema, selected_columns):
+        selected_schema = []
+        for selected in selected_columns:
+            for column in schema:
+                if column[0] == selected:
+                    selected_schema.append(column)
+
+        return selected_schema
+
+    def get_indices_for_selected_columns(self, schema, selected_columns):
+        schema_for_selected_columns = self.get_schema_for_selected_columns(schema, selected_columns)
+        return [schema.index(f) for f in schema_for_selected_columns]
+
     def issue(self, command_request):
         """
         Issues the command_request to the server
@@ -395,9 +408,8 @@ class Executor(object):
             selected_columns = [selected_columns]
 
         if selected_columns is not None:
-            temp = [f for f in schema if f[0] in selected_columns]
-            indices = [schema.index(f) for f in temp]
-            schema = temp
+            schema = self.get_schema_for_selected_columns(schema, selected_columns)
+            indices = self.get_indices_for_selected_columns(schema, selected_columns)
 
         logger.info("Issuing query " + query_url)
         try:
