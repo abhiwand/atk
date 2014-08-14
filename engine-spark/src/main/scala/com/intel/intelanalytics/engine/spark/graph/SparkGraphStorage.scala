@@ -58,7 +58,7 @@ class SparkGraphStorage(metaStore: MetaStore,
         {
           val check = metaStore.graphRepo.lookupByName(graph.name)
           if (check.isDefined) {
-            throw new RuntimeException("Graph with same name exists. Create aborted")
+            throw new RuntimeException("Graph with same name exists. Create aborted.")
           }
           val quiet: Boolean = true
           backendStorage.deleteUnderlyingTable(graph.name, quiet)
@@ -78,6 +78,7 @@ class SparkGraphStorage(metaStore: MetaStore,
           future {
             backendStorage.renameUnderlyingTable(graph.name, newName)
           }
+
           val newGraph = graph.copy(name = newName)
           metaStore.graphRepo.update(newGraph).get
         }
