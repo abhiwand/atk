@@ -76,7 +76,7 @@ class RowParserSpec extends Specification {
   }
   "RowParser" should {
     "parse nested tab/s followed by double quotes in a string" in {
-      csvRowParser.splitLineIntoParts "foo,bar,\t\"baz\"\t") shouldEqual Array("foo", "bar", "baz")
+      csvRowParser.splitLineIntoParts ("foo,bar,\t\"baz\"\t") shouldEqual Array("foo", "bar", "baz")
     }
   }
   val trow = new RowParser('\t', Array[DataTypes.DataType]())
