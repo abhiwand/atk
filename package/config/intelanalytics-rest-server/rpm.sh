@@ -45,7 +45,7 @@ POST="
 restUser=iauser
 if [ \$1 -eq 2 ]; then
   echo start intelanalytics-rest-server
-  service intelanalytics-rest-server restart
+  service intelanalytics restart
 fi
 
 hadoop fs -ls /user/iauser/datasets 2>/dev/null

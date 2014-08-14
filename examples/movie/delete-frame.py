@@ -1,12 +1,12 @@
 #
-# Netflix example - create a frame and delete it
+# Movie example - create a frame and delete it
 #
-# Depends on a netflix.csv file (see sample in data/netflix.csv)
+# Depends on a movie.csv file (see sample in data/movie.csv)
 #
 # Usage:
 #
 #   Copy data to HDFS
-#       hadoop fs -copyFromLocal netflix.csv {fsRoot in HDFS}
+#       hadoop fs -copyFromLocal movie.csv {fsRoot in HDFS}
 #
 #   At Python prompt
 #       import os
@@ -21,7 +21,7 @@ print("server ping")
 server.ping()
 
 print("define csv file")
-csv = CsvFile("/netflix.csv", schema= [('user', int32),
+csv = CsvFile("/movie.csv", schema= [('user', int32),
                                               ('vertexType', str),
                                               ('movie', int32),
                                               ('rating', str),
