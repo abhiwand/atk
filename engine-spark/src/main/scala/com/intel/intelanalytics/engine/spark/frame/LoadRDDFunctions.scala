@@ -58,7 +58,8 @@ object LoadRDDFunctions extends Serializable {
     val preEvaluateResults = parse(sampleRdd, parser)
     val failedCount = preEvaluateResults.errorLines.count()
     val sampleRowsCount: Long = sampleRdd.count()
-    val failedRatio: Long = if (sampleRowsCount == 0) 0 else 100 * failedCount / sampleRowsCount
+
+    val failedRatio: Long =  if (sampleRowsCount == 0) 0 else 100 * failedCount / sampleRowsCount
 
     //don't need it anymore
     sampleRdd.unpersist()
