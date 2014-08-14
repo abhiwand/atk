@@ -29,7 +29,7 @@ import java.nio.file.{ Path, Paths }
 import com.intel.intelanalytics.engine.{ Directory, Entry, File, FileStorage }
 import com.intel.intelanalytics.shared.EventLogging
 import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.{Path => HPath, FileUtil, FileSystem, LocalFileSystem}
+import org.apache.hadoop.fs.{ Path => HPath, FileUtil, FileSystem, LocalFileSystem }
 import org.apache.hadoop.hdfs.DistributedFileSystem
 import java.net.URI
 
