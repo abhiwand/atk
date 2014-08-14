@@ -44,7 +44,7 @@ fi
 POST="
 restUser=iauser
 if [ \$1 -eq 2 ]; then
-  echo start intelanalytics-rest-server
+  echo start intelanalytics
   service intelanalytics restart
 fi
 
