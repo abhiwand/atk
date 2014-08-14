@@ -30,6 +30,7 @@ from intelanalytics.core.orddict import OrderedDict
 from collections import defaultdict
 import json
 import sys
+import codecs
 
 from intelanalytics.core.frame import BigFrame
 from intelanalytics.core.column import BigColumn
@@ -325,7 +326,7 @@ class FrameBackendRest(object):
             table.vrules = prettytable.NONE
             for r in self.rows:
                 table.add_row(r)
-            return table.get_string()
+            return unicode(table.get_string())
 
          #def _repr_html_(self): TODO - Add this method for ipython notebooks
 
