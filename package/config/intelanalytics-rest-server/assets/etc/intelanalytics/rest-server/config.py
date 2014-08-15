@@ -444,7 +444,7 @@ def create_intel_analytics_config( hdfs_host_name, hdfs_namenode_port, zookeeper
     :param spark_worker_memory: spark worker executor max memory
     :return:
     """
-    print "Creating application.conf file from application.conf.tpl"
+    print "\nCreating application.conf file from application.conf.tpl"
     config_file_tpl_path = "application.conf.tpl"
     config_file_path = "application.conf"
 
