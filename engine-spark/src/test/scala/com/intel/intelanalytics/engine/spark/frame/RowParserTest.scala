@@ -31,6 +31,7 @@ class RowParserTest extends WordSpec with Matchers {
   val csvRowParser = new RowParser(',', Array[DataTypes.DataType]())
 
   "RowParser" should {
+    
     "parse a String" in {
       csvRowParser.splitLineIntoParts("a,b") shouldEqual Array("a", "b")
     }
@@ -50,8 +51,6 @@ class RowParserTest extends WordSpec with Matchers {
     "parse a nested space/s followed by double quotes in a string" in {
       csvRowParser.splitLineIntoParts("foo,bar, \"baz\"  ") shouldEqual Array("foo", "bar", "baz")
     }
-
-
 
     "parse nested tab/s followed by double quotes in a string" in {
       csvRowParser.splitLineIntoParts("foo,bar,\t\"baz\"\t") shouldEqual Array("foo", "bar", "baz")
