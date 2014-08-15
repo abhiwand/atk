@@ -24,7 +24,7 @@
 package com.intel.intelanalytics.engine.spark.command
 
 import com.intel.intelanalytics.component.{ ClassLoaderAware, Boot }
-import com.intel.intelanalytics.domain.command.{ CommandDefinition, Command, CommandTemplate, Execution }
+import com.intel.intelanalytics.domain.command._
 import com.intel.intelanalytics.engine.plugin.{ Invocation, FunctionCommand, CommandPlugin }
 import com.intel.intelanalytics.engine.spark.context.SparkContextManager
 import com.intel.intelanalytics.engine.spark.plugin.SparkInvocation
@@ -38,6 +38,14 @@ import spray.json._
 import scala.concurrent._
 import scala.util.Try
 import org.apache.spark.engine.{ ProgressPrinter, SparkProgressListener }
+import scala.Some
+import com.intel.intelanalytics.domain.command.CommandDefinition
+import com.intel.intelanalytics.engine.plugin.FunctionCommand
+import com.intel.intelanalytics.domain.command.CommandTemplate
+import com.intel.intelanalytics.security.UserPrincipal
+import com.intel.intelanalytics.domain.command.Execution
+import com.intel.intelanalytics.engine.spark.plugin.SparkInvocation
+import com.intel.intelanalytics.domain.command.Command
 
 /**
  * CommandExecutor manages a registry of CommandPlugins and executes them on request.
@@ -71,7 +79,7 @@ class CommandExecutor(engine: => SparkEngine, commands: SparkCommandStorage, con
   def getCommandDefinitions(): Iterable[CommandDefinition] =
     commandPlugins.values.map(p => {
       val (argSchema, resSchema) = getArgumentAndResultSchemas(p)
-      CommandDefinition(p.name, argSchema, resSchema)
+      CommandDefinition(p.name, argSchema, resSchema, p.doc)
     })
 
   private def getArgumentAndResultSchemas(plugin: CommandPlugin[_, _]) = {
@@ -111,14 +119,16 @@ class CommandExecutor(engine: => SparkEngine, commands: SparkCommandStorage, con
    * @param name the name of the command
    * @param function the function to be called when running the command
    * @param numberOfJobs the number of jobs that this command will create (constant)
+   * @param doc the documentation for the command
    * @tparam A the argument type of the command
    * @tparam R the return type of the command
    * @return the CommandPlugin instance created during the registration process.
    */
   def registerCommand[A <: Product: JsonFormat: ClassManifest, R <: Product: JsonFormat: ClassManifest](name: String,
                                                                                                         function: (A, UserPrincipal, SparkInvocation) => R,
-                                                                                                        numberOfJobs: Int = 1): CommandPlugin[A, R] = {
-    registerCommand(name, function, (A) => numberOfJobs)
+                                                                                                        numberOfJobs: Int = 1,
+                                                                                                        doc: Option[CommandDoc] = None): CommandPlugin[A, R] = {
+    registerCommand(name, function, (A) => numberOfJobs, doc)
   }
 
   /**
@@ -131,14 +141,19 @@ class CommandExecutor(engine: => SparkEngine, commands: SparkCommandStorage, con
    * @param name the name of the command
    * @param function the function to be called when running the command
    * @param numberOfJobsFunc function for determining the number of jobs that this command will create
+   * @param doc the documentation for the command
    * @tparam A the argument type of the command
    * @tparam R the return type of the command
    * @return the CommandPlugin instance created during the registration process.
    */
   def registerCommand[A <: Product: JsonFormat: ClassManifest, R <: Product: JsonFormat: ClassManifest](name: String,
                                                                                                         function: (A, UserPrincipal, SparkInvocation) => R,
-                                                                                                        numberOfJobsFunc: (A) => Int): CommandPlugin[A, R] = {
-    registerCommand(FunctionCommand(name, function.asInstanceOf[(A, UserPrincipal, Invocation) => R], numberOfJobsFunc))
+                                                                                                        numberOfJobsFunc: (A) => Int,
+                                                                                                        doc: Option[CommandDoc]): CommandPlugin[A, R] = {
+    // Note: providing a default =None to the doc parameter causes a strange compiler error where it can't
+    // distinguish this method from the one which takes a plain Int for the numberOfJobs. Since the
+    // numberOfJobsFunc variation is much less frequently used, we'll make doc a required parameter
+    registerCommand(FunctionCommand(name, function.asInstanceOf[(A, UserPrincipal, Invocation) => R], numberOfJobsFunc, doc))
   }
 
   private def getCommandDefinition(name: String): Option[CommandPlugin[_, _]] = {

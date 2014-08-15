@@ -30,7 +30,6 @@ import json
 import logging
 import sys
 import re
-import collections
 from requests import HTTPError
 
 logger = logging.getLogger(__name__)
@@ -38,6 +37,19 @@ logger = logging.getLogger(__name__)
 import intelanalytics.rest.config as config
 from intelanalytics.rest.connection import http
 from intelanalytics.core.errorhandle import IaError
+from intelanalytics.rest.jsonschema import get_command_def
+
+
+_commands_from_backend = []
+
+
+def get_commands():
+    if not _commands_from_backend:
+        logger.info("Requesting available commands from server")
+        response = http.get("commands/definitions")
+        commands_json_schema = response.json()
+        _commands_from_backend.extend([get_command_def(c) for c in commands_json_schema])
+    return _commands_from_backend
 
 
 class ProgressPrinter(object):
@@ -455,6 +467,7 @@ class Executor(object):
                     current = holder
             if not hasattr(current, name):
                 setattr(clazz, name, staticmethod(v))
+                logger.debug("Loaded class %s with static method %s", clazz, name)
 
     def get_command_functions(self, prefixes, update_function, new_function):
         functions = dict()

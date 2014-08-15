@@ -100,8 +100,13 @@ class GraphBackendRest(object):
             logger.info("REST Backend: create graph response: " + r.text)
             graph_info = GraphInfo(r.json())
             initialized_graph=initialize_graph(graph,graph_info)
-            frame_rules=JsonRules(rules)
-            self.load(initialized_graph,frame_rules, append= False)
+            if rules:
+                frame_rules = JsonRules(rules)
+                if logger.level == logging.DEBUG:
+                    import json
+                    payload_json = json.dumps(frame_rules, indent=2, sort_keys=True)
+                    logger.debug("REST Backend: create graph payload: " + payload_json)
+                self.load(initialized_graph,frame_rules, append= False)
             return graph_info.name
 
     
