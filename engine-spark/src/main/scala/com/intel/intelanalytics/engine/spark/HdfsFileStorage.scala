@@ -115,12 +115,12 @@ class HdfsFileStorage(fsRoot: String) extends EventLogging {
   }
 
   /**
-   * File size
+   * File size (supports wildcards)
    * @param path relative path
    */
   def size(path: String): Long = {
     val p: Path = absolutePath(path)
-    fs.getFileStatus(p).getLen
+    fs.globStatus(p).map( fileStatus => fileStatus.getLen ).reduce(_ + _)
   }
 }
 
