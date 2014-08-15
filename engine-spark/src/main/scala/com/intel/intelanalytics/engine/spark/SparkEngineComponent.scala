@@ -46,10 +46,11 @@ import com.intel.intelanalytics.security.UserPrincipal
 class SparkComponent extends EngineComponent
     with FrameComponent
     with CommandComponent
-    with FileComponent
     with DbProfileComponent
     with SlickMetaStoreComponent
     with EventLogging {
+
+  SparkEngineConfig.logSettings()
 
   lazy val engine = new SparkEngine(sparkContextManager,
     commandExecutor, commands, frames, graphs, queries, queryExecutor, sparkAutoPartitioner) {}

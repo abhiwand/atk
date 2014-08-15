@@ -42,8 +42,6 @@ import com.intel.intelanalytics.repository.{ SlickMetaStoreComponent, MetaStoreC
 import com.intel.intelanalytics.engine.plugin.Invocation
 import scala.Some
 import com.intel.intelanalytics.domain.frame.DataFrameTemplate
-import com.intel.intelanalytics.engine.File
-import com.intel.intelanalytics.engine.Directory
 import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.domain.frame.DataFrame
 import com.intel.intelanalytics.engine.spark.plugin.SparkInvocation
