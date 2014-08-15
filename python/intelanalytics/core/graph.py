@@ -529,8 +529,20 @@ class BigGraph(CommandSupport):
         examples
         --------
         ::
+            # create a frame as the source for additional data
+            csv = CsvFile("/movie.csv", schema= [('user', int32),
+                                              ('vertexType', str),
+                                              ('movie', int32),
+                                              ('rating', str)])
+            frame = BigFrame(csv)
 
-            Example
+            # define graph parsing rules
+            user = VertexRule("user", frame.user, {"vertexType": frame.vertexType})
+            movie = VertexRule("movie", frame.movie)
+            rates = EdgeRule("rating", user, movie, { "rating": frame.rating }, is_directed = True)
+
+            # append data from the frame to an existing graph
+            graph.append([user, movie, rates])
 
         .. versionadded:: 0.8
         """
