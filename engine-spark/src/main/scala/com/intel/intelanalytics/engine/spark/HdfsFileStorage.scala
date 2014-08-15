@@ -23,11 +23,11 @@
 
 package com.intel.intelanalytics.engine.spark
 
-import java.io.{InputStream, OutputStream}
+import java.io.{ InputStream, OutputStream }
 
 import com.intel.intelanalytics.shared.EventLogging
 import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.{Path, FileSystem, LocalFileSystem}
+import org.apache.hadoop.fs.{ Path, FileSystem, LocalFileSystem }
 import org.apache.hadoop.hdfs.DistributedFileSystem
 
 class HdfsFileStorage(fsRoot: String) extends EventLogging {
@@ -120,7 +120,7 @@ class HdfsFileStorage(fsRoot: String) extends EventLogging {
    */
   def size(path: String): Long = {
     val p: Path = absolutePath(path)
-    fs.globStatus(p).map( fileStatus => fileStatus.getLen ).reduce(_ + _)
+    fs.globStatus(p).map(fileStatus => fileStatus.getLen).reduce(_ + _)
   }
 }
 
