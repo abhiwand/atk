@@ -23,18 +23,19 @@ intel.analytics {
         fs.root = "hdfs://invalid-fsroot-host/user/iauser"
 
         # The (comma separated, no spaces) Zookeeper hosts that
-        # Titan needs to be able to connect to HBase
+        # Comma separated list of host names with zookeeper role assigned
         titan.load.storage.hostname = "invalid-titan-host"
-        titan.query.storage.hostname = ${intel.analytics.engine.titan.load.storage.hostname}
+        # Zookeeper client port, defaults to 2181
+        //titan.load.storage.port = "2181"
 
-         # The URL for connecting to the Spark master server
-         spark.master = "spark://invalid-spark-master:7077"
+        # The URL for connecting to the Spark master server
+        spark.master = "spark://invalid-spark-master:7077"
 
-         spark.conf.properties {
+        spark.conf.properties {
             # Memory should be same or lower than what is listed as available in Cloudera Manager.
             # Values should generally be in gigabytes, e.g. "8g"
             spark.executor.memory = "invalid executor memory"
-         }
+        }
     }
 
 }
@@ -146,8 +147,6 @@ intel.analytics {
         # documentation for these settings is available on Titan website
         storage {
           //backend = "hbase"
-          //port = "2181"
-
           #Performance tuning parameters:
           //batch-loading = "true"
           //buffer-size = 2048
@@ -174,8 +173,8 @@ intel.analytics {
         storage {
           # query does use the batch load settings in titan.load
           //backend = ${intel.analytics.engine.titan.load.storage.backend}
-          //hostname =  ${intel.analytics.engine.titan.load.storage.hostname}
-          //port =  ${intel.analytics.engine.titan.load.storage.port}
+          hostname =  ${intel.analytics.engine.titan.load.storage.hostname}
+          port =  ${intel.analytics.engine.titan.load.storage.port}
         }
         cache {
           # Adjust cache size parameters if you experience OutOfMemory errors during Titan queries

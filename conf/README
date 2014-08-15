@@ -9,6 +9,7 @@ properties get search replaced with relevant data from Cloudera manager by
 source_code/package/config/intelanalytics-rest-server/assets/etc/intelanalytics/rest-server/config.py
     fs.root
     titan.load.storage.hostname
+    titan.load.storage.port
     spark.master
     spark.executor.memory
 

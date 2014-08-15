@@ -366,7 +366,11 @@ def get_hdfs_details(services):
 
     hdfs_namenode_role_hostnames = get_role_host_names(api, hdfs_namenode_roles)
 
-    return hdfs_namenode_role_hostnames
+    hdfs_config_groups = role_config_groups.get_all_role_config_groups(api, hdfs_service.name, cluster.name)
+
+    hdfs_namenode_port, _ = find_config(hdfs_config_groups, "hdfs-NAMENODE-BASE", "namenode_port")
+
+    return hdfs_namenode_role_hostnames, hdfs_namenode_port
 
 def get_zookeeper_details(services):
     """
@@ -386,7 +390,11 @@ def get_zookeeper_details(services):
 
     zookeeper_server_role_hostnames = get_role_host_names(api, zookeeper_server_roles)
 
-    return zookeeper_server_role_hostnames
+    zookeeper_config_groups = role_config_groups.get_all_role_config_groups(api, zookeeper_service.name, cluster.name)
+
+    zookeeper_client_port, _ = find_config(zookeeper_config_groups, "zookeeper-SERVER-BASE", "clientPort")
+
+    return zookeeper_server_role_hostnames, zookeeper_client_port
 
 def get_spark_details(services):
     """
@@ -424,7 +432,8 @@ def get_spark_details(services):
 
     return spark_master_role_hostnames, spark_config_executor_total_max_heapsize, spark_config_master_port
 
-def create_intel_analytics_config( hdfs_host_name, zookeeper_host_names, spark_master_host, spark_master_port, spark_worker_memory):
+def create_intel_analytics_config( hdfs_host_name, hdfs_namenode_port, zookeeper_host_names, zookeeper_client_port,
+                                   spark_master_host, spark_master_port, spark_worker_memory):
     """
     create a new application.conf file from the tempalte
 
@@ -446,10 +455,12 @@ def create_intel_analytics_config( hdfs_host_name, zookeeper_host_names, spark_m
 
     print "Updating configuration"
     #set fs.root
-    config_tpl_text = re.sub(r'fs.root = .*', 'fs.root = "hdfs://' + hdfs_host_name[0] + '/user/' + IAUSER + '"', config_tpl_text)
+    config_tpl_text = re.sub(r'fs.root = .*', 'fs.root = "hdfs://' + hdfs_host_name[0] + ":" + hdfs_namenode_port + '/user/' + IAUSER + '"', config_tpl_text)
     #set titan zookeeper list titan.load.storage.hostname
     config_tpl_text = re.sub(r'titan.load.storage.hostname = .*',
                        'titan.load.storage.hostname = "' + ','.join(zookeeper_host_names) + '"', config_tpl_text)
+    config_tpl_text = re.sub(r'[/]*titan.load.storage.port = .*',
+                       'titan.load.storage.port = "' + zookeeper_client_port  + '"', config_tpl_text)
     #set spark master
     config_tpl_text = re.sub(r'spark.master = .*',
                        'spark.master = "spark://' + spark_master_host[0] + ':' + spark_master_port + '"', config_tpl_text)
@@ -503,17 +514,18 @@ if cluster:
     services = cluster.get_all_services()
 
     #get hdfs name node host name
-    hdfs_namenode_role_host_names = get_hdfs_details(services)
+    hdfs_namenode_role_host_names, hdfs_namenode_port = get_hdfs_details(services)
 
     #get zookeeper host names
-    zookeeper_server_role_host_names = get_zookeeper_details(services)
+    zookeeper_server_role_host_names, zookeeper_client_port = get_zookeeper_details(services)
 
     #get spark service details
     spark_master_role_host_names, spark_config_executor_total_max_heapsize, spark_config_master_port = get_spark_details(services)
 
     #write changes to our config
-    create_intel_analytics_config(hdfs_namenode_role_host_names, zookeeper_server_role_host_names, spark_master_role_host_names,
-                           spark_config_master_port, spark_config_executor_total_max_heapsize)
+    create_intel_analytics_config(hdfs_namenode_role_host_names, hdfs_namenode_port, zookeeper_server_role_host_names,
+                                  zookeeper_client_port, spark_master_role_host_names, spark_config_master_port,
+                                  spark_config_executor_total_max_heapsize)
 else:
     print "No cluster selected"
     exit(1)
