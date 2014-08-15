@@ -58,6 +58,7 @@ class HdfsFileStorage(fsRoot: String) extends EventLogging {
    * @param path a path relative to the root or that includes the root
    */
   private[spark] def absolutePath(path: String): Path = {
+    // TODO: this seems to work but this could be revisted and perhaps done nicer
     if (path.startsWith(fsRoot)) {
       new Path(path)
     }
