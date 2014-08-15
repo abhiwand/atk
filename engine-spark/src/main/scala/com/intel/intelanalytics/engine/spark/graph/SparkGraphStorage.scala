@@ -35,7 +35,7 @@ class SparkGraphStorage(metaStore: MetaStore,
     metaStore.withSession("spark.graphstorage.drop") {
       implicit session =>
         {
-          val quiet: Boolean = false
+          val quiet: Boolean = true
           //future {
           backendStorage.deleteUnderlyingTable(graph.name, quiet)
           //}
