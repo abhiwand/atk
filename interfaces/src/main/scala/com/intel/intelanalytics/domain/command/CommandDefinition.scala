@@ -30,4 +30,5 @@ import com.intel.intelanalytics.schema.ObjectSchema
  */
 case class CommandDefinition(name: String,
                              argument_schema: ObjectSchema,
-                             return_schema: ObjectSchema)
+                             return_schema: ObjectSchema,
+                             doc: Option[CommandDoc])
