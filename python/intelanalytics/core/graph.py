@@ -410,7 +410,21 @@ class BigGraph(CommandSupport):
     --------
     ::
 
-        g = BigGraph([user_vertex, movie_vertex, rating_edge, extra_movie_rule])
+        # create a frame as the source for a graph
+        csv = CsvFile("/movie.csv", schema= [('user', int32),
+                                              ('vertexType', str),
+                                              ('movie', int32),
+                                              ('rating', str)])
+        frame = BigFrame(csv)
+
+        # define graph parsing rules
+        user = VertexRule("user", frame.user, {"vertexType": frame.vertexType})
+        movie = VertexRule("movie", frame.movie)
+        rates = EdgeRule("rating", user, movie, { "rating": frame.rating }, is_directed = True)
+
+        # create graph
+        graph = BigGraph([user, movie, rates])
+
 
     .. versionadded:: 0.8
 
@@ -515,8 +529,20 @@ class BigGraph(CommandSupport):
         examples
         --------
         ::
+            # create a frame as the source for additional data
+            csv = CsvFile("/movie.csv", schema= [('user', int32),
+                                              ('vertexType', str),
+                                              ('movie', int32),
+                                              ('rating', str)])
+            frame = BigFrame(csv)
 
-            Example
+            # define graph parsing rules
+            user = VertexRule("user", frame.user, {"vertexType": frame.vertexType})
+            movie = VertexRule("movie", frame.movie)
+            rates = EdgeRule("rating", user, movie, { "rating": frame.rating }, is_directed = True)
+
+            # append data from the frame to an existing graph
+            graph.append([user, movie, rates])
 
         .. versionadded:: 0.8
         """
