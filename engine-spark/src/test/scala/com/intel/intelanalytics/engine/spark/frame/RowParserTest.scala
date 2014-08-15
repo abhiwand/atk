@@ -24,14 +24,14 @@
 package com.intel.intelanalytics.engine.spark.frame
 
 import com.intel.intelanalytics.domain.schema.DataTypes
-import org.scalatest.{Matchers, WordSpec}
+import org.scalatest.{ Matchers, WordSpec }
 
 class RowParserTest extends WordSpec with Matchers {
 
   val csvRowParser = new RowParser(',', Array[DataTypes.DataType]())
 
   "RowParser" should {
-    
+
     "parse a String" in {
       csvRowParser.splitLineIntoParts("a,b") shouldEqual Array("a", "b")
     }

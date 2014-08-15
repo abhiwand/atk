@@ -59,7 +59,7 @@ class RowParser(separator: Char, columnTypes: Array[DataType]) extends Serializa
     }
     catch {
       case e: Exception =>
-        RowParseResult(parseSuccess = false, Array(line, e.toString))
+         RowParseResult(parseSuccess = false, Array(line, e.toString))
     }
   }
 
