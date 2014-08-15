@@ -30,6 +30,7 @@ from intelanalytics.core.orddict import OrderedDict
 from collections import defaultdict
 import json
 import sys
+import codecs
 
 from intelanalytics.core.frame import BigFrame
 from intelanalytics.core.column import BigColumn
@@ -181,11 +182,14 @@ class FrameBackendRest(object):
         return "frame_" + uuid.uuid4().hex + annotation
 
     @staticmethod
-    def _validate_schema(schema):
-        for tup in schema:
-            if not isinstance(tup[0], basestring):
+    def _format_schema(schema):
+        formatted_schema = []
+        for name, data_type in schema:
+            if not isinstance(name, basestring):
                 raise ValueError("First value in schema tuple must be a string")
-            valid_data_types.validate(tup[1])
+            formatted_data_type = valid_data_types.get_from_type(data_type)
+            formatted_schema.append((name, formatted_data_type))
+        return formatted_schema
 
     def add_columns(self, frame, expression, schema):
         if not schema or not hasattr(schema, "__iter__"):
@@ -196,7 +200,7 @@ class FrameBackendRest(object):
             only_one_column = True
             schema = [schema]
 
-        self._validate_schema(schema)
+        schema = self._format_schema(schema)
         names, data_types = zip(*schema)
 
         add_columns_function = get_add_one_column_function(expression, data_types[0]) if only_one_column \
@@ -315,14 +319,14 @@ class FrameBackendRest(object):
             # keep the import localized, as serialization doesn't like prettytable
             import intelanalytics.rest.prettytable as prettytable
             table = prettytable.PrettyTable()
-            fields = OrderedDict([("{0}:{1}".format(n, valid_data_types.to_string(t)), self._align[t]) for n, t in self.schema])
+            fields = OrderedDict([("{0}:{1}".format(key, valid_data_types.to_string(val)), self._align[val]) for key, val in self.schema])
             table.field_names = fields.keys()
             table.align.update(fields)
             table.hrules = prettytable.HEADER
             table.vrules = prettytable.NONE
             for r in self.rows:
                 table.add_row(r)
-            return table.get_string()
+            return unicode(table.get_string())
 
          #def _repr_html_(self): TODO - Add this method for ipython notebooks
 
@@ -455,9 +459,9 @@ class FrameBackendRest(object):
             raise ValueError("label_column does not exist in frame")
         if not pred_column in column_names:
             raise ValueError("pred_column does not exist in frame")
-        if supported_types.get_type_string(schema_dict[label_column]) in ['float32', 'float64']:
+        if schema_dict[label_column] in [float32, float64]:
             raise ValueError("invalid label_column types")
-        if supported_types.get_type_string(schema_dict[pred_column]) in ['float32', 'float64']:
+        if schema_dict[pred_column] in [float32, float64]:
             raise ValueError("invalid pred_column types")
         if not beta > 0:
             raise ValueError("invalid beta value for f measure")
@@ -471,13 +475,13 @@ class FrameBackendRest(object):
         column_names = schema_dict.keys()
         if not label_column in column_names:
             raise ValueError("label_column does not exist in frame")
-        if schema_dict.get(label_column) in ['float32', 'float64']:
+        if schema_dict.get(label_column) in [float32, float64]:
             raise ValueError("invalid label_column types")
         if pred_column.strip() == "":
             raise ValueError("pred_column can not be empty string")
         if not pred_column in column_names:
             raise ValueError("pred_column does not exist in frame")
-        if schema_dict.get(pred_column) in ['float32', 'float64']:
+        if schema_dict.get(pred_column) in [float32, float64]:
             raise ValueError("invalid pred_column types")
         if str(pos_label).strip() == "":
             raise ValueError("invalid pos_label")

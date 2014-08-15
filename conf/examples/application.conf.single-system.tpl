@@ -16,8 +16,6 @@ intel.analytics.giraph.mapreduce.map {
       java.opts = "-Xmx2g"
 }
 
-# END REQUIRED SETTINGS
-
 # In a single machine configuration, all services are on the same host.
 # This configuration uses the HOSTNAME environment variable (which is preconfigured
 # in the startup scripts of the rest server) as the name for all the service hosts.
@@ -36,8 +34,9 @@ intel.analytics {
         # The (comma separated, no spaces) Zookeeper hosts that
         # Titan needs to be able to connect to HBase
         titan.load.storage.hostname = ${HOSTNAME}
-
-        spark {
+        titan.query.storage.hostname = ${intel.analytics.engine.titan.load.storage.hostname}
+        
+	spark {
             # The URL for connecting to the Spark master server
             master = "spark://"${HOSTNAME}":7077"
         }

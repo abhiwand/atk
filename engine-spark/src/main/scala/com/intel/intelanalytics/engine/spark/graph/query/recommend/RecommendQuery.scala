@@ -113,7 +113,7 @@ class RecommendQuery extends SparkCommandPlugin[RecommendParams, RecommendResult
     val numOutputResults = arguments.num_output_results.getOrElse(config.getInt("num_output_results"))
 
     val (targetVertexType, sourceVertexName, targetVertexName, sourceIdPropertyKey, targetIdPropertyKey) =
-      if (vertexType == config.getString("vertex_type")) {
+      if (vertexType == config.getString("vertex_type").toLowerCase) {
         ("r", leftVertexName, rightVertexName, leftVertexIdPropertyKey, rightVertexIdPropertyKey)
       }
       else {
@@ -160,14 +160,14 @@ class RecommendQuery extends SparkCommandPlugin[RecommendParams, RecommendResult
     // it means source vertex knew target vertex already.
     // The target vertex cannot shown up in recommendation results
     val avoidTargetEdgeRDD = edgeRDD.filter(
-      edge => edge.getHeadVertexGbId() == sourceGbId &&
+      edge => edge.headVertexGbId == sourceGbId &&
         edge.getPropertyValueAsString(edgeTypePropertyKey).toLowerCase == trainStr
     )
 
-    //get valid target vertices' gbIds
+    //get list of vertices' gbIds to avoid
     val avoidTargetGbIdsRDD = avoidTargetEdgeRDD.tailVerticesGbIds()
 
-    //get unique target vertices' gbIds
+    //get unique list of vertices' gbIds to avoid
     val avoidGbIdsArray = avoidTargetGbIdsRDD.distinct().toArray()
 
     //filter target vertex RDD
