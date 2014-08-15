@@ -67,11 +67,16 @@ class SparkQueryStorage(val metaStore: SlickMetaStoreComponent#SlickMetaStore, f
   def getQueryPage(ctx: SparkContext, queryId: Long, pageId: Long): Iterable[Any] = {
     val rdd = getQueryRdd(ctx, queryId)
     val query = lookup(queryId)
-    val pageSize: Int = query match {
-      case Some(q) => q.pageSize.getOrElse(SparkEngineConfig.pageSize.toLong).toInt
-      case None => SparkEngineConfig.pageSize
+    val (pageSize: Int , totalPages: Int) = query match {
+      case Some(q) => (
+        q.pageSize.getOrElse(SparkEngineConfig.pageSize.toLong).toInt,
+        q.totalPages.getOrElse(-1l).toInt)
+      case None => (SparkEngineConfig.pageSize, -1)
     }
-    SparkOps.getRows[Any](rdd, pageId * pageSize, pageSize, pageSize)
+    if(totalPages == 1)
+      rdd.collect()
+    else
+      SparkOps.getRows[Any](rdd, pageId * pageSize, pageSize, pageSize)
   }
 
   /**

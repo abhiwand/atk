@@ -134,43 +134,20 @@ class DataFrameService(commonDirectives: CommonDirectives, engine: Engine) exten
                 }
             } ~ (path("data") & get) {
               parameters('offset.as[Int], 'count.as[Int]) {
-                (offset, count) =>
-                  {
-                    import ViewModelJsonImplicits._
-                    val queryArgs = RowQuery[Long](id, offset, count)
-                    // if there will only be a single page just return the data this will be much faster
-                    if (count <= engine.pageSize) {
-                      onComplete(engine.getRows(queryArgs)) {
-                        case Success(rows: Iterable[Array[Any]]) => {
-                          import spray.httpx.SprayJsonSupport._
-                          import spray.json._
-                          import DomainJsonProtocol._
-                          val strings = rows.map(r => r.map {
-                            case null => JsNull
-                            case a => a.toJson
-                          }.toJson).toList
-                          val tempQuery = Query(-1, "dataframe/load", Some(queryArgs.toJson.asJsObject), None, true,
-                            Some(1), Some(count), new DateTime(), new DateTime(), None)
-                          complete(QueryDecorator.decoratePage(uri.toString, List(Rel.self(uri.toString)),
-                            tempQuery, 1, strings))
-                        }
-                        case Failure(ex) => throw ex
-                      }
-                    }
-                    else {
-                      val exec = engine.getRowsLarge(queryArgs)
-                      //we require a commands uri to point the query completion to.
-                      val pattern = new Regex(prefix + ".*")
-                      val commandUri = pattern.replaceFirstIn(uri.toString, QueryService.prefix + "/") + exec.start.id
-                      complete(QueryDecorator.decorateEntity(commandUri, List(Rel.self(commandUri)), exec.start))
-                    }
-                  }
+                (offset, count) => {
+                  import ViewModelJsonImplicits._
+                  val queryArgs = RowQuery[Long](id, offset, count)
+                  val exec = engine.getRowsLarge(queryArgs)
+                  //we require a commands uri to point the query completion to.
+                  val pattern = new Regex(prefix + ".*")
+                  val commandUri = pattern.replaceFirstIn(uri.toString, QueryService.prefix + "/") + exec.start.id
+                  complete(QueryDecorator.decorateEntity(commandUri, List(Rel.self(commandUri)), exec.start))
+                }
               }
             }
-
           }
+
         }
     }
   }
-
 }
