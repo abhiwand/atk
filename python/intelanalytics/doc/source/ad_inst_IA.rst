@@ -1,7 +1,7 @@
-===============
-Set Up A Server
-===============
-
+=======================
+IA Package Installation
+=======================
+    
 ------------
 Introduction
 ------------
@@ -12,9 +12,8 @@ For brevity Intel Analytics will be referred to as IA going forward.
 
 See `Cloudera Installation Documentation <http://www.cloudera.com/content/cloudera-content/cloudera-docs/CM5/latest/Cloudera-Manager-Installation-Guide/cm5ig_install_cm_cdh.html>`_
 
-------------
 Requirements
-------------
+============
 
 1. RHEL/Centos 6.4 OS
 #. Sudo access is required to install the various IA packages since they are installed through Yum and for the editing of root owned configuration files
@@ -68,37 +67,38 @@ The dependency list is merely informational.
 When yum installs a package, it will pull dependencies automatically.
 All the Cloudera dependencies are implied for all packages.
 
-IA Rest Server
-==============
+Intel Analytics Rest Server
+===========================
 
 Package Name: intelanalytics-rest-server
 
 Dependencies
 
-* intelanalytics-python-client
-* intelanalytics-graphbuilder
+*   intelanalytics-python-client
+*   intelanalytics-graphbuilder
+*   python-cm-api
+*   python-argparse
 * Java Runtime Environment or Java Development Environment 1.7
 
-IA Python Client
-================
+Intel Analytics Python Client
+=============================
 
 Needs to be installed on every spark worker node as well as the gateway node or other machine that is going to be the designated client.
 The version must be the same on the IA python client submitting requests, the rest server and the rest client installed on the individual nodes.
 
 
-Package Name: intelanalytics-python-client
+Package Name: intelanalytics-python-rest-client
 
 Dependencies
 
 * `python 2.6 <https://docs.python.org/release/2.6.6/>`_
 * `python-ordereddict <https://pypi.python.org/pypi/ordereddict>`_
-* `python-pip <https://pip.pypa.io/en/latest/>`_
 * `numpy >= 1.8.1 <http://www.numpy.org/>`_
 * `python-bottle >= 0.12 <http://bottlepy.org/docs/dev/index.html>`_
 * `python-requests >= 2.2.1 <http://docs.python-requests.org/en/latest/>`_
 
-IA Graph Builder
-================
+Intel Analytics Graph Builder
+=============================
 
 Needs to be installed with the IA rest server
 
@@ -107,14 +107,12 @@ Package Name: intelanalytics-graphbuilder
 Dependencies
 
 * intelanalytics-spark-deps
-* `jq * <http://stedolan.github.io/jq/>`_
-* `perl-URI * <http://search.cpan.org/dist/URI/>`_
 
 \* These dependenicies are only used in a helper script that updates the spark class path in Cloudera manager.
 They are not used for any data processing.
 
-IA Spark Dependencies
-=====================
+Intel Analytics Spark Dependencies
+==================================
 
 Need to be installed on every spark worker node.
 
@@ -201,8 +199,9 @@ Alternatively you can run::
     key_id=YOUR_KEY
     secret_key=YOUR_SECRET" | sudo tee -a /etc/yum.repos.d/ia.repo
 
-Note:
-| Don't forget to replace YOUR_KEY, and YOUR_SECRET with the keys that were given to you.
+.. Note::
+
+    **Don't forget to replace YOUR_KEY, and YOUR_SECRET with the keys that were given to you.**
 
 Verify the installation of the IA repository by running::
 
@@ -261,13 +260,58 @@ If you open the file it will look something like this::
 If your Cloudera cluster is parcel-based, the default SPARK_HOME should work.
 If your Cloudera cluster is packaged-based, like RPM or DEB, use "/usr/lib/spark".
 
-/etc/intelanalytics/rest-server/application.conf.tpl:
------------------------------------------------------
+/etc/intelanalytics/rest-server/application.conf:
+-------------------------------------------------
+The configuration of application.conf is automated via the use of a python script in /etc/intelanalytics/rest-sever/config.py.
+It will query Cloudera manager for the configurations and create a new application.conf based off the application.conf.tpl.
 
+To configure your cluster, first cd to the Intel Analytics directory, then start Python with the ``config.py`` file::
+
+    cd /etc/intelanalytics/rest-sever/
+    sudo python config.py
+
+After executing the script answer the prompts to configure your cluster.
+
+Sample output with notes::
+
+    #if the default is correct hit enter
+    What port is Cloudera manager listening on? defaults to '7180' if nothing is entered:
+    What is the Cloudera manager username? defaults to 'admin' if nothing is entered:
+    What is the Cloudera manager password? defaults to 'admin' if nothing is entered:
+
+    #if your cloudera manager instance only manages a single cluster this prompt will not come up
+    1: Cluster Name: cluster 1            Version: CDH5
+    2: Cluster Name: cluster 2            Version: CDH5
+    Enter the clusters index number: 1
+    You picked cluster 1
+
+
+    No current SPARK_CLASSPATH set.
+    Setting to:
+    export SPARK_CLASSPATH="/usr/lib/intelanalytics/graphbuilder/lib/*"
+    Deploying config   .   .   .   .   .   .   .   .   .   .   .   .  
+    You need to restart spark service for the config changes to take affect.
+
+    #restarting the cluster is up to the user just in case spark is busy running any jobs
+    would you like to restart now? defaults to 'no' if nothing is entered: yes
+    Restarting spark  .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   
+
+    #Creating the /etc/intelanalytics/rest-server/application.conf file
+    Creating application.conf file from application.conf.tpl
+    Reading application.conf.tpl
+    Updating configuration
+    Writing application.conf
+
+If you accidentally enter the wrong information on any of the prompts you can always run the script again it will user a fresh application.conf.tpl to recreate the application.conf file.
+
+You can now skip to `Finish Intel Analytics Installation`_
+
+Manual Configuration
+--------------------
 
 The rest-server package only provides a configuration template called application.conf.tpl.
 We need to copy and rename this file to application.conf and update host names and memory configurations.
-First let's rename the file::
+First let's copy and rename the file ::
 
     sudo cp /etc/intelanalytics/rest-server/application.conf.tpl
         /etc/intelanalytics/rest-server/application.conf
@@ -276,9 +320,9 @@ Note:
 The above command has been split for enhanced readability in some medias.
 It should be entered as a single line.
 
-Open the file with your editor of choice (we use vim for example)::
+Open the file with your editor of choice::
 
-    sudo vim /etc/intelanalytics/rest-server/application.conf
+    sudo vi /etc/intelanalytics/rest-server/application.conf
 
 All the changes that need to be made are at the top of the file.
 This is the section you want to look at::
@@ -288,7 +332,10 @@ This is the section you want to look at::
     intel.analytics {
 
         # The host name for the Postgresql database in which the metadata will be stored
-        metastore.connection-postgresql.host = "invalid-postgresql-host"
+        //metastore.connection-postgresql.host = "invalid-postgresql-host"
+        # This allows the use of an in memory data store. Restarting the rest server will create a fresh database and any 
+        # data in the h2 DB will be lost 
+        metastore.connection = ${intel.analytics.metastore.connection-h2} 
 
         engine {
 
@@ -301,78 +348,80 @@ This is the section you want to look at::
             titan.load.storage.hostname = "invalid-titan-host"
             titan.query.storage.hostname = ${intel.analytics.engine.titan.load.storage.hostname}
 
-            spark {
-                # The URL for connecting to the Spark master server
-                master = "spark://invalid-spark-master:7077"
-
-                conf.properties {
-                    # Memory should be same or lower than what is listed as available
-                    #in Cloudera Manager.
-                    # Values should generally be in gigabytes, e.g. "8g"
-                    spark.executor.memory = "invalid executor memory"
-                }
+            # The URL for connecting to the Spark master server
+            spark.master = "spark://invalid-spark-master:7077"
+            spark.conf.properties {
+                # Memory should be same or lower than what is listed as available
+                #in Cloudera Manager.
+                # Values should generally be in gigabytes, e.g. "8g"
+                spark.executor.memory = "invalid executor memory"
             }
         }
     }
 
     # END REQUIRED SETTINGS
 
-1. Configure meta store
 
-Comment the following line by pre-pending it with '//'::
+1. Configure file system root
 
-    metastore.connection-postgresql.host = "invalid-postgresql-host"
+    In the following line the text "invalid-fsroot-host" should be replaced with the fully qualified domain of your HDFS installation::
+
+        fs.root = "hdfs://invalid-fsroot-host/user/iauser"
+        
+    Example::
+
+        fs.root = "hdfs://localhost.localdomain/user/iauser" 
+
+#. Configure zookeeper host 
+
+    In the following line replace "invalid-titan-host" with the comma delimited list of fully qualified domain names of all nodes running the zookeeper service::
+
+        titan.load.storage.hostname = "invalid-titan-host"
+
+    Example::
+
+        titan.load.storage.hostname = "localhost.localdomain" 
+
+#. Configure spark host
+
+    Update "invalid-spark-master" with the fully qualified domain name of the spark master node::
+
+        master = "spark://localhost.localdomain:7077"
     
-and replace it with this::
+    Example::
 
-    //metastore.connection-postgresql.host = "invalid-postgresql-host"
-    metastore.connection = ${intel.analytics.metastore.connection-h2}
+        master = "spark://localhost.localdomain:7077" 
 
-2. Configure file system root
+#. Configure spark executor memory
 
-In the following line the text "invalid-fsroot-host" should be replaced with the fully qualified domain of your HDFS installation::
+    The spark executor memory needs to be set equal to or less than what is configured in Cloudera manager.
+    The Cloudera Spark installation will, by default, set the spark executor memory to 8g, so 8g is usually a safe setting.
+    If have any doubts you can always verify the executor memory in Cloudera manager.
+    ::
 
-    fs.root = "hdfs://invalid-fsroot-host/user/iauser"
-    
-3. Configure zookeeper host
+        spark.executor.memory = "invalid executor memory"
 
-In the following line replace "invalid-titan-host" with the comma delimited list of fully qualified domain names of all nodes running the zookeeper service::
+    Example::
 
-    titan.load.storage.hostname = "invalid-titan-host"
-    
-4. Configure spark host
+        spark.executor.memory = "8g"
 
-Update "invalid-spark-master" with the fully qualified domain name of the spark master node::
+    Click on the spark service then configuration in Cloudera manager to get executor memory.
 
-    master = "spark://invalid-spark-master:7077"
-    
-5. Configure spark executor memory
+    .. image:: ad_inst_IA_1.png
+        :align: center
 
-The spark executor memory needs to be set equal to or less than what is configured in Cloudera manager.
-The Cloudera Spark installation will, by default, set the spark executor memory to 8g, so 8g is usually a safe setting.
-If have any doubts you can always verify the executor memory in Cloudera manager.
-::
+#. Set the bind ip address (optional)
 
-    spark.executor.memory = "invalid executor memory"
+    If you would like the Intel Analytics server to bind to all ip address and not just localhost update the following lines.
+    And follow the commented instructions.
+    This configuration section is also near the top of the file.
+    ::
 
-Click on the spark service then configuration in Cloudera manager to get executor memory.
+        #bind address - change to 0.0.0.0 to listen on all interfaces
+        //host = "127.0.0.1"
 
-.. image:: ad_inst_IA_1.png
-    :width: 80%
-    :align: center
-
-6. Set the bind ip address (optional)
-
-If you would like the Intel Analytics server to bind to all ip address and not just localhost update the following lines.
-And follow the commented instructions.
-This configuration section is also near the top of the file.
-::
-
-    #bind address - change to 0.0.0.0 to listen on all interfaces
-    //host = "127.0.0.1"
-
-Set the spark classpath
-~~~~~~~~~~~~~~~~~~~~~~~
+Setting the spark class path
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Run the following command to set the spark class path::
 
@@ -389,19 +438,18 @@ If it isn't already set add::
 then restart the spark service.
 
 .. image:: ad_inst_IA_2.png
-    :width: 80%
     :align: center
 
 
-IA spark deps:
---------------
+IA spark deps
+-------------
 
 After setting up the IA repositories, run the following command on every host with a spark worker::
 
     sudo yum -y install intelanalytics-spark-deps
 
-IA python rest client:
-----------------------
+IA python rest client
+---------------------
 
 After setting up the IA repositories, run the following command on every host with a spark worker::
 
@@ -410,8 +458,8 @@ After setting up the IA repositories, run the following command on every host wi
 After installing IA spark deps and IA python rest client, you can start the rest server and start submitting requests.
 
 
-Starting IA Rest Server:
-------------------------
+Starting IA Rest Server
+-----------------------
 
 Starting the Rest server is very easy.
 It can be started like any other linux service.
@@ -421,8 +469,8 @@ It can be started like any other linux service.
 
 After starting the rest server, you can browse to the host on port 9099 to see if the server started successfully.
 
-Troubleshooting:
-----------------
+Troubleshooting
+---------------
 
 The log files get written to /var/log/intelanalytics/rest-server/output.log or /var/log/intelanalytics/rest-server/application.log.
 If you are having issues starting or running jobs, tail either log to see what error is getting reported while running the task::
@@ -432,4 +480,3 @@ If you are having issues starting or running jobs, tail either log to see what e
 or::
 
     sudo tail -f /var/log/intelanalytics/rest-server/application.log
-
