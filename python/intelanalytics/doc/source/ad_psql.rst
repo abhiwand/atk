@@ -26,31 +26,31 @@ Once we have the unit tests in and working, \~test might be an even better one t
 You’re going to launch the system using “laucher.jar” -- a command for your system would look like
 (assuming you want to store your dataframes in \~/intelanalytics)::
 
-    bin/api-server.sh
+    bin/API-server.sh
 
-This will launch the api server.
-Right now the api server has an embedded version of the engine in it, so this is the process that will be running your code.
+This will launch the API server.
+Right now the API server has an embedded version of Engine in it, so this is the process that will be running your code.
 Currently it’s configured to use spark in local mode for easier testing at this point,
 which is why I mentioned \~/intelanalytics above -- it will only write to your local filesystem
 (it’s using the Hadoop and Spark APIs, so this will be easy to change when we’re ready for it).
 
 At this early point in the development, it is recommended to clear out the "hdfs" filesystem first::
 
-    rm -rf ~/intelanalytics/*;bin/api-server.sh
+    rm -rf ~/intelanalytics/*;bin/API-server.sh
 
 Once this is done, you will have the API server running.
 Point your browser (or REST tool like the `Postman REST client`_) at **\http://<your-server-name>:9099/v1/dataframes** as a starting point.
 
-Note that you can override settings (which live in api-server/src/main/resources/application.conf) in one of two ways.
+Note that you can override settings (which live in API-server/src/main/resources/application.conf) in one of two ways.
 You can change a specific setting on the command line.
-For instance, you might change the port that the api server will start on::
+For instance, you might change the port that the API server will start on::
 
-    rm \-rf \~/intelanalytics/; bin/api-server.sh \-Dintel.analytics.api.port=9999
+    rm \-rf \~/intelanalytics/; bin/API-server.sh \-Dintel.analytics.API.port=9999
 
 You can also maintain a file of your preferred settings, and use that to override the settings.
 Suppose you had a file called "dev.conf" in your current folder that contained this text::
 
-    intel.analytics.api {
+    intel.analytics.API {
         host = "127.0.0.1"
         port = 3333
     }
@@ -58,7 +58,7 @@ Suppose you had a file called "dev.conf" in your current folder that contained t
 If you include that file in the launcher's classpath, and tell the configuration system about it,
 those values will override the defaults, and your server will start up only listening on 127.0.0.1 on port 3333.
 
-*EXTRA_CONF=/path/to/folder/containing/my/dev.conf/file* rm \-rf \~/intelanalytics/; bin/api-server.sh *\-Dconfig.resource=dev.conf*
+*EXTRA_CONF=/path/to/folder/containing/my/dev.conf/file* rm \-rf \~/intelanalytics/; bin/API-server.sh *\-Dconfig.resource=dev.conf*
 
 --------------------------
 Installing ispark-deps.jar
@@ -129,16 +129,15 @@ environment (where you want your data to persist between restarts).
     
     *   Modify ``postgresql.conf`` and uncomment the *listen_addresses* setting with the IP that PostgreSQL should listen on.
     
-        *   If the engine and API server are on the same host as PostgreSQL, you can just use "localhost", otherwise you need an IP or hostname.
-        *   If Engine and PostgreSQL are on the same node lock PostgreSQL to listen on the local loopback interface only
+        *   If Engine and PostgreSQL are on the same node, lock PostgreSQL to listen on the local loopback interface only::
         
-            *   listen_addresses = 'localhost'
+                listen_addresses = 'localhost'
             
-        *   If Engine and PostgreSQL are on different nodes allow PostgreSQL to listen to both an externally accessible interface and the local loopback
+        *   If Engine and PostgreSQL are on different nodes allow PostgreSQL to listen to both an externally accessible interface and the local loopback interface::
 
                 listen_addresses = 'localhost,<IP of Accessible Interface>'
                 
-        *   or to listen on all interfaces
+        *   or to listen on all interfaces::
             
                 listen_addresses = '*'
                 
@@ -158,7 +157,7 @@ environment (where you want your data to persist between restarts).
         
 *   Configure our application to use PostgreSQL
 
-    *   Edit ``source_code/api-server/src/main/resources/application.conf``
+    *   Edit ``source_code/API-server/src/main/resources/application.conf``
     *   Comment out H2 configuration
     *   Uncomment PostgreSQL configuration
     
@@ -168,19 +167,19 @@ environment (where you want your data to persist between restarts).
 
     *   Use *\d* to see the schema, see the `cheatsheet <ad_psql_cs>`
     
-*   Insert a user
+*   Insert a user::
 
         psql metastore
-        insert into users (username, api_key, created_on, modified_on)
-            values( 'metastore', 'test_api_key_1', now(), now() )
+        insert into users (username, API_key, created_on, modified_on)
+            values( 'metastore', 'test_API_key_1', now(), now() )
 
 -------------
 Related Pages
 -------------
 
-* :doc: ad_inst
-* :doc: ad_psql_cs
-* [GAO:Setting up Tribeca in CDH5]
+:doc: ad_inst.rst
+:doc: ad_psql_cs.rst
+[GAO:Setting up Tribeca in CDH5]
 
 .. ifconfig:: internal_docs
 

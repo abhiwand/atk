@@ -376,6 +376,8 @@ class BigFrame(CommandSupport):
     @property
     def row_count(self):
         """
+        Count the rows.
+
         Returns
         -------
         The number of rows in the frame.
