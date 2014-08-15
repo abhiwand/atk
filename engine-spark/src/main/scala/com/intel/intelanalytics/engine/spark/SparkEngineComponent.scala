@@ -26,7 +26,7 @@ package com.intel.intelanalytics.engine.spark
 import java.util.{ ArrayList => JArrayList, List => JList, Map => JMap }
 
 import com.intel.intelanalytics.engine._
-import com.intel.intelanalytics.engine.spark.command.{ CommandExecutor, SparkCommandStorage }
+import com.intel.intelanalytics.engine.spark.command.{ CommandLoader, CommandPluginRegistry, CommandExecutor, SparkCommandStorage }
 import com.intel.intelanalytics.engine.spark.context.{ SparkContextFactory, SparkContextManager }
 import com.intel.intelanalytics.engine.spark.frame.{ FrameFileStorage, SparkFrameStorage }
 import com.intel.intelanalytics.engine.spark.graph.{ SparkGraphHBaseBackend, SparkGraphStorage }
@@ -53,7 +53,7 @@ class SparkComponent extends EngineComponent
   SparkEngineConfig.logSettings()
 
   lazy val engine = new SparkEngine(sparkContextManager,
-    commandExecutor, commands, frames, graphs, queries, queryExecutor, sparkAutoPartitioner) {}
+    commandExecutor, commands, frames, graphs, queries, queryExecutor, sparkAutoPartitioner, new CommandPluginRegistry(new CommandLoader)) {}
 
   override lazy val profile = withContext("engine connecting to metastore") {
     Profile.initializeFromConfig(SparkEngineConfig)
