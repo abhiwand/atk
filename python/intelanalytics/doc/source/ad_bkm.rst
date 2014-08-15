@@ -1,8 +1,20 @@
 ==================
 Best Known Methods
 ==================
-**New for release 0.8.2**
 
+---
+Yum
+---
+
+If you have trouble downloading any of the dependencies run::
+
+    yum clean all
+
+or
+::
+
+    yum clean expire-cache
+    
 -------
 Plugins
 -------
