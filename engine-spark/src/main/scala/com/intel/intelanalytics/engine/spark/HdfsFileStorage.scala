@@ -23,11 +23,11 @@
 
 package com.intel.intelanalytics.engine.spark
 
-import java.io.{ IOException, InputStream, OutputStream }
+import java.io.{InputStream, OutputStream}
 
 import com.intel.intelanalytics.shared.EventLogging
 import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.{ Path, FileUtil, FileSystem, LocalFileSystem }
+import org.apache.hadoop.fs.{Path, FileSystem, LocalFileSystem}
 import org.apache.hadoop.hdfs.DistributedFileSystem
 
 class HdfsFileStorage(fsRoot: String) extends EventLogging {
