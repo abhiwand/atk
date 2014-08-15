@@ -64,9 +64,13 @@ class RowParser(separator: Char, columnTypes: Array[DataType]) extends Serializa
   }
 
   private[frame] def splitLineIntoParts(line: String): Array[String] = {
-    val parser = CSVParser.parse(line, csvFormat)
-    parser.getRecords.get(0).iterator().toArray
+    val records = CSVParser.parse(line, csvFormat).getRecords
+    if (records.isEmpty) {
+      Array.empty[String]
+    }
+    else {
+      records.get(0).iterator().toArray
+    }
   }
-
 
 }
