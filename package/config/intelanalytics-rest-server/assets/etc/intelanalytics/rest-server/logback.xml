@@ -1,4 +1,4 @@
-<configuration>
+<configuration scan="true">
 
     <appender name="FILE" class="ch.qos.logback.core.FileAppender">
         <file>/var/log/intelanalytics/rest-server/application.log</file>
@@ -16,6 +16,14 @@
     <logger name="play" level="INFO" />
     <logger name="application" level="INFO" />
 
+    <!--
+        log levels
+        TRACE
+        DEBUG
+        INFO
+        WARN
+        ERROR
+    -->
     <root level="INFO">
         <appender-ref ref="FILE" />
         <appender-ref ref="STDOUT" />

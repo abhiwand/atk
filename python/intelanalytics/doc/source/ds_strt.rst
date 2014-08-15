@@ -31,40 +31,16 @@ Before You Start
 ----------------
 
 You should be familiar with some of the other Python packages already available in the open source community.
-The IAT provides a set of functionality exposed through a Python API, which can be accessed through `iPython©`_ notebooks.
-You'll want to know about `Apache™ Hadoop®`_ and its various components.
-We use HDFS, MapReduce, and YARN, as well as `Apache™ Giraph©`_ for graph-based machine learning.
-The Tital graph database can be queried using the `Gremlin®`_ graph query language from TinkerPop™.
+The IAT provides a set of functionality exposed through a Python API, which can be accessed through `iPython`_ * notebooks.
+You'll want to know about `Apache Hadoop`_ * and its various components.
+We use HDFS, :term:`MapReduce`, and YARN, as well as `Apache Giraph`_ * for graph-based machine learning.
+The Tital graph database can be queried using the `Gremlin`_ * graph query language from TinkerPop™.
 
-Some of the other Python packages already available in the open source community:
+.. rubric:: footnotes
 
-+---------------------+-----------------------------+--------------------------------------------+
-| **Python Package**  | **Description**             | **URL**                                    |
-+---------------------+-----------------------------+--------------------------------------------+
-| scipy               | scientific computing        | http://www.scipy.org                       |
-+---------------------+-----------------------------+--------------------------------------------+
-| numpy               | numeric computing           | http://www.numpy.org                       |
-+---------------------+-----------------------------+--------------------------------------------+
-| sympy               | symbolic math               | http://www.sympy.org                       |
-+---------------------+-----------------------------+--------------------------------------------+
-| pandas              | data structures             | http://pandas.pydata.org                   |
-+---------------------+-----------------------------+--------------------------------------------+
-| matplotlib          | plotting                    | http://matplotlib.org                      |
-+---------------------+-----------------------------+--------------------------------------------+
-| nltk                | natural language toolkit    | http://www.nltk.org                        |
-+---------------------+-----------------------------+--------------------------------------------+
-| jinja2              | templating engine           | http://jimja.pocoo.org                     |
-+---------------------+-----------------------------+--------------------------------------------+
-| bulbs               | graph data support          | http://bulbflow.com/docs                   |
-+---------------------+-----------------------------+--------------------------------------------+
-| happybase           | HBase support               | http://happybase.readthedocs.org/en/latest |
-+---------------------+-----------------------------+--------------------------------------------+
-| pydoop              | Hadoop support              | http://pydoop.sourceforge.net/docs         |
-+---------------------+-----------------------------+--------------------------------------------+
-| mrjob               | map reduce                  | http://pythonhosted.org/mrjob              |
-+---------------------+-----------------------------+--------------------------------------------+
+.. [*] Other names and brands may be claimed as the property of others.
 
-.. _iPython©: http://ipython.org/
-.. _Apache™ Hadoop®: http://hadoop.apache.org/docs/current/index.html 
-.. _Apache™ Giraph©: http://giraph.apache.org/ 
-.. _Gremlin®: https://github.com/tinkerpop/gremlin/wiki
+.. _iPython: http://ipython.org/
+.. _Apache Hadoop: http://hadoop.apache.org/docs/current/index.html 
+.. _Apache Giraph: http://giraph.apache.org/ 
+.. _Gremlin: https://github.com/tinkerpop/gremlin/wiki

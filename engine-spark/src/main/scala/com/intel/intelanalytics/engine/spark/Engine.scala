@@ -97,7 +97,7 @@ import com.intel.intelanalytics.domain.frame.ColumnSummaryStatisticsReturn
 import com.intel.intelanalytics.domain.frame.FrameJoin
 
 object SparkEngine {
-  private val pythonRddDelimiter = "\0"
+  private val pythonRddDelimiter = "YoMeDelimiter"
 }
 
 class SparkEngine(sparkContextManager: SparkContextManager,
@@ -906,10 +906,17 @@ class SparkEngine(sparkContextManager: SparkContextManager,
    * @return RDD consisting of the requested number of rows
    */
   def getRowsSimple(arguments: RowQuery[Identifier], user: UserPrincipal, invocation: SparkInvocation) = {
-    implicit val impUser: UserPrincipal = user
-    val frame = frames.lookup(arguments.id).getOrElse(throw new IllegalArgumentException("Requested frame does not exist"))
-    val rows = frames.getRowsRDD(frame, arguments.offset, arguments.count, invocation.sparkContext)
-    rows
+    if (arguments.count + arguments.offset <= SparkEngineConfig.pageSize) {
+      val rdd = frames.getFrameRdd(invocation.sparkContext, arguments.id).rows
+      val takenRows = rdd.take(arguments.count + arguments.offset.toInt).drop(arguments.offset.toInt)
+      invocation.sparkContext.parallelize(takenRows)
+    }
+    else {
+      implicit val impUser: UserPrincipal = user
+      val frame = frames.lookup(arguments.id).getOrElse(throw new IllegalArgumentException("Requested frame does not exist"))
+      val rows = frames.getRowsRDD(frame, arguments.offset, arguments.count, invocation.sparkContext)
+      rows
+    }
   }
 
   /**
@@ -923,8 +930,15 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     future {
       withMyClassLoader {
         val frame = frames.lookup(arguments.id).getOrElse(throw new IllegalArgumentException("Requested frame does not exist"))
-        val rows = frames.getRows(frame, arguments.offset, arguments.count)
-        rows
+        val ctx = sparkContextManager.context(user, "query")
+        try {
+          val rdd: RDD[Row] = frames.getFrameRdd(ctx, frame).rows
+          val rows = rdd.take(arguments.count + arguments.offset.toInt).drop(arguments.offset.toInt)
+          rows
+        }
+        finally {
+          ctx.stop()
+        }
       }
     }
   }
