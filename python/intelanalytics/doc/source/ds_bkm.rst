@@ -21,8 +21,36 @@ Create a .pythonrc file in your home directory with the following contents::
 
 Or you can just run the two lines in your REPL session.
 
+This will let you do the tab completion, but will also remember your history over multiple sessions::
+
+    # Add auto-completion and a stored history file of commands to your Python
+    # interactive interpreter. Requires Python 2.0+, readline.
+
+    import atexit
+    import os
+    import readline
+    import rlcompleter
+    import sys
+
+    # Autocomplete is bound to the Esc key by default, so change it to tab.
+    readline.parse_and_bind("tab: complete")
+
+    historyPath = os.path.expanduser("~/.pyhistory")
+
+    def save_history(historyPath=historyPath):
+        import readline
+        readline.write_history_file(historyPath)
+
+    if os.path.exists(historyPath):
+        readline.read_history_file(historyPath)
+
+    atexit.register(save_history)
+
+    # anything not deleted (sys and os) will remain in the interpreter session
+    del atexit, readline, rlcompleter, save_history, historyPath
+
 Note:
-If the .pythonrc does not take effect, add PYTHONSTARTUP in your .bashrc file::
+    If the .pythonrc does not take effect, add PYTHONSTARTUP in your .bashrc file::
 
     export PYTHONSTARTUP=~/.pythonrc
 
