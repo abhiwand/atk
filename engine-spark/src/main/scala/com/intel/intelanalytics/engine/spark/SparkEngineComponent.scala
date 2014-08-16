@@ -75,9 +75,8 @@ class SparkComponent extends EngineComponent
 
   private lazy val admin = new HBaseAdmin(HBaseConfiguration.create())
 
-  val graphs: GraphStorage =
-    new SparkGraphStorage(metaStore,
-      new SparkGraphHBaseBackend(admin), frames)
+  val graphs: SparkGraphStorage = new SparkGraphStorage(metaStore,
+    new SparkGraphHBaseBackend(admin), frames)
 
   val commands = new SparkCommandStorage(metaStore.asInstanceOf[SlickMetaStore])
 

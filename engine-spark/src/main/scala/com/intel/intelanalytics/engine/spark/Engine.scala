@@ -39,6 +39,7 @@ import com.intel.intelanalytics.engine._
 import com.intel.intelanalytics.engine.plugin.{ Invocation, CommandPlugin }
 import com.intel.intelanalytics.engine.spark.command.{ CommandPluginRegistry, CommandExecutor }
 import com.intel.intelanalytics.engine.spark.graph.SparkGraphStorage
+import com.intel.intelanalytics.engine.spark.plugin.SparkInvocation
 import com.intel.intelanalytics.engine.spark.queries.{ SparkQueryStorage, QueryExecutor }
 import com.intel.intelanalytics.engine.spark.frame._
 import com.intel.intelanalytics.shared.EventLogging
@@ -58,14 +59,17 @@ import scala.concurrent._
 import com.intel.intelanalytics.engine.spark.statistics.ColumnStatistics
 import org.apache.spark.engine.SparkProgressListener
 import com.intel.intelanalytics.domain.frame.FrameAddColumns
-import com.intel.intelanalytics.domain.frame.FrameRenameFrame
+import com.intel.intelanalytics.domain.frame.RenameFrame
 import com.intel.intelanalytics.engine.spark.plugin.SparkInvocation
 import com.intel.intelanalytics.domain.graph.GraphLoad
-import com.intel.intelanalytics.domain.graph.GraphRenameGraph
+import com.intel.intelanalytics.domain.graph.RenameGraph
 import com.intel.intelanalytics.domain.frame.load.LineParserArguments
+import com.intel.intelanalytics.domain.graph.GraphLoad
 import com.intel.intelanalytics.domain.schema.Schema
 import com.intel.intelanalytics.domain.frame.DropDuplicates
+import com.intel.intelanalytics.engine.spark.frame.RowParseResult
 import com.intel.intelanalytics.domain.frame.FrameProject
+import com.intel.intelanalytics.domain.graph.Graph
 import com.intel.intelanalytics.domain.graph.Graph
 import com.intel.intelanalytics.domain.frame.ConfusionMatrix
 import com.intel.intelanalytics.domain.FilterPredicate
@@ -79,6 +83,7 @@ import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.domain.frame.FrameRemoveColumn
 import com.intel.intelanalytics.domain.frame.FrameReference
 import com.intel.intelanalytics.engine.spark.frame.RDDJoinParam
+import com.intel.intelanalytics.domain.graph.GraphTemplate
 import com.intel.intelanalytics.domain.frame.load.LoadSource
 import com.intel.intelanalytics.domain.graph.GraphTemplate
 import com.intel.intelanalytics.domain.query.Query
@@ -296,14 +301,14 @@ class SparkEngine(sparkContextManager: SparkContextManager,
 
   def expectFrame(frameRef: FrameReference): DataFrame = expectFrame(frameRef.id)
 
-  def renameFrame(arguments: FrameRenameFrame)(implicit user: UserPrincipal): Execution =
+  def renameFrame(arguments: RenameFrame)(implicit user: UserPrincipal): Execution =
     commands.execute(renameFrameCommand, arguments, user, implicitly[ExecutionContext])
 
   val renameFrameCommand = commandPluginRegistry.registerCommand("dataframe/rename_frame", renameFrameSimple _)
 
-  private def renameFrameSimple(arguments: FrameRenameFrame, user: UserPrincipal, invocation: SparkInvocation): DataFrame = {
+  private def renameFrameSimple(arguments: RenameFrame, user: UserPrincipal, invocation: SparkInvocation): DataFrame = {
     val frame = expectFrame(arguments.frame)
-    val newName = arguments.new_name
+    val newName = arguments.newName
     frames.renameFrame(frame, newName)
   }
 
@@ -967,30 +972,30 @@ class SparkEngine(sparkContextManager: SparkContextManager,
 
   val loadGraphCommand = commandPluginRegistry.registerCommand("graph/load", loadGraphSimple _, numberOfJobs = 2)
   def loadGraphSimple(arguments: GraphLoad, user: UserPrincipal, invocation: SparkInvocation) = {
-  //validating frames    
+    //validating frames    
     arguments.frame_rules.foreach(frule => expectFrame(frule.frame))
 
     val graph = graphs.loadGraph(arguments, invocation)(user)
     graph
   }
 
-  def renameGraphSimple(arguments: GraphRenameGraph, user: UserPrincipal): Graph = {
-    val graph = expectGraph(arguments.graph)
-    val newName = arguments.new_name
+  /**
+   * Renames a graph in the database
+   * @param rename RenameGraph object storing the graph and the newName
+   * @param user IMPLICIT. The user loading the graph
+   * @return Graph object
+   */
+
+  def renameGraph(rename: RenameGraph)(implicit user: UserPrincipal): Execution =
+    commands.execute(renameGraphCommand, rename, user, implicitly[ExecutionContext])
+
+  val renameGraphCommand = commandPluginRegistry.registerCommand("graph/rename_graph", renameGraphSimple)
+  def renameGraphSimple(rename: RenameGraph, user: UserPrincipal, invocation: SparkInvocation): Graph = {
+    val graphId = rename.graph.id
+    val graph = graphs.lookup(graphId).getOrElse(throw new NotFoundException("graph", graphId.toString))
+    val newName = rename.newName
     graphs.renameGraph(graph, newName)
   }
-
-  def expectGraph(graphId: Long): Graph = {
-    graphs.lookup(graphId).getOrElse(throw new NotFoundException("graph", graphId.toString))
-  }
-
-  def expectGraph(graphRef: GraphReference): Graph = expectGraph(graphRef.id)
-
-  val renameGraphCommand = commands.registerCommand("graph/rename_graph", renameGraphSimple)
-
-  def renameGraph(arguments: GraphRenameGraph)(implicit user: UserPrincipal): Execution =
-    commands.execute(renameGraphCommand, arguments, user, implicitly[ExecutionContext])
-
 
   /**
    * Obtains a graph's metadata from its identifier.
