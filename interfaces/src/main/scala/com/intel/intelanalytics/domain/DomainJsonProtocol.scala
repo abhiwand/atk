@@ -146,7 +146,7 @@ object DomainJsonProtocol extends IADefaultJsonProtocol {
   implicit val addColumnLongFormat = jsonFormat4(FrameAddColumns[JsObject, Long])
   implicit val projectColumnFormat = jsonFormat4(FrameProject[JsObject, String])
   implicit val projectColumnLongFormat = jsonFormat4(FrameProject[JsObject, Long])
-  implicit val renameFrameFormat = jsonFormat2(FrameRenameFrame)
+  implicit val renameFrameFormat = jsonFormat2(RenameFrame)
   implicit val renameColumnsFormat = jsonFormat3(FrameRenameColumns[JsObject, String])
   implicit val renameColumnsLongFormat = jsonFormat3(FrameRenameColumns[JsObject, Long])
   implicit val joinFrameLongFormat = jsonFormat3(FrameJoin)
@@ -192,7 +192,7 @@ object DomainJsonProtocol extends IADefaultJsonProtocol {
 
   implicit val graphTemplateFormat = jsonFormat1(GraphTemplate)
   implicit val graphFormat = jsonFormat9(Graph)
-  implicit val graphRenameFormat = jsonFormat2(GraphRenameGraph)
+  implicit val graphRenameFormat = jsonFormat2(RenameGraph)
 
   // graph loading formats for specifying graphbuilder and graphload rules
 

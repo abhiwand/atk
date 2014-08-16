@@ -57,7 +57,8 @@ class GraphBackendRest(object):
 
     commands_loaded = {}
 
-    def __init__(self):
+    def __init__(self, http_methods = None):
+        self.rest_http = http_methods or http
         if not self.__class__.commands_loaded:
             self.__class__.commands_loaded.update(executor.get_command_functions(('graph', 'graphs'),
                                                                                  execute_update_graph_command,
@@ -67,36 +68,44 @@ class GraphBackendRest(object):
 
     def get_graph_names(self):
         logger.info("REST Backend: get_graph_names")
-        r = http.get('graphs')
+        r = self.rest_http.get('graphs')
         payload = r.json()
         return [f['name'] for f in payload]
 
     def get_graph(self,name):
         logger.info("REST Backend: get_graph")
-        r = http.get('graphs?name='+name)
+        r = self.rest_http.get('graphs?name='+name)
         graph_info = GraphInfo(r.json())
         return BigGraph(graph_info)
 
-    def delete_graph(name):
-    #     """Deletes the graph from backing store"""
-         raise NotImplemented
+    def delete_graph(self,graph):
+        if isinstance(graph,BigGraph):
+            return self._delete_graph(graph)
+        elif isinstance(graph, basestring):
+            #delete by name
+            return self._delete_graph(self.get_graph(graph))
+        else:
+            raise TypeError('Expected argument of type BigGraph or the graph name')
+
+    def _delete_graph(self, graph):
+        logger.info("REST Backend: Delete graph {0}".format(repr(graph)))
+        r=self.rest_http.delete("graphs/"+str(graph._id))
+        return None
 
     def create(self, graph,rules,name):
-        logger.info("REST Backend: create graph: " + graph.name)
+        logger.info("REST Backend: create graph with name %s: " % name)
         if isinstance(rules, GraphInfo):
             initialize_graph(graph,rules)
             return  # Early exit here
-
         new_graph_name=self._create_new_graph(graph,rules,name or self._get_new_graph_name(rules))
         return new_graph_name
 
-
-    def _create_new_graph(self,graph,rules,name):
+    def _create_new_graph(self, graph, rules, name):
         if rules and (not isinstance(rules, list) or not all([isinstance(rule, Rule) for rule in rules])):
             raise TypeError("rules must be a list of Rule objects")
         else:
             payload = {'name': name}
-            r=http.post('graphs', payload)
+            r=self.rest_http.post('graphs', payload)
             logger.info("REST Backend: create graph response: " + r.text)
             graph_info = GraphInfo(r.json())
             initialized_graph=initialize_graph(graph,graph_info)
@@ -115,6 +124,17 @@ class GraphBackendRest(object):
         arguments = {'graph': self._get_graph_full_uri(graph), "new name": name}
         execute_update_graph_command('rename_graph', arguments,graph)
 
+    def get_name(self, graph):
+        return self._get_graph_info(graph).name
+
+    def get_repr(self, graph):
+        graph_info = self._get_graph_info(graph)
+        return "\n".join(['BigGraph "%s"' % (graph_info.name)])
+
+    def _get_graph_info(self, graph):
+        response = self.rest_http.get_full_uri(self._get_graph_full_uri(graph))
+        return GraphInfo(response.json())
+
     def _get_graph_full_uri(self,graph):
         return self.rest_http.create_full_uri('graphs/%d' % graph._id)
 
@@ -123,14 +143,14 @@ class GraphBackendRest(object):
         frame_rules = JsonRules(rules)
         self.load(graph, frame_rules, append=True)
 
-    def _get_uri(self, payload):
-        links = payload['links']
-        for link in links:
-            if link['rel'] == 'self':
-                return link['uri']
-        return "we don't know"
-        # TODO - bring exception back
-        #raise Exception('Unable to find uri for graph')
+    # def _get_uri(self, payload):
+    #     links = payload['links']
+    #     for link in links:
+    #         if link['rel'] == 'self':
+    #             return link['uri']
+    #     return "we don't know"
+    #     # TODO - bring exception back
+    #     #raise Exception('Unable to find uri for graph')
 
     def als(self, graph, *args, **kwargs):
         logger.info("REST Backend: run als on graph " + graph.name)

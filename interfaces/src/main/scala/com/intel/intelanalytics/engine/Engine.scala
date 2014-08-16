@@ -27,7 +27,7 @@ import com.intel.intelanalytics.domain.command.{ CommandDefinition, Execution, C
 import com.intel.intelanalytics.domain.FilterPredicate
 import com.intel.intelanalytics.domain.frame._
 import com.intel.intelanalytics.domain.frame.load.Load
-import com.intel.intelanalytics.domain.graph.{ Graph, GraphLoad, GraphTemplate, GraphRenameGraph }
+import com.intel.intelanalytics.domain.graph.{ Graph, GraphLoad, GraphTemplate, RenameGraph }
 import com.intel.intelanalytics.domain.query.{ Execution => QueryExecution, RowQuery, Query }
 import com.intel.intelanalytics.engine.Rows._
 import com.intel.intelanalytics.security.UserPrincipal
@@ -86,7 +86,7 @@ trait Engine {
 
   def assignSample(arguments: AssignSample)(implicit user: UserPrincipal): Execution
 
-  def renameFrame(arguments: FrameRenameFrame)(implicit user: UserPrincipal): Execution
+  def renameFrame(arguments: RenameFrame)(implicit user: UserPrincipal): Execution
 
   def renameColumns(arguments: FrameRenameColumns[JsObject, Long])(implicit user: UserPrincipal): Execution
 
@@ -137,7 +137,7 @@ trait Engine {
 
   def createGraph(graph: GraphTemplate)(implicit user: UserPrincipal): Future[Graph]
 
-  def renameGraph(arguments: GraphRenameGraph)(implicit user: UserPrincipal): Execution
+  def renameGraph(rename: RenameGraph)(implicit user: UserPrincipal): Execution
 
   def loadGraph(graph: GraphLoad)(implicit user: UserPrincipal): Execution
 
