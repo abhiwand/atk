@@ -5,29 +5,25 @@ import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.engine.{ Rows, GraphBackendStorage, GraphStorage }
 import com.intel.graphbuilder.driver.spark.titan.GraphBuilder
 import org.apache.spark.rdd.RDD
-import com.intel.intelanalytics.engine.spark.{ SparkComponent }
-import com.intel.intelanalytics.repository.{ MetaStore, MetaStoreComponent }
+import com.intel.intelanalytics.repository.MetaStore
 import com.intel.intelanalytics.shared.EventLogging
 import scala.concurrent._
 import ExecutionContext.Implicits.global
 import com.intel.intelanalytics.domain.graph.{ GraphLoad, GraphTemplate, Graph }
-import com.intel.intelanalytics.engine.spark.context.Context
 import com.intel.intelanalytics.engine.spark.frame.SparkFrameStorage
+import com.intel.intelanalytics.engine.plugin.Invocation
+import com.intel.intelanalytics.engine.spark.plugin.SparkInvocation
 
 /**
  * Front end for Spark to create and manage graphs using GraphBuilder3
- * @param context User context.
  * @param metaStore Repository for graph and frame meta data.
  * @param backendStorage Backend store the graph database.
  * @param frameStorage Provides dataframe services.
  */
-class SparkGraphStorage(context: (UserPrincipal) => Context,
-                        metaStore: MetaStore,
+class SparkGraphStorage(metaStore: MetaStore,
                         backendStorage: GraphBackendStorage,
                         frameStorage: SparkFrameStorage)
     extends GraphStorage with EventLogging {
-
-  import spray.json._
 
   /**
    * Deletes a graph by synchronously deleting its information from the metastore and asynchronously
@@ -87,12 +83,12 @@ class SparkGraphStorage(context: (UserPrincipal) => Context,
    * @param user The user loading the graph.
    * @return
    */
-  override def loadGraph(graphLoad: GraphLoad)(implicit user: UserPrincipal): Graph = {
+  override def loadGraph(graphLoad: GraphLoad, invocation: Invocation)(implicit user: UserPrincipal): Graph = {
     withContext("se.loadgraph") {
       metaStore.withSession("spark.graphstorage.load") {
         implicit session =>
           {
-            val sparkContext = context(user).sparkContext
+            val sparkContext = invocation.asInstanceOf[SparkInvocation].sparkContext
 
             val frameRules = graphLoad.frame_rules
 
@@ -110,7 +106,7 @@ class SparkGraphStorage(context: (UserPrincipal) => Context,
             val graphBuilder = new GraphBuilder(gbConfigFactory.graphConfig)
 
             // Setup data in Spark
-            val inputRowsRdd: RDD[Rows.Row] = frameStorage.getFrameRowRdd(sparkContext, theOnlySourceFrameID)
+            val inputRowsRdd: RDD[Rows.Row] = frameStorage.loadFrameRdd(sparkContext, theOnlySourceFrameID)
 
             val inputRdd: RDD[Seq[_]] = inputRowsRdd.map(x => x.toSeq)
 

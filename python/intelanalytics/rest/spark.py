@@ -42,7 +42,7 @@ from serializers import PickleSerializer, BatchedSerializer, UTF8Deserializer, C
 from intelanalytics.core.row import Row
 from intelanalytics.core.iatypes import valid_data_types
 
-rdd_delimiter = '\0'
+rdd_delimiter = 'YoMeDelimiter'
 rdd_null_indicator = 'YoMeNull'
 
 
