@@ -26,9 +26,9 @@ package com.intel.intelanalytics.engine.spark
 import java.util.{ ArrayList => JArrayList, List => JList, Map => JMap }
 
 import com.intel.intelanalytics.engine._
-import com.intel.intelanalytics.engine.spark.command.{ CommandExecutor, SparkCommandStorage }
+import com.intel.intelanalytics.engine.spark.command.{ CommandLoader, CommandPluginRegistry, CommandExecutor, SparkCommandStorage }
 import com.intel.intelanalytics.engine.spark.context.{ SparkContextFactory, SparkContextManager }
-import com.intel.intelanalytics.engine.spark.frame.SparkFrameStorage
+import com.intel.intelanalytics.engine.spark.frame.{ FrameFileStorage, SparkFrameStorage }
 import com.intel.intelanalytics.engine.spark.graph.{ SparkGraphHBaseBackend, SparkGraphStorage }
 import com.intel.intelanalytics.engine.spark.queries.{ QueryExecutor, SparkQueryStorage }
 import com.intel.intelanalytics.repository.{ DbProfileComponent, Profile, SlickMetaStoreComponent }
@@ -36,6 +36,7 @@ import com.intel.intelanalytics.shared.EventLogging
 import org.apache.hadoop.fs.{ Path => HPath }
 import org.apache.hadoop.hbase.HBaseConfiguration
 import org.apache.hadoop.hbase.client.HBaseAdmin
+import com.intel.intelanalytics.security.UserPrincipal
 
 //TODO documentation
 //TODO progress notification
@@ -46,13 +47,14 @@ class SparkComponent extends EngineComponent
     with FrameComponent
     with GraphComponent
     with CommandComponent
-    with FileComponent
     with DbProfileComponent
     with SlickMetaStoreComponent
     with EventLogging {
 
+  SparkEngineConfig.logSettings()
+
   lazy val engine = new SparkEngine(sparkContextManager,
-    commandExecutor, commands, frames, graphs, queries, queryExecutor, sparkAutoPartitioner) {}
+    commandExecutor, commands, frames, graphs, queries, queryExecutor, sparkAutoPartitioner, new CommandPluginRegistry(new CommandLoader)) {}
 
   override lazy val profile = withContext("engine connecting to metastore") {
     Profile.initializeFromConfig(SparkEngineConfig)
@@ -66,15 +68,16 @@ class SparkComponent extends EngineComponent
 
   val sparkAutoPartitioner = new SparkAutoPartitioner(fileStorage)
 
-  val frames = new SparkFrameStorage(sparkContextManager.context(_),
-    SparkEngineConfig.fsRoot, fileStorage, SparkEngineConfig.pageSize, metaStore.asInstanceOf[SlickMetaStore], sparkAutoPartitioner)
+  val frameFileStorage = new FrameFileStorage(SparkEngineConfig.fsRoot, fileStorage)
+
+  val getContextFunc = (user: UserPrincipal) => sparkContextManager.context(user, "query")
+  val frames = new SparkFrameStorage(frameFileStorage, SparkEngineConfig.pageSize, metaStore.asInstanceOf[SlickMetaStore], sparkAutoPartitioner, getContextFunc)
 
   private lazy val admin = new HBaseAdmin(HBaseConfiguration.create())
 
-  //val graphs: GraphStorage =
-  val graphs = new SparkGraphStorage(sparkContextManager.context(_),
-    metaStore,
-    new SparkGraphHBaseBackend(admin), frames)
+  val graphs: GraphStorage =
+    new SparkGraphStorage(metaStore,
+      new SparkGraphHBaseBackend(admin), frames)
 
   val commands = new SparkCommandStorage(metaStore.asInstanceOf[SlickMetaStore])
 

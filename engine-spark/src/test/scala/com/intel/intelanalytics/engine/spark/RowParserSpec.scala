@@ -66,17 +66,17 @@ class RowParserSpec extends Specification {
   }
   "RowParser" should {
     "parse nested tab/s followed by single quotes in a string" in {
-      csvRowParser.splitLineIntoParts("foo,bar, \'baz\' ") shouldEqual Array("foo", "bar", "baz")
+      csvRowParser.splitLineIntoParts("foo,bar,\t\'baz\'\t") shouldEqual Array("foo", "bar", "baz")
     }
   }
   "RowParser" should {
     "preserve leading and trailing tab/s in a string" in {
-      csvRowParser.splitLineIntoParts(" foo,bar,baz") shouldEqual Array(" foo", "bar", "baz")
+      csvRowParser.splitLineIntoParts("\tfoo,bar,baz") shouldEqual Array("\tfoo", "bar", "baz")
     }
   }
   "RowParser" should {
     "parse nested tab/s followed by double quotes in a string" in {
-      csvRowParser.splitLineIntoParts("foo,bar, \"baz\" ") shouldEqual Array("foo", "bar", "baz")
+      csvRowParser.splitLineIntoParts("foo,bar,\t\"baz\"\t") shouldEqual Array("foo", "bar", "baz")
     }
   }
   val trow = new RowParser('\t', Array[DataTypes.DataType]())

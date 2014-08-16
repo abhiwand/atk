@@ -25,7 +25,7 @@ package com.intel.intelanalytics.domain
 
 import java.net.URI
 
-import com.intel.intelanalytics.domain.command.CommandDefinition
+import com.intel.intelanalytics.domain.command.{ CommandPost, CommandDefinition }
 import com.intel.intelanalytics.domain.frame.load.{ Load, LineParser, LoadSource, LineParserArguments }
 import com.intel.intelanalytics.domain.schema.DataTypes
 import com.intel.intelanalytics.domain.query.{ RowQuery }
@@ -127,7 +127,7 @@ object DomainJsonProtocol extends IADefaultJsonProtocol {
 
   implicit val userFormat = jsonFormat5(User)
   implicit val statusFormat = jsonFormat5(Status)
-  implicit val dataFrameFormat = jsonFormat11(DataFrame)
+  implicit val dataFrameFormat = jsonFormat12(DataFrame)
   implicit val dataFrameTemplateFormat = jsonFormat2(DataFrameTemplate)
   implicit val separatorArgsJsonFormat = jsonFormat1(SeparatorArgs)
   implicit val definitionFormat = jsonFormat3(Definition)
@@ -186,6 +186,7 @@ object DomainJsonProtocol extends IADefaultJsonProtocol {
   implicit val confusionMatrixLongFormat = jsonFormat4(ConfusionMatrix[Long])
   implicit val confusionMatrixValuesLongFormat = jsonFormat1(ConfusionMatrixValues)
   implicit val ecdfLongFormat = jsonFormat4(ECDF[Long])
+  implicit val commandActionFormat = jsonFormat1(CommandPost)
 
   // graph service formats
 
