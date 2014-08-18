@@ -105,16 +105,18 @@ class EdgeRDDFunctions(self: RDD[Edge], val maxEdgesPerCommit: Long = 50000L) ex
     val edgesByTail = self.groupBy(edge => edge.tailVertexGbId)
     val edgesWithTail = idsByGbId.join(edgesByTail).flatMapValues(value => {
       val gbIdToPhysicalIds = value._1
-      val physicalId = gbIdToPhysicalIds(0).physicalId
+      //      val physicalId = gbIdToPhysicalIds(0).physicalId
+      val physicalId = gbIdToPhysicalIds.head.physicalId
       val edges = value._2
       edges.map(e => e.copy(tailPhysicalId = physicalId))
     }).values
 
     // set physical ids for head vertices
     val edgesByHead = edgesWithTail.groupBy(e => e.headVertexGbId)
-    val edgesWithPhysicalIds = idsByGbId.join(edgesByHead).flatMapValues(value => {
+    val edgesWithPhysicalIds: RDD[Edge] = idsByGbId.join(edgesByHead).flatMapValues(value => {
       val gbIdToPhysicalIds = value._1
-      val physicalId = gbIdToPhysicalIds(0).physicalId
+      //      val physicalId = gbIdToPhysicalIds(0).physicalId
+      val physicalId = gbIdToPhysicalIds.head.physicalId
       val edges = value._2
       edges.map(e => e.copy(headPhysicalId = physicalId))
     }).values
