@@ -751,14 +751,14 @@ private[spark] object SparkOps extends Serializable {
     else
       Array[Any]()
 
-  def aggregation(rdd: RDD[(String, Seq[Array[Any]])],
+  def aggregation(rdd: RDD[(String, Iterable[Array[Any]])],
                   args_pair: Seq[(Int, String)],
                   schema: List[(String, DataTypes.DataType)],
                   groupedColumnSchema: Array[DataTypes.DataType],
                   location: String): Seq[DataTypes.DataType] = {
 
     rdd.map(elem =>
-      convertGroupBasedOnSchema(groupedColumnSchema, elem._1) ++ aggregation_functions(elem._2, args_pair, schema))
+      convertGroupBasedOnSchema(groupedColumnSchema, elem._1) ++ aggregation_functions(elem._2.toSeq, args_pair, schema))
       .saveAsObjectFile(location)
 
     val aggregated_column_schema = for {
@@ -779,8 +779,8 @@ private[spark] object SparkOps extends Serializable {
    */
   def removeDuplicatesByKey(pairRdd: RDD[(Seq[Any], Array[Any])]): RDD[Array[Any]] = {
     val grouped = pairRdd.groupByKey()
-    val duplicatesRemoved = grouped.map(bag => {
-      val firstEntry = bag._2(0)
+    val duplicatesRemoved: RDD[Array[Any]] = grouped.map(bag => {
+      val firstEntry = bag._2.head
       firstEntry
     })
     duplicatesRemoved
