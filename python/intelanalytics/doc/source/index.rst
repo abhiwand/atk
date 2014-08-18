@@ -25,6 +25,9 @@ References
 * :doc:`ia_legal`
 * :ref:`genindex`
 * :ref:`search`
-* :download:`PDF Document <IntelAnalytics.pdf>`
+
+.. TODO::
+
+    * :download:`PDF Document <IntelAnalytics.pdf>`
 
  
