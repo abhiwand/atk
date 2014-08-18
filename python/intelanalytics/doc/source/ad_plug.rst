@@ -272,3 +272,11 @@ This setting is built into the reference.conf that is embedded in the engine arc
 For your installation, you can control this list using the application.conf file.
 
 Once this setting has been updated, restart the server to activate the changes.
+
+|
+
+<- :doc:`ad_inst_vm`
+|-------------------------------|
+:doc:`ad_inst` ->
+
+<- :doc:`index`

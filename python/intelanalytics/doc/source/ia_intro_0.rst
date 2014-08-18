@@ -19,3 +19,10 @@ all while still using cost-effective, powerful open source engines, but without 
 The toolkit unifies entity-based machine learning with end-to-end graph processing, and includes powerful, scalable algorithms for uncovering
 relationships that are hidden in big data, and the modular framework enables users or developers to extend and integrate new functionality
 and algorithms. 
+
+|
+
+<- :doc:`index`
+|-------------------------------|
+:doc:`ia_intro_1` ->
+

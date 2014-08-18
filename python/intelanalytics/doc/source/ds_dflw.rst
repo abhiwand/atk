@@ -908,3 +908,10 @@ Commands such as g4 = my_graph will only give you a copy of the proxy, pointing 
     Similar to what was discussed for BigFrame, what gets returned is not all the data, but a proxy (descriptive pointer) for the data.
     Commands such as ``g4 = my_graph`` will only give you a copy of the proxy, pointing to the same graph.
 
+| 
+
+<- :doc:`ds_db`
+|-------------------------------|
+:doc:`ds_ml` ->
+
+<- :doc:`index`

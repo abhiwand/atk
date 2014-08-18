@@ -6,7 +6,7 @@ Yum Repo (Red Hat & Similar Systems)
 Configure File Installation Software
 ------------------------------------
 
-First add the epel RHEL/Centos::
+First add the EPEL RHEL/Centos::
 
     wget http://download.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
     sudo rpm -ivh epel-release-6-8.noarch.rpm

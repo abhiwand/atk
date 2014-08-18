@@ -183,3 +183,11 @@ To update::
 
     sudo yum update intelanalytics-rest-server
 
+
+|
+
+<- :doc:`ad_psql_cs`
+|-------------------------------|
+:doc:`ad_plug` ->
+
+<- :doc:`index`

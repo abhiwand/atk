@@ -95,7 +95,7 @@ The EPEL, and Intel Analytics repositories must be installed on all spark master
 
 Add EPEL Repository
 ===================
-Before trying to install the epel repo run the following command to see if it's already available on the machines you will be installing Intel Analytics on.
+Before trying to install the EPEL repo run the following command to see if it's already available on the machines you will be installing Intel Analytics on.
 ::
 
     sudo yum repolist
@@ -507,3 +507,11 @@ If you are having issues starting or running jobs, tail either log to see what e
 or::
 
     sudo tail -f /var/log/intelanalytics/rest-server/application.log
+
+|
+
+<- :doc:`ad_inst_cloudera`
+|-------------------------------|
+:doc:`ad_psql` ->
+
+<- :doc:`index`
