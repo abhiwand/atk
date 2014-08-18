@@ -31,13 +31,13 @@ import spray.json.JsValue
  * @param dataColumn Name of the column supplying the data.
  * @param weightsColumn Optional. Name of the column supplying the weights. Weights default to uniform (all 1's)
  *                      if no weights column is provided.
- * @param maxNumberOfModesReturned Optional. Maximum number of modes returned. If this parameter is not provided, it
+ * @param maxModesReturned Optional. Maximum number of modes returned. If this parameter is not provided, it
  *                                 defaults to 1.
  */
 case class ColumnMode(frame: FrameReference,
                       dataColumn: String,
                       weightsColumn: Option[String],
-                      maxNumberOfModesReturned: Option[Int]) {
+                      maxModesReturned: Option[Int]) {
 
   require(frame != null, "frame is required")
   require(dataColumn != null, "data column is required")
