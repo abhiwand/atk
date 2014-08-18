@@ -421,6 +421,9 @@ class BigGraph(CommandSupport):
     --------
     ::
 
+    This example uses a single source data frame and creates a graph of 'user' and 'movie' vertices connected by 'rating'
+    edges.
+
         # create a frame as the source for a graph
         csv = CsvFile("/movie.csv", schema= [('user', int32),
                                               ('vertexType', str),
@@ -435,7 +438,6 @@ class BigGraph(CommandSupport):
 
         # create graph
         graph = BigGraph([user, movie, rates])
-
 
     .. versionadded:: 0.8
 
