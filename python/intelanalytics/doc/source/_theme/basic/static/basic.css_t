@@ -45,6 +45,9 @@ div.related li.right {
 
 div.sphinxsidebarwrapper {
     padding: 10px 5px 0 10px;
+    /* position: fixed; Added 20140815 by Mark Aldrich to make the sidebar stable */
+    /* width: 18%; Added 20140815 by Mark Aldrich to keep the text inside the sidebar */
+    /* overflow-y: scroll; Added 20140815 by Mark Aldrich to allow the sidebar to scroll independently */
 }
 
 div.sphinxsidebar {

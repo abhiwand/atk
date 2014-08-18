@@ -25,7 +25,7 @@ package com.intel.intelanalytics.domain
 
 import java.net.URI
 
-import com.intel.intelanalytics.domain.command.CommandDefinition
+import com.intel.intelanalytics.domain.command.{ CommandPost, CommandDefinition }
 import com.intel.intelanalytics.domain.frame.load.{ Load, LineParser, LoadSource, LineParserArguments }
 import com.intel.intelanalytics.domain.schema.DataTypes
 import com.intel.intelanalytics.domain.query.{ RowQuery }
@@ -34,7 +34,7 @@ import com.intel.intelanalytics.engine.plugin.QueryPluginResults
 import com.intel.intelanalytics.schema._
 import spray.json._
 import com.intel.intelanalytics.domain.frame._
-import com.intel.intelanalytics.domain.graph.{ GraphReference, Graph, GraphLoad, GraphTemplate }
+import com.intel.intelanalytics.domain.graph._
 import com.intel.intelanalytics.domain.graph.construction.{ EdgeRule, FrameRule, PropertyRule, ValueRule, VertexRule }
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 import com.intel.intelanalytics.domain.schema.{ DataTypes, Schema }
@@ -127,7 +127,7 @@ object DomainJsonProtocol extends IADefaultJsonProtocol {
 
   implicit val userFormat = jsonFormat5(User)
   implicit val statusFormat = jsonFormat5(Status)
-  implicit val dataFrameFormat = jsonFormat11(DataFrame)
+  implicit val dataFrameFormat = jsonFormat12(DataFrame)
   implicit val dataFrameTemplateFormat = jsonFormat2(DataFrameTemplate)
   implicit val separatorArgsJsonFormat = jsonFormat1(SeparatorArgs)
   implicit val definitionFormat = jsonFormat3(Definition)
@@ -146,7 +146,7 @@ object DomainJsonProtocol extends IADefaultJsonProtocol {
   implicit val addColumnLongFormat = jsonFormat4(FrameAddColumns[JsObject, Long])
   implicit val projectColumnFormat = jsonFormat4(FrameProject[JsObject, String])
   implicit val projectColumnLongFormat = jsonFormat4(FrameProject[JsObject, Long])
-  implicit val renameFrameFormat = jsonFormat2(FrameRenameFrame)
+  implicit val renameFrameFormat = jsonFormat2(RenameFrame)
   implicit val renameColumnsFormat = jsonFormat3(FrameRenameColumns[JsObject, String])
   implicit val renameColumnsLongFormat = jsonFormat3(FrameRenameColumns[JsObject, Long])
   implicit val joinFrameLongFormat = jsonFormat3(FrameJoin)
@@ -186,11 +186,13 @@ object DomainJsonProtocol extends IADefaultJsonProtocol {
   implicit val confusionMatrixLongFormat = jsonFormat4(ConfusionMatrix[Long])
   implicit val confusionMatrixValuesLongFormat = jsonFormat1(ConfusionMatrixValues)
   implicit val ecdfLongFormat = jsonFormat4(ECDF[Long])
+  implicit val commandActionFormat = jsonFormat1(CommandPost)
 
   // graph service formats
 
   implicit val graphTemplateFormat = jsonFormat1(GraphTemplate)
   implicit val graphFormat = jsonFormat9(Graph)
+  implicit val graphRenameFormat = jsonFormat2(RenameGraph)
 
   // graph loading formats for specifying graphbuilder and graphload rules
 
