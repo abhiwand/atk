@@ -96,6 +96,14 @@ The idea here is that the software learns faster.
     Different models need different evaluation methods.
     What will be added in the first step will be prior and posterior histogram, RoC/AUC curves, and lift curves.
 
+| 
+
+<- :doc:`ds_dflw`
+|-------------------------------|
+:doc:`ds_mlal_0` ->
+
+<- :doc:`index`
+
 
 .. _Introduction to Machine Learning: http://alex.smola.org/drafts/thebook.pdf
 .. _Wikipedia\: Machine Learning: http://en.wikipedia.org/wiki/Machine_learning

@@ -98,6 +98,13 @@ For Topic Modeling, see: http://en.wikipedia.org/wiki/Topic_model
 .. _LDA:
 .. include:: ds_mlal_lda.rst
 
+| 
+
+<- :doc:`ds_ml`
+|-------------------------------|
+:doc:`ds_apic` ->
+
+<- :doc:`index`
 
 .. rubric:: footnotes
 

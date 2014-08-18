@@ -10,23 +10,22 @@ If you have trouble downloading any of the dependencies run::
 
     yum clean all
 
-or
-::
+or::
 
     yum clean expire-cache
     
--------
-Plugins
--------
+-----
+Spark
+-----
 
-Spark Bug
-=========
+Plug-in Spark Bug
+=================
 
-When implementing a plugin, using Spark prior to version 1.1.0, avoid using the Spark *top* function.
+When implementing a plug-in, using Spark prior to version 1.1.0, avoid using the Spark *top* function.
 Instead, use the less efficient *sortByKey* function.
 The Spark *top* function has a bug filed against it when using Kryo serializer.
 This has been fixed in Spark 1.1.0.
-There is a known work-around, but there are issues implementing it in our plugin architecture.
+There is a known work-around, but there are issues implementing it in our plug-in architecture.
 See https://issues.apache.org/jira/browse/SPARK-2306.
 
 Resolving disk full issue while running Spark jobs
@@ -40,7 +39,7 @@ run time including but not limited to shuffle data.
 
 In order to resolve this, follow these instructions:
 
-1)  Stop the Intelanalytics service
+1)  Stop the intelanalytics service
 
 #)  From CDH Web UI: first stop "Cloudera Management Service", and then stop the CDH.
 
@@ -73,3 +72,10 @@ These can use up a bit of space eventually (over 140MB per command).
 
 * Short-term workaround: periodically delete these files
 * Long-term fix: Spark 1.0 will automatically clean up the files
+
+
+| 
+
+<- :doc:`ad_inst`
+|-------------------------------|
+:doc:`index` ->

@@ -1,15 +1,39 @@
-============
-Installation
-============
+===================
+:ref:`Installation`
+===================
 
+---------------------------
+:doc:`ad_inst_pre_cloudera`
+---------------------------
 
-..  toctree::
-    :maxdepth: 2
+-----------------------
+:doc:`ad_inst_cloudera`
+-----------------------
 
-    ad_inst_pre_cloudera
-    ad_inst_cloudera
-    ad_inst_IA
-    ad_psql
-    ad_psql_cs
-    ad_inst_vm
-    ad_plug
+-----------------
+:doc:`ad_inst_IA`
+-----------------
+
+--------------
+:doc:`ad_psql`
+--------------
+
+-----------------
+:doc:`ad_psql_cs`
+-----------------
+
+-----------------
+:doc:`ad_inst_vm`
+-----------------
+
+--------------
+:doc:`ad_plug`
+--------------
+
+| 
+
+<- :doc:`ad_reqs`
+|-------------------------------|
+:doc:`ad_bkm` ->
+
+<- :doc:`index`

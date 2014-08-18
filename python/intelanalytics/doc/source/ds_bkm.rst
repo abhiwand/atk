@@ -116,3 +116,10 @@ These can use up a bit of space eventually (over 140MB per command).
 
 * Short-term workaround: periodically delete these files
 * Long-term fix: Spark 1.0 will automatically clean up the files
+
+| 
+
+<- :doc:`ds_apic`
+|-------------------------------|
+:doc:`index` ->
+

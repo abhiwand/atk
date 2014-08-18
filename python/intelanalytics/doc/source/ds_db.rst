@@ -10,5 +10,13 @@ A :term:`graph` database does not use indices, and thus, does not use index look
 
 See `Wikipedia\: Graph Data Structure`_.
 
+| 
+
+<- :doc:`ds_strt`
+|-------------------------------|
+:doc:`ds_dflw` ->
+
+<- :doc:`index`
+
 .. _Wikipedia\: Graph Data Structure: http://en.wikipedia.org/wiki/Graph_data_structure
 

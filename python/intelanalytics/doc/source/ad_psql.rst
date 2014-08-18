@@ -186,7 +186,13 @@ Related Pages
     * [GAO:IntelliJ Setup]
     * [GAO:Proxy Settings]
 
+|
 
+<- :doc:`ad_inst_IA`
+|-------------------------------|
+:doc:`ad_psql_cs` ->
+
+<- :doc:`index`
 
 .. _PostgreSQL: http://www.postgresql.org
 .. _`Postman REST client`: https://chrome.google.com/webstore/detail/postman-rest-client/fdmmgilgnpjigdojojpjoooidkmcomcm?hl=en
