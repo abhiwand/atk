@@ -531,6 +531,7 @@ class BigGraph(CommandSupport):
         examples
         --------
         ::
+
             # create a frame as the source for additional data
             csv = CsvFile("/movie.csv", schema= [('user', int32),
                                               ('vertexType', str),
