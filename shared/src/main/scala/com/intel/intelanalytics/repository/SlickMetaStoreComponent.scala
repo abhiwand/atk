@@ -371,8 +371,10 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
 
       def errorFrameId = column[Option[Long]]("error_frame_id")
 
+      def revision = column[Int]("revision")
+
       /** projection to/from the database */
-      override def * = (id, name, description, schema, rowCount, statusId, createdOn, modifiedOn, createdById, modifiedById, errorFrameId) <>
+      override def * = (id, name, description, schema, rowCount, statusId, createdOn, modifiedOn, createdById, modifiedById, errorFrameId, revision) <>
         (DataFrame.tupled, DataFrame.unapply)
 
       // foreign key relationships
@@ -394,7 +396,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
     }
 
     def _insertFrame(frame: DataFrameTemplate)(implicit session: Session) = {
-      val f = DataFrame(0, frame.name, frame.description, Schema(), 0L, 1L, new DateTime(), new DateTime(), None, None)
+      val f = DataFrame(0, frame.name, frame.description, Schema(), 0L, 1L, new DateTime(), new DateTime(), None, None, None, 0)
       framesAutoInc.insert(f)
     }
 
@@ -427,6 +429,13 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
       // this looks crazy but it is how you update only one column
       val errorFrameIdColumn = for (f <- frames if f.id === frame.id) yield f.errorFrameId
       errorFrameIdColumn.update(errorFrameId)
+      frames.where(_.id === frame.id).firstOption.get
+    }
+
+    override def updateRevision(frame: DataFrame, revision: Int)(implicit session: Session): DataFrame = {
+      // this looks crazy but it is how you update only one column
+      val column = for (f <- frames if f.id === frame.id) yield f.revision
+      column.update(revision)
       frames.where(_.id === frame.id).firstOption.get
     }
 
