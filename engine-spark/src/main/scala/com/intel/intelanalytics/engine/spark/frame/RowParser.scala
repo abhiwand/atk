@@ -43,7 +43,6 @@ import scala.collection.JavaConversions.asScalaIterator
 class RowParser(separator: Char, columnTypes: Array[DataType]) extends Serializable {
 
   val csvFormat = CSVFormat.RFC4180.withDelimiter(separator)
-    .withIgnoreSurroundingSpaces(true)
 
   val converter = DataTypes.parseMany(columnTypes)(_)
 
