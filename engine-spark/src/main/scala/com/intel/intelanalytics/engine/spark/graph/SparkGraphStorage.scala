@@ -1,5 +1,6 @@
 package com.intel.intelanalytics.engine.spark.graph
 
+import com.intel.intelanalytics.domain.frame.DataFrame
 import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.engine.{ Rows, GraphBackendStorage, GraphStorage }
 import com.intel.graphbuilder.driver.spark.titan.GraphBuilder
@@ -30,15 +31,13 @@ class SparkGraphStorage(metaStore: MetaStore,
    * @param graph Graph metadata object.
    */
   override def drop(graph: Graph): Unit = {
+
     metaStore.withSession("spark.graphstorage.drop") {
       implicit session =>
         {
-          future {
-            backendStorage.deleteUnderlyingTable(graph.name)
-          }
-
+          val quiet: Boolean = true
+          backendStorage.deleteUnderlyingTable(graph.name, quiet)
           metaStore.graphRepo.delete(graph.id)
-
           Unit
         }
     }
@@ -51,14 +50,33 @@ class SparkGraphStorage(metaStore: MetaStore,
    * @return Graph metadata.
    */
   override def createGraph(graph: GraphTemplate)(implicit user: UserPrincipal): Graph = {
+
     metaStore.withSession("spark.graphstorage.create") {
       implicit session =>
         {
           val check = metaStore.graphRepo.lookupByName(graph.name)
           if (check.isDefined) {
-            throw new RuntimeException("Graph with same name exists. Create aborted")
+            throw new RuntimeException("Graph with same name exists. Create aborted.")
           }
+          val quiet: Boolean = true
+          backendStorage.deleteUnderlyingTable(graph.name, quiet)
           metaStore.graphRepo.insert(graph).get
+        }
+    }
+  }
+
+  override def renameGraph(graph: Graph, newName: String): Graph = {
+    metaStore.withSession("spark.graphstorage.rename") {
+      implicit session =>
+        {
+          val check = metaStore.graphRepo.lookupByName(newName)
+          if (check.isDefined) {
+            throw new RuntimeException("Graph with same name exists. Rename aborted.")
+          }
+          backendStorage.renameUnderlyingTable(graph.name, newName)
+
+          val newGraph = graph.copy(name = newName)
+          metaStore.graphRepo.update(newGraph).get
         }
     }
   }

@@ -34,7 +34,7 @@ import com.intel.intelanalytics.engine.plugin.QueryPluginResults
 import com.intel.intelanalytics.schema._
 import spray.json._
 import com.intel.intelanalytics.domain.frame._
-import com.intel.intelanalytics.domain.graph.{ GraphReference, Graph, GraphLoad, GraphTemplate }
+import com.intel.intelanalytics.domain.graph._
 import com.intel.intelanalytics.domain.graph.construction.{ EdgeRule, FrameRule, PropertyRule, ValueRule, VertexRule }
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 import com.intel.intelanalytics.domain.schema.{ DataTypes, Schema }
@@ -146,7 +146,7 @@ object DomainJsonProtocol extends IADefaultJsonProtocol {
   implicit val addColumnLongFormat = jsonFormat4(FrameAddColumns[JsObject, Long])
   implicit val projectColumnFormat = jsonFormat4(FrameProject[JsObject, String])
   implicit val projectColumnLongFormat = jsonFormat4(FrameProject[JsObject, Long])
-  implicit val renameFrameFormat = jsonFormat2(FrameRenameFrame)
+  implicit val renameFrameFormat = jsonFormat2(RenameFrame)
   implicit val renameColumnsFormat = jsonFormat3(FrameRenameColumns[JsObject, String])
   implicit val renameColumnsLongFormat = jsonFormat3(FrameRenameColumns[JsObject, Long])
   implicit val joinFrameLongFormat = jsonFormat3(FrameJoin)
@@ -192,6 +192,7 @@ object DomainJsonProtocol extends IADefaultJsonProtocol {
 
   implicit val graphTemplateFormat = jsonFormat1(GraphTemplate)
   implicit val graphFormat = jsonFormat9(Graph)
+  implicit val graphRenameFormat = jsonFormat2(RenameGraph)
 
   // graph loading formats for specifying graphbuilder and graphload rules
 
