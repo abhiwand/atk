@@ -90,12 +90,16 @@ Execution Flow
 ==============
 
 .. image:: ad_plug_1.*
+    :width: 80 %
+    :align: center
 
 Accessing Spark or Other Components
 ===================================
 
 For the time being, plugin authors may implement specific interfaces that declare their need for a particular service, for example,
 SparkSupport for direct access to a SparkContext.
+
+See also :doc:`ad_bkm`.
 
 ------------------------
 Creating a CommandPlugin
