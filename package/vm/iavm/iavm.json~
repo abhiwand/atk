@@ -1,0 +1,40 @@
+{
+    "variables": {
+        "aws_access_key": "",
+        "aws_secret_key": ""
+    },
+    "builders": [
+        {
+            "type": "virtualbox-ovf",
+		
+	"source_path": "iabasevm/iabasevm-3.ova",
+	"ssh_username": "cloudera",
+	"ssh_password": "cloudera",
+	"ssh_wait_timeout": "5m",
+	"shutdown_timeout": "5m",
+	"shutdown_command": "echo 'packer' | sudo /sbin/shutdown -P now",
+	"vm_name": "IntelAnalytics-0.8.0-CDH-5.0.3-dev",
+	"vboxmanage": [
+		["modifyvm", "{{.Name}}", "--memory", "12288"],
+		["modifyvm", "{{.Name}}", "--cpus", "2"]
+		]
+        }
+    ],
+    "provisioners": [
+	{
+		"type": "shell",
+		"scripts": ["env.sh", "bootstrap-salt.sh"],
+		"execute_command": " chmod +x {{ .Path }}; sudo {{ .Vars }} {{ .Path }}"
+
+	},
+        {
+            "type": "salt-masterless",
+            "local_state_tree": "/home/rodorad/packer/salt/salt/base",
+            "local_pillar_roots": "/home/rodorad/packer/salt/pillar",
+            "bootstrap_args": " -I https://github.com/myuser/salt.git  git develop ",
+            "skip_bootstrap": true,
+            "minion_config": "/home/rodorad/packer/salt/salt/minion",
+            "temp_config_dir": "tmp/salt"
+        }
+    ]
+}

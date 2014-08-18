@@ -1,10 +1,9 @@
 from intelanalytics import *
 
-dataset = "datasets/movie_sample_data_small.csv"
+dataset = "datasets/movie_data_random.csv"
 
 #csv schema definition
 schema = [("user_id", int32),
-          ("vertex_type", str),
           ("movie_id", int32),
           ("rating", int32),
           ("splits", str)]
@@ -25,11 +24,11 @@ print frame.inspect()
 
 # Create some rules
 
-user = VertexRule("user_id", frame["user_id"], {"vertex_type": frame["vertex_type"]})
+user = VertexRule("user_id", frame.user_id, {"vertex_type": "L"})
 
-movie = VertexRule("movie_id", frame.movie_id)
+movie = VertexRule("movie_id", frame.movie_id, {"vertex_type": "R"})
 
-rates = EdgeRule("rating", user, movie, {"splits": frame.splits}, is_directed=True)
+rates = EdgeRule("edge", user, movie, {"splits": frame.splits, "rating": frame.rating})
 
 # Create a graph
 print "creating graph"

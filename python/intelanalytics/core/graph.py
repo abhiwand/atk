@@ -20,6 +20,8 @@
 # estoppel or otherwise. Any license under such intellectual property rights
 # must be express and approved by Intel in writing.
 ##############################################################################
+from intelanalytics.core.errorhandle import IaError
+
 f, f2 = {}, {}
 
 import logging
@@ -100,8 +102,8 @@ def delete_graph(name):
     
     Parameters
     ----------
-    name : string
-        The name of the graph you are erasing
+    graph : string or BigGraph
+        Either the name of the BigGraph object to delete or the BigGraph object itself
         
     Returns
     -------
@@ -121,8 +123,7 @@ def delete_graph(name):
 
     """
     # TODO - Review docstring
-    #return _get_backend().delete_graph(name)
-    raise NotImplemented
+    return _get_backend().delete_graph(name)
 
 
 class RuleWithDifferentFramesError(ValueError):
@@ -200,7 +201,7 @@ class Rule(object):
             elif frame != source.frame:
                 raise RuleWithDifferentFramesError()
         elif not isinstance(source, basestring):
-                raise TypeError("Rule contains invalid source type" + type(source).__name__)
+                raise TypeError("Rule contains invalid source type: " + type(source).__name__)
         return frame
 
     @staticmethod
@@ -384,15 +385,25 @@ class EdgeRule(Rule):
 
         """
         # TODO - Add docstring
+
         label_frame = None
         if isinstance(self.label, BigColumn):
             label_frame = VertexRule('label', self.label).validate()
         elif not self.label or not isinstance(self.label, basestring):
             raise TypeError("label argument must be a column or non-empty string")
-        tail_frame = self.tail.validate()
-        head_frame = self.head.validate()
+
+        if isinstance(self.tail, VertexRule):
+            tail_frame = self.tail.validate()
+        else:
+            raise TypeError("Invalid type %s for 'tail' argument. It must be a VertexRule." % self.tail)
+
+        if isinstance(self.head, VertexRule):
+            head_frame = self.head.validate()
+        else:
+            raise TypeError("Invalid type %s for 'head' argument. It must be a VertexRule." % self.head)
         properties_frame = self.validate_properties(self.properties)
         return self.validate_same_frame(label_frame, tail_frame, head_frame, properties_frame)
+
 
 class BigGraph(CommandSupport):
     """
@@ -410,26 +421,45 @@ class BigGraph(CommandSupport):
     --------
     ::
 
-        g = BigGraph([user_vertex, movie_vertex, rating_edge, extra_movie_rule])
+        # create a frame as the source for a graph
+        csv = CsvFile("/movie.csv", schema= [('user', int32),
+                                              ('vertexType', str),
+                                              ('movie', int32),
+                                              ('rating', str)])
+        frame = BigFrame(csv)
+
+        # define graph parsing rules
+        user = VertexRule("user", frame.user, {"vertexType": frame.vertexType})
+        movie = VertexRule("movie", frame.movie)
+        rates = EdgeRule("rating", user, movie, { "rating": frame.rating }, is_directed = True)
+
+        # create graph
+        graph = BigGraph([user, movie, rates])
+
 
     .. versionadded:: 0.8
 
     """
     def __init__(self, rules=None, name=""):
+        try:
+            self._id = 0
+            if not hasattr(self, '_backend'):
+                self._backend = _get_backend()
+            new_graph_name= self._backend.create(self, rules, name)
+            CommandSupport.__init__(self)
+            #self.ml = GraphMachineLearning(self)
+            self.sampling = GraphSampling(self)
+            logger.info('Created new graph "%s"', new_graph_name)
+        except:
+            raise IaError(logger)
 
-        if not hasattr(self, '_backend'):
-            self._backend = _get_backend()
-        self._name = name or self._get_new_graph_name()
-        self._uri = ""
-        self._backend.create(self,rules,name)
 
-        CommandSupport.__init__(self)
-        #self.ml = GraphMachineLearning(self)
-        #self.sampling = GraphSampling(self)
-        logger.info('Created new graph "%s"', self._name)
 
     def __repr__(self):
-        return self._name
+        try:
+            return self._backend.get_repr(self)
+        except:
+            return super(BigGraph,self).__repr__() + "(Unable to collect metadeta from server)"
 
     @property
     def name(self):
@@ -454,7 +484,10 @@ class BigGraph(CommandSupport):
 
         """
         # TODO - Review Docstring
-        return self._name
+        try:
+            return self._backend.get_name(self)
+        except:
+            IaError(logger)
 
     @name.setter
     def name(self, value):
@@ -479,28 +512,11 @@ class BigGraph(CommandSupport):
 
         """
         # TODO - Review Docstring
-        self._backend.set_name(value)
+        try:
+            self.rename_graph(value)
+        except:
+            raise IaError(logger)
 
-    @property
-    def uri(self):
-        """
-        Provides the URI of the BigGraph.
-
-        Returns
-        -------
-        URI
-            See http://en.wikipedia.org/wiki/Uniform_Resource_Identifier
-
-        Examples
-        --------
-        ::
-
-            Example
-
-        .. versionadded:: 0.8
-
-        """
-        return self._uri
 
     def append(self, rules=None):
         """
@@ -515,8 +531,20 @@ class BigGraph(CommandSupport):
         examples
         --------
         ::
+            # create a frame as the source for additional data
+            csv = CsvFile("/movie.csv", schema= [('user', int32),
+                                              ('vertexType', str),
+                                              ('movie', int32),
+                                              ('rating', str)])
+            frame = BigFrame(csv)
 
-            Example
+            # define graph parsing rules
+            user = VertexRule("user", frame.user, {"vertexType": frame.vertexType})
+            movie = VertexRule("movie", frame.movie)
+            rates = EdgeRule("rating", user, movie, { "rating": frame.rating }, is_directed = True)
+
+            # append data from the frame to an existing graph
+            graph.append([user, movie, rates])
 
         .. versionadded:: 0.8
         """
@@ -531,58 +559,54 @@ class BigGraph(CommandSupport):
     #def add_props(self, rules)
     #def remove_props(self, rules)
 
-# class GraphSampling(object):
-#     """
-#     Functionality for creating a graph sample
-#
-#     .. versionadded:: 0.8
-#
-#     """
-#
-#     def __init__(self, graph):
-#         self.graph = graph
-#         if not hasattr(self, '_backend'):
-#             self._backend = _get_backend()
-#
-#     def vertex_sample(self, size, sample_type, **kwargs):
-#         """
-#         Create a vertex induced subgraph obtained by vertex sampling
-#
-#         Three types of vertex sampling are provided: 'uniform', 'degree', and 'degreedist'.  A 'uniform' vertex sample
-#         is obtained by sampling vertices uniformly at random.  For 'degree' vertex sampling, each vertex is weighted by
-#         its out-degree.  For 'degreedist' vertex sampling, each vertex is weighted by the total number of vertices that
-#         have the same out-degree as it.  That is, the weight applied to each vertex for 'degreedist' vertex sampling is
-#         given by the out-degree histogram bin size.
-#
-#         Parameters
-#         ----------
-#         size : int
-#             the number of vertices to sample from the graph
-#         sample_type : str
-#             the type of vertex sample among: ['uniform', 'degree', 'degreedist']
-#         seed : (optional keyword argument) int
-#             random seed value
-#
-#         Returns
-#         -------
-#         BigGraph
-#             a new BigGraph object representing the vertex induced subgraph
-#
-#         Examples
-#         --------
-#         Assume a set of rules created on a BigFrame that specifies 'user' and 'product' vertices as well as an edge
-#         rule.  The BigGraph created from this data can be vertex sampled to obtained a vertex induced subgraph:
-#
-#             graph = BigGraph([user_vertex_rule, product_vertex_rule, edge_rule])
-#             subgraph = graph.sampling.vertex_sample(1000, 'uniform')
-#
-#         """
-#         if 'seed' in kwargs:
-#             result = self._backend.vertex_sample(self.graph, size, sample_type, kwargs['seed'])
-#             return self._backend.get_graph(result['name'])
-#         else:
-#             result = self._backend.vertex_sample(self.graph, size, sample_type)
-#             return self._backend.get_graph(result['name'])
+class GraphSampling(object):
+    """
+    Functionality for creating a graph sample
+
+    .. versionadded:: 0.8
+
+    """
+
+    def __init__(self, graph):
+        self.graph = graph
+        if not hasattr(self, '_backend'):
+            self._backend = _get_backend()
+
+    def vertex_sample(self, size, sample_type, seed=None):
+        """
+        Create a vertex induced subgraph obtained by vertex sampling
+
+        Three types of vertex sampling are provided: 'uniform', 'degree', and 'degreedist'.  A 'uniform' vertex sample
+        is obtained by sampling vertices uniformly at random.  For 'degree' vertex sampling, each vertex is weighted by
+        its out-degree.  For 'degreedist' vertex sampling, each vertex is weighted by the total number of vertices that
+        have the same out-degree as it.  That is, the weight applied to each vertex for 'degreedist' vertex sampling is
+        given by the out-degree histogram bin size.
+
+        Parameters
+        ----------
+        size : int
+            the number of vertices to sample from the graph
+        sample_type : str
+            the type of vertex sample among: ['uniform', 'degree', 'degreedist']
+        seed : (optional) int
+            random seed value
+
+        Returns
+        -------
+        BigGraph
+            a new BigGraph object representing the vertex induced subgraph
+
+        Examples
+        --------
+        Assume a set of rules created on a BigFrame that specifies 'user' and 'product' vertices as well as an edge
+        rule.  The BigGraph created from this data can be vertex sampled to obtained a vertex induced subgraph:
+
+            graph = BigGraph([user_vertex_rule, product_vertex_rule, edge_rule])
+            subgraph = graph.sampling.vertex_sample(1000, 'uniform')
+
+        """
+        result = self._backend.vertex_sample(self.graph, size, sample_type, seed)
+        return self._backend.get_graph(result['name'])
 
 
 class GraphMachineLearning(object):

@@ -69,9 +69,9 @@ To import the ALS input data, use the following iPython calls::
     fb = get_frame_builder()
     csvfile = '/user/hadoop/recommendation_raw_input.csv'
     frame = fb.build_from_csv('AlsFrame',
-                              csvfile,
-                              schema='/user:long,vertex_type:chararray,movie:long,rating:logn.splits:chararray',
-                              overwrite=True)
+                      csvfile,
+                      schema='user:long,vertex_type:chararray,movie:long,rating:logn.splits:chararray',
+                      overwrite=True)
 
 The example above loads the ALS input data from a CSV file.
 The first line imports the needed python modules.
@@ -255,3 +255,6 @@ Example
                 )
 
 
+.. _Factorization Meets the Neighborhood\: a Multifaceted Collaborative Filtering Model: http://public.research.att.com/~volinsky/netflix/kdd08koren.pdf
+.. _Large-Scale Parallel Collaborative Filtering for the Netflix Prize: http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.173.2797
+.. _Columbia Data Science\: Blog Week-7: http://columbiadatascience.com/2012/10/18/week-7-hunch-com-recommendation-engines-svd-alternating-least-squares-convexity-filter-bubbles/
