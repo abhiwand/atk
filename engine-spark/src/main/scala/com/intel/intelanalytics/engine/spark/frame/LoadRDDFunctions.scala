@@ -49,7 +49,7 @@ object LoadRDDFunctions extends Serializable {
     val sampleSize = SparkEngineConfig.frameLoadTestSampleSize
     val threshold = SparkEngineConfig.frameLoadTestFailThresholdPercentage
 
-    val fileContentRdd: RDD[String] = ctx.textFile(fileName, partitions)
+    val fileContentRdd: RDD[String] = ctx.textFile(fileName, partitions).filter(_.trim() != "")
     val sampleRdd = SparkOps.getPagedRdd(fileContentRdd, 0, sampleSize, sampleSize)
 
     //cache the RDD since it will be used multiple times
@@ -59,7 +59,7 @@ object LoadRDDFunctions extends Serializable {
     val failedCount = preEvaluateResults.errorLines.count()
     val sampleRowsCount: Long = sampleRdd.count()
 
-    val failedRatio: Long =  if (sampleRowsCount == 0) 0 else 100 * failedCount / sampleRowsCount
+    val failedRatio: Long = if (sampleRowsCount == 0) 0 else 100 * failedCount / sampleRowsCount
 
     //don't need it anymore
     sampleRdd.unpersist()
