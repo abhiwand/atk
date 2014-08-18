@@ -23,14 +23,11 @@
 
 package com.intel.intelanalytics.engine.spark.command
 
-import com.intel.intelanalytics.component.{ ClassLoaderAware, Boot }
-import com.intel.intelanalytics.domain.command._
-import com.intel.intelanalytics.engine.plugin.{ Invocation, FunctionCommand, CommandPlugin }
+import com.intel.intelanalytics.component.ClassLoaderAware
+import com.intel.intelanalytics.engine.plugin.CommandPlugin
 import com.intel.intelanalytics.engine.spark.context.SparkContextManager
-import com.intel.intelanalytics.engine.spark.plugin.SparkInvocation
-import com.intel.intelanalytics.engine.spark.{ SparkEngine, SparkEngineConfig }
-import com.intel.intelanalytics.security.UserPrincipal
-import com.intel.intelanalytics.shared.{ JsonSchemaExtractor, EventLogging }
+import com.intel.intelanalytics.engine.spark.SparkEngine
+import com.intel.intelanalytics.shared.EventLogging
 import com.intel.intelanalytics.NotFoundException
 import org.apache.spark.SparkContext
 import spray.json._
@@ -38,14 +35,12 @@ import spray.json._
 import scala.concurrent._
 import scala.util.Try
 import org.apache.spark.engine.{ ProgressPrinter, SparkProgressListener }
-import scala.Some
-import com.intel.intelanalytics.domain.command.CommandDefinition
-import com.intel.intelanalytics.engine.plugin.FunctionCommand
 import com.intel.intelanalytics.domain.command.CommandTemplate
 import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.domain.command.Execution
 import com.intel.intelanalytics.engine.spark.plugin.SparkInvocation
 import com.intel.intelanalytics.domain.command.Command
+import scala.collection.mutable
 
 /**
  * CommandExecutor manages a registry of CommandPlugins and executes them on request.
@@ -73,92 +68,7 @@ class CommandExecutor(engine: => SparkEngine, commands: SparkCommandStorage, con
     extends EventLogging
     with ClassLoaderAware {
 
-  /**
-   * Returns all the command definitions registered with this command executor.
-   */
-  def getCommandDefinitions(): Iterable[CommandDefinition] =
-    commandPlugins.values.map(p => {
-      val (argSchema, resSchema) = getArgumentAndResultSchemas(p)
-      CommandDefinition(p.name, argSchema, resSchema, p.doc)
-    })
-
-  private def getArgumentAndResultSchemas(plugin: CommandPlugin[_, _]) = {
-    val arg = plugin.argumentManifest
-    val ret = plugin.returnManifest
-    (JsonSchemaExtractor.getProductSchema(arg), JsonSchemaExtractor.getProductSchema(ret))
-  }
-
-  private var commandPlugins: Map[String, CommandPlugin[_, _]] = SparkEngineConfig.archives.flatMap {
-    archive =>
-      Boot.getArchive(archive)
-        .getAll[CommandPlugin[_ <: Product, _ <: Product]]("command")
-        .map(p => (p.name, p))
-  }.toMap
-
-  /**
-   * Adds the given command to the registry.
-   * @param command the command to add
-   * @tparam A the argument type for the command
-   * @tparam R the return type for the command
-   * @return the same command that was passed, for convenience
-   */
-  def registerCommand[A <: Product, R <: Product](command: CommandPlugin[A, R]): CommandPlugin[A, R] = {
-    synchronized {
-      commandPlugins += (command.name -> command)
-    }
-    command
-  }
-
-  /**
-   * Registers a function as a command using FunctionCommand. This is a convenience method,
-   * it is also possible to construct a FunctionCommand explicitly and pass it to the
-   * registerCommand method that takes a CommandPlugin.
-   *
-   * For where numberOfJobs is constant for a command.
-   *
-   * @param name the name of the command
-   * @param function the function to be called when running the command
-   * @param numberOfJobs the number of jobs that this command will create (constant)
-   * @param doc the documentation for the command
-   * @tparam A the argument type of the command
-   * @tparam R the return type of the command
-   * @return the CommandPlugin instance created during the registration process.
-   */
-  def registerCommand[A <: Product: JsonFormat: ClassManifest, R <: Product: JsonFormat: ClassManifest](name: String,
-                                                                                                        function: (A, UserPrincipal, SparkInvocation) => R,
-                                                                                                        numberOfJobs: Int = 1,
-                                                                                                        doc: Option[CommandDoc] = None): CommandPlugin[A, R] = {
-    registerCommand(name, function, (A) => numberOfJobs, doc)
-  }
-
-  /**
-   * Registers a function as a command using FunctionCommand. This is a convenience method,
-   * it is also possible to construct a FunctionCommand explicitly and pass it to the
-   * registerCommand method that takes a CommandPlugin.
-   *
-   * For where numberOfJobs can change based on the arguments to a command.
-   *
-   * @param name the name of the command
-   * @param function the function to be called when running the command
-   * @param numberOfJobsFunc function for determining the number of jobs that this command will create
-   * @param doc the documentation for the command
-   * @tparam A the argument type of the command
-   * @tparam R the return type of the command
-   * @return the CommandPlugin instance created during the registration process.
-   */
-  def registerCommand[A <: Product: JsonFormat: ClassManifest, R <: Product: JsonFormat: ClassManifest](name: String,
-                                                                                                        function: (A, UserPrincipal, SparkInvocation) => R,
-                                                                                                        numberOfJobsFunc: (A) => Int,
-                                                                                                        doc: Option[CommandDoc]): CommandPlugin[A, R] = {
-    // Note: providing a default =None to the doc parameter causes a strange compiler error where it can't
-    // distinguish this method from the one which takes a plain Int for the numberOfJobs. Since the
-    // numberOfJobsFunc variation is much less frequently used, we'll make doc a required parameter
-    registerCommand(FunctionCommand(name, function.asInstanceOf[(A, UserPrincipal, Invocation) => R], numberOfJobsFunc, doc))
-  }
-
-  private def getCommandDefinition(name: String): Option[CommandPlugin[_, _]] = {
-    commandPlugins.get(name)
-  }
+  val commandIdContextMapping = new mutable.HashMap[Long, SparkContext]()
 
   /**
    * Executes the given command template, managing all necessary auditing, contexts, class loaders, etc.
@@ -178,9 +88,9 @@ class CommandExecutor(engine: => SparkEngine, commands: SparkCommandStorage, con
     withMyClassLoader {
       withContext("ce.execute") {
         withContext(command.name) {
-          val commandId = cmd.id
-          val commandName = cmd.name
-          val context: SparkContext = contextManager.context(user, s"(id:$commandId,name:$commandName)")
+
+          val context: SparkContext = createContextForCommand(command, arguments, user, cmd)
+
           val cmdFuture = future {
             withCommand(cmd) {
               try {
@@ -188,16 +98,10 @@ class CommandExecutor(engine: => SparkEngine, commands: SparkCommandStorage, con
                   user = user, executionContext = implicitly[ExecutionContext],
                   sparkContext = context, commandStorage = commands)
 
-                val listener = new SparkProgressListener(SparkProgressListener.progressUpdater, cmd.id, command.numberOfJobs(arguments))
-                val progressPrinter = new ProgressPrinter(listener)
-                context.addSparkListener(listener)
-                context.addSparkListener(progressPrinter)
-
-                val funcResult = command(invocation, arguments)
-                command.serializeReturn(funcResult)
+                executeCommand(command, arguments, invocation)
               }
               finally {
-                context.stop()
+                stopCommand(cmd.id)
               }
             }
             commands.lookup(cmd.id).get
@@ -206,6 +110,32 @@ class CommandExecutor(engine: => SparkEngine, commands: SparkCommandStorage, con
         }
       }
     }
+  }
+
+  /**
+   * Execute command and return serialized result
+   * @param command command
+   * @param arguments input argument
+   * @param invocation invocation data
+   * @tparam R return type
+   * @tparam A argument type
+   * @return command result
+   */
+  def executeCommand[R <: Product, A <: Product](command: CommandPlugin[A, R], arguments: A, invocation: SparkInvocation): JsObject = {
+    val funcResult = command(invocation, arguments)
+    command.serializeReturn(funcResult)
+  }
+
+  def createContextForCommand[R <: Product, A <: Product](command: CommandPlugin[A, R], arguments: A, user: UserPrincipal, cmd: Command): SparkContext = {
+    val commandId = cmd.id
+    val commandName = cmd.name
+    val context: SparkContext = contextManager.context(user, s"(id:$commandId,name:$commandName)")
+    val listener = new SparkProgressListener(SparkProgressListener.progressUpdater, cmd.id, command.numberOfJobs(arguments))
+    val progressPrinter = new ProgressPrinter(listener)
+    context.addSparkListener(listener)
+    context.addSparkListener(progressPrinter)
+    commandIdContextMapping += (commandId -> context)
+    context
   }
 
   /**
@@ -223,8 +153,9 @@ class CommandExecutor(engine: => SparkEngine, commands: SparkCommandStorage, con
   def execute[A <: Product, R <: Product](name: String,
                                           arguments: A,
                                           user: UserPrincipal,
-                                          executionContext: ExecutionContext): Execution = {
-    val function = getCommandDefinition(name)
+                                          executionContext: ExecutionContext,
+                                          commandPluginRegistry: CommandPluginRegistry): Execution = {
+    val function = commandPluginRegistry.getCommandDefinition(name)
       .getOrElse(throw new NotFoundException("command definition", name))
       .asInstanceOf[CommandPlugin[A, R]]
     execute(function, arguments, user, executionContext)
@@ -243,8 +174,9 @@ class CommandExecutor(engine: => SparkEngine, commands: SparkCommandStorage, con
    */
   def execute[A <: Product, R <: Product](command: CommandTemplate,
                                           user: UserPrincipal,
-                                          executionContext: ExecutionContext): Execution = {
-    val function = getCommandDefinition(command.name)
+                                          executionContext: ExecutionContext,
+                                          commandPluginRegistry: CommandPluginRegistry): Execution = {
+    val function = commandPluginRegistry.getCommandDefinition(command.name)
       .getOrElse(throw new NotFoundException("command definition", command.name))
       .asInstanceOf[CommandPlugin[A, R]]
     val convertedArgs = function.parseArguments(command.arguments.get)
@@ -255,5 +187,14 @@ class CommandExecutor(engine: => SparkEngine, commands: SparkCommandStorage, con
     commands.complete(command.id, Try {
       block
     })
+  }
+
+  /**
+   * Stop a command
+   * @param commandId command id
+   */
+  def stopCommand(commandId: Long): Unit = {
+    commandIdContextMapping.get(commandId).foreach { case (context) => context.stop() }
+    commandIdContextMapping -= commandId
   }
 }

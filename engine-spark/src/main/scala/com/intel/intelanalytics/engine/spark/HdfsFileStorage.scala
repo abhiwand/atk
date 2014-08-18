@@ -23,26 +23,26 @@
 
 package com.intel.intelanalytics.engine.spark
 
-import java.io.{ IOException, InputStream, OutputStream }
-import java.nio.file.{ Path, Paths }
+import java.io.{ InputStream, OutputStream }
 
-import com.intel.intelanalytics.engine.{ Directory, Entry, File, FileStorage }
 import com.intel.intelanalytics.shared.EventLogging
 import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.{ FileSystem, LocalFileSystem, Path => HPath }
+import org.apache.hadoop.fs.{ Path, FileSystem, LocalFileSystem }
 import org.apache.hadoop.hdfs.DistributedFileSystem
 
-case class HdfsStorageConfig(fsRoot: String)
+class HdfsFileStorage(fsRoot: String) extends EventLogging {
 
-class HdfsFileStorage(fsRoot: String) extends FileStorage with EventLogging {
+  val configuration = withContext("HDFSFileStorage.configuration") {
 
-  val configuration = {
+    info("fsRoot: " + fsRoot)
+
     val hadoopConfig = new Configuration()
     //http://stackoverflow.com/questions/17265002/hadoop-no-filesystem-for-scheme-file
     hadoopConfig.set("fs.hdfs.impl", classOf[DistributedFileSystem].getName)
     hadoopConfig.set("fs.file.impl", classOf[LocalFileSystem].getName)
 
     if (fsRoot.startsWith("hdfs")) {
+      info("fsRoot starts with HDFS")
       hadoopConfig.set("fs.defaultFS", fsRoot)
     }
 
@@ -53,12 +53,22 @@ class HdfsFileStorage(fsRoot: String) extends FileStorage with EventLogging {
 
   val fs = FileSystem.get(configuration)
 
-  def hPath(first: String, second: String): HPath = {
-    new HPath(concatPaths(first, second))
+  /**
+   * Path from a path
+   * @param path a path relative to the root or that includes the root
+   */
+  private[spark] def absolutePath(path: String): Path = {
+    // TODO: this seems to work but this could be revisted and perhaps done nicer
+    if (path.startsWith(fsRoot)) {
+      new Path(path)
+    }
+    else {
+      new Path(concatPaths(fsRoot, path))
+    }
   }
 
-  override def write(sink: File, append: Boolean): OutputStream = withContext("file.write") {
-    val path: HPath = hPath(fsRoot, sink.path.toString)
+  def write(sink: Path, append: Boolean): OutputStream = withContext("file.write") {
+    val path: Path = absolutePath(sink.toString)
     if (append) {
       fs.append(path)
     }
@@ -67,65 +77,50 @@ class HdfsFileStorage(fsRoot: String) extends FileStorage with EventLogging {
     }
   }
 
-  override def list(source: Directory): Seq[Entry] = withContext("file.list") {
-    fs.listStatus(hPath(fsRoot, source.path.toString))
-      .map {
-        case s if s.isDirectory => Directory(path = Paths.get(s.getPath.toString))
-        case f if f.isDirectory => File(path = Paths.get(f.getPath.toString), size = f.getLen)
-        case x => throw new IOException("Unknown object type in filesystem at " + x.getPath)
-      }
+  def list(source: Path): Seq[Path] = withContext("file.list") {
+    fs.listStatus(absolutePath(source.toString)).map(fs => fs.getPath)
   }
 
-  override def read(source: File): InputStream = withContext("file.read") {
-    val path: HPath = hPath(fsRoot, source.path.toString)
+  def read(source: Path): InputStream = withContext("file.read") {
+    val path: Path = absolutePath(source.toString)
     fs.open(path)
   }
 
-  override def getMetaData(path: Path): Option[Entry] = withContext("file.getMetaData") {
-    val p: HPath = hPath(fsRoot, path.toString)
-    val exists = fs.exists(p)
-    if (!exists) {
-      None
-    }
-    else {
-      val status = fs.getStatus(p)
-      if (status == null || fs.isDirectory(p)) {
-        Some(Directory(path))
-      }
-      else {
-        Some(File(path, status.getUsed))
-      }
-    }
+  def exists(path: Path): Boolean = withContext("file.exists") {
+    val p: Path = absolutePath(path.toString)
+    fs.exists(p)
   }
 
   /**
-   * Recursive delete
+   * Delete
+   * @param recursive true to delete subdirectories and files
    */
-  override def delete(path: Path): Unit = withContext("file.delete") {
-    val fullPath = hPath(fsRoot, path.toString)
-    val success = fs.delete(fullPath, true) // recursive
-    if (!success) {
-      error("Could not delete path: " + fullPath.toUri)
+  def delete(path: Path, recursive: Boolean = true): Unit = withContext("file.delete") {
+    val fullPath = absolutePath(path.toString)
+    if (fs.exists(fullPath)) {
+      val success = fs.delete(fullPath, recursive)
+      if (!success) {
+        error("Could not delete path: " + fullPath.toUri.toString)
+      }
     }
   }
 
-  override def create(file: Path): Unit = withContext("file.create") {
-    fs.create(hPath(fsRoot, file.toString))
+  def create(file: Path): Unit = withContext("file.create") {
+    fs.create(absolutePath(file.toString))
   }
 
-  override def createDirectory(directory: Path): Directory = withContext("file.createDirectory") {
-    val adjusted = hPath(fsRoot, directory.toString)
+  def createDirectory(directory: Path): Unit = withContext("file.createDirectory") {
+    val adjusted = absolutePath(directory.toString)
     fs.mkdirs(adjusted)
-    getMetaData(Paths.get(directory.toString)).get.asInstanceOf[Directory]
   }
 
   /**
-   * File size
+   * File size (supports wildcards)
    * @param path relative path
    */
-  override def size(path: String): Long = {
-    val p: HPath = hPath(fsRoot, path.toString)
-    fs.getFileStatus(p).getLen
+  def size(path: String): Long = {
+    val p: Path = absolutePath(path)
+    fs.globStatus(p).map(fileStatus => fileStatus.getLen).reduce(_ + _)
   }
 }
 

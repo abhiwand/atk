@@ -23,27 +23,8 @@
 
 package com.intel.intelanalytics.engine
 
-import java.nio.file.Path
-import java.io.{ OutputStream, InputStream }
+trait GraphComponent {
 
-trait FileStorage {
-  def createDirectory(name: Path): Directory
+  def graphs: GraphStorage
 
-  def create(name: Path)
-
-  def delete(path: Path): Unit
-
-  def getMetaData(path: Path): Option[Entry]
-
-  def read(source: File): InputStream
-
-  def list(source: Directory): Seq[Entry]
-
-  def write(sink: File, append: Boolean = false): OutputStream
-
-  /**
-   * File size
-   * @param path relative path
-   */
-  def size(path: String): Long
 }
