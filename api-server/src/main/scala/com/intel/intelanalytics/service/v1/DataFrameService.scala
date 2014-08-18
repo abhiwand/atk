@@ -134,15 +134,16 @@ class DataFrameService(commonDirectives: CommonDirectives, engine: Engine) exten
                 }
             } ~ (path("data") & get) {
               parameters('offset.as[Int], 'count.as[Int]) {
-                (offset, count) => {
-                  import ViewModelJsonImplicits._
-                  val queryArgs = RowQuery[Long](id, offset, count)
-                  val exec = engine.getRowsLarge(queryArgs)
-                  //we require a commands uri to point the query completion to.
-                  val pattern = new Regex(prefix + ".*")
-                  val commandUri = pattern.replaceFirstIn(uri.toString, QueryService.prefix + "/") + exec.start.id
-                  complete(QueryDecorator.decorateEntity(commandUri, List(Rel.self(commandUri)), exec.start))
-                }
+                (offset, count) =>
+                  {
+                    import ViewModelJsonImplicits._
+                    val queryArgs = RowQuery[Long](id, offset, count)
+                    val exec = engine.getRowsLarge(queryArgs)
+                    //we require a commands uri to point the query completion to.
+                    val pattern = new Regex(prefix + ".*")
+                    val commandUri = pattern.replaceFirstIn(uri.toString, QueryService.prefix + "/") + exec.start.id
+                    complete(QueryDecorator.decorateEntity(commandUri, List(Rel.self(commandUri)), exec.start))
+                  }
               }
             }
           }

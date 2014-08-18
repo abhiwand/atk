@@ -21,8 +21,9 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.engine
+package com.intel.intelanalytics.domain.frame
 
-trait FileComponent {
-  def fileStorage: FileStorage
+case class RenameFrame(frame: FrameReference, newName: String) {
+  require(frame != null, "frame is required")
+  require(newName != null && newName.size > 0, "newName is required")
 }

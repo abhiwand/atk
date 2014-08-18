@@ -106,7 +106,6 @@ def get_frame(name):
     except:
         raise IaError(logger)
 
-
 def delete_frame(frame):
     """
     Erases data.
@@ -376,6 +375,8 @@ class BigFrame(CommandSupport):
     @property
     def row_count(self):
         """
+        Count the rows.
+
         Returns
         -------
         The number of rows in the frame.
