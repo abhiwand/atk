@@ -798,7 +798,7 @@ class BigFrame(CommandSupport):
             Must contain numerical data. Uniform weights of 1 for all items will be used for the calculation if this
                 parameter is not provided.
 
-        max_number_of_modes_returned : int
+        max_modes_returned : int
             Optional. Maximum number of modes returned. If this parameter is not provided, it defaults to 1
 
         Returns
