@@ -98,11 +98,6 @@ intel.analytics {
       # ("/usr/lib/spark","/opt/cloudera/parcels/CDH/lib/spark/", etc)
       //home = ""
 
-
-      # this is the default number of partitions that will be used for RDDs
-      default-partitions = 90
-
-
       # path to python worker execution, usually to toggle 2.6 and 2.7
       //python-worker-exec = "python" #Other valid values: "python2.7"
 

@@ -19,10 +19,15 @@ Contents
 References
 ----------
 .. toctree::
-   :maxdepth: 1
+  :maxdepth: 1
 
 * :doc:`glossary`
 * :doc:`ia_legal`
 * :ref:`genindex`
 * :ref:`search`
 
+.. TODO::
+
+    * :download:`PDF Document <IntelAnalytics.pdf>`
+
+ 
