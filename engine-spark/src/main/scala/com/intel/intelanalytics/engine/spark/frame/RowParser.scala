@@ -25,7 +25,7 @@ package com.intel.intelanalytics.engine.spark.frame
 
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 import com.intel.intelanalytics.domain.schema.DataTypes
-import org.apache.commons.csv.{CSVParser, CSVFormat}
+import org.apache.commons.csv.{ CSVParser, CSVFormat }
 import scala.collection.JavaConversions.asScalaIterator
 
 /**
@@ -53,12 +53,12 @@ class RowParser(separator: Char, columnTypes: Array[DataType]) extends Serializa
    */
   def apply(line: String): RowParseResult = {
     try {
-        val parts = splitLineIntoParts(line)
-        RowParseResult(parseSuccess = true, converter(parts))
+      val parts = splitLineIntoParts(line)
+      RowParseResult(parseSuccess = true, converter(parts))
     }
     catch {
       case e: Exception =>
-         RowParseResult(parseSuccess = false, Array(line, e.toString))
+        RowParseResult(parseSuccess = false, Array(line, e.toString))
     }
   }
 
