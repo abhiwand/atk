@@ -79,11 +79,13 @@ Let's start with a file *Data.csv* whose contents look like this::
     4,
     5,""
 
-Create the schema *schema_ab* with two columns: *a* (int32), and *b* (string)::
+Create the schema *schema_ab* with two columns: *a* (int32), and *b* (string):
+
+.. code::
 
     schema_ab = [('a', int32), ('b', string)]
 
-When defining schemas, if the parser should ignore the field, the type is assigned *ignore*, and the name should be an empty string ``''``::
+When `defining schemas`, if the parser should ignore the field, the type is assigned *ignore*, and the name should be an empty string ``''``::
 
     schema_2 = [('column_a', str), ('', ignore), ('more_data', str)]
 
@@ -491,7 +493,8 @@ Aggregation based on columns:
     Average the grouped values in column *d* and save it in a new column *d_avg*;
     Add up the grouped values in column *d* and save it in a new column *d_sum*::
 
-        grouped_data = my_frame.groupby(['a', 'b'], { 'c': [agg.avg, agg.sum, agg.stdev], 'd': [agg.avg, agg.sum]})
+        grouped_data = my_frame.groupby(['a', 'b'], { 'c': [agg.avg, agg.sum, agg.stdev],
+            'd': [agg.avg, agg.sum]})
 
     Note:
         The only columns in the new frame will be the grouping columns and the generated columns.
@@ -531,7 +534,8 @@ Aggregation based on both column and row together:
     Average the grouped values in column *d* and save it in a new column *d_avg*;
     Add up the grouped values in column *d* and save it in a new column *d_sum*::
 
-        my_frame.groupby(['a', 'b'], [agg.count, { 'c': [agg.avg, agg.sum, agg.stdev], 'd': [agg.avg, agg.sum]}])
+        my_frame.groupby(['a', 'b'], [agg.count, { 'c': [agg.avg, agg.sum, agg.stdev],
+            'd': [agg.avg, agg.sum]}])
 
     Supported aggregation functions:
 
@@ -822,7 +826,8 @@ This edge is considered “directed” since an employee reports to a manager bu
 To make an edge a directed one, the user needs to use the parameter ``is_directed`` in the edge rule and set it to ``True``,
 as shown in example below::
 
-    reports = EdgeRule("worksUnder", employee, manager, { "years": f[“years”]}, is_directed = True)
+    reports = EdgeRule("worksUnder", employee, manager, { "years": f[“years”]},
+        is_directed = True)
 
 Building A Graph
 ================
@@ -846,8 +851,8 @@ Commands such as g4 = my_graph will only give you a copy of the proxy, pointing 
     and now you are at the point where you can make a :term:`graph`.
 
     There are two main steps to :term:`graph` construction.
-    First, you will build a set of rules to describe the transformation from table to :term:`graph`, and then you build it,
-    copying the data into it at that point.
+    First, you will build a set of rules to describe the transformation from table to :term:`graph`,
+    and then you build it, copying the data into it at that point.
 
     Building Rules
 

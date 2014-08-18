@@ -29,10 +29,8 @@ import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 import com.intel.intelanalytics.engine.Rows._
 import com.intel.intelanalytics.security.UserPrincipal
 
-import scala.util.Try
-import com.intel.intelanalytics.engine.plugin.Invocation
-
 trait FrameStorage {
+
   def lookup(id: Long): Option[DataFrame]
   def lookupByName(name: String)(implicit user: UserPrincipal): Option[DataFrame]
   def getFrames(offset: Int, count: Int)(implicit user: UserPrincipal): Seq[DataFrame]

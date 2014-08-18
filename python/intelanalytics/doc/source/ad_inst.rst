@@ -2,6 +2,7 @@
 Installation
 ============
 
+
 ..  toctree::
     :maxdepth: 2
 
@@ -10,4 +11,5 @@ Installation
     ad_inst_IA
     ad_psql
     ad_psql_cs
+    ad_inst_vm
     ad_plug

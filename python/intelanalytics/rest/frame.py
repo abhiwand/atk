@@ -30,6 +30,7 @@ from intelanalytics.core.orddict import OrderedDict
 from collections import defaultdict
 import json
 import sys
+import codecs
 
 from intelanalytics.core.frame import BigFrame
 from intelanalytics.core.column import BigColumn
@@ -94,7 +95,7 @@ class FrameBackendRest(object):
     def _delete_frame(self, frame):
         logger.info("REST Backend: Delete frame {0}".format(repr(frame)))
         r = self.rest_http.delete("dataframes/" + str(frame._id))
-        return frame.name
+        return None
 
     def create(self, frame, source, name):
         logger.info("REST Backend: create frame with name %s" % name)
@@ -325,7 +326,7 @@ class FrameBackendRest(object):
             table.vrules = prettytable.NONE
             for r in self.rows:
                 table.add_row(r)
-            return table.get_string()
+            return unicode(table.get_string())
 
          #def _repr_html_(self): TODO - Add this method for ipython notebooks
 
@@ -402,7 +403,7 @@ class FrameBackendRest(object):
 
     # def remove_columns(self, frame, name):
     #     columns = ",".join(name) if isinstance(name, list) else name
-    #     arguments = {'frame': frame.uri, 'column': columns}
+    #     : frame.uri, 'column': columns}
     #     execute_update_frame_command('removecolumn', arguments, frame)
 
     def rename_columns(self, frame, column_names, new_names):
