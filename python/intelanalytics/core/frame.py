@@ -106,7 +106,6 @@ def get_frame(name):
     except:
         raise IaError(logger)
 
-
 def delete_frame(frame):
     """
     Erases data.

@@ -20,6 +20,8 @@
 # estoppel or otherwise. Any license under such intellectual property rights
 # must be express and approved by Intel in writing.
 ##############################################################################
+from intelanalytics.core.errorhandle import IaError
+
 f, f2 = {}, {}
 
 import logging
@@ -100,8 +102,8 @@ def delete_graph(name):
     
     Parameters
     ----------
-    name : string
-        The name of the graph you are erasing
+    graph : string or BigGraph
+        Either the name of the BigGraph object to delete or the BigGraph object itself
         
     Returns
     -------
@@ -121,8 +123,7 @@ def delete_graph(name):
 
     """
     # TODO - Review docstring
-    #return _get_backend().delete_graph(name)
-    raise NotImplemented
+    return _get_backend().delete_graph(name)
 
 
 class RuleWithDifferentFramesError(ValueError):
@@ -200,7 +201,7 @@ class Rule(object):
             elif frame != source.frame:
                 raise RuleWithDifferentFramesError()
         elif not isinstance(source, basestring):
-                raise TypeError("Rule contains invalid source type" + type(source).__name__)
+                raise TypeError("Rule contains invalid source type: " + type(source).__name__)
         return frame
 
     @staticmethod
@@ -384,15 +385,25 @@ class EdgeRule(Rule):
 
         """
         # TODO - Add docstring
+
         label_frame = None
         if isinstance(self.label, BigColumn):
             label_frame = VertexRule('label', self.label).validate()
         elif not self.label or not isinstance(self.label, basestring):
             raise TypeError("label argument must be a column or non-empty string")
-        tail_frame = self.tail.validate()
-        head_frame = self.head.validate()
+
+        if isinstance(self.tail, VertexRule):
+            tail_frame = self.tail.validate()
+        else:
+            raise TypeError("Invalid type %s for 'tail' argument. It must be a VertexRule." % self.tail)
+
+        if isinstance(self.head, VertexRule):
+            head_frame = self.head.validate()
+        else:
+            raise TypeError("Invalid type %s for 'head' argument. It must be a VertexRule." % self.head)
         properties_frame = self.validate_properties(self.properties)
         return self.validate_same_frame(label_frame, tail_frame, head_frame, properties_frame)
+
 
 class BigGraph(CommandSupport):
     """
@@ -430,20 +441,25 @@ class BigGraph(CommandSupport):
 
     """
     def __init__(self, rules=None, name=""):
+        try:
+            self._id = 0
+            if not hasattr(self, '_backend'):
+                self._backend = _get_backend()
+            new_graph_name= self._backend.create(self, rules, name)
+            CommandSupport.__init__(self)
+            #self.ml = GraphMachineLearning(self)
+            self.sampling = GraphSampling(self)
+            logger.info('Created new graph "%s"', new_graph_name)
+        except:
+            raise IaError(logger)
 
-        if not hasattr(self, '_backend'):
-            self._backend = _get_backend()
-        self._name = name or self._get_new_graph_name()
-        self._uri = ""
-        self._backend.create(self,rules,name)
 
-        CommandSupport.__init__(self)
-        #self.ml = GraphMachineLearning(self)
-        self.sampling = GraphSampling(self)
-        logger.info('Created new graph "%s"', self._name)
 
     def __repr__(self):
-        return self._name
+        try:
+            return self._backend.get_repr(self)
+        except:
+            return super(BigGraph,self).__repr__() + "(Unable to collect metadeta from server)"
 
     @property
     def name(self):
@@ -468,7 +484,10 @@ class BigGraph(CommandSupport):
 
         """
         # TODO - Review Docstring
-        return self._name
+        try:
+            return self._backend.get_name(self)
+        except:
+            IaError(logger)
 
     @name.setter
     def name(self, value):
@@ -493,28 +512,11 @@ class BigGraph(CommandSupport):
 
         """
         # TODO - Review Docstring
-        self._backend.set_name(value)
+        try:
+            self.rename_graph(value)
+        except:
+            raise IaError(logger)
 
-    @property
-    def uri(self):
-        """
-        Provides the URI of the BigGraph.
-
-        Returns
-        -------
-        URI
-            See http://en.wikipedia.org/wiki/Uniform_Resource_Identifier
-
-        Examples
-        --------
-        ::
-
-            Example
-
-        .. versionadded:: 0.8
-
-        """
-        return self._uri
 
     def append(self, rules=None):
         """
