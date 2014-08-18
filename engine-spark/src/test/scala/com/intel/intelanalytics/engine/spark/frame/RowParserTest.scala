@@ -44,16 +44,24 @@ class RowParserTest extends WordSpec with Matchers {
       csvRowParser.splitLineIntoParts("foo and bar,bar and foo,\"foo, is bar\"") shouldEqual Array("foo and bar", "bar and foo", "foo, is bar")
     }
 
+    "remove double quotes" in {
+      csvRowParser.splitLineIntoParts("\"foo\",\"bar\"") shouldEqual Array("foo","bar")
+    }
+
+    "not do anything special with single quotes" in {
+      csvRowParser.splitLineIntoParts("'foo','bar'") shouldEqual Array("'foo'","'bar'")
+    }
+
     "parse a string with empty fields" in {
       csvRowParser.splitLineIntoParts("foo,bar,,,baz") shouldEqual Array("foo", "bar", "", "", "baz")
     }
 
-    "parse a nested space/s followed by double quotes in a string" in {
-      csvRowParser.splitLineIntoParts("foo,bar, \"baz\"  ") shouldEqual Array("foo", "bar", "baz")
+    "preserve leading and trailing tab/s in a string" in {
+      csvRowParser.splitLineIntoParts("\tfoo,bar,baz") shouldEqual Array("\tfoo", "bar", "baz")
     }
 
-    "parse nested tab/s followed by double quotes in a string" in {
-      csvRowParser.splitLineIntoParts("foo,bar,\t\"baz\"\t") shouldEqual Array("foo", "bar", "baz")
+    "preserve leading and trailing spaces in a string" in {
+      csvRowParser.splitLineIntoParts(" foo,bar ,baz") shouldEqual Array(" foo", "bar ", "baz")
     }
 
     "parse a tab separated string" in {
