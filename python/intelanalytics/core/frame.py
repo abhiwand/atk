@@ -778,7 +778,7 @@ class BigFrame(CommandSupport):
             raise IaError(logger)
 
     @doc_stub
-    def column_mode (self, data_column, weights_column = None, max_number_of_modes_returned = None):
+    def column_mode (self, data_column, weights_column = None, max_modes_returned = None):
         """
         Calculate modes of a column.  A mode is a data element of maximum weight. All data elements of weight <= 0
         are excluded from the calculation, as are all data elements whose weight is NaN or infinite.
