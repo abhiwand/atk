@@ -141,8 +141,8 @@ class DataFrameService(commonDirectives: CommonDirectives, engine: Engine) exten
                     val exec = engine.getRowsLarge(queryArgs)
                     //we require a commands uri to point the query completion to.
                     val pattern = new Regex(prefix + ".*")
-                    val commandUri = pattern.replaceFirstIn(uri.toString, QueryService.prefix + "/") + exec.start.id
-                    complete(QueryDecorator.decorateEntity(commandUri, List(Rel.self(commandUri)), exec.start, result.schema))
+                    val commandUri = pattern.replaceFirstIn(uri.toString, QueryService.prefix + "/") + exec.execution.start.id
+                    complete(QueryDecorator.decorateEntity(commandUri, List(Rel.self(commandUri)), exec.execution.start, exec.schema))
                   }
               }
             }

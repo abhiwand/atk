@@ -28,7 +28,7 @@ import com.intel.intelanalytics.domain.FilterPredicate
 import com.intel.intelanalytics.domain.frame._
 import com.intel.intelanalytics.domain.frame.load.Load
 import com.intel.intelanalytics.domain.graph.{ Graph, GraphLoad, GraphTemplate, RenameGraph }
-import com.intel.intelanalytics.domain.query.{ Execution => QueryExecution, RowQuery, Query }
+import com.intel.intelanalytics.domain.query.{ Execution => QueryExecution, PagedQueryResult, QueryDataResult, RowQuery, Query }
 import com.intel.intelanalytics.engine.Rows._
 import com.intel.intelanalytics.security.UserPrincipal
 import spray.json.JsObject
