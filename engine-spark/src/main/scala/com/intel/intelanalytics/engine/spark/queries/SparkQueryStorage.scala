@@ -37,6 +37,7 @@ import org.apache.spark.rdd.RDD
 import spray.json.JsObject
 
 import scala.util.{ Failure, Success, Try }
+import org.apache.hadoop.fs.Path
 
 /**
  * Class Responsible for coordinating Query Storage with Spark
@@ -175,7 +176,7 @@ class SparkQueryStorage(val metaStore: SlickMetaStoreComponent#SlickMetaStore, f
    * @param queryId
    */
   def dropFiles(queryId: Long): Unit = withContext("frame.drop") {
-    files.delete(Paths.get(getQueryDirectory(queryId)))
+    files.delete(new Path(getAbsoluteQueryDirectory(queryId)))
   }
 
 }

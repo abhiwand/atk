@@ -8,6 +8,7 @@ Contents:
 
     ad_reqs
     ad_inst
+    ad_bkm
 
 .. TODO:: Future sections
     ad_conf

@@ -36,4 +36,6 @@ trait FrameRepository[Session] extends Repository[Session, DataFrameTemplate, Da
 
   /** Update the errorFrameId column */
   def updateErrorFrameId(frame: DataFrame, errorFrameId: Option[Long])(implicit session: Session): DataFrame
+
+  def updateRevision(frame: DataFrame, revision: Int)(implicit session: Session): DataFrame
 }

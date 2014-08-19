@@ -23,7 +23,7 @@
 
 package com.intel.intelanalytics.engine.spark
 
-import com.intel.intelanalytics.domain.schema.DataTypes
+import com.intel.intelanalytics.domain.schema.{ Schema, DataTypes }
 import com.intel.intelanalytics.engine.Rows._
 import org.apache.spark.SparkContext
 
@@ -31,13 +31,15 @@ import scala.collection.mutable
 import scala.reflect.ClassTag
 
 import scala.Some
-import com.intel.intelanalytics.engine.spark.frame.RDDJoinParam
+import com.intel.intelanalytics.engine.spark.frame.{ FrameRDD, RDDJoinParam }
 import com.intel.intelanalytics.algorithm.{ Percentile, PercentileTarget, PercentileComposingElement }
 import scala.collection.mutable.ListBuffer
 import org.apache.spark.rdd.RDD
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 import scala.math.pow
 import scala.reflect.ClassTag
+import com.intel.intelanalytics.domain.frame.FrameGroupByColumn
+import spray.json.JsObject
 
 //implicit conversion for PairRDD
 import org.apache.spark.SparkContext._
@@ -751,15 +753,14 @@ private[spark] object SparkOps extends Serializable {
     else
       Array[Any]()
 
-  def aggregation(rdd: RDD[(String, Seq[Array[Any]])],
+  def aggregation(groupedRDD: RDD[(String, Seq[Array[Any]])],
                   args_pair: Seq[(Int, String)],
                   schema: List[(String, DataTypes.DataType)],
                   groupedColumnSchema: Array[DataTypes.DataType],
-                  location: String): Seq[DataTypes.DataType] = {
+                  arguments: FrameGroupByColumn[JsObject, Long]): FrameRDD = {
 
-    rdd.map(elem =>
+    val resultRdd = groupedRDD.map(elem =>
       convertGroupBasedOnSchema(groupedColumnSchema, elem._1) ++ aggregation_functions(elem._2, args_pair, schema))
-      .saveAsObjectFile(location)
 
     val aggregated_column_schema = for {
       i <- args_pair
@@ -770,7 +771,15 @@ private[spark] object SparkOps extends Serializable {
         case _ => DataTypes.float64
       }
     }
-    groupedColumnSchema ++ aggregated_column_schema
+
+    val new_data_types = groupedColumnSchema ++ aggregated_column_schema
+
+    val new_column_names = arguments.group_by_columns ++ {
+      for { i <- arguments.aggregations } yield i._3
+    }
+    val new_schema = new_column_names.zip(new_data_types)
+
+    new FrameRDD(new Schema(new_schema), resultRdd)
   }
 
   /**
