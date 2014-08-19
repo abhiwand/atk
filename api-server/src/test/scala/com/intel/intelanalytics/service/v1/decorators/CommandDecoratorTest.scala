@@ -21,50 +21,30 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.spark.graphon.testutils
+package com.intel.intelanalytics.service.v1.decorators
 
-import com.intel.testutils.DirectoryUtils._
-import com.intel.testutils.LogUtils
-import com.intel.graphbuilder.graph.titan.TitanGraphConnector
-import com.intel.graphbuilder.util.SerializableBaseConfiguration
-import java.io.File
+import org.scalatest.{ Matchers, FlatSpec }
+import com.intel.intelanalytics.service.v1.viewmodels.RelLink
+import org.joda.time.DateTime
+import com.intel.intelanalytics.domain.command.Command
+import com.intel.intelanalytics.engine.{ TaskProgressInfo, ProgressInfo }
 
-/**
- * This trait can be mixed into Specifications to get a TitanGraph backed by Berkeley for testing purposes.
- *
- * IMPORTANT! only one thread can use the graph below at a time. This isn't normally an issue because
- * each test usually gets its own copy.
- */
-trait TestingTitan {
+class CommandDecoratorTest extends FlatSpec with Matchers {
 
-  LogUtils.silenceTitan()
+  val uri = "http://www.example.com/commands"
+  val relLinks = Seq(RelLink("foo", uri, "GET"))
+  val command = new Command(1, "name", None, None, List(ProgressInfo(20.00f, Some(TaskProgressInfo(0)))), false, None, new DateTime, new DateTime)
 
-  private var tmpDir: File = createTempDirectory("titan-graph-for-unit-testing-")
-
-  var titanConfig = new SerializableBaseConfiguration()
-  titanConfig.setProperty("storage.directory", tmpDir.getAbsolutePath)
-
-  var titanConnector = new TitanGraphConnector(titanConfig)
-  var graph = titanConnector.connect()
-
-  /**
-   * IMPORTANT! removes temporary files
-   */
-  def cleanupTitan(): Unit = {
-    try {
-      if (graph != null) {
-        graph.shutdown()
-      }
-    }
-    finally {
-      deleteTempDirectory(tmpDir)
-    }
-
-    // make sure this class is unusable when we're done
-    titanConfig = null
-    titanConnector = null
-    graph = null
-    tmpDir = null
+  "CommandDecorator" should "be able to decorate a command" in {
+    val decoratedCommand = CommandDecorator.decorateEntity(null, relLinks, command)
+    decoratedCommand.id should be(1)
+    decoratedCommand.name should be("name")
+    decoratedCommand.links.head.uri should be("http://www.example.com/commands")
   }
 
+  it should "set the correct URL in decorating a list of commands" in {
+    val commandHeaders = CommandDecorator.decorateForIndex(uri, Seq(command))
+    val commandHeader = commandHeaders.toList.head
+    commandHeader.url should be("http://www.example.com/commands/1")
+  }
 }

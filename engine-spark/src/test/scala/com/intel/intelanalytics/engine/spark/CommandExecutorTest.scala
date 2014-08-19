@@ -2,7 +2,8 @@ package com.intel.intelanalytics.engine.spark
 
 import org.scalatest.{ Matchers, FlatSpec }
 import com.intel.intelanalytics.engine.spark.command.{ CommandLoader, SparkCommandStorage, CommandPluginRegistry, CommandExecutor }
-import org.specs2.mock.Mockito
+import org.mockito.Mockito._
+import org.mockito.Matchers._
 import com.intel.intelanalytics.domain.command.{ Command, CommandTemplate }
 import scala.concurrent.duration._
 import com.intel.intelanalytics.engine.spark.context.SparkContextManager
@@ -17,21 +18,22 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol
 import DomainJsonProtocol._
 import com.intel.intelanalytics.engine.plugin.CommandPlugin
 import scala.collection.immutable.HashMap
+import org.scalatest.mock.MockitoSugar
 
-class CommandExecutorTest extends FlatSpec with Matchers with Mockito {
+class CommandExecutorTest extends FlatSpec with Matchers with MockitoSugar {
 
   val loader = mock[CommandLoader]
-  loader.loadFromConfig().returns(new HashMap[String, CommandPlugin[_, _]])
+  when(loader.loadFromConfig()).thenReturn(new HashMap[String, CommandPlugin[_, _]])
 
   val commandPluginRegistry = new CommandPluginRegistry(loader)
   def createCommandExecutor(): CommandExecutor = {
     val engine = mock[SparkEngine]
     val commandStorage = mock[SparkCommandStorage]
     val cmd: Command = Command(1, "command", None, None, List(), false, None, null, null, None)
-    commandStorage.create(any[CommandTemplate]).returns(cmd)
-    commandStorage.lookup(anyLong).returns(Some(cmd))
+    when(commandStorage.create(any(classOf[CommandTemplate]))).thenReturn(cmd)
+    when(commandStorage.lookup(anyLong())).thenReturn(Some(cmd))
     val contextManager = mock[SparkContextManager]
-    contextManager.context(any[UserPrincipal], anyString).returns(mock[SparkContext])
+    when(contextManager.context(any(classOf[UserPrincipal]), anyString())).thenReturn(mock[SparkContext])
 
     new CommandExecutor(engine, commandStorage, contextManager)
   }

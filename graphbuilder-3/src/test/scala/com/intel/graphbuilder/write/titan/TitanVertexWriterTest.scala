@@ -21,50 +21,43 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.spark.graphon.testutils
+package com.intel.graphbuilder.write.titan
 
-import com.intel.testutils.DirectoryUtils._
-import com.intel.testutils.LogUtils
-import com.intel.graphbuilder.graph.titan.TitanGraphConnector
-import com.intel.graphbuilder.util.SerializableBaseConfiguration
-import java.io.File
+import org.mockito.Mockito._
+import org.scalatest.mock.MockitoSugar
+import org.scalatest.{ Matchers, WordSpec }
+import com.intel.graphbuilder.elements.{ Property, Vertex }
+import com.intel.graphbuilder.write.VertexWriter
+import com.thinkaurelius.titan.core.TitanVertex
 
-/**
- * This trait can be mixed into Specifications to get a TitanGraph backed by Berkeley for testing purposes.
- *
- * IMPORTANT! only one thread can use the graph below at a time. This isn't normally an issue because
- * each test usually gets its own copy.
- */
-trait TestingTitan {
+class TitanVertexWriterTest extends WordSpec with Matchers with MockitoSugar {
 
-  LogUtils.silenceTitan()
+  "TitanVertexWriter" should {
 
-  private var tmpDir: File = createTempDirectory("titan-graph-for-unit-testing-")
+    "use the underlying writer and populate the gbIdToPhysicalId mapping" in {
+      // setup mocks
+      val vertexWriter = mock[VertexWriter]
+      val gbVertex = mock[Vertex]
+      val titanVertex = mock[TitanVertex]
+      val gbId = mock[Property]
+      val physicalId = new java.lang.Long(123)
 
-  var titanConfig = new SerializableBaseConfiguration()
-  titanConfig.setProperty("storage.directory", tmpDir.getAbsolutePath)
+      when(gbVertex.gbId).thenReturn(gbId)
+      when(titanVertex.getID).thenReturn(physicalId)
+      when(vertexWriter.write(gbVertex)).thenReturn(titanVertex)
 
-  var titanConnector = new TitanGraphConnector(titanConfig)
-  var graph = titanConnector.connect()
+      // instantiated class under test
+      val titanVertexWriter = new TitanVertexWriter(vertexWriter)
 
-  /**
-   * IMPORTANT! removes temporary files
-   */
-  def cleanupTitan(): Unit = {
-    try {
-      if (graph != null) {
-        graph.shutdown()
-      }
-    }
-    finally {
-      deleteTempDirectory(tmpDir)
+      // invoke method under test
+      val gbIdToPhysicalId = titanVertexWriter.write(gbVertex)
+
+      // validate
+      verify(vertexWriter).write(gbVertex)
+      gbIdToPhysicalId.gbId shouldBe gbId
+      gbIdToPhysicalId.physicalId shouldBe physicalId
     }
 
-    // make sure this class is unusable when we're done
-    titanConfig = null
-    titanConnector = null
-    graph = null
-    tmpDir = null
   }
 
 }

@@ -21,50 +21,29 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.spark.graphon.testutils
+package com.intel.intelanalytics.service.v1.decorators
 
-import com.intel.testutils.DirectoryUtils._
-import com.intel.testutils.LogUtils
-import com.intel.graphbuilder.graph.titan.TitanGraphConnector
-import com.intel.graphbuilder.util.SerializableBaseConfiguration
-import java.io.File
+import org.scalatest.{ Matchers, FlatSpec }
+import com.intel.intelanalytics.service.v1.viewmodels.RelLink
+import com.intel.intelanalytics.domain.graph.Graph
+import org.joda.time.DateTime
 
-/**
- * This trait can be mixed into Specifications to get a TitanGraph backed by Berkeley for testing purposes.
- *
- * IMPORTANT! only one thread can use the graph below at a time. This isn't normally an issue because
- * each test usually gets its own copy.
- */
-trait TestingTitan {
+class GraphDecoratorTest extends FlatSpec with Matchers {
 
-  LogUtils.silenceTitan()
+  val uri = "http://www.example.com/graphs"
+  val relLinks = Seq(RelLink("foo", uri, "GET"))
+  val graph = new Graph(1, "name", None, "storage", 1L, new DateTime, new DateTime)
 
-  private var tmpDir: File = createTempDirectory("titan-graph-for-unit-testing-")
-
-  var titanConfig = new SerializableBaseConfiguration()
-  titanConfig.setProperty("storage.directory", tmpDir.getAbsolutePath)
-
-  var titanConnector = new TitanGraphConnector(titanConfig)
-  var graph = titanConnector.connect()
-
-  /**
-   * IMPORTANT! removes temporary files
-   */
-  def cleanupTitan(): Unit = {
-    try {
-      if (graph != null) {
-        graph.shutdown()
-      }
-    }
-    finally {
-      deleteTempDirectory(tmpDir)
-    }
-
-    // make sure this class is unusable when we're done
-    titanConfig = null
-    titanConnector = null
-    graph = null
-    tmpDir = null
+  "GraphDecorator" should "be able to decorate a graph" in {
+    val decoratedGraph = GraphDecorator.decorateEntity(null, relLinks, graph)
+    decoratedGraph.id should be(1)
+    decoratedGraph.name should be("name")
+    decoratedGraph.links.head.uri should be("http://www.example.com/graphs")
   }
 
+  it should "set the correct URL in decorating a list of graphs" in {
+    val graphHeaders = GraphDecorator.decorateForIndex(uri, Seq(graph))
+    val graphHeader = graphHeaders.toList.head
+    graphHeader.url should be("http://www.example.com/graphs/1")
+  }
 }

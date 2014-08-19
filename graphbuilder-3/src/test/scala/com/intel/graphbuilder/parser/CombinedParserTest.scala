@@ -21,50 +21,34 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.spark.graphon.testutils
+package com.intel.graphbuilder.parser
 
-import com.intel.testutils.DirectoryUtils._
-import com.intel.testutils.LogUtils
-import com.intel.graphbuilder.graph.titan.TitanGraphConnector
-import com.intel.graphbuilder.util.SerializableBaseConfiguration
-import java.io.File
+import com.intel.graphbuilder.parser.rule.RuleParserDSL._
+import com.intel.graphbuilder.parser.rule._
+import org.scalatest.{ Matchers, WordSpec }
 
-/**
- * This trait can be mixed into Specifications to get a TitanGraph backed by Berkeley for testing purposes.
- *
- * IMPORTANT! only one thread can use the graph below at a time. This isn't normally an issue because
- * each test usually gets its own copy.
- */
-trait TestingTitan {
+class CombinedParserTest extends WordSpec with Matchers {
 
-  LogUtils.silenceTitan()
+  "CompinedParser" should {
 
-  private var tmpDir: File = createTempDirectory("titan-graph-for-unit-testing-")
+    "in the numbers example, parse 15 graph elements" in {
 
-  var titanConfig = new SerializableBaseConfiguration()
-  titanConfig.setProperty("storage.directory", tmpDir.getAbsolutePath)
+      val inputRows = List(
+        List("1", "{(1)}", "1", "Y", "1", "Y"),
+        List("2", "{(1)}", "10", "Y", "2", "Y"),
+        List("3", "{(1)}", "11", "Y", "3", "Y"),
+        List("4", "{(1),(2)}", "100", "N", "4", "Y"),
+        List("5", "{(1)}", "101", "Y", "5", "Y"))
 
-  var titanConnector = new TitanGraphConnector(titanConfig)
-  var graph = titanConnector.connect()
-
-  /**
-   * IMPORTANT! removes temporary files
-   */
-  def cleanupTitan(): Unit = {
-    try {
-      if (graph != null) {
-        graph.shutdown()
+      val parser = {
+        val inputSchema = new InputSchema(List("cf:number", "cf:factor", "binary", "isPrime", "reverse", "isPalindrome"), null)
+        val vertexRules = List(VertexRule(gbId("cf:number"), List(property("isPrime"))), VertexRule(gbId("reverse")))
+        val edgeRules = List(EdgeRule(property("cf:number"), property("reverse"), constant("reverseOf")))
+        new CombinedParser(inputSchema, new VertexRuleParser(inputSchema, vertexRules), new EdgeRuleParser(inputSchema, edgeRules))
       }
-    }
-    finally {
-      deleteTempDirectory(tmpDir)
+
+      inputRows.flatMap(row => parser.parse(row)).size shouldBe 15
     }
 
-    // make sure this class is unusable when we're done
-    titanConfig = null
-    titanConnector = null
-    graph = null
-    tmpDir = null
   }
-
 }

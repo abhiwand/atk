@@ -21,50 +21,22 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.spark.graphon.testutils
+package com.intel.intelanalytics.domain
 
-import com.intel.testutils.DirectoryUtils._
-import com.intel.testutils.LogUtils
-import com.intel.graphbuilder.graph.titan.TitanGraphConnector
-import com.intel.graphbuilder.util.SerializableBaseConfiguration
-import java.io.File
+import com.intel.intelanalytics.domain.frame.FrameReference
+import org.scalatest.{ Matchers, FlatSpec }
 
-/**
- * This trait can be mixed into Specifications to get a TitanGraph backed by Berkeley for testing purposes.
- *
- * IMPORTANT! only one thread can use the graph below at a time. This isn't normally an issue because
- * each test usually gets its own copy.
- */
-trait TestingTitan {
+import DomainJsonProtocol._
+import spray.json._
 
-  LogUtils.silenceTitan()
+class FrameReferenceFormatTest extends FlatSpec with Matchers {
 
-  private var tmpDir: File = createTempDirectory("titan-graph-for-unit-testing-")
+  "Frame reference (domain)" should "convert ia://dataframes/3 to a frame reference for id 3" in {
+    JsString("ia://dataframes/3").convertTo[FrameReference] should equal(FrameReference(3))
+  }
 
-  var titanConfig = new SerializableBaseConfiguration()
-  titanConfig.setProperty("storage.directory", tmpDir.getAbsolutePath)
-
-  var titanConnector = new TitanGraphConnector(titanConfig)
-  var graph = titanConnector.connect()
-
-  /**
-   * IMPORTANT! removes temporary files
-   */
-  def cleanupTitan(): Unit = {
-    try {
-      if (graph != null) {
-        graph.shutdown()
-      }
-    }
-    finally {
-      deleteTempDirectory(tmpDir)
-    }
-
-    // make sure this class is unusable when we're done
-    titanConfig = null
-    titanConnector = null
-    graph = null
-    tmpDir = null
+  it should "convert a frame reference for frame 3 to ia://dataframes/3" in {
+    FrameReference(3).toJson should equal(JsString("ia://dataframes/3"))
   }
 
 }

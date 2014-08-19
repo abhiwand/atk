@@ -21,50 +21,28 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.spark.graphon.testutils
+package com.intel.graphbuilder.schema
 
-import com.intel.testutils.DirectoryUtils._
-import com.intel.testutils.LogUtils
-import com.intel.graphbuilder.graph.titan.TitanGraphConnector
-import com.intel.graphbuilder.util.SerializableBaseConfiguration
-import java.io.File
+import org.scalatest.{ Matchers, WordSpec }
 
-/**
- * This trait can be mixed into Specifications to get a TitanGraph backed by Berkeley for testing purposes.
- *
- * IMPORTANT! only one thread can use the graph below at a time. This isn't normally an issue because
- * each test usually gets its own copy.
- */
-trait TestingTitan {
+class GraphSchemaTest extends WordSpec with Matchers {
 
-  LogUtils.silenceTitan()
+  "GraphSchema" should {
 
-  private var tmpDir: File = createTempDirectory("titan-graph-for-unit-testing-")
+    "be able to provide properties by name" in {
+      val propDef1 = new PropertyDef(PropertyType.Vertex, "one", classOf[String], true, true)
+      val propDef2 = new PropertyDef(PropertyType.Vertex, "two", classOf[String], false, false)
+      val propDef3 = new PropertyDef(PropertyType.Edge, "three", classOf[String], false, false)
+      val propDef4 = new PropertyDef(PropertyType.Vertex, "one", classOf[String], false, false)
 
-  var titanConfig = new SerializableBaseConfiguration()
-  titanConfig.setProperty("storage.directory", tmpDir.getAbsolutePath)
+      // invoke method under test
+      val schema = new GraphSchema(Nil, List(propDef1, propDef2, propDef3, propDef4))
 
-  var titanConnector = new TitanGraphConnector(titanConfig)
-  var graph = titanConnector.connect()
-
-  /**
-   * IMPORTANT! removes temporary files
-   */
-  def cleanupTitan(): Unit = {
-    try {
-      if (graph != null) {
-        graph.shutdown()
-      }
+      // validations
+      schema.propertiesWithName("one").size shouldBe 2
+      schema.propertiesWithName("two").size shouldBe 1
+      schema.propertiesWithName("three").size shouldBe 1
+      schema.propertiesWithName("three").head.propertyType shouldBe PropertyType.Edge
     }
-    finally {
-      deleteTempDirectory(tmpDir)
-    }
-
-    // make sure this class is unusable when we're done
-    titanConfig = null
-    titanConnector = null
-    graph = null
-    tmpDir = null
   }
-
 }
