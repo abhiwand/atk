@@ -429,9 +429,9 @@ class FrameBackendRest(object):
             return []
         url = 'dataframes/{0}/data?offset={2}&count={1}'.format(frame._id,n, offset)
         result = executor.query(url)
-        schema_json = result[1]
+        schema_json = result.schema
         schema = FrameSchema.from_strings_to_types(schema_json)
-        data = result[0]
+        data = result.data
         return (data, schema)
 
 
