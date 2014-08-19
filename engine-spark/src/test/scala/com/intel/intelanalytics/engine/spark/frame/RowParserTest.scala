@@ -45,11 +45,11 @@ class RowParserTest extends WordSpec with Matchers {
     }
 
     "remove double quotes" in {
-      csvRowParser.splitLineIntoParts("\"foo\",\"bar\"") shouldEqual Array("foo","bar")
+      csvRowParser.splitLineIntoParts("\"foo\",\"bar\"") shouldEqual Array("foo", "bar")
     }
 
     "not do anything special with single quotes" in {
-      csvRowParser.splitLineIntoParts("'foo','bar'") shouldEqual Array("'foo'","'bar'")
+      csvRowParser.splitLineIntoParts("'foo','bar'") shouldEqual Array("'foo'", "'bar'")
     }
 
     "parse a string with empty fields" in {
