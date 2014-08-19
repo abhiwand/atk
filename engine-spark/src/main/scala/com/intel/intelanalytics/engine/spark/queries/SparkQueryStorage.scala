@@ -76,7 +76,7 @@ class SparkQueryStorage(val metaStore: SlickMetaStoreComponent#SlickMetaStore, f
     if (totalPages == 1)
       rdd.collect()
     else
-      SparkOps.getRows[Any](rdd, pageId * pageSize, pageSize, pageSize)
+      SparkOps.getRows[Array[Any]](rdd, pageId * pageSize, pageSize, pageSize)
   }
 
   /**
