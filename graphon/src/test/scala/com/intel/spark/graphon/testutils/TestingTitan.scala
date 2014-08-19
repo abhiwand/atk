@@ -41,7 +41,7 @@ trait TestingTitan {
 
   LogUtils.silenceTitan()
 
-  private var tmpDir: File = createTempDirectory("titan-graph-for-unit-testing-")
+  private var tmpDir: File = createTempDirectory("graphon-titan-graph-for-unit-testing-")
 
   var titanConfig = new SerializableBaseConfiguration()
   titanConfig.setProperty("storage.directory", tmpDir.getAbsolutePath)
