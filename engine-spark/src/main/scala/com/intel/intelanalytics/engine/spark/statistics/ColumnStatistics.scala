@@ -37,7 +37,7 @@ private[spark] object ColumnStatistics extends Serializable {
                  modeCountOption: Option[Int],
                  rowRDD: RDD[Row]): ColumnModeReturn = {
 
-    val defaultNumberOfModesReturned = 1;
+    val defaultNumberOfModesReturned = 1
 
     val dataWeightPairs: RDD[(Any, Double)] =
       getDataWeightPairs(dataColumnIndex, weightsColumnIndexOption, weightsTypeOption, rowRDD)
