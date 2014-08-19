@@ -34,6 +34,8 @@ import java.io.File
  *
  * IMPORTANT! only one thread can use the graph below at a time. This isn't normally an issue because
  * each test usually gets its own copy.
+ *
+ * @deprecated this class is a duplicate of one in GraphBuilder
  */
 trait TestingTitan {
 
