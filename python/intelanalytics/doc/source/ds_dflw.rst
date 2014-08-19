@@ -79,11 +79,13 @@ Let's start with a file *Data.csv* whose contents look like this::
     4,
     5,""
 
-Create the schema *schema_ab* with two columns: *a* (int32), and *b* (string)::
+Create the schema *schema_ab* with two columns: *a* (int32), and *b* (string):
+
+.. code::
 
     schema_ab = [('a', int32), ('b', string)]
 
-When defining schemas, if the parser should ignore the field, the type is assigned *ignore*, and the name should be an empty string ``''``::
+When `defining schemas`, if the parser should ignore the field, the type is assigned *ignore*, and the name should be an empty string ``''``::
 
     schema_2 = [('column_a', str), ('', ignore), ('more_data', str)]
 
@@ -474,8 +476,7 @@ Create multiple columns at once by making a function return a list of values for
 Groupby (and Aggregate):
 ------------------------
 
-Group rows together based on matching column values and then apply aggregation
-functions on each group, producing a **new** frame.
+Group rows together based on matching column values and then apply :term:`aggregation functions` on each group, producing a **new** frame.
 
 This needs two parameters:
 
@@ -492,11 +493,12 @@ Aggregation based on columns:
     Average the grouped values in column *d* and save it in a new column *d_avg*;
     Add up the grouped values in column *d* and save it in a new column *d_sum*::
 
-        grouped_data = my_frame.groupby(['a', 'b'], { 'c': [agg.avg, agg.sum, agg.stdev], 'd': [agg.avg, agg.sum]})
+        grouped_data = my_frame.groupby(['a', 'b'], { 'c': [agg.avg, agg.sum, agg.stdev],
+            'd': [agg.avg, agg.sum]})
 
     Note:
-        The only columns in the new frame will be the grouping columns and the generated columns. In this case, regardless of the original frame size,
-        you will get seven columns:
+        The only columns in the new frame will be the grouping columns and the generated columns.
+        In this case, regardless of the original frame size, you will get seven columns:
 
         .. hlist::
             :columns: 7
@@ -532,7 +534,8 @@ Aggregation based on both column and row together:
     Average the grouped values in column *d* and save it in a new column *d_avg*;
     Add up the grouped values in column *d* and save it in a new column *d_sum*::
 
-        my_frame.groupby(['a', 'b'], [agg.count, { 'c': [agg.avg, agg.sum, agg.stdev], 'd': [agg.avg, agg.sum]}])
+        my_frame.groupby(['a', 'b'], [agg.count, { 'c': [agg.avg, agg.sum, agg.stdev],
+            'd': [agg.avg, agg.sum]}])
 
     Supported aggregation functions:
 
@@ -547,7 +550,7 @@ Aggregation based on both column and row together:
     * quantile
     * stdev
     * sum
-    * variance
+    * :term:`variance <Bias-variance tradeoff>`
     * distinct
 
 
@@ -667,7 +670,8 @@ Result is *outer_frame*::
     None        None        None                0   log
 
 If column *b* in *my_frame* and column *d* in *your_frame* are the tie:
-Do it again but include all data from *your_frame* and only that data in *my_frame* which has a value in *b* that matches a value in *your_frame* *c*::
+Do it again but include all data from *your_frame* and only that data in *my_frame* which has a value in *b* that matches
+a value in *your_frame* *c*::
 
     right_frame = my_frame.join(your_frame, left_on='b', right_on='d', how='right')
 
@@ -740,7 +744,7 @@ For the examples below, we will use a BigFrame *my_frame*, which accesses an arb
     +-----------+-----------+-----------+-----------+
     | emp_id    | name      | manager   | years     |
     +===========+===========+===========+===========+
-    | 00001     | john      |           | 5         |
+    | 00001     | john      | None      | 5         |
     +-----------+-----------+-----------+-----------+
     | 00002     | paul      | 00001     | 4         |
     +-----------+-----------+-----------+-----------+
@@ -804,13 +808,13 @@ To create a rule for an edge, one needs to define:
 Example:
 ~~~~~~~~
 
-Create an edge called “reports” from the same frame (accessed by BigFrame *my_frame*) as above, using previously defined *employee* and *manager*
-rules, and link them together::
+Create an edge called “reports” from the same frame (accessed by BigFrame *my_frame*) as above, using previously
+defined *employee* and *manager* rules, and link them together::
 
     reports = EdgeRule("worksUnder", employee, manager, { "years": f[“years”] })
 
-This rule ties the vertices together, and also defines the property *years*, so the edges created will have this property with the value from the frame
-column *years*.
+This rule ties the vertices together, and also defines the property *years*, so the edges created will have this property
+with the value from the frame column *years*.
 
 Rule of directed/non-directed edge:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -819,19 +823,24 @@ In the edge rule, the user can specify whether or not the edge is :term:`directe
 
 In the example above, using the *employee* and *manager* vertices, there is an edge created to link both of them with label “worksUnder”.
 This edge is considered “directed” since an employee reports to a manager but not vice versa.
-To make an edge a directed one, the user needs to use the parameter ``is_directed`` in the edge rule and set it to ``True``, as shown in example below::
+To make an edge a directed one, the user needs to use the parameter ``is_directed`` in the edge rule and set it to ``True``,
+as shown in example below::
 
-    reports = EdgeRule("worksUnder", employee, manager, { "years": f[“years”]}, is_directed = True)
+    reports = EdgeRule("worksUnder", employee, manager, { "years": f[“years”]},
+        is_directed = True)
 
 Building A Graph
 ================
 
-Now that you have built some rules, let us put them to use and create a graph by calling BigGraph. We will give the graph the name “employee_graph”::
+Now that you have built some rules, let us put them to use and create a graph by calling BigGraph. We will give the graph the
+name “employee_graph”::
 
     my_graph = BigGraph([employee, manager, reports], “employee_graph”)
 
-The graph is then created in the underlying graph database structure and the access control information is saved into the BigGraph object *my_graph*.
-The data is ready to be analyzed using the advanced functionality of the BigGraph API, for example, the use of machine learning algorithms.
+The graph is then created in the underlying graph database structure and the access control information is saved into the
+BigGraph object *my_graph*.
+The data is ready to be analyzed using the advanced functionality of the BigGraph API, for example,
+the use of :term:`machine learning` algorithms.
 
 Similar to what was discussed for BigFrame, what gets returned is not all the data, but a proxy (descriptive pointer) for the data.
 Commands such as g4 = my_graph will only give you a copy of the proxy, pointing to the same graph.
@@ -842,8 +851,8 @@ Commands such as g4 = my_graph will only give you a copy of the proxy, pointing 
     and now you are at the point where you can make a :term:`graph`.
 
     There are two main steps to :term:`graph` construction.
-    First, you will build a set of rules to describe the transformation from table to :term:`graph`, and then you build it,
-    copying the data into it at that point.
+    First, you will build a set of rules to describe the transformation from table to :term:`graph`,
+    and then you build it, copying the data into it at that point.
 
     Building Rules
 
