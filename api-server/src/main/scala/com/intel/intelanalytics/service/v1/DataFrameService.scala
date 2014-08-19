@@ -138,34 +138,11 @@ class DataFrameService(commonDirectives: CommonDirectives, engine: Engine) exten
                   {
                     import ViewModelJsonImplicits._
                     val queryArgs = RowQuery[Long](id, offset, count)
-                    // if there will only be a single page just return the data this will be much faster
-                    if (count <= engine.pageSize) {
-                      onComplete(engine.getRows(queryArgs)) {
-                        case Success(result: QueryDataResult) => {
-                          import spray.httpx.SprayJsonSupport._
-                          import spray.json._
-                          import DomainJsonProtocol._
-                          val strings = result.data.map(r => r.map {
-                            case null => JsNull
-                            case a => a.toJson
-                          }.toJson).toList
-                          val tempQuery = Query(-1, "dataframe/load", Some(queryArgs.toJson.asJsObject), None, true,
-                            Some(1), Some(count), new DateTime(), new DateTime(), None)
-                          complete(QueryDecorator.decoratePage(uri.toString, List(Rel.self(uri.toString)),
-                            tempQuery, 1, strings, result.schema))
-                        }
-                        case Failure(ex) => ctx => {
-                          ctx.complete(400, ex.getMessage)
-                        }
-                      }
-                    }
-                    else {
-                      val result = engine.getRowsLarge(queryArgs)
-                      //we require a commands uri to point the query completion to.
-                      val pattern = new Regex(prefix + ".*")
-                      val commandUri = pattern.replaceFirstIn(uri.toString, QueryService.prefix + "/") + result.execution.start.id
-                      complete(QueryDecorator.decorateEntity(commandUri, List(Rel.self(commandUri)), result.execution.start, result.schema))
-                    }
+                    val exec = engine.getRowsLarge(queryArgs)
+                    //we require a commands uri to point the query completion to.
+                    val pattern = new Regex(prefix + ".*")
+                    val commandUri = pattern.replaceFirstIn(uri.toString, QueryService.prefix + "/") + exec.start.id
+                    complete(QueryDecorator.decorateEntity(commandUri, List(Rel.self(commandUri)), exec.start, result.schema))
                   }
               }
             }

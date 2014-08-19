@@ -41,6 +41,7 @@ import org.joda.time.DateTime
  * @param modifiedBy user who last modified this row
  * @param rowCount number of rows in the frame
  * @param errorFrameId foreign key for the error data frame associated with this frame (parse errors go into this frame)
+ * @param revision the current revision number of the frame - incremented with each change to the data frame
  */
 case class DataFrame(id: Long,
                      name: String,
@@ -52,8 +53,10 @@ case class DataFrame(id: Long,
                      modifiedOn: DateTime,
                      createdBy: Option[Long] = None,
                      modifiedBy: Option[Long] = None,
-                     errorFrameId: Option[Long] = None) extends HasId {
+                     errorFrameId: Option[Long] = None,
+                     revision: Int = 0) extends HasId {
   require(id >= 0, "id must be zero or greater")
   require(name != null, "name must not be null")
   require(name.trim.length > 0, "name must not be empty or whitespace")
+  require(revision >= 0, "revision must be a positive integer")
 }
