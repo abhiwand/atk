@@ -26,6 +26,7 @@ private[spark] object ColumnStatistics extends Serializable {
    * @param dataType The type of the data column.
    * @param weightsColumnIndexOption Option for index of column providing weights. Must be numerical data.
    * @param weightsTypeOption Option for the datatype of the weights.
+   * @param modeCountOption Option for the maximum number of modes returned. Defaults to 1.
    * @param rowRDD RDD of input rows.
    * @return The mode of the column (as a string), the weight of the mode, and the total weight of the data.
    */
@@ -33,21 +34,26 @@ private[spark] object ColumnStatistics extends Serializable {
                  dataType: DataType,
                  weightsColumnIndexOption: Option[Int],
                  weightsTypeOption: Option[DataType],
+                 modeCountOption: Option[Int],
                  rowRDD: RDD[Row]): ColumnModeReturn = {
+
+    val defaultNumberOfModesReturned = 1;
 
     val dataWeightPairs: RDD[(Any, Double)] =
       getDataWeightPairs(dataColumnIndex, weightsColumnIndexOption, weightsTypeOption, rowRDD)
 
-    val frequencyStatistics = new FrequencyStatistics(dataWeightPairs)
+    val modeCount = modeCountOption.getOrElse(defaultNumberOfModesReturned)
 
-    val modeJsValue: JsValue = if (frequencyStatistics.mode.isEmpty) {
-      None.asInstanceOf[Option[String]].toJson
-    }
-    else {
-      dataType.typedJson(frequencyStatistics.mode.get)
-    }
+    val frequencyStatistics = new FrequencyStatistics(dataWeightPairs, modeCount)
 
-    ColumnModeReturn(modeJsValue, frequencyStatistics.weightOfMode, frequencyStatistics.totalWeight)
+    val modeSet = frequencyStatistics.modeSet
+
+    val modeSetJsValue = modeSet.map(x => dataType.typedJson(x)).toJson
+
+    ColumnModeReturn(modeSetJsValue,
+      frequencyStatistics.weightOfMode,
+      frequencyStatistics.totalWeight,
+      frequencyStatistics.modeCount)
   }
 
   /**

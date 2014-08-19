@@ -54,11 +54,12 @@ Glossary
 
         See :term:`Loopy Belief Propagation`.
 
-    Beysian Network
+    Baysian Network
+    Baysian Networks
 
          From `Wikipedia\: Bayesian Network`_:
 
-            A Beysian Network is a probabilistic graphic model that represents a set of random variables and their conditional
+            A Baysian Network is a probabilistic graphic model that represents a set of random variables and their conditional
             dependencies through a directed acyclic graph (DAG).
             For example, a Bayesian network could represent the probabilistic relationships between diseases and symptoms.
             Given symptoms, the network can be used to compute the probabilities of the presence of various diseases.
@@ -213,7 +214,11 @@ Glossary
     EqualWidth
     Equal Depth Binning
 
-        TBD
+        Equal width binning places column values into bins such that the values in each bin fall within the same
+        interval and the interval width for each bin is equal.
+
+        Equal depth binning attempts to place column values into bins such that each bin contains the same number of
+        elements.
 
     ETL
     
@@ -454,7 +459,7 @@ Glossary
     Markov Random Fields
 
         Markov Random fields, or Markov Network, are an undirected graph model that may be cyclic.
-        This contrasts with Beysian Networks, which are directed and acyclic.
+        This contrasts with :term:`Baysian Networks`, which are directed and acyclic.
 
         For more information see: `Wikipedia\: Markov Random Field`_.
 
@@ -557,7 +562,7 @@ Glossary
 
     str
 
-        A string data type in Python using the ASCII encoding.
+        A string data type in Python using the :term:`ASCII` encoding.
 
     string
 

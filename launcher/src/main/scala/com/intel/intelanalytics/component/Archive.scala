@@ -1,7 +1,3 @@
-package com.intel.intelanalytics.component
-
-import scala.reflect.ClassTag
-
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
@@ -24,6 +20,10 @@ import scala.reflect.ClassTag
 // estoppel or otherwise. Any license under such intellectual property rights
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
+
+package com.intel.intelanalytics.component
+
+import scala.reflect.ClassTag
 
 trait Archive extends Component {
 

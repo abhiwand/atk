@@ -26,7 +26,7 @@ package com.intel.intelanalytics.engine.spark.queries
 import com.intel.intelanalytics.NotFoundException
 import com.intel.intelanalytics.component.{ Boot, ClassLoaderAware }
 import com.intel.intelanalytics.domain.query.{ Query, QueryTemplate, Execution }
-import com.intel.intelanalytics.engine.plugin.{ QueryPluginResults, FunctionQuery, QueryPlugin }
+import com.intel.intelanalytics.engine.plugin.{ Invocation, QueryPluginResults, FunctionQuery, QueryPlugin }
 import com.intel.intelanalytics.engine.spark.context.SparkContextManager
 import com.intel.intelanalytics.engine.spark.plugin.SparkInvocation
 import com.intel.intelanalytics.engine.spark.{ SparkEngine, SparkEngineConfig }
@@ -82,8 +82,8 @@ class QueryExecutor(engine: => SparkEngine, queries: SparkQueryStorage, contextM
    * @return the QueryPlugin instance created during the registration process.
    */
   def registerQuery[A <: Product: JsonFormat: ClassManifest](name: String,
-                                                             function: (A, UserPrincipal) => Any): QueryPlugin[A] =
-    registerQuery(FunctionQuery(name, function))
+                                                             function: (A, UserPrincipal, SparkInvocation) => Any): QueryPlugin[A] =
+    registerQuery(FunctionQuery(name, function.asInstanceOf[(A, UserPrincipal, Invocation) => Any]))
 
   /**
    * Adds the given query to the registry.
@@ -120,31 +120,35 @@ class QueryExecutor(engine: => SparkEngine, queries: SparkQueryStorage, contextM
     withMyClassLoader {
       withContext("ce.execute") {
         withContext(query.name) {
-          val context: SparkContext = contextManager.context(user).sparkContext
+          val context: SparkContext = contextManager.context(user, "query")
           val qFuture = future {
             withQuery(q) {
-              import com.intel.intelanalytics.domain.DomainJsonProtocol._
-              val invocation: SparkInvocation = SparkInvocation(engine, commandId = 0, arguments = q.arguments,
-                user = user, executionContext = implicitly[ExecutionContext],
-                sparkContext = context, commandStorage = null)
 
-              //unset the command-id local property so that the query does edit the commands progress
-              context.setLocalProperty("command-id", null)
+              try {
+                import com.intel.intelanalytics.domain.DomainJsonProtocol._
+                val invocation: SparkInvocation = SparkInvocation(engine, commandId = 0, arguments = q.arguments,
+                  user = user, executionContext = implicitly[ExecutionContext],
+                  sparkContext = context, commandStorage = null)
 
-              val funcResult = query(invocation, arguments)
+                val funcResult = query(invocation, arguments)
 
-              val rdd = funcResult match {
-                case x: RDD[Any] => x
-                case x: Seq[Any] => context.parallelize(x)
-                case x: Iterable[Any] => context.parallelize(x.toSeq)
-                case _ => ???
+                val rdd = funcResult match {
+                  case x: RDD[Any] => x
+                  case x: Seq[Any] => context.parallelize(x)
+                  case x: Iterable[Any] => context.parallelize(x.toSeq)
+                  case _ => ???
+                }
+                val location = queries.getAbsoluteQueryDirectory(q.id)
+                val pageSize = SparkEngineConfig.pageSize
+                val totalPages = math.ceil(rdd.count().toDouble / pageSize).toInt
+
+                rdd.saveAsObjectFile(location)
+                QueryPluginResults(totalPages, pageSize).toJson.asJsObject()
               }
-              val location = queries.getAbsoluteQueryDirectory(q.id)
+              finally {
+                context.stop()
+              }
 
-              rdd.saveAsObjectFile(location)
-              val pageSize = SparkEngineConfig.pageSize
-              val totalPages = math.ceil(rdd.count().toDouble / pageSize).toInt
-              QueryPluginResults(totalPages, pageSize).toJson.asJsObject()
             }
             queries.lookup(q.id).get
           }

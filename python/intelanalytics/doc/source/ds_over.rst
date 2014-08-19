@@ -4,7 +4,7 @@ User Manual
 
 Contents:
 
-..  toctree::
+.. toctree::
     :maxdepth: 2
 
     ds_strt
@@ -18,7 +18,6 @@ Contents:
 .. TODO::
 
     ds_samp # graph sampling
-    ds_mlal_a # k-Clique algorithm
-    ds_misc # Miscellaneous
+    ds_mlal_k # k-Clique algorithm
     ds_supp # Supplemental
     ds_resr # Resources

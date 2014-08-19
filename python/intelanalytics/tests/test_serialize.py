@@ -21,13 +21,14 @@
 # must be express and approved by Intel in writing.
 ##############################################################################
 
-from intelanalytics.rest.serialize import IAPickle
+'''from intelanalytics.rest.serializers import IAPickle
 import unittest
 from StringIO import StringIO
 import pickle
 
 
 class TestIAPickle(unittest.TestCase):
+
     def pickle_and_unpickle(self, obj):
         pickled_stream = StringIO()
         i = IAPickle(pickled_stream)
@@ -115,3 +116,4 @@ class TestIAPickle(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+    '''
