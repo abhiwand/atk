@@ -21,50 +21,30 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.spark.graphon.testutils
+package com.intel.intelanalytics.service.v1
 
-import com.intel.testutils.DirectoryUtils._
-import com.intel.testutils.LogUtils
-import com.intel.graphbuilder.graph.titan.TitanGraphConnector
-import com.intel.graphbuilder.util.SerializableBaseConfiguration
-import java.io.File
+import org.mockito.Mockito._
+import com.intel.intelanalytics.security.UserPrincipal
+import com.intel.intelanalytics.service.{ ServiceTest, CommonDirectives }
+import com.intel.intelanalytics.engine.Engine
+import scala.concurrent.Future
 
-/**
- * This trait can be mixed into Specifications to get a TitanGraph backed by Berkeley for testing purposes.
- *
- * IMPORTANT! only one thread can use the graph below at a time. This isn't normally an issue because
- * each test usually gets its own copy.
- */
-trait TestingTitan {
+class CommandServiceTest extends ServiceTest {
 
-  LogUtils.silenceTitan()
+  implicit val userPrincipal = mock[UserPrincipal]
+  val commonDirectives = mock[CommonDirectives]
+  when(commonDirectives.apply("commands")).thenReturn(provide(userPrincipal))
 
-  private var tmpDir: File = createTempDirectory("titan-graph-for-unit-testing-")
+  "CommandService" should "give an empty set when there are no results" in {
 
-  var titanConfig = new SerializableBaseConfiguration()
-  titanConfig.setProperty("storage.directory", tmpDir.getAbsolutePath)
+    val engine = mock[Engine]
+    val commandService = new CommandService(commonDirectives, engine)
 
-  var titanConnector = new TitanGraphConnector(titanConfig)
-  var graph = titanConnector.connect()
+    when(engine.getCommands(0, 20)).thenReturn(Future.successful(Seq()))
 
-  /**
-   * IMPORTANT! removes temporary files
-   */
-  def cleanupTitan(): Unit = {
-    try {
-      if (graph != null) {
-        graph.shutdown()
-      }
+    Get("/commands") ~> commandService.commandRoutes() ~> check {
+      assert(responseAs[String] == "[]")
     }
-    finally {
-      deleteTempDirectory(tmpDir)
-    }
-
-    // make sure this class is unusable when we're done
-    titanConfig = null
-    titanConnector = null
-    graph = null
-    tmpDir = null
   }
 
 }

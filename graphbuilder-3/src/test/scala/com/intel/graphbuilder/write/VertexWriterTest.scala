@@ -21,50 +21,47 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.spark.graphon.testutils
+package com.intel.graphbuilder.write
 
-import com.intel.testutils.DirectoryUtils._
-import com.intel.testutils.LogUtils
-import com.intel.graphbuilder.graph.titan.TitanGraphConnector
-import com.intel.graphbuilder.util.SerializableBaseConfiguration
-import java.io.File
+import org.mockito.Mockito._
+import org.scalatest.{ Matchers, WordSpec }
+import com.intel.graphbuilder.write.dao.VertexDAO
+import com.intel.graphbuilder.elements.Vertex
+import org.scalatest.mock.MockitoSugar
 
-/**
- * This trait can be mixed into Specifications to get a TitanGraph backed by Berkeley for testing purposes.
- *
- * IMPORTANT! only one thread can use the graph below at a time. This isn't normally an issue because
- * each test usually gets its own copy.
- */
-trait TestingTitan {
+class VertexWriterTest extends WordSpec with Matchers with MockitoSugar {
 
-  LogUtils.silenceTitan()
+  "VertexWriter" should {
 
-  private var tmpDir: File = createTempDirectory("titan-graph-for-unit-testing-")
+    "support append true" in {
+      // setup mocks
+      val vertexDAO = mock[VertexDAO]
+      val vertex = mock[Vertex]
 
-  var titanConfig = new SerializableBaseConfiguration()
-  titanConfig.setProperty("storage.directory", tmpDir.getAbsolutePath)
+      // instantiated class under test
+      val vertexWriter = new VertexWriter(vertexDAO, append = true)
 
-  var titanConnector = new TitanGraphConnector(titanConfig)
-  var graph = titanConnector.connect()
+      // invoke method under test
+      vertexWriter.write(vertex)
 
-  /**
-   * IMPORTANT! removes temporary files
-   */
-  def cleanupTitan(): Unit = {
-    try {
-      if (graph != null) {
-        graph.shutdown()
-      }
-    }
-    finally {
-      deleteTempDirectory(tmpDir)
+      // validate
+      verify(vertexDAO).updateOrCreate(vertex)
     }
 
-    // make sure this class is unusable when we're done
-    titanConfig = null
-    titanConnector = null
-    graph = null
-    tmpDir = null
+    "support append false" in {
+      // setup mocks
+      val vertexDAO = mock[VertexDAO]
+      val vertex = mock[Vertex]
+
+      // instantiate class under test
+      val vertexWriter = new VertexWriter(vertexDAO, append = false)
+
+      // invoke method under test
+      vertexWriter.write(vertex)
+
+      // validate
+      verify(vertexDAO).create(vertex)
+    }
   }
 
 }

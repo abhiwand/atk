@@ -303,15 +303,6 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                             <executions>
                                 <execution>
                                     <id>compile</id>
-                                    <configuration>
-                                        <compilerPlugins>
-                                            <compilerPlugin>
-                                                <groupId>com.mmakowski</groupId>
-                                                <artifactId>maven-specs2-plugin</artifactId>
-                                                <version>0.4.2</version>
-                                            </compilerPlugin>
-                                        </compilerPlugins>
-                                    </configuration>
                                 </execution>
                             </executions>
                         </plugin>
@@ -336,25 +327,6 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                                 </execution>
                             </executions>
                         </plugin>
-                        <plugin>
-                            <!--run specs test from maven-->
-                            <inherited>true</inherited>
-                            <groupId>com.mmakowski</groupId>
-                            <artifactId>maven-specs2-plugin</artifactId>
-                            <version>0.4.2</version>
-                            <configuration>
-
-                            </configuration>
-                            <executions>
-                                <execution>
-                                    <id>specs2test</id>
-                                    <phase>test</phase>
-                                    <goals>
-                                        <goal>run-specs</goal>
-                                    </goals>
-                                </execution>
-                            </executions>
-                        </plugin>
                         <!--END DO NOT TOUCH-->
                     </plugins>
                 </pluginManagement>
@@ -373,22 +345,12 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                         <version>2.1.6</version>
                         <scope>test</scope>
                     </dependency>
-                    <dependency>
-                        <groupId>org.specs2</groupId>
-                        <artifactId>specs2_${scala.short.version}</artifactId>
-                        <version>2.3.10</version>
-                        <scope>test</scope>
-                    </dependency>
                 </dependencies>
             </dependencyManagement>
             <dependencies>
                 <dependency>
                     <groupId>org.scalatest</groupId>
                     <artifactId>scalatest_2.10</artifactId>
-                </dependency>
-                <dependency>
-                    <groupId>org.specs2</groupId>
-                    <artifactId>specs2_${scala.short.version}</artifactId>
                 </dependency>
             </dependencies>
         </profile>
@@ -424,11 +386,6 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                                                 <groupId>org.scoverage</groupId>
                                                 <artifactId>scalac-scoverage-plugin_${scala.short.version}</artifactId>
                                                 <version>${scoverage-plugin.version}</version>
-                                            </compilerPlugin>
-                                            <compilerPlugin>
-                                                <groupId>com.mmakowski</groupId>
-                                                <artifactId>maven-specs2-plugin</artifactId>
-                                                <version>0.4.2</version>
                                             </compilerPlugin>
                                         </compilerPlugins>
                                         <args>

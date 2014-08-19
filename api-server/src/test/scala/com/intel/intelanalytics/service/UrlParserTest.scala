@@ -21,50 +21,29 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.spark.graphon.testutils
+package com.intel.intelanalytics.service
 
-import com.intel.testutils.DirectoryUtils._
-import com.intel.testutils.LogUtils
-import com.intel.graphbuilder.graph.titan.TitanGraphConnector
-import com.intel.graphbuilder.util.SerializableBaseConfiguration
-import java.io.File
+import org.scalatest.{ Matchers, FlatSpec }
 
-/**
- * This trait can be mixed into Specifications to get a TitanGraph backed by Berkeley for testing purposes.
- *
- * IMPORTANT! only one thread can use the graph below at a time. This isn't normally an issue because
- * each test usually gets its own copy.
- */
-trait TestingTitan {
+class UrlParserTest extends FlatSpec with Matchers {
 
-  LogUtils.silenceTitan()
-
-  private var tmpDir: File = createTempDirectory("titan-graph-for-unit-testing-")
-
-  var titanConfig = new SerializableBaseConfiguration()
-  titanConfig.setProperty("storage.directory", tmpDir.getAbsolutePath)
-
-  var titanConnector = new TitanGraphConnector(titanConfig)
-  var graph = titanConnector.connect()
-
-  /**
-   * IMPORTANT! removes temporary files
-   */
-  def cleanupTitan(): Unit = {
-    try {
-      if (graph != null) {
-        graph.shutdown()
-      }
-    }
-    finally {
-      deleteTempDirectory(tmpDir)
-    }
-
-    // make sure this class is unusable when we're done
-    titanConfig = null
-    titanConnector = null
-    graph = null
-    tmpDir = null
+  "UrlParser" should "be able to parse graphIds from graph URI's" in {
+    val uri = "http://example.com/v1/graphs/34"
+    UrlParser.getGraphId(uri) should be(Some(34))
   }
 
+  it should "be able to parse frameIds from frame URI's" in {
+    val uri = "http://example.com/v1/dataframes/55"
+    UrlParser.getFrameId(uri) should be(Some(55))
+  }
+
+  it should "NOT parse frameIds from invalid URI's" in {
+    val uri = "http://example.com/v1/invalid/55"
+    UrlParser.getFrameId(uri) should be(None)
+  }
+
+  it should "NOT parse non-numeric frame ids" in {
+    val uri = "http://example.com/v1/invalid/ABC"
+    UrlParser.getFrameId(uri) should be(None)
+  }
 }
