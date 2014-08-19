@@ -51,6 +51,14 @@ def get_commands():
         _commands_from_backend.extend([get_command_def(c) for c in commands_json_schema])
     return _commands_from_backend
 
+
+def execute_command(command_name, **arguments):
+    """Executes command and returns the output"""
+    command_request = CommandRequest(command_name, arguments)
+    command_info = executor.issue(command_request)
+    return command_info.result
+
+
 class OperationCancelException(Exception):
     pass
 

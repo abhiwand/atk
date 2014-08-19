@@ -124,7 +124,11 @@ def get_member_class(parent_class, member_name):
                     prop.fget.loadable_class.__name__ == class_name]):
             raise ValueError("CommandLoadable Class %s already has a member %s.  Will not override dynamically."
                              % (parent_class.__name__, member_name))
-    loadable_class = _loadable_classes.get(class_name, None) or create_loadable_class(class_name, parent_class)
+    loadable_class = _loadable_classes.get(class_name, None) or create_loadable_class(class_name,
+                                                                                      parent_class,
+                                                                                      "Contains %s functionality for %s"
+                                                                                      % (member_name,
+                                                                                         parent_class.__name__))
     return loadable_class
 
 
@@ -141,20 +145,14 @@ def add_member_class(parent_class, member_name):
 
     # Add a property getter which returns an instance member variable of the
     # same name prefixed w/ an underscore, per convention
-    private_name = '_' + member_name
-
-    def fget(self):
-        return getattr(self, private_name)
-    fget.loadable_class = member_class
-    doc = "Access to object's %s functionality" % member_name  # vanilla doc string
-    setattr(parent_class, member_name, property(fget=fget, doc=doc))
+    prop = make_property(member_class, member_name)
+    setattr(parent_class, member_name, prop)
     return member_class
 
 
-def create_loadable_class(new_class_name, namespace_obj, doc=None):
+
+def create_loadable_class(new_class_name, namespace_obj, doc):
     """Dynamically create a class type with the given name and namespace_obj"""
-    if not doc:
-        doc = "Auto-generated class to scope functionality"
     new_class = type(str(new_class_name),
                      (CommandLoadable,),
                      {'__doc__': doc, '__module__': namespace_obj.__module__})
@@ -170,19 +168,28 @@ def _default_val_to_str(param):
     return param.default if param.default is None or param.data_type not in [str, unicode] else "'%s'" % param.default
 
 
-def make_code_text(command_def):
+def make_function_code_text(command_def):
     """Writes python code text for this command to be inserted into python modules"""
     calling_args = []
     signature_args = []
+    name_of_self = ''
     for param in command_def.parameters:
+        if param.use_self:
+            if name_of_self:
+                raise RuntimeError("Internal Metaprogramming Error: more than one parameter wants to be called 'self'")
+            name = 'self'
+            name_of_self = param.name
+        else:
+            name = param.name
+        signature_args.append(name if not param.optional else "%s=%s" % (param.name, _default_val_to_str(param)))
         calling_args.append(param.name)
-        signature_args.append(param.name if not param.optional else "%s=%s" % (param.name, _default_val_to_str(param)))
-    text = 'def %s(%s):\n    """%s"""\n    return %s(\'%s\', %s)\n' % (command_def.name,
-                                                                       ", ".join(signature_args),
-                                                                       command_def.doc,
-                                                                       _execute_command_function_name,
-                                                                       command_def.full_name,
-                                                                       ", ".join(["%s=%s" % (a, a) for a in calling_args]))
+    text_template = 'def %s(%s):\n    """\n    %s\n    """\n    return %s(\'%s\', %s)\n'
+    text = text_template % (command_def.name,
+                            ", ".join(signature_args),
+                            command_def.doc,
+                            _execute_command_function_name,
+                            command_def.full_name,
+                            ", ".join(["%s=%s" % (a, a if a != name_of_self else 'self') for a in calling_args]))
     logger.debug("Created code text:\n%s", text)
     return text
 
@@ -190,7 +197,7 @@ def make_code_text(command_def):
 def make_function(command_def, execute_command_function=None):
     """Creates the function which will appropriately call execute_command for this command"""
     execute_command = make_execute_command_function(command_def, execute_command_function)
-    func_text = make_code_text(command_def)
+    func_text = make_function_code_text(command_def)
     func_code = compile(func_text, '<string>', "exec")
     func_globals = {}
     eval(func_code, {_execute_command_function_name: execute_command}, func_globals)
@@ -198,6 +205,26 @@ def make_function(command_def, execute_command_function=None):
     function.command = command_def.json_schema
     function.__doc__ = command_def.doc
     return function
+
+
+def make_property_code_text(member_name):
+    return """@property
+def %s(self):
+    \"""
+    Access to object's %s functionality
+    \"""
+    return getattr(self, '_%s')
+    """ % (member_name, member_name, member_name)
+
+
+def make_property(member_class, member_name):
+    private_name = '_' + member_name
+
+    def fget(self):
+        return getattr(self, private_name)
+    fget.loadable_class = member_class
+    doc = "Access to object's %s functionality" % member_name  # vanilla doc string
+    return property(fget=fget, doc=doc)
 
 
 def validate_arguments(arguments, parameters):
@@ -226,7 +253,7 @@ def make_execute_command_function(command_def, execute_command_function):
     parameters = command_def.parameters
     def execute_command(name, **kwargs):
         arguments = validate_arguments(kwargs, parameters)
-        return execute_command_function(name, arguments)
+        return execute_command_function(name, **arguments)
     return execute_command
 
 
