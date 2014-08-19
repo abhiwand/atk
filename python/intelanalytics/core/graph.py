@@ -520,7 +520,9 @@ class BigGraph(CommandSupport):
 
     def append(self, rules=None):
         """
-        Append frame data to the current graph.
+        Append frame data to the current graph.  Append updates existing edges and vertices or creates new ones if they
+        do not exist. Vertices are considered the same if their id_key's and id_value's match.  Edges are considered
+        the same if they have the same source Vertex, destination Vertex, and label.
 
         Parameters
         ----------
@@ -530,7 +532,7 @@ class BigGraph(CommandSupport):
 
         examples
         --------
-        ::
+        This example shows appending new user and movie data to an existing graph::
 
             # create a frame as the source for additional data
             csv = CsvFile("/movie.csv", schema= [('user', int32),
@@ -546,6 +548,31 @@ class BigGraph(CommandSupport):
 
             # append data from the frame to an existing graph
             graph.append([user, movie, rates])
+
+        This example shows creating a graph from one frame and appending data to it from other frames::
+
+            # create a frame as the source for a graph
+            ratingsFrame = BigFrame(CsvFile("/ratings.csv", schema= [('userId', int32),
+                                                  ('movieId', int32),
+                                                  ('rating', str)]))
+
+            # define graph parsing rules
+            user = VertexRule("user", ratingsFrame.userId)
+            movie = VertexRule("movie", ratingsFrame.movieId)
+            rates = EdgeRule("rating", user, movie, { "rating": ratingsFrame.rating }, is_directed = True)
+
+            # create graph
+            graph = BigGraph([user, movie, rates])
+
+            # load additional properties onto the user vertices
+            usersFrame = BigFrame(CsvFile("/users.csv", schema= [('userId', int32), ('name', str), ('age', int32)]))
+            userAdditional = VertexRule("user", usersFrame.userId, {"userName": usersFrame.name, "age": usersFrame.age })
+            graph.append([userAdditional])
+
+            # load additional properties onto the movie vertices
+            movieFrame = BigFrame(CsvFile("/movies.csv", schema= [('movieId', int32), ('title', str), ('year', int32)]))
+            movieAdditional = VertexRule("movie", movieFrame.movieId, {"title": movieFrame.title, "year": movieFrame.year })
+            graph.append([movieAdditional])
 
         .. versionadded:: 0.8
         """
