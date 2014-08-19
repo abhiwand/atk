@@ -139,10 +139,10 @@ class QueryExecutor(engine: => SparkEngine, queries: SparkQueryStorage, contextM
                   case _ => ???
                 }
                 val location = queries.getAbsoluteQueryDirectory(q.id)
-
-                rdd.saveAsObjectFile(location)
                 val pageSize = SparkEngineConfig.pageSize
                 val totalPages = math.ceil(rdd.count().toDouble / pageSize).toInt
+
+                rdd.saveAsObjectFile(location)
                 QueryPluginResults(totalPages, pageSize).toJson.asJsObject()
               }
               finally {

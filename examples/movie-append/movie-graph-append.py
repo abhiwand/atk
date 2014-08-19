@@ -1,16 +1,16 @@
 #
-# Netflix example where we append data to an existing graph
+# Movie example where we append data to an existing graph
 #
-# Depends on a netflix1.csv and netflix2.csv files that each contain some overlapping data and some unique data.
+# Depends on a movie1.csv and movie2.csv files that each contain some overlapping data and some unique data.
 #
 # Usage:
 #
 #   Copy data to HDFS
-#       hadoop fs -copyFromLocal netflix*.csv {fsRoot in HDFS}
+#       hadoop fs -copyFromLocal movie*.csv {fsRoot in HDFS}
 #
 #   At Python prompt
 #       import os
-#       execfile('/path/to/netflix-graph-append.py')
+#       execfile('/path/to/movie-graph-append.py')
 #
 
 from intelanalytics import *
@@ -23,8 +23,8 @@ server.ping()
 print("define csv file")
 schema = [('user', int32),('vertexType', str),('movie', int32),('rating', str),('splits', str)]
 
-csv1 = CsvFile("/netflix1.csv", schema)
-csv2 = CsvFile("/netflix2.csv", schema)
+csv1 = CsvFile("/movie1.csv", schema)
+csv2 = CsvFile("/movie2.csv", schema)
 
 print("create big frame 1")
 frame1 = BigFrame(csv1)

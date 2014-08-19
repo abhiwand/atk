@@ -111,6 +111,7 @@ class HttpMethods(object):
 
     @staticmethod
     def _check_response(response, ignore=None):
+
         HttpMethods._check_response_for_build_id(response)
 
         try:
