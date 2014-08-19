@@ -41,6 +41,7 @@ from intelanalytics.rest.connection import http
 from intelanalytics.rest.iatypes import get_data_type_from_rest_str, get_rest_str_from_data_type
 from intelanalytics.rest.command import CommandRequest, executor
 from intelanalytics.rest.spark import prepare_row_function, get_add_one_column_function, get_add_many_columns_function
+from collections import namedtuple
 
 
 class FrameBackendRest(object):
@@ -333,8 +334,8 @@ class FrameBackendRest(object):
         # inspect is just a pretty-print of take, we'll do it on the client
         # side until there's a good reason not to
         result = self.take(frame, n, offset)
-        data = result[0]
-        schema = result[1]
+        data = result.data
+        schema = result.schema
         return FrameBackendRest.InspectionTable(schema, data)
 
     def join(self, left, right, left_on, right_on, how):
@@ -424,6 +425,8 @@ class FrameBackendRest(object):
         arguments = {'frame': self._get_frame_full_uri(frame), "new_name": name}
         execute_update_frame_command('rename_frame', arguments, frame)
 
+
+
     def take(self, frame, n, offset):
         if n==0:
             return []
@@ -432,7 +435,9 @@ class FrameBackendRest(object):
         schema_json = result.schema
         schema = FrameSchema.from_strings_to_types(schema_json)
         data = result.data
-        return (data, schema)
+
+        TakeResult = namedtuple("TakeResult", ['data', 'schema'])
+        return TakeResult(data, schema)
 
 
     def ecdf(self, frame, sample_col):
