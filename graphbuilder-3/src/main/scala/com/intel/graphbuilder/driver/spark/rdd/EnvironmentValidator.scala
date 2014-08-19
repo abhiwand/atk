@@ -3,7 +3,7 @@ package com.intel.graphbuilder.driver.spark.rdd
 import java.io.File
 
 /**
- * Methods for validating the environment looks correct
+ * Methods for validating the environment
  */
 object EnvironmentValidator extends Serializable {
 
