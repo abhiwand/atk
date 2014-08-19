@@ -23,12 +23,13 @@ object LoadRDDFunctions extends Serializable {
                         parser: LineParser,
                         partitions: Int): ParseResultRddWrapper = {
 
+    val fileContentRdd: RDD[String] = sc.textFile(fileName, partitions).filter(_.trim() != "")
+
     // parse a sample so we can bail early if needed
-    parseSampleOfFile(sc, fileName, parser, partitions)
+    parseSampleOfFile(fileContentRdd, parser)
 
     // re-parse the entire file
-    parse(sc.textFile(fileName, partitions).filter(_.trim() != ""), parser)
-
+    parse(fileContentRdd, parser)
   }
 
   /**
@@ -36,20 +37,16 @@ object LoadRDDFunctions extends Serializable {
    *
    * Throw an exception if too many rows can't be parsed.
    *
-   * @param ctx SparkContext used for textFile reading
-   * @param fileName name of file to parse
+   * @param fileContentRdd the rows that need to be parsed (the file content)
    * @param parser the parser to use
    */
-  private[frame] def parseSampleOfFile(ctx: SparkContext,
-                                       fileName: String,
-                                       parser: LineParser,
-                                       partitions: Int): Unit = {
+  private[frame] def parseSampleOfFile(fileContentRdd: RDD[String],
+                                       parser: LineParser): Unit = {
 
     //parse the first number of lines specified as sample size and make sure the file is acceptable
     val sampleSize = SparkEngineConfig.frameLoadTestSampleSize
     val threshold = SparkEngineConfig.frameLoadTestFailThresholdPercentage
 
-    val fileContentRdd: RDD[String] = ctx.textFile(fileName, partitions).filter(_.trim() != "")
     val sampleRdd = SparkOps.getPagedRdd(fileContentRdd, 0, sampleSize, sampleSize)
 
     //cache the RDD since it will be used multiple times
