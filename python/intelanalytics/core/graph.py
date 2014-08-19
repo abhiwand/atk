@@ -440,6 +440,11 @@ class BigGraph(CommandSupport):
     .. versionadded:: 0.8
 
     """
+
+    # command load filters:
+    command_prefixes = ['graph', 'graphs']
+    command_mute_list = ['load', 'rename_graph']  # these commands are not exposed
+
     def __init__(self, rules=None, name=""):
         try:
             self._id = 0

@@ -88,7 +88,7 @@ class CommandPluginRegistry(loader: CommandLoader) {
   def getCommandDefinitions(): Iterable[CommandDefinition] =
     commandPlugins.values.map(p => {
       val (argSchema, resSchema) = getArgumentAndResultSchemas(p)
-      CommandDefinition(p.name, argSchema, resSchema)
+      CommandDefinition(p.name, argSchema, resSchema, p.doc)
     })
 
   private def getArgumentAndResultSchemas(plugin: CommandPlugin[_, _]) = {

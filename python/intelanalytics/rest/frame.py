@@ -30,7 +30,6 @@ from intelanalytics.core.orddict import OrderedDict
 from collections import defaultdict
 import json
 import sys
-import codecs
 
 from intelanalytics.core.frame import BigFrame
 from intelanalytics.core.column import BigColumn
@@ -41,7 +40,7 @@ from intelanalytics.core.metaprog import load_loadable
 
 from intelanalytics.rest.connection import http
 from intelanalytics.rest.iatypes import get_data_type_from_rest_str, get_rest_str_from_data_type
-from intelanalytics.rest.command import CommandRequest, executor, get_commands
+from intelanalytics.rest.command import CommandRequest, executor, get_commands, execute_command
 from intelanalytics.rest.spark import prepare_row_function, get_add_one_column_function, get_add_many_columns_function
 
 
@@ -518,6 +517,7 @@ class FrameBackendRest(object):
         arguments = {'frame_id': frame._id, 'name': name, 'sample_col': sample_col, 'dist_type': dist_type, 'count_value': str(count_value)}
         return execute_new_frame_command('cumulative_dist', arguments)
 
+
 class FrameInfo(object):
     """
     JSON-based Server description of a BigFrame
@@ -533,7 +533,7 @@ class FrameInfo(object):
         return '%s "%s"' % (self.id_number, self.name)
     def _validate(self):
         try:
-            self.id_number
+            assert self.id_number
         except KeyError:
             raise RuntimeError("Invalid response from server.  Expected Frame info.")
 
@@ -630,16 +630,4 @@ def get_command_output(command_name, arguments):
     return command_info.result
 
 
-def execute_command(command_name, arguments):
-    """Executes command and returns the output"""
-    command_request = CommandRequest(command_name, arguments)
-    command_info = executor.issue(command_request)
-    return command_info.result
-
-
-def default_execute_command(name, *args):
-    """Stub for debug"""
-    print "Fake execution of %s" % name
-    for a in args:
-        print str(a)
 
