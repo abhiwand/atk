@@ -7,6 +7,7 @@ src,vertex_type,dest,weight,edge_type
 -570,R,1,4,tr
 1,L,-778,1,tr
 -778,R,1,1,tr
+
 1,L,-1209,2,va
 -1209,R,1,2,va
 1,L,-1218,3,tr
