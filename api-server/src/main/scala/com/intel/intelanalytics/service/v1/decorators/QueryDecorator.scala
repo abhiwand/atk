@@ -63,7 +63,10 @@ object QueryDecorator extends EntityDecorator[Query, GetQueries, GetQuery] {
         Some(GetQueryPage(None, None, entity.totalPages, schema))
       }
       else {
-        None
+        schema match {
+          case Some(_) => Some(GetQueryPage(None, None, None, schema = schema))
+          case _ => None
+        }
       }, links = links.toList)
   }
 

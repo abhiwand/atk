@@ -337,18 +337,8 @@ class Executor(object):
 
     __commands = []
 
-    def extract_data_from_selected_columns(self, data_in_page, indices):
-        new_data = []
-        for row in data_in_page:
-            new_row = []
-            for index in indices:
-                new_row.append(row[index])
-            row = new_row
 
-            new_data.append(row)
-        return new_data
-
-    def get_query_response(id, partition):
+    def get_query_response(self, id, partition):
         """
         Attempt to get the next partition of data as a CommandInfo Object. Allow for several retries
         :param id: Query ID
@@ -363,19 +353,6 @@ class Executor(object):
                 time.sleep(5)
                 if i == max_retries - 1:
                     raise e
-
-    def get_schema_for_selected_columns(self, schema, selected_columns):
-        selected_schema = []
-        for selected in selected_columns:
-            for column in schema:
-                if column[0] == selected:
-                    selected_schema.append(column)
-
-        return selected_schema
-
-    def get_indices_for_selected_columns(self, schema, selected_columns):
-        schema_for_selected_columns = self.get_schema_for_selected_columns(schema, selected_columns)
-        return [schema.index(f) for f in schema_for_selected_columns]
 
     def issue(self, command_request):
         """
@@ -406,18 +383,11 @@ class Executor(object):
             raise CommandServerError(command_info)
         return command_info
 
-    def query(self, query_url, schema, selected_columns):
+    def query(self, query_url):
         """
         Issues the query_request to the server
         """
         QueryResult = namedtuple("QueryResult", ['data', 'schema'])
-
-        if isinstance(selected_columns, basestring):
-            selected_columns = [selected_columns]
-
-        if selected_columns is not None:
-            schema = self.get_schema_for_selected_columns(schema, selected_columns)
-            indices = self.get_indices_for_selected_columns(schema, selected_columns)
 
         logger.info("Issuing query " + query_url)
         try:
@@ -427,17 +397,12 @@ class Executor(object):
             response = http.get(query_url)
 
         response_json = response.json()
-        data = []
 
         schema = response_json["result"]["schema"]['columns']
 
         if response_json["complete"]:
             data = response_json["result"]["data"]
             return QueryResult(data, schema)
-            result_data = response_json["result"]["data"]
-            if selected_columns is not None:
-                result_data = self.extract_data_from_selected_columns(result_data, indices)
-            data.extend(result_data)
         else:
             command = self.poll_command_info(response)
 
@@ -446,12 +411,10 @@ class Executor(object):
             total_pages = command.result["total_pages"] + 1
 
             start = 1
+            data = []
             for i in range(start, total_pages):
                 next_partition = self.get_query_response(command.id_number, i)
                 data_in_page = next_partition.result["data"]
-
-                if selected_columns is not None:
-                    data_in_page = self.extract_data_from_selected_columns(data_in_page, indices)
 
                 data.extend(data_in_page)
 
