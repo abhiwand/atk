@@ -1966,7 +1966,7 @@ class BigFrame(CommandSupport):
         """
         # TODO - Review and complete docstring
         try:
-            result = self._backend.take(self, n, offset)
+            result = self._backend.take(self, n, offset, selected_columns)
             return result.data
         except:
             raise IaError(logger)
