@@ -778,6 +778,53 @@ class BigFrame(CommandSupport):
             raise IaError(logger)
 
     @doc_stub
+    def column_mode (self, data_column, weights_column = None, max_modes_returned = None):
+        """
+        Calculate modes of a column.  A mode is a data element of maximum weight. All data elements of weight <= 0
+        are excluded from the calculation, as are all data elements whose weight is NaN or infinite.
+        If there are no data elements of finite weight > 0, no mode is returned.
+
+        Because data distributions often have mutliple modes, it is possible for a set of modes to be returned. By
+         default, only one is returned, but my setting the optional parameter max_number_of_modes_returned, a larger
+         number of modes can be returned.
+
+        Parameters
+        ----------
+        data_column : str
+            The column whose mode is to be calculated
+
+        weights_column : str
+            Optional. The column that provides weights (frequencies) for the mode calculation.
+            Must contain numerical data. Uniform weights of 1 for all items will be used for the calculation if this
+                parameter is not provided.
+
+        max_modes_returned : int
+            Optional. Maximum number of modes returned. If this parameter is not provided, it defaults to 1
+
+        Returns
+        -------
+        mode : Dict
+            Dictionary containing summary statistics in the following entries:
+                mode : A mode is a data element of maximum net weight. A set of modes is returned.
+                 The empty set is returned when the sum of the weights is 0. If the number of modes is <= the parameter
+                 maxNumberOfModesReturned, then all modes of the data are returned.If the number of modes is
+                 > maxNumberOfModesReturned, then only the first maxNumberOfModesReturned many modes
+                 (per a canonical ordering) are returned.
+                weight_of_mode : Weight of a mode. If there are no data elements of finite weight > 0,
+                 the weight of the mode is 0. If no weights column is given, this is the number of appearances of
+                 each mode.
+                total_weight : Sum of all weights in the weight column. This is the row count if no weights
+                 are given. If no weights column is given, this is the number of rows in the table with non-zero weight.
+                mode_count : The number of distinct modes in the data. In the case that the data is very multimodal,
+                 this number may well exceed max_number_of_modes_returned.
+
+        Example
+        -------
+        >>> mode = frame.column_mode('modum columpne')
+        """
+        pass
+
+    @doc_stub
     def column_summary_statistics(self, data_column, weights_column_name = None):
         """
         Calculate summary statistics of a column.

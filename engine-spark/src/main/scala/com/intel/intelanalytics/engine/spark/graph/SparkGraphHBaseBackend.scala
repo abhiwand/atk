@@ -38,7 +38,7 @@ class SparkGraphHBaseBackend(hbaseAdmin: => HBaseAdmin) extends GraphBackendStor
     val snapShotName: String = graphName.concat("_SnapShot")
 
     if (hbaseAdmin.tableExists(tableName)) {
-      if (hbaseAdmin.tableExists(newTableName)){
+      if (hbaseAdmin.tableExists(newTableName)) {
         hbaseAdmin.disableTable(newTableName)
         hbaseAdmin.deleteTable(newTableName)
       }
