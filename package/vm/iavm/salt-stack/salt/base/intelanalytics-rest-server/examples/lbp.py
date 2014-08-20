@@ -1,6 +1,6 @@
 from intelanalytics import *
 
-csv = CsvFile("datasets/lbp_edge.csv", schema= [("source", int64), ("value", str), ("vertex_type", str), ("target", int64) , ("weight", float64)], skip_header_lines=1)
+csv = CsvFile("datasets/lbp_edge.csv", schema= [("source", int64), ("value", str), ("vertex_type", str), ("target", int64) , ("weight", float64)])
 
 print("Creating DataFrame myframe")
 

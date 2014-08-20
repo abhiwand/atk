@@ -7,7 +7,8 @@
         {
             "type": "virtualbox-ovf",
 		
-	"source_path": "iabasevm/iabasevm-3.ova",
+	"source_path": "iabasevm/iabasevm-4.ova",
+	"headless": true,
 	"ssh_username": "cloudera",
 	"ssh_password": "cloudera",
 	"ssh_wait_timeout": "5m",
@@ -29,11 +30,11 @@
 	},
         {
             "type": "salt-masterless",
-            "local_state_tree": "salt-stack/salt/base",
-            "local_pillar_roots": "salt-stack/pillar",
+            "local_state_tree": "/home/vm/packer/salt/salt/base",
+            "local_pillar_roots": "/home/vm/packer/salt/pillar",
             "bootstrap_args": " -I https://github.com/myuser/salt.git  git develop ",
             "skip_bootstrap": true,
-            "minion_config": "salt-stack/salt/minion",
+            "minion_config": "/home/vm/packer/salt/salt/minion",
             "temp_config_dir": "tmp/salt"
         }
     ]

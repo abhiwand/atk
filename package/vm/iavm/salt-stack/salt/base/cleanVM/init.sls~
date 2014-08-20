@@ -1,7 +1,7 @@
 rm /etc/yum.repos.d/gaoPrivate.repo:
   cmd.run
 
-/etc/yum.repos.d/ia.repo
+/etc/yum.repos.d/ia.repo:
   file.managed:
     - source: salt://cleanVM/jinja-gaoPrivate.repo
     - template: jinja
