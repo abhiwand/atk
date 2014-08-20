@@ -106,7 +106,6 @@ def get_frame(name):
     except:
         raise IaError(logger)
 
-
 def delete_frame(frame):
     """
     Erases data.
@@ -376,6 +375,8 @@ class BigFrame(CommandSupport):
     @property
     def row_count(self):
         """
+        Count the rows.
+
         Returns
         -------
         The number of rows in the frame.
@@ -446,9 +447,21 @@ class BigFrame(CommandSupport):
 
         Examples
         --------
-        Get the frame accuracy::
+        Consider the following sample data set in *frame* with actual data labels specified in the *labels* column and
+        the predicted labels in the *predictions* column:
 
-            acc = frame.accuracy('labels', 'predictions')
+            >>> frame.inspect()
+
+              a:unicode   b:int32   labels:int32  predictions:int32
+            ---------------------------------------------------------
+              red               1              0                  0
+              blue              3              1                  0
+              blue              1              0                  0
+              green             0              1                  1
+
+            >>> frame.accuracy('labels', 'predictions')
+
+            0.75
 
         .. versionadded:: 0.8
 
@@ -863,16 +876,24 @@ class BigFrame(CommandSupport):
 
         Examples
         --------
-        ::
+        Consider the following sample data set in *frame* with actual data labels specified in the *labels* column and
+        the predicted labels in the *predictions* column:
 
-            print(my_frame.confusion_matrix('labels', 'predictions'))
+            >>> frame.inspect()
 
-        The resultant output is::
+              a:unicode   b:int32   labels:int32  predictions:int32
+            ---------------------------------------------------------
+              red               1              0                  0
+              blue              3              1                  0
+              blue              1              0                  0
+              green             0              1                  1
 
-                             Predicted
-                           __pos__ _neg___
-             Actual   pos | 1     | 4
-                      neg | 3     | 2
+            >>> print(frame.confusion_matrix('labels', 'predictions'))
+
+                            Predicted
+                           _pos_ _neg__
+             Actual   pos |  1     1
+                      neg |  0     2
 
         .. versionadded:: 0.8
 
@@ -1261,8 +1282,27 @@ class BigFrame(CommandSupport):
 
         Examples
         --------
-        ::
-            ecdf_frame = frame.ecdf('sample')
+        Consider the following sample data set in *frame* with actual data labels specified in the *labels* column and
+        the predicted labels in the *predictions* column:
+
+            >>> frame.inspect()
+
+              a:unicode   b:int32
+            -----------------------
+              red               1
+              blue              3
+              blue              1
+              green             0
+
+            >>> result = frame.ecdf('b')
+            >>> result.inspect()
+
+              b:int32   b_ECDF:float64
+            ----------------------------
+              1                    0.2
+              2                    0.5
+              3                    0.8
+              4                    1.0
 
         .. versionadded:: 0.8
 
@@ -1380,11 +1420,29 @@ class BigFrame(CommandSupport):
 
         Examples
         --------
-        ::
+        Consider the following sample data set in *frame* with actual data labels specified in the *labels* column and
+        the predicted labels in the *predictions* column:
 
-            f1 = frame.fmeasure('labels', 'predictions')
-            f2 = frame.fmeasure('labels', 'predictions', beta=2)
-            f1_binary = frame.fmeasure('labels', 'predictions', pos_label='good')
+            >>> frame.inspect()
+
+              a:unicode   b:int32   labels:int32  predictions:int32
+            ---------------------------------------------------------
+              red               1              0                  0
+              blue              3              1                  0
+              blue              1              0                  0
+              green             0              1                  1
+
+            >>> frame.fmeasure('labels', 'predictions')
+
+            0.66666666666666663
+
+            >>> frame.fmeasure('labels', 'predictions', beta=2)
+
+            0.55555555555555558
+
+            >>> frame.fmeasure('labels', 'predictions', pos_label=0)
+
+            0.80000000000000004
 
         .. versionadded:: 0.8
 
@@ -1656,10 +1714,25 @@ class BigFrame(CommandSupport):
 
         Examples
         --------
-        ::
-        
-            prec = my_frame.precision('labels', 'predictions')
-            prec2 = my_frame.precision('labels', 'predictions', 'yes')
+        Consider the following sample data set in *frame* with actual data labels specified in the *labels* column and
+        the predicted labels in the *predictions* column:
+
+            >>> frame.inspect()
+
+              a:unicode   b:int32   labels:int32  predictions:int32
+            ---------------------------------------------------------
+              red               1              0                  0
+              blue              3              1                  0
+              blue              1              0                  0
+              green             0              1                  1
+
+            >>> frame.precision('labels', 'predictions')
+
+            1.0
+
+            >>> frame.precision('labels', 'predictions', 0)
+
+            0.66666666666666663
 
         .. versionadded:: 0.8
 
@@ -1753,10 +1826,25 @@ class BigFrame(CommandSupport):
 
         Examples
         --------
-        ::
+        Consider the following sample data set in *frame* with actual data labels specified in the *labels* column and
+        the predicted labels in the *predictions* column:
 
-            rec = frame.recall('labels', 'predictions')
-            rec2 = frame.recall('labels', 'predictions', 'pos')
+            >>> frame.inspect()
+
+              a:unicode   b:int32   labels:int32  predictions:int32
+            ---------------------------------------------------------
+              red               1              0                  0
+              blue              3              1                  0
+              blue              1              0                  0
+              green             0              1                  1
+
+            >>> frame.recall('labels', 'predictions')
+
+            0.5
+
+            >>> frame.recall('labels', 'predictions', 0)
+
+            1.0
 
         .. versionadded:: 0.8
 
@@ -1878,8 +1966,8 @@ class BigFrame(CommandSupport):
         """
         # TODO - Review and complete docstring
         try:
-            result = self._backend.take(self, n, offset, selected_columns)
-            return result['data']
+            result = self._backend.take(self, n, offset)
+            return result.data
         except:
             raise IaError(logger)
 

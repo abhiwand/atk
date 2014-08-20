@@ -38,7 +38,12 @@ logger = logging.getLogger(__name__)
 import intelanalytics.rest.config as config
 from intelanalytics.rest.connection import http
 from intelanalytics.core.errorhandle import IaError
+from collections import namedtuple
 
+
+
+class OperationCancelException(Exception):
+    pass
 
 class ProgressPrinter(object):
 
@@ -395,6 +400,7 @@ class Executor(object):
 
         except KeyboardInterrupt:
             self.cancel(command_info.id_number)
+            raise OperationCancelException("command cancelled by user")
 
         if command_info.error:
             raise CommandServerError(command_info)
@@ -404,6 +410,8 @@ class Executor(object):
         """
         Issues the query_request to the server
         """
+        QueryResult = namedtuple("QueryResult", ['data', 'schema'])
+
         if isinstance(selected_columns, basestring):
             selected_columns = [selected_columns]
 
@@ -421,7 +429,11 @@ class Executor(object):
         response_json = response.json()
         data = []
 
+        schema = response_json["result"]["schema"]['columns']
+
         if response_json["complete"]:
+            data = response_json["result"]["data"]
+            return QueryResult(data, schema)
             result_data = response_json["result"]["data"]
             if selected_columns is not None:
                 result_data = self.extract_data_from_selected_columns(result_data, indices)
@@ -455,15 +467,18 @@ class Executor(object):
                         }
                     }]
                     printer.print_progress(progress, finished)
+        return QueryResult(data, schema)
 
-        return {'schema': schema, 'data': data}
 
     def cancel(self, command_id):
         """
         Tries to cancel the given command
         """
         logger.info("Executor cancelling command " + str(command_id))
-        # TODO - implement command cancellation (like a DELETE to commands/id?)
+
+        arguments = {'status': 'cancel'}
+        command_request = CommandRequest("", arguments)
+        http.post("commands/%s" %(str(command_id)), command_request.to_json_obj())
 
     def fetch(self):
         """

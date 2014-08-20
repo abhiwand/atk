@@ -21,8 +21,10 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.engine
+package com.intel.intelanalytics.domain.graph
 
-trait FileComponent {
-  def fileStorage: FileStorage
+case class RenameGraph(graph: GraphReference, newName: String) {
+  require(graph != null, "graph is required")
+  require(newName != null && newName.size > 0, "newName is required")
 }
+

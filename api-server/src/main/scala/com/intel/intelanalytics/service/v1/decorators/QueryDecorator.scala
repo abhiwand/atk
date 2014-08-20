@@ -41,18 +41,30 @@ object QueryDecorator extends EntityDecorator[Query, GetQueries, GetQuery] {
    * @param uri UNUSED? DELETE?
    * @param links related links
    * @param entity the entity to decorate
-   * @param schema the schema to describe the data returned by the query
    * @return the View/Model
    */
-  def decorateEntity(uri: String, links: Iterable[RelLink], entity: Query, schema: Schema): GetQuery = {
+  override def decorateEntity(uri: String, links: Iterable[RelLink], entity: Query): GetQuery = {
+    decorateEntity(uri, links, entity, None)
+  }
+
+  /**
+   * Decorate a single entity (like you would want in "GET /entities/id")
+   *
+   * @param uri UNUSED? DELETE?
+   * @param links related links
+   * @param entity the entity to decorate
+   * @param schema schema to describe the data returned by query
+   * @return the View/Model
+   */
+  def decorateEntity(uri: String, links: Iterable[RelLink], entity: Query, schema: Option[Schema]): GetQuery = {
     GetQuery(id = entity.id, name = entity.name,
       arguments = entity.arguments, error = entity.error, complete = entity.complete,
       result = if (entity.complete) {
-        Some(GetQueryPage(None, None, entity.totalPages))
+        Some(GetQueryPage(None, None, entity.totalPages, schema))
       }
       else {
         None
-      }, links = links.toList, schema)
+      }, links = links.toList)
   }
 
   /**
@@ -92,14 +104,14 @@ object QueryDecorator extends EntityDecorator[Query, GetQueries, GetQuery] {
    * @param entity query retrieved
    * @param page page requested
    * @param data data found in the partitiion as a List of JsValues
-   * @param schema the schema to describe the data returned by the query
+   * @param schema schema to describe the data returned by query
    * @return the View/Model
    */
-  def decoratePage(uri: String, links: Iterable[RelLink], entity: Query, page: Long, data: List[JsValue], schema: Schema): GetQuery = {
+  def decoratePage(uri: String, links: Iterable[RelLink], entity: Query, page: Long, data: List[JsValue], schema: Option[Schema]): GetQuery = {
     require(entity.complete)
 
     GetQuery(id = entity.id, name = entity.name,
       arguments = entity.arguments, error = entity.error, complete = entity.complete,
-      result = Some(new GetQueryPage(Some(data), Some(page), entity.totalPages)), links = links.toList, schema)
+      result = Some(new GetQueryPage(Some(data), Some(page), entity.totalPages, schema)), links = links.toList)
   }
 }

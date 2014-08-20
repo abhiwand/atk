@@ -21,9 +21,10 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.domain.frame
+package com.intel.intelanalytics.engine
 
-case class FrameRenameFrame(frame: FrameReference, new_name: String) {
-  require(frame != null, "frame is required")
-  require(new_name != null && new_name.size > 0, "new_name is required")
+trait GraphComponent {
+
+  def graphs: GraphStorage
+
 }

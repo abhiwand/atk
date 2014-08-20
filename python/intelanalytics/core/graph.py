@@ -20,6 +20,8 @@
 # estoppel or otherwise. Any license under such intellectual property rights
 # must be express and approved by Intel in writing.
 ##############################################################################
+from intelanalytics.core.errorhandle import IaError
+
 f, f2 = {}, {}
 
 import logging
@@ -100,8 +102,8 @@ def delete_graph(name):
     
     Parameters
     ----------
-    name : string
-        The name of the graph you are erasing
+    graph : string or BigGraph
+        Either the name of the BigGraph object to delete or the BigGraph object itself
         
     Returns
     -------
@@ -121,8 +123,7 @@ def delete_graph(name):
 
     """
     # TODO - Review docstring
-    #return _get_backend().delete_graph(name)
-    raise NotImplemented
+    return _get_backend().delete_graph(name)
 
 
 class RuleWithDifferentFramesError(ValueError):
@@ -200,7 +201,7 @@ class Rule(object):
             elif frame != source.frame:
                 raise RuleWithDifferentFramesError()
         elif not isinstance(source, basestring):
-                raise TypeError("Rule contains invalid source type" + type(source).__name__)
+                raise TypeError("Rule contains invalid source type: " + type(source).__name__)
         return frame
 
     @staticmethod
@@ -384,15 +385,25 @@ class EdgeRule(Rule):
 
         """
         # TODO - Add docstring
+
         label_frame = None
         if isinstance(self.label, BigColumn):
             label_frame = VertexRule('label', self.label).validate()
         elif not self.label or not isinstance(self.label, basestring):
             raise TypeError("label argument must be a column or non-empty string")
-        tail_frame = self.tail.validate()
-        head_frame = self.head.validate()
+
+        if isinstance(self.tail, VertexRule):
+            tail_frame = self.tail.validate()
+        else:
+            raise TypeError("Invalid type %s for 'tail' argument. It must be a VertexRule." % self.tail)
+
+        if isinstance(self.head, VertexRule):
+            head_frame = self.head.validate()
+        else:
+            raise TypeError("Invalid type %s for 'head' argument. It must be a VertexRule." % self.head)
         properties_frame = self.validate_properties(self.properties)
         return self.validate_same_frame(label_frame, tail_frame, head_frame, properties_frame)
+
 
 class BigGraph(CommandSupport):
     """
@@ -408,28 +419,47 @@ class BigGraph(CommandSupport):
 
     Examples
     --------
-    ::
+    This example uses a single source data frame and creates a graph of 'user' and 'movie' vertices connected by
+    'rating' edges::
 
-        g = BigGraph([user_vertex, movie_vertex, rating_edge, extra_movie_rule])
+        # create a frame as the source for a graph
+        csv = CsvFile("/movie.csv", schema= [('user', int32),
+                                              ('vertexType', str),
+                                              ('movie', int32),
+                                              ('rating', str)])
+        frame = BigFrame(csv)
+
+        # define graph parsing rules
+        user = VertexRule("user", frame.user, {"vertexType": frame.vertexType})
+        movie = VertexRule("movie", frame.movie)
+        rates = EdgeRule("rating", user, movie, { "rating": frame.rating }, is_directed = True)
+
+        # create graph
+        graph = BigGraph([user, movie, rates])
 
     .. versionadded:: 0.8
 
     """
     def __init__(self, rules=None, name=""):
+        try:
+            self._id = 0
+            if not hasattr(self, '_backend'):
+                self._backend = _get_backend()
+            new_graph_name= self._backend.create(self, rules, name)
+            CommandSupport.__init__(self)
+            #self.ml = GraphMachineLearning(self)
+            self.sampling = GraphSampling(self)
+            logger.info('Created new graph "%s"', new_graph_name)
+        except:
+            raise IaError(logger)
 
-        if not hasattr(self, '_backend'):
-            self._backend = _get_backend()
-        self._name = name or self._get_new_graph_name()
-        self._uri = ""
-        self._backend.create(self,rules,name)
 
-        CommandSupport.__init__(self)
-        #self.ml = GraphMachineLearning(self)
-        self.sampling = GraphSampling(self)
-        logger.info('Created new graph "%s"', self._name)
 
     def __repr__(self):
-        return self._name
+        try:
+            return self._backend.get_repr(self)
+        except:
+            return super(BigGraph,self).__repr__() + "(Unable to collect metadeta from server)"
 
     @property
     def name(self):
@@ -454,7 +484,10 @@ class BigGraph(CommandSupport):
 
         """
         # TODO - Review Docstring
-        return self._name
+        try:
+            return self._backend.get_name(self)
+        except:
+            IaError(logger)
 
     @name.setter
     def name(self, value):
@@ -479,32 +512,17 @@ class BigGraph(CommandSupport):
 
         """
         # TODO - Review Docstring
-        self._backend.set_name(value)
+        try:
+            self.rename_graph(value)
+        except:
+            raise IaError(logger)
 
-    @property
-    def uri(self):
-        """
-        Provides the URI of the BigGraph.
-
-        Returns
-        -------
-        URI
-            See http://en.wikipedia.org/wiki/Uniform_Resource_Identifier
-
-        Examples
-        --------
-        ::
-
-            Example
-
-        .. versionadded:: 0.8
-
-        """
-        return self._uri
 
     def append(self, rules=None):
         """
-        Append frame data to the current graph.
+        Append frame data to the current graph.  Append updates existing edges and vertices or creates new ones if they
+        do not exist. Vertices are considered the same if their id_key's and id_value's match.  Edges are considered
+        the same if they have the same source Vertex, destination Vertex, and label.
 
         Parameters
         ----------
@@ -514,9 +532,47 @@ class BigGraph(CommandSupport):
 
         examples
         --------
-        ::
+        This example shows appending new user and movie data to an existing graph::
 
-            Example
+            # create a frame as the source for additional data
+            csv = CsvFile("/movie.csv", schema= [('user', int32),
+                                              ('vertexType', str),
+                                              ('movie', int32),
+                                              ('rating', str)])
+            frame = BigFrame(csv)
+
+            # define graph parsing rules
+            user = VertexRule("user", frame.user, {"vertexType": frame.vertexType})
+            movie = VertexRule("movie", frame.movie)
+            rates = EdgeRule("rating", user, movie, { "rating": frame.rating }, is_directed = True)
+
+            # append data from the frame to an existing graph
+            graph.append([user, movie, rates])
+
+        This example shows creating a graph from one frame and appending data to it from other frames::
+
+            # create a frame as the source for a graph
+            ratingsFrame = BigFrame(CsvFile("/ratings.csv", schema= [('userId', int32),
+                                                  ('movieId', int32),
+                                                  ('rating', str)]))
+
+            # define graph parsing rules
+            user = VertexRule("user", ratingsFrame.userId)
+            movie = VertexRule("movie", ratingsFrame.movieId)
+            rates = EdgeRule("rating", user, movie, { "rating": ratingsFrame.rating }, is_directed = True)
+
+            # create graph
+            graph = BigGraph([user, movie, rates])
+
+            # load additional properties onto the user vertices
+            usersFrame = BigFrame(CsvFile("/users.csv", schema= [('userId', int32), ('name', str), ('age', int32)]))
+            userAdditional = VertexRule("user", usersFrame.userId, {"userName": usersFrame.name, "age": usersFrame.age })
+            graph.append([userAdditional])
+
+            # load additional properties onto the movie vertices
+            movieFrame = BigFrame(CsvFile("/movies.csv", schema= [('movieId', int32), ('title', str), ('year', int32)]))
+            movieAdditional = VertexRule("movie", movieFrame.movieId, {"title": movieFrame.title, "year": movieFrame.year })
+            graph.append([movieAdditional])
 
         .. versionadded:: 0.8
         """
