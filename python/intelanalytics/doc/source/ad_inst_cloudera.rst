@@ -272,8 +272,10 @@ To run Giraph jobs, ensure that the memory settings in CDH match those in applic
 | 
 
 <- :doc:`ad_inst_pre_cloudera`
-|-------------------------------|
+<------------------------------->
 :doc:`ad_inst_IA` ->
+
+<- :doc:`ad_inst`
 
 <- :doc:`index`
 

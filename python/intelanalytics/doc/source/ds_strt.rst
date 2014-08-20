@@ -98,7 +98,7 @@ The Tital graph database can be queried using the `Gremlin`_ * graph query langu
 | 
 
 <- :doc:`index`
-|-------------------------------|
+<------------------------------->
 :doc:`ds_db` ->
 
 

@@ -13,7 +13,7 @@ See `Wikipedia\: Graph Data Structure`_.
 | 
 
 <- :doc:`ds_strt`
-|-------------------------------|
+<------------------------------->
 :doc:`ds_dflw` ->
 
 <- :doc:`index`

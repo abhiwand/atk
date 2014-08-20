@@ -140,7 +140,9 @@ reboot all cluser systems to properly set all changes made.
 |
 
 <- :doc:`ad_inst`
-|-------------------------------|
+<------------------------------->
 :doc:`ad_inst_cloudera` ->
+
+<- :doc:`ad_inst`
 
 <- :doc:`index`

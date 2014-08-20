@@ -17,7 +17,7 @@ See `Cloudera Requirements`_.
 |
 
 <- :doc:`index`
-|-------------------------------|
+<------------------------------->
 :doc:`ad_inst` ->
 
 .. _Cloudera Requirements: http://blog.cloudera.com/blog/2013/08/how-to-select-the-right-hardware-for-your-new-hadoop-cluster/

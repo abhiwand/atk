@@ -276,7 +276,7 @@ Once this setting has been updated, restart the server to activate the changes.
 |
 
 <- :doc:`ad_inst_vm`
-|-------------------------------|
+<------------------------------->
 :doc:`ad_inst` ->
 
 <- :doc:`index`

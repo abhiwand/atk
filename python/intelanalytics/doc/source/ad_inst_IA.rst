@@ -327,7 +327,7 @@ Sample output with notes::
 If you accidentally enter the wrong information on any of the prompts you can always run the script again.
 It will use a fresh application.conf.tpl and query Cloudera manager again to recreate the application.conf file.
 
-You can now skip to `Finish Intel Analytics Installation`_
+You can now skip to Finish Intel Analytics Installation (TBD).
 
 Manual Configuration
 --------------------
@@ -511,7 +511,9 @@ or::
 |
 
 <- :doc:`ad_inst_cloudera`
-|-------------------------------|
+<------------------------------->
 :doc:`ad_psql` ->
+
+<- :doc:`ad_inst`
 
 <- :doc:`index`

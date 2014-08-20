@@ -99,7 +99,7 @@ The idea here is that the software learns faster.
 | 
 
 <- :doc:`ds_dflw`
-|-------------------------------|
+<------------------------------->
 :doc:`ds_mlal_0` ->
 
 <- :doc:`index`

@@ -146,7 +146,7 @@ Note that in the 0.8 beta release there are some libraries (particularly Python 
 |
 
 <- :doc:`ia_intro_1`
-|-------------------------------|
+<------------------------------->
 :doc:`index` ->
 
 .. rubric:: Footnotes
