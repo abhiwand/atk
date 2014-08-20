@@ -28,21 +28,29 @@ import com.intel.graphbuilder.parser.rule.RuleParserDSL._
 import com.intel.graphbuilder.parser.rule.{ EdgeRule, VertexRule }
 import com.intel.graphbuilder.parser.{ ColumnDef, InputSchema }
 import com.intel.graphbuilder.elements.{ Edge, Vertex, Property }
-import com.intel.testutils.Specs2TestingSparkContext
+import com.intel.testutils.TestingSparkContextWordSpec
 import com.tinkerpop.blueprints.Direction
 import org.apache.spark.rdd.RDD
-import org.specs2.mutable.Specification
+import org.scalatest.{ BeforeAndAfter, Matchers }
 
 import scala.collection.JavaConversions._
 
 /**
  * End-to-end Integration Test
  */
-class GraphBuilderITest extends Specification {
+class GraphBuilderITest extends TestingSparkContextWordSpec with Matchers with TestingTitan with BeforeAndAfter {
+
+  before {
+    setupTitan()
+  }
+
+  after {
+    cleanupTitan()
+  }
 
   "GraphBuilder" should {
 
-    "support an end-to-end flow of the numbers example with append" in new Specs2TestingSparkContext with TestingTitan {
+    "support an end-to-end flow of the numbers example with append" in {
 
       // Input Data
       val inputRows = List(
@@ -66,7 +74,7 @@ class GraphBuilderITest extends Specification {
       val edgeRules = List(EdgeRule(gbId("cf:number"), gbId("reverse"), constant("reverseOf")))
 
       // Setup data in Spark
-      val inputRdd = sc.parallelize(inputRows.asInstanceOf[Seq[_]]).asInstanceOf[RDD[Seq[_]]]
+      val inputRdd = sparkContext.parallelize(inputRows.asInstanceOf[Seq[_]]).asInstanceOf[RDD[Seq[_]]]
 
       // Build the Graph
       val config = new GraphBuilderConfig(inputSchema, vertexRules, edgeRules, titanConfig)
@@ -74,8 +82,8 @@ class GraphBuilderITest extends Specification {
       gb.build(inputRdd)
 
       // Validate
-      graph.getEdges.size mustEqual 5
-      graph.getVertices.size mustEqual 5
+      graph.getEdges.size shouldBe 5
+      graph.getVertices.size shouldBe 5
 
       // need to shutdown because only one connection can be open at a time
       graph.shutdown()
@@ -88,7 +96,7 @@ class GraphBuilderITest extends Specification {
         List("6", "{(1),(2),(3)}", "110", "N", "6", "Y"),
         List("7", "{(1)}", "111", "Y", "7", "Y"))
 
-      val inputRdd2 = sc.parallelize(additionalInputRows.asInstanceOf[Seq[_]]).asInstanceOf[RDD[Seq[_]]]
+      val inputRdd2 = sparkContext.parallelize(additionalInputRows.asInstanceOf[Seq[_]]).asInstanceOf[RDD[Seq[_]]]
 
       // Append to the existing Graph
       val gb2 = new GraphBuilder(config.copy(append = true, retainDanglingEdges = true, inferSchema = false))
@@ -96,12 +104,12 @@ class GraphBuilderITest extends Specification {
 
       // Validate
       graph = titanConnector.connect()
-      graph.getEdges.size mustEqual 7
-      graph.getVertices.size mustEqual 7
+      graph.getEdges.size shouldBe 7
+      graph.getVertices.size shouldBe 7
 
     }
 
-    "support unusual cases of dynamic parsing, dangling edges" in new Specs2TestingSparkContext with TestingTitan {
+    "support unusual cases of dynamic parsing, dangling edges" in {
 
       // Input Data
       val inputRows = List(
@@ -135,7 +143,7 @@ class GraphBuilderITest extends Specification {
         EdgeRule(constant("movieId") -> column("movieIdOfRating"), constant("userId") -> column("userIdOfRating"), "was-watched-by", Nil))
 
       // Setup data in Spark
-      val inputRdd = sc.parallelize(inputRows.asInstanceOf[Seq[_]]).asInstanceOf[RDD[Seq[_]]]
+      val inputRdd = sparkContext.parallelize(inputRows.asInstanceOf[Seq[_]]).asInstanceOf[RDD[Seq[_]]]
 
       // Build the Graph
       val config = new GraphBuilderConfig(inputSchema, vertexRules, edgeRules, titanConfig, retainDanglingEdges = true)
@@ -143,15 +151,15 @@ class GraphBuilderITest extends Specification {
       gb.build(inputRdd)
 
       // Validate
-      graph.getVertices.size mustEqual 6
-      graph.getEdges.size mustEqual 10
+      graph.getVertices.size shouldBe 6
+      graph.getEdges.size shouldBe 10
 
       val obama = graph.getVertices("userId", 1001L).iterator().next()
-      obama.getProperty("name").asInstanceOf[String] mustEqual "President Obama"
-      obama.getEdges(Direction.OUT).size mustEqual 3
+      obama.getProperty("name").asInstanceOf[String] shouldBe "President Obama"
+      obama.getEdges(Direction.OUT).size shouldBe 3
     }
 
-    "support inferring schema from the data" in new Specs2TestingSparkContext with TestingTitan {
+    "support inferring schema from the data" in {
 
       // Input data, as edge list
       val inputEdges = List(
@@ -176,7 +184,7 @@ class GraphBuilderITest extends Specification {
         "7 5",
         "8 3")
 
-      val inputRows = sc.parallelize(inputEdges)
+      val inputRows = sparkContext.parallelize(inputEdges)
 
       // Create edge set RDD, make up properties
       val inputRdd = inputRows.map(row => row.split(" "): Seq[String])
@@ -193,13 +201,13 @@ class GraphBuilderITest extends Specification {
       // Validate
       graph = titanConnector.connect()
 
-      graph.getEdges.size mustEqual 20
-      graph.getVertices.size mustEqual 8
+      graph.getEdges.size shouldBe 20
+      graph.getVertices.size shouldBe 8
 
       val vertexOne = graph.getVertices("userId", "1").iterator().next()
-      vertexOne.getProperty("location").asInstanceOf[String] mustEqual "Oregon"
-      vertexOne.getEdges(Direction.OUT).size mustEqual 3
-      vertexOne.getEdges(Direction.OUT).iterator().next().getProperty("tweet").asInstanceOf[String] mustEqual "blah blah blah..."
+      vertexOne.getProperty("location").asInstanceOf[String] shouldBe "Oregon"
+      vertexOne.getEdges(Direction.OUT).size shouldBe 3
+      vertexOne.getEdges(Direction.OUT).iterator().next().getProperty("tweet").asInstanceOf[String] shouldBe "blah blah blah..."
     }
 
   }
