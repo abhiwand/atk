@@ -33,12 +33,13 @@ class CommandExecutorTest extends FlatSpec with Matchers with MockitoSugar {
     when(commandStorage.create(any(classOf[CommandTemplate]))).thenReturn(cmd)
     when(commandStorage.lookup(anyLong())).thenReturn(Some(cmd))
     val contextManager = mock[SparkContextManager]
-    when(contextManager.context(any(classOf[UserPrincipal]), anyString())).thenReturn(mock[SparkContext])
+    val sc = mock[SparkContext]
+    when(contextManager.context(any(classOf[UserPrincipal]), anyString())).thenReturn(sc)
 
     new CommandExecutor(engine, commandStorage, contextManager)
   }
 
-  "create spark context" should "add a entry in command id and context mapping" ignore {
+  "create spark context" should "add a entry in command id and context mapping" in {
     val args = CumulativeDist[Long](frameId = 1, "", "", "cumulative_sum", "")
 
     var contextCountDuringExecution = 0
@@ -62,7 +63,7 @@ class CommandExecutorTest extends FlatSpec with Matchers with MockitoSugar {
     executor.commandIdContextMapping.size shouldBe 0
   }
 
-  "cancel command during execution" should "remove the entry from command id and context mapping" ignore {
+  "cancel command during execution" should "remove the entry from command id and context mapping" in {
     val args = CumulativeDist[Long](frameId = 1, "", "", "cumulative_sum", "")
     val executor = createCommandExecutor()
 
