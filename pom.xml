@@ -1021,6 +1021,11 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 <artifactId>commons-net</artifactId>
                 <version>3.1</version>
             </dependency>
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-csv</artifactId>
+                <version>1.0</version>
+            </dependency>
 
             <!--log4j-->
             <dependency>
