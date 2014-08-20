@@ -65,22 +65,31 @@ class CommandDefinition(object):
                           self.doc])
 
 
+def validate_arguments(arguments, parameters):
+    """
+    Returns validated and possibly re-cast arguments
+
+    Use parameter definitions to make sure the arguments conform.  This function
+    is closure over in the dynamically generated execute command function
+    """
+    validated = {}
+    for (k, v) in arguments.items():
+        try:
+            parameter = [p for p in parameters if p.name == k][0]
+        except IndexError:
+            raise ValueError("No parameter named '%s'" % k)
+        validated[k] = v
+        if parameter.use_self:
+            validated[k] = v._get_id()
+        if parameter.data_type is list:
+            if isinstance(v, basestring) or not hasattr(v, '__iter__'):
+                validated[k] = [v]
+    return validated
+
+
 # TODO - Remove the rest of this file (it moved to metaprog.py)
 
 from types import MethodType
-
-
-def doc_stub(f):
-    """
-    Marks the function as a documentation stub that exists only to facilitate
-    generation of static Python html docs. The implementation, if any, is replaced
-    at runtime by the standard command dispatch logic.
-    :param f: the function
-    :return: the function, annotated so that the command dispatch logic knows it is
-                safe to replace it.
-    """
-    f.doc_stub = True
-    return f
 
 
 class Holder(object):

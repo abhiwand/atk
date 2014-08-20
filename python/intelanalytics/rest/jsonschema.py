@@ -28,20 +28,13 @@ logger = logging.getLogger(__name__)
 
 import json
 
-from intelanalytics.core.iatypes import *
 from intelanalytics.core.command import CommandDefinition, Parameter, Return, Doc, Version
+from intelanalytics.core.iatypes import *
+from intelanalytics.core.frame import BigFrame
+from intelanalytics.core.graph import BigGraph
 
 __all__ = ['get_command_def']
 
-
-class FrameReference:
-    """Dummy Frame Reference class for now"""  # TODO - clean up id/uri
-    pass
-
-
-class GraphReference:
-    """Dummy Graph Reference class for now"""  # TODO - clean up id/uri
-    pass
 
 # See http://json-schema.org/documentation.html
 # And source_code/interfaces/src/main/scala/com/intel/intelanalytics/schema/JsonSchema.scala
@@ -54,8 +47,8 @@ json_type_id_to_data_type  = {
 }
 
 json_str_formats_to_data_type = {
-    "uri/ia-frame": FrameReference,
-    "uri/ia-graph": GraphReference,
+    "uri/ia-frame": BigFrame,
+    "uri/ia-graph": BigGraph,
 }
 
 
@@ -83,7 +76,7 @@ def get_data_type(json_schema):
             elif t == 'array':
                 data_type = list
             elif t == 'object':
-                data_type =  dict  # use dict for now, TODO - add complex type support
+                data_type = dict  # use dict for now, TODO - add complex type support
 
         if not data_type:
             #data_type =  dict  # use dict for now, TODO - add complex type support
@@ -136,7 +129,7 @@ def get_return(return_schema):
     # 4. return None  (no return value)
     data_type = get_data_type(return_schema)
     use_self = return_schema.get('self', False)
-    if use_self and data_type not in [FrameReference, GraphReference]:
+    if use_self and data_type not in [BigFrame, BigGraph]:
         raise TypeError("Error loading commands: use_self is True, but data_type is %s" % data_type)
     doc = get_doc(return_schema)
     return Return(data_type, use_self, doc)
