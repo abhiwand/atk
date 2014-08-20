@@ -21,29 +21,14 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.engine
+package com.intel.intelanalytics.domain.query
 
-import java.nio.file.Path
-import java.io.{ OutputStream, InputStream }
+import com.intel.intelanalytics.domain.query.{ Execution => QueryExecution }
+import com.intel.intelanalytics.domain.schema.Schema
 
-trait FileStorage {
-  def createDirectory(name: Path): Directory
-
-  def create(name: Path)
-
-  def delete(path: Path): Unit
-
-  def getMetaData(path: Path): Option[Entry]
-
-  def read(source: File): InputStream
-
-  def list(source: Directory): Seq[Entry]
-
-  def write(sink: File, append: Boolean = false): OutputStream
-
-  /**
-   * File size
-   * @param path relative path
-   */
-  def size(path: String): Long
-}
+/**
+ * Response for paged query
+ * @param execution query execution instance
+ * @param schema schema to describe the data
+ */
+case class PagedQueryResult(execution: QueryExecution, schema: Option[Schema])

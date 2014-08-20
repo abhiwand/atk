@@ -30,6 +30,7 @@ from intelanalytics.core.orddict import OrderedDict
 from collections import defaultdict
 import json
 import sys
+import codecs
 
 from intelanalytics.core.frame import BigFrame
 from intelanalytics.core.column import BigColumn
@@ -41,6 +42,7 @@ from intelanalytics.rest.connection import http
 from intelanalytics.rest.iatypes import get_data_type_from_rest_str, get_rest_str_from_data_type
 from intelanalytics.rest.command import CommandRequest, executor
 from intelanalytics.rest.spark import prepare_row_function, get_add_one_column_function, get_add_many_columns_function
+from collections import namedtuple
 
 
 class FrameBackendRest(object):
@@ -94,7 +96,7 @@ class FrameBackendRest(object):
     def _delete_frame(self, frame):
         logger.info("REST Backend: Delete frame {0}".format(repr(frame)))
         r = self.rest_http.delete("dataframes/" + str(frame._id))
-        return frame.name
+        return None
 
     def create(self, frame, source, name):
         logger.info("REST Backend: create frame with name %s" % name)
@@ -325,7 +327,7 @@ class FrameBackendRest(object):
             table.vrules = prettytable.NONE
             for r in self.rows:
                 table.add_row(r)
-            return table.get_string()
+            return unicode(table.get_string())
 
          #def _repr_html_(self): TODO - Add this method for ipython notebooks
 
@@ -333,6 +335,8 @@ class FrameBackendRest(object):
         # inspect is just a pretty-print of take, we'll do it on the client
         # side until there's a good reason not to
         result = self.take(frame, n, offset, selected_columns)
+        data = result.data
+        schema = result.schema
         return FrameBackendRest.InspectionTable(result['schema'], result['data'])
 
     def join(self, left, right, left_on, right_on, how):
@@ -402,7 +406,7 @@ class FrameBackendRest(object):
 
     # def remove_columns(self, frame, name):
     #     columns = ",".join(name) if isinstance(name, list) else name
-    #     arguments = {'frame': frame.uri, 'column': columns}
+    #     : frame.uri, 'column': columns}
     #     execute_update_frame_command('removecolumn', arguments, frame)
 
     def rename_columns(self, frame, column_names, new_names):
@@ -426,7 +430,13 @@ class FrameBackendRest(object):
         if n==0:
             return []
         url = 'dataframes/{0}/data?offset={2}&count={1}'.format(frame._id,n, offset)
-        return executor.query(url, frame.schema, selected_columns)
+        result = executor.query(url, frame.schema, selected_columns)
+        schema_json = result.schema
+        schema = FrameSchema.from_strings_to_types(schema_json)
+        data = result.data
+
+        TakeResult = namedtuple("TakeResult", ['data', 'schema'])
+        return TakeResult(data, schema)
 
 
     def ecdf(self, frame, sample_col):
