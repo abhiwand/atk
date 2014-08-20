@@ -448,18 +448,18 @@ class BigFrame(CommandSupport):
         Examples
         --------
         Consider the following sample data set in *frame* with actual data labels specified in the *labels* column and
-        the predicted labels in the *predictions* column:
+        the predicted labels in the *predictions* column::
 
-            >>> frame.inspect()
+            frame.inspect()
 
               a:unicode   b:int32   labels:int32  predictions:int32
-            ---------------------------------------------------------
+            |-------------------------------------------------------|
               red               1              0                  0
               blue              3              1                  0
               blue              1              0                  0
               green             0              1                  1
 
-            >>> frame.accuracy('labels', 'predictions')
+            frame.accuracy('labels', 'predictions')
 
             0.75
 
@@ -877,18 +877,18 @@ class BigFrame(CommandSupport):
         Examples
         --------
         Consider the following sample data set in *frame* with actual data labels specified in the *labels* column and
-        the predicted labels in the *predictions* column:
-
-            >>> frame.inspect()
+        the predicted labels in the *predictions* column::
+        
+            frame.inspect()
 
               a:unicode   b:int32   labels:int32  predictions:int32
-            ---------------------------------------------------------
+            |-------------------------------------------------------|
               red               1              0                  0
               blue              3              1                  0
               blue              1              0                  0
               green             0              1                  1
 
-            >>> print(frame.confusion_matrix('labels', 'predictions'))
+            print(frame.confusion_matrix('labels', 'predictions'))
 
                             Predicted
                            _pos_ _neg__
@@ -978,7 +978,7 @@ class BigFrame(CommandSupport):
                1
                2
               
-        The cumulative count for column *obs* using *count_value = 1* is obtained by:
+        The cumulative count for column *obs* using *count_value = 1* is obtained by::
 
             cc_frame = my_frame.cumulative_count('obs', 1)
 
@@ -1283,26 +1283,27 @@ class BigFrame(CommandSupport):
         Examples
         --------
         Consider the following sample data set in *frame* with actual data labels specified in the *labels* column and
-        the predicted labels in the *predictions* column:
+        the predicted labels in the *predictions* column::
 
-            >>> frame.inspect()
+            frame.inspect()
 
               a:unicode   b:int32
-            -----------------------
+            |---------------------|
               red               1
               blue              3
               blue              1
               green             0
 
-            >>> result = frame.ecdf('b')
-            >>> result.inspect()
+            result = frame.ecdf('b')
+            result.inspect()
 
               b:int32   b_ECDF:float64
-            ----------------------------
+            |--------------------------|
               1                    0.2
               2                    0.5
               3                    0.8
               4                    1.0
+
 
         .. versionadded:: 0.8
 
@@ -1381,10 +1382,8 @@ class BigFrame(CommandSupport):
         Model :math:`F_{\\beta}` measure.
 
         Computes the :math:`F_{\\beta}` measure for a classification model.
-        A column containing the correct labels for each instance and a column containing the predictions made by the
-        model are specified.
-        The :math:`F_{\\beta}` measure of a binary classification model is the harmonic mean of precision and
-        recall.
+        A column containing the correct labels for each instance and a column containing the predictions made by the model are specified.
+        The :math:`F_{\\beta}` measure of a binary classification model is the harmonic mean of precision and recall.
         If we let:
         
         * beta :math:`\\equiv \\beta`,
@@ -1421,26 +1420,26 @@ class BigFrame(CommandSupport):
         Examples
         --------
         Consider the following sample data set in *frame* with actual data labels specified in the *labels* column and
-        the predicted labels in the *predictions* column:
+        the predicted labels in the *predictions* column::
 
-            >>> frame.inspect()
+            frame.inspect()
 
               a:unicode   b:int32   labels:int32  predictions:int32
-            ---------------------------------------------------------
+            |-------------------------------------------------------|
               red               1              0                  0
               blue              3              1                  0
               blue              1              0                  0
               green             0              1                  1
 
-            >>> frame.fmeasure('labels', 'predictions')
+            frame.fmeasure('labels', 'predictions')
 
             0.66666666666666663
 
-            >>> frame.fmeasure('labels', 'predictions', beta=2)
+            frame.fmeasure('labels', 'predictions', beta=2)
 
             0.55555555555555558
 
-            >>> frame.fmeasure('labels', 'predictions', pos_label=0)
+            frame.fmeasure('labels', 'predictions', pos_label=0)
 
             0.80000000000000004
 
@@ -1712,22 +1711,22 @@ class BigFrame(CommandSupport):
         Examples
         --------
         Consider the following sample data set in *frame* with actual data labels specified in the *labels* column and
-        the predicted labels in the *predictions* column:
+        the predicted labels in the *predictions* column::
 
-            >>> frame.inspect()
+            frame.inspect()
 
               a:unicode   b:int32   labels:int32  predictions:int32
-            ---------------------------------------------------------
+            |-------------------------------------------------------|
               red               1              0                  0
               blue              3              1                  0
               blue              1              0                  0
               green             0              1                  1
 
-            >>> frame.precision('labels', 'predictions')
+            frame.precision('labels', 'predictions')
 
             1.0
 
-            >>> frame.precision('labels', 'predictions', 0)
+            frame.precision('labels', 'predictions', 0)
 
             0.66666666666666663
 
@@ -1824,22 +1823,22 @@ class BigFrame(CommandSupport):
         Examples
         --------
         Consider the following sample data set in *frame* with actual data labels specified in the *labels* column and
-        the predicted labels in the *predictions* column:
+        the predicted labels in the *predictions* column::
 
-            >>> frame.inspect()
+            frame.inspect()
 
               a:unicode   b:int32   labels:int32  predictions:int32
-            ---------------------------------------------------------
+            |-------------------------------------------------------|
               red               1              0                  0
               blue              3              1                  0
               blue              1              0                  0
               green             0              1                  1
 
-            >>> frame.recall('labels', 'predictions')
+            frame.recall('labels', 'predictions')
 
             0.5
 
-            >>> frame.recall('labels', 'predictions', 0)
+            frame.recall('labels', 'predictions', 0)
 
             1.0
 
