@@ -107,6 +107,9 @@ import com.intel.intelanalytics.domain.frame.FlattenColumn
 import com.intel.intelanalytics.domain.frame.ColumnSummaryStatisticsReturn
 import com.intel.intelanalytics.domain.frame.ColumnModeReturn
 import com.intel.intelanalytics.domain.frame.FrameJoin
+import com.intel.intelanalytics.engine.spark.plugin.SparkInvocation
+import com.intel.intelanalytics.domain.query.PagedQueryResult
+import com.intel.intelanalytics.domain.query.QueryDataResult
 
 object SparkEngine {
   private val pythonRddDelimiter = "YoMeDelimiter"
@@ -193,7 +196,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
       val ctx = sparkContextManager.context(user, "query")
       try {
         val data = queryStorage.getQueryPage(ctx, id, pageId)
-        data
+        com.intel.intelanalytics.domain.query.QueryDataResult(data, None)
       }
       finally {
         ctx.stop()
@@ -896,8 +899,11 @@ class SparkEngine(sparkContextManager: SparkContextManager,
    * @param user current user
    * @return the QueryExecution
    */
-  def getRowsLarge(arguments: RowQuery[Identifier])(implicit user: UserPrincipal): QueryExecution = {
-    queries.execute(getRowsQuery, arguments, user, implicitly[ExecutionContext])
+  def getRowsLarge(arguments: RowQuery[Identifier])(implicit user: UserPrincipal): PagedQueryResult = {
+    val queryExecution = queries.execute(getRowsQuery, arguments, user, implicitly[ExecutionContext])
+    val frame = frames.lookup(arguments.id).get
+    val schema = frame.schema
+    PagedQueryResult(queryExecution, Some(schema))
   }
   val getRowsQuery = queries.registerQuery("dataframes/data", getRowsSimple)
 
@@ -930,7 +936,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
    * @param user current user
    * @return RDD consisting of the requested number of rows
    */
-  def getRows(arguments: RowQuery[Identifier])(implicit user: UserPrincipal): Future[Iterable[Row]] = {
+  def getRows(arguments: RowQuery[Identifier])(implicit user: UserPrincipal): Future[QueryDataResult] = {
     future {
       withMyClassLoader {
         val frame = frames.lookup(arguments.id).getOrElse(throw new IllegalArgumentException("Requested frame does not exist"))
@@ -938,7 +944,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
         try {
           val rdd: RDD[Row] = frames.loadFrameRdd(ctx, frame).rows
           val rows = rdd.take(arguments.count + arguments.offset.toInt).drop(arguments.offset.toInt)
-          rows
+          QueryDataResult(rows, Some(frame.schema))
         }
         finally {
           ctx.stop()

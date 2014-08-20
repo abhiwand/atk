@@ -24,6 +24,7 @@
 package com.intel.intelanalytics.service.v1.viewmodels
 
 import spray.json.{ JsValue }
+import com.intel.intelanalytics.domain.schema.Schema
 
 /**
  * A value that will be inserted into the result section of a GetQuery object
@@ -31,5 +32,6 @@ import spray.json.{ JsValue }
  * @param data Actual requested Values
  * @param page Partition data came from
  * @param totalPages Total partitions for the data source
+ * @param schema schema to describe the data returned by query
  */
-case class GetQueryPage(data: Option[List[JsValue]], page: Option[Long], totalPages: Option[Long])
+case class GetQueryPage(data: Option[List[JsValue]], page: Option[Long], totalPages: Option[Long], schema: Option[Schema])
