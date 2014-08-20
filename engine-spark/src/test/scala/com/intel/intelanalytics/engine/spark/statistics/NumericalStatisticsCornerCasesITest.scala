@@ -3,7 +3,6 @@ package com.intel.intelanalytics.engine.spark.statistics
 import com.intel.testutils.TestingSparkContextFlatSpec
 import org.scalatest.Matchers
 import org.scalatest.Assertions
-import org.scalacheck.Prop.True
 import com.intel.intelanalytics.engine.spark.statistics.numericalstatistics.NumericalStatistics
 
 class NumericalStatisticsCornerCasesITest extends TestingSparkContextFlatSpec with Matchers {

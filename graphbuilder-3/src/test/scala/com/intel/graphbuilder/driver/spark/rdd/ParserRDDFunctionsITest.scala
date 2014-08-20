@@ -27,16 +27,16 @@ import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRDDImplicits._
 import com.intel.graphbuilder.parser.rule.RuleParserDSL._
 import com.intel.graphbuilder.parser.rule.{ EdgeRule, EdgeRuleParser, VertexRule, VertexRuleParser }
 import com.intel.graphbuilder.parser.{ ColumnDef, CombinedParser, InputSchema }
-import com.intel.testutils.Specs2TestingSparkContext
+import com.intel.testutils.TestingSparkContextWordSpec
 import org.apache.spark.rdd.RDD
-import org.specs2.mock.Mockito
-import org.specs2.mutable.Specification
+import org.scalatest.Matchers
+import org.scalatest.mock.MockitoSugar
 
-class ParserRDDFunctionsITest extends Specification with Mockito {
+class ParserRDDFunctionsITest extends TestingSparkContextWordSpec with Matchers with MockitoSugar {
 
   "ParserRDDFunctions" should {
 
-    "support a combined parser (one that goes over the input in one step)" in new Specs2TestingSparkContext {
+    "support a combined parser (one that goes over the input in one step)" in {
 
       // Input Data
       val inputRows = List(
@@ -64,15 +64,15 @@ class ParserRDDFunctionsITest extends Specification with Mockito {
       val parser = new CombinedParser(inputSchema, vertexParser, edgeParser)
 
       // Setup data in Spark
-      val inputRdd = sc.parallelize(inputRows.asInstanceOf[Seq[_]]).asInstanceOf[RDD[Seq[_]]]
+      val inputRdd = sparkContext.parallelize(inputRows.asInstanceOf[Seq[_]]).asInstanceOf[RDD[Seq[_]]]
 
       // invoke method under test
       val outputRdd = inputRdd.parse(parser)
 
       // verification
-      outputRdd.count() mustEqual 15
-      outputRdd.filterVertices().count() mustEqual 10
-      outputRdd.filterEdges().count() mustEqual 5
+      outputRdd.count() shouldBe 15
+      outputRdd.filterVertices().count() shouldBe 10
+      outputRdd.filterEdges().count() shouldBe 5
     }
   }
 

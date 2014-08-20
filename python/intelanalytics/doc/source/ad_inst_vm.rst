@@ -2,12 +2,24 @@
 Virtual Machines
 ================
 
+------------
+Introduction
+------------
 Thank you for your interest in the Intel Analytics Toolkit 0.8 beta.
 Please follow the steps below to download your copy of the beta product.
 
-------------------------
-VM Download Instructions
-------------------------
+------------
+Requirements
+------------
+12 gigs of memory need to be allocated to the VM
+
+At least 30gigs of free hard drive space
+
+Working Virtual Box installation 4.3
+
+---------------------
+Download Instructions
+---------------------
 
 The VM image is downloaded from AWS.
 The download will require that you have the AWS Command Line Interface (CLI) client on your system.
@@ -49,7 +61,9 @@ After installing run::
 You will be prompted for to enter your access and secret keys you were given.
 When Prompted for a Default region name use 'us-west-2'.
 When prompted for default output format use 'json'.
+
 ::
+
     AWS Access Key ID [None]: my access key
     AWS Secret Access Key [None]: my secret key
     Default region name [None]: us-west-2
@@ -109,7 +123,7 @@ Once the VM is imported go ahead and boot the VM by selecting the VM and clickin
 .. image:: ad_inst_vm_05.*
 
 Before you start
-================
+----------------
 
 After every reboot of the VM you must restart the IA server.
 ::
@@ -117,7 +131,7 @@ After every reboot of the VM you must restart the IA server.
     sudo service intelanalytics restart
 
 Examples
-========
+--------
 
 The VM is pre-configured and installed with IA toolkit.
 It has many examples and datasets to get you started as soon as the VM is booted.
@@ -149,7 +163,7 @@ To run any of the python example scripts, make sure you are in the examples dire
 where SCRIPT_NAME is any of the scripts in '/home/cloudera/example'.
 
 Logs
-====
+----
 
 If you need to debug changes to the scripts (or peak behind the curtain) the log files are located at '/var/log/intelanalytics/rest-server/output.log'.
 ::
@@ -157,7 +171,7 @@ If you need to debug changes to the scripts (or peak behind the curtain) the log
     sudo tail -f /var/log/intelanalytics/rest-server/output.log
 
 Updating
-========
+--------
 
 If you have been given access and secret keys, edit '/etc/yum.repos.d/ia.repo' and replace *myKey* and *mySecret*.
 Now you will be able to run Yum commands to check for and do updates.
@@ -183,3 +197,13 @@ To update::
 
     sudo yum update intelanalytics-rest-server
 
+
+|
+
+<- :doc:`ad_psql_cs`
+<------------------------------->
+:doc:`ad_plug` ->
+
+<- :doc:`ad_inst`
+
+<- :doc:`index`

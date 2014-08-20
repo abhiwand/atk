@@ -27,9 +27,9 @@ Discrete Loopy Belief Propagation:
 
 LBP is typically considered a :term:`semi-supervised machine learning <Semi-Supervised Learning>` algorithm as
 
-    1) there is typically no ground truth observation of states and
-    #) the algorithm is primarily concerned with estimating a joint probability function rather than
-    with :term:`classification` or point prediction.
+    1)  there is typically no ground truth observation of states and
+    #)  the algorithm is primarily concerned with estimating a joint probability function rather than
+        with :term:`classification` or point prediction.
 
 The standard (discrete) LBP algorithm requires a set of probability thresholds to be considered a classifier.
 Nonetheless, the discrete LBP algorithm allows Test/Train/Validate splits of the data and the algorithm will treat "Train" observations
