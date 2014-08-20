@@ -38,18 +38,7 @@
         <relativePath>../pom.xml</relativePath>
         <version>0.8.0-SNAPSHOT</version>
     </parent>
-    <build>
-        <plugins>
-            <plugin>
-                <!--disable specs2 test because the plugin will barf the test are not specs2-->
-                <groupId>com.mmakowski</groupId>
-                <artifactId>maven-specs2-plugin</artifactId>
-                <configuration>
-                    <skipTests>true</skipTests>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
+
     <dependencies>
         <dependency>
             <groupId>commons-net</groupId>

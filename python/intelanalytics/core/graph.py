@@ -301,7 +301,8 @@ class VertexRule(Rule):
         --------
         ::
 
-            Example
+            my_graph = BigGraph(my_rule_a, my_rule_b, my_rule_1)
+            validation = my_graph.validate()
 
         .. versionadded:: 0.8
 
@@ -424,9 +425,9 @@ class BigGraph(CommandSupport):
 
         # create a frame as the source for a graph
         csv = CsvFile("/movie.csv", schema= [('user', int32),
-                                              ('vertexType', str),
-                                              ('movie', int32),
-                                              ('rating', str)])
+                                            ('vertexType', str),
+                                            ('movie', int32),
+                                            ('rating', str)])
         frame = BigFrame(csv)
 
         # define graph parsing rules
@@ -536,9 +537,10 @@ class BigGraph(CommandSupport):
 
             # create a frame as the source for additional data
             csv = CsvFile("/movie.csv", schema= [('user', int32),
-                                              ('vertexType', str),
-                                              ('movie', int32),
-                                              ('rating', str)])
+                                                ('vertexType', str),
+                                                ('movie', int32),
+                                                ('rating', str)])
+
             frame = BigFrame(csv)
 
             # define graph parsing rules
@@ -575,6 +577,7 @@ class BigGraph(CommandSupport):
             graph.append([movieAdditional])
 
         .. versionadded:: 0.8
+
         """
         self._backend.append(self, rules)
 
@@ -589,7 +592,7 @@ class BigGraph(CommandSupport):
 
 class GraphSampling(object):
     """
-    Functionality for creating a graph sample
+    Functionality for creating a graph sample.
 
     .. versionadded:: 0.8
 
@@ -602,7 +605,7 @@ class GraphSampling(object):
 
     def vertex_sample(self, size, sample_type, seed=None):
         """
-        Create a vertex induced subgraph obtained by vertex sampling
+        Create a vertex induced subgraph obtained by vertex sampling.
 
         Three types of vertex sampling are provided: 'uniform', 'degree', and 'degreedist'.  A 'uniform' vertex sample
         is obtained by sampling vertices uniformly at random.  For 'degree' vertex sampling, each vertex is weighted by
@@ -626,12 +629,14 @@ class GraphSampling(object):
 
         Examples
         --------
-        Assume a set of rules created on a BigFrame that specifies 'user' and 'product' vertices as well as an edge
-        rule.  The BigGraph created from this data can be vertex sampled to obtained a vertex induced subgraph:
+        Assume a set of rules created on a BigFrame that specifies 'user' and 'product' vertices as well as an edge rule.
+        The BigGraph created from this data can be vertex sampled to obtain a vertex induced subgraph::
 
             graph = BigGraph([user_vertex_rule, product_vertex_rule, edge_rule])
             subgraph = graph.sampling.vertex_sample(1000, 'uniform')
 
+        .. versionadded:: 0.8
+        
         """
         result = self._backend.vertex_sample(self.graph, size, sample_type, seed)
         return self._backend.get_graph(result['name'])

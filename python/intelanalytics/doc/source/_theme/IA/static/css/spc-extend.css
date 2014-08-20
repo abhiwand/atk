@@ -10,6 +10,7 @@ body {
   -moz-box-shadow: 0 0 3px #888;
   -webkit-box-shadow: 0 0 3px #888;
   box-shadow: 0 0 3px #888;
+  min-height: 675px;
 }
 .underline {
   border-bottom: 1.5px solid #eeeeee;
