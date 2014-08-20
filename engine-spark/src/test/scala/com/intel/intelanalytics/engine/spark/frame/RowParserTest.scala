@@ -1,5 +1,3 @@
-package com.intel.intelanalytics.engine.spark
-
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
@@ -23,67 +21,51 @@ package com.intel.intelanalytics.engine.spark
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-import org.scalatest.{ Matchers, WordSpec }
-import com.intel.intelanalytics.engine.spark.frame.RowParser
+package com.intel.intelanalytics.engine.spark.frame
+
 import com.intel.intelanalytics.domain.schema.DataTypes
+import org.scalatest.{ Matchers, WordSpec }
 
 class RowParserTest extends WordSpec with Matchers {
+
   val csvRowParser = new RowParser(',', Array[DataTypes.DataType]())
+
   "RowParser" should {
+
     "parse a String" in {
       csvRowParser.splitLineIntoParts("a,b") shouldEqual Array("a", "b")
     }
-  }
-  "RowParser" should {
-    "parse a String with single quotes" in {
-      csvRowParser.splitLineIntoParts("foo and bar,bar and foo,'foo, is bar'") shouldEqual Array("foo and bar", "bar and foo", "foo, is bar")
-    }
-  }
-  "RowParser" should {
+
     "parse an empty string" in {
-      csvRowParser.splitLineIntoParts("") shouldEqual Array("")
+      csvRowParser.splitLineIntoParts("") shouldEqual Array()
     }
-  }
-  "RowParser" should {
+
     "parse a nested double quotes string" in {
       csvRowParser.splitLineIntoParts("foo and bar,bar and foo,\"foo, is bar\"") shouldEqual Array("foo and bar", "bar and foo", "foo, is bar")
     }
-  }
-  "RowParser" should {
+
+    "remove double quotes" in {
+      csvRowParser.splitLineIntoParts("\"foo\",\"bar\"") shouldEqual Array("foo", "bar")
+    }
+
+    "not do anything special with single quotes" in {
+      csvRowParser.splitLineIntoParts("'foo','bar'") shouldEqual Array("'foo'", "'bar'")
+    }
+
     "parse a string with empty fields" in {
       csvRowParser.splitLineIntoParts("foo,bar,,,baz") shouldEqual Array("foo", "bar", "", "", "baz")
     }
-  }
-  "RowParser" should {
-    "parse a nested space/s followed by double quotes in a string" in {
-      csvRowParser.splitLineIntoParts("foo,bar, \"baz\"  ") shouldEqual Array("foo", "bar", "baz")
-    }
-  }
-  "RowParser" should {
-    "parse a nested space/s followed by single quotes in a string" in {
-      csvRowParser.splitLineIntoParts("foo,bar,  \'baz\'   ") shouldEqual Array("foo", "bar", "baz")
-    }
-  }
-  "RowParser" should {
-    "parse nested tab/s followed by single quotes in a string" in {
-      csvRowParser.splitLineIntoParts("foo,bar,\t\'baz\'\t") shouldEqual Array("foo", "bar", "baz")
-    }
-  }
-  "RowParser" should {
+
     "preserve leading and trailing tab/s in a string" in {
       csvRowParser.splitLineIntoParts("\tfoo,bar,baz") shouldEqual Array("\tfoo", "bar", "baz")
     }
-  }
-  "RowParser" should {
-    "parse nested tab/s followed by double quotes in a string" in {
-      csvRowParser.splitLineIntoParts("foo,bar,\t\"baz\"\t") shouldEqual Array("foo", "bar", "baz")
-    }
-  }
-  val trow = new RowParser('\t', Array[DataTypes.DataType]())
 
-  "RowParser" should {
+    "preserve leading and trailing spaces in a string" in {
+      csvRowParser.splitLineIntoParts(" foo,bar ,baz") shouldEqual Array(" foo", "bar ", "baz")
+    }
 
     "parse a tab separated string" in {
+      val trow = new RowParser('\t', Array[DataTypes.DataType]())
       trow.splitLineIntoParts("foo\tbar\tbaz") shouldEqual Array("foo", "bar", "baz")
     }
   }
