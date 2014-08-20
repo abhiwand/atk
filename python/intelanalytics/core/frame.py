@@ -31,7 +31,13 @@ logger = logging.getLogger(__name__)
 from intelanalytics.core.column import BigColumn
 from intelanalytics.core.errorhandle import IaError
 from intelanalytics.core.metaprog import CommandLoadable
-
+try:
+    from intelanalytics.core.autoframe import CommandLoadableBigFrame
+    command_loadable = CommandLoadableBigFrame
+    logger.info("BigFrame is inheriting commands from autoframe.py")
+except:
+    logger.info("autoframe.py not found, BigFrame is NOT inheriting commands from it")
+    command_loadable = CommandLoadable
 
 def _get_backend():
     from intelanalytics.core.config import get_frame_backend
@@ -146,7 +152,7 @@ def delete_frame(frame):
         raise IaError(logger)
 
 
-class BigFrame(CommandLoadable):
+class BigFrame(command_loadable):
     """
     Data handle.
 
@@ -1817,9 +1823,3 @@ class BigFrame(CommandLoadable):
             return self._backend.take(self, n, offset)
         except:
             raise IaError(logger)
-
-
-import os
-if os.getenv('IA_SPHINX_AUTODOC', False):
-    from intelanalytics.doc.source.plugins.docload import load_loadables_for_docs_only
-    load_loadables_for_docs_only({'dataframe': BigFrame})
