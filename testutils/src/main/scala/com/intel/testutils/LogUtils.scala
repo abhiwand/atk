@@ -31,6 +31,9 @@ import org.apache.log4j.{ Level, Logger }
  * Logging of underlying libraries can get annoying in unit
  * tests so it is nice to be able to change easily.
  * </p>
+ *
+ * TODO: this class doesn't really seem to work any more.  It needs to be updated to turn off logging.
+ *
  */
 object LogUtils {
 
