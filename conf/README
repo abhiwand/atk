@@ -1,9 +1,17 @@
 In the examples directory you can find application.conf.tpl file 
 that has configurations you might want to configure outside of the packaged jar.
 If you feel like it's important for customers to know about the configuration please add it here with a comment. 
-This is the template configuration file is shipped out to customers. 
+This is the template configuration file that is shipped out to customers.
 If you know what a configuration does please add a comment about its function.
-If you feel like a configuration should be removed from the template remove it.
+
+EXERCISE CAUTION WHEN UPDATING application.conf.tpl because you might break the post installation script. the following
+properties get search replaced with relevant data from Cloudera manager by
+source_code/package/config/intelanalytics-rest-server/assets/etc/intelanalytics/rest-server/config.py
+    fs.root
+    titan.load.storage.hostname
+    titan.load.storage.port
+    spark.master
+    spark.executor.memory
 
 
 PLEASE
@@ -32,3 +40,4 @@ to use the base config copy it and rename to the conf directory
 cp source_code/conf/examples/application.conf.tpl source_code/conf/examples/application.conf
 
 application.conf is being ignored by git so no worries about commiting in by mistake
+
