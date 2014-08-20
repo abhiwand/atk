@@ -437,6 +437,17 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
         <pluginManagement>
             <plugins>
                 <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>exec-maven-plugin</artifactId>
+                    <version>1.3.2</version>
+                </plugin>
+                <plugin>
+                    <inherited>true</inherited>
+                    <groupId>org.scoverage</groupId>
+                    <artifactId>maven-scoverage-plugin</artifactId>
+                    <version>${scoverage-plugin.version}</version>
+                </plugin>
+                <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>
                     <version>2.17</version>
@@ -1020,6 +1031,11 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 <groupId>commons-net</groupId>
                 <artifactId>commons-net</artifactId>
                 <version>3.1</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-csv</artifactId>
+                <version>1.0</version>
             </dependency>
 
             <!--log4j-->

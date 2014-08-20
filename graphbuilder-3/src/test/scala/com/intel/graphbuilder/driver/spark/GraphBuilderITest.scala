@@ -34,6 +34,7 @@ import org.apache.spark.rdd.RDD
 import org.scalatest.{ BeforeAndAfter, Matchers }
 
 import scala.collection.JavaConversions._
+import com.intel.graphbuilder.driver.spark.rdd.EnvironmentValidator
 
 /**
  * End-to-end Integration Test
@@ -41,6 +42,8 @@ import scala.collection.JavaConversions._
 class GraphBuilderITest extends TestingSparkContextWordSpec with Matchers with TestingTitan with BeforeAndAfter {
 
   before {
+    EnvironmentValidator.skipEnvironmentValidation = true
+
     setupTitan()
   }
 
