@@ -1,6 +1,6 @@
 from intelanalytics import *
 
-csv = CsvFile("datasets/lp_edge.csv", schema= [("source", int64), ("input_value", str), ("target", int64), ("weight", float64)], skip_header_lines=1)
+csv = CsvFile("datasets/lp_edge.csv", schema= [("source", int64), ("input_value", str), ("target", int64), ("weight", float64)])
 
 print("Creating frame with name myframe1")
 

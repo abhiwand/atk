@@ -1,24 +1,24 @@
 from intelanalytics import *
 
-dataset = r"datasets/movie_data_random.csv"
+dataset = r"datasets/movie_sample_data_5mb.csv"
 
-schema = [("user_id", int32), ("movie_id", int32), ("rating", int32), ("splits", str)]
+schema = [("user_id", int32), ("direction", str), ("movie_id", int32), ("rating", int32), ("splits", str)]
 
-csv_file = CsvFile(dataset, schema, skip_header_lines = 1)
+csv_file = CsvFile(dataset, schema, skip_header_lines = 0)
 
 print("Creating DataFrame")
 
 f = BigFrame(csv_file)
 
-user = VertexRule("user_id", f.user_id, {"vertex_type": "L"})
+user = VertexRule("user_id", f.user_id, { "vertex_type": "L"})
 
-movie = VertexRule("movie_id", f.movie_id, {"vertex_type": "R"})
+movie = VertexRule("movie_id", f.movie_id, { "vertex_type": "R"})
 
-rates = EdgeRule("edge", user, movie, {"splits": f.splits, "rating": f.rating})
+rates = EdgeRule("edge", user, movie, { "splits": f.splits,"rating":f.rating })
 
 print("Creating Graph cgd")
 
-g = BigGraph([user, movie, rates], "cgd")
+g = BigGraph([user, movie, rates] ,"cgd")
 
 print("Running Conjugate Gradient Descent on Graph cgd")
 

@@ -3,7 +3,8 @@ intelanalytics-rest-server:
     - refresh: True
     - require:
       - pkg: yum-s3
-      - sls: gaoPrivateRepo
+#      - sls: gaoPrivateRepo
+
 
 /etc/intelanalytics/rest-server/application.conf:
   file.managed:
@@ -21,35 +22,27 @@ ls -l /etc/intelanalytics/rest-server:
     - required: 
       - pkg: intelanalytics-rest-server
 
-/etc/intelanalytics/rest-server/reference.conf:
+/etc/security/limits.conf:
   file.managed:
-    - source: salt://intelanalytics-rest-server/reference.conf
+    - source: salt://intelanalytics-rest-server/limits.conf
+    - user: root
+    - group: root
+    - mode: 644
     - required: 
       - pkg: intelanalytics-rest-server
 
-/etc/default/intelanalytics-rest-server:
-  file.managed:
-    - source: salt://intelanalytics-rest-server/intelanalytics-rest-server
-    - required:
-      - pkg: intelanalytics-rest-server
-
-chkconfig intelanalytics-rest-server on:
+chkconfig intelanalytics on:
   cmd.run:
     - required:
       - pkg: intelanalytics-rest-server
 
-/home/iauser/datasets:
-  file.recurse:
-    - source: salt://intelanalytics-rest-server/examples/datasets
+
+cp -Rv /usr/lib/intelanalytics/rest-server/examples /home/cloudera/examples:
+  cmd.run:
     - required:
       - pkg: intelanalytics-rest-server
 
-/home/cloudera/examples:
-  file.recurse:
-    - source: salt://intelanalytics-rest-server/examples
-    - required:
-      - pkg: intelanalytics-rest-server
-    
-su -c "hadoop fs -put /home/iauser/datasets " iauser:
+chmown -R cloudera:cloudera /home/cloudera:
   cmd.run
+    
 
