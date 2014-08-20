@@ -143,6 +143,12 @@ this, and other dependencies, must be checked by the administrator when the tool
 Most of the toolkit is installed as a "head unit" that can be installed on an edge node to the cluster if it is not desired to install on a cluster node itself.
 Note that in the 0.8 beta release there are some libraries (particularly Python libraries) that need to be present on the server nodes.
 
+|
+
+<- :doc:`ia_intro_1`
+<------------------------------->
+:doc:`index` ->
+
 .. rubric:: Footnotes
 
 .. [#f1] Aurelius (thinkaurelius.com) is the creator of the Titan open source graph database

@@ -88,6 +88,7 @@ import com.intel.intelanalytics.domain.frame.load.LoadSource
 import com.intel.intelanalytics.domain.graph.GraphTemplate
 import com.intel.intelanalytics.domain.query.Query
 import com.intel.intelanalytics.domain.frame.ColumnSummaryStatistics
+import com.intel.intelanalytics.domain.frame.ColumnMode
 import com.intel.intelanalytics.domain.frame.ECDF
 import com.intel.intelanalytics.domain.frame.DataFrameTemplate
 import com.intel.intelanalytics.engine.ProgressInfo
@@ -104,6 +105,7 @@ import com.intel.intelanalytics.domain.frame.ConfusionMatrixValues
 import com.intel.intelanalytics.domain.command.CommandTemplate
 import com.intel.intelanalytics.domain.frame.FlattenColumn
 import com.intel.intelanalytics.domain.frame.ColumnSummaryStatisticsReturn
+import com.intel.intelanalytics.domain.frame.ColumnModeReturn
 import com.intel.intelanalytics.domain.frame.FrameJoin
 import com.intel.intelanalytics.engine.spark.plugin.SparkInvocation
 import com.intel.intelanalytics.domain.query.PagedQueryResult
@@ -580,8 +582,6 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     frames.updateSchema(newFrame, allColumns)
   }
 
-  // TRIB-2245
-  /*
   /**
    * Calculate the mode of the specified column.
    * @param arguments Input specification for column mode.
@@ -591,16 +591,16 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     commands.execute(columnModeCommand, arguments, user, implicitly[ExecutionContext])
 
   val columnModeCommand: CommandPlugin[ColumnMode, ColumnModeReturn] =
-    pluginRegistry.registerCommand("dataframe/column_mode", columnModeSimple)
+    commandPluginRegistry.registerCommand("dataframe/column_mode", columnModeSimple _)
 
-  def columnModeSimple(arguments: ColumnMode, user: UserPrincipal): ColumnModeReturn = {
+  def columnModeSimple(arguments: ColumnMode, user: UserPrincipal, invocation: SparkInvocation): ColumnModeReturn = {
 
     implicit val u = user
 
-    val frameId = arguments.frame
+    val frameId = arguments.frame.id
     val frame = expectFrame(frameId)
-    val ctx = sparkContextManager.context(user).sparkContext
-    val rdd = frames.getFrameRdd(ctx, frameId.id)
+    val ctx = invocation.sparkContext
+    val rdd = frames.loadFrameRdd(ctx, frameId)
     val columnIndex = frame.schema.columnIndex(arguments.dataColumn)
     val valueDataType: DataType = frame.schema.columns(columnIndex)._2
 
@@ -612,9 +612,16 @@ class SparkEngine(sparkContextManager: SparkContextManager,
       (Some(weightsColumnIndex), Some(frame.schema.columns(weightsColumnIndex)._2))
     }
 
-    ColumnStatistics.columnMode(columnIndex, valueDataType, weightsColumnIndexOption, weightsDataTypeOption, rdd)
+    val modeCountOption = arguments.maxModesReturned
+
+    ColumnStatistics.columnMode(columnIndex,
+      valueDataType,
+      weightsColumnIndexOption,
+      weightsDataTypeOption,
+      modeCountOption,
+      rdd)
   }
-*/
+
   // TODO TRIB-2245
   /**
    * Calculate the median of the specified column.

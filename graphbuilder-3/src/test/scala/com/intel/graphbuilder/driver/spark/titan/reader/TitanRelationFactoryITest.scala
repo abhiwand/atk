@@ -4,15 +4,16 @@ import com.intel.graphbuilder.elements.{ GraphElement, Property }
 import com.thinkaurelius.titan.graphdb.types.system.SystemKey
 import com.thinkaurelius.titan.diskstorage.keycolumnvalue.Entry
 import org.scalatest.{ WordSpec, Matchers }
-import org.specs2.mock.Mockito
+import org.mockito.Mockito._
 import com.thinkaurelius.titan.graphdb.internal.InternalType
 import com.thinkaurelius.titan.graphdb.database.idhandling.IDHandler
 import TitanReaderTestData._
+import org.scalatest.mock.MockitoSugar
 
 /**
  * Integration test for Titan relation factory.
  */
-class TitanRelationFactoryITest extends WordSpec with Matchers with Mockito {
+class TitanRelationFactoryITest extends WordSpec with Matchers with MockitoSugar {
 
   val edgeSerializer = graph.getEdgeSerializer()
 
@@ -47,8 +48,8 @@ class TitanRelationFactoryITest extends WordSpec with Matchers with Mockito {
       intercept[IllegalArgumentException] {
         val factory = new TitanRelationFactory(100)
         val invalidType = mock[InternalType]
-        invalidType.isEdgeLabel returns (false)
-        invalidType.isPropertyKey returns (false)
+        when(invalidType.isEdgeLabel).thenReturn(false)
+        when(invalidType.isPropertyKey).thenReturn(false)
         factory.setType(invalidType)
         factory.build()
       }
