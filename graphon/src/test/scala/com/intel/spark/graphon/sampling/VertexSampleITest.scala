@@ -28,11 +28,14 @@ import com.intel.spark.graphon.testutils.TestingTitan
 import com.intel.graphbuilder.elements.{ Property, Vertex, Edge }
 import scala.collection.JavaConversions._
 import org.scalatest.Matchers
+import com.intel.graphbuilder.driver.spark.rdd.EnvironmentValidator
 
 /**
  * Integration testing for uniform vertex sampling
  */
 class VertexSampleITest extends TestingSparkContextWordSpec with Matchers {
+
+  EnvironmentValidator.skipEnvironmentValidation = true
 
   // generate sample data
   val gbIds = Map((1, new Property("gbId", 1)),

@@ -75,3 +75,10 @@ Hadoop-based data platform.
 Every capability – including graph :term:`transaction processing`, classical :term:`machine learning`, graph analytic algorithms,
 and graph construction, scale economically by adding more standard servers to the Hadoop cluster, equipping the developer with
 advanced analytics for data of all sizes.
+
+|
+
+<- :doc:`ia_intro_0`
+<------------------------------->
+:doc:`ia_intro_2` ->
+
