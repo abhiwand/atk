@@ -21,32 +21,14 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.service.v1.viewmodels
+package com.intel.intelanalytics.domain.query
 
-import com.intel.intelanalytics.domain.command.CommandDefinition
-import com.intel.intelanalytics.domain.frame.FrameReference
-import spray.httpx.SprayJsonSupport
-import spray.json._
-import com.intel.intelanalytics.spray.json.IADefaultJsonProtocol
+import com.intel.intelanalytics.domain.query.{ Execution => QueryExecution }
+import com.intel.intelanalytics.domain.schema.Schema
 
 /**
- * Implicit Conversions for View/Models to JSON
+ * Response for paged query
+ * @param execution query execution instance
+ * @param schema schema to describe the data
  */
-object ViewModelJsonImplicits extends IADefaultJsonProtocol with SprayJsonSupport {
-
-  //this is needed for implicits
-  import com.intel.intelanalytics.domain.DomainJsonProtocol._
-
-  implicit val relLinkFormat = jsonFormat3(RelLink)
-  implicit val getCommandsFormat = jsonFormat3(GetCommands)
-  implicit val getCommandFormat = jsonFormat8(GetCommand)
-  implicit val getDataFramesFormat = jsonFormat3(GetDataFrames)
-  implicit val getDataFrameFormat = jsonFormat6(GetDataFrame)
-  implicit val getGraphsFormat = jsonFormat3(GetGraphs)
-  implicit val getGraphFormat = jsonFormat3(GetGraph)
-  implicit val getQueryPageFormat = jsonFormat4(GetQueryPage)
-  implicit val getQueryPagesFormat = jsonFormat2(GetQueryPages)
-  implicit val getQueriesFormat = jsonFormat3(GetQueries)
-  implicit val getQueryFormat = jsonFormat7(GetQuery)
-  implicit val jsonTransformFormat = jsonFormat2(JsonTransform)
-}
+case class PagedQueryResult(execution: QueryExecution, schema: Option[Schema])

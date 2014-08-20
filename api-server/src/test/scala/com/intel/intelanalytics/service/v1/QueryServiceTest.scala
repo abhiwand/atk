@@ -23,7 +23,7 @@
 
 package com.intel.intelanalytics.service.v1
 
-import com.intel.intelanalytics.domain.query.Query
+import com.intel.intelanalytics.domain.query.{ QueryDataResult, Query }
 import com.intel.intelanalytics.engine.Engine
 import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.service.{ CommonDirectives, ServiceTest }
@@ -78,16 +78,17 @@ class QueryServiceTest extends ServiceTest {
 
     Get("/queries/1") ~> queryService.queryRoutes() ~> check {
       val r = responseAs[String]
-      assert(r == """{
-                    |  "id": 1,
-                    |  "name": "dataframes/data",
-                    |  "complete": false,
-                    |  "links": [{
-                    |    "rel": "self",
-                    |    "uri": "http://example.com/queries/1",
-                    |    "method": "GET"
-                    |  }]
-                    |}""".stripMargin)
+      val expected = """{
+                       |  "id": 1,
+                       |  "name": "dataframes/data",
+                       |  "complete": false,
+                       |  "links": [{
+                       |    "rel": "self",
+                       |    "uri": "http://example.com/queries/1",
+                       |    "method": "GET"
+                       |  }]
+                       |}""".stripMargin
+      assert(r == expected)
     }
   }
 
@@ -129,7 +130,7 @@ class QueryServiceTest extends ServiceTest {
       Future.successful(Some(Query(1, "dataframes/data", None, None, true, Some(5), None, new DateTime(), new DateTime(), None))))
 
     when(engine.getQueryPage(1, 0)).thenReturn(
-      List()
+      QueryDataResult(List(), None)
     )
 
     Get("/queries/1/data/1") ~> queryService.queryRoutes() ~> check {
