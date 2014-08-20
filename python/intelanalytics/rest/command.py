@@ -38,6 +38,9 @@ logger = logging.getLogger(__name__)
 import intelanalytics.rest.config as config
 from intelanalytics.rest.connection import http
 from intelanalytics.core.errorhandle import IaError
+from collections import namedtuple
+
+
 
 class OperationCancelException(Exception):
     pass
@@ -332,6 +335,7 @@ class Executor(object):
     Executes commands
     """
 
+
     __commands = []
 
     def issue(self, command_request):
@@ -367,6 +371,8 @@ class Executor(object):
         """
         Issues the query_request to the server
         """
+        QueryResult = namedtuple("QueryResult", ['data', 'schema'])
+
         logger.info("Issuing query " + query_url)
         try:
             response = http.get(query_url)
@@ -376,8 +382,11 @@ class Executor(object):
 
         response_json = response.json()
 
+        schema = response_json["result"]["schema"]['columns']
+
         if response_json["complete"]:
-            return response_json["result"]["data"]
+            data = response_json["result"]["data"]
+            return QueryResult(data, schema)
 
         command = self.poll_command_info(response)
 
@@ -418,7 +427,8 @@ class Executor(object):
                     }
                 }]
                 printer.print_progress(progress, finished)
-        return data
+
+        return QueryResult(data, schema)
 
 
 

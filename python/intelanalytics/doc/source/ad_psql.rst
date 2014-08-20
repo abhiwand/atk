@@ -94,8 +94,7 @@ environment (where you want your data to persist between restarts).
 *   On your './interfaces/src/main/resources/reference.conf' or your 'application.conf' (if you are using RPM packages) set the following::
 
     *   metastore.connection-postgresql.host = "localhost"
-    *   metastore.connection.url = "jdbc:postgresql://"${intel.analytics.metastore.connection-postgresql.host}
-        ":"${intel.analytics.metastore.connection-postgresql.port}"/"${intel.analytics.metastore.connection-postgresql.database}
+    *   metastore.connection.url = "jdbc:postgresql://"${intel.analytics.metastore.connection-postgresql.host}":"${intel.analytics.metastore.connection-postgresql.port}"/"${intel.analytics.metastore.connection-postgresql.database}
 
 *   Configure PostgreSQL to use password authentication
 
@@ -142,6 +141,7 @@ environment (where you want your data to persist between restarts).
                 listen_addresses = '*'
                 
 *   Restart PostgreSQL
+
 ::
 
         sudo service postgresql restart
@@ -178,7 +178,9 @@ Related Pages
 -------------
 
 :doc: ad_inst.rst
+
 :doc: ad_psql_cs.rst
+
 [GAO:Setting up Tribeca in CDH5]
 
 .. ifconfig:: internal_docs
@@ -186,7 +188,15 @@ Related Pages
     * [GAO:IntelliJ Setup]
     * [GAO:Proxy Settings]
 
+|
 
+<- :doc:`ad_inst_IA`
+<------------------------------->
+:doc:`ad_psql_cs` ->
+
+<- :doc:`ad_inst`
+
+<- :doc:`index`
 
 .. _PostgreSQL: http://www.postgresql.org
 .. _`Postman REST client`: https://chrome.google.com/webstore/detail/postman-rest-client/fdmmgilgnpjigdojojpjoooidkmcomcm?hl=en
