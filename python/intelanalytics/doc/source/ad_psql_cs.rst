@@ -61,8 +61,10 @@ PSQL has a really nice command-line interface with full help and documentation b
 |
 
 <- :doc:`ad_psql`
-|-------------------------------|
+<------------------------------->
 :doc:`ad_inst_vm` ->
+
+<- :doc:`ad_inst`
 
 <- :doc:`index`
 

@@ -911,7 +911,7 @@ Commands such as g4 = my_graph will only give you a copy of the proxy, pointing 
 | 
 
 <- :doc:`ds_db`
-|-------------------------------|
+<------------------------------->
 :doc:`ds_ml` ->
 
 <- :doc:`index`

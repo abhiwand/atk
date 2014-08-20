@@ -79,6 +79,6 @@ advanced analytics for data of all sizes.
 |
 
 <- :doc:`ia_intro_0`
-|-------------------------------|
+<------------------------------->
 :doc:`ia_intro_2` ->
 

@@ -1,11 +1,10 @@
-.. centered::
+.. centered::Intel® Analytics Toolkit
 
-    Intel® Analytics Toolkit
+.. _Technical_Summary:
 
-    
-========================
-:ref:`Technical Summary`
-========================
+============================================
+:ref:`Technical Summary <Technical_Summary>`
+============================================
 
 ----------------------------
 :doc:`Overview <ia_intro_0>`
@@ -29,9 +28,11 @@ This section describes the capabilities of the 0.8 version of the Intel Analytic
 
 |
 
-=====================
-:ref:`Administration`
-=====================
+.. _Administration:
+
+======================================
+:ref:`Administration <Administration>`
+======================================
 
 ------------------------------------
 :doc:`System Requirements <ad_reqs>`
@@ -52,9 +53,11 @@ Some suggestions of what we have found helpful.
 
 |
 
-==================
-:ref:`User Manual`
-==================
+.. _User_Manual:
+
+================================
+:ref:`User Manual <User_Manual>`
+================================
 
 --------------------------------
 :doc:`Getting Started <ds_strt>`
@@ -100,16 +103,57 @@ Some suggestions of what we have found helpful.
 
 |    
 
-=================
-:ref:`References`
-=================
-.. toctree::
-  :maxdepth: 1
+.. _References:
+
+==============================
+:ref:`References <References>`
+==============================
 
 * :doc:`glossary`
 * :doc:`ia_legal`
 * :ref:`genindex`
 * :ref:`search`
+
+.. toctree::
+    :maxdepth: 1
+    :hidden:
+
+    ad_bkm
+    ad_inst
+    ad_inst_cloudera
+    ad_inst_IA
+    ad_inst_pre_cloudera
+    ad_inst_vm
+    ad_plug
+    ad_psql
+    ad_psql_cs
+    ad_reqs
+    ds_apic
+    ds_apir
+    ds_bkm
+    ds_db
+    ds_dflw
+    ds_ml
+    ds_mlal_0
+    ds_mlal_k
+    ds_mlal_als
+    ds_mlal_apl
+    ds_mlal_cc
+    ds_mlal_cf
+    ds_mlal_cgd
+    ds_mlal_glbp
+    ds_mlal_lbp
+    ds_mlal_lda
+    ds_mlal_lp
+    ds_mlal_pr
+    ds_strt
+    glossary
+    ia_intro_0
+    ia_intro_1
+    ia_intro_2
+    ia_legal
+    index
+
 
 .. TODO::
 
