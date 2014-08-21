@@ -72,10 +72,10 @@ class ValidDataTypes(unittest.TestCase):
             self.fail("Expected exception!")
 
     def test_validate(self):
-        valid_data_types._validate(float64)
-        valid_data_types._validate(int)
+        valid_data_types.validate(float64)
+        valid_data_types.validate(int)
         try:
-            valid_data_types._validate(ignore)
+            valid_data_types.validate(ignore)
         except ValueError:
             pass
         else:
