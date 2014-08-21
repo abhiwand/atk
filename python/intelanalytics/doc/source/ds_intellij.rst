@@ -13,6 +13,9 @@ These instructions assume you have already installed
 - Intel Analytics Python Rest Client
 - IntelliJ
 
+Verify the "Python" plugin is enabled in IntelliJ by choosing "Settings" under the "File" menu, 
+searching for "Python", and choosing "Plugins" from the pane on the left-hand side.
+
 Setup
 =====
 1)  Select "New Project" on IntelliJ's initial screen
