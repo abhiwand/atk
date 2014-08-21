@@ -27,8 +27,7 @@ iatest.init()
 import unittest
 
 from intelanalytics.core.iatypes import *
-from intelanalytics.core.orddict  import OrderedDict
-from intelanalytics.rest.frame import FrameBackendRest
+from intelanalytics.rest.frame import FrameSchema, FrameData
 
 
 class TestInspectionTable(unittest.TestCase):
@@ -49,27 +48,23 @@ class TestInspectionTable(unittest.TestCase):
 #        self.assertEquals(expected, repr(it).replace(" ", ""))
     def test_get_schema_for_selected_columns(self):
         schema = [('user_id', int32), ('vertex_type', str), ('movie_id', int32), ('rating', int32), ('splits', str)]
-        backend = FrameBackendRest()
-        selected_schema = backend.get_schema_for_selected_columns(schema, ['user_id', 'splits'])
+        selected_schema = FrameSchema.get_schema_for_selected_columns(schema, ['user_id', 'splits'])
         self.assertEqual(selected_schema, [('user_id', int32), ('splits', str)])
 
     def test_get_schema_for_selected_columns_change_order(self):
         schema = [('user_id', int32), ('vertex_type', str), ('movie_id', int32), ('rating', int32), ('splits', str)]
-        backend = FrameBackendRest()
-        selected_schema = backend.get_schema_for_selected_columns(schema, ['splits', 'user_id', 'rating'])
+        selected_schema = FrameSchema.get_schema_for_selected_columns(schema, ['splits', 'user_id', 'rating'])
         self.assertEqual(selected_schema, [('splits', str), ('user_id', int32), ('rating', int32)])
 
     def test_get_indices_for_selected_columns(self):
         schema = [('user_id', int32), ('vertex_type', str), ('movie_id', int32), ('rating', int32), ('splits', str)]
-        backend = FrameBackendRest()
-        indices = backend.get_indices_for_selected_columns(schema, ['user_id', 'splits'])
+        indices = FrameSchema.get_indices_for_selected_columns(schema, ['user_id', 'splits'])
         self.assertEqual(indices, [0, 4])
 
     def test_extract_columns_from_data(self):
-        backend = FrameBackendRest()
         indices = [0, 2]
         data = [[1, 'a', '3'], [2, 'b', '2'], [3, 'c', '5'], [4, 'd', '-10']]
-        result = backend.extract_data_from_selected_columns(data, indices)
+        result = FrameData.extract_data_from_selected_columns(data, indices)
         self.assertEqual(result, [[1, '3'], [2, '2'], [3, '5'], [4, '-10']])
 
 
