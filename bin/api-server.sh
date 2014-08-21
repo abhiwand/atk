@@ -27,7 +27,7 @@ else
 fi
 
 pushd $DIR/..
-pwd                             i
+pwd
 
 export HOSTNAME=`hostname`
 

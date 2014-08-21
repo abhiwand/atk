@@ -1,3 +1,4 @@
+===================
 System Requirements
 ===================
 
@@ -12,5 +13,11 @@ See `Cloudera Requirements`_.
 
 
     Software requirements for the Intel® Analytic package client are:
+
+|
+
+<- :doc:`index`
+<------------------------------->
+:doc:`ad_inst` ->
 
 .. _Cloudera Requirements: http://blog.cloudera.com/blog/2013/08/how-to-select-the-right-hardware-for-your-new-hadoop-cluster/

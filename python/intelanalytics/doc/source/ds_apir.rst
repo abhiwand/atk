@@ -154,3 +154,11 @@ Here are some guidelines to follow when writing a PUF:
         frame.add_columns(get_row_sum_func(['name', 'address']), ('sum', int32))
 
     The ``row_sum2`` function closes over the *ignore_list* argument making it available to the row function that executes on each row.
+
+
+| 
+
+<- :doc:`ds_dflw`
+<------------------------------->
+:doc:`index` ->
+
