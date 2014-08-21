@@ -67,7 +67,7 @@ def make_command_def(full_name):
 
 cmd_defs = [make_command_def(name) for name in numbers_by_lang.keys()]
 
-def get_numbers(cmd_name, args):
+def get_numbers(cmd_name, **args):
     numbers = numbers_by_lang[cmd_name]
     return "%s, %s" % (numbers[args['a']], numbers[args['b']])
 
