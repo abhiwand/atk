@@ -349,6 +349,9 @@ class CommandServerError(Exception):
         Exception.__init__(self, message)
 
 
+QueryResult = namedtuple("QueryResult", ['data', 'schema'])
+
+
 class Executor(object):
     """
     Executes commands
@@ -390,8 +393,6 @@ class Executor(object):
         """
         Issues the query_request to the server
         """
-        QueryResult = namedtuple("QueryResult", ['data', 'schema'])
-
         logger.info("Issuing query " + query_url)
         try:
             response = http.get(query_url)
