@@ -331,17 +331,6 @@ class FrameBackendRest(object):
 
          #def _repr_html_(self): TODO - Add this method for ipython notebooks
 
-    def extract_data_from_selected_columns(self, data_in_page, indices):
-        new_data = []
-        for row in data_in_page:
-            new_row = []
-            for index in indices:
-                new_row.append(row[index])
-            row = new_row
-
-            new_data.append(row)
-        return new_data
-
     def inspect(self, frame, n, offset, selected_columns):
         # inspect is just a pretty-print of take, we'll do it on the client
         # side until there's a good reason not to
@@ -380,19 +369,6 @@ class FrameBackendRest(object):
                      'columns': columns,
                      'new_column_names': new_names}
         execute_update_frame_command('project', arguments, projected_frame)
-
-    def get_schema_for_selected_columns(self, schema, selected_columns):
-        selected_schema = []
-        for selected in selected_columns:
-            for column in schema:
-                if column[0] == selected:
-                    selected_schema.append(column)
-
-        return selected_schema
-
-    def get_indices_for_selected_columns(self, schema, selected_columns):
-        schema_for_selected_columns = self.get_schema_for_selected_columns(schema, selected_columns)
-        return [schema.index(f) for f in schema_for_selected_columns]
 
     def groupby(self, frame, groupby_columns, aggregation):
         if groupby_columns is None:
@@ -464,12 +440,12 @@ class FrameBackendRest(object):
 
         updated_schema = schema
         if selected_columns is not None:
-            updated_schema = self.get_schema_for_selected_columns(schema, selected_columns)
-            indices = self.get_indices_for_selected_columns(schema, selected_columns)
+            updated_schema = FrameSchema.get_schema_for_selected_columns(schema, selected_columns)
+            indices = FrameSchema.get_indices_for_selected_columns(schema, selected_columns)
 
         data = result.data
         if selected_columns is not None:
-            data = self.extract_data_from_selected_columns(data, indices)
+            data = FrameData.extract_data_from_selected_columns(data, indices)
 
 
         TakeResult = namedtuple("TakeResult", ['data', 'schema'])
@@ -624,7 +600,35 @@ class FrameSchema:
     def from_strings_to_types(s):
         return [(name, get_data_type_from_rest_str(data_type)) for name, data_type in s]
 
-    # Add more if necessary
+    @staticmethod
+    def get_schema_for_selected_columns(schema, selected_columns):
+        selected_schema = []
+        for selected in selected_columns:
+            for column in schema:
+                if column[0] == selected:
+                    selected_schema.append(column)
+
+        return selected_schema
+
+    @staticmethod
+    def get_indices_for_selected_columns(schema, selected_columns):
+        schema_for_selected_columns = FrameSchema.get_schema_for_selected_columns(schema, selected_columns)
+        return [schema.index(f) for f in schema_for_selected_columns]
+
+
+class FrameData:
+
+    @staticmethod
+    def extract_data_from_selected_columns(data_in_page, indices):
+        new_data = []
+        for row in data_in_page:
+            new_row = []
+            for index in indices:
+                new_row.append(row[index])
+            row = new_row
+
+            new_data.append(row)
+        return new_data
 
 def initialize_frame(frame, frame_info):
     """Initializes a frame according to given frame_info"""
