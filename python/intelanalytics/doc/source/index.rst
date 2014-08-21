@@ -152,7 +152,6 @@ Some suggestions of what we have found helpful.
     ia_intro_1
     ia_intro_2
     ia_legal
-    index
 
 
 .. TODO::

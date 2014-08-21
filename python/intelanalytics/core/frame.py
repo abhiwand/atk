@@ -628,8 +628,8 @@ class BigFrame(CommandSupport):
         Now the frame accessed by BigFrame *my_frame* has a new column named "sample_bin" and each row contains one of the values "train",
         "test", or "validate".  Values in the other columns are unaffected.
 
-        .. versionadded:: 0.8
-
+        .. versionadded:: TBD
+        
         """
         pass
 
@@ -780,47 +780,74 @@ class BigFrame(CommandSupport):
     @doc_stub
     def column_mode (self, data_column, weights_column = None, max_modes_returned = None):
         """
-        Calculate modes of a column.  A mode is a data element of maximum weight. All data elements of weight <= 0
-        are excluded from the calculation, as are all data elements whose weight is NaN or infinite.
+        Calculate modes of a column.
+
+        A mode is a data element of maximum weight.
+        All data elements of weight <= 0 are excluded from the calculation, as are all data elements whose weight is NaN or infinite.
         If there are no data elements of finite weight > 0, no mode is returned.
 
-        Because data distributions often have mutliple modes, it is possible for a set of modes to be returned. By
-         default, only one is returned, but my setting the optional parameter max_number_of_modes_returned, a larger
-         number of modes can be returned.
+        Because data distributions often have mutliple modes, it is possible for a set of modes to be returned.
+        By default, only one is returned, but my setting the optional parameter max_number_of_modes_returned, a larger number of modes can be returned.
 
         Parameters
         ----------
         data_column : str
             The column whose mode is to be calculated
 
-        weights_column : str
-            Optional. The column that provides weights (frequencies) for the mode calculation.
-            Must contain numerical data. Uniform weights of 1 for all items will be used for the calculation if this
-                parameter is not provided.
+        weights_column : str (optional)
+            The column that provides weights (frequencies) for the mode calculation.
+            Must contain numerical data.
+            Uniform weights of 1 for all items will be used for the calculation if this parameter is not provided.
 
-        max_modes_returned : int
-            Optional. Maximum number of modes returned. If this parameter is not provided, it defaults to 1
+        max_modes_returned : int (optional)
+            Maximum number of modes returned.
+            If this parameter is not provided, it defaults to 1.
 
         Returns
         -------
         mode : Dict
             Dictionary containing summary statistics in the following entries:
-                mode : A mode is a data element of maximum net weight. A set of modes is returned.
-                 The empty set is returned when the sum of the weights is 0. If the number of modes is <= the parameter
-                 maxNumberOfModesReturned, then all modes of the data are returned.If the number of modes is
-                 > maxNumberOfModesReturned, then only the first maxNumberOfModesReturned many modes
-                 (per a canonical ordering) are returned.
-                weight_of_mode : Weight of a mode. If there are no data elements of finite weight > 0,
-                 the weight of the mode is 0. If no weights column is given, this is the number of appearances of
-                 each mode.
-                total_weight : Sum of all weights in the weight column. This is the row count if no weights
-                 are given. If no weights column is given, this is the number of rows in the table with non-zero weight.
-                mode_count : The number of distinct modes in the data. In the case that the data is very multimodal,
-                 this number may well exceed max_number_of_modes_returned.
+                mode : A mode is a data element of maximum net weight.
+                    A set of modes is returned.
+                    The empty set is returned when the sum of the weights is 0.
+                    If the number of modes is <= the parameter maxNumberOfModesReturned, then all modes of the data are returned.
+                    If the number of modes is > maxNumberOfModesReturned, then only the first maxNumberOfModesReturned many modes (per a canonical ordering) are returned.
+                weight_of_mode : Weight of a mode.
+                    If there are no data elements of finite weight > 0, the weight of the mode is 0.
+                    If no weights column is given, this is the number of appearances of each mode.
+                total_weight : Sum of all weights in the weight column.
+                    This is the row count if no weights are given.
+                    If no weights column is given, this is the number of rows in the table with non-zero weight.
+                mode_count : The number of distinct modes in the data.
+                    In the case that the data is very multimodal, this number may well exceed max_number_of_modes_returned.
 
-        Example
-        -------
-        >>> mode = frame.column_mode('modum columpne')
+        Examples
+        --------
+        ::
+        
+            frame.inspect()
+            
+              modum_column:float64
+            |----------------------|
+                      2356.246
+                        16.24562
+                      2163.4557463
+                       654.352156
+                      2652.0
+                     24653.4567
+                       213.647
+                         ...
+            
+            mode = frame.column_mode('modum_column')
+            print mode
+            
+            { 'mode': (3425.345, 325988.8735, 5125,235, ...),
+            'weight_of_mode': 23,
+            'total_weight': 34827350,
+            'mode_count': 9834572938752 }
+            
+        .. versionadded:: TBD
+        
         """
         pass
 
@@ -895,9 +922,30 @@ class BigFrame(CommandSupport):
         --------
         ::
 
-            stats = frame.column_summary_statistics('data column', 'weight column')
+            frame.inspect()
 
-        .. versionadded:: 0.8
+              a:unicode   b:int32   weight:int32  data_column:int32
+            |-------------------------------------------------------|
+              red               1              0                  0
+              blue              3              1                  0
+              blue              1              0                  0
+              green             0              1                  1
+              ...             ...            ...                ...
+
+            stats = frame.column_summary_statistics('data_column', 'weight')
+            print stats
+            
+            { 'mean': 1053.32,
+            'geometric_mean': 853.1333,
+            'variance': 193.32,
+            'standard_deviation': 13.9039,
+            'valid_data_count': 48937204,
+            'minimum: 0.0,
+            'maximum': 93842.0,
+            'mean_confidence_lower': 54.345,
+            'mean_confidence_upper': 89.654 }
+
+        .. versionadded:: TBD
 
         """
         pass
@@ -1921,7 +1969,7 @@ class BigFrame(CommandSupport):
 
         For further examples, see :ref:`example_frame.remove_columns`
 
-        .. versionadded:: 0.8
+        .. versionadded:: TBD
 
         """
         pass

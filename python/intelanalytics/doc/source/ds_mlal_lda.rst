@@ -304,14 +304,14 @@ num_topics:
     The default value is 10, but all positive integers are accepted.
 
 Returns
--------
+
 Multi-line string
 
     The configuration and learning curve report for Latent Dirichlet Allocation.
 
  
 Examples
---------
+
 ::
 
     g.ml.latent_dirichlet_allocation(

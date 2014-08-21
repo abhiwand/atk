@@ -28,8 +28,8 @@ A k-clique is certainly a community in the sense that its nodes are all connecte
 since it is natural that a few members of the community may not interact.
 The k-clique percolation method forms communities by taking unions of k-cliques that overlap in :math:`k - 1` vertices.
 
-Example:
---------
+K-Clique Example:
+-----------------
 In the graph below, the 3-clique communities are {1,2,3, 4} and {4, 5, 6, 7, 8}. Note that the nodes 9, 10, 11, 12 belong to no community at all,
 whereas 4 belongs to two distinct (but overlapping) communities.
 
