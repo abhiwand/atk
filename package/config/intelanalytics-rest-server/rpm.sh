@@ -61,8 +61,8 @@ fi
 PREUN="
  checkStatus=\$(service intelanalytics-rest-server status | grep start/running)
  if  [ \$1 -eq 0 ] && [ \"\$checkStatus\" != \"\" ]; then
-    echo stopping intelanalytics-rest-server
-    service intelanalytics-rest-server stop
+    echo stopping intelanalytics
+    service intelanalytics stop
  fi
 "
 
