@@ -194,6 +194,7 @@ class BigFrame(CommandSupport):
         try:
             self._id = 0
             self._error_frame_id = None
+            #self._ia_uri = None
             if not hasattr(self, '_backend'):  # if a subclass has not already set the _backend
                 self._backend = _get_backend()
             new_frame_name = self._backend.create(self, source, name)

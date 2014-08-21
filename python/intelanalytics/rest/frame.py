@@ -71,6 +71,7 @@ class FrameBackendRest(object):
         r = self.rest_http.get('dataframes?name='+name)
         frame_info = FrameInfo(r.json())
         return BigFrame(frame_info)
+        #return frame_info.ia_uri
 
     def get_frame_by_id(self, id):
         logger.info("REST Backend: get_frame_by_id")
@@ -512,7 +513,7 @@ class FrameBackendRest(object):
         arguments = {'frame_id': frame._id, 'name': name, 'sample_col': sample_col, 'dist_type': dist_type, 'count_value': str(count_value)}
         return execute_new_frame_command('cumulative_dist', arguments)
 
-class FrameInfo(object):
+class  FrameInfo(object):
     """
     JSON-based Server description of a BigFrame
     """
@@ -532,6 +533,10 @@ class FrameInfo(object):
     @property
     def name(self):
         return self._payload['name']
+
+    #@property
+    #def ia_uri(self):
+    #    return self._payload['destination']
 
     @property
     def schema(self):
@@ -584,6 +589,7 @@ def initialize_frame(frame, frame_info):
     """Initializes a frame according to given frame_info"""
     frame._id = frame_info.id_number
     frame._error_frame_id = frame_info.error_frame_id
+    #frame._ia_uri = frame_info.ia_uri
 
 def execute_update_frame_command(command_name, arguments, frame):
     """Executes command and updates frame with server response"""
