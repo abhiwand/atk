@@ -24,7 +24,7 @@
 package com.intel.spark.graphon.testutils
 
 import com.intel.testutils.DirectoryUtils._
-import com.intel.testutils.{ MultipleAfter, LogUtils }
+import com.intel.testutils.LogUtils
 import com.intel.graphbuilder.graph.titan.TitanGraphConnector
 import com.intel.graphbuilder.util.SerializableBaseConfiguration
 import java.io.File
@@ -34,23 +34,20 @@ import java.io.File
  *
  * IMPORTANT! only one thread can use the graph below at a time. This isn't normally an issue because
  * each test usually gets its own copy.
+ *
+ * @deprecated this class is a duplicate of one in GraphBuilder
  */
-trait TestingTitan extends MultipleAfter {
+trait TestingTitan {
 
   LogUtils.silenceTitan()
 
-  private var tmpDir: File = createTempDirectory("titan-graph-for-unit-testing-")
+  private var tmpDir: File = createTempDirectory("graphon-titan-graph-for-unit-testing-")
 
   var titanConfig = new SerializableBaseConfiguration()
   titanConfig.setProperty("storage.directory", tmpDir.getAbsolutePath)
 
   var titanConnector = new TitanGraphConnector(titanConfig)
   var graph = titanConnector.connect()
-
-  override def after: Unit = {
-    cleanupTitan()
-    super.after
-  }
 
   /**
    * IMPORTANT! removes temporary files

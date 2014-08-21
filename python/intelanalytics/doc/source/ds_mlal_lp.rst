@@ -52,3 +52,7 @@ It is also possible for some (most) nodes to converge and others to never conver
 The algorithm requires all nodes to converge before declaring that the algorithm has converged overall. 
 If this condition is not met, the algorithm will continue up to the maximum number of super steps.
 
+.. rubric:: footnotes
+
+.. [#LP1] http://www.cs.cmu.edu/~zhuxj/pub/CMU-CALD-02-107.pdf
+

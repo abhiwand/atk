@@ -98,15 +98,11 @@ For Topic Modeling, see: http://en.wikipedia.org/wiki/Topic_model
 .. _LDA:
 .. include:: ds_mlal_lda.rst
 
+| 
 
-.. rubric:: footnotes
+<- :doc:`ds_ml`
+<------------------------------->
+:doc:`ds_apic` ->
 
-.. [#LP1] http://www.cs.cmu.edu/~zhuxj/pub/CMU-CALD-02-107.pdf
-.. [#LDA1] http://www.cs.princeton.edu/~blei/papers/Blei2011.pdf
-.. [#LDA2] http://www.sciencedirect.com/science/article/pii/S1532046401910299
-.. [#LDA3] http://tartarus.org/~martin/PorterStemmer/index.html
-.. [#LDA4] http://www.textfixer.com/resources/common-english-words.txt
-.. [#LDA5] http://www.ics.uci.edu/~newman/pubs/fastlda.pdf
-.. [#LDA6] http://machinelearning.wustl.edu/mlpapers/paper_files/NIPS2006_511.pdf
-.. [#LDA7] http://www.cs.princeton.edu/~blei/papers/Blei2011.pdf
+<- :doc:`index`
 
