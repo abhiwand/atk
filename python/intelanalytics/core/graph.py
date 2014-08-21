@@ -32,13 +32,14 @@ from intelanalytics.core.serialize import to_json
 from intelanalytics.core.column import BigColumn
 from intelanalytics.core.command import CommandSupport
 
-try:
-    from intelanalytics.core.autoframe import CommandLoadableBigGraph as command_loadable
-    logger.info("BigGraph is inheriting commands from autograph.py")
-except:
-    #logger.info("autograph.py not found, BigGraph is NOT inheriting commands from it")
-    logger.info("BigGraph is still using older CommandSupport")
-    command_loadable = CommandSupport
+# try:
+#     from intelanalytics.core.autograph import CommandLoadableBigGraph as command_loadable
+#     logger.info("BigGraph is inheriting commands from autograph.py")
+# except:
+#     #logger.info("autograph.py not found, BigGraph is NOT inheriting commands from it")
+#     logger.info("BigGraph is still using older CommandSupport")
+#     command_loadable = CommandSupport
+command_loadable = CommandSupport  # TODO - enable BigGraph to use autograph.py
 
 
 def _get_backend():
