@@ -24,7 +24,7 @@
 package com.intel.intelanalytics.engine.spark.graph
 
 import com.intel.graphbuilder.util.SerializableBaseConfiguration
-import com.intel.testutils.LogUtils
+import com.intel.testutils.{ DirectoryUtils, LogUtils }
 import com.thinkaurelius.titan.core.util.TitanCleanup
 import com.thinkaurelius.titan.core.{ TitanFactory, TitanGraph }
 import com.tinkerpop.blueprints.Graph
@@ -32,6 +32,7 @@ import com.tinkerpop.blueprints.util.wrappers.id.IdGraph
 import org.scalatest.{ BeforeAndAfter, FlatSpec }
 
 import scala.concurrent.Lock
+import java.io.File
 
 /**
  * This trait can be mixed into Specifications to get a TitanGraph backed by an in-memory database
@@ -46,14 +47,16 @@ trait TestingTitan extends FlatSpec with BeforeAndAfter {
 
   LogUtils.silenceTitan()
 
-  val titanConfig = new SerializableBaseConfiguration()
-  titanConfig.setProperty("storage.directory", "/tmp/test-my")
+  var tmpDir: File = null
   var titanGraph: TitanGraph = null
   var graph: Graph = null
 
   before {
-    // Using ID graph
-    TestingTitan.lock.acquire()
+    tmpDir = DirectoryUtils.createTempDirectory("engine-tmp-dir-for-titan-tests")
+
+    val titanConfig = new SerializableBaseConfiguration()
+    titanConfig.setProperty("storage.directory", tmpDir.getAbsolutePath)
+
     titanGraph = TitanFactory.open(titanConfig)
     graph = new IdGraph(titanGraph, true, false)
   }
@@ -73,13 +76,14 @@ trait TestingTitan extends FlatSpec with BeforeAndAfter {
     }
     finally {
       TitanCleanup.clear(titanGraph)
+
+      DirectoryUtils.deleteTempDirectory(tmpDir)
+
+      tmpDir = null
+      titanGraph = null
       graph = null
-      TestingTitan.lock.release()
     }
 
   }
 }
 
-object TestingTitan {
-  private val lock = new Lock()
-}
