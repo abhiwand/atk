@@ -21,7 +21,7 @@
 # must be express and approved by Intel in writing.
 ##############################################################################
 """
-Meta-programming - dynamically adding commands to api objects
+Meta-programming - dynamically adding commands to api objects or building auto*.py
 """
 
 __all__ = ['CommandLoadable', 'load_loadable']
@@ -166,106 +166,6 @@ def create_loadable_class(new_class_name, namespace_obj, doc):
     return new_class
 
 
-def _default_val_to_str(param):
-    return param.default if param.default is None or param.data_type not in [str, unicode] else "'%s'" % param.default
-
-
-def get_function_text(command_def):
-    """Writes python code text for this command to be inserted into python modules"""
-    calling_args = []
-    signature_args = []
-    name_of_self = ''
-    for param in command_def.parameters:
-        if param.use_self:
-            if name_of_self:
-                raise RuntimeError("Internal Metaprogramming Error: more than one parameter wants to be called 'self'")
-            name = 'self'
-            name_of_self = param.name
-        else:
-            name = param.name
-        signature_args.append(name if not param.optional else "%s=%s" % (param.name, _default_val_to_str(param)))
-        calling_args.append(param.name)
-    text_template = 'def %s(%s):\n    """\n    %s\n    """\n    return %s(\'%s\', %s)\n'
-    text = text_template % (command_def.name,
-                            ", ".join(signature_args),
-                            command_def.doc,
-                            _execute_command_function_name,
-                            command_def.full_name,
-                            ", ".join(["%s=%s" % (a, a if a != name_of_self else 'self') for a in calling_args]))
-    logger.debug("Created code text:\n%s", text)
-    return text
-
-
-def create_function(command_def, execute_command_function=None):
-    """Creates the function which will appropriately call execute_command for this command"""
-    execute_command = create_execute_command_function(command_def, execute_command_function)
-    func_text = get_function_text(command_def)
-    func_code = compile(func_text, '<string>', "exec")
-    func_globals = {}
-    eval(func_code, {_execute_command_function_name: execute_command}, func_globals)
-    function = func_globals[command_def.name]
-    function.command = command_def
-    function.__doc__ = command_def.doc
-    return function
-
-
-def get_property_text(member_name):
-    return """@property
-def %s(self):
-    \"""
-    Access to object's %s functionality
-    \"""
-    return getattr(self, '_%s')
-    """ % (member_name, member_name, member_name)
-
-
-def create_property(member_class, member_name):
-    private_name = '_' + member_name
-
-    def fget(self):
-        return getattr(self, private_name)
-    fget.loadable_class = member_class
-    doc = "Access to object's %s functionality" % member_name  # vanilla doc string
-    return property(fget=fget, doc=doc)
-
-
-def get_parameters_dict_text(loadable_class, command_defs):
-    return """
-# Parameter definitions for argument validation.  Disregard values for default and doc.  They are overridden to None.
-_parameters = {
-    %s
-}""" % (",\n    ".join([command_parameters_to_str(c)
-                        for c in command_defs
-                        if c.prefix in loadable_class.command_prefixes
-                        and c.name not in loadable_class.command_mute_list]))
-
-
-def command_parameters_to_str(command_def):
-    return "'%s':[\n        %s]" % (command_def.full_name, ",\n        ".join(parameter_to_str(p) for p in command_def.parameters))
-
-
-def parameter_to_str(parameter):
-    # TODO - remove the None compensation --this should never happen (binColumn and maybe others are producing a None currently)
-    return "Parameter(name='%s', data_type=%s, use_self=%s, optional=%s, default=None, doc=None)" % (parameter.name, 'None' if parameter.data_type is None else parameter.data_type.__name__, parameter.use_self, parameter.optional)
-
-
-def get_execute_command_function_text():
-    return """
-def %s(_name, **kwargs):
-    \"""Validates arguments and calls execute_command\"""
-    arguments = validate_arguments(kwargs, _parameters[_name])
-    return %s(_name, **arguments)
-""" % (_execute_command_function_name,  _aliased_execute_command_function_name)
-
-
-def create_execute_command_function(command_def, execute_command_function):
-    parameters = command_def.parameters
-    def execute_command(name, **kwargs):
-        arguments = validate_arguments(kwargs, parameters)
-        return execute_command_function(name, **arguments)
-    return execute_command
-
-
 def check_loadable_class(cls):
     if not hasattr(cls, "command_prefixes"):
         raise TypeError("CommandLoadable inheritor %s lacks implementation for 'command_prefixes'" % cls)
@@ -290,16 +190,100 @@ def load_loadable(loadable_class, command_defs, execute_command_function):  # fu
             logger.debug("Added function        %s to class %s", command.name, current_class)
 
 
+def get_execute_command_function_text():
+    return """
+def %s(_name, **kwargs):
+    \"""Validates arguments and calls execute_command\"""
+    arguments = validate_arguments(kwargs, _parameters[_name])
+    return %s(_name, **arguments)
+""" % (_execute_command_function_name,  _aliased_execute_command_function_name)
 
 
-def indent(text, spaces=4):
-    indentation = ' ' * spaces
-    return "\n".join([indentation + line for line in text.split('\n')])
+def create_execute_command_function(command_def, execute_command_function):
+    """
+    Creates the appropriate execute_command for the command_def by closing
+    over the parameter info for validating the arguments during usage
+    """
+    parameters = command_def.parameters
+    def execute_command(name, **kwargs):
+        arguments = validate_arguments(kwargs, parameters)
+        return execute_command_function(name, **arguments)
+    return execute_command
 
+
+def get_function_text(command_def):
+    """Produces python code text for a command to be inserted into python modules"""
+    calling_args = []
+    signature_args = []
+    name_of_self = ''
+    for param in command_def.parameters:
+        if param.use_self:
+            if name_of_self:
+                raise RuntimeError("Internal Metaprogramming Error: more than one parameter wants to be called 'self'")
+            name = 'self'
+            name_of_self = param.name
+        else:
+            name = param.name
+        signature_args.append(name if not param.optional else "%s=%s" % (param.name, _default_val_to_str(param)))
+        calling_args.append(param.name)
+    text_template = 'def %s(%s):\n    """\n    %s\n    """\n    return %s(\'%s\', %s)\n'
+    text = text_template % (command_def.name,
+                            ", ".join(signature_args),
+                            command_def.doc,
+                            _execute_command_function_name,
+                            command_def.full_name,
+                            ", ".join(["%s=%s" % (a, a if a != name_of_self else 'self') for a in calling_args]))
+    logger.debug("Created code text:\n%s", text)
+    return text
+
+
+def _default_val_to_str(param):
+    return param.default if param.default is None or param.data_type not in [str, unicode] else "'%s'" % param.default
+
+
+def create_function(command_def, execute_command_function=None):
+    """Creates the function which will appropriately call execute_command for this command"""
+    execute_command = create_execute_command_function(command_def, execute_command_function)
+    func_text = get_function_text(command_def)
+    func_code = compile(func_text, '<string>', "exec")
+    func_globals = {}
+    eval(func_code, {_execute_command_function_name: execute_command}, func_globals)
+    function = func_globals[command_def.name]
+    function.command = command_def
+    function.__doc__ = command_def.doc
+    return function
+
+
+def get_property_text(member_name):
+    return """@property
+def %s(self):
+    \"""
+    %s
+    \"""
+    return getattr(self, '_%s')
+    """ % (member_name, _get_property_doc(member_name), member_name)
+
+
+def create_property(member_class, member_name):
+    private_name = '_' + member_name
+
+    def fget(self):
+        return getattr(self, private_name)
+    fget.loadable_class = member_class
+    doc = _get_property_doc(member_name)
+    return property(fget=fget, doc=doc)
+
+
+def _get_property_doc(member_name):
+    return "Access to object's %s functionality" % member_name  # vanilla doc string
+
+#
+# auto*.py generation
+#
 
 def get_auto_module_text(loadable_class, member_classes, command_defs):
     return "\n".join([get_file_header_text(loadable_class),
-                      get_member_commands_text(loadable_class),
+                      get_loadable_base_class_text(loadable_class),
                       get_member_classes_text(loadable_class, member_classes),
                       get_execute_command_function_text(),
                       get_parameters_dict_text(loadable_class, command_defs)])
@@ -346,7 +330,11 @@ from intelanalytics.rest.command import %s as %s
        _aliased_execute_command_function_name)
 
 
-def get_member_commands_text(loadable_class):
+def get_loadable_base_class_text(loadable_class):
+    """
+    Produces code text for the base class from which the main loadable class
+    will inherit the commands --i.e. the main class of the auto*.py file
+    """
     return """
 class CommandLoadable%s(CommandLoadable):
     \"""
@@ -356,25 +344,35 @@ class CommandLoadable%s(CommandLoadable):
 %s
 """ % (loadable_class.__name__,
        loadable_class.__name__,
-       '\n'.join(get_function_lines(loadable_class)) or 'pass')
+       get_member_commands_text(loadable_class) or 'pass')
 
 
 def get_member_classes_text(loadable_class, member_clasess):
+    """
+    Produces code text for dynamically created loadable classes needed as intermediate objects
+    """
     names = []
     lines = []
     for c in member_clasess.values():
         if c.__name__.startswith(loadable_class.__name__):
             names.append(c.__name__)
-            lines.append('')  # insert extra blank line
-            lines.append("class %s(object):" % c.__name__)
-            lines.append('    """\n%s\n    """' % indent(c.__doc__))
-            lines.extend(get_function_lines(c))
+            lines.append("""
+class %s(CommandLoadable):
+    \"""
+%s
+    \"""
+%s
+""" % (c.__name__, indent(c.__doc__), get_member_commands_text(c)))
     if names:
         lines.append("__all__ = [%s]" % (', '.join(["'%s'" % name for name in names])))
     return "\n".join(lines)
 
 
-def get_function_lines(loadable_class):
+def get_member_commands_text(loadable_class):
+    """
+    Produces code text for all the commands (both functions and properties)
+    that have been loaded into the loadable class
+    """
     lines = []
     for member_name in sorted(loadable_class.__dict__.keys()):
         member = loadable_class.__dict__[member_name]
@@ -383,6 +381,37 @@ def get_function_lines(loadable_class):
             lines.append(indent(get_function_text(command_def)))
         elif type(member) is property and hasattr(member.fget, 'loadable_class'):
             lines.append(indent(get_property_text(member_name)))
-    return lines
+    return "\n".join(lines)
 
+
+def get_parameters_dict_text(loadable_class, command_defs):
+    """
+    Produces code text to define a dict which contains all the Parameter info
+    for the commands defined in this auto*.py file.
+    """
+    # The parameter info must be available for argument coercion when the
+    # commands are executed.  We must write it in hard-coded text since we
+    # are not relying on the server info once the auto*.py file is written.
+    return """
+# Parameter definitions for argument validation.  Disregard values for default and doc.  They are overridden to None.
+_parameters = {
+    %s
+}""" % (",\n    ".join([_command_parameters_to_str(c)
+                        for c in command_defs
+                        if c.prefix in loadable_class.command_prefixes
+                        and c.name not in loadable_class.command_mute_list]))
+
+
+def _command_parameters_to_str(command_def):
+    return "'%s':[\n        %s]" % (command_def.full_name, ",\n        ".join(_parameter_to_str(p) for p in command_def.parameters))
+
+
+def _parameter_to_str(parameter):
+    # TODO - remove the None compensation --this should never happen (binColumn and maybe others are producing a None currently)
+    return "Parameter(name='%s', data_type=%s, use_self=%s, optional=%s, default=None, doc=None)" % (parameter.name, 'None' if parameter.data_type is None else parameter.data_type.__name__, parameter.use_self, parameter.optional)
+
+
+def indent(text, spaces=4):
+    indentation = ' ' * spaces
+    return "\n".join([indentation + line for line in text.split('\n')])
 
