@@ -76,5 +76,5 @@ Setup
     ::
         Successful ping to Intel Analytics at http://localhost:9099/info
 
-#)  Next we recommend looking at the included examples
+#)  Next take a look at the included examples
 
