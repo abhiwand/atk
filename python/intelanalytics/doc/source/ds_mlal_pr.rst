@@ -60,35 +60,32 @@ the analysis (specified by a list of desired edge labels),  performs the analysi
 a new property at each vertex that contains that vertex’s *PageRank* score.
 The name of the new property is specified by the caller.
 
-Parameters
-~~~~~~~~~~
+Parameters::
 
-input_edge_label_list *:*
-    The label of the edges used to generate the graph for *PageRank* Analysis.
+    input_edge_label_list *:*
+        The label of the edges used to generate the graph for *PageRank* Analysis.
 
-output_vertex_property_list *:* List (comma-separated list of strings)
-    The name of the vertex property used to store the *PageRank* score of the vertex.
+    output_vertex_property_list *:* List (comma-separated list of strings)
+        The name of the vertex property used to store the *PageRank* score of the vertex.
 
-max_supersteps *:* int (optional)
-    The number of iterations to run the *PageRank* algorithm.
-    The default value is 20.
+    max_supersteps *:* int (optional)
+        The number of iterations to run the *PageRank* algorithm.
+        The default value is 20.
 
-convergence_threshold *:* double (optional)
-    The convergence threshold which controls how small the change in belief value must be in order to meet the convergence criteria.
-    The default value is 0.001.
+    convergence_threshold *:* double (optional)
+        The convergence threshold which controls how small the change in belief value must be in order to meet the convergence criteria.
+        The default value is 0.001.
 
-reset_probability *:* double (optional)
-    The damping factor :math:`\rho` in the equation of the preceding subsection.
-    The default value is 0.15.
+    reset_probability *:* double (optional)
+        The damping factor :math:`\rho` in the equation of the preceding subsection.
+        The default value is 0.15.
 
-convergence_output_interval *:* int (optional)
-    Controls how frequently a progress report is logged on the server.
-    The convergence progress output interval.
-    The default value is 1, which means output every super step.
+    convergence_output_interval *:* int (optional)
+        Controls how frequently a progress report is logged on the server.
+        The convergence progress output interval.
+        The default value is 1, which means output every super step.
 
-Example Usage
-~~~~~~~~~~~~~
-::
+Example Usage::
 
     graph.ml.page_rank(
                         self,
