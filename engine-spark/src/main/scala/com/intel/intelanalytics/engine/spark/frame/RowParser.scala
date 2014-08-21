@@ -23,9 +23,10 @@
 
 package com.intel.intelanalytics.engine.spark.frame
 
-import util.parsing.combinator.RegexParsers
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 import com.intel.intelanalytics.domain.schema.DataTypes
+import org.apache.commons.csv.{ CSVParser, CSVFormat }
+import scala.collection.JavaConversions.asScalaIterator
 
 /**
  * Split a string based on delimiter into List[String]
@@ -39,11 +40,9 @@ import com.intel.intelanalytics.domain.schema.DataTypes
  *
  * @param separator delimiter character
  */
-class RowParser(separator: Char, columnTypes: Array[DataType]) extends RegexParsers with Serializable {
+class RowParser(separator: Char, columnTypes: Array[DataType]) extends Serializable {
 
-  override def skipWhitespace = false
-  private def space = regex("[ \\n]*".r)
-  private def tab = regex("[ \\t]*".r)
+  val csvFormat = CSVFormat.RFC4180.withDelimiter(separator)
 
   val converter = DataTypes.parseMany(columnTypes)(_)
 
@@ -63,32 +62,14 @@ class RowParser(separator: Char, columnTypes: Array[DataType]) extends RegexPars
     }
   }
 
-  /**
-   * Apply method parses the string and returns a list of String tokens
-   * @param line to be parsed
-   */
-  def splitLineIntoParts(line: String): Array[String] = parseAll(record, line) match {
-    case Success(result, _) => result.toArray
-    case failure: NoSuccess => { throw new Exception("Parse Failed") }
+  private[frame] def splitLineIntoParts(line: String): Array[String] = {
+    val records = CSVParser.parse(line, csvFormat).getRecords
+    if (records.isEmpty) {
+      Array.empty[String]
+    }
+    else {
+      records.get(0).iterator().toArray
+    }
   }
-
-  def record = repsep(mainToken, separator.toString)
-  def mainToken = spaceWithSingleQuotes | tabWithQuotes | spaceWithQuotes | tabWithSingleQuotes | doubleQuotes | singleQuotes | unquotes | empty
-  /** function to evaluate empty fields*/
-  lazy val empty = success("")
-  /** function to evaluate single quotes*/
-  lazy val singleQuotes = "'" ~> "[^']+".r <~ "'"
-  /** function to evaluate double quotes*/
-  lazy val doubleQuotes: Parser[String] = "\"" ~> "[^\"]+".r <~ "\""
-  /** function to evaluate normal tokens*/
-  lazy val unquotes = ("[^" + separator + "]+").r
-  /** function to evaluate space/s followed by single quote*/
-  lazy val spaceWithSingleQuotes = space ~> "'" ~> "[^']+".r <~ "'" <~ space
-  /** function to evaluate space/s followed by double quote*/
-  lazy val spaceWithQuotes = space ~> '"' ~> "[^\"]+".r <~ '"' <~ space
-  /** function to evaluate tab/s followed by double quote*/
-  lazy val tabWithQuotes = tab ~> '"' ~> "[^\"]+".r <~ '"' <~ tab
-  /** function to evaluate tab/s followed by single quote*/
-  lazy val tabWithSingleQuotes = tab ~> "'" ~> "[^\']+".r <~ "'" <~ tab
 
 }

@@ -41,6 +41,7 @@ extensions = [
     'sphinx.ext.todo',
     'sphinx.ext.doctest',
     'sphinx.ext.pngmath',
+#    'sphinx.ext.viewcode',
     'numpydoc',
 ]
 

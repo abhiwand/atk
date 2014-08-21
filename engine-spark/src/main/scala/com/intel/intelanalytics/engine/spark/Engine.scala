@@ -88,6 +88,7 @@ import com.intel.intelanalytics.domain.frame.load.LoadSource
 import com.intel.intelanalytics.domain.graph.GraphTemplate
 import com.intel.intelanalytics.domain.query.Query
 import com.intel.intelanalytics.domain.frame.ColumnSummaryStatistics
+import com.intel.intelanalytics.domain.frame.ColumnMode
 import com.intel.intelanalytics.domain.frame.ECDF
 import com.intel.intelanalytics.domain.frame.DataFrameTemplate
 import com.intel.intelanalytics.engine.ProgressInfo
@@ -105,7 +106,11 @@ import com.intel.intelanalytics.domain.frame.ConfusionMatrixValues
 import com.intel.intelanalytics.domain.command.CommandTemplate
 import com.intel.intelanalytics.domain.frame.FlattenColumn
 import com.intel.intelanalytics.domain.frame.ColumnSummaryStatisticsReturn
+import com.intel.intelanalytics.domain.frame.ColumnModeReturn
 import com.intel.intelanalytics.domain.frame.FrameJoin
+import com.intel.intelanalytics.engine.spark.plugin.SparkInvocation
+import com.intel.intelanalytics.domain.query.PagedQueryResult
+import com.intel.intelanalytics.domain.query.QueryDataResult
 
 object SparkEngine {
   private val pythonRddDelimiter = "YoMeDelimiter"
@@ -192,7 +197,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
       val ctx = sparkContextManager.context(user, "query")
       try {
         val data = queryStorage.getQueryPage(ctx, id, pageId)
-        data
+        com.intel.intelanalytics.domain.query.QueryDataResult(data, None)
       }
       finally {
         ctx.stop()
@@ -222,7 +227,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
   def load(arguments: Load)(implicit user: UserPrincipal): Execution =
     commands.execute(loadCommand, arguments, user, implicitly[ExecutionContext])
 
-  val loadCommand = commandPluginRegistry.registerCommand("dataframe/load", loadSimple _, numberOfJobs = 7)
+  val loadCommand = commandPluginRegistry.registerCommand("dataframe/load", loadSimple _, numberOfJobs = 8)
 
   /**
    * Load data from a LoadSource object to an existing destination described in the Load object
@@ -614,8 +619,6 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     frames.updateSchema(newFrame, allColumns)
   }
 
-  // TRIB-2245
-  /*
   /**
    * Calculate the mode of the specified column.
    * @param arguments Input specification for column mode.
@@ -625,16 +628,16 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     commands.execute(columnModeCommand, arguments, user, implicitly[ExecutionContext])
 
   val columnModeCommand: CommandPlugin[ColumnMode, ColumnModeReturn] =
-    pluginRegistry.registerCommand("dataframe/column_mode", columnModeSimple)
+    commandPluginRegistry.registerCommand("dataframe/column_mode", columnModeSimple _)
 
-  def columnModeSimple(arguments: ColumnMode, user: UserPrincipal): ColumnModeReturn = {
+  def columnModeSimple(arguments: ColumnMode, user: UserPrincipal, invocation: SparkInvocation): ColumnModeReturn = {
 
     implicit val u = user
 
-    val frameId = arguments.frame
+    val frameId = arguments.frame.id
     val frame = expectFrame(frameId)
-    val ctx = sparkContextManager.context(user).sparkContext
-    val rdd = frames.getFrameRdd(ctx, frameId.id)
+    val ctx = invocation.sparkContext
+    val rdd = frames.loadFrameRdd(ctx, frameId)
     val columnIndex = frame.schema.columnIndex(arguments.dataColumn)
     val valueDataType: DataType = frame.schema.columns(columnIndex)._2
 
@@ -646,9 +649,16 @@ class SparkEngine(sparkContextManager: SparkContextManager,
       (Some(weightsColumnIndex), Some(frame.schema.columns(weightsColumnIndex)._2))
     }
 
-    ColumnStatistics.columnMode(columnIndex, valueDataType, weightsColumnIndexOption, weightsDataTypeOption, rdd)
+    val modeCountOption = arguments.maxModesReturned
+
+    ColumnStatistics.columnMode(columnIndex,
+      valueDataType,
+      weightsColumnIndexOption,
+      weightsDataTypeOption,
+      modeCountOption,
+      rdd)
   }
-*/
+
   // TODO TRIB-2245
   /**
    * Calculate the median of the specified column.
@@ -1014,8 +1024,11 @@ class SparkEngine(sparkContextManager: SparkContextManager,
    * @param user current user
    * @return the QueryExecution
    */
-  def getRowsLarge(arguments: RowQuery[Identifier])(implicit user: UserPrincipal): QueryExecution = {
-    queries.execute(getRowsQuery, arguments, user, implicitly[ExecutionContext])
+  def getRowsLarge(arguments: RowQuery[Identifier])(implicit user: UserPrincipal): PagedQueryResult = {
+    val queryExecution = queries.execute(getRowsQuery, arguments, user, implicitly[ExecutionContext])
+    val frame = frames.lookup(arguments.id).get
+    val schema = frame.schema
+    PagedQueryResult(queryExecution, Some(schema))
   }
   val getRowsQuery = queries.registerQuery("dataframes/data", getRowsSimple)
 
@@ -1048,7 +1061,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
    * @param user current user
    * @return RDD consisting of the requested number of rows
    */
-  def getRows(arguments: RowQuery[Identifier])(implicit user: UserPrincipal): Future[Iterable[Row]] = {
+  def getRows(arguments: RowQuery[Identifier])(implicit user: UserPrincipal): Future[QueryDataResult] = {
     future {
       withMyClassLoader {
         val frame = frames.lookup(arguments.id).getOrElse(throw new IllegalArgumentException("Requested frame does not exist"))
@@ -1056,7 +1069,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
         try {
           val rdd: RDD[Row] = frames.loadFrameRdd(ctx, frame).rows
           val rows = rdd.take(arguments.count + arguments.offset.toInt).drop(arguments.offset.toInt)
-          rows
+          QueryDataResult(rows, Some(frame.schema))
         }
         finally {
           ctx.stop()

@@ -41,7 +41,10 @@ def execute_update_graph_command(command_name, arguments, graph):
         command_name = 'graph/' + command_name
     command = CommandRequest(command_name, arguments=arguments)
     command_info = executor.issue(command)
-    return command_info.result
+    if (command_info.result.has_key('value') and len(command_info.result) == 1):
+        return command_info.result.get('value')
+    else:
+        return command_info.result
 
 execute_new_graph_command = execute_update_graph_command
 
