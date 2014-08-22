@@ -2,6 +2,11 @@
 Process Flow Examples
 =====================
 
+.. toctree::
+    :hidden:
+    
+    ds_apir
+
 When using the toolkit, you will import your data, perform cleaning operations on it, possibly combine it with other data sets,
 and finally, analyze it.
 
