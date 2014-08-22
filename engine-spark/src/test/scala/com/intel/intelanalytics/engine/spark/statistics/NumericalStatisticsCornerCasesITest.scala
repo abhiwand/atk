@@ -26,8 +26,8 @@ class NumericalStatisticsCornerCasesITest extends TestingSparkContextFlatSpec wi
     val dataFrequenciesWithNegs =
       sparkContext.parallelize((data :+ 1000.toDouble :+ (-10000).toDouble).zip((frequencies :+ (-1).toDouble :+ 0.toDouble)))
 
-    val numericalStatistics = new NumericalStatistics(dataFrequencies)
-    val numericalStatisticsWithNegs = new NumericalStatistics(dataFrequenciesWithNegs)
+    val numericalStatistics = new NumericalStatistics(dataFrequencies, false)
+    val numericalStatisticsWithNegs = new NumericalStatistics(dataFrequenciesWithNegs, false)
 
     numericalStatistics.positiveWeightCount shouldBe data.length
     numericalStatisticsWithNegs.positiveWeightCount shouldBe data.length
@@ -65,8 +65,8 @@ class NumericalStatisticsCornerCasesITest extends TestingSparkContextFlatSpec wi
     val dataFrequenciesWithBadGuys =
       sparkContext.parallelize(data.zip(frequencies) ++ badDataGoodWeights ++ goodDataBadWeights)
 
-    val numericalStatistics = new NumericalStatistics(dataFrequencies)
-    val numericalStatisticsWithBadGuys = new NumericalStatistics(dataFrequenciesWithBadGuys)
+    val numericalStatistics = new NumericalStatistics(dataFrequencies, false)
+    val numericalStatisticsWithBadGuys = new NumericalStatistics(dataFrequenciesWithBadGuys, false)
 
     numericalStatistics.positiveWeightCount shouldBe data.length
     numericalStatisticsWithBadGuys.positiveWeightCount shouldBe data.length
@@ -103,7 +103,7 @@ class NumericalStatisticsCornerCasesITest extends TestingSparkContextFlatSpec wi
 
     val dataFrequencies = sparkContext.parallelize(data.zip(frequencies))
 
-    val numericalStatistics = new NumericalStatistics(dataFrequencies)
+    val numericalStatistics = new NumericalStatistics(dataFrequencies, false)
 
     numericalStatistics.weightedGeometricMean.isNaN() shouldBe true
 
@@ -116,7 +116,7 @@ class NumericalStatisticsCornerCasesITest extends TestingSparkContextFlatSpec wi
 
     val dataFrequencies = sparkContext.parallelize(data.zip(frequencies))
 
-    val numericalStatistics = new NumericalStatistics(dataFrequencies)
+    val numericalStatistics = new NumericalStatistics(dataFrequencies, false)
 
     numericalStatistics.weightedGeometricMean.isNaN() shouldBe true
 
@@ -129,7 +129,7 @@ class NumericalStatisticsCornerCasesITest extends TestingSparkContextFlatSpec wi
 
     val dataFrequencies = sparkContext.parallelize(data.zip(frequencies))
 
-    val numericalStatistics = new NumericalStatistics(dataFrequencies)
+    val numericalStatistics = new NumericalStatistics(dataFrequencies, false)
 
     numericalStatistics.positiveWeightCount shouldBe 0
     numericalStatistics.nonPositiveWeightCount shouldBe 0
@@ -152,7 +152,7 @@ class NumericalStatisticsCornerCasesITest extends TestingSparkContextFlatSpec wi
 
     val dataFrequencies = sparkContext.parallelize(data.zip(frequencies))
 
-    val numericalStatistics = new NumericalStatistics(dataFrequencies)
+    val numericalStatistics = new NumericalStatistics(dataFrequencies, false)
 
     numericalStatistics.positiveWeightCount shouldBe 0
     numericalStatistics.nonPositiveWeightCount shouldBe data.length
@@ -176,7 +176,7 @@ class NumericalStatisticsCornerCasesITest extends TestingSparkContextFlatSpec wi
 
     val dataFrequencies = sparkContext.parallelize(data.zip(frequencies))
 
-    val numericalStatistics = new NumericalStatistics(dataFrequencies)
+    val numericalStatistics = new NumericalStatistics(dataFrequencies, false)
 
     numericalStatistics.positiveWeightCount shouldBe 1
     numericalStatistics.nonPositiveWeightCount shouldBe 0
@@ -199,7 +199,7 @@ class NumericalStatisticsCornerCasesITest extends TestingSparkContextFlatSpec wi
 
     val dataFrequencies = sparkContext.parallelize(data.zip(frequencies))
 
-    val numericalStatistics = new NumericalStatistics(dataFrequencies)
+    val numericalStatistics = new NumericalStatistics(dataFrequencies, false)
 
     numericalStatistics.positiveWeightCount shouldBe 2
     numericalStatistics.nonPositiveWeightCount shouldBe 0
@@ -222,7 +222,7 @@ class NumericalStatisticsCornerCasesITest extends TestingSparkContextFlatSpec wi
 
     val dataFrequencies = sparkContext.parallelize(data.zip(frequencies))
 
-    val numericalStatistics = new NumericalStatistics(dataFrequencies)
+    val numericalStatistics = new NumericalStatistics(dataFrequencies, false)
 
     numericalStatistics.positiveWeightCount shouldBe 3
     numericalStatistics.nonPositiveWeightCount shouldBe 0

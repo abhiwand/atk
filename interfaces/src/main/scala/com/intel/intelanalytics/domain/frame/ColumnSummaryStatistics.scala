@@ -30,8 +30,15 @@ import spray.json.JsValue
  * @param frame Identifier for the input dataframe.
  * @param dataColumn Name of the column to statistically summarize. Must contain numerical data.
  * @param weightsColumn Optional. Name of the column that provides weights (frequencies).
+ * @param usePopulationVariance If true, variance calculated is the population variance. If false or the option is not
+ *                              provided, the variance calculated is the sample variance. Because this option affects
+ *                              the variance, it affects the standard deviation and the confidence intervals as well. It
+ *                              is an error to request sample variance when the sum of weights is <= 1.
  */
-case class ColumnSummaryStatistics(frame: FrameReference, dataColumn: String, weightsColumn: Option[String]) {
+case class ColumnSummaryStatistics(frame: FrameReference,
+                                   dataColumn: String,
+                                   weightsColumn: Option[String],
+                                   usePopulationVariance: Option[Boolean]) {
 
   require(frame != null, "frame is required but not provided")
   require(dataColumn != null, "data column is required but not provided")
@@ -47,9 +54,11 @@ case class ColumnSummaryStatistics(frame: FrameReference, dataColumn: String, we
  * @param mean Arithmetic mean of the data.
  * @param geometricMean Geometric mean of the data. None when there is a non-positive data element, 1 if there are no
  *                       data elements.
- * @param variance Variance of the data where weighted sum of squared distance from the mean is divided by the number of
- *                 data elements minus 1. None when the number of data elements is < 2.
- * @param standardDeviation Standard deviation of the data. None when the number of data elements is < 2.
+ * @param variance If sample variance is used,  the variance  is the weighted sum of squared distances from the mean is
+ *                 divided by the sum of weights minus 1. If population variance is used, the variance is the weighted
+ *                 sum of squared distances from the mean divided by the sum of weights.
+ *                 In either case, the variance is None when the number of data elements is < 2.
+ * @param standardDeviation Square root of the variance. None when the number of data elements is < 2.
  * @param totalWeight The sum of all weights over valid input rows. (Ie. neither data nor weight is NaN, or infinity,
  *                    and weight is > 0).
  * @param minimum Minimum value in the data. None when there are no data elements of positive weight.
