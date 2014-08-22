@@ -1,6 +1,11 @@
 Python API
 ==========
 
+.. toctree::
+    :hidden:
+    
+    ds_bkm
+
 Files
 -----
 .. automodule:: intelanalytics.core.files
