@@ -825,7 +825,7 @@ class BigFrame(CommandSupport):
         pass
 
     @doc_stub
-    def column_summary_statistics(self, data_column, weights_column_name = None):
+    def column_summary_statistics(self, data_column, weights_column_name = None, use_population_variance = None):
         """
         Calculate summary statistics of a column.
 
@@ -836,7 +836,11 @@ class BigFrame(CommandSupport):
             Must contain numerical data; all NaNs and infinite values are excluded from the calculation.
         weights_column_name : str (optional)
             Name of column holding weights of column values
-
+        use_population_variance : bool (optional)
+            If true, the variance is calculated as the population variance. If false, the variance calculated as the
+             sample variance. Because this option affects the variance, it affects the standard deviation and the
+             confidence intervals as well. It is an error to request sample variance when the sum of weights is <= 1.
+             This option is False by default (so sample variance is the default).
         Returns
         -------
         summary : Dict
@@ -849,11 +853,16 @@ class BigFrame(CommandSupport):
                   Geometric mean of the data. None when there is a data element <= 0, 1.0 when there are no data elements.
 
             | variance:
-                  Variance of the data where  sum of squared distance from the mean is divided by count - 1.
                   None when there are <= 1 many data elements.
+                  Sample variance is the weighted sum of the squared distance of each data element from the
+                   weighted mean, divided by the total weight minus 1. It is an error to compute sample variance
+                   when the net weight is <= 1.
+                  Population variance is the weighted sum of the squared distance of each data element from the
+                   weighted mean, divided by the total weight.
 
             | standard_deviation:
                   Standard deviation of the data. None when there are <= 1 many data elements.
+
 
             | valid_data_count:
                   The count of all data elements that are finite numbers.
@@ -879,14 +888,23 @@ class BigFrame(CommandSupport):
             | valid_data_count returns a Long.
             | All other values are returned as Doubles or None.
 
-        Variance
-            Variance is computed by the following formula:
+        Sample Variance
+            Sample Variance is computed by the following formula:
 
         .. math::
 
-            \\left( \\frac{1}{n - 1} \\right) * sum_{i}  \\left(x_{i} - M \\right) ^{2}
+            \\left( \\frac{1}{W - 1} \\right) * sum_{i}  \\left(x_{i} - M \\right) ^{2}
 
-        where :math:`n` is the number of valid elements of positive weight, and :math:`M` is the mean.
+        where :math:`W` is sum of weights over valid elements of positive weight, and :math:`M` is the weighted mean.
+
+        Population Variance
+            Population Variance is computed by the following formula:
+
+        .. math::
+
+            \\left( \\frac{1}{W} \\right) * sum_{i}  \\left(x_{i} - M \\right) ^{2}
+
+        where :math:`W` is sum of weights over valid elements of positive weight, and :math:`M` is the weighted mean.
 
         Standard Deviation
             The square root of the variance.

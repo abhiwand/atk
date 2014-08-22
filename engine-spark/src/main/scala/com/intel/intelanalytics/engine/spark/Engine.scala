@@ -687,7 +687,14 @@ class SparkEngine(sparkContextManager: SparkContextManager,
       (Some(weightsColumnIndex), Some(frame.schema.columns(weightsColumnIndex)._2))
     }
 
-    ColumnStatistics.columnSummaryStatistics(columnIndex, valueDataType, weightsColumnIndexOption, weightsDataTypeOption, rdd)
+    val usePopulationVariance = arguments.usePopulationVariance.getOrElse(false)
+
+    ColumnStatistics.columnSummaryStatistics(columnIndex,
+      valueDataType,
+      weightsColumnIndexOption,
+      weightsDataTypeOption,
+      rdd,
+      usePopulationVariance)
   }
 
   // TODO TRIB-2245

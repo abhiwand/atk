@@ -111,18 +111,21 @@ private[spark] object ColumnStatistics extends Serializable {
    * @param weightsColumnIndexOption Option for index of column providing the weights. Must be numerical data.
    * @param weightsTypeOption Option for the datatype of the weights.
    * @param rowRDD RDD of input rows.
+   * @param usePopulationVariance If true, variance is calculated as population variance. If false, variance is
+   *                              calculated as sample variance.
    * @return Summary statistics of the column.
    */
   def columnSummaryStatistics(dataColumnIndex: Int,
                               dataType: DataType,
                               weightsColumnIndexOption: Option[Int],
                               weightsTypeOption: Option[DataType],
-                              rowRDD: RDD[Row]): ColumnSummaryStatisticsReturn = {
+                              rowRDD: RDD[Row],
+                              usePopulationVariance: Boolean): ColumnSummaryStatisticsReturn = {
 
     val dataWeightPairs: RDD[(Double, Double)] =
       getDoubleWeightPairs(dataColumnIndex, dataType, weightsColumnIndexOption, weightsTypeOption, rowRDD)
 
-    val stats = new NumericalStatistics(dataWeightPairs)
+    val stats = new NumericalStatistics(dataWeightPairs, usePopulationVariance)
 
     ColumnSummaryStatisticsReturn(mean = stats.weightedMean,
       geometricMean = stats.weightedGeometricMean,
@@ -165,7 +168,9 @@ private[spark] object ColumnStatistics extends Serializable {
     val dataWeightPairs: RDD[(Double, Double)] =
       getDoubleWeightPairs(dataColumnIndex, dataType, weightsColumnIndexOption, weightsTypeOption, rowRDD)
 
-    val stats = new NumericalStatistics(dataWeightPairs)
+    // since we aren't offering full statistics right now, this just makes the project compile
+    // if we want to use population variance in full statistics, we'll have to plumb that down
+    val stats = new NumericalStatistics(dataWeightPairs, false)
 
     ColumnFullStatisticsReturn(mean = stats.weightedMean,
       geometricMean = stats.weightedGeometricMean,
