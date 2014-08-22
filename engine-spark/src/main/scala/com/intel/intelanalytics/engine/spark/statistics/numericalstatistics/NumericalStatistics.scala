@@ -120,14 +120,21 @@ class NumericalStatistics(dataWeightPairs: RDD[(Double, Double)], usePopulationV
    * NaN when there are <= 1 data elements of positive weight.
    */
   lazy val meanConfidenceLower: Double =
-    if (positiveWeightCount > 1) weightedMean - (1.96) * (weightedStandardDeviation / Math.sqrt(positiveWeightCount)) else Double.NaN
+
+    if (positiveWeightCount > 1 && weightedStandardDeviation != Double.NaN)
+      weightedMean - (1.96) * (weightedStandardDeviation / Math.sqrt(positiveWeightCount))
+    else
+      Double.NaN
 
   /**
    * The lower limit of the 95% confidence interval about the mean. (Assumes that the distribution is normal.)
    * NaN when there are <= 1 data elements of positive weight.
    */
   lazy val meanConfidenceUpper: Double =
-    if (positiveWeightCount > 1) weightedMean + (1.96) * (weightedStandardDeviation / Math.sqrt(positiveWeightCount)) else Double.NaN
+    if (positiveWeightCount > 1 && weightedStandardDeviation != Double.NaN)
+      weightedMean + (1.96) * (weightedStandardDeviation / Math.sqrt(positiveWeightCount))
+    else
+      Double.NaN
 
   /**
    * The un-weighted skewness of the dataset.

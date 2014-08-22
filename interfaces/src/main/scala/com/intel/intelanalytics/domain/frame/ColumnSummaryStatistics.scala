@@ -32,8 +32,7 @@ import spray.json.JsValue
  * @param weightsColumn Optional. Name of the column that provides weights (frequencies).
  * @param usePopulationVariance If true, variance calculated is the population variance. If false or the option is not
  *                              provided, the variance calculated is the sample variance. Because this option affects
- *                              the variance, it affects the standard deviation and the confidence intervals as well. It
- *                              is an error to request sample variance when the sum of weights is <= 1.
+ *                              the variance, it affects the standard deviation and the confidence intervals as well.
  */
 case class ColumnSummaryStatistics(frame: FrameReference,
                                    dataColumn: String,
@@ -55,18 +54,21 @@ case class ColumnSummaryStatistics(frame: FrameReference,
  * @param geometricMean Geometric mean of the data. None when there is a non-positive data element, 1 if there are no
  *                       data elements.
  * @param variance If sample variance is used,  the variance  is the weighted sum of squared distances from the mean is
- *                 divided by the sum of weights minus 1. If population variance is used, the variance is the weighted
- *                 sum of squared distances from the mean divided by the sum of weights.
- *                 In either case, the variance is None when the number of data elements is < 2.
- * @param standardDeviation Square root of the variance. None when the number of data elements is < 2.
+ *                 divided by the sum of weights minus 1 (NaN if the sum of the weights is <= 1).
+ *                 If population variance is used, the variance is the weighted sum of squared distances from the mean
+ *                 divided by the sum of weights.
+ * @param standardDeviation Square root of the variance. None when sample variance is used and the sum of the weights
+ *                          is <= 1.
  * @param totalWeight The sum of all weights over valid input rows. (Ie. neither data nor weight is NaN, or infinity,
  *                    and weight is > 0).
  * @param minimum Minimum value in the data. None when there are no data elements of positive weight.
  * @param maximum Maximum value in the data. None when there are no data elements of positive weight.
  * @param meanConfidenceLower: Lower limit of the 95% confidence interval about the mean. Assumes a Gaussian RV.
- *                             None when there are <= 1 data elements of positive weight.
+ *                             None when there are no elements of positive weight or if sample variance is used and
+ *                             the sum of the weights is <= 1.
  * @param meanConfidenceUpper: Upper limit of the 95% confidence interval about the mean. Assumes a Gaussian RV.
- *                              None when there are <= 1 data elements of positive weight.
+ *                             None when there are no elements of positive weight or if sample variance is used and
+ *                             the sum of the weights is <= 1.
  * @param badRowCount The number of rows containing a NaN or infinite value in either the data or weights column.
  * @param goodRowCount The number of rows containing a NaN or infinite value in either the data or weight
  * @param positiveWeightCount  The number valid data elements with weights > 0.
@@ -78,10 +80,10 @@ case class ColumnSummaryStatisticsReturn(mean: Double,
                                          variance: Double,
                                          standardDeviation: Double,
                                          totalWeight: Double,
-                                         minimum: Option[Double],
-                                         maximum: Option[Double],
-                                         meanConfidenceLower: Option[Double],
-                                         meanConfidenceUpper: Option[Double],
+                                         minimum: Double,
+                                         maximum: Double,
+                                         meanConfidenceLower: Double,
+                                         meanConfidenceUpper: Double,
                                          badRowCount: Long,
                                          goodRowCount: Long,
                                          positiveWeightCount: Long,

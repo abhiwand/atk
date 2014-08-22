@@ -839,8 +839,8 @@ class BigFrame(CommandSupport):
         use_population_variance : bool (optional)
             If true, the variance is calculated as the population variance. If false, the variance calculated as the
              sample variance. Because this option affects the variance, it affects the standard deviation and the
-             confidence intervals as well. It is an error to request sample variance when the sum of weights is <= 1.
-             This option is False by default (so sample variance is the default).
+             confidence intervals as well. This option is False by default, so that sample variance is the default
+             form of variance calculated.
         Returns
         -------
         summary : Dict
@@ -850,18 +850,19 @@ class BigFrame(CommandSupport):
                   Arithmetic mean of the data.
 
             | geometric_mean:
-                  Geometric mean of the data. None when there is a data element <= 0, 1.0 when there are no data elements.
+                  Geometric mean of the data. None when there is a data element <= 0, 1.0 when there are no data
+                  elements.
 
             | variance:
                   None when there are <= 1 many data elements.
                   Sample variance is the weighted sum of the squared distance of each data element from the
-                   weighted mean, divided by the total weight minus 1. It is an error to compute sample variance
-                   when the net weight is <= 1.
+                   weighted mean, divided by the total weight minus 1. None when the sum of the weights is <= 1.
                   Population variance is the weighted sum of the squared distance of each data element from the
                    weighted mean, divided by the total weight.
 
             | standard_deviation:
-                  Standard deviation of the data. None when there are <= 1 many data elements.
+                  The square root of the variance. None when  sample variance
+                  is being used and the sum of weights is <= 1.
 
 
             | valid_data_count:
@@ -876,11 +877,13 @@ class BigFrame(CommandSupport):
 
             | mean_confidence_lower:
                   Lower limit of the 95% confidence interval about the mean.
-                  Assumes a Gaussian distribution. None when there are 0 or 1 data elements.
+                  Assumes a Gaussian distribution. None when there are no data elements, or if sample variance
+                  is being used and the sum of weights is <= 1.
 
             | mean_confidence_upper:
                   Upper limit of the 95% confidence interval about the mean.
-                  Assumes a Gaussian distribution. None when there are 0 or 1 data elements.
+                  Assumes a Gaussian distribution. None when there are no data elements, or if sample variance
+                  is being used and the sum of weights is <= 1.
 
         Notes
         -----
