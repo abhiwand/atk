@@ -27,7 +27,9 @@ package com.intel.spark.graphon.communitydetection.kclique
 import org.apache.spark.rdd.RDD
 import com.intel.spark.graphon.communitydetection.kclique.datatypes.Datatypes.VertexSet
 import org.apache.spark.SparkContext._
+import org.apache.spark.SparkContext
 import com.intel.spark.graphon.communitydetection.kclique.datatypes._
+import com.intel.spark.graphon.connectedcomponents.NormalizeConnectedComponents
 
 /**
  * Get the mapping pair between vertices of each k-cliques and set of community IDs that has been generated from
@@ -44,7 +46,7 @@ object CommunityAssigner extends Serializable {
    * @param cliqueGraphVertexIdToCliqueSet pair of new Long IDs and corresponding k-cliques
    * @return an RDD of pair of original vertex ID and set of community IDs to which it belongs
    */
-  def run(connectedComponents: RDD[(Long, Long)], cliqueGraphVertexIdToCliqueSet: RDD[(Long, VertexSet)]): RDD[(Long, Set[Long])] = {
+  def run(connectedComponents: RDD[(Long, Long)], cliqueGraphVertexIdToCliqueSet: RDD[(Long, VertexSet)], sc: SparkContext): RDD[(Long, Set[Long])] = {
 
     // Pair of seq of community Id and seq of k-cliques by cogrouping
     // connected components (new vertices and community Id pair) and new vertices Id to
@@ -59,14 +61,18 @@ object CommunityAssigner extends Serializable {
     })
 
     // Emit community Id and old vertex vertex Id (of k-clique) pair from the set of vertex Id
-    val communityVertexPair = communityIdToVertexIdSet.flatMap(communityIdVertices =>
-      communityIdVertices._2.map(vertex =>
-        VertexCommunity(vertex, communityIdVertices._1)))
+    val vertexCommunityIDPair = communityIdToVertexIdSet.flatMap(communityIdVertices =>
+      communityIdVertices._2.map(vertex => (vertex, communityIdVertices._1)))
+
+    // Modify the long random community IDs with the normalized community IDs inside the pair 
+    val (communityCount, vertexNormalizedCommunityIDPair) =
+      NormalizeConnectedComponents.normalize(vertexCommunityIDPair, sc)
 
     // group the communities for each k-clique vertices and get pair of vertex Id and set of community Ids
-    val vertexCommunitySet: RDD[(Long, Set[Long])] = communityVertexPair.groupBy(_.vertexID).mapValues(_.map(_.communityID).toSet)
+    val vertexCommunityIDSet: RDD[(Long, Set[Long])] = vertexNormalizedCommunityIDPair
+      .groupBy(_._1).mapValues(_.map(_._2).toSet)
 
-    vertexCommunitySet
+    vertexCommunityIDSet
   }
 
 }

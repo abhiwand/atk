@@ -43,11 +43,11 @@ class CommunityAssignerTest extends FlatSpec with Matchers with TestingSparkCont
     ).map({ case (renamedID, kClique) => (renamedID.toLong, kClique.map(_.toLong).toSet) })
 
     val vertexWithCommunityList = List(
-      (2, Array(1)),
+      (2, Array(2)),
       (3, Array(1, 2)),
-      (4, Array(1)),
+      (4, Array(2)),
       (5, Array(1, 2)),
-      (6, Array(2)),
+      (6, Array(1)),
       (7, Array(1, 2)),
       (8, Array(1, 2))
     ).map({ case (vertex, community) => (vertex.toLong, community.map(_.toLong).toSet) })
@@ -62,8 +62,9 @@ class CommunityAssignerTest extends FlatSpec with Matchers with TestingSparkCont
       val rddOfRenamedIDWithCommunity = sparkContext.parallelize(renamedIDWithCommunity)
       val rddOfRenamedIDWithOriginalKClique = sparkContext.parallelize(renamedIDWithOriginalKClique)
 
-      val vertexWithAssignedCommunities = CommunityAssigner.run(rddOfRenamedIDWithCommunity, rddOfRenamedIDWithOriginalKClique)
+      val vertexWithAssignedCommunities = CommunityAssigner.run(rddOfRenamedIDWithCommunity, rddOfRenamedIDWithOriginalKClique, sparkContext)
 
       vertexWithAssignedCommunities.collect().toSet shouldEqual rddOfVertexWithCommunityList.collect().toSet
     }
 }
+

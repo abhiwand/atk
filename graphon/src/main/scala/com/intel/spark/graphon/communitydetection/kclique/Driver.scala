@@ -77,7 +77,7 @@ object Driver {
 
     // Pair each vertex with a set of the communities to which it belongs
     val vertexCommunitySet =
-      CommunityAssigner.run(cliquesAndConnectedComponent.connectedComponents, cliquesAndConnectedComponent.newVertexIdToOldVertexIdOfCliqueGraph)
+      CommunityAssigner.run(cliquesAndConnectedComponent.connectedComponents, cliquesAndConnectedComponent.newVertexIdToOldVertexIdOfCliqueGraph, sc)
 
     // Set the vertex Ids as required by Graph Builder
     // A Graph Builder vertex is described by three components -
