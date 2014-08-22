@@ -1,5 +1,5 @@
 @echo off
-set DEBUG=0
+set DEBUG=1
 if "%DEBUG%" equ "0" echo : Check for help request
 echo "/%1/%2/%3/%4/%5/%6/%7/%8/%9/" | find /I "/-h/" > nul
 set E1=%ERRORLEVEL%
@@ -114,9 +114,7 @@ if "%ERRORLEVEL%" equ "0" set BUILD=0
 if "%BUILD%" equ "1" goto:SEEK_TEXT
 python fix_latex.py
 if "%ERRORLEVEL%" equ "1" goto:SEEK_TEXT
-cd build\latex
-echo make
-cd ..\..
+call tex-2-pdf %1 %2 %3 %4 %5 %6 %7 %8 %9
 
 :SEEK_TEXT
 if "%DEBUG%" equ "0" echo : Look for text
