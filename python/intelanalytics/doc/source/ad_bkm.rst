@@ -2,6 +2,11 @@
 Best Known Methods
 ==================
 
+.. toctree::
+    :hidden:
+    
+    index
+
 ---
 Yum
 ---
