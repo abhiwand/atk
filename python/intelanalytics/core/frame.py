@@ -388,7 +388,8 @@ class BigFrame(command_loadable):
     @property
     def row_count(self):
         """
-        Returns number of rows
+        Returns number of rows.
+        
         Returns
         -------
         int
@@ -397,10 +398,15 @@ class BigFrame(command_loadable):
         Examples
         --------
         Get the number of rows::
+        
             my_frame.row_count
+            
         The result given is::
+        
             81734
+            
         .. versionadded:: 0.8
+        
         """
         try:
             return self._backend.get_row_count(self)
