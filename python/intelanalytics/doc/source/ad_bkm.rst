@@ -1,6 +1,6 @@
-==================
-Best Known Methods
-==================
+==========================
+Best Known Methods (Admin)
+==========================
 
 ---
 Yum
@@ -10,23 +10,62 @@ If you have trouble downloading any of the dependencies run::
 
     yum clean all
 
-or
-::
+or::
 
     yum clean expire-cache
     
--------
-Plugins
--------
+-------------------------
+Configuration information
+-------------------------
 
-Spark Bug
-=========
+Partitioning
+============
 
-When implementing a plugin, using Spark prior to version 1.1.0, avoid using the Spark *top* function.
+Rules of thumb
+    Choose a reasonable number of partitions: no smaller than 100, no larger than 10,000 (large cluster)
+        Lower bound: at least 2x number of cores in your cluster
+            Too few partitions results in
+                Less concurrency
+                More susceptible to data skew
+                Increased memory pressure
+
+        Upper bound: ensure your tasks take at least 100ms (if they are going faster, then you are probably spending more time scheduling tasks than
+executing them)
+            Too many partitions results in
+                Time wasted spent scheduling
+                If you choose a number way too high then more time will be spent scheduling than executing
+
+            10,000 would be way too big for a 4 node cluster
+
+        Notes
+
+.. ifconfig:: internal_docs
+
+            Graph builder could not complete 1GB Netflix graph with less than 60 partitions - about 90 was optimal (larger needed for large data)
+            Graph builder ran into issues with partition size larger than 2000 on 4 node cluster with larger data sizes
+
+.. _ad_bkm_ide:
+
+-----------------------------------
+Integrated Development Environments
+-----------------------------------
+.. toctree::
+
+    ds_eclipse
+    ds_intellij
+    
+-----
+Spark
+-----
+
+Plug-in Spark Bug
+=================
+
+When implementing a plug-in, using Spark prior to version 1.1.0, avoid using the Spark *top* function.
 Instead, use the less efficient *sortByKey* function.
 The Spark *top* function has a bug filed against it when using Kryo serializer.
 This has been fixed in Spark 1.1.0.
-There is a known work-around, but there are issues implementing it in our plugin architecture.
+There is a known work-around, but there are issues implementing it in our plug-in architecture.
 See https://issues.apache.org/jira/browse/SPARK-2306.
 
 Resolving disk full issue while running Spark jobs
@@ -40,7 +79,7 @@ run time including but not limited to shuffle data.
 
 In order to resolve this, follow these instructions:
 
-1)  Stop the Intelanalytics service
+1)  Stop the intelanalytics service
 
 #)  From CDH Web UI: first stop "Cloudera Management Service", and then stop the CDH.
 
@@ -73,3 +112,21 @@ These can use up a bit of space eventually (over 140MB per command).
 
 * Short-term workaround: periodically delete these files
 * Long-term fix: Spark 1.0 will automatically clean up the files
+
+----------
+References
+----------
+
+Spark Docs
+    | http://spark.apache.org/docs/0.9.0/configuration.html
+    | http://spark.apache.org/docs/0.9.0/tuning.html
+
+Nice thread on how Shuffle works in Spark,
+    http://apache-spark-user-list.1001560.n3.nabble.com/How-does-shuffle-work-in-spark-td584.html
+
+
+| 
+
+<- :doc:`ad_inst`
+<------------------------------>
+:doc:`index` ->

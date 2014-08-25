@@ -2,12 +2,32 @@
 Virtual Machines
 ================
 
+------------
+Introduction
+------------
 Thank you for your interest in the Intel Analytics Toolkit 0.8 beta.
-Please follow the steps below to download your copy of the beta product.
+This guide will walk you through the download and import of the Intel Analytics beta.
+Currently the Intel Analytics toolkit VM only supports Virtual Box.
+We will not cover the installation of Virtual Box.
+Virtual Box supports many platforms and can be downloaded for free.
+The installation documentation is also available online.
+------------
+Requirements
+------------
+12GB of memory needs to be allocated to the VM
 
-------------------------
-VM Download Instructions
-------------------------
+30 GB of free hard drive space
+
+Working Virtual Box installation 4.3
+
+---------------------
+Download Instructions
+---------------------
+
+Note:
+    Don't forget to open a Linux shell (or for Windows user a command prompt) to run the various commands.
+
+.. figure:: ad_inst_vm_00.*
 
 The VM image is downloaded from AWS.
 The download will require that you have the AWS Command Line Interface (CLI) client on your system.
@@ -50,6 +70,7 @@ You will be prompted for to enter your access and secret keys you were given.
 When Prompted for a Default region name use 'us-west-2'.
 When prompted for default output format use 'json'.
 ::
+
     AWS Access Key ID [None]: my access key
     AWS Secret Access Key [None]: my secret key
     Default region name [None]: us-west-2
@@ -57,56 +78,56 @@ When prompted for default output format use 'json'.
 
 To download the VM run::
 
-    aws s3 cp s3://intel-analytics-repo/release/latest/vm/IntelAnalytics-0.8.0-CDH-5.0.3.tar.gz
+    aws s3 cp s3://intel-analytics-repo/release/latest/VM/IntelAnalytics-0.8.0-CDH-5.0.3.tar.gz
     
 Depending on the release you would like to download, you can change '0.8.0' to the latest release, or another you would like to try.
 
---------------------------------
-Running Intel Analytics VM image
---------------------------------
+---------------
+Extract Archive
+---------------
 
-To jump start usage of the IA toolkit we have modified the base Cloudera Virtual Box VM with the IA toolkit.
-Currently the Intel Analytics toolkit VM only supports `Virtual Box <https://www.virtualbox.org/>`.
-We will not cover the installation of Virtual Box.
-Virtual Box supports many platforms and can be `downloaded <https://www.virtualbox.org/wiki/Downloads]>` for free.
-The installation documentation is also `available online <https://www.virtualbox.org/manual/UserManual.html]>`.
+Extracting On Windows
+=====================
+Extracting on Windows is relatively easy.
+Use any of the following tools to extract the archive, 7zip , WinZip , Winrar , etc...
 
-Installation
-============
+Extracting On Linux
+===================
+After acquiring the VM, extract the archive::
 
-After acquiring the VM extract the archive::
-
-    tar -xvf IntelAnalytics-0.8.0-CDH-5.0.3.tar.gz
+    tar -xvf IntelAnalytics-0.8.0-CDH-5.0.3.tar.gz
 
 You should have two files after extracting::
 
     IntelAnalytics-0.8.0-CDH-5.0.3-disk1.vmdk
     IntelAnalytics-0.8.0-CDH-5.0.3.ovf
 
-Import
-======
-
+Import Image
+============
 In Virtual Box go to the file menu then import appliance.
+File -> Import Appliance
 
-File \-> Import Appliance
+.. figure:: ad_inst_vm_01.*
 
-.. image:: ad_inst_vm_01.*
+Select your file
 
-Select your file.
+.. figure:: ad_inst_vm_02.*
+ 
+Import Intel Analytics VM
 
-.. image:: ad_inst_vm_02.*
-
-Import IA VM
-
-.. image:: ad_inst_vm_03.*
-
+.. figure:: ad_inst_vm_03.*
+ 
 After clicking 'Import' wait for the VM to be imported
 
-.. image:: ad_inst_vm_04.*
-
+.. figure:: ad_inst_vm_04.*
+ 
 Once the VM is imported go ahead and boot the VM by selecting the VM and clicking start
 
-.. image:: ad_inst_vm_05.*
+.. figure:: ad_inst_vm_05.*
+ 
+--------------------------------
+Running Intel Analytics VM image
+--------------------------------
 
 Before you start
 ================
@@ -116,8 +137,13 @@ After every reboot of the VM you must restart the IA server.
 
     sudo service intelanalytics restart
 
+If you restart service and you see the following output you can ignore it. All it means is that the service wasn't running before it was told to stop.
+::
+    
+    initctl: Unknown instance:
+
 Examples
-========
+--------
 
 The VM is pre-configured and installed with IA toolkit.
 It has many examples and datasets to get you started as soon as the VM is booted.
@@ -144,15 +170,15 @@ the actual data that is being used by the python examples and the intelanalytics
 To run any of the python example scripts, make sure you are in the examples directory and start python with the script name::
 
     cd /home/cloudera/examples
-    python SCRIPT_NAME.py
+    python <SCRIPT_NAME>.py
 
-where SCRIPT_NAME is any of the scripts in '/home/cloudera/example'.
+where ``<SCRIPT_NAME>`` is any of the scripts in '/home/cloudera/example'.
 
 Logs
-====
+----
 
 If you need to debug changes to the scripts (or peak behind the curtain) the log files are located at '/var/log/intelanalytics/rest-server/output.log'.
-::
+To show the log information as it gets appended to the the log file run "tail -f"::
 
     sudo tail -f /var/log/intelanalytics/rest-server/output.log
 
@@ -183,3 +209,12 @@ To update::
 
     sudo yum update intelanalytics-rest-server
 
+|
+
+<- :doc:`ad_psql_cs`
+<------------------------------->
+:doc:`ad_plug` ->
+
+<- :doc:`ad_inst`
+
+<- :doc:`index`

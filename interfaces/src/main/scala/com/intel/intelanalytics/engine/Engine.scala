@@ -28,12 +28,13 @@ import com.intel.intelanalytics.domain.FilterPredicate
 import com.intel.intelanalytics.domain.frame._
 import com.intel.intelanalytics.domain.frame.load.Load
 import com.intel.intelanalytics.domain.graph.{ Graph, GraphLoad, GraphTemplate, RenameGraph }
-import com.intel.intelanalytics.domain.query.{ Execution => QueryExecution, RowQuery, Query }
+import com.intel.intelanalytics.domain.query.{ Execution => QueryExecution, PagedQueryResult, QueryDataResult, RowQuery, Query }
 import com.intel.intelanalytics.engine.Rows._
 import com.intel.intelanalytics.security.UserPrincipal
 import spray.json.JsObject
 
 import scala.concurrent.Future
+import com.intel.intelanalytics.domain.schema.Schema
 
 //TODO: make these all use Try instead?
 //TODO: make as many of these as possible use id instead of dataframe as the first argument?
@@ -68,13 +69,13 @@ trait Engine {
 
   def getQuery(id: Identifier): Future[Option[Query]]
 
-  def getQueryPage(id: Identifier, pageId: Identifier)(implicit user: UserPrincipal): Iterable[Any]
+  def getQueryPage(id: Identifier, pageId: Identifier)(implicit user: UserPrincipal): QueryDataResult
 
   def getFrame(id: Identifier)(implicit user: UserPrincipal): Future[Option[DataFrame]]
 
-  def getRows(arguments: RowQuery[Identifier])(implicit user: UserPrincipal): Future[Iterable[Any]]
+  def getRows(arguments: RowQuery[Identifier])(implicit user: UserPrincipal): Future[QueryDataResult]
 
-  def getRowsLarge(arguments: RowQuery[Identifier])(implicit user: UserPrincipal): QueryExecution
+  def getRowsLarge(arguments: RowQuery[Identifier])(implicit user: UserPrincipal): PagedQueryResult
 
   def create(frame: DataFrameTemplate)(implicit user: UserPrincipal): Future[DataFrame]
 
@@ -113,11 +114,11 @@ trait Engine {
 
   def columnMedian(arguments: ColumnMedian)(implicit user: UserPrincipal): Execution
 
+  def columnMode(arguments: ColumnMode)(implicit user: UserPrincipal): Execution
+
   // TODO TRIB-2245
   /*
   def columnFullStatistics(arguments: ColumnFullStatistics)(implicit user: UserPrincipal): Execution
-
-  def columnMode(arguments: ColumnMode)(implicit user: UserPrincipal): Execution
 
   */
 
