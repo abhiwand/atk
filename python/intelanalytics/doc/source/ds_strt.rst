@@ -23,14 +23,14 @@ Features
 Built-in Databases
 ------------------
 
-The Analytics Toolkit stores data as either traditional table-based format in HBase, or in a graph database,
+The Analytics Toolkit stores data as either traditional table-based format, or in a graph database,
 and it provides the tools to allow data scientists to easily manipulate data in either of these data formats.
 
 *The following is new for release 0.8.2.*
 
---------
-Examples
---------
+---------------
+Script Examples
+---------------
 
 Intel Analytics ships with example scripts and data sets that exercise the various features of the platform.
 The example scripts can be found in the iauser's home directory usually /home/iauser.
@@ -94,6 +94,13 @@ The IAT provides a set of functionality exposed through a Python API, which can 
 You'll want to know about `Apache Hadoop`_ * and its various components.
 We use HDFS, :term:`MapReduce`, and YARN, as well as `Apache Giraph`_ * for graph-based machine learning.
 The Tital graph database can be queried using the `Gremlin`_ * graph query language from TinkerPop™.
+
+| 
+
+<- :doc:`index`
+<------------------------------->
+:doc:`ds_db` ->
+
 
 .. rubric:: footnotes
 

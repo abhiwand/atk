@@ -38,6 +38,7 @@ import scala.concurrent.duration._
 
 import scala.concurrent._
 import com.intel.giraph.algorithms.cc.ConnectedComponentsComputation
+import com.intel.intelanalytics.domain.command.CommandDoc
 
 case class ConnectedComponentsCommand(graph: GraphReference,
                                       input_edge_label: String,
@@ -51,6 +52,9 @@ class ConnectedComponents
   import DomainJsonProtocol._
   implicit val connectedComponentsCommandFormat = jsonFormat4(ConnectedComponentsCommand)
   implicit val connectedComponentsResultFormat = jsonFormat1(ConnectedComponentsResult)
+
+  override def doc = Some(CommandDoc(oneLineSummary = "",
+    extendedSummary = Some("""""")))
 
   override def execute(invocation: Invocation, arguments: ConnectedComponentsCommand)(implicit user: UserPrincipal, executionContext: ExecutionContext): ConnectedComponentsResult = {
 
