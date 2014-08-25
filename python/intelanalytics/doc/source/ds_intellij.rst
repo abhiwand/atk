@@ -4,8 +4,9 @@
 IntelliJ Setup Instructions
 ===========================
 
+-------------
 Prerequisites
-=============
+-------------
 
 These instructions assume you have already installed
 
@@ -16,8 +17,9 @@ These instructions assume you have already installed
 Verify the "Python" plugin is enabled in IntelliJ by choosing "Settings" under the "File" menu, 
 searching for "Python", and choosing "Plugins" from the pane on the left-hand side.
 
+-----
 Setup
-=====
+-----
 1)  Select "New Project" on IntelliJ's initial screen
 
 #)  Select "Python" as the project type and choose "Next"

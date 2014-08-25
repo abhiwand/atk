@@ -1,11 +1,10 @@
-
-
 ==========================
 Eclipse Setup Instructions
 ==========================
 
+-------------
 Prerequisites
-=============
+-------------
 
 These instructions assume you have already installed
 
@@ -17,9 +16,9 @@ The Intel Analytics Toolkit should work with any version of Eclipse but these in
 
 If you are on a corporate network, you may need to configure proxy settings in Eclipse before beginning (see Eclipse documentation).
 
-
+-----
 Setup
-=====
+-----
 1)  Choose "Eclipse Marketplace" under the "Help" menu 
 
 #)  If the next screen does not come up you may need to configure proxy settings
