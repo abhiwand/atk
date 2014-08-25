@@ -48,12 +48,12 @@ class TestInspectionTable(unittest.TestCase):
 #        self.assertEquals(expected, repr(it).replace(" ", ""))
     def test_get_schema_for_selected_columns(self):
         schema = [('user_id', int32), ('vertex_type', str), ('movie_id', int32), ('rating', int32), ('splits', str)]
-        selected_schema = FrameSchema.get_schema_for_selected_columns(schema, ['user_id', 'splits'])
+        selected_schema = FrameSchema.get_schema_for_columns(schema, ['user_id', 'splits'])
         self.assertEqual(selected_schema, [('user_id', int32), ('splits', str)])
 
     def test_get_schema_for_selected_columns_change_order(self):
         schema = [('user_id', int32), ('vertex_type', str), ('movie_id', int32), ('rating', int32), ('splits', str)]
-        selected_schema = FrameSchema.get_schema_for_selected_columns(schema, ['splits', 'user_id', 'rating'])
+        selected_schema = FrameSchema.get_schema_for_columns(schema, ['splits', 'user_id', 'rating'])
         self.assertEqual(selected_schema, [('splits', str), ('user_id', int32), ('rating', int32)])
 
     def test_get_indices_for_selected_columns(self):

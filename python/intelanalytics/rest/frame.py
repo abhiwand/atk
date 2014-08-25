@@ -440,7 +440,7 @@ class FrameBackendRest(object):
 
         updated_schema = schema
         if selected_columns is not None:
-            updated_schema = FrameSchema.get_schema_for_selected_columns(schema, selected_columns)
+            updated_schema = FrameSchema.get_schema_for_columns(schema, selected_columns)
             indices = FrameSchema.get_indices_for_selected_columns(schema, selected_columns)
 
         data = result.data
@@ -601,7 +601,7 @@ class FrameSchema:
         return [(name, get_data_type_from_rest_str(data_type)) for name, data_type in s]
 
     @staticmethod
-    def get_schema_for_selected_columns(schema, selected_columns):
+    def get_schema_for_columns(schema, selected_columns):
         selected_schema = []
         for selected in selected_columns:
             for column in schema:
@@ -612,7 +612,7 @@ class FrameSchema:
 
     @staticmethod
     def get_indices_for_selected_columns(schema, selected_columns):
-        schema_for_selected_columns = FrameSchema.get_schema_for_selected_columns(schema, selected_columns)
+        schema_for_selected_columns = FrameSchema.get_schema_for_columns(schema, selected_columns)
         return [schema.index(f) for f in schema_for_selected_columns]
 
 
