@@ -1,5 +1,3 @@
-
-
 ===========================
 IntelliJ Setup Instructions
 ===========================
@@ -71,14 +69,14 @@ Setup
 #)  Under the "File" menu choose "New" and then "Python File"
 
 
-#)  Name the file "test" and type in the following code
-    ::
+#)  Name the file "test" and type in the following code::
+
         import intelanalytics as ia
         ia.server.ping()
 
 
-#)  Choose "Run" menu, choose "Run", you should see the output
-    ::
+#)  Choose "Run" menu, choose "Run", you should see the output::
+
         Successful ping to Intel Analytics at http://localhost:9099/info
 
 #)  Next take a look at the included examples

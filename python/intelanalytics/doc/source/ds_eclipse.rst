@@ -89,15 +89,15 @@ Setup
 
     #)  Close the "Help keeping PyDev alive" dialog, if it appears.
 
-    #)  Type the following code into test.py
-        ::
+    #)  Type the following code into test.py::
+    
             import intelanalytics as ia
             ia.server.ping()
 
 #)  Choose "Run" under the "Run" menu
 
-    #)  Choose "Python Run" and choose the "OK" button, you should see the output
-        ::
+    #)  Choose "Python Run" and choose the "OK" button, you should see the output::
+    
             Successful ping to Intel Analytics at http://localhost:9099/info
 
 #)  Next take a look at the included examples

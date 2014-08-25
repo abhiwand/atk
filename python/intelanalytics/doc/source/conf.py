@@ -195,7 +195,7 @@ html_last_updated_fmt = '%b %d, %Y'
 #html_use_smartypants = True
 
 # Custom sidebar templates, maps document names to template names.
-html_sidebars = {'**': ['globaltoc.html', 'searchbox.html', 'relations.html']}
+html_sidebars = {'**': ['searchbox.html', 'globaltoc.html']}
 
 # Additional templates that should be rendered to pages, maps page names to
 # template names.
