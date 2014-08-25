@@ -28,9 +28,9 @@ and it provides the tools to allow data scientists to easily manipulate data in 
 
 *The following is new for release 0.8.2.*
 
---------
-Examples
---------
+---------------
+Script Examples
+---------------
 
 Intel Analytics ships with example scripts and data sets that exercise the various features of the platform.
 The example scripts can be found in the iauser's home directory usually /home/iauser.
