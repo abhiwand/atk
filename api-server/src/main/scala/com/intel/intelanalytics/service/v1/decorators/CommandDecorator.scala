@@ -24,6 +24,9 @@ package com.intel.intelanalytics.service.v1.decorators
 
 import com.intel.intelanalytics.domain.command.Command
 import com.intel.intelanalytics.service.v1.viewmodels.{ RelLink, GetCommand, GetCommands }
+import spray.json.JsString
+
+import scala.util.parsing.json.JSON
 
 /**
  * A decorator that takes an entity from the database and converts it to a View/Model
@@ -40,8 +43,11 @@ object CommandDecorator extends EntityDecorator[Command, GetCommands, GetCommand
    * @return the View/Model
    */
   override def decorateEntity(uri: String, links: Iterable[RelLink], entity: Command): GetCommand = {
-
-    GetCommand(id = entity.id, name = entity.name,
+    val entity_arguments = entity.arguments.get
+    //val ia_uri: String = entity_arguments.getFields("destination").head.toString()
+    val ia_uri: String = entity_arguments.getFields("destination").head.asInstanceOf[JsString].value
+    //val ia_uri: String = JSON.stringify(entity_arguments.getFields("destination").head)
+    GetCommand(id = entity.id, name = entity.name, ia_uri,
       arguments = entity.arguments, error = entity.error, progress = entity.progress, complete = entity.complete,
       result = entity.result, links = links.toList)
   }

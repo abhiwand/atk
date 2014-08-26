@@ -45,6 +45,7 @@ import org.joda.time.DateTime
  */
 case class DataFrame(id: Long,
                      name: String,
+                     //ia_uri: String,
                      description: Option[String] = None,
                      schema: Schema = Schema(),
                      rowCount: Long,

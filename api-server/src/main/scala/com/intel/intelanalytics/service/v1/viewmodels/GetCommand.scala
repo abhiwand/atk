@@ -42,10 +42,11 @@ import com.intel.intelanalytics.engine.ProgressInfo
  * @param result result data for executing the command
  * @param links hyperlinks to related URIs
  */
-case class GetCommand(id: Long, name: String, arguments: Option[JsObject], error: Option[Error], progress: List[ProgressInfo],
+case class GetCommand(id: Long, name: String, ia_uri: String, arguments: Option[JsObject], error: Option[Error], progress: List[ProgressInfo],
                       complete: Boolean, result: Option[JsObject], links: List[RelLink]) {
   require(id > 0, "id must be greater than zero")
   require(name != null, "name may not be null")
+  require(ia_uri != null, "ia_uri may not be null")
   require(arguments != null, "arguments may not be null")
   require(links != null, "links may not be null")
   require(error != null, "links may not be null")

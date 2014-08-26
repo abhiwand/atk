@@ -138,6 +138,9 @@ class FrameBackendRest(object):
     def get_row_count(self, frame):
         return self._get_frame_info(frame).row_count
 
+    #def get_ia_uri(self, frame):
+    #    return self._get_frame_info(frame).ia_uri
+
     def get_repr(self, frame):
         frame_info = self._get_frame_info(frame)
         return "\n".join(['BigFrame "%s"\nrow_count = %d\nschema = ' % (frame_info.name, frame_info.row_count)] +
@@ -545,9 +548,9 @@ class  FrameInfo(object):
     def name(self):
         return self._payload['name']
 
-    #@property
+    @property
     #def ia_uri(self):
-    #    return self._payload['destination']
+    #    return self._payload['ia_uri']
 
     @property
     def schema(self):

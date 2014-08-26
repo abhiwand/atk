@@ -373,6 +373,7 @@ class BigFrame(CommandSupport):
         except:
             raise IaError(logger)
 
+
     @property
     def row_count(self):
         """
@@ -388,6 +389,13 @@ class BigFrame(CommandSupport):
             return self._backend.get_row_count(self)
         except:
             raise IaError(logger)
+
+    @property
+    #def ia_uri(self):
+    #    try:
+    #        return self._backend.get_ia_uri(self)
+    #    except:
+    #        raise IaError(logger)
 
     @property
     def schema(self):
