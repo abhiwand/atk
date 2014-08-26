@@ -17,7 +17,7 @@ mkdir -p $SCRIPTPATH/rpm/SOURCES
 cp $tarFile $SCRIPTPATH/rpm/SOURCES/${packageName}-${version}.tar.gz
 
 LICENSE="Confidential"
-SUMMARY="$packageName-$version Build number: $BUILD_NUMBER. TimeStamp $TIMESTAMP"
+#SUMMARY="$packageName$version Build number: $BUILD_NUMBER. TimeStamp $TIMESTAMP"
 DESCRIPTION="$SUMMARY 
 start the server with 'service intelanalytics-rest-server status' 
 config files are in /etc/intelanalytics/rest-server
