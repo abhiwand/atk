@@ -329,6 +329,7 @@ class CommandServerError(Exception):
             message = "(Server response insufficient to provide details)"
         Exception.__init__(self, message)
 
+QueryResult = namedtuple("QueryResult", ['data', 'schema'])
 
 class Executor(object):
     """
@@ -387,8 +388,6 @@ class Executor(object):
         """
         Issues the query_request to the server
         """
-        QueryResult = namedtuple("QueryResult", ['data', 'schema'])
-
         logger.info("Issuing query " + query_url)
         try:
             response = http.get(query_url)
