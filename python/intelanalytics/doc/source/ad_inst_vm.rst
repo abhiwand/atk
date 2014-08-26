@@ -130,7 +130,7 @@ Running Intel Analytics VM image
 --------------------------------
 
 Before you start
-----------------
+================
 
 After every reboot of the VM you must restart the IA server.
 ::
@@ -183,7 +183,7 @@ To show the log information as it gets appended to the the log file run "tail -f
     sudo tail -f /var/log/intelanalytics/rest-server/output.log
 
 Updating
---------
+========
 
 If you have been given access and secret keys, edit '/etc/yum.repos.d/ia.repo' and replace *myKey* and *mySecret*.
 Now you will be able to run Yum commands to check for and do updates.

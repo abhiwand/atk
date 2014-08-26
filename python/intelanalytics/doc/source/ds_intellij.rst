@@ -1,11 +1,10 @@
-
-
 ===========================
 IntelliJ Setup Instructions
 ===========================
 
+-------------
 Prerequisites
-=============
+-------------
 
 These instructions assume you have already installed
 
@@ -13,8 +12,12 @@ These instructions assume you have already installed
 - Intel Analytics Python Rest Client
 - IntelliJ
 
+Verify the "Python" plugin is enabled in IntelliJ by choosing "Settings" under the "File" menu, 
+searching for "Python", and choosing "Plugins" from the pane on the left-hand side.
+
+-----
 Setup
-=====
+-----
 1)  Select "New Project" on IntelliJ's initial screen
 
 #)  Select "Python" as the project type and choose "Next"
@@ -66,14 +69,14 @@ Setup
 #)  Under the "File" menu choose "New" and then "Python File"
 
 
-#)  Name the file "test" and type in the following code
-    ::
+#)  Name the file "test" and type in the following code::
+
         import intelanalytics as ia
         ia.server.ping()
 
 
-#)  Choose "Run" menu, choose "Run", you should see the output
-    ::
+#)  Choose "Run" menu, choose "Run", you should see the output::
+
         Successful ping to Intel Analytics at http://localhost:9099/info
 
 #)  Next take a look at the included examples

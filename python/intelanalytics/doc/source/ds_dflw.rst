@@ -2,6 +2,11 @@
 Process Flow Examples
 =====================
 
+.. toctree::
+    :hidden:
+    
+    ds_apir
+
 When using the toolkit, you will import your data, perform cleaning operations on it, possibly combine it with other data sets,
 and finally, analyze it.
 
@@ -773,8 +778,8 @@ Note:
     1. Consist of a label and its value. For example, the property *name* with its value taken from column *name* of our frame.
     #. Are optional, which means a vertex might have zero or more properties.
 
-Example:
-~~~~~~~~
+Vertex Rule Example:
+~~~~~~~~~~~~~~~~~~~~
 
 Create a vertex rule called “employee” from the above frame::
 
@@ -805,8 +810,8 @@ To create a rule for an edge, one needs to define:
     A. consist of a label and its value, for example, the property *name* with value taken from column *name* of a frame
     #. are optional, which means an edge might have zero or more properties
 
-Example:
-~~~~~~~~
+Edge Rule Example:
+~~~~~~~~~~~~~~~~~~
 
 Create an edge called “reports” from the same frame (accessed by BigFrame *my_frame*) as above, using previously
 defined *employee* and *manager* rules, and link them together::

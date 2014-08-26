@@ -1,6 +1,6 @@
-==================
-Best Known Methods
-==================
+=========================
+Best Known Methods (User)
+=========================
 
 -------------------------
 Configuration information
@@ -155,8 +155,8 @@ References
 ----------
 
 Spark Docs
-    http://spark.apache.org/docs/0.9.0/configuration.htmlhttps://securewiki.ith.intel.com/images/icons/linkext7.gif
-    http://spark.apache.org/docs/0.9.0/tuning.htmlhttps://securewiki.ith.intel.com/images/icons/linkext7.gif
+    | http://spark.apache.org/docs/0.9.0/configuration.html
+    | http://spark.apache.org/docs/0.9.0/tuning.html
 
 Nice thread on how Shuffle works in Spark,
     http://apache-spark-user-list.1001560.n3.nabble.com/How-does-shuffle-work-in-spark-td584.html

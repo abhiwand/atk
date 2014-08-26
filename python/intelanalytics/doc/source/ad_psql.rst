@@ -17,8 +17,8 @@ environment (where you want your data to persist between restarts).
 
 *   On your './interfaces/src/main/resources/reference.conf' or your 'application.conf' (if you are using RPM packages) set the following::
 
-    metastore.connection-postgresql.host = "localhost"
-    metastore.connection.url = "jdbc:postgresql://"${intel.analytics.metastore.connection-postgresql.host}":"${intel.analytics.metastore.connection-postgresql.port}"/"${intel.analytics.metastore.connection-postgresql.database}
+        metastore.connection-postgresql.host = "localhost"
+        metastore.connection.url = "jdbc:postgresql://"${intel.analytics.metastore.connection-postgresql.host}":"${intel.analytics.metastore.connection-postgresql.port}"/"${intel.analytics.metastore.connection-postgresql.database}
 
 *   Configure PostgreSQL to use password authentication
 
