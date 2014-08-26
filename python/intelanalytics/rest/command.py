@@ -57,6 +57,8 @@ def execute_command(command_name, **arguments):
     """Executes command and returns the output"""
     command_request = CommandRequest(command_name, arguments)
     command_info = executor.issue(command_request)
+    if (command_info.result.has_key('value') and len(command_info.result) == 1):
+        return command_info.result.get('value')
     return command_info.result
 
 
