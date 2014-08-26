@@ -23,7 +23,7 @@
 package com.intel.intelanalytics.service.v1.decorators
 
 import com.intel.intelanalytics.domain.graph.Graph
-import com.intel.intelanalytics.service.v1.viewmodels.{GetDataFrame, RelLink, GetGraph, GetGraphs}
+import com.intel.intelanalytics.service.v1.viewmodels.{ GetDataFrame, RelLink, GetGraph, GetGraphs }
 
 /**
  * A decorator that takes an entity from the database and converts it to a View/Model
