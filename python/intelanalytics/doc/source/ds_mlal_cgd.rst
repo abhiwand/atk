@@ -204,6 +204,7 @@ The bias result will be stored in cgd_bias.
 
     After execution, the algorithm's results are stored in database.
     The convergence curve is accessible through the report object.
+    
     Example
 
     Graph.ml.cgd(

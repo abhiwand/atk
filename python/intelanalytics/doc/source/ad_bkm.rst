@@ -1,6 +1,6 @@
-==================
-Best Known Methods
-==================
+==========================
+Best Known Methods (Admin)
+==========================
 
 ---
 Yum
@@ -44,7 +44,16 @@ executing them)
             Graph builder could not complete 1GB Netflix graph with less than 60 partitions - about 90 was optimal (larger needed for large data)
             Graph builder ran into issues with partition size larger than 2000 on 4 node cluster with larger data sizes
 
+.. _ad_bkm_ide:
 
+-----------------------------------
+Integrated Development Environments
+-----------------------------------
+.. toctree::
+
+    ds_eclipse
+    ds_intellij
+    
 -----
 Spark
 -----
@@ -109,8 +118,8 @@ References
 ----------
 
 Spark Docs
-    http://spark.apache.org/docs/0.9.0/configuration.htmlhttps://securewiki.ith.intel.com/images/icons/linkext7.gif
-    http://spark.apache.org/docs/0.9.0/tuning.htmlhttps://securewiki.ith.intel.com/images/icons/linkext7.gif
+    | http://spark.apache.org/docs/0.9.0/configuration.html
+    | http://spark.apache.org/docs/0.9.0/tuning.html
 
 Nice thread on how Shuffle works in Spark,
     http://apache-spark-user-list.1001560.n3.nabble.com/How-does-shuffle-work-in-spark-td584.html
