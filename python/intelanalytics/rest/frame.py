@@ -44,6 +44,7 @@ from intelanalytics.rest.command import CommandRequest, executor
 from intelanalytics.rest.spark import prepare_row_function, get_add_one_column_function, get_add_many_columns_function
 from collections import namedtuple
 
+TakeResult = namedtuple("TakeResult", ['data', 'schema'])
 
 class FrameBackendRest(object):
     """REST plumbing for BigFrame"""
@@ -447,8 +448,6 @@ class FrameBackendRest(object):
         if selected_columns is not None:
             data = FrameData.extract_data_from_selected_columns(data, indices)
 
-
-        TakeResult = namedtuple("TakeResult", ['data', 'schema'])
         return TakeResult(data, updated_schema)
 
 
