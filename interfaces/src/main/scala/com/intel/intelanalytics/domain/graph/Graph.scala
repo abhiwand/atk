@@ -40,6 +40,7 @@ import org.joda.time.DateTime
  */
 case class Graph(id: Long,
                  name: String,
+                 //ia_uri: String,
                  description: Option[String],
                  storage: String,
                  statusId: Long,
