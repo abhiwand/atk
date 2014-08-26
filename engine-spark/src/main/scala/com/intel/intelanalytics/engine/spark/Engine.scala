@@ -716,9 +716,9 @@ class SparkEngine(sparkContextManager: SparkContextManager,
   override def columnMedian(arguments: ColumnMedian)(implicit user: UserPrincipal): Execution =
     commands.execute(columnMedianCommand, arguments, user, implicitly[ExecutionContext])
 
-  val columnMedianDoc = CommandDoc(oneLineSummary = "Calculate (weighted)median of a column.",
+  val columnMedianDoc = CommandDoc(oneLineSummary = "Calculate (weighted) median of a column.",
     extendedSummary = Some("""
-                             Calculate the (weighted) median of a column. The median is the least value X in the range of the distribution so
+                             |Calculate the (weighted) median of a column. The median is the least value X in the range of the distribution so
                              |         that the cumulative weight of values strictly below X is strictly less than half of the total weight and
                              |          the cumulative weight of values up to and including X is >= 1/2 the total weight.
                              |
@@ -747,7 +747,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
                              |""".stripMargin))
 
   val columnMedianCommand: CommandPlugin[ColumnMedian, ColumnMedianReturn] =
-    commandPluginRegistry.registerCommand("dataframe/column_median", columnMedianSimple)
+    commandPluginRegistry.registerCommand("dataframe/column_median", columnMedianSimple, doc = Some(columnMedianDoc))
 
   def columnMedianSimple(arguments: ColumnMedian, user: UserPrincipal, invocation: SparkInvocation): ColumnMedianReturn = {
 
