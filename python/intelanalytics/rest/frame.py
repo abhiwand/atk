@@ -434,8 +434,6 @@ class FrameBackendRest(object):
 
 
     def take(self, frame, n, offset):
-        if n==0:
-            return []
         url = 'dataframes/{0}/data?offset={2}&count={1}'.format(frame._id,n, offset)
         result = executor.query(url)
         schema_json = result.schema
