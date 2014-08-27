@@ -119,42 +119,7 @@ if [ $? == 0 ]; then
     echo "/$1/$2/$3/$4/$5/$6/$7/$8/$9/" | grep -i -e "/html/" -e "/latexonly/" -e "/latex/" -e "/latexpdf/" -e "/pdf/" -e "/text/" \
         > /dev/null
     if [ $? == 0 ]; then
-        # Look for problems
-        BAK_FOUND='NO'
-        if [[ -f ../core/files.bak ]]; then
-            BAK_FOUND='YES'
-        fi
-        if [[ -f ../core/frame.bak ]]; then
-            BAK_FOUND='YES'
-        fi
-        if [[ -f ../core/graph.bak ]]; then
-            BAK_FOUND='YES'
-        fi
-        if [ "$BAK_FOUND" == "YES" ]; then
-            echo "Found a .bak for files, frame, or graph. Find out why."
-            exit 1
-        fi
-        make_backup 'files'
-        if [ "$?" -ne "0" ]; then
-            exit 1
-        fi
-        make_backup 'frame'
-        if [ "$?" -ne "0" ]; then
-            reset_backup 'files'
-            exit 1
-        fi
-        make_backup 'graph'
-        if [ "$?" -ne "0" ]; then
-            reset_backup 'files'
-            reset_backup 'frame'
-            exit 1
-        fi
-
-        # Translate each file to doc-specific file
-        change_class_object 'files'
-        change_class_object 'frame'
-        change_class_object 'graph'
-
+        
         # Look for html
         echo "/$1/$2/$3/$4/$5/$6/$7/$8/$9/" | grep -i "/html/" > /dev/null
         if [ $? == 0 ]; then
@@ -163,6 +128,8 @@ if [ $? == 0 ]; then
             fi
             # Ignore all toctree warnings.
             make -B html 2>&1 | grep -v -f toctreeWarnings
+            if [[ -f build/latex/IntelAnalytics.pdf ]]; then
+                cp build/latex/IntelAnalytics.pdf build/html/_downloads/
         fi
 
         # Look for latexpdf
@@ -179,6 +146,8 @@ if [ $? == 0 ]; then
                     cd build/latex
                     make
                     cd ../..
+                    if [ [[ -f build/latex/IntelAnalytics.pdf ]] && [[ -d build/html ]] ]; then
+                        cp build/latex/IntelAnalytics.pdf build/html/_downloads/
                 fi
             fi
         fi

@@ -19,7 +19,7 @@ import os
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #sys.path.insert(0, os.path.abspath('.'))
-p = os.path.abspath('../../../')
+p = os.path.abspath('../../python/')
 print "Adding path " + p
 sys.path.insert(0, p)# os.path.abspath('../../..'))
 print "sys.path is now:"
