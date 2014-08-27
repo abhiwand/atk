@@ -30,7 +30,17 @@ import uuid
 
 from intelanalytics.core.serialize import to_json
 from intelanalytics.core.column import BigColumn
-from intelanalytics.core.command import CommandSupport, doc_stub
+from intelanalytics.core.command import CommandSupport
+
+# try:
+#     from intelanalytics.core.autograph import CommandLoadableBigGraph as command_loadable
+#     logger.info("BigGraph is inheriting commands from autograph.py")
+# except:
+#     #logger.info("autograph.py not found, BigGraph is NOT inheriting commands from it")
+#     logger.info("BigGraph is still using older CommandSupport")
+#     command_loadable = CommandSupport
+command_loadable = CommandSupport  # TODO - enable BigGraph to use autograph.py
+
 
 def _get_backend():
     from intelanalytics.core.config import get_graph_backend
@@ -143,14 +153,14 @@ class Rule(object):
     # TODO - Docstrings
 
     def __init__(self):
-        self.source_frame = self.validate()
+        self.source_frame = self._validate()
 
     # A bunch of rule validation methods, each of which returns the common
     # source frame for the rule.  A little extra validation work here to enable
     # an easier API for the interactive user
 
     # Must be overridden:
-    def validate(self):
+    def _validate(self):
         """
 
         .. versionadded:: 0.8
@@ -160,7 +170,7 @@ class Rule(object):
         raise NotImplementedError
 
     @staticmethod
-    def validate_source(source, frame):
+    def _validate_source(source, frame):
         """
         Source: String or BigColumn.
 
@@ -205,19 +215,19 @@ class Rule(object):
         return frame
 
     @staticmethod
-    def validate_property(key, value, frame):
+    def _validate_property(key, value, frame):
         """
 
         .. versionadded:: 0.8
 
         """
         # TODO - Docstrings
-        frame = Rule.validate_source(key, frame)
-        frame = Rule.validate_source(value, frame)
+        frame = Rule._validate_source(key, frame)
+        frame = Rule._validate_source(value, frame)
         return frame
 
     @staticmethod
-    def validate_properties(properties):
+    def _validate_properties(properties):
         """
 
         .. versionadded:: 0.8
@@ -227,11 +237,11 @@ class Rule(object):
         frame = None
         if properties:
             for k, v in properties.items():
-                frame = Rule.validate_property(k, v, frame)
+                frame = Rule._validate_property(k, v, frame)
         return frame
 
     @staticmethod
-    def validate_same_frame(*frames):
+    def _validate_same_frame(*frames):
         """
         Assures all non-None frames provided are in fact the same frame.
 
@@ -290,7 +300,7 @@ class VertexRule(Rule):
     def __repr__(self):
         return to_json(self)
 
-    def validate(self):
+    def _validate(self):
         """
         Checks that the rule has what it needs.
 
@@ -301,16 +311,17 @@ class VertexRule(Rule):
         --------
         ::
 
-            Example
+            my_graph = BigGraph(my_rule_a, my_rule_b, my_rule_1)
+            validation = my_graph.validate()
 
         .. versionadded:: 0.8
 
         """
 
         # TODO - Add docstring
-        id_frame = self.validate_property(self.id_key, self.id_value, None)
-        properties_frame = self.validate_properties(self.properties)
-        return self.validate_same_frame(id_frame, properties_frame)
+        id_frame = self._validate_property(self.id_key, self.id_value, None)
+        properties_frame = self._validate_properties(self.properties)
+        return self._validate_same_frame(id_frame, properties_frame)
 
 
 class EdgeRule(Rule):
@@ -363,7 +374,7 @@ class EdgeRule(Rule):
     def __repr__(self):
         return to_json(self)
 
-    def validate(self):
+    def _validate(self):
         """
         Checks that the rule has what it needs.
 
@@ -388,24 +399,24 @@ class EdgeRule(Rule):
 
         label_frame = None
         if isinstance(self.label, BigColumn):
-            label_frame = VertexRule('label', self.label).validate()
+            label_frame = VertexRule('label', self.label)._validate()
         elif not self.label or not isinstance(self.label, basestring):
             raise TypeError("label argument must be a column or non-empty string")
 
         if isinstance(self.tail, VertexRule):
-            tail_frame = self.tail.validate()
+            tail_frame = self.tail._validate()
         else:
             raise TypeError("Invalid type %s for 'tail' argument. It must be a VertexRule." % self.tail)
 
         if isinstance(self.head, VertexRule):
-            head_frame = self.head.validate()
+            head_frame = self.head._validate()
         else:
             raise TypeError("Invalid type %s for 'head' argument. It must be a VertexRule." % self.head)
-        properties_frame = self.validate_properties(self.properties)
-        return self.validate_same_frame(label_frame, tail_frame, head_frame, properties_frame)
+        properties_frame = self._validate_properties(self.properties)
+        return self._validate_same_frame(label_frame, tail_frame, head_frame, properties_frame)
 
 
-class BigGraph(CommandSupport):
+class BigGraph(command_loadable):
     """
     Creates a big graph.
 
@@ -424,9 +435,9 @@ class BigGraph(CommandSupport):
 
         # create a frame as the source for a graph
         csv = CsvFile("/movie.csv", schema= [('user', int32),
-                                              ('vertexType', str),
-                                              ('movie', int32),
-                                              ('rating', str)])
+                                            ('vertexType', str),
+                                            ('movie', int32),
+                                            ('rating', str)])
         frame = BigFrame(csv)
 
         # define graph parsing rules
@@ -440,6 +451,11 @@ class BigGraph(CommandSupport):
     .. versionadded:: 0.8
 
     """
+
+    # command load filters:
+    command_prefixes = ['graph', 'graphs']
+    command_mute_list = ['load', 'rename_graph']  # these commands are not exposed
+
     def __init__(self, rules=None, name=""):
         try:
             self._id = 0
@@ -447,8 +463,6 @@ class BigGraph(CommandSupport):
                 self._backend = _get_backend()
             new_graph_name= self._backend.create(self, rules, name)
             CommandSupport.__init__(self)
-            #self.ml = GraphMachineLearning(self)
-            self.sampling = GraphSampling(self)
             logger.info('Created new graph "%s"', new_graph_name)
         except:
             raise IaError(logger)
@@ -536,9 +550,10 @@ class BigGraph(CommandSupport):
 
             # create a frame as the source for additional data
             csv = CsvFile("/movie.csv", schema= [('user', int32),
-                                              ('vertexType', str),
-                                              ('movie', int32),
-                                              ('rating', str)])
+                                                ('vertexType', str),
+                                                ('movie', int32),
+                                                ('rating', str)])
+
             frame = BigFrame(csv)
 
             # define graph parsing rules
@@ -575,6 +590,7 @@ class BigGraph(CommandSupport):
             graph.append([movieAdditional])
 
         .. versionadded:: 0.8
+
         """
         self._backend.append(self, rules)
 
@@ -587,92 +603,3 @@ class BigGraph(CommandSupport):
     #def add_props(self, rules)
     #def remove_props(self, rules)
 
-class GraphSampling(object):
-    """
-    Functionality for creating a graph sample
-
-    .. versionadded:: 0.8
-
-    """
-
-    def __init__(self, graph):
-        self.graph = graph
-        if not hasattr(self, '_backend'):
-            self._backend = _get_backend()
-
-    def vertex_sample(self, size, sample_type, seed=None):
-        """
-        Create a vertex induced subgraph obtained by vertex sampling
-
-        Three types of vertex sampling are provided: 'uniform', 'degree', and 'degreedist'.  A 'uniform' vertex sample
-        is obtained by sampling vertices uniformly at random.  For 'degree' vertex sampling, each vertex is weighted by
-        its out-degree.  For 'degreedist' vertex sampling, each vertex is weighted by the total number of vertices that
-        have the same out-degree as it.  That is, the weight applied to each vertex for 'degreedist' vertex sampling is
-        given by the out-degree histogram bin size.
-
-        Parameters
-        ----------
-        size : int
-            the number of vertices to sample from the graph
-        sample_type : str
-            the type of vertex sample among: ['uniform', 'degree', 'degreedist']
-        seed : (optional) int
-            random seed value
-
-        Returns
-        -------
-        BigGraph
-            a new BigGraph object representing the vertex induced subgraph
-
-        Examples
-        --------
-        Assume a set of rules created on a BigFrame that specifies 'user' and 'product' vertices as well as an edge
-        rule.  The BigGraph created from this data can be vertex sampled to obtained a vertex induced subgraph:
-
-            graph = BigGraph([user_vertex_rule, product_vertex_rule, edge_rule])
-            subgraph = graph.sampling.vertex_sample(1000, 'uniform')
-
-        """
-        result = self._backend.vertex_sample(self.graph, size, sample_type, seed)
-        return self._backend.get_graph(result['name'])
-
-
-class GraphMachineLearning(object):
-    """
-
-    .. versionadded:: 0.8
-
-    """
-    # TODO - Docstrings
-    def __init__(self, graph):
-        self.graph = graph
-        if not hasattr(self, '_backend'):
-            self._backend = _get_backend()
-
-    def als(self,
-            input_edge_property_list,
-            input_edge_label,
-            output_vertex_property_list,
-            vertex_type,
-            edge_type):
-        """
-
-        .. versionadded:: 0.8
-
-        """
-        # TODO - Docstrings
-        self._backend.als(self.graph,
-                          input_edge_property_list,
-                          input_edge_label,
-                          output_vertex_property_list,
-                          vertex_type,
-                          edge_type)
-
-    def recommend(self, vertex_id):
-        """
-
-        .. versionadded:: 0.8
-
-        """
-        # TODO - Docstrings
-        return self._backend.recommend(self.graph, vertex_id)

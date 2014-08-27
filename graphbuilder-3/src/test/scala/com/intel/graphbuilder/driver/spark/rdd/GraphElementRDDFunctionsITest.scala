@@ -25,26 +25,26 @@ package com.intel.graphbuilder.driver.spark.rdd
 
 import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRDDImplicits._
 import com.intel.graphbuilder.elements.{ Edge, Vertex, _ }
-import com.intel.testutils.Specs2TestingSparkContext
-import org.specs2.mutable.Specification
+import com.intel.testutils.TestingSparkContextWordSpec
+import org.scalatest.Matchers
 
-class GraphElementRDDFunctionsITest extends Specification {
+class GraphElementRDDFunctionsITest extends TestingSparkContextWordSpec with Matchers {
 
   "GraphElementRDDFunctions" should {
 
     // A lot of tests are being grouped together here because it
     // is somewhat expensive to spin up a testing SparkContext
-    "pass integration test" in new Specs2TestingSparkContext {
+    "pass integration test" in {
 
       val edge1 = new Edge(Property("gbId", 1L), Property("gbId", 2L), "myLabel", List(Property("key", "value")))
       val edge2 = new Edge(Property("gbId", 2L), Property("gbId", 3L), "myLabel", List(Property("key", "value")))
 
       val vertex = new Vertex(Property("gbId", 2L), Nil)
 
-      val graphElements = sc.parallelize(List[GraphElement](edge1, edge2, vertex))
+      val graphElements = sparkContext.parallelize(List[GraphElement](edge1, edge2, vertex))
 
-      graphElements.filterEdges().count() mustEqual 2
-      graphElements.filterVertices().count() mustEqual 1
+      graphElements.filterEdges().count() shouldBe 2
+      graphElements.filterVertices().count() shouldBe 1
     }
   }
 }
