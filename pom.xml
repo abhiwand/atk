@@ -310,12 +310,12 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                             <inherited>true</inherited>
                             <groupId>org.scalatest</groupId>
                             <artifactId>scalatest-maven-plugin</artifactId>
-                            <version>1.0-RC2</version>
+                            <version>1.0</version>
                             <configuration>
                                 <reportsDirectory>${project.build.directory}/surefire-reports</reportsDirectory>
                                 <junitxml>.</junitxml>
                                 <filereports>WDF TestSuite.txt</filereports>
-                                <parallel>false</parallel>
+                                <parallel>true</parallel>
                             </configuration>
                             <executions>
                                 <execution>
