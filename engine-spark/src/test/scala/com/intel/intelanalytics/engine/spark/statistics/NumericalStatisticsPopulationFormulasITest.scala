@@ -131,6 +131,35 @@ class NumericalStatisticsPopulationFormulasITest extends TestingSparkContextFlat
     Math.abs(testStandardDeviation - expectedStandardDeviationWeights) should be < epsilon
   }
 
+  "mean confidence lower" should "handle data with integer frequencies" in new NumericalStatisticsTestPopulationFormulas {
+
+    val testMCL = numericalStatisticsFrequencies.meanConfidenceLower
+
+    Math.abs(testMCL - (expectedMean - 1.96 * (expectedStandardDeviationFrequencies / Math.sqrt(netFrequencies)))) should be < epsilon
+  }
+
+  "mean confidence lower" should "handle data with fractional weights" in new NumericalStatisticsTestPopulationFormulas {
+
+    val testMCL = numericalStatisticsWeights.meanConfidenceLower
+
+    Math.abs(testMCL - (expectedMean - 1.96 * (expectedStandardDeviationWeights / Math.sqrt(netWeight)))) should be < epsilon
+  }
+
+
+  "mean confidence upper" should "handle data with integer frequencies" in new NumericalStatisticsTestPopulationFormulas {
+
+    val testMCU = numericalStatisticsFrequencies.meanConfidenceUpper
+
+    Math.abs(testMCU - (expectedMean + 1.96 * (expectedStandardDeviationFrequencies / Math.sqrt(netFrequencies)))) should be < epsilon
+  }
+
+  "mean confidence upper" should "handle data with fractional weights" in new NumericalStatisticsTestPopulationFormulas {
+
+    val testMCU = numericalStatisticsWeights.meanConfidenceUpper
+
+    Math.abs(testMCU - (expectedMean + 1.96 * (expectedStandardDeviationWeights / Math.sqrt(netWeight)))) should be < epsilon
+  }
+
   "max" should "handle data with integer frequencies" in new NumericalStatisticsTestPopulationFormulas {
 
     val testMax = numericalStatisticsFrequencies.max
