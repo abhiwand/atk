@@ -88,6 +88,7 @@ import com.intel.intelanalytics.domain.frame.load.LoadSource
 import com.intel.intelanalytics.domain.graph.GraphTemplate
 import com.intel.intelanalytics.domain.query.Query
 import com.intel.intelanalytics.domain.frame.ColumnSummaryStatistics
+import com.intel.intelanalytics.domain.frame.ColumnMedian
 import com.intel.intelanalytics.domain.frame.ColumnMode
 import com.intel.intelanalytics.domain.frame.ECDF
 import com.intel.intelanalytics.domain.frame.DataFrameTemplate
@@ -106,6 +107,7 @@ import com.intel.intelanalytics.domain.frame.ConfusionMatrixValues
 import com.intel.intelanalytics.domain.command.CommandTemplate
 import com.intel.intelanalytics.domain.frame.FlattenColumn
 import com.intel.intelanalytics.domain.frame.ColumnSummaryStatisticsReturn
+import com.intel.intelanalytics.domain.frame.ColumnMedianReturn
 import com.intel.intelanalytics.domain.frame.ColumnModeReturn
 import com.intel.intelanalytics.domain.frame.FrameJoin
 import com.intel.intelanalytics.engine.spark.plugin.SparkInvocation
@@ -704,41 +706,71 @@ class SparkEngine(sparkContextManager: SparkContextManager,
       rdd)
   }
 
-  // TODO TRIB-2245
   /**
    * Calculate the median of the specified column.
    * param arguments Input specification for column median.
    * param user Current user.
    *
-   * override def columnMedian(arguments: ColumnMedian)(implicit user: UserPrincipal): Execution =
-   * commands.execute(columnMedianCommand, arguments, user, implicitly[ExecutionContext])
-   *
-   * val columnMedianCommand: CommandPlugin[ColumnMedian, ColumnMedianReturn] =
-   * pluginRegistry.registerCommand("dataframe/column_median", columnMedianSimple)
-   *
-   * def columnMedianSimple(arguments: ColumnMedian, user: UserPrincipal): ColumnMedianReturn = {
-   *
-   * implicit val u = user
-   *
-   * val frameId = arguments.frame
-   * val frame = expectFrame(frameId)
-   * val ctx = sparkContextManager.context(user).sparkContext
-   * val rdd = frames.getFrameRdd(ctx, frameId.id)
-   * val columnIndex = frame.schema.columnIndex(arguments.dataColumn)
-   * val valueDataType: DataType = frame.schema.columns(columnIndex)._2
-   *
-   * val (weightsColumnIndexOption, weightsDataTypeOption) = if (arguments.weightsColumn.isEmpty) {
-   * (None, None)
-   * }
-   * else {
-   * val weightsColumnIndex = frame.schema.columnIndex(arguments.weightsColumn.get)
-   * (Some(weightsColumnIndex), Some(frame.schema.columns(weightsColumnIndex)._2))
-   * }
-   * val (weightsColumnIndexOption, weightsDataTypeOption) = (None, None)
-   *
-   * ColumnStatistics.columnMedian(columnIndex, valueDataType, weightsColumnIndexOption, weightsDataTypeOption, rdd)
-   * }
    */
+
+  override def columnMedian(arguments: ColumnMedian)(implicit user: UserPrincipal): Execution =
+    commands.execute(columnMedianCommand, arguments, user, implicitly[ExecutionContext])
+
+  val columnMedianDoc = CommandDoc(oneLineSummary = "Calculate (weighted) median of a column.",
+    extendedSummary = Some("""
+                             |Calculate the (weighted) median of a column. The median is the least value X in the range of the distribution so
+                             |         that the cumulative weight of values strictly below X is strictly less than half of the total weight and
+                             |          the cumulative weight of values up to and including X is >= 1/2 the total weight.
+                             |
+                             |        All data elements of weight <= 0 are excluded from the calculation, as are all data elements whose weight
+                             |         is NaN or infinite. If a weight column is provided and no weights are finite numbers > 0, None is returned.
+                             |
+                             |        Parameters
+                             |        ----------
+                             |        data_column : str
+                             |            The column whose median is to be calculated.
+                             |
+                             |        weights_column : str
+                             |            Optional. The column that provides weights (frequencies) for the median calculation.
+                             |            Must contain numerical data. Uniform weights of 1 for all items will be used for the calculation if this
+                             |                parameter is not provided.
+                             |
+                             |        Returns
+                             |        -------
+                             |        median :  The median of the values.  If a weight column is provided and no weights are finite numbers > 0,
+                             |             None is returned. Type of the median returned is that of the contents of the data column, so a column of
+                             |             Longs will result in a Long median and a column of Floats will result in a Float median.
+                             |
+                             |        Example
+                             |        -------
+                             |        >>> median = frame.column_median('middling column')
+                             |""".stripMargin))
+
+  val columnMedianCommand: CommandPlugin[ColumnMedian, ColumnMedianReturn] =
+    commandPluginRegistry.registerCommand("dataframe/column_median", columnMedianSimple, doc = Some(columnMedianDoc))
+
+  def columnMedianSimple(arguments: ColumnMedian, user: UserPrincipal, invocation: SparkInvocation): ColumnMedianReturn = {
+
+    implicit val u = user
+
+    val frameId: Long = arguments.frame.id
+    val frame = expectFrame(frameId)
+    val ctx = invocation.sparkContext
+    val rdd = frames.loadFrameRdd(ctx, frameId)
+    val columnIndex = frame.schema.columnIndex(arguments.dataColumn)
+    val valueDataType: DataType = frame.schema.columns(columnIndex)._2
+
+    val (weightsColumnIndexOption, weightsDataTypeOption) = if (arguments.weightsColumn.isEmpty) {
+      (None, None)
+    }
+    else {
+      val weightsColumnIndex = frame.schema.columnIndex(arguments.weightsColumn.get)
+      (Some(weightsColumnIndex), Some(frame.schema.columns(weightsColumnIndex)._2))
+    }
+
+    ColumnStatistics.columnMedian(columnIndex, valueDataType, weightsColumnIndexOption, weightsDataTypeOption, rdd)
+  }
+
   /**
    * Calculate summary statistics of the specified column.
    * @param arguments Input specification for column summary statistics.

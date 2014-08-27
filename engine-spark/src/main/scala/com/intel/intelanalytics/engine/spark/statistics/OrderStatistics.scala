@@ -46,20 +46,14 @@ class OrderStatistics[T: ClassTag](dataWeightPairs: RDD[(T, Double)])(implicit o
 
       // the "median partition" is the partition the contains the median
       val (indexOfMedianPartition, weightInPrecedingPartitions) = findMedianPartition(weightsOfPartitions, totalWeight)
-      val medianPartition: Array[(T, BigDecimal)] =
-        sortedDataWeightPairs.mapPartitionsWithIndex(partitionSelector(indexOfMedianPartition), true).collect()
 
-      // now we find where the median value of the dataset resides inside the median partition
-      val weightPrecedingMedian = (totalWeight / 2) - weightInPrecedingPartitions
-      var indexOfMedian: Int = 0
-      var weightSoFar: BigDecimal = 0
+      val median: T = sortedDataWeightPairs.mapPartitionsWithIndex({
+        case (partitionIndex, iterator) =>
+          if (partitionIndex != indexOfMedianPartition) Iterator.empty
+          else medianInSingletonIterator[T](iterator, totalWeight, weightInPrecedingPartitions)
+      }).collect().head
 
-      while (weightSoFar + medianPartition(indexOfMedian)._2 < weightPrecedingMedian) {
-        weightSoFar += medianPartition(indexOfMedian)._2
-        indexOfMedian += 1
-      }
-
-      Some(medianPartition(indexOfMedian)._1)
+      Some(median)
     }
   }
 
@@ -67,10 +61,27 @@ class OrderStatistics[T: ClassTag](dataWeightPairs: RDD[(T, Double)])(implicit o
   private def sumWeightsInPartition(it: Iterator[(T, BigDecimal)]): Iterator[BigDecimal] =
     if (it.nonEmpty) Iterator(it.map({ case (x, w) => w }).reduce(_ + _)) else Iterator(0)
 
-  // Given a desired partition, an index of a partition and its iterator, this returns the iterator of the incoming
-  // partition if it is the descired partition, and empty iterator if it is not the desired partition.
-  private def partitionSelector(selectedPartition: Int)(index: Int, partitionIterator: Iterator[(T, BigDecimal)]): Iterator[(T, BigDecimal)] = {
-    if (index == selectedPartition) partitionIterator else Iterator[(T, BigDecimal)]()
+  // take an iterator for the partition that contains the median, and returns the median...
+  // as the single element in a new iterator
+  private def medianInSingletonIterator[T](it: Iterator[(T, BigDecimal)],
+                                           totalWeight: BigDecimal,
+                                           weightInPrecedingPartitions: BigDecimal): Iterator[T] = {
+
+    val weightPrecedingMedian = (totalWeight / 2) - weightInPrecedingPartitions
+
+    if (it.nonEmpty) {
+      var currentDataWeightPair: (T, BigDecimal) = it.next
+      var weightSoFar: BigDecimal = currentDataWeightPair._2
+
+      while (weightSoFar < weightPrecedingMedian) {
+        currentDataWeightPair = it.next()
+        weightSoFar += currentDataWeightPair._2
+      }
+      Iterator(currentDataWeightPair._1)
+    }
+    else {
+      Iterator.empty
+    }
   }
 
   // Find the index of the partition that contains the median of the of the dataset, as well as the net weight of the
