@@ -34,8 +34,6 @@ import DefaultJsonProtocol._
  */
 object DataTypes {
 
-  val pythonRddNullString = "YoMeNull" // TODO - identify correct null indicator, and locate this appropriately
-
   /**
    * The datatype trait
    */
@@ -238,13 +236,12 @@ object DataTypes {
     strings.zipWithIndex.map {
       case (s, i) => {
         s match {
-          case nullString if nullString == pythonRddNullString => null // TODO - remove, handle differently
           case _ =>
             val colType = lifted(i).getOrElse(throw new IllegalArgumentException(
               "Data extend beyond number" +
                 " of columns defined in data frame"))
             val value = colType.parse(s)
-            value.get
+            value.getOrElse(null)
         }
       }
     }

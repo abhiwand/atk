@@ -524,9 +524,9 @@ class SparkEngine(sparkContextManager: SparkContextManager,
 
       val baseRdd: RDD[String] = frames.loadFrameRdd(ctx, frameId)
         .map(x => x.map(t => t match {
-          case null => DataTypes.pythonRddNullString
-          case _ => t.toString
-        }).mkString(SparkEngine.pythonRddDelimiter))
+          case null => JsNull
+          case a => a.toJson
+        }).toJson.toString)
 
       val pythonExec = SparkEngineConfig.pythonWorkerExec
       val environment = new java.util.HashMap[String, String]()
@@ -546,7 +546,14 @@ class SparkEngine(sparkContextManager: SparkContextManager,
 
   private def persistPythonRDD(dataFrame: DataFrame, pyRdd: EnginePythonRDD[String], converter: Array[String] => Array[Any]): Unit = {
     withMyClassLoader {
-      val resultRdd = pyRdd.map(s => new String(s).split(SparkEngine.pythonRddDelimiter)).map(converter)
+      val resultRdd = pyRdd.map(s => JsonParser(new String(s)).convertTo[List[JsValue]].map(x => x match {
+        case x if x.isInstanceOf[JsString] => x.asInstanceOf[JsString].value
+        case x if x.isInstanceOf[JsNumber] => x.asInstanceOf[JsNumber].toString
+        case x if x.isInstanceOf[JsBoolean] => x.asInstanceOf[JsBoolean].toString
+        case _ => null
+      }).toArray)
+        .map(converter)
+
       frames.saveFrameWithoutSchema(dataFrame, resultRdd)
     }
   }
