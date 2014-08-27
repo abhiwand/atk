@@ -831,13 +831,13 @@ class SparkEngine(sparkContextManager: SparkContextManager,
                              |
                              |            | mean_confidence_lower:
                              |                  Lower limit of the 95% confidence interval about the mean.
-                             |                  Assumes a Gaussian distribution. None when there are no data elements, or if sample variance
-                             |                  is being used and the sum of weights is <= 1.
+                             |                  Assumes a Gaussian distribution.
+                             |                  None when there are no elements of positive weight.
                              |
                              |            | mean_confidence_upper:
                              |                  Upper limit of the 95% confidence interval about the mean.
-                             |                  Assumes a Gaussian distribution. None when there are no data elements, or if sample variance
-                             |                  is being used and the sum of weights is <= 1.
+                             |                  Assumes a Gaussian distribution.
+                             |                  None when there are no elements of positive weight.
                              |
                              |            | bad_row_count : The number of rows containing a NaN or infinite value in either the data
                              |                  or weights column.
