@@ -24,20 +24,72 @@
 Command objects
 """
 
+import logging
+logger = logging.getLogger(__name__)
+
+from collections import namedtuple
+from intelanalytics.core.npdoc import get_numpy_doc
+
+
+Parameter = namedtuple("Parameter", ['name', 'data_type', 'use_self', 'optional', 'default', 'doc'])
+
+Return = namedtuple("Return", ['data_type', 'use_self', 'doc'])
+
+Version = namedtuple("Version", ['added', 'changed', 'deprecated', 'doc'])
+
+Doc = namedtuple("Doc", ['one_line_summary', 'extended_summary'])
+
+
+class CommandDefinition(object):
+    """Defines a Command"""
+
+    def __init__(self, json_schema, full_name, parameters, return_type, doc=None, version=None):
+        self.json_schema = json_schema
+        self.full_name = full_name
+        parts = self.full_name.split('/')
+        self.prefix = parts[0]
+        self.intermediates = tuple(parts[1:-1])
+        self.name = parts[-1]
+        self.parameters = parameters
+        self.return_type = return_type
+        self.version = version
+        # do doc last, so we can send populated self to create CommandNumpydoc
+        self.doc = '' if doc is None else get_numpy_doc(self, doc.one_line_summary, doc.extended_summary)
+
+
+    def __repr__(self):
+        return "\n".join([self.full_name,
+                          "\n".join([repr(p) for p in self.parameters]),
+                          repr(self.return_type),
+                          repr(self.version),
+                          self.doc])
+
+
+def validate_arguments(arguments, parameters):
+    """
+    Returns validated and possibly re-cast arguments
+
+    Use parameter definitions to make sure the arguments conform.  This function
+    is closure over in the dynamically generated execute command function
+    """
+    validated = {}
+    for (k, v) in arguments.items():
+        try:
+            parameter = [p for p in parameters if p.name == k][0]
+        except IndexError:
+            raise ValueError("No parameter named '%s'" % k)
+        validated[k] = v
+        if parameter.use_self:
+            validated[k] = v._get_id()
+        if parameter.data_type is list:
+            if isinstance(v, basestring) or not hasattr(v, '__iter__'):
+                validated[k] = [v]
+    return validated
+
+
+# TODO - Remove the rest of this file (it moved to metaprog.py)
+
 from types import MethodType
-
-
-def doc_stub(f):
-    """
-    Marks the function as a documentation stub that exists only to facilitate
-    generation of static Python html docs. The implementation, if any, is replaced
-    at runtime by the standard command dispatch logic.
-    :param f: the function
-    :return: the function, annotated so that the command dispatch logic knows it is
-                safe to replace it.
-    """
-    f.doc_stub = True
-    return f
 
 
 class Holder(object):
@@ -57,6 +109,7 @@ class CommandSupport(object):
     def __init__(self):
         functions = getattr(self.__class__, "_commands", dict())
         for ((intermediates, name), function) in functions.items():
+            added_to_class = None
             current = self
             for inter in intermediates:
                 if not hasattr(current, inter):
@@ -66,12 +119,17 @@ class CommandSupport(object):
             if current == self:
                 if not hasattr(self.__class__, name):
                     setattr(self.__class__, name, function)
+                    added_to_class = "new function"
                 else:
                     f = getattr(self.__class__, name)
                     if hasattr(f, "doc_stub"):
                         function.__doc__ = f.__doc__
                         delattr(self.__class__, name)
                         setattr(self.__class__, name, function)
+                        added_to_class = "doc_stub replacement"
             else:
                 method = MethodType(function, self, self.__class__)
                 current.__dict__[name] = method
+                added_to_class = "new function for intermediate"
+            if added_to_class:
+                logger.debug("(Old Way) Added function %s to class %s as %s", name, current.__class__, added_to_class)

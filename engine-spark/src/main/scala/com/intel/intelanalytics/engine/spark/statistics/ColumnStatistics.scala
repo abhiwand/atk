@@ -85,7 +85,7 @@ private[spark] object ColumnStatistics extends Serializable {
     val orderStatistics = new OrderStatistics[Any](dataWeightPairs)
 
     val medianReturn: JsValue = if (orderStatistics.medianOption.isEmpty) {
-      None.asInstanceOf[Option[Double]].toJson
+      JsNull
     }
     else {
       dataType.typedJson(orderStatistics.medianOption.get)

@@ -25,6 +25,7 @@ package com.intel.intelanalytics.domain
 
 import java.net.URI
 
+import com.intel.intelanalytics.domain.command.{ CommandDoc, CommandDefinition }
 import com.intel.intelanalytics.domain.command.{ CommandPost, CommandDefinition }
 import com.intel.intelanalytics.domain.frame.load.{ Load, LineParser, LoadSource, LineParserArguments }
 import com.intel.intelanalytics.domain.schema.DataTypes
@@ -168,7 +169,7 @@ object DomainJsonProtocol extends IADefaultJsonProtocol {
   implicit val columnModeFormat = jsonFormat4(ColumnMode)
   implicit val columnModeReturnFormat = jsonFormat4(ColumnModeReturn)
 
-  implicit val columnMedianFormat = jsonFormat2(ColumnMedian)
+  implicit val columnMedianFormat = jsonFormat3(ColumnMedian)
   implicit val columnMedianReturnFormat = jsonFormat1(ColumnMedianReturn)
 
   implicit val rowQueryFormat = jsonFormat3(RowQuery[Long])
@@ -264,5 +265,23 @@ object DomainJsonProtocol extends IADefaultJsonProtocol {
   lazy implicit val stringSchemaFormat = jsonFormat9(StringSchema)
   lazy implicit val objectSchemaFormat = jsonFormat12(ObjectSchema)
   lazy implicit val arraySchemaFormat = jsonFormat9(ArraySchema)
-  lazy implicit val commandDefinitionFormat = jsonFormat3(CommandDefinition)
+
+  implicit object CommandDocFormat extends JsonFormat[CommandDoc] {
+    override def read(value: JsValue): CommandDoc = {
+      value.asJsObject.getFields("title", "description") match {
+        case Seq(JsString(title), JsString(description)) =>
+          CommandDoc(title, Some(description))
+        case Seq(JsString(title), JsNull) =>
+          CommandDoc(title, None)
+        case x => deserializationError(s"Expected a CommandDoc Json object, but got $x")
+      }
+    }
+
+    override def write(doc: CommandDoc): JsValue = doc.extendedSummary match {
+      case Some(d) => JsObject("title" -> JsString(doc.oneLineSummary), "description" -> JsString(doc.extendedSummary.get))
+      case None => JsObject("title" -> JsString(doc.oneLineSummary))
+    }
+  }
+
+  lazy implicit val commandDefinitionFormat = jsonFormat4(CommandDefinition)
 }
