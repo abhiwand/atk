@@ -560,7 +560,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
   val flattenColumnCommand = commandPluginRegistry.registerCommand("dataframe/flatten_column", flattenColumnSimple _)
   def flattenColumnSimple(arguments: FlattenColumn, user: UserPrincipal, invocation: SparkInvocation) = {
     implicit val u = user
-    val frameId: Long = arguments.frameId
+    val frameId: Long = arguments.frameId.id
     val realFrame = expectFrame(frameId)
 
     val ctx = invocation.sparkContext
