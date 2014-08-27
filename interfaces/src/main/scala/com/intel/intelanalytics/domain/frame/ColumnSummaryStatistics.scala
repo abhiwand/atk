@@ -64,11 +64,9 @@ case class ColumnSummaryStatistics(frame: FrameReference,
  * @param minimum Minimum value in the data. None when there are no data elements of positive weight.
  * @param maximum Maximum value in the data. None when there are no data elements of positive weight.
  * @param meanConfidenceLower: Lower limit of the 95% confidence interval about the mean. Assumes a Gaussian RV.
- *                             None when there are no elements of positive weight or if sample variance is used and
- *                             the sum of the weights is <= 1.
+ *                             None when there are no elements of positive weight.
  * @param meanConfidenceUpper: Upper limit of the 95% confidence interval about the mean. Assumes a Gaussian RV.
- *                             None when there are no elements of positive weight or if sample variance is used and
- *                             the sum of the weights is <= 1.
+ *                             None when there are no elements of positive weight.
  * @param badRowCount The number of rows containing a NaN or infinite value in either the data or weights column.
  * @param goodRowCount The number of rows containing a NaN or infinite value in either the data or weight
  * @param positiveWeightCount  The number valid data elements with weights > 0.
