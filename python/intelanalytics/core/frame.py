@@ -207,7 +207,7 @@ class BigFrame(command_loadable):
         try:
             self._id = 0
             self._error_frame_id = None
-            #self._ia_uri = None
+            self._ia_uri = None
             if not hasattr(self, '_backend'):  # if a subclass has not already set the _backend
                 self._backend = _get_backend()
             new_frame_name = self._backend.create(self, source, name)
@@ -416,11 +416,11 @@ class BigFrame(command_loadable):
             raise IaError(logger)
 
     @property
-    #def ia_uri(self):
-    #    try:
-    #        return self._backend.get_ia_uri(self)
-    #    except:
-    #        raise IaError(logger)
+    def ia_uri(self):
+        try:
+            return self._backend.get_ia_uri(self)
+        except:
+            raise IaError(logger)
 
     @property
     def schema(self):

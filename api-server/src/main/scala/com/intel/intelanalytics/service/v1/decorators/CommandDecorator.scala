@@ -43,9 +43,8 @@ object CommandDecorator extends EntityDecorator[Command, GetCommands, GetCommand
    * @return the View/Model
    */
   override def decorateEntity(uri: String, links: Iterable[RelLink], entity: Command): GetCommand = {
-    val entity_arguments = entity.arguments.get
-    val ia_uri: String = entity_arguments.getFields("destination").head.asInstanceOf[JsString].value
-    GetCommand(id = entity.id, name = entity.name, ia_uri,
+
+    GetCommand(id = entity.id, name = entity.name,
       arguments = entity.arguments, error = entity.error, progress = entity.progress, complete = entity.complete,
       result = entity.result, links = links.toList)
   }

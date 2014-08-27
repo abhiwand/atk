@@ -143,8 +143,8 @@ class FrameBackendRest(object):
     def get_row_count(self, frame):
         return self._get_frame_info(frame).row_count
 
-    #def get_ia_uri(self, frame):
-    #    return self._get_frame_info(frame).ia_uri
+    def get_ia_uri(self, frame):
+        return self._get_frame_info(frame).ia_uri
 
     def get_repr(self, frame):
         frame_info = self._get_frame_info(frame)
@@ -532,7 +532,7 @@ class FrameBackendRest(object):
         arguments = {'frame_id': frame._id, 'name': name, 'sample_col': sample_col, 'dist_type': dist_type, 'count_value': str(count_value)}
         return execute_new_frame_command('cumulative_dist', arguments)
 
-class  FrameInfo(object):
+class FrameInfo(object):
     """
     JSON-based Server description of a BigFrame
     """
@@ -545,11 +545,12 @@ class  FrameInfo(object):
 
     def __str__(self):
         return '%s "%s"' % (self.id_number, self.name)
+
     def _validate(self):
         try:
             assert self.id_number
         except KeyError:
-            raise RuntimeError("Invalid response from server.  Expected Frame info.")
+            raise RuntimeError("Invalid response from server. Expected Frame info.")
 
     @property
     def id_number(self):
@@ -560,8 +561,8 @@ class  FrameInfo(object):
         return self._payload['name']
 
     @property
-    #def ia_uri(self):
-    #    return self._payload['ia_uri']
+    def ia_uri(self):
+        return self._payload['ia_uri']
 
     @property
     def schema(self):
@@ -613,8 +614,8 @@ class FrameSchema:
 def initialize_frame(frame, frame_info):
     """Initializes a frame according to given frame_info"""
     frame._id = frame_info.id_number
+    frame._ia_uri = frame_info.ia_uri
     frame._error_frame_id = frame_info.error_frame_id
-    #frame._ia_uri = frame_info.ia_uri
 
 def execute_update_frame_command(command_name, arguments, frame):
     """Executes command and updates frame with server response"""
