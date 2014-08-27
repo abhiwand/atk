@@ -45,6 +45,12 @@ from intelanalytics.rest.spark import prepare_row_function, get_add_one_column_f
 from collections import namedtuple
 
 TakeResult = namedtuple("TakeResult", ['data', 'schema'])
+"""
+Take result contains data and schema.
+data contains only columns based on user specified columns
+schema contains only columns baed on user specified columns
+the data type under schema is also coverted to IA types
+"""
 
 class FrameBackendRest(object):
     """REST plumbing for BigFrame"""
@@ -433,7 +439,7 @@ class FrameBackendRest(object):
         arguments = {'frame': self._get_frame_full_uri(frame), "new_name": name}
         execute_update_frame_command('rename_frame', arguments, frame)
 
-    def take(self, frame, n, offset, selected_columns):
+    def take(self, frame, n, offset, columns):
 
         if n==0:
             return []
@@ -441,16 +447,16 @@ class FrameBackendRest(object):
         result = executor.query(url)
         schema = FrameSchema.from_strings_to_types(result.schema)
 
-        if isinstance(selected_columns, basestring):
-            selected_columns = [selected_columns]
+        if isinstance(columns, basestring):
+            columns = [columns]
 
         updated_schema = schema
-        if selected_columns is not None:
-            updated_schema = FrameSchema.get_schema_for_columns(schema, selected_columns)
-            indices = FrameSchema.get_indices_for_selected_columns(schema, selected_columns)
+        if columns is not None:
+            updated_schema = FrameSchema.get_schema_for_columns(schema, columns)
+            indices = FrameSchema.get_indices_for_selected_columns(schema, columns)
 
         data = result.data
-        if selected_columns is not None:
+        if columns is not None:
             data = FrameData.extract_data_from_selected_columns(data, indices)
 
         return TakeResult(data, updated_schema)
@@ -613,18 +619,19 @@ class FrameSchema:
 
     @staticmethod
     def get_schema_for_columns(schema, selected_columns):
-        selected_schema = []
-        for selected in selected_columns:
-            for column in schema:
-                if column[0] == selected:
-                    selected_schema.append(column)
-
-        return selected_schema
+        indices = FrameSchema.get_indices_for_selected_columns(schema, selected_columns)
+        return [schema[i] for i in indices]
 
     @staticmethod
     def get_indices_for_selected_columns(schema, selected_columns):
-        schema_for_selected_columns = FrameSchema.get_schema_for_columns(schema, selected_columns)
-        return [schema.index(f) for f in schema_for_selected_columns]
+        indices = []
+        for selected in selected_columns:
+            for column in schema:
+                if column[0] == selected:
+                    indices.append(schema.index(column))
+                    break
+
+        return indices
 
 
 class FrameData:
@@ -633,12 +640,8 @@ class FrameData:
     def extract_data_from_selected_columns(data_in_page, indices):
         new_data = []
         for row in data_in_page:
-            new_row = []
-            for index in indices:
-                new_row.append(row[index])
-            row = new_row
+            new_data.append([row[index] for index in indices])
 
-            new_data.append(row)
         return new_data
 
 def initialize_frame(frame, frame_info):

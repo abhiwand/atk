@@ -349,9 +349,9 @@ class CommandServerError(Exception):
         Exception.__init__(self, message)
 
 QueryResult = namedtuple("QueryResult", ['data', 'schema'])
-
-QueryResult = namedtuple("QueryResult", ['data', 'schema'])
-
+"""
+QueryResult contains the data and schema directly returned from the rest server
+"""
 
 class Executor(object):
     """

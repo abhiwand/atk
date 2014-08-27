@@ -1482,7 +1482,7 @@ class BigFrame(command_loadable):
             raise IaError(logger)
 
 
-    def inspect(self, n=10, offset=0, selected_columns=None):
+    def inspect(self, n=10, offset=0, columns=None):
         """
         Print data.
 
@@ -1494,7 +1494,7 @@ class BigFrame(command_loadable):
             The number of rows to print
         offset : int
             The number of rows to skip before printing
-        selected_columns : String or iterable of string
+        columns : String or iterable of string
             Specify the columns to be included in the result. By default all the columns
             are to be included
             
@@ -1512,7 +1512,7 @@ class BigFrame(command_loadable):
         """
         # TODO - Review docstring
         try:
-            return self._backend.inspect(self, n, offset, selected_columns)
+            return self._backend.inspect(self, n, offset, columns)
         except:
             raise IaError(logger)
 
@@ -1785,7 +1785,7 @@ class BigFrame(command_loadable):
         except:
             raise IaError(logger)
 
-    def take(self, n, offset=0, selected_columns=None):
+    def take(self, n, offset=0, columns=None):
         """
         Get data subset.
 
@@ -1797,7 +1797,7 @@ class BigFrame(command_loadable):
             The number of rows to copy from the currently active BigFrame
         offset : int
             The number of rows to skip before copying
-        selected_columns : String or iterable of string
+        columns : String or iterable of string
             Specify the columns to be included in the result. By default all the columns
             are to be included
 
@@ -1831,7 +1831,7 @@ class BigFrame(command_loadable):
         """
         # TODO - Review and complete docstring
         try:
-            result = self._backend.take(self, n, offset, selected_columns)
+            result = self._backend.take(self, n, offset, columns)
             return result.data
         except:
             raise IaError(logger)
