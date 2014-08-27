@@ -19,7 +19,7 @@ cp $tarFile $SCRIPTPATH/rpm/SOURCES/${packageName}-${version}.tar.gz
 LICENSE="Confidential"
 #SUMMARY="$packageName$version Build number: $BUILD_NUMBER. TimeStamp $TIMESTAMP"
 DESCRIPTION="$SUMMARY 
-start the server with 'service intelanalytics-rest-server status' 
+start the server with 'service intelanalytics status'
 config files are in /etc/intelanalytics/rest-server
 log files live in /var/log/intelanalytics/rest-server"
 
@@ -59,7 +59,7 @@ fi
 "
 
 PREUN="
- checkStatus=\$(service intelanalytics-rest-server status | grep start/running)
+ checkStatus=\$(service intelanalytics status | grep start/running)
  if  [ \$1 -eq 0 ] && [ \"\$checkStatus\" != \"\" ]; then
     echo stopping intelanalytics
     service intelanalytics stop
