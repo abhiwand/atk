@@ -14,6 +14,7 @@ import spray.json._
 
 import scala.collection.JavaConverters._
 import scala.concurrent._
+import com.intel.intelanalytics.domain.command.CommandDoc
 
 /**
  * Get histogram and optionally ROC curve on property values
@@ -77,6 +78,90 @@ class HistogramRocQuery extends SparkCommandPlugin[HistogramRocParams, Histogram
   implicit val rocCurveFormat = jsonFormat2(RocCurve)
   implicit val histogramFormat = jsonFormat2(Histogram.apply)
   implicit val histogramRocResultFormat = jsonFormat3(HistogramRocResult)
+
+  override def doc = Some(CommandDoc(oneLineSummary = "Generate histograms, and Receiver Operating Characteristic (ROC) curves.",
+    extendedSummary = Some("""
+    Extended Summary
+    ----------------
+    Generate histograms of prior and posterior probabilities, and Receiver Operating Characteristic (ROC)
+    curves for the model.
+
+    The prerequisite is that either LBP, ALS or CGD has been run before this query. Prior histograms are
+    available for LBP, ALS and CGD. ROC curves are only available for LBP because ROC curves require
+    both prior and posterior probabilities to be present.
+
+    Parameters
+    ----------
+    prior_property_list : String
+        Name of the property containing the vector of prior probabilities.
+        The prior probabilities are represented in the graph as a delimited list
+        of real values between [0,1], one for each feature dimension.
+
+    posterior_property_list: String (optional)
+        Name of the property containing the vector of posterior probabilities.
+        The posterior probabilities are represented in the graph as a delimited list
+        of real values between [0,1], one for each feature dimension.
+
+    enable_roc : Boolean (optional)
+        If True, generates ROC curves for the train (TR), validation (VA) and test (TE) splits of
+        each feature dimension. The ROC curves are computed using the prior and posterior probabilities.
+        False disables the generation of ROC curves.
+        The default value is False.
+
+    roc_threshold : List of Doubles (optional)
+        The ROC threshold parameters in [min, step, max] format.
+        The default value is [0, 0.05, 1].
+
+  property_type : String (optional)
+        The type of property for the prior and posterior values.
+        Valid values are either VERTEX_PROPERTY or EDGE_PROPERTY.
+        The default value is VERTEX_PROPERTY.
+
+    vertex_type_property_key : String (optional)
+        The property name for vertex type. The default value "vertex_type".
+        This property indicates whether the data is in the train, validation, or test splits.
+
+    split_types : List of Strings (optional)
+        The list of split types to include in the report.
+        The default value is =["TR", "VA", "TE"] for train (TR), validation (VA), and test (TE) splits.
+
+    histogram_buckets : int32
+        The number of buckets to plot in histograms. The default value is 30.
+
+    Raises
+    ------
+    RuntimeException
+        If the properties specified do not exist in the graph, or if the dimensions of the prior and posterior
+        vectors are not the same.
+
+    Returns
+    -------
+        Dictionary containing prior histograms, and optionally the posterior histograms and ROC curves. The dictionary
+        entries are:
+          prior_histograms : An array of histograms of prior probabilities for each feature dimension.
+            The histogram comprises of an array of buckets and corresponding counts. The buckets are all open
+            to the left except for the last which is closed, e.g., for the array [1,5,10] the buckets are
+            [1, 5) [5, 10]. The size of the counts array is smaller than the buckets array by 1.
+
+        posterior_histograms : An array of histograms of posterior probabilities for each feature dimension.
+
+        roc_curves: An array of arrays containing the ROC curves for each feature dimension and split type.
+
+    Examples
+    --------
+    For example, you can generate the prior and posterior histograms, and ROC curves for LBP as follows:
+
+      graph = BigGraph(...)
+      graph.ml.loopy_belief_propagation(...)
+      results = graph.query.histogram_roc(prior_property_list ="value", posterior_property_list = "lbp_posterior", enable_roc = True, roc_threshold =[0, 0.05, 1], property_type = "VERTEX_PROPERTY", vertex_type_property_key="vertex_type",  split_types=["TR", "VA", "TE"], histogram_buckets=30)
+
+      results["prior_histograms"]
+      results["posterior_histograms"]
+      results["roc_curves"]
+
+    If you want compute only the prior histograms use:
+      results = graph.query.histogram_roc(prior_property_list ="value", enable_roc = False)
+""")))
 
   override def execute(invocation: SparkInvocation, arguments: HistogramRocParams)(implicit user: UserPrincipal, executionContext: ExecutionContext): HistogramRocResult = {
     import scala.concurrent.duration._

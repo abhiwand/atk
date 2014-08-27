@@ -35,7 +35,6 @@ import spray.json._
 import scala.concurrent._
 import scala.util.Try
 import org.apache.spark.engine.{ ProgressPrinter, SparkProgressListener }
-import scala.Some
 import com.intel.intelanalytics.domain.command.CommandTemplate
 import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.domain.command.Execution

@@ -9,7 +9,7 @@ import org.scalatest.mock.MockitoSugar
 
 class GremlinQueryITest extends FlatSpec with Matchers with TestingTitan with MockitoSugar {
 
-  "executeGremlinQuery" should "execute valid Gremlin queries" ignore {
+  "executeGremlinQuery" should "execute valid Gremlin queries" in {
     val vertex1 = titanGraph.addVertex(null)
     val vertex2 = titanGraph.addVertex(null)
     val edge = titanGraph.addEdge(null, vertex1, vertex2, "knows")
@@ -37,7 +37,7 @@ class GremlinQueryITest extends FlatSpec with Matchers with TestingTitan with Mo
     vertexCount(0) should equal(JsNumber(2))
     edgeCount(0) should equal(JsNumber(1))
   }
-  "executeGremlinQuery" should "throw a Runtime exception when executing invalid Gremlin" ignore {
+  "executeGremlinQuery" should "throw a Runtime exception when executing invalid Gremlin" in {
     intercept[java.lang.RuntimeException] {
       val gremlinQuery = new GremlinQuery()
       val gremlinScript = """InvalidGremlin"""
