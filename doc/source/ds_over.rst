@@ -3,6 +3,7 @@ User Manual
 ===========
 
 .. toctree::
+    :maxdepth: 3
 
     ds_strt
     ds_db

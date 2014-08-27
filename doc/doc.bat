@@ -6,6 +6,7 @@ set E1=%ERRORLEVEL%
 echo "/%1/%2/%3/%4/%5/%6/%7/%8/%9/" | find /I "/--help/" > nul
 set E2=%ERRORLEVEL%
 set FH=1
+set PY_PATH=C:\USERS\RMALDRIX\WORK\PYTHON
 
 if "%E1%" equ "0" set FH=0
 if "%E2%" equ "0" set FH=0
@@ -29,7 +30,7 @@ if "%FH%" equ "0" (
 )
     
 if "%DEBUG%" equ "0" echo : This is stupid, but sometimes numpy chokes on these files.
-if exist ..\core\*.pyc del ..\core\*.pyc
+if exist %PY_PATH%\intelanalytics\core\*.pyc del %PY_PATH%\intelanalytics\core\*.pyc
 
 if "%DEBUG%" equ "0" echo : Look for packages if the individual is a techwriter
 echo "/%1/%2/%3/%4/%5/%6/%7/%8/%9/" | find /I "/packages/" > nul
@@ -82,14 +83,18 @@ if "%BUILDS%" equ "1" goto:ZIP_IT
 :SEEK_HTML
 if "%DEBUG%" equ "0" echo : Look for html
 echo "/%1/%2/%3/%4/%5/%6/%7/%8/%9/" | find /I "/html/" > nul
-if "%ERRORLEVEL%" equ "1" goto:SEEK_PDF
+if "%ERRORLEVEL%" equ "1" goto:SEEK_LATEX
+
+:BUILD_HTML
 if "%DEBUG%" equ "0" echo : Look for previous html directory
 if exist build\html rd /S /Q build\html
 if "%DEBUG%" equ "0" echo : Ignore all toctree warnings.
 sphinx-build -b html source build\html 2>&1 | find /V "WARNING: toctree"
+if not exist build\latex goto:SEEK_LATEX
+if exist build\latex\IntelAnalytics.pdf copy build\latex\IntelAnalytics.pdf build\html\_downloads > nul
 if "%DEBUG%" equ "0" echo : Finished with HTML section
 
-:SEEK_PDF
+:SEEK_LATEX
 if "%DEBUG%" equ "0" echo : Look for latex
 set BUILD=1
 echo "/%1/%2/%3/%4/%5/%6/%7/%8/%9/" | find /I "/pdf/" > nul
@@ -99,7 +104,10 @@ if "%ERRORLEVEL%" equ "0" set BUILD=0
 echo "/%1/%2/%3/%4/%5/%6/%7/%8/%9/" | find /I "/latex/" > nul
 if "%ERRORLEVEL%" equ "0" set BUILD=0
 echo "/%1/%2/%3/%4/%5/%6/%7/%8/%9/" | find /I "/latexonly/" > nul
+if "%ERRORLEVEL%" equ "0" set BUILD=0
 if "%BUILD%" equ "1" goto:SEEK_TEXT
+
+:BUILD_LATEX
 if exist build\latex rd /s /q build\latex
 sphinx-build -b latex source build\latex 2>&1 | find /V "WARNING: toctree"
 if not exist build\latex\IntelAnalytics.tex goto:SEEK_TEXT
@@ -112,14 +120,20 @@ if "%ERRORLEVEL%" equ "0" set BUILD=0
 echo "/%1/%2/%3/%4/%5/%6/%7/%8/%9/" | find /I "/latexpdf/" > nul
 if "%ERRORLEVEL%" equ "0" set BUILD=0
 if "%BUILD%" equ "1" goto:SEEK_TEXT
+
+:BUILD_PDF
 python fix_latex.py
 if "%ERRORLEVEL%" equ "1" goto:SEEK_TEXT
 call tex-2-pdf %1 %2 %3 %4 %5 %6 %7 %8 %9
+if not exist build\html goto:SEEK_TEXT
+if exist build\latex\IntelAnalytics.pdf copy build\latex\IntelAnalytics.pdf build\html\_downloads > nul
 
 :SEEK_TEXT
 if "%DEBUG%" equ "0" echo : Look for text
 echo "/%1/%2/%3/%4/%5/%6/%7/%8/%9/" | find /I "/text/" > nul
 if "%ERRORLEVEL%" equ "1" goto:ZIP_IT
+
+:BUILD_TEXT
 if exist build\text rd /s /q build\text
 if "%DEBUG%" equ "0" echo : Yes for "text"
 sphinx-build -b text source build\text 2>&1 | find /V "WARNING: toctree"
