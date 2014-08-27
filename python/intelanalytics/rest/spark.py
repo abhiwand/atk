@@ -42,13 +42,7 @@ from serializers import PickleSerializer, BatchedSerializer, UTF8Deserializer, C
 from intelanalytics.core.row import Row
 from intelanalytics.core.iatypes import valid_data_types
 
-rdd_delimiter = 'YoMeDelimiter'
-rdd_null_indicator = 'YoMeNull'
-
-
-def make_row(row_data):
-    return [unicode(field) if field is not None else unicode(rdd_null_indicator)
-            for field in row_data]
+import json
 
 
 def get_add_one_column_function(row_function, data_type):
@@ -56,11 +50,10 @@ def get_add_one_column_function(row_function, data_type):
     def add_one_column(row):
         result = row_function(row)
         cast_value = valid_data_types.cast(result, data_type)
-        if cast_value is None:
-            cast_value = rdd_null_indicator
+        if cast_value is not None:
+            cast_value = unicode(cast_value)
         row.data.append(cast_value)
-        row_data = make_row(row.data)
-        return rdd_delimiter.join(row_data)
+        return json.dumps(row.data) 
     return add_one_column
 
 
@@ -70,11 +63,10 @@ def get_add_many_columns_function(row_function, data_types):
         result = row_function(row)
         for i, data_type in enumerate(data_types):
             cast_value = valid_data_types.cast(result[i], data_type)
-            if cast_value is None:
-                cast_value = rdd_null_indicator
+            if cast_value is not None:
+                cast_value = unicode(cast_value)
             row.data.append(cast_value)
-        row_data = make_row(row.data)
-        return rdd_delimiter.join(row_data)
+        return json.dumps(row.data) 
     return add_many_columns
 
 
@@ -84,11 +76,7 @@ class RowWrapper(Row):
     """
 
     def load_row(self, s):
-        # todo - will probably change frequently
-        #  specific to String RDD, takes a comma-sep string right now...
-        self.data = [field if field != rdd_null_indicator else None
-                     for field in s.split(rdd_delimiter)]
-        #print "row_wrapper.data=" + str(self.data)
+        self.data = json.loads(s)
 
 
 def pickle_function(func):
