@@ -27,14 +27,12 @@ import org.specs2.mutable.Specification
 
 import org.apache.spark.scheduler._
 import org.specs2.mock.Mockito
-import org.apache.spark.scheduler.SparkListenerTaskEnd
 import org.apache.spark.scheduler.SparkListenerStageSubmitted
 import org.apache.spark.scheduler.SparkListenerStageCompleted
 import org.apache.spark.scheduler.SparkListenerJobStart
-import org.apache.spark.{ TaskContext, Success }
+import org.apache.spark.TaskContext
 import com.intel.intelanalytics.engine.spark.CommandProgressUpdater
 import org.apache.spark.engine.SparkProgressListener
-import java.util.Properties
 import com.intel.intelanalytics.engine.{ ProgressInfo, TaskProgressInfo }
 
 class ProgressListenerSpec extends Specification with Mockito {
@@ -69,7 +67,7 @@ class ProgressListenerSpec extends Specification with Mockito {
 
     job.finalStage.returns(finalStage1)
 
-    val jobStart = SparkListenerJobStart(job, stageIds)
+    val jobStart = SparkListenerJobStart(job.jobId, stageIds)
 
     listener onJobStart jobStart
     listener
@@ -81,34 +79,14 @@ class ProgressListenerSpec extends Specification with Mockito {
 
     val job1 = mock[ActiveJob]
     job1.jobId.returns(1)
-    val finalStage1 = mock[Stage]
-    finalStage1.id.returns(3)
-    val parent1 = mock[Stage]
-    parent1.id.returns(1)
-    val parent2 = mock[Stage]
-    parent2.id.returns(2)
-    finalStage1.parents.returns(List(parent1, parent2))
-    job1.finalStage.returns(finalStage1)
 
-    val jobStart1 = SparkListenerJobStart(job1, stageIds)
+    val jobStart1 = SparkListenerJobStart(job1.jobId, Array(1, 2, 3))
     listener onJobStart jobStart1
 
     val job2 = mock[ActiveJob]
     job2.jobId.returns(2)
 
-    val finalStage2 = mock[Stage]
-    finalStage2.id.returns(7)
-    val parent2_1 = mock[Stage]
-    parent2_1.id.returns(4)
-    val parent2_2 = mock[Stage]
-    parent2_2.id.returns(5)
-    val parent2_3 = mock[Stage]
-    parent2_3.id.returns(6)
-
-    finalStage2.parents.returns(List(parent2_1, parent2_2, parent2_3))
-    job2.finalStage.returns(finalStage2)
-
-    val jobStart2 = SparkListenerJobStart(job2, stageIds)
+    val jobStart2 = SparkListenerJobStart(job2.jobId, Array(4, 5, 6, 7))
     listener onJobStart jobStart2
 
     listener
@@ -126,19 +104,8 @@ class ProgressListenerSpec extends Specification with Mockito {
   private def sendStageCompletedToListener(listener: SparkProgressListener, stageId: Int) {
     val stageInfo = mock[StageInfo]
     stageInfo.stageId.returns(stageId)
+    stageInfo.failureReason.returns(None)
     listener.onStageCompleted(SparkListenerStageCompleted(stageInfo))
-  }
-
-  private def sendTaskEndToListener(listener: SparkProgressListener, stageId: Int, numOfTimes: Int, success: Boolean) {
-    val taskInfo = mock[TaskInfo]
-    val task = new FakeTask(stageId)
-    val taskEnd = SparkListenerTaskEnd(task, Success, taskInfo, null)
-
-    taskInfo.successful.returns(success)
-
-    for (i <- 1 to numOfTimes) {
-      listener.onTaskEnd(taskEnd)
-    }
   }
 
   "get all stages" in {
@@ -146,24 +113,7 @@ class ProgressListenerSpec extends Specification with Mockito {
     val job = mock[ActiveJob]
     job.jobId.returns(1)
 
-    val finalStage1 = mock[Stage]
-    finalStage1.id.returns(3)
-    job.finalStage.returns(finalStage1)
-
-    val parent1 = mock[Stage]
-    parent1.id.returns(1)
-    val parent2 = mock[Stage]
-    parent2.id.returns(2)
-    finalStage1.parents.returns(List(parent1, parent2))
-
-    val parent1_1 = mock[Stage]
-    parent1_1.id.returns(4)
-    val parent1_2 = mock[Stage]
-    parent1_2.id.returns(5)
-
-    parent1.parents.returns(List(parent1_1, parent1_2))
-
-    val jobStart = SparkListenerJobStart(job, Array())
+    val jobStart = SparkListenerJobStart(job.jobId, Array[Int](1, 2, 3, 4, 5), null)
     listener onJobStart jobStart
 
     listener.jobIdToStagesIds(1).toList.sorted shouldEqual List(1, 2, 3, 4, 5)
@@ -191,6 +141,7 @@ class ProgressListenerSpec extends Specification with Mockito {
     sendStageSubmittedToListener(listener, 1, 10)
     sendStageCompletedToListener(listener, 1)
     listener.getCommandProgress().map(info => info.progress) shouldEqual List(33.33f)
+    sendStageSubmittedToListener(listener, 2, 10)
     sendStageCompletedToListener(listener, 2)
     listener.getCommandProgress().map(info => info.progress) shouldEqual List(66.66f)
   }
@@ -200,7 +151,9 @@ class ProgressListenerSpec extends Specification with Mockito {
 
     sendStageSubmittedToListener(listener, 1, 10)
     sendStageCompletedToListener(listener, 1)
+    sendStageSubmittedToListener(listener, 2, 10)
     sendStageCompletedToListener(listener, 2)
+    sendStageSubmittedToListener(listener, 3, 10)
     sendStageCompletedToListener(listener, 3)
     listener.getCommandProgress().map(info => info.progress) shouldEqual List(100f)
 
@@ -213,28 +166,29 @@ class ProgressListenerSpec extends Specification with Mockito {
   "finish first task in first stage" in {
     val listener = createListener_one_job(1)
     sendStageSubmittedToListener(listener, 1, 10)
-    sendTaskEndToListener(listener, 1, 1, true)
+    listener.stageIdToTasksComplete(1) = listener.stageIdToTasksComplete.getOrElse(1, 0) + 1
     listener.getCommandProgress() shouldEqual List(ProgressInfo(3.33f, Some(TaskProgressInfo(0))))
   }
 
   "finish second task in second stage" in {
     val listener = createListener_one_job(1)
 
+    sendStageSubmittedToListener(listener, 1, 10)
     sendStageCompletedToListener(listener, 1)
     sendStageSubmittedToListener(listener, 2, 10)
-    sendTaskEndToListener(listener, 2, 2, true)
-
+    listener.stageIdToTasksComplete(2) = listener.stageIdToTasksComplete.getOrElse(2, 0) + 2
     listener.getCommandProgress() shouldEqual List(ProgressInfo(40f, Some(TaskProgressInfo(0))))
   }
-
+  //
   "finish second task in second stage, second task in third stage" in {
     val listener = createListener_one_job(1)
+    sendStageSubmittedToListener(listener, 1, 10)
     sendStageCompletedToListener(listener, 1)
     sendStageSubmittedToListener(listener, 2, 10)
-    sendTaskEndToListener(listener, 2, 2, true)
+    listener.stageIdToTasksComplete(2) = listener.stageIdToTasksComplete.getOrElse(2, 0) + 2
 
     sendStageSubmittedToListener(listener, 3, 10)
-    sendTaskEndToListener(listener, 3, 2, true)
+    listener.stageIdToTasksComplete(3) = listener.stageIdToTasksComplete.getOrElse(3, 0) + 2
     listener.getCommandProgress().map(info => info.progress) shouldEqual List(46.66f)
   }
 
@@ -245,19 +199,19 @@ class ProgressListenerSpec extends Specification with Mockito {
 
   private def finishAllTasksInSecondStage: SparkProgressListener = {
     val listener = createListener_one_job(1)
-
+    sendStageSubmittedToListener(listener, 1, 3)
     sendStageCompletedToListener(listener, 1)
     sendStageSubmittedToListener(listener, 2, 3)
-    sendTaskEndToListener(listener, 2, 3, true)
+    listener.stageIdToTasksComplete(2) = listener.stageIdToTasksComplete.getOrElse(2, 0) + 3
     listener
   }
-
+  //
   "finish all tasks in second stage-2" in {
     val listener = createListener_one_job(1)
+    sendStageSubmittedToListener(listener, 1, 3)
     sendStageCompletedToListener(listener, 1)
     sendStageSubmittedToListener(listener, 2, 3)
-    sendTaskEndToListener(listener, 2, 3, true)
-
+    listener.stageIdToTasksComplete(2) = listener.stageIdToTasksComplete.getOrElse(2, 0) + 3
     listener.getCommandProgress().map(info => info.progress) shouldEqual List(66.66f)
     sendStageCompletedToListener(listener, 2)
     listener.getCommandProgress().map(info => info.progress) shouldEqual List(66.66f)
@@ -270,9 +224,7 @@ class ProgressListenerSpec extends Specification with Mockito {
     val jobEnd = mock[SparkListenerJobEnd]
     val stage = mock[Stage]
     stage.id.returns(1)
-    jobEnd.jobResult.returns(JobFailed(null, Some(stage)))
 
-    listener.unfinishedStages.get(1) shouldNotEqual None
     listener.onJobEnd(jobEnd)
     listener.getCommandProgress().map(info => info.progress) shouldEqual List(0)
   }
@@ -280,93 +232,65 @@ class ProgressListenerSpec extends Specification with Mockito {
   "failed at middle of stage" in {
     val listener = createListener_one_job(1)
     sendStageSubmittedToListener(listener, 1, 10)
-    sendTaskEndToListener(listener, 1, 6, true)
-    listener.getCommandProgress().map(info => info.progress) shouldEqual List(20)
+    listener.stageIdToTasksComplete(1) = listener.stageIdToTasksComplete.getOrElse(1, 0) + 6
 
-    val jobEnd = mock[SparkListenerJobEnd]
+    listener.getCommandProgress().map(info => info.progress) shouldEqual List(20)
     val stage = mock[Stage]
     stage.id.returns(1)
-    jobEnd.jobResult.returns(JobFailed(null, Some(stage)))
-
-    listener.unfinishedStages.get(1) shouldNotEqual None
-    listener.onJobEnd(jobEnd)
-
-    //send second time, make sure no exception thrown
-    listener.onJobEnd(jobEnd)
     listener.getCommandProgress().map(info => info.progress) shouldEqual List(20)
-  }
-
-  "save progress on stage complete" in {
-    val listener: SparkProgressListener = finishAllTasksInSecondStage
-    val updater = listener.progressUpdater.asInstanceOf[TestProgressUpdater]
-    updater.commandProgress(1) shouldEqual List(66.66f)
   }
 
   "get two progress info for a single command" in {
     val listener: SparkProgressListener = createListener_two_jobs(1)
-
+    sendStageSubmittedToListener(listener, 1, 10)
     sendStageCompletedToListener(listener, 1)
     sendStageSubmittedToListener(listener, 2, 10)
 
-    sendTaskEndToListener(listener, 2, 2, true)
-    sendTaskEndToListener(listener, 2, 1, false)
+    listener.stageIdToTasksComplete(2) = listener.stageIdToTasksComplete.getOrElse(2, 0) + 2
+    listener.stageIdToTasksFailed(2) = listener.stageIdToTasksFailed.getOrElse(2, 0) + 1
 
     listener.getCommandProgress() shouldEqual List(ProgressInfo(20f, Some(TaskProgressInfo(1))))
 
     sendStageSubmittedToListener(listener, 4, 10)
+    listener.stageIdToTasksFailed(4) = listener.stageIdToTasksFailed.getOrElse(4, 0) + 1
 
-    sendTaskEndToListener(listener, 4, 1, false)
     listener.getCommandProgress() shouldEqual List(ProgressInfo(20f, Some(TaskProgressInfo(2))))
-    sendTaskEndToListener(listener, 4, 1, true)
+    listener.stageIdToTasksComplete(4) = listener.stageIdToTasksComplete.getOrElse(4, 0) + 1
     listener.getCommandProgress() shouldEqual List(ProgressInfo(21.25f, Some(TaskProgressInfo(2))))
 
     sendStageCompletedToListener(listener, 2)
     sendStageSubmittedToListener(listener, 3, 10)
 
-    sendTaskEndToListener(listener, 3, 10, true)
+    listener.stageIdToTasksComplete(3) = listener.stageIdToTasksComplete.getOrElse(3, 0) + 10
     sendStageCompletedToListener(listener, 3)
     listener.getCommandProgress().map(info => info.tasksInfo) shouldEqual List(Some(TaskProgressInfo(2)))
-
-    //set expected jobs to 1, should see 2 progress since one is expected and the other one is not.
-    //    listener.setJobCountForCommand(1, 1)
-    //    listener.getCommandProgress(1) shouldEqual List(ProgressInfo(100f, Some(TaskProgressInfo(1))), ProgressInfo(2.5f, Some(TaskProgressInfo(1))))
   }
 
   "get two progress info for a single command, expected number of jobs is 1 less than actual" in {
     val listener: SparkProgressListener = createListener_two_jobs(1, 1)
 
+    sendStageSubmittedToListener(listener, 1, 10)
     sendStageCompletedToListener(listener, 1)
     sendStageSubmittedToListener(listener, 2, 10)
 
-    sendTaskEndToListener(listener, 2, 2, true)
-    sendTaskEndToListener(listener, 2, 1, false)
+    listener.stageIdToTasksComplete(2) = listener.stageIdToTasksComplete.getOrElse(2, 0) + 2
+    listener.stageIdToTasksFailed(2) = listener.stageIdToTasksFailed.getOrElse(2, 0) + 1
 
     listener.getCommandProgress() shouldEqual List(ProgressInfo(40f, Some(TaskProgressInfo(1))), ProgressInfo(0f, Some(TaskProgressInfo(0))))
 
     sendStageSubmittedToListener(listener, 4, 10)
 
-    sendTaskEndToListener(listener, 4, 1, false)
+    listener.stageIdToTasksFailed(4) = listener.stageIdToTasksFailed.getOrElse(4, 0) + 1
     listener.getCommandProgress() shouldEqual List(ProgressInfo(40f, Some(TaskProgressInfo(1))), ProgressInfo(0f, Some(TaskProgressInfo(1))))
-    sendTaskEndToListener(listener, 4, 1, true)
+    listener.stageIdToTasksComplete(4) = listener.stageIdToTasksComplete.getOrElse(4, 0) + 1
     listener.getCommandProgress() shouldEqual List(ProgressInfo(40f, Some(TaskProgressInfo(1))), ProgressInfo(2.5f, Some(TaskProgressInfo(1))))
 
     sendStageCompletedToListener(listener, 2)
     sendStageSubmittedToListener(listener, 3, 10)
 
-    sendTaskEndToListener(listener, 3, 10, true)
+    listener.stageIdToTasksComplete(3) = listener.stageIdToTasksComplete.getOrElse(3, 0) + 10
     sendStageCompletedToListener(listener, 3)
 
     listener.getCommandProgress() shouldEqual List(ProgressInfo(100f, Some(TaskProgressInfo(1))), ProgressInfo(2.5f, Some(TaskProgressInfo(1))))
   }
-
-  "mark parent stage to complete when child stage is starting" in {
-    val listener = createListener_one_job(1)
-    sendStageSubmittedToListener(listener, 2, 10)
-    listener.getCommandProgress().map(info => info.progress) shouldEqual List(0f)
-    sendTaskEndToListener(listener, 2, 3, false)
-    sendTaskEndToListener(listener, 2, 10, true)
-    sendStageCompletedToListener(listener, 2)
-    listener.getCommandProgress() shouldEqual List(ProgressInfo(66.66f, Some(TaskProgressInfo(3))))
-  }
-
 }
