@@ -12,10 +12,11 @@ intelanalytics-rest-server:
     - required: 
       - pkg: intelanalytics-rest-server
 
-ls -l /etc/intelanalytics:
+python conf.py --host localhost --port 7180 --username cloudera --password cloudera --cluster "Cloudera QuickStart - C5" --restart yes:
   cmd.run:
-    - required: 
+    - required:
       - pkg: intelanalytics-rest-server
+    - cwd: /etc/intelanalytics/rest-server/
 
 ls -l /etc/intelanalytics/rest-server:
   cmd.run:
