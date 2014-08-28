@@ -130,6 +130,7 @@ if [ $? == 0 ]; then
             make -B html 2>&1 | grep -v -f toctreeWarnings
             if [[ -f build/latex/IntelAnalytics.pdf ]]; then
                 cp build/latex/IntelAnalytics.pdf build/html/_downloads/
+	    fi
         fi
 
         # Look for latexpdf
@@ -146,8 +147,11 @@ if [ $? == 0 ]; then
                     cd build/latex
                     make
                     cd ../..
-                    if [ [[ -f build/latex/IntelAnalytics.pdf ]] && [[ -d build/html ]] ]; then
-                        cp build/latex/IntelAnalytics.pdf build/html/_downloads/
+                    if [[ -f build/latex/IntelAnalytics.pdf ]]; then
+			if [[ -d build/html ]]; then
+                            cp build/latex/IntelAnalytics.pdf build/html/_downloads/
+			fi
+		    fi
                 fi
             fi
         fi

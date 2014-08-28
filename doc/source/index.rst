@@ -1,4 +1,6 @@
-
+=======================
+Intel Analytics Toolkit
+=======================
 .. toctree::
     :maxdepth: 3
     
