@@ -132,17 +132,18 @@ def prepare_row_function(frame, subject_function, iteration_function):
 
 class IaBatchedSerializer(BatchedSerializer):
     def __init__(self):
-        super(IaBatchedSerializer,self).__init__(PickleSerializer(), 1)
+        super(IaBatchedSerializer,self).__init__(PickleSerializer(), -1)
 
     def dump_stream(self, iterator, stream):
         self.dump_stream_as_json(self._batched(iterator), stream)
 
     def dump_stream_as_json(self, iterator, stream):
         for obj in iterator:
-            serialized = ",".join(obj)
-            try:
-                s = str(serialized)
-            except UnicodeEncodeError:
-                s = unicode(serialized).encode('unicode_escape')
-            write_int(len(s), stream)
-            stream.write(s)
+            if len(obj) > 0:
+                serialized = '[' + ','.join(obj) + ']'
+                try:
+                    s = str(serialized)
+                except UnicodeEncodeError:
+                    s = unicode(serialized).encode('unicode_escape')
+                write_int(len(s), stream)
+                stream.write(s)
