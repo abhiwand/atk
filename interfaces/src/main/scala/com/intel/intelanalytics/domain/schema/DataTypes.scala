@@ -236,12 +236,13 @@ object DataTypes {
     strings.zipWithIndex.map {
       case (s, i) => {
         s match {
+          case null => null
           case _ =>
             val colType = lifted(i).getOrElse(throw new IllegalArgumentException(
               "Data extend beyond number" +
                 " of columns defined in data frame"))
             val value = colType.parse(s)
-            value.getOrElse(null)
+            value.get
         }
       }
     }
