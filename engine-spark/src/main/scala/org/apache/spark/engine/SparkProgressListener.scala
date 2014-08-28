@@ -46,137 +46,89 @@ object SparkProgressListener {
 
 class SparkProgressListener(val progressUpdater: CommandProgressUpdater, val commandId: Long, val jobCount: Int) extends JobProgressListener(new SparkConf(true)) {
 
-  //  val jobIdToStagesIds = new HashMap[Int, Array[Int]]
-  //  val stageIdStageMapping = new HashMap[Int, Stage]
-  //  val unfinishedStages = new HashMap[Int, StageInfo]()
-  //  val completedStages = ListBuffer[Int]()
-  //  val stageIdToTasksComplete = HashMap[Int, Int]()
-  //  val stageIdToTasksFailed = HashMap[Int, Int]()
-  //  val jobs = new ListBuffer[ActiveJob]
-  //
-  //  override def onJobStart(jobStart: SparkListenerJobStart) {
-  //    val job = jobStart.job
-  //    val stages = addStageAndAncestorStagesToCollection(job.finalStage)
-  //
-  //    val stageIds = stages.map(s => s.id)
-  //    jobIdToStagesIds(job.jobId) = stageIds.toArray
-  //    stageIdStageMapping ++= stages.map(stage => (stage.id, stage))
-  //    jobs += job
-  //  }
-  //
-  //  /**
-  //   * Return all the ancestors stages and the stage itself
-  //   * @param stage the stage to find all the ancestors
-  //   */
-  //  def addStageAndAncestorStagesToCollection(stage: Stage): Seq[Stage] = {
-  //    val stageList = new HashSet[Stage]
-  //
-  //    if (stage.parents != null) {
-  //      stage.parents.foreach(s => {
-  //        stageList ++= addStageAndAncestorStagesToCollection(s)
-  //      })
-  //    }
-  //
-  //    stageList += stage
-  //    stageList.toSeq
-  //  }
-  //
-  //  override def onStageSubmitted(stageSubmitted: SparkListenerStageSubmitted) {
-  //    val stage = stageSubmitted.stage
-  //    unfinishedStages(stage.stageId) = stage
-  //  }
-  //
-  //  override def onStageCompleted(stageCompleted: SparkListenerStageCompleted) {
-  //
-  //    val stageInfo = stageCompleted.stage
-  //    unfinishedStages -= stageInfo.stageId
-  //    completedStages += stageInfo.stageId
-  //
-  //    //make sure all the parent stages are marked to complete
-  //    val stage = stageIdStageMapping(stageInfo.stageId)
-  //    val markToCompleteStages = addStageAndAncestorStagesToCollection(stage)
-  //    for (stage <- markToCompleteStages) {
-  //      if (!completedStages.contains(stage.id))
-  //        completedStages += stage.id
-  //    }
-  //  }
-  //
-  //  override def onTaskEnd(taskEnd: SparkListenerTaskEnd) {
-  //    val sid = taskEnd.task.stageId
-  //    taskEnd.taskInfo.successful match {
-  //      case true => stageIdToTasksComplete(sid) = stageIdToTasksComplete.getOrElse(sid, 0) + 1
-  //      case false => stageIdToTasksFailed(sid) = stageIdToTasksFailed.getOrElse(sid, 0) + 1
-  //    }
-  //
-  //    updateProgress()
-  //  }
-  //
-  //  /* Calculate progress for the job */
-  //  private def getProgress(jobId: Int): Float = {
-  //    val totalStageIds = jobIdToStagesIds(jobId)
-  //    val finished = totalStageIds.count(i => completedStages.contains(i))
-  //    val unfinished = unfinishedStages.filter { case (id, _) => totalStageIds.contains(id) }.map { case (id, stage) => stage }
-  //
-  //    val totalStageCount: Int = totalStageIds.length
-  //    var progress: Float = (100 * finished.toFloat) / totalStageCount.toFloat
-  //
-  //    unfinished.foreach(stage => {
-  //      val totalTasksCount = stage.numTasks
-  //      val successCount = stageIdToTasksComplete.getOrElse(stage.stageId, 0)
-  //      progress += (100 * successCount.toFloat / (totalTasksCount * totalStageCount).toFloat)
-  //    })
-  //
-  //    BigDecimal(progress).setScale(2, BigDecimal.RoundingMode.DOWN).toFloat
-  //  }
-  //
-  //  /**
-  //   * Return a detailed progress info about current job.
-  //   */
-  //  private def getDetailedProgress(jobId: Int): TaskProgressInfo = {
-  //    val stageIds = jobIdToStagesIds(jobId)
-  //    var totalFailed = 0
-  //    for (stageId <- stageIds) {
-  //      totalFailed += stageIdToTasksFailed.getOrElse(stageId, 0)
-  //    }
-  //
-  //    TaskProgressInfo(totalFailed)
-  //  }
-  //
-  //  /**
-  //   * Calculate progress for the command
-  //   */
-  //  def getCommandProgress(): List[ProgressInfo] = {
-  //    var progress = 0f
-  //    var retriedCounts = 0
-  //
-  //    jobs.zip(1 to jobCount).foreach {
-  //      case (job, _) =>
-  //        progress += getProgress(job.jobId)
-  //        retriedCounts += getDetailedProgress(job.jobId).retries
-  //    }
-  //
-  //    val result = new ListBuffer[ProgressInfo]()
-  //    result += ProgressInfo(progress / jobCount.toFloat, Some(TaskProgressInfo(retriedCounts)))
-  //
-  //    val unexpected = for {
-  //      i <- jobCount to (jobs.length - 1)
-  //      job = jobs(i)
-  //      progress = getProgress(job.jobId)
-  //      taskInfo = getDetailedProgress(job.jobId)
-  //    } yield ProgressInfo(progress, Some(taskInfo))
-  //
-  //    result ++= unexpected
-  //    result.toList
-  //  }
-  //
-  //  /**
-  //   * Update the progress information and send it to progress updater
-  //   */
-  //  private def updateProgress() {
-  //    val progressInfo = getCommandProgress()
-  //    progressUpdater.updateProgress(commandId, progressInfo)
-  //  }
+  val jobIdToStagesIds = new HashMap[Int, Array[Int]]
 
-  def getCommandProgress(): List[ProgressInfo] = new ListBuffer[ProgressInfo]().toList
+  val jobs = new ListBuffer[Int]
+
+  override def onJobStart(jobStart: SparkListenerJobStart) {
+    val stageIds = jobStart.stageIds
+    val jobId = jobStart.jobId
+
+    jobIdToStagesIds(jobId) = stageIds.toArray
+    jobs += jobId
+  }
+
+  override def onTaskEnd(taskEnd: SparkListenerTaskEnd) {
+    super.onTaskEnd(taskEnd)
+    updateProgress()
+  }
+
+  /* Calculate progress for the job */
+  private def getProgress(jobId: Int): Float = {
+    val totalStageIds = jobIdToStagesIds(jobId)
+    val completedStageIds = completedStages.map(stageInfo => stageInfo.stageId).toSet
+
+    val finishedCount = totalStageIds.count(i => completedStageIds.contains(i))
+    val runningStages = activeStages.filter { case (id, _) => totalStageIds.contains(id) }.map { case (id, stage) => stage }
+
+    val totalStageCount: Int = totalStageIds.length
+    var progress: Float = (100 * finishedCount.toFloat) / totalStageCount.toFloat
+
+    runningStages.foreach(stage => {
+      val totalTasksCount = stage.numTasks
+      val successCount = stageIdToTasksComplete.getOrElse(stage.stageId, 0)
+      progress += (100 * successCount.toFloat / (totalTasksCount * totalStageCount).toFloat)
+    })
+
+    BigDecimal(progress).setScale(2, BigDecimal.RoundingMode.DOWN).toFloat
+  }
+
+  /**
+   * Return a detailed progress info about current job.
+   */
+  private def getDetailedProgress(jobId: Int): TaskProgressInfo = {
+    val stageIds = jobIdToStagesIds(jobId)
+    var totalFailed = 0
+    for (stageId <- stageIds) {
+      totalFailed += stageIdToTasksFailed.getOrElse(stageId, 0)
+    }
+
+    TaskProgressInfo(totalFailed)
+  }
+
+  /**
+   * Calculate progress for the command
+   */
+  def getCommandProgress(): List[ProgressInfo] = {
+    var progress = 0f
+    var retriedCounts = 0
+
+    jobs.zip(1 to jobCount).foreach {
+      case (jobId, _) =>
+        progress += getProgress(jobId)
+        retriedCounts += getDetailedProgress(jobId).retries
+    }
+
+    val result = new ListBuffer[ProgressInfo]()
+    result += ProgressInfo(progress / jobCount.toFloat, Some(TaskProgressInfo(retriedCounts)))
+
+    val unexpected = for {
+      i <- jobCount to (jobs.length - 1)
+      jobId = jobs(i)
+      progress = getProgress(jobId)
+      taskInfo = getDetailedProgress(jobId)
+    } yield ProgressInfo(progress, Some(taskInfo))
+
+    result ++= unexpected
+    result.toList
+  }
+
+  /**
+   * Update the progress information and send it to progress updater
+   */
+  private def updateProgress() {
+    val progressInfo = getCommandProgress()
+    progressUpdater.updateProgress(commandId, progressInfo)
+  }
 }
 
