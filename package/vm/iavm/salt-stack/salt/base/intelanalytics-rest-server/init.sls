@@ -12,6 +12,11 @@ intelanalytics-rest-server:
     - required: 
       - pkg: intelanalytics-rest-server
 
+ls -l /etc/intelanalytics/rest-server:
+  cmd.run:
+    - required:
+      - pkg: intelanalytics-rest-server
+
 chmod +x conf.py:
   cmd.run:
     - required:
@@ -23,11 +28,6 @@ python conf.py --host localhost --port 7180 --username cloudera --password cloud
     - required:
       - pkg: intelanalytics-rest-server
     - cwd: /etc/intelanalytics/rest-server/
-
-ls -l /etc/intelanalytics/rest-server:
-  cmd.run:
-    - required: 
-      - pkg: intelanalytics-rest-server
 
 /etc/security/limits.conf:
   file.managed:
