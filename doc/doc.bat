@@ -122,8 +122,8 @@ if "%ERRORLEVEL%" equ "0" set BUILD=0
 if "%BUILD%" equ "1" goto:SEEK_TEXT
 
 :BUILD_PDF
-python fix_latex.py
-if "%ERRORLEVEL%" equ "1" goto:SEEK_TEXT
+rem python fix_latex.py
+rem if "%ERRORLEVEL%" equ "1" goto:SEEK_TEXT
 call tex-2-pdf %1 %2 %3 %4 %5 %6 %7 %8 %9
 if not exist build\html goto:SEEK_TEXT
 if exist build\latex\IntelAnalytics.pdf copy build\latex\IntelAnalytics.pdf build\html\_downloads > nul
