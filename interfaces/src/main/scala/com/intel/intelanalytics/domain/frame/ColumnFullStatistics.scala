@@ -53,10 +53,6 @@ case class ColumnFullStatistics(frame: FrameReference, dataColumn: String, weigh
  *                 or if the distribution is uniform.
  * @param kurtosis The kurtosis of the data. NaN when the number of data elements is < 4
  *                 or if the distribution is uniform.
- * @param mode A mode of the data; that is, an item with the greatest weight (largest frequency).
- *             When there is more than one mode, the one of least numerical value is taken.
- *             None when there are no data elements of positive weight.
- * @param weightAtMode The weight of the mode.
  * @param totalWeight Sum of all weights that are finite numbers > 0.
  * @param minimum Minimum value in the data. None when there are no data elements of positive
  *                weight.
@@ -79,13 +75,11 @@ case class ColumnFullStatisticsReturn(mean: Double,
                                       standardDeviation: Double,
                                       skewness: Double,
                                       kurtosis: Double,
-                                      mode: Option[Double],
-                                      weightAtMode: Double,
                                       totalWeight: Double,
-                                      minimum: Option[Double],
-                                      maximum: Option[Double],
-                                      meanConfidenceLower: Option[Double],
-                                      meanConfidenceUpper: Option[Double],
+                                      minimum: Double,
+                                      maximum: Double,
+                                      meanConfidenceLower: Double,
+                                      meanConfidenceUpper: Double,
                                       positiveWeightCount: Long,
                                       nonPositiveWeightCount: Long,
                                       badRowCount: Long,

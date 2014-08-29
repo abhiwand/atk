@@ -14,9 +14,9 @@ log "copy and rename: $tarFile"
 cp $tarFile $SCRIPTPATH/rpm/SOURCES/${packageName}-${version}.tar.gz
 
 LICENSE="Confidential"
-SUMMARY="$packageName-$version Build number: $BUILD_NUMBER. TimeStamp $TIMESTAMP"
+#SUMMARY="$packageName-$version Build number: $BUILD_NUMBER. TimeStamp $TIMESTAMP"
 DESCRIPTION=$SUMMARY 
-REQUIRES="python, python-ordereddict, python-pip, numpy >= 1.8.1, python-pandas >= 0.13.1, python-bottle >= 0.12, python-requests >= 2.2.1"
+REQUIRES="python, python-ordereddict, numpy >= 1.8.1, python-bottle >= 0.12, python-requests >= 2.2.1"
 
 POST="
  #sim link to python sites packages
@@ -36,7 +36,7 @@ POSTUN="
 
 FILES="
 /usr/lib/intelanalytics/rest-client
-%config(noreplace) /usr/lib/intelanalytics/rest-client/python/rest/config.py
+%config /usr/lib/intelanalytics/rest-client/python/rest/config.py
 "
 
 mkdir -p $SCRIPTPATH/rpm/SPECS

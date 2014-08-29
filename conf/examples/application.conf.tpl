@@ -11,7 +11,10 @@
 intel.analytics {
 
     # The host name for the Postgresql database in which the metadata will be stored
-    metastore.connection-postgresql.host = "invalid-postgresql-host"
+    //metastore.connection-postgresql.host = "invalid-postgresql-host"
+    # This allows the use of an in memory data store. Restarting the rest server will create a fresh database and any
+    # data in the h2 DB will be lost
+    metastore.connection = ${intel.analytics.metastore.connection-h2}
 
     engine {
 
@@ -20,19 +23,18 @@ intel.analytics {
         fs.root = "hdfs://invalid-fsroot-host/user/iauser"
 
         # The (comma separated, no spaces) Zookeeper hosts that
-        # Titan needs to be able to connect to HBase
+        # Comma separated list of host names with zookeeper role assigned
         titan.load.storage.hostname = "invalid-titan-host"
-        titan.query.storage.hostname = ${intel.analytics.engine.titan.load.storage.hostname}
+        # Zookeeper client port, defaults to 2181
+        //titan.load.storage.port = "2181"
 
-        spark {
-            # The URL for connecting to the Spark master server
-            master = "spark://invalid-spark-master:7077"
+        # The URL for connecting to the Spark master server
+        spark.master = "spark://invalid-spark-master:7077"
 
-            conf.properties {
-                # Memory should be same or lower than what is listed as available in Cloudera Manager.
-                # Values should generally be in gigabytes, e.g. "8g"
-                spark.executor.memory = "invalid executor memory"
-            }
+        spark.conf.properties {
+            # Memory should be same or lower than what is listed as available in Cloudera Manager.
+            # Values should generally be in gigabytes, e.g. "8g"
+            spark.executor.memory = "invalid executor memory"
         }
     }
 
@@ -96,11 +98,6 @@ intel.analytics {
       # ("/usr/lib/spark","/opt/cloudera/parcels/CDH/lib/spark/", etc)
       //home = ""
 
-
-      # this is the default number of partitions that will be used for RDDs
-      default-partitions = 90
-
-
       # path to python worker execution, usually to toggle 2.6 and 2.7
       //python-worker-exec = "python" #Other valid values: "python2.7"
 
@@ -145,8 +142,6 @@ intel.analytics {
         # documentation for these settings is available on Titan website
         storage {
           //backend = "hbase"
-          //port = "2181"
-
           #Performance tuning parameters:
           //batch-loading = "true"
           //buffer-size = 2048
@@ -173,8 +168,8 @@ intel.analytics {
         storage {
           # query does use the batch load settings in titan.load
           //backend = ${intel.analytics.engine.titan.load.storage.backend}
-          //hostname =  ${intel.analytics.engine.titan.load.storage.hostname}
-          //port =  ${intel.analytics.engine.titan.load.storage.port}
+          hostname =  ${intel.analytics.engine.titan.load.storage.hostname}
+          port =  ${intel.analytics.engine.titan.load.storage.port}
         }
         cache {
           # Adjust cache size parameters if you experience OutOfMemory errors during Titan queries
@@ -190,4 +185,3 @@ intel.analytics {
     }
   }
 }
-

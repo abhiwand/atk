@@ -17,13 +17,13 @@ mkdir -p $SCRIPTPATH/rpm/SOURCES
 cp $tarFile $SCRIPTPATH/rpm/SOURCES/${packageName}-${version}.tar.gz
 
 LICENSE="Confidential"
-SUMMARY="$packageName-$version Build number: $BUILD_NUMBER. TimeStamp $TIMESTAMP"
+#SUMMARY="$packageName$version Build number: $BUILD_NUMBER. TimeStamp $TIMESTAMP"
 DESCRIPTION="$SUMMARY 
-start the server with 'service intelanalytics-rest-server status' 
+start the server with 'service intelanalytics status'
 config files are in /etc/intelanalytics/rest-server
 log files live in /var/log/intelanalytics/rest-server"
 
-REQUIRES=" java >= 1.7, intelanalytics-python-rest-client >= 0.8-${BUILD_NUMBER}, intelanalytics-graphbuilder >= 0.8-${BUILD_NUMBER}"
+REQUIRES=" java-1.7.0-openjdk, intelanalytics-python-rest-client >= ${version}-${BUILD_NUMBER}, intelanalytics-graphbuilder >= ${version}-${BUILD_NUMBER}, python-argparse, python-cm-api"
 
 PRE="
 restUser=iauser
@@ -36,25 +36,33 @@ hadoop fs -ls /user/iauser 2>/dev/null
 if [ \$? -eq 1 ]; then
 	echo create \$restUser hdfs home directory
 	su -c \"hadoop fs -mkdir /user/\$restUser\" hdfs
-	su -c \"hadoop fs -chown iauser:iauser /user/\$restUser\" hdfs
+	su -c \"hadoop fs -chown \$restUser:\$restUser /user/\$restUser\" hdfs
 	su -c \"hadoop fs -chmod 755 /user/\$restUser\" hdfs
 fi
 "
 
 POST="
+restUser=iauser
+if [ \$1 -eq 2 ]; then
+  echo start intelanalytics
+  service intelanalytics restart
+fi
 
- if [ \$1 -eq 2 ]; then
-    echo start intelanalytics-rest-server
-    service intelanalytics-rest-server restart
- fi
+hadoop fs -ls /user/iauser/datasets 2>/dev/null
+if [ \$? -eq 1 ]; then
+	echo move sample data scripts and data sets
+	cp -R /usr/lib/intelanalytics/rest-server/examples /home/\$restUser
+	chown -R iauser:iauser /home/\$restUser/examples
+	su -c \"hadoop fs -put ~/examples/datasets \" iauser
+fi
  
 "
 
 PREUN="
- checkStatus=\$(service intelanalytics-rest-server status | grep start/running)
+ checkStatus=\$(service intelanalytics status | grep start/running)
  if  [ \$1 -eq 0 ] && [ \"\$checkStatus\" != \"\" ]; then
-    echo stopping intelanalytics-rest-server
-    service intelanalytics-rest-server stop
+    echo stopping intelanalytics
+    service intelanalytics stop
  fi
 "
 

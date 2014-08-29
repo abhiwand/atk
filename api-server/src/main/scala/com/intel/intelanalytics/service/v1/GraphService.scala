@@ -151,7 +151,7 @@ class GraphService(commonDirectives: CommonDirectives, engine: Engine) extends D
                           graph <- engine.getGraph(id)
                           res <- engine.deleteGraph(graph)
                         } yield res) {
-                          case Success(frames) => complete("OK")
+                          case Success(ok) => complete("OK")
                           case Failure(ex) => throw ex
                         }
                       }
