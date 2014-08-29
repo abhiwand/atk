@@ -524,9 +524,9 @@ class SparkEngine(sparkContextManager: SparkContextManager,
 
       val baseRdd: RDD[String] = frames.loadFrameRdd(ctx, frameId)
         .map(x => x.map(t => t match {
-          case null => DataTypes.pythonRddNullString
-          case _ => t.toString
-        }).mkString(SparkEngine.pythonRddDelimiter))
+          case null => JsNull
+          case a => a.toJson
+        }).toJson.toString)
 
       val pythonExec = SparkEngineConfig.pythonWorkerExec
       val environment = new java.util.HashMap[String, String]()
@@ -544,10 +544,21 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     }
   }
 
-  private def persistPythonRDD(dataFrame: DataFrame, pyRdd: EnginePythonRDD[String], converter: Array[String] => Array[Any]): Unit = {
+  private def persistPythonRDD(dataFrame: DataFrame, pyRdd: EnginePythonRDD[String], converter: Array[String] => Array[Any], skipRowCount: Boolean = false): Long = {
     withMyClassLoader {
-      val resultRdd = pyRdd.map(s => new String(s).split(SparkEngine.pythonRddDelimiter)).map(converter)
+
+      val resultRdd = pyRdd.map(s => JsonParser(new String(s)).convertTo[List[List[JsValue]]].map(y => y.map(x => x match {
+        case x if x.isInstanceOf[JsString] => x.asInstanceOf[JsString].value
+        case x if x.isInstanceOf[JsNumber] => x.asInstanceOf[JsNumber].toString
+        case x if x.isInstanceOf[JsBoolean] => x.asInstanceOf[JsBoolean].toString
+        case _ => null
+      }).toArray))
+        .flatMap(identity)
+        .map(converter)
+
+      val rowCount = if (skipRowCount) 0 else resultRdd.count()
       frames.saveFrameWithoutSchema(dataFrame, resultRdd)
+      rowCount
     }
   }
 
@@ -978,13 +989,12 @@ class SparkEngine(sparkContextManager: SparkContextManager,
   def filterSimple(arguments: FilterPredicate[JsObject, Long], user: UserPrincipal, invocation: SparkInvocation) = {
     implicit val u = user
     val pyRdd = createPythonRDD(arguments.frame, arguments.predicate, invocation.sparkContext)
-    val rowCount = pyRdd.count()
 
     val realFrame = frames.lookup(arguments.frame).getOrElse(
       throw new IllegalArgumentException(s"No such data frame: ${arguments.frame}"))
     val schema = realFrame.schema
     val converter = DataTypes.parseMany(schema.columns.map(_._2).toArray)(_)
-    persistPythonRDD(realFrame, pyRdd, converter)
+    val rowCount = persistPythonRDD(realFrame, pyRdd, converter, skipRowCount = false)
     frames.updateRowCount(realFrame, rowCount)
   }
 
@@ -1152,7 +1162,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     // Update the data
     val pyRdd = createPythonRDD(frameId, expression, invocation.sparkContext)
     val converter = DataTypes.parseMany(newColumns.map(_._2).toArray)(_)
-    persistPythonRDD(realFrame, pyRdd, converter)
+    persistPythonRDD(realFrame, pyRdd, converter, skipRowCount = true)
     frames.updateSchema(realFrame, newColumns)
   }
 
