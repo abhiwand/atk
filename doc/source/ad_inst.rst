@@ -1,5 +1,3 @@
-.. _ad_inst_installation:
-
 ============
 Installation
 ============
@@ -14,11 +12,3 @@ Installation
     ad_psql_cs
     ad_inst_vm
     ad_plug
-
-| 
-
-<- :doc:`ad_reqs`
-<------------------------------->
-:doc:`ad_bkm` ->
-
-<- :doc:`index`

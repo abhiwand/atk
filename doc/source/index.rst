@@ -14,12 +14,13 @@ Intel Analytics Toolkit
 ==========
 References
 ==========
+
 .. toctree::
     :maxdepth: 1
 
-    * :doc:`glossary`
-    * :doc:`ia_legal`
-    * :ref:`genindex`
-    * :ref:`search`
+    :ref:`glossary`
+    :ref:`ia_legal`
+    :ref:`genindex`
+    :ref:`search`
 
  

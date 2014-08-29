@@ -2,9 +2,13 @@
 Virtual Machines
 ================
 
+.. contents:: Table of Contents
+    :local:
+
 ------------
 Introduction
 ------------
+
 Thank you for your interest in the Intel Analytics Toolkit 0.8 beta.
 This guide will walk you through the download and import of the Intel Analytics beta.
 Currently the Intel Analytics toolkit VM only supports `Virtual Box <https://www.virtualbox.org/>`_.
@@ -12,14 +16,16 @@ We will not cover the installation of Virtual Box.
 Virtual Box supports many platforms and can be `downloaded for free <https://www.virtualbox.org/wiki/Downloads>`_.
 The installation documentation is also
 `available online <https://www.virtualbox.org/manual/UserManual.html>`_.
+
 ------------
 Requirements
 ------------
-12GB of memory needs to be allocated to the VM
 
-30 GB of free hard drive space
+A)  12GB of memory needs to be allocated to the VM
 
-Working Virtual Box installation 4.3
+#)  30 GB of free hard drive space
+
+#)  Working Virtual Box installation 4.3
 
 -----------------
 Download VM Image
@@ -38,7 +44,7 @@ After installing the interface you can verify the installation by running::
 
     aws --version
 
-You should this kind of response::
+You should see this kind of response::
 
     aws-cli/1.2.9 Python/2.7.6 Linux/3.8.0-35-generic
 
@@ -117,13 +123,12 @@ Once the VM is imported go ahead and boot the VM by selecting the VM and clickin
 
 .. figure:: ad_inst_vm_05.*
  
-================================
+--------------------------------
 Running Intel Analytics VM image
-================================
+--------------------------------
 
-----------------
 Before you start
-----------------
+================
 
 After every reboot of the VM you must restart the |IA| server.
 ::
@@ -137,7 +142,7 @@ All it means is that the service wasn't running before it was told to stop.
     initctl: Unknown instance:
 
 Using Sample Scripts
---------------------
+====================
 
 The VM is pre-configured and installed with |IA| toolkit.
 It has many examples and datasets to get you started as soon as the VM is booted.
@@ -176,13 +181,20 @@ Example::
     python pr.py
 
 Logs
-----
+====
 
 If you need to debug changes to the scripts (or peak behind the curtain) the log files are located at '/var/log/intelanalytics/rest-server/output.log'.
 To show the log information as it gets appended to the the log file run "tail -f"::
 
     sudo tail -f /var/log/intelanalytics/rest-server/output.log
+    
+More details about the logs can be found here: :doc:`ad_log`.
 
+.. toctree::
+    :hidden:
+    
+    ad_log
+    
 Updating
 ========
 
