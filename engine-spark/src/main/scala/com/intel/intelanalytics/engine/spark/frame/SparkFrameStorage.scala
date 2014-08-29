@@ -348,45 +348,16 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
 
   }
 
-  val idRegex: Regex = "^\\d+$".r
-
-  val frameBase = "/intelanalytics/dataframes"
-  //temporary
-  var frameId = new AtomicLong(1)
-
-  //  def nextFrameId() = {
-  //    //Just a temporary implementation, only appropriate for scaffolding.
-  //    frameId.getAndIncrement
-  //  }
-  //
-  def getFrameDirectory(id: Long): String = {
-    val path = Paths.get(s"$frameBase/$id")
-    path.toString
+  /**
+   * Automatically generate a name for a frame.
+   *
+   * The frame name comprises of the prefix "frame_", a random uuid, and an optional annotation.
+   *
+   * @param annotation Optional annotation to add to frame name
+   * @return Frame name
+   */
+  def generateFrameName(annotation: Option[String] = None): String = {
+    "frame_" + java.util.UUID.randomUUID().toString + annotation.getOrElse("")
   }
-  //
-  //  def getFrameDirectoryByName(name: String): String = {
-  //    //val path = Paths.get(s"something")
-  //    val path = Paths.get(s"$frameBase/$name")
-  //    path.toString
-  //  }
-  //
-
-  def getFrameDataFile(id: Long): String = {
-    getFrameDirectory(id) + "/data"
-  }
-
-  def getFrameMetaDataFile(id: Long): String = {
-    getFrameDirectory(id) + "/meta"
-  }
-  //
-  //  def getFrameMetaDataFileByName(name: String): String = {
-  //    getFrameDirectoryByName(name) + "/meta"
-  //  }
-  //
-  //  def getFrameDataFileByName(name: String): String = {
-  //    getFrameDirectoryByName(name) + "/data"
-  //  }
-
-  def generateFrameName(): String = java.util.UUID.randomUUID().toString
 
 }

@@ -189,7 +189,7 @@ private[spark] object ColumnStatistics extends Serializable {
       goodRowCount = stats.goodRowCount)
   }
 
-  private def getDataWeightPairs(dataColumnIndex: Int,
+  def getDataWeightPairs(dataColumnIndex: Int,
                                  weightsColumnIndexOption: Option[Int],
                                  weightsTypeOption: Option[DataType],
                                  rowRDD: RDD[Row]): RDD[(Any, Double)] = {
