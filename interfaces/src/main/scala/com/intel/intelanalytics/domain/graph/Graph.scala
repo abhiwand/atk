@@ -23,7 +23,7 @@
 
 package com.intel.intelanalytics.domain.graph
 
-import com.intel.intelanalytics.domain.HasId
+import com.intel.intelanalytics.domain.{IAUri, HasId}
 import org.joda.time.DateTime
 
 /**
@@ -47,9 +47,10 @@ case class Graph(id: Long,
                  createdOn: DateTime,
                  modifiedOn: DateTime,
                  createdByUserId: Option[Long] = None,
-                 modifiedByUserId: Option[Long] = None) extends HasId {
+                 modifiedByUserId: Option[Long] = None) extends HasId with IAUri {
   require(id >= 0, "id must be zero or greater")
   require(name != null, "name must not be null")
   require(name.trim.length > 0, "name must not be empty or whitespace")
+  def entity = "graph"
 
 }
