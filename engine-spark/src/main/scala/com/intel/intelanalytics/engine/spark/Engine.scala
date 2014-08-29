@@ -544,7 +544,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     }
   }
 
-  private def persistPythonRDD(dataFrame: DataFrame, pyRdd: EnginePythonRDD[String], converter: Array[String] => Array[Any]): Unit = {
+  private def persistPythonRDD(dataFrame: DataFrame, pyRdd: EnginePythonRDD[String], converter: Array[String] => Array[Any], skipRowCount: Boolean = false): Long = {
     withMyClassLoader {
 
       val resultRdd = pyRdd.map(s => JsonParser(new String(s)).convertTo[List[List[JsValue]]].map(y => y.map(x => x match {
@@ -556,7 +556,9 @@ class SparkEngine(sparkContextManager: SparkContextManager,
         .flatMap(identity)
         .map(converter)
 
+      val rowCount = if (skipRowCount) 0 else resultRdd.count()
       frames.saveFrameWithoutSchema(dataFrame, resultRdd)
+      rowCount
     }
   }
 
@@ -926,13 +928,12 @@ class SparkEngine(sparkContextManager: SparkContextManager,
   def filterSimple(arguments: FilterPredicate[JsObject, Long], user: UserPrincipal, invocation: SparkInvocation) = {
     implicit val u = user
     val pyRdd = createPythonRDD(arguments.frame, arguments.predicate, invocation.sparkContext)
-    val rowCount = pyRdd.count()
 
     val realFrame = frames.lookup(arguments.frame).getOrElse(
       throw new IllegalArgumentException(s"No such data frame: ${arguments.frame}"))
     val schema = realFrame.schema
     val converter = DataTypes.parseMany(schema.columns.map(_._2).toArray)(_)
-    persistPythonRDD(realFrame, pyRdd, converter)
+    val rowCount = persistPythonRDD(realFrame, pyRdd, converter, skipRowCount = false)
     frames.updateRowCount(realFrame, rowCount)
   }
 
@@ -1100,7 +1101,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     // Update the data
     val pyRdd = createPythonRDD(frameId, expression, invocation.sparkContext)
     val converter = DataTypes.parseMany(newColumns.map(_._2).toArray)(_)
-    persistPythonRDD(realFrame, pyRdd, converter)
+    persistPythonRDD(realFrame, pyRdd, converter, skipRowCount = true)
     frames.updateSchema(realFrame, newColumns)
   }
 
