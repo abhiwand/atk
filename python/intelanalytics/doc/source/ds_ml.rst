@@ -1,7 +1,7 @@
 ================
 Machine Learning
 ================
-
+    
 :term:`Machine learning` is about constructing and studying software that can "learn" from data.
 
 When you enter a search phrase or question in an internet search tool, you get a list of websites ranked in order of relevance.
@@ -37,6 +37,11 @@ Machine Learning, But Were Too Afraid To Ask (Part Two)`_.
 ---------------
 Algorithm Types
 ---------------
+
+.. toctree::
+    :maxdepth: 2
+    
+    ds_mlal_0
 
 The algorithms that we use in the Analytics Toolkit are :term:`Unsupervised Learning` or :term:`Supervised Learning` algorithms,
 where you either have definitive results (supervised) or where the results are determined by an estimation on the relationship
@@ -95,6 +100,14 @@ The idea here is that the software learns faster.
 
     Different models need different evaluation methods.
     What will be added in the first step will be prior and posterior histogram, RoC/AUC curves, and lift curves.
+
+| 
+
+<- :doc:`ds_dflw`
+<------------------------------->
+:doc:`ds_mlal_0` ->
+
+<- :doc:`index`
 
 
 .. _Introduction to Machine Learning: http://alex.smola.org/drafts/thebook.pdf

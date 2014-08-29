@@ -43,11 +43,16 @@ The cost function for a node is given by:
 
 .. math::
 
-    cost = \sum_k w_{i,k} * \left [ \left ( 1 - \lambda \right ) * \left [ previous\ belief_{i}^{2} - w_{i,k} * previous\ belief_{i} * previous\
-    belief_{k} \right ] + 0.5 * \lambda * \left ( previous\ belief_{i} - prior_{i} \right ) ^{2} \right ]
+    cost =& \sum_k w_{i,k} * \Big[ \big( 1 - \lambda \big) * \big[ previous\ belief_{i}^{2} - w_{i,k} * previous\ belief_{i}\\
+    & * previous\ belief_{k} \big] + 0.5 * \lambda * \big( previous\ belief_{i} - prior_{i} \big) ^{2} \Big]
+
 
 Convergence is a local phenomenon; not all nodes will converge at the same time. 
 It is also possible for some (most) nodes to converge and others to never converge. 
 The algorithm requires all nodes to converge before declaring that the algorithm has converged overall. 
 If this condition is not met, the algorithm will continue up to the maximum number of super steps.
+
+.. rubric:: footnotes
+
+.. [#LP1] http://www.cs.cmu.edu/~zhuxj/pub/CMU-CALD-02-107.pdf
 

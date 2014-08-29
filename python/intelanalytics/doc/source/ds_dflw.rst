@@ -2,6 +2,11 @@
 Process Flow Examples
 =====================
 
+.. toctree::
+    :hidden:
+    
+    ds_apir
+
 When using the toolkit, you will import your data, perform cleaning operations on it, possibly combine it with other data sets,
 and finally, analyze it.
 
@@ -79,11 +84,13 @@ Let's start with a file *Data.csv* whose contents look like this::
     4,
     5,""
 
-Create the schema *schema_ab* with two columns: *a* (int32), and *b* (string)::
+Create the schema *schema_ab* with two columns: *a* (int32), and *b* (string):
+
+.. code::
 
     schema_ab = [('a', int32), ('b', string)]
 
-When defining schemas, if the parser should ignore the field, the type is assigned *ignore*, and the name should be an empty string ``''``::
+When `defining schemas`, if the parser should ignore the field, the type is assigned *ignore*, and the name should be an empty string ``''``::
 
     schema_2 = [('column_a', str), ('', ignore), ('more_data', str)]
 
@@ -491,7 +498,8 @@ Aggregation based on columns:
     Average the grouped values in column *d* and save it in a new column *d_avg*;
     Add up the grouped values in column *d* and save it in a new column *d_sum*::
 
-        grouped_data = my_frame.groupby(['a', 'b'], { 'c': [agg.avg, agg.sum, agg.stdev], 'd': [agg.avg, agg.sum]})
+        grouped_data = my_frame.groupby(['a', 'b'], { 'c': [agg.avg, agg.sum, agg.stdev],
+            'd': [agg.avg, agg.sum]})
 
     Note:
         The only columns in the new frame will be the grouping columns and the generated columns.
@@ -531,7 +539,8 @@ Aggregation based on both column and row together:
     Average the grouped values in column *d* and save it in a new column *d_avg*;
     Add up the grouped values in column *d* and save it in a new column *d_sum*::
 
-        my_frame.groupby(['a', 'b'], [agg.count, { 'c': [agg.avg, agg.sum, agg.stdev], 'd': [agg.avg, agg.sum]}])
+        my_frame.groupby(['a', 'b'], [agg.count, { 'c': [agg.avg, agg.sum, agg.stdev],
+            'd': [agg.avg, agg.sum]}])
 
     Supported aggregation functions:
 
@@ -769,8 +778,8 @@ Note:
     1. Consist of a label and its value. For example, the property *name* with its value taken from column *name* of our frame.
     #. Are optional, which means a vertex might have zero or more properties.
 
-Example:
-~~~~~~~~
+Vertex Rule Example:
+~~~~~~~~~~~~~~~~~~~~
 
 Create a vertex rule called “employee” from the above frame::
 
@@ -801,8 +810,8 @@ To create a rule for an edge, one needs to define:
     A. consist of a label and its value, for example, the property *name* with value taken from column *name* of a frame
     #. are optional, which means an edge might have zero or more properties
 
-Example:
-~~~~~~~~
+Edge Rule Example:
+~~~~~~~~~~~~~~~~~~
 
 Create an edge called “reports” from the same frame (accessed by BigFrame *my_frame*) as above, using previously
 defined *employee* and *manager* rules, and link them together::
@@ -822,7 +831,8 @@ This edge is considered “directed” since an employee reports to a manager bu
 To make an edge a directed one, the user needs to use the parameter ``is_directed`` in the edge rule and set it to ``True``,
 as shown in example below::
 
-    reports = EdgeRule("worksUnder", employee, manager, { "years": f[“years”]}, is_directed = True)
+    reports = EdgeRule("worksUnder", employee, manager, { "years": f[“years”]},
+        is_directed = True)
 
 Building A Graph
 ================
@@ -846,8 +856,8 @@ Commands such as g4 = my_graph will only give you a copy of the proxy, pointing 
     and now you are at the point where you can make a :term:`graph`.
 
     There are two main steps to :term:`graph` construction.
-    First, you will build a set of rules to describe the transformation from table to :term:`graph`, and then you build it,
-    copying the data into it at that point.
+    First, you will build a set of rules to describe the transformation from table to :term:`graph`,
+    and then you build it, copying the data into it at that point.
 
     Building Rules
 
@@ -903,3 +913,10 @@ Commands such as g4 = my_graph will only give you a copy of the proxy, pointing 
     Similar to what was discussed for BigFrame, what gets returned is not all the data, but a proxy (descriptive pointer) for the data.
     Commands such as ``g4 = my_graph`` will only give you a copy of the proxy, pointing to the same graph.
 
+| 
+
+<- :doc:`ds_db`
+<------------------------------->
+:doc:`ds_ml` ->
+
+<- :doc:`index`

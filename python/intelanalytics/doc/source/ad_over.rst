@@ -1,16 +1,10 @@
+==============
 Administration
 ==============
 
-Contents:
-
-..  toctree::
-    :maxdepth: 3
+.. toctree::
 
     ad_reqs
     ad_inst
-
-.. TODO:: Future sections
-    ad_conf
-    ad_mntc
-    ad_trbl
-
+    ad_python
+    ad_bkm

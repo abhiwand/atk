@@ -90,12 +90,16 @@ Execution Flow
 ==============
 
 .. image:: ad_plug_1.*
+    :width: 80 %
+    :align: center
 
 Accessing Spark or Other Components
 ===================================
 
 For the time being, plugin authors may implement specific interfaces that declare their need for a particular service, for example,
 SparkSupport for direct access to a SparkContext.
+
+See also :doc:`ad_bkm`.
 
 ------------------------
 Creating a CommandPlugin
@@ -268,3 +272,11 @@ This setting is built into the reference.conf that is embedded in the engine arc
 For your installation, you can control this list using the application.conf file.
 
 Once this setting has been updated, restart the server to activate the changes.
+
+|
+
+<- :doc:`ad_inst_vm`
+<------------------------------->
+:doc:`ad_inst` ->
+
+<- :doc:`index`

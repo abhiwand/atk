@@ -69,9 +69,9 @@ To import the ALS input data, use the following iPython calls::
     fb = get_frame_builder()
     csvfile = '/user/hadoop/recommendation_raw_input.csv'
     frame = fb.build_from_csv('AlsFrame',
-                              csvfile,
-                              schema='/user:long,vertex_type:chararray,movie:long,rating:logn.splits:chararray',
-                              overwrite=True)
+                      csvfile,
+                      schema='user:long,vertex_type:chararray,movie:long,rating:logn.splits:chararray',
+                      overwrite=True)
 
 The example above loads the ALS input data from a CSV file.
 The first line imports the needed python modules.
