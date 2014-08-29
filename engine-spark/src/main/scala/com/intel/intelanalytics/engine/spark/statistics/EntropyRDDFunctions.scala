@@ -35,7 +35,7 @@ private[spark] object EntropyRDDFunctions extends Serializable {
     val dataWeightPairs =
       ColumnStatistics.getDataWeightPairs(dataColumnIndex, weightsColumnIndexOption, weightsTypeOption, rowRDD)
 
-    val distinctCounts = dataWeightPairs.reduceByKey(_ + _).map({ case (value, count) => count})
+    val distinctCounts = dataWeightPairs.reduceByKey(_ + _).map({ case (value, count) => count })
 
     // sum() throws an exception if RDD is empty so catching it and returning zero
     val totalCount = Try(distinctCounts.sum()).getOrElse(0d)

@@ -5,7 +5,7 @@ package com.intel.intelanalytics.domain.frame
  *
  * @param dataColumn Name of the column to compute entropy.
  * @param weightsColumn Optional. Name of the column that provides weights (frequencies).
- *                   
+ *
  */
 case class Entropy(frame: FrameReference, dataColumn: String, weightsColumn: Option[String] = None) {
   require(frame != null, "frame is required")

@@ -16,7 +16,7 @@ class EntropyITest extends TestingSparkContextFlatSpec with Matchers {
     Array[Any](0, "a", 0),
     Array[Any](0, "b", 0),
     Array[Any](1, "b", 0),
-    Array[Any](1, "b", 0),  
+    Array[Any](1, "b", 0),
     Array[Any](2, "c", 0))
 
   val weightedInput = List(
@@ -56,5 +56,4 @@ class EntropyITest extends TestingSparkContextFlatSpec with Matchers {
     entropy should equal(0)
   }
 }
-
 

@@ -190,9 +190,9 @@ private[spark] object ColumnStatistics extends Serializable {
   }
 
   def getDataWeightPairs(dataColumnIndex: Int,
-                                 weightsColumnIndexOption: Option[Int],
-                                 weightsTypeOption: Option[DataType],
-                                 rowRDD: RDD[Row]): RDD[(Any, Double)] = {
+                         weightsColumnIndexOption: Option[Int],
+                         weightsTypeOption: Option[DataType],
+                         rowRDD: RDD[Row]): RDD[(Any, Double)] = {
 
     val dataRDD: RDD[Any] = rowRDD.map(row => row(dataColumnIndex))
 
