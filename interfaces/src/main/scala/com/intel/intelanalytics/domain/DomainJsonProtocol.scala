@@ -182,7 +182,7 @@ object DomainJsonProtocol extends IADefaultJsonProtocol {
   implicit val assignSampleFormat = jsonFormat5(AssignSample)
   implicit val calculatePercentilesFormat = jsonFormat3(CalculatePercentiles)
 
-  implicit val entropyFormat = jsonFormat2(Entropy)
+  implicit val entropyFormat = jsonFormat3(Entropy)
   implicit val entropyReturnFormat = jsonFormat1(EntropyReturn)
 
   implicit val topKFormat = jsonFormat4(TopK)
