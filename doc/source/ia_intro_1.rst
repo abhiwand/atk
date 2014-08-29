@@ -38,6 +38,7 @@ through analysis and machine learning (using the graph engine.)
 With a complete graph pipeline of capabilities, exploring and productively deploying graph analytics to gain valuable
 insights becomes possible and practical, without the brittle “do it yourself” approaches needed today.
 
+.. _Unified_Graph_and_Entity_Analytics:
 
 Unified Graph and Entity Analytics
 ==================================
