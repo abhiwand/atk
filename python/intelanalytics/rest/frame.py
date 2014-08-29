@@ -1,3 +1,4 @@
+# coding: utf-8
 ##############################################################################
 # INTEL CONFIDENTIAL
 #
@@ -332,7 +333,7 @@ class FrameBackendRest(object):
             table.vrules = prettytable.NONE
             for r in self.rows:
                 table.add_row(r)
-            return unicode(table.get_string())
+            return table.get_string().encode('utf8','replace')
 
          #def _repr_html_(self): TODO - Add this method for ipython notebooks
 
