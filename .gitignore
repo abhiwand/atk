@@ -28,6 +28,8 @@ git
 /python/.coverage
 /python/cover/
 /python/nosetests.xml
+/python/intelanalytics/core/autoframe.py
+/python/intelanalytics/core/autograph.py
 largegit.sh
 make.sh
 .metadata*

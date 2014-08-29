@@ -29,10 +29,7 @@ import spray.json.JsValue
  * Command for calculating the median of a (possibly weighted) dataframe column.
  * @param frame identifier for the input dataframe
  */
-case class ColumnMedian(frame: FrameReference, dataColumn: String) {
-
-  // TODO TRIB-2245
-  // weightsColumn: Option[String]) {
+case class ColumnMedian(frame: FrameReference, dataColumn: String, weightsColumn: Option[String]) {
 
   require(frame != null, "frame is required")
   require(dataColumn != null, "data column is required")

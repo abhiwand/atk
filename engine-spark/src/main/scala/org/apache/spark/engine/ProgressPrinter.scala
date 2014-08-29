@@ -47,7 +47,7 @@ class ProgressPrinter(progressListener: SparkProgressListener) extends SparkList
   }
 
   def printJobProgress() {
-    val commandId = progressListener.commandIdJobs.keys.toList.sorted.last
-    println("command:" + commandId + ", progress: " + progressListener.getCommandProgress(commandId) + "%")
+    val commandId = progressListener.commandId
+    println("command:" + commandId + ", progress: " + progressListener.getCommandProgress() + "%")
   }
 }

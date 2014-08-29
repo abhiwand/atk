@@ -139,7 +139,7 @@ object Boot extends App with ClassLoaderAware {
   /**
    * For debugging only
    */
-  private[component] def writeFile(fileName: String, content: String) {
+  def writeFile(fileName: String, content: String) {
     import java.io._
     val file = new java.io.File(fileName)
     val parent = file.getParentFile
@@ -161,7 +161,7 @@ object Boot extends App with ClassLoaderAware {
    * @param archiveName the archive to create
    * @return the created, running, `Archive`
    */
-  private def buildArchive(archiveName: String): Archive = {
+  private def buildArchive(archiveName: String, className: Option[String] = None): Archive = {
     try {
       //We first create a standard plugin class loader, which we will use to query the config
       //to see if this archive needs special treatment (i.e. a parent class loader other than the
@@ -173,7 +173,13 @@ object Boot extends App with ClassLoaderAware {
 
       val augmentedConfigForProbe = ConfigFactory.defaultReference(probe)
 
-      val definition = readArchiveDefinition(archiveName, augmentedConfigForProbe)
+      val definition = {
+        val defaultDef = readArchiveDefinition(archiveName, augmentedConfigForProbe)
+        className match {
+          case Some(n) => defaultDef.copy(className = n)
+          case _ => defaultDef
+        }
+      }
 
       //Now that we know the parent, we build the real class loader we're going to use for this archive.
       val parentLoader = loaders.getOrElse(definition.parent, throw new IllegalArgumentException(
@@ -211,12 +217,13 @@ object Boot extends App with ClassLoaderAware {
 
   /**
    * Returns the requested archive, loading it if needed.
-   * @param name the name of the archive
+   * @param archiveName the name of the archive
+   * @param className the name of the class managing the archive
    *
    * @return the requested archive
    */
-  def getArchive(name: String): Archive = {
-    archives.getOrElse(name, buildArchive(name))
+  def getArchive(archiveName: String, className: Option[String] = None): Archive = {
+    archives.getOrElse(archiveName, buildArchive(archiveName, className))
   }
 
   /**
@@ -316,15 +323,16 @@ object Boot extends App with ClassLoaderAware {
 
   def usage() = println("Usage: java -jar launcher.jar <archive> <application>")
 
-  if (args.length != 2) {
+  if (args.length < 1 || args.length > 2) {
     usage()
   }
   else {
     try {
-      val name: String = args(0)
-      Archive.logger(s"Starting $name")
-      val instance = getArchive(name)
-      Archive.logger(s"Started $name with ${instance.definition}")
+      val archiveName: String = args(0)
+      val applicationName: Option[String] = { if (args.length == 2) Some(args(1)) else None }
+      Archive.logger(s"Starting $archiveName")
+      val instance = getArchive(archiveName, applicationName)
+      Archive.logger(s"Started $archiveName with ${instance.definition}")
     }
     catch {
       case NonFatal(e) =>

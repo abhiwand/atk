@@ -36,11 +36,14 @@ expected_repr_123 = """   a      b
 
 class TestSimpleDataSource(unittest.TestCase):
 
+
+    """
     def test_to_pandas_dataframe_using_rows(self):
         sds = SimpleDataSource(schema=[('a', int32), ('b', str)], rows=[(1, 'one'), (2, 'two'), (3, 'three')])
         df = sds.to_pandas_dataframe()
         result = repr(df)
         self.assertEquals(expected_repr_123, result)
+
 
     def test_to_pandas_dataframe_using_columns(self):
         sds = SimpleDataSource(schema=[('a', int32), ('b', str)],
@@ -49,7 +52,7 @@ class TestSimpleDataSource(unittest.TestCase):
         df = sds.to_pandas_dataframe()
         result = repr(df)
         self.assertEquals(expected_repr_123, result)
-
+"""
 
 if __name__ == '__main__':
     unittest.main()

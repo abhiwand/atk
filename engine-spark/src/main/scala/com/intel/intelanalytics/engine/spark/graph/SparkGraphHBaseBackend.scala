@@ -13,18 +13,40 @@ class SparkGraphHBaseBackend(hbaseAdmin: => HBaseAdmin) extends GraphBackendStor
   /**
    * Deletes a graph's underlying table from HBase.
    * @param graphName The user's name for the graph.
+   * @param quiet Whether we attempt to delete quietly(if true) or raise raise an error if table doesn't exist(if false).
    */
-  override def deleteUnderlyingTable(graphName: String): Unit = {
+  override def deleteUnderlyingTable(graphName: String, quiet: Boolean): Unit = {
 
     val tableName: String = GraphName.convertGraphUserNameToBackendName(graphName)
-
     if (hbaseAdmin.tableExists(tableName)) {
-      hbaseAdmin.disableTable(tableName)
+      if (hbaseAdmin.isTableEnabled(tableName)) {
+        hbaseAdmin.disableTable(tableName)
+      }
       hbaseAdmin.deleteTable(tableName)
     }
     else {
-      throw new IllegalArgumentException(
-        "SparkGraphHBaseBackend.deleteTable:  HBase table " + tableName + " requested for deletion does not exist.")
+      if (!quiet) {
+        throw new IllegalArgumentException(
+          "SparkGraphHBaseBackend.deleteTable:  HBase table " + tableName + " requested for deletion does not exist.")
+      }
+    }
+  }
+
+  override def renameUnderlyingTable(graphName: String, newName: String): Unit = {
+    val tableName: String = GraphName.convertGraphUserNameToBackendName(graphName)
+    val newTableName: String = GraphName.convertGraphUserNameToBackendName(newName)
+    val snapShotName: String = graphName.concat("_SnapShot")
+
+    if (hbaseAdmin.tableExists(tableName)) {
+      if (hbaseAdmin.tableExists(newTableName)) {
+        hbaseAdmin.disableTable(newTableName)
+        hbaseAdmin.deleteTable(newTableName)
+      }
+      hbaseAdmin.disableTable(tableName)
+      hbaseAdmin.snapshot(snapShotName, tableName)
+      hbaseAdmin.cloneSnapshot(snapShotName, newTableName)
+      hbaseAdmin.deleteSnapshot(snapShotName)
+      hbaseAdmin.deleteTable(tableName)
     }
   }
 }

@@ -15,8 +15,6 @@ private[numericalstatistics] class FirstPassStatisticsAccumulatorParam
       weightedSumOfLogs = Some(0),
       minimum = Double.PositiveInfinity,
       maximum = Double.NegativeInfinity,
-      mode = Double.NaN,
-      weightAtMode = 0,
       totalWeight = 0,
       positiveWeightCount = 0,
       nonPositiveWeightCount = 0,
@@ -45,23 +43,13 @@ private[numericalstatistics] class FirstPassStatisticsAccumulatorParam
         None
       }
 
-    val (mode, weightAtMode) = if (stats1.weightAtMode > stats2.weightAtMode)
-      (stats1.mode, stats1.weightAtMode)
-    else if (stats1.weightAtMode < stats2.weightAtMode)
-      (stats2.mode, stats2.weightAtMode)
-    else if (stats1.mode <= stats2.mode)
-      (stats1.mode, stats1.weightAtMode)
-    else
-      (stats2.mode, stats2.weightAtMode)
-
     FirstPassStatistics(mean = mean,
       weightedSumOfSquares = weightedSumOfSquares,
       weightedSumOfSquaredDistancesFromMean = sumOfSquaredDistancesFromMean,
       weightedSumOfLogs = weightedSumOfLogs,
       minimum = Math.min(stats1.minimum, stats2.minimum),
       maximum = Math.max(stats1.maximum, stats2.maximum),
-      mode = mode,
-      weightAtMode = weightAtMode, totalWeight = totalWeight,
+      totalWeight = totalWeight,
       positiveWeightCount = stats1.positiveWeightCount + stats2.positiveWeightCount,
       nonPositiveWeightCount = stats1.nonPositiveWeightCount + stats2.nonPositiveWeightCount,
       badRowCount = stats1.badRowCount + stats2.badRowCount,

@@ -1,5 +1,0 @@
-base:
-  '*':
-    - gaoRepo
-  'dockerrepo':
-    - dockerRepo
