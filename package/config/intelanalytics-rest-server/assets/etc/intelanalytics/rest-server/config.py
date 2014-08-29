@@ -50,7 +50,9 @@ Command Line Arguments
 --cluster The Cloudera cluster we will pull and update config for. If Cloudera manager manages more than one cluster
     we need to know what cluster we will be updating and pulling our config for. Can give the display name of the
     cluster
-
+--python The python exec you would like to use. Intel Analytics defaults to python. This is usually changed to the
+    python 2.7 exec to allow users the ability to use ipython. The server and the client must be runnig the same
+    python version
 --restart Weather or not we will restart the spark service after setting the spark classpath. After the SPARK_CLASSPATH
     gets updated we deploy the new config but we also need to restart the spark service for the changes to take effect
     on all the master and worker nodes. This is left to the user to decide in case spark is currently busy running some
