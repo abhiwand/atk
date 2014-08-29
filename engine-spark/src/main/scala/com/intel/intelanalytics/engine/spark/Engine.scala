@@ -74,7 +74,6 @@ import com.intel.intelanalytics.domain.graph.Graph
 import com.intel.intelanalytics.domain.frame.ConfusionMatrix
 import com.intel.intelanalytics.domain.FilterPredicate
 import com.intel.intelanalytics.domain.frame.load.Load
-import com.intel.intelanalytics.domain.frame.CalculatePercentiles
 import com.intel.intelanalytics.domain.frame.CumulativeDist
 import com.intel.intelanalytics.domain.frame.AssignSample
 import com.intel.intelanalytics.domain.frame.FrameGroupByColumn
@@ -96,7 +95,6 @@ import com.intel.intelanalytics.engine.ProgressInfo
 import com.intel.intelanalytics.domain.command.CommandDefinition
 import com.intel.intelanalytics.domain.frame.ClassificationMetric
 import com.intel.intelanalytics.domain.frame.BinColumn
-import com.intel.intelanalytics.domain.frame.PercentileValues
 import com.intel.intelanalytics.domain.frame.DataFrame
 import com.intel.intelanalytics.domain.command.Execution
 import com.intel.intelanalytics.domain.command.Command
@@ -113,6 +111,8 @@ import com.intel.intelanalytics.domain.frame.FrameJoin
 import com.intel.intelanalytics.engine.spark.plugin.SparkInvocation
 import com.intel.intelanalytics.domain.query.PagedQueryResult
 import com.intel.intelanalytics.domain.query.QueryDataResult
+import com.intel.intelanalytics.domain.frame.CalculateQuantiles
+import com.intel.intelanalytics.domain.frame.QuantileValues
 
 object SparkEngine {
   private val pythonRddDelimiter = "YoMeDelimiter"
@@ -1344,19 +1344,19 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     frames.updateRowCount(realFrame, rowCount)
   }
 
-  val calculateQuantileCommand = commands.registerCommand("dataframe/calculate_quantiles", calculateQuantilesSimple _, 7)
+  val calculateQuantileCommand = commandPluginRegistry.registerCommand("dataframe/calculate_quantiles", calculateQuantilesSimple _, numberOfJobs = 7)
 
-  def calculateQuantilesSimple(quantiles: CalculateQuantiles, user: UserPrincipal): QuantileValues = {
+  def calculateQuantilesSimple(quantiles: CalculateQuantiles, user: UserPrincipal, invocation: SparkInvocation): QuantileValues = {
     implicit val u = user
     val frameId: Long = quantiles.frameId
-    val ctx = sparkContextManager.context(user).sparkContext
+    val ctx = invocation.sparkContext
 
     val realFrame: DataFrame = getDataFrameById(frameId)
     val frameSchema = realFrame.schema
     val columnIndex = frameSchema.columnIndex(quantiles.columnName)
     val columnDataType = frameSchema.columnDataType(quantiles.columnName)
 
-    val rdd = frames.getFrameRdd(ctx, frameId)
+    val rdd = frames.loadFrameRdd(ctx, frameId)
     val quantileValues = SparkOps.calculateQuantiles(rdd, quantiles.quantiles, columnIndex, columnDataType).toList
     QuantileValues(quantileValues)
   }

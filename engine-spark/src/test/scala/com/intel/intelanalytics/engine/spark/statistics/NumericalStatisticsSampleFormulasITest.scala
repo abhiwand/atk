@@ -135,7 +135,6 @@ class NumericalStatisticsSampleFormulasITest extends TestingSparkContextFlatSpec
     Math.abs(testStandardDeviation - expectedStandardDeviationWeights) should be < epsilon
   }
 
-
   "mean confidence lower" should "handle data with integer frequencies" in new NumericalStatisticsTestSampleFormulas {
 
     val testMCL = numericalStatisticsFrequencies.meanConfidenceLower
@@ -149,7 +148,6 @@ class NumericalStatisticsSampleFormulasITest extends TestingSparkContextFlatSpec
 
     Math.abs(testMCL - (expectedMeanIPW - 1.96 * (expectedStandardDeviationWeights / Math.sqrt(netIPWeights)))) should be < epsilon
   }
-
 
   "mean confidence upper" should "handle data with integer frequencies" in new NumericalStatisticsTestSampleFormulas {
 
