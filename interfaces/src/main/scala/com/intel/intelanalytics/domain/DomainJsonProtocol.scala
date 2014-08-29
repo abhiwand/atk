@@ -59,6 +59,7 @@ object DomainJsonProtocol extends IADefaultJsonProtocol {
       DataTypes.toDataType(raw)
     }
 
+
     override def write(obj: DataType): JsValue = new JsString(obj.toString)
   }
 
@@ -104,6 +105,7 @@ object DomainJsonProtocol extends IADefaultJsonProtocol {
 
     override def read(json: JsValue): T = json match {
       case JsString(name) =>
+        IAUriFactory.getReference(name)
         val id = patterns.flatMap(p => p.findMatch(name))
           .headOption
           .map(s => s.toLong)
@@ -113,18 +115,6 @@ object DomainJsonProtocol extends IADefaultJsonProtocol {
       case _ => deserializationError(s"Expected $name URL, but received " + json)
     }
   }
-
-  implicit val frameReferenceFormat = new ReferenceFormat[FrameReference](
-    List(PatternIndex("""ia://dataframes/(\d+)""".r, 1),
-      PatternIndex("""https?://.+/dataframes/(\d+)""".r, 1)),
-    "dataframes", "data frame",
-    n => FrameReference(n))
-
-  implicit val graphReferenceFormat = new ReferenceFormat[GraphReference](
-    List(PatternIndex("""ia://graphs/(\d+)""".r, 1),
-      PatternIndex("""https?://.+/graphs/(\d+)""".r, 1)),
-    "graphs", "graph",
-    n => GraphReference(n))
 
   implicit val userFormat = jsonFormat5(User)
   implicit val statusFormat = jsonFormat5(Status)
