@@ -23,19 +23,24 @@
 
 package com.intel.intelanalytics.engine.spark
 
-import com.intel.intelanalytics.domain.schema.DataTypes
+import com.intel.intelanalytics.domain.schema.{ Schema, DataTypes }
 import com.intel.intelanalytics.engine.Rows._
 import org.apache.spark.SparkContext
 
 import scala.collection.immutable.TreeMap
 import scala.collection.mutable
-import com.intel.intelanalytics.engine.spark.frame.RDDJoinParam
+import scala.reflect.ClassTag
+
+import scala.Some
+import com.intel.intelanalytics.engine.spark.frame.{ FrameRDD, RDDJoinParam }
 import com.intel.intelanalytics.algorithm.{ Percentile, PercentileTarget, PercentileComposingElement }
 import scala.collection.mutable.ListBuffer
 import org.apache.spark.rdd.RDD
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 import scala.math.{ pow, log }
 import scala.reflect.ClassTag
+import com.intel.intelanalytics.domain.frame.FrameGroupByColumn
+import spray.json.JsObject
 import scala.util.Try
 
 //implicit conversion for PairRDD

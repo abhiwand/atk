@@ -1,4 +1,3 @@
-/*
 ////////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
@@ -29,11 +28,14 @@ import com.intel.spark.graphon.testutils.TestingTitan
 import com.intel.graphbuilder.elements.{ Property, Vertex, Edge }
 import scala.collection.JavaConversions._
 import org.scalatest.Matchers
+import com.intel.graphbuilder.driver.spark.rdd.EnvironmentValidator
 
 /**
  * Integration testing for uniform vertex sampling
  */
 class VertexSampleITest extends TestingSparkContextWordSpec with Matchers {
+
+  EnvironmentValidator.skipEnvironmentValidation = true
 
   // generate sample data
   val gbIds = Map((1, new Property("gbId", 1)),
@@ -210,10 +212,10 @@ class VertexSampleITest extends TestingSparkContextWordSpec with Matchers {
       val topVertexRdd = VertexSampleSparkOps.getTopVertices(vertexRdd, 4)
       val topVertexArray = topVertexRdd.collect()
 
-      topVertexArray.contains(inputVertexList(5)) shouldEqual true
-      topVertexArray.contains(inputVertexList(2)) shouldEqual true
-      topVertexArray.contains(inputVertexList(6)) shouldEqual true
-      topVertexArray.contains(inputVertexList(7)) shouldEqual true
+      topVertexArray.contains(inputVertexListWeighted(5)._2) shouldEqual true
+      topVertexArray.contains(inputVertexListWeighted(2)._2) shouldEqual true
+      topVertexArray.contains(inputVertexListWeighted(6)._2) shouldEqual true
+      topVertexArray.contains(inputVertexListWeighted(7)._2) shouldEqual true
     }
   }
 
@@ -258,4 +260,3 @@ class VertexSampleITest extends TestingSparkContextWordSpec with Matchers {
   }
 
 }
-*/

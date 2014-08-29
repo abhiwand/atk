@@ -58,5 +58,14 @@ PSQL has a really nice command-line interface with full help and documentation b
                     1 |              1 | 1       | Initial version for 0.8l| SQL  | V1__Initial_version_for_0.8.sql | -1027169045 | metastore    | 2014-06-18 03:39:31.573302 |            363 | t
         (1 row)
 
+|
+
+<- :doc:`ad_psql`
+<------------------------------->
+:doc:`ad_inst_vm` ->
+
+<- :doc:`ad_inst`
+
+<- :doc:`index`
 
 .. _Flyway: http://flywaydb.org/
