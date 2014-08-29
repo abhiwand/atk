@@ -236,6 +236,7 @@ html_show_copyright = True
 latex_elements = {
 # The paper size ('letterpaper' or 'a4paper').
 'papersize': 'letterpaper',
+'printindex': '\\printindex',
 
 # The font size ('10pt', '11pt' or '12pt').
 'pointsize': '10pt',
@@ -263,7 +264,7 @@ latex_use_parts = True
 latex_show_pagerefs = True
 
 # If true, show URL addresses after external links.
-latex_show_urls = True
+latex_show_urls = 'footnote'
 
 # Documents to append as an appendix to all manuals.
 #latex_appendices = []

@@ -6,7 +6,7 @@
     :local:
 
 This section describes the capabilities of the 0.8 version of the Intel Analytics Toolkit, :math:`-` in particular the graph analytics capabilities.
-Other functionality referenced in the :ref:`capabilities` section (like :ref:`Unified Graph and Entity Analytics` analytics) will be added in a future release.
+Other functionality referenced in the :doc:`ia_intro_1` section (like :ref:`Unified_Graph_and_Entity_Analytics`) will be added in a future release.
 
 Data Import, Data Cleaning, and Feature Engineering
 ===================================================
