@@ -2,30 +2,37 @@
 Virtual Machines
 ================
 
+.. contents:: Table of Contents
+    :local:
+
 ------------
 Introduction
 ------------
+
 Thank you for your interest in the Intel Analytics Toolkit 0.8 beta.
 This guide will walk you through the download and import of the Intel Analytics beta.
-Currently the Intel Analytics toolkit VM only supports Virtual Box.
+Currently the Intel Analytics toolkit VM only supports `Virtual Box <https://www.virtualbox.org/>`_.
 We will not cover the installation of Virtual Box.
-Virtual Box supports many platforms and can be downloaded for free.
-The installation documentation is also available online.
+Virtual Box supports many platforms and can be `downloaded for free <https://www.virtualbox.org/wiki/Downloads>`_.
+The installation documentation is also
+`available online <https://www.virtualbox.org/manual/UserManual.html>`_.
+
 ------------
 Requirements
 ------------
-12GB of memory needs to be allocated to the VM
 
-30 GB of free hard drive space
+A)  12GB of memory needs to be allocated to the VM
 
-Working Virtual Box installation 4.3
+#)  30 GB of free hard drive space
 
----------------------
-Download Instructions
----------------------
+#)  Working Virtual Box installation 4.3
+
+-----------------
+Download VM Image
+-----------------
 
 Note:
-    Don't forget to open a Linux shell (or for Windows user a command prompt) to run the various commands.
+    Open a Linux shell (or for Windows user a command prompt) to run the various commands.
 
 .. figure:: ad_inst_vm_00.*
 
@@ -35,40 +42,28 @@ Instructions for downloading and installing can be found at `Amazon cli document
 
 After installing the interface you can verify the installation by running::
 
-    aws help
+    aws --version
 
-You should see man style help text for your output.
+You should see this kind of response::
+
+    aws-cli/1.2.9 Python/2.7.6 Linux/3.8.0-35-generic
+
+Take note of the aws-cli version.
+Make sure the version is greater or equal to 1.2.9.
+Older versions of the aws-cli client won't work with the restricted permissions.
+
+If you happen to have the aws-cli client you can update the client with pip.
 ::
 
-    AWS()
-
-
-
-    NAME
-        aws -
-
-    DESCRIPTION
-        The  AWS  Command  Line  Interface is a unified tool to manage your AWS
-        services.
-
-    SYNOPSIS
-            aws [options] <command> <subcommand> [parameters]
-
-        Use aws command help for information on a specific command.
-
-    OPTIONS
-            --debug (boolean)
-
-        Turn on debug logging.
-
-
-After installing run::
+    expand source
+ 
+After aws installation, run::
 
     aws configure
 
-You will be prompted for to enter your access and secret keys you were given.
-When Prompted for a Default region name use 'us-west-2'.
-When prompted for default output format use 'json'.
+You will be prompted to enter the access and secret keys you were given.
+When Prompted for the "Default region name" use "us-west-2".
+When prompted for the "Default output format" use "json".
 ::
 
     AWS Access Key ID [None]: my access key
@@ -89,7 +84,8 @@ Extract Archive
 Extracting On Windows
 =====================
 Extracting on Windows is relatively easy.
-Use any of the following tools to extract the archive, 7zip , WinZip , Winrar , etc...
+Use any of the following tools to extract the archive, `7zip <http://7-zip.org/>`_ ,
+`WinZip <http://winzip.com/>`_ , `Winrar <http://rarlab.com/>`_, etc...
 
 Extracting On Linux
 ===================
@@ -102,14 +98,16 @@ You should have two files after extracting::
     IntelAnalytics-0.8.0-CDH-5.0.3-disk1.vmdk
     IntelAnalytics-0.8.0-CDH-5.0.3.ovf
 
+------------
 Import Image
-============
+------------
 In Virtual Box go to the file menu then import appliance.
+
 File -> Import Appliance
 
 .. figure:: ad_inst_vm_01.*
 
-Select your file
+Select your .ovf file extracted from the vm image earlier
 
 .. figure:: ad_inst_vm_02.*
  
@@ -132,21 +130,23 @@ Running Intel Analytics VM image
 Before you start
 ================
 
-After every reboot of the VM you must restart the IA server.
+After every reboot of the VM you must restart the |IA| server.
 ::
 
     sudo service intelanalytics restart
 
-If you restart service and you see the following output you can ignore it. All it means is that the service wasn't running before it was told to stop.
+If you restart service and you see the following output you can ignore it.
+All it means is that the service wasn't running before it was told to stop.
 ::
     
     initctl: Unknown instance:
 
-Examples
---------
+Using Sample Scripts
+====================
 
-The VM is pre-configured and installed with IA toolkit.
+The VM is pre-configured and installed with |IA| toolkit.
 It has many examples and datasets to get you started as soon as the VM is booted.
+
 The examples are located in '/home/cloudera/examples'.
 ::
 
@@ -169,24 +169,37 @@ the actual data that is being used by the python examples and the intelanalytics
 
 To run any of the python example scripts, make sure you are in the examples directory and start python with the script name::
 
-    cd /home/cloudera/examples
     python <SCRIPT_NAME>.py
 
 where ``<SCRIPT_NAME>`` is any of the scripts in '/home/cloudera/example'.
 
+Make sure you are in the examples directory first, then run the desired script:
+
+Example::
+
+    cd /home/cloudera/examples
+    python pr.py
+
 Logs
-----
+====
 
 If you need to debug changes to the scripts (or peak behind the curtain) the log files are located at '/var/log/intelanalytics/rest-server/output.log'.
 To show the log information as it gets appended to the the log file run "tail -f"::
 
     sudo tail -f /var/log/intelanalytics/rest-server/output.log
+    
+More details about the logs can be found here: :doc:`ad_log`.
 
+.. toctree::
+    :hidden:
+    
+    ad_log
+    
 Updating
 ========
 
 If you have been given access and secret keys, edit '/etc/yum.repos.d/ia.repo' and replace *myKey* and *mySecret*.
-Now you will be able to run Yum commands to check for and do updates.
+Afterwards you will be able to run ``yum`` commands to check for and do updates.
 ::
 
     sudo [vi/vim] /etc/yum.repos.d/ia.repo
@@ -209,12 +222,4 @@ To update::
 
     sudo yum update intelanalytics-rest-server
 
-|
-
-<- :doc:`ad_psql_cs`
-<------------------------------->
-:doc:`ad_plug` ->
-
-<- :doc:`ad_inst`
-
-<- :doc:`index`
+.. |IA| replace:: Intel Analytics

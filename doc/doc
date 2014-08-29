@@ -131,6 +131,7 @@ if [ $? == 0 ]; then
             if [[ -f build/latex/IntelAnalytics.pdf ]]; then
                 cp build/latex/IntelAnalytics.pdf build/html/_downloads/
             fi
+	    fi
         fi
 
         # Look for latexpdf
@@ -147,8 +148,10 @@ if [ $? == 0 ]; then
                     cd build/latex
                     make
                     cd ../..
-                    if [[ -f build/latex/IntelAnalytics.pdf ]] && [[ -d build/html ]]; then
-                        cp build/latex/IntelAnalytics.pdf build/html/_downloads/
+                    if [[ -f build/latex/IntelAnalytics.pdf ]]; then
+                        if [[ -d build/html ]]; then
+                                        cp build/latex/IntelAnalytics.pdf build/html/_downloads/
+                        fi
                     fi
                 fi
             fi
@@ -188,7 +191,3 @@ if [ $? == 0 ]; then
 
 fi
 exit 0
-
-
-
-

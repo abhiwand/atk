@@ -2,6 +2,9 @@
 IntelliJ Setup Instructions
 ===========================
 
+.. contents:: Table of Contents
+    :local:
+
 -------------
 Prerequisites
 -------------

@@ -1,6 +1,9 @@
 ====================================
 Intel Analytics Package Installation
 ====================================
+
+.. contents::
+    :local:
     
 ------------
 Introduction
@@ -508,12 +511,10 @@ or::
 
     sudo tail -f /var/log/intelanalytics/rest-server/application.log
 
-|
 
-<- :doc:`ad_inst_cloudera`
-<------------------------------->
-:doc:`ad_psql` ->
+More details about the logs can be found here: :doc:`ad_log`.
 
-<- :doc:`ad_inst`
-
-<- :doc:`index`
+.. toctree::
+    :hidden:
+    
+    ad_log

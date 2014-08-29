@@ -2,9 +2,12 @@
 Process Flow Examples
 =====================
 
+.. contents:: Table of Contents
+    :local:
+
 .. toctree::
     :hidden:
-    
+
     ds_apir
 
 When using the toolkit, you will import your data, perform cleaning operations on it, possibly combine it with other data sets,
@@ -912,11 +915,3 @@ Commands such as g4 = my_graph will only give you a copy of the proxy, pointing 
 
     Similar to what was discussed for BigFrame, what gets returned is not all the data, but a proxy (descriptive pointer) for the data.
     Commands such as ``g4 = my_graph`` will only give you a copy of the proxy, pointing to the same graph.
-
-| 
-
-<- :doc:`ds_db`
-<------------------------------->
-:doc:`ds_ml` ->
-
-<- :doc:`index`
