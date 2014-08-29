@@ -51,7 +51,7 @@ cp -Rv /usr/lib/intelanalytics/rest-server/examples /home/cloudera/examples:
     - required:
       - pkg: intelanalytics-rest-server
 
-chmown -R cloudera:cloudera /home/cloudera:
-  cmd.run
+
+
     
 

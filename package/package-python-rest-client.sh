@@ -20,7 +20,7 @@ rm $package-source.tar.gz
 
 #mkdir -p  tarballs/$package/etc/intelanalytics/rest-server
 
-mkdir -p  tarballs/$package/usr/lib/intelanalytics/rest-client/python/
+mkdir -p  tarballs/$package/usr/lib/intelanalytics/rest-client/python/doc
 
 
 cp -v config/intelanalytics-python-rest-client/requirements.txt tarballs/$package/usr/lib/intelanalytics/rest-client/python/
