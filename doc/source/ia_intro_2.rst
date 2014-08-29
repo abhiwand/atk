@@ -2,8 +2,11 @@
 0.8 Preview Release 
 -------------------
 
+.. contents:: Table of Contents
+    :local:
+
 This section describes the capabilities of the 0.8 version of the Intel Analytics Toolkit, :math:`-` in particular the graph analytics capabilities.
-Other functionality referenced in the :ref:`capabilities section <ia_intro_1_capabilities>` (like :ref:`entity-based <ia_intro_1_entity_based>` analytics) will be added in a future release.
+Other functionality referenced in the :ref:`capabilities` section (like :ref:`Unified Graph and Entity Analytics` analytics) will be added in a future release.
 
 Data Import, Data Cleaning, and Feature Engineering
 ===================================================
@@ -142,12 +145,6 @@ Hadoop clusters running CDH 5.0.3 are necessary in order to support the minimum 
 this, and other dependencies, must be checked by the administrator when the toolkit is installed.
 Most of the toolkit is installed as a "head unit" that can be installed on an edge node to the cluster if it is not desired to install on a cluster node itself.
 Note that in the 0.8 beta release there are some libraries (particularly Python libraries) that need to be present on the server nodes.
-
-|
-
-<- :doc:`ia_intro_1`
-<------------------------------->
-:doc:`index` ->
 
 .. rubric:: Footnotes
 

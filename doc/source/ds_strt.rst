@@ -2,6 +2,9 @@
 Getting Started
 ===============
 
+.. contents:: Table of Contents
+    :local:
+
 The Intel® Analytics Toolkit (IAT) is a scalable database and software pipeline for big data analytics.
 The Analytics Toolkit gives data scientists the tools to take raw data, clean it appropriately, build graphs,
 examine the relationships between data, and view the data in different ways.
@@ -94,13 +97,6 @@ The IAT provides a set of functionality exposed through a Python API, which can 
 You'll want to know about `Apache Hadoop`_ * and its various components.
 We use HDFS, :term:`MapReduce`, and YARN, as well as `Apache Giraph`_ * for graph-based machine learning.
 The Tital graph database can be queried using the `Gremlin`_ * graph query language from TinkerPop™.
-
-| 
-
-<- :doc:`index`
-<------------------------------->
-:doc:`ds_db` ->
-
 
 .. rubric:: footnotes
 

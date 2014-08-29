@@ -2,6 +2,9 @@
 Building and Running Intel Analytics Toolkit
 ============================================
 
+.. contents:: Table of Contents
+    :local:
+
 ----------------
 Using PostgreSQL
 ----------------
@@ -105,16 +108,6 @@ Related Pages
 
     * [GAO:IntelliJ Setup]
     * [GAO:Proxy Settings]
-
-|
-
-<- :doc:`ad_inst_IA`
-<------------------------------->
-:doc:`ad_psql_cs` ->
-
-<- :doc:`ad_inst`
-
-<- :doc:`index`
 
 .. _PostgreSQL: http://www.postgresql.org
 .. _`Postman REST client`: https://chrome.google.com/webstore/detail/postman-rest-client/fdmmgilgnpjigdojojpjoooidkmcomcm?hl=en

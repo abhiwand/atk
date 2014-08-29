@@ -2,6 +2,9 @@
 Best Known Methods (User)
 =========================
 
+.. contents:: Table of Contents
+    :local:
+
 -------------------------
 Configuration information
 -------------------------
@@ -159,11 +162,4 @@ Spark Docs
 
 Nice thread on how Shuffle works in Spark,
     http://apache-spark-user-list.1001560.n3.nabble.com/How-does-shuffle-work-in-spark-td584.html
-
-
-| 
-
-<- :doc:`ds_apic`
-<------------------------------->
-:doc:`index` ->
 

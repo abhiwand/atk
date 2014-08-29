@@ -2,6 +2,9 @@
 Python Client Setup
 ===================
 
+.. contents:: Table of Contents
+    :local:
+
 --------------------
 Windows Python Setup
 --------------------

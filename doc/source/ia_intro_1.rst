@@ -1,8 +1,9 @@
-﻿.. _ia_intro_1_capabilities:
-   
-------------
+﻿------------
 Capabilities 
 ------------
+
+.. contents:: Table of Contents
+    :local:
 
 Easier Development
 ==================
@@ -37,7 +38,6 @@ through analysis and machine learning (using the graph engine.)
 With a complete graph pipeline of capabilities, exploring and productively deploying graph analytics to gain valuable
 insights becomes possible and practical, without the brittle “do it yourself” approaches needed today.
 
-.. _ia_intro_1_entity_based:
 
 Unified Graph and Entity Analytics
 ==================================
@@ -75,10 +75,3 @@ Hadoop-based data platform.
 Every capability – including graph :term:`transaction processing`, classical :term:`machine learning`, graph analytic algorithms,
 and graph construction, scale economically by adding more standard servers to the Hadoop cluster, equipping the developer with
 advanced analytics for data of all sizes.
-
-|
-
-<- :doc:`ia_intro_0`
-<------------------------------->
-:doc:`ia_intro_2` ->
-
