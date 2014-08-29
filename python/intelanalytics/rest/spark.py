@@ -132,7 +132,7 @@ def prepare_row_function(frame, subject_function, iteration_function):
 
 class IaBatchedSerializer(BatchedSerializer):
     def __init__(self):
-        super(IaBatchedSerializer,self).__init__(PickleSerializer(), -1)
+        super(IaBatchedSerializer,self).__init__(PickleSerializer(), 1000)
 
     def dump_stream(self, iterator, stream):
         self.dump_stream_as_json(self._batched(iterator), stream)
