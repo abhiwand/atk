@@ -1,19 +1,20 @@
 package com.intel.intelanalytics.domain.frame
 
 /**
- * Command for calculating the empirical entropy of a column in a data frame.
+ * Command for calculating the Shannon entropy of a column in a data frame.
  *
- * @param frame Reference to the input data frame
- * @param columnName Column name
+ * @param dataColumn Name of the column to compute entropy.
+ * @param weightsColumn Optional. Name of the column that provides weights (frequencies).
+ *                   
  */
-case class Entropy(frame: FrameReference, columnName: String) {
+case class Entropy(frame: FrameReference, dataColumn: String, weightsColumn: Option[String] = None) {
   require(frame != null, "frame is required")
-  require(columnName != null, "column name is required")
+  require(dataColumn != null, "column name is required")
 }
 
 /**
- * Return value for entropy command.
+ * Return value for Shannon entropy command.
  *
- * @param entropy Empirical entropy
+ * @param entropy Shannon entropy
  */
 case class EntropyReturn(entropy: Double)
