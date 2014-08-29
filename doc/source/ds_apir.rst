@@ -2,6 +2,9 @@
 Python User Functions
 =====================
 
+.. contents:: Table of Contents
+    :local:
+
 A :term:`Python User Function (PUF)` is a python function written by the user on the client-side which can execute in a distributed fashion
 on the cluster.
 The function is serialized and copies are distributed throughout the cluster as part of command execution.
@@ -154,11 +157,3 @@ Here are some guidelines to follow when writing a PUF:
         frame.add_columns(get_row_sum_func(['name', 'address']), ('sum', int32))
 
     The ``row_sum2`` function closes over the *ignore_list* argument making it available to the row function that executes on each row.
-
-
-| 
-
-<- :doc:`ds_dflw`
-<------------------------------->
-:doc:`index` ->
-

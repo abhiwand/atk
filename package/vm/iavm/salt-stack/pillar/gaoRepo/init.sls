@@ -1,7 +1,7 @@
 gaoRepo:
   private:
     baseUrl: https://bda-internal-yum.s3-us-west-2.amazonaws.com
-    branch: sprint_18
+    branch: sprint
     keyId: AKIAJRVHQZHGTIVGBGJA
     secretKey: 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
   release:

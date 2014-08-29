@@ -79,7 +79,7 @@ rd /S /Q %ARCHIVEPREFIX%docs-%FMT%
 
 
 :CLEAN
-del /F /Q *.dvi *.log *.ind *.aux *.toc *.syn *.idx *.out *.ilg *.pla
+rem del /F /Q *.dvi *.log *.ind *.aux *.toc *.syn *.idx *.out *.ilg *.pla
 
 :FINI
 dir *.pdf

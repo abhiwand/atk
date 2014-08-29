@@ -2,6 +2,9 @@
 Physical Machine Configuration
 ==============================
 
+.. contents:: Table of Contents
+    :local:
+
 The following instructional will walk you through configuring a brand new physical machine from scratch.
 The first section called "Pre-Configuration" and will be a little vague because the configurations here can change from machine to machine.
 The second section called "Base Configuration" should be pretty identical for all machines.
@@ -136,13 +139,3 @@ Make sure all systems in cluster are in time-sync with one-another.
 ===========
 
 reboot all cluser systems to properly set all changes made.
-
-|
-
-<- :doc:`ad_inst`
-<------------------------------->
-:doc:`ad_inst_cloudera` ->
-
-<- :doc:`ad_inst`
-
-<- :doc:`index`

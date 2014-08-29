@@ -9,13 +9,5 @@ You might use a :term:`graph` database to analyze the layout of an organization,
 
 See `Wikipedia\: Graph Data Structure`_.
 
-| 
-
-<- :doc:`ds_strt`
-<------------------------------->
-:doc:`ds_dflw` ->
-
-<- :doc:`index`
-
 .. _Wikipedia\: Graph Data Structure: http://en.wikipedia.org/wiki/Graph_data_structure
 
