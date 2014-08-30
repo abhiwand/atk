@@ -5,7 +5,7 @@ import org.apache.spark.rdd.RDD
 
 import scala.collection.immutable.TreeMap
 
-class TopKRDDFunctions {
+private[spark] object TopKRDDFunctions extends Serializable {
   /**
    * Returns the top (or bottom) K distinct values by count for specified data column.
    *
