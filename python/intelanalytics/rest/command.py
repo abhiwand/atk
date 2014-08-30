@@ -57,7 +57,22 @@ def execute_command(command_name, **arguments):
     """Executes command and returns the output"""
     command_request = CommandRequest(command_name, arguments)
     command_info = executor.issue(command_request)
-    return command_info.result
+
+    if command_info.result.has_key('name') and command_info.result.has_key('schema'):
+        # Used for plugins that return data frame
+        from intelanalytics.core.config import get_frame_backend
+        frame_backend = get_frame_backend()
+        return frame_backend.get_frame(command_info.result['name'])
+        #_get_backend
+        #from intelanalytics.rest.connection import http
+        #from intelanalytics.rest.frame import FrameInfo
+        #from intelanalytics.rest.frame import FrameInfo
+
+        #r = http.get('dataframes?name='+command_info.result['name'])
+        #frame_info = FrameInfo(r.json())
+        #return BigFrame(frame_info)
+    else:
+        return command_info.result
 
 
 

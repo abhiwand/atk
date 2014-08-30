@@ -56,58 +56,33 @@ import com.intel.spark.mllib.util.MLDataSplitter
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent._
-import com.intel.intelanalytics.engine.spark.statistics.ColumnStatistics
+import com.intel.intelanalytics.engine.spark.statistics.{ TopKRDDFunctions, EntropyRDDFunctions, ColumnStatistics }
 import org.apache.spark.engine.SparkProgressListener
-import com.intel.intelanalytics.domain.frame.FrameAddColumns
-import com.intel.intelanalytics.domain.frame.RenameFrame
+import com.intel.intelanalytics.domain.frame._
 import com.intel.intelanalytics.engine.spark.plugin.SparkInvocation
 import com.intel.intelanalytics.domain.graph.GraphLoad
 import com.intel.intelanalytics.domain.graph.RenameGraph
 import com.intel.intelanalytics.domain.frame.load.LineParserArguments
 import com.intel.intelanalytics.domain.graph.GraphLoad
 import com.intel.intelanalytics.domain.schema.Schema
-import com.intel.intelanalytics.domain.frame.DropDuplicates
 import com.intel.intelanalytics.engine.spark.frame.RowParseResult
-import com.intel.intelanalytics.domain.frame.FrameProject
 import com.intel.intelanalytics.domain.graph.Graph
 import com.intel.intelanalytics.domain.graph.Graph
-import com.intel.intelanalytics.domain.frame.ConfusionMatrix
 import com.intel.intelanalytics.domain.FilterPredicate
 import com.intel.intelanalytics.domain.frame.load.Load
-import com.intel.intelanalytics.domain.frame.CalculatePercentiles
-import com.intel.intelanalytics.domain.frame.CumulativeDist
-import com.intel.intelanalytics.domain.frame.AssignSample
-import com.intel.intelanalytics.domain.frame.FrameGroupByColumn
-import com.intel.intelanalytics.domain.frame.FrameRenameColumns
 import com.intel.intelanalytics.security.UserPrincipal
-import com.intel.intelanalytics.domain.frame.FrameRemoveColumn
-import com.intel.intelanalytics.domain.frame.FrameReference
 import com.intel.intelanalytics.engine.spark.frame.RDDJoinParam
 import com.intel.intelanalytics.domain.graph.GraphTemplate
 import com.intel.intelanalytics.domain.frame.load.LoadSource
 import com.intel.intelanalytics.domain.graph.GraphTemplate
 import com.intel.intelanalytics.domain.query.Query
-import com.intel.intelanalytics.domain.frame.ColumnSummaryStatistics
-import com.intel.intelanalytics.domain.frame.ColumnMode
-import com.intel.intelanalytics.domain.frame.ECDF
-import com.intel.intelanalytics.domain.frame.DataFrameTemplate
 import com.intel.intelanalytics.engine.ProgressInfo
 import com.intel.intelanalytics.domain.command.CommandDefinition
-import com.intel.intelanalytics.domain.frame.ClassificationMetric
-import com.intel.intelanalytics.domain.frame.BinColumn
-import com.intel.intelanalytics.domain.frame.PercentileValues
-import com.intel.intelanalytics.domain.frame.DataFrame
 import com.intel.intelanalytics.domain.command.Execution
 import com.intel.intelanalytics.domain.command.Command
 import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.query.RowQuery
-import com.intel.intelanalytics.domain.frame.ClassificationMetricValue
-import com.intel.intelanalytics.domain.frame.ConfusionMatrixValues
 import com.intel.intelanalytics.domain.command.CommandTemplate
-import com.intel.intelanalytics.domain.frame.FlattenColumn
-import com.intel.intelanalytics.domain.frame.ColumnSummaryStatisticsReturn
-import com.intel.intelanalytics.domain.frame.ColumnModeReturn
-import com.intel.intelanalytics.domain.frame.FrameJoin
 import com.intel.intelanalytics.engine.spark.plugin.SparkInvocation
 import com.intel.intelanalytics.domain.query.PagedQueryResult
 import com.intel.intelanalytics.domain.query.QueryDataResult
@@ -1402,19 +1377,62 @@ class SparkEngine(sparkContextManager: SparkContextManager,
   override def entropy(arguments: Entropy)(implicit user: UserPrincipal): Execution =
     commands.execute(entropyCommand, arguments, user, implicitly[ExecutionContext])
 
-  val entropyCommand: CommandPlugin[Entropy, EntropyReturn] =
-    commands.registerCommand("dataframe/entropy", entropyCommandSimple _, numberOfJobs = 3)
+  val entropyDoc = CommandDoc(oneLineSummary = "Calculate Shannon entropy of a column.",
+    extendedSummary = Some("""
+    Calculate the Shannon entropy of a column.  A mode is a data element of maximum weight. All data elements of weight <= 0
+    are excluded from the calculation, as are all data elements whose weight is NaN or infinite.
+    If there are no data elements of finite weight > 0, no mode is returned.
 
-  def entropyCommandSimple(arguments: Entropy, user: UserPrincipal): EntropyReturn = {
+    Because data distributions often have mutliple modes, it is possible for a set of modes to be returned. By
+    default, only one is returned, but my setting the optional parameter max_number_of_modes_returned, a larger
+    number of modes can be returned.
+
+    Parameters
+    ----------
+    data_column : str
+        The column whose mode is to be calculated
+
+    weights_column : str
+        Optional. The column that provides weights (frequencies) for the mode calculation.
+        Must contain numerical data. Uniform weights of 1 for all items will be used for the calculation if this
+        parameter is not provided.
+
+
+    Returns
+    -------
+    mode : Dict
+        Dictionary containing summary statistics in the following entries:
+            mode : A mode is a data element of maximum net weight. A set of modes is returned.
+             The empty set is returned when the sum of the weights is 0. If the number of modes is <= the parameter
+             maxNumberOfModesReturned, then all modes of the data are returned.If the number of modes is
+             > maxNumberOfModesReturned, then only the first maxNumberOfModesReturned many modes
+             (per a canonical ordering) are returned.
+            weight_of_mode : Weight of a mode. If there are no data elements of finite weight > 0,
+             the weight of the mode is 0. If no weights column is given, this is the number of appearances of
+             each mode.
+            total_weight : Sum of all weights in the weight column. This is the row count if no weights
+             are given. If no weights column is given, this is the number of rows in the table with non-zero weight.
+            mode_count : The number of distinct modes in the data. In the case that the data is very multimodal,
+             this number may well exceed max_number_of_modes_returned.
+
+    Example
+    -------
+    >>> mode = frame.column_mode('modum columpne')
+                           """))
+
+  val entropyCommand = commandPluginRegistry.registerCommand("dataframe/entropy",
+    entropyCommandSimple _, numberOfJobs = 3)
+
+  def entropyCommandSimple(arguments: Entropy, user: UserPrincipal, invocation: SparkInvocation): EntropyReturn = {
     implicit val u = user
 
     val frameId = arguments.frame
     val frame = expectFrame(frameId)
-    val ctx = sparkContextManager.context(user).sparkContext
-    val frameRdd = frames.getFrameRdd(ctx, frameId.id)
-    val columnIndex = frame.schema.columnIndex(arguments.columnName)
+    val ctx = invocation.sparkContext
+    val frameRdd = frames.loadFrameRdd(ctx, frameId.id)
+    val columnIndex = frame.schema.columnIndex(arguments.dataColumn)
 
-    val entropy = SparkOps.entropy(frameRdd, columnIndex)
+    val entropy = EntropyRDDFunctions.shannonEntropy(frameRdd, columnIndex)
     EntropyReturn(entropy)
   }
 
@@ -1427,34 +1445,32 @@ class SparkEngine(sparkContextManager: SparkContextManager,
   override def topK(arguments: TopK)(implicit user: UserPrincipal): Execution =
     commands.execute(topKCommand, arguments, user, implicitly[ExecutionContext])
 
-  val topKCommand: CommandPlugin[TopK, TopKReturn] =
-    commands.registerCommand("dataframe/topk", topKCommandSimple _, numberOfJobs = 3)
+  val topKCommand =
+    commandPluginRegistry.registerCommand("dataframe/topk", topKCommandSimple _, numberOfJobs = 3)
 
-  def topKCommandSimple(arguments: TopK, user: UserPrincipal): TopKReturn = {
+  def topKCommandSimple(arguments: TopK, user: UserPrincipal, invocation: SparkInvocation): DataFrame = {
     implicit val u = user
 
     val frameId = arguments.frame
     val frame = expectFrame(frameId)
-    val ctx = sparkContextManager.context(user).sparkContext
-    val frameRdd = frames.getFrameRdd(ctx, frameId.id)
+    val ctx = invocation.sparkContext
+    val frameRdd = frames.loadFrameRdd(ctx, frameId.id)
     val columnIndex = frame.schema.columnIndex(arguments.columnName)
     val valueDataType = frame.schema.columns(columnIndex)._2
 
     val newFrameName = frames.generateFrameName()
 
     val newFrame = Await.result(create(DataFrameTemplate(newFrameName, None)), SparkEngineConfig.defaultTimeout)
-    val location = fsRoot + frames.getFrameDataFile(newFrame.id)
 
-    val topRdd = SparkOps.topK(frameRdd, columnIndex, arguments.k, arguments.reverse.getOrElse(false))
-    topRdd.saveAsObjectFile(location)
+    val topRdd = TopKRDDFunctions.topK(frameRdd, columnIndex, arguments.k, arguments.reverse.getOrElse(false))
 
     val newSchema = Schema(List(
       (arguments.columnName, valueDataType),
       ("count", DataTypes.int64)
     ))
 
-    frames.updateSchema(newFrame, newSchema.columns)
-    TopKReturn(FrameReference(newFrame.id))
+    frames.saveFrame(newFrame, new FrameRDD(newSchema, topRdd))
+    //TopKReturn(FrameReference(newFrame.id))
   }
 
   /**

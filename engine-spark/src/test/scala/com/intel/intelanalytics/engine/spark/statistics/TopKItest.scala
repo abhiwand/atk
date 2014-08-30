@@ -1,9 +1,9 @@
-package com.intel.intelanalytics.engine.spark
+package com.intel.intelanalytics.engine.spark.statistics
 
 import com.intel.testutils.TestingSparkContextFlatSpec
 import org.scalatest.Matchers
 
-class TopKTest extends TestingSparkContextFlatSpec with Matchers {
+class TopKItest extends TestingSparkContextFlatSpec with Matchers {
   val inputList = List(
     Array[Any](-1, "a", 0),
     Array[Any](0, "c", 0),
@@ -26,7 +26,7 @@ class TopKTest extends TestingSparkContextFlatSpec with Matchers {
 
   "topK" should "return the top K distinct values sorted by count" in {
     val frameRdd = sparkContext.parallelize(inputList, 2)
-    val top1Column0 = SparkOps.topK(frameRdd, 0, 1, false).collect()
+    val top1Column0 = TopKRDDFunctions.topK(frameRdd, 0, 1, false).collect()
 
     top1Column0.size should equal(1)
     top1Column0(0) should equal(Array[Any](5, 3))
@@ -34,7 +34,7 @@ class TopKTest extends TestingSparkContextFlatSpec with Matchers {
 
   "topK" should "return all distinct values sorted by count if K exceeds input size" in {
     val frameRdd = sparkContext.parallelize(inputList, 2)
-    val topKColumn1 = SparkOps.topK(frameRdd, 1, 100, false).collect()
+    val topKColumn1 = TopKRDDFunctions.topK(frameRdd, 1, 100, false).collect()
 
     topKColumn1.size should equal(3)
     topKColumn1(0) should equal(Array[Any]("b", 3))
@@ -44,7 +44,7 @@ class TopKTest extends TestingSparkContextFlatSpec with Matchers {
 
   "topK" should "return the bottom K distinct values sorted by count" in {
     val frameRdd = sparkContext.parallelize(inputList, 2)
-    val bottom2Column1 = SparkOps.topK(frameRdd, 1, 2, true).collect()
+    val bottom2Column1 = TopKRDDFunctions.topK(frameRdd, 1, 2, true).collect()
 
     bottom2Column1.size should equal(2)
     bottom2Column1(0) should equal(Array[Any]("c", 1))
@@ -53,30 +53,30 @@ class TopKTest extends TestingSparkContextFlatSpec with Matchers {
 
   "topK" should "return an empty sequence if the input data frame is empty" in {
     val frameRdd = sparkContext.parallelize(emptyList, 2)
-    val bottomKColumn1 = SparkOps.topK(frameRdd, 1, 4, true).collect()
+    val bottomKColumn1 = TopKRDDFunctions.topK(frameRdd, 1, 4, true).collect()
     bottomKColumn1.size should equal(0)
   }
 
   "sortTopKByValue" should "return the top 3 entries by value sorted by descending order" in {
-    val sortedK = SparkOps.sortTopKByValue(keyCountList.toIterator, 3, descending = true).toSeq
+    val sortedK = TopKRDDFunctions.sortTopKByValue(keyCountList.toIterator, 3, descending = true).toSeq
     sortedK.size should equal(3)
     sortedK should equal(Seq(("key2", 20), ("key3", 12), ("key5", 6)))
   }
 
   "sortTopKByValue" should "return all entries sorted in descending order if K exceeds input size" in {
-    val sortedK = SparkOps.sortTopKByValue(keyCountList.toIterator, 10, descending = true).toSeq
+    val sortedK = TopKRDDFunctions.sortTopKByValue(keyCountList.toIterator, 10, descending = true).toSeq
     sortedK.size should equal(5)
     sortedK should equal(Seq(("key2", 20), ("key3", 12), ("key5", 6), ("key1", 2), ("key4", 0)))
   }
 
   "sortTopKByValue" should "return the top 2 entries by value in ascending order" in {
-    val sortedK = SparkOps.sortTopKByValue(keyCountList.toIterator, 2, descending = false).toSeq
+    val sortedK = TopKRDDFunctions.sortTopKByValue(keyCountList.toIterator, 2, descending = false).toSeq
     sortedK.size should equal(2)
     sortedK should equal(Seq(("key4", 0), ("key1", 2)))
   }
 
   "sortTopKByValue" should "return empty if the input data is empty" in {
-    val sortedK = SparkOps.sortTopKByValue(emptyCountList.toIterator, 2, descending = false).toSeq
+    val sortedK = TopKRDDFunctions.sortTopKByValue(emptyCountList.toIterator, 2, descending = false).toSeq
     sortedK.size should equal(0)
   }
 
