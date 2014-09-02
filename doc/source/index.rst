@@ -14,11 +14,9 @@ References
 ==========
 
 .. toctree::
-    :maxdepth: 1
+   :maxdepth: 1
 
-    glossary
-    ia_legal
-    genindex
-    search
-
- 
+* :doc:`glossary`
+* :doc:`ia_legal`
+* :ref:`genindex`
+* :ref:`search`
