@@ -12,7 +12,7 @@ Prerequisites
 These instructions assume you have already installed
 
 - Python 2.6 
-- Intel Analytics Python Rest Client
+- Intel Analytics Python Rest Client and required dependencies
 - `IntelliJ IDEA <http://www.jetbrains.com/idea/>`_
 
 Verify the "Python" plugin is enabled in IntelliJ by choosing :menuselection:`File --> Settings`,
