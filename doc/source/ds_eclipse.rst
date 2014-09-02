@@ -17,12 +17,12 @@ These instructions assume you have already installed
 
 The Intel Analytics Toolkit should work with any version of Eclipse but these instructions were tested with Eclipse Standard Version 4.4 Luna.
 
-If you are on a corporate network, you may need to configure proxy settings in Eclipse before beginning (see Eclipse documentation).
+If you are on a corporate network, you may need to configure proxy settings in Eclipse before beginning (see Eclipse Help).
 
 -----
 Setup
 -----
-1)  Choose "Eclipse Marketplace" under the "Help" menu 
+1)  Choose :menuselection:`Help --> Eclipse Marketplace`
 
 #)  If the next screen does not come up you may need to configure proxy settings
 
@@ -38,7 +38,7 @@ Setup
 
 #)  Choose the default Workspace
 
-#)  Choose File New Project
+#)  Choose :menuselection:`File --> New --> Project...`
 
     a)  Choose the "PyDev" folder and "PyDev Project" and choose the "Next" button
 
@@ -52,7 +52,7 @@ Setup
 
         #)  Choose the "New" button
 
-        #)  Browse for python 2.6.  On RedHat this is probably /usr/bin/python
+        #)  Browse for python 2.6.  On RedHat and Centos this is probably /usr/bin/python
 
         #)  Choose the "Ok" button
 
@@ -74,17 +74,17 @@ Setup
 
     #)  Choose "Add source folder" button
 
-    #)  Browse for the Intel Analytics Python Rest Client libraries.  On RedHat these are found under "/usr/lib/intelanalytics/rest-client/python".
+    #)  Browse for the Intel Analytics Python Rest Client libraries.  On RedHat and Centos these are found under "/usr/lib/intelanalytics/rest-client/python".
 
     #)  Choose the "OK" button
 
 #)  Right click your project folder, e.g. "myproject"
 
-    a)  Choose "New" and then "Source Folder"
+    a)  Choose :menuselection:`New --> Source Folder`
 
     #)  Give it the name "src" and choose the "Finish" button
 
-#)  Right click "src" folder and choose "New" "File"
+#)  Right click "src" folder and choose :menuselection:`New --> File`
 
     a)  Give the file name "test.py"
 
@@ -97,7 +97,7 @@ Setup
             import intelanalytics as ia
             ia.server.ping()
 
-#)  Choose "Run" under the "Run" menu
+#)  Choose :menuselection:`Run --> Run`
 
     #)  Choose "Python Run" and choose the "OK" button, you should see the output::
     
