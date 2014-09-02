@@ -544,6 +544,15 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     }
   }
 
+  /**
+   * Persists a PythonRDD after python computation is complete to HDFS 
+   *
+   * @param dataFrame DataFrame associated with this RDD
+   * @param pyRdd PythonRDD instance
+   * @param converter Schema Function converter to convert internals of RDD from Array[String] to Array[Any]
+   * @param skipRowCount Skip counting rows when persisting RDD for optimizing speed
+   * @return rowCount Number of rows if skipRowCount is false, else 0 (for optimization/transformations which do not alter row count)
+   */
   private def persistPythonRDD(dataFrame: DataFrame, pyRdd: EnginePythonRDD[String], converter: Array[String] => Array[Any], skipRowCount: Boolean = false): Long = {
     withMyClassLoader {
 
