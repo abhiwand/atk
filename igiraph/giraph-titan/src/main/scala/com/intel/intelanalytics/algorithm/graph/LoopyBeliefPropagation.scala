@@ -170,7 +170,7 @@ class LoopyBeliefPropagation
 
     //    These parameters are set from the arguments passed in, or defaulted from
     //    the engine configuration if not passed.
-    GiraphConfigurationUtil.set(hConf, "lbp.maxSuperSteps", arguments.max_supersteps)
+    GiraphConfigurationUtil.set(hConf, "lbp.maxSupersteps", arguments.max_supersteps)
     GiraphConfigurationUtil.set(hConf, "lbp.convergenceThreshold", arguments.convergence_threshold)
     GiraphConfigurationUtil.set(hConf, "lbp.anchorThreshold", arguments.anchor_threshold)
     GiraphConfigurationUtil.set(hConf, "lbp.bidirectionalCheck", arguments.bidirectional_check)

@@ -12,16 +12,19 @@ Prerequisites
 These instructions assume you have already installed
 
 - Python 2.6 
-- Intel Analytics Python Rest Client
-- IntelliJ
+- Intel Analytics Python Rest Client and required dependencies
+- `IntelliJ IDEA <http://www.jetbrains.com/idea/>`_
 
-Verify the "Python" plugin is enabled in IntelliJ by choosing "Settings" under the "File" menu, 
+Verify the "Python" plugin is enabled in IntelliJ by choosing :menuselection:`File --> Settings`,
 searching for "Python", and choosing "Plugins" from the pane on the left-hand side.
+
+The Intel Analytics Toolkit should work with any version of IntelliJ IDEA but these instructions were tested
+with IntelliJ IDEA 13.1.3 Ultimate.
 
 -----
 Setup
 -----
-1)  Select "New Project" on IntelliJ's initial screen
+1)  Select "New Project" on IntelliJ IDEA's initial screen
 
 #)  Select "Python" as the project type and choose "Next"
 
@@ -50,7 +53,7 @@ Setup
     #)  Choose the "Finish" button
 
 
-#)  Under the "File" menu choose "Project Structure"
+#)  Choose :menuselection:`File --> Project Structure`
 
     a)  Make sure "Python 2.6" is selected as the Project SDK and choose "Apply"
 
@@ -69,7 +72,7 @@ Setup
     #)  Choose "OK" button
 
 
-#)  Under the "File" menu choose "New" and then "Python File"
+#)  Choose :menuselection:`File --> New --> Python File`
 
 
 #)  Name the file "test" and type in the following code::
@@ -78,7 +81,7 @@ Setup
         ia.server.ping()
 
 
-#)  Choose "Run" menu, choose "Run", you should see the output::
+#)  Choose :menuselection:`Run --> Run`, you should see the output::
 
         Successful ping to Intel Analytics at http://localhost:9099/info
 
