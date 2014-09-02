@@ -331,7 +331,10 @@ class EdgeRule(Rule):
     Parameters
     ----------
     label: str or BigColumn source
-        edge label, can be constant string or pulled from BigColumn
+        edge label, can be constant string or pulled from BigColumn.
+        Pulling labels from a BigColumn can have a negative performance
+        impact if there are many distinct values (hundreds of values
+        are okay, thousands of values may take a long time).
     tail: VertexRule
         tail vertex ('from' vertex); must be from same BigFrame as head,
         label and any properties
