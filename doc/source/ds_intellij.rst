@@ -18,6 +18,9 @@ These instructions assume you have already installed
 Verify the "Python" plugin is enabled in IntelliJ by choosing :menuselection:`File --> Settings`,
 searching for "Python", and choosing "Plugins" from the pane on the left-hand side.
 
+These instructions should work with any version of IntelliJ but these instructions were tested
+with IntelliJ IDEA 13.1.3 Ultimate.
+
 -----
 Setup
 -----
