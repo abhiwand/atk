@@ -198,7 +198,7 @@ class ConjugateGradientDescent
 
     //    These parameters are set from the arguments passed in, or defaulted from
     //    the engine configuration if not passed.
-    GiraphConfigurationUtil.set(hConf, "cgd.maxSuperSteps", arguments.max_supersteps)
+    GiraphConfigurationUtil.set(hConf, "cgd.maxSupersteps", arguments.max_supersteps)
     GiraphConfigurationUtil.set(hConf, "cgd.convergenceThreshold", arguments.convergence_threshold)
     GiraphConfigurationUtil.set(hConf, "cgd.featureDimension", arguments.feature_dimension)
     GiraphConfigurationUtil.set(hConf, "cgd.bidirectionalCheck", arguments.bidirectional_check)
