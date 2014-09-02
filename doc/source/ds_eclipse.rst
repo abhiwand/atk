@@ -12,7 +12,7 @@ Prerequisites
 These instructions assume you have already installed
 
 - Python 2.6 
-- Intel Analytics Python Rest Client
+- Intel Analytics Python Rest Client and required dependencies
 - Eclipse Standard
 
 The Intel Analytics Toolkit should work with any version of Eclipse but these instructions were tested with Eclipse Standard Version 4.4 Luna.
