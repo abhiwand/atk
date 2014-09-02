@@ -13,18 +13,18 @@ These instructions assume you have already installed
 
 - Python 2.6 
 - Intel Analytics Python Rest Client
-- `IntelliJ <http://www.jetbrains.com/idea/>`_
+- `IntelliJ IDEA <http://www.jetbrains.com/idea/>`_
 
 Verify the "Python" plugin is enabled in IntelliJ by choosing :menuselection:`File --> Settings`,
 searching for "Python", and choosing "Plugins" from the pane on the left-hand side.
 
-These instructions should work with any version of IntelliJ but these instructions were tested
+The Intel Analytics Toolkit should work with any version of IntelliJ IDEA but these instructions were tested
 with IntelliJ IDEA 13.1.3 Ultimate.
 
 -----
 Setup
 -----
-1)  Select "New Project" on IntelliJ's initial screen
+1)  Select "New Project" on IntelliJ IDEA's initial screen
 
 #)  Select "Python" as the project type and choose "Next"
 
