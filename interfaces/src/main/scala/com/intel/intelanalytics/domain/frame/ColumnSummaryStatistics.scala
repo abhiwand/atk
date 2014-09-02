@@ -30,8 +30,14 @@ import spray.json.JsValue
  * @param frame Identifier for the input dataframe.
  * @param dataColumn Name of the column to statistically summarize. Must contain numerical data.
  * @param weightsColumn Optional. Name of the column that provides weights (frequencies).
+ * @param usePopulationVariance If true, variance calculated is the population variance. If false or the option is not
+ *                              provided, the variance calculated is the sample variance. Because this option affects
+ *                              the variance, it affects the standard deviation and the confidence intervals as well.
  */
-case class ColumnSummaryStatistics(frame: FrameReference, dataColumn: String, weightsColumn: Option[String]) {
+case class ColumnSummaryStatistics(frame: FrameReference,
+                                   dataColumn: String,
+                                   weightsColumn: Option[String],
+                                   usePopulationVariance: Option[Boolean]) {
 
   require(frame != null, "frame is required but not provided")
   require(dataColumn != null, "data column is required but not provided")
@@ -43,51 +49,41 @@ case class ColumnSummaryStatistics(frame: FrameReference, dataColumn: String, we
  * out of the calculation. If a row contains a NaN or infinite value in either the data or weights column, that row is
  * skipped and a count of bad rows is incremented.
  *
+ *
  * @param mean Arithmetic mean of the data.
- * @param geometricMean Geometric mean of the data. NaN when there is a non-positive data element, 1 if there are no
+ * @param geometricMean Geometric mean of the data. None when there is a non-positive data element, 1 if there are no
  *                       data elements.
- * @param variance Variance of the data where weighted sum of squared distance from the mean is divided by the number of
- *                 data elements minus 1. NaN when the number of data elements is < 2.
- * @param standardDeviation Standard deviation of the data. NaN when the number of data elements is < 2.
- * @param validDataCount The number of data elements that are finite numbers. (Ie. after NaNs and infinite values have
- *                       been excluded.)
+ * @param variance If sample variance is used,  the variance  is the weighted sum of squared distances from the mean is
+ *                 divided by the sum of weights minus 1 (NaN if the sum of the weights is <= 1).
+ *                 If population variance is used, the variance is the weighted sum of squared distances from the mean
+ *                 divided by the sum of weights.
+ * @param standardDeviation Square root of the variance. None when sample variance is used and the sum of the weights
+ *                          is <= 1.
+ * @param totalWeight The sum of all weights over valid input rows. (Ie. neither data nor weight is NaN, or infinity,
+ *                    and weight is > 0).
  * @param minimum Minimum value in the data. None when there are no data elements of positive weight.
  * @param maximum Maximum value in the data. None when there are no data elements of positive weight.
  * @param meanConfidenceLower: Lower limit of the 95% confidence interval about the mean. Assumes a Gaussian RV.
- *                             NaN when there are <= 1 data elements of positive weight.
+ *                             None when there are no elements of positive weight.
  * @param meanConfidenceUpper: Upper limit of the 95% confidence interval about the mean. Assumes a Gaussian RV.
- *                              NaN when there are <= 1 data elements of positive weight.
+ *                             None when there are no elements of positive weight.
+ * @param badRowCount The number of rows containing a NaN or infinite value in either the data or weights column.
+ * @param goodRowCount The number of rows containing a NaN or infinite value in either the data or weight
+ * @param positiveWeightCount  The number valid data elements with weights > 0.
+ *                             This is the number of entries used for the calculation of the statistics.
+ * @param nonPositiveWeightCount The number valid data elements with weight <= 0.
  */
 case class ColumnSummaryStatisticsReturn(mean: Double,
                                          geometricMean: Double,
                                          variance: Double,
                                          standardDeviation: Double,
-                                         //mode: Option[Double],
-                                         //weightAtMode: Double,
-                                         validDataCount: Long,
-                                         minimum: Option[Double],
-                                         maximum: Option[Double],
-                                         meanConfidenceLower: Option[Double],
-                                         meanConfidenceUpper: Option[Double] //positiveWeightCount: Long,
-                                         //nonPositiveWeightCount: Long,
-                                         //badRowCount: Long,
-                                         //goodRowCount: Long
-                                         )
-
-/* TODO TRIB-2245
- * modes only make sense when there are weights
- *
- *  * @param mode A mode of the data; that is, an item with the greatest weight (largest frequency).
- *              When there is more than one mode, the one of least numerical value is taken.
- *              None when there are no data elements of positive weight.
- * @param weightAtMode The weight of the mode.
- *
- * logging of "indigestible data" will come later
-* @param positiveWeightCount  The number valid data elements with weights > 0.
-*                             This is the number of entries used for the calculation of the statistics.
-* @param nonPositiveWeightCount The number valid data elements with weight <= 0.
-* @param badRowCount The number of rows containing a NaN or infinite value in either the data or weights column.
-* @param goodRowCount The number of rows containing a NaN or infinite value in either the data or weights
-*                             column.
-*                             */
+                                         totalWeight: Double,
+                                         minimum: Double,
+                                         maximum: Double,
+                                         meanConfidenceLower: Double,
+                                         meanConfidenceUpper: Double,
+                                         badRowCount: Long,
+                                         goodRowCount: Long,
+                                         positiveWeightCount: Long,
+                                         nonPositiveWeightCount: Long)
 

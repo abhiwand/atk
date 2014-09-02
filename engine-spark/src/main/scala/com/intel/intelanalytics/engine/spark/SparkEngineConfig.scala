@@ -78,9 +78,6 @@ object SparkEngineConfig extends SharedConfig with EventLogging {
     }
   }
 
-  /** Default number for partitioning data */
-  val sparkDefaultPartitions: Int = config.getInt("intel.analytics.engine.spark.default-partitions")
-
   val defaultTimeout: FiniteDuration = config.getInt("intel.analytics.engine.default-timeout").seconds
 
   val fsRoot: String = config.getString("intel.analytics.engine.fs.root")

@@ -36,16 +36,16 @@ class ColumnStatisticsITest extends TestingSparkContextFlatSpec with Matchers {
   }
 
   "mode with no net weight" should "return none as json" in new ColumnStatisticsTest() {
-    val testMode = ColumnStatistics.columnMode(0, DataTypes.string, Some(7), Some(DataTypes.int32), rowRDD)
+    val testMode = ColumnStatistics.columnMode(0, DataTypes.string, Some(7), Some(DataTypes.int32), None, rowRDD)
 
-    testMode.mode shouldBe None.asInstanceOf[Option[String]].toJson
+    testMode.modes shouldBe Set.empty[String].toJson
   }
 
   "weighted mode" should "work" in new ColumnStatisticsTest() {
 
-    val testMode = ColumnStatistics.columnMode(0, DataTypes.string, Some(3), Some(DataTypes.int32), rowRDD)
+    val testMode = ColumnStatistics.columnMode(0, DataTypes.string, Some(3), Some(DataTypes.int32), None, rowRDD)
 
-    testMode.mode shouldBe "E".toJson
+    testMode.modes shouldBe Set("E").toJson
   }
 
   "unweighted full statistics" should "work" in new ColumnStatisticsTest() {
@@ -66,7 +66,12 @@ class ColumnStatisticsITest extends TestingSparkContextFlatSpec with Matchers {
 
   "unweighted summary statistics" should "work" in new ColumnStatisticsTest() {
 
-    val stats: ColumnSummaryStatisticsReturn = ColumnStatistics.columnSummaryStatistics(2, DataTypes.float32, None, None, rowRDD)
+    val stats: ColumnSummaryStatisticsReturn = ColumnStatistics.columnSummaryStatistics(2,
+      DataTypes.float32,
+      None,
+      None,
+      rowRDD,
+      false)
 
     Math.abs(stats.mean - 2.0) should be < epsilon
   }
@@ -74,7 +79,7 @@ class ColumnStatisticsITest extends TestingSparkContextFlatSpec with Matchers {
   "weighted summary statistics" should "work" in new ColumnStatisticsTest() {
 
     val stats: ColumnSummaryStatisticsReturn =
-      ColumnStatistics.columnSummaryStatistics(5, DataTypes.float32, Some(4), Some(DataTypes.int32), rowRDD)
+      ColumnStatistics.columnSummaryStatistics(5, DataTypes.float32, Some(4), Some(DataTypes.int32), rowRDD, false)
 
     Math.abs(stats.mean - 1.2) should be < epsilon
   }
