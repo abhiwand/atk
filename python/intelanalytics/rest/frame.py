@@ -1,3 +1,4 @@
+# coding: utf-8
 ##############################################################################
 # INTEL CONFIDENTIAL
 #
@@ -30,18 +31,19 @@ from intelanalytics.core.orddict import OrderedDict
 from collections import defaultdict
 import json
 import sys
-import codecs
 
 from intelanalytics.core.frame import BigFrame
 from intelanalytics.core.column import BigColumn
 from intelanalytics.core.files import CsvFile
 from intelanalytics.core.iatypes import *
 from intelanalytics.core.aggregation import agg
-from intelanalytics.rest.connection import http
+from intelanalytics.core.metaprog import load_loadable
 
+from intelanalytics.rest.connection import http
 from intelanalytics.rest.iatypes import get_data_type_from_rest_str, get_rest_str_from_data_type
-from intelanalytics.rest.command import CommandRequest, executor
+from intelanalytics.rest.command import CommandRequest, executor, get_commands, execute_command
 from intelanalytics.rest.spark import prepare_row_function, get_add_one_column_function, get_add_many_columns_function
+from collections import namedtuple
 
 
 class FrameBackendRest(object):
@@ -54,11 +56,16 @@ class FrameBackendRest(object):
         # use global connection, auth, etc.  This client does not support
         # multiple connection contexts
         if not self.__class__.commands_loaded:
+            # New way
+            logger.info("Loading Frame commands")
+            commands = get_commands()
+            load_loadable(BigFrame, commands, execute_command)
+
+            # Old way - keep doing old way for static methods for now, incremental switch-over
             self.__class__.commands_loaded.update(executor.get_command_functions(('dataframe', 'dataframes'),
-                                                                        execute_update_frame_command,
-                                                                        execute_new_frame_command))
+                                                                                 execute_update_frame_command,
+                                                                                 execute_new_frame_command))
             executor.install_static_methods(self.__class__, self.__class__.commands_loaded)
-            BigFrame._commands = self.__class__.commands_loaded
 
     def get_frame_names(self):
         logger.info("REST Backend: get_frame_names")
@@ -95,7 +102,7 @@ class FrameBackendRest(object):
     def _delete_frame(self, frame):
         logger.info("REST Backend: Delete frame {0}".format(repr(frame)))
         r = self.rest_http.delete("dataframes/" + str(frame._id))
-        return frame.name
+        return None
 
     def create(self, frame, source, name):
         logger.info("REST Backend: create frame with name %s" % name)
@@ -171,7 +178,7 @@ class FrameBackendRest(object):
             return {'source': { 'source_type': 'dataframe',
                                 'uri': str(data._id)},  # TODO - be consistent about _id vs. uri in these calls
                     'destination': self._get_frame_full_uri(frame)}
-        raise TypeError("Unsupported data source " + type(data).__name__)
+        raise TypeError("Unsupported data source %s" % type(data))
 
     @staticmethod
     def _get_new_frame_name(source=None):
@@ -326,15 +333,17 @@ class FrameBackendRest(object):
             table.vrules = prettytable.NONE
             for r in self.rows:
                 table.add_row(r)
-            return unicode(table.get_string())
+            return table.get_string().encode('utf8','replace')
 
          #def _repr_html_(self): TODO - Add this method for ipython notebooks
 
     def inspect(self, frame, n, offset):
         # inspect is just a pretty-print of take, we'll do it on the client
         # side until there's a good reason not to
-        rows = self.take(frame, n, offset)
-        return FrameBackendRest.InspectionTable(frame.schema, rows)
+        result = self.take(frame, n, offset)
+        data = result.data
+        schema = result.schema
+        return FrameBackendRest.InspectionTable(schema, data)
 
     def join(self, left, right, left_on, right_on, how):
         if right_on is None:
@@ -403,7 +412,7 @@ class FrameBackendRest(object):
 
     # def remove_columns(self, frame, name):
     #     columns = ",".join(name) if isinstance(name, list) else name
-    #     arguments = {'frame': frame.uri, 'column': columns}
+    #     : frame.uri, 'column': columns}
     #     execute_update_frame_command('removecolumn', arguments, frame)
 
     def rename_columns(self, frame, column_names, new_names):
@@ -423,11 +432,17 @@ class FrameBackendRest(object):
         arguments = {'frame': self._get_frame_full_uri(frame), "new_name": name}
         execute_update_frame_command('rename_frame', arguments, frame)
 
+
+
     def take(self, frame, n, offset):
-        if n==0:
-            return []
         url = 'dataframes/{0}/data?offset={2}&count={1}'.format(frame._id,n, offset)
-        return executor.query(url)
+        result = executor.query(url)
+        schema_json = result.schema
+        schema = FrameSchema.from_strings_to_types(schema_json)
+        data = result.data
+
+        TakeResult = namedtuple("TakeResult", ['data', 'schema'])
+        return TakeResult(data, schema)
 
 
     def ecdf(self, frame, sample_col):
@@ -512,18 +527,25 @@ class FrameBackendRest(object):
         arguments = {'frame_id': frame._id, 'name': name, 'sample_col': sample_col, 'dist_type': dist_type, 'count_value': str(count_value)}
         return execute_new_frame_command('cumulative_dist', arguments)
 
+
 class FrameInfo(object):
     """
     JSON-based Server description of a BigFrame
     """
     def __init__(self, frame_json_payload):
         self._payload = frame_json_payload
+        self._validate()
 
     def __repr__(self):
         return json.dumps(self._payload, indent=2, sort_keys=True)
 
     def __str__(self):
         return '%s "%s"' % (self.id_number, self.name)
+    def _validate(self):
+        try:
+            assert self.id_number
+        except KeyError:
+            raise RuntimeError("Invalid response from server.  Expected Frame info.")
 
     @property
     def id_number(self):
@@ -615,4 +637,9 @@ def get_command_output(command_name, arguments):
     """Executes command and returns the output"""
     command_request = CommandRequest('dataframe/' + command_name, arguments)
     command_info = executor.issue(command_request)
+    if (command_info.result.has_key('value') and len(command_info.result) == 1):
+        return command_info.result.get('value')
     return command_info.result
+
+
+

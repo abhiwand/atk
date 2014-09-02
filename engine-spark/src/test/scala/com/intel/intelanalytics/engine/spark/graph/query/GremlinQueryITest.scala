@@ -3,10 +3,11 @@ package com.intel.intelanalytics.engine.spark.graph.query
 import com.intel.intelanalytics.engine.spark.graph.TestingTitan
 import com.intel.testutils.MatcherUtils._
 import org.scalatest.{ FlatSpec, Matchers }
-import org.specs2.mock.Mockito
+import org.mockito.Mockito._
 import spray.json.JsNumber
+import org.scalatest.mock.MockitoSugar
 
-class GremlinQueryITest extends FlatSpec with Matchers with TestingTitan with Mockito {
+class GremlinQueryITest extends FlatSpec with Matchers with TestingTitan with MockitoSugar {
 
   "executeGremlinQuery" should "execute valid Gremlin queries" in {
     val vertex1 = titanGraph.addVertex(null)

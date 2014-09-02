@@ -24,7 +24,7 @@
 package com.intel.intelanalytics.service.v1
 
 import com.intel.intelanalytics.domain._
-import com.intel.intelanalytics.domain.query.{ Query, RowQuery }
+import com.intel.intelanalytics.domain.query.{ QueryDataResult, Query, RowQuery }
 import org.joda.time.DateTime
 import spray.json._
 import spray.http.{ StatusCodes, HttpResponse, Uri }
@@ -134,20 +134,22 @@ class DataFrameService(commonDirectives: CommonDirectives, engine: Engine) exten
                 }
             } ~ (path("data") & get) {
               parameters('offset.as[Int], 'count.as[Int]) {
-                (offset, count) => {
-                  import ViewModelJsonImplicits._
-                  val queryArgs = RowQuery[Long](id, offset, count)
-                  val exec = engine.getRowsLarge(queryArgs)
-                  //we require a commands uri to point the query completion to.
-                  val pattern = new Regex(prefix + ".*")
-                  val commandUri = pattern.replaceFirstIn(uri.toString, QueryService.prefix + "/") + exec.start.id
-                  complete(QueryDecorator.decorateEntity(commandUri, List(Rel.self(commandUri)), exec.start))
-                }
+                (offset, count) =>
+                  {
+                    import ViewModelJsonImplicits._
+                    val queryArgs = RowQuery[Long](id, offset, count)
+                    val exec = engine.getRowsLarge(queryArgs)
+                    //we require a commands uri to point the query completion to.
+                    val pattern = new Regex(prefix + ".*")
+                    val commandUri = pattern.replaceFirstIn(uri.toString, QueryService.prefix + "/") + exec.execution.start.id
+                    complete(QueryDecorator.decorateEntity(commandUri, List(Rel.self(commandUri)), exec.execution.start, exec.schema))
+                  }
               }
             }
-          }
 
+          }
         }
     }
   }
+
 }

@@ -42,7 +42,12 @@ object DirectoryUtils {
    */
   def createTempDirectory(prefix: String): File = {
     try {
-      convertFileToDirectory(File.createTempFile(prefix, "-tmp"))
+      val tmpDir = convertFileToDirectory(File.createTempFile(prefix, "-tmp"))
+
+      // Don't rely on this- it is just an extra safety net
+      tmpDir.deleteOnExit()
+
+      tmpDir
     }
     catch {
       case e: Exception =>
