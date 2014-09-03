@@ -23,8 +23,6 @@ CREATE TABLE query (
   created_by bigint
 );
 
-ALTER TABLE public.query OWNER TO metastore;
-
 --
 -- Name: query_query_id_seq; Type: SEQUENCE; Schema: public; Owner: metastore
 --
@@ -34,8 +32,6 @@ CREATE SEQUENCE query_query_id_seq
   NO MAXVALUE
   NO MINVALUE
   CACHE 1;
-
-ALTER TABLE public.query_query_id_seq OWNER TO metastore;
 
 --
 -- Name: query_query_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: metastore
