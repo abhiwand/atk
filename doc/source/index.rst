@@ -20,3 +20,10 @@ References
 * :doc:`ia_legal`
 * :ref:`genindex`
 * :ref:`search`
+
+.. toctree::
+    :hidden:
+    :maxdepth: 1
+    
+    glossary
+    ia_legal
