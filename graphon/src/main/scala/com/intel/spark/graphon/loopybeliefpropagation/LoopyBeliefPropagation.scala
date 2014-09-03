@@ -1,7 +1,7 @@
 package com.intel.spark.graphon.loopybeliefpropagation
 
 import com.intel.intelanalytics.domain.graph.GraphReference
-import com.intel.intelanalytics.engine.spark.plugin.{SparkInvocation, SparkCommandPlugin}
+import com.intel.intelanalytics.engine.spark.plugin.{ SparkInvocation, SparkCommandPlugin }
 import com.intel.intelanalytics.domain.DomainJsonProtocol
 import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.spark.graphon.communitydetection.kclique.KCliqueResult
@@ -38,7 +38,6 @@ case class Lbp(graph: GraphReference,
  */
 case class LbpResult(time: Double)
 
-
 /**
  * KClique Percolation launcher class. Takes the command from python layer
  */
@@ -48,7 +47,7 @@ class LoopyBeliefPropagation extends SparkCommandPlugin[Lbp, LbpResult] {
   implicit val kcliqueFormat = jsonFormat15(Lbp)
   implicit val kcliqueResultFormat = jsonFormat1(LbpResult)
 
-  override def execute(sparkInvocation: SparkInvocation, arguments: Lbp)(implicit user: UserPrincipal, executionContext: ExecutionContext): KCliqueResult = {
+  override def execute(sparkInvocation: SparkInvocation, arguments: Lbp)(implicit user: UserPrincipal, executionContext: ExecutionContext): LbpResult = {
 
     val start = System.currentTimeMillis()
 
@@ -68,8 +67,8 @@ class LoopyBeliefPropagation extends SparkCommandPlugin[Lbp, LbpResult] {
     val iatGraphName = GraphName.convertGraphUserNameToBackendName(graph.name)
     titanConfig.setProperty("storage.tablename", iatGraphName)
 
-    // Start KClique Percolation
-    Driver.run(titanConfig, sc, arguments.cliqueSize, arguments.communityPropertyLabel)
+    // Start the Loopiness
+    Driver.run(titanConfig, sc, arguments.output_vertex_property_list.getOrElse("LBP_RESULT"))
 
     // Get the execution time and print it
     val time = (System.currentTimeMillis() - start).toDouble / 1000.0

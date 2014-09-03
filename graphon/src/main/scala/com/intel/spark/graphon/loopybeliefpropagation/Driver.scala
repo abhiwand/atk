@@ -23,9 +23,8 @@
 
 package com.intel.spark.graphon.loopybeliefpropagation
 
-
 import org.apache.spark.rdd.RDD
-import com.intel.graphbuilder.elements.{ Edge => GBEdge, Vertex => GBVertex }
+import com.intel.graphbuilder.elements.{ Edge => GBEdge, Vertex => GBVertex, Property }
 import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRDDImplicits._
 import org.apache.spark.SparkContext
 import com.intel.graphbuilder.graph.titan.TitanGraphConnector
@@ -40,11 +39,12 @@ import com.intel.spark.graphon.communitydetection.kclique.GraphGenerator
 import com.intel.spark.graphon.communitydetection.kclique.GetConnectedComponents
 import com.intel.spark.graphon.communitydetection.kclique.CommunityAssigner
 import com.intel.spark.graphon.communitydetection.kclique.GBVertexRDDBuilder
-import com.intel.graphbuilder.elements.Vertex
 import com.intel.spark.graphon.communitydetection.kclique.CommunityWriterInTitan
-import com.intel.graphbuilder.elements.Edge
 import com.intel.spark.graphon.communitydetection.kclique.datatypes.Edge
 import com.intel.spark.graphon.communitydetection.kclique.datatypes
+import com.intel.spark.graphon.communitydetection.ScalaToJavaCollectionConverter
+import com.intel.graphbuilder.driver.spark.titan.{ GraphBuilderConfig, GraphBuilder }
+import com.intel.graphbuilder.parser.InputSchema
 
 /**
  * The driver for running loopy belief propagation
@@ -74,13 +74,15 @@ object Driver {
 
     // do a little GraphX MagiX
 
+    val newGBVertices: RDD[GBVertex] = gbVertices.map({
+      case (GBVertex(physicalId, gbId, properties)) => GBVertex(physicalId, gbId, Seq(Property(outputPropertyLabel, 0)))
+    })
 
-    val newGBVertices: RDD[GBVertex] = gbVertexRDDBuilder.setVertex(outputPropertyLabel)
-
-    // Update back each vertex in the input Titan graph and the write the community property
-    // as the set of communities to which it belongs
-    val communityWriterInTitan = new CommunityWriterInTitan()
-    communityWriterInTitan.run(newGBVertices, gbEdges, titanConfig)
+    // Create the GraphBuilder object
+    // Setting true to append for updating existing graph
+    val gb = new GraphBuilder(new GraphBuilderConfig(new InputSchema(Seq.empty), List.empty, List.empty, titanConfig, append = true))
+    // Build the graph using spark
+    gb.buildGraphWithSpark(newGBVertices, gbEdges)
 
   }
 
