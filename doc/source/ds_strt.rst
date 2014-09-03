@@ -105,6 +105,7 @@ Integrated Development Environments
 
     ds_eclipse
     ds_intellij
+    ds_pycharm
 
 .. rubric:: footnotes
 
