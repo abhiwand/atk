@@ -300,7 +300,7 @@ public class ConjugateGradientDescentComputation extends BasicComputation<LongWr
     }
 
     /**
-     * Compute beta
+     * Compute beta according to Hestenes-Stiefel formula
      *
      * @param gradient of type Vector
      * @param conjugate of type Vector
