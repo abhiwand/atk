@@ -13,6 +13,25 @@ graph database to allow you to examine your data and run analytic tools on it.
 The interface to the data is through a Python programmatic interface, where data scientists are able to iteratively
 manage data, features, graphs,  models, results and visualizations.
 
+----------------
+Before You Start
+----------------
+
+You should be familiar with some of the other Python packages already available in the open source community.
+The IAT provides a set of functionality exposed through a Python API, which can be accessed through `iPython`_ * notebooks.
+You'll want to know about `Apache Hadoop`_ * and its various components.
+We use HDFS, :term:`MapReduce`, and YARN, as well as `Apache Giraph`_ * for graph-based machine learning.
+The Tital graph database can be queried using the `Gremlin`_ * graph query language from TinkerPop™.
+
+-----------------------------------
+Integrated Development Environments
+-----------------------------------
+.. toctree::
+
+    ds_eclipse
+    ds_intellij
+    ds_pycharm
+
 --------
 Features
 --------
@@ -87,24 +106,6 @@ If you need to debug changes to the scripts or peak behind the curtain, the log 
     sudo tail -f /var/log/intelanalytics/rest-server/output.log
 
 *End of new for release 0.8.2*
-
-----------------
-Before You Start
-----------------
-
-You should be familiar with some of the other Python packages already available in the open source community.
-The IAT provides a set of functionality exposed through a Python API, which can be accessed through `iPython`_ * notebooks.
-You'll want to know about `Apache Hadoop`_ * and its various components.
-We use HDFS, :term:`MapReduce`, and YARN, as well as `Apache Giraph`_ * for graph-based machine learning.
-The Tital graph database can be queried using the `Gremlin`_ * graph query language from TinkerPop™.
-
------------------------------------
-Integrated Development Environments
------------------------------------
-.. toctree::
-
-    ds_eclipse
-    ds_intellij
 
 .. rubric:: footnotes
 
