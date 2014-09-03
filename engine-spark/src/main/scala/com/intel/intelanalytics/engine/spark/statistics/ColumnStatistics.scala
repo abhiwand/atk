@@ -85,7 +85,7 @@ private[spark] object ColumnStatistics extends Serializable {
     val orderStatistics = new OrderStatistics[Any](dataWeightPairs)
 
     val medianReturn: JsValue = if (orderStatistics.medianOption.isEmpty) {
-      None.asInstanceOf[Option[Double]].toJson
+      JsNull
     }
     else {
       dataType.typedJson(orderStatistics.medianOption.get)
@@ -111,42 +111,42 @@ private[spark] object ColumnStatistics extends Serializable {
    * @param weightsColumnIndexOption Option for index of column providing the weights. Must be numerical data.
    * @param weightsTypeOption Option for the datatype of the weights.
    * @param rowRDD RDD of input rows.
+   * @param usePopulationVariance If true, variance is calculated as population variance. If false, variance is
+   *                              calculated as sample variance.
    * @return Summary statistics of the column.
    */
   def columnSummaryStatistics(dataColumnIndex: Int,
                               dataType: DataType,
                               weightsColumnIndexOption: Option[Int],
                               weightsTypeOption: Option[DataType],
-                              rowRDD: RDD[Row]): ColumnSummaryStatisticsReturn = {
+                              rowRDD: RDD[Row],
+                              usePopulationVariance: Boolean): ColumnSummaryStatisticsReturn = {
 
     val dataWeightPairs: RDD[(Double, Double)] =
       getDoubleWeightPairs(dataColumnIndex, dataType, weightsColumnIndexOption, weightsTypeOption, rowRDD)
 
-    val stats = new NumericalStatistics(dataWeightPairs)
+    val stats = new NumericalStatistics(dataWeightPairs, usePopulationVariance)
 
     ColumnSummaryStatisticsReturn(mean = stats.weightedMean,
       geometricMean = stats.weightedGeometricMean,
       variance = stats.weightedVariance,
       standardDeviation = stats.weightedStandardDeviation,
-      // TODO TRIB-2245 modes only make sense when there are weights
-      // mode = if (stats.weightedMode.isNaN) None else Some(stats.weightedMode),
-      // weightAtMode = stats.weightAtMode,
-      validDataCount = stats.totalWeight.toLong,
-      meanConfidenceLower = if (stats.meanConfidenceLower.isNaN) None else Some(stats.meanConfidenceLower),
-      meanConfidenceUpper = if (stats.meanConfidenceUpper.isNaN) None else Some(stats.meanConfidenceUpper),
-      minimum = if (stats.min.isNaN) None else Some(stats.min),
-      maximum = if (stats.max.isNaN) None else Some(stats.max)
-    // TODO TRIB-2245
-    //positiveWeightCount = stats.positiveWeightCount,
-    //nonPositiveWeightCount = stats.nonPositiveWeightCount,
-    // badRowCount = stats.badRowCount,
-    //goodRowCount = stats.goodRowCount
-    //
-    )
+      totalWeight = stats.totalWeight,
+      meanConfidenceLower = stats.meanConfidenceLower,
+      meanConfidenceUpper = stats.meanConfidenceUpper,
+      minimum = stats.min,
+      maximum = stats.max,
+      positiveWeightCount = stats.positiveWeightCount,
+      nonPositiveWeightCount = stats.nonPositiveWeightCount,
+      badRowCount = stats.badRowCount,
+      goodRowCount = stats.goodRowCount)
   }
 
   /**
    * Calculate full statistics of data column, possibly weighted by an optional weights column.
+   *
+   * It is assumed that the values in the data column are unique. If the data values are not unique,
+   * some statistics will be incorrect.
    *
    * Values with non-positive weights(including NaNs and infinite values) are thrown out before the calculation is
    * performed, however, they are logged as "bad rows" (when a row contain a datum or a weight that is not a finite
@@ -168,7 +168,9 @@ private[spark] object ColumnStatistics extends Serializable {
     val dataWeightPairs: RDD[(Double, Double)] =
       getDoubleWeightPairs(dataColumnIndex, dataType, weightsColumnIndexOption, weightsTypeOption, rowRDD)
 
-    val stats = new NumericalStatistics(dataWeightPairs)
+    // since we aren't offering full statistics right now, this just makes the project compile
+    // if we want to use population variance in full statistics, we'll have to plumb that down
+    val stats = new NumericalStatistics(dataWeightPairs, false)
 
     ColumnFullStatisticsReturn(mean = stats.weightedMean,
       geometricMean = stats.weightedGeometricMean,
@@ -176,13 +178,11 @@ private[spark] object ColumnStatistics extends Serializable {
       standardDeviation = stats.weightedStandardDeviation,
       skewness = stats.weightedSkewness,
       kurtosis = stats.weightedKurtosis,
-      mode = if (stats.weightedMode.isNaN) None else Some(stats.weightedMode),
-      weightAtMode = stats.weightAtMode,
       totalWeight = stats.totalWeight,
-      meanConfidenceLower = if (stats.meanConfidenceLower.isNaN) None else Some(stats.meanConfidenceLower),
-      meanConfidenceUpper = if (stats.meanConfidenceUpper.isNaN) None else Some(stats.meanConfidenceUpper),
-      minimum = if (stats.min.isNaN) None else Some(stats.min),
-      maximum = if (stats.max.isNaN) None else Some(stats.max),
+      meanConfidenceLower = stats.meanConfidenceLower,
+      meanConfidenceUpper = stats.meanConfidenceUpper,
+      minimum = stats.min,
+      maximum = stats.max,
       positiveWeightCount = stats.positiveWeightCount,
       nonPositiveWeightCount = stats.nonPositiveWeightCount,
       badRowCount = stats.badRowCount,

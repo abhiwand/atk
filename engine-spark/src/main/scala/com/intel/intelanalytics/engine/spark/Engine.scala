@@ -88,6 +88,7 @@ import com.intel.intelanalytics.domain.frame.load.LoadSource
 import com.intel.intelanalytics.domain.graph.GraphTemplate
 import com.intel.intelanalytics.domain.query.Query
 import com.intel.intelanalytics.domain.frame.ColumnSummaryStatistics
+import com.intel.intelanalytics.domain.frame.ColumnMedian
 import com.intel.intelanalytics.domain.frame.ColumnMode
 import com.intel.intelanalytics.domain.frame.ECDF
 import com.intel.intelanalytics.domain.frame.DataFrameTemplate
@@ -106,6 +107,7 @@ import com.intel.intelanalytics.domain.frame.ConfusionMatrixValues
 import com.intel.intelanalytics.domain.command.CommandTemplate
 import com.intel.intelanalytics.domain.frame.FlattenColumn
 import com.intel.intelanalytics.domain.frame.ColumnSummaryStatisticsReturn
+import com.intel.intelanalytics.domain.frame.ColumnMedianReturn
 import com.intel.intelanalytics.domain.frame.ColumnModeReturn
 import com.intel.intelanalytics.domain.frame.FrameJoin
 import com.intel.intelanalytics.engine.spark.plugin.SparkInvocation
@@ -522,9 +524,9 @@ class SparkEngine(sparkContextManager: SparkContextManager,
 
       val baseRdd: RDD[String] = frames.loadFrameRdd(ctx, frameId)
         .map(x => x.map(t => t match {
-          case null => DataTypes.pythonRddNullString
-          case _ => t.toString
-        }).mkString(SparkEngine.pythonRddDelimiter))
+          case null => JsNull
+          case a => a.toJson
+        }).toJson.toString)
 
       val pythonExec = SparkEngineConfig.pythonWorkerExec
       val environment = new java.util.HashMap[String, String]()
@@ -542,10 +544,30 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     }
   }
 
-  private def persistPythonRDD(dataFrame: DataFrame, pyRdd: EnginePythonRDD[String], converter: Array[String] => Array[Any]): Unit = {
+  /**
+   * Persists a PythonRDD after python computation is complete to HDFS 
+   *
+   * @param dataFrame DataFrame associated with this RDD
+   * @param pyRdd PythonRDD instance
+   * @param converter Schema Function converter to convert internals of RDD from Array[String] to Array[Any]
+   * @param skipRowCount Skip counting rows when persisting RDD for optimizing speed
+   * @return rowCount Number of rows if skipRowCount is false, else 0 (for optimization/transformations which do not alter row count)
+   */
+  private def persistPythonRDD(dataFrame: DataFrame, pyRdd: EnginePythonRDD[String], converter: Array[String] => Array[Any], skipRowCount: Boolean = false): Long = {
     withMyClassLoader {
-      val resultRdd = pyRdd.map(s => new String(s).split(SparkEngine.pythonRddDelimiter)).map(converter)
+
+      val resultRdd = pyRdd.map(s => JsonParser(new String(s)).convertTo[List[List[JsValue]]].map(y => y.map(x => x match {
+        case x if x.isInstanceOf[JsString] => x.asInstanceOf[JsString].value
+        case x if x.isInstanceOf[JsNumber] => x.asInstanceOf[JsNumber].toString
+        case x if x.isInstanceOf[JsBoolean] => x.asInstanceOf[JsBoolean].toString
+        case _ => null
+      }).toArray))
+        .flatMap(identity)
+        .map(converter)
+
+      val rowCount = if (skipRowCount) 0 else resultRdd.count()
       frames.saveFrameWithoutSchema(dataFrame, resultRdd)
+      rowCount
     }
   }
 
@@ -704,41 +726,71 @@ class SparkEngine(sparkContextManager: SparkContextManager,
       rdd)
   }
 
-  // TODO TRIB-2245
   /**
    * Calculate the median of the specified column.
    * param arguments Input specification for column median.
    * param user Current user.
    *
-   * override def columnMedian(arguments: ColumnMedian)(implicit user: UserPrincipal): Execution =
-   * commands.execute(columnMedianCommand, arguments, user, implicitly[ExecutionContext])
-   *
-   * val columnMedianCommand: CommandPlugin[ColumnMedian, ColumnMedianReturn] =
-   * pluginRegistry.registerCommand("dataframe/column_median", columnMedianSimple)
-   *
-   * def columnMedianSimple(arguments: ColumnMedian, user: UserPrincipal): ColumnMedianReturn = {
-   *
-   * implicit val u = user
-   *
-   * val frameId = arguments.frame
-   * val frame = expectFrame(frameId)
-   * val ctx = sparkContextManager.context(user).sparkContext
-   * val rdd = frames.getFrameRdd(ctx, frameId.id)
-   * val columnIndex = frame.schema.columnIndex(arguments.dataColumn)
-   * val valueDataType: DataType = frame.schema.columns(columnIndex)._2
-   *
-   * val (weightsColumnIndexOption, weightsDataTypeOption) = if (arguments.weightsColumn.isEmpty) {
-   * (None, None)
-   * }
-   * else {
-   * val weightsColumnIndex = frame.schema.columnIndex(arguments.weightsColumn.get)
-   * (Some(weightsColumnIndex), Some(frame.schema.columns(weightsColumnIndex)._2))
-   * }
-   * val (weightsColumnIndexOption, weightsDataTypeOption) = (None, None)
-   *
-   * ColumnStatistics.columnMedian(columnIndex, valueDataType, weightsColumnIndexOption, weightsDataTypeOption, rdd)
-   * }
    */
+
+  override def columnMedian(arguments: ColumnMedian)(implicit user: UserPrincipal): Execution =
+    commands.execute(columnMedianCommand, arguments, user, implicitly[ExecutionContext])
+
+  val columnMedianDoc = CommandDoc(oneLineSummary = "Calculate (weighted) median of a column.",
+    extendedSummary = Some("""
+                             |Calculate the (weighted) median of a column. The median is the least value X in the range of the distribution so
+                             |         that the cumulative weight of values strictly below X is strictly less than half of the total weight and
+                             |          the cumulative weight of values up to and including X is >= 1/2 the total weight.
+                             |
+                             |        All data elements of weight <= 0 are excluded from the calculation, as are all data elements whose weight
+                             |         is NaN or infinite. If a weight column is provided and no weights are finite numbers > 0, None is returned.
+                             |
+                             |        Parameters
+                             |        ----------
+                             |        data_column : str
+                             |            The column whose median is to be calculated.
+                             |
+                             |        weights_column : str
+                             |            Optional. The column that provides weights (frequencies) for the median calculation.
+                             |            Must contain numerical data. Uniform weights of 1 for all items will be used for the calculation if this
+                             |                parameter is not provided.
+                             |
+                             |        Returns
+                             |        -------
+                             |        median :  The median of the values.  If a weight column is provided and no weights are finite numbers > 0,
+                             |             None is returned. Type of the median returned is that of the contents of the data column, so a column of
+                             |             Longs will result in a Long median and a column of Floats will result in a Float median.
+                             |
+                             |        Example
+                             |        -------
+                             |        >>> median = frame.column_median('middling column')
+                             |""".stripMargin))
+
+  val columnMedianCommand: CommandPlugin[ColumnMedian, ColumnMedianReturn] =
+    commandPluginRegistry.registerCommand("dataframe/column_median", columnMedianSimple, doc = Some(columnMedianDoc))
+
+  def columnMedianSimple(arguments: ColumnMedian, user: UserPrincipal, invocation: SparkInvocation): ColumnMedianReturn = {
+
+    implicit val u = user
+
+    val frameId: Long = arguments.frame.id
+    val frame = expectFrame(frameId)
+    val ctx = invocation.sparkContext
+    val rdd = frames.loadFrameRdd(ctx, frameId)
+    val columnIndex = frame.schema.columnIndex(arguments.dataColumn)
+    val valueDataType: DataType = frame.schema.columns(columnIndex)._2
+
+    val (weightsColumnIndexOption, weightsDataTypeOption) = if (arguments.weightsColumn.isEmpty) {
+      (None, None)
+    }
+    else {
+      val weightsColumnIndex = frame.schema.columnIndex(arguments.weightsColumn.get)
+      (Some(weightsColumnIndex), Some(frame.schema.columns(weightsColumnIndex)._2))
+    }
+
+    ColumnStatistics.columnMedian(columnIndex, valueDataType, weightsColumnIndexOption, weightsDataTypeOption, rdd)
+  }
+
   /**
    * Calculate summary statistics of the specified column.
    * @param arguments Input specification for column summary statistics.
@@ -749,70 +801,126 @@ class SparkEngine(sparkContextManager: SparkContextManager,
 
   val columnSummaryStatisticsDoc = CommandDoc(oneLineSummary = "Calculate summary statistics of a column.",
     extendedSummary = Some("""
-    |Parameters
-    |----------
-    |data_column : str
-    |    The column to be statistically summarized.
-    |    Must contain numerical data; all NaNs and infinite values are excluded from the calculation.
-    |weights_column_name : str (optional)
-    |    Name of column holding weights of column values
-    |
-    |Returns
-    |-------
-    |summary : Dict
-    |    Dictionary containing summary statistics in the following entries:
-    |
-    |    mean:
-    |        Arithmetic mean of the data.
-    |    geometric_mean:
-    |        Geometric mean of the data. None when there is a data element <= 0, 1.0 when there are no data elements.
-    |    variance:
-    |        Variance of the data where  sum of squared distance from the mean is divided by count - 1.
-    |        None when there are <= 1 many data elements.
-    |    standard_deviation:
-    |        Standard deviation of the data. None when there are <= 1 many data elements.
-    |
-    |    valid_data_count:
-    |        The count of all data elements that are finite numbers.
-    |        (In other words, after excluding NaNs and infinite values.)
-    |
-    |    minimum:
-    |        Minimum value in the data. None when there are no data elements.
-    |
-    |    maximum:
-    |        Maximum value in the data. None when there are no data elements.
-    |
-    |    mean_confidence_lower:
-    |        Lower limit of the 95% confidence interval about the mean.
-    |        Assumes a Gaussian distribution. None when there are 0 or 1 data elements.
-    |
-    |    mean_confidence_upper:
-    |        Upper limit of the 95% confidence interval about the mean.
-    |        Assumes a Gaussian distribution. None when there are 0 or 1 data elements.
-    |
-    |Notes
-    |-----
-    |Return Types
-    |    valid_data_count returns a Long.
-    |    All other values are returned as Doubles or None.
-    |
-    |Variance
-    |    Variance is computed by the following formula:
-    |
-    |.. math::
-    |
-    |    \\left( \\frac{1}{n - 1} \\right) * sum_{i}  \\left(x_{i} - M \\right) ^{2}
-    |
-    |where :math:`n` is the number of valid elements of positive weight, and :math:`M` is the mean.
-    |
-    |Standard Deviation
-    |    The square root of the variance.
-    |
-    |Examples
-    |--------
-    |::
-    |
-    |    stats = frame.column_summary_statistics('data column', 'weight column')
+                             |        Calculate summary statistics of a column.
+                             |
+                             |        Parameters
+                             |        ----------
+                             |        data_column : str
+                             |            The column to be statistically summarized.
+                             |            Must contain numerical data; all NaNs and infinite values are excluded from the calculation.
+                             |        weights_column_name : str (optional)
+                             |            Name of column holding weights of column values
+                             |        use_population_variance : bool (optional)
+                             |            If true, the variance is calculated as the population variance. If false, the variance calculated as the
+                             |             sample variance. Because this option affects the variance, it affects the standard deviation and the
+                             |             confidence intervals as well. This option is False by default, so that sample variance is the default
+                             |             form of variance calculated.
+                             |        Returns
+                             |        -------
+                             |        summary : Dict
+                             |            Dictionary containing summary statistics in the following entries:
+                             |
+                             |            | mean:
+                             |                  Arithmetic mean of the data.
+                             |
+                             |            | geometric_mean:
+                             |                  Geometric mean of the data. None when there is a data element <= 0, 1.0 when there are no data
+                             |                  elements.
+                             |
+                             |            | variance:
+                             |                  None when there are <= 1 many data elements.
+                             |                  Sample variance is the weighted sum of the squared distance of each data element from the
+                             |                   weighted mean, divided by the total weight minus 1. None when the sum of the weights is <= 1.
+                             |                  Population variance is the weighted sum of the squared distance of each data element from the
+                             |                   weighted mean, divided by the total weight.
+                             |
+                             |            | standard_deviation:
+                             |                  The square root of the variance. None when  sample variance
+                             |                  is being used and the sum of weights is <= 1.
+                             |
+                             |
+                             |            | valid_data_count:
+                             |                  The count of all data elements that are finite numbers.
+                             |                  (In other words, after excluding NaNs and infinite values.)
+                             |
+                             |            | minimum:
+                             |                  Minimum value in the data. None when there are no data elements.
+                             |
+                             |            | maximum:
+                             |                  Maximum value in the data. None when there are no data elements.
+                             |
+                             |            | mean_confidence_lower:
+                             |                  Lower limit of the 95% confidence interval about the mean.
+                             |                  Assumes a Gaussian distribution.
+                             |                  None when there are no elements of positive weight.
+                             |
+                             |            | mean_confidence_upper:
+                             |                  Upper limit of the 95% confidence interval about the mean.
+                             |                  Assumes a Gaussian distribution.
+                             |                  None when there are no elements of positive weight.
+                             |
+                             |            | bad_row_count : The number of rows containing a NaN or infinite value in either the data
+                             |                  or weights column.
+                             |
+                             |            | good_row_count : The number of rows not containing a NaN or infinite value in either the data
+                             |                  or weights column.
+                             |
+                             |            | positive_weight_count : The number of valid data elements with weight > 0.
+                             |                   This is the number of entries used in the statistical calculation.
+                             |
+                             |            | non_positive_weight_count : The number valid data elements with finite weight <= 0.
+                             |
+                             |        Notes
+                             |        -----
+                             |        Return Types
+                             |            | valid_data_count returns a Long.
+                             |            | All other values are returned as Doubles or None.
+                             |
+                             |        Sample Variance
+                             |            Sample Variance is computed by the following formula:
+                             |
+                             |        .. math::
+                             |
+                             |            \\left( \\frac{1}{W - 1} \\right) * sum_{i}  \\left(x_{i} - M \\right) ^{2}
+                             |
+                             |        where :math:`W` is sum of weights over valid elements of positive weight, and :math:`M` is the weighted mean.
+                             |
+                             |        Population Variance
+                             |            Population Variance is computed by the following formula:
+                             |
+                             |        .. math::
+                             |
+                             |            \\left( \\frac{1}{W} \\right) * sum_{i}  \\left(x_{i} - M \\right) ^{2}
+                             |
+                             |        where :math:`W` is sum of weights over valid elements of positive weight, and :math:`M` is the weighted mean.
+                             |
+                             |        Standard Deviation
+                             |            The square root of the variance.
+                             |
+                             |        Logging Invalid Data
+                             |        --------------------
+                             |
+                             |        A row is bad when it contains a NaN or infinite value in either its data or weights column.  In this case, it
+                             |         contributes to bad_row_count; otherwise it contributes to good row count.
+                             |
+                             |        A good row can be skipped because the value in its weight column is <=0. In this case, it contributes to
+                             |         non_positive_weight_count, otherwise (when the weight is > 0) it contributes to valid_data_weight_pair_count.
+                             |
+                             |            Equations
+                             |            ---------
+                             |            bad_row_count + good_row_count = # rows in the frame
+                             |            positive_weight_count + non_positive_weight_count = good_row_count
+                             |
+                             |        In particular, when no weights column is provided and all weights are 1.0, non_positive_weight_count = 0 and
+                             |         positive_weight_count = good_row_count
+                             |
+                             |        Examples
+                             |        --------
+                             |        ::
+                             |
+                             |            stats = frame.column_summary_statistics('data column', 'weight column')
+                             |
+                             |        .. versionadded:: 0.8
     |""".stripMargin))
 
   val columnStatisticCommand: CommandPlugin[ColumnSummaryStatistics, ColumnSummaryStatisticsReturn] =
@@ -828,18 +936,23 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     val rdd = frames.loadFrameRdd(ctx, frameId)
     val columnIndex = frame.schema.columnIndex(arguments.dataColumn)
     val valueDataType: DataType = frame.schema.columns(columnIndex)._2
-    // TODO TRIB-2245
-    /*
+
     val (weightsColumnIndexOption, weightsDataTypeOption) = if (arguments.weightsColumn.isEmpty) {
       (None, None)
     }
     else {
       val weightsColumnIndex = frame.schema.columnIndex(arguments.weightsColumn.get)
       (Some(weightsColumnIndex), Some(frame.schema.columns(weightsColumnIndex)._2))
-    }*/
-    val (weightsColumnIndexOption, weightsDataTypeOption) = (None, None)
+    }
 
-    ColumnStatistics.columnSummaryStatistics(columnIndex, valueDataType, weightsColumnIndexOption, weightsDataTypeOption, rdd)
+    val usePopulationVariance = arguments.usePopulationVariance.getOrElse(false)
+
+    ColumnStatistics.columnSummaryStatistics(columnIndex,
+      valueDataType,
+      weightsColumnIndexOption,
+      weightsDataTypeOption,
+      rdd,
+      usePopulationVariance)
   }
 
   // TODO TRIB-2245
@@ -885,13 +998,12 @@ class SparkEngine(sparkContextManager: SparkContextManager,
   def filterSimple(arguments: FilterPredicate[JsObject, Long], user: UserPrincipal, invocation: SparkInvocation) = {
     implicit val u = user
     val pyRdd = createPythonRDD(arguments.frame, arguments.predicate, invocation.sparkContext)
-    val rowCount = pyRdd.count()
 
     val realFrame = frames.lookup(arguments.frame).getOrElse(
       throw new IllegalArgumentException(s"No such data frame: ${arguments.frame}"))
     val schema = realFrame.schema
     val converter = DataTypes.parseMany(schema.columns.map(_._2).toArray)(_)
-    persistPythonRDD(realFrame, pyRdd, converter)
+    val rowCount = persistPythonRDD(realFrame, pyRdd, converter, skipRowCount = false)
     frames.updateRowCount(realFrame, rowCount)
   }
 
@@ -1059,7 +1171,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     // Update the data
     val pyRdd = createPythonRDD(frameId, expression, invocation.sparkContext)
     val converter = DataTypes.parseMany(newColumns.map(_._2).toArray)(_)
-    persistPythonRDD(realFrame, pyRdd, converter)
+    persistPythonRDD(realFrame, pyRdd, converter, skipRowCount = true)
     frames.updateSchema(realFrame, newColumns)
   }
 

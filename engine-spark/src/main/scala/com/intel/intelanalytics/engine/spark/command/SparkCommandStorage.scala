@@ -77,9 +77,10 @@ class SparkCommandStorage(val metaStore: SlickMetaStoreComponent#SlickMetaStore)
             // update progress to 100 since the command is complete. This step is necessary
             // because the actually progress notification events are sent to SparkProgressListener.
             // The exact timing of the events arrival can not be determined.
-
             val progress = command.progress.map(info => info.copy(progress = 100f))
-            command.copy(complete = true, progress = progress, result = Some(r))
+            command.copy(complete = true,
+              progress = if (!progress.isEmpty) progress else List(ProgressInfo(100f, None)),
+              result = Some(r))
           }
         }
         repo.update(changed)

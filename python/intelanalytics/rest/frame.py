@@ -1,3 +1,4 @@
+# coding: utf-8
 ##############################################################################
 # INTEL CONFIDENTIAL
 #
@@ -336,7 +337,7 @@ class FrameBackendRest(object):
             table.vrules = prettytable.NONE
             for r in self.rows:
                 table.add_row(r)
-            return unicode(table.get_string())
+            return table.get_string().encode('utf8','replace')
 
          #def _repr_html_(self): TODO - Add this method for ipython notebooks
 
@@ -438,8 +439,6 @@ class FrameBackendRest(object):
 
 
     def take(self, frame, n, offset):
-        if n==0:
-            return []
         url = 'dataframes/{0}/data?offset={2}&count={1}'.format(frame._id,n, offset)
         result = executor.query(url)
         schema_json = result.schema
@@ -647,4 +646,6 @@ def get_command_output(command_name, arguments):
     """Executes command and returns the output"""
     command_request = CommandRequest('dataframe/' + command_name, arguments)
     command_info = executor.issue(command_request)
+    if (command_info.result.has_key('value') and len(command_info.result) == 1):
+        return command_info.result.get('value')
     return command_info.result
