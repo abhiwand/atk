@@ -21,11 +21,9 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.algorithm
+package com.intel.intelanalytics.domain.frame
 
-/**
- * percentile composing element which contains element's index and its weight
- * @param index element index
- * @param percentileTarget the percentile target that the element can be applied to
- */
-case class PercentileComposingElement(index: Long, percentileTarget: PercentileTarget)
+case class FrameDropColumns(frame: FrameReference, columns: Array[String]) {
+  require(frame != null, "frame is required")
+  require(columns != null, "columns are required")
+}

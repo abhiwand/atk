@@ -388,15 +388,15 @@ Drop any rows where the data matches some previously-implemented evaluation row 
 
     my_frame.drop_duplicates()
  
-.. _example_frame.remove_columns:
+.. _example_frame.drop_columns:
 
 Remove Columns:
 ---------------
 
 Columns can be removed either with a string matching the column name or a list of strings::
 
-    my_frame.remove_columns('b')
-    my_frame.remove_columns(['a', 'c'])
+    my_frame.drop_columns('b')
+    my_frame.drop_columns(['a', 'c'])
 
 .. _example_frame.rename_columns:
 

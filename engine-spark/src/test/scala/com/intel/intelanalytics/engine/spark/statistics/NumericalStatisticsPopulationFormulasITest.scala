@@ -145,7 +145,6 @@ class NumericalStatisticsPopulationFormulasITest extends TestingSparkContextFlat
     Math.abs(testMCL - (expectedMean - 1.96 * (expectedStandardDeviationWeights / Math.sqrt(netWeight)))) should be < epsilon
   }
 
-
   "mean confidence upper" should "handle data with integer frequencies" in new NumericalStatisticsTestPopulationFormulas {
 
     val testMCU = numericalStatisticsFrequencies.meanConfidenceUpper

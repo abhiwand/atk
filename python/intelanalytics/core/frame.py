@@ -28,6 +28,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+
 from intelanalytics.core.column import BigColumn
 from intelanalytics.core.errorhandle import IaError
 from intelanalytics.core.metaprog import CommandLoadable
@@ -39,10 +40,11 @@ except:
     logger.info("autoframe.py not found, BigFrame is NOT inheriting commands from it")
     command_loadable = CommandLoadable
 
+from intelanalytics.core.deprecate import deprecated
+
 def _get_backend():
     from intelanalytics.core.config import get_frame_backend
     return get_frame_backend()
-
 
 def get_frame_names():
     """
@@ -115,7 +117,13 @@ def get_frame(name):
     except:
         raise IaError(logger)
 
+
+@deprecated("Use drop_frame(frame).")
 def delete_frame(frame):
+    drop_frame(frame)
+
+
+def drop_frame(frame):
     """
     Erases data.
 
@@ -201,7 +209,7 @@ class BigFrame(command_loadable):
 
     # command load filters:
     command_prefixes = ['dataframe', 'dataframes']
-    command_mute_list = ['load', 'project', 'rename_frame']  # this commands are not exposed
+    command_mute_list = ['load', 'project', 'rename_frame']  # these commands are not exposed
 
     def __init__(self, source=None, name=None):
         try:
@@ -243,7 +251,7 @@ class BigFrame(command_loadable):
 
     # We are not defining __setitem__.  Columns must be added explicitly
 
-    # We are not defining __delitem__.  Columns must be deleted w/ remove_columns
+    # We are not defining __delitem__.  Columns must be deleted w/ drop_columns
 
     def __repr__(self):
         try:
@@ -726,15 +734,19 @@ class BigFrame(command_loadable):
         except:
             raise IaError(logger)
 
+    @deprecated("Use quantiles().")
     def calculate_percentiles(self, column_name, percentiles):
+        self.quantiles(column_name, percentiles)
+
+    def quantiles(self, column_name, quantiles):
         """
-        Calculate percentiles on given column.
+        Calculate quantiles on given column.
 
         Parameters
         ----------
         column_name : str
-            The column to calculate percentile
-        percentiles : int OR list of int. If float is provided, it will be rounded to int
+            The column to calculate quantiles
+        quantiles : int OR list of int. If float is provided, it will be rounded to int
 
         Returns
         -------
@@ -744,16 +756,16 @@ class BigFrame(command_loadable):
         --------
         ::
 
-            my_frame.calculate_percentiles('final_sale_price', [10, 50, 100])
+            my_frame.quantiles('final_sale_price', [10, 50, 100])
 
         .. versionadded:: 0.8
 
         """
         try:
-            percentiles_result = self._backend.calculate_percentiles(self, column_name, percentiles).result.get('percentiles')
+            quantiles_result = self._backend.quantiles(self, column_name, quantiles).result.get('percentiles')
             result_dict = {}
-            for p in percentiles_result:
-                result_dict[p.get("percentile")] = p.get("value")
+            for p in quantiles_result:
+                result_dict[p.get("quantile")] = p.get("value")
 
             return result_dict
         except:
@@ -806,11 +818,17 @@ class BigFrame(command_loadable):
 
         return self._backend.confusion_matrix(self, label_column, pred_column, pos_label)
 
-    def copy(self):
+    def copy(self, columns=None):
         """
-        Copy frame.
+        Copy frame or certain frame columns entirely.
 
         Creates a full copy of the current frame.
+
+        Parameters
+        ----------
+        columns : str, list, or dict (optional)
+            If not None, the copy will only include the columns specified.  If a dictionary is used, the string pairs
+            represent a column renaming, {source_column_name: destination_column_name}
 
         Returns
         -------
@@ -843,8 +861,19 @@ class BigFrame(command_loadable):
 
         """
         try:
+            if columns is None:
+                column_names = self.column_names  # all columns
+                new_names = None
+            elif isinstance(columns, dict):
+                column_names = columns.keys()
+                new_names = columns.values()
+            elif isinstance(columns, basestring):
+                column_names = [columns]
+                new_names = None
+            else:
+                raise ValueError("bad argument type %s passed to copy().  Must be string or dict" % type(columns))
             copied_frame = BigFrame()
-            self._backend.project_columns(self, copied_frame, self.column_names)
+            self._backend.project_columns(self, copied_frame, column_names, new_names)
             return copied_frame
         except:
             raise IaError(logger)
@@ -1094,7 +1123,11 @@ class BigFrame(command_loadable):
         except:
             raise IaError(logger)
 
+    @deprecated("Use drop_rows().")
     def drop(self, predicate):
+        self.drop_rows(predicate)
+
+    def drop_rows(self, predicate):
         """
         Drop rows.
 
@@ -1282,7 +1315,7 @@ class BigFrame(command_loadable):
         except:
             raise IaError(logger)
 
-    def fmeasure(self, label_column, pred_column, pos_label=1, beta=1):
+    def f_measure(self, label_column, pred_column, pos_label=1, beta=1):
         """
         Model :math:`F_{\\beta}` measure.
 
@@ -1336,22 +1369,22 @@ class BigFrame(command_loadable):
               blue              1              0                  0
               green             0              1                  1
 
-            frame.fmeasure('labels', 'predictions')
+            frame.f_measure('labels', 'predictions')
 
             0.66666666666666663
 
-            frame.fmeasure('labels', 'predictions', beta=2)
+            frame.f_measure('labels', 'predictions', beta=2)
 
             0.55555555555555558
 
-            frame.fmeasure('labels', 'predictions', pos_label=0)
+            frame.f_measure('labels', 'predictions', pos_label=0)
 
             0.80000000000000004
 
         .. versionadded:: 0.8
 
         """
-        return self._backend.classification_metric(self, 'fmeasure', label_column, pred_column, pos_label, beta)
+        return self._backend.classification_metric(self, 'f_measure', label_column, pred_column, pos_label, beta)
 
     def get_error_frame(self):
         """
@@ -1371,7 +1404,11 @@ class BigFrame(command_loadable):
         except:
             raise IaError(logger)
 
-    def groupby(self, groupby_columns, *aggregation_arguments):
+    @deprecated("use group_by() with an underscore.")
+    def groupby(self, group_by_columns, *aggregation_arguments):
+        self.group_by(group_by_columns, *aggregation_arguments)
+
+    def group_by(self, group_by_columns, *aggregation_arguments):
         """
         Create summarized frame.
 
@@ -1381,7 +1418,7 @@ class BigFrame(command_loadable):
 
         Parameters
         ----------
-        groupby_columns : str
+        group_by_columns : str
             column name or list of column names
         aggregation_arguments
             aggregation function based on entire row, and/or
@@ -1471,13 +1508,13 @@ class BigFrame(command_loadable):
              ape     1           2        6.0         12.0             4.0           9
              big     1           3        6.333333    19.0             5.0           7
 
-        For further examples, see :ref:`example_frame.groupby`.
+        For further examples, see :ref:`example_frame.group_by`.
 
         .. versionadded:: 0.8
 
         """
         try:
-            return self._backend.groupby(self, groupby_columns, aggregation_arguments)
+            return self._backend.group_by(self, group_by_columns, aggregation_arguments)
         except:
             raise IaError(logger)
 
@@ -1639,6 +1676,7 @@ class BigFrame(command_loadable):
         """
         return self._backend.classification_metric(self, 'precision', label_column, pred_column, pos_label, 1)
 
+    @deprecated("Use copy() instead.")
     def project_columns(self, column_names, new_names=None):
         """
         Create frame from columns.
@@ -1750,7 +1788,11 @@ class BigFrame(command_loadable):
         """
         return self._backend.classification_metric(self, 'recall', label_column, pred_column, pos_label, 1)
 
-    def rename_columns(self, column_names, new_names):
+    @deprecated("Use drop_columns() instead.")
+    def remove_columns(self, column_names):
+        self.drop_columns(column_names)
+
+    def rename_columns(self, column_names, new_names=None):
         """
         Rename column.
 
@@ -1758,17 +1800,15 @@ class BigFrame(command_loadable):
 
         Parameters
         ----------
-        column_names : str or list of str
-            The name(s) of the existing column(s).
-        new_names : str
-            The new name(s) for the column(s). Must not already exist.
+        column_names : dictionary of str pairs
+            The name pair (existing name, new name)
 
         Examples
         --------
         Start with a frame with columns *Wrong* and *Wong*.
         Rename the columns to *Right* and *Wite*::
 
-            my_frame.rename_columns(["Wrong", "Wong"], ["Right", "Wite"])
+            my_frame.rename_columns({"Wrong": "Right, "Wong": "Wite"})
 
         Now, what was *Wrong* is now *Right* and what was *Wong* is now *Wite*.
 

@@ -32,6 +32,8 @@ from intelanalytics.core.serialize import to_json
 from intelanalytics.core.column import BigColumn
 from intelanalytics.core.command import CommandSupport
 
+from intelanalytics.core.deprecate import deprecated
+
 # try:
 #     from intelanalytics.core.autograph import CommandLoadableBigGraph as command_loadable
 #     logger.info("BigGraph is inheriting commands from autograph.py")
@@ -106,7 +108,12 @@ def get_graph(name):
     return _get_backend().get_graph(name)
 
 
+@deprecated
 def delete_graph(name):
+    drop_graph(name)
+
+
+def drop_graph(name):
     """
     Deletes the graph from backing store.
     
@@ -125,7 +132,7 @@ def delete_graph(name):
     We have these graphs defined: movies, incomes, virus.
     Delete the graph *incomes*::
 
-        my_gone = delete_graph("incomes")
+        my_gone = drop_graph("incomes")
 
     my_gone is now a string with the value "incomes"
 

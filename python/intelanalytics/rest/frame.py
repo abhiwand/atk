@@ -27,7 +27,7 @@ import uuid
 import logging
 logger = logging.getLogger(__name__)
 from intelanalytics.core.orddict import OrderedDict
-from collections import defaultdict
+from collections import defaultdict, namedtuple
 import json
 import sys
 
@@ -37,12 +37,12 @@ from intelanalytics.core.files import CsvFile
 from intelanalytics.core.iatypes import *
 from intelanalytics.core.aggregation import agg
 from intelanalytics.core.metaprog import load_loadable
+from intelanalytics.core.deprecate import raise_deprecation_warning
 
 from intelanalytics.rest.connection import http
 from intelanalytics.rest.iatypes import get_data_type_from_rest_str, get_rest_str_from_data_type
 from intelanalytics.rest.command import CommandRequest, executor, get_commands, execute_command
 from intelanalytics.rest.spark import prepare_row_function, get_add_one_column_function, get_add_many_columns_function
-from collections import namedtuple
 
 
 class FrameBackendRest(object):
@@ -235,20 +235,20 @@ class FrameBackendRest(object):
             sys.stderr.write("There were parse errors during load, please see frame.get_error_frame()\n")
             logger.warn("There were parse errors during load, please see frame.get_error_frame()")
 
-    def calculate_percentiles(self, frame, column_name, percentiles):
-        if isinstance(percentiles, int):
-            percentiles = [percentiles]
+    def quantiles(self, frame, column_name, quantiles):
+        if isinstance(quantiles, int):
+            quantiles = [quantiles]
 
-        invalid_percentiles = []
-        for p in percentiles:
+        invalid_quantiles = []
+        for p in quantiles:
             if p > 100 or p < 0:
-                invalid_percentiles.append(str(p))
+                invalid_quantiles.append(str(p))
 
-        if len(invalid_percentiles) > 0:
-            raise ValueError("Invalid number for percentile:" + ','.join(invalid_percentiles))
+        if len(invalid_quantiles) > 0:
+            raise ValueError("Invalid number for quantile:" + ','.join(invalid_quantiles))
 
-        arguments = {'frame_id': frame._id, "column_name": column_name, "percentiles": percentiles}
-        command = CommandRequest("dataframe/calculate_percentiles", arguments)
+        arguments = {'frame_id': frame._id, "column_name": column_name, "quantiles": quantiles}
+        command = CommandRequest("dataframe/quantiles", arguments)
         return executor.issue(command)
 
     def drop(self, frame, predicate):
@@ -374,11 +374,11 @@ class FrameBackendRest(object):
                      'new_column_names': new_names}
         execute_update_frame_command('project', arguments, projected_frame)
 
-    def groupby(self, frame, groupby_columns, aggregation):
-        if groupby_columns is None:
-            groupby_columns = []
-        elif isinstance(groupby_columns, basestring):
-            groupby_columns = [groupby_columns]
+    def group_by(self, frame, group_by_columns, aggregation):
+        if group_by_columns is None:
+            group_by_columns = []
+        elif isinstance(group_by_columns, basestring):
+            group_by_columns = [group_by_columns]
 
         first_column_name = None
         aggregation_list = []
@@ -404,23 +404,27 @@ class FrameBackendRest(object):
         name = self._get_new_frame_name()
         arguments = {'frame': self._get_frame_full_uri(frame),
                      'name': name,
-                     'group_by_columns': groupby_columns,
+                     'group_by_columns': group_by_columns,
                      'aggregations': aggregation_list}
 
-        return execute_new_frame_command("groupby", arguments)
-
-    # def remove_columns(self, frame, name):
-    #     columns = ",".join(name) if isinstance(name, list) else name
-    #     : frame.uri, 'column': columns}
-    #     execute_update_frame_command('removecolumn', arguments, frame)
+        return execute_new_frame_command("group_by", arguments)
 
     def rename_columns(self, frame, column_names, new_names):
-        if isinstance(column_names, basestring) and isinstance(new_names, basestring):
-            column_names = [column_names]
-            new_names = [new_names]
-        if len(column_names) != len(new_names):
-            raise ValueError("rename requires name lists of equal length")
-        current_names = frame.column_names
+        if new_names is not None:
+            raise_deprecation_warning("rename_columns with old parameter syntax",
+                                      "New parameter syntax is to pass a dictionary of name pairs, (old, new)")
+            if isinstance(column_names, basestring) and isinstance(new_names, basestring):
+                column_names = [column_names]
+                new_names = [new_names]
+            if len(column_names) != len(new_names):
+                raise ValueError("Old-style rename_columns requires name lists of equal length")
+            current_names = frame.column_names
+        else:
+            if not isinstance(column_names, dict):
+                raise ValueError("rename_columns requires a dictionary of string pairs")
+            new_names = column_names.values()
+            current_names = column_names.keys()
+
         for nn in new_names:
             if nn in current_names:
                 raise ValueError("Cannot use rename to '{0}' because another column already exists with that name".format(nn))
@@ -431,8 +435,6 @@ class FrameBackendRest(object):
         arguments = {'frame': self._get_frame_full_uri(frame), "new_name": name}
         execute_update_frame_command('rename_frame', arguments, frame)
 
-
-
     def take(self, frame, n, offset):
         url = 'dataframes/{0}/data?offset={2}&count={1}'.format(frame._id,n, offset)
         result = executor.query(url)
@@ -442,7 +444,6 @@ class FrameBackendRest(object):
 
         TakeResult = namedtuple("TakeResult", ['data', 'schema'])
         return TakeResult(data, schema)
-
 
     def ecdf(self, frame, sample_col):
         import numpy as np
@@ -459,7 +460,7 @@ class FrameBackendRest(object):
 
     def classification_metric(self, frame, metric_type, label_column, pred_column, pos_label, beta):
         # TODO - remove error handling, leave to server (or move to plugin)
-        if metric_type not in ['accuracy', 'precision', 'recall', 'fmeasure']:
+        if metric_type not in ['accuracy', 'precision', 'recall', 'f_measure']:
             raise ValueError("metric_type must be one of: 'accuracy'")
         if label_column.strip() == "":
             raise ValueError("label_column can not be empty string")
