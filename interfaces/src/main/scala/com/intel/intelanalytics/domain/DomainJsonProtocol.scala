@@ -98,24 +98,19 @@ object DomainJsonProtocol extends IADefaultJsonProtocol {
     }
   }
 
-  class ReferenceFormat[T <: HasId](patterns: Seq[PatternIndex], collection: String, name: String, factory: Long => T)
-      extends JsonFormat[T] {
-
+class ReferenceFormat[T <: HasId]( collection: String, name: String, factory: Long => T)
+  extends JsonFormat[T] {
     override def write(obj: T): JsValue = JsString(s"ia://$collection/${obj.id}")
 
     override def read(json: JsValue): T = json match {
       case JsString(name) =>
-        IAUriFactory.getReference(name)
-        val id = patterns.flatMap(p => p.findMatch(name))
-          .headOption
-          .map(s => s.toLong)
-          .getOrElse(deserializationError(s"Couldn't find $collection ID in " + name))
-        factory(id)
+        factory(IAUriFactory.getReference(name).id)
       case JsNumber(n) => factory(n.toLong)
       case _ => deserializationError(s"Expected $name URL, but received " + json)
     }
   }
 
+  implicit val frameReferenceFormat = new ReferenceFormat[FrameReference]("dataframes", "frame", n => FrameReference(n))
   implicit val userFormat = jsonFormat5(User)
   implicit val statusFormat = jsonFormat5(Status)
   implicit val dataFrameFormat = jsonFormat12(DataFrame)
@@ -180,7 +175,7 @@ object DomainJsonProtocol extends IADefaultJsonProtocol {
   implicit val commandActionFormat = jsonFormat1(CommandPost)
 
   // graph service formats
-
+  implicit val graphReferenceFormat = new ReferenceFormat[GraphReference]("graphs", "graph", n => GraphReference(n))
   implicit val graphTemplateFormat = jsonFormat1(GraphTemplate)
   implicit val graphFormat = jsonFormat9(Graph)
   implicit val graphRenameFormat = jsonFormat2(RenameGraph)

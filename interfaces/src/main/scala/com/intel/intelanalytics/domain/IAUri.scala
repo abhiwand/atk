@@ -17,13 +17,25 @@ trait IAUri {
 }
 
 object IAUriFactory {
-//TODO: Add check entity with entityO and test cases
-  def getReference(uri: String, entityName: Option[String]=""): HasId = {
-    val validateUri = """.+//frame/(\d+)|.+//graph/(\d+)""".r
+  def getReference(uri: String, entityName: Option[String]=None): HasId = {
 
-  /* Validate uri structure and retrieve the entity and id from the uri*/
-    if ((validateUri findFirstIn uri).mkString(",").nonEmpty) {
-      val entity: String = entityName.getOrElse(("graph|frame".r findFirstIn uri).mkString)
+    val validateUri = """.+//frame/(\d+)|.+//graph/(\d+)""".r
+    var entity : String = ""
+    /* Validate uri structure and retrieve the entity and id from the uri*/
+    if ((validateUri findFirstIn uri).mkString(",").isEmpty) {
+      throw new IllegalArgumentException("Invalid uri")
+    }
+    else {
+
+      entityName match {
+        case Some(entityName) => {
+          entity = ("graph|frame".r findFirstIn uri).mkString
+          if (!(entity equals Some(entityName))) {
+            throw new IllegalArgumentException("Inconsistent entity name")
+          }
+        }
+        case None => entity = ("graph|frame".r findFirstIn uri).mkString
+      }
 
       val id: Long = ("""(\d+)""".r findFirstIn uri).mkString.toLong
 
@@ -38,10 +50,5 @@ object IAUriFactory {
         case _ => throw new IllegalArgumentException("Invalid uri")
       }
     }
-
-    else
-    {
-      throw new IllegalArgumentException("Invalid uri")
-    }
   }
- }
+}
