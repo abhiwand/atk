@@ -25,7 +25,7 @@ config file for rest client
 """
 
 # default connection config
-class server:
+class server_defaults:
     host = "localhost"
     port = 9099
     scheme = "http"
@@ -35,7 +35,7 @@ class server:
                'Authorization': "test_api_key_1"}
 
 
-class polling:
+class polling_defaults:
     start_interval_secs = 1
     max_interval_secs = 20
     backoff_factor = 1.02
