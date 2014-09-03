@@ -270,6 +270,10 @@ class VertexRule(Rule):
     """
     Specifies a vertex and vertex properties.
 
+    Dynamically pulling property names from a BigColumn can have a negative
+    performance impact if there are many distinct values (hundreds of
+    values are okay, thousands of values may take a long time).
+
     Parameters
     ----------
     id_key: string
@@ -335,10 +339,14 @@ class EdgeRule(Rule):
     """
     Specifies an edge and edge properties.
 
+    Dynamically pulling labels or property names from a BigColumn can
+    have a negative performance impact if there are many distinct values
+    (hundreds of values are okay, thousands of values may take a long time).
+
     Parameters
     ----------
     label: str or BigColumn source
-        edge label, can be constant string or pulled from BigColumn
+        edge label, can be constant string or pulled from BigColumn.
     tail: VertexRule
         tail vertex ('from' vertex); must be from same BigFrame as head,
         label and any properties
