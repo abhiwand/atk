@@ -65,7 +65,7 @@ Setup
 
     #)  Choose "classes"
 
-    #)  Choose "ia" and click "OK" button
+    #)  Choose "myproject" and click "OK" button
 
     #)  Name the library "ia-python-client"
 
