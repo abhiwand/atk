@@ -1,6 +1,6 @@
-===========================
-IntelliJ Setup Instructions
-===========================
+================================
+IntelliJ IDEA Setup Instructions
+================================
 
 .. contents:: Table of Contents
     :local:
@@ -44,7 +44,7 @@ Setup
 
             #)  Choose "Add Local"
 
-            #)  Browse for your local Python 2.6 installation.  On RedHat this is probably /usr/bin/python.
+            #)  Browse for your local Python 2.6 installation.  On RedHat and Centos this is probably /usr/bin/python.
 
             #)  Choose the "OK" button
 
@@ -61,7 +61,7 @@ Setup
 
     #)  Choose the plus sign "+"
 
-    #)  Choose "Java" and browse to the Intel Analytics Python Rest Client libraries.  On RedHat these are found under "/usr/lib/intelanalytics/rest-client/python".
+    #)  Choose "Java" and browse to the Intel Analytics Python Rest Client libraries.  On RedHat and Centos these are found under "/usr/lib/intelanalytics/rest-client/python".
 
     #)  Choose "classes"
 
