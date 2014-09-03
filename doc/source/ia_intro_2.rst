@@ -72,7 +72,7 @@ Complex, rich queries are supported through the broadly-used :term:`Gremlin` gra
 Queries are returned as Python objects so that they are easily incorporated into the user’s workflow.
 Some of the commonly-used capabilities of :term:`Gremlin` queries include navigating the graph, updating vertex properties,
 adding edges, and removing vertices.
-:term:`Gremlin` simplifies graph data query through succinct expressions that chain together a series of steps and logical function such as transform,
+:term:`Gremlin` simplifies graph data query through succinct expressions that chain together a series of steps and logical functions such as transform,
 filtering, and branch to represent very complex graph traversals, similar to using SQL for programming relational databases.    
 
 This version of the toolkit uses the Titan [#f1]_ open source property graph database to enable storing and querying graph data.

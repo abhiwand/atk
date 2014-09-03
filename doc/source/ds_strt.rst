@@ -98,6 +98,15 @@ You'll want to know about `Apache Hadoop`_ * and its various components.
 We use HDFS, :term:`MapReduce`, and YARN, as well as `Apache Giraph`_ * for graph-based machine learning.
 The Tital graph database can be queried using the `Gremlin`_ * graph query language from TinkerPop™.
 
+-----------------------------------
+Integrated Development Environments
+-----------------------------------
+.. toctree::
+
+    ds_eclipse
+    ds_intellij
+    ds_pycharm
+
 .. rubric:: footnotes
 
 .. [*] Other names and brands may be claimed as the property of others.

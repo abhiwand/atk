@@ -209,7 +209,7 @@ The expected output is like this
 
     //    These parameters are set from the arguments passed in, or defaulted from
     //    the engine configuration if not passed.
-    GiraphConfigurationUtil.set(hConf, "als.maxSuperSteps", arguments.max_supersteps)
+    GiraphConfigurationUtil.set(hConf, "als.maxSupersteps", arguments.max_supersteps)
     GiraphConfigurationUtil.set(hConf, "als.convergenceThreshold", arguments.convergence_threshold)
     GiraphConfigurationUtil.set(hConf, "als.featureDimension", arguments.feature_dimension)
     GiraphConfigurationUtil.set(hConf, "als.bidirectionalCheck", arguments.bidirectional_check)
