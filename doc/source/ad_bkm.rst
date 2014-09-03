@@ -49,13 +49,6 @@ executing them)
 
 .. _ad_bkm_ide:
 
------------------------------------
-Integrated Development Environments
------------------------------------
-.. toctree::
-
-    ds_eclipse
-    ds_intellij
     
 -----
 Spark
