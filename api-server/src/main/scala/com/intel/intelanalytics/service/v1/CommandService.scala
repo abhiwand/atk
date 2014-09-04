@@ -395,12 +395,12 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
   def runClassificationMetric(uri: Uri, xform: JsonTransform)(implicit user: UserPrincipal) = {
     {
       val test = Try {
-        xform.arguments.get.convertTo[ClassificationMetric[Long]]
+        xform.arguments.get.convertTo[ClassificationMetric]
       }
 
       validate(test.isSuccess, "Failed to parse file load descriptor: " + getErrorMessage(test)) {
         val args = test.get
-        val result = engine.classificationMetric(args)
+        val result = engine.fmeasure(args)
         val command: Command = result.start
         complete(decorate(uri + "/" + command.id, command))
       }

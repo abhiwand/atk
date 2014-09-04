@@ -458,30 +458,6 @@ class FrameBackendRest(object):
         arguments = {'frame_id': frame._id, 'name': name, 'sample_col': sample_col, 'data_type': data_type}
         return execute_new_frame_command('ecdf', arguments)
 
-    def classification_metric(self, frame, metric_type, label_column, pred_column, pos_label, beta):
-        # TODO - remove error handling, leave to server (or move to plugin)
-        if metric_type not in ['accuracy', 'precision', 'recall', 'fmeasure']:
-            raise ValueError("metric_type must be one of: 'accuracy'")
-        if label_column.strip() == "":
-            raise ValueError("label_column can not be empty string")
-        if pred_column.strip() == "":
-            raise ValueError("pred_column can not be empty string")
-        if str(pos_label).strip() == "":
-            raise ValueError("invalid pos_label")
-        schema_dict = dict(frame.schema)
-        column_names = schema_dict.keys()
-        if not label_column in column_names:
-            raise ValueError("label_column does not exist in frame")
-        if not pred_column in column_names:
-            raise ValueError("pred_column does not exist in frame")
-        if schema_dict[label_column] in [float32, float64]:
-            raise ValueError("invalid label_column types")
-        if schema_dict[pred_column] in [float32, float64]:
-            raise ValueError("invalid pred_column types")
-        if not beta > 0:
-            raise ValueError("invalid beta value for f measure")
-        arguments = {'frame_id': frame._id, 'metric_type': metric_type, 'label_column': label_column, 'pred_column': pred_column, 'pos_label': str(pos_label), 'beta': beta}
-        return get_command_output('classification_metric', arguments).get('metric_value')
     
     def confusion_matrix(self, frame, label_column, pred_column, pos_label):
         if label_column.strip() == "":

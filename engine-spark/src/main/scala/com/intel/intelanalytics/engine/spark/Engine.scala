@@ -545,7 +545,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
   }
 
   /**
-   * Persists a PythonRDD after python computation is complete to HDFS 
+   * Persists a PythonRDD after python computation is complete to HDFS
    *
    * @param dataFrame DataFrame associated with this RDD
    * @param pyRdd PythonRDD instance
@@ -1380,14 +1380,133 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     PercentileValues(percentileValues)
   }
 
-  override def classificationMetric(arguments: ClassificationMetric[Long])(implicit user: UserPrincipal): Execution =
-    commands.execute(classificationMetricCommand, arguments, user, implicitly[ExecutionContext])
+  override def fmeasure(arguments: ClassificationMetric)(implicit user: UserPrincipal): Execution =
+    commands.execute(fmeasureCommand, arguments, user, implicitly[ExecutionContext])
+  val fmeasureDoc = CommandDoc(oneLineSummary = "Computes Model accuracy, precision, recall and fmeasure (math:`F_{\\beta}`).",
+    extendedSummary = Some("""
+    Based on the *metric_type* argument provided, it computes the accuracy, precision, recall or :math:`F_{\\beta}` measure for a classification model
 
-  val classificationMetricCommand: CommandPlugin[ClassificationMetric[Long], ClassificationMetricValue] = commandPluginRegistry.registerCommand("dataframe/classification_metric", classificationMetricSimple _)
+    --- When metric_type provided is 'fmeasure': Computes the :math:`F_{\\beta}` measure for a classification model.
+    A column containing the correct labels for each instance and a column containing the predictions made by the model are specified.
+    The :math:`F_{\\beta}` measure of a binary classification model is the harmonic mean of precision and recall.
+    If we let:
 
-  def classificationMetricSimple(arguments: ClassificationMetric[Long], user: UserPrincipal, invocation: SparkInvocation): ClassificationMetricValue = {
+    * beta :math:`\\equiv \\beta`,
+    * :math:`T_{P}` denote the number of true positives,
+    * :math:`F_{P}` denote the number of false positives, and
+    * :math:`F_{N}` denote the number of false negatives,
+
+    then:
+    .. math::
+      F_{\\beta} = \\left(1 + \\beta ^ 2\\right) * \\frac{\\frac{T_{P}}{T_{P} + F_{P}} * \\frac{T_{P}}{T_{P} + F_{N}}}{\\beta ^ 2 * \\
+      \\left(\\frac{T_{P}}{T_{P} + F_{P}} + \\frac{T_{P}}{T_{P} + F_{N}}\\right)}
+
+    For multi-class classification, the :math:`F_{\\beta}` measure is computed as the weighted average of the :math:`F_{\\beta}` measure
+    for each label, where the weight is the number of instance with each label in the labeled column.  The
+    determination of binary vs. multi-class is automatically inferred from the data.
+
+    --- When metric_type provided is 'recall': Computes the recall measure for a classification model.
+    A column containing the correct labels for each instance and a column containing the predictions made by the model are specified.
+    The recall of a binary classification model is the proportion of positive instances that are correctly identified.
+    If we let :math:`T_{P}` denote the number of true positives and :math:`F_{N}` denote the number of false
+    negatives, then the model recall is given by: :math:`\\frac {T_{P}} {T_{P} + F_{N}}`.
+
+    For multi-class classification, the recall measure is computed as the weighted average of the recall
+    for each label, where the weight is the number of instance with each label in the labeled column.  The
+    determination of binary vs. multi-class is automatically inferred from the data.
+
+    --- When metric_type provided is 'precision': Computes the precision measure for a classification model
+    A column containing the correct labels for each instance and a column containing the predictions made by the
+    model are specified.  The precision of a binary classification model is the proportion of predicted positive
+    instances that are correct.  If we let :math:`T_{P}` denote the number of true positives and :math:`F_{P}` denote the number of false
+    positives, then the model precision is given by: :math:`\\frac {T_{P}} {T_{P} + F_{P}}`.
+
+    For multi-class classification, the precision measure is computed as the weighted average of the precision
+    for each label, where the weight is the number of instances with each label in the labeled column.  The
+    determination of binary vs. multi-class is automatically inferred from the data.
+
+    --- When metric_type provided is 'accuracy': Computes the accuracy measure for a classification model
+    A column containing the correct labels for each instance and a column containing the predictions made by the classifier are specified.
+    The accuracy of a classification model is the proportion of predictions that are correct.
+    If we let :math:`T_{P}` denote the number of true positives, :math:`T_{N}` denote the number of true negatives, and :math:`K`
+    denote the total number of classified instances, then the model accuracy is given by: :math:`\\frac{T_{P} + T_{N}}{K}`.
+
+    This measure applies to binary and multi-class classifiers.
+
+
+    Parameters
+    ----------
+    metric_type : str
+      the model that is to be computed
+    label_column : str
+      the name of the column containing the correct label for each instance
+    pred_column : str
+      the name of the column containing the predicted label for each instance
+    pos_label : str
+      the value to be interpreted as a positive instance (only for binary, ignored for multi-class)
+    beta : float
+      beta value to use for :math:`F_{\\beta}` measure (default F1 measure is computed); must be greater than zero
+
+    Returns
+    -------
+    float64
+    the measure for the classifier
+
+    Examples
+    --------
+    Consider the following sample data set in *frame* with actual data labels specified in the *labels* column and
+    the predicted labels in the *predictions* column::
+
+    frame.inspect()
+
+    a:unicode   b:int32   labels:int32  predictions:int32
+    |-------------------------------------------------------|
+    red               1              0                  0
+    blue              3              1                  0
+    blue              1              0                  0
+    green             0              1                  1
+
+    frame.fmeasure('fmeasure', 'labels', 'predictions', '1', 1)
+
+    0.66666666666666663
+
+    frame.fmeasure('fmeasure', 'labels', 'predictions', '1', 2)
+
+    0.55555555555555558
+
+    frame.fmeasure('fmeasure', 'labels', 'predictions', '0', 1)
+
+    0.80000000000000004
+
+
+    frame.fmeasure('recall', 'labels', 'predictions', '1', 1)
+
+    0.5
+
+    frame.fmeasure('recall', 'labels', 'predictions', '0', 1)
+
+    1.0
+
+
+    frame.fmeasure('precision', 'labels', 'predictions', '1', 1)
+
+    1.0
+
+    frame.fmeasure('precision', 'labels', 'predictions', '0', 1)
+
+    0.66666666666666663
+
+
+    frame.fmeasure('accuracy', 'labels', 'predictions', '1', 1)
+
+    0.75
+
+    .. versionadded:: 0.8  """))
+  val fmeasureCommand: CommandPlugin[ClassificationMetric, ClassificationMetricValue] = commandPluginRegistry.registerCommand("dataframe/fmeasure", fmeasureSimple _, doc = Some(fmeasureDoc))
+
+  def fmeasureSimple(arguments: ClassificationMetric, user: UserPrincipal, invocation: SparkInvocation): ClassificationMetricValue = {
     implicit val u = user
-    val frameId: Long = arguments.frameId
+    val frameId = arguments.frame.id
     val realFrame: DataFrame = getDataFrameById(frameId)
 
     val ctx = invocation.sparkContext
