@@ -150,7 +150,7 @@ trait Engine {
 
   // Model performance measures
 
-  def classificationMetric(arguments: ClassificationMetric[Long])(implicit user: UserPrincipal): Execution
+  def fmeasure(arguments: ClassificationMetric)(implicit user: UserPrincipal): Execution
 
   def ecdf(arguments: ECDF[Long])(implicit user: UserPrincipal): Execution
 

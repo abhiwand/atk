@@ -23,7 +23,8 @@
 
 package com.intel.intelanalytics.domain.frame
 
-case class ClassificationMetric[FrameRef](frameId: FrameRef, metricType: String, labelColumn: String, predColumn: String, posLabel: String, beta: Double) {
+case class ClassificationMetric(frame: FrameReference, metricType: String, labelColumn: String, predColumn: String, posLabel: String, beta: Double) {
+  require(frame != null, "AssignSample requires a non-null dataframe.")
   require(metricType.equals("accuracy") ||
     metricType.equals("precision") ||
     metricType.equals("recall") ||
