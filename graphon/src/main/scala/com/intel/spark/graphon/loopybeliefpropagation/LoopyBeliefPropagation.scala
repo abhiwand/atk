@@ -1,17 +1,21 @@
 package com.intel.spark.graphon.loopybeliefpropagation
 
 import com.intel.intelanalytics.domain.graph.GraphReference
-import com.intel.intelanalytics.engine.spark.plugin.{ SparkInvocation, SparkCommandPlugin }
+import com.intel.intelanalytics.engine.spark.plugin.{SparkInvocation, SparkCommandPlugin}
 import com.intel.intelanalytics.domain.DomainJsonProtocol
 import com.intel.intelanalytics.security.UserPrincipal
-import com.intel.spark.graphon.communitydetection.kclique.KCliqueResult
-import com.intel.intelanalytics.security.UserPrincipal
-import scala.concurrent.{ Await, ExecutionContext }
+import scala.concurrent.{Await, ExecutionContext}
 import com.intel.intelanalytics.component.Boot
 import com.intel.intelanalytics.engine.spark.SparkEngineConfig
 import com.intel.intelanalytics.engine.spark.graph.GraphName
-import spray.json.JsObject
 import spray.json._
+import com.intel.graphbuilder.graph.titan.TitanGraphConnector
+import com.intel.graphbuilder.driver.spark.titan.reader.TitanReader
+import org.apache.spark.rdd.RDD
+import com.intel.graphbuilder.elements.{Property, Vertex => GBVertex}
+import com.intel.graphbuilder.driver.spark.titan.{GraphBuilderConfig, GraphBuilder}
+import com.intel.graphbuilder.parser.InputSchema
+import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRDDImplicits._
 
 case class Lbp(graph: GraphReference,
                vertex_value_property_list: Option[String],
@@ -39,11 +43,18 @@ case class Lbp(graph: GraphReference,
 case class LbpResult(time: Double)
 
 /**
- * KClique Percolation launcher class. Takes the command from python layer
+ * Launches the GraphX loopy belief propagation.
+ *
+ * Pulls graph from underlying store, sends it off to the LBP runner, and then sends results back to the underlying
+ * store.
+ *
+ * Right now it is using only Titan for graph storage. In time we will hopefully make this more flexible.
+ *
  */
 class LoopyBeliefPropagation extends SparkCommandPlugin[Lbp, LbpResult] {
 
   import DomainJsonProtocol._
+
   implicit val kcliqueFormat = jsonFormat15(Lbp)
   implicit val kcliqueResultFormat = jsonFormat1(LbpResult)
 
@@ -59,16 +70,49 @@ class LoopyBeliefPropagation extends SparkCommandPlugin[Lbp, LbpResult] {
     val config = configuration
     val titanConfig = SparkEngineConfig.titanLoadConfiguration
 
+
+
     // Get the graph
     import scala.concurrent.duration._
     val graph = Await.result(sparkInvocation.engine.getGraph(arguments.graph.id), config.getInt("default-timeout") seconds)
 
-    // Set the graph in Titan
     val iatGraphName = GraphName.convertGraphUserNameToBackendName(graph.name)
     titanConfig.setProperty("storage.tablename", iatGraphName)
 
-    // Start the Loopiness
-    Driver.run(titanConfig, sc, arguments.output_vertex_property_list.getOrElse("LBP_RESULT"))
+
+
+    val titanConnector = new TitanGraphConnector(titanConfig)
+
+    // Read the graph from Titan
+    val titanReader = new TitanReader(sc, titanConnector)
+    val titanReaderRDD = titanReader.read()
+
+
+    // Get the GraphBuilder vertex list
+    val gbVertices = titanReaderRDD.filterVertices()
+
+    // Get the GraphBuilder edge list
+    val gbEdges = titanReaderRDD.filterEdges()
+
+
+
+
+    // do a little GraphX MagiX
+
+
+    // send it out down the line
+
+    val outputPropertyLabel = arguments.output_vertex_property_list.getOrElse("LBP_RESULT")
+
+    val newGBVertices: RDD[GBVertex] = gbVertices.map({
+      case (GBVertex(physicalId, gbId, properties)) => GBVertex(physicalId, gbId, Seq(Property(outputPropertyLabel, 0)))
+    })
+
+    // Create the GraphBuilder object
+    // Setting true to append for updating existing graph
+    val gb = new GraphBuilder(new GraphBuilderConfig(new InputSchema(Seq.empty), List.empty, List.empty, titanConfig, append = true))
+    // Build the graph using spark
+    gb.buildGraphWithSpark(newGBVertices, gbEdges)
 
     // Get the execution time and print it
     val time = (System.currentTimeMillis() - start).toDouble / 1000.0
