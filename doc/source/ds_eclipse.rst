@@ -95,6 +95,7 @@ Setup
     #)  Type the following code into test.py::
     
             import intelanalytics as ia
+            ia.server.host = "correct host name or IP address"
             ia.server.ping()
 
 #)  Choose :menuselection:`Run --> Run`
