@@ -46,19 +46,24 @@ object GraphGenerator extends Serializable {
    */
   def run(cliqueAndExtenders: RDD[ExtendersFact]) = {
 
-    // Derive the key value pairs of k-1 cliques in the graph and k cliques that extend them
+    // Derive the extended k cliques by extending the k-1 cliques
     // and drop the boolean variable neighborHigh that describes whether the neighbors are of higher order
-    val cliqueAndExtendedClique = cliqueAndExtenders.flatMap({
+    val extendedClique = cliqueAndExtenders.flatMap({
       case ExtendersFact(clique, extenders, neighborHigh) =>
-        extenders.map(extendedBy =>
-          (CliqueFact(clique.members), CliqueFact(clique.members + extendedBy)))
+        extenders.map(extendedBy => (clique.members + extendedBy).toSeq.sorted.toSet)
+    })
+
+    // Derive the pairs of all possible k-1 cliques in the graph corresponding to each extended k cliques
+    // and the extended k cliques
+    val cliqueAndExtendedClique = extendedClique.flatMap({
+      case (extendedCliques) =>
+        extendedCliques.map(cliqueMember => (CliqueFact(extendedCliques - cliqueMember), CliqueFact(extendedCliques)))
     })
 
     // Get the distinct CliqueFact set as the new vertex list of k-clique graph
-    val cliqueFactVertexList = cliqueAndExtenders.flatMap({
-      case ExtendersFact(clique, extenders, neighborHigh) =>
-        extenders.map(extendedBy => CliqueFact(clique.members + extendedBy))
-    }).distinct()
+    val cliqueFactVertexList = extendedClique.map({
+      case (extendedCliques) => CliqueFact(extendedCliques)
+    })
 
     // Group those pairs by their keys (the k-1) sets, so in each group
     // we get (U, Seq(V_1, . V_m)), where the U is a k-1 clique and each V_i is a k-clique extending it
