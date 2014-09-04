@@ -16,7 +16,7 @@ cp $tarFile $SCRIPTPATH/rpm/SOURCES/${packageName}-${version}.tar.gz
 LICENSE="Confidential"
 #SUMMARY="$packageName-$version Build number: $BUILD_NUMBER. TimeStamp $TIMESTAMP"
 DESCRIPTION=$SUMMARY 
-REQUIRES="python, python-ordereddict, python-numpy >= 1.8.1, python-bottle >= 0.12, python-requests >= 2.2.1"
+REQUIRES="python, python-ordereddict, numpy >= 1.8.1, python-bottle >= 0.12, python-requests >= 2.2.1"
 
 POST="
  #sim link to python sites packages

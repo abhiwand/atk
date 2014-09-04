@@ -72,6 +72,7 @@ parser.add_argument("--port", type=int, help="Cloudera Manager Port")
 parser.add_argument("--username", type=str, help="Cloudera Manager User Name")
 parser.add_argument("--password", type=str, help="Cloudera Manager Password")
 parser.add_argument("--cluster", type=str, help="Cloudera Manager Cluster Name if more than one cluster is managed by Cloudera Manager.")
+parser.add_argument("--python", type=str, help="The name of the python executable to use. It must be in the path")
 parser.add_argument("--restart", type=str, help="Weather or not to restart spark service after config changes")
 args = parser.parse_args()
 
@@ -104,6 +105,8 @@ def get_arg(question, default, arg):
     """
     return user_info_prompt(question + " defaults to '" + str(default) + "' if nothing is entered: ", default) \
         if arg is None else arg
+
+def get_python_exec():
 
 def select_cluster(clusters, command_line_cluster):
     """
