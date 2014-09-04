@@ -78,6 +78,7 @@ Setup
 #)  Name the file "test" and type in the following code::
 
         import intelanalytics as ia
+        ia.server.host = "correct host name or IP address"
         ia.server.ping()
 
 
