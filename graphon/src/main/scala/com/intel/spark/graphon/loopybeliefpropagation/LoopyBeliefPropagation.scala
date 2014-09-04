@@ -80,10 +80,7 @@ class LoopyBeliefPropagation extends SparkCommandPlugin[Lbp, LbpResult] {
 
   def serializeReturn(returnValue: LbpResult): JsObject = returnValue.toJson.asJsObject()
 
-  /**
-   * The name of the command, e.g. graphs/ml/kclique_percolation
-   */
-  override def name: String = "graphs/ml/lbp-graphon"
+  override def name: String = "graphs/ml/lbp_graphon"
 
   override def serializeArguments(arguments: Lbp): JsObject = arguments.toJson.asJsObject()
 
