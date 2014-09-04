@@ -107,7 +107,10 @@ environment (where you want your data to persist between restarts).
 Related Pages
 -------------
 
+:doc:`ad_psql_cs`
+
 .. toctree::
+    :hidden:
     :maxdepth: 1
     
     ad_psql_cs
