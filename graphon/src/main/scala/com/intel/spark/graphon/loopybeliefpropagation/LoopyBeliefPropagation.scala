@@ -1,10 +1,10 @@
 package com.intel.spark.graphon.loopybeliefpropagation
 
 import com.intel.intelanalytics.domain.graph.GraphReference
-import com.intel.intelanalytics.engine.spark.plugin.{SparkInvocation, SparkCommandPlugin}
+import com.intel.intelanalytics.engine.spark.plugin.{ SparkInvocation, SparkCommandPlugin }
 import com.intel.intelanalytics.domain.DomainJsonProtocol
 import com.intel.intelanalytics.security.UserPrincipal
-import scala.concurrent.{Await, ExecutionContext}
+import scala.concurrent.{ Await, ExecutionContext }
 import com.intel.intelanalytics.component.Boot
 import com.intel.intelanalytics.engine.spark.SparkEngineConfig
 import com.intel.intelanalytics.engine.spark.graph.GraphName
@@ -12,8 +12,8 @@ import spray.json._
 import com.intel.graphbuilder.graph.titan.TitanGraphConnector
 import com.intel.graphbuilder.driver.spark.titan.reader.TitanReader
 import org.apache.spark.rdd.RDD
-import com.intel.graphbuilder.elements.{Property, Vertex => GBVertex}
-import com.intel.graphbuilder.driver.spark.titan.{GraphBuilderConfig, GraphBuilder}
+import com.intel.graphbuilder.elements.{ Property, Vertex => GBVertex, Edge => GBEdge }
+import com.intel.graphbuilder.driver.spark.titan.{ GraphBuilderConfig, GraphBuilder }
 import com.intel.graphbuilder.parser.InputSchema
 import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRDDImplicits._
 
@@ -70,8 +70,6 @@ class LoopyBeliefPropagation extends SparkCommandPlugin[Lbp, LbpResult] {
     val config = configuration
     val titanConfig = SparkEngineConfig.titanLoadConfiguration
 
-
-
     // Get the graph
     import scala.concurrent.duration._
     val graph = Await.result(sparkInvocation.engine.getGraph(arguments.graph.id), config.getInt("default-timeout") seconds)
@@ -79,40 +77,26 @@ class LoopyBeliefPropagation extends SparkCommandPlugin[Lbp, LbpResult] {
     val iatGraphName = GraphName.convertGraphUserNameToBackendName(graph.name)
     titanConfig.setProperty("storage.tablename", iatGraphName)
 
-
-
     val titanConnector = new TitanGraphConnector(titanConfig)
 
     // Read the graph from Titan
     val titanReader = new TitanReader(sc, titanConnector)
     val titanReaderRDD = titanReader.read()
 
-
-    // Get the GraphBuilder vertex list
-    val gbVertices = titanReaderRDD.filterVertices()
-
-    // Get the GraphBuilder edge list
-    val gbEdges = titanReaderRDD.filterEdges()
-
-
-
+    val gbVertices: RDD[GBVertex] = titanReaderRDD.filterVertices()
+    val gbEdges: RDD[GBEdge] = titanReaderRDD.filterEdges()
 
     // do a little GraphX MagiX
 
+    val (outVertices, outEdges) = LbpRunner.runLbp(gbVertices, gbEdges, arguments)
 
     // send it out down the line
-
-    val outputPropertyLabel = arguments.output_vertex_property_list.getOrElse("LBP_RESULT")
-
-    val newGBVertices: RDD[GBVertex] = gbVertices.map({
-      case (GBVertex(physicalId, gbId, properties)) => GBVertex(physicalId, gbId, Seq(Property(outputPropertyLabel, 0)))
-    })
 
     // Create the GraphBuilder object
     // Setting true to append for updating existing graph
     val gb = new GraphBuilder(new GraphBuilderConfig(new InputSchema(Seq.empty), List.empty, List.empty, titanConfig, append = true))
     // Build the graph using spark
-    gb.buildGraphWithSpark(newGBVertices, gbEdges)
+    gb.buildGraphWithSpark(outVertices, outEdges)
 
     // Get the execution time and print it
     val time = (System.currentTimeMillis() - start).toDouble / 1000.0
