@@ -18,20 +18,21 @@ All functionality is performed on the cluster, at scale, using `Apache Spark <ht
 
 Functionality provided includes:
 
-* Parsing for CSV and JSON data types
-* Duplicate removal, dropping rows, data filtering, copying data into a new columns, and concatenating columns
+* Parsing for CSV and JSON data types (see :ref:`Importing Data`)
+* Duplicate removal, dropping rows, data filtering, copying data into a new columns, and concatenating columns (see :ref:`Clean the Data`)
 * Summary calculations for data inspection, such as counts, measures of central tendency, distribution and percentile of data, dispersions, and binning
 * Joining of multiple data sources based on record relationships, such as intersection (inner join),  union (outer join), and lookup inclusion or
-  exclusion (left and right joins)
+  exclusion (left and right joins) (see :ref:`Transform The Data`)
 * Date and time functions to convert formats, such as conversion to year/month/day/hour/minute/second, filtering by date, and calculating durations,
   simplifying the engineering required to build a desired feature
 * String manipulation, such as regular expression matching, tokenization, query and replace, upper/lower case conversions, splitting and trimming
 * Common math and calculations, including absolute value, exponentiation, logarithm, square root, rounding, integer operations (such as division,
   modulo, floor and ceiling), and random number generation
 * Overall-level and "GroupBy"-level aggregation, and evaluation through functions like averaging, counting total or unique values, summing,
-  finding the min and max, :term:`variance <Bias-variance tradeoff>`, and standard deviation, plus advanced transforms like exponentially weighted average.  
+  finding the min and max, :term:`variance <Bias-variance tradeoff>`, and standard deviation, plus advanced transforms like exponentially weighted average
+  (see :ref:`Transform The Data`)
 * Most functions can be applied using filters of data ranges, numeric ranges, or value lookups. 
-* Custom user-developed parsing and transformations (:term:`lambda functions`, row-based) using Python  
+* Custom user-developed parsing and transformations (:term:`lambda functions`, row-based) using Python (see :ref:`Transform The Data`)
 
 Graph Construction
 ==================
@@ -40,6 +41,16 @@ To use graph tools, such as graph databases, graph analytics and :term:`machine 
 into a network of vertices and edges.
 The Intel Analytics Toolkit makes this process simple, through pre-built routines for assembling data sets of all sizes into graphs, using cluster
 computing for high-throughput.
+
+Functionality provided includes:
+
+*
+*
+*
+*
+*
+*
+
 The toolkit supports flexibility of graph data structures, including fully flexible graphs with arbitrary edges and vertices that can optionally
 have properties assigned, as well as bipartite graphs, in which a graph edge always connects two different classes of vertices,
 such as connecting "items" to "purchasers."

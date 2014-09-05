@@ -66,6 +66,44 @@ Dependencies
 *   `python-bottle <https://pypi.python.org/pypi/bottle>`_ >= 0.12
 *   `python-requests <https://pypi.python.org/pypi/requests>`_ >= 2.2.1
 
+.. ifconfig:: internal_docs
+
+    ------------------- --------------------------- --------------------------- -------------------------
+    Component           Current IAT Version         CDH Version (5.1.0)         Python Version Compatible
+    =================== =========================== =========================== =========================
+    Hadoop              1.2.1                       2.3.0
+    HBase               0.94.12                     0.98.1
+    Yarn                --                          2.3.0
+    ZooKeeper           --                          3.4.5
+    Python              2.6 + 2.7                   2.6 + 2.7
+    Spark               1.0	                        1.0.0
+    Giraph              1.1.0-SNAPSHOT (96968fd)    1.1.0-SNAPSHOT (96968fd)
+    Titan               0.5m1
+    Faunus              0.5m1
+    JDK                 1.7                         1.7
+
+    Python Modules
+    HappyBase           0.7                                                     2.6 + 2.7
+    SciPy               0.13.2                                                  2.6 + 2.7
+    NumPy               1.8.0                                                   2.6 + 2.7
+
+    sympy               0.7.4.1
+    nltk                2.0.4
+    Jinja2              2.7.2
+    tornado             3.2
+    mrjob               0.4.2
+    matplotlib          1.3.1
+    pandas              0.12.0
+    pyzmq               14.0.1
+    pyjavaproperties    0.6
+    mock                1.0.1
+    nose                1.3.0
+    coverage            3.7.1
+    pydoop              0.11.1
+    virtualenv          1.10.1
+    interval            1.0.0
+    ------------------- --------------------------- --------------------------- -------------------------
+
 Intel Analytics Graph Builder
 =============================
 Needs to be installed with the IA rest server
