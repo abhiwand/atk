@@ -27,18 +27,15 @@ This can be done from a shell script, similar to::
 
 This way, from inside Python, it is easy to load the toolkit::
 
-    from intelanalytics import *
+    import intelanalytics as ia
 
-Note:
-    Using the form ``import intelanalytics`` will not function properly.
-    It may not object initially, but there are some things which will not work.
-    To test whether you have imported the toolkit properly type::
+To test whether you have imported the toolkit properly type::
 
-        print valid_data_types
+    print valid_data_types
 
-    You should see something like this::
+You should see something like this::
 
-        float32, float64, int32, int64, str, unicode
+    float32, float64, int32, int64, str, unicode
 
 .. _Importing Data:
 
@@ -392,31 +389,30 @@ Drop any rows where the data matches some previously-implemented evaluation row 
 
     my_frame.drop_duplicates()
  
-.. _example_frame.remove_columns:
+.. _example_frame.drop_columns:
 
-Remove Columns:
+Drop Columns:
 ---------------
 
-Columns can be removed either with a string matching the column name or a list of strings::
+Columns can be dropped either with a string matching the column name or a list of strings::
 
-    my_frame.remove_columns('b')
-    my_frame.remove_columns(['a', 'c'])
+    my_frame.drop_columns('b')
+    my_frame.drop_columns(['a', 'c'])
 
 .. _example_frame.rename_columns:
 
 Rename Columns:
 ---------------
 
-Columns can be renamed by giving the existing column name and the new name,
-or by giving a list of columns and a list of new names.
+Columns can be renamed by giving the existing column name and the new name, in the form of a dictionary.
 
 Rename column *a* to *id*::
 
-    my_frame.rename_columns('a', 'id')
+    my_frame.rename_columns(('a': 'id'))
 
 Rename column *b* to *author* and *c* to *publisher*::
 
-    my_frame.rename_columns(['b', 'c'], ['author', 'publisher'])
+    my_frame.rename_columns(('b': 'author', 'c': 'publisher'))
 
 .. _Transform The Data:
 
@@ -485,12 +481,13 @@ Create multiple columns at once by making a function return a list of values for
 
     my_frame.add_columns(lambda row: [abs(row.a), abs(row.b)], [('a_abs', int32), ('b_abs', int32)])
 
-.. _example_frame.groupby:
+.. _example_frame.group_by:
 
-Groupby (and Aggregate):
-------------------------
+Group_by (and Aggregate):
+-------------------------
 
-Group rows together based on matching column values and then apply :term:`aggregation functions` on each group, producing a **new** frame.
+Group rows together based on matching column values and then apply :term:`aggregation functions` on each group,
+producing a **new** frame.
 
 This needs two parameters:
 
@@ -507,7 +504,7 @@ Aggregation based on columns:
     Average the grouped values in column *d* and save it in a new column *d_avg*;
     Add up the grouped values in column *d* and save it in a new column *d_sum*::
 
-        grouped_data = my_frame.groupby(['a', 'b'], { 'c': [agg.avg, agg.sum, agg.stdev],
+        grouped_data = my_frame.group_by(['a', 'b'], { 'c': [agg.avg, agg.sum, agg.stdev],
             'd': [agg.avg, agg.sum]})
 
     Note:
@@ -532,7 +529,7 @@ Aggregation based on full row:
     Group by unique values in columns *a* and *b*;
     Count the number of rows in each group and put that value in column *count*::
 
-        gr_data = my_frame.groupby(['a', 'b'], agg.count)
+        gr_data = my_frame.group_by(['a', 'b'], agg.count)
 
     Note:
         agg.count is the only full row aggregation function supported at this time
@@ -548,7 +545,7 @@ Aggregation based on both column and row together:
     Average the grouped values in column *d* and save it in a new column *d_avg*;
     Add up the grouped values in column *d* and save it in a new column *d_sum*::
 
-        my_frame.groupby(['a', 'b'], [agg.count, { 'c': [agg.avg, agg.sum, agg.stdev],
+        my_frame.group_by(['a', 'b'], [agg.count, { 'c': [agg.avg, agg.sum, agg.stdev],
             'd': [agg.avg, agg.sum]}])
 
     Supported aggregation functions:
@@ -586,20 +583,20 @@ Aggregation based on both column and row together:
 
     Use a 'stats' builtin to get all the basic statistical calculations::
 
-        f.groupby(['a', 'b'], { 'c': stats, 'd': stats })
-        f.groupby(['a', 'b'], stats)  # on all columns besides the groupby columns
+        f.group_by(['a', 'b'], { 'c': stats, 'd': stats })
+        f.group_by(['a', 'b'], stats)  # on all columns besides the group_by columns
 
-    Use lambdas for custom groupby operations --i.e. first parameter can be a lambda
+    Use lambdas for custom group_by operations --i.e. first parameter can be a lambda
 
     Customer reducers::
 
-        f.groupby(['a', 'b'], ReducerByRow('my_row_lambda_col', lambda acc, row_upd: acc + row_upd.c - row_upd.d))
+        f.group_by(['a', 'b'], ReducerByRow('my_row_lambda_col', lambda acc, row_upd: acc + row_upd.c - row_upd.d))
 
     Produces a frame with 3 columns: ``"a", "b", "my_row_lambda_col"``
 
     Mixed-combo::
 
-        f.groupby(['a', 'b'],
+        f.group_by(['a', 'b'],
                   stats,
                   ReducerByRow('my_row_lambda_col', lambda acc, row_upd: acc + row_upd.c - row_upd.d))
                   { 'c': ReducerByCell('c_fuzz', lambda acc, cell_upd: acc * cell_upd / 2),
@@ -859,65 +856,11 @@ the use of :term:`machine learning` algorithms.
 Similar to what was discussed for BigFrame, what gets returned is not all the data, but a proxy (descriptive pointer) for the data.
 Commands such as g4 = my_graph will only give you a copy of the proxy, pointing to the same graph.
 
-.. TODO:: Remove the remainder of this file if the first part checks out. 
+--------------
+Error Handling
+--------------
 
-    You have imported your data into a frame, cleaned it, corrected the data as necessary,
-    and now you are at the point where you can make a :term:`graph`.
+Examples:
 
-    There are two main steps to :term:`graph` construction.
-    First, you will build a set of rules to describe the transformation from table to :term:`graph`,
-    and then you build it, copying the data into it at that point.
-
-    Building Rules
-
-
-    First make rule objects.
-    These are the criteria for transforming the table data to :term:`graph` data.
-
-    .. _example_graph.vertexrule:
-
-    Vertex Rules
-
-    Make a rule *my_vertex_rule_1* that makes a :term:`vertex` for every row in the frame *my_frame*;
-    give the :term:`vertex` a unique identification property *vid*;
-    assign *vid* the value from column *a*;
-    give the :term:`vertex` a property *x*, with a value from column *b*::
-
-         my_vertex_rule_1 = VertexRule('vid', my_frame['a'], {'x', my_frame['b']})
-
-    Make a rule *my_vertex_rule_2* that makes a :term:`vertex` for every row in the frame *my_frame*;
-    give the :term:`vertex` a unique identification property *yid*;
-    assign *yid* the value from column *c*;
-    give the :term:`vertex` a property *y*, with a value from column *d*::
-
-         my_vertex_rule_2 = VertexRule('yid', my_frame['c'], {'y', my_frame['d']})
-
-    .. _example_graph.edgerule:
-
-    Edge Rules
-
-
-    Edge rules connect the :term:`vertices` in the :term:`graph`.
-
-    Make a rule *my_edge_rule*;
-    assign the rule a label from the values in columns *a*;
-    tell it that it goes from *my_vertex_rule_1* to *my_vertex_rule_2*;
-    give it a propery *z* with a value from column *e*;
-    and tell it that it is a directed edge::
-
-        my_edge_rule = EdgeRule( my_frame['a'] + my_frame['c'], my_vertex_rule_1, my_vertex_rule_2, {'z' : my_frame['e'], True)
-
-    .. _example_graph.biggraph:
-
-    Building A Graph
-
-
-    Now that you have built some rules, let us put them to use and create a :term:`BigGraph` and give it the name *bg*:
-
-        my_graph = BigGraph([my_vertex_rule_1, my_vertex_rule_2, my_edge_rule], 'bg')
-
-    The table database has now been copied into a :term:`BigGraph` object and is ready to be analyzed using the advanced
-    functionality of the :term:`BigGraph` API.
-
-    Similar to what was discussed for BigFrame, what gets returned is not all the data, but a proxy (descriptive pointer) for the data.
-    Commands such as ``g4 = my_graph`` will only give you a copy of the proxy, pointing to the same graph.
+    >>> ia.errors.last  # full exception stack trace and message of the last exception raised at the API layer
+    >>> ia.errors.show_details  # toggle setting to show full stack trace, False by default
