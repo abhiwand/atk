@@ -118,12 +118,12 @@ def get_frame(name):
         raise IaError(logger)
 
 
-@deprecated("Use drop_frame(frame).")
+@deprecated("Use drop_frames(frame).")
 def delete_frame(frame):
-    return drop_frame(frame)
+    return drop_frames(frame)
 
 
-def drop_frame(frame):
+def drop_frames(frame):
     """
     Erases data.
 
@@ -144,7 +144,7 @@ def drop_frame(frame):
     Create a new frame; delete it; print what gets returned from the function::
 
         my_frame = BigFrame(my_csv, 'my_frame')
-        deleted_frame = delete_frame('my_frame')
+        deleted_frame = drop_frames('my_frame')
         print deleted_frame
 
     The result would be::

@@ -110,16 +110,16 @@ def get_graph(name):
 
 @deprecated
 def delete_graph(name):
-    return drop_graph(name)
+    return drop_graphs(name)
 
 
-def drop_graph(name):
+def drop_graphs(graphs):
     """
-    Deletes the graph from backing store.
+    Deletes graphs from backing store.
     
     Parameters
     ----------
-    graph : string or BigGraph
+    graphs : string or BigGraph
         Either the name of the BigGraph object to delete or the BigGraph object itself
         
     Returns
@@ -132,7 +132,7 @@ def drop_graph(name):
     We have these graphs defined: movies, incomes, virus.
     Delete the graph *incomes*::
 
-        my_gone = drop_graph("incomes")
+        my_gone = drop_graphs("incomes")
 
     my_gone is now a string with the value "incomes"
 
@@ -140,7 +140,7 @@ def drop_graph(name):
 
     """
     # TODO - Review docstring
-    return _get_backend().delete_graph(name)
+    return _get_backend().delete_graph(graphs)
 
 
 class RuleWithDifferentFramesError(ValueError):
