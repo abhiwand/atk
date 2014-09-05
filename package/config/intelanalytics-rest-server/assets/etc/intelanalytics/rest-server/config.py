@@ -107,6 +107,13 @@ def get_arg(question, default, arg):
         if arg is None else arg
 
 def get_python_exec():
+    """
+    Get ask the user for the python exec the would like to use.
+
+    :return: string with the python path exec name
+    """
+    return get_arg("What python exec would you like to use? It must be in the path. ", "python", args.python)
+
 
 def select_cluster(clusters, command_line_cluster):
     """
@@ -298,7 +305,7 @@ def restart_service(service):
 
     """
     print "\nYou need to restart " + service.name + " service for the config changes to take affect."
-    service_restart = get_arg("would you like to restart now?", "no", args.restart)
+    service_restart = get_arg("Would you like to restart spark now? Type 'yes' to restart.", "no", args.restart)
     if service_restart is not None and service_restart.strip().lower() == "yes":
         print "Restarting " + service.name,
         service.restart()
@@ -438,7 +445,7 @@ def get_spark_details(services):
     return spark_master_role_hostnames, spark_config_executor_total_max_heapsize, spark_config_master_port
 
 def create_intel_analytics_config( hdfs_host_name, hdfs_namenode_port, zookeeper_host_names, zookeeper_client_port,
-                                   spark_master_host, spark_master_port, spark_worker_memory):
+                                   spark_master_host, spark_master_port, spark_worker_memory, python_exec):
     """
     create a new application.conf file from the tempalte
 
@@ -471,6 +478,9 @@ def create_intel_analytics_config( hdfs_host_name, hdfs_namenode_port, zookeeper
                        'spark.master = "spark://' + spark_master_host[0] + ':' + spark_master_port + '"', config_tpl_text)
     #set spark executor memory
     config_tpl_text = re.sub(r'spark.executor.memory = .*', 'spark.executor.memory = "' + spark_worker_memory + '"', config_tpl_text)
+
+    #set python exec
+    config_tpl_text = re.sub(r'python-worker-exec = .*', 'python-worker-exec = "' + python_exec + '"', config_tpl_text)
 
     print "Writing application.conf"
     config = open(config_file_path, "w")
@@ -527,10 +537,13 @@ if cluster:
     #get spark service details
     spark_master_role_host_names, spark_config_executor_total_max_heapsize, spark_config_master_port = get_spark_details(services)
 
+    #get python exec
+    python_exec = get_python_exec()
+
     #write changes to our config
     create_intel_analytics_config(hdfs_namenode_role_host_names, hdfs_namenode_port, zookeeper_server_role_host_names,
                                   zookeeper_client_port, spark_master_role_host_names, spark_config_master_port,
-                                  spark_config_executor_total_max_heapsize)
+                                  spark_config_executor_total_max_heapsize, python_exec)
 else:
     print "No cluster selected"
     exit(1)
