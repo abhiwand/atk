@@ -1,22 +1,47 @@
 from intelanalytics import *
 
-csv = CsvFile("datasets/lbp_edge.csv", schema= [("source", int64), ("value", str), ("vertex_type", str), ("target", int64) , ("weight", float64)])
+#the default home directory is  hdfs://user/iauser all the sample data sets are saved to hdfs://user/iauser/datasets
+dataset = r"datasets/lbp_edge.csv"
 
-print("Creating DataFrame myframe")
+#csv schema definition
+schema = [("user_id", int64),
+          ("movie_id", int64),
+          ("rating", int64),
+          ("splits", str)]
 
-f = BigFrame(csv, "myframe")
+csv = CsvFile(dataset, schema, skip_header_lines=1)
 
-source = VertexRule("source", f.source, {"vertex_type" : f.vertex_type, "value" : f.value})
+print "Building data frame 'myframe'"
 
-target = VertexRule("target", f.target, {"vertex_type" : f.vertex_type, "value" : f.value})
+frame = BigFrame(csv, "myframe")
 
-edge = EdgeRule("edge", target, source, {'weight': f.weight})
+print "Done building data frame 'myframe'"
 
-print("Creating Graph mygraph")
+print frame.inspect()
 
-g = BigGraph([target, source, edge], "mygraph")
+source = VertexRule("source", frame.source, {"vertex_type" : frame.vertex_type, "value" : frame.value})
 
-print("Running Loopy Belief Propagation on Graph mygraph")
+target = VertexRule("target", frame.target, {"vertex_type" : frame.vertex_type, "value" : frame.value})
 
-g.ml.loopy_belief_propagation(vertex_value_property_list = "value", edge_value_property_list  = "weight", input_edge_label_list = "edge",   output_vertex_property_list = "lbp_posterior",   vertex_type_property_key = "vertex_type",  vector_value = "true",    max_supersteps = 10,   convergence_threshold = 0.0, anchor_threshold = 0.9, smoothing = 2.0, bidirectional_check = False,  ignore_vertex_type = False, max_product= False, power = 0)
- 
+edge = EdgeRule("edge", target, source, {'weight': frame.weight})
+
+print "Creating Graph 'mygraph'"
+
+graph = BigGraph([target, source, edge], "mygraph")
+
+print "Running Loopy Belief Propagation on Graph mygraph"
+
+print graph.ml.loopy_belief_propagation(vertex_value_property_list="value",
+                                        edge_value_property_list="weight",
+                                        input_edge_label_list="edge",
+                                        output_vertex_property_list="lbp_posterior",
+                                        vertex_type_property_key="vertex_type",
+                                        vector_value="true",
+                                        max_supersteps=10,
+                                        convergence_threshold=0.0,
+                                        anchor_threshold=0.9,
+                                        smoothing=2.0,
+                                        bidirectional_check=False,
+                                        ignore_vertex_type=False,
+                                        max_product=False,
+                                        power=0)

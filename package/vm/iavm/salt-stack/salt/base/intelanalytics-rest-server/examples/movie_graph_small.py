@@ -1,24 +1,26 @@
 from intelanalytics import *
 
-dataset = "datasets/movie_data_random.csv"
+#the default home directory is  hdfs://user/iauser all the sample data sets are saved to hdfs://user/iauser/datasets
+dataset = r"datasets/movie_data_random.csv"
 
 #csv schema definition
 schema = [("user_id", int32),
-          ("vertex_type", str),
           ("movie_id", int32),
           ("rating", int32),
           ("splits", str)]
 
-print "Defining the params"
 csv_file = CsvFile(dataset, schema, skip_header_lines=1)
 
-print "building frame"
+print "Building data frame"
+
 frame = BigFrame(csv_file)
-print "Done building frame!"
+
+print "Done building frame"
 
 print frame.inspect()
 
-print "filter frame by rating"
+print "Filter frame by rating"
+
 frame.filter(lambda row: row.rating >= 5)
 
 print frame.inspect()

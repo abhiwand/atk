@@ -1,21 +1,37 @@
 from intelanalytics import *
 
+#the default home directory is  hdfs://user/iauser all the sample data sets are saved to hdfs://user/iauser/datasets
 dataset = r"datasets/test_lda.csv"
 
-schema = [("doc", str), ("vertex_type", str), ("word", str), ("word_count", int64)]
+#csv schema definition
+schema = [("doc", str),
+          ("vertex_type", str),
+          ("word", str),
+          ("word_count", int64)]
 
-csv_file = CsvFile(dataset, schema, skip_header_lines = 0)
+csv_file = CsvFile(dataset, schema, skip_header_lines=1)
 
-f = BigFrame(csv_file)
+print "Building data frame"
 
-f.inspect()
+frame = BigFrame(csv_file)
 
-doc = VertexRule("doc", f.doc, { "vertex_type": "L"})
+print "Done building data frame"
 
-word = VertexRule("word", f.word, { "vertex_type": "R"})
+print frame.inspect()
 
-contains = EdgeRule("contains", doc, word, { "word_count": f.word_count })
+doc = VertexRule("doc", frame.doc, {"vertex_type": "L"})
 
-g = BigGraph([doc, word, contains] ,"lda")
+word = VertexRule("word", frame.word, {"vertex_type": "R"})
 
-g.ml.latent_dirichlet_allocation(edge_value_property_list = "word_count", vertex_type_property_key = "vertex_type", input_edge_label_list = "contains", output_vertex_property_list = "lda_result ", vector_value = "true", num_topics = 3)
+contains = EdgeRule("contains", doc, word, {"word_count": frame.word_count})
+
+print "Create graph 'lda'"
+graph = BigGraph([doc, word, contains], "lda")
+
+print "Running Latent Dirichlet Allocation on graph 'lda' "
+print graph.ml.latent_dirichlet_allocation(edge_value_property_list="word_count",
+                                           vertex_type_property_key="vertex_type",
+                                           input_edge_label_list="contains",
+                                           output_vertex_property_list="lda_result ",
+                                           vector_value="true",
+                                           num_topics=3)
