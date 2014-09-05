@@ -291,9 +291,9 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     }
   }
 
-  def getFrames(offset: Int, count: Int)(implicit p: UserPrincipal): Future[Seq[DataFrame]] = withContext("se.getFrames") {
+  def getFrames()(implicit p: UserPrincipal): Future[Seq[DataFrame]] = withContext("se.getFrames") {
     future {
-      frames.getFrames(offset, count)
+      frames.getFrames()
     }
   }
 
@@ -545,7 +545,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
   }
 
   /**
-   * Persists a PythonRDD after python computation is complete to HDFS 
+   * Persists a PythonRDD after python computation is complete to HDFS
    *
    * @param dataFrame DataFrame associated with this RDD
    * @param pyRdd PythonRDD instance

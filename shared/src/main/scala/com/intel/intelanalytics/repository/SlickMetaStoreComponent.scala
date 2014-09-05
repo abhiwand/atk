@@ -443,6 +443,10 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
       _insertFrame(frame)(session)
     }
 
+    def scanAll()(implicit session: Session): Seq[DataFrame] = {
+      frames.drop(0).list
+    }
+
     override def scan(offset: Int = 0, count: Int = defaultScanCount)(implicit session: Session): Seq[DataFrame] = {
       frames.drop(offset).take(count).list
     }

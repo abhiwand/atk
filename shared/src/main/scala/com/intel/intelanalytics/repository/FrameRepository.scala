@@ -38,4 +38,11 @@ trait FrameRepository[Session] extends Repository[Session, DataFrameTemplate, Da
   def updateErrorFrameId(frame: DataFrame, errorFrameId: Option[Long])(implicit session: Session): DataFrame
 
   def updateRevision(frame: DataFrame, revision: Int)(implicit session: Session): DataFrame
+
+  /**
+   * Return all the frames
+   * @param session current session
+   * @return all the dataframes
+   */
+  def scanAll()(implicit session: Session): Seq[DataFrame]
 }

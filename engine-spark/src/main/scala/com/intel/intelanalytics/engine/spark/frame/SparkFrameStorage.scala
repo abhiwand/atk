@@ -275,11 +275,11 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
     }
   }
 
-  override def getFrames(offset: Int, count: Int)(implicit user: UserPrincipal): Seq[DataFrame] = {
+  override def getFrames()(implicit user: UserPrincipal): Seq[DataFrame] = {
     metaStore.withSession("frame.getFrames") {
       implicit session =>
         {
-          metaStore.frameRepo.scan(offset, count)
+          metaStore.frameRepo.scanAll()
         }
     }
   }
