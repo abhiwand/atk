@@ -40,6 +40,8 @@ Note:
 
         float32, float64, int32, int64, str, unicode
 
+.. _Importing Data:
+
 --------------
 Importing Data
 --------------
@@ -314,6 +316,8 @@ To create a new frame using the existing frame, use .take()::
  
 Here, we've created a frame of 10 rows, beginning at row 200, from the frame accessed by *my_frame*.
 
+.. _Clean The Data:
+
 Clean The Data
 ==============
 
@@ -413,6 +417,8 @@ Rename column *a* to *id*::
 Rename column *b* to *author* and *c* to *publisher*::
 
     my_frame.rename_columns(['b', 'c'], ['author', 'publisher'])
+
+.. _Transform The Data:
 
 Transform The Data
 ==================
