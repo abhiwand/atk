@@ -108,7 +108,7 @@ def get_graph(name):
     return _get_backend().get_graph(name)
 
 
-@deprecated
+@deprecated("use drop_graphs")
 def delete_graph(name):
     return drop_graphs(name)
 
