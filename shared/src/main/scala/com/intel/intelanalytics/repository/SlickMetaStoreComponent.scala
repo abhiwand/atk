@@ -681,7 +681,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
    */
   class SlickGraphRepository extends GraphRepository[Session]
       with EventLogging {
-    this: GraphRepository[Session] =>
+    this: Repository[Session, GraphTemplate, Graph] =>
 
     class GraphTable(tag: Tag) extends Table[Graph](tag, "graph") {
       def id = column[Long]("graph_id", O.PrimaryKey, O.AutoInc)
