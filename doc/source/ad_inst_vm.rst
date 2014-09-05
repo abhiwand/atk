@@ -38,7 +38,7 @@ Note:
 
 The VM image is downloaded from AWS.
 The download will require that you have the AWS Command Line Interface (CLI) client on your system.
-Instructions for downloading and installing can be found at `Amazon cli documentation <http://docs.aws.amazon.com/cli/latest/userguide/installing.html]>`.
+Instructions for downloading and installing can be found at `Amazon cli documentation <http://docs.aws.amazon.com/cli/latest/userguide/installing.html>`_.
 
 After installing the interface you can verify the installation by running::
 
