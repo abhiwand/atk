@@ -110,7 +110,7 @@ def get_graph(name):
 
 @deprecated
 def delete_graph(name):
-    drop_graph(name)
+    return drop_graph(name)
 
 
 def drop_graph(name):

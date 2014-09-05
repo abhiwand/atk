@@ -120,7 +120,7 @@ def get_frame(name):
 
 @deprecated("Use drop_frame(frame).")
 def delete_frame(frame):
-    drop_frame(frame)
+    return drop_frame(frame)
 
 
 def drop_frame(frame):
@@ -736,7 +736,7 @@ class BigFrame(command_loadable):
 
     @deprecated("Use quantiles().")
     def calculate_percentiles(self, column_name, percentiles):
-        self.quantiles(column_name, percentiles)
+        return self.quantiles(column_name, percentiles)
 
     def quantiles(self, column_name, quantiles):
         """
@@ -1406,7 +1406,7 @@ class BigFrame(command_loadable):
 
     @deprecated("use group_by() with an underscore.")
     def groupby(self, group_by_columns, *aggregation_arguments):
-        self.group_by(group_by_columns, *aggregation_arguments)
+        return self.group_by(group_by_columns, *aggregation_arguments)
 
     def group_by(self, group_by_columns, *aggregation_arguments):
         """
@@ -1790,7 +1790,7 @@ class BigFrame(command_loadable):
 
     @deprecated("Use drop_columns() instead.")
     def remove_columns(self, column_names):
-        self.drop_columns(column_names)
+        return self.drop_columns(column_names)
 
     def rename_columns(self, column_names, new_names=None):
         """
