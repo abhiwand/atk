@@ -1,25 +1,41 @@
 from intelanalytics import *
 
+#the default home directory is  hdfs://user/iauser all the sample data sets are saved to hdfs://user/iauser/datasets
 dataset = r"datasets/movie_data_random.csv"
 
-schema = [("user_id", int32), ("direction", str), ("movie_id", int32), ("rating", int32), ("splits", str)]
+#csv schema definition
+schema = [("user_id", int32),
+          ("movie_id", int32),
+          ("rating", int32),
+          ("splits", str)]
 
-csv_file = CsvFile(dataset, schema, skip_header_lines = 0)
+csv_file = CsvFile(dataset, schema, skip_header_lines=1)
 
-print("Creating DataFrame")
+print "Building data frame"
 
-f = BigFrame(csv_file)
+frame = BigFrame(csv_file)
 
-user = VertexRule("user_id", f.user_id, { "vertex_type": "L"})
+print "Done building data frame"
 
-movie = VertexRule("movie_id", f.movie_id, { "vertex_type": "R"})
+print frame.inspect()
 
-rates = EdgeRule("edge", user, movie, { "splits": f.splits,"rating":f.rating })
+user = VertexRule("user_id", frame.user_id, { "vertex_type": "L"})
 
-print("Creating Graph cgd")
+movie = VertexRule("movie_id", frame.movie_id, { "vertex_type": "R"})
 
-g = BigGraph([user, movie, rates] ,"cgd")
+rates = EdgeRule("edge", user, movie, { "splits": frame.splits, "rating": frame.rating })
 
-print("Running Conjugate Gradient Descent on Graph cgd")
+print "Creating Graph cgd"
 
-print g.ml.conjugate_gradient_descent(edge_value_property_list = "rating", vertex_type_property_key = "vertex_type", input_edge_label_list = "edge", output_vertex_property_list = "cgd_result ", edge_type_property_key = "splits",vector_value = "true",cgd_lambda = 0.065, num_iters = 3)
+graph = BigGraph([user, movie, rates] ,"cgd")
+
+print "Running Conjugate Gradient Descent on Graph cgd"
+
+print graph.ml.conjugate_gradient_descent(edge_value_property_list="rating",
+                                          vertex_type_property_key="vertex_type",
+                                          input_edge_label_list="edge",
+                                          output_vertex_property_list="cgd_result ",
+                                          edge_type_property_key="splits",
+                                          vector_value="true",
+                                          cgd_lambda=0.065,
+                                          num_iters=3)
