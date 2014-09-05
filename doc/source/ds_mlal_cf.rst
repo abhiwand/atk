@@ -17,35 +17,31 @@ A typical representation of the preference matrix P in Giraph is a bi-partite gr
 users and nodes at the right side represent a set of items (for example, movies), and edges encode the rating a user provided to an item.
 To support training, validation and test, a common practice in machine learning, each edge is also annotated by “TR”, “VA” or “TE”.  
 
-.. image:: ds_mlal_cf_1.png
-   :align: center
-   :width: 80 %
+.. figure:: ds_mlal_cf_1.*
+    :align: center
+    :scale: 80 %
+    
+    A typical representation of the preference matrix P
 
 Each node in the graph will be associated with a vector :math:`\textstyle \overrightarrow {f_x}` of length :math:`k`, where :math:`k`
 is the feature dimension specified by the user, and a bias term :math:`b_x`.
-ALS optimizes :math:`\textstyle \overrightarrow {f_x}` and :math:`b_x` alternatively between user profiles using least
-squares on users and on items.
-At each step, the total prediction error for each item or user is computed and the bias term for that item or user is recomputed for use in
-the next iteration:
+The predictions for item :math:`m_{j}`, from user :math:`u_{i}` care given by dot product of the feature vector and the user vector,
+plus the item and user bias terms:
 
 .. math::
 
-    b = \frac {\sum error}{(1 + \lambda) * n}
+    r_{ij} = \overrightarrow {f_{ui}} \cdot \overrightarrow {f_{mj}} + b_{ui} + b_{mj}
 
-At each step, the regularized cost function that is minimized is:
+The parameters of the above equation are chosen to minimize the regularized mean squared error between known and predicted ratings:
 
 .. math::
 
     cost = \frac {\sum error^2} {n} + \lambda * \left( bias^2 + \sum f_k^2 \right)
 
-Note that the equations above omit user and item subscripts for generality.
-The regularization term, :math:`\lambda`, tries to avoid overfitting by penalizing the magnitudes of the parameters.
-After the parameters :math:`\textstyle \overrightarrow {f_x}` and :math:`b_x` are determined, given an item :math:`m_j`,
-the rating from user :math:`u_i` can be predicted by a simple linear model:
-
-.. math::
-
-    r_{ij} = \overrightarrow {f_{ui}} \cdot \overrightarrow {f_{mj}} + b_{ui} + b_{mj}
+How this optimization is accomplished depends on whether the use uses the ALS or CGD functions respectively.
+It is recommended that the ALS method be used to solve collaborative filtering problems.
+The CGD method uses less memory than ALS, but it returns an approximate solution to the objective function and 
+should only be used in cases when memory required for ALS is prohibitively high.
 
 
 .. _Factorization Meets the Neighborhood\: a Multifaceted Collaborative Filtering Model: http://public.research.att.com/~volinsky/netflix/kdd08koren.pdf
