@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 ## The primary purpose of this script file is to allow the Sphinx-Build program
 # to build in python 2.7 on a RedHat distribution of Linux. RedHat needs
@@ -8,7 +8,8 @@
 # Running on Ubuntu, we don't need virtpy because Ubuntu is awesome!
 UBUNTU_OS=$(cat /etc/*-release | grep -i ubuntu)
 
-# Subroutines
+# Give the filename of the list of people with ability to load python packages
+TECHWRITERS=techwriters
 
 # Look for help
 echo "/$1/$2/$3/$4/$5/$6/$7/$8/$9/" | grep -i -e "/-h/" -e "/--help/" > /dev/null
@@ -19,17 +20,18 @@ if [ $? == 0 ]; then
     echo "-h, --help: Print this and exit"
     echo "-e:         Do not erase previous compilation"
     if [ "$UBUNTU_OS" == "" ]; then
-        echo "-f, --force:Allow compile without virtual environment"
+        echo "-f, --force:Attempt compile without virtual environment"
     fi
-    echo "zip:        Do a zip of build directory"
     echo "html:       Compile to html"
     echo "latex:      Compile to LaTeX"
     echo "pdf:        Compile to pdf"
+    echo "text:       Compile to text"
+    echo "zip:        Do a zip of build directory"
     echo "packages:   Check for installed packages"
     echo
     echo "By default, file builds will erase previous files first. For example,"
     echo "if html is called for, this will delete the existing html files first."
-    exit 0
+    echo
 fi
 
 # This is stupid, but sometimes numpy chokes on these files.
@@ -60,19 +62,21 @@ if [ "$UBUNTU_OS" == "" ]; then
             exit 1
         fi
     fi
+else
+    USERNAME=$LOGNAME
 fi
 
 # Look for packages if the individual is a techwriter
 echo "/$1/$2/$3/$4/$5/$6/$7/$8/$9/" | grep -i "/packages/" > /dev/null
 if [ $? == 0 ]; then
     # Yes for "packages", check for permissions
-    if [ -f techwriters ]; then
-        echo $USERNAME | grep --file=techwriters > /dev/null
+    if [ -f $SCRIPTPATH/$TECHWRITERS ]; then
+        echo $USERNAME | grep -f $SCRIPTPATH/$TECHWRITERS > /dev/null
         if [ $? == 0 ]; then
             clear
-            echo Check the installed packages and insure they are complete.
+            echo Checking the installed packages and insure they are complete.
             # The packages need superuser rights to install properly.
-            sudo $SCRIPTPATH/install_packages.sh
+            sudo -E $SCRIPTPATH/install_packages.sh
             if [ $? == 0 ]; then
                 exit 1
             fi
@@ -117,6 +121,9 @@ if [ $? == 0 ]; then
     fi
     # Ignore all toctree warnings.
     make -B html 2>&1 | grep -v -f toctreeWarnings
+    if [[ ! -d build/html/_downloads ]]; then
+        mkdir build/html/_downloads
+    fi
     if [[ -f build/latex/IntelAnalytics.pdf ]]; then
         cp build/latex/IntelAnalytics.pdf build/html/_downloads/
     fi
@@ -133,7 +140,7 @@ if [ $? == 0 ]; then
             make
             cd ../..
             if [[ -f build/latex/IntelAnalytics.pdf ]]; then
-                if [[ -d build/html ]]; then
+                if [[ -d build/html/_downloads ]]; then
                     cp build/latex/IntelAnalytics.pdf build/html/_downloads/
                 fi
             fi
@@ -143,7 +150,7 @@ fi
 
 
 echo "/$1/$2/$3/$4/$5/$6/$7/$8/$9/" | grep -i -e "/zip/" > /dev/null
-if [ $? == 1 ]; then
+if [ $? == 0 ]; then
     echo Zipping Results...
     zip -q -9 -r intel_analytics_docs build/*
 fi
