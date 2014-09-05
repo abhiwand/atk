@@ -94,20 +94,26 @@ environment (where you want your data to persist between restarts).
         insert into users (username, API_key, created_on, modified_on)
             values( 'metastore', 'test_API_key_1', now(), now() )
 
+.. ifconfig:: internal_docs
+
+    If you are running PostgreSQL, you will see this error after upgrading to the latest sprint_18 code,
+
+    Caused by: org.flywaydb.core.api.FlywayException: Validate failed. Found differences between applied migrations and available migrations: Migration Checksum mismatch for migration V1__Initial_version_for_0.8.sql: DB=-1027169045, Classpath=-781393732
+
+    You will need to drop and re-create your metastore to get around this issue.  Instructions `here <:doc: ad_psql_cs.rst>`.
+    
+
 -------------
 Related Pages
 -------------
 
-:doc: ad_inst.rst
+:doc:`ad_psql_cs`
 
-:doc: ad_psql_cs.rst
+.. toctree::
+    :hidden:
+    :maxdepth: 1
+    
+    ad_psql_cs
 
-[GAO:Setting up Tribeca in CDH5]
-
-.. ifconfig:: internal_docs
-
-    * [GAO:IntelliJ Setup]
-    * [GAO:Proxy Settings]
 
 .. _PostgreSQL: http://www.postgresql.org
-.. _`Postman REST client`: https://chrome.google.com/webstore/detail/postman-rest-client/fdmmgilgnpjigdojojpjoooidkmcomcm?hl=en
