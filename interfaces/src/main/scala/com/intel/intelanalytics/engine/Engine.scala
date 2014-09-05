@@ -146,7 +146,10 @@ trait Engine {
 
   def deleteGraph(graph: Graph): Future[Unit]
 
-  def cumulativeDist(arguments: CumulativeDist[Long])(implicit user: UserPrincipal): Execution
+  def cum_sum(arguments: CumulativeSum)(implicit user: UserPrincipal): Execution
+  def cum_percent(arguments: CumulativePercentSum)(implicit user: UserPrincipal): Execution
+  def tally(arguments: CumulativeCount)(implicit user: UserPrincipal): Execution
+  def tally_percent(arguments: CumulativePercentCount)(implicit user: UserPrincipal): Execution
 
   // Model performance measures
 

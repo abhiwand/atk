@@ -23,16 +23,16 @@
 
 package com.intel.intelanalytics.domain.frame
 
-case class ClassificationMetric(frame: FrameReference, metricType: String, labelColumn: String, predColumn: String, posLabel: String, beta: Double) {
-  require(frame != null, "ClassificationMetric requires a non-null dataframe.")
-  require(metricType.equals("accuracy") ||
-    metricType.equals("precision") ||
-    metricType.equals("recall") ||
-    metricType.equals("fmeasure"), "valid metric type is required")
-  require(labelColumn != null && !labelColumn.equals(""), "label column is required")
-  require(predColumn != null && !predColumn.equals(""), "predict column is required")
-  require(posLabel != null && !posLabel.equals(""), "invalid positive label")
-  require(beta > 0, "invalid beta value for f measure")
-}
+/**
+ * Represents a CumulativeCount object
+ *
+ * @param sampleCol name of the column from which to compute a cumulative distribution
+ * @param frame
+ * @param countVal
+ */
 
-case class ClassificationMetricValue(metricValue: Double)
+case class CumulativeCount(frame: FrameReference, sampleCol: String, countVal: String) {
+  require(frame != null, "frame is required")
+  require(sampleCol != null, "column name for sample is required")
+  require(countVal != null, "")
+}
