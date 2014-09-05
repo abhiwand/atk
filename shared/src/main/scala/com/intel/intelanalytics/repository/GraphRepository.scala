@@ -21,30 +21,18 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.engine
+package com.intel.intelanalytics.repository
 
-import com.intel.intelanalytics.domain.graph.{ Graph, GraphLoad, GraphTemplate }
-import com.intel.intelanalytics.security.UserPrincipal
-import spray.json.JsObject
-import com.intel.intelanalytics.engine.plugin.Invocation
+import com.intel.intelanalytics.domain.graph.{ Graph, GraphTemplate }
 
 /**
- * Manages multiple graphs in the underlying graph database.
+ * Repository for graphs
  */
-trait GraphStorage {
-
-  def lookup(id: Long): Option[Graph]
-
-  def createGraph(graph: GraphTemplate)(implicit user: UserPrincipal): Graph
-
-  def renameGraph(graph: Graph, newName: String): Graph
-
-  def loadGraph(graph: GraphLoad, invocation: Invocation)(implicit user: UserPrincipal): Graph
-
-  def drop(graph: Graph)
-
-  def getGraphs()(implicit user: UserPrincipal): Seq[Graph]
-
-  def getGraphByName(name: String)(implicit user: UserPrincipal): Option[Graph]
-
+trait GraphRepository[Session] extends Repository[Session, GraphTemplate, Graph] {
+  /**
+   * Return all the graphs
+   * @param session current session
+   * @return all the graphs
+   */
+  def scanAll()(implicit session: Session): Seq[Graph]
 }
