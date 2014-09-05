@@ -112,7 +112,7 @@ def get_python_exec():
 
     :return: string with the python path exec name
     """
-    return get_arg("What python exec would you like to use? It must be in the path. ", "python", args.python)
+    return get_arg("What python executable would you like to use? It must be in the path. ", "python", args.python)
 
 
 def select_cluster(clusters, command_line_cluster):
@@ -477,7 +477,7 @@ def create_intel_analytics_config( hdfs_host_name, hdfs_namenode_port, zookeeper
     config_tpl_text = re.sub(r'spark.master = .*',
                        'spark.master = "spark://' + spark_master_host[0] + ':' + spark_master_port + '"', config_tpl_text)
     #set spark executor memory
-    config_tpl_text = re.sub(r'spark.executor.memory = .*', 'spark.executor.memory = "' + spark_worker_memory + '"', config_tpl_text)
+    config_tpl_text = re.sub(r'[/]*spark.executor.memory = .*', 'spark.executor.memory = "' + spark_worker_memory + '"', config_tpl_text)
 
     #set python exec
     config_tpl_text = re.sub(r'python-worker-exec = .*', 'python-worker-exec = "' + python_exec + '"', config_tpl_text)
