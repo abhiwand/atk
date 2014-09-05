@@ -1654,9 +1654,9 @@ class SparkEngine(sparkContextManager: SparkContextManager,
 
     val sampleIndex = realFrame.schema.columnIndex(arguments.sampleCol)
 
-    val newFrame = Await.result(create(DataFrameTemplate(arguments.frame.name, None)), SparkEngineConfig.defaultTimeout)
+    val newFrame = Await.result(create(DataFrameTemplate(realFrame.name, None)), SparkEngineConfig.defaultTimeout)
 
-    val (cumulativeDistRdd, columnName) = CumulativeDistFunctions.cumulativePercentCount(frameRdd, sampleIndex)
+    val (cumulativeDistRdd, columnName) = CumulativeDistFunctions.cumulativePercentCount(frameRdd, sampleIndex, arguments.countValue)
 
     val frameSchema = realFrame.schema
     val allColumns = frameSchema.columns :+ (arguments.sampleCol + columnName, DataTypes.float64)
@@ -1733,9 +1733,9 @@ class SparkEngine(sparkContextManager: SparkContextManager,
 
     val sampleIndex = realFrame.schema.columnIndex(arguments.sampleCol)
 
-    val newFrame = Await.result(create(DataFrameTemplate(arguments.frame.name, None)), SparkEngineConfig.defaultTimeout)
+    val newFrame = Await.result(create(DataFrameTemplate(realFrame.name, None)), SparkEngineConfig.defaultTimeout)
 
-    val (cumulativeDistRdd, columnName) = CumulativeDistFunctions.cumulativeCount(frameRdd, sampleIndex)
+    val (cumulativeDistRdd, columnName) = CumulativeDistFunctions.cumulativeCount(frameRdd, sampleIndex, arguments.countValue)
 
     val frameSchema = realFrame.schema
     val allColumns = frameSchema.columns :+ (arguments.sampleCol + columnName, DataTypes.float64)
@@ -1815,7 +1815,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
 
     val sampleIndex = realFrame.schema.columnIndex(arguments.sampleCol)
 
-    val newFrame = Await.result(create(DataFrameTemplate(arguments.frame.name, None)), SparkEngineConfig.defaultTimeout)
+    val newFrame = Await.result(create(DataFrameTemplate(realFrame.name, None)), SparkEngineConfig.defaultTimeout)
 
     val (cumulativeDistRdd, columnName) = CumulativeDistFunctions.cumulativePercentSum(frameRdd, sampleIndex)
 
@@ -1896,7 +1896,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
 
     val sampleIndex = realFrame.schema.columnIndex(arguments.sampleCol)
 
-    val newFrame = Await.result(create(DataFrameTemplate(arguments.frame.name, None)), SparkEngineConfig.defaultTimeout)
+    val newFrame = Await.result(create(DataFrameTemplate(realFrame.name, None)), SparkEngineConfig.defaultTimeout)
 
     val (cumulativeDistRdd, columnName) = CumulativeDistFunctions.cumulativeSum(frameRdd, sampleIndex)
 
