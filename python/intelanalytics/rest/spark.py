@@ -42,11 +42,7 @@ from serializers import PickleSerializer, BatchedSerializer, UTF8Deserializer, C
 from intelanalytics.core.row import Row
 from intelanalytics.core.iatypes import valid_data_types
 
-try:
-    import simplejson as json
-except ImportError:
-    import json
-
+import json
 
 
 def get_add_one_column_function(row_function, data_type):
