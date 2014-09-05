@@ -70,7 +70,7 @@ trait MetaStore {
   def frameRepo: FrameRepository[Session]
 
   /** Repository for CRUD on 'graph' table */
-  def graphRepo: Repository[Session, GraphTemplate, Graph]
+  def graphRepo: GraphRepository[Session]
 
   /** Repository for CRUD on 'command' table */
   def commandRepo: CommandRepository[Session]

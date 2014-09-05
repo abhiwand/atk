@@ -157,7 +157,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
 
     override lazy val statusRepo: Repository[Session, Status, Status] = new SlickStatusRepository
 
-    override lazy val graphRepo: Repository[Session, GraphTemplate, Graph] = new SlickGraphRepository
+    override lazy val graphRepo: GraphRepository[Session] = new SlickGraphRepository
 
     override lazy val frameRepo: FrameRepository[Session] = new SlickFrameRepository
 
@@ -443,7 +443,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
       _insertFrame(frame)(session)
     }
 
-    def scanAll()(implicit session: Session): Seq[DataFrame] = {
+    override def scanAll()(implicit session: Session): Seq[DataFrame] = {
       frames.drop(0).list
     }
 
@@ -679,9 +679,9 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
    * think that would be helpful but beware: That sort of thing mutates as the graph evolves so keeping it current
    * will require tracking.
    */
-  class SlickGraphRepository extends Repository[Session, GraphTemplate, Graph]
+  class SlickGraphRepository extends GraphRepository[Session]
       with EventLogging {
-    this: Repository[Session, GraphTemplate, Graph] =>
+    this: GraphRepository[Session] =>
 
     class GraphTable(tag: Tag) extends Table[Graph](tag, "graph") {
       def id = column[Long]("graph_id", O.PrimaryKey, O.AutoInc)
@@ -740,6 +740,10 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
 
     override def scan(offset: Int = 0, count: Int = defaultScanCount)(implicit session: Session): Seq[Graph] = {
       graphs.drop(offset).take(count).list
+    }
+
+    override def scanAll()(implicit session: Session): Seq[Graph] = {
+      graphs.drop(0).list
     }
 
     override def lookup(id: Long)(implicit session: Session): Option[Graph] = {

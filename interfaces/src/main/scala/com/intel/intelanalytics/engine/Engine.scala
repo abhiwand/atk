@@ -134,7 +134,7 @@ trait Engine {
 
   def getGraph(id: Identifier): Future[Graph]
 
-  def getGraphs(offset: Int, count: Int)(implicit user: UserPrincipal): Future[Seq[Graph]]
+  def getGraphs()(implicit user: UserPrincipal): Future[Seq[Graph]]
 
   def getGraphByName(name: String)(implicit user: UserPrincipal): Future[Option[Graph]]
 
