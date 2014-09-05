@@ -1656,7 +1656,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
 
     val newFrame = Await.result(create(DataFrameTemplate(realFrame.name, None)), SparkEngineConfig.defaultTimeout)
 
-    val (cumulativeDistRdd, columnName) = CumulativeDistFunctions.cumulativePercentCount(frameRdd, sampleIndex, arguments.countValue)
+    val (cumulativeDistRdd, columnName) = (CumulativeDistFunctions.cumulativePercentCount(frameRdd, sampleIndex, arguments.countVal), "_cumulative_percent_count")
 
     val frameSchema = realFrame.schema
     val allColumns = frameSchema.columns :+ (arguments.sampleCol + columnName, DataTypes.float64)
@@ -1735,7 +1735,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
 
     val newFrame = Await.result(create(DataFrameTemplate(realFrame.name, None)), SparkEngineConfig.defaultTimeout)
 
-    val (cumulativeDistRdd, columnName) = CumulativeDistFunctions.cumulativeCount(frameRdd, sampleIndex, arguments.countValue)
+    val (cumulativeDistRdd, columnName) = (CumulativeDistFunctions.cumulativeCount(frameRdd, sampleIndex, arguments.countVal), "_cumulative_count")
 
     val frameSchema = realFrame.schema
     val allColumns = frameSchema.columns :+ (arguments.sampleCol + columnName, DataTypes.float64)
@@ -1803,8 +1803,8 @@ class SparkEngine(sparkContextManager: SparkContextManager,
           2 1.0
 
       ..versionadded :: 0.8 """))
-  val cumulativePercentSumCommand = commandPluginRegistry.registerCommand("dataframe/cum_percent", cumulativeDistPercentSimple _, doc = Some(cumPercentDoc))
-  def cumulativeDistSimple(arguments: CumulativePercentSum, user: UserPrincipal, invocation: SparkInvocation) = {
+  val cumulativePercentSumCommand = commandPluginRegistry.registerCommand("dataframe/cum_percent", cumulativePercentSumSimple _, doc = Some(cumPercentDoc))
+  def cumulativePercentSumSimple(arguments: CumulativePercentSum, user: UserPrincipal, invocation: SparkInvocation) = {
     implicit val u = user
     val frameId = arguments.frame.id
     val realFrame = expectFrame(frameId)
@@ -1817,7 +1817,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
 
     val newFrame = Await.result(create(DataFrameTemplate(realFrame.name, None)), SparkEngineConfig.defaultTimeout)
 
-    val (cumulativeDistRdd, columnName) = CumulativeDistFunctions.cumulativePercentSum(frameRdd, sampleIndex)
+    val (cumulativeDistRdd, columnName) = (CumulativeDistFunctions.cumulativePercentSum(frameRdd, sampleIndex), "_cumulative_percent_sum")
 
     val frameSchema = realFrame.schema
     val allColumns = frameSchema.columns :+ (arguments.sampleCol + columnName, DataTypes.float64)
@@ -1884,8 +1884,8 @@ class SparkEngine(sparkContextManager: SparkContextManager,
                2                     6
 
         .. versionadded:: 0.8 """))
-  val cumulativeSumCommand = commandPluginRegistry.registerCommand("dataframe/cum_sum", cumulativeDistSimple _, doc = Some(cumSumDoc))
-  def cumulativeDistSimple(arguments: CumulativeSum, user: UserPrincipal, invocation: SparkInvocation) = {
+  val cumulativeSumCommand = commandPluginRegistry.registerCommand("dataframe/cum_sum", cumulativeSumSimple _, doc = Some(cumSumDoc))
+  def cumulativeSumSimple(arguments: CumulativeSum, user: UserPrincipal, invocation: SparkInvocation) = {
     implicit val u = user
     val frameId = arguments.frame.id
     val realFrame = expectFrame(frameId)
@@ -1898,7 +1898,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
 
     val newFrame = Await.result(create(DataFrameTemplate(realFrame.name, None)), SparkEngineConfig.defaultTimeout)
 
-    val (cumulativeDistRdd, columnName) = CumulativeDistFunctions.cumulativeSum(frameRdd, sampleIndex)
+    val (cumulativeDistRdd, columnName) = (CumulativeDistFunctions.cumulativeSum(frameRdd, sampleIndex), "_cumulative_sum")
 
     val frameSchema = realFrame.schema
     val allColumns = frameSchema.columns :+ (arguments.sampleCol + columnName, DataTypes.float64)
