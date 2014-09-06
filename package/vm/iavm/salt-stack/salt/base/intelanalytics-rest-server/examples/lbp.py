@@ -4,10 +4,11 @@ from intelanalytics import *
 dataset = r"datasets/lbp_edge.csv"
 
 #csv schema definition
-schema = [("user_id", int64),
-          ("movie_id", int64),
-          ("rating", int64),
-          ("splits", str)]
+schema = [("source", int64),
+          ("value", str),
+          ("vertex_type", str),
+          ("target", int64),
+          ("weight", float64)]
 
 csv = CsvFile(dataset, schema, skip_header_lines=1)
 
@@ -17,11 +18,13 @@ frame = BigFrame(csv, "myframe")
 
 print "Done building data frame 'myframe'"
 
+print "Inspecting frame 'myframe'"
+
 print frame.inspect()
 
-source = VertexRule("source", frame.source, {"vertex_type" : frame.vertex_type, "value" : frame.value})
+source = VertexRule("source", frame.source, {"vertex_type": frame.vertex_type, "value": frame.value})
 
-target = VertexRule("target", frame.target, {"vertex_type" : frame.vertex_type, "value" : frame.value})
+target = VertexRule("target", frame.target, {"vertex_type": frame.vertex_type, "value": frame.value})
 
 edge = EdgeRule("edge", target, source, {'weight': frame.weight})
 

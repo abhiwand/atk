@@ -17,6 +17,8 @@ frame = BigFrame(csv_file)
 
 print "Done building frame"
 
+print "Inspecting frame"
+
 print frame.inspect()
 
 print "Filter frame by rating"
@@ -27,7 +29,7 @@ print frame.inspect()
 
 # Create some rules
 
-user = VertexRule("user_id", frame["user_id"], {"vertex_type": frame["vertex_type"]})
+user = VertexRule("user_id", frame["user_id"], {"vertex_type": "L"})
 
 movie = VertexRule("movie_id", frame.movie_id)
 

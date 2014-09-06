@@ -17,6 +17,8 @@ frame = BigFrame(csv_file)
 
 print "Done building data frame"
 
+print "Inspecting frame"
+
 print frame.inspect()
 
 user = VertexRule("user_id", frame.user_id, {"vertex_type": "L"})
