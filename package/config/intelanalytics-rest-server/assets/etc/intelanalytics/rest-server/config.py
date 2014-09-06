@@ -477,10 +477,10 @@ def create_intel_analytics_config( hdfs_host_name, hdfs_namenode_port, zookeeper
     config_tpl_text = re.sub(r'spark.master = .*',
                        'spark.master = "spark://' + spark_master_host[0] + ':' + spark_master_port + '"', config_tpl_text)
     #set spark executor memory
-    config_tpl_text = re.sub(r'[/]*spark.executor.memory = .*', 'spark.executor.memory = "' + spark_worker_memory + '"', config_tpl_text)
+    config_tpl_text = re.sub(r'spark.executor.memory = .*', 'spark.executor.memory = "' + spark_worker_memory + '"', config_tpl_text)
 
     #set python exec
-    config_tpl_text = re.sub(r'python-worker-exec = .*', 'python-worker-exec = "' + python_exec + '"', config_tpl_text)
+    config_tpl_text = re.sub(r'[/]*python-worker-exec = .*', 'python-worker-exec = "' + python_exec + '"', config_tpl_text)
 
     print "Writing application.conf"
     config = open(config_file_path, "w")
