@@ -444,7 +444,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
     }
 
     override def scanAll()(implicit session: Session): Seq[DataFrame] = {
-      frames.drop(0).list
+      frames.list
     }
 
     override def scan(offset: Int = 0, count: Int = defaultScanCount)(implicit session: Session): Seq[DataFrame] = {
@@ -743,7 +743,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
     }
 
     override def scanAll()(implicit session: Session): Seq[Graph] = {
-      graphs.drop(0).list
+      graphs.list
     }
 
     override def lookup(id: Long)(implicit session: Session): Option[Graph] = {
