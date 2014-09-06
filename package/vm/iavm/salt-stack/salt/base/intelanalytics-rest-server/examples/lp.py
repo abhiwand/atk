@@ -3,6 +3,7 @@ from intelanalytics import *
 #the default home directory is  hdfs://user/iauser all the sample data sets are saved to hdfs://user/iauser/datasets
 dataset = r"datasets/test_lda.csv"
 
+#csv schema definition
 schema = [("source", int64),
           ("input_value", str),
           ("target", int64),
@@ -16,6 +17,8 @@ print "Building data frame 'lp'"
 frame = BigFrame(csv, "lp")
 
 print "Done building data frame"
+
+print "Inspecting frame 'lp'"
 
 print frame.inspect()
 

@@ -17,17 +17,19 @@ frame = BigFrame(csv_file)
 
 print "Done building data frame"
 
+print "Inspecting frame"
+
 print frame.inspect()
 
-user = VertexRule("user_id", frame.user_id, { "vertex_type": "L"})
+user = VertexRule("user_id", frame.user_id, {"vertex_type": "L"})
 
-movie = VertexRule("movie_id", frame.movie_id, { "vertex_type": "R"})
+movie = VertexRule("movie_id", frame.movie_id, {"vertex_type": "R"})
 
-rates = EdgeRule("edge", user, movie, { "splits": frame.splits, "rating": frame.rating })
+rates = EdgeRule("edge", user, movie, {"splits": frame.splits, "rating": frame.rating})
 
 print "Creating Graph cgd"
 
-graph = BigGraph([user, movie, rates] ,"cgd")
+graph = BigGraph([user, movie, rates], "cgd")
 
 print "Running Conjugate Gradient Descent on Graph cgd"
 
