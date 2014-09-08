@@ -59,7 +59,6 @@ object DomainJsonProtocol extends IADefaultJsonProtocol {
       DataTypes.toDataType(raw)
     }
 
-
     override def write(obj: DataType): JsValue = new JsString(obj.toString)
   }
 
@@ -98,8 +97,8 @@ object DomainJsonProtocol extends IADefaultJsonProtocol {
     }
   }
 
-class ReferenceFormat[T <: HasId]( collection: String, name: String, factory: Long => T)
-  extends JsonFormat[T] {
+  class ReferenceFormat[T <: HasId](collection: String, name: String, factory: Long => T)
+      extends JsonFormat[T] {
     override def write(obj: T): JsValue = JsString(s"ia://$collection/${obj.id}")
 
     override def read(json: JsValue): T = json match {
@@ -113,7 +112,6 @@ class ReferenceFormat[T <: HasId]( collection: String, name: String, factory: Lo
   implicit val frameReferenceFormat = new ReferenceFormat[FrameReference]("dataframes", "frame", n => FrameReference(n))
   implicit val userFormat = jsonFormat5(User)
   implicit val statusFormat = jsonFormat5(Status)
-  implicit val dataFrameFormat = jsonFormat12(DataFrame)
   implicit val dataFrameTemplateFormat = jsonFormat2(DataFrameTemplate)
   implicit val separatorArgsJsonFormat = jsonFormat1(SeparatorArgs)
   implicit val definitionFormat = jsonFormat3(Definition)
@@ -177,7 +175,6 @@ class ReferenceFormat[T <: HasId]( collection: String, name: String, factory: Lo
   // graph service formats
   implicit val graphReferenceFormat = new ReferenceFormat[GraphReference]("graphs", "graph", n => GraphReference(n))
   implicit val graphTemplateFormat = jsonFormat1(GraphTemplate)
-  implicit val graphFormat = jsonFormat9(Graph)
   implicit val graphRenameFormat = jsonFormat2(RenameGraph)
 
   // graph loading formats for specifying graphbuilder and graphload rules
@@ -269,4 +266,28 @@ class ReferenceFormat[T <: HasId]( collection: String, name: String, factory: Lo
   }
 
   lazy implicit val commandDefinitionFormat = jsonFormat4(CommandDefinition)
+
+  implicit object dataFrameFormat extends JsonFormat[DataFrame] {
+    implicit val dataFrameFormatOriginal = jsonFormat12(DataFrame)
+
+    override def read(value: JsValue): DataFrame = {
+      dataFrameFormatOriginal.read(value)
+    }
+
+    override def write(frame: DataFrame): JsValue = {
+      JsObject(dataFrameFormatOriginal.write(frame).asJsObject.fields + ("ia_uri" -> JsString(frame.getUri)))
+  }
+  }
+
+  implicit object graphFormat extends JsonFormat[Graph] {
+    implicit val graphFormatOriginal = jsonFormat9(Graph)
+
+    override def read(value: JsValue): Graph = {
+      graphFormatOriginal.read(value)
+    }
+
+    override def write(graph:Graph) : JsValue ={
+      JsObject(graphFormatOriginal.write(graph).asJsObject.fields + ("ia_uri" -> JsString(graph.getUri)))
+    }
+  }
 }

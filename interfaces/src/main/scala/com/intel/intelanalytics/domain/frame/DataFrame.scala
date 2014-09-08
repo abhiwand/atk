@@ -23,7 +23,7 @@
 
 package com.intel.intelanalytics.domain.frame
 
-import com.intel.intelanalytics.domain.{IAUri, HasId}
+import com.intel.intelanalytics.domain.{ IAUri, HasId }
 import com.intel.intelanalytics.domain.schema.Schema
 import org.joda.time.DateTime
 

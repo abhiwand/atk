@@ -23,7 +23,7 @@
 
 package com.intel.intelanalytics.domain.graph
 
-import com.intel.intelanalytics.domain.{IAUri, HasId}
+import com.intel.intelanalytics.domain.{ IAUri, HasId }
 import org.joda.time.DateTime
 
 /**
@@ -51,5 +51,4 @@ case class Graph(id: Long,
   require(name != null, "name must not be null")
   require(name.trim.length > 0, "name must not be empty or whitespace")
   def entity = "graph"
-
 }

@@ -34,7 +34,7 @@ import com.intel.intelanalytics.domain.schema.Schema
  * @param rowCount the number of rows in the frames
  * @param links
  */
-//case class GetDataFrame(id: Long, name: String, schema: Schema, rowCount: Long, links: List[RelLink], errorFrameId: Option[Long], ia_uri: String) {
+
 case class GetDataFrame(id: Long, name: String, ia_uri: String, schema: Schema, rowCount: Long, links: List[RelLink], errorFrameId: Option[Long]) {
   require(id > 0, "id must be greater than zero")
   require(name != null, "name must not be null")
@@ -43,5 +43,5 @@ case class GetDataFrame(id: Long, name: String, ia_uri: String, schema: Schema, 
   require(rowCount >= 0, "rowCount must not be negative")
   require(links != null, "links must not be null")
   require(errorFrameId != null, "errorFrameId must not be null")
-  //require(ia_uri != null, "ia_uri must not be null")
+
 }
