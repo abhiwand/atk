@@ -1,10 +1,8 @@
 package com.intel.intelanalytics.domain
 
-
 import com.intel.intelanalytics.domain.DomainJsonProtocol.PatternIndex
 import com.intel.intelanalytics.domain.frame.FrameReference
 import com.intel.intelanalytics.domain.graph.GraphReference
-
 
 trait IAUri {
   def id: Long
@@ -17,10 +15,10 @@ trait IAUri {
 }
 
 object IAUriFactory {
-  def getReference(uri: String, entityName: Option[String]=None): HasId = {
+  def getReference(uri: String, entityName: Option[String] = None): HasId = {
 
     val validateUri = """.+//frame/(\d+)|.+//graph/(\d+)""".r
-    var entity : String = ""
+    var entity: String = ""
     /* Validate uri structure and retrieve the entity and id from the uri*/
     if ((validateUri findFirstIn uri).mkString(",").isEmpty) {
       throw new IllegalArgumentException("Invalid uri")

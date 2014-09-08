@@ -41,8 +41,7 @@ object GraphDecorator extends EntityDecorator[Graph, GetGraphs, GetGraph] {
    */
   override def decorateEntity(uri: String, links: Iterable[RelLink], entity: Graph): GetGraph = {
 
-    val ia_uri : String = entity.getUri
-    GetGraph(id = entity.id, ia_uri, name = entity.name, links = links.toList)
+    GetGraph(id = entity.id, ia_uri = entity.getUri, name = entity.name, links = links.toList)
   }
 
   /**
