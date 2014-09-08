@@ -257,12 +257,7 @@ class CommandInfo(object):
         self._payload = payload
 
 
-
-
-
 class Polling(object):
-
-
 
     @staticmethod
     def poll(uri, predicate=None, start_interval_secs=None, max_interval_secs=None, backoff_factor=None):
@@ -288,11 +283,11 @@ class Polling(object):
         if predicate is None:
             predicate = Polling._get_completion_status
         if start_interval_secs is None:
-            start_interval_secs = config.polling.start_interval_secs
+            start_interval_secs = config.polling_defaults.start_interval_secs
         if backoff_factor is None:
-            backoff_factor = config.polling.backoff_factor
+            backoff_factor = config.polling_defaults.backoff_factor
         if max_interval_secs is None:
-            max_interval_secs = config.polling.max_interval_secs
+            max_interval_secs = config.polling_defaults.max_interval_secs
         if not CommandInfo.is_valid_command_uri(uri):
             raise ValueError('Cannot poll ' + uri + ' - a /commands/{number} uri is required')
         interval_secs = start_interval_secs

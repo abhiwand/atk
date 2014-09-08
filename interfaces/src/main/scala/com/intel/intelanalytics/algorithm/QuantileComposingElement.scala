@@ -21,12 +21,11 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.domain.frame
-
-import com.intel.intelanalytics.algorithm.Percentile
+package com.intel.intelanalytics.algorithm
 
 /**
- * The result object for percentile calculation
- * @param percentiles value for the percentiles
+ * quantile composing element which contains element's index and its weight
+ * @param index element index
+ * @param quantileTarget the quantile target that the element can be applied to
  */
-case class PercentileValues(percentiles: List[Percentile])
+case class QuantileComposingElement(index: Long, quantileTarget: QuantileTarget)

@@ -65,7 +65,7 @@ Setup
 
     #)  Choose "classes"
 
-    #)  Choose "ia" and click "OK" button
+    #)  Choose "myproject" and click "OK" button
 
     #)  Name the library "ia-python-client"
 
@@ -78,6 +78,7 @@ Setup
 #)  Name the file "test" and type in the following code::
 
         import intelanalytics as ia
+        ia.server.host = "correct host name or IP address"
         ia.server.ping()
 
 
