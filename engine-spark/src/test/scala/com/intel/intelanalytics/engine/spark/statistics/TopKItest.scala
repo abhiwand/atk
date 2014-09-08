@@ -1,5 +1,6 @@
 package com.intel.intelanalytics.engine.spark.statistics
 
+import com.intel.intelanalytics.engine.spark.statistics.TopKRDDFunctions.CountPair
 import com.intel.testutils.TestingSparkContextFlatSpec
 import org.scalatest.Matchers
 
@@ -15,14 +16,14 @@ class TopKItest extends TestingSparkContextFlatSpec with Matchers {
 
   val emptyList = List.empty[Array[Any]]
 
-  val keyCountList = List(
+  val keyCountList = List[(Any, Long)](
     ("key1", 2),
     ("key2", 20),
     ("key3", 12),
     ("key4", 0),
     ("key5", 6))
 
-  val emptyCountList = List.empty[(String, Int)]
+  val emptyCountList = List.empty[(Any, Long)]
 
   "topK" should "return the top K distinct values sorted by count" in {
     val frameRdd = sparkContext.parallelize(inputList, 2)
@@ -60,19 +61,19 @@ class TopKItest extends TestingSparkContextFlatSpec with Matchers {
   "sortTopKByValue" should "return the top 3 entries by value sorted by descending order" in {
     val sortedK = TopKRDDFunctions.sortTopKByValue(keyCountList.toIterator, 3, descending = true).toSeq
     sortedK.size should equal(3)
-    sortedK should equal(Seq(("key2", 20), ("key3", 12), ("key5", 6)))
+    sortedK should equal(Seq(CountPair("key2", 20), CountPair("key3", 12), CountPair("key5", 6)))
   }
 
   "sortTopKByValue" should "return all entries sorted in descending order if K exceeds input size" in {
     val sortedK = TopKRDDFunctions.sortTopKByValue(keyCountList.toIterator, 10, descending = true).toSeq
     sortedK.size should equal(5)
-    sortedK should equal(Seq(("key2", 20), ("key3", 12), ("key5", 6), ("key1", 2), ("key4", 0)))
+    sortedK should equal(Seq(CountPair("key2", 20), CountPair("key3", 12), CountPair("key5", 6), CountPair("key1", 2), CountPair("key4", 0)))
   }
 
   "sortTopKByValue" should "return the top 2 entries by value in ascending order" in {
     val sortedK = TopKRDDFunctions.sortTopKByValue(keyCountList.toIterator, 2, descending = false).toSeq
     sortedK.size should equal(2)
-    sortedK should equal(Seq(("key4", 0), ("key1", 2)))
+    sortedK should equal(Seq(CountPair("key4", 0), CountPair("key1", 2)))
   }
 
   "sortTopKByValue" should "return empty if the input data is empty" in {
