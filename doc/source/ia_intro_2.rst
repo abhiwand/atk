@@ -25,7 +25,7 @@ Functionality provided includes:
 *   Duplicate removal, dropping rows, data filtering, copying data into new columns,
     and concatenating columns (see :ref:`Clean the Data`)
 *   Summary calculations for data inspection, such as counts, measures of central tendency,
-    distribution and percentile of data, dispersions, and binning
+    distribution and percentile of data, dispersions, and binning (see :ref:`ds_dflw_frame.examine`)
 *   Joining of multiple data sources based on record relationships, such as intersection (inner join),
     union (outer join), and lookup inclusion or exclusion (left and right joins) (see :ref:`Transform The Data`)
 *   Date and time functions to convert formats, such as conversion to year/month/day/hour/minute/second,
@@ -56,7 +56,7 @@ such as connecting "items" to "purchasers."
 
 To build a graph, the developer assigns which features to use for vertices, which to use for edges,
 their respective labeling, and any associated properties.
-For further details about defining vertices and edges, see :ref:`Building Rules`.
+For further details about defining vertices and edges, see :ref:`ds_dflw_building_rules`.
 The toolkit *BigGraph* routine then assembles the individual records into
 the properly-formed graph using the computing cluster for fast throughput.
 For further details about building graphs, see :ref:`ds_dflw_building_a_graph`.

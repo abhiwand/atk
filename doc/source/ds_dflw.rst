@@ -335,7 +335,7 @@ so when using some Python libraries, be aware that some of them are not designed
 In general, the following functions select rows of data based upon the data in the row.
 For details about row selection based upon its data see :doc:`ds_apir`
 
-.. _example_frame.drop:
+.. _example_frame.drop_rows
 
 Drop Rows:
 ----------
@@ -347,15 +347,15 @@ Examples:
 
 To drop all rows where column *b* contains a negative number::
 
-    my_frame.drop(lambda row: row['b'] < 0)
+    my_frame.drop_rows(lambda row: row['b'] < 0)
 
 To drop all rows where column *a* is empty::
 
-    my_frame.drop(lambda row: row['a'] is None)
+    my_frame.drop_rows(lambda row: row['a'] is None)
 
 To drop all rows where any column is empty::
 
-    my_frame.drop(lambda row: any([cell is None for cell in row]))
+    my_frame.drop_rows(lambda row: any([cell is None for cell in row]))
 
 .. _example_frame.filter:
 
@@ -480,6 +480,16 @@ An example of Piecewise Linear Transformation::
 Create multiple columns at once by making a function return a list of values for the new frame columns::
 
     my_frame.add_columns(lambda row: [abs(row.a), abs(row.b)], [('a_abs', int32), ('b_abs', int32)])
+
+.. _ds_dflw_frame_examine:
+
+Examining the Data
+==================
+
+Let's say we want to get some standard statistical information about *my_frame*.
+We can use the frame function *column_summary_statistics*::
+
+    my_frame.column_summary_statistics()
 
 .. _example_frame.group_by:
 
@@ -764,6 +774,8 @@ For the examples below, we will use a BigFrame *my_frame*, which accesses an arb
     | 00004     | ringo     | 00001     | 2         |
     +-----------+-----------+-----------+-----------+
 
+.. _ds_dflw_building_rules:
+
 Building Rules
 ==============
 
@@ -842,8 +854,8 @@ as shown in example below::
 
 .. _ds_dflw_building_a_graph:
 
-Building A Graph
-================
+Building a Graph From a Set of Rules
+====================================
 
 Now that you have built some rules, let us put them to use and create a graph by calling BigGraph.
 We will give the graph the name “employee_graph”::

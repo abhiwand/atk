@@ -115,7 +115,7 @@ def get_frame(name):
     except:
         raise IaError(logger)
 
-def delete_frame(frame):
+def drop_frame(frame):
     """
     Erases data.
 
@@ -136,18 +136,18 @@ def delete_frame(frame):
     Create a new frame; delete it; print what gets returned from the function::
 
         my_frame = BigFrame(my_csv, 'my_frame')
-        deleted_frame = delete_frame('my_frame')
-        print deleted_frame
+        dropped_frame = drop_frame('my_frame')
+        print dropped_frame
 
     The result would be::
 
         "my_frame"
 
-    .. versionadded:: 0.8
+    .. versionchanged:: 0.8.5
 
     """
     try:
-        return _get_backend().delete_frame(frame)
+        return _get_backend().drop_frame(frame)
     except:
         raise IaError(logger)
 
@@ -243,7 +243,7 @@ class BigFrame(command_loadable):
 
     # We are not defining __setitem__.  Columns must be added explicitly
 
-    # We are not defining __delitem__.  Columns must be deleted w/ remove_columns
+    # We are not defining __delitem__.  Columns must be deleted w/ drop_columns
 
     def __repr__(self):
         try:
@@ -726,7 +726,7 @@ class BigFrame(command_loadable):
         except:
             raise IaError(logger)
 
-    def calculate_percentiles(self, column_name, percentiles):
+    def quantiles(self, column_name, percentiles):
         """
         Calculate percentiles on given column.
 
@@ -744,13 +744,13 @@ class BigFrame(command_loadable):
         --------
         ::
 
-            my_frame.calculate_percentiles('final_sale_price', [10, 50, 100])
+            my_frame.quantiles('final_sale_price', [10, 50, 100])
 
-        .. versionadded:: 0.8
+        .. versionchanged:: 0.8.5
 
         """
         try:
-            percentiles_result = self._backend.calculate_percentiles(self, column_name, percentiles).result.get('percentiles')
+            percentiles_result = self._backend.quantiles(self, column_name, percentiles).result.get('percentiles')
             result_dict = {}
             for p in percentiles_result:
                 result_dict[p.get("percentile")] = p.get("value")
@@ -1108,7 +1108,7 @@ class BigFrame(command_loadable):
         except:
             raise IaError(logger)
 
-    def drop(self, predicate):
+    def drop_rows(self, predicate):
         """
         Drop rows.
 
@@ -1124,20 +1124,20 @@ class BigFrame(command_loadable):
         For this example, my_frame is a BigFrame object accessing a frame with lots of data for the attributes of *lions*, *tigers*, and *ligers*.
         Get rid of the *lions* and *tigers*::
 
-            my_frame.drop(lambda row: row.animal_type == "lion" or row.animal_type == "tiger")
+            my_frame.drop_rows(lambda row: row.animal_type == "lion" or row.animal_type == "tiger")
 
         Now the frame only has information about *ligers*.
 
         More information on row functions can be found at :doc:`ds_apir`.
 
-        For further examples, see :ref:`example_frame.drop`
+        For further examples, see :ref:`example_frame.drop_rows`
 
-        .. versionadded:: 0.8
+        .. versionchanged:: 0.8.5
 
         """
         # TODO - Review docstring
         try:
-            self._backend.drop(self, predicate)
+            self._backend.drop_rows(self, predicate)
         except:
             raise IaError(logger)
 
@@ -1296,7 +1296,7 @@ class BigFrame(command_loadable):
         except:
             raise IaError(logger)
 
-    def fmeasure(self, label_column, pred_column, pos_label=1, beta=1):
+    def f_measure(self, label_column, pred_column, pos_label=1, beta=1):
         """
         Model :math:`F_{\\beta}` measure.
 
@@ -1350,22 +1350,22 @@ class BigFrame(command_loadable):
               blue              1              0                  0
               green             0              1                  1
 
-            frame.fmeasure('labels', 'predictions')
+            frame.f_measure('labels', 'predictions')
 
             0.66666666666666663
 
-            frame.fmeasure('labels', 'predictions', beta=2)
+            frame.f_measure('labels', 'predictions', beta=2)
 
             0.55555555555555558
 
-            frame.fmeasure('labels', 'predictions', pos_label=0)
+            frame.f_measure('labels', 'predictions', pos_label=0)
 
             0.80000000000000004
 
-        .. versionadded:: 0.8
+        .. versionchanged:: 0.8.5
 
         """
-        return self._backend.classification_metric(self, 'fmeasure', label_column, pred_column, pos_label, beta)
+        return self._backend.classification_metric(self, 'f_measure', label_column, pred_column, pos_label, beta)
 
     def get_error_frame(self):
         """
@@ -1390,7 +1390,8 @@ class BigFrame(command_loadable):
         Create summarized frame.
 
         Creates a new frame and returns a BigFrame object to access it.
-        Takes a column or group of columns, finds the unique combination of values, and creates unique rows with these column values.
+        Takes a column or group of columns, finds the unique combination of values,
+        and creates unique rows with these column values.
         The other columns are combined according to the aggregation argument(s).
 
         Parameters
@@ -1408,10 +1409,11 @@ class BigFrame(command_loadable):
 
         Notes
         -----
-        * The column names created by aggregation functions in the new frame are the original column name appended with the '_' character
-          and the aggregation function.
-          For example, if the original field is 'a' and the function is 'avg', the resultant column is named 'a_avg'.
-        * An aggregation argument of 'count' results in a column named 'count'.
+        *   The column names created by aggregation functions in the new frame are the original column
+            name appended with the '_' character and the aggregation function.
+            For example, if the original field is 'a' and the function is 'avg',
+            the resultant column is named 'a_avg'.
+        *   An aggregation argument of 'count' results in a column named 'count'.
 
         Examples
         --------
@@ -1428,7 +1430,8 @@ class BigFrame(command_loadable):
              bat
              cat
 
-        Create a new frame, combining similar values of column *a*, and count how many of each value is in the original frame::
+        Create a new frame, combining similar values of column *a*, and count how many of each
+        value is in the original frame::
 
             new_frame = my_frame.group_By('a', count)
             new_frame.inspect()
@@ -1476,7 +1479,8 @@ class BigFrame(command_loadable):
              big     1     8.0       5
 
         Create a new frame from this data, grouping the rows by unique combinations of column *a* and *c*;
-        count each group; for column *d* calculate the average, sum and minimum value; for column *e*, save the maximum value::
+        count each group; for column *d* calculate the average, sum and minimum value; for column *e*,
+        save the maximum value::
 
             new_frame = my_frame.group_By(['a', 'c'], agg.count, {'d': [agg.avg, agg.sum, agg.min], 'e': agg.max})
 
@@ -1487,7 +1491,7 @@ class BigFrame(command_loadable):
 
         For further examples, see :ref:`example_frame.group_by`.
 
-        .. versionadded:: 0.8
+        .. versionchanged:: 0.8.5
 
         """
         try:
