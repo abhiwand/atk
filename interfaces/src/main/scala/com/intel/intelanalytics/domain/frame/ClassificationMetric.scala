@@ -28,7 +28,7 @@ case class ClassificationMetric(frame: FrameReference, metricType: String, label
   require(metricType.equals("accuracy") ||
     metricType.equals("precision") ||
     metricType.equals("recall") ||
-    metricType.equals("fmeasure"), "valid metric type is required")
+    metricType.equals("f_measure"), "valid metric type is required")
   require(labelColumn != null && !labelColumn.equals(""), "label column is required")
   require(predColumn != null && !predColumn.equals(""), "predict column is required")
   require(posLabel != null && !posLabel.equals(""), "invalid positive label")

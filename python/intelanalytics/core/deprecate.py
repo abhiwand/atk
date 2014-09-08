@@ -21,13 +21,26 @@
 # must be express and approved by Intel in writing.
 ##############################################################################
 """
-iapy package init, public API
+deprecation decorator
 """
-from intelanalytics.core.iatypes import *
-from intelanalytics.core.aggregation import agg
-from intelanalytics.core.errorhandle import errors, error_handling
-from intelanalytics.core.files import CsvFile
-from intelanalytics.core.frame import BigFrame, get_frame, get_frame_names, drop_frames, delete_frame
-from intelanalytics.core.graph import BigGraph, get_graph, get_graph_names, drop_graphs, delete_graph, VertexRule, EdgeRule
-from intelanalytics.core.loggers import loggers
-from intelanalytics.rest.connection import server
+import warnings
+
+
+def deprecated(message):
+    def decorator(function):
+        def wrapper(*args, **kwargs):
+            raise_deprecation_warning(function.__name__, message)
+            return function(*args, **kwargs)
+        wrapper.__name__ = function.__name__
+        wrapper.__doc__ = function.__doc__
+        wrapper.__dict__.update(function.__dict__)
+        return wrapper
+    return decorator
+
+
+def raise_deprecation_warning(function_name, message):
+    with warnings.catch_warnings():
+        warnings.simplefilter('default')  # make it so Python 2.7 will still report this warning
+        warnings.warn("Call to deprecated function %s.  %s" % (function_name, message),
+                      DeprecationWarning,
+                      stacklevel=2)

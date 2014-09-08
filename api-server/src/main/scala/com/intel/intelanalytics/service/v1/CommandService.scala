@@ -181,7 +181,7 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
       case ("dataframe/rename_columns") => runFrameRenameColumns(uri, xform)
       case ("dataframe/join") => runJoinFrames(uri, xform)
       case ("dataframe/flatten_column") => runflattenColumn(uri, xform)
-      case ("dataframe/groupby") => runFrameGroupByColumn(uri, xform)
+      case ("dataframe/group_by") => runFrameGroupByColumn(uri, xform)
       case ("dataframe/drop_duplicates") => runDropDuplicates(uri, xform)
       case ("dataframe/bin_column") => runBinColumn(uri, xform)
       case ("dataframe/classification_metric") => runClassificationMetric(uri, xform)

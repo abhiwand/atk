@@ -91,7 +91,7 @@ trait Engine {
 
   def renameColumns(arguments: FrameRenameColumns[JsObject, Long])(implicit user: UserPrincipal): Execution
 
-  def removeColumn(arguments: FrameRemoveColumn)(implicit user: UserPrincipal): Execution
+  def dropColumns(arguments: FrameDropColumns)(implicit user: UserPrincipal): Execution
 
   def addColumns(arguments: FrameAddColumns[JsObject, Long])(implicit user: UserPrincipal): Execution
 

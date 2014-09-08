@@ -28,6 +28,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+
 from intelanalytics.core.column import BigColumn
 from intelanalytics.core.errorhandle import IaError
 from intelanalytics.core.metaprog import CommandLoadable
@@ -39,10 +40,11 @@ except:
     logger.info("autoframe.py not found, BigFrame is NOT inheriting commands from it")
     command_loadable = CommandLoadable
 
+from intelanalytics.core.deprecate import deprecated
+
 def _get_backend():
     from intelanalytics.core.config import get_frame_backend
     return get_frame_backend()
-
 
 def get_frame_names():
     """
@@ -115,7 +117,13 @@ def get_frame(name):
     except:
         raise IaError(logger)
 
+
+@deprecated("Use drop_frames(frame).")
 def delete_frame(frame):
+    return drop_frames(frame)
+
+
+def drop_frames(frame):
     """
     Erases data.
 
@@ -136,7 +144,7 @@ def delete_frame(frame):
     Create a new frame; delete it; print what gets returned from the function::
 
         my_frame = BigFrame(my_csv, 'my_frame')
-        deleted_frame = delete_frame('my_frame')
+        deleted_frame = drop_frames('my_frame')
         print deleted_frame
 
     The result would be::
@@ -201,7 +209,7 @@ class BigFrame(command_loadable):
 
     # command load filters:
     command_prefixes = ['dataframe', 'dataframes']
-    command_mute_list = ['load', 'project', 'rename_frame']  # this commands are not exposed
+    command_mute_list = ['load', 'project', 'rename_frame']  # these commands are not exposed
 
     def __init__(self, source=None, name=None):
         try:
@@ -243,7 +251,7 @@ class BigFrame(command_loadable):
 
     # We are not defining __setitem__.  Columns must be added explicitly
 
-    # We are not defining __delitem__.  Columns must be deleted w/ remove_columns
+    # We are not defining __delitem__.  Columns must be deleted w/ drop_columns
 
     def __repr__(self):
         try:
@@ -675,15 +683,19 @@ class BigFrame(command_loadable):
         except:
             raise IaError(logger)
 
+    @deprecated("Use quantiles().")
     def calculate_percentiles(self, column_name, percentiles):
+        return self.quantiles(column_name, percentiles)
+
+    def quantiles(self, column_name, quantiles):
         """
-        Calculate percentiles on given column.
+        Calculate quantiles on given column.
 
         Parameters
         ----------
         column_name : str
-            The column to calculate percentile
-        percentiles : int OR list of int. If float is provided, it will be rounded to int
+            The column to calculate quantiles
+        quantiles : int OR list of int. If float is provided, it will be rounded to int
 
         Returns
         -------
@@ -693,16 +705,16 @@ class BigFrame(command_loadable):
         --------
         ::
 
-            my_frame.calculate_percentiles('final_sale_price', [10, 50, 100])
+            my_frame.quantiles('final_sale_price', [10, 50, 100])
 
         .. versionadded:: 0.8
 
         """
         try:
-            percentiles_result = self._backend.calculate_percentiles(self, column_name, percentiles).result.get('percentiles')
+            quantiles_result = self._backend.quantiles(self, column_name, quantiles).result.get('percentiles')
             result_dict = {}
-            for p in percentiles_result:
-                result_dict[p.get("percentile")] = p.get("value")
+            for p in quantiles_result:
+                result_dict[p.get("quantile")] = p.get("value")
 
             return result_dict
         except:
@@ -754,17 +766,16 @@ class BigFrame(command_loadable):
 
         return self._backend.confusion_matrix(self, label_column, pred_column, pos_label)
 
-    def copy(self, columns):
+    def copy(self, columns=None):
         """
-        Copy frame.
+        Copy frame or certain frame columns entirely.
 
-        Creates a full or partial copy of the current frame.
 
         Parameters
         ----------
-        columns: [str | list of str | dictionary], (optional)
-           Limit the copy to particular columns.
-           Using a dictionary allows simultaneously renaming of columns.
+        columns : str, list, or dict (optional)
+            If not None, the copy will only include the columns specified.  If a dictionary is used, the string pairs
+            represent a column renaming, {source_column_name: destination_column_name}
 
         Returns
         -------
@@ -807,11 +818,27 @@ class BigFrame(command_loadable):
 
         """
         try:
-            return self._backend.copy(self, column_names)
+            if columns is None:
+                column_names = self.column_names  # all columns
+                new_names = None
+            elif isinstance(columns, dict):
+                column_names = columns.keys()
+                new_names = columns.values()
+            elif isinstance(columns, basestring):
+                column_names = [columns]
+                new_names = None
+            else:
+                raise ValueError("bad argument type %s passed to copy().  Must be string or dict" % type(columns))
+            copied_frame = BigFrame()
+            self._backend.project_columns(self, copied_frame, column_names, new_names)
+            return copied_frame
         except:
             raise IaError(logger)
 
     def drop(self, predicate):
+        self.drop_rows(predicate)
+
+    def drop_rows(self, predicate):
         """
         Drop rows.
 
@@ -1017,7 +1044,11 @@ class BigFrame(command_loadable):
         except:
             raise IaError(logger)
 
-    def group_by(self, group_columns, *aggregation_arguments):
+    @deprecated("use group_by() with an underscore.")
+    def groupby(self, group_by_columns, *aggregation_arguments):
+        return self.group_by(group_by_columns, *aggregation_arguments)
+
+    def group_by(self, group_by_columns, *aggregation_arguments):
         """
         Create summarized frame.
 
@@ -1027,7 +1058,7 @@ class BigFrame(command_loadable):
 
         Parameters
         ----------
-        group_columns : str
+        group_by_columns : str
             column name or list of column names
         aggregation_arguments
             aggregation function based on entire row, and/or
@@ -1123,7 +1154,7 @@ class BigFrame(command_loadable):
 
         """
         try:
-            return self._backend.group_by(self, group_columns, aggregation_arguments)
+            return self._backend.group_by(self, group_by_columns, aggregation_arguments)
         except:
             raise IaError(logger)
 
@@ -1229,7 +1260,11 @@ class BigFrame(command_loadable):
         except:
             raise IaError(logger)
 
-    def rename_columns(self, names_dict):
+    @deprecated("Use drop_columns() instead.")
+    def remove_columns(self, column_names):
+        return self.drop_columns(column_names)
+
+    def rename_columns(self, column_names, new_names=None):
         """
         Rename column.
 
@@ -1237,15 +1272,15 @@ class BigFrame(command_loadable):
 
         Parameters
         ----------
-        names_dict : dictionary
-            A pairing of old and new names
+        column_names : dictionary of str pairs
+            The name pair (existing name, new name)
 
         Examples
         --------
         Start with a frame with columns *Wrong* and *Wong*.
         Rename the columns to *Right* and *Wite*::
 
-            my_frame.rename_columns(("Wrong": "Right", "Wong": "Wite"))
+            my_frame.rename_columns({"Wrong": "Right, "Wong": "Wite"})
 
         Now, what was *Wrong* is now *Right* and what was *Wong* is now *Wite*.
 
@@ -1255,7 +1290,7 @@ class BigFrame(command_loadable):
 
         """
         try:
-            self._backend.rename_columns(self, names_dict)
+            self._backend.rename_columns(self, column_names, new_names)
         except:
             raise IaError(logger)
 
