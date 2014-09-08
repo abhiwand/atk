@@ -15,8 +15,4 @@ case class TopK(frame: FrameReference, columnName: String, k: Int, reverse: Opti
   require(columnName != null, "column name is required")
 }
 
-/**
- * Returns top (or bottom) K distinct values by count for a specified column.
- */
-case class TopKReturn(frame: FrameReference)
 
