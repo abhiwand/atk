@@ -73,7 +73,7 @@ parser.add_argument("--cluster", type=str, help="Cloudera Manager Cluster Name i
 parser.add_argument("--restart", type=str, help="Weather or not to restart spark service after config changes")
 args = parser.parse_args()
 
-LIB_PATH = "/usr/lib/intelanalytics/graphbuilder/lib/"
+LIB_PATH = "/usr/lib/intelanalytics/graphbuilder/lib/ispark-deps.jar"
 IAUSER = "iauser"
 
 
@@ -199,7 +199,7 @@ def find_ia_class_path(class_path):
     :param class_path: the full class path value from Cloudera manager
     :return: found intel analytics class path
     """
-    return re.search('.*' + LIB_PATH + '*.*', class_path)
+    return re.search('.*' + LIB_PATH + '.*', class_path)
 
 
 def find_exported_class_path(spark_config_env_sh):
@@ -244,12 +244,12 @@ def create_updated_class_path(current_class_path, spark_env):
 
     if current_class_path is None:
         #if no class path exist append it to the end of the spark_env.sh config
-        spark_class_path="export SPARK_CLASSPATH=\"" + LIB_PATH + "*\""
+        spark_class_path="export SPARK_CLASSPATH=\"" + LIB_PATH + "\""
         return spark_env + "\r\n" + spark_class_path
     else:
         #if a class path already exist search and replace the current class path plus our class path in spark_env.sh
         #config
-        spark_class_path="export SPARK_CLASSPATH=\"" + current_class_path + ":" + LIB_PATH + "*\""
+        spark_class_path="export SPARK_CLASSPATH=\"" + current_class_path + ":" + LIB_PATH + "\""
         return re.sub('export.*SPARK_CLASSPATH=(\".*\"|[^\r\n]*).*', spark_class_path, spark_env)
 
 

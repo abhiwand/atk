@@ -57,20 +57,13 @@ def execute_command(command_name, **arguments):
     """Executes command and returns the output"""
     command_request = CommandRequest(command_name, arguments)
     command_info = executor.issue(command_request)
-
-    if command_info.result.has_key('name') and command_info.result.has_key('schema'):
+    if (command_info.result.has_key('value') and len(command_info.result) == 1):
+        return command_info.result.get('value')
+    elif command_info.result.has_key('name') and command_info.result.has_key('schema'):
         # Used for plugins that return data frame
         from intelanalytics.core.config import get_frame_backend
         frame_backend = get_frame_backend()
         return frame_backend.get_frame(command_info.result['name'])
-        #_get_backend
-        #from intelanalytics.rest.connection import http
-        #from intelanalytics.rest.frame import FrameInfo
-        #from intelanalytics.rest.frame import FrameInfo
-
-        #r = http.get('dataframes?name='+command_info.result['name'])
-        #frame_info = FrameInfo(r.json())
-        #return BigFrame(frame_info)
     else:
         return command_info.result
 
@@ -270,12 +263,7 @@ class CommandInfo(object):
         self._payload = payload
 
 
-
-
-
 class Polling(object):
-
-
 
     @staticmethod
     def poll(uri, predicate=None, start_interval_secs=None, max_interval_secs=None, backoff_factor=None):
@@ -301,11 +289,11 @@ class Polling(object):
         if predicate is None:
             predicate = Polling._get_completion_status
         if start_interval_secs is None:
-            start_interval_secs = config.polling.start_interval_secs
+            start_interval_secs = config.polling_defaults.start_interval_secs
         if backoff_factor is None:
-            backoff_factor = config.polling.backoff_factor
+            backoff_factor = config.polling_defaults.backoff_factor
         if max_interval_secs is None:
-            max_interval_secs = config.polling.max_interval_secs
+            max_interval_secs = config.polling_defaults.max_interval_secs
         if not CommandInfo.is_valid_command_uri(uri):
             raise ValueError('Cannot poll ' + uri + ' - a /commands/{number} uri is required')
         interval_secs = start_interval_secs
@@ -552,7 +540,7 @@ class Executor(object):
                             kwargs[k] = v
                         validated = CommandRequest.validate_arguments(parameters, kwargs)
                         if return_self:
-                            return new_function(full_name, validated)
+                            return new_function(full_name, validated, s)
                         else:
                             return update_function(full_name, validated, s)
                     except:

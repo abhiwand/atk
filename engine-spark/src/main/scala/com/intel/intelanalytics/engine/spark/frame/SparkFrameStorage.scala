@@ -187,7 +187,7 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
     }
   }
 
-  override def removeColumn(frame: DataFrame, columnIndex: Seq[Int])(implicit user: UserPrincipal): DataFrame =
+  override def dropColumns(frame: DataFrame, columnIndex: Seq[Int])(implicit user: UserPrincipal): DataFrame =
     //withContext("frame.removeColumn") {
     metaStore.withSession("frame.removeColumn") {
       implicit session =>

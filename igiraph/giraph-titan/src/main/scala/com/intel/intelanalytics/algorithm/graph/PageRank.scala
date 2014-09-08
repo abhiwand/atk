@@ -108,7 +108,7 @@ class PageRank
 
     //    These parameters are set from the arguments passed in, or defaulted from
     //    the engine configuration if not passed.
-    GiraphConfigurationUtil.set(hConf, "pr.maxSuperSteps", arguments.max_supersteps)
+    GiraphConfigurationUtil.set(hConf, "pr.maxSupersteps", arguments.max_supersteps)
     GiraphConfigurationUtil.set(hConf, "pr.convergenceThreshold", arguments.convergence_threshold)
     GiraphConfigurationUtil.set(hConf, "pr.resetProbability", arguments.reset_probability)
     GiraphConfigurationUtil.set(hConf, "pr.convergenceProgressOutputInterval", arguments.convergence_progress_output_interval)
