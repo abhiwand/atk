@@ -176,11 +176,11 @@ class TestLittleFrame(unittest.TestCase):
 
     def test_remove_column(self):
         f = LittleFrame(data_source_nenfr_na)
-        f.remove_columns('en')
+        f.drop_columns('en')
         self.validate_schema(f, [('n', int32), ('fr', str)])
 
     def test_remove_column_multiple(self):
         f = LittleFrame(data_source_nenfr_na)
-        f.remove_columns(['fr', 'en'])
+        f.drop_columns(['fr', 'en'])
         self.validate_schema(f, [('n', int32)])
 '''
