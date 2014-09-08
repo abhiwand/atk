@@ -58,31 +58,58 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent._
 import com.intel.intelanalytics.engine.spark.statistics.{ TopKRDDFunctions, EntropyRDDFunctions, ColumnStatistics }
 import org.apache.spark.engine.SparkProgressListener
-import com.intel.intelanalytics.domain.frame._
+import com.intel.intelanalytics.domain.frame.FrameAddColumns
+import com.intel.intelanalytics.domain.frame.RenameFrame
 import com.intel.intelanalytics.engine.spark.plugin.SparkInvocation
 import com.intel.intelanalytics.domain.graph.GraphLoad
 import com.intel.intelanalytics.domain.graph.RenameGraph
 import com.intel.intelanalytics.domain.frame.load.LineParserArguments
 import com.intel.intelanalytics.domain.graph.GraphLoad
 import com.intel.intelanalytics.domain.schema.Schema
+import com.intel.intelanalytics.domain.frame.DropDuplicates
 import com.intel.intelanalytics.engine.spark.frame.RowParseResult
+import com.intel.intelanalytics.domain.frame.FrameProject
 import com.intel.intelanalytics.domain.graph.Graph
 import com.intel.intelanalytics.domain.graph.Graph
+import com.intel.intelanalytics.domain.frame.ConfusionMatrix
 import com.intel.intelanalytics.domain.FilterPredicate
 import com.intel.intelanalytics.domain.frame.load.Load
+import com.intel.intelanalytics.domain.frame.Quantiles
+import com.intel.intelanalytics.domain.frame.CumulativeDist
+import com.intel.intelanalytics.domain.frame.AssignSample
+import com.intel.intelanalytics.domain.frame.FrameGroupByColumn
+import com.intel.intelanalytics.domain.frame.FrameRenameColumns
 import com.intel.intelanalytics.security.UserPrincipal
+import com.intel.intelanalytics.domain.frame.FrameDropColumns
+import com.intel.intelanalytics.domain.frame.FrameReference
 import com.intel.intelanalytics.engine.spark.frame.RDDJoinParam
 import com.intel.intelanalytics.domain.graph.GraphTemplate
 import com.intel.intelanalytics.domain.frame.load.LoadSource
 import com.intel.intelanalytics.domain.graph.GraphTemplate
 import com.intel.intelanalytics.domain.query.Query
+import com.intel.intelanalytics.domain.frame.ColumnSummaryStatistics
+import com.intel.intelanalytics.domain.frame.ColumnMedian
+import com.intel.intelanalytics.domain.frame.ColumnMode
+import com.intel.intelanalytics.domain.frame.ECDF
+import com.intel.intelanalytics.domain.frame.DataFrameTemplate
 import com.intel.intelanalytics.engine.ProgressInfo
 import com.intel.intelanalytics.domain.command.CommandDefinition
+import com.intel.intelanalytics.domain.frame.ClassificationMetric
+import com.intel.intelanalytics.domain.frame.BinColumn
+import com.intel.intelanalytics.domain.frame.QuantileValues
+import com.intel.intelanalytics.domain.frame.DataFrame
 import com.intel.intelanalytics.domain.command.Execution
 import com.intel.intelanalytics.domain.command.Command
 import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.query.RowQuery
+import com.intel.intelanalytics.domain.frame.ClassificationMetricValue
+import com.intel.intelanalytics.domain.frame.ConfusionMatrixValues
 import com.intel.intelanalytics.domain.command.CommandTemplate
+import com.intel.intelanalytics.domain.frame.FlattenColumn
+import com.intel.intelanalytics.domain.frame.ColumnSummaryStatisticsReturn
+import com.intel.intelanalytics.domain.frame.ColumnMedianReturn
+import com.intel.intelanalytics.domain.frame.ColumnModeReturn
+import com.intel.intelanalytics.domain.frame.FrameJoin
 import com.intel.intelanalytics.engine.spark.plugin.SparkInvocation
 import com.intel.intelanalytics.domain.query.PagedQueryResult
 import com.intel.intelanalytics.domain.query.QueryDataResult
@@ -437,7 +464,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
   def groupBy(arguments: FrameGroupByColumn[JsObject, Long])(implicit user: UserPrincipal): Execution =
     commands.execute(groupByCommand, arguments, user, implicitly[ExecutionContext])
 
-  val groupByCommand = commandPluginRegistry.registerCommand("dataframe/groupby", groupBySimple _)
+  val groupByCommand = commandPluginRegistry.registerCommand("dataframe/group_by", groupBySimple _)
   def groupBySimple(arguments: FrameGroupByColumn[JsObject, Long], user: UserPrincipal, invocation: SparkInvocation) = {
     implicit val u = user
     val originalFrameID = arguments.frame
@@ -497,9 +524,9 @@ class SparkEngine(sparkContextManager: SparkContextManager,
 
       val baseRdd: RDD[String] = frames.loadFrameRdd(ctx, frameId)
         .map(x => x.map(t => t match {
-          case null => DataTypes.pythonRddNullString
-          case _ => t.toString
-        }).mkString(SparkEngine.pythonRddDelimiter))
+          case null => JsNull
+          case a => a.toJson
+        }).toJson.toString)
 
       val pythonExec = SparkEngineConfig.pythonWorkerExec
       val environment = new java.util.HashMap[String, String]()
@@ -517,10 +544,30 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     }
   }
 
-  private def persistPythonRDD(dataFrame: DataFrame, pyRdd: EnginePythonRDD[String], converter: Array[String] => Array[Any]): Unit = {
+  /**
+   * Persists a PythonRDD after python computation is complete to HDFS
+   *
+   * @param dataFrame DataFrame associated with this RDD
+   * @param pyRdd PythonRDD instance
+   * @param converter Schema Function converter to convert internals of RDD from Array[String] to Array[Any]
+   * @param skipRowCount Skip counting rows when persisting RDD for optimizing speed
+   * @return rowCount Number of rows if skipRowCount is false, else 0 (for optimization/transformations which do not alter row count)
+   */
+  private def persistPythonRDD(dataFrame: DataFrame, pyRdd: EnginePythonRDD[String], converter: Array[String] => Array[Any], skipRowCount: Boolean = false): Long = {
     withMyClassLoader {
-      val resultRdd = pyRdd.map(s => new String(s).split(SparkEngine.pythonRddDelimiter)).map(converter)
+
+      val resultRdd = pyRdd.map(s => JsonParser(new String(s)).convertTo[List[List[JsValue]]].map(y => y.map(x => x match {
+        case x if x.isInstanceOf[JsString] => x.asInstanceOf[JsString].value
+        case x if x.isInstanceOf[JsNumber] => x.asInstanceOf[JsNumber].toString
+        case x if x.isInstanceOf[JsBoolean] => x.asInstanceOf[JsBoolean].toString
+        case _ => null
+      }).toArray))
+        .flatMap(identity)
+        .map(converter)
+
+      val rowCount = if (skipRowCount) 0 else resultRdd.count()
       frames.saveFrameWithoutSchema(dataFrame, resultRdd)
+      rowCount
     }
   }
 
