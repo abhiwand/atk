@@ -28,6 +28,9 @@ import com.intel.intelanalytics.engine.Rows._
 import org.apache.spark.SparkContext
 
 import scala.collection.mutable
+import scala.reflect.ClassTag
+
+import scala.Some
 import com.intel.intelanalytics.engine.spark.frame.{ FrameRDD, RDDJoinParam }
 import com.intel.intelanalytics.algorithm.{ Quantile, QuantileTarget, QuantileComposingElement }
 import scala.collection.mutable.ListBuffer
