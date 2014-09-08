@@ -29,7 +29,7 @@ import org.apache.spark.SparkContext
 
 import scala.collection.mutable
 import com.intel.intelanalytics.engine.spark.frame.{ FrameRDD, RDDJoinParam }
-import com.intel.intelanalytics.algorithm.{ Percentile, PercentileTarget, PercentileComposingElement }
+import com.intel.intelanalytics.algorithm.{ Quantile, QuantileTarget, QuantileComposingElement }
 import scala.collection.mutable.ListBuffer
 import org.apache.spark.rdd.RDD
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
@@ -793,48 +793,48 @@ private[spark] object SparkOps extends Serializable {
   }
 
   /**
-   * Calculate percentile values
+   * Calculate quantile values
    * @param rdd input rdd
-   * @param percentiles seq of percentiles to find value for
-   * @param columnIndex the index of column to calculate percentile
+   * @param quantiles seq of quantiles to find value for
+   * @param columnIndex the index of column to calculate quantile
    * @param dataType data type of the column
    *
-   * Currently calculate percentiles with weight average. n be the number of total elements which is ordered,
-   * T th percentile can be calculated in the following way.
+   * Currently calculate quantiles with weight average. n be the number of total elements which is ordered,
+   * T th quantile can be calculated in the following way.
    * n * T / 100 = i + j   i is the integer part and j is the fractional part
-   * The percentile is Xi * (1- j) + Xi+1 * j
+   * The quantile is Xi * (1- j) + Xi+1 * j
    *
-   * Calculating a list of percentiles follows the following process:
-   * 1. calculate components for each percentile. If T th percentile is Xi * (1- j) + Xi+1 * j, output
+   * Calculating a list of quantiles follows the following process:
+   * 1. calculate components for each quantile. If T th quantile is Xi * (1- j) + Xi+1 * j, output
    * (i, (1 - j)), (i + 1, j).
    * 2. transform the components. Take component (i, (1 - j)) and transform to (i, (T, 1 - j)), where (T, 1 -j) is
-   * a percentile target for element i. Create mapping i -> seq(percentile targets)
-   * 3. iterate through all elements in each partition. for element i, find sequence of percentile targets from
+   * a quantile target for element i. Create mapping i -> seq(quantile targets)
+   * 3. iterate through all elements in each partition. for element i, find sequence of quantile targets from
    * the mapping created earlier. emit (T, i * (1 - j))
-   * 4. reduce by key, which is percentile. Sum all partial results to get the final percentile values.
+   * 4. reduce by key, which is quantile. Sum all partial results to get the final quantile values.
    */
-  def calculatePercentiles(rdd: RDD[Row], percentiles: Seq[Int], columnIndex: Int, dataType: DataType): Seq[Percentile] = {
+  def quantiles(rdd: RDD[Row], quantiles: Seq[Int], columnIndex: Int, dataType: DataType): Seq[Quantile] = {
     val totalRows = rdd.count()
     val pairRdd = rdd.map(row => SparkOps.createKeyValuePairFromRow(row, List(columnIndex))).map { case (keyColumns, data) => (keyColumns(0).toString.toDouble, data) }
     val sorted = pairRdd.asInstanceOf[RDD[(Double, Row)]].sortByKey(true)
 
-    val percentileTargetMapping = getPercentileTargetMapping(totalRows, percentiles)
+    val quantileTargetMapping = getQuantileTargetMapping(totalRows, quantiles)
     val sumsAndCounts: Map[Int, (Int, Int)] = getPerPartitionCountAndAccumulatedSum(sorted)
 
-    //this is the first stage of calculating percentile
-    //generate data that has keys as percentiles and values as column data times weight
-    val percentilesComponentsRDD = sorted.mapPartitionsWithIndex((partitionIndex, rows) => {
+    //this is the first stage of calculating quantile
+    //generate data that has keys as quantiles and values as column data times weight
+    val quantilesComponentsRDD = sorted.mapPartitionsWithIndex((partitionIndex, rows) => {
       var rowIndex: Long = (if (partitionIndex == 0) 0 else sumsAndCounts(partitionIndex - 1)._2) + 1
       val perPartitionResult = ListBuffer[(Int, BigDecimal)]()
 
       for (row <- rows) {
-        if (percentileTargetMapping.contains(rowIndex)) {
-          val targets: Seq[PercentileTarget] = percentileTargetMapping(rowIndex)
+        if (quantileTargetMapping.contains(rowIndex)) {
+          val targets: Seq[QuantileTarget] = quantileTargetMapping(rowIndex)
 
-          for (percentileTarget <- targets) {
+          for (quantileTarget <- targets) {
             val value = row._1
             val numericVal = DataTypes.toBigDecimal(value)
-            perPartitionResult += ((percentileTarget.percentile, numericVal * percentileTarget.weight))
+            perPartitionResult += ((quantileTarget.quantile, numericVal * quantileTarget.weight))
           }
         }
 
@@ -844,58 +844,58 @@ private[spark] object SparkOps extends Serializable {
       perPartitionResult.toIterator
     })
 
-    percentilesComponentsRDD.reduceByKey(_ + _).sortByKey(true).collect().map { case (percentile, value) => Percentile(percentile, value) }
+    quantilesComponentsRDD.reduceByKey(_ + _).sortByKey(true).collect().map { case (quantile, value) => Quantile(quantile, value) }
   }
 
   /**
-   * calculate and return elements for calculating percentile
-   * For example, 25th percentile out of 10 rows(X1, X2, X3, ... X10) will be
+   * calculate and return elements for calculating quantile
+   * For example, 25th quantile out of 10 rows(X1, X2, X3, ... X10) will be
    * 0.5 * x2 + 0.5 * x3. The method will return x2 and x3 with weight as 0.5
    *
-   * For whole percentile calculation process, please refer to doc of method calculatePercentiles
+   * For whole quantile calculation process, please refer to doc of method calculatePercentiles
    * @param totalRows
-   * @param percentile
+   * @param quantile
    */
-  def getPercentileComposingElements(totalRows: Long, percentile: Int): Seq[PercentileComposingElement] = {
-    val position = (BigDecimal(percentile) * totalRows) / 100
+  def getQuantileComposingElements(totalRows: Long, quantile: Int): Seq[QuantileComposingElement] = {
+    val position = (BigDecimal(quantile) * totalRows) / 100
     var integerPosition = position.toLong
     val fractionPosition = position - integerPosition
 
-    val result = mutable.ListBuffer[PercentileComposingElement]()
+    val result = mutable.ListBuffer[QuantileComposingElement]()
 
-    val addPercentileComposingElement = (position: Long, percentile: Int, weight: BigDecimal) => {
+    val addQuantileComposingElement = (position: Long, quantile: Int, weight: BigDecimal) => {
       //element starts from 1. therefore X0 equals X1
       if (weight > 0)
-        result += PercentileComposingElement(if (position != 0) position else 1, PercentileTarget(percentile, weight))
+        result += QuantileComposingElement(if (position != 0) position else 1, QuantileTarget(quantile, weight))
     }
 
-    addPercentileComposingElement(integerPosition, percentile, 1 - fractionPosition)
-    addPercentileComposingElement(integerPosition + 1, percentile, fractionPosition)
+    addQuantileComposingElement(integerPosition, quantile, 1 - fractionPosition)
+    addQuantileComposingElement(integerPosition + 1, quantile, fractionPosition)
     result.toSeq
   }
 
   /**
-   * Calculate mapping between an element's position and Seq of percentiles that the element can contribute to
+   * Calculate mapping between an element's position and Seq of quantiles that the element can contribute to
    * @param totalRows total number of rows in the data
-   * @param percentiles Sequence of percentiles to search
+   * @param quantiles Sequence of quantiles to search
    *
-   * For whole percentile calculation process, please refer to doc of method calculatePercentiles
+   * For whole quantile calculation process, please refer to doc of method calculatePercentiles
    */
-  def getPercentileTargetMapping(totalRows: Long, percentiles: Seq[Int]): Map[Long, Seq[PercentileTarget]] = {
+  def getQuantileTargetMapping(totalRows: Long, quantiles: Seq[Int]): Map[Long, Seq[QuantileTarget]] = {
 
-    val composingElements: Seq[PercentileComposingElement] = percentiles.flatMap(percentile => getPercentileComposingElements(totalRows, percentile))
+    val composingElements: Seq[QuantileComposingElement] = quantiles.flatMap(quantile => getQuantileComposingElements(totalRows, quantile))
 
-    val mapping = mutable.Map[Long, ListBuffer[PercentileTarget]]()
+    val mapping = mutable.Map[Long, ListBuffer[QuantileTarget]]()
     for (element <- composingElements) {
       val elementIndex: Long = element.index
 
       if (!mapping.contains(elementIndex))
-        mapping(elementIndex) = ListBuffer[PercentileTarget]()
+        mapping(elementIndex) = ListBuffer[QuantileTarget]()
 
-      mapping(elementIndex) += element.percentileTarget
+      mapping(elementIndex) += element.quantileTarget
     }
 
-    //for each element's percentile targets, convert from ListBuffer to Seq
+    //for each element's quantile targets, convert from ListBuffer to Seq
     //convert the map to immutable map
     mapping.map { case (elementIndex, targets) => (elementIndex, targets.toSeq) }.toMap
   }

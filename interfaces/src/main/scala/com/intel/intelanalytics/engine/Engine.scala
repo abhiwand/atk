@@ -91,7 +91,7 @@ trait Engine {
 
   def renameColumns(arguments: FrameRenameColumns[JsObject, Long])(implicit user: UserPrincipal): Execution
 
-  def removeColumn(arguments: FrameRemoveColumn)(implicit user: UserPrincipal): Execution
+  def dropColumns(arguments: FrameDropColumns)(implicit user: UserPrincipal): Execution
 
   def addColumns(arguments: FrameAddColumns[JsObject, Long])(implicit user: UserPrincipal): Execution
 
@@ -112,14 +112,16 @@ trait Engine {
 
   def columnSummaryStatistics(arguments: ColumnSummaryStatistics)(implicit user: UserPrincipal): Execution
 
+  def columnMedian(arguments: ColumnMedian)(implicit user: UserPrincipal): Execution
+
   def columnMode(arguments: ColumnMode)(implicit user: UserPrincipal): Execution
 
   // TODO TRIB-2245
   /*
   def columnFullStatistics(arguments: ColumnFullStatistics)(implicit user: UserPrincipal): Execution
 
-  def columnMedian(arguments: ColumnMedian)(implicit user: UserPrincipal): Execution
-*/
+  */
+
   def entropy(arguments: Entropy)(implicit user: UserPrincipal): Execution
 
   def topK(arguments: TopK)(implicit user: UserPrincipal): Execution

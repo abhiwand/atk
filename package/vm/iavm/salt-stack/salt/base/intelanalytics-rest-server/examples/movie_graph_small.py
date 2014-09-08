@@ -1,6 +1,6 @@
 from intelanalytics import *
 
-dataset = "datasets/movie_sample_data_small.csv"
+dataset = "datasets/movie_data_random.csv"
 
 #csv schema definition
 schema = [("user_id", int32),

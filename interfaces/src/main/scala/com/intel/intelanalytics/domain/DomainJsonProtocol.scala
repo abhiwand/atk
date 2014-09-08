@@ -46,7 +46,7 @@ import spray.json._
 import com.intel.intelanalytics.engine.{ ProgressInfo, TaskProgressInfo }
 
 import scala.util.matching.Regex
-import com.intel.intelanalytics.algorithm.Percentile
+import com.intel.intelanalytics.algorithm.Quantile
 import com.intel.intelanalytics.spray.json.IADefaultJsonProtocol
 
 /**
@@ -144,7 +144,7 @@ object DomainJsonProtocol extends IADefaultJsonProtocol {
   implicit val loadFormat = jsonFormat2(Load)
   implicit val filterPredicateFormat = jsonFormat2(FilterPredicate[JsObject, String])
   implicit val filterPredicateLongFormat = jsonFormat2(FilterPredicate[JsObject, Long])
-  implicit val removeColumnFormat = jsonFormat2(FrameRemoveColumn)
+  implicit val removeColumnFormat = jsonFormat2(FrameDropColumns)
   implicit val addColumnFormat = jsonFormat4(FrameAddColumns[JsObject, String])
   implicit val addColumnLongFormat = jsonFormat4(FrameAddColumns[JsObject, Long])
   implicit val projectColumnFormat = jsonFormat4(FrameProject[JsObject, String])
@@ -163,15 +163,15 @@ object DomainJsonProtocol extends IADefaultJsonProtocol {
   implicit val progressInfoFormat = jsonFormat2(ProgressInfo)
   implicit val binColumnLongFormat = jsonFormat6(BinColumn[Long])
 
-  implicit val columnSummaryStatisticsFormat = jsonFormat3(ColumnSummaryStatistics)
-  implicit val columnSummaryStatisticsReturnFormat = jsonFormat9(ColumnSummaryStatisticsReturn)
+  implicit val columnSummaryStatisticsFormat = jsonFormat4(ColumnSummaryStatistics)
+  implicit val columnSummaryStatisticsReturnFormat = jsonFormat13(ColumnSummaryStatisticsReturn)
   implicit val columnFullStatisticsFormat = jsonFormat3(ColumnFullStatistics)
-  implicit val columnFullStatisticsReturnFormat = jsonFormat17(ColumnFullStatisticsReturn)
+  implicit val columnFullStatisticsReturnFormat = jsonFormat15(ColumnFullStatisticsReturn)
 
   implicit val columnModeFormat = jsonFormat4(ColumnMode)
   implicit val columnModeReturnFormat = jsonFormat4(ColumnModeReturn)
 
-  implicit val columnMedianFormat = jsonFormat2(ColumnMedian)
+  implicit val columnMedianFormat = jsonFormat3(ColumnMedian)
   implicit val columnMedianReturnFormat = jsonFormat1(ColumnMedianReturn)
 
   implicit val rowQueryFormat = jsonFormat3(RowQuery[Long])
@@ -180,13 +180,12 @@ object DomainJsonProtocol extends IADefaultJsonProtocol {
   implicit val cumulativeDistLongFormat = jsonFormat5(CumulativeDist[Long])
 
   implicit val assignSampleFormat = jsonFormat5(AssignSample)
-  implicit val calculatePercentilesFormat = jsonFormat3(CalculatePercentiles)
+  implicit val calculatePercentilesFormat = jsonFormat3(Quantiles)
 
   implicit val entropyFormat = jsonFormat3(Entropy)
   implicit val entropyReturnFormat = jsonFormat1(EntropyReturn)
 
   implicit val topKFormat = jsonFormat4(TopK)
-  implicit val topKReturnFormat = jsonFormat1(TopKReturn)
 
   // model performance formats
 
@@ -211,8 +210,8 @@ object DomainJsonProtocol extends IADefaultJsonProtocol {
   implicit val vertexRuleFormat = jsonFormat2(VertexRule)
   implicit val frameRuleFormat = jsonFormat3(FrameRule)
   implicit val graphLoadFormat = jsonFormat3(GraphLoad)
-  implicit val percentileFormat = jsonFormat2(Percentile)
-  implicit val PercentileCalculationResultFormat = jsonFormat1(PercentileValues)
+  implicit val percentileFormat = jsonFormat2(Quantile)
+  implicit val PercentileCalculationResultFormat = jsonFormat1(QuantileValues)
 
   implicit object DataTypeJsonFormat extends JsonFormat[Any] {
     override def write(obj: Any): JsValue = {
