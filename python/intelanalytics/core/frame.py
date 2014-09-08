@@ -397,7 +397,7 @@ class BigFrame(command_loadable):
     def row_count(self):
         """
         Returns number of rows.
-        
+
         Returns
         -------
         int
@@ -406,15 +406,15 @@ class BigFrame(command_loadable):
         Examples
         --------
         Get the number of rows::
-        
+
             my_frame.row_count
-            
+
         The result given is::
-        
+
             81734
-            
+
         .. versionadded:: 0.8
-        
+
         """
         try:
             return self._backend.get_row_count(self)
@@ -508,7 +508,7 @@ class BigFrame(command_loadable):
     def add_columns(self, func, schema):
         """
         Add column.
-        
+
         Adds one or more new columns to the frame by evaluating the given
         func on each row.
 
@@ -526,7 +526,7 @@ class BigFrame(command_loadable):
         -----
         The row function ('func') must return a value in the same format as specified by the schema.
         See :doc:ds_apir.
-        
+
         Examples
         --------
         Given a BigFrame proxy *my_frame* identifying a data frame with two int32 columns *column1* and *column2*.
@@ -565,15 +565,15 @@ class BigFrame(command_loadable):
         Given a function *function_b* which returns a value in a list, store the result in a new column *calculated_b*::
 
             my_frame.add_columns(function_b, ("calculated_b", float32))
-        
+
         This would result in an error because function_b is returning a value as a single element list like [2.4], but our column is defined as
         a tuple.
         The column must be defined as a list::
 
             my_frame.add_columns(function_b, [("calculated_b", float32)])
-        
+
         More information on row functions can be found at :doc:`ds_apir`.
-        
+
         For further examples, see :ref:`example_frame.add_columns`.
 
         .. versionadded:: 0.8
@@ -776,7 +776,7 @@ class BigFrame(command_loadable):
         """
         Builds matrix.
 
-        Outputs a confusion matrix for a binary classifier
+        Outputs a :term:`confusion matrix` for a binary classifier
 
         Parameters
         ----------
@@ -795,7 +795,7 @@ class BigFrame(command_loadable):
         --------
         Consider the following sample data set in *frame* with actual data labels specified in the *labels* column and
         the predicted labels in the *predictions* column::
-        
+
             frame.inspect()
 
               a:unicode   b:int32   labels:int32  predictions:int32
@@ -822,7 +822,6 @@ class BigFrame(command_loadable):
         """
         Copy frame or certain frame columns entirely.
 
-        Creates a full copy of the current frame.
 
         Parameters
         ----------
@@ -843,6 +842,7 @@ class BigFrame(command_loadable):
             my_frame.name("cust")
 
         At this point we have one frame of data, which is now called "cust".
+        We will say it has columns *id*, *name*, *hair*, and *shoe*.
         Let's copy it to a new frame::
 
             your_frame = my_frame.copy()
@@ -857,7 +857,16 @@ class BigFrame(command_loadable):
             "cust"
             "frame_75401b7435d7132f5470ba35..."
 
-        .. versionadded:: 0.8
+        Now, let's copy *some* of the columns from the original frame::
+
+            our_frame = my_frame.copy(['id', 'hair'])
+
+        Our new frame now has two columns, *id* and *hair*, and has 5 million rows.
+        Let's try that again, but this time change the name of the *hair* column to *color*::
+
+            last_frame = my_frame.copy(('id': 'id', 'hair': 'color'))
+
+        .. versionchanged:: 0.8.5
 
         """
         try:
@@ -881,7 +890,7 @@ class BigFrame(command_loadable):
     def cumulative_count(self, sample_col, count_value):
         """
         Compute a cumulative count.
-        
+
         A cumulative count is computed by sequentially stepping through the column values and keeping track of the
         the number of times the specified *count_value* has been seen up to the current value.
 
@@ -911,7 +920,7 @@ class BigFrame(command_loadable):
                0
                1
                2
-              
+
         The cumulative count for column *obs* using *count_value = 1* is obtained by::
 
             cc_frame = my_frame.cumulative_count('obs', 1)
@@ -973,7 +982,7 @@ class BigFrame(command_loadable):
                0
                1
                2
- 
+
         The cumulative percent sum for column *obs* is obtained by::
 
             cps_frame = my_frame.cumulative_percent_sum('obs')
@@ -991,7 +1000,7 @@ class BigFrame(command_loadable):
                0                          0.5
                1                          0.66666666
                2                          1.0
-        
+
         .. versionadded:: 0.8
 
         """
@@ -1052,7 +1061,7 @@ class BigFrame(command_loadable):
                0                          0.5
                1                          1.0
                2                          1.0
-         
+
         .. versionadded:: 0.8
 
         """
@@ -1148,7 +1157,7 @@ class BigFrame(command_loadable):
         Now the frame only has information about *ligers*.
 
         More information on row functions can be found at :doc:`ds_apir`.
-        
+
         For further examples, see :ref:`example_frame.drop`
 
         .. versionadded:: 0.8
@@ -1170,7 +1179,7 @@ class BigFrame(command_loadable):
         ----------
         columns : str OR list of str
             column name(s) to identify duplicates. If empty, will remove duplicates that have whole row data identical.
-    
+
         Examples
         --------
         Remove any rows that have the same data in column *b* as a previously checked row::
@@ -1206,7 +1215,7 @@ class BigFrame(command_loadable):
         """
         Empirical Cumulative Distribution.
 
-        Generates the empirical cumulative distribution for the input column.
+        Generates the :term:`empirical cumulative distribution` for the input column.
 
         Parameters
         ----------
@@ -1272,7 +1281,7 @@ class BigFrame(command_loadable):
         The frame now only has data about lizards and frogs
 
         More information on row functions can be found at :doc:`ds_apir`.
-        
+
         For further examples, see :ref:`example_frame.filter`
 
         .. versionadded:: 0.8
@@ -1323,14 +1332,14 @@ class BigFrame(command_loadable):
         A column containing the correct labels for each instance and a column containing the predictions made by the model are specified.
         The :math:`F_{\\beta}` measure of a binary classification model is the harmonic mean of precision and recall.
         If we let:
-        
+
         * beta :math:`\\equiv \\beta`,
         * :math:`T_{P}` denote the number of true positives,
         * :math:`F_{P}` denote the number of false positives, and
         * :math:`F_{N}` denote the number of false negatives,
-            
+
         then:
-        
+
         .. math::
             F_{\\beta} = \\left(1 + \\beta ^ 2\\right) * \\frac{\\frac{T_{P}}{T_{P} + F_{P}} * \\frac{T_{P}}{T_{P} + F_{N}}}{\\beta ^ 2 * \\
             \\left(\\frac{T_{P}}{T_{P} + F_{P}} + \\frac{T_{P}}{T_{P} + F_{N}}\\right)}
@@ -1453,7 +1462,7 @@ class BigFrame(command_loadable):
 
         Create a new frame, combining similar values of column *a*, and count how many of each value is in the original frame::
 
-            new_frame = my_frame.groupBy('a', count)
+            new_frame = my_frame.group_By('a', count)
             new_frame.inspect()
 
              a str       count int
@@ -1477,7 +1486,7 @@ class BigFrame(command_loadable):
         Create a new frame from this data, grouping the rows by unique combinations of column *a* and *b*;
         average the value in *c* for each group::
 
-            new_frame = my_frame.groupBy(['a', 'b'], {'c' : avg})
+            new_frame = my_frame.group_By(['a', 'b'], {'c' : avg})
             new_frame.inspect()
 
              a int   b str   c_avg float
@@ -1501,7 +1510,7 @@ class BigFrame(command_loadable):
         Create a new frame from this data, grouping the rows by unique combinations of column *a* and *c*;
         count each group; for column *d* calculate the average, sum and minimum value; for column *e*, save the maximum value::
 
-            new_frame = my_frame.groupBy(['a', 'c'], agg.count, {'d': [agg.avg, agg.sum, agg.min], 'e': agg.max})
+            new_frame = my_frame.group_By(['a', 'c'], agg.count, {'d': [agg.avg, agg.sum, agg.min], 'e': agg.max})
 
              a str   c int   count int  d_avg float  d_sum float     d_min float e_max int
             |-----------------------------------------------------------------------------|
@@ -1531,12 +1540,12 @@ class BigFrame(command_loadable):
             The number of rows to print
         offset : int
             The number of rows to skip before printing
-            
+
         Returns
         -------
         data
             Formatted for ease of human inspection
-            
+
         Examples
         --------
         For an example, see :ref:`example_frame.inspect`
@@ -1814,7 +1823,7 @@ class BigFrame(command_loadable):
 
         For further examples, see :ref:`example_frame.rename_columns`
 
-        .. versionadded:: 0.8
+        .. versionchanged:: 0.8.5
 
         """
         try:

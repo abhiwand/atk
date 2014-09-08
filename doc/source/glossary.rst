@@ -220,6 +220,18 @@ Glossary
         Equal depth binning attempts to place column values into bins such that each bin contains the same number of
         elements.
 
+    Empirical Cumulative Distribution
+    
+        The empirical cumulative distribution function (ECDF) :math:`Fn` is a step function with jumps :math:`i/n` at observation values,
+        where :math:`i` is the number of tied observations at that value.
+        Missing values are ignored.
+
+        For observations x :math:`= (x1,x2, ... xn)`, :math:`Fn` is the fraction of observations less or equal to :math:`t`.
+        
+        .. math::
+
+            Fn(t) = \# \frac {xi <= t}{n} = \frac {1}{n} \sum_{i=1}^{n} Indicator(xi <= t).
+
     ETL
     
         Extract, Transform, and Load
