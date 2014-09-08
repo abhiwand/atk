@@ -435,6 +435,7 @@ class FrameBackendRest(object):
     def rename_frame(self, frame, name):
         arguments = {'frame': self._get_frame_full_uri(frame), "new_name": name}
         execute_update_frame_command('rename_frame', arguments, frame)
+        
 
     def take(self, frame, n, offset):
         url = 'dataframes/{0}/data?offset={2}&count={1}'.format(frame._id,n, offset)
