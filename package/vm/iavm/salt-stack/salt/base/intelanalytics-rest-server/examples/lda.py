@@ -36,4 +36,5 @@ print graph.ml.latent_dirichlet_allocation(edge_value_property_list="word_count"
                                            input_edge_label_list="contains",
                                            output_vertex_property_list="lda_result ",
                                            vector_value="true",
+                                           max_supersteps=1,
                                            num_topics=3)
