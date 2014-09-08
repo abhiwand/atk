@@ -1,7 +1,7 @@
 from intelanalytics import *
 
 #the default home directory is  hdfs://user/iauser all the sample data sets are saved to hdfs://user/iauser/datasets
-dataset = r"datasets/test_lda.csv"
+dataset = r"datasets/lp_edge.csv"
 
 #csv schema definition
 schema = [("source", int64),
