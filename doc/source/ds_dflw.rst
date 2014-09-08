@@ -840,20 +840,23 @@ as shown in example below::
     reports = EdgeRule("worksUnder", employee, manager, { "years": f[“years”]},
         is_directed = True)
 
+.. _ds_dflw_building_a_graph:
+
 Building A Graph
 ================
 
-Now that you have built some rules, let us put them to use and create a graph by calling BigGraph. We will give the graph the
-name “employee_graph”::
+Now that you have built some rules, let us put them to use and create a graph by calling BigGraph.
+We will give the graph the name “employee_graph”::
 
     my_graph = BigGraph([employee, manager, reports], “employee_graph”)
 
-The graph is then created in the underlying graph database structure and the access control information is saved into the
-BigGraph object *my_graph*.
+The graph is then created in the underlying graph database structure and
+the access control information is saved into the BigGraph object *my_graph*.
 The data is ready to be analyzed using the advanced functionality of the BigGraph API, for example,
 the use of :term:`machine learning` algorithms.
 
-Similar to what was discussed for BigFrame, what gets returned is not all the data, but a proxy (descriptive pointer) for the data.
+Similar to what was discussed for BigFrame, what gets returned is not all the data,
+but a proxy (descriptive pointer) for the data.
 Commands such as g4 = my_graph will only give you a copy of the proxy, pointing to the same graph.
 
 --------------
