@@ -419,7 +419,7 @@ class FrameBackendRest(object):
                 new_names = [new_names]
             if len(column_names) != len(new_names):
                 raise ValueError("Old-style rename_columns requires name lists of equal length")
-            current_names = frame.column_names
+            current_names = column_names
         else:
             if not isinstance(column_names, dict):
                 raise ValueError("rename_columns requires a dictionary of string pairs")
