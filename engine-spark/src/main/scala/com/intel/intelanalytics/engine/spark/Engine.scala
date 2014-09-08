@@ -545,7 +545,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
   }
 
   /**
-   * Persists a PythonRDD after python computation is complete to HDFS 
+   * Persists a PythonRDD after python computation is complete to HDFS
    *
    * @param dataFrame DataFrame associated with this RDD
    * @param pyRdd PythonRDD instance

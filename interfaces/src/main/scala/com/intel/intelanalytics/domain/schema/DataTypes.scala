@@ -232,6 +232,9 @@ object DataTypes {
    * @return the converted values. Any values that cannot be parsed will result in an illegal argument exception.
    */
   def parseMany(columnTypes: Array[DataType])(strings: Array[String]): Array[Any] = {
+    if (columnTypes.length != strings.length)
+      throw new IllegalArgumentException("Data length does not match columns defined in data frame")
+
     val lifted = columnTypes.lift
     strings.zipWithIndex.map {
       case (s, i) => {
