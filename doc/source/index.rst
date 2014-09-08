@@ -20,3 +20,10 @@ References
 * :doc:`ia_legal`
 * :ref:`genindex`
 * :ref:`search`
+* :download:`PDF <_downloads/IntelAnalytics.pdf>`
+.. toctree::
+    :hidden:
+    :maxdepth: 1
+    
+    glossary
+    ia_legal

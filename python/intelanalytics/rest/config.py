@@ -23,9 +23,10 @@
 """
 config file for rest client
 """
+from intelanalytics.core.deprecate import raise_deprecation_warning
 
 # default connection config
-class server:
+class server_defaults:
     host = "localhost"
     port = 9099
     scheme = "http"
@@ -35,7 +36,32 @@ class server:
                'Authorization': "test_api_key_1"}
 
 
-class polling:
+class deprecated_server(object):
+
+    @property
+    def host(self):
+        raise_deprecation_warning("config.server.host", "use server.host")
+        return server_defaults.host
+
+    @host.setter
+    def host(self, value):
+        raise_deprecation_warning("config.server.host", "use server.host")
+        server_defaults.host = value
+
+    @property
+    def port(self):
+        raise_deprecation_warning("config.server.port", "use server.port")
+        return server_defaults.port
+
+    @port.setter
+    def port(self, value):
+        raise_deprecation_warning("config.server.port", "use server.port")
+        server_defaults.port = value
+
+server = deprecated_server()
+
+
+class polling_defaults:
     start_interval_secs = 1
     max_interval_secs = 20
     backoff_factor = 1.02
