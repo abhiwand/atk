@@ -56,8 +56,10 @@ such as connecting "items" to "purchasers."
 
 To build a graph, the developer assigns which features to use for vertices, which to use for edges,
 their respective labeling, and any associated properties.
-The toolkit routine then assembles the individual records into the properly-formed graph using the computing
-cluster for fast throughput.
+For further details about defining vertices and edges, see :ref:`Building Rules`.
+The toolkit *BigGraph* routine then assembles the individual records into
+the properly-formed graph using the computing cluster for fast throughput.
+For further details about building graphs, see :ref:`ds_dflw_building_a_graph`.
 In this process, duplicate edges are removed if data is incorrectly replicated, and the graph is checked for
 correct form, to eliminate presence of mal-connected edges that can prevent analytic algorithms from operating.
 The final graph is bulk-loaded into the Intel Analytics Toolkit’s graph database.

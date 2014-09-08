@@ -486,13 +486,13 @@ If your zookeeper client port is not 2181 un-comment the following line and repl
 Configure Spark Master Host
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    Update "invalid-Spark-master" with the fully qualified domain name of the Spark master node::
+    Update "invalid-spark-master" with the fully qualified domain name of the Spark master node::
 
-        master = "Spark://localhost.localdomain:7077"
+        master = "spark://localhost.localdomain:7077"
     
     Example::
 
-        master = "Spark://localhost.localdomain:7077" 
+        master = "spark://localhost.localdomain:7077" 
 
 Configure Spark Executor Memory
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -533,7 +533,7 @@ Run the following command to set the Spark class path::
 Follow the prompts and make corrections where necessary.
 
 If you have problems running the script you can update the Spark class path through Cloudera manager.
-If you log into Cloudera manager under the Spark configuration you can find the Spark-conf/Spark-env.sh setting.
+If you log into Cloudera manager under the Spark configuration you can find the spark-conf/spark-env.sh setting.
 If it isn't already set, add::
 
     export SPARK_CLASSPATH="/usr/lib/intelanalytics/graphbuilder/lib/*"
@@ -549,7 +549,7 @@ Starting Intel Analytics Spark Dependencies
 
 After setting up the Intel Analytics repositories, run the following command on every host with a Spark worker::
 
-    sudo yum -y install intelanalytics-Spark-deps
+    sudo yum -y install intelanalytics-spark-deps
 
 Installing Intel Analytics Python Rest Client
 =============================================
