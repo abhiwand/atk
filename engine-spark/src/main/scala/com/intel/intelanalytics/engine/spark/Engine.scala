@@ -1379,45 +1379,28 @@ class SparkEngine(sparkContextManager: SparkContextManager,
 
   val entropyDoc = CommandDoc(oneLineSummary = "Calculate Shannon entropy of a column.",
     extendedSummary = Some("""
-    Calculate the Shannon entropy of a column.  A mode is a data element of maximum weight. All data elements of weight <= 0
+    Calculate the Shannon entropy of a column.  The column can be weighted. All data elements of weight <= 0
     are excluded from the calculation, as are all data elements whose weight is NaN or infinite.
-    If there are no data elements of finite weight > 0, no mode is returned.
-
-    Because data distributions often have mutliple modes, it is possible for a set of modes to be returned. By
-    default, only one is returned, but my setting the optional parameter max_number_of_modes_returned, a larger
-    number of modes can be returned.
+    If there are no data elements of finite weight > 0, the entropy is zero.
 
     Parameters
     ----------
     data_column : str
-        The column whose mode is to be calculated
+        The column whose entropy is to be calculated
 
-    weights_column : str
-        Optional. The column that provides weights (frequencies) for the mode calculation.
+    weights_column : str (Optional)
+        The column that provides weights (frequencies) for the entropy calculation.
         Must contain numerical data. Uniform weights of 1 for all items will be used for the calculation if this
         parameter is not provided.
 
-
     Returns
     -------
-    mode : Dict
-        Dictionary containing summary statistics in the following entries:
-            mode : A mode is a data element of maximum net weight. A set of modes is returned.
-             The empty set is returned when the sum of the weights is 0. If the number of modes is <= the parameter
-             maxNumberOfModesReturned, then all modes of the data are returned.If the number of modes is
-             > maxNumberOfModesReturned, then only the first maxNumberOfModesReturned many modes
-             (per a canonical ordering) are returned.
-            weight_of_mode : Weight of a mode. If there are no data elements of finite weight > 0,
-             the weight of the mode is 0. If no weights column is given, this is the number of appearances of
-             each mode.
-            total_weight : Sum of all weights in the weight column. This is the row count if no weights
-             are given. If no weights column is given, this is the number of rows in the table with non-zero weight.
-            mode_count : The number of distinct modes in the data. In the case that the data is very multimodal,
-             this number may well exceed max_number_of_modes_returned.
+    entropy : float64
 
     Example
     -------
-    >>> mode = frame.column_mode('modum columpne')
+    >>> entropy = frame.entropy('data column')
+    >>> weighted_entropy = frame.entropy('data column', 'weight column')
                            """))
 
   val entropyCommand = commandPluginRegistry.registerCommand("dataframe/entropy",
@@ -1426,24 +1409,80 @@ class SparkEngine(sparkContextManager: SparkContextManager,
   def entropyCommandSimple(arguments: Entropy, user: UserPrincipal, invocation: SparkInvocation): EntropyReturn = {
     implicit val u = user
 
-    val frameId = arguments.frame
-    val frame = expectFrame(frameId)
+    val frameRef = arguments.frameRef
+    val frame = expectFrame(frameRef)
     val ctx = invocation.sparkContext
-    val frameRdd = frames.loadFrameRdd(ctx, frameId.id)
+    val frameRdd = frames.loadFrameRdd(ctx, frameRef.id)
     val columnIndex = frame.schema.columnIndex(arguments.dataColumn)
+    val (weightsColumnIndexOption, weightsDataTypeOption) = getColumnIndexAndType(frame, arguments.weightsColumn)
 
-    val entropy = EntropyRDDFunctions.shannonEntropy(frameRdd, columnIndex)
+    val entropy = EntropyRDDFunctions.shannonEntropy(frameRdd, columnIndex, weightsColumnIndexOption, weightsDataTypeOption)
     EntropyReturn(entropy)
   }
 
   /**
-   * Calculate the entropy of the specified column.
+   * Calculate the top (or bottom) K distinct values by count for specified data column.
    *
-   * @param arguments Input specification for column entropy
+   * @param arguments Input specification for topK command
    * @param user Current user
    */
   override def topK(arguments: TopK)(implicit user: UserPrincipal): Execution =
     commands.execute(topKCommand, arguments, user, implicitly[ExecutionContext])
+
+  val topKDoc = CommandDoc(oneLineSummary = "Calculate the top (or bottom) K distinct values by count of a column.",
+    extendedSummary = Some("""
+    Calculate the top (or bottom) K distinct values by count of a column.  The column can be weighted. All data elements
+    of weight <= 0 are excluded from the calculation, as are all data elements whose weight is NaN or infinite.
+    If there are no data elements of finite weight > 0, the topK is empty.
+
+    Parameters
+    ----------
+    data_column : str
+        The column whose top (or bottom) K distinct values are to be calculated
+
+    k : int
+        Number of entries to return
+
+    reverse : boolean  (Optional, default=True)
+        Optional. DefIf True, return bottom K, else return top K entries
+                             |
+    weights_column : str (Optional)
+        The column that provides weights (frequencies) for the topK calculation.
+        Must contain numerical data. Uniform weights of 1 for all items will be used for the calculation if this
+        parameter is not provided.
+
+
+
+    Returns
+    -------
+
+    BigFrame : An object with access to the frame
+
+    Example
+    -------
+    For this example, we calculate the top 5 movie genres in a data frame.
+
+     >>> top5 = frame.topk('genre', 5)
+     >>> top5.inspect()
+
+      genre:str   count:int64
+      ----------------------------
+      Drama        738278
+      Comedy       671398
+      Short        455728
+      Documentary  323150
+      Talk-Show    265180
+
+    In this example, we calculate the bottom 3 movie genres in a data frame.
+    >>> bottom3 = frame.topk('genre', 3, reverse=True)
+    >>> bottom3.inspect()
+
+       genre:str   count:int64
+       ----------------------------
+       Musical      26976
+       War          21067
+       Film-Noir    595
+                           """))
 
   val topKCommand =
     commandPluginRegistry.registerCommand("dataframe/topk", topKCommandSimple _, numberOfJobs = 3)
@@ -1470,7 +1509,6 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     ))
 
     frames.saveFrame(newFrame, new FrameRDD(newSchema, topRdd))
-    //TopKReturn(FrameReference(newFrame.id))
   }
 
   /**
@@ -1485,5 +1523,25 @@ class SparkEngine(sparkContextManager: SparkContextManager,
 
   override def shutdown(): Unit = {
     //do nothing
+  }
+
+
+  /**
+   * Get column index and data type of a column in a data frame.
+   *
+   * @param frame Data frame
+   * @param columnName Column name
+   * @return Option with the column index and data type
+   */
+  private def getColumnIndexAndType(frame: DataFrame, columnName: Option[String]): (Option[Int], Option[DataType]) = {
+
+    val (columnIndexOption, dataTypeOption) = columnName match {
+      case Some(columnIndex) => {
+        val weightsColumnIndex = frame.schema.columnIndex(columnIndex)
+        (Some(weightsColumnIndex), Some(frame.schema.columns(weightsColumnIndex)._2))
+      }
+      case None => (None, None)
+    }
+    (columnIndexOption, dataTypeOption)
   }
 }

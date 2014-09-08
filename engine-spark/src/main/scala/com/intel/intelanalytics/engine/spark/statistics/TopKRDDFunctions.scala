@@ -34,7 +34,7 @@ private[spark] object TopKRDDFunctions extends Serializable {
     val topKByPartition = distinctCountRDD.mapPartitions(countIterator => {
       Iterator.single(sortTopKByValue(countIterator, k, isDescendingSort))
     }).reduce({ (topPartition1, topPartition2) =>
-      mergeSortedSeqs(topPartition1, topPartition2, Seq(), k, isDescendingSort)
+      mergeSortedSeqs(topPartition1, topPartition2, isDescendingSort)
     })
 
     // Get the overall top (or bottom) K entries from partitions
@@ -66,32 +66,27 @@ private[spark] object TopKRDDFunctions extends Serializable {
     priorityQueue.reverse.dequeueAll.toSeq
   }
 
-  private def mergeSortedSeqs(topKSeq1: Seq[CountPair], topKSeq2: Seq[CountPair], accumulator: Seq[CountPair],
-                        k: Int, descending: Boolean = false): Seq[CountPair] = {
-    val ordering = if (descending) implicitly[Ordering[CountPair]].reverse else implicitly[Ordering[CountPair]]
+  /**
+   * Merge two sorted sequences while maintaining sort order.
+   *
+   * @param sortedSeq1 First sorted sequence
+   * @param sortedSeq2 Second sorted sequence
+   * @param descending Sort in descending order if true, else sort in ascending order
+   * @return Merged sorted sequence
+   */
+  private def mergeSortedSeqs(sortedSeq1: Seq[CountPair], sortedSeq2: Seq[CountPair],
+                         descending: Boolean = false): Seq[CountPair] = {
+    val ordering = if (descending) Ordering[CountPair].reverse else Ordering[CountPair]
 
-    (topKSeq1, topKSeq2) match {
-      case (seq1, Nil) => accumulator ++ seq1
-      case (Nil, seq2) => accumulator ++ seq2
+    (sortedSeq1, sortedSeq2) match {
+      case (seq1, Nil) => seq1
+      case (Nil, seq2) => seq2
       case (seq1, seq2) => {
-        val (newTopKSeq1, newTopKSeq2, newAccumulator) = getNextMergeSeqs(seq1, seq2, accumulator, ordering)
-        mergeSortedSeqs(newTopKSeq1, newTopKSeq2, newAccumulator, k, descending)
+        if (ordering.lteq(seq1.head, seq2.head))
+          seq1.head +: mergeSortedSeqs(seq1.tail, seq2, descending)
+        else
+          seq2.head +: mergeSortedSeqs(seq1, seq2.tail, descending)
       }
     }
   }
-
-  private def getNextMergeSeqs(seq1: Seq[CountPair],
-                               seq2: Seq[CountPair],
-                               accumulator: Seq[CountPair],
-                               ordering: Ordering[CountPair]): (Seq[CountPair], Seq[CountPair], Seq[CountPair]) = {
-    val (head1, tailSeq1) = (seq1.head, seq1.tail)
-    val (head2, tailSeq2) = (seq2.head, seq2.tail)
-    val (newSeq1, newSeq2, newAccumulator) = if (ordering.lteq(head1, head2))
-      (tailSeq1, seq2, accumulator :+ head1)
-    else
-      (seq1, tailSeq2, accumulator :+ head2)
-    (newSeq1, newSeq2, newAccumulator)
-  }
-
-
 }
