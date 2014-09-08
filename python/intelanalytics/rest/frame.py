@@ -419,17 +419,17 @@ class FrameBackendRest(object):
                 new_names = [new_names]
             if len(column_names) != len(new_names):
                 raise ValueError("Old-style rename_columns requires name lists of equal length")
-            current_names = column_names
         else:
             if not isinstance(column_names, dict):
                 raise ValueError("rename_columns requires a dictionary of string pairs")
             new_names = column_names.values()
-            current_names = column_names.keys()
+            column_names = column_names.keys()
 
+        current_names = frame.column_names
         for nn in new_names:
             if nn in current_names:
                 raise ValueError("Cannot use rename to '{0}' because another column already exists with that name".format(nn))
-        arguments = {'frame': self._get_frame_full_uri(frame), "original_names": current_names, "new_names": new_names}
+        arguments = {'frame': self._get_frame_full_uri(frame), "original_names": column_names, "new_names": new_names}
         execute_update_frame_command('rename_columns', arguments, frame)
 
     def rename_frame(self, frame, name):
