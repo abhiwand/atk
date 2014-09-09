@@ -51,7 +51,7 @@ object CommunityAssigner extends Serializable {
     // Pair of seq of community Id and seq of k-cliques by cogrouping
     // connected components (new vertices and community Id pair) and new vertices Id to
     // old vertices Id (of k-clique) pair
-    val seqOfCommunityIdToSeqOfCliques: RDD[(Seq[Long], Seq[Set[Long]])] = connectedComponents.cogroup(cliqueGraphVertexIdToCliqueSet).map(_._2)
+    val seqOfCommunityIdToSeqOfCliques: RDD[(Iterable[Long], Iterable[Set[Long]])] = connectedComponents.cogroup(cliqueGraphVertexIdToCliqueSet).map(_._2)
 
     // Get community Id and corresponding set of old vertex Ids of the k-clique
     val communityIdToVertexIdSet: RDD[(Long, Set[Long])] = seqOfCommunityIdToSeqOfCliques.flatMap({

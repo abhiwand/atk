@@ -22,7 +22,7 @@ class LbpRunnerTest extends FlatSpec with Matchers with TestingSparkContextFlatS
     val dstIdPropertyName = "dstId"
     val edgeLabel = "label"
     val propertyForLBPOutput = "LBP_VALUE"
-    val expectedLBPValue  = new Array[Double](0)
+    val expectedLBPValue = new Array[Double](0)
 
     val vertexSet: Set[Long] = Set(1, 2, 3, 4, 5, 6, 7)
 
@@ -74,9 +74,9 @@ class LbpRunnerTest extends FlatSpec with Matchers with TestingSparkContextFlatS
       vertexSet.map(vid =>
         GBVertex(vid, Property(vertexIdPropertyName, vid), Seq(Property(propertyForLBPOutput, expectedLBPValue))))
 
-    testVertices.map({case gbVertex: GBVertex => gbVertex.physicalId }) shouldBe expectedVerticesOut.map({case gbVertex: GBVertex => gbVertex.physicalId })
-    testVertices.map({case gbVertex: GBVertex => gbVertex.gbId }) shouldBe expectedVerticesOut.map({case gbVertex: GBVertex => gbVertex.gbId })
-    testVertices.forall({case gbVertex: GBVertex => ( gbVertex.getProperty(propertyForLBPOutput).get.value.asInstanceOf[Array[Double]].isEmpty)}) shouldBe true
-    testVertices.forall({case gbVertex: GBVertex => ( gbVertex.properties.length == 1)}) shouldBe true
+    testVertices.map({ case gbVertex: GBVertex => gbVertex.physicalId }) shouldBe expectedVerticesOut.map({ case gbVertex: GBVertex => gbVertex.physicalId })
+    testVertices.map({ case gbVertex: GBVertex => gbVertex.gbId }) shouldBe expectedVerticesOut.map({ case gbVertex: GBVertex => gbVertex.gbId })
+    testVertices.forall({ case gbVertex: GBVertex => (gbVertex.getProperty(propertyForLBPOutput).get.value.asInstanceOf[Array[Double]].isEmpty) }) shouldBe true
+    testVertices.forall({ case gbVertex: GBVertex => (gbVertex.properties.length == 1) }) shouldBe true
   }
 }
