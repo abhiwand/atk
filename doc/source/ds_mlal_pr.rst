@@ -34,13 +34,12 @@ Our implementation of *PageRank* satisfies the following equation at each vertex
     PR(v) = \frac {\rho}{n} + \rho \left (\sum_{u\in InSet(v)} \frac {PR(u)}{L(u)} \right ) 
 
 Where:
-
-| :math:`\vartriangleright v` – a vertex
-| :math:`\vartriangleright L(v)` – outbound degree of the vertex v
-| :math:`\vartriangleright PR(v)` – *PageRank* score of the vertex v 
-| :math:`\vartriangleright InSet(v)` – set of vertices pointing to the vertex v 
-| :math:`\vartriangleright n` – total number of vertices in the graph
-| :math:`\vartriangleright \rho`- user specified damping factor (also known as reset probability)
+    | :math:`v` – a vertex
+    | :math:`L(v)` – outbound degree of the vertex v
+    | :math:`PR(v)` – *PageRank* score of the vertex v 
+    | :math:`InSet(v)` – set of vertices pointing to the vertex v 
+    | :math:`n` – total number of vertices in the graph
+    | :math:`\rho` - user specified damping factor (also known as reset probability)
 
 Termination is guaranteed by two mechanisms.
 
