@@ -6,15 +6,41 @@
 
 	  -->
     <title>Scala Coverage</title>
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css">
+    <style type="text/css">
+        div.tab-pane iframe {
+            width: 100%;
+            height: 90%;
+        }
+    </style>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
 </head>
 <body>
-	<p><a href="api-server/target/scoverage-report/index.html">api-server</a></p>
-	<p><a href="engine/target/scoverage-report/index.html">engine</a></p>
-	<p><a href="engine-spark/target/scoverage-report/index.html">engine-spark</a></p>
-	<p><a href="graphbuilder-3/target/scoverage-report/index.html">graphbuilder-3</a></p>
-	<p><a href="graphon/target/scoverage-report/index.html">graphon</a></p>
-	<p><a href="interfaces/target/scoverage-report/index.html">interfaces</a></p>
-	<p><a href="launcher/target/scoverage-report/index.html">launcher</a></p>
-	<p><a href="shared/target/scoverage-report/index.html">shared</a></p>
+
+    <!-- Nav tabs -->
+    <ul class="nav nav-tabs" role="tablist">
+        <li class="active"><a href="#api-server" role="tab" data-toggle="tab">api-server</a></li>
+        <li><a href="#engine-spark" role="tab" data-toggle="tab">engine-spark</a></li>
+        <li><a href="#graphbuilder-3" role="tab" data-toggle="tab">graphbuilder-3</a></li>
+        <li><a href="#graphon" role="tab" data-toggle="tab">graphon</a></li>
+        <li><a href="#interfaces" role="tab" data-toggle="tab">interfaces</a></li>
+        <li><a href="#launcher" role="tab" data-toggle="tab">launcher</a></li>
+        <li><a href="#shared" role="tab" data-toggle="tab">shared</a></li>
+    </ul>
+
+    <!-- Tab panes -->
+    <div class="tab-content">
+        <div class="tab-pane active" id="api-server"><iframe src="api-server/target/scoverage-report/index.html"></iframe></div>
+        <div class="tab-pane" id="engine-spark"><iframe src="engine-spark/target/scoverage-report/index.html"></iframe></div>
+        <div class="tab-pane" id="graphbuilder-3"><iframe src="graphbuilder-3/target/scoverage-report/index.html"></iframe></div>
+        <div class="tab-pane" id="graphon"><iframe src="graphon/target/scoverage-report/index.html"></iframe></div>
+        <div class="tab-pane" id="interfaces"><iframe src="interfaces/target/scoverage-report/index.html"></iframe></div>
+        <div class="tab-pane" id="launcher"><iframe src="launcher/target/scoverage-report/index.html"></iframe></div>
+        <div class="tab-pane" id="shared"><iframe src="shared/target/scoverage-report/index.html"></iframe></div>
+    </div>
+
 </body>
 </html>
