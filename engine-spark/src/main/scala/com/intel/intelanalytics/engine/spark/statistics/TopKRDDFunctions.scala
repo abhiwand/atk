@@ -1,5 +1,6 @@
 package com.intel.intelanalytics.engine.spark.statistics
 
+import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 import com.intel.intelanalytics.engine.Rows._
 import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.RDD
@@ -8,23 +9,30 @@ import scala.collection.mutable.PriorityQueue
 
 private[spark] object TopKRDDFunctions extends Serializable {
 
-  case class CountPair(key: Any, value: Long) extends Ordered[CountPair] {
+  case class CountPair(key: Any, value: Double) extends Ordered[CountPair] {
     def compare(that: CountPair) = this.value compare that.value
   }
 
   /**
    * Returns the top (or bottom) K distinct values by count for specified data column.
    *
-   * @param frameRdd RDD for data frame
-   * @param columnIndex Index of data column
+   * @param frameRDD RDD for data frame
+   * @param dataColumnIndex Index of data column
    * @param k Number of entries to return
    * @param reverse Return bottom K entries if true, else return top K
+   * @param weightsColumnIndexOption Option for index of column providing the weights. Must be numerical data.
+   * @param weightsTypeOption Option for the datatype of the weights.
    * @return Top (or bottom) K distinct values by count for specified column
    */
-  def topK(frameRdd: RDD[Row], columnIndex: Int, k: Int, reverse: Boolean = false): RDD[Row] = {
-    require(columnIndex >= 0, "label column index must be greater than or equal to zero")
+  def topK(frameRDD: RDD[Row], dataColumnIndex: Int, k: Int, reverse: Boolean = false,
+           weightsColumnIndexOption: Option[Int] = None,
+           weightsTypeOption: Option[DataType] = None): RDD[Row] = {
+    require(dataColumnIndex >= 0, "label column index must be greater than or equal to zero")
 
-    val distinctCountRDD = frameRdd.map(row => (row(columnIndex), 1l)).reduceByKey((a, b) => a + b)
+    val dataWeightPairs =
+      ColumnStatistics.getDataWeightPairs(dataColumnIndex, weightsColumnIndexOption, weightsTypeOption, frameRDD)
+
+    val distinctCountRDD = dataWeightPairs.reduceByKey((a, b) => a + b)
 
     //Sort by descending order to get top K
     val isDescendingSort = !reverse
@@ -41,7 +49,7 @@ private[spark] object TopKRDDFunctions extends Serializable {
     // Get the overall top (or bottom) K entries from partitions
     // Works when K*num_partitions fits in memory of single machine.
     val topRows = topKByPartition.take(k).map(f => Array(f.key, f.value))
-    frameRdd.sparkContext.parallelize(topRows)
+    frameRDD.sparkContext.parallelize(topRows)
   }
 
   /**
@@ -54,7 +62,7 @@ private[spark] object TopKRDDFunctions extends Serializable {
    * @param descending Sort in descending order if true, else sort in ascending order
    * @return Top K sorted entries
    */
-  def sortTopKByValue(inputIterator: Iterator[(Any, Long)],
+  def sortTopKByValue(inputIterator: Iterator[(Any, Double)],
                       k: Int, descending: Boolean = false): Seq[CountPair] = {
     val ordering = if (descending) Ordering[CountPair].reverse else Ordering[CountPair]
     val priorityQueue = new PriorityQueue[CountPair]()(ordering)

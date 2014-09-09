@@ -1,29 +1,30 @@
 package com.intel.intelanalytics.engine.spark.statistics
 
 import com.intel.intelanalytics.engine.spark.statistics.TopKRDDFunctions.CountPair
+import com.intel.intelanalytics.domain.schema.DataTypes
 import com.intel.testutils.TestingSparkContextFlatSpec
 import org.scalatest.Matchers
 
 class TopKItest extends TestingSparkContextFlatSpec with Matchers {
   val inputList = List(
-    Array[Any](-1, "a", 0),
-    Array[Any](0, "c", 0),
-    Array[Any](0, "b", 0),
-    Array[Any](5, "b", 0),
-    Array[Any](5, "b", 0),
-    Array[Any](5, "a", 0)
+    Array[Any](-1, "a", 0, 2d),
+    Array[Any](0, "c", 0, 1d),
+    Array[Any](0, "b", 0, 0.5d),
+    Array[Any](5, "b", 0, 0.25d),
+    Array[Any](5, "b", 0, 0.2d),
+    Array[Any](5, "a", 0, 0.1d)
   )
 
   val emptyList = List.empty[Array[Any]]
 
-  val keyCountList = List[(Any, Long)](
+  val keyCountList = List[(Any, Double)](
     ("key1", 2),
     ("key2", 20),
     ("key3", 12),
     ("key4", 0),
     ("key5", 6))
 
-  val emptyCountList = List.empty[(Any, Long)]
+  val emptyCountList = List.empty[(Any, Double)]
 
   "topK" should "return the top K distinct values sorted by count" in {
     val frameRdd = sparkContext.parallelize(inputList, 2)
@@ -33,7 +34,7 @@ class TopKItest extends TestingSparkContextFlatSpec with Matchers {
     top1Column0(0) should equal(Array[Any](5, 3))
   }
 
-  "topK" should "return all distinct values sorted by count if K exceeds input size" in {
+  "topK" should "return all top K distinct values sorted by count if K exceeds input size" in {
     val frameRdd = sparkContext.parallelize(inputList, 2)
     val topKColumn1 = TopKRDDFunctions.topK(frameRdd, 1, 100, false).collect()
 
@@ -43,6 +44,16 @@ class TopKItest extends TestingSparkContextFlatSpec with Matchers {
     topKColumn1(2) should equal(Array[Any]("c", 1))
   }
 
+  "topK" should "return the weighted top K distinct values sorted by count" in {
+    val frameRdd = sparkContext.parallelize(inputList, 2)
+    val topKColumn1 = TopKRDDFunctions.topK(frameRdd, 1, 3, false, Some(3), Some(DataTypes.float64)).collect()
+
+    topKColumn1.size should equal(3)
+    topKColumn1(0) should equal(Array[Any]("a", 2.1))
+    topKColumn1(1) should equal(Array[Any]("c", 1))
+    topKColumn1(2) should equal(Array[Any]("b", 0.95))
+  }
+
   "topK" should "return the bottom K distinct values sorted by count" in {
     val frameRdd = sparkContext.parallelize(inputList, 2)
     val bottom2Column1 = TopKRDDFunctions.topK(frameRdd, 1, 2, true).collect()
@@ -50,6 +61,16 @@ class TopKItest extends TestingSparkContextFlatSpec with Matchers {
     bottom2Column1.size should equal(2)
     bottom2Column1(0) should equal(Array[Any]("c", 1))
     bottom2Column1(1) should equal(Array[Any]("a", 2))
+  }
+
+  "topK" should "return the weighted bottom K distinct values sorted by count" in {
+    val frameRdd = sparkContext.parallelize(inputList, 2)
+    val topKColumn1 = TopKRDDFunctions.topK(frameRdd, 1, 3, true, Some(3), Some(DataTypes.float64)).collect()
+
+    topKColumn1.size should equal(3)
+    topKColumn1(0) should equal(Array[Any]("b", 0.95))
+    topKColumn1(1) should equal(Array[Any]("c", 1))
+    topKColumn1(2) should equal(Array[Any]("a", 2.1))
   }
 
   "topK" should "return an empty sequence if the input data frame is empty" in {
