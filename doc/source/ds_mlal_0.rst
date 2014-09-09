@@ -20,19 +20,18 @@ Machine Learning Algorithms
     ds_mlal_cc
     ds_mlal_k
 
-In this release of the Analytics Toolkit, we support eight graphical algorithms in iGiraph.
-From a functionality point of view, they fall into these categories: *Collaborative Filtering*, *Graph Analytics*, *Graphical Models*, and *Topic Modeling*.
+The graph machine learning algorithms currently supported fall into these categories:
+*Collaborative Filtering*, *Graph Analytics*, *Graphical Models*, and *Topic Modeling*.
 
 * :ref:`Collaborative_Filtering`
-
     * :ref:`ALS`
     * :ref:`CGD`
 
 * :ref:`Graph_Analytics`
-
     * :ref:`PR`
 
 .. TODO::
+
     * ref:`APL`
     * ref:`CC`
     
@@ -40,7 +39,6 @@ From a functionality point of view, they fall into these categories: *Collaborat
 
 
 * :ref:`Graphical_Models`
-
     * :ref:`LP`
     * :ref:`LBP`
 
@@ -65,7 +63,7 @@ From a functionality point of view, they fall into these categories: *Collaborat
 Graph Analytics
 ---------------
 
-    We currently support one algorithm in this category, :ref:`PR`
+We currently support one algorithm in this category, :ref:`PR`
 
 
 .. _PR:

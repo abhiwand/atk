@@ -335,7 +335,7 @@ so when using some Python libraries, be aware that some of them are not designed
 In general, the following functions select rows of data based upon the data in the row.
 For details about row selection based upon its data see :doc:`ds_apir`
 
-.. _example_frame.drop_rows
+.. _example_frame.drop_rows:
 
 Drop Rows:
 ----------
@@ -533,7 +533,6 @@ Aggregation based on columns:
             * *d_sum*
 
 Aggregation based on full row:
-
     Given a frame with columns *a*, and *b*;
     Create a new frame and a Bigframe *gr_data* to access it;
     Group by unique values in columns *a* and *b*;
@@ -545,7 +544,6 @@ Aggregation based on full row:
         agg.count is the only full row aggregation function supported at this time
 
 Aggregation based on both column and row together:
-
     Given a frame with columns *a*, *b*, *c*, and *d*;
     Group by unique values in columns *a* and *b*;
     Count the number of rows in each group and put that value in column *count*:
@@ -864,8 +862,7 @@ We will give the graph the name “employee_graph”::
 
 The graph is then created in the underlying graph database structure and
 the access control information is saved into the BigGraph object *my_graph*.
-The data is ready to be analyzed using the advanced functionality of the BigGraph API, for example,
-the use of :term:`machine learning` algorithms.
+The data is ready to be analyzed using the :doc:`ds_ml` algorithms in the BigGraph API.
 
 Similar to what was discussed for BigFrame, what gets returned is not all the data,
 but a proxy (descriptive pointer) for the data.

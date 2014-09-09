@@ -174,9 +174,9 @@ class BigFrame(command_loadable):
     Notes
     -----
     If no name is provided for the BigFrame object, it will generate one.
-    An automatically generated name will be the word "frame_" followed by the uuid.uuid4().hex and
+    An automatically generated name will be the word "frame\_" followed by the uuid.uuid4().hex and
     if allowed, an "_" character then the name of the data source.
-    For example, ``frame_b21a3475a2175f165ba7...``
+    For example, ``u'frame_e433e25751b6434bae13b6d1c8ab45c1_csv_file'``
 
     Examples
     --------
