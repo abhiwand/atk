@@ -26,7 +26,7 @@ package com.intel.intelanalytics.engine.spark
 import org.scalatest.{ Matchers, FlatSpec }
 import com.intel.intelanalytics.algorithm.{ QuantileTarget, QuantileComposingElement }
 
-class QuantileCalculationTest extends FlatSpec with Matchers {
+class QuantileTest extends FlatSpec with Matchers {
   "25th quantile" should "be 0.5 * x2 + 0.5 * x3 from 10 elements" in {
     Seq(QuantileComposingElement(2, QuantileTarget(25, 0.5f)), QuantileComposingElement(3, QuantileTarget(25, 0.5f))) shouldBe SparkOps.getQuantileComposingElements(10, 25)
   }
@@ -54,19 +54,6 @@ class QuantileCalculationTest extends FlatSpec with Matchers {
     mapping(4997931) shouldBe Seq(QuantileTarget(95, 1))
     mapping(5208370) shouldBe Seq(QuantileTarget(99, 0.8))
     mapping(5208371) shouldBe Seq(QuantileTarget(99, 0.2))
-  }
-
-  "10.5, 20.2 and 95.8 quantile" should "have mapping for element and mapping" in {
-    val mapping = SparkOps.getQuantileTargetMapping(5260980, Seq(10.5, 20.2, 95.8))
-
-    mapping(552402) shouldBe Seq(QuantileTarget(10.5, 0.1))
-    mapping(552403) shouldBe Seq(QuantileTarget(10.5, 0.9))
-
-    mapping(1062717) shouldBe Seq(QuantileTarget(20.2, 0.04))
-    mapping(1062718) shouldBe Seq(QuantileTarget(20.2, 0.96))
-
-    mapping(5040018) shouldBe Seq(QuantileTarget(95.8, 0.16))
-    mapping(5040019) shouldBe Seq(QuantileTarget(95.8, 0.84))
   }
 
 }

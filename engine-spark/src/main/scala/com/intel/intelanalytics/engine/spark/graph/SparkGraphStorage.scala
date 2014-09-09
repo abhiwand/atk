@@ -125,16 +125,14 @@ class SparkGraphStorage(metaStore: MetaStore,
 
   /**
    * Obtain the graph metadata for a range of graph IDs.
-   * @param offset First graph to obtain.
-   * @param count Number of graphs to obtain.
    * @param user The user listing the graphs.
    * @return Sequence of graph metadata objects.
    */
-  override def getGraphs(offset: Int, count: Int)(implicit user: UserPrincipal): Seq[Graph] = {
+  override def getGraphs()(implicit user: UserPrincipal): Seq[Graph] = {
     metaStore.withSession("spark.graphstorage.getGraphs") {
       implicit session =>
         {
-          metaStore.graphRepo.scan(offset, count)
+          metaStore.graphRepo.scanAll()
         }
     }
   }

@@ -91,7 +91,7 @@ trait Engine {
 
   def renameColumns(arguments: FrameRenameColumns[JsObject, Long])(implicit user: UserPrincipal): Execution
 
-  def removeColumn(arguments: FrameRemoveColumn)(implicit user: UserPrincipal): Execution
+  def dropColumns(arguments: FrameDropColumns)(implicit user: UserPrincipal): Execution
 
   def addColumns(arguments: FrameAddColumns[JsObject, Long])(implicit user: UserPrincipal): Execution
 
@@ -122,11 +122,15 @@ trait Engine {
 
   */
 
+  def entropy(arguments: Entropy)(implicit user: UserPrincipal): Execution
+
+  def topK(arguments: TopK)(implicit user: UserPrincipal): Execution
+
   def confusionMatrix(arguments: ConfusionMatrix[Long])(implicit user: UserPrincipal): Execution
 
   def groupBy(arguments: FrameGroupByColumn[JsObject, Long])(implicit user: UserPrincipal): Execution
 
-  def getFrames(offset: Int, count: Int)(implicit p: UserPrincipal): Future[Seq[DataFrame]]
+  def getFrames()(implicit p: UserPrincipal): Future[Seq[DataFrame]]
 
   def getFrameByName(name: String)(implicit p: UserPrincipal): Future[Option[DataFrame]]
 
@@ -134,7 +138,7 @@ trait Engine {
 
   def getGraph(id: Identifier): Future[Graph]
 
-  def getGraphs(offset: Int, count: Int)(implicit user: UserPrincipal): Future[Seq[Graph]]
+  def getGraphs()(implicit user: UserPrincipal): Future[Seq[Graph]]
 
   def getGraphByName(name: String)(implicit user: UserPrincipal): Future[Option[Graph]]
 
