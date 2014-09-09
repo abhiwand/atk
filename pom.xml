@@ -161,13 +161,13 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 <module>event</module>
                 <module>ispark-deps</module>
                 <module>testutils</module>
-                <module>graphbuilder-3</module><!-- scoverage -->
+                <module>graphbuilder-3</module>
                 <module>graphon</module>
                 <module>interfaces</module>
-                <module>launcher</module><!-- scoverage -->
-                <module>shared</module><!-- scoverage -->
+                <module>launcher</module>
+                <module>shared</module>
                 <module>engine</module>
-                <module>engine-spark</module><!-- scoverage -->
+                <module>engine-spark</module>
                 <module>api-server</module>
                 <module>igiraph/giraph-titan</module>
                 <!--<module>imahout</module>
@@ -190,13 +190,13 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 <!--module>python</module-->
                 <module>ispark-deps</module>
                 <module>testutils</module>
-                <module>graphbuilder-3</module><!-- scoverage -->
+                <module>graphbuilder-3</module>
                 <module>graphon</module>
                 <module>interfaces</module>
-                <module>launcher</module><!-- scoverage -->
-                <module>shared</module><!-- scoverage -->
+                <module>launcher</module>
+                <module>shared</module>
                 <module>engine</module>
-                <module>engine-spark</module><!-- scoverage -->
+                <module>engine-spark</module>
                 <module>api-server</module>
                 <module>imahout</module>
                 <module>igiraph/giraph-core</module>
@@ -251,11 +251,6 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                                         </jvmArgs>
                                         <args>
                                             <arg>-g:vars</arg>
-                                            <!--
-                                                The -Yrangepos flag was causing issues with a ScalaTest in imllib.
-                                                It is needed for scoverage but hopefully not needed here.
-                                             -->
-                                            <!--arg>-Yrangepos</arg-->
                                         </args>
                                     </configuration>
                                 </execution>
@@ -357,9 +352,7 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
         <profile>
             <id>scala-coverage</id>
             <activation>
-                <property>
-                    <name>env.BUILD_NUMBER</name>
-                </property>
+                <activeByDefault>false</activeByDefault>
             </activation>
             <build>
                 <pluginManagement>
@@ -373,6 +366,10 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                             <executions>
                                 <execution>
                                     <id>compile</id>
+                                    <goals>
+                                        <goal>add-source</goal>
+                                        <goal>compile</goal>
+                                    </goals>
                                     <configuration>
                                         <dependencies>
                                             <dependency>
@@ -390,24 +387,15 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                                         </compilerPlugins>
                                         <args>
                                             <arg>-g:vars</arg>
-                                            <arg>-Yrangepos</arg>
                                             <arg>-P:scoverage:dataDir:${project.build.directory}</arg>
                                         </args>
                                     </configuration>
                                 </execution>
-                            </executions>
-                        </plugin>
-                        <plugin>
-                            <inherited>true</inherited>
-                            <groupId>org.scoverage</groupId>
-                            <artifactId>maven-scoverage-plugin</artifactId>
-                            <version>${scoverage-plugin.version}</version>
-                            <executions>
                                 <execution>
-                                    <id>scala-scoverage-report</id>
-                                    <phase>test</phase>
+                                    <id>test</id>
                                     <goals>
-                                        <goal>report</goal>
+                                        <goal>add-source</goal>
+                                        <goal>testCompile</goal>
                                     </goals>
                                 </execution>
                             </executions>
