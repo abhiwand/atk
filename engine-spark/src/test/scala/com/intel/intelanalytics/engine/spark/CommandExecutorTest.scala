@@ -12,7 +12,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.engine.spark.plugin.SparkInvocation
 import com.intel.intelanalytics.domain.frame.{ CumulativeSum, DataFrame }
-import com.intel.intelanalytics.domain.frame.PercentileValues
+import com.intel.intelanalytics.domain.frame.QuantileValues
 import scala.concurrent.{ Await, ExecutionContext }
 import spray.json._
 import com.intel.intelanalytics.domain.DomainJsonProtocol
@@ -41,13 +41,12 @@ class CommandExecutorTest extends FlatSpec with Matchers with MockitoSugar {
   }
 
   "create spark context" should "add a entry in command id and context mapping" in {
-
-    val args = PercentileValues(List())
+    val args = QuantileValues(List())
     var contextCountDuringExecution = 0
     var containsKey1DuringExecution = false
     val executor = createCommandExecutor()
 
-    val dummyFunc = (dist: PercentileValues, user: UserPrincipal, invocation: SparkInvocation) => {
+    val dummyFunc = (dist: QuantileValues, user: UserPrincipal, invocation: SparkInvocation) => {
       contextCountDuringExecution = executor.commandIdContextMapping.size
       containsKey1DuringExecution = executor.commandIdContextMapping.contains(1)
       mock[DataFrame]
@@ -65,12 +64,11 @@ class CommandExecutorTest extends FlatSpec with Matchers with MockitoSugar {
   }
 
   "cancel command during execution" should "remove the entry from command id and context mapping" in {
-    //val args = CumulativeSum(mock[DataFrame], "")
-    val args = PercentileValues(List())
+    val args = QuantileValues(List())
     val executor = createCommandExecutor()
 
     var contextCountAfterCancel = 0
-    val dummyFunc = (dist: PercentileValues, user: UserPrincipal, invocation: SparkInvocation) => {
+    val dummyFunc = (dist: QuantileValues, user: UserPrincipal, invocation: SparkInvocation) => {
       executor.stopCommand(1)
       contextCountAfterCancel = executor.commandIdContextMapping.size
       mock[DataFrame]
