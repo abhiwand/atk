@@ -25,7 +25,7 @@ Functionality provided includes:
 *   Duplicate removal, dropping rows, data filtering, copying data into new columns,
     and concatenating columns (see :ref:`Clean the Data`)
 *   Summary calculations for data inspection, such as counts, measures of central tendency,
-    distribution and percentile of data, dispersions, and binning (see :ref:`ds_dflw_frame.examine`)
+    distribution and percentile of data, dispersions, and binning (see :ref:`ds_dflw_frame_examine`)
 *   Joining of multiple data sources based on record relationships, such as intersection (inner join),
     union (outer join), and lookup inclusion or exclusion (left and right joins) (see :ref:`Transform The Data`)
 *   Date and time functions to convert formats, such as conversion to year/month/day/hour/minute/second,
