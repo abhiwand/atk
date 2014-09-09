@@ -257,7 +257,7 @@ def create_updated_class_path(current_class_path, spark_env):
     if current_class_path is None:
         #if no class path exist append it to the end of the spark_env.sh config
         spark_class_path="export SPARK_CLASSPATH=\"" + LIB_PATH + "\""
-        return spark_env + "\r\n" + spark_class_path
+        return spark_env + "\n" + spark_class_path
     else:
         #if a class path already exist search and replace the current class path plus our class path in spark_env.sh
         #config
