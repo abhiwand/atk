@@ -17,13 +17,13 @@ mkdir -p $SCRIPTPATH/rpm/SOURCES
 cp $tarFile $SCRIPTPATH/rpm/SOURCES/${packageName}-${version}.tar.gz
 
 LICENSE="Confidential"
-SUMMARY="$packageName-$version Build number: $BUILD_NUMBER. TimeStamp $TIMESTAMP"
+#SUMMARY="$packageName$version Build number: $BUILD_NUMBER. TimeStamp $TIMESTAMP"
 DESCRIPTION="$SUMMARY 
-start the server with 'service intelanalytics-rest-server status' 
+start the server with 'service intelanalytics status'
 config files are in /etc/intelanalytics/rest-server
 log files live in /var/log/intelanalytics/rest-server"
 
-REQUIRES=" java >= 1.7, intelanalytics-python-rest-client >= 0.8-${BUILD_NUMBER}, intelanalytics-graphbuilder >= 0.8-${BUILD_NUMBER}"
+REQUIRES=" java-1.7.0-openjdk, intelanalytics-python-rest-client >= ${version}-${BUILD_NUMBER}, intelanalytics-graphbuilder >= ${version}-${BUILD_NUMBER}, python-argparse, python-cm-api"
 
 PRE="
 restUser=iauser
@@ -44,7 +44,7 @@ fi
 POST="
 restUser=iauser
 if [ \$1 -eq 2 ]; then
-  echo start intelanalytics-rest-server
+  echo start intelanalytics
   service intelanalytics restart
 fi
 
@@ -59,10 +59,10 @@ fi
 "
 
 PREUN="
- checkStatus=\$(service intelanalytics-rest-server status | grep start/running)
+ checkStatus=\$(service intelanalytics status | grep start/running)
  if  [ \$1 -eq 0 ] && [ \"\$checkStatus\" != \"\" ]; then
-    echo stopping intelanalytics-rest-server
-    service intelanalytics-rest-server stop
+    echo stopping intelanalytics
+    service intelanalytics stop
  fi
 "
 

@@ -10,8 +10,8 @@
     <name>Titan-HBase: Distributed Graph Database</name>
     <url>http://thinkaurelius.github.com/titan/</url>
     <properties>
-        <hbase.version>0.98.1-cdh5.1.0</hbase.version>
-        <hadoop.version>2.3.0-cdh5.1.0</hadoop.version>
+        <hbase.version>0.98.1-cdh5.1.2</hbase.version>
+        <hadoop.version>2.3.0-cdh5.1.2</hadoop.version>
         <hadoop.artifact>hadoop-common</hadoop.artifact>
         <titan.hbase.mvn.opts />
         <default.test.jvm.opts>-Xms256m -Xmx1280m -XX:+HeapDumpOnOutOfMemoryError -ea ${test.extra.jvm.opts}</default.test.jvm.opts>
@@ -218,8 +218,8 @@
             </activation>
             
             <properties>
-                <hbase.version>0.98.1-cdh5.1.0</hbase.version>
-                <hadoop.version>2.3.0-cdh5.1.0</hadoop.version>
+                <hbase.version>0.98.1-cdh5.1.2</hbase.version>
+                <hadoop.version>2.3.0-cdh5.1.2</hadoop.version>
                 <hadoop.artifact>hadoop-common</hadoop.artifact>
                 <titan.hbase.mvn.opts>-Dhadoop.version=${hadoop.version} -Dhadoop.profile=2.0</titan.hbase.mvn.opts>
             </properties>

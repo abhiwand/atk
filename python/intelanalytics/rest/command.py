@@ -30,7 +30,6 @@ import json
 import logging
 import sys
 import re
-import collections
 from requests import HTTPError
 
 logger = logging.getLogger(__name__)
@@ -38,7 +37,34 @@ logger = logging.getLogger(__name__)
 import intelanalytics.rest.config as config
 from intelanalytics.rest.connection import http
 from intelanalytics.core.errorhandle import IaError
+from intelanalytics.rest.jsonschema import get_command_def
+from collections import namedtuple
 
+
+_commands_from_backend = []
+
+
+def get_commands():
+    if not _commands_from_backend:
+        logger.info("Requesting available commands from server")
+        response = http.get("commands/definitions")
+        commands_json_schema = response.json()
+        _commands_from_backend.extend([get_command_def(c) for c in commands_json_schema])
+    return _commands_from_backend
+
+
+def execute_command(command_name, **arguments):
+    """Executes command and returns the output"""
+    command_request = CommandRequest(command_name, arguments)
+    command_info = executor.issue(command_request)
+    if (command_info.result.has_key('value') and len(command_info.result) == 1):
+        return command_info.result.get('value')
+    return command_info.result
+
+
+
+class OperationCancelException(Exception):
+    pass
 
 class ProgressPrinter(object):
 
@@ -231,12 +257,7 @@ class CommandInfo(object):
         self._payload = payload
 
 
-
-
-
 class Polling(object):
-
-
 
     @staticmethod
     def poll(uri, predicate=None, start_interval_secs=None, max_interval_secs=None, backoff_factor=None):
@@ -262,11 +283,11 @@ class Polling(object):
         if predicate is None:
             predicate = Polling._get_completion_status
         if start_interval_secs is None:
-            start_interval_secs = config.polling.start_interval_secs
+            start_interval_secs = config.polling_defaults.start_interval_secs
         if backoff_factor is None:
-            backoff_factor = config.polling.backoff_factor
+            backoff_factor = config.polling_defaults.backoff_factor
         if max_interval_secs is None:
-            max_interval_secs = config.polling.max_interval_secs
+            max_interval_secs = config.polling_defaults.max_interval_secs
         if not CommandInfo.is_valid_command_uri(uri):
             raise ValueError('Cannot poll ' + uri + ' - a /commands/{number} uri is required')
         interval_secs = start_interval_secs
@@ -325,10 +346,14 @@ class CommandServerError(Exception):
         Exception.__init__(self, message)
 
 
+QueryResult = namedtuple("QueryResult", ['data', 'schema'])
+
+
 class Executor(object):
     """
     Executes commands
     """
+
 
     __commands = []
 
@@ -355,6 +380,7 @@ class Executor(object):
 
         except KeyboardInterrupt:
             self.cancel(command_info.id_number)
+            raise OperationCancelException("command cancelled by user")
 
         if command_info.error:
             raise CommandServerError(command_info)
@@ -373,8 +399,11 @@ class Executor(object):
 
         response_json = response.json()
 
+        schema = response_json["result"]["schema"]['columns']
+
         if response_json["complete"]:
-            return response_json["result"]["data"]
+            data = response_json["result"]["data"]
+            return QueryResult(data, schema)
 
         command = self.poll_command_info(response)
 
@@ -415,7 +444,8 @@ class Executor(object):
                     }
                 }]
                 printer.print_progress(progress, finished)
-        return data
+
+        return QueryResult(data, schema)
 
 
 
@@ -424,7 +454,10 @@ class Executor(object):
         Tries to cancel the given command
         """
         logger.info("Executor cancelling command " + str(command_id))
-        # TODO - implement command cancellation (like a DELETE to commands/id?)
+
+        arguments = {'status': 'cancel'}
+        command_request = CommandRequest("", arguments)
+        http.post("commands/%s" %(str(command_id)), command_request.to_json_obj())
 
     def fetch(self):
         """
@@ -455,6 +488,7 @@ class Executor(object):
                     current = holder
             if not hasattr(current, name):
                 setattr(clazz, name, staticmethod(v))
+                logger.debug("Loaded class %s with static method %s", clazz, name)
 
     def get_command_functions(self, prefixes, update_function, new_function):
         functions = dict()

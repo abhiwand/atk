@@ -37,8 +37,6 @@ CREATE TABLE command (
 );
 
 
-ALTER TABLE public.command OWNER TO metastore;
-
 --
 -- Name: command_command_id_seq; Type: SEQUENCE; Schema: public; Owner: metastore
 --
@@ -50,8 +48,6 @@ CREATE SEQUENCE command_command_id_seq
     NO MINVALUE
     CACHE 1;
 
-
-ALTER TABLE public.command_command_id_seq OWNER TO metastore;
 
 --
 -- Name: command_command_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: metastore
@@ -85,7 +81,6 @@ CREATE TABLE frame (
 );
 
 
-ALTER TABLE public.frame OWNER TO metastore;
 
 --
 -- Name: frame_frame_id_seq; Type: SEQUENCE; Schema: public; Owner: metastore
@@ -98,8 +93,6 @@ CREATE SEQUENCE frame_frame_id_seq
     NO MINVALUE
     CACHE 1;
 
-
-ALTER TABLE public.frame_frame_id_seq OWNER TO metastore;
 
 --
 -- Name: frame_frame_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: metastore
@@ -132,8 +125,6 @@ CREATE TABLE graph (
 );
 
 
-ALTER TABLE public.graph OWNER TO metastore;
-
 --
 -- Name: graph_graph_id_seq; Type: SEQUENCE; Schema: public; Owner: metastore
 --
@@ -145,8 +136,6 @@ CREATE SEQUENCE graph_graph_id_seq
     NO MINVALUE
     CACHE 1;
 
-
-ALTER TABLE public.graph_graph_id_seq OWNER TO metastore;
 
 --
 -- Name: graph_graph_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: metastore
@@ -175,7 +164,6 @@ CREATE TABLE status (
 );
 
 
-ALTER TABLE public.status OWNER TO metastore;
 
 --
 -- Name: users; Type: TABLE; Schema: public; Owner: metastore; Tablespace:
@@ -190,7 +178,6 @@ CREATE TABLE users (
 );
 
 
-ALTER TABLE public.users OWNER TO metastore;
 
 --
 -- Name: users_user_id_seq; Type: SEQUENCE; Schema: public; Owner: metastore
@@ -204,7 +191,6 @@ CREATE SEQUENCE users_user_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.users_user_id_seq OWNER TO metastore;
 
 --
 -- Name: users_user_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: metastore
@@ -320,16 +306,3 @@ ALTER TABLE ONLY graph
     ADD CONSTRAINT graph_status_id FOREIGN KEY (status_id) REFERENCES status(status_id);
 
 
---
--- Name: public; Type: ACL; Schema: -; Owner: postgres
---
-
-REVOKE ALL ON SCHEMA public FROM PUBLIC;
-REVOKE ALL ON SCHEMA public FROM postgres;
-GRANT ALL ON SCHEMA public TO postgres;
-GRANT ALL ON SCHEMA public TO PUBLIC;
-
-
---
--- PostgreSQL database dump complete
---

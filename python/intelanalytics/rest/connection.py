@@ -37,16 +37,53 @@ _default = object()
 
 
 class Server(object):
+    """
+    Configuration for the client to talk to the server.
+
+    Defaults from rest/config.py are used but they can be overridden by setting the values
+    in this class.
+
+    host : str
+        host name
+    port : int or str
+        port number
+    scheme : str
+        protocol scheme, like "http"
+    version : str
+        server API version to use, like "v1"
+    headers : dict of str pairs
+        http headers
+
+    Example::
+        ia.server.host = 'your.hostname.com'
+        ia.server.port = None
+
+        ia.server.ping()  # test server connection
+
+        ia.server.reset()  # configuration restored to defaults
+    """
+
+    def __init__(self):
+        self.host = config.server_defaults.host
+        self.port = config.server_defaults.port
+        self.scheme = config.server_defaults.scheme
+        self.version = config.server_defaults.version
+        self.headers = config.server_defaults.headers
+
+    def reset(self):
+        """Restores the server configuration to defaults"""
+        self.__init__()
 
     def __repr__(self):
-        return '{"host": "%s", "port": "%s", "scheme": "%s", "version": "%s"}' \
-               % (self.host, self.port, self.scheme, self.version)
+        return '{"host": "%s", "port": "%s", "scheme": "%s", "version": "%s", "headers": "%s"}' \
+               % (self.host, self.port, self.scheme, self.version, self.headers)
 
     def __str__(self):
         return """host:    %s
 port:    %s
 scheme:  %s
-version: %s""" % (self.host, self.port, self.scheme, self.version)
+version: %s
+headers: %s""" % (self.host, self.port, self.scheme, self.version, self.headers)
 
     def _get_scheme_and_authority(self):
         uri = "%s://%s" % (self.scheme, self.host)
@@ -54,33 +91,13 @@ version: %s""" % (self.host, self.port, self.scheme, self.version)
             uri += ":%s" % self.port
         return uri
 
-    @property
-    def host(self):
-        return config.server.host
-
-    @property
-    def port(self):
-        return config.server.port
-
-    @property
-    def scheme(self):
-        return config.server.scheme
-
-    @property
-    def version(self):
-        return config.server.version
-
-    @property
-    def headers(self):
-        return config.server.headers
-
-
     def get_base_uri(self):
+        """Returns the base uri used by client as currently configured to talk to the server"""
         return "%s/%s/" % (self._get_scheme_and_authority(), self.version)
 
     def ping(self):
         """
-        Ping the server, throw exception if not there
+        Ping the server, throw exception if unable to connect
         """
         uri = ""
         try:
@@ -93,8 +110,7 @@ version: %s""" % (self.host, self.port, self.scheme, self.version)
                 raise Exception("Invalid response payload: " + r.text)
             print "Successful ping to Intel Analytics at " + uri
         except Exception as e:
-            message = "Failed to ping Intel Analytics at " + uri + "\n" + str(e)
-            #print (message)
+            message = "Failed to ping Intel Analytics at %s\n%s\n%s" % (uri, e, str(self))
             logger.error(message)
             raise IOError(message)
 
@@ -111,14 +127,16 @@ class HttpMethods(object):
 
     @staticmethod
     def _check_response(response, ignore=None):
+
         HttpMethods._check_response_for_build_id(response)
-        if not ignore or response.status_code not in ignore:
+
+        try:
             response.raise_for_status()
-        else:
-            try:
-                response.raise_for_status()
-            except Exception as e:
-                m = "Ignoring HTTP Response ERROR probably due to {0}:\n\t{1}".\
+        except Exception as e:
+            if not ignore or response.status_code not in ignore:
+                raise requests.exceptions.HTTPError(str(e) + " "+ response.text)
+            else:
+                m = "Ignoring HTTP Response ERROR probably due to {0}:\n\t{1}". \
                     format(ignore[response.status_code], e)
                 logger.warn(m)
                 sys.stderr.write(m)
@@ -154,6 +172,7 @@ class HttpMethods(object):
         r = requests.get(uri, headers=self.server.headers)
         if logger.level <= logging.DEBUG:
             logger.debug("[HTTP Get Response] %s\n%s", r.text, r.headers)
+
         self._check_response(r)
         return r
 
@@ -182,10 +201,8 @@ class HttpMethods(object):
         if logger.level <= logging.DEBUG:
             logger.debug("[HTTP Post Response] %s", r.text)
             self.reason = r.text
-        try:
-            self._check_response(r, {406: 'long initialization time'})
-        except Exception as e:
-            raise requests.exceptions.HTTPError(str(e) + " "+ r.text)
+
+        self._check_response(r, {406: 'long initialization time'})
         return r
 
 build_id_help_msg = """

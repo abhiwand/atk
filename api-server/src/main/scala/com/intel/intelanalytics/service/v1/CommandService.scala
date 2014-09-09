@@ -43,7 +43,7 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol._
 import com.intel.intelanalytics.service.v1.viewmodels._
 import com.intel.intelanalytics.service.v1.viewmodels.ViewModelJsonImplicits._
 import com.intel.intelanalytics.domain.graph.{ GraphReference, GraphLoad }
-import com.intel.intelanalytics.domain.command.{ Execution, CommandTemplate, Command }
+import com.intel.intelanalytics.domain.command.{ CommandPost, Execution, CommandTemplate, Command }
 import com.intel.intelanalytics.shared.EventLogging
 import com.intel.intelanalytics.service.{ ApiServiceConfig, UrlParser, CommonDirectives, AuthenticationDirective }
 import com.intel.intelanalytics.service.v1.decorators.CommandDecorator
@@ -86,7 +86,22 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
                     case Success(Some(command)) => complete(decorate(uri, command))
                     case _ => reject()
                   }
-                }
+                } ~
+                  post {
+                    entity(as[JsonTransform]) {
+                      xform =>
+                        {
+                          val action = xform.arguments.get.convertTo[CommandPost]
+                          action.status match {
+                            case "cancel" => onComplete(engine.cancelCommand(id)) {
+                              case Success(command) => complete("Command cancelled by client")
+                              case _ => reject()
+                            }
+                          }
+                        }
+                    }
+
+                  }
             }
           }
       } ~
@@ -145,8 +160,6 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
     }
   }
 
-  //TODO: disentangle the command dispatch from the routing
-  //TODO: this method is going away soon.
   /**
    * Command dispatcher that translates from HTTP pathname to command invocation
    * @param uri Path of command.
@@ -168,7 +181,7 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
       case ("dataframe/rename_columns") => runFrameRenameColumns(uri, xform)
       case ("dataframe/join") => runJoinFrames(uri, xform)
       case ("dataframe/flatten_column") => runflattenColumn(uri, xform)
-      case ("dataframe/groupby") => runFrameGroupByColumn(uri, xform)
+      case ("dataframe/group_by") => runFrameGroupByColumn(uri, xform)
       case ("dataframe/drop_duplicates") => runDropDuplicates(uri, xform)
       case ("dataframe/bin_column") => runBinColumn(uri, xform)
       case ("dataframe/classification_metric") => runClassificationMetric(uri, xform)

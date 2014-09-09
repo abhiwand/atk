@@ -14,9 +14,9 @@ log "copy and rename: $tarFile"
 cp $tarFile $SCRIPTPATH/rpm/SOURCES/${packageName}-${version}.tar.gz
 
 LICENSE="Confidential"
-SUMMARY="$packageName-$version Build number: $BUILD_NUMBER. TimeStamp $TIMESTAMP"
+#SUMMARY="$packageName-$version Build number: $BUILD_NUMBER. TimeStamp $TIMESTAMP"
 DESCRIPTION=$SUMMARY 
-REQUIRES="java >= 1.7"
+REQUIRES="java-1.7.0-openjdk"
 
 POST="
 
