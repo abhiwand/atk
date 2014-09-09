@@ -111,12 +111,12 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
 
         <dep.aurelius.version>0.4.5-SNAPSHOT</dep.aurelius.version>
         <dep.gremlin.version>2.4.0</dep.gremlin.version>
-        <dep.hbase.version>0.96.1.1-cdh5.0.3</dep.hbase.version>
-        <dep.hadoop2.version>2.3.0-cdh5.0.3</dep.hadoop2.version>
+        <dep.hbase.version>0.98.1-cdh5.1.2</dep.hbase.version>
+        <dep.hadoop2.version>2.3.0-cdh5.1.2</dep.hadoop2.version>
 
         <dep.mahout.version>0.9</dep.mahout.version>
 
-        <dep.spark.version>0.9.0-cdh5.0.3</dep.spark.version>
+        <dep.spark.version>1.0.0-cdh5.1.2</dep.spark.version>
 
         <dep.typesafe-config.version>1.2.1</dep.typesafe-config.version>
         <!--START GAO MAVEN -->

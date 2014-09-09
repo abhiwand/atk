@@ -27,10 +27,10 @@ import org.scalatest.Matchers
 import com.intel.testutils.TestingSparkContextFlatSpec
 import com.intel.intelanalytics.domain.schema.DataTypes
 import scala.collection.mutable.ListBuffer
-import com.intel.intelanalytics.algorithm.Percentile
+import com.intel.intelanalytics.algorithm.Quantile
 
-class PercentileCalculationITest extends TestingSparkContextFlatSpec with Matchers {
-  "Calculation percentile in small data set" should "return the correct values" in {
+class QuantileITest extends TestingSparkContextFlatSpec with Matchers {
+  "Calculation quantile in small data set" should "return the correct values" in {
     val numbers = List((Array[Any](3, "")), (Array[Any](5, "")),
       (Array[Any](6, "")), (Array[Any](7, "")), (Array[Any](23, "")), (Array[Any](8, "")), (Array[Any](21, "")), (Array[Any](9, "")), (Array[Any](11, "")),
       (Array[Any](20, "")), (Array[Any](13, "")), (Array[Any](15, "")), (Array[Any](10, "")), (Array[Any](16, "")), (Array[Any](17, "")),
@@ -39,17 +39,17 @@ class PercentileCalculationITest extends TestingSparkContextFlatSpec with Matche
     )
 
     val rdd = sparkContext.parallelize(numbers, 3)
-    val result = SparkOps.calculatePercentiles(rdd, Seq(0, 3, 5, 40, 100), 0, DataTypes.int32)
+    val result = SparkOps.quantiles(rdd, Seq(0, 3, 5, 40, 100), 0, DataTypes.int32)
     result.length shouldBe 5
-    result(0) shouldBe Percentile(0, 1)
-    result(1) shouldBe Percentile(3, 1)
-    result(2) shouldBe Percentile(5, 1.25)
-    result(3) shouldBe Percentile(40, 10)
-    result(4) shouldBe Percentile(100, 25)
+    result(0) shouldBe Quantile(0, 1)
+    result(1) shouldBe Quantile(3, 1)
+    result(2) shouldBe Quantile(5, 1.25)
+    result(3) shouldBe Quantile(40, 10)
+    result(4) shouldBe Quantile(100, 25)
   }
 
   //   Large scale test takes longer time. uncomment it when needed.
-  //  "Calculation percentile in large data set" should "return the correct values" in {
+  //  "Calculation quantile in large data set" should "return the correct values" in {
   //
   //    import scala.util.Random
   //    val numbers = ListBuffer[Array[Any]]()

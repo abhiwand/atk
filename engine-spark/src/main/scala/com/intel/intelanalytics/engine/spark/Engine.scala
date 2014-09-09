@@ -74,13 +74,13 @@ import com.intel.intelanalytics.domain.graph.Graph
 import com.intel.intelanalytics.domain.frame.ConfusionMatrix
 import com.intel.intelanalytics.domain.FilterPredicate
 import com.intel.intelanalytics.domain.frame.load.Load
-import com.intel.intelanalytics.domain.frame.CalculatePercentiles
+import com.intel.intelanalytics.domain.frame.Quantiles
 import com.intel.intelanalytics.domain.frame.CumulativeDist
 import com.intel.intelanalytics.domain.frame.AssignSample
 import com.intel.intelanalytics.domain.frame.FrameGroupByColumn
 import com.intel.intelanalytics.domain.frame.FrameRenameColumns
 import com.intel.intelanalytics.security.UserPrincipal
-import com.intel.intelanalytics.domain.frame.FrameRemoveColumn
+import com.intel.intelanalytics.domain.frame.FrameDropColumns
 import com.intel.intelanalytics.domain.frame.FrameReference
 import com.intel.intelanalytics.engine.spark.frame.RDDJoinParam
 import com.intel.intelanalytics.domain.graph.GraphTemplate
@@ -96,7 +96,7 @@ import com.intel.intelanalytics.engine.ProgressInfo
 import com.intel.intelanalytics.domain.command.CommandDefinition
 import com.intel.intelanalytics.domain.frame.ClassificationMetric
 import com.intel.intelanalytics.domain.frame.BinColumn
-import com.intel.intelanalytics.domain.frame.PercentileValues
+import com.intel.intelanalytics.domain.frame.QuantileValues
 import com.intel.intelanalytics.domain.frame.DataFrame
 import com.intel.intelanalytics.domain.command.Execution
 import com.intel.intelanalytics.domain.command.Command
@@ -464,7 +464,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
   def groupBy(arguments: FrameGroupByColumn[JsObject, Long])(implicit user: UserPrincipal): Execution =
     commands.execute(groupByCommand, arguments, user, implicitly[ExecutionContext])
 
-  val groupByCommand = commandPluginRegistry.registerCommand("dataframe/groupby", groupBySimple _)
+  val groupByCommand = commandPluginRegistry.registerCommand("dataframe/group_by", groupBySimple _)
   def groupBySimple(arguments: FrameGroupByColumn[JsObject, Long], user: UserPrincipal, invocation: SparkInvocation) = {
     implicit val u = user
     val originalFrameID = arguments.frame
@@ -1079,16 +1079,16 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     frames.saveFrame(newJoinFrame, new FrameRDD(new Schema(allColumns), joinResultRDD), Some(joinRowCount))
   }
 
-  def removeColumn(arguments: FrameRemoveColumn)(implicit user: UserPrincipal): Execution =
-    commands.execute(removeColumnCommand, arguments, user, implicitly[ExecutionContext])
+  def dropColumns(arguments: FrameDropColumns)(implicit user: UserPrincipal): Execution =
+    commands.execute(dropColumnsCommand, arguments, user, implicitly[ExecutionContext])
 
-  val removeColumnDoc = CommandDoc(oneLineSummary = "Remove columns from the frame.",
+  val dropColumnsDoc = CommandDoc(oneLineSummary = "Remove columns from the frame.",
     extendedSummary = Some("""
     Remove columns from the frame.  They are deleted.
 
     Parameters
     ----------
-    name: str OR list of str
+    columns: str OR list of str
         column name OR list of column names to be removed from the frame
 
     Notes
@@ -1099,11 +1099,11 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     --------
     For this example, BigFrame object * my_frame * accesses a frame with columns * column_a *, * column_b *, * column_c * and * column_d *.
     Eliminate columns * column_b * and * column_d *::
-    my_frame.remove_columns([column_b, column_d])
+    my_frame.drop_columns([column_b, column_d])
     Now the frame only has the columns * column_a * and * column_c *.
-    For further examples, see: ref: `example_frame.remove_columns`"""))
-  val removeColumnCommand = commandPluginRegistry.registerCommand("dataframe/remove_columns", removeColumnSimple _, doc = Some(removeColumnDoc))
-  def removeColumnSimple(arguments: FrameRemoveColumn, user: UserPrincipal, invocation: SparkInvocation) = {
+    For further examples, see: ref: `example_frame.drop_columns`"""))
+  val dropColumnsCommand = commandPluginRegistry.registerCommand("dataframe/drop_columns", dropColumnsSimple _, doc = Some(dropColumnsDoc))
+  def dropColumnsSimple(arguments: FrameDropColumns, user: UserPrincipal, invocation: SparkInvocation) = {
 
     implicit val u = user
     val ctx = invocation.sparkContext
@@ -1136,7 +1136,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
         frames.saveFrameWithoutSchema(realFrame, resultRdd)
     }
 
-    frames.removeColumn(realFrame, columnIndices)
+    frames.dropColumns(realFrame, columnIndices)
   }
 
   def addColumns(arguments: FrameAddColumns[JsObject, Long])(implicit user: UserPrincipal): Execution =
@@ -1361,21 +1361,21 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     frames.updateRowCount(realFrame, rowCount)
   }
 
-  val calculatePercentileCommand = commandPluginRegistry.registerCommand("dataframe/calculate_percentiles", calculatePercentilesSimple _, numberOfJobs = 7)
+  val quantilesCommand = commandPluginRegistry.registerCommand("dataframe/quantiles", quantilesSimple _, numberOfJobs = 7)
 
-  def calculatePercentilesSimple(percentiles: CalculatePercentiles, user: UserPrincipal, invocation: SparkInvocation): PercentileValues = {
+  def quantilesSimple(quantiles: Quantiles, user: UserPrincipal, invocation: SparkInvocation): QuantileValues = {
     implicit val u = user
-    val frameId: Long = percentiles.frameId
+    val frameId: Long = quantiles.frameId
     val ctx = invocation.sparkContext
 
     val realFrame: DataFrame = getDataFrameById(frameId)
     val frameSchema = realFrame.schema
-    val columnIndex = frameSchema.columnIndex(percentiles.columnName)
-    val columnDataType = frameSchema.columnDataType(percentiles.columnName)
+    val columnIndex = frameSchema.columnIndex(quantiles.columnName)
+    val columnDataType = frameSchema.columnDataType(quantiles.columnName)
 
     val rdd = frames.loadFrameRdd(ctx, frameId)
-    val percentileValues = SparkOps.calculatePercentiles(rdd, percentiles.percentiles, columnIndex, columnDataType).toList
-    PercentileValues(percentileValues)
+    val quantileValues = SparkOps.quantiles(rdd, quantiles.quantiles, columnIndex, columnDataType).toList
+    QuantileValues(quantileValues)
   }
 
   override def classificationMetric(arguments: ClassificationMetric[Long])(implicit user: UserPrincipal): Execution =
@@ -1400,7 +1400,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
       case "accuracy" => SparkOps.modelAccuracy(frameRdd, labelColumnIndex, predColumnIndex)
       case "precision" => SparkOps.modelPrecision(frameRdd, labelColumnIndex, predColumnIndex, arguments.posLabel)
       case "recall" => SparkOps.modelRecall(frameRdd, labelColumnIndex, predColumnIndex, arguments.posLabel)
-      case "fmeasure" => SparkOps.modelFMeasure(frameRdd, labelColumnIndex, predColumnIndex, arguments.posLabel, arguments.beta)
+      case "f_measure" => SparkOps.modelFMeasure(frameRdd, labelColumnIndex, predColumnIndex, arguments.posLabel, arguments.beta)
       case _ => throw new IllegalArgumentException() // TODO: this exception needs to be handled differently
     }
     ClassificationMetricValue(metric_value)
