@@ -1,6 +1,9 @@
-===========================
-IntelliJ Setup Instructions
-===========================
+================================
+IntelliJ IDEA Setup Instructions
+================================
+
+.. contents:: Table of Contents
+    :local:
 
 -------------
 Prerequisites
@@ -9,16 +12,19 @@ Prerequisites
 These instructions assume you have already installed
 
 - Python 2.6 
-- Intel Analytics Python Rest Client
-- IntelliJ
+- Intel Analytics Python Rest Client and required dependencies
+- `IntelliJ IDEA <http://www.jetbrains.com/idea/>`_
 
-Verify the "Python" plugin is enabled in IntelliJ by choosing "Settings" under the "File" menu, 
+Verify the "Python" plugin is enabled in IntelliJ by choosing :menuselection:`File --> Settings`,
 searching for "Python", and choosing "Plugins" from the pane on the left-hand side.
+
+The Intel Analytics Toolkit should work with any version of IntelliJ IDEA but these instructions were tested
+with IntelliJ IDEA 13.1.3 Ultimate.
 
 -----
 Setup
 -----
-1)  Select "New Project" on IntelliJ's initial screen
+1)  Select "New Project" on IntelliJ IDEA's initial screen
 
 #)  Select "Python" as the project type and choose "Next"
 
@@ -38,7 +44,7 @@ Setup
 
             #)  Choose "Add Local"
 
-            #)  Browse for your local Python 2.6 installation.  On RedHat this is probably /usr/bin/python.
+            #)  Browse for your local Python 2.6 installation.  On RedHat and Centos this is probably /usr/bin/python.
 
             #)  Choose the "OK" button
 
@@ -47,7 +53,7 @@ Setup
     #)  Choose the "Finish" button
 
 
-#)  Under the "File" menu choose "Project Structure"
+#)  Choose :menuselection:`File --> Project Structure`
 
     a)  Make sure "Python 2.6" is selected as the Project SDK and choose "Apply"
 
@@ -55,27 +61,28 @@ Setup
 
     #)  Choose the plus sign "+"
 
-    #)  Choose "Java" and browse to the Intel Analytics Python Rest Client libraries.  On RedHat these are found under "/usr/lib/intelanalytics/rest-client/python".
+    #)  Choose "Java" and browse to the Intel Analytics Python Rest Client libraries.  On RedHat and Centos these are found under "/usr/lib/intelanalytics/rest-client/python".
 
     #)  Choose "classes"
 
-    #)  Choose "ia" and click "OK" button
+    #)  Choose "myproject" and click "OK" button
 
     #)  Name the library "ia-python-client"
 
     #)  Choose "OK" button
 
 
-#)  Under the "File" menu choose "New" and then "Python File"
+#)  Choose :menuselection:`File --> New --> Python File`
 
 
 #)  Name the file "test" and type in the following code::
 
         import intelanalytics as ia
+        ia.server.host = "correct host name or IP address"
         ia.server.ping()
 
 
-#)  Choose "Run" menu, choose "Run", you should see the output::
+#)  Choose :menuselection:`Run --> Run`, you should see the output::
 
         Successful ping to Intel Analytics at http://localhost:9099/info
 

@@ -1,7 +1,10 @@
 ======================
 Plugin Authoring Guide
 ======================
- 
+
+.. contents:: Table of Contents
+    :local:
+
 ------------
 Introduction
 ------------
@@ -113,9 +116,9 @@ The Python client creates Python functions to match the commands in the engine, 
 name you specify for your plugin.
 
 Name components are separated by slashes.
-For instance, the command that removes columns from a dataframe is called dataframe/remove_column.
+For instance, the command that drops columns from a dataframe is called dataframe/drop_column.
 The Python client sees that name, knows that dataframe commands are associated with the :term:`BigFrame` class, and therefore generates a
-function named remove_column on BigFrame.
+function named drop_column on BigFrame.
 When the user calls that function, its arguments will be converted to JSON, sent to the REST server, and then on to the engine for processing.
 The results from the engine flow back through the REST server, and are converted back to Python objects.
 
@@ -272,11 +275,3 @@ This setting is built into the reference.conf that is embedded in the engine arc
 For your installation, you can control this list using the application.conf file.
 
 Once this setting has been updated, restart the server to activate the changes.
-
-|
-
-<- :doc:`ad_inst_vm`
-<------------------------------->
-:doc:`ad_inst` ->
-
-<- :doc:`index`

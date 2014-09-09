@@ -10,6 +10,7 @@ MAINTAINER="BDA <BDA@intel.com>"
 #deb build defaults
 #some sensible defaults for some of the fields in all these control files
 BUILD_DEPENDS="debhelper (>= 9.0.0)"
+SUMMARY="$packageName Branch: $BRANCH version: $VERSION Build number: $BUILD_NUMBER. TimeStamp $TIMESTAMP"
 DEPENDS="\${misc:Depends}"
 STANDARDS_VERSION="3.9.3"
 ARCH="any"

@@ -7,7 +7,7 @@
         {
             "type": "virtualbox-ovf",
 		
-	"source_path": "iabasevm/iabasevm-4.ova",
+	"source_path": "iabasevm/iabasevm-5.ova",
 	"headless": true,
 	"ssh_username": "cloudera",
 	"ssh_password": "cloudera",

@@ -2,6 +2,9 @@
 Cloudera Hadoop 5 Configuration
 ===============================
 
+.. contents:: Table of Contents
+    :local:
+
 This guide will walk you through the process of configuring Cloudera Hadoop 5 on a physical or virtual cluster.
 
 ------------------------
@@ -268,15 +271,5 @@ To run Giraph jobs, ensure that the memory settings in CDH match those in applic
 
     a.  mapreduce.map.memory.mb. This setting should match mapreduce.map.memory.mb in Yarn.
     #.  mapreduce.map.java.opts. This setting should match mapreduce.map.java.opts.max in Yarn.
-
-| 
-
-<- :doc:`ad_inst_pre_cloudera`
-<------------------------------->
-:doc:`ad_inst_IA` ->
-
-<- :doc:`ad_inst`
-
-<- :doc:`index`
 
 .. _Cloudera Manager: http://www.cloudera.com/content/support/en/downloads/cloudera_manager/cm-5-1-0.html

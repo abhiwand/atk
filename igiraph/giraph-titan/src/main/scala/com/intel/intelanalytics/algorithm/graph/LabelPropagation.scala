@@ -149,7 +149,7 @@ class LabelPropagation
 
     //    These parameters are set from the arguments passed in, or defaulted from
     //    the engine configuration if not passed.
-    GiraphConfigurationUtil.set(hConf, "lp.maxSuperSteps", arguments.max_supersteps)
+    GiraphConfigurationUtil.set(hConf, "lp.maxSupersteps", arguments.max_supersteps)
     GiraphConfigurationUtil.set(hConf, "lp.convergenceThreshold", arguments.convergence_threshold)
     GiraphConfigurationUtil.set(hConf, "lp.anchorThreshold", arguments.anchor_threshold)
     GiraphConfigurationUtil.set(hConf, "lp.bidirectionalCheck", arguments.bidirectional_check)

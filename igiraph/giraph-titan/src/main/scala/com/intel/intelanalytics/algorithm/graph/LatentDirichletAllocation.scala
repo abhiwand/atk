@@ -178,7 +178,7 @@ class LatentDirichletAllocation
 
     //    These parameters are set from the arguments passed in, or defaulted from
     //    the engine configuration if not passed.
-    GiraphConfigurationUtil.set(hConf, "lda.maxSuperSteps", arguments.max_supersteps)
+    GiraphConfigurationUtil.set(hConf, "lda.maxSupersteps", arguments.max_supersteps)
     GiraphConfigurationUtil.set(hConf, "lda.alpha", arguments.alpha)
     GiraphConfigurationUtil.set(hConf, "lda.beta", arguments.beta)
     GiraphConfigurationUtil.set(hConf, "lda.convergenceThreshold", arguments.convergence_threshold)
