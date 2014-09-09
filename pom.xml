@@ -176,6 +176,20 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
             </modules>
         </profile>
         <profile>
+            <id>modules-java</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <modules>
+                <module>event</module>
+                <module>imahout</module>
+                <module>igiraph/giraph-core</module>
+                <module>igiraph/giraph-algorithms</module>
+                <module>igiraph/giraph-titan</module>
+                <module>igiraph</module>
+            </modules>
+        </profile>
+        <profile>
             <id>modules-all</id>
             <activation>
                 <activeByDefault>true</activeByDefault>
