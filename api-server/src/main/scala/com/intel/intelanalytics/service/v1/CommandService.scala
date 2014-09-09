@@ -400,7 +400,7 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
 
       validate(test.isSuccess, "Failed to parse file load descriptor: " + getErrorMessage(test)) {
         val args = test.get
-        val result = engine.fmeasure(args)
+        val result = engine.f_measure(args)
         val command: Command = result.start
         complete(decorate(uri + "/" + command.id, command))
       }
