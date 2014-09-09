@@ -1505,9 +1505,9 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     0.75
 
     .. versionadded:: 0.8  """))
-  val f_measureCommand: CommandPlugin[ClassificationMetric, ClassificationMetricValue] = commandPluginRegistry.registerCommand("dataframe/f_measure", fmeasureSimple _, doc = Some(f_measureDoc))
+  val f_measureCommand: CommandPlugin[ClassificationMetric, ClassificationMetricValue] = commandPluginRegistry.registerCommand("dataframe/f_measure", f_measureSimple _, doc = Some(f_measureDoc))
 
-  def fmeasureSimple(arguments: ClassificationMetric, user: UserPrincipal, invocation: SparkInvocation): ClassificationMetricValue = {
+  def f_measureSimple(arguments: ClassificationMetric, user: UserPrincipal, invocation: SparkInvocation): ClassificationMetricValue = {
     implicit val u = user
     val frameId = arguments.frame.id
     val realFrame: DataFrame = getDataFrameById(frameId)
