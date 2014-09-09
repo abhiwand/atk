@@ -55,31 +55,15 @@ if "%DEBUG%" equ "0" echo : Check for PDF
 set BUILD="1"
 echo "/%1/%2/%3/%4/%5/%6/%7/%8/%9/" | find /I "/pdf/" > nul
 if "%ERRORLEVEL%"=="0" set BUILD="0"
-if "%BUILD%"=="1" goto:ZIP
+if "%BUILD%"=="1" goto:CLEAN
 if "%DEBUG%" equ "0" echo : Processing for Pdf
 
-for %%f in (*.tex) do (
-    for /L %%i in (1,1,5) do echo r | pdflatex %LATEXOPTS% %%f > nul
-)
-
-:ZIP
-if "%DEBUG%" equ "0" echo : Check for ZIP
-set BUILD="1"
-echo "/%1/%2/%3/%4/%5/%6/%7/%8/%9/" | find /I "/zip/" > nul
-if "%ERRORLEVEL%"=="0" set BUILD="0"
-if "%BUILD%"=="1" toto:CLEAN
-if "%DEBUG%" equ "0" echo : Processing for Zip
-
-set FMT="ZIP"
-mkdir %ARCHIVEPREFIX%docs-%FMT%
-for %%f in (*.PDF) do copy %%f %ARCHIVEPREFIX%docs-%FMT%
-echo Zipping PDFs...
-zip -q -r -9 %ARCHIVEPREFIX%docs-%FMT%.zip %ARCHIVEPREFIX%docs-%FMT%
-rd /S /Q %ARCHIVEPREFIX%docs-%FMT%
-
+for /L %%i in (1,1,3) do echo r | pdflatex %LATEXOPTS% IntelAnalytics.tex > nul
+makeindex -s python.ist IntelAnalytics.idx
+for /L %%i in (1,1,2) do echo r | pdflatex %LATEXOPTS% IntelAnalytics.tex > nul
 
 :CLEAN
-del /F /Q *.dvi *.log *.ind *.aux *.toc *.syn *.idx *.out *.ilg *.pla
+rem del /F /Q *.dvi *.log *.ind *.aux *.toc *.syn *.idx *.out *.ilg *.pla
 
 :FINI
 dir *.pdf

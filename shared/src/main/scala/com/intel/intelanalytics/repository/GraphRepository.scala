@@ -21,12 +21,18 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.domain.frame
+package com.intel.intelanalytics.repository
+
+import com.intel.intelanalytics.domain.graph.{ Graph, GraphTemplate }
 
 /**
- * Command for calculating quantiles values
- * @param frameId id of the data frame
- * @param quantiles the quantiles to calculate value for
- * @param columnName name of the column to find quantiles
+ * Repository for graphs
  */
-case class CalculateQuantiles(frameId: Long, quantiles: List[Double], columnName: String)
+trait GraphRepository[Session] extends Repository[Session, GraphTemplate, Graph] {
+  /**
+   * Return all the graphs
+   * @param session current session
+   * @return all the graphs
+   */
+  def scanAll()(implicit session: Session): Seq[Graph]
+}

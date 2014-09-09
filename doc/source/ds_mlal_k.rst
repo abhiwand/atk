@@ -1,6 +1,6 @@
-===========================
-Machine Learning Algorithms
-===========================
+====================
+K-Clique Percolation
+====================
 
 .. _ds_mlal_K-Clique Percolation Algorithm:
 

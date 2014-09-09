@@ -37,6 +37,8 @@ import spray.json._
 import com.intel.intelanalytics.domain.frame._
 import com.intel.intelanalytics.domain.graph._
 import com.intel.intelanalytics.domain.graph.construction.{ EdgeRule, FrameRule, PropertyRule, ValueRule, VertexRule }
+import com.intel.intelanalytics.domain.graph.{ Graph, GraphLoad, GraphReference, GraphTemplate }
+import com.intel.intelanalytics.domain.query.RowQuery
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 import com.intel.intelanalytics.domain.schema.{ DataTypes, Schema }
 import org.joda.time.DateTime
@@ -142,7 +144,7 @@ object DomainJsonProtocol extends IADefaultJsonProtocol {
   implicit val loadFormat = jsonFormat2(Load)
   implicit val filterPredicateFormat = jsonFormat2(FilterPredicate[JsObject, String])
   implicit val filterPredicateLongFormat = jsonFormat2(FilterPredicate[JsObject, Long])
-  implicit val removeColumnFormat = jsonFormat2(FrameRemoveColumn)
+  implicit val removeColumnFormat = jsonFormat2(FrameDropColumns)
   implicit val addColumnFormat = jsonFormat4(FrameAddColumns[JsObject, String])
   implicit val addColumnLongFormat = jsonFormat4(FrameAddColumns[JsObject, Long])
   implicit val projectColumnFormat = jsonFormat4(FrameProject[JsObject, String])
@@ -178,7 +180,12 @@ object DomainJsonProtocol extends IADefaultJsonProtocol {
   implicit val cumulativeDistLongFormat = jsonFormat5(CumulativeDist[Long])
 
   implicit val assignSampleFormat = jsonFormat5(AssignSample)
-  implicit val calculateQuantilesFormat = jsonFormat3(CalculateQuantiles)
+  implicit val calculatePercentilesFormat = jsonFormat3(Quantiles)
+
+  implicit val entropyFormat = jsonFormat3(Entropy)
+  implicit val entropyReturnFormat = jsonFormat1(EntropyReturn)
+
+  implicit val topKFormat = jsonFormat5(TopK)
 
   // model performance formats
 
@@ -230,6 +237,7 @@ object DomainJsonProtocol extends IADefaultJsonProtocol {
     }
 
   }
+
   implicit object UriFormat extends JsonFormat[URI] {
     override def read(json: JsValue): URI = json match {
       case JsString(value) => new URI(value)

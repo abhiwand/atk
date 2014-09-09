@@ -1,6 +1,9 @@
 ====================================
 Intel Analytics Package Installation
 ====================================
+
+.. contents::
+    :local:
     
 ------------
 Introduction
@@ -26,7 +29,7 @@ Requirements
     #. Zookeeper
 
 #. Python 2.6 - RHEL/Centos 6.4 ships with python 2.6
-#. EPEL yum repository -- All the nodes on the cluster must have the EPEL yum repository.
+#. `EPEL yum repository <https://fedoraproject.org/wiki/EPEL>`_ -- All the nodes on the cluster must have the EPEL yum repository.
    Adding the EPEL repository is straight forward and can be accomplished with a few simple steps.
 #. Intel Analytics Private Repository Access - if you have not been given AWS access and secret keys you will not be able to install Intel Analytics.
 
@@ -58,10 +61,48 @@ Package Name: intelanalytics-python-rest-client
 Dependencies
 
 *   python 2.6
-*   python-ordereddict
-*   numpy >= 1.8.1
-*   python-bottle >= 0.12
-*   python-requests >= 2.2.1
+*   `python-ordereddict <https://pypi.python.org/pypi/ordereddict>`_
+*   `numpy <https://pypi.python.org/pypi/numpy>`_ >= 1.8.1
+*   `python-bottle <https://pypi.python.org/pypi/bottle>`_ >= 0.12
+*   `python-requests <https://pypi.python.org/pypi/requests>`_ >= 2.2.1
+
+.. ifconfig:: internal_docs
+
+    ------------------- --------------------------- --------------------------- -------------------------
+    Component           Current IAT Version         CDH Version (5.1.0)         Python Version Compatible
+    =================== =========================== =========================== =========================
+    Hadoop              1.2.1                       2.3.0
+    HBase               0.94.12                     0.98.1
+    Yarn                --                          2.3.0
+    ZooKeeper           --                          3.4.5
+    Python              2.6 + 2.7                   2.6 + 2.7
+    Spark               1.0	                        1.0.0
+    Giraph              1.1.0-SNAPSHOT (96968fd)    1.1.0-SNAPSHOT (96968fd)
+    Titan               0.5m1
+    Faunus              0.5m1
+    JDK                 1.7                         1.7
+
+    Python Modules
+    HappyBase           0.7                                                     2.6 + 2.7
+    SciPy               0.13.2                                                  2.6 + 2.7
+    NumPy               1.8.0                                                   2.6 + 2.7
+
+    sympy               0.7.4.1
+    nltk                2.0.4
+    Jinja2              2.7.2
+    tornado             3.2
+    mrjob               0.4.2
+    matplotlib          1.3.1
+    pandas              0.12.0
+    pyzmq               14.0.1
+    pyjavaproperties    0.6
+    mock                1.0.1
+    nose                1.3.0
+    coverage            3.7.1
+    pydoop              0.11.1
+    virtualenv          1.10.1
+    interval            1.0.0
+    ------------------- --------------------------- --------------------------- -------------------------
 
 Intel Analytics Graph Builder
 =============================
@@ -75,9 +116,9 @@ Dependencies
 
 Intel Analytics Spark Dependencies
 ==================================
-Needs to be installed on every single spark worker node.
+Needs to be installed on every individual spark worker node.
 
-﻿package Name: intelanalytics-spark-deps
+﻿package name: intelanalytics-spark-deps
 
 Dependencies
 
@@ -90,11 +131,11 @@ Installation
 Adding Extra Repositories
 =========================
 
-The first step in the installation is adding EPEL, and two Intel Analytics repositories to make the YUM installation possible.
+The first step in the installation is adding EPEL, and two Intel Analytics repositories to make the `YUM <http://en.wikipedia.org/wiki/Yellowdog_Updater,_Modified>`_ installation possible.
 The EPEL, and Intel Analytics repositories must be installed on all spark master, and worker nodes as well as the node that will be running the Intel Analytics rest server.
 
 Add EPEL Repository
-===================
+-------------------
 Before trying to install the EPEL repo run the following command to see if it's already available on the machines you will be installing Intel Analytics on.
 ::
 
@@ -113,26 +154,29 @@ Before trying to install the EPEL repo run the following command to see if it's 
 You want to look for "epel" repo id.
 
 If the EPEL repository is missing run these commands to install the necessary files.
+::
 
-wget http://download.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
-sudo rpm -ivh epel-release-6-8.noarch.rpm
+    wget http://download.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
+    sudo rpm -ivh epel-release-6-8.noarch.rpm
+
 To verify the installation run
+::
 
-sudo yum repolist
+    sudo yum repolist
 
-#sample output
-repo id                                                                         repo name
-epel                                                                            Extra Packages for Enterprise Linux 6 - x86_64                                                         11,018
-rhui-REGION-client-config-server-6                                              Red Hat Update Infrastructure 2.0 Client Configuration Server 6                                             2
-rhui-REGION-rhel-server-releases                                                Red Hat Enterprise Linux Server 6 (RPMs)                                                               12,663
-rhui-REGION-rhel-server-releases-optional    
+    #sample output
+    repo id                                                                         repo name
+    epel                                                                            Extra Packages for Enterprise Linux 6 - x86_64                                                         11,018
+    rhui-REGION-client-config-server-6                                              Red Hat Update Infrastructure 2.0 Client Configuration Server 6                                             2
+    rhui-REGION-rhel-server-releases                                                Red Hat Enterprise Linux Server 6 (RPMs)                                                               12,663
+    rhui-REGION-rhel-server-releases-optional    
                                            
 Make sure the "epel" repo id is present.
 
 
 
 Add Intel Analytics Dependency Repository
-=========================================
+-----------------------------------------
 
 We pre-package and host some open source libraries to aid with installations.
 In some cases we pre-packaged newer versions from what is available in RHEL or EPEL repositories.
@@ -142,7 +186,7 @@ To add the dependency repository run the following command::
     wget https://intel-analytics-dependencies.s3-us-west-2.amazonaws.com/Intel Analytics-deps.repo
     sudo cp Intel Analytics-deps.repo /etc/yum.repos.d/
 
-If you have issues running the above command, try entering the following, being careful about the placement of the \" characters::
+If you have issues running the above command, try entering the following, being careful about the placement of the ``"`` characters::
 
     sudo touch /etc/yum.repos.d/Intel Analytics-deps.repo
     echo "[intel-analytics-deps]
@@ -155,6 +199,7 @@ To test the installation of the dependencies repository run the following comman
 
     sudo yum info yum-s3
 
+    #should print something close to this
     Available Packages
     Name        : yum-s3
     Arch        : noarch
@@ -166,16 +211,16 @@ To test the installation of the dependencies repository run the following comman
     URL         : git@github.com:NumberFour/yum-s3-plugin.git
     License     : Apache License 2.0
 
-If you get similar output install yum-s3 package::
+If you get similar output, install yum-s3 package::
 
     sudo yum -y install yum-s3
 
 Add Intel Analytics Private Repository
-======================================
+--------------------------------------
 
 Next we will create /etc/yum.repos.d/ia.repo.
-Don't forget to replace "YOUR_KEY", and "YOUR_SECRET" with your given AWS access, and secret keys.
-Run the following command to create /etc/yum.repos.d/ia.repo file.
+Don't forget to replace ``YOUR_KEY``, and ``YOUR_SECRET`` with your given AWS access, and secret keys.
+Run the following command to create ``/etc/yum.repos.d/ia.repo`` file.
 ::
 
     echo "[intel-analytics]
@@ -196,6 +241,7 @@ Verify the installation of the Intel Analytics repository by running::
 
     sudo yum info intelanalytics-rest-server
 
+    #sample output
     Available Packages
     Name        : intelanalytics-rest-server
     Arch        : x86_64
@@ -209,8 +255,18 @@ Verify the installation of the Intel Analytics repository by running::
 
 If you get package details for intelanalytics-rest-server package, then the repository installed correctly and you can continue installation.
 
+Troubleshooting Private Repository
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The most common error when using the private repository is in correct access and secret keys or the server time is out of sync with the world.
+It never hurts to double check your access and secret keys in the ia.repo file.
+
+To keep your system time in sync with the world run::
+
+    sudo service ntpd start
+
 Installing Intel Analytics Packages
 ===================================
+
 Installing Intel Analytics Rest Server
 --------------------------------------
 This next step is going to install IA rest server and all it's dependencies.
@@ -233,15 +289,16 @@ The Intel Analytics python rest client package needs to be installed on every no
 
     sudo yum -y install intelanalytics-python-rest-client
 
-Alternate Intel Analytics Spark Dependencies, and Python Rest client installation command
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Alternate Intel Analytics Spark Dependencies, and Python Rest Client Installation Command
+-----------------------------------------------------------------------------------------
 You still need to run this command on every spark worker node but you can combine both the spark dependencies and python rest client installation into one command.
 ::
 
     sudo yum -y install intelanalytics-spark-deps intelanalytics-python-rest-client
 
+-------------
 Configuration
-=============
+-------------
 
 There are two config files you may need to edit on the node that has the Intel Analytics rest server package.
 
@@ -251,8 +308,8 @@ There are two config files you may need to edit on the node that has the Intel A
 **/etc/default/intelanalytics-rest-server**:
 
 If your Cloudera cluster is parcel based you can skip this step because we default to parcel based clusters.
-If your cluster is not parcel based  you need to update the SPARK_HOME value to the location where Cloudera installed spark.
-Usually non-parcel installations of Cloudera will install spark to /usr/lib/spark.
+If your cluster is not parcel based  you need to update the SPARK_HOME value to the location where Cloudera installed Spark.
+Usually non-parcel installations of Cloudera will install Spark to /usr/lib/spark.
 
 /etc/default/intelanalytics-rest-server::
 
@@ -261,11 +318,11 @@ Usually non-parcel installations of Cloudera will install spark to /usr/lib/spar
 
     # depending on the CDH install method used, set the appropriate SPARK_HOME below:
 
-    #RPM cloudera installations will place spark in /usr/lib/spark
+    #RPM cloudera installations will place Spark in /usr/lib/spark
     #export SPARK_HOME="/usr/lib/spark"
 
-    #Parcel cloudera installations will place spark in /opt/cloudera/parcels/CDH/lib/spark
-    #/opt/cloudera/parcels/CDH will be a symlink to your current cloudera version
+    #Parcel Cloudera installations will place Spark in /opt/cloudera/parcels/CDH/lib/spark
+    #/opt/cloudera/parcels/CDH will be a symlink to your current Cloudera version
     export SPARK_HOME="/opt/cloudera/parcels/CDH/lib/spark"
 
     export IA_JVM_OPT="-XX:MaxPermSize=256m"
@@ -273,12 +330,14 @@ Usually non-parcel installations of Cloudera will install spark to /usr/lib/spar
     export IAUSER="iauser"
     export HOSTNAME=`hostname`
 
-**/etc/intelanalytics/rest-server/application.conf.tpl**:
+/etc/intelanalytics/rest-server/application.conf.tpl
+====================================================
 
 The application.conf.tpl is only a reference configuration file.
 This file needs to be copied and renamed to application.conf then updated before the Intel Analytics rest server is started.
 
-**/etc/intelanalytics/rest-server/application.conf**:
+/etc/intelanalytics/rest-server/application.conf
+================================================
 
 Configuration Script
 --------------------
@@ -286,8 +345,7 @@ Configuration Script
 The configuration of application.conf is semi automated via the use of a python script in /etc/intelanalytics/rest-sever/config.py.
 It will query Cloudera manager for the necessary configuration values and create a new application.conf based off the application.conf.tpl.
 
-To configure your spark service and your Intel Analytics installation do the following.
-First cd to the Intel Analytics directory, then start Python with the ``config.py`` file::
+To configure your spark service and your Intel Analytics installation do the following::
 
     cd /etc/intelanalytics/rest-sever/
     sudo python config.py
@@ -327,11 +385,21 @@ Sample output with notes::
 If you accidentally enter the wrong information on any of the prompts you can always run the script again.
 It will use a fresh application.conf.tpl and query Cloudera manager again to recreate the application.conf file.
 
+.. versionadded:: 0.8.5
+    Server configuration can be directly accessed through the IA Toolkit:
+
+        >>> ia.server.host = "myhostname"
+        >>> ia.server.port = None
+        >>> ia.server.ping()
+        >>> ia.server.reset()   # restore server config to defaults in rest/config.py
+
+
 You can now skip to Finish Intel Analytics Installation (TBD).
 
 Manual Configuration
 --------------------
-
+ *This section is optional and only if additional changes to the configuration file are needed*
+ 
 The rest-server package only provides a configuration template called application.conf.tpl.
 We need to copy and rename this file to application.conf and update host names and memory configurations.
 First let's copy and rename the file ::
@@ -366,18 +434,18 @@ This is the section you want to look at::
             # and which will be used as the starting point for any relative URLs
             fs.root = "hdfs://invalid-fsroot-host/user/iauser"
 
-            # The (comma separated, no spaces) Zookeeper hosts that
-            # Titan needs to be able to connect to HBase
+            # The (comma separated, no spaces) Zookeeper hosts that comma separated list of host names with zookeeper role assigned
             titan.load.storage.hostname = "invalid-titan-host"
-            titan.query.storage.hostname = ${intel.analytics.engine.titan.load.storage.hostname}
-
+            # Zookeeper client port, defaults to 2181
+            //titan.load.storage.port = "2181"
+        
             # The URL for connecting to the Spark master server
-            Spark.master = "Spark://invalid-Spark-master:7077"
-            Spark.conf.properties {
+            spark.master = "spark://invalid-spark-master:7077"
+            spark.conf.properties {
                 # Memory should be same or lower than what is listed as available
-                #in Cloudera Manager.
+                # in Cloudera Manager.
                 # Values should generally be in gigabytes, e.g. "8g"
-                Spark.executor.memory = "invalid executor memory"
+                spark.executor.memory = "invalid executor memory"
             }
         }
     }
@@ -396,6 +464,10 @@ Configure File System Root
 
         fs.root = "hdfs://localhost.localdomain/user/iauser" 
 
+If your Name Node port is not 8020 you can specify it after the host name::
+
+    fs.root = "hdfs://localhost.localdomain:8020/user/iauser"
+
 Configure Zookeeper Host
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -407,8 +479,12 @@ Configure Zookeeper Host
 
         titan.load.storage.hostname = "localhost.localdomain" 
 
-Configure Spark Host
-~~~~~~~~~~~~~~~~~~~~
+If your zookeeper client port is not 2181 un-comment the following line and replace 2181 with your zookeeper client port::
+
+    titan.load.storage.port = "my zookeeper client port"
+
+Configure Spark Master Host
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     Update "invalid-Spark-master" with the fully qualified domain name of the Spark master node::
 
@@ -421,18 +497,18 @@ Configure Spark Host
 Configure Spark Executor Memory
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    The Spark executor memory needs to be set equal to or less than what is configured in Cloudera manager.
+    The Spark executor memory needs to be set equal to or less than what is configured in Cloudera Manager.
     The Cloudera Spark installation will, by default, set the Spark executor memory to 8g, so 8g is usually a safe setting.
     If have any doubts you can always verify the executor memory in Cloudera manager.
     ::
 
-        Spark.executor.memory = "invalid executor memory"
+        spark.executor.memory = "invalid executor memory"
 
     Example::
 
-        Spark.executor.memory = "8g"
+        spark.executor.memory = "8g"
 
-    Click on the Spark service then configuration in Cloudera manager to get executor memory.
+    Click on the Spark service then configuration in Cloudera Manager to get executor memory.
 
     .. image:: ad_inst_IA_1.png
         :align: center
@@ -447,18 +523,18 @@ Set the Bind IP Address (Optional)
         #bind address - change to 0.0.0.0 to listen on all interfaces
         //host = "127.0.0.1"
 
-Setting the Spark Class Path
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Updating the Spark Class Path
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Run the following command to set the Spark class path::
 
-    /usr/lib/intelanalytics/graphbuilder/set-cm-Spark-classpath.sh
+    /usr/lib/intelanalytics/graphbuilder/set-cm-spark-classpath.sh
     
 Follow the prompts and make corrections where necessary.
 
 If you have problems running the script you can update the Spark class path through Cloudera manager.
 If you log into Cloudera manager under the Spark configuration you can find the Spark-conf/Spark-env.sh setting.
-If it isn't already set add::
+If it isn't already set, add::
 
     export SPARK_CLASSPATH="/usr/lib/intelanalytics/graphbuilder/lib/*"
     
@@ -467,16 +543,16 @@ then restart the Spark service.
 .. image:: ad_inst_IA_2.png
     :align: center
 
-
-Installing Intel Analytics Spark Dependencies
----------------------------------------------
+-------------------------------------------
+Starting Intel Analytics Spark Dependencies
+-------------------------------------------
 
 After setting up the Intel Analytics repositories, run the following command on every host with a Spark worker::
 
     sudo yum -y install intelanalytics-Spark-deps
 
 Installing Intel Analytics Python Rest Client
----------------------------------------------
+=============================================
 
 After setting up the Intel Analytics repositories, run the following command on every host with a Spark worker::
 
@@ -486,7 +562,7 @@ After installing Intel Analytics Spark deps and Intel Analytics python rest clie
 
 
 Starting Intel Analytics Rest Server
-------------------------------------
+====================================
 
 Starting the Rest server is very easy.
 It can be started like any other linux service.
@@ -497,7 +573,7 @@ It can be started like any other linux service.
 After starting the rest server, you can browse to the host on port 9099 to see if the server started successfully.
 
 Troubleshooting
----------------
+===============
 
 The log files get written to /var/log/intelanalytics/rest-server/output.log or /var/log/intelanalytics/rest-server/application.log.
 If you are having issues starting or running jobs, tail either log to see what error is getting reported while running the task::
@@ -508,12 +584,10 @@ or::
 
     sudo tail -f /var/log/intelanalytics/rest-server/application.log
 
-|
 
-<- :doc:`ad_inst_cloudera`
-<------------------------------->
-:doc:`ad_psql` ->
+More details about the logs can be found here: :doc:`ad_log`.
 
-<- :doc:`ad_inst`
-
-<- :doc:`index`
+.. toctree::
+    :hidden:
+    
+    ad_log

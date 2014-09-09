@@ -29,7 +29,7 @@ import com.intel.intelanalytics.domain.schema.DataTypes
 import scala.collection.mutable.ListBuffer
 import com.intel.intelanalytics.algorithm.Quantile
 
-class QuantileCalculationITest extends TestingSparkContextFlatSpec with Matchers {
+class QuantileITest extends TestingSparkContextFlatSpec with Matchers {
   "Calculation quantile in small data set" should "return the correct values" in {
     val numbers = List((Array[Any](3, "")), (Array[Any](5, "")),
       (Array[Any](6, "")), (Array[Any](7, "")), (Array[Any](23, "")), (Array[Any](8, "")), (Array[Any](21, "")), (Array[Any](9, "")), (Array[Any](11, "")),
@@ -39,18 +39,17 @@ class QuantileCalculationITest extends TestingSparkContextFlatSpec with Matchers
     )
 
     val rdd = sparkContext.parallelize(numbers, 3)
-    val result = SparkOps.calculateQuantiles(rdd, Seq(0, 3, 5, 40, 40.5, 100), 0, DataTypes.int32)
-    result.length shouldBe 6
+    val result = SparkOps.quantiles(rdd, Seq(0, 3, 5, 40, 100), 0, DataTypes.int32)
+    result.length shouldBe 5
     result(0) shouldBe Quantile(0, 1)
     result(1) shouldBe Quantile(3, 1)
     result(2) shouldBe Quantile(5, 1.25)
     result(3) shouldBe Quantile(40, 10)
-    result(4) shouldBe Quantile(40.5, 10.125)
-    result(5) shouldBe Quantile(100, 25)
+    result(4) shouldBe Quantile(100, 25)
   }
 
   //   Large scale test takes longer time. uncomment it when needed.
-  //  "Calculation percentile in large data set" should "return the correct values" in {
+  //  "Calculation quantile in large data set" should "return the correct values" in {
   //
   //    import scala.util.Random
   //    val numbers = ListBuffer[Array[Any]]()
