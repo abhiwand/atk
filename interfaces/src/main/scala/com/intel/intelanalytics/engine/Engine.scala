@@ -126,7 +126,7 @@ trait Engine {
 
   def groupBy(arguments: FrameGroupByColumn[JsObject, Long])(implicit user: UserPrincipal): Execution
 
-  def getFrames(offset: Int, count: Int)(implicit p: UserPrincipal): Future[Seq[DataFrame]]
+  def getFrames()(implicit p: UserPrincipal): Future[Seq[DataFrame]]
 
   def getFrameByName(name: String)(implicit p: UserPrincipal): Future[Option[DataFrame]]
 
@@ -134,7 +134,7 @@ trait Engine {
 
   def getGraph(id: Identifier): Future[Graph]
 
-  def getGraphs(offset: Int, count: Int)(implicit user: UserPrincipal): Future[Seq[Graph]]
+  def getGraphs()(implicit user: UserPrincipal): Future[Seq[Graph]]
 
   def getGraphByName(name: String)(implicit user: UserPrincipal): Future[Option[Graph]]
 

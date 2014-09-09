@@ -101,7 +101,7 @@ class GraphService(commonDirectives: CommonDirectives, engine: Engine) extends D
                     }
                     case _ =>
                       //TODO: cursor
-                      onComplete(engine.getGraphs(0, 20)) {
+                      onComplete(engine.getGraphs()) {
                         case Success(graphs) =>
                           import IADefaultJsonProtocol._
                           implicit val indexFormat = ViewModelJsonImplicits.getGraphsFormat
