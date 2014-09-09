@@ -276,7 +276,7 @@ object DomainJsonProtocol extends IADefaultJsonProtocol {
 
     override def write(frame: DataFrame): JsValue = {
       JsObject(dataFrameFormatOriginal.write(frame).asJsObject.fields + ("ia_uri" -> JsString(frame.getUri)))
-  }
+    }
   }
 
   implicit object graphFormat extends JsonFormat[Graph] {
@@ -286,7 +286,7 @@ object DomainJsonProtocol extends IADefaultJsonProtocol {
       graphFormatOriginal.read(value)
     }
 
-    override def write(graph:Graph) : JsValue ={
+    override def write(graph: Graph): JsValue = {
       JsObject(graphFormatOriginal.write(graph).asJsObject.fields + ("ia_uri" -> JsString(graph.getUri)))
     }
   }
