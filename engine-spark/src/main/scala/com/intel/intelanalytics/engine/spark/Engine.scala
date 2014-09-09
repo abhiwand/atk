@@ -103,7 +103,6 @@ import com.intel.intelanalytics.domain.frame.FrameJoin
 import com.intel.intelanalytics.engine.spark.plugin.SparkInvocation
 import com.intel.intelanalytics.domain.query.PagedQueryResult
 import com.intel.intelanalytics.domain.query.QueryDataResult
-import com.intel.intelanalytics.domain.frame.CalculateQuantiles
 import com.intel.intelanalytics.domain.frame.QuantileValues
 
 object SparkEngine {

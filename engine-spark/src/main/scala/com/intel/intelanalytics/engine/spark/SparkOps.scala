@@ -816,7 +816,7 @@ private[spark] object SparkOps extends Serializable {
    * the mapping created earlier. emit (T, i * (1 - j))
    * 4. reduce by key, which is quantile. Sum all partial results to get the final quantile values.
    */
-  def calculateQuantiles(rdd: RDD[Row], quantiles: Seq[Double], columnIndex: Int, dataType: DataType): Seq[Quantile] = {
+  def quantiles(rdd: RDD[Row], quantiles: Seq[Double], columnIndex: Int, dataType: DataType): Seq[Quantile] = {
     val totalRows = rdd.count()
     val pairRdd = rdd.map(row => SparkOps.createKeyValuePairFromRow(row, List(columnIndex))).map { case (keyColumns, data) => (keyColumns(0).toString.toDouble, data) }
     val sorted = pairRdd.asInstanceOf[RDD[(Double, Row)]].sortByKey(true)
