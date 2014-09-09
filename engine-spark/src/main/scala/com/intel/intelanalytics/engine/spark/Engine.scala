@@ -1383,13 +1383,13 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     QuantileValues(quantileValues)
   }
 
-  override def fmeasure(arguments: ClassificationMetric)(implicit user: UserPrincipal): Execution =
-    commands.execute(fmeasureCommand, arguments, user, implicitly[ExecutionContext])
-  val fmeasureDoc = CommandDoc(oneLineSummary = "Computes Model accuracy, precision, recall and fmeasure (math:`F_{\\beta}`).",
+  override def f_measure(arguments: ClassificationMetric)(implicit user: UserPrincipal): Execution =
+    commands.execute(f_measureCommand, arguments, user, implicitly[ExecutionContext])
+  val f_measureDoc = CommandDoc(oneLineSummary = "Computes Model accuracy, precision, recall and f_measure (math:`F_{\\beta}`).",
     extendedSummary = Some("""
     Based on the *metric_type* argument provided, it computes the accuracy, precision, recall or :math:`F_{\\beta}` measure for a classification model
 
-    --- When metric_type provided is 'fmeasure': Computes the :math:`F_{\\beta}` measure for a classification model.
+    --- When metric_type provided is 'f_measure': Computes the :math:`F_{\\beta}` measure for a classification model.
     A column containing the correct labels for each instance and a column containing the predictions made by the model are specified.
     The :math:`F_{\\beta}` measure of a binary classification model is the harmonic mean of precision and recall.
     If we let:
@@ -1469,43 +1469,43 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     blue              1              0                  0
     green             0              1                  1
 
-    frame.fmeasure('fmeasure', 'labels', 'predictions', '1', 1)
+    frame.f_measure('f_measure', 'labels', 'predictions', '1', 1)
 
     0.66666666666666663
 
-    frame.fmeasure('fmeasure', 'labels', 'predictions', '1', 2)
+    frame.f_measure('f_measure', 'labels', 'predictions', '1', 2)
 
     0.55555555555555558
 
-    frame.fmeasure('fmeasure', 'labels', 'predictions', '0', 1)
+    frame.f_measure('f_measure', 'labels', 'predictions', '0', 1)
 
     0.80000000000000004
 
 
-    frame.fmeasure('recall', 'labels', 'predictions', '1', 1)
+    frame.f_measure('recall', 'labels', 'predictions', '1', 1)
 
     0.5
 
-    frame.fmeasure('recall', 'labels', 'predictions', '0', 1)
+    frame.f_measure('recall', 'labels', 'predictions', '0', 1)
 
     1.0
 
 
-    frame.fmeasure('precision', 'labels', 'predictions', '1', 1)
+    frame.f_measure('precision', 'labels', 'predictions', '1', 1)
 
     1.0
 
-    frame.fmeasure('precision', 'labels', 'predictions', '0', 1)
+    frame.f_measure('precision', 'labels', 'predictions', '0', 1)
 
     0.66666666666666663
 
 
-    frame.fmeasure('accuracy', 'labels', 'predictions', '1', 1)
+    frame.f_measure('accuracy', 'labels', 'predictions', '1', 1)
 
     0.75
 
     .. versionadded:: 0.8  """))
-  val fmeasureCommand: CommandPlugin[ClassificationMetric, ClassificationMetricValue] = commandPluginRegistry.registerCommand("dataframe/fmeasure", fmeasureSimple _, doc = Some(fmeasureDoc))
+  val f_measureCommand: CommandPlugin[ClassificationMetric, ClassificationMetricValue] = commandPluginRegistry.registerCommand("dataframe/f_measure", fmeasureSimple _, doc = Some(f_measureDoc))
 
   def fmeasureSimple(arguments: ClassificationMetric, user: UserPrincipal, invocation: SparkInvocation): ClassificationMetricValue = {
     implicit val u = user
@@ -1601,7 +1601,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
                              |        ----------
                              |        sample_col : string
                              |            The name of the column from which to compute the cumulative sum
-                             |        count_value : any
+                             |        count_value : string
                              |            The column value to be used for the counts
                              |
                              |        Returns
@@ -1680,7 +1680,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
         ----------
         sample_col : string
             The name of the column from which to compute the cumulative count
-        count_value : any
+        count_value : string
             The column value to be used for the counts
 
         Returns
@@ -1705,7 +1705,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
 
         The cumulative count for column *obs* using *count_value = 1* is obtained by::
 
-            cc_frame = my_frame.cumulative_count('obs', 1)
+            cc_frame = my_frame.cumulative_count('obs', '1')
 
         The BigFrame *cc_frame* accesses a frame which contains two columns *obs* and *obsCumulativeCount*.
         Column *obs* still has the same data and *obsCumulativeCount* contains the cumulative counts::
@@ -1787,7 +1787,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
 
     The cumulative percent sum for column * obs * is obtained by ::
 
-    cps_frame = my_frame.cumulative_percent_sum('obs ')
+    cps_frame = my_frame.cumulative_percent_sum('obs')
 
     The new frame accessed by BigFrame * cps_frame * contains two columns * obs * and * obsCumulativePercentSum *.
     They contain the original data and the cumulative percent sum, respectively ::

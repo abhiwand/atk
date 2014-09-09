@@ -27,7 +27,7 @@ package com.intel.intelanalytics.domain.frame
  * Represents a CumulativeSum object
  *
  * @param sampleCol name of the column from which to compute a cumulative distribution
- * @param frame
+ * @param frame identifier for the input dataframe
  */
 case class CumulativeSum(frame: FrameReference, sampleCol: String) {
   require(frame != null, "frame is required")
