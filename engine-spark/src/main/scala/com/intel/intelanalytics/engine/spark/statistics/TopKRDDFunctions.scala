@@ -60,7 +60,7 @@ private[spark] object TopKRDDFunctions extends Serializable {
 
     inputIterator.foreach(element => {
       priorityQueue.enqueue(CountPair(element._1, element._2))
-      if (priorityQueue.size > k)  priorityQueue.dequeue()
+      if (priorityQueue.size > k) priorityQueue.dequeue()
     })
 
     priorityQueue.reverse.dequeueAll.toSeq
@@ -75,7 +75,7 @@ private[spark] object TopKRDDFunctions extends Serializable {
    * @return Merged sorted sequence
    */
   private def mergeSortedSeqs(sortedSeq1: Seq[CountPair], sortedSeq2: Seq[CountPair],
-                         descending: Boolean = false): Seq[CountPair] = {
+                              descending: Boolean = false): Seq[CountPair] = {
     val ordering = if (descending) Ordering[CountPair].reverse else Ordering[CountPair]
 
     (sortedSeq1, sortedSeq2) match {

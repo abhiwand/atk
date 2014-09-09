@@ -26,20 +26,14 @@ package com.intel.intelanalytics.engine.spark
 import java.util.{ ArrayList => JArrayList, List => JList }
 
 import com.intel.intelanalytics.component.ClassLoaderAware
-import com.intel.intelanalytics.domain.DomainJsonProtocol._
 import com.intel.intelanalytics.domain._
-import com.intel.intelanalytics.domain.query.{ Execution => QueryExecution }
-import com.intel.intelanalytics.domain.command._
-
-import com.intel.intelanalytics.domain.graph._
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 import com.intel.intelanalytics.domain.schema.{ DataTypes, SchemaUtil }
 import com.intel.intelanalytics.engine.Rows._
 import com.intel.intelanalytics.engine._
-import com.intel.intelanalytics.engine.plugin.{ Invocation, CommandPlugin }
+import com.intel.intelanalytics.engine.plugin.CommandPlugin
 import com.intel.intelanalytics.engine.spark.command.{ CommandPluginRegistry, CommandExecutor }
 import com.intel.intelanalytics.engine.spark.graph.SparkGraphStorage
-import com.intel.intelanalytics.engine.spark.plugin.SparkInvocation
 import com.intel.intelanalytics.engine.spark.queries.{ SparkQueryStorage, QueryExecutor }
 import com.intel.intelanalytics.engine.spark.frame._
 import com.intel.intelanalytics.shared.EventLogging
@@ -58,18 +52,16 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent._
 import com.intel.intelanalytics.engine.spark.statistics.{ TopKRDDFunctions, EntropyRDDFunctions, ColumnStatistics }
 import org.apache.spark.engine.SparkProgressListener
+import com.intel.intelanalytics.domain.frame.Entropy
+import com.intel.intelanalytics.domain.frame.EntropyReturn
+import com.intel.intelanalytics.domain.frame.TopK
 import com.intel.intelanalytics.domain.frame.FrameAddColumns
 import com.intel.intelanalytics.domain.frame.RenameFrame
-import com.intel.intelanalytics.engine.spark.plugin.SparkInvocation
-import com.intel.intelanalytics.domain.graph.GraphLoad
 import com.intel.intelanalytics.domain.graph.RenameGraph
-import com.intel.intelanalytics.domain.frame.load.LineParserArguments
 import com.intel.intelanalytics.domain.graph.GraphLoad
 import com.intel.intelanalytics.domain.schema.Schema
 import com.intel.intelanalytics.domain.frame.DropDuplicates
-import com.intel.intelanalytics.engine.spark.frame.RowParseResult
 import com.intel.intelanalytics.domain.frame.FrameProject
-import com.intel.intelanalytics.domain.graph.Graph
 import com.intel.intelanalytics.domain.graph.Graph
 import com.intel.intelanalytics.domain.frame.ConfusionMatrix
 import com.intel.intelanalytics.domain.FilterPredicate
@@ -83,8 +75,6 @@ import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.domain.frame.FrameDropColumns
 import com.intel.intelanalytics.domain.frame.FrameReference
 import com.intel.intelanalytics.engine.spark.frame.RDDJoinParam
-import com.intel.intelanalytics.domain.graph.GraphTemplate
-import com.intel.intelanalytics.domain.frame.load.LoadSource
 import com.intel.intelanalytics.domain.graph.GraphTemplate
 import com.intel.intelanalytics.domain.query.Query
 import com.intel.intelanalytics.domain.frame.ColumnSummaryStatistics
@@ -1661,7 +1651,6 @@ class SparkEngine(sparkContextManager: SparkContextManager,
   override def shutdown(): Unit = {
     //do nothing
   }
-
 
   /**
    * Get column index and data type of a column in a data frame.

@@ -15,4 +15,3 @@ case class TopK(frame: FrameReference, columnName: String, k: Int, reverse: Opti
   require(columnName != null, "column name is required")
 }
 
-
