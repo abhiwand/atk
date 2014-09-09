@@ -74,13 +74,11 @@ import com.intel.intelanalytics.domain.graph.Graph
 import com.intel.intelanalytics.domain.frame.ConfusionMatrix
 import com.intel.intelanalytics.domain.FilterPredicate
 import com.intel.intelanalytics.domain.frame.load.Load
-import com.intel.intelanalytics.domain.frame.CalculatePercentiles
 import com.intel.intelanalytics.domain.frame.CumulativeSum
 import com.intel.intelanalytics.domain.frame.CumulativeCount
 import com.intel.intelanalytics.domain.frame.CumulativePercentCount
 import com.intel.intelanalytics.domain.frame.CumulativePercentSum
 import com.intel.intelanalytics.domain.frame.Quantiles
-import com.intel.intelanalytics.domain.frame.CumulativeDist
 import com.intel.intelanalytics.domain.frame.AssignSample
 import com.intel.intelanalytics.domain.frame.FrameGroupByColumn
 import com.intel.intelanalytics.domain.frame.FrameRenameColumns
