@@ -1568,7 +1568,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     k : int
         Number of entries to return
 
-    reverse : boolean  (Optional, default=True)
+    reverse : boolean  (Optional, default=False)
         Optional. DefIf True, return bottom K, else return top K entries
                              |
 
@@ -1584,7 +1584,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
      >>> top5 = frame.topk('genre', 5)
      >>> top5.inspect()
 
-      genre:str   count:int64
+      genre:str   count:float64
       ----------------------------
       Drama        738278
       Comedy       671398
@@ -1596,7 +1596,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     >>> bottom3 = frame.topk('genre', 3, reverse=True)
     >>> bottom3.inspect()
 
-       genre:str   count:int64
+       genre:str   count:float64
        ----------------------------
        Musical      26976
        War          21067
@@ -1615,6 +1615,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     val frameRdd = frames.loadFrameRdd(ctx, frameId.id)
     val columnIndex = frame.schema.columnIndex(arguments.columnName)
     val valueDataType = frame.schema.columns(columnIndex)._2
+    val (weightsColumnIndexOption, weightsDataTypeOption) = getColumnIndexAndType(frame, arguments.weightsColumn)
 
     val newFrameName = frames.generateFrameName()
 
@@ -1624,10 +1625,11 @@ class SparkEngine(sparkContextManager: SparkContextManager,
 
     val newSchema = Schema(List(
       (arguments.columnName, valueDataType),
-      ("count", DataTypes.int64)
+      ("count", DataTypes.float64)
     ))
 
-    frames.saveFrame(newFrame, new FrameRDD(newSchema, topRdd))
+    val rowCount = topRdd.count()
+    frames.saveFrame(newFrame, new FrameRDD(newSchema, topRdd), Some(rowCount))
   }
 
   /**
