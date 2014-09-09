@@ -27,11 +27,11 @@ package com.intel.intelanalytics.domain.frame
  * Represents a CumulativePercentCount object
  *
  * @param sampleCol name of the column from which to compute a cumulative distribution
- * @param frame
+ * @param frame identifier for the input dataframe
  * @param countVal
  */
 case class CumulativePercentCount(frame: FrameReference, sampleCol: String, countVal: String) {
   require(frame != null, "frame is required")
   require(sampleCol != null, "column name for sample is required")
-  require(countVal != null, "")
+  require(countVal != null, "count value for the sample is required")
 }
