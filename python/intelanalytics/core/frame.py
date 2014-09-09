@@ -1093,7 +1093,7 @@ class BigFrame(command_loadable):
 
         Create a new frame, combining similar values of column *a*, and count how many of each value is in the original frame::
 
-            new_frame = my_frame.group_By('a', count)
+            new_frame = my_frame.groupBy('a', count)
             new_frame.inspect()
 
              a str       count int
@@ -1158,7 +1158,8 @@ class BigFrame(command_loadable):
         except:
             raise IaError(logger)
 
-    def inspect(self, n=10, offset=0):
+
+    def inspect(self, n=10, offset=0, columns=None):
         """
         Print data.
 
@@ -1170,6 +1171,10 @@ class BigFrame(command_loadable):
             The number of rows to print
         offset : int
             The number of rows to skip before printing
+        columns : String or iterable of string
+            Specify the columns to be included in the result. By default all the columns
+            are to be included
+            
 
         Returns
         -------
@@ -1185,7 +1190,7 @@ class BigFrame(command_loadable):
         """
         # TODO - Review docstring
         try:
-            return self._backend.inspect(self, n, offset)
+            return self._backend.inspect(self, n, offset, columns)
         except:
             raise IaError(logger)
 
@@ -1294,7 +1299,7 @@ class BigFrame(command_loadable):
         except:
             raise IaError(logger)
 
-    def take(self, n, offset=0):
+    def take(self, n, offset=0, columns=None):
         """
         Get data subset.
 
@@ -1306,6 +1311,9 @@ class BigFrame(command_loadable):
             The number of rows to copy from the currently active BigFrame
         offset : int
             The number of rows to skip before copying
+        columns : String or iterable of string
+            Specify the columns to be included in the result. By default all the columns
+            are to be included
 
         Notes
         -----
@@ -1337,7 +1345,7 @@ class BigFrame(command_loadable):
         """
         # TODO - Review and complete docstring
         try:
-            result = self._backend.take(self, n, offset)
+            result = self._backend.take(self, n, offset, columns)
             return result.data
         except:
             raise IaError(logger)

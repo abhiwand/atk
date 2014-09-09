@@ -23,26 +23,16 @@
 
 package com.intel.intelanalytics.repository
 
-import com.intel.intelanalytics.domain.frame.{ DataFrame, DataFrameTemplate }
-import com.intel.intelanalytics.domain.schema.{ DataTypes }
-import DataTypes.DataType
-import com.intel.intelanalytics.security.UserPrincipal
+import com.intel.intelanalytics.domain.graph.{ Graph, GraphTemplate }
 
-trait FrameRepository[Session] extends Repository[Session, DataFrameTemplate, DataFrame] {
-
-  def updateSchema(frame: DataFrame, columns: List[(String, DataType)])(implicit session: Session): DataFrame
-
-  def updateRowCount(frame: DataFrame, rowCount: Long)(implicit session: Session): DataFrame
-
-  /** Update the errorFrameId column */
-  def updateErrorFrameId(frame: DataFrame, errorFrameId: Option[Long])(implicit session: Session): DataFrame
-
-  def updateRevision(frame: DataFrame, revision: Int)(implicit session: Session): DataFrame
-
+/**
+ * Repository for graphs
+ */
+trait GraphRepository[Session] extends Repository[Session, GraphTemplate, Graph] {
   /**
-   * Return all the frames
+   * Return all the graphs
    * @param session current session
-   * @return all the dataframes
+   * @return all the graphs
    */
-  def scanAll()(implicit session: Session): Seq[DataFrame]
+  def scanAll()(implicit session: Session): Seq[Graph]
 }

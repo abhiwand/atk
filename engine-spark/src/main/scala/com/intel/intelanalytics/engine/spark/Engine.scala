@@ -294,9 +294,9 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     }
   }
 
-  def getFrames(offset: Int, count: Int)(implicit p: UserPrincipal): Future[Seq[DataFrame]] = withContext("se.getFrames") {
+  def getFrames()(implicit p: UserPrincipal): Future[Seq[DataFrame]] = withContext("se.getFrames") {
     future {
-      frames.getFrames(offset, count)
+      frames.getFrames()
     }
   }
 
@@ -1308,15 +1308,13 @@ class SparkEngine(sparkContextManager: SparkContextManager,
 
   /**
    * Get the metadata for a range of graph identifiers.
-   * @param offset First graph to obtain.
-   * @param count Number of graphs to obtain.
    * @param user IMPLICIT. User listing the graphs.
    * @return Future of the sequence of graph metadata entries to be returned.
    */
-  def getGraphs(offset: Int, count: Int)(implicit user: UserPrincipal): Future[Seq[Graph]] =
+  def getGraphs()(implicit user: UserPrincipal): Future[Seq[Graph]] =
     withContext("se.getGraphs") {
       future {
-        graphs.getGraphs(offset, count)
+        graphs.getGraphs()
       }
     }
 
