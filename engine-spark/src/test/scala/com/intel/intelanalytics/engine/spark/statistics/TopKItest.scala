@@ -7,12 +7,12 @@ import org.scalatest.Matchers
 
 class TopKItest extends TestingSparkContextFlatSpec with Matchers {
   val inputList = List(
-    Array[Any](-1, "a", 0, 2d),
-    Array[Any](0, "c", 0, 1d),
-    Array[Any](0, "b", 0, 0.5d),
-    Array[Any](5, "b", 0, 0.25d),
-    Array[Any](5, "b", 0, 0.2d),
-    Array[Any](5, "a", 0, 0.1d)
+    Array[Any](-1, "a", 0, 2d, 0d),
+    Array[Any](0, "c", 0, 1d, 0d),
+    Array[Any](0, "b", 0, 0.5d, 0d),
+    Array[Any](5, "b", 0, 0.25d, 0d),
+    Array[Any](5, "b", 0, 0.2d, 0d),
+    Array[Any](5, "a", 0, 0.1d, 0d)
   )
 
   val emptyList = List.empty[Array[Any]]
@@ -77,6 +77,12 @@ class TopKItest extends TestingSparkContextFlatSpec with Matchers {
     val frameRdd = sparkContext.parallelize(emptyList, 2)
     val bottomKColumn1 = TopKRDDFunctions.topK(frameRdd, 1, 4, true).collect()
     bottomKColumn1.size should equal(0)
+  }
+
+  "topK" should "return an empty sequence if all columns have zero weight" in {
+    val frameRdd = sparkContext.parallelize(inputList, 2)
+    val topKColumn1 = TopKRDDFunctions.topK(frameRdd, 1, 2, false, Some(4), Some(DataTypes.float64)).collect()
+    topKColumn1.size should equal(0)
   }
 
   "sortTopKByValue" should "return the top 3 entries by value sorted by descending order" in {

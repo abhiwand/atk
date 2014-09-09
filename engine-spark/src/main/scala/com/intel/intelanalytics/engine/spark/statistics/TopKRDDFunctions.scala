@@ -31,6 +31,7 @@ private[spark] object TopKRDDFunctions extends Serializable {
 
     val dataWeightPairs =
       ColumnStatistics.getDataWeightPairs(dataColumnIndex, weightsColumnIndexOption, weightsTypeOption, frameRDD)
+        .filter({ case (data, weight) => NumericValidationUtils.isFinitePositive(weight) })
 
     val distinctCountRDD = dataWeightPairs.reduceByKey((a, b) => a + b)
 
