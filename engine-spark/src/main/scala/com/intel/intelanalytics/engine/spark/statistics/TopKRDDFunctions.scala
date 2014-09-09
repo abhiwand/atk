@@ -23,6 +23,7 @@ private[spark] object TopKRDDFunctions extends Serializable {
    */
   def topK(frameRdd: RDD[Row], columnIndex: Int, k: Int, reverse: Boolean = false): RDD[Row] = {
     require(columnIndex >= 0, "label column index must be greater than or equal to zero")
+
     val distinctCountRDD = frameRdd.map(row => (row(columnIndex), 1l)).reduceByKey((a, b) => a + b)
 
     //Sort by descending order to get top K

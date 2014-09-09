@@ -13,5 +13,6 @@ import spray.json.JsValue
 case class TopK(frame: FrameReference, columnName: String, k: Int, reverse: Option[Boolean] = Some(false)) {
   require(frame != null, "frame is required")
   require(columnName != null, "column name is required")
+  require(k > 0, "k should be greater than zero")
 }
 
