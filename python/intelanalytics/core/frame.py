@@ -213,8 +213,8 @@ class BigFrame(command_loadable):
 
     def __init__(self, source=None, name=None):
         try:
-            self._id = 0
             self._error_frame_id = None
+            self._id = 0
             self._ia_uri = None
             if not hasattr(self, '_backend'):  # if a subclass has not already set the _backend
                 self._backend = _get_backend()
