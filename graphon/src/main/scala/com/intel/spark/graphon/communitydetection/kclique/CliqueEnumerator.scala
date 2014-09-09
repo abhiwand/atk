@@ -206,7 +206,7 @@ object CliqueEnumerator {
     val filteredCoGroups = cliquesAndNeighborsCoGrouped.filter(
       {
         case (members, cliqueTags, neighbors) =>
-          cliqueTags.length > 0 && neighbors.length > 0
+          cliqueTags.nonEmpty && neighbors.nonEmpty
       })
 
     //Repackage these tuples as ExtenderFacts
