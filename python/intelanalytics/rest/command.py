@@ -59,7 +59,13 @@ def execute_command(command_name, **arguments):
     command_info = executor.issue(command_request)
     if (command_info.result.has_key('value') and len(command_info.result) == 1):
         return command_info.result.get('value')
-    return command_info.result
+    elif command_info.result.has_key('name') and command_info.result.has_key('schema'):
+        # Used for plugins that return data frame
+        from intelanalytics.core.config import get_frame_backend
+        frame_backend = get_frame_backend()
+        return frame_backend.get_frame(command_info.result['name'])
+    else:
+        return command_info.result
 
 
 
