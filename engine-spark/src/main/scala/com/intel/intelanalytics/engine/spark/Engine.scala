@@ -1558,7 +1558,9 @@ class SparkEngine(sparkContextManager: SparkContextManager,
 
   val topKDoc = CommandDoc(oneLineSummary = "Calculate the top (or bottom) K distinct values by count of a column.",
     extendedSummary = Some("""
-    Calculate the top (or bottom) K distinct values by count of a column.
+    Calculate the top (or bottom) K distinct values by count of a column. The column can be weighted.
+    All data elements of weight <= 0 are excluded from the calculation, as are all data elements whose weight is NaN or infinite.
+    If there are no data elements of finite weight > 0, the entropy is zero.
 
     Parameters
     ----------
@@ -1570,7 +1572,11 @@ class SparkEngine(sparkContextManager: SparkContextManager,
 
     reverse : boolean  (Optional, default=False)
         Optional. DefIf True, return bottom K, else return top K entries
-                             |
+
+    weights_column : str (Optional)
+        The column that provides weights (frequencies) for the entropy calculation.
+        Must contain numerical data. Uniform weights of 1 for all items will be used for the calculation if this
+        parameter is not provided.
 
     Returns
     -------
