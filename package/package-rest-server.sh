@@ -23,7 +23,7 @@ mkdir -p  tarballs/$package/etc/intelanalytics/rest-server
 mkdir -p  tarballs/$package/usr/lib/intelanalytics/rest-server/lib
 
 #copy example scripts
-cp -Rv vm/salt/salt/base/$package/examples tarballs/$package/usr/lib/intelanalytics/rest-server
+cp -Rv vm/iavm/salt-stack/salt/base/$package/examples tarballs/$package/usr/lib/intelanalytics/rest-server
 
 if [ -d /home/agent/datasets ]; then
     #copy datasets from agent home if it exists into the rpm tar.gz source

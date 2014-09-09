@@ -46,11 +46,6 @@ class TestRestConnection(unittest.TestCase):
         self.assertEquals(conn1['scheme'], c.scheme)
         self.assertEquals(conn1['version'], c.version)
 
-    def test_connection_repr(self):
-        c = Server()
-        expected = '{"host": "localhost", "port": "9099", "scheme": "http", "version": "v1"}'
-        self.assertEquals(expected, repr(c))
-
     def test_connection_get_scheme_and_authority(self):
         c = Server()
         expected = 'http://localhost:9099'

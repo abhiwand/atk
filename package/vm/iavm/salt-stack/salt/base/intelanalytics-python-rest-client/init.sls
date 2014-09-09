@@ -16,7 +16,7 @@ intelanalytics-python-rest-client:
 mkdir -p /home/cloudera/Documents/quick-hadoop/python:
   cmd.run
 
-cp -Rv /usr/lib/intelanalytics/rest-client/python/doc/build/html/* /home/cloudera/Documents/quick-hadoop/python:
+cp -Rv /usr/lib/intelanalytics/rest-client/python/doc/html/* /home/cloudera/Documents/quick-hadoop/python:
   cmd.run
 
 chown -R cloudera:cloudera /home/cloudera:
