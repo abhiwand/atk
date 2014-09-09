@@ -28,12 +28,12 @@ The graph machine learning algorithms currently supported fall into these catego
     * :ref:`CGD`
 
 * :ref:`Graph_Analytics`
+    * :ref:`CC`
     * :ref:`PR`
 
 .. TODO::
 
     * ref:`APL`
-    * ref:`CC`
     
     Add these to the toctree above.
 
@@ -63,8 +63,11 @@ The graph machine learning algorithms currently supported fall into these catego
 Graph Analytics
 ---------------
 
-We currently support one algorithm in this category, :ref:`PR`
+The algorithms we currently support in this category :ref:`CC` and :ref:`PR`.
 
+
+.. _CC:
+.. include:: ds_mlal_cc.rst
 
 .. _PR:
 .. include:: ds_mlal_pr.rst
@@ -75,11 +78,6 @@ We currently support one algorithm in this category, :ref:`PR`
 
     .. _APL:
     .. include:: ds_mlal_apl.rst
-
-
-    .. _CC:
-    .. include:: ds_mlal_cc.rst
-
 
 .. _Graphical_Models:
 
