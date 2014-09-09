@@ -29,6 +29,7 @@ import com.typesafe.config.Config
 import spray.json.JsObject
 
 import scala.concurrent.ExecutionContext
+import com.intel.intelanalytics.domain.command.CommandDoc
 
 /**
  * Base trait for all operation-based plugins (query and command, for example).
@@ -47,6 +48,7 @@ sealed abstract class OperationPlugin[Argument <: Product: ClassManifest, Return
    * The name of the command, e.g. graphs/ml/loopy_belief_propagation
    */
   def name: String
+  def doc: Option[CommandDoc] = None
 
   /**
    * Operation plugins must implement this method to do the work requested by the user.
@@ -121,4 +123,5 @@ abstract class QueryPlugin[Argument <: Product: ClassManifest] extends Operation
    */
   def serializeArguments(arguments: Argument): JsObject
 
+  override def doc: Option[CommandDoc] = None
 }

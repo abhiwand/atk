@@ -27,6 +27,7 @@ import com.intel.intelanalytics.security.UserPrincipal
 import spray.json._
 
 import scala.concurrent.ExecutionContext
+import com.intel.intelanalytics.domain.command.CommandDoc
 
 /**
  * Encapsulates a normal Scala function as a CommandPlugin.
@@ -38,7 +39,8 @@ import scala.concurrent.ExecutionContext
  */
 case class FunctionCommand[Arguments <: Product: JsonFormat: ClassManifest, Return <: Product: JsonFormat: ClassManifest](name: String,
                                                                                                                           function: (Arguments, UserPrincipal, Invocation) => Return,
-                                                                                                                          numberOfJobsFunc: (Arguments) => Int)
+                                                                                                                          numberOfJobsFunc: (Arguments) => Int,
+                                                                                                                          override val doc: Option[CommandDoc] = None)
     extends CommandPlugin[Arguments, Return] {
 
   override def parseArguments(arguments: JsObject) = arguments.convertTo[Arguments]

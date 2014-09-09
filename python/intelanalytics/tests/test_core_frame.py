@@ -27,13 +27,13 @@ iatest.init()
 #iatest.set_logging("intelanalytics.core.operations", 20)
 
 import unittest
-from mock import patch
+from mock import patch, Mock
 
 from intelanalytics.core.frame import BigFrame
 from intelanalytics.core.column import BigColumn
 from intelanalytics.core.files import CsvFile
 from intelanalytics.core.iatypes import *
-#from intelanalytics.core.backend import FrameBackendSimplePrint
+from intelanalytics.core.config import get_frame_backend
 
 
 def get_simple_frame_abcde():
@@ -51,7 +51,7 @@ def get_simple_frame_abfgh():
                                           ('G', float64),
                                           ('H', str)]))
 
-#@patch('intelanalytics.core.config.get_frame_backend', new=FrameBackendSimplePrint)
+@patch('intelanalytics.core.config.get_frame_backend')
 class FrameConstruction(unittest.TestCase):
 
     def validate_column_names(self, frame, column_names):
@@ -59,23 +59,23 @@ class FrameConstruction(unittest.TestCase):
         for i in column_names:
             self.assertNotEqual(None,frame[i])
 
-    #@patch('intelanalytics.core.frame.BigFrame._get_new_frame_name')
 
-    '''def test_create(self):
-        get_new_frame_name.return_value = 'untitled_1234'
+    def test_create(self, get_frame_backend):
         f = BigFrame()
-        self.assertEqual('untitled_1234', f.name)
+        self.assertEqual(0, f._id)
+        self.assertEqual(None, f._error_frame_id)
 
-    def test_create_from_csv(self):
+    '''
+
+    def test_create_from_csv(self, get_frame_backend):
         f = BigFrame(CsvFile("dummy.csv", [('A', int32), ('B', int64)]))
-        self.assertEqual(2, len(f))
-        self.assertTrue(isinstance(f['A'], BigColumn))
-        self.assertTrue(isinstance(f['B'], BigColumn))
+        self.assertEqual(0, len(f))
         try:
             c = f['C']
             self.fail()
         except KeyError:
             pass
+
 
     def test_slice_columns_with_list(self):
         f = get_simple_frame_abcde()
@@ -87,7 +87,7 @@ class FrameConstruction(unittest.TestCase):
     def test_del_column(self):
         f = get_simple_frame_abcde()
         self.assertEqual(5, len(f))
-        f.remove_columns('B')
+        f.drop_columns('B')
         self.assertEqual(4, len(f))
         try:
             b = f['B']
@@ -98,7 +98,7 @@ class FrameConstruction(unittest.TestCase):
     def test_del_column_with_list(self):
         f = get_simple_frame_abcde()
         self.assertEqual(5, len(f))
-        f.remove_columns(['C', 'E', 'A'])
+        f.drop_columns(['C', 'E', 'A'])
         self.assertEqual(2, len(f))
         self.assertEqual(2, len(f.column_names))
         self.assertTrue('D' in f.column_names)

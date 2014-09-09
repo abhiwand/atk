@@ -28,52 +28,41 @@ import java.util.{ ArrayList => JArrayList, List => JList }
 import com.intel.intelanalytics.component.ClassLoaderAware
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
 import com.intel.intelanalytics.domain._
-import com.intel.intelanalytics.domain.query.{ Execution => QueryExecution, RowQuery, Query, QueryTemplate }
-import com.intel.intelanalytics.domain.command.{ Command, CommandDefinition, CommandTemplate, Execution }
-import com.intel.intelanalytics.domain.frame._
-import com.intel.intelanalytics.domain.frame.load.{ LineParserArguments, LineParser, LoadSource, Load }
+import com.intel.intelanalytics.domain.query.{ Execution => QueryExecution }
+import com.intel.intelanalytics.domain.command._
 
-import com.intel.intelanalytics.domain.graph.{ Graph, GraphLoad, GraphTemplate }
+import com.intel.intelanalytics.domain.graph._
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
-import com.intel.intelanalytics.domain.schema.{ DataTypes, Schema, SchemaUtil }
+import com.intel.intelanalytics.domain.schema.{ DataTypes, SchemaUtil }
 import com.intel.intelanalytics.engine.Rows._
 import com.intel.intelanalytics.engine._
-import com.intel.intelanalytics.engine.plugin.CommandPlugin
-import com.intel.intelanalytics.engine.spark.command.CommandExecutor
+import com.intel.intelanalytics.engine.plugin.{ Invocation, CommandPlugin }
+import com.intel.intelanalytics.engine.spark.command.{ CommandPluginRegistry, CommandExecutor }
+import com.intel.intelanalytics.engine.spark.graph.SparkGraphStorage
+import com.intel.intelanalytics.engine.spark.plugin.SparkInvocation
 import com.intel.intelanalytics.engine.spark.queries.{ SparkQueryStorage, QueryExecutor }
-import com.intel.intelanalytics.engine.spark.context.SparkContextManager
-import com.intel.intelanalytics.engine.spark.frame.{ RDDJoinParam, RowParser, SparkFrameStorage }
-import com.intel.intelanalytics.engine.spark.context.SparkContextManager
 import com.intel.intelanalytics.engine.spark.frame._
-import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.shared.EventLogging
 import com.intel.intelanalytics.NotFoundException
 import org.apache.spark.SparkContext
 import org.apache.spark.api.python.{ EnginePythonAccumulatorParam, EnginePythonRDD }
 import org.apache.spark.broadcast.Broadcast
-import org.apache.spark.engine.SparkProgressListener
 import org.apache.spark.rdd.RDD
 import spray.json._
 
-import com.intel.intelanalytics.domain.frame.LoadLines
-
 import DomainJsonProtocol._
-
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent._
 import com.intel.intelanalytics.engine.spark.context.SparkContextManager
-import scala.util.Try
-import org.apache.spark.engine.SparkProgressListener
-import com.intel.spark.mllib.util.{ LabeledLine, MLDataSplitter }
+import com.intel.spark.mllib.util.MLDataSplitter
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent._
-import com.intel.intelanalytics.engine.plugin.CommandPlugin
 import com.intel.intelanalytics.engine.spark.statistics.ColumnStatistics
-import scala.util.Try
 import org.apache.spark.engine.SparkProgressListener
 import com.intel.intelanalytics.domain.frame.FrameAddColumns
-import com.intel.intelanalytics.domain.frame.FrameRenameFrame
+import com.intel.intelanalytics.domain.frame.RenameFrame
+import com.intel.intelanalytics.engine.spark.plugin.SparkInvocation
+import com.intel.intelanalytics.domain.graph.GraphLoad
+import com.intel.intelanalytics.domain.graph.RenameGraph
 import com.intel.intelanalytics.domain.frame.load.LineParserArguments
 import com.intel.intelanalytics.domain.graph.GraphLoad
 import com.intel.intelanalytics.domain.schema.Schema
@@ -81,27 +70,49 @@ import com.intel.intelanalytics.domain.frame.DropDuplicates
 import com.intel.intelanalytics.engine.spark.frame.RowParseResult
 import com.intel.intelanalytics.domain.frame.FrameProject
 import com.intel.intelanalytics.domain.graph.Graph
+import com.intel.intelanalytics.domain.graph.Graph
+import com.intel.intelanalytics.domain.frame.ConfusionMatrix
 import com.intel.intelanalytics.domain.FilterPredicate
 import com.intel.intelanalytics.domain.frame.load.Load
-import com.intel.intelanalytics.domain.frame.load.LineParser
-import com.intel.intelanalytics.domain.frame.BigColumn
+import com.intel.intelanalytics.domain.frame.Quantiles
+import com.intel.intelanalytics.domain.frame.CumulativeDist
+import com.intel.intelanalytics.domain.frame.AssignSample
 import com.intel.intelanalytics.domain.frame.FrameGroupByColumn
+import com.intel.intelanalytics.domain.frame.FrameRenameColumns
 import com.intel.intelanalytics.security.UserPrincipal
-import com.intel.intelanalytics.domain.frame.FrameRemoveColumn
+import com.intel.intelanalytics.domain.frame.FrameDropColumns
+import com.intel.intelanalytics.domain.frame.FrameReference
 import com.intel.intelanalytics.engine.spark.frame.RDDJoinParam
 import com.intel.intelanalytics.domain.graph.GraphTemplate
 import com.intel.intelanalytics.domain.frame.load.LoadSource
+import com.intel.intelanalytics.domain.graph.GraphTemplate
+import com.intel.intelanalytics.domain.query.Query
+import com.intel.intelanalytics.domain.frame.ColumnSummaryStatistics
+import com.intel.intelanalytics.domain.frame.ColumnMedian
+import com.intel.intelanalytics.domain.frame.ColumnMode
+import com.intel.intelanalytics.domain.frame.ECDF
 import com.intel.intelanalytics.domain.frame.DataFrameTemplate
 import com.intel.intelanalytics.engine.ProgressInfo
-import com.intel.intelanalytics.domain.frame.FrameRenameColumns
+import com.intel.intelanalytics.domain.command.CommandDefinition
+import com.intel.intelanalytics.domain.frame.ClassificationMetric
 import com.intel.intelanalytics.domain.frame.BinColumn
+import com.intel.intelanalytics.domain.frame.QuantileValues
 import com.intel.intelanalytics.domain.frame.DataFrame
 import com.intel.intelanalytics.domain.command.Execution
 import com.intel.intelanalytics.domain.command.Command
+import com.intel.intelanalytics.domain.command.CommandDoc
+import com.intel.intelanalytics.domain.query.RowQuery
+import com.intel.intelanalytics.domain.frame.ClassificationMetricValue
+import com.intel.intelanalytics.domain.frame.ConfusionMatrixValues
 import com.intel.intelanalytics.domain.command.CommandTemplate
 import com.intel.intelanalytics.domain.frame.FlattenColumn
+import com.intel.intelanalytics.domain.frame.ColumnSummaryStatisticsReturn
+import com.intel.intelanalytics.domain.frame.ColumnMedianReturn
+import com.intel.intelanalytics.domain.frame.ColumnModeReturn
 import com.intel.intelanalytics.domain.frame.FrameJoin
 import com.intel.intelanalytics.engine.spark.plugin.SparkInvocation
+import com.intel.intelanalytics.domain.query.PagedQueryResult
+import com.intel.intelanalytics.domain.query.QueryDataResult
 
 object SparkEngine {
   private val pythonRddDelimiter = "YoMeDelimiter"
@@ -111,10 +122,11 @@ class SparkEngine(sparkContextManager: SparkContextManager,
                   commands: CommandExecutor,
                   commandStorage: CommandStorage,
                   frames: SparkFrameStorage,
-                  graphs: GraphStorage,
+                  graphs: SparkGraphStorage,
                   queryStorage: SparkQueryStorage,
                   queries: QueryExecutor,
-                  sparkAutoPartitioner: SparkAutoPartitioner) extends Engine
+                  sparkAutoPartitioner: SparkAutoPartitioner,
+                  commandPluginRegistry: CommandPluginRegistry) extends Engine
     with EventLogging
     with ClassLoaderAware {
 
@@ -187,7 +199,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
       val ctx = sparkContextManager.context(user, "query")
       try {
         val data = queryStorage.getQueryPage(ctx, id, pageId)
-        data
+        com.intel.intelanalytics.domain.query.QueryDataResult(data, None)
       }
       finally {
         ctx.stop()
@@ -205,19 +217,19 @@ class SparkEngine(sparkContextManager: SparkContextManager,
    * @return an Execution that can be used to track the completion of the command
    */
   def execute(command: CommandTemplate)(implicit user: UserPrincipal): Execution =
-    commands.execute(command, user, implicitly[ExecutionContext])
+    commands.execute(command, user, implicitly[ExecutionContext], commandPluginRegistry)
 
   /**
    * All the command definitions available
    */
   override def getCommandDefinitions()(implicit user: UserPrincipal): Iterable[CommandDefinition] = {
-    commands.getCommandDefinitions()
+    commandPluginRegistry.getCommandDefinitions()
   }
 
   def load(arguments: Load)(implicit user: UserPrincipal): Execution =
     commands.execute(loadCommand, arguments, user, implicitly[ExecutionContext])
 
-  val loadCommand = commands.registerCommand("dataframe/load", loadSimple _, numberOfJobs = 7)
+  val loadCommand = commandPluginRegistry.registerCommand("dataframe/load", loadSimple _, numberOfJobs = 8)
 
   /**
    * Load data from a LoadSource object to an existing destination described in the Load object
@@ -231,7 +243,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
 
     if (load.source.isFrame) {
       // load data from an existing frame and add its data onto the target frame
-      val additionalData = frames.getFrameRdd(ctx, expectFrame(load.source.uri.toInt))
+      val additionalData = frames.loadFrameRdd(ctx, expectFrame(load.source.uri.toInt))
       unionAndSave(ctx, destinationFrame, additionalData)
     }
     else if (load.source.isFile) {
@@ -262,13 +274,10 @@ class SparkEngine(sparkContextManager: SparkContextManager,
    * @return the frame with updated schema
    */
   private def unionAndSave(sparkContext: SparkContext, existingFrame: DataFrame, additionalData: FrameRDD): DataFrame = {
-    val existingRdd = frames.getFrameRdd(sparkContext, existingFrame)
+    val existingRdd = frames.loadFrameRdd(sparkContext, existingFrame)
     val unionedRdd = existingRdd.union(additionalData)
-    val location = fsRoot + frames.getFrameDataFile(existingFrame.id)
     val rowCount = unionedRdd.count()
-    unionedRdd.rows.saveAsObjectFile(location)
-    frames.updateSchema(existingFrame, unionedRdd.schema.columns)
-    frames.updateRowCount(existingFrame, rowCount)
+    frames.saveFrame(existingFrame, unionedRdd, Some(rowCount))
   }
 
   def create(frame: DataFrameTemplate)(implicit user: UserPrincipal): Future[DataFrame] =
@@ -300,21 +309,21 @@ class SparkEngine(sparkContextManager: SparkContextManager,
 
   def expectFrame(frameRef: FrameReference): DataFrame = expectFrame(frameRef.id)
 
-  def renameFrame(arguments: FrameRenameFrame)(implicit user: UserPrincipal): Execution =
+  def renameFrame(arguments: RenameFrame)(implicit user: UserPrincipal): Execution =
     commands.execute(renameFrameCommand, arguments, user, implicitly[ExecutionContext])
 
-  val renameFrameCommand = commands.registerCommand("dataframe/rename_frame", renameFrameSimple)
+  val renameFrameCommand = commandPluginRegistry.registerCommand("dataframe/rename_frame", renameFrameSimple _)
 
-  private def renameFrameSimple(arguments: FrameRenameFrame, user: UserPrincipal, invocation: SparkInvocation): DataFrame = {
+  private def renameFrameSimple(arguments: RenameFrame, user: UserPrincipal, invocation: SparkInvocation): DataFrame = {
     val frame = expectFrame(arguments.frame)
-    val newName = arguments.new_name
+    val newName = arguments.newName
     frames.renameFrame(frame, newName)
   }
 
   def renameColumns(arguments: FrameRenameColumns[JsObject, Long])(implicit user: UserPrincipal): Execution =
     commands.execute(renameColumnsCommand, arguments, user, implicitly[ExecutionContext])
 
-  val renameColumnsCommand = commands.registerCommand("dataframe/rename_columns", renameColumnsSimple)
+  val renameColumnsCommand = commandPluginRegistry.registerCommand("dataframe/rename_columns", renameColumnsSimple _)
   def renameColumnsSimple(arguments: FrameRenameColumns[JsObject, Long], user: UserPrincipal, invocation: SparkInvocation) = {
     val frameID = arguments.frame
     val frame = expectFrame(frameID)
@@ -324,7 +333,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
   def project(arguments: FrameProject[JsObject, Long])(implicit user: UserPrincipal): Execution =
     commands.execute(projectCommand, arguments, user, implicitly[ExecutionContext])
 
-  val projectCommand = commands.registerCommand("dataframe/project", projectSimple)
+  val projectCommand = commandPluginRegistry.registerCommand("dataframe/project", projectSimple _)
   def projectSimple(arguments: FrameProject[JsObject, Long], user: UserPrincipal, invocation: SparkInvocation): DataFrame = {
 
     implicit val u = user
@@ -337,7 +346,6 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     val columns = arguments.columns
 
     val schema = sourceFrame.schema
-    val location = fsRoot + frames.getFrameDataFile(projectedFrameID)
 
     val columnIndices = for {
       col <- columns
@@ -348,11 +356,10 @@ class SparkEngine(sparkContextManager: SparkContextManager,
       throw new IllegalArgumentException(s"Invalid list of columns: ${arguments.columns.toString()}")
     }
 
-    frames.getFrameRowRdd(ctx, sourceFrameID)
+    val resultRdd = frames.loadFrameRdd(ctx, sourceFrameID)
       .map(row => {
         for { i <- columnIndices } yield row(i)
       }.toArray)
-      .saveAsObjectFile(location)
 
     val projectedColumns = arguments.new_column_names match {
       case empty if empty.size == 0 => for { i <- columnIndices } yield schema.columns(i)
@@ -361,8 +368,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
           yield (arguments.new_column_names(i), schema.columns(columnIndices(i))._2)
     }
 
-    frames.updateSchema(projectedFrame, projectedColumns.toList)
-    frames.updateRowCount(projectedFrame, sourceFrame.rowCount)
+    frames.saveFrame(projectedFrame, new FrameRDD(new Schema(projectedColumns.toList), resultRdd), Some(sourceFrame.rowCount))
   }
 
   /**
@@ -377,7 +383,43 @@ class SparkEngine(sparkContextManager: SparkContextManager,
   def assignSample(arguments: AssignSample)(implicit user: UserPrincipal): Execution =
     commands.execute(assignSampleCommand, arguments, user, implicitly[ExecutionContext])
 
-  val assignSampleCommand = commands.registerCommand("dataframe/assign_sample", assignSampleSimple)
+  val assignSampleDoc = CommandDoc(oneLineSummary = "Assign classes to rows.",
+    extendedSummary = Some("""
+    Randomly assign classes to rows given a vector of percentages.
+    The table receives an additional column that contains a random label generated by the probability distribution
+    function specified by a list of floating point values.
+    The labels are non-negative integers drawn from the range [ 0,  len(split_percentages) - 1].
+    Optionally, the user can specify a list of strings to be used as the labels. If the number of labels is 3,
+    the labels will default to "TR", "TE" and "VA".
+
+    Parameters
+    ----------
+    sample_percentages : list of floating point values
+        Entries are non-negative and sum to 1.
+        If the *i*'th entry of the  list is *p*,
+        then then each row receives label *i* with independent probability *p*.
+    sample_labels : str (optional)
+        Names to be used for the split classes.
+        Defaults "TR", "TE", "VA" when there are three numbers given in split_percentages,
+        defaults to Sample#0, Sample#1, ... otherwise.
+    output_column : str (optional)
+        Name of the new column which holds the labels generated by the function
+    random_seed : int (optional)
+        Random seed used to generate the labels. Defaults to 0.
+
+    Examples
+    --------
+    For this example, my_frame is a BigFrame object accessing a frame with data.
+    Append a new column *sample_bin* to the frame;
+    Assign the value in the new column to "train", "test", or "validate"::
+
+        my_frame.assign_sample([0.3, 0.3, 0.4], ["train", "test", "validate"])
+
+    Now the frame accessed by BigFrame *my_frame* has a new column named "sample_bin" and each row contains one of the values "train",
+    "test", or "validate".  Values in the other columns are unaffected.
+    """))
+
+  val assignSampleCommand = commandPluginRegistry.registerCommand("dataframe/assign_sample", assignSampleSimple _, doc = Some(assignSampleDoc))
 
   def assignSampleSimple(arguments: AssignSample, user: UserPrincipal, invocation: SparkInvocation) = {
 
@@ -409,11 +451,11 @@ class SparkEngine(sparkContextManager: SparkContextManager,
 
     val splitter = new MLDataSplitter(splitPercentages, splitLabels, seed)
 
-    val labeledRDD = splitter.randomlyLabelRDD(frames.getFrameRdd(ctx, frameID))
+    val labeledRDD = splitter.randomlyLabelRDD(frames.loadFrameRdd(ctx, frameID))
 
     val splitRDD = labeledRDD.map(labeledRow => labeledRow.entry :+ labeledRow.label.asInstanceOf[Any])
 
-    splitRDD.saveAsObjectFile(fsRoot + frames.getFrameDataFile(frame.id))
+    frames.saveFrameWithoutSchema(frame, splitRDD)
 
     val allColumns = frame.schema.columns :+ (outputColumn, DataTypes.string)
     frames.updateSchema(frame, allColumns)
@@ -422,7 +464,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
   def groupBy(arguments: FrameGroupByColumn[JsObject, Long])(implicit user: UserPrincipal): Execution =
     commands.execute(groupByCommand, arguments, user, implicitly[ExecutionContext])
 
-  val groupByCommand = commands.registerCommand("dataframe/groupby", groupBySimple)
+  val groupByCommand = commandPluginRegistry.registerCommand("dataframe/group_by", groupBySimple _)
   def groupBySimple(arguments: FrameGroupByColumn[JsObject, Long], user: UserPrincipal, invocation: SparkInvocation) = {
     implicit val u = user
     val originalFrameID = arguments.frame
@@ -434,15 +476,13 @@ class SparkEngine(sparkContextManager: SparkContextManager,
 
     val newFrame = Await.result(create(DataFrameTemplate(arguments.name, None)), SparkEngineConfig.defaultTimeout)
 
-    val location = fsRoot + frames.getFrameDataFile(newFrame.id)
-
     val aggregation_arguments = arguments.aggregations
 
     val args_pair = for {
       (aggregation_function, column_to_apply, new_column_name) <- aggregation_arguments
     } yield (schema.columns.indexWhere(columnTuple => columnTuple._1 == column_to_apply), aggregation_function)
 
-    val new_data_types = if (arguments.group_by_columns.length > 0) {
+    if (arguments.group_by_columns.length > 0) {
       val groupByColumns = arguments.group_by_columns
 
       val columnIndices: Seq[(Int, DataType)] = for {
@@ -451,20 +491,17 @@ class SparkEngine(sparkContextManager: SparkContextManager,
         columnDataType = schema.columns(columnIndex)._2
       } yield (columnIndex, columnDataType)
 
-      val groupedRDD = frames.getFrameRowRdd(ctx, originalFrameID).groupBy((data: Rows.Row) => {
+      val groupedRDD = frames.loadFrameRdd(ctx, originalFrameID).groupBy((data: Rows.Row) => {
         for { index <- columnIndices.map(_._1) } yield data(index)
       }.mkString("\0"))
-      SparkOps.aggregation(groupedRDD, args_pair, originalFrame.schema.columns, columnIndices.map(_._2).toArray, location)
+      val resultRdd = SparkOps.aggregation(groupedRDD, args_pair, originalFrame.schema.columns, columnIndices.map(_._2).toArray, arguments)
+      frames.saveFrame(newFrame, resultRdd)
     }
     else {
-      val groupedRDD = frames.getFrameRowRdd(ctx, originalFrameID).groupBy((data: Rows.Row) => "")
-      SparkOps.aggregation(groupedRDD, args_pair, originalFrame.schema.columns, Array[DataType](), location)
+      val groupedRDD = frames.loadFrameRdd(ctx, originalFrameID).groupBy((data: Rows.Row) => "")
+      val resultRdd = SparkOps.aggregation(groupedRDD, args_pair, originalFrame.schema.columns, Array[DataType](), arguments)
+      frames.saveFrame(newFrame, resultRdd)
     }
-    val new_column_names = arguments.group_by_columns ++ {
-      for { i <- aggregation_arguments } yield i._3
-    }
-    val new_schema = new_column_names.zip(new_data_types)
-    frames.updateSchema(newFrame, new_schema)
   }
 
   def decodePythonBase64EncodedStrToBytes(byteStr: String): Array[Byte] = {
@@ -485,11 +522,11 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     withMyClassLoader {
       val predicateInBytes = decodePythonBase64EncodedStrToBytes(py_expression)
 
-      val baseRdd: RDD[String] = frames.getFrameRowRdd(ctx, frameId)
+      val baseRdd: RDD[String] = frames.loadFrameRdd(ctx, frameId)
         .map(x => x.map(t => t match {
-          case null => DataTypes.pythonRddNullString
-          case _ => t.toString
-        }).mkString(SparkEngine.pythonRddDelimiter))
+          case null => JsNull
+          case a => a.toJson
+        }).toJson.toString)
 
       val pythonExec = SparkEngineConfig.pythonWorkerExec
       val environment = new java.util.HashMap[String, String]()
@@ -507,9 +544,30 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     }
   }
 
-  private def persistPythonRDD(pyRdd: EnginePythonRDD[String], converter: Array[String] => Array[Any], location: String): Unit = {
+  /**
+   * Persists a PythonRDD after python computation is complete to HDFS
+   *
+   * @param dataFrame DataFrame associated with this RDD
+   * @param pyRdd PythonRDD instance
+   * @param converter Schema Function converter to convert internals of RDD from Array[String] to Array[Any]
+   * @param skipRowCount Skip counting rows when persisting RDD for optimizing speed
+   * @return rowCount Number of rows if skipRowCount is false, else 0 (for optimization/transformations which do not alter row count)
+   */
+  private def persistPythonRDD(dataFrame: DataFrame, pyRdd: EnginePythonRDD[String], converter: Array[String] => Array[Any], skipRowCount: Boolean = false): Long = {
     withMyClassLoader {
-      pyRdd.map(s => new String(s).split(SparkEngine.pythonRddDelimiter)).map(converter).saveAsObjectFile(location)
+
+      val resultRdd = pyRdd.map(s => JsonParser(new String(s)).convertTo[List[List[JsValue]]].map(y => y.map(x => x match {
+        case x if x.isInstanceOf[JsString] => x.asInstanceOf[JsString].value
+        case x if x.isInstanceOf[JsNumber] => x.asInstanceOf[JsNumber].toString
+        case x if x.isInstanceOf[JsBoolean] => x.asInstanceOf[JsBoolean].toString
+        case _ => null
+      }).toArray))
+        .flatMap(identity)
+        .map(converter)
+
+      val rowCount = if (skipRowCount) 0 else resultRdd.count()
+      frames.saveFrameWithoutSchema(dataFrame, resultRdd)
+      rowCount
     }
   }
 
@@ -521,7 +579,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
   override def flattenColumn(arguments: FlattenColumn)(implicit user: UserPrincipal): Execution =
     commands.execute(flattenColumnCommand, arguments, user, implicitly[ExecutionContext])
 
-  val flattenColumnCommand = commands.registerCommand("dataframe/flatten_column", flattenColumnSimple)
+  val flattenColumnCommand = commandPluginRegistry.registerCommand("dataframe/flatten_column", flattenColumnSimple _)
   def flattenColumnSimple(arguments: FlattenColumn, user: UserPrincipal, invocation: SparkInvocation) = {
     implicit val u = user
     val frameId: Long = arguments.frameId
@@ -530,15 +588,14 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     val ctx = invocation.sparkContext
 
     val newFrame = Await.result(create(DataFrameTemplate(arguments.name, None)), SparkEngineConfig.defaultTimeout)
-    val rdd = frames.getFrameRowRdd(ctx, frameId)
+    val rdd = frames.loadFrameRdd(ctx, frameId)
 
     val columnIndex = realFrame.schema.columnIndex(arguments.column)
 
     val flattenedRDD = SparkOps.flattenRddByColumnIndex(columnIndex, arguments.separator, rdd)
     val rowCount = flattenedRDD.count()
 
-    flattenedRDD.saveAsObjectFile(fsRoot + frames.getFrameDataFile(newFrame.id))
-    frames.updateSchema(newFrame, realFrame.schema.columns)
+    frames.saveFrame(newFrame, new FrameRDD(realFrame.schema, flattenedRDD))
     frames.updateRowCount(newFrame, rowCount)
   }
 
@@ -550,7 +607,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
   override def binColumn(arguments: BinColumn[Long])(implicit user: UserPrincipal): Execution =
     commands.execute(binColumnCommand, arguments, user, implicitly[ExecutionContext])
 
-  val binColumnCommand = commands.registerCommand("dataframe/bin_column", binColumnSimple _, numberOfJobs = 7)
+  val binColumnCommand = commandPluginRegistry.registerCommand("dataframe/bin_column", binColumnSimple _, numberOfJobs = 7)
   def binColumnSimple(arguments: BinColumn[Long], user: UserPrincipal, invocation: SparkInvocation) = {
     implicit val u = user
     val frameId: Long = arguments.frame
@@ -558,7 +615,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
 
     val ctx = invocation.sparkContext
 
-    val rdd = frames.getFrameRowRdd(ctx, frameId)
+    val rdd = frames.loadFrameRdd(ctx, frameId)
 
     val columnIndex = realFrame.schema.columnIndex(arguments.columnName)
 
@@ -567,24 +624,23 @@ class SparkEngine(sparkContextManager: SparkContextManager,
 
     val newFrame = Await.result(create(DataFrameTemplate(arguments.name, None)), SparkEngineConfig.defaultTimeout)
 
+    val allColumns = realFrame.schema.columns :+ (arguments.binColumnName, DataTypes.int32)
+
     arguments.binType match {
       case "equalwidth" => {
         val binnedRdd = SparkOps.binEqualWidth(columnIndex, arguments.numBins, rdd)
-        binnedRdd.saveAsObjectFile(fsRoot + frames.getFrameDataFile(newFrame.id))
+        frames.saveFrame(newFrame, new FrameRDD(new Schema(allColumns), binnedRdd))
       }
       case "equaldepth" => {
         val binnedRdd = SparkOps.binEqualDepth(columnIndex, arguments.numBins, rdd)
-        binnedRdd.saveAsObjectFile(fsRoot + frames.getFrameDataFile(newFrame.id))
+        frames.saveFrame(newFrame, new FrameRDD(new Schema(allColumns), binnedRdd))
       }
       case _ => throw new IllegalArgumentException(s"Invalid binning type: ${arguments.binType.toString()}")
     }
 
-    val allColumns = realFrame.schema.columns :+ (arguments.binColumnName, DataTypes.int32)
     frames.updateSchema(newFrame, allColumns)
   }
 
-  // TRIB-2245
-  /*
   /**
    * Calculate the mode of the specified column.
    * @param arguments Input specification for column mode.
@@ -593,17 +649,62 @@ class SparkEngine(sparkContextManager: SparkContextManager,
   override def columnMode(arguments: ColumnMode)(implicit user: UserPrincipal): Execution =
     commands.execute(columnModeCommand, arguments, user, implicitly[ExecutionContext])
 
-  val columnModeCommand: CommandPlugin[ColumnMode, ColumnModeReturn] =
-    commands.registerCommand("dataframe/column_mode", columnModeSimple)
+  val columnModeDoc = CommandDoc(oneLineSummary = "Calculate modes of a column.",
+    extendedSummary = Some("""
+    Calculate modes of a column.  A mode is a data element of maximum weight. All data elements of weight <= 0
+    are excluded from the calculation, as are all data elements whose weight is NaN or infinite.
+    If there are no data elements of finite weight > 0, no mode is returned.
 
-  def columnModeSimple(arguments: ColumnMode, user: UserPrincipal): ColumnModeReturn = {
+    Because data distributions often have mutliple modes, it is possible for a set of modes to be returned. By
+    default, only one is returned, but my setting the optional parameter max_number_of_modes_returned, a larger
+    number of modes can be returned.
+
+    Parameters
+    ----------
+    data_column : str
+        The column whose mode is to be calculated
+
+    weights_column : str
+        Optional. The column that provides weights (frequencies) for the mode calculation.
+        Must contain numerical data. Uniform weights of 1 for all items will be used for the calculation if this
+        parameter is not provided.
+
+    max_modes_returned : int
+        Optional. Maximum number of modes returned. If this parameter is not provided, it defaults to 1
+
+    Returns
+    -------
+    mode : Dict
+        Dictionary containing summary statistics in the following entries:
+            mode : A mode is a data element of maximum net weight. A set of modes is returned.
+             The empty set is returned when the sum of the weights is 0. If the number of modes is <= the parameter
+             maxNumberOfModesReturned, then all modes of the data are returned.If the number of modes is
+             > maxNumberOfModesReturned, then only the first maxNumberOfModesReturned many modes
+             (per a canonical ordering) are returned.
+            weight_of_mode : Weight of a mode. If there are no data elements of finite weight > 0,
+             the weight of the mode is 0. If no weights column is given, this is the number of appearances of
+             each mode.
+            total_weight : Sum of all weights in the weight column. This is the row count if no weights
+             are given. If no weights column is given, this is the number of rows in the table with non-zero weight.
+            mode_count : The number of distinct modes in the data. In the case that the data is very multimodal,
+             this number may well exceed max_number_of_modes_returned.
+
+    Example
+    -------
+    >>> mode = frame.column_mode('modum columpne')
+"""))
+
+  val columnModeCommand: CommandPlugin[ColumnMode, ColumnModeReturn] =
+    commandPluginRegistry.registerCommand("dataframe/column_mode", columnModeSimple _, doc = Some(columnModeDoc))
+
+  def columnModeSimple(arguments: ColumnMode, user: UserPrincipal, invocation: SparkInvocation): ColumnModeReturn = {
 
     implicit val u = user
 
-    val frameId = arguments.frame
+    val frameId = arguments.frame.id
     val frame = expectFrame(frameId)
-    val ctx = sparkContextManager.context(user).sparkContext
-    val rdd = frames.getFrameRdd(ctx, frameId.id)
+    val ctx = invocation.sparkContext
+    val rdd = frames.loadFrameRdd(ctx, frameId)
     val columnIndex = frame.schema.columnIndex(arguments.dataColumn)
     val valueDataType: DataType = frame.schema.columns(columnIndex)._2
 
@@ -615,44 +716,81 @@ class SparkEngine(sparkContextManager: SparkContextManager,
       (Some(weightsColumnIndex), Some(frame.schema.columns(weightsColumnIndex)._2))
     }
 
-    ColumnStatistics.columnMode(columnIndex, valueDataType, weightsColumnIndexOption, weightsDataTypeOption, rdd)
+    val modeCountOption = arguments.maxModesReturned
+
+    ColumnStatistics.columnMode(columnIndex,
+      valueDataType,
+      weightsColumnIndexOption,
+      weightsDataTypeOption,
+      modeCountOption,
+      rdd)
   }
-*/
-  // TODO TRIB-2245
+
   /**
    * Calculate the median of the specified column.
-   * @param arguments Input specification for column median.
-   * @param user Current user.
+   * param arguments Input specification for column median.
+   * param user Current user.
    *
-   * override def columnMedian(arguments: ColumnMedian)(implicit user: UserPrincipal): Execution =
-   * commands.execute(columnMedianCommand, arguments, user, implicitly[ExecutionContext])
-   *
-   * val columnMedianCommand: CommandPlugin[ColumnMedian, ColumnMedianReturn] =
-   * commands.registerCommand("dataframe/column_median", columnMedianSimple)
-   *
-   * def columnMedianSimple(arguments: ColumnMedian, user: UserPrincipal): ColumnMedianReturn = {
-   *
-   * implicit val u = user
-   *
-   * val frameId = arguments.frame
-   * val frame = expectFrame(frameId)
-   * val ctx = sparkContextManager.context(user).sparkContext
-   * val rdd = frames.getFrameRdd(ctx, frameId.id)
-   * val columnIndex = frame.schema.columnIndex(arguments.dataColumn)
-   * val valueDataType: DataType = frame.schema.columns(columnIndex)._2
-   *
-   * val (weightsColumnIndexOption, weightsDataTypeOption) = if (arguments.weightsColumn.isEmpty) {
-   * (None, None)
-   * }
-   * else {
-   * val weightsColumnIndex = frame.schema.columnIndex(arguments.weightsColumn.get)
-   * (Some(weightsColumnIndex), Some(frame.schema.columns(weightsColumnIndex)._2))
-   * }
-   * val (weightsColumnIndexOption, weightsDataTypeOption) = (None, None)
-   *
-   * ColumnStatistics.columnMedian(columnIndex, valueDataType, weightsColumnIndexOption, weightsDataTypeOption, rdd)
-   * }
    */
+
+  override def columnMedian(arguments: ColumnMedian)(implicit user: UserPrincipal): Execution =
+    commands.execute(columnMedianCommand, arguments, user, implicitly[ExecutionContext])
+
+  val columnMedianDoc = CommandDoc(oneLineSummary = "Calculate (weighted) median of a column.",
+    extendedSummary = Some("""
+                             |Calculate the (weighted) median of a column. The median is the least value X in the range of the distribution so
+                             |         that the cumulative weight of values strictly below X is strictly less than half of the total weight and
+                             |          the cumulative weight of values up to and including X is >= 1/2 the total weight.
+                             |
+                             |        All data elements of weight <= 0 are excluded from the calculation, as are all data elements whose weight
+                             |         is NaN or infinite. If a weight column is provided and no weights are finite numbers > 0, None is returned.
+                             |
+                             |        Parameters
+                             |        ----------
+                             |        data_column : str
+                             |            The column whose median is to be calculated.
+                             |
+                             |        weights_column : str
+                             |            Optional. The column that provides weights (frequencies) for the median calculation.
+                             |            Must contain numerical data. Uniform weights of 1 for all items will be used for the calculation if this
+                             |                parameter is not provided.
+                             |
+                             |        Returns
+                             |        -------
+                             |        median :  The median of the values.  If a weight column is provided and no weights are finite numbers > 0,
+                             |             None is returned. Type of the median returned is that of the contents of the data column, so a column of
+                             |             Longs will result in a Long median and a column of Floats will result in a Float median.
+                             |
+                             |        Example
+                             |        -------
+                             |        >>> median = frame.column_median('middling column')
+                             |""".stripMargin))
+
+  val columnMedianCommand: CommandPlugin[ColumnMedian, ColumnMedianReturn] =
+    commandPluginRegistry.registerCommand("dataframe/column_median", columnMedianSimple, doc = Some(columnMedianDoc))
+
+  def columnMedianSimple(arguments: ColumnMedian, user: UserPrincipal, invocation: SparkInvocation): ColumnMedianReturn = {
+
+    implicit val u = user
+
+    val frameId: Long = arguments.frame.id
+    val frame = expectFrame(frameId)
+    val ctx = invocation.sparkContext
+    val rdd = frames.loadFrameRdd(ctx, frameId)
+    val columnIndex = frame.schema.columnIndex(arguments.dataColumn)
+    val valueDataType: DataType = frame.schema.columns(columnIndex)._2
+
+    val (weightsColumnIndexOption, weightsDataTypeOption) = if (arguments.weightsColumn.isEmpty) {
+      (None, None)
+    }
+    else {
+      val weightsColumnIndex = frame.schema.columnIndex(arguments.weightsColumn.get)
+      (Some(weightsColumnIndex), Some(frame.schema.columns(weightsColumnIndex)._2))
+    }
+
+    ColumnStatistics.columnMedian(columnIndex, valueDataType, weightsColumnIndexOption, weightsDataTypeOption, rdd)
+  }
+
   /**
    * Calculate summary statistics of the specified column.
    * @param arguments Input specification for column summary statistics.
@@ -661,8 +799,132 @@ class SparkEngine(sparkContextManager: SparkContextManager,
   override def columnSummaryStatistics(arguments: ColumnSummaryStatistics)(implicit user: UserPrincipal): Execution =
     commands.execute(columnStatisticCommand, arguments, user, implicitly[ExecutionContext])
 
+  val columnSummaryStatisticsDoc = CommandDoc(oneLineSummary = "Calculate summary statistics of a column.",
+    extendedSummary = Some("""
+                             |        Calculate summary statistics of a column.
+                             |
+                             |        Parameters
+                             |        ----------
+                             |        data_column : str
+                             |            The column to be statistically summarized.
+                             |            Must contain numerical data; all NaNs and infinite values are excluded from the calculation.
+                             |        weights_column_name : str (optional)
+                             |            Name of column holding weights of column values
+                             |        use_population_variance : bool (optional)
+                             |            If true, the variance is calculated as the population variance. If false, the variance calculated as the
+                             |             sample variance. Because this option affects the variance, it affects the standard deviation and the
+                             |             confidence intervals as well. This option is False by default, so that sample variance is the default
+                             |             form of variance calculated.
+                             |        Returns
+                             |        -------
+                             |        summary : Dict
+                             |            Dictionary containing summary statistics in the following entries:
+                             |
+                             |            | mean:
+                             |                  Arithmetic mean of the data.
+                             |
+                             |            | geometric_mean:
+                             |                  Geometric mean of the data. None when there is a data element <= 0, 1.0 when there are no data
+                             |                  elements.
+                             |
+                             |            | variance:
+                             |                  None when there are <= 1 many data elements.
+                             |                  Sample variance is the weighted sum of the squared distance of each data element from the
+                             |                   weighted mean, divided by the total weight minus 1. None when the sum of the weights is <= 1.
+                             |                  Population variance is the weighted sum of the squared distance of each data element from the
+                             |                   weighted mean, divided by the total weight.
+                             |
+                             |            | standard_deviation:
+                             |                  The square root of the variance. None when  sample variance
+                             |                  is being used and the sum of weights is <= 1.
+                             |
+                             |
+                             |            | valid_data_count:
+                             |                  The count of all data elements that are finite numbers.
+                             |                  (In other words, after excluding NaNs and infinite values.)
+                             |
+                             |            | minimum:
+                             |                  Minimum value in the data. None when there are no data elements.
+                             |
+                             |            | maximum:
+                             |                  Maximum value in the data. None when there are no data elements.
+                             |
+                             |            | mean_confidence_lower:
+                             |                  Lower limit of the 95% confidence interval about the mean.
+                             |                  Assumes a Gaussian distribution.
+                             |                  None when there are no elements of positive weight.
+                             |
+                             |            | mean_confidence_upper:
+                             |                  Upper limit of the 95% confidence interval about the mean.
+                             |                  Assumes a Gaussian distribution.
+                             |                  None when there are no elements of positive weight.
+                             |
+                             |            | bad_row_count : The number of rows containing a NaN or infinite value in either the data
+                             |                  or weights column.
+                             |
+                             |            | good_row_count : The number of rows not containing a NaN or infinite value in either the data
+                             |                  or weights column.
+                             |
+                             |            | positive_weight_count : The number of valid data elements with weight > 0.
+                             |                   This is the number of entries used in the statistical calculation.
+                             |
+                             |            | non_positive_weight_count : The number valid data elements with finite weight <= 0.
+                             |
+                             |        Notes
+                             |        -----
+                             |        Return Types
+                             |            | valid_data_count returns a Long.
+                             |            | All other values are returned as Doubles or None.
+                             |
+                             |        Sample Variance
+                             |            Sample Variance is computed by the following formula:
+                             |
+                             |        .. math::
+                             |
+                             |            \\left( \\frac{1}{W - 1} \\right) * sum_{i}  \\left(x_{i} - M \\right) ^{2}
+                             |
+                             |        where :math:`W` is sum of weights over valid elements of positive weight, and :math:`M` is the weighted mean.
+                             |
+                             |        Population Variance
+                             |            Population Variance is computed by the following formula:
+                             |
+                             |        .. math::
+                             |
+                             |            \\left( \\frac{1}{W} \\right) * sum_{i}  \\left(x_{i} - M \\right) ^{2}
+                             |
+                             |        where :math:`W` is sum of weights over valid elements of positive weight, and :math:`M` is the weighted mean.
+                             |
+                             |        Standard Deviation
+                             |            The square root of the variance.
+                             |
+                             |        Logging Invalid Data
+                             |        --------------------
+                             |
+                             |        A row is bad when it contains a NaN or infinite value in either its data or weights column.  In this case, it
+                             |         contributes to bad_row_count; otherwise it contributes to good row count.
+                             |
+                             |        A good row can be skipped because the value in its weight column is <=0. In this case, it contributes to
+                             |         non_positive_weight_count, otherwise (when the weight is > 0) it contributes to valid_data_weight_pair_count.
+                             |
+                             |            Equations
+                             |            ---------
+                             |            bad_row_count + good_row_count = # rows in the frame
+                             |            positive_weight_count + non_positive_weight_count = good_row_count
+                             |
+                             |        In particular, when no weights column is provided and all weights are 1.0, non_positive_weight_count = 0 and
+                             |         positive_weight_count = good_row_count
+                             |
+                             |        Examples
+                             |        --------
+                             |        ::
+                             |
+                             |            stats = frame.column_summary_statistics('data column', 'weight column')
+                             |
+                             |        .. versionadded:: 0.8
+    |""".stripMargin))
+
   val columnStatisticCommand: CommandPlugin[ColumnSummaryStatistics, ColumnSummaryStatisticsReturn] =
-    commands.registerCommand("dataframe/column_summary_statistics", columnStatisticSimple)
+    commandPluginRegistry.registerCommand("dataframe/column_summary_statistics", columnStatisticSimple _, doc = Some(columnSummaryStatisticsDoc))
 
   def columnStatisticSimple(arguments: ColumnSummaryStatistics, user: UserPrincipal, invocation: SparkInvocation): ColumnSummaryStatisticsReturn = {
 
@@ -671,21 +933,26 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     val frameId: Long = arguments.frame.id
     val frame = expectFrame(frameId)
     val ctx = invocation.sparkContext
-    val rdd = frames.getFrameRdd(ctx, frameId)
+    val rdd = frames.loadFrameRdd(ctx, frameId)
     val columnIndex = frame.schema.columnIndex(arguments.dataColumn)
     val valueDataType: DataType = frame.schema.columns(columnIndex)._2
-    // TODO TRIB-2245
-    /*
+
     val (weightsColumnIndexOption, weightsDataTypeOption) = if (arguments.weightsColumn.isEmpty) {
       (None, None)
     }
     else {
       val weightsColumnIndex = frame.schema.columnIndex(arguments.weightsColumn.get)
       (Some(weightsColumnIndex), Some(frame.schema.columns(weightsColumnIndex)._2))
-    }*/
-    val (weightsColumnIndexOption, weightsDataTypeOption) = (None, None)
+    }
 
-    ColumnStatistics.columnSummaryStatistics(columnIndex, valueDataType, weightsColumnIndexOption, weightsDataTypeOption, rdd)
+    val usePopulationVariance = arguments.usePopulationVariance.getOrElse(false)
+
+    ColumnStatistics.columnSummaryStatistics(columnIndex,
+      valueDataType,
+      weightsColumnIndexOption,
+      weightsDataTypeOption,
+      rdd,
+      usePopulationVariance)
   }
 
   // TODO TRIB-2245
@@ -699,7 +966,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     commands.execute(columnFullStatisticsCommand, arguments, user, implicitly[ExecutionContext])
 
   val columnFullStatisticsCommand: CommandPlugin[ColumnFullStatistics, ColumnFullStatisticsReturn] =
-    commands.registerCommand("dataframe/column_full_statistics", columnFullStatisticSimple)
+    pluginRegistry.registerCommand("dataframe/column_full_statistics", columnFullStatisticSimple)
 
   def columnFullStatisticSimple(arguments: ColumnFullStatistics, user: UserPrincipal): ColumnFullStatisticsReturn = {
 
@@ -727,19 +994,16 @@ class SparkEngine(sparkContextManager: SparkContextManager,
   def filter(arguments: FilterPredicate[JsObject, Long])(implicit user: UserPrincipal): Execution =
     commands.execute(filterCommand, arguments, user, implicitly[ExecutionContext])
 
-  val filterCommand = commands.registerCommand("dataframe/filter", filterSimple _, numberOfJobs = 2)
+  val filterCommand = commandPluginRegistry.registerCommand("dataframe/filter", filterSimple _, numberOfJobs = 2)
   def filterSimple(arguments: FilterPredicate[JsObject, Long], user: UserPrincipal, invocation: SparkInvocation) = {
     implicit val u = user
     val pyRdd = createPythonRDD(arguments.frame, arguments.predicate, invocation.sparkContext)
-    val rowCount = pyRdd.count()
-
-    val location = fsRoot + frames.getFrameDataFile(arguments.frame)
 
     val realFrame = frames.lookup(arguments.frame).getOrElse(
       throw new IllegalArgumentException(s"No such data frame: ${arguments.frame}"))
     val schema = realFrame.schema
     val converter = DataTypes.parseMany(schema.columns.map(_._2).toArray)(_)
-    persistPythonRDD(pyRdd, converter, location)
+    val rowCount = persistPythonRDD(realFrame, pyRdd, converter, skipRowCount = false)
     frames.updateRowCount(realFrame, rowCount)
   }
 
@@ -751,7 +1015,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
   override def join(arguments: FrameJoin)(implicit user: UserPrincipal): Execution =
     commands.execute(joinCommand, arguments, user, implicitly[ExecutionContext])
 
-  val joinCommand = commands.registerCommand("dataframe/join", joinSimple)
+  val joinCommand = commandPluginRegistry.registerCommand("dataframe/join", joinSimple _)
   def joinSimple(arguments: FrameJoin, user: UserPrincipal, invocation: SparkInvocation) = {
     implicit val u = user
     def createPairRddForJoin(arguments: FrameJoin, ctx: SparkContext): List[RDD[(Any, Array[Any])]] = {
@@ -762,7 +1026,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
               throw new IllegalArgumentException(s"No such data frame"))
 
             val frameSchema = realFrame.schema
-            val rdd = frames.getFrameRowRdd(ctx, frame._1)
+            val rdd = frames.loadFrameRdd(ctx, frame._1)
             val columnIndex = frameSchema.columnIndex(frame._2)
             (rdd, columnIndex)
           }
@@ -810,17 +1074,36 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     val joinResultRDD = SparkOps.joinRDDs(RDDJoinParam(pairRdds(0), leftColumns.length),
       RDDJoinParam(pairRdds(1), rightColumns.length),
       arguments.how)
+
     val joinRowCount = joinResultRDD.count()
-    joinResultRDD.saveAsObjectFile(fsRoot + frames.getFrameDataFile(newJoinFrame.id))
-    frames.updateSchema(newJoinFrame, allColumns)
-    frames.updateRowCount(newJoinFrame, joinRowCount)
+    frames.saveFrame(newJoinFrame, new FrameRDD(new Schema(allColumns), joinResultRDD), Some(joinRowCount))
   }
 
-  def removeColumn(arguments: FrameRemoveColumn)(implicit user: UserPrincipal): Execution =
-    commands.execute(removeColumnCommand, arguments, user, implicitly[ExecutionContext])
+  def dropColumns(arguments: FrameDropColumns)(implicit user: UserPrincipal): Execution =
+    commands.execute(dropColumnsCommand, arguments, user, implicitly[ExecutionContext])
 
-  val removeColumnCommand = commands.registerCommand("dataframe/remove_columns", removeColumnSimple)
-  def removeColumnSimple(arguments: FrameRemoveColumn, user: UserPrincipal, invocation: SparkInvocation) = {
+  val dropColumnsDoc = CommandDoc(oneLineSummary = "Remove columns from the frame.",
+    extendedSummary = Some("""
+    Remove columns from the frame.  They are deleted.
+
+    Parameters
+    ----------
+    columns: str OR list of str
+        column name OR list of column names to be removed from the frame
+
+    Notes
+    -----
+    Deleting the last column in a frame leaves the frame empty.
+
+    Examples
+    --------
+    For this example, BigFrame object * my_frame * accesses a frame with columns * column_a *, * column_b *, * column_c * and * column_d *.
+    Eliminate columns * column_b * and * column_d *::
+    my_frame.drop_columns([column_b, column_d])
+    Now the frame only has the columns * column_a * and * column_c *.
+    For further examples, see: ref: `example_frame.drop_columns`"""))
+  val dropColumnsCommand = commandPluginRegistry.registerCommand("dataframe/drop_columns", dropColumnsSimple _, doc = Some(dropColumnsDoc))
+  def dropColumnsSimple(arguments: FrameDropColumns, user: UserPrincipal, invocation: SparkInvocation) = {
 
     implicit val u = user
     val ctx = invocation.sparkContext
@@ -829,7 +1112,6 @@ class SparkEngine(sparkContextManager: SparkContextManager,
 
     val realFrame = expectFrame(arguments.frame)
     val schema = realFrame.schema
-    val location = fsRoot + frames.getFrameDataFile(frameId)
 
     val columnIndices = {
       for {
@@ -842,22 +1124,25 @@ class SparkEngine(sparkContextManager: SparkContextManager,
       case invalidColumns if invalidColumns.contains(-1) =>
         throw new IllegalArgumentException(s"Invalid list of columns: [${arguments.columns.mkString(", ")}]")
       case allColumns if allColumns.length == schema.columns.length =>
-        frames.getFrameRowRdd(ctx, frameId).filter(_ => false).saveAsObjectFile(location)
-      case singleColumn if singleColumn.length == 1 => frames.getFrameRowRdd(ctx, frameId)
-        .map(row => row.take(singleColumn(0)) ++ row.drop(singleColumn(0) + 1))
-        .saveAsObjectFile(location)
-      case multiColumn => frames.getFrameRowRdd(ctx, frameId)
-        .map(row => row.zipWithIndex.filter(elem => multiColumn.contains(elem._2) == false).map(_._1))
-        .saveAsObjectFile(location)
+        val resultRdd = frames.loadFrameRdd(ctx, frameId).filter(_ => false)
+        frames.saveFrameWithoutSchema(realFrame, resultRdd)
+      case singleColumn if singleColumn.length == 1 =>
+        val resultRdd = frames.loadFrameRdd(ctx, realFrame)
+          .map(row => row.take(singleColumn(0)) ++ row.drop(singleColumn(0) + 1))
+        frames.saveFrameWithoutSchema(realFrame, resultRdd)
+      case multiColumn =>
+        val resultRdd = frames.loadFrameRdd(ctx, frameId)
+          .map(row => row.zipWithIndex.filter(elem => multiColumn.contains(elem._2) == false).map(_._1))
+        frames.saveFrameWithoutSchema(realFrame, resultRdd)
     }
 
-    frames.removeColumn(realFrame, columnIndices)
+    frames.dropColumns(realFrame, columnIndices)
   }
 
   def addColumns(arguments: FrameAddColumns[JsObject, Long])(implicit user: UserPrincipal): Execution =
     commands.execute(addColumnsCommand, arguments, user, implicitly[ExecutionContext])
 
-  val addColumnsCommand = commands.registerCommand("dataframe/add_columns", addColumnsSimple)
+  val addColumnsCommand = commandPluginRegistry.registerCommand("dataframe/add_columns", addColumnsSimple _)
   def addColumnsSimple(arguments: FrameAddColumns[JsObject, Long], user: UserPrincipal, invocation: SparkInvocation) = {
     implicit val u = user
     val ctx = invocation.sparkContext
@@ -868,9 +1153,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
 
     val realFrame = expectFrame(arguments.frame)
     val schema = realFrame.schema
-    val location = fsRoot + frames.getFrameDataFile(frameId)
 
-    var newFrame = realFrame
     var newColumns = schema.columns
     for {
       i <- 0 until column_names.size
@@ -888,8 +1171,8 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     // Update the data
     val pyRdd = createPythonRDD(frameId, expression, invocation.sparkContext)
     val converter = DataTypes.parseMany(newColumns.map(_._2).toArray)(_)
-    persistPythonRDD(pyRdd, converter, location)
-    frames.updateSchema(newFrame, newColumns)
+    persistPythonRDD(realFrame, pyRdd, converter, skipRowCount = true)
+    frames.updateSchema(realFrame, newColumns)
   }
 
   /**
@@ -898,8 +1181,11 @@ class SparkEngine(sparkContextManager: SparkContextManager,
    * @param user current user
    * @return the QueryExecution
    */
-  def getRowsLarge(arguments: RowQuery[Identifier])(implicit user: UserPrincipal): QueryExecution = {
-    queries.execute(getRowsQuery, arguments, user, implicitly[ExecutionContext])
+  def getRowsLarge(arguments: RowQuery[Identifier])(implicit user: UserPrincipal): PagedQueryResult = {
+    val queryExecution = queries.execute(getRowsQuery, arguments, user, implicitly[ExecutionContext])
+    val frame = frames.lookup(arguments.id).get
+    val schema = frame.schema
+    PagedQueryResult(queryExecution, Some(schema))
   }
   val getRowsQuery = queries.registerQuery("dataframes/data", getRowsSimple)
 
@@ -912,10 +1198,17 @@ class SparkEngine(sparkContextManager: SparkContextManager,
    * @return RDD consisting of the requested number of rows
    */
   def getRowsSimple(arguments: RowQuery[Identifier], user: UserPrincipal, invocation: SparkInvocation) = {
-    implicit val impUser: UserPrincipal = user
-    val frame = frames.lookup(arguments.id).getOrElse(throw new IllegalArgumentException("Requested frame does not exist"))
-    val rows = frames.getRowsRDD(frame, arguments.offset, arguments.count, invocation.sparkContext)
-    rows
+    if (arguments.count + arguments.offset <= SparkEngineConfig.pageSize) {
+      val rdd = frames.loadFrameRdd(invocation.sparkContext, arguments.id).rows
+      val takenRows = rdd.take(arguments.count + arguments.offset.toInt).drop(arguments.offset.toInt)
+      invocation.sparkContext.parallelize(takenRows)
+    }
+    else {
+      implicit val impUser: UserPrincipal = user
+      val frame = frames.lookup(arguments.id).getOrElse(throw new IllegalArgumentException("Requested frame does not exist"))
+      val rows = frames.getPagedRowsRDD(frame, arguments.offset, arguments.count, invocation.sparkContext)
+      rows
+    }
   }
 
   /**
@@ -925,12 +1218,19 @@ class SparkEngine(sparkContextManager: SparkContextManager,
    * @param user current user
    * @return RDD consisting of the requested number of rows
    */
-  def getRows(arguments: RowQuery[Identifier])(implicit user: UserPrincipal): Future[Iterable[Row]] = {
+  def getRows(arguments: RowQuery[Identifier])(implicit user: UserPrincipal): Future[QueryDataResult] = {
     future {
       withMyClassLoader {
         val frame = frames.lookup(arguments.id).getOrElse(throw new IllegalArgumentException("Requested frame does not exist"))
-        val rows = frames.getRows(frame, arguments.offset, arguments.count)
-        rows
+        val ctx = sparkContextManager.context(user, "query")
+        try {
+          val rdd: RDD[Row] = frames.loadFrameRdd(ctx, frame).rows
+          val rows = rdd.take(arguments.count + arguments.offset.toInt).drop(arguments.offset.toInt)
+          QueryDataResult(rows, Some(frame.schema))
+        }
+        finally {
+          ctx.stop()
+        }
       }
     }
   }
@@ -965,13 +1265,31 @@ class SparkEngine(sparkContextManager: SparkContextManager,
   def loadGraph(arguments: GraphLoad)(implicit user: UserPrincipal): Execution =
     commands.execute(loadGraphCommand, arguments, user, implicitly[ExecutionContext])
 
-  val loadGraphCommand = commands.registerCommand("graph/load", loadGraphSimple _, numberOfJobs = 2)
+  val loadGraphCommand = commandPluginRegistry.registerCommand("graph/load", loadGraphSimple _, numberOfJobs = 2)
   def loadGraphSimple(arguments: GraphLoad, user: UserPrincipal, invocation: SparkInvocation) = {
-    // validating frames
+    //validating frames    
     arguments.frame_rules.foreach(frule => expectFrame(frule.frame))
 
     val graph = graphs.loadGraph(arguments, invocation)(user)
     graph
+  }
+
+  /**
+   * Renames a graph in the database
+   * @param rename RenameGraph object storing the graph and the newName
+   * @param user IMPLICIT. The user loading the graph
+   * @return Graph object
+   */
+
+  def renameGraph(rename: RenameGraph)(implicit user: UserPrincipal): Execution =
+    commands.execute(renameGraphCommand, rename, user, implicitly[ExecutionContext])
+
+  val renameGraphCommand = commandPluginRegistry.registerCommand("graph/rename_graph", renameGraphSimple)
+  def renameGraphSimple(rename: RenameGraph, user: UserPrincipal, invocation: SparkInvocation): Graph = {
+    val graphId = rename.graph.id
+    val graph = graphs.lookup(graphId).getOrElse(throw new NotFoundException("graph", graphId.toString))
+    val newName = rename.newName
+    graphs.renameGraph(graph, newName)
   }
 
   /**
@@ -1022,7 +1340,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
   override def dropDuplicates(arguments: DropDuplicates)(implicit user: UserPrincipal): Execution =
     commands.execute(dropDuplicateCommand, arguments, user, implicitly[ExecutionContext])
 
-  val dropDuplicateCommand = commands.registerCommand("dataframe/drop_duplicates", dropDuplicateSimple _, numberOfJobs = 2)
+  val dropDuplicateCommand = commandPluginRegistry.registerCommand("dataframe/drop_duplicates", dropDuplicateSimple _, numberOfJobs = 2)
 
   def dropDuplicateSimple(dropDuplicateCommand: DropDuplicates, user: UserPrincipal, invocation: SparkInvocation) = {
     implicit val u = user
@@ -1033,7 +1351,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     val ctx = invocation.sparkContext
 
     val frameSchema = realFrame.schema
-    val rdd = frames.getFrameRowRdd(ctx, frameId)
+    val rdd = frames.loadFrameRdd(ctx, frameId)
 
     val columnIndices = frameSchema.columnIndex(dropDuplicateCommand.unique_columns)
     val pairRdd = rdd.map(row => SparkOps.createKeyValuePairFromRow(row, columnIndices))
@@ -1041,31 +1359,31 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     val duplicatesRemoved: RDD[Array[Any]] = SparkOps.removeDuplicatesByKey(pairRdd)
     val rowCount = duplicatesRemoved.count()
 
-    duplicatesRemoved.saveAsObjectFile(fsRoot + frames.getFrameDataFile(frameId))
+    frames.saveFrameWithoutSchema(realFrame, duplicatesRemoved)
     frames.updateRowCount(realFrame, rowCount)
   }
 
-  val calculatePercentileCommand = commands.registerCommand("dataframe/calculate_percentiles", calculatePercentilesSimple _, numberOfJobs = 7)
+  val quantilesCommand = commandPluginRegistry.registerCommand("dataframe/quantiles", quantilesSimple _, numberOfJobs = 7)
 
-  def calculatePercentilesSimple(percentiles: CalculatePercentiles, user: UserPrincipal, invocation: SparkInvocation): PercentileValues = {
+  def quantilesSimple(quantiles: Quantiles, user: UserPrincipal, invocation: SparkInvocation): QuantileValues = {
     implicit val u = user
-    val frameId: Long = percentiles.frameId
+    val frameId: Long = quantiles.frameId
     val ctx = invocation.sparkContext
 
     val realFrame: DataFrame = getDataFrameById(frameId)
     val frameSchema = realFrame.schema
-    val columnIndex = frameSchema.columnIndex(percentiles.columnName)
-    val columnDataType = frameSchema.columnDataType(percentiles.columnName)
+    val columnIndex = frameSchema.columnIndex(quantiles.columnName)
+    val columnDataType = frameSchema.columnDataType(quantiles.columnName)
 
-    val rdd = frames.getFrameRdd(ctx, frameId)
-    val percentileValues = SparkOps.calculatePercentiles(rdd, percentiles.percentiles, columnIndex, columnDataType).toList
-    PercentileValues(percentileValues)
+    val rdd = frames.loadFrameRdd(ctx, frameId)
+    val quantileValues = SparkOps.quantiles(rdd, quantiles.quantiles, columnIndex, columnDataType).toList
+    QuantileValues(quantileValues)
   }
 
   override def classificationMetric(arguments: ClassificationMetric[Long])(implicit user: UserPrincipal): Execution =
     commands.execute(classificationMetricCommand, arguments, user, implicitly[ExecutionContext])
 
-  val classificationMetricCommand: CommandPlugin[ClassificationMetric[Long], ClassificationMetricValue] = commands.registerCommand("dataframe/classification_metric", classificationMetricSimple)
+  val classificationMetricCommand: CommandPlugin[ClassificationMetric[Long], ClassificationMetricValue] = commandPluginRegistry.registerCommand("dataframe/classification_metric", classificationMetricSimple _)
 
   def classificationMetricSimple(arguments: ClassificationMetric[Long], user: UserPrincipal, invocation: SparkInvocation): ClassificationMetricValue = {
     implicit val u = user
@@ -1075,7 +1393,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     val ctx = invocation.sparkContext
 
     val frameSchema = realFrame.schema
-    val frameRdd = frames.getFrameRowRdd(ctx, frameId)
+    val frameRdd = frames.loadFrameRdd(ctx, frameId)
 
     val labelColumnIndex = frameSchema.columnIndex(arguments.labelColumn)
     val predColumnIndex = frameSchema.columnIndex(arguments.predColumn)
@@ -1084,7 +1402,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
       case "accuracy" => SparkOps.modelAccuracy(frameRdd, labelColumnIndex, predColumnIndex)
       case "precision" => SparkOps.modelPrecision(frameRdd, labelColumnIndex, predColumnIndex, arguments.posLabel)
       case "recall" => SparkOps.modelRecall(frameRdd, labelColumnIndex, predColumnIndex, arguments.posLabel)
-      case "fmeasure" => SparkOps.modelFMeasure(frameRdd, labelColumnIndex, predColumnIndex, arguments.posLabel, arguments.beta)
+      case "f_measure" => SparkOps.modelFMeasure(frameRdd, labelColumnIndex, predColumnIndex, arguments.posLabel, arguments.beta)
       case _ => throw new IllegalArgumentException() // TODO: this exception needs to be handled differently
     }
     ClassificationMetricValue(metric_value)
@@ -1093,7 +1411,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
   override def confusionMatrix(arguments: ConfusionMatrix[Long])(implicit user: UserPrincipal): Execution =
     commands.execute(confusionMatrixCommand, arguments, user, implicitly[ExecutionContext])
 
-  val confusionMatrixCommand: CommandPlugin[ConfusionMatrix[Long], ConfusionMatrixValues] = commands.registerCommand("dataframe/confusion_matrix", confusionMatrixSimple)
+  val confusionMatrixCommand: CommandPlugin[ConfusionMatrix[Long], ConfusionMatrixValues] = commandPluginRegistry.registerCommand("dataframe/confusion_matrix", confusionMatrixSimple _)
 
   def confusionMatrixSimple(arguments: ConfusionMatrix[Long], user: UserPrincipal, invocation: SparkInvocation): ConfusionMatrixValues = {
     implicit val u = user
@@ -1103,7 +1421,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     val ctx = invocation.sparkContext
 
     val frameSchema = realFrame.schema
-    val frameRdd = frames.getFrameRdd(ctx, frameId)
+    val frameRdd = frames.loadFrameRdd(ctx, frameId)
 
     val labelColumnIndex = frameSchema.columnIndex(arguments.labelColumn)
     val predColumnIndex = frameSchema.columnIndex(arguments.predColumn)
@@ -1116,7 +1434,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
   override def ecdf(arguments: ECDF[Long])(implicit user: UserPrincipal): Execution =
     commands.execute(ecdfCommand, arguments, user, implicitly[ExecutionContext])
 
-  val ecdfCommand = commands.registerCommand("dataframe/ecdf", ecdfSimple)
+  val ecdfCommand = commandPluginRegistry.registerCommand("dataframe/ecdf", ecdfSimple _)
 
   def ecdfSimple(arguments: ECDF[Long], user: UserPrincipal, invocation: SparkInvocation) = {
     implicit val u = user
@@ -1125,14 +1443,13 @@ class SparkEngine(sparkContextManager: SparkContextManager,
 
     val ctx = invocation.sparkContext
 
-    val rdd = frames.getFrameRdd(ctx, frameId)
+    val rdd = frames.loadFrameRdd(ctx, frameId)
 
     val sampleIndex = realFrame.schema.columnIndex(arguments.sampleCol)
 
     val newFrame = Await.result(create(DataFrameTemplate(arguments.name, None)), SparkEngineConfig.defaultTimeout)
 
     val ecdfRdd = SparkOps.ecdf(rdd, sampleIndex, arguments.dataType)
-    ecdfRdd.saveAsObjectFile(fsRoot + frames.getFrameDataFile(newFrame.id))
 
     val columnName = "_ECDF"
     val allColumns = arguments.dataType match {
@@ -1142,14 +1459,16 @@ class SparkEngine(sparkContextManager: SparkContextManager,
       case "float64" => List((arguments.sampleCol, DataTypes.float64), (arguments.sampleCol + columnName, DataTypes.float64))
       case _ => List((arguments.sampleCol, DataTypes.string), (arguments.sampleCol + columnName, DataTypes.float64))
     }
-    frames.updateSchema(newFrame, allColumns)
+
+    frames.saveFrame(newFrame, new FrameRDD(new Schema(allColumns), ecdfRdd))
+
     newFrame.copy(schema = Schema(allColumns))
   }
 
   override def cumulativeDist(arguments: CumulativeDist[Long])(implicit user: UserPrincipal): Execution =
     commands.execute(cumulativeDistCommand, arguments, user, implicitly[ExecutionContext])
 
-  val cumulativeDistCommand = commands.registerCommand("dataframe/cumulative_dist", cumulativeDistSimple)
+  val cumulativeDistCommand = commandPluginRegistry.registerCommand("dataframe/cumulative_dist", cumulativeDistSimple _)
 
   def cumulativeDistSimple(arguments: CumulativeDist[Long], user: UserPrincipal, invocation: SparkInvocation) = {
     implicit val u = user
@@ -1158,7 +1477,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
 
     val ctx = invocation.sparkContext
 
-    val frameRdd = frames.getFrameRdd(ctx, frameId)
+    val frameRdd = frames.loadFrameRdd(ctx, frameId)
 
     val sampleIndex = realFrame.schema.columnIndex(arguments.sampleCol)
 
@@ -1172,13 +1491,18 @@ class SparkEngine(sparkContextManager: SparkContextManager,
       case _ => throw new IllegalArgumentException("Invalid distType specified")
     }
 
-    cumulativeDistRdd.saveAsObjectFile(fsRoot + frames.getFrameDataFile(newFrame.id))
-
     val frameSchema = realFrame.schema
     val allColumns = frameSchema.columns :+ (arguments.sampleCol + columnName, DataTypes.float64)
 
-    frames.updateSchema(newFrame, allColumns)
+    frames.saveFrame(newFrame, new FrameRDD(new Schema(allColumns), cumulativeDistRdd))
+
     newFrame.copy(schema = Schema(allColumns))
+  }
+
+  override def cancelCommand(id: Long)(implicit user: UserPrincipal): Future[Unit] = withContext("se.cancelCommand") {
+    future {
+      commands.stopCommand(id)
+    }
   }
 
   /**

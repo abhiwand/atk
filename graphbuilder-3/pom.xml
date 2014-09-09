@@ -31,11 +31,6 @@
                 <artifactId>scalatest-maven-plugin</artifactId>
             </plugin>
             <plugin>
-                <!--run specs test from maven-->
-                <groupId>com.mmakowski</groupId>
-                <artifactId>maven-specs2-plugin</artifactId>
-            </plugin>
-            <plugin>
                 <groupId>org.scoverage</groupId>
                 <artifactId>maven-scoverage-plugin</artifactId>
             </plugin>

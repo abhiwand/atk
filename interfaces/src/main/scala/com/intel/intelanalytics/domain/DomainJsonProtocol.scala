@@ -25,7 +25,8 @@ package com.intel.intelanalytics.domain
 
 import java.net.URI
 
-import com.intel.intelanalytics.domain.command.CommandDefinition
+import com.intel.intelanalytics.domain.command.{ CommandDoc, CommandDefinition }
+import com.intel.intelanalytics.domain.command.{ CommandPost, CommandDefinition }
 import com.intel.intelanalytics.domain.frame.load.{ Load, LineParser, LoadSource, LineParserArguments }
 import com.intel.intelanalytics.domain.schema.DataTypes
 import com.intel.intelanalytics.domain.query.{ RowQuery }
@@ -34,7 +35,7 @@ import com.intel.intelanalytics.engine.plugin.QueryPluginResults
 import com.intel.intelanalytics.schema._
 import spray.json._
 import com.intel.intelanalytics.domain.frame._
-import com.intel.intelanalytics.domain.graph.{ GraphReference, Graph, GraphLoad, GraphTemplate }
+import com.intel.intelanalytics.domain.graph._
 import com.intel.intelanalytics.domain.graph.construction.{ EdgeRule, FrameRule, PropertyRule, ValueRule, VertexRule }
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 import com.intel.intelanalytics.domain.schema.{ DataTypes, Schema }
@@ -43,7 +44,7 @@ import spray.json._
 import com.intel.intelanalytics.engine.{ ProgressInfo, TaskProgressInfo }
 
 import scala.util.matching.Regex
-import com.intel.intelanalytics.algorithm.Percentile
+import com.intel.intelanalytics.algorithm.Quantile
 import com.intel.intelanalytics.spray.json.IADefaultJsonProtocol
 
 /**
@@ -127,7 +128,7 @@ object DomainJsonProtocol extends IADefaultJsonProtocol {
 
   implicit val userFormat = jsonFormat5(User)
   implicit val statusFormat = jsonFormat5(Status)
-  implicit val dataFrameFormat = jsonFormat11(DataFrame)
+  implicit val dataFrameFormat = jsonFormat12(DataFrame)
   implicit val dataFrameTemplateFormat = jsonFormat2(DataFrameTemplate)
   implicit val separatorArgsJsonFormat = jsonFormat1(SeparatorArgs)
   implicit val definitionFormat = jsonFormat3(Definition)
@@ -141,12 +142,12 @@ object DomainJsonProtocol extends IADefaultJsonProtocol {
   implicit val loadFormat = jsonFormat2(Load)
   implicit val filterPredicateFormat = jsonFormat2(FilterPredicate[JsObject, String])
   implicit val filterPredicateLongFormat = jsonFormat2(FilterPredicate[JsObject, Long])
-  implicit val removeColumnFormat = jsonFormat2(FrameRemoveColumn)
+  implicit val removeColumnFormat = jsonFormat2(FrameDropColumns)
   implicit val addColumnFormat = jsonFormat4(FrameAddColumns[JsObject, String])
   implicit val addColumnLongFormat = jsonFormat4(FrameAddColumns[JsObject, Long])
   implicit val projectColumnFormat = jsonFormat4(FrameProject[JsObject, String])
   implicit val projectColumnLongFormat = jsonFormat4(FrameProject[JsObject, Long])
-  implicit val renameFrameFormat = jsonFormat2(FrameRenameFrame)
+  implicit val renameFrameFormat = jsonFormat2(RenameFrame)
   implicit val renameColumnsFormat = jsonFormat3(FrameRenameColumns[JsObject, String])
   implicit val renameColumnsLongFormat = jsonFormat3(FrameRenameColumns[JsObject, Long])
   implicit val joinFrameLongFormat = jsonFormat3(FrameJoin)
@@ -160,15 +161,15 @@ object DomainJsonProtocol extends IADefaultJsonProtocol {
   implicit val progressInfoFormat = jsonFormat2(ProgressInfo)
   implicit val binColumnLongFormat = jsonFormat6(BinColumn[Long])
 
-  implicit val columnSummaryStatisticsFormat = jsonFormat3(ColumnSummaryStatistics)
-  implicit val columnSummaryStatisticsReturnFormat = jsonFormat9(ColumnSummaryStatisticsReturn)
+  implicit val columnSummaryStatisticsFormat = jsonFormat4(ColumnSummaryStatistics)
+  implicit val columnSummaryStatisticsReturnFormat = jsonFormat13(ColumnSummaryStatisticsReturn)
   implicit val columnFullStatisticsFormat = jsonFormat3(ColumnFullStatistics)
-  implicit val columnFullStatisticsReturnFormat = jsonFormat17(ColumnFullStatisticsReturn)
+  implicit val columnFullStatisticsReturnFormat = jsonFormat15(ColumnFullStatisticsReturn)
 
-  implicit val columnModeFormat = jsonFormat3(ColumnMode)
-  implicit val columnModeReturnFormat = jsonFormat3(ColumnModeReturn)
+  implicit val columnModeFormat = jsonFormat4(ColumnMode)
+  implicit val columnModeReturnFormat = jsonFormat4(ColumnModeReturn)
 
-  implicit val columnMedianFormat = jsonFormat2(ColumnMedian)
+  implicit val columnMedianFormat = jsonFormat3(ColumnMedian)
   implicit val columnMedianReturnFormat = jsonFormat1(ColumnMedianReturn)
 
   implicit val rowQueryFormat = jsonFormat3(RowQuery[Long])
@@ -177,7 +178,7 @@ object DomainJsonProtocol extends IADefaultJsonProtocol {
   implicit val cumulativeDistLongFormat = jsonFormat5(CumulativeDist[Long])
 
   implicit val assignSampleFormat = jsonFormat5(AssignSample)
-  implicit val calculatePercentilesFormat = jsonFormat3(CalculatePercentiles)
+  implicit val calculatePercentilesFormat = jsonFormat3(Quantiles)
 
   // model performance formats
 
@@ -186,11 +187,13 @@ object DomainJsonProtocol extends IADefaultJsonProtocol {
   implicit val confusionMatrixLongFormat = jsonFormat4(ConfusionMatrix[Long])
   implicit val confusionMatrixValuesLongFormat = jsonFormat1(ConfusionMatrixValues)
   implicit val ecdfLongFormat = jsonFormat4(ECDF[Long])
+  implicit val commandActionFormat = jsonFormat1(CommandPost)
 
   // graph service formats
 
   implicit val graphTemplateFormat = jsonFormat1(GraphTemplate)
   implicit val graphFormat = jsonFormat9(Graph)
+  implicit val graphRenameFormat = jsonFormat2(RenameGraph)
 
   // graph loading formats for specifying graphbuilder and graphload rules
 
@@ -200,8 +203,8 @@ object DomainJsonProtocol extends IADefaultJsonProtocol {
   implicit val vertexRuleFormat = jsonFormat2(VertexRule)
   implicit val frameRuleFormat = jsonFormat3(FrameRule)
   implicit val graphLoadFormat = jsonFormat3(GraphLoad)
-  implicit val percentileFormat = jsonFormat2(Percentile)
-  implicit val PercentileCalculationResultFormat = jsonFormat1(PercentileValues)
+  implicit val percentileFormat = jsonFormat2(Quantile)
+  implicit val PercentileCalculationResultFormat = jsonFormat1(QuantileValues)
 
   implicit object DataTypeJsonFormat extends JsonFormat[Any] {
     override def write(obj: Any): JsValue = {
@@ -262,5 +265,23 @@ object DomainJsonProtocol extends IADefaultJsonProtocol {
   lazy implicit val stringSchemaFormat = jsonFormat9(StringSchema)
   lazy implicit val objectSchemaFormat = jsonFormat12(ObjectSchema)
   lazy implicit val arraySchemaFormat = jsonFormat9(ArraySchema)
-  lazy implicit val commandDefinitionFormat = jsonFormat3(CommandDefinition)
+
+  implicit object CommandDocFormat extends JsonFormat[CommandDoc] {
+    override def read(value: JsValue): CommandDoc = {
+      value.asJsObject.getFields("title", "description") match {
+        case Seq(JsString(title), JsString(description)) =>
+          CommandDoc(title, Some(description))
+        case Seq(JsString(title), JsNull) =>
+          CommandDoc(title, None)
+        case x => deserializationError(s"Expected a CommandDoc Json object, but got $x")
+      }
+    }
+
+    override def write(doc: CommandDoc): JsValue = doc.extendedSummary match {
+      case Some(d) => JsObject("title" -> JsString(doc.oneLineSummary), "description" -> JsString(doc.extendedSummary.get))
+      case None => JsObject("title" -> JsString(doc.oneLineSummary))
+    }
+  }
+
+  lazy implicit val commandDefinitionFormat = jsonFormat4(CommandDefinition)
 }

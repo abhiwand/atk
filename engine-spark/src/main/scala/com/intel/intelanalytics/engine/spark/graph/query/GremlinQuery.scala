@@ -16,6 +16,7 @@ import spray.json._
 import scala.collection.JavaConversions._
 import scala.concurrent.{ Await, ExecutionContext, Lock }
 import scala.util.Try
+import com.intel.intelanalytics.domain.command.CommandDoc
 
 /**
  * Arguments for Gremlin query.
@@ -60,6 +61,55 @@ class GremlinQuery extends CommandPlugin[QueryArgs, QueryResult] {
 
   val gremlinExecutor = new GremlinGroovyScriptEngine()
   var titanGraphs = Map[String, TitanGraph]()
+
+  override def doc = Some(CommandDoc(oneLineSummary = "Executes a Gremlin query.",
+    extendedSummary = Some("""
+    Extended Summary
+    ----------------
+    Executes a Gremlin query on an existing graph.
+
+    The query returns a list of results in GraphSON format(for vertices or edges)
+    or JSON (for other results like counts). GraphSON is a JSON-based format for
+    property graphs which uses reserved keys that begin with underscores to
+    encode vertex and edge metadata.
+
+    Parameters
+    ----------
+    gremlin: String
+        The Gremlin script to execute.
+        At present, the query does not support pagination so the results of query
+        should be limited using the Gremlin range filter [i..j], e.g., g.V[0..9]
+        to return the first 10 vertices.
+
+    Raises
+    ------
+    RuntimeException
+      	If the Gremlin script could not be executed due to invalid syntax.
+
+    Returns
+    -------
+    Dictionary
+        Query results and runtime in seconds.
+
+
+    Examples
+    --------
+    Get the first two outgoing edges of the vertex whose source equals 5767244
+      	mygraph = BigGraph(...)
+      	results = mygraph.query.gremlin("g.V('source', 5767244).outE[0..1]")
+      	print results["results"]
+
+    The expected output is a list of edges in GraphSON format:
+    	  [{u'_label': u'edge', u'_type': u'edge', u'_inV': 1381202500, u'weight': 1, u'_outV': 1346400004, u'_id': u'fDEQC9-1t7m96-1U'},
+    	  {u'_label': u'edge', u'_type': u'edge', u'_inV': 1365600772, u'weight': 1, u'_outV': 1346400004, u'_id': u'frtzv9-1t7m96-1U'}]
+
+    Get the count of incoming edges for a vertex.
+    	results = mygraph.query.gremlin("g.V('target', 5767243).inE.count()")
+    	print results["results"]
+
+    The expected output is:
+    	[4]
+""")))
 
   /**
    * Executes a Gremlin query.
