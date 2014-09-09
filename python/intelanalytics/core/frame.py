@@ -517,12 +517,13 @@ class BigFrame(command_loadable):
         Notes
         -----
         The row function ('func') must return a value in the same format as specified by the schema.
-        See :doc:ds_apir.
+        See :doc:`ds_apir`.
 
         Examples
         --------
         Given a BigFrame proxy *my_frame* identifying a data frame with two int32 columns *column1* and *column2*.
-        Add a third column named "column3" as an int32 and fill it with the contents of *column1* and *column2* multiplied together::
+        Add a third column named "column3" as an int32 and fill it with the contents of *column1* and *column2*
+        multiplied together::
 
             my_frame.add_columns(lambda row: row.column1*row.column2, ('column3', int32))
 
@@ -534,11 +535,13 @@ class BigFrame(command_loadable):
             my_frame.add_columns(lambda row: '', ('column4', str))
 
         The BigFrame object *my_frame* now has four columns *column1*, *column2*, *column3*, and *column4*.
-        The first three columns are int32 and the fourth column is string.  Column *column4* has an empty string ('') in every row.
+        The first three columns are int32 and the fourth column is string.  Column *column4* has an
+        empty string ('') in every row.
 
         Multiple columns can be added at the same time.
         Add a column *a_times_b* and fill it with the contents of column *a* multiplied by the contents of column *b*.
-        At the same time, add a column *a_plus_b* and fill it with the contents of column *a* plus the contents of column *b*::
+        At the same time, add a column *a_plus_b* and fill it with the contents of column *a* plus
+        the contents of column *b*::
 
             my_frame.add_columns(lambda row: [row.a * row.b, row.a + row.b], [("a_times_b", float32), ("a_plus_b", float32))
 
