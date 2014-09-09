@@ -38,7 +38,7 @@ class GraphDecoratorTest extends FlatSpec with Matchers {
     val decoratedGraph = GraphDecorator.decorateEntity(null, relLinks, graph)
     decoratedGraph.id should be(1)
     decoratedGraph.name should be("name")
-    decoratedGraph.ia_uri should be("ia://graphs/1")
+    decoratedGraph.ia_uri should be("ia://graph/1")
     decoratedGraph.links.head.uri should be("http://www.example.com/graphs")
   }
 

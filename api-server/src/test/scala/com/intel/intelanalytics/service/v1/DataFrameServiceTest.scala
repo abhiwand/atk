@@ -60,7 +60,6 @@ class DataFrameServiceTest extends ServiceTest {
     Get("/dataframes") ~> dataFrameService.frameRoutes() ~> check {
       assert(responseAs[String] == """[{
                                      |  "id": 1,
-                                     |  "ia_uri": "ia://frame/1",
                                      |  "name": "name",
                                      |  "url": "http://example.com/dataframes/1"
                                      |}]""".stripMargin)
