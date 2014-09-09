@@ -8,7 +8,7 @@ trait IAUri {
   def id: Long
   def entity: String
 
-  def getUri: String = {
+  def uri: String = {
     val ia_uri: String = "ia://" + entity + "/" + id
     return ia_uri
   }
