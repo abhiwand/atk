@@ -22,24 +22,24 @@ class LbpRunnerTest extends FlatSpec with Matchers with TestingSparkContextFlatS
     val dstIdPropertyName = "dstId"
     val edgeLabel = "label"
     val propertyForLBPOutput = "LBP_VALUE"
-    val expectedLBPValue = 0
+    val expectedLBPValue  = new Array[Double](0)
 
-    val vertexList: List[Long] = List(1, 2, 3, 5, 6, 7)
+    val vertexSet: Set[Long] = Set(1, 2, 3, 4, 5, 6, 7)
 
     //  directed edge list is made bidirectional with a flatmap
 
-    val edgeList: List[(Long, Long)] = List((2.toLong, 6.toLong), (2.toLong, 4.toLong), (4.toLong, 6.toLong),
+    val edgeSet: Set[(Long, Long)] = Set((2.toLong, 6.toLong), (2.toLong, 4.toLong), (4.toLong, 6.toLong),
       (3.toLong, 5.toLong), (3.toLong, 7.toLong), (5.toLong, 7.toLong)).flatMap({ case (x, y) => Set((x, y), (y, x)) })
 
-    val gbVertexList = vertexList.map(x => GBVertex(x, Property(vertexIdPropertyName, x), Seq.empty[Property]))
-    val gbEdgeList =
-      edgeList.map({
+    val gbVertexSet = vertexSet.map(x => GBVertex(x, Property(vertexIdPropertyName, x), Seq.empty[Property]))
+    val gbEdgeSet =
+      edgeSet.map({
         case (src, dst) =>
           GBEdge(src, dst, Property(srcIdPropertyName, src), Property(dstIdPropertyName, dst), edgeLabel, Seq.empty[Property])
       })
 
-    val verticesIn: RDD[GBVertex] = sparkContext.parallelize(gbVertexList)
-    val edgesIn: RDD[GBEdge] = sparkContext.parallelize(gbEdgeList)
+    val verticesIn: RDD[GBVertex] = sparkContext.parallelize(gbVertexSet.toList)
+    val edgesIn: RDD[GBEdge] = sparkContext.parallelize(gbEdgeSet.toList)
   }
 
   "LBP Runner" should "properly update the vertex label but nothing else" in new LbpTest {
@@ -62,18 +62,21 @@ class LbpRunnerTest extends FlatSpec with Matchers with TestingSparkContextFlatS
 
     val (verticesOut, edgesOut) = LbpRunner.runLbp(verticesIn, edgesIn, args)
 
-    val testVertices = verticesOut.toArray().toList
-    val testEdges = edgesOut.toArray().toList
+    val testVertices = verticesOut.toArray().toSet
+    val testEdges = edgesOut.toArray().toSet
 
     // no effect on the edge structure
-    testEdges shouldBe gbEdgeList
+    testEdges shouldBe gbEdgeSet
 
     // vertices should have had their properties updated
 
     val expectedVerticesOut =
-      vertexList.map(vid =>
+      vertexSet.map(vid =>
         GBVertex(vid, Property(vertexIdPropertyName, vid), Seq(Property(propertyForLBPOutput, expectedLBPValue))))
 
-    testVertices shouldBe expectedVerticesOut
+    testVertices.map({case gbVertex: GBVertex => gbVertex.physicalId }) shouldBe expectedVerticesOut.map({case gbVertex: GBVertex => gbVertex.physicalId })
+    testVertices.map({case gbVertex: GBVertex => gbVertex.gbId }) shouldBe expectedVerticesOut.map({case gbVertex: GBVertex => gbVertex.gbId })
+    testVertices.forall({case gbVertex: GBVertex => ( gbVertex.getProperty(propertyForLBPOutput).get.value.asInstanceOf[Array[Double]].isEmpty)}) shouldBe true
+    testVertices.forall({case gbVertex: GBVertex => ( gbVertex.properties.length == 1)}) shouldBe true
   }
 }

@@ -63,7 +63,19 @@ case class Vertex(physicalId: Any, gbId: Property, properties: Seq[Property]) ex
     if (id != other.id) {
       throw new IllegalArgumentException("You can't merge vertices with different ids")
     }
-    new Vertex(gbId, Property.merge(this.properties, other.properties))
+
+    if (physicalId != null && other.physicalId == null) {
+      new Vertex(physicalId, gbId, Property.merge(this.properties, other.properties))
+    }
+    else if (physicalId == null && other.physicalId != null) {
+      new Vertex(other.physicalId, gbId, Property.merge(this.properties, other.properties))
+    }
+    else if (physicalId != null && physicalId == other.physicalId) {
+      new Vertex(physicalId, gbId, Property.merge(this.properties, other.properties))
+    }
+    else {
+      new Vertex(gbId, Property.merge(this.properties, other.properties))
+    }
   }
 
   /**
