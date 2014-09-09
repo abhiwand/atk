@@ -278,7 +278,7 @@ class FrameBackendRest(object):
 
     def flatten_column(self, frame, column_name):
         name = self._get_new_frame_name()
-        arguments = {'name': name, 'frame_id': frame._id, 'column': column_name, 'separator': ',' }
+        arguments = {'name': name, 'frame': frame._id, 'column': column_name, 'separator': ',' }
         return execute_new_frame_command('flatten_column', arguments)
 
     def bin_column(self, frame, column_name, num_bins, bin_type='equalwidth', bin_column_name='binned'):
@@ -293,7 +293,7 @@ class FrameBackendRest(object):
         if not colTypes[column_name] in [np.float32, np.float64, np.int32, np.int64]:
             raise ValueError("unable to bin non-numeric values")
         name = self._get_new_frame_name()
-        arguments = {'name': name, 'frame': frame._id, 'column_name': column_name, 'num_bins': num_bins, 'bin_type': bin_type, 'bin_column_name': bin_column_name}
+        arguments = {'name': name, 'frame_id': frame._id, 'column_name': column_name, 'num_bins': num_bins, 'bin_type': bin_type, 'bin_column_name': bin_column_name}
         return execute_new_frame_command('bin_column', arguments)
 
 
@@ -553,12 +553,12 @@ class FrameInfo(object):
             raise RuntimeError("Invalid response from server. Expected Frame info.")
 
     @property
-    def id_number(self):
-        return self._payload['id']
-
-    @property
     def name(self):
         return self._payload['name']
+
+    @property
+    def id_number(self):
+        return self._payload['id']
 
     @property
     def ia_uri(self):
@@ -613,8 +613,8 @@ class FrameSchema:
 
 def initialize_frame(frame, frame_info):
     """Initializes a frame according to given frame_info"""
-    frame._id = frame_info.id_number
     frame._ia_uri = frame_info.ia_uri
+    frame._id = frame_info.id_number
     frame._error_frame_id = frame_info.error_frame_id
 
 def execute_update_frame_command(command_name, arguments, frame):
