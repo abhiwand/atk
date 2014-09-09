@@ -1,0 +1,46 @@
+<html>
+<head>
+	<!--
+
+	   This file is to make it easy to view scoverage code coverage numbers on the build server.
+
+	  -->
+    <title>Scala Coverage</title>
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css">
+    <style type="text/css">
+        div.tab-pane iframe {
+            width: 100%;
+            height: 90%;
+        }
+    </style>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+</head>
+<body>
+
+    <!-- Nav tabs -->
+    <ul class="nav nav-tabs" role="tablist">
+        <li class="active"><a href="#api-server" role="tab" data-toggle="tab">api-server</a></li>
+        <li><a href="#engine-spark" role="tab" data-toggle="tab">engine-spark</a></li>
+        <li><a href="#graphbuilder-3" role="tab" data-toggle="tab">graphbuilder-3</a></li>
+        <li><a href="#graphon" role="tab" data-toggle="tab">graphon</a></li>
+        <li><a href="#interfaces" role="tab" data-toggle="tab">interfaces</a></li>
+        <li><a href="#launcher" role="tab" data-toggle="tab">launcher</a></li>
+        <li><a href="#shared" role="tab" data-toggle="tab">shared</a></li>
+    </ul>
+
+    <!-- Tab panes -->
+    <div class="tab-content">
+        <div class="tab-pane active" id="api-server"><iframe src="api-server-scoverage-report/index.html"></iframe></div>
+        <div class="tab-pane" id="engine-spark"><iframe src="engine-spark-scoverage-report/index.html"></iframe></div>
+        <div class="tab-pane" id="graphbuilder-3"><iframe src="graphbuilder-3-scoverage-report/index.html"></iframe></div>
+        <div class="tab-pane" id="graphon"><iframe src="graphon-scoverage-report/index.html"></iframe></div>
+        <div class="tab-pane" id="interfaces"><iframe src="interfaces-scoverage-report/index.html"></iframe></div>
+        <div class="tab-pane" id="launcher"><iframe src="launcher-scoverage-report/index.html"></iframe></div>
+        <div class="tab-pane" id="shared"><iframe src="shared-scoverage-report/index.html"></iframe></div>
+    </div>
+
+</body>
+</html>
