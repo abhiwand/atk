@@ -1536,7 +1536,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
   def entropyCommandSimple(arguments: Entropy, user: UserPrincipal, invocation: SparkInvocation): EntropyReturn = {
     implicit val u = user
 
-    val frameRef = arguments.frameRef
+    val frameRef = arguments.frame
     val frame = expectFrame(frameRef)
     val ctx = invocation.sparkContext
     val frameRdd = frames.loadFrameRdd(ctx, frameRef.id)
@@ -1558,9 +1558,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
 
   val topKDoc = CommandDoc(oneLineSummary = "Calculate the top (or bottom) K distinct values by count of a column.",
     extendedSummary = Some("""
-    Calculate the top (or bottom) K distinct values by count of a column.  The column can be weighted. All data elements
-    of weight <= 0 are excluded from the calculation, as are all data elements whose weight is NaN or infinite.
-    If there are no data elements of finite weight > 0, the topK is empty.
+    Calculate the top (or bottom) K distinct values by count of a column.
 
     Parameters
     ----------
@@ -1573,12 +1571,6 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     reverse : boolean  (Optional, default=True)
         Optional. DefIf True, return bottom K, else return top K entries
                              |
-    weights_column : str (Optional)
-        The column that provides weights (frequencies) for the topK calculation.
-        Must contain numerical data. Uniform weights of 1 for all items will be used for the calculation if this
-        parameter is not provided.
-
-
 
     Returns
     -------
