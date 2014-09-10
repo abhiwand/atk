@@ -73,7 +73,7 @@ fi
 configDir="$config/$packageName"
 
 export BUILD_NUMBER=$build
-export TIMESTAMP=$(date --utc +%Y%m%d%H%M%SZ)
+export TIMESTAMP=$(date)
 export VERSION=$version
 export PACKAGE_NAME=$packageName
 export LICENSE=Apache
