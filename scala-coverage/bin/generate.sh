@@ -9,7 +9,7 @@
 # graphbuilder-3 were written to engine-spark or vice-versa. This was noticed especially with any test extending
 # TestingSparkContextWordSpec or other test clases in testutils.
 #
-# Assumes you are running from source_code
+# Assumes you are running from source_code and that "mvn install" has already been done
 #
 
 # maven profiles we want active
@@ -44,11 +44,14 @@ do
     cd $module
     $mvn_scala_coverage
 
+    # fix issue with links in overview.html
+    sed -i 's:a href=".*com/intel/:a href="com/intel/:g' target/scoverage-report/overview.html
+
     # save coverage report to code-coverage project
     cp -r target/scoverage-report ../${report_target}/${module}-scoverage-report
 
-    # don't need it any more - make double sure we are only running scoverage on a single module
-    mvn clean
+    # make doubly sure instrumented scoverage classes are gone
+    rm -rf target
     cd ..
   fi
 done
