@@ -37,7 +37,7 @@
     </parent>
 
     <properties>
-        <pkg.version>0.8.4</pkg.version>
+        <pkg.version>0.8.5</pkg.version>
     </properties>
     <profiles>
         <profile>
