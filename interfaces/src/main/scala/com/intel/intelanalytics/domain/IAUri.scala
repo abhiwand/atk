@@ -28,7 +28,7 @@ object IAUriFactory {
       entityName match {
         case Some(entityName) => {
           entity = ("graph|frame".r findFirstIn uri).mkString
-          if (!(entity equals Some(entityName))) {
+          if (!(entity == entityName)) {
             throw new IllegalArgumentException("Inconsistent entity name")
           }
         }
