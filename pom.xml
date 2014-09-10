@@ -177,6 +177,9 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
         </profile>
         <profile>
             <id>modules-java</id>
+            <!--
+                This profile is here so that we can capture code-coverage for the Java modules only.
+            -->
             <activation>
                 <activeByDefault>false</activeByDefault>
             </activation>
@@ -365,6 +368,12 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
         </profile>
         <profile>
             <id>scala-coverage</id>
+            <!--
+                 Scoverage is should only be used on a single module at a time or it produces inaccurate results.
+
+                 The right way to use it is to run "mvn install" on the full project.  Change directory to the
+                 submodule and run "mvn clean test scoverage:report".
+            -->
             <activation>
                 <activeByDefault>false</activeByDefault>
             </activation>

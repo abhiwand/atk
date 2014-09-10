@@ -26,20 +26,19 @@ import org.apache.hadoop.fs._
 import org.apache.hadoop.conf.Configuration
 import scala.util.Random
 
-val left_nodes = new Range(1,LEFT_SIDE_MAX,1)
+val left_nodes = new Range(1, LEFT_SIDE_MAX, 1)
 val right_nodes = new Range(-1, -1 * RIGHT_SIDE_MAX, -1)
 
 val distributed_left_nodes = sc.parallelize(left_nodes)
 val distributed_right_nodes = sc.parallelize(right_nodes)
 
-val connected_left_nodes = distributed_left_nodes.map((Random.nextInt().abs % 100*GRAPH_CONNECTEDNESS_DENSITY, _))
-val connected_right_nodes = distributed_right_nodes.map((Random.nextInt().abs % 100*GRAPH_CONNECTEDNESS_DENSITY, _))
+val connected_left_nodes = distributed_left_nodes.map((Random.nextInt().abs % 100 * GRAPH_CONNECTEDNESS_DENSITY, _))
+val connected_right_nodes = distributed_right_nodes.map((Random.nextInt().abs % 100 * GRAPH_CONNECTEDNESS_DENSITY, _))
 
 val graph = connected_left_nodes.join(connected_right_nodes).map(_._2)
 
 val rated_graph = graph.map(row => s"${row._1},${row._2},${Random.nextInt().abs % 10}")
 rated_graph.saveAsTextFile(HDFS_OUTPUT_LOCATION)
-
 
 println("******************************************************")
 println(s"Output files have been saved to $HDFS_OUTPUT_LOCATION")
@@ -47,16 +46,15 @@ println("Do you wish to merge the output files to a single file on HDFS and dele
 println("e.g. hdfs://master/user/iauser/bipartite_graph_final")
 val HDFS_SINGLE_FILE_LOCATION = readLine()
 
-if (HDFS_SINGLE_FILE_LOCATION.length() > 0)
-{
-    val conf = new Configuration()
-    val fs = FileSystem.get(new Configuration())
-    def getFullyQualifiedPath(path: String, fs: FileSystem): Path = fs.makeQualified(Path.getPathWithoutSchemeAndAuthority(new Path(path)))
-    val src = getFullyQualifiedPath(HDFS_OUTPUT_LOCATION, fs)
-    var dest = getFullyQualifiedPath(HDFS_SINGLE_FILE_LOCATION, fs)
-    val res = FileUtil.copyMerge(fs, src, fs, dest, true, conf, null)
-    if (res) println("File merge was successful")
-    else println("Failed to merge source files")
+if (HDFS_SINGLE_FILE_LOCATION.length() > 0) {
+  val conf = new Configuration()
+  val fs = FileSystem.get(new Configuration())
+  def getFullyQualifiedPath(path: String, fs: FileSystem): Path = fs.makeQualified(Path.getPathWithoutSchemeAndAuthority(new Path(path)))
+  val src = getFullyQualifiedPath(HDFS_OUTPUT_LOCATION, fs)
+  var dest = getFullyQualifiedPath(HDFS_SINGLE_FILE_LOCATION, fs)
+  val res = FileUtil.copyMerge(fs, src, fs, dest, true, conf, null)
+  if (res) println("File merge was successful")
+  else println("Failed to merge source files")
 }
 sys.exit()
 
