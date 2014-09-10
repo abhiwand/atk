@@ -24,8 +24,8 @@
 package com.intel.intelanalytics.algorithm
 
 /**
- * Represent a percentile and its value
- * @param percentile percentile
- * @param value value at the percentile
+ * quantile target that will be applied to an element
+ * @param quantile quantile. For eg, 40 means 40th quantile
+ * @param weight weight that will be applied to the element
  */
-case class Percentile(percentile: Int, value: BigDecimal)
+case class QuantileTarget(quantile: Int, weight: BigDecimal)

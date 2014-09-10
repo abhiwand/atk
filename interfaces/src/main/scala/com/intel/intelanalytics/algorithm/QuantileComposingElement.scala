@@ -21,12 +21,11 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.domain.frame
+package com.intel.intelanalytics.algorithm
 
 /**
- * Command for calculating percentiles values
- * @param frameId id of the data frame
- * @param percentiles the percentiles to calculate value for
- * @param columnName name of the column to find percentiles
+ * quantile composing element which contains element's index and its weight
+ * @param index element index
+ * @param quantileTarget the quantile target that the element can be applied to
  */
-case class CalculatePercentiles(frameId: Long, percentiles: List[Int], columnName: String)
+case class QuantileComposingElement(index: Long, quantileTarget: QuantileTarget)
