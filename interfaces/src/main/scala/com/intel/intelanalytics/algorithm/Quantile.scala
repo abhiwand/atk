@@ -24,8 +24,8 @@
 package com.intel.intelanalytics.algorithm
 
 /**
- * percentile composing element which contains element's index and its weight
- * @param index element index
- * @param percentileTarget the percentile target that the element can be applied to
+ * Represent a quantile and its value
+ * @param quantile quantile
+ * @param value value at the quantile
  */
-case class PercentileComposingElement(index: Long, percentileTarget: PercentileTarget)
+case class Quantile(quantile: Int, value: BigDecimal)

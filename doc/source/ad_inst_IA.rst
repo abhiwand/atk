@@ -385,6 +385,15 @@ Sample output with notes::
 If you accidentally enter the wrong information on any of the prompts you can always run the script again.
 It will use a fresh application.conf.tpl and query Cloudera manager again to recreate the application.conf file.
 
+.. versionadded:: 0.8.5
+    Server configuration can be directly accessed through the IA Toolkit:
+
+        >>> ia.server.host = "myhostname"
+        >>> ia.server.port = None
+        >>> ia.server.ping()
+        >>> ia.server.reset()   # restore server config to defaults in rest/config.py
+
+
 You can now skip to Finish Intel Analytics Installation (TBD).
 
 Manual Configuration

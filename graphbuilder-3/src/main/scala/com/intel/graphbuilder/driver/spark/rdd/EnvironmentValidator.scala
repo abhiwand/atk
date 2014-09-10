@@ -26,7 +26,7 @@ object EnvironmentValidator extends Serializable {
           throw new RuntimeException("SPARK_CLASSPATH does NOT contain ispark-deps.jar, please add, and restart Spark")
         }
         else {
-          val parts = sparkClasspath.split("[: ]+")
+          val parts = sparkClasspath.split("[: \n\r\t]+")
           parts.foreach(part => {
             if (part.contains("ispark-deps.jar")) {
               val jar = new File(part)

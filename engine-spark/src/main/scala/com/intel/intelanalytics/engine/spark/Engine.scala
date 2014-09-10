@@ -26,20 +26,14 @@ package com.intel.intelanalytics.engine.spark
 import java.util.{ ArrayList => JArrayList, List => JList }
 
 import com.intel.intelanalytics.component.ClassLoaderAware
-import com.intel.intelanalytics.domain.DomainJsonProtocol._
 import com.intel.intelanalytics.domain._
-import com.intel.intelanalytics.domain.query.{ Execution => QueryExecution }
-import com.intel.intelanalytics.domain.command._
-
-import com.intel.intelanalytics.domain.graph._
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 import com.intel.intelanalytics.domain.schema.{ DataTypes, SchemaUtil }
 import com.intel.intelanalytics.engine.Rows._
 import com.intel.intelanalytics.engine._
-import com.intel.intelanalytics.engine.plugin.{ Invocation, CommandPlugin }
+import com.intel.intelanalytics.engine.plugin.CommandPlugin
 import com.intel.intelanalytics.engine.spark.command.{ CommandPluginRegistry, CommandExecutor }
 import com.intel.intelanalytics.engine.spark.graph.SparkGraphStorage
-import com.intel.intelanalytics.engine.spark.plugin.SparkInvocation
 import com.intel.intelanalytics.engine.spark.queries.{ SparkQueryStorage, QueryExecutor }
 import com.intel.intelanalytics.engine.spark.frame._
 import com.intel.intelanalytics.shared.EventLogging
@@ -56,35 +50,31 @@ import com.intel.spark.mllib.util.MLDataSplitter
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent._
-import com.intel.intelanalytics.engine.spark.statistics.ColumnStatistics
+import com.intel.intelanalytics.engine.spark.statistics.{ TopKRDDFunctions, EntropyRDDFunctions, ColumnStatistics }
 import org.apache.spark.engine.SparkProgressListener
+import com.intel.intelanalytics.domain.frame.Entropy
+import com.intel.intelanalytics.domain.frame.EntropyReturn
+import com.intel.intelanalytics.domain.frame.TopK
 import com.intel.intelanalytics.domain.frame.FrameAddColumns
 import com.intel.intelanalytics.domain.frame.RenameFrame
-import com.intel.intelanalytics.engine.spark.plugin.SparkInvocation
-import com.intel.intelanalytics.domain.graph.GraphLoad
 import com.intel.intelanalytics.domain.graph.RenameGraph
-import com.intel.intelanalytics.domain.frame.load.LineParserArguments
 import com.intel.intelanalytics.domain.graph.GraphLoad
 import com.intel.intelanalytics.domain.schema.Schema
 import com.intel.intelanalytics.domain.frame.DropDuplicates
-import com.intel.intelanalytics.engine.spark.frame.RowParseResult
 import com.intel.intelanalytics.domain.frame.FrameProject
-import com.intel.intelanalytics.domain.graph.Graph
 import com.intel.intelanalytics.domain.graph.Graph
 import com.intel.intelanalytics.domain.frame.ConfusionMatrix
 import com.intel.intelanalytics.domain.FilterPredicate
 import com.intel.intelanalytics.domain.frame.load.Load
-import com.intel.intelanalytics.domain.frame.CalculatePercentiles
+import com.intel.intelanalytics.domain.frame.Quantiles
 import com.intel.intelanalytics.domain.frame.CumulativeDist
 import com.intel.intelanalytics.domain.frame.AssignSample
 import com.intel.intelanalytics.domain.frame.FrameGroupByColumn
 import com.intel.intelanalytics.domain.frame.FrameRenameColumns
 import com.intel.intelanalytics.security.UserPrincipal
-import com.intel.intelanalytics.domain.frame.FrameRemoveColumn
+import com.intel.intelanalytics.domain.frame.FrameDropColumns
 import com.intel.intelanalytics.domain.frame.FrameReference
 import com.intel.intelanalytics.engine.spark.frame.RDDJoinParam
-import com.intel.intelanalytics.domain.graph.GraphTemplate
-import com.intel.intelanalytics.domain.frame.load.LoadSource
 import com.intel.intelanalytics.domain.graph.GraphTemplate
 import com.intel.intelanalytics.domain.query.Query
 import com.intel.intelanalytics.domain.frame.ColumnSummaryStatistics
@@ -96,7 +86,7 @@ import com.intel.intelanalytics.engine.ProgressInfo
 import com.intel.intelanalytics.domain.command.CommandDefinition
 import com.intel.intelanalytics.domain.frame.ClassificationMetric
 import com.intel.intelanalytics.domain.frame.BinColumn
-import com.intel.intelanalytics.domain.frame.PercentileValues
+import com.intel.intelanalytics.domain.frame.QuantileValues
 import com.intel.intelanalytics.domain.frame.DataFrame
 import com.intel.intelanalytics.domain.command.Execution
 import com.intel.intelanalytics.domain.command.Command
@@ -291,9 +281,9 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     }
   }
 
-  def getFrames(offset: Int, count: Int)(implicit p: UserPrincipal): Future[Seq[DataFrame]] = withContext("se.getFrames") {
+  def getFrames()(implicit p: UserPrincipal): Future[Seq[DataFrame]] = withContext("se.getFrames") {
     future {
-      frames.getFrames(offset, count)
+      frames.getFrames()
     }
   }
 
@@ -464,7 +454,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
   def groupBy(arguments: FrameGroupByColumn[JsObject, Long])(implicit user: UserPrincipal): Execution =
     commands.execute(groupByCommand, arguments, user, implicitly[ExecutionContext])
 
-  val groupByCommand = commandPluginRegistry.registerCommand("dataframe/groupby", groupBySimple _)
+  val groupByCommand = commandPluginRegistry.registerCommand("dataframe/group_by", groupBySimple _)
   def groupBySimple(arguments: FrameGroupByColumn[JsObject, Long], user: UserPrincipal, invocation: SparkInvocation) = {
     implicit val u = user
     val originalFrameID = arguments.frame
@@ -545,7 +535,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
   }
 
   /**
-   * Persists a PythonRDD after python computation is complete to HDFS 
+   * Persists a PythonRDD after python computation is complete to HDFS
    *
    * @param dataFrame DataFrame associated with this RDD
    * @param pyRdd PythonRDD instance
@@ -1079,16 +1069,16 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     frames.saveFrame(newJoinFrame, new FrameRDD(new Schema(allColumns), joinResultRDD), Some(joinRowCount))
   }
 
-  def removeColumn(arguments: FrameRemoveColumn)(implicit user: UserPrincipal): Execution =
-    commands.execute(removeColumnCommand, arguments, user, implicitly[ExecutionContext])
+  def dropColumns(arguments: FrameDropColumns)(implicit user: UserPrincipal): Execution =
+    commands.execute(dropColumnsCommand, arguments, user, implicitly[ExecutionContext])
 
-  val removeColumnDoc = CommandDoc(oneLineSummary = "Remove columns from the frame.",
+  val dropColumnsDoc = CommandDoc(oneLineSummary = "Remove columns from the frame.",
     extendedSummary = Some("""
     Remove columns from the frame.  They are deleted.
 
     Parameters
     ----------
-    name: str OR list of str
+    columns: str OR list of str
         column name OR list of column names to be removed from the frame
 
     Notes
@@ -1099,11 +1089,11 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     --------
     For this example, BigFrame object * my_frame * accesses a frame with columns * column_a *, * column_b *, * column_c * and * column_d *.
     Eliminate columns * column_b * and * column_d *::
-    my_frame.remove_columns([column_b, column_d])
+    my_frame.drop_columns([column_b, column_d])
     Now the frame only has the columns * column_a * and * column_c *.
-    For further examples, see: ref: `example_frame.remove_columns`"""))
-  val removeColumnCommand = commandPluginRegistry.registerCommand("dataframe/remove_columns", removeColumnSimple _, doc = Some(removeColumnDoc))
-  def removeColumnSimple(arguments: FrameRemoveColumn, user: UserPrincipal, invocation: SparkInvocation) = {
+    For further examples, see: ref: `example_frame.drop_columns`"""))
+  val dropColumnsCommand = commandPluginRegistry.registerCommand("dataframe/drop_columns", dropColumnsSimple _, doc = Some(dropColumnsDoc))
+  def dropColumnsSimple(arguments: FrameDropColumns, user: UserPrincipal, invocation: SparkInvocation) = {
 
     implicit val u = user
     val ctx = invocation.sparkContext
@@ -1136,7 +1126,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
         frames.saveFrameWithoutSchema(realFrame, resultRdd)
     }
 
-    frames.removeColumn(realFrame, columnIndices)
+    frames.dropColumns(realFrame, columnIndices)
   }
 
   def addColumns(arguments: FrameAddColumns[JsObject, Long])(implicit user: UserPrincipal): Execution =
@@ -1305,15 +1295,13 @@ class SparkEngine(sparkContextManager: SparkContextManager,
 
   /**
    * Get the metadata for a range of graph identifiers.
-   * @param offset First graph to obtain.
-   * @param count Number of graphs to obtain.
    * @param user IMPLICIT. User listing the graphs.
    * @return Future of the sequence of graph metadata entries to be returned.
    */
-  def getGraphs(offset: Int, count: Int)(implicit user: UserPrincipal): Future[Seq[Graph]] =
+  def getGraphs()(implicit user: UserPrincipal): Future[Seq[Graph]] =
     withContext("se.getGraphs") {
       future {
-        graphs.getGraphs(offset, count)
+        graphs.getGraphs()
       }
     }
 
@@ -1363,21 +1351,21 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     frames.updateRowCount(realFrame, rowCount)
   }
 
-  val calculatePercentileCommand = commandPluginRegistry.registerCommand("dataframe/calculate_percentiles", calculatePercentilesSimple _, numberOfJobs = 7)
+  val quantilesCommand = commandPluginRegistry.registerCommand("dataframe/quantiles", quantilesSimple _, numberOfJobs = 7)
 
-  def calculatePercentilesSimple(percentiles: CalculatePercentiles, user: UserPrincipal, invocation: SparkInvocation): PercentileValues = {
+  def quantilesSimple(quantiles: Quantiles, user: UserPrincipal, invocation: SparkInvocation): QuantileValues = {
     implicit val u = user
-    val frameId: Long = percentiles.frameId
+    val frameId: Long = quantiles.frameId
     val ctx = invocation.sparkContext
 
     val realFrame: DataFrame = getDataFrameById(frameId)
     val frameSchema = realFrame.schema
-    val columnIndex = frameSchema.columnIndex(percentiles.columnName)
-    val columnDataType = frameSchema.columnDataType(percentiles.columnName)
+    val columnIndex = frameSchema.columnIndex(quantiles.columnName)
+    val columnDataType = frameSchema.columnDataType(quantiles.columnName)
 
     val rdd = frames.loadFrameRdd(ctx, frameId)
-    val percentileValues = SparkOps.calculatePercentiles(rdd, percentiles.percentiles, columnIndex, columnDataType).toList
-    PercentileValues(percentileValues)
+    val quantileValues = SparkOps.quantiles(rdd, quantiles.quantiles, columnIndex, columnDataType).toList
+    QuantileValues(quantileValues)
   }
 
   override def classificationMetric(arguments: ClassificationMetric[Long])(implicit user: UserPrincipal): Execution =
@@ -1402,7 +1390,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
       case "accuracy" => SparkOps.modelAccuracy(frameRdd, labelColumnIndex, predColumnIndex)
       case "precision" => SparkOps.modelPrecision(frameRdd, labelColumnIndex, predColumnIndex, arguments.posLabel)
       case "recall" => SparkOps.modelRecall(frameRdd, labelColumnIndex, predColumnIndex, arguments.posLabel)
-      case "fmeasure" => SparkOps.modelFMeasure(frameRdd, labelColumnIndex, predColumnIndex, arguments.posLabel, arguments.beta)
+      case "f_measure" => SparkOps.modelFMeasure(frameRdd, labelColumnIndex, predColumnIndex, arguments.posLabel, arguments.beta)
       case _ => throw new IllegalArgumentException() // TODO: this exception needs to be handled differently
     }
     ClassificationMetricValue(metric_value)
@@ -1506,6 +1494,149 @@ class SparkEngine(sparkContextManager: SparkContextManager,
   }
 
   /**
+   * Calculate the entropy of the specified column.
+   *
+   * @param arguments Input specification for column entropy
+   * @param user Current user
+   */
+  override def entropy(arguments: Entropy)(implicit user: UserPrincipal): Execution =
+    commands.execute(entropyCommand, arguments, user, implicitly[ExecutionContext])
+
+  val entropyDoc = CommandDoc(oneLineSummary = "Calculate Shannon entropy of a column.",
+    extendedSummary = Some("""
+    Calculate the Shannon entropy of a column.  The column can be weighted. All data elements of weight <= 0
+    are excluded from the calculation, as are all data elements whose weight is NaN or infinite.
+    If there are no data elements of finite weight > 0, the entropy is zero.
+
+    Parameters
+    ----------
+    data_column : str
+        The column whose entropy is to be calculated
+
+    weights_column : str (Optional)
+        The column that provides weights (frequencies) for the entropy calculation.
+        Must contain numerical data. Uniform weights of 1 for all items will be used for the calculation if this
+        parameter is not provided.
+
+    Returns
+    -------
+    entropy : float64
+
+    Example
+    -------
+    >>> entropy = frame.entropy('data column')
+    >>> weighted_entropy = frame.entropy('data column', 'weight column')
+                           """))
+
+  val entropyCommand = commandPluginRegistry.registerCommand("dataframe/entropy",
+    entropyCommandSimple _, numberOfJobs = 3)
+
+  def entropyCommandSimple(arguments: Entropy, user: UserPrincipal, invocation: SparkInvocation): EntropyReturn = {
+    implicit val u = user
+
+    val frameRef = arguments.frame
+    val frame = expectFrame(frameRef)
+    val ctx = invocation.sparkContext
+    val frameRdd = frames.loadFrameRdd(ctx, frameRef.id)
+    val columnIndex = frame.schema.columnIndex(arguments.dataColumn)
+    val (weightsColumnIndexOption, weightsDataTypeOption) = getColumnIndexAndType(frame, arguments.weightsColumn)
+
+    val entropy = EntropyRDDFunctions.shannonEntropy(frameRdd, columnIndex, weightsColumnIndexOption, weightsDataTypeOption)
+    EntropyReturn(entropy)
+  }
+
+  /**
+   * Calculate the top (or bottom) K distinct values by count for specified data column.
+   *
+   * @param arguments Input specification for topK command
+   * @param user Current user
+   */
+  override def topK(arguments: TopK)(implicit user: UserPrincipal): Execution =
+    commands.execute(topKCommand, arguments, user, implicitly[ExecutionContext])
+
+  val topKDoc = CommandDoc(oneLineSummary = "Calculate the top (or bottom) K distinct values by count of a column.",
+    extendedSummary = Some("""
+    Calculate the top (or bottom) K distinct values by count of a column. The column can be weighted.
+    All data elements of weight <= 0 are excluded from the calculation, as are all data elements whose weight is NaN or infinite.
+    If there are no data elements of finite weight > 0, the entropy is zero.
+
+    Parameters
+    ----------
+    data_column : str
+        The column whose top (or bottom) K distinct values are to be calculated
+
+    k : int
+        Number of entries to return
+
+    reverse : boolean  (Optional, default=False)
+        Optional. DefIf True, return bottom K, else return top K entries
+
+    weights_column : str (Optional)
+        The column that provides weights (frequencies) for the entropy calculation.
+        Must contain numerical data. Uniform weights of 1 for all items will be used for the calculation if this
+        parameter is not provided.
+
+    Returns
+    -------
+
+    BigFrame : An object with access to the frame
+
+    Example
+    -------
+    For this example, we calculate the top 5 movie genres in a data frame.
+
+     >>> top5 = frame.topk('genre', 5)
+     >>> top5.inspect()
+
+      genre:str   count:float64
+      ----------------------------
+      Drama        738278
+      Comedy       671398
+      Short        455728
+      Documentary  323150
+      Talk-Show    265180
+
+    In this example, we calculate the bottom 3 movie genres in a data frame.
+    >>> bottom3 = frame.topk('genre', 3, reverse=True)
+    >>> bottom3.inspect()
+
+       genre:str   count:float64
+       ----------------------------
+       Musical      26976
+       War          21067
+       Film-Noir    595
+                           """))
+
+  val topKCommand =
+    commandPluginRegistry.registerCommand("dataframe/topk", topKCommandSimple _, numberOfJobs = 3)
+
+  def topKCommandSimple(arguments: TopK, user: UserPrincipal, invocation: SparkInvocation): DataFrame = {
+    implicit val u = user
+
+    val frameId = arguments.frame
+    val frame = expectFrame(frameId)
+    val ctx = invocation.sparkContext
+    val frameRdd = frames.loadFrameRdd(ctx, frameId.id)
+    val columnIndex = frame.schema.columnIndex(arguments.columnName)
+    val valueDataType = frame.schema.columns(columnIndex)._2
+    val (weightsColumnIndexOption, weightsDataTypeOption) = getColumnIndexAndType(frame, arguments.weightsColumn)
+
+    val newFrameName = frames.generateFrameName()
+
+    val newFrame = Await.result(create(DataFrameTemplate(newFrameName, None)), SparkEngineConfig.defaultTimeout)
+
+    val topRdd = TopKRDDFunctions.topK(frameRdd, columnIndex, arguments.k, arguments.reverse.getOrElse(false))
+
+    val newSchema = Schema(List(
+      (arguments.columnName, valueDataType),
+      ("count", DataTypes.float64)
+    ))
+
+    val rowCount = topRdd.count()
+    frames.saveFrame(newFrame, new FrameRDD(newSchema, topRdd), Some(rowCount))
+  }
+
+  /**
    * Retrieve DataFrame object by frame id
    * @param frameId id of the dataframe
    */
@@ -1517,5 +1648,24 @@ class SparkEngine(sparkContextManager: SparkContextManager,
 
   override def shutdown(): Unit = {
     //do nothing
+  }
+
+  /**
+   * Get column index and data type of a column in a data frame.
+   *
+   * @param frame Data frame
+   * @param columnName Column name
+   * @return Option with the column index and data type
+   */
+  private def getColumnIndexAndType(frame: DataFrame, columnName: Option[String]): (Option[Int], Option[DataType]) = {
+
+    val (columnIndexOption, dataTypeOption) = columnName match {
+      case Some(columnIndex) => {
+        val weightsColumnIndex = frame.schema.columnIndex(columnIndex)
+        (Some(weightsColumnIndex), Some(frame.schema.columns(weightsColumnIndex)._2))
+      }
+      case None => (None, None)
+    }
+    (columnIndexOption, dataTypeOption)
   }
 }

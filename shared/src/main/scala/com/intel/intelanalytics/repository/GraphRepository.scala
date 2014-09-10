@@ -21,11 +21,18 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.algorithm
+package com.intel.intelanalytics.repository
+
+import com.intel.intelanalytics.domain.graph.{ Graph, GraphTemplate }
 
 /**
- * percentile target that will be applied to an element
- * @param percentile percentile. For eg, 40 means 40th percentile
- * @param weight weight that will be applied to the element
+ * Repository for graphs
  */
-case class PercentileTarget(percentile: Int, weight: BigDecimal)
+trait GraphRepository[Session] extends Repository[Session, GraphTemplate, Graph] {
+  /**
+   * Return all the graphs
+   * @param session current session
+   * @return all the graphs
+   */
+  def scanAll()(implicit session: Session): Seq[Graph]
+}
