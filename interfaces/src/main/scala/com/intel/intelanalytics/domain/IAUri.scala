@@ -20,7 +20,7 @@ object IAUriFactory {
     val validateUri = """.+//frame/(\d+)|.+//graph/(\d+)""".r
     var entity: String = ""
     /* Validate uri structure and retrieve the entity and id from the uri*/
-    if ((validateUri findFirstIn uri).mkString(",").isEmpty) {
+    if ((validateUri findFirstIn uri).mkString(",") == "") {
       throw new IllegalArgumentException("Invalid uri")
     }
     else {
