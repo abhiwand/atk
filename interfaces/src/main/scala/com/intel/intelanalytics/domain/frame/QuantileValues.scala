@@ -23,15 +23,10 @@
 
 package com.intel.intelanalytics.domain.frame
 
-case class ClassificationMetric[FrameRef](frameId: FrameRef, metricType: String, labelColumn: String, predColumn: String, posLabel: String, beta: Double) {
-  require(metricType.equals("accuracy") ||
-    metricType.equals("precision") ||
-    metricType.equals("recall") ||
-    metricType.equals("f_measure"), "valid metric type is required")
-  require(labelColumn != null && !labelColumn.equals(""), "label column is required")
-  require(predColumn != null && !predColumn.equals(""), "predict column is required")
-  require(posLabel != null && !posLabel.equals(""), "invalid positive label")
-  require(beta > 0, "invalid beta value for f measure")
-}
+import com.intel.intelanalytics.algorithm.Quantile
 
-case class ClassificationMetricValue(metricValue: Double)
+/**
+ * The result object for quantile calculation
+ * @param quantiles value for the percentiles
+ */
+case class QuantileValues(quantiles: List[Quantile])
