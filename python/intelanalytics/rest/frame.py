@@ -45,6 +45,13 @@ from intelanalytics.rest.iatypes import get_data_type_from_rest_str, get_rest_st
 from intelanalytics.rest.command import CommandRequest, executor, get_commands, execute_command
 from intelanalytics.rest.spark import prepare_row_function, get_add_one_column_function, get_add_many_columns_function
 
+TakeResult = namedtuple("TakeResult", ['data', 'schema'])
+"""
+Take result contains data and schema.
+data contains only columns based on user specified columns
+schema contains only columns baed on user specified columns
+the data type under schema is also coverted to IA types
+"""
 
 class FrameBackendRest(object):
     """REST plumbing for BigFrame"""
@@ -337,12 +344,13 @@ class FrameBackendRest(object):
 
          #def _repr_html_(self): TODO - Add this method for ipython notebooks
 
-    def inspect(self, frame, n, offset):
+    def inspect(self, frame, n, offset, selected_columns):
         # inspect is just a pretty-print of take, we'll do it on the client
         # side until there's a good reason not to
-        result = self.take(frame, n, offset)
+        result = self.take(frame, n, offset, selected_columns)
         data = result.data
         schema = result.schema
+
         return FrameBackendRest.InspectionTable(schema, data)
 
     def join(self, left, right, left_on, right_on, how):
@@ -436,15 +444,28 @@ class FrameBackendRest(object):
         arguments = {'frame': self._get_frame_full_uri(frame), "new_name": name}
         execute_update_frame_command('rename_frame', arguments, frame)
 
-    def take(self, frame, n, offset):
+
+
+    def take(self, frame, n, offset, columns):
+        if n==0:
+            return []
         url = 'dataframes/{0}/data?offset={2}&count={1}'.format(frame._id,n, offset)
         result = executor.query(url)
-        schema_json = result.schema
-        schema = FrameSchema.from_strings_to_types(schema_json)
-        data = result.data
+        schema = FrameSchema.from_strings_to_types(result.schema)
 
-        TakeResult = namedtuple("TakeResult", ['data', 'schema'])
-        return TakeResult(data, schema)
+        if isinstance(columns, basestring):
+            columns = [columns]
+
+        updated_schema = schema
+        if columns is not None:
+            updated_schema = FrameSchema.get_schema_for_columns(schema, columns)
+            indices = FrameSchema.get_indices_for_selected_columns(schema, columns)
+
+        data = result.data
+        if columns is not None:
+            data = FrameData.extract_data_from_selected_columns(data, indices)
+
+        return TakeResult(data, updated_schema)
 
     def ecdf(self, frame, sample_col):
         import numpy as np
@@ -601,7 +622,32 @@ class FrameSchema:
     def from_strings_to_types(s):
         return [(name, get_data_type_from_rest_str(data_type)) for name, data_type in s]
 
-    # Add more if necessary
+    @staticmethod
+    def get_schema_for_columns(schema, selected_columns):
+        indices = FrameSchema.get_indices_for_selected_columns(schema, selected_columns)
+        return [schema[i] for i in indices]
+
+    @staticmethod
+    def get_indices_for_selected_columns(schema, selected_columns):
+        indices = []
+        for selected in selected_columns:
+            for column in schema:
+                if column[0] == selected:
+                    indices.append(schema.index(column))
+                    break
+
+        return indices
+
+
+class FrameData:
+
+    @staticmethod
+    def extract_data_from_selected_columns(data_in_page, indices):
+        new_data = []
+        for row in data_in_page:
+            new_data.append([row[index] for index in indices])
+
+        return new_data
 
 def initialize_frame(frame, frame_info):
     """Initializes a frame according to given frame_info"""
