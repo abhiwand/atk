@@ -59,7 +59,13 @@ def execute_command(command_name, **arguments):
     command_info = executor.issue(command_request)
     if (command_info.result.has_key('value') and len(command_info.result) == 1):
         return command_info.result.get('value')
-    return command_info.result
+    elif command_info.result.has_key('name') and command_info.result.has_key('schema'):
+        # Used for plugins that return data frame
+        from intelanalytics.core.config import get_frame_backend
+        frame_backend = get_frame_backend()
+        return frame_backend.get_frame(command_info.result['name'])
+    else:
+        return command_info.result
 
 
 
@@ -257,12 +263,7 @@ class CommandInfo(object):
         self._payload = payload
 
 
-
-
-
 class Polling(object):
-
-
 
     @staticmethod
     def poll(uri, predicate=None, start_interval_secs=None, max_interval_secs=None, backoff_factor=None):
@@ -288,11 +289,11 @@ class Polling(object):
         if predicate is None:
             predicate = Polling._get_completion_status
         if start_interval_secs is None:
-            start_interval_secs = config.polling.start_interval_secs
+            start_interval_secs = config.polling_defaults.start_interval_secs
         if backoff_factor is None:
-            backoff_factor = config.polling.backoff_factor
+            backoff_factor = config.polling_defaults.backoff_factor
         if max_interval_secs is None:
-            max_interval_secs = config.polling.max_interval_secs
+            max_interval_secs = config.polling_defaults.max_interval_secs
         if not CommandInfo.is_valid_command_uri(uri):
             raise ValueError('Cannot poll ' + uri + ' - a /commands/{number} uri is required')
         interval_secs = start_interval_secs
@@ -350,17 +351,34 @@ class CommandServerError(Exception):
             message = "(Server response insufficient to provide details)"
         Exception.__init__(self, message)
 
-
 QueryResult = namedtuple("QueryResult", ['data', 'schema'])
-
+"""
+QueryResult contains the data and schema directly returned from the rest server
+"""
 
 class Executor(object):
     """
     Executes commands
     """
 
-
     __commands = []
+
+
+    def get_query_response(self, id, partition):
+        """
+        Attempt to get the next partition of data as a CommandInfo Object. Allow for several retries
+        :param id: Query ID
+        :param partition: Partition number to pull
+        """
+        max_retries = 20
+        for i in range(max_retries):
+            try:
+                info = CommandInfo(http.get("queries/%s/data/%s" % (id, partition)).json())
+                return info
+            except HTTPError as e:
+                time.sleep(5)
+                if i == max_retries - 1:
+                    raise e
 
     def issue(self, command_request):
         """
@@ -409,49 +427,34 @@ class Executor(object):
         if response_json["complete"]:
             data = response_json["result"]["data"]
             return QueryResult(data, schema)
+        else:
+            command = self.poll_command_info(response)
 
-        command = self.poll_command_info(response)
+            #retreive the data
+            printer = ProgressPrinter()
+            total_pages = command.result["total_pages"] + 1
 
-        def get_query_response(id, partition):
-            """
-            Attempt to get the next partition of data as a CommandInfo Object. Allow for several retries
-            :param id: Query ID
-            :param partition: Partition number to pull
-            """
-            max_retries = 20
-            for i in range(max_retries):
-                try:
-                    info = CommandInfo(http.get("queries/%s/data/%s" % (id, partition)).json())
-                    return info
-                except HTTPError as e:
-                    time.sleep(5)
-                    if i == max_retries - 1:
-                        raise e
+            start = 1
+            data = []
+            for i in range(start, total_pages):
+                next_partition = self.get_query_response(command.id_number, i)
+                data_in_page = next_partition.result["data"]
 
-        #retreive the data
-        printer = ProgressPrinter()
-        total_pages = command.result["total_pages"] + 1
-        data = []
-        start = 1
-        for i in range(start, total_pages):
-            next_partition = get_query_response(command.id_number, i)
-            data.extend(next_partition.result["data"])
+                data.extend(data_in_page)
 
-            #if the total pages is greater than 10 display a progress bar
-            if total_pages > 5:
-                finished = i == (total_pages - 1)
-                if not finished:
-                    time.sleep(.5)
-                progress = [{
-                    "progress": (float(i)/(total_pages - 1)) * 100,
-                    "tasks_info": {
-                        "retries": 0
-                    }
-                }]
-                printer.print_progress(progress, finished)
-
+                #if the total pages is greater than 10 display a progress bar
+                if total_pages > 5:
+                    finished = i == (total_pages - 1)
+                    if not finished:
+                        time.sleep(.5)
+                    progress = [{
+                        "progress": (float(i)/(total_pages - 1)) * 100,
+                        "tasks_info": {
+                            "retries": 0
+                        }
+                    }]
+                    printer.print_progress(progress, finished)
         return QueryResult(data, schema)
-
 
 
     def cancel(self, command_id):

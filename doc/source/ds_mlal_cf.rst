@@ -19,7 +19,7 @@ To support training, validation and test, a common practice in machine learning,
 
 .. figure:: ds_mlal_cf_1.*
     :align: center
-    :scale: 80 %
+    :width: 80 %
     
     A typical representation of the preference matrix P
 

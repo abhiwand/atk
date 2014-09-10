@@ -17,27 +17,29 @@ conjugate gradient descent in general, see: http://en.wikipedia.org/wiki/Conjuga
 The Mathematics of Matrix Factorization via CGD
 -----------------------------------------------
 
-Matrix factorization by conjugate gradient descent produces ratings by using the (limited) space of observed rankings to infer
-a user-factors vector :math:`p_u` for each user  :math:`u`, and an item-factors vector :math:`q_i` for each item :math:`i`, and then producing
-a ranking by user :math:`u` of item :math:`i` by the dot-product :math:`b_{ui} + p_u^Tq_i` where :math:`b_{ui}` is a baseline ranking
-calculated as :math:`b_{ui} = \mu + b_u + b_i`.
+Matrix factorization by conjugate gradient descent produces ratings by using the (limited) space of
+observed rankings to infer a user-factors vector :math:`p_{u}` for each user  :math:`u`,
+and an item-factors vector :math:`q_{i}` for each item :math:`i`, and then producing
+a ranking by user :math:`u` of item :math:`i` by the dot-product :math:`b_{ui} + p_{u}^{T}q_{i}`
+where :math:`b_{ui}` is a baseline ranking calculated as :math:`b_{ui} = \mu + b_{u} + b_{i}`.
 
 The optimum model is chosen to minimum the following sum, which penalizes square distance of the prediction from observed rankings and complexity of the
 model (through the regularization term):
 
 .. math::
-    \sum_{(u,i) \in {\mathcal{K}}} (r_{ui} - \mu - b_u - b_i - p_u^Tq_i)^2 + \lambda_3(||p_u||^2 + ||q_i||^2 + b_u^2 + b_i^2)    
+    \sum_{(u,i) \in {\mathcal{K}}} (r_{ui} - \mu - b_{u} - b_{i} - p_{u}^{T}q_{i})^{2} +
+    \lambda_{3}(||p_{u}||^{2} + ||q_{i}||^{2} + b_{u}^{2} + b_{i}^{2})    
 
 Where:
 
     | :math:`r_{ui}` – Observed ranking of item :math:`i` by user :math:`u`
     | :math:`{\mathcal{K}}` – Set of pairs :math:`(u,i)` for each observed ranking of item :math:`i` by user :math:`u`
     | :math:`\mu` – The average rating over all ratings of all items by all users.
-    | :math:`b_u` –  How much user :math:`u`'s average rating differs from :math:`\mu`.
-    | :math:`b_i` –   How much item :math:`i`'s average rating differs from :math:`\mu`
-    | :math:`p_u` –  User-factors vector.
-    | :math:`q_i` – Item-factors vector.
-    | :math:`\lambda_3` – A regularization parameter specified by the user.
+    | :math:`b_{u}` –  How much user :math:`u`'s average rating differs from :math:`\mu`.
+    | :math:`b_{i}` –   How much item :math:`i`'s average rating differs from :math:`\mu`
+    | :math:`p_{u}` –  User-factors vector.
+    | :math:`q_{i}` – Item-factors vector.
+    | :math:`\lambda_{3}` – A regularization parameter specified by the user.
 
 
 This optimization problem is solved by the conjugate gradient descent method. Indeed, this difference in how the optimization problem is solved is the

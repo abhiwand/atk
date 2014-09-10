@@ -23,10 +23,10 @@
 
 package com.intel.intelanalytics.domain.frame
 
-import com.intel.intelanalytics.algorithm.Percentile
-
 /**
- * The result object for percentile calculation
- * @param percentiles value for the percentiles
+ * Command for calculating percentiles values
+ * @param frameId id of the data frame
+ * @param quantiles the percentiles to calculate value for
+ * @param columnName name of the column to find percentiles
  */
-case class PercentileValues(percentiles: List[Percentile])
+case class Quantiles(frameId: Long, quantiles: List[Int], columnName: String)
