@@ -18,18 +18,20 @@ See `Cloudera Installation Documentation <http://www.cloudera.com/content/cloude
 Requirements
 ------------
 
-1. RHEL/Centos 6.4 OS
-#. Sudo access is required to install the various Intel Analytics packages since they are installed through Yum and for the editing of root owned configuration files
-#. Cloudera cluster with CDH-5.0.2-p0.13 or CDH-5.0.3-p0.35 with the following services installed and running.
+1.  RHEL/Centos 6.4 OS
+#.  `Sudo access <https://webmail.intel.com/owa/redir.aspx?C=KzTqGHz24kGeV-IC3Go9YsjpsfOfoNEI466Twm5ZVbmw8oVP6h2w_p7KR8kmm3PCgOncDaOzC9Y.&URL=http%3a%2f%2fen.wikipedia.org%2fwiki%2fSudo>`_
+    is required to install the various Intel Analytics packages since they are installed through Yum and
+    for the editing of root owned configuration files
+#.  Cloudera cluster with CDH-5.0.2-p0.13 or CDH-5.0.3-p0.35 with the following services installed and running.
 
-    a. HDFS
-    #. SPARK
-    #. Hbase
-    #. Yarn(MR2)
-    #. Zookeeper
+    a.  HDFS
+    #.  SPARK
+    #.  Hbase
+    #.  Yarn(MR2)
+    #.  Zookeeper
 
-#. Python 2.6 - RHEL/Centos 6.4 ships with python 2.6
-#. `EPEL yum repository <https://fedoraproject.org/wiki/EPEL>`_ -- All the nodes on the cluster must have the EPEL yum repository.
+#.  Python 2.6 - RHEL/Centos 6.4 ships with python 2.6
+#.  `EPEL yum repository <https://fedoraproject.org/wiki/EPEL>`_ -- All the nodes on the cluster must have the EPEL yum repository.
    Adding the EPEL repository is straight forward and can be accomplished with a few simple steps.
 #. Intel Analytics Private Repository Access - if you have not been given AWS access and secret keys you will not be able to install Intel Analytics.
 
@@ -65,44 +67,6 @@ Dependencies
 *   `numpy <https://pypi.python.org/pypi/numpy>`_ >= 1.8.1
 *   `python-bottle <https://pypi.python.org/pypi/bottle>`_ >= 0.12
 *   `python-requests <https://pypi.python.org/pypi/requests>`_ >= 2.2.1
-
-.. ifconfig:: internal_docs
-
-    ------------------- --------------------------- --------------------------- -------------------------
-    Component           Current IAT Version         CDH Version (5.1.0)         Python Version Compatible
-    =================== =========================== =========================== =========================
-    Hadoop              1.2.1                       2.3.0
-    HBase               0.94.12                     0.98.1
-    Yarn                --                          2.3.0
-    ZooKeeper           --                          3.4.5
-    Python              2.6 + 2.7                   2.6 + 2.7
-    Spark               1.0	                        1.0.0
-    Giraph              1.1.0-SNAPSHOT (96968fd)    1.1.0-SNAPSHOT (96968fd)
-    Titan               0.5m1
-    Faunus              0.5m1
-    JDK                 1.7                         1.7
-
-    Python Modules
-    HappyBase           0.7                                                     2.6 + 2.7
-    SciPy               0.13.2                                                  2.6 + 2.7
-    NumPy               1.8.0                                                   2.6 + 2.7
-
-    sympy               0.7.4.1
-    nltk                2.0.4
-    Jinja2              2.7.2
-    tornado             3.2
-    mrjob               0.4.2
-    matplotlib          1.3.1
-    pandas              0.12.0
-    pyzmq               14.0.1
-    pyjavaproperties    0.6
-    mock                1.0.1
-    nose                1.3.0
-    coverage            3.7.1
-    pydoop              0.11.1
-    virtualenv          1.10.1
-    interval            1.0.0
-    ------------------- --------------------------- --------------------------- -------------------------
 
 Intel Analytics Graph Builder
 =============================
