@@ -39,6 +39,9 @@ import org.apache.commons.configuration.BaseConfiguration
 
 import scala.collection.JavaConversions._
 
+// $COVERAGE-OFF$
+// This is example code only, not part of the main product
+
 // TODO: this class should either be deleted or cleaned up
 
 /**

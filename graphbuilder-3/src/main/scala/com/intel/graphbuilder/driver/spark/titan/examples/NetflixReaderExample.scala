@@ -23,6 +23,9 @@
 
 package com.intel.graphbuilder.driver.spark.titan.examples
 
+// $COVERAGE-OFF$
+// This is example code only, not part of the main product
+
 import com.intel.graphbuilder.util.SerializableBaseConfiguration
 import com.intel.graphbuilder.driver.spark.titan.reader.TitanReader
 import com.intel.graphbuilder.graph.titan.TitanGraphConnector
