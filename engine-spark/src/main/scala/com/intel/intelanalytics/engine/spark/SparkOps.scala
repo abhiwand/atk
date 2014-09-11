@@ -191,6 +191,19 @@ private[spark] object SparkOps extends Serializable {
         }
       })
 
+      case "outer" => SparkOps.fullOuterJoin(left.rdd, right.rdd).map(t => {
+        t._2 match {
+          case (Some(leftValues), Some(rightValues)) => { leftValues ++ rightValues }
+          case (Some(leftValues), None) => {
+            leftValues ++ (1 to right.columnCount).map(i => null)
+          }
+          case (None, Some(rightValues)) => {
+            var array: Array[Any] = rightValues
+            (1 to left.columnCount).foreach(i => array = null +: array)
+          }
+        }
+      })
+
       case _ => left.rdd.join(right.rdd).map(t => {
         val leftValues: Array[Any] = t._2._1
         val rightValues: mutable.ArrayOps[Any] = t._2._2
@@ -199,6 +212,22 @@ private[spark] object SparkOps extends Serializable {
     }
 
     result.asInstanceOf[RDD[Array[Any]]]
+  }
+
+  /**
+   * Perform a full outer join of `this` and `other`. For each element (k, v) in `this`, the
+   * resulting RDD will either contain all pairs (k, (Some(v), Some(w))) for w in `other`, or
+   * the pair (k, (Some(v), None)) if no elements in `other` have key k. Similarly, for each
+   * element (k, w) in `other`, the resulting RDD will either contain all pairs
+   * (k, (Some(v), Some(w))) for v in `this`, or the pair (k, (None, Some(w))) if no elements
+   * in `this` have key k. Uses the given Partitioner to partition the output RDD.
+   */
+  def fullOuterJoin(left: RDD[(Any, Array[Any])], other: RDD[(Any, Array[Any])]): RDD[(Any, (Option[Array[Any]], Option[Array[Any]]))] = {
+    left.cogroup(other).flatMapValues {
+      case (vs, Seq()) => vs.map(v => (Some(v), None))
+      case (Seq(), ws) => ws.map(w => (None, Some(w)))
+      case (vs, ws) => for (v <- vs; w <- ws) yield (Some(v), Some(w))
+    }.asInstanceOf[RDD[(Any, (Option[Array[Any]], Option[Array[Any]]))]]
   }
 
   /**
