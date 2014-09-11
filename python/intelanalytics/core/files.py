@@ -36,8 +36,9 @@ class CsvFile(DataFile):
     Parameters
     ----------
     file_name : string
-        name of data input file. Relative paths are interpreted relative to the intel.analytics.engine.fs.root
-        configuration. Absolute paths (beginning with hdfs://..., for example) are also supported.
+        name of data input file.
+        Relative paths are interpreted relative to the intel.analytics.engine.fs.root configuration.
+        Absolute paths (beginning with hdfs://..., for example) are also supported.
     schema : list of tuples of the form (string, type)
         schema description of the fields for a given line.  It is a list of
         tuples which describe each field, (field name, field type), where
@@ -53,11 +54,12 @@ class CsvFile(DataFile):
     Raises
     ------
     ValueError
-        * "file_name must be a non-empty string": check for spurious leading comma in the parameters
-        * "schema must be non-empty list of tuples": check for spelling errors in the creation, building and application of the schema variable
-        * "delimiter must be a non-empty string": "" is not a valid delimiter between columns
-        * "First item in CSV schema tuple must be a string": check schema 
-        * "Second item in CSV schema tuple must be a supported type: ...": check schema
+        *   "file_name must be a non-empty string": check for spurious leading comma in the parameters
+        *   "schema must be non-empty list of tuples": check for spelling errors in the creation,
+            building and application of the schema variable
+        *   "delimiter must be a non-empty string": "" is not a valid delimiter between columns
+        *   "First item in CSV schema tuple must be a string": check schema
+        *   "Second item in CSV schema tuple must be a supported type: ...": check schema
 
     Examples
     --------
@@ -69,7 +71,7 @@ class CsvFile(DataFile):
 
     First bring in the stuff::
 
-        from intelanalytics import *
+        import intelanalytics as ia
 
     At this point create a schema that defines the data::
 
@@ -79,19 +81,19 @@ class CsvFile(DataFile):
 
     Now build a CsvFile object with this schema::
 
-        csv_define = CsvFile("raw_data.csv", csv_schema)
+        csv_define = ia.CsvFile("raw_data.csv", csv_schema)
 
     The standard delimiter in a csv file is the comma.
     If the columns of data were separated by a character other than comma, we need to add the appropriate delimiter.
     For example if the data columns were separated by the colon character, the instruction would be::
 
-        csv_data = CsvFile("raw_data.csv", csv_schema, ':')
+        csv_data = ia.CsvFile("raw_data.csv", csv_schema, ':')
             or
-        CsvFile("raw_data.csv", csv_schema, delimiter = ':')
+        ia.CsvFile("raw_data.csv", csv_schema, delimiter = ':')
 
     If our data had some lines of header at the beginning of the file, we could have skipped these lines::
 
-        csv_data = CsvFile("raw_data.csv", csv_schema, skip_header_lines=2)
+        csv_data = ia.CsvFile("raw_data.csv", csv_schema, skip_header_lines=2)
 
     For other examples see :ref:`Data Flow <example_files.csvfile>`.
 
@@ -133,13 +135,13 @@ class CsvFile(DataFile):
         -------
         list of string
             Field names
-        
+
         Examples
         --------
         For this example, we are going to use a raw data file called 'my_data.csv'.
         It will have two columns *col1* and *col2* with types of *int32* and *float32* respectively::
 
-            my_csv = CsvFile("my_data.csv", schema=[("col1", int32), ("col2", float32)])
+            my_csv = ia.CsvFile("my_data.csv", schema=[("col1", int32), ("col2", float32)])
             print(my_csv.field_names())
 
         The output would be::
@@ -158,18 +160,18 @@ class CsvFile(DataFile):
         Schema field types
 
         List of field types from the schema stored in the CsvFile object.
-        
+
         Returns
         -------
         list of types
             Field types
-        
+
         Examples
         --------
         For this example, we are going to use a raw data file called 'my_data.csv'.
         It will have two columns *col1* and *col2* with types of *int32* and *float32* respectively::
 
-            my_csv = CsvFile("my_data.csv", schema=[("col1", int32), ("col2", float32)])
+            my_csv = ia.CsvFile("my_data.csv", schema=[("col1", int32), ("col2", float32)])
             print(my_csv.field_types())
 
         The output would be::
