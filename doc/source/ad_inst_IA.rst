@@ -420,13 +420,14 @@ This is the section you want to look at::
 Configure File System Root
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    In the following line the text "invalid-fsroot-host" should be replaced with the fully qualified domain of your HDFS installation::
+In the following line the text "invalid-fsroot-host" should be replaced with the fully
+qualified domain of your HDFS installation::
 
-        fs.root = "hdfs://invalid-fsroot-host/user/iauser"
-        
-    Example::
+    fs.root = "hdfs://invalid-fsroot-host/user/iauser"
 
-        fs.root = "hdfs://localhost.localdomain/user/iauser" 
+Example::
+
+    fs.root = "hdfs://localhost.localdomain/user/iauser" 
 
 If your Name Node port is not 8020 you can specify it after the host name::
 
@@ -435,13 +436,14 @@ If your Name Node port is not 8020 you can specify it after the host name::
 Configure Zookeeper Host
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-    In the following line replace "invalid-titan-host" with the comma delimited list of fully qualified domain names of all nodes running the zookeeper service::
+In the following line replace "invalid-titan-host" with the comma delimited list of fully
+qualified domain names of all nodes running the zookeeper service::
 
-        titan.load.storage.hostname = "invalid-titan-host"
+    titan.load.storage.hostname = "invalid-titan-host"
 
-    Example::
+Example::
 
-        titan.load.storage.hostname = "localhost.localdomain" 
+    titan.load.storage.hostname = "localhost.localdomain" 
 
 If your zookeeper client port is not 2181 un-comment the following line and replace 2181 with your zookeeper client port::
 
@@ -450,42 +452,43 @@ If your zookeeper client port is not 2181 un-comment the following line and repl
 Configure Spark Master Host
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    Update "invalid-spark-master" with the fully qualified domain name of the Spark master node::
+Update "invalid-spark-master" with the fully qualified domain name of the Spark master node::
 
-        master = "spark://localhost.localdomain:7077"
-    
-    Example::
+    master = "spark://localhost.localdomain:7077"
 
-        master = "spark://localhost.localdomain:7077" 
+Example::
+
+    master = "spark://localhost.localdomain:7077" 
 
 Configure Spark Executor Memory
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    The Spark executor memory needs to be set equal to or less than what is configured in Cloudera Manager.
-    The Cloudera Spark installation will, by default, set the Spark executor memory to 8g, so 8g is usually a safe setting.
-    If have any doubts you can always verify the executor memory in Cloudera manager.
-    ::
+The Spark executor memory needs to be set equal to or less than what is configured in Cloudera Manager.
+The Cloudera Spark installation will, by default, set the Spark executor memory to 8g, so 8g is usually a safe setting.
+If have any doubts you can always verify the executor memory in Cloudera manager.
+::
 
-        spark.executor.memory = "invalid executor memory"
+    spark.executor.memory = "invalid executor memory"
 
-    Example::
+Example::
 
-        spark.executor.memory = "8g"
+    spark.executor.memory = "8g"
 
-    Click on the Spark service then configuration in Cloudera Manager to get executor memory.
+Click on the Spark service then configuration in Cloudera Manager to get executor memory.
 
-    .. image:: ad_inst_IA_1.png
-        :align: center
+.. image:: ad_inst_IA_1.*
+    :align: center
 
 Set the Bind IP Address (Optional)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    If you would like the Intel Analytics server to bind to all ip address and not just localhost update the following lines and follow the commented instructions.
-    This configuration section is also near the top of the file.
-    ::
+If you would like the Intel Analytics server to bind to all ip address and not just localhost
+update the following lines and follow the commented instructions.
+This configuration section is also near the top of the file.
+::
 
-        #bind address - change to 0.0.0.0 to listen on all interfaces
-        //host = "127.0.0.1"
+    #bind address - change to 0.0.0.0 to listen on all interfaces
+    //host = "127.0.0.1"
 
 Updating the Spark Class Path
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -502,9 +505,12 @@ If it isn't already set, add::
 
     export SPARK_CLASSPATH="/usr/lib/intelanalytics/graphbuilder/lib/*"
     
+.. image:: ad_inst_IA_2.*
+    :align: center
+
 then restart the Spark service.
 
-.. image:: ad_inst_IA_2.png
+.. image:: ad_inst_IA_3.*
     :align: center
 
 -------------------------------------------
@@ -522,7 +528,8 @@ After setting up the Intel Analytics repositories, run the following command on 
 
     sudo yum -y install intelanalytics-python-rest-client
 
-After installing Intel Analytics Spark deps and Intel Analytics python rest client, you can start the rest server and start submitting requests.
+After installing Intel Analytics Spark deps and Intel Analytics python rest client,
+you can start the rest server and start submitting requests.
 
 
 Starting Intel Analytics Rest Server
@@ -539,8 +546,10 @@ After starting the rest server, you can browse to the host on port 9099 to see i
 Troubleshooting
 ===============
 
-The log files get written to /var/log/intelanalytics/rest-server/output.log or /var/log/intelanalytics/rest-server/application.log.
-If you are having issues starting or running jobs, tail either log to see what error is getting reported while running the task::
+The log files get written to /var/log/intelanalytics/rest-server/output.log or
+/var/log/intelanalytics/rest-server/application.log.
+If you are having issues starting or running jobs, tail either log to see what error is
+getting reported while running the task::
 
     sudo tail -f /var/log/intelanalytics/rest-server/output.log
 
