@@ -1914,7 +1914,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
 
   val entropyDoc = CommandDoc(oneLineSummary = "Calculate Shannon entropy of a column.",
     extendedSummary = Some("""
-    Calculate the Shannon entropy of a column.  The column can be weighted. All data elements of weight <= 0
+    Calculate the Shannon entropy of a column. The column can be weighted. All data elements of weight <= 0
     are excluded from the calculation, as are all data elements whose weight is NaN or infinite.
     If there are no data elements of finite weight > 0, the entropy is zero.
 
@@ -1936,10 +1936,11 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     -------
     >>> entropy = frame.shannon_entropy('data column')
     >>> weighted_entropy = frame.shannon_entropy('data column', 'weight column')
-                           """))
+
+    ..versionadded :: 0.8 """))
 
   val entropyCommand = commandPluginRegistry.registerCommand("dataframe/shannon_entropy",
-    entropyCommandSimple _, numberOfJobs = 3)
+    entropyCommandSimple _, numberOfJobs = 3, doc = Some(entropyDoc))
 
   def entropyCommandSimple(arguments: Entropy, user: UserPrincipal, invocation: SparkInvocation): EntropyReturn = {
     implicit val u = user
@@ -2003,7 +2004,8 @@ class SparkEngine(sparkContextManager: SparkContextManager,
       Documentary  323150
       Talk-Show    265180
 
-   Calculate the top 3 movies weighted by rating.
+   This example calculates the top 3 movies weighted by rating.
+
      >>> top3 = frame.top_k('genre', 3, weights_column='rating')
      >>> top3.inspect()
 
@@ -2013,7 +2015,8 @@ class SparkEngine(sparkContextManager: SparkContextManager,
      Shawshank Redemption  6358.0
      The Dark Knight       5426.0
 
-    Calculate the bottom 3 movie genres in a data frame.
+   This example calculates the bottom 3 movie genres in a data frame.
+
     >>> bottom3 = frame.top_k('genre', -3)
     >>> bottom3.inspect()
 
@@ -2022,10 +2025,11 @@ class SparkEngine(sparkContextManager: SparkContextManager,
        Musical      26
        War          47
        Film-Noir    595
-                           """))
+
+    ..versionadded :: 0.8 """))
 
   val topKCommand =
-    commandPluginRegistry.registerCommand("dataframe/top_k", topKCommandSimple _, numberOfJobs = 3)
+    commandPluginRegistry.registerCommand("dataframe/top_k", topKCommandSimple _, numberOfJobs = 3, doc = Some(topKDoc))
 
   def topKCommandSimple(arguments: TopK, user: UserPrincipal, invocation: SparkInvocation): DataFrame = {
     implicit val u = user
