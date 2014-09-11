@@ -762,7 +762,7 @@ class BigFrame(command_loadable):
 
         """
         try:
-            return self._backend.calculate_quantiles(self, column_name, quantiles)
+            return self._backend.quantiles(self, column_name, quantiles)
         except:
             raise IaError(logger)
 
