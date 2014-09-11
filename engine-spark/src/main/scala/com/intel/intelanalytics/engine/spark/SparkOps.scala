@@ -204,11 +204,13 @@ private[spark] object SparkOps extends Serializable {
         }
       })
 
-      case _ => left.rdd.join(right.rdd).map(t => {
+      case "inner" => left.rdd.join(right.rdd).map(t => {
         val leftValues: Array[Any] = t._2._1
         val rightValues: mutable.ArrayOps[Any] = t._2._2
         leftValues ++ rightValues
       })
+
+      case other: String => throw new IllegalArgumentException(s"Method $other not supported. only support left, right, outer and inner.")
     }
 
     result.asInstanceOf[RDD[Array[Any]]]
