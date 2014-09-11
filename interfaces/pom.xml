@@ -4,6 +4,12 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <artifactId>interfaces</artifactId>
+    <name>interfaces</name>
+    <description>
+        Classes that define the API interface between the API Server and Engine go in the 'interfaces' module.
+
+        Shared code, like that used for reading from the Meta-Store Repository, goes in the 'shared' module.
+    </description>
 
     <packaging>jar</packaging>
 
@@ -13,15 +19,24 @@
         <relativePath>../pom.xml</relativePath>
         <version>0.8.0-SNAPSHOT</version>
     </parent>
-    <build>
 
+    <build>
         <plugins>
             <plugin>
                 <groupId>net.alchim31.maven</groupId>
                 <artifactId>scala-maven-plugin</artifactId>
             </plugin>
+            <plugin>
+                <groupId>org.scalatest</groupId>
+                <artifactId>scalatest-maven-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.scoverage</groupId>
+                <artifactId>maven-scoverage-plugin</artifactId>
+            </plugin>
         </plugins>
     </build>
+
     <dependencies>
         <dependency>
             <groupId>com.intel.ia</groupId>

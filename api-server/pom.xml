@@ -6,22 +6,26 @@
     <artifactId>api-server</artifactId>
     <packaging>jar</packaging>
 
+    <description>
+        Thin REST layer above the Engine.  Converts HTTP requests to AKKA messages that are sent to the Engine.
+
+        Very little business logic should exist here.
+
+        Ideally this module is as small as possible.
+    </description>
+
     <parent>
         <groupId>com.intel.ia</groupId>
         <artifactId>IntelAnalytics</artifactId>
         <relativePath>../pom.xml</relativePath>
         <version>0.8.0-SNAPSHOT</version>
     </parent>
+
     <build>
-        <testSourceDirectory>src/test/scala</testSourceDirectory>
         <plugins>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <version>2.12.4</version>
-                <configuration>
-                    <skipTests>true</skipTests>
-                </configuration>
+                <groupId>net.alchim31.maven</groupId>
+                <artifactId>scala-maven-plugin</artifactId>
             </plugin>
             <plugin>
                 <groupId>org.scalatest</groupId>

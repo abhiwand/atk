@@ -5,6 +5,15 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>engine-spark</artifactId>
     <packaging>jar</packaging>
+    <name>engine-spark</name>
+    <description>
+        This is a Spark implementation of the Engine.  In the future there might be other execution engines
+        for the Engine besides Spark.
+
+        Most business logic goes here.
+
+        The Engine should NOT be aware of REST or HTTP.
+    </description>
 
     <parent>
         <groupId>com.intel.ia</groupId>
@@ -29,6 +38,7 @@
             </plugin>
         </plugins>
     </build>
+
     <dependencies>
 
         <!--START BDA dependencies to our modules-->

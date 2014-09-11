@@ -79,7 +79,7 @@ class DataFrameService(commonDirectives: CommonDirectives, engine: Engine) exten
                   }
                 }
                 case _ =>
-                  onComplete(engine.getFrames(0, ApiServiceConfig.defaultCount)) {
+                  onComplete(engine.getFrames()) {
                     case Success(frames) =>
                       import IADefaultJsonProtocol._
                       implicit val indexFormat = ViewModelJsonImplicits.getDataFramesFormat

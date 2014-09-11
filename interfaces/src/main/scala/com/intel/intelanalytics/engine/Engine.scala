@@ -122,11 +122,15 @@ trait Engine {
 
   */
 
+  def entropy(arguments: Entropy)(implicit user: UserPrincipal): Execution
+
+  def topK(arguments: TopK)(implicit user: UserPrincipal): Execution
+
   def confusionMatrix(arguments: ConfusionMatrix[Long])(implicit user: UserPrincipal): Execution
 
   def groupBy(arguments: FrameGroupByColumn[JsObject, Long])(implicit user: UserPrincipal): Execution
 
-  def getFrames(offset: Int, count: Int)(implicit p: UserPrincipal): Future[Seq[DataFrame]]
+  def getFrames()(implicit p: UserPrincipal): Future[Seq[DataFrame]]
 
   def getFrameByName(name: String)(implicit p: UserPrincipal): Future[Option[DataFrame]]
 
@@ -134,7 +138,7 @@ trait Engine {
 
   def getGraph(id: Identifier): Future[Graph]
 
-  def getGraphs(offset: Int, count: Int)(implicit user: UserPrincipal): Future[Seq[Graph]]
+  def getGraphs()(implicit user: UserPrincipal): Future[Seq[Graph]]
 
   def getGraphByName(name: String)(implicit user: UserPrincipal): Future[Option[Graph]]
 
@@ -146,11 +150,14 @@ trait Engine {
 
   def deleteGraph(graph: Graph): Future[Unit]
 
-  def cumulativeDist(arguments: CumulativeDist[Long])(implicit user: UserPrincipal): Execution
+  def cum_sum(arguments: CumulativeSum)(implicit user: UserPrincipal): Execution
+  def cum_percent(arguments: CumulativePercentSum)(implicit user: UserPrincipal): Execution
+  def tally(arguments: CumulativeCount)(implicit user: UserPrincipal): Execution
+  def tally_percent(arguments: CumulativePercentCount)(implicit user: UserPrincipal): Execution
 
   // Model performance measures
 
-  def classificationMetric(arguments: ClassificationMetric[Long])(implicit user: UserPrincipal): Execution
+  def f_measure(arguments: ClassificationMetric)(implicit user: UserPrincipal): Execution
 
   def ecdf(arguments: ECDF[Long])(implicit user: UserPrincipal): Execution
 
