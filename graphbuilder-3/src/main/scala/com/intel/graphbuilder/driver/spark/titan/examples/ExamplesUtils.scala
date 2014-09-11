@@ -23,6 +23,9 @@
 
 package com.intel.graphbuilder.driver.spark.titan.examples
 
+// $COVERAGE-OFF$
+// This is utility code only, not part of the main product
+
 import java.io.File
 import java.net.InetAddress
 
