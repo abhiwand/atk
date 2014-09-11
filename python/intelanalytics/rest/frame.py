@@ -255,8 +255,12 @@ class FrameBackendRest(object):
             raise ValueError("Invalid number for quantile:" + ','.join(invalid_quantiles))
 
         arguments = {'frame_id': frame._id, "column_name": column_name, "quantiles": quantiles}
-        command = CommandRequest("dataframe/quantiles", arguments)
-        return executor.issue(command)
+        quantiles_reuslt = get_command_output('quantiles', arguments).get('quantiles')
+        result_dict = {}
+        for p in quantiles_reuslt:
+            result_dict[p.get("quantile")] = p.get("value")
+
+        return result_dict
 
     def drop(self, frame, predicate):
         from itertools import ifilterfalse  # use the REST API filter, with a ifilterfalse iterator
