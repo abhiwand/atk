@@ -54,12 +54,12 @@ def get_graph_names():
     Get graph names.
 
     Gets the names of BigGraph objects available for retrieval.
-    
+
     Returns
     -------
     list of string
         A list comprised of the graph names
-        
+
     Examples
     --------
     We have these graphs defined: movies, incomes, virus.
@@ -81,17 +81,17 @@ def get_graph(name):
     Get graph access.
 
     Creates a BigGraph access point to the named graph.
-    
+
     Parameters
     ----------
     name : string
         The name of the graph you are obtaining
-        
+
     Returns
     -------
     graph
         A BigGraph object
-    
+
     Examples
     --------
     We have these graphs defined: movies, incomes, virus.
@@ -121,12 +121,12 @@ def drop_graphs(graphs):
     ----------
     graphs : string or BigGraph
         Either the name of the BigGraph object to delete or the BigGraph object itself
-        
+
     Returns
     -------
     string
         The name of the graph you erased
-    
+
     Examples
     --------
     We have these graphs defined: movies, incomes, virus.
@@ -136,7 +136,7 @@ def drop_graphs(graphs):
 
     my_gone is now a string with the value "incomes"
 
-    .. versionadded:: 0.8
+    .. versionchanged:: 0.8.5
 
     """
     # TODO - Review docstring
@@ -364,7 +364,7 @@ class EdgeRule(Rule):
     Examples
     --------
     ::
-    
+
         rating_edge = EdgeRule('rating', movie_vertex, user_vertex, {'weight': my_frame['score']})
 
     .. versionadded:: 0.8

@@ -18,18 +18,20 @@ See `Cloudera Installation Documentation <http://www.cloudera.com/content/cloude
 Requirements
 ------------
 
-1. RHEL/Centos 6.4 OS
-#. Sudo access is required to install the various Intel Analytics packages since they are installed through Yum and for the editing of root owned configuration files
-#. Cloudera cluster with CDH-5.0.2-p0.13 or CDH-5.0.3-p0.35 with the following services installed and running.
+1.  RHEL/Centos 6.4 OS
+#.  `Sudo access <https://webmail.intel.com/owa/redir.aspx?C=KzTqGHz24kGeV-IC3Go9YsjpsfOfoNEI466Twm5ZVbmw8oVP6h2w_p7KR8kmm3PCgOncDaOzC9Y.&URL=http%3a%2f%2fen.wikipedia.org%2fwiki%2fSudo>`_
+    is required to install the various Intel Analytics packages since they are installed through Yum and
+    for the editing of root owned configuration files
+#.  Cloudera cluster with CDH-5.0.2-p0.13 or CDH-5.0.3-p0.35 with the following services installed and running.
 
-    a. HDFS
-    #. SPARK
-    #. Hbase
-    #. Yarn(MR2)
-    #. Zookeeper
+    a.  HDFS
+    #.  SPARK
+    #.  Hbase
+    #.  Yarn(MR2)
+    #.  Zookeeper
 
-#. Python 2.6 - RHEL/Centos 6.4 ships with python 2.6
-#. `EPEL yum repository <https://fedoraproject.org/wiki/EPEL>`_ -- All the nodes on the cluster must have the EPEL yum repository.
+#.  Python 2.6 - RHEL/Centos 6.4 ships with python 2.6
+#.  `EPEL yum repository <https://fedoraproject.org/wiki/EPEL>`_ -- All the nodes on the cluster must have the EPEL yum repository.
    Adding the EPEL repository is straight forward and can be accomplished with a few simple steps.
 #. Intel Analytics Private Repository Access - if you have not been given AWS access and secret keys you will not be able to install Intel Analytics.
 
@@ -65,44 +67,6 @@ Dependencies
 *   `numpy <https://pypi.python.org/pypi/numpy>`_ >= 1.8.1
 *   `python-bottle <https://pypi.python.org/pypi/bottle>`_ >= 0.12
 *   `python-requests <https://pypi.python.org/pypi/requests>`_ >= 2.2.1
-
-.. ifconfig:: internal_docs
-
-    ------------------- --------------------------- --------------------------- -------------------------
-    Component           Current IAT Version         CDH Version (5.1.0)         Python Version Compatible
-    =================== =========================== =========================== =========================
-    Hadoop              1.2.1                       2.3.0
-    HBase               0.94.12                     0.98.1
-    Yarn                --                          2.3.0
-    ZooKeeper           --                          3.4.5
-    Python              2.6 + 2.7                   2.6 + 2.7
-    Spark               1.0	                        1.0.0
-    Giraph              1.1.0-SNAPSHOT (96968fd)    1.1.0-SNAPSHOT (96968fd)
-    Titan               0.5m1
-    Faunus              0.5m1
-    JDK                 1.7                         1.7
-
-    Python Modules
-    HappyBase           0.7                                                     2.6 + 2.7
-    SciPy               0.13.2                                                  2.6 + 2.7
-    NumPy               1.8.0                                                   2.6 + 2.7
-
-    sympy               0.7.4.1
-    nltk                2.0.4
-    Jinja2              2.7.2
-    tornado             3.2
-    mrjob               0.4.2
-    matplotlib          1.3.1
-    pandas              0.12.0
-    pyzmq               14.0.1
-    pyjavaproperties    0.6
-    mock                1.0.1
-    nose                1.3.0
-    coverage            3.7.1
-    pydoop              0.11.1
-    virtualenv          1.10.1
-    interval            1.0.0
-    ------------------- --------------------------- --------------------------- -------------------------
 
 Intel Analytics Graph Builder
 =============================
@@ -456,13 +420,14 @@ This is the section you want to look at::
 Configure File System Root
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    In the following line the text "invalid-fsroot-host" should be replaced with the fully qualified domain of your HDFS installation::
+In the following line the text "invalid-fsroot-host" should be replaced with the fully
+qualified domain of your HDFS installation::
 
-        fs.root = "hdfs://invalid-fsroot-host/user/iauser"
-        
-    Example::
+    fs.root = "hdfs://invalid-fsroot-host/user/iauser"
 
-        fs.root = "hdfs://localhost.localdomain/user/iauser" 
+Example::
+
+    fs.root = "hdfs://localhost.localdomain/user/iauser" 
 
 If your Name Node port is not 8020 you can specify it after the host name::
 
@@ -471,13 +436,14 @@ If your Name Node port is not 8020 you can specify it after the host name::
 Configure Zookeeper Host
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-    In the following line replace "invalid-titan-host" with the comma delimited list of fully qualified domain names of all nodes running the zookeeper service::
+In the following line replace "invalid-titan-host" with the comma delimited list of fully
+qualified domain names of all nodes running the zookeeper service::
 
-        titan.load.storage.hostname = "invalid-titan-host"
+    titan.load.storage.hostname = "invalid-titan-host"
 
-    Example::
+Example::
 
-        titan.load.storage.hostname = "localhost.localdomain" 
+    titan.load.storage.hostname = "localhost.localdomain" 
 
 If your zookeeper client port is not 2181 un-comment the following line and replace 2181 with your zookeeper client port::
 
@@ -486,42 +452,43 @@ If your zookeeper client port is not 2181 un-comment the following line and repl
 Configure Spark Master Host
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    Update "invalid-Spark-master" with the fully qualified domain name of the Spark master node::
+Update "invalid-spark-master" with the fully qualified domain name of the Spark master node::
 
-        master = "Spark://localhost.localdomain:7077"
-    
-    Example::
+    master = "spark://localhost.localdomain:7077"
 
-        master = "Spark://localhost.localdomain:7077" 
+Example::
+
+    master = "spark://localhost.localdomain:7077" 
 
 Configure Spark Executor Memory
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    The Spark executor memory needs to be set equal to or less than what is configured in Cloudera Manager.
-    The Cloudera Spark installation will, by default, set the Spark executor memory to 8g, so 8g is usually a safe setting.
-    If have any doubts you can always verify the executor memory in Cloudera manager.
-    ::
+The Spark executor memory needs to be set equal to or less than what is configured in Cloudera Manager.
+The Cloudera Spark installation will, by default, set the Spark executor memory to 8g, so 8g is usually a safe setting.
+If have any doubts you can always verify the executor memory in Cloudera manager.
+::
 
-        spark.executor.memory = "invalid executor memory"
+    spark.executor.memory = "invalid executor memory"
 
-    Example::
+Example::
 
-        spark.executor.memory = "8g"
+    spark.executor.memory = "8g"
 
-    Click on the Spark service then configuration in Cloudera Manager to get executor memory.
+Click on the Spark service then configuration in Cloudera Manager to get executor memory.
 
-    .. image:: ad_inst_IA_1.png
-        :align: center
+.. image:: ad_inst_IA_1.*
+    :align: center
 
 Set the Bind IP Address (Optional)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    If you would like the Intel Analytics server to bind to all ip address and not just localhost update the following lines and follow the commented instructions.
-    This configuration section is also near the top of the file.
-    ::
+If you would like the Intel Analytics server to bind to all ip address and not just localhost
+update the following lines and follow the commented instructions.
+This configuration section is also near the top of the file.
+::
 
-        #bind address - change to 0.0.0.0 to listen on all interfaces
-        //host = "127.0.0.1"
+    #bind address - change to 0.0.0.0 to listen on all interfaces
+    //host = "127.0.0.1"
 
 Updating the Spark Class Path
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -533,14 +500,17 @@ Run the following command to set the Spark class path::
 Follow the prompts and make corrections where necessary.
 
 If you have problems running the script you can update the Spark class path through Cloudera manager.
-If you log into Cloudera manager under the Spark configuration you can find the Spark-conf/Spark-env.sh setting.
+If you log into Cloudera manager under the Spark configuration you can find the spark-conf/spark-env.sh setting.
 If it isn't already set, add::
 
     export SPARK_CLASSPATH="/usr/lib/intelanalytics/graphbuilder/lib/*"
     
+.. image:: ad_inst_IA_2.*
+    :align: center
+
 then restart the Spark service.
 
-.. image:: ad_inst_IA_2.png
+.. image:: ad_inst_IA_3.*
     :align: center
 
 -------------------------------------------
@@ -549,7 +519,7 @@ Starting Intel Analytics Spark Dependencies
 
 After setting up the Intel Analytics repositories, run the following command on every host with a Spark worker::
 
-    sudo yum -y install intelanalytics-Spark-deps
+    sudo yum -y install intelanalytics-spark-deps
 
 Installing Intel Analytics Python Rest Client
 =============================================
@@ -558,7 +528,8 @@ After setting up the Intel Analytics repositories, run the following command on 
 
     sudo yum -y install intelanalytics-python-rest-client
 
-After installing Intel Analytics Spark deps and Intel Analytics python rest client, you can start the rest server and start submitting requests.
+After installing Intel Analytics Spark deps and Intel Analytics python rest client,
+you can start the rest server and start submitting requests.
 
 
 Starting Intel Analytics Rest Server
@@ -575,8 +546,10 @@ After starting the rest server, you can browse to the host on port 9099 to see i
 Troubleshooting
 ===============
 
-The log files get written to /var/log/intelanalytics/rest-server/output.log or /var/log/intelanalytics/rest-server/application.log.
-If you are having issues starting or running jobs, tail either log to see what error is getting reported while running the task::
+The log files get written to /var/log/intelanalytics/rest-server/output.log or
+/var/log/intelanalytics/rest-server/application.log.
+If you are having issues starting or running jobs, tail either log to see what error is
+getting reported while running the task::
 
     sudo tail -f /var/log/intelanalytics/rest-server/output.log
 
