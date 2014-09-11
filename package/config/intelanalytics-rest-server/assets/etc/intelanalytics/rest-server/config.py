@@ -112,7 +112,7 @@ def get_python_exec():
 
     :return: string with the python path exec name
     """
-    return get_arg("What python executable would you like to use? It must be in the path. ", "python", args.python)
+    return get_arg("\nWhat python executable would you like to use? It must be in the path. ", "python", args.python)
 
 
 def select_cluster(clusters, command_line_cluster):
@@ -220,7 +220,7 @@ def find_exported_class_path(spark_config_env_sh):
     :param spark_config_env_sh: all the text from the cloudera manager spark_env.sh
     :return: the entire line containing the exported class path
     """
-    return re.search('export.*SPARK_CLASSPATH=.*', spark_config_env_sh) if spark_config_env_sh else None
+    return re.search('SPARK_CLASSPATH=.*', spark_config_env_sh) if spark_config_env_sh else None
 
 def find_class_path_value(spark_config_env_sh):
     """
@@ -231,7 +231,7 @@ def find_class_path_value(spark_config_env_sh):
     """
 
     #i search all groups after the match to find the one that only has the value
-    find_class_path = re.search('export.*SPARK_CLASSPATH=(\".*\"|[^\r\n]*).*', spark_config_env_sh)
+    find_class_path = re.search('SPARK_CLASSPATH=(\".*\"|[^\r\n]*).*', spark_config_env_sh)
     class_path = None
     #get only the value not the 'export SPARK_CLASSPATH' chaff. find the group that only has the export value
     if find_class_path is not None:
@@ -256,13 +256,13 @@ def create_updated_class_path(current_class_path, spark_env):
 
     if current_class_path is None:
         #if no class path exist append it to the end of the spark_env.sh config
-        spark_class_path="export SPARK_CLASSPATH=\"" + LIB_PATH + "\""
+        spark_class_path="SPARK_CLASSPATH=\"" + LIB_PATH + "\""
         return spark_env + "\n" + spark_class_path
     else:
         #if a class path already exist search and replace the current class path plus our class path in spark_env.sh
         #config
-        spark_class_path="export SPARK_CLASSPATH=\"" + current_class_path + ":" + LIB_PATH + "\""
-        return re.sub('export.*SPARK_CLASSPATH=(\".*\"|[^\r\n]*).*', spark_class_path, spark_env)
+        spark_class_path="SPARK_CLASSPATH=\"" + current_class_path + ":" + LIB_PATH + "\""
+        return re.sub('.*SPARK_CLASSPATH=(\".*\"|[^\r\n]*).*', spark_class_path, spark_env)
 
 
 def poll_commands(service, command_name):
@@ -337,7 +337,7 @@ def update_spark_env(group, spark_config_env_sh):
         print "Setting to: " + updated_class_path
 
         #update the spark-env.sh with our exported class path appended to whatever whas already present in spark-env.sh
-        group.update_config({"spark-conf/spark-env.sh_client_config_safety_valve": updated_class_path})
+        group.update_config({"SPARK_WORKER_role_env_safety_valve": updated_class_path})
         return True
     else:
         #found existing classpath
@@ -351,7 +351,7 @@ def update_spark_env(group, spark_config_env_sh):
             print "No existing Intel Analytics class path found."
             updated_class_path = create_updated_class_path(found_class_path_value, spark_config_env_sh)
             print "Updating to: " + updated_class_path
-            group.update_config({"spark-conf/spark-env.sh_client_config_safety_valve" : updated_class_path})
+            group.update_config({"SPARK_WORKER_role_env_safety_valve" : updated_class_path})
             return True
         else:
             #existing ia classpath
@@ -433,9 +433,10 @@ def get_spark_details(services):
 
     spark_config_master_port, _ = find_config(spark_config_groups, "spark-SPARK_MASTER-BASE", "master_port")
 
-    spark_config_env_sh, group = find_config(spark_config_groups, "spark-GATEWAY-BASE",
-                                   "spark-conf/spark-env.sh_client_config_safety_valve")
-
+    #spark_config_env_sh, group = find_config(spark_config_groups, "spark-GATEWAY-BASE",
+    #                               "spark-conf/spark-env.sh_client_config_safety_valve")
+    spark_config_env_sh, group = find_config(spark_config_groups, "spark-SPARK_WORKER-BASE", "SPARK_WORKER_role_env_safety_valve")
+    print spark_config_env_sh
     updated = update_spark_env(group, spark_config_env_sh)
 
     if updated and True:
