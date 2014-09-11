@@ -242,7 +242,7 @@ class FrameBackendRest(object):
             sys.stderr.write("There were parse errors during load, please see frame.get_error_frame()\n")
             logger.warn("There were parse errors during load, please see frame.get_error_frame()")
 
-    def calculate_quantiles(self, frame, column_name, quantiles):
+    def quantiles(self, frame, column_name, quantiles):
         if isinstance(quantiles, int) or isinstance(quantiles, float) or isinstance(quantiles, long):
             quantiles = [quantiles]
 
@@ -254,8 +254,6 @@ class FrameBackendRest(object):
         if len(invalid_quantiles) > 0:
             raise ValueError("Invalid number for quantile:" + ','.join(invalid_quantiles))
 
-        arguments = {'frame_id': frame._id, "column_name": column_name, "quantiles": quantiles}
-        quantiles_result = execute_update_frame_command('calculate_quantiles', arguments, frame).get('quantiles')
         arguments = {'frame_id': frame._id, "column_name": column_name, "quantiles": quantiles}
         command = CommandRequest("dataframe/quantiles", arguments)
         return executor.issue(command)
