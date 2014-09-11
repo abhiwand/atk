@@ -60,9 +60,9 @@ def get_frame_names():
     --------
     Create two BigFrame objects and get their names::
 
-        my_frame = BigFrame(csv_schema_1, "BigFrame1")
-        your_frame = BigFrame(csv_schema_2, "BigFrame2")
-        frame_names = get_frame_names()
+        my_frame = ia.BigFrame(csv_schema_1, "BigFrame1")
+        your_frame = ia.BigFrame(csv_schema_2, "BigFrame2")
+        frame_names = ia.get_frame_names()
         print frame_names
 
     Result would be::
@@ -97,10 +97,11 @@ def get_frame(name):
 
     Examples
     --------
-    Create a frame *my_frame*; create a BigFrame proxy for it; check that the new BigFrame is equivalent to the original::
+    Create a frame *my_frame*; create a BigFrame proxy for it; check that the new BigFrame is
+    equivalent to the original::
 
-        my_frame = BigFrame(my_csv, "my_frame")
-        your_frame = get_frame("my_frame")
+        my_frame = ia.BigFrame(my_csv, "my_frame")
+        your_frame = ia.get_frame("my_frame")
         print my_frame == your_frame
 
     Result would be::
@@ -142,8 +143,8 @@ def drop_frames(frame):
     --------
     Create a new frame; delete it; print what gets returned from the function::
 
-        my_frame = BigFrame(my_csv, 'my_frame')
-        deleted_frame = drop_frames('my_frame')
+        my_frame = ia.BigFrame(my_csv, 'my_frame')
+        deleted_frame = ia.drop_frames('my_frame')
         print deleted_frame
 
     The result would be::
@@ -185,17 +186,25 @@ class BigFrame(command_loadable):
     if allowed, an "_" character then the name of the data source.
     For example, ``u'frame_e433e25751b6434bae13b6d1c8ab45c1_csv_file'``
 
+    If a string in the csv file starts and ends with a double-quote (") character, the character is stripped
+    off of the data before it is put into the field.
+    Anything, including delimiters, between the double-quote characters is considered part of the string.
+    If the first character after the delimiter is anything other than a double-quote character,
+    the string will be composed of all the characters between the delimiters, including double-quotes.
+    If the first field type is string, leading spaces on each row are considered part of the string.
+    If the last field type is string, trailing spaces on each row are considered part of the string.
+
     Examples
     --------
     Create a BigFrame object; name it "my_frame"::
 
-        g = BigFrame(my_csv_schema, "my_frame")
+        g = ia.BigFrame(my_csv_schema, "my_frame")
 
     A BigFrame object has been created and *g* is its proxy. It brought in the data described by *my_csv_schema*. It is named *my_frame*.
 
     Create an empty frame; name it "your_frame"::
 
-        h = BigFrame(name='your_frame')
+        h = ia.BigFrame(name='your_frame')
 
     A BigFrame object has been created and *h* is its proxy. It has no data yet, but it does have the name *your_frame*.
 
@@ -323,7 +332,7 @@ class BigFrame(command_loadable):
         --------
         Create a BigFrame object from the data described by schema *my_csv*; get the column names::
 
-            my_frame = BigFrame(source='my_csv')
+            my_frame = ia.BigFrame(source='my_csv')
             my_columns = my_frame.column_names
             print my_columns
 
@@ -355,7 +364,7 @@ class BigFrame(command_loadable):
         --------
         Create a frame and give it the name "Flavor Recipes"; read the name back to check it::
 
-            frame = BigFrame(name="Flavor Recipes")
+            frame = ia.BigFrame(name="Flavor Recipes")
             given_name = frame.name
             print given_name
 
@@ -437,7 +446,7 @@ class BigFrame(command_loadable):
         --------
         Given that we have an existing data frame *my_data*, get the BigFrame proxy then the frame schema::
 
-            BF = get_frame('my_data')
+            BF = ia.get_frame('my_data')
             my_schema = BF.schema
             print my_schema
 
@@ -841,7 +850,7 @@ class BigFrame(command_loadable):
         --------
         Build a BigFrame from a csv file with 5 million rows of data; call the frame "cust"::
 
-            my_frame = BigFrame(source="my_data.csv")
+            my_frame = ia.BigFrame(source="my_data.csv")
             my_frame.name("cust")
 
         At this point we have one frame of data, which is now called "cust".
@@ -1550,7 +1559,7 @@ class BigFrame(command_loadable):
         columns : String or iterable of string
             Specify the columns to be included in the result. By default all the columns
             are to be included
-            
+
 
         Returns
         -------

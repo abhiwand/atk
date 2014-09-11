@@ -65,7 +65,7 @@ def get_graph_names():
     We have these graphs defined: movies, incomes, virus.
     Get the graph names::
 
-        my_names = get_graph_names()
+        my_names = ia.get_graph_names()
 
     my_names is now ["incomes", "movies", "virus"]
 
@@ -97,7 +97,7 @@ def get_graph(name):
     We have these graphs defined: movies, incomes, virus.
     Get access to the graph *virus*::
 
-        my_graph = get_graph("virus")
+        my_graph = ia.get_graph("virus")
 
     my_graph is now a BigGraph object with access to the graph *virus*.
 
@@ -116,7 +116,7 @@ def delete_graph(name):
 def drop_graphs(graphs):
     """
     Deletes graphs from backing store.
-    
+
     Parameters
     ----------
     graphs : string or BigGraph
@@ -132,7 +132,7 @@ def drop_graphs(graphs):
     We have these graphs defined: movies, incomes, virus.
     Delete the graph *incomes*::
 
-        my_gone = drop_graphs("incomes")
+        my_gone = ia.drop_graphs("incomes")
 
     my_gone is now a string with the value "incomes"
 
@@ -180,33 +180,6 @@ class Rule(object):
     def _validate_source(source, frame):
         """
         Source: String or BigColumn.
-
-        Checks that source is a BigColumn or a string. If it is neither, it raises an error.
-        If the frame is None, it is assigned the frame from the source.
-        If the frame is named and it differs from the source.frame, it raises an error.
-
-        Parameters
-        ----------
-        source
-            D
-        frame : string
-            D
-
-        Raises
-        ------
-        RuleWithDifferentFramesError()
-        TypeError
-
-        Returns
-        -------
-        string
-            The name of the frame
-
-        Examples
-        --------
-        ::
-
-            Example
 
         .. versionadded:: 0.8
 
@@ -290,8 +263,8 @@ class VertexRule(Rule):
     --------
     ::
 
-        movie_vertex = VertexRule('movie', my_frame['movie'], {'genre': my_frame['genre']})
-        user_vertex = VertexRule('user', my_frame['user'], {'age': my_frame['age_1']})
+        movie_vertex = ia.VertexRule('movie', my_frame['movie'], {'genre': my_frame['genre']})
+        user_vertex = ia.VertexRule('user', my_frame['user'], {'age': my_frame['age_1']})
 
     .. versionadded:: 0.8
 
@@ -365,7 +338,7 @@ class EdgeRule(Rule):
     --------
     ::
 
-        rating_edge = EdgeRule('rating', movie_vertex, user_vertex, {'weight': my_frame['score']})
+        rating_edge = ia.EdgeRule('rating', movie_vertex, user_vertex, {'weight': my_frame['score']})
 
     .. versionadded:: 0.8
 
@@ -449,19 +422,19 @@ class BigGraph(command_loadable):
     'rating' edges::
 
         # create a frame as the source for a graph
-        csv = CsvFile("/movie.csv", schema= [('user', int32),
+        csv = ia.CsvFile("/movie.csv", schema= [('user', int32),
                                             ('vertexType', str),
                                             ('movie', int32),
                                             ('rating', str)])
-        frame = BigFrame(csv)
+        frame = ia.BigFrame(csv)
 
         # define graph parsing rules
-        user = VertexRule("user", frame.user, {"vertexType": frame.vertexType})
-        movie = VertexRule("movie", frame.movie)
-        rates = EdgeRule("rating", user, movie, { "rating": frame.rating }, is_directed = True)
+        user = ia.VertexRule("user", frame.user, {"vertexType": frame.vertexType})
+        movie = ia.VertexRule("movie", frame.movie)
+        rates = ia.EdgeRule("rating", user, movie, { "rating": frame.rating }, is_directed = True)
 
         # create graph
-        graph = BigGraph([user, movie, rates])
+        graph = ia.BigGraph([user, movie, rates])
 
     .. versionadded:: 0.8
 
@@ -504,7 +477,7 @@ class BigGraph(command_loadable):
         --------
         ::
 
-            my_graph = BigGraph( , "my_data")
+            my_graph = ia.BigGraph( , "my_data")
             my_name = my_graph.name
 
         my_name is now a string with the value "my_data"
@@ -532,7 +505,7 @@ class BigGraph(command_loadable):
         --------
         ::
 
-            my_graph = BigGraph()
+            my_graph = ia.BigGraph()
             my_graph.name("my_data")
 
         my_graph is now a BigGraph object with the name "my_data"
@@ -549,9 +522,10 @@ class BigGraph(command_loadable):
 
     def append(self, rules=None):
         """
-        Append frame data to the current graph.  Append updates existing edges and vertices or creates new ones if they
-        do not exist. Vertices are considered the same if their id_key's and id_value's match.  Edges are considered
-        the same if they have the same source Vertex, destination Vertex, and label.
+        Append frame data to the current graph.
+        Append updates existing edges and vertices or creates new ones/ if they do not exist.
+        Vertices are considered the same if their id_key's and id_value's match.
+        Edges are considered the same if they have the same source Vertex, destination Vertex, and label.
 
         Parameters
         ----------
@@ -564,17 +538,17 @@ class BigGraph(command_loadable):
         This example shows appending new user and movie data to an existing graph::
 
             # create a frame as the source for additional data
-            csv = CsvFile("/movie.csv", schema= [('user', int32),
+            csv = ia.CsvFile("/movie.csv", schema= [('user', int32),
                                                 ('vertexType', str),
                                                 ('movie', int32),
                                                 ('rating', str)])
 
-            frame = BigFrame(csv)
+            frame = ia.BigFrame(csv)
 
             # define graph parsing rules
-            user = VertexRule("user", frame.user, {"vertexType": frame.vertexType})
-            movie = VertexRule("movie", frame.movie)
-            rates = EdgeRule("rating", user, movie, { "rating": frame.rating }, is_directed = True)
+            user = ia.VertexRule("user", frame.user, {"vertexType": frame.vertexType})
+            movie = ia.VertexRule("movie", frame.movie)
+            rates = ia.EdgeRule("rating", user, movie, { "rating": frame.rating }, is_directed = True)
 
             # append data from the frame to an existing graph
             graph.append([user, movie, rates])
@@ -582,26 +556,26 @@ class BigGraph(command_loadable):
         This example shows creating a graph from one frame and appending data to it from other frames::
 
             # create a frame as the source for a graph
-            ratingsFrame = BigFrame(CsvFile("/ratings.csv", schema= [('userId', int32),
+            ratingsFrame = ia.BigFrame(ia.CsvFile("/ratings.csv", schema= [('userId', int32),
                                                   ('movieId', int32),
                                                   ('rating', str)]))
 
             # define graph parsing rules
-            user = VertexRule("user", ratingsFrame.userId)
-            movie = VertexRule("movie", ratingsFrame.movieId)
-            rates = EdgeRule("rating", user, movie, { "rating": ratingsFrame.rating }, is_directed = True)
+            user = ia.VertexRule("user", ratingsFrame.userId)
+            movie = ia.VertexRule("movie", ratingsFrame.movieId)
+            rates = ia.EdgeRule("rating", user, movie, { "rating": ratingsFrame.rating }, is_directed = True)
 
             # create graph
-            graph = BigGraph([user, movie, rates])
+            graph = ia.BigGraph([user, movie, rates])
 
             # load additional properties onto the user vertices
-            usersFrame = BigFrame(CsvFile("/users.csv", schema= [('userId', int32), ('name', str), ('age', int32)]))
-            userAdditional = VertexRule("user", usersFrame.userId, {"userName": usersFrame.name, "age": usersFrame.age })
+            usersFrame = ia.BigFrame(ia.CsvFile("/users.csv", schema= [('userId', int32), ('name', str), ('age', int32)]))
+            userAdditional = ia.VertexRule("user", usersFrame.userId, {"userName": usersFrame.name, "age": usersFrame.age })
             graph.append([userAdditional])
 
             # load additional properties onto the movie vertices
-            movieFrame = BigFrame(CsvFile("/movies.csv", schema= [('movieId', int32), ('title', str), ('year', int32)]))
-            movieAdditional = VertexRule("movie", movieFrame.movieId, {"title": movieFrame.title, "year": movieFrame.year })
+            movieFrame = ia.BigFrame(ia.CsvFile("/movies.csv", schema= [('movieId', int32), ('title', str), ('year', int32)]))
+            movieAdditional = ia.VertexRule("movie", movieFrame.movieId, {"title": movieFrame.title, "year": movieFrame.year })
             graph.append([movieAdditional])
 
         .. versionadded:: 0.8
