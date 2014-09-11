@@ -275,11 +275,11 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
     }
   }
 
-  override def getFrames(offset: Int, count: Int)(implicit user: UserPrincipal): Seq[DataFrame] = {
+  override def getFrames()(implicit user: UserPrincipal): Seq[DataFrame] = {
     metaStore.withSession("frame.getFrames") {
       implicit session =>
         {
-          metaStore.frameRepo.scan(offset, count)
+          metaStore.frameRepo.scanAll()
         }
     }
   }
@@ -346,6 +346,18 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
       None
     }
 
+  }
+
+  /**
+   * Automatically generate a name for a frame.
+   *
+   * The frame name comprises of the prefix "frame_", a random uuid, and an optional annotation.
+   *
+   * @param annotation Optional annotation to add to frame name
+   * @return Frame name
+   */
+  def generateFrameName(annotation: Option[String] = None): String = {
+    "frame_" + java.util.UUID.randomUUID().toString + annotation.getOrElse("")
   }
 
 }

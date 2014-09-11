@@ -37,6 +37,8 @@ import spray.json._
 import com.intel.intelanalytics.domain.frame._
 import com.intel.intelanalytics.domain.graph._
 import com.intel.intelanalytics.domain.graph.construction.{ EdgeRule, FrameRule, PropertyRule, ValueRule, VertexRule }
+import com.intel.intelanalytics.domain.graph.{ Graph, GraphLoad, GraphReference, GraphTemplate }
+import com.intel.intelanalytics.domain.query.RowQuery
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 import com.intel.intelanalytics.domain.schema.{ DataTypes, Schema }
 import org.joda.time.DateTime
@@ -175,14 +177,22 @@ object DomainJsonProtocol extends IADefaultJsonProtocol {
   implicit val rowQueryFormat = jsonFormat3(RowQuery[Long])
   implicit val queryResultsFormat = jsonFormat2(QueryPluginResults)
 
-  implicit val cumulativeDistLongFormat = jsonFormat5(CumulativeDist[Long])
+  implicit val cumulativeSumFormat = jsonFormat2(CumulativeSum)
+  implicit val cumulativePercentSumFormat = jsonFormat2(CumulativePercentSum)
+  implicit val cumulativeCountFormat = jsonFormat3(CumulativeCount)
+  implicit val cumulativePercentCountFormat = jsonFormat3(CumulativePercentCount)
 
   implicit val assignSampleFormat = jsonFormat5(AssignSample)
   implicit val calculatePercentilesFormat = jsonFormat3(Quantiles)
 
+  implicit val entropyFormat = jsonFormat3(Entropy)
+  implicit val entropyReturnFormat = jsonFormat1(EntropyReturn)
+
+  implicit val topKFormat = jsonFormat5(TopK)
+
   // model performance formats
 
-  implicit val classificationMetricLongFormat = jsonFormat6(ClassificationMetric[Long])
+  implicit val classificationMetricLongFormat = jsonFormat6(ClassificationMetric)
   implicit val classificationMetricValueLongFormat = jsonFormat1(ClassificationMetricValue)
   implicit val confusionMatrixLongFormat = jsonFormat4(ConfusionMatrix[Long])
   implicit val confusionMatrixValuesLongFormat = jsonFormat1(ConfusionMatrixValues)
@@ -230,6 +240,7 @@ object DomainJsonProtocol extends IADefaultJsonProtocol {
     }
 
   }
+
   implicit object UriFormat extends JsonFormat[URI] {
     override def read(json: JsValue): URI = json match {
       case JsString(value) => new URI(value)

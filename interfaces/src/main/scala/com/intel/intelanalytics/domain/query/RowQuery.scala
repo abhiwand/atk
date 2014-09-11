@@ -32,5 +32,5 @@ package com.intel.intelanalytics.domain.query
  * @tparam Identifier DataType of Primary Key. Will usually be a Long
  */
 case class RowQuery[Identifier](id: Identifier, offset: Long, count: Int) {
-
+  require(count >= 0, s"Bad count value $count. Count must be >= 0.")
 }

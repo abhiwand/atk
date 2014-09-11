@@ -6,6 +6,11 @@
     <artifactId>engine</artifactId>
     <packaging>jar</packaging>
 
+    <description>
+        Not used yet - this will be where the Engine is launched when we move it from inside the API Server to
+        its own process.
+    </description>
+
     <parent>
         <groupId>com.intel.ia</groupId>
         <artifactId>IntelAnalytics</artifactId>
@@ -15,7 +20,18 @@
 
     <build>
         <plugins>
-
+            <plugin>
+                <groupId>net.alchim31.maven</groupId>
+                <artifactId>scala-maven-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.scalatest</groupId>
+                <artifactId>scalatest-maven-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.scoverage</groupId>
+                <artifactId>maven-scoverage-plugin</artifactId>
+            </plugin>
         </plugins>
     </build>
 
