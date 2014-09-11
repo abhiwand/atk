@@ -66,8 +66,11 @@ import com.intel.intelanalytics.domain.graph.Graph
 import com.intel.intelanalytics.domain.frame.ConfusionMatrix
 import com.intel.intelanalytics.domain.FilterPredicate
 import com.intel.intelanalytics.domain.frame.load.Load
+import com.intel.intelanalytics.domain.frame.CumulativeSum
+import com.intel.intelanalytics.domain.frame.CumulativeCount
+import com.intel.intelanalytics.domain.frame.CumulativePercentCount
+import com.intel.intelanalytics.domain.frame.CumulativePercentSum
 import com.intel.intelanalytics.domain.frame.Quantiles
-import com.intel.intelanalytics.domain.frame.CumulativeDist
 import com.intel.intelanalytics.domain.frame.AssignSample
 import com.intel.intelanalytics.domain.frame.FrameGroupByColumn
 import com.intel.intelanalytics.domain.frame.FrameRenameColumns
@@ -1368,14 +1371,133 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     QuantileValues(quantileValues)
   }
 
-  override def classificationMetric(arguments: ClassificationMetric[Long])(implicit user: UserPrincipal): Execution =
-    commands.execute(classificationMetricCommand, arguments, user, implicitly[ExecutionContext])
+  override def f_measure(arguments: ClassificationMetric)(implicit user: UserPrincipal): Execution =
+    commands.execute(f_measureCommand, arguments, user, implicitly[ExecutionContext])
+  val f_measureDoc = CommandDoc(oneLineSummary = "Computes Model accuracy, precision, recall and f_measure (math:`F_{\\beta}`).",
+    extendedSummary = Some("""
+    Based on the *metric_type* argument provided, it computes the accuracy, precision, recall or :math:`F_{\\beta}` measure for a classification model
 
-  val classificationMetricCommand: CommandPlugin[ClassificationMetric[Long], ClassificationMetricValue] = commandPluginRegistry.registerCommand("dataframe/classification_metric", classificationMetricSimple _)
+    --- When metric_type provided is 'f_measure': Computes the :math:`F_{\\beta}` measure for a classification model.
+    A column containing the correct labels for each instance and a column containing the predictions made by the model are specified.
+    The :math:`F_{\\beta}` measure of a binary classification model is the harmonic mean of precision and recall.
+    If we let:
 
-  def classificationMetricSimple(arguments: ClassificationMetric[Long], user: UserPrincipal, invocation: SparkInvocation): ClassificationMetricValue = {
+    * beta :math:`\\equiv \\beta`,
+    * :math:`T_{P}` denote the number of true positives,
+    * :math:`F_{P}` denote the number of false positives, and
+    * :math:`F_{N}` denote the number of false negatives,
+
+    then:
+    .. math::
+      F_{\\beta} = \\left(1 + \\beta ^ 2\\right) * \\frac{\\frac{T_{P}}{T_{P} + F_{P}} * \\frac{T_{P}}{T_{P} + F_{N}}}{\\beta ^ 2 * \\
+      \\left(\\frac{T_{P}}{T_{P} + F_{P}} + \\frac{T_{P}}{T_{P} + F_{N}}\\right)}
+
+    For multi-class classification, the :math:`F_{\\beta}` measure is computed as the weighted average of the :math:`F_{\\beta}` measure
+    for each label, where the weight is the number of instance with each label in the labeled column.  The
+    determination of binary vs. multi-class is automatically inferred from the data.
+
+    --- When metric_type provided is 'recall': Computes the recall measure for a classification model.
+    A column containing the correct labels for each instance and a column containing the predictions made by the model are specified.
+    The recall of a binary classification model is the proportion of positive instances that are correctly identified.
+    If we let :math:`T_{P}` denote the number of true positives and :math:`F_{N}` denote the number of false
+    negatives, then the model recall is given by: :math:`\\frac {T_{P}} {T_{P} + F_{N}}`.
+
+    For multi-class classification, the recall measure is computed as the weighted average of the recall
+    for each label, where the weight is the number of instance with each label in the labeled column.  The
+    determination of binary vs. multi-class is automatically inferred from the data.
+
+    --- When metric_type provided is 'precision': Computes the precision measure for a classification model
+    A column containing the correct labels for each instance and a column containing the predictions made by the
+    model are specified.  The precision of a binary classification model is the proportion of predicted positive
+    instances that are correct.  If we let :math:`T_{P}` denote the number of true positives and :math:`F_{P}` denote the number of false
+    positives, then the model precision is given by: :math:`\\frac {T_{P}} {T_{P} + F_{P}}`.
+
+    For multi-class classification, the precision measure is computed as the weighted average of the precision
+    for each label, where the weight is the number of instances with each label in the labeled column.  The
+    determination of binary vs. multi-class is automatically inferred from the data.
+
+    --- When metric_type provided is 'accuracy': Computes the accuracy measure for a classification model
+    A column containing the correct labels for each instance and a column containing the predictions made by the classifier are specified.
+    The accuracy of a classification model is the proportion of predictions that are correct.
+    If we let :math:`T_{P}` denote the number of true positives, :math:`T_{N}` denote the number of true negatives, and :math:`K`
+    denote the total number of classified instances, then the model accuracy is given by: :math:`\\frac{T_{P} + T_{N}}{K}`.
+
+    This measure applies to binary and multi-class classifiers.
+
+
+    Parameters
+    ----------
+    metric_type : str
+      the model that is to be computed
+    label_column : str
+      the name of the column containing the correct label for each instance
+    pred_column : str
+      the name of the column containing the predicted label for each instance
+    pos_label : str
+      the value to be interpreted as a positive instance (only for binary, ignored for multi-class)
+    beta : float
+      beta value to use for :math:`F_{\\beta}` measure (default F1 measure is computed); must be greater than zero
+
+    Returns
+    -------
+    float64
+    the measure for the classifier
+
+    Examples
+    --------
+    Consider the following sample data set in *frame* with actual data labels specified in the *labels* column and
+    the predicted labels in the *predictions* column::
+
+    frame.inspect()
+
+    a:unicode   b:int32   labels:int32  predictions:int32
+    |-------------------------------------------------------|
+    red               1              0                  0
+    blue              3              1                  0
+    blue              1              0                  0
+    green             0              1                  1
+
+    frame.f_measure('f_measure', 'labels', 'predictions', '1', 1)
+
+    0.66666666666666663
+
+    frame.f_measure('f_measure', 'labels', 'predictions', '1', 2)
+
+    0.55555555555555558
+
+    frame.f_measure('f_measure', 'labels', 'predictions', '0', 1)
+
+    0.80000000000000004
+
+
+    frame.f_measure('recall', 'labels', 'predictions', '1', 1)
+
+    0.5
+
+    frame.f_measure('recall', 'labels', 'predictions', '0', 1)
+
+    1.0
+
+
+    frame.f_measure('precision', 'labels', 'predictions', '1', 1)
+
+    1.0
+
+    frame.f_measure('precision', 'labels', 'predictions', '0', 1)
+
+    0.66666666666666663
+
+
+    frame.f_measure('accuracy', 'labels', 'predictions', '1', 1)
+
+    0.75
+
+    .. versionadded:: 0.8  """))
+  val f_measureCommand: CommandPlugin[ClassificationMetric, ClassificationMetricValue] = commandPluginRegistry.registerCommand("dataframe/f_measure", f_measureSimple _, doc = Some(f_measureDoc))
+
+  def f_measureSimple(arguments: ClassificationMetric, user: UserPrincipal, invocation: SparkInvocation): ClassificationMetricValue = {
     implicit val u = user
-    val frameId: Long = arguments.frameId
+    val frameId = arguments.frame.id
     val realFrame: DataFrame = getDataFrameById(frameId)
 
     val ctx = invocation.sparkContext
@@ -1453,14 +1575,66 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     newFrame.copy(schema = Schema(allColumns))
   }
 
-  override def cumulativeDist(arguments: CumulativeDist[Long])(implicit user: UserPrincipal): Execution =
-    commands.execute(cumulativeDistCommand, arguments, user, implicitly[ExecutionContext])
-
-  val cumulativeDistCommand = commandPluginRegistry.registerCommand("dataframe/cumulative_dist", cumulativeDistSimple _)
-
-  def cumulativeDistSimple(arguments: CumulativeDist[Long], user: UserPrincipal, invocation: SparkInvocation) = {
+  override def tally_percent(arguments: CumulativePercentCount)(implicit user: UserPrincipal): Execution =
+    commands.execute(cumulativePercentCountCommand, arguments, user, implicitly[ExecutionContext])
+  val tallyPercentDoc = CommandDoc(oneLineSummary = "Computes a cumulative percent count.",
+    extendedSummary = Some("""
+                             |Compute a cumulative percent count.
+                             |
+                             |        A cumulative percent count is computed by sequentially stepping through the column values and keeping track of
+                             |        the current percentage of the total number of times the specified *count_value* has been seen up to the current
+                             |        value.
+                             |
+                             |        Parameters
+                             |        ----------
+                             |        sample_col : string
+                             |            The name of the column from which to compute the cumulative sum
+                             |        count_value : string
+                             |            The column value to be used for the counts
+                             |
+                             |        Returns
+                             |        -------
+                             |        BigFrame
+                             |            A new object accessing a new frame containing the original columns appended with a column containing the cumulative percent counts
+                             |
+                             |        Examples
+                             |        --------
+                             |        Consider BigFrame *my_frame*, which accesses a frame that contains a single column named *obs*::
+                             |
+                             |            my_frame.inspect()
+                             |
+                             |             obs int32
+                             |            |---------|
+                             |               0
+                             |               1
+                             |               2
+                             |               0
+                             |               1
+                             |               2
+                             |
+                             |        The cumulative percent count for column *obs* is obtained by::
+                             |
+                             |            cpc_frame = my_frame.cumulative_percent_count('obs', 1)
+                             |
+                             |        The BigFrame *cpc_frame* accesses a new frame that contains two columns, *obs* that contains the original column values, and
+                             |        *obsCumulativePercentCount* that contains the cumulative percent count::
+                             |
+                             |            cpc_frame.inspect()
+                             |
+                             |             obs int32   obsCumulativePercentCount float64
+                             |            |---------------------------------------------|
+                             |               0                          0.0
+                             |               1                          0.5
+                             |               2                          0.5
+                             |               0                          0.5
+                             |               1                          1.0
+                             |               2                          1.0
+                             |
+                             |        .. versionadded:: 0.8 """.stripMargin))
+  val cumulativePercentCountCommand = commandPluginRegistry.registerCommand("dataframe/tally_percent", cumulativePercentCountSimple _, doc = Some(tallyPercentDoc))
+  def cumulativePercentCountSimple(arguments: CumulativePercentCount, user: UserPrincipal, invocation: SparkInvocation) = {
     implicit val u = user
-    val frameId: Long = arguments.frameId
+    val frameId = arguments.frame.id
     val realFrame = expectFrame(frameId)
 
     val ctx = invocation.sparkContext
@@ -1469,15 +1643,251 @@ class SparkEngine(sparkContextManager: SparkContextManager,
 
     val sampleIndex = realFrame.schema.columnIndex(arguments.sampleCol)
 
-    val newFrame = Await.result(create(DataFrameTemplate(arguments.name, None)), SparkEngineConfig.defaultTimeout)
+    val newFrame = Await.result(create(DataFrameTemplate(realFrame.name, None)), SparkEngineConfig.defaultTimeout)
 
-    val (cumulativeDistRdd, columnName) = arguments.distType match {
-      case "cumulative_sum" => (CumulativeDistFunctions.cumulativeSum(frameRdd, sampleIndex), "_cumulative_sum")
-      case "cumulative_count" => (CumulativeDistFunctions.cumulativeCount(frameRdd, sampleIndex, arguments.countValue), "_cumulative_count")
-      case "cumulative_percent_sum" => (CumulativeDistFunctions.cumulativePercentSum(frameRdd, sampleIndex), "_cumulative_percent_sum")
-      case "cumulative_percent_count" => (CumulativeDistFunctions.cumulativePercentCount(frameRdd, sampleIndex, arguments.countValue), "_cumulative_percent_count")
-      case _ => throw new IllegalArgumentException("Invalid distType specified")
-    }
+    val (cumulativeDistRdd, columnName) = (CumulativeDistFunctions.cumulativePercentCount(frameRdd, sampleIndex, arguments.countVal), "_cumulative_percent_count")
+
+    val frameSchema = realFrame.schema
+    val allColumns = frameSchema.columns :+ (arguments.sampleCol + columnName, DataTypes.float64)
+
+    frames.saveFrame(newFrame, new FrameRDD(new Schema(allColumns), cumulativeDistRdd))
+
+    newFrame.copy(schema = Schema(allColumns))
+  }
+
+  override def tally(arguments: CumulativeCount)(implicit user: UserPrincipal): Execution =
+    commands.execute(cumulativeCountCommand, arguments, user, implicitly[ExecutionContext])
+  val tallyDoc = CommandDoc(oneLineSummary = "Computes a cumulative count.",
+    extendedSummary = Some("""
+        Compute a cumulative count.
+
+        A cumulative count is computed by sequentially stepping through the column values and keeping track of the
+        the number of times the specified *count_value* has been seen up to the current value.
+
+        Parameters
+        ----------
+        sample_col : string
+            The name of the column from which to compute the cumulative count
+        count_value : string
+            The column value to be used for the counts
+
+        Returns
+        -------
+        BigFrame
+            A new object accessing a new frame containing the original columns appended with a column containing the cumulative counts
+
+        Examples
+        --------
+        Consider BigFrame *my_frame*, which accesses a frame that contains a single column *obs*::
+
+            my_frame.inspect()
+
+             obs int32
+             |---------|
+               0
+               1
+               2
+               0
+               1
+               2
+
+        The cumulative count for column *obs* using *count_value = 1* is obtained by::
+
+            cc_frame = my_frame.cumulative_count('obs', '1')
+
+        The BigFrame *cc_frame* accesses a frame which contains two columns *obs* and *obsCumulativeCount*.
+        Column *obs* still has the same data and *obsCumulativeCount* contains the cumulative counts::
+
+            cc_frame.inspect()
+
+             obs int32   obsCumulativeCount int32
+             |------------------------------------|
+               0                          0
+               1                          1
+               2                          1
+               0                          1
+               1                          2
+               2                          2
+
+        .. versionadded:: 0.8 """))
+  val cumulativeCountCommand = commandPluginRegistry.registerCommand("dataframe/tally", cumulativeCountSimple _, doc = Some(tallyDoc))
+  def cumulativeCountSimple(arguments: CumulativeCount, user: UserPrincipal, invocation: SparkInvocation) = {
+    implicit val u = user
+    val frameId = arguments.frame.id
+    val realFrame = expectFrame(frameId)
+
+    val ctx = invocation.sparkContext
+
+    val frameRdd = frames.loadFrameRdd(ctx, frameId)
+
+    val sampleIndex = realFrame.schema.columnIndex(arguments.sampleCol)
+
+    val newFrame = Await.result(create(DataFrameTemplate(realFrame.name, None)), SparkEngineConfig.defaultTimeout)
+
+    val (cumulativeDistRdd, columnName) = (CumulativeDistFunctions.cumulativeCount(frameRdd, sampleIndex, arguments.countVal), "_cumulative_count")
+
+    val frameSchema = realFrame.schema
+    val allColumns = frameSchema.columns :+ (arguments.sampleCol + columnName, DataTypes.float64)
+
+    frames.saveFrame(newFrame, new FrameRDD(new Schema(allColumns), cumulativeDistRdd))
+
+    newFrame.copy(schema = Schema(allColumns))
+  }
+
+  override def cum_percent(arguments: CumulativePercentSum)(implicit user: UserPrincipal): Execution =
+    commands.execute(cumulativePercentSumCommand, arguments, user, implicitly[ExecutionContext])
+  val cumPercentDoc = CommandDoc(oneLineSummary = "Computes a cumulative percent sum.",
+    extendedSummary = Some("""
+    Compute a cumulative percent sum.
+
+    A cumulative percent sum is computed by sequentially stepping through the column values and keeping track of the
+    current percentage of the total sum accounted
+    for at the current value.
+
+    Parameters
+    ----------
+    sample_col: string
+      The name of the column from which to compute the cumulative percent sum
+
+    Returns
+    -------
+    BigFrame
+      A new object accessing a new frame containing the original columns appended with a column containing the cumulative percent sums
+
+    Notes
+    -----
+      This function applies only to columns containing numerical data.
+
+    Examples
+    --------
+    Consider BigFrame * my_frame * accessing a frame that contains a single column named * obs *::
+
+        my_frame.inspect()
+
+        obs int32
+        |---------|
+          0
+          1
+          2
+          0
+          1
+          2
+
+    The cumulative percent sum for column * obs * is obtained by ::
+
+    cps_frame = my_frame.cumulative_percent_sum('obs')
+
+    The new frame accessed by BigFrame * cps_frame * contains two columns * obs * and * obsCumulativePercentSum *.
+    They contain the original data and the cumulative percent sum, respectively ::
+
+        cps_frame.inspect()
+
+        obs int32 obsCumulativePercentSum float64
+        |-------------------------------------------|
+          0 0.0
+          1 0.16666666
+          2 0.5
+          0 0.5
+          1 0.66666666
+          2 1.0
+
+      ..versionadded :: 0.8 """))
+  val cumulativePercentSumCommand = commandPluginRegistry.registerCommand("dataframe/cum_percent", cumulativePercentSumSimple _, doc = Some(cumPercentDoc))
+  def cumulativePercentSumSimple(arguments: CumulativePercentSum, user: UserPrincipal, invocation: SparkInvocation) = {
+    implicit val u = user
+    val frameId = arguments.frame.id
+    val realFrame = expectFrame(frameId)
+
+    val ctx = invocation.sparkContext
+
+    val frameRdd = frames.loadFrameRdd(ctx, frameId)
+
+    val sampleIndex = realFrame.schema.columnIndex(arguments.sampleCol)
+
+    val newFrame = Await.result(create(DataFrameTemplate(realFrame.name, None)), SparkEngineConfig.defaultTimeout)
+
+    val (cumulativeDistRdd, columnName) = (CumulativeDistFunctions.cumulativePercentSum(frameRdd, sampleIndex), "_cumulative_percent_sum")
+
+    val frameSchema = realFrame.schema
+    val allColumns = frameSchema.columns :+ (arguments.sampleCol + columnName, DataTypes.float64)
+
+    frames.saveFrame(newFrame, new FrameRDD(new Schema(allColumns), cumulativeDistRdd))
+
+    newFrame.copy(schema = Schema(allColumns))
+  }
+
+  override def cum_sum(arguments: CumulativeSum)(implicit user: UserPrincipal): Execution =
+    commands.execute(cumulativeSumCommand, arguments, user, implicitly[ExecutionContext])
+  val cumSumDoc = CommandDoc(oneLineSummary = "Computes a cumulative sum.",
+    extendedSummary = Some("""
+        Compute a cumulative sum.
+
+        A cumulative sum is computed by sequentially stepping through the column values and keeping track of the current
+        cumulative sum for each value.
+
+        Parameters
+        ----------
+        sample_col : string
+            The name of the column from which to compute the cumulative sum
+
+        Returns
+        -------
+        BigFrame
+            A new object accessing a frame containing the original columns appended with a column containing the cumulative sums
+
+        Notes
+        -----
+        This function applies only to columns containing numerical data.
+
+        Examples
+        --------
+        Consider BigFrame *my_frame*, which accesses a frame that contains a single column named *obs*::
+
+             my_frame.inspect()
+
+             obs int32
+             |---------|
+               0
+               1
+               2
+               0
+               1
+               2
+
+        The cumulative percent count for column *obs* is obtained by::
+
+            cs_frame = my_frame.cumulative_percent_count('obs', 1)
+
+        The BigFrame *cs_frame* accesses a new frame that contains two columns, *obs* that contains the original column values, and
+        *obsCumulativeSum* that contains the cumulative percent count::
+
+            cs_frame.inspect()
+
+             obs int32   obsCumulativeSum int32
+             |----------------------------------|
+               0                     0
+               1                     1
+               2                     3
+               0                     3
+               1                     4
+               2                     6
+
+        .. versionadded:: 0.8 """))
+  val cumulativeSumCommand = commandPluginRegistry.registerCommand("dataframe/cum_sum", cumulativeSumSimple _, doc = Some(cumSumDoc))
+  def cumulativeSumSimple(arguments: CumulativeSum, user: UserPrincipal, invocation: SparkInvocation) = {
+    implicit val u = user
+    val frameId = arguments.frame.id
+    val realFrame = expectFrame(frameId)
+
+    val ctx = invocation.sparkContext
+
+    val frameRdd = frames.loadFrameRdd(ctx, frameId)
+
+    val sampleIndex = realFrame.schema.columnIndex(arguments.sampleCol)
+
+    val newFrame = Await.result(create(DataFrameTemplate(realFrame.name, None)), SparkEngineConfig.defaultTimeout)
+
+    val (cumulativeDistRdd, columnName) = (CumulativeDistFunctions.cumulativeSum(frameRdd, sampleIndex), "_cumulative_sum")
 
     val frameSchema = realFrame.schema
     val allColumns = frameSchema.columns :+ (arguments.sampleCol + columnName, DataTypes.float64)

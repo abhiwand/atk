@@ -444,8 +444,6 @@ class FrameBackendRest(object):
         arguments = {'frame': self._get_frame_full_uri(frame), "new_name": name}
         execute_update_frame_command('rename_frame', arguments, frame)
 
-
-
     def take(self, frame, n, offset, columns):
         if n==0:
             return []
@@ -480,30 +478,6 @@ class FrameBackendRest(object):
         arguments = {'frame_id': frame._id, 'name': name, 'sample_col': sample_col, 'data_type': data_type}
         return execute_new_frame_command('ecdf', arguments)
 
-    def classification_metric(self, frame, metric_type, label_column, pred_column, pos_label, beta):
-        # TODO - remove error handling, leave to server (or move to plugin)
-        if metric_type not in ['accuracy', 'precision', 'recall', 'f_measure']:
-            raise ValueError("metric_type must be one of: 'accuracy'")
-        if label_column.strip() == "":
-            raise ValueError("label_column can not be empty string")
-        if pred_column.strip() == "":
-            raise ValueError("pred_column can not be empty string")
-        if str(pos_label).strip() == "":
-            raise ValueError("invalid pos_label")
-        schema_dict = dict(frame.schema)
-        column_names = schema_dict.keys()
-        if not label_column in column_names:
-            raise ValueError("label_column does not exist in frame")
-        if not pred_column in column_names:
-            raise ValueError("pred_column does not exist in frame")
-        if schema_dict[label_column] in [float32, float64]:
-            raise ValueError("invalid label_column types")
-        if schema_dict[pred_column] in [float32, float64]:
-            raise ValueError("invalid pred_column types")
-        if not beta > 0:
-            raise ValueError("invalid beta value for f measure")
-        arguments = {'frame_id': frame._id, 'metric_type': metric_type, 'label_column': label_column, 'pred_column': pred_column, 'pos_label': str(pos_label), 'beta': beta}
-        return get_command_output('classification_metric', arguments).get('metric_value')
     
     def confusion_matrix(self, frame, label_column, pred_column, pos_label):
         if label_column.strip() == "":
@@ -534,21 +508,6 @@ class FrameBackendRest(object):
         formattedMatrix += "         neg | " + str(valueList[2]) + " " * max([maxLength - len(str(valueList[2])), 0]) + "   " + str(valueList[1]) + " " * max([maxLength - len(str(valueList[1])), 0]) + " \n"
 
         return formattedMatrix
-
-    def cumulative_dist(self, frame, sample_col, dist_type, count_value="1"):
-        import numpy as np
-        if not sample_col in frame.column_names:
-            raise ValueError("sample_col does not exist in frame")
-        col_types = dict(frame.schema)
-        if dist_type in ['cumulative_sum', 'cumulative_percent_sum'] and not col_types[sample_col] in [np.float32, np.float64, np.int32, np.int64]:
-            raise ValueError("invalid sample_col type for the specified dist_type")
-        if not dist_type in ['cumulative_sum', 'cumulative_count', 'cumulative_percent_sum', 'cumulative_percent_count']:
-            raise ValueError("invalid distribution type")
-        # TODO: check count_value
-        name = self._get_new_frame_name()
-        arguments = {'frame_id': frame._id, 'name': name, 'sample_col': sample_col, 'dist_type': dist_type, 'count_value': str(count_value)}
-        return execute_new_frame_command('cumulative_dist', arguments)
-
 
 class FrameInfo(object):
     """
