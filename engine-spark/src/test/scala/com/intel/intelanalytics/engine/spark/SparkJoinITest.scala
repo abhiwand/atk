@@ -23,7 +23,7 @@
 
 package com.intel.intelanalytics.engine.spark
 
-import org.scalatest.{ BeforeAndAfterEach, Matchers, FlatSpec }
+import org.scalatest.Matchers
 import com.intel.testutils.TestingSparkContextFlatSpec
 import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.RDD

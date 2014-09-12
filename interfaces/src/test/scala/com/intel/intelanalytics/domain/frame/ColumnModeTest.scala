@@ -21,21 +21,18 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.engine.spark
+package com.intel.intelanalytics.domain.frame
 
-import com.intel.intelanalytics.domain.schema.DataTypes
-import org.scalatest.{ FlatSpec, Matchers }
+import org.scalatest.WordSpec
 
-class FrameAppendTest extends FlatSpec with Matchers {
-  "List[DataTypes]" should "determine which type they will combine into" in {
-    DataTypes.mergeTypes(DataTypes.string :: DataTypes.int32 :: DataTypes.float64 :: Nil) should be(DataTypes.string)
-    DataTypes.mergeTypes(DataTypes.string :: DataTypes.float64 :: Nil) should be(DataTypes.string)
-    DataTypes.mergeTypes(DataTypes.string :: DataTypes.int64 :: DataTypes.float64 :: Nil) should be(DataTypes.string)
-    DataTypes.mergeTypes(DataTypes.int32 :: DataTypes.float64 :: Nil) should be(DataTypes.float64)
-    DataTypes.mergeTypes(DataTypes.int64 :: DataTypes.float32 :: Nil) should be(DataTypes.float64)
-    DataTypes.mergeTypes(DataTypes.int32 :: DataTypes.int64 :: Nil) should be(DataTypes.int64)
-    DataTypes.mergeTypes(DataTypes.int32 :: DataTypes.float32 :: Nil) should be(DataTypes.float32)
-    DataTypes.mergeTypes(DataTypes.int32 :: DataTypes.int32 :: Nil) should be(DataTypes.int32)
+class ColumnModeTest extends WordSpec {
+
+  "ColumnMode" should {
+    "not allow null frame reference" in {
+      intercept[IllegalArgumentException] { ColumnMode(null, "dataColumn", None, None) }
+    }
+    "not allow null dataColumn" in {
+      intercept[IllegalArgumentException] { ColumnMode(FrameReference(1), null, None, None) }
+    }
   }
-
 }

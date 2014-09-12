@@ -188,7 +188,7 @@ object DomainJsonProtocol extends IADefaultJsonProtocol {
   implicit val entropyFormat = jsonFormat3(Entropy)
   implicit val entropyReturnFormat = jsonFormat1(EntropyReturn)
 
-  implicit val topKFormat = jsonFormat5(TopK)
+  implicit val topKFormat = jsonFormat4(TopK)
 
   // model performance formats
 
