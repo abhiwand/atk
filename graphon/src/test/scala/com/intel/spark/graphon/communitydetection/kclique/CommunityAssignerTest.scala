@@ -64,6 +64,10 @@ class CommunityAssignerTest extends FlatSpec with Matchers with TestingSparkCont
 
       val vertexWithAssignedCommunities = CommunityAssigner.run(rddOfRenamedIDWithCommunity, rddOfRenamedIDWithOriginalKClique, sparkContext)
 
+
+    val testSet = vertexWithAssignedCommunities.collect().toSet
+    val desiredSet = rddOfVertexWithCommunityList.collect().toSet
+
       vertexWithAssignedCommunities.collect().toSet shouldEqual rddOfVertexWithCommunityList.collect().toSet
     }
 }
