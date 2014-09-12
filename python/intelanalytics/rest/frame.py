@@ -31,7 +31,6 @@ from intelanalytics.core.orddict import OrderedDict
 from collections import defaultdict, namedtuple
 import json
 import sys
-import codecs
 
 from intelanalytics.core.frame import BigFrame
 from intelanalytics.core.column import BigColumn
@@ -280,12 +279,12 @@ class FrameBackendRest(object):
     def filter(self, frame, predicate):
         from itertools import ifilter
         http_ready_function = prepare_row_function(frame, predicate, ifilter)
-        arguments = {'frame': self._get_frame_full_uri(frame), 'predicate': http_ready_function}
+        arguments = {'frame_id': frame._id, 'predicate': http_ready_function}
         execute_update_frame_command("filter", arguments, frame)
 
     def flatten_column(self, frame, column_name):
         name = self._get_new_frame_name()
-        arguments = {'name': name, 'frame': frame._id, 'column': column_name, 'separator': ',' }
+        arguments = {'name': name, 'frame_id': frame._id, 'column': column_name, 'separator': ',' }
         return execute_new_frame_command('flatten_column', arguments)
 
     def bin_column(self, frame, column_name, num_bins, bin_type='equalwidth', bin_column_name='binned'):
@@ -381,7 +380,7 @@ class FrameBackendRest(object):
         # TODO - fix REST server to accept nulls, for now we'll pass an empty list
         else:
             new_names = list(columns)
-        arguments = {'frame': self._get_frame_full_uri(frame),
+        arguments = {'frame_id': frame._id,
                      'projected_frame': self._get_frame_full_uri(projected_frame),
                      'columns': columns,
                      'new_column_names': new_names}
@@ -415,7 +414,7 @@ class FrameBackendRest(object):
                 raise TypeError("Bad type %s provided in aggregation arguments; expecting an aggregation function or a dictionary of column_name:[func]" % type(arg))
 
         name = self._get_new_frame_name()
-        arguments = {'frame': self._get_frame_full_uri(frame),
+        arguments = {'frame_id': frame._id,
                      'name': name,
                      'group_by_columns': group_by_columns,
                      'aggregations': aggregation_list}
@@ -441,11 +440,11 @@ class FrameBackendRest(object):
         for nn in new_names:
             if nn in current_names:
                 raise ValueError("Cannot use rename to '{0}' because another column already exists with that name".format(nn))
-        arguments = {'frame': self._get_frame_full_uri(frame), "original_names": column_names, "new_names": new_names}
+        arguments = {'frame_id': frame._id, "original_names": column_names, "new_names": new_names}
         execute_update_frame_command('rename_columns', arguments, frame)
 
     def rename_frame(self, frame, name):
-        arguments = {'frame': self._get_frame_full_uri(frame), "new_name": name}
+        arguments = {'frame': frame._id, "new_name": name}
         execute_update_frame_command('rename_frame', arguments, frame)
 
 
@@ -484,30 +483,6 @@ class FrameBackendRest(object):
         arguments = {'frame_id': frame._id, 'name': name, 'sample_col': sample_col, 'data_type': data_type}
         return execute_new_frame_command('ecdf', arguments)
 
-    def classification_metric(self, frame, metric_type, label_column, pred_column, pos_label, beta):
-        # TODO - remove error handling, leave to server (or move to plugin)
-        if metric_type not in ['accuracy', 'precision', 'recall', 'f_measure']:
-            raise ValueError("metric_type must be one of: 'accuracy'")
-        if label_column.strip() == "":
-            raise ValueError("label_column can not be empty string")
-        if pred_column.strip() == "":
-            raise ValueError("pred_column can not be empty string")
-        if str(pos_label).strip() == "":
-            raise ValueError("invalid pos_label")
-        schema_dict = dict(frame.schema)
-        column_names = schema_dict.keys()
-        if not label_column in column_names:
-            raise ValueError("label_column does not exist in frame")
-        if not pred_column in column_names:
-            raise ValueError("pred_column does not exist in frame")
-        if schema_dict[label_column] in [float32, float64]:
-            raise ValueError("invalid label_column types")
-        if schema_dict[pred_column] in [float32, float64]:
-            raise ValueError("invalid pred_column types")
-        if not beta > 0:
-            raise ValueError("invalid beta value for f measure")
-        arguments = {'frame_id': frame._id, 'metric_type': metric_type, 'label_column': label_column, 'pred_column': pred_column, 'pos_label': str(pos_label), 'beta': beta}
-        return get_command_output('classification_metric', arguments).get('metric_value')
     
     def confusion_matrix(self, frame, label_column, pred_column, pos_label):
         if label_column.strip() == "":
@@ -539,20 +514,6 @@ class FrameBackendRest(object):
 
         return formattedMatrix
 
-    def cumulative_dist(self, frame, sample_col, dist_type, count_value="1"):
-        import numpy as np
-        if not sample_col in frame.column_names:
-            raise ValueError("sample_col does not exist in frame")
-        col_types = dict(frame.schema)
-        if dist_type in ['cumulative_sum', 'cumulative_percent_sum'] and not col_types[sample_col] in [np.float32, np.float64, np.int32, np.int64]:
-            raise ValueError("invalid sample_col type for the specified dist_type")
-        if not dist_type in ['cumulative_sum', 'cumulative_count', 'cumulative_percent_sum', 'cumulative_percent_count']:
-            raise ValueError("invalid distribution type")
-        # TODO: check count_value
-        name = self._get_new_frame_name()
-        arguments = {'frame_id': frame._id, 'name': name, 'sample_col': sample_col, 'dist_type': dist_type, 'count_value': str(count_value)}
-        return execute_new_frame_command('cumulative_dist', arguments)
-
 class FrameInfo(object):
     """
     JSON-based Server description of a BigFrame
@@ -566,7 +527,7 @@ class FrameInfo(object):
 
     def __str__(self):
         return '%s "%s"' % (self.id_number, self.name)
-
+    
     def _validate(self):
         try:
             assert self.id_number
@@ -574,13 +535,13 @@ class FrameInfo(object):
             raise RuntimeError("Invalid response from server. Expected Frame info.")
 
     @property
-    def name(self):
-        return self._payload['name']
-
-    @property
     def id_number(self):
         return self._payload['id']
-
+    
+    @property
+    def name(self):
+        return self._payload['name']
+    
     @property
     def ia_uri(self):
         return self._payload['ia_uri']
@@ -696,3 +657,6 @@ def get_command_output(command_name, arguments):
     if (command_info.result.has_key('value') and len(command_info.result) == 1):
         return command_info.result.get('value')
     return command_info.result
+
+
+

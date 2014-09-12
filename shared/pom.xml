@@ -5,6 +5,14 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>shared</artifactId>
     <packaging>jar</packaging>
+    <name>shared (mainly meta-store code)</name>
+
+    <description>
+        This module is for code that needs to be shared between the API Server and Engine (except for interfaces).
+         For example, both the API Server and Engine need to talk with the Meta-Store.
+
+        Classes that define the API interface between the API Server and Engine go in the interfaces module.
+    </description>
 
     <parent>
         <groupId>com.intel.ia</groupId>

@@ -130,7 +130,7 @@ class GraphBackendRest(object):
         return "graph_" + uuid.uuid4().hex + annotation
 
     def rename_graph(self, graph, name):
-        arguments = {'graph': self._get_graph_full_uri(graph), "new name": name}
+        arguments = {'graph': graph._id, "new name": name}
         execute_update_graph_command('rename_graph', arguments,graph)
 
     def get_name(self, graph):
