@@ -200,6 +200,7 @@ private[spark] object SparkOps extends Serializable {
           case (None, Some(rightValues)) => {
             var array: Array[Any] = rightValues
             (1 to left.columnCount).foreach(i => array = null +: array)
+            array
           }
         }
       })

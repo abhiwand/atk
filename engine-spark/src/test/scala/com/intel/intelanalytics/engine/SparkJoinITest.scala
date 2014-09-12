@@ -85,4 +85,25 @@ class SparkJoinITest extends TestingSparkContextFlatSpec with Matchers {
     data(3)._2 shouldBe Array(null, null, 4, "Oman")
   }
 
+  "joinRDDs" should "join two RDD with outer join" in {
+    val id_country_codes = List(Array[Any](1, 354), Array[Any](2, 91), Array[Any](3, 47), Array[Any](5, 50))
+    val id_country_names = List(Array[Any](1, "Iceland"), Array[Any](2, "India"), Array[Any](3, "Norway"), Array[Any](4, "Oman"))
+
+    val countryCode = sparkContext.parallelize(id_country_codes).map(t => SparkOps.createKeyValuePairFromRow(t, List(0))).map { case (keyColumns, data) => (keyColumns(0), data) }
+    val countryNames = sparkContext.parallelize(id_country_names).map(t => SparkOps.createKeyValuePairFromRow(t, List(0))).map { case (keyColumns, data) => (keyColumns(0), data) }
+
+    val result = SparkOps.joinRDDs(RDDJoinParam(countryCode, 2), RDDJoinParam(countryNames, 2), "outer")
+    val sortable = result.map(t => SparkOps.createKeyValuePairFromRow(t, List(0))).map { case (keyColumns, data) => (keyColumns(0), data) }.asInstanceOf[RDD[(Int, Array[Any])]]
+    val sorted = sortable.sortByKey(true)
+
+    val data = sorted.take(5)
+
+    data(0)._2 shouldBe Array(null, null, 4, "Oman")
+    data(1)._2 shouldBe Array(1, 354, 1, "Iceland")
+    data(2)._2 shouldBe Array(2, 91, 2, "India")
+    data(3)._2 shouldBe Array(3, 47, 3, "Norway")
+    data(4)._2 shouldBe Array(5, 50, null, null)
+
+  }
+
 }
