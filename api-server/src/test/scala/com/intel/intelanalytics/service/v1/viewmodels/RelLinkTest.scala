@@ -38,14 +38,12 @@ class RelLinkTest extends FlatSpec with Matchers {
   }
 
   it should "not allow invalid methods" in {
-    try {
-      RelLink("ia-foo", "uri", "WHACK")
-      fail("expected exception not thrown")
-    }
-    catch {
-      case e: IllegalArgumentException => // pass
-      case _: Exception => fail("expected exception not thrown")
-    }
+    intercept[IllegalArgumentException] { RelLink("ia-foo", "uri", "WHACK") }
+  }
 
+  it should "not allow null" in {
+    intercept[IllegalArgumentException] { RelLink(null, "uri", "GET") }
+    intercept[IllegalArgumentException] { RelLink("rel", null, "GET") }
+    intercept[IllegalArgumentException] { RelLink("rel", "uri", null) }
   }
 }
