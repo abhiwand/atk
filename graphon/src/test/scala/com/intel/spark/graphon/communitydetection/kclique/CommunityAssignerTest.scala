@@ -31,7 +31,7 @@ import com.intel.spark.graphon.communitydetection.kclique.CommunityAssigner
 class CommunityAssignerTest extends FlatSpec with Matchers with TestingSparkContextFlatSpec {
 
   trait kCliqueVertexWithCommunityListTest {
-    val renamedIDWithCommunity = List((1001, 1), (1002, 1), (1003, 1), (1004, 2), (1005, 2))
+    val renamedIDWithCommunity = List((1001, 2), (1002, 2), (1003, 2), (1004, 1), (1005, 1))
       .map({ case (renamedID, community) => (renamedID.toLong, community.toLong) })
 
     val renamedIDWithOriginalKClique = List(
@@ -63,10 +63,6 @@ class CommunityAssignerTest extends FlatSpec with Matchers with TestingSparkCont
       val rddOfRenamedIDWithOriginalKClique = sparkContext.parallelize(renamedIDWithOriginalKClique)
 
       val vertexWithAssignedCommunities = CommunityAssigner.run(rddOfRenamedIDWithCommunity, rddOfRenamedIDWithOriginalKClique, sparkContext)
-
-
-    val testSet = vertexWithAssignedCommunities.collect().toSet
-    val desiredSet = rddOfVertexWithCommunityList.collect().toSet
 
       vertexWithAssignedCommunities.collect().toSet shouldEqual rddOfVertexWithCommunityList.collect().toSet
     }
