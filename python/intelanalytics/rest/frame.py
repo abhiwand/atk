@@ -187,7 +187,7 @@ class FrameBackendRest(object):
         if isinstance(data, BigFrame):
             return {'source': { 'source_type': 'dataframe',
                                 'uri': str(data._id)},  # TODO - be consistent about _id vs. uri in these calls
-                    'destination': self._get_frame_full_uri(frame)}
+                    'destination': frame._id}
         raise TypeError("Unsupported data source %s" % type(data))
 
     @staticmethod
@@ -265,7 +265,7 @@ class FrameBackendRest(object):
     def drop(self, frame, predicate):
         from itertools import ifilterfalse  # use the REST API filter, with a ifilterfalse iterator
         http_ready_function = prepare_row_function(frame, predicate, ifilterfalse)
-        arguments = {'frame': self._get_frame_full_uri(frame), 'predicate': http_ready_function}
+        arguments = {'frame': frame._id, 'predicate': http_ready_function}
         execute_update_frame_command("filter", arguments, frame)
 
     def drop_duplicates(self, frame, columns):
@@ -279,7 +279,7 @@ class FrameBackendRest(object):
     def filter(self, frame, predicate):
         from itertools import ifilter
         http_ready_function = prepare_row_function(frame, predicate, ifilter)
-        arguments = {'frame_id': frame._id, 'predicate': http_ready_function}
+        arguments = {'frame': self._get_frame_full_uri(frame), 'predicate': http_ready_function}
         execute_update_frame_command("filter", arguments, frame)
 
     def flatten_column(self, frame, column_name):
@@ -380,7 +380,7 @@ class FrameBackendRest(object):
         # TODO - fix REST server to accept nulls, for now we'll pass an empty list
         else:
             new_names = list(columns)
-        arguments = {'frame_id': frame._id,
+        arguments = {'frame': self._get_frame_full_uri(frame),
                      'projected_frame': self._get_frame_full_uri(projected_frame),
                      'columns': columns,
                      'new_column_names': new_names}
@@ -414,7 +414,7 @@ class FrameBackendRest(object):
                 raise TypeError("Bad type %s provided in aggregation arguments; expecting an aggregation function or a dictionary of column_name:[func]" % type(arg))
 
         name = self._get_new_frame_name()
-        arguments = {'frame_id': frame._id,
+        arguments = {'frame': self._get_frame_full_uri(frame),
                      'name': name,
                      'group_by_columns': group_by_columns,
                      'aggregations': aggregation_list}
@@ -440,7 +440,7 @@ class FrameBackendRest(object):
         for nn in new_names:
             if nn in current_names:
                 raise ValueError("Cannot use rename to '{0}' because another column already exists with that name".format(nn))
-        arguments = {'frame_id': frame._id, "original_names": column_names, "new_names": new_names}
+        arguments = {'frame': self._get_frame_full_uri(frame), "original_names": column_names, "new_names": new_names}
         execute_update_frame_command('rename_columns', arguments, frame)
 
     def rename_frame(self, frame, name):
