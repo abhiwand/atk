@@ -29,4 +29,16 @@ class RocTest extends WordSpec {
       assert(result.numFalsePositives(1) == 110)
     }
   }
+
+  "RocParams" should {
+    "calculate correct size" in {
+      val rocParams = RocParams(List(3, 1, 6))
+      assert(rocParams.size == 3)
+    }
+
+    "calculate correct thresholds" in {
+      val rocParams = RocParams(List(3, 1, 6))
+      assert(rocParams.thresholds == Vector(3, 4, 5))
+    }
+  }
 }
