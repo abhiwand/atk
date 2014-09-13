@@ -419,6 +419,7 @@ This is the section you want to look at::
 
     # END REQUIRED SETTINGS
 
+.. _ad_inst_IA_configure_file_system_root:
 
 Configure File System Root
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
