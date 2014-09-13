@@ -36,16 +36,17 @@ class CsvFile(DataFile):
     Parameters
     ----------
     file_name : string
-        name of data input file.
+        Name of data input file.
+        File must be in the hadoop file system.
         Relative paths are interpreted relative to the intel.analytics.engine.fs.root configuration.
         Absolute paths (beginning with hdfs://..., for example) are also supported.
+        See :ref:`Configure File System Root <ad_inst_IA_configure_file_system_root>`.
     schema : list of tuples of the form (string, type)
-        schema description of the fields for a given line.  It is a list of
-        tuples which describe each field, (field name, field type), where
-        the field name is a string, and file is a supported type
-        (See data_types from the iatypes module)
-        The type ``ignore`` may also be used if the field should be ignored
-        on loads
+        schema description of the fields for a given line.
+        It is a list of tuples which describe each field, (field name, field type),
+        where the field name is a string, and file is a supported type,
+        (See data_types from the iatypes module).
+        The type ``ignore`` may also be used if the field should be ignored on loads.
     delimiter : string (optional)
         string indicator of the delimiter for the fields
     skip_header_lines : int (optional)
@@ -64,6 +65,7 @@ class CsvFile(DataFile):
     Examples
     --------
     For this example, we are going to use a raw data file named "raw_data.csv".
+    The file has been moved to hdfs://localhost.localdomain/user/iauser/.
     It consists of three columns named: *a*, *b*, *c*.
     The columns have the data types: *int32*, *int32*, *str*.
     The fields of data are separated by commas.
@@ -95,7 +97,7 @@ class CsvFile(DataFile):
 
         csv_data = ia.CsvFile("raw_data.csv", csv_schema, skip_header_lines=2)
 
-    For other examples see :ref:`Data Flow <example_files.csvfile>`.
+    For other examples see :ref:`Importing a CSV File <example_files.csvfile>`.
 
     .. versionadded:: 0.8
 
