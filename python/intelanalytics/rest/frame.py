@@ -265,7 +265,7 @@ class FrameBackendRest(object):
     def drop(self, frame, predicate):
         from itertools import ifilterfalse  # use the REST API filter, with a ifilterfalse iterator
         http_ready_function = prepare_row_function(frame, predicate, ifilterfalse)
-        arguments = {'frame': frame._id, 'predicate': http_ready_function}
+        arguments = {'frame': self._get_frame_full_uri(frame), 'predicate': http_ready_function}
         execute_update_frame_command("filter", arguments, frame)
 
     def drop_duplicates(self, frame, columns):
