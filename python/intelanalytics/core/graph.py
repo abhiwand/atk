@@ -447,6 +447,7 @@ class BigGraph(command_loadable):
     def __init__(self, rules=None, name=""):
         try:
             self._id = 0
+            self._ia_uri = None
             if not hasattr(self, '_backend'):
                 self._backend = _get_backend()
             new_graph_name= self._backend.create(self, rules, name)
@@ -466,7 +467,7 @@ class BigGraph(command_loadable):
     @property
     def name(self):
         """
-        Get the name of the current ojbect.
+        Get the name of the current object.
 
         Returns
         -------
@@ -519,6 +520,12 @@ class BigGraph(command_loadable):
         except:
             raise IaError(logger)
 
+    @property
+    def ia_uri(self):
+        try:
+            return self._backend.get_ia_uri(self)
+        except:
+            raise IaError(logger)
 
     def append(self, rules=None):
         """

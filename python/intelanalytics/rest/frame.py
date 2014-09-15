@@ -150,6 +150,9 @@ class FrameBackendRest(object):
     def get_row_count(self, frame):
         return self._get_frame_info(frame).row_count
 
+    def get_ia_uri(self, frame):
+        return self._get_frame_info(frame).ia_uri
+
     def get_repr(self, frame):
         frame_info = self._get_frame_info(frame)
         return "\n".join(['BigFrame "%s"\nrow_count = %d\nschema = ' % (frame_info.name, frame_info.row_count)] +
@@ -184,7 +187,7 @@ class FrameBackendRest(object):
         if isinstance(data, BigFrame):
             return {'source': { 'source_type': 'dataframe',
                                 'uri': str(data._id)},  # TODO - be consistent about _id vs. uri in these calls
-                    'destination': self._get_frame_full_uri(frame)}
+                    'destination': frame._id}
         raise TypeError("Unsupported data source %s" % type(data))
 
     @staticmethod
@@ -296,7 +299,7 @@ class FrameBackendRest(object):
         if not colTypes[column_name] in [np.float32, np.float64, np.int32, np.int64]:
             raise ValueError("unable to bin non-numeric values")
         name = self._get_new_frame_name()
-        arguments = {'name': name, 'frame': frame._id, 'column_name': column_name, 'num_bins': num_bins, 'bin_type': bin_type, 'bin_column_name': bin_column_name}
+        arguments = {'name': name, 'frame_id': frame._id, 'column_name': column_name, 'num_bins': num_bins, 'bin_type': bin_type, 'bin_column_name': bin_column_name}
         return execute_new_frame_command('bin_column', arguments)
 
 
@@ -441,8 +444,10 @@ class FrameBackendRest(object):
         execute_update_frame_command('rename_columns', arguments, frame)
 
     def rename_frame(self, frame, name):
-        arguments = {'frame': self._get_frame_full_uri(frame), "new_name": name}
+        arguments = {'frame': frame._id, "new_name": name}
         execute_update_frame_command('rename_frame', arguments, frame)
+
+
 
     def take(self, frame, n, offset, columns):
         url = 'dataframes/{0}/data?offset={2}&count={1}'.format(frame._id,n, offset)
@@ -520,19 +525,24 @@ class FrameInfo(object):
 
     def __str__(self):
         return '%s "%s"' % (self.id_number, self.name)
+    
     def _validate(self):
         try:
             assert self.id_number
         except KeyError:
-            raise RuntimeError("Invalid response from server.  Expected Frame info.")
+            raise RuntimeError("Invalid response from server. Expected Frame info.")
 
     @property
     def id_number(self):
         return self._payload['id']
-
+    
     @property
     def name(self):
         return self._payload['name']
+    
+    @property
+    def ia_uri(self):
+        return self._payload['ia_uri']
 
     @property
     def schema(self):
@@ -608,6 +618,7 @@ class FrameData:
 
 def initialize_frame(frame, frame_info):
     """Initializes a frame according to given frame_info"""
+    frame._ia_uri = frame_info.ia_uri
     frame._id = frame_info.id_number
     frame._error_frame_id = frame_info.error_frame_id
 
