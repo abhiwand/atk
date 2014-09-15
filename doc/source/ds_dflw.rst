@@ -335,7 +335,7 @@ so when using some Python libraries, be aware that some of them are not designed
 In general, the following functions select rows of data based upon the data in the row.
 For details about row selection based upon its data see :doc:`ds_apir`
 
-.. _example_frame.drop:
+.. _example_frame.drop_rows:
 
 Drop Rows:
 ----------
@@ -347,15 +347,15 @@ Examples:
 
 To drop all rows where column *b* contains a negative number::
 
-    my_frame.drop(lambda row: row['b'] < 0)
+    my_frame.drop_rows(lambda row: row['b'] < 0)
 
 To drop all rows where column *a* is empty::
 
-    my_frame.drop(lambda row: row['a'] is None)
+    my_frame.drop_rows(lambda row: row['a'] is None)
 
 To drop all rows where any column is empty::
 
-    my_frame.drop(lambda row: any([cell is None for cell in row]))
+    my_frame.drop_rows(lambda row: any([cell is None for cell in row]))
 
 .. _example_frame.filter:
 
@@ -481,6 +481,16 @@ Create multiple columns at once by making a function return a list of values for
 
     my_frame.add_columns(lambda row: [abs(row.a), abs(row.b)], [('a_abs', int32), ('b_abs', int32)])
 
+.. _ds_dflw_frame_examine:
+
+Examining the Data
+==================
+
+Let's say we want to get some standard statistical information about *my_frame*.
+We can use the frame function *column_summary_statistics*::
+
+    my_frame.column_summary_statistics()
+
 .. _example_frame.group_by:
 
 Group_by (and Aggregate):
@@ -523,7 +533,6 @@ Aggregation based on columns:
             * *d_sum*
 
 Aggregation based on full row:
-
     Given a frame with columns *a*, and *b*;
     Create a new frame and a Bigframe *gr_data* to access it;
     Group by unique values in columns *a* and *b*;
@@ -535,7 +544,6 @@ Aggregation based on full row:
         agg.count is the only full row aggregation function supported at this time
 
 Aggregation based on both column and row together:
-
     Given a frame with columns *a*, *b*, *c*, and *d*;
     Group by unique values in columns *a* and *b*;
     Count the number of rows in each group and put that value in column *count*:
@@ -764,6 +772,8 @@ For the examples below, we will use a BigFrame *my_frame*, which accesses an arb
     | 00004     | ringo     | 00001     | 2         |
     +-----------+-----------+-----------+-----------+
 
+.. _ds_dflw_building_rules:
+
 Building Rules
 ==============
 
@@ -840,20 +850,22 @@ as shown in example below::
     reports = EdgeRule("worksUnder", employee, manager, { "years": f[“years”]},
         is_directed = True)
 
-Building A Graph
-================
+.. _ds_dflw_building_a_graph:
 
-Now that you have built some rules, let us put them to use and create a graph by calling BigGraph. We will give the graph the
-name “employee_graph”::
+Building a Graph From a Set of Rules
+====================================
+
+Now that you have built some rules, let us put them to use and create a graph by calling BigGraph.
+We will give the graph the name “employee_graph”::
 
     my_graph = BigGraph([employee, manager, reports], “employee_graph”)
 
-The graph is then created in the underlying graph database structure and the access control information is saved into the
-BigGraph object *my_graph*.
-The data is ready to be analyzed using the advanced functionality of the BigGraph API, for example,
-the use of :term:`machine learning` algorithms.
+The graph is then created in the underlying graph database structure and
+the access control information is saved into the BigGraph object *my_graph*.
+The data is ready to be analyzed using the :doc:`ds_ml` algorithms in the BigGraph API.
 
-Similar to what was discussed for BigFrame, what gets returned is not all the data, but a proxy (descriptive pointer) for the data.
+Similar to what was discussed for BigFrame, what gets returned is not all the data,
+but a proxy (descriptive pointer) for the data.
 Commands such as g4 = my_graph will only give you a copy of the proxy, pointing to the same graph.
 
 --------------
