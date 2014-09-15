@@ -19,12 +19,12 @@ private[spark] object TopKRDDFunctions extends Serializable {
    * @param frameRDD RDD for data frame
    * @param dataColumnIndex Index of data column
    * @param k Number of entries to return
-   * @param reverse Return bottom K entries if true, else return top K
+   * @param useBottomK Return bottom K entries if true, else return top K
    * @param weightsColumnIndexOption Option for index of column providing the weights. Must be numerical data.
    * @param weightsTypeOption Option for the datatype of the weights.
    * @return Top (or bottom) K distinct values by count for specified column
    */
-  def topK(frameRDD: RDD[Row], dataColumnIndex: Int, k: Int, reverse: Boolean = false,
+  def topK(frameRDD: RDD[Row], dataColumnIndex: Int, k: Int, useBottomK: Boolean = false,
            weightsColumnIndexOption: Option[Int] = None,
            weightsTypeOption: Option[DataType] = None): RDD[Row] = {
     require(dataColumnIndex >= 0, "label column index must be greater than or equal to zero")
@@ -36,20 +36,20 @@ private[spark] object TopKRDDFunctions extends Serializable {
     val distinctCountRDD = dataWeightPairs.reduceByKey((a, b) => a + b)
 
     //Sort by descending order to get top K
-    val isDescendingSort = !reverse
+    val isDescendingSort = !useBottomK
 
     // Efficiently get the top (or bottom) K entries by first sorting the top (or bottom) K entries in each partition
     // This function uses a tree map instead of a bounded priority queue (despite the added overhead)
     // because we need to keep key-value pairs
     val topKByPartition = distinctCountRDD.mapPartitions(countIterator => {
-      Iterator.single(sortTopKByValue(countIterator, k, isDescendingSort))
+      Iterator(sortTopKByValue(countIterator, k, isDescendingSort))
     }).reduce({ (topPartition1, topPartition2) =>
-      mergeSortedSeqs(topPartition1, topPartition2, isDescendingSort)
+      mergeTopKSortedSeqs(topPartition1, topPartition2, isDescendingSort, k)
     })
 
     // Get the overall top (or bottom) K entries from partitions
     // Works when K*num_partitions fits in memory of single machine.
-    val topRows = topKByPartition.take(k).map(f => Array(f.key, f.value))
+    val topRows = topKByPartition.map(f => Array(f.key, f.value))
     frameRDD.sparkContext.parallelize(topRows)
   }
 
@@ -73,30 +73,24 @@ private[spark] object TopKRDDFunctions extends Serializable {
       if (priorityQueue.size > k) priorityQueue.dequeue()
     })
 
-    priorityQueue.reverse.dequeueAll.toSeq
+    priorityQueue.reverse.dequeueAll
   }
 
   /**
-   * Merge two sorted sequences while maintaining sort order.
+   * Merge two sorted sequences while maintaining sort order, and return topK.
    *
    * @param sortedSeq1 First sorted sequence
    * @param sortedSeq2 Second sorted sequence
    * @param descending Sort in descending order if true, else sort in ascending order
-   * @return Merged sorted sequence
+   * @param k Number of top sorted entries to return
+   * @return Merged sorted sequence with topK entries
    */
-  private def mergeSortedSeqs(sortedSeq1: Seq[CountPair], sortedSeq2: Seq[CountPair],
-                              descending: Boolean = false): Seq[CountPair] = {
+  private def mergeTopKSortedSeqs(sortedSeq1: Seq[CountPair], sortedSeq2: Seq[CountPair],
+                                  descending: Boolean = false, k: Int): Seq[CountPair] = {
+    // Previously tried recursive and non-recursive merge but Scala sort turned out to be the fastest.
+    // Recursive merge was overflowing the stack for large K
     val ordering = if (descending) Ordering[CountPair].reverse else Ordering[CountPair]
+    (sortedSeq1 ++ sortedSeq2).sorted(ordering).take(k)
 
-    (sortedSeq1, sortedSeq2) match {
-      case (seq1, Nil) => seq1
-      case (Nil, seq2) => seq2
-      case (seq1, seq2) => {
-        if (ordering.lteq(seq1.head, seq2.head))
-          seq1.head +: mergeSortedSeqs(seq1.tail, seq2, descending)
-        else
-          seq2.head +: mergeSortedSeqs(seq1, seq2.tail, descending)
-      }
-    }
   }
 }

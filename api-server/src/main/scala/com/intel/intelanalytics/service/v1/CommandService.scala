@@ -166,16 +166,12 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
    * @param xform Argument parser.
    * @param user IMPLICIT. The user running the command.
    * @return Spray Route for command invocation
+   * @deprecated this code path is going away, this is the old way to do it
    */
   def runCommand(uri: Uri, xform: JsonTransform)(implicit user: UserPrincipal): Route = {
     xform.name match {
-      //TODO: genericize function resolution and invocation
-      //case ("graph/load") => runGraphLoad(uri, xform)
-      //case ("graph/ml/als") => runAls(uri, xform)
-      //case ("dataframe/load") => runFrameLoad(uri, xform)
+      // TODO: replace all of these with plugin-style
       case ("dataframe/filter") => runFilter(uri, xform)
-      //case ("dataframe/removecolumn") => runFrameRemoveColumn(uri, xform)
-      //case ("dataframe/rename_frame") => runFrameRenameFrame(uri, xform)
       case ("dataframe/add_columns") => runFrameAddColumns(uri, xform)
       case ("dataframe/project") => runFrameProject(uri, xform)
       case ("dataframe/rename_columns") => runFrameRenameColumns(uri, xform)

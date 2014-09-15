@@ -6,7 +6,8 @@ Physical Machine Configuration
     :local:
 
 The following instructional will walk you through configuring a brand new physical machine from scratch.
-The first section called "Pre-Configuration" and will be a little vague because the configurations here can change from machine to machine.
+The first section called "Pre-Configuration" and will be a little vague because the configurations here
+can change from machine to machine.
 The second section called "Base Configuration" should be pretty identical for all machines.
 
 -----------------
