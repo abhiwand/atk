@@ -10,6 +10,9 @@
     - require: 
       - pkg: yum-s3
 
+yum clean all:
+  cmd.run
+
 yum search intelanalytics:
   cmd.run
 
