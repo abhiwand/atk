@@ -319,8 +319,34 @@ class SparkEngine(sparkContextManager: SparkContextManager,
   val renameColumnsCommand = commandPluginRegistry.registerCommand("dataframe/rename_columns", renameColumnsSimple _)
   def renameColumnsSimple(arguments: FrameRenameColumns[JsObject, Long], user: UserPrincipal, invocation: SparkInvocation) = {
     val frameID = arguments.frame
-    val frame = expectFrame(frameID)
-    frames.renameColumns(frame, arguments.original_names.zip(arguments.new_names))
+    val realFrame = expectFrame(frameID)
+    val newNames = arguments.new_names
+    val schema = realFrame.schema
+    val originalNames = arguments.original_names
+
+    for {
+      i <- 0 until newNames.size
+    } {
+      val column_name = newNames(i)
+      val original_name = originalNames(i)
+      if (schema.columns.indexWhere(columnTuple => columnTuple._1 == column_name) >= 0)
+        throw new IllegalArgumentException(s"Cannot rename because another column already exists with that name: $column_name")
+
+      if (schema.columns.indexWhere(columnTuple => columnTuple._1 == original_name) < 0)
+        throw new IllegalArgumentException(s"Cannot rename because there is no column with that name: $original_name")
+    }
+
+    /**
+     * for cn in column_names:
+     * present = False
+     * for current_name in current_names:
+     * if cn == current_name:
+     * present = True
+     * if not present:
+     * raise ValueError ("Cannot rename because column name '{0}' is not present in current column names".format(cn))
+     */
+
+    frames.renameColumns(realFrame, arguments.original_names.zip(arguments.new_names))
   }
 
   def project(arguments: FrameProject[JsObject, Long])(implicit user: UserPrincipal): Execution =

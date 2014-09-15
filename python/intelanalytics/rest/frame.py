@@ -433,10 +433,6 @@ class FrameBackendRest(object):
             new_names = column_names.values()
             column_names = column_names.keys()
 
-        current_names = frame.column_names
-        for nn in new_names:
-            if nn in current_names:
-                raise ValueError("Cannot use rename to '{0}' because another column already exists with that name".format(nn))
         arguments = {'frame': self._get_frame_full_uri(frame), "original_names": column_names, "new_names": new_names}
         execute_update_frame_command('rename_columns', arguments, frame)
 
