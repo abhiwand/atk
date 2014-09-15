@@ -601,7 +601,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
   val flattenColumnCommand = commandPluginRegistry.registerCommand("dataframe/flatten_column", flattenColumnSimple _)
   def flattenColumnSimple(arguments: FlattenColumn, user: UserPrincipal, invocation: SparkInvocation) = {
     implicit val u = user
-    val frameId: Long = arguments.frameId
+    val frameId: Long = arguments.frameId.id
     val realFrame = expectFrame(frameId)
 
     val ctx = invocation.sparkContext
@@ -1940,7 +1940,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
 
   val entropyDoc = CommandDoc(oneLineSummary = "Calculate Shannon entropy of a column.",
     extendedSummary = Some("""
-    Calculate the Shannon entropy of a column.  The column can be weighted. All data elements of weight <= 0
+    Calculate the Shannon entropy of a column. The column can be weighted. All data elements of weight <= 0
     are excluded from the calculation, as are all data elements whose weight is NaN or infinite.
     If there are no data elements of finite weight > 0, the entropy is zero.
 
@@ -1960,12 +1960,13 @@ class SparkEngine(sparkContextManager: SparkContextManager,
 
     Example
     -------
-    >>> entropy = frame.entropy('data column')
-    >>> weighted_entropy = frame.entropy('data column', 'weight column')
-                           """))
+    >>> entropy = frame.shannon_entropy('data column')
+    >>> weighted_entropy = frame.shannon_entropy('data column', 'weight column')
 
-  val entropyCommand = commandPluginRegistry.registerCommand("dataframe/entropy",
-    entropyCommandSimple _, numberOfJobs = 3)
+    ..versionadded :: 0.8 """))
+
+  val entropyCommand = commandPluginRegistry.registerCommand("dataframe/shannon_entropy",
+    entropyCommandSimple _, numberOfJobs = 3, doc = Some(entropyDoc))
 
   def entropyCommandSimple(arguments: Entropy, user: UserPrincipal, invocation: SparkInvocation): EntropyReturn = {
     implicit val u = user
@@ -1994,7 +1995,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     extendedSummary = Some("""
     Calculate the top (or bottom) K distinct values by count of a column. The column can be weighted.
     All data elements of weight <= 0 are excluded from the calculation, as are all data elements whose weight is NaN or infinite.
-    If there are no data elements of finite weight > 0, the entropy is zero.
+    If there are no data elements of finite weight > 0, then topK is empty.
 
     Parameters
     ----------
@@ -2002,13 +2003,10 @@ class SparkEngine(sparkContextManager: SparkContextManager,
         The column whose top (or bottom) K distinct values are to be calculated
 
     k : int
-        Number of entries to return
-
-    reverse : boolean  (Optional, default=False)
-        Optional. DefIf True, return bottom K, else return top K entries
+        Number of entries to return (If k is negative, return bottom k)
 
     weights_column : str (Optional)
-        The column that provides weights (frequencies) for the entropy calculation.
+        The column that provides weights (frequencies) for the topK calculation.
         Must contain numerical data. Uniform weights of 1 for all items will be used for the calculation if this
         parameter is not provided.
 
@@ -2021,7 +2019,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     -------
     For this example, we calculate the top 5 movie genres in a data frame.
 
-     >>> top5 = frame.topk('genre', 5)
+     >>> top5 = frame.top_k('genre', 5)
      >>> top5.inspect()
 
       genre:str   count:float64
@@ -2032,19 +2030,32 @@ class SparkEngine(sparkContextManager: SparkContextManager,
       Documentary  323150
       Talk-Show    265180
 
-    In this example, we calculate the bottom 3 movie genres in a data frame.
-    >>> bottom3 = frame.topk('genre', 3, reverse=True)
+   This example calculates the top 3 movies weighted by rating.
+
+     >>> top3 = frame.top_k('genre', 3, weights_column='rating')
+     >>> top3.inspect()
+
+     movie:str   count:float64
+     -----------------------------
+     The Godfather         7689.0
+     Shawshank Redemption  6358.0
+     The Dark Knight       5426.0
+
+   This example calculates the bottom 3 movie genres in a data frame.
+
+    >>> bottom3 = frame.top_k('genre', -3)
     >>> bottom3.inspect()
 
        genre:str   count:float64
        ----------------------------
-       Musical      26976
-       War          21067
+       Musical      26
+       War          47
        Film-Noir    595
-                           """))
+
+    ..versionadded :: 0.8 """))
 
   val topKCommand =
-    commandPluginRegistry.registerCommand("dataframe/topk", topKCommandSimple _, numberOfJobs = 3)
+    commandPluginRegistry.registerCommand("dataframe/top_k", topKCommandSimple _, numberOfJobs = 3, doc = Some(topKDoc))
 
   def topKCommandSimple(arguments: TopK, user: UserPrincipal, invocation: SparkInvocation): DataFrame = {
     implicit val u = user
@@ -2060,8 +2071,9 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     val newFrameName = frames.generateFrameName()
 
     val newFrame = Await.result(create(DataFrameTemplate(newFrameName, None)), SparkEngineConfig.defaultTimeout)
-
-    val topRdd = TopKRDDFunctions.topK(frameRdd, columnIndex, arguments.k, arguments.reverse.getOrElse(false))
+    val useBottomK = arguments.k < 0
+    val topRdd = TopKRDDFunctions.topK(frameRdd, columnIndex, Math.abs(arguments.k), useBottomK,
+      weightsColumnIndexOption, weightsDataTypeOption)
 
     val newSchema = Schema(List(
       (arguments.columnName, valueDataType),

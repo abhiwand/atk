@@ -39,6 +39,7 @@ class FrameDecoratorTest extends FlatSpec with Matchers {
     val decoratedFrame = FrameDecorator.decorateEntity(uri, Nil, frame)
     decoratedFrame.id should be(1)
     decoratedFrame.name should be("name")
+    decoratedFrame.ia_uri should be("ia://frame/1")
     decoratedFrame.links.head.uri should be("http://www.example.com/dataframes/1")
   }
 
