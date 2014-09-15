@@ -445,8 +445,6 @@ class FrameBackendRest(object):
         execute_update_frame_command('rename_frame', arguments, frame)
 
     def take(self, frame, n, offset, columns):
-        if n==0:
-            return []
         url = 'dataframes/{0}/data?offset={2}&count={1}'.format(frame._id,n, offset)
         result = executor.query(url)
         schema = FrameSchema.from_strings_to_types(result.schema)
