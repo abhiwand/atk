@@ -988,7 +988,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     commands.execute(filterCommand, arguments, user, implicitly[ExecutionContext])
 
   val filterCommand = commandPluginRegistry.registerCommand("dataframe/filter", filterSimple _, numberOfJobs = 2)
-  def filterSimple(arguments: FilterPredicate[JsObject, Long], user: UserPrincipal, invocation: SparkInvocation) = {
+  def filterSimple(arguments: FilterPredicate[JsObject, Long], user: UserPrincipal, invocation: SparkInvocation): DataFrame = {
     implicit val u = user
     val pyRdd = createPythonRDD(arguments.frame, arguments.predicate, invocation.sparkContext)
 
@@ -1009,7 +1009,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     commands.execute(joinCommand, arguments, user, implicitly[ExecutionContext])
 
   val joinCommand = commandPluginRegistry.registerCommand("dataframe/join", joinSimple _)
-  def joinSimple(arguments: FrameJoin, user: UserPrincipal, invocation: SparkInvocation) = {
+  def joinSimple(arguments: FrameJoin, user: UserPrincipal, invocation: SparkInvocation): DataFrame = {
     implicit val u = user
     def createPairRddForJoin(arguments: FrameJoin, ctx: SparkContext): List[RDD[(Any, Array[Any])]] = {
       val tupleRddColumnIndex: List[(RDD[Rows.Row], Int)] = arguments.frames.map {
@@ -1096,7 +1096,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     Now the frame only has the columns * column_a * and * column_c *.
     For further examples, see: ref: `example_frame.drop_columns`"""))
   val dropColumnsCommand = commandPluginRegistry.registerCommand("dataframe/drop_columns", dropColumnsSimple _, doc = Some(dropColumnsDoc))
-  def dropColumnsSimple(arguments: FrameDropColumns, user: UserPrincipal, invocation: SparkInvocation) = {
+  def dropColumnsSimple(arguments: FrameDropColumns, user: UserPrincipal, invocation: SparkInvocation): DataFrame = {
 
     implicit val u = user
     val ctx = invocation.sparkContext
