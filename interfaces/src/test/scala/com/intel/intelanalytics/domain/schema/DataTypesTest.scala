@@ -21,12 +21,12 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.engine.spark
+package com.intel.intelanalytics.domain.schema
 
-import com.intel.intelanalytics.domain.schema.DataTypes
 import org.scalatest.{ FlatSpec, Matchers }
 
-class FrameAppendTest extends FlatSpec with Matchers {
+class DataTypesTest extends FlatSpec with Matchers {
+
   "List[DataTypes]" should "determine which type they will combine into" in {
     DataTypes.mergeTypes(DataTypes.string :: DataTypes.int32 :: DataTypes.float64 :: Nil) should be(DataTypes.string)
     DataTypes.mergeTypes(DataTypes.string :: DataTypes.float64 :: Nil) should be(DataTypes.string)
@@ -36,6 +36,37 @@ class FrameAppendTest extends FlatSpec with Matchers {
     DataTypes.mergeTypes(DataTypes.int32 :: DataTypes.int64 :: Nil) should be(DataTypes.int64)
     DataTypes.mergeTypes(DataTypes.int32 :: DataTypes.float32 :: Nil) should be(DataTypes.float32)
     DataTypes.mergeTypes(DataTypes.int32 :: DataTypes.int32 :: Nil) should be(DataTypes.int32)
+  }
+
+  "toBigDecimal" should "convert int value" in {
+    val value = 100
+    val bigDecimalVal = DataTypes.toBigDecimal(value)
+    bigDecimalVal.intValue shouldBe value
+  }
+
+  "toBigDecimal" should "convert long value" in {
+    val value: Long = 100
+    val bigDecimalVal = DataTypes.toBigDecimal(value)
+    bigDecimalVal.longValue shouldBe value
+  }
+
+  "toBigDecimal" should "convert float value" in {
+    val value = 100.05f
+    val bigDecimalVal = DataTypes.toBigDecimal(value)
+    bigDecimalVal.floatValue shouldBe value
+  }
+
+  "toBigDecimal" should "convert double value" in {
+    val value = 100.05
+    val bigDecimalVal = DataTypes.toBigDecimal(value)
+    bigDecimalVal.doubleValue shouldBe value
+  }
+
+  "toBigDecimal" should "throw Exception when non-numeric value is passed in" in {
+    val value = "non-numeric"
+    intercept[IllegalArgumentException] {
+      DataTypes.toBigDecimal(value)
+    }
   }
 
 }

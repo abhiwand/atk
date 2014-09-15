@@ -21,13 +21,19 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.engine.spark
+package com.intel.intelanalytics.domain.frame
 
-import com.intel.intelanalytics.engine.ProgressInfo
+import org.scalatest.WordSpec
+import org.scalatest.mock.MockitoSugar
 
-/**
- * Execute when receiving progress update for command
- */
-trait CommandProgressUpdater {
-  def updateProgress(commandId: Long, progressInfo: List[ProgressInfo])
+class ColumnModeTest extends WordSpec with MockitoSugar {
+
+  "ColumnMode" should {
+    "not allow null frame reference" in {
+      intercept[IllegalArgumentException] { ColumnMode(null, "dataColumn", None, None) }
+    }
+    "not allow null dataColumn" in {
+      intercept[IllegalArgumentException] { ColumnMode(mock[FrameReference], null, None, None) }
+    }
+  }
 }

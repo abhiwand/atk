@@ -9,15 +9,15 @@ class UserTest extends FlatSpec {
     new User(1L, None, None, new DateTime, new DateTime)
   }
 
+  it should "not be able to have a null apiKey" in {
+    intercept[IllegalArgumentException] { new User(1L, None, null, new DateTime, new DateTime) }
+  }
+
   it should "not be able to have an empty string apiKey" in {
-    try {
-      new User(1L, None, Some(""), new DateTime, new DateTime)
+    intercept[IllegalArgumentException] { new User(1L, None, Some(""), new DateTime, new DateTime) }
+  }
 
-      fail("The expected IllegalArgumentException was not thrown")
-    }
-    catch {
-      case e: IllegalArgumentException => // expected, test passes
-    }
-
+  it should "have id greater than zero" in {
+    intercept[IllegalArgumentException] { new User(-1L, None, Some("api"), new DateTime, new DateTime) }
   }
 }
