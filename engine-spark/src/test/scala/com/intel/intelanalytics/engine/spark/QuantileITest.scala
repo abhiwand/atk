@@ -26,7 +26,6 @@ package com.intel.intelanalytics.engine.spark
 import org.scalatest.Matchers
 import com.intel.testutils.TestingSparkContextFlatSpec
 import com.intel.intelanalytics.domain.schema.DataTypes
-import scala.collection.mutable.ListBuffer
 import com.intel.intelanalytics.algorithm.Quantile
 
 class QuantileITest extends TestingSparkContextFlatSpec with Matchers {
