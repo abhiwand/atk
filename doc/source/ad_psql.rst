@@ -1,18 +1,18 @@
-============================================
-Building and Running Intel Analytics Toolkit
-============================================
+=================
+Tracking Metadata
+=================
 
 .. contents:: Table of Contents
     :local:
 
-----------------
-Using PostgreSQL
-----------------
-
-By default, our application uses H2, an in-memory database that is lost on application restart.
+By default, the Intel Analytics Toolkit uses H2, an in-memory database that is lost on application restart.
 This is convenient for testing.
 H2 setup is completely automatic.
 No steps below are needed for H2.
+
+----------------
+Using PostgreSQL
+----------------
 
 By default, the Cloudera Manager installs PostgreSQL_ which is used for tracking metadata.
 PostgreSQL is only required if your engine and API server are on different nodes or if you are in a more production
