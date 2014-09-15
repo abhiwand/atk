@@ -622,11 +622,13 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     arguments.binType match {
       case "equalwidth" => {
         val binnedRdd = SparkOps.binEqualWidth(columnIndex, arguments.numBins, rdd)
-        frames.saveFrame(newFrame, new FrameRDD(new Schema(allColumns), binnedRdd))
+        val rowCount = binnedRdd.count()
+        frames.saveFrame(newFrame, new FrameRDD(new Schema(allColumns), binnedRdd), Option(rowCount))
       }
       case "equaldepth" => {
         val binnedRdd = SparkOps.binEqualDepth(columnIndex, arguments.numBins, rdd)
-        frames.saveFrame(newFrame, new FrameRDD(new Schema(allColumns), binnedRdd))
+        val rowCount = binnedRdd.count()
+        frames.saveFrame(newFrame, new FrameRDD(new Schema(allColumns), binnedRdd), Option(rowCount))
       }
       case _ => throw new IllegalArgumentException(s"Invalid binning type: ${arguments.binType.toString()}")
     }
@@ -1570,9 +1572,11 @@ class SparkEngine(sparkContextManager: SparkContextManager,
       case _ => List((arguments.sampleCol, DataTypes.string), (arguments.sampleCol + columnName, DataTypes.float64))
     }
 
-    frames.saveFrame(newFrame, new FrameRDD(new Schema(allColumns), ecdfRdd))
+    val rowCount = ecdfRdd.count()
+    frames.saveFrame(newFrame, new FrameRDD(new Schema(allColumns), ecdfRdd), Option(rowCount))
 
-    newFrame.copy(schema = Schema(allColumns))
+    //newFrame.copy(schema = Schema(allColumns))
+    frames.updateSchema(newFrame, allColumns)
   }
 
   override def tally_percent(arguments: CumulativePercentCount)(implicit user: UserPrincipal): Execution =
@@ -1650,9 +1654,11 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     val frameSchema = realFrame.schema
     val allColumns = frameSchema.columns :+ (arguments.sampleCol + columnName, DataTypes.float64)
 
-    frames.saveFrame(newFrame, new FrameRDD(new Schema(allColumns), cumulativeDistRdd))
+    val rowCount = cumulativeDistRdd.count()
+    frames.saveFrame(newFrame, new FrameRDD(new Schema(allColumns), cumulativeDistRdd), Option(rowCount))
 
-    newFrame.copy(schema = Schema(allColumns))
+    //newFrame.copy(schema = Schema(allColumns))
+    frames.updateSchema(newFrame, allColumns)
   }
 
   override def tally(arguments: CumulativeCount)(implicit user: UserPrincipal): Execution =
@@ -1729,9 +1735,11 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     val frameSchema = realFrame.schema
     val allColumns = frameSchema.columns :+ (arguments.sampleCol + columnName, DataTypes.float64)
 
-    frames.saveFrame(newFrame, new FrameRDD(new Schema(allColumns), cumulativeDistRdd))
+    val rowCount = cumulativeDistRdd.count()
+    frames.saveFrame(newFrame, new FrameRDD(new Schema(allColumns), cumulativeDistRdd), Option(rowCount))
 
-    newFrame.copy(schema = Schema(allColumns))
+    //newFrame.copy(schema = Schema(allColumns))
+    frames.updateSchema(newFrame, allColumns)
   }
 
   override def cum_percent(arguments: CumulativePercentSum)(implicit user: UserPrincipal): Execution =
@@ -1811,9 +1819,11 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     val frameSchema = realFrame.schema
     val allColumns = frameSchema.columns :+ (arguments.sampleCol + columnName, DataTypes.float64)
 
-    frames.saveFrame(newFrame, new FrameRDD(new Schema(allColumns), cumulativeDistRdd))
+    val rowCount = cumulativeDistRdd.count()
+    frames.saveFrame(newFrame, new FrameRDD(new Schema(allColumns), cumulativeDistRdd), Option(rowCount))
 
-    newFrame.copy(schema = Schema(allColumns))
+    //newFrame.copy(schema = Schema(allColumns))
+    frames.updateSchema(newFrame, allColumns)
   }
 
   override def cum_sum(arguments: CumulativeSum)(implicit user: UserPrincipal): Execution =
@@ -1892,9 +1902,11 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     val frameSchema = realFrame.schema
     val allColumns = frameSchema.columns :+ (arguments.sampleCol + columnName, DataTypes.float64)
 
-    frames.saveFrame(newFrame, new FrameRDD(new Schema(allColumns), cumulativeDistRdd))
+    val rowCount = cumulativeDistRdd.count()
+    frames.saveFrame(newFrame, new FrameRDD(new Schema(allColumns), cumulativeDistRdd), Option(rowCount))
 
-    newFrame.copy(schema = Schema(allColumns))
+    //newFrame.copy(schema = Schema(allColumns))
+    frames.updateSchema(newFrame, allColumns)
   }
 
   override def cancelCommand(id: Long)(implicit user: UserPrincipal): Future[Unit] = withContext("se.cancelCommand") {
