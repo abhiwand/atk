@@ -9,5 +9,6 @@ Installation
     ad_inst_cloudera
     ad_inst_IA
     ad_psql
+    ad_ipython
     ad_inst_vm
     ad_plug
