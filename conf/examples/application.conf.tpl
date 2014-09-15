@@ -12,6 +12,12 @@ intel.analytics {
 
     # The host name for the Postgresql database in which the metadata will be stored
     //metastore.connection-postgresql.host = "invalid-postgresql-host"
+    //metastore.connection-postgresql.port = 5432
+    //metastore.connection-postgresql.database = "ia-metastore"
+    //metastore.connection-postgresql.url = "jdbc:postgresql://"${intel.analytics.metastore.connection-postgresql.host}":"${intel.analytics.metastore.connection-postgresql.port}"/"${intel.analytics.metastore.connection-postgresql.database}
+    //metastore.connection-postgresql.username = "iauser"
+    //metastore.connection-postgresql.password = "myPassword"
+
     # This allows the use of an in memory data store. Restarting the rest server will create a fresh database and any
     # data in the h2 DB will be lost
     metastore.connection = ${intel.analytics.metastore.connection-h2}
