@@ -170,47 +170,49 @@ private[spark] object SparkOps extends Serializable {
   def joinRDDs(left: RDDJoinParam, right: RDDJoinParam, how: String): RDD[Array[Any]] = {
 
     val result = how match {
-      case "left" => left.rdd.leftOuterJoin(right.rdd).map(t => {
-        val rightValues: Option[Array[Any]] = t._2._2
-        val leftValues: Array[Any] = t._2._1
-        rightValues match {
-          case s: Some[Array[Any]] => leftValues ++ s.get
-          case None => leftValues ++ (1 to right.columnCount).map(i => null)
-        }
-      })
-
-      case "right" => left.rdd.rightOuterJoin(right.rdd).map(t => {
-        val leftValues: Option[Array[Any]] = t._2._1
-        val rightValues: Array[Any] = t._2._2
-        leftValues match {
-          case s: Some[Array[Any]] => s.get ++ rightValues
-          case None => {
-            var array: Array[Any] = rightValues
-            (1 to left.columnCount).foreach(i => array = null +: array)
-            array
+      case "left" => left.rdd.leftOuterJoin(right.rdd).map {
+        case (_, (leftValues, rightValues)) => {
+          rightValues match {
+            case s: Some[Array[Any]] => leftValues ++ s.get
+            case None => leftValues ++ (1 to right.columnCount).map(i => null)
           }
         }
-      })
+      }
 
-      case "outer" => Spark.fullOuterJoin(left.rdd, right.rdd).map(t => {
-        t._2 match {
-          case (Some(leftValues), Some(rightValues)) => { leftValues ++ rightValues }
-          case (Some(leftValues), None) => {
-            leftValues ++ (1 to right.columnCount).map(i => null)
-          }
-          case (None, Some(rightValues)) => {
-            var array: Array[Any] = rightValues
-            (1 to left.columnCount).foreach(i => array = null +: array)
-            array
+      case "right" => left.rdd.rightOuterJoin(right.rdd).map {
+        case (_, (leftValues, rightValues)) => {
+          leftValues match {
+            case s: Some[Array[Any]] => s.get ++ rightValues
+            case None => {
+              var array: Array[Any] = rightValues
+              (1 to left.columnCount).foreach(i => array = null +: array)
+              array
+            }
           }
         }
-      })
+      }
 
-      case "inner" => left.rdd.join(right.rdd).map(t => {
-        val leftValues: Array[Any] = t._2._1
-        val rightValues: mutable.ArrayOps[Any] = t._2._2
-        leftValues ++ rightValues
-      })
+      case "outer" => Spark.fullOuterJoin(left.rdd, right.rdd).map {
+        case (_, outerJoinResult) => {
+          outerJoinResult match {
+            case (Some(leftValues), Some(rightValues)) => { leftValues ++ rightValues }
+            case (Some(leftValues), None) => {
+              leftValues ++ (1 to right.columnCount).map(i => null)
+            }
+            case (None, Some(rightValues)) => {
+              var array: Array[Any] = rightValues
+              (1 to left.columnCount).foreach(i => array = null +: array)
+              array
+            }
+          }
+        }
+      }
+
+      case "inner" => left.rdd.join(right.rdd).map {
+        case (key, (leftValues, rightValues)) => {
+          leftValues ++ rightValues
+        }
+      }
 
       case other: String => throw new IllegalArgumentException(s"Method $other not supported. only support left, right, outer and inner.")
     }

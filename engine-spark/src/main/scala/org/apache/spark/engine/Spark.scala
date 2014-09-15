@@ -26,8 +26,8 @@ import org.apache.spark.SparkContext._
 object Spark {
 
   /**
-   * This code is taken from Spark source. It will be removed when upgrading to newer
-   * version of Spark which has this method included.
+   * This code is taken from Spark source. https://github.com/apache/spark/pull/1395
+   * It will be removed when upgrading to newer version of Spark which has this method included.
    *
    * Perform a full outer join of `this` and `other`. For each element (k, v) in `this`, the
    * resulting RDD will either contain all pairs (k, (Some(v), Some(w))) for w in `other`, or
