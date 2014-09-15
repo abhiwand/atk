@@ -24,15 +24,16 @@
 package com.intel.intelanalytics.domain.frame
 
 import org.scalatest.WordSpec
+import org.scalatest.mock.MockitoSugar
 
-class ColumnModeTest extends WordSpec {
+class ColumnModeTest extends WordSpec with MockitoSugar {
 
   "ColumnMode" should {
     "not allow null frame reference" in {
       intercept[IllegalArgumentException] { ColumnMode(null, "dataColumn", None, None) }
     }
     "not allow null dataColumn" in {
-      intercept[IllegalArgumentException] { ColumnMode(FrameReference(1), null, None, None) }
+      intercept[IllegalArgumentException] { ColumnMode(mock[FrameReference], null, None, None) }
     }
   }
 }
