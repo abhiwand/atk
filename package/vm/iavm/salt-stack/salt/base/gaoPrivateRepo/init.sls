@@ -10,7 +10,7 @@
     - require: 
       - pkg: yum-s3
 
-yum clean all:
+echo "gaoprivate";yum clean all:
   cmd.run
 
 yum search intelanalytics:
