@@ -6,7 +6,7 @@ class RowParseResultTest extends WordSpec {
 
   "RowParseResult" should {
     "validate correct size of error frames" in {
-      intercept[IllegalArgumentException] {  RowParseResult(parseSuccess = false, Array[Any](1, 2, 3)) }
+      intercept[IllegalArgumentException] { RowParseResult(parseSuccess = false, Array[Any](1, 2, 3)) }
     }
 
     "not throw errors when error frame is correct size" in {
