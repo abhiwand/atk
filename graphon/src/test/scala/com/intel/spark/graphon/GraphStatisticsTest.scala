@@ -76,12 +76,12 @@ class GraphStatisticsTest extends TestingSparkContextWordSpec with Matchers {
 
   private def createVertexWithOneEdge: (Seq[Vertex], Seq[Edge]) = {
     val alice_gbId = new Property("gbId", 10001)
-    val alice = new Vertex(alice_gbId, List(new Property("Name", "Alice")))
+    val alice = new Vertex(alice_gbId, Set(new Property("Name", "Alice")))
 
     val bob_gbId = new Property("gbId", 10002)
-    val bob = new Vertex(bob_gbId, List(new Property("Name", "Bob")))
+    val bob = new Vertex(bob_gbId, Set(new Property("Name", "Bob")))
 
-    val edge1 = new Edge(alice_gbId, bob_gbId, validEdgeLabel, List(new Property("time", 20)))
+    val edge1 = new Edge(alice_gbId, bob_gbId, validEdgeLabel, Set(new Property("time", 20)))
     (Seq(alice, bob), Seq(edge1))
   }
 }

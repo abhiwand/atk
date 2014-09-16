@@ -47,44 +47,44 @@ class VertexSampleITest extends TestingSparkContextWordSpec with Matchers {
     (7, new Property("gbId", 7)),
     (8, new Property("gbId", 8)))
 
-  val inputVertexList = Seq(Vertex(gbIds(1), gbIds(1), Seq(new Property("location", "Oregon"))),
-    Vertex(gbIds(2), gbIds(2), Seq(new Property("location", "Oregon"))),
-    Vertex(gbIds(3), gbIds(3), Seq(new Property("location", "Oregon"))),
-    Vertex(gbIds(4), gbIds(4), Seq(new Property("location", "Oregon"))),
-    Vertex(gbIds(5), gbIds(5), Seq(new Property("location", "Oregon"))),
-    Vertex(gbIds(6), gbIds(6), Seq(new Property("location", "Oregon"))),
-    Vertex(gbIds(7), gbIds(7), Seq(new Property("location", "Oregon"))),
-    Vertex(gbIds(8), gbIds(8), Seq(new Property("location", "Oregon"))))
+  val inputVertexList = Seq(Vertex(gbIds(1), gbIds(1), Set(new Property("location", "Oregon"))),
+    Vertex(gbIds(2), gbIds(2), Set(new Property("location", "Oregon"))),
+    Vertex(gbIds(3), gbIds(3), Set(new Property("location", "Oregon"))),
+    Vertex(gbIds(4), gbIds(4), Set(new Property("location", "Oregon"))),
+    Vertex(gbIds(5), gbIds(5), Set(new Property("location", "Oregon"))),
+    Vertex(gbIds(6), gbIds(6), Set(new Property("location", "Oregon"))),
+    Vertex(gbIds(7), gbIds(7), Set(new Property("location", "Oregon"))),
+    Vertex(gbIds(8), gbIds(8), Set(new Property("location", "Oregon"))))
 
-  val inputVertexListWeighted = Seq((0.5, Vertex(gbIds(1), gbIds(1), Seq(new Property("location", "Oregon")))),
-    (0.1, Vertex(gbIds(2), gbIds(2), Seq(new Property("location", "Oregon")))),
-    (2.0, Vertex(gbIds(3), gbIds(3), Seq(new Property("location", "Oregon")))),
-    (1.1, Vertex(gbIds(4), gbIds(4), Seq(new Property("location", "Oregon")))),
-    (0.3, Vertex(gbIds(5), gbIds(5), Seq(new Property("location", "Oregon")))),
-    (3.6, Vertex(gbIds(6), gbIds(6), Seq(new Property("location", "Oregon")))),
-    (1.5, Vertex(gbIds(7), gbIds(7), Seq(new Property("location", "Oregon")))),
-    (1.4, Vertex(gbIds(8), gbIds(8), Seq(new Property("location", "Oregon")))))
+  val inputVertexListWeighted = Seq((0.5, Vertex(gbIds(1), gbIds(1), Set(new Property("location", "Oregon")))),
+    (0.1, Vertex(gbIds(2), gbIds(2), Set(new Property("location", "Oregon")))),
+    (2.0, Vertex(gbIds(3), gbIds(3), Set(new Property("location", "Oregon")))),
+    (1.1, Vertex(gbIds(4), gbIds(4), Set(new Property("location", "Oregon")))),
+    (0.3, Vertex(gbIds(5), gbIds(5), Set(new Property("location", "Oregon")))),
+    (3.6, Vertex(gbIds(6), gbIds(6), Set(new Property("location", "Oregon")))),
+    (1.5, Vertex(gbIds(7), gbIds(7), Set(new Property("location", "Oregon")))),
+    (1.4, Vertex(gbIds(8), gbIds(8), Set(new Property("location", "Oregon")))))
 
-  val inputEdgeList = Seq(Edge(gbIds(1), gbIds(2), gbIds(1), gbIds(2), "tweeted", Seq(new Property("tweet", "blah blah blah..."))),
-    Edge(gbIds(1), gbIds(3), gbIds(1), gbIds(3), "tweeted", Seq(new Property("tweet", "blah blah blah..."))),
-    Edge(gbIds(1), gbIds(4), gbIds(1), gbIds(4), "tweeted", Seq(new Property("tweet", "blah blah blah..."))),
-    Edge(gbIds(2), gbIds(1), gbIds(2), gbIds(1), "tweeted", Seq(new Property("tweet", "blah blah blah..."))),
-    Edge(gbIds(2), gbIds(5), gbIds(2), gbIds(5), "tweeted", Seq(new Property("tweet", "blah blah blah..."))),
-    Edge(gbIds(3), gbIds(1), gbIds(3), gbIds(1), "tweeted", Seq(new Property("tweet", "blah blah blah..."))),
-    Edge(gbIds(3), gbIds(4), gbIds(3), gbIds(4), "tweeted", Seq(new Property("tweet", "blah blah blah..."))),
-    Edge(gbIds(3), gbIds(6), gbIds(3), gbIds(6), "tweeted", Seq(new Property("tweet", "blah blah blah..."))),
-    Edge(gbIds(3), gbIds(7), gbIds(3), gbIds(7), "tweeted", Seq(new Property("tweet", "blah blah blah..."))),
-    Edge(gbIds(3), gbIds(8), gbIds(3), gbIds(8), "tweeted", Seq(new Property("tweet", "blah blah blah..."))),
-    Edge(gbIds(4), gbIds(1), gbIds(4), gbIds(1), "tweeted", Seq(new Property("tweet", "blah blah blah..."))),
-    Edge(gbIds(4), gbIds(3), gbIds(4), gbIds(3), "tweeted", Seq(new Property("tweet", "blah blah blah..."))),
-    Edge(gbIds(5), gbIds(2), gbIds(5), gbIds(2), "tweeted", Seq(new Property("tweet", "blah blah blah..."))),
-    Edge(gbIds(5), gbIds(6), gbIds(5), gbIds(6), "tweeted", Seq(new Property("tweet", "blah blah blah..."))),
-    Edge(gbIds(5), gbIds(7), gbIds(5), gbIds(7), "tweeted", Seq(new Property("tweet", "blah blah blah..."))),
-    Edge(gbIds(6), gbIds(3), gbIds(6), gbIds(3), "tweeted", Seq(new Property("tweet", "blah blah blah..."))),
-    Edge(gbIds(6), gbIds(5), gbIds(6), gbIds(5), "tweeted", Seq(new Property("tweet", "blah blah blah..."))),
-    Edge(gbIds(7), gbIds(3), gbIds(7), gbIds(3), "tweeted", Seq(new Property("tweet", "blah blah blah..."))),
-    Edge(gbIds(7), gbIds(5), gbIds(7), gbIds(5), "tweeted", Seq(new Property("tweet", "blah blah blah..."))),
-    Edge(gbIds(8), gbIds(3), gbIds(8), gbIds(3), "tweeted", Seq(new Property("tweet", "blah blah blah..."))))
+  val inputEdgeList = Seq(Edge(gbIds(1), gbIds(2), gbIds(1), gbIds(2), "tweeted", Set(new Property("tweet", "blah blah blah..."))),
+    Edge(gbIds(1), gbIds(3), gbIds(1), gbIds(3), "tweeted", Set(new Property("tweet", "blah blah blah..."))),
+    Edge(gbIds(1), gbIds(4), gbIds(1), gbIds(4), "tweeted", Set(new Property("tweet", "blah blah blah..."))),
+    Edge(gbIds(2), gbIds(1), gbIds(2), gbIds(1), "tweeted", Set(new Property("tweet", "blah blah blah..."))),
+    Edge(gbIds(2), gbIds(5), gbIds(2), gbIds(5), "tweeted", Set(new Property("tweet", "blah blah blah..."))),
+    Edge(gbIds(3), gbIds(1), gbIds(3), gbIds(1), "tweeted", Set(new Property("tweet", "blah blah blah..."))),
+    Edge(gbIds(3), gbIds(4), gbIds(3), gbIds(4), "tweeted", Set(new Property("tweet", "blah blah blah..."))),
+    Edge(gbIds(3), gbIds(6), gbIds(3), gbIds(6), "tweeted", Set(new Property("tweet", "blah blah blah..."))),
+    Edge(gbIds(3), gbIds(7), gbIds(3), gbIds(7), "tweeted", Set(new Property("tweet", "blah blah blah..."))),
+    Edge(gbIds(3), gbIds(8), gbIds(3), gbIds(8), "tweeted", Set(new Property("tweet", "blah blah blah..."))),
+    Edge(gbIds(4), gbIds(1), gbIds(4), gbIds(1), "tweeted", Set(new Property("tweet", "blah blah blah..."))),
+    Edge(gbIds(4), gbIds(3), gbIds(4), gbIds(3), "tweeted", Set(new Property("tweet", "blah blah blah..."))),
+    Edge(gbIds(5), gbIds(2), gbIds(5), gbIds(2), "tweeted", Set(new Property("tweet", "blah blah blah..."))),
+    Edge(gbIds(5), gbIds(6), gbIds(5), gbIds(6), "tweeted", Set(new Property("tweet", "blah blah blah..."))),
+    Edge(gbIds(5), gbIds(7), gbIds(5), gbIds(7), "tweeted", Set(new Property("tweet", "blah blah blah..."))),
+    Edge(gbIds(6), gbIds(3), gbIds(6), gbIds(3), "tweeted", Set(new Property("tweet", "blah blah blah..."))),
+    Edge(gbIds(6), gbIds(5), gbIds(6), gbIds(5), "tweeted", Set(new Property("tweet", "blah blah blah..."))),
+    Edge(gbIds(7), gbIds(3), gbIds(7), gbIds(3), "tweeted", Set(new Property("tweet", "blah blah blah..."))),
+    Edge(gbIds(7), gbIds(5), gbIds(7), gbIds(5), "tweeted", Set(new Property("tweet", "blah blah blah..."))),
+    Edge(gbIds(8), gbIds(3), gbIds(8), gbIds(3), "tweeted", Set(new Property("tweet", "blah blah blah..."))))
 
   "Generating a uniform vertex sample" should {
 
@@ -171,19 +171,19 @@ class VertexSampleITest extends TestingSparkContextWordSpec with Matchers {
       val vertexRdd = sparkContext.parallelize(inputVertexList, 2)
       val edgeRdd = sparkContext.parallelize(inputEdgeList, 2)
 
-      val sampleVertexList = Seq(Vertex(gbIds(1), gbIds(1), Seq(new Property("location", "Oregon"))),
-        Vertex(gbIds(2), gbIds(2), Seq(new Property("location", "Oregon"))),
-        Vertex(gbIds(3), gbIds(3), Seq(new Property("location", "Oregon"))),
-        Vertex(gbIds(4), gbIds(4), Seq(new Property("location", "Oregon"))))
+      val sampleVertexList = Seq(Vertex(gbIds(1), gbIds(1), Set(new Property("location", "Oregon"))),
+        Vertex(gbIds(2), gbIds(2), Set(new Property("location", "Oregon"))),
+        Vertex(gbIds(3), gbIds(3), Set(new Property("location", "Oregon"))),
+        Vertex(gbIds(4), gbIds(4), Set(new Property("location", "Oregon"))))
 
-      val sampleEdgeList = Seq(Edge(gbIds(1), gbIds(2), gbIds(1), gbIds(2), "tweeted", Seq(new Property("tweet", "blah blah blah..."))),
-        Edge(gbIds(1), gbIds(3), gbIds(1), gbIds(3), "tweeted", Seq(new Property("tweet", "blah blah blah..."))),
-        Edge(gbIds(1), gbIds(4), gbIds(1), gbIds(4), "tweeted", Seq(new Property("tweet", "blah blah blah..."))),
-        Edge(gbIds(2), gbIds(1), gbIds(2), gbIds(1), "tweeted", Seq(new Property("tweet", "blah blah blah..."))),
-        Edge(gbIds(3), gbIds(1), gbIds(3), gbIds(1), "tweeted", Seq(new Property("tweet", "blah blah blah..."))),
-        Edge(gbIds(3), gbIds(4), gbIds(3), gbIds(4), "tweeted", Seq(new Property("tweet", "blah blah blah..."))),
-        Edge(gbIds(4), gbIds(1), gbIds(4), gbIds(1), "tweeted", Seq(new Property("tweet", "blah blah blah..."))),
-        Edge(gbIds(4), gbIds(3), gbIds(4), gbIds(3), "tweeted", Seq(new Property("tweet", "blah blah blah..."))))
+      val sampleEdgeList = Seq(Edge(gbIds(1), gbIds(2), gbIds(1), gbIds(2), "tweeted", Set(new Property("tweet", "blah blah blah..."))),
+        Edge(gbIds(1), gbIds(3), gbIds(1), gbIds(3), "tweeted", Set(new Property("tweet", "blah blah blah..."))),
+        Edge(gbIds(1), gbIds(4), gbIds(1), gbIds(4), "tweeted", Set(new Property("tweet", "blah blah blah..."))),
+        Edge(gbIds(2), gbIds(1), gbIds(2), gbIds(1), "tweeted", Set(new Property("tweet", "blah blah blah..."))),
+        Edge(gbIds(3), gbIds(1), gbIds(3), gbIds(1), "tweeted", Set(new Property("tweet", "blah blah blah..."))),
+        Edge(gbIds(3), gbIds(4), gbIds(3), gbIds(4), "tweeted", Set(new Property("tweet", "blah blah blah..."))),
+        Edge(gbIds(4), gbIds(1), gbIds(4), gbIds(1), "tweeted", Set(new Property("tweet", "blah blah blah..."))),
+        Edge(gbIds(4), gbIds(3), gbIds(4), gbIds(3), "tweeted", Set(new Property("tweet", "blah blah blah..."))))
 
       val sampleVertexRdd = sparkContext.parallelize(sampleVertexList, 2)
       val sampleEdgeRdd = sparkContext.parallelize(sampleEdgeList, 2)

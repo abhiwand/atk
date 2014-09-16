@@ -2,12 +2,13 @@ package com.intel.spark.graphon.loopybeliefpropagation
 
 import scala.reflect.ClassTag
 import org.apache.spark.graphx._
+import com.intel.spark.graphon.IATPregel
 
 case class VertexState(values: Array[Double], id: Any)
 
 object GraphXLBP {
 
-  def runGraphXLBP(graph: Graph[VertexState, Double]): Graph[VertexState, Double] = {
+  def runGraphXLBP(graph: Graph[VertexState, Double]): (Graph[VertexState, Double], String) = {
 
     val initialMessage: Double = 0
 
@@ -23,6 +24,6 @@ object GraphXLBP {
       0
     }
 
-    Pregel(graph, initialMessage, activeDirection = EdgeDirection.Either)(vertexProgram, sendMessage, mergeMsg)
+    IATPregel(graph, initialMessage, activeDirection = EdgeDirection.Either)(vertexProgram, sendMessage, mergeMsg)
   }
 }

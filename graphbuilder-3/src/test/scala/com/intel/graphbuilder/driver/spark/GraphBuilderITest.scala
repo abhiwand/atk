@@ -191,11 +191,11 @@ class GraphBuilderITest extends TestingSparkContextWordSpec with Matchers with T
 
       // Create edge set RDD, make up properties
       val inputRdd = inputRows.map(row => row.split(" "): Seq[String])
-      val edgeRdd = inputRdd.map(e => new Edge(new Property("userId", e(0)), new Property("userId", e(1)), "tweeted", Seq(new Property("tweet", "blah blah blah..."))))
+      val edgeRdd = inputRdd.map(e => new Edge(new Property("userId", e(0)), new Property("userId", e(1)), "tweeted", Set(new Property("tweet", "blah blah blah..."))))
 
       // Create vertex set RDD, make up properties
       val rawVertexRdd = inputRdd.flatMap(row => row).distinct()
-      val vertexRdd = rawVertexRdd.map(v => new Vertex(new Property("userId", v), Seq(new Property("location", "Oregon"))))
+      val vertexRdd = rawVertexRdd.map(v => new Vertex(new Property("userId", v), Set(new Property("location", "Oregon"))))
 
       // Build the graph
       val gb = new GraphBuilder(new GraphBuilderConfig(new InputSchema(Seq.empty), List.empty, List.empty, titanConfig))
