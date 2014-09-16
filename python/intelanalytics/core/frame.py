@@ -1345,7 +1345,7 @@ class BigFrame(command_loadable):
         except:
             raise IaError(logger)
 
-    def f_measure(self, label_column, pred_column, pos_label=1, beta=1):
+    #def f_measure(self, label_column, pred_column, pos_label=1, beta=1):
         """
         Model :math:`F_{\\beta}` measure.
 
@@ -1414,7 +1414,7 @@ class BigFrame(command_loadable):
         .. versionadded:: 0.8
 
         """
-        return self._backend.classification_metric(self, 'f_measure', label_column, pred_column, pos_label, beta)
+        #return self._backend.classification_metric(self, 'f_measure', label_column, pred_column, pos_label, beta)
 
     def get_error_frame(self):
         """

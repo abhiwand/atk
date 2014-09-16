@@ -29,10 +29,6 @@ import org.apache.spark.scheduler.{ SparkListenerJobEnd, SparkListenerTaskEnd, S
  * Create for demo purpose. It is used to get progress from SparkProgressListener and print it out
  * TODO: remove it when progress report is exposed through rest api
  */
-/**
- * Create for demo purpose. It is used to get progress from SparkProgressListener and print it out
- * TODO: remove it when progress report is exposed through rest api
- */
 class ProgressPrinter(progressListener: SparkProgressListener) extends SparkListener {
   override def onStageCompleted(stageCompleted: SparkListenerStageCompleted) {
     //    printJobProgress()

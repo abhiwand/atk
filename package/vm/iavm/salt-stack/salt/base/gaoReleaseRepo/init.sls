@@ -9,7 +9,7 @@
     - require: 
       - pkg: yum-s3
 
-yum clean all:
+echo "release"; yum clean all:
   cmd.run
 
 yum search intelanalytics:
