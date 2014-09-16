@@ -27,13 +27,13 @@ class LbpRunnerTest extends FlatSpec with Matchers with TestingSparkContextFlatS
 
     val vertexSet: Set[Long] = Set(1, 2, 3, 4, 5, 6, 7)
 
-    val pdfValues: Map[Long, Array[Double]] = Map(1.toLong -> Array(0.1d, 0.9d),
-      2.toLong -> Array(0.2d, 0.8d),
-      3.toLong -> Array(0.3d, 0.7d),
-      4.toLong -> Array(0.4d, 0.6d),
-      5.toLong -> Array(0.5d, 0.5d),
-      6.toLong -> Array(0.6d, 0.4d),
-      7.toLong -> Array(0.7d, 0.3d))
+    val pdfValues: Map[Long, List[Double]] = Map(1.toLong -> List(0.1d, 0.9d),
+      2.toLong -> List(0.2d, 0.8d),
+      3.toLong -> List(0.3d, 0.7d),
+      4.toLong -> List(0.4d, 0.6d),
+      5.toLong -> List(0.5d, 0.5d),
+      6.toLong -> List(0.6d, 0.4d),
+      7.toLong -> List(0.7d, 0.3d))
 
     //  directed edge list is made bidirectional with a flatmap
 
@@ -69,11 +69,6 @@ class LbpRunnerTest extends FlatSpec with Matchers with TestingSparkContextFlatS
       max_product = None,
       power = None)
 
-    val gbV1 = GBVertex(666, Property(vertexIdPropertyName, 666), Set(Property("heynow", "therayago"), Property("foo", 10)))
-    val gbV2 = GBVertex(666, Property(vertexIdPropertyName, 666), Set(Property("foo", 10), Property("heynow", "therayago")))
-
-    gbV1 shouldEqual gbV2
-
     val (verticesOut, edgesOut, log) = LbpRunner.runLbp(verticesIn, edgesIn, args)
 
     val testVertices = verticesOut.collect().toSet
@@ -86,16 +81,10 @@ class LbpRunnerTest extends FlatSpec with Matchers with TestingSparkContextFlatS
 
     val expectedVerticesOut =
       vertexSet.map(vid =>
-        GBVertex(vid, Property(vertexIdPropertyName, vid), Set(Property(propertyForLBPOutput, expectedLBPValue))))
+        GBVertex(vid, Property(vertexIdPropertyName, vid), Set(Property(inputPropertyName, pdfValues.get(vid).get), Property(propertyForLBPOutput, pdfValues.get(vid).get))))
 
-    testVertices.map({ case gbVertex: GBVertex => gbVertex.physicalId }) shouldBe expectedVerticesOut.map({ case gbVertex: GBVertex => gbVertex.physicalId })
-    testVertices.map({ case gbVertex: GBVertex => gbVertex.gbId }) shouldBe expectedVerticesOut.map({ case gbVertex: GBVertex => gbVertex.gbId })
-    testVertices.forall({ case gbVertex: GBVertex => (gbVertex.properties.size == 2) }) shouldBe true
+    testVertices shouldEqual expectedVerticesOut
 
-    //   val testIdsToArrays = testVertices.map({ case gbVertex: GBVertex => (gbVertex.physicalId, gbVertex.getProperty(inputPropertyName).get.asInstanceOf[Array[Double]]) }).toMap
-
-    // vertexSet.forall(i => (pdfValues.get(i).get equals testIdsToArrays.get(i).get)) shouldBe true
-
-    // testVertices.forall({ case gbVertex: GBVertex => (gbVertex.getProperty(propertyForLBPOutput).get.value.asInstanceOf[Array[Double]].isEmpty) }) shouldBe true
   }
+
 }
