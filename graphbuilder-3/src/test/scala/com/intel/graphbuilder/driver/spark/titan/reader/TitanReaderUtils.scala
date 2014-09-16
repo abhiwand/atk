@@ -112,16 +112,4 @@ object TitanReaderUtils {
     })
   }
 
-  /**
-   * Orders properties in GraphBuilder elements alphabetically using the property key.
-   *
-   * Needed to ensure to that comparison tests pass. Graphbuilder properties are represented
-   * as a sequence, so graph elements with different property orderings are not considered equal.
-   *
-   * @param graphElements Array of GraphBuilder elements
-   * @return  Array of GraphBuilder elements with sorted property lists
-   */
-  def sortGraphElementProperties(graphElements: Array[GraphElement]) = {
-    graphElements // this function is going bye-bye
-  }
 }

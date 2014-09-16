@@ -3,7 +3,6 @@ package com.intel.graphbuilder.driver.spark.titan.reader
 import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRDDImplicits._
 import com.intel.graphbuilder.driver.spark.rdd.TitanHBaseReaderRDD
 import com.intel.graphbuilder.driver.spark.titan.reader.TitanReaderTestData._
-import com.intel.graphbuilder.driver.spark.titan.reader.TitanReaderUtils.sortGraphElementProperties
 import com.intel.graphbuilder.elements.GraphElement
 import com.intel.testutils.TestingSparkContextWordSpec
 import org.apache.hadoop.hbase.CellUtil
@@ -61,13 +60,9 @@ class TitanReaderITest extends TestingSparkContextWordSpec with Matchers {
       vertices.length shouldBe 3
       edges.length shouldBe 2
 
-      val sortedGraphElements = sortGraphElementProperties(graphElements)
-      val sortedVertices = sortGraphElementProperties(vertices.asInstanceOf[Array[GraphElement]])
-      val sortedEdges = sortGraphElementProperties(edges.asInstanceOf[Array[GraphElement]])
-
-      sortedGraphElements should contain theSameElementsAs List[GraphElement](plutoGbVertex, seaGbVertex, neptuneGbVertex, plutoGbEdge, seaGbEdge)
-      sortedVertices should contain theSameElementsAs List[GraphElement](plutoGbVertex, seaGbVertex, neptuneGbVertex)
-      sortedEdges should contain theSameElementsAs List[GraphElement](plutoGbEdge, seaGbEdge)
+      graphElements should contain theSameElementsAs List[GraphElement](plutoGbVertex, seaGbVertex, neptuneGbVertex, plutoGbEdge, seaGbEdge)
+      vertices should contain theSameElementsAs List[GraphElement](plutoGbVertex, seaGbVertex, neptuneGbVertex)
+      edges should contain theSameElementsAs List[GraphElement](plutoGbEdge, seaGbEdge)
     }
   }
 }
