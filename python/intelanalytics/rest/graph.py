@@ -1,4 +1,4 @@
-     ##############################################################################
+##############################################################################
 # INTEL CONFIDENTIAL
 #
 # Copyright 2014 Intel Corporation All Rights Reserved.
@@ -119,7 +119,7 @@ class GraphBackendRest(object):
                     import json
                     payload_json = json.dumps(frame_rules, indent=2, sort_keys=True)
                     logger.debug("REST Backend: create graph payload: " + payload_json)
-                self.load(initialized_graph,frame_rules, append= False)
+                initialized_graph.load(frame_rules, append=False)
             return graph_info.name
     
     def _get_new_graph_name(self,source=None):
@@ -130,7 +130,7 @@ class GraphBackendRest(object):
         return "graph_" + uuid.uuid4().hex + annotation
 
     def rename_graph(self, graph, name):
-        arguments = {'graph': graph._id, "new name": name}
+        arguments = {'graph': graph._id, "new_name": name}
         execute_update_graph_command('rename_graph', arguments,graph)
 
     def get_name(self, graph):
@@ -153,36 +153,7 @@ class GraphBackendRest(object):
     def append(self, graph, rules):
         logger.info("REST Backend: append_frame graph: " + graph.name)
         frame_rules = JsonRules(rules)
-        self.load(graph, frame_rules, append=True)
-
-    # def _get_uri(self, payload):
-    #     links = payload['links']
-    #     for link in links:
-    #         if link['rel'] == 'self':
-    #             return link['uri']
-    #     return "we don't know"
-    #     # TODO - bring exception back
-    #     #raise Exception('Unable to find uri for graph')
-
-    def als(self, graph, *args, **kwargs):
-        logger.info("REST Backend: run als on graph " + graph.name)
-        payload = JsonAlsPayload(graph, *args, **kwargs)
-        if logger.level == logging.DEBUG:
-            import json
-            payload_json =  json.dumps(payload, indent=2, sort_keys=True)
-            logger.debug("REST Backend: run als payload: " + payload_json)
-        r = http.post('commands', payload)
-        logger.debug("REST Backend: run als response: " + r.text)
-
-    def recommend(self, graph, vertex_id):
-        logger.info("REST Backend: als query on graph " + graph.name)
-        cmd_format ='graphs/{0}/vertices?qname=ALSQuery&offset=0&count=10&vertexID={1}'
-        cmd = cmd_format.format(graph._id, vertex_id)
-        logger.debug("REST Backend: als query cmd: " + cmd)
-        r = http.get(cmd)
-        json = r.json()
-        logger.debug("REST Backend: run als response: " + json)
-        return json
+        graph.load(frame_rules, append=True)
 
 
 class JsonAlsPayload(object):
