@@ -30,7 +30,7 @@ from intelanalytics.core.command import CommandDefinition, Parameter, Return
 from intelanalytics.core.loggers import loggers
 
 class Numbers(CommandLoadable):
-    command_prefixes = ['numbers']
+    _command_prefixes = ['numbers']
     def __init__(self, name):
         self._id = name
         CommandLoadable.__init__(self)

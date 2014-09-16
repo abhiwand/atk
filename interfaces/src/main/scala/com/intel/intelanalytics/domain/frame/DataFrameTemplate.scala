@@ -27,4 +27,5 @@ case class DataFrameTemplate(name: String, description: Option[String]) {
   require(name != null, "name must not be null")
   require(name.trim.length > 0, "name must not be empty or whitespace")
   require(description != null, "description must not be null")
+
 }
