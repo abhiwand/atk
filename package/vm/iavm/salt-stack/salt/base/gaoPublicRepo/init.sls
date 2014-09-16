@@ -5,5 +5,5 @@
     - defaults:
       baseUrl: {{ pillar['gaoRepo']['public']['baseUrl'] }}
 
-yum clean all:
+echo "public";yum clean all:
   cmd.run

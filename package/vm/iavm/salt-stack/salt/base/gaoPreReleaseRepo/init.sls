@@ -9,10 +9,7 @@
     - require: 
       - pkg: yum-s3
 
-yum clean all:
-  cmd.run
-
-cat /etc/yum.repos.d/gaoRelease.repo:
+echo "pre-release";yum clean all:
   cmd.run
 
 yum search intelanalytics:
