@@ -65,7 +65,7 @@ class GBVertexRDDBuilder(gbVertices: RDD[Vertex], vertexCommunitySet: RDD[(Long,
       case (vertexId, communitySet) => Vertex(
         java.lang.Long.valueOf(vertexId),
         Property(TitanReader.TITAN_READER_DEFAULT_GB_ID, vertexId),
-        Seq(Property(communityPropertyLabel, ScalaToJavaCollectionConverter.convertSet(communitySet))))
+        Set(Property(communityPropertyLabel, ScalaToJavaCollectionConverter.convertSet(communitySet))))
     })
     newGBVertices
   }

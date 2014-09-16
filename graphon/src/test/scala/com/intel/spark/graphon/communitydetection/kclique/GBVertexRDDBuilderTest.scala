@@ -37,10 +37,10 @@ class GBVertexRDDBuilderTest extends FlatSpec with Matchers with TestingSparkCon
     val communityPropertyDefaultLabel: String = "Community"
 
     val gbVerticesList: List[Vertex] = List(
-      new Vertex(java.lang.Long.valueOf(10001), new Property("titanPhysicalId", 10001), List(new Property("source", 101))),
-      new Vertex(java.lang.Long.valueOf(10002), new Property("titanPhysicalId", 10002), List(new Property("source", 102))),
-      new Vertex(java.lang.Long.valueOf(10003), new Property("titanPhysicalId", 10003), List(new Property("source", 103))),
-      new Vertex(java.lang.Long.valueOf(10004), new Property("titanPhysicalId", 10004), List(new Property("source", 104))))
+      new Vertex(java.lang.Long.valueOf(10001), new Property("titanPhysicalId", 10001), Set(new Property("source", 101))),
+      new Vertex(java.lang.Long.valueOf(10002), new Property("titanPhysicalId", 10002), Set(new Property("source", 102))),
+      new Vertex(java.lang.Long.valueOf(10003), new Property("titanPhysicalId", 10003), Set(new Property("source", 103))),
+      new Vertex(java.lang.Long.valueOf(10004), new Property("titanPhysicalId", 10004), Set(new Property("source", 104))))
 
     val vertexCommunitySet: List[(Long, Set[Long])] = List(
       (10001, Array(1)),
@@ -51,13 +51,13 @@ class GBVertexRDDBuilderTest extends FlatSpec with Matchers with TestingSparkCon
     val emptySet: Set[Long] = Set()
     val newGBVertexList = List(
       new Vertex(java.lang.Long.valueOf(10001), new Property("titanPhysicalId", 10001),
-        List(new Property(communityPropertyDefaultLabel, ScalaToJavaCollectionConverter.convertSet(Set(1.toLong))))),
+        Set(new Property(communityPropertyDefaultLabel, ScalaToJavaCollectionConverter.convertSet(Set(1.toLong))))),
       new Vertex(java.lang.Long.valueOf(10002), new Property("titanPhysicalId", 10002),
-        List(new Property(communityPropertyDefaultLabel, ScalaToJavaCollectionConverter.convertSet(emptySet)))),
+        Set(new Property(communityPropertyDefaultLabel, ScalaToJavaCollectionConverter.convertSet(emptySet)))),
       new Vertex(java.lang.Long.valueOf(10003), new Property("titanPhysicalId", 10003),
-        List(new Property(communityPropertyDefaultLabel, ScalaToJavaCollectionConverter.convertSet(Set(1.toLong, 2.toLong))))),
+        Set(new Property(communityPropertyDefaultLabel, ScalaToJavaCollectionConverter.convertSet(Set(1.toLong, 2.toLong))))),
       new Vertex(java.lang.Long.valueOf(10004), new Property("titanPhysicalId", 10004),
-        List(new Property(communityPropertyDefaultLabel, ScalaToJavaCollectionConverter.convertSet(Set(1.toLong))))))
+        Set(new Property(communityPropertyDefaultLabel, ScalaToJavaCollectionConverter.convertSet(Set(1.toLong))))))
 
   }
 

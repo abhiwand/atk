@@ -34,9 +34,9 @@ package com.intel.graphbuilder.elements
  * @param gbId the unique id that will be used by graph builder
  * @param properties the other properties that exist on this vertex
  */
-case class Vertex(physicalId: Any, gbId: Property, properties: Seq[Property]) extends GraphElement with Mergeable[Vertex] {
+case class Vertex(physicalId: Any, gbId: Property, properties: Set[Property]) extends GraphElement with Mergeable[Vertex] {
 
-  def this(gbId: Property, properties: Seq[Property]) {
+  def this(gbId: Property, properties: Set[Property]) {
     this(null, gbId, properties)
   }
 

@@ -49,14 +49,14 @@ class VertexDAOTest extends WordSpec with Matchers with TestingTitan with Before
     }
 
     "create a blueprints vertex from a graphbuilder vertex" in {
-      val gbVertex = new Vertex(new Property("gbId", 10001), Nil)
+      val gbVertex = new Vertex(new Property("gbId", 10001), Set.empty[Property])
       val bpVertex = vertexDAO.create(gbVertex)
       bpVertex.getPropertyKeys.size() shouldBe 1
       bpVertex.getProperty("gbId").asInstanceOf[Int] shouldBe 10001
     }
 
     "set properties on a newly created blueprints vertex" in {
-      val gbVertex = new Vertex(new Property("gbId", 10002), List(new Property("name", "My Name")))
+      val gbVertex = new Vertex(new Property("gbId", 10002), Set(new Property("name", "My Name")))
       val bpVertex = vertexDAO.create(gbVertex)
       bpVertex.getPropertyKeys.size() shouldBe 2
       bpVertex.getProperty("name").asInstanceOf[String] shouldBe "My Name"
@@ -64,8 +64,8 @@ class VertexDAOTest extends WordSpec with Matchers with TestingTitan with Before
 
     "update properties on vertices" in {
       // setup data
-      val gbVertexOriginal = new Vertex(new Property("gbId", 10003), List(new Property("name", "Original Name")))
-      val gbVertexUpdated = new Vertex(new Property("gbId", 10003), List(new Property("name", "Updated Name")))
+      val gbVertexOriginal = new Vertex(new Property("gbId", 10003), Set(new Property("name", "Original Name")))
+      val gbVertexUpdated = new Vertex(new Property("gbId", 10003), Set(new Property("name", "Updated Name")))
       val bpVertexOriginal = vertexDAO.create(gbVertexOriginal)
 
       // invoke method under test
@@ -78,8 +78,8 @@ class VertexDAOTest extends WordSpec with Matchers with TestingTitan with Before
 
     "update properties on vertices when no create is needed" in {
       // setup data
-      val gbVertexOriginal = new Vertex(new Property("gbId", 10004), List(new Property("name", "Original Name")))
-      val gbVertexUpdated = new Vertex(new Property("gbId", 10004), List(new Property("name", "Updated Name")))
+      val gbVertexOriginal = new Vertex(new Property("gbId", 10004), Set(new Property("name", "Original Name")))
+      val gbVertexUpdated = new Vertex(new Property("gbId", 10004), Set(new Property("name", "Updated Name")))
       vertexDAO.create(gbVertexOriginal)
       graph.commit()
 
@@ -93,7 +93,7 @@ class VertexDAOTest extends WordSpec with Matchers with TestingTitan with Before
 
     "create vertices when create is needed" in {
       // setup data
-      val gbVertex = new Vertex(new Property("gbId", 10005), List(new Property("name", "Original Name")))
+      val gbVertex = new Vertex(new Property("gbId", 10005), Set(new Property("name", "Original Name")))
 
       // invoke method under test
       val bpVertexUpdated = vertexDAO.updateOrCreate(gbVertex)
@@ -105,7 +105,7 @@ class VertexDAOTest extends WordSpec with Matchers with TestingTitan with Before
 
     "find a blueprints vertex using a physical titan id" in {
       // setup data
-      val gbVertex = new Vertex(new Property("gbId", 10006), Nil)
+      val gbVertex = new Vertex(new Property("gbId", 10006), Set.empty[Property])
       val createdBpVertex = vertexDAO.create(gbVertex)
       val id = TitanIdUtils.titanId(createdBpVertex)
       graph.commit()

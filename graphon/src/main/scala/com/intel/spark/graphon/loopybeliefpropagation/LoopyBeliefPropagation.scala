@@ -55,8 +55,8 @@ class LoopyBeliefPropagation extends SparkCommandPlugin[Lbp, LbpResult] {
 
   import DomainJsonProtocol._
 
-  implicit val kcliqueFormat = jsonFormat15(Lbp)
-  implicit val kcliqueResultFormat = jsonFormat1(LbpResult)
+  implicit val LbpFormat = jsonFormat15(Lbp)
+  implicit val LbpResultFormat = jsonFormat1(LbpResult)
 
   override def execute(sparkInvocation: SparkInvocation, arguments: Lbp)(implicit user: UserPrincipal, executionContext: ExecutionContext): LbpResult = {
 
@@ -88,9 +88,9 @@ class LoopyBeliefPropagation extends SparkCommandPlugin[Lbp, LbpResult] {
 
     // do a little GraphX MagiX
 
-    val (outVertices, outEdges) = LbpRunner.runLbp(gbVertices, gbEdges, arguments)
+    val (outVertices, outEdges, log) = LbpRunner.runLbp(gbVertices, gbEdges, arguments)
 
-    // send it out down the line
+    // write out the graph
 
     // Create the GraphBuilder object
     // Setting true to append for updating existing graph
@@ -101,6 +101,7 @@ class LoopyBeliefPropagation extends SparkCommandPlugin[Lbp, LbpResult] {
     // Get the execution time and print it
     val time = (System.currentTimeMillis() - start).toDouble / 1000.0
 
+    print("Here's your LBP log: " + log)
     LbpResult(time)
   }
 

@@ -36,15 +36,15 @@ import com.intel.graphbuilder.util.StringUtils
  * @param tailVertexGbId the unique ID for the source Vertex
  * @param headVertexGbId the unique ID for the destination Vertex
  * @param label the Edge label
- * @param properties the list of properties associated with this edge
+ * @param properties the set of properties associated with this edge
  */
-case class Edge(var tailPhysicalId: Any, var headPhysicalId: Any, tailVertexGbId: Property, headVertexGbId: Property, label: String, properties: Seq[Property]) extends GraphElement with Mergeable[Edge] {
+case class Edge(var tailPhysicalId: Any, var headPhysicalId: Any, tailVertexGbId: Property, headVertexGbId: Property, label: String, properties: Set[Property]) extends GraphElement with Mergeable[Edge] {
 
-  def this(tailVertexGbId: Property, headVertexGbId: Property, label: String, properties: Seq[Property]) {
+  def this(tailVertexGbId: Property, headVertexGbId: Property, label: String, properties: Set[Property]) {
     this(null, null, tailVertexGbId, headVertexGbId, label, properties)
   }
 
-  def this(tailVertexGbId: Property, headVertexGbId: Property, label: Any, properties: Seq[Property]) {
+  def this(tailVertexGbId: Property, headVertexGbId: Property, label: Any, properties: Set[Property]) {
     this(tailVertexGbId, headVertexGbId, StringUtils.nullSafeToString(label), properties)
   }
 
