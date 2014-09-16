@@ -4,7 +4,7 @@ import scala.reflect.ClassTag
 import org.apache.spark.graphx._
 import com.intel.spark.graphon.IATPregel
 
-case class VertexState(values: Array[Double], id: Any)
+case class VertexState(values: List[Double], id: Any)
 
 object GraphXLBP {
 

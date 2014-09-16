@@ -79,10 +79,10 @@ case class Vertex(physicalId: Any, gbId: Property, properties: Set[Property]) ex
   }
 
   /**
-   * Full list of properties including the gbId
+   * Full set of properties including the gbId
    */
-  def fullProperties: Seq[Property] = {
-    gbId :: properties.toList
+  def fullProperties: Set[Property] = {
+    properties + gbId
   }
 
   /**

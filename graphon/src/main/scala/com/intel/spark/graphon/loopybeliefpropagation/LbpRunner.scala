@@ -23,7 +23,7 @@ object LbpRunner {
 
     val graphXVertices =
       inVertices.map((gbVertex => (gbVertex.physicalId.asInstanceOf[Long],
-        VertexState(gbVertex.getProperty(inputPropertyName).get.value.asInstanceOf[Array[Double]],
+        VertexState(gbVertex.getProperty(inputPropertyName).get.value.asInstanceOf[List[Double]],
           gbVertex.id))))
 
     val graphXEdges = inEdges.map(edge =>
