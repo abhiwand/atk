@@ -13,7 +13,7 @@ object LbpRunner {
 
     val outputPropertyLabel = lbpParameters.output_vertex_property_list.getOrElse("LBP_RESULT")
 
-    // yeah, if one a youse try to do this with an empty RDD, then youse go fuck yourself... CAPICHE?
+    // yeah, if one a youse try and do this with an empty RDD, then ya go stuff yerself... CAPICHE?
 
     val idPropertyName = inVertices.take(1)(0).gbId.key
 
