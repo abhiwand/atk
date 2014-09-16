@@ -57,6 +57,9 @@ Command Line Arguments
     gets updated we deploy the new config but we also need to restart the spark service for the changes to take effect
     on all the master and worker nodes. This is left to the user to decide in case spark is currently busy running some
     jobs
+--db-port
+--db-username
+--db-password
 
     TODO: Configure database when the configuration script is done.
 """
@@ -64,6 +67,7 @@ Command Line Arguments
 from cm_api.api_client import ApiResource
 from cm_api.endpoints import hosts
 from cm_api.endpoints import role_config_groups
+from subprocess import call
 import re, time, argparse
 
 parser = argparse.ArgumentParser(description="Process cl arguments to avoid prompts in automation")
@@ -74,6 +78,11 @@ parser.add_argument("--password", type=str, help="Cloudera Manager Password")
 parser.add_argument("--cluster", type=str, help="Cloudera Manager Cluster Name if more than one cluster is managed by Cloudera Manager.")
 parser.add_argument("--python", type=str, help="The name of the python executable to use. It must be in the path")
 parser.add_argument("--restart", type=str, help="Weather or not to restart spark service after config changes")
+parser.add_argument("--db-host", type=str, help="Database host name")
+parser.add_argument("--db-port", type=str, help="Database port number")
+parser.add_argument("--db", type=str, help="Database name")
+parser.add_argument("--db-username", type=str, help="Database username")
+parser.add_argument("--db-password", type=str, help="Database password")
 args = parser.parse_args()
 
 LIB_PATH = "/usr/lib/intelanalytics/graphbuilder/lib/ispark-deps.jar"
@@ -445,6 +454,23 @@ def get_spark_details(services):
 
     return spark_master_role_hostnames, spark_config_executor_total_max_heapsize, spark_config_master_port
 
+def get_db_details():
+
+    print args
+    db_host = get_arg("What is the database hostname?", "localhost", args.db_host)
+    db_port = get_arg("What is the database hostname?", "5432", args.db_port)
+    db = get_arg("What is the database name?", "ia-metastore", args.db)
+    db_username = get_arg("What is the database name?", "ia-metastore", args.db_username)
+    db_password = get_arg("What is the database name?", "somerandomtext", args.db_password)
+
+    print os.urandom(32)
+    #create postgres user with password
+    #create postgres database
+    #update /var/lib/pgsql/data/pg_hba.conf
+    print call(["ls", "-l"])
+
+
+
 def create_intel_analytics_config( hdfs_host_name, hdfs_namenode_port, zookeeper_host_names, zookeeper_client_port,
                                    spark_master_host, spark_master_port, spark_worker_memory, python_exec):
     """
@@ -509,6 +535,7 @@ cloudera_manager_username = get_arg("What is the Cloudera manager username?", "a
 
 cloudera_manager_password = get_arg("What is the Cloudera manager password?", "admin", args.password)
 
+
 #rest service handle
 api = ApiResource(cloudera_manager_host, server_port=cloudera_manager_port, username=cloudera_manager_username,
                   password=cloudera_manager_password)
@@ -540,6 +567,8 @@ if cluster:
 
     #get python exec
     python_exec = get_python_exec()
+
+    get_db_details()
 
     #write changes to our config
     create_intel_analytics_config(hdfs_namenode_role_host_names, hdfs_namenode_port, zookeeper_server_role_host_names,
