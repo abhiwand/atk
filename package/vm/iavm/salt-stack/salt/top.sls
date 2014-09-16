@@ -2,7 +2,7 @@ base:
   '*':
     - gaoPublicRepo
     - yum-s3
-    - gaoReleaseRepo
+    - gaoPreReleaseRepo
     - intelanalytics-rest-server
     - intelanalytics-graphbuilder
     - intelanalytics-python-rest-client

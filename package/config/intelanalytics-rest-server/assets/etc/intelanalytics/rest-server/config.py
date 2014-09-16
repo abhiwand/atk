@@ -50,7 +50,9 @@ Command Line Arguments
 --cluster The Cloudera cluster we will pull and update config for. If Cloudera manager manages more than one cluster
     we need to know what cluster we will be updating and pulling our config for. Can give the display name of the
     cluster
-
+--python The python exec you would like to use. Intel Analytics defaults to python. This is usually changed to the
+    python 2.7 exec to allow users the ability to use ipython. The server and the client must be runnig the same
+    python version
 --restart Weather or not we will restart the spark service after setting the spark classpath. After the SPARK_CLASSPATH
     gets updated we deploy the new config but we also need to restart the spark service for the changes to take effect
     on all the master and worker nodes. This is left to the user to decide in case spark is currently busy running some
@@ -70,6 +72,7 @@ parser.add_argument("--port", type=int, help="Cloudera Manager Port")
 parser.add_argument("--username", type=str, help="Cloudera Manager User Name")
 parser.add_argument("--password", type=str, help="Cloudera Manager Password")
 parser.add_argument("--cluster", type=str, help="Cloudera Manager Cluster Name if more than one cluster is managed by Cloudera Manager.")
+parser.add_argument("--python", type=str, help="The name of the python executable to use. It must be in the path")
 parser.add_argument("--restart", type=str, help="Weather or not to restart spark service after config changes")
 args = parser.parse_args()
 
@@ -102,6 +105,15 @@ def get_arg(question, default, arg):
     """
     return user_info_prompt(question + " defaults to '" + str(default) + "' if nothing is entered: ", default) \
         if arg is None else arg
+
+def get_python_exec():
+    """
+    Get ask the user for the python exec the would like to use.
+
+    :return: string with the python path exec name
+    """
+    return get_arg("\nWhat python executable would you like to use? It must be in the path. ", "python", args.python)
+
 
 def select_cluster(clusters, command_line_cluster):
     """
@@ -208,7 +220,7 @@ def find_exported_class_path(spark_config_env_sh):
     :param spark_config_env_sh: all the text from the cloudera manager spark_env.sh
     :return: the entire line containing the exported class path
     """
-    return re.search('export.*SPARK_CLASSPATH=.*', spark_config_env_sh) if spark_config_env_sh else None
+    return re.search('SPARK_CLASSPATH=.*', spark_config_env_sh) if spark_config_env_sh else None
 
 def find_class_path_value(spark_config_env_sh):
     """
@@ -219,7 +231,7 @@ def find_class_path_value(spark_config_env_sh):
     """
 
     #i search all groups after the match to find the one that only has the value
-    find_class_path = re.search('export.*SPARK_CLASSPATH=(\".*\"|[^\r\n]*).*', spark_config_env_sh)
+    find_class_path = re.search('SPARK_CLASSPATH=(\".*\"|[^\r\n]*).*', spark_config_env_sh)
     class_path = None
     #get only the value not the 'export SPARK_CLASSPATH' chaff. find the group that only has the export value
     if find_class_path is not None:
@@ -244,13 +256,13 @@ def create_updated_class_path(current_class_path, spark_env):
 
     if current_class_path is None:
         #if no class path exist append it to the end of the spark_env.sh config
-        spark_class_path="export SPARK_CLASSPATH=\"" + LIB_PATH + "\""
-        return spark_env + "\r\n" + spark_class_path
+        spark_class_path="SPARK_CLASSPATH=\"" + LIB_PATH + "\""
+        return spark_env + "\n" + spark_class_path
     else:
         #if a class path already exist search and replace the current class path plus our class path in spark_env.sh
         #config
-        spark_class_path="export SPARK_CLASSPATH=\"" + current_class_path + ":" + LIB_PATH + "\""
-        return re.sub('export.*SPARK_CLASSPATH=(\".*\"|[^\r\n]*).*', spark_class_path, spark_env)
+        spark_class_path="SPARK_CLASSPATH=\"" + current_class_path + ":" + LIB_PATH + "\""
+        return re.sub('.*SPARK_CLASSPATH=(\".*\"|[^\r\n]*).*', spark_class_path, spark_env)
 
 
 def poll_commands(service, command_name):
@@ -293,7 +305,7 @@ def restart_service(service):
 
     """
     print "\nYou need to restart " + service.name + " service for the config changes to take affect."
-    service_restart = get_arg("would you like to restart now?", "no", args.restart)
+    service_restart = get_arg("Would you like to restart spark now? Type 'yes' to restart.", "no", args.restart)
     if service_restart is not None and service_restart.strip().lower() == "yes":
         print "Restarting " + service.name,
         service.restart()
@@ -325,7 +337,7 @@ def update_spark_env(group, spark_config_env_sh):
         print "Setting to: " + updated_class_path
 
         #update the spark-env.sh with our exported class path appended to whatever whas already present in spark-env.sh
-        group.update_config({"spark-conf/spark-env.sh_client_config_safety_valve": updated_class_path})
+        group.update_config({"SPARK_WORKER_role_env_safety_valve": updated_class_path})
         return True
     else:
         #found existing classpath
@@ -339,7 +351,7 @@ def update_spark_env(group, spark_config_env_sh):
             print "No existing Intel Analytics class path found."
             updated_class_path = create_updated_class_path(found_class_path_value, spark_config_env_sh)
             print "Updating to: " + updated_class_path
-            group.update_config({"spark-conf/spark-env.sh_client_config_safety_valve" : updated_class_path})
+            group.update_config({"SPARK_WORKER_role_env_safety_valve" : updated_class_path})
             return True
         else:
             #existing ia classpath
@@ -421,9 +433,10 @@ def get_spark_details(services):
 
     spark_config_master_port, _ = find_config(spark_config_groups, "spark-SPARK_MASTER-BASE", "master_port")
 
-    spark_config_env_sh, group = find_config(spark_config_groups, "spark-GATEWAY-BASE",
-                                   "spark-conf/spark-env.sh_client_config_safety_valve")
-
+    #spark_config_env_sh, group = find_config(spark_config_groups, "spark-GATEWAY-BASE",
+    #                               "spark-conf/spark-env.sh_client_config_safety_valve")
+    spark_config_env_sh, group = find_config(spark_config_groups, "spark-SPARK_WORKER-BASE", "SPARK_WORKER_role_env_safety_valve")
+    print spark_config_env_sh
     updated = update_spark_env(group, spark_config_env_sh)
 
     if updated and True:
@@ -433,7 +446,7 @@ def get_spark_details(services):
     return spark_master_role_hostnames, spark_config_executor_total_max_heapsize, spark_config_master_port
 
 def create_intel_analytics_config( hdfs_host_name, hdfs_namenode_port, zookeeper_host_names, zookeeper_client_port,
-                                   spark_master_host, spark_master_port, spark_worker_memory):
+                                   spark_master_host, spark_master_port, spark_worker_memory, python_exec):
     """
     create a new application.conf file from the tempalte
 
@@ -466,6 +479,9 @@ def create_intel_analytics_config( hdfs_host_name, hdfs_namenode_port, zookeeper
                        'spark.master = "spark://' + spark_master_host[0] + ':' + spark_master_port + '"', config_tpl_text)
     #set spark executor memory
     config_tpl_text = re.sub(r'spark.executor.memory = .*', 'spark.executor.memory = "' + spark_worker_memory + '"', config_tpl_text)
+
+    #set python exec
+    config_tpl_text = re.sub(r'[/]*python-worker-exec = .*', 'python-worker-exec = "' + python_exec + '"', config_tpl_text)
 
     print "Writing application.conf"
     config = open(config_file_path, "w")
@@ -522,10 +538,13 @@ if cluster:
     #get spark service details
     spark_master_role_host_names, spark_config_executor_total_max_heapsize, spark_config_master_port = get_spark_details(services)
 
+    #get python exec
+    python_exec = get_python_exec()
+
     #write changes to our config
     create_intel_analytics_config(hdfs_namenode_role_host_names, hdfs_namenode_port, zookeeper_server_role_host_names,
                                   zookeeper_client_port, spark_master_role_host_names, spark_config_master_port,
-                                  spark_config_executor_total_max_heapsize)
+                                  spark_config_executor_total_max_heapsize, python_exec)
 else:
     print "No cluster selected"
     exit(1)

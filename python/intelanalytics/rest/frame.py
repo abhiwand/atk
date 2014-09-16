@@ -149,6 +149,9 @@ class FrameBackendRest(object):
     def get_row_count(self, frame):
         return self._get_frame_info(frame).row_count
 
+    def get_ia_uri(self, frame):
+        return self._get_frame_info(frame).ia_uri
+
     def get_repr(self, frame):
         frame_info = self._get_frame_info(frame)
         return "\n".join(['BigFrame "%s"\nrow_count = %d\nschema = ' % (frame_info.name, frame_info.row_count)] +
@@ -183,7 +186,7 @@ class FrameBackendRest(object):
         if isinstance(data, BigFrame):
             return {'source': { 'source_type': 'dataframe',
                                 'uri': str(data._id)},  # TODO - be consistent about _id vs. uri in these calls
-                    'destination': self._get_frame_full_uri(frame)}
+                    'destination': frame._id}
         raise TypeError("Unsupported data source %s" % type(data))
 
     @staticmethod
@@ -299,7 +302,7 @@ class FrameBackendRest(object):
         if not colTypes[column_name] in [np.float32, np.float64, np.int32, np.int64]:
             raise ValueError("unable to bin non-numeric values")
         name = self._get_new_frame_name()
-        arguments = {'name': name, 'frame': frame._id, 'column_name': column_name, 'num_bins': num_bins, 'bin_type': bin_type, 'bin_column_name': bin_column_name}
+        arguments = {'name': name, 'frame_id': frame._id, 'column_name': column_name, 'num_bins': num_bins, 'bin_type': bin_type, 'bin_column_name': bin_column_name}
         return execute_new_frame_command('bin_column', arguments)
 
 
@@ -444,14 +447,12 @@ class FrameBackendRest(object):
         execute_update_frame_command('rename_columns', arguments, frame)
 
     def rename_frame(self, frame, name):
-        arguments = {'frame': self._get_frame_full_uri(frame), "new_name": name}
+        arguments = {'frame': frame._id, "new_name": name}
         execute_update_frame_command('rename_frame', arguments, frame)
 
 
 
     def take(self, frame, n, offset, columns):
-        if n==0:
-            return []
         url = 'dataframes/{0}/data?offset={2}&count={1}'.format(frame._id,n, offset)
         result = executor.query(url)
         schema = FrameSchema.from_strings_to_types(result.schema)
@@ -483,30 +484,6 @@ class FrameBackendRest(object):
         arguments = {'frame_id': frame._id, 'name': name, 'sample_col': sample_col, 'data_type': data_type}
         return execute_new_frame_command('ecdf', arguments)
 
-    def classification_metric(self, frame, metric_type, label_column, pred_column, pos_label, beta):
-        # TODO - remove error handling, leave to server (or move to plugin)
-        if metric_type not in ['accuracy', 'precision', 'recall', 'f_measure']:
-            raise ValueError("metric_type must be one of: 'accuracy'")
-        if label_column.strip() == "":
-            raise ValueError("label_column can not be empty string")
-        if pred_column.strip() == "":
-            raise ValueError("pred_column can not be empty string")
-        if str(pos_label).strip() == "":
-            raise ValueError("invalid pos_label")
-        schema_dict = dict(frame.schema)
-        column_names = schema_dict.keys()
-        if not label_column in column_names:
-            raise ValueError("label_column does not exist in frame")
-        if not pred_column in column_names:
-            raise ValueError("pred_column does not exist in frame")
-        if schema_dict[label_column] in [float32, float64]:
-            raise ValueError("invalid label_column types")
-        if schema_dict[pred_column] in [float32, float64]:
-            raise ValueError("invalid pred_column types")
-        if not beta > 0:
-            raise ValueError("invalid beta value for f measure")
-        arguments = {'frame_id': frame._id, 'metric_type': metric_type, 'label_column': label_column, 'pred_column': pred_column, 'pos_label': str(pos_label), 'beta': beta}
-        return get_command_output('classification_metric', arguments).get('metric_value')
     
     def confusion_matrix(self, frame, label_column, pred_column, pos_label):
         if label_column.strip() == "":
@@ -538,21 +515,6 @@ class FrameBackendRest(object):
 
         return formattedMatrix
 
-    def cumulative_dist(self, frame, sample_col, dist_type, count_value="1"):
-        import numpy as np
-        if not sample_col in frame.column_names:
-            raise ValueError("sample_col does not exist in frame")
-        col_types = dict(frame.schema)
-        if dist_type in ['cumulative_sum', 'cumulative_percent_sum'] and not col_types[sample_col] in [np.float32, np.float64, np.int32, np.int64]:
-            raise ValueError("invalid sample_col type for the specified dist_type")
-        if not dist_type in ['cumulative_sum', 'cumulative_count', 'cumulative_percent_sum', 'cumulative_percent_count']:
-            raise ValueError("invalid distribution type")
-        # TODO: check count_value
-        name = self._get_new_frame_name()
-        arguments = {'frame_id': frame._id, 'name': name, 'sample_col': sample_col, 'dist_type': dist_type, 'count_value': str(count_value)}
-        return execute_new_frame_command('cumulative_dist', arguments)
-
-
 class FrameInfo(object):
     """
     JSON-based Server description of a BigFrame
@@ -566,19 +528,24 @@ class FrameInfo(object):
 
     def __str__(self):
         return '%s "%s"' % (self.id_number, self.name)
+    
     def _validate(self):
         try:
             assert self.id_number
         except KeyError:
-            raise RuntimeError("Invalid response from server.  Expected Frame info.")
+            raise RuntimeError("Invalid response from server. Expected Frame info.")
 
     @property
     def id_number(self):
         return self._payload['id']
-
+    
     @property
     def name(self):
         return self._payload['name']
+    
+    @property
+    def ia_uri(self):
+        return self._payload['ia_uri']
 
     @property
     def schema(self):
@@ -654,6 +621,7 @@ class FrameData:
 
 def initialize_frame(frame, frame_info):
     """Initializes a frame according to given frame_info"""
+    frame._ia_uri = frame_info.ia_uri
     frame._id = frame_info.id_number
     frame._error_frame_id = frame_info.error_frame_id
 

@@ -54,7 +54,6 @@ case class LoadSource(source_type: String, uri: String, parser: Option[LineParse
  */
 case class LineParser(name: String, arguments: LineParserArguments)
 
-//skip_rows instead of skipRows so that the parser can properly parse the REST Apis naming convention
 /**
  * Values needed for initializing a parser.
  *
