@@ -145,7 +145,7 @@ Using Sample Scripts
 ====================
 
 The VM is pre-configured and installed with |IA| toolkit.
-It has many examples and datasets to get you started as soon as the VM is booted.
+It has several examples and datasets to get you started as soon as the VM is booted.
 
 The examples are located in '/home/cloudera/examples'.
 ::

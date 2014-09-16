@@ -53,6 +53,7 @@ def initialize_graph(graph, graph_info):
     """Initializes a graph according to given graph_info"""
     graph._id = graph_info.id_number
     graph._name = graph_info.name
+    graph._ia_uri = graph_info.ia_uri
     graph._uri= http.create_full_uri("graphs/"+ str(graph._id))
     return graph
 
@@ -129,11 +130,14 @@ class GraphBackendRest(object):
         return "graph_" + uuid.uuid4().hex + annotation
 
     def rename_graph(self, graph, name):
-        arguments = {'graph': self._get_graph_full_uri(graph), "new name": name}
+        arguments = {'graph': graph._id, "new name": name}
         execute_update_graph_command('rename_graph', arguments,graph)
 
     def get_name(self, graph):
         return self._get_graph_info(graph).name
+
+    def get_ia_uri(self, graph):
+        return self._get_graph_info(graph).ia_uri
 
     def get_repr(self, graph):
         graph_info = self._get_graph_info(graph)
@@ -301,6 +305,10 @@ class GraphInfo(object):
     @property
     def name(self):
         return self._payload['name']
+
+    @property
+    def ia_uri(self):
+        return self._payload['ia_uri']
 
     @property
     def links(self):

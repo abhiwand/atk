@@ -232,15 +232,19 @@ object DataTypes {
    * @return the converted values. Any values that cannot be parsed will result in an illegal argument exception.
    */
   def parseMany(columnTypes: Array[DataType])(strings: Array[String]): Array[Any] = {
+    val frameColumnCount = columnTypes.length
+    val dataCount = strings.length
+
+    if (frameColumnCount != dataCount)
+      throw new IllegalArgumentException(s"Expected $frameColumnCount columns, but got $dataCount columns in this row.")
+
     val lifted = columnTypes.lift
     strings.zipWithIndex.map {
       case (s, i) => {
         s match {
           case null => null
           case _ =>
-            val colType = lifted(i).getOrElse(throw new IllegalArgumentException(
-              "Data extend beyond number" +
-                " of columns defined in data frame"))
+            val colType = lifted(i).get
             val value = colType.parse(s)
             value.get
         }

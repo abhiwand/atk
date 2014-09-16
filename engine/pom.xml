@@ -6,6 +6,11 @@
     <artifactId>engine</artifactId>
     <packaging>jar</packaging>
 
+    <description>
+        Not used yet - this will be where the Engine is launched when we move it from inside the API Server to
+        its own process.
+    </description>
+
     <parent>
         <groupId>com.intel.ia</groupId>
         <artifactId>IntelAnalytics</artifactId>

@@ -23,6 +23,9 @@
 
 package com.intel.intelanalytics.repository.util
 
+// $COVERAGE-OFF$
+// This is a developer utility, not part of the main product
+
 import java.sql.DriverManager
 
 /**

@@ -23,7 +23,7 @@
 
 package com.intel.intelanalytics.domain.frame
 
-import com.intel.intelanalytics.domain.HasId
+import com.intel.intelanalytics.domain.{ IAUri, HasId }
 import com.intel.intelanalytics.domain.schema.Schema
 import org.joda.time.DateTime
 
@@ -54,9 +54,10 @@ case class DataFrame(id: Long,
                      createdBy: Option[Long] = None,
                      modifiedBy: Option[Long] = None,
                      errorFrameId: Option[Long] = None,
-                     revision: Int = 0) extends HasId {
+                     revision: Int = 0) extends HasId with IAUri {
   require(id >= 0, "id must be zero or greater")
   require(name != null, "name must not be null")
   require(name.trim.length > 0, "name must not be empty or whitespace")
   require(revision >= 0, "revision must be a positive integer")
+  def entity = "frame"
 }

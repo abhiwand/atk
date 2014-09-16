@@ -21,22 +21,15 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.domain
+package com.intel.intelanalytics.domain.frame
 
-import com.intel.intelanalytics.domain.frame.FrameReference
-import org.scalatest.{ Matchers, FlatSpec }
-
-import DomainJsonProtocol._
-import spray.json._
-
-class FrameReferenceFormatTest extends FlatSpec with Matchers {
-
-  "Frame reference (domain)" should "convert ia://dataframes/3 to a frame reference for id 3" in {
-    JsString("ia://dataframes/3").convertTo[FrameReference] should equal(FrameReference(3))
-  }
-
-  it should "convert a frame reference for frame 3 to ia://dataframes/3" in {
-    FrameReference(3).toJson should equal(JsString("ia://dataframes/3"))
-  }
-
+/**
+ * Represents a CumulativeSum object
+ *
+ * @param sampleCol name of the column from which to compute a cumulative distribution
+ * @param frame identifier for the input dataframe
+ */
+case class CumulativeSum(frame: FrameReference, sampleCol: String) {
+  require(frame != null, "frame is required")
+  require(sampleCol != null, "column name for sample is required")
 }

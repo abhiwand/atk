@@ -7,14 +7,14 @@
         {
             "type": "virtualbox-ovf",
 		
-	"source_path": "iabasevm/iabasevm-5.ova",
+	"source_path": "iabasevm/iabasevm-7.ova",
 	"headless": true,
 	"ssh_username": "cloudera",
 	"ssh_password": "cloudera",
 	"ssh_wait_timeout": "5m",
 	"shutdown_timeout": "5m",
 	"shutdown_command": "echo 'packer' | sudo /sbin/shutdown -P now",
-	"vm_name": "IntelAnalytics-0.8.0-CDH-5.0.3-internal-dev",
+	"vm_name": "IntelAnalytics-0.8.5-CDH-5.0.3-internal-dev",
 	"vboxmanage": [
 		["modifyvm", "{{.Name}}", "--memory", "12288"],
 		["modifyvm", "{{.Name}}", "--cpus", "2"]

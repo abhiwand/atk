@@ -21,21 +21,16 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.engine.spark
+package com.intel.intelanalytics.domain.frame
 
-import com.intel.intelanalytics.domain.schema.DataTypes
-import org.scalatest.{ FlatSpec, Matchers }
+/**
+ * Represents a CumulativePercentSum object
+ *
+ * @param sampleCol name of the column from which to compute a cumulative distribution
+ * @param frame identifier for the input dataframe
+ */
 
-class FrameAppendTest extends FlatSpec with Matchers {
-  "List[DataTypes]" should "determine which type they will combine into" in {
-    DataTypes.mergeTypes(DataTypes.string :: DataTypes.int32 :: DataTypes.float64 :: Nil) should be(DataTypes.string)
-    DataTypes.mergeTypes(DataTypes.string :: DataTypes.float64 :: Nil) should be(DataTypes.string)
-    DataTypes.mergeTypes(DataTypes.string :: DataTypes.int64 :: DataTypes.float64 :: Nil) should be(DataTypes.string)
-    DataTypes.mergeTypes(DataTypes.int32 :: DataTypes.float64 :: Nil) should be(DataTypes.float64)
-    DataTypes.mergeTypes(DataTypes.int64 :: DataTypes.float32 :: Nil) should be(DataTypes.float64)
-    DataTypes.mergeTypes(DataTypes.int32 :: DataTypes.int64 :: Nil) should be(DataTypes.int64)
-    DataTypes.mergeTypes(DataTypes.int32 :: DataTypes.float32 :: Nil) should be(DataTypes.float32)
-    DataTypes.mergeTypes(DataTypes.int32 :: DataTypes.int32 :: Nil) should be(DataTypes.int32)
-  }
-
+case class CumulativePercentSum(frame: FrameReference, sampleCol: String) {
+  require(frame != null, "frame is required")
+  require(sampleCol != null, "column name for sample is required")
 }

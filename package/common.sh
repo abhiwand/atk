@@ -4,7 +4,7 @@
 SCRIPT=$(readlink -f "$0")
 SCRIPTPATH=$(dirname "$SCRIPT")
 
-URL="graphtrial.intel.com"
+URL="intel.com"
 MAINTAINER="BDA <BDA@intel.com>"
 
 #deb build defaults

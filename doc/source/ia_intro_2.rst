@@ -21,19 +21,13 @@ using `Apache Spark <http://spark.apache.org/docs/0.9.0/index.html>`_.
 
 Functionality provided includes:
 
-*   Parsing for CSV and JSON data types (see :ref:`Importing Data`)
+*   Parsing for CSV data types (see :ref:`Importing Data`)
 *   Duplicate removal, dropping rows, data filtering, copying data into new columns,
     and concatenating columns (see :ref:`Clean the Data`)
 *   Summary calculations for data inspection, such as counts, measures of central tendency,
-    distribution and percentile of data, dispersions, and binning
+    distribution and percentile of data, dispersions, and binning (see :ref:`ds_dflw_frame_examine`)
 *   Joining of multiple data sources based on record relationships, such as intersection (inner join),
     union (outer join), and lookup inclusion or exclusion (left and right joins) (see :ref:`Transform The Data`)
-*   Date and time functions to convert formats, such as conversion to year/month/day/hour/minute/second,
-    filtering by date, and calculating durations, simplifying the engineering required to build a desired feature
-*   String manipulation, such as regular expression matching, tokenization, query and replace,
-    upper/lower case conversions, splitting and trimming
-*   Common math and calculations, including absolute value, exponentiation, logarithm, square root, rounding,
-    integer operations (such as division, modulo, floor and ceiling), and random number generation
 *   Overall-level and "Group By"-level aggregation, and evaluation through functions like averaging,
     counting total or unique values, summing, finding the min and max, :term:`variance <Bias-variance tradeoff>`,
     and standard deviation, plus advanced transforms like exponentially weighted average (see :ref:`Transform The Data`)
@@ -56,8 +50,10 @@ such as connecting "items" to "purchasers."
 
 To build a graph, the developer assigns which features to use for vertices, which to use for edges,
 their respective labeling, and any associated properties.
-The toolkit routine then assembles the individual records into the properly-formed graph using the computing
-cluster for fast throughput.
+For further details about defining vertices and edges, see :ref:`ds_dflw_building_rules`.
+The toolkit *BigGraph* routine then assembles the individual records into
+the properly-formed graph using the computing cluster for fast throughput.
+For further details about building graphs, see :ref:`ds_dflw_building_a_graph`.
 In this process, duplicate edges are removed if data is incorrectly replicated, and the graph is checked for
 correct form, to eliminate presence of mal-connected edges that can prevent analytic algorithms from operating.
 The final graph is bulk-loaded into the Intel Analytics Toolkit’s graph database.
@@ -175,3 +171,56 @@ be present on the server nodes.
 .. rubric:: Footnotes
 
 .. [#f1] Aurelius (thinkaurelius.com) is the creator of the Titan open source graph database
+
+.. TODO::
+    Functionality provided includes:
+
+    Files:
+    Parsing for CSV: CsvFile
+    Parsing for JSON: ------------  (PUF)
+
+    Frame:
+    Duplicate removal: drop_duplicates
+    dropping rows: drop_rows
+    data filtering: filter
+    copying data into new columns: add_columns, group_by
+    concatenating columns: join
+    Summary calculations: group_by, accuracy, cumulative_sum
+    data inspection, such as counts: group_by, cumulative count
+    measures of central tendency: -----------   (Michael?)
+    distribution of data: ecdf
+    percentile of data: cumulative_percent_sum, cumulative_percent_count
+    dispersions: ------------  (Michael?)
+    binning: bin_column
+    Joining of multiple data sources: join
+    Date and time functions: --------------  (PUF)
+    String manipulation: --------------  (PUF)
+    Common math and calculations: ----------------  (PUF)
+    Overall-level and "Group By": group_by
+
+    Graph:
+    data must first be structured into a network of vertices and edges: vertex_rule, edge_rule
+    To build a graph, the developer assigns which features to use for vertices: vertex_rule
+    which to use for edges: edge_rule
+    their respective labeling, and any associated properties: vertex_rule, edge_rule
+    routine then assembles the graph: graph
+    capabilities to subset the data into modeling sets:   assign_sample
+    sample graph data while preserving key structural properties of the graph: ------------- (sample.vertex_sample)
+    generating a graph data set with weighted edges: --------------  edge_rule (specify the weight as an edge property)
+    data-splitting capabilities: assign_sample
+    transactional functionality: ------------ (We can do read queries using Gremlin, but we do not support transactional writes)
+    adding new vertices and edges: -------------  (graph.append)
+    sorting: ----------- (Not supported)
+    searching: ----------  (query.gremlin)
+    traversing graph elements based on logical properties of the graph: -----------  (query.grelim)
+    finding shortest paths: (Not supported yet)
+    Gremlin graph query language: ----------- (query.gremlin)
+    use Titan to enable storing: --------- (default right now)
+    use Titan to query graph data: ---------  (default right now)
+    appl  Topic Modeling using Latent Dirichlet Allocation: ---------  (graph.ml.latent_dirichelet_allocation)
+    Average path length: (Not supported)
+    Connected component: graph.ml.connected_components
+    Vertex degree: ---------  (query.gremlin - Get count of outgoing edges using Gremlin)
+    Vertex degree distribution: ---------  (Not yet exposed in Python ... used internally)
+    Shortest path from a vertex to all other vertices: Not yet supported
+    Centrality / PageRank: ---------  graph.ml.page_rank
