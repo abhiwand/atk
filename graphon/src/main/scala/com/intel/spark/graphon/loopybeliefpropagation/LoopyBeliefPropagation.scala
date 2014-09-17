@@ -36,11 +36,10 @@ case class Lbp(graph: GraphReference,
 /**
  * The result object
  *
- * Note: For now it is returning the execution time
- *
+ * @param log execution log
  * @param time execution time
  */
-case class LbpResult(time: Double)
+case class LbpResult(log: String, time: Double)
 
 /**
  * Launches the GraphX loopy belief propagation.
@@ -56,7 +55,7 @@ class LoopyBeliefPropagation extends SparkCommandPlugin[Lbp, LbpResult] {
   import DomainJsonProtocol._
 
   implicit val LbpFormat = jsonFormat15(Lbp)
-  implicit val LbpResultFormat = jsonFormat1(LbpResult)
+  implicit val LbpResultFormat = jsonFormat2(LbpResult)
 
   override def execute(sparkInvocation: SparkInvocation, arguments: Lbp)(implicit user: UserPrincipal, executionContext: ExecutionContext): LbpResult = {
 
@@ -101,8 +100,7 @@ class LoopyBeliefPropagation extends SparkCommandPlugin[Lbp, LbpResult] {
     // Get the execution time and print it
     val time = (System.currentTimeMillis() - start).toDouble / 1000.0
 
-    print("Here's your LBP log: " + log)
-    LbpResult(time)
+    LbpResult(log, time)
   }
 
   def parseArguments(arguments: JsObject) = arguments.convertTo[Lbp]

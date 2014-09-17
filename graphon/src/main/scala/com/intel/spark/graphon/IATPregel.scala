@@ -91,23 +91,40 @@ object IATPregel {
    * @return the resulting graph at the end of the computation
    *
    */
-  def apply[VD: ClassTag, ED: ClassTag, A: ClassTag](graph: Graph[VD, ED],
-                                                     initialMsg: A,
-                                                     maxIterations: Int = Int.MaxValue,
-                                                     activeDirection: EdgeDirection = EdgeDirection.Either)(vprog: (VertexId, VD, A) => VD,
-                                                                                                            sendMsg: EdgeTriplet[VD, ED] => Iterator[(VertexId, A)],
-                                                                                                            mergeMsg: (A, A) => A): (Graph[VD, ED], String) =
+  def apply[VD: ClassTag, ED: ClassTag, A: ClassTag, VI: ClassTag, EI: ClassTag, I: ClassTag, S: ClassTag](graph: Graph[VD, ED],
+                                                                                                           initialMsg: A,
+                                                                                                           vertexDataToInitialStatus: VD => VI,
+                                                                                                           vertexInitialStatusCombiner: (VI, VI) => VI,
+                                                                                                           edgeDataToInitialStatus: ED => EI,
+                                                                                                           edgeInitialStatusCombiner: (EI, EI) => EI,
+                                                                                                           generateInitialReport: (VI, EI) => String,
+                                                                                                           accumulateStepStatus: (S, S) => S,
+                                                                                                           convertStateToStatus: VD => S,
+                                                                                                           generatePerStepReport: (S, Int) => String,
+                                                                                                           maxIterations: Int = Int.MaxValue,
+                                                                                                           activeDirection: EdgeDirection = EdgeDirection.Either)(vprog: (VertexId, VD, A) => VD,
+                                                                                                                                                                  sendMsg: EdgeTriplet[VD, ED] => Iterator[(VertexId, A)],
+                                                                                                                                                                  mergeMsg: (A, A) => A): (Graph[VD, ED], String) =
     {
 
       var log = new StringBuilder("Enter the Pregel.\n")
 
+      val vInitial = graph.vertices.map({ case (vid, vdata) => vertexDataToInitialStatus(vdata) }).reduce(vertexInitialStatusCombiner)
+
+      val eInitial = graph.edges.map({ case e: Edge[ED] => edgeDataToInitialStatus(e.attr) }).reduce(edgeInitialStatusCombiner)
+
+      log.++=(generateInitialReport(vInitial, eInitial))
+
       var g = graph.mapVertices((vid, vdata) => vprog(vid, vdata, initialMsg)).cache()
+
       // compute the messages
       var messages = g.mapReduceTriplets(sendMsg, mergeMsg)
       var activeMessages = messages.count()
+
       // Loop
       var prevG: Graph[VD, ED] = null
       var i = 0
+
       while (activeMessages > 0 && i < maxIterations) {
         // Receive the messages. Vertices that didn't get any messages do not appear in newVerts.
         val newVerts = g.vertices.innerJoin(messages)(vprog).cache()
@@ -126,7 +143,7 @@ object IATPregel {
         // vertices of prevG (depended on by newVerts, oldMessages, and the vertices of g).
         activeMessages = messages.count()
 
-        log.++=("Pregel finished iteration " + i + "\n")
+        log.++=(generatePerStepReport(g.vertices.map({ case (id, data) => convertStateToStatus(data) }).reduce(accumulateStepStatus), i))
 
         // Unpersist the RDDs hidden by newly-materialized RDDs
         oldMessages.unpersist(blocking = false)
