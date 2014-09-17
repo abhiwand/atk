@@ -73,7 +73,7 @@ When prompted for the "Default output format" use "json".
 
 To download the VM run::
 
-    aws s3 cp s3://intel-analytics-repo/release/latest/VM/IntelAnalytics-0.8.0-CDH-5.0.3.tar.gz
+    aws s3 cp s3://intel-analytics-repo/release/latest/VM/IntelAnalytics-0.8.5-CDH-5.1.2.tar.gz
     
 Depending on the release you would like to download, you can change '0.8.0' to the latest release, or another you would like to try.
 
@@ -91,12 +91,12 @@ Extracting On Linux
 ===================
 After acquiring the VM, extract the archive::
 
-    tar -xvf IntelAnalytics-0.8.0-CDH-5.0.3.tar.gz
+    tar -xvf IntelAnalytics-0.8.5-CDH-5.1.2.tar.gz
 
 You should have two files after extracting::
 
-    IntelAnalytics-0.8.0-CDH-5.0.3-disk1.vmdk
-    IntelAnalytics-0.8.0-CDH-5.0.3.ovf
+    IntelAnalytics-0.8.5-CDH-5.1.2.vmdk
+    IntelAnalytics-0.8.5-CDH-5.1.2.ovf
 
 ------------
 Import Image
