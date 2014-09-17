@@ -95,7 +95,7 @@ class LbpRunnerTest extends FlatSpec with Matchers with TestingSparkContextFlatS
     // testVertices shouldEqual expectedVerticesOut
     testEdges shouldBe expectedEdgesOut
 
-    log.containsSlice("Pregel has completed iteration 19") shouldBe true
+    log.containsSlice("IATPregel engine has completed iteration 19") shouldBe true
   }
 
 }

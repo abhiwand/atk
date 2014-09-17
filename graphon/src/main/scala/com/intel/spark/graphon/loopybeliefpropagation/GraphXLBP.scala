@@ -2,19 +2,16 @@ package com.intel.spark.graphon.loopybeliefpropagation
 
 import scala.reflect.ClassTag
 import org.apache.spark.graphx._
-import com.intel.spark.graphon.iatpregel.{IATPregelLogger, IATPregel}
+import com.intel.spark.graphon.iatpregel._
+import com.intel.spark.graphon.iatpregel.IATPregelLogger
 
 case class VertexState(value: Double, id: Any, delta: Double)
-
-case class InitialVertexStatus(vertexCount: Long)
-
-case class InitialEdgeStatus(edgeCount: Long)
-
-case class SuperStepStatus(vertexCount: Long, sumOfDeltas: Double)
 
 object GraphXLBP {
 
   def runGraphXLBP(graph: Graph[VertexState, Double], maxIterations: Int): (Graph[VertexState, Double], String) = {
+
+    // pregeling
 
     val initialMessage: Double = 0
 
@@ -35,27 +32,14 @@ object GraphXLBP {
       0.05d
     }
 
-    def accumulateStatus(status1: SuperStepStatus, status2: SuperStepStatus) = {
+    // logging
 
-      SuperStepStatus(status1.vertexCount + status2.vertexCount, status1.sumOfDeltas + status2.sumOfDeltas)
-    }
 
-    def convertStateToStatus(state: VertexState): SuperStepStatus = SuperStepStatus(1, state.delta)
+    def vertexDataToInitialStatus(vdata: VertexState) = InitialVertexCount(1)
+    def edgeDataToInitialStatus(edata: Double) = InitialEdgeCount(1)
+    def convertStateToStatus(state: VertexState): SuperStepCountNetDelta = SuperStepCountNetDelta(1, state.delta)
 
-    def generateStepReport(status: SuperStepStatus, iteration: Int) = {
-      "IATPregel has completed iteration " + iteration + "  "+
-        "The average delta is " + (status.sumOfDeltas / status.vertexCount + "\n")
-    }
-
-    def vertexDataToInitialStatus(vdata: VertexState) = InitialVertexStatus(1)
-    def vertexInitialStatusCombiner(status1: InitialVertexStatus, status2: InitialVertexStatus) =
-      InitialVertexStatus(status1.vertexCount + status2.vertexCount)
-
-    def edgeDataToInitialStatus(edata: Double) = InitialEdgeStatus(1)
-    def edgeInitialStatusCombiner(status1: InitialEdgeStatus, status2: InitialEdgeStatus) =
-      InitialEdgeStatus(status1.edgeCount + status2.edgeCount)
-
-    def generateInitialReport(initialVertexStatus: InitialVertexStatus, initialEdgeStatus: InitialEdgeStatus) = {
+    def generateInitialReport(initialVertexStatus: InitialVertexCount, initialEdgeStatus: InitialEdgeCount) = {
       var report = new StringBuilder("**** LOOPY BELIEF PROPAGATION ****\n")
 
       report.++=("vertex count = " + initialVertexStatus.vertexCount + "\n")
@@ -65,15 +49,15 @@ object GraphXLBP {
       report.toString()
     }
 
-    val pregelLogger = IATPregelLogger(vertexDataToInitialStatus,
-      vertexInitialStatusCombiner,
-      edgeDataToInitialStatus,
-      edgeInitialStatusCombiner,
-      generateInitialReport,
-      accumulateStatus,
-      convertStateToStatus,
-      generateStepReport )
 
+    val pregelLogger = IATPregelLogger(vertexDataToInitialStatus,
+      InitialVertexCount.combine,
+      edgeDataToInitialStatus,
+      InitialEdgeCount.combine,
+      generateInitialReport,
+      SuperStepCountNetDelta.accumulateSuperStepStatus,
+      convertStateToStatus,
+      SuperStepCountNetDelta.generateStepReport)
 
     IATPregel(graph,
       initialMessage,

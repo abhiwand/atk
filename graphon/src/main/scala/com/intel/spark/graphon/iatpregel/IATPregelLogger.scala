@@ -14,18 +14,17 @@ import scala.reflect.ClassTag
  * @param convertStateToStatus Converts vertex data into super-step status record.
  * @param generatePerStepReport Convert super-status record into human readable form.
  *
- * @tparam VD Class of the vertex data.
- * @tparam VIS Class of the vertex initial state.
- * @tparam ED Class of the edge data.
- * @tparam EIS Class of the edge initial state.
- * @tparam SSS Class of the super-step state.
+ * @tparam VertexData Class of the vertex data.
+ * @tparam VertexInitialState Class of the vertex initial state.
+ * @tparam EdgeData Class of the edge data.
+ * @tparam EdgeInitialState Class of the edge initial state.
+ * @tparam SuperStepState Class of the super-step state.
  */
-case class IATPregelLogger[VD: ClassTag, VIS: ClassTag, ED: ClassTag, EIS: ClassTag, SSS: ClassTag]
-(vertexDataToInitialStatus: VD => VIS,
- vertexInitialStatusCombiner: (VIS, VIS) => VIS,
- edgeDataToInitialStatus: ED => EIS,
- edgeInitialStatusCombiner: (EIS, EIS) => EIS,
- generateInitialReport: (VIS, EIS) => String,
- accumulateStepStatus: (SSS, SSS) => SSS,
- convertStateToStatus: VD => SSS,
- generatePerStepReport: (SSS, Int) => String)
+case class IATPregelLogger[VertexData: ClassTag, VertexInitialState: ClassTag, EdgeData: ClassTag, EdgeInitialState: ClassTag, SuperStepState: ClassTag](vertexDataToInitialStatus: VertexData => VertexInitialState,
+                                                                                                                                                         vertexInitialStatusCombiner: (VertexInitialState, VertexInitialState) => VertexInitialState,
+                                                                                                                                                         edgeDataToInitialStatus: EdgeData => EdgeInitialState,
+                                                                                                                                                         edgeInitialStatusCombiner: (EdgeInitialState, EdgeInitialState) => EdgeInitialState,
+                                                                                                                                                         generateInitialReport: (VertexInitialState, EdgeInitialState) => String,
+                                                                                                                                                         accumulateStepStatus: (SuperStepState, SuperStepState) => SuperStepState,
+                                                                                                                                                         convertStateToStatus: VertexData => SuperStepState,
+                                                                                                                                                         generatePerStepReport: (SuperStepState, Int) => String)
