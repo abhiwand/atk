@@ -1870,7 +1870,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
 
         The cumulative sum for column *obs* is obtained by::
 
-            cs_frame = my_frame.cumulative_sum('obs', 1)
+            cs_frame = my_frame.cumulative_sum('obs')
 
         The BigFrame *cs_frame* accesses a new frame that contains two columns, *obs* that contains the original column values, and
         *obsCumulativeSum* that contains the cumulative percent count::
