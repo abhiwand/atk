@@ -126,8 +126,6 @@ trait Engine {
 
   def topK(arguments: TopK)(implicit user: UserPrincipal): Execution
 
-  def confusionMatrix(arguments: ConfusionMatrix[Long])(implicit user: UserPrincipal): Execution
-
   def groupBy(arguments: FrameGroupByColumn[JsObject, Long])(implicit user: UserPrincipal): Execution
 
   def getFrames()(implicit p: UserPrincipal): Future[Seq[DataFrame]]
@@ -150,14 +148,14 @@ trait Engine {
 
   def deleteGraph(graph: Graph): Future[Unit]
 
-  def cum_sum(arguments: CumulativeSum)(implicit user: UserPrincipal): Execution
-  def cum_percent(arguments: CumulativePercentSum)(implicit user: UserPrincipal): Execution
+  def cumSum(arguments: CumulativeSum)(implicit user: UserPrincipal): Execution
+  def cumPercent(arguments: CumulativePercentSum)(implicit user: UserPrincipal): Execution
   def tally(arguments: CumulativeCount)(implicit user: UserPrincipal): Execution
-  def tally_percent(arguments: CumulativePercentCount)(implicit user: UserPrincipal): Execution
+  def tallyPercent(arguments: CumulativePercentCount)(implicit user: UserPrincipal): Execution
 
   // Model performance measures
 
-  def f_measure(arguments: ClassificationMetric)(implicit user: UserPrincipal): Execution
+  def classificationMetrics(arguments: ClassificationMetric)(implicit user: UserPrincipal): Execution
 
   def ecdf(arguments: ECDF[Long])(implicit user: UserPrincipal): Execution
 
