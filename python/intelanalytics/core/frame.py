@@ -1100,69 +1100,6 @@ class BigFrame(CommandLoadableBigFrame):
         except:
             raise IaError(logger)
 
-    @deprecated("Use auto generated cumulative_sum().")
-    def cumulative_sum(self, sample_col):
-        """
-        Compute a cumulative sum.
-
-        A cumulative sum is computed by sequentially stepping through the column values and keeping track of the current
-        cumulative sum for each value.
-
-        Parameters
-        ----------
-        sample_col : string
-            The name of the column from which to compute the cumulative sum
-
-        Returns
-        -------
-        BigFrame
-            A new object accessing a frame containing the original columns appended with a column containing the cumulative sums
-
-        Notes
-        -----
-        This function applies only to columns containing numerical data.
-
-        Examples
-        --------
-        Consider BigFrame *my_frame*, which accesses a frame that contains a single column named *obs*::
-
-            my_frame.inspect()
-
-             obs int32
-            |---------|
-               0
-               1
-               2
-               0
-               1
-               2
-
-        The cumulative percent count for column *obs* is obtained by::
-
-            cs_frame = my_frame.cumulative_percent_count('obs', 1)
-
-        The BigFrame *cs_frame* accesses a new frame that contains two columns, *obs* that contains the original column values, and
-        *obsCumulativeSum* that contains the cumulative percent count::
-
-            cs_frame.inspect()
-
-             obs int32   obsCumulativeSum int32
-            |----------------------------------|
-               0                     0
-               1                     1
-               2                     3
-               0                     3
-               1                     4
-               2                     6
-
-        .. versionadded:: 0.8
-
-        """
-        try:
-            return self.cumulative_sum(sample_col)
-        except:
-            raise IaError(logger)
-
     @deprecated("Use drop_rows().")
     def drop(self, predicate):
         self.drop_rows(predicate)
