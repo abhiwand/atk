@@ -28,17 +28,18 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-
 from intelanalytics.core.column import BigColumn
 from intelanalytics.core.errorhandle import IaError
 from intelanalytics.core.metaprog import CommandLoadable
 try:
     from intelanalytics.core.autoframe import CommandLoadableBigFrame
-    command_loadable = CommandLoadableBigFrame
     logger.info("BigFrame is inheriting commands from autoframe.py")
 except:
-    logger.info("autoframe.py not found, BigFrame is NOT inheriting commands from it")
-    command_loadable = CommandLoadable
+    msg = "autoframe.py not found, BigFrame is NOT inheriting commands from it"
+    logger.warn(msg)
+    import warnings
+    warnings.warn(msg, RuntimeWarning)
+    CommandLoadableBigFrame = CommandLoadable
 
 from intelanalytics.core.deprecate import deprecated
 
@@ -61,9 +62,9 @@ def get_frame_names():
     --------
     Create two BigFrame objects and get their names::
 
-        my_frame = BigFrame(csv_schema_1, "BigFrame1")
-        your_frame = BigFrame(csv_schema_2, "BigFrame2")
-        frame_names = get_frame_names()
+        my_frame = ia.BigFrame(csv_schema_1, "BigFrame1")
+        your_frame = ia.BigFrame(csv_schema_2, "BigFrame2")
+        frame_names = ia.get_frame_names()
         print frame_names
 
     Result would be::
@@ -98,10 +99,11 @@ def get_frame(name):
 
     Examples
     --------
-    Create a frame *my_frame*; create a BigFrame proxy for it; check that the new BigFrame is equivalent to the original::
+    Create a frame *my_frame*; create a BigFrame proxy for it; check that the new BigFrame is
+    equivalent to the original::
 
-        my_frame = BigFrame(my_csv, "my_frame")
-        your_frame = get_frame("my_frame")
+        my_frame = ia.BigFrame(my_csv, "my_frame")
+        your_frame = ia.get_frame("my_frame")
         print my_frame == your_frame
 
     Result would be::
@@ -143,15 +145,15 @@ def drop_frames(frame):
     --------
     Create a new frame; delete it; print what gets returned from the function::
 
-        my_frame = BigFrame(my_csv, 'my_frame')
-        deleted_frame = drop_frames('my_frame')
+        my_frame = ia.BigFrame(my_csv, 'my_frame')
+        deleted_frame = ia.drop_frames('my_frame')
         print deleted_frame
 
     The result would be::
 
         "my_frame"
 
-    .. versionadded:: 0.8
+    .. versionchanged:: 0.8.5
 
     """
     try:
@@ -160,7 +162,7 @@ def drop_frames(frame):
         raise IaError(logger)
 
 
-class BigFrame(command_loadable):
+class BigFrame(CommandLoadableBigFrame):
     """
     Data handle.
 
@@ -182,21 +184,29 @@ class BigFrame(command_loadable):
     Notes
     -----
     If no name is provided for the BigFrame object, it will generate one.
-    An automatically generated name will be the word "frame_" followed by the uuid.uuid4().hex and
+    An automatically generated name will be the word "frame\_" followed by the uuid.uuid4().hex and
     if allowed, an "_" character then the name of the data source.
-    For example, ``frame_b21a3475a2175f165ba7...``
+    For example, ``u'frame_e433e25751b6434bae13b6d1c8ab45c1_csv_file'``
+
+    If a string in the csv file starts and ends with a double-quote (") character, the character is stripped
+    off of the data before it is put into the field.
+    Anything, including delimiters, between the double-quote characters is considered part of the string.
+    If the first character after the delimiter is anything other than a double-quote character,
+    the string will be composed of all the characters between the delimiters, including double-quotes.
+    If the first field type is string, leading spaces on each row are considered part of the string.
+    If the last field type is string, trailing spaces on each row are considered part of the string.
 
     Examples
     --------
     Create a BigFrame object; name it "my_frame"::
 
-        g = BigFrame(my_csv_schema, "my_frame")
+        g = ia.BigFrame(my_csv_schema, "my_frame")
 
     A BigFrame object has been created and *g* is its proxy. It brought in the data described by *my_csv_schema*. It is named *my_frame*.
 
     Create an empty frame; name it "your_frame"::
 
-        h = BigFrame(name='your_frame')
+        h = ia.BigFrame(name='your_frame')
 
     A BigFrame object has been created and *h* is its proxy. It has no data yet, but it does have the name *your_frame*.
 
@@ -208,17 +218,18 @@ class BigFrame(command_loadable):
     # TODO - Review Parameters, Examples
 
     # command load filters:
-    command_prefixes = ['dataframe', 'dataframes']
-    command_mute_list = ['load', 'project', 'rename_frame']  # these commands are not exposed
+    _command_prefixes = ['dataframe', 'dataframes']
+    _muted_command_names = ['load', 'project', 'rename_frame']  # these commands are not exposed
 
     def __init__(self, source=None, name=None):
         try:
-            self._id = 0
             self._error_frame_id = None
+            self._id = 0
+            self._ia_uri = None
             if not hasattr(self, '_backend'):  # if a subclass has not already set the _backend
                 self._backend = _get_backend()
             new_frame_name = self._backend.create(self, source, name)
-            CommandLoadable.__init__(self)
+            CommandLoadableBigFrame.__init__(self)
             logger.info('Created new frame "%s"', new_frame_name)
         except:
             raise IaError(logger)
@@ -324,7 +335,7 @@ class BigFrame(command_loadable):
         --------
         Create a BigFrame object from the data described by schema *my_csv*; get the column names::
 
-            my_frame = BigFrame(source='my_csv')
+            my_frame = ia.BigFrame(source='my_csv')
             my_columns = my_frame.column_names
             print my_columns
 
@@ -356,7 +367,7 @@ class BigFrame(command_loadable):
         --------
         Create a frame and give it the name "Flavor Recipes"; read the name back to check it::
 
-            frame = BigFrame(name="Flavor Recipes")
+            frame = ia.BigFrame(name="Flavor Recipes")
             given_name = frame.name
             print given_name
 
@@ -393,6 +404,7 @@ class BigFrame(command_loadable):
         except:
             raise IaError(logger)
 
+
     @property
     def row_count(self):
         """
@@ -422,6 +434,13 @@ class BigFrame(command_loadable):
             raise IaError(logger)
 
     @property
+    def ia_uri(self):
+        try:
+            return self._backend.get_ia_uri(self)
+        except:
+            raise IaError(logger)
+
+    @property
     def schema(self):
         """
         BigFrame schema.
@@ -438,7 +457,7 @@ class BigFrame(command_loadable):
         --------
         Given that we have an existing data frame *my_data*, get the BigFrame proxy then the frame schema::
 
-            BF = get_frame('my_data')
+            BF = ia.get_frame('my_data')
             my_schema = BF.schema
             print my_schema
 
@@ -453,6 +472,57 @@ class BigFrame(command_loadable):
             return self._backend.get_schema(self)
         except:
             raise IaError(logger)
+
+    def accuracy(self, label_column, pred_column):
+        """
+        Model accuracy.
+
+        Computes the accuracy measure for a classification model
+        A column containing the correct labels for each instance and a column containing the predictions made by the classifier are specified.
+        The accuracy of a classification model is the proportion of predictions that are correct.
+        If we let :math:`T_{P}` denote the number of true positives, :math:`T_{N}` denote the number of true negatives, and :math:`K`
+        denote the total number of classified instances, then the model accuracy is given by: :math:`\\frac{T_{P} + T_{N}}{K}`.
+
+        This measure applies to binary and multi-class classifiers.
+
+        Parameters
+        ----------
+        label_column : str
+            the name of the column containing the correct label for each instance
+        pred_column : str
+            the name of the column containing the predicted label for each instance
+
+        Returns
+        -------
+        float64
+            the accuracy measure for the classifier
+
+        Examples
+        --------
+        Consider the following sample data set in *frame* with actual data labels specified in the *labels* column and
+        the predicted labels in the *predictions* column::
+
+            frame.inspect()
+
+              a:unicode   b:int32   labels:int32  predictions:int32
+            |-------------------------------------------------------|
+              red               1              0                  0
+              blue              3              1                  0
+              blue              1              0                  0
+              green             0              1                  1
+
+            frame.accuracy('labels', 'predictions')
+
+            0.75
+
+        .. versionadded:: 0.8
+
+        """
+        try:
+            return self._backend.classification_metric(self, 'accuracy', label_column, pred_column, '1', 1)
+        except:
+            raise IaError(logger)
+
 
     def add_columns(self, func, schema):
         """
@@ -474,12 +544,13 @@ class BigFrame(command_loadable):
         Notes
         -----
         The row function ('func') must return a value in the same format as specified by the schema.
-        See :doc:ds_apir.
+        See :doc:`ds_apir`.
 
         Examples
         --------
         Given a BigFrame proxy *my_frame* identifying a data frame with two int32 columns *column1* and *column2*.
-        Add a third column named "column3" as an int32 and fill it with the contents of *column1* and *column2* multiplied together::
+        Add a third column named "column3" as an int32 and fill it with the contents of *column1* and *column2*
+        multiplied together::
 
             my_frame.add_columns(lambda row: row.column1*row.column2, ('column3', int32))
 
@@ -491,11 +562,13 @@ class BigFrame(command_loadable):
             my_frame.add_columns(lambda row: '', ('column4', str))
 
         The BigFrame object *my_frame* now has four columns *column1*, *column2*, *column3*, and *column4*.
-        The first three columns are int32 and the fourth column is string.  Column *column4* has an empty string ('') in every row.
+        The first three columns are int32 and the fourth column is string.  Column *column4* has an
+        empty string ('') in every row.
 
         Multiple columns can be added at the same time.
         Add a column *a_times_b* and fill it with the contents of column *a* multiplied by the contents of column *b*.
-        At the same time, add a column *a_plus_b* and fill it with the contents of column *a* plus the contents of column *b*::
+        At the same time, add a column *a_plus_b* and fill it with the contents of column *a* plus
+        the contents of column *b*::
 
             my_frame.add_columns(lambda row: [row.a * row.b, row.a + row.b], [("a_times_b", float32), ("a_plus_b", float32))
 
@@ -707,7 +780,7 @@ class BigFrame(command_loadable):
 
             my_frame.quantiles('final_sale_price', [10, 50, 100])
 
-        .. versionadded:: 0.8
+        .. versionchanged:: 0.8.5
 
         """
         try:
@@ -719,6 +792,7 @@ class BigFrame(command_loadable):
             return result_dict
         except:
             raise IaError(logger)
+
 
     def confusion_matrix(self, label_column, pred_column, pos_label=1):
         """
@@ -768,8 +842,9 @@ class BigFrame(command_loadable):
 
     def copy(self, columns=None):
         """
-        Copy frame or certain frame columns entirely.
+        Copy frame.
 
+        Copy frame or certain frame columns entirely.
 
         Parameters
         ----------
@@ -786,7 +861,7 @@ class BigFrame(command_loadable):
         --------
         Build a BigFrame from a csv file with 5 million rows of data; call the frame "cust"::
 
-            my_frame = BigFrame(source="my_data.csv")
+            my_frame = ia.BigFrame(source="my_data.csv")
             my_frame.name("cust")
 
         At this point we have one frame of data, which is now called "cust".
@@ -835,6 +910,252 @@ class BigFrame(command_loadable):
         except:
             raise IaError(logger)
 
+    def cumulative_count(self, sample_col, count_value):
+        """
+        Compute a cumulative count.
+
+        A cumulative count is computed by sequentially stepping through the column values and keeping track of the
+        the number of times the specified *count_value* has been seen up to the current value.
+
+        Parameters
+        ----------
+        sample_col : string
+            The name of the column from which to compute the cumulative count
+        count_value : any
+            The column value to be used for the counts
+
+        Returns
+        -------
+        BigFrame
+            A new object accessing a new frame containing the original columns appended with a column containing the cumulative counts
+
+        Examples
+        --------
+        Consider BigFrame *my_frame*, which accesses a frame that contains a single column *obs*::
+
+            my_frame.inspect()
+
+             obs int32
+            |---------|
+               0
+               1
+               2
+               0
+               1
+               2
+
+        The cumulative count for column *obs* using *count_value = 1* is obtained by::
+
+            cc_frame = my_frame.cumulative_count('obs', 1)
+
+        The BigFrame *cc_frame* accesses a frame which contains two columns *obs* and *obsCumulativeCount*.
+        Column *obs* still has the same data and *obsCumulativeCount* contains the cumulative counts::
+
+            cc_frame.inspect()
+
+             obs int32   obsCumulativeCount int32
+            |------------------------------------|
+               0                          0
+               1                          1
+               2                          1
+               0                          1
+               1                          2
+               2                          2
+
+        .. versionadded:: 0.8
+
+        """
+        try:
+            return self._backend.cumulative_dist(self, sample_col, 'cumulative_count', count_value)
+        except:
+            raise IaError(logger)
+
+    def cumulative_percent_sum(self, sample_col):
+        """
+        Compute a cumulative percent sum.
+
+        A cumulative percent sum is computed by sequentially stepping through the column values and keeping track of the
+        current percentage of the total sum accounted for at the current value.
+
+        Parameters
+        ----------
+        sample_col : string
+            The name of the column from which to compute the cumulative percent sum
+
+        Returns
+        -------
+        BigFrame
+            A new object accessing a new frame containing the original columns appended with a column containing the cumulative percent sums
+
+        Notes
+        -----
+        This function applies only to columns containing numerical data.
+
+        Examples
+        --------
+        Consider BigFrame *my_frame* accessing a frame that contains a single column named *obs*::
+
+            my_frame.inspect()
+
+             obs int32
+            |---------|
+               0
+               1
+               2
+               0
+               1
+               2
+
+        The cumulative percent sum for column *obs* is obtained by::
+
+            cps_frame = my_frame.cumulative_percent_sum('obs')
+
+        The new frame accessed by BigFrame *cps_frame* contains two columns *obs* and *obsCumulativePercentSum*.
+        They contain the original data and the cumulative percent sum, respectively::
+
+            cps_frame.inspect()
+
+             obs int32   obsCumulativePercentSum float64
+            |-------------------------------------------|
+               0                          0.0
+               1                          0.16666666
+               2                          0.5
+               0                          0.5
+               1                          0.66666666
+               2                          1.0
+
+        .. versionadded:: 0.8
+
+        """
+        try:
+            return self._backend.cumulative_dist(self, sample_col, 'cumulative_percent_sum')
+        except:
+            raise IaError(logger)
+
+    def cumulative_percent_count(self, sample_col, count_value):
+        """
+        Compute a cumulative percent count.
+
+        A cumulative percent count is computed by sequentially stepping through the column values and keeping track of
+        the current percentage of the total number of times the specified *count_value* has been seen up to the current
+        value.
+
+        Parameters
+        ----------
+        sample_col : string
+            The name of the column from which to compute the cumulative sum
+        count_value : any
+            The column value to be used for the counts
+
+        Returns
+        -------
+        BigFrame
+            A new object accessing a new frame containing the original columns appended with a column containing the cumulative percent counts
+
+        Examples
+        --------
+        Consider BigFrame *my_frame*, which accesses a frame that contains a single column named *obs*::
+
+            my_frame.inspect()
+
+             obs int32
+            |---------|
+               0
+               1
+               2
+               0
+               1
+               2
+
+        The cumulative percent count for column *obs* is obtained by::
+
+            cpc_frame = my_frame.cumulative_percent_count('obs', 1)
+
+        The BigFrame *cpc_frame* accesses a new frame that contains two columns, *obs* that contains the original column values, and
+        *obsCumulativePercentCount* that contains the cumulative percent count::
+
+            cpc_frame.inspect()
+
+             obs int32   obsCumulativePercentCount float64
+            |---------------------------------------------|
+               0                          0.0
+               1                          0.5
+               2                          0.5
+               0                          0.5
+               1                          1.0
+               2                          1.0
+
+        .. versionadded:: 0.8
+
+        """
+        try:
+            return self._backend.cumulative_dist(self, sample_col, 'cumulative_percent_count', count_value)
+        except:
+            raise IaError(logger)
+
+    def cumulative_sum(self, sample_col):
+        """
+        Compute a cumulative sum.
+
+        A cumulative sum is computed by sequentially stepping through the column values and keeping track of the current
+        cumulative sum for each value.
+
+        Parameters
+        ----------
+        sample_col : string
+            The name of the column from which to compute the cumulative sum
+
+        Returns
+        -------
+        BigFrame
+            A new object accessing a frame containing the original columns appended with a column containing the cumulative sums
+
+        Notes
+        -----
+        This function applies only to columns containing numerical data.
+
+        Examples
+        --------
+        Consider BigFrame *my_frame*, which accesses a frame that contains a single column named *obs*::
+
+            my_frame.inspect()
+
+             obs int32
+            |---------|
+               0
+               1
+               2
+               0
+               1
+               2
+
+        The cumulative percent count for column *obs* is obtained by::
+
+            cs_frame = my_frame.cumulative_percent_count('obs', 1)
+
+        The BigFrame *cs_frame* accesses a new frame that contains two columns, *obs* that contains the original column values, and
+        *obsCumulativeSum* that contains the cumulative percent count::
+
+            cs_frame.inspect()
+
+             obs int32   obsCumulativeSum int32
+            |----------------------------------|
+               0                     0
+               1                     1
+               2                     3
+               0                     3
+               1                     4
+               2                     6
+
+        .. versionadded:: 0.8
+
+        """
+        try:
+            return self._backend.cumulative_dist(self, sample_col, 'cumulative_sum')
+        except:
+            raise IaError(logger)
+
+    @deprecated("Use drop_rows().")
     def drop(self, predicate):
         self.drop_rows(predicate)
 
@@ -854,15 +1175,15 @@ class BigFrame(command_loadable):
         For this example, my_frame is a BigFrame object accessing a frame with lots of data for the attributes of *lions*, *tigers*, and *ligers*.
         Get rid of the *lions* and *tigers*::
 
-            my_frame.drop(lambda row: row.animal_type == "lion" or row.animal_type == "tiger")
+            my_frame.drop_rows(lambda row: row.animal_type == "lion" or row.animal_type == "tiger")
 
         Now the frame only has information about *ligers*.
 
         More information on row functions can be found at :doc:`ds_apir`.
 
-        For further examples, see :ref:`example_frame.drop`
+        For further examples, see :ref:`example_frame.drop_rows`
 
-        .. versionadded:: 0.8
+        .. versionchanged:: 0.8.5
 
         """
         # TODO - Review docstring
@@ -1026,6 +1347,77 @@ class BigFrame(command_loadable):
         except:
             raise IaError(logger)
 
+    #def f_measure(self, label_column, pred_column, pos_label=1, beta=1):
+        """
+        Model :math:`F_{\\beta}` measure.
+
+        Computes the :math:`F_{\\beta}` measure for a classification model.
+        A column containing the correct labels for each instance and a column containing the predictions made by the model are specified.
+        The :math:`F_{\\beta}` measure of a binary classification model is the harmonic mean of precision and recall.
+        If we let:
+
+        * beta :math:`\\equiv \\beta`,
+        * :math:`T_{P}` denote the number of true positives,
+        * :math:`F_{P}` denote the number of false positives, and
+        * :math:`F_{N}` denote the number of false negatives,
+
+        then:
+
+        .. math::
+            F_{\\beta} = \\left(1 + \\beta ^ 2\\right) * \\frac{\\frac{T_{P}}{T_{P} + F_{P}} * \\frac{T_{P}}{T_{P} + F_{N}}}{\\beta ^ 2 * \\
+            \\left(\\frac{T_{P}}{T_{P} + F_{P}} + \\frac{T_{P}}{T_{P} + F_{N}}\\right)}
+
+        For multi-class classification, the :math:`F_{\\beta}` measure is computed as the weighted average of the :math:`F_{\\beta}` measure
+        for each label, where the weight is the number of instance with each label in the labeled column.  The
+        determination of binary vs. multi-class is automatically inferred from the data.
+
+        Parameters
+        ----------
+        label_column : str
+            the name of the column containing the correct label for each instance
+        pred_column : str
+            the name of the column containing the predicted label for each instance
+        pos_label : int or str, (optional)
+            the value to be interpreted as a positive instance (only for binary, ignored for multi-class)
+        beta : float, (optional)
+            beta value to use for :math:`F_{\\beta}` measure (default F1 measure is computed); must be greater than zero
+
+        Returns
+        -------
+        float64
+            the :math:`F_{\\beta}` measure for the classifier
+
+        Examples
+        --------
+        Consider the following sample data set in *frame* with actual data labels specified in the *labels* column and
+        the predicted labels in the *predictions* column::
+
+            frame.inspect()
+
+              a:unicode   b:int32   labels:int32  predictions:int32
+            |-------------------------------------------------------|
+              red               1              0                  0
+              blue              3              1                  0
+              blue              1              0                  0
+              green             0              1                  1
+
+            frame.f_measure('labels', 'predictions')
+
+            0.66666666666666663
+
+            frame.f_measure('labels', 'predictions', beta=2)
+
+            0.55555555555555558
+
+            frame.f_measure('labels', 'predictions', pos_label=0)
+
+            0.80000000000000004
+
+        .. versionadded:: 0.8
+
+        """
+        #return self._backend.classification_metric(self, 'f_measure', label_column, pred_column, pos_label, beta)
+
     def get_error_frame(self):
         """
         Frame with errors.
@@ -1053,7 +1445,8 @@ class BigFrame(command_loadable):
         Create summarized frame.
 
         Creates a new frame and returns a BigFrame object to access it.
-        Takes a column or group of columns, finds the unique combination of values, and creates unique rows with these column values.
+        Takes a column or group of columns, finds the unique combination of values,
+        and creates unique rows with these column values.
         The other columns are combined according to the aggregation argument(s).
 
         Parameters
@@ -1071,10 +1464,11 @@ class BigFrame(command_loadable):
 
         Notes
         -----
-        * The column names created by aggregation functions in the new frame are the original column name appended with the '_' character
-          and the aggregation function.
-          For example, if the original field is 'a' and the function is 'avg', the resultant column is named 'a_avg'.
-        * An aggregation argument of 'count' results in a column named 'count'.
+        *   The column names created by aggregation functions in the new frame are the original column
+            name appended with the '_' character and the aggregation function.
+            For example, if the original field is 'a' and the function is 'avg',
+            the resultant column is named 'a_avg'.
+        *   An aggregation argument of 'count' results in a column named 'count'.
 
         Examples
         --------
@@ -1091,9 +1485,10 @@ class BigFrame(command_loadable):
              bat
              cat
 
-        Create a new frame, combining similar values of column *a*, and count how many of each value is in the original frame::
+        Create a new frame, combining similar values of column *a*, and count how many of each
+        value is in the original frame::
 
-            new_frame = my_frame.groupBy('a', count)
+            new_frame = my_frame.group_by('a', count)
             new_frame.inspect()
 
              a str       count int
@@ -1139,7 +1534,8 @@ class BigFrame(command_loadable):
              big     1     8.0       5
 
         Create a new frame from this data, grouping the rows by unique combinations of column *a* and *c*;
-        count each group; for column *d* calculate the average, sum and minimum value; for column *e*, save the maximum value::
+        count each group; for column *d* calculate the average, sum and minimum value; for column *e*,
+        save the maximum value::
 
             new_frame = my_frame.group_By(['a', 'c'], agg.count, {'d': [agg.avg, agg.sum, agg.min], 'e': agg.max})
 
@@ -1150,7 +1546,7 @@ class BigFrame(command_loadable):
 
         For further examples, see :ref:`example_frame.group_by`.
 
-        .. versionadded:: 0.8
+        .. versionchanged:: 0.8.5
 
         """
         try:
@@ -1174,7 +1570,7 @@ class BigFrame(command_loadable):
         columns : String or iterable of string
             Specify the columns to be included in the result. By default all the columns
             are to be included
-            
+
 
         Returns
         -------
@@ -1264,6 +1660,173 @@ class BigFrame(command_loadable):
             return self._backend.join(self, right, left_on, right_on, how)
         except:
             raise IaError(logger)
+
+    def precision(self, label_column, pred_column, pos_label=1):
+        """
+        Model precision.
+
+        Computes the precision measure for a classification model
+        A column containing the correct labels for each instance and a column containing the predictions made by the
+        model are specified.  The precision of a binary classification model is the proportion of predicted positive
+        instances that are correct.  If we let :math:`T_{P}` denote the number of true positives and :math:`F_{P}` denote the number of false
+        positives, then the model precision is given by: :math:`\\frac {T_{P}} {T_{P} + F_{P}}`.
+
+        For multi-class classification, the precision measure is computed as the weighted average of the precision
+        for each label, where the weight is the number of instances with each label in the labeled column.  The
+        determination of binary vs. multi-class is automatically inferred from the data.
+
+        Parameters
+        ----------
+        label_column : str
+            the name of the column containing the correct label for each instance
+        pred_column : str
+            the name of the column containing the predicted label for each instance
+        pos_label : int or str, (optional, default=1)
+            the value to be interpreted as a positive instance (only for binary, ignored for multi-class)
+
+        Returns
+        -------
+        float64
+            the precision measure for the classifier
+
+        Examples
+        --------
+        Consider the following sample data set in *frame* with actual data labels specified in the *labels* column and
+        the predicted labels in the *predictions* column::
+
+            frame.inspect()
+
+              a:unicode   b:int32   labels:int32  predictions:int32
+            |-------------------------------------------------------|
+              red               1              0                  0
+              blue              3              1                  0
+              blue              1              0                  0
+              green             0              1                  1
+
+            frame.precision('labels', 'predictions')
+
+            1.0
+
+            frame.precision('labels', 'predictions', 0)
+
+            0.66666666666666663
+
+        .. versionadded:: 0.8
+
+        """
+        return self._backend.classification_metric(self, 'precision', label_column, pred_column, pos_label, 1)
+
+    @deprecated("Use copy() instead.")
+    def project_columns(self, column_names, new_names=None):
+        """
+        Create frame from columns.
+
+        Copies specified columns into a new BigFrame object, optionally renaming them.
+
+        Parameters
+        ----------
+
+        column_names : str OR list of str
+            column name OR list of column names to be copied from the currently active frame
+        new_names : str OR list of str
+            The new name(s) for the column(s)
+
+        Notes
+        -----
+        If new column names are specified, the quantity of column names must match the quantity of new names,
+        though if you are only using a single column, it does not matter whether that column is declared in string
+        fashion, or as a single string in a list.
+
+        Returns
+        -------
+        BigFrame
+            A new frame object accessing a new frame containing copies of the specified columns
+
+        Examples
+        --------
+        Given a BigFrame *my_frame*, accessing a frame with columns named *a*, *b*, *c*, *d*.
+        Create a new frame with three columns *apple*, *boat*, and *frog*, where for each row of the original frame, the data from column *a* is copied
+        to the new column *apple*, the data from column *b* is copied to the column *boat*, and the data from column *c* is copied
+        to the column *frog*::
+
+            new_frame = my_frame.project_columns( ['a', 'b', 'c'], ['apple', 'boat', 'frog'])
+
+        And the result is a new BigFrame named 'new_name' accessing a new frame with columns *apple*, *boat*, *frog*, and the data from *my_frame*,
+        column *a* is now copied in column *apple*, the data from column *b* is now copied in column *boat* and the data from column *c* is now
+        copied in column *frog*.
+
+        Continuing::
+
+            frog_frame = new_frame.project_columns('frog')
+
+        And the new BigFrame *frog_frame* is accessing a frame with a single column *frog* which has a copy of all the data from the original
+        column *c* in *my_frame*.
+
+        .. versionadded:: 0.8
+
+        """
+        # TODO - need example in docstring
+        try:
+            projected_frame = BigFrame()
+            self._backend.project_columns(self, projected_frame, column_names, new_names)
+            return projected_frame
+        except:
+            raise IaError(logger)
+
+    def recall(self, label_column, pred_column, pos_label=1):
+        """
+        Model measure.
+
+        Computes the recall measure for a classification model.
+        A column containing the correct labels for each instance and a column containing the predictions made by the model are specified.
+        The recall of a binary classification model is the proportion of positive instances that are correctly identified.
+        If we let :math:`T_{P}` denote the number of true positives and :math:`F_{N}` denote the number of false
+        negatives, then the model recall is given by: :math:`\\frac {T_{P}} {T_{P} + F_{N}}`.
+
+        For multi-class classification, the recall measure is computed as the weighted average of the recall
+        for each label, where the weight is the number of instance with each label in the labeled column.  The
+        determination of binary vs. multi-class is automatically inferred from the data.
+
+        Parameters
+        ----------
+        label_column : str
+            the name of the column containing the correct label for each instance
+        pred_column : str
+            the name of the column containing the predicted label for each instance
+        pos_label : int or str, (optional)
+            the value to be interpreted as a positive instance (only for binary, ignored for multi-class)
+
+        Returns
+        -------
+        float64
+            the recall measure for the classifier
+
+        Examples
+        --------
+        Consider the following sample data set in *frame* with actual data labels specified in the *labels* column and
+        the predicted labels in the *predictions* column::
+
+            frame.inspect()
+
+              a:unicode   b:int32   labels:int32  predictions:int32
+            |-------------------------------------------------------|
+              red               1              0                  0
+              blue              3              1                  0
+              blue              1              0                  0
+              green             0              1                  1
+
+            frame.recall('labels', 'predictions')
+
+            0.5
+
+            frame.recall('labels', 'predictions', 0)
+
+            1.0
+
+        .. versionadded:: 0.8
+
+        """
+        return self._backend.classification_metric(self, 'recall', label_column, pred_column, pos_label, 1)
 
     @deprecated("Use drop_columns() instead.")
     def remove_columns(self, column_names):

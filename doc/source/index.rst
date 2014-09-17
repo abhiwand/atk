@@ -21,6 +21,7 @@ References
 * :ref:`genindex`
 * :ref:`search`
 * :download:`PDF <_downloads/IntelAnalytics.pdf>`
+
 .. toctree::
     :hidden:
     :maxdepth: 1
