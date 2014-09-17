@@ -69,27 +69,6 @@ If working behind a proxy, make sure system proxy settings are configured.
     yum clean all
     yum distro-sync
 
-.. ifconfig:: internal_docs
-
-    12. Install Basic Development Tools
-    ===================================
-
-    RedHat/CentOS/Oracle Linux:
-    ---------------------------
-    ::
-
-        yum --disableexcludes=all install kernel-headers kernel-devel
-        yum groupinstall "Development tools"
-
-    13. Install/Update Additional Software
-    ======================================
-
-    RedHat/CentOS:
-    ---------------------------
-    ::
-
-        yum install openssl openssh man curl nc nano screen vim-enhanced grep gawk awk service chkconfig ntp rpm python sudo rsync
-
 7. Determine primary CDH user
 =============================
 
@@ -139,4 +118,4 @@ Make sure all systems in cluster are in time-sync with one-another.
 12. Reboot!
 ===========
 
-reboot all cluser systems to properly set all changes made.
+Reboot all cluser systems to properly set all changes made.

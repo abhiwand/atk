@@ -16,54 +16,27 @@ Download and install the `Cloudera Manager`_.
 Set Proxy Info in Cloudera Manager (if necessary)
 -------------------------------------------------
 
-.. ifconfig:: internal_docs
+The first step to take in the Cloudera Manager web interface is to add your proxy information.
 
-    The first step to take in the Cloudera Manager web interface is to add JF's proxy information.
-
-    1. Click the "Cloudera Manager" hyperlink graphic on the top left portion of the window.
-    #. Click the Administration drop-down along the top of the window, then select Settings.
-    #. Select the Network button long the menu pane to the left
-    #. In the Proxy Server field, enter proxy.jf.intel.com
-    #. In the Proxy Port field, enter 911
-    #. Hit the Save Changes button to the top right of the active menu
-    #. Hit the admin drop-down menu at the top right corner of the window and logout
-    #. Log back in using the same admin admin username password combo
-
-.. ifconfig:: internal_docs == False
-
-    The first step to take in the Cloudera Manager web interface is to add your proxy information.
-
-    1. Click the "Cloudera Manager" hyperlink graphic on the top left portion of the window.
-    #. Click the Administration drop-down along the top of the window, then select Settings.
-    #. Select the Network button long the menu pane to the left
-    #. In the Proxy Server field, enter the proxy qualified name, for example, "proxy.my.company.com"
-    #. In the Proxy Port field, enter your proxy port number
-    #. Hit the Save Changes button to the top right of the active menu
-    #. Hit the admin drop-down menu at the top right corner of the window and logout
-    #. Log back in using the same admin admin username password combo
+1. Click the "Cloudera Manager" hyperlink graphic on the top left portion of the window.
+#. Click the Administration drop-down along the top of the window, then select Settings.
+#. Select the Network button long the menu pane to the left
+#. In the Proxy Server field, enter the proxy qualified name, for example, "proxy.my.company.com"
+#. In the Proxy Port field, enter your proxy port number
+#. Hit the Save Changes button to the top right of the active menu
+#. Hit the admin drop-down menu at the top right corner of the window and logout
+#. Log back in using the same admin admin username password combo
 
 -------------------
 Submit License File
 -------------------
 
-.. ifconfig:: internal_docs
+To complete this step, you must first acquire the Cloudera license file.
 
-    To complete this step, you must first acquire the "intel_bda_graph_analytics_lab_machines_dev_cloudera_enterprise_license.txt" file,
-    which can be found in the "licenses" folder of either the build server or the CLC.
-
-    1. Under the Cloudera Enterprise column, click on the empty text field to the left of the Upload button
-    #. Select the license file
-    #. Hit the Upload button
-    #. Hit Continue on the bottom right of the window  
-
-.. ifconfig:: internal_docs == False
-
-    To complete this step, you must first acquire the Cloudera license file.
-
-    1. Under the Cloudera Enterprise column, click on the empty text field to the left of the Upload button
-    #. Select the license file
-    #. Hit the Upload button
-    #. Hit Continue on the bottom right of the window  
+1. Under the Cloudera Enterprise column, click on the empty text field to the left of the Upload button
+#. Select the license file
+#. Hit the Upload button
+#. Hit Continue on the bottom right of the window  
 
 ----------------
 Specifying Hosts
