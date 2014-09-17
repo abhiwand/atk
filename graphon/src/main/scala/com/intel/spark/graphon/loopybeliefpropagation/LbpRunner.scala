@@ -13,31 +13,32 @@ object LbpRunner {
 
     val outputPropertyLabel = lbpParameters.output_vertex_property_list.getOrElse("LBP_RESULT")
 
-    // yeah, if one a youse try and do this with an empty RDD, then ya go stuff yerself... CAPICHE?
-
-    val idPropertyName = inVertices.take(1)(0).gbId.key
-
     val inputPropertyName: String = lbpParameters.vertex_value_property_list.get
+
+    val maxIterations: Int = lbpParameters.max_supersteps.getOrElse(20) // 20, really... 20?
 
     // convert to graphX vertices
 
     val graphXVertices =
       inVertices.map((gbVertex => (gbVertex.physicalId.asInstanceOf[Long],
-        VertexState(gbVertex.getProperty(inputPropertyName).get.value.asInstanceOf[List[Double]],
-          gbVertex.id))))
+        VertexState(gbVertex.getProperty(inputPropertyName).get.value.asInstanceOf[Double],
+          gbVertex.id, 0))))
 
     val graphXEdges = inEdges.map(edge =>
       (new Edge[Double](edge.tailPhysicalId.asInstanceOf[Long], edge.headPhysicalId.asInstanceOf[Long], 0)))
 
     val graph = Graph[VertexState, Double](graphXVertices, graphXEdges)
 
-    val (newGraph, log) = GraphXLBP.runGraphXLBP(graph)
+    val (newGraph, log) = GraphXLBP.runGraphXLBP(graph, maxIterations)
 
     val outVertices = newGraph.vertices.map({
       case (vid, vertexState) =>
-        GBVertex(vertexState.id.asInstanceOf[Property].value, vertexState.id.asInstanceOf[Property], Set(Property(outputPropertyLabel, vertexState.values)))
+        GBVertex(vertexState.id.asInstanceOf[Property].value, vertexState.id.asInstanceOf[Property], Set(Property(outputPropertyLabel, vertexState.value)))
     })
 
+    // the trade-off:
+    // either we pass along all of the data into GraphX or we do a join at the end...
+    // the join is pretty expensive, and the data has to live somewhere anyway
     val outV: RDD[GBVertex] =
       inVertices.map(gbVertex => (gbVertex.id, gbVertex)).join(outVertices.map(gbVertex => (gbVertex.id, gbVertex))).map({ case (key: Any, (v1: GBVertex, v2: GBVertex)) => v1.merge(v2) })
 
