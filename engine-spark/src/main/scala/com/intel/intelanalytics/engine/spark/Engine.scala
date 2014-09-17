@@ -63,7 +63,6 @@ import com.intel.intelanalytics.domain.schema.Schema
 import com.intel.intelanalytics.domain.frame.DropDuplicates
 import com.intel.intelanalytics.domain.frame.FrameProject
 import com.intel.intelanalytics.domain.graph.Graph
-import com.intel.intelanalytics.domain.frame.ConfusionMatrix
 import com.intel.intelanalytics.domain.FilterPredicate
 import com.intel.intelanalytics.domain.frame.load.Load
 import com.intel.intelanalytics.domain.frame.CumulativeSum
@@ -96,7 +95,7 @@ import com.intel.intelanalytics.domain.command.Command
 import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.query.RowQuery
 import com.intel.intelanalytics.domain.frame.ClassificationMetricValue
-import com.intel.intelanalytics.domain.frame.ConfusionMatrixValues
+//import com.intel.intelanalytics.domain.frame.ConfusionMatrixValues
 import com.intel.intelanalytics.domain.command.CommandTemplate
 import com.intel.intelanalytics.domain.frame.FlattenColumn
 import com.intel.intelanalytics.domain.frame.ColumnSummaryStatisticsReturn
@@ -1397,9 +1396,9 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     QuantileValues(quantileValues)
   }
 
-  override def f_measure(arguments: ClassificationMetric)(implicit user: UserPrincipal): Execution =
-    commands.execute(f_measureCommand, arguments, user, implicitly[ExecutionContext])
-  val f_measureDoc = CommandDoc(oneLineSummary = "Computes Model accuracy, precision, recall and f_measure (math:`F_{\\beta}`).",
+  override def classificationMetrics(arguments: ClassificationMetric)(implicit user: UserPrincipal): Execution =
+    commands.execute(classificationMetricsCommand, arguments, user, implicitly[ExecutionContext])
+  val classificationMetricsDoc = CommandDoc(oneLineSummary = "Computes Model accuracy, precision, recall, confusion matrix and f_measure (math:`F_{\\beta}`).",
     extendedSummary = Some("""
     Based on the *metric_type* argument provided, it computes the accuracy, precision, recall or :math:`F_{\\beta}` measure for a classification model
 
@@ -1483,45 +1482,50 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     blue              1              0                  0
     green             0              1                  1
 
-    frame.f_measure('f_measure', 'labels', 'predictions', '1', 1)
+    frame.classification_metrics('f_measure', 'labels', 'predictions', '1', 1)
 
     0.66666666666666663
 
-    frame.f_measure('f_measure', 'labels', 'predictions', '1', 2)
+    frame.classification_metrics('f_measure', 'labels', 'predictions', '1', 2)
 
     0.55555555555555558
 
-    frame.f_measure('f_measure', 'labels', 'predictions', '0', 1)
+    frame.classification_metrics('f_measure', 'labels', 'predictions', '0', 1)
 
     0.80000000000000004
 
 
-    frame.f_measure('recall', 'labels', 'predictions', '1', 1)
+    frame.classification_metrics('recall', 'labels', 'predictions', '1', 1)
 
     0.5
 
-    frame.f_measure('recall', 'labels', 'predictions', '0', 1)
+    frame.classification_metrics('recall', 'labels', 'predictions', '0', 1)
 
     1.0
 
 
-    frame.f_measure('precision', 'labels', 'predictions', '1', 1)
+    frame.classification_metrics('precision', 'labels', 'predictions', '1', 1)
 
     1.0
 
-    frame.f_measure('precision', 'labels', 'predictions', '0', 1)
+    frame.classification_metrics('precision', 'labels', 'predictions', '0', 1)
 
     0.66666666666666663
 
 
-    frame.f_measure('accuracy', 'labels', 'predictions', '1', 1)
+    frame.classification_metrics('accuracy', 'labels', 'predictions', '1', 1)
 
     0.75
 
-    .. versionadded:: 0.8  """))
-  val f_measureCommand: CommandPlugin[ClassificationMetric, ClassificationMetricValue] = commandPluginRegistry.registerCommand("dataframe/f_measure", f_measureSimple _, doc = Some(f_measureDoc))
+    frame.classification_metrics('confusion_matrix', 'labels', 'predictions', '1', 1)
 
-  def f_measureSimple(arguments: ClassificationMetric, user: UserPrincipal, invocation: SparkInvocation): ClassificationMetricValue = {
+    [1, 2, 0, 1]
+
+
+    .. versionadded:: 0.8  """))
+  val classificationMetricsCommand: CommandPlugin[ClassificationMetric, ClassificationMetricValue] = commandPluginRegistry.registerCommand("dataframe/classification_metrics", classificationMetricsSimple _, doc = Some(classificationMetricsDoc))
+
+  def classificationMetricsSimple(arguments: ClassificationMetric, user: UserPrincipal, invocation: SparkInvocation): ClassificationMetricValue = {
     implicit val u = user
     val frameId = arguments.frame.id
     val realFrame: DataFrame = getDataFrameById(frameId)
@@ -1534,37 +1538,21 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     val labelColumnIndex = frameSchema.columnIndex(arguments.labelColumn)
     val predColumnIndex = frameSchema.columnIndex(arguments.predColumn)
 
-    val metric_value = arguments.metricType match {
-      case "accuracy" => SparkOps.modelAccuracy(frameRdd, labelColumnIndex, predColumnIndex)
-      case "precision" => SparkOps.modelPrecision(frameRdd, labelColumnIndex, predColumnIndex, arguments.posLabel)
-      case "recall" => SparkOps.modelRecall(frameRdd, labelColumnIndex, predColumnIndex, arguments.posLabel)
-      case "f_measure" => SparkOps.modelFMeasure(frameRdd, labelColumnIndex, predColumnIndex, arguments.posLabel, arguments.beta)
-      case _ => throw new IllegalArgumentException() // TODO: this exception needs to be handled differently
+    if (arguments.metricType == "confusion_matrix") {
+      val valueList = SparkOps.confusionMatrix(frameRdd, labelColumnIndex, predColumnIndex, arguments.posLabel)
+      ClassificationMetricValue(None, Some(valueList))
     }
-    ClassificationMetricValue(metric_value)
-  }
+    else {
+      val metric_value = arguments.metricType match {
+        case "accuracy" => SparkOps.modelAccuracy(frameRdd, labelColumnIndex, predColumnIndex)
+        case "precision" => SparkOps.modelPrecision(frameRdd, labelColumnIndex, predColumnIndex, arguments.posLabel)
+        case "recall" => SparkOps.modelRecall(frameRdd, labelColumnIndex, predColumnIndex, arguments.posLabel)
+        case "f_measure" => SparkOps.modelFMeasure(frameRdd, labelColumnIndex, predColumnIndex, arguments.posLabel, arguments.beta)
+        case _ => throw new IllegalArgumentException() // TODO: this exception needs to be handled differently
+      }
+      ClassificationMetricValue(Some(metric_value), None)
+    }
 
-  override def confusionMatrix(arguments: ConfusionMatrix[Long])(implicit user: UserPrincipal): Execution =
-    commands.execute(confusionMatrixCommand, arguments, user, implicitly[ExecutionContext])
-
-  val confusionMatrixCommand: CommandPlugin[ConfusionMatrix[Long], ConfusionMatrixValues] = commandPluginRegistry.registerCommand("dataframe/confusion_matrix", confusionMatrixSimple _)
-
-  def confusionMatrixSimple(arguments: ConfusionMatrix[Long], user: UserPrincipal, invocation: SparkInvocation): ConfusionMatrixValues = {
-    implicit val u = user
-    val frameId: Long = arguments.frameId
-    val realFrame: DataFrame = getDataFrameById(frameId)(user)
-
-    val ctx = invocation.sparkContext
-
-    val frameSchema = realFrame.schema
-    val frameRdd = frames.loadFrameRdd(ctx, frameId)
-
-    val labelColumnIndex = frameSchema.columnIndex(arguments.labelColumn)
-    val predColumnIndex = frameSchema.columnIndex(arguments.predColumn)
-
-    val valueList = SparkOps.confusionMatrix(frameRdd, labelColumnIndex, predColumnIndex, arguments.posLabel)
-
-    ConfusionMatrixValues(valueList)
   }
 
   override def ecdf(arguments: ECDF[Long])(implicit user: UserPrincipal): Execution =
@@ -1601,7 +1589,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     newFrame.copy(schema = Schema(allColumns))
   }
 
-  override def tally_percent(arguments: CumulativePercentCount)(implicit user: UserPrincipal): Execution =
+  def tallyPercent(arguments: CumulativePercentCount)(implicit user: UserPrincipal): Execution =
     commands.execute(cumulativePercentCountCommand, arguments, user, implicitly[ExecutionContext])
   val tallyPercentDoc = CommandDoc(oneLineSummary = "Computes a cumulative percent count.",
     extendedSummary = Some("""
@@ -1640,7 +1628,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
                              |
                              |        The cumulative percent count for column *obs* is obtained by::
                              |
-                             |            cpc_frame = my_frame.cumulative_percent_count('obs', 1)
+                             |            cpc_frame = my_frame.tally_percent('obs', 1)
                              |
                              |        The BigFrame *cpc_frame* accesses a new frame that contains two columns, *obs* that contains the original column values, and
                              |        *obsCumulativePercentCount* that contains the cumulative percent count::
@@ -1719,7 +1707,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
 
         The cumulative count for column *obs* using *count_value = 1* is obtained by::
 
-            cc_frame = my_frame.cumulative_count('obs', '1')
+            cc_frame = my_frame.tally('obs', '1')
 
         The BigFrame *cc_frame* accesses a frame which contains two columns *obs* and *obsCumulativeCount*.
         Column *obs* still has the same data and *obsCumulativeCount* contains the cumulative counts::
@@ -1760,7 +1748,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     newFrame.copy(schema = Schema(allColumns))
   }
 
-  override def cum_percent(arguments: CumulativePercentSum)(implicit user: UserPrincipal): Execution =
+  def cumPercent(arguments: CumulativePercentSum)(implicit user: UserPrincipal): Execution =
     commands.execute(cumulativePercentSumCommand, arguments, user, implicitly[ExecutionContext])
   val cumPercentDoc = CommandDoc(oneLineSummary = "Computes a cumulative percent sum.",
     extendedSummary = Some("""
@@ -1801,7 +1789,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
 
     The cumulative percent sum for column * obs * is obtained by ::
 
-    cps_frame = my_frame.cumulative_percent_sum('obs')
+    cps_frame = my_frame.cumulative_percent('obs')
 
     The new frame accessed by BigFrame * cps_frame * contains two columns * obs * and * obsCumulativePercentSum *.
     They contain the original data and the cumulative percent sum, respectively ::
@@ -1818,7 +1806,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
           2 1.0
 
       ..versionadded :: 0.8 """))
-  val cumulativePercentSumCommand = commandPluginRegistry.registerCommand("dataframe/cum_percent", cumulativePercentSumSimple _, doc = Some(cumPercentDoc))
+  val cumulativePercentSumCommand = commandPluginRegistry.registerCommand("dataframe/cumulative_percent", cumulativePercentSumSimple _, doc = Some(cumPercentDoc))
   def cumulativePercentSumSimple(arguments: CumulativePercentSum, user: UserPrincipal, invocation: SparkInvocation) = {
     implicit val u = user
     val frameId = arguments.frame.id
@@ -1842,7 +1830,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     newFrame.copy(schema = Schema(allColumns))
   }
 
-  override def cum_sum(arguments: CumulativeSum)(implicit user: UserPrincipal): Execution =
+  def cumSum(arguments: CumulativeSum)(implicit user: UserPrincipal): Execution =
     commands.execute(cumulativeSumCommand, arguments, user, implicitly[ExecutionContext])
   val cumSumDoc = CommandDoc(oneLineSummary = "Computes a cumulative sum.",
     extendedSummary = Some("""
@@ -1880,9 +1868,9 @@ class SparkEngine(sparkContextManager: SparkContextManager,
                1
                2
 
-        The cumulative percent count for column *obs* is obtained by::
+        The cumulative sum for column *obs* is obtained by::
 
-            cs_frame = my_frame.cumulative_percent_count('obs', 1)
+            cs_frame = my_frame.cumulative_sum('obs', 1)
 
         The BigFrame *cs_frame* accesses a new frame that contains two columns, *obs* that contains the original column values, and
         *obsCumulativeSum* that contains the cumulative percent count::
@@ -1899,7 +1887,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
                2                     6
 
         .. versionadded:: 0.8 """))
-  val cumulativeSumCommand = commandPluginRegistry.registerCommand("dataframe/cum_sum", cumulativeSumSimple _, doc = Some(cumSumDoc))
+  val cumulativeSumCommand = commandPluginRegistry.registerCommand("dataframe/cumulative_sum", cumulativeSumSimple _, doc = Some(cumSumDoc))
   def cumulativeSumSimple(arguments: CumulativeSum, user: UserPrincipal, invocation: SparkInvocation) = {
     implicit val u = user
     val frameId = arguments.frame.id

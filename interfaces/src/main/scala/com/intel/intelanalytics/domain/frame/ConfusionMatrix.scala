@@ -23,11 +23,3 @@
 
 package com.intel.intelanalytics.domain.frame
 
-case class ConfusionMatrix[FrameRef](frameId: FrameRef, labelColumn: String, predColumn: String, posLabel: String) {
-  require(frameId != null, "frame is required")
-  require(labelColumn != null && !labelColumn.equals(""), "label column is required")
-  require(predColumn != null && !predColumn.equals(""), "predict column is required")
-  require(posLabel != null && !posLabel.equals(""), "valid positive label is required")
-}
-
-case class ConfusionMatrixValues(valueList: Seq[Long])
