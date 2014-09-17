@@ -110,7 +110,6 @@ class EdgeDAOTest extends WordSpec with Matchers with TestingTitan with BeforeAn
       titanId(edgeDAO.find(gbEdge).get) shouldBe titanId(edgeDAO.find(updatedEdge).get)
 
       // validate
-      graph.getEdge(bpEdgeOriginal.getId) should be(null) // this is weird but when you update Titan assigns a new id
       bpEdgeUpdated.getProperty("newKey").asInstanceOf[String] shouldBe "newValue"
     }
 

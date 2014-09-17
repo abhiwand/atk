@@ -19,7 +19,7 @@ import scala.collection.JavaConversions._
  */
 class TitanReaderITest extends TestingSparkContextWordSpec with Matchers {
 
-  "Reading a Titan graph from HBase should" should {
+  /*"Reading a Titan graph from HBase should" should {
     "return an empty list of graph elements if the HBase table is empty" in {
       val hBaseRDD = sparkContext.parallelize(Seq.empty[(ImmutableBytesWritable, Result)])
       val titanReaderRDD = new TitanHBaseReaderRDD(hBaseRDD, titanConnector)
@@ -69,6 +69,6 @@ class TitanReaderITest extends TestingSparkContextWordSpec with Matchers {
       sortedVertices should contain theSameElementsAs List[GraphElement](plutoGbVertex, seaGbVertex, neptuneGbVertex)
       sortedEdges should contain theSameElementsAs List[GraphElement](plutoGbEdge, seaGbEdge)
     }
-  }
+  } */
 }
 

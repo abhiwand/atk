@@ -1,17 +1,12 @@
 package com.intel.graphbuilder.driver.spark.rdd
 
-import com.intel.graphbuilder.driver.spark.titan.reader.{ TitanRow, TitanRowParser }
 import com.intel.graphbuilder.elements.GraphElement
 import com.intel.graphbuilder.graph.titan.TitanGraphConnector
-import com.thinkaurelius.titan.diskstorage.StaticBuffer
-import com.thinkaurelius.titan.diskstorage.keycolumnvalue.StaticBufferEntry
-import com.thinkaurelius.titan.diskstorage.util.{ StaticArrayBuffer, StaticByteBuffer }
-import org.apache.hadoop.hbase.client.Result
-import org.apache.hadoop.hbase.io.ImmutableBytesWritable
+import com.intel.graphbuilder.util.TitanConverter
+import com.thinkaurelius.titan.hadoop.FaunusVertex
+import org.apache.hadoop.io.NullWritable
 import org.apache.spark.rdd.RDD
 import org.apache.spark.{ InterruptibleIterator, Partition, TaskContext }
-
-import scala.collection.JavaConversions._
 
 /**
  * RDD that loads Titan graph from HBase.
@@ -20,10 +15,10 @@ import scala.collection.JavaConversions._
  * @param titanConnector connector to Titan
  */
 
-class TitanHBaseReaderRDD(hBaseRDD: RDD[(ImmutableBytesWritable, Result)],
+class TitanHBaseReaderRDD(hBaseRDD: RDD[(NullWritable, FaunusVertex)],
                           titanConnector: TitanGraphConnector) extends RDD[GraphElement](hBaseRDD) {
 
-  override def getPartitions: Array[Partition] = firstParent[(ImmutableBytesWritable, Result)].partitions
+  override def getPartitions: Array[Partition] = firstParent[(NullWritable, FaunusVertex)].partitions
 
   /**
    * Parses HBase input rows to extract vertices and corresponding edges.
@@ -31,39 +26,19 @@ class TitanHBaseReaderRDD(hBaseRDD: RDD[(ImmutableBytesWritable, Result)],
    * @return Iterator of GraphBuilder vertices and edges using GraphBuilder's GraphElement trait
    */
   override def compute(split: Partition, context: TaskContext): Iterator[GraphElement] = {
-    val titanGraph = titanConnector.connect()
-    val titanTransaction = titanGraph.newTransaction(titanGraph.buildTransaction())
-    val titanEdgeSerializer = titanGraph.getEdgeSerializer()
 
-    val graphElements = firstParent[(ImmutableBytesWritable, Result)].iterator(split, context).flatMap(hBaseRow => {
-      val result = hBaseRow._2
-      val rowKey = new StaticByteBuffer(result.getRow)
+    val graphElements = firstParent[(NullWritable, FaunusVertex)].iterator(split, context).flatMap(hBaseRow => {
+      val faunusVertex = hBaseRow._2
 
-      val titanRow = getSerializedTitanRow(rowKey, result)
-      val titanRowParser = TitanRowParser(titanRow, titanEdgeSerializer, titanTransaction)
-      val rowGraphElements = titanRowParser.parse()
+      val gbVertex = TitanConverter.toGraphBuilderVertex(faunusVertex)
+      val gbEdges = TitanConverter.toGraphBuilderEdges(faunusVertex)
+
+      val rowGraphElements: Iterator[GraphElement] = Iterator(gbVertex) ++ gbEdges
 
       rowGraphElements
-    })
-
-    context.addOnCompleteCallback(() => {
-      titanTransaction.commit()
-      titanGraph.shutdown()
     })
 
     new InterruptibleIterator(context, graphElements)
   }
 
-  /**
-   * Get serialized Titan elements from HBase input row
-   */
-  private def getSerializedTitanRow(rowKey: StaticBuffer, result: Result): TitanRow = {
-    val titanColumnFamilyName = com.thinkaurelius.titan.diskstorage.Backend.EDGESTORE_NAME.getBytes();
-    val titanColumnFamilyMap = result.getFamilyMap(titanColumnFamilyName);
-
-    val serializedEntries = titanColumnFamilyMap.entrySet().map(entry =>
-      StaticBufferEntry.of(new StaticArrayBuffer(entry.getKey), new StaticArrayBuffer(entry.getValue))).toSeq
-
-    new TitanRow(rowKey, serializedEntries)
-  }
 }

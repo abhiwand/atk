@@ -10,7 +10,8 @@ import org.apache.spark.rdd.RDD
  * TitanReader constants.
  */
 object TitanReader {
-  val TITAN_STORAGE_BACKEND = GraphDatabaseConfiguration.STORAGE_NAMESPACE + "." + GraphDatabaseConfiguration.STORAGE_BACKEND_KEY
+  val TITAN_STORAGE_NS = GraphDatabaseConfiguration.STORAGE_NS.getName
+  val TITAN_STORAGE_BACKEND = TITAN_STORAGE_NS + "." + GraphDatabaseConfiguration.STORAGE_BACKEND.getName
   val TITAN_READER_DEFAULT_GB_ID = "titanPhysicalId" //TODO: Replace with a user-defined label
 }
 
