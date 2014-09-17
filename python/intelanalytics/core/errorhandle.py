@@ -121,14 +121,25 @@ class IaError(Exception):
         except:
             warnings.warn("Unable to log exc_info", RuntimeWarning)
 
-        if ErrorHandling.show_details:
+        if errors.show_details:
             # to show the stack, we just re-raise the last exception as is
             raise
         else:
             # to hide the stack, we return the exception info w/o trace
             #sys.stderr.write(Errors.help_msg)
             #sys.stderr.flush()
-            return exc_info[1], None, None
+            e = exc_info[1]
+            message = str(e)
+
+            # if there is error from running python user function,
+            # remove the unwanted Spark worker stacktrace
+            filter = "        org.apache.spark.api.python"
+            if(message.find(filter)):
+                stop_index = message.index(filter)
+                message = message[0:stop_index]
+                e.args = (message,)
+
+            return e, None, None
 
     @classmethod
     def log_error(cls, logger=None):
