@@ -20,27 +20,26 @@ food webs to predict extinctions.
 Background references:
 ~~~~~~~~~~~~~~~~~~~~~~
 
-    | * Basic description and principles: `Wikipedia\: PageRank`_
-    | * Applications to food web analysis: `Stanford\: Applications of PageRank`_
-    | * Applications to recommendation systems: `PLoS\: Computational Biology`_
+*   Basic description and principles: `Wikipedia\: PageRank`_
+*   Applications to food web analysis: `Stanford\: Applications of PageRank`_
+*   Applications to recommendation systems: `PLoS\: Computational Biology`_
 
-Mathematical Details of the IAT Implementation
-----------------------------------------------
+Mathematical Details of PageRank Implementation
+-----------------------------------------------
 
-The implementation of *PageRank* provided by IAT satisfies the following equation at each vertex :math:`v` of the graph:
+Our implementation of *PageRank* satisfies the following equation at each vertex :math:`v` of the graph:
 
 .. math::
 
     PR(v) = \frac {\rho}{n} + \rho \left (\sum_{u\in InSet(v)} \frac {PR(u)}{L(u)} \right ) 
 
 Where:
-
     | :math:`v` – a vertex
     | :math:`L(v)` – outbound degree of the vertex v
     | :math:`PR(v)` – *PageRank* score of the vertex v 
     | :math:`InSet(v)` – set of vertices pointing to the vertex v 
     | :math:`n` – total number of vertices in the graph
-    | :math:`\rho`- user specified damping factor (also known as reset probability)
+    | :math:`\rho` - user specified damping factor (also known as reset probability)
 
 Termination is guaranteed by two mechanisms.
 
