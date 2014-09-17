@@ -134,8 +134,8 @@ class IaError(Exception):
             # if there is error from running python user function,
             # remove the unwanted Spark worker stacktrace
             filter = "        org.apache.spark.api.python"
-            if(message.find(filter)):
-                stop_index = message.index(filter)
+            stop_index = message.find(filter)
+            if(stop_index >= 0):
                 message = message[0:stop_index]
                 e.args = (message,)
 
