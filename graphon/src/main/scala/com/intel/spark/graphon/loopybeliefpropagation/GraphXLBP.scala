@@ -2,7 +2,7 @@ package com.intel.spark.graphon.loopybeliefpropagation
 
 import scala.reflect.ClassTag
 import org.apache.spark.graphx._
-import com.intel.spark.graphon.IATPregel
+import com.intel.spark.graphon.iatpregel.{IATPregelLogger, IATPregel}
 
 case class VertexState(value: Double, id: Any, delta: Double)
 
@@ -43,8 +43,8 @@ object GraphXLBP {
     def convertStateToStatus(state: VertexState): SuperStepStatus = SuperStepStatus(1, state.delta)
 
     def generateStepReport(status: SuperStepStatus, iteration: Int) = {
-      "IATPregel has completed iteration " + iteration + ".  \n FEAR IATPREGEL !!!!" +
-        "The average delta is " + (status.sumOfDeltas / status.vertexCount)
+      "IATPregel has completed iteration " + iteration + "  "+
+        "The average delta is " + (status.sumOfDeltas / status.vertexCount + "\n")
     }
 
     def vertexDataToInitialStatus(vdata: VertexState) = InitialVertexStatus(1)
@@ -65,16 +65,19 @@ object GraphXLBP {
       report.toString()
     }
 
-    IATPregel(graph,
-      initialMessage,
-      vertexDataToInitialStatus,
+    val pregelLogger = IATPregelLogger(vertexDataToInitialStatus,
       vertexInitialStatusCombiner,
       edgeDataToInitialStatus,
       edgeInitialStatusCombiner,
       generateInitialReport,
       accumulateStatus,
       convertStateToStatus,
-      generateStepReport,
+      generateStepReport )
+
+
+    IATPregel(graph,
+      initialMessage,
+      pregelLogger,
       maxIterations = maxIterations,
       activeDirection = EdgeDirection.Either)(vertexProgram, sendMessage, mergeMsg)
   }
