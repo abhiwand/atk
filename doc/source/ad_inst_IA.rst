@@ -70,15 +70,15 @@ Yum Repository Requirements
 All the nodes on the cluster must have the EPEL yum repository as well as two Intel Analytics repositories.
 You will need repository access to Intel Analytics Private Repository which you will get when you sign up.
 
-------------------------
-Intel Analytics packages
-------------------------
+------------------------------------
+Intel Analytics Packages Information
+------------------------------------
 
 The dependency list is merely informational.
 When yum installs a package, it will pull dependencies automatically.
 All the Cloudera dependencies are implied for all packages.
 
-Intel Analytics Rest Server
+Intel Analytics REST Server
 ===========================
 Only needs to be installed on a single node.
 
@@ -159,6 +159,8 @@ The first step in the installation is adding EPEL and two Intel Analytics reposi
 the `YUM <http://en.wikipedia.org/wiki/Yellowdog_Updater,_Modified>`_ installation possible.
 The EPEL and Intel Analytics repositories must be installed on all spark master and worker nodes as well as
 the node that will be running the Intel Analytics rest server.
+The Intel Analytics Dependency repository and the yum-s3 package must be installed before
+trying to `Add Intel Analytics Private Repository`_.
 
 Add EPEL Repository
 -------------------
@@ -209,12 +211,11 @@ In some cases we pre-packaged newer versions from what is available in RHEL, EPE
 
 To add the dependency repository run the following command::
 
-    wget https://intel-analytics-dependencies.s3-us-west-2.amazonaws.com/ia-deps.rep
+    wget https://intel-analytics-dependencies.s3-us-west-2.amazonaws.com/ia-deps.repo
     sudo cp ia-deps.repo /etc/yum.repos.d/
 
 If you have issues running the above command, try entering the following, being careful about the placement of the ``"`` characters::
 
-    sudo touch /etc/yum.repos.d/ia-deps.repo
     echo "[intel-analytics-deps]
     name=intel-analytics-deps
     baseurl=https://intel-analytics-dependencies.s3-us-west-2.amazonaws.com/yum
@@ -294,10 +295,12 @@ To keep your system time in sync with the world run::
 
     sudo service ntpd start
 
+The Intel Analytics Dependency repository and the yum-s3 package must be installed before trying to `Add Intel Analytics Private Repository`_.
+
 Installing Intel Analytics Packages
 ===================================
 
-Installing Intel Analytics Rest Server
+Installing Intel Analytics REST Server
 --------------------------------------
 This next step is going to install IA rest server and all it's dependencies.
 Only one instance of the rest server needs to be installed.
@@ -306,6 +309,15 @@ Although it doesn't matter where it's installed it's usually installed along sid
 
     sudo yum -y install intelanalytics-rest-server
 
+Worker Node Preinstallation
+---------------------------
+These are some required steps prior to the installation on “worker nodes”:
+
+*   copy ``ia-deps.repo`` and ``ia.repo`` files from ``/etc/yum.repos.d/`` on master node to ``/etc/yum.repos.d/`` on each worker node
+*   install Intel Analytics Dependencies Repository on each worker node::
+  
+        sudo yum -y install yum-s3
+
 Installing Intel Analytics Spark Dependencies
 ---------------------------------------------
 The Intel Analytics spark dependencies package needs to be installed on every node running the spark worker role.
@@ -313,14 +325,14 @@ The Intel Analytics spark dependencies package needs to be installed on every no
 
     sudo yum -y install intelanalytics-spark-deps
 
-Installing Intel Analytics Python Rest Client
+Installing Intel Analytics Python REST Client
 ---------------------------------------------
 The Intel Analytics python rest client package needs to be installed on every node running the spark worker role.
 ::
 
     sudo yum -y install intelanalytics-python-rest-client
 
-Installing Intel Analytics Python 2.7 Rest Client 
+Installing Intel Analytics Python 2.7 REST Client 
 -------------------------------------------------
 
 Like the regular python 2.6 client above this also needs to be installed on every spark worker node.
@@ -334,7 +346,7 @@ You can combine both the spark dependencies and python rest client installation 
 
 
 -------------------------
-Rest Server Configuration
+REST Server Configuration
 -------------------------
 
 There are two config files you may need to edit on the node that has the Intel Analytics rest server package.
@@ -586,10 +598,10 @@ Now, restart the Spark service.
 .. image:: ad_inst_IA_3.*
     :align: center
 
-Starting Intel Analytics Rest Server
+Starting Intel Analytics REST Server
 ====================================
 
-Starting the Rest server is very easy.
+Starting the REST server is very easy.
 It can be started like any other Linux service.
 ::
 
@@ -597,7 +609,7 @@ It can be started like any other Linux service.
 
 After starting the rest server, you can browse to the host on port 9099 to see if the server started successfully.
 
-Troubleshooting Intel Analytics Rest Server
+Troubleshooting Intel Analytics REST Server
 ===========================================
 
 The log files get written to /var/log/intelanalytics/rest-server/output.log or

@@ -572,48 +572,6 @@ Aggregation based on both column and row together:
     * :term:`variance <Bias-variance tradeoff>`
     * distinct
 
-
-.. ifconfig:: internal_docs
-
-    (Follows GraphLab's SFrame:
-    http://graphlab.com/products/create/docs/graphlab.data_structures.html#module-graphlab.aggregate)
-
-    And then from IAT Product Defn:  (any must-haves for 0.8?)
-
-    Mean, Median, Mode, Sum, Geom Mean
-    Skewness, Kurtosis, Cumulative Sum, Cumulative Count, Sum, Count
-    Minimum, Maximum, Range, Variance, Standard Deviation, Mean Standard Error, Mean Confidence Interval, Outliers
-    Count Distinct, Distribution
-    Possibly others I missed
-
-
-    Stuff to consider for >= 1.0
-
-    Use a 'stats' builtin to get all the basic statistical calculations::
-
-        f.group_by(['a', 'b'], { 'c': stats, 'd': stats })
-        f.group_by(['a', 'b'], stats)  # on all columns besides the group_by columns
-
-    Use lambdas for custom group_by operations --i.e. first parameter can be a lambda
-
-    Customer reducers::
-
-        f.group_by(['a', 'b'], ReducerByRow('my_row_lambda_col', lambda acc, row_upd: acc + row_upd.c - row_upd.d))
-
-    Produces a frame with 3 columns: ``"a", "b", "my_row_lambda_col"``
-
-    Mixed-combo::
-
-        f.group_by(['a', 'b'],
-                  stats,
-                  ReducerByRow('my_row_lambda_col', lambda acc, row_upd: acc + row_upd.c - row_upd.d))
-                  { 'c': ReducerByCell('c_fuzz', lambda acc, cell_upd: acc * cell_upd / 2),
-                    'd': ReducerByCell('d_fuzz', lambda acc, cell_upd: acc * cell_upd / 3.14)})
-
-    Produces a frame with several columns:
-    ``"a", "b", "c_avg", "c_stdev", "c_ ..., "d_avg", "d_stdev", "d_ ..., "my_row_lambda_col", "c_fuzz", "d_fuzz"``
-
-
 .. _example_frame.join:
 
 Join:

@@ -161,7 +161,7 @@ Major platform elements utilized by the toolkit include:
 
 Consequently, the toolkit has version dependencies on the Hadoop cluster for Spark, HBase, and
 additional data platform components.
-Hadoop clusters running CDH 5.1.2 are necessary in order to support the minimum versions of the platform components;
+Hadoop clusters running CDH 5.1.0 are necessary in order to support the minimum versions of the platform components;
 this, and other dependencies, must be checked by the administrator when the toolkit is installed.
 Most of the toolkit is installed as a "head unit" that can be installed on an edge node to the cluster
 if it is not desired to install on a cluster node itself.
