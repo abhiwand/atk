@@ -28,6 +28,7 @@ trait TestingTitan {
     tmpDir = DirectoryUtils.createTempDirectory("titan-graph-for-unit-testing-")
 
     titanConfig = new SerializableBaseConfiguration()
+    titanConfig.setProperty("storage.backend", "berkeleyje")
     titanConfig.setProperty("storage.directory", tmpDir.getAbsolutePath)
 
     titanConnector = new TitanGraphConnector(titanConfig)
@@ -40,7 +41,9 @@ trait TestingTitan {
   def cleanupTitan(): Unit = {
     try {
       if (graph != null) {
-        graph.shutdown()
+        graph.commit()
+
+        //graph.shutdown()
       }
     }
     finally {

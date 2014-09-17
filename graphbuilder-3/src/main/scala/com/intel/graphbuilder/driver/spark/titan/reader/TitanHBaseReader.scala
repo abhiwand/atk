@@ -7,9 +7,12 @@ import com.intel.graphbuilder.elements.GraphElement
 import com.intel.graphbuilder.graph.titan.TitanGraphConnector
 import com.thinkaurelius.titan.diskstorage.hbase.HBaseStoreManager
 import com.thinkaurelius.titan.graphdb.configuration.GraphDatabaseConfiguration
+import com.thinkaurelius.titan.hadoop.FaunusVertex
+import com.thinkaurelius.titan.hadoop.formats.hbase.TitanHBaseInputFormat
 import org.apache.hadoop.hbase.client.{ HBaseAdmin, Scan }
 import org.apache.hadoop.hbase.mapreduce.{ TableInputFormat, TableMapReduceUtil }
 import org.apache.hadoop.hbase.{ HBaseConfiguration, HConstants }
+import org.apache.hadoop.io.NullWritable
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 
@@ -17,9 +20,10 @@ import org.apache.spark.rdd.RDD
  * TitanHBaseReader constants.
  */
 object TitanHBaseReader {
-  val TITAN_STORAGE_HOSTNAME = GraphDatabaseConfiguration.STORAGE_NAMESPACE + "." + GraphDatabaseConfiguration.HOSTNAME_KEY
-  val TITAN_STORAGE_TABLENAME = GraphDatabaseConfiguration.STORAGE_NAMESPACE + "." + HBaseStoreManager.TABLE_NAME_KEY
-  val TITAN_STORAGE_PORT = GraphDatabaseConfiguration.STORAGE_NAMESPACE + "." + GraphDatabaseConfiguration.PORT_KEY
+  val TITAN_STORAGE_NS = GraphDatabaseConfiguration.STORAGE_NS.getName
+  val TITAN_STORAGE_HOSTNAME = TITAN_STORAGE_NS + "." + GraphDatabaseConfiguration.STORAGE_HOSTS.getName
+  val TITAN_STORAGE_TABLENAME = TITAN_STORAGE_NS + "." + HBaseStoreManager.HBASE_NS.getName + "." + HBaseStoreManager.HBASE_TABLE.getName
+  val TITAN_STORAGE_PORT = TITAN_STORAGE_NS + "." + GraphDatabaseConfiguration.STORAGE_PORT.getName
 }
 
 /**
@@ -49,9 +53,9 @@ class TitanHBaseReader(sparkContext: SparkContext, titanConnector: TitanGraphCon
 
     checkTableExists(hBaseConfig, tableName)
 
-    val hBaseRDD = sparkContext.newAPIHadoopRDD(hBaseConfig, classOf[TableInputFormat],
-      classOf[org.apache.hadoop.hbase.io.ImmutableBytesWritable],
-      classOf[org.apache.hadoop.hbase.client.Result])
+    val hBaseRDD = sparkContext.newAPIHadoopRDD(hBaseConfig, classOf[TitanHBaseInputFormat],
+      classOf[NullWritable],
+      classOf[FaunusVertex])
 
     new TitanHBaseReaderRDD(hBaseRDD, titanConnector)
   }

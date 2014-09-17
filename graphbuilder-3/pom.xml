@@ -37,13 +37,29 @@
             <artifactId>testutils</artifactId>
             <scope>test</scope>
         </dependency>
-        <dependency>
+        <!-- <dependency>
             <groupId>com.intel.ia</groupId>
             <artifactId>ititan-core</artifactId>
+        </dependency> -->
+        <dependency>
+            <groupId>com.thinkaurelius.titan</groupId>
+            <artifactId>titan-core</artifactId>
+            <version>0.5.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.thinkaurelius.titan</groupId>
+            <artifactId>titan-hadoop-core</artifactId>
+            <version>0.5.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.thinkaurelius.titan</groupId>
+            <artifactId>titan-hadoop-2</artifactId>
+            <version>0.5.0</version>
         </dependency>
         <dependency>
             <groupId>com.thinkaurelius.titan</groupId>
             <artifactId>titan-berkeleyje</artifactId>
+            <version>0.5.0</version>
             <exclusions>
                 <exclusion>
                     <groupId>com.thinkaurelius.titan</groupId>
@@ -54,6 +70,7 @@
         <dependency>
             <groupId>com.thinkaurelius.titan</groupId>
             <artifactId>titan-cassandra</artifactId>
+            <version>0.5.0</version>
             <exclusions>
                 <exclusion>
                     <groupId>com.thinkaurelius.titan</groupId>
@@ -76,6 +93,7 @@
         <dependency>
             <groupId>com.thinkaurelius.titan</groupId>
             <artifactId>titan-hbase</artifactId>
+            <version>0.5.0</version>
             <exclusions>
                 <exclusion>
                     <groupId>com.thinkaurelius.titan</groupId>
@@ -110,6 +128,7 @@
         <dependency>
             <groupId>com.thinkaurelius.titan</groupId>
             <artifactId>titan-es</artifactId>
+            <version>0.5.0</version>
             <exclusions>
                 <exclusion>
                     <groupId>com.thinkaurelius.titan</groupId>
