@@ -1564,6 +1564,8 @@ class SparkEngine(sparkContextManager: SparkContextManager,
 
     val ecdfRdd = SparkOps.ecdf(rdd, sampleIndex, arguments.dataType)
 
+    val rowCount = ecdfRdd.count()
+
     val columnName = "_ECDF"
     val allColumns = arguments.dataType match {
       case "int32" => List((arguments.sampleCol, DataTypes.int32), (arguments.sampleCol + columnName, DataTypes.float64))
@@ -1573,9 +1575,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
       case _ => List((arguments.sampleCol, DataTypes.string), (arguments.sampleCol + columnName, DataTypes.float64))
     }
 
-    frames.saveFrame(newFrame, new FrameRDD(new Schema(allColumns), ecdfRdd))
-
-    newFrame.copy(schema = Schema(allColumns))
+    frames.saveFrame(newFrame, new FrameRDD(new Schema(allColumns), ecdfRdd), Some(rowCount))
   }
 
   def tallyPercent(arguments: CumulativePercentCount)(implicit user: UserPrincipal): Execution =
@@ -1646,16 +1646,12 @@ class SparkEngine(sparkContextManager: SparkContextManager,
 
     val sampleIndex = realFrame.schema.columnIndex(arguments.sampleCol)
 
-    val newFrame = Await.result(create(DataFrameTemplate(realFrame.name, None)), SparkEngineConfig.defaultTimeout)
-
     val (cumulativeDistRdd, columnName) = (CumulativeDistFunctions.cumulativePercentCount(frameRdd, sampleIndex, arguments.countVal), "_cumulative_percent_count")
 
     val frameSchema = realFrame.schema
     val allColumns = frameSchema.columns :+ (arguments.sampleCol + columnName, DataTypes.float64)
 
-    frames.saveFrame(newFrame, new FrameRDD(new Schema(allColumns), cumulativeDistRdd))
-
-    newFrame.copy(schema = Schema(allColumns))
+    frames.saveFrame(realFrame, new FrameRDD(new Schema(allColumns), cumulativeDistRdd))
   }
 
   override def tally(arguments: CumulativeCount)(implicit user: UserPrincipal): Execution =
@@ -1725,16 +1721,12 @@ class SparkEngine(sparkContextManager: SparkContextManager,
 
     val sampleIndex = realFrame.schema.columnIndex(arguments.sampleCol)
 
-    val newFrame = Await.result(create(DataFrameTemplate(realFrame.name, None)), SparkEngineConfig.defaultTimeout)
-
     val (cumulativeDistRdd, columnName) = (CumulativeDistFunctions.cumulativeCount(frameRdd, sampleIndex, arguments.countVal), "_cumulative_count")
 
     val frameSchema = realFrame.schema
     val allColumns = frameSchema.columns :+ (arguments.sampleCol + columnName, DataTypes.float64)
 
-    frames.saveFrame(newFrame, new FrameRDD(new Schema(allColumns), cumulativeDistRdd))
-
-    newFrame.copy(schema = Schema(allColumns))
+    frames.saveFrame(realFrame, new FrameRDD(new Schema(allColumns), cumulativeDistRdd))
   }
 
   def cumPercent(arguments: CumulativePercentSum)(implicit user: UserPrincipal): Execution =
@@ -1807,16 +1799,12 @@ class SparkEngine(sparkContextManager: SparkContextManager,
 
     val sampleIndex = realFrame.schema.columnIndex(arguments.sampleCol)
 
-    val newFrame = Await.result(create(DataFrameTemplate(realFrame.name, None)), SparkEngineConfig.defaultTimeout)
-
     val (cumulativeDistRdd, columnName) = (CumulativeDistFunctions.cumulativePercentSum(frameRdd, sampleIndex), "_cumulative_percent_sum")
 
     val frameSchema = realFrame.schema
     val allColumns = frameSchema.columns :+ (arguments.sampleCol + columnName, DataTypes.float64)
 
-    frames.saveFrame(newFrame, new FrameRDD(new Schema(allColumns), cumulativeDistRdd))
-
-    newFrame.copy(schema = Schema(allColumns))
+    frames.saveFrame(realFrame, new FrameRDD(new Schema(allColumns), cumulativeDistRdd))
   }
 
   def cumSum(arguments: CumulativeSum)(implicit user: UserPrincipal): Execution =
@@ -1888,16 +1876,12 @@ class SparkEngine(sparkContextManager: SparkContextManager,
 
     val sampleIndex = realFrame.schema.columnIndex(arguments.sampleCol)
 
-    val newFrame = Await.result(create(DataFrameTemplate(realFrame.name, None)), SparkEngineConfig.defaultTimeout)
-
     val (cumulativeDistRdd, columnName) = (CumulativeDistFunctions.cumulativeSum(frameRdd, sampleIndex), "_cumulative_sum")
 
     val frameSchema = realFrame.schema
     val allColumns = frameSchema.columns :+ (arguments.sampleCol + columnName, DataTypes.float64)
 
-    frames.saveFrame(newFrame, new FrameRDD(new Schema(allColumns), cumulativeDistRdd))
-
-    newFrame.copy(schema = Schema(allColumns))
+    frames.saveFrame(realFrame, new FrameRDD(new Schema(allColumns), cumulativeDistRdd))
   }
 
   override def cancelCommand(id: Long)(implicit user: UserPrincipal): Future[Unit] = withContext("se.cancelCommand") {
