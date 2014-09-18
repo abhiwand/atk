@@ -67,8 +67,9 @@ This is very important in cases where the solution has thousands or even million
 Usage
 ~~~~~
 
-The matrix factorization by CGD procedure takes a property graph, encoding a biparite user-item ranking network, selects a subset of the edges to be considered
-(via a selection of edge labels), takes initial ratings from specified edge property values, and then writes each user-factors vector to its user vertex in a specified
-vertex property name and each item-factors vector to its item vertex in the specified vertex property name.
+The matrix factorization by CGD procedure takes a property graph, encoding a biparite user-item ranking network,
+selects a subset of the edges to be considered (via a selection of edge labels), takes initial ratings from
+specified edge property values, and then writes each user-factors vector to its user vertex in a specified vertex
+property name and each item-factors vector to its item vertex in the specified vertex property name.
 
 

@@ -10,8 +10,8 @@ Process Flow Examples
 
     ds_apir
 
-When using the toolkit, you will import your data, perform cleaning operations on it, possibly combine it with other data sets,
-and finally, analyze it.
+When using the toolkit, you will import your data, perform cleaning operations on it,
+possibly combine it with other data sets, and finally, analyze it.
 
 The first thing to do is to load the toolkit.
 This is stored in the intelanalytics folder and it's sub-folders.
@@ -232,6 +232,7 @@ To create a new frame with only columns *a* and *c* from the original frame *bf*
 BigFrames are not the same thing as frames.
 Frames contain data, viewed similarly to a table, while BigFrames are descriptive pointers to the data.
 Commands such as ``f4 = my_frame`` will only give you a copy of the BigFrame proxy pointing to the same data.
+Use the frame.copy() function to copy the frame itself.
 
 .. _example_frame.append:
 
@@ -286,17 +287,17 @@ See also the *join* method in the :doc:`API <ds_apic>` section.
 
 Inspect The Data
 ================
-IAT provides several functions that allow you to inspect your data, including .count(), .len(), .inspect(), and .take().
+IAT provides several functions that allow you to inspect your data, including attributes, .inspect(), and .take().
 
 Examples
 --------
-To count the number of rows of data, you could do it this way::
+To obtain the number of rows of data, you would do it this way::
 
-    my_frame.count()
+    my_frame.row_count
 
-To count the number of columns, you use this function::
+To get the column names, you would enter::
 
-    my_frame.len()
+    my_frame.column_names
 
 To print the first two rows of data::
 
@@ -307,12 +308,10 @@ To print the first two rows of data::
       12.3000              500    
      195.1230           183954    
 
-To create a new frame using the existing frame, use .take()::
+To see rows 201 to 211, enter::
 
     my_frame.take(10, offset=200)
  
-Here, we've created a frame of 10 rows, beginning at row 200, from the frame accessed by *my_frame*.
-
 .. _Clean The Data:
 
 Clean The Data
@@ -330,7 +329,8 @@ so when using some Python libraries, be aware that some of them are not designed
     It is recommended that you copy the data to a new frame on a regular basis and work on the new frame.
     This way, you have a fall-back if something does not work as expected::
 
-        next_frame = BigFrame(last_frame)
+        next_frame = last_frame.copy()
+        next_frame.name = "next_frame"
 
 In general, the following functions select rows of data based upon the data in the row.
 For details about row selection based upon its data see :doc:`ds_apir`
@@ -408,11 +408,11 @@ Columns can be renamed by giving the existing column name and the new name, in t
 
 Rename column *a* to *id*::
 
-    my_frame.rename_columns(('a': 'id'))
+    my_frame.rename_columns({'a': 'id'})
 
 Rename column *b* to *author* and *c* to *publisher*::
 
-    my_frame.rename_columns(('b': 'author', 'c': 'publisher'))
+    my_frame.rename_columns({'b': 'author', 'c': 'publisher'})
 
 .. _Transform The Data:
 
@@ -479,7 +479,10 @@ An example of Piecewise Linear Transformation::
 
 Create multiple columns at once by making a function return a list of values for the new frame columns::
 
-    my_frame.add_columns(lambda row: [abs(row.a), abs(row.b)], [('a_abs', int32), ('b_abs', int32)])
+    my_frame.add_columns(lambda row: [abs(row.a), abs(row.b)], [('a_abs', int32),
+        ('b_abs', int32)])
+
+The above command has been split for enhanced readability in some medias.
 
 .. _ds_dflw_frame_examine:
 
@@ -487,9 +490,9 @@ Examining the Data
 ==================
 
 Let's say we want to get some standard statistical information about *my_frame*.
-We can use the frame function *column_summary_statistics*::
+We can use the frame function *f_measure*
 
-    my_frame.column_summary_statistics()
+    my_frame.f_measure()
 
 .. _example_frame.group_by:
 
@@ -564,13 +567,11 @@ Aggregation based on both column and row together:
     * avg
     * count
     * max
-    * mean
     * min
-    * quantile
     * stdev
     * sum
-    * :term:`variance <Bias-variance tradeoff>`
-    * distinct
+    * :term:`var (variance) <Bias-variance tradeoff>`
+    * count_distinct
 
 .. _example_frame.join:
 
@@ -584,83 +585,69 @@ For the sake of readability, in these examples we will refer to the frames and t
 
     my_frame.inspect()                      
 
-    a:str       b:str       c:str           
-    --------------------------------------  
-    alligator   bear        cat             
-    auto        bus         car             
-    apple       berry       cantelope       
-    mirror      frog        ball
+    a:str      b:str  c:str
+    ---------------------------
+    alligator  bear   cat
+    auto       bus    car
+    apple      berry  cantelope
+    mirror     frog   ball
 
     your_frame.inspect()
                                         
-    b:str       c:int32     d:str
-    ------------------------------------
-    bus             871     dog
-    berry          5218     frog
-    blue              0     log         
+    b:str  c:int32  d:str
+    ---------------------
+    bus        871  dog
+    berry     5218  frog
+    blue         0  log
 
 Column *b* in both frames is a unique identifier used to tie the two frames together.
 Join *your_frame* to *my_frame*, creating a new frame with a new BigFrame to access it;
 Include all data from *my_frame* and only that data from *your_frame* which has a value
 in *b* that matches a value in *my_frame* *b*::
 
-    our_frame = my_frame.join(your_frame, 'b', how='left')
+    left_frame = my_frame.join(your_frame, 'b', how='left')
 
-Result is *our_frame*::
+Result is *left_frame*::
 
-    our_frame.inspect()
+    left_frame.inspect()
 
-    a:str       b:str       c_L:str         c_R:int32   d:str
-    ----------------------------------------------------------------
-    alligator   bear        cat                  None   None
-    auto        bus         car                   871   dog
-    apple       berry       cantelope            5281   frog
-    mirror      frog        ball                 None   None
+    a:str      b_L:str  b_R:str  c_L:str     c_R:int32  d:str
+    ---------------------------------------------------------
+    alligator  bear     bear     cat              None  None
+    auto       bus      bus      car               871  dog
+    apple      berry    berry    cantelope        5281  frog
+    mirror     frog     frog     ball             None  None
 
-Do it again but this time include only data from *my_frame* and *your_frame* which have matching values in *b*::
+Do it again but this time include all the data in *your_frame* and
+only data from *my_frame* which have matching values in *b*::
 
-    inner_frame = my_frame.join(your_frame, 'b')
-    or
-    inner_frame = my_frame.join(your_frame, 'b', how='inner')
-
-Result is *inner_frame*::
-
-    inner_frame.inspect()
-
-    a:str       b:str       c_L:str         c_R:int32   d:str
-    ----------------------------------------------------------------
-    auto        bus         car                   871   dog
-    apple       berry       cantelope            5218   frog
-
-Do it again but this time include any data from *my_frame* and *your_frame* which do not have matching values in *b*::
-
-    outer_frame = my_frame.join(your_frame, 'b', how='outer')
-
-Result is *outer_frame*::
-
-    outer_frame.inspect()
-
-    a:str       b:str       c_L:str     c_R:int32   d:str
-    ----------------------------------------------------------------
-    alligator   bear        cat              None   None
-    mirror      frog        ball             None   None
-    None        None        None                0   log
-
-If column *b* in *my_frame* and column *d* in *your_frame* are the tie:
-Do it again but include all data from *your_frame* and only that data in *my_frame* which has a value in *b* that matches
-a value in *your_frame* *c*::
-
-    right_frame = my_frame.join(your_frame, left_on='b', right_on='d', how='right')
+    right_frame = my_frame.join(your_frame, 'b', how='right')
 
 Result is *right_frame*::
 
     right_frame.inspect()
 
-    a:str       b_L:str     c:str       b_R:str     c:int32     d:str
-    ----------------------------------------------------------------------------
-    None        None        None        bus             871     dog
-    mirror      frog        ball        berry          5218     frog
-    None        None        None        blue              0     log
+    a:str  b_L:str  b_R:str  c_L:str    c_R:int32  d:str
+    ----------------------------------------------------
+    auto   bus      bus      car              871  dog
+    apple  berry    berry    cantelope       5218  frog
+    None   blue     blue     None               0  log
+
+If column *b* in *my_frame* and column *d* in *your_frame* are the tie:
+Do it again but include all data from *your_frame* and only that data in *my_frame* which has a value in *b* that matches
+a value in *your_frame* *c*::
+
+    our_frame = my_frame.join(your_frame, left_on='b', right_on='d', how='right')
+
+Result is *our_frame*::
+
+    our_frame.inspect()
+
+    a:str   b_L:str  c:str  b_R:str  c:int32  d:str
+    -----------------------------------------------
+    None    None     None   bus          871  dog
+    mirror  frog     ball   berry       5218  frog
+    None    None     None   blue           0  log
 
 .. _example_frame.flatten_column:
 
@@ -679,7 +666,9 @@ The "original_data"::
 
 I run my commands to bring the data in where I can work on it::
 
-    my_csv = CsvFile("original_data.csv", schema=[('a', int32), ('b', string)], delimiter='-')
+    my_csv = CsvFile("original_data.csv", schema=[('a', int32), ('b', string)],
+        delimiter='-')
+    # The above command has been split for enhanced readability in some medias.
     my_frame = BigFrame(source=my_csv)
 
 I look at it and see::
@@ -742,8 +731,8 @@ Vertex Rule:
 
 To create a rule for :term:`vertices`, one needs to define:
 
-1. The label for the vertices, for example, the string “empID”.
-#. The identification value of each vertex, for example, the column “emp_id” of our frame.
+1. The label for the vertices, for example, the string "empID".
+#. The identification value of each vertex, for example, the column "emp_id" of our frame.
 #. The properties of the vertex.
 
 Note:
@@ -755,16 +744,16 @@ Note:
 Vertex Rule Example:
 ~~~~~~~~~~~~~~~~~~~~
 
-Create a vertex rule called “employee” from the above frame::
+Create a vertex rule called "employee" from the above frame::
 
-    employee = VertexRule(‘empID”, my_frame[“emp_id”], {“name”: my_frame[“name”]})
+    employee = VertexRule(‘empID", my_frame["emp_id"], {"name": my_frame["name"]})
 
-The created vertices will be grouped under the label “empID”, will have an identification based on the values from the column *emp_id*,
+The created vertices will be grouped under the label "empID", will have an identification based on the values from the column *emp_id*,
 and will have a property *name* with its value from the specified frame column *name*.
 
-Create another vertex rule called “manager”::
+Create another vertex rule called "manager"::
 
-    manager = VertexRule(‘empID”, my_frame[“manager”])
+    manager = VertexRule(‘empID", my_frame["manager"])
 
 The identification values for these vertices will be taken from column *manager* of the frame.
 
@@ -777,7 +766,7 @@ An edge is a link that connects two vertices, in our case, they are *tail* and *
 
 To create a rule for an edge, one needs to define:
 
-1. The label or identification for the edge, for example, the string “worksUnder”
+1. The label or identification for the edge, for example, the string "worksUnder"
 #. The tail vertex specified in the previously defined vertex rule.
 #. The head vertex specified in the previously defined vertex rule.
 #. The properties of the edge:
@@ -787,10 +776,10 @@ To create a rule for an edge, one needs to define:
 Edge Rule Example:
 ~~~~~~~~~~~~~~~~~~
 
-Create an edge called “reports” from the same frame (accessed by BigFrame *my_frame*) as above, using previously
+Create an edge called "reports" from the same frame (accessed by BigFrame *my_frame*) as above, using previously
 defined *employee* and *manager* rules, and link them together::
 
-    reports = EdgeRule("worksUnder", employee, manager, { "years": f[“years”] })
+    reports = EdgeRule("worksUnder", employee, manager, { "years": my_frame["years"] })
 
 This rule ties the vertices together, and also defines the property *years*, so the edges created will have this property
 with the value from the frame column *years*.
@@ -800,12 +789,12 @@ Rule of directed/non-directed edge:
 
 In the edge rule, the user can specify whether or not the edge is :term:`directed <Undirected Graph>`.
 
-In the example above, using the *employee* and *manager* vertices, there is an edge created to link both of them with label “worksUnder”.
-This edge is considered “directed” since an employee reports to a manager but not vice versa.
+In the example above, using the *employee* and *manager* vertices, there is an edge created to link both of them with label "worksUnder".
+This edge is considered "directed" since an employee reports to a manager but not vice versa.
 To make an edge a directed one, the user needs to use the parameter ``is_directed`` in the edge rule and set it to ``True``,
 as shown in example below::
 
-    reports = EdgeRule("worksUnder", employee, manager, { "years": f[“years”]},
+    reports = EdgeRule("worksUnder", employee, manager, { "years": my_frame["years"]},
         is_directed = True)
 
 .. _ds_dflw_building_a_graph:
@@ -814,9 +803,9 @@ Building a Graph From a Set of Rules
 ====================================
 
 Now that you have built some rules, let us put them to use and create a graph by calling BigGraph.
-We will give the graph the name “employee_graph”::
+We will give the graph the name "employee_graph"::
 
-    my_graph = BigGraph([employee, manager, reports], “employee_graph”)
+    my_graph = BigGraph([employee, manager, reports], "employee_graph")
 
 The graph is then created in the underlying graph database structure and
 the access control information is saved into the BigGraph object *my_graph*.
@@ -830,7 +819,10 @@ Commands such as g4 = my_graph will only give you a copy of the proxy, pointing 
 Error Handling
 --------------
 
-Examples:
+Examples::
 
-    >>> ia.errors.last  # full exception stack trace and message of the last exception raised at the API layer
-    >>> ia.errors.show_details  # toggle setting to show full stack trace, False by default
+    ia.errors.last  # full exception stack trace and message of the last exception
+        raised at the API layer
+    ia.errors.show_details  # toggle setting to show full stack trace, False by default
+
+The above commands may have been split for enhanced readability in some medias.

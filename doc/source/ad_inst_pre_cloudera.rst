@@ -22,9 +22,9 @@ Pre-Configuration
 Base Configuration
 ------------------
 
-1. Configure client-side DNS:
-=============================
-Insure all systems in cluster are DNS or /etc/hosts resolvable.
+1. Configure client-side :abbr:`DNS (Domain Name Service)`
+==========================================================
+Insure all systems in cluster are :abbr:`DNS (Domain Name Service)` or /etc/hosts resolvable.
 
 2. Disable Firewall
 ===================
@@ -118,4 +118,4 @@ Make sure all systems in cluster are in time-sync with one-another.
 12. Reboot!
 ===========
 
-Reboot all cluser systems to properly set all changes made.
+Reboot all cluster systems to properly set all changes made.
