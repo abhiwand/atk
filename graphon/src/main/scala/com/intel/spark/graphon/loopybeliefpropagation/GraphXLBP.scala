@@ -34,7 +34,6 @@ object GraphXLBP {
 
     // logging
 
-
     def vertexDataToInitialStatus(vdata: VertexState) = InitialVertexCount(1)
     def edgeDataToInitialStatus(edata: Double) = InitialEdgeCount(1)
     def convertStateToStatus(state: VertexState): SuperStepCountNetDelta = SuperStepCountNetDelta(1, state.delta)
@@ -48,7 +47,6 @@ object GraphXLBP {
 
       report.toString()
     }
-
 
     val pregelLogger = IATPregelLogger(vertexDataToInitialStatus,
       InitialVertexCount.combine,
