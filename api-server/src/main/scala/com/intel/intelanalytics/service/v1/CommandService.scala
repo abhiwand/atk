@@ -30,7 +30,7 @@ import com.intel.intelanalytics.domain._
 import com.intel.intelanalytics.engine.Engine
 import com.intel.intelanalytics.service.v1.viewmodels.ViewModelJsonImplicits._
 import scala.concurrent._
-import spray.http.Uri
+import spray.http.{ StatusCodes, Uri }
 import spray.routing.{ ValidationRejection, Directives, Route }
 import com.intel.intelanalytics.domain.frame._
 import com.intel.intelanalytics.domain.FilterPredicate
@@ -84,7 +84,8 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
                 get {
                   onComplete(engine.getCommand(id)) {
                     case Success(Some(command)) => complete(decorate(uri, command))
-                    case _ => reject()
+                    case Success(None) => complete(StatusCodes.NotFound)
+                    case _ => complete(StatusCodes.InternalServerError)
                   }
                 } ~
                   post {
@@ -95,7 +96,7 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
                           action.status match {
                             case "cancel" => onComplete(engine.cancelCommand(id)) {
                               case Success(command) => complete("Command cancelled by client")
-                              case _ => reject()
+                              case _ => complete(StatusCodes.InternalServerError)
                             }
                           }
                         }
@@ -144,10 +145,11 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
                                 }
                               }
                               catch {
-                                case e: DeserializationException =>
-                                  reject(ValidationRejection(
-                                    s"Incorrectly formatted JSON found while parsing command '${xform.name}':" +
-                                      s" ${e.getMessage}", Some(e)))
+                                case e: DeserializationException => {
+                                  val message = s"Incorrectly formatted JSON found while parsing command '${xform.name}':" +
+                                    s" ${e.getMessage}"
+                                  failWith(new DeserializationException(message, e))
+                                }
                               }
                             }
                           }

@@ -75,7 +75,8 @@ class DataFrameService(commonDirectives: CommonDirectives, engine: Engine) exten
                       val baseUri = StringUtils.substringBeforeLast(uri.toString(), "/")
                       complete(FrameDecorator.decorateEntity(baseUri + "/" + frame.id, Nil, frame))
                     }
-                    case _ => reject()
+                    case Success(None) => complete(StatusCodes.NotFound)
+                    case _ => complete(StatusCodes.InternalServerError)
                   }
                 }
                 case _ =>
@@ -120,7 +121,8 @@ class DataFrameService(commonDirectives: CommonDirectives, engine: Engine) exten
                       decorated
                     }
                   }
-                  case _ => reject()
+                  case Success(None) => complete(StatusCodes.NotFound)
+                  case _ => complete(StatusCodes.InternalServerError)
                 }
               } ~
                 delete {

@@ -29,7 +29,7 @@ import com.intel.intelanalytics.domain.User
 import com.intel.intelanalytics.repository.MetaStore
 import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.shared.EventLogging
-import spray.http.HttpHeader
+import spray.http.{ StatusCodes, StatusCode, HttpHeader }
 import spray.routing._
 
 import scala.PartialFunction._
@@ -58,7 +58,7 @@ class AuthenticationDirective(val metaStore: MetaStore) extends Directives with 
     //TODO: proper authorization with spray authenticate directive in a manner similar to S3.
     optionalHeaderValue(getUserPrincipalFromHeader).flatMap {
       case Some(p) => provide(p)
-      case None => reject(AuthenticationFailedRejection(AuthenticationFailedRejection.CredentialsMissing, List()))
+      case None => complete(StatusCodes.Unauthorized)
     }
 
   protected def getUserPrincipalFromHeader(header: HttpHeader): Option[UserPrincipal] =
