@@ -243,7 +243,7 @@ def validate_arguments(arguments, parameters):
             raise ValueError("No parameter named '%s'" % k)
         validated[k] = v
         if parameter.data_type is list:
-            if isinstance(v, basestring) or not hasattr(v, '__iter__'):
+            if v is not None and (isinstance(v, basestring) or not hasattr(v, '__iter__')):
                 validated[k] = [v]
     return validated
 
