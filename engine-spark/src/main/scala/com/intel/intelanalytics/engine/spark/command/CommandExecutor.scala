@@ -24,7 +24,8 @@
 package com.intel.intelanalytics.engine.spark.command
 
 import com.intel.intelanalytics.component.ClassLoaderAware
-import com.intel.intelanalytics.engine.plugin.CommandPlugin
+import com.intel.intelanalytics.engine.{Engine, CommandStorage}
+import com.intel.intelanalytics.engine.plugin.{Invocation, CommandPlugin}
 import com.intel.intelanalytics.engine.spark.context.SparkContextManager
 import com.intel.intelanalytics.engine.spark.SparkEngine
 import com.intel.intelanalytics.shared.EventLogging
@@ -34,11 +35,11 @@ import spray.json._
 
 import scala.concurrent._
 import scala.util.Try
-import org.apache.spark.engine.{ ProgressPrinter, SparkProgressListener }
+import org.apache.spark.engine.{ProgressPrinter, SparkProgressListener}
 import com.intel.intelanalytics.domain.command.CommandTemplate
 import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.domain.command.Execution
-import com.intel.intelanalytics.engine.spark.plugin.SparkInvocation
+import com.intel.intelanalytics.engine.spark.plugin.{SparkCommandPlugin, SparkInvocation}
 import com.intel.intelanalytics.domain.command.Command
 import scala.collection.mutable
 
@@ -54,19 +55,27 @@ import scala.collection.mutable
  * Plugins can be executed in three ways:
  *
  * 1. A CommandPlugin can be passed directly to the execute method. The command need not be in
- *    the registry
+ * the registry
  * 2. A command can be called by name. This requires that the command be in the registry.
  * 3. A command can be called with a CommandTemplate. This requires that the command named by
- *    the command template be in the registry, and that the arguments provided in the CommandTemplate
- *    can be parsed by the command.
+ * the command template be in the registry, and that the arguments provided in the CommandTemplate
+ * can be parsed by the command.
  *
  * @param engine an Engine instance that will be passed to command plugins during execution
  * @param commands a command storage that the executor can use for audit logging command execution
  * @param contextManager a SparkContext factory that can be passed to SparkCommandPlugins during execution
  */
 class CommandExecutor(engine: => SparkEngine, commands: SparkCommandStorage, contextManager: SparkContextManager)
-    extends EventLogging
-    with ClassLoaderAware {
+  extends EventLogging
+  with ClassLoaderAware {
+
+  case class SimpleInvocation(engine: Engine,
+                              commandStorage: CommandStorage,
+                              executionContext: ExecutionContext,
+                              arguments: Option[JsObject],
+                              commandId: Long,
+                              user: UserPrincipal
+                               ) extends Invocation
 
   val commandIdContextMapping = new mutable.HashMap[Long, SparkContext]()
 
@@ -89,14 +98,30 @@ class CommandExecutor(engine: => SparkEngine, commands: SparkCommandStorage, con
       withContext("ce.execute") {
         withContext(command.name) {
 
-          val context: SparkContext = createContextForCommand(command, arguments, user, cmd)
 
           val cmdFuture = future {
             withCommand(cmd) {
               try {
-                val invocation: SparkInvocation = SparkInvocation(engine, commandId = cmd.id, arguments = cmd.arguments,
-                  user = user, executionContext = implicitly[ExecutionContext],
-                  sparkContext = context, commandStorage = commands)
+                val invocation = cmd match {
+
+                  case c: SparkCommandPlugin[A, R] =>
+                    val context: SparkContext = createContextForCommand(command, arguments, user, cmd)
+
+                    SparkInvocation(engine,
+                      commandId = cmd.id,
+                      arguments = cmd.arguments,
+                      user = user,
+                      executionContext = implicitly[ExecutionContext],
+                      sparkContext = context,
+                      commandStorage = commands)
+
+                  case _ => SimpleInvocation(engine,
+                    commandStorage = commands,
+                    commandId = cmd.id,
+                    arguments = cmd.arguments,
+                    user = user,
+                    executionContext = implicitly[ExecutionContext])
+                }
 
                 executeCommand(command, arguments, invocation)
               }
@@ -121,7 +146,7 @@ class CommandExecutor(engine: => SparkEngine, commands: SparkCommandStorage, con
    * @tparam A argument type
    * @return command result
    */
-  def executeCommand[R <: Product, A <: Product](command: CommandPlugin[A, R], arguments: A, invocation: SparkInvocation): JsObject = {
+  def executeCommand[R <: Product, A <: Product](command: CommandPlugin[A, R], arguments: A, invocation: Invocation): JsObject = {
     val funcResult = command(invocation, arguments)
     command.serializeReturn(funcResult)
   }
@@ -194,7 +219,7 @@ class CommandExecutor(engine: => SparkEngine, commands: SparkCommandStorage, con
    * @param commandId command id
    */
   def stopCommand(commandId: Long): Unit = {
-    commandIdContextMapping.get(commandId).foreach { case (context) => context.stop() }
+    commandIdContextMapping.get(commandId).foreach { case (context) => context.stop()}
     commandIdContextMapping -= commandId
   }
 }
