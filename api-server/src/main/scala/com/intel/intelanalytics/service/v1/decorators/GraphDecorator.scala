@@ -23,7 +23,7 @@
 package com.intel.intelanalytics.service.v1.decorators
 
 import com.intel.intelanalytics.domain.graph.Graph
-import com.intel.intelanalytics.service.v1.viewmodels.{ RelLink, GetGraph, GetGraphs }
+import com.intel.intelanalytics.service.v1.viewmodels.{ GetDataFrame, RelLink, GetGraph, GetGraphs }
 
 /**
  * A decorator that takes an entity from the database and converts it to a View/Model
@@ -40,7 +40,8 @@ object GraphDecorator extends EntityDecorator[Graph, GetGraphs, GetGraph] {
    * @return the View/Model
    */
   override def decorateEntity(uri: String, links: Iterable[RelLink], entity: Graph): GetGraph = {
-    GetGraph(id = entity.id, name = entity.name, links = links.toList)
+
+    GetGraph(id = entity.id, ia_uri = entity.uri, name = entity.name, links = links.toList)
   }
 
   /**

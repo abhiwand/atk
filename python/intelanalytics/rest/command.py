@@ -68,9 +68,9 @@ def execute_command(command_name, **arguments):
         return command_info.result
 
 
-
 class OperationCancelException(Exception):
     pass
+
 
 class ProgressPrinter(object):
 

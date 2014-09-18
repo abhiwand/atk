@@ -30,18 +30,19 @@ import uuid
 
 from intelanalytics.core.serialize import to_json
 from intelanalytics.core.column import BigColumn
-from intelanalytics.core.command import CommandSupport
+from intelanalytics.core.metaprog import CommandLoadable
+
+try:
+    from intelanalytics.core.autograph import CommandLoadableBigGraph
+    logger.info("BigGraph is inheriting commands from autograph.py")
+except:
+    msg = "autograph.py not found, BigGraph is NOT inheriting commands from it"
+    logger.warn(msg)
+    import warnings
+    warnings.warn(msg, RuntimeWarning)
+    CommandLoadableBigGraph = CommandLoadable
 
 from intelanalytics.core.deprecate import deprecated
-
-# try:
-#     from intelanalytics.core.autograph import CommandLoadableBigGraph as command_loadable
-#     logger.info("BigGraph is inheriting commands from autograph.py")
-# except:
-#     #logger.info("autograph.py not found, BigGraph is NOT inheriting commands from it")
-#     logger.info("BigGraph is still using older CommandSupport")
-#     command_loadable = CommandSupport
-command_loadable = CommandSupport  # TODO - enable BigGraph to use autograph.py
 
 
 def _get_backend():
@@ -406,7 +407,8 @@ class EdgeRule(Rule):
         properties_frame = self._validate_properties(self.properties)
         return self._validate_same_frame(label_frame, tail_frame, head_frame, properties_frame)
 
-class BigGraph(command_loadable):
+
+class BigGraph(CommandLoadableBigGraph):
     """
     Creates a big graph.
 
@@ -444,21 +446,20 @@ class BigGraph(command_loadable):
     """
 
     # command load filters:
-    command_prefixes = ['graph', 'graphs']
-    command_mute_list = ['load', 'rename_graph']  # these commands are not exposed
+    _command_prefixes = ['graph', 'graphs']
+    _muted_command_names = ['rename_graph']  # these commands are not exposed
 
     def __init__(self, rules=None, name=""):
         try:
             self._id = 0
+            self._ia_uri = None
             if not hasattr(self, '_backend'):
                 self._backend = _get_backend()
+            CommandLoadableBigGraph.__init__(self)
             new_graph_name= self._backend.create(self, rules, name)
-            CommandSupport.__init__(self)
             logger.info('Created new graph "%s"', new_graph_name)
         except:
             raise IaError(logger)
-
-
 
     def __repr__(self):
         try:
@@ -469,7 +470,7 @@ class BigGraph(command_loadable):
     @property
     def name(self):
         """
-        Get the name of the current ojbect.
+        Get the name of the current object.
 
         Returns
         -------
@@ -518,10 +519,16 @@ class BigGraph(command_loadable):
         """
         # TODO - Review Docstring
         try:
-            self.rename_graph(value)
+            self._backend.rename_graph(self, value)
         except:
             raise IaError(logger)
 
+    @property
+    def ia_uri(self):
+        try:
+            return self._backend.get_ia_uri(self)
+        except:
+            raise IaError(logger)
 
     def append(self, rules=None):
         """

@@ -33,11 +33,13 @@ from intelanalytics.core.errorhandle import IaError
 from intelanalytics.core.metaprog import CommandLoadable
 try:
     from intelanalytics.core.autoframe import CommandLoadableBigFrame
-    command_loadable = CommandLoadableBigFrame
     logger.info("BigFrame is inheriting commands from autoframe.py")
 except:
-    logger.info("autoframe.py not found, BigFrame is NOT inheriting commands from it")
-    command_loadable = CommandLoadable
+    msg = "autoframe.py not found, BigFrame is NOT inheriting commands from it"
+    logger.warn(msg)
+    import warnings
+    warnings.warn(msg, RuntimeWarning)
+    CommandLoadableBigFrame = CommandLoadable
 
 from intelanalytics.core.deprecate import deprecated
 
@@ -160,7 +162,7 @@ def drop_frames(frame):
         raise IaError(logger)
 
 
-class BigFrame(command_loadable):
+class BigFrame(CommandLoadableBigFrame):
     """
     Summary
     -------
@@ -219,17 +221,18 @@ class BigFrame(command_loadable):
     # TODO - Review Parameters, Examples
 
     # command load filters:
-    command_prefixes = ['dataframe', 'dataframes']
-    command_mute_list = ['load', 'project', 'rename_frame']  # these commands are not exposed
+    _command_prefixes = ['dataframe', 'dataframes']
+    _muted_command_names = ['load', 'project', 'rename_frame']  # these commands are not exposed
 
     def __init__(self, source=None, name=None):
         try:
-            self._id = 0
             self._error_frame_id = None
+            self._id = 0
+            self._ia_uri = None
             if not hasattr(self, '_backend'):  # if a subclass has not already set the _backend
                 self._backend = _get_backend()
             new_frame_name = self._backend.create(self, source, name)
-            CommandLoadable.__init__(self)
+            CommandLoadableBigFrame.__init__(self)
             logger.info('Created new frame "%s"', new_frame_name)
         except:
             raise IaError(logger)
@@ -404,6 +407,7 @@ class BigFrame(command_loadable):
         except:
             raise IaError(logger)
 
+
     @property
     def row_count(self):
         """
@@ -429,6 +433,13 @@ class BigFrame(command_loadable):
         """
         try:
             return self._backend.get_row_count(self)
+        except:
+            raise IaError(logger)
+
+    @property
+    def ia_uri(self):
+        try:
+            return self._backend.get_ia_uri(self)
         except:
             raise IaError(logger)
 
@@ -1341,7 +1352,7 @@ class BigFrame(command_loadable):
         except:
             raise IaError(logger)
 
-    def f_measure(self, label_column, pred_column, pos_label=1, beta=1):
+    #def f_measure(self, label_column, pred_column, pos_label=1, beta=1):
         """
         Model :math:`F_{\\beta}` measure.
 
@@ -1410,7 +1421,7 @@ class BigFrame(command_loadable):
         .. versionadded:: 0.8
 
         """
-        return self._backend.classification_metric(self, 'f_measure', label_column, pred_column, pos_label, beta)
+        #return self._backend.classification_metric(self, 'f_measure', label_column, pred_column, pos_label, beta)
 
     def get_error_frame(self):
         """
