@@ -23,11 +23,11 @@
 """
 iapy package init, public API
 """
+from intelanalytics.core.loggers import loggers
 from intelanalytics.core.iatypes import *
 from intelanalytics.core.aggregation import agg
 from intelanalytics.core.errorhandle import errors, error_handling
 from intelanalytics.core.files import CsvFile
 from intelanalytics.core.frame import BigFrame, get_frame, get_frame_names, drop_frames, delete_frame
 from intelanalytics.core.graph import BigGraph, get_graph, get_graph_names, drop_graphs, delete_graph, VertexRule, EdgeRule
-from intelanalytics.core.loggers import loggers
 from intelanalytics.rest.connection import server
