@@ -43,26 +43,27 @@ SCRIPT=$(readlink -f "$0")
 SCRIPTPATH=$(dirname "$SCRIPT")
 pushd $SCRIPTPATH > /dev/null
 
-if [ "$UBUNTU_OS" == "" ]; then
-    # This is not Ubuntu, so look for a virtual environment
-    if [[ -f /usr/lib/IntelAnalytics/virtpy/bin/activate ]]; then
-        ACTIVATE_FILE=/usr/lib/IntelAnalytics/virtpy/bin/activate
-    else
-        ACTIVATE_FILE=/usr/local/virtpy/bin/activate
-    fi
+echo "/$1/$2/$3/$4/$5/$6/$7/$8/$9/" | grep -i -e "/-f/" -e "/--force/"> /dev/null
+if [ $? == 1 ]; then
+    if [ "$UBUNTU_OS" == "" ]; then
+        # This is not Ubuntu, so look for a virtual environment
+        if [[ -f /usr/lib/IntelAnalytics/virtpy/bin/activate ]]; then
+            ACTIVATE_FILE=/usr/lib/IntelAnalytics/virtpy/bin/activate
+        else
+            ACTIVATE_FILE=/usr/local/virtpy/bin/activate
+        fi
 
-    if [[ -f $ACTIVATE_FILE ]]; then
-        source $ACTIVATE_FILE > /dev/null
-    else
-        echo "/$1/$2/$3/$4/$5/$6/$7/$8/$9/" | grep -i -e "/-f/" -e "/--force/"> /dev/null
-        if [ $? == 1 ]; then
+        if [[ -f $ACTIVATE_FILE ]]; then
+            source $ACTIVATE_FILE > /dev/null
+        else
             echo "Virtual Environment is not installed."
             echo "Please execute install_pyenv.sh to install."
             popd > /dev/null
             exit 1
         fi
+    else
+        USERNAME=$LOGNAME
     fi
-else
     USERNAME=$LOGNAME
 fi
 
