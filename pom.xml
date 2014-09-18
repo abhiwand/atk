@@ -109,8 +109,8 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-        <dep.aurelius.version>0.4.5-SNAPSHOT</dep.aurelius.version>
-        <dep.gremlin.version>2.4.0</dep.gremlin.version>
+        <dep.aurelius.version>0.5.0</dep.aurelius.version>
+        <dep.gremlin.version>2.5.0</dep.gremlin.version>
         <dep.hbase.version>0.98.1-cdh5.1.2</dep.hbase.version>
         <dep.hadoop2.version>2.3.0-cdh5.1.2</dep.hadoop2.version>
 
@@ -753,7 +753,7 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
             <dependency>
                 <groupId>com.intel.ia</groupId>
                 <artifactId>ititan-core</artifactId>
-                <version>${dep.aurelius.version}</version>
+                <version>0.5.0-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>com.thinkaurelius.titan</groupId>

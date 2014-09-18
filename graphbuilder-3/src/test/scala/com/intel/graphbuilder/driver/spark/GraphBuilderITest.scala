@@ -132,7 +132,7 @@ class GraphBuilderITest extends TestingSparkContextWordSpec with Matchers with T
       // Input Schema
       val inputSchema = new InputSchema(List(
         new ColumnDef("idType", classOf[String]), // describes the next column, if it is a movieId or userId
-        new ColumnDef("id", classOf[java.lang.Long]),
+        new ColumnDef("id", null),
         new ColumnDef("name", classOf[String]), // movie title or user name
         new ColumnDef("userIdOfRating", classOf[String]),
         new ColumnDef("liking", classOf[String]),
