@@ -334,17 +334,6 @@ class SparkEngine(sparkContextManager: SparkContextManager,
       if (schema.columns.indexWhere(columnTuple => columnTuple._1 == original_name) < 0)
         throw new IllegalArgumentException(s"Cannot rename because there is no column with that name: $original_name")
     }
-
-    /**
-     * for cn in column_names:
-     * present = False
-     * for current_name in current_names:
-     * if cn == current_name:
-     * present = True
-     * if not present:
-     * raise ValueError ("Cannot rename because column name '{0}' is not present in current column names".format(cn))
-     */
-
     frames.renameColumns(realFrame, arguments.original_names.zip(arguments.new_names))
   }
 
