@@ -1437,7 +1437,7 @@ class BigFrame(CommandLoadableBigFrame):
         Create a new frame, combining similar values of column *a*, and count how many of each
         value is in the original frame::
 
-            new_frame = my_frame.group_by('a', count)
+            new_frame = my_frame.group_by('a', agg.count)
             new_frame.inspect()
 
              a str       count int
@@ -1461,7 +1461,7 @@ class BigFrame(CommandLoadableBigFrame):
         Create a new frame from this data, grouping the rows by unique combinations of column *a* and *b*;
         average the value in *c* for each group::
 
-            new_frame = my_frame.group_By(['a', 'b'], {'c' : avg})
+            new_frame = my_frame.group_by(['a', 'b'], {'c' : avg})
             new_frame.inspect()
 
              a int   b str   c_avg float
@@ -1486,7 +1486,7 @@ class BigFrame(CommandLoadableBigFrame):
         count each group; for column *d* calculate the average, sum and minimum value; for column *e*,
         save the maximum value::
 
-            new_frame = my_frame.group_By(['a', 'c'], agg.count, {'d': [agg.avg, agg.sum, agg.min], 'e': agg.max})
+            new_frame = my_frame.group_by(['a', 'c'], agg.count, {'d': [agg.avg, agg.sum, agg.min], 'e': agg.max})
 
              a str   c int   count int  d_avg float  d_sum float     d_min float e_max int
             |-----------------------------------------------------------------------------|
