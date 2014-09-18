@@ -1557,7 +1557,11 @@ class SparkEngine(sparkContextManager: SparkContextManager,
 
     val sampleIndex = realFrame.schema.columnIndex(arguments.sampleCol)
 
+    val newFrame = Await.result(create(DataFrameTemplate(arguments.name, None)), SparkEngineConfig.defaultTimeout)
+
     val ecdfRdd = SparkOps.ecdf(rdd, sampleIndex, arguments.dataType)
+
+    val rowCount = ecdfRdd.count()
 
     val columnName = "_ECDF"
     val allColumns = arguments.dataType match {
@@ -1568,9 +1572,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
       case _ => List((arguments.sampleCol, DataTypes.string), (arguments.sampleCol + columnName, DataTypes.float64))
     }
 
-    frames.saveFrame(realFrame, new FrameRDD(new Schema(allColumns), ecdfRdd))
-
-    realFrame.copy(schema = Schema(allColumns))
+    frames.saveFrame(newFrame, new FrameRDD(new Schema(allColumns), ecdfRdd), Some(rowCount))
   }
 
   override def tally_percent(arguments: CumulativePercentCount)(implicit user: UserPrincipal): Execution =
