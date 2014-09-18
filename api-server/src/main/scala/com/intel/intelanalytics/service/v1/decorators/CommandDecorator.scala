@@ -24,6 +24,9 @@ package com.intel.intelanalytics.service.v1.decorators
 
 import com.intel.intelanalytics.domain.command.Command
 import com.intel.intelanalytics.service.v1.viewmodels.{ RelLink, GetCommand, GetCommands }
+import spray.json.JsString
+
+import scala.util.parsing.json.JSON
 
 /**
  * A decorator that takes an entity from the database and converts it to a View/Model
