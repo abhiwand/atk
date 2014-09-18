@@ -263,8 +263,10 @@ class VertexRule(Rule):
     --------
     ::
 
-        movie_vertex = ia.VertexRule('movie', my_frame['movie'], {'genre': my_frame['genre']})
-        user_vertex = ia.VertexRule('user', my_frame['user'], {'age': my_frame['age_1']})
+        movie_vertex = ia.VertexRule('movie', my_frame['movie'], {'genre':
+            my_frame['genre']})
+        user_vertex = ia.VertexRule('user', my_frame['user'], {'age':
+            my_frame['age_1']})
 
     .. versionadded:: 0.8
 
@@ -338,7 +340,8 @@ class EdgeRule(Rule):
     --------
     ::
 
-        rating_edge = ia.EdgeRule('rating', movie_vertex, user_vertex, {'weight': my_frame['score']})
+        rating_edge = ia.EdgeRule('rating', movie_vertex, user_vertex, {'weight':
+            my_frame['score']})
 
     .. versionadded:: 0.8
 
@@ -403,7 +406,6 @@ class EdgeRule(Rule):
         properties_frame = self._validate_properties(self.properties)
         return self._validate_same_frame(label_frame, tail_frame, head_frame, properties_frame)
 
-
 class BigGraph(command_loadable):
     """
     Creates a big graph.
@@ -431,7 +433,8 @@ class BigGraph(command_loadable):
         # define graph parsing rules
         user = ia.VertexRule("user", frame.user, {"vertexType": frame.vertexType})
         movie = ia.VertexRule("movie", frame.movie)
-        rates = ia.EdgeRule("rating", user, movie, { "rating": frame.rating }, is_directed = True)
+        rates = ia.EdgeRule("rating", user, movie, { "rating": frame.rating },
+            is_directed = True)
 
         # create graph
         graph = ia.BigGraph([user, movie, rates])
@@ -548,7 +551,8 @@ class BigGraph(command_loadable):
             # define graph parsing rules
             user = ia.VertexRule("user", frame.user, {"vertexType": frame.vertexType})
             movie = ia.VertexRule("movie", frame.movie)
-            rates = ia.EdgeRule("rating", user, movie, { "rating": frame.rating }, is_directed = True)
+            rates = ia.EdgeRule("rating", user, movie, { "rating": frame.rating },
+                is_directed = True)
 
             # append data from the frame to an existing graph
             graph.append([user, movie, rates])
@@ -563,19 +567,24 @@ class BigGraph(command_loadable):
             # define graph parsing rules
             user = ia.VertexRule("user", ratingsFrame.userId)
             movie = ia.VertexRule("movie", ratingsFrame.movieId)
-            rates = ia.EdgeRule("rating", user, movie, { "rating": ratingsFrame.rating }, is_directed = True)
+            rates = ia.EdgeRule("rating", user, movie, { "rating": ratingsFrame.rating },
+                is_directed = True)
 
             # create graph
             graph = ia.BigGraph([user, movie, rates])
 
             # load additional properties onto the user vertices
-            usersFrame = ia.BigFrame(ia.CsvFile("/users.csv", schema= [('userId', int32), ('name', str), ('age', int32)]))
-            userAdditional = ia.VertexRule("user", usersFrame.userId, {"userName": usersFrame.name, "age": usersFrame.age })
+            usersFrame = ia.BigFrame(ia.CsvFile("/users.csv", schema= [('userId', int32),
+                ('name', str), ('age', int32)]))
+            userAdditional = ia.VertexRule("user", usersFrame.userId, {"userName":
+                usersFrame.name, "age": usersFrame.age })
             graph.append([userAdditional])
 
             # load additional properties onto the movie vertices
-            movieFrame = ia.BigFrame(ia.CsvFile("/movies.csv", schema= [('movieId', int32), ('title', str), ('year', int32)]))
-            movieAdditional = ia.VertexRule("movie", movieFrame.movieId, {"title": movieFrame.title, "year": movieFrame.year })
+            movieFrame = ia.BigFrame(ia.CsvFile("/movies.csv", schema= [('movieId', int32),
+                ('title', str), ('year', int32)]))
+            movieAdditional = ia.VertexRule("movie", movieFrame.movieId, {"title":
+                movieFrame.title, "year": movieFrame.year })
             graph.append([movieAdditional])
 
         .. versionadded:: 0.8

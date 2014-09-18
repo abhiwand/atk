@@ -162,6 +162,8 @@ def drop_frames(frame):
 
 class BigFrame(command_loadable):
     """
+    Summary
+    -------
     Data handle.
 
     Class with information about a large 2D table of data.
@@ -213,6 +215,7 @@ class BigFrame(command_loadable):
     .. versionadded:: 0.8
 
     """
+
     # TODO - Review Parameters, Examples
 
     # command load filters:
@@ -559,7 +562,8 @@ class BigFrame(command_loadable):
         At the same time, add a column *a_plus_b* and fill it with the contents of column *a* plus
         the contents of column *b*::
 
-            my_frame.add_columns(lambda row: [row.a * row.b, row.a + row.b], [("a_times_b", float32), ("a_plus_b", float32))
+            my_frame.add_columns(lambda row: [row.a * row.b, row.a + row.b], [("a_times_b",
+                float32), ("a_plus_b", float32))
 
         Two new columns are created, "a_times_b" and "a_plus_b", with the appropriate contents.
 
@@ -1164,7 +1168,8 @@ class BigFrame(command_loadable):
         For this example, my_frame is a BigFrame object accessing a frame with lots of data for the attributes of *lions*, *tigers*, and *ligers*.
         Get rid of the *lions* and *tigers*::
 
-            my_frame.drop_rows(lambda row: row.animal_type == "lion" or row.animal_type == "tiger")
+            my_frame.drop_rows(lambda row: row.animal_type == "lion" or
+                row.animal_type == "tiger")
 
         Now the frame only has information about *ligers*.
 
@@ -1526,7 +1531,8 @@ class BigFrame(command_loadable):
         count each group; for column *d* calculate the average, sum and minimum value; for column *e*,
         save the maximum value::
 
-            new_frame = my_frame.group_By(['a', 'c'], agg.count, {'d': [agg.avg, agg.sum, agg.min], 'e': agg.max})
+            new_frame = my_frame.group_By(['a', 'c'], agg.count, {'d':
+                [agg.avg, agg.sum, agg.min], 'e': agg.max})
 
              a str   c int   count int  d_avg float  d_sum float     d_min float e_max int
             |-----------------------------------------------------------------------------|
@@ -1635,7 +1641,8 @@ class BigFrame(command_loadable):
         Now, using a single BigFrame *my_frame* accessing a frame with the columns *b* and *book*.
         Build a new frame, but remove any rows where the values in *b* and *book* do not match::
 
-            joined_frame = your_frame.join(your_frame, left_on='b', right_on='book', how='inner')
+            joined_frame = your_frame.join(your_frame, left_on='b', right_on='book',
+                how='inner')
 
         We end up with a new BigFrame *joined_frame* accessing a new frame with all the original columns, but only those rows where the data in the
         original frame in column *b* matched the data in column *book*.

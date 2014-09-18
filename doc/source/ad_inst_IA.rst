@@ -42,12 +42,12 @@ If you do have access to 'sudo' and 'yum' you will see a list of repositories::
 
     $ sudo yum repolist
     Loaded plugins: amazon-id, rhui-lb, s3
-    repo id                                   repo name                                                     status
-    epel                                      Extra Packages for Enterprise Linux 6 - x86_64                11,099
-    rhui-REGION-client-config-server-6        Red Hat Update Infrastructure 2.0 Client Configuration Server      3
-    rhui-REGION-rhel-server-releases          Red Hat Enterprise Linux Server 6 (RPMs)                      12,888
-    rhui-REGION-rhel-server-releases-optional Red Hat Enterprise Linux Server 6 Optional (RPMs)              7,269
-    rhui-REGION-rhel-server-rh-common         Red Hat Enterprise Linux Server 6 RH Common (RPMs)                27
+    repo id                                   repo name                                     ...
+    epel                                      Extra Packages for Enterprise Linux 6 - x86_64...
+    rhui-REGION-client-config-server-6        Red Hat Update Infrastructure 2.0 Client Confi...
+    rhui-REGION-rhel-server-releases          Red Hat Enterprise Linux Server 6 (RPMs)      ...
+    rhui-REGION-rhel-server-releases-optional Red Hat Enterprise Linux Server 6 Optional (RP...
+    rhui-REGION-rhel-server-rh-common         Red Hat Enterprise Linux Server 6 RH Common (R...
     repolist: 31,335
 
 Cluster Requirements
@@ -171,13 +171,13 @@ Before trying to install the EPEL repo run the following command to see if it's 
 
 
     #sample output
-    repo id                                    repo name
-    cloudera-cdh5                              Cloudera CDH, Version 5                                              141
-    cloudera-manager                           Cloudera Manager, Version 5.1.0                                        7
-    epel                                       Extra Packages for Enterprise Linux 6 - x86_64                    11,022
-    rhui-REGION-client-config-server-6         Red Hat Update Infrastructure 2.0 Client Configuration Server 6        2
-    rhui-REGION-rhel-server-releases           Red Hat Enterprise Linux Server 6 (RPMs)                          12,690
-    rhui-REGION-rhel-server-releases-optional  Red Hat Enterprise Linux Server 6 Optional (RPMs)                  7,168
+    repo id                              repo name
+    cloudera-cdh5                        Cloudera CDH, Version 5                         ...
+    cloudera-manager                     Cloudera Manager, Version 5.1.0                 ...
+    epel                                 Extra Packages for Enterprise Linux 6 - x86_64  ...
+    rhui-REGION-client-config-server...  Red Hat Update Infrastructure 2.0 Client Configu...
+    rhui-REGION-rhel-server-releases...  Red Hat Enterprise Linux Server 6 (RPMs)        ...
+    rhui-REGION-rhel-server-releases...  Red Hat Enterprise Linux Server 6 Optional (RPMs...
 
 You want to look for "epel" repo id.
 
@@ -193,11 +193,11 @@ To verify the installation run
     sudo yum repolist
 
     #sample output
-    repo id                                     repo name
-    epel                                        Extra Packages for Enterprise Linux 6 - x86_64                  11,018
-    rhui-REGION-client-config-server-6          Red Hat Update Infrastructure 2.0 Client Configuration Server 6      2
-    rhui-REGION-rhel-server-releases            Red Hat Enterprise Linux Server 6 (RPMs)                        12,663
-    rhui-REGION-rhel-server-releases-optional    
+    repo id                              repo name
+    epel                                 Extra Packages for Enterprise Linux 6 - x86_64  ...
+    rhui-REGION-client-config-server...  Red Hat Update Infrastructure 2.0 Client Configu...
+    rhui-REGION-rhel-server-releases...  Red Hat Enterprise Linux Server 6 (RPMs)        ...
+    rhui-REGION-rhel-server-releases...  Red Hat Enterprise Linux Server 6 Optional (RPMs...
                                            
 Make sure the "epel" repo id is present.
 
@@ -254,13 +254,17 @@ Run the following command to create ``/etc/yum.repos.d/ia.repo`` file.
 
     echo "[intel-analytics]
     name=intel analytics
-    baseurl=https://intel-analytics-repo.s3-us-west-2.amazonaws.com/release/latest/yum/dists/rhel/6
+    baseurl=https://intel-analytics-repo.s3-us-west-2.amazonaws.com
+        /release/latest/yum/dists/rhel/6
     gpgcheck=0
     priority=1
     s3_enabled=1
     #yum-get iam only has get
     key_id=YOUR_KEY
     secret_key=YOUR_SECRET" | sudo tee -a /etc/yum.repos.d/ia.repo
+
+The ``baseurl`` line above has been broken across two lines for displaying in various media.
+The lines should be combined into a single line with no gaps (spaces).
 
 .. Note::
 
@@ -342,8 +346,10 @@ Like the regular python 2.6 client above this also needs to be installed on ever
 
 You can combine both the spark dependencies and python rest client installation into one command::
 
-    $ sudo yum -y install intelanalytics-spark-deps intelanalytics-python-rest-client intelanalytics-python-rest-client-python27
+    $ sudo yum -y install intelanalytics-spark-deps intelanalytics-python-rest-client
+        intelanalytics-python-rest-client-python27
 
+The above line should be a single line. It was split across multiple lines to enhance the display in various media.
 
 -------------------------
 REST Server Configuration
@@ -381,7 +387,8 @@ Usually non-parcel installations of Cloudera will install Spark to /usr/lib/spar
     export HOSTNAME=`hostname`
 
     IFS=$'\n\r'
-    #get class paths from separate file to make the upstart skip neat and making editing easier
+    #get class paths from separate files to make the upstart skip neat and
+    #making editing easier
     if [ -f /etc/intelanalytics/rest-server/classpath ]; then
         for path in `cat /etc/intelanalytics/rest-server/classpath`
         do
@@ -436,10 +443,12 @@ Sample output with notes::
     Deploying config   .   .   .   .   .   .   .   .   .   .   .   .  
 
     You need to restart Spark service for the config changes to take affect.
-    would you like to restart now? Type 'yes' to restart. defaults to 'no' if nothing is entered: yes
+    would you like to restart now? Type 'yes' to restart. defaults to 'no' if nothing is
+    entered: yes
     Restarting Spark  .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   
 
-    What python executable would you like to use? It must be in the path.  defaults to 'python' if nothing is entered:
+    What python executable would you like to use? It must be in the path.  defaults to
+    'python' if nothing is entered:
 
     Creating application.conf file from application.conf.tpl
     Reading application.conf.tpl
@@ -477,8 +486,8 @@ This is the section you want to look at::
 
         # The host name for the Postgresql database in which the metadata will be stored
         //metastore.connection-postgresql.host = "invalid-postgresql-host"
-        # This allows the use of an in memory data store. Restarting the rest server will create a fresh database and any 
-        # data in the h2 DB will be lost 
+        # This allows the use of an in memory data store. Restarting the rest server will
+        # create a fresh database and any data in the h2 DB will be lost 
         metastore.connection = ${intel.analytics.metastore.connection-h2} 
 
         engine {

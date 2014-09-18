@@ -129,7 +129,7 @@ In the "Choose a combination of services to install" dialogue, select the "Custo
 In the drop-down menu, mark the following boxes:
 
 * HBase
-* HDFS
+* :abbr:`HDFS (Hadoop Distributed File System)`
 * Oozie
 * Spark
 * Sqoop 2
@@ -150,7 +150,7 @@ This page allows you to designate which roles your different nodes will take up.
 In a default loadout, almost all of these fields will be left to their default, but there are four that need to be changed.
 
 1. Under the HBase section, click on the HBase Thrift Server dialogue and select master node of your cluster
-#. Under the HDFS section, click on the Secondary Name Node dialogue and select node01 of your cluster
+#. Under the :abbr:`HDFS (Hadoop Distributed File System)` section, click on the Secondary Name Node dialogue and select node01 of your cluster
 #. Under the YARN section, click on the JobHistory Server dialogue and select node01 of your cluster
 #. Under the ZooKeeper section, click on the Server dialogue and select node01, node02, node03 of your cluster
 
@@ -213,7 +213,7 @@ The next page requires no interaction. Just more loading bars.
 ------------------------ 
 Final Settings and Tests
 ------------------------ 
-Test functionality of hdfs.
+Test functionality of :abbr:`HDFS (Hadoop Distributed File System)`.
 
 ------
 Tweaks
