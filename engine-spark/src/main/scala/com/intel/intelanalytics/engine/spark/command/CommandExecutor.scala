@@ -24,8 +24,8 @@
 package com.intel.intelanalytics.engine.spark.command
 
 import com.intel.intelanalytics.component.ClassLoaderAware
-import com.intel.intelanalytics.engine.{Engine, CommandStorage}
-import com.intel.intelanalytics.engine.plugin.{Invocation, CommandPlugin}
+import com.intel.intelanalytics.engine.{ Engine, CommandStorage }
+import com.intel.intelanalytics.engine.plugin.{ Invocation, CommandPlugin }
 import com.intel.intelanalytics.engine.spark.context.SparkContextManager
 import com.intel.intelanalytics.engine.spark.SparkEngine
 import com.intel.intelanalytics.shared.EventLogging
@@ -35,11 +35,11 @@ import spray.json._
 
 import scala.concurrent._
 import scala.util.Try
-import org.apache.spark.engine.{ProgressPrinter, SparkProgressListener}
+import org.apache.spark.engine.{ ProgressPrinter, SparkProgressListener }
 import com.intel.intelanalytics.domain.command.CommandTemplate
 import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.domain.command.Execution
-import com.intel.intelanalytics.engine.spark.plugin.{SparkCommandPlugin, SparkInvocation}
+import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
 import com.intel.intelanalytics.domain.command.Command
 import scala.collection.mutable
 
@@ -66,16 +66,15 @@ import scala.collection.mutable
  * @param contextManager a SparkContext factory that can be passed to SparkCommandPlugins during execution
  */
 class CommandExecutor(engine: => SparkEngine, commands: SparkCommandStorage, contextManager: SparkContextManager)
-  extends EventLogging
-  with ClassLoaderAware {
+    extends EventLogging
+    with ClassLoaderAware {
 
   case class SimpleInvocation(engine: Engine,
                               commandStorage: CommandStorage,
                               executionContext: ExecutionContext,
                               arguments: Option[JsObject],
                               commandId: Long,
-                              user: UserPrincipal
-                               ) extends Invocation
+                              user: UserPrincipal) extends Invocation
 
   val commandIdContextMapping = new mutable.HashMap[Long, SparkContext]()
 
@@ -97,7 +96,6 @@ class CommandExecutor(engine: => SparkEngine, commands: SparkCommandStorage, con
     withMyClassLoader {
       withContext("ce.execute") {
         withContext(command.name) {
-
 
           val cmdFuture = future {
             withCommand(cmd) {
@@ -219,7 +217,7 @@ class CommandExecutor(engine: => SparkEngine, commands: SparkCommandStorage, con
    * @param commandId command id
    */
   def stopCommand(commandId: Long): Unit = {
-    commandIdContextMapping.get(commandId).foreach { case (context) => context.stop()}
+    commandIdContextMapping.get(commandId).foreach { case (context) => context.stop() }
     commandIdContextMapping -= commandId
   }
 }

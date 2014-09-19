@@ -17,7 +17,7 @@ import scala.concurrent.{ Await, ExecutionContext }
 import spray.json._
 import com.intel.intelanalytics.domain.DomainJsonProtocol
 import DomainJsonProtocol._
-import com.intel.intelanalytics.engine.plugin.CommandPlugin
+import com.intel.intelanalytics.engine.plugin.{Invocation, CommandPlugin}
 import scala.collection.immutable.HashMap
 import org.scalatest.mock.MockitoSugar
 
@@ -40,7 +40,7 @@ class CommandExecutorTest extends FlatSpec with Matchers with MockitoSugar {
     new CommandExecutor(engine, commandStorage, contextManager)
   }
 
-  "create spark context" should "add a entry in command id and context mapping" in {
+  "running a command" should "add an entry in command id and context mapping for SparkCommands" in {
     val args = QuantileValues(List())
     var contextCountDuringExecution = 0
     var containsKey1DuringExecution = false
@@ -60,6 +60,29 @@ class CommandExecutorTest extends FlatSpec with Matchers with MockitoSugar {
     containsKey1DuringExecution shouldBe true
 
     //make sure the entry is cleaned up after execution
+    executor.commandIdContextMapping.size shouldBe 0
+  }
+
+  "running a command" should "not add an entry in command id and context mapping for regular commands" in {
+    val args = QuantileValues(List())
+    var contextCountDuringExecution = 0
+    var containsKey1DuringExecution = false
+    val executor = createCommandExecutor()
+
+    val dummyFunc = (dist: QuantileValues, user: UserPrincipal, invocation: Invocation) => {
+      contextCountDuringExecution = executor.commandIdContextMapping.size
+      containsKey1DuringExecution = executor.commandIdContextMapping.contains(1)
+      mock[DataFrame]
+    }
+
+    val plugin = commandPluginRegistry.registerCommand("dummy", dummyFunc)
+    val user = mock[UserPrincipal]
+    val execution = executor.execute(plugin, args, user, implicitly[ExecutionContext])
+    Await.ready(execution.end, 10 seconds)
+    contextCountDuringExecution shouldBe 0
+    containsKey1DuringExecution shouldBe false
+
+    //make sure the mapping is still empty
     executor.commandIdContextMapping.size shouldBe 0
   }
 
