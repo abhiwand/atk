@@ -23,7 +23,7 @@
 
 package com.intel.intelanalytics.domain.frame
 
-import com.intel.intelanalytics.domain.{ IAUri, HasId }
+import com.intel.intelanalytics.domain.{OnDemand, UriReference, HasId}
 import com.intel.intelanalytics.domain.schema.Schema
 import org.joda.time.{ Duration, DateTime }
 
@@ -52,7 +52,7 @@ case class DataFrame(id: Long,
                      materialized: Option[DateTime] = None,
                      materializationDuration: Option[Duration] = None,
                      errorFrameId: Option[Long] = None,
-                     parent: Option[Int] = None) extends HasId with IAUri {
+                     parent: Option[Int] = None) extends HasId with UriReference with OnDemand {
   require(id >= 0, "id must be zero or greater")
   require(name != null, "name must not be null")
   require(name.trim.length > 0, "name must not be empty or whitespace")
