@@ -28,6 +28,7 @@ case class ClassificationMetric(frame: FrameReference, metricType: String, label
   require(metricType.equals("accuracy") ||
     metricType.equals("precision") ||
     metricType.equals("recall") ||
+    metricType.equals("confusion_matrix") ||
     metricType.equals("f_measure"), "valid metric type is required")
   require(labelColumn != null && !labelColumn.equals(""), "label column is required")
   require(predColumn != null && !predColumn.equals(""), "predict column is required")
@@ -35,4 +36,4 @@ case class ClassificationMetric(frame: FrameReference, metricType: String, label
   require(beta > 0, "invalid beta value for f measure")
 }
 
-case class ClassificationMetricValue(metricValue: Double)
+case class ClassificationMetricValue(metricValue: Option[Double] = None, valueList: Option[Seq[Long]] = None)
