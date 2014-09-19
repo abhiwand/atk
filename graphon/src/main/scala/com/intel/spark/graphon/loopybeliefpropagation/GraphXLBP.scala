@@ -4,33 +4,70 @@ import scala.reflect.ClassTag
 import org.apache.spark.graphx._
 import com.intel.spark.graphon.iatpregel._
 import com.intel.spark.graphon.iatpregel.IATPregelLogger
+import com.intel.graphbuilder.elements.{ Property, Vertex => GBVertex, Edge => GBEdge }
 
-case class VertexState(value: Double, id: Any, delta: Double)
+case class VertexState(gbVertex: GBVertex,
+                       prior: List[Double],
+                       unnormalizedPosterior: List[Double],
+                       posterior: List[Double],
+                       delta: Double)
 
 object GraphXLBP {
 
-  def runGraphXLBP(graph: Graph[VertexState, Double], maxIterations: Int): (Graph[VertexState, Double], String) = {
+  def runGraphXLBP(graph: Graph[VertexState, Double], maxIterations: Int, stateSpaceSize: Int): (Graph[VertexState, Double], String) = {
 
     // pregeling
 
-    val initialMessage: Double = 0
+    val initialMessage: List[Double] = (1 to stateSpaceSize).map(x => 1.toDouble).toList
 
-    def vertexProgram(id: VertexId, vertexState: VertexState, message: Double): VertexState = {
+    val power = 1.0d
+    val smoothing = 1.0d
 
-      val oldValue = vertexState.value
-      val newValue = oldValue - message
-      val delta = message
-
-      VertexState(newValue, vertexState.id, delta)
+    def edgePotential(delta: Double, weight: Double) = {
+      -Math.pow(delta.toDouble, power) * weight * smoothing
     }
 
-    def sendMessage(edgeTriplet: EdgeTriplet[VertexState, Double]): Iterator[(VertexId, Double)] = {
-      Iterator((edgeTriplet.dstId, edgeTriplet.srcAttr.value))
+    def vertexProgram(id: VertexId, vertexState: VertexState, incomingMessage: List[Double]): VertexState = {
+
+      val prior = vertexState.prior
+
+      val oldPosterior = vertexState.posterior
+
+      val priorTimesMessages: List[Double] = VectorMath.product(prior, incomingMessage)
+
+      // l1 normalization
+      val l1Norm = priorTimesMessages.map(x => Math.abs(x)).reduce(_ + _)
+      val normalizedPosterior = priorTimesMessages.map(x => (x / l1Norm))
+
+      val delta = normalizedPosterior.zip(oldPosterior).map({ case (x, y) => Math.abs(x - y) }).reduce(_ + _)
+
+      VertexState(vertexState.gbVertex, prior, priorTimesMessages, normalizedPosterior, delta)
     }
 
-    def mergeMsg(message1: Double, message2: Double): Double = {
-      0.05d
+    def calculateMessage(unnormalizedPosterior: List[Double], edgeWeight: Double): List[Double] = {
+
+      val nStates = unnormalizedPosterior.length
+
+      val stateRange = (0 to nStates - 1).toList
+
+      val statesUNPosteriors = stateRange.zip(unnormalizedPosterior)
+
+      val message = stateRange.map(i => statesUNPosteriors.map({
+        case (j, x: Double) =>
+          x * Math.exp(edgePotential(Math.abs(i - j) / ((nStates - 1).toDouble), edgeWeight))
+      }).reduce(_ + _))
+
+      message
     }
+
+    def sendMessage(edgeTriplet: EdgeTriplet[VertexState, Double]): Iterator[(VertexId, List[Double])] = {
+
+      val unnormalizedPrior = edgeTriplet.srcAttr.unnormalizedPosterior
+
+      Iterator((edgeTriplet.dstId, calculateMessage(unnormalizedPrior, edgeTriplet.attr)))
+    }
+
+    def mergeMsg(m1: List[Double], m2: List[Double]): List[Double] = VectorMath.product(m1, m2)
 
     // logging
 

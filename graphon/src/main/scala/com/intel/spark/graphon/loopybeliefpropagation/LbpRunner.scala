@@ -9,6 +9,25 @@ import org.apache.spark.SparkContext._
 
 object LbpRunner {
 
+  def lbpVertexStateFromGBVertex(gbVertex: GBVertex, inputPropertyName: String): VertexState = {
+
+    val prior = gbVertex.getProperty(inputPropertyName).get.value.asInstanceOf[List[Double]]
+
+    val sum = prior.reduce(_ + _)
+    val posterior = prior.map(x => x / sum)
+
+    VertexState(gbVertex, prior, prior, posterior, 0.0d)
+
+  }
+
+  def outputGBVertrexfromLBPVertexState(vertexState: VertexState, outputPropertyLabel: String) = {
+    val oldGBVertex = vertexState.gbVertex
+
+    val properties = oldGBVertex.properties + Property(outputPropertyLabel, vertexState.posterior)
+
+    GBVertex(oldGBVertex.physicalId, oldGBVertex.gbId, properties)
+  }
+
   def runLbp(inVertices: RDD[GBVertex], inEdges: RDD[GBEdge], lbpParameters: Lbp): (RDD[GBVertex], RDD[GBEdge], String) = {
 
     val outputPropertyLabel = lbpParameters.output_vertex_property_list.getOrElse("LBP_RESULT")
@@ -19,29 +38,26 @@ object LbpRunner {
 
     // convert to graphX vertices
 
-    val graphXVertices =
+    val graphXVertices: RDD[(Long, VertexState)] =
       inVertices.map((gbVertex => (gbVertex.physicalId.asInstanceOf[Long],
-        VertexState(gbVertex.getProperty(inputPropertyName).get.value.asInstanceOf[Double],
-          gbVertex.id, 0))))
+        lbpVertexStateFromGBVertex(gbVertex, inputPropertyName))))
 
     val graphXEdges = inEdges.map(edge =>
-      (new Edge[Double](edge.tailPhysicalId.asInstanceOf[Long], edge.headPhysicalId.asInstanceOf[Long], 0)))
+      (new Edge[Double](edge.tailPhysicalId.asInstanceOf[Long], edge.headPhysicalId.asInstanceOf[Long], 1)))
+
+    val testGraphXVerticesIn = graphXVertices.collect()
 
     val graph = Graph[VertexState, Double](graphXVertices, graphXEdges)
 
-    val (newGraph, log) = GraphXLBP.runGraphXLBP(graph, maxIterations)
+    val (newGraph, log) = GraphXLBP.runGraphXLBP(graph, maxIterations, 2) // NLS TODO: state space hardwired to {0,1} !!
+
+    // we need to get the correct value out of the posterior
 
     val outVertices = newGraph.vertices.map({
       case (vid, vertexState) =>
-        GBVertex(vertexState.id.asInstanceOf[Property].value, vertexState.id.asInstanceOf[Property], Set(Property(outputPropertyLabel, vertexState.value)))
+        outputGBVertrexfromLBPVertexState(vertexState, outputPropertyLabel)
     })
 
-    // the trade-off:
-    // either we pass along all of the data into GraphX or we do a join at the end...
-    // the join is pretty expensive, and the data has to live somewhere anyway
-    val outV: RDD[GBVertex] =
-      inVertices.map(gbVertex => (gbVertex.id, gbVertex)).join(outVertices.map(gbVertex => (gbVertex.id, gbVertex))).map({ case (key: Any, (v1: GBVertex, v2: GBVertex)) => v1.merge(v2) })
-
-    (outV, inEdges, log)
+    (outVertices, inEdges, log)
   }
 }

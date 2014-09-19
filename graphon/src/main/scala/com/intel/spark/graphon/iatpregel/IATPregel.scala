@@ -57,7 +57,7 @@ object IATPregel {
 
     // Loop
     var prevG: Graph[VertexData, EdgeData] = null
-    var i = 0
+    var i = 1
 
     while (activeMessages > 0 && i < maxIterations) {
       // Receive the messages. Vertices that didn't get any messages do not appear in newVerts.
