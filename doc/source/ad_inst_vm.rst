@@ -86,8 +86,7 @@ Extract Archive
 Extracting On Windows
 =====================
 Extracting on Windows is relatively easy.
-Use any of the following tools to extract the archive, `7zip <http://7-zip.org/>`_ ,
-`WinZip <http://winzip.com/>`_ , `Winrar <http://rarlab.com/>`_, etc...
+Use the following tool (or your equivalent) to extract the archive: `7zip <http://7-zip.org/>`_.
 
 Extracting On Linux
 ===================
