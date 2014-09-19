@@ -46,6 +46,10 @@
             <artifactId>titan-berkeleyje</artifactId>
             <exclusions>
                 <exclusion>
+                    <groupId>org.jboss.netty</groupId>
+                    <artifactId>netty</artifactId>
+                </exclusion>
+                <exclusion>
                     <groupId>com.thinkaurelius.titan</groupId>
                     <artifactId>titan-core</artifactId>
                 </exclusion>
@@ -80,12 +84,24 @@
             <version>0.5.0</version>
             <exclusions>
                 <exclusion>
+                    <groupId>org.jboss.netty</groupId>
+                    <artifactId>netty</artifactId>
+                </exclusion>
+                <exclusion>
                     <groupId>com.thinkaurelius.titan</groupId>
                     <artifactId>titan-core</artifactId>
                 </exclusion>
                 <exclusion>
                     <groupId>org.apache.hbase</groupId>
                     <artifactId>hbase-client</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.hadoop</groupId>
+                    <artifactId>hadoop-client</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.hadoop</groupId>
+                    <artifactId>hadoop-core</artifactId>
                 </exclusion>
                 <exclusion>
                     <groupId>org.apache.hbase</groupId>
@@ -113,6 +129,10 @@
             <groupId>com.thinkaurelius.titan</groupId>
             <artifactId>titan-hbase</artifactId>
             <exclusions>
+                <exclusion>
+                    <groupId>org.jboss.netty</groupId>
+                    <artifactId>netty</artifactId>
+                </exclusion>
                 <exclusion>
                     <groupId>com.thinkaurelius.titan</groupId>
                     <artifactId>titan-core</artifactId>
@@ -147,6 +167,10 @@
             <groupId>com.thinkaurelius.titan</groupId>
             <artifactId>titan-es</artifactId>
             <exclusions>
+                <exclusion>
+                    <groupId>org.jboss.netty</groupId>
+                    <artifactId>netty</artifactId>
+                </exclusion>
                 <exclusion>
                     <groupId>com.thinkaurelius.titan</groupId>
                     <artifactId>titan-core</artifactId>
