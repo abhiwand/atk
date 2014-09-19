@@ -95,7 +95,6 @@ import com.intel.intelanalytics.domain.command.Command
 import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.query.RowQuery
 import com.intel.intelanalytics.domain.frame.ClassificationMetricValue
-//import com.intel.intelanalytics.domain.frame.ConfusionMatrixValues
 import com.intel.intelanalytics.domain.command.CommandTemplate
 import com.intel.intelanalytics.domain.frame.FlattenColumn
 import com.intel.intelanalytics.domain.frame.ColumnSummaryStatisticsReturn
@@ -1624,7 +1623,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
                              |
                              |            cpc_frame.inspect()
                              |
-                             |             obs int32   obsCumulativePercentCount float64
+                             |             obs int32    obs_tally_percent float64
                              |            |---------------------------------------------|
                              |               0                          0.0
                              |               1                          0.5
@@ -1646,7 +1645,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
 
     val sampleIndex = realFrame.schema.columnIndex(arguments.sampleCol)
 
-    val (cumulativeDistRdd, columnName) = (CumulativeDistFunctions.cumulativePercentCount(frameRdd, sampleIndex, arguments.countVal), "_cumulative_percent_count")
+    val (cumulativeDistRdd, columnName) = (CumulativeDistFunctions.cumulativePercentCount(frameRdd, sampleIndex, arguments.countVal), "_tally_percent")
 
     val frameSchema = realFrame.schema
     val allColumns = frameSchema.columns :+ (arguments.sampleCol + columnName, DataTypes.float64)
@@ -1699,7 +1698,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
 
             cc_frame.inspect()
 
-             obs int32   obsCumulativeCount int32
+             obs int32        obs_tally int32
              |------------------------------------|
                0                          0
                1                          1
@@ -1721,7 +1720,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
 
     val sampleIndex = realFrame.schema.columnIndex(arguments.sampleCol)
 
-    val (cumulativeDistRdd, columnName) = (CumulativeDistFunctions.cumulativeCount(frameRdd, sampleIndex, arguments.countVal), "_cumulative_count")
+    val (cumulativeDistRdd, columnName) = (CumulativeDistFunctions.cumulativeCount(frameRdd, sampleIndex, arguments.countVal), "_tally")
 
     val frameSchema = realFrame.schema
     val allColumns = frameSchema.columns :+ (arguments.sampleCol + columnName, DataTypes.float64)
@@ -1777,14 +1776,14 @@ class SparkEngine(sparkContextManager: SparkContextManager,
 
         cps_frame.inspect()
 
-        obs int32 obsCumulativePercentSum float64
+        obs   int32   obs_cumulative_percent float64
         |-------------------------------------------|
-          0 0.0
-          1 0.16666666
-          2 0.5
-          0 0.5
-          1 0.66666666
-          2 1.0
+          0                   0.0
+          1                   0.16666666
+          2                   0.5
+          0                   0.5
+          1                   0.66666666
+          2                   1.0
 
       ..versionadded :: 0.8 """))
   val cumulativePercentSumCommand = commandPluginRegistry.registerCommand("dataframe/cumulative_percent", cumulativePercentSumSimple _, doc = Some(cumPercentDoc))
@@ -1799,7 +1798,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
 
     val sampleIndex = realFrame.schema.columnIndex(arguments.sampleCol)
 
-    val (cumulativeDistRdd, columnName) = (CumulativeDistFunctions.cumulativePercentSum(frameRdd, sampleIndex), "_cumulative_percent_sum")
+    val (cumulativeDistRdd, columnName) = (CumulativeDistFunctions.cumulativePercentSum(frameRdd, sampleIndex), "_cumulative_percent")
 
     val frameSchema = realFrame.schema
     val allColumns = frameSchema.columns :+ (arguments.sampleCol + columnName, DataTypes.float64)
@@ -1854,7 +1853,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
 
             cs_frame.inspect()
 
-             obs int32   obsCumulativeSum int32
+             obs int32   obs_cumulative_sum int32
              |----------------------------------|
                0                     0
                1                     1
