@@ -76,7 +76,8 @@ To download the VM run::
     
 The preceding line was broken across multiple lines for improved viewing on various media.
 The line should be entered as one line with no gaps (spaces).
-Depending on the release you would like to download, you can change ``#.#.#`` to the latest release (|release|), or another you would like to try.
+You must change ``#.#.#`` to the release you wish to download.
+If the version of CDH has changed, you need to change that as well.
 
 ---------------
 Extract Archive
