@@ -71,6 +71,8 @@ trait Engine {
 
   def getQueryPage(id: Identifier, pageId: Identifier)(implicit user: UserPrincipal): QueryDataResult
 
+  def getUserPrincipal(apiKey: String): UserPrincipal
+
   def getFrame(id: Identifier)(implicit user: UserPrincipal): Future[Option[DataFrame]]
 
   def getRows(arguments: RowQuery[Identifier])(implicit user: UserPrincipal): Future[QueryDataResult]

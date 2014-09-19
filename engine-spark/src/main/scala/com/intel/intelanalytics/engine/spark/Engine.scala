@@ -104,7 +104,8 @@ import com.intel.intelanalytics.domain.frame.FrameJoin
 import com.intel.intelanalytics.engine.spark.plugin.SparkInvocation
 import com.intel.intelanalytics.domain.query.PagedQueryResult
 import com.intel.intelanalytics.domain.query.QueryDataResult
-import com.intel.intelanalytics.domain.frame.QuantileValues
+import org.apache.commons.lang.StringUtils
+import com.intel.intelanalytics.engine.spark.user.UserStorage
 
 object SparkEngine {
   private val pythonRddDelimiter = "YoMeDelimiter"
@@ -115,6 +116,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
                   commandStorage: CommandStorage,
                   frames: SparkFrameStorage,
                   graphs: SparkGraphStorage,
+                  users: UserStorage,
                   queryStorage: SparkQueryStorage,
                   queries: QueryExecutor,
                   sparkAutoPartitioner: SparkAutoPartitioner,
@@ -197,6 +199,10 @@ class SparkEngine(sparkContextManager: SparkContextManager,
         ctx.stop()
       }
     }
+  }
+
+  override def getUserPrincipal(apiKey: String): UserPrincipal = {
+    users.getUserPrincipal(apiKey)
   }
 
   /**
