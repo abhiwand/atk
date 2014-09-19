@@ -105,14 +105,13 @@ object DomainJsonProtocol extends IADefaultJsonProtocol {
     }
   }
 
-  class ReferenceFormat[T <: HasId](collection: String, name: String, factory: Long => T)
+  class ReferenceFormat[T <: UriReference](entity: String)
       extends JsonFormat[T] {
-    override def write(obj: T): JsValue = JsString(s"ia://$collection/${obj.id}")
+    override def write(obj: T): JsValue = JsString(obj.uri)
 
     override def read(json: JsValue): T = json match {
-      case JsString(name) =>
-        factory(IAUriFactory.getReference(name).id)
-      case JsNumber(n) => factory(n.toLong)
+      case JsString(name) =>ReferenceResolver.resolve(name)
+      case JsNumber(n) => ReferenceResolver.resolve(s"ia://$entity/$n")
       case _ => deserializationError(s"Expected $name URL, but received " + json)
     }
   }
