@@ -25,7 +25,7 @@ package com.intel.intelanalytics.domain.frame
 
 import com.intel.intelanalytics.domain.{ IAUri, HasId }
 import com.intel.intelanalytics.domain.schema.Schema
-import org.joda.time.DateTime
+import org.joda.time.{ Duration, DateTime }
 
 /**
  * Represents a Big Data Frame
@@ -36,28 +36,26 @@ import org.joda.time.DateTime
  * @param status lifecycle status. For example, INIT (building), ACTIVE, DELETED (un-delete possible),
  *               DELETE_FINAL (no un-delete), INCOMPLETE (failed construction)
  * @param createdOn date/time this record was created
- * @param modifiedOn date/time this record was last modified
  * @param createdBy user who created this row
- * @param modifiedBy user who last modified this row
  * @param rowCount number of rows in the frame
  * @param errorFrameId foreign key for the error data frame associated with this frame (parse errors go into this frame)
- * @param revision the current revision number of the frame - incremented with each change to the data frame
  */
 case class DataFrame(id: Long,
                      name: String,
-                     description: Option[String] = None,
                      schema: Schema = Schema(),
-                     rowCount: Long,
                      status: Long,
                      createdOn: DateTime,
-                     modifiedOn: DateTime,
+                     description: Option[String] = None,
+                     rowCount: Option[Long] = None,
+                     command: Option[Int] = None,
                      createdBy: Option[Long] = None,
-                     modifiedBy: Option[Long] = None,
+                     materialized: Option[DateTime] = None,
+                     materializationDuration: Option[Duration] = None,
                      errorFrameId: Option[Long] = None,
-                     revision: Int = 0) extends HasId with IAUri {
+                     parent: Option[Int] = None) extends HasId with IAUri {
   require(id >= 0, "id must be zero or greater")
   require(name != null, "name must not be null")
   require(name.trim.length > 0, "name must not be empty or whitespace")
-  require(revision >= 0, "revision must be a positive integer")
+  require(parent.isEmpty || parent.get > 0, "parent must be one or greater if provided")
   def entity = "frame"
 }

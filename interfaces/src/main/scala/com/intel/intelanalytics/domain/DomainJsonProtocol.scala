@@ -41,7 +41,7 @@ import com.intel.intelanalytics.domain.graph.{ Graph, GraphLoad, GraphReference,
 import com.intel.intelanalytics.domain.query.RowQuery
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 import com.intel.intelanalytics.domain.schema.{ DataTypes, Schema }
-import org.joda.time.DateTime
+import org.joda.time.{ Duration, DateTime }
 import spray.json._
 import com.intel.intelanalytics.engine.{ ProgressInfo, TaskProgressInfo }
 
@@ -64,7 +64,7 @@ object DomainJsonProtocol extends IADefaultJsonProtocol {
     override def write(obj: DataType): JsValue = new JsString(obj.toString)
   }
 
-  trait DateTimeJsonFormat extends JsonFormat[DateTime] {
+  implicit val dateTimeFormat = new JsonFormat[DateTime] {
     private val dateTimeFmt = org.joda.time.format.ISODateTimeFormat.dateTime
     def write(x: DateTime) = JsString(dateTimeFmt.print(x))
     def read(value: JsValue) = value match {
@@ -73,7 +73,13 @@ object DomainJsonProtocol extends IADefaultJsonProtocol {
     }
   }
 
-  implicit val dateTimeFormat = new DateTimeJsonFormat {}
+  implicit val durationFormat = new JsonFormat[Duration] {
+    def write(x: Duration) = JsString(x.toString)
+    def read(value: JsValue) = value match {
+      case JsString(x) => Duration.parse(x)
+      case x => deserializationError("Expected Duration as JsString, but got " + x)
+    }
+  }
 
   implicit val schemaFormat = jsonFormat1(Schema)
 
@@ -277,7 +283,7 @@ object DomainJsonProtocol extends IADefaultJsonProtocol {
   lazy implicit val commandDefinitionFormat = jsonFormat4(CommandDefinition)
 
   implicit object dataFrameFormat extends JsonFormat[DataFrame] {
-    implicit val dataFrameFormatOriginal = jsonFormat12(DataFrame)
+    implicit val dataFrameFormatOriginal = jsonFormat13(DataFrame)
 
     override def read(value: JsValue): DataFrame = {
       dataFrameFormatOriginal.read(value)
