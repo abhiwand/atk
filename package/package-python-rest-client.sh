@@ -26,6 +26,7 @@ mkdir -p  tarballs/$package/usr/lib/intelanalytics/rest-client/python/doc
 cp -v config/intelanalytics-python-rest-client/requirements.txt tarballs/$package/usr/lib/intelanalytics/rest-client/python/
 		  
 cp -Rv  ../python/intelanalytics/* tarballs/$package/usr/lib/intelanalytics/rest-client/python/
+cp -Rv  ../python/cmdgen.py tarballs/$package/usr/lib/intelanalytics/rest-client/
 
 cp -Rv ../doc/build/html tarballs/$package/usr/lib/intelanalytics/rest-client/python/doc/html/
 

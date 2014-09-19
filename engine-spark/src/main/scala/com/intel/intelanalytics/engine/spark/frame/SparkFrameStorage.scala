@@ -288,10 +288,10 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
     metaStore.withSession("frame.createFrame") {
       implicit session =>
         {
-          /*val check = metaStore.frameRepo.lookupByName(frameTemplate.name)
+          val check = metaStore.frameRepo.lookupByName(frameTemplate.name)
           if (check.isDefined) {
             throw new RuntimeException("Frame with same name exists. Create aborted.")
-          }*/
+          }
           val frame = metaStore.frameRepo.insert(frameTemplate).get
 
           //remove any existing artifacts to prevent collisions when a database is reinitialized.
