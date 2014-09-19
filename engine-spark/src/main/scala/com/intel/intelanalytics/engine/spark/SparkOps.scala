@@ -707,7 +707,7 @@ private[spark] object SparkOps extends Serializable {
       case ((j: Int, "AVG"), DataTypes.float64) => elem.map(e => e(j).asInstanceOf[Double]).sum / elem.length
 
       case ((j: Int, "COUNT"), _) => elem.length
-      case ((j: Int, "COUNT_DISTINCT"), _) => elem.map(e => e(j)).distinct.length
+      case ((j: Int, "COUNT_DISTINCT"), _) => elem.map(e => e(j)).distinct.length.asInstanceOf[Long]
 
       case ((j: Int, "VAR"), DataTypes.int32) =>
         val elements: Seq[Int] = elem.map(e => e(j).asInstanceOf[Int])
@@ -766,9 +766,14 @@ private[spark] object SparkOps extends Serializable {
       i <- args_pair
     } yield {
       i._2 match {
-        case "COUNT" | "COUNT_DISTINCT" => DataTypes.int64
+        case "COUNT" | "COUNT_DISTINCT" => DataTypes.int32
         case "SUM" | "MIN" | "MAX" => schema(i._1)._2
-        case _ => DataTypes.float64
+        case _ => {
+          if (schema(i._1)._2.toString.contains("32"))
+            DataTypes.float32
+          else
+            DataTypes.float64
+        }
       }
     }
 
