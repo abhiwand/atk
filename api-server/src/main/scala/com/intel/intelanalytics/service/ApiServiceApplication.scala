@@ -75,10 +75,8 @@ class ApiServiceApplication extends Archive with EventLogging {
     //make sure engine is initialized
     Await.ready(engine.getCommands(0, 1), 30 seconds)
 
-    val metaStore = new MetaStoreConfigured().metaStore
-
     // setup common directives
-    val serviceAuthentication = new AuthenticationDirective(metaStore)
+    val serviceAuthentication = new AuthenticationDirective(engine)
     val commonDirectives = new CommonDirectives(serviceAuthentication)
 
     // setup V1 Services

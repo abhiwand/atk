@@ -81,6 +81,16 @@ class HdfsFileStorage(fsRoot: String) extends EventLogging {
     fs.listStatus(absolutePath(source.toString)).map(fs => fs.getPath)
   }
 
+  /**
+   * Return a sequence of Path objects in a given directory that match a user supplied path filter
+   * @param source parent directory
+   * @param filter path filter
+   * @return Sequence of Path objects
+   */
+  def globList(source: Path, filter: String): Seq[Path] = withContext("file.globList") {
+    fs.globStatus(new Path(source, filter)).map(fs => fs.getPath)
+  }
+
   def read(source: Path): InputStream = withContext("file.read") {
     val path: Path = absolutePath(source.toString)
     fs.open(path)

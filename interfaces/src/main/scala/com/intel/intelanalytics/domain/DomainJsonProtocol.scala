@@ -176,9 +176,7 @@ object DomainJsonProtocol extends IADefaultJsonProtocol {
   // model performance formats
 
   implicit val classificationMetricLongFormat = jsonFormat6(ClassificationMetric)
-  implicit val classificationMetricValueLongFormat = jsonFormat1(ClassificationMetricValue)
-  implicit val confusionMatrixLongFormat = jsonFormat4(ConfusionMatrix[Long])
-  implicit val confusionMatrixValuesLongFormat = jsonFormat1(ConfusionMatrixValues)
+  implicit val classificationMetricValueLongFormat = jsonFormat2(ClassificationMetricValue)
   implicit val ecdfLongFormat = jsonFormat4(ECDF[Long])
   implicit val commandActionFormat = jsonFormat1(CommandPost)
 
@@ -195,8 +193,8 @@ object DomainJsonProtocol extends IADefaultJsonProtocol {
   implicit val vertexRuleFormat = jsonFormat2(VertexRule)
   implicit val frameRuleFormat = jsonFormat3(FrameRule)
   implicit val graphLoadFormat = jsonFormat3(GraphLoad)
-  implicit val percentileFormat = jsonFormat2(Quantile)
-  implicit val PercentileCalculationResultFormat = jsonFormat1(QuantileValues)
+  implicit val quantileFormat = jsonFormat2(Quantile)
+  implicit val QuantileCalculationResultFormat = jsonFormat1(QuantileValues)
 
   implicit object DataTypeJsonFormat extends JsonFormat[Any] {
     override def write(obj: Any): JsValue = {

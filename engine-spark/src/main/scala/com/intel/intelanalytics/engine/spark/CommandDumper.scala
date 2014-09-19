@@ -59,6 +59,7 @@ class CommandDumper extends DefaultArchive
       commands,
       /*frames*/ null,
       /*graphs*/ null,
+      /*users*/ null,
       queries,
       queryExecutor,
       /*sparkAutoPartitioner*/ null,
