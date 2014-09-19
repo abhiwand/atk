@@ -93,12 +93,12 @@ Extracting On Linux
 ===================
 After acquiring the VM, extract the archive. Replace ``#.#.#`` with the release number::
 
-    tar -xvf IntelAnalytics-#.#.#-CDH-5.1.0.tar.gz
+    tar -xvf IntelAnalytics-#.#.#-CDH-5.1.2.tar.gz
 
 You should have two files after extracting::
 
-    IntelAnalytics-#.#.#-CDH-5.1.0-disk1.vmdk
-    IntelAnalytics-#.#.#-CDH-5.1.0.ovf
+    IntelAnalytics-#.#.#-CDH-5.1.2-disk1.vmdk
+    IntelAnalytics-#.#.#-CDH-5.1.2.ovf
 
 ------------
 Import Image
