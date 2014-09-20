@@ -49,7 +49,7 @@ object IATPregel {
 
     val vInitial = (sparkContext.parallelize(List(emptyVertexInitialStatus)).union(graph.vertices.map({ case (vid, vdata) => vertexDataToInitialStatus(vdata) }))).reduce(vertexInitialStatusCombiner)
 
-    val eInitial = (sparkContext.parallelize((List(emptyEdgeInitialStatus))).union(graph.edges.map({ case e: Edge[EdgeData] => edgeDataToInitialStatus(e.attr)}))).reduce(edgeInitialStatusCombiner)
+    val eInitial = (sparkContext.parallelize((List(emptyEdgeInitialStatus))).union(graph.edges.map({ case e: Edge[EdgeData] => edgeDataToInitialStatus(e.attr) }))).reduce(edgeInitialStatusCombiner)
 
     var log = new StringBuilder(generateInitialReport(vInitial, eInitial))
 
