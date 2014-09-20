@@ -76,7 +76,7 @@ class DataFrameService(commonDirectives: CommonDirectives, engine: Engine) exten
                       complete(FrameDecorator.decorateEntity(baseUri + "/" + frame.id, Nil, frame))
                     }
                     case Success(None) => complete(StatusCodes.NotFound)
-                    case _ => complete(StatusCodes.InternalServerError)
+                    case Failure(ex) => throw ex
                   }
                 }
                 case _ =>
@@ -122,7 +122,7 @@ class DataFrameService(commonDirectives: CommonDirectives, engine: Engine) exten
                     }
                   }
                   case Success(None) => complete(StatusCodes.NotFound)
-                  case _ => complete(StatusCodes.InternalServerError)
+                  case Failure(ex) => throw ex
                 }
               } ~
                 delete {

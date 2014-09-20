@@ -103,7 +103,7 @@ class QueryService(commonDirectives: CommonDirectives, engine: Engine) extends D
                     onComplete(engine.getQuery(id)) {
                       case Success(Some(query)) => complete(decorate(uri, query, None))
                       case Success(None) => complete(StatusCodes.NotFound)
-                      case _ => complete(StatusCodes.InternalServerError)
+                      case Failure(ex) => throw ex
                     }
                   }
                 } ~
@@ -114,7 +114,7 @@ class QueryService(commonDirectives: CommonDirectives, engine: Engine) extends D
                         onComplete(engine.getQuery(id)) {
                           case Success(Some(query)) => complete(QueryDecorator.decoratePages(uri.toString, query))
                           case Success(None) => complete(StatusCodes.NotFound)
-                          case _ => complete(StatusCodes.InternalServerError)
+                          case Failure(ex) => throw ex
                         }
                       }
                     }
@@ -134,7 +134,7 @@ class QueryService(commonDirectives: CommonDirectives, engine: Engine) extends D
                                 QueryDecorator.decorateEntity(uri.toString(), links, query)
                               })
                             case Success(None) => complete(StatusCodes.NotFound)
-                            case _ => complete(StatusCodes.InternalServerError)
+                            case Failure(ex) => throw ex
                           }
                         }
                       }
