@@ -258,11 +258,10 @@ class FrameBackendRest(object):
             raise ValueError("Invalid number for quantile:" + ','.join(invalid_quantiles))
 
         arguments = {'frame_id': frame._id, "column_name": column_name, "quantiles": quantiles}
-        quantiles_reuslt = get_command_output('quantiles', arguments).get('quantiles')
+        quantiles_result = get_command_output('quantiles', arguments).get('quantiles')
         result_dict = {}
-        for p in quantiles_reuslt:
+        for p in quantiles_result:
             result_dict[p.get("quantile")] = p.get("value")
-
         return result_dict
 
     def drop(self, frame, predicate):
