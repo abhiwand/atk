@@ -50,8 +50,7 @@ object GraphXLBP {
       VertexState(vertexState.gbVertex, messages, prior, posterior, delta)
     }
 
-    def calculateMessage(sender: VertexId, destination: VertexId, vertexState: VertexState, edgeWeight: Double):
-    Map[VertexId, List[Double]] = {
+    def calculateMessage(sender: VertexId, destination: VertexId, vertexState: VertexState, edgeWeight: Double): Map[VertexId, List[Double]] = {
 
       val prior = vertexState.prior
       val messages = vertexState.messages

@@ -81,7 +81,6 @@ class DegenerateCasesTest extends FlatSpec with Matchers with TestingSparkContex
 
   }
 
-
   "LBP Runner" should "work properly with a two node graph, unit probabilities" in new LbpTest {
 
     val vertexSet: Set[Long] = Set(1, 2)
@@ -194,7 +193,7 @@ class DegenerateCasesTest extends FlatSpec with Matchers with TestingSparkContex
 
   "LBP Runner" should "work with a triangle with values that are equal, non-unit probabilities" in new LbpTest {
 
-    val vertexSet: Set[Long] = Set(1, 2,3)
+    val vertexSet: Set[Long] = Set(1, 2, 3)
 
     val pdfValues: Map[Long, List[Double]] = Map(1.toLong -> List(0.3d, 0.7d),
       2.toLong -> List(0.3d, 0.7d), 3.toLong -> List(0.3d, 0.7d))
