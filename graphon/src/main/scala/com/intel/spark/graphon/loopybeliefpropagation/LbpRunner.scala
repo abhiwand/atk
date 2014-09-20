@@ -16,7 +16,7 @@ object LbpRunner {
     val sum = prior.reduce(_ + _)
     val posterior = prior.map(x => x / sum)
 
-    VertexState(gbVertex, prior, prior, posterior, 0.0d)
+    VertexState(gbVertex, Map(), prior, posterior, 0.0d)
 
   }
 
