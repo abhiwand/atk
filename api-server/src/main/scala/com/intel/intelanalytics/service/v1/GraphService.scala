@@ -97,7 +97,7 @@ class GraphService(commonDirectives: CommonDirectives, engine: Engine) extends D
                           complete(GraphDecorator.decorateEntity(uri.toString(), links, graph))
                         }
                         case Success(None) => complete(StatusCodes.NotFound)
-                        case _ => complete(StatusCodes.InternalServerError)
+                        case Failure(ex) => throw ex
                       }
                     }
                     case _ =>
@@ -144,7 +144,7 @@ class GraphService(commonDirectives: CommonDirectives, engine: Engine) extends D
                             decorated
                           }
                         }
-                        case _ => complete(StatusCodes.InternalServerError)
+                        case Failure(ex) => throw ex
                       }
                     } ~
                       delete {

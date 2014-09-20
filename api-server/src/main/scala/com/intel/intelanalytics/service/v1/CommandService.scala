@@ -85,7 +85,7 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
                   onComplete(engine.getCommand(id)) {
                     case Success(Some(command)) => complete(decorate(uri, command))
                     case Success(None) => complete(StatusCodes.NotFound)
-                    case _ => complete(StatusCodes.InternalServerError)
+                    case Failure(ex) => throw ex
                   }
                 } ~
                   post {
@@ -96,7 +96,7 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
                           action.status match {
                             case "cancel" => onComplete(engine.cancelCommand(id)) {
                               case Success(command) => complete("Command cancelled by client")
-                              case _ => complete(StatusCodes.InternalServerError)
+                              case Failure(ex) => throw ex
                             }
                           }
                         }
