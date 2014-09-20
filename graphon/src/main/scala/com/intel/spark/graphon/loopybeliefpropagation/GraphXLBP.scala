@@ -7,8 +7,8 @@ import com.intel.spark.graphon.iatpregel.IATPregelLogger
 import com.intel.graphbuilder.elements.{ Property, Vertex => GBVertex, Edge => GBEdge }
 
 case class VertexState(gbVertex: GBVertex,
+                       messages: Map[VertexId, List[Double]],
                        prior: List[Double],
-                       unnormalizedPosterior: List[Double],
                        posterior: List[Double],
                        delta: Double)
 
@@ -18,7 +18,7 @@ object GraphXLBP {
 
     // pregeling
 
-    val initialMessage: List[Double] = (1 to stateSpaceSize).map(x => 1.toDouble).toList
+    val initialMessage: Map[Long, List[Double]] = Map()
 
     val power = 1.0d
     val smoothing = 1.0d
@@ -27,47 +27,65 @@ object GraphXLBP {
       -Math.pow(delta.toDouble, power) * weight * smoothing
     }
 
-    def vertexProgram(id: VertexId, vertexState: VertexState, incomingMessage: List[Double]): VertexState = {
+    def vertexProgram(id: VertexId, vertexState: VertexState, messages: Map[VertexId, List[Double]]): VertexState = {
 
       val prior = vertexState.prior
 
       val oldPosterior = vertexState.posterior
 
-      val priorTimesMessages: List[Double] = VectorMath.product(prior, incomingMessage)
+      val priorTimesMessages: List[Double] =
+        if (messages.nonEmpty) {
+          VectorMath.product(prior, messages.values.reduce(VectorMath.product(_, _)))
+        }
+        else {
+          prior
+        }
 
       // l1 normalization
       val l1Norm = priorTimesMessages.map(x => Math.abs(x)).reduce(_ + _)
-      val normalizedPosterior = priorTimesMessages.map(x => (x / l1Norm))
+      val posterior = priorTimesMessages.map(x => (x / l1Norm))
 
-      val delta = normalizedPosterior.zip(oldPosterior).map({ case (x, y) => Math.abs(x - y) }).reduce(_ + _)
+      val delta = posterior.zip(oldPosterior).map({ case (x, y) => Math.abs(x - y) }).reduce(_ + _)
 
-      VertexState(vertexState.gbVertex, prior, priorTimesMessages, normalizedPosterior, delta)
+      VertexState(vertexState.gbVertex, messages, prior, posterior, delta)
     }
 
-    def calculateMessage(unnormalizedPosterior: List[Double], edgeWeight: Double): List[Double] = {
+    def calculateMessage(sender: VertexId, destination: VertexId, vertexState: VertexState, edgeWeight: Double):
+    Map[VertexId, List[Double]] = {
 
-      val nStates = unnormalizedPosterior.length
+      val prior = vertexState.prior
+      val messages = vertexState.messages
 
+      val nStates = prior.length
       val stateRange = (0 to nStates - 1).toList
 
-      val statesUNPosteriors = stateRange.zip(unnormalizedPosterior)
+      val messagesNotFromDestination = messages - destination
+
+      val reducedMessages = if (messagesNotFromDestination.nonEmpty) {
+        VectorMath.product(prior, messagesNotFromDestination.values.reduce(VectorMath.product(_, _)))
+      }
+      else {
+        prior.map(x => 1.0d)
+      }
+
+      val statesUNPosteriors = stateRange.zip(reducedMessages)
 
       val message = stateRange.map(i => statesUNPosteriors.map({
         case (j, x: Double) =>
           x * Math.exp(edgePotential(Math.abs(i - j) / ((nStates - 1).toDouble), edgeWeight))
       }).reduce(_ + _))
 
-      message
+      Map(sender -> message)
     }
 
-    def sendMessage(edgeTriplet: EdgeTriplet[VertexState, Double]): Iterator[(VertexId, List[Double])] = {
+    def sendMessage(edgeTriplet: EdgeTriplet[VertexState, Double]): Iterator[(VertexId, Map[Long, List[Double]])] = {
 
-      val unnormalizedPrior = edgeTriplet.srcAttr.unnormalizedPosterior
+      val vertexState = edgeTriplet.srcAttr
 
-      Iterator((edgeTriplet.dstId, calculateMessage(unnormalizedPrior, edgeTriplet.attr)))
+      Iterator((edgeTriplet.dstId, calculateMessage(edgeTriplet.srcId, edgeTriplet.dstId, vertexState, edgeTriplet.attr)))
     }
 
-    def mergeMsg(m1: List[Double], m2: List[Double]): List[Double] = VectorMath.product(m1, m2)
+    def mergeMsg(m1: Map[Long, List[Double]], m2: Map[Long, List[Double]]): Map[Long, List[Double]] = m1 ++ m2
 
     // logging
 
@@ -85,8 +103,10 @@ object GraphXLBP {
       report.toString()
     }
 
-    val pregelLogger = IATPregelLogger(vertexDataToInitialStatus,
+    val pregelLogger = IATPregelLogger(InitialVertexCount.emptyInitialStatus,
+      vertexDataToInitialStatus,
       InitialVertexCount.combine,
+      InitialEdgeCount.emptyInitalStatus,
       edgeDataToInitialStatus,
       InitialEdgeCount.combine,
       generateInitialReport,

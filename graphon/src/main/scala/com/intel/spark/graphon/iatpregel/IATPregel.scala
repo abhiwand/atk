@@ -33,9 +33,13 @@ object IATPregel {
                                                                                                                                                              activeDirection: EdgeDirection = EdgeDirection.Either)(vprog: (VertexId, VertexData, Message) => VertexData,
                                                                                                                                                                                                                     sendMsg: EdgeTriplet[VertexData, EdgeData] => Iterator[(VertexId, Message)],
                                                                                                                                                                                                                     mergeMsg: (Message, Message) => Message): (Graph[VertexData, EdgeData], String) = {
+    val sparkContext = graph.vertices.sparkContext // GraphX should put spark context at the graph level.
 
+    val emptyVertexInitialStatus = pregelLogger.emptyVertexInitialStatus
     val vertexDataToInitialStatus = pregelLogger.vertexDataToInitialStatus
     val vertexInitialStatusCombiner = pregelLogger.vertexInitialStatusCombiner
+
+    val emptyEdgeInitialStatus = pregelLogger.emptyEdgeInitialStatus
     val edgeDataToInitialStatus = pregelLogger.edgeDataToInitialStatus
     val edgeInitialStatusCombiner = pregelLogger.edgeInitialStatusCombiner
     val generateInitialReport = pregelLogger.generateInitialReport
@@ -43,9 +47,9 @@ object IATPregel {
     val convertStateToStatus = pregelLogger.convertStateToStatus
     val generatePerStepReport = pregelLogger.generatePerStepReport
 
-    val vInitial = graph.vertices.map({ case (vid, vdata) => vertexDataToInitialStatus(vdata) }).reduce(vertexInitialStatusCombiner)
+    val vInitial = (sparkContext.parallelize(List(emptyVertexInitialStatus)).union(graph.vertices.map({ case (vid, vdata) => vertexDataToInitialStatus(vdata) }))).reduce(vertexInitialStatusCombiner)
 
-    val eInitial = graph.edges.map({ case e: Edge[EdgeData] => edgeDataToInitialStatus(e.attr) }).reduce(edgeInitialStatusCombiner)
+    val eInitial = (sparkContext.parallelize((List(emptyEdgeInitialStatus))).union(graph.edges.map({ case e: Edge[EdgeData] => edgeDataToInitialStatus(e.attr)}))).reduce(edgeInitialStatusCombiner)
 
     var log = new StringBuilder(generateInitialReport(vInitial, eInitial))
 

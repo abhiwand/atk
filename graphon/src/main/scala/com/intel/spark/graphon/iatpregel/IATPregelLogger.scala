@@ -20,11 +20,17 @@ import scala.reflect.ClassTag
  * @tparam EdgeInitialState Class of the edge initial state.
  * @tparam SuperStepState Class of the super-step state.
  */
-case class IATPregelLogger[VertexData: ClassTag, VertexInitialState: ClassTag, EdgeData: ClassTag, EdgeInitialState: ClassTag, SuperStepState: ClassTag](vertexDataToInitialStatus: VertexData => VertexInitialState,
-                                                                                                                                                         vertexInitialStatusCombiner: (VertexInitialState, VertexInitialState) => VertexInitialState,
-                                                                                                                                                         edgeDataToInitialStatus: EdgeData => EdgeInitialState,
-                                                                                                                                                         edgeInitialStatusCombiner: (EdgeInitialState, EdgeInitialState) => EdgeInitialState,
-                                                                                                                                                         generateInitialReport: (VertexInitialState, EdgeInitialState) => String,
-                                                                                                                                                         accumulateStepStatus: (SuperStepState, SuperStepState) => SuperStepState,
-                                                                                                                                                         convertStateToStatus: VertexData => SuperStepState,
-                                                                                                                                                         generatePerStepReport: (SuperStepState, Int) => String)
+case class IATPregelLogger[VertexData: ClassTag,
+VertexInitialState: ClassTag,
+EdgeData: ClassTag,
+EdgeInitialState: ClassTag,
+SuperStepState: ClassTag](emptyVertexInitialStatus: VertexInitialState,
+                          vertexDataToInitialStatus: VertexData => VertexInitialState,
+                          vertexInitialStatusCombiner: (VertexInitialState, VertexInitialState) => VertexInitialState,
+                          emptyEdgeInitialStatus: EdgeInitialState,
+                          edgeDataToInitialStatus: EdgeData => EdgeInitialState,
+                          edgeInitialStatusCombiner: (EdgeInitialState, EdgeInitialState) => EdgeInitialState,
+                          generateInitialReport: (VertexInitialState, EdgeInitialState) => String,
+                          accumulateStepStatus: (SuperStepState, SuperStepState) => SuperStepState,
+                          convertStateToStatus: VertexData => SuperStepState,
+                          generatePerStepReport: (SuperStepState, Int) => String)
