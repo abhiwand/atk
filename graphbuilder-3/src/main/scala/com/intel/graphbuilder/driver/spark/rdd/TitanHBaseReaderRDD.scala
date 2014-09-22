@@ -30,8 +30,8 @@ class TitanHBaseReaderRDD(hBaseRDD: RDD[(NullWritable, FaunusVertex)],
     val graphElements = firstParent[(NullWritable, FaunusVertex)].iterator(split, context).flatMap(hBaseRow => {
       val faunusVertex = hBaseRow._2
 
-      val gbVertex = TitanConverter.toGraphBuilderVertex(faunusVertex)
-      val gbEdges = TitanConverter.toGraphBuilderEdges(faunusVertex)
+      val gbVertex = TitanConverter.createGraphBuilderVertex(faunusVertex)
+      val gbEdges = TitanConverter.createGraphBuilderEdges(faunusVertex)
 
       val rowGraphElements: Iterator[GraphElement] = Iterator(gbVertex) ++ gbEdges
 

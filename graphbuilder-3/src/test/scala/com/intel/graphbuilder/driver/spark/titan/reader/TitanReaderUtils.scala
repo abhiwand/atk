@@ -1,7 +1,11 @@
 package com.intel.graphbuilder.driver.spark.titan.reader
 
-import com.intel.graphbuilder.elements.{ Edge, GraphElement, Property, Vertex }
-import com.thinkaurelius.titan.core.TitanProperty
+import com.intel.graphbuilder.elements.{Edge, GraphElement, Property, Vertex}
+import com.thinkaurelius.titan.core.{TitanProperty, TitanVertex}
+import com.thinkaurelius.titan.hadoop.FaunusVertex
+import com.tinkerpop.blueprints.Direction
+
+import scala.collection.JavaConversions._
 
 /**
  * Utility methods for creating test data for reading Titan graphs.
@@ -41,5 +45,20 @@ object TitanReaderUtils {
         }
       }
     })
+  }
+
+  def createFaunusVertex(titanVertex: TitanVertex): FaunusVertex = {
+    val faunusVertex = new FaunusVertex()
+    faunusVertex.setId(titanVertex.getLongId)
+
+    titanVertex.getProperties().map(property => {
+      faunusVertex.addProperty(property.getPropertyKey().getName(),property.getValue())
+    })
+
+    titanVertex.getTitanEdges(Direction.OUT).map(edge => {
+      val faunusEdge = faunusVertex.addEdge(edge.getLabel(), edge.getOtherVertex(titanVertex))
+      edge.getPropertyKeys().map (property => faunusEdge.setProperty(property, edge.getProperty(property)))
+    })
+    faunusVertex
   }
 }

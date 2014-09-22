@@ -7,6 +7,8 @@ import com.intel.graphbuilder.graph.titan.TitanGraphConnector
 import com.intel.graphbuilder.util.SerializableBaseConfiguration
 import com.intel.testutils.DirectoryUtils
 import com.thinkaurelius.titan.core.{ TitanEdge, TitanVertex }
+import com.thinkaurelius.titan.hadoop.FaunusVertex
+import org.apache.hadoop.io.NullWritable
 import org.scalatest.{ BeforeAndAfterAll, Suite }
 
 import scala.collection.JavaConversions._
@@ -30,6 +32,7 @@ object TitanReaderTestData extends Suite with BeforeAndAfterAll {
   private var tmpDir: File = DirectoryUtils.createTempDirectory("titan-graph-for-unit-testing-")
 
   val titanConfig = new SerializableBaseConfiguration()
+  titanConfig.setProperty("storage.backend", "berkeleyje")
   titanConfig.setProperty("storage.directory", tmpDir.getAbsolutePath)
 
   val titanConnector = new TitanGraphConnector(titanConfig)
@@ -104,6 +107,14 @@ object TitanReaderTestData extends Suite with BeforeAndAfterAll {
   val plutoGbEdge = {
     new Edge(neptuneTitanVertex.getId, plutoTitanVertex.getId, Property(gbID, neptuneTitanVertex.getId), Property(gbID, plutoTitanVertex.getId), plutoTitanEdge.getLabel(), List[Property]())
   }
+
+  // Faunus graph elements
+  val neptuneFaunusVertex = createFaunusVertex(neptuneTitanVertex)
+  val plutoFaunusVertex = createFaunusVertex(plutoTitanVertex)
+  val seaFaunusVertex = createFaunusVertex(seaTitanVertex)
+
+  // HBase rows
+  val hBaseRows = Seq((NullWritable.get(), neptuneFaunusVertex)) //, (NullWritable.get(), plutoFaunusVertex), (NullWritable.get(), seaFaunusVertex))
 
   /**
    * IMPORTANT! removes temporary files
