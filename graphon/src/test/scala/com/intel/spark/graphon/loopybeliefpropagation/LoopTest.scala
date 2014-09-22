@@ -1,24 +1,15 @@
 package com.intel.spark.graphon.loopybeliefpropagation
 
-import org.scalatest.Matchers
-
-import java.util.Date
-import org.apache.spark.SparkContext
-import scala.concurrent.Lock
-import org.scalatest.{ FlatSpec, BeforeAndAfter }
-import org.apache.log4j.{ Logger, Level }
-import com.intel.testutils.TestingSparkContextFlatSpec
-import com.intel.spark.graphon.connectedcomponents.NormalizeConnectedComponents
 import com.intel.graphbuilder.elements.{ Property, Vertex => GBVertex, Edge => GBEdge }
+import org.scalatest.{Matchers, FlatSpec}
+import com.intel.testutils.TestingSparkContextFlatSpec
 import org.apache.spark.rdd.RDD
-import com.intel.intelanalytics.domain.graph.GraphReference
-import scala.reflect.internal.util.StringOps
+
 
 /**
- * These tests make sure that loopy belief propagation can correctly handle graphs with no edges and even graphs with
- * no vertices.
+ * These test cases validate that LBP works correctly on (very simple) graphs that contain loops.
  */
-class DegenerateCasesTest extends FlatSpec with Matchers with TestingSparkContextFlatSpec {
+class LoopTest extends FlatSpec with Matchers with TestingSparkContextFlatSpec {
 
   trait LbpTest {
 
@@ -30,16 +21,17 @@ class DegenerateCasesTest extends FlatSpec with Matchers with TestingSparkContex
     val propertyForLBPOutput = "LBP_VALUE"
 
   }
+  "LBP Runner" should "work with a triangle with uniform probabilities" in new LbpTest {
 
-  "LBP Runner" should "work properly with an empty graph" in new LbpTest {
+    val vertexSet: Set[Long] = Set(1, 2, 3)
 
-    val vertexSet: Set[Long] = Set()
-
-    val pdfValues: Map[Long, List[Double]] = Map()
+    val pdfValues: Map[Long, List[Double]] = Map(1.toLong -> List(0.5d, 0.5d),
+      2.toLong -> List(0.5d, 0.5d), 3.toLong -> List(0.5d, 0.5d))
 
     //  directed edge list is made bidirectional with a flatmap
 
-    val edgeSet: Set[(Long, Long)] = Set()
+    val edgeSet: Set[(Long, Long)] = Set((1.toLong, 2.toLong), (1.toLong, 3.toLong), (2.toLong, 3.toLong))
+      .flatMap({ case (x, y) => Set((x, y), (y, x)) })
 
     val gbVertexSet = vertexSet.map(x => GBVertex(x, Property(vertexIdPropertyName, x), Set(Property(inputPropertyName, pdfValues.get(x).get))))
 
@@ -85,15 +77,17 @@ class DegenerateCasesTest extends FlatSpec with Matchers with TestingSparkContex
 
   }
 
-  "LBP Runner" should "work properly with a single node graph" in new LbpTest {
+  "LBP Runner" should "work with a four-cycle with uniform probabilities" in new LbpTest {
 
-    val vertexSet: Set[Long] = Set(1)
+    val vertexSet: Set[Long] = Set(1, 2, 3, 4)
 
-    val pdfValues: Map[Long, List[Double]] = Map(1.toLong -> List(0.550d, 0.45d))
+    val pdfValues: Map[Long, List[Double]] = Map(1.toLong -> List(0.5d, 0.5d),
+      2.toLong -> List(0.5d, 0.5d), 3.toLong -> List(0.5d, 0.5d), 4.toLong -> List(0.5d, 0.5d))
 
     //  directed edge list is made bidirectional with a flatmap
 
-    val edgeSet: Set[(Long, Long)] = Set()
+    val edgeSet: Set[(Long, Long)] = Set((1.toLong, 2.toLong), (2.toLong, 3.toLong),
+      (3.toLong, 4.toLong), (4.toLong, 1.toLong)).flatMap({ case (x, y) => Set((x, y), (y, x)) })
 
     val gbVertexSet = vertexSet.map(x => GBVertex(x, Property(vertexIdPropertyName, x), Set(Property(inputPropertyName, pdfValues.get(x).get))))
 
@@ -138,64 +132,5 @@ class DegenerateCasesTest extends FlatSpec with Matchers with TestingSparkContex
     testEdges shouldBe expectedEdgesOut
 
   }
-
-  "LBP Runner" should "work properly with a two node disconnected graph" in new LbpTest {
-
-    val vertexSet: Set[Long] = Set(1, 2)
-
-    val pdfValues: Map[Long, List[Double]] = Map(1.toLong -> List(1.0d, 0.0d),
-      2.toLong -> List(0.1d, 0.9d))
-
-    //  directed edge list is made bidirectional with a flatmap
-
-    val edgeSet: Set[(Long, Long)] = Set()
-
-    val gbVertexSet = vertexSet.map(x => GBVertex(x, Property(vertexIdPropertyName, x), Set(Property(inputPropertyName, pdfValues.get(x).get))))
-
-    val gbEdgeSet =
-      edgeSet.map({
-        case (src, dst) =>
-          GBEdge(src, dst, Property(srcIdPropertyName, src), Property(dstIdPropertyName, dst), edgeLabel, Set.empty[Property])
-      })
-
-    val expectedVerticesOut =
-      vertexSet.map(vid =>
-        GBVertex(vid, Property(vertexIdPropertyName, vid), Set(Property(inputPropertyName, pdfValues.get(vid).get),
-          Property(propertyForLBPOutput, pdfValues.get(vid).get))))
-
-    val expectedEdgesOut = gbEdgeSet // no expected changes to the edge set
-
-    val verticesIn: RDD[GBVertex] = sparkContext.parallelize(gbVertexSet.toList)
-    val edgesIn: RDD[GBEdge] = sparkContext.parallelize(gbEdgeSet.toList)
-
-    val args = Lbp(graph = null, // we don't use this one in LbpRunner since we already have the RDDs for the graph
-      vertex_value_property_list = Some(inputPropertyName),
-      edge_value_property_list = None,
-      input_edge_label_list = None,
-      output_vertex_property_list = Some(propertyForLBPOutput),
-      vertex_type_property_key = None,
-      vector_value = None,
-      max_supersteps = None,
-      convergence_threshold = None,
-      anchor_threshold = None,
-      smoothing = None,
-      bidirectional_check = None,
-      ignore_vertex_type = None,
-      max_product = None,
-      power = None)
-
-    val (verticesOut, edgesOut, log) = LbpRunner.runLbp(verticesIn, edgesIn, args)
-
-    val testVertices = verticesOut.collect().toSet
-    val testEdges = edgesOut.collect().toSet
-
-    testVertices shouldEqual expectedVerticesOut
-    testEdges shouldBe expectedEdgesOut
-
-  }
-
-
-
-
 
 }
