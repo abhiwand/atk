@@ -30,18 +30,19 @@ import uuid
 
 from intelanalytics.core.serialize import to_json
 from intelanalytics.core.column import BigColumn
-from intelanalytics.core.command import CommandSupport
+from intelanalytics.core.metaprog import CommandLoadable
+
+try:
+    from intelanalytics.core.autograph import CommandLoadableBigGraph
+    logger.info("BigGraph is inheriting commands from autograph.py")
+except:
+    msg = "autograph.py not found, BigGraph is NOT inheriting commands from it"
+    logger.warn(msg)
+    import warnings
+    warnings.warn(msg, RuntimeWarning)
+    CommandLoadableBigGraph = CommandLoadable
 
 from intelanalytics.core.deprecate import deprecated
-
-# try:
-#     from intelanalytics.core.autograph import CommandLoadableBigGraph as command_loadable
-#     logger.info("BigGraph is inheriting commands from autograph.py")
-# except:
-#     #logger.info("autograph.py not found, BigGraph is NOT inheriting commands from it")
-#     logger.info("BigGraph is still using older CommandSupport")
-#     command_loadable = CommandSupport
-command_loadable = CommandSupport  # TODO - enable BigGraph to use autograph.py
 
 
 def _get_backend():
@@ -263,8 +264,10 @@ class VertexRule(Rule):
     --------
     ::
 
-        movie_vertex = ia.VertexRule('movie', my_frame['movie'], {'genre': my_frame['genre']})
-        user_vertex = ia.VertexRule('user', my_frame['user'], {'age': my_frame['age_1']})
+        movie_vertex = ia.VertexRule('movie', my_frame['movie'], {'genre':
+            my_frame['genre']})
+        user_vertex = ia.VertexRule('user', my_frame['user'], {'age':
+            my_frame['age_1']})
 
     .. versionadded:: 0.8
 
@@ -338,7 +341,8 @@ class EdgeRule(Rule):
     --------
     ::
 
-        rating_edge = ia.EdgeRule('rating', movie_vertex, user_vertex, {'weight': my_frame['score']})
+        rating_edge = ia.EdgeRule('rating', movie_vertex, user_vertex, {'weight':
+            my_frame['score']})
 
     .. versionadded:: 0.8
 
@@ -404,7 +408,7 @@ class EdgeRule(Rule):
         return self._validate_same_frame(label_frame, tail_frame, head_frame, properties_frame)
 
 
-class BigGraph(command_loadable):
+class BigGraph(CommandLoadableBigGraph):
     """
     Creates a big graph.
 
@@ -431,7 +435,8 @@ class BigGraph(command_loadable):
         # define graph parsing rules
         user = ia.VertexRule("user", frame.user, {"vertexType": frame.vertexType})
         movie = ia.VertexRule("movie", frame.movie)
-        rates = ia.EdgeRule("rating", user, movie, { "rating": frame.rating }, is_directed = True)
+        rates = ia.EdgeRule("rating", user, movie, { "rating": frame.rating },
+            is_directed = True)
 
         # create graph
         graph = ia.BigGraph([user, movie, rates])
@@ -441,21 +446,20 @@ class BigGraph(command_loadable):
     """
 
     # command load filters:
-    command_prefixes = ['graph', 'graphs']
-    command_mute_list = ['load', 'rename_graph']  # these commands are not exposed
+    _command_prefixes = ['graph', 'graphs']
+    _muted_command_names = ['rename_graph']  # these commands are not exposed
 
     def __init__(self, rules=None, name=""):
         try:
             self._id = 0
+            self._ia_uri = None
             if not hasattr(self, '_backend'):
                 self._backend = _get_backend()
+            CommandLoadableBigGraph.__init__(self)
             new_graph_name= self._backend.create(self, rules, name)
-            CommandSupport.__init__(self)
             logger.info('Created new graph "%s"', new_graph_name)
         except:
             raise IaError(logger)
-
-
 
     def __repr__(self):
         try:
@@ -466,7 +470,7 @@ class BigGraph(command_loadable):
     @property
     def name(self):
         """
-        Get the name of the current ojbect.
+        Get the name of the current object.
 
         Returns
         -------
@@ -515,10 +519,16 @@ class BigGraph(command_loadable):
         """
         # TODO - Review Docstring
         try:
-            self.rename_graph(value)
+            self._backend.rename_graph(self, value)
         except:
             raise IaError(logger)
 
+    @property
+    def ia_uri(self):
+        try:
+            return self._backend.get_ia_uri(self)
+        except:
+            raise IaError(logger)
 
     def append(self, rules=None):
         """
@@ -548,7 +558,8 @@ class BigGraph(command_loadable):
             # define graph parsing rules
             user = ia.VertexRule("user", frame.user, {"vertexType": frame.vertexType})
             movie = ia.VertexRule("movie", frame.movie)
-            rates = ia.EdgeRule("rating", user, movie, { "rating": frame.rating }, is_directed = True)
+            rates = ia.EdgeRule("rating", user, movie, { "rating": frame.rating },
+                is_directed = True)
 
             # append data from the frame to an existing graph
             graph.append([user, movie, rates])
@@ -563,19 +574,24 @@ class BigGraph(command_loadable):
             # define graph parsing rules
             user = ia.VertexRule("user", ratingsFrame.userId)
             movie = ia.VertexRule("movie", ratingsFrame.movieId)
-            rates = ia.EdgeRule("rating", user, movie, { "rating": ratingsFrame.rating }, is_directed = True)
+            rates = ia.EdgeRule("rating", user, movie, { "rating": ratingsFrame.rating },
+                is_directed = True)
 
             # create graph
             graph = ia.BigGraph([user, movie, rates])
 
             # load additional properties onto the user vertices
-            usersFrame = ia.BigFrame(ia.CsvFile("/users.csv", schema= [('userId', int32), ('name', str), ('age', int32)]))
-            userAdditional = ia.VertexRule("user", usersFrame.userId, {"userName": usersFrame.name, "age": usersFrame.age })
+            usersFrame = ia.BigFrame(ia.CsvFile("/users.csv", schema= [('userId', int32),
+                ('name', str), ('age', int32)]))
+            userAdditional = ia.VertexRule("user", usersFrame.userId, {"userName":
+                usersFrame.name, "age": usersFrame.age })
             graph.append([userAdditional])
 
             # load additional properties onto the movie vertices
-            movieFrame = ia.BigFrame(ia.CsvFile("/movies.csv", schema= [('movieId', int32), ('title', str), ('year', int32)]))
-            movieAdditional = ia.VertexRule("movie", movieFrame.movieId, {"title": movieFrame.title, "year": movieFrame.year })
+            movieFrame = ia.BigFrame(ia.CsvFile("/movies.csv", schema= [('movieId', int32),
+                ('title', str), ('year', int32)]))
+            movieAdditional = ia.VertexRule("movie", movieFrame.movieId, {"title":
+                movieFrame.title, "year": movieFrame.year })
             graph.append([movieAdditional])
 
         .. versionadded:: 0.8

@@ -21,22 +21,19 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.domain
+package com.intel.intelanalytics.domain.frame
 
-import com.intel.intelanalytics.domain.frame.FrameReference
-import org.scalatest.{ Matchers, FlatSpec }
+import org.scalatest.WordSpec
+import org.scalatest.mock.MockitoSugar
 
-import DomainJsonProtocol._
-import spray.json._
+class ColumnModeTest extends WordSpec with MockitoSugar {
 
-class FrameReferenceFormatTest extends FlatSpec with Matchers {
-
-  "Frame reference (domain)" should "convert ia://dataframes/3 to a frame reference for id 3" in {
-    JsString("ia://dataframes/3").convertTo[FrameReference] should equal(FrameReference(3))
+  "ColumnMode" should {
+    "not allow null frame reference" in {
+      intercept[IllegalArgumentException] { ColumnMode(null, "dataColumn", None, None) }
+    }
+    "not allow null dataColumn" in {
+      intercept[IllegalArgumentException] { ColumnMode(mock[FrameReference], null, None, None) }
+    }
   }
-
-  it should "convert a frame reference for frame 3 to ia://dataframes/3" in {
-    FrameReference(3).toJson should equal(JsString("ia://dataframes/3"))
-  }
-
 }

@@ -9,66 +9,124 @@ Intel Analytics Package Installation
 Introduction
 ------------
 
-In this guide we will walk through the Intel Analytics installation and the minimal configuration needed to get the service running.
-This guide is not going to walk you through the Cloudera cluster installation since that subject is covered by Cloudera in greater detail.
+In this guide we will walk through the Intel Analytics installation and
+the minimal configuration needed to get the service running.
+This guide is not going to walk you through the Cloudera cluster installation
+since that subject is covered by Cloudera in greater detail.
 
-See `Cloudera Installation Documentation <http://www.cloudera.com/content/cloudera-content/cloudera-docs/CM5/latest/Cloudera-Manager-Installation-Guide/cm5ig_install_cm_cdh.html>`_
+See `Cloudera Installation Documentation`_
 
 ------------
 Requirements
 ------------
 
-1.  RHEL/Centos 6.4 OS
-#.  `Sudo access <https://webmail.intel.com/owa/redir.aspx?C=KzTqGHz24kGeV-IC3Go9YsjpsfOfoNEI466Twm5ZVbmw8oVP6h2w_p7KR8kmm3PCgOncDaOzC9Y.&URL=http%3a%2f%2fen.wikipedia.org%2fwiki%2fSudo>`_
-    is required to install the various Intel Analytics packages since they are installed through Yum and
-    for the editing of root owned configuration files
-#.  Cloudera cluster with CDH-5.0.2-p0.13 or CDH-5.0.3-p0.35 with the following services installed and running.
+Operating System Requirements
+=============================
 
-    a.  HDFS
-    #.  SPARK
-    #.  Hbase
-    #.  Yarn(MR2)
-    #.  Zookeeper
+These instructions will work on Red Hat Enterprise Linux or CentOS version 6.4
 
-#.  Python 2.6 - RHEL/Centos 6.4 ships with python 2.6
-#.  `EPEL yum repository <https://fedoraproject.org/wiki/EPEL>`_
-    -- All the nodes on the cluster must have the EPEL yum repository.
-    Adding the EPEL repository is straight forward and can be accomplished with a few simple steps.
-#.  Intel Analytics Private Repository Access - if you have not been given AWS access and
-    secret keys you will not be able to install Intel Analytics.
+User Permission Requirements 
+============================
 
-------------------------
-Intel Analytics packages
-------------------------
+Since you will be installing packages via the 'yum' command you will need 'sudo' command access
+to execute 'yum' commands successfully.
+To verify access run this quick command::
 
-The dependency list is merely informational. When yum installs a package, it will pull dependencies automatically. All the Cloudera dependencies are implied for all packages.
+    $ sudo yum repolist
+    [sudo] password for jdoe:
+    jdoe is not in the sudoers file. This incident will be reported.
 
-Intel Analytics Rest Server
+If you don't have permissions to run the 'sudo' command you will see access denied errors.
+If you don't have permissions to run 'sudo' contact your system administrator.
+If you do have access to 'sudo' and 'yum' you will see a list of repositories::
+
+    $ sudo yum repolist
+    Loaded plugins: amazon-id, rhui-lb, s3
+    repo id                                   repo name                                     ...
+    epel                                      Extra Packages for Enterprise Linux 6 - x86_64...
+    rhui-REGION-client-config-server-6        Red Hat Update Infrastructure 2.0 Client Confi...
+    rhui-REGION-rhel-server-releases          Red Hat Enterprise Linux Server 6 (RPMs)      ...
+    rhui-REGION-rhel-server-releases-optional Red Hat Enterprise Linux Server 6 Optional (RP...
+    rhui-REGION-rhel-server-rh-common         Red Hat Enterprise Linux Server 6 RH Common (R...
+    repolist: 31,335
+
+Cluster Requirements
+====================
+
+You need a Cloudera cluster 5.1.x with following services.
+
+i.  HDFS
+#.  SPARK
+#.  Hbase
+#.  Yarn(MR2)
+#.  Zookeeper
+
+You need python to run the Intel Analytics python client.
+The Intel Analytics python client will run with python 2.6 and 2.7.
+
+Yum Repository Requirements
 ===========================
+
+All the nodes on the cluster must have the EPEL yum repository as well as two Intel Analytics repositories.
+You will need repository access to Intel Analytics Private Repository which you will get when you sign up.
+
+------------------------------------
+Intel Analytics Packages Information
+------------------------------------
+
+The dependency list is merely informational.
+When yum installs a package, it will pull dependencies automatically.
+All the Cloudera dependencies are implied for all packages.
+
+Intel Analytics REST Server
+===========================
+Only needs to be installed on a single node.
+
 Package Name: intelanalytics-rest-server
 
 Dependencies
 
-*   intelanalytics-python-client
-*   intelanalytics-graphbuilder
-*   python-cm-api
-*   python-argparse
-*   Java Runtime Environment or Java Development Environment 1.7
+i.  intelanalytics-python-client
+#.  intelanalytics-graphbuilder
+#.  python-cm-api
+#.  python-argparse
+#.  Java Runtime Environment or Java Development Environment 1.7
 
 Intel Analytics Python Client
 =============================
-Needs to be installed on every spark worker node as well as the gateway node or other machine that is going to be the designated client.
-The IA python client submitting requests, the rest server and the rest client package installed on the worker nodes must all be the same version.
+Needs to be installed on every spark worker node as well as the gateway node or other node
+that is going to be the designated client.
+The IA python client submitting requests, the rest server and the rest client package installed
+on the worker nodes must all be the same version.
 
 Package Name: intelanalytics-python-rest-client
 
 Dependencies
 
-*   python 2.6
-*   `python-ordereddict <https://pypi.python.org/pypi/ordereddict>`_
-*   `numpy <https://pypi.python.org/pypi/numpy>`_ >= 1.8.1
-*   `python-bottle <https://pypi.python.org/pypi/bottle>`_ >= 0.12
-*   `python-requests <https://pypi.python.org/pypi/requests>`_ >= 2.2.1
+i.  python 2.6
+#.  `python-ordereddict <https://pypi.python.org/pypi/ordereddict>`_
+#.  `numpy <https://pypi.python.org/pypi/numpy>`_ >= 1.8.1
+#.  `python-bottle <https://pypi.python.org/pypi/bottle>`_ >= 0.12
+#.  `python-requests <https://pypi.python.org/pypi/requests>`_ >= 2.2.1
+
+Intel Analytics Python 2.7 Client
+
+Needs to be installed on every spark worker node as well as the gateway node or other node
+that is going to be the designated client.
+The IA python client submitting requests, the rest server and the rest client package installed
+on the worker nodes must all be the same version.
+When using python 2.7 you must configure your Intel Analytics rest server to use the python2.7 executable.
+
+Package Name: intelanalytics-python-rest-client-python27
+
+Dependencies
+
+i.  python 2.7
+#.  python27-ordreddict
+#.  python27-numpy >= 1.81
+#.  python27-bottle > = 0.12
+#.  python27-requests >= 2.2.1
+
 
 Intel Analytics Graph Builder
 =============================
@@ -84,7 +142,7 @@ Intel Analytics Spark Dependencies
 ==================================
 Needs to be installed on every individual spark worker node.
 
-﻿package name: intelanalytics-spark-deps
+Package Name: intelanalytics-spark-deps
 
 Dependencies
 
@@ -101,6 +159,8 @@ The first step in the installation is adding EPEL and two Intel Analytics reposi
 the `YUM <http://en.wikipedia.org/wiki/Yellowdog_Updater,_Modified>`_ installation possible.
 The EPEL and Intel Analytics repositories must be installed on all spark master and worker nodes as well as
 the node that will be running the Intel Analytics rest server.
+The Intel Analytics Dependency repository and the yum-s3 package must be installed before
+trying to `Add Intel Analytics Private Repository`_.
 
 Add EPEL Repository
 -------------------
@@ -111,13 +171,13 @@ Before trying to install the EPEL repo run the following command to see if it's 
 
 
     #sample output
-    repo id                                    repo name
-    cloudera-cdh5                              Cloudera CDH, Version 5                                              141
-    cloudera-manager                           Cloudera Manager, Version 5.1.0                                        7
-    epel                                       Extra Packages for Enterprise Linux 6 - x86_64                    11,022
-    rhui-REGION-client-config-server-6         Red Hat Update Infrastructure 2.0 Client Configuration Server 6        2
-    rhui-REGION-rhel-server-releases           Red Hat Enterprise Linux Server 6 (RPMs)                          12,690
-    rhui-REGION-rhel-server-releases-optional  Red Hat Enterprise Linux Server 6 Optional (RPMs)                  7,168
+    repo id                              repo name
+    cloudera-cdh5                        Cloudera CDH, Version 5                         ...
+    cloudera-manager                     Cloudera Manager, Version 5.1.0                 ...
+    epel                                 Extra Packages for Enterprise Linux 6 - x86_64  ...
+    rhui-REGION-client-config-server...  Red Hat Update Infrastructure 2.0 Client Configu...
+    rhui-REGION-rhel-server-releases...  Red Hat Enterprise Linux Server 6 (RPMs)        ...
+    rhui-REGION-rhel-server-releases...  Red Hat Enterprise Linux Server 6 Optional (RPMs...
 
 You want to look for "epel" repo id.
 
@@ -133,11 +193,11 @@ To verify the installation run
     sudo yum repolist
 
     #sample output
-    repo id                                                                         repo name
-    epel                                                                            Extra Packages for Enterprise Linux 6 - x86_64                                                         11,018
-    rhui-REGION-client-config-server-6                                              Red Hat Update Infrastructure 2.0 Client Configuration Server 6                                             2
-    rhui-REGION-rhel-server-releases                                                Red Hat Enterprise Linux Server 6 (RPMs)                                                               12,663
-    rhui-REGION-rhel-server-releases-optional    
+    repo id                              repo name
+    epel                                 Extra Packages for Enterprise Linux 6 - x86_64  ...
+    rhui-REGION-client-config-server...  Red Hat Update Infrastructure 2.0 Client Configu...
+    rhui-REGION-rhel-server-releases...  Red Hat Enterprise Linux Server 6 (RPMs)        ...
+    rhui-REGION-rhel-server-releases...  Red Hat Enterprise Linux Server 6 Optional (RPMs...
                                            
 Make sure the "epel" repo id is present.
 
@@ -147,21 +207,20 @@ Add Intel Analytics Dependency Repository
 -----------------------------------------
 
 We pre-package and host some open source libraries to aid with installations.
-In some cases we pre-packaged newer versions from what is available in RHEL or EPEL repositories.
+In some cases we pre-packaged newer versions from what is available in RHEL, EPEL or CentOS repositories.
 
 To add the dependency repository run the following command::
 
-    wget https://intel-analytics-dependencies.s3-us-west-2.amazonaws.com/Intel Analytics-deps.repo
-    sudo cp Intel Analytics-deps.repo /etc/yum.repos.d/
+    wget https://intel-analytics-dependencies.s3-us-west-2.amazonaws.com/ia-deps.repo
+    sudo cp ia-deps.repo /etc/yum.repos.d/
 
 If you have issues running the above command, try entering the following, being careful about the placement of the ``"`` characters::
 
-    sudo touch /etc/yum.repos.d/Intel Analytics-deps.repo
     echo "[intel-analytics-deps]
     name=intel-analytics-deps
     baseurl=https://intel-analytics-dependencies.s3-us-west-2.amazonaws.com/yum
     gpgcheck=0
-    priority=1 enabled=1"  | sudo tee -a /etc/yum.repos.d/Intel Analytics-deps.repo
+    priority=1 enabled=1"  | sudo tee -a /etc/yum.repos.d/ia-deps.repo
 
 To test the installation of the dependencies repository run the following command::
 
@@ -183,6 +242,8 @@ If you get similar output, install yum-s3 package::
 
     sudo yum -y install yum-s3
 
+Installing the YUM s3 plugin will allow us to use the Amazon S3 repository.
+
 Add Intel Analytics Private Repository
 --------------------------------------
 
@@ -193,13 +254,17 @@ Run the following command to create ``/etc/yum.repos.d/ia.repo`` file.
 
     echo "[intel-analytics]
     name=intel analytics
-    baseurl=https://intel-analytics-repo.s3-us-west-2.amazonaws.com/release/latest/yum/dists/rhel/6
+    baseurl=https://intel-analytics-repo.s3-us-west-2.amazonaws.com
+        /release/latest/yum/dists/rhel/6
     gpgcheck=0
     priority=1
     s3_enabled=1
     #yum-get iam only has get
     key_id=YOUR_KEY
-    secret_key=YOUR_SECRET" | sudo tee -a /etc/yum.repos.d/Intel Analytics.repo
+    secret_key=YOUR_SECRET" | sudo tee -a /etc/yum.repos.d/ia.repo
+
+The ``baseurl`` line above has been broken across two lines for displaying in various media.
+The lines should be combined into a single line with no gaps (spaces).
 
 .. Note::
 
@@ -213,35 +278,49 @@ Verify the installation of the Intel Analytics repository by running::
     Available Packages
     Name        : intelanalytics-rest-server
     Arch        : x86_64
-    Version     : 0.8
-    Release     : 1474
+    Version     : #.#.#
+    Release     : ####
     Size        : 419 M
     Repo        : intel-analytics
-    Summary     : intelanalytics-rest-server-0.8 Build number: 1474. TimeStamp 20140722211530Z
-    URL         : graphtrial.intel.com
+    Summary     : intelanalytics-rest-server-0.8
+    URL         : intel.com
     License     : Confidential
 
-If you get package details for intelanalytics-rest-server package, then the repository installed correctly and you can continue installation.
+If you get package details for intelanalytics-rest-server package,
+then the repository installed correctly and you can continue installation.
 
 Troubleshooting Private Repository
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-The most common error when using the private repository is in correct access and secret keys or the server time is out of sync with the world.
+The most common error when using the private repository is in correct access and secret keys or
+the server time is out of sync with the world.
 It never hurts to double check your access and secret keys in the ia.repo file.
 
 To keep your system time in sync with the world run::
 
     sudo service ntpd start
 
+The Intel Analytics Dependency repository and the yum-s3 package must be installed before trying to `Add Intel Analytics Private Repository`_.
+
 Installing Intel Analytics Packages
 ===================================
 
-Installing Intel Analytics Rest Server
+Installing Intel Analytics REST Server
 --------------------------------------
 This next step is going to install IA rest server and all it's dependencies.
-Only one instance of the rest server needs to be installed. Although it doesn't matter where it's installed it's usually installed along side the HDFS name node.
+Only one instance of the rest server needs to be installed.
+Although it doesn't matter where it's installed it's usually installed along side the HDFS name node.
 ::
 
     sudo yum -y install intelanalytics-rest-server
+
+Worker Node Preinstallation
+---------------------------
+These are some required steps prior to the installation on “worker nodes”:
+
+*   copy ``ia-deps.repo`` and ``ia.repo`` files from ``/etc/yum.repos.d/`` on master node to ``/etc/yum.repos.d/`` on each worker node
+*   install Intel Analytics Dependencies Repository on each worker node::
+  
+        sudo yum -y install yum-s3
 
 Installing Intel Analytics Spark Dependencies
 ---------------------------------------------
@@ -250,19 +329,30 @@ The Intel Analytics spark dependencies package needs to be installed on every no
 
     sudo yum -y install intelanalytics-spark-deps
 
-Installing Intel Analytics Python Rest Client
+Installing Intel Analytics Python REST Client
 ---------------------------------------------
 The Intel Analytics python rest client package needs to be installed on every node running the spark worker role.
 ::
 
     sudo yum -y install intelanalytics-python-rest-client
 
+Installing Intel Analytics Python 2.7 REST Client 
+-------------------------------------------------
+
+Like the regular python 2.6 client above this also needs to be installed on every spark worker node.
+::
+
+    $ sudo yum -y install intelanalytics-python-rest-client-python27
+
 You can combine both the spark dependencies and python rest client installation into one command::
 
-    sudo yum -y install intelanalytics-spark-deps intelanalytics-python-rest-client
+    $ sudo yum -y install intelanalytics-spark-deps intelanalytics-python-rest-client
+        intelanalytics-python-rest-client-python27
+
+The above line should be a single line. It was split across multiple lines to enhance the display in various media.
 
 -------------------------
-Rest Server Configuration
+REST Server Configuration
 -------------------------
 
 There are two config files you may need to edit on the node that has the Intel Analytics rest server package.
@@ -296,6 +386,26 @@ Usually non-parcel installations of Cloudera will install Spark to /usr/lib/spar
     export IAUSER="iauser"
     export HOSTNAME=`hostname`
 
+    IFS=$'\n\r'
+    #get class paths from separate files to make the upstart skip neat and
+    #making editing easier
+    if [ -f /etc/intelanalytics/rest-server/classpath ]; then
+        for path in `cat /etc/intelanalytics/rest-server/classpath`
+        do
+            #skip empty and lines starting with #
+            if [ "$path" == "" ] || [[ $path == \#* ]]; then
+                continue
+            fi
+            #set the extra conf for the first time
+            if [[ -z "$CLASSPATH" ]]; then
+                CLASSPATH=$path
+            else
+                CLASSPATH="${CLASSPATH}:${path}"
+            fi
+        done
+    fi
+    export CLASSPATH=$CLASSPATH
+
 application.conf
 ================
 
@@ -325,25 +435,21 @@ Sample output with notes::
     What port is Cloudera Manager listening on? defaults to '7180' if nothing is entered:
     What is the Cloudera Manager username? defaults to 'admin' if nothing is entered:
     What is the Cloudera Manager password? defaults to 'admin' if nothing is entered:
-
-    #if your cloudera manager instance only manages a single cluster this prompt will not come up
-    1: Cluster Name: cluster 1            Version: CDH5
-    2: Cluster Name: cluster 2            Version: CDH5
-    Enter the clusters index number: 1
-    You picked cluster 1
-
-
+    None
     No current SPARK_CLASSPATH set.
     Setting to:
     export SPARK_CLASSPATH="/usr/lib/intelanalytics/graphbuilder/lib/*"
-    Deploying config   .   .   .   .   .   .   .   .   .   .   .   .  
-    You need to restart Spark service for the config changes to take affect.
 
-    #restarting the cluster is up to the user just in case Spark is busy running any jobs
-    would you like to restart now? defaults to 'no' if nothing is entered: yes
+    Deploying config   .   .   .   .   .   .   .   .   .   .   .   .  
+
+    You need to restart Spark service for the config changes to take affect.
+    would you like to restart now? Type 'yes' to restart. defaults to 'no' if nothing is
+    entered: yes
     Restarting Spark  .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   
 
-    #Creating the /etc/intelanalytics/rest-server/application.conf file
+    What python executable would you like to use? It must be in the path.  defaults to
+    'python' if nothing is entered:
+
     Creating application.conf file from application.conf.tpl
     Reading application.conf.tpl
     Updating configuration
@@ -352,20 +458,9 @@ Sample output with notes::
 If you accidentally enter the wrong information on any of the prompts you can always run the script again.
 It will use a fresh application.conf.tpl and query Cloudera Manager again to recreate the application.conf file.
 
-.. versionadded:: 0.8.5
-    Server configuration can be directly accessed through the IA Toolkit:
-
-        >>> ia.server.host = "myhostname"
-        >>> ia.server.port = None
-        >>> ia.server.ping()
-        >>> ia.server.reset()   # restore server config to defaults in rest/config.py
-
-
-You can now skip to :ref:`finish_conf`.
-
 Manual Configuration
 --------------------
- *This section is optional and only if additional changes to the configuration file are needed*
+**This section is optional and only if additional changes to the configuration file are needed**
  
 The rest-server package only provides a configuration template called application.conf.tpl.
 We need to copy and rename this file to application.conf and update host names and memory configurations.
@@ -391,8 +486,8 @@ This is the section you want to look at::
 
         # The host name for the Postgresql database in which the metadata will be stored
         //metastore.connection-postgresql.host = "invalid-postgresql-host"
-        # This allows the use of an in memory data store. Restarting the rest server will create a fresh database and any 
-        # data in the h2 DB will be lost 
+        # This allows the use of an in memory data store. Restarting the rest server will
+        # create a fresh database and any data in the h2 DB will be lost 
         metastore.connection = ${intel.analytics.metastore.connection-h2} 
 
         engine {
@@ -401,7 +496,7 @@ This is the section you want to look at::
             # and which will be used as the starting point for any relative URLs
             fs.root = "hdfs://invalid-fsroot-host/user/iauser"
 
-            # The (comma separated, no spaces) Zookeeper hosts that comma separated list of host names with zookeeper role assigned
+            # Comma separated list of host names with zookeeper role assigned
             titan.load.storage.hostname = "invalid-titan-host"
             # Zookeeper client port, defaults to 2181
             //titan.load.storage.port = "2181"
@@ -412,7 +507,7 @@ This is the section you want to look at::
                 # Memory should be same or lower than what is listed as available
                 # in Cloudera Manager.
                 # Values should generally be in gigabytes, e.g. "8g"
-                spark.executor.memory = "invalid executor memory"
+                spark.executor.memory = "8g"
             }
         }
     }
@@ -433,7 +528,7 @@ Example::
 
     fs.root = "hdfs://localhost.localdomain/user/iauser" 
 
-If your Name Node port is not 8020 you can specify it after the host name::
+If your HDFS Name Node port does not use the standard port, you can specify it after the host name with a colon::
 
     fs.root = "hdfs://localhost.localdomain:8020/user/iauser"
 
@@ -451,18 +546,18 @@ Example::
 
 If your zookeeper client port is not 2181 un-comment the following line and replace 2181 with your zookeeper client port::
 
-    titan.load.storage.port = "my zookeeper client port"
+    titan.load.storage.port = "2181"
 
 Configure Spark Master Host
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Update "invalid-spark-master" with the fully qualified domain name of the Spark master node::
 
-    master = "spark://localhost.localdomain:7077"
+    spark.master = "spark://invalid-spark-master:7077"
 
 Example::
 
-    master = "spark://localhost.localdomain:7077" 
+    spark.master = "spark://localhost.localdomain:7077" 
 
 Configure Spark Executor Memory
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -486,7 +581,7 @@ Click on the Spark service then configuration in Cloudera Manager to get executo
 Set the Bind IP Address (Optional)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-If you would like the Intel Analytics server to bind to all ip address and not just localhost
+If you would like the Intel Analytics server to bind to all ip addresses and not just localhost
 update the following lines and follow the commented instructions.
 This configuration section is also near the top of the file.
 ::
@@ -497,50 +592,26 @@ This configuration section is also near the top of the file.
 Updating the Spark Class Path
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Run the following command to set the Spark class path::
-
-    /usr/lib/intelanalytics/graphbuilder/set-cm-spark-classpath.sh
-    
-Follow the prompts and make corrections where necessary.
-
-If you have problems running the script you can update the Spark class path through Cloudera Manager.
-If you log into Cloudera Manager under the Spark configuration you can find the spark-conf/spark-env.sh setting.
+If you did the automatic configuration the classpath will be updated automatically in Cloudera Manager
+but if you have any problems you can update the spark class path through Cloudera Manager.
+If you log into Cloudera Manager under the spark configuration you can find the Worker Environment Advanced 
+Configuration Snippet.
 If it isn't already set, add::
 
-    export SPARK_CLASSPATH="/usr/lib/intelanalytics/graphbuilder/lib/*"
-    
+    SPARK_CLASSPATH="/usr/lib/intelanalytics/graphbuilder/lib/ispark-deps.jar"
+
 .. image:: ad_inst_IA_2.*
     :align: center
-
-.. _finish_conf:
-
-Finish Configuration
-====================
 
 Now, restart the Spark service.
 
 .. image:: ad_inst_IA_3.*
     :align: center
 
------------
-Final Steps
------------
-
-Spark Dependencies & Python Rest Client
-=======================================
-
-After setting up the Intel Analytics repositories, run the following commands on every host with a Spark worker::
-
-    sudo yum -y install intelanalytics-spark-deps
-    sudo yum -y install intelanalytics-python-rest-client
-
-You can now start the rest server and start submitting requests.
-
-
-Starting Intel Analytics Rest Server
+Starting Intel Analytics REST Server
 ====================================
 
-Starting the Rest server is very easy.
+Starting the REST server is very easy.
 It can be started like any other Linux service.
 ::
 
@@ -548,8 +619,8 @@ It can be started like any other Linux service.
 
 After starting the rest server, you can browse to the host on port 9099 to see if the server started successfully.
 
-Troubleshooting
-===============
+Troubleshooting Intel Analytics REST Server
+===========================================
 
 The log files get written to /var/log/intelanalytics/rest-server/output.log or
 /var/log/intelanalytics/rest-server/application.log.
@@ -569,3 +640,5 @@ More details about the logs can be found here: :doc:`ad_log`.
     :hidden:
     
     ad_log
+
+.. _Cloudera Installation Documentation: http://www.cloudera.com/content/cloudera-content/cloudera-docs/CM5/latest/Cloudera-Manager-Installation-Guide/cm5ig_install_cm_cdh.html
