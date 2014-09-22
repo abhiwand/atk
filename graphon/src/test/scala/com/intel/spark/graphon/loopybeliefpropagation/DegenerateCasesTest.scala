@@ -194,8 +194,4 @@ class DegenerateCasesTest extends FlatSpec with Matchers with TestingSparkContex
 
   }
 
-
-
-
-
 }
