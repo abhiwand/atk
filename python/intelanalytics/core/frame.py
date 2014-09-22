@@ -1585,7 +1585,19 @@ class BigFrame(CommandLoadableBigFrame):
 
         Examples
         --------
-        For an example, see :ref:`example_frame.inspect`
+        For this example, let's say we have a frame of data and a BigFrame to access it. Let's look at the first 10 rows of data::
+        
+            print my_frame.inspect()
+            
+            column defs ->  animal:str  name:str    age:int     weight:float
+                          |--------------------------------------------------|
+            frame data ->   lion        George        8            542.5
+                            lion        Ursula        6            495.0
+                            ape         Ape          41            400.0
+                            elephant    Shep          5           8630.0
+            
+        
+        For another example, see :ref:`example_frame.inspect`
 
         .. versionadded:: 0.8
 
