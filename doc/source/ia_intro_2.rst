@@ -102,7 +102,7 @@ The Intel Analytics Toolkit provides a suite of graph algorithms that make it ea
 and :term:`topic modeling`, in addition to common graph statistical calculations.
 Each is easy to invoke using the Python environment and parameters for the desired algorithm configuration.
 Each algorithm also provides necessary metrics, facilitating assessment of model performance, accuracy,
-and configuration of the model for its intended usage (including :term:`Confusion Matrices`, ROC, :term:`K-S Tests`,
+and configuration of the model for its intended usage (including :term:`Confusion Matrices`, :term:`ROC`, :term:`K-S Tests`,
 and accuracy metrics, including :term:`precision, recall, <precision/recall>` and :term:`F-Measure`).
 
 Graph mining and machine learning algorithms included in this release are:
