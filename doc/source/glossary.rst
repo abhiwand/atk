@@ -56,7 +56,6 @@ Glossary
         See :term:`Loopy Belief Propagation`.
 
     Baysian Network
-    Baysian Networks
 
          From `Wikipedia\: Bayesian Network`_:
 
@@ -67,6 +66,9 @@ Glossary
 
         \Contrast with :term:`Markov Random Fields`.
         
+    Baysian Networks
+
+        See :term:`Baysian Network`.
 
     Bias-variance tradeoff
 
@@ -105,19 +107,23 @@ Glossary
         A class object with the functionality to manipulate the data in a :term:`frame`.
 
     bool
+
+        See :term:`Boolean`.
+
     Boolean
-    Booleans
 
         A variable that can hold a single "True" or "False" value.
         In Python, it can also be "None" meaning that it is not defined.
+
+    Booleans
+
+        See :term:`Boolean`.
 
     bytearray
 
         A sequence of integers in the range 0 <= x < 256.
 
     Centrality
-    Centrality (PageRank)
-    PageRank Centrality
 
         From `Wikipedia\: Centrality`_:
 
@@ -127,6 +133,14 @@ Glossary
         There are four main measures of centrality: degree, betweenness, closeness, and eigenvector.
         Centrality concepts were first developed in social network analysis,
         and many of the terms used to measure centrality reflect their sociological origin. [#f10]_
+
+    Centrality (Katz)
+
+        See :term:`Katz Centrality`.
+
+    Centrality (PageRank)
+
+        See :term:`Centrality`.
 
     Classification
 
@@ -170,8 +184,11 @@ Glossary
         in which any two vertices are connected to each other by paths, and which is connected to no
         additional vertices in the supergraph.
 
-    Confusion Matrix
     Confusion Matrices
+
+        See :term:`Confusion Matrix`
+
+    Confusion Matrix
 
         From `Wikipedia\: Confusion Matrix`_:
 
@@ -198,6 +215,9 @@ Glossary
         For more information see: `Wikipedia\: Convergence (mathematics)`_.
 
     dict
+
+        See :term:`Dictionary`.
+
     Dictionary
 
         A class of data composed of key/value pairs.
@@ -215,7 +235,6 @@ Glossary
         Contrast with :term:`Undirected Graph`.
 
     Edge
-    Edges
 
         An edge is the link between two vertices in a graph database.
         Edges can have direction, or be undirected.
@@ -227,8 +246,18 @@ Glossary
 
         For more information see: :term:`Vertex`, and `Tinkerpop\: Property Graph Model`_.
 
+    Edges
+
+        See :term:`Edge`.
+
     EqualDepth
+
+        See :term:`Equal Depth Binning`.
+
     EqualWidth
+
+        See :term:`Equal Depth Binning`.
+
     Equal Depth Binning
 
         Equal width binning places column values into bins such that the values in each bin fall within
@@ -239,7 +268,7 @@ Glossary
 
     Empirical Cumulative Distribution
     
-        The empirical cumulative distribution function (ECDF) :math:`Fn` is a step function with
+        The :abbr:`ECDF (empirical cumulative distribution function)` :math:`Fn` is a step function with
         jumps :math:`i/n` at observation values, where :math:`i` is the number of tied observations at that value.
         Missing values are ignored.
 
@@ -256,7 +285,7 @@ Glossary
 
         From `Wikipedia\: Extract, Transform, and Load`_:
 
-            In computing, extract, transform, and load (ETL) refers to a process in database usage and 
+            In computing, :abbr:`ETL (extract, transform, and load)` refers to a process in database usage and 
             especially in data warehousing that:
 
         \ 
@@ -266,32 +295,44 @@ Glossary
                 data mart, or data warehouse)
 
         \ 
-            ETL systems are commonly used to integrate data from multiple applications,
-            typically developed and supported by different vendors or hosted on separate computer hardware.
+            :abbr:`ETL (extract, transform, and load)` systems are commonly used to integrate data from multiple
+            applications, typically developed and supported by different vendors or hosted on separate computer hardware.
             The disparate systems containing the original data are frequently managed and operated by
             different employees.
             For example a cost accounting system may combine data from payroll, sales and purchasing.
 
 
     F1 Score
+
+        See :term:`F-Measure`.
+
     F-Measure
-    F-Score
         
         From `Wikipedia\: F1 score`_:
 
         In statistical analysis of binary classification, the F1 score (also F-score or F-measure) is
         a measure of a test's accuracy.
 
+    F-Score
+
+        See :term:`F-Measure`.
+
     float32
+
+        A real non-integer number with 32 bits of precision as appropriate.
+
     float64
 
-        A real non-integer number with 32 or 64 bits of precision as appropriate.
+        A real non-integer number with 64 bits of precision as appropriate.
 
     Frame
 
         A table database with rows and columns containing data.
 
     GaBP
+
+        See :term:`Gaussian Belief Propagation`.
+
     Gaussian Belief Propagation
 
         Gaussian belief propagation is a variant of the belief propagation algorithm when the
@@ -375,11 +416,16 @@ Glossary
         For more information see: `Gremlin Wiki`_.
 
     int32
+
+        An integer is a member of the set of positive whole numbers {1, 2, 3, . . . },
+        negative whole numbers {-1, -2, -3, . . . }, and zero {0}.
+        Since a computer is limited, the computer representation of it can have 32 bits of precision.
+
     int64
 
         An integer is a member of the set of positive whole numbers {1, 2, 3, . . . },
         negative whole numbers {-1, -2, -3, . . . }, and zero {0}.
-        Since a computer is limited, the computer representation of it can have 32 or 64 bits of precision.
+        Since a computer is limited, the computer representation of it can have 64 bits of precision.
 
     Ising Smoothing Parameter
 
@@ -391,7 +437,6 @@ Glossary
         A larger smoothing value implies stronger relationships between adjacent random variables in the graph.
 
     Katz Centrality
-    Centrality (Katz)
 
         From `Wikipedia\: Katz Centrality`_:
 
@@ -403,15 +448,19 @@ Glossary
         a pair of actors, Katz centrality measures influence by taking into account the total number of
         walks between a pair of actors. [#f9]_
 
+    :abbr:`K-S (Kolmogorov–Smirnov)` Tests
+
+        See :term:`Kolmogorov–Smirnov Test`.
+
     Kolmogorov–Smirnov Test
-    K-S Tests
 
         From `Wikipedia\: Kolmogorov–Smirnov Test`_:
 
-        In statistics, the Kolmogorov–Smirnov test (K–S test) is a nonparametric test of the equality of
+        In statistics, the :abbr`K-S (Kolmogorov–Smirnov)` is a nonparametric test of the equality of
         continuous, one-dimensional probability distributions that can be used to compare a sample with
-        a reference probability distribution (one-sample K–S test), or to compare two samples (two-sample K–S test).
-        The Kolmogorov–Smirnov statistic quantifies a distance between the empirical distribution
+        a reference probability distribution (one-sample :abbr`K-S (Kolmogorov–Smirnov)` test),
+        or to compare two samples (two-sample :abbr`K-S (Kolmogorov–Smirnov)` test).
+        The :abbr`K-S (Kolmogorov–Smirnov)` statistic quantifies a distance between the empirical distribution
         function of the sample and the cumulative distribution function of the reference distribution,
         or between the empirical distribution functions of two samples.
 
@@ -451,7 +500,7 @@ Glossary
 
         Adapted from: `Stanford\: Machine Learning`_:
 
-            This is the tradeoff parameter, used in Label Propagation on Gaussian Random Fields.
+            This is the tradeoff parameter, used in :term:`Label Propagation` on :term:`Gaussian Random Fields`.
             The regularization parameter is a control on fitting parameters.
             It is used in machine learning algorithms to prevent overfitting.
             As the magnitude of the fitting parameter increases, there will be an increasing penalty on
@@ -524,6 +573,10 @@ Glossary
 
         For more information see: `Wikipedia\: PageRank`_.
 
+    PageRank Centrality
+
+        See :term:`Centrality`.
+
     Precision/Recall
 
         From `Wikipedia\: Precision and Recall`_:
@@ -542,8 +595,10 @@ Glossary
         For more information see: `Tinkerpop\: Property Graph Model`_.
 
     PUF
+
+        See :term:`Python User Function`.
+
     Python User Function
-    Python User Function (PUF)
 
         A Python User Function (PUF) is a python function written by the user on the client-side which
         can execute in a distributed fashion on the cluster.
@@ -645,13 +700,16 @@ Glossary
         discovering the abstract "topics" that occur in a collection of documents.
 
     Transaction Processing
-    Transactional Functionality
 
         From `Wikipedia\: Transaction Processing`_:
 
         In computer science, transaction processing is information processing that is divided into individual,
         indivisible operations, called transactions.
         Each transaction must succeed or fail as a complete unit; it cannot be only partially complete.
+
+    Transactional Functionality
+
+        See :term:`Transaction Processing`.
 
     Undirected Graph
 
@@ -678,7 +736,6 @@ Glossary
         For more information see: :term:`Supervised Learning`, and :term:`Semi-Supervised Learning`.
 
     Vertex
-    Vertices
 
         A vertex is a data point in a graph database.
         Each vertex has an ID and a property map.
@@ -705,6 +762,10 @@ Glossary
         In the study of graphs and networks, the degree of a node in a network is the number of
         connections it has to other nodes and the degree distribution is the probability distribution
         of these degrees over the whole network.
+
+    Vertices
+
+        See :term:`Vertex`.
 
 .. _Wikipedia\: Standard Deviation: http://en.wikipedia.org/wiki/Standard_deviation
 .. _Wikipedia\: Variance: https://en.wikipedia.org/wiki/Variance

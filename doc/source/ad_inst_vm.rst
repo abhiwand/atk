@@ -23,9 +23,9 @@ Requirements
 
 A)  12GB of memory needs to be allocated to the VM
 
-#)  30 GB of free hard drive space
+#)  45GB of free hard drive space
 
-#)  Working Virtual Box installation 4.3
+#)  Working Virtual Box 4.3 installation
 
 -----------------
 Download VM Image
@@ -33,8 +33,6 @@ Download VM Image
 
 Note:
     Open a Linux shell (or for Windows user a command prompt) to run the various commands.
-
-.. figure:: ad_inst_vm_00.*
 
 The VM image is downloaded from AWS.
 The download will require that you have the AWS Command Line Interface (CLI) client on your system.
@@ -73,9 +71,12 @@ When prompted for the "Default output format" use "json".
 
 To download the VM run::
 
-    aws s3 cp s3://intel-analytics-repo/release/latest/VM/IntelAnalytics-0.8.0-CDH-5.0.3.tar.gz
+    aws s3 cp s3://intel-analytics-repo/release/latest/VM/IntelAnalytics
+        -#.#.#-CDH-5.1.2.tar.gz
     
-Depending on the release you would like to download, you can change '0.8.0' to the latest release, or another you would like to try.
+The preceding line was broken across multiple lines for improved viewing on various media.
+The line should be entered as one line with no gaps (spaces).
+Depending on the release you would like to download, you can change ``#.#.#`` to the latest release (|release|), or another you would like to try.
 
 ---------------
 Extract Archive
@@ -89,14 +90,14 @@ Use any of the following tools to extract the archive, `7zip <http://7-zip.org/>
 
 Extracting On Linux
 ===================
-After acquiring the VM, extract the archive::
+After acquiring the VM, extract the archive. Replace ``#.#.#`` with the release number::
 
-    tar -xvf IntelAnalytics-0.8.0-CDH-5.0.3.tar.gz
+    tar -xvf IntelAnalytics-#.#.#-CDH-5.1.0.tar.gz
 
 You should have two files after extracting::
 
-    IntelAnalytics-0.8.0-CDH-5.0.3-disk1.vmdk
-    IntelAnalytics-0.8.0-CDH-5.0.3.ovf
+    IntelAnalytics-#.#.#-CDH-5.1.0-disk1.vmdk
+    IntelAnalytics-#.#.#-CDH-5.1.0.ovf
 
 ------------
 Import Image
@@ -145,7 +146,7 @@ Using Sample Scripts
 ====================
 
 The VM is pre-configured and installed with |IA| toolkit.
-It has many examples and datasets to get you started as soon as the VM is booted.
+It has several examples and datasets to get you started as soon as the VM is booted.
 
 The examples are located in '/home/cloudera/examples'.
 ::
@@ -158,11 +159,11 @@ The examples are located in '/home/cloudera/examples'.
 The datasets are located in '/home/cloudera/examples/datasets' and 'hdfs://user/iauser/datasets/'.
 ::
 
-    -rw-r--r--   1 iauser iauser        122 2014-08-01 00:53 /user/iauser/datasets/README
-    -rw-r--r--   1 iauser iauser     617816 2014-08-01 00:53 /user/iauser/datasets/apl.csv
-    -rw-r--r--   1 iauser iauser    8162836 2014-08-01 00:53 /user/iauser/datasets/lbp_edge.csv
-    -rw-r--r--   1 iauser iauser     188470 2014-08-01 00:53 /user/iauser/datasets/lp_edge.csv
-    -rw-r--r--   1 iauser iauser  311641390 2014-08-01 00:53 /user/iauser/datasets/test_lda.csv
+    -rw-r--r--   1 iauser iauser        122 2014-08-01 /user/iauser/datasets/README
+    -rw-r--r--   1 iauser iauser     617816 2014-08-01 /user/iauser/datasets/apl.csv
+    -rw-r--r--   1 iauser iauser    8162836 2014-08-01 /user/iauser/datasets/lbp_edge.csv
+    -rw-r--r--   1 iauser iauser     188470 2014-08-01 /user/iauser/datasets/lp_edge.csv
+    -rw-r--r--   1 iauser iauser  311641390 2014-08-01 /user/iauser/datasets/test_lda.csv
 
 The datasets in '/home/cloudera/examples/datasets' are for reference,
 the actual data that is being used by the python examples and the intelanalytics server is in 'hdfs://user/iauser/datasets'.
@@ -206,7 +207,7 @@ Afterwards you will be able to run ``yum`` commands to check for and do updates.
 
     [Intel Analytics repo]
     name=Intel Analytics yum repo
-    baseurl=https://s3-us-west-2.amazonaws.com/intel-analytics-repo/release/0.8.0/yum/dists/rhel/6
+    baseurl=https://s3-us-west-2.amazonaws.com/intel-analytics-repo/release/#.#.#/yum/dists/rhel/6
     gpgcheck=0
     priority=1
     #enabled=0
@@ -214,6 +215,7 @@ Afterwards you will be able to run ``yum`` commands to check for and do updates.
     key_id=myKey
     secret_key=mySecret
 
+Replace the ``#.#.#`` with the correct release number.
 To check for new updates and see the difference between the new and installed version::
 
     sudo yum info intelanalytics-rest-server

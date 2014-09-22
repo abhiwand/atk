@@ -22,8 +22,6 @@
 ##############################################################################
 from intelanalytics.core.iatypes import valid_data_types
 
-
-
 class DataFile(object):
     annotation = "data_file"
     pass

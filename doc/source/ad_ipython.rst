@@ -46,12 +46,12 @@ If you do have access to 'sudo' and 'yum' you will see a list of repositories.
 
     # successful sudo yum verification
     Loaded plugins: amazon-id, rhui-lb, s3
-    repo id                                   repo name                                                     status
-    epel                                      Extra Packages for Enterprise Linux 6 - x86_64                11,099
-    rhui-REGION-client-config-server-6        Red Hat Update Infrastructure 2.0 Client Configuration Server      3
-    rhui-REGION-rhel-server-releases          Red Hat Enterprise Linux Server 6 (RPMs)                      12,888
-    rhui-REGION-rhel-server-releases-optional Red Hat Enterprise Linux Server 6 Optional (RPMs)              7,269
-    rhui-REGION-rhel-server-rh-common         Red Hat Enterprise Linux Server 6 RH Common (RPMs)                27
+    repo id                           ...  repo name
+    epel                              ...  Extra Packages for Enterprise Linux 6 - x86_64 ...
+    rhui-REGION-client-config-server-6...  Red Hat Update Infrastructure 2.0 Client Config...
+    rhui-REGION-rhel-server-releases  ...  Red Hat Enterprise Linux Server 6 (RPMs)       ...
+    rhui-REGION-rhel-server-releases-o...  Red Hat Enterprise Linux Server 6 Optional (RPM...
+    rhui-REGION-rhel-server-rh-common ...  Red Hat Enterprise Linux Server 6 RH Common (RP...
     repolist: 31,335
 
 Cluster Requirements
@@ -68,7 +68,7 @@ If the service is not using the default 9099 port, you also need the port number
 Adding Extra Repositories
 -------------------------
 
-The first step in the installation is adding `EPEL <https://fedoraproject.org/wiki/EPEL>`_ ,
+The first step in the installation is adding `EPEL <https://fedoraproject.org/wiki/EPEL>`_,
 and two Intel Analytics repositories to make the installation as smooth and painless as it can be on Linux.
 
 Add EPEL Repository
@@ -80,13 +80,14 @@ on the machine you will be working on::
     $ sudo yum repolist
 
     # sample output
-    repo id                                    repo name                                                         Status
-    cloudera-cdh5                              Cloudera CDH, Version 5                                              141
-    cloudera-manager                           Cloudera Manager, Version 5.1.0                                        7
-    epel                                       Extra Packages for Enterprise Linux 6 - x86_64                    11,022
-    rhui-REGION-client-config-server-6         Red Hat Update Infrastructure 2.0 Client Configuration Server 6        2
-    rhui-REGION-rhel-server-releases           Red Hat Enterprise Linux Server 6 (RPMs)                          12,690
-    rhui-REGION-rhel-server-releases-optional  Red Hat Enterprise Linux Server 6 Optional (RPMs)                  7,168
+    repo id                           ...  repo name
+    cloudera-cdh5                     ...  Cloudera CDH, Version 5                        ...
+    cloudera-manager                  ...  Cloudera Manager, Version 5.1.0                ...
+    epel                              ...  Extra Packages for Enterprise Linux 6 - x86_64 ...
+    rhui-REGION-client-config-server-6...  Red Hat Update Infrastructure 2.0 Client Config...
+    rhui-REGION-rhel-server-releases  ...  Red Hat Enterprise Linux Server 6 (RPMs)       ...
+    rhui-REGION-rhel-server-releases-o...  Red Hat Enterprise Linux Server 6 Optional (RPM...
+    rhui-REGION-rhel-server-rh-common ...  Red Hat Enterprise Linux Server 6 RH Common (RP...
 
 You want to look for the *'epel'* repo id.
 If you don't see the *'epel'* repo id, execute the following commands to install it::
@@ -99,11 +100,14 @@ To verify the EPEL repository installation, run::
     $ sudo yum repolist
 
     # sample output
-    repo id                                    repo name                                                         Status
-    epel                                       Extra Packages for Enterprise Linux 6 - x86_64                    11,018
-    rhui-REGION-client-config-server-6         Red Hat Update Infrastructure 2.0 Client Configuration Server 6        2
-    rhui-REGION-rhel-server-releases           Red Hat Enterprise Linux Server 6 (RPMs)                          12,663
-    rhui-REGION-rhel-server-releases-optional
+    repo id                           ...  repo name
+    cloudera-cdh5                     ...  Cloudera CDH, Version 5                        ...
+    cloudera-manager                  ...  Cloudera Manager, Version 5.1.0                ...
+    epel                              ...  Extra Packages for Enterprise Linux 6 - x86_64 ...
+    rhui-REGION-client-config-server-6...  Red Hat Update Infrastructure 2.0 Client Config...
+    rhui-REGION-rhel-server-releases  ...  Red Hat Enterprise Linux Server 6 (RPMs)       ...
+    rhui-REGION-rhel-server-releases-o...  Red Hat Enterprise Linux Server 6 Optional (RPM...
+    rhui-REGION-rhel-server-rh-common ...  Red Hat Enterprise Linux Server 6 RH Common (RP...
 
 Make sure the *'epel'* repo id is present.
 
@@ -154,13 +158,17 @@ Run the following command to create /etc/yum.repos.d/ia.repo file::
 
     $ echo "[intel-analytics]
     name=intel analytics
-    baseurl=https://intel-analytics-repo.s3-us-west-2.amazonaws.com/release/latest/yum/dists/rhel/6
+    baseurl=https://intel-analytics-repo.s3-us-west-2.amazonaws.com
+        /release/latest/yum/dists/rhel/6
     gpgcheck=0
     priority=1
     s3_enabled=1
     #yum-get iam only has get
     key_id=YOUR_KEY
     secret_key=YOUR_SECRET" | sudo tee -a /etc/yum.repos.d/ia.repo
+
+The ``baseurl`` line above has been broken across two lines for displaying in various media.
+The lines should be combined into a single line with no gaps (spaces).
 
 .. note::
 
@@ -172,15 +180,15 @@ Verify the IA repository configuration by running::
 
     # sample output
     Available Packages
-    Name        : intelanalytics-rest-server
-    Arch        : x86_64
-    Version     : 0.8
-    Release     : 1474
-    Size        : 419 M
-    Repo        : intel-analytics
-    Summary     : intelanalytics-rest-server-0.8 Build number: 1474. TimeStamp 20140722211530Z
-    URL         : graphtrial.intel.com
-    License     : Confidential
+    Name     : intelanalytics-rest-server
+    Arch     : x86_64
+    Version  : 0.8
+    Release  : 1474
+    Size     : 419 M
+    Repo     : intel-analytics
+    Summary  : intelanalytics-rest-server-0.8 Build number: 1474. TimeStamp 20140722...
+    URL      : graphtrial.intel.com
+    License  : Confidential
 
 If you get package details for intelanalytics-rest-server package then the repository installed correctly and
 you can continue installation.
