@@ -58,7 +58,7 @@ class CommonDirectives(val authenticationDirective: AuthenticationDirective) ext
       }
       case NonFatal(e) => {
         error("An error occurred during request processing.", exception = e)
-        complete(StatusCodes.InternalServerError, "An internal server error occurred")
+        complete(StatusCodes.InternalServerError, "An internal server error occurred: " + e.getMessage)
       }
     }
   }
