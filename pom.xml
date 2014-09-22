@@ -328,6 +328,7 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                                 <junitxml>.</junitxml>
                                 <filereports>WDF TestSuite.txt</filereports>
                                 <parallel>true</parallel>
+                                <stdout>FTD</stdout>
                             </configuration>
                             <executions>
                                 <execution>

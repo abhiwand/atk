@@ -29,8 +29,5 @@ object ApiServiceConfig extends SharedConfig {
   /** Default number of items to return in service index when not specified. E.g. GET /v1/commands */
   val defaultCount: Int = config.getInt("intel.analytics.api.default-count")
 
-  /** Input file for creating test users for local development */
-  val testUsersFile: String = config.getString("intel.analytics.test.users.file")
-
   val buildId = config.getString("intel.analytics.api.buildId")
 }
