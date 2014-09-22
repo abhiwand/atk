@@ -1,11 +1,10 @@
 package com.intel.spark.graphon.loopybeliefpropagation
 
-import com.intel.graphbuilder.elements.{Edge, Property, Vertex}
+import com.intel.graphbuilder.elements.{ Edge, Property, Vertex }
 import org.apache.spark.rdd.RDD
-import org.scalatest.{Matchers, FlatSpec}
+import org.scalatest.{ Matchers, FlatSpec }
 import com.intel.testutils.TestingSparkContextFlatSpec
 import com.intel.graphbuilder.elements.{ Property, Vertex => GBVertex, Edge => GBEdge }
-
 
 /**
  * These tests validate loopy belief propagation on two node graphs.
@@ -27,10 +26,10 @@ class TwoNodeTest extends FlatSpec with Matchers with TestingSparkContextFlatSpe
 
   "LBP Runner" should "work with two nodes of differing unit states" in new LbpTest {
 
-    val vertexSet: Set[Long] = Set(1,2)
+    val vertexSet: Set[Long] = Set(1, 2)
 
     val priors: Map[Long, List[Double]] = Map(1.toLong -> List(1.0d, 0.0d), 2.toLong -> List(0.0d, 1.0d))
-    val expectedPosteriors : Map[Long, List[Double]] = Map(1.toLong -> List(1.0d, 0.0d), 2.toLong -> List(0.0d, 1.0d))
+    val expectedPosteriors: Map[Long, List[Double]] = Map(1.toLong -> List(1.0d, 0.0d), 2.toLong -> List(0.0d, 1.0d))
 
     //  directed edge list is made bidirectional with a flatmap
 
@@ -79,8 +78,6 @@ class TwoNodeTest extends FlatSpec with Matchers with TestingSparkContextFlatSpe
     testEdges shouldBe expectedEdgesOut
 
   }
-
-
 
   "LBP Runner" should "work properly with a two node graph, uniform probabilities" in new LbpTest {
 
@@ -140,8 +137,6 @@ class TwoNodeTest extends FlatSpec with Matchers with TestingSparkContextFlatSpe
 
   }
 
-
-
   "LBP Runner" should "work properly with one node uniform, one node unit" in new LbpTest {
 
     val vertexSet: Set[Long] = Set(1, 2)
@@ -150,7 +145,7 @@ class TwoNodeTest extends FlatSpec with Matchers with TestingSparkContextFlatSpe
       2.toLong -> List(0.5d, 0.5d))
 
     val expectedPosteriors: Map[Long, List[Double]] = Map(1.toLong -> List(1.0d, 0.0d),
-      2.toLong -> List( Math.E / (Math.E + 1), 1/(Math.E + 1)))
+      2.toLong -> List(Math.E / (Math.E + 1), 1 / (Math.E + 1)))
 
     //  directed edge list is made bidirectional with a flatmap
 
@@ -213,23 +208,20 @@ class TwoNodeTest extends FlatSpec with Matchers with TestingSparkContextFlatSpe
     val messageSecondToFirst = List((secondNodePriors.head + secondNodePriors.tail.head / Math.E),
       (secondNodePriors.head / Math.E + secondNodePriors.tail.head))
 
-    val unnormalizedBeliefsFirstNode : List[Double] = firstNodePriors.zip(messageSecondToFirst).map({case (p,m) => p*m})
-    val unnormalizedBeliefsSecondNode : List[Double] = secondNodePriors.zip(messageFirstToSecond).map({case (p,m) => p*m})
+    val unnormalizedBeliefsFirstNode: List[Double] = firstNodePriors.zip(messageSecondToFirst).map({ case (p, m) => p * m })
+    val unnormalizedBeliefsSecondNode: List[Double] = secondNodePriors.zip(messageFirstToSecond).map({ case (p, m) => p * m })
 
-    val expectedFirstNodePosteriors = unnormalizedBeliefsFirstNode.map(x => x / (unnormalizedBeliefsFirstNode.reduce(_+_)))
-    val expectedSecondNodePosteriors = unnormalizedBeliefsSecondNode.map(x => x / (unnormalizedBeliefsSecondNode.reduce(_+_)))
+    val expectedFirstNodePosteriors = unnormalizedBeliefsFirstNode.map(x => x / (unnormalizedBeliefsFirstNode.reduce(_ + _)))
+    val expectedSecondNodePosteriors = unnormalizedBeliefsSecondNode.map(x => x / (unnormalizedBeliefsSecondNode.reduce(_ + _)))
 
-
-    expectedFirstNodePosteriors shouldEqual List(0.5078674222109657d,0.4921325777890343d)
+    expectedFirstNodePosteriors shouldEqual List(0.5078674222109657d, 0.4921325777890343d)
     expectedSecondNodePosteriors shouldEqual List(0.3403080027827025d, 0.6596919972172975d)
 
     val priors: Map[Long, List[Double]] = Map(1.toLong -> firstNodePriors,
       2.toLong -> secondNodePriors)
 
-
-
     val expectedPosteriors: Map[Long, List[Double]] = Map(1.toLong -> expectedFirstNodePosteriors,
-      2.toLong ->expectedSecondNodePosteriors)
+      2.toLong -> expectedSecondNodePosteriors)
 
     //  directed edge list is made bidirectional with a flatmap
 

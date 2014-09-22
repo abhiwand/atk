@@ -8,7 +8,7 @@ object VectorMath {
 
   def product(v1: List[Double], v2: List[Double]): List[Double] = v1.zip(v2).map({ case (x, y) => x * y })
 
-  def product(vectors: List[List[Double]]) : List[Double] = {
+  def product(vectors: List[List[Double]]): List[Double] = {
     vectors.reduce(product)
   }
 
@@ -21,15 +21,16 @@ object VectorMath {
     }
   }
 
-  def l1Norm(v : List[Double]) : Double = {
-    v.map(x => Math.abs(x)).reduce(_+_)
+  def l1Norm(v: List[Double]): Double = {
+    v.map(x => Math.abs(x)).reduce(_ + _)
   }
 
-  def l1Normalize(v: List[Double]) : List[Double] = {
+  def l1Normalize(v: List[Double]): List[Double] = {
     val norm = l1Norm(v)
     if (norm > 0d) {
       v.map(x => x / norm)
-    } else {
+    }
+    else {
       v // only happens it it's the zero vector
     }
   }

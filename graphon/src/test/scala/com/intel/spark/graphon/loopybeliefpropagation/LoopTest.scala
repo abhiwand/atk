@@ -1,10 +1,9 @@
 package com.intel.spark.graphon.loopybeliefpropagation
 
 import com.intel.graphbuilder.elements.{ Property, Vertex => GBVertex, Edge => GBEdge }
-import org.scalatest.{Matchers, FlatSpec}
+import org.scalatest.{ Matchers, FlatSpec }
 import com.intel.testutils.TestingSparkContextFlatSpec
 import org.apache.spark.rdd.RDD
-
 
 /**
  * These test cases validate that LBP works correctly on (very simple) graphs that contain loops.
