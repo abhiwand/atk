@@ -43,7 +43,7 @@ object GraphXLBP {
 
       // l1 normalization
       val l1Norm = priorTimesMessages.map(x => Math.abs(x)).reduce(_ + _)
-      val posterior = priorTimesMessages.map(x => (x / l1Norm))
+      val posterior = VectorMath.l1Normalize(priorTimesMessages)
 
       val delta = posterior.zip(oldPosterior).map({ case (x, y) => Math.abs(x - y) }).reduce(_ + _)
 
@@ -64,7 +64,7 @@ object GraphXLBP {
         VectorMath.product(prior, messagesNotFromDestination.values.reduce(VectorMath.product(_, _)))
       }
       else {
-        prior.map(x => 1.0d)
+        prior
       }
 
       val statesUNPosteriors = stateRange.zip(reducedMessages)
