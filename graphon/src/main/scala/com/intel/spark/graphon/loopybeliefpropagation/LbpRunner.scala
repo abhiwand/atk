@@ -11,7 +11,7 @@ object LbpRunner {
 
   def lbpVertexStateFromGBVertex(gbVertex: GBVertex, inputPropertyName: String): VertexState = {
 
-    val prior = gbVertex.getProperty(inputPropertyName).get.value.asInstanceOf[List[Double]]
+    val prior = gbVertex.getProperty(inputPropertyName).get.value.asInstanceOf[Vector[Double]]
 
     val sum = prior.reduce(_ + _)
     val posterior = prior.map(x => x / sum)

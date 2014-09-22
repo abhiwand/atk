@@ -33,60 +33,60 @@ class TreesTest extends FlatSpec with Matchers with TestingSparkContextFlatSpec 
     val edgeSet: Set[(Long, Long)] = Set((1.toLong, 3.toLong), (2.toLong, 3.toLong), (3.toLong, 4.toLong),
       (4.toLong, 5.toLong)).flatMap({ case (x, y) => Set((x, y), (y, x)) })
 
-    val firstNodePriors = List(0.1d, 0.9d)
-    val secondNodePriors = List(0.2d, 0.8d)
-    val thirdNodePriors = List(0.3d, 0.7d)
-    val fourthNodePriors = List(0.4d, 0.6d)
-    val fifthNodePriors = List(0.5d, 0.5d)
+    val firstNodePriors = Vector(0.1d, 0.9d)
+    val secondNodePriors = Vector(0.2d, 0.8d)
+    val thirdNodePriors = Vector(0.3d, 0.7d)
+    val fourthNodePriors = Vector(0.4d, 0.6d)
+    val fifthNodePriors = Vector(0.5d, 0.5d)
 
-    val priors: Map[Long, List[Double]] = Map(1.toLong -> firstNodePriors, 2.toLong -> secondNodePriors,
+    val priors: Map[Long, Vector[Double]] = Map(1.toLong -> firstNodePriors, 2.toLong -> secondNodePriors,
       3.toLong -> thirdNodePriors, 4.toLong -> fourthNodePriors, 5.toLong -> fifthNodePriors)
 
     // messages that converge after the first round - that is,  the constant ones coming from the leaves
 
-    val message1to3 = List(firstNodePriors.head + firstNodePriors.tail.head / Math.E,
-      firstNodePriors.head / Math.E + firstNodePriors.tail.head)
+    val message1to3 = Vector(firstNodePriors.head + firstNodePriors.last / Math.E,
+      firstNodePriors.head / Math.E + firstNodePriors.last)
 
-    val message2to3 = List(secondNodePriors.head + secondNodePriors.tail.head / Math.E,
-      secondNodePriors.head / Math.E + secondNodePriors.tail.head)
+    val message2to3 = Vector(secondNodePriors.head + secondNodePriors.last / Math.E,
+      secondNodePriors.head / Math.E + secondNodePriors.last)
 
-    val message5to4 = List(fifthNodePriors.head + fifthNodePriors.tail.head / Math.E,
-      fifthNodePriors.head / Math.E + fifthNodePriors.tail.head)
+    val message5to4 = Vector(fifthNodePriors.head + fifthNodePriors.last / Math.E,
+      fifthNodePriors.head / Math.E + fifthNodePriors.last)
 
     // messages the converge after the second round, after the leaves have reported
 
-    val message3to4 = List(thirdNodePriors.head * message1to3.head * message2to3.head
-      + (1 / Math.E) * thirdNodePriors.tail.head * message1to3.tail.head * message2to3.tail.head,
+    val message3to4 = Vector(thirdNodePriors.head * message1to3.head * message2to3.head
+      + (1 / Math.E) * thirdNodePriors.last * message1to3.last * message2to3.last,
       (1 / Math.E) * thirdNodePriors.head * message1to3.head * message2to3.head
-        + thirdNodePriors.tail.head * message1to3.tail.head * message2to3.tail.head
+        + thirdNodePriors.last * message1to3.last * message2to3.last
     )
 
-    val message4to3 = List(fourthNodePriors.head * message5to4.head
-      + (1 / Math.E) * fourthNodePriors.tail.head * message5to4.tail.head,
+    val message4to3 = Vector(fourthNodePriors.head * message5to4.head
+      + (1 / Math.E) * fourthNodePriors.last * message5to4.last,
       (1 / Math.E) * fourthNodePriors.head * message5to4.head
-        + fourthNodePriors.tail.head * message5to4.tail.head
+        + fourthNodePriors.last * message5to4.last
     )
 
     // messages converging in the third round
 
-    val message4to5 = List(fourthNodePriors.head * message3to4.head
-      + (1 / Math.E) * fourthNodePriors.tail.head * message3to4.tail.head,
+    val message4to5 = Vector(fourthNodePriors.head * message3to4.head
+      + (1 / Math.E) * fourthNodePriors.last * message3to4.last,
       (1 / Math.E) * fourthNodePriors.head * message3to4.head
-        + fourthNodePriors.tail.head * message3to4.tail.head
+        + fourthNodePriors.last * message3to4.last
     )
 
-    val message3to1 = List(
+    val message3to1 = Vector(
       thirdNodePriors.head * message4to3.head * message2to3.head
-        + 1 / Math.E * thirdNodePriors.tail.head * message4to3.tail.head * message2to3.tail.head,
+        + 1 / Math.E * thirdNodePriors.last * message4to3.last * message2to3.last,
       1 / Math.E * thirdNodePriors.head * message4to3.head * message2to3.head
-        + thirdNodePriors.tail.head * message4to3.tail.head * message2to3.tail.head
+        + thirdNodePriors.last * message4to3.last * message2to3.last
     )
 
-    val message3to2 = List(
+    val message3to2 = Vector(
       thirdNodePriors.head * message4to3.head * message1to3.head
-        + 1 / Math.E * thirdNodePriors.tail.head * message4to3.tail.head * message1to3.tail.head,
+        + 1 / Math.E * thirdNodePriors.last * message4to3.last * message1to3.last,
       1 / Math.E * thirdNodePriors.head * message4to3.head * message1to3.head
-        + thirdNodePriors.tail.head * message4to3.tail.head * message1to3.tail.head
+        + thirdNodePriors.last * message4to3.last * message1to3.last
     )
 
     // calculate expected posteriors
@@ -97,7 +97,7 @@ class TreesTest extends FlatSpec with Matchers with TestingSparkContextFlatSpec 
     val expectedPosterior4 = VectorMath.l1Normalize(VectorMath.product(List(fourthNodePriors, message3to4, message5to4)))
     val expectedPosterior5 = VectorMath.l1Normalize(VectorMath.product(fifthNodePriors, message4to5))
 
-    val expectedPosteriors: Map[Long, List[Double]] = Map(1.toLong -> expectedPosterior1, 2.toLong -> expectedPosterior2,
+    val expectedPosteriors: Map[Long, Vector[Double]] = Map(1.toLong -> expectedPosterior1, 2.toLong -> expectedPosterior2,
       3.toLong -> expectedPosterior3, 4.toLong -> expectedPosterior4, 5.toLong -> expectedPosterior5)
 
     val gbVertexSet = vertexSet.map(x => GBVertex(x, Property(vertexIdPropertyName, x), Set(Property(inputPropertyName, priors.get(x).get))))
@@ -142,10 +142,10 @@ class TreesTest extends FlatSpec with Matchers with TestingSparkContextFlatSpec 
     val testVertices = verticesOut.collect().toSet
     val testIdsToPosteriors = testVertices.map({ case gbVertex: GBVertex => (gbVertex.physicalId.asInstanceOf[Long] -> gbVertex.getProperty(propertyForLBPOutput).get) }).toMap
 
-    def closePDFs(v1: List[Double], v2: List[Double]): Boolean = {
+    def closePDFs(v1: Vector[Double], v2: Vector[Double]): Boolean = {
       v1.zip(v2).forall({ case (x, y) => Math.abs(x - y) < 0.00000001 })
     }
-    val test = testIdsToPosteriors.forall({ case (key, posterior) => closePDFs(expectedPosteriors.get(key).get, posterior.value.asInstanceOf[List[Double]]) })
+    val test = testIdsToPosteriors.forall({ case (key, posterior) => closePDFs(expectedPosteriors.get(key).get, posterior.value.asInstanceOf[Vector[Double]]) })
 
     test shouldBe true
   }

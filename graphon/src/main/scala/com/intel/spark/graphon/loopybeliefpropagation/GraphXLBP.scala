@@ -7,9 +7,9 @@ import com.intel.spark.graphon.iatpregel.IATPregelLogger
 import com.intel.graphbuilder.elements.{ Property, Vertex => GBVertex, Edge => GBEdge }
 
 case class VertexState(gbVertex: GBVertex,
-                       messages: Map[VertexId, List[Double]],
-                       prior: List[Double],
-                       posterior: List[Double],
+                       messages: Map[VertexId, Vector[Double]],
+                       prior: Vector[Double],
+                       posterior: Vector[Double],
                        delta: Double)
 
 object GraphXLBP {
@@ -18,7 +18,7 @@ object GraphXLBP {
 
     // pregeling
 
-    val initialMessage: Map[Long, List[Double]] = Map()
+    val initialMessage: Map[Long, Vector[Double]] = Map()
 
     val power = 1.0d
     val smoothing = 1.0d
@@ -27,13 +27,13 @@ object GraphXLBP {
       -Math.pow(delta.toDouble, power) * weight * smoothing
     }
 
-    def vertexProgram(id: VertexId, vertexState: VertexState, messages: Map[VertexId, List[Double]]): VertexState = {
+    def vertexProgram(id: VertexId, vertexState: VertexState, messages: Map[VertexId, Vector[Double]]): VertexState = {
 
       val prior = vertexState.prior
 
       val oldPosterior = vertexState.posterior
 
-      val priorTimesMessages: List[Double] =
+      val priorTimesMessages: Vector[Double] =
         if (messages.nonEmpty) {
           VectorMath.product(prior, messages.values.reduce(VectorMath.product(_, _)))
         }
@@ -50,13 +50,13 @@ object GraphXLBP {
       VertexState(vertexState.gbVertex, messages, prior, posterior, delta)
     }
 
-    def calculateMessage(sender: VertexId, destination: VertexId, vertexState: VertexState, edgeWeight: Double): Map[VertexId, List[Double]] = {
+    def calculateMessage(sender: VertexId, destination: VertexId, vertexState: VertexState, edgeWeight: Double): Map[VertexId, Vector[Double]] = {
 
       val prior = vertexState.prior
       val messages = vertexState.messages
 
       val nStates = prior.length
-      val stateRange = (0 to nStates - 1).toList
+      val stateRange = (0 to nStates - 1).toVector
 
       val messagesNotFromDestination = messages - destination
 
@@ -77,14 +77,14 @@ object GraphXLBP {
       Map(sender -> message)
     }
 
-    def sendMessage(edgeTriplet: EdgeTriplet[VertexState, Double]): Iterator[(VertexId, Map[Long, List[Double]])] = {
+    def sendMessage(edgeTriplet: EdgeTriplet[VertexState, Double]): Iterator[(VertexId, Map[Long, Vector[Double]])] = {
 
       val vertexState = edgeTriplet.srcAttr
 
       Iterator((edgeTriplet.dstId, calculateMessage(edgeTriplet.srcId, edgeTriplet.dstId, vertexState, edgeTriplet.attr)))
     }
 
-    def mergeMsg(m1: Map[Long, List[Double]], m2: Map[Long, List[Double]]): Map[Long, List[Double]] = m1 ++ m2
+    def mergeMsg(m1: Map[Long, Vector[Double]], m2: Map[Long, Vector[Double]]): Map[Long, Vector[Double]] = m1 ++ m2
 
     // logging
 

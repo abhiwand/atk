@@ -28,8 +28,8 @@ class TwoNodeTest extends FlatSpec with Matchers with TestingSparkContextFlatSpe
 
     val vertexSet: Set[Long] = Set(1, 2)
 
-    val priors: Map[Long, List[Double]] = Map(1.toLong -> List(1.0d, 0.0d), 2.toLong -> List(0.0d, 1.0d))
-    val expectedPosteriors: Map[Long, List[Double]] = Map(1.toLong -> List(1.0d, 0.0d), 2.toLong -> List(0.0d, 1.0d))
+    val priors: Map[Long, Vector[Double]] = Map(1.toLong -> Vector(1.0d, 0.0d), 2.toLong -> Vector(0.0d, 1.0d))
+    val expectedPosteriors: Map[Long, Vector[Double]] = Map(1.toLong -> Vector(1.0d, 0.0d), 2.toLong -> Vector(0.0d, 1.0d))
 
     //  directed edge list is made bidirectional with a flatmap
 
@@ -83,11 +83,11 @@ class TwoNodeTest extends FlatSpec with Matchers with TestingSparkContextFlatSpe
 
     val vertexSet: Set[Long] = Set(1, 2)
 
-    val priors: Map[Long, List[Double]] = Map(1.toLong -> List(0.5d, 0.5d),
-      2.toLong -> List(0.5d, 0.5d))
+    val priors: Map[Long, Vector[Double]] = Map(1.toLong -> Vector(0.5d, 0.5d),
+      2.toLong -> Vector(0.5d, 0.5d))
 
-    val expectedPosteriors: Map[Long, List[Double]] = Map(1.toLong -> List(0.5d, 0.5d),
-      2.toLong -> List(0.5d, 0.5d))
+    val expectedPosteriors: Map[Long, Vector[Double]] = Map(1.toLong -> Vector(0.5d, 0.5d),
+      2.toLong -> Vector(0.5d, 0.5d))
 
     //  directed edge list is made bidirectional with a flatmap
 
@@ -141,11 +141,11 @@ class TwoNodeTest extends FlatSpec with Matchers with TestingSparkContextFlatSpe
 
     val vertexSet: Set[Long] = Set(1, 2)
 
-    val priors: Map[Long, List[Double]] = Map(1.toLong -> List(1.0d, 0.0d),
-      2.toLong -> List(0.5d, 0.5d))
+    val priors: Map[Long, Vector[Double]] = Map(1.toLong -> Vector(1.0d, 0.0d),
+      2.toLong -> Vector(0.5d, 0.5d))
 
-    val expectedPosteriors: Map[Long, List[Double]] = Map(1.toLong -> List(1.0d, 0.0d),
-      2.toLong -> List(Math.E / (Math.E + 1), 1 / (Math.E + 1)))
+    val expectedPosteriors: Map[Long, Vector[Double]] = Map(1.toLong -> Vector(1.0d, 0.0d),
+      2.toLong -> Vector(Math.E / (Math.E + 1), 1 / (Math.E + 1)))
 
     //  directed edge list is made bidirectional with a flatmap
 
@@ -199,28 +199,28 @@ class TwoNodeTest extends FlatSpec with Matchers with TestingSparkContextFlatSpe
 
     val vertexSet: Set[Long] = Set(1, 2)
 
-    val firstNodePriors = List(0.6d, 0.4d)
-    val secondNodePriors = List(0.3d, 0.7d)
+    val firstNodePriors = Vector(0.6d, 0.4d)
+    val secondNodePriors = Vector(0.3d, 0.7d)
 
-    val messageFirstToSecond = List((firstNodePriors.head + firstNodePriors.tail.head / Math.E),
-      (firstNodePriors.head / Math.E + firstNodePriors.tail.head))
+    val messageFirstToSecond = Vector((firstNodePriors.head + firstNodePriors.last / Math.E),
+      (firstNodePriors.head / Math.E + firstNodePriors.last))
 
-    val messageSecondToFirst = List((secondNodePriors.head + secondNodePriors.tail.head / Math.E),
-      (secondNodePriors.head / Math.E + secondNodePriors.tail.head))
+    val messageSecondToFirst = Vector((secondNodePriors.head + secondNodePriors.last / Math.E),
+      (secondNodePriors.head / Math.E + secondNodePriors.last))
 
-    val unnormalizedBeliefsFirstNode: List[Double] = firstNodePriors.zip(messageSecondToFirst).map({ case (p, m) => p * m })
-    val unnormalizedBeliefsSecondNode: List[Double] = secondNodePriors.zip(messageFirstToSecond).map({ case (p, m) => p * m })
+    val unnormalizedBeliefsFirstNode: Vector[Double] = firstNodePriors.zip(messageSecondToFirst).map({ case (p, m) => p * m })
+    val unnormalizedBeliefsSecondNode: Vector[Double] = secondNodePriors.zip(messageFirstToSecond).map({ case (p, m) => p * m })
 
     val expectedFirstNodePosteriors = unnormalizedBeliefsFirstNode.map(x => x / (unnormalizedBeliefsFirstNode.reduce(_ + _)))
     val expectedSecondNodePosteriors = unnormalizedBeliefsSecondNode.map(x => x / (unnormalizedBeliefsSecondNode.reduce(_ + _)))
 
-    expectedFirstNodePosteriors shouldEqual List(0.5078674222109657d, 0.4921325777890343d)
-    expectedSecondNodePosteriors shouldEqual List(0.3403080027827025d, 0.6596919972172975d)
+    expectedFirstNodePosteriors shouldEqual Vector(0.5078674222109657d, 0.4921325777890343d)
+    expectedSecondNodePosteriors shouldEqual Vector(0.3403080027827025d, 0.6596919972172975d)
 
-    val priors: Map[Long, List[Double]] = Map(1.toLong -> firstNodePriors,
+    val priors: Map[Long, Vector[Double]] = Map(1.toLong -> firstNodePriors,
       2.toLong -> secondNodePriors)
 
-    val expectedPosteriors: Map[Long, List[Double]] = Map(1.toLong -> expectedFirstNodePosteriors,
+    val expectedPosteriors: Map[Long, Vector[Double]] = Map(1.toLong -> expectedFirstNodePosteriors,
       2.toLong -> expectedSecondNodePosteriors)
 
     //  directed edge list is made bidirectional with a flatmap

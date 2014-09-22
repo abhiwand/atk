@@ -35,7 +35,7 @@ class DegenerateCasesTest extends FlatSpec with Matchers with TestingSparkContex
 
     val vertexSet: Set[Long] = Set()
 
-    val pdfValues: Map[Long, List[Double]] = Map()
+    val pdfValues: Map[Long, Vector[Double]] = Map()
 
     //  directed edge list is made bidirectional with a flatmap
 
@@ -89,7 +89,7 @@ class DegenerateCasesTest extends FlatSpec with Matchers with TestingSparkContex
 
     val vertexSet: Set[Long] = Set(1)
 
-    val pdfValues: Map[Long, List[Double]] = Map(1.toLong -> List(0.550d, 0.45d))
+    val pdfValues: Map[Long, Vector[Double]] = Map(1.toLong -> Vector(0.550d, 0.45d))
 
     //  directed edge list is made bidirectional with a flatmap
 
@@ -143,8 +143,8 @@ class DegenerateCasesTest extends FlatSpec with Matchers with TestingSparkContex
 
     val vertexSet: Set[Long] = Set(1, 2)
 
-    val pdfValues: Map[Long, List[Double]] = Map(1.toLong -> List(1.0d, 0.0d),
-      2.toLong -> List(0.1d, 0.9d))
+    val pdfValues: Map[Long, Vector[Double]] = Map(1.toLong -> Vector(1.0d, 0.0d),
+      2.toLong -> Vector(0.1d, 0.9d))
 
     //  directed edge list is made bidirectional with a flatmap
 
