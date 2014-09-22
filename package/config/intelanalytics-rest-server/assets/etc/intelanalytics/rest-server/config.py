@@ -1,3 +1,4 @@
+#!/usr/bin/python
 ##############################################################################
 # INTEL CONFIDENTIAL
 #
@@ -68,10 +69,11 @@ from cm_api.api_client import ApiResource
 from cm_api.endpoints import hosts
 from cm_api.endpoints import role_config_groups
 from subprocess import call
-import re, time, argparse
+from os import system
+import hashlib, re, time, argparse, os, time, sys
 
 parser = argparse.ArgumentParser(description="Process cl arguments to avoid prompts in automation")
-parser.add_argument("--host", type=str, help="Clouder Manager Host")
+parser.add_argument("--host", type=str, help="Cloudera Manager Host")
 parser.add_argument("--port", type=int, help="Cloudera Manager Port")
 parser.add_argument("--username", type=str, help="Cloudera Manager User Name")
 parser.add_argument("--password", type=str, help="Cloudera Manager Password")
@@ -83,10 +85,15 @@ parser.add_argument("--db-port", type=str, help="Database port number")
 parser.add_argument("--db", type=str, help="Database name")
 parser.add_argument("--db-username", type=str, help="Database username")
 parser.add_argument("--db-password", type=str, help="Database password")
+parser.add_argument("--db-skip-reconfig", type=str, help="Should i skip database re-configuration? 'yes' to skip.")
 args = parser.parse_args()
 
 LIB_PATH = "/usr/lib/intelanalytics/graphbuilder/lib/ispark-deps.jar"
 IAUSER = "iauser"
+IA_LOG_PATH = "/var/log/intelanalytics/rest-server/output.log"
+IA_START_WAIT_LOOPS = 10
+IA_START_WAIT = 2
+POSTGRES_WAIT = 3
 
 
 def user_info_prompt(message, default):
@@ -97,7 +104,7 @@ def user_info_prompt(message, default):
     :param default: the fallback value if the user doesn't give any input
     :return: either the default or whatever the user entered
     """
-    response = raw_input(message)
+    response = raw_input(message).strip()
     if response == "" or response is None:
         response = default
     return response
@@ -112,7 +119,7 @@ def get_arg(question, default, arg):
     :param arg: the parsed argument from the command line
     :return: argument if it exist, user input, or the default value
     """
-    return user_info_prompt(question + " defaults to '" + str(default) + "' if nothing is entered: ", default) \
+    return user_info_prompt(question + " defaults to \"" + str(default) + "\" if nothing is entered: ", default) \
         if arg is None else arg
 
 def get_python_exec():
@@ -285,14 +292,16 @@ def poll_commands(service, command_name):
     while active:
         time.sleep(1)
         print " . ",
+        sys.stdout.flush()
         commands = service.get_commands(view="full")
         if commands:
             for c in commands:
                 if c.name == command_name:
-                    active = c.active
+                    active = c.active	
                     break
         else:
             break
+    print "\n"
 
 
 def deploy_config(service, roles):
@@ -454,25 +463,200 @@ def get_spark_details(services):
 
     return spark_master_role_hostnames, spark_config_executor_total_max_heapsize, spark_config_master_port
 
+def get_old_db_details():
+    """
+    Get the old database settings if we have any. We need to look for any existing db settings to make sure we don't
+    wipe anything out if we don't have too. If we do wipe out the old settings it might cause some problems with users
+    since everyone will have to recreate all their frames and graphs.
+    prompt the user to skip DB configuration if we have current settings.
+    :return: all the db connection info and skip status
+    """
+    host = "localhost"
+    port = "5432"
+    database = "ia_metastore"
+    username = "iauser"
+    password = "myPassword"
+    skip = "yes"
+    
+    #look for an old application.conf and see if we have any old db configs
+    try:
+        application_conf = open("application.conf")
+        application_conf_text = application_conf.read()
+        application_conf.close()
+
+        matches =  re.search(r'metastore.connection-postgresql.host = "(?P<host>.*)"', application_conf_text)
+        host = matches.group('host')
+        matches =  re.search(r'metastore.connection-postgresql.port = "(?P<port>.*)"', application_conf_text)
+        port = matches.group('port')
+        matches =  re.search(r'metastore.connection-postgresql.database = "(?P<database>.*)"', application_conf_text)
+        database = matches.group('database')
+        matches =  re.search(r'metastore.connection-postgresql.username = "(?P<username>.*)"', application_conf_text)
+        username = matches.group('username')
+        matches =  re.search(r'metastore.connection-postgresql.password = "(?P<password>.*)"', application_conf_text)
+        password = matches.group('password')
+
+        if matches:
+            skip = get_arg("We detected an existing database configuration. "
+                           "\n Do you want to skip the database configuration and use the existing database settings"
+                           "\n or continue with the database configuration replacing what you currently have?"
+                           "\n Answer 'yes' to skip the database re-configuration.","yes" , args.db_skip_reconfig)
+
+        return host, port, database, username, password, skip
+    except IOError:
+        skip = "no"
+        return host, port, database, username, password, skip
+
+def set_db_user_access(db_username):
+    """
+    set the postgres user access in pg_hba.conf file. We will only ever set localhost access. More open permissions
+    will have to be updated by a system admin. The access ip rights gets appended to the top of the postgres conf
+    file. repeated calls will keep appending to the same file.
+
+    :param db_username: the database username
+    """
+    #update pg_hba conf file with user entry will only ever be for local host
+    print "Configuring postgres access for  \"" + db_username + "\" "
+    pg_hba = open("/var/lib/pgsql/data/pg_hba.conf", 'r+')
+    pg_hba_text = pg_hba.read()
+    pg_hba.seek(0)
+    pg_hba.write("host    all         " + db_username + "      127.0.0.1/32            md5 \n" + pg_hba_text)
+    pg_hba.close()
+
+def create_db_user(db_username, db_password):
+    """
+    create the postgres user and set his password. Will do a OS system call to the postgres psql command to create the
+    user.
+
+    :param db_username: the  user name that will eventually own the database
+    :param db_password: the password for the user
+
+    """
+    print system("su -c \"echo \\\"create user " + db_username +
+                 " with createdb encrypted password '" + db_password + "';\\\" | psql \"  postgres")
+
+def create_db(db, db_username):
+    """
+    Create the database and make db_username the owner. Does a system call to the postgres psql command to create the
+    database
+
+    :param db: the name of the database
+    :param db_username: the postgres user that will own the database
+
+    """
+    print system("su -c \"echo \\\"create database " + db + " with owner " + db_username + ";\\\" | psql \"  postgres")
+
+def create_IA_meatauser(db):
+    """
+    Once postgres is configured and the IA server has been restarted we need to add the test user to so authentication
+    will work in IA. Does a psql to set the record
+
+    :param db: the database we will be inserting the record into
+
+    """
+    print system("su -c \" echo \\\" \c " + db +
+                 "; \\\\\\\\\  insert into users (username, api_key, created_on, modified_on) "
+                 "values( 'metastore', 'test_api_key_1', now(), now() );\\\" | psql \" postgres ")
+
+
+def restart_db():
+    """
+    We need to restart the postgres server for the access updates to pg_hba.conf take affect. I sleep right after to
+    give the service some time to come up
+
+    :return:
+    """
+    print system("service postgresql  restart ")
+    time.sleep(POSTGRES_WAIT)
+
+def get_IA_log():
+    """
+    Open the output.log and save the contents to memory. Will be used monitor the IA server restart status.
+    :return:
+    """
+    output_log = open(IA_LOG_PATH)
+    output_log_text = output_log.read()
+    output_log.close()
+    return output_log_text
+
+def restart_IA():
+    """
+    Send the linux service command to restart intelanalytics server and read the output.log file to see when the server
+    has been restarted.
+    :return:
+    """
+    #Truncate the IA log so we can detect a new 'Bound to' message which would let us know the server is up
+    output_log = open(IA_LOG_PATH, "w")
+    output_log.write("")
+    output_log.close()
+
+    #restart IA
+    print system("service intelanalytics restart ")
+
+    print "Waiting for Intel Analytics server to restart"
+
+    output_log_text = get_IA_log()
+    count = 0
+    #When we get the Bount to message the server has finished restarting
+    while re.search("Bound to.*:.*", output_log_text) is None:
+        print " . ",
+        sys.stdout.flush()
+        time.sleep(IA_START_WAIT)
+
+        output_log_text = get_IA_log()
+
+        count += 1
+        if count > IA_START_WAIT_LOOPS:
+            print "Intel Analytics Rest server didn't restart"
+            exit(1)
+
+    print "\n"
+
 def get_db_details():
+    """
+    Will ask the user for all the database connection details or will skip database configuration and use the previous
+    settings found in the existing application.conf
+    :return:
+    """
+    host, port, database, username, password, skip = get_old_db_details()
+    
+    if skip == "yes":
+        print "Skipping database configuration"
+        db_host = host
+        db_port = port
+        db = database
+        db_username = username
+        db_password = password
+    else: 
+        db_host = get_arg("What is the hostname of the database server?", host, args.db_host)
+        db_port = get_arg("What is the port of the database server?", port, args.db_port)
+        db = get_arg("What is the name of the database?", database, args.db)
+        db_username = get_arg("What is the database user name?", username, args.db_username)
+        #create a random password to use as our default
+        if password == "myPassword":
+            #create randomly generated hashed password
+            password = hashlib.sha1(os.urandom(32).encode('base_64')).digest().encode('base_64').strip()
+        db_password = get_arg("What is the database password? The default password was randomly generated.", password, args.db_password)
 
-    print args
-    db_host = get_arg("What is the database hostname?", "localhost", args.db_host)
-    db_port = get_arg("What is the database hostname?", "5432", args.db_port)
-    db = get_arg("What is the database name?", "ia-metastore", args.db)
-    db_username = get_arg("What is the database name?", "ia-metastore", args.db_username)
-    db_password = get_arg("What is the database name?", "somerandomtext", args.db_password)
+        #hard code pass and username till db config issues gets fixed TRIB-3737
+        db_username = "metastore"
+        db_password = "Tribeca123"
 
-    print os.urandom(32)
-    #create postgres user with password
-    #create postgres database
-    #update /var/lib/pgsql/data/pg_hba.conf
-    print call(["ls", "-l"])
+        set_db_user_access(db_username)
 
+        create_db_user(db_username, db_password)
 
+        create_db(db, db_username)
+
+        restart_db()
+
+        restart_IA()
+
+        create_IA_meatauser(db)
+
+    return db_host, db_port, db, db_username, db_password
 
 def create_intel_analytics_config( hdfs_host_name, hdfs_namenode_port, zookeeper_host_names, zookeeper_client_port,
-                                   spark_master_host, spark_master_port, spark_worker_memory, python_exec):
+                                   spark_master_host, spark_master_port, spark_worker_memory, python_exec, db_host, db_port, db, db_username, db_password):
     """
     create a new application.conf file from the tempalte
 
@@ -508,6 +692,13 @@ def create_intel_analytics_config( hdfs_host_name, hdfs_namenode_port, zookeeper
 
     #set python exec
     config_tpl_text = re.sub(r'[/]*python-worker-exec = .*', 'python-worker-exec = "' + python_exec + '"', config_tpl_text)
+
+    #set db configuration
+    config_tpl_text = re.sub(r'[/]*metastore.connection-postgresql.host = .*', 'metastore.connection-postgresql.host = "' + db_host + '"', config_tpl_text)
+    config_tpl_text = re.sub(r'[/]*metastore.connection-postgresql.port = .*', 'metastore.connection-postgresql.port = "' + db_port + '"', config_tpl_text)
+    config_tpl_text = re.sub(r'[/]*metastore.connection-postgresql.database = .*', 'metastore.connection-postgresql.database = "' + db + '"', config_tpl_text)
+    config_tpl_text = re.sub(r'[/]*metastore.connection-postgresql.username = .*', 'metastore.connection-postgresql.username = "' + db_username + '"', config_tpl_text)
+    config_tpl_text = re.sub(r'[/]*metastore.connection-postgresql.password = .*', 'metastore.connection-postgresql.password = "' + db_password + '"', config_tpl_text)
 
     print "Writing application.conf"
     config = open(config_file_path, "w")
@@ -568,12 +759,12 @@ if cluster:
     #get python exec
     python_exec = get_python_exec()
 
-    get_db_details()
+    db_host, db_port, db, db_username, db_password = get_db_details()
 
     #write changes to our config
     create_intel_analytics_config(hdfs_namenode_role_host_names, hdfs_namenode_port, zookeeper_server_role_host_names,
                                   zookeeper_client_port, spark_master_role_host_names, spark_config_master_port,
-                                  spark_config_executor_total_max_heapsize, python_exec)
+                                  spark_config_executor_total_max_heapsize, python_exec, db_host, db_port, db, db_username, db_password)
 else:
     print "No cluster selected"
     exit(1)
