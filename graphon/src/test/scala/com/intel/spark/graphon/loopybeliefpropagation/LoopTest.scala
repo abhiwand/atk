@@ -24,8 +24,8 @@ class LoopTest extends FlatSpec with Matchers with TestingSparkContextFlatSpec {
 
     val vertexSet: Set[Long] = Set(1, 2, 3)
 
-    val pdfValues: Map[Long, List[Double]] = Map(1.toLong -> List(0.5d, 0.5d),
-      2.toLong -> List(0.5d, 0.5d), 3.toLong -> List(0.5d, 0.5d))
+    val pdfValues: Map[Long, Vector[Double]] = Map(1.toLong -> Vector(0.5d, 0.5d),
+      2.toLong -> Vector(0.5d, 0.5d), 3.toLong -> Vector(0.5d, 0.5d))
 
     //  directed edge list is made bidirectional with a flatmap
 
@@ -80,8 +80,8 @@ class LoopTest extends FlatSpec with Matchers with TestingSparkContextFlatSpec {
 
     val vertexSet: Set[Long] = Set(1, 2, 3, 4)
 
-    val pdfValues: Map[Long, List[Double]] = Map(1.toLong -> List(0.5d, 0.5d),
-      2.toLong -> List(0.5d, 0.5d), 3.toLong -> List(0.5d, 0.5d), 4.toLong -> List(0.5d, 0.5d))
+    val pdfValues: Map[Long, Vector[Double]] = Map(1.toLong -> Vector(0.5d, 0.5d),
+      2.toLong -> Vector(0.5d, 0.5d), 3.toLong -> Vector(0.5d, 0.5d), 4.toLong -> Vector(0.5d, 0.5d))
 
     //  directed edge list is made bidirectional with a flatmap
 
