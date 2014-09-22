@@ -38,6 +38,7 @@ import org.apache.hadoop.hbase.HBaseConfiguration
 import org.apache.hadoop.hbase.client.HBaseAdmin
 import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.engine.spark.util.DiskSpaceReporter
+import com.intel.intelanalytics.engine.spark.user.UserStorage
 
 //TODO documentation
 //TODO progress notification
@@ -55,7 +56,7 @@ class SparkComponent extends EngineComponent
   SparkEngineConfig.logSettings()
 
   lazy val engine = new SparkEngine(sparkContextManager,
-    commandExecutor, commands, frames, graphs, queries, queryExecutor, sparkAutoPartitioner, new CommandPluginRegistry(new CommandLoader)) {}
+    commandExecutor, commands, frames, graphs, userStorage, queries, queryExecutor, sparkAutoPartitioner, new CommandPluginRegistry(new CommandLoader)) {}
 
   override lazy val profile = withContext("engine connecting to metastore") {
     Profile.initializeFromConfig(SparkEngineConfig)
@@ -78,6 +79,8 @@ class SparkComponent extends EngineComponent
 
   val graphs: SparkGraphStorage = new SparkGraphStorage(metaStore,
     new SparkGraphHBaseBackend(admin), frames)
+
+  val userStorage = new UserStorage(metaStore.asInstanceOf[SlickMetaStore])
 
   val commands = new SparkCommandStorage(metaStore.asInstanceOf[SlickMetaStore])
 
