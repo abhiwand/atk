@@ -33,17 +33,11 @@ object GraphXLBP {
 
       val oldPosterior = vertexState.posterior
 
-      val priorTimesMessages: Vector[Double] =
-        if (messages.nonEmpty) {
-          VectorMath.product(prior, messages.values.reduce(VectorMath.product(_, _)))
-        }
-        else {
-          prior
-        }
+      val messageValues : List[Vector[Double]] = messages.toList.map({case (k,v) => v})
 
-      // l1 normalization
-      val l1Norm = priorTimesMessages.map(x => Math.abs(x)).reduce(_ + _)
-      val posterior = VectorMath.l1Normalize(priorTimesMessages)
+      val productOfPriorAndMessages: Vector[Double] = VectorMath.overflowProtectedProduct(prior :: messageValues)
+
+      val posterior = VectorMath.l1Normalize(productOfPriorAndMessages)
 
       val delta = posterior.zip(oldPosterior).map({ case (x, y) => Math.abs(x - y) }).reduce(_ + _)
 
@@ -59,13 +53,10 @@ object GraphXLBP {
       val stateRange = (0 to nStates - 1).toVector
 
       val messagesNotFromDestination = messages - destination
+      val messagesNotFromDestinationValues : List[Vector[Double]] =
+        messagesNotFromDestination.map({case (k,v) => v}).toList
 
-      val reducedMessages = if (messagesNotFromDestination.nonEmpty) {
-        VectorMath.product(prior, messagesNotFromDestination.values.reduce(VectorMath.product(_, _)))
-      }
-      else {
-        prior
-      }
+      val reducedMessages = VectorMath.overflowProtectedProduct(prior :: messagesNotFromDestinationValues)
 
       val statesUNPosteriors = stateRange.zip(reducedMessages)
 

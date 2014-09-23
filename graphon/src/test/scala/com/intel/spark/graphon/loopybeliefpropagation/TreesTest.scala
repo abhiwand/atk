@@ -5,6 +5,7 @@ import org.apache.spark.rdd.RDD
 import org.scalatest.{ Matchers, FlatSpec }
 import com.intel.testutils.TestingSparkContextFlatSpec
 import com.intel.graphbuilder.elements.{ Property, Vertex => GBVertex, Edge => GBEdge }
+import com.intel.spark.graphon.testutils.ApproximateVertexEquality
 
 /**
  * For graphs that are trees, belief propagation is known to converge to the exact solution with a number of iterations
@@ -22,6 +23,8 @@ class TreesTest extends FlatSpec with Matchers with TestingSparkContextFlatSpec 
     val edgeLabel = "label"
     val inputPropertyName = "input_property_name"
     val propertyForLBPOutput = "LBP_VALUE"
+
+    val floatingPointEqualityThreshold : Double = 0.000000001d
 
   }
 
@@ -91,11 +94,11 @@ class TreesTest extends FlatSpec with Matchers with TestingSparkContextFlatSpec 
 
     // calculate expected posteriors
 
-    val expectedPosterior1 = VectorMath.l1Normalize(VectorMath.product(firstNodePriors, message3to1))
-    val expectedPosterior2 = VectorMath.l1Normalize(VectorMath.product(secondNodePriors, message3to2))
-    val expectedPosterior3 = VectorMath.l1Normalize(VectorMath.product(List(thirdNodePriors, message1to3, message2to3, message4to3)))
-    val expectedPosterior4 = VectorMath.l1Normalize(VectorMath.product(List(fourthNodePriors, message3to4, message5to4)))
-    val expectedPosterior5 = VectorMath.l1Normalize(VectorMath.product(fifthNodePriors, message4to5))
+    val expectedPosterior1 = VectorMath.l1Normalize(VectorMath.overflowProtectedProduct(firstNodePriors, message3to1))
+    val expectedPosterior2 = VectorMath.l1Normalize(VectorMath.overflowProtectedProduct(secondNodePriors, message3to2))
+    val expectedPosterior3 = VectorMath.l1Normalize(VectorMath.overflowProtectedProduct(List(thirdNodePriors, message1to3, message2to3, message4to3)))
+    val expectedPosterior4 = VectorMath.l1Normalize(VectorMath.overflowProtectedProduct(List(fourthNodePriors, message3to4, message5to4)))
+    val expectedPosterior5 = VectorMath.l1Normalize(VectorMath.overflowProtectedProduct(fifthNodePriors, message4to5))
 
     val expectedPosteriors: Map[Long, Vector[Double]] = Map(1.toLong -> expectedPosterior1, 2.toLong -> expectedPosterior2,
       3.toLong -> expectedPosterior3, 4.toLong -> expectedPosterior4, 5.toLong -> expectedPosterior5)
@@ -136,17 +139,15 @@ class TreesTest extends FlatSpec with Matchers with TestingSparkContextFlatSpec 
 
     val (verticesOut, edgesOut, log) = LbpRunner.runLbp(verticesIn, edgesIn, args)
 
-    val testEdges = edgesOut.collect().toSet
-    testEdges shouldBe expectedEdgesOut
-
     val testVertices = verticesOut.collect().toSet
-    val testIdsToPosteriors = testVertices.map({ case gbVertex: GBVertex => (gbVertex.physicalId.asInstanceOf[Long] -> gbVertex.getProperty(propertyForLBPOutput).get) }).toMap
+    val testEdges = edgesOut.collect().toSet
 
-    def closePDFs(v1: Vector[Double], v2: Vector[Double]): Boolean = {
-      v1.zip(v2).forall({ case (x, y) => Math.abs(x - y) < 0.00000001 })
-    }
-    val test = testIdsToPosteriors.forall({ case (key, posterior) => closePDFs(expectedPosteriors.get(key).get, posterior.value.asInstanceOf[Vector[Double]]) })
+    val test = ApproximateVertexEquality.equalsApproximateAtProperty(testVertices,
+      expectedVerticesOut,
+      propertyForLBPOutput,
+      floatingPointEqualityThreshold)
 
     test shouldBe true
+    testEdges shouldBe expectedEdgesOut
   }
 }

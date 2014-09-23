@@ -5,6 +5,7 @@ import org.apache.spark.rdd.RDD
 import org.scalatest.{ Matchers, FlatSpec }
 import com.intel.testutils.TestingSparkContextFlatSpec
 import com.intel.graphbuilder.elements.{ Property, Vertex => GBVertex, Edge => GBEdge }
+import com.intel.spark.graphon.testutils.ApproximateVertexEquality
 
 /**
  * These tests validate loopy belief propagation on two node graphs.
@@ -21,6 +22,8 @@ class TwoNodeTest extends FlatSpec with Matchers with TestingSparkContextFlatSpe
     val edgeLabel = "label"
     val inputPropertyName = "input_property_name"
     val propertyForLBPOutput = "LBP_VALUE"
+
+    val floatingPointEqualityThreshold : Double = 0.000000001d
 
   }
 
@@ -74,7 +77,12 @@ class TwoNodeTest extends FlatSpec with Matchers with TestingSparkContextFlatSpe
     val testVertices = verticesOut.collect().toSet
     val testEdges = edgesOut.collect().toSet
 
-    testVertices shouldEqual expectedVerticesOut
+    val test = ApproximateVertexEquality.equalsApproximateAtProperty(testVertices,
+      expectedVerticesOut,
+      propertyForLBPOutput,
+      floatingPointEqualityThreshold)
+
+    test shouldBe true
     testEdges shouldBe expectedEdgesOut
 
   }
@@ -132,7 +140,12 @@ class TwoNodeTest extends FlatSpec with Matchers with TestingSparkContextFlatSpe
     val testVertices = verticesOut.collect().toSet
     val testEdges = edgesOut.collect().toSet
 
-    testVertices shouldEqual expectedVerticesOut
+    val test = ApproximateVertexEquality.equalsApproximateAtProperty(testVertices,
+      expectedVerticesOut,
+      propertyForLBPOutput,
+      floatingPointEqualityThreshold)
+
+    test shouldBe true
     testEdges shouldBe expectedEdgesOut
 
   }
@@ -190,7 +203,12 @@ class TwoNodeTest extends FlatSpec with Matchers with TestingSparkContextFlatSpe
     val testVertices = verticesOut.collect().toSet
     val testEdges = edgesOut.collect().toSet
 
-    testVertices shouldEqual expectedVerticesOut
+    val test = ApproximateVertexEquality.equalsApproximateAtProperty(testVertices,
+      expectedVerticesOut,
+      propertyForLBPOutput,
+      floatingPointEqualityThreshold)
+
+    test shouldBe true
     testEdges shouldBe expectedEdgesOut
 
   }
@@ -266,7 +284,12 @@ class TwoNodeTest extends FlatSpec with Matchers with TestingSparkContextFlatSpe
     val testVertices = verticesOut.collect().toSet
     val testEdges = edgesOut.collect().toSet
 
-    testVertices shouldEqual expectedVerticesOut
+    val test = ApproximateVertexEquality.equalsApproximateAtProperty(testVertices,
+      expectedVerticesOut,
+      propertyForLBPOutput,
+      floatingPointEqualityThreshold)
+
+    test shouldBe true
     testEdges shouldBe expectedEdgesOut
 
   }
