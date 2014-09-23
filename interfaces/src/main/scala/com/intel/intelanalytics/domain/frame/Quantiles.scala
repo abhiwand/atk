@@ -29,4 +29,4 @@ package com.intel.intelanalytics.domain.frame
  * @param quantiles the percentiles to calculate value for
  * @param columnName name of the column to find percentiles
  */
-case class Quantiles(frameId: Long, quantiles: List[Double], columnName: String)
+case class Quantiles(frameId: FrameReference, quantiles: List[Double], columnName: String)
