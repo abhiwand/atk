@@ -245,25 +245,6 @@ class FrameBackendRest(object):
             sys.stderr.write("There were parse errors during load, please see frame.get_error_frame()\n")
             logger.warn("There were parse errors during load, please see frame.get_error_frame()")
 
-    def quantiles(self, frame, column_name, quantiles):
-        if isinstance(quantiles, int) or isinstance(quantiles, float) or isinstance(quantiles, long):
-            quantiles = [quantiles]
-
-        invalid_quantiles = []
-        for p in quantiles:
-            if p > 100 or p < 0:
-                invalid_quantiles.append(str(p))
-
-        if len(invalid_quantiles) > 0:
-            raise ValueError("Invalid number for quantile:" + ','.join(invalid_quantiles))
-
-        arguments = {'frame_id': frame._id, "column_name": column_name, "quantiles": quantiles}
-        quantiles_result = get_command_output('quantiles', arguments).get('quantiles')
-        result_dict = {}
-        for p in quantiles_result:
-            result_dict[p.get("quantile")] = p.get("value")
-        return result_dict
-
     def drop(self, frame, predicate):
         from itertools import ifilterfalse  # use the REST API filter, with a ifilterfalse iterator
         http_ready_function = prepare_row_function(frame, predicate, ifilterfalse)

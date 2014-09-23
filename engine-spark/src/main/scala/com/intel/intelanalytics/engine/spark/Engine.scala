@@ -1380,9 +1380,10 @@ class SparkEngine(sparkContextManager: SparkContextManager,
         |
         |Parameters
         |----------
+        |quantiles : float OR list of float
         |column_name : str
         |    The column to calculate quantile
-        |quantiles : float OR list of float.
+        |
         |
         |Returns
         |-------
@@ -1423,15 +1424,15 @@ class SparkEngine(sparkContextManager: SparkContextManager,
 
   def quantilesSimple(quantiles: Quantiles, user: UserPrincipal, invocation: SparkInvocation): QuantileValues = {
     implicit val u = user
-    val frameId: Long = quantiles.frameId
+    val frameId: FrameReference = quantiles.frameId
     val ctx = invocation.sparkContext
 
-    val realFrame: DataFrame = getDataFrameById(frameId)
+    val realFrame: DataFrame = getDataFrameById(frameId.id)
     val frameSchema = realFrame.schema
     val columnIndex = frameSchema.columnIndex(quantiles.columnName)
     val columnDataType = frameSchema.columnDataType(quantiles.columnName)
 
-    val rdd = frames.loadFrameRdd(ctx, frameId)
+    val rdd = frames.loadFrameRdd(ctx, frameId.id)
     val quantileValues = SparkOps.quantiles(rdd, quantiles.quantiles, columnIndex, columnDataType).toList
     QuantileValues(quantileValues)
   }
