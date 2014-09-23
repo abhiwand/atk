@@ -105,18 +105,18 @@ object DomainJsonProtocol extends IADefaultJsonProtocol {
     }
   }
 
-  class ReferenceFormat[T <: UriReference](entity: String)
+  class ReferenceFormat[T <: UriReference](entity: Entity)
       extends JsonFormat[T] {
     override def write(obj: T): JsValue = JsString(obj.uri)
 
     override def read(json: JsValue): T = json match {
-      case JsString(name) =>ReferenceResolver.resolve(name)
-      case JsNumber(n) => ReferenceResolver.resolve(s"ia://$entity/$n")
-      case _ => deserializationError(s"Expected $name URL, but received " + json)
+      case JsString(name) => ReferenceResolver.resolve(name).asInstanceOf[T]
+      case JsNumber(n) => ReferenceResolver.resolve(s"ia://${entity.name.plural}/$n").asInstanceOf[T]
+      case _ => deserializationError(s"Expected valid ${entity.name.plural} URI, but received " + json)
     }
   }
 
-  implicit val frameReferenceFormat = new ReferenceFormat[FrameReference]("dataframes", "frame", n => FrameReference(n))
+  implicit val frameReferenceFormat = new ReferenceFormat[FrameReference](FrameReference)
   implicit val userFormat = jsonFormat5(User)
   implicit val statusFormat = jsonFormat5(Status)
   implicit val dataFrameTemplateFormat = jsonFormat2(DataFrameTemplate)
@@ -186,7 +186,7 @@ object DomainJsonProtocol extends IADefaultJsonProtocol {
   implicit val commandActionFormat = jsonFormat1(CommandPost)
 
   // graph service formats
-  implicit val graphReferenceFormat = new ReferenceFormat[GraphReference]("graphs", "graph", n => GraphReference(n))
+  implicit val graphReferenceFormat = new ReferenceFormat[GraphReference](GraphReference)
   implicit val graphTemplateFormat = jsonFormat1(GraphTemplate)
   implicit val graphRenameFormat = jsonFormat2(RenameGraph)
 
@@ -282,7 +282,7 @@ object DomainJsonProtocol extends IADefaultJsonProtocol {
   lazy implicit val commandDefinitionFormat = jsonFormat4(CommandDefinition)
 
   implicit object dataFrameFormat extends JsonFormat[DataFrame] {
-    implicit val dataFrameFormatOriginal = jsonFormat13(DataFrame)
+    implicit val dataFrameFormatOriginal = jsonFormat17(DataFrame)
 
     override def read(value: JsValue): DataFrame = {
       dataFrameFormatOriginal.read(value)

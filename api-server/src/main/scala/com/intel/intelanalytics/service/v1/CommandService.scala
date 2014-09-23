@@ -203,7 +203,7 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
       & validate(idOpt.isDefined, "Destination is not a valid data frame URL")) {
         val args = test.get
         val id = idOpt.get
-        val exec = engine.load(Load(FrameReference(id), args.source.source_type match {
+        val exec = engine.load(Load(FrameReference(id, Some(true)), args.source.source_type match {
           case "dataframe" => {
             val dataID = UrlParser.getFrameId(args.source.uri)
             validate(dataID.isDefined, "Source is not a valid data frame URL")

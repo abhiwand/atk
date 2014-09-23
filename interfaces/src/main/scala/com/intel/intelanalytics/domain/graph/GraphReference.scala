@@ -23,6 +23,30 @@
 
 package com.intel.intelanalytics.domain.graph
 
-import com.intel.intelanalytics.domain.HasId
+import com.intel.intelanalytics.domain.{ ReferenceResolver, UriReference, Entity, EntityName }
 
-case class GraphReference(id: Long) extends HasId
+class GraphReference(graphId: Long, graphExists: Option[Boolean] = None) extends UriReference {
+  /** The entity type */
+  override def entity: Entity = GraphReference
+
+  /** The entity id */
+  override def id: Long = graphId
+
+  /**
+   * Is this reference known to be valid at the time it was created?
+   *
+   * None indicates this is unknown.
+   */
+  override def exists: Option[Boolean] = graphExists
+
+}
+
+object GraphReference extends Entity {
+
+  //Default resolver that simply creates a reference, with no guarantee that it is valid.
+  ReferenceResolver.register(this, id => GraphReference(id, None))
+
+  def name = EntityName("graph", "graphs")
+
+  def apply(graphId: Long, graphExists: Option[Boolean] = None) = new GraphReference(graphId, graphExists)
+}

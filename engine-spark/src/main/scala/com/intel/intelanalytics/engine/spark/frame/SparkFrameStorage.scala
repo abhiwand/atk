@@ -24,27 +24,16 @@
 package com.intel.intelanalytics.engine.spark.frame
 
 import com.intel.intelanalytics.component.ClassLoaderAware
-import com.intel.intelanalytics.engine._
+import com.intel.intelanalytics.domain.frame.{ DataFrame, DataFrameTemplate }
 import com.intel.intelanalytics.domain.schema.DataTypes
-import DataTypes.DataType
-import java.nio.file.Paths
-import com.intel.intelanalytics.shared.EventLogging
-
-import scala.io.Codec
-import org.apache.spark.rdd.RDD
+import com.intel.intelanalytics.domain.schema.DataTypes.DataType
+import com.intel.intelanalytics.engine.{ FrameStorage, _ }
 import com.intel.intelanalytics.engine.spark._
-import org.apache.spark.SparkContext
-import scala.util.matching.Regex
-import java.util.concurrent.atomic.AtomicLong
-import com.intel.intelanalytics.domain.frame.Column
-import com.intel.intelanalytics.engine.FrameStorage
-import com.intel.intelanalytics.repository.{ SlickMetaStoreComponent, MetaStoreComponent }
-import com.intel.intelanalytics.engine.plugin.Invocation
-import scala.Some
-import com.intel.intelanalytics.domain.frame.DataFrameTemplate
+import com.intel.intelanalytics.repository.SlickMetaStoreComponent
 import com.intel.intelanalytics.security.UserPrincipal
-import com.intel.intelanalytics.domain.frame.DataFrame
-import com.intel.intelanalytics.engine.spark.plugin.SparkInvocation
+import com.intel.intelanalytics.shared.EventLogging
+import org.apache.spark.SparkContext
+import org.apache.spark.rdd.RDD
 
 class SparkFrameStorage(frameFileStorage: FrameFileStorage,
                         maxRows: Int,
@@ -53,7 +42,7 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
                         getContext: (UserPrincipal) => SparkContext)
     extends FrameStorage with EventLogging with ClassLoaderAware {
 
-  import Rows.Row
+  import com.intel.intelanalytics.engine.Rows.Row
 
   /**
    * Create a FrameRDD or throw an exception if bad frameId is given
@@ -73,15 +62,14 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
    * @param frame the model for the frame
    * @return the newly created FrameRDD
    */
-  def loadFrameRdd(ctx: SparkContext, frame: DataFrame): FrameRDD = {
-    if (frame.revision == 0) {
+  def loadFrameRdd(ctx: SparkContext, frame: DataFrame): FrameRDD = frame.storageFormat match {
+    case None =>
       new FrameRDD(frame.schema, ctx.parallelize[Row](Nil))
-    }
-    else {
+    case Some(format) =>
+      //TODO delegate to format
       val absPath = frameFileStorage.currentFrameRevision(frame)
       val rows = ctx.objectFile[Row](absPath.toString, sparkAutoPartitioner.partitionsForFile(absPath.toString))
       new FrameRDD(frame.schema, rows)
-    }
   }
 
   /**
@@ -92,10 +80,7 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
    */
   def saveFrame(frameEntity: DataFrame, frameRdd: FrameRDD, rowCount: Option[Long] = None): DataFrame = {
 
-    val oldRevision = frameEntity.revision
-    val nextRevision = frameEntity.revision + 1
-
-    val path = frameFileStorage.createFrameRevision(frameEntity, nextRevision)
+    val path = frameFileStorage.createFrameRevision(frameEntity, 0)
 
     frameRdd.saveAsObjectFile(path.toString)
 
@@ -106,13 +91,13 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
             metaStore.frameRepo.updateSchema(frameEntity, frameRdd.schema.columns)
           }
           if (rowCount.isDefined) {
-            metaStore.frameRepo.updateRowCount(frameEntity, rowCount.get)
+            metaStore.frameRepo.updateRowCount(frameEntity, rowCount)
           }
-          metaStore.frameRepo.updateRevision(frameEntity, nextRevision)
         }
     }
 
-    frameFileStorage.deleteFrameRevision(frameEntity, oldRevision)
+    //TODO: Garbage collection
+    // frameFileStorage.deleteFrameRevision(frameEntity, oldRevision)
 
     expectFrame(frameEntity.id)
   }
@@ -170,7 +155,7 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
     metaStore.withSession("frame.updateCount") {
       implicit session =>
         {
-          metaStore.frameRepo.updateRowCount(frame, rowCount)
+          metaStore.frameRepo.updateRowCount(frame, Some(rowCount))
         }
     }
   }

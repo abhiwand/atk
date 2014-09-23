@@ -1,6 +1,6 @@
 package com.intel.intelanalytics.domain
 
-import org.joda.time.{Duration, DateTime}
+import org.joda.time.DateTime
 
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
@@ -56,21 +56,21 @@ trait OnDemand {
    * This is not the time when it was created, it is the time when its value
    * was needed, so computation was forced.
    */
-  def materialized: Option[DateTime]
+  def materializedOn: Option[DateTime]
 
   /**
-   * The length of time that it took to complete the materialization. Will be None
-   * when [[materialized]] is None, and may be None when [[materialized]] is Some,
+   * The date time when materialization completed. Will be None
+   * when [[materializedOn]] is None, and may be None when [[materializedOn]] is Some,
    * which would mean that computation is in progress.
    */
-  def materializationDuration: Option[Duration]
+  def materializationComplete: Option[DateTime]
 
   /**
    * Describes the computation status of this value
    *
    * @see [[ComputeStatus]]
    */
-  def computeStatus: ComputeStatus = (materialized, materializationDuration) match {
+  def computeStatus: ComputeStatus = (materializedOn, materializationComplete) match {
     case (None, _) => Suspended
     case (Some(_), None) => InProgress
     case (Some(_), Some(_)) => Complete

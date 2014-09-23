@@ -23,6 +23,32 @@
 
 package com.intel.intelanalytics.domain.frame
 
-import com.intel.intelanalytics.domain.HasId
+import com.intel.intelanalytics.domain.{ ReferenceResolver, Entity, EntityName, UriReference }
 
-case class FrameReference(id: Long) extends HasId
+class FrameReference(frameId: Long, frameExists: Option[Boolean] = None) extends UriReference {
+
+  /** The entity type */
+  override def entity: Entity = FrameReference
+
+  /** The entity id */
+  override def id: Long = frameId
+
+  /**
+   * Is this reference known to be valid at the time it was created?
+   *
+   * None indicates this is unknown.
+   */
+  override def exists: Option[Boolean] = frameExists
+}
+
+object FrameReference extends Entity {
+
+  //Default resolver that simply creates a reference, with no guarantee that it is valid.
+  ReferenceResolver.register(this, id => FrameReference(id, None))
+
+  def name = EntityName("frame", "frames")
+
+  override def alternatives = Seq(EntityName("dataframe", "dataframes"))
+
+  def apply(frameId: Long, frameExists: Option[Boolean]) = new FrameReference(frameId, frameExists)
+}
