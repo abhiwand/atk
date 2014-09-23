@@ -641,6 +641,20 @@ def get_db_details():
         db_username = "metastore"
         db_password = "Tribeca123"
 
+
+
+    return db_host, db_port, db, db_username, db_password, skip
+
+def set_db_details(db, db_username, db_password, skip):
+    """
+    Update the local hos postgres install. Create the user, database and set network access
+    :param db: database name
+    :param db_username: db user name
+    :param db_password: db password
+    :param skip: weather the user wants to skip db configuration
+
+    """
+    if skip != "yes":
         set_db_user_access(db_username)
 
         create_db_user(db_username, db_password)
@@ -652,8 +666,6 @@ def get_db_details():
         restart_IA()
 
         create_IA_meatauser(db)
-
-    return db_host, db_port, db, db_username, db_password
 
 def create_intel_analytics_config( hdfs_host_name, hdfs_namenode_port, zookeeper_host_names, zookeeper_client_port,
                                    spark_master_host, spark_master_port, spark_worker_memory, python_exec, db_host, db_port, db, db_username, db_password):
@@ -759,12 +771,15 @@ if cluster:
     #get python exec
     python_exec = get_python_exec()
 
-    db_host, db_port, db, db_username, db_password = get_db_details()
+    db_host, db_port, db, db_username, db_password, db_skip = get_db_details()
 
     #write changes to our config
     create_intel_analytics_config(hdfs_namenode_role_host_names, hdfs_namenode_port, zookeeper_server_role_host_names,
                                   zookeeper_client_port, spark_master_role_host_names, spark_config_master_port,
                                   spark_config_executor_total_max_heapsize, python_exec, db_host, db_port, db, db_username, db_password)
+
+    set_db_details(db, db_username, db_password, db_skip)
+
 else:
     print "No cluster selected"
     exit(1)
