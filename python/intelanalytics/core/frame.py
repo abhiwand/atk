@@ -27,9 +27,12 @@ BigFrame
 import logging
 
 logger = logging.getLogger(__name__)
+from intelanalytics.core.api import get_api_decorator
+api = get_api_decorator(logger)
 
 from intelanalytics.core.column import BigColumn
 from intelanalytics.core.errorhandle import IaError
+
 from intelanalytics.core.metaprog import CommandLoadable
 try:
     from intelanalytics.core.autoframe import CommandLoadableBigFrame
@@ -43,10 +46,12 @@ except:
 
 from intelanalytics.core.deprecate import deprecated
 
+
 def _get_backend():
     from intelanalytics.core.config import get_frame_backend
     return get_frame_backend()
 
+@api
 def get_frame_names():
     """
     BigFrame names.
@@ -74,13 +79,10 @@ def get_frame_names():
     .. versionadded:: 0.8
 
     """
-    # TODO - Review docstring
-    try:
-        return _get_backend().get_frame_names()
-    except:
-        raise IaError(logger)
+    return _get_backend().get_frame_names()
 
 
+@api
 def get_frame(name):
     """
     Get BigFrame.
@@ -113,11 +115,7 @@ def get_frame(name):
     .. versionadded:: 0.8
 
     """
-    # TODO - Review docstring
-    try:
-        return _get_backend().get_frame(name)
-    except:
-        raise IaError(logger)
+    return _get_backend().get_frame(name)
 
 
 @deprecated("Use drop_frames(frame).")
@@ -125,6 +123,7 @@ def delete_frame(frame):
     return drop_frames(frame)
 
 
+@api
 def drop_frames(frame):
     """
     Erases data.
@@ -156,10 +155,7 @@ def drop_frames(frame):
     .. versionchanged:: 0.8.5
 
     """
-    try:
-        return _get_backend().delete_frame(frame)
-    except:
-        raise IaError(logger)
+    return _get_backend().delete_frame(frame)
 
 
 class BigFrame(CommandLoadableBigFrame):
@@ -228,11 +224,16 @@ class BigFrame(CommandLoadableBigFrame):
             self._ia_uri = None
             if not hasattr(self, '_backend'):  # if a subclass has not already set the _backend
                 self._backend = _get_backend()
-            new_frame_name = self._backend.create(self, source, name)
             CommandLoadableBigFrame.__init__(self)
+            new_frame_name = self._backend.create(self, source, name)
             logger.info('Created new frame "%s"', new_frame_name)
         except:
-            raise IaError(logger)
+            error = IaError(logger)
+
+
+            raise error
+
+
 
     def __getattr__(self, name):
         """After regular attribute access, try looking up the name of a column.
@@ -320,7 +321,9 @@ class BigFrame(CommandLoadableBigFrame):
     def __hash__(self):
         return hash(self._id)
 
+
     @property
+    @api
     def column_names(self):
         """
         Column names.
@@ -346,12 +349,10 @@ class BigFrame(CommandLoadableBigFrame):
         .. versionadded:: 0.8
 
         """
-        try:
-            return [name for name, data_type in self._backend.get_schema(self)]
-        except:
-            raise IaError(logger)
+        return [name for name, data_type in self._backend.get_schema(self)]
 
     @property
+    @api
     def name(self):
         """
         Frame name.
@@ -378,12 +379,10 @@ class BigFrame(CommandLoadableBigFrame):
         .. versionadded:: 0.8
 
         """
-        try:
-            return self._backend.get_name(self)
-        except:
-            IaError(logger)
+        return self._backend.get_name(self)
 
     @name.setter
+    @api
     def name(self, value):
         """
         Set frame name.
@@ -399,13 +398,10 @@ class BigFrame(CommandLoadableBigFrame):
         .. versionadded:: 0.8
 
         """
-        try:
-            self._backend.rename_frame(self, value)
-        except:
-            raise IaError(logger)
-
+        self._backend.rename_frame(self, value)
 
     @property
+    @api
     def row_count(self):
         """
         Returns number of rows.
@@ -422,25 +418,21 @@ class BigFrame(CommandLoadableBigFrame):
             my_frame.row_count
 
         The result given is::
-
+        
             81734
-
+            
         .. versionadded:: 0.8
-
+        
         """
-        try:
-            return self._backend.get_row_count(self)
-        except:
-            raise IaError(logger)
+        return self._backend.get_row_count(self)
 
     @property
+    @api
     def ia_uri(self):
-        try:
-            return self._backend.get_ia_uri(self)
-        except:
-            raise IaError(logger)
+        return self._backend.get_ia_uri(self)
 
     @property
+    @api
     def schema(self):
         """
         BigFrame schema.
@@ -468,10 +460,7 @@ class BigFrame(CommandLoadableBigFrame):
         .. versionadded:: 0.8
 
         """
-        try:
-            return self._backend.get_schema(self)
-        except:
-            raise IaError(logger)
+        return self._backend.get_schema(self)
 
     @deprecated("Use classification_metrics().")
     def accuracy(self, label_column, pred_column):
@@ -526,6 +515,7 @@ class BigFrame(CommandLoadableBigFrame):
             raise IaError(logger)
 
 
+    @api
     def add_columns(self, func, schema):
         """
         Add column.
@@ -603,11 +593,9 @@ class BigFrame(CommandLoadableBigFrame):
         .. versionadded:: 0.8
 
         """
-        try:
-            self._backend.add_columns(self, func, schema)
-        except:
-            raise IaError(logger)
+        self._backend.add_columns(self, func, schema)
 
+    @api
     def append(self, data):
         """
         Add data.
@@ -641,12 +629,9 @@ class BigFrame(CommandLoadableBigFrame):
         .. versionadded:: 0.8
 
         """
-        # TODO - Review examples
-        try:
-            self._backend.append(self, data)
-        except:
-            raise IaError(logger)
+        self._backend.append(self, data)
 
+    @api
     def bin_column(self, column_name, num_bins, bin_type='equalwidth', bin_column_name='binned'):
         """
         Column values into bins.
@@ -753,15 +738,13 @@ class BigFrame(CommandLoadableBigFrame):
         .. versionadded:: 0.8
 
         """
-        try:
-            return self._backend.bin_column(self, column_name, num_bins, bin_type, bin_column_name)
-        except:
-            raise IaError(logger)
+        return self._backend.bin_column(self, column_name, num_bins, bin_type, bin_column_name)
 
     @deprecated("Use quantiles().")
     def calculate_percentiles(self, column_name, percentiles):
         return self.quantiles(column_name, percentiles)
 
+    @api
     def quantiles(self, column_name, quantiles):
         """
         Calculate quantiles on given column.
@@ -769,8 +752,8 @@ class BigFrame(CommandLoadableBigFrame):
         Parameters
         ----------
         column_name : str
-            The column to calculate quantiles
-        quantiles : int OR list of int. If float is provided, it will be rounded to int
+            The column to calculate quantile
+        quantiles : float OR list of float.
 
         Returns
         -------
@@ -785,15 +768,7 @@ class BigFrame(CommandLoadableBigFrame):
         .. versionchanged:: 0.8.5
 
         """
-        try:
-            quantiles_result = self._backend.quantiles(self, column_name, quantiles).result.get('percentiles')
-            result_dict = {}
-            for p in quantiles_result:
-                result_dict[p.get("quantile")] = p.get("value")
-
-            return result_dict
-        except:
-            raise IaError(logger)
+        return self._backend.quantiles(self, column_name, quantiles)
 
 
     @deprecated("Use classification_metrics().")
@@ -898,23 +873,20 @@ class BigFrame(CommandLoadableBigFrame):
         .. versionchanged:: 0.8.5
 
         """
-        try:
-            if columns is None:
-                column_names = self.column_names  # all columns
-                new_names = None
-            elif isinstance(columns, dict):
-                column_names = columns.keys()
-                new_names = columns.values()
-            elif isinstance(columns, basestring):
-                column_names = [columns]
-                new_names = None
-            else:
-                raise ValueError("bad argument type %s passed to copy().  Must be string or dict" % type(columns))
-            copied_frame = BigFrame()
-            self._backend.project_columns(self, copied_frame, column_names, new_names)
-            return copied_frame
-        except:
-            raise IaError(logger)
+        if columns is None:
+            column_names = self.column_names  # all columns
+            new_names = None
+        elif isinstance(columns, dict):
+            column_names = columns.keys()
+            new_names = columns.values()
+        elif isinstance(columns, basestring):
+            column_names = [columns]
+            new_names = None
+        else:
+            raise ValueError("bad argument type %s passed to copy().  Must be string or dict" % type(columns))
+        copied_frame = BigFrame()
+        self._backend.project_columns(self, copied_frame, column_names, new_names)
+        return copied_frame
 
     @deprecated("Use tally().")
     def cumulative_count(self, sample_col, count_value):
@@ -1106,6 +1078,7 @@ class BigFrame(CommandLoadableBigFrame):
     def drop(self, predicate):
         self.drop_rows(predicate)
 
+    @api
     def drop_rows(self, predicate):
         """
         Drop rows.
@@ -1133,12 +1106,9 @@ class BigFrame(CommandLoadableBigFrame):
         .. versionchanged:: 0.8.5
 
         """
-        # TODO - Review docstring
-        try:
-            self._backend.drop(self, predicate)
-        except:
-            raise IaError(logger)
+        self._backend.drop(self, predicate)
 
+    @api
     def drop_duplicates(self, columns=None):
         """
         Remove duplicates.
@@ -1176,11 +1146,9 @@ class BigFrame(CommandLoadableBigFrame):
         .. versionadded:: 0.8
 
         """
-        try:
-            self._backend.drop_duplicates(self, columns)
-        except:
-            raise IaError(logger)
+        self._backend.drop_duplicates(self, columns)
 
+    @api
     def ecdf(self, sample_col):
         """
         Empirical Cumulative Distribution.
@@ -1225,11 +1193,9 @@ class BigFrame(CommandLoadableBigFrame):
         .. versionadded:: 0.8
 
         """
-        try:
-            return self._backend.ecdf(self, sample_col)
-        except:
-            raise IaError(logger)
+        return self._backend.ecdf(self, sample_col)
 
+    @api
     def filter(self, predicate):
         """
         Select data.
@@ -1257,12 +1223,9 @@ class BigFrame(CommandLoadableBigFrame):
         .. versionadded:: 0.8
 
         """
-        # TODO - Review docstring
-        try:
-            self._backend.filter(self, predicate)
-        except:
-            raise IaError(logger)
+        self._backend.filter(self, predicate)
 
+    @api
     def flatten_column(self, column_name):
         """
         Spread out data.
@@ -1288,11 +1251,7 @@ class BigFrame(CommandLoadableBigFrame):
         .. versionadded:: 0.8
 
         """
-
-        try:
-            return self._backend.flatten_column(self, column_name)
-        except:
-            raise IaError(logger)
+        return self._backend.flatten_column(self, column_name)
 
     @deprecated("Use classification_metrics().")
     def f_measure(self, label_column, pred_column, pos_label='1', beta=1):
@@ -1370,6 +1329,7 @@ class BigFrame(CommandLoadableBigFrame):
         except:
             raise IaError(logger)
 
+    @api
     def get_error_frame(self):
         """
         Frame with errors.
@@ -1383,15 +1343,13 @@ class BigFrame(CommandLoadableBigFrame):
             A new object accessing a frame that contains the parse errors of the currently active BigFrame
             or None if no error frame exists
         """
-        try:
-            return self._backend.get_frame_by_id(self._error_frame_id)
-        except:
-            raise IaError(logger)
+        return self._backend.get_frame_by_id(self._error_frame_id)
 
     @deprecated("use group_by() with an underscore.")
     def groupby(self, group_by_columns, *aggregation_arguments):
         return self.group_by(group_by_columns, *aggregation_arguments)
 
+    @api
     def group_by(self, group_by_columns, *aggregation_arguments):
         """
         Create summarized frame.
@@ -1501,12 +1459,10 @@ class BigFrame(CommandLoadableBigFrame):
         .. versionchanged:: 0.8.5
 
         """
-        try:
-            return self._backend.group_by(self, group_by_columns, aggregation_arguments)
-        except:
-            raise IaError(logger)
+        return self._backend.group_by(self, group_by_columns, aggregation_arguments)
 
 
+    @api
     def inspect(self, n=10, offset=0, columns=None):
         """
         Print data.
@@ -1536,12 +1492,9 @@ class BigFrame(CommandLoadableBigFrame):
         .. versionadded:: 0.8
 
         """
-        # TODO - Review docstring
-        try:
-            return self._backend.inspect(self, n, offset, columns)
-        except:
-            raise IaError(logger)
+        return self._backend.inspect(self, n, offset, columns)
 
+    @api
     def join(self, right, left_on, right_on=None, how='inner'):
         """
         Combine frames.
@@ -1608,10 +1561,7 @@ class BigFrame(CommandLoadableBigFrame):
         .. versionadded:: 0.8
 
         """
-        try:
-            return self._backend.join(self, right, left_on, right_on, how)
-        except:
-            raise IaError(logger)
+        return self._backend.join(self, right, left_on, right_on, how)
 
     @deprecated("Use classification_metrics().")
     def precision(self, label_column, pred_column, pos_label='1'):
@@ -1794,6 +1744,7 @@ class BigFrame(CommandLoadableBigFrame):
     def remove_columns(self, column_names):
         return self.drop_columns(column_names)
 
+    @api
     def rename_columns(self, column_names, new_names=None):
         """
         Rename column.
@@ -1819,11 +1770,9 @@ class BigFrame(CommandLoadableBigFrame):
         .. versionchanged:: 0.8.5
 
         """
-        try:
-            self._backend.rename_columns(self, column_names, new_names)
-        except:
-            raise IaError(logger)
+        self._backend.rename_columns(self, column_names, new_names)
 
+    @api
     def take(self, n, offset=0, columns=None):
         """
         Get data subset.
@@ -1868,9 +1817,5 @@ class BigFrame(CommandLoadableBigFrame):
         .. versionadded:: 0.8
 
         """
-        # TODO - Review and complete docstring
-        try:
-            result = self._backend.take(self, n, offset, columns)
-            return result.data
-        except:
-            raise IaError(logger)
+        result = self._backend.take(self, n, offset, columns)
+        return result.data

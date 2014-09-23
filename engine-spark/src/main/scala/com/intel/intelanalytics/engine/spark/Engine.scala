@@ -104,6 +104,8 @@ import com.intel.intelanalytics.domain.frame.FrameJoin
 import com.intel.intelanalytics.engine.spark.plugin.SparkInvocation
 import com.intel.intelanalytics.domain.query.PagedQueryResult
 import com.intel.intelanalytics.domain.query.QueryDataResult
+import org.apache.commons.lang.StringUtils
+import com.intel.intelanalytics.engine.spark.user.UserStorage
 
 object SparkEngine {
   private val pythonRddDelimiter = "YoMeDelimiter"
@@ -114,6 +116,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
                   commandStorage: CommandStorage,
                   frames: SparkFrameStorage,
                   graphs: SparkGraphStorage,
+                  users: UserStorage,
                   queryStorage: SparkQueryStorage,
                   queries: QueryExecutor,
                   sparkAutoPartitioner: SparkAutoPartitioner,
@@ -196,6 +199,10 @@ class SparkEngine(sparkContextManager: SparkContextManager,
         ctx.stop()
       }
     }
+  }
+
+  override def getUserPrincipal(apiKey: String): UserPrincipal = {
+    users.getUserPrincipal(apiKey)
   }
 
   /**
@@ -439,7 +446,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     val outputColumn = arguments.output_column.getOrElse("sample_bin")
 
     if (frame.schema.columns.indexWhere(columnTuple => columnTuple._1 == outputColumn) >= 0)
-      throw new IllegalArgumentException(s"Duplicate column name: ${outputColumn}")
+      throw new IllegalArgumentException(s"Duplicate column name: $outputColumn")
 
     val seed = arguments.random_seed.getOrElse(0)
 
@@ -461,10 +468,9 @@ class SparkEngine(sparkContextManager: SparkContextManager,
 
     val splitRDD = labeledRDD.map(labeledRow => labeledRow.entry :+ labeledRow.label.asInstanceOf[Any])
 
-    frames.saveFrameWithoutSchema(frame, splitRDD)
-
     val allColumns = frame.schema.columns :+ (outputColumn, DataTypes.string)
-    frames.updateSchema(frame, allColumns)
+    frames.saveFrame(frame, new FrameRDD(new Schema(allColumns), splitRDD))
+
   }
 
   def groupBy(arguments: FrameGroupByColumn[JsObject, Long])(implicit user: UserPrincipal): Execution =
@@ -572,7 +578,8 @@ class SparkEngine(sparkContextManager: SparkContextManager,
         .map(converter)
 
       val rowCount = if (skipRowCount) 0 else resultRdd.count()
-      frames.saveFrameWithoutSchema(dataFrame, resultRdd)
+      //      frames.saveFrameWithoutSchema(ctx, dataFrame, resultRdd)
+      frames.saveFrame(dataFrame, new FrameRDD(dataFrame.schema, resultRdd))
       rowCount
     }
   }
@@ -1126,23 +1133,22 @@ class SparkEngine(sparkContextManager: SparkContextManager,
       } yield columnIndex
     }.sorted.distinct
 
-    columnIndices match {
+    val resultRDD = columnIndices match {
       case invalidColumns if invalidColumns.contains(-1) =>
         throw new IllegalArgumentException(s"Invalid list of columns: [${arguments.columns.mkString(", ")}]")
       case allColumns if allColumns.length == schema.columns.length =>
-        val resultRdd = frames.loadFrameRdd(ctx, frameId).filter(_ => false)
-        frames.saveFrameWithoutSchema(realFrame, resultRdd)
+        frames.loadFrameRdd(ctx, frameId).filter(_ => false)
       case singleColumn if singleColumn.length == 1 =>
-        val resultRdd = frames.loadFrameRdd(ctx, realFrame)
+        frames.loadFrameRdd(ctx, realFrame)
           .map(row => row.take(singleColumn(0)) ++ row.drop(singleColumn(0) + 1))
-        frames.saveFrameWithoutSchema(realFrame, resultRdd)
       case multiColumn =>
-        val resultRdd = frames.loadFrameRdd(ctx, frameId)
+        frames.loadFrameRdd(ctx, frameId)
           .map(row => row.zipWithIndex.filter(elem => multiColumn.contains(elem._2) == false).map(_._1))
-        frames.saveFrameWithoutSchema(realFrame, resultRdd)
     }
 
-    frames.dropColumns(realFrame, columnIndices)
+    val dataFrame = frames.dropColumns(realFrame, columnIndices)
+    frames.saveFrame(dataFrame, new FrameRDD(dataFrame.schema, resultRDD))
+    dataFrame
   }
 
   def addColumns(arguments: FrameAddColumns[JsObject, Long])(implicit user: UserPrincipal): Execution =
@@ -1177,8 +1183,9 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     // Update the data
     val pyRdd = createPythonRDD(frameId, expression, invocation.sparkContext)
     val converter = DataTypes.parseMany(newColumns.map(_._2).toArray)(_)
-    persistPythonRDD(realFrame, pyRdd, converter, skipRowCount = true)
-    frames.updateSchema(realFrame, newColumns)
+    val newFrame = frames.updateSchema(realFrame, newColumns)
+    persistPythonRDD(newFrame, pyRdd, converter, skipRowCount = true)
+    newFrame
   }
 
   /**
@@ -1363,8 +1370,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     val duplicatesRemoved: RDD[Array[Any]] = SparkOps.removeDuplicatesByKey(pairRdd)
     val rowCount = duplicatesRemoved.count()
 
-    frames.saveFrameWithoutSchema(realFrame, duplicatesRemoved)
-    frames.updateRowCount(realFrame, rowCount)
+    frames.saveFrame(realFrame, new FrameRDD(frameSchema, duplicatesRemoved), Some(rowCount))
   }
 
   val quantilesCommand = commandPluginRegistry.registerCommand("dataframe/quantiles", quantilesSimple _, numberOfJobs = 7)

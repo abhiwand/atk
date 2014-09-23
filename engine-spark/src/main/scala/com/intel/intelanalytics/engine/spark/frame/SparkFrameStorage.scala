@@ -34,6 +34,9 @@ import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.shared.EventLogging
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
+import com.intel.intelanalytics.domain.frame.DataFrame
+import com.intel.intelanalytics.engine.spark.plugin.SparkInvocation
+import org.apache.spark.sql.{ SQLContext, SchemaRDD }
 
 class SparkFrameStorage(frameFileStorage: FrameFileStorage,
                         maxRows: Int,
@@ -52,7 +55,7 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
    */
   def loadFrameRdd(ctx: SparkContext, frameId: Long): FrameRDD = {
     val frame = lookup(frameId).getOrElse(
-      throw new IllegalArgumentException(s"No such data frame: ${frameId}"))
+      throw new IllegalArgumentException(s"No such data frame: $frameId"))
     loadFrameRdd(ctx, frame)
   }
 
@@ -70,11 +73,21 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
       val absPath = frameFileStorage.currentFrameRevision(frame)
       val rows = ctx.objectFile[Row](absPath.toString, sparkAutoPartitioner.partitionsForFile(absPath.toString))
       new FrameRDD(frame.schema, rows)
+      val f: FrameRDD = if (frameFileStorage.isParquet(frame)) {
+        val sqlContext = new SQLContext(ctx)
+        val rows = sqlContext.parquetFile(absPath.toString)
+        new FrameRDD(frame.schema, rows)
+      }
+      else {
+        val rows = ctx.objectFile[Row](absPath.toString, sparkAutoPartitioner.partitionsForFile(absPath.toString))
+        new FrameRDD(frame.schema, rows)
+      }
+      f
   }
 
   /**
    * Save a FrameRDD to HDFS - this is the only save path that should be used
-   * @param frameEntity
+   * @param frameEntity DataFrame representation
    * @param frameRdd the RDD
    * @param rowCount optionally provide the row count if you need to update it
    */
@@ -82,7 +95,11 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
 
     val path = frameFileStorage.createFrameRevision(frameEntity, 0)
 
-    frameRdd.saveAsObjectFile(path.toString)
+    //TODO: make storage aware
+    //frameRdd.saveAsObjectFile(path.toString)
+
+    val schemaRDD = frameRdd.toSchemaRDD()
+    schemaRDD.saveAsParquetFile(path.toString)
 
     metaStore.withSession("frame.saveFrame") {
       implicit session =>
@@ -100,16 +117,6 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
     // frameFileStorage.deleteFrameRevision(frameEntity, oldRevision)
 
     expectFrame(frameEntity.id)
-  }
-
-  /**
-   * Save a data frame
-   * @param frameEntity the data frame entity record from the meta store
-   * @param frameRdd the contents of the data frame
-   * @deprecated It is better to use saveFrame() rather than this version.
-   */
-  def saveFrameWithoutSchema(frameEntity: DataFrame, frameRdd: RDD[Array[Any]]): Unit = {
-    saveFrame(frameEntity, new FrameRDD(null, frameRdd))
   }
 
   def getPagedRowsRDD(frame: DataFrame, offset: Long, count: Int, ctx: SparkContext)(implicit user: UserPrincipal): RDD[Row] =
@@ -204,6 +211,7 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
         }
     }
   }
+
   override def renameColumns(frame: DataFrame, name_pairs: Seq[(String, String)]): DataFrame =
     //withContext("frame.renameColumns") {
     metaStore.withSession("frame.renameColumns") {

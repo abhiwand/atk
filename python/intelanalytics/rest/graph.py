@@ -31,8 +31,9 @@ logger = logging.getLogger(__name__)
 
 from intelanalytics.core.graph import VertexRule, EdgeRule, BigGraph, Rule
 from intelanalytics.core.column import BigColumn
+from intelanalytics.core.metaprog import load_loadable
 from intelanalytics.rest.connection import http
-from intelanalytics.rest.command import CommandRequest, executor
+from intelanalytics.rest.command import CommandRequest, executor, get_commands, execute_command
 
 
 def execute_update_graph_command(command_name, arguments, graph):
@@ -63,12 +64,16 @@ class GraphBackendRest(object):
 
     def __init__(self, http_methods = None):
         self.rest_http = http_methods or http
+
         if not self.__class__.commands_loaded:
-            self.__class__.commands_loaded.update(executor.get_command_functions(('graph', 'graphs'),
-                                                                                 execute_update_graph_command,
-                                                                                execute_new_graph_command))
-            executor.install_static_methods(self.__class__, self.__class__.commands_loaded)
-            BigGraph._commands = self.__class__.commands_loaded
+            logger.info("Loading Graph commands")
+            commands = get_commands()
+            load_loadable(BigGraph, commands, execute_command)
+            #self.__class__.commands_loaded.update(executor.get_command_functions(('graph', 'graphs'),
+            #                                                                     execute_update_graph_command,
+            #                                                                    execute_new_graph_command))
+            #executor.install_static_methods(self.__class__, self.__class__.commands_loaded)
+            #BigGraph._commands = self.__class__.commands_loaded
 
     def get_graph_names(self):
         logger.info("REST Backend: get_graph_names")
@@ -112,7 +117,7 @@ class GraphBackendRest(object):
             r=self.rest_http.post('graphs', payload)
             logger.info("REST Backend: create graph response: " + r.text)
             graph_info = GraphInfo(r.json())
-            initialized_graph=initialize_graph(graph,graph_info)
+            initialized_graph=initialize_graph(graph, graph_info)
             if rules:
                 frame_rules = JsonRules(rules)
                 if logger.level == logging.DEBUG:
@@ -128,6 +133,11 @@ class GraphBackendRest(object):
         except:
             annotation= ''
         return "graph_" + uuid.uuid4().hex + annotation
+
+    def _load(self, graph, rules, append):
+        arguments = {'graph': graph._id, "rules": rules, "append": append}
+        execute_update_graph_command('load', arguments)
+
 
     def rename_graph(self, graph, name):
         arguments = {'graph': graph._id, "new_name": name}

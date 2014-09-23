@@ -24,7 +24,7 @@
 package com.intel.intelanalytics.algorithm
 
 /**
- * quantile composing element which contains element's index and its weight
+ * Quantile composing element which contains element's index and its weight
  * @param index element index
  * @param quantileTarget the quantile target that the element can be applied to
  */
