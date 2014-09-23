@@ -13,6 +13,7 @@ import com.intel.graphbuilder.elements.{ Property, Vertex => GBVertex, Edge => G
 import org.apache.spark.rdd.RDD
 import com.intel.intelanalytics.domain.graph.GraphReference
 import scala.reflect.internal.util.StringOps
+import com.intel.spark.graphon.testutils.ApproximateVertexEquality
 
 /**
  * These tests make sure that loopy belief propagation can correctly handle graphs with no edges and even graphs with
@@ -28,6 +29,8 @@ class DegenerateCasesTest extends FlatSpec with Matchers with TestingSparkContex
     val edgeLabel = "label"
     val inputPropertyName = "input_property_name"
     val propertyForLBPOutput = "LBP_VALUE"
+
+    val floatingPointEqualityThreshold : Double = 0.000000001d
 
   }
 
@@ -80,7 +83,12 @@ class DegenerateCasesTest extends FlatSpec with Matchers with TestingSparkContex
     val testVertices = verticesOut.collect().toSet
     val testEdges = edgesOut.collect().toSet
 
-    testVertices shouldEqual expectedVerticesOut
+    val test = ApproximateVertexEquality.equalsApproximateAtProperty(testVertices,
+      expectedVerticesOut,
+      propertyForLBPOutput,
+      floatingPointEqualityThreshold)
+
+    test shouldBe true
     testEdges shouldBe expectedEdgesOut
 
   }
@@ -134,9 +142,13 @@ class DegenerateCasesTest extends FlatSpec with Matchers with TestingSparkContex
     val testVertices = verticesOut.collect().toSet
     val testEdges = edgesOut.collect().toSet
 
-    testVertices shouldEqual expectedVerticesOut
-    testEdges shouldBe expectedEdgesOut
+    val test = ApproximateVertexEquality.equalsApproximateAtProperty(testVertices,
+      expectedVerticesOut,
+      propertyForLBPOutput,
+      floatingPointEqualityThreshold)
 
+    test shouldBe true
+    testEdges shouldBe expectedEdgesOut
   }
 
   "LBP Runner" should "work properly with a two node disconnected graph" in new LbpTest {
@@ -189,9 +201,13 @@ class DegenerateCasesTest extends FlatSpec with Matchers with TestingSparkContex
     val testVertices = verticesOut.collect().toSet
     val testEdges = edgesOut.collect().toSet
 
-    testVertices shouldEqual expectedVerticesOut
-    testEdges shouldBe expectedEdgesOut
+    val test = ApproximateVertexEquality.equalsApproximateAtProperty(testVertices,
+      expectedVerticesOut,
+      propertyForLBPOutput,
+      floatingPointEqualityThreshold)
 
+    test shouldBe true
+    testEdges shouldBe expectedEdgesOut
   }
 
 }

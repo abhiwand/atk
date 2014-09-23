@@ -4,6 +4,7 @@ import com.intel.graphbuilder.elements.{ Property, Vertex => GBVertex, Edge => G
 import org.scalatest.{ Matchers, FlatSpec }
 import com.intel.testutils.TestingSparkContextFlatSpec
 import org.apache.spark.rdd.RDD
+import com.intel.spark.graphon.testutils.ApproximateVertexEquality
 
 /**
  * These test cases validate that LBP works correctly on (very simple) graphs that contain loops.
@@ -18,6 +19,8 @@ class LoopTest extends FlatSpec with Matchers with TestingSparkContextFlatSpec {
     val edgeLabel = "label"
     val inputPropertyName = "input_property_name"
     val propertyForLBPOutput = "LBP_VALUE"
+
+    val floatingPointEqualityThreshold : Double = 0.000000001d
 
   }
   "LBP Runner" should "work with a triangle with uniform probabilities" in new LbpTest {
@@ -71,7 +74,12 @@ class LoopTest extends FlatSpec with Matchers with TestingSparkContextFlatSpec {
     val testVertices = verticesOut.collect().toSet
     val testEdges = edgesOut.collect().toSet
 
-    testVertices shouldEqual expectedVerticesOut
+    val test = ApproximateVertexEquality.equalsApproximateAtProperty(testVertices,
+      expectedVerticesOut,
+      propertyForLBPOutput,
+      floatingPointEqualityThreshold)
+
+    test shouldBe true
     testEdges shouldBe expectedEdgesOut
 
   }
@@ -127,7 +135,12 @@ class LoopTest extends FlatSpec with Matchers with TestingSparkContextFlatSpec {
     val testVertices = verticesOut.collect().toSet
     val testEdges = edgesOut.collect().toSet
 
-    testVertices shouldEqual expectedVerticesOut
+    val test = ApproximateVertexEquality.equalsApproximateAtProperty(testVertices,
+      expectedVerticesOut,
+      propertyForLBPOutput,
+      floatingPointEqualityThreshold)
+
+    test shouldBe true
     testEdges shouldBe expectedEdgesOut
 
   }
