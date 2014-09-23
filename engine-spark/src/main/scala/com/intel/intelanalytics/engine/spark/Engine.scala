@@ -1424,7 +1424,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
 
   def quantilesSimple(quantiles: Quantiles, user: UserPrincipal, invocation: SparkInvocation): QuantileValues = {
     implicit val u = user
-    val frameId: FrameReference = quantiles.frameId
+    val frameId: FrameReference = quantiles.frame
     val ctx = invocation.sparkContext
 
     val realFrame: DataFrame = getDataFrameById(frameId.id)
