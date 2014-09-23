@@ -1,5 +1,6 @@
 package com.intel.intelanalytics.engine.spark
 
+import com.intel.intelanalytics.domain.DomainJsonProtocol
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
 import com.intel.intelanalytics.domain.command.{ Command, CommandTemplate }
 import com.intel.intelanalytics.domain.frame.{ DataFrame, QuantileValues }
@@ -13,6 +14,7 @@ import org.mockito.Matchers._
 import org.mockito.Mockito._
 import org.scalatest.mock.MockitoSugar
 import org.scalatest.{ FlatSpec, Matchers }
+import spray.json.JsObject
 
 import scala.collection.immutable.HashMap
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -67,13 +69,28 @@ class CommandExecutorTest extends FlatSpec with Matchers with MockitoSugar {
     var containsKey1DuringExecution = false
     val executor = createCommandExecutor()
 
-    val dummyFunc = (dist: QuantileValues, user: UserPrincipal, invocation: Invocation) => {
-      contextCountDuringExecution = executor.commandIdContextMapping.size
-      containsKey1DuringExecution = executor.commandIdContextMapping.contains(1)
-      mock[DataFrame]
+    val plugin = new CommandPlugin[QuantileValues, DataFrame] {
+
+      implicit val qformat = jsonFormat1(QuantileValues)
+
+      implicit val dformat = DomainJsonProtocol.dataFrameFormat
+
+      def parseArguments(arguments: JsObject): QuantileValues = qformat.read(arguments)
+
+      def serializeArguments(arguments: QuantileValues): JsObject = qformat.write(arguments).asJsObject
+
+      override def serializeReturn(returnValue: DataFrame): JsObject = dformat.write(returnValue).asJsObject
+
+      override def name: String = "foo"
+
+      def execute(invocation: Invocation, arguments: QuantileValues)(implicit user: UserPrincipal, executionContext: ExecutionContext): DataFrame = {
+
+        contextCountDuringExecution = executor.commandIdContextMapping.size
+        containsKey1DuringExecution = executor.commandIdContextMapping.contains(1)
+        mock[DataFrame]
+      }
     }
 
-    val plugin = commandPluginRegistry.registerCommand("dummy", dummyFunc)
     val user = mock[UserPrincipal]
     val execution = executor.execute(plugin, args, user, implicitly[ExecutionContext])
     Await.ready(execution.end, 10 seconds)

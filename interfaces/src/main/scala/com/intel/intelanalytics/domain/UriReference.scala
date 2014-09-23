@@ -20,7 +20,7 @@ trait UriReference extends HasId {
 
   /** The full URI */
   def uri: String = {
-    val ia_uri: String = s"$scheme://${entity.name.plural}/$id"
+    val ia_uri: String = s"$scheme://${entity.name.name}/$id"
     ia_uri
   }
 
