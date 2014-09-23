@@ -48,17 +48,17 @@ class FrameFileStorage(fsRoot: String,
   }
 
   /** Current revision for a frame */
+  @deprecated
   def currentFrameRevision(dataFrame: DataFrame): Path = {
-    require(dataFrame.revision > 0, "Revision should be larger than zero")
-    frameRevisionDirectory(dataFrame.id, dataFrame.revision)
+    frameRevisionDirectory(dataFrame.id)
   }
 
   /**
    * Create the Next revision for a frame.
    */
+  @deprecated
   def createFrameRevision(dataFrame: DataFrame, revision: Int): Path = withContext("createFrameRevision") {
     require(revision > 0, "Revision should be larger than zero")
-    require(revision > dataFrame.revision, s"New revision should be larger than the old revision: $dataFrame $revision")
 
     val path = frameRevisionDirectory(dataFrame.id, revision)
     if (hdfs.exists(path)) {
@@ -93,8 +93,9 @@ class FrameFileStorage(fsRoot: String,
   }
 
   /** Base dir for a particular revision of a frame */
-  private[frame] def frameRevisionDirectory(frameId: Long, revision: Int): Path = {
-    new Path(frameBaseDirectory(frameId) + "/rev" + revision)
+  @deprecated
+  private[frame] def frameRevisionDirectory(frameId: Long, revision: Int = 0): Path = {
+    frameBaseDirectory(frameId)
   }
 
   /** Base dir for a frame */

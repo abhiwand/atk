@@ -1,25 +1,23 @@
 package com.intel.intelanalytics.engine.spark
 
-import org.scalatest.{ Matchers, FlatSpec }
-import com.intel.intelanalytics.engine.spark.command.{ CommandLoader, SparkCommandStorage, CommandPluginRegistry, CommandExecutor }
-import org.mockito.Mockito._
-import org.mockito.Matchers._
+import com.intel.intelanalytics.domain.DomainJsonProtocol._
 import com.intel.intelanalytics.domain.command.{ Command, CommandTemplate }
-import scala.concurrent.duration._
+import com.intel.intelanalytics.domain.frame.{ DataFrame, QuantileValues }
+import com.intel.intelanalytics.engine.plugin.{ CommandPlugin, Invocation }
+import com.intel.intelanalytics.engine.spark.command.{ CommandExecutor, CommandLoader, CommandPluginRegistry, SparkCommandStorage }
 import com.intel.intelanalytics.engine.spark.context.SparkContextManager
-import org.apache.spark.SparkContext
-import scala.concurrent.ExecutionContext.Implicits.global
-import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.engine.spark.plugin.SparkInvocation
-import com.intel.intelanalytics.domain.frame.{ CumulativeSum, DataFrame }
-import com.intel.intelanalytics.domain.frame.QuantileValues
-import scala.concurrent.{ Await, ExecutionContext }
-import spray.json._
-import com.intel.intelanalytics.domain.DomainJsonProtocol
-import DomainJsonProtocol._
-import com.intel.intelanalytics.engine.plugin.{Invocation, CommandPlugin}
-import scala.collection.immutable.HashMap
+import com.intel.intelanalytics.security.UserPrincipal
+import org.apache.spark.SparkContext
+import org.mockito.Matchers._
+import org.mockito.Mockito._
 import org.scalatest.mock.MockitoSugar
+import org.scalatest.{ FlatSpec, Matchers }
+
+import scala.collection.immutable.HashMap
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.duration._
+import scala.concurrent.{ Await, ExecutionContext }
 
 class CommandExecutorTest extends FlatSpec with Matchers with MockitoSugar {
 

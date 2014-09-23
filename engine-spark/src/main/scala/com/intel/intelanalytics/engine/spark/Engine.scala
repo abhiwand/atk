@@ -374,11 +374,11 @@ class SparkEngine(sparkContextManager: SparkContextManager,
           yield (arguments.new_column_names(i), schema.columns(columnIndices(i))._2)
     }
 
-    frames.saveFrame(projectedFrame, new FrameRDD(new Schema(projectedColumns.toList), resultRdd), Some(sourceFrame.rowCount))
+    frames.saveFrame(projectedFrame, new FrameRDD(new Schema(projectedColumns.toList), resultRdd), sourceFrame.rowCount)
   }
 
   /**
-   * Randomly assigns sample lables to rows of a table, with probabilities for each label given by an incoming
+   * Randomly assigns sample labels to rows of a table, with probabilities for each label given by an incoming
    * probability distribution. Modifies the current table by adding a  column (called "sample bin" by default) that
    * contains the sample labels.
    *

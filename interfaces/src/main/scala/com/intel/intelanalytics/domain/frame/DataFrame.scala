@@ -23,9 +23,9 @@
 
 package com.intel.intelanalytics.domain.frame
 
-import com.intel.intelanalytics.domain.{OnDemand, UriReference, HasId}
+import com.intel.intelanalytics.domain.OnDemand
 import com.intel.intelanalytics.domain.schema.Schema
-import org.joda.time.{ Duration, DateTime }
+import org.joda.time.DateTime
 
 /**
  * Represents a Big Data Frame
@@ -40,22 +40,25 @@ import org.joda.time.{ Duration, DateTime }
  * @param rowCount number of rows in the frame
  * @param errorFrameId foreign key for the error data frame associated with this frame (parse errors go into this frame)
  */
-case class DataFrame(id: Long,
+case class DataFrame(override val id: Long,
                      name: String,
                      schema: Schema = Schema(),
                      status: Long,
                      createdOn: DateTime,
+                     modifiedOn: Option[DateTime] = None,
+                     storageFormat: Option[String] = None,
+                     storageLocation: Option[String] = None,
                      description: Option[String] = None,
                      rowCount: Option[Long] = None,
-                     command: Option[Int] = None,
+                     command: Option[Long] = None,
                      createdBy: Option[Long] = None,
-                     materialized: Option[DateTime] = None,
-                     materializationDuration: Option[Duration] = None,
+                     modifiedBy: Option[Long] = None,
+                     materializedOn: Option[DateTime] = None,
+                     materializationComplete: Option[DateTime] = None,
                      errorFrameId: Option[Long] = None,
-                     parent: Option[Int] = None) extends HasId with UriReference with OnDemand {
+                     parent: Option[Long] = None) extends FrameReference(id, Some(true)) with OnDemand {
   require(id >= 0, "id must be zero or greater")
   require(name != null, "name must not be null")
   require(name.trim.length > 0, "name must not be empty or whitespace")
   require(parent.isEmpty || parent.get > 0, "parent must be one or greater if provided")
-  def entity = "frame"
 }

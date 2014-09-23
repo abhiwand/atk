@@ -21,24 +21,12 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.repository
+package com.intel.intelanalytics.domain
 
-import com.intel.intelanalytics.domain.frame.{ DataFrame, DataFrameTemplate }
-import com.intel.intelanalytics.domain.schema.DataTypes.DataType
+case class EntityName(name: String, plural: String)
 
-trait FrameRepository[Session] extends Repository[Session, DataFrameTemplate, DataFrame] {
-
-  def updateSchema(frame: DataFrame, columns: List[(String, DataType)])(implicit session: Session): DataFrame
-
-  def updateRowCount(frame: DataFrame, rowCount: Option[Long])(implicit session: Session): DataFrame
-
-  /** Update the errorFrameId column */
-  def updateErrorFrameId(frame: DataFrame, errorFrameId: Option[Long])(implicit session: Session): DataFrame
-
-  /**
-   * Return all the frames
-   * @param session current session
-   * @return all the dataframes
-   */
-  def scanAll()(implicit session: Session): Seq[DataFrame]
+trait Entity {
+  def name: EntityName
+  def alternatives: Seq[EntityName] = Seq()
 }
+
