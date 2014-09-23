@@ -41,7 +41,8 @@ object LogUtils {
    * Turn down logging since Spark gives so much output otherwise.
    */
   def silenceSpark() {
-    setLogLevels(Level.WARN, Seq("spark", "org.eclipse.jetty", "akka"))
+    setLogLevels(Level.WARN, Seq("o.a.spark.scheduler.DAGScheduler",
+      "o.a.spark.scheduler.TaskSetManager", "org.eclipse.jetty", "akka"))
   }
 
   /**

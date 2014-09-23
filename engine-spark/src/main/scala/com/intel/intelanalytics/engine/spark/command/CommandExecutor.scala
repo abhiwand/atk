@@ -100,7 +100,7 @@ class CommandExecutor(engine: => SparkEngine, commands: SparkCommandStorage, con
           val cmdFuture = future {
             withCommand(cmd) {
               try {
-                val invocation = cmd match {
+                val invocation = command match {
 
                   case c: SparkCommandPlugin[A, R] =>
                     val context: SparkContext = createContextForCommand(command, arguments, user, cmd)
