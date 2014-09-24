@@ -80,6 +80,7 @@ class TestUserFunc(unittest.TestCase):
     def test_trim_spark_worker_trace_from_exception(self):
         e = Exception(sample_worker_message)
         filter = "        org.apache.spark.api.python"
+        message = "ZeroDivisionError: integer division or modulo by zero"
         self.assertTrue(e.args[0].find(filter) >= 0)
 
         @has_python_user_function_arg
@@ -91,6 +92,7 @@ class TestUserFunc(unittest.TestCase):
         except Exception as ex:
             # verify that the spark worker stacktrace is removed from the message
             self.assertTrue(ex.args[0].find(filter) < 0)
+            self.assertTrue(ex.args[0].find(message) >= 0)
         else:
             self.fail()
 
