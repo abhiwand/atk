@@ -667,6 +667,9 @@ def set_db_details(db, db_username, db_password, skip):
 
         create_IA_meatauser(db)
 
+def search_replace_config(search, replace, search_text):
+    return re.sub(r'[/]*' + search + ' = .*', replace, search_text)
+
 def create_intel_analytics_config( hdfs_host_name, hdfs_namenode_port, zookeeper_host_names, zookeeper_client_port,
                                    spark_master_host, spark_master_port, spark_worker_memory, python_exec, db_host, db_port, db, db_username, db_password):
     """
@@ -690,27 +693,41 @@ def create_intel_analytics_config( hdfs_host_name, hdfs_namenode_port, zookeeper
 
     print "Updating configuration"
     #set fs.root
-    config_tpl_text = re.sub(r'fs.root = .*', 'fs.root = "hdfs://' + hdfs_host_name[0] + ":" + hdfs_namenode_port + '/user/' + IAUSER + '"', config_tpl_text)
+    config_tpl_text = search_replace_config("fs.root",
+                                            'fs.root = "hdfs://' + hdfs_host_name[0] +
+                                            ":" + hdfs_namenode_port + '/user/' + IAUSER + '"', config_tpl_text)
     #set titan zookeeper list titan.load.storage.hostname
-    config_tpl_text = re.sub(r'titan.load.storage.hostname = .*',
-                       'titan.load.storage.hostname = "' + ','.join(zookeeper_host_names) + '"', config_tpl_text)
-    config_tpl_text = re.sub(r'[/]*titan.load.storage.port = .*',
-                       'titan.load.storage.port = "' + zookeeper_client_port  + '"', config_tpl_text)
+    config_tpl_text = search_replace_config("titan.load.storage.hostname",
+                                            'titan.load.storage.hostname = "' + ','.join(zookeeper_host_names) + '"',
+                                            config_tpl_text)
+    config_tpl_text = search_replace_config("titan.load.storage.port",
+                                            'titan.load.storage.port = "' + zookeeper_client_port  + '"',
+                                            config_tpl_text)
     #set spark master
-    config_tpl_text = re.sub(r'spark.master = .*',
-                       'spark.master = "spark://' + spark_master_host[0] + ':' + spark_master_port + '"', config_tpl_text)
+    config_tpl_text = search_replace_config("spark.master",
+                                            'spark.master = "spark://' + spark_master_host[0] +
+                                            ':' + spark_master_port + '"', config_tpl_text)
     #set spark executor memory
-    config_tpl_text = re.sub(r'spark.executor.memory = .*', 'spark.executor.memory = "' + spark_worker_memory + '"', config_tpl_text)
+    config_tpl_text = search_replace_config("spark.executor.memory",
+                                            'spark.executor.memory = "' + spark_worker_memory + '"', config_tpl_text)
 
     #set python exec
-    config_tpl_text = re.sub(r'[/]*python-worker-exec = .*', 'python-worker-exec = "' + python_exec + '"', config_tpl_text)
+    config_tpl_text = search_replace_config("python-worker-exec",
+                                            'python-worker-exec = "' + python_exec + '"', config_tpl_text)
 
     #set db configuration
-    config_tpl_text = re.sub(r'[/]*metastore.connection-postgresql.host = .*', 'metastore.connection-postgresql.host = "' + db_host + '"', config_tpl_text)
-    config_tpl_text = re.sub(r'[/]*metastore.connection-postgresql.port = .*', 'metastore.connection-postgresql.port = "' + db_port + '"', config_tpl_text)
-    config_tpl_text = re.sub(r'[/]*metastore.connection-postgresql.database = .*', 'metastore.connection-postgresql.database = "' + db + '"', config_tpl_text)
-    config_tpl_text = re.sub(r'[/]*metastore.connection-postgresql.username = .*', 'metastore.connection-postgresql.username = "' + db_username + '"', config_tpl_text)
-    config_tpl_text = re.sub(r'[/]*metastore.connection-postgresql.password = .*', 'metastore.connection-postgresql.password = "' + db_password + '"', config_tpl_text)
+    config_tpl_text = search_replace_config("metastore.connection-postgresql.host",
+                                            'metastore.connection-postgresql.host = "' + db_host + '"', config_tpl_text)
+    config_tpl_text = search_replace_config("metastore.connection-postgresql.port",
+                                            'metastore.connection-postgresql.port = "' + db_port + '"', config_tpl_text)
+    config_tpl_text = search_replace_config("metastore.connection-postgresql.database",
+                                            'metastore.connection-postgresql.database = "' + db + '"', config_tpl_text)
+    config_tpl_text = search_replace_config("metastore.connection-postgresql.username",
+                                            'metastore.connection-postgresql.username = "' + db_username + '"',
+                                            config_tpl_text)
+    config_tpl_text = search_replace_config("metastore.connection-postgresql.password",
+                                            'metastore.connection-postgresql.password = "' + db_password + '"',
+                                            config_tpl_text)
 
     print "Writing application.conf"
     config = open(config_file_path, "w")
@@ -766,7 +783,8 @@ if cluster:
     zookeeper_server_role_host_names, zookeeper_client_port = get_zookeeper_details(services)
 
     #get spark service details
-    spark_master_role_host_names, spark_config_executor_total_max_heapsize, spark_config_master_port = get_spark_details(services)
+    spark_master_role_host_names, spark_config_executor_total_max_heapsize, spark_config_master_port = \
+        get_spark_details(services)
 
     #get python exec
     python_exec = get_python_exec()
@@ -776,7 +794,8 @@ if cluster:
     #write changes to our config
     create_intel_analytics_config(hdfs_namenode_role_host_names, hdfs_namenode_port, zookeeper_server_role_host_names,
                                   zookeeper_client_port, spark_master_role_host_names, spark_config_master_port,
-                                  spark_config_executor_total_max_heapsize, python_exec, db_host, db_port, db, db_username, db_password)
+                                  spark_config_executor_total_max_heapsize, python_exec, db_host, db_port, db,
+                                  db_username, db_password)
 
     set_db_details(db, db_username, db_password, db_skip)
 
