@@ -26,29 +26,33 @@ f, f2 = {}, {}
 
 import logging
 logger = logging.getLogger(__name__)
+from intelanalytics.core.api import get_api_decorator
+api = get_api_decorator(logger)
+
 import uuid
 
 from intelanalytics.core.serialize import to_json
 from intelanalytics.core.column import BigColumn
-from intelanalytics.core.command import CommandSupport
+from intelanalytics.core.metaprog import CommandLoadable
+
+try:
+    from intelanalytics.core.autograph import CommandLoadableBigGraph
+    logger.info("BigGraph is inheriting commands from autograph.py")
+except Exception as e:
+    msg = "autograph.py not found, BigGraph is NOT inheriting commands from it\n%s" % e
+    logger.warn(msg)
+    import warnings
+    warnings.warn(msg, RuntimeWarning)
+    CommandLoadableBigGraph = CommandLoadable
 
 from intelanalytics.core.deprecate import deprecated
-
-# try:
-#     from intelanalytics.core.autograph import CommandLoadableBigGraph as command_loadable
-#     logger.info("BigGraph is inheriting commands from autograph.py")
-# except:
-#     #logger.info("autograph.py not found, BigGraph is NOT inheriting commands from it")
-#     logger.info("BigGraph is still using older CommandSupport")
-#     command_loadable = CommandSupport
-command_loadable = CommandSupport  # TODO - enable BigGraph to use autograph.py
 
 
 def _get_backend():
     from intelanalytics.core.config import get_graph_backend
     return get_graph_backend()
 
-
+@api
 def get_graph_names():
     """
     Get graph names.
@@ -75,7 +79,7 @@ def get_graph_names():
     # TODO - Review docstring
     return _get_backend().get_graph_names()
 
-
+@api
 def get_graph(name):
     """
     Get graph access.
@@ -112,7 +116,7 @@ def get_graph(name):
 def delete_graph(name):
     return drop_graphs(name)
 
-
+@api
 def drop_graphs(graphs):
     """
     Deletes graphs from backing store.
@@ -404,7 +408,7 @@ class EdgeRule(Rule):
         return self._validate_same_frame(label_frame, tail_frame, head_frame, properties_frame)
 
 
-class BigGraph(command_loadable):
+class BigGraph(CommandLoadableBigGraph):
     """
     Creates a big graph.
 
@@ -441,8 +445,8 @@ class BigGraph(command_loadable):
     """
 
     # command load filters:
-    command_prefixes = ['graph', 'graphs']
-    command_mute_list = ['load', 'rename_graph']  # these commands are not exposed
+    _command_prefixes = ['graph', 'graphs']
+    _muted_command_names = ['rename_graph']  # these commands are not exposed
 
     def __init__(self, rules=None, name=""):
         try:
@@ -450,13 +454,11 @@ class BigGraph(command_loadable):
             self._ia_uri = None
             if not hasattr(self, '_backend'):
                 self._backend = _get_backend()
+            CommandLoadableBigGraph.__init__(self)
             new_graph_name= self._backend.create(self, rules, name)
-            CommandSupport.__init__(self)
             logger.info('Created new graph "%s"', new_graph_name)
         except:
             raise IaError(logger)
-
-
 
     def __repr__(self):
         try:
@@ -465,6 +467,7 @@ class BigGraph(command_loadable):
             return super(BigGraph,self).__repr__() + "(Unable to collect metadeta from server)"
 
     @property
+    @api
     def name(self):
         """
         Get the name of the current object.
@@ -486,13 +489,10 @@ class BigGraph(command_loadable):
         .. versionadded:: 0.8
 
         """
-        # TODO - Review Docstring
-        try:
-            return self._backend.get_name(self)
-        except:
-            IaError(logger)
+        return self._backend.get_name(self)
 
     @name.setter
+    @api
     def name(self, value):
         """
         Set the name of the current object.
@@ -516,17 +516,16 @@ class BigGraph(command_loadable):
         """
         # TODO - Review Docstring
         try:
-            self.rename_graph(value)
+            self._backend.rename_graph(self, value)
         except:
             raise IaError(logger)
 
     @property
+    @api
     def ia_uri(self):
-        try:
-            return self._backend.get_ia_uri(self)
-        except:
-            raise IaError(logger)
+        return self._backend.get_ia_uri(self)
 
+    @api
     def append(self, rules=None):
         """
         Append frame data to the current graph.

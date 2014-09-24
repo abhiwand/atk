@@ -1,4 +1,3 @@
-# coding: utf-8
 ##############################################################################
 # INTEL CONFIDENTIAL
 #
@@ -247,7 +246,7 @@ class FrameBackendRest(object):
             logger.warn("There were parse errors during load, please see frame.get_error_frame()")
 
     def quantiles(self, frame, column_name, quantiles):
-        if isinstance(quantiles, int):
+        if isinstance(quantiles, int) or isinstance(quantiles, float) or isinstance(quantiles, long):
             quantiles = [quantiles]
 
         invalid_quantiles = []
@@ -259,8 +258,11 @@ class FrameBackendRest(object):
             raise ValueError("Invalid number for quantile:" + ','.join(invalid_quantiles))
 
         arguments = {'frame_id': frame._id, "column_name": column_name, "quantiles": quantiles}
-        command = CommandRequest("dataframe/quantiles", arguments)
-        return executor.issue(command)
+        quantiles_result = get_command_output('quantiles', arguments).get('quantiles')
+        result_dict = {}
+        for p in quantiles_result:
+            result_dict[p.get("quantile")] = p.get("value")
+        return result_dict
 
     def drop(self, frame, predicate):
         from itertools import ifilterfalse  # use the REST API filter, with a ifilterfalse iterator
@@ -299,7 +301,7 @@ class FrameBackendRest(object):
         if not colTypes[column_name] in [np.float32, np.float64, np.int32, np.int64]:
             raise ValueError("unable to bin non-numeric values")
         name = self._get_new_frame_name()
-        arguments = {'name': name, 'frame_id': frame._id, 'column_name': column_name, 'num_bins': num_bins, 'bin_type': bin_type, 'bin_column_name': bin_column_name}
+        arguments = {'name': name, 'frame': frame._id, 'column_name': column_name, 'num_bins': num_bins, 'bin_type': bin_type, 'bin_column_name': bin_column_name}
         return execute_new_frame_command('bin_column', arguments)
 
 
@@ -436,10 +438,6 @@ class FrameBackendRest(object):
             new_names = column_names.values()
             column_names = column_names.keys()
 
-        current_names = frame.column_names
-        for nn in new_names:
-            if nn in current_names:
-                raise ValueError("Cannot use rename to '{0}' because another column already exists with that name".format(nn))
         arguments = {'frame': self._get_frame_full_uri(frame), "original_names": column_names, "new_names": new_names}
         execute_update_frame_command('rename_columns', arguments, frame)
 
@@ -450,6 +448,8 @@ class FrameBackendRest(object):
 
 
     def take(self, frame, n, offset, columns):
+        if n == 0:
+            return TakeResult([], frame.schema)
         url = 'dataframes/{0}/data?offset={2}&count={1}'.format(frame._id,n, offset)
         result = executor.query(url)
         schema = FrameSchema.from_strings_to_types(result.schema)
