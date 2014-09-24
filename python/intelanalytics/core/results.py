@@ -21,13 +21,40 @@
 # must be express and approved by Intel in writing.
 ##############################################################################
 """
-iapy package init, public API
+Results post-processing
 """
-from intelanalytics.core.loggers import loggers
-from intelanalytics.core.iatypes import *
-from intelanalytics.core.aggregation import agg
-from intelanalytics.core.errorhandle import errors, error_handling
-from intelanalytics.core.files import CsvFile
-from intelanalytics.core.frame import BigFrame, get_frame, get_frame_names, drop_frames, delete_frame
-from intelanalytics.core.graph import BigGraph, get_graph, get_graph_names, drop_graphs, delete_graph, VertexRule, EdgeRule
-from intelanalytics.rest.connection import server
+
+# This is a stop-gap solution for post-processing results from commands whose
+# definitions are dynamically loaded from the server
+
+
+def get_postprocessor(command_full_name):
+    """Look for a result post-processing function, returns None if not found"""
+    return _postprocessors.get(command_full_name, None)
+
+
+# command-> post-processor table, populated by decorator
+_postprocessors = {}
+
+
+# decorator
+def postprocessor(*command_full_names):
+    def _postprocessor(function):
+        for name in command_full_names:
+            add_postprocessor(name, function)
+        return function
+    return _postprocessor
+
+
+def add_postprocessor(command_full_name, function):
+    if command_full_name in _postprocessors:
+        raise RuntimeError("Internal Error: duplicate command name '%s' in results post-processors" % command_full_name)
+    _postprocessors[command_full_name] = function
+
+
+# post-processor methods --all take a json object argument
+
+@postprocessor('graphs/sampling/vertex_sample')
+def return_graph(json_result):
+    from intelanalytics.core.graph import get_graph
+    return get_graph(json_result['name'])
