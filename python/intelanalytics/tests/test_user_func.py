@@ -22,7 +22,7 @@
 ##############################################################################
 import sys
 import iatest
-from intelanalytics.core.errorhandle import IaError
+from intelanalytics.core.userfunction import has_python_user_function_arg
 
 iatest.init()
 
@@ -74,25 +74,23 @@ ZeroDivisionError: integer division or modulo by zero
 Driver stacktrace:
 """
 
-class TestErrorHandle(unittest.TestCase):
-
-    def getIaErrorFromException(self, e):
-        try:
-            try:
-                raise e
-            except:
-                raise IaError(None)
-        except Exception as iae:
-            return iae
+class TestUserFunc(unittest.TestCase):
 
 
     def test_trim_spark_worker_trace_from_exception(self):
         e = Exception(sample_worker_message)
         filter = "        org.apache.spark.api.python"
         self.assertTrue(e.args[0].find(filter) >= 0)
-        iaError = self.getIaErrorFromException(e)
-        # verify that the spark worker stacktrace is removed from the message
-        self.assertTrue(iaError.args[0].find(filter) < 0)
+
+        @has_python_user_function_arg
+        def func():
+            raise e
+
+        try:
+            func()
+        except Exception as ex:
+            # verify that the spark worker stacktrace is removed from the message
+            self.assertTrue(ex.args[0].find(filter) < 0)
 
 
 
