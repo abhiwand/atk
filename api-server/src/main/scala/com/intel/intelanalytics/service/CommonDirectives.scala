@@ -54,7 +54,7 @@ class CommonDirectives(val authenticationDirective: AuthenticationDirective) ext
     ExceptionHandler {
       case e: IllegalArgumentException => {
         error("An error occurred during request processing.", exception = e)
-        complete(StatusCodes.BadRequest, "Bad request: " + e.getMessage)
+        complete(StatusCodes.BadRequest, e.getMessage)
       }
       case NonFatal(e) => {
         error("An error occurred during request processing.", exception = e)
