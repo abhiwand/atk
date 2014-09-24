@@ -1,4 +1,4 @@
-     ##############################################################################
+##############################################################################
 # INTEL CONFIDENTIAL
 #
 # Copyright 2014 Intel Corporation All Rights Reserved.
@@ -31,8 +31,9 @@ logger = logging.getLogger(__name__)
 
 from intelanalytics.core.graph import VertexRule, EdgeRule, BigGraph, Rule
 from intelanalytics.core.column import BigColumn
+from intelanalytics.core.metaprog import load_loadable
 from intelanalytics.rest.connection import http
-from intelanalytics.rest.command import CommandRequest, executor
+from intelanalytics.rest.command import CommandRequest, executor, get_commands, execute_command
 
 
 def execute_update_graph_command(command_name, arguments, graph):
@@ -63,12 +64,16 @@ class GraphBackendRest(object):
 
     def __init__(self, http_methods = None):
         self.rest_http = http_methods or http
+
         if not self.__class__.commands_loaded:
-            self.__class__.commands_loaded.update(executor.get_command_functions(('graph', 'graphs'),
-                                                                                 execute_update_graph_command,
-                                                                                execute_new_graph_command))
-            executor.install_static_methods(self.__class__, self.__class__.commands_loaded)
-            BigGraph._commands = self.__class__.commands_loaded
+            logger.info("Loading Graph commands")
+            commands = get_commands()
+            load_loadable(BigGraph, commands, execute_command)
+            #self.__class__.commands_loaded.update(executor.get_command_functions(('graph', 'graphs'),
+            #                                                                     execute_update_graph_command,
+            #                                                                    execute_new_graph_command))
+            #executor.install_static_methods(self.__class__, self.__class__.commands_loaded)
+            #BigGraph._commands = self.__class__.commands_loaded
 
     def get_graph_names(self):
         logger.info("REST Backend: get_graph_names")
@@ -112,14 +117,14 @@ class GraphBackendRest(object):
             r=self.rest_http.post('graphs', payload)
             logger.info("REST Backend: create graph response: " + r.text)
             graph_info = GraphInfo(r.json())
-            initialized_graph=initialize_graph(graph,graph_info)
+            initialized_graph=initialize_graph(graph, graph_info)
             if rules:
                 frame_rules = JsonRules(rules)
                 if logger.level == logging.DEBUG:
                     import json
                     payload_json = json.dumps(frame_rules, indent=2, sort_keys=True)
                     logger.debug("REST Backend: create graph payload: " + payload_json)
-                self.load(initialized_graph,frame_rules, append= False)
+                initialized_graph.load(frame_rules, append=False)
             return graph_info.name
     
     def _get_new_graph_name(self,source=None):
@@ -129,8 +134,13 @@ class GraphBackendRest(object):
             annotation= ''
         return "graph_" + uuid.uuid4().hex + annotation
 
+    def _load(self, graph, rules, append):
+        arguments = {'graph': graph._id, "rules": rules, "append": append}
+        execute_update_graph_command('load', arguments)
+
+
     def rename_graph(self, graph, name):
-        arguments = {'graph': graph._id, "new name": name}
+        arguments = {'graph': graph._id, "new_name": name}
         execute_update_graph_command('rename_graph', arguments,graph)
 
     def get_name(self, graph):
@@ -153,36 +163,7 @@ class GraphBackendRest(object):
     def append(self, graph, rules):
         logger.info("REST Backend: append_frame graph: " + graph.name)
         frame_rules = JsonRules(rules)
-        self.load(graph, frame_rules, append=True)
-
-    # def _get_uri(self, payload):
-    #     links = payload['links']
-    #     for link in links:
-    #         if link['rel'] == 'self':
-    #             return link['uri']
-    #     return "we don't know"
-    #     # TODO - bring exception back
-    #     #raise Exception('Unable to find uri for graph')
-
-    def als(self, graph, *args, **kwargs):
-        logger.info("REST Backend: run als on graph " + graph.name)
-        payload = JsonAlsPayload(graph, *args, **kwargs)
-        if logger.level == logging.DEBUG:
-            import json
-            payload_json =  json.dumps(payload, indent=2, sort_keys=True)
-            logger.debug("REST Backend: run als payload: " + payload_json)
-        r = http.post('commands', payload)
-        logger.debug("REST Backend: run als response: " + r.text)
-
-    def recommend(self, graph, vertex_id):
-        logger.info("REST Backend: als query on graph " + graph.name)
-        cmd_format ='graphs/{0}/vertices?qname=ALSQuery&offset=0&count=10&vertexID={1}'
-        cmd = cmd_format.format(graph._id, vertex_id)
-        logger.debug("REST Backend: als query cmd: " + cmd)
-        r = http.get(cmd)
-        json = r.json()
-        logger.debug("REST Backend: run als response: " + json)
-        return json
+        graph.load(frame_rules, append=True)
 
 
 class JsonAlsPayload(object):
