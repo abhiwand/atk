@@ -33,7 +33,7 @@ object GraphXLBP {
 
       val oldPosterior = vertexState.posterior
 
-      val messageValues : List[Vector[Double]] = messages.toList.map({case (k,v) => v})
+      val messageValues: List[Vector[Double]] = messages.toList.map({ case (k, v) => v })
 
       val productOfPriorAndMessages: Vector[Double] = VectorMath.overflowProtectedProduct(prior :: messageValues)
 
@@ -53,8 +53,8 @@ object GraphXLBP {
       val stateRange = (0 to nStates - 1).toVector
 
       val messagesNotFromDestination = messages - destination
-      val messagesNotFromDestinationValues : List[Vector[Double]] =
-        messagesNotFromDestination.map({case (k,v) => v}).toList
+      val messagesNotFromDestinationValues: List[Vector[Double]] =
+        messagesNotFromDestination.map({ case (k, v) => v }).toList
 
       val reducedMessages = VectorMath.overflowProtectedProduct(prior :: messagesNotFromDestinationValues)
 
