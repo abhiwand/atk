@@ -17,9 +17,13 @@ intel.analytics {
     //metastore.connection-postgresql.username = "iauser"
     //metastore.connection-postgresql.password = "myPassword"
     metastore.connection-postgresql.url = "jdbc:postgresql://"${intel.analytics.metastore.connection-postgresql.host}":"${intel.analytics.metastore.connection-postgresql.port}"/"${intel.analytics.metastore.connection-postgresql.database}
+
+    # This allows for the use of postgres for a metastore. Service restarts will not affect the data stored in postgres
+    metastore.connection = ${intel.analytics.metastore.connection-postgresql}
+
     # This allows the use of an in memory data store. Restarting the rest server will create a fresh database and any
     # data in the h2 DB will be lost
-    metastore.connection = ${intel.analytics.metastore.connection-h2}
+    //metastore.connection = ${intel.analytics.metastore.connection-h2}
 
     engine {
 

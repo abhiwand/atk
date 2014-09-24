@@ -94,7 +94,13 @@ IA_LOG_PATH = "/var/log/intelanalytics/rest-server/output.log"
 IA_START_WAIT_LOOPS = 10
 IA_START_WAIT = 2
 POSTGRES_WAIT = 3
+GOOD = '\033[92m'
+WARNING = '\033[93m'
+ERROR = '\033[91m'
+RESET = '\033[0m'
 
+def color_text(text, color):
+    return color + text + RESET
 
 def user_info_prompt(message, default):
     """
@@ -119,7 +125,8 @@ def get_arg(question, default, arg):
     :param arg: the parsed argument from the command line
     :return: argument if it exist, user input, or the default value
     """
-    return user_info_prompt(question + " defaults to \"" + str(default) + "\" if nothing is entered: ", default) \
+    return user_info_prompt(question + " defaults to \"" + color_text(str(default), GOOD) +
+                            "\" if nothing is entered: ", default) \
         if arg is None else arg
 
 def get_python_exec():
@@ -150,7 +157,7 @@ def select_cluster(clusters, command_line_cluster):
     else:
         count = 1
         for c in clusters:
-          print(str(count) + ": Cluster Name: {0:20} Version: {1}".format(c.name, c.version))
+          print( color_text(str(count), GOOD) + ": Cluster Name: {0:20} Version: {1}".format(c.name, c.version))
           count += 1
         cluster_index = input("Enter the clusters index number: ")
         print ("You picked cluster " + str(cluster_index))
@@ -272,12 +279,12 @@ def create_updated_class_path(current_class_path, spark_env):
 
     if current_class_path is None:
         #if no class path exist append it to the end of the spark_env.sh config
-        spark_class_path="SPARK_CLASSPATH=\"" + LIB_PATH + "\""
+        spark_class_path = "SPARK_CLASSPATH=\"" + LIB_PATH + "\""
         return spark_env + "\n" + spark_class_path
     else:
         #if a class path already exist search and replace the current class path plus our class path in spark_env.sh
         #config
-        spark_class_path="SPARK_CLASSPATH=\"" + current_class_path + ":" + LIB_PATH + "\""
+        spark_class_path = "SPARK_CLASSPATH=\"" + current_class_path + ":" + LIB_PATH + "\""
         return re.sub('.*SPARK_CLASSPATH=(\".*\"|[^\r\n]*).*', spark_class_path, spark_env)
 
 
@@ -291,7 +298,7 @@ def poll_commands(service, command_name):
     active = True
     while active:
         time.sleep(1)
-        print " . ",
+        print color_text(" . ", WARNING),
         sys.stdout.flush()
         commands = service.get_commands(view="full")
         if commands:
@@ -315,6 +322,7 @@ def deploy_config(service, roles):
     print "Deploying config ",
     service.deploy_client_config(*get_service_names(roles))
     poll_commands(service, "deployClientConfig")
+    print color_text("Config Deployed", GOOD)
 
 def restart_service(service):
     """
@@ -323,11 +331,13 @@ def restart_service(service):
 
     """
     print "\nYou need to restart " + service.name + " service for the config changes to take affect."
-    service_restart = get_arg("Would you like to restart spark now? Type 'yes' to restart.", "no", args.restart)
+    service_restart = get_arg("Would you like to restart spark now? Enter \"" + color_text("yes", GOOD) +
+                              "\" to restart.", "no", args.restart)
     if service_restart is not None and service_restart.strip().lower() == "yes":
         print "Restarting " + service.name,
         service.restart()
         poll_commands(service, "Restart")
+        print color_text("Restarted " + service.name, GOOD)
 
 
 def update_spark_env(group, spark_config_env_sh):
@@ -387,7 +397,7 @@ def get_hdfs_details(services):
     #get hdfs service details
     hdfs_service = find_service(services, "HDFS")
     if hdfs_service is None:
-        print "no hdfs service found"
+        print color_text("no hdfs service found", ERROR)
         exit(1)
 
     hdfs_roles = hdfs_service.get_all_roles()
@@ -411,7 +421,7 @@ def get_zookeeper_details(services):
     """
     zookeeper_service = find_service(services, "ZOOKEEPER")
     if zookeeper_service is None:
-        print "no zookeeper service found"
+        print color_text("no zookeeper service found", ERROR)
         exit(1)
 
     zookeeper_roles = zookeeper_service.get_all_roles()
@@ -435,7 +445,7 @@ def get_spark_details(services):
     """
     spark_service = find_service(services, "SPARK")
     if spark_service is None:
-       print "no spark service found"
+       print color_text("no spark service found", ERROR)
        exit(1)
 
     spark_roles = spark_service.get_all_roles()
@@ -453,7 +463,8 @@ def get_spark_details(services):
 
     #spark_config_env_sh, group = find_config(spark_config_groups, "spark-GATEWAY-BASE",
     #                               "spark-conf/spark-env.sh_client_config_safety_valve")
-    spark_config_env_sh, group = find_config(spark_config_groups, "spark-SPARK_WORKER-BASE", "SPARK_WORKER_role_env_safety_valve")
+    spark_config_env_sh, group = find_config(spark_config_groups, "spark-SPARK_WORKER-BASE",
+                                             "SPARK_WORKER_role_env_safety_valve")
     print spark_config_env_sh
     updated = update_spark_env(group, spark_config_env_sh)
 
@@ -462,6 +473,17 @@ def get_spark_details(services):
         restart_service(spark_service)
 
     return spark_master_role_hostnames, spark_config_executor_total_max_heapsize, spark_config_master_port
+
+def search_replace_config(search, replace, search_text):
+    return re.sub(r'[/]*' + search + ' = .*', replace, search_text)
+
+def search_config(config_key, group_name, search_text):
+    matches = re.search(r'' + config_key + ' = "(?P<' + group_name + '>.*)"', search_text)
+    if matches:
+        return matches.group(group_name)
+    else:
+        return None
+
 
 def get_old_db_details():
     """
@@ -484,22 +506,28 @@ def get_old_db_details():
         application_conf_text = application_conf.read()
         application_conf.close()
 
-        matches =  re.search(r'metastore.connection-postgresql.host = "(?P<host>.*)"', application_conf_text)
-        host = matches.group('host')
-        matches =  re.search(r'metastore.connection-postgresql.port = "(?P<port>.*)"', application_conf_text)
-        port = matches.group('port')
-        matches =  re.search(r'metastore.connection-postgresql.database = "(?P<database>.*)"', application_conf_text)
-        database = matches.group('database')
-        matches =  re.search(r'metastore.connection-postgresql.username = "(?P<username>.*)"', application_conf_text)
-        username = matches.group('username')
-        matches =  re.search(r'metastore.connection-postgresql.password = "(?P<password>.*)"', application_conf_text)
-        password = matches.group('password')
+        host = search_config("metastore.connection-postgresql.host", "host", application_conf_text)
+        port = search_config("metastore.connection-postgresql.port", "port", application_conf_text)
+        database = search_config("metastore.connection-postgresql.database", "database", application_conf_text)
+        username = search_config("metastore.connection-postgresql.username", "username", application_conf_text)
+        password = search_config("metastore.connection-postgresql.password", "password", application_conf_text)
 
-        if matches:
-            skip = get_arg("We detected an existing database configuration. "
-                           "\n Do you want to skip the database configuration and use the existing database settings"
-                           "\n or continue with the database configuration replacing what you currently have?"
-                           "\n Answer 'yes' to skip the database re-configuration.","yes" , args.db_skip_reconfig)
+        #re.search(r'metastore.connection-postgresql.host = "(?P<host>.*)"', application_conf_text)
+        #host = matches.group('host')
+        #matches =  re.search(r'metastore.connection-postgresql.port = "(?P<port>.*)"', application_conf_text)
+        #port = matches.group('port')
+        #matches =  re.search(r'metastore.connection-postgresql.database = "(?P<database>.*)"', application_conf_text)
+        #database = matches.group('database')
+        #matches =  re.search(r'metastore.connection-postgresql.username = "(?P<username>.*)"', application_conf_text)
+        #username = matches.group('username')
+        #matches =  re.search(r'metastore.connection-postgresql.password = "(?P<password>.*)"', application_conf_text)
+        #password = matches.group('password')
+
+        if host:
+            skip = get_arg(WARNING + "\n We detected an existing database configuration. "
+                           "\n To skip the database configuration hit enter. "
+                           "To continue with the database configuration enter \"no\" " + RESET,
+                           "yes", args.db_skip_reconfig)
 
         return host, port, database, username, password, skip
     except IOError:
@@ -516,11 +544,20 @@ def set_db_user_access(db_username):
     """
     #update pg_hba conf file with user entry will only ever be for local host
     print "Configuring postgres access for  \"" + db_username + "\" "
-    pg_hba = open("/var/lib/pgsql/data/pg_hba.conf", 'r+')
+    try:
+        pg_hba = open("/var/lib/pgsql/data/pg_hba.conf", 'r+')
+    except IOError:
+        system("service postgresql initdb")
+        pg_hba = open("/var/lib/pgsql/data/pg_hba.conf", 'r+')
+        restart_db()
+
     pg_hba_text = pg_hba.read()
     pg_hba.seek(0)
-    pg_hba.write("host    all         " + db_username + "      127.0.0.1/32            md5 \n" + pg_hba_text)
+    pg_hba.write("host    all         " + db_username + "      127.0.0.1/32            md5 #IATINSERT\n" + pg_hba_text)
     pg_hba.close()
+
+
+
 
 def create_db_user(db_username, db_password):
     """
@@ -606,7 +643,7 @@ def restart_IA():
 
         count += 1
         if count > IA_START_WAIT_LOOPS:
-            print "Intel Analytics Rest server didn't restart"
+            print color_text("Intel Analytics Rest server didn't restart", ERROR)
             exit(1)
 
     print "\n"
@@ -620,7 +657,7 @@ def get_db_details():
     host, port, database, username, password, skip = get_old_db_details()
     
     if skip == "yes":
-        print "Skipping database configuration"
+        print color_text("Skipping database configuration", WARNING)
         db_host = host
         db_port = port
         db = database
@@ -636,10 +673,6 @@ def get_db_details():
             #create randomly generated hashed password
             password = hashlib.sha1(os.urandom(32).encode('base_64')).digest().encode('base_64').strip()
         db_password = get_arg("What is the database password? The default password was randomly generated.", password, args.db_password)
-
-        #hard code pass and username till db config issues gets fixed TRIB-3737
-        db_username = "metastore"
-        db_password = "Tribeca123"
 
 
 
@@ -666,9 +699,6 @@ def set_db_details(db, db_username, db_password, skip):
         restart_IA()
 
         create_IA_meatauser(db)
-
-def search_replace_config(search, replace, search_text):
-    return re.sub(r'[/]*' + search + ' = .*', replace, search_text)
 
 def create_intel_analytics_config( hdfs_host_name, hdfs_namenode_port, zookeeper_host_names, zookeeper_client_port,
                                    spark_master_host, spark_master_port, spark_worker_memory, python_exec, db_host, db_port, db, db_username, db_password):
@@ -745,7 +775,7 @@ if cloudera_manager_host is None:
         cloudera_manager_host = re.search('(?<=server_host=).*',cloudera_agent_config.read()).group(0)
         cloudera_agent_config.close()
     except IOError:
-        cloudera_manager_host = user_info_prompt("What the hostname of your Cloudera Manager instance? ","localhost")
+        cloudera_manager_host = user_info_prompt("What the hostname of your Cloudera Manager instance? ", "localhost")
 
 
 cloudera_manager_port = cloudera_manager_username = get_arg("What port is Cloudera manager listening on?", 7180,
