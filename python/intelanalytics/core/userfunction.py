@@ -21,30 +21,27 @@
 # must be express and approved by Intel in writing.
 ##############################################################################
 import sys
-from intelanalytics.core.errorhandle import IaError
 from decorator import decorator
 
-def get_python_user_function_decorator():
-    def _python_user_function(function, *args, **kwargs):
-        try:
-            return function(*args, **kwargs)
-        except:
-            exc_info = sys.exc_info()
-            e = exc_info[1]
-            message = str(e)
+def _has_python_user_function_arg(function, *args, **kwargs):
+    try:
+        return function(*args, **kwargs)
+    except:
+        exc_info = sys.exc_info()
+        e = exc_info[1]
+        message = str(e)
 
-            # if there is error from running python user function,
-            # remove the unwanted Spark worker stacktrace
-            filter = "        org.apache.spark.api.python"
-            stop_index = message.find(filter)
-            if(stop_index >= 0):
-                message = message[0:stop_index]
-                e.args = (message,)
+        # if there is error from running python user function,
+        # remove the unwanted Spark worker stacktrace
+        filter = "        org.apache.spark.api.python"
+        stop_index = message.find(filter)
+        if(stop_index >= 0):
+            message = message[0:stop_index]
+            e.args = (message,)
 
-            raise e
+        raise e
 
 
-    def python_user_function(function):
-        return decorator(_python_user_function, function)
+def has_python_user_function_arg(function):
+    return decorator(_has_python_user_function_arg, function)
 
-    return python_user_function
