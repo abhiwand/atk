@@ -111,6 +111,7 @@
         <dependency>
             <groupId>org.apache.spark</groupId>
             <artifactId>spark-core_${scala.short.version}</artifactId>
+            <version>${dep.spark.version}</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.mortbay.jetty</groupId>
@@ -145,7 +146,7 @@
         <dependency>
             <groupId>org.apache.spark</groupId>
             <artifactId>spark-sql_${scala.short.version}</artifactId>
-            <version>1.0.0</version>
+            <version>${dep.spark.version}</version>
             <exclusions>
                 <exclusion>
                     <groupId>com.typesafe</groupId>
