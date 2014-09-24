@@ -183,7 +183,6 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
       case ("dataframe/drop_duplicates") => runDropDuplicates(uri, xform)
       case ("dataframe/bin_column") => runBinColumn(uri, xform)
       case ("dataframe/classification_metric") => runClassificationMetric(uri, xform)
-      case ("dataframe/confusion_matrix") => runConfusionMatrix(uri, xform)
       case s: String => illegalArg("Command name is not supported: " + s)
       case _ => illegalArg("Command name was NOT a string")
     }
@@ -408,23 +407,7 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
 
       validate(test.isSuccess, "Failed to parse file load descriptor: " + getErrorMessage(test)) {
         val args = test.get
-        val result = engine.f_measure(args)
-        val command: Command = result.start
-        complete(decorate(uri + "/" + command.id, command))
-      }
-    }
-  }
-
-  def runConfusionMatrix(uri: Uri, xform: JsonTransform)(implicit user: UserPrincipal) = {
-    // TODO: convert to plugin-style and remove this method
-    {
-      val test = Try {
-        xform.arguments.get.convertTo[ConfusionMatrix[Long]]
-      }
-
-      validate(test.isSuccess, "Failed to parse confusion matrix descriptor: " + getErrorMessage(test)) {
-        val args = test.get
-        val result = engine.confusionMatrix(args)
+        val result = engine.classificationMetrics(args)
         val command: Command = result.start
         complete(decorate(uri + "/" + command.id, command))
       }

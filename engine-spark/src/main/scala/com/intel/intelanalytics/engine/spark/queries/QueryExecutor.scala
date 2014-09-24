@@ -132,12 +132,8 @@ class QueryExecutor(engine: => SparkEngine, queries: SparkQueryStorage, contextM
 
                 val funcResult = query(invocation, arguments)
 
-                val rdd = funcResult match {
-                  case x: RDD[Any] => x
-                  case x: Seq[Any] => context.parallelize(x)
-                  case x: Iterable[Any] => context.parallelize(x.toSeq)
-                  case _ => ???
-                }
+                val rdd: RDD[Any] = funcResult.asInstanceOf[RDD[Any]]
+
                 val location = queries.getAbsoluteQueryDirectory(q.id)
                 val pageSize = SparkEngineConfig.pageSize
                 val totalPages = math.ceil(rdd.count().toDouble / pageSize).toInt
