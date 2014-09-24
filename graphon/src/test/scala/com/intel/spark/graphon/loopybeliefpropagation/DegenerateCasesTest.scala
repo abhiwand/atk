@@ -30,7 +30,7 @@ class DegenerateCasesTest extends FlatSpec with Matchers with TestingSparkContex
     val inputPropertyName = "input_property_name"
     val propertyForLBPOutput = "LBP_VALUE"
 
-    val floatingPointEqualityThreshold : Double = 0.000000001d
+    val floatingPointEqualityThreshold: Double = 0.000000001d
 
   }
 
