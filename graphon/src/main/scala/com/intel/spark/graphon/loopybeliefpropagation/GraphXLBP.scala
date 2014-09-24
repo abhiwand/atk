@@ -3,14 +3,13 @@ package com.intel.spark.graphon.loopybeliefpropagation
 import scala.reflect.ClassTag
 import org.apache.spark.graphx._
 import com.intel.spark.graphon.iatpregel._
-import com.intel.spark.graphon.iatpregel.IATPregelLogger
 import com.intel.graphbuilder.elements.{ Property, Vertex => GBVertex, Edge => GBEdge }
 
 case class VertexState(gbVertex: GBVertex,
                        messages: Map[VertexId, Vector[Double]],
                        prior: Vector[Double],
                        posterior: Vector[Double],
-                       delta: Double)
+                       delta: Double) extends DeltaProvider
 
 object GraphXLBP {
 
@@ -79,34 +78,13 @@ object GraphXLBP {
 
     // logging
 
-    def vertexDataToInitialStatus(vdata: VertexState) = InitialVertexCount(1)
-    def edgeDataToInitialStatus(edata: Double) = InitialEdgeCount(1)
-    def convertStateToStatus(state: VertexState): SuperStepCountNetDelta = SuperStepCountNetDelta(1, state.delta)
-
-    def generateInitialReport(initialVertexStatus: InitialVertexCount, initialEdgeStatus: InitialEdgeCount) = {
-      var report = new StringBuilder("**** LOOPY BELIEF PROPAGATION ****\n")
-
-      report.++=("vertex count = " + initialVertexStatus.vertexCount + "\n")
-      report.++=("edge count = " + initialEdgeStatus.edgeCount + "\n")
-      report.++=("max number of supersteps = " + maxIterations + "\n")
-
-      report.toString()
-    }
-
-    val pregelLogger = IATPregelLogger(InitialVertexCount.emptyInitialStatus,
-      vertexDataToInitialStatus,
-      InitialVertexCount.combine,
-      InitialEdgeCount.emptyInitalStatus,
-      edgeDataToInitialStatus,
-      InitialEdgeCount.combine,
-      generateInitialReport,
-      SuperStepCountNetDelta.accumulateSuperStepStatus,
-      convertStateToStatus,
-      SuperStepCountNetDelta.generateStepReport)
+    val initialReporter = new BasicCountsInitialReport[VertexState, Double]
+    val superStepReporter = new AverageDeltaSuperStepReport[VertexState]
 
     IATPregel(graph,
       initialMessage,
-      pregelLogger,
+      initialReporter,
+      superStepReporter,
       maxIterations = maxIterations,
       activeDirection = EdgeDirection.Either)(vertexProgram, sendMessage, mergeMsg)
   }

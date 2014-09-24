@@ -3,55 +3,57 @@ package com.intel.spark.graphon.iatpregel
 import scala.reflect.ClassTag
 
 import org.apache.spark.graphx._
+import org.apache.spark.rdd.RDD
 
 object IATPregel {
 
   /**
-   * Implements Pregel-like BSP message passing.
-   * Based on the GraphX implementation of Pregel but with richer logging.
+   * Implements Pregel-like BSP message passing. It is the GraphX implementation of Pregel extended with richer logging.
    *
-   * @param graph
-   * @param initialMsg
-   * @param pregelLogger
-   * @param maxIterations
-   * @param activeDirection
-   * @param vprog
-   * @param sendMsg
-   * @param mergeMsg
-   * @tparam VertexData
-   * @tparam EdgeData
-   * @tparam Message
-   * @tparam VertexInitialState
-   * @tparam EdgeInitialState
-   * @tparam SuperStepState
-   * @return
+   * @param graph The graph on which to run the Pregel program. A GraphX graph.
+   * @param initialMsg The initial message to be sent to every vertex at the start of the computation.
+   * @param initialReportGenerator Function that creates the initial summary of vertex and edge data for the log.
+   * @param superStepReportGenerator Function that creates the per-superstep report for the log. It consumes only vertex
+   *                                 data because Pregel programs do not modify edge data.
+   * @param maxIterations The maximum number of supersteps that can be executed in this run.
+   * @param activeDirection The direction of edges incident to a vertex that received a message in
+   * the previous round on which to run `sendMsg`. For example, if this is `EdgeDirection.Out`, only
+   * out-edges of vertices that received a message in the previous round will run. The default is
+   * `EdgeDirection.Either`, which will run `sendMsg` on edges where either side received a message
+   * in the previous round. If this is `EdgeDirection.Both`, `sendMsg` will only run on edges where
+   * *both* vertices received a message.
+   * @param vprog The user-defined vertex program which runs on each
+   * vertex and receives the inbound message and computes a new vertex
+   * value. On the first iteration the vertex program is invoked on
+   * all vertices and is passed the default message. On subsequent
+   * iterations the vertex program is only invoked on those vertices
+   * that receive messages.
+   * @param sendMsg A user supplied function that is applied to out
+   * edges of vertices that received messages in the current
+   * iteration.
+   * @param mergeMsg A user supplied function that takes two incoming
+   * messages of type A and merges them into a single message of type
+   * A. ''This function must be commutative and associative and
+   * ideally the size of A should not increase.''
+   * @tparam VertexData Class of the per-vertex data in the computation.
+   * @tparam EdgeData Class of the per-edge data in the computation
+   * @tparam Message Message type passed during the progress of the
+   * @return Pair of GraphX graph (with updated values) and log string.
    */
-  def apply[VertexData: ClassTag, EdgeData: ClassTag, Message: ClassTag, VertexInitialState: ClassTag, EdgeInitialState: ClassTag, SuperStepState: ClassTag](graph: Graph[VertexData, EdgeData],
-                                                                                                                                                             initialMsg: Message,
-                                                                                                                                                             pregelLogger: IATPregelLogger[VertexData, VertexInitialState, EdgeData, EdgeInitialState, SuperStepState],
-                                                                                                                                                             maxIterations: Int = Int.MaxValue,
-                                                                                                                                                             activeDirection: EdgeDirection = EdgeDirection.Either)(vprog: (VertexId, VertexData, Message) => VertexData,
-                                                                                                                                                                                                                    sendMsg: EdgeTriplet[VertexData, EdgeData] => Iterator[(VertexId, Message)],
-                                                                                                                                                                                                                    mergeMsg: (Message, Message) => Message): (Graph[VertexData, EdgeData], String) = {
-    val sparkContext = graph.vertices.sparkContext // GraphX should put spark context at the graph level.
+  def apply[VertexData: ClassTag, EdgeData: ClassTag, Message: ClassTag](graph: Graph[VertexData, EdgeData],
+                                                                         initialMsg: Message,
+                                                                         initialReportGenerator: InitialReport[VertexData, EdgeData],
+                                                                         superStepReportGenerator: SuperStepReport[VertexData],
+                                                                         maxIterations: Int = Int.MaxValue,
+                                                                         activeDirection: EdgeDirection = EdgeDirection.Either)(vprog: (VertexId, VertexData, Message) => VertexData,
+                                                                                                                                sendMsg: EdgeTriplet[VertexData, EdgeData] => Iterator[(VertexId, Message)],
+                                                                                                                                mergeMsg: (Message, Message) => Message): (Graph[VertexData, EdgeData], String) = {
+    val vdataRDD: RDD[VertexData] = graph.vertices.map({ case (vid, vdata) => vdata })
+    val edataRDD: RDD[EdgeData] = graph.edges.map({ case e: Edge[EdgeData] => e.attr })
 
-    val emptyVertexInitialStatus = pregelLogger.emptyVertexInitialStatus
-    val vertexDataToInitialStatus = pregelLogger.vertexDataToInitialStatus
-    val vertexInitialStatusCombiner = pregelLogger.vertexInitialStatusCombiner
+    val initialReport = initialReportGenerator.generateInitialReport(vdataRDD, edataRDD)
 
-    val emptyEdgeInitialStatus = pregelLogger.emptyEdgeInitialStatus
-    val edgeDataToInitialStatus = pregelLogger.edgeDataToInitialStatus
-    val edgeInitialStatusCombiner = pregelLogger.edgeInitialStatusCombiner
-    val generateInitialReport = pregelLogger.generateInitialReport
-    val accumulateStepStatus = pregelLogger.accumulateStepStatus
-    val convertStateToStatus = pregelLogger.convertStateToStatus
-    val generatePerStepReport = pregelLogger.generatePerStepReport
-
-    val vInitial = (sparkContext.parallelize(List(emptyVertexInitialStatus)).union(graph.vertices.map({ case (vid, vdata) => vertexDataToInitialStatus(vdata) }))).reduce(vertexInitialStatusCombiner)
-
-    val eInitial = (sparkContext.parallelize((List(emptyEdgeInitialStatus))).union(graph.edges.map({ case e: Edge[EdgeData] => edgeDataToInitialStatus(e.attr) }))).reduce(edgeInitialStatusCombiner)
-
-    var log = new StringBuilder(generateInitialReport(vInitial, eInitial))
+    var log = new StringBuilder(initialReport)
 
     var g = graph.mapVertices((vid, vdata) => vprog(vid, vdata, initialMsg)).cache()
 
@@ -81,7 +83,7 @@ object IATPregel {
       // vertices of prevG (depended on by newVerts, oldMessages, and the vertices of g).
       activeMessages = messages.count()
 
-      log.++=(generatePerStepReport(g.vertices.map({ case (id, data) => convertStateToStatus(data) }).reduce(accumulateStepStatus), i))
+      log.++=(superStepReportGenerator.generateSuperStepReport(i, g.vertices.map({ case (vid, vdata) => vdata })))
 
       // Unpersist the RDDs hidden by newly-materialized RDDs
       oldMessages.unpersist(blocking = false)
@@ -97,4 +99,4 @@ object IATPregel {
 
 }
 
-// end of class Pregel
+// end of class IATPregel
