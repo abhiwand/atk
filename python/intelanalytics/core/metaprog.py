@@ -31,27 +31,30 @@ import logging
 logger = logging.getLogger(__name__)
 
 import sys
-import inspect
 import datetime
 from collections import deque
+
+from intelanalytics.core.api import get_api_decorator
 
 _created_classes = {}
 """All the dynamically created loadable classes, added as they are created"""
 
 
+
 # Constants
-IA_URI = '_id'  # TODO: switch over when Anahita finishes the IA_URI switch from _id
+IA_URI = '_id'
 
 COMMAND_DEF = '_command_def'
 COMMAND_PREFIXES = '_command_prefixes'
 INTERMEDIATE_NAME = '_intermediate_name'
-INTERMEDIATE_CLASS = '_intermediate_class'
 LOADED_COMMANDS = '_loaded_commands'
 LOADED_INTERMEDIATE_CLASSES = '_loaded_intermediate_classes'
 MUTED_COMMAND_NAMES = '_muted_command_names'
 
 EXECUTE_COMMAND_FUNCTION_NAME = 'execute_command'
 ALIASED_EXECUTE_COMMAND_FUNCTION_NAME = 'aliased_execute_command'
+
+DOC_STUB = 'doc_stub'
 
 
 class CommandNotLoadedError(NotImplementedError):
@@ -102,7 +105,11 @@ class CommandLoadable(object):
                 if not hasattr(self, private_member_name):
                     logger.debug("Instantiating intermediate class %s as %s", intermediate, private_member_name)
                     instance = intermediate(self, *args, **kwargs)  # pass self as parent
-                    setattr(self, private_member_name, instance)
+                    self._add_intermediate_instance(private_member_name, instance)
+
+    def _add_intermediate_instance(self, private_member_name, instance):
+        logger.debug("Adding intermediate class instance as member %s", private_member_name)
+        setattr(self, private_member_name, instance)
 
     def _get_root_object(self):
         """internal method to enable intermediate member class to get the original loadable class instance"""
@@ -138,12 +145,13 @@ def get_intermediate_class(parent_class, intermediate_name):
     # Validate that if existing member of such a name is already there, it's a getter for the loadable class we want
     if hasattr(parent_class, intermediate_name):
         prop = getattr(parent_class, intermediate_name)
-        if not all([type(prop) is property,
-                    hasattr(prop.fget, INTERMEDIATE_CLASS),
-                    CommandLoadable in inspect.getmro(getattr(prop.fget, INTERMEDIATE_CLASS)),
-                    getattr(prop.fget, INTERMEDIATE_CLASS).__name__ == class_name]):
+        if type(prop) is property and hasattr(prop.fget, DOC_STUB):
+            pass
+        elif type(prop) is not property \
+                or not hasattr(prop.fget, INTERMEDIATE_NAME) \
+                or not getattr(prop.fget, INTERMEDIATE_NAME) == intermediate_name:
             raise ValueError("CommandLoadable Class %s already has a member %s which does not access a loadable class."
-                             % (parent_class.__name__, intermediate_name))
+                         % (parent_class.__name__, intermediate_name))
     return _created_classes.get(class_name, None) or create_intermediate_class(parent_class, intermediate_name)
 
 
@@ -178,7 +186,7 @@ def add_intermediate_class(parent_class, intermediate_name):
 
     # Add a property getter which returns an instance member variable of the
     # same name prefixed w/ an underscore, per convention
-    prop = create_intermediate_property(intermediate_class)
+    prop = create_intermediate_property(intermediate_name)
     setattr(parent_class, intermediate_name, prop)
 
     if not hasattr(parent_class, LOADED_INTERMEDIATE_CLASSES):
@@ -200,7 +208,7 @@ def load_loadable(loadable_class, command_defs, execute_command_function):
     check_loadable_class(loadable_class)
     for command in command_defs:
         if loadable_class._should_load(command):
-            function = create_function(command, execute_command_function)
+            function = create_function(loadable_class, command, execute_command_function)
             # First add any intermediate member classes to provide intended scoping
             current_class = loadable_class
             for intermediate_name in command.intermediates:
@@ -209,8 +217,8 @@ def load_loadable(loadable_class, command_defs, execute_command_function):
 
 
 def add_command(loadable_class, command_def, function):
-    # Add the function if it doesn't already exist
-    if not hasattr(loadable_class, command_def.name):
+    # Add the function if it doesn't already exist or exists as a doc_stub
+    if not hasattr(loadable_class, command_def.name) or hasattr(getattr(loadable_class, command_def.name), DOC_STUB):
         setattr(loadable_class, command_def.name, function)
         if not hasattr(loadable_class, LOADED_COMMANDS):
             setattr(loadable_class, LOADED_COMMANDS, [])
@@ -221,10 +229,12 @@ def add_command(loadable_class, command_def, function):
 def get_execute_command_function_text():
     return '''
 def {execute_command}(_name, **kwargs):
-    """Validates arguments and calls execute_command"""
+    """Validates arguments, calls execute_command, and returns formatted result"""
     from intelanalytics.rest.command import {execute_command} as {alias}
-    arguments = validate_arguments(kwargs, _parameters[_name])
-    return {alias}(_name, **arguments)
+    signature = get_signature(_name)
+    arguments = validate_arguments(kwargs, signature['parameters'])
+    result = {alias}(_name, **arguments)
+    return format_result(result, signature['return_type'])
 '''.format(execute_command=EXECUTE_COMMAND_FUNCTION_NAME, alias=ALIASED_EXECUTE_COMMAND_FUNCTION_NAME)
 
 
@@ -265,70 +275,86 @@ def get_self_argument_text():
     return "self.%s().%s" % (CommandLoadable._get_root_object.__name__, IA_URI)
 
 
-def get_function_text(command_def, validate_args=False):
+def get_function_parameters_text(command_def):
+    return ", ".join(['self' if param.use_self else
+                      param.name if not param.optional else
+                      "%s=%s" % (param.name, _default_val_to_str(param))
+                      for param in command_def.parameters])
+
+
+def get_function_kwargs(command_def):
+    return ", ".join(["%s=%s" % (p.name, p.name if not p.use_self else get_self_argument_text())
+                      for p in command_def.parameters])
+
+
+def get_function_text(command_def, body_text='pass', decorator_text=''):
     """Produces python code text for a command to be inserted into python modules"""
-    calling_args = []
-    signature_args = []
-    name_of_self = ''
-    for param in command_def.parameters:
-        if param.use_self:
-            if name_of_self:
-                raise RuntimeError("Internal Metaprogramming Error: more than one parameter wants to be called 'self'")
-            name = 'self'
-            name_of_self = param.name
-        else:
-            name = param.name
-        signature_args.append(name if not param.optional else "%s=%s" % (param.name, _default_val_to_str(param)))
-        calling_args.append(param.name)
-    text_format = '''def {func_name}({signature_args}):
+    return '''{decorator}
+def {func_name}({parameters}):
     """
     {doc}
     """
-    return {exec_func_name}('{command_full_name}', {kwargs_str})
-'''
-    text = text_format.format(func_name=command_def.name,
-                              signature_args=', '.join(signature_args),
-                              doc=command_def.doc,
-                              exec_func_name=EXECUTE_COMMAND_FUNCTION_NAME,
-                              command_full_name=command_def.full_name,
-                              kwargs_str=", ".join(["%s=%s" % (a, a if a != name_of_self else get_self_argument_text()) for a in calling_args]))
-    return text
+    {body_text}
+'''.format(decorator=decorator_text,
+           func_name=command_def.name,
+           parameters=get_function_parameters_text(command_def),
+           doc=command_def.doc,
+           body_text=body_text)
+
+
+def get_call_execute_command_text(command_def):
+    return "%s('%s', %s)" % (EXECUTE_COMMAND_FUNCTION_NAME,
+                             command_def.full_name,
+                             get_function_kwargs(command_def))
 
 
 def _default_val_to_str(param):
     return param.default if param.default is None or param.data_type not in [str, unicode] else "'%s'" % param.default
 
 
-def create_function(command_def, execute_command_function=None):
+def create_function(loadable_class, command_def, execute_command_function=None):
     """Creates the function which will appropriately call execute_command for this command"""
     execute_command = create_execute_command_function(command_def, execute_command_function)
-    func_text = get_function_text(command_def)
+    func_text = get_function_text(command_def, body_text='return ' + get_call_execute_command_text(command_def), decorator_text='@api')
     func_code = compile(func_text, '<string>', "exec")
     func_globals = {}
-    eval(func_code, {EXECUTE_COMMAND_FUNCTION_NAME: execute_command}, func_globals)
+    api_decorator = get_api_decorator(logging.getLogger(loadable_class.__module__))
+    eval(func_code, {'api': api_decorator, EXECUTE_COMMAND_FUNCTION_NAME: execute_command}, func_globals)
     function = func_globals[command_def.name]
     function.command = command_def
     function.__doc__ = command_def.doc
     return function
 
 
-def get_property_text(intermediate_name):
-    return """@property
-def %s(self):
-    \"""
-    %s
-    \"""
-    return self.%s
-    """ % (intermediate_name, _get_property_doc(intermediate_name), get_private_name(intermediate_name))
-
-
-def create_intermediate_property(intermediate_class):
+def get_property_text(intermediate_class):
     intermediate_name = getattr(intermediate_class, INTERMEDIATE_NAME)
-    private_name = get_private_name(intermediate_name)
+    return """@property
+@{doc_stub}
+def {name}(self):
+    \"""
+    {doc}
+    \"""
+    return {cls}()
+    """.format(doc_stub=doc_stub.__name__,
+               name=intermediate_name,
+               doc=_get_property_doc(intermediate_name),
+               cls=intermediate_class.__name__)
 
+
+def mark_with_intermediate_name(obj, intermediate_name):
+    setattr(obj, INTERMEDIATE_NAME, intermediate_name) # mark the getter in order to recognize name collisions
+
+
+def get_fget(intermediate_name):
+    private_name = get_private_name(intermediate_name)
     def fget(self):
         return getattr(self, private_name)
-    setattr(fget, INTERMEDIATE_CLASS, intermediate_class)  # set the intermediate class for the getter
+    return fget
+
+
+def create_intermediate_property(intermediate_name):
+    fget = get_fget(intermediate_name)
+    mark_with_intermediate_name(fget, intermediate_name)
     doc = _get_property_doc(intermediate_name)
     return property(fget=fget, doc=doc)
 
@@ -337,6 +363,16 @@ def _get_property_doc(intermediate_name):
     return "Access to object's %s functionality" % intermediate_name  # vanilla doc string
 
 
+# def intermediate_class_getter(function):
+#     """Decorator for intermediate class getter properties"""
+#     mark_with_intermediate_name(function, function.__name__)
+#     return function
+
+
+def doc_stub(function):
+    setattr(function, DOC_STUB, function.__name__)
+    return function
+
 #
 # auto*.py generation
 #
@@ -344,9 +380,7 @@ def _get_property_doc(intermediate_name):
 def get_auto_module_text(loaded_class):
     return "\n".join([get_file_header_text(loaded_class),
                       get_loaded_base_class_text(loaded_class),
-                      get_intermediate_classes_text(loaded_class),
-                      get_execute_command_function_text(),
-                      get_parameters_dict_text(loaded_class)])
+                      get_intermediate_classes_text(loaded_class)])
 
 
 def get_file_header_text(loaded_class):
@@ -373,15 +407,33 @@ def get_file_header_text(loaded_class):
 # must be express and approved by Intel in writing.
 ##############################################################################
 
-# Auto-generated file for %s commands (%s)
+# Auto-generated file for {loadable_class} commands ({timestamp})
 #
 # **DO NOT EDIT**
 
+from {module} import {objects}
 
-from intelanalytics.core.iatypes import *
-from intelanalytics.core.metaprog import CommandLoadable, validate_arguments
-from intelanalytics.core.command import Parameter
-""" % (loaded_class.__name__, datetime.datetime.now().isoformat())
+""".format(loadable_class=loaded_class.__name__,
+           timestamp=datetime.datetime.now().isoformat(),
+           module=__name__,
+           objects=", ".join([CommandLoadable.__name__, doc_stub.__name__]))
+
+
+def get_loadable_class_text(class_name, doc, members_text):
+    """
+    Produces code text for a loadable class definition
+    """
+    return '''
+class {name}({base_class}):
+    """
+{doc}
+    """
+
+    def __init__(self, *args, **kwargs):
+        {base_class}.__init__(self, *args, **kwargs)
+
+{members}
+'''.format(name=class_name, base_class=CommandLoadable.__name__, doc=indent(doc), members=members_text)
 
 
 def get_loaded_base_class_name(loaded_class):
@@ -393,16 +445,9 @@ def get_loaded_base_class_text(loaded_class):
     Produces code text for the base class from which the main loadable class
     will inherit the commands --i.e. the main class of the auto*.py file
     """
-    return """
-class %s(CommandLoadable):
-    \"""
-    Contains commands for %s provided by the server
-    \"""
-
-%s
-""" % (get_loaded_base_class_name(loaded_class),
-       loaded_class.__name__,
-       get_members_text(loaded_class) or 'pass')
+    return get_loadable_class_text(get_loaded_base_class_name(loaded_class),
+                                   "Contains commands for %s provided by the server" % loaded_class.__name__,
+                                   get_members_text(loaded_class))
 
 
 def get_intermediate_classes_text(loaded_class):
@@ -412,27 +457,13 @@ def get_intermediate_classes_text(loaded_class):
     if not hasattr(loaded_class, LOADED_INTERMEDIATE_CLASSES):
         return ''
 
-    names = []
     lines = []
     q = deque(getattr(loaded_class, LOADED_INTERMEDIATE_CLASSES))
     while len(q):
         c = q.pop()
-        names.append(c.__name__)
-        lines.append("""
-class %s(CommandLoadable):
-    \"""
-%s
-    \"""
-
-    def __init__(self, *args, **kwargs):
-        %s.__init__(self, *args, **kwargs)
-
-%s
-""" % (c.__name__, indent(c.__doc__), CommandLoadable.__name__, get_members_text(c)))
+        lines.append(get_loadable_class_text(c.__name__, c.__doc__, get_members_text(c)))
         if hasattr(c, LOADED_INTERMEDIATE_CLASSES):
             q.appendleft(getattr(c, LOADED_INTERMEDIATE_CLASSES))
-    if names:
-        lines.append("__all__ = [%s]" % (', '.join(["'%s'" % name for name in names])))
     return "\n".join(lines)
 
 
@@ -442,62 +473,13 @@ def get_members_text(loaded_class):
     that have been loaded into the loadable class
     """
     lines = []
-    init_lines = []
     if hasattr(loaded_class, LOADED_COMMANDS):
         for command in getattr(loaded_class, LOADED_COMMANDS):
-            lines.append(indent(get_function_text(command)))
+            lines.append(indent(get_function_text(command, decorator_text='@' + doc_stub.__name__)))
     if hasattr(loaded_class, LOADED_INTERMEDIATE_CLASSES):
         for intermediate_class in getattr(loaded_class, LOADED_INTERMEDIATE_CLASSES):
-            member_name = getattr(intermediate_class, INTERMEDIATE_NAME)
-            init_lines.append(indent("self.%s = %s(self)" % (get_private_name(member_name), intermediate_class.__name__)))
-            lines.append(indent(get_property_text(member_name)))
-    if init_lines:
-        lines.insert(0, indent("""def __init__(self, *args, **kwargs):
-    %s.__init__(self)
-%s
-""" % (CommandLoadable.__name__, "\n".join(init_lines))))
-
+            lines.append(indent(get_property_text(intermediate_class)))
     return "\n".join(lines)
-
-
-def get_parameters_dict_text(loaded_class):
-    """
-    Produces code text to define a dict which contains all the Parameter info
-    for the commands defined in this auto*.py file.
-    """
-    # The parameter info must be available for argument coercion when the
-    # commands are executed.  We must write it in hard-coded text since we
-    # are not relying on the server info once the auto*.py file is written.
-    q = deque([loaded_class])
-    lines = []
-    while len(q):
-        current_class = q.pop()
-        if hasattr(current_class, LOADED_COMMANDS):
-            lines.extend([_get_parameters_text(loaded_class, command)  # loaded_class needs to stay root obj
-                for command in getattr(current_class, LOADED_COMMANDS)])
-        if hasattr(current_class, LOADED_INTERMEDIATE_CLASSES):
-            q.extendleft(getattr(current_class, LOADED_INTERMEDIATE_CLASSES))
-
-    return """
-# Parameter definitions for argument validation.  Disregard values for default and doc.  They are overridden to None.
-_parameters = {
-    %s
-}""" % ",\n    ".join(lines)
-
-
-def _get_parameters_text(loaded_class, command_def):
-    return "'%s':[\n        %s]" % (command_def.full_name, ",\n        ".join(_get_parameter_construction_text(loaded_class, p) for p in command_def.parameters))
-
-
-def _get_parameter_data_type_text(loaded_class, parameter):
-    # TODO - remove the None compensation --this should never happen (binColumn and maybe others are producing a None currently)
-    return 'None' if parameter.data_type is None\
-        else get_loaded_base_class_name(loaded_class) if parameter.data_type is loaded_class\
-        else parameter.data_type.__name__
-
-
-def _get_parameter_construction_text(loaded_class, parameter):
-    return "Parameter(name='%s', data_type=%s, use_self=%s, optional=%s, default=None, doc=None)" % (parameter.name, _get_parameter_data_type_text(loaded_class, parameter), parameter.use_self, parameter.optional)
 
 
 def indent(text, spaces=4):

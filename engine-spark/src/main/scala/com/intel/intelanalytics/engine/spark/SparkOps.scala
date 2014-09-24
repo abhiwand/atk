@@ -707,7 +707,7 @@ private[spark] object SparkOps extends Serializable {
       case ((j: Int, "AVG"), DataTypes.float64) => elem.map(e => e(j).asInstanceOf[Double]).sum / elem.length
 
       case ((j: Int, "COUNT"), _) => elem.length
-      case ((j: Int, "COUNT_DISTINCT"), _) => elem.map(e => e(j)).distinct.length
+      case ((j: Int, "COUNT_DISTINCT"), _) => elem.map(e => e(j)).distinct.length.asInstanceOf[Long]
 
       case ((j: Int, "VAR"), DataTypes.int32) =>
         val elements: Seq[Int] = elem.map(e => e(j).asInstanceOf[Int])
@@ -766,9 +766,14 @@ private[spark] object SparkOps extends Serializable {
       i <- args_pair
     } yield {
       i._2 match {
-        case "COUNT" | "COUNT_DISTINCT" => DataTypes.int64
+        case "COUNT" | "COUNT_DISTINCT" => DataTypes.int32
         case "SUM" | "MIN" | "MAX" => schema(i._1)._2
-        case _ => DataTypes.float64
+        case _ => {
+          if (schema(i._1)._2.toString.contains("32"))
+            DataTypes.float32
+          else
+            DataTypes.float64
+        }
       }
     }
 
@@ -816,7 +821,7 @@ private[spark] object SparkOps extends Serializable {
    * the mapping created earlier. emit (T, i * (1 - j))
    * 4. reduce by key, which is quantile. Sum all partial results to get the final quantile values.
    */
-  def quantiles(rdd: RDD[Row], quantiles: Seq[Int], columnIndex: Int, dataType: DataType): Seq[Quantile] = {
+  def quantiles(rdd: RDD[Row], quantiles: Seq[Double], columnIndex: Int, dataType: DataType): Seq[Quantile] = {
     val totalRows = rdd.count()
     val pairRdd = rdd.map(row => SparkOps.createKeyValuePairFromRow(row, List(columnIndex))).map { case (keyColumns, data) => (keyColumns(0).toString.toDouble, data) }
     val sorted = pairRdd.asInstanceOf[RDD[(Double, Row)]].sortByKey(true)
@@ -828,7 +833,7 @@ private[spark] object SparkOps extends Serializable {
     //generate data that has keys as quantiles and values as column data times weight
     val quantilesComponentsRDD = sorted.mapPartitionsWithIndex((partitionIndex, rows) => {
       var rowIndex: Long = (if (partitionIndex == 0) 0 else sumsAndCounts(partitionIndex - 1)._2) + 1
-      val perPartitionResult = ListBuffer[(Int, BigDecimal)]()
+      val perPartitionResult = ListBuffer[(Double, BigDecimal)]()
 
       for (row <- rows) {
         if (quantileTargetMapping.contains(rowIndex)) {
@@ -855,18 +860,18 @@ private[spark] object SparkOps extends Serializable {
    * For example, 25th quantile out of 10 rows(X1, X2, X3, ... X10) will be
    * 0.5 * x2 + 0.5 * x3. The method will return x2 and x3 with weight as 0.5
    *
-   * For whole quantile calculation process, please refer to doc of method calculatePercentiles
+   * For whole quantile calculation process, please refer to doc of method calculateQuantiles
    * @param totalRows
    * @param quantile
    */
-  def getQuantileComposingElements(totalRows: Long, quantile: Int): Seq[QuantileComposingElement] = {
+  def getQuantileComposingElements(totalRows: Long, quantile: Double): Seq[QuantileComposingElement] = {
     val position = (BigDecimal(quantile) * totalRows) / 100
     var integerPosition = position.toLong
     val fractionPosition = position - integerPosition
 
     val result = mutable.ListBuffer[QuantileComposingElement]()
 
-    val addQuantileComposingElement = (position: Long, quantile: Int, weight: BigDecimal) => {
+    val addQuantileComposingElement = (position: Long, quantile: Double, weight: BigDecimal) => {
       //element starts from 1. therefore X0 equals X1
       if (weight > 0)
         result += QuantileComposingElement(if (position != 0) position else 1, QuantileTarget(quantile, weight))
@@ -882,9 +887,9 @@ private[spark] object SparkOps extends Serializable {
    * @param totalRows total number of rows in the data
    * @param quantiles Sequence of quantiles to search
    *
-   * For whole quantile calculation process, please refer to doc of method calculatePercentiles
+   * For whole quantile calculation process, please refer to doc of method calculateQuantiles
    */
-  def getQuantileTargetMapping(totalRows: Long, quantiles: Seq[Int]): Map[Long, Seq[QuantileTarget]] = {
+  def getQuantileTargetMapping(totalRows: Long, quantiles: Seq[Double]): Map[Long, Seq[QuantileTarget]] = {
 
     val composingElements: Seq[QuantileComposingElement] = quantiles.flatMap(quantile => getQuantileComposingElements(totalRows, quantile))
 
