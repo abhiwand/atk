@@ -91,6 +91,8 @@ class TestUserFunc(unittest.TestCase):
         except Exception as ex:
             # verify that the spark worker stacktrace is removed from the message
             self.assertTrue(ex.args[0].find(filter) < 0)
+        else:
+            self.fail()
 
 
 
