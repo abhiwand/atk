@@ -30,6 +30,9 @@ logger = logging.getLogger(__name__)
 from intelanalytics.core.api import get_api_decorator
 api = get_api_decorator(logger)
 
+from intelanalytics.core.python_user_function import get_python_user_function_decorator
+python_user_function = get_python_user_function_decorator()
+
 from intelanalytics.core.column import BigColumn
 from intelanalytics.core.errorhandle import IaError
 
@@ -514,8 +517,8 @@ class BigFrame(CommandLoadableBigFrame):
         except:
             raise IaError(logger)
 
-
     @api
+    @python_user_function
     def add_columns(self, func, schema):
         """
         Add column.
@@ -1079,6 +1082,7 @@ class BigFrame(CommandLoadableBigFrame):
         self.drop_rows(predicate)
 
     @api
+    @python_user_function
     def drop_rows(self, predicate):
         """
         Drop rows.
@@ -1196,6 +1200,7 @@ class BigFrame(CommandLoadableBigFrame):
         return self._backend.ecdf(self, sample_col)
 
     @api
+    @python_user_function
     def filter(self, predicate):
         """
         Select data.
