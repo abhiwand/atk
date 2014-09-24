@@ -68,22 +68,12 @@ class QueryService(commonDirectives: CommonDirectives, engine: Engine) extends D
    * @param data iterable to return in response
    * @return JSON friendly version of data
    */
-  def dataToJson(data: Iterable[Any]): List[JsValue] = {
+  def dataToJson(data: Iterable[Array[Any]]): List[JsValue] = {
     import com.intel.intelanalytics.domain.DomainJsonProtocol._
-    data match {
-      case x: Iterable[Array[Any]] => {
-        x.map(row => row.map {
-          case null => JsNull
-          case a => a.toJson
-        }.toJson).toList
-      }
-      case x: Iterable[Any] => {
-        data.map {
-          case null => JsNull
-          case a => a.toJson
-        }.toList
-      }
-    }
+    data.map(row => row.map {
+      case null => JsNull
+      case a => a.toJson
+    }.toJson).toList
   }
 
   val prefix = QueryService.prefix
