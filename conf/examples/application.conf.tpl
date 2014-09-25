@@ -9,6 +9,11 @@
 # BEGIN REQUIRED SETTINGS
 
 intel.analytics {
+    #bind address - change to 0.0.0.0 to listen on all interfaces
+    //api.host = "127.0.0.1"
+
+    #bind port
+    //api.port = 9099
 
     # The host name for the Postgresql database in which the metadata will be stored
     //metastore.connection-postgresql.host = "invalid-postgresql-host"
@@ -61,12 +66,6 @@ intel.analytics {
       #this is reported by the API server in the /info results - it can be used to identify
       #a particular server or cluster
       //identifier = "ia"
-
-	  #bind address - change to 0.0.0.0 to listen on all interfaces
-      //host = "127.0.0.1"
-
-	  #bind port
-      //port = 9099
 
       #The default page size for result pagination
       //default-count = 20
