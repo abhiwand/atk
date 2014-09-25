@@ -1,4 +1,4 @@
-package com.intel.spark.graphon.loopybeliefpropagation
+package com.intel.spark.graphon
 
 /**
  * A library of routines for performing normed linear algebra with vectors represented as Vector[Double]

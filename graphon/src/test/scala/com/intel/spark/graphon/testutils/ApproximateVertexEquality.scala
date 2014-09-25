@@ -1,7 +1,7 @@
 package com.intel.spark.graphon.testutils
 
 import com.intel.graphbuilder.elements.{ Property, Vertex => GBVertex, Edge => GBEdge }
-import com.intel.spark.graphon.loopybeliefpropagation.VectorMath
+import com.intel.spark.graphon.VectorMath
 
 object ApproximateVertexEquality {
 

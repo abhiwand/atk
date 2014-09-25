@@ -6,6 +6,7 @@ import org.scalatest.{ Matchers, FlatSpec }
 import com.intel.testutils.TestingSparkContextFlatSpec
 import com.intel.graphbuilder.elements.{ Property, Vertex => GBVertex, Edge => GBEdge }
 import com.intel.spark.graphon.testutils.ApproximateVertexEquality
+import com.intel.spark.graphon.VectorMath
 
 /**
  * For graphs that are trees, belief propagation is known to converge to the exact solution with a number of iterations

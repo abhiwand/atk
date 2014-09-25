@@ -4,6 +4,7 @@ import scala.reflect.ClassTag
 import org.apache.spark.graphx._
 import com.intel.spark.graphon.iatpregel._
 import com.intel.graphbuilder.elements.{ Property, Vertex => GBVertex, Edge => GBEdge }
+import com.intel.spark.graphon.VectorMath
 
 case class VertexState(gbVertex: GBVertex,
                        messages: Map[VertexId, Vector[Double]],
