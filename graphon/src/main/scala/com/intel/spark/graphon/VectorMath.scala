@@ -25,25 +25,27 @@ object VectorMath {
   }
 
   /**
-   * Take the per-component sum of two vectors. If one vector is shorter than the other, the shorter is padded with 0s.
+   * Take the per-component sum of two vectors. If one vector is shorter than the other, the shorter is padded with
+   * the optional padding value, which defaults to 0.
    * @param v1 First input vector.
    * @param v2 Second input vector.
+   * @param padValue The value used to pad out the shorter vector. Default value is 0.
    * @return The component-wise sum of the two vectors. If their lengths differ, the result is truncated to the length
    *         of the shorter.
    */
-  def sum(v1: Vector[Double], v2: Vector[Double]): Vector[Double] = {
+  def sum(v1: Vector[Double], v2: Vector[Double], padValue: Double = 0d): Vector[Double] = {
     val length1 = v1.length
     val length2 = v2.length
 
     val liftedV1 = if (length1 < length2) {
-      v1 ++ (1 to (length2 - length1)).map(x => 0d)
+      v1 ++ (1 to (length2 - length1)).map(x => padValue)
     }
     else {
       v1
     }
 
     val liftedV2 = if (length2 < length1) {
-      v2 ++ (1 to (length1 - length2)).map(x => 0d)
+      v2 ++ (1 to (length1 - length2)).map(x => padValue)
     }
     else {
       v2
@@ -76,7 +78,10 @@ object VectorMath {
       None
     }
     else {
-      Some(componentwiseExponentiation(vectors.map(componentwiseLog(_)).reduce(sum)))
+      val logs: List[Vector[Double]] = vectors.map(componentwiseLog(_))
+      val sumOfLogs: Vector[Double] = logs.reduce(sum(_, _, Double.NegativeInfinity))
+      val product = componentwiseExponentiation(sumOfLogs)
+      Some(product)
     }
   }
 
@@ -85,7 +90,12 @@ object VectorMath {
    * @return The l1 norm of the vector.
    */
   def l1Norm(v: Vector[Double]): Double = {
-    v.map(x => Math.abs(x)).reduce(_ + _)
+    if (v.isEmpty) {
+      0d
+    }
+    else {
+      v.map(x => Math.abs(x)).reduce(_ + _)
+    }
   }
 
   /**
