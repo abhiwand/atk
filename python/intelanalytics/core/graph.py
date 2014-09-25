@@ -57,7 +57,7 @@ def get_graph_names():
     """
     Get graph names.
 
-    Gets the names of BigGraph objects available for retrieval.
+    Gets the names of graphs available for retrieval.
 
     Returns
     -------
@@ -70,6 +70,9 @@ def get_graph_names():
     Get the graph names::
 
         my_names = ia.get_graph_names()
+        print my_names
+        
+        ['incomes', 'movies', 'virus']
 
     my_names is now ["incomes", "movies", "virus"]
 
