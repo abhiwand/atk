@@ -94,11 +94,11 @@ class TreesTest extends FlatSpec with Matchers with TestingSparkContextFlatSpec 
 
     // calculate expected posteriors
 
-    val expectedPosterior1 = VectorMath.l1Normalize(VectorMath.overflowProtectedProduct(firstNodePriors, message3to1))
-    val expectedPosterior2 = VectorMath.l1Normalize(VectorMath.overflowProtectedProduct(secondNodePriors, message3to2))
-    val expectedPosterior3 = VectorMath.l1Normalize(VectorMath.overflowProtectedProduct(List(thirdNodePriors, message1to3, message2to3, message4to3)))
-    val expectedPosterior4 = VectorMath.l1Normalize(VectorMath.overflowProtectedProduct(List(fourthNodePriors, message3to4, message5to4)))
-    val expectedPosterior5 = VectorMath.l1Normalize(VectorMath.overflowProtectedProduct(fifthNodePriors, message4to5))
+    val expectedPosterior1 = VectorMath.l1Normalize(VectorMath.overflowProtectedProduct(firstNodePriors, message3to1).get)
+    val expectedPosterior2 = VectorMath.l1Normalize(VectorMath.overflowProtectedProduct(secondNodePriors, message3to2).get)
+    val expectedPosterior3 = VectorMath.l1Normalize(VectorMath.overflowProtectedProduct(List(thirdNodePriors, message1to3, message2to3, message4to3)).get)
+    val expectedPosterior4 = VectorMath.l1Normalize(VectorMath.overflowProtectedProduct(List(fourthNodePriors, message3to4, message5to4)).get)
+    val expectedPosterior5 = VectorMath.l1Normalize(VectorMath.overflowProtectedProduct(fifthNodePriors, message4to5).get)
 
     val expectedPosteriors: Map[Long, Vector[Double]] = Map(1.toLong -> expectedPosterior1, 2.toLong -> expectedPosterior2,
       3.toLong -> expectedPosterior3, 4.toLong -> expectedPosterior4, 5.toLong -> expectedPosterior5)

@@ -34,7 +34,7 @@ object GraphXLBP {
 
       val messageValues: List[Vector[Double]] = messages.toList.map({ case (k, v) => v })
 
-      val productOfPriorAndMessages: Vector[Double] = VectorMath.overflowProtectedProduct(prior :: messageValues)
+      val productOfPriorAndMessages: Vector[Double] = VectorMath.overflowProtectedProduct(prior :: messageValues).get
 
       val posterior = VectorMath.l1Normalize(productOfPriorAndMessages)
 
@@ -55,7 +55,7 @@ object GraphXLBP {
       val messagesNotFromDestinationValues: List[Vector[Double]] =
         messagesNotFromDestination.map({ case (k, v) => v }).toList
 
-      val reducedMessages = VectorMath.overflowProtectedProduct(prior :: messagesNotFromDestinationValues)
+      val reducedMessages = VectorMath.overflowProtectedProduct(prior :: messagesNotFromDestinationValues).get
 
       val statesUNPosteriors = stateRange.zip(reducedMessages)
 
