@@ -43,11 +43,11 @@ import scala.collection.JavaConverters._
 import com.intel.intelanalytics.domain.command.CommandDoc
 
 case class Lda(graph: GraphReference,
-               edge_value_property_list: Option[String],
-               input_edge_label_list: Option[String],
-               output_vertex_property_list: Option[String],
-               vertex_type_property_key: Option[String],
-               vector_value: Option[String],
+               edge_value_property_list: List[String],
+               input_edge_label_list: List[String],
+               output_vertex_property_list: List[String],
+               vertex_type: String,
+               vector_value: Boolean,
                max_supersteps: Option[Int] = None,
                alpha: Option[Float] = None,
                beta: Option[Float] = None,
@@ -70,15 +70,15 @@ class LatentDirichletAllocation
     extendedSummary = Some("""
     Parameters
     ----------
-    edge_value_property_list : Comma Separated String
+    edge_value_property_list : List of String
         The edge properties which contain the input edge values.
         We expect comma-separated list of property names  if you use
         more than one edge property.
 
-    input_edge_label_list : Comma Separated String
+    input_edge_label_list : List of String
         The name of edge label.
 
-    output_vertex_property_list : Comma Separated List
+    output_vertex_property_list : List of String
         The list of vertex properties to store output vertex values.
 
     vertex_type : String
@@ -161,7 +161,7 @@ class LatentDirichletAllocation
 
     Examples
     --------
-    g.ml.latent_dirichlet_allocation(edge_value_property_list = "word_count", vertex_type_property_key = "vertex_type", input_edge_label_list = "contains", output_vertex_property_list = "lda_result ", vector_value = "true", num_topics = 3)
+    g.ml.latent_dirichlet_allocation(edge_value_property_list = ["word_count"], vertex_type = "vertex_type", input_edge_label_list = ["contains"], output_vertex_property_list = ["lda_result"], vector_value = True, num_topics = 3)
 
     The expected output is like this
     {u'value': u'======Graph Statistics======\nNumber of vertices: 12 (doc: 6, word: 6)\nNumber of edges: 12\n\n======LDA Configuration======\nnumTopics: 3\nalpha: 0.100000\nbeta: 0.100000\nconvergenceThreshold: 0.000000\nbidirectionalCheck: false\nmaxSupersteps: 20\nmaxVal: Infinity\nminVal: -Infinity\nevaluateCost: false\n\n======Learning Progress======\nsuperstep = 1\tmaxDelta = 0.333682\nsuperstep = 2\tmaxDelta = 0.117571\nsuperstep = 3\tmaxDelta = 0.073708\nsuperstep = 4\tmaxDelta = 0.053260\nsuperstep = 5\tmaxDelta = 0.038495\nsuperstep = 6\tmaxDelta = 0.028494\nsuperstep = 7\tmaxDelta = 0.020819\nsuperstep = 8\tmaxDelta = 0.015374\nsuperstep = 9\tmaxDelta = 0.011267\nsuperstep = 10\tmaxDelta = 0.008305\nsuperstep = 11\tmaxDelta = 0.006096\nsuperstep = 12\tmaxDelta = 0.004488\nsuperstep = 13\tmaxDelta = 0.003297\nsuperstep = 14\tmaxDelta = 0.002426\nsuperstep = 15\tmaxDelta = 0.001783\nsuperstep = 16\tmaxDelta = 0.001311\nsuperstep = 17\tmaxDelta = 0.000964\nsuperstep = 18\tmaxDelta = 0.000709\nsuperstep = 19\tmaxDelta = 0.000521\nsuperstep = 20\tmaxDelta = 0.000383'}
@@ -190,11 +190,11 @@ class LatentDirichletAllocation
 
     GiraphConfigurationUtil.initializeTitanConfig(hConf, titanConf, graph)
 
-    GiraphConfigurationUtil.set(hConf, "input.edge.value.property.key.list", arguments.edge_value_property_list)
-    GiraphConfigurationUtil.set(hConf, "input.edge.label.list", arguments.input_edge_label_list)
-    GiraphConfigurationUtil.set(hConf, "output.vertex.property.key.list", arguments.output_vertex_property_list)
-    GiraphConfigurationUtil.set(hConf, "vertex.type.property.key", arguments.vertex_type_property_key)
-    GiraphConfigurationUtil.set(hConf, "vector.value", arguments.vector_value)
+    GiraphConfigurationUtil.set(hConf, "input.edge.value.property.key.list", Some(arguments.edge_value_property_list.mkString(",")))
+    GiraphConfigurationUtil.set(hConf, "input.edge.label.list", Some(arguments.input_edge_label_list.mkString(",")))
+    GiraphConfigurationUtil.set(hConf, "output.vertex.property.key.list", Some(arguments.output_vertex_property_list.mkString(",")))
+    GiraphConfigurationUtil.set(hConf, "vertex.type.property.key", Some(arguments.vertex_type))
+    GiraphConfigurationUtil.set(hConf, "vector.value", Some(arguments.vector_value.toString))
 
     val giraphConf = new GiraphConfiguration(hConf)
 
