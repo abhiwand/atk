@@ -20,6 +20,7 @@
 # estoppel or otherwise. Any license under such intellectual property rights
 # must be express and approved by Intel in writing.
 ##############################################################################
+import re
 import sys
 from decorator import decorator
 
@@ -30,17 +31,19 @@ def _has_python_user_function_arg(function, *args, **kwargs):
         exc_info = sys.exc_info()
         e = exc_info[1]
         message = str(e)
+        lines = message.split("\n")
 
-        # if there is error from running python user function,
-        # remove the unwanted Spark worker stacktrace
-        filter = "        org.apache.spark.api.python"
-        stop_index = message.find(filter)
-        if(stop_index >= 0):
-            message = message[0:stop_index]
-            e.args = (message,)
+        eligibal_lines = []
 
+        # match the server side stack trace from running python user function and remove it
+        regex = re.compile(".*java:[0-9]+.*|.*scala:[0-9]+.*|Driver stacktrace.*")
+        for line in lines:
+            if regex.search(line) is None:
+                eligibal_lines.append(line)
+
+        message = "\n".join(eligibal_lines)
+        e.args = (message,)
         raise e
-
 
 def has_python_user_function_arg(function):
     return decorator(_has_python_user_function_arg, function)
