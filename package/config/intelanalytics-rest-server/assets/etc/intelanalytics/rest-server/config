@@ -26,14 +26,23 @@ Requirements:
     Clouderas python cm-api http://cloudera.github.io/cm_api/
     working Cloudera manager with at least a single cluster
     Intel Analytics installation
+    sudo access
 
 This script queries Cloudera manager to get the host names of the machines running the following roles.
  -ZOOKEEPER server(the zookeeper role is actually called 'server')
  -HDFS name node
  -SPARK master
 It also updates the spark-env.sh config in Cloudera manager with a necessary export of SPARK_CLASSPATH
-needed for graph processing. The spark service config is re-deployed and the service is restarted. If the Intel Analytics
-class path is already present no updates are done, the config is not deployed and the spark service is not restarted.
+needed for graph processing. The spark service config is re-deployed and the service is restarted.
+If the Intel Analytics class path is already present no updates are done,
+the config is not deployed and the spark service is not restarted.
+
+CAUTION:
+    You can run this script many times to pull the latest configuration details from Cloudera manager but care should
+    be taken when getting asked the questions to configure the database. If any existing database configurations exist
+    you will be asked if you would like to skip the database configuration and default to previous settings or
+    continue with fresh settings. If you do change database configurations the Intel Analytics rest server will loose
+    all knowledge of any frames, graphs and other processed data that might have been created.
 
 Command Line Arguments
     Every command line argument has a corresponding user prompt. If the command line argument is given the prompt will
@@ -51,16 +60,27 @@ Command Line Arguments
 --cluster The Cloudera cluster we will pull and update config for. If Cloudera manager manages more than one cluster
     we need to know what cluster we will be updating and pulling our config for. Can give the display name of the
     cluster
+
 --python The python exec you would like to use. Intel Analytics defaults to python. This is usually changed to the
     python 2.7 exec to allow users the ability to use ipython. The server and the client must be runnig the same
     python version
+
 --restart Weather or not we will restart the spark service after setting the spark classpath. After the SPARK_CLASSPATH
     gets updated we deploy the new config but we also need to restart the spark service for the changes to take effect
     on all the master and worker nodes. This is left to the user to decide in case spark is currently busy running some
     jobs
---db-port
---db-username
---db-password
+
+--db-host the hostname of your postgres database. will default to localhost
+
+--db-port the port number for your postgres installation. will default to 5432
+
+--db the postgres database name. will default to ia_metastore
+
+--db-username the database user name. will default to iauser
+
+--db-password the database password. will default to random hash
+
+--db-skip-reconfig weather or not you want to skip database config if we find an existing config
 
     TODO: Configure database when the configuration script is done.
 """
@@ -77,7 +97,8 @@ parser.add_argument("--host", type=str, help="Cloudera Manager Host")
 parser.add_argument("--port", type=int, help="Cloudera Manager Port")
 parser.add_argument("--username", type=str, help="Cloudera Manager User Name")
 parser.add_argument("--password", type=str, help="Cloudera Manager Password")
-parser.add_argument("--cluster", type=str, help="Cloudera Manager Cluster Name if more than one cluster is managed by Cloudera Manager.")
+parser.add_argument("--cluster", type=str, help="Cloudera Manager Cluster Name if more than one cluster is managed by "
+                                                "Cloudera Manager.")
 parser.add_argument("--python", type=str, help="The name of the python executable to use. It must be in the path")
 parser.add_argument("--restart", type=str, help="Weather or not to restart spark service after config changes")
 parser.add_argument("--db-host", type=str, help="Database host name")
@@ -512,17 +533,6 @@ def get_old_db_details():
         username = search_config("metastore.connection-postgresql.username", "username", application_conf_text)
         password = search_config("metastore.connection-postgresql.password", "password", application_conf_text)
 
-        #re.search(r'metastore.connection-postgresql.host = "(?P<host>.*)"', application_conf_text)
-        #host = matches.group('host')
-        #matches =  re.search(r'metastore.connection-postgresql.port = "(?P<port>.*)"', application_conf_text)
-        #port = matches.group('port')
-        #matches =  re.search(r'metastore.connection-postgresql.database = "(?P<database>.*)"', application_conf_text)
-        #database = matches.group('database')
-        #matches =  re.search(r'metastore.connection-postgresql.username = "(?P<username>.*)"', application_conf_text)
-        #username = matches.group('username')
-        #matches =  re.search(r'metastore.connection-postgresql.password = "(?P<password>.*)"', application_conf_text)
-        #password = matches.group('password')
-
         if host:
             skip = get_arg(WARNING + "\n We detected an existing database configuration. "
                            "\n To skip the database configuration hit enter. "
@@ -633,7 +643,7 @@ def restart_IA():
 
     output_log_text = get_IA_log()
     count = 0
-    #When we get the Bount to message the server has finished restarting
+    #When we get the Bound to message the server has finished restarting
     while re.search("Bound to.*:.*", output_log_text) is None:
         print " . ",
         sys.stdout.flush()
@@ -700,6 +710,8 @@ def set_db_details(db, db_username, db_password, skip):
 
         create_IA_meatauser(db)
 
+        print color_text("postgres is configured", GOOD)
+
 def create_intel_analytics_config( hdfs_host_name, hdfs_namenode_port, zookeeper_host_names, zookeeper_client_port,
                                    spark_master_host, spark_master_port, spark_worker_memory, python_exec, db_host, db_port, db, db_username, db_password):
     """
@@ -759,10 +771,11 @@ def create_intel_analytics_config( hdfs_host_name, hdfs_namenode_port, zookeeper
                                             'metastore.connection-postgresql.password = "' + db_password + '"',
                                             config_tpl_text)
 
-    print "Writing application.conf"
+
     config = open(config_file_path, "w")
     config.write(config_tpl_text)
     config.close()
+    print color_text("Configuration created for Intel Analytics", GOOD)
 
 #get the Cloudera manager host
 cloudera_manager_host = args.host if args.host else None
@@ -829,8 +842,10 @@ if cluster:
 
     set_db_details(db, db_username, db_password, db_skip)
 
+    print color_text("Intel Analytics is ready for use.")
+
 else:
-    print "No cluster selected"
+    print color_text("No cluster selected.", ERROR)
     exit(1)
 
 
