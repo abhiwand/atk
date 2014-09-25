@@ -46,7 +46,7 @@ case class Als(graph: GraphReference,
                output_vertex_property_list: List[String],
                vertex_type_property_key: String,
                edge_type_property_key: String,
-               vector_value: Option[Boolean] = false,
+               vector_value: Option[Boolean] = None,
                max_supersteps: Option[Int] = None,
                convergence_threshold: Option[Double] = None,
                als_lambda: Option[Float] = None,
@@ -226,7 +226,7 @@ The expected output is like this
     GiraphConfigurationUtil.set(hConf, "output.vertex.property.key.list", Some(arguments.output_vertex_property_list.mkString(",")))
     GiraphConfigurationUtil.set(hConf, "vertex.type.property.key", Some(arguments.vertex_type_property_key))
     GiraphConfigurationUtil.set(hConf, "edge.type.property.key", Some(arguments.edge_type_property_key))
-    GiraphConfigurationUtil.set(hConf, "vector.value", arguments.vector_value)
+    GiraphConfigurationUtil.set(hConf, "vector.value", Some(arguments.vector_value.getOrElse(false).toString))
     GiraphConfigurationUtil.set(hConf, "output.vertex.bias", biasOnOption)
 
     val giraphConf = new GiraphConfiguration(hConf)
