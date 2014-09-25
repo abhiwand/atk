@@ -78,18 +78,6 @@ intel.analytics {
       //request-timeout = 29s
     }
 
-	#Connection information for the database where IAT will store its system metadata
-	metastore {
-	    connection-postgresql {
-          //port = 5432
-          //database = "metastore"
-		  //username = "metastore"
-		  //password = "Tribeca123"
-	    }
-
-		//connection = ${intel.analytics.metastore.connection-postgresql}
-	}
-
 	#Configuration for the IAT processing engine
 	engine {
 	    //default-timeout = 30s
