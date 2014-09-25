@@ -9,25 +9,6 @@ import org.apache.spark.SparkContext._
 
 object LbpRunner {
 
-  def lbpVertexStateFromGBVertex(gbVertex: GBVertex, inputPropertyName: String): VertexState = {
-
-    val prior = gbVertex.getProperty(inputPropertyName).get.value.asInstanceOf[Vector[Double]]
-
-    val sum = prior.reduce(_ + _)
-    val posterior = prior.map(x => x / sum)
-
-    VertexState(gbVertex, Map(), prior, posterior, 0.0d)
-
-  }
-
-  def outputGBVertrexfromLBPVertexState(vertexState: VertexState, outputPropertyLabel: String) = {
-    val oldGBVertex = vertexState.gbVertex
-
-    val properties = oldGBVertex.properties + Property(outputPropertyLabel, vertexState.posterior)
-
-    GBVertex(oldGBVertex.physicalId, oldGBVertex.gbId, properties)
-  }
-
   def runLbp(inVertices: RDD[GBVertex], inEdges: RDD[GBEdge], lbpParameters: Lbp): (RDD[GBVertex], RDD[GBEdge], String) = {
 
     val outputPropertyLabel = lbpParameters.output_vertex_property_list.getOrElse("LBP_RESULT")
@@ -49,9 +30,8 @@ object LbpRunner {
 
     val graph = Graph[VertexState, Double](graphXVertices, graphXEdges)
 
-    val (newGraph, log) = GraphXLBP.runGraphXLBP(graph, maxIterations, 2) // NLS TODO: state space hardwired to {0,1} !!
-
-    // we need to get the correct value out of the posterior
+    val graphXLBPRunner = new GraphXLBP(maxIterations, 2) // NLS TODO: state space hardwired to {0,1} !!
+    val (newGraph, log) = graphXLBPRunner.run(graph)
 
     val outVertices = newGraph.vertices.map({
       case (vid, vertexState) =>
@@ -59,5 +39,24 @@ object LbpRunner {
     })
 
     (outVertices, inEdges, log)
+  }
+
+  private def lbpVertexStateFromGBVertex(gbVertex: GBVertex, inputPropertyName: String): VertexState = {
+
+    val prior = gbVertex.getProperty(inputPropertyName).get.value.asInstanceOf[Vector[Double]]
+
+    val sum = prior.reduce(_ + _)
+    val posterior = prior.map(x => x / sum)
+
+    VertexState(gbVertex, Map(), prior, posterior, 0.0d)
+
+  }
+
+  private def outputGBVertrexfromLBPVertexState(vertexState: VertexState, outputPropertyLabel: String) = {
+    val oldGBVertex = vertexState.gbVertex
+
+    val properties = oldGBVertex.properties + Property(outputPropertyLabel, vertexState.posterior)
+
+    GBVertex(oldGBVertex.physicalId, oldGBVertex.gbId, properties)
   }
 }
