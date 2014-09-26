@@ -69,6 +69,11 @@ def get_add_many_columns_function(row_function, data_types):
         return json.dumps(row.data) 
     return add_many_columns
 
+class IaPyWorkerError(Exception):
+    def __init__(self, value):
+        self.value = value
+    def __str__(self):
+        return repr(base64.urlsafe_b64decode(self.value))
 
 class RowWrapper(Row):
     """
@@ -76,8 +81,7 @@ class RowWrapper(Row):
     """
 
     def load_row(self, s):
-        self.data = json.loads(s)
-
+        self.data = json.loads(unicode(s))
 
 def pickle_function(func):
     """Pickle the function the way Pyspark does"""
@@ -101,9 +105,13 @@ def _wrap_row_function(frame, row_function):
     """
     schema = frame.schema  # must grab schema now so frame is not closed over
     def row_func(row):
-        row_wrapper = RowWrapper(schema)
-        row_wrapper.load_row(row)
-        return row_function(row_wrapper)
+        try:
+            row_wrapper = RowWrapper(schema)
+            row_wrapper.load_row(row)
+            return row_function(row_wrapper)
+        except Exception as e:
+            msg = base64.urlsafe_b64encode('Exception:%s while processing row:%s' % (repr(e),row))
+            raise IaPyWorkerError(msg)
     return row_func
 
 
@@ -140,7 +148,7 @@ class IaBatchedSerializer(BatchedSerializer):
     def dump_stream_as_json(self, iterator, stream):
         for obj in iterator:
             if len(obj) > 0:
-                serialized = '[' + ','.join(obj) + ']'
+                serialized = '[%s]' % ','.join(obj)
                 try:
                     s = str(serialized)
                 except UnicodeEncodeError:
