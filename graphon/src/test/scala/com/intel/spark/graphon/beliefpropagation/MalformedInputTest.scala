@@ -1,15 +1,19 @@
 package com.intel.spark.graphon.beliefpropagation
 
-import com.intel.graphbuilder.elements.{ Property, Vertex => GBVertex, Edge => GBEdge }
 import org.scalatest.{ Matchers, FlatSpec }
 import com.intel.testutils.TestingSparkContextFlatSpec
+import com.intel.graphbuilder.elements.{ Edge => GBEdge, Property, Vertex => GBVertex }
 import org.apache.spark.rdd.RDD
-import com.intel.spark.graphon.testutils.ApproximateVertexEquality
+import com.intel.graphbuilder.driver.spark.titan.reader.TitanRelationFactory
+import com.thinkaurelius.titan.graphdb.internal.InternalType
+import org.mockito.Mockito._
+import org.apache.spark.SparkException
 
 /**
- * These test cases validate that belief propagation works correctly on (very simple) graphs that contain loops.
+ * Tests that check that bad inputs and arguments will raise the appropriate exceptions.
  */
-class LoopTest extends FlatSpec with Matchers with TestingSparkContextFlatSpec {
+
+class MalformedInputTest extends FlatSpec with Matchers with TestingSparkContextFlatSpec {
 
   trait BPTest {
 
@@ -29,17 +33,16 @@ class LoopTest extends FlatSpec with Matchers with TestingSparkContextFlatSpec {
       posteriorPropertyName = propertyForLBPOutput)
 
   }
-  "BP Runner" should "work with a triangle with uniform probabilities" in new BPTest {
 
-    val vertexSet: Set[Long] = Set(1, 2, 3)
+  "BP Runner" should "throw an illegal argument exception when an input vector length does not match the size of the state space " in new BPTest {
 
-    val pdfValues: Map[Long, Vector[Double]] = Map(1.toLong -> Vector(0.5d, 0.5d),
-      2.toLong -> Vector(0.5d, 0.5d), 3.toLong -> Vector(0.5d, 0.5d))
+    val vertexSet: Set[Long] = Set(1)
+
+    val pdfValues: Map[Long, Vector[Double]] = Map(1.toLong -> Vector(1.0d))
 
     //  directed edge list is made bidirectional with a flatmap
 
-    val edgeSet: Set[(Long, Long)] = Set((1.toLong, 2.toLong), (1.toLong, 3.toLong), (2.toLong, 3.toLong))
-      .flatMap({ case (x, y) => Set((x, y), (y, x)) })
+    val edgeSet: Set[(Long, Long)] = Set()
 
     val gbVertexSet = vertexSet.map(x => GBVertex(x, Property(vertexIdPropertyName, x), Set(Property(inputPropertyName, pdfValues.get(x).get))))
 
@@ -59,34 +62,26 @@ class LoopTest extends FlatSpec with Matchers with TestingSparkContextFlatSpec {
     val verticesIn: RDD[GBVertex] = sparkContext.parallelize(gbVertexSet.toList)
     val edgesIn: RDD[GBEdge] = sparkContext.parallelize(gbEdgeSet.toList)
 
-    val (verticesOut, edgesOut, log) = BeliefPropagationRunner.run(verticesIn, edgesIn, args)
+    // This on Spark, so the IllegalArgumentException bubbles up through a SparkException
+    val exception = intercept[SparkException] {
+      val (verticesOut, edgesOut, log) = BeliefPropagationRunner.run(verticesIn, edgesIn, args)
+    }
 
-    val testVertices = verticesOut.collect().toSet
-    val testEdges = edgesOut.collect().toSet
-
-    val test = ApproximateVertexEquality.approximatelyEquals(testVertices,
-      expectedVerticesOut,
-      List(propertyForLBPOutput),
-      floatingPointEqualityThreshold)
-
-    test shouldBe true
-    testEdges shouldBe expectedEdgesOut
-
+    exception.asInstanceOf[SparkException].getMessage should include ("IllegalArgumentException")
+    exception.asInstanceOf[SparkException].getMessage should include ("Length of prior does not match state space size")
   }
 
-  "BP Runner" should "work with a four-cycle with uniform probabilities" in new BPTest {
+  "BP Runner" should "throw a NotFoundException when the vertex does provide the request property" in new BPTest {
 
-    val vertexSet: Set[Long] = Set(1, 2, 3, 4)
+    val vertexSet: Set[Long] = Set(1)
 
-    val pdfValues: Map[Long, Vector[Double]] = Map(1.toLong -> Vector(0.5d, 0.5d),
-      2.toLong -> Vector(0.5d, 0.5d), 3.toLong -> Vector(0.5d, 0.5d), 4.toLong -> Vector(0.5d, 0.5d))
+    val pdfValues: Map[Long, Vector[Double]] = Map(1.toLong -> Vector(1.0d))
 
     //  directed edge list is made bidirectional with a flatmap
 
-    val edgeSet: Set[(Long, Long)] = Set((1.toLong, 2.toLong), (2.toLong, 3.toLong),
-      (3.toLong, 4.toLong), (4.toLong, 1.toLong)).flatMap({ case (x, y) => Set((x, y), (y, x)) })
+    val edgeSet: Set[(Long, Long)] = Set()
 
-    val gbVertexSet = vertexSet.map(x => GBVertex(x, Property(vertexIdPropertyName, x), Set(Property(inputPropertyName, pdfValues.get(x).get))))
+    val gbVertexSet = vertexSet.map(x => GBVertex(x, Property(vertexIdPropertyName, x), Set(Property("hahawrongname", pdfValues.get(x).get))))
 
     val gbEdgeSet =
       edgeSet.map({
@@ -104,19 +99,12 @@ class LoopTest extends FlatSpec with Matchers with TestingSparkContextFlatSpec {
     val verticesIn: RDD[GBVertex] = sparkContext.parallelize(gbVertexSet.toList)
     val edgesIn: RDD[GBEdge] = sparkContext.parallelize(gbEdgeSet.toList)
 
-    val (verticesOut, edgesOut, log) = BeliefPropagationRunner.run(verticesIn, edgesIn, args)
+    // This on Spark, so the IllegalArgumentException bubbles up through a SparkException
+    val exception = intercept[SparkException] {
+      val (verticesOut, edgesOut, log) = BeliefPropagationRunner.run(verticesIn, edgesIn, args)
+    }
 
-    val testVertices = verticesOut.collect().toSet
-    val testEdges = edgesOut.collect().toSet
-
-    val test = ApproximateVertexEquality.approximatelyEquals(testVertices,
-      expectedVerticesOut,
-      List(propertyForLBPOutput),
-      floatingPointEqualityThreshold)
-
-    test shouldBe true
-    testEdges shouldBe expectedEdgesOut
-
+    exception.asInstanceOf[SparkException].getMessage should include ("NotFoundException")
+    exception.asInstanceOf[SparkException].getMessage should include (inputPropertyName)
   }
-
 }

@@ -16,25 +16,26 @@ object BeliefPropagationRunner {
    * Run belief propagation on a graph.
    * @param inVertices Vertices of the incoming graph.
    * @param inEdges Edges of the incoming graph.
-   * @param bpArgs Parameters controlling the execution of belief propagation.
+   * @param args Parameters controlling the execution of belief propagation.
    * @return Vertex and edge list for the output graph and a logging string reporting on the execution of the belief
    *         propagation run.
    */
 
-  def run(inVertices: RDD[GBVertex], inEdges: RDD[GBEdge], bpArgs: BeliefPropagationArgs): (RDD[GBVertex], RDD[GBEdge], String) = {
+  def run(inVertices: RDD[GBVertex], inEdges: RDD[GBEdge], args: BeliefPropagationArgs): (RDD[GBVertex], RDD[GBEdge], String) = {
 
     val defaultEdgeWeight = 1.0d
 
-    val outputPropertyLabel = bpArgs.posteriorPropertyName
-    val inputPropertyName: String = bpArgs.vertexPriorPropertyName
-    val maxIterations: Int = bpArgs.maxSuperSteps
-    val beliefsAsStrings = bpArgs.beliefsAsStrings
+    val outputPropertyLabel = args.posteriorPropertyName
+    val inputPropertyName: String = args.vertexPriorPropertyName
+    val maxIterations: Int = args.maxSuperSteps
+    val beliefsAsStrings = args.beliefsAsStrings
+    val stateSpaceSize = args.stateSpaceSize
 
     // convert to graphX vertices
 
     val graphXVertices: RDD[(Long, VertexState)] =
       inVertices.map(gbVertex => (gbVertex.physicalId.asInstanceOf[Long],
-        bpVertexStateFromVertex(gbVertex, inputPropertyName)))
+        bpVertexStateFromVertex(gbVertex, inputPropertyName, stateSpaceSize)))
 
     val graphXEdges = inEdges.map(edge =>
       new Edge[Double](edge.tailPhysicalId.asInstanceOf[Long], edge.headPhysicalId.asInstanceOf[Long], defaultEdgeWeight))
@@ -54,7 +55,7 @@ object BeliefPropagationRunner {
 
   // converts incoming vertex to the form consumed by the belief propagation computation
   private def bpVertexStateFromVertex(gbVertex: GBVertex,
-                                      inputPropertyName: String): VertexState = {
+                                      inputPropertyName: String, stateSpaceSize: Int): VertexState = {
 
     val property = gbVertex.getProperty(inputPropertyName)
 
@@ -69,6 +70,11 @@ object BeliefPropagationRunner {
       }
     }
 
+    if (prior.length != stateSpaceSize) {
+      throw new IllegalArgumentException("Length of prior does not match state space size\n" +
+        "Vertex ID ==" + gbVertex.gbId.value.toString + "    Physical ID == " + gbVertex.physicalId + "\n" +
+        "Property name == " + inputPropertyName + "    Expected state space size " + stateSpaceSize)
+    }
     val posterior = VectorMath.l1Normalize(prior)
 
     VertexState(gbVertex, messages = Map(), prior, posterior, delta = 0.0d)

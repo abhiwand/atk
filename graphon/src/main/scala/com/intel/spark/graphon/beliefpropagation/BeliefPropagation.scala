@@ -29,6 +29,7 @@ import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRDDImplicits._
  *                      Defaults to 20.
  */
 case class BeliefPropagationArgs(graph: GraphReference,
+                                 stateSpaceSize: Int,
                                  vertexPriorPropertyName: String,
                                  posteriorPropertyName: String,
                                  edgeWeightProperty: Option[String] = None,
@@ -56,7 +57,7 @@ class BeliefPropagation extends SparkCommandPlugin[BeliefPropagationArgs, Belief
 
   import DomainJsonProtocol._
 
-  implicit val LbpFormat = jsonFormat6(BeliefPropagationArgs)
+  implicit val LbpFormat = jsonFormat7(BeliefPropagationArgs)
   implicit val LbpResultFormat = jsonFormat2(BeliefPropagationResult)
 
   override def execute(sparkInvocation: SparkInvocation, arguments: BeliefPropagationArgs)(implicit user: UserPrincipal, executionContext: ExecutionContext): BeliefPropagationResult = {
@@ -86,8 +87,6 @@ class BeliefPropagation extends SparkCommandPlugin[BeliefPropagationArgs, Belief
 
     val gbVertices: RDD[GBVertex] = titanReaderRDD.filterVertices()
     val gbEdges: RDD[GBEdge] = titanReaderRDD.filterEdges()
-
-    // do a little GraphX MagiX
 
     val (outVertices, outEdges, log) = BeliefPropagationRunner.run(gbVertices, gbEdges, arguments)
 
