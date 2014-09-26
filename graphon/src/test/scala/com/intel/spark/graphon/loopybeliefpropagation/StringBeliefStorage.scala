@@ -37,7 +37,7 @@ class StringBeliefStorage extends FlatSpec with Matchers with TestingSparkContex
 
     val vertexSet: Set[Long] = Set(1, 2)
 
-    val pdfValues: Map[Long, String] = Map(1.toLong -> "1.0, 0.0", 2.toLong -> "0.1, 0.9d")
+    val pdfValues: Map[Long, String] = Map(1.toLong -> "1.0, 0.0", 2.toLong -> "0.1, 0.9d \t")
 
     //  directed edge list is made bidirectional with a flatmap
 
@@ -51,7 +51,7 @@ class StringBeliefStorage extends FlatSpec with Matchers with TestingSparkContex
           GBEdge(src, dst, Property(srcIdPropertyName, src), Property(dstIdPropertyName, dst), edgeLabel, Set.empty[Property])
       })
 
-    val expectedVerticesOut =  vertexSet.map(vid =>   GBVertex(vid, Property(vertexIdPropertyName, vid),
+    val expectedVerticesOut = vertexSet.map(vid => GBVertex(vid, Property(vertexIdPropertyName, vid),
       Set(Property(inputPropertyName, pdfValues.get(vid).get), Property(propertyForLBPOutput, pdfValues.get(vid).get))))
 
     val expectedEdgesOut = gbEdgeSet // no expected changes to the edge set
