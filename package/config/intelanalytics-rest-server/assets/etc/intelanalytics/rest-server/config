@@ -726,14 +726,17 @@ def get_db_details():
         db_host = get_arg("What is the hostname of the database server?", host, args.db_host)
         db_port = get_arg("What is the port of the database server?", port, args.db_port)
         db = get_arg("What is the name of the database?", database, args.db,
-                     r'^[A-Za-z_]{1}[A-Za-z0-9_]*$', "Only underscore and alphanumeric characters are allowed")
+                     r'^[A-Za-z_]{1}[A-Za-z0-9_]*$', "Only underscores and alphanumeric characters are "
+                                                     "allowed and the first character can't be a number.")
         db_username = get_arg("What is the database user name?", username, args.db_username,
-                              r'^[A-Za-z_]{1}[A-Za-z0-9_]*$', "Only underscore and alphanumeric characters are allowed")
+                              r'^[A-Za-z_]{1}[A-Za-z0-9_]*$', "Only underscores and alphanumeric characters are "
+                                                              "allowed and hhe first character can't be a number.")
         #create a random password to use as our default
         if password == "myPassword":
             #create randomly generated hashed password
             password = hashlib.sha1(os.urandom(32).encode('base_64')).digest().encode('base_64').strip()
-        db_password = get_arg("What is the database password? The default password was randomly generated.", password, args.db_password)
+        db_password = get_arg("What is the database password? The default password was randomly generated.",
+                              password, args.db_password)
 
 
 
