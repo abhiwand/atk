@@ -38,6 +38,10 @@ object ApproximateVertexEquality {
   /**
    * Test two sets of vertices for approximate equality.
    *
+   * The equality check across sets is by brute force...  this is slower than hashing would be but
+   * these methods are meant to be run on small sets when evaluating unit tests. Change it up if you have
+   * a performance problem here.
+   *
    * @param vertexSet1 First set of vertices.
    * @param vertexSet2 Second set of vertices.
    * @param namesOfApproximateProperties List of properties that are allowed to be approximately equal.
