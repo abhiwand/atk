@@ -21,7 +21,7 @@ object BeliefPropagationRunner {
    *         propagation run.
    */
 
-  def runLbp(inVertices: RDD[GBVertex], inEdges: RDD[GBEdge], lbpParameters: BeliefPropagationArgs): (RDD[GBVertex], RDD[GBEdge], String) = {
+  def run(inVertices: RDD[GBVertex], inEdges: RDD[GBEdge], lbpParameters: BeliefPropagationArgs): (RDD[GBVertex], RDD[GBEdge], String) = {
 
     val defaultEdgeWeight = 1.0d
     val defaultSizeOfStateSpace = 2

@@ -15,7 +15,7 @@ import com.intel.spark.graphon.VectorMath
  */
 class TreesTest extends FlatSpec with Matchers with TestingSparkContextFlatSpec {
 
-  trait LbpTest {
+  trait BPTest {
 
     val vertexIdPropertyName = "id"
     val srcIdPropertyName = "srcId"
@@ -33,7 +33,7 @@ class TreesTest extends FlatSpec with Matchers with TestingSparkContextFlatSpec 
 
   }
 
-  "LBP Runner" should "work properly on a five node tree with degree sequence 1, 1, 3, 2, 1" in new LbpTest {
+  "BP Runner" should "work properly on a five node tree with degree sequence 1, 1, 3, 2, 1" in new BPTest {
 
     val vertexSet: Set[Long] = Set(1, 2, 3, 4, 5)
 
@@ -126,7 +126,7 @@ class TreesTest extends FlatSpec with Matchers with TestingSparkContextFlatSpec 
     val verticesIn: RDD[GBVertex] = sparkContext.parallelize(gbVertexSet.toList)
     val edgesIn: RDD[GBEdge] = sparkContext.parallelize(gbEdgeSet.toList)
 
-    val (verticesOut, edgesOut, log) = BeliefPropagationRunner.runLbp(verticesIn, edgesIn, args)
+    val (verticesOut, edgesOut, log) = BeliefPropagationRunner.run(verticesIn, edgesIn, args)
 
     val testVertices = verticesOut.collect().toSet
     val testEdges = edgesOut.collect().toSet

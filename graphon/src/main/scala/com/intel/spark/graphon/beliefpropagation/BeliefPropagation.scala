@@ -89,7 +89,7 @@ class BeliefPropagation extends SparkCommandPlugin[BeliefPropagationArgs, Belief
 
     // do a little GraphX MagiX
 
-    val (outVertices, outEdges, log) = BeliefPropagationRunner.runLbp(gbVertices, gbEdges, arguments)
+    val (outVertices, outEdges, log) = BeliefPropagationRunner.run(gbVertices, gbEdges, arguments)
 
     // write out the graph
 
