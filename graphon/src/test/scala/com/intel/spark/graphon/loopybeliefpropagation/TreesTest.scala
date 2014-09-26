@@ -1,6 +1,5 @@
 package com.intel.spark.graphon.loopybeliefpropagation
 
-import com.intel.graphbuilder.elements.{ Edge, Property, Vertex }
 import org.apache.spark.rdd.RDD
 import org.scalatest.{ Matchers, FlatSpec }
 import com.intel.testutils.TestingSparkContextFlatSpec

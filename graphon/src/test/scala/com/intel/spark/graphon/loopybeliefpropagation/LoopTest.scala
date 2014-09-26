@@ -7,7 +7,7 @@ import org.apache.spark.rdd.RDD
 import com.intel.spark.graphon.testutils.ApproximateVertexEquality
 
 /**
- * These test cases validate that LBP works correctly on (very simple) graphs that contain loops.
+ * These test cases validate that belief propagation works correctly on (very simple) graphs that contain loops.
  */
 class LoopTest extends FlatSpec with Matchers with TestingSparkContextFlatSpec {
 

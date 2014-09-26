@@ -9,7 +9,8 @@ import com.intel.spark.graphon.testutils.ApproximateVertexEquality
 /**
  * These tests validate loopy belief propagation on two node graphs.
  *
- * These provide simple examples for detecting errors in message calculation and in belief readout.
+ * They provide easy to analyze examples for detecting many possible errors in
+ * message calculation and in belief readout.
  */
 class TwoNodeTest extends FlatSpec with Matchers with TestingSparkContextFlatSpec {
 
