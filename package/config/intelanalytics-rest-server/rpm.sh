@@ -16,6 +16,7 @@ log "copy and rename: $tarFile"
 mkdir -p $SCRIPTPATH/rpm/SOURCES
 cp $tarFile $SCRIPTPATH/rpm/SOURCES/${packageName}-${version}.tar.gz
 
+GROUP="Intel Analytics Server"
 LICENSE="Confidential"
 #SUMMARY="$packageName$version Build number: $BUILD_NUMBER. TimeStamp $TIMESTAMP"
 DESCRIPTION="$SUMMARY 
