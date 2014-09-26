@@ -1,4 +1,4 @@
-package com.intel.spark.graphon.loopybeliefpropagation
+package com.intel.spark.graphon.beliefpropagation
 
 import org.apache.spark.rdd.RDD
 import org.scalatest.{ Matchers, FlatSpec }
@@ -25,11 +25,10 @@ class TwoNodeTest extends FlatSpec with Matchers with TestingSparkContextFlatSpe
 
     val floatingPointEqualityThreshold: Double = 0.000000001d
 
-    val args = Lbp(graph = null, // we don't use this one in LbpRunner since we already have the RDDs for the graph
+    val args = BeliefPropagationArgs(graph = null, // we don't use this one in LbpRunner since we already have the RDDs for the graph
       vertexPriorPropertyName = inputPropertyName,
       edgeWeightProperty = None,
-      posteriorPropertyName = propertyForLBPOutput,
-      maxSuperSteps = None)
+      posteriorPropertyName = propertyForLBPOutput)
 
   }
 
@@ -62,7 +61,7 @@ class TwoNodeTest extends FlatSpec with Matchers with TestingSparkContextFlatSpe
     val verticesIn: RDD[GBVertex] = sparkContext.parallelize(gbVertexSet.toList)
     val edgesIn: RDD[GBEdge] = sparkContext.parallelize(gbEdgeSet.toList)
 
-    val (verticesOut, edgesOut, log) = LbpRunner.runLbp(verticesIn, edgesIn, args)
+    val (verticesOut, edgesOut, log) = BeliefPropagationRunner.runLbp(verticesIn, edgesIn, args)
 
     val testVertices = verticesOut.collect().toSet
     val testEdges = edgesOut.collect().toSet
@@ -109,7 +108,7 @@ class TwoNodeTest extends FlatSpec with Matchers with TestingSparkContextFlatSpe
     val verticesIn: RDD[GBVertex] = sparkContext.parallelize(gbVertexSet.toList)
     val edgesIn: RDD[GBEdge] = sparkContext.parallelize(gbEdgeSet.toList)
 
-    val (verticesOut, edgesOut, log) = LbpRunner.runLbp(verticesIn, edgesIn, args)
+    val (verticesOut, edgesOut, log) = BeliefPropagationRunner.runLbp(verticesIn, edgesIn, args)
 
     val testVertices = verticesOut.collect().toSet
     val testEdges = edgesOut.collect().toSet
@@ -156,7 +155,7 @@ class TwoNodeTest extends FlatSpec with Matchers with TestingSparkContextFlatSpe
     val verticesIn: RDD[GBVertex] = sparkContext.parallelize(gbVertexSet.toList)
     val edgesIn: RDD[GBEdge] = sparkContext.parallelize(gbEdgeSet.toList)
 
-    val (verticesOut, edgesOut, log) = LbpRunner.runLbp(verticesIn, edgesIn, args)
+    val (verticesOut, edgesOut, log) = BeliefPropagationRunner.runLbp(verticesIn, edgesIn, args)
 
     val testVertices = verticesOut.collect().toSet
     val testEdges = edgesOut.collect().toSet
@@ -221,7 +220,7 @@ class TwoNodeTest extends FlatSpec with Matchers with TestingSparkContextFlatSpe
     val verticesIn: RDD[GBVertex] = sparkContext.parallelize(gbVertexSet.toList)
     val edgesIn: RDD[GBEdge] = sparkContext.parallelize(gbEdgeSet.toList)
 
-    val (verticesOut, edgesOut, log) = LbpRunner.runLbp(verticesIn, edgesIn, args)
+    val (verticesOut, edgesOut, log) = BeliefPropagationRunner.runLbp(verticesIn, edgesIn, args)
 
     val testVertices = verticesOut.collect().toSet
     val testEdges = edgesOut.collect().toSet

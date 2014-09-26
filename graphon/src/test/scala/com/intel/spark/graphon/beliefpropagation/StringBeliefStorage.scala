@@ -1,4 +1,4 @@
-package com.intel.spark.graphon.loopybeliefpropagation
+package com.intel.spark.graphon.beliefpropagation
 
 import org.scalatest.{ Matchers, FlatSpec }
 import com.intel.testutils.TestingSparkContextFlatSpec
@@ -24,12 +24,10 @@ class StringBeliefStorage extends FlatSpec with Matchers with TestingSparkContex
 
     val floatingPointEqualityThreshold: Double = 0.000000001d
 
-    val args = Lbp(graph = null, // we don't use this one in LbpRunner since we already have the RDDs for the graph
+    val args = BeliefPropagationArgs(graph = null, // we don't use this one in LbpRunner since we already have the RDDs for the graph
       vertexPriorPropertyName = inputPropertyName,
       edgeWeightProperty = None,
-      posteriorPropertyName = propertyForLBPOutput,
-      beliefsAsStrings = true,
-      maxSuperSteps = None)
+      posteriorPropertyName = propertyForLBPOutput)
 
   }
 
@@ -59,13 +57,14 @@ class StringBeliefStorage extends FlatSpec with Matchers with TestingSparkContex
     val verticesIn: RDD[GBVertex] = sparkContext.parallelize(gbVertexSet.toList)
     val edgesIn: RDD[GBEdge] = sparkContext.parallelize(gbEdgeSet.toList)
 
-    val (verticesOut, edgesOut, log) = LbpRunner.runLbp(verticesIn, edgesIn, args)
+    val (verticesOut, edgesOut, log) = BeliefPropagationRunner.runLbp(verticesIn, edgesIn, args)
 
     val testVertices = verticesOut.collect().toSet
     val testEdges = edgesOut.collect().toSet
 
     val testIdsToStrings: Map[Long, String] = testVertices.map(gbVertex =>
-      (gbVertex.physicalId.asInstanceOf[Long], gbVertex.getProperty(propertyForLBPOutput).get.value.toString)).toMap
+      (gbVertex.physicalId.asInstanceOf[Long],
+        gbVertex.getProperty(propertyForLBPOutput).get.value.asInstanceOf[Vector[Double]].toList.mkString(", "))).toMap
 
     val testBelief1Option = testIdsToStrings.get(1)
     val testBelief2Option = testIdsToStrings.get(2)

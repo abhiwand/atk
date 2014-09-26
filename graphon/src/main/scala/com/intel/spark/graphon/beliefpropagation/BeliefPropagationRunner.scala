@@ -1,4 +1,4 @@
-package com.intel.spark.graphon.loopybeliefpropagation
+package com.intel.spark.graphon.beliefpropagation
 
 import org.apache.spark.rdd.RDD
 import com.intel.graphbuilder.elements.{ Property, Vertex => GBVertex, Edge => GBEdge }
@@ -10,7 +10,7 @@ import com.intel.spark.graphon.VectorMath
  * Provides a method for running belief propagation on a graph. The result is a new graph with the belief-propagation
  * posterior beliefs placed in a new vertex property on each vertex.
  */
-object LbpRunner {
+object BeliefPropagationRunner {
 
   /**
    * Run belief propagation on a graph.
@@ -21,15 +21,14 @@ object LbpRunner {
    *         propagation run.
    */
 
-  def runLbp(inVertices: RDD[GBVertex], inEdges: RDD[GBEdge], lbpParameters: Lbp): (RDD[GBVertex], RDD[GBEdge], String) = {
+  def runLbp(inVertices: RDD[GBVertex], inEdges: RDD[GBEdge], lbpParameters: BeliefPropagationArgs): (RDD[GBVertex], RDD[GBEdge], String) = {
 
-    val defaultMaxIterations = 20
     val defaultEdgeWeight = 1.0d
     val defaultSizeOfStateSpace = 2
 
     val outputPropertyLabel = lbpParameters.posteriorPropertyName
     val inputPropertyName: String = lbpParameters.vertexPriorPropertyName
-    val maxIterations: Int = lbpParameters.maxSuperSteps.getOrElse(defaultMaxIterations)
+    val maxIterations: Int = lbpParameters.maxSuperSteps
     val beliefsAsStrings = lbpParameters.beliefsAsStrings
 
     // convert to graphX vertices
@@ -43,7 +42,7 @@ object LbpRunner {
 
     val graph = Graph[VertexState, Double](graphXVertices, graphXEdges)
 
-    val graphXLBPRunner = new GraphXLBP(maxIterations, defaultSizeOfStateSpace)
+    val graphXLBPRunner = new PregelBeliefPropagation(maxIterations, defaultSizeOfStateSpace)
     val (newGraph, log) = graphXLBPRunner.run(graph)
 
     val outVertices = newGraph.vertices.map({
