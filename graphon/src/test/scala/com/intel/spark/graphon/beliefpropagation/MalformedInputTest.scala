@@ -4,9 +4,6 @@ import org.scalatest.{ Matchers, FlatSpec }
 import com.intel.testutils.TestingSparkContextFlatSpec
 import com.intel.graphbuilder.elements.{ Edge => GBEdge, Property, Vertex => GBVertex }
 import org.apache.spark.rdd.RDD
-import com.intel.graphbuilder.driver.spark.titan.reader.TitanRelationFactory
-import com.thinkaurelius.titan.graphdb.internal.InternalType
-import org.mockito.Mockito._
 import org.apache.spark.SparkException
 
 /**
@@ -67,8 +64,8 @@ class MalformedInputTest extends FlatSpec with Matchers with TestingSparkContext
       val (verticesOut, edgesOut, log) = BeliefPropagationRunner.run(verticesIn, edgesIn, args)
     }
 
-    exception.asInstanceOf[SparkException].getMessage should include ("IllegalArgumentException")
-    exception.asInstanceOf[SparkException].getMessage should include ("Length of prior does not match state space size")
+    exception.asInstanceOf[SparkException].getMessage should include("IllegalArgumentException")
+    exception.asInstanceOf[SparkException].getMessage should include("Length of prior does not match state space size")
   }
 
   "BP Runner" should "throw a NotFoundException when the vertex does provide the request property" in new BPTest {
@@ -101,10 +98,10 @@ class MalformedInputTest extends FlatSpec with Matchers with TestingSparkContext
 
     // This on Spark, so the IllegalArgumentException bubbles up through a SparkException
     val exception = intercept[SparkException] {
-      val (verticesOut, edgesOut, log) = BeliefPropagationRunner.run(verticesIn, edgesIn, args)
+      BeliefPropagationRunner.run(verticesIn, edgesIn, args)
     }
 
-    exception.asInstanceOf[SparkException].getMessage should include ("NotFoundException")
-    exception.asInstanceOf[SparkException].getMessage should include (inputPropertyName)
+    exception.asInstanceOf[SparkException].getMessage should include("NotFoundException")
+    exception.asInstanceOf[SparkException].getMessage should include(inputPropertyName)
   }
 }
