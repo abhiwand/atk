@@ -72,7 +72,9 @@ class LoopyBeliefPropagation
     in general graphs. The algorithm is then sometimes called "loopy"
     belief propagation, because graphs typically contain cycles, or loops.
 
-    In Giraph, we run the algorithm in iterations until it converges.
+    We run the algorithm in iterations until it converges.
+
+    This is the Giraph implementation of belief propagation in the toolkit.
 
     Parameters
     ----------
