@@ -27,6 +27,12 @@ class TreesTest extends FlatSpec with Matchers with TestingSparkContextFlatSpec 
 
     val floatingPointEqualityThreshold: Double = 0.000000001d
 
+    val args = Lbp(graph = null, // we don't use this one in LbpRunner since we already have the RDDs for the graph
+      vertexPriorPropertyName = inputPropertyName,
+      edgeWeightProperty = None,
+      posteriorPropertyName = propertyForLBPOutput,
+      maxSuperSteps = None)
+
   }
 
   "LBP Runner" should "work properly on a five node tree with degree sequence 1, 1, 3, 2, 1" in new LbpTest {
@@ -122,22 +128,6 @@ class TreesTest extends FlatSpec with Matchers with TestingSparkContextFlatSpec 
     val verticesIn: RDD[GBVertex] = sparkContext.parallelize(gbVertexSet.toList)
     val edgesIn: RDD[GBEdge] = sparkContext.parallelize(gbEdgeSet.toList)
 
-    val args = Lbp(graph = null, // we don't use this one in LbpRunner since we already have the RDDs for the graph
-      vertex_value_property_list = Some(inputPropertyName),
-      edge_value_property_list = None,
-      input_edge_label_list = None,
-      output_vertex_property_list = Some(propertyForLBPOutput),
-      vertex_type_property_key = None,
-      vector_value = None,
-      max_supersteps = Some(4),
-      convergence_threshold = None,
-      anchor_threshold = None,
-      smoothing = None,
-      bidirectional_check = None,
-      ignore_vertex_type = None,
-      max_product = None,
-      power = None)
-
     val (verticesOut, edgesOut, log) = LbpRunner.runLbp(verticesIn, edgesIn, args)
 
     val testVertices = verticesOut.collect().toSet
@@ -145,7 +135,7 @@ class TreesTest extends FlatSpec with Matchers with TestingSparkContextFlatSpec 
 
     val test = ApproximateVertexEquality.equalsApproximateAtProperty(testVertices,
       expectedVerticesOut,
-      propertyForLBPOutput,
+      List(propertyForLBPOutput),
       floatingPointEqualityThreshold)
 
     test shouldBe true

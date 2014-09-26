@@ -37,7 +37,8 @@ class GraphXLBP(val maxIterations: Int,
    *
    * @param graph GraphX graph to be analyzed.
    *
-   * @return The graph with posterior probabilities updated by belief propagation.
+   * @return The graph with posterior probabilities updated by belief propagation, and a logging string
+   *         reporting on the execution of the algorithm.
    */
   def run(graph: Graph[VertexState, Double]): (Graph[VertexState, Double], String) = {
 
@@ -58,7 +59,7 @@ class GraphXLBP(val maxIterations: Int,
   }
 
   /**
-   * GraphX required method to update the state of a vertex from the messages it has received.
+   * Pregel required method to update the state of a vertex from the messages it has received.
    * @param id The id of the currently processed vertex.
    * @param vertexState The state of the currently processed vertex.
    * @param messages A map of the (neighbor, message-from-neighbor) pairs for the most recent round of message passing.
@@ -125,7 +126,7 @@ class GraphXLBP(val maxIterations: Int,
   }
 
   /**
-   * GraphX required method to send messages across an edge.
+   * Pregel required method to send messages across an edge.
    * @param edgeTriplet Contains state of source, destination and edge.
    * @return Iterator over messages to send.
    */
@@ -137,7 +138,7 @@ class GraphXLBP(val maxIterations: Int,
   }
 
   /**
-   * GraphX required method to combine messages coming into a vertex.
+   * Pregel required method to combine messages coming into a vertex.
    *
    * @param m1 First message.
    * @param m2 Second message.

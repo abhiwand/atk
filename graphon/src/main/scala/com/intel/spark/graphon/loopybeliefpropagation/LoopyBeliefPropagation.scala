@@ -12,26 +12,16 @@ import spray.json._
 import com.intel.graphbuilder.graph.titan.TitanGraphConnector
 import com.intel.graphbuilder.driver.spark.titan.reader.TitanReader
 import org.apache.spark.rdd.RDD
-import com.intel.graphbuilder.elements.{ Property, Vertex => GBVertex, Edge => GBEdge }
+import com.intel.graphbuilder.elements.{ Vertex => GBVertex, Edge => GBEdge }
 import com.intel.graphbuilder.driver.spark.titan.{ GraphBuilderConfig, GraphBuilder }
 import com.intel.graphbuilder.parser.InputSchema
 import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRDDImplicits._
 
 case class Lbp(graph: GraphReference,
-               vertex_value_property_list: Option[String],
-               edge_value_property_list: Option[String],
-               input_edge_label_list: Option[String],
-               output_vertex_property_list: Option[String],
-               vertex_type_property_key: Option[String],
-               vector_value: Option[String],
-               max_supersteps: Option[Int] = None,
-               convergence_threshold: Option[Double] = None,
-               anchor_threshold: Option[Double] = None,
-               smoothing: Option[Double] = None,
-               bidirectional_check: Option[Boolean] = None,
-               ignore_vertex_type: Option[Boolean] = None,
-               max_product: Option[Boolean] = None,
-               power: Option[Double] = None)
+               vertexPriorPropertyName: String,
+               edgeWeightProperty: Option[String],
+               posteriorPropertyName: String,
+               maxSuperSteps: Option[Int] = None)
 
 /**
  * The result object
@@ -42,7 +32,7 @@ case class Lbp(graph: GraphReference,
 case class LbpResult(log: String, time: Double)
 
 /**
- * Launches the GraphX loopy belief propagation.
+ * Launches belief propagation.
  *
  * Pulls graph from underlying store, sends it off to the LBP runner, and then sends results back to the underlying
  * store.
@@ -54,7 +44,7 @@ class LoopyBeliefPropagation extends SparkCommandPlugin[Lbp, LbpResult] {
 
   import DomainJsonProtocol._
 
-  implicit val LbpFormat = jsonFormat15(Lbp)
+  implicit val LbpFormat = jsonFormat5(Lbp)
   implicit val LbpResultFormat = jsonFormat2(LbpResult)
 
   override def execute(sparkInvocation: SparkInvocation, arguments: Lbp)(implicit user: UserPrincipal, executionContext: ExecutionContext): LbpResult = {
