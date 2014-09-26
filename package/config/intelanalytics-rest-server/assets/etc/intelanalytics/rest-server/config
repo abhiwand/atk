@@ -560,7 +560,7 @@ def get_old_db_details():
     database = "ia_metastore"
     username = "iauser"
     password = "myPassword"
-    skip = "yes"
+    skip = "no"
     
     #look for an old application.conf and see if we have any old db configs
     try:
@@ -568,21 +568,25 @@ def get_old_db_details():
         application_conf_text = application_conf.read()
         application_conf.close()
 
-        host = search_config("metastore.connection-postgresql.host", "host", application_conf_text)
-        port = search_config("metastore.connection-postgresql.port", "port", application_conf_text)
-        database = search_config("metastore.connection-postgresql.database", "database", application_conf_text)
-        username = search_config("metastore.connection-postgresql.username", "username", application_conf_text)
-        password = search_config("metastore.connection-postgresql.password", "password", application_conf_text)
+        prev_host = search_config("metastore.connection-postgresql.host", "host", application_conf_text)
+        prev_port = search_config("metastore.connection-postgresql.port", "port", application_conf_text)
+        prev_database = search_config("metastore.connection-postgresql.database", "database", application_conf_text)
+        prev_username = search_config("metastore.connection-postgresql.username", "username", application_conf_text)
+        prev_password = search_config("metastore.connection-postgresql.password", "password", application_conf_text)
 
-        if host and port and database and username and password:
+        if prev_host and prev_port and prev_database and prev_username and prev_password:
             skip = get_arg(color_text("\n We detected an existing database configuration. "
                            "\n To skip the database configuration hit enter. "
                            "To continue with the database configuration enter \"no\" \n", WARNING),
                            "yes", args.db_skip_reconfig)
+            host = prev_host
+            port = prev_port
+            database = prev_database
+            username = prev_username
+            password = prev_password
 
         return host, port, database, username, password, skip
     except IOError:
-        skip = "no"
         return host, port, database, username, password, skip
 
 
