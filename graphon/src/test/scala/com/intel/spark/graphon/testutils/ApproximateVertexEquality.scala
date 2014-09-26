@@ -81,11 +81,11 @@ object ApproximateVertexEquality {
     }
     else {
       (propertyOption1.get.value, propertyOption2.get.value) match {
-        case (v1: Float, v2: Float) =>  Math.abs(v1 - v2) < threshold
+        case (v1: Float, v2: Float) => Math.abs(v1 - v2) < threshold
         case (v1: Double, v2: Double) => Math.abs(v1 - v2) < threshold
-        case (v1 : Vector[Double],  v2: Vector[Double]) => (v1.length == v2.length) &&
+        case (v1: Vector[Double], v2: Vector[Double]) => (v1.length == v2.length) &&
           (VectorMath.l1Distance(v1, v2) < threshold)
-        case (v1: Vector[Float], v2 : Vector[Float]) =>    (v1.length == v2.length) &&
+        case (v1: Vector[Float], v2: Vector[Float]) => (v1.length == v2.length) &&
           (VectorMath.l1Distance(v1.map(x => x.toDouble), v2.map(x => x.toDouble)) < threshold)
         case _ => false
       }

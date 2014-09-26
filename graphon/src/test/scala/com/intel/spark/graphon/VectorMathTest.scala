@@ -2,6 +2,13 @@ package com.intel.spark.graphon
 
 import org.scalatest.{ Matchers, FlatSpec }
 
+/**
+ * Provides simple tests for the vector math routines.
+ * In particular -
+ * 1. basic numerical correctness
+ * 2. correct promotion of vectors of differeing lengths
+ * 3. handling the null vector
+ */
 class VectorMathTest extends FlatSpec with Matchers {
 
   trait VectorTest {

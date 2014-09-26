@@ -9,7 +9,7 @@ import com.intel.spark.graphon.testutils.ApproximateVertexEquality
 
 /**
  * These tests make sure that loopy belief propagation can correctly handle graphs with no edges and even graphs with
- * no vertices.
+ * no vertices. It sounds silly till the thing crashes on you.
  */
 class DegenerateCasesTest extends FlatSpec with Matchers with TestingSparkContextFlatSpec {
 
@@ -65,12 +65,7 @@ class DegenerateCasesTest extends FlatSpec with Matchers with TestingSparkContex
     val testVertices = verticesOut.collect().toSet
     val testEdges = edgesOut.collect().toSet
 
-    val test = ApproximateVertexEquality.approximatelyEquals(testVertices,
-      expectedVerticesOut,
-      List(propertyForLBPOutput),
-      floatingPointEqualityThreshold)
-
-    test shouldBe true
+    testVertices shouldEqual expectedVerticesOut
     testEdges shouldBe expectedEdgesOut
 
   }
@@ -108,12 +103,7 @@ class DegenerateCasesTest extends FlatSpec with Matchers with TestingSparkContex
     val testVertices = verticesOut.collect().toSet
     val testEdges = edgesOut.collect().toSet
 
-    val test = ApproximateVertexEquality.approximatelyEquals(testVertices,
-      expectedVerticesOut,
-      List(propertyForLBPOutput),
-      floatingPointEqualityThreshold)
-
-    test shouldBe true
+    testVertices shouldEqual expectedVerticesOut
     testEdges shouldBe expectedEdgesOut
   }
 

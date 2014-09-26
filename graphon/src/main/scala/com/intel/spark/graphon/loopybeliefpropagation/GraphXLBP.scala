@@ -2,7 +2,7 @@ package com.intel.spark.graphon.loopybeliefpropagation
 
 import org.apache.spark.graphx._
 import com.intel.spark.graphon.iatpregel._
-import com.intel.graphbuilder.elements.{ Property, Vertex => GBVertex, Edge => GBEdge }
+import com.intel.graphbuilder.elements.{ Vertex => GBVertex }
 import com.intel.spark.graphon.VectorMath
 
 /**
