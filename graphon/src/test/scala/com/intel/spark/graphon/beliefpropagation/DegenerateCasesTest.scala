@@ -26,6 +26,7 @@ class DegenerateCasesTest extends FlatSpec with Matchers with TestingSparkContex
 
     val args = BeliefPropagationArgs(graph = null, // we don't use this one in LbpRunner since we already have the RDDs for the graph
       vertexPriorPropertyName = inputPropertyName,
+      stateSpaceSize = 2,
       edgeWeightProperty = None,
       posteriorPropertyName = propertyForLBPOutput)
 
