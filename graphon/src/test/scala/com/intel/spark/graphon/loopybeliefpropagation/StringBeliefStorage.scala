@@ -1,8 +1,8 @@
 package com.intel.spark.graphon.loopybeliefpropagation
 
-import org.scalatest.{Matchers, FlatSpec}
+import org.scalatest.{ Matchers, FlatSpec }
 import com.intel.testutils.TestingSparkContextFlatSpec
-import com.intel.graphbuilder.elements.{Edge => GBEdge, Property, Vertex => GBVertex}
+import com.intel.graphbuilder.elements.{ Edge => GBEdge, Property, Vertex => GBVertex }
 import org.apache.spark.rdd.RDD
 import com.intel.spark.graphon.testutils.ApproximateVertexEquality
 
@@ -51,10 +51,8 @@ class StringBeliefStorage extends FlatSpec with Matchers with TestingSparkContex
           GBEdge(src, dst, Property(srcIdPropertyName, src), Property(dstIdPropertyName, dst), edgeLabel, Set.empty[Property])
       })
 
-    val expectedVerticesOut =
-      vertexSet.map(vid =>
-        GBVertex(vid, Property(vertexIdPropertyName, vid), Set(Property(inputPropertyName, pdfValues.get(vid).get),
-          Property(propertyForLBPOutput, pdfValues.get(vid).get))))
+    val expectedVerticesOut =  vertexSet.map(vid =>   GBVertex(vid, Property(vertexIdPropertyName, vid),
+      Set(Property(inputPropertyName, pdfValues.get(vid).get), Property(propertyForLBPOutput, pdfValues.get(vid).get))))
 
     val expectedEdgesOut = gbEdgeSet // no expected changes to the edge set
 
@@ -66,15 +64,16 @@ class StringBeliefStorage extends FlatSpec with Matchers with TestingSparkContex
     val testVertices = verticesOut.collect().toSet
     val testEdges = edgesOut.collect().toSet
 
-    val testIdsToStrings : Map[Long, String] =  testVertices.map(gbVertex =>
-        (gbVertex.physicalId.asInstanceOf[Long], gbVertex.getProperty(propertyForLBPOutput).get.toString)).toMap
+    val testIdsToStrings: Map[Long, String] = testVertices.map(gbVertex =>
+      (gbVertex.physicalId.asInstanceOf[Long], gbVertex.getProperty(propertyForLBPOutput).get.value.toString)).toMap
 
     val testBelief1Option = testIdsToStrings.get(1)
     val testBelief2Option = testIdsToStrings.get(2)
-    
+
     val test = if (testBelief1Option.isEmpty || testBelief2Option.isEmpty) {
       false
-    } else {
+    }
+    else {
       val testBelief1 = testBelief1Option.get.split(",").map(s => s.toDouble)
       val testBelief2 = testBelief2Option.get.split(",").map(s => s.toDouble)
 
@@ -83,7 +82,6 @@ class StringBeliefStorage extends FlatSpec with Matchers with TestingSparkContex
         (Math.abs(testBelief2.apply(0) - 0.1d) < floatingPointEqualityThreshold) &&
         (Math.abs(testBelief2.apply(1) - 0.9d) < floatingPointEqualityThreshold)
     }
-
 
     test shouldBe true
     testEdges shouldBe expectedEdgesOut
