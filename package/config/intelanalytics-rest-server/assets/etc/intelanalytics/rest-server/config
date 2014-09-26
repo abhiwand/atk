@@ -120,8 +120,10 @@ WARNING = '\033[93m'
 ERROR = '\033[91m'
 RESET = '\033[0m'
 
+
 def color_text(text, color):
     return text
+
 
 def user_info_prompt(message, default):
     """
@@ -134,9 +136,11 @@ def user_info_prompt(message, default):
     response = raw_input(message).strip()
     if response == "" or response is None:
         response = default
+
     return response
 
-def get_arg(question, default, arg):
+
+def get_arg(question, default, arg, regex=None, error_msg=None):
     """
     see if we value in the parsed argument arg if not prompt for the user for the required info. If an parsed
     argument is present that will returned and no prompt will be displayed
@@ -146,9 +150,19 @@ def get_arg(question, default, arg):
     :param arg: the parsed argument from the command line
     :return: argument if it exist, user input, or the default value
     """
-    return user_info_prompt(question + " defaults to \"" + color_text(str(default), GOOD) +
-                            "\" if nothing is entered: ", default) \
-        if arg is None else arg
+    if regex:
+        user_text = user_info_prompt(question + " defaults to \"" + color_text(str(default), GOOD) +
+                                     "\" if nothing is entered: ", default)
+        if re.search(regex, user_text) is None:
+            if error_msg:
+                print error_msg
+            return get_arg(question, default, arg, regex, error_msg)
+        else:
+            return user_text
+    else:
+        return user_info_prompt(question + " defaults to \"" + color_text(str(default), GOOD) +
+                                "\" if nothing is entered: ", default) if arg is None else arg
+
 
 def get_python_exec():
     """
@@ -185,6 +199,7 @@ def select_cluster(clusters, command_line_cluster):
         cluster = clusters[(cluster_index-1)]
     return cluster
 
+
 def find_service(services, type):
     """
     Find a service handle, right now we only look for HDFS, ZOOKEEPER, and SPARK
@@ -198,6 +213,7 @@ def find_service(services, type):
             return service
     return None
 
+
 def get_service_names(roles):
     """
     Get all the role names. this is used when deploying configurations after updates. The role names are very long and
@@ -208,6 +224,7 @@ def get_service_names(roles):
     :return: only the service names. will list of something like this 'spark-SPARK_WORKER-207e4bfb96a401eb77c8a78f'
     """
     return [role.name for role in roles]
+
 
 def find_service_roles(roles, type):
     """
@@ -220,6 +237,7 @@ def find_service_roles(roles, type):
     """
     return [role for role in roles if role.type == type]
 
+
 def get_role_host_names(api, roles):
     """
         get the host name for the all for the roles
@@ -229,6 +247,7 @@ def get_role_host_names(api, roles):
     :return: list of machine host names
     """
     return [hosts.get_host(api, role.hostRef.hostId).hostname for role in roles]
+
 
 def find_config(groups, group_name, config_name):
     """
@@ -249,6 +268,7 @@ def find_config(groups, group_name, config_name):
                         return config.value, config_group
     return None, None
 
+
 def find_ia_class_path(class_path):
     """
     find any current ia class path
@@ -265,6 +285,7 @@ def find_exported_class_path(spark_config_env_sh):
     :return: the entire line containing the exported class path
     """
     return re.search('SPARK_CLASSPATH=.*', spark_config_env_sh) if spark_config_env_sh else None
+
 
 def find_class_path_value(spark_config_env_sh):
     """
@@ -345,6 +366,7 @@ def deploy_config(service, roles):
     poll_commands(service, "deployClientConfig")
     print color_text("Config Deployed", GOOD)
 
+
 def restart_service(service):
     """
     restart the service
@@ -408,6 +430,7 @@ def update_spark_env(group, spark_config_env_sh):
             return False
     return False
 
+
 def get_hdfs_details(services):
     """
     We need various hdfs details to eventually get to the name node host name
@@ -433,6 +456,7 @@ def get_hdfs_details(services):
 
     return hdfs_namenode_role_hostnames, hdfs_namenode_port
 
+
 def get_zookeeper_details(services):
     """
     get the various zookeeper service details and eventually return the zookeeper host names
@@ -456,6 +480,7 @@ def get_zookeeper_details(services):
     zookeeper_client_port, _ = find_config(zookeeper_config_groups, "zookeeper-SERVER-BASE", "clientPort")
 
     return zookeeper_server_role_hostnames, zookeeper_client_port
+
 
 def get_spark_details(services):
     """
@@ -495,10 +520,27 @@ def get_spark_details(services):
 
     return spark_master_role_hostnames, spark_config_executor_total_max_heapsize, spark_config_master_port
 
+
 def search_replace_config(search, replace, search_text):
+    """
+    search and replace the application.conf.tpl with the config pulled from cloudera manager or as a result of asking
+    the user a question
+    :param search: the config key to look for
+    :param replace: the replacing text
+    :param search_text: our search text usually application.conf.tpl
+    :return: application.conf.tpl text with one new replaced key
+    """
     return re.sub(r'[/]*' + search + ' = .*', replace, search_text)
 
+
 def search_config(config_key, group_name, search_text):
+    """
+    centralize the config search since i was doing the same exact search on every config key lookup
+    :param config_key: the config key from our application.conf
+    :param group_name: The name of the regex group. makes it easy to find later
+    :param search_text: the application.conf text to search in
+    :return:
+    """
     matches = re.search(r'' + config_key + ' = "(?P<' + group_name + '>.*)"', search_text)
     if matches:
         return matches.group(group_name)
@@ -533,16 +575,17 @@ def get_old_db_details():
         username = search_config("metastore.connection-postgresql.username", "username", application_conf_text)
         password = search_config("metastore.connection-postgresql.password", "password", application_conf_text)
 
-        if host:
-            skip = get_arg(WARNING + "\n We detected an existing database configuration. "
+        if host and port and database and username and password:
+            skip = get_arg(color_text("\n We detected an existing database configuration. "
                            "\n To skip the database configuration hit enter. "
-                           "To continue with the database configuration enter \"no\" " + RESET,
+                           "To continue with the database configuration enter \"no\" \n", WARNING),
                            "yes", args.db_skip_reconfig)
 
         return host, port, database, username, password, skip
     except IOError:
         skip = "no"
         return host, port, database, username, password, skip
+
 
 def set_db_user_access(db_username):
     """
@@ -567,8 +610,6 @@ def set_db_user_access(db_username):
     pg_hba.close()
 
 
-
-
 def create_db_user(db_username, db_password):
     """
     create the postgres user and set his password. Will do a OS system call to the postgres psql command to create the
@@ -581,6 +622,7 @@ def create_db_user(db_username, db_password):
     print system("su -c \"echo \\\"create user " + db_username +
                  " with createdb encrypted password '" + db_password + "';\\\" | psql \"  postgres")
 
+
 def create_db(db, db_username):
     """
     Create the database and make db_username the owner. Does a system call to the postgres psql command to create the
@@ -591,6 +633,7 @@ def create_db(db, db_username):
 
     """
     print system("su -c \"echo \\\"create database " + db + " with owner " + db_username + ";\\\" | psql \"  postgres")
+
 
 def create_IA_meatauser(db):
     """
@@ -616,17 +659,6 @@ def restart_db():
     time.sleep(POSTGRES_WAIT)
 
 
-
-
-
-
-
-
-
-
-
-
-
 def get_IA_log():
     """
     Open the output.log and save the contents to memory. Will be used monitor the IA server restart status.
@@ -636,6 +668,7 @@ def get_IA_log():
     output_log_text = output_log.read()
     output_log.close()
     return output_log_text
+
 
 def restart_IA():
     """
@@ -670,6 +703,7 @@ def restart_IA():
 
     print "\n"
 
+
 def get_db_details():
     """
     Will ask the user for all the database connection details or will skip database configuration and use the previous
@@ -688,8 +722,10 @@ def get_db_details():
     else: 
         db_host = get_arg("What is the hostname of the database server?", host, args.db_host)
         db_port = get_arg("What is the port of the database server?", port, args.db_port)
-        db = get_arg("What is the name of the database?", database, args.db)
-        db_username = get_arg("What is the database user name?", username, args.db_username)
+        db = get_arg("What is the name of the database?", database, args.db,
+                     r'^[A-Za-z_]{1}[A-Za-z0-9_]*$', "Only underscore and alphanumeric characters are allowed")
+        db_username = get_arg("What is the database user name?", username, args.db_username,
+                              r'^[A-Za-z_]{1}[A-Za-z0-9_]*$', "Only underscore and alphanumeric characters are allowed")
         #create a random password to use as our default
         if password == "myPassword":
             #create randomly generated hashed password
@@ -699,6 +735,7 @@ def get_db_details():
 
 
     return db_host, db_port, db, db_username, db_password, skip
+
 
 def set_db_details(db, db_username, db_password, skip):
     """
@@ -724,8 +761,10 @@ def set_db_details(db, db_username, db_password, skip):
 
         print color_text("postgres is configured", GOOD)
 
+
 def create_intel_analytics_config( hdfs_host_name, hdfs_namenode_port, zookeeper_host_names, zookeeper_client_port,
-                                   spark_master_host, spark_master_port, spark_worker_memory, python_exec, db_host, db_port, db, db_username, db_password):
+                                   spark_master_host, spark_master_port, spark_worker_memory, python_exec,
+                                   db_host, db_port, db, db_username, db_password):
     """
     create a new application.conf file from the tempalte
 
