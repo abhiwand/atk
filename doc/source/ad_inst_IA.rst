@@ -460,7 +460,7 @@ It will use a fresh application.conf.tpl and query Cloudera Manager again to rec
 
 Manual Configuration
 --------------------
-**This section is optional and only if additional changes to the configuration file are needed**
+**This section is optional and only if additional changes to the configuration file are needed. `(Skip section) skip_manual`_**
  
 The rest-server package only provides a configuration template called application.conf.tpl.
 We need to copy and rename this file to application.conf and update host names and memory configurations.
@@ -601,6 +601,10 @@ If it isn't already set, add::
 
 .. image:: ad_inst_IA_2.*
     :align: center
+
+.. _skip_manual:
+
+**End of manual configuration**
 
 Now, restart the Spark service.
 
