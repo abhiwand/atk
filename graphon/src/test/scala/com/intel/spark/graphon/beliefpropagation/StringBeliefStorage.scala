@@ -4,7 +4,6 @@ import org.scalatest.{ Matchers, FlatSpec }
 import com.intel.testutils.TestingSparkContextFlatSpec
 import com.intel.graphbuilder.elements.{ Edge => GBEdge, Property, Vertex => GBVertex }
 import org.apache.spark.rdd.RDD
-import com.intel.spark.graphon.testutils.ApproximateVertexEquality
 
 /**
  * This test verifies that the priors and posteriors can be read and stored as comma delimited lists in properties.
