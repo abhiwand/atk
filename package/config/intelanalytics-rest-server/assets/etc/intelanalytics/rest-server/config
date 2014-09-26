@@ -392,7 +392,6 @@ def update_spark_env(group, spark_config_env_sh):
     :return:
     """
 
-
     if spark_config_env_sh is None:
         spark_config_env_sh = ""
 
