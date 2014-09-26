@@ -39,18 +39,18 @@ object ApproximateVertexEquality {
    *
    * @param vertexSet1 First set of vertices.
    * @param vertexSet2 Second set of vertices.
-   * @param propertyNames List of properties that are allowed to be approximately equal.
+   * @param namesOfApproximateProperties List of properties that are allowed to be approximately equal.
    * @param threshold Threshold for floating point comparisons when performing approximate comparisons of properties.
    * @return True if the two sets are the same size and for every vertex in the first set, there is a vertex in the
    *         second set with which it is approximately equal.
    */
-  def equalsApproximateAtProperty(vertexSet1: Set[GBVertex],
-                                  vertexSet2: Set[GBVertex],
-                                  propertyNames: List[String],
-                                  threshold: Double): Boolean = {
+  def approximatelyEquals(vertexSet1: Set[GBVertex],
+                          vertexSet2: Set[GBVertex],
+                          namesOfApproximateProperties: List[String],
+                          threshold: Double): Boolean = {
 
     (vertexSet1.size == vertexSet2.size) &&
-      vertexSet1.forall(v => vertexSet2.exists(u => approximatelyEquals(u, v, propertyNames, threshold)))
+      vertexSet1.forall(v => vertexSet2.exists(u => approximatelyEquals(u, v, namesOfApproximateProperties, threshold)))
   }
 
   /*
@@ -103,6 +103,5 @@ object ApproximateVertexEquality {
       }
     }
   }
-
 
 }
