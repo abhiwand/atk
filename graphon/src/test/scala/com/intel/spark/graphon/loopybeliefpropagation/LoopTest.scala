@@ -22,6 +22,12 @@ class LoopTest extends FlatSpec with Matchers with TestingSparkContextFlatSpec {
 
     val floatingPointEqualityThreshold: Double = 0.000000001d
 
+    val args = Lbp(graph = null, // we don't use this one in LbpRunner since we already have the RDDs for the graph
+      vertexPriorPropertyName = inputPropertyName,
+      edgeWeightProperty = None,
+      posteriorPropertyName = propertyForLBPOutput,
+      maxSuperSteps = None)
+
   }
   "LBP Runner" should "work with a triangle with uniform probabilities" in new LbpTest {
 
@@ -53,22 +59,6 @@ class LoopTest extends FlatSpec with Matchers with TestingSparkContextFlatSpec {
     val verticesIn: RDD[GBVertex] = sparkContext.parallelize(gbVertexSet.toList)
     val edgesIn: RDD[GBEdge] = sparkContext.parallelize(gbEdgeSet.toList)
 
-    val args = Lbp(graph = null, // we don't use this one in LbpRunner since we already have the RDDs for the graph
-      vertex_value_property_list = Some(inputPropertyName),
-      edge_value_property_list = None,
-      input_edge_label_list = None,
-      output_vertex_property_list = Some(propertyForLBPOutput),
-      vertex_type_property_key = None,
-      vector_value = None,
-      max_supersteps = None,
-      convergence_threshold = None,
-      anchor_threshold = None,
-      smoothing = None,
-      bidirectional_check = None,
-      ignore_vertex_type = None,
-      max_product = None,
-      power = None)
-
     val (verticesOut, edgesOut, log) = LbpRunner.runLbp(verticesIn, edgesIn, args)
 
     val testVertices = verticesOut.collect().toSet
@@ -76,7 +66,7 @@ class LoopTest extends FlatSpec with Matchers with TestingSparkContextFlatSpec {
 
     val test = ApproximateVertexEquality.equalsApproximateAtProperty(testVertices,
       expectedVerticesOut,
-      propertyForLBPOutput,
+      List(propertyForLBPOutput),
       floatingPointEqualityThreshold)
 
     test shouldBe true
@@ -114,22 +104,6 @@ class LoopTest extends FlatSpec with Matchers with TestingSparkContextFlatSpec {
     val verticesIn: RDD[GBVertex] = sparkContext.parallelize(gbVertexSet.toList)
     val edgesIn: RDD[GBEdge] = sparkContext.parallelize(gbEdgeSet.toList)
 
-    val args = Lbp(graph = null, // we don't use this one in LbpRunner since we already have the RDDs for the graph
-      vertex_value_property_list = Some(inputPropertyName),
-      edge_value_property_list = None,
-      input_edge_label_list = None,
-      output_vertex_property_list = Some(propertyForLBPOutput),
-      vertex_type_property_key = None,
-      vector_value = None,
-      max_supersteps = None,
-      convergence_threshold = None,
-      anchor_threshold = None,
-      smoothing = None,
-      bidirectional_check = None,
-      ignore_vertex_type = None,
-      max_product = None,
-      power = None)
-
     val (verticesOut, edgesOut, log) = LbpRunner.runLbp(verticesIn, edgesIn, args)
 
     val testVertices = verticesOut.collect().toSet
@@ -137,7 +111,7 @@ class LoopTest extends FlatSpec with Matchers with TestingSparkContextFlatSpec {
 
     val test = ApproximateVertexEquality.equalsApproximateAtProperty(testVertices,
       expectedVerticesOut,
-      propertyForLBPOutput,
+      List(propertyForLBPOutput),
       floatingPointEqualityThreshold)
 
     test shouldBe true

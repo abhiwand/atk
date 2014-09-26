@@ -11,7 +11,7 @@ object VectorMath {
    * @return Vector whose ith entry is the natural logarithm of the ith entry of v.
    */
   def componentwiseLog(v: Vector[Double]): Vector[Double] = {
-    v.map(Math.log(_))
+    v.map(Math.log)
   }
 
   /**
@@ -78,7 +78,7 @@ object VectorMath {
       None
     }
     else {
-      val logs: List[Vector[Double]] = vectors.map(componentwiseLog(_))
+      val logs: List[Vector[Double]] = vectors.map(componentwiseLog)
       val sumOfLogs: Vector[Double] = logs.reduce(sum(_, _, Double.NegativeInfinity))
       val product = componentwiseExponentiation(sumOfLogs)
       Some(product)
@@ -142,4 +142,5 @@ object VectorMath {
 
     l1Norm(liftedV1.zip(liftedV2).map({ case (x, y) => x - y }))
   }
+
 }
