@@ -27,7 +27,7 @@ class MalformedInputTest extends FlatSpec with Matchers with TestingSparkContext
       vertexPriorPropertyName = inputPropertyName,
       stateSpaceSize = 2,
       edgeWeightProperty = None,
-      posteriorPropertyName = propertyForLBPOutput)
+      vertexPosteriorPropertyName = propertyForLBPOutput)
 
   }
 

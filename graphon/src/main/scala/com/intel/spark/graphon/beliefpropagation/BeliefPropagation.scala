@@ -16,12 +16,13 @@ import com.intel.graphbuilder.elements.{ Vertex => GBVertex, Edge => GBEdge }
 import com.intel.graphbuilder.driver.spark.titan.{ GraphBuilderConfig, GraphBuilder }
 import com.intel.graphbuilder.parser.InputSchema
 import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRDDImplicits._
+import com.intel.intelanalytics.domain.command.CommandDoc
 
 /**
  * Parameters for executing belief propagation.
  * @param graph Reference to the graph object on which to propagate beliefs.
  * @param vertexPriorPropertyName Name of the property that stores the prior beliefs.
- * @param posteriorPropertyName Name of the property to which posterior beliefs will be stored.
+ * @param vertexPosteriorPropertyName Name of the property to which posterior beliefs will be stored.
  * @param edgeWeightProperty Optional String. Name of the property on edges that stores the edge weight.
  *                           If none is supplied, edge weights default to 1.0
  * @param beliefsAsStrings Boolean, defaults to false.
@@ -29,9 +30,9 @@ import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRDDImplicits._
  *                      Defaults to 20.
  */
 case class BeliefPropagationArgs(graph: GraphReference,
-                                 stateSpaceSize: Int,
                                  vertexPriorPropertyName: String,
-                                 posteriorPropertyName: String,
+                                 vertexPosteriorPropertyName: String,
+                                 stateSpaceSize: Int,
                                  edgeWeightProperty: Option[String] = None,
                                  beliefsAsStrings: Boolean = false,
                                  maxSuperSteps: Int = 20)
@@ -59,6 +60,59 @@ class BeliefPropagation extends SparkCommandPlugin[BeliefPropagationArgs, Belief
 
   implicit val LbpFormat = jsonFormat7(BeliefPropagationArgs)
   implicit val LbpResultFormat = jsonFormat2(BeliefPropagationResult)
+
+
+  override def doc = Some(CommandDoc(oneLineSummary = "Belief propagation by the sum-product algorithm." +
+    " Can be executed on graphs with cycles. ",
+    extendedSummary = Some("""
+    Extended Summary
+    ----------------
+    This algorithm was originally designed for acyclic graphical models,
+    then it was found that the Belief Propagation algorithm can be used
+    in general graphs. The algorithm is then sometimes called "loopy"
+    belief propagation, because graphs typically contain cycles, or loops.
+
+    In Giraph, we run the algorithm in iterations until it converges.
+
+    Parameters
+    ----------
+    vertex_prior_property_name : String
+        The vertex property which contains the prior belief for the vertex.
+        
+    posterior_property_name : String
+        The vertex property which will contain the posterior belief for each vertex.
+
+    state_space_size : Int
+        The number of states in the MRF. Used for validation: Belief propagation will not run if
+        an input vertex provides a prior belief whose length does not match the state space size.
+
+    edge_weight_property :  String (optional)
+        The edge property that contains the edge weight for each edge. The default edge weight is 1 if this
+        option is not specified.
+
+    beliefs_as_strings :  Boolean (optional, default is False)
+        If this is true, the posterior beliefs will be written as a string containing comma-separated doubles.
+        Otherwise, the posterior beliefs are written as lists of doubles.
+
+
+    max_supersteps : Integer (optional)
+        The maximum number of super steps that the algorithm will execute.
+        The valid value range is all positive integer.
+        The default value is 20.
+
+    Returns
+    -------
+    Multiple line string
+        Progress report for belief propagation.
+
+
+    Examples
+    --------
+    g.ml.lbp_graphon(vertex_prior_property_name = "value", posterior_property_name = "lbp_posterior", edge_weight_property  = "weight",  max_supersteps = 10)
+
+    The expected output is like this
+     TBD'}
+                           """)))
 
   override def execute(sparkInvocation: SparkInvocation, arguments: BeliefPropagationArgs)(implicit user: UserPrincipal, executionContext: ExecutionContext): BeliefPropagationResult = {
 

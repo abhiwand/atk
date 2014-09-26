@@ -29,7 +29,7 @@ class TwoNodeTest extends FlatSpec with Matchers with TestingSparkContextFlatSpe
       vertexPriorPropertyName = inputPropertyName,
       stateSpaceSize = 2,
       edgeWeightProperty = None,
-      posteriorPropertyName = propertyForLBPOutput)
+      vertexPosteriorPropertyName = propertyForLBPOutput)
 
   }
 

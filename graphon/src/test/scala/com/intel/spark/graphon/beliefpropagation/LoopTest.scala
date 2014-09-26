@@ -26,7 +26,7 @@ class LoopTest extends FlatSpec with Matchers with TestingSparkContextFlatSpec {
       vertexPriorPropertyName = inputPropertyName,
       stateSpaceSize = 2,
       edgeWeightProperty = None,
-      posteriorPropertyName = propertyForLBPOutput)
+      vertexPosteriorPropertyName = propertyForLBPOutput)
 
   }
   "BP Runner" should "work with a triangle with uniform probabilities" in new BPTest {

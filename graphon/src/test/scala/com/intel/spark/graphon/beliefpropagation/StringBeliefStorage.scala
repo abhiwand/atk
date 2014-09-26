@@ -27,7 +27,7 @@ class StringBeliefStorage extends FlatSpec with Matchers with TestingSparkContex
       vertexPriorPropertyName = inputPropertyName,
       stateSpaceSize = 2,
       edgeWeightProperty = None,
-      posteriorPropertyName = propertyForLBPOutput)
+      vertexPosteriorPropertyName = propertyForLBPOutput)
 
   }
 
