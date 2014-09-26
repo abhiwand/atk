@@ -16,20 +16,19 @@ object BeliefPropagationRunner {
    * Run belief propagation on a graph.
    * @param inVertices Vertices of the incoming graph.
    * @param inEdges Edges of the incoming graph.
-   * @param lbpParameters Parameters controlling the execution of belief propagation.
+   * @param bpArgs Parameters controlling the execution of belief propagation.
    * @return Vertex and edge list for the output graph and a logging string reporting on the execution of the belief
    *         propagation run.
    */
 
-  def run(inVertices: RDD[GBVertex], inEdges: RDD[GBEdge], lbpParameters: BeliefPropagationArgs): (RDD[GBVertex], RDD[GBEdge], String) = {
+  def run(inVertices: RDD[GBVertex], inEdges: RDD[GBEdge], bpArgs: BeliefPropagationArgs): (RDD[GBVertex], RDD[GBEdge], String) = {
 
     val defaultEdgeWeight = 1.0d
-    val defaultSizeOfStateSpace = 2
 
-    val outputPropertyLabel = lbpParameters.posteriorPropertyName
-    val inputPropertyName: String = lbpParameters.vertexPriorPropertyName
-    val maxIterations: Int = lbpParameters.maxSuperSteps
-    val beliefsAsStrings = lbpParameters.beliefsAsStrings
+    val outputPropertyLabel = bpArgs.posteriorPropertyName
+    val inputPropertyName: String = bpArgs.vertexPriorPropertyName
+    val maxIterations: Int = bpArgs.maxSuperSteps
+    val beliefsAsStrings = bpArgs.beliefsAsStrings
 
     // convert to graphX vertices
 
@@ -42,7 +41,7 @@ object BeliefPropagationRunner {
 
     val graph = Graph[VertexState, Double](graphXVertices, graphXEdges)
 
-    val graphXLBPRunner = new PregelBeliefPropagation(maxIterations, defaultSizeOfStateSpace)
+    val graphXLBPRunner = new PregelBeliefPropagation(maxIterations)
     val (newGraph, log) = graphXLBPRunner.run(graph)
 
     val outVertices = newGraph.vertices.map({

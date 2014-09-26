@@ -23,12 +23,10 @@ case class VertexState(gbVertex: GBVertex,
 /**
  * Provides a method to run belief propagation on a graph.
  * @param maxIterations Bound on the number of iterations.
- * @param stateSpaceSize The number of
  * @param power Exponent used in the potential function.
  * @param smoothing Smoothing parameter used in the potential function
  */
 class PregelBeliefPropagation(val maxIterations: Int,
-                              val stateSpaceSize: Int,
                               val power: Double = 1.0d,
                               val smoothing: Double = 1.0d) extends Serializable {
 
