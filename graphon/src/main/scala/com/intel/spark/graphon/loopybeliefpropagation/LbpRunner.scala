@@ -3,6 +3,8 @@ package com.intel.spark.graphon.loopybeliefpropagation
 import org.apache.spark.rdd.RDD
 import com.intel.graphbuilder.elements.{ Property, Vertex => GBVertex, Edge => GBEdge }
 import org.apache.spark.graphx.{ Graph, Edge }
+import com.intel.intelanalytics._
+import com.intel.spark.graphon.VectorMath
 
 /**
  * Provides a method for running belief propagation on a graph. The result is a new graph with the belief-propagation
@@ -26,10 +28,9 @@ object LbpRunner {
     val defaultSizeOfStateSpace = 2
 
     val outputPropertyLabel = lbpParameters.posteriorPropertyName
-
     val inputPropertyName: String = lbpParameters.vertexPriorPropertyName
-
     val maxIterations: Int = lbpParameters.maxSuperSteps.getOrElse(defaultMaxIterations)
+    val beliefsAsStrings = lbpParameters.beliefsAsStrings
 
     // convert to graphX vertices
 
@@ -47,29 +48,47 @@ object LbpRunner {
 
     val outVertices = newGraph.vertices.map({
       case (vid, vertexState) =>
-        vertexFromBPVertexState(vertexState, outputPropertyLabel)
+        vertexFromBPVertexState(vertexState, outputPropertyLabel, beliefsAsStrings)
     })
 
     (outVertices, inEdges, log)
   }
 
   // converts incoming vertex to the form consumed by the belief propagation computation
-  private def bpVertexStateFromVertex(gbVertex: GBVertex, inputPropertyName: String): VertexState = {
+  private def bpVertexStateFromVertex(gbVertex: GBVertex,
+                                      inputPropertyName: String): VertexState = {
 
-    val prior = gbVertex.getProperty(inputPropertyName).get.value.asInstanceOf[Vector[Double]]
+    val property = gbVertex.getProperty(inputPropertyName)
 
-    val sum = prior.reduce(_ + _)
-    val posterior = prior.map(x => x / sum)
+    val prior: Vector[Double] = if (property.isEmpty) {
+      throw new NotFoundException("Vertex Property", inputPropertyName,
+        "Vertex ID ==" + gbVertex.gbId.value.toString + "    Physical ID == " + gbVertex.physicalId)
+    }
+    else {
+      property.get.value match {
+        case v: Vector[Double] => v
+        case s: String => s.split(",").map(x => x.toDouble).toVector
+      }
+    }
 
-    VertexState(gbVertex, Map(), prior, posterior, 0.0d)
+    val posterior = VectorMath.l1Normalize(prior)
+
+    VertexState(gbVertex, messages = Map(), prior, posterior, delta = 0.0d)
 
   }
 
   // converts vertex in belief propagation output into the common graph representation for output
-  private def vertexFromBPVertexState(vertexState: VertexState, outputPropertyLabel: String) = {
+  private def vertexFromBPVertexState(vertexState: VertexState, outputPropertyLabel: String, beliefsAsStrings: Boolean) = {
     val oldGBVertex = vertexState.gbVertex
 
-    val properties = oldGBVertex.properties + Property(outputPropertyLabel, vertexState.posterior)
+    val posteriorProperty: Property = if (beliefsAsStrings) {
+      Property(outputPropertyLabel, vertexState.posterior.map(x => x.toString).mkString(", "))
+    }
+    else {
+      Property(outputPropertyLabel, vertexState.posterior)
+    }
+
+    val properties = oldGBVertex.properties + posteriorProperty
 
     GBVertex(oldGBVertex.physicalId, oldGBVertex.gbId, properties)
   }
