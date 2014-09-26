@@ -14,7 +14,7 @@ import com.intel.spark.graphon.testutils.ApproximateVertexEquality
  */
 class TwoNodeTest extends FlatSpec with Matchers with TestingSparkContextFlatSpec {
 
-  trait LbpTest {
+  trait BPTest {
 
     val vertexIdPropertyName = "id"
     val srcIdPropertyName = "srcId"
@@ -32,7 +32,7 @@ class TwoNodeTest extends FlatSpec with Matchers with TestingSparkContextFlatSpe
 
   }
 
-  "LBP Runner" should "work with two nodes of differing unit states" in new LbpTest {
+  "BP Runner" should "work with two nodes of differing unit states" in new BPTest {
 
     val vertexSet: Set[Long] = Set(1, 2)
 
@@ -61,7 +61,7 @@ class TwoNodeTest extends FlatSpec with Matchers with TestingSparkContextFlatSpe
     val verticesIn: RDD[GBVertex] = sparkContext.parallelize(gbVertexSet.toList)
     val edgesIn: RDD[GBEdge] = sparkContext.parallelize(gbEdgeSet.toList)
 
-    val (verticesOut, edgesOut, log) = BeliefPropagationRunner.runLbp(verticesIn, edgesIn, args)
+    val (verticesOut, edgesOut, log) = BeliefPropagationRunner.run(verticesIn, edgesIn, args)
 
     val testVertices = verticesOut.collect().toSet
     val testEdges = edgesOut.collect().toSet
@@ -76,7 +76,7 @@ class TwoNodeTest extends FlatSpec with Matchers with TestingSparkContextFlatSpe
 
   }
 
-  "LBP Runner" should "work properly with a two node graph, uniform probabilities" in new LbpTest {
+  "BP Runner" should "work properly with a two node graph, uniform probabilities" in new BPTest {
 
     val vertexSet: Set[Long] = Set(1, 2)
 
@@ -108,7 +108,7 @@ class TwoNodeTest extends FlatSpec with Matchers with TestingSparkContextFlatSpe
     val verticesIn: RDD[GBVertex] = sparkContext.parallelize(gbVertexSet.toList)
     val edgesIn: RDD[GBEdge] = sparkContext.parallelize(gbEdgeSet.toList)
 
-    val (verticesOut, edgesOut, log) = BeliefPropagationRunner.runLbp(verticesIn, edgesIn, args)
+    val (verticesOut, edgesOut, log) = BeliefPropagationRunner.run(verticesIn, edgesIn, args)
 
     val testVertices = verticesOut.collect().toSet
     val testEdges = edgesOut.collect().toSet
@@ -123,7 +123,7 @@ class TwoNodeTest extends FlatSpec with Matchers with TestingSparkContextFlatSpe
 
   }
 
-  "LBP Runner" should "work properly with one node uniform, one node unit" in new LbpTest {
+  "BP Runner" should "work properly with one node uniform, one node unit" in new BPTest {
 
     val vertexSet: Set[Long] = Set(1, 2)
 
@@ -155,7 +155,7 @@ class TwoNodeTest extends FlatSpec with Matchers with TestingSparkContextFlatSpe
     val verticesIn: RDD[GBVertex] = sparkContext.parallelize(gbVertexSet.toList)
     val edgesIn: RDD[GBEdge] = sparkContext.parallelize(gbEdgeSet.toList)
 
-    val (verticesOut, edgesOut, log) = BeliefPropagationRunner.runLbp(verticesIn, edgesIn, args)
+    val (verticesOut, edgesOut, log) = BeliefPropagationRunner.run(verticesIn, edgesIn, args)
 
     val testVertices = verticesOut.collect().toSet
     val testEdges = edgesOut.collect().toSet
@@ -170,7 +170,7 @@ class TwoNodeTest extends FlatSpec with Matchers with TestingSparkContextFlatSpe
 
   }
 
-  "LBP Runner" should "work properly with two nodes of differing non-uniform, non-unit priors" in new LbpTest {
+  "BP Runner" should "work properly with two nodes of differing non-uniform, non-unit priors" in new BPTest {
 
     val vertexSet: Set[Long] = Set(1, 2)
 
@@ -220,7 +220,7 @@ class TwoNodeTest extends FlatSpec with Matchers with TestingSparkContextFlatSpe
     val verticesIn: RDD[GBVertex] = sparkContext.parallelize(gbVertexSet.toList)
     val edgesIn: RDD[GBEdge] = sparkContext.parallelize(gbEdgeSet.toList)
 
-    val (verticesOut, edgesOut, log) = BeliefPropagationRunner.runLbp(verticesIn, edgesIn, args)
+    val (verticesOut, edgesOut, log) = BeliefPropagationRunner.run(verticesIn, edgesIn, args)
 
     val testVertices = verticesOut.collect().toSet
     val testEdges = edgesOut.collect().toSet

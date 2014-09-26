@@ -8,12 +8,12 @@ import org.apache.spark.rdd.RDD
 import com.intel.spark.graphon.testutils.ApproximateVertexEquality
 
 /**
- * These tests make sure that loopy belief propagation can correctly handle graphs with no edges and even graphs with
+ * These tests make sure that belief propagation can correctly handle graphs with no edges and even graphs with
  * no vertices. It sounds silly till the thing crashes on you.
  */
 class DegenerateCasesTest extends FlatSpec with Matchers with TestingSparkContextFlatSpec {
 
-  trait LbpTest {
+  trait BPTest {
 
     val vertexIdPropertyName = "id"
     val srcIdPropertyName = "srcId"
@@ -31,7 +31,7 @@ class DegenerateCasesTest extends FlatSpec with Matchers with TestingSparkContex
 
   }
 
-  "LBP Runner" should "work properly with an empty graph" in new LbpTest {
+  "BP Runner" should "work properly with an empty graph" in new BPTest {
 
     val vertexSet: Set[Long] = Set()
 
@@ -59,7 +59,7 @@ class DegenerateCasesTest extends FlatSpec with Matchers with TestingSparkContex
     val verticesIn: RDD[GBVertex] = sparkContext.parallelize(gbVertexSet.toList)
     val edgesIn: RDD[GBEdge] = sparkContext.parallelize(gbEdgeSet.toList)
 
-    val (verticesOut, edgesOut, log) = BeliefPropagationRunner.runLbp(verticesIn, edgesIn, args)
+    val (verticesOut, edgesOut, log) = BeliefPropagationRunner.run(verticesIn, edgesIn, args)
 
     val testVertices = verticesOut.collect().toSet
     val testEdges = edgesOut.collect().toSet
@@ -69,7 +69,7 @@ class DegenerateCasesTest extends FlatSpec with Matchers with TestingSparkContex
 
   }
 
-  "LBP Runner" should "work properly with a single node graph" in new LbpTest {
+  "BP Runner" should "work properly with a single node graph" in new BPTest {
 
     val vertexSet: Set[Long] = Set(1)
 
@@ -97,7 +97,7 @@ class DegenerateCasesTest extends FlatSpec with Matchers with TestingSparkContex
     val verticesIn: RDD[GBVertex] = sparkContext.parallelize(gbVertexSet.toList)
     val edgesIn: RDD[GBEdge] = sparkContext.parallelize(gbEdgeSet.toList)
 
-    val (verticesOut, edgesOut, log) = BeliefPropagationRunner.runLbp(verticesIn, edgesIn, args)
+    val (verticesOut, edgesOut, log) = BeliefPropagationRunner.run(verticesIn, edgesIn, args)
 
     val testVertices = verticesOut.collect().toSet
     val testEdges = edgesOut.collect().toSet
@@ -106,7 +106,7 @@ class DegenerateCasesTest extends FlatSpec with Matchers with TestingSparkContex
     testEdges shouldBe expectedEdgesOut
   }
 
-  "LBP Runner" should "work properly with a two node disconnected graph" in new LbpTest {
+  "BP Runner" should "work properly with a two node disconnected graph" in new BPTest {
 
     val vertexSet: Set[Long] = Set(1, 2)
 
@@ -135,7 +135,7 @@ class DegenerateCasesTest extends FlatSpec with Matchers with TestingSparkContex
     val verticesIn: RDD[GBVertex] = sparkContext.parallelize(gbVertexSet.toList)
     val edgesIn: RDD[GBEdge] = sparkContext.parallelize(gbEdgeSet.toList)
 
-    val (verticesOut, edgesOut, log) = BeliefPropagationRunner.runLbp(verticesIn, edgesIn, args)
+    val (verticesOut, edgesOut, log) = BeliefPropagationRunner.run(verticesIn, edgesIn, args)
 
     val testVertices = verticesOut.collect().toSet
     val testEdges = edgesOut.collect().toSet
