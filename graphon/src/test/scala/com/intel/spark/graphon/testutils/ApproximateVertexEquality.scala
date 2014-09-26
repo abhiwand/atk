@@ -1,11 +1,12 @@
 package com.intel.spark.graphon.testutils
 
-import com.intel.graphbuilder.elements.{ Property, Vertex => GBVertex, Edge => GBEdge }
+import com.intel.graphbuilder.elements.{ Property, Vertex => GBVertex }
 import com.intel.spark.graphon.VectorMath
 
 /**
- * Provides methods for comparing vertices when approximate equality is acceptable in a specified property.
- * Such properties be either Float, Double, Vector[Double] or Vector[Float] valued
+ * Provides methods for comparing vertices and sets of vertices when approximate equality is acceptable in a
+ * list of specified properties. Properties that can be approximately equal must have values that are of one of the
+ * types Float, Double, Vector[Double] or Vector[Float] valued
  */
 object ApproximateVertexEquality {
 
@@ -26,12 +27,12 @@ object ApproximateVertexEquality {
     val keys1 = properties1.map({ case p: Property => p.key })
     val keys2 = properties2.map({ case p: Property => p.key })
 
-    (v1.physicalId == v2.physicalId) &&
-      (v1.gbId equals v2.gbId) &&
-      (keys1 equals keys2) &&
-      (keys1.forall(k => ((namesOfApproximateProperties.contains(k) &&
+    v1.physicalId == v2.physicalId &&
+      v1.gbId.equals(v2.gbId) &&
+      keys1.equals(keys2) &&
+      keys1.forall(k => (namesOfApproximateProperties.contains(k) &&
         propertiesApproximatelyEqual(v1.getProperty(k), v2.getProperty(k), threshold)) ||
-        (v1.getProperty(k) equals v2.getProperty(k)))))
+        (v1.getProperty(k) equals v2.getProperty(k)))
   }
 
   /**
@@ -79,27 +80,14 @@ object ApproximateVertexEquality {
       true
     }
     else {
-      val val1 = propertyOption1.get.value
-      val val2 = propertyOption2.get.value
-
-      if (val1.isInstanceOf[Float] && val2.isInstanceOf[Float]) {
-        Math.abs(val1.asInstanceOf[Float] - val2.asInstanceOf[Float]) < threshold
-      }
-      else if (val1.isInstanceOf[Double] && val2.isInstanceOf[Double]) {
-        Math.abs(val1.asInstanceOf[Double] - val2.asInstanceOf[Double]) < threshold
-      }
-      else if (val1.isInstanceOf[Vector[Double]] && val2.isInstanceOf[Vector[Double]]) {
-        val v1 = val1.asInstanceOf[Vector[Double]]
-        val v2 = val2.asInstanceOf[Vector[Double]]
-        (v1.length == v2.length) && (VectorMath.l1Distance(v1, v2) < threshold)
-      }
-      else if (val1.isInstanceOf[Vector[Float]] && val2.isInstanceOf[Vector[Float]]) {
-        val v1 = val1.asInstanceOf[Vector[Float]]
-        val v2 = val2.asInstanceOf[Vector[Float]]
-        (v1.length == v2.length) && (VectorMath.l1Distance(v1.map(x => x.toDouble), v2.map(x => x.toDouble)) < threshold)
-      }
-      else {
-        false
+      (propertyOption1.get.value, propertyOption2.get.value) match {
+        case (v1: Float, v2: Float) =>  Math.abs(v1 - v2) < threshold
+        case (v1: Double, v2: Double) => Math.abs(v1 - v2) < threshold
+        case (v1 : Vector[Double],  v2: Vector[Double]) => (v1.length == v2.length) &&
+          (VectorMath.l1Distance(v1, v2) < threshold)
+        case (v1: Vector[Float], v2 : Vector[Float]) =>    (v1.length == v2.length) &&
+          (VectorMath.l1Distance(v1.map(x => x.toDouble), v2.map(x => x.toDouble)) < threshold)
+        case _ => false
       }
     }
   }
