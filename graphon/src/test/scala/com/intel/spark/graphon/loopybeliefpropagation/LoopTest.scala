@@ -64,7 +64,7 @@ class LoopTest extends FlatSpec with Matchers with TestingSparkContextFlatSpec {
     val testVertices = verticesOut.collect().toSet
     val testEdges = edgesOut.collect().toSet
 
-    val test = ApproximateVertexEquality.equalsApproximateAtProperty(testVertices,
+    val test = ApproximateVertexEquality.approximatelyEquals(testVertices,
       expectedVerticesOut,
       List(propertyForLBPOutput),
       floatingPointEqualityThreshold)
@@ -109,7 +109,7 @@ class LoopTest extends FlatSpec with Matchers with TestingSparkContextFlatSpec {
     val testVertices = verticesOut.collect().toSet
     val testEdges = edgesOut.collect().toSet
 
-    val test = ApproximateVertexEquality.equalsApproximateAtProperty(testVertices,
+    val test = ApproximateVertexEquality.approximatelyEquals(testVertices,
       expectedVerticesOut,
       List(propertyForLBPOutput),
       floatingPointEqualityThreshold)
