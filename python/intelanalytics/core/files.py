@@ -34,34 +34,31 @@ class CsvFile(DataFile):
     Parameters
     ----------
     file_name : string
-        name of data input file.
+        Name of data input file.
+        File must be in the hadoop file system.
         Relative paths are interpreted relative to the intel.analytics.engine.fs.root configuration.
         Absolute paths (beginning with hdfs://..., for example) are also supported.
+        See :ref:`Configure File System Root <ad_inst_IA_configure_file_system_root>`.
     schema : list of tuples of the form (string, type)
-        schema description of the fields for a given line.  It is a list of
-        tuples which describe each field, (field name, field type), where
-        the field name is a string, and file is a supported type
-        (See data_types from the iatypes module)
-        The type ``ignore`` may also be used if the field should be ignored
-        on loads
+        schema description of the fields for a given line.
+        It is a list of tuples which describe each field, (field name, field type),
+        where the field name is a string, and file is a supported type,
+        (See data_types from the iatypes module).
+        The type ``ignore`` may also be used if the field should be ignored on loads.
     delimiter : string (optional)
         string indicator of the delimiter for the fields
     skip_header_lines : int (optional)
         indicates numbers of lines to skip before parsing records
 
-    Raises
-    ------
-    ValueError
-        *   "file_name must be a non-empty string": check for spurious leading comma in the parameters
-        *   "schema must be non-empty list of tuples": check for spelling errors in the creation,
-            building and application of the schema variable
-        *   "delimiter must be a non-empty string": "" is not a valid delimiter between columns
-        *   "First item in CSV schema tuple must be a string": check schema
-        *   "Second item in CSV schema tuple must be a supported type: ...": check schema
+    Returns
+    -------
+    class
+        An object which holds both the name and schema of a :term:`CSV` file.
 
     Examples
     --------
     For this example, we are going to use a raw data file named "raw_data.csv".
+    The file has been moved to hdfs://localhost.localdomain/user/iauser/data/.
     It consists of three columns named: *a*, *b*, *c*.
     The columns have the data types: *int32*, *int32*, *str*.
     The fields of data are separated by commas.
@@ -79,21 +76,21 @@ class CsvFile(DataFile):
 
     Now build a CsvFile object with this schema::
 
-        csv_define = ia.CsvFile("raw_data.csv", csv_schema)
+        csv_define = ia.CsvFile("data/raw_data.csv", csv_schema)
 
     The standard delimiter in a csv file is the comma.
     If the columns of data were separated by a character other than comma, we need to add the appropriate delimiter.
     For example if the data columns were separated by the colon character, the instruction would be::
 
-        csv_data = ia.CsvFile("raw_data.csv", csv_schema, ':')
+        csv_data = ia.CsvFile("data/raw_data.csv", csv_schema, ':')
             or
-        ia.CsvFile("raw_data.csv", csv_schema, delimiter = ':')
+        ia.CsvFile("data/raw_data.csv", csv_schema, delimiter = ':')
 
     If our data had some lines of header at the beginning of the file, we could have skipped these lines::
 
-        csv_data = ia.CsvFile("raw_data.csv", csv_schema, skip_header_lines=2)
+        csv_data = ia.CsvFile("data/raw_data.csv", csv_schema, skip_header_lines=2)
 
-    For other examples see :ref:`Data Flow <example_files.csvfile>`.
+    For other examples see :ref:`Importing a CSV File <example_files.csvfile>`.
 
     .. versionadded:: 0.8
 
