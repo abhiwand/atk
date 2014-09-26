@@ -1,8 +1,6 @@
 package com.intel.spark.graphon.iatpregel
 
 import org.apache.spark.rdd.RDD
-import org.apache.spark.SparkContext
-import com.intel.spark.graphon.iatpregel.DeltaProvider
 
 /**
  * Provides a method for creating an initial report that summarizes vertex and edge counts.

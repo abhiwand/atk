@@ -1,8 +1,6 @@
 package com.intel.spark.graphon.iatpregel
 
-import scala.reflect.ClassTag
 import org.apache.spark.rdd.RDD
-import org.apache.spark.SparkContext
 
 /**
  * Implementations of this trait provide a method for creating an initial status report for a Pregel-run using the
