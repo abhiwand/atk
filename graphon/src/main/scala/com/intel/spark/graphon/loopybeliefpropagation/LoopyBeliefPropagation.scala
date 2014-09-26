@@ -19,8 +19,9 @@ import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRDDImplicits._
 
 case class Lbp(graph: GraphReference,
                vertexPriorPropertyName: String,
-               edgeWeightProperty: Option[String],
                posteriorPropertyName: String,
+               edgeWeightProperty: Option[String] = None,
+               beliefsAsStrings: Boolean = false,
                maxSuperSteps: Option[Int] = None)
 
 /**
@@ -44,7 +45,7 @@ class LoopyBeliefPropagation extends SparkCommandPlugin[Lbp, LbpResult] {
 
   import DomainJsonProtocol._
 
-  implicit val LbpFormat = jsonFormat5(Lbp)
+  implicit val LbpFormat = jsonFormat6(Lbp)
   implicit val LbpResultFormat = jsonFormat2(LbpResult)
 
   override def execute(sparkInvocation: SparkInvocation, arguments: Lbp)(implicit user: UserPrincipal, executionContext: ExecutionContext): LbpResult = {
