@@ -1,4 +1,4 @@
-package com.intel.spark.graphon.loopybeliefpropagation
+package com.intel.spark.graphon.beliefpropagation
 
 import com.intel.intelanalytics.domain.graph.GraphReference
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkInvocation, SparkCommandPlugin }
@@ -17,12 +17,23 @@ import com.intel.graphbuilder.driver.spark.titan.{ GraphBuilderConfig, GraphBuil
 import com.intel.graphbuilder.parser.InputSchema
 import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRDDImplicits._
 
-case class Lbp(graph: GraphReference,
-               vertexPriorPropertyName: String,
-               posteriorPropertyName: String,
-               edgeWeightProperty: Option[String] = None,
-               beliefsAsStrings: Boolean = false,
-               maxSuperSteps: Option[Int] = None)
+/**
+ * Parameters for executing belief propagation.
+ * @param graph Reference to the graph object on which to propagate beliefs.
+ * @param vertexPriorPropertyName Name of the property that stores the prior beliefs.
+ * @param posteriorPropertyName Name of the property to which posterior beliefs will be stored.
+ * @param edgeWeightProperty Optional String. Name of the property on edges that stores the edge weight.
+ *                           If none is supplied, edge weights default to 1.0
+ * @param beliefsAsStrings Boolean, defaults to false.
+ * @param maxSuperSteps Optional integer. The maximum number of iterations of message passing that will be invoked.
+ *                      Defaults to 20.
+ */
+case class BeliefPropagationArgs(graph: GraphReference,
+                                 vertexPriorPropertyName: String,
+                                 posteriorPropertyName: String,
+                                 edgeWeightProperty: Option[String] = None,
+                                 beliefsAsStrings: Boolean = false,
+                                 maxSuperSteps: Int = 20)
 
 /**
  * The result object
@@ -30,7 +41,7 @@ case class Lbp(graph: GraphReference,
  * @param log execution log
  * @param time execution time
  */
-case class LbpResult(log: String, time: Double)
+case class BeliefPropagationResult(log: String, time: Double)
 
 /**
  * Launches belief propagation.
@@ -41,14 +52,14 @@ case class LbpResult(log: String, time: Double)
  * Right now it is using only Titan for graph storage. In time we will hopefully make this more flexible.
  *
  */
-class LoopyBeliefPropagation extends SparkCommandPlugin[Lbp, LbpResult] {
+class BeliefPropagation extends SparkCommandPlugin[BeliefPropagationArgs, BeliefPropagationResult] {
 
   import DomainJsonProtocol._
 
-  implicit val LbpFormat = jsonFormat6(Lbp)
-  implicit val LbpResultFormat = jsonFormat2(LbpResult)
+  implicit val LbpFormat = jsonFormat6(BeliefPropagationArgs)
+  implicit val LbpResultFormat = jsonFormat2(BeliefPropagationResult)
 
-  override def execute(sparkInvocation: SparkInvocation, arguments: Lbp)(implicit user: UserPrincipal, executionContext: ExecutionContext): LbpResult = {
+  override def execute(sparkInvocation: SparkInvocation, arguments: BeliefPropagationArgs)(implicit user: UserPrincipal, executionContext: ExecutionContext): BeliefPropagationResult = {
 
     val start = System.currentTimeMillis()
 
@@ -78,7 +89,7 @@ class LoopyBeliefPropagation extends SparkCommandPlugin[Lbp, LbpResult] {
 
     // do a little GraphX MagiX
 
-    val (outVertices, outEdges, log) = LbpRunner.runLbp(gbVertices, gbEdges, arguments)
+    val (outVertices, outEdges, log) = BeliefPropagationRunner.runLbp(gbVertices, gbEdges, arguments)
 
     // write out the graph
 
@@ -91,15 +102,15 @@ class LoopyBeliefPropagation extends SparkCommandPlugin[Lbp, LbpResult] {
     // Get the execution time and print it
     val time = (System.currentTimeMillis() - start).toDouble / 1000.0
 
-    LbpResult(log, time)
+    BeliefPropagationResult(log, time)
   }
 
-  def parseArguments(arguments: JsObject) = arguments.convertTo[Lbp]
+  def parseArguments(arguments: JsObject) = arguments.convertTo[BeliefPropagationArgs]
 
-  def serializeReturn(returnValue: LbpResult): JsObject = returnValue.toJson.asJsObject()
+  def serializeReturn(returnValue: BeliefPropagationResult): JsObject = returnValue.toJson.asJsObject()
 
   override def name: String = "graphs/ml/lbp_graphon"
 
-  override def serializeArguments(arguments: Lbp): JsObject = arguments.toJson.asJsObject()
+  override def serializeArguments(arguments: BeliefPropagationArgs): JsObject = arguments.toJson.asJsObject()
 
 }

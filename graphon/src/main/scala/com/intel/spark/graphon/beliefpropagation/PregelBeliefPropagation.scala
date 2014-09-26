@@ -1,4 +1,4 @@
-package com.intel.spark.graphon.loopybeliefpropagation
+package com.intel.spark.graphon.beliefpropagation
 
 import org.apache.spark.graphx._
 import com.intel.spark.graphon.iatpregel._
@@ -27,10 +27,10 @@ case class VertexState(gbVertex: GBVertex,
  * @param power Exponent used in the potential function.
  * @param smoothing Smoothing parameter used in the potential function
  */
-class GraphXLBP(val maxIterations: Int,
-                val stateSpaceSize: Int,
-                val power: Double = 1.0d,
-                val smoothing: Double = 1.0d) extends Serializable {
+class PregelBeliefPropagation(val maxIterations: Int,
+                              val stateSpaceSize: Int,
+                              val power: Double = 1.0d,
+                              val smoothing: Double = 1.0d) extends Serializable {
 
   /**
    * Run belief propagation on a graph.
