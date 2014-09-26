@@ -66,12 +66,11 @@ class BeliefPropagation extends SparkCommandPlugin[BeliefPropagationArgs, Belief
     extendedSummary = Some("""
     Extended Summary
     ----------------
-    This algorithm was originally designed for acyclic graphical models,
-    then it was found that the Belief Propagation algorithm can be used
-    in general graphs. The algorithm is then sometimes called "loopy"
-    belief propagation, because graphs typically contain cycles, or loops.
 
-    In Giraph, we run the algorithm in iterations until it converges.
+    This algorithm analyzes a graphical model with prior beliefs using sum product message passing.
+    The priors are read from a property in the graph, the posteriors are written to another property in the graph.
+
+    This is the GraphX based implementation of belief propagation in the toolkit.
 
     Parameters
     ----------
