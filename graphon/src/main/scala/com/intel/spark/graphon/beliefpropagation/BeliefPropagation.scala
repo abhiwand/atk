@@ -33,9 +33,9 @@ case class BeliefPropagationArgs(graph: GraphReference,
                                  vertexPriorPropertyName: String,
                                  vertexPosteriorPropertyName: String,
                                  stateSpaceSize: Int,
-                                 edgeWeightProperty: Option[String] = None,
                                  beliefsAsStrings: Boolean = false,
-                                 maxSuperSteps: Int = 20)
+                                 maxSuperSteps: Int = 20,
+                                 edgeWeightProperty: Option[String] = None)
 
 /**
  * The result object
@@ -46,7 +46,7 @@ case class BeliefPropagationArgs(graph: GraphReference,
 case class BeliefPropagationResult(log: String, time: Double)
 
 /**
- * Launches belief propagation.
+ * Launches "loopy" belief propagation.
  *
  * Pulls graph from underlying store, sends it off to the LBP runner, and then sends results back to the underlying
  * store.
@@ -58,12 +58,11 @@ class BeliefPropagation extends SparkCommandPlugin[BeliefPropagationArgs, Belief
 
   import DomainJsonProtocol._
 
-  implicit val LbpFormat = jsonFormat7(BeliefPropagationArgs)
-  implicit val LbpResultFormat = jsonFormat2(BeliefPropagationResult)
-
+  implicit val BPFormat = jsonFormat7(BeliefPropagationArgs)
+  implicit val BPResultFormat = jsonFormat2(BeliefPropagationResult)
 
   override def doc = Some(CommandDoc(oneLineSummary = "Belief propagation by the sum-product algorithm." +
-    " Can be executed on graphs with cycles. ",
+    " Also known as loopy belief propagation.",
     extendedSummary = Some("""
     Extended Summary
     ----------------
@@ -108,7 +107,7 @@ class BeliefPropagation extends SparkCommandPlugin[BeliefPropagationArgs, Belief
 
     Examples
     --------
-    g.ml.lbp_graphon(vertex_prior_property_name = "value", posterior_property_name = "lbp_posterior", edge_weight_property  = "weight",  max_supersteps = 10)
+    g.ml.belief_propagation(vertex_prior_property_name = "value", posterior_property_name = "lbp_posterior", edge_weight_property  = "weight",  max_supersteps = 10)
 
     The expected output is like this
      TBD'}
@@ -162,7 +161,7 @@ class BeliefPropagation extends SparkCommandPlugin[BeliefPropagationArgs, Belief
 
   def serializeReturn(returnValue: BeliefPropagationResult): JsObject = returnValue.toJson.asJsObject()
 
-  override def name: String = "graphs/ml/lbp_graphon"
+  override def name: String = "graphs/ml/belief_propagation"
 
   override def serializeArguments(arguments: BeliefPropagationArgs): JsObject = arguments.toJson.asJsObject()
 
