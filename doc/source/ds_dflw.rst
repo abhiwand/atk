@@ -29,6 +29,8 @@ This way, from inside Python, it is easy to load the toolkit::
 
     import intelanalytics as ia
 
+.. _valid_data_types:
+
 To test whether you have imported the toolkit properly type::
 
     print valid_data_types
@@ -42,8 +44,6 @@ You should see something like this::
 --------------
 Importing Data
 --------------
-
-.. _valid_data_types:
 
 Your data is composed of different data types.
 It could be composed of strings, integers, logic(True or False), floating point numbers, and other types.
@@ -85,6 +85,8 @@ Let's start with a file *Data.csv* whose contents look like this::
     ,"Does Your Chewing Gum"
     4,
     5,""
+    
+.. TODO:: Put in hadoop command to move data file from local to server.
 
 Create the schema *schema_ab* with two columns: *a* (int32), and *b* (string):
 
@@ -92,7 +94,8 @@ Create the schema *schema_ab* with two columns: *a* (int32), and *b* (string):
 
     schema_ab = [('a', int32), ('b', string)]
 
-When `defining schemas`, if the parser should ignore the field, the type is assigned *ignore*, and the name should be an empty string ``''``::
+When `defining schemas`, if the parser should ignore the field, the type is assigned *ignore*,
+and the name should be an empty string ``''``::
 
     schema_2 = [('column_a', str), ('', ignore), ('more_data', str)]
 
