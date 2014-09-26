@@ -25,7 +25,7 @@ object BeliefPropagationRunner {
 
     val defaultEdgeWeight = 1.0d
 
-    val outputPropertyLabel = args.posteriorPropertyName
+    val outputPropertyLabel = args.vertexPosteriorPropertyName
     val inputPropertyName: String = args.vertexPriorPropertyName
     val maxIterations: Int = args.maxSuperSteps
     val beliefsAsStrings = args.beliefsAsStrings
