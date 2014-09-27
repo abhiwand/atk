@@ -23,13 +23,12 @@
 
 package com.intel.intelanalytics.engine
 
-import com.intel.intelanalytics.domain.frame.{ DataFrame, DataFrameTemplate, _ }
-import com.intel.intelanalytics.domain.schema.DataTypes
+import com.intel.intelanalytics.domain.frame.{ DataFrame, DataFrameTemplate }
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 import com.intel.intelanalytics.engine.Rows._
 import com.intel.intelanalytics.security.UserPrincipal
 
-trait FrameStorage {
+trait FrameStorage[Data, Context] {
 
   def lookup(id: Long): Option[DataFrame]
   def lookupByName(name: String)(implicit user: UserPrincipal): Option[DataFrame]
@@ -40,8 +39,9 @@ trait FrameStorage {
   def renameColumns(frame: DataFrame, name_pairs: Seq[(String, String)]): DataFrame
   def getRows(frame: DataFrame, offset: Long, count: Int)(implicit user: UserPrincipal): Iterable[Row]
   def drop(frame: DataFrame)
-  //def updateName(frame: DataFrame, newName: String)(implicit user: UserPrincipal): DataFrame
   def updateSchema(frame: DataFrame, columns: List[(String, DataType)]): DataFrame
+  def loadFrameData(context: Context, frame: DataFrame): Data
+  def saveFrameData(frame: DataFrame, data: Data, rowCount: Option[Long] = None): DataFrame
 
   /**
    * Get the error frame of the supplied frame or create one if it doesn't exist

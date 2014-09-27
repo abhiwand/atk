@@ -3,8 +3,9 @@ package com.intel.intelanalytics.engine.spark
 import com.intel.intelanalytics.domain.DomainJsonProtocol
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
 import com.intel.intelanalytics.domain.command.{ Command, CommandTemplate }
-import com.intel.intelanalytics.domain.frame.{ DataFrame, QuantileValues }
-import com.intel.intelanalytics.engine.plugin.{ CommandPlugin, Invocation }
+import com.intel.intelanalytics.domain.frame.{FrameReference, DataFrame, QuantileValues}
+import com.intel.intelanalytics.domain.graph.GraphReference
+import com.intel.intelanalytics.engine.plugin.{Action, CommandPlugin, Invocation}
 import com.intel.intelanalytics.engine.spark.command.{ CommandExecutor, CommandLoader, CommandPluginRegistry, SparkCommandStorage }
 import com.intel.intelanalytics.engine.spark.context.SparkContextManager
 import com.intel.intelanalytics.engine.spark.plugin.SparkInvocation
@@ -63,7 +64,7 @@ class CommandExecutorTest extends FlatSpec with Matchers with MockitoSugar {
     executor.commandIdContextMapping.size shouldBe 0
   }
 
-  "running a command" should "not add an entry in command id and context mapping for regular commands" in {
+  it should "not add an entry in command id and context mapping for regular commands" in {
     val args = QuantileValues(List())
     var contextCountDuringExecution = 0
     var containsKey1DuringExecution = false
@@ -119,4 +120,74 @@ class CommandExecutorTest extends FlatSpec with Matchers with MockitoSugar {
     contextCountAfterCancel shouldBe 0
   }
 
+  "getReferenceTypes" should "find frame references and graph references" in {
+    case class Foo(frameId: Int, frame: FrameReference, graphId: Int, graph: GraphReference)
+
+    val executor = createCommandExecutor()
+
+    val members = executor.getReferenceTypes[Foo]().toArray
+
+    members.length shouldBe 2
+    members.map(_._1).toArray shouldBe Array("frame", "graph")
+  }
+
+  "isAction" should "recognize Actions as actions" in {
+
+    //Foo has only UriReference types, so returning it doesn't make this automatically an action
+    case class Foo(frame: FrameReference)
+
+    val executor = createCommandExecutor()
+
+    //Declare a plugin "with Action"
+    val plugin = new CommandPlugin[Foo,Foo] with Action {
+      override def parseArguments(arguments: JsObject): Foo = ???
+      override def serializeArguments(arguments: Foo): JsObject = ???
+      override def serializeReturn(returnValue: Foo): JsObject = ???
+      override def execute(invocation: Invocation, arguments: Foo)(implicit user: UserPrincipal, executionContext: ExecutionContext): Foo = ???
+      override def name: String = ???
+    }
+
+    executor.isAction(plugin) shouldBe true
+
+  }
+
+  it should "recognize things that return types with non-UriReference members as actions" in {
+
+    //Foo has both UriReference and non-UriReference types, so returning it makes this plugin an action.
+    case class Foo(frameId: Int, frame: FrameReference)
+
+    val executor = createCommandExecutor()
+
+    //Declare a plugin without Action
+    val plugin = new CommandPlugin[Foo,Foo] {
+      override def parseArguments(arguments: JsObject): Foo = ???
+      override def serializeArguments(arguments: Foo): JsObject = ???
+      override def serializeReturn(returnValue: Foo): JsObject = ???
+      override def execute(invocation: Invocation, arguments: Foo)(implicit user: UserPrincipal, executionContext: ExecutionContext): Foo = ???
+      override def name: String = ???
+    }
+
+    executor.isAction(plugin) shouldBe true
+
+  }
+
+  it should "return false for a non-Action that returns only UriReference properties" in {
+
+    //Foo has only UriReference types, so returning it doesn't automatically make this an action.
+    case class Foo(frame: FrameReference)
+
+    val executor = createCommandExecutor()
+
+    //Declare a plugin without Action
+    val plugin = new CommandPlugin[Foo,Foo] {
+      override def parseArguments(arguments: JsObject): Foo = ???
+      override def serializeArguments(arguments: Foo): JsObject = ???
+      override def serializeReturn(returnValue: Foo): JsObject = ???
+      override def execute(invocation: Invocation, arguments: Foo)(implicit user: UserPrincipal, executionContext: ExecutionContext): Foo = ???
+      override def name: String = ???
+    }
+
+    executor.isAction(plugin) shouldBe false
+
+  }
 }

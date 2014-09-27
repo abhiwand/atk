@@ -31,9 +31,6 @@ import org.apache.hadoop.fs.Path
 /**
  * Frame storage in HDFS.
  *
- * Each frame revision is stored into a new location so that we don't get problems
- * with reading and writing to the same location at the same time.
- *
  * @param fsRoot root for our application, e.g. "hdfs://hostname/user/iauser"
  * @param hdfs methods for interacting with underlying storage (e.g. HDFS)
  */
@@ -47,26 +44,12 @@ class FrameFileStorage(fsRoot: String,
     info("data frames base directory: " + framesBaseDirectory)
   }
 
-  /** Current revision for a frame */
-  @deprecated
-  def currentFrameRevision(dataFrame: DataFrame): Path = {
-    frameRevisionDirectory(dataFrame.id)
-  }
+  def createFrame(dataFrame: DataFrame): Path = withContext("createFrame") {
 
-  /**
-   * Create the Next revision for a frame.
-   */
-  @deprecated
-  def createFrameRevision(dataFrame: DataFrame, revision: Int): Path = withContext("createFrameRevision") {
-    require(revision > 0, "Revision should be larger than zero")
-
-    val path = frameRevisionDirectory(dataFrame.id, revision)
+    val path = frameBaseDirectory(dataFrame.id)
     if (hdfs.exists(path)) {
-      error("Next frame revision already exists " + path
-        + " You may be attempting to modify a data frame that is already in the process of being modified")
-
-      // TODO: It would be nice to throw an Exception here but we probably need to handle locking first
-      hdfs.delete(path)
+      throw new IllegalArgumentException("Next frame already exists " + path
+        + ". You may be attempting to modify a data frame that is already in the process of being modified")
     }
     path
   }
@@ -74,27 +57,9 @@ class FrameFileStorage(fsRoot: String,
   /**
    * Remove the directory and underlying data for a particular revision of a data frame
    * @param dataFrame the data frame to act on
-   * @param revision the revision to remove
-   */
-  def deleteFrameRevision(dataFrame: DataFrame, revision: Int): Unit = {
-    if (revision > 0) {
-      hdfs.delete(frameRevisionDirectory(dataFrame.id, revision), recursive = true)
-    }
-  }
-
-  /**
-   * Remove the underlying data file from HDFS - remove any revision that exists
-   *
-   * @param dataFrame the frame to completely remove
    */
   def delete(dataFrame: DataFrame): Unit = {
     hdfs.delete(frameBaseDirectory(dataFrame.id), recursive = true)
-  }
-
-  /** Base dir for a particular revision of a frame */
-  @deprecated
-  private[frame] def frameRevisionDirectory(frameId: Long, revision: Int = 0): Path = {
-    frameBaseDirectory(frameId)
   }
 
   /** Base dir for a frame */
@@ -108,7 +73,7 @@ class FrameFileStorage(fsRoot: String,
    * @return true if the data frame is saved in the parquet format
    */
   private[frame] def isParquet(dataFrame: DataFrame): Boolean = {
-    val path = currentFrameRevision(dataFrame)
+    val path = frameBaseDirectory(dataFrame.id)
     hdfs.globList(path, "*.parquet").length > 0
   }
 

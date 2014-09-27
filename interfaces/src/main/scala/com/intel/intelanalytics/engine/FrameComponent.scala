@@ -23,8 +23,8 @@
 
 package com.intel.intelanalytics.engine
 
-trait FrameComponent {
+trait FrameComponent[FrameData, FrameContext] {
 
-  def frames: FrameStorage
+  def frames: FrameStorage[FrameData, FrameContext]
 
 }
