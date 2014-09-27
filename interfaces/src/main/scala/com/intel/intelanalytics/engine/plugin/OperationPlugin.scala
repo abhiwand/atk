@@ -23,13 +23,12 @@
 
 package com.intel.intelanalytics.engine.plugin
 
-import com.intel.intelanalytics.component.{ ClassLoaderAware, Plugin, Component }
+import com.intel.intelanalytics.component.{ClassLoaderAware, Plugin}
+import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.security.UserPrincipal
-import com.typesafe.config.Config
 import spray.json.JsObject
 
 import scala.concurrent.ExecutionContext
-import com.intel.intelanalytics.domain.command.CommandDoc
 
 /**
  * Base trait for all operation-based plugins (query and command, for example).
@@ -125,3 +124,10 @@ abstract class QueryPlugin[Argument <: Product: ClassManifest] extends Operation
 
   override def doc: Option[CommandDoc] = None
 }
+
+/**
+ * Marker trait for commands that force execution. Users should use 'with Action'  to
+ * mark any plugin that performs a shuffle operation, returns data directly back to the
+ * user, etc.
+ */
+trait Action {}

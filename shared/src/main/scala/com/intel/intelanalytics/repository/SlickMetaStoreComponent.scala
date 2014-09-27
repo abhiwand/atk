@@ -184,6 +184,12 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
         database.withSession(f)
       }
     }
+
+    override def withTransaction[T](name: String)(f: (Session) => T): T = {
+      withContext(name) {
+        database.withTransaction(f)
+      }
+    }
   }
 
   /**

@@ -23,36 +23,7 @@
 
 package com.intel.intelanalytics.repository
 
-import com.intel.intelanalytics.domain.{ User, UserTemplate, Status }
-import com.intel.intelanalytics.domain.frame.{ DataFrame, DataFrameTemplate }
-import com.intel.intelanalytics.domain.graph.{ Graph, GraphTemplate }
-import com.intel.intelanalytics.domain.command.{ Command, CommandTemplate }
-import com.intel.intelanalytics.repository._
-import com.intel.intelanalytics.domain.Status
-import com.intel.intelanalytics.domain.User
-import com.intel.intelanalytics.domain.graph.Graph
-import com.intel.intelanalytics.domain.UserTemplate
-import com.intel.intelanalytics.domain.graph.GraphTemplate
-import com.intel.intelanalytics.domain.Status
-import com.intel.intelanalytics.domain.User
-import com.intel.intelanalytics.domain.graph.Graph
-import com.intel.intelanalytics.domain.UserTemplate
-import com.intel.intelanalytics.domain.graph.GraphTemplate
-import com.intel.intelanalytics.domain.Status
-import com.intel.intelanalytics.domain.User
-import com.intel.intelanalytics.domain.graph.Graph
-import com.intel.intelanalytics.domain.UserTemplate
-import com.intel.intelanalytics.domain.graph.GraphTemplate
-import com.intel.intelanalytics.domain.Status
-import com.intel.intelanalytics.domain.User
-import com.intel.intelanalytics.domain.graph.Graph
-import com.intel.intelanalytics.domain.UserTemplate
-import com.intel.intelanalytics.domain.graph.GraphTemplate
-import com.intel.intelanalytics.domain.Status
-import com.intel.intelanalytics.domain.User
-import com.intel.intelanalytics.domain.graph.Graph
-import com.intel.intelanalytics.domain.UserTemplate
-import com.intel.intelanalytics.domain.graph.GraphTemplate
+import com.intel.intelanalytics.domain.{ Status, User, UserTemplate }
 
 /**
  * The MetaStore gives access to Repositories. Repositories are how you
@@ -61,6 +32,8 @@ import com.intel.intelanalytics.domain.graph.GraphTemplate
 trait MetaStore {
   type Session
   def withSession[T](name: String)(f: Session => T): T
+
+  def withTransaction[T](name: String)(f: Session => T): T
 
   /** Repository for CRUD on 'status' table */
   def statusRepo: Repository[Session, Status, Status]

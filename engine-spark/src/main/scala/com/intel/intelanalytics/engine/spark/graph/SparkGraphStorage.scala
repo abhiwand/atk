@@ -134,7 +134,7 @@ class SparkGraphStorage(metaStore: MetaStore,
             val graphBuilder = new GraphBuilder(gbConfigFactory.graphConfig)
 
             // Setup data in Spark
-            val inputRowsRdd: RDD[Rows.Row] = frameStorage.loadFrameRdd(sparkContext, theOnlySourceFrameID)
+            val inputRowsRdd: RDD[Rows.Row] = frameStorage.loadFrameData(sparkContext, theOnlySourceFrameID)
 
             val inputRdd: RDD[Seq[_]] = inputRowsRdd.map(x => x.toSeq)
 
