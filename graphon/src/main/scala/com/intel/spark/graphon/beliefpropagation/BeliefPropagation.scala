@@ -25,7 +25,7 @@ import com.intel.intelanalytics.domain.command.CommandDoc
  * @param vertexPosteriorPropertyName Name of the property to which posterior beliefs will be stored.
  * @param edgeWeightProperty Optional String. Name of the property on edges that stores the edge weight.
  *                           If none is supplied, edge weights default to 1.0
- * @param beliefsAsStrings Boolean, defaults to false.
+ * @param beliefsAsStrings Optional Boolean, defaults to false.
  * @param maxSuperSteps Optional integer. The maximum number of iterations of message passing that will be invoked.
  *                      Defaults to 20.
  */
@@ -33,9 +33,9 @@ case class BeliefPropagationArgs(graph: GraphReference,
                                  vertexPriorPropertyName: String,
                                  vertexPosteriorPropertyName: String,
                                  stateSpaceSize: Int,
-                                 beliefsAsStrings: Boolean = false,
-                                 maxSuperSteps: Int = 20,
-                                 edgeWeightProperty: Option[String] = None)
+                                 edgeWeightProperty: Option[String] = None,
+                                 beliefsAsStrings: Option[Boolean],
+                                 maxSuperSteps: Option[Int])
 
 /**
  * The result object

@@ -27,8 +27,8 @@ object BeliefPropagationRunner {
 
     val outputPropertyLabel = args.vertexPosteriorPropertyName
     val inputPropertyName: String = args.vertexPriorPropertyName
-    val maxIterations: Int = args.maxSuperSteps
-    val beliefsAsStrings = args.beliefsAsStrings
+    val maxIterations: Int = args.maxSuperSteps.getOrElse(20)
+    val beliefsAsStrings = args.beliefsAsStrings.getOrElse(false)
     val stateSpaceSize = args.stateSpaceSize
 
     // convert to graphX vertices
@@ -57,6 +57,7 @@ object BeliefPropagationRunner {
   private def bpVertexStateFromVertex(gbVertex: GBVertex,
                                       inputPropertyName: String, stateSpaceSize: Int): VertexState = {
 
+    val separators : Array[Char] = Array(' ', ',', '\t')
     val property = gbVertex.getProperty(inputPropertyName)
 
     val prior: Vector[Double] = if (property.isEmpty) {
@@ -66,7 +67,7 @@ object BeliefPropagationRunner {
     else {
       property.get.value match {
         case v: Vector[Double] => v
-        case s: String => s.split(",").map(x => x.toDouble).toVector
+        case s: String => s.split(separators).filter(_.nonEmpty).map(_.toDouble).toVector
       }
     }
 

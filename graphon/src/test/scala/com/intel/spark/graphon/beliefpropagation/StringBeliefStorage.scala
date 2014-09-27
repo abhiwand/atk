@@ -27,6 +27,8 @@ class StringBeliefStorage extends FlatSpec with Matchers with TestingSparkContex
       vertexPriorPropertyName = inputPropertyName,
       stateSpaceSize = 2,
       edgeWeightProperty = None,
+      maxSuperSteps = Some(10),
+      beliefsAsStrings = Some(true),
       vertexPosteriorPropertyName = propertyForLBPOutput)
 
   }
@@ -35,7 +37,7 @@ class StringBeliefStorage extends FlatSpec with Matchers with TestingSparkContex
 
     val vertexSet: Set[Long] = Set(1, 2)
 
-    val pdfValues: Map[Long, String] = Map(1.toLong -> "1.0, 0.0", 2.toLong -> "0.1, 0.9d \t")
+    val pdfValues: Map[Long, String] = Map(1.toLong -> "\t1.0    0.0  ", 2.toLong -> "0.1, 0.9d \t")
 
     //  directed edge list is made bidirectional with a flatmap
 
@@ -64,7 +66,7 @@ class StringBeliefStorage extends FlatSpec with Matchers with TestingSparkContex
 
     val testIdsToStrings: Map[Long, String] = testVertices.map(gbVertex =>
       (gbVertex.physicalId.asInstanceOf[Long],
-        gbVertex.getProperty(propertyForLBPOutput).get.value.asInstanceOf[Vector[Double]].toList.mkString(", "))).toMap
+        gbVertex.getProperty(propertyForLBPOutput).get.value.asInstanceOf[String])).toMap
 
     val testBelief1Option = testIdsToStrings.get(1)
     val testBelief2Option = testIdsToStrings.get(2)
