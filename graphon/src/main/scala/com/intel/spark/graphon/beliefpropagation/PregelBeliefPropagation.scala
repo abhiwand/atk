@@ -27,7 +27,7 @@ case class VertexState(gbVertex: GBVertex,
  * @param smoothing Smoothing parameter used in the potential function
  */
 class PregelBeliefPropagation(val maxIterations: Int,
-                              val power: Double = 1.0d,
+                              val power: Double = 0.0d,
                               val smoothing: Double = 1.0d) extends Serializable {
 
   /**
@@ -83,12 +83,25 @@ class PregelBeliefPropagation(val maxIterations: Int,
   /**
    * The edge potential function provides an estimate of how compatible the states are between two joined vertices.
    * This is the one inspired by the Boltzmann distribution.
-   * @param delta Difference in the states between given vertices.
+   * @param state1 State of the first vertex.
+   * @param state2 State of the second vertex.
    * @param weight Edge weight.
    * @return Compatibility estimate for the two states..
    */
-  private def edgePotential(delta: Double, weight: Double) = {
-    -Math.pow(delta.toDouble, power) * weight * smoothing
+  private def edgePotential(state1: Int, state2: Int, weight: Double) = {
+
+    val compatibilityFactor =
+      if (power == 0d) {
+        if (state1 == state2)
+          0d
+        else
+          1d
+      } else {
+        val delta = Math.abs(state1 - state2)
+        Math.pow(delta, power)
+      }
+
+    -1.0d * compatibilityFactor * weight * smoothing
   }
 
   /**
@@ -117,7 +130,7 @@ class PregelBeliefPropagation(val maxIterations: Int,
 
     val message = stateRange.map(i => statesUNPosteriors.map({
       case (j, x: Double) =>
-        x * Math.exp(edgePotential(Math.abs(i - j) / (nStates - 1).toDouble, edgeWeight))
+        x * Math.exp(edgePotential(i, j, edgeWeight))
     }).reduce(_ + _))
 
     Map(sender -> message)

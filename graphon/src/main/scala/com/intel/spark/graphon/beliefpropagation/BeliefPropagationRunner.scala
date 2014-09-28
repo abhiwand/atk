@@ -23,13 +23,13 @@ object BeliefPropagationRunner {
 
   def run(inVertices: RDD[GBVertex], inEdges: RDD[GBEdge], args: BeliefPropagationArgs): (RDD[GBVertex], RDD[GBEdge], String) = {
 
-    val defaultEdgeWeight = 1.0d
-
     val outputPropertyLabel = args.vertexPosteriorPropertyName
     val inputPropertyName: String = args.vertexPriorPropertyName
-    val maxIterations: Int = args.maxSuperSteps.getOrElse(20)
-    val beliefsAsStrings = args.beliefsAsStrings.getOrElse(false)
+    val maxIterations: Int = args.maxSuperSteps.getOrElse(BeliefPropagationDefaults.maxSuperStepsDefault)
+    val beliefsAsStrings = args.beliefsAsStrings.getOrElse(BeliefPropagationDefaults.beliefsAsStringsDefault)
     val stateSpaceSize = args.stateSpaceSize
+
+    val defaultEdgeWeight = BeliefPropagationDefaults.edgeWeightDefault
 
     // convert to graphX vertices
 
@@ -37,8 +37,7 @@ object BeliefPropagationRunner {
       inVertices.map(gbVertex => (gbVertex.physicalId.asInstanceOf[Long],
         bpVertexStateFromVertex(gbVertex, inputPropertyName, stateSpaceSize)))
 
-    val graphXEdges = inEdges.map(edge =>
-      new Edge[Double](edge.tailPhysicalId.asInstanceOf[Long], edge.headPhysicalId.asInstanceOf[Long], defaultEdgeWeight))
+    val graphXEdges = inEdges.map(edge => bpEdgeStateFromEdge(edge, args.edgeWeightProperty, defaultEdgeWeight))
 
     val graph = Graph[VertexState, Double](graphXVertices, graphXEdges)
 
@@ -51,6 +50,31 @@ object BeliefPropagationRunner {
     })
 
     (outVertices, inEdges, log)
+  }
+
+  // converts incoming edge to the form consumed by the belief propagation computation
+  private def bpEdgeStateFromEdge(gbEdge: GBEdge, edgeWeightPropertyNameOption: Option[String], defaultEdgeWeight: Double) = {
+
+    val weight: Double = if (edgeWeightPropertyNameOption.nonEmpty) {
+
+      val edgeWeightPropertyName = edgeWeightPropertyNameOption.get
+
+      val property = gbEdge.getProperty(edgeWeightPropertyName)
+
+      if (property.isEmpty) {
+        throw new NotFoundException("Edge Property", edgeWeightPropertyName, "Edge ID == " + gbEdge.id + "\n"
+          + "Source Vertex == " + gbEdge.tailVertexGbId.value + "\n"
+          + "Destination Vertex == " + gbEdge.headVertexGbId.value)
+      }
+      else {
+        gbEdge.getProperty(edgeWeightPropertyNameOption.get).get.asInstanceOf[Double]
+      }
+    }
+    else {
+      defaultEdgeWeight
+    }
+
+    new Edge[Double](gbEdge.tailPhysicalId.asInstanceOf[Long], gbEdge.headPhysicalId.asInstanceOf[Long], weight)
   }
 
   // converts incoming vertex to the form consumed by the belief propagation computation
