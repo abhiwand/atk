@@ -28,10 +28,11 @@ import com.intel.giraph.algorithms.lda.CVB0LDAComputation.CVB0LDAMasterCompute;
 import com.intel.giraph.io.VertexData4LDAWritable;
 import com.intel.giraph.io.titan.hbase.TitanHBaseVertexInputFormatPropertyGraph4LDA;
 import com.intel.mahout.math.DoubleWithVectorWritable;
+import com.thinkaurelius.titan.core.EdgeLabel;
+import com.thinkaurelius.titan.core.PropertyKey;
 import com.thinkaurelius.titan.core.TitanEdge;
-import com.thinkaurelius.titan.core.TitanKey;
-import com.thinkaurelius.titan.core.TitanLabel;
 import com.thinkaurelius.titan.core.TitanVertex;
+import com.thinkaurelius.titan.core.schema.TitanManagement;
 import org.apache.giraph.utils.InternalVertexRunner;
 import org.apache.hadoop.io.LongWritable;
 import org.junit.Assert;
@@ -50,8 +51,8 @@ import static org.junit.Assert.assertTrue;
  * then run algorithm with input data,
  * finally write back results to Titan via TitanVertexOutputFormatPropertyGraph4LDA
  */
-public class TitanVertexFormatPropertyGraph4LDATest 
-    extends TitanTestBase<LongWritable, VertexData4LDAWritable, DoubleWithVectorWritable> {
+public class TitanVertexFormatPropertyGraph4LDATest
+        extends TitanTestBase<LongWritable, VertexData4LDAWritable, DoubleWithVectorWritable> {
         /*
         String[] graph = new String[] {
                 "[0,[],[L],[[6,2,[]],[8,1,[]]]]",
@@ -69,17 +70,17 @@ public class TitanVertexFormatPropertyGraph4LDATest
         */
 
     private double[][] expectedValues = new double[][]{
-        {0.15863483822017285, 0.031873080137769697, 0.8094920816420574},
-        {0.09239858901071828, 0.012522565962482012, 0.8950788450267997},
-        {0.924679657940628, 0.04403787436202393, 0.03128246769734804},
-        {0.962300077861499, 0.021424254061240638, 0.016275668077260483},
-        {0.024203941505452374, 0.9221690887384729, 0.053626969756074803},
-        {0.016373920784401155, 0.9607148775164212, 0.02291120169917766},
-        {0.07160457232542619, 0.010366361339420923, 0.5594055353975846},
-        {0.7647283135683827, 0.01776726509649644, 0.011057738285362},
-        {0.037871265297471875, 0.010241008617535364, 0.49656174068786074},
-        {0.008731744582534676, 0.4990641425734286, 0.013873214396170841},
-        {0.008849556294726512, 0.4881329883043053, 0.025325000431417853}
+            {0.15863483822017285, 0.031873080137769697, 0.8094920816420574},
+            {0.09239858901071828, 0.012522565962482012, 0.8950788450267997},
+            {0.924679657940628, 0.04403787436202393, 0.03128246769734804},
+            {0.962300077861499, 0.021424254061240638, 0.016275668077260483},
+            {0.024203941505452374, 0.9221690887384729, 0.053626969756074803},
+            {0.016373920784401155, 0.9607148775164212, 0.02291120169917766},
+            {0.07160457232542619, 0.010366361339420923, 0.5594055353975846},
+            {0.7647283135683827, 0.01776726509649644, 0.011057738285362},
+            {0.037871265297471875, 0.010241008617535364, 0.49656174068786074},
+            {0.008731744582534676, 0.4990641425734286, 0.013873214396170841},
+            {0.008849556294726512, 0.4881329883043053, 0.025325000431417853}
     };
 
     private int numKeys = 3;
@@ -107,9 +108,11 @@ public class TitanVertexFormatPropertyGraph4LDATest
         EDGE_TYPE_PROPERTY_KEY.set(giraphConf, "edgeType");
 
 
-        TitanKey vertexType = tx.makeKey("vertexType").dataType(String.class).make();
-        TitanKey frequency = tx.makeKey("frequency").dataType(String.class).make();
-        TitanLabel edge = tx.makeLabel("edge").make();
+        TitanManagement graphManager = graph.getManagementSystem();
+        PropertyKey vertexType = graphManager.makePropertyKey("vertexType").dataType(String.class).make();
+        PropertyKey frequency = graphManager.makePropertyKey("frequency").dataType(String.class).make();
+        EdgeLabel edge = graphManager.makeEdgeLabel("edge").make();
+        graphManager.commit();
 
         for (int i = 0; i < numVertices; i++) {
             nodes[i] = tx.addVertex();
@@ -181,34 +184,34 @@ public class TitanVertexFormatPropertyGraph4LDATest
 
         //verify data is written to Titan
         startNewTransaction();
-        TitanKey[] resultKey;
+        PropertyKey[] resultKey;
         String[] keyName;
-        resultKey = new TitanKey[numKeys];
+        resultKey = new PropertyKey[numKeys];
         keyName = new String[numKeys];
         keyName[0] = "lda_p0";
         keyName[1] = "lda_p1";
         keyName[2] = "lda_p2";
         //check keys are generated for Titan
         for (int i = 0; i < numKeys; i++) {
-            assertTrue(tx.containsType(keyName[i]));
+            assertTrue(tx.containsRelationType(keyName[i]));
             resultKey[i] = tx.getPropertyKey(keyName[i]);
             assertEquals(resultKey[i].getName(), keyName[i]);
             assertEquals(resultKey[i].getDataType(), String.class);
         }
 
         for (int i = 0; i < numVertices; i++) {
-            long nid = nodes[i].getID();
+            long nid = nodes[i].getLongId();
             assertTrue(tx.containsVertex(nid));
             nodes[i] = tx.getVertex(nid);
 
             LOG.info(" LDA i " + i + ", got {" +
-                + Double.parseDouble(nodes[i].getProperty(resultKey[0]).toString()) + ", "
-                + Double.parseDouble(nodes[i].getProperty(resultKey[1]).toString()) + ", "
-                + Double.parseDouble(nodes[i].getProperty(resultKey[2]).toString()) + "}");
+                    +Double.parseDouble(nodes[i].getProperty(resultKey[0]).toString()) + ", "
+                    + Double.parseDouble(nodes[i].getProperty(resultKey[1]).toString()) + ", "
+                    + Double.parseDouble(nodes[i].getProperty(resultKey[2]).toString()) + "}");
 
             for (int j = 0; j < numKeys; j++) {
-            //   assertEquals(expectedValues[i][j], Double.parseDouble(nodes[i].getProperty(resultKey[j])
-             //       .toString()), 0.01d);
+                //   assertEquals(expectedValues[i][j], Double.parseDouble(nodes[i].getProperty(resultKey[j])
+                //       .toString()), 0.01d);
             }
         }
     }
@@ -227,14 +230,14 @@ public class TitanVertexFormatPropertyGraph4LDATest
         String keyName = "lda_result";
 
         //check keys are generated for Titan
-        assertTrue(tx.containsType(keyName));
-        TitanKey resultKey = tx.getPropertyKey(keyName);
+        assertTrue(tx.containsRelationType(keyName));
+        PropertyKey resultKey = tx.getPropertyKey(keyName);
         assertEquals(resultKey.getName(), keyName);
         assertEquals(resultKey.getDataType(), String.class);
 
 
         for (int i = 0; i < numVertices; i++) {
-            nid[i] = nodes[i].getID();
+            nid[i] = nodes[i].getLongId();
             assertTrue(tx.containsVertex(nid[i]));
             nodes[i] = tx.getVertex(nid[i]);
 
@@ -242,12 +245,12 @@ public class TitanVertexFormatPropertyGraph4LDATest
             String ldaResult = nodes[i].getProperty(resultKey).toString();
             String[] valueString = ldaResult.split(",");
             LOG.info(" LDA i " + i + ", got {" +
-                + Double.parseDouble(valueString[0]) + ", "
-                + Double.parseDouble(valueString[1]) + ", "
-                + Double.parseDouble(valueString[2]) + "}");
+                    +Double.parseDouble(valueString[0]) + ", "
+                    + Double.parseDouble(valueString[1]) + ", "
+                    + Double.parseDouble(valueString[2]) + "}");
 
             for (int j = 0; j < numKeys; j++) {
-              //  assertEquals(expectedValues[i][j], Double.parseDouble(valueString[j]), 0.01d);
+                //  assertEquals(expectedValues[i][j], Double.parseDouble(valueString[j]), 0.01d);
             }
         }
     }

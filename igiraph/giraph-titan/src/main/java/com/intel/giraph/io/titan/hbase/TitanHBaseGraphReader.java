@@ -22,20 +22,9 @@
 //////////////////////////////////////////////////////////////////////////////
 package com.intel.giraph.io.titan.hbase;
 
-import com.google.common.base.Preconditions;
 import com.intel.giraph.io.titan.TitanGraphReader;
-import com.thinkaurelius.titan.diskstorage.keycolumnvalue.Entry;
-import com.thinkaurelius.titan.diskstorage.keycolumnvalue.StaticBufferEntry;
-import com.thinkaurelius.titan.diskstorage.util.StaticByteBuffer;
 import org.apache.commons.configuration.Configuration;
-import org.apache.giraph.conf.ImmutableClassesGiraphConfiguration;
-import org.apache.giraph.graph.Vertex;
 import org.apache.log4j.Logger;
-
-import java.nio.ByteBuffer;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.NavigableMap;
 
 /**
  * TitanHBaseGraphReader which helps read in Graph from Titan/HBase
@@ -56,108 +45,5 @@ public class TitanHBaseGraphReader extends TitanGraphReader {
         super(configuration);
     }
 
-    /**
-     * reading Vertex from Titan features <code>long</code> vertex ID's,
-     * <code>Double</code> vertex values, and <code>Float</code> edge
-     * weights.
-     *
-     * @param type      : input format type
-     * @param conf      : Giraph configuration
-     * @param key       : key from HBase input data
-     * @param columnMap : columnMap from HBase input data, in
-     *                  Map<qualifier,Map<timestamp,value>> format
-     * @return Vertex : Giraph Vertex
-     */
-    public Vertex readGiraphVertex(String type, ImmutableClassesGiraphConfiguration conf, byte[] key,
-                                   final NavigableMap<byte[], NavigableMap<Long, byte[]>> columnMap) {
-
-        return super.readGiraphVertex(type, conf, ByteBuffer.wrap(key), new HBaseMapIterable(
-            columnMap));
-    }
-
-    /**
-     * HBaseMapIterable to create iterator from TableRecordReader Result
-     */
-    private static class HBaseMapIterable implements Iterable<Entry> {
-        /**
-         * Result from TableRecordReader is in a three level Map of the form:
-         * <Map&family,Map<qualifier,Map<timestamp,value>>> Map&family is key;
-         * Map<qualifier,Map<timestamp,value>> is columnMap
-         */
-        private final NavigableMap<byte[], NavigableMap<Long, byte[]>> columnMap;
-
-        /**
-         * HBaseMapIterable
-         *
-         * @param columnMap from HBase
-         */
-        public HBaseMapIterable(final NavigableMap<byte[], NavigableMap<Long, byte[]>> columnMap) {
-            Preconditions.checkNotNull(columnMap);
-            this.columnMap = columnMap;
-/*
-            for (java.util.Map.Entry<byte[], NavigableMap<Long, byte[]>> columnEntry : columnMap.entrySet()) {
-                NavigableMap<Long, byte[]> cellMap = columnEntry.getValue();
-            }
-            */
-        }
-
-        /**
-         * @return Iterator for HBase columnvalues
-         */
-        @Override
-        public Iterator<Entry> iterator() {
-            return new HBaseMapIterator(columnMap.entrySet().iterator());
-        }
-
-    }
-
-    /**
-     * HBaseMapIterator
-     */
-    private static class HBaseMapIterator implements Iterator<Entry> {
-        /**
-         * iterator over columnValues
-         */
-        private final Iterator<Map.Entry<byte[], NavigableMap<Long, byte[]>>> iterator;
-
-        /**
-         * HBaseMapIterator
-         *
-         * @param iterator HBase columnValues iterator
-         */
-        public HBaseMapIterator(final Iterator<Map.Entry<byte[], NavigableMap<Long, byte[]>>> iterator) {
-            this.iterator = iterator;
-        }
-
-        /**
-         * @return boolean whether there is next entry
-         */
-        @Override
-        public boolean hasNext() {
-            return iterator.hasNext();
-        }
-
-        /**
-         * @return StaticBufferEntry next entry
-         */
-        @Override
-        public Entry next() {
-            if (iterator.hasNext()) {
-                final Map.Entry<byte[], NavigableMap<Long, byte[]>> entry = iterator.next();
-                return new StaticBufferEntry(new StaticByteBuffer(entry.getKey()), new StaticByteBuffer(entry
-                    .getValue().lastEntry().getValue()));
-            } else {
-                return null;
-            }
-        }
-
-        /**
-         * remove
-         */
-        @Override
-        public void remove() {
-            throw new UnsupportedOperationException();
-        }
-    }
 
 }

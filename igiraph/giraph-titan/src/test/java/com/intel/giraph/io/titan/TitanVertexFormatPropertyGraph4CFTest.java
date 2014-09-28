@@ -31,10 +31,11 @@ import com.intel.giraph.algorithms.cgd.ConjugateGradientDescentComputation;
 import com.intel.giraph.io.formats.JsonPropertyGraph4CFOutputFormat;
 import com.intel.giraph.io.titan.hbase.TitanHBaseVertexInputFormatPropertyGraph4CF;
 import com.intel.giraph.io.titan.hbase.TitanHBaseVertexInputFormatPropertyGraph4CFCGD;
+import com.thinkaurelius.titan.core.EdgeLabel;
+import com.thinkaurelius.titan.core.PropertyKey;
 import com.thinkaurelius.titan.core.TitanEdge;
-import com.thinkaurelius.titan.core.TitanKey;
-import com.thinkaurelius.titan.core.TitanLabel;
 import com.thinkaurelius.titan.core.TitanVertex;
+import com.thinkaurelius.titan.core.schema.TitanManagement;
 import org.apache.giraph.utils.InternalVertexRunner;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -58,7 +59,7 @@ import static org.junit.Assert.assertTrue;
  * finally write back results to Titan via TitanVertexOutputFormatPropertyGraph4CF
  */
 public class TitanVertexFormatPropertyGraph4CFTest
-    extends TitanTestBase{
+        extends TitanTestBase {
             /*
         String[] graph = new String[] {
                 "[0,[],[L],[[2,1,[tr]],[3,2,[te]]]]",
@@ -70,19 +71,19 @@ public class TitanVertexFormatPropertyGraph4CFTest
         */
 
     private double[][] expectedAlsValues = new double[][]{
-        {0.22733103186672185, 0.16592728476946825, 0.06253175723477887},
-        {1.136655159333612, 0.8296364238473429, 0.3126587861738814},
-        {2.7235109462314817, 1.9878710470306467, 0.7491538832804335},
-        {0, 0, 0},
-        {0, 0, 0}
+            {0.22733103186672185, 0.16592728476946825, 0.06253175723477887},
+            {1.136655159333612, 0.8296364238473429, 0.3126587861738814},
+            {2.7235109462314817, 1.9878710470306467, 0.7491538832804335},
+            {0, 0, 0},
+            {0, 0, 0}
     };
 
     private double[][] expectedCgdValues = new double[][]{
-        {0.009727852297685321, 0.16196986703936098, 0.11821940082368845, 0.04343929992598407},
-        {0.0513853529653213, 1.074278784023375, 0.7841122636458053, 0.2990103285744924},
-        {0.28903519391401, 2.6748825147340485, 1.9524983677650556, 0.8443278159632931},
-        {0, 0, 0, 0},
-        {0, 0, 0, 0}
+            {0.009727852297685321, 0.16196986703936098, 0.11821940082368845, 0.04343929992598407},
+            {0.0513853529653213, 1.074278784023375, 0.7841122636458053, 0.2990103285744924},
+            {0.28903519391401, 2.6748825147340485, 1.9524983677650556, 0.8443278159632931},
+            {0, 0, 0, 0},
+            {0, 0, 0, 0}
     };
 
     private int numKeys = 3;
@@ -93,10 +94,12 @@ public class TitanVertexFormatPropertyGraph4CFTest
     @Override
     protected void configure() throws Exception {
         //load the graph to Titan
-        TitanKey vertexType = tx.makeKey("vertexType").dataType(String.class).make();
-        TitanKey edgeType = tx.makeKey("edgeType").dataType(String.class).make();
-        TitanKey weight = tx.makeKey("weight").dataType(String.class).make();
-        TitanLabel edge = tx.makeLabel("edge").make();
+        TitanManagement graphManager = graph.getManagementSystem();
+        PropertyKey vertexType = graphManager.makePropertyKey("vertexType").dataType(String.class).make();
+        PropertyKey edgeType = graphManager.makePropertyKey("edgeType").dataType(String.class).make();
+        PropertyKey weight = graphManager.makePropertyKey("weight").dataType(String.class).make();
+        EdgeLabel edge = graphManager.makeEdgeLabel("edge").make();
+        graphManager.commit();
 
         for (int i = 0; i < numVertices; i++) {
             nodes[i] = tx.addVertex();
@@ -162,30 +165,30 @@ public class TitanVertexFormatPropertyGraph4CFTest
         //verify data is written to Titan
         startNewTransaction();
         long[] nid;
-        TitanKey[] resultKey;
+        PropertyKey[] resultKey;
         String[] keyName;
         nid = new long[numVertices];
-        resultKey = new TitanKey[numKeys];
+        resultKey = new PropertyKey[numKeys];
         keyName = new String[numKeys];
         keyName[0] = "als_p0";
         keyName[1] = "als_p1";
         keyName[2] = "als_p2";
         //check keys are generated for Titan
         for (int i = 0; i < numKeys; i++) {
-            assertTrue(tx.containsType(keyName[i]));
+            assertTrue(tx.containsRelationType(keyName[i]));
             resultKey[i] = tx.getPropertyKey(keyName[i]);
             assertEquals(resultKey[i].getName(), keyName[i]);
             assertEquals(resultKey[i].getDataType(), String.class);
         }
 
         for (int i = 0; i < numVertices; i++) {
-            nid[i] = nodes[i].getID();
+            nid[i] = nodes[i].getLongId();
             assertTrue(tx.containsVertex(nid[i]));
             nodes[i] = tx.getVertex(nid[i]);
 
             for (int j = 0; j < numKeys; j++) {
                 assertEquals(expectedAlsValues[i][j], Double.parseDouble(nodes[i].getProperty(resultKey[j]).
-                    toString()), 0.01d);
+                        toString()), 0.01d);
             }
         }
     }
@@ -217,13 +220,13 @@ public class TitanVertexFormatPropertyGraph4CFTest
         String keyName = "als_result";
 
         //check keys are generated for Titan
-        assertTrue(tx.containsType(keyName));
-        TitanKey resultKey = tx.getPropertyKey(keyName);
+        assertTrue(tx.containsRelationType(keyName));
+        PropertyKey resultKey = tx.getPropertyKey(keyName);
         assertEquals(resultKey.getName(), keyName);
         assertEquals(resultKey.getDataType(), String.class);
 
         for (int i = 0; i < numVertices; i++) {
-            long nid = nodes[i].getID();
+            long nid = nodes[i].getLongId();
             assertTrue(tx.containsVertex(nid));
             nodes[i] = tx.getVertex(nid);
 
