@@ -133,8 +133,11 @@ class TwoNodeTest extends FlatSpec with Matchers with TestingSparkContextFlatSpe
     val priors: Map[Long, Vector[Double]] = Map(1.toLong -> Vector(1.0d, 0.0d),
       2.toLong -> Vector(0.5d, 0.5d))
 
+    val potentialAt1 = 1.0d / (Math.E * Math.E)
+    val oneOverPotentialAt1 = 1.0d / potentialAt1
+
     val expectedPosteriors: Map[Long, Vector[Double]] = Map(1.toLong -> Vector(1.0d, 0.0d),
-      2.toLong -> Vector(Math.E / (Math.E + 1), 1 / (Math.E + 1)))
+      2.toLong -> Vector(oneOverPotentialAt1 / (oneOverPotentialAt1+ 1), 1 / (oneOverPotentialAt1+ 1)))
 
     //  directed edge list is made bidirectional with a flatmap
 
@@ -180,20 +183,19 @@ class TwoNodeTest extends FlatSpec with Matchers with TestingSparkContextFlatSpe
     val firstNodePriors = Vector(0.6d, 0.4d)
     val secondNodePriors = Vector(0.3d, 0.7d)
 
-    val messageFirstToSecond = Vector(firstNodePriors.head + firstNodePriors.last / Math.E,
-      (firstNodePriors.head / Math.E) + firstNodePriors.last)
+    val potentialAt1 = 1.0d / (Math.E * Math.E)
 
-    val messageSecondToFirst = Vector(secondNodePriors.head + secondNodePriors.last / Math.E,
-      (secondNodePriors.head / Math.E) + secondNodePriors.last)
+    val messageFirstToSecond = Vector(firstNodePriors.head + firstNodePriors.last * potentialAt1,
+      (firstNodePriors.head  * potentialAt1) + firstNodePriors.last)
+
+    val messageSecondToFirst = Vector(secondNodePriors.head + secondNodePriors.last  * potentialAt1,
+      (secondNodePriors.head  * potentialAt1) + secondNodePriors.last)
 
     val unnormalizedBeliefsFirstNode: Vector[Double] = firstNodePriors.zip(messageSecondToFirst).map({ case (p, m) => p * m })
     val unnormalizedBeliefsSecondNode: Vector[Double] = secondNodePriors.zip(messageFirstToSecond).map({ case (p, m) => p * m })
 
     val expectedFirstNodePosteriors = unnormalizedBeliefsFirstNode.map(x => x / unnormalizedBeliefsFirstNode.reduce(_ + _))
     val expectedSecondNodePosteriors = unnormalizedBeliefsSecondNode.map(x => x / unnormalizedBeliefsSecondNode.reduce(_ + _))
-
-    expectedFirstNodePosteriors shouldEqual Vector(0.5078674222109657d, 0.4921325777890343d)
-    expectedSecondNodePosteriors shouldEqual Vector(0.3403080027827025d, 0.6596919972172975d)
 
     val priors: Map[Long, Vector[Double]] = Map(1.toLong -> firstNodePriors,
       2.toLong -> secondNodePriors)

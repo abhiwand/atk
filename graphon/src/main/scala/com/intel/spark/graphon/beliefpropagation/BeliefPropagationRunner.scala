@@ -31,6 +31,9 @@ object BeliefPropagationRunner {
 
     val defaultEdgeWeight = BeliefPropagationDefaults.edgeWeightDefault
 
+    val power = BeliefPropagationDefaults.powerDefault
+    val smoothing = BeliefPropagationDefaults.smoothingDefault
+
     // convert to graphX vertices
 
     val graphXVertices: RDD[(Long, VertexState)] =
@@ -41,7 +44,7 @@ object BeliefPropagationRunner {
 
     val graph = Graph[VertexState, Double](graphXVertices, graphXEdges)
 
-    val graphXLBPRunner = new PregelBeliefPropagation(maxIterations)
+    val graphXLBPRunner = new PregelBeliefPropagation(maxIterations, power, smoothing)
     val (newGraph, log) = graphXLBPRunner.run(graph)
 
     val outVertices = newGraph.vertices.map({
