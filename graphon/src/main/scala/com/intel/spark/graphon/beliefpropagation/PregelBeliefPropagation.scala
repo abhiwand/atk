@@ -28,7 +28,7 @@ case class VertexState(gbVertex: GBVertex,
  */
 class PregelBeliefPropagation(val maxIterations: Int,
                               val power: Double = 0.0d,
-                              val smoothing: Double = 1.0d) extends Serializable {
+                              val smoothing: Double = 2.0d) extends Serializable {
 
   /**
    * Run belief propagation on a graph.

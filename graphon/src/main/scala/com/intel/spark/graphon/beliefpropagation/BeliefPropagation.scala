@@ -44,6 +44,8 @@ object BeliefPropagationDefaults {
   val beliefsAsStringsDefault = false
   val maxSuperStepsDefault = 20
   val edgeWeightDefault = 1.0d
+  val powerDefault = 0d
+  val smoothingDefault = 2.0d
 }
 
 /**

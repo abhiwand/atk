@@ -55,48 +55,50 @@ class TreesTest extends FlatSpec with Matchers with TestingSparkContextFlatSpec 
 
     // messages that converge after the first round - that is,  the constant ones coming from the leaves
 
-    val message1to3 = Vector(firstNodePriors.head + firstNodePriors.last / Math.E,
-      firstNodePriors.head / Math.E + firstNodePriors.last)
+    val potentialAt1 = 1.0d / (Math.E * Math.E)
 
-    val message2to3 = Vector(secondNodePriors.head + secondNodePriors.last / Math.E,
-      secondNodePriors.head / Math.E + secondNodePriors.last)
+    val message1to3 = Vector(firstNodePriors.head + firstNodePriors.last * potentialAt1,
+      firstNodePriors.head * potentialAt1 + firstNodePriors.last)
 
-    val message5to4 = Vector(fifthNodePriors.head + fifthNodePriors.last / Math.E,
-      fifthNodePriors.head / Math.E + fifthNodePriors.last)
+    val message2to3 = Vector(secondNodePriors.head + secondNodePriors.last * potentialAt1,
+      secondNodePriors.head * potentialAt1 + secondNodePriors.last)
+
+    val message5to4 = Vector(fifthNodePriors.head + fifthNodePriors.last * potentialAt1,
+      fifthNodePriors.head * potentialAt1 + fifthNodePriors.last)
 
     // messages the converge after the second round, after the leaves have reported
 
     val message3to4 = Vector(thirdNodePriors.head * message1to3.head * message2to3.head
-      + (1 / Math.E) * thirdNodePriors.last * message1to3.last * message2to3.last,
-      (1 / Math.E) * thirdNodePriors.head * message1to3.head * message2to3.head
+      + potentialAt1 * thirdNodePriors.last * message1to3.last * message2to3.last,
+      potentialAt1 * thirdNodePriors.head * message1to3.head * message2to3.head
         + thirdNodePriors.last * message1to3.last * message2to3.last
     )
 
     val message4to3 = Vector(fourthNodePriors.head * message5to4.head
-      + (1 / Math.E) * fourthNodePriors.last * message5to4.last,
-      (1 / Math.E) * fourthNodePriors.head * message5to4.head
+      + potentialAt1 * fourthNodePriors.last * message5to4.last,
+      potentialAt1 * fourthNodePriors.head * message5to4.head
         + fourthNodePriors.last * message5to4.last
     )
 
     // messages converging in the third round
 
     val message4to5 = Vector(fourthNodePriors.head * message3to4.head
-      + (1 / Math.E) * fourthNodePriors.last * message3to4.last,
-      (1 / Math.E) * fourthNodePriors.head * message3to4.head
+      + potentialAt1 * fourthNodePriors.last * message3to4.last,
+      potentialAt1 * fourthNodePriors.head * message3to4.head
         + fourthNodePriors.last * message3to4.last
     )
 
     val message3to1 = Vector(
       thirdNodePriors.head * message4to3.head * message2to3.head
-        + 1 / Math.E * thirdNodePriors.last * message4to3.last * message2to3.last,
-      1 / Math.E * thirdNodePriors.head * message4to3.head * message2to3.head
+        + potentialAt1 * thirdNodePriors.last * message4to3.last * message2to3.last,
+      potentialAt1 * thirdNodePriors.head * message4to3.head * message2to3.head
         + thirdNodePriors.last * message4to3.last * message2to3.last
     )
 
     val message3to2 = Vector(
       thirdNodePriors.head * message4to3.head * message1to3.head
-        + 1 / Math.E * thirdNodePriors.last * message4to3.last * message1to3.last,
-      1 / Math.E * thirdNodePriors.head * message4to3.head * message1to3.head
+        + potentialAt1* thirdNodePriors.last * message4to3.last * message1to3.last,
+      potentialAt1 * thirdNodePriors.head * message4to3.head * message1to3.head
         + thirdNodePriors.last * message4to3.last * message1to3.last
     )
 
