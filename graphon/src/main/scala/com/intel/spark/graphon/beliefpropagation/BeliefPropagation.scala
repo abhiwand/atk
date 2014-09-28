@@ -34,8 +34,17 @@ case class BeliefPropagationArgs(graph: GraphReference,
                                  vertexPosteriorPropertyName: String,
                                  stateSpaceSize: Int,
                                  edgeWeightProperty: Option[String] = None,
-                                 beliefsAsStrings: Option[Boolean],
-                                 maxSuperSteps: Option[Int])
+                                 beliefsAsStrings: Option[Boolean] = None,
+                                 maxSuperSteps: Option[Int] = None)
+
+/**
+ * Companion object holds the default values.
+ */
+object BeliefPropagationDefaults {
+  val beliefsAsStringsDefault = false
+  val maxSuperStepsDefault = 20
+  val edgeWeightDefault = 1.0d
+}
 
 /**
  * The result object
