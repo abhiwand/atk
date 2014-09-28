@@ -31,7 +31,7 @@ import scala.util.control.NonFatal
 
 class EngineApplication extends Archive with EventLogging with ClassLoaderAware {
 
-  var engine: EngineComponent with FrameComponent with CommandComponent = null
+  var engine: EngineComponent with FrameComponent[_, _] with CommandComponent = null
 
   override def getAll[T: ClassTag](descriptor: String) = {
     descriptor match {
@@ -51,7 +51,7 @@ class EngineApplication extends Archive with EventLogging with ClassLoaderAware 
       //TODO: when Engine moves to its own process, it will need to start its own Akka actor system.
       engine = com.intel.intelanalytics.component.Boot.getArchive("engine-spark")
         .load("com.intel.intelanalytics.engine.spark.SparkComponent")
-        .asInstanceOf[EngineComponent with FrameComponent with CommandComponent]
+        .asInstanceOf[EngineComponent with FrameComponent[_, _] with CommandComponent]
 
     }
     catch {
