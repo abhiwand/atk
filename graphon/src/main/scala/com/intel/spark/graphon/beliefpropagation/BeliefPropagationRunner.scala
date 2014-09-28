@@ -57,7 +57,7 @@ object BeliefPropagationRunner {
   private def bpVertexStateFromVertex(gbVertex: GBVertex,
                                       inputPropertyName: String, stateSpaceSize: Int): VertexState = {
 
-    val separators : Array[Char] = Array(' ', ',', '\t')
+    val separators: Array[Char] = Array(' ', ',', '\t')
     val property = gbVertex.getProperty(inputPropertyName)
 
     val prior: Vector[Double] = if (property.isEmpty) {
