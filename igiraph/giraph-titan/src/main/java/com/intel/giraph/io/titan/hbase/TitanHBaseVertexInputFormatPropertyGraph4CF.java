@@ -22,28 +22,33 @@
 //////////////////////////////////////////////////////////////////////////////
 package com.intel.giraph.io.titan.hbase;
 
+import com.google.common.base.Preconditions;
 import com.intel.giraph.io.EdgeData4CFWritable;
 import com.intel.giraph.io.VertexData4CFWritable;
 import com.intel.giraph.io.titan.GiraphToTitanGraphFactory;
 import com.intel.giraph.io.titan.common.GiraphTitanUtils;
-import com.thinkaurelius.titan.diskstorage.Backend;
+import com.thinkaurelius.titan.core.EdgeLabel;
+import com.thinkaurelius.titan.core.TitanEdge;
+import com.thinkaurelius.titan.hadoop.FaunusVertex;
+import com.tinkerpop.blueprints.Direction;
 import org.apache.giraph.conf.ImmutableClassesGiraphConfiguration;
 import org.apache.giraph.edge.Edge;
+import org.apache.giraph.edge.EdgeFactory;
 import org.apache.giraph.graph.Vertex;
 import org.apache.giraph.io.VertexReader;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.log4j.Logger;
+import org.apache.mahout.math.DenseVector;
 import org.apache.mahout.math.Vector;
 
 import java.io.IOException;
+import java.util.*;
 
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.GIRAPH_TITAN;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INPUT_DATA_ERROR;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.PROPERTY_GRAPH_4_CF;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.*;
 
 
 /**
@@ -62,13 +67,13 @@ import static com.intel.giraph.io.titan.common.GiraphTitanConstants.PROPERTY_GRA
  * [1,[4,3],[L],[[2,2.1,[tr]],[3,0.7,[va]]]]
  */
 public class TitanHBaseVertexInputFormatPropertyGraph4CF extends
-    TitanHBaseVertexInputFormat<LongWritable, VertexData4CFWritable, EdgeData4CFWritable> {
+        TitanHBaseVertexInputFormat<LongWritable, VertexData4CFWritable, EdgeData4CFWritable> {
 
     /**
      * LOG class
      */
     private static final Logger LOG = Logger
-        .getLogger(TitanHBaseVertexInputFormatPropertyGraph4CF.class);
+            .getLogger(TitanHBaseVertexInputFormatPropertyGraph4CF.class);
 
     /**
      * checkInputSpecs
@@ -86,7 +91,7 @@ public class TitanHBaseVertexInputFormatPropertyGraph4CF extends
      */
     @Override
     public void setConf(
-        ImmutableClassesGiraphConfiguration<LongWritable, VertexData4CFWritable, EdgeData4CFWritable> conf) {
+            ImmutableClassesGiraphConfiguration<LongWritable, VertexData4CFWritable, EdgeData4CFWritable> conf) {
         GiraphTitanUtils.setupHBase(conf);
         super.setConf(conf);
     }
@@ -101,7 +106,7 @@ public class TitanHBaseVertexInputFormatPropertyGraph4CF extends
      * @throws RuntimeException
      */
     public VertexReader<LongWritable, VertexData4CFWritable, EdgeData4CFWritable> createVertexReader(
-        InputSplit split, TaskAttemptContext context) throws IOException {
+            InputSplit split, TaskAttemptContext context) throws IOException {
 
         return new TitanHBaseVertexReader(split, context);
 
@@ -111,7 +116,7 @@ public class TitanHBaseVertexInputFormatPropertyGraph4CF extends
      * Uses the RecordReader to get HBase data
      */
     public static class TitanHBaseVertexReader extends
-        HBaseVertexReader<LongWritable, VertexData4CFWritable, EdgeData4CFWritable> {
+            HBaseVertexReader<LongWritable, VertexData4CFWritable, EdgeData4CFWritable> {
         /**
          * reader to parse Titan graph
          */
@@ -148,11 +153,11 @@ public class TitanHBaseVertexInputFormatPropertyGraph4CF extends
          */
         @Override
         public void initialize(InputSplit inputSplit, TaskAttemptContext context) throws IOException,
-            InterruptedException {
+                InterruptedException {
             super.initialize(inputSplit, context);
             this.graphReader = new TitanHBaseGraphReader(
-                GiraphToTitanGraphFactory.generateTitanConfiguration(context.getConfiguration(),
-                    GIRAPH_TITAN.get(context.getConfiguration())));
+                    GiraphToTitanGraphFactory.generateTitanConfiguration(context.getConfiguration(),
+                            GIRAPH_TITAN.get(context.getConfiguration())));
         }
 
         /**
@@ -165,20 +170,162 @@ public class TitanHBaseVertexInputFormatPropertyGraph4CF extends
         @Override
         public boolean nextVertex() throws IOException, InterruptedException {
             //the edge store name used by Titan
-            final byte[] edgeStoreFamily = Bytes.toBytes(Backend.EDGESTORE_NAME);
-
-            while (getRecordReader().nextKeyValue()) {
-                final Vertex<LongWritable, VertexData4CFWritable, EdgeData4CFWritable> temp = graphReader
-                    .readGiraphVertex(PROPERTY_GRAPH_4_CF, getConf(), getRecordReader()
-                        .getCurrentKey().copyBytes(), getRecordReader().getCurrentValue().getMap()
-                        .get(edgeStoreFamily));
-                if (null != temp) {
-                    vertex = temp;
-                    return true;
-                }
+            if (getRecordReader().nextKeyValue()) {
+                vertex = readGiraphVertex(getConf(), getRecordReader().getCurrentValue());
+                return true;
             }
+
             vertex = null;
             return false;
+        }
+
+
+
+        public Vertex<LongWritable, VertexData4CFWritable, EdgeData4CFWritable> readGiraphVertex(final ImmutableClassesGiraphConfiguration conf, final FaunusVertex faunusVertex) {
+            /** Vertex value properties to filter */
+            final String[] vertexValuePropertyKeyList;
+            /** Edge value properties to filter */
+            final String[] edgeValuePropertyKeyList;
+            /** Edge labels to filter */
+            final String[] edgeLabelList;
+
+            String regexp = "[\\s,\\t]+";
+            /**
+             * vertex value
+             */
+            VertexData4CFWritable vertexValueVector = null;
+            /**
+             * the vertex type
+             */
+            VertexData4CFWritable.VertexType vertexType = null;
+            /**
+             * the edge type
+             */
+            EdgeData4CFWritable.EdgeType edgeType = null;
+            /**
+             * Enable vector value
+             */
+            String enableVectorValue = "true";
+
+            /**
+             * Property key for Vertex Type
+             */
+             String vertexTypePropertyKey;
+            /**
+             * Property key for Edge Type
+             */
+             String edgeTypePropertyKey;
+
+            /**
+             * HashMap of configured vertex properties
+             */
+             final Map<String, Integer> vertexValuePropertyKeys = new HashMap<String, Integer>();
+            /**
+             * HashMap of configured edge properties
+             */
+             final Map<String, Integer> edgeValuePropertyKeys = new HashMap<String, Integer>();
+            /**
+             * HashSet of configured edge labels
+             */
+             final Map<String, Integer> edgeLabelKeys = new HashMap<String, Integer>();
+
+
+            enableVectorValue = VECTOR_VALUE.get(conf);
+            vertexValuePropertyKeyList = INPUT_VERTEX_VALUE_PROPERTY_KEY_LIST.get(conf).split(regexp);
+            edgeValuePropertyKeyList = INPUT_EDGE_VALUE_PROPERTY_KEY_LIST.get(conf).split(regexp);
+            edgeLabelList = INPUT_EDGE_LABEL_LIST.get(conf).split(regexp);
+            vertexTypePropertyKey = VERTEX_TYPE_PROPERTY_KEY.get(conf);
+            edgeTypePropertyKey = EDGE_TYPE_PROPERTY_KEY.get(conf);
+            int size = vertexValuePropertyKeyList.length;
+            for (int i = 0; i < size; i++) {
+                vertexValuePropertyKeys.put(vertexValuePropertyKeyList[i], i);
+            }
+            for (int i = 0; i < edgeValuePropertyKeyList.length; i++) {
+                edgeValuePropertyKeys.put(edgeValuePropertyKeyList[i], i);
+            }
+
+            for (int i = 0; i < edgeLabelList.length; i++) {
+                edgeLabelKeys.put(edgeLabelList[i], i);
+            }
+
+
+            // set up vertex Value
+            Vertex<LongWritable, VertexData4CFWritable, EdgeData4CFWritable> vertex = conf.createVertex();
+            double[] data = new double[size];
+            Vector vector = new DenseVector(data);
+            vertexValueVector = new VertexData4CFWritable(vertexType, vector.clone());
+            vertex.initialize(new LongWritable(faunusVertex.getLongId()), vertexValueVector);
+
+
+
+            // Add check that property list contains single value
+            for (final String propertyKey : vertexValuePropertyKeys.keySet()) {
+                final Object vertexValueObject = faunusVertex.getProperty(propertyKey);
+                vertexType = vertex.getValue().getType();
+                Vector vector1 = vertex.getValue().getVector();
+                if (enableVectorValue.equals("true")) {
+                    //one property key has a vector as value
+                    //split by either space or comma or tab
+                    String[] valueString = vertexValueObject.toString().split(regexp);
+                    for (int i = 0; i < valueString.length; i++) {
+                        vector.set(i, Double.parseDouble(valueString[i]));
+                    }
+                } else {
+                    final double vertexValue = Double.parseDouble(vertexValueObject.toString());
+                    vector.set(vertexValuePropertyKeys.get(propertyKey), vertexValue);
+                }
+                vertex.setValue(new VertexData4CFWritable(vertexType, vector1));
+            }
+
+            final Object vertexTypeObject = faunusVertex.getProperty(vertexTypePropertyKey);
+            if (vertexTypeObject != null) {
+                Vector priorVector = vertex.getValue().getVector();
+                String vertexTypeString = vertexTypeObject.toString().toLowerCase();
+                if (vertexTypeString.equals(VERTEX_TYPE_LEFT)) {
+                    vertexType = VertexData4CFWritable.VertexType.LEFT;
+                } else if (vertexTypeString.equals(VERTEX_TYPE_RIGHT)) {
+                    vertexType = VertexData4CFWritable.VertexType.RIGHT;
+                } else {
+                    LOG.error("Vertex type string: %s isn't supported." + vertexTypeString);
+                    throw new IllegalArgumentException(String.format(
+                            "Vertex type string: %s isn't supported.", vertexTypeString));
+                }
+                vertex.setValue(new VertexData4CFWritable(vertexType, priorVector));
+            }
+
+            for (final String edgeLabelKey : edgeLabelKeys.keySet()) {
+                EdgeLabel edgeLabel = faunusVertex.tx().getEdgeLabel(edgeLabelKey);
+                for (final TitanEdge titanEdge : faunusVertex.getTitanEdges(Direction.OUT, edgeLabel)) {
+                    double edgeValue = 1.0d;
+                    String edgeTypeString = null;
+                    for (final String propertyKey : edgeValuePropertyKeys.keySet()) {
+                        final Object edgeValueObject = titanEdge.getProperty(propertyKey);
+                        edgeValue = Double.parseDouble(edgeValueObject.toString()); //TODO: ADD check
+
+                        final Object edgeTypeObject = titanEdge.getProperty(edgeTypePropertyKey);
+                        edgeTypeString = edgeTypeObject.toString().toLowerCase();
+                        if (edgeTypeString.equals(TYPE_TRAIN)) {
+                            edgeType = EdgeData4CFWritable.EdgeType.TRAIN;
+                        } else if (edgeTypeString.equals(TYPE_VALIDATE)) {
+                            edgeType = EdgeData4CFWritable.EdgeType.VALIDATE;
+                        } else if (edgeTypeString.equals(TYPE_TEST)) {
+                            edgeType = EdgeData4CFWritable.EdgeType.TEST;
+                        } else {
+                            LOG.error("Edge type string: %s isn't supported." + edgeTypeString);
+                            throw new IllegalArgumentException(String.format(
+                                    "Edge type string: %s isn't supported.", edgeTypeString));
+                        }
+
+
+                        Edge<LongWritable, EdgeData4CFWritable> edge = EdgeFactory.create(
+                                new LongWritable(titanEdge.getOtherVertex(faunusVertex).getLongId()), new EdgeData4CFWritable(
+                                        edgeType, edgeValue));
+                        vertex.addEdge(edge);
+
+                    }
+                }
+            }
+            return (vertex);
         }
 
         /**
@@ -191,7 +338,7 @@ public class TitanHBaseVertexInputFormatPropertyGraph4CF extends
          */
         @Override
         public Vertex<LongWritable, VertexData4CFWritable, EdgeData4CFWritable> getCurrentVertex()
-            throws IOException, InterruptedException {
+                throws IOException, InterruptedException {
             return vertex;
         }
 

@@ -22,11 +22,14 @@
 //////////////////////////////////////////////////////////////////////////////
 package com.intel.giraph.io.titan.hbase;
 
+import com.thinkaurelius.titan.hadoop.FaunusVertex;
+import com.thinkaurelius.titan.hadoop.formats.hbase.TitanHBaseInputFormat;
 import org.apache.giraph.io.VertexInputFormat;
 import org.apache.giraph.io.VertexReader;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.io.ImmutableBytesWritable;
 import org.apache.hadoop.hbase.mapreduce.TableInputFormat;
+import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.mapreduce.InputSplit;
@@ -38,10 +41,9 @@ import java.io.IOException;
 import java.util.List;
 
 /**
- * Abstract class that uses HBase TableInputFormat and its Scan object to
- * instantiate vertices from an HBase table.
+ * Abstract class that uses TitanHBaseInputFormat to read Titan/Hadoop (i.e., Faunus) vertices from HBase.
  *
- * Subclasses can configure TableInputFormat by using conf.set
+ * Subclasses can configure TitanHBaseInputFormat by using conf.set
  *
  * @param <I> Vertex index value
  * @param <V> Vertex value
@@ -53,7 +55,7 @@ public abstract class TitanHBaseVertexInputFormat<I extends WritableComparable, 
     /**
      * use HBase table input format
      */
-    protected static final TableInputFormat INPUT_FORMAT = new TableInputFormat();
+    protected static final TitanHBaseInputFormat INPUT_FORMAT = new TitanHBaseInputFormat();
 
     /**
      * Create RecordReader to read HBase row-key, result records.
@@ -69,7 +71,7 @@ public abstract class TitanHBaseVertexInputFormat<I extends WritableComparable, 
         /**
          * Reader instance
          */
-        private RecordReader<ImmutableBytesWritable, Result> reader;
+        private RecordReader<NullWritable, FaunusVertex> reader;
         /**
          * Context passed to initialize
          */
@@ -86,7 +88,7 @@ public abstract class TitanHBaseVertexInputFormat<I extends WritableComparable, 
          * @throws InterruptedException exception that can be thrown during
          *                              creation
          */
-        protected RecordReader<ImmutableBytesWritable, Result>
+        protected RecordReader<NullWritable, FaunusVertex>
         createHBaseRecordReader(InputSplit inputSplit, TaskAttemptContext context)
             throws IOException, InterruptedException {
             INPUT_FORMAT.setConf(context.getConfiguration());
@@ -133,7 +135,7 @@ public abstract class TitanHBaseVertexInputFormat<I extends WritableComparable, 
          *
          * @return Record reader to be used for reading.
          */
-        protected RecordReader<ImmutableBytesWritable, Result> getRecordReader() {
+        protected RecordReader<NullWritable, FaunusVertex> getRecordReader() {
             return reader;
         }
 

@@ -23,6 +23,7 @@
 package com.intel.giraph.io.titan;
 
 import com.thinkaurelius.titan.core.TitanTransaction;
+import com.thinkaurelius.titan.diskstorage.configuration.backend.CommonsConfiguration;
 import com.thinkaurelius.titan.graphdb.configuration.GraphDatabaseConfiguration;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.giraph.conf.GiraphConfiguration;
@@ -113,7 +114,7 @@ public abstract class TitanTestBase<I extends org.apache.hadoop.io.WritableCompa
 
         BaseConfiguration baseConfig = GiraphToTitanGraphFactory.generateTitanConfiguration(conf,
             GIRAPH_TITAN.get(giraphConf));
-        titanConfig = new GraphDatabaseConfiguration(baseConfig);
+        titanConfig = new GraphDatabaseConfiguration(new CommonsConfiguration(baseConfig));
         ensureTitanTableReady();
         graph = new TitanTestGraph(titanConfig);
         startNewTransaction();

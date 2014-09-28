@@ -22,28 +22,34 @@
 //////////////////////////////////////////////////////////////////////////////
 package com.intel.giraph.io.titan.hbase;
 
+import com.intel.giraph.io.EdgeData4CFWritable;
 import com.intel.giraph.io.VertexData4LBPWritable;
 import com.intel.giraph.io.titan.GiraphToTitanGraphFactory;
 import com.intel.giraph.io.titan.common.GiraphTitanUtils;
-import com.thinkaurelius.titan.diskstorage.Backend;
+import com.thinkaurelius.titan.core.EdgeLabel;
+import com.thinkaurelius.titan.core.TitanEdge;
+import com.thinkaurelius.titan.hadoop.FaunusVertex;
+import com.tinkerpop.blueprints.Direction;
+import com.tinkerpop.blueprints.util.ExceptionFactory;
 import org.apache.giraph.conf.ImmutableClassesGiraphConfiguration;
 import org.apache.giraph.edge.Edge;
+import org.apache.giraph.edge.EdgeFactory;
 import org.apache.giraph.graph.Vertex;
 import org.apache.giraph.io.VertexReader;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.log4j.Logger;
+import org.apache.mahout.math.DenseVector;
 import org.apache.mahout.math.Vector;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.GIRAPH_TITAN;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INPUT_DATA_ERROR;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.PROPERTY_GRAPH_4_LBP;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.*;
 
 
 /**
@@ -62,13 +68,13 @@ import static com.intel.giraph.io.titan.common.GiraphTitanConstants.PROPERTY_GRA
  * '[]' is reserved for future usage.
  */
 public class TitanHBaseVertexInputFormatPropertyGraph4LBP extends
-    TitanHBaseVertexInputFormat<LongWritable, VertexData4LBPWritable, DoubleWritable> {
+        TitanHBaseVertexInputFormat<LongWritable, VertexData4LBPWritable, DoubleWritable> {
 
     /**
      * LOG class
      */
     private static final Logger LOG = Logger
-        .getLogger(TitanHBaseVertexInputFormatPropertyGraph4LBP.class);
+            .getLogger(TitanHBaseVertexInputFormatPropertyGraph4LBP.class);
 
     /**
      * checkInputSpecs
@@ -86,7 +92,7 @@ public class TitanHBaseVertexInputFormatPropertyGraph4LBP extends
      */
     @Override
     public void setConf(
-        ImmutableClassesGiraphConfiguration<LongWritable, VertexData4LBPWritable, DoubleWritable> conf) {
+            ImmutableClassesGiraphConfiguration<LongWritable, VertexData4LBPWritable, DoubleWritable> conf) {
         GiraphTitanUtils.setupHBase(conf);
         super.setConf(conf);
     }
@@ -101,7 +107,7 @@ public class TitanHBaseVertexInputFormatPropertyGraph4LBP extends
      * @throws RuntimeException
      */
     public VertexReader<LongWritable, VertexData4LBPWritable, DoubleWritable> createVertexReader(
-        InputSplit split, TaskAttemptContext context) throws IOException {
+            InputSplit split, TaskAttemptContext context) throws IOException {
 
         return new TitanHBaseVertexReader(split, context);
 
@@ -111,7 +117,7 @@ public class TitanHBaseVertexInputFormatPropertyGraph4LBP extends
      * Uses the RecordReader to get HBase data
      */
     public static class TitanHBaseVertexReader extends
-        HBaseVertexReader<LongWritable, VertexData4LBPWritable, DoubleWritable> {
+            HBaseVertexReader<LongWritable, VertexData4LBPWritable, DoubleWritable> {
         /**
          * reader to parse Titan graph
          */
@@ -148,11 +154,11 @@ public class TitanHBaseVertexInputFormatPropertyGraph4LBP extends
          */
         @Override
         public void initialize(InputSplit inputSplit, TaskAttemptContext context) throws IOException,
-            InterruptedException {
+                InterruptedException {
             super.initialize(inputSplit, context);
             this.graphReader = new TitanHBaseGraphReader(
-                GiraphToTitanGraphFactory.generateTitanConfiguration(context.getConfiguration(),
-                    GIRAPH_TITAN.get(context.getConfiguration())));
+                    GiraphToTitanGraphFactory.generateTitanConfiguration(context.getConfiguration(),
+                            GIRAPH_TITAN.get(context.getConfiguration())));
         }
 
         /**
@@ -165,20 +171,160 @@ public class TitanHBaseVertexInputFormatPropertyGraph4LBP extends
         @Override
         public boolean nextVertex() throws IOException, InterruptedException {
             //the edge store name used by Titan
-            final byte[] edgeStoreFamily = Bytes.toBytes(Backend.EDGESTORE_NAME);
-
-            while (getRecordReader().nextKeyValue()) {
-                final Vertex<LongWritable, VertexData4LBPWritable, DoubleWritable> temp = graphReader
-                    .readGiraphVertex(PROPERTY_GRAPH_4_LBP, getConf(), getRecordReader()
-                        .getCurrentKey().copyBytes(), getRecordReader().getCurrentValue().getMap()
-                        .get(edgeStoreFamily));
-                if (null != temp) {
-                    vertex = temp;
-                    return true;
-                }
+            if (getRecordReader().nextKeyValue()) {
+                vertex = readGiraphVertex(getConf(), getRecordReader().getCurrentValue());
+                return true;
             }
+
             vertex = null;
             return false;
+        }
+
+
+        public Vertex<LongWritable, VertexData4LBPWritable, DoubleWritable> readGiraphVertex(final ImmutableClassesGiraphConfiguration conf, final FaunusVertex faunusVertex) {
+            /** Vertex value properties to filter */
+            final String[] vertexValuePropertyKeyList;
+            /** Edge value properties to filter */
+            final String[] edgeValuePropertyKeyList;
+            /** Edge labels to filter */
+            final String[] edgeLabelList;
+
+            String regexp = "[\\s,\\t]+";
+            /**
+             * vertex value
+             */
+            VertexData4LBPWritable vertexValueVector = null;
+            /**
+             * the vertex type
+             */
+            VertexData4LBPWritable.VertexType vertexType = null;
+            /**
+             * the edge type
+             */
+            EdgeData4CFWritable.EdgeType edgeType = null;
+            /**
+             * Enable vector value
+             */
+            String enableVectorValue = "true";
+
+            /**
+             * Property key for Vertex Type
+             */
+            String vertexTypePropertyKey;
+            /**
+             * Property key for Edge Type
+             */
+            String edgeTypePropertyKey;
+
+            /**
+             * HashMap of configured vertex properties
+             */
+            final Map<String, Integer> vertexValuePropertyKeys = new HashMap<String, Integer>();
+            /**
+             * HashMap of configured edge properties
+             */
+            final Map<String, Integer> edgeValuePropertyKeys = new HashMap<String, Integer>();
+            /**
+             * HashSet of configured edge labels
+             */
+            final Map<String, Integer> edgeLabelKeys = new HashMap<String, Integer>();
+
+
+            enableVectorValue = VECTOR_VALUE.get(conf);
+            vertexValuePropertyKeyList = INPUT_VERTEX_VALUE_PROPERTY_KEY_LIST.get(conf).split(regexp);
+            edgeValuePropertyKeyList = INPUT_EDGE_VALUE_PROPERTY_KEY_LIST.get(conf).split(regexp);
+            edgeLabelList = INPUT_EDGE_LABEL_LIST.get(conf).split(regexp);
+            vertexTypePropertyKey = VERTEX_TYPE_PROPERTY_KEY.get(conf);
+            edgeTypePropertyKey = EDGE_TYPE_PROPERTY_KEY.get(conf);
+            int size = vertexValuePropertyKeyList.length;
+
+
+            for (int i = 0; i < size; i++) {
+                vertexValuePropertyKeys.put(vertexValuePropertyKeyList[i], i);
+            }
+            for (int i = 0; i < edgeValuePropertyKeyList.length; i++) {
+                edgeValuePropertyKeys.put(edgeValuePropertyKeyList[i], i);
+            }
+
+            for (int i = 0; i < edgeLabelList.length; i++) {
+                edgeLabelKeys.put(edgeLabelList[i], i);
+            }
+
+
+            // set up vertex Value
+            Vertex<LongWritable, VertexData4LBPWritable, DoubleWritable> vertex = conf.createVertex();
+            double[] data = new double[size];
+            Vector vector = new DenseVector(data);
+            vertexValueVector = new VertexData4LBPWritable(vertexType, vector.clone(), vector.clone());
+            vertex.initialize(new LongWritable(faunusVertex.getLongId()), vertexValueVector);
+
+
+            // Add check that property list contains single value
+            for (final String propertyKey : vertexValuePropertyKeys.keySet()) {
+                final Object vertexValueObject = faunusVertex.getProperty(propertyKey);
+                vertexType = vertex.getValue().getType();
+                Vector priorVector = vertex.getValue().getPriorVector();
+                if (enableVectorValue.equals("true")) {
+                    //one property key has a vector as value
+                    //split by either space or comma or tab
+                    String[] valueString = vertexValueObject.toString().split(regexp);
+                    size = valueString.length;
+                    double[] data2 = new double[size];
+                    priorVector = new DenseVector(data2);
+                    for (int i = 0; i < size; i++) {
+                        priorVector.set(i, Double.parseDouble(valueString[i]));
+                    }
+                    //update vector with right size
+                    if (vector.size() < size) {
+                        double[] data1 = new double[size];
+                        vector = new DenseVector(data1);
+                    }
+                } else {
+                    final double vertexValue = Double.parseDouble(vertexValueObject.toString());
+                    priorVector.set(vertexValuePropertyKeys.get(propertyKey), vertexValue);
+                }
+                vertex.setValue(new VertexData4LBPWritable(vertexType, priorVector, vector.clone()));
+            }
+
+            final Object vertexTypeObject = faunusVertex.getProperty(vertexTypePropertyKey);
+            if (vertexTypeObject != null) {
+                Vector priorVector = vertex.getValue().getPriorVector();
+                String vertexTypeString = vertexTypeObject.toString().toLowerCase();
+                if (vertexTypeString.equals(TYPE_TRAIN)) {
+                    vertexType = VertexData4LBPWritable.VertexType.TRAIN;
+                } else if (vertexTypeString.equals(TYPE_VALIDATE)) {
+                    vertexType = VertexData4LBPWritable.VertexType.VALIDATE;
+                } else if (vertexTypeString.equals(TYPE_TEST)) {
+                    vertexType = VertexData4LBPWritable.VertexType.TEST;
+                } else {
+                    LOG.error(WRONG_VERTEX_TYPE + vertexTypeString);
+                    throw new IllegalArgumentException(String.format(
+                            WRONG_VERTEX_TYPE, vertexTypeString));
+                }
+                vertex.setValue(new VertexData4LBPWritable(vertexType, priorVector, vector.clone()));
+
+            }
+
+            for (final String edgeLabelKey : edgeLabelKeys.keySet()) {
+                EdgeLabel edgeLabel = faunusVertex.tx().getEdgeLabel(edgeLabelKey);
+                for (final TitanEdge titanEdge : faunusVertex.getTitanEdges(Direction.OUT, edgeLabel)) {
+                    double edgeValue = 1.0d;
+                    for (final String propertyKey : edgeValuePropertyKeys.keySet()) {
+                        final Object edgeValueObject = titanEdge.getProperty(propertyKey);
+                        edgeValue = Double.parseDouble(edgeValueObject.toString()); //TODO: ADD check
+
+                        final Object edgeTypeObject = titanEdge.getProperty(edgeTypePropertyKey);
+
+                        Edge<LongWritable, DoubleWritable> edge = EdgeFactory.create(
+                                new LongWritable(titanEdge.getOtherVertex(faunusVertex).getLongId()), new DoubleWritable(edgeValue));
+                        vertex.addEdge(edge);
+
+                    }
+
+
+                }
+            }
+            return (vertex);
         }
 
         /**
@@ -191,7 +337,7 @@ public class TitanHBaseVertexInputFormatPropertyGraph4LBP extends
          */
         @Override
         public Vertex<LongWritable, VertexData4LBPWritable, DoubleWritable> getCurrentVertex()
-            throws IOException, InterruptedException {
+                throws IOException, InterruptedException {
             return vertex;
         }
 

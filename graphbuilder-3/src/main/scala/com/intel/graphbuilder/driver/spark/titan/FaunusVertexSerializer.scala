@@ -2,8 +2,8 @@ package com.intel.graphbuilder.driver.spark.titan
 
 import java.io._
 
-import com.esotericsoftware.kryo.io.{Input, Output}
-import com.esotericsoftware.kryo.{Kryo, Serializer}
+import com.esotericsoftware.kryo.io.{ Input, Output }
+import com.esotericsoftware.kryo.{ Kryo, Serializer }
 import com.esotericsoftware.minlog.Log
 import com.thinkaurelius.titan.hadoop.FaunusVertex
 import org.apache.commons.io.FileUtils
@@ -30,7 +30,6 @@ class FaunusVertexSerializer extends Serializer[FaunusVertex] {
   }
 }
 
-
 object FaunusVertexSerializer {
 
   def main(args: Array[String]) = {
@@ -40,8 +39,6 @@ object FaunusVertexSerializer {
     val kryo = new Kryo()
     //val gbRegistrator = new GraphBuilderKryoRegistrator()
     //gbRegistrator.registerClasses(kryo)
-
-
 
     kryo.register(classOf[FaunusVertex], new FaunusVertexSerializer(), 1000)
     val output = new Output(new FileOutputStream("/tmp/file.bin"))

@@ -31,8 +31,8 @@ class TitanReaderITest extends TestingSparkContextWordSpec with Matchers {
     "return 3 GraphBuilder vertices and 2 GraphBuilder rows" in {
       val hBaseRDD = sparkContext.parallelize(
         Seq((NullWritable.get(), neptuneFaunusVertex),
-        (NullWritable.get(), plutoFaunusVertex),
-        (NullWritable.get(), seaFaunusVertex)))
+          (NullWritable.get(), plutoFaunusVertex),
+          (NullWritable.get(), seaFaunusVertex)))
 
       val titanReaderRDD = new TitanHBaseReaderRDD(hBaseRDD, titanConnector)
       val vertexRDD = titanReaderRDD.filterVertices()

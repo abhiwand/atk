@@ -46,7 +46,7 @@ public class GiraphTitanConstants {
      * Titan Stroage table name .
      */
     public static final StrConfOption GIRAPH_TITAN_STORAGE_TABLENAME = new StrConfOption(
-        "giraph.titan.input.storage.tablename", "", "Titan/Hbase tablename - required");
+        "giraph.titan.input.storage.hbase.table", "", "Titan/Hbase tablename - required");
     /**
      * port where to contact Titan storage.
      */

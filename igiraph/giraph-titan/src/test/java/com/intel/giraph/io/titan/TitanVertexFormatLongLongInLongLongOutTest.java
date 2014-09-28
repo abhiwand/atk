@@ -25,10 +25,11 @@ package com.intel.giraph.io.titan;
 import com.intel.giraph.algorithms.cc.ConnectedComponentsComputation;
 import com.intel.giraph.combiner.MinimumLongCombiner;
 import com.intel.giraph.io.titan.hbase.TitanHBaseVertexInputFormatLongLongNull;
+import com.thinkaurelius.titan.core.EdgeLabel;
+import com.thinkaurelius.titan.core.PropertyKey;
 import com.thinkaurelius.titan.core.TitanEdge;
-import com.thinkaurelius.titan.core.TitanKey;
-import com.thinkaurelius.titan.core.TitanLabel;
 import com.thinkaurelius.titan.core.TitanVertex;
+import com.thinkaurelius.titan.core.schema.TitanManagement;
 import org.apache.giraph.edge.ByteArrayEdges;
 import org.apache.giraph.utils.InternalVertexRunner;
 import org.apache.hadoop.io.LongWritable;
@@ -52,9 +53,9 @@ import static org.junit.Assert.assertTrue;
  * TitanHBaseVertexInputFormat. Then run algorithm with input data.
  */
 public class TitanVertexFormatLongLongInLongLongOutTest
-    extends TitanTestBase<LongWritable, LongWritable, NullWritable> {
+        extends TitanTestBase<LongWritable, LongWritable, NullWritable> {
     double[] expectedValues = new double[]{
-        4, 4, 4, 4, 4, 24, 24, 24, 36, 36
+            4, 4, 4, 4, 4, 24, 24, 24, 36, 36
     };
 
 
@@ -62,9 +63,9 @@ public class TitanVertexFormatLongLongInLongLongOutTest
     protected void configure() throws Exception {
         giraphConf.setComputationClass(ConnectedComponentsComputation.class);
         giraphConf.setMasterComputeClass(ConnectedComponentsComputation.
-            ConnectedComponentsMasterCompute.class);
+                ConnectedComponentsMasterCompute.class);
         giraphConf.setAggregatorWriterClass(ConnectedComponentsComputation.
-            ConnectedComponentsAggregatorWriter.class);
+                ConnectedComponentsAggregatorWriter.class);
         giraphConf.setOutEdgesClass(ByteArrayEdges.class);
         giraphConf.setMessageCombinerClass(MinimumLongCombiner.class);
         giraphConf.setVertexInputFormatClass(TitanHBaseVertexInputFormatLongLongNull.class);
@@ -95,7 +96,9 @@ public class TitanVertexFormatLongLongInLongLongOutTest
         };
         */
 
-        TitanLabel edge = tx.makeLabel("edge").make();
+        TitanManagement graphManager = graph.getManagementSystem();
+        EdgeLabel edge = graphManager.makeEdgeLabel("edge").make();
+        graphManager.commit();
 
         int numVertices = 10;
         TitanVertex[] nodes = new TitanVertex[numVertices];
@@ -131,18 +134,18 @@ public class TitanVertexFormatLongLongInLongLongOutTest
         //verify data is written to Titan
         startNewTransaction();
         long[] nid = new long[numVertices];
-        TitanKey resultKey;
+        PropertyKey resultKey;
         String keyName = "component_id";
 
         //check keys are generated for Titan
-        assertTrue(tx.containsType(keyName));
+        assertTrue(tx.containsRelationType(keyName));
         resultKey = tx.getPropertyKey(keyName);
         assertEquals(resultKey.getName(), keyName);
         assertEquals(resultKey.getDataType(), String.class);
 
 
         for (int i = 0; i < numVertices; i++) {
-            nid[i] = nodes[i].getID();
+            nid[i] = nodes[i].getLongId();
             assertTrue(tx.containsVertex(nid[i]));
             nodes[i] = tx.getVertex(nid[i]);
             assertEquals(expectedValues[i], Double.parseDouble(nodes[i].getProperty(resultKey).toString()), 0d);

@@ -25,10 +25,11 @@ package com.intel.giraph.io.titan;
 import com.intel.giraph.algorithms.apl.AveragePathLengthComputation;
 import com.intel.giraph.io.DistanceMapWritable;
 import com.intel.giraph.io.titan.hbase.TitanHBaseVertexInputFormatLongDistanceMapNull;
+import com.thinkaurelius.titan.core.EdgeLabel;
+import com.thinkaurelius.titan.core.PropertyKey;
 import com.thinkaurelius.titan.core.TitanEdge;
-import com.thinkaurelius.titan.core.TitanKey;
-import com.thinkaurelius.titan.core.TitanLabel;
 import com.thinkaurelius.titan.core.TitanVertex;
+import com.thinkaurelius.titan.core.schema.TitanManagement;
 import org.apache.giraph.utils.InternalVertexRunner;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.NullWritable;
@@ -46,10 +47,9 @@ import static org.junit.Assert.assertTrue;
  * <p/>
  * Each Vertex is with <code>Long</code> id,
  * and <code>DistanceMap</code> values.
- *
  */
-public class TitanVertexFormatLongIDDistanceMapTest 
-    extends TitanTestBase<LongWritable, DistanceMapWritable, NullWritable> {
+public class TitanVertexFormatLongIDDistanceMapTest
+        extends TitanTestBase<LongWritable, DistanceMapWritable, NullWritable> {
 
     @Override
     protected void configure() throws Exception {
@@ -81,7 +81,9 @@ public class TitanVertexFormatLongIDDistanceMapTest
         };
         */
 
-        TitanLabel edge = tx.makeLabel("edge").make();
+        TitanManagement graphManager = graph.getManagementSystem();
+        EdgeLabel edge = graphManager.makeEdgeLabel("edge").make();
+        graphManager.commit();
 
         int numVertices = 5;
         TitanVertex[] nodes = new TitanVertex[5];
@@ -111,23 +113,23 @@ public class TitanVertexFormatLongIDDistanceMapTest
         //verify data is written to Titan
         startNewTransaction();
         long[] nid;
-        TitanKey[] resultKey;
+        PropertyKey[] resultKey;
         String[] keyName;
         nid = new long[5];
-        resultKey = new TitanKey[2];
+        resultKey = new PropertyKey[2];
         keyName = new String[2];
         keyName[0] = "result_p0";
         keyName[1] = "result_p1";
         //check keys are generated for Titan
         for (int i = 0; i < 2; i++) {
-            assertTrue(tx.containsType(keyName[i]));
+            assertTrue(tx.containsRelationType(keyName[i]));
             resultKey[i] = tx.getPropertyKey(keyName[i]);
             assertEquals(resultKey[i].getName(), keyName[i]);
             assertEquals(resultKey[i].getDataType(), String.class);
         }
 
         for (int i = 0; i < 5; i++) {
-            nid[i] = nodes[i].getID();
+            nid[i] = nodes[i].getLongId();
             assertTrue(tx.containsVertex(nid[i]));
             nodes[i] = tx.getVertex(nid[i]);
 

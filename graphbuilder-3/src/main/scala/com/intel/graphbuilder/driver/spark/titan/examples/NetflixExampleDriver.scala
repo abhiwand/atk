@@ -55,7 +55,7 @@ object NetflixExampleDriver {
   titanConfig.setProperty("storage.parallel-backend-ops", "true")
   titanConfig.setProperty("ids.authority.randomized-conflict-avoidance-retries", "30")
   titanConfig.setProperty("ids.block-size", "300000")
-  titanConfig.setProperty("ids.flush", "false")
+  titanConfig.setProperty("ids.flush", "true")
   titanConfig.setProperty("ids.renew-timeout", "120000")
   titanConfig.setProperty("ids.num-partitions", "10")
   titanConfig.setProperty("ids.authority.conflict-avoidance-mode", "GLOBAL_AUTO")

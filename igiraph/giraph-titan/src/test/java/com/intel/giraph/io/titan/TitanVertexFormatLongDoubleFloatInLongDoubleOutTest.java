@@ -24,10 +24,11 @@ package com.intel.giraph.io.titan;
 
 import com.intel.giraph.algorithms.pr.PageRankComputation;
 import com.intel.giraph.io.titan.hbase.TitanHBaseVertexInputFormatLongDoubleNull;
+import com.thinkaurelius.titan.core.EdgeLabel;
+import com.thinkaurelius.titan.core.PropertyKey;
 import com.thinkaurelius.titan.core.TitanEdge;
-import com.thinkaurelius.titan.core.TitanKey;
-import com.thinkaurelius.titan.core.TitanLabel;
 import com.thinkaurelius.titan.core.TitanVertex;
+import com.thinkaurelius.titan.core.schema.TitanManagement;
 import org.apache.giraph.utils.InternalVertexRunner;
 import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.LongWritable;
@@ -49,8 +50,8 @@ import static org.junit.Assert.assertTrue;
  * then run algorithm with input data,
  * finally write back results to Titan via TitanVertexOutputFormatLongIDDoubleValue
  */
-public class TitanVertexFormatLongDoubleFloatInLongDoubleOutTest 
-    extends TitanTestBase<LongWritable, DoubleWritable, NullWritable> {
+public class TitanVertexFormatLongDoubleFloatInLongDoubleOutTest
+        extends TitanTestBase<LongWritable, DoubleWritable, NullWritable> {
 
     @Override
     protected void configure() {
@@ -83,15 +84,18 @@ public class TitanVertexFormatLongDoubleFloatInLongDoubleOutTest
         */
 
         double[] expectedValues = new double[]{
-            0.16682289373110673,
-            0.24178880797750443,
-            0.17098446073203238,
-            0.24178880797750443,
-            0.17098446073203238
+                0.16682289373110673,
+                0.24178880797750443,
+                0.17098446073203238,
+                0.24178880797750443,
+                0.17098446073203238
         };
 
-        TitanKey weight = tx.makeKey("weight").dataType(String.class).make();
-        TitanLabel edge = tx.makeLabel("edge").make();
+
+        TitanManagement graphManager = graph.getManagementSystem();
+        PropertyKey weight = graphManager.makePropertyKey("weight").dataType(String.class).make();
+        EdgeLabel edge = graphManager.makeEdgeLabel("edge").make();
+        graphManager.commit();
 
         int numVertices = 5;
         TitanVertex[] nodes = new TitanVertex[numVertices];
@@ -125,26 +129,26 @@ public class TitanVertexFormatLongDoubleFloatInLongDoubleOutTest
         edges[11] = nodes[4].addEdge(edge, nodes[2]);
         edges[11].setProperty(weight, "4.0");
 
-        tx.commit();
+
 
 
         Iterable<String> results = InternalVertexRunner.run(giraphConf, new String[0]);
         Assert.assertNotNull(results);
 
-        startNewTransaction();        
+        startNewTransaction();
         long[] nid;
-        TitanKey resultKey;
+        PropertyKey resultKey;
         String keyName = "rank";
         nid = new long[5];
         //check keys are generated for Titan
-        assertTrue(tx.containsType(keyName));
+        assertTrue(tx.containsRelationType(keyName));
         resultKey = tx.getPropertyKey(keyName);
         assertEquals(resultKey.getName(), keyName);
         assertEquals(resultKey.getDataType(), String.class);
 
 
         for (int i = 0; i < 5; i++) {
-            nid[i] = nodes[i].getID();
+            nid[i] = nodes[i].getLongId();
             assertTrue(tx.containsVertex(nid[i]));
             nodes[i] = tx.getVertex(nid[i]);
 
