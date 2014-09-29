@@ -23,8 +23,6 @@
 
 package com.intel.intelanalytics.repository
 
-import com.intel.intelanalytics.shared.SharedConfig
-
 import scala.slick.driver.{ H2Driver, JdbcProfile, PostgresDriver }
 
 /**
@@ -54,20 +52,6 @@ case class Profile(profile: JdbcProfile,
 }
 
 object Profile {
-
-  /**
-   * Initialize a Profile from settings in the config
-   */
-  def initializeFromConfig(config: SharedConfig): Profile = {
-
-    val driver = config.metaStoreConnectionDriver
-
-    new Profile(jdbcProfileForDriver(driver),
-      connectionString = config.metaStoreConnectionUrl,
-      driver,
-      username = config.metaStoreConnectionUsername,
-      password = config.metaStoreConnectionPassword)
-  }
 
   /**
    * Initialize the JdbcProfile based on the Driver name

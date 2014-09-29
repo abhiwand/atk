@@ -7,6 +7,14 @@ import org.apache.spark.rdd.RDD
 
 import scala.collection.mutable.PriorityQueue
 
+/**
+ *
+ * This is a wrapper to encapsulate methods that may need to be serialized to executed on Spark worker nodes.
+ * If you don't know what this means please read about Closure Mishap
+ * [[http://ampcamp.berkeley.edu/wp-content/uploads/2012/06/matei-zaharia-part-1-amp-camp-2012-spark-intro.pdf]]
+ * and Task Serialization
+ * [[http://stackoverflow.com/questions/22592811/scala-spark-task-not-serializable-java-io-notserializableexceptionon-when]]
+ */
 private[spark] object TopKRDDFunctions extends Serializable {
 
   case class CountPair(key: Any, value: Double) extends Ordered[CountPair] {

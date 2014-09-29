@@ -52,12 +52,30 @@ case class Lp(graph: GraphReference,
               bidirectional_check: Option[Boolean] = None)
 case class LpResult(value: String) //TODO
 
-class LabelPropagation
-    extends CommandPlugin[Lp, LpResult] {
+/** Json conversion for arguments and return value case classes */
+object LpJsonFormat {
   import DomainJsonProtocol._
   implicit val lbpFormat = jsonFormat11(Lp)
   implicit val lbpResultFormat = jsonFormat1(LpResult)
+}
 
+import LpJsonFormat._
+
+class LabelPropagation
+    extends CommandPlugin[Lp, LpResult] {
+
+  /**
+   * The name of the command, e.g. graphs/ml/loopy_belief_propagation
+   *
+   * The format of the name determines how the plugin gets "installed" in the Python layer via code generation.
+   */
+  override def name: String = "graphs/ml/label_propagation"
+
+  /**
+   * User documentation exposed in Python.
+   *
+   * [[http://docutils.sourceforge.net/rst.html ReStructuredText]]
+   */
   override def doc = Some(CommandDoc(oneLineSummary = "Label Propagation on Gaussian Random Fields.",
     extendedSummary = Some("""
     Extended Summary
@@ -175,14 +193,4 @@ class LabelPropagation
       config, giraphConf, invocation, "lp-learning-report_0"))
   }
 
-  //TODO: Replace with generic code that works on any case class
-  def parseArguments(arguments: JsObject) = arguments.convertTo[Lp]
-
-  //TODO: Replace with generic code that works on any case class
-  def serializeReturn(returnValue: LpResult): JsObject = returnValue.toJson.asJsObject
-
-  override def name: String = "graphs/ml/label_propagation"
-
-  //TODO: Replace with generic code that works on any case class
-  override def serializeArguments(arguments: Lp): JsObject = arguments.toJson.asJsObject()
 }
