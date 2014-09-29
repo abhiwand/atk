@@ -137,7 +137,7 @@ class TwoNodeTest extends FlatSpec with Matchers with TestingSparkContextFlatSpe
     val oneOverPotentialAt1 = 1.0d / potentialAt1
 
     val expectedPosteriors: Map[Long, Vector[Double]] = Map(1.toLong -> Vector(1.0d, 0.0d),
-      2.toLong -> Vector(oneOverPotentialAt1 / (oneOverPotentialAt1+ 1), 1 / (oneOverPotentialAt1+ 1)))
+      2.toLong -> Vector(oneOverPotentialAt1 / (oneOverPotentialAt1 + 1), 1 / (oneOverPotentialAt1 + 1)))
 
     //  directed edge list is made bidirectional with a flatmap
 
@@ -186,10 +186,10 @@ class TwoNodeTest extends FlatSpec with Matchers with TestingSparkContextFlatSpe
     val potentialAt1 = 1.0d / (Math.E * Math.E)
 
     val messageFirstToSecond = Vector(firstNodePriors.head + firstNodePriors.last * potentialAt1,
-      (firstNodePriors.head  * potentialAt1) + firstNodePriors.last)
+      (firstNodePriors.head * potentialAt1) + firstNodePriors.last)
 
-    val messageSecondToFirst = Vector(secondNodePriors.head + secondNodePriors.last  * potentialAt1,
-      (secondNodePriors.head  * potentialAt1) + secondNodePriors.last)
+    val messageSecondToFirst = Vector(secondNodePriors.head + secondNodePriors.last * potentialAt1,
+      (secondNodePriors.head * potentialAt1) + secondNodePriors.last)
 
     val unnormalizedBeliefsFirstNode: Vector[Double] = firstNodePriors.zip(messageSecondToFirst).map({ case (p, m) => p * m })
     val unnormalizedBeliefsSecondNode: Vector[Double] = secondNodePriors.zip(messageFirstToSecond).map({ case (p, m) => p * m })

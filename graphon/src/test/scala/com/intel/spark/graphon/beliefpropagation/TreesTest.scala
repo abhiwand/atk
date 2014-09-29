@@ -97,7 +97,7 @@ class TreesTest extends FlatSpec with Matchers with TestingSparkContextFlatSpec 
 
     val message3to2 = Vector(
       thirdNodePriors.head * message4to3.head * message1to3.head
-        + potentialAt1* thirdNodePriors.last * message4to3.last * message1to3.last,
+        + potentialAt1 * thirdNodePriors.last * message4to3.last * message1to3.last,
       potentialAt1 * thirdNodePriors.head * message4to3.head * message1to3.head
         + thirdNodePriors.last * message4to3.last * message1to3.last
     )

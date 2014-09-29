@@ -18,7 +18,7 @@ case class VertexState(gbVertex: GBVertex,
                        messages: Map[VertexId, Vector[Double]],
                        prior: Vector[Double],
                        posterior: Vector[Double],
-                       delta: Double) extends DeltaProvider
+                       delta: Double) extends DeltaProvider with Serializable
 
 /**
  * Provides a method to run belief propagation on a graph.
@@ -96,7 +96,8 @@ class PregelBeliefPropagation(val maxIterations: Int,
           0d
         else
           1d
-      } else {
+      }
+      else {
         val delta = Math.abs(state1 - state2)
         Math.pow(delta, power)
       }

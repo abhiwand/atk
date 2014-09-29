@@ -34,14 +34,21 @@ class BasicCountsInitialReport[V, E] extends InitialReport[V, E] with Serializab
 }
 
 /**
+ * Aggregater for per-superstep status reports.
+ *
+ * @param vertexCount Number of vertices.
+ * @param sumOfDeltas Net change.
+ */
+case class SuperStepCountNetDelta(vertexCount: Long, sumOfDeltas: Double) extends Serializable
+
+/**
  * Provides a method for generating per-superstep reports that summarizes the vertex count and average change per
  * vertex since the last superstep.
  *
  * @tparam V Class of the vertex data.
  */
-class AverageDeltaSuperStepReport[V <: DeltaProvider] extends SuperStepReport[V] with Serializable {
 
-  case class SuperStepCountNetDelta(vertexCount: Long, sumOfDeltas: Double)
+class AverageDeltaSuperStepReport[V <: DeltaProvider] extends SuperStepReport[V] with Serializable {
 
   private def accumulateSuperStepStatus(status1: SuperStepCountNetDelta, status2: SuperStepCountNetDelta) = {
     new SuperStepCountNetDelta(status1.vertexCount + status2.vertexCount, status1.sumOfDeltas + status2.sumOfDeltas)
