@@ -77,90 +77,91 @@ class RecommendQuery extends SparkCommandPlugin[RecommendParams, RecommendResult
   implicit val recommendParamsFormat = jsonFormat14(RecommendParams)
   implicit val recommendResultFormat = jsonFormat1(RecommendResult)
 
-  override def doc = Some(CommandDoc(oneLineSummary = "Train model recommendation.",
+  override def doc = Some(CommandDoc(oneLineSummary = "Trained model recommendation.",
     extendedSummary = Some("""
-    Extended Summary
-    ----------------
-    Get recommendation to either left-side or right-side vertices.
-    The prerequisite is at least one of two algorithms (ALS or CGD) has been run before this query.
-
-    Parameters
-    ----------
-    vertex_id : int32
-        The vertex id to get recommendation for.
-
-    vertex_type : String (optional)
-        The vertex type to get recommendation for. The valid value is either "L" or "R".
-        "L" stands for left-side vertices of a bipartite graph.
-        "R" stands for right-side vertices of a bipartite graph.
-        For example, if your input data is "user,movie,rating" and you want to
-        get recommendation on user, please input "L" because user is your left-side
-        vertex. Similarly, please input "R if you want to get recommendation for movie.
-        The default value is "L".
-
-    output_vertex_property_list : Comma Separated String (optional)
-        The property name for ALS/CGD results.When bias is enabled,
-        the last property name in the output_vertex_property_list is for bias.
-        The default value is "als_result".
-
-    vertex_type_property_key : String (optional)
-        The property name for vertex type.
-        The default value is "vertex_type"
-
-    edge_type_property_key : String (optional)
-        The property name for edge type. We need this name to know data is in train,
-        validation or test splits.
-        The default value "splits".
-
-    vector_value : String (optional)
-        Whether ALS/CDG results are saved in a vector for each vertex.
-        The default value is "true"
-
-    bias_on : String (optional)
-        Whether bias turned on/off for ALS/CDG calculation.
-        When bias is enabled, the last property name in the output_vertex_property_list is for bias.
-        The default value is "false"
-
-    train_str : String (optional)
-        The label for training data.
-        The default value is "TR"
-
-    num_output_results : int (optional)
-        The number of recommendations to output.
-        The default value is 10.
-
-    left_vertex_name : String (optional)
-        The real name for left side vertex.
-        The default value is "user".
-
-    right_vertex_name : String (optional)
-        The real name for right side vertex.
-        The default value is "movie".
-
-    left_vertex_id_property_key : String (optional)
-        The property name for left side vertex id.
-        The default value is "user_id".
-
-    right_vertex_id_property_key : String (optional)
-        The property name for right side vertex id.
-        The default value is "movie_id".
-
-    Returns
-    -------
-    Multiple line string
-        Recommendations for the input vertex.
-
-    Examples
-    --------
-    For example, if your left-side vertices are users, and you want to get movie recommendation for user 1,
-    the command to use is::
-
-        g.query.recommend(vertex_id = 1)
-
-    The expected output is like this::
-
-        {u'recommendation': u'Top 10 recommendation for user 1\nmovie\t-132\tscore\t5.617994036115665\nmovie\t-53\tscore\t5.311958055352947\nmovie\t-389\tscore\t5.098006034765436\nmovie\t-84\tscore\t4.695484062644423\nmovie\t-302\tscore\t4.693913046573323\nmovie\t-462\tscore\t4.648850870271126\nmovie\t-186\tscore\t4.495738316971479\nmovie\t-234\tscore\t4.432865786903878\nmovie\t-105\tscore\t4.418878980193627\nmovie\t-88\tscore\t4.415980762315559\n'}::
-""")))
+                            |    Extended Summary
+                            |    ----------------
+                            |    Get recommendation to either left-side or right-side vertices.
+                            |    The prerequisite is at least one of two algorithms (ALS or CGD) has been run before this query.
+                            |    
+                            |    Parameters
+                            |    ----------
+                            |    vertex_id : int32
+                            |        The vertex id to get recommendation for.
+                            |    
+                            |    vertex_type : String (optional)
+                            |        The vertex type to get recommendation for. The valid value is either "L" or "R".
+                            |        "L" stands for left-side vertices of a bipartite graph.
+                            |        "R" stands for right-side vertices of a bipartite graph.
+                            |        For example, if your input data is "user,movie,rating" and you want to
+                            |        get recommendation on user, please input "L" because user is your left-side
+                            |        vertex. Similarly, please input "R if you want to get recommendation for movie.
+                            |        The default value is "L".
+                            |    
+                            |    output_vertex_property_list : Comma Separated String (optional)
+                            |        The property name for ALS/CGD results.When bias is enabled,
+                            |        the last property name in the output_vertex_property_list is for bias.
+                            |        The default value is "als_result".
+                            |    
+                            |    vertex_type_property_key : String (optional)
+                            |        The property name for vertex type.
+                            |        The default value is "vertex_type"
+                            |    
+                            |    edge_type_property_key : String (optional)
+                            |        The property name for edge type. We need this name to know data is in train,
+                            |        validation or test splits.
+                            |        The default value "splits".
+                            |    
+                            |    vector_value : String (optional)
+                            |        Whether ALS/CDG results are saved in a vector for each vertex.
+                            |        The default value is "true"
+                            |    
+                            |    bias_on : String (optional)
+                            |        Whether bias turned on/off for ALS/CDG calculation.
+                            |        When bias is enabled, the last property name in the output_vertex_property_list is for bias.
+                            |        The default value is "false"
+                            |    
+                            |    train_str : String (optional)
+                            |        The label for training data.
+                            |        The default value is "TR"
+                            |    
+                            |    num_output_results : int (optional)
+                            |        The number of recommendations to output.
+                            |        The default value is 10.
+                            |    
+                            |    left_vertex_name : String (optional)
+                            |        The real name for left side vertex.
+                            |        The default value is "user".
+                            |    
+                            |    right_vertex_name : String (optional)
+                            |        The real name for right side vertex.
+                            |        The default value is "movie".
+                            |    
+                            |    left_vertex_id_property_key : String (optional)
+                            |        The property name for left side vertex id.
+                            |        The default value is "user_id".
+                            |    
+                            |    right_vertex_id_property_key : String (optional)
+                            |        The property name for right side vertex id.
+                            |        The default value is "movie_id".
+                            |    
+                            |    Returns
+                            |    -------
+                            |    Multiple line string
+                            |        Recommendations for the input vertex.
+                            |    
+                            |    Examples
+                            |    --------
+                            |    For example, if your left-side vertices are users, and you want to get movie recommendation for user 1,
+                            |    the command to use is::
+                            |    
+                            |        g.query.recommend(vertex_id = 1)
+                            |    
+                            |    The expected output is like this::
+                            |    
+                            |        {u'recommendation': u'Top 10 recommendation for user 1\\nmovie\\t-132\\tscore\\t5.617994036115665\\nmovie\\t-53\\tscore\\t5.311958055352947\\nmovie\\t-389\\tscore\\t5.098006034765436\\nmovie\\t-84\\tscore\\t4.695484062644423\\nmovie\\t-302\\tscore\\t4.693913046573323\\nmovie\\t-462\\tscore\\t4.648850870271126\\nmovie\\t-186\\tscore\\t4.495738316971479\\nmovie\\t-234\\tscore\\t4.432865786903878\\nmovie\\t-105\\tscore\\t4.418878980193627\\nmovie\\t-88\\tscore\\t4.415980762315559\\n'}::
+                            |    
+                            """.stripMargin)))
 
   override def execute(invocation: SparkInvocation, arguments: RecommendParams)(
     implicit user: UserPrincipal, executionContext: ExecutionContext): RecommendResult = {
