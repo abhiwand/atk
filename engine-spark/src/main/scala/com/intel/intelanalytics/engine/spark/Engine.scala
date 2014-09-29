@@ -245,6 +245,11 @@ class SparkEngine(sparkContextManager: SparkContextManager,
       unionAndSave(ctx, destinationFrame, additionalData)
     }
     else if (load.source.isFile) {
+
+      if (!new java.io.File(load.source.uri).exists) {
+        throw new IllegalArgumentException("File does not exist: " + load.source.uri)
+      }
+
       val parser = load.source.parser.get
       val partitions = sparkAutoPartitioner.partitionsForFile(load.source.uri)
       val parseResult = LoadRDDFunctions.loadAndParseLines(ctx, fsRoot + "/" + load.source.uri, parser, partitions)
