@@ -38,6 +38,54 @@ Rules of thumb:
 Python
 ------
 
+Server Connection
+=================
+
+Ping the server::
+
+    >>> import intelanalytics as ia
+    >>> ia.server.ping()
+    Successful ping to Intel Analytics at http://localhost:9099/info
+
+View and edit the server connection::
+
+    >>> print ia.server
+    host:    localhost
+    port:    9099
+    scheme:  http
+    version: v1
+
+    >>> ia.server.host
+    'localhost'
+
+    >>> ia.server.host = '10.54.99.99'
+    >>> ia.server.port = None
+    >>> print ia.server
+    host:    10.54.99.99
+    port:    None
+    scheme:  http
+    version: v1
+
+Reset configuration back to defaults::
+
+    >>> ia.server.reset()
+    >>> print ia.server
+    host:    localhost
+    port:    9099
+    scheme:  http
+    version: v1
+
+Errors
+======
+
+By default the toolkit does not print the full stack trace when exceptions occur.  To see the full python stack trace of the last (i.e. most recent) exception::
+
+    >>> print ia.errors.last
+
+To enable always printing the full python stack trace, set the 'show_details' property::
+
+    >>> ia.errors.show_details = True
+
 Tab Completion
 ==============
 
