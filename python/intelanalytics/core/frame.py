@@ -196,17 +196,22 @@ class BigFrame(CommandLoadableBigFrame):
 
     Examples
     --------
-    Create a BigFrame object; name it "my_frame"::
+    Create a new frame based upon the data described in the CsvFile object *my_csv_schema*.
+    Name the frame "my_frame".
+    Create a BigFrame *g* to access the data::
 
         g = ia.BigFrame(my_csv_schema, "my_frame")
 
-    A BigFrame object has been created and *g* is its proxy. It brought in the data described by *my_csv_schema*. It is named *my_frame*.
+    A BigFrame object has been created and *g* is its proxy.
+    It brought in the data described by *my_csv_schema*.
+    It is named *my_frame*.
 
     Create an empty frame; name it "your_frame"::
 
         h = ia.BigFrame(name='your_frame')
 
-    A BigFrame object has been created and *h* is its proxy. It has no data yet, but it does have the name *your_frame*.
+    A frame has been created and BigFrame *h* is its proxy.
+    It has no data yet, but it does have the name *your_frame*.
 
     For other examples, see :ref:`example_frame.bigframe`.
 
@@ -497,7 +502,7 @@ class BigFrame(CommandLoadableBigFrame):
             frame.inspect()
 
               a:unicode   b:int32   labels:int32  predictions:int32
-            |-------------------------------------------------------|
+            /-------------------------------------------------------/
               red               1              0                  0
               blue              3              1                  0
               blue              1              0                  0
@@ -684,7 +689,7 @@ class BigFrame(CommandLoadableBigFrame):
             my_frame.inspect( n=11 )
 
               a:int32
-            |--------|
+            /---------/
               1
               1
               2
@@ -704,7 +709,7 @@ class BigFrame(CommandLoadableBigFrame):
             binnedEW.inspect( n=11 )
 
               a:int32     aEWBinned:int32
-            |----------------------------|
+            /-----------------------------/
               1                   1
               1                   1
               2                   1
@@ -725,7 +730,7 @@ class BigFrame(CommandLoadableBigFrame):
             binnedED.inspect( n=11 )
 
               a:int32     aEDBinned:int32
-            |----------------------------|
+            /-----------------------------/
               1                   1
               1                   1
               2                   1
@@ -802,7 +807,7 @@ class BigFrame(CommandLoadableBigFrame):
             frame.inspect()
 
               a:unicode   b:int32   labels:int32  predictions:int32
-            |-------------------------------------------------------|
+            /-------------------------------------------------------/
               red               1              0                  0
               blue              3              1                  0
               blue              1              0                  0
@@ -918,7 +923,7 @@ class BigFrame(CommandLoadableBigFrame):
             my_frame.inspect()
 
              obs int32
-            |---------|
+           /-----------/
                0
                1
                2
@@ -936,7 +941,7 @@ class BigFrame(CommandLoadableBigFrame):
             cc_frame.inspect()
 
              obs int32   obsCumulativeCount int32
-            |------------------------------------|
+           /--------------------------------------/
                0                          0
                1                          1
                2                          1
@@ -981,7 +986,7 @@ class BigFrame(CommandLoadableBigFrame):
             my_frame.inspect()
 
              obs:int32
-            |---------|
+           /-----------/
                0
                1
                2
@@ -999,7 +1004,7 @@ class BigFrame(CommandLoadableBigFrame):
             cps_frame.inspect()
 
              obs:int32   obsCumulativePercentSum:float64
-            |-------------------------------------------|
+           /---------------------------------------------/
                0                          0.0
                1                          0.16666666
                2                          0.5
@@ -1043,7 +1048,7 @@ class BigFrame(CommandLoadableBigFrame):
             my_frame.inspect()
 
              obs:int32
-            |---------|
+           /-----------/
                0
                1
                2
@@ -1061,7 +1066,7 @@ class BigFrame(CommandLoadableBigFrame):
             cpc_frame.inspect()
 
              obs:int32   obsCumulativePercentCount:float64
-            |---------------------------------------------|
+           /-----------------------------------------------/
                0                          0.0
                1                          0.5
                2                          0.5
@@ -1177,7 +1182,7 @@ class BigFrame(CommandLoadableBigFrame):
             frame.inspect()
 
               a:unicode   b:int32
-            |---------------------|
+            /---------------------/
               red               1
               blue              3
               blue              1
@@ -1187,7 +1192,7 @@ class BigFrame(CommandLoadableBigFrame):
             result.inspect()
 
               b:int32   b_ECDF:float64
-            |--------------------------|
+            /--------------------------/
               1                    0.2
               2                    0.5
               3                    0.8
@@ -1306,7 +1311,7 @@ class BigFrame(CommandLoadableBigFrame):
             frame.inspect()
 
               a:unicode   b:int32   labels:int32  predictions:int32
-            |-------------------------------------------------------|
+            /-------------------------------------------------------/
               red               1              0                  0
               blue              3              1                  0
               blue              1              0                  0
@@ -1391,7 +1396,7 @@ class BigFrame(CommandLoadableBigFrame):
             my_frame.inspect()
 
              a:str
-            |-----|
+           /-------/
              cat
              apple
              bat
@@ -1406,7 +1411,7 @@ class BigFrame(CommandLoadableBigFrame):
             new_frame.inspect()
 
              a:str       count:int
-            |---------------------|
+           /-----------------------/
              cat             3
              apple           1
              bat             2
@@ -1416,7 +1421,7 @@ class BigFrame(CommandLoadableBigFrame):
             my_frame.inspect()
 
              a:int   b:str       c:float
-            |---------------------------|
+           /-----------------------------/
              1       alpha     3.0
              1       bravo     5.0
              1       alpha     5.0
@@ -1430,7 +1435,7 @@ class BigFrame(CommandLoadableBigFrame):
             new_frame.inspect()
 
              a:int   b:str   c_avg:float
-            |---------------------------|
+           /-----------------------------/
              1       alpha     4.0
              1       bravo     5.0
              2       bravo    10.0
@@ -1440,7 +1445,7 @@ class BigFrame(CommandLoadableBigFrame):
             my_frame.inspect()
 
              a:str   c:int   d:float e:int
-            |-----------------------------|
+           /-------------------------------/
              ape     1     4.0       9
              ape     1     8.0       8
              big     1     5.0       7
@@ -1455,7 +1460,7 @@ class BigFrame(CommandLoadableBigFrame):
                 [agg.avg, agg.sum, agg.min], 'e': agg.max})
 
              a:str   c:int   count:int  d_avg:float  d_sum:float   d_min:float   e_max:int
-            |-----------------------------------------------------------------------------|
+           /-------------------------------------------------------------------------------/
              ape     1           2        6.0         12.0             4.0           9
              big     1           3        6.333333    19.0             5.0           7
 
@@ -1493,17 +1498,17 @@ class BigFrame(CommandLoadableBigFrame):
         Examples
         --------
         For this example, let's say we have a frame of data and a BigFrame to access it. Let's look at the first 10 rows of data::
-        
+
             print my_frame.inspect()
-            
+
             column defs ->  animal:str  name:str    age:int     weight:float
-                          |--------------------------------------------------|
+                          /--------------------------------------------------/
             frame data ->   lion        George        8            542.5
                             lion        Ursula        6            495.0
                             ape         Ape          41            400.0
                             elephant    Shep          5           8630.0
-            
-        
+
+
         For another example, see :ref:`example_frame.inspect`
 
         .. versionadded:: 0.8
@@ -1618,7 +1623,7 @@ class BigFrame(CommandLoadableBigFrame):
             frame.inspect()
 
               a:unicode   b:int32   labels:int32  predictions:int32
-            |-------------------------------------------------------|
+            /-------------------------------------------------------/
               red               1              0                  0
               blue              3              1                  0
               blue              1              0                  0
@@ -1735,7 +1740,7 @@ class BigFrame(CommandLoadableBigFrame):
             frame.inspect()
 
               a:unicode   b:int32   labels:int32  predictions:int32
-            |-------------------------------------------------------|
+            /-------------------------------------------------------/
               red               1              0                  0
               blue              3              1                  0
               blue              1              0                  0
