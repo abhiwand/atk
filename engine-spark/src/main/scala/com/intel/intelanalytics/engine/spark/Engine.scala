@@ -1788,8 +1788,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     Compute a cumulative percent sum.
 
     A cumulative percent sum is computed by sequentially stepping through the column values and keeping track of the
-    current percentage of the total sum accounted
-    for at the current value.
+    current percentage of the total sum accounted for at the current value.
 
     Parameters
     ----------
@@ -1803,7 +1802,8 @@ class SparkEngine(sparkContextManager: SparkContextManager,
 
     Notes
     -----
-      This function applies only to columns containing numerical data.
+      This function applies only to columns containing numerical data.  Although this function will execute for columns
+      containing negative values, the interpretation of the result will change (e.g., negative percentages).
 
     Examples
     --------
