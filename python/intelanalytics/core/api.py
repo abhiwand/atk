@@ -20,14 +20,26 @@
 # estoppel or otherwise. Any license under such intellectual property rights
 # must be express and approved by Intel in writing.
 ##############################################################################
-"""
-iapy package init, public API
-"""
-from intelanalytics.core.loggers import loggers
-from intelanalytics.core.iatypes import *
-from intelanalytics.core.aggregation import agg
-from intelanalytics.core.errorhandle import errors, error_handling
-from intelanalytics.core.files import CsvFile
-from intelanalytics.core.frame import BigFrame, get_frame, get_frame_names, drop_frames, delete_frame
-from intelanalytics.core.graph import BigGraph, get_graph, get_graph_names, drop_graphs, delete_graph, VertexRule, EdgeRule
-from intelanalytics.rest.connection import server
+from intelanalytics.core.errorhandle import IaError
+from intelanalytics.core.loggers import log_api_call
+from decorator import decorator
+
+
+def get_api_decorator(logger):
+    def _api(function, *args, **kwargs):
+        log_api_call(function)
+        try:
+            return function(*args, **kwargs)
+        except:
+            error = IaError(logger)
+
+
+
+            raise error  # see intelanalytics.errors.last for details
+
+
+
+
+    def api(function):
+        return decorator(_api, function)
+    return api
