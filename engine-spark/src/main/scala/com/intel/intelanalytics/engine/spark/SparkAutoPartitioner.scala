@@ -23,7 +23,7 @@
 
 package com.intel.intelanalytics.engine.spark
 
-import com.intel.intelanalytics.shared.EventLogging
+import com.intel.event.EventLogging
 
 /**
  * Calculate a best guess for the number of partitions that should be used for loading this file into a Spark RDD.
