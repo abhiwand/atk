@@ -23,8 +23,8 @@
 
 package com.intel.graphbuilder.write.titan
 
-import com.intel.graphbuilder.driver.spark.TestingTitan
 import com.intel.graphbuilder.schema.{ EdgeLabelDef, GraphSchema, PropertyDef, PropertyType }
+import com.intel.testutils.TestingTitan
 import com.thinkaurelius.titan.core.TitanGraph
 import com.tinkerpop.blueprints.{ Direction, Edge, Vertex }
 import org.mockito.Mockito._

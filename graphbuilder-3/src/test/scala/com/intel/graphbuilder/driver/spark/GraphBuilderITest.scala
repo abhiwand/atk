@@ -24,12 +24,15 @@
 package com.intel.graphbuilder.driver.spark
 
 import com.intel.graphbuilder.driver.spark.titan.{ GraphBuilder, GraphBuilderConfig }
+import com.intel.graphbuilder.graph.titan.TitanGraphConnector
 import com.intel.graphbuilder.parser.rule.RuleParserDSL._
 import com.intel.graphbuilder.parser.rule.{ EdgeRule, VertexRule }
 import com.intel.graphbuilder.parser.{ ColumnDef, InputSchema }
 import com.intel.graphbuilder.elements.{ Edge, Vertex, Property }
-import com.intel.testutils.TestingSparkContextWordSpec
+import com.intel.graphbuilder.util.SerializableBaseConfiguration
+import com.intel.testutils.{ TestingTitan, TestingSparkContextWordSpec }
 import com.tinkerpop.blueprints.Direction
+import org.apache.log4j.{ Level, Logger }
 import org.apache.spark.rdd.RDD
 import org.scalatest.{ BeforeAndAfter, Matchers }
 
@@ -43,7 +46,6 @@ class GraphBuilderITest extends TestingSparkContextWordSpec with Matchers with T
 
   before {
     EnvironmentValidator.skipEnvironmentValidation = true
-
     setupTitan()
   }
 
@@ -79,6 +81,11 @@ class GraphBuilderITest extends TestingSparkContextWordSpec with Matchers with T
       // Setup data in Spark
       val inputRdd = sparkContext.parallelize(inputRows.asInstanceOf[Seq[_]]).asInstanceOf[RDD[Seq[_]]]
 
+      // Connect to the graph
+      val titanConfig = new SerializableBaseConfiguration()
+      titanConfig.copy(titanBaseConfig)
+      val titanConnector = new TitanGraphConnector(titanConfig)
+
       // Build the Graph
       val config = new GraphBuilderConfig(inputSchema, vertexRules, edgeRules, titanConfig)
       val gb = new GraphBuilder(config)
@@ -113,7 +120,8 @@ class GraphBuilderITest extends TestingSparkContextWordSpec with Matchers with T
     }
 
     "support unusual cases of dynamic parsing, dangling edges" in {
-
+      Logger.getLogger("com.thinkaurelius").setLevel(Level.WARN)
+      Logger.getLogger("com.thinkaurelius.titan.graphdb.transaction.StandardTitanTx").setLevel(Level.WARN)
       // Input Data
       val inputRows = List(
         List("userId", 1001L, "President Obama", "", "", ""), // a vertex that is a user named President Obama
@@ -149,6 +157,8 @@ class GraphBuilderITest extends TestingSparkContextWordSpec with Matchers with T
       val inputRdd = sparkContext.parallelize(inputRows.asInstanceOf[Seq[_]]).asInstanceOf[RDD[Seq[_]]]
 
       // Build the Graph
+      val titanConfig = new SerializableBaseConfiguration()
+      titanConfig.copy(titanBaseConfig)
       val config = new GraphBuilderConfig(inputSchema, vertexRules, edgeRules, titanConfig, retainDanglingEdges = true)
       val gb = new GraphBuilder(config)
       gb.build(inputRdd)
@@ -198,12 +208,14 @@ class GraphBuilderITest extends TestingSparkContextWordSpec with Matchers with T
       val vertexRdd = rawVertexRdd.map(v => new Vertex(new Property("userId", v), Seq(new Property("location", "Oregon"))))
 
       // Build the graph
+      val titanConfig = new SerializableBaseConfiguration()
+      titanConfig.copy(titanBaseConfig)
       val gb = new GraphBuilder(new GraphBuilderConfig(new InputSchema(Seq.empty), List.empty, List.empty, titanConfig))
       gb.buildGraphWithSpark(vertexRdd, edgeRdd)
 
       // Validate
+      val titanConnector = new TitanGraphConnector(titanConfig)
       graph = titanConnector.connect()
-
       graph.getEdges.size shouldBe 20
       graph.getVertices.size shouldBe 8
 
