@@ -77,14 +77,12 @@ class RecommendQuery extends SparkCommandPlugin[RecommendParams, RecommendResult
   implicit val recommendParamsFormat = jsonFormat14(RecommendParams)
   implicit val recommendResultFormat = jsonFormat1(RecommendResult)
 
-  override def doc = Some(CommandDoc(oneLineSummary = "Make recommendation based on trained model.",
+  override def doc = Some(CommandDoc(oneLineSummary = "Train model recommendation.",
     extendedSummary = Some("""
     Extended Summary
     ----------------
     Get recommendation to either left-side or right-side vertices.
-
     The prerequisite is at least one of two algorithms (ALS or CGD) has been run before this query.
-
 
     Parameters
     ----------
@@ -147,12 +145,6 @@ class RecommendQuery extends SparkCommandPlugin[RecommendParams, RecommendResult
         The property name for right side vertex id.
         The default value is "movie_id".
 
-    Raises
-    ------
-    ValueError
-        When both bias_on and vector_value are true, we expect output_vertex_property_list contains
-        two keys, one for output results, one for bias.
-
     Returns
     -------
     Multiple line string
@@ -161,13 +153,13 @@ class RecommendQuery extends SparkCommandPlugin[RecommendParams, RecommendResult
     Examples
     --------
     For example, if your left-side vertices are users, and you want to get movie recommendation for user 1,
-    the commend to use are:
+    the command to use is::
 
-    g.query.recommend(vertex_id = 1)::
+        g.query.recommend(vertex_id = 1)
 
-    The expected output is like this
+    The expected output is like this::
 
-    {u'recommendation': u'Top 10 recommendation for user 1\nmovie\t-132\tscore\t5.617994036115665\nmovie\t-53\tscore\t5.311958055352947\nmovie\t-389\tscore\t5.098006034765436\nmovie\t-84\tscore\t4.695484062644423\nmovie\t-302\tscore\t4.693913046573323\nmovie\t-462\tscore\t4.648850870271126\nmovie\t-186\tscore\t4.495738316971479\nmovie\t-234\tscore\t4.432865786903878\nmovie\t-105\tscore\t4.418878980193627\nmovie\t-88\tscore\t4.415980762315559\n'}::
+        {u'recommendation': u'Top 10 recommendation for user 1\nmovie\t-132\tscore\t5.617994036115665\nmovie\t-53\tscore\t5.311958055352947\nmovie\t-389\tscore\t5.098006034765436\nmovie\t-84\tscore\t4.695484062644423\nmovie\t-302\tscore\t4.693913046573323\nmovie\t-462\tscore\t4.648850870271126\nmovie\t-186\tscore\t4.495738316971479\nmovie\t-234\tscore\t4.432865786903878\nmovie\t-105\tscore\t4.418878980193627\nmovie\t-88\tscore\t4.415980762315559\n'}::
 """)))
 
   override def execute(invocation: SparkInvocation, arguments: RecommendParams)(
