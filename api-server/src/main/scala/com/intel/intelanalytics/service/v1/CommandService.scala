@@ -181,7 +181,6 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
       case ("dataframe/drop_duplicates") => runDropDuplicates(uri, xform)
       case ("dataframe/bin_column") => runBinColumn(uri, xform)
       case ("dataframe/classification_metric") => runClassificationMetric(uri, xform)
-      case ("dataframe/confusion_matrix") => runConfusionMatrix(uri, xform)
       case s: String => illegalArg("Command name is not supported: " + s)
       case _ => illegalArg("Command name was NOT a string")
     }
@@ -189,13 +188,12 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
 
   /**
    * Load a dataset and append it to an existing dataframe.
-   *
    * @param uri Command path
    * @param xform Json Object used for parsing the command sent from the client.
    * @param user current user
-   * @return
    */
   def runFrameLoad(uri: Uri, xform: JsonTransform)(implicit user: UserPrincipal) = {
+    // TODO: convert to plugin-style and remove this method
     val test = Try {
       import DomainJsonProtocol._
       xform.arguments.get.convertTo[Load]
@@ -225,6 +223,7 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
    * @return A Spray route.
    */
   def runGraphLoad(uri: Uri, transform: JsonTransform)(implicit user: UserPrincipal): Route = {
+    // TODO: convert to plugin-style and remove this method
     val test = Try {
       transform.arguments.get.convertTo[GraphLoad]
     }
@@ -252,6 +251,7 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
   }
 
   def runFilter(uri: Uri, xform: JsonTransform)(implicit user: UserPrincipal) = {
+    // TODO: convert to plugin-style and remove this method
     val test = Try {
       xform.arguments.get.convertTo[FilterPredicate[JsObject, String]]
     }
@@ -266,6 +266,7 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
   }
 
   def runFrameRenameColumns(uri: Uri, xform: JsonTransform)(implicit user: UserPrincipal) = {
+    // TODO: convert to plugin-style and remove this method
     val test = Try {
       xform.arguments.get.convertTo[FrameRenameColumns[JsObject, String]]
     }
@@ -280,6 +281,7 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
   }
 
   def runFrameAddColumns(uri: Uri, xform: JsonTransform)(implicit user: UserPrincipal) = {
+    // TODO: convert to plugin-style and remove this method
     val test = Try {
       xform.arguments.get.convertTo[FrameAddColumns[JsObject, String]]
     }
@@ -297,6 +299,7 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
    * Perform the join operation and return the submitted command to the client
    */
   def runJoinFrames(uri: Uri, xform: JsonTransform)(implicit user: UserPrincipal): Route = {
+    // TODO: convert to plugin-style and remove this method
     val test = Try {
       xform.arguments.get.convertTo[FrameJoin]
     }
@@ -314,6 +317,7 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
    * Receive column flattening request and executing flatten column command
    */
   def runflattenColumn(uri: Uri, xform: JsonTransform)(implicit user: UserPrincipal) = {
+    // TODO: convert to plugin-style and remove this method
     val test = Try {
       xform.arguments.get.convertTo[FlattenColumn]
     }
@@ -327,6 +331,7 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
   }
 
   def runBinColumn(uri: Uri, xform: JsonTransform)(implicit user: UserPrincipal) = {
+    // TODO: convert to plugin-style and remove this method
     val test = Try {
       xform.arguments.get.convertTo[BinColumn[Long]]
     }
@@ -343,6 +348,7 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
    * Receive drop duplicates request and executing drop duplicates
    */
   def runDropDuplicates(uri: Uri, xform: JsonTransform)(implicit user: UserPrincipal) = {
+    // TODO: convert to plugin-style and remove this method
     val test = Try {
       xform.arguments.get.convertTo[DropDuplicates]
     }
@@ -356,6 +362,7 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
   }
 
   def runFrameProject(uri: Uri, xform: JsonTransform)(implicit user: UserPrincipal) = {
+    // TODO: convert to plugin-style and remove this method
     val test = Try {
       xform.arguments.get.convertTo[FrameProject[JsObject, String]]
     }
@@ -372,6 +379,7 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
   }
 
   def runFrameGroupByColumn(uri: Uri, xform: JsonTransform)(implicit user: UserPrincipal) = {
+    // TODO: convert to plugin-style and remove this method
     {
       val test = Try {
         import DomainJsonProtocol._
@@ -389,6 +397,7 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
   }
 
   def runClassificationMetric(uri: Uri, xform: JsonTransform)(implicit user: UserPrincipal) = {
+    // TODO: convert to plugin-style and remove this method
     {
       val test = Try {
         xform.arguments.get.convertTo[ClassificationMetric]
@@ -396,22 +405,7 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
 
       validate(test.isSuccess, "Failed to parse file load descriptor: " + getErrorMessage(test)) {
         val args = test.get
-        val result = engine.f_measure(args)
-        val command: Command = result.start
-        complete(decorate(uri + "/" + command.id, command))
-      }
-    }
-  }
-
-  def runConfusionMatrix(uri: Uri, xform: JsonTransform)(implicit user: UserPrincipal) = {
-    {
-      val test = Try {
-        xform.arguments.get.convertTo[ConfusionMatrix[Long]]
-      }
-
-      validate(test.isSuccess, "Failed to parse confusion matrix descriptor: " + getErrorMessage(test)) {
-        val args = test.get
-        val result = engine.confusionMatrix(args)
+        val result = engine.classificationMetrics(args)
         val command: Command = result.start
         complete(decorate(uri + "/" + command.id, command))
       }

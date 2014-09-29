@@ -1,4 +1,3 @@
-# coding: utf-8
 ##############################################################################
 # INTEL CONFIDENTIAL
 #
@@ -150,6 +149,9 @@ class FrameBackendRest(object):
     def get_row_count(self, frame):
         return self._get_frame_info(frame).row_count
 
+    def get_ia_uri(self, frame):
+        return self._get_frame_info(frame).ia_uri
+
     def get_repr(self, frame):
         frame_info = self._get_frame_info(frame)
         return "\n".join(['BigFrame "%s"\nrow_count = %d\nschema = ' % (frame_info.name, frame_info.row_count)] +
@@ -184,7 +186,7 @@ class FrameBackendRest(object):
         if isinstance(data, BigFrame):
             return {'source': { 'source_type': 'dataframe',
                                 'uri': str(data._id)},  # TODO - be consistent about _id vs. uri in these calls
-                    'destination': self._get_frame_full_uri(frame)}
+                    'destination': frame._id}
         raise TypeError("Unsupported data source %s" % type(data))
 
     @staticmethod
@@ -244,7 +246,7 @@ class FrameBackendRest(object):
             logger.warn("There were parse errors during load, please see frame.get_error_frame()")
 
     def quantiles(self, frame, column_name, quantiles):
-        if isinstance(quantiles, int):
+        if isinstance(quantiles, int) or isinstance(quantiles, float) or isinstance(quantiles, long):
             quantiles = [quantiles]
 
         invalid_quantiles = []
@@ -256,8 +258,11 @@ class FrameBackendRest(object):
             raise ValueError("Invalid number for quantile:" + ','.join(invalid_quantiles))
 
         arguments = {'frame_id': frame._id, "column_name": column_name, "quantiles": quantiles}
-        command = CommandRequest("dataframe/quantiles", arguments)
-        return executor.issue(command)
+        quantiles_result = get_command_output('quantiles', arguments).get('quantiles')
+        result_dict = {}
+        for p in quantiles_result:
+            result_dict[p.get("quantile")] = p.get("value")
+        return result_dict
 
     def drop(self, frame, predicate):
         from itertools import ifilterfalse  # use the REST API filter, with a ifilterfalse iterator
@@ -433,20 +438,18 @@ class FrameBackendRest(object):
             new_names = column_names.values()
             column_names = column_names.keys()
 
-        current_names = frame.column_names
-        for nn in new_names:
-            if nn in current_names:
-                raise ValueError("Cannot use rename to '{0}' because another column already exists with that name".format(nn))
         arguments = {'frame': self._get_frame_full_uri(frame), "original_names": column_names, "new_names": new_names}
         execute_update_frame_command('rename_columns', arguments, frame)
 
     def rename_frame(self, frame, name):
-        arguments = {'frame': self._get_frame_full_uri(frame), "new_name": name}
+        arguments = {'frame': frame._id, "new_name": name}
         execute_update_frame_command('rename_frame', arguments, frame)
 
+
+
     def take(self, frame, n, offset, columns):
-        if n==0:
-            return []
+        if n == 0:
+            return TakeResult([], frame.schema)
         url = 'dataframes/{0}/data?offset={2}&count={1}'.format(frame._id,n, offset)
         result = executor.query(url)
         schema = FrameSchema.from_strings_to_types(result.schema)
@@ -522,19 +525,24 @@ class FrameInfo(object):
 
     def __str__(self):
         return '%s "%s"' % (self.id_number, self.name)
+    
     def _validate(self):
         try:
             assert self.id_number
         except KeyError:
-            raise RuntimeError("Invalid response from server.  Expected Frame info.")
+            raise RuntimeError("Invalid response from server. Expected Frame info.")
 
     @property
     def id_number(self):
         return self._payload['id']
-
+    
     @property
     def name(self):
         return self._payload['name']
+    
+    @property
+    def ia_uri(self):
+        return self._payload['ia_uri']
 
     @property
     def schema(self):
@@ -610,6 +618,7 @@ class FrameData:
 
 def initialize_frame(frame, frame_info):
     """Initializes a frame according to given frame_info"""
+    frame._ia_uri = frame_info.ia_uri
     frame._id = frame_info.id_number
     frame._error_frame_id = frame_info.error_frame_id
 

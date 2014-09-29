@@ -28,4 +28,4 @@ package com.intel.intelanalytics.algorithm
  * @param quantile quantile
  * @param value value at the quantile
  */
-case class Quantile(quantile: Int, value: BigDecimal)
+case class Quantile(quantile: Double, value: BigDecimal)
