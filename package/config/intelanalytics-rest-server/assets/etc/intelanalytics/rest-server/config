@@ -55,7 +55,7 @@ Command Line Arguments
 
 --username The Cloudera manager user name. The user name for loging into Cloudera manager
 
---pasword The Cloudera manager pass word. Thye user name for loging into Cloudera manager
+--pasword The Cloudera manager pass word. The user name for loging into Cloudera manager
 
 --cluster The Cloudera cluster we will pull and update config for. If Cloudera manager manages more than one cluster
     we need to know what cluster we will be updating and pulling our config for. Can give the display name of the
@@ -78,7 +78,8 @@ Command Line Arguments
 
 --db-username the database user name. will default to iauser
 
---db-password the database password. will default to random hash
+--db-password the database password. will default to random hash. Don't use '$' sign in the password the intel analytics
+    server can't read them correctly from the configuration file.
 
 --db-skip-reconfig weather or not you want to skip database config if we find an existing config
 
@@ -730,13 +731,14 @@ def get_db_details():
                                                      "allowed and the first character can't be a number.")
         db_username = get_arg("What is the database user name?", username, args.db_username,
                               r'^[A-Za-z_]{1}[A-Za-z0-9_]*$', "Only underscores and alphanumeric characters are "
-                                                              "allowed and hhe first character can't be a number.")
+                                                              "allowed and the first character can't be a number.")
         #create a random password to use as our default
         if password == "myPassword":
             #create randomly generated hashed password
             password = hashlib.sha1(os.urandom(32).encode('base_64')).digest().encode('base_64').strip()
         db_password = get_arg("What is the database password? The default password was randomly generated.",
-                              password, args.db_password)
+                              re.sub(r'[\S\s]', "*", password), args.db_password, r'^[^$]*$',
+                              "The dollar sign is not allowed in the password.")
 
 
 
