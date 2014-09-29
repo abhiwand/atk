@@ -79,7 +79,9 @@ Command Line Arguments
 --db-username the database user name. will default to iauser
 
 --db-password the database password. will default to random hash. Don't use '$' sign in the password the intel analytics
-    server can't read them correctly from the configuration file.
+    server can't read them correctly from the configuration file. While doing the configuration for the password
+    you will only see asterisk for the display. If you need the password for future reference you can open the
+    application.conf file and look for metastore.connection-postgresql.username.
 
 --db-skip-reconfig weather or not you want to skip database config if we find an existing config
 
@@ -91,7 +93,7 @@ from cm_api.endpoints import hosts
 from cm_api.endpoints import role_config_groups
 from subprocess import call
 from os import system
-import hashlib, re, time, argparse, os, time, sys
+import hashlib, re, time, argparse, os, time, sys, getpass
 
 parser = argparse.ArgumentParser(description="Process cl arguments to avoid prompts in automation")
 parser.add_argument("--host", type=str, help="Cloudera Manager Host")
@@ -126,7 +128,7 @@ def color_text(text, color):
     return text
 
 
-def user_info_prompt(message, default):
+def user_info_prompt(message, default, password=False):
     """
     prompt the user for info if nothing is entered we default to the given default
 
@@ -134,14 +136,24 @@ def user_info_prompt(message, default):
     :param default: the fallback value if the user doesn't give any input
     :return: either the default or whatever the user entered
     """
-    response = raw_input(message).strip()
-    if response == "" or response is None:
-        response = default
+    if password:
+        password1 = getpass.getpass(message).strip()
+        password2 = getpass.getpass("Confirm password: ").strip()
+        if(password1 == "" or password1 is None) and password1 == password2:
+            return default
+        elif password1 == password2:
+            return password1
+        else:
+            print "\n Password did not match"
+            return user_info_prompt(message, default, password)
+    else:
+        response = raw_input(message).strip()
+        if response == "" or response is None:
+            response = default
+        return response
 
-    return response
 
-
-def get_arg(question, default, arg, regex=None, error_msg=None):
+def get_arg(question, default, arg, regex=None, error_msg=None, password=False):
     """
     see if we value in the parsed argument arg if not prompt for the user for the required info. If an parsed
     argument is present that will returned and no prompt will be displayed
@@ -151,18 +163,21 @@ def get_arg(question, default, arg, regex=None, error_msg=None):
     :param arg: the parsed argument from the command line
     :return: argument if it exist, user input, or the default value
     """
-    if regex:
-        user_text = user_info_prompt(question + " defaults to \"" + color_text(str(default), GOOD) +
-                                     "\" if nothing is entered: ", default)
-        if re.search(regex, user_text) is None:
-            if error_msg:
-                print error_msg
-            return get_arg(question, default, arg, regex, error_msg)
+    if arg is None:
+        if regex:
+            user_text = user_info_prompt(question + " defaults to \"" + color_text(str(default), GOOD) +
+                                         "\" if nothing is entered: ", default, password)
+            if re.search(regex, user_text) is None:
+                if error_msg:
+                    print error_msg
+                return get_arg(question, default, arg, regex, error_msg, password)
+            else:
+                return user_text
         else:
-            return user_text
+            return user_info_prompt(question + " defaults to \"" + color_text(str(default), GOOD) +
+                                "\" if nothing is entered: ", default, password)
     else:
-        return user_info_prompt(question + " defaults to \"" + color_text(str(default), GOOD) +
-                                "\" if nothing is entered: ", default) if arg is None else arg
+        return arg
 
 
 def get_python_exec():
@@ -738,7 +753,7 @@ def get_db_details():
             password = hashlib.sha1(os.urandom(32).encode('base_64')).digest().encode('base_64').strip()
         db_password = get_arg("What is the database password? The default password was randomly generated.",
                               re.sub(r'[\S\s]', "*", password), args.db_password, r'^[^$]*$',
-                              "The dollar sign is not allowed in the password.")
+                              "The dollar sign is not allowed in the password.",True)
 
 
 
