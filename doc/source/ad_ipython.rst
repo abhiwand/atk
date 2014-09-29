@@ -282,9 +282,9 @@ Ipython shell and trying to ping the rest server.
     help      -> Python's own help system.
     object?   -> Details about 'object', use 'object??' for extra details.
 
-    In [1]: from intelanalytics import *
+    In [1]: import intelanalytics as ia
 
-    In [2]: server.ping()
+    In [2]: ia.server.ping()
     Successful ping to Intel Analytics at http://localhost:9099/info
 
     In [3]:
