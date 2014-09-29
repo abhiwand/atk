@@ -108,9 +108,13 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
         <buildtype>test</buildtype>
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-
+        <!-- START TITAN -->
+        <dep.ititan.version>0.5.0-SNAPSHOT</dep.ititan.version>
         <dep.aurelius.version>0.5.0</dep.aurelius.version>
-        <dep.gremlin.version>2.5.0</dep.gremlin.version>
+        <dep.tinkerpop.version>2.5.0</dep.tinkerpop.version>
+        <dep.reflections.version>0.9.9-RC1</dep.reflections.version>
+        <!-- END TITAN -->
+
         <dep.hbase.version>0.98.1-cdh5.1.2</dep.hbase.version>
         <dep.hadoop2.version>2.3.0-cdh5.1.2</dep.hadoop2.version>
 
@@ -127,6 +131,7 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
 
         <scala.long.version>2.10.3</scala.long.version>
         <scala.short.version>2.10</scala.short.version>
+        <scalatest.version>2.2.1</scalatest.version>
 
         <akka.version>2.3.2</akka.version>
 
@@ -355,7 +360,7 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                     <dependency>
                         <groupId>org.scalatest</groupId>
                         <artifactId>scalatest_${scala.short.version}</artifactId>
-                        <version>2.1.6</version>
+                        <version>${scalatest.version}</version>
                         <scope>test</scope>
                     </dependency>
                 </dependencies>
@@ -363,7 +368,7 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
             <dependencies>
                 <dependency>
                     <groupId>org.scalatest</groupId>
-                    <artifactId>scalatest_2.10</artifactId>
+                    <artifactId>scalatest_${scala.short.version}</artifactId>
                 </dependency>
             </dependencies>
         </profile>
@@ -754,7 +759,13 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
             <dependency>
                 <groupId>com.intel.ia</groupId>
                 <artifactId>ititan-core</artifactId>
-                <version>0.5.0-SNAPSHOT</version>
+                <version>${dep.ititan.version}</version>
+                <!--<exclusions>
+                    <exclusion>
+                        <groupId>org.apache.avro</groupId>
+                        <artifactId>avro</artifactId>
+                    </exclusion>
+                </exclusions> -->
             </dependency>
             <dependency>
                 <groupId>com.thinkaurelius.titan</groupId>
@@ -763,18 +774,7 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
             </dependency>
             <dependency>
                 <groupId>com.thinkaurelius.titan</groupId>
-                <artifactId>ititan-core</artifactId>
-                <version>${dep.aurelius.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.apache.avro</groupId>
-                        <artifactId>avro</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>com.thinkaurelius.faunus</groupId>
-                <artifactId>faunus</artifactId>
+                <artifactId>titan-hadoop-2</artifactId>
                 <version>${dep.aurelius.version}</version>
             </dependency>
             <dependency>
@@ -803,13 +803,19 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                     </exclusion>
                 </exclusions>
             </dependency>
+            <dependency>
+                <groupId>org.reflections</groupId>
+                <artifactId>reflections</artifactId>
+                <version>${dep.reflections.version}</version>
+            </dependency>
+
             <!--ENDititan-->
 
             <!--STARTgremlin-groovy -->
             <dependency>
                 <groupId>com.tinkerpop.gremlin</groupId>
                 <artifactId>gremlin-groovy</artifactId>
-                <version>${dep.gremlin.version}</version>
+                <version>${dep.tinkerpop.version}</version>
             </dependency>
             <!--ENDgremlin-groovy -->
             <!--org.scala-->
@@ -1143,12 +1149,12 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
             <dependency>
                 <groupId>com.tinkerpop.blueprints</groupId>
                 <artifactId>blueprints-core</artifactId>
-                <version>2.4.0</version>
+                <version>${dep.tinkerpop.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.tinkerpop</groupId>
                 <artifactId>frames</artifactId>
-                <version>2.4.0</version>
+                <version>${dep.tinkerpop.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.codahale.metrics</groupId>

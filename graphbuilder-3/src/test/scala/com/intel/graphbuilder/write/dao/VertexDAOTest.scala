@@ -23,9 +23,9 @@
 
 package com.intel.graphbuilder.write.dao
 
-import com.intel.graphbuilder.driver.spark.TestingTitan
 import com.intel.graphbuilder.elements._
 import com.intel.graphbuilder.write.titan.TitanIdUtils
+import com.intel.testutils.TestingTitan
 import org.scalatest.{ BeforeAndAfter, Matchers, WordSpec }
 
 class VertexDAOTest extends WordSpec with Matchers with TestingTitan with BeforeAndAfter {

@@ -19,15 +19,16 @@
     </description>
 
     <properties>
+        <dep.aurelius.version>0.5.0</dep.aurelius.version>
         <titan.version>0.5.0-SNAPSHOT</titan.version>
     </properties>
-
     <dependencies>
         <dependency>
             <groupId>com.thinkaurelius.titan</groupId>
             <artifactId>titan-core</artifactId>
-            <version>0.5.0</version>
+            <version>${dep.aurelius.version}</version>
         </dependency>
+
     </dependencies>
 
     <build>

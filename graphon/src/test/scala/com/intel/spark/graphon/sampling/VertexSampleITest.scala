@@ -23,12 +23,14 @@
 
 package com.intel.spark.graphon.sampling
 
-import com.intel.testutils.TestingSparkContextWordSpec
-import com.intel.spark.graphon.testutils.TestingTitan
-import com.intel.graphbuilder.elements.{ Property, Vertex, Edge }
-import scala.collection.JavaConversions._
-import org.scalatest.Matchers
 import com.intel.graphbuilder.driver.spark.rdd.EnvironmentValidator
+import com.intel.graphbuilder.elements.{ Edge, Property, Vertex }
+import com.intel.graphbuilder.graph.titan.TitanGraphConnector
+import com.intel.graphbuilder.util.SerializableBaseConfiguration
+import com.intel.testutils.{ TestingSparkContextWordSpec, TestingTitan }
+import org.scalatest.{ BeforeAndAfter, Matchers }
+
+import scala.collection.JavaConversions._
 
 /**
  * Integration testing for uniform vertex sampling
@@ -195,8 +197,13 @@ class VertexSampleITest extends TestingSparkContextWordSpec with Matchers {
     }
 
     "correctly write the vertex induced subgraph to Titan" in new TestingTitan {
+      setupTitan()
       val vertexRdd = sparkContext.parallelize(inputVertexList, 2)
       val edgeRdd = sparkContext.parallelize(inputEdgeList, 2)
+
+      val titanConfig = new SerializableBaseConfiguration()
+      titanConfig.copy(titanBaseConfig)
+      val titanConnector = new TitanGraphConnector(titanConfig)
 
       VertexSampleSparkOps.writeToTitan(vertexRdd, edgeRdd, titanConfig)
 
@@ -204,6 +211,7 @@ class VertexSampleITest extends TestingSparkContextWordSpec with Matchers {
 
       graph.getEdges.size shouldEqual 20
       graph.getVertices.size shouldEqual 8
+      cleanupTitan()
     }
 
     "select the correct weighted vertices" in {
