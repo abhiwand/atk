@@ -21,10 +21,11 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.engine.spark.frame.plugins
+package com.intel.intelanalytics.engine.spark.graph.plugins
 
+import com.intel.intelanalytics.NotFoundException
 import com.intel.intelanalytics.domain.command.CommandDoc
-import com.intel.intelanalytics.domain.frame.{ RenameFrame, DataFrame, FlattenColumn }
+import com.intel.intelanalytics.domain.graph.{ RenameGraph, Graph }
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
 import com.intel.intelanalytics.security.UserPrincipal
 
@@ -37,9 +38,9 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol._
 // TODO: shouldn't be a Spark Plugin, doesn't need Spark
 
 /**
- * Rename a frame
+ * Rename a graph in the database
  */
-class RenameFramePlugin extends SparkCommandPlugin[RenameFrame, DataFrame] {
+class RenameGraphPlugin extends SparkCommandPlugin[RenameGraph, Graph] {
 
   /**
    * The name of the command, e.g. graphs/ml/loopy_belief_propagation
@@ -47,7 +48,7 @@ class RenameFramePlugin extends SparkCommandPlugin[RenameFrame, DataFrame] {
    * The format of the name determines how the plugin gets "installed" in the client layer
    * e.g Python client via code generation.
    */
-  override def name: String = "dataframe/rename_frame"
+  override def name: String = "graph/rename_graph"
 
   /**
    * User documentation exposed in Python.
@@ -57,7 +58,7 @@ class RenameFramePlugin extends SparkCommandPlugin[RenameFrame, DataFrame] {
   override def doc: Option[CommandDoc] = None
 
   /**
-   * Rename a frame
+   * Rename a graph in the database
    *
    * @param invocation information about the user and the circumstances at the time of the call,
    *                   as well as a function that can be called to produce a SparkContext that
@@ -66,15 +67,16 @@ class RenameFramePlugin extends SparkCommandPlugin[RenameFrame, DataFrame] {
    * @param user current user
    * @return a value of type declared as the Return type.
    */
-  override def execute(invocation: SparkInvocation, arguments: RenameFrame)(implicit user: UserPrincipal, executionContext: ExecutionContext): DataFrame = {
+  override def execute(invocation: SparkInvocation, arguments: RenameGraph)(implicit user: UserPrincipal, executionContext: ExecutionContext): Graph = {
     // dependencies (later to be replaced with dependency injection)
-    val frames = invocation.engine.frames
+    val graphs = invocation.engine.graphs
 
     // validate arguments
-    val frame = frames.expectFrame(arguments.frame)
+    val graphId = arguments.graph.id
+    val graph = graphs.lookup(graphId).getOrElse(throw new NotFoundException("graph", graphId.toString))
     val newName = arguments.newName
 
     // run the operation and save results
-    frames.renameFrame(frame, newName)
+    graphs.renameGraph(graph, newName)
   }
 }
