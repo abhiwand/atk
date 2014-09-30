@@ -88,10 +88,12 @@ class BinColumnPlugin extends SparkCommandPlugin[BinColumn, DataFrame] {
     arguments.binType match {
       case "equalwidth" =>
         val binnedRdd = DiscretizationFunctions.binEqualWidth(columnIndex, arguments.numBins, rdd)
-        frames.saveFrame(newFrame, new FrameRDD(new Schema(allColumns), binnedRdd))
+        val rowCount = binnedRdd.count()
+        frames.saveFrame(newFrame, new FrameRDD(new Schema(allColumns), binnedRdd), Some(rowCount))
       case "equaldepth" =>
         val binnedRdd = DiscretizationFunctions.binEqualDepth(columnIndex, arguments.numBins, rdd)
-        frames.saveFrame(newFrame, new FrameRDD(new Schema(allColumns), binnedRdd))
+        val rowCount = binnedRdd.count()
+        frames.saveFrame(newFrame, new FrameRDD(new Schema(allColumns), binnedRdd), Some(rowCount))
       case _ => throw new IllegalArgumentException(s"Invalid binning type: ${arguments.binType.toString}")
     }
     frames.updateSchema(newFrame, allColumns)
