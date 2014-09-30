@@ -55,7 +55,7 @@ class PageRank
   implicit val prFormat = jsonFormat7(Pr)
   implicit val prResultFormat = jsonFormat1(PrResult)
 
-  override def doc = Some(CommandDoc(oneLineSummary = "The .",
+  override def doc = Some(CommandDoc(oneLineSummary = "The `PageRank algorithm <http://en.wikipedia.org/wiki/PageRank>`_.",
     extendedSummary = Some("""
                             |   Parameters
                             |   ----------
@@ -88,7 +88,7 @@ class PageRank
                             |   Returns
                             |   -------
                             |   Multiple line string
-                            |       The configuration and convergence report for Page Rank.
+                            |       The configuration and convergence report for Page Rank
                             |
                             |   Examples
                             |   --------

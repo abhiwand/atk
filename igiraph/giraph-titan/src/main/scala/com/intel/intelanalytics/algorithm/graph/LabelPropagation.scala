@@ -83,7 +83,7 @@ class LabelPropagation
                             |   output_vertex_property_list : comma-separated string
                             |       The list of vertex properties to store output vertex values.
                             |
-                            |   vector_value: Boolean
+                            |   vector_value : boolean
                             |       True means a vector as vertex value is supported
                             |       False means a vector as vertex value is not supported
                             |
@@ -119,7 +119,7 @@ class LabelPropagation
                             |       The valid value range is [0.0,1.0].
                             |       The default value is 0.
                             |
-                            |   bidirectional_check : Boolean (optional)
+                            |   bidirectional_check : boolean (optional)
                             |       If it is true, Giraph will firstly check whether each edge is bidirectional
                             |       before running algorithm. LP expects an undirected input graph and each edge
                             |       therefore should be bi-directional. This option is mainly for graph integrity
@@ -128,7 +128,7 @@ class LabelPropagation
                             |   Returns
                             |   -------
                             |   Multiple line string
-                            |       The configuration and learning curve report for Label Propagation.
+                            |       The configuration and learning curve report for Label Propagation
                             |
                             |   Examples
                             |   --------

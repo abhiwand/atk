@@ -95,7 +95,7 @@ class LoopyBeliefPropagation
                             |       The name of vertex property which contains vertex type.
                             |       The default value is "vertex_type"
                             |
-                            |   vector_value: Boolean
+                            |   vector_value : boolean
                             |       True means a vector as vertex value is supported
                             |       False means a vector as vertex value is not supported
                             |
@@ -126,7 +126,7 @@ class LoopyBeliefPropagation
                             |       Larger value implies smoother decay and the edge weight beomes less important.
                             |       The default value is 2.0.
                             |
-                            |   bidirectional_check : Boolean (optional)
+                            |   bidirectional_check : boolean (optional)
                             |       If it is true, Giraph will firstly check whether each edge is bidirectional before
                             |       running algorithm. This option is mainly for graph integrity check. Turning it on
                             |       only makes sense when all nodes are labeled as "TR", otherwise the algorithm will
@@ -134,11 +134,11 @@ class LoopyBeliefPropagation
                             |       as single directional even though they are defined as bi-directional input graph.
                             |       The default value is false.
                             |
-                            |   ignore_vertex_type : Boolean (optional)
+                            |   ignore_vertex_type : boolean (optional)
                             |       If true, all vertex will be treated as training data
                             |       The default value is False
                             |
-                            |   max_product : Boolean (optional)
+                            |   max_product : boolean (optional)
                             |       Should LBP use max_product or not
                             |       The default value is False
                             |
@@ -163,58 +163,3 @@ class LoopyBeliefPropagation
                             |
                             """.stripMargin)))
 
-  override def execute(invocation: Invocation, arguments: Lbp)(implicit user: UserPrincipal, executionContext: ExecutionContext): LbpResult = {
-
-    val config = configuration
-    val hConf = GiraphConfigurationUtil.newHadoopConfigurationFrom(config, "giraph")
-    val titanConf = GiraphConfigurationUtil.flattenConfig(config.getConfig("titan"), "titan.")
-
-    val graphFuture = invocation.engine.getGraph(arguments.graph.id)
-    val graph = Await.result(graphFuture, config.getInt("default-timeout") seconds)
-
-    //    These parameters are set from the arguments passed in, or defaulted from
-    //    the engine configuration if not passed.
-    GiraphConfigurationUtil.set(hConf, "lbp.maxSupersteps", arguments.max_supersteps)
-    GiraphConfigurationUtil.set(hConf, "lbp.convergenceThreshold", arguments.convergence_threshold)
-    GiraphConfigurationUtil.set(hConf, "lbp.anchorThreshold", arguments.anchor_threshold)
-    GiraphConfigurationUtil.set(hConf, "lbp.bidirectionalCheck", arguments.bidirectional_check)
-    GiraphConfigurationUtil.set(hConf, "lbp.power", arguments.power)
-    GiraphConfigurationUtil.set(hConf, "lbp.smoothing", arguments.smoothing)
-    GiraphConfigurationUtil.set(hConf, "lbp.ignoreVertexType", arguments.ignore_vertex_type)
-
-    GiraphConfigurationUtil.initializeTitanConfig(hConf, titanConf, graph)
-
-    GiraphConfigurationUtil.set(hConf, "input.vertex.value.property.key.list", arguments.vertex_value_property_list)
-    GiraphConfigurationUtil.set(hConf, "input.edge.value.property.key.list", arguments.edge_value_property_list)
-    GiraphConfigurationUtil.set(hConf, "input.edge.label.list", arguments.input_edge_label_list)
-    GiraphConfigurationUtil.set(hConf, "output.vertex.property.key.list", arguments.output_vertex_property_list)
-    GiraphConfigurationUtil.set(hConf, "vertex.type.property.key", arguments.vertex_type_property_key)
-    GiraphConfigurationUtil.set(hConf, "vector.value", arguments.vector_value)
-
-    val giraphConf = new GiraphConfiguration(hConf)
-
-    giraphConf.setVertexInputFormatClass(classOf[TitanHBaseVertexInputFormatPropertyGraph4LBP])
-    giraphConf.setVertexOutputFormatClass(classOf[TitanVertexOutputFormatPropertyGraph4LBP[_ <: org.apache.hadoop.io.WritableComparable[_], _ <: org.apache.hadoop.io.Writable, _ <: org.apache.hadoop.io.Writable]])
-    giraphConf.setMasterComputeClass(classOf[LoopyBeliefPropagationComputation.LoopyBeliefPropagationMasterCompute])
-    giraphConf.setComputationClass(classOf[LoopyBeliefPropagationComputation])
-    giraphConf.setAggregatorWriterClass(classOf[LoopyBeliefPropagationComputation.LoopyBeliefPropagationAggregatorWriter])
-
-    LbpResult(GiraphJobManager.run("ia_giraph_lbp",
-      classOf[LoopyBeliefPropagationComputation].getCanonicalName,
-      config, giraphConf, invocation, "lbp-learning-report_0"))
-  }
-
-  //TODO: Replace with generic code that works on any case class
-  def parseArguments(arguments: JsObject) = arguments.convertTo[Lbp]
-
-  //TODO: Replace with generic code that works on any case class
-  def serializeReturn(returnValue: LbpResult): JsObject = returnValue.toJson.asJsObject
-
-  /**
-   * The name of the command, e.g. graphs/ml/loopy_belief_propagation
-   */
-  override def name: String = "graphs/ml/loopy_belief_propagation"
-
-  //TODO: Replace with generic code that works on any case class
-  override def serializeArguments(arguments: Lbp): JsObject = arguments.toJson.asJsObject()
-}

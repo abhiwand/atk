@@ -57,17 +57,17 @@ class ConnectedComponents
     extendedSummary = Some("""
                             |   Prerequisites::
                             |
-                            |   Edge label in the property graph must be bidirectional.
+                            |       Edge label in the property graph must be bidirectional.
                             |
                             |   Parameters
                             |   ----------
-                            |   input_edge_label : String
+                            |   input_edge_label : string
                             |       The name of edge label used to for performing the connected components calculation.
                             |
-                            |   output_vertex_property : String
+                            |   output_vertex_property : string
                             |       The vertex property which will contain the connected component id for each vertex.
                             |
-                            |   convergence_output_interval : Integer (optional)
+                            |   convergence_output_interval : integer (optional)
                             |       The convergence progress output interval.
                             |       Since convergence is a tricky notion for
                             |       The valid value range is [1, max_supersteps]

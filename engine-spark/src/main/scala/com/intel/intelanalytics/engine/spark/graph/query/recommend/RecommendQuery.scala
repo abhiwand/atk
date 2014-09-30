@@ -317,3 +317,4 @@ class RecommendQuery extends SparkCommandPlugin[RecommendParams, RecommendResult
   //TODO: Replace with generic code that works on any case class
   override def serializeArguments(arguments: RecommendParams): JsObject = arguments.toJson.asJsObject()
 }
+>>>>>>> e45414e1fcdaee52c8ad0ff4e2e5874698cb6c9b
