@@ -58,6 +58,4 @@ trait SparkCommandPlugin[Argument <: Product, Return <: Product]
    */
   def execute(invocation: SparkInvocation, arguments: Argument)(implicit user: UserPrincipal, executionContext: ExecutionContext): Return
 
-
-  val kryoRegistrator: Class[EngineKryoRegistrator] = classOf[EngineKryoRegistrator]
 }
