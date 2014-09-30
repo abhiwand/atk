@@ -23,7 +23,7 @@
 
 package com.intel.intelanalytics.domain.frame
 
-case class ClassificationMetric(frame: FrameReference, labelColumn: String, predColumn: String, posLabel: Either[String, Int], beta: Option[Double] = None) {
+case class ClassificationMetric(frame: FrameReference, labelColumn: String, predColumn: String, posLabel: Option[Either[String, Int]], beta: Option[Double] = None) {
   require(frame != null, "ClassificationMetric requires a non-null dataframe.")
   require(labelColumn != null && !labelColumn.equals(""), "label column is required")
   require(predColumn != null && !predColumn.equals(""), "predict column is required")
