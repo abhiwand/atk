@@ -742,37 +742,6 @@ class BigFrame(CommandLoadableBigFrame):
         """
         return self._backend.bin_column(self, column_name, num_bins, bin_type, bin_column_name)
 
-    @deprecated("Use quantiles().")
-    def calculate_percentiles(self, column_name, percentiles):
-        return self.quantiles(column_name, percentiles)
-
-    @api
-    def quantiles(self, column_name, quantiles):
-        """
-        Calculate quantiles on given column.
-
-        Parameters
-        ----------
-        column_name : str
-            The column to calculate quantile
-        quantiles : float OR list of float.
-
-        Returns
-        -------
-        dictionary
-
-        Examples
-        --------
-        ::
-
-            my_frame.quantiles('final_sale_price', [10, 50, 100])
-
-        .. versionchanged:: 0.8.5
-
-        """
-        return self._backend.quantiles(self, column_name, quantiles)
-
-
     @deprecated("Use classification_metrics().")
     def confusion_matrix(self, label_column, pred_column, pos_label='1'):
         """
