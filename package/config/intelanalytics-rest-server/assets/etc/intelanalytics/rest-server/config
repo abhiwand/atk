@@ -705,7 +705,7 @@ def restart_IA():
     :return:
     """
     #Truncate the IA log so we can detect a new 'Bound to' message which would let us know the server is up
-    output_log = open(IA_LOG_PATH, "w")
+    output_log = open(IA_LOG_PATH, "w+")
     output_log.write("")
     output_log.close()
 
