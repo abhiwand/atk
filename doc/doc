@@ -97,7 +97,7 @@ if [ $? == 0 ]; then
 
         # Update scala server
         cd ..
-        mvn compile -pl engine-spark -am
+        mvn compile
         if [ $? == 1 ]; then
             exit 1
         fi
