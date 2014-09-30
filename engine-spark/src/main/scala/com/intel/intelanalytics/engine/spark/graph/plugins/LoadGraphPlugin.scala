@@ -21,10 +21,10 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.engine.spark.frame.plugins
+package com.intel.intelanalytics.engine.spark.graph.plugins
 
 import com.intel.intelanalytics.domain.command.CommandDoc
-import com.intel.intelanalytics.domain.frame.{ RenameFrame, DataFrame, FlattenColumn }
+import com.intel.intelanalytics.domain.graph.{ GraphLoad, Graph }
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
 import com.intel.intelanalytics.security.UserPrincipal
 
@@ -34,12 +34,10 @@ import scala.concurrent.ExecutionContext
 import spray.json._
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
 
-// TODO: shouldn't be a Spark Plugin, doesn't need Spark
-
 /**
- * Rename a frame
+ * Loads graph data into a graph in the database. The source is tabular data interpreted by user-specified rules.
  */
-class RenameFramePlugin extends SparkCommandPlugin[RenameFrame, DataFrame] {
+class LoadGraphPlugin extends SparkCommandPlugin[GraphLoad, Graph] {
 
   /**
    * The name of the command, e.g. graphs/ml/loopy_belief_propagation
@@ -47,7 +45,7 @@ class RenameFramePlugin extends SparkCommandPlugin[RenameFrame, DataFrame] {
    * The format of the name determines how the plugin gets "installed" in the client layer
    * e.g Python client via code generation.
    */
-  override def name: String = "dataframe/rename_frame"
+  override def name: String = "graph/load"
 
   /**
    * User documentation exposed in Python.
@@ -57,7 +55,13 @@ class RenameFramePlugin extends SparkCommandPlugin[RenameFrame, DataFrame] {
   override def doc: Option[CommandDoc] = None
 
   /**
-   * Rename a frame
+   * Number of Spark jobs that get created by running this command
+   * (this configuration is used to prevent multiple progress bars in Python client)
+   */
+  override def numberOfJobs(arguments: GraphLoad) = 2
+
+  /**
+   * Loads graph data into a graph in the database. The source is tabular data interpreted by user-specified rules.
    *
    * @param invocation information about the user and the circumstances at the time of the call,
    *                   as well as a function that can be called to produce a SparkContext that
@@ -66,15 +70,15 @@ class RenameFramePlugin extends SparkCommandPlugin[RenameFrame, DataFrame] {
    * @param user current user
    * @return a value of type declared as the Return type.
    */
-  override def execute(invocation: SparkInvocation, arguments: RenameFrame)(implicit user: UserPrincipal, executionContext: ExecutionContext): DataFrame = {
+  override def execute(invocation: SparkInvocation, arguments: GraphLoad)(implicit user: UserPrincipal, executionContext: ExecutionContext): Graph = {
     // dependencies (later to be replaced with dependency injection)
+    val graphs = invocation.engine.graphs
     val frames = invocation.engine.frames
 
     // validate arguments
-    val frame = frames.expectFrame(arguments.frame)
-    val newName = arguments.newName
+    arguments.frame_rules.foreach(frule => frames.expectFrame(frule.frame))
 
     // run the operation and save results
-    frames.renameFrame(frame, newName)
+    graphs.loadGraph(arguments, invocation)(user)
   }
 }
