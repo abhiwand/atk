@@ -1968,7 +1968,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
                             |
                             |   .. versionadded:: 0.8
                             """.stripMargin))
-|
+
   val entropyCommand = commandPluginRegistry.registerCommand("dataframe/shannon_entropy",
     entropyCommandSimple _, numberOfJobs = 3, doc = Some(entropyDoc))
 
@@ -2064,7 +2064,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
                             |
                             |   .. versionadded:: 0.8
                             """.stripMargin))
-|
+
   val topKCommand =
     commandPluginRegistry.registerCommand("dataframe/top_k", topKCommandSimple _, numberOfJobs = 3, doc = Some(topKDoc))
 
