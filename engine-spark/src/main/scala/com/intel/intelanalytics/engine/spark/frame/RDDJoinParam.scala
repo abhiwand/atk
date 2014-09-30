@@ -27,6 +27,8 @@ import org.apache.spark.rdd.RDD
 
 /**
  * This object exists to avoid having to serialize the entire engine in order to use spark
+ *
+ * If you don't know what this means please read about Closure Mishap
+ * [[http://ampcamp.berkeley.edu/wp-content/uploads/2012/06/matei-zaharia-part-1-amp-camp-2012-spark-intro.pdf]]
  */
-
 case class RDDJoinParam(rdd: RDD[(Any, Array[Any])], columnCount: Int)

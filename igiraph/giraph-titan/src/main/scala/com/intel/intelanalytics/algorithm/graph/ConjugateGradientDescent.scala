@@ -60,12 +60,30 @@ case class Cgd(graph: GraphReference,
 
 case class CgdResult(value: String)
 
-class ConjugateGradientDescent
-    extends CommandPlugin[Cgd, CgdResult] {
+/** Json conversion for arguments and return value case classes */
+object CgdJsonFormat {
   import DomainJsonProtocol._
   implicit val cgdFormat = jsonFormat17(Cgd)
   implicit val cgdResultFormat = jsonFormat1(CgdResult)
+}
 
+import CgdJsonFormat._
+
+class ConjugateGradientDescent
+    extends CommandPlugin[Cgd, CgdResult] {
+
+  /**
+   * The name of the command, e.g. graphs/ml/loopy_belief_propagation
+   *
+   * The format of the name determines how the plugin gets "installed" in the Python layer via code generation.
+   */
+  override def name: String = "graphs/ml/conjugate_gradient_descent"
+
+  /**
+   * User documentation exposed in Python.
+   *
+   * [[http://docutils.sourceforge.net/rst.html ReStructuredText]]
+   */
   override def doc = Some(CommandDoc(oneLineSummary = "The Conjugate Gradient Descent (CGD) with Bias for collaborative filtering algorithms.",
     extendedSummary = Some("""
     Extended Summary
@@ -232,17 +250,4 @@ class ConjugateGradientDescent
       config, giraphConf, invocation, "cgd-learning-report_0"))
   }
 
-  //TODO: Replace with generic code that works on any case class
-  def parseArguments(arguments: JsObject) = arguments.convertTo[Cgd]
-
-  //TODO: Replace with generic code that works on any case class
-  def serializeReturn(returnValue: CgdResult): JsObject = returnValue.toJson.asJsObject
-
-  /**
-   * The name of the command, e.g. graphs/ml/alternating_least_squares
-   */
-  override def name: String = "graphs/ml/conjugate_gradient_descent"
-
-  //TODO: Replace with generic code that works on any case class
-  override def serializeArguments(arguments: Cgd): JsObject = arguments.toJson.asJsObject()
 }

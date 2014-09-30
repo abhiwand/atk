@@ -62,14 +62,23 @@ case class KClique(graph: GraphReference,
  */
 case class KCliqueResult(time: Double)
 
+/** Json conversion for arguments and return value case classes */
+object KCliquePercolationJsonFormat {
+  import DomainJsonProtocol._
+  implicit val kcliqueFormat = jsonFormat3(KClique)
+  implicit val kcliqueResultFormat = jsonFormat1(KCliqueResult)
+}
+
+import KCliquePercolationJsonFormat._
 /**
  * KClique Percolation launcher class. Takes the command from python layer
  */
 class KCliquePercolation extends SparkCommandPlugin[KClique, KCliqueResult] {
 
-  import DomainJsonProtocol._
-  implicit val kcliqueFormat = jsonFormat3(KClique)
-  implicit val kcliqueResultFormat = jsonFormat1(KCliqueResult)
+  /**
+   * The name of the command, e.g. graphs/ml/kclique_percolation
+   */
+  override def name: String = "graphs/ml/kclique_percolation"
 
   override def execute(sparkInvocation: SparkInvocation, arguments: KClique)(implicit user: UserPrincipal, executionContext: ExecutionContext): KCliqueResult = {
 
@@ -99,16 +108,5 @@ class KCliquePercolation extends SparkCommandPlugin[KClique, KCliqueResult] {
 
     KCliqueResult(time)
   }
-
-  def parseArguments(arguments: JsObject) = arguments.convertTo[KClique]
-
-  def serializeReturn(returnValue: KCliqueResult): JsObject = returnValue.toJson.asJsObject()
-
-  /**
-   * The name of the command, e.g. graphs/ml/kclique_percolation
-   */
-  override def name: String = "graphs/ml/kclique_percolation"
-
-  override def serializeArguments(arguments: KClique): JsObject = arguments.toJson.asJsObject()
 
 }
