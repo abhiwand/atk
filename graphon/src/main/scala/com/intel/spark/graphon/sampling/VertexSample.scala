@@ -61,13 +61,27 @@ case class VertexSampleArguments(graph: GraphReference, size: Int, sampleType: S
  */
 case class VertexSampleResult(name: String)
 
-class VertexSample extends SparkCommandPlugin[VertexSampleArguments, VertexSampleResult] {
-
+/** Json conversion for arguments and return value case classes */
+object VertexSampleJsonFormat {
   import DomainJsonProtocol._
-
   implicit val vertexSampleFormat = jsonFormat4(VertexSampleArguments)
   implicit val vertexSampleResultFormat = jsonFormat1(VertexSampleResult)
+}
 
+import VertexSampleJsonFormat._
+
+class VertexSample extends SparkCommandPlugin[VertexSampleArguments, VertexSampleResult] {
+
+  /**
+   * The name of the command
+   */
+  override def name: String = "graphs/sampling/vertex_sample"
+
+  /**
+   * User documentation exposed in Python.
+   *
+   * [[http://docutils.sourceforge.net/rst.html ReStructuredText]]
+   */
   override def doc = Some(CommandDoc(oneLineSummary = "Create a vertex induced subgraph obtained by vertex sampling.",
     extendedSummary = Some("""
     Three types of vertex sampling are provided: 'uniform', 'degree', and 'degreedist'.  A 'uniform' vertex sample
@@ -148,19 +162,5 @@ class VertexSample extends SparkCommandPlugin[VertexSampleArguments, VertexSampl
 
     VertexSampleResult(subgraphName)
   }
-
-  /**
-   * The name of the command
-   */
-  override def name: String = "graphs/sampling/vertex_sample"
-
-  //TODO: Replace with generic code that works on any case class
-  def parseArguments(arguments: JsObject) = arguments.convertTo[VertexSampleArguments]
-
-  //TODO: Replace with generic code that works on any case class
-  def serializeReturn(returnValue: VertexSampleResult): JsObject = returnValue.toJson.asJsObject
-
-  //TODO: Replace with generic code that works on any case class
-  override def serializeArguments(arguments: VertexSampleArguments): JsObject = arguments.toJson.asJsObject()
 
 }

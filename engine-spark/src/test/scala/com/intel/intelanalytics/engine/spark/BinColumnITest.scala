@@ -40,7 +40,7 @@ class BinColumnITest extends TestingSparkContextFlatSpec with Matchers {
     val rdd = sparkContext.parallelize(inputList)
 
     // Get binned results
-    val binnedRdd = SparkOps.binEqualWidth(1, 2, rdd)
+    val binnedRdd = DiscretizationFunctions.binEqualWidth(1, 2, rdd)
     val result = binnedRdd.take(5)
 
     // Validate
@@ -62,7 +62,7 @@ class BinColumnITest extends TestingSparkContextFlatSpec with Matchers {
     val rdd = sparkContext.parallelize(inputList)
 
     // Get binned results
-    val binnedRdd = SparkOps.binEqualWidth(1, 2, rdd)
+    val binnedRdd = DiscretizationFunctions.binEqualWidth(1, 2, rdd)
 
     // Validate
     binnedRdd.map(row => row(2)).distinct.count() shouldEqual 2
@@ -80,7 +80,7 @@ class BinColumnITest extends TestingSparkContextFlatSpec with Matchers {
     val rdd = sparkContext.parallelize(inputList, 2)
 
     // Get binned results
-    val binnedRdd = SparkOps.binEqualWidth(1, 4, rdd)
+    val binnedRdd = DiscretizationFunctions.binEqualWidth(1, 4, rdd)
     val result = binnedRdd.take(6)
 
     // Validate
@@ -104,7 +104,7 @@ class BinColumnITest extends TestingSparkContextFlatSpec with Matchers {
     val rdd = sparkContext.parallelize(inputList)
 
     // Get binned results
-    an[IllegalArgumentException] shouldBe thrownBy(SparkOps.binEqualWidth(1, 0, rdd))
+    an[IllegalArgumentException] shouldBe thrownBy(DiscretizationFunctions.binEqualWidth(1, 0, rdd))
   }
 
   "binEqualWidth" should "throw error if attempting to bin non-numeric column" in {
@@ -119,7 +119,7 @@ class BinColumnITest extends TestingSparkContextFlatSpec with Matchers {
     val rdd = sparkContext.parallelize(inputList)
 
     // Get binned results
-    a[SparkException] shouldBe thrownBy(SparkOps.binEqualWidth(0, 4, rdd))
+    a[SparkException] shouldBe thrownBy(DiscretizationFunctions.binEqualWidth(0, 4, rdd))
   }
 
   "binEqualWidth" should "put each element in separate bin if num_bins is greater than length of column" in {
@@ -138,7 +138,7 @@ class BinColumnITest extends TestingSparkContextFlatSpec with Matchers {
     val rdd = sparkContext.parallelize(inputList, 2)
 
     // Get binned results
-    val binnedRdd = SparkOps.binEqualWidth(1, 20, rdd) // note this creates bins of width 0.55 for this dataset
+    val binnedRdd = DiscretizationFunctions.binEqualWidth(1, 20, rdd) // note this creates bins of width 0.55 for this dataset
     val result = binnedRdd.take(10)
 
     // Validate
@@ -165,7 +165,7 @@ class BinColumnITest extends TestingSparkContextFlatSpec with Matchers {
     val rdd = sparkContext.parallelize(inputList, 2)
 
     // Get binned results
-    val binnedRdd = SparkOps.binEqualDepth(1, 2, rdd)
+    val binnedRdd = DiscretizationFunctions.binEqualDepth(1, 2, rdd)
     val result = binnedRdd.take(5)
 
     // Validate
@@ -187,7 +187,7 @@ class BinColumnITest extends TestingSparkContextFlatSpec with Matchers {
     val rdd = sparkContext.parallelize(inputList, 2)
 
     // Get binned results
-    val binnedRdd = SparkOps.binEqualDepth(1, 2, rdd)
+    val binnedRdd = DiscretizationFunctions.binEqualDepth(1, 2, rdd)
 
     // Validate
     binnedRdd.map(row => row(2)).distinct.count() shouldEqual 2
@@ -204,7 +204,7 @@ class BinColumnITest extends TestingSparkContextFlatSpec with Matchers {
     val rdd = sparkContext.parallelize(inputList, 2)
 
     // Get binned results
-    val binnedRdd = SparkOps.binEqualDepth(1, 3, rdd)
+    val binnedRdd = DiscretizationFunctions.binEqualDepth(1, 3, rdd)
     val result = binnedRdd.take(5)
 
     // Validate
@@ -227,7 +227,7 @@ class BinColumnITest extends TestingSparkContextFlatSpec with Matchers {
     val rdd = sparkContext.parallelize(inputList, 2)
 
     // Get binned results
-    val binnedRdd = SparkOps.binEqualDepth(1, 3, rdd)
+    val binnedRdd = DiscretizationFunctions.binEqualDepth(1, 3, rdd)
     val result = binnedRdd.take(6)
 
     // Validate
@@ -255,7 +255,7 @@ class BinColumnITest extends TestingSparkContextFlatSpec with Matchers {
     val rdd = sparkContext.parallelize(inputList, 2)
 
     // Get binned results
-    val binnedRdd = SparkOps.binEqualDepth(1, 2, rdd)
+    val binnedRdd = DiscretizationFunctions.binEqualDepth(1, 2, rdd)
     val result = binnedRdd.take(10)
 
     // Validate
@@ -287,7 +287,7 @@ class BinColumnITest extends TestingSparkContextFlatSpec with Matchers {
     val rdd = sparkContext.parallelize(inputList, 2)
 
     // Get binned results
-    val binnedRdd = SparkOps.binEqualDepth(1, 20, rdd)
+    val binnedRdd = DiscretizationFunctions.binEqualDepth(1, 20, rdd)
     val result = binnedRdd.take(10)
 
     // Validate
