@@ -178,10 +178,9 @@ class ConjugateGradientDescent
 
     val config = configuration
     val pattern = "[\\s,\\t]+"
-    val outputVertexPropertyList = arguments.output_vertex_property_list.getOrElse(
-      config.getString("output_vertex_property_list"))
+    val outputVertexPropertyList = arguments.output_vertex_property_list.mkString(",")
     val resultPropertyList = outputVertexPropertyList.split(pattern)
-    val vectorValue = arguments.vector_value.getOrElse(config.getString("vector_value")).toBoolean
+    val vectorValue = arguments.vector_value.getOrElse(false)
     val biasOn = arguments.bias_on.getOrElse(false)
     require(resultPropertyList.size >= 1,
       "Please input at least one vertex property name for ALS/CGD results")
@@ -216,8 +215,8 @@ class ConjugateGradientDescent
     GiraphConfigurationUtil.set(hConf, "output.vertex.property.key.list", Some(arguments.output_vertex_property_list.mkString(",")))
     GiraphConfigurationUtil.set(hConf, "vertex.type.property.key", Some(arguments.vertex_type_property_key))
     GiraphConfigurationUtil.set(hConf, "edge.type.property.key", Some(arguments.edge_type_property_key))
-    GiraphConfigurationUtil.set(hConf, "vector.value", Some(arguments.vector_value.getOrElse(false).toString))
-    GiraphConfigurationUtil.set(hConf, "output.vertex.bias", biasOnOption)
+    GiraphConfigurationUtil.set(hConf, "vector.value", Some(vectorValue.toString))
+    GiraphConfigurationUtil.set(hConf, "output.vertex.bias", Some(biasOn))
 
     val giraphConf = new GiraphConfiguration(hConf)
 
