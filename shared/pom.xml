@@ -5,38 +5,39 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>shared</artifactId>
     <packaging>jar</packaging>
+    <name>shared (mainly meta-store code)</name>
+
+    <description>
+        This module is for code that needs to be shared between the API Server and Engine (except for interfaces).
+        For example, both the API Server and Engine need to talk with the Meta-Store.
+
+        Classes that define the API interface between the API Server and Engine go in the interfaces module.
+    </description>
+
     <parent>
         <groupId>com.intel.ia</groupId>
         <artifactId>IntelAnalytics</artifactId>
         <relativePath>../pom.xml</relativePath>
-        <version>0.8.0-SNAPSHOT</version>
+        <version>0.8.6-SNAPSHOT</version>
     </parent>
 
     <build>
+        <!--
+            sourceDirectory and testSourceDirectory don't seem to be needed by Maven but they
+            seem to help IntelliJ import projects correctly (but aren't needed on every module)
+        -->
         <sourceDirectory>src/main/scala</sourceDirectory>
         <testSourceDirectory>src/test/scala</testSourceDirectory>
         <plugins>
             <plugin>
-                <!--disable sure fire test-->
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <configuration>
-                    <skipTests>true</skipTests>
-                </configuration>
-            </plugin>
-
-            <plugin>
                 <groupId>net.alchim31.maven</groupId>
                 <artifactId>scala-maven-plugin</artifactId>
-
             </plugin>
             <plugin>
                 <groupId>org.scalatest</groupId>
                 <artifactId>scalatest-maven-plugin</artifactId>
             </plugin>
-
             <plugin>
-                <!--add to Create covergage results-->
                 <groupId>org.scoverage</groupId>
                 <artifactId>maven-scoverage-plugin</artifactId>
             </plugin>
@@ -55,11 +56,19 @@
         </dependency>
         <!--END BDA dependencies to our modules-->
 
+        <!--
+            Maven didn't need the "scala-reflect" dependency listed for successful builds
+            but IntelliJ got very obscure errors without it after re-importing the project.
+        -->
         <dependency>
             <groupId>org.scala-lang</groupId>
             <artifactId>scala-reflect</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>io.spray</groupId>
+            <artifactId>spray-json_${scala.short.version}</artifactId>
+        </dependency>
         <dependency>
             <groupId>com.typesafe.slick</groupId>
             <artifactId>slick_${scala.short.version}</artifactId>
@@ -92,22 +101,6 @@
             <groupId>org.flywaydb</groupId>
             <artifactId>flyway-core</artifactId>
             <version>3.0</version>
-        </dependency>
-        <dependency>
-            <groupId>com.googlecode.json-simple</groupId>
-            <artifactId>json-simple</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.spray</groupId>
-            <artifactId>spray-json_${scala.short.version}</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>ch.qos.logback</groupId>
-            <artifactId>logback-classic</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
         </dependency>
         <dependency>
             <groupId>org.mockito</groupId>

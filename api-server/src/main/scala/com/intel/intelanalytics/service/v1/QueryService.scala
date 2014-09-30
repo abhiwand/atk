@@ -34,7 +34,6 @@ import com.intel.intelanalytics.service.v1.decorators.{ QueryDecorator }
 import com.intel.intelanalytics.service.v1.viewmodels.ViewModelJsonImplicits._
 import com.intel.intelanalytics.service.v1.viewmodels._
 import com.intel.intelanalytics.service.{ ApiServiceConfig, CommonDirectives, UrlParser }
-import com.intel.intelanalytics.shared.EventLogging
 import spray.http.Uri
 import scala.concurrent._
 import spray.http.Uri
@@ -45,6 +44,7 @@ import scala.concurrent.ExecutionContext
 import scala.util.{ Failure, Success, Try }
 
 import ExecutionContext.Implicits.global
+import com.intel.event.EventLogging
 
 /**
  * REST API Query Service
@@ -69,22 +69,12 @@ class QueryService(commonDirectives: CommonDirectives, engine: Engine) extends D
    * @param data iterable to return in response
    * @return JSON friendly version of data
    */
-  def dataToJson(data: Iterable[Any]): List[JsValue] = {
+  def dataToJson(data: Iterable[Array[Any]]): List[JsValue] = {
     import com.intel.intelanalytics.domain.DomainJsonProtocol._
-    data match {
-      case x: Iterable[Array[Any]] => {
-        x.map(row => row.map {
-          case null => JsNull
-          case a => a.toJson
-        }.toJson).toList
-      }
-      case x: Iterable[Any] => {
-        data.map {
-          case null => JsNull
-          case a => a.toJson
-        }.toList
-      }
-    }
+    data.map(row => row.map {
+      case null => JsNull
+      case a => a.toJson
+    }.toJson).toList
   }
 
   val prefix = QueryService.prefix

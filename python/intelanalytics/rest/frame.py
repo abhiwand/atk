@@ -1,4 +1,3 @@
-# coding: utf-8
 ##############################################################################
 # INTEL CONFIDENTIAL
 #
@@ -45,6 +44,13 @@ from intelanalytics.rest.iatypes import get_data_type_from_rest_str, get_rest_st
 from intelanalytics.rest.command import CommandRequest, executor, get_commands, execute_command
 from intelanalytics.rest.spark import prepare_row_function, get_add_one_column_function, get_add_many_columns_function
 
+TakeResult = namedtuple("TakeResult", ['data', 'schema'])
+"""
+Take result contains data and schema.
+data contains only columns based on user specified columns
+schema contains only columns baed on user specified columns
+the data type under schema is also coverted to IA types
+"""
 
 class FrameBackendRest(object):
     """REST plumbing for BigFrame"""
@@ -143,6 +149,9 @@ class FrameBackendRest(object):
     def get_row_count(self, frame):
         return self._get_frame_info(frame).row_count
 
+    def get_ia_uri(self, frame):
+        return self._get_frame_info(frame).ia_uri
+
     def get_repr(self, frame):
         frame_info = self._get_frame_info(frame)
         return "\n".join(['BigFrame "%s"\nrow_count = %d\nschema = ' % (frame_info.name, frame_info.row_count)] +
@@ -177,7 +186,7 @@ class FrameBackendRest(object):
         if isinstance(data, BigFrame):
             return {'source': { 'source_type': 'dataframe',
                                 'uri': str(data._id)},  # TODO - be consistent about _id vs. uri in these calls
-                    'destination': self._get_frame_full_uri(frame)}
+                    'destination': frame._id}
         raise TypeError("Unsupported data source %s" % type(data))
 
     @staticmethod
@@ -215,7 +224,7 @@ class FrameBackendRest(object):
         from itertools import imap
         http_ready_function = prepare_row_function(frame, add_columns_function, imap)
 
-        arguments = {'frame': self._get_frame_full_uri(frame),
+        arguments = {'frame': self.get_ia_uri(frame),
                      'column_names': names,
                      'column_types': [get_rest_str_from_data_type(t) for t in data_types],
                      'expression': http_ready_function}
@@ -236,26 +245,10 @@ class FrameBackendRest(object):
             sys.stderr.write("There were parse errors during load, please see frame.get_error_frame()\n")
             logger.warn("There were parse errors during load, please see frame.get_error_frame()")
 
-    def quantiles(self, frame, column_name, quantiles):
-        if isinstance(quantiles, int):
-            quantiles = [quantiles]
-
-        invalid_quantiles = []
-        for p in quantiles:
-            if p > 100 or p < 0:
-                invalid_quantiles.append(str(p))
-
-        if len(invalid_quantiles) > 0:
-            raise ValueError("Invalid number for quantile:" + ','.join(invalid_quantiles))
-
-        arguments = {'frame_id': frame._id, "column_name": column_name, "quantiles": quantiles}
-        command = CommandRequest("dataframe/quantiles", arguments)
-        return executor.issue(command)
-
     def drop(self, frame, predicate):
         from itertools import ifilterfalse  # use the REST API filter, with a ifilterfalse iterator
         http_ready_function = prepare_row_function(frame, predicate, ifilterfalse)
-        arguments = {'frame': self._get_frame_full_uri(frame), 'predicate': http_ready_function}
+        arguments = {'frame': self.get_ia_uri(frame), 'predicate': http_ready_function}
         execute_update_frame_command("filter", arguments, frame)
 
     def drop_duplicates(self, frame, columns):
@@ -269,7 +262,7 @@ class FrameBackendRest(object):
     def filter(self, frame, predicate):
         from itertools import ifilter
         http_ready_function = prepare_row_function(frame, predicate, ifilter)
-        arguments = {'frame': self._get_frame_full_uri(frame), 'predicate': http_ready_function}
+        arguments = {'frame': self.get_ia_uri(frame), 'predicate': http_ready_function}
         execute_update_frame_command("filter", arguments, frame)
 
     def flatten_column(self, frame, column_name):
@@ -289,7 +282,7 @@ class FrameBackendRest(object):
         if not colTypes[column_name] in [np.float32, np.float64, np.int32, np.int64]:
             raise ValueError("unable to bin non-numeric values")
         name = self._get_new_frame_name()
-        arguments = {'name': name, 'frame': frame._id, 'column_name': column_name, 'num_bins': num_bins, 'bin_type': bin_type, 'bin_column_name': bin_column_name}
+        arguments = {'name': name, 'frame': self.get_ia_uri(frame), 'column_name': column_name, 'num_bins': num_bins, 'bin_type': bin_type, 'bin_column_name': bin_column_name}
         return execute_new_frame_command('bin_column', arguments)
 
 
@@ -337,12 +330,13 @@ class FrameBackendRest(object):
 
          #def _repr_html_(self): TODO - Add this method for ipython notebooks
 
-    def inspect(self, frame, n, offset):
+    def inspect(self, frame, n, offset, selected_columns):
         # inspect is just a pretty-print of take, we'll do it on the client
         # side until there's a good reason not to
-        result = self.take(frame, n, offset)
+        result = self.take(frame, n, offset, selected_columns)
         data = result.data
         schema = result.schema
+
         return FrameBackendRest.InspectionTable(schema, data)
 
     def join(self, left, right, left_on, right_on, how):
@@ -369,8 +363,8 @@ class FrameBackendRest(object):
         # TODO - fix REST server to accept nulls, for now we'll pass an empty list
         else:
             new_names = list(columns)
-        arguments = {'frame': self._get_frame_full_uri(frame),
-                     'projected_frame': self._get_frame_full_uri(projected_frame),
+        arguments = {'frame': self.get_ia_uri(frame),
+                     'projected_frame': self.get_ia_uri(projected_frame),
                      'columns': columns,
                      'new_column_names': new_names}
         execute_update_frame_command('project', arguments, projected_frame)
@@ -403,7 +397,7 @@ class FrameBackendRest(object):
                 raise TypeError("Bad type %s provided in aggregation arguments; expecting an aggregation function or a dictionary of column_name:[func]" % type(arg))
 
         name = self._get_new_frame_name()
-        arguments = {'frame': self._get_frame_full_uri(frame),
+        arguments = {'frame': self.get_ia_uri(frame),
                      'name': name,
                      'group_by_columns': group_by_columns,
                      'aggregations': aggregation_list}
@@ -425,26 +419,35 @@ class FrameBackendRest(object):
             new_names = column_names.values()
             column_names = column_names.keys()
 
-        current_names = frame.column_names
-        for nn in new_names:
-            if nn in current_names:
-                raise ValueError("Cannot use rename to '{0}' because another column already exists with that name".format(nn))
-        arguments = {'frame': self._get_frame_full_uri(frame), "original_names": column_names, "new_names": new_names}
+        arguments = {'frame': self.get_ia_uri(frame), "original_names": column_names, "new_names": new_names}
         execute_update_frame_command('rename_columns', arguments, frame)
 
     def rename_frame(self, frame, name):
-        arguments = {'frame': self._get_frame_full_uri(frame), "new_name": name}
+        arguments = {'frame': frame._id, "new_name": name}
         execute_update_frame_command('rename_frame', arguments, frame)
 
-    def take(self, frame, n, offset):
+
+
+    def take(self, frame, n, offset, columns):
+        if n == 0:
+            return TakeResult([], frame.schema)
         url = 'dataframes/{0}/data?offset={2}&count={1}'.format(frame._id,n, offset)
         result = executor.query(url)
-        schema_json = result.schema
-        schema = FrameSchema.from_strings_to_types(schema_json)
-        data = result.data
+        schema = FrameSchema.from_strings_to_types(result.schema)
 
-        TakeResult = namedtuple("TakeResult", ['data', 'schema'])
-        return TakeResult(data, schema)
+        if isinstance(columns, basestring):
+            columns = [columns]
+
+        updated_schema = schema
+        if columns is not None:
+            updated_schema = FrameSchema.get_schema_for_columns(schema, columns)
+            indices = FrameSchema.get_indices_for_selected_columns(schema, columns)
+
+        data = result.data
+        if columns is not None:
+            data = FrameData.extract_data_from_selected_columns(data, indices)
+
+        return TakeResult(data, updated_schema)
 
     def ecdf(self, frame, sample_col):
         import numpy as np
@@ -459,30 +462,6 @@ class FrameBackendRest(object):
         arguments = {'frame_id': frame._id, 'name': name, 'sample_col': sample_col, 'data_type': data_type}
         return execute_new_frame_command('ecdf', arguments)
 
-    def classification_metric(self, frame, metric_type, label_column, pred_column, pos_label, beta):
-        # TODO - remove error handling, leave to server (or move to plugin)
-        if metric_type not in ['accuracy', 'precision', 'recall', 'f_measure']:
-            raise ValueError("metric_type must be one of: 'accuracy'")
-        if label_column.strip() == "":
-            raise ValueError("label_column can not be empty string")
-        if pred_column.strip() == "":
-            raise ValueError("pred_column can not be empty string")
-        if str(pos_label).strip() == "":
-            raise ValueError("invalid pos_label")
-        schema_dict = dict(frame.schema)
-        column_names = schema_dict.keys()
-        if not label_column in column_names:
-            raise ValueError("label_column does not exist in frame")
-        if not pred_column in column_names:
-            raise ValueError("pred_column does not exist in frame")
-        if schema_dict[label_column] in [float32, float64]:
-            raise ValueError("invalid label_column types")
-        if schema_dict[pred_column] in [float32, float64]:
-            raise ValueError("invalid pred_column types")
-        if not beta > 0:
-            raise ValueError("invalid beta value for f measure")
-        arguments = {'frame_id': frame._id, 'metric_type': metric_type, 'label_column': label_column, 'pred_column': pred_column, 'pos_label': str(pos_label), 'beta': beta}
-        return get_command_output('classification_metric', arguments).get('metric_value')
     
     def confusion_matrix(self, frame, label_column, pred_column, pos_label):
         if label_column.strip() == "":
@@ -514,21 +493,6 @@ class FrameBackendRest(object):
 
         return formattedMatrix
 
-    def cumulative_dist(self, frame, sample_col, dist_type, count_value="1"):
-        import numpy as np
-        if not sample_col in frame.column_names:
-            raise ValueError("sample_col does not exist in frame")
-        col_types = dict(frame.schema)
-        if dist_type in ['cumulative_sum', 'cumulative_percent_sum'] and not col_types[sample_col] in [np.float32, np.float64, np.int32, np.int64]:
-            raise ValueError("invalid sample_col type for the specified dist_type")
-        if not dist_type in ['cumulative_sum', 'cumulative_count', 'cumulative_percent_sum', 'cumulative_percent_count']:
-            raise ValueError("invalid distribution type")
-        # TODO: check count_value
-        name = self._get_new_frame_name()
-        arguments = {'frame_id': frame._id, 'name': name, 'sample_col': sample_col, 'dist_type': dist_type, 'count_value': str(count_value)}
-        return execute_new_frame_command('cumulative_dist', arguments)
-
-
 class FrameInfo(object):
     """
     JSON-based Server description of a BigFrame
@@ -542,19 +506,24 @@ class FrameInfo(object):
 
     def __str__(self):
         return '%s "%s"' % (self.id_number, self.name)
+    
     def _validate(self):
         try:
             assert self.id_number
         except KeyError:
-            raise RuntimeError("Invalid response from server.  Expected Frame info.")
+            raise RuntimeError("Invalid response from server. Expected Frame info.")
 
     @property
     def id_number(self):
         return self._payload['id']
-
+    
     @property
     def name(self):
         return self._payload['name']
+    
+    @property
+    def ia_uri(self):
+        return self._payload['ia_uri']
 
     @property
     def schema(self):
@@ -601,10 +570,36 @@ class FrameSchema:
     def from_strings_to_types(s):
         return [(name, get_data_type_from_rest_str(data_type)) for name, data_type in s]
 
-    # Add more if necessary
+    @staticmethod
+    def get_schema_for_columns(schema, selected_columns):
+        indices = FrameSchema.get_indices_for_selected_columns(schema, selected_columns)
+        return [schema[i] for i in indices]
+
+    @staticmethod
+    def get_indices_for_selected_columns(schema, selected_columns):
+        indices = []
+        for selected in selected_columns:
+            for column in schema:
+                if column[0] == selected:
+                    indices.append(schema.index(column))
+                    break
+
+        return indices
+
+
+class FrameData:
+
+    @staticmethod
+    def extract_data_from_selected_columns(data_in_page, indices):
+        new_data = []
+        for row in data_in_page:
+            new_data.append([row[index] for index in indices])
+
+        return new_data
 
 def initialize_frame(frame, frame_info):
     """Initializes a frame according to given frame_info"""
+    frame._ia_uri = frame_info.ia_uri
     frame._id = frame_info.id_number
     frame._error_frame_id = frame_info.error_frame_id
 

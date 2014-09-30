@@ -29,13 +29,11 @@ import org.joda.time.DateTime
 import spray.json._
 import spray.http.{ StatusCodes, HttpResponse, Uri }
 import scala.Some
-import com.intel.intelanalytics.repository.MetaStoreComponent
 import com.intel.intelanalytics.service.v1.viewmodels._
 import com.intel.intelanalytics.engine.{ Engine, EngineComponent }
 import scala.concurrent._
 import scala.util._
 import com.intel.intelanalytics.service.v1.viewmodels.GetDataFrame
-import com.intel.intelanalytics.shared.EventLogging
 import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.domain.frame.DataFrameTemplate
 import com.intel.intelanalytics.domain.frame.DataFrame
@@ -48,6 +46,7 @@ import com.intel.intelanalytics.spray.json.IADefaultJsonProtocol
 import com.intel.intelanalytics.service.v1.decorators.{ QueryDecorator, CommandDecorator, FrameDecorator }
 
 import scala.util.matching.Regex
+import com.intel.event.EventLogging
 
 //TODO: Is this right execution context for us?
 import ExecutionContext.Implicits.global
@@ -79,7 +78,7 @@ class DataFrameService(commonDirectives: CommonDirectives, engine: Engine) exten
                   }
                 }
                 case _ =>
-                  onComplete(engine.getFrames(0, ApiServiceConfig.defaultCount)) {
+                  onComplete(engine.getFrames()) {
                     case Success(frames) =>
                       import IADefaultJsonProtocol._
                       implicit val indexFormat = ViewModelJsonImplicits.getDataFramesFormat

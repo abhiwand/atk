@@ -52,7 +52,7 @@ class FrequencyStatistics[T: ClassManifest](dataWeightPairs: RDD[(T, Double)], m
       dataWeightPairs.filter({ case (data, weight) => NumericValidationUtils.isFinitePositive(weight) })
 
     val uniqueValuesPositiveWeights: RDD[(T, Double)] =
-      dataWeightPairsPositiveWeights.groupBy(_._1).map({ case (data, weights) => aggregateWeights(data, weights) })
+      dataWeightPairsPositiveWeights.groupBy(_._1).map({ case (data, weights) => aggregateWeights(data, weights.toSeq) })
 
     uniqueValuesPositiveWeights.foreach(
       {
@@ -67,7 +67,7 @@ class FrequencyStatistics[T: ClassManifest](dataWeightPairs: RDD[(T, Double)], m
 
   }
 
-  private def aggregateWeights(data: T, dataWeightPairs: Seq[(T, Double)]): (T, Double) =
+  private def aggregateWeights(data: T, dataWeightPairs: Iterable[(T, Double)]): (T, Double) =
     (data, dataWeightPairs.map({ case (data, weight) => weight }).reduce(_ + _))
 
 }

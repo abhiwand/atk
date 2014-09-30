@@ -23,23 +23,12 @@
 
 package com.intel.spark.mllib.util
 
-import org.apache.spark.SparkContext
-import org.scalatest.{ BeforeAndAfterAll, FunSuite }
+import com.intel.testutils.TestingSparkContextFunSuite
 import org.scalatest.matchers.ShouldMatchers
 
 import scala.util.Random
 
-class MLDataSplitterSuite extends FunSuite with BeforeAndAfterAll with ShouldMatchers {
-  @transient private var sc: SparkContext = _
-
-  override def beforeAll() {
-    sc = new SparkContext("local", "test")
-  }
-
-  override def afterAll() {
-    sc.stop()
-    System.clearProperty("spark.driver.port")
-  }
+class MLDataSplitterSuite extends TestingSparkContextFunSuite with ShouldMatchers {
 
   // test if we can randomly split a RDD according to a percentage distribution
   test("MLDataSplitter") {
@@ -51,7 +40,7 @@ class MLDataSplitterSuite extends FunSuite with BeforeAndAfterAll with ShouldMat
     // generate testRDD
     val rnd = new Random(41)
     val testData = Array.fill[Double](nPoints)(rnd.nextGaussian())
-    val testRDD = sc.parallelize(testData, 2)
+    val testRDD = this.sparkContext.parallelize(testData, 2)
 
     // test the size of generated RDD
     val nTotal = testRDD.count

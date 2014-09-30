@@ -25,12 +25,11 @@ package com.intel.intelanalytics.service
 
 import akka.actor.{ ActorRef, ActorSystem, Props }
 import akka.io.IO
-import com.intel.intelanalytics.shared.EventLogging
 import spray.can.Http
 import akka.pattern.ask
 import akka.util.Timeout
 import scala.concurrent.duration._
-import com.intel.event.EventLogger
+import com.intel.event.{ EventLogging, EventLogger }
 import com.intel.event.adapter.SLF4JLogAdapter
 import com.intel.intelanalytics.component.{ Archive }
 import com.intel.intelanalytics.engine.Engine
@@ -75,10 +74,8 @@ class ApiServiceApplication extends Archive with EventLogging {
     //make sure engine is initialized
     Await.ready(engine.getCommands(0, 1), 30 seconds)
 
-    val metaStore = new MetaStoreConfigured().metaStore
-
     // setup common directives
-    val serviceAuthentication = new AuthenticationDirective(metaStore)
+    val serviceAuthentication = new AuthenticationDirective(engine)
     val commonDirectives = new CommonDirectives(serviceAuthentication)
 
     // setup V1 Services
