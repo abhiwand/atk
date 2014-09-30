@@ -36,12 +36,16 @@ import scala.concurrent.ExecutionContext
 import spray.json._
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
 
+/**
+ * Copies specified columns into a new BigFrame object, optionally renaming them.
+ */
 class ProjectPlugin extends SparkCommandPlugin[FrameProject, DataFrame] {
 
   /**
    * The name of the command, e.g. graphs/ml/loopy_belief_propagation
    *
-   * The format of the name determines how the plugin gets "installed" in the Python layer via code generation.
+   * The format of the name determines how the plugin gets "installed" in the client layer
+   * e.g Python client via code generation.
    */
   override def name: String = "dataframe/project"
 
@@ -53,7 +57,7 @@ class ProjectPlugin extends SparkCommandPlugin[FrameProject, DataFrame] {
   override def doc: Option[CommandDoc] = None
 
   /**
-   *
+   * Copies specified columns into a new BigFrame object, optionally renaming them.
    *
    * @param invocation information about the user and the circumstances at the time of the call,
    *                   as well as a function that can be called to produce a SparkContext that
