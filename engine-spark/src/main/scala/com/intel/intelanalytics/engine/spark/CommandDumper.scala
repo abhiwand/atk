@@ -39,6 +39,8 @@ import com.intel.event.EventLogging
 /**
  * Special archive for dumping the command and query information to a file
  * without needing to start up the api server or too many other resources.
+ *
+ * This is used for generating the Python docs, it isn't part of the running system.
  */
 class CommandDumper extends DefaultArchive
     with DbProfileComponent
