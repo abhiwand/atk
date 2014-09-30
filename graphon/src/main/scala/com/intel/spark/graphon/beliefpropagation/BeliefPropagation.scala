@@ -135,43 +135,56 @@ class BeliefPropagation extends SparkCommandPlugin[BeliefPropagationArgs, Belief
 
     val start = System.currentTimeMillis()
 
-    val sc = sparkInvocation.sparkContext
+    // Get the SparkContext as one the input parameters for Driver
 
-    sc.addJar(Boot.getJar("graphon").getPath)
+    sparkInvocation.sparkContext.stop
 
-    // Titan Settings for input
-    val config = configuration
-    val titanConfig = SparkEngineConfig.titanLoadConfiguration
+    val sparkConf: SparkConf = sparkInvocation.sparkContext.getConf.set("spark.kryo.registrator", "com.intel.spark.graphon.GraphonKryoRegistrator")
 
-    // Get the graph
-    import scala.concurrent.duration._
-    val graph = Await.result(sparkInvocation.engine.getGraph(arguments.graph.id), config.getInt("default-timeout") seconds)
+    val sc = new SparkContext(sparkConf)
 
-    val iatGraphName = GraphName.convertGraphUserNameToBackendName(graph.name)
-    titanConfig.setProperty("storage.tablename", iatGraphName)
+    try {
 
-    val titanConnector = new TitanGraphConnector(titanConfig)
+      sc.addJar(Boot.getJar("graphon").getPath)
 
-    // Read the graph from Titan
-    val titanReader = new TitanReader(sc, titanConnector)
-    val titanReaderRDD = titanReader.read()
+      // Titan Settings for input
+      val config = configuration
+      val titanConfig = SparkEngineConfig.titanLoadConfiguration
 
-    val gbVertices: RDD[GBVertex] = titanReaderRDD.filterVertices()
-    val gbEdges: RDD[GBEdge] = titanReaderRDD.filterEdges()
+      // Get the graph
+      import scala.concurrent.duration._
+      val graph = Await.result(sparkInvocation.engine.getGraph(arguments.graph.id), config.getInt("default-timeout") seconds)
 
-    val (outVertices, outEdges, log) = BeliefPropagationRunner.run(gbVertices, gbEdges, arguments)
+      val iatGraphName = GraphName.convertGraphUserNameToBackendName(graph.name)
+      titanConfig.setProperty("storage.tablename", iatGraphName)
 
-    // write out the graph
+      val titanConnector = new TitanGraphConnector(titanConfig)
 
-    // Create the GraphBuilder object
-    // Setting true to append for updating existing graph
-    val gb = new GraphBuilder(new GraphBuilderConfig(new InputSchema(Seq.empty), List.empty, List.empty, titanConfig, append = true))
-    // Build the graph using spark
-    gb.buildGraphWithSpark(outVertices, outEdges)
+      // Read the graph from Titan
+      val titanReader = new TitanReader(sc, titanConnector)
+      val titanReaderRDD = titanReader.read()
 
-    // Get the execution time and print it
-    val time = (System.currentTimeMillis() - start).toDouble / 1000.0
-    BeliefPropagationResult(log, time)
+      val gbVertices: RDD[GBVertex] = titanReaderRDD.filterVertices()
+      val gbEdges: RDD[GBEdge] = titanReaderRDD.filterEdges()
+
+      val (outVertices, outEdges, log) = BeliefPropagationRunner.run(gbVertices, gbEdges, arguments)
+
+      // write out the graph
+
+      // Create the GraphBuilder object
+      // Setting true to append for updating existing graph
+      val gb = new GraphBuilder(new GraphBuilderConfig(new InputSchema(Seq.empty), List.empty, List.empty, titanConfig, append = true))
+      // Build the graph using spark
+      gb.buildGraphWithSpark(outVertices, outEdges)
+
+      // Get the execution time and print it
+      val time = (System.currentTimeMillis() - start).toDouble / 1000.0
+      BeliefPropagationResult(log, time)
+    }
+
+    finally {
+      sc.stop
+    }
 
   }
 
