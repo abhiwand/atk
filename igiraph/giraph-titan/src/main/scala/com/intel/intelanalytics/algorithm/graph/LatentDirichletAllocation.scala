@@ -76,16 +76,16 @@ class LatentDirichletAllocation
                            |        more than one edge property.
                            | 
                            |    input_edge_label_list : comma-separated string
-                           |        The name of edge label.
+                           |        The name of edge label
                            | 
-                           |    output_vertex_property_list : Comma Separated List
-                           |        The list of vertex properties to store output vertex values.
+                           |    output_vertex_property_list : comma-separated list
+                           |        The list of vertex properties to store output vertex values
                            | 
                            |    vertex_type : string
-                           |        The name of vertex property which contains vertex type.
+                           |        The name of vertex property which contains vertex type
                            | 
-                           |    vector_value: Boolean
-                           |        True means a vector as vertex value is supported
+                           |    vector_value : boolean
+                           |        True means a vector as vertex value is supported,
                            |        False means a vector as vertex value is not supported
                            | 
                            |    max_supersteps : integer (optional)
@@ -140,7 +140,7 @@ class LatentDirichletAllocation
                            |        Valid value range is all float.
                            |        The default value is "-Infinity".
                            | 
-                           |    bidirectional_check : Boolean (optional)
+                           |    bidirectional_check : boolean (optional)
                            |        True means to turn on bidirectional check. False means to turn
                            |        off bidirectional check. LDA expects a bi-partite input graph and
                            |        each edge therefore should be bi-directional. This option is mainly
