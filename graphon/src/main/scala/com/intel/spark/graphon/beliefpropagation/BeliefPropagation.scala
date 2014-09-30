@@ -132,6 +132,7 @@ class BeliefPropagation extends SparkCommandPlugin[BeliefPropagationArgs, Belief
 
     val sparkConf: SparkConf = sparkInvocation.sparkContext.getConf.set("spark.kryo.registrator", "com.intel.spark.graphon.GraphonKryoRegistrator")
 
+    sparkInvocation.sparkContext.stop()
     val sc = new SparkContext(sparkConf)
 
     try {
