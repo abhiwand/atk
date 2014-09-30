@@ -60,12 +60,30 @@ case class Lda(graph: GraphReference,
 
 case class LdaResult(value: String)
 
-class LatentDirichletAllocation
-    extends CommandPlugin[Lda, LdaResult] {
+/** Json conversion for arguments and return value case classes */
+object LdaJsonFormat {
   import DomainJsonProtocol._
   implicit val ldaFormat = jsonFormat15(Lda)
   implicit val ldaResultFormat = jsonFormat1(LdaResult)
+}
 
+import LdaJsonFormat._
+
+class LatentDirichletAllocation
+    extends CommandPlugin[Lda, LdaResult] {
+
+  /**
+   * The name of the command, e.g. graphs/ml/loopy_belief_propagation
+   *
+   * The format of the name determines how the plugin gets "installed" in the Python layer via code generation.
+   */
+  override def name: String = "graphs/ml/latent_dirichlet_allocation"
+
+  /**
+   * User documentation exposed in Python.
+   *
+   * [[http://docutils.sourceforge.net/rst.html ReStructuredText]]
+   */
   override def doc = Some(CommandDoc(oneLineSummary = "The `Latent Dirichlet Allocation <http://en.wikipedia.org/wiki/Latent_Dirichlet_allocation>`_",
     extendedSummary = Some("""
     Parameters
@@ -209,14 +227,4 @@ class LatentDirichletAllocation
       config, giraphConf, invocation, "lda-learning-report_0"))
   }
 
-  //TODO: Replace with generic code that works on any case class
-  def parseArguments(arguments: JsObject) = arguments.convertTo[Lda]
-
-  //TODO: Replace with generic code that works on any case class
-  def serializeReturn(returnValue: LdaResult): JsObject = returnValue.toJson.asJsObject
-
-  override def name: String = "graphs/ml/latent_dirichlet_allocation"
-
-  //TODO: Replace with generic code that works on any case class
-  override def serializeArguments(arguments: Lda): JsObject = arguments.toJson.asJsObject()
 }

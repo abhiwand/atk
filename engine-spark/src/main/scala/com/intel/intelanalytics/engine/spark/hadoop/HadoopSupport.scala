@@ -1,6 +1,5 @@
 package com.intel.intelanalytics.engine.hadoop
 
-import com.intel.intelanalytics.shared.EventLogging
 import com.typesafe.config.{ Config, ConfigFactory, ConfigObject, ConfigValue }
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{ LocalFileSystem, Path }
@@ -8,6 +7,7 @@ import org.apache.hadoop.hdfs.DistributedFileSystem
 
 import scala.collection.JavaConverters._
 import scala.reflect.io.Directory
+import com.intel.event.EventLogging
 
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL

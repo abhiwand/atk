@@ -49,19 +49,33 @@ case class QueryArgs(graph: GraphReference, gremlin: String)
  */
 case class QueryResult(results: Iterable[JsValue], run_time_seconds: Double)
 
+/** Json conversion for arguments and return value case classes */
+object GremlinQueryFormat {
+  import com.intel.intelanalytics.domain.DomainJsonProtocol._
+  implicit val queryArgsFormat = jsonFormat2(QueryArgs)
+  implicit val queryResultFormat = jsonFormat2(QueryResult)
+}
+
+import GremlinQueryFormat._
+
 /**
  * Command plugin for executing Gremlin queries.
  */
 class GremlinQuery extends CommandPlugin[QueryArgs, QueryResult] {
 
-  import com.intel.intelanalytics.domain.DomainJsonProtocol._
-
-  implicit val queryArgsFormat = jsonFormat2(QueryArgs)
-  implicit val queryResultFormat = jsonFormat2(QueryResult)
-
   val gremlinExecutor = new GremlinGroovyScriptEngine()
   var titanGraphs = Map[String, TitanGraph]()
 
+  /**
+   * The name of the command, e.g. graphs/ml/loopy_belief_propagation
+   */
+  override def name: String = "graphs/query/gremlin"
+
+  /**
+   * User documentation exposed in Python.
+   *
+   * [[http://docutils.sourceforge.net/rst.html ReStructuredText]]
+   */
   override def doc = Some(CommandDoc(oneLineSummary = "Executes a Gremlin query.",
     extendedSummary = Some("""
     Extended Summary
@@ -148,20 +162,6 @@ class GremlinQuery extends CommandPlugin[QueryArgs, QueryResult] {
     QueryResult(resultIterator, runtimeInSeconds)
   }
 
-  //TODO: Replace with generic code that works on any case class
-  def parseArguments(arguments: JsObject) = arguments.convertTo[QueryArgs]
-
-  //TODO: Replace with generic code that works on any case class
-  def serializeReturn(returnValue: QueryResult): JsObject = returnValue.toJson.asJsObject
-
-  /**
-   * The name of the command, e.g. graphs/ml/loopy_belief_propagation
-   */
-  override def name: String = "graphs/query/gremlin"
-
-  //TODO: Replace with generic code that works on any case class
-  override def serializeArguments(arguments: QueryArgs): JsObject = arguments.toJson.asJsObject()
-
   /**
    * Execute gremlin query.
    *
@@ -172,6 +172,8 @@ class GremlinQuery extends CommandPlugin[QueryArgs, QueryResult] {
   def executeGremlinQuery(titanGraph: TitanGraph, gremlinScript: String,
                           bindings: Bindings,
                           graphSONMode: GraphSONMode = GraphSONMode.NORMAL): Iterable[JsValue] = {
+    import com.intel.intelanalytics.domain.DomainJsonProtocol._
+
     val results = Try(gremlinExecutor.eval(gremlinScript, bindings)).getOrElse({
       throw new RuntimeException(s"Invalid syntax for Gremlin query: ${gremlinScript}")
     })
