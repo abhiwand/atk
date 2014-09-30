@@ -25,7 +25,6 @@ package com.intel.intelanalytics.engine.spark
 
 import com.intel.intelanalytics.component.{ Boot, DefaultArchive }
 import com.intel.intelanalytics.repository.{ Profile, DbProfileComponent, SlickMetaStoreComponent }
-import com.intel.intelanalytics.shared.{ SharedConfig, EventLogging }
 import com.intel.intelanalytics.engine.spark.queries.{ QueryExecutor, SparkQueryStorage }
 import com.intel.intelanalytics.engine.spark.command.{ CommandLoader, CommandPluginRegistry, CommandExecutor, SparkCommandStorage }
 import com.intel.intelanalytics.domain.{ User, DomainJsonProtocol }
@@ -35,6 +34,7 @@ import spray.json._
 import DomainJsonProtocol.commandDefinitionFormat
 import com.intel.intelanalytics.security.UserPrincipal
 import org.joda.time.DateTime
+import com.intel.event.EventLogging
 
 /**
  * Special archive for dumping the command and query information to a file
@@ -46,7 +46,13 @@ class CommandDumper extends DefaultArchive
     with EventLogging {
 
   override lazy val profile = withContext("command dumper connecting to metastore") {
-    Profile.initializeFromConfig(CommandDumperConfig)
+    // Initialize a Profile from settings in the config
+    val driver = CommandDumperConfig.metaStoreConnectionDriver
+    new Profile(Profile.jdbcProfileForDriver(driver),
+      connectionString = CommandDumperConfig.metaStoreConnectionUrl,
+      driver,
+      username = CommandDumperConfig.metaStoreConnectionUsername,
+      password = CommandDumperConfig.metaStoreConnectionPassword)
   }
 
   override def start() = {
@@ -80,7 +86,7 @@ class CommandDumper extends DefaultArchive
 /**
  *  Command Dumper needs to use basic H-2 setup
  */
-object CommandDumperConfig extends SharedConfig {
+object CommandDumperConfig extends SparkEngineConfig {
   override val metaStoreConnectionUrl: String = nonEmptyString("intel.analytics.metastore.connection-h2.url")
   override val metaStoreConnectionDriver: String = nonEmptyString("intel.analytics.metastore.connection-h2.driver")
   override val metaStoreConnectionUsername: String = config.getString("intel.analytics.metastore.connection-h2.username")

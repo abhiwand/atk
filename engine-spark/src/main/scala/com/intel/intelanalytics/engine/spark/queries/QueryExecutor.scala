@@ -31,13 +31,13 @@ import com.intel.intelanalytics.engine.spark.context.SparkContextManager
 import com.intel.intelanalytics.engine.spark.plugin.SparkInvocation
 import com.intel.intelanalytics.engine.spark.{ SparkEngine, SparkEngineConfig }
 import com.intel.intelanalytics.security.UserPrincipal
-import com.intel.intelanalytics.shared.EventLogging
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import spray.json._
 
 import scala.concurrent._
 import scala.util.Try
+import com.intel.event.EventLogging
 
 /**
  * QueryExecutor manages a registry of QueryPlugins and executes them on request.

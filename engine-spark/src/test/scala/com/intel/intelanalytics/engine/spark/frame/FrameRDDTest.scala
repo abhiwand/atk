@@ -24,7 +24,7 @@
 package com.intel.intelanalytics.engine.spark.frame
 
 import com.intel.intelanalytics.domain.schema.{ DataTypes, Schema }
-import com.intel.testutils.TestingSparkContextFlatSpec
+import com.intel.testutils.{ TestingSparkContextWordSpec, TestingSparkContextFlatSpec }
 import org.apache.spark.sql.{ SQLContext, SchemaRDD }
 import org.apache.spark.sql.catalyst.types.{ StringType, IntegerType }
 import org.scalatest.Matchers
@@ -39,37 +39,41 @@ case class TestCase(num: Int, name: String)
 /**
  * Unit Tests for the FrameRDD class
  */
-class FrameRDDTest extends TestingSparkContextFlatSpec with Matchers {
-  "FrameRDD" should "be convertible into a SchemaRDD" in {
-    val rows = sparkContext.parallelize((1 to 100).map(i => Array(i, i.toString)))
-    val schema = new Schema(List(("num", DataTypes.int32), ("name", DataTypes.string)))
-    val rdd = new FrameRDD(schema, rows)
-    val schemaRDD = rdd.toSchemaRDD()
+class FrameRDDTest extends TestingSparkContextWordSpec with Matchers {
+  "FrameRDD" should {
 
-    schemaRDD.getClass should be(classOf[SchemaRDD])
-  }
+    "be convertible into a SchemaRDD" in {
+      val rows = sparkContext.parallelize((1 to 100).map(i => Array(i, i.toString)))
+      val schema = new Schema(List(("num", DataTypes.int32), ("name", DataTypes.string)))
+      val rdd = new FrameRDD(schema, rows)
+      val schemaRDD = rdd.toSchemaRDD()
 
-  "FrameRDD" should "create an appropriate StructType from frames Schema" in {
-    val rows = sparkContext.parallelize((1 to 100).map(i => Array(i, i.toString)))
-    val schema = new Schema(List(("num", DataTypes.int32), ("name", DataTypes.string)))
-    val rdd = new FrameRDD(schema, rows)
+      schemaRDD.getClass should be(classOf[SchemaRDD])
+    }
 
-    val structType = rdd.schemaToStructType()
-    structType.fields(0).name should be("num")
-    structType.fields(0).dataType should be(IntegerType)
+    "create an appropriate StructType from frames Schema" in {
+      val rows = sparkContext.parallelize((1 to 100).map(i => Array(i, i.toString)))
+      val schema = new Schema(List(("num", DataTypes.int32), ("name", DataTypes.string)))
+      val rdd = new FrameRDD(schema, rows)
 
-    structType.fields(1).name should be("name")
-    structType.fields(1).dataType should be(StringType)
-  }
+      val structType = rdd.schemaToStructType()
+      structType.fields(0).name should be("num")
+      structType.fields(0).dataType should be(IntegerType)
 
-  "FrameRDD" should "allow a SchemaRDD in its constructor" in {
-    val rows = sparkContext.parallelize((1 to 100).map(i => new TestCase(i, i.toString)))
-    val sqlContext = new SQLContext(sparkContext)
-    val schemaRDD = sqlContext.createSchemaRDD(rows)
-    val schema = new Schema(List(("num", DataTypes.int32), ("name", DataTypes.string)))
+      structType.fields(1).name should be("name")
+      structType.fields(1).dataType should be(StringType)
+    }
 
-    val frameRDD = new FrameRDD(schema, schemaRDD)
+    // ignoring because of OutOfMemory errors, these weren't showing up in engine-spark until most of shared was merged in
+    "allow a SchemaRDD in its constructor" in {
+      val rows = sparkContext.parallelize((1 to 100).map(i => new TestCase(i, i.toString)))
+      val sqlContext = new SQLContext(sparkContext)
+      val schemaRDD = sqlContext.createSchemaRDD(rows)
+      val schema = new Schema(List(("num", DataTypes.int32), ("name", DataTypes.string)))
 
-    frameRDD.take(1) should be(Array(Array(1, "1")))
+      val frameRDD = new FrameRDD(schema, schemaRDD)
+
+      frameRDD.take(1) should be(Array(Array(1, "1")))
+    }
   }
 }

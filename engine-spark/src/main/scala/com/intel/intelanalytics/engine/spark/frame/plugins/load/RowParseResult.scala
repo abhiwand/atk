@@ -1,4 +1,4 @@
-package com.intel.intelanalytics.engine.spark.frame
+package com.intel.intelanalytics.engine.spark.frame.plugins.load
 
 /**
  * Parsing results into two types of rows: successes and failures.

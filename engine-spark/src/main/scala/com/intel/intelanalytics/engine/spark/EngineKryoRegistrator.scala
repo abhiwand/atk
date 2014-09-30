@@ -23,11 +23,12 @@
 
 package com.intel.intelanalytics.engine.spark
 
+import com.intel.intelanalytics.engine.spark.frame.plugins.load.RowParseResult
 import org.apache.spark.serializer.KryoRegistrator
 import com.esotericsoftware.kryo.Kryo
 import com.intel.graphbuilder.driver.spark.titan.GraphBuilderKryoRegistrator
 import com.intel.intelanalytics.engine.Rows.Row
-import com.intel.intelanalytics.engine.spark.frame.{ FrameRDD, RowParseResult }
+import com.intel.intelanalytics.engine.spark.frame.FrameRDD
 
 /**
  * Register classes that are going to be serialized by Kryo.
