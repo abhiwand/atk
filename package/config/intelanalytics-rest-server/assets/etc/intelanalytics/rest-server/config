@@ -165,10 +165,15 @@ def get_arg(question, default, arg, regex=None, error_msg=None, password=False):
     :param arg: the parsed argument from the command line
     :return: argument if it exist, user input, or the default value
     """
+
+    if password:
+        message = question + " defaults to \"" + color_text(re.sub(r'[\S\s]', "*", str(default)), GOOD) + "\" if nothing is entered: "
+    else:
+        message = question + " defaults to \"" + color_text(str(default), GOOD) + "\" if nothing is entered: "
+
     if arg is None:
         if regex:
-            user_text = user_info_prompt(question + " defaults to \"" + color_text(str(default), GOOD) +
-                                         "\" if nothing is entered: ", default, password)
+            user_text = user_info_prompt(message, default, password)
             if re.search(regex, user_text) is None:
                 if error_msg:
                     print error_msg
@@ -176,8 +181,7 @@ def get_arg(question, default, arg, regex=None, error_msg=None, password=False):
             else:
                 return user_text
         else:
-            return user_info_prompt(question + " defaults to \"" + color_text(str(default), GOOD) +
-                                "\" if nothing is entered: ", default, password)
+            return user_info_prompt(message, default, password)
     else:
         return arg
 
@@ -754,7 +758,7 @@ def get_db_details():
             #create randomly generated hashed password
             password = hashlib.sha1(os.urandom(32).encode('base_64')).digest().encode('base_64').strip()
         db_password = get_arg("What is the database password? The default password was randomly generated.",
-                              re.sub(r'[\S\s]', "*", password), args.db_password, r'^[^$]*$',
+                              password, args.db_password, r'^[^$]*$',
                               "The dollar sign is not allowed in the password.",True)
 
 
