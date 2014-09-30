@@ -24,10 +24,10 @@
 package com.intel.intelanalytics.engine
 
 import com.intel.intelanalytics.component.{ ClassLoaderAware, Archive }
-import com.intel.intelanalytics.shared.EventLogging
 
 import scala.reflect.ClassTag
 import scala.util.control.NonFatal
+import com.intel.event.EventLogging
 
 class EngineApplication extends Archive with EventLogging with ClassLoaderAware {
 
