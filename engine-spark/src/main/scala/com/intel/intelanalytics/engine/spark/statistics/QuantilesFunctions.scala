@@ -39,10 +39,6 @@ object QuantilesFunctions extends Serializable {
 
   /**
    * Calculate quantile values
-   * @param rdd input rdd
-   * @param quantiles seq of quantiles to find value for
-   * @param columnIndex the index of column to calculate quantile
-   * @param dataType data type of the column
    *
    * Currently calculate quantiles with weight average. n be the number of total elements which is ordered,
    * T th quantile can be calculated in the following way.
@@ -57,6 +53,11 @@ object QuantilesFunctions extends Serializable {
    * 3. iterate through all elements in each partition. for element i, find sequence of quantile targets from
    * the mapping created earlier. emit (T, i * (1 - j))
    * 4. reduce by key, which is quantile. Sum all partial results to get the final quantile values.
+   *
+   * @param rdd input rdd
+   * @param quantiles seq of quantiles to find value for
+   * @param columnIndex the index of column to calculate quantile
+   * @param dataType data type of the column
    */
   def quantiles(rdd: RDD[Row], quantiles: Seq[Double], columnIndex: Int, dataType: DataType): Seq[Quantile] = {
     val totalRows = rdd.count()

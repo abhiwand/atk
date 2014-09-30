@@ -34,6 +34,8 @@ import scala.concurrent.ExecutionContext
 import spray.json._
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
 
+// TODO: shouldn't be a Spark Plugin, doesn't need Spark
+
 /**
  * Rename columns of a frame
  */
