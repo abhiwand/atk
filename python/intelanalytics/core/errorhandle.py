@@ -121,7 +121,7 @@ class IaError(Exception):
         except:
             warnings.warn("Unable to log exc_info", RuntimeWarning)
 
-        if errors.show_details:
+        if ErrorHandling.show_details:
             # to show the stack, we just re-raise the last exception as is
             raise
         else:
