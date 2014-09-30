@@ -171,8 +171,8 @@ object DomainJsonProtocol extends IADefaultJsonProtocol {
 
   // model performance formats
 
-  implicit val classificationMetricLongFormat = jsonFormat6(ClassificationMetric)
-  implicit val classificationMetricValueLongFormat = jsonFormat2(ClassificationMetricValue)
+  implicit val classificationMetricLongFormat = jsonFormat5(ClassificationMetric)
+  implicit val classificationMetricValueLongFormat = jsonFormat5(ClassificationMetricValue)
   implicit val ecdfLongFormat = jsonFormat4(ECDF[Long])
   implicit val commandActionFormat = jsonFormat1(CommandPost)
 

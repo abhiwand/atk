@@ -56,27 +56,28 @@ class ConfusionMatrixTest extends TestingSparkContextFlatSpec with Matchers {
   "confusion matrix" should "compute correct TP, TN, FP, FN values" in {
     val rdd = sparkContext.parallelize(inputListBinary)
 
-    val valueList = ClassificationMetrics.confusionMatrix(rdd, 0, 1, "1")
-    valueList(0) shouldEqual 1
-    valueList(1) shouldEqual 2
-    valueList(2) shouldEqual 0
-    valueList(3) shouldEqual 1
+    val metricValue = ClassificationMetrics.binaryClassificationMetrics(rdd, 0, 1, "1", 1)
+    metricValue._5 get "tp" shouldEqual Some(1)
+    metricValue._5 get "tn" shouldEqual Some(2)
+    metricValue._5 get "fp" shouldEqual Some(0)
+    metricValue._5 get "fn" shouldEqual Some(1)
   }
 
   "confusion matrix" should "compute correct TP, TN, FP, FN values for string labels" in {
     val rdd = sparkContext.parallelize(inputListBinaryChar)
 
-    val valueList = ClassificationMetrics.confusionMatrix(rdd, 0, 1, "yes")
-    valueList(0) shouldEqual 1
-    valueList(1) shouldEqual 2
-    valueList(2) shouldEqual 0
-    valueList(3) shouldEqual 1
+    val metricValue = ClassificationMetrics.binaryClassificationMetrics(rdd, 0, 1, "yes", 1)
+    metricValue._5 get "tp" shouldEqual Some(1)
+    metricValue._5 get "tn" shouldEqual Some(2)
+    metricValue._5 get "fp" shouldEqual Some(0)
+    metricValue._5 get "fn" shouldEqual Some(1)
   }
 
-  "confusion matrix" should "throw IllegalArgumentException if user gives multi-class data as input" in {
+  "confusion matrix" should "return an empty map if user gives multi-class data as input" in {
     val rdd = sparkContext.parallelize(inputListMulti)
 
-    an[IllegalArgumentException] shouldBe thrownBy(ClassificationMetrics.confusionMatrix(rdd, 0, 1, "1"))
+    val metricValue = ClassificationMetrics.multiclassClassificationMetrics(rdd, 0, 1, 1)
+    metricValue._5.isEmpty
   }
 
 }
