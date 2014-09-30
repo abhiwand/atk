@@ -1477,9 +1477,9 @@ TODO: delete me, code moved to separate plugin files
 
   val classificationMetricsDoc = CommandDoc(oneLineSummary = "Computes Model accuracy, precision, recall, confusion matrix and f_measure (math:`F_{\\beta}`).",
     extendedSummary = Some("""
-    Based on the *metric_type* argument provided, it computes the accuracy, precision, recall or :math:`F_{\\beta}` measure for a classification model
+    It returns an object that contains the computed accuracy, precision, confusion_matrix, recall or :math:`F_{\\beta}` measure for a classification model
 
-    --- When metric_type provided is 'f_measure': Computes the :math:`F_{\\beta}` measure for a classification model.
+    --- 'f_measure': Computes the :math:`F_{\\beta}` measure for a classification model.
     A column containing the correct labels for each instance and a column containing the predictions made by the model are specified.
     The :math:`F_{\\beta}` measure of a binary classification model is the harmonic mean of precision and recall.
     If we let:
@@ -1498,7 +1498,7 @@ TODO: delete me, code moved to separate plugin files
     for each label, where the weight is the number of instance with each label in the labeled column.  The
     determination of binary vs. multi-class is automatically inferred from the data.
 
-    --- When metric_type provided is 'recall': Computes the recall measure for a classification model.
+    --- 'recall': Computes the recall measure for a classification model.
     A column containing the correct labels for each instance and a column containing the predictions made by the model are specified.
     The recall of a binary classification model is the proportion of positive instances that are correctly identified.
     If we let :math:`T_{P}` denote the number of true positives and :math:`F_{N}` denote the number of false
@@ -1508,7 +1508,7 @@ TODO: delete me, code moved to separate plugin files
     for each label, where the weight is the number of instance with each label in the labeled column.  The
     determination of binary vs. multi-class is automatically inferred from the data.
 
-    --- When metric_type provided is 'precision': Computes the precision measure for a classification model
+    --- 'precision': Computes the precision measure for a classification model
     A column containing the correct labels for each instance and a column containing the predictions made by the
     model are specified.  The precision of a binary classification model is the proportion of predicted positive
     instances that are correct.  If we let :math:`T_{P}` denote the number of true positives and :math:`F_{P}` denote the number of false
@@ -1518,7 +1518,7 @@ TODO: delete me, code moved to separate plugin files
     for each label, where the weight is the number of instances with each label in the labeled column.  The
     determination of binary vs. multi-class is automatically inferred from the data.
 
-    --- When metric_type provided is 'accuracy': Computes the accuracy measure for a classification model
+    --- 'accuracy': Computes the accuracy measure for a classification model
     A column containing the correct labels for each instance and a column containing the predictions made by the classifier are specified.
     The accuracy of a classification model is the proportion of predictions that are correct.
     If we let :math:`T_{P}` denote the number of true positives, :math:`T_{N}` denote the number of true negatives, and :math:`K`
@@ -1526,24 +1526,26 @@ TODO: delete me, code moved to separate plugin files
 
     This measure applies to binary and multi-class classifiers.
 
+    --- 'confusion_matrix': Computes the
 
     Parameters
     ----------
-    metric_type : str
-      the model that is to be computed
     label_column : str
       the name of the column containing the correct label for each instance
     pred_column : str
       the name of the column containing the predicted label for each instance
-    pos_label : str
-      the value to be interpreted as a positive instance (only for binary, ignored for multi-class)
-    beta : float
+    pos_label : str or int (for binary classifiers) or Null (for multi-class classifiers)
+      the value to be interpreted as a positive instance
+    beta : Double
       beta value to use for :math:`F_{\\beta}` measure (default F1 measure is computed); must be greater than zero
+
+    Notes
+    ----
+    confusion_matrix is not yet implemented for multi-class classifiers
 
     Returns
     -------
-    float64
-    the measure for the classifier
+    an object containing the accuracy, precision, recall, f_measure and confusion_matrix for a classification model
 
     Examples
     --------
@@ -1553,50 +1555,36 @@ TODO: delete me, code moved to separate plugin files
     frame.inspect()
 
     a:unicode   b:int32   labels:int32  predictions:int32
-    |-------------------------------------------------------|
+                             |-------------------------------------------------------|
     red               1              0                  0
     blue              3              1                  0
     blue              1              0                  0
     green             0              1                  1
 
-    frame.classification_metrics('f_measure', 'labels', 'predictions', '1', 1)
+    cm = frame.classification_metrics('labels', 'predictions', 1, 1)
 
-    0.66666666666666663
+    cm.f_measure
 
-    frame.classification_metrics('f_measure', 'labels', 'predictions', '1', 2)
+      0.66666666666666663
 
-    0.55555555555555558
+    cm.recall
 
-    frame.classification_metrics('f_measure', 'labels', 'predictions', '0', 1)
+      0.5
 
-    0.80000000000000004
+    cm.accuracy
 
+      0.75
 
-    frame.classification_metrics('recall', 'labels', 'predictions', '1', 1)
+    cm.precision
 
-    0.5
+      1.0
 
-    frame.classification_metrics('recall', 'labels', 'predictions', '0', 1)
+    cm.confusion_matrix
 
-    1.0
-
-
-    frame.classification_metrics('precision', 'labels', 'predictions', '1', 1)
-
-    1.0
-
-    frame.classification_metrics('precision', 'labels', 'predictions', '0', 1)
-
-    0.66666666666666663
-
-
-    frame.classification_metrics('accuracy', 'labels', 'predictions', '1', 1)
-
-    0.75
-
-    frame.classification_metrics('confusion_matrix', 'labels', 'predictions', '1', 1)
-
-    [1, 2, 0, 1]
+                      Predicted
+                    _pos_ _neg__
+      Actual    pos |  1     1
+                neg |  0     2
 
 
     .. versionadded:: 0.8  """))
@@ -1605,31 +1593,23 @@ TODO: delete me, code moved to separate plugin files
   def classificationMetricsSimple(arguments: ClassificationMetric, user: UserPrincipal, invocation: SparkInvocation): ClassificationMetricValue = {
     implicit val u = user
     val frameId = arguments.frame.id
-    val frameMeta: DataFrame = getDataFrameById(frameId)
-
     val ctx = invocation.sparkContext
-
+    val frameMeta: DataFrame = getDataFrameById(frameId)
     val frameSchema = frameMeta.schema
-    val frameRdd = frames.loadFrameRdd(ctx, frameId)
 
+    val frameRdd = frames.loadFrameRdd(ctx, frameId)
+    val betaValue = arguments.beta.getOrElse(1.0)
     val labelColumnIndex = frameSchema.columnIndex(arguments.labelColumn)
     val predColumnIndex = frameSchema.columnIndex(arguments.predColumn)
 
-    if (arguments.metricType == "confusion_matrix") {
-      val valueList = ClassificationMetrics.confusionMatrix(frameRdd, labelColumnIndex, predColumnIndex, arguments.posLabel)
-      ClassificationMetricValue(None, Some(valueList))
+    if (arguments.posLabel == None) {
+      val metrics = ClassificationMetrics.multiclassClassificationMetrics(frameRdd, labelColumnIndex, predColumnIndex, betaValue)
+      ClassificationMetricValue(fMeasure = metrics._1, accuracy = metrics._2, recall = metrics._3, precision = metrics._4, confusionMatrix = metrics._5)
     }
     else {
-      val metric_value = arguments.metricType match {
-        case "accuracy" => ClassificationMetrics.modelAccuracy(frameRdd, labelColumnIndex, predColumnIndex)
-        case "precision" => ClassificationMetrics.modelPrecision(frameRdd, labelColumnIndex, predColumnIndex, arguments.posLabel)
-        case "recall" => ClassificationMetrics.modelRecall(frameRdd, labelColumnIndex, predColumnIndex, arguments.posLabel)
-        case "f_measure" => ClassificationMetrics.modelFMeasure(frameRdd, labelColumnIndex, predColumnIndex, arguments.posLabel, arguments.beta)
-        case _ => throw new IllegalArgumentException() // TODO: this exception needs to be handled differently
-      }
-      ClassificationMetricValue(Some(metric_value), None)
+      val metrics = ClassificationMetrics.binaryClassificationMetrics(frameRdd, labelColumnIndex, predColumnIndex, arguments.posLabel.toString, betaValue)
+      ClassificationMetricValue(fMeasure = metrics._1, accuracy = metrics._2, recall = metrics._3, precision = metrics._4, confusionMatrix = metrics._5)
     }
-
   }
 
   val ecdfCommand = commandPluginRegistry.registerCommand("dataframe/ecdf", ecdfSimple _)

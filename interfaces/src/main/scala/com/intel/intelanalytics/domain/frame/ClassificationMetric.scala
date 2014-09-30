@@ -23,17 +23,14 @@
 
 package com.intel.intelanalytics.domain.frame
 
-case class ClassificationMetric(frame: FrameReference, metricType: String, labelColumn: String, predColumn: String, posLabel: String, beta: Double) {
+case class ClassificationMetric(frame: FrameReference, labelColumn: String, predColumn: String, posLabel: Either[String, Int], beta: Option[Double] = None) {
   require(frame != null, "ClassificationMetric requires a non-null dataframe.")
-  require(metricType.equals("accuracy") ||
-    metricType.equals("precision") ||
-    metricType.equals("recall") ||
-    metricType.equals("confusion_matrix") ||
-    metricType.equals("f_measure"), "valid metric type is required")
   require(labelColumn != null && !labelColumn.equals(""), "label column is required")
   require(predColumn != null && !predColumn.equals(""), "predict column is required")
-  require(posLabel != null && !posLabel.equals(""), "invalid positive label")
-  require(beta > 0, "invalid beta value for f measure")
+  beta match {
+    case Some(x) => require((x >= 0), "invalid beta value for f measure. Should be greater than or equal to 0")
+    case _ => null
+  }
 }
 
-case class ClassificationMetricValue(metricValue: Option[Double] = None, valueList: Option[Seq[Long]] = None)
+case class ClassificationMetricValue(fMeasure: Double, accuracy: Double, recall: Double, precision: Double, confusionMatrix: Map[String, Long])

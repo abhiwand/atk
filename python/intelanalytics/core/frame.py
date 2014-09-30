@@ -509,8 +509,8 @@ class BigFrame(CommandLoadableBigFrame):
 
         """
         try:
-            d = self.classification_metrics('accuracy', label_column, pred_column, '1', 1)
-            return d["metric_value"]
+            cm = self.classification_metrics(label_column, pred_column, 1, 1)
+            return cm.accuracy
         except:
             raise IaError(logger)
 
@@ -785,8 +785,8 @@ class BigFrame(CommandLoadableBigFrame):
 
         """
         try:
-            d = self.classification_metrics("confusion_matrix", label_column, pred_column, pos_label, 1)
-            return d["metric_value"]
+            cm = self.classification_metrics(label_column, pred_column, pos_label, 1)
+            return cm.confusion_matrix
         except:
             raise IaError(logger)
 
@@ -1285,7 +1285,7 @@ class BigFrame(CommandLoadableBigFrame):
 
             0.55555555555555558
 
-            frame.f_measure('labels', 'predictions', pos_label='0')
+            frame.f_measure('labels', 'predictions', pos_label=0)
 
             0.80000000000000004
 
@@ -1293,8 +1293,8 @@ class BigFrame(CommandLoadableBigFrame):
 
         """
         try:
-            d = self.classification_metrics('f_measure', label_column, pred_column, pos_label, beta)
-            return d["metric_value"]
+            cm = self.classification_metrics(label_column, pred_column, pos_label, beta)
+            return cm.f_measure
         except:
             raise IaError(logger)
 
@@ -1579,7 +1579,7 @@ class BigFrame(CommandLoadableBigFrame):
 
             1.0
 
-            frame.precision('labels', 'predictions', '0')
+            frame.precision('labels', 'predictions', 0)
 
             0.66666666666666663
 
@@ -1587,8 +1587,8 @@ class BigFrame(CommandLoadableBigFrame):
 
         """
         try:
-            d = self.classification_metrics('precision', label_column, pred_column, pos_label, 1)
-            return d["metric_value"]
+            d = self.classification_metrics(label_column, pred_column, pos_label, 1)
+            return cm.precision
         except:
             raise IaError(logger)
 
@@ -1696,7 +1696,7 @@ class BigFrame(CommandLoadableBigFrame):
 
             0.5
 
-            frame.recall('labels', 'predictions', '0')
+            frame.recall('labels', 'predictions', 0)
 
             1.0
 
@@ -1704,8 +1704,8 @@ class BigFrame(CommandLoadableBigFrame):
 
         """
         try:
-            d = self.classification_metrics('recall', label_column, pred_column, pos_label, 1)
-            return d["metric_value"]
+            cm = self.classification_metrics(label_column, pred_column, pos_label, 1)
+            return cm.recall
         except:
             raise IaError(logger)
 
