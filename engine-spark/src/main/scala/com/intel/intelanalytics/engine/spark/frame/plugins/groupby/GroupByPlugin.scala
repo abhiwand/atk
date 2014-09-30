@@ -14,12 +14,16 @@ import scala.concurrent.{ Await, ExecutionContext }
 import spray.json._
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
 
+/**
+ * Create a Summarized Frame with Aggregations (Avg, Count, Max, Min, Mean, Sum, Stdev, ...)
+ */
 class GroupByPlugin extends SparkCommandPlugin[FrameGroupByColumn, DataFrame] {
 
   /**
    * The name of the command, e.g. graphs/ml/loopy_belief_propagation
    *
-   * The format of the name determines how the plugin gets "installed" in the Python layer via code generation.
+   * The format of the name determines how the plugin gets "installed" in the client layer
+   * e.g Python client via code generation.
    */
   override def name: String = "dataframe/group_by"
 
@@ -31,7 +35,7 @@ class GroupByPlugin extends SparkCommandPlugin[FrameGroupByColumn, DataFrame] {
   override def doc: Option[CommandDoc] = None
 
   /**
-   *
+   * Create a Summarized Frame with Aggregations (Avg, Count, Max, Min, Mean, Sum, Stdev, ...)
    *
    * @param invocation information about the user and the circumstances at the time of the call,
    *                   as well as a function that can be called to produce a SparkContext that

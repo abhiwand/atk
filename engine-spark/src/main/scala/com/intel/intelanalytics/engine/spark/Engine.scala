@@ -247,6 +247,11 @@ class SparkEngine(sparkContextManager: SparkContextManager,
       unionAndSave(ctx, destinationFrame, additionalData)
     }
     else if (load.source.isFile) {
+
+      if (!new java.io.File(load.source.uri).exists) {
+        throw new IllegalArgumentException("File does not exist: " + load.source.uri)
+      }
+
       val parser = load.source.parser.get
       val partitions = sparkAutoPartitioner.partitionsForFile(load.source.uri)
       val parseResult = LoadRDDFunctions.loadAndParseLines(ctx, fsRoot + "/" + load.source.uri, parser, partitions)
@@ -525,7 +530,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
   }
 
   */
-
+  /*
   def decodePythonBase64EncodedStrToBytes(byteStr: String): Array[Byte] = {
     // Python uses different RFC than Java, must correct a couple characters
     // http://stackoverflow.com/questions/21318601/how-to-decode-a-base64-string-in-scala-or-java00
@@ -593,6 +598,8 @@ class SparkEngine(sparkContextManager: SparkContextManager,
       rowCount
     }
   }
+
+*/
 
   commandPluginRegistry.registerCommand(new FlattenColumnPlugin())
 
@@ -1038,19 +1045,30 @@ TODO: delete me, code moved to separate plugin files
     ColumnStatistics.columnFullStatistics(columnIndex, valueDataType, weightsColumnIndexOption, weightsDataTypeOption, rdd)
   }
  */
+  commandPluginRegistry.registerCommand(new FilterPlugin)
+  /*
+
+  TODO: delete me, code moved to separate plugin files
 
   val filterCommand = commandPluginRegistry.registerCommand("dataframe/filter", filterSimple _, numberOfJobs = 2)
   def filterSimple(arguments: FilterPredicate, user: UserPrincipal, invocation: SparkInvocation): DataFrame = {
+    val pythonRDDStorage = new PythonRDDStorage(frames)
     implicit val u = user
-    val pyRdd = createPythonRDD(arguments.frame.id, arguments.predicate, invocation.sparkContext)
+    val pyRdd = pythonRDDStorage.createPythonRDD(arguments.frame.id, arguments.predicate, invocation.sparkContext)
 
     val frameMeta = frames.lookup(arguments.frame.id).getOrElse(
       throw new IllegalArgumentException(s"No such data frame: ${arguments.frame}"))
     val schema = frameMeta.schema
     val converter = DataTypes.parseMany(schema.columns.map(_._2).toArray)(_)
-    val rowCount = persistPythonRDD(frameMeta, pyRdd, converter, skipRowCount = false)
+    val rowCount = pythonRDDStorage.persistPythonRDD(frameMeta, pyRdd, converter, skipRowCount = false)
     frames.updateRowCount(frameMeta, rowCount)
   }
+  */
+
+  commandPluginRegistry.registerCommand(new JoinPlugin(frames))
+
+  /*
+  TODO: delete me, code moved to separate plugin files
 
   val joinCommand = commandPluginRegistry.registerCommand("dataframe/join", joinSimple _)
 
@@ -1121,6 +1139,7 @@ TODO: delete me, code moved to separate plugin files
     val joinRowCount = joinResultRDD.count()
     frames.saveFrame(newJoinFrame, new FrameRDD(new Schema(allColumns), joinResultRDD), Some(joinRowCount))
   }
+  */
 
   val dropColumnsDoc = CommandDoc(oneLineSummary = "Remove columns from the frame.",
     extendedSummary = Some("""
@@ -1180,6 +1199,7 @@ TODO: delete me, code moved to separate plugin files
 
   val addColumnsCommand = commandPluginRegistry.registerCommand("dataframe/add_columns", addColumnsSimple _)
   def addColumnsSimple(arguments: FrameAddColumns, user: UserPrincipal, invocation: SparkInvocation) = {
+    val pythonRDDStorage = new PythonRDDStorage(frames)
     implicit val u = user
     val ctx = invocation.sparkContext
     val frameId = arguments.frame.id
@@ -1205,10 +1225,10 @@ TODO: delete me, code moved to separate plugin files
     }
 
     // Update the data
-    val pyRdd = createPythonRDD(frameId, expression, invocation.sparkContext)
+    val pyRdd = pythonRDDStorage.createPythonRDD(frameId, expression, invocation.sparkContext)
     val converter = DataTypes.parseMany(newColumns.map(_._2).toArray)(_)
     val newFrame = frames.updateSchema(frameMeta, newColumns)
-    persistPythonRDD(newFrame, pyRdd, converter, skipRowCount = true)
+    pythonRDDStorage.persistPythonRDD(newFrame, pyRdd, converter, skipRowCount = true)
     newFrame
   }
 
