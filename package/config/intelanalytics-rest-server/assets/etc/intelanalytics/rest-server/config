@@ -138,10 +138,12 @@ def user_info_prompt(message, default, password=False):
     """
     if password:
         password1 = getpass.getpass(message).strip()
-        password2 = getpass.getpass("Confirm password: ").strip()
-        if(password1 == "" or password1 is None) and password1 == password2:
+        if password1 == "" or password1 is None:
             return default
-        elif password1 == password2:
+
+        password2 = getpass.getpass("Confirm password: ").strip()
+
+        if password1 == password2:
             return password1
         else:
             print "\n Password did not match"
