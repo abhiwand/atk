@@ -24,7 +24,8 @@
 package com.intel.intelanalytics.engine.spark.frame.plugins
 
 import com.intel.intelanalytics.domain.command.CommandDoc
-import com.intel.intelanalytics.domain.frame.{ RenameFrame, DataFrame, FlattenColumn }
+import com.intel.intelanalytics.domain.frame.{ FrameDropColumns, DataFrame }
+import com.intel.intelanalytics.engine.spark.frame.FrameRDD
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
 import com.intel.intelanalytics.security.UserPrincipal
 
@@ -34,12 +35,10 @@ import scala.concurrent.ExecutionContext
 import spray.json._
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
 
-// TODO: shouldn't be a Spark Plugin, doesn't need Spark
-
 /**
- * Rename a frame
+ * Remove columns from a frame
  */
-class RenameFramePlugin extends SparkCommandPlugin[RenameFrame, DataFrame] {
+class DropColumnsPlugin extends SparkCommandPlugin[FrameDropColumns, DataFrame] {
 
   /**
    * The name of the command, e.g. graphs/ml/loopy_belief_propagation
@@ -47,17 +46,36 @@ class RenameFramePlugin extends SparkCommandPlugin[RenameFrame, DataFrame] {
    * The format of the name determines how the plugin gets "installed" in the client layer
    * e.g Python client via code generation.
    */
-  override def name: String = "dataframe/rename_frame"
+  override def name: String = "dataframe/drop_columns"
 
   /**
    * User documentation exposed in Python.
    *
    * [[http://docutils.sourceforge.net/rst.html ReStructuredText]]
    */
-  override def doc: Option[CommandDoc] = None
+  override def doc: Option[CommandDoc] = Some(CommandDoc(oneLineSummary = "Remove columns from the frame.",
+    extendedSummary = Some("""
+    Remove columns from the frame.  They are deleted.
+
+    Parameters
+    ----------
+    columns: str OR list of str
+        column name OR list of column names to be removed from the frame
+
+    Notes
+    -----
+    Deleting the last column in a frame leaves the frame empty.
+
+    Examples
+    --------
+    For this example, BigFrame object * my_frame * accesses a frame with columns * column_a *, * column_b *, * column_c * and * column_d *.
+    Eliminate columns * column_b * and * column_d *::
+    my_frame.drop_columns([column_b, column_d])
+    Now the frame only has the columns * column_a * and * column_c *.
+    For further examples, see: ref: `example_frame.drop_columns`""")))
 
   /**
-   * Rename a frame
+   * Remove columns from a frame.
    *
    * @param invocation information about the user and the circumstances at the time of the call,
    *                   as well as a function that can be called to produce a SparkContext that
@@ -66,15 +84,41 @@ class RenameFramePlugin extends SparkCommandPlugin[RenameFrame, DataFrame] {
    * @param user current user
    * @return a value of type declared as the Return type.
    */
-  override def execute(invocation: SparkInvocation, arguments: RenameFrame)(implicit user: UserPrincipal, executionContext: ExecutionContext): DataFrame = {
+  override def execute(invocation: SparkInvocation, arguments: FrameDropColumns)(implicit user: UserPrincipal, executionContext: ExecutionContext): DataFrame = {
     // dependencies (later to be replaced with dependency injection)
     val frames = invocation.engine.frames
+    val ctx = invocation.sparkContext
 
     // validate arguments
-    val frame = frames.expectFrame(arguments.frame)
-    val newName = arguments.newName
+    val frameId = arguments.frame.id
+    val columns = arguments.columns
+    val frameMeta = frames.expectFrame(arguments.frame)
+    val schema = frameMeta.schema
 
-    // run the operation and save results
-    frames.renameFrame(frame, newName)
+    // run the operation
+    val columnIndices = {
+      for {
+        col <- columns
+        columnIndex = schema.columns.indexWhere(columnTuple => columnTuple._1 == col)
+      } yield columnIndex
+    }.sorted.distinct
+
+    val resultRDD = columnIndices match {
+      case invalidColumns if invalidColumns.contains(-1) =>
+        throw new IllegalArgumentException(s"Invalid list of columns: [${arguments.columns.mkString(", ")}]")
+      case allColumns if allColumns.length == schema.columns.length =>
+        frames.loadFrameRdd(ctx, frameId).filter(_ => false)
+      case singleColumn if singleColumn.length == 1 =>
+        frames.loadFrameRdd(ctx, frameMeta)
+          .map(row => row.take(singleColumn(0)) ++ row.drop(singleColumn(0) + 1))
+      case multiColumn =>
+        frames.loadFrameRdd(ctx, frameId)
+          .map(row => row.zipWithIndex.filter(elem => multiColumn.contains(elem._2) == false).map(_._1))
+    }
+
+    val dataFrame = frames.dropColumns(frameMeta, columnIndices)
+
+    // save results
+    frames.saveFrame(dataFrame, new FrameRDD(dataFrame.schema, resultRDD))
   }
 }
