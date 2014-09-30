@@ -30,6 +30,13 @@ import org.apache.hadoop.fs.{ Path, FileSystem, LocalFileSystem }
 import org.apache.hadoop.hdfs.DistributedFileSystem
 import com.intel.event.EventLogging
 
+/**
+ * HDFS Access
+ *
+ * IMPORTANT! Make sure you aren't breaking wild card support - it is easy to forget about
+ *
+ * @param fsRoot the root directory for IntelAnalytics e.g. "/user/iauser"
+ */
 class HdfsFileStorage(fsRoot: String) extends EventLogging {
 
   val configuration = withContext("HDFSFileStorage.configuration") {

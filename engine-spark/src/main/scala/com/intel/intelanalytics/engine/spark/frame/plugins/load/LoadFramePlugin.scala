@@ -43,7 +43,8 @@ class LoadFramePlugin extends SparkCommandPlugin[Load, DataFrame] {
   /**
    * The name of the command, e.g. graphs/ml/loopy_belief_propagation
    *
-   * The format of the name determines how the plugin gets "installed" in the Python layer via code generation.
+   * The format of the name determines how the plugin gets "installed" in the client layer
+   * e.g Python client via code generation.
    */
   override def name: String = "dataframe/load"
 
@@ -61,7 +62,8 @@ class LoadFramePlugin extends SparkCommandPlugin[Load, DataFrame] {
   override def numberOfJobs(load: Load) = 8
 
   /**
-   * Plugins must implement this method to do the work requested by the user.
+   * Parsing data to load and append to data frames
+   *
    * @param invocation information about the user and the circumstances at the time of the call,
    *                   as well as a function that can be called to produce a SparkContext that
    *                   can be used during this invocation.

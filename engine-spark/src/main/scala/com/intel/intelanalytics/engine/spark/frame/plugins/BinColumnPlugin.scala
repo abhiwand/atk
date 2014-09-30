@@ -37,12 +37,24 @@ import scala.concurrent.{ Await, ExecutionContext }
 import spray.json._
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
 
+/**
+ * Column values into bins.
+ *
+ * Two types of binning are provided: equalwidth and equaldepth.
+ *
+ * Equal width binning places column values into bins such that the values in each bin fall within the same
+ * interval and the interval width for each bin is equal.
+ *
+ * Equal depth binning attempts to place column values into bins such that each bin contains the same number
+ * of elements
+ */
 class BinColumnPlugin extends SparkCommandPlugin[BinColumn, DataFrame] {
 
   /**
    * The name of the command, e.g. graphs/ml/loopy_belief_propagation
    *
-   * The format of the name determines how the plugin gets "installed" in the Python layer via code generation.
+   * The format of the name determines how the plugin gets "installed" in the client layer
+   * e.g Python client via code generation.
    */
   override def name: String = "dataframe/bin_column"
 

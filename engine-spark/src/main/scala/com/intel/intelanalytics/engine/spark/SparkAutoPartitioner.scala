@@ -29,6 +29,13 @@ import com.intel.event.EventLogging
  * Calculate a best guess for the number of partitions that should be used for loading this file into a Spark RDD.
  *
  * This number won't be perfect but should be better than using default.
+ *
+ * General Advice on Paritioning:
+ * - Choose a reasonable number of partitions: no smaller than 100, no larger than 10,000 (large cluster)
+ * - Lower bound: at least 2x number of cores in your cluster
+ * - Upper bound: ensure your tasks take at least 100ms (if they are going faster, then you are probably spending more
+ *   time scheduling tasks than executing them)
+ * - Generally better to have slightly too many partitions than too few
  */
 class SparkAutoPartitioner(fileStorage: HdfsFileStorage) extends EventLogging {
 
