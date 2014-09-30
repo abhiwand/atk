@@ -21,11 +21,12 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.engine.spark.frame
+package com.intel.intelanalytics.engine.spark.frame.plugins.load
 
-import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 import com.intel.intelanalytics.domain.schema.DataTypes
-import org.apache.commons.csv.{ CSVParser, CSVFormat }
+import com.intel.intelanalytics.domain.schema.DataTypes.DataType
+import org.apache.commons.csv.{ CSVFormat, CSVParser }
+
 import scala.collection.JavaConversions.asScalaIterator
 
 /**

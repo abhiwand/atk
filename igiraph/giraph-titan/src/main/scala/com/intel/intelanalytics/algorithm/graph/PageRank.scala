@@ -49,12 +49,30 @@ case class Pr(graph: GraphReference,
 
 case class PrResult(value: String) //TODO
 
-class PageRank
-    extends CommandPlugin[Pr, PrResult] {
+/** Json conversion for arguments and return value case classes */
+object PrJsonFormat {
   import DomainJsonProtocol._
   implicit val prFormat = jsonFormat7(Pr)
   implicit val prResultFormat = jsonFormat1(PrResult)
+}
 
+import PrJsonFormat._
+
+class PageRank
+    extends CommandPlugin[Pr, PrResult] {
+
+  /**
+   * The name of the command, e.g. graphs/ml/loopy_belief_propagation
+   *
+   * The format of the name determines how the plugin gets "installed" in the Python layer via code generation.
+   */
+  override def name: String = "graphs/ml/page_rank"
+
+  /**
+   * User documentation exposed in Python.
+   *
+   * [[http://docutils.sourceforge.net/rst.html ReStructuredText]]
+   */
   override def doc = Some(CommandDoc(oneLineSummary = "The `PageRank algorithm <http://en.wikipedia.org/wiki/PageRank>`_.",
     extendedSummary = Some("""
     Parameters
@@ -132,14 +150,4 @@ class PageRank
 
   }
 
-  //TODO: Replace with generic code that works on any case class
-  def parseArguments(arguments: JsObject) = arguments.convertTo[Pr]
-
-  //TODO: Replace with generic code that works on any case class
-  def serializeReturn(returnValue: PrResult): JsObject = returnValue.toJson.asJsObject
-
-  override def name: String = "graphs/ml/page_rank"
-
-  //TODO: Replace with generic code that works on any case class
-  override def serializeArguments(arguments: Pr): JsObject = arguments.toJson.asJsObject()
 }
