@@ -12,7 +12,7 @@ UBUNTU_OS=$(cat /etc/*-release | grep -i ubuntu)
 TECHWRITERS=techwriters
 
 # Look for help
-echo "/$1/$2/$3/$4/$5/$6/$7/$8/$9/" | grep -i -e "/-h/" -e "/--help/" > /dev/null
+echo "/$1/$2/$3/$4/$5/$6/$7/$8/$9/" | grep -i -e "/-h/" -e "/--help/" -e "//////////" > /dev/null
 if [ $? == 0 ]; then
     echo
     echo $0
@@ -22,6 +22,8 @@ if [ $? == 0 ]; then
     if [ "$UBUNTU_OS" == "" ]; then
         echo "-f, --force:Attempt compile without virtual environment"
     fi
+    echo "-s:         Do not compile Scala code"
+    echo
     echo "html:       Compile to html"
     echo "latex:      Compile to LaTeX"
     echo "pdf:        Compile to pdf"
@@ -85,70 +87,96 @@ if [ $? == 0 ]; then
     fi
 fi
 
-# Look for latex
-echo "/$1/$2/$3/$4/$5/$6/$7/$8/$9/" | grep -i -e "/latex/" -e "/pdf/" > /dev/null
+# Look for buildable
+echo "/$1/$2/$3/$4/$5/$6/$7/$8/$9/" | grep -i -e "/latex/" -e "/pdf/" -e "/txt/" -e "/html/" > /dev/null
 if [ $? == 0 ]; then
-    echo "/$1/$2/$3/$4/$5/$6/$7/$8/$9/" | grep -i "/-e/" > /dev/null
+     
+    echo "/$1/$2/$3/$4/$5/$6/$7/$8/$9/" | grep -i "/-s/" > /dev/null
     if [ $? == 1 ]; then
-        if [[ -d build/latex ]]; then
-            rm -r build/latex/*
-        fi
-    fi
-    # Yes for "latex"
-    make -B latex 2>&1 | grep -v -f toctreeWarnings
-fi
+        pushd
 
-# Look for text
-echo "/$1/$2/$3/$4/$5/$6/$7/$8/$9/" | grep -i "/text/" > /dev/null
-if [ $? == 0 ]; then
-    echo "/$1/$2/$3/$4/$5/$6/$7/$8/$9/" | grep -i "/-e/" > /dev/null
-    if [ $? == 1 ]; then
-        if [[ -d build/text ]]; then
-            rm -r build/text/*
+        # Update scala server
+        cd ..
+        mvn compile -pl engine-spark -am
+        if [ $? == 1 ]; then
+            exit 1
         fi
-    fi
-    # Yes for "text"
-    make -B text 2>&1 | grep -v -f toctreeWarnings
-fi
 
-# Look for html
-echo "/$1/$2/$3/$4/$5/$6/$7/$8/$9/" | grep -i "/html/" > /dev/null
-if [ $? == 0 ]; then
-    echo "/$1/$2/$3/$4/$5/$6/$7/$8/$9/" | grep -i "/-e/" > /dev/null
-    if [ $? == 1 ]; then
-        if [[ -d build/html ]]; then
-            rm -r build/html/*
+        # Update the additional python documentation files
+        cd python
+        python cmdgen.py
+        if [ $? == 1 ]; then
+            exit 1
         fi
-    fi
-    # Ignore all toctree warnings.
-    make -B html 2>&1 | grep -v -f toctreeWarnings
-    if [[ ! -d build/html/_downloads ]]; then
-        mkdir build/html/_downloads
-    fi
-    if [[ -f build/latex/IntelAnalytics.pdf ]]; then
-        cp build/latex/IntelAnalytics.pdf build/html/_downloads/
-    fi
-fi
 
-# Look for pdf
-echo "/$1/$2/$3/$4/$5/$6/$7/$8/$9/" | grep -i -e "/pdf/" > /dev/null
-if [ $? == 0 ]; then
-    # Yes for "latexpdf"
-    if [[ -f build/latex/IntelAnalytics.tex ]]; then
-        # python fix_latex.py
-        # if [ "$?" == "0" ] ; then
-            cd build/latex
-            make
-            cd ../..
-            if [[ -f build/latex/IntelAnalytics.pdf ]]; then
-                if [[ -d build/html/_downloads ]]; then
-                    cp build/latex/IntelAnalytics.pdf build/html/_downloads/
-                fi
+        # return to original directory to continue
+        popd
+    fi
+
+    # Look for latex
+    echo "/$1/$2/$3/$4/$5/$6/$7/$8/$9/" | grep -i -e "/latex/" -e "/pdf/" > /dev/null
+    if [ $? == 0 ]; then
+        echo "/$1/$2/$3/$4/$5/$6/$7/$8/$9/" | grep -i "/-e/" > /dev/null
+        if [ $? == 1 ]; then
+            if [[ -d build/latex ]]; then
+                rm -r build/latex/*
             fi
-        # fi
+        fi
+        # Yes for "latex"
+        make -B latex 2>&1 | grep -v -f toctreeWarnings
+    fi
+
+    # Look for text
+    echo "/$1/$2/$3/$4/$5/$6/$7/$8/$9/" | grep -i "/text/" > /dev/null
+    if [ $? == 0 ]; then
+        echo "/$1/$2/$3/$4/$5/$6/$7/$8/$9/" | grep -i "/-e/" > /dev/null
+        if [ $? == 1 ]; then
+            if [[ -d build/text ]]; then
+                rm -r build/text/*
+            fi
+        fi
+        # Yes for "text"
+        make -B text 2>&1 | grep -v -f toctreeWarnings
+    fi
+
+    # Look for html
+    echo "/$1/$2/$3/$4/$5/$6/$7/$8/$9/" | grep -i "/html/" > /dev/null
+    if [ $? == 0 ]; then
+        echo "/$1/$2/$3/$4/$5/$6/$7/$8/$9/" | grep -i "/-e/" > /dev/null
+        if [ $? == 1 ]; then
+            if [[ -d build/html ]]; then
+                rm -r build/html/*
+            fi
+        fi
+        # Ignore all toctree warnings.
+        make -B html 2>&1 | grep -v -f toctreeWarnings
+        if [[ ! -d build/html/_downloads ]]; then
+            mkdir build/html/_downloads
+        fi
+        if [[ -f build/latex/IntelAnalytics.pdf ]]; then
+            cp build/latex/IntelAnalytics.pdf build/html/_downloads/
+        fi
+    fi
+
+    # Look for pdf
+    echo "/$1/$2/$3/$4/$5/$6/$7/$8/$9/" | grep -i -e "/pdf/" > /dev/null
+    if [ $? == 0 ]; then
+        # Yes for "latexpdf"
+        if [[ -f build/latex/IntelAnalytics.tex ]]; then
+            # python fix_latex.py
+            # if [ "$?" == "0" ] ; then
+                cd build/latex
+                make
+                cd ../..
+                if [[ -f build/latex/IntelAnalytics.pdf ]]; then
+                    if [[ -d build/html/_downloads ]]; then
+                        cp build/latex/IntelAnalytics.pdf build/html/_downloads/
+                    fi
+                fi
+            # fi
+        fi
     fi
 fi
-
 
 echo "/$1/$2/$3/$4/$5/$6/$7/$8/$9/" | grep -i -e "/zip/" > /dev/null
 if [ $? == 0 ]; then

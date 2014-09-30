@@ -214,6 +214,16 @@ Glossary
 
         For more information see: `Wikipedia\: Convergence (mathematics)`_.
 
+    CSV
+
+        A :abbr:`CSV (comma-separated values)` file stores tabular data (numbers and text) in plain-text form.
+        Plain text means that the file is a sequence of readable characters.
+        A CSV file can consist of any number of records, separated by unique character or sequence of characters.
+        New line characters are ususally used for this purpose.
+        Each record consists of one or more fields, separated by some unique character or sequence of characters.
+        Commas are ususally used for this purpose, hence the name.
+        Tab characters are also quite common.
+        
     dict
 
         See :term:`Dictionary`.
