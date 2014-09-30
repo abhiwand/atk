@@ -689,10 +689,13 @@ def get_IA_log():
     Open the output.log and save the contents to memory. Will be used monitor the IA server restart status.
     :return:
     """
-    output_log = open(IA_LOG_PATH)
-    output_log_text = output_log.read()
-    output_log.close()
-    return output_log_text
+    try:
+        output_log = open(IA_LOG_PATH)
+        output_log_text = output_log.read()
+        output_log.close()
+        return output_log_text
+    except IOError:
+        return ""
 
 
 def restart_IA():
