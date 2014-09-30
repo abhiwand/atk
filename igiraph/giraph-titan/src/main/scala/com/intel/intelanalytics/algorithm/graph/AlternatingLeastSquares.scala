@@ -59,12 +59,31 @@ case class Als(graph: GraphReference,
 
 case class AlsResult(value: String)
 
-class AlternatingLeastSquares
-    extends CommandPlugin[Als, AlsResult] {
+/** Json conversion for arguments and return value case classes */
+object AlsJsonFormat {
   import DomainJsonProtocol._
   implicit val alsFormat = jsonFormat16(Als)
   implicit val alsResultFormat = jsonFormat1(AlsResult)
+}
 
+import AlsJsonFormat._
+
+class AlternatingLeastSquares
+    extends CommandPlugin[Als, AlsResult] {
+
+  /**
+   * The name of the command, e.g. graphs/ml/alternating_least_squares
+   *
+   * The format of the name determines how the plugin gets "installed" in the client layer
+   * e.g Python client via code generation.
+   */
+  override def name: String = "graphs/ml/alternating_least_squares"
+
+  /**
+   * User documentation exposed in Python.
+   *
+   * [[http://docutils.sourceforge.net/rst.html ReStructuredText]]
+   */
   override def doc = Some(CommandDoc(oneLineSummary = "The Alternating Least Squares with Bias for collaborative filtering algorithms.",
     extendedSummary = Some("""
 
@@ -242,17 +261,4 @@ The expected output is like this
       config, giraphConf, invocation, "als-learning-report_0"))
   }
 
-  //TODO: Replace with generic code that works on any case class
-  def parseArguments(arguments: JsObject) = arguments.convertTo[Als]
-
-  //TODO: Replace with generic code that works on any case class
-  def serializeReturn(returnValue: AlsResult): JsObject = returnValue.toJson.asJsObject
-
-  /**
-   * The name of the command, e.g. graphs/ml/alternating_least_squares
-   */
-  override def name: String = "graphs/ml/alternating_least_squares"
-
-  //TODO: Replace with generic code that works on any case class
-  override def serializeArguments(arguments: Als): JsObject = arguments.toJson.asJsObject()
 }
