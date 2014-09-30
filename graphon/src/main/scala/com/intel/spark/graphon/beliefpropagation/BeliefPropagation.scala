@@ -18,32 +18,33 @@ import com.intel.graphbuilder.parser.InputSchema
 import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRDDImplicits._
 import com.intel.intelanalytics.domain.command.CommandDoc
 import org.apache.spark.{ SparkConf, SparkContext }
+import com.intel.graphbuilder.util.SerializableBaseConfiguration
 
 /**
  * Parameters for executing belief propagation.
  * @param graph Reference to the graph object on which to propagate beliefs.
- * @param vertexPriorPropertyName Name of the property that stores the prior beliefs.
- * @param vertexPosteriorPropertyName Name of the property to which posterior beliefs will be stored.
+ * @param priorProperty Name of the property that stores the prior beliefs.
+ * @param posteriorProperty Name of the property to which posterior beliefs will be stored.
  * @param edgeWeightProperty Optional String. Name of the property on edges that stores the edge weight.
  *                           If none is supplied, edge weights default to 1.0
- * @param beliefsAsStrings Optional Boolean, defaults to false.
- * @param maxSuperSteps Optional integer. The maximum number of iterations of message passing that will be invoked.
+ * @param stringOutput Optional Boolean, defaults to false.
+ * @param maxIterations Optional integer. The maximum number of iterations of message passing that will be invoked.
  *                      Defaults to 20.
  */
 case class BeliefPropagationArgs(graph: GraphReference,
-                                 vertexPriorPropertyName: String,
-                                 vertexPosteriorPropertyName: String,
+                                 priorProperty: String,
+                                 posteriorProperty: String,
                                  stateSpaceSize: Int,
                                  edgeWeightProperty: Option[String] = None,
-                                 beliefsAsStrings: Option[Boolean] = None,
-                                 maxSuperSteps: Option[Int] = None)
+                                 stringOutput: Option[Boolean] = None,
+                                 maxIterations: Option[Int] = None)
 
 /**
  * Companion object holds the default values.
  */
 object BeliefPropagationDefaults {
-  val beliefsAsStringsDefault = false
-  val maxSuperStepsDefault = 20
+  val stringOutputDefault = false
+  val maxIterationsDefault = 20
   val edgeWeightDefault = 1.0d
   val powerDefault = 0d
   val smoothingDefault = 2.0d
@@ -92,11 +93,11 @@ class BeliefPropagation extends SparkCommandPlugin[BeliefPropagationArgs, Belief
 
     Parameters
     ----------
-    vertex_prior_property_name : String
-        The vertex property which contains the prior belief for the vertex.
+    prior_property : String
+        Name of the vertex property which contains the prior belief for the vertex.
         
-    posterior_property_name : String
-        The vertex property which will contain the posterior belief for each vertex.
+    posterior_property : String
+        Name of the vertex property which will contain the posterior belief for each vertex.
 
     state_space_size : Int
         The number of states in the MRF. Used for validation: Belief propagation will not run if
@@ -106,12 +107,12 @@ class BeliefPropagation extends SparkCommandPlugin[BeliefPropagationArgs, Belief
         The edge property that contains the edge weight for each edge. The default edge weight is 1 if this
         option is not specified.
 
-    beliefs_as_strings :  Boolean (optional, default is False)
+    string_output :  Boolean (optional, default is False)
         If this is true, the posterior beliefs will be written as a string containing comma-separated doubles.
         Otherwise, the posterior beliefs are written as lists of doubles.
 
 
-    max_supersteps : Integer (optional)
+    max_iterations : Integer (optional)
         The maximum number of super steps that the algorithm will execute.
         The valid value range is all positive integer.
         The default value is 20.
@@ -124,7 +125,7 @@ class BeliefPropagation extends SparkCommandPlugin[BeliefPropagationArgs, Belief
 
     Examples
     --------
-    g.ml.belief_propagation(vertex_prior_property_name = "value", posterior_property_name = "lbp_posterior", edge_weight_property  = "weight",  max_supersteps = 10)
+    g.ml.belief_propagation(prior_property = "value", posterior_property = "lbp_posterior", edge_weight_property  = "weight",  max_iterations = 10)
 
     The expected output is like this
      TBD'}
@@ -134,54 +135,43 @@ class BeliefPropagation extends SparkCommandPlugin[BeliefPropagationArgs, Belief
 
     val start = System.currentTimeMillis()
 
-    // Get the SparkContext as one the input parameters for Driver
+    val sc = sparkInvocation.sparkContext
 
-    val sparkConf: SparkConf = sparkInvocation.sparkContext.getConf.set("spark.kryo.registrator", "com.intel.spark.graphon.GraphonKryoRegistrator")
+    sc.addJar(Boot.getJar("graphon").getPath)
 
-    sparkInvocation.sparkContext.stop()
-    val sc = new SparkContext(sparkConf)
+    // Titan Settings for input
+    val config = configuration
+    val titanConfig = SparkEngineConfig.titanLoadConfiguration
 
-    try {
-      sc.addJar(Boot.getJar("graphon").getPath)
+    // Get the graph
+    import scala.concurrent.duration._
+    val graph = Await.result(sparkInvocation.engine.getGraph(arguments.graph.id), config.getInt("default-timeout") seconds)
 
-      // Titan Settings for input
-      val config = configuration
-      val titanConfig = SparkEngineConfig.titanLoadConfiguration
+    val iatGraphName = GraphName.convertGraphUserNameToBackendName(graph.name)
+    titanConfig.setProperty("storage.tablename", iatGraphName)
 
-      // Get the graph
-      import scala.concurrent.duration._
-      val graph = Await.result(sparkInvocation.engine.getGraph(arguments.graph.id), config.getInt("default-timeout") seconds)
+    val titanConnector = new TitanGraphConnector(titanConfig)
 
-      val iatGraphName = GraphName.convertGraphUserNameToBackendName(graph.name)
-      titanConfig.setProperty("storage.tablename", iatGraphName)
+    // Read the graph from Titan
+    val titanReader = new TitanReader(sc, titanConnector)
+    val titanReaderRDD = titanReader.read()
 
-      val titanConnector = new TitanGraphConnector(titanConfig)
+    val gbVertices: RDD[GBVertex] = titanReaderRDD.filterVertices()
+    val gbEdges: RDD[GBEdge] = titanReaderRDD.filterEdges()
 
-      // Read the graph from Titan
-      val titanReader = new TitanReader(sc, titanConnector)
-      val titanReaderRDD = titanReader.read()
+    val (outVertices, outEdges, log) = BeliefPropagationRunner.run(gbVertices, gbEdges, arguments)
 
-      val gbVertices: RDD[GBVertex] = titanReaderRDD.filterVertices()
-      val gbEdges: RDD[GBEdge] = titanReaderRDD.filterEdges()
+    // write out the graph
 
-      val (outVertices, outEdges, log) = BeliefPropagationRunner.run(gbVertices, gbEdges, arguments)
+    // Create the GraphBuilder object
+    // Setting true to append for updating existing graph
+    val gb = new GraphBuilder(new GraphBuilderConfig(new InputSchema(Seq.empty), List.empty, List.empty, titanConfig, append = true))
+    // Build the graph using spark
+    gb.buildGraphWithSpark(outVertices, outEdges)
 
-      // write out the graph
-
-      // Create the GraphBuilder object
-      // Setting true to append for updating existing graph
-      val gb = new GraphBuilder(new GraphBuilderConfig(new InputSchema(Seq.empty), List.empty, List.empty, titanConfig, append = true))
-      // Build the graph using spark
-      gb.buildGraphWithSpark(outVertices, outEdges)
-
-      // Get the execution time and print it
-      val time = (System.currentTimeMillis() - start).toDouble / 1000.0
-      BeliefPropagationResult(log, time)
-    }
-
-    finally {
-      sc.stop
-    }
+    // Get the execution time and print it
+    val time = (System.currentTimeMillis() - start).toDouble / 1000.0
+    BeliefPropagationResult(log, time)
 
   }
 

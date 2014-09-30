@@ -27,12 +27,12 @@ class TreesTest extends FlatSpec with Matchers with TestingSparkContextFlatSpec 
     val floatingPointEqualityThreshold: Double = 0.000000001d
 
     val args = BeliefPropagationArgs(graph = null, // we don't use this one in LbpRunner since we already have the RDDs for the graph
-      vertexPriorPropertyName = inputPropertyName,
+      priorProperty = inputPropertyName,
       stateSpaceSize = 2,
       edgeWeightProperty = None,
-      maxSuperSteps = Some(10),
-      beliefsAsStrings = None,
-      vertexPosteriorPropertyName = propertyForLBPOutput)
+      maxIterations = Some(10),
+      stringOutput = None,
+      posteriorProperty = propertyForLBPOutput)
 
   }
 

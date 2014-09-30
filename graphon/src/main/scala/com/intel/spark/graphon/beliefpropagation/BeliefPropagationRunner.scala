@@ -10,7 +10,7 @@ import com.intel.spark.graphon.VectorMath
  * Provides a method for running belief propagation on a graph. The result is a new graph with the belief-propagation
  * posterior beliefs placed in a new vertex property on each vertex.
  */
-object BeliefPropagationRunner {
+object BeliefPropagationRunner extends Serializable {
 
   /**
    * Run belief propagation on a graph.
@@ -23,10 +23,10 @@ object BeliefPropagationRunner {
 
   def run(inVertices: RDD[GBVertex], inEdges: RDD[GBEdge], args: BeliefPropagationArgs): (RDD[GBVertex], RDD[GBEdge], String) = {
 
-    val outputPropertyLabel = args.vertexPosteriorPropertyName
-    val inputPropertyName: String = args.vertexPriorPropertyName
-    val maxIterations: Int = args.maxSuperSteps.getOrElse(BeliefPropagationDefaults.maxSuperStepsDefault)
-    val beliefsAsStrings = args.beliefsAsStrings.getOrElse(BeliefPropagationDefaults.beliefsAsStringsDefault)
+    val outputPropertyLabel = args.posteriorProperty
+    val inputPropertyName: String = args.priorProperty
+    val maxIterations: Int = args.maxIterations.getOrElse(BeliefPropagationDefaults.maxIterationsDefault)
+    val beliefsAsStrings = args.stringOutput.getOrElse(BeliefPropagationDefaults.stringOutputDefault)
     val stateSpaceSize = args.stateSpaceSize
 
     val defaultEdgeWeight = BeliefPropagationDefaults.edgeWeightDefault
