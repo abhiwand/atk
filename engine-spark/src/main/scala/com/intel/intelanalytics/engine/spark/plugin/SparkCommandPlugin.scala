@@ -27,6 +27,7 @@ import com.intel.intelanalytics.engine.plugin.{ CommandPlugin, Invocation }
 import com.intel.intelanalytics.security.UserPrincipal
 
 import scala.concurrent.ExecutionContext
+import com.intel.intelanalytics.engine.spark.EngineKryoRegistrator
 
 /**
  * Base trait for command plugins that need direct access to a SparkContext
@@ -56,4 +57,7 @@ trait SparkCommandPlugin[Argument <: Product, Return <: Product]
    * @return a value of type declared as the Return type.
    */
   def execute(invocation: SparkInvocation, arguments: Argument)(implicit user: UserPrincipal, executionContext: ExecutionContext): Return
+
+
+  val kryoRegistrator: Class[EngineKryoRegistrator] = classOf[EngineKryoRegistrator]
 }

@@ -10,7 +10,7 @@ import org.apache.spark.rdd.RDD
  *
  * The test will be deprecated when this functionality is deprecated.
  */
-class StringBeliefStorage extends FlatSpec with Matchers with TestingSparkContextFlatSpec {
+class StringBeliefStorageTest extends FlatSpec with Matchers with TestingSparkContextFlatSpec {
 
   trait BPTest {
 
@@ -24,12 +24,12 @@ class StringBeliefStorage extends FlatSpec with Matchers with TestingSparkContex
     val floatingPointEqualityThreshold: Double = 0.000000001d
 
     val args = BeliefPropagationArgs(graph = null, // we don't use this one in LbpRunner since we already have the RDDs for the graph
-      vertexPriorPropertyName = inputPropertyName,
+      priorProperty = inputPropertyName,
       stateSpaceSize = 2,
       edgeWeightProperty = None,
-      maxSuperSteps = Some(10),
-      beliefsAsStrings = Some(true),
-      vertexPosteriorPropertyName = propertyForLBPOutput)
+      maxIterations = Some(10),
+      stringOutput = Some(true),
+      posteriorProperty = propertyForLBPOutput)
 
   }
 
