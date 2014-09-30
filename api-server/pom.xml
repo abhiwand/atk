@@ -5,9 +5,11 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>api-server</artifactId>
     <packaging>jar</packaging>
+    <name>api-server (REST server)</name>
 
     <description>
         Thin REST layer above the Engine.  Converts HTTP requests to AKKA messages that are sent to the Engine.
+        (Currently this module also instantiates the Engine but later the Engine might be running in its own JVM).
 
         Very little business logic should exist here.
 
@@ -18,10 +20,16 @@
         <groupId>com.intel.ia</groupId>
         <artifactId>IntelAnalytics</artifactId>
         <relativePath>../pom.xml</relativePath>
-        <version>0.8.0-SNAPSHOT</version>
+        <version>0.8.6-SNAPSHOT</version>
     </parent>
 
     <build>
+        <!--
+            sourceDirectory and testSourceDirectory don't seem to be needed by Maven but they
+            seem to help IntelliJ import projects correctly (but aren't needed on every module)
+        -->
+        <sourceDirectory>src/main/scala</sourceDirectory>
+        <testSourceDirectory>src/test/scala</testSourceDirectory>
         <plugins>
             <plugin>
                 <groupId>net.alchim31.maven</groupId>
@@ -51,10 +59,6 @@
         <dependency>
             <groupId>com.intel.ia</groupId>
             <artifactId>launcher</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.intel.ia</groupId>
-            <artifactId>shared</artifactId>
         </dependency>
         <!--END BDA dependencies to our modules-->
 		

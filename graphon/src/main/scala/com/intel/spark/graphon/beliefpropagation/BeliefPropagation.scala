@@ -57,6 +57,15 @@ object BeliefPropagationDefaults {
  */
 case class BeliefPropagationResult(log: String, time: Double)
 
+/** Json conversion for arguments and return value case classes */
+object BeliefPropagationJsonFormat {
+  import DomainJsonProtocol._
+  implicit val BPFormat = jsonFormat7(BeliefPropagationArgs)
+  implicit val BPResultFormat = jsonFormat2(BeliefPropagationResult)
+}
+
+import BeliefPropagationJsonFormat._
+
 /**
  * Launches "loopy" belief propagation.
  *
@@ -68,10 +77,7 @@ case class BeliefPropagationResult(log: String, time: Double)
  */
 class BeliefPropagation extends SparkCommandPlugin[BeliefPropagationArgs, BeliefPropagationResult] {
 
-  import DomainJsonProtocol._
-
-  implicit val BPFormat = jsonFormat7(BeliefPropagationArgs)
-  implicit val BPResultFormat = jsonFormat2(BeliefPropagationResult)
+  override def name: String = "graphs/ml/belief_propagation"
 
   override def doc = Some(CommandDoc(oneLineSummary = "Belief propagation by the sum-product algorithm." +
     " Also known as loopy belief propagation.",
@@ -178,13 +184,5 @@ class BeliefPropagation extends SparkCommandPlugin[BeliefPropagationArgs, Belief
     }
 
   }
-
-  def parseArguments(arguments: JsObject) = arguments.convertTo[BeliefPropagationArgs]
-
-  def serializeReturn(returnValue: BeliefPropagationResult): JsObject = returnValue.toJson.asJsObject()
-
-  override def name: String = "graphs/ml/belief_propagation"
-
-  override def serializeArguments(arguments: BeliefPropagationArgs): JsObject = arguments.toJson.asJsObject()
 
 }

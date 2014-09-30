@@ -27,7 +27,6 @@ import com.intel.intelanalytics.component.ClassLoaderAware
 import com.intel.intelanalytics.engine.plugin.CommandPlugin
 import com.intel.intelanalytics.engine.spark.context.SparkContextManager
 import com.intel.intelanalytics.engine.spark.SparkEngine
-import com.intel.intelanalytics.shared.EventLogging
 import com.intel.intelanalytics.NotFoundException
 import org.apache.spark.SparkContext
 import spray.json._
@@ -41,6 +40,7 @@ import com.intel.intelanalytics.domain.command.Execution
 import com.intel.intelanalytics.engine.spark.plugin.SparkInvocation
 import com.intel.intelanalytics.domain.command.Command
 import scala.collection.mutable
+import com.intel.event.EventLogging
 
 /**
  * CommandExecutor manages a registry of CommandPlugins and executes them on request.

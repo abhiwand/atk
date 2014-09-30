@@ -224,7 +224,7 @@ class FrameBackendRest(object):
         from itertools import imap
         http_ready_function = prepare_row_function(frame, add_columns_function, imap)
 
-        arguments = {'frame': self._get_frame_full_uri(frame),
+        arguments = {'frame': self.get_ia_uri(frame),
                      'column_names': names,
                      'column_types': [get_rest_str_from_data_type(t) for t in data_types],
                      'expression': http_ready_function}
@@ -245,29 +245,10 @@ class FrameBackendRest(object):
             sys.stderr.write("There were parse errors during load, please see frame.get_error_frame()\n")
             logger.warn("There were parse errors during load, please see frame.get_error_frame()")
 
-    def quantiles(self, frame, column_name, quantiles):
-        if isinstance(quantiles, int) or isinstance(quantiles, float) or isinstance(quantiles, long):
-            quantiles = [quantiles]
-
-        invalid_quantiles = []
-        for p in quantiles:
-            if p > 100 or p < 0:
-                invalid_quantiles.append(str(p))
-
-        if len(invalid_quantiles) > 0:
-            raise ValueError("Invalid number for quantile:" + ','.join(invalid_quantiles))
-
-        arguments = {'frame_id': frame._id, "column_name": column_name, "quantiles": quantiles}
-        quantiles_result = get_command_output('quantiles', arguments).get('quantiles')
-        result_dict = {}
-        for p in quantiles_result:
-            result_dict[p.get("quantile")] = p.get("value")
-        return result_dict
-
     def drop(self, frame, predicate):
         from itertools import ifilterfalse  # use the REST API filter, with a ifilterfalse iterator
         http_ready_function = prepare_row_function(frame, predicate, ifilterfalse)
-        arguments = {'frame': self._get_frame_full_uri(frame), 'predicate': http_ready_function}
+        arguments = {'frame': self.get_ia_uri(frame), 'predicate': http_ready_function}
         execute_update_frame_command("filter", arguments, frame)
 
     def drop_duplicates(self, frame, columns):
@@ -281,7 +262,7 @@ class FrameBackendRest(object):
     def filter(self, frame, predicate):
         from itertools import ifilter
         http_ready_function = prepare_row_function(frame, predicate, ifilter)
-        arguments = {'frame': self._get_frame_full_uri(frame), 'predicate': http_ready_function}
+        arguments = {'frame': self.get_ia_uri(frame), 'predicate': http_ready_function}
         execute_update_frame_command("filter", arguments, frame)
 
     def flatten_column(self, frame, column_name):
@@ -301,7 +282,7 @@ class FrameBackendRest(object):
         if not colTypes[column_name] in [np.float32, np.float64, np.int32, np.int64]:
             raise ValueError("unable to bin non-numeric values")
         name = self._get_new_frame_name()
-        arguments = {'name': name, 'frame': frame._id, 'column_name': column_name, 'num_bins': num_bins, 'bin_type': bin_type, 'bin_column_name': bin_column_name}
+        arguments = {'name': name, 'frame': self.get_ia_uri(frame), 'column_name': column_name, 'num_bins': num_bins, 'bin_type': bin_type, 'bin_column_name': bin_column_name}
         return execute_new_frame_command('bin_column', arguments)
 
 
@@ -382,8 +363,8 @@ class FrameBackendRest(object):
         # TODO - fix REST server to accept nulls, for now we'll pass an empty list
         else:
             new_names = list(columns)
-        arguments = {'frame': self._get_frame_full_uri(frame),
-                     'projected_frame': self._get_frame_full_uri(projected_frame),
+        arguments = {'frame': self.get_ia_uri(frame),
+                     'projected_frame': self.get_ia_uri(projected_frame),
                      'columns': columns,
                      'new_column_names': new_names}
         execute_update_frame_command('project', arguments, projected_frame)
@@ -416,7 +397,7 @@ class FrameBackendRest(object):
                 raise TypeError("Bad type %s provided in aggregation arguments; expecting an aggregation function or a dictionary of column_name:[func]" % type(arg))
 
         name = self._get_new_frame_name()
-        arguments = {'frame': self._get_frame_full_uri(frame),
+        arguments = {'frame': self.get_ia_uri(frame),
                      'name': name,
                      'group_by_columns': group_by_columns,
                      'aggregations': aggregation_list}
@@ -438,7 +419,7 @@ class FrameBackendRest(object):
             new_names = column_names.values()
             column_names = column_names.keys()
 
-        arguments = {'frame': self._get_frame_full_uri(frame), "original_names": column_names, "new_names": new_names}
+        arguments = {'frame': self.get_ia_uri(frame), "original_names": column_names, "new_names": new_names}
         execute_update_frame_command('rename_columns', arguments, frame)
 
     def rename_frame(self, frame, name):
