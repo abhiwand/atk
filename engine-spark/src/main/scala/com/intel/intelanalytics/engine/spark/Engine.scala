@@ -1555,7 +1555,7 @@ TODO: delete me, code moved to separate plugin files
     frame.inspect()
 
     a:unicode   b:int32   labels:int32  predictions:int32
-                             |-------------------------------------------------------|
+    |-------------------------------------------------------|
     red               1              0                  0
     blue              3              1                  0
     blue              1              0                  0
@@ -1602,12 +1602,20 @@ TODO: delete me, code moved to separate plugin files
     val labelColumnIndex = frameSchema.columnIndex(arguments.labelColumn)
     val predColumnIndex = frameSchema.columnIndex(arguments.predColumn)
 
-    if (arguments.posLabel == None) {
+    val metricsPoslabel: String = arguments.posLabel.isDefined match {
+      case false => null
+      case true => arguments.posLabel.get match {
+        case Left(x) => x
+        case Right(x) => x.toString
+      }
+    }
+
+    if (metricsPoslabel == null) {
       val metrics = ClassificationMetrics.multiclassClassificationMetrics(frameRdd, labelColumnIndex, predColumnIndex, betaValue)
       ClassificationMetricValue(fMeasure = metrics._1, accuracy = metrics._2, recall = metrics._3, precision = metrics._4, confusionMatrix = metrics._5)
     }
     else {
-      val metrics = ClassificationMetrics.binaryClassificationMetrics(frameRdd, labelColumnIndex, predColumnIndex, arguments.posLabel.toString, betaValue)
+      val metrics = ClassificationMetrics.binaryClassificationMetrics(frameRdd, labelColumnIndex, predColumnIndex, metricsPoslabel, betaValue)
       ClassificationMetricValue(fMeasure = metrics._1, accuracy = metrics._2, recall = metrics._3, precision = metrics._4, confusionMatrix = metrics._5)
     }
   }

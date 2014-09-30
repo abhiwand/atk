@@ -40,12 +40,19 @@ class ClassificationMetricsResult(object):
 class ConfusionMatrix():
 
     def __init__(self, confusion_matrix_result):
-        self.true_positive = confusion_matrix_result['tp']
-        self.false_negative = confusion_matrix_result['fn']
-        self.false_positive = confusion_matrix_result['fp']
-        self.true_negative = confusion_matrix_result['tn']
+        if len(confusion_matrix_result) > 0:
+            self.true_positive = confusion_matrix_result['tp']
+            self.false_negative = confusion_matrix_result['fn']
+            self.false_positive = confusion_matrix_result['fp']
+            self.true_negative = confusion_matrix_result['tn']
+            self.defined = True
+        else:
+            self.defined = False
 
     def __repr__(self):
-        return "\t\tPredicted \n\t\t_pos_ _neg_ \nActual    pos\t| {0}    {1}\n\t  neg\t| {2}    {3}".format(self.true_positive,self.false_negative,self.false_positive,self.true_negative)
+        if self.defined:
+            return "\t\tPredicted \n\t\t_pos_ _neg_ \nActual    pos\t| {0}    {1}\n\t  neg\t| {2}    {3}".format(self.true_positive,self.false_negative,self.false_positive,self.true_negative)
+        else:
+            return "Confusion Matrix is not supported for multi class classifiers"
 
 
