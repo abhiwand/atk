@@ -1587,7 +1587,7 @@ class BigFrame(CommandLoadableBigFrame):
 
         """
         try:
-            d = self.classification_metrics(label_column, pred_column, pos_label, 1)
+            cm = self.classification_metrics(label_column, pred_column, pos_label, 1)
             return cm.precision
         except:
             raise IaError(logger)
