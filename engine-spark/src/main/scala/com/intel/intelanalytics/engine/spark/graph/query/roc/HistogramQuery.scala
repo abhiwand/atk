@@ -125,12 +125,13 @@ class HistogramQuery extends SparkCommandPlugin[HistogramParams, HistogramResult
                             |    dictionary
                             |        Dictionary containing prior histograms, and optionally the posterior histograms. The dictionary
                             |        entries are:
-                            |          * prior_histograms : An array of histograms of prior probabilities for each feature dimension.
+                            |
+                            |        *   prior_histograms : An array of histograms of prior probabilities for each feature dimension.
                             |            The histogram comprises of an array of buckets and corresponding counts.
                             |            The buckets are all open to the left except for the last which is closed,
                             |            e.g., for the array [1,5,10] the buckets are [1, 5) [5, 10].
                             |            The size of the counts array is smaller than the buckets array by 1.
-                            |          * posterior_histograms : An array of histograms of posterior probabilities for each
+                            |        *   posterior_histograms : An array of histograms of posterior probabilities for each
                             |            feature dimension.
                             |
                             |
