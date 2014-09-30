@@ -43,7 +43,7 @@ trait GraphStorage {
 
   def drop(graph: Graph)
 
-  def getGraphs(offset: Int, count: Int)(implicit user: UserPrincipal): Seq[Graph]
+  def getGraphs()(implicit user: UserPrincipal): Seq[Graph]
 
   def getGraphByName(name: String)(implicit user: UserPrincipal): Option[Graph]
 

@@ -57,12 +57,31 @@ case class Lbp(graph: GraphReference,
 
 case class LbpResult(value: String) //TODO
 
-class LoopyBeliefPropagation
-    extends CommandPlugin[Lbp, LbpResult] {
+/** Json conversion for arguments and return value case classes */
+object LbpJsonFormat {
   import DomainJsonProtocol._
   implicit val lbpFormat = jsonFormat15(Lbp)
   implicit val lbpResultFormat = jsonFormat1(LbpResult)
+}
 
+import LbpJsonFormat._
+
+class LoopyBeliefPropagation
+    extends CommandPlugin[Lbp, LbpResult] {
+
+  /**
+   * The name of the command, e.g. graphs/ml/loopy_belief_propagation
+   *
+   * The format of the name determines how the plugin gets "installed" in the client layer
+   * e.g Python client via code generation.
+   */
+  override def name: String = "graphs/ml/loopy_belief_propagation"
+
+  /**
+   * User documentation exposed in Python.
+   *
+   * [[http://docutils.sourceforge.net/rst.html ReStructuredText]]
+   */
   override def doc = Some(CommandDoc(oneLineSummary = "Loopy belief propagation on Markov Random Fields(MRF).",
     extendedSummary = Some("""
     Extended Summary
@@ -200,17 +219,4 @@ class LoopyBeliefPropagation
       config, giraphConf, invocation, "lbp-learning-report_0"))
   }
 
-  //TODO: Replace with generic code that works on any case class
-  def parseArguments(arguments: JsObject) = arguments.convertTo[Lbp]
-
-  //TODO: Replace with generic code that works on any case class
-  def serializeReturn(returnValue: LbpResult): JsObject = returnValue.toJson.asJsObject
-
-  /**
-   * The name of the command, e.g. graphs/ml/loopy_belief_propagation
-   */
-  override def name: String = "graphs/ml/loopy_belief_propagation"
-
-  //TODO: Replace with generic code that works on any case class
-  override def serializeArguments(arguments: Lbp): JsObject = arguments.toJson.asJsObject()
 }

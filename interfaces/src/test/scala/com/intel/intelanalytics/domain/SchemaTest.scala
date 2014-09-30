@@ -25,4 +25,16 @@ class SchemaTest extends FlatSpec with Matchers {
     schema.columnIndex(Seq()) shouldBe List(0, 1, 2)
   }
 
+  "Schema" should "be able to report column data types for first column" in {
+    val columns: List[(String, DataType)] = List(("a", int64), ("b", float32), ("c", string))
+    val schema = Schema(columns)
+    schema.columnDataType("a") shouldBe int64
+  }
+
+  it should "be able to report column data types for last column" in {
+    val columns: List[(String, DataType)] = List(("a", int64), ("b", float32), ("c", string))
+    val schema = Schema(columns)
+    schema.columnDataType("c") shouldBe string
+  }
+
 }

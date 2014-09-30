@@ -45,6 +45,10 @@ trait Engine {
   type Identifier = Long //TODO: make more generic?
   val pageSize: Int
 
+  val frames: FrameStorage
+
+  val graphs: GraphStorage
+
   /**
    * Executes the given command template, managing all necessary auditing, contexts, class loaders, etc.
    *
@@ -71,6 +75,8 @@ trait Engine {
 
   def getQueryPage(id: Identifier, pageId: Identifier)(implicit user: UserPrincipal): QueryDataResult
 
+  def getUserPrincipal(apiKey: String): UserPrincipal
+
   def getFrame(id: Identifier)(implicit user: UserPrincipal): Future[Option[DataFrame]]
 
   def getRows(arguments: RowQuery[Identifier])(implicit user: UserPrincipal): Future[QueryDataResult]
@@ -79,54 +85,9 @@ trait Engine {
 
   def create(frame: DataFrameTemplate)(implicit user: UserPrincipal): Future[DataFrame]
 
-  def load(arguments: Load)(implicit user: UserPrincipal): Execution
-
-  def filter(arguments: FilterPredicate[JsObject, Long])(implicit user: UserPrincipal): Execution
-
-  def project(arguments: FrameProject[JsObject, Long])(implicit user: UserPrincipal): Execution
-
-  def assignSample(arguments: AssignSample)(implicit user: UserPrincipal): Execution
-
-  def renameFrame(arguments: RenameFrame)(implicit user: UserPrincipal): Execution
-
-  def renameColumns(arguments: FrameRenameColumns[JsObject, Long])(implicit user: UserPrincipal): Execution
-
-  def dropColumns(arguments: FrameDropColumns)(implicit user: UserPrincipal): Execution
-
-  def addColumns(arguments: FrameAddColumns[JsObject, Long])(implicit user: UserPrincipal): Execution
-
   def delete(frame: DataFrame): Future[Unit]
 
-  /**
-   * Remove duplicates rows, keeping only one row per uniqueness criteria match
-   * @param dropDuplicateCommand command for dropping duplicates
-   * @param user current user
-   */
-  def dropDuplicates(dropDuplicateCommand: DropDuplicates)(implicit user: UserPrincipal): Execution
-
-  def join(argument: FrameJoin)(implicit user: UserPrincipal): Execution
-
-  def flattenColumn(argument: FlattenColumn)(implicit user: UserPrincipal): Execution
-
-  def binColumn(arguments: BinColumn[Long])(implicit user: UserPrincipal): Execution
-
-  def columnSummaryStatistics(arguments: ColumnSummaryStatistics)(implicit user: UserPrincipal): Execution
-
-  def columnMedian(arguments: ColumnMedian)(implicit user: UserPrincipal): Execution
-
-  def columnMode(arguments: ColumnMode)(implicit user: UserPrincipal): Execution
-
-  // TODO TRIB-2245
-  /*
-  def columnFullStatistics(arguments: ColumnFullStatistics)(implicit user: UserPrincipal): Execution
-
-  */
-
-  def confusionMatrix(arguments: ConfusionMatrix[Long])(implicit user: UserPrincipal): Execution
-
-  def groupBy(arguments: FrameGroupByColumn[JsObject, Long])(implicit user: UserPrincipal): Execution
-
-  def getFrames(offset: Int, count: Int)(implicit p: UserPrincipal): Future[Seq[DataFrame]]
+  def getFrames()(implicit p: UserPrincipal): Future[Seq[DataFrame]]
 
   def getFrameByName(name: String)(implicit p: UserPrincipal): Future[Option[DataFrame]]
 
@@ -134,25 +95,13 @@ trait Engine {
 
   def getGraph(id: Identifier): Future[Graph]
 
-  def getGraphs(offset: Int, count: Int)(implicit user: UserPrincipal): Future[Seq[Graph]]
+  def getGraphs()(implicit user: UserPrincipal): Future[Seq[Graph]]
 
   def getGraphByName(name: String)(implicit user: UserPrincipal): Future[Option[Graph]]
 
   def createGraph(graph: GraphTemplate)(implicit user: UserPrincipal): Future[Graph]
 
-  def renameGraph(rename: RenameGraph)(implicit user: UserPrincipal): Execution
-
-  def loadGraph(graph: GraphLoad)(implicit user: UserPrincipal): Execution
-
   def deleteGraph(graph: Graph): Future[Unit]
-
-  def cumulativeDist(arguments: CumulativeDist[Long])(implicit user: UserPrincipal): Execution
-
-  // Model performance measures
-
-  def classificationMetric(arguments: ClassificationMetric[Long])(implicit user: UserPrincipal): Execution
-
-  def ecdf(arguments: ECDF[Long])(implicit user: UserPrincipal): Execution
 
   /**
    * Cancel a running command

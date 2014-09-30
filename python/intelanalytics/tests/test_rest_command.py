@@ -4,6 +4,7 @@ iatest.init()
 import unittest
 from mock import patch, Mock
 from intelanalytics.rest.command import ProgressPrinter
+from intelanalytics.rest.command import Executor
 
 
 class TestRestCommand(unittest.TestCase):
@@ -100,7 +101,6 @@ class TestRestCommand(unittest.TestCase):
         self.assertEqual(write_queue[2], "\r[=========================] 100.00% Tasks retries:0 Time 0:00:00\n")
         self.assertEqual(write_queue[3], "\r[=========================] 100.00% Tasks retries:0 Time 0:00:00\n")
         self.assertEqual(write_queue[4], "\r[=========================] 100.00% Tasks retries:0 Time 0:00:00\n")
-
 
 if __name__ == '__main__':
     unittest.main()

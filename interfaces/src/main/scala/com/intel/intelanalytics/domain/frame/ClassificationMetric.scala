@@ -23,10 +23,12 @@
 
 package com.intel.intelanalytics.domain.frame
 
-case class ClassificationMetric[FrameRef](frameId: FrameRef, metricType: String, labelColumn: String, predColumn: String, posLabel: String, beta: Double) {
+case class ClassificationMetric(frame: FrameReference, metricType: String, labelColumn: String, predColumn: String, posLabel: String, beta: Double) {
+  require(frame != null, "ClassificationMetric requires a non-null dataframe.")
   require(metricType.equals("accuracy") ||
     metricType.equals("precision") ||
     metricType.equals("recall") ||
+    metricType.equals("confusion_matrix") ||
     metricType.equals("f_measure"), "valid metric type is required")
   require(labelColumn != null && !labelColumn.equals(""), "label column is required")
   require(predColumn != null && !predColumn.equals(""), "predict column is required")
@@ -34,4 +36,4 @@ case class ClassificationMetric[FrameRef](frameId: FrameRef, metricType: String,
   require(beta > 0, "invalid beta value for f measure")
 }
 
-case class ClassificationMetricValue(metricValue: Double)
+case class ClassificationMetricValue(metricValue: Option[Double] = None, valueList: Option[Seq[Long]] = None)

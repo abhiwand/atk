@@ -31,13 +31,13 @@ import com.intel.intelanalytics.engine.spark.context.SparkContextManager
 import com.intel.intelanalytics.engine.spark.plugin.SparkInvocation
 import com.intel.intelanalytics.engine.spark.{ SparkEngine, SparkEngineConfig }
 import com.intel.intelanalytics.security.UserPrincipal
-import com.intel.intelanalytics.shared.EventLogging
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import spray.json._
 
 import scala.concurrent._
 import scala.util.Try
+import com.intel.event.EventLogging
 
 /**
  * QueryExecutor manages a registry of QueryPlugins and executes them on request.
@@ -132,12 +132,8 @@ class QueryExecutor(engine: => SparkEngine, queries: SparkQueryStorage, contextM
 
                 val funcResult = query(invocation, arguments)
 
-                val rdd = funcResult match {
-                  case x: RDD[Any] => x
-                  case x: Seq[Any] => context.parallelize(x)
-                  case x: Iterable[Any] => context.parallelize(x.toSeq)
-                  case _ => ???
-                }
+                val rdd: RDD[Any] = funcResult.asInstanceOf[RDD[Any]]
+
                 val location = queries.getAbsoluteQueryDirectory(q.id)
                 val pageSize = SparkEngineConfig.pageSize
                 val totalPages = math.ceil(rdd.count().toDouble / pageSize).toInt

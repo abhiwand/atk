@@ -30,7 +30,6 @@ import com.intel.intelanalytics.domain.frame.{ DataFrame, DataFrameTemplate }
 import com.intel.intelanalytics.domain.graph.{ Graph, GraphTemplate }
 import com.intel.intelanalytics.domain.query.{ QueryTemplate, Query => QueryRecord }
 import com.intel.intelanalytics.domain.schema.Schema
-import com.intel.intelanalytics.shared.EventLogging
 import org.joda.time.DateTime
 import scala.slick.driver.{ JdbcDriver, JdbcProfile }
 import org.flywaydb.core.Flyway
@@ -51,6 +50,7 @@ import com.intel.intelanalytics.domain.command.CommandTemplate
 import com.intel.intelanalytics.domain.Error
 import com.intel.intelanalytics.domain.graph.GraphTemplate
 import com.intel.intelanalytics.domain.UserTemplate
+import com.intel.event.EventLogging
 
 trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
 
@@ -86,6 +86,8 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
   )
 
   private[repository] val database = withContext("Connecting to database") {
+    info("JDBC Connection String: " + profile.connectionString)
+    info("JDBC Driver: " + profile.driver)
     Database.forURL(profile.connectionString, driver = profile.driver, user = profile.username, password = profile.password)
   }
 
@@ -108,10 +110,10 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
      */
     override def initializeSchema(): Unit = {
 
-      withSession("Verifying schema") {
+      withSession("initializing/verifying schema") {
         implicit session =>
           if (profile.isH2) {
-            info("Creating schema")
+            info("Creating schema using H2")
             // Tables that are dependencies for other tables need to go first
             statusRepo.asInstanceOf[SlickStatusRepository].createTable
             statusRepo.asInstanceOf[SlickStatusRepository].initializeValues
@@ -121,6 +123,13 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
             queryRepo.asInstanceOf[SlickQueryRepository].createTable // depends on user
             graphRepo.asInstanceOf[SlickGraphRepository].createTable // depends on user, status
             info("Schema creation completed")
+
+            //populate the database with some test users from the specified file (for testing), read from the resources folder
+            val apiKey = "test_api_key_1"
+            info(s"Creating test user with api key $apiKey")
+            userRepo.insert(new UserTemplate(apiKey)).get
+            assert(userRepo.scan().length > 0, "No user was created")
+            assert(userRepo.retrieveByColumnValue("api_key", apiKey).length == 1, "User not found by api key")
           }
           else {
             info("Running migrations to create/update schema as needed, jdbcUrl: " + profile.connectionString +
@@ -157,7 +166,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
 
     override lazy val statusRepo: Repository[Session, Status, Status] = new SlickStatusRepository
 
-    override lazy val graphRepo: Repository[Session, GraphTemplate, Graph] = new SlickGraphRepository
+    override lazy val graphRepo: GraphRepository[Session] = new SlickGraphRepository
 
     override lazy val frameRepo: FrameRepository[Session] = new SlickFrameRepository
 
@@ -443,6 +452,10 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
       _insertFrame(frame)(session)
     }
 
+    override def scanAll()(implicit session: Session): Seq[DataFrame] = {
+      frames.list
+    }
+
     override def scan(offset: Int = 0, count: Int = defaultScanCount)(implicit session: Session): Seq[DataFrame] = {
       frames.drop(offset).take(count).list
     }
@@ -675,7 +688,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
    * think that would be helpful but beware: That sort of thing mutates as the graph evolves so keeping it current
    * will require tracking.
    */
-  class SlickGraphRepository extends Repository[Session, GraphTemplate, Graph]
+  class SlickGraphRepository extends GraphRepository[Session]
       with EventLogging {
     this: Repository[Session, GraphTemplate, Graph] =>
 
@@ -736,6 +749,10 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
 
     override def scan(offset: Int = 0, count: Int = defaultScanCount)(implicit session: Session): Seq[Graph] = {
       graphs.drop(offset).take(count).list
+    }
+
+    override def scanAll()(implicit session: Session): Seq[Graph] = {
+      graphs.list
     }
 
     override def lookup(id: Long)(implicit session: Session): Option[Graph] = {

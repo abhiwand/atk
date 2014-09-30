@@ -24,9 +24,9 @@
 package com.intel.intelanalytics.engine.spark.frame
 
 import com.intel.intelanalytics.domain.frame.DataFrame
-import com.intel.intelanalytics.shared.EventLogging
 import com.intel.intelanalytics.engine.spark.HdfsFileStorage
 import org.apache.hadoop.fs.Path
+import com.intel.event.EventLogging
 
 /**
  * Frame storage in HDFS.
@@ -68,7 +68,6 @@ class FrameFileStorage(fsRoot: String,
       // TODO: It would be nice to throw an Exception here but we probably need to handle locking first
       hdfs.delete(path)
     }
-    hdfs.createDirectory(path)
     path
   }
 
@@ -100,6 +99,16 @@ class FrameFileStorage(fsRoot: String,
   /** Base dir for a frame */
   private[frame] def frameBaseDirectory(frameId: Long): Path = {
     new Path(framesBaseDirectory + "/" + frameId)
+  }
+
+  /**
+   * Determine if a dataFrame is saved as parquet
+   * @param dataFrame the data frame to verify
+   * @return true if the data frame is saved in the parquet format
+   */
+  private[frame] def isParquet(dataFrame: DataFrame): Boolean = {
+    val path = currentFrameRevision(dataFrame)
+    hdfs.globList(path, "*.parquet").length > 0
   }
 
 }

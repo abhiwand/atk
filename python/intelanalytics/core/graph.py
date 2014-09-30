@@ -26,46 +26,50 @@ f, f2 = {}, {}
 
 import logging
 logger = logging.getLogger(__name__)
+from intelanalytics.core.api import get_api_decorator
+api = get_api_decorator(logger)
+
 import uuid
 
 from intelanalytics.core.serialize import to_json
 from intelanalytics.core.column import BigColumn
-from intelanalytics.core.command import CommandSupport
+from intelanalytics.core.metaprog import CommandLoadable
+
+try:
+    from intelanalytics.core.autograph import CommandLoadableBigGraph
+    logger.info("BigGraph is inheriting commands from autograph.py")
+except Exception as e:
+    msg = "autograph.py not found, BigGraph is NOT inheriting commands from it\n%s" % e
+    logger.warn(msg)
+    import warnings
+    warnings.warn(msg, RuntimeWarning)
+    CommandLoadableBigGraph = CommandLoadable
 
 from intelanalytics.core.deprecate import deprecated
-
-# try:
-#     from intelanalytics.core.autograph import CommandLoadableBigGraph as command_loadable
-#     logger.info("BigGraph is inheriting commands from autograph.py")
-# except:
-#     #logger.info("autograph.py not found, BigGraph is NOT inheriting commands from it")
-#     logger.info("BigGraph is still using older CommandSupport")
-#     command_loadable = CommandSupport
-command_loadable = CommandSupport  # TODO - enable BigGraph to use autograph.py
 
 
 def _get_backend():
     from intelanalytics.core.config import get_graph_backend
     return get_graph_backend()
 
-
+@api
 def get_graph_names():
     """
     Get graph names.
 
     Gets the names of BigGraph objects available for retrieval.
-    
+
     Returns
     -------
     list of string
         A list comprised of the graph names
-        
+
     Examples
     --------
     We have these graphs defined: movies, incomes, virus.
     Get the graph names::
 
-        my_names = get_graph_names()
+        my_names = ia.get_graph_names()
 
     my_names is now ["incomes", "movies", "virus"]
 
@@ -75,29 +79,29 @@ def get_graph_names():
     # TODO - Review docstring
     return _get_backend().get_graph_names()
 
-
+@api
 def get_graph(name):
     """
     Get graph access.
 
     Creates a BigGraph access point to the named graph.
-    
+
     Parameters
     ----------
     name : string
         The name of the graph you are obtaining
-        
+
     Returns
     -------
     graph
         A BigGraph object
-    
+
     Examples
     --------
     We have these graphs defined: movies, incomes, virus.
     Get access to the graph *virus*::
 
-        my_graph = get_graph("virus")
+        my_graph = ia.get_graph("virus")
 
     my_graph is now a BigGraph object with access to the graph *virus*.
 
@@ -112,31 +116,31 @@ def get_graph(name):
 def delete_graph(name):
     return drop_graphs(name)
 
-
+@api
 def drop_graphs(graphs):
     """
     Deletes graphs from backing store.
-    
+
     Parameters
     ----------
     graphs : string or BigGraph
         Either the name of the BigGraph object to delete or the BigGraph object itself
-        
+
     Returns
     -------
     string
         The name of the graph you erased
-    
+
     Examples
     --------
     We have these graphs defined: movies, incomes, virus.
     Delete the graph *incomes*::
 
-        my_gone = drop_graphs("incomes")
+        my_gone = ia.drop_graphs("incomes")
 
     my_gone is now a string with the value "incomes"
 
-    .. versionadded:: 0.8
+    .. versionchanged:: 0.8.5
 
     """
     # TODO - Review docstring
@@ -180,33 +184,6 @@ class Rule(object):
     def _validate_source(source, frame):
         """
         Source: String or BigColumn.
-
-        Checks that source is a BigColumn or a string. If it is neither, it raises an error.
-        If the frame is None, it is assigned the frame from the source.
-        If the frame is named and it differs from the source.frame, it raises an error.
-
-        Parameters
-        ----------
-        source
-            D
-        frame : string
-            D
-
-        Raises
-        ------
-        RuleWithDifferentFramesError()
-        TypeError
-
-        Returns
-        -------
-        string
-            The name of the frame
-
-        Examples
-        --------
-        ::
-
-            Example
 
         .. versionadded:: 0.8
 
@@ -290,8 +267,8 @@ class VertexRule(Rule):
     --------
     ::
 
-        movie_vertex = VertexRule('movie', my_frame['movie'], {'genre': my_frame['genre']})
-        user_vertex = VertexRule('user', my_frame['user'], {'age': my_frame['age_1']})
+        movie_vertex = ia.VertexRule('movie', my_frame['movie'], {'genre': my_frame['genre']})
+        user_vertex = ia.VertexRule('user', my_frame['user'], {'age': my_frame['age_1']})
 
     .. versionadded:: 0.8
 
@@ -364,8 +341,8 @@ class EdgeRule(Rule):
     Examples
     --------
     ::
-    
-        rating_edge = EdgeRule('rating', movie_vertex, user_vertex, {'weight': my_frame['score']})
+
+        rating_edge = ia.EdgeRule('rating', movie_vertex, user_vertex, {'weight': my_frame['score']})
 
     .. versionadded:: 0.8
 
@@ -431,7 +408,7 @@ class EdgeRule(Rule):
         return self._validate_same_frame(label_frame, tail_frame, head_frame, properties_frame)
 
 
-class BigGraph(command_loadable):
+class BigGraph(CommandLoadableBigGraph):
     """
     Creates a big graph.
 
@@ -449,40 +426,39 @@ class BigGraph(command_loadable):
     'rating' edges::
 
         # create a frame as the source for a graph
-        csv = CsvFile("/movie.csv", schema= [('user', int32),
+        csv = ia.CsvFile("/movie.csv", schema= [('user', int32),
                                             ('vertexType', str),
                                             ('movie', int32),
                                             ('rating', str)])
-        frame = BigFrame(csv)
+        frame = ia.BigFrame(csv)
 
         # define graph parsing rules
-        user = VertexRule("user", frame.user, {"vertexType": frame.vertexType})
-        movie = VertexRule("movie", frame.movie)
-        rates = EdgeRule("rating", user, movie, { "rating": frame.rating }, is_directed = True)
+        user = ia.VertexRule("user", frame.user, {"vertexType": frame.vertexType})
+        movie = ia.VertexRule("movie", frame.movie)
+        rates = ia.EdgeRule("rating", user, movie, { "rating": frame.rating }, is_directed = True)
 
         # create graph
-        graph = BigGraph([user, movie, rates])
+        graph = ia.BigGraph([user, movie, rates])
 
     .. versionadded:: 0.8
 
     """
 
     # command load filters:
-    command_prefixes = ['graph', 'graphs']
-    command_mute_list = ['load', 'rename_graph']  # these commands are not exposed
+    _command_prefixes = ['graph', 'graphs']
+    _muted_command_names = ['rename_graph']  # these commands are not exposed
 
     def __init__(self, rules=None, name=""):
         try:
             self._id = 0
+            self._ia_uri = None
             if not hasattr(self, '_backend'):
                 self._backend = _get_backend()
+            CommandLoadableBigGraph.__init__(self)
             new_graph_name= self._backend.create(self, rules, name)
-            CommandSupport.__init__(self)
             logger.info('Created new graph "%s"', new_graph_name)
         except:
             raise IaError(logger)
-
-
 
     def __repr__(self):
         try:
@@ -491,9 +467,10 @@ class BigGraph(command_loadable):
             return super(BigGraph,self).__repr__() + "(Unable to collect metadeta from server)"
 
     @property
+    @api
     def name(self):
         """
-        Get the name of the current ojbect.
+        Get the name of the current object.
 
         Returns
         -------
@@ -504,7 +481,7 @@ class BigGraph(command_loadable):
         --------
         ::
 
-            my_graph = BigGraph( , "my_data")
+            my_graph = ia.BigGraph( , "my_data")
             my_name = my_graph.name
 
         my_name is now a string with the value "my_data"
@@ -512,13 +489,10 @@ class BigGraph(command_loadable):
         .. versionadded:: 0.8
 
         """
-        # TODO - Review Docstring
-        try:
-            return self._backend.get_name(self)
-        except:
-            IaError(logger)
+        return self._backend.get_name(self)
 
     @name.setter
+    @api
     def name(self, value):
         """
         Set the name of the current object.
@@ -532,7 +506,7 @@ class BigGraph(command_loadable):
         --------
         ::
 
-            my_graph = BigGraph()
+            my_graph = ia.BigGraph()
             my_graph.name("my_data")
 
         my_graph is now a BigGraph object with the name "my_data"
@@ -542,16 +516,22 @@ class BigGraph(command_loadable):
         """
         # TODO - Review Docstring
         try:
-            self.rename_graph(value)
+            self._backend.rename_graph(self, value)
         except:
             raise IaError(logger)
 
+    @property
+    @api
+    def ia_uri(self):
+        return self._backend.get_ia_uri(self)
 
+    @api
     def append(self, rules=None):
         """
-        Append frame data to the current graph.  Append updates existing edges and vertices or creates new ones if they
-        do not exist. Vertices are considered the same if their id_key's and id_value's match.  Edges are considered
-        the same if they have the same source Vertex, destination Vertex, and label.
+        Append frame data to the current graph.
+        Append updates existing edges and vertices or creates new ones/ if they do not exist.
+        Vertices are considered the same if their id_key's and id_value's match.
+        Edges are considered the same if they have the same source Vertex, destination Vertex, and label.
 
         Parameters
         ----------
@@ -564,17 +544,17 @@ class BigGraph(command_loadable):
         This example shows appending new user and movie data to an existing graph::
 
             # create a frame as the source for additional data
-            csv = CsvFile("/movie.csv", schema= [('user', int32),
+            csv = ia.CsvFile("/movie.csv", schema= [('user', int32),
                                                 ('vertexType', str),
                                                 ('movie', int32),
                                                 ('rating', str)])
 
-            frame = BigFrame(csv)
+            frame = ia.BigFrame(csv)
 
             # define graph parsing rules
-            user = VertexRule("user", frame.user, {"vertexType": frame.vertexType})
-            movie = VertexRule("movie", frame.movie)
-            rates = EdgeRule("rating", user, movie, { "rating": frame.rating }, is_directed = True)
+            user = ia.VertexRule("user", frame.user, {"vertexType": frame.vertexType})
+            movie = ia.VertexRule("movie", frame.movie)
+            rates = ia.EdgeRule("rating", user, movie, { "rating": frame.rating }, is_directed = True)
 
             # append data from the frame to an existing graph
             graph.append([user, movie, rates])
@@ -582,26 +562,26 @@ class BigGraph(command_loadable):
         This example shows creating a graph from one frame and appending data to it from other frames::
 
             # create a frame as the source for a graph
-            ratingsFrame = BigFrame(CsvFile("/ratings.csv", schema= [('userId', int32),
+            ratingsFrame = ia.BigFrame(ia.CsvFile("/ratings.csv", schema= [('userId', int32),
                                                   ('movieId', int32),
                                                   ('rating', str)]))
 
             # define graph parsing rules
-            user = VertexRule("user", ratingsFrame.userId)
-            movie = VertexRule("movie", ratingsFrame.movieId)
-            rates = EdgeRule("rating", user, movie, { "rating": ratingsFrame.rating }, is_directed = True)
+            user = ia.VertexRule("user", ratingsFrame.userId)
+            movie = ia.VertexRule("movie", ratingsFrame.movieId)
+            rates = ia.EdgeRule("rating", user, movie, { "rating": ratingsFrame.rating }, is_directed = True)
 
             # create graph
-            graph = BigGraph([user, movie, rates])
+            graph = ia.BigGraph([user, movie, rates])
 
             # load additional properties onto the user vertices
-            usersFrame = BigFrame(CsvFile("/users.csv", schema= [('userId', int32), ('name', str), ('age', int32)]))
-            userAdditional = VertexRule("user", usersFrame.userId, {"userName": usersFrame.name, "age": usersFrame.age })
+            usersFrame = ia.BigFrame(ia.CsvFile("/users.csv", schema= [('userId', int32), ('name', str), ('age', int32)]))
+            userAdditional = ia.VertexRule("user", usersFrame.userId, {"userName": usersFrame.name, "age": usersFrame.age })
             graph.append([userAdditional])
 
             # load additional properties onto the movie vertices
-            movieFrame = BigFrame(CsvFile("/movies.csv", schema= [('movieId', int32), ('title', str), ('year', int32)]))
-            movieAdditional = VertexRule("movie", movieFrame.movieId, {"title": movieFrame.title, "year": movieFrame.year })
+            movieFrame = ia.BigFrame(ia.CsvFile("/movies.csv", schema= [('movieId', int32), ('title', str), ('year', int32)]))
+            movieAdditional = ia.VertexRule("movie", movieFrame.movieId, {"title": movieFrame.title, "year": movieFrame.year })
             graph.append([movieAdditional])
 
         .. versionadded:: 0.8

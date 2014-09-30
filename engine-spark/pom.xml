@@ -5,15 +5,30 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>engine-spark</artifactId>
     <packaging>jar</packaging>
+    <name>engine-spark</name>
+    <description>
+        This is a Spark implementation of the Engine.  In the future there might be other execution engines
+        for the Engine besides Spark.
+
+        Most business logic goes here.
+
+        The Engine should NOT be aware of REST or HTTP.
+    </description>
 
     <parent>
         <groupId>com.intel.ia</groupId>
         <artifactId>IntelAnalytics</artifactId>
         <relativePath>../pom.xml</relativePath>
-        <version>0.8.0-SNAPSHOT</version>
+        <version>0.8.6-SNAPSHOT</version>
     </parent>
 
     <build>
+        <!--
+            sourceDirectory and testSourceDirectory don't seem to be needed by Maven but they
+            seem to help IntelliJ import projects correctly (but aren't needed on every module)
+        -->
+        <sourceDirectory>src/main/scala</sourceDirectory>
+        <testSourceDirectory>src/test/scala</testSourceDirectory>
         <plugins>
             <plugin>
                 <groupId>net.alchim31.maven</groupId>
@@ -29,6 +44,7 @@
             </plugin>
         </plugins>
     </build>
+
     <dependencies>
 
         <!--START BDA dependencies to our modules-->
@@ -38,15 +54,15 @@
         </dependency>
         <dependency>
             <groupId>com.intel.ia</groupId>
+            <artifactId>shared</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.intel.ia</groupId>
             <artifactId>interfaces</artifactId>
         </dependency>
         <dependency>
             <groupId>com.intel.ia</groupId>
             <artifactId>launcher</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.intel.ia</groupId>
-            <artifactId>shared</artifactId>
         </dependency>
         <dependency>
             <groupId>com.intel.ia</groupId>
@@ -64,12 +80,20 @@
                     <groupId>org.apache.servicemix.bundles</groupId>
                     <artifactId>org.apache.servicemix.bundles.commons-csv</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>javax.servlet</groupId>
+                    <artifactId>servlet-api</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.mortbay.jetty</groupId>
+                    <artifactId>servlet-api-2.5</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
         <dependency>
             <groupId>com.intel.ia</groupId>
             <artifactId>imllib</artifactId>
-            <version>0.8.0-SNAPSHOT</version>
+            <version>0.8.6-SNAPSHOT</version>
             <exclusions>
                 <exclusion>
                     <groupId>com.intel.ia</groupId>
@@ -85,8 +109,15 @@
         <!--END BDA dependencies to our modules-->
 
         <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>2.2.2</version>
+        </dependency>
+
+        <dependency>
             <groupId>org.apache.spark</groupId>
             <artifactId>spark-core_${scala.short.version}</artifactId>
+            <version>${dep.spark.version}</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.mortbay.jetty</groupId>
@@ -119,8 +150,31 @@
             </exclusions>
         </dependency>
         <dependency>
-            <groupId>com.typesafe.slick</groupId>
-            <artifactId>slick_${scala.short.version}</artifactId>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-sql_${scala.short.version}</artifactId>
+            <version>${dep.spark.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.typesafe</groupId>
+                    <artifactId>scalalogging-slf4j_2.10</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.spark</groupId>
+                    <artifactId>spark-core_${scala.short.version}</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.scala-lang</groupId>
+                    <artifactId>scala-reflect</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.scalacheck</groupId>
+                    <artifactId>scala_check_${scala.short.version}</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.scalatest</groupId>
+                    <artifactId>scalatest_${scala.short.version}</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.apache.hadoop</groupId>
@@ -134,16 +188,40 @@
                     <groupId>org.slf4j</groupId>
                     <artifactId>slf4j-log4j12</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>javax.servlet</groupId>
+                    <artifactId>servlet-api</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.mortbay.jetty</groupId>
+                    <artifactId>servlet-api-2.5</artifactId>
+                </exclusion>
             </exclusions>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-mapreduce-client-core</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>javax.servlet</groupId>
+                    <artifactId>servlet-api</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.mortbay.jetty</groupId>
+                    <artifactId>servlet-api-2.5</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-mapreduce-client-jobclient</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>javax.servlet</groupId>
+                    <artifactId>servlet-api</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.apache.hadoop</groupId>
@@ -161,6 +239,14 @@
                 <exclusion>
                     <groupId>org.slf4j</groupId>
                     <artifactId>slf4j-log4j12</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>javax.servlet</groupId>
+                    <artifactId>servlet-api</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.mortbay.jetty</groupId>
+                    <artifactId>servlet-api-2.5</artifactId>
                 </exclusion>
             </exclusions>
             <scope>compile</scope>
@@ -182,6 +268,5 @@
             <artifactId>mockito-all</artifactId>
             <scope>test</scope>
         </dependency>
-
     </dependencies>
 </project>

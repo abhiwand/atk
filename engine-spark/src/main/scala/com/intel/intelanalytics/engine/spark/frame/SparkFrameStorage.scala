@@ -23,12 +23,12 @@
 
 package com.intel.intelanalytics.engine.spark.frame
 
+import com.intel.intelanalytics.NotFoundException
 import com.intel.intelanalytics.component.ClassLoaderAware
 import com.intel.intelanalytics.engine._
 import com.intel.intelanalytics.domain.schema.DataTypes
 import DataTypes.DataType
 import java.nio.file.Paths
-import com.intel.intelanalytics.shared.EventLogging
 
 import scala.io.Codec
 import org.apache.spark.rdd.RDD
@@ -36,15 +36,15 @@ import com.intel.intelanalytics.engine.spark._
 import org.apache.spark.SparkContext
 import scala.util.matching.Regex
 import java.util.concurrent.atomic.AtomicLong
-import com.intel.intelanalytics.domain.frame.Column
+import com.intel.intelanalytics.domain.frame.{ FrameReference, Column, DataFrameTemplate, DataFrame }
 import com.intel.intelanalytics.engine.FrameStorage
 import com.intel.intelanalytics.repository.{ SlickMetaStoreComponent, MetaStoreComponent }
 import com.intel.intelanalytics.engine.plugin.Invocation
 import scala.Some
-import com.intel.intelanalytics.domain.frame.DataFrameTemplate
 import com.intel.intelanalytics.security.UserPrincipal
-import com.intel.intelanalytics.domain.frame.DataFrame
 import com.intel.intelanalytics.engine.spark.plugin.SparkInvocation
+import org.apache.spark.sql.{ SQLContext, SchemaRDD }
+import com.intel.event.EventLogging
 
 class SparkFrameStorage(frameFileStorage: FrameFileStorage,
                         maxRows: Int,
@@ -55,6 +55,12 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
 
   import Rows.Row
 
+  override def expectFrame(frameId: Long): DataFrame = {
+    lookup(frameId).getOrElse(throw new NotFoundException("dataframe", frameId.toString))
+  }
+
+  override def expectFrame(frameRef: FrameReference): DataFrame = expectFrame(frameRef.id)
+
   /**
    * Create a FrameRDD or throw an exception if bad frameId is given
    * @param ctx spark context
@@ -63,7 +69,7 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
    */
   def loadFrameRdd(ctx: SparkContext, frameId: Long): FrameRDD = {
     val frame = lookup(frameId).getOrElse(
-      throw new IllegalArgumentException(s"No such data frame: ${frameId}"))
+      throw new IllegalArgumentException(s"No such data frame: $frameId"))
     loadFrameRdd(ctx, frame)
   }
 
@@ -79,25 +85,33 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
     }
     else {
       val absPath = frameFileStorage.currentFrameRevision(frame)
-      val rows = ctx.objectFile[Row](absPath.toString, sparkAutoPartitioner.partitionsForFile(absPath.toString))
-      new FrameRDD(frame.schema, rows)
+      val f: FrameRDD = if (frameFileStorage.isParquet(frame)) {
+        val sqlContext = new SQLContext(ctx)
+        val rows = sqlContext.parquetFile(absPath.toString)
+        new FrameRDD(frame.schema, rows)
+      }
+      else {
+        val rows = ctx.objectFile[Row](absPath.toString, sparkAutoPartitioner.partitionsForFile(absPath.toString))
+        new FrameRDD(frame.schema, rows)
+      }
+      f
     }
   }
 
   /**
    * Save a FrameRDD to HDFS - this is the only save path that should be used
-   * @param frameEntity
+   * @param frameEntity DataFrame representation
    * @param frameRdd the RDD
    * @param rowCount optionally provide the row count if you need to update it
    */
   def saveFrame(frameEntity: DataFrame, frameRdd: FrameRDD, rowCount: Option[Long] = None): DataFrame = {
-
     val oldRevision = frameEntity.revision
     val nextRevision = frameEntity.revision + 1
 
     val path = frameFileStorage.createFrameRevision(frameEntity, nextRevision)
 
-    frameRdd.saveAsObjectFile(path.toString)
+    val schemaRDD = frameRdd.toSchemaRDD()
+    schemaRDD.saveAsParquetFile(path.toString)
 
     metaStore.withSession("frame.saveFrame") {
       implicit session =>
@@ -117,16 +131,6 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
     expectFrame(frameEntity.id)
   }
 
-  /**
-   * Save a data frame
-   * @param frameEntity the data frame entity record from the meta store
-   * @param frameRdd the contents of the data frame
-   * @deprecated It is better to use saveFrame() rather than this version.
-   */
-  def saveFrameWithoutSchema(frameEntity: DataFrame, frameRdd: RDD[Array[Any]]): Unit = {
-    saveFrame(frameEntity, new FrameRDD(null, frameRdd))
-  }
-
   def getPagedRowsRDD(frame: DataFrame, offset: Long, count: Int, ctx: SparkContext)(implicit user: UserPrincipal): RDD[Row] =
     withContext("frame.getRows") {
       require(frame != null, "frame is required")
@@ -134,7 +138,7 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
       require(count > 0, "count must be zero or greater")
       withMyClassLoader {
         val rdd: RDD[Row] = loadFrameRdd(ctx, frame.id)
-        val rows = SparkOps.getPagedRdd[Row](rdd, offset, count, -1)
+        val rows = MiscFrameFunctions.getPagedRdd[Row](rdd, offset, count, -1)
         rows
       }
     }
@@ -148,7 +152,7 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
         val ctx = getContext(user)
         try {
           val rdd: RDD[Row] = loadFrameRdd(ctx, frame)
-          val rows = SparkOps.getRows(rdd, offset, count, maxRows)
+          val rows = MiscFrameFunctions.getRows(rdd, offset, count, maxRows)
           rows
         }
         finally {
@@ -262,10 +266,6 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
     new ParseResultRddWrapper(frameRdd, errorFrameRdd)
   }
 
-  def expectFrame(frameId: Long): DataFrame = {
-    lookup(frameId).getOrElse(throw new RuntimeException("Frame NOT found " + frameId))
-  }
-
   override def lookup(id: Long): Option[DataFrame] = {
     metaStore.withSession("frame.lookup") {
       implicit session =>
@@ -275,11 +275,11 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
     }
   }
 
-  override def getFrames(offset: Int, count: Int)(implicit user: UserPrincipal): Seq[DataFrame] = {
+  override def getFrames()(implicit user: UserPrincipal): Seq[DataFrame] = {
     metaStore.withSession("frame.getFrames") {
       implicit session =>
         {
-          metaStore.frameRepo.scan(offset, count)
+          metaStore.frameRepo.scanAll()
         }
     }
   }
@@ -346,6 +346,18 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
       None
     }
 
+  }
+
+  /**
+   * Automatically generate a name for a frame.
+   *
+   * The frame name comprises of the prefix "frame_", a random uuid, and an optional annotation.
+   *
+   * @param annotation Optional annotation to add to frame name
+   * @return Frame name
+   */
+  def generateFrameName(annotation: Option[String] = None): String = {
+    "frame_" + java.util.UUID.randomUUID().toString + annotation.getOrElse("")
   }
 
 }

@@ -27,13 +27,11 @@ import com.intel.intelanalytics.domain._
 import spray.json._
 import spray.http.Uri
 import scala.Some
-import com.intel.intelanalytics.repository.MetaStoreComponent
 import com.intel.intelanalytics.service.v1.viewmodels._
 import com.intel.intelanalytics.engine.{ Engine, EngineComponent }
 import scala.concurrent._
 import scala.util._
 import com.intel.intelanalytics.service.v1.viewmodels.GetGraph
-import com.intel.intelanalytics.shared.EventLogging
 import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.domain.graph.{ GraphTemplate, Graph }
 import com.intel.intelanalytics.domain.DomainJsonProtocol.DataTypeFormat
@@ -44,6 +42,7 @@ import com.intel.intelanalytics.service.v1.decorators.GraphDecorator
 import com.intel.intelanalytics.service.v1.viewmodels.ViewModelJsonImplicits
 import com.intel.intelanalytics.service.v1.viewmodels.Rel
 import com.intel.intelanalytics.spray.json.IADefaultJsonProtocol
+import com.intel.event.EventLogging
 
 //TODO: Is this right execution context for us?
 
@@ -101,7 +100,7 @@ class GraphService(commonDirectives: CommonDirectives, engine: Engine) extends D
                     }
                     case _ =>
                       //TODO: cursor
-                      onComplete(engine.getGraphs(0, 20)) {
+                      onComplete(engine.getGraphs()) {
                         case Success(graphs) =>
                           import IADefaultJsonProtocol._
                           implicit val indexFormat = ViewModelJsonImplicits.getGraphsFormat

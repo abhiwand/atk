@@ -1,22 +1,47 @@
 from intelanalytics import *
 
-csv = CsvFile("datasets/lp_edge.csv", schema= [("source", int64), ("input_value", str), ("target", int64), ("weight", float64)])
+#the default home directory is  hdfs://user/iauser all the sample data sets are saved to hdfs://user/iauser/datasets
+dataset = r"datasets/lp_edge.csv"
 
-print("Creating frame with name myframe1")
+#csv schema definition
+schema = [("source", int64),
+          ("input_value", str),
+          ("target", int64),
+          ("weight", float64)]
 
-f = BigFrame(csv, "myframe1")
+#csv schema definition
+csv = CsvFile(dataset, schema, skip_header_lines=1)
 
-source = VertexRule("source", f.source, {"input_value" : f.input_value})
+print "Building data frame 'lp'"
 
-target = VertexRule("target", f.target, {"input_value" : f.input_value})
+frame = BigFrame(csv, "lp")
 
-edge = EdgeRule("edge", source, target, {'weight': f.weight})
+print "Done building data frame"
 
-print("Creating graph with name mygraph1")
+print "Inspecting frame 'lp'"
 
-g = BigGraph([source, target, edge], "mygraph1")
+print frame.inspect()
 
-print("Running Label Propagation on Graph mygraph1")
+source = VertexRule("source", frame.source, {"input_value" : frame.input_value})
 
-g.ml.label_propagation(vertex_value_property_list = "input_value", edge_value_property_list  = "weight", input_edge_label_list = "edge",   output_vertex_property_list = "lp_posterior",   vector_value = "true",    max_supersteps = 10,   convergence_threshold = 0.0, anchor_threshold = 0.9, lp_lambda = 0.5, bidirectional_check = False)
+target = VertexRule("target", frame.target, {"input_value" : frame.input_value})
+
+edge = EdgeRule("edge", source, target, {'weight': frame.weight})
+
+print "Creating graph 'lp_graph'"
+
+graph = BigGraph([source, target, edge], "lp_graph")
+
+print "Running Label Propagation on Graph 'lp_graph'"
+
+print graph.ml.label_propagation(vertex_value_property_list="input_value",
+                                 edge_value_property_list="weight",
+                                 input_edge_label_list="edge",
+                                 output_vertex_property_list="lp_posterior",
+                                 vector_value="true",
+                                 max_supersteps=10,
+                                 convergence_threshold=0.0,
+                                 anchor_threshold=0.9,
+                                 lp_lambda=0.5,
+                                 bidirectional_check=False)
 
