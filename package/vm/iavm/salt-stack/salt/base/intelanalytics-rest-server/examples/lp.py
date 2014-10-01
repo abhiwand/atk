@@ -34,14 +34,14 @@ graph = BigGraph([source, target, edge], "lp_graph")
 
 print "Running Label Propagation on Graph 'lp_graph'"
 
-print graph.ml.label_propagation(vertex_value_property_list="input_value",
-                                 edge_value_property_list="weight",
-                                 input_edge_label_list="edge",
-                                 output_vertex_property_list="lp_posterior",
-                                 vector_value="true",
-                                 max_supersteps=10,
-                                 convergence_threshold=0.0,
-                                 anchor_threshold=0.9,
-                                 lp_lambda=0.5,
-                                 bidirectional_check=False)
+print graph.ml.label_propagation(vertex_value_property_list = ["input_value"],
+                                 edge_value_property_list = ["weight"],
+                                 input_edge_label_list = ["edge"],
+                                 output_vertex_property_list = ["lp_posterior"],
+                                 vector_value = True,
+                                 max_supersteps = 10,
+                                 convergence_threshold = 0.0,
+                                 anchor_threshold = 0.9,
+                                 lp_lambda = 0.5,
+                                 bidirectional_check = False)
 

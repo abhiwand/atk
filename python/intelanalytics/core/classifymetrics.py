@@ -25,6 +25,7 @@ Post Processing of classification metrics results
 """
 
 class ClassificationMetricsResult(object):
+    """ Defines the results for binary and multi class classification metrics  """
 
     def __init__(self, json_result):
         self.precision = json_result['precision']
@@ -38,6 +39,8 @@ class ClassificationMetricsResult(object):
 
 
 class ConfusionMatrix():
+    """ Defines the Confusion Matrix and pretty prints the values calculated for confusion matrix for binary
+    classifiers """
 
     def __init__(self, confusion_matrix_result):
         if len(confusion_matrix_result) > 0:

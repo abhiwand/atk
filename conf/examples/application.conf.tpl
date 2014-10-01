@@ -9,12 +9,26 @@
 # BEGIN REQUIRED SETTINGS
 
 intel.analytics {
+    #bind address - change to 0.0.0.0 to listen on all interfaces
+    //api.host = "127.0.0.1"
+
+    #bind port
+    //api.port = 9099
 
     # The host name for the Postgresql database in which the metadata will be stored
     //metastore.connection-postgresql.host = "invalid-postgresql-host"
+    //metastore.connection-postgresql.port = 5432
+    //metastore.connection-postgresql.database = "ia-metastore"
+    //metastore.connection-postgresql.username = "iauser"
+    //metastore.connection-postgresql.password = "myPassword"
+    metastore.connection-postgresql.url = "jdbc:postgresql://"${intel.analytics.metastore.connection-postgresql.host}":"${intel.analytics.metastore.connection-postgresql.port}"/"${intel.analytics.metastore.connection-postgresql.database}
+
+    # This allows for the use of postgres for a metastore. Service restarts will not affect the data stored in postgres
+    metastore.connection = ${intel.analytics.metastore.connection-postgresql}
+
     # This allows the use of an in memory data store. Restarting the rest server will create a fresh database and any
     # data in the h2 DB will be lost
-    metastore.connection = ${intel.analytics.metastore.connection-h2}
+    //metastore.connection = ${intel.analytics.metastore.connection-h2}
 
     engine {
 
@@ -53,12 +67,6 @@ intel.analytics {
       #a particular server or cluster
       //identifier = "ia"
 
-	  #bind address - change to 0.0.0.0 to listen on all interfaces
-      //host = "127.0.0.1"
-
-	  #bind port
-      //port = 9099
-
       #The default page size for result pagination
       //default-count = 20
 
@@ -68,18 +76,6 @@ intel.analytics {
       #HTTP request timeout for the api server
       //request-timeout = 29s
     }
-
-	#Connection information for the database where IAT will store its system metadata
-	metastore {
-	    connection-postgresql {
-          //port = 5432
-          //database = "metastore"
-		  //username = "metastore"
-		  //password = "Tribeca123"
-	    }
-
-		//connection = ${intel.analytics.metastore.connection-postgresql}
-	}
 
 	#Configuration for the IAT processing engine
 	engine {
