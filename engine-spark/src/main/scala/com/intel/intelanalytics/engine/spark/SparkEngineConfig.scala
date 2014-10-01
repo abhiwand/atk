@@ -24,19 +24,28 @@
 package com.intel.intelanalytics.engine.spark
 
 import com.intel.graphbuilder.util.SerializableBaseConfiguration
-import com.intel.intelanalytics.shared.{ EventLogging, SharedConfig }
-import com.typesafe.config.Config
+import com.typesafe.config.{ ConfigFactory, Config }
 import scala.collection.JavaConverters._
 import scala.concurrent.duration._
 import java.net.InetAddress
 import java.io.File
+import com.intel.event.EventLogging
 
 /**
  * Configuration Settings for the SparkEngine,
  *
  * This is our wrapper for Typesafe config.
  */
-object SparkEngineConfig extends SharedConfig with EventLogging {
+object SparkEngineConfig extends SparkEngineConfig
+
+/**
+ * Configuration Settings for the SparkEngine,
+ *
+ * This is our wrapper for Typesafe config.
+ */
+trait SparkEngineConfig extends EventLogging {
+
+  val config = ConfigFactory.load()
 
   // val's are not lazy because failing early is better
 
@@ -181,4 +190,20 @@ object SparkEngineConfig extends SharedConfig with EventLogging {
 
   // Python execution command for workers
   val pythonWorkerExec: String = config.getString("intel.analytics.engine.spark.python-worker-exec")
+
+  // val's are not lazy because failing early is better
+  val metaStoreConnectionUrl: String = nonEmptyString("intel.analytics.metastore.connection.url")
+  val metaStoreConnectionDriver: String = nonEmptyString("intel.analytics.metastore.connection.driver")
+  val metaStoreConnectionUsername: String = config.getString("intel.analytics.metastore.connection.username")
+  val metaStoreConnectionPassword: String = config.getString("intel.analytics.metastore.connection.password")
+
+  /**
+   * Get a String but throw Exception if it is empty
+   */
+  protected def nonEmptyString(key: String): String = {
+    config.getString(key) match {
+      case "" => throw new IllegalArgumentException(key + " cannot be empty!")
+      case s: String => s
+    }
+  }
 }

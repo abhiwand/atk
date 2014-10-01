@@ -24,12 +24,19 @@
 package com.intel.intelanalytics.engine.spark
 
 import java.io.{ InputStream, OutputStream }
-
-import com.intel.intelanalytics.shared.EventLogging
+import org.apache.commons.lang3.ArrayUtils
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{ Path, FileSystem, LocalFileSystem }
 import org.apache.hadoop.hdfs.DistributedFileSystem
+import com.intel.event.EventLogging
 
+/**
+ * HDFS Access
+ *
+ * IMPORTANT! Make sure you aren't breaking wild card support - it is easy to forget about
+ *
+ * @param fsRoot the root directory for IntelAnalytics e.g. "/user/iauser"
+ */
 class HdfsFileStorage(fsRoot: String) extends EventLogging {
 
   val configuration = withContext("HDFSFileStorage.configuration") {
@@ -129,8 +136,12 @@ class HdfsFileStorage(fsRoot: String) extends EventLogging {
    * @param path relative path
    */
   def size(path: String): Long = {
-    val p: Path = absolutePath(path)
-    fs.globStatus(p).map(fileStatus => fileStatus.getLen).reduce(_ + _)
+    val abPath: Path = absolutePath(path)
+    val fileStatuses = fs.globStatus(abPath)
+    if (ArrayUtils.isEmpty(fileStatuses.asInstanceOf[Array[AnyRef]])) {
+      throw new RuntimeException("No file found at path " + abPath)
+    }
+    fileStatuses.map(fileStatus => fileStatus.getLen).reduce(_ + _)
   }
 }
 
