@@ -1662,134 +1662,6 @@ TODO: delete me, code moved to separate plugin files
                             |
                             |   .. versionadded:: 0.8
                                 """.stripMargin))
-  val classificationMetricsCommand: CommandPlugin[ClassificationMetric, ClassificationMetricValue] = commandPluginRegistry.registerCommand("dataframe/classification_metrics", classificationMetricsSimple _, doc = Some(classificationMetricsDoc))
-=======
-  val classificationMetricsDoc = CommandDoc(oneLineSummary = "Computes Model accuracy, precision, recall, confusion matrix and f_measure (math:`F_{\\beta}`).",
-    extendedSummary = Some("""
-    Based on the *metric_type* argument provided, it computes the accuracy, precision, recall or :math:`F_{\\beta}` measure for a classification model
-
-    --- When metric_type provided is 'f_measure': Computes the :math:`F_{\\beta}` measure for a classification model.
-    A column containing the correct labels for each instance and a column containing the predictions made by the model are specified.
-    The :math:`F_{\\beta}` measure of a binary classification model is the harmonic mean of precision and recall.
-    If we let:
-
-    * beta :math:`\\equiv \\beta`,
-    * :math:`T_{P}` denote the number of true positives,
-    * :math:`F_{P}` denote the number of false positives, and
-    * :math:`F_{N}` denote the number of false negatives,
-
-    then:
-    .. math::
-      F_{\\beta} = \\left(1 + \\beta ^ 2\\right) * \\frac{\\frac{T_{P}}{T_{P} + F_{P}} * \\frac{T_{P}}{T_{P} + F_{N}}}{\\beta ^ 2 * \\
-      \\left(\\frac{T_{P}}{T_{P} + F_{P}} + \\frac{T_{P}}{T_{P} + F_{N}}\\right)}
-
-    For multi-class classification, the :math:`F_{\\beta}` measure is computed as the weighted average of the :math:`F_{\\beta}` measure
-    for each label, where the weight is the number of instance with each label in the labeled column.  The
-    determination of binary vs. multi-class is automatically inferred from the data.
-
-    --- When metric_type provided is 'recall': Computes the recall measure for a classification model.
-    A column containing the correct labels for each instance and a column containing the predictions made by the model are specified.
-    The recall of a binary classification model is the proportion of positive instances that are correctly identified.
-    If we let :math:`T_{P}` denote the number of true positives and :math:`F_{N}` denote the number of false
-    negatives, then the model recall is given by: :math:`\\frac {T_{P}} {T_{P} + F_{N}}`.
-
-    For multi-class classification, the recall measure is computed as the weighted average of the recall
-    for each label, where the weight is the number of instance with each label in the labeled column.  The
-    determination of binary vs. multi-class is automatically inferred from the data.
-
-    --- When metric_type provided is 'precision': Computes the precision measure for a classification model
-    A column containing the correct labels for each instance and a column containing the predictions made by the
-    model are specified.  The precision of a binary classification model is the proportion of predicted positive
-    instances that are correct.  If we let :math:`T_{P}` denote the number of true positives and :math:`F_{P}` denote the number of false
-    positives, then the model precision is given by: :math:`\\frac {T_{P}} {T_{P} + F_{P}}`.
-
-    For multi-class classification, the precision measure is computed as the weighted average of the precision
-    for each label, where the weight is the number of instances with each label in the labeled column.  The
-    determination of binary vs. multi-class is automatically inferred from the data.
-
-    --- When metric_type provided is 'accuracy': Computes the accuracy measure for a classification model
-    A column containing the correct labels for each instance and a column containing the predictions made by the classifier are specified.
-    The accuracy of a classification model is the proportion of predictions that are correct.
-    If we let :math:`T_{P}` denote the number of true positives, :math:`T_{N}` denote the number of true negatives, and :math:`K`
-    denote the total number of classified instances, then the model accuracy is given by: :math:`\\frac{T_{P} + T_{N}}{K}`.
-
-    This measure applies to binary and multi-class classifiers.
-
-
-    Parameters
-    ----------
-    metric_type : str
-      the model that is to be computed
-    label_column : str
-      the name of the column containing the correct label for each instance
-    pred_column : str
-      the name of the column containing the predicted label for each instance
-    pos_label : str
-      the value to be interpreted as a positive instance (only for binary, ignored for multi-class)
-    beta : float
-      beta value to use for :math:`F_{\\beta}` measure (default F1 measure is computed); must be greater than zero
-
-    Returns
-    -------
-    float64
-    the measure for the classifier
-
-    Examples
-    --------
-    Consider the following sample data set in *frame* with actual data labels specified in the *labels* column and
-    the predicted labels in the *predictions* column::
-
-    frame.inspect()
-
-    a:unicode   b:int32   labels:int32  predictions:int32
-    |-------------------------------------------------------|
-    red               1              0                  0
-    blue              3              1                  0
-    blue              1              0                  0
-    green             0              1                  1
-
-    frame.classification_metrics('f_measure', 'labels', 'predictions', '1', 1)
-
-    0.66666666666666663
-
-    frame.classification_metrics('f_measure', 'labels', 'predictions', '1', 2)
-
-    0.55555555555555558
-
-    frame.classification_metrics('f_measure', 'labels', 'predictions', '0', 1)
-
-    0.80000000000000004
-
-
-    frame.classification_metrics('recall', 'labels', 'predictions', '1', 1)
-
-    0.5
-
-    frame.classification_metrics('recall', 'labels', 'predictions', '0', 1)
-
-    1.0
-
-
-    frame.classification_metrics('precision', 'labels', 'predictions', '1', 1)
-
-    1.0
-
-    frame.classification_metrics('precision', 'labels', 'predictions', '0', 1)
-
-    0.66666666666666663
-
-
-    frame.classification_metrics('accuracy', 'labels', 'predictions', '1', 1)
-
-    0.75
-
-    frame.classification_metrics('confusion_matrix', 'labels', 'predictions', '1', 1)
-
-    [1, 2, 0, 1]
-
-
-    .. versionadded:: 0.8  """))
->>>>>>> sprint_19
 
   val classificationMetricsCommand: CommandPlugin[ClassificationMetric, ClassificationMetricValue] = commandPluginRegistry.registerCommand("dataframe/classification_metrics", classificationMetricsSimple _, doc = Some(classificationMetricsDoc))
   def classificationMetricsSimple(arguments: ClassificationMetric, user: UserPrincipal, invocation: SparkInvocation): ClassificationMetricValue = {
@@ -2240,8 +2112,8 @@ TODO: delete me, code moved to separate plugin files
                             |   weights_column : str (optional)
                             |       The column that provides weights (frequencies) for the topK calculation.
                             |       Must contain numerical data.
-                            |       Uniform weights of 1 for all items will be used for the calculation if this
-                            |       parameter is not provided.
+                            |       Uniform weights of 1 for all items will be used for the calculation if
+                            |       this parameter is not provided.
                             |
                             |   Returns
                             |   -------
@@ -2270,11 +2142,11 @@ TODO: delete me, code moved to separate plugin files
                             |       top3 = frame.top_k('genre', 3, weights_column='rating')
                             |       top3.inspect()
                             |
-                            |         movie:str   count:float64
-                            |       /---------------------------/
-                            |       The Godfather         7689.0
-                            |       Shawshank Redemption  6358.0
-                            |       The Dark Knight       5426.0
+                            |         movie:str      count:float64
+                            |       /------------------------------/
+                            |         The Godfather         7689.0
+                            |         Shawshank Redemption  6358.0
+                            |         The Dark Knight       5426.0
                             |
                             |   This example calculates the bottom 3 movie genres in a data frame.
                             |   ::
