@@ -2,11 +2,11 @@ package com.intel.intelanalytics.engine.spark
 
 import com.intel.intelanalytics.domain.DomainJsonProtocol
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
-import com.intel.intelanalytics.domain.command.{Command, CommandTemplate}
-import com.intel.intelanalytics.domain.frame.{DataFrame, FrameReference, QuantileValues}
+import com.intel.intelanalytics.domain.command.{ Command, CommandTemplate }
+import com.intel.intelanalytics.domain.frame.{ DataFrame, FrameReference, QuantileValues }
 import com.intel.intelanalytics.domain.graph.GraphReference
-import com.intel.intelanalytics.engine.plugin.{Action, CommandPlugin, Invocation}
-import com.intel.intelanalytics.engine.spark.command.{CommandExecutor, CommandLoader, CommandPluginRegistry, SparkCommandStorage}
+import com.intel.intelanalytics.engine.plugin.{ Action, CommandPlugin, Invocation }
+import com.intel.intelanalytics.engine.spark.command.{ CommandExecutor, CommandLoader, CommandPluginRegistry, SparkCommandStorage }
 import com.intel.intelanalytics.engine.spark.context.SparkContextManager
 import com.intel.intelanalytics.engine.spark.plugin.SparkInvocation
 import com.intel.intelanalytics.security.UserPrincipal
@@ -14,13 +14,13 @@ import org.apache.spark.SparkContext
 import org.mockito.Matchers._
 import org.mockito.Mockito._
 import org.scalatest.mock.MockitoSugar
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.{ FlatSpec, Matchers }
 import spray.json.JsObject
 
 import scala.collection.immutable.HashMap
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
-import scala.concurrent.{Await, ExecutionContext}
+import scala.concurrent.{ Await, ExecutionContext }
 
 case class ReferenceOnly(frame: FrameReference, graph: GraphReference)
 
@@ -28,7 +28,7 @@ case class PrimitiveOnly(frameId: Int, graphId: Int)
 
 case class Mixed(frameId: Int, frame: FrameReference)
 
-class WithoutAction[T <: Product : ClassManifest] extends CommandPlugin[T, T] {
+class WithoutAction[T <: Product: ClassManifest] extends CommandPlugin[T, T] {
   override def parseArguments(arguments: JsObject): T = ???
 
   override def serializeArguments(arguments: T): JsObject = ???
@@ -40,8 +40,7 @@ class WithoutAction[T <: Product : ClassManifest] extends CommandPlugin[T, T] {
   override def name: String = ???
 }
 
-class WithAction[T <: Product : ClassManifest] extends WithoutAction[T] with Action {}
-
+class WithAction[T <: Product: ClassManifest] extends WithoutAction[T] with Action {}
 
 class CommandExecutorTest extends FlatSpec with Matchers with MockitoSugar {
 
@@ -175,7 +174,6 @@ class CommandExecutorTest extends FlatSpec with Matchers with MockitoSugar {
     case class Foo(frame: FrameReference)
 
     val executor = createCommandExecutor()
-
 
     val plugin = new WithoutAction[ReferenceOnly]
 

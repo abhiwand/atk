@@ -23,7 +23,6 @@
 
 package com.intel.intelanalytics.domain.frame
 
-import com.intel.intelanalytics.domain.OnDemand
 import com.intel.intelanalytics.domain.schema.Schema
 import org.joda.time.DateTime
 
@@ -56,7 +55,7 @@ case class DataFrame(override val id: Long,
                      materializedOn: Option[DateTime] = None,
                      materializationComplete: Option[DateTime] = None,
                      errorFrameId: Option[Long] = None,
-                     parent: Option[Long] = None) extends FrameReference(id, Some(true)) with OnDemand {
+                     parent: Option[Long] = None) extends FrameReference(id, Some(true)) {
   require(id >= 0, "id must be zero or greater")
   require(name != null, "name must not be null")
   require(name.trim.length > 0, "name must not be empty or whitespace")
