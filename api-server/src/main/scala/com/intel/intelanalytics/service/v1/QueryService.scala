@@ -34,7 +34,6 @@ import com.intel.intelanalytics.service.v1.decorators.{ QueryDecorator }
 import com.intel.intelanalytics.service.v1.viewmodels.ViewModelJsonImplicits._
 import com.intel.intelanalytics.service.v1.viewmodels._
 import com.intel.intelanalytics.service.{ ApiServiceConfig, CommonDirectives, UrlParser }
-import com.intel.intelanalytics.shared.EventLogging
 import spray.http.Uri
 import scala.concurrent._
 import spray.http.Uri
@@ -45,6 +44,7 @@ import scala.concurrent.ExecutionContext
 import scala.util.{ Failure, Success, Try }
 
 import ExecutionContext.Implicits.global
+import com.intel.event.EventLogging
 
 /**
  * REST API Query Service

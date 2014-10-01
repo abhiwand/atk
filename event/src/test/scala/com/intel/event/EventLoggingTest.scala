@@ -21,10 +21,9 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.shared
+package com.intel.event
 
 import org.scalatest.{ FlatSpec, Matchers }
-import com.intel.event._
 import org.scalatest.mock.MockitoSugar
 import org.mockito.Mockito._
 import org.mockito.ArgumentMatcher

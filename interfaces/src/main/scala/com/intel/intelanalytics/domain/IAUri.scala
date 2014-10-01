@@ -21,7 +21,7 @@ object IAUriFactory {
     var entity: String = ""
     /* Validate uri structure and retrieve the entity and id from the uri*/
     if ((validateUri findFirstIn uri).mkString(",") == "") {
-      throw new IllegalArgumentException("Invalid uri")
+      throw new IllegalArgumentException("Invalid uri: " + uri)
     }
     else {
 
@@ -29,7 +29,7 @@ object IAUriFactory {
         case Some(entityName) => {
           entity = ("graph|frame".r findFirstIn uri).mkString
           if (!(entity == entityName)) {
-            throw new IllegalArgumentException("Inconsistent entity name")
+            throw new IllegalArgumentException("Inconsistent entity name: " + entityName + " " + uri)
           }
         }
         case None => entity = ("graph|frame".r findFirstIn uri).mkString
@@ -39,13 +39,9 @@ object IAUriFactory {
 
       /* Instantiate appropriate Reference depending on the entity */
       entity match {
-        case "graph" =>
-          GraphReference(id)
-
-        case "frame" =>
-          FrameReference(id)
-
-        case _ => throw new IllegalArgumentException("Invalid uri")
+        case "graph" => GraphReference(id)
+        case "frame" => FrameReference(id)
+        case _ => throw new IllegalArgumentException("Invalid uri: " + uri)
       }
     }
   }

@@ -1,5 +1,6 @@
 package com.intel.intelanalytics.engine.spark.frame
 
+import com.intel.intelanalytics.engine.spark.frame.plugins.load.RowParseResult
 import org.scalatest.WordSpec
 
 class RowParseResultTest extends WordSpec {
