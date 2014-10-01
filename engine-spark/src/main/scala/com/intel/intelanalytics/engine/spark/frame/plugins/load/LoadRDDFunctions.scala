@@ -1,10 +1,11 @@
-package com.intel.intelanalytics.engine.spark.frame
+package com.intel.intelanalytics.engine.spark.frame.plugins.load
 
-import org.apache.spark.SparkContext
-import com.intel.intelanalytics.domain.frame.load.{ LineParserArguments, LineParser }
-import com.intel.intelanalytics.engine.spark.{ SparkOps, SparkEngineConfig }
-import org.apache.spark.rdd.RDD
+import com.intel.intelanalytics.domain.frame.load.{ LineParser, LineParserArguments }
 import com.intel.intelanalytics.domain.schema.{ DataTypes, SchemaUtil }
+import com.intel.intelanalytics.engine.spark.SparkEngineConfig
+import com.intel.intelanalytics.engine.spark.frame._
+import org.apache.spark.SparkContext
+import org.apache.spark.rdd.RDD
 
 /**
  * Helper functions for loading an RDD
@@ -47,7 +48,7 @@ object LoadRDDFunctions extends Serializable {
     val sampleSize = SparkEngineConfig.frameLoadTestSampleSize
     val threshold = SparkEngineConfig.frameLoadTestFailThresholdPercentage
 
-    val sampleRdd = SparkOps.getPagedRdd(fileContentRdd, 0, sampleSize, sampleSize)
+    val sampleRdd = MiscFrameFunctions.getPagedRdd(fileContentRdd, 0, sampleSize, sampleSize)
 
     //cache the RDD since it will be used multiple times
     sampleRdd.cache()

@@ -24,6 +24,7 @@
 package com.intel.intelanalytics.engine.spark.frame
 
 import com.intel.intelanalytics.domain.schema.DataTypes
+import com.intel.intelanalytics.engine.spark.frame.plugins.load.RowParser
 import org.scalatest.{ Matchers, WordSpec }
 
 class RowParserTest extends WordSpec with Matchers {

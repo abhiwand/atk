@@ -23,8 +23,8 @@
 
 package com.intel.intelanalytics.engine.spark.plugin
 
-import com.intel.intelanalytics.engine.Engine
 import com.intel.intelanalytics.engine.plugin.Invocation
+import com.intel.intelanalytics.engine.spark.SparkEngine
 import com.intel.intelanalytics.engine.spark.command.SparkCommandStorage
 import com.intel.intelanalytics.security.UserPrincipal
 import org.apache.spark.SparkContext
@@ -43,7 +43,7 @@ import scala.concurrent.ExecutionContext
  * @param arguments the original JSON arguments, unconverted
  * @param sparkContext a SparkContext that can be used to implement the plugin's functionality
  */
-case class SparkInvocation(engine: Engine,
+case class SparkInvocation(engine: SparkEngine,
                            user: UserPrincipal,
                            commandId: Long,
                            executionContext: ExecutionContext,

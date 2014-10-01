@@ -19,10 +19,16 @@
         <groupId>com.intel.ia</groupId>
         <artifactId>IntelAnalytics</artifactId>
         <relativePath>../pom.xml</relativePath>
-        <version>0.8.0-SNAPSHOT</version>
+        <version>0.8.6-SNAPSHOT</version>
     </parent>
 
     <build>
+        <!--
+            sourceDirectory and testSourceDirectory don't seem to be needed by Maven but they
+            seem to help IntelliJ import projects correctly (but aren't needed on every module)
+        -->
+        <sourceDirectory>src/main/scala</sourceDirectory>
+        <testSourceDirectory>src/test/scala</testSourceDirectory>
         <plugins>
             <plugin>
                 <groupId>net.alchim31.maven</groupId>
@@ -48,15 +54,15 @@
         </dependency>
         <dependency>
             <groupId>com.intel.ia</groupId>
+            <artifactId>shared</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.intel.ia</groupId>
             <artifactId>interfaces</artifactId>
         </dependency>
         <dependency>
             <groupId>com.intel.ia</groupId>
             <artifactId>launcher</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.intel.ia</groupId>
-            <artifactId>shared</artifactId>
         </dependency>
         <dependency>
             <groupId>com.intel.ia</groupId>
@@ -87,7 +93,7 @@
         <dependency>
             <groupId>com.intel.ia</groupId>
             <artifactId>imllib</artifactId>
-            <version>0.8.0-SNAPSHOT</version>
+            <version>0.8.6-SNAPSHOT</version>
             <exclusions>
                 <exclusion>
                     <groupId>com.intel.ia</groupId>
@@ -158,7 +164,7 @@
                 </exclusion>
                 <exclusion>
                     <groupId>org.scala-lang</groupId>
-                    <artifactId>sscala-reflect</artifactId>
+                    <artifactId>scala-reflect</artifactId>
                 </exclusion>
                 <exclusion>
                     <groupId>org.scalacheck</groupId>
@@ -169,10 +175,6 @@
                     <artifactId>scalatest_${scala.short.version}</artifactId>
                 </exclusion>
             </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>com.typesafe.slick</groupId>
-            <artifactId>slick_${scala.short.version}</artifactId>
         </dependency>
         <dependency>
             <groupId>org.apache.hadoop</groupId>

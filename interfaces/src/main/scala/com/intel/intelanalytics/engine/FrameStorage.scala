@@ -23,6 +23,7 @@
 
 package com.intel.intelanalytics.engine
 
+import com.intel.intelanalytics.NotFoundException
 import com.intel.intelanalytics.domain.frame.{ DataFrame, DataFrameTemplate, _ }
 import com.intel.intelanalytics.domain.schema.DataTypes
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
@@ -30,6 +31,9 @@ import com.intel.intelanalytics.engine.Rows._
 import com.intel.intelanalytics.security.UserPrincipal
 
 trait FrameStorage {
+
+  def expectFrame(frameId: Long): DataFrame
+  def expectFrame(frameRef: FrameReference): DataFrame
 
   def lookup(id: Long): Option[DataFrame]
   def lookupByName(name: String)(implicit user: UserPrincipal): Option[DataFrame]
