@@ -32,11 +32,6 @@ POSTUN="
 
 "
 
-FILES="
-/usr/lib/intelanalytics/graphbuilder/bin
-/usr/lib/intelanalytics/graphbuilder/conf
-/usr/lib/intelanalytics/graphbuilder/ext
-"
 
 mkdir -p $SCRIPTPATH/rpm/SPECS
 rpmSpec > $SCRIPTPATH/rpm/SPECS/$packageName.spec
