@@ -1,4 +1,4 @@
-package com.intel.intelanalytics.engine.spark
+package com.intel.intelanalytics.engine.spark.frame
 
 import org.scalatest.{ BeforeAndAfterEach, Matchers, FlatSpec }
 import org.apache.spark.rdd.RDD
@@ -15,14 +15,14 @@ class DropDuplicatesITest extends FlatSpec with Matchers with BeforeAndAfterEach
     rdd.count() shouldBe 5
 
     //prepare a pair rdd for removing duplicates
-    val pairRdd = rdd.map(row => SparkOps.createKeyValuePairFromRow(row, Seq(0, 1)))
+    val pairRdd = rdd.map(row => MiscFrameFunctions.createKeyValuePairFromRow(row, Seq(0, 1)))
 
     //remove duplicates identified by key
-    val duplicatesRemoved = SparkOps.removeDuplicatesByKey(pairRdd)
+    val duplicatesRemoved = MiscFrameFunctions.removeDuplicatesByKey(pairRdd)
     duplicatesRemoved.count() shouldBe 3 // original data contain 5 rows, now drop to 3
 
     //transform output to a sortable format
-    val sortable = duplicatesRemoved.map(t => SparkOps.createKeyValuePairFromRow(t, Seq(1))).map { case (keyColumns, data) => (keyColumns(0), data) }.asInstanceOf[RDD[(Int, Array[Any])]]
+    val sortable = duplicatesRemoved.map(t => MiscFrameFunctions.createKeyValuePairFromRow(t, Seq(1))).map { case (keyColumns, data) => (keyColumns(0), data) }.asInstanceOf[RDD[(Int, Array[Any])]]
 
     //sort output to validate result
     val sorted = sortable.sortByKey(true)

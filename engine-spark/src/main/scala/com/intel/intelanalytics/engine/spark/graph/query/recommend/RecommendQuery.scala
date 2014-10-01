@@ -70,13 +70,27 @@ case class RecommendParams(graph: GraphReference,
  */
 case class RecommendResult(recommendation: String)
 
-class RecommendQuery extends SparkCommandPlugin[RecommendParams, RecommendResult] {
-
+/** Json conversion for arguments and return value case classes */
+object RecommendJsonFormat {
   import com.intel.intelanalytics.domain.DomainJsonProtocol._
-
   implicit val recommendParamsFormat = jsonFormat14(RecommendParams)
   implicit val recommendResultFormat = jsonFormat1(RecommendResult)
+}
 
+import RecommendJsonFormat._
+
+class RecommendQuery extends SparkCommandPlugin[RecommendParams, RecommendResult] {
+
+  /**
+   * The name of the command, e.g. graphs/query/recommend
+   */
+  override def name: String = "graphs/query/recommend"
+
+  /**
+   * User documentation exposed in Python.
+   *
+   * [[http://docutils.sourceforge.net/rst.html ReStructuredText]]
+   */
   override def doc = Some(CommandDoc(oneLineSummary = "Trained model recommendation.",
     extendedSummary = Some("""
                             |   Extended Summary
@@ -90,16 +104,19 @@ class RecommendQuery extends SparkCommandPlugin[RecommendParams, RecommendResult
                             |       The vertex id to get recommendation for
                             |   
                             |   vertex_type : string (optional)
-                            |       The vertex type to get recommendation for. The valid value is either "L" or "R".
+                            |       The vertex type to get recommendation for.
+                            |       The valid value is either "L" or "R".
                             |       "L" stands for left-side vertices of a bipartite graph.
                             |       "R" stands for right-side vertices of a bipartite graph.
-                            |       For example, if your input data is "user,movie,rating" and you want to
-                            |       get recommendation on user, please input "L" because user is your left-side
-                            |       vertex. Similarly, please input "R if you want to get recommendation for movie.
+                            |       For example, if your input data is "user,movie,rating" and
+                            |       you want to get recommendations on user, input "L" because
+                            |       user is your left-side vertex.
+                            |       Similarly, input "R" if you want to get recommendations for movie.
                             |       The default value is "L".
                             |   
                             |   output_vertex_property_list : comma-separated string (optional)
-                            |       The property name for ALS/CGD results.When bias is enabled,
+                            |       The property name for ALS/CGD results.
+                            |       When bias is enabled,
                             |       the last property name in the output_vertex_property_list is for bias.
                             |       The default value is "als_result".
                             |   
@@ -110,7 +127,7 @@ class RecommendQuery extends SparkCommandPlugin[RecommendParams, RecommendResult
                             |   edge_type_property_key : string (optional)
                             |       The property name for edge type.
                             |       We need this name to know data is in train, validation or test splits.
-                            |       The default value "splits".
+                            |       The default value is "splits".
                             |   
                             |   vector_value : string (optional)
                             |       Whether ALS/CDG results are saved in a vector for each vertex.
@@ -118,7 +135,8 @@ class RecommendQuery extends SparkCommandPlugin[RecommendParams, RecommendResult
                             |   
                             |   bias_on : string (optional)
                             |       Whether bias turned on/off for ALS/CDG calculation.
-                            |       When bias is enabled, the last property name in the output_vertex_property_list is for bias.
+                            |       When bias is enabled,
+                            |       the last property name in the output_vertex_property_list is for bias.
                             |       The default value is "false".
                             |   
                             |   train_str : string (optional)
@@ -152,8 +170,9 @@ class RecommendQuery extends SparkCommandPlugin[RecommendParams, RecommendResult
                             |   
                             |   Examples
                             |   --------
-                            |   For example, if your left-side vertices are users, and you want to get movie
-                            |   recommendation for user 1, the command to use is::
+                            |   For example, if your left-side vertices are users,
+                            |   and you want to get movie recommendations for user 1,
+                            |   the command to use is::
                             |   
                             |       g.query.recommend(vertex_id = 1)
                             |   
@@ -303,18 +322,4 @@ class RecommendQuery extends SparkCommandPlugin[RecommendParams, RecommendResult
     RecommendResult(results)
   }
 
-  //TODO: Replace with generic code that works on any case class
-  def parseArguments(arguments: JsObject) = arguments.convertTo[RecommendParams]
-
-  //TODO: Replace with generic code that works on any case class
-  def serializeReturn(returnValue: RecommendResult): JsObject = returnValue.toJson.asJsObject
-
-  /**
-   * The name of the command, e.g. graphs/query/recommend
-   */
-  override def name: String = "graphs/query/recommend"
-
-  //TODO: Replace with generic code that works on any case class
-  override def serializeArguments(arguments: RecommendParams): JsObject = arguments.toJson.asJsObject()
 }
->>>>>>> e45414e1fcdaee52c8ad0ff4e2e5874698cb6c9b

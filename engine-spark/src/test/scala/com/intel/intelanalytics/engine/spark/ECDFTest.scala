@@ -65,13 +65,13 @@ class ECDFTest extends TestingSparkContextFlatSpec with Matchers {
     val sampleThreeRdd = sparkContext.parallelize(sampleThreeList, 2)
 
     // Get binned results
-    val sampleOneECDF = SparkOps.ecdf(sampleOneRdd, 0, "int32")
+    val sampleOneECDF = CumulativeDistFunctions.ecdf(sampleOneRdd, 0, "int32")
     val resultOne = sampleOneECDF.take(10)
 
-    val sampleTwoECDF = SparkOps.ecdf(sampleTwoRdd, 0, "int32")
+    val sampleTwoECDF = CumulativeDistFunctions.ecdf(sampleTwoRdd, 0, "int32")
     val resultTwo = sampleTwoECDF.take(5)
 
-    val sampleThreeECDF = SparkOps.ecdf(sampleThreeRdd, 0, "int32")
+    val sampleThreeECDF = CumulativeDistFunctions.ecdf(sampleThreeRdd, 0, "int32")
     val resultThree = sampleThreeECDF.take(5)
 
     // Validate

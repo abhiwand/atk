@@ -57,12 +57,31 @@ case class Lbp(graph: GraphReference,
 
 case class LbpResult(value: String) //TODO
 
-class LoopyBeliefPropagation
-    extends CommandPlugin[Lbp, LbpResult] {
+/** Json conversion for arguments and return value case classes */
+object LbpJsonFormat {
   import DomainJsonProtocol._
   implicit val lbpFormat = jsonFormat15(Lbp)
   implicit val lbpResultFormat = jsonFormat1(LbpResult)
+}
 
+import LbpJsonFormat._
+
+class LoopyBeliefPropagation
+    extends CommandPlugin[Lbp, LbpResult] {
+
+  /**
+   * The name of the command, e.g. graphs/ml/loopy_belief_propagation
+   *
+   * The format of the name determines how the plugin gets "installed" in the client layer
+   * e.g Python client via code generation.
+   */
+  override def name: String = "graphs/ml/loopy_belief_propagation"
+
+  /**
+   * User documentation exposed in Python.
+   *
+   * [[http://docutils.sourceforge.net/rst.html ReStructuredText]]
+   */
   override def doc = Some(CommandDoc(oneLineSummary = "Loopy belief propagation on Markov Random Fields(MRF).",
     extendedSummary = Some("""
                             |   Extended Summary
@@ -118,7 +137,7 @@ class LoopyBeliefPropagation
                             |       update. This is for the case where we have confident prior estimation for some nodes
                             |       and don't want the algorithm updates these nodes.
                             |       The valid value range is in [0, 1].
-                            |       The default value is 1.0
+                            |       The default value is 1.0.
                             |
                             |   smoothing : float (optional)
                             |       The Ising smoothing parameter. This parameter adjusts the relative strength
@@ -135,16 +154,16 @@ class LoopyBeliefPropagation
                             |       The default value is false.
                             |
                             |   ignore_vertex_type : boolean (optional)
-                            |       If true, all vertex will be treated as training data
-                            |       The default value is False
+                            |       If true, all vertex will be treated as training data.
+                            |       The default value is False.
                             |
                             |   max_product : boolean (optional)
-                            |       Should LBP use max_product or not
-                            |       The default value is False
+                            |       Should LBP use max_product or not.
+                            |       The default value is False.
                             |
                             |   power: float (optional)
-                            |       power coefficient for power edge potential
-                            |       The default value is 0
+                            |       Power coefficient for power edge potential.
+                            |       The default value is 0.
                             |
                             |   Returns
                             |   -------
@@ -163,3 +182,45 @@ class LoopyBeliefPropagation
                             |
                             """.stripMargin)))
 
+  override def execute(invocation: Invocation, arguments: Lbp)(implicit user: UserPrincipal, executionContext: ExecutionContext): LbpResult = {
+
+    val config = configuration
+    val hConf = GiraphConfigurationUtil.newHadoopConfigurationFrom(config, "giraph")
+    val titanConf = GiraphConfigurationUtil.flattenConfig(config.getConfig("titan"), "titan.")
+
+    val graphFuture = invocation.engine.getGraph(arguments.graph.id)
+    val graph = Await.result(graphFuture, config.getInt("default-timeout") seconds)
+
+    //    These parameters are set from the arguments passed in, or defaulted from
+    //    the engine configuration if not passed.
+    GiraphConfigurationUtil.set(hConf, "lbp.maxSupersteps", arguments.max_supersteps)
+    GiraphConfigurationUtil.set(hConf, "lbp.convergenceThreshold", arguments.convergence_threshold)
+    GiraphConfigurationUtil.set(hConf, "lbp.anchorThreshold", arguments.anchor_threshold)
+    GiraphConfigurationUtil.set(hConf, "lbp.bidirectionalCheck", arguments.bidirectional_check)
+    GiraphConfigurationUtil.set(hConf, "lbp.power", arguments.power)
+    GiraphConfigurationUtil.set(hConf, "lbp.smoothing", arguments.smoothing)
+    GiraphConfigurationUtil.set(hConf, "lbp.ignoreVertexType", arguments.ignore_vertex_type)
+
+    GiraphConfigurationUtil.initializeTitanConfig(hConf, titanConf, graph)
+
+    GiraphConfigurationUtil.set(hConf, "input.vertex.value.property.key.list", arguments.vertex_value_property_list)
+    GiraphConfigurationUtil.set(hConf, "input.edge.value.property.key.list", arguments.edge_value_property_list)
+    GiraphConfigurationUtil.set(hConf, "input.edge.label.list", arguments.input_edge_label_list)
+    GiraphConfigurationUtil.set(hConf, "output.vertex.property.key.list", arguments.output_vertex_property_list)
+    GiraphConfigurationUtil.set(hConf, "vertex.type.property.key", arguments.vertex_type_property_key)
+    GiraphConfigurationUtil.set(hConf, "vector.value", arguments.vector_value)
+
+    val giraphConf = new GiraphConfiguration(hConf)
+
+    giraphConf.setVertexInputFormatClass(classOf[TitanHBaseVertexInputFormatPropertyGraph4LBP])
+    giraphConf.setVertexOutputFormatClass(classOf[TitanVertexOutputFormatPropertyGraph4LBP[_ <: org.apache.hadoop.io.WritableComparable[_], _ <: org.apache.hadoop.io.Writable, _ <: org.apache.hadoop.io.Writable]])
+    giraphConf.setMasterComputeClass(classOf[LoopyBeliefPropagationComputation.LoopyBeliefPropagationMasterCompute])
+    giraphConf.setComputationClass(classOf[LoopyBeliefPropagationComputation])
+    giraphConf.setAggregatorWriterClass(classOf[LoopyBeliefPropagationComputation.LoopyBeliefPropagationAggregatorWriter])
+
+    LbpResult(GiraphJobManager.run("ia_giraph_lbp",
+      classOf[LoopyBeliefPropagationComputation].getCanonicalName,
+      config, giraphConf, invocation, "lbp-learning-report_0"))
+  }
+
+}

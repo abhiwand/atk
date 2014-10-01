@@ -47,12 +47,31 @@ case class ConnectedComponentsCommand(graph: GraphReference,
 
 case class ConnectedComponentsResult(value: String) //TODO
 
-class ConnectedComponents
-    extends CommandPlugin[ConnectedComponentsCommand, ConnectedComponentsResult] {
+/** Json conversion for arguments and return value case classes */
+object ConnectedComponentsJsonFormat {
   import DomainJsonProtocol._
   implicit val connectedComponentsCommandFormat = jsonFormat4(ConnectedComponentsCommand)
   implicit val connectedComponentsResultFormat = jsonFormat1(ConnectedComponentsResult)
+}
 
+import ConnectedComponentsJsonFormat._
+
+class ConnectedComponents
+    extends CommandPlugin[ConnectedComponentsCommand, ConnectedComponentsResult] {
+
+  /**
+   * The name of the command, e.g. graphs/ml/loopy_belief_propagation
+   *
+   * The format of the name determines how the plugin gets "installed" in the client layer
+   * e.g Python client via code generation.
+   */
+  override def name: String = "graphs/ml/connected_components"
+
+  /**
+   * User documentation exposed in Python.
+   *
+   * [[http://docutils.sourceforge.net/rst.html ReStructuredText]]
+   */
   override def doc = Some(CommandDoc(oneLineSummary = "Label vertices by their connected component in the graph induced by a given edge label",
     extendedSummary = Some("""
                             |   Prerequisites::
@@ -118,15 +137,4 @@ class ConnectedComponents
       classOf[ConnectedComponentsComputation].getCanonicalName,
       config, giraphConf, invocation, "cc-convergence-report_0"))
   }
-
-  //TODO: Replace with generic code that works on any case class
-  def parseArguments(arguments: JsObject) = arguments.convertTo[ConnectedComponentsCommand]
-
-  //TODO: Replace with generic code that works on any case class
-  def serializeReturn(returnValue: ConnectedComponentsResult): JsObject = returnValue.toJson.asJsObject
-
-  override def name: String = "graphs/ml/connected_components"
-
-  //TODO: Replace with generic code that works on any case class
-  override def serializeArguments(arguments: ConnectedComponentsCommand): JsObject = arguments.toJson.asJsObject()
 }

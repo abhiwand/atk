@@ -6,9 +6,7 @@
     <artifactId>interfaces</artifactId>
     <name>interfaces</name>
     <description>
-        Classes that define the API interface between the API Server and Engine go in the 'interfaces' module.
-
-        Shared code, like that used for reading from the Meta-Store Repository, goes in the 'shared' module.
+        The API interface between the API Server and Engine
     </description>
 
     <packaging>jar</packaging>
@@ -17,10 +15,16 @@
         <groupId>com.intel.ia</groupId>
         <artifactId>IntelAnalytics</artifactId>
         <relativePath>../pom.xml</relativePath>
-        <version>0.8.0-SNAPSHOT</version>
+        <version>0.8.6-SNAPSHOT</version>
     </parent>
 
     <build>
+        <!--
+            sourceDirectory and testSourceDirectory don't seem to be needed by Maven but they
+            seem to help IntelliJ import projects correctly (but aren't needed on every module)
+        -->
+        <sourceDirectory>src/main/scala</sourceDirectory>
+        <testSourceDirectory>src/test/scala</testSourceDirectory>
         <plugins>
             <plugin>
                 <groupId>net.alchim31.maven</groupId>
