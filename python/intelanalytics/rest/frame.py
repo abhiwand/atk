@@ -404,20 +404,11 @@ class FrameBackendRest(object):
 
         return execute_new_frame_command("group_by", arguments)
 
-    def rename_columns(self, frame, column_names, new_names):
-        if new_names is not None:
-            raise_deprecation_warning("rename_columns with old parameter syntax",
-                                      "New parameter syntax is to pass a dictionary of name pairs, (old, new)")
-            if isinstance(column_names, basestring) and isinstance(new_names, basestring):
-                column_names = [column_names]
-                new_names = [new_names]
-            if len(column_names) != len(new_names):
-                raise ValueError("Old-style rename_columns requires name lists of equal length")
-        else:
-            if not isinstance(column_names, dict):
-                raise ValueError("rename_columns requires a dictionary of string pairs")
-            new_names = column_names.values()
-            column_names = column_names.keys()
+    def rename_columns(self, frame, column_names):
+        if not isinstance(column_names, dict):
+            raise ValueError("rename_columns requires a dictionary of string pairs")
+        new_names = column_names.values()
+        column_names = column_names.keys()
 
         arguments = {'frame': frame._id, "original_names": column_names, "new_names": new_names}
         execute_update_frame_command('rename_columns', arguments, frame)
