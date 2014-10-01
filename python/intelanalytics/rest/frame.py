@@ -419,7 +419,7 @@ class FrameBackendRest(object):
             new_names = column_names.values()
             column_names = column_names.keys()
 
-        arguments = {'frame': self.get_ia_uri(frame), "original_names": column_names, "new_names": new_names}
+        arguments = {'frame': frame._id, "original_names": column_names, "new_names": new_names}
         execute_update_frame_command('rename_columns', arguments, frame)
 
     def rename_frame(self, frame, name):
