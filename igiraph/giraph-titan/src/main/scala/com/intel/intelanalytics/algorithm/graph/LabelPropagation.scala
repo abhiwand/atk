@@ -40,11 +40,11 @@ import scala.concurrent._
 import com.intel.intelanalytics.domain.command.CommandDoc
 
 case class Lp(graph: GraphReference,
-              vertex_value_property_list: Option[String],
-              edge_value_property_list: Option[String],
-              input_edge_label_list: Option[String],
-              output_vertex_property_list: Option[String],
-              vector_value: Option[String],
+              vertex_value_property_list: List[String],
+              edge_value_property_list: List[String],
+              input_edge_label_list: List[String],
+              output_vertex_property_list: List[String],
+              vector_value: Boolean,
               max_supersteps: Option[Int] = None,
               convergence_threshold: Option[Double] = None,
               anchor_threshold: Option[Double] = None,
@@ -87,23 +87,23 @@ class LabelPropagation
                             |
                             |   Parameters
                             |   ----------
-                            |   vertex_value_property_list : comma-separated string
+                            |   vertex_value_property_list : list of string
                             |       The vertex properties which contain prior vertex values if you
                             |       use more than one vertex property.
                             |
-                            |   edge_value_property_list : comma-separated string
+                            |   edge_value_property_list : list of string
                             |       The edge properties which contain the input edge values.
                             |       We expect comma-separated list of property names  if you use
                             |       more than one edge property.
                             |
-                            |   input_edge_label_list : string
-                            |       The name of edge label..
+                            |   input_edge_label_list : list of string
+                            |       The name of edge label
                             |
-                            |   output_vertex_property_list : comma-separated string
-                            |       The list of vertex properties to store output vertex values.
+                            |   output_vertex_property_list : list of string
+                            |       The list of vertex properties to store output vertex values
                             |
                             |   vector_value : boolean
-                            |       True means a vector as vertex value is supported
+                            |       True means a vector as vertex value is supported,
                             |       False means a vector as vertex value is not supported
                             |
                             |   max_supersteps : integer (optional)
@@ -179,11 +179,11 @@ class LabelPropagation
 
     GiraphConfigurationUtil.initializeTitanConfig(hConf, titanConf, graph)
 
-    GiraphConfigurationUtil.set(hConf, "input.vertex.value.property.key.list", arguments.vertex_value_property_list)
-    GiraphConfigurationUtil.set(hConf, "input.edge.value.property.key.list", arguments.edge_value_property_list)
-    GiraphConfigurationUtil.set(hConf, "input.edge.label.list", arguments.input_edge_label_list)
-    GiraphConfigurationUtil.set(hConf, "output.vertex.property.key.list", arguments.output_vertex_property_list)
-    GiraphConfigurationUtil.set(hConf, "vector.value", arguments.vector_value)
+    GiraphConfigurationUtil.set(hConf, "input.vertex.value.property.key.list", Some(arguments.vertex_value_property_list.mkString(",")))
+    GiraphConfigurationUtil.set(hConf, "input.edge.value.property.key.list", Some(arguments.edge_value_property_list.mkString(",")))
+    GiraphConfigurationUtil.set(hConf, "input.edge.label.list", Some(arguments.input_edge_label_list.mkString(",")))
+    GiraphConfigurationUtil.set(hConf, "output.vertex.property.key.list", Some(arguments.output_vertex_property_list.mkString(",")))
+    GiraphConfigurationUtil.set(hConf, "vector.value", Some(arguments.vector_value.toString))
 
     val giraphConf = new GiraphConfiguration(hConf)
 
