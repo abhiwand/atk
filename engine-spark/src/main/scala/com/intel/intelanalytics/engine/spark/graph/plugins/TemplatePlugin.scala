@@ -21,10 +21,10 @@
 //// must be express and approved by Intel in writing.
 ////////////////////////////////////////////////////////////////////////////////
 //
-//package com.intel.intelanalytics.engine.spark.frame.plugins
+//package com.intel.intelanalytics.engine.spark.graph.plugins
 //
 //import com.intel.intelanalytics.domain.command.CommandDoc
-//import com.intel.intelanalytics.domain.frame.DataFrame
+//import com.intel.intelanalytics.domain.graph.Graph
 //import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
 //import com.intel.intelanalytics.security.UserPrincipal
 //
@@ -37,7 +37,7 @@
 ///**
 //* Template to follow when writing plugins
 //*/
-//class TemplatePlugin extends SparkCommandPlugin[Args, DataFrame] {
+//class TemplatePlugin extends SparkCommandPlugin[Args, Graph] {
 //
 //  /**
 //   * The name of the command, e.g. graphs/ml/loopy_belief_propagation
@@ -70,9 +70,9 @@
 //   * @param user current user
 //   * @return a value of type declared as the Return type.
 //   */
-//  override def execute(invocation: SparkInvocation, arguments: Args)(implicit user: UserPrincipal, executionContext: ExecutionContext): DataFrame = {
+//  override def execute(invocation: SparkInvocation, arguments: Args)(implicit user: UserPrincipal, executionContext: ExecutionContext): Graph = {
 //    // dependencies (later to be replaced with dependency injection)
-//    val frames = invocation.engine.frames
+//    val graphs = invocation.engine.graphs
 //    val ctx = invocation.sparkContext
 //
 //    // validate arguments

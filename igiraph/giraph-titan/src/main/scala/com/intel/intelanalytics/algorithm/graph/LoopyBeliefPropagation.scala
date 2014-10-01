@@ -40,12 +40,12 @@ import scala.concurrent._
 import com.intel.intelanalytics.domain.command.CommandDoc
 
 case class Lbp(graph: GraphReference,
-               vertex_value_property_list: Option[String],
-               edge_value_property_list: Option[String],
-               input_edge_label_list: Option[String],
-               output_vertex_property_list: Option[String],
-               vertex_type_property_key: Option[String],
-               vector_value: Option[String],
+               vertex_value_property_list: List[String],
+               edge_value_property_list: List[String],
+               input_edge_label_list: List[String],
+               output_vertex_property_list: List[String],
+               vertex_type: String,
+               vector_value: Boolean,
                max_supersteps: Option[Int] = None,
                convergence_threshold: Option[Double] = None,
                anchor_threshold: Option[Double] = None,
@@ -95,24 +95,23 @@ class LoopyBeliefPropagation
 
     Parameters
     ----------
-    vertex_value_property_list : Comma Separated String
+    vertex_value_property_list : List of String
         The vertex properties which contain prior vertex values if you
       use more than one vertex property.
 
-    edge_value_property_list : Comma Separated String
+    edge_value_property_list : List of String
         The edge properties which contain the input edge values.
         We expect comma-separated list of property names  if you use
         more than one edge property.
 
-    input_edge_label_list : String
-        The name of edge label.
+    input_edge_label_list : List of String
+        The name of edge labels.
 
-    output_vertex_property_list : Comma Separated String
+    output_vertex_property_list : List of String
         The list of vertex properties to store output vertex values.
 
     vertex_type : String
         The name of vertex property which contains vertex type.
-        The default value is "vertex_type"
 
     vector_value: Boolean
         True means a vector as vertex value is supported
@@ -172,7 +171,7 @@ class LoopyBeliefPropagation
 
     Examples
     --------
-    g.ml.loopy_belief_propagation(vertex_value_property_list = "value", edge_value_property_list  = "weight", input_edge_label_list = "edge",   output_vertex_property_list = "lbp_posterior",   vertex_type_property_key = "vertex_type",  vector_value = "true",    max_supersteps = 10,   convergence_threshold = 0.0, anchor_threshold = 0.9, smoothing = 2.0, bidirectional_check = False,  ignore_vertex_type = False, max_product= False, power = 0)
+    g.ml.loopy_belief_propagation(vertex_value_property_list = ["value"], edge_value_property_list  = ["weight"], input_edge_label_list = ["edge"], output_vertex_property_list = ["lbp_posterior"], vertex_type = "vertex_type", vector_value = True, max_supersteps = 10, convergence_threshold = 0.0, anchor_threshold = 0.9, smoothing = 2.0, bidirectional_check = False, ignore_vertex_type = False, max_product= False, power = 0)
 
     The expected output is like this
     {u'value': u'======Graph Statistics======\nNumber of vertices: 80000 (train: 56123, validate: 15930, test: 7947)\nNumber of edges: 318400\n\n======LBP Configuration======\nmaxSupersteps: 10\nconvergenceThreshold: 0.000000\nanchorThreshold: 0.900000\nsmoothing: 2.000000\nbidirectionalCheck: false\nignoreVertexType: false\nmaxProduct: false\npower: 0.000000\n\n======Learning Progress======\nsuperstep = 1\tavgTrainDelta = 0.594534\tavgValidateDelta = 0.542366\tavgTestDelta = 0.542801\nsuperstep = 2\tavgTrainDelta = 0.322596\tavgValidateDelta = 0.373647\tavgTestDelta = 0.371556\nsuperstep = 3\tavgTrainDelta = 0.180468\tavgValidateDelta = 0.194503\tavgTestDelta = 0.198478\nsuperstep = 4\tavgTrainDelta = 0.113280\tavgValidateDelta = 0.117436\tavgTestDelta = 0.122555\nsuperstep = 5\tavgTrainDelta = 0.076510\tavgValidateDelta = 0.074419\tavgTestDelta = 0.077451\nsuperstep = 6\tavgTrainDelta = 0.051452\tavgValidateDelta = 0.051683\tavgTestDelta = 0.052538\nsuperstep = 7\tavgTrainDelta = 0.038257\tavgValidateDelta = 0.033629\tavgTestDelta = 0.034017\nsuperstep = 8\tavgTrainDelta = 0.027924\tavgValidateDelta = 0.026722\tavgTestDelta = 0.025877\nsuperstep = 9\tavgTrainDelta = 0.022886\tavgValidateDelta = 0.019267\tavgTestDelta = 0.018190\nsuperstep = 10\tavgTrainDelta = 0.018271\tavgValidateDelta = 0.015924\tavgTestDelta = 0.015377'}
@@ -199,12 +198,12 @@ class LoopyBeliefPropagation
 
     GiraphConfigurationUtil.initializeTitanConfig(hConf, titanConf, graph)
 
-    GiraphConfigurationUtil.set(hConf, "input.vertex.value.property.key.list", arguments.vertex_value_property_list)
-    GiraphConfigurationUtil.set(hConf, "input.edge.value.property.key.list", arguments.edge_value_property_list)
-    GiraphConfigurationUtil.set(hConf, "input.edge.label.list", arguments.input_edge_label_list)
-    GiraphConfigurationUtil.set(hConf, "output.vertex.property.key.list", arguments.output_vertex_property_list)
-    GiraphConfigurationUtil.set(hConf, "vertex.type.property.key", arguments.vertex_type_property_key)
-    GiraphConfigurationUtil.set(hConf, "vector.value", arguments.vector_value)
+    GiraphConfigurationUtil.set(hConf, "input.vertex.value.property.key.list", Some(arguments.vertex_value_property_list.mkString(",")))
+    GiraphConfigurationUtil.set(hConf, "input.edge.value.property.key.list", Some(arguments.edge_value_property_list.mkString(",")))
+    GiraphConfigurationUtil.set(hConf, "input.edge.label.list", Some(arguments.input_edge_label_list.mkString(",")))
+    GiraphConfigurationUtil.set(hConf, "output.vertex.property.key.list", Some(arguments.output_vertex_property_list.mkString(",")))
+    GiraphConfigurationUtil.set(hConf, "vertex.type.property.key", Some(arguments.vertex_type))
+    GiraphConfigurationUtil.set(hConf, "vector.value", Some(arguments.vector_value.toString))
 
     val giraphConf = new GiraphConfiguration(hConf)
 

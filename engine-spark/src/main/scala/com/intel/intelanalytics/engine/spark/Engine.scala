@@ -37,6 +37,7 @@ import com.intel.intelanalytics.engine.spark.frame.plugins.groupby.{ GroupByPlug
 import com.intel.intelanalytics.engine.spark.frame.plugins.load.{ LoadFramePlugin, LoadRDDFunctions }
 import com.intel.intelanalytics.engine.spark.frame.plugins._
 import com.intel.intelanalytics.engine.spark.graph.SparkGraphStorage
+import com.intel.intelanalytics.engine.spark.graph.plugins.{ RenameGraphPlugin, LoadGraphPlugin }
 import com.intel.intelanalytics.engine.spark.queries.{ SparkQueryStorage, QueryExecutor }
 import com.intel.intelanalytics.engine.spark.frame._
 import com.intel.intelanalytics.NotFoundException
@@ -1140,7 +1141,11 @@ TODO: delete me, code moved to separate plugin files
     frames.saveFrame(newJoinFrame, new FrameRDD(new Schema(allColumns), joinResultRDD), Some(joinRowCount))
   }
   */
+  commandPluginRegistry.registerCommand(new DropColumnsPlugin)
 
+  /*
+
+   TODO: delete me, code moved to separate plugin files
   val dropColumnsDoc = CommandDoc(oneLineSummary = "Remove columns from the frame.",
     extendedSummary = Some("""
     Remove columns from the frame.  They are deleted.
@@ -1162,6 +1167,9 @@ TODO: delete me, code moved to separate plugin files
     Now the frame only has the columns * column_a * and * column_c *.
     For further examples, see: ref: `example_frame.drop_columns`"""))
   val dropColumnsCommand = commandPluginRegistry.registerCommand("dataframe/drop_columns", dropColumnsSimple _, doc = Some(dropColumnsDoc))
+
+  TODO: delete me, code moved to separate plugin files
+
   def dropColumnsSimple(arguments: FrameDropColumns, user: UserPrincipal, invocation: SparkInvocation): DataFrame = {
 
     implicit val u = user
@@ -1196,6 +1204,13 @@ TODO: delete me, code moved to separate plugin files
     frames.saveFrame(dataFrame, new FrameRDD(dataFrame.schema, resultRDD))
     dataFrame
   }
+  */
+
+  commandPluginRegistry.registerCommand(new AddColumnsPlugin)
+
+  /*
+
+  TODO: delete me, code moved to separate plugin files
 
   val addColumnsCommand = commandPluginRegistry.registerCommand("dataframe/add_columns", addColumnsSimple _)
   def addColumnsSimple(arguments: FrameAddColumns, user: UserPrincipal, invocation: SparkInvocation) = {
@@ -1231,6 +1246,10 @@ TODO: delete me, code moved to separate plugin files
     pythonRDDStorage.persistPythonRDD(newFrame, pyRdd, converter, skipRowCount = true)
     newFrame
   }
+
+  TODO: delete me, code moved to separate plugin files
+
+  */
 
   /**
    * Execute getRows Query plugin
@@ -1313,6 +1332,11 @@ TODO: delete me, code moved to separate plugin files
     }
   }
 
+  commandPluginRegistry.registerCommand(new LoadGraphPlugin)
+  /*
+
+  TODO: delete me, code moved to separate plugin files
+
   val loadGraphCommand = commandPluginRegistry.registerCommand("graph/load", loadGraphSimple _, numberOfJobs = 2)
   /**
    * Loads graph data into a graph in the database. The source is tabular data interpreted by user-specified  rules.
@@ -1326,6 +1350,12 @@ TODO: delete me, code moved to separate plugin files
     val graph = graphs.loadGraph(arguments, invocation)(user)
     graph
   }
+  */
+
+  commandPluginRegistry.registerCommand(new RenameGraphPlugin)
+  /*
+
+  TODO: delete me, code moved to separate plugin files
 
   val renameGraphCommand = commandPluginRegistry.registerCommand("graph/rename_graph", renameGraphSimple)
   /**
@@ -1340,6 +1370,8 @@ TODO: delete me, code moved to separate plugin files
     val newName = rename.newName
     graphs.renameGraph(graph, newName)
   }
+
+  */
 
   /**
    * Obtains a graph's metadata from its identifier.
@@ -1384,25 +1416,31 @@ TODO: delete me, code moved to separate plugin files
     }
   }
 
+  commandPluginRegistry.registerCommand(new DropDuplicatesPlugin)
+
+  /*
+
+  TODO: delete me, code moved to separate plugin files
+
   val dropDuplicateCommand = commandPluginRegistry.registerCommand("dataframe/drop_duplicates", dropDuplicateSimple _, numberOfJobs = 2)
 
   /**
-   * Remove duplicates rows, keeping only one row per uniqueness criteria match
-   * @param dropDuplicateCommand command for dropping duplicates
+   * Remove duplicate rows, keeping only one row per uniqueness criteria match
+   * @param arguments command for dropping duplicates
    * @param user current user
    */
-  def dropDuplicateSimple(dropDuplicateCommand: DropDuplicates, user: UserPrincipal, invocation: SparkInvocation) = {
+  def dropDuplicateSimple(arguments: DropDuplicates, user: UserPrincipal, invocation: SparkInvocation) = {
     implicit val u = user
 
-    val frameId: Long = dropDuplicateCommand.frameId
-    val frameMeta: DataFrame = getDataFrameById(frameId)
+    val frameId: Long = arguments.frameId
+    val frameMeta: DataFrame = frames.expectFrame(frameId)
 
     val ctx = invocation.sparkContext
 
     val frameSchema = frameMeta.schema
     val rdd = frames.loadFrameRdd(ctx, frameId)
 
-    val columnIndices = frameSchema.columnIndex(dropDuplicateCommand.unique_columns)
+    val columnIndices = frameSchema.columnIndex(arguments.unique_columns)
     val pairRdd = rdd.map(row => MiscFrameFunctions.createKeyValuePairFromRow(row, columnIndices))
 
     val duplicatesRemoved: RDD[Array[Any]] = MiscFrameFunctions.removeDuplicatesByKey(pairRdd)
@@ -1410,6 +1448,8 @@ TODO: delete me, code moved to separate plugin files
 
     frames.saveFrame(frameMeta, new FrameRDD(frameSchema, duplicatesRemoved), Some(rowCount))
   }
+
+  */
 
   val quantileDoc = CommandDoc(oneLineSummary = "Calculate quantiles on given column.",
     extendedSummary = Some(
@@ -1465,7 +1505,7 @@ TODO: delete me, code moved to separate plugin files
     val frameId: FrameReference = quantiles.frame
     val ctx = invocation.sparkContext
 
-    val frameMeta: DataFrame = getDataFrameById(frameId.id)
+    val frameMeta: DataFrame = frames.expectFrame(frameId.id)
     val frameSchema = frameMeta.schema
     val columnIndex = frameSchema.columnIndex(quantiles.columnName)
     val columnDataType = frameSchema.columnDataType(quantiles.columnName)
@@ -1594,7 +1634,7 @@ TODO: delete me, code moved to separate plugin files
     implicit val u = user
     val frameId = arguments.frame.id
     val ctx = invocation.sparkContext
-    val frameMeta: DataFrame = getDataFrameById(frameId)
+    val frameMeta: DataFrame = frames.expectFrame(frameId)
     val frameSchema = frameMeta.schema
 
     val frameRdd = frames.loadFrameRdd(ctx, frameId)
@@ -1977,12 +2017,12 @@ TODO: delete me, code moved to separate plugin files
 
     Example
     -------
-    >>> entropy = frame.shannon_entropy('data column')
-    >>> weighted_entropy = frame.shannon_entropy('data column', 'weight column')
+    >>> entropy = frame.entropy('data column')
+    >>> weighted_entropy = frame.entropy('data column', 'weight column')
 
     ..versionadded :: 0.8 """))
 
-  val entropyCommand = commandPluginRegistry.registerCommand("dataframe/shannon_entropy",
+  val entropyCommand = commandPluginRegistry.registerCommand("dataframe/entropy",
     entropyCommandSimple _, numberOfJobs = 3, doc = Some(entropyDoc))
 
   /**
@@ -2102,16 +2142,6 @@ TODO: delete me, code moved to separate plugin files
 
     val rowCount = topRdd.count()
     frames.saveFrame(newFrame, new FrameRDD(newSchema, topRdd), Some(rowCount))
-  }
-
-  /**
-   * Retrieve DataFrame object by frame id
-   * @param frameId id of the dataframe
-   */
-  def getDataFrameById(frameId: Long)(implicit user: UserPrincipal): DataFrame = {
-    val frameMeta = frames.lookup(frameId).getOrElse(
-      throw new IllegalArgumentException(s"No such data frame $frameId"))
-    frameMeta
   }
 
   override def shutdown(): Unit = {
