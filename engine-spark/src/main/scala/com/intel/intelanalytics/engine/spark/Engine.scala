@@ -2029,12 +2029,12 @@ TODO: delete me, code moved to separate plugin files
 
     Example
     -------
-    >>> entropy = frame.shannon_entropy('data column')
-    >>> weighted_entropy = frame.shannon_entropy('data column', 'weight column')
+    >>> entropy = frame.entropy('data column')
+    >>> weighted_entropy = frame.entropy('data column', 'weight column')
 
     ..versionadded :: 0.8 """))
 
-  val entropyCommand = commandPluginRegistry.registerCommand("dataframe/shannon_entropy",
+  val entropyCommand = commandPluginRegistry.registerCommand("dataframe/entropy",
     entropyCommandSimple _, numberOfJobs = 3, doc = Some(entropyDoc))
 
   /**
