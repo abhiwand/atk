@@ -1651,12 +1651,10 @@ TODO: delete me, code moved to separate plugin files
     }
 
     if (metricsPoslabel == null) {
-      val metrics = ClassificationMetrics.multiclassClassificationMetrics(frameRdd, labelColumnIndex, predColumnIndex, betaValue)
-      ClassificationMetricValue(fMeasure = metrics._1, accuracy = metrics._2, recall = metrics._3, precision = metrics._4, confusionMatrix = metrics._5)
+      ClassificationMetrics.multiclassClassificationMetrics(frameRdd, labelColumnIndex, predColumnIndex, betaValue)
     }
     else {
-      val metrics = ClassificationMetrics.binaryClassificationMetrics(frameRdd, labelColumnIndex, predColumnIndex, metricsPoslabel, betaValue)
-      ClassificationMetricValue(fMeasure = metrics._1, accuracy = metrics._2, recall = metrics._3, precision = metrics._4, confusionMatrix = metrics._5)
+      ClassificationMetrics.binaryClassificationMetrics(frameRdd, labelColumnIndex, predColumnIndex, metricsPoslabel, betaValue)
     }
   }
 
