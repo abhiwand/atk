@@ -2070,7 +2070,7 @@ TODO: delete me, code moved to separate plugin files
                             |
                             """.stripMargin))
 
-  val entropyCommand = commandPluginRegistry.registerCommand("dataframe/shannon_entropy",
+  val entropyCommand = commandPluginRegistry.registerCommand("dataframe/entropy",
     entropyCommandSimple _, numberOfJobs = 3, doc = Some(entropyDoc))
 
   /**
