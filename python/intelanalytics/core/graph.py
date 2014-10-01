@@ -45,8 +45,6 @@ except Exception as e:
     warnings.warn(msg, RuntimeWarning)
     CommandLoadableBigGraph = CommandLoadable
 
-from intelanalytics.core.deprecate import deprecated
-
 
 def _get_backend():
     from intelanalytics.core.config import get_graph_backend
@@ -111,10 +109,6 @@ def get_graph(name):
     # TODO - Review docstring
     return _get_backend().get_graph(name)
 
-
-@deprecated("use drop_graphs")
-def delete_graph(name):
-    return drop_graphs(name)
 
 @api
 def drop_graphs(graphs):

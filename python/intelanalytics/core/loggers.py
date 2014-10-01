@@ -89,9 +89,49 @@ class Loggers(object):
                                                  len(logger.handlers))
 
     def set_http(self, level=logging.DEBUG, output=None):
+        """
+        Sets the level of logging for http traffic
+
+        Parameters
+        ----------
+        level : int, str or logging.*, optional
+            The level to which the logger will be set.  May be 0,10,20,30,40,50
+            or "DEBUG", "INFO", etc.  (only first letter is requirecd)
+            Setting to None disables the logging to stderr
+            See `https://docs.python.org/2/library/logging.html`
+            If not specified, DEBUG is used
+            To turn OFF the logger, set level to 0 or None
+        output: file or str, or list of such, optional
+            The file object or name of the file to log to.  If empty, then stderr is used
+
+        Examples
+        --------
+        >>> loggers.set_http()       # Enables http logging to stderr
+        >>> loggers.set_http(None)   # Disables http logging
+        """
         self.set(level, HTTP_LOGGER_NAME, output)
 
     def set_api(self, level=logging.INFO, output=sys.stdout):
+        """
+        Sets the level of logging for py api calls (command tracing)
+
+        Parameters
+        ----------
+        level : int, str or logging.*, optional
+            The level to which the logger will be set.  May be 0,10,20,30,40,50
+            or "DEBUG", "INFO", etc.  (only first letter is requirecd)
+            Setting to None disables the logging to stderr
+            See `https://docs.python.org/2/library/logging.html`
+            If not specified, DEBUG is used
+            To turn OFF the logger, set level to 0 or None
+        output: file or str, or list of such, optional
+            The file object or name of the file to log to.  If empty, then stderr is used
+
+        Examples
+        --------
+        >>> loggers.set_api()       # Enables api logging to stdout
+        >>> loggers.set_api(None)   # Disables api logging
+        """
         self.set(level, API_LOGGER_NAME, output)
 
     def set(self, level=logging.DEBUG, logger_name='', output=None, line_format=None):
@@ -110,7 +150,8 @@ class Loggers(object):
         logger_name: str, optional
             The name of the logger.  If empty string, then the intelanalytics root logger is set
         output: file or str, or list of such, optional
-            The file object or name of the file to log to.  If empty, then stderr is used then assumed file logging is disabled
+            The file object or name of the file to log to.  If empty, then stderr is used
+
         Examples
         --------
         # to enable INFO level logging to file 'log.txt' and no printing to stderr:
