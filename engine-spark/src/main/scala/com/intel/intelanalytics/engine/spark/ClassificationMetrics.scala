@@ -23,6 +23,7 @@
 
 package com.intel.intelanalytics.engine.spark
 
+import com.intel.intelanalytics.domain.frame.ClassificationMetricValue
 import org.apache.spark.rdd.RDD
 import com.intel.intelanalytics.engine.Rows.Row
 import scala.math.pow
@@ -196,7 +197,7 @@ object ClassificationMetrics extends Serializable {
    * @param beta the beta value to use to compute the f measure
    * @return a Double of the model f measure, a Double of the model accuracy, a Double of the model recall, a Double of the model precision, a map of confusion matrix values
    */
-  def multiclassClassificationMetrics(frameRdd: RDD[Row], labelColumnIndex: Int, predColumnIndex: Int, beta: Double): (Double, Double, Double, Double, Map[String, Long]) = {
+  def multiclassClassificationMetrics(frameRdd: RDD[Row], labelColumnIndex: Int, predColumnIndex: Int, beta: Double): ClassificationMetricValue = {
     require(labelColumnIndex >= 0, "label column index must be greater than or equal to zero")
     require(predColumnIndex >= 0, "prediction column index must be greater than or equal to zero")
 
@@ -206,7 +207,7 @@ object ClassificationMetrics extends Serializable {
     val accuracy = modelAccuracy(frameRdd, labelColumnIndex, predColumnIndex)
 
     //TODO: Confusion matrix for multi class classifiers is not yet supported
-    return (fmeasure, accuracy, recall, precision, Map())
+    ClassificationMetricValue(fmeasure, accuracy, recall, precision, Map())
   }
 
   /**
@@ -219,7 +220,7 @@ object ClassificationMetrics extends Serializable {
    * @param posLabel posLabel the label for a positive instance
    * @return a Double of the model f measure, a Double of the model accuracy, a Double of the model recall, a Double of the model precision, a map of confusion matrix values
    */
-  def binaryClassificationMetrics(frameRdd: RDD[Row], labelColumnIndex: Int, predColumnIndex: Int, posLabel: String, beta: Double): (Double, Double, Double, Double, Map[String, Long]) = {
+  def binaryClassificationMetrics(frameRdd: RDD[Row], labelColumnIndex: Int, predColumnIndex: Int, posLabel: String, beta: Double): ClassificationMetricValue = {
     require(labelColumnIndex >= 0, "label column index must be greater than or equal to zero")
     require(predColumnIndex >= 0, "prediction column index must be greater than or equal to zero")
 
@@ -231,7 +232,7 @@ object ClassificationMetrics extends Serializable {
     val fn = frameRdd.sparkContext.accumulator[Long](0)
 
     frameRdd.foreach { row =>
-      if (row(labelColumnIndex).toString.equals(row(predColumnIndex).toString)) {
+      if (row(labelColumnIndex) == row(predColumnIndex)) {
         t.add(1)
       }
       if (row(labelColumnIndex).toString.equals(posLabel) && row(predColumnIndex).toString.equals(posLabel)) {
@@ -268,6 +269,6 @@ object ClassificationMetrics extends Serializable {
       case _ => t.value / k.toDouble
     }
 
-    return (fmeasure, accuracy, recall, precision, Map(("tp", tp.value), ("tn", tn.value), ("fp", fp.value), ("fn", fn.value)))
+    ClassificationMetricValue(fmeasure, accuracy, recall, precision, Map(("tp", tp.value), ("tn", tn.value), ("fp", fp.value), ("fn", fn.value)))
   }
 }

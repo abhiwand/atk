@@ -120,21 +120,21 @@ class ClassificationMetricTest extends TestingSparkContextFlatSpec with Matchers
     val rdd = sparkContext.parallelize(inputListBinary)
 
     val metricValue = ClassificationMetrics.binaryClassificationMetrics(rdd, 0, 1, "1", 1)
-    metricValue._4 shouldEqual 1.0
+    metricValue.precision shouldEqual 1.0
   }
 
   "precision measure" should "compute correct value for binary classifier with string labels" in {
     val rdd = sparkContext.parallelize(inputListBinaryChar)
 
     val metricValue = ClassificationMetrics.binaryClassificationMetrics(rdd, 0, 1, "yes", 1)
-    metricValue._4 shouldEqual 1.0
+    metricValue.precision shouldEqual 1.0
   }
 
   "precision measure" should "compute correct value for binary classifier 2" in {
     val rdd = sparkContext.parallelize(inputListBinary2)
 
     val metricValue = ClassificationMetrics.binaryClassificationMetrics(rdd, 0, 1, "1", 1)
-    val diff = (metricValue._4 - 0.5555555).abs
+    val diff = (metricValue.precision - 0.5555555).abs
     diff should be <= 0.0000001
   }
 
@@ -142,7 +142,7 @@ class ClassificationMetricTest extends TestingSparkContextFlatSpec with Matchers
     val rdd = sparkContext.parallelize(inputListBinary)
 
     val metricValue = ClassificationMetrics.binaryClassificationMetrics(rdd, 0, 1, "yoyoyo", 1)
-    metricValue._4 shouldEqual 0.0
+    metricValue.precision shouldEqual 0.0
   }
 
   "precision measure" should "compute correct value for multi-class classifier" in {
@@ -165,21 +165,21 @@ class ClassificationMetricTest extends TestingSparkContextFlatSpec with Matchers
     val rdd = sparkContext.parallelize(inputListBinary)
 
     val metricValue = ClassificationMetrics.binaryClassificationMetrics(rdd, 0, 1, "1", 1)
-    metricValue._3 shouldEqual 0.5
+    metricValue.recall shouldEqual 0.5
   }
 
   "recall measure" should "compute correct value for binary classifier with string labels" in {
     val rdd = sparkContext.parallelize(inputListBinaryChar)
 
     val metricValue = ClassificationMetrics.binaryClassificationMetrics(rdd, 0, 1, "yes", 1)
-    metricValue._3 shouldEqual 0.5
+    metricValue.recall shouldEqual 0.5
   }
 
   "recall measure" should "compute correct value for binary classifier 2" in {
     val rdd = sparkContext.parallelize(inputListBinary2)
 
     val metricValue = ClassificationMetrics.binaryClassificationMetrics(rdd, 0, 1, "1", 1)
-    val diff = (metricValue._3 - 0.8333333).abs
+    val diff = (metricValue.recall - 0.8333333).abs
     diff should be <= 0.0000001
   }
 
@@ -187,7 +187,7 @@ class ClassificationMetricTest extends TestingSparkContextFlatSpec with Matchers
     val rdd = sparkContext.parallelize(inputListBinary)
 
     val metricValue = ClassificationMetrics.binaryClassificationMetrics(rdd, 0, 1, "yoyoyo", 1)
-    metricValue._3 shouldEqual 0.0
+    metricValue.recall shouldEqual 0.0
   }
 
   "recall measure" should "compute correct value for multi-class classifier" in {
@@ -210,7 +210,7 @@ class ClassificationMetricTest extends TestingSparkContextFlatSpec with Matchers
     val rdd = sparkContext.parallelize(inputListBinary)
 
     val metricValue = ClassificationMetrics.binaryClassificationMetrics(rdd, 0, 1, "1", 0.5)
-    val diff = (metricValue._1 - 0.8333333).abs
+    val diff = (metricValue.fMeasure - 0.8333333).abs
     diff should be <= 0.0000001
   }
 
@@ -218,7 +218,7 @@ class ClassificationMetricTest extends TestingSparkContextFlatSpec with Matchers
     val rdd = sparkContext.parallelize(inputListBinary2)
 
     val metricValue = ClassificationMetrics.binaryClassificationMetrics(rdd, 0, 1, "1", 0.5)
-    val diff = (metricValue._1 - 0.5952380).abs
+    val diff = (metricValue.fMeasure - 0.5952380).abs
     diff should be <= 0.0000001
   }
 
@@ -226,7 +226,7 @@ class ClassificationMetricTest extends TestingSparkContextFlatSpec with Matchers
     val rdd = sparkContext.parallelize(inputListBinary)
 
     val metricValue = ClassificationMetrics.binaryClassificationMetrics(rdd, 0, 1, "1", 1)
-    val diff = (metricValue._1 - 0.6666666).abs
+    val diff = (metricValue.fMeasure - 0.6666666).abs
     diff should be <= 0.0000001
   }
 
@@ -234,7 +234,7 @@ class ClassificationMetricTest extends TestingSparkContextFlatSpec with Matchers
     val rdd = sparkContext.parallelize(inputListBinaryChar)
 
     val metricValue = ClassificationMetrics.binaryClassificationMetrics(rdd, 0, 1, "yes", 1)
-    val diff = (metricValue._1 - 0.6666666).abs
+    val diff = (metricValue.fMeasure - 0.6666666).abs
     diff should be <= 0.0000001
   }
 
@@ -242,7 +242,7 @@ class ClassificationMetricTest extends TestingSparkContextFlatSpec with Matchers
     val rdd = sparkContext.parallelize(inputListBinary2)
 
     val metricValue = ClassificationMetrics.binaryClassificationMetrics(rdd, 0, 1, "1", 1)
-    val diff = (metricValue._1 - 0.6666666).abs
+    val diff = (metricValue.fMeasure - 0.6666666).abs
     diff should be <= 0.0000001
   }
 
@@ -250,7 +250,7 @@ class ClassificationMetricTest extends TestingSparkContextFlatSpec with Matchers
     val rdd = sparkContext.parallelize(inputListBinary)
 
     val metricValue = ClassificationMetrics.binaryClassificationMetrics(rdd, 0, 1, "1", 2)
-    val diff = (metricValue._1 - 0.5555555).abs
+    val diff = (metricValue.fMeasure - 0.5555555).abs
     diff should be <= 0.0000001
   }
 
@@ -258,7 +258,7 @@ class ClassificationMetricTest extends TestingSparkContextFlatSpec with Matchers
     val rdd = sparkContext.parallelize(inputListBinary2)
 
     val metricValue = ClassificationMetrics.binaryClassificationMetrics(rdd, 0, 1, "1", 2)
-    val diff = (metricValue._1 - 0.7575757).abs
+    val diff = (metricValue.fMeasure - 0.7575757).abs
     diff should be <= 0.0000001
   }
 
@@ -266,7 +266,7 @@ class ClassificationMetricTest extends TestingSparkContextFlatSpec with Matchers
     val rdd = sparkContext.parallelize(inputListBinary)
 
     val metricValue = ClassificationMetrics.binaryClassificationMetrics(rdd, 0, 1, "yoyoyo", 1)
-    metricValue._1 shouldEqual 0.0
+    metricValue.fMeasure shouldEqual 0.0
   }
 
   "f measure" should "compute correct value for multi-class classifier for beta = 0.5" in {
