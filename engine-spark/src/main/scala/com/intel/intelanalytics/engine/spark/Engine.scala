@@ -1566,7 +1566,7 @@ TODO: delete me, code moved to separate plugin files
 
     This measure applies to binary and multi-class classifiers.
 
-    --- 'confusion_matrix': Computes the
+    --- 'confusion_matrix': Builds matrix. Outputs a :term:`confusion matrix` for a binary classifier
 
     Parameters
     ----------
