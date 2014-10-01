@@ -41,12 +41,12 @@ import scala.collection.JavaConverters._
 import com.intel.intelanalytics.domain.command.CommandDoc
 
 case class Cgd(graph: GraphReference,
-               edge_value_property_list: Option[String],
-               input_edge_label_list: Option[String],
-               output_vertex_property_list: Option[String],
-               vertex_type_property_key: Option[String],
-               edge_type_property_key: Option[String],
-               vector_value: Option[String],
+               edge_value_property_list: List[String],
+               input_edge_label_list: List[String],
+               output_vertex_property_list: List[String],
+               vertex_type_property_key: String,
+               edge_type_property_key: String,
+               vector_value: Option[Boolean] = None,
                max_supersteps: Option[Int] = None,
                convergence_threshold: Option[Double] = None,
                cgd_lambda: Option[Float] = None,
@@ -89,85 +89,86 @@ class ConjugateGradientDescent
     extendedSummary = Some("""
                             |   Extended Summary
                             |   ----------------
-                            |   CGD implementation of the algorithm presented in
-                            |   Y. Koren. Factorization Meets the Neighborhood: a Multifaceted
-                            |   Collaborative Filtering Model. In ACM KDD 2008. (Equation 5)
+                            |   CGD implementation of the algorithm presented in Y. Koren.
+                            |   Factorization Meets the Neighborhood: a Multifaceted
+                            |   Collaborative Filtering Model.
+                            |   In ACM KDD 2008. (Equation 5)
                             |
                             |   Parameters
                             |   ----------
-                            |   edge_value_property_list : Comma Separated String
+                            |   edge_value_property_list : list of string
                             |       The edge properties which contain the input edge values.
-                            |       We expect comma-separated list of property names  if you use
+                            |       A comma-separated list of property names when declaring
                             |       more than one edge property.
                             |
-                            |   input_edge_label_list : Comma Separated String
+                            |   input_edge_label_list : list of string
                             |       The name of edge label
                             |
-                            |   output_vertex_property_list : String List
-                            |       The list of vertex properties to store output vertex values.
+                            |   output_vertex_property_list : list of string  
+                            |       The list of vertex properties to store output vertex values
                             |
-                            |   vertex_type_property_key : String
-                            |       The name of vertex property which contains vertex type.
+                            |   vertex_type_property_key : string
+                            |       The name of vertex property which contains vertex type
                             |
-                            |   edge_type_property_key : String
-                            |       The name of edge property which contains edge type.
+                            |   edge_type_property_key : string
+                            |       The name of edge property which contains edge type
                             |
-                            |   vector_value: String
-                            |       True means a vector as vertex value is supported
-                            |       False means a vector as vertex value is not supported
-                            |       The default value is "false".
+                            |   vector_value: string (optional)
+                            |       True means a vector as vertex value is supported,
+                            |       False means a vector as vertex value is not supported.
+                            |       The default value is False.
                             |
-                            |   max_supersteps : Integer (optional)
+                            |   max_supersteps : integer (optional)
                             |       The maximum number of super steps (iterations) that the algorithm
                             |       will execute.  The default value is 20.
                             |
-                            |   convergence_threshold : Float (optional)
+                            |   convergence_threshold : float (optional)
                             |       The amount of change in cost function that will be tolerated at convergence.
                             |       If the change is less than this threshold, the algorithm exists earlier
                             |       before it reaches the maximum number of super steps.
-                            |       The valid value range is all Float and zero.
+                            |       The valid value range is all float and zero.
                             |       The default value is 0.
                             |
-                            |   cgd_lambda : Float (optional)
+                            |   cgd_lambda : float (optional)
                             |       The tradeoff parameter that controls the strength of regularization.
                             |       Larger value implies stronger regularization that helps prevent overfitting
                             |       but may cause the issue of underfitting if the value is too large.
                             |       The value is usually determined by cross validation (CV).
-                            |       The valid value range is all positive Float and zero.
+                            |       The valid value range is all positive float and zero.
                             |       The default value is 0.065.
                             |
-                            |   feature_dimension : Integer (optional)
+                            |   feature_dimension : integer (optional)
                             |       The length of feature vector to use in CGD model.
                             |       Larger value in general results in more accurate parameter estimation,
                             |       but slows down the computation.
                             |       The valid value range is all positive integer.
                             |       The default value is 3.
                             |
-                            |   learning_curve_output_interval : Integer (optional)
+                            |   learning_curve_output_interval : integer (optional)
                             |       The learning curve output interval.
                             |       Since each CGD iteration is composed by 2 super steps,
-                            |       the default one iteration means two super steps.
+                            |       the default one (1) iteration means two super steps.
                             |
-                            |   bidirectional_check : Boolean (optional)
-                            |       If it is True, Giraph will firstly check whether each edge is bidirectional
-                            |       before executing algorithm. CGD expects a bi-partite input graph and each edge
+                            |   bidirectional_check : boolean (optional)
+                            |       If it is True, Giraph will check whether each edge is bidirectional
+                            |       before executing the algorithm. CGD expects a bi-partite input graph and each edge
                             |       therefore should be bi-directional. This option is mainly for graph integrity check.
                             |
-                            |   bias_on : Boolean (optional)
+                            |   bias_on : boolean (optional)
                             |       True means turn on the update for bias term and False means turn off
-                            |       the update for bias term. Turning it on often yields more accurate model with
-                            |       minor performance penalty; turning it off disables term update and leaves the
-                            |       value of bias term to be zero.
+                            |       the update for bias term.
+                            |       Turning it on often yields more accurate model with minor performance penalty;
+                            |       turning it off disables term update and leaves the value of bias term to be zero.
                             |       The default value is false.
                             |
-                            |   max_value : Float (optional)
+                            |   max_value : float (optional)
                             |       The maximum edge weight value. If an edge weight is larger than this
                             |       value, the algorithm will throw an exception and terminate. This option
                             |       is mainly for graph integrity check.
                             |       Valid value range is all Float.
                             |       The default value is "Infinity".
                             |
-                            |   min_value : Float (optional)
+                            |   min_value : float (optional)
                             |       The minimum edge weight value. If an edge weight is smaller than this
                             |       value, the algorithm will throw an exception and terminate. This option
                             |       is mainly for graph integrity check.
@@ -194,10 +195,9 @@ class ConjugateGradientDescent
 
     val config = configuration
     val pattern = "[\\s,\\t]+"
-    val outputVertexPropertyList = arguments.output_vertex_property_list.getOrElse(
-      config.getString("output_vertex_property_list"))
+    val outputVertexPropertyList = arguments.output_vertex_property_list.mkString(",")
     val resultPropertyList = outputVertexPropertyList.split(pattern)
-    val vectorValue = arguments.vector_value.getOrElse(config.getString("vector_value")).toBoolean
+    val vectorValue = arguments.vector_value.getOrElse(false)
     val biasOn = arguments.bias_on.getOrElse(false)
     require(resultPropertyList.size >= 1,
       "Please input at least one vertex property name for ALS/CGD results")
@@ -227,13 +227,13 @@ class ConjugateGradientDescent
 
     GiraphConfigurationUtil.initializeTitanConfig(hConf, titanConf, graph)
 
-    GiraphConfigurationUtil.set(hConf, "input.edge.value.property.key.list", arguments.edge_value_property_list)
-    GiraphConfigurationUtil.set(hConf, "input.edge.label.list", arguments.input_edge_label_list)
-    GiraphConfigurationUtil.set(hConf, "output.vertex.property.key.list", arguments.output_vertex_property_list)
-    GiraphConfigurationUtil.set(hConf, "vertex.type.property.key", arguments.vertex_type_property_key)
-    GiraphConfigurationUtil.set(hConf, "edge.type.property.key", arguments.edge_type_property_key)
-    GiraphConfigurationUtil.set(hConf, "vector.value", arguments.vector_value)
-    GiraphConfigurationUtil.set(hConf, "output.vertex.bias", biasOnOption)
+    GiraphConfigurationUtil.set(hConf, "input.edge.value.property.key.list", Some(arguments.edge_value_property_list.mkString(",")))
+    GiraphConfigurationUtil.set(hConf, "input.edge.label.list", Some(arguments.input_edge_label_list.mkString(",")))
+    GiraphConfigurationUtil.set(hConf, "output.vertex.property.key.list", Some(arguments.output_vertex_property_list.mkString(",")))
+    GiraphConfigurationUtil.set(hConf, "vertex.type.property.key", Some(arguments.vertex_type_property_key))
+    GiraphConfigurationUtil.set(hConf, "edge.type.property.key", Some(arguments.edge_type_property_key))
+    GiraphConfigurationUtil.set(hConf, "vector.value", Some(vectorValue.toString))
+    GiraphConfigurationUtil.set(hConf, "output.vertex.bias", Some(biasOn))
 
     val giraphConf = new GiraphConfiguration(hConf)
 

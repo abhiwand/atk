@@ -43,11 +43,11 @@ import scala.collection.JavaConverters._
 import com.intel.intelanalytics.domain.command.CommandDoc
 
 case class Lda(graph: GraphReference,
-               edge_value_property_list: Option[String],
-               input_edge_label_list: Option[String],
-               output_vertex_property_list: Option[String],
-               vertex_type_property_key: Option[String],
-               vector_value: Option[String],
+               edge_value_property_list: List[String],
+               input_edge_label_list: List[String],
+               output_vertex_property_list: List[String],
+               vertex_type: String,
+               vector_value: Boolean,
                max_supersteps: Option[Int] = None,
                alpha: Option[Float] = None,
                beta: Option[Float] = None,
@@ -89,15 +89,15 @@ class LatentDirichletAllocation
     extendedSummary = Some("""
                            |    Parameters
                            |    ----------
-                           |    edge_value_property_list : comma-separated string
+                           |    edge_value_property_list : list of string
                            |        The edge properties which contain the input edge values.
                            |        We expect comma-separated list of property names  if you use
                            |        more than one edge property.
                            | 
-                           |    input_edge_label_list : comma-separated string
+                           |    input_edge_label_list : list of string
                            |        The name of edge label
                            | 
-                           |    output_vertex_property_list : comma-separated list
+                           |    output_vertex_property_list : list of string
                            |        The list of vertex properties to store output vertex values
                            | 
                            |    vertex_type : string
@@ -213,11 +213,11 @@ class LatentDirichletAllocation
 
     GiraphConfigurationUtil.initializeTitanConfig(hConf, titanConf, graph)
 
-    GiraphConfigurationUtil.set(hConf, "input.edge.value.property.key.list", arguments.edge_value_property_list)
-    GiraphConfigurationUtil.set(hConf, "input.edge.label.list", arguments.input_edge_label_list)
-    GiraphConfigurationUtil.set(hConf, "output.vertex.property.key.list", arguments.output_vertex_property_list)
-    GiraphConfigurationUtil.set(hConf, "vertex.type.property.key", arguments.vertex_type_property_key)
-    GiraphConfigurationUtil.set(hConf, "vector.value", arguments.vector_value)
+    GiraphConfigurationUtil.set(hConf, "input.edge.value.property.key.list", Some(arguments.edge_value_property_list.mkString(",")))
+    GiraphConfigurationUtil.set(hConf, "input.edge.label.list", Some(arguments.input_edge_label_list.mkString(",")))
+    GiraphConfigurationUtil.set(hConf, "output.vertex.property.key.list", Some(arguments.output_vertex_property_list.mkString(",")))
+    GiraphConfigurationUtil.set(hConf, "vertex.type.property.key", Some(arguments.vertex_type))
+    GiraphConfigurationUtil.set(hConf, "vector.value", Some(arguments.vector_value.toString))
 
     val giraphConf = new GiraphConfiguration(hConf)
 

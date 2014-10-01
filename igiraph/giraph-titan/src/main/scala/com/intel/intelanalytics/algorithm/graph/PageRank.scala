@@ -40,8 +40,8 @@ import scala.concurrent._
 import com.intel.intelanalytics.domain.command.CommandDoc
 
 case class Pr(graph: GraphReference,
-              input_edge_label_list: Option[String],
-              output_vertex_property_list: Option[String],
+              input_edge_label_list: List[String],
+              output_vertex_property_list: List[String],
               max_supersteps: Option[Int] = None,
               convergence_threshold: Option[Double] = None,
               reset_probability: Option[Double] = None,
@@ -76,12 +76,13 @@ class PageRank
    */
   override def doc = Some(CommandDoc(oneLineSummary = "The `PageRank algorithm <http://en.wikipedia.org/wiki/PageRank>`_.",
     extendedSummary = Some("""
+<<<<<<< HEAD
                             |   Parameters
                             |   ----------
-                            |   input_edge_label : string
+                            |   input_edge_label : list of string
                             |       The name of edge label.
                             |
-                            |   output_vertex_property_list : comma separated string
+                            |   output_vertex_property_list : list of string
                             |       The list of vertex properties to store output vertex values.
                             |
                             |   max_supersteps : integer (optional)
@@ -138,8 +139,8 @@ class PageRank
 
     GiraphConfigurationUtil.initializeTitanConfig(hConf, titanConf, graph)
 
-    GiraphConfigurationUtil.set(hConf, "input.edge.label.list", arguments.input_edge_label_list)
-    GiraphConfigurationUtil.set(hConf, "output.vertex.property.key.list", arguments.output_vertex_property_list)
+    GiraphConfigurationUtil.set(hConf, "input.edge.label.list", Some(arguments.input_edge_label_list.mkString(",")))
+    GiraphConfigurationUtil.set(hConf, "output.vertex.property.key.list", Some(arguments.output_vertex_property_list.mkString(",")))
 
     val giraphConf = new GiraphConfiguration(hConf)
 

@@ -41,12 +41,12 @@ import scala.collection.JavaConverters._
 import com.intel.intelanalytics.domain.command.CommandDoc
 
 case class Als(graph: GraphReference,
-               edge_value_property_list: Option[String],
-               input_edge_label_list: Option[String],
-               output_vertex_property_list: Option[String],
-               vertex_type_property_key: Option[String],
-               edge_type_property_key: Option[String],
-               vector_value: Option[String],
+               edge_value_property_list: List[String],
+               input_edge_label_list: List[String],
+               output_vertex_property_list: List[String],
+               vertex_type_property_key: String,
+               edge_type_property_key: String,
+               vector_value: Option[Boolean] = None,
                max_supersteps: Option[Int] = None,
                convergence_threshold: Option[Double] = None,
                als_lambda: Option[Float] = None,
@@ -89,7 +89,7 @@ class AlternatingLeastSquares
                             |
                             |   Extended Summary
                             |   ----------------
-                            |   The algorithms presented in
+                            |   The algorithms presented in:
                             |
                             |   1.  Y. Zhou, D. Wilkinson, R. Schreiber and R. Pan. Large-Scale
                             |       Parallel Collaborative Filtering for the Netflix Prize. 2008.
@@ -108,17 +108,17 @@ class AlternatingLeastSquares
                             |       Name of edge label
                             |
                             |   output_vertex_property_list : comma-separated string
-                            |       The list of vertex properties to store output vertex values.
+                            |       The list of vertex properties to store output vertex values
                             |
                             |   vertex_type_property_key : string
-                            |       The name of vertex property which contains vertex type.
+                            |       The name of vertex property which contains vertex type
                             |
                             |   edge_type_property_key : string
-                            |       The name of edge property which contains edge type.
+                            |       The name of edge property which contains edge type
                             |
                             |   vector_value: string (optional)
-                            |       True means a vector as vertex value is supported
-                            |       False means a vector as vertex value is not supported
+                            |       True means a vector as vertex value is supported,
+                            |       False means a vector as vertex value is not supported.
                             |       The default value is False.
                             |
                             |   max_supersteps : integer, optional
@@ -152,29 +152,33 @@ class AlternatingLeastSquares
                             |       Since each ALS iteration is composed by 2 super steps,
                             |       the default one iteration means two super steps.
                             |
-                            |   bidirectional_check : Boolean (optional)
+                            |   bidirectional_check : boolean (optional)
                             |       If it is True, Giraph will firstly check whether each edge is bidirectional
-                            |       before executing algorithm. ALS expects a bi-partite input graph and each edge
-                            |       therefore should be bi-directional. This option is mainly for graph integrity check.
+                            |       before executing algorithm.
+                            |       ALS expects a bi-partite input graph and each edge therefore should
+                            |       be bi-directional.
+                            |       This option is mainly for graph integrity check.
                             |
-                            |   bias_on : Boolean (optional)
+                            |   bias_on : boolean (optional)
                             |       True means turn on the update for bias term and False means turn off
-                            |       the update for bias term. Turning it on often yields more accurate model with
-                            |       minor performance penalty; turning it off disables term update and leaves the
-                            |       value of bias term to be zero.
+                            |       the update for bias term.
+                            |       Turning it on often yields more accurate model with minor performance penalty;
+                            |       turning it off disables term update and leaves the value of bias term to be zero.
                             |       The default value is False.
                             |
                             |   max_value : float (optional)
-                            |       The maximum edge weight value. If an edge weight is larger than this
-                            |       value, the algorithm will throw an exception and terminate. This option
-                            |       is mainly for graph integrity check.
+                            |       The maximum edge weight value.
+                            |       If an edge weight is larger than this
+                            |       value, the algorithm will throw an exception and terminate.
+                            |       This optioni is mainly for graph integrity check.
                             |       Valid value range is all float.
                             |       The default value is Infinity.
                             |
                             |   min_value : float (optional)
-                            |       The minimum edge weight value. If an edge weight is smaller than this
-                            |       value, the algorithm will throw an exception and terminate. This option
-                            |       is mainly for graph integrity check.
+                            |       The minimum edge weight value.
+                            |       If an edge weight is smaller than this
+                            |       value, the algorithm will throw an exception and terminate.
+                            |       This option is mainly for graph integrity check.
                             |       Valid value range is all float.
                             |       The default value is -Infinity.
                             |
@@ -200,10 +204,9 @@ class AlternatingLeastSquares
 
     val config = configuration
     val pattern = "[\\s,\\t]+"
-    val outputVertexPropertyList = arguments.output_vertex_property_list.getOrElse(
-      config.getString("output_vertex_property_list"))
+    val outputVertexPropertyList = arguments.output_vertex_property_list.mkString(",")
     val resultPropertyList = outputVertexPropertyList.split(pattern)
-    val vectorValue = arguments.vector_value.getOrElse(config.getString("vector_value")).toBoolean
+    val vectorValue = arguments.vector_value.getOrElse(false)
     val biasOn = arguments.bias_on.getOrElse(false)
     require(resultPropertyList.size >= 1,
       "Please input at least one vertex property name for ALS/CGD results")
@@ -232,13 +235,13 @@ class AlternatingLeastSquares
 
     GiraphConfigurationUtil.initializeTitanConfig(hConf, titanConf, graph)
 
-    GiraphConfigurationUtil.set(hConf, "input.edge.value.property.key.list", arguments.edge_value_property_list)
-    GiraphConfigurationUtil.set(hConf, "input.edge.label.list", arguments.input_edge_label_list)
-    GiraphConfigurationUtil.set(hConf, "output.vertex.property.key.list", arguments.output_vertex_property_list)
-    GiraphConfigurationUtil.set(hConf, "vertex.type.property.key", arguments.vertex_type_property_key)
-    GiraphConfigurationUtil.set(hConf, "edge.type.property.key", arguments.edge_type_property_key)
-    GiraphConfigurationUtil.set(hConf, "vector.value", arguments.vector_value)
-    GiraphConfigurationUtil.set(hConf, "output.vertex.bias", biasOnOption)
+    GiraphConfigurationUtil.set(hConf, "input.edge.value.property.key.list", Some(arguments.edge_value_property_list.mkString(",")))
+    GiraphConfigurationUtil.set(hConf, "input.edge.label.list", Some(arguments.input_edge_label_list.mkString(",")))
+    GiraphConfigurationUtil.set(hConf, "output.vertex.property.key.list", Some(arguments.output_vertex_property_list.mkString(",")))
+    GiraphConfigurationUtil.set(hConf, "vertex.type.property.key", Some(arguments.vertex_type_property_key))
+    GiraphConfigurationUtil.set(hConf, "edge.type.property.key", Some(arguments.edge_type_property_key))
+    GiraphConfigurationUtil.set(hConf, "vector.value", Some(vectorValue.toString))
+    GiraphConfigurationUtil.set(hConf, "output.vertex.bias", Some(biasOn))
 
     val giraphConf = new GiraphConfiguration(hConf)
 
