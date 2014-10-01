@@ -115,7 +115,7 @@ object Reflection {
       case _ => throw new IllegalArgumentException("Only constructors with a single set of arguments are supported")
     }
 
-    (args: Map[String,Any]) => {
+    (args: Map[String, Any]) => {
       val applied = parms.map(p => {
         val decoded: String = p.name.decodedName.decoded
         args.getOrElse(decoded, throw new IllegalArgumentException(s"Missing value for parameter '$decoded'"))

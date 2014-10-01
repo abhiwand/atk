@@ -88,7 +88,20 @@ class CommandExecutor(engine: => SparkEngine, commands: SparkCommandStorage, con
   val commandIdContextMapping = new mutable.HashMap[Long, SparkContext]()
 
   def resolveSuspendedReferences[A <: Product, R <: Product](command: Command, plugin: CommandPlugin[A, R], arguments: A): A = {
-    ???
+    val types = Reflection.getUriReferenceTypes[A]()
+    val references = types.map {
+      case (name, signature) =>
+        //TODO: something more flexible than case analysis
+        signature match {
+          case x if x <:< typeTag[FrameReference].tpe =>
+            (name, createPendingFrame())
+          case x if x <:< typeTag[GraphReference].tpe =>
+            (name, createPendingGraph())
+          case _ => ???
+        }
+    }.toMap
+    val ctorMap = Reflection.getConstructorMap[A]()
+    ctorMap(references)
   }
 
   def createSuspendedReferences[A <: Product: TypeTag, R <: Product: TypeTag](command: Command, plugin: CommandPlugin[A, R], arguments: A): R = {
@@ -128,9 +141,9 @@ class CommandExecutor(engine: => SparkEngine, commands: SparkCommandStorage, con
    * @return an Execution object that can be used to track the command's execution
    */
   def execute[A <: Product: TypeTag, R <: Product: TypeTag](plugin: CommandPlugin[A, R],
-                                                              arguments: A,
-                                                              user: UserPrincipal,
-                                                              executionContext: ExecutionContext): Execution = {
+                                                            arguments: A,
+                                                            user: UserPrincipal,
+                                                            executionContext: ExecutionContext): Execution = {
     implicit val ec = executionContext
     val cmd = commands.create(CommandTemplate(plugin.name, Some(plugin.serializeArguments(arguments))))
     withMyClassLoader {
@@ -246,10 +259,10 @@ class CommandExecutor(engine: => SparkEngine, commands: SparkCommandStorage, con
    * @return an Execution object that can be used to track the command's execution
    */
   def execute[A <: Product: TypeTag, R <: Product: TypeTag](name: String,
-                                                              arguments: A,
-                                                              user: UserPrincipal,
-                                                              executionContext: ExecutionContext,
-                                                              commandPluginRegistry: CommandPluginRegistry): Execution = {
+                                                            arguments: A,
+                                                            user: UserPrincipal,
+                                                            executionContext: ExecutionContext,
+                                                            commandPluginRegistry: CommandPluginRegistry): Execution = {
     val function = commandPluginRegistry.getCommandDefinition(name)
       .getOrElse(throw new NotFoundException("command definition", name))
       .asInstanceOf[CommandPlugin[A, R]]
@@ -268,9 +281,9 @@ class CommandExecutor(engine: => SparkEngine, commands: SparkCommandStorage, con
    * @return an Execution object that can be used to track the command's execution
    */
   def execute[A <: Product: TypeTag, R <: Product: TypeTag](command: CommandTemplate,
-                                                              user: UserPrincipal,
-                                                              executionContext: ExecutionContext,
-                                                              commandPluginRegistry: CommandPluginRegistry): Execution = {
+                                                            user: UserPrincipal,
+                                                            executionContext: ExecutionContext,
+                                                            commandPluginRegistry: CommandPluginRegistry): Execution = {
     val function = commandPluginRegistry.getCommandDefinition(command.name)
       .getOrElse(throw new NotFoundException("command definition", command.name))
       .asInstanceOf[CommandPlugin[A, R]]

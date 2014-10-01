@@ -1,5 +1,6 @@
 package com.intel.intelanalytics.domain
 
+import com.intel.intelanalytics.domain.command.Command
 import org.joda.time.DateTime
 
 //////////////////////////////////////////////////////////////////////////////
@@ -75,4 +76,9 @@ trait OnDemand {
     case (Some(_), None) => InProgress
     case (Some(_), Some(_)) => Complete
   }
+
+  /**
+   * The command that produced this object
+   */
+  def command(): Command
 }
