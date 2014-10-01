@@ -127,15 +127,23 @@ class CommandExecutor(engine: => SparkEngine, commands: SparkCommandStorage, con
   }
 
   def createContextForCommand[R <: Product, A <: Product](command: CommandPlugin[A, R], arguments: A, user: UserPrincipal, cmd: Command): SparkContext = {
-    val commandId = cmd.id
-    val commandName = cmd.name
-    val context: SparkContext = contextManager.context(user, s"(id:$commandId,name:$commandName)")
-    val listener = new SparkProgressListener(SparkProgressListener.progressUpdater, cmd.id, command.numberOfJobs(arguments))
-    val progressPrinter = new ProgressPrinter(listener)
-    context.addSparkListener(listener)
-    context.addSparkListener(progressPrinter)
-    commandIdContextMapping += (commandId -> context)
-    context
+    withContext("createContextForCommand") {
+      val commandId = cmd.id
+      val commandName = cmd.name
+      val context: SparkContext = contextManager.context(user, s"(id:$commandId,name:$commandName)")
+      try {
+        val listener = new SparkProgressListener(SparkProgressListener.progressUpdater, cmd.id, command.numberOfJobs(arguments))
+        val progressPrinter = new ProgressPrinter(listener)
+        context.addSparkListener(listener)
+        context.addSparkListener(progressPrinter)
+      }
+      catch {
+        // exception only shows up here due to dev error, but it is hard to debug without this logging
+        case e: Exception => error("could not create progress listeners", exception = e)
+      }
+      commandIdContextMapping += (commandId -> context)
+      context
+    }
   }
 
   /**
