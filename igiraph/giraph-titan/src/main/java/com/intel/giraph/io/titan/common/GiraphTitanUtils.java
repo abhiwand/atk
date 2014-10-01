@@ -25,6 +25,7 @@ package com.intel.giraph.io.titan.common;
 import com.intel.giraph.io.titan.TitanGraphWriter;
 import com.thinkaurelius.titan.core.TitanGraph;
 import com.thinkaurelius.titan.core.TitanTransaction;
+import com.thinkaurelius.titan.core.schema.TitanManagement;
 import com.thinkaurelius.titan.diskstorage.Backend;
 import org.apache.giraph.conf.ImmutableClassesGiraphConfiguration;
 import org.apache.hadoop.hbase.HConstants;
@@ -207,31 +208,19 @@ public class GiraphTitanUtils {
             throw new RuntimeException(TITAN_GRAPH_NOT_OPEN);
         }
 
-        TitanTransaction tx = graph.newTransaction();
-        if (tx == null) {
-            LOG.error(TITAN_TX_NOT_OPEN);
-            throw new RuntimeException(TITAN_TX_NOT_OPEN);
-        }
-        LOG.info(OPENED_GRAPH);
         String[] vertexValuePropertyKeyList = OUTPUT_VERTEX_PROPERTY_KEY_LIST.get(conf).split(regexp);
-        //Lock dbLock = FakeLock.INSTANCE;
-        //dbLock.lock();
-        /*
+
+        // TODO: Need locks?
+        TitanManagement graphManager =  graph.getManagementSystem();
+
         for (int i = 0; i < vertexValuePropertyKeyList.length; i++) {
-            if (!tx.containsType(vertexValuePropertyKeyList[i])) {
+            if (!graphManager.containsRelationType(vertexValuePropertyKeyList[i])) {
                 LOG.info(CREATE_VERTEX_PROPERTY + vertexValuePropertyKeyList[i]);
-                // for titan 0.3.2
-                //     this.graph.makeType().name().unique(Direction.OUT).dataType(String.class)
-                //             .makePropertyKey();
-                //for titan 0.4.0
-                graph.makeKey(vertexValuePropertyKeyList[i]).dataType(String.class).make();
+                //for titan 0.5.0+
+                graphManager.makePropertyKey(vertexValuePropertyKeyList[i]).dataType(String.class).make();
             }
         }
-        dbLock.unlock();
-        if (tx.isOpen()) {
-            tx.commit();
-        } */
-        graph.commit();
+        graphManager.commit();
         graph.shutdown();
     }
 

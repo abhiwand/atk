@@ -22,21 +22,14 @@
 //////////////////////////////////////////////////////////////////////////////
 package com.intel.giraph.io.titan.hbase;
 
-import com.intel.giraph.io.titan.GiraphToTitanGraphFactory;
-import com.intel.giraph.io.titan.common.GiraphTitanUtils;
-import com.thinkaurelius.titan.core.EdgeLabel;
 import com.thinkaurelius.titan.core.TitanEdge;
-import com.thinkaurelius.titan.diskstorage.Backend;
+import com.thinkaurelius.titan.core.TitanProperty;
 import com.thinkaurelius.titan.hadoop.FaunusVertex;
-import com.tinkerpop.blueprints.Direction;
 import org.apache.giraph.conf.ImmutableClassesGiraphConfiguration;
 import org.apache.giraph.edge.Edge;
 import org.apache.giraph.edge.EdgeFactory;
 import org.apache.giraph.graph.Vertex;
 import org.apache.giraph.io.VertexReader;
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hbase.util.Bytes;
-import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapreduce.InputSplit;
@@ -44,12 +37,7 @@ import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.log4j.Logger;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
-
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.*;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INPUT_EDGE_LABEL_LIST;
+import java.util.Iterator;
 
 /**
  * TitanHBaseVertexInputFormatLongLongNull loads vertex
@@ -58,36 +46,12 @@ import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INPUT_EDGE_L
  * and <code>Null</code> edge weights.
  */
 public class TitanHBaseVertexInputFormatLongLongNull extends
-    TitanHBaseVertexInputFormat<LongWritable, LongWritable, NullWritable> {
+        TitanHBaseVertexInputFormat<LongWritable, LongWritable, NullWritable> {
 
-    /**
-     * LOG class
-     */
     private static final Logger LOG = Logger.getLogger(TitanHBaseVertexInputFormatLongLongNull.class);
 
     /**
-     * checkInputSpecs
-     *
-     * @param conf : Giraph configuration
-     */
-    @Override
-    public void checkInputSpecs(Configuration conf) {
-    }
-
-    /**
-     * set up HBase based on users' configuration
-     *
-     * @param conf :Giraph configuration
-     */
-    @Override
-    public void setConf(ImmutableClassesGiraphConfiguration<LongWritable, LongWritable, NullWritable> conf) {
-        GiraphTitanUtils.setupHBase(conf);
-        super.setConf(conf);
-    }
-
-
-    /**
-     * create TitanHBaseVertexReader
+     * Create vertex reader
      *
      * @param split   : inputsplits from TableInputFormat
      * @param context : task context
@@ -95,53 +59,28 @@ public class TitanHBaseVertexInputFormatLongLongNull extends
      * @throws IOException
      * @throws RuntimeException
      */
-    public VertexReader<LongWritable, LongWritable, NullWritable>
-    createVertexReader(InputSplit split, TaskAttemptContext context) throws IOException {
-
-        return new TitanHBaseVertexReader(split, context);
-
+    @Override
+    public VertexReader<LongWritable, LongWritable, NullWritable> createVertexReader(
+            InputSplit split, TaskAttemptContext context) throws IOException {
+        return new LongLongNullVertexReader(split, context);
     }
 
     /**
-     * Uses the RecordReader to return HBase data
+     * Vertex Reader that constructs Giraph vertices from Titan Vertices
      */
-    public static class TitanHBaseVertexReader extends
-        HBaseVertexReader<LongWritable, LongWritable, NullWritable> {
-        /**
-         * Graph Reader to parse data in Titan Graph semantics
-         */
-        private TitanHBaseGraphReader graphReader;
-        /**
-         * Giraph Veretex
-         */
-        private Vertex vertex = null;
-        /**
-         * task context
-         */
-        private final TaskAttemptContext context;
+    protected static class LongLongNullVertexReader extends TitanHBaseVertexReader<LongWritable, LongWritable, NullWritable> {
+
+        private Vertex<LongWritable, LongWritable, NullWritable> giraphVertex = null;
 
         /**
-         * TitanHBaseVertexReader constructor
+         * Constructs vertex reader
          *
-         * @param split   InputSplit from TableInputFormat
-         * @param context task context
+         * @param split   Input split from HBase table
+         * @param context Giraph task context
          * @throws IOException
          */
-        public TitanHBaseVertexReader(InputSplit split, TaskAttemptContext context) throws IOException {
+        public LongLongNullVertexReader(InputSplit split, TaskAttemptContext context) throws IOException {
             this.context = context;
-        }
-
-        /**
-         * @param inputSplit Input Split form HBase
-         * @param context    task context
-         */
-        @Override
-        public void initialize(InputSplit inputSplit, TaskAttemptContext context) throws IOException,
-            InterruptedException {
-            super.initialize(inputSplit, context);
-            this.graphReader = new TitanHBaseGraphReader(
-                GiraphToTitanGraphFactory.generateTitanConfiguration(context.getConfiguration(),
-                    GIRAPH_TITAN.get(context.getConfiguration())));
         }
 
         /**
@@ -153,78 +92,101 @@ public class TitanHBaseVertexInputFormatLongLongNull extends
          */
         @Override
         public boolean nextVertex() throws IOException, InterruptedException {
-            //the edge store name used by Titan
+            boolean hasMoreVertices = false;
+            giraphVertex = null;
+
             if (getRecordReader().nextKeyValue()) {
-                vertex = readGiraphVertex(getConf(), getRecordReader().getCurrentValue());
-                return true;
+                giraphVertex = readGiraphVertex(getConf(), getRecordReader().getCurrentValue());
+                hasMoreVertices = true;
             }
 
-            vertex = null;
-            return false;
-        }
-
-
-        public Vertex<LongWritable, LongWritable, NullWritable> readGiraphVertex(final ImmutableClassesGiraphConfiguration conf, final FaunusVertex faunusVertex) {
-            /** Vertex value properties to filter */
-            final String[] vertexValuePropertyKeyList;
-            /** Edge value properties to filter */
-            final String[] edgeValuePropertyKeyList;
-            /** Edge labels to filter */
-            final String[] edgeLabelList;
-
-            String regexp = "[\\s,\\t]+";
-
-            vertexValuePropertyKeyList = INPUT_VERTEX_VALUE_PROPERTY_KEY_LIST.get(conf).split(regexp);
-            edgeValuePropertyKeyList = INPUT_EDGE_VALUE_PROPERTY_KEY_LIST.get(conf).split(regexp);
-            edgeLabelList = INPUT_EDGE_LABEL_LIST.get(conf).split(regexp);
-            Set<String> vertexValuePropertyKeys = new HashSet<String>(Arrays.asList(vertexValuePropertyKeyList));
-            Set<String> edgeValuePropertyKeys = new HashSet<String>(Arrays.asList(edgeValuePropertyKeyList));
-            Set<String> edgeLabelKeys = new HashSet<String>(Arrays.asList(edgeLabelList));
-
-            Vertex<LongWritable, LongWritable, NullWritable> vertex = conf.createVertex();
-            vertex.initialize(new LongWritable(faunusVertex.getLongId()), new LongWritable(0));
-
-            // Add check that property list contains single value
-            if (vertexValuePropertyKeys.size() >0) {
-                String propertyKey = vertexValuePropertyKeys.iterator().next();
-                final Object vertexValueObject = faunusVertex.getProperty(propertyKey);
-                final long vertexValue =  Long.parseLong(vertexValueObject.toString());
-                vertex.setValue(new LongWritable(vertexValue));
-            }
-
-
-            for (final String edgeLabelKey : edgeLabelKeys) {
-                EdgeLabel edgeLabel = faunusVertex.tx().getEdgeLabel(edgeLabelKey);
-                for (final TitanEdge titanEdge : faunusVertex.getTitanEdges(Direction.OUT, edgeLabel)) {
-                    Edge<LongWritable, NullWritable> edge = EdgeFactory.create(new LongWritable(
-                            titanEdge.getOtherVertex(faunusVertex).getLongId()), NullWritable.get());
-                    vertex.addEdge(edge);
-                }
-            }
-            return (vertex);
+            return hasMoreVertices;
         }
 
         /**
-         * getCurrentVetex
+         * Get current Giraph vertex.
          *
-         * @return Vertex : Giraph vertex
+         * @return Giraph vertex
          * @throws IOException
          * @throws InterruptedException
          */
         @Override
         public Vertex<LongWritable, LongWritable, NullWritable> getCurrentVertex() throws IOException,
-            InterruptedException {
-            return vertex;
+                InterruptedException {
+            return giraphVertex;
         }
 
         /**
-         * close
+         * Construct a Giraph vertex from a Faunus (Titan/Hadoop vertex).
          *
-         * @throws IOException
+         * @param conf         Giraph configuration with property names, and edge labels to filter
+         * @param faunusVertex Faunus vertex
+         * @return Giraph vertex
          */
-        public void close() throws IOException {
-            this.graphReader.shutdown();
-            super.close();
+        private Vertex<LongWritable, LongWritable, NullWritable> readGiraphVertex(
+                final ImmutableClassesGiraphConfiguration conf, final FaunusVertex faunusVertex) {
+            // Initialize Giraph vertex
+            Vertex<LongWritable, LongWritable, NullWritable> vertex = conf.createVertex();
+            vertex.initialize(new LongWritable(faunusVertex.getLongId()), new LongWritable(0));
+
+            // Add vertex properties
+            Iterator<TitanProperty> titanProperties = vertexBuilder.buildTitanProperties(faunusVertex);
+            vertex.setValue(getLongWritableProperty(titanProperties));
+
+            // Add edges
+            Iterator<TitanEdge> titanEdges = vertexBuilder.buildTitanEdges(faunusVertex);
+            addGiraphEdges(vertex, faunusVertex, titanEdges);
+
+            return (vertex);
+        }
+
+
+        /**
+         * Create Long writable from value of first Titan property in iterator
+         *
+         * @param titanProperties Iterator of Titan properties
+         * @return Long writable containing value of first property in list
+         */
+        private LongWritable getLongWritableProperty(Iterator<TitanProperty> titanProperties) {
+            long vertexValue = 0;
+            if (titanProperties.hasNext()) {
+                Object propertyValue = titanProperties.next().getValue();
+                try {
+                    vertexValue = Long.parseLong(propertyValue.toString());
+                } catch (NumberFormatException e) {
+                    LOG.warn("Unable to parse long value for property: " + propertyValue);
+                }
+            }
+            return (new LongWritable(vertexValue));
+        }
+
+
+        /**
+         * Add edges to Giraph vertex.
+         *
+         * @param vertex       Giraph vertex to add edges to
+         * @param faunusVertex (Faunus (Titan/Hadoop) vertex
+         * @param titanEdges   Iterator of Titan edges
+         */
+        private void addGiraphEdges(Vertex<LongWritable, LongWritable, NullWritable> vertex,
+                                    FaunusVertex faunusVertex, Iterator<TitanEdge> titanEdges) {
+            while (titanEdges.hasNext()) {
+                TitanEdge titanEdge = titanEdges.next();
+                Edge<LongWritable, NullWritable> edge = getGiraphEdge(faunusVertex, titanEdge);
+                vertex.addEdge(edge);
+            }
+        }
+
+        /**
+         * Create Giraph edge from Titan edge
+         *
+         * @param faunusVertex Faunus (Titan/Hadoop) vertex
+         * @param titanEdge    Titan edge
+         * @return Giraph edge
+         */
+        private Edge<LongWritable, NullWritable> getGiraphEdge(FaunusVertex faunusVertex, TitanEdge titanEdge) {
+            return EdgeFactory.create(new LongWritable(
+                    titanEdge.getOtherVertex(faunusVertex).getLongId()), NullWritable.get());
         }
     }
 }
