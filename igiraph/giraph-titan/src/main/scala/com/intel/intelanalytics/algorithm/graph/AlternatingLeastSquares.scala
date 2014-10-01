@@ -41,12 +41,12 @@ import scala.collection.JavaConverters._
 import com.intel.intelanalytics.domain.command.CommandDoc
 
 case class Als(graph: GraphReference,
-               edge_value_property_list: Option[String],
-               input_edge_label_list: Option[String],
-               output_vertex_property_list: Option[String],
-               vertex_type_property_key: Option[String],
-               edge_type_property_key: Option[String],
-               vector_value: Option[String],
+               edge_value_property_list: List[String],
+               input_edge_label_list: List[String],
+               output_vertex_property_list: List[String],
+               vertex_type_property_key: String,
+               edge_type_property_key: String,
+               vector_value: Option[Boolean] = None,
                max_supersteps: Option[Int] = None,
                convergence_threshold: Option[Double] = None,
                als_lambda: Option[Float] = None,
@@ -59,12 +59,31 @@ case class Als(graph: GraphReference,
 
 case class AlsResult(value: String)
 
-class AlternatingLeastSquares
-    extends CommandPlugin[Als, AlsResult] {
+/** Json conversion for arguments and return value case classes */
+object AlsJsonFormat {
   import DomainJsonProtocol._
   implicit val alsFormat = jsonFormat16(Als)
   implicit val alsResultFormat = jsonFormat1(AlsResult)
+}
 
+import AlsJsonFormat._
+
+class AlternatingLeastSquares
+    extends CommandPlugin[Als, AlsResult] {
+
+  /**
+   * The name of the command, e.g. graphs/ml/alternating_least_squares
+   *
+   * The format of the name determines how the plugin gets "installed" in the client layer
+   * e.g Python client via code generation.
+   */
+  override def name: String = "graphs/ml/alternating_least_squares"
+
+  /**
+   * User documentation exposed in Python.
+   *
+   * [[http://docutils.sourceforge.net/rst.html ReStructuredText]]
+   */
   override def doc = Some(CommandDoc(oneLineSummary = "The Alternating Least Squares with Bias for collaborative filtering algorithms.",
     extendedSummary = Some("""
 
@@ -80,15 +99,15 @@ class AlternatingLeastSquares
 
     Parameters
     ----------
-    edge_value_property_list : Comma Separated String
+    edge_value_property_list : List of String
         The edge properties which contain the input edge values.
         We expect comma-separated list of property names  if you use
         more than one edge property.
 
-    input_edge_label_list : Comma Separated String
+    input_edge_label_list : List of String
         Name of edge label
 
-    output_vertex_property_list : Comma Separated String
+    output_vertex_property_list : List of String
         The list of vertex properties to store output vertex values.
 
     vertex_type_property_key : String
@@ -97,7 +116,7 @@ class AlternatingLeastSquares
     edge_type_property_key : String
         The name of edge property which contains edge type.
 
-    vector_value: String (optional)
+    vector_value: Boolean (optional)
         True means a vector as vertex value is supported
         False means a vector as vertex value is not supported
         The default value is False.
@@ -176,7 +195,7 @@ class AlternatingLeastSquares
     the commend to use are:
 
 
-	g.ml.alternating_least_squares(edge_value_property_list = "rating", vertex_type_property_key = "vertex_type", input_edge_label_list = "edge", output_vertex_property_list = "als_result", edge_type_property_key = "splits", vector_value = "true", als_lambda = 0.065, bias_on = False, min_value = 1, max_value = 5)::
+	g.ml.alternating_least_squares(edge_value_property_list = ["rating"], vertex_type_property_key = "vertex_type", input_edge_label_list = ["edge"], output_vertex_property_list = ["als_result"], edge_type_property_key = "splits", vector_value = True, als_lambda = 0.065, bias_on = False, min_value = 1, max_value = 5)::
 
 
 The expected output is like this
@@ -189,10 +208,9 @@ The expected output is like this
 
     val config = configuration
     val pattern = "[\\s,\\t]+"
-    val outputVertexPropertyList = arguments.output_vertex_property_list.getOrElse(
-      config.getString("output_vertex_property_list"))
+    val outputVertexPropertyList = arguments.output_vertex_property_list.mkString(",")
     val resultPropertyList = outputVertexPropertyList.split(pattern)
-    val vectorValue = arguments.vector_value.getOrElse(config.getString("vector_value")).toBoolean
+    val vectorValue = arguments.vector_value.getOrElse(false)
     val biasOn = arguments.bias_on.getOrElse(false)
     require(resultPropertyList.size >= 1,
       "Please input at least one vertex property name for ALS/CGD results")
@@ -221,13 +239,13 @@ The expected output is like this
 
     GiraphConfigurationUtil.initializeTitanConfig(hConf, titanConf, graph)
 
-    GiraphConfigurationUtil.set(hConf, "input.edge.value.property.key.list", arguments.edge_value_property_list)
-    GiraphConfigurationUtil.set(hConf, "input.edge.label.list", arguments.input_edge_label_list)
-    GiraphConfigurationUtil.set(hConf, "output.vertex.property.key.list", arguments.output_vertex_property_list)
-    GiraphConfigurationUtil.set(hConf, "vertex.type.property.key", arguments.vertex_type_property_key)
-    GiraphConfigurationUtil.set(hConf, "edge.type.property.key", arguments.edge_type_property_key)
-    GiraphConfigurationUtil.set(hConf, "vector.value", arguments.vector_value)
-    GiraphConfigurationUtil.set(hConf, "output.vertex.bias", biasOnOption)
+    GiraphConfigurationUtil.set(hConf, "input.edge.value.property.key.list", Some(arguments.edge_value_property_list.mkString(",")))
+    GiraphConfigurationUtil.set(hConf, "input.edge.label.list", Some(arguments.input_edge_label_list.mkString(",")))
+    GiraphConfigurationUtil.set(hConf, "output.vertex.property.key.list", Some(arguments.output_vertex_property_list.mkString(",")))
+    GiraphConfigurationUtil.set(hConf, "vertex.type.property.key", Some(arguments.vertex_type_property_key))
+    GiraphConfigurationUtil.set(hConf, "edge.type.property.key", Some(arguments.edge_type_property_key))
+    GiraphConfigurationUtil.set(hConf, "vector.value", Some(vectorValue.toString))
+    GiraphConfigurationUtil.set(hConf, "output.vertex.bias", Some(biasOn))
 
     val giraphConf = new GiraphConfiguration(hConf)
 
@@ -242,17 +260,4 @@ The expected output is like this
       config, giraphConf, invocation, "als-learning-report_0"))
   }
 
-  //TODO: Replace with generic code that works on any case class
-  def parseArguments(arguments: JsObject) = arguments.convertTo[Als]
-
-  //TODO: Replace with generic code that works on any case class
-  def serializeReturn(returnValue: AlsResult): JsObject = returnValue.toJson.asJsObject
-
-  /**
-   * The name of the command, e.g. graphs/ml/alternating_least_squares
-   */
-  override def name: String = "graphs/ml/alternating_least_squares"
-
-  //TODO: Replace with generic code that works on any case class
-  override def serializeArguments(arguments: Als): JsObject = arguments.toJson.asJsObject()
 }

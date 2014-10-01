@@ -31,5 +31,5 @@ print "Creating graph 'pr'"
 graph = BigGraph([user, movie, rates], "pr")
 
 print "Running page rank on graph 'pr' "
-print graph.ml.page_rank(input_edge_label_list="edge", output_vertex_property_list="pr_result")
+print graph.ml.page_rank(input_edge_label_list=["edge"], output_vertex_property_list=["pr_result"])
 

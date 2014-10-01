@@ -21,11 +21,10 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.shared
+package com.intel.event
 
-import com.intel.event.adapter.SLF4JLogAdapter
-import com.intel.event.{ EventLog, EventLogger, Severity, EventContext }
 import scala.util.control.NonFatal
+import com.intel.event.adapter.SLF4JLogAdapter
 
 /**
  * Mixin for logging with the Event library.

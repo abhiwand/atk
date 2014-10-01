@@ -30,6 +30,8 @@ logger = logging.getLogger(__name__)
 from intelanalytics.core.api import get_api_decorator
 api = get_api_decorator(logger)
 
+from intelanalytics.core.userfunction import has_python_user_function_arg
+
 from intelanalytics.core.column import BigColumn
 from intelanalytics.core.errorhandle import IaError
 
@@ -514,8 +516,8 @@ class BigFrame(CommandLoadableBigFrame):
         except:
             raise IaError(logger)
 
-
     @api
+    @has_python_user_function_arg
     def add_columns(self, func, schema):
         """
         Add column.
@@ -739,37 +741,6 @@ class BigFrame(CommandLoadableBigFrame):
 
         """
         return self._backend.bin_column(self, column_name, num_bins, bin_type, bin_column_name)
-
-    @deprecated("Use quantiles().")
-    def calculate_percentiles(self, column_name, percentiles):
-        return self.quantiles(column_name, percentiles)
-
-    @api
-    def quantiles(self, column_name, quantiles):
-        """
-        Calculate quantiles on given column.
-
-        Parameters
-        ----------
-        column_name : str
-            The column to calculate quantile
-        quantiles : float OR list of float.
-
-        Returns
-        -------
-        dictionary
-
-        Examples
-        --------
-        ::
-
-            my_frame.quantiles('final_sale_price', [10, 50, 100])
-
-        .. versionchanged:: 0.8.5
-
-        """
-        return self._backend.quantiles(self, column_name, quantiles)
-
 
     @deprecated("Use classification_metrics().")
     def confusion_matrix(self, label_column, pred_column, pos_label='1'):
@@ -1079,6 +1050,7 @@ class BigFrame(CommandLoadableBigFrame):
         self.drop_rows(predicate)
 
     @api
+    @has_python_user_function_arg
     def drop_rows(self, predicate):
         """
         Drop rows.
@@ -1196,6 +1168,7 @@ class BigFrame(CommandLoadableBigFrame):
         return self._backend.ecdf(self, sample_col)
 
     @api
+    @has_python_user_function_arg
     def filter(self, predicate):
         """
         Select data.

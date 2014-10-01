@@ -34,7 +34,7 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
     <groupId>com.intel.ia</groupId>
     <artifactId>IntelAnalytics</artifactId>
     <packaging>pom</packaging>
-    <version>0.8.0-SNAPSHOT</version>
+    <version>0.8.6-SNAPSHOT</version>
     <name>IntelAnalytics Parent</name>
     <description>IntelAnalytics : Large Scale Graph Analytics</description>
     <inceptionYear>2013</inceptionYear>
@@ -103,7 +103,7 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
         <maven>3.0</maven>
     </prerequisites>
     <properties>
-        <project.version>0.8.0-SNAPSHOT</project.version>
+        <project.version>0.8.6-SNAPSHOT</project.version>
         <top.dir>${project.basedir}</top.dir>
         <buildtype>test</buildtype>
 
@@ -332,7 +332,7 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                                 <reportsDirectory>${project.build.directory}/surefire-reports</reportsDirectory>
                                 <junitxml>.</junitxml>
                                 <filereports>WDF TestSuite.txt</filereports>
-                                <parallel>true</parallel>
+                                <parallel>false</parallel>
                                 <stdout>FTD</stdout>
                             </configuration>
                             <executions>
@@ -378,7 +378,7 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                  Scoverage is should only be used on a single module at a time or it produces inaccurate results.
 
                  The right way to use it is to run "mvn install" on the full project.  Change directory to the
-                 submodule and run "mvn clean test scoverage:report".
+                 submodule and run "mvn -Pscala-coverage clean test scoverage:report".
             -->
             <activation>
                 <activeByDefault>false</activeByDefault>

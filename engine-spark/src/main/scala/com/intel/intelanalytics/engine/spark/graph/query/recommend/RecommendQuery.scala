@@ -70,13 +70,27 @@ case class RecommendParams(graph: GraphReference,
  */
 case class RecommendResult(recommendation: String)
 
-class RecommendQuery extends SparkCommandPlugin[RecommendParams, RecommendResult] {
-
+/** Json conversion for arguments and return value case classes */
+object RecommendJsonFormat {
   import com.intel.intelanalytics.domain.DomainJsonProtocol._
-
   implicit val recommendParamsFormat = jsonFormat14(RecommendParams)
   implicit val recommendResultFormat = jsonFormat1(RecommendResult)
+}
 
+import RecommendJsonFormat._
+
+class RecommendQuery extends SparkCommandPlugin[RecommendParams, RecommendResult] {
+
+  /**
+   * The name of the command, e.g. graphs/query/recommend
+   */
+  override def name: String = "graphs/query/recommend"
+
+  /**
+   * User documentation exposed in Python.
+   *
+   * [[http://docutils.sourceforge.net/rst.html ReStructuredText]]
+   */
   override def doc = Some(CommandDoc(oneLineSummary = "Make recommendation based on trained model.",
     extendedSummary = Some("""
     Extended Summary
@@ -310,17 +324,4 @@ class RecommendQuery extends SparkCommandPlugin[RecommendParams, RecommendResult
     RecommendResult(results)
   }
 
-  //TODO: Replace with generic code that works on any case class
-  def parseArguments(arguments: JsObject) = arguments.convertTo[RecommendParams]
-
-  //TODO: Replace with generic code that works on any case class
-  def serializeReturn(returnValue: RecommendResult): JsObject = returnValue.toJson.asJsObject
-
-  /**
-   * The name of the command, e.g. graphs/query/recommend
-   */
-  override def name: String = "graphs/query/recommend"
-
-  //TODO: Replace with generic code that works on any case class
-  override def serializeArguments(arguments: RecommendParams): JsObject = arguments.toJson.asJsObject()
 }

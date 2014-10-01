@@ -40,11 +40,11 @@ import scala.concurrent._
 import com.intel.intelanalytics.domain.command.CommandDoc
 
 case class Lp(graph: GraphReference,
-              vertex_value_property_list: Option[String],
-              edge_value_property_list: Option[String],
-              input_edge_label_list: Option[String],
-              output_vertex_property_list: Option[String],
-              vector_value: Option[String],
+              vertex_value_property_list: List[String],
+              edge_value_property_list: List[String],
+              input_edge_label_list: List[String],
+              output_vertex_property_list: List[String],
+              vector_value: Boolean,
               max_supersteps: Option[Int] = None,
               convergence_threshold: Option[Double] = None,
               anchor_threshold: Option[Double] = None,
@@ -52,12 +52,31 @@ case class Lp(graph: GraphReference,
               bidirectional_check: Option[Boolean] = None)
 case class LpResult(value: String) //TODO
 
-class LabelPropagation
-    extends CommandPlugin[Lp, LpResult] {
+/** Json conversion for arguments and return value case classes */
+object LpJsonFormat {
   import DomainJsonProtocol._
   implicit val lbpFormat = jsonFormat11(Lp)
   implicit val lbpResultFormat = jsonFormat1(LpResult)
+}
 
+import LpJsonFormat._
+
+class LabelPropagation
+    extends CommandPlugin[Lp, LpResult] {
+
+  /**
+   * The name of the command, e.g. graphs/ml/loopy_belief_propagation
+   *
+   * The format of the name determines how the plugin gets "installed" in the client layer
+   * e.g Python client via code generation.
+   */
+  override def name: String = "graphs/ml/label_propagation"
+
+  /**
+   * User documentation exposed in Python.
+   *
+   * [[http://docutils.sourceforge.net/rst.html ReStructuredText]]
+   */
   override def doc = Some(CommandDoc(oneLineSummary = "Label Propagation on Gaussian Random Fields.",
     extendedSummary = Some("""
     Extended Summary
@@ -68,19 +87,19 @@ class LabelPropagation
 
     Parameters
     ----------
-    vertex_value_property_list : Comma Separated String
+    vertex_value_property_list : List of String
         The vertex properties which contain prior vertex values if you
         use more than one vertex property.
 
-    edge_value_property_list : Comma Separated String
+    edge_value_property_list : List of String
         The edge properties which contain the input edge values.
         We expect comma-separated list of property names  if you use
         more than one edge property.
 
-    input_edge_label_list : String
-        The name of edge label..
+    input_edge_label_list : List of String
+        The name of edge label.
 
-    output_vertex_property_list : Comma Separated String
+    output_vertex_property_list : List of String
         The list of vertex properties to store output vertex values.
 
     vector_value: Boolean
@@ -132,7 +151,7 @@ class LabelPropagation
 
     Examples
     --------
-    g.ml.label_propagation(vertex_value_property_list = "input_value", edge_value_property_list  = "weight", input_edge_label_list = "edge",   output_vertex_property_list = "lp_posterior",   vector_value = "true",    max_supersteps = 10,   convergence_threshold = 0.0, anchor_threshold = 0.9, lp_lambda = 0.5, bidirectional_check = False)
+    g.ml.label_propagation(vertex_value_property_list = ["input_value"], edge_value_property_list  = ["weight"], input_edge_label_list = ["edge"],   output_vertex_property_list = ["lp_posterior"],   vector_value = True,    max_supersteps = 10,   convergence_threshold = 0.0, anchor_threshold = 0.9, lp_lambda = 0.5, bidirectional_check = False)
 
     The expected output is like this
     {u'value': u'======Graph Statistics======\nNumber of vertices: 600\nNumber of edges: 15716\n\n======LP Configuration======\nlambda: 0.000000\nanchorThreshold: 0.900000\nconvergenceThreshold: 0.000000\nmaxSupersteps: 10\nbidirectionalCheck: false\n\n======Learning Progress======\nsuperstep = 1\tcost = 0.008692\nsuperstep = 2\tcost = 0.008155\nsuperstep = 3\tcost = 0.007809\nsuperstep = 4\tcost = 0.007544\nsuperstep = 5\tcost = 0.007328\nsuperstep = 6\tcost = 0.007142\nsuperstep = 7\tcost = 0.006979\nsuperstep = 8\tcost = 0.006833\nsuperstep = 9\tcost = 0.006701\nsuperstep = 10\tcost = 0.006580'}
@@ -156,11 +175,11 @@ class LabelPropagation
 
     GiraphConfigurationUtil.initializeTitanConfig(hConf, titanConf, graph)
 
-    GiraphConfigurationUtil.set(hConf, "input.vertex.value.property.key.list", arguments.vertex_value_property_list)
-    GiraphConfigurationUtil.set(hConf, "input.edge.value.property.key.list", arguments.edge_value_property_list)
-    GiraphConfigurationUtil.set(hConf, "input.edge.label.list", arguments.input_edge_label_list)
-    GiraphConfigurationUtil.set(hConf, "output.vertex.property.key.list", arguments.output_vertex_property_list)
-    GiraphConfigurationUtil.set(hConf, "vector.value", arguments.vector_value)
+    GiraphConfigurationUtil.set(hConf, "input.vertex.value.property.key.list", Some(arguments.vertex_value_property_list.mkString(",")))
+    GiraphConfigurationUtil.set(hConf, "input.edge.value.property.key.list", Some(arguments.edge_value_property_list.mkString(",")))
+    GiraphConfigurationUtil.set(hConf, "input.edge.label.list", Some(arguments.input_edge_label_list.mkString(",")))
+    GiraphConfigurationUtil.set(hConf, "output.vertex.property.key.list", Some(arguments.output_vertex_property_list.mkString(",")))
+    GiraphConfigurationUtil.set(hConf, "vector.value", Some(arguments.vector_value.toString))
 
     val giraphConf = new GiraphConfiguration(hConf)
 
@@ -175,14 +194,4 @@ class LabelPropagation
       config, giraphConf, invocation, "lp-learning-report_0"))
   }
 
-  //TODO: Replace with generic code that works on any case class
-  def parseArguments(arguments: JsObject) = arguments.convertTo[Lp]
-
-  //TODO: Replace with generic code that works on any case class
-  def serializeReturn(returnValue: LpResult): JsObject = returnValue.toJson.asJsObject
-
-  override def name: String = "graphs/ml/label_propagation"
-
-  //TODO: Replace with generic code that works on any case class
-  override def serializeArguments(arguments: Lp): JsObject = arguments.toJson.asJsObject()
 }

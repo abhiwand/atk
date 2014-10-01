@@ -34,12 +34,12 @@ graph = BigGraph([target, source, edge], "mygraph")
 
 print "Running Loopy Belief Propagation on Graph mygraph"
 
-print graph.ml.loopy_belief_propagation(vertex_value_property_list="value",
-                                        edge_value_property_list="weight",
-                                        input_edge_label_list="edge",
-                                        output_vertex_property_list="lbp_posterior",
-                                        vertex_type_property_key="vertex_type",
-                                        vector_value="true",
+print graph.ml.loopy_belief_propagation(vertex_value_property_list=["value"],
+                                        edge_value_property_list=["weight"],
+                                        input_edge_label_list=["edge"],
+                                        output_vertex_property_list=["lbp_posterior"],
+                                        vertex_type="vertex_type",
+                                        vector_value=True,
                                         max_supersteps=10,
                                         convergence_threshold=0.0,
                                         anchor_threshold=0.9,

@@ -68,8 +68,8 @@ case class HistogramParams(graph: GraphReference,
 case class HistogramResult(prior_histograms: List[Histogram],
                            posterior_histograms: Option[List[Histogram]])
 
-class HistogramQuery extends SparkCommandPlugin[HistogramParams, HistogramResult] {
-
+/** JSON conversion */
+object HistogramJsonFormat {
   import com.intel.intelanalytics.domain.DomainJsonProtocol._
 
   implicit val histogramParamsFormat = jsonFormat7(HistogramParams)
@@ -77,7 +77,22 @@ class HistogramQuery extends SparkCommandPlugin[HistogramParams, HistogramResult
   // implicit val rocCurveFormat = jsonFormat2(RocCurve)
   implicit val histogramFormat = jsonFormat2(Histogram.apply)
   implicit val histogramResultFormat = jsonFormat2(HistogramResult)
+}
 
+import HistogramJsonFormat._
+
+class HistogramQuery extends SparkCommandPlugin[HistogramParams, HistogramResult] {
+
+  /**
+   * The name of the command, e.g. graphs/ml/loopy_belief_propagation
+   */
+  override def name: String = "graphs/query/histogram"
+
+  /**
+   * User documentation exposed in Python.
+   *
+   * [[http://docutils.sourceforge.net/rst.html ReStructuredText]]
+   */
   override def doc = Some(CommandDoc(oneLineSummary = "Generate histograms.",
     extendedSummary = Some("""
     Extended Summary
@@ -211,16 +226,4 @@ class HistogramQuery extends SparkCommandPlugin[HistogramParams, HistogramResult
 
   }
 
-  //TODO: Replace with generic code that works on any case class
-  def parseArguments(arguments: JsObject) = arguments.convertTo[HistogramParams]
-
-  //TODO: Replace with generic code that works on any case class
-  def serializeReturn(returnValue: HistogramResult): JsObject = returnValue.toJson.asJsObject
-
-  def serializeArguments(arguments: HistogramParams): JsObject = arguments.toJson.asJsObject
-
-  /**
-   * The name of the command, e.g. graphs/ml/loopy_belief_propagation
-   */
-  override def name: String = "graphs/query/histogram"
 }
