@@ -26,7 +26,7 @@ import org.apache.giraph.conf.StrConfOption;
 
 
 /**
- * Constants used all over Giraph for configuration specific for Titan/Hbase
+ * Constants used all over Giraph for configuration specific for Titan/HBase
  * Titan/Cassandra
  */
 
@@ -53,60 +53,10 @@ public class GiraphTitanConstants {
     public static final StrConfOption GIRAPH_TITAN_STORAGE_PORT = new StrConfOption(
         "giraph.titan.input.storage.port", "2181", "port where to contact Titan/hbase");
     /**
-     * Titan storage connection time out.
-     */
-    public static final StrConfOption GIRAPH_TITAN_STORAGE_CONNECTION_TIMEOUT = new StrConfOption(
-        "giraph.titan.input.storage.connection-timeout", "100000", "Titan/hbase storage time out");
-    /**
      * Titan storage batch loading.
      */
     public static final StrConfOption GIRAPH_TITAN_STORAGE_BATCH_LOADING = new StrConfOption(
         "giraph.titan.input.storage.batch-loading", "true", "Titan storage batch-loading");
-    /**
-     * Titan storage ids block-size.
-     */
-    public static final StrConfOption GIRAPH_TITAN_IDS_BLOCK_SIZE = new StrConfOption(
-        "giraph.titan.input.storage.ids.block-size", "50000", "Titan ids block size");
-    /*/**
-     * Titan Storage attempt-wait.
-     */
-    /*public static final StrConfOption GIRAPH_TITAN_STORAGE_ATTEMPT_WAIT = new StrConfOption(
-            "giraph.titan.input.storage.attempt-wait", "750", "Titan storage attempt wait");
-    /**
-     * Titan Storage idauthority-wait-time.
-     */
-    /* static final StrConfOption GIRAPH_TITAN_STORAGE_IDAUTORITY_WAIT_TIME = new StrConfOption(
-            "giraph.titan.input.storage.idauthority-wait-time", "3000", "Titan storage idauthority wait time");
-    /**
-     * Titan Storage write attempts
-     */
-    /*public static final StrConfOption GIRAPH_TITAN_STORAGE_WRITE_ATTEMPTS = new StrConfOption(
-            "giraph.titan.input.storage.write-attempts", "10", "Titan storage write attempts");
-    /**
-     * Titan Storage lock wait time.
-     */
-    /*public static final StrConfOption GIRAPH_TITAN_STORAGE_LOCK_WAIT_TIME = new StrConfOption(
-            "giraph.titan.input.storage.lock-wait-time", "500", "Titan storage lock wait time");
-    /**
-     * Titan Storage lock expiry time
-     */
-    /*public static final StrConfOption GIRAPH_TITAN_STORAGE_LOCK_EXPIRY_TIME = new StrConfOption(
-            "giraph.titan.input.storage.locak-expiry-time", "600000", "Titan storage lock expiry time");
-    /**
-     * Titan Storage ids renew-timeout.
-     */
-    /*public static final StrConfOption GIRAPH_TITAN_IDS_RENEW_TIMEOUT = new StrConfOption(
-            "giraph.titan.input.ids.renew-timeout", "600000", "Titan ids renew timeout");
-    /**
-     * Titan Storage ids partition.
-     */
-    /*public static final StrConfOption GIRAPH_TITAN_IDS_PARTITION = new StrConfOption(
-            "giraph.titan.input.ids.partition", "false", "Titan ids partition");
-    /**
-     * Titan Storage ids num-partition
-     */
-    /*public static final StrConfOption GIRAPH_TITAN_IDS_NUM_PARTITIONS = new StrConfOption(
-            "giraph.titan.input.ids.num-partitions", "100", "Titan ids num partitions");     */
     /**
      * the configuration prefix to stripped for Titan
      */
@@ -166,37 +116,7 @@ public class GiraphTitanConstants {
      */
     public static final StrConfOption VECTOR_VALUE = new StrConfOption(
         "vector.value", "true", "whether to vertex property value for vertex and edge");
-    /**
-     * the vertex format type for KMeans which output distance map
-     */
-    public static final String LONG_DISTANCE_MAP_NULL = "LongDistanceMapNull";
-    /**
-     * the vertex format type for Long Id, Double vertex value, Null edge value
-     */
-    public static final String LONG_DOUBLE_NULL = "LongDoubleNull";
-    /**
-     * the vertex format type for Long Id, Long vertex value, Null edge value
-     */
-    public static final String LONG_LONG_NULL = "LongLongNull";    /**
-     * the vertex format type for Loopy Belief Propagation algorithm on property graph
-     */
-    public static final String PROPERTY_GRAPH_4_LBP = "PropertyGraph4LBP";
-    /**
-     * the vertex format type for Label Propagation algorithm on property graph
-     */
-    public static final String PROPERTY_GRAPH_4_LP = "PropertyGraph4LP";
-    /**
-     * the vertex format type for Collaborative Filtering algorithm on property graph
-     */
-    public static final String PROPERTY_GRAPH_4_CF = "PropertyGraph4CF";
-    /**
-     * the vertex format type for Collaborative Filtering algorithm, Conjugate Gradient Descent on property graph
-     */
-    public static final String PROPERTY_GRAPH_4_CF_CGD = "PropertyGraph4CFCGD";
-    /**
-     * the vertex format type for Latent Dirichlet Alloation on property graph
-     */
-    public static final String PROPERTY_GRAPH_4_LDA = "PropertyGraph4LDA";
+
     /**
      * the id offset used by Titan
      */
@@ -338,10 +258,5 @@ public class GiraphTitanConstants {
      * edge type for test data
      */
     public static final String TYPE_TEST = "te";
-    /**
-     * prevent instantiation of utility class
-     */
-    private GiraphTitanConstants() {
 
-    }
 }
