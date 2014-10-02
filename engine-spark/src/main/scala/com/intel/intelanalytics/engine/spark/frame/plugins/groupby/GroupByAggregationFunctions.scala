@@ -77,10 +77,10 @@ object GroupByAggregationFunctions {
   }
 
   private def aggregationFunctions(elem: Seq[Array[Any]],
-                                   args_pair: Seq[(Int, String)],
+                                   argsPair: Seq[(Int, String)],
                                    schema: List[(String, DataTypes.DataType)]): Seq[Any] = {
     for {
-      i <- args_pair
+      i <- argsPair
     } yield (i, schema(i._1)._2) match {
       case ((j: Int, "SUM"), DataTypes.int32) => elem.map(e => e(j).asInstanceOf[Int]).sum
       case ((j: Int, "SUM"), DataTypes.int64) => elem.map(e => e(j).asInstanceOf[Long]).sum
