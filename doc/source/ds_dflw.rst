@@ -837,18 +837,16 @@ defined *employee* and *manager* rules, and link them together::
 This rule ties the vertices together, and also defines the property *years*, so the edges created will have this property
 with the value from the frame column *years*.
 
-Rule of directed/non-directed edge:
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-In the edge rule, the user can specify whether or not the edge is :term:`directed <Undirected Graph>`.
+Use of bidirectional:
+~~~~~~~~~~~~~~~~~~~~~
 
 In the example above, using the *employee* and *manager* vertices, there is an edge created to link both of them with label “worksUnder”.
 This edge is considered “directed” since an employee reports to a manager but not vice versa.
-To make an edge a directed one, the user needs to use the parameter ``is_directed`` in the edge rule and set it to ``True``,
-as shown in example below::
+The bidirectional flag will create an extra edge going in the opposite direction for every edge.  To enable use the
+parameter ``bidirectional`` in the edge rule and set it to ``True``, as shown in example below::
 
     reports = EdgeRule("worksUnder", employee, manager, { "years": f[“years”]},
-        is_directed = True)
+        bidirectional = True)
 
 .. _ds_dflw_building_a_graph:
 
