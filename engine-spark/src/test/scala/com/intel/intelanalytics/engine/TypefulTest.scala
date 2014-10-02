@@ -21,35 +21,23 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.shared
+package com.intel.intelanalytics.engine
 
-import com.typesafe.config.ConfigFactory
+import com.intel.intelanalytics.engine.spark.command.Typeful
+import org.scalatest.{ FlatSpec, Matchers }
 
-/**
- * Configuration that is shared between both the API Server and the Engine.
- *
- * This is our wrapper for Typesafe config.
- *
- * See ApiServiceConfig and SparkEngineConfig.
- */
-trait SharedConfig {
+class TypefulTest extends FlatSpec with Matchers {
 
-  val config = ConfigFactory.load()
+  import Typeful.Searchable._
 
-  // val's are not lazy because failing early is better
-  val metaStoreConnectionUrl: String = nonEmptyString("intel.analytics.metastore.connection.url")
-  val metaStoreConnectionDriver: String = nonEmptyString("intel.analytics.metastore.connection.driver")
-  val metaStoreConnectionUsername: String = config.getString("intel.analytics.metastore.connection.username")
-  val metaStoreConnectionPassword: String = config.getString("intel.analytics.metastore.connection.password")
+  case class Foo(bar: Int, baz: String)
 
-  /**
-   * Get a String but throw Exception if it is empty
-   */
-  protected def nonEmptyString(key: String): String = {
-    config.getString(key) match {
-      case "" => throw new IllegalArgumentException(key + " cannot be empty!")
-      case s: String => s
-    }
+  "deepFind" should "find things in lists" in {
+    List(Foo(3, "assiduous"), Foo(4, "benign")).deepFind((s: String) => true) should be(List("assiduous", "benign"))
+  }
+
+  "findAll" should "find things in case classes" in {
+    Foo(3, "assiduous").deepFind((s: String) => s.endsWith("ous")) should be(Seq("assiduous"))
   }
 
 }

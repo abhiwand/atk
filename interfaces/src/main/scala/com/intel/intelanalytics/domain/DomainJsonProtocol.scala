@@ -50,7 +50,7 @@ import com.intel.intelanalytics.algorithm.Quantile
 import com.intel.intelanalytics.spray.json.IADefaultJsonProtocol
 
 /**
- * Implicit conversions for domain objects to JSON
+ * Implicit conversions for domain objects to/from JSON
  */
 object DomainJsonProtocol extends IADefaultJsonProtocol {
 
@@ -130,26 +130,22 @@ object DomainJsonProtocol extends IADefaultJsonProtocol {
   implicit val loadSourceParserFormat = jsonFormat2(LineParser)
   implicit val loadSourceFormat = jsonFormat3(LoadSource)
   implicit val loadFormat = jsonFormat2(Load)
-  implicit val filterPredicateFormat = jsonFormat2(FilterPredicate[JsObject, String])
-  implicit val filterPredicateLongFormat = jsonFormat2(FilterPredicate[JsObject, Long])
+  implicit val filterPredicateFormat = jsonFormat2(FilterPredicate)
   implicit val removeColumnFormat = jsonFormat2(FrameDropColumns)
-  implicit val addColumnFormat = jsonFormat4(FrameAddColumns[JsObject, String])
-  implicit val addColumnLongFormat = jsonFormat4(FrameAddColumns[JsObject, Long])
-  implicit val projectColumnFormat = jsonFormat4(FrameProject[JsObject, String])
-  implicit val projectColumnLongFormat = jsonFormat4(FrameProject[JsObject, Long])
+  implicit val addColumnFormat = jsonFormat4(FrameAddColumns)
+  implicit val projectColumnFormat = jsonFormat4(FrameProject)
   implicit val renameFrameFormat = jsonFormat2(RenameFrame)
   implicit val renameColumnsFormat = jsonFormat3(FrameRenameColumns[JsObject, String])
   implicit val renameColumnsLongFormat = jsonFormat3(FrameRenameColumns[JsObject, Long])
   implicit val joinFrameLongFormat = jsonFormat3(FrameJoin)
-  implicit val groupByColumnFormat = jsonFormat4(FrameGroupByColumn[JsObject, String])
-  implicit val groupByColumnLongFormat = jsonFormat4(FrameGroupByColumn[JsObject, Long])
+  implicit val groupByColumnFormat = jsonFormat4(FrameGroupByColumn)
 
   implicit val errorFormat = jsonFormat5(Error)
   implicit val flattenColumnLongFormat = jsonFormat4(FlattenColumn)
   implicit val dropDuplicatesFormat = jsonFormat2(DropDuplicates)
   implicit val taskInfoFormat = jsonFormat1(TaskProgressInfo)
   implicit val progressInfoFormat = jsonFormat2(ProgressInfo)
-  implicit val binColumnLongFormat = jsonFormat6(BinColumn[Long])
+  implicit val binColumnFormat = jsonFormat6(BinColumn)
 
   implicit val columnSummaryStatisticsFormat = jsonFormat4(ColumnSummaryStatistics)
   implicit val columnSummaryStatisticsReturnFormat = jsonFormat13(ColumnSummaryStatisticsReturn)

@@ -29,13 +29,13 @@ import com.intel.intelanalytics.engine.{ Rows, GraphBackendStorage, GraphStorage
 import com.intel.graphbuilder.driver.spark.titan.GraphBuilder
 import org.apache.spark.rdd.RDD
 import com.intel.intelanalytics.repository.MetaStore
-import com.intel.intelanalytics.shared.EventLogging
 import scala.concurrent._
 import ExecutionContext.Implicits.global
 import com.intel.intelanalytics.domain.graph.{ GraphLoad, GraphTemplate, Graph }
 import com.intel.intelanalytics.engine.spark.frame.SparkFrameStorage
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.plugin.SparkInvocation
+import com.intel.event.EventLogging
 
 /**
  * Front end for Spark to create and manage graphs using GraphBuilder3

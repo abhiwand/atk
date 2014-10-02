@@ -15,7 +15,7 @@ import org.mockito.Matchers._
 import org.mockito.Mockito._
 import org.scalatest.mock.MockitoSugar
 import org.scalatest.{ FlatSpec, Matchers }
-import spray.json.JsObject
+import spray.json.{ JsonFormat, JsObject }
 
 import scala.collection.immutable.HashMap
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -28,7 +28,16 @@ case class PrimitiveOnly(frameId: Int, graphId: Int)
 
 case class Mixed(frameId: Int, frame: FrameReference)
 
-class WithoutAction[T <: Product: ClassManifest] extends CommandPlugin[T, T] {
+object JsonFormats {
+  import DomainJsonProtocol._
+  implicit val roFormat = jsonFormat2(ReferenceOnly)
+  implicit val poFormat = jsonFormat2(PrimitiveOnly)
+  implicit val mFormat = jsonFormat2(Mixed)
+}
+
+import JsonFormats._
+
+class WithoutAction[T <: Product: ClassManifest: JsonFormat] extends CommandPlugin[T, T] {
   override def parseArguments(arguments: JsObject): T = ???
 
   override def serializeArguments(arguments: T): JsObject = ???
@@ -40,7 +49,7 @@ class WithoutAction[T <: Product: ClassManifest] extends CommandPlugin[T, T] {
   override def name: String = ???
 }
 
-class WithAction[T <: Product: ClassManifest] extends WithoutAction[T] with Action {}
+class WithAction[T <: Product: ClassManifest: JsonFormat] extends WithoutAction[T] with Action {}
 
 class CommandExecutorTest extends FlatSpec with Matchers with MockitoSugar {
 
@@ -96,10 +105,6 @@ class CommandExecutorTest extends FlatSpec with Matchers with MockitoSugar {
       implicit val qformat = jsonFormat1(QuantileValues)
 
       implicit val dformat = DomainJsonProtocol.dataFrameFormat
-
-      def parseArguments(arguments: JsObject): QuantileValues = qformat.read(arguments)
-
-      def serializeArguments(arguments: QuantileValues): JsObject = qformat.write(arguments).asJsObject
 
       override def serializeReturn(returnValue: DataFrame): JsObject = dformat.write(returnValue).asJsObject
 

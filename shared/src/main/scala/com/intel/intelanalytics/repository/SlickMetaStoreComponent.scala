@@ -30,8 +30,8 @@ import com.intel.intelanalytics.domain.frame.{ DataFrame, DataFrameTemplate }
 import com.intel.intelanalytics.domain.graph.{ Graph, GraphTemplate }
 import com.intel.intelanalytics.domain.query.{ QueryTemplate, Query => QueryRecord }
 import com.intel.intelanalytics.domain.schema.Schema
-import com.intel.intelanalytics.shared.EventLogging
 import org.joda.time.{ Duration, DateTime }
+import org.joda.time.DateTime
 import scala.slick.driver.{ JdbcDriver, JdbcProfile }
 import org.flywaydb.core.Flyway
 import spray.json._
@@ -51,6 +51,7 @@ import com.intel.intelanalytics.domain.command.CommandTemplate
 import com.intel.intelanalytics.domain.Error
 import com.intel.intelanalytics.domain.graph.GraphTemplate
 import com.intel.intelanalytics.domain.UserTemplate
+import com.intel.event.EventLogging
 
 trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
 

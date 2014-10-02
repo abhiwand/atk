@@ -35,17 +35,18 @@ import com.intel.intelanalytics.engine.spark.user.UserStorage
 import com.intel.intelanalytics.engine.spark.util.DiskSpaceReporter
 import com.intel.intelanalytics.repository.{ DbProfileComponent, Profile, SlickMetaStoreComponent }
 import com.intel.intelanalytics.security.UserPrincipal
-import com.intel.intelanalytics.shared.EventLogging
 import org.apache.hadoop.fs.{ Path => HPath }
 import org.apache.hadoop.hbase.HBaseConfiguration
 import org.apache.hadoop.hbase.client.HBaseAdmin
 import org.apache.spark.SparkContext
+import com.intel.intelanalytics.security.UserPrincipal
+import com.intel.intelanalytics.engine.spark.util.DiskSpaceReporter
+import com.intel.intelanalytics.engine.spark.user.UserStorage
+import com.intel.event.EventLogging
 
-//TODO documentation
-//TODO progress notification
-//TODO event notification
-//TODO pass current user info
-
+/**
+ * Main class for initializing the Spark Engine
+ */
 class SparkComponent extends EngineComponent
     with FrameComponent[FrameRDD, SparkContext]
     with GraphComponent
@@ -60,7 +61,14 @@ class SparkComponent extends EngineComponent
     commandExecutor, commands, frames, graphs, userStorage, queries, queryExecutor, sparkAutoPartitioner, new CommandPluginRegistry(new CommandLoader)) {}
 
   override lazy val profile = withContext("engine connecting to metastore") {
-    Profile.initializeFromConfig(SparkEngineConfig)
+
+    // Initialize a Profile from settings in the config
+    val driver = SparkEngineConfig.metaStoreConnectionDriver
+    new Profile(Profile.jdbcProfileForDriver(driver),
+      connectionString = SparkEngineConfig.metaStoreConnectionUrl,
+      driver,
+      username = SparkEngineConfig.metaStoreConnectionUsername,
+      password = SparkEngineConfig.metaStoreConnectionPassword)
   }
 
   metaStore.initializeSchema()
