@@ -44,9 +44,9 @@ factor = VertexRule("number", frame["factor"])
 binary = VertexRule("number", frame["binary"])
 reverse = VertexRule("number", frame["reverse"])
 
-hasFactor = EdgeRule("hasFactor", number, factor, is_directed=True)
-hasBinary = EdgeRule("hasBinary", number, binary, is_directed=True)
-hasReverse = EdgeRule("hasReverse", number, reverse, is_directed=False)
+hasFactor = EdgeRule("hasFactor", number, factor, bidirectional=False)
+hasBinary = EdgeRule("hasBinary", number, binary, bidirectional=False)
+hasReverse = EdgeRule("hasReverse", number, reverse, bidirectional=True)
 
 print("create graph")
 graph = BigGraph([number, factor, binary, reverse, hasFactor, hasBinary, hasReverse])
