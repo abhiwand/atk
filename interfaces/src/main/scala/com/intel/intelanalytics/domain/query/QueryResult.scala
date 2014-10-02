@@ -26,8 +26,7 @@ package com.intel.intelanalytics.domain.query
 import com.intel.intelanalytics.domain.schema.Schema
 
 /**
- * Result returned by query
- * @param data data from the query
+ * Response for a query from an RDD. Subclassed for either Parquet or Sequence file storage.
  * @param schema schema to describe the data
  */
-case class QueryDataResult(data: Iterable[Array[Any]], schema: Option[Schema]) extends QueryResult(schema)
+class QueryResult(schema: Option[Schema])
