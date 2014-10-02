@@ -23,17 +23,35 @@
 
 package com.intel.intelanalytics.engine.spark.frame
 
+import com.intel.intelanalytics.NotFoundException
 import com.intel.intelanalytics.component.ClassLoaderAware
 import com.intel.intelanalytics.domain.frame.{ DataFrame, DataFrameTemplate }
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
+import com.intel.intelanalytics.engine._
+import com.intel.intelanalytics.domain.schema.DataTypes
+import DataTypes.DataType
+import java.nio.file.Paths
+
+import scala.io.Codec
+import org.apache.spark.rdd.RDD
+import com.intel.intelanalytics.engine.spark._
+import org.apache.spark.SparkContext
+import scala.util.matching.Regex
+import java.util.concurrent.atomic.AtomicLong
+import com.intel.intelanalytics.domain.frame.{ FrameReference, Column, DataFrameTemplate, DataFrame }
 import com.intel.intelanalytics.engine.FrameStorage
 import com.intel.intelanalytics.engine.spark._
 import com.intel.intelanalytics.repository.SlickMetaStoreComponent
+import com.intel.intelanalytics.repository.{ SlickMetaStoreComponent, MetaStoreComponent }
+import com.intel.intelanalytics.engine.plugin.Invocation
+import scala.Some
 import com.intel.intelanalytics.security.UserPrincipal
-import com.intel.intelanalytics.shared.EventLogging
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SQLContext
+import com.intel.intelanalytics.engine.spark.plugin.SparkInvocation
+import org.apache.spark.sql.{ SQLContext, SchemaRDD }
+import com.intel.event.EventLogging
 
 import scala.util.control.NonFatal
 
@@ -45,6 +63,12 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
     extends FrameStorage[FrameRDD, SparkContext] with EventLogging with ClassLoaderAware {
 
   import com.intel.intelanalytics.engine.Rows.Row
+
+  override def expectFrame(frameId: Long): DataFrame = {
+    lookup(frameId).getOrElse(throw new NotFoundException("dataframe", frameId.toString))
+  }
+
+  override def expectFrame(frameRef: FrameReference): DataFrame = expectFrame(frameRef.id)
 
   /**
    * Create a FrameRDD or throw an exception if bad frameId is given
@@ -140,7 +164,8 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
       require(count > 0, "count must be zero or greater")
       withMyClassLoader {
         val rdd: RDD[Row] = loadFrameData(ctx, frame.id)
-        val rows = SparkOps.getPagedRdd[Row](rdd, offset, count, -1)
+        val rows = MiscFrameFunctions.getPagedRdd[Row](rdd, offset, count, -1)
+
         rows
       }
     }
@@ -154,7 +179,7 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
         val ctx = getContext(user)
         try {
           val rdd: RDD[Row] = loadFrameData(ctx, frame)
-          val rows = SparkOps.getRows(rdd, offset, count, maxRows)
+          val rows = MiscFrameFunctions.getRows(rdd, offset, count, maxRows)
           rows
         }
         finally {
@@ -267,10 +292,6 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
     val frameRdd = loadFrameData(ctx, frame)
     val errorFrameRdd = loadFrameData(ctx, errorFrame)
     new ParseResultRddWrapper(frameRdd, errorFrameRdd)
-  }
-
-  def expectFrame(frameId: Long): DataFrame = {
-    lookup(frameId).getOrElse(throw new RuntimeException("Frame NOT found " + frameId))
   }
 
   override def lookup(id: Long): Option[DataFrame] = {

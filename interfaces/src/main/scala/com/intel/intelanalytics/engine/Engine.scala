@@ -23,27 +23,39 @@
 
 package com.intel.intelanalytics.engine
 
-import com.intel.intelanalytics.domain.command.{ CommandDefinition, Execution, CommandTemplate, Command }
-import com.intel.intelanalytics.domain.FilterPredicate
+import com.intel.intelanalytics.domain.command.{ Command, CommandDefinition, CommandTemplate, Execution }
 import com.intel.intelanalytics.domain.frame._
-import com.intel.intelanalytics.domain.frame.load.Load
-import com.intel.intelanalytics.domain.graph.{ Graph, GraphLoad, GraphTemplate, RenameGraph }
-import com.intel.intelanalytics.domain.query.{ Execution => QueryExecution, PagedQueryResult, QueryDataResult, RowQuery, Query }
-import com.intel.intelanalytics.engine.Rows._
+import com.intel.intelanalytics.domain.graph.{ Graph, GraphTemplate }
+import com.intel.intelanalytics.domain.query.{ PagedQueryResult, Query, QueryDataResult, RowQuery, Execution => QueryExecution }
 import com.intel.intelanalytics.security.UserPrincipal
-import spray.json.JsObject
 
 import scala.concurrent.Future
-import com.intel.intelanalytics.domain.schema.Schema
 
 //TODO: make these all use Try instead?
 //TODO: make as many of these as possible use id instead of dataframe as the first argument?
 //TODO: distinguish between DataFrame and DataFrameSpec,
 // where the latter has no ID, and is the argument passed to create?
 trait Engine {
+  /**
+   * What data type is used to represent data for frames, etc.?
+   *
+   * e.g. for Spark this would be FrameRDD
+   */
+  type Data
+
+  /**
+   * What data type is used to represent any ambient context that operations need to have available?
+   *
+   * e.g. for Spark this would be SparkContext.
+   */
+  type Context
 
   type Identifier = Long //TODO: make more generic?
   val pageSize: Int
+
+  val frames: FrameStorage[Data, Context]
+
+  val graphs: GraphStorage
 
   /**
    * Executes the given command template, managing all necessary auditing, contexts, class loaders, etc.
@@ -81,54 +93,7 @@ trait Engine {
 
   def create(frame: DataFrameTemplate)(implicit user: UserPrincipal): Future[DataFrame]
 
-  def load(arguments: Load)(implicit user: UserPrincipal): Execution
-
-  def filter(arguments: FilterPredicate[JsObject, Long])(implicit user: UserPrincipal): Execution
-
-  def project(arguments: FrameProject[JsObject, Long])(implicit user: UserPrincipal): Execution
-
-  def assignSample(arguments: AssignSample)(implicit user: UserPrincipal): Execution
-
-  def renameFrame(arguments: RenameFrame)(implicit user: UserPrincipal): Execution
-
-  def renameColumns(arguments: FrameRenameColumns[JsObject, Long])(implicit user: UserPrincipal): Execution
-
-  def dropColumns(arguments: FrameDropColumns)(implicit user: UserPrincipal): Execution
-
-  def addColumns(arguments: FrameAddColumns[JsObject, Long])(implicit user: UserPrincipal): Execution
-
   def delete(frame: DataFrame): Future[Unit]
-
-  /**
-   * Remove duplicates rows, keeping only one row per uniqueness criteria match
-   * @param dropDuplicateCommand command for dropping duplicates
-   * @param user current user
-   */
-  def dropDuplicates(dropDuplicateCommand: DropDuplicates)(implicit user: UserPrincipal): Execution
-
-  def join(argument: FrameJoin)(implicit user: UserPrincipal): Execution
-
-  def flattenColumn(argument: FlattenColumn)(implicit user: UserPrincipal): Execution
-
-  def binColumn(arguments: BinColumn[Long])(implicit user: UserPrincipal): Execution
-
-  def columnSummaryStatistics(arguments: ColumnSummaryStatistics)(implicit user: UserPrincipal): Execution
-
-  def columnMedian(arguments: ColumnMedian)(implicit user: UserPrincipal): Execution
-
-  def columnMode(arguments: ColumnMode)(implicit user: UserPrincipal): Execution
-
-  // TODO TRIB-2245
-  /*
-  def columnFullStatistics(arguments: ColumnFullStatistics)(implicit user: UserPrincipal): Execution
-
-  */
-
-  def entropy(arguments: Entropy)(implicit user: UserPrincipal): Execution
-
-  def topK(arguments: TopK)(implicit user: UserPrincipal): Execution
-
-  def groupBy(arguments: FrameGroupByColumn[JsObject, Long])(implicit user: UserPrincipal): Execution
 
   def getFrames()(implicit p: UserPrincipal): Future[Seq[DataFrame]]
 
@@ -144,22 +109,7 @@ trait Engine {
 
   def createGraph(graph: GraphTemplate)(implicit user: UserPrincipal): Future[Graph]
 
-  def renameGraph(rename: RenameGraph)(implicit user: UserPrincipal): Execution
-
-  def loadGraph(graph: GraphLoad)(implicit user: UserPrincipal): Execution
-
   def deleteGraph(graph: Graph): Future[Unit]
-
-  def cumSum(arguments: CumulativeSum)(implicit user: UserPrincipal): Execution
-  def cumPercent(arguments: CumulativePercentSum)(implicit user: UserPrincipal): Execution
-  def tally(arguments: CumulativeCount)(implicit user: UserPrincipal): Execution
-  def tallyPercent(arguments: CumulativePercentCount)(implicit user: UserPrincipal): Execution
-
-  // Model performance measures
-
-  def classificationMetrics(arguments: ClassificationMetric)(implicit user: UserPrincipal): Execution
-
-  def ecdf(arguments: ECDF[Long])(implicit user: UserPrincipal): Execution
 
   /**
    * Cancel a running command

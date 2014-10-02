@@ -24,9 +24,9 @@
 package com.intel.intelanalytics.engine.spark.frame
 
 import com.intel.intelanalytics.domain.frame.DataFrame
-import com.intel.intelanalytics.shared.EventLogging
 import com.intel.intelanalytics.engine.spark.HdfsFileStorage
 import org.apache.hadoop.fs.Path
+import com.intel.event.EventLogging
 
 /**
  * Frame storage in HDFS.

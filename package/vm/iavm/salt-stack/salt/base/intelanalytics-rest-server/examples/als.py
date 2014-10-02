@@ -33,10 +33,10 @@ g = BigGraph([user, movie, rates], "als")
 
 print "Running Alternating Least Squares on Graph als"
 
-print g.ml.alternating_least_squares(edge_value_property_list="rating",
+print g.ml.alternating_least_squares(edge_value_property_list=["rating"],
                                      vertex_type_property_key="vertex_type",
-                                     input_edge_label_list="edge",
-                                     output_vertex_property_list="als_result ",
+                                     input_edge_label_list=["edge"],
+                                     output_vertex_property_list=["als_result"],
                                      edge_type_property_key="splits",
-                                     vector_value="true",
+                                     vector_value=True,
                                      als_lambda=0.065)
