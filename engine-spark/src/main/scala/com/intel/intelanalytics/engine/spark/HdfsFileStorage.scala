@@ -143,5 +143,15 @@ class HdfsFileStorage(fsRoot: String) extends EventLogging {
     }
     fileStatuses.map(fileStatus => fileStatus.getLen).reduce(_ + _)
   }
+
+  /**
+   * Determine if the file path is a directory
+   * @param path path to examine
+   * @return true if the path is a directory false if it is not
+   */
+  def isDirectory(path: Path): Boolean = withContext("file.isDirectory") {
+    fs.isDirectory(path)
+  }
+
 }
 

@@ -420,10 +420,23 @@ class FrameBackendRest(object):
 
 
     def take(self, frame, n, offset, columns):
+        def get_take_result():
+            data = []
+            schema = None
+            while len(data) < n:
+                url = 'dataframes/{0}/data?offset={2}&count={1}'.format(frame._id,n + len(data), offset + len(data))
+                result = executor.query(url)
+                if not schema:
+                    schema = result.schema
+                if len(result.data) == 0:
+                    break
+                data.extend(result.data)
+            return TakeResult(data, schema)
+
         if n == 0:
             return TakeResult([], frame.schema)
-        url = 'dataframes/{0}/data?offset={2}&count={1}'.format(frame._id,n, offset)
-        result = executor.query(url)
+        result = get_take_result()
+
         schema = FrameSchema.from_strings_to_types(result.schema)
 
         if isinstance(columns, basestring):

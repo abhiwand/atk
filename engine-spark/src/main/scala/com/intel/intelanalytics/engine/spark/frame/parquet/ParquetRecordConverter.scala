@@ -21,13 +21,25 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.domain.query
+package com.intel.intelanalytics.engine.spark.frame.parquet
 
-import com.intel.intelanalytics.domain.schema.Schema
+import parquet.io.api.{ GroupConverter, PrimitiveConverter }
 
 /**
- * Result returned by query
- * @param data data from the query
- * @param schema schema to describe the data
+ * Class used by Parquet libraries for converting binary information into a primitive type.
  */
-case class QueryDataResult(data: Iterable[Array[Any]], schema: Option[Schema]) extends QueryResult(schema)
+class ParquetRecordConverter extends PrimitiveConverter {
+  /**
+   * For our purposes this will always be a primitive type
+   */
+  override def isPrimitive(): Boolean = {
+    true
+  }
+
+  /**
+   * Creates a new GroupConverter object that is needed by the Parquet libraries
+   */
+  override def asGroupConverter(): GroupConverter = {
+    new ParquetRecordGroupConverter()
+  }
+}
