@@ -76,15 +76,13 @@ class GroupByPlugin extends SparkCommandPlugin[FrameGroupByColumn, DataFrame] {
       }.mkString("\0"))
       val resultRdd = GroupByAggregationFunctions.aggregation(groupedRDD, args_pair, originalFrame.schema.columns, columnIndices.map(_._2).toArray, arguments)
       val rowCount = resultRdd.count()
-      frames.saveFrame(newFrame, resultRdd)
-      frames.updateRowCount(newFrame, rowCount)
+      frames.saveFrame(newFrame, resultRdd, Some(rowCount))
     }
     else {
       val groupedRDD = frames.loadFrameRdd(ctx, originalFrameID).groupBy((data: Rows.Row) => "")
       val resultRdd = GroupByAggregationFunctions.aggregation(groupedRDD, args_pair, originalFrame.schema.columns, Array[DataType](), arguments)
       val rowCount = resultRdd.count()
-      frames.saveFrame(newFrame, resultRdd)
-      frames.updateRowCount(newFrame, rowCount)
+      frames.saveFrame(newFrame, resultRdd, Some(rowCount))
     }
   }
 }
