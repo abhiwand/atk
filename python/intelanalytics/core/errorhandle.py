@@ -24,8 +24,6 @@ import sys
 import traceback
 import warnings
 
-from intelanalytics.core.deprecate import raise_deprecation_warning
-
 
 class Errors(object):
     """
@@ -69,37 +67,6 @@ class Errors(object):
 errors = Errors()
 
 
-# Deprecating ErrorHandling for simpler Errors
-class ErrorHandling(object):
-
-    @property
-    def show_details(self):
-        raise_deprecation_warning('error_handling.show_details', "Use 'errors.show_details' instead.")
-        """Boolean which determines if the full exception traceback is included in the exception handling"""
-        return errors.show_details
-
-    @show_details.setter
-    def show_details(self, value):
-        raise_deprecation_warning('error_handling.show_details', "Use 'errors.show_details' instead.")
-        errors.show_details = value
-
-    @staticmethod
-    def get_last():
-        """Returns list of formatted strings of the details (traceback) of the last captured exception"""
-        raise_deprecation_warning('get_last', "Use 'errors.last' instead.")
-        return errors._get_last()
-
-    @staticmethod
-    def print_last():
-        raise_deprecation_warning('error_handling.print_last', "Use 'errors.last' instead.")
-        """Prints the details (traceback) of the last captured exception"""
-        last_exception = errors.last
-        print last_exception
-
-# deprecated singleton
-error_handling = ErrorHandling()
-
-
 class IaError(Exception):
     """
     Internal Error Factory for the API layer to report or remove error stack trace.
@@ -121,7 +88,7 @@ class IaError(Exception):
         except:
             warnings.warn("Unable to log exc_info", RuntimeWarning)
 
-        if ErrorHandling.show_details:
+        if errors.show_details:
             # to show the stack, we just re-raise the last exception as is
             raise
         else:

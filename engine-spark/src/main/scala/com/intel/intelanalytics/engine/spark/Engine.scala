@@ -80,7 +80,7 @@ import com.intel.intelanalytics.domain.frame.FrameDropColumns
 import com.intel.intelanalytics.domain.frame.FrameReference
 import com.intel.intelanalytics.engine.spark.frame.RDDJoinParam
 import com.intel.intelanalytics.domain.graph.GraphTemplate
-import com.intel.intelanalytics.domain.query.Query
+import com.intel.intelanalytics.domain.query._
 import com.intel.intelanalytics.domain.frame.ColumnSummaryStatistics
 import com.intel.intelanalytics.domain.frame.ColumnMedian
 import com.intel.intelanalytics.domain.frame.ColumnMode
@@ -95,7 +95,6 @@ import com.intel.intelanalytics.domain.frame.DataFrame
 import com.intel.intelanalytics.domain.command.Execution
 import com.intel.intelanalytics.domain.command.Command
 import com.intel.intelanalytics.domain.command.CommandDoc
-import com.intel.intelanalytics.domain.query.RowQuery
 import com.intel.intelanalytics.domain.frame.ClassificationMetricValue
 import com.intel.intelanalytics.domain.command.CommandTemplate
 import com.intel.intelanalytics.domain.frame.FlattenColumn
@@ -104,8 +103,6 @@ import com.intel.intelanalytics.domain.frame.ColumnMedianReturn
 import com.intel.intelanalytics.domain.frame.ColumnModeReturn
 import com.intel.intelanalytics.domain.frame.FrameJoin
 import com.intel.intelanalytics.engine.spark.plugin.SparkInvocation
-import com.intel.intelanalytics.domain.query.PagedQueryResult
-import com.intel.intelanalytics.domain.query.QueryDataResult
 import org.apache.commons.lang.StringUtils
 import com.intel.intelanalytics.engine.spark.user.UserStorage
 import com.intel.event.EventLogging
@@ -1292,21 +1289,17 @@ TODO: delete me, code moved to separate plugin files
    *
    * @param arguments RowQuery object describing id, offset, and count
    * @param user current user
-   * @return RDD consisting of the requested number of rows
+   * @return A QueryResult describing the data and schema of this take
    */
-  def getRows(arguments: RowQuery[Identifier])(implicit user: UserPrincipal): Future[QueryDataResult] = {
-    future {
-      withMyClassLoader {
-        val frame = frames.lookup(arguments.id).getOrElse(throw new IllegalArgumentException("Requested frame does not exist"))
-        val ctx = sparkContextManager.context(user, "query")
-        try {
-          val rdd: RDD[Row] = frames.loadFrameRdd(ctx, frame).rows
-          val rows = rdd.take(arguments.count + arguments.offset.toInt).drop(arguments.offset.toInt)
-          QueryDataResult(rows, Some(frame.schema))
-        }
-        finally {
-          ctx.stop()
-        }
+  def getRows(arguments: RowQuery[Identifier])(implicit user: UserPrincipal): QueryResult = {
+    withMyClassLoader {
+      val frame = frames.lookup(arguments.id).getOrElse(throw new IllegalArgumentException("Requested frame does not exist"))
+      if (frames.isParquet(frame)) {
+        val rows = frames.getRows(frame, arguments.offset, arguments.count)
+        QueryDataResult(rows, Some(frame.schema))
+      }
+      else {
+        getRowsLarge(arguments)
       }
     }
   }

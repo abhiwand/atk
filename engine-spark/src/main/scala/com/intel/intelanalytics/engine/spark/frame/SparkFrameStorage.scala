@@ -29,6 +29,7 @@ import com.intel.intelanalytics.engine._
 import com.intel.intelanalytics.domain.schema.DataTypes
 import DataTypes.DataType
 import java.nio.file.Paths
+import com.intel.intelanalytics.engine.spark.frame.parquet.ParquetReader
 
 import scala.io.Codec
 import org.apache.spark.rdd.RDD
@@ -85,7 +86,7 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
     }
     else {
       val absPath = frameFileStorage.currentFrameRevision(frame)
-      val f: FrameRDD = if (frameFileStorage.isParquet(frame)) {
+      val f: FrameRDD = if (isParquet(frame)) {
         val sqlContext = new SQLContext(ctx)
         val rows = sqlContext.parquetFile(absPath.toString)
         new FrameRDD(frame.schema, rows)
@@ -96,6 +97,15 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
       }
       f
     }
+  }
+
+  /**
+   * Determine if a dataFrame is saved as parquet
+   * @param frame the data frame to verify
+   * @return true if the data frame is saved in the parquet format
+   */
+  def isParquet(frame: DataFrame): Boolean = {
+    frameFileStorage.isParquet(frame)
   }
 
   /**
@@ -132,7 +142,7 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
   }
 
   def getPagedRowsRDD(frame: DataFrame, offset: Long, count: Int, ctx: SparkContext)(implicit user: UserPrincipal): RDD[Row] =
-    withContext("frame.getRows") {
+    withContext("frame.getPagedRowsRDD") {
       require(frame != null, "frame is required")
       require(offset >= 0, "offset must be zero or greater")
       require(count > 0, "count must be zero or greater")
@@ -143,21 +153,24 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
       }
     }
 
+  /**
+   * Retrieve records from the given dataframe
+   * @param frame Frame to retrieve records from
+   * @param offset offset in frame before retrieval
+   * @param count number of records to retrieve
+   * @param user logged in user
+   * @return records in the dataframe starting from offset with a length of count
+   */
   override def getRows(frame: DataFrame, offset: Long, count: Int)(implicit user: UserPrincipal): Iterable[Row] =
     withContext("frame.getRows") {
       require(frame != null, "frame is required")
       require(offset >= 0, "offset must be zero or greater")
       require(count > 0, "count must be zero or greater")
       withMyClassLoader {
-        val ctx = getContext(user)
-        try {
-          val rdd: RDD[Row] = loadFrameRdd(ctx, frame)
-          val rows = MiscFrameFunctions.getRows(rdd, offset, count, maxRows)
-          rows
-        }
-        finally {
-          ctx.stop()
-        }
+        val absPath = frameFileStorage.currentFrameRevision(frame)
+        val reader = new ParquetReader(absPath, frameFileStorage.hdfs)
+        val rows = reader.take(count, offset, Some(maxRows))
+        rows
       }
     }
 

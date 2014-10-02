@@ -24,7 +24,7 @@
 package com.intel.intelanalytics.service.v1
 
 import com.intel.intelanalytics.domain._
-import com.intel.intelanalytics.domain.query.{ QueryDataResult, Query, RowQuery }
+import com.intel.intelanalytics.domain.query.{ PagedQueryResult, QueryDataResult, Query, RowQuery }
 import org.joda.time.DateTime
 import spray.json._
 import spray.http.{ StatusCodes, HttpResponse, Uri }
@@ -137,18 +137,39 @@ class DataFrameService(commonDirectives: CommonDirectives, engine: Engine) exten
                   {
                     import ViewModelJsonImplicits._
                     val queryArgs = RowQuery[Long](id, offset, count)
-                    val exec = engine.getRowsLarge(queryArgs)
-                    //we require a commands uri to point the query completion to.
-                    val pattern = new Regex(prefix + ".*")
-                    val commandUri = pattern.replaceFirstIn(uri.toString, QueryService.prefix + "/") + exec.execution.start.id
-                    complete(QueryDecorator.decorateEntity(commandUri, List(Rel.self(commandUri)), exec.execution.start, exec.schema))
+                    val results = engine.getRows(queryArgs)
+                    results match {
+                      case r: QueryDataResult => {
+                        complete(GetQuery(id = None, error = None,
+                          name = "getRows", arguments = None, complete = true,
+                          result = Some(GetQueryPage(
+                            Some(dataToJson(r.data)), None, None, r.schema)),
+                          links = List(Rel.self(uri.toString))))
+                      }
+                      case exec: PagedQueryResult => {
+                        val pattern = new Regex(prefix + ".*")
+                        val commandUri = pattern.replaceFirstIn(uri.toString, QueryService.prefix + "/") + exec.execution.start.id
+                        complete(QueryDecorator.decorateEntity(commandUri, List(Rel.self(commandUri)), exec.execution.start, exec.schema))
+                      }
+                    }
                   }
               }
             }
-
           }
         }
     }
   }
 
+  /**
+   * Convert an Iterable of Any to a List of JsValue. Required due to how spray-json handles AnyVals
+   * @param data iterable to return in response
+   * @return JSON friendly version of data
+   */
+  def dataToJson(data: Iterable[Array[Any]]): List[JsValue] = {
+    import com.intel.intelanalytics.domain.DomainJsonProtocol._
+    data.map(row => row.map {
+      case null => JsNull
+      case a => a.toJson
+    }.toJson).toList
+  }
 }
