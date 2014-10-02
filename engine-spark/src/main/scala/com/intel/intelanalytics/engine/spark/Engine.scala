@@ -33,9 +33,15 @@ import com.intel.intelanalytics.engine.Rows._
 import com.intel.intelanalytics.engine._
 import com.intel.intelanalytics.engine.plugin.CommandPlugin
 import com.intel.intelanalytics.engine.spark.command.{ CommandPluginRegistry, CommandExecutor }
+import com.intel.intelanalytics.engine.spark.frame.plugins.bincolumn.BinColumnPlugin
+import com.intel.intelanalytics.engine.spark.frame.plugins.classificationmetrics.ClassificationMetricsPlugin
+import com.intel.intelanalytics.engine.spark.frame.plugins.cumulativedist._
 import com.intel.intelanalytics.engine.spark.frame.plugins.groupby.{ GroupByPlugin, GroupByAggregationFunctions }
 import com.intel.intelanalytics.engine.spark.frame.plugins.load.{ LoadFramePlugin, LoadRDDFunctions }
 import com.intel.intelanalytics.engine.spark.frame.plugins._
+import com.intel.intelanalytics.engine.spark.frame.plugins.statistics.descriptives.{ ColumnMedianPlugin, ColumnModePlugin, ColumnSummaryStatisticsPlugin }
+import com.intel.intelanalytics.engine.spark.frame.plugins.statistics.quantiles.QuantilesPlugin
+import com.intel.intelanalytics.engine.spark.frame.plugins.topk.{ TopKPlugin, TopKRDDFunctions }
 import com.intel.intelanalytics.engine.spark.graph.SparkGraphStorage
 import com.intel.intelanalytics.engine.spark.graph.plugins.{ RenameGraphPlugin, LoadGraphPlugin }
 import com.intel.intelanalytics.engine.spark.queries.{ SparkQueryStorage, QueryExecutor }
@@ -53,7 +59,7 @@ import com.intel.spark.mllib.util.MLDataSplitter
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent._
-import com.intel.intelanalytics.engine.spark.statistics.{ QuantilesFunctions, TopKRDDFunctions, EntropyRDDFunctions, ColumnStatistics }
+import com.intel.intelanalytics.engine.spark.frame.plugins.statistics.descriptives.ColumnStatistics
 import org.apache.spark.engine.SparkProgressListener
 import com.intel.intelanalytics.domain.frame.Entropy
 import com.intel.intelanalytics.domain.frame.EntropyReturn
@@ -269,6 +275,8 @@ class SparkEngine(sparkContextManager: SparkContextManager,
 
   }
 
+    TODO: delete me, code moved to separate plugin files
+
 
   private def unionAndSave(sparkContext: SparkContext, existingFrame: DataFrame, additionalData: FrameRDD): DataFrame = {
     val existingRdd = frames.loadFrameRdd(sparkContext, existingFrame)
@@ -319,6 +327,8 @@ class SparkEngine(sparkContextManager: SparkContextManager,
   commandPluginRegistry.registerCommand(new RenameColumnsPlugin)
   /*
 
+  TODO: delete me, code moved to separate plugin files
+
   val renameColumnsCommand = commandPluginRegistry.registerCommand("dataframe/rename_columns", renameColumnsSimple _)
   def renameColumnsSimple(arguments: FrameRenameColumns[JsObject, Long], user: UserPrincipal, invocation: SparkInvocation) = {
     val frameID = arguments.frame
@@ -345,6 +355,8 @@ class SparkEngine(sparkContextManager: SparkContextManager,
   commandPluginRegistry.registerCommand(new ProjectPlugin)
 
   /*
+
+    TODO: delete me, code moved to separate plugin files
 
   val projectCommand = commandPluginRegistry.registerCommand("dataframe/project", projectSimple _)
   def projectSimple(arguments: FrameProject[JsObject, Long], user: UserPrincipal, invocation: SparkInvocation): DataFrame = {
@@ -429,6 +441,8 @@ class SparkEngine(sparkContextManager: SparkContextManager,
 
   commandPluginRegistry.registerCommand(new AssignSamplePlugin)
   /*
+
+    TODO: delete me, code moved to separate plugin files
 
   val assignSampleCommand = commandPluginRegistry.registerCommand("dataframe/assign_sample", assignSampleSimple _, doc = Some(assignSampleDoc))
 
@@ -529,6 +543,9 @@ class SparkEngine(sparkContextManager: SparkContextManager,
 
   */
   /*
+
+    TODO: delete me, code moved to separate plugin files
+
   def decodePythonBase64EncodedStrToBytes(byteStr: String): Array[Byte] = {
     // Python uses different RFC than Java, must correct a couple characters
     // http://stackoverflow.com/questions/21318601/how-to-decode-a-base64-string-in-scala-or-java00
@@ -568,6 +585,8 @@ class SparkEngine(sparkContextManager: SparkContextManager,
       pyRdd
     }
   }
+
+    TODO: delete me, code moved to separate plugin files
 
   /**
    * Persists a PythonRDD after python computation is complete to HDFS
@@ -1443,6 +1462,8 @@ TODO: delete me, code moved to separate plugin files
   }
 
   */
+  /*
+    TODO: delete me, code moved to separate plugin files
 
   val quantileDoc = CommandDoc(oneLineSummary = "Calculate quantiles on given column.",
     extendedSummary = Some(
@@ -1490,23 +1511,32 @@ TODO: delete me, code moved to separate plugin files
         |.. versionchanged:: 0.8
       """.stripMargin)
   )
+*/
+  commandPluginRegistry.registerCommand(new QuantilesPlugin)
+  /*
+  TODO: delete me, code moved to separate plugin files
 
   val quantilesCommand = commandPluginRegistry.registerCommand("dataframe/quantiles", quantilesSimple _, numberOfJobs = 7, doc = Some(quantileDoc))
 
-  def quantilesSimple(quantiles: Quantiles, user: UserPrincipal, invocation: SparkInvocation): QuantileValues = {
+  def quantilesSimple(arguments: Quantiles, user: UserPrincipal, invocation: SparkInvocation): QuantileValues = {
     implicit val u = user
-    val frameId: FrameReference = quantiles.frame
+    val frameId: FrameReference = arguments.frame
     val ctx = invocation.sparkContext
 
     val frameMeta: DataFrame = frames.expectFrame(frameId.id)
     val frameSchema = frameMeta.schema
-    val columnIndex = frameSchema.columnIndex(quantiles.columnName)
-    val columnDataType = frameSchema.columnDataType(quantiles.columnName)
+    val columnIndex = frameSchema.columnIndex(arguments.columnName)
+    val columnDataType = frameSchema.columnDataType(arguments.columnName)
 
     val rdd = frames.loadFrameRdd(ctx, frameMeta)
-    val quantileValues = QuantilesFunctions.quantiles(rdd, quantiles.quantiles, columnIndex, columnDataType).toList
+    val quantileValues = QuantilesFunctions.quantiles(rdd, arguments.quantiles, columnIndex, columnDataType).toList
     QuantileValues(quantileValues)
   }
+  */
+
+  /*
+  TODO: delete me, code moved to separate plugin files
+
 
   val classificationMetricsDoc = CommandDoc(oneLineSummary = "Computes Model accuracy, precision, recall, confusion matrix and f_measure (math:`F_{\\beta}`).",
     extendedSummary = Some("""
@@ -1622,6 +1652,13 @@ TODO: delete me, code moved to separate plugin files
 
     .. versionadded:: 0.8  """))
 
+  */
+
+  commandPluginRegistry.registerCommand(new ClassificationMetricsPlugin)
+
+  /*
+  TODO: delete me, code moved to separate plugin files
+
   val classificationMetricsCommand: CommandPlugin[ClassificationMetric, ClassificationMetricValue] = commandPluginRegistry.registerCommand("dataframe/classification_metrics", classificationMetricsSimple _, doc = Some(classificationMetricsDoc))
   def classificationMetricsSimple(arguments: ClassificationMetric, user: UserPrincipal, invocation: SparkInvocation): ClassificationMetricValue = {
     implicit val u = user
@@ -1650,6 +1687,12 @@ TODO: delete me, code moved to separate plugin files
       ClassificationMetrics.binaryClassificationMetrics(frameRdd, labelColumnIndex, predColumnIndex, metricsPoslabel, betaValue)
     }
   }
+  */
+
+  commandPluginRegistry.registerCommand(new EcdfPlugin)
+
+  /*
+  TODO: delete me, code moved to separate plugin files
 
   val ecdfCommand = commandPluginRegistry.registerCommand("dataframe/ecdf", ecdfSimple _)
 
@@ -1681,6 +1724,10 @@ TODO: delete me, code moved to separate plugin files
 
     frames.saveFrame(newFrame, new FrameRDD(new Schema(allColumns), ecdfRdd), Some(rowCount))
   }
+  */
+  /*
+
+  TODO: delete me, code moved to separate plugin files
 
   val tallyPercentDoc = CommandDoc(oneLineSummary = "Computes a cumulative percent count.",
     extendedSummary = Some("""
@@ -1736,6 +1783,11 @@ TODO: delete me, code moved to separate plugin files
                              |               2                          1.0
                              |
                              |        .. versionadded:: 0.8 """.stripMargin))
+  */
+  commandPluginRegistry.registerCommand(new TallyPercentPlugin)
+  /*
+  TODO: delete me, code moved to separate plugin files
+
   val cumulativePercentCountCommand = commandPluginRegistry.registerCommand("dataframe/tally_percent", cumulativePercentCountSimple _, doc = Some(tallyPercentDoc))
   def cumulativePercentCountSimple(arguments: CumulativePercentCount, user: UserPrincipal, invocation: SparkInvocation) = {
     implicit val u = user
@@ -1755,6 +1807,8 @@ TODO: delete me, code moved to separate plugin files
 
     frames.saveFrame(frameMeta, new FrameRDD(new Schema(allColumns), cumulativeDistRdd))
   }
+  */
+  /*
 
   val tallyDoc = CommandDoc(oneLineSummary = "Computes a cumulative count.",
     extendedSummary = Some("""
@@ -1809,6 +1863,15 @@ TODO: delete me, code moved to separate plugin files
                2                          2
 
         .. versionadded:: 0.8 """))
+
+  */
+
+  commandPluginRegistry.registerCommand(new TallyPlugin)
+
+  /*
+
+  TODO: delete me, code moved to separate plugin files
+
   val cumulativeCountCommand = commandPluginRegistry.registerCommand("dataframe/tally", cumulativeCountSimple _, doc = Some(tallyDoc))
   def cumulativeCountSimple(arguments: CumulativeCount, user: UserPrincipal, invocation: SparkInvocation) = {
     implicit val u = user
@@ -1828,6 +1891,10 @@ TODO: delete me, code moved to separate plugin files
 
     frames.saveFrame(frameMeta, new FrameRDD(new Schema(allColumns), cumulativeDistRdd))
   }
+  */
+  /*
+
+  TODO: delete me, code moved to separate plugin files
 
   val cumPercentDoc = CommandDoc(oneLineSummary = "Computes a cumulative percent sum.",
     extendedSummary = Some("""
@@ -1885,6 +1952,14 @@ TODO: delete me, code moved to separate plugin files
           2                   1.0
 
       ..versionadded :: 0.8 """))
+
+  */
+
+  commandPluginRegistry.registerCommand(new CumulativePercentPlugin)
+
+  /*
+  TODO: delete me, code moved to separate plugin files
+
   val cumulativePercentSumCommand = commandPluginRegistry.registerCommand("dataframe/cumulative_percent", cumulativePercentSumSimple _, doc = Some(cumPercentDoc))
   def cumulativePercentSumSimple(arguments: CumulativePercentSum, user: UserPrincipal, invocation: SparkInvocation) = {
     implicit val u = user
@@ -1904,6 +1979,10 @@ TODO: delete me, code moved to separate plugin files
 
     frames.saveFrame(frameMeta, new FrameRDD(new Schema(allColumns), cumulativeDistRdd))
   }
+  */
+  /*
+
+  TODO: delete me, code moved to separate plugin files
 
   val cumSumDoc = CommandDoc(oneLineSummary = "Computes a cumulative sum.",
     extendedSummary = Some("""
@@ -1960,6 +2039,13 @@ TODO: delete me, code moved to separate plugin files
                2                     6
 
         .. versionadded:: 0.8 """))
+
+   */
+  commandPluginRegistry.registerCommand(new CumulativeSumPlugin)
+  /*
+
+  TODO: delete me, code moved to separate plugin files
+
   val cumulativeSumCommand = commandPluginRegistry.registerCommand("dataframe/cumulative_sum", cumulativeSumSimple _, doc = Some(cumSumDoc))
   def cumulativeSumSimple(arguments: CumulativeSum, user: UserPrincipal, invocation: SparkInvocation) = {
     implicit val u = user
@@ -1979,12 +2065,15 @@ TODO: delete me, code moved to separate plugin files
 
     frames.saveFrame(frameMeta, new FrameRDD(new Schema(allColumns), cumulativeDistRdd))
   }
+  */
 
   override def cancelCommand(id: Long)(implicit user: UserPrincipal): Future[Unit] = withContext("se.cancelCommand") {
     future {
       commands.stopCommand(id)
     }
   }
+  /*
+  TODO: delete me, code moved to separate plugin files
 
   val entropyDoc = CommandDoc(oneLineSummary = "Calculate Shannon entropy of a column.",
     extendedSummary = Some("""
@@ -2014,6 +2103,14 @@ TODO: delete me, code moved to separate plugin files
     ..versionadded :: 0.8 """))
 
   val entropyCommand = commandPluginRegistry.registerCommand("dataframe/entropy",
+*/
+
+  commandPluginRegistry.registerCommand(new ShannonEntropyPlugin)
+  /*
+
+  TODO: delete me, code moved to separate plugin files
+
+  val entropyCommand = commandPluginRegistry.registerCommand("dataframe/shannon_entropy",
     entropyCommandSimple _, numberOfJobs = 3, doc = Some(entropyDoc))
 
   /**
@@ -2035,6 +2132,10 @@ TODO: delete me, code moved to separate plugin files
     val entropy = EntropyRDDFunctions.shannonEntropy(frameRdd, columnIndex, weightsColumnIndexOption, weightsDataTypeOption)
     EntropyReturn(entropy)
   }
+  */
+  /*
+
+  TODO: delete me, code moved to separate plugin files
 
   val topKDoc = CommandDoc(oneLineSummary = "Calculate the top (or bottom) K distinct values by count of a column.",
     extendedSummary = Some("""
@@ -2098,6 +2199,12 @@ TODO: delete me, code moved to separate plugin files
        Film-Noir    595
 
     ..versionadded :: 0.8 """))
+*/
+
+  commandPluginRegistry.registerCommand(new TopKPlugin)
+
+  /*
+  TODO: delete me, code moved to separate plugin files
 
   val topKCommand =
     commandPluginRegistry.registerCommand("dataframe/top_k", topKCommandSimple _, numberOfJobs = 3, doc = Some(topKDoc))
@@ -2134,27 +2241,10 @@ TODO: delete me, code moved to separate plugin files
     val rowCount = topRdd.count()
     frames.saveFrame(newFrame, new FrameRDD(newSchema, topRdd), Some(rowCount))
   }
+  */
 
   override def shutdown(): Unit = {
     //do nothing
   }
 
-  /**
-   * Get column index and data type of a column in a data frame.
-   *
-   * @param frame Data frame
-   * @param columnName Column name
-   * @return Option with the column index and data type
-   */
-  private def getColumnIndexAndType(frame: DataFrame, columnName: Option[String]): (Option[Int], Option[DataType]) = {
-
-    val (columnIndexOption, dataTypeOption) = columnName match {
-      case Some(columnIndex) => {
-        val weightsColumnIndex = frame.schema.columnIndex(columnIndex)
-        (Some(weightsColumnIndex), Some(frame.schema.columns(weightsColumnIndex)._2))
-      }
-      case None => (None, None)
-    }
-    (columnIndexOption, dataTypeOption)
-  }
 }

@@ -26,7 +26,7 @@ package com.intel.intelanalytics.engine.spark.frame.parquet
 import java.nio.charset.Charset
 
 import com.intel.intelanalytics.engine.spark.HdfsFileStorage
-import org.apache.hadoop.fs.{  Path, FileSystem }
+import org.apache.hadoop.fs.{ Path, FileSystem }
 import parquet.column.{ ColumnReadStore, ColumnReader, ColumnDescriptor }
 import parquet.column.page.PageReadStore
 import parquet.hadoop.{ Footer, ParquetFileReader }
