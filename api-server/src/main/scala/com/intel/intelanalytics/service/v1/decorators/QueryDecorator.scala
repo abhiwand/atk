@@ -22,9 +22,9 @@
 //////////////////////////////////////////////////////////////////////////////
 package com.intel.intelanalytics.service.v1.decorators
 
-import com.intel.intelanalytics.domain.query.Query
+import com.intel.intelanalytics.domain.query.{ QueryDataResult, Query }
 import com.intel.intelanalytics.service.v1.viewmodels._
-import spray.json.JsValue
+import spray.json.{ JsNull, JsValue }
 
 import scala.collection.mutable.ListBuffer
 import com.intel.intelanalytics.domain.schema.Schema
@@ -57,7 +57,7 @@ object QueryDecorator extends EntityDecorator[Query, GetQueries, GetQuery] {
    * @return the View/Model
    */
   def decorateEntity(uri: String, links: Iterable[RelLink], entity: Query, schema: Option[Schema]): GetQuery = {
-    GetQuery(id = entity.id, name = entity.name,
+    GetQuery(id = Some(entity.id), name = entity.name,
       arguments = entity.arguments, error = entity.error, complete = entity.complete,
       result = if (entity.complete) {
         Some(GetQueryPage(None, None, entity.totalPages, schema))
@@ -113,8 +113,9 @@ object QueryDecorator extends EntityDecorator[Query, GetQueries, GetQuery] {
   def decoratePage(uri: String, links: Iterable[RelLink], entity: Query, page: Long, data: List[JsValue], schema: Option[Schema]): GetQuery = {
     require(entity.complete)
 
-    GetQuery(id = entity.id, name = entity.name,
+    GetQuery(id = Some(entity.id), name = entity.name,
       arguments = entity.arguments, error = entity.error, complete = entity.complete,
       result = Some(new GetQueryPage(Some(data), Some(page), entity.totalPages, schema)), links = links.toList)
   }
+
 }

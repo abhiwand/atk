@@ -404,20 +404,11 @@ class FrameBackendRest(object):
 
         return execute_new_frame_command("group_by", arguments)
 
-    def rename_columns(self, frame, column_names, new_names):
-        if new_names is not None:
-            raise_deprecation_warning("rename_columns with old parameter syntax",
-                                      "New parameter syntax is to pass a dictionary of name pairs, (old, new)")
-            if isinstance(column_names, basestring) and isinstance(new_names, basestring):
-                column_names = [column_names]
-                new_names = [new_names]
-            if len(column_names) != len(new_names):
-                raise ValueError("Old-style rename_columns requires name lists of equal length")
-        else:
-            if not isinstance(column_names, dict):
-                raise ValueError("rename_columns requires a dictionary of string pairs")
-            new_names = column_names.values()
-            column_names = column_names.keys()
+    def rename_columns(self, frame, column_names):
+        if not isinstance(column_names, dict):
+            raise ValueError("rename_columns requires a dictionary of string pairs")
+        new_names = column_names.values()
+        column_names = column_names.keys()
 
         arguments = {'frame': self.get_ia_uri(frame), "original_names": column_names, "new_names": new_names}
         execute_update_frame_command('rename_columns', arguments, frame)
@@ -429,10 +420,23 @@ class FrameBackendRest(object):
 
 
     def take(self, frame, n, offset, columns):
+        def get_take_result():
+            data = []
+            schema = None
+            while len(data) < n:
+                url = 'dataframes/{0}/data?offset={2}&count={1}'.format(frame._id,n + len(data), offset + len(data))
+                result = executor.query(url)
+                if not schema:
+                    schema = result.schema
+                if len(result.data) == 0:
+                    break
+                data.extend(result.data)
+            return TakeResult(data, schema)
+
         if n == 0:
             return TakeResult([], frame.schema)
-        url = 'dataframes/{0}/data?offset={2}&count={1}'.format(frame._id,n, offset)
-        result = executor.query(url)
+        result = get_take_result()
+
         schema = FrameSchema.from_strings_to_types(result.schema)
 
         if isinstance(columns, basestring):
