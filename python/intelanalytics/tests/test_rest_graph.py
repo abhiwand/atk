@@ -102,7 +102,7 @@ class TestGraphBackendRest(unittest.TestCase):
               "value" : { "type": "column", "value": "popcorn" }
             }
           ],
-          "bidirectional": true
+          "bidirectional": false
         }
       ]
     }

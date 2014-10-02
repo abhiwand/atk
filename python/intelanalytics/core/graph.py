@@ -341,7 +341,7 @@ class EdgeRule(Rule):
     .. versionadded:: 0.8
 
     """
-    def __init__(self, label, tail, head, properties=None, bidirectional=True):
+    def __init__(self, label, tail, head, properties=None, bidirectional=False):
         self.label = label
         self.tail = tail
         self.head = head
