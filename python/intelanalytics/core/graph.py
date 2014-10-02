@@ -329,8 +329,8 @@ class EdgeRule(Rule):
         property_name is a string, and property_value is a literal value
         or a BigColumn source, which must be from same BigFrame as head,
         tail and label
-    is_directed : bool
-        indicates the edge is directed
+    bidirectional : bool
+        indicates the edge is bidirectional
 
     Examples
     --------
@@ -341,12 +341,12 @@ class EdgeRule(Rule):
     .. versionadded:: 0.8
 
     """
-    def __init__(self, label, tail, head, properties=None, is_directed=False):
+    def __init__(self, label, tail, head, properties=None, bidirectional=True):
         self.label = label
         self.tail = tail
         self.head = head
         self.properties = properties or {}
-        self.is_directed = bool(is_directed)
+        self.bidirectional = bool(bidirectional)
         super(EdgeRule, self).__init__()  # invokes validation
 
     def _as_json_obj(self):
@@ -429,7 +429,7 @@ class BigGraph(CommandLoadableBigGraph):
         # define graph parsing rules
         user = ia.VertexRule("user", frame.user, {"vertexType": frame.vertexType})
         movie = ia.VertexRule("movie", frame.movie)
-        rates = ia.EdgeRule("rating", user, movie, { "rating": frame.rating }, is_directed = True)
+        rates = ia.EdgeRule("rating", user, movie, { "rating": frame.rating }, bidirectional = True)
 
         # create graph
         graph = ia.BigGraph([user, movie, rates])
@@ -548,7 +548,7 @@ class BigGraph(CommandLoadableBigGraph):
             # define graph parsing rules
             user = ia.VertexRule("user", frame.user, {"vertexType": frame.vertexType})
             movie = ia.VertexRule("movie", frame.movie)
-            rates = ia.EdgeRule("rating", user, movie, { "rating": frame.rating }, is_directed = True)
+            rates = ia.EdgeRule("rating", user, movie, { "rating": frame.rating }, bidirectional = True)
 
             # append data from the frame to an existing graph
             graph.append([user, movie, rates])
@@ -563,7 +563,7 @@ class BigGraph(CommandLoadableBigGraph):
             # define graph parsing rules
             user = ia.VertexRule("user", ratingsFrame.userId)
             movie = ia.VertexRule("movie", ratingsFrame.movieId)
-            rates = ia.EdgeRule("rating", user, movie, { "rating": ratingsFrame.rating }, is_directed = True)
+            rates = ia.EdgeRule("rating", user, movie, { "rating": ratingsFrame.rating }, bidirectional = True)
 
             # create graph
             graph = ia.BigGraph([user, movie, rates])

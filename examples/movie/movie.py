@@ -43,7 +43,7 @@ print("frame row count " + str(errors.row_count))
 print("define graph parsing rules")
 movie = VertexRule("movie", frame.movie)
 user = VertexRule("user", frame.user, {"vertexType": frame.vertexType})
-rates = EdgeRule("rating", user, movie, { "splits": frame.splits }, is_directed = True)
+rates = EdgeRule("rating", user, movie, { "splits": frame.splits }, bidirectional = False)
 
 print("create graph")
 graph = BigGraph([user, movie, rates])

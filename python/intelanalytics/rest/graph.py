@@ -223,7 +223,7 @@ class JsonEdgeRule(object):
                 'head': JsonProperty(JsonValue(rule.head.id_key), JsonValue(rule.head.id_value)),
                 'properties': [JsonProperty(JsonValue(k), JsonValue(v))
                                for k, v in rule.properties.items()],
-                'bidirectional': not rule.is_directed}
+                'bidirectional': rule.bidirectional}
 
 
 class JsonFrame(object):

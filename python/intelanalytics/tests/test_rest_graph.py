@@ -102,7 +102,7 @@ class TestGraphBackendRest(unittest.TestCase):
               "value" : { "type": "column", "value": "popcorn" }
             }
           ],
-          "is_directed": false
+          "bidirectional": true
         }
       ]
     }
@@ -134,7 +134,7 @@ class TestGraphBackendRest(unittest.TestCase):
                           user_vertex,
                           movie_vertex,
                           {"with_popcorn": frame['popcorn']},
-                          is_directed=False)]
+                          bidirectional=True)]
         #print "\n".join(repr(r) for r in rules)
         return frame, rules
 '''
