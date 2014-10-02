@@ -1483,7 +1483,7 @@ class BigFrame(CommandLoadableBigFrame):
         .. versionchanged:: 0.8.5
 
         """
-        self._backend.rename_columns(self, column_names, new_names)
+        self._backend.rename_columns(self, column_names)
 
     @api
     def take(self, n, offset=0, columns=None):
