@@ -82,6 +82,7 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
    */
   def loadFrameRdd(ctx: SparkContext, frame: DataFrame): FrameRDD = {
     if (frame.revision == 0) {
+      // revision zero is special and means nothing has been saved to disk yet
       new FrameRDD(frame.schema, ctx.parallelize[Row](Nil))
     }
     else {
