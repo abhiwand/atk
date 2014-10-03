@@ -130,8 +130,7 @@ object DomainJsonProtocol extends IADefaultJsonProtocol {
   implicit val addColumnFormat = jsonFormat4(FrameAddColumns)
   implicit val projectColumnFormat = jsonFormat4(FrameProject)
   implicit val renameFrameFormat = jsonFormat2(RenameFrame)
-  implicit val renameColumnsFormat = jsonFormat3(FrameRenameColumns[JsObject, String])
-  implicit val renameColumnsLongFormat = jsonFormat3(FrameRenameColumns[JsObject, Long])
+  implicit val renameColumnsFormat = jsonFormat3(FrameRenameColumns)
   implicit val joinFrameLongFormat = jsonFormat3(FrameJoin)
   implicit val groupByColumnFormat = jsonFormat4(FrameGroupByColumn)
 
@@ -171,8 +170,8 @@ object DomainJsonProtocol extends IADefaultJsonProtocol {
 
   // model performance formats
 
-  implicit val classificationMetricLongFormat = jsonFormat6(ClassificationMetric)
-  implicit val classificationMetricValueLongFormat = jsonFormat2(ClassificationMetricValue)
+  implicit val classificationMetricLongFormat = jsonFormat5(ClassificationMetric)
+  implicit val classificationMetricValueLongFormat = jsonFormat5(ClassificationMetricValue)
   implicit val ecdfLongFormat = jsonFormat4(ECDF[Long])
   implicit val commandActionFormat = jsonFormat1(CommandPost)
 

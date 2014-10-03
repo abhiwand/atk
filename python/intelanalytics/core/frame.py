@@ -120,11 +120,6 @@ def get_frame(name):
     return _get_backend().get_frame(name)
 
 
-@deprecated("Use drop_frames(frame).")
-def delete_frame(frame):
-    return drop_frames(frame)
-
-
 @api
 def drop_frames(frame):
     """
@@ -511,8 +506,8 @@ class BigFrame(CommandLoadableBigFrame):
 
         """
         try:
-            d = self.classification_metrics('accuracy', label_column, pred_column, '1', 1)
-            return d["metric_value"]
+            cm = self.classification_metrics(label_column, pred_column, 1, 1)
+            return cm.accuracy
         except:
             raise IaError(logger)
 
@@ -787,8 +782,8 @@ class BigFrame(CommandLoadableBigFrame):
 
         """
         try:
-            d = self.classification_metrics("confusion_matrix", label_column, pred_column, pos_label, 1)
-            return d["metric_value"]
+            cm = self.classification_metrics(label_column, pred_column, pos_label, 1)
+            return cm.confusion_matrix
         except:
             raise IaError(logger)
 
@@ -858,196 +853,6 @@ class BigFrame(CommandLoadableBigFrame):
         copied_frame = BigFrame()
         self._backend.project_columns(self, copied_frame, column_names, new_names)
         return copied_frame
-
-    @deprecated("Use tally().")
-    def cumulative_count(self, sample_col, count_value):
-        """
-        Compute a cumulative count.
-
-        A cumulative count is computed by sequentially stepping through the column values and keeping track of the
-        the number of times the specified *count_value* has been seen up to the current value.
-
-        Parameters
-        ----------
-        sample_col : string
-            The name of the column from which to compute the cumulative count
-        count_value : any
-            The column value to be used for the counts
-
-        Returns
-        -------
-        BigFrame
-            A new object accessing a new frame containing the original columns appended with a column containing the cumulative counts
-
-        Examples
-        --------
-        Consider BigFrame *my_frame*, which accesses a frame that contains a single column *obs*::
-
-            my_frame.inspect()
-
-             obs int32
-            |---------|
-               0
-               1
-               2
-               0
-               1
-               2
-
-        The cumulative count for column *obs* using *count_value = 1* is obtained by::
-
-            cc_frame = my_frame.cumulative_count('obs', '1')
-
-        The BigFrame *cc_frame* accesses a frame which contains two columns *obs* and *obsCumulativeCount*.
-        Column *obs* still has the same data and *obsCumulativeCount* contains the cumulative counts::
-
-            cc_frame.inspect()
-
-             obs int32   obsCumulativeCount int32
-            |------------------------------------|
-               0                          0
-               1                          1
-               2                          1
-               0                          1
-               1                          2
-               2                          2
-
-        .. versionadded:: 0.8
-
-        """
-        try:
-            return self.tally(sample_col, count_value)
-        except:
-            raise IaError(logger)
-
-    @deprecated("Use cumulative_percent().")
-    def cumulative_percent_sum(self, sample_col):
-        """
-        Compute a cumulative percent sum.
-
-        A cumulative percent sum is computed by sequentially stepping through the column values and keeping track of the
-        current percentage of the total sum accounted for at the current value.
-
-        Parameters
-        ----------
-        sample_col : string
-            The name of the column from which to compute the cumulative percent sum
-
-        Returns
-        -------
-        BigFrame
-            A new object accessing a new frame containing the original columns appended with a column containing the cumulative percent sums
-
-        Notes
-        -----
-        This function applies only to columns containing numerical data.
-
-        Examples
-        --------
-        Consider BigFrame *my_frame* accessing a frame that contains a single column named *obs*::
-
-            my_frame.inspect()
-
-             obs int32
-            |---------|
-               0
-               1
-               2
-               0
-               1
-               2
-
-        The cumulative percent sum for column *obs* is obtained by::
-
-            cps_frame = my_frame.cumulative_percent_sum('obs')
-
-        The new frame accessed by BigFrame *cps_frame* contains two columns *obs* and *obsCumulativePercentSum*.
-        They contain the original data and the cumulative percent sum, respectively::
-
-            cps_frame.inspect()
-
-             obs int32   obsCumulativePercentSum float64
-            |-------------------------------------------|
-               0                          0.0
-               1                          0.16666666
-               2                          0.5
-               0                          0.5
-               1                          0.66666666
-               2                          1.0
-
-        .. versionadded:: 0.8
-
-        """
-        try:
-            return self.cumulative_percent(sample_col)
-        except:
-            raise IaError(logger)
-
-    @deprecated("Use tally_percent().")
-    def cumulative_percent_count(self, sample_col, count_value):
-        """
-        Compute a cumulative percent count.
-
-        A cumulative percent count is computed by sequentially stepping through the column values and keeping track of
-        the current percentage of the total number of times the specified *count_value* has been seen up to the current
-        value.
-
-        Parameters
-        ----------
-        sample_col : string
-            The name of the column from which to compute the cumulative sum
-        count_value : any
-            The column value to be used for the counts
-
-        Returns
-        -------
-        BigFrame
-            A new object accessing a new frame containing the original columns appended with a column containing the cumulative percent counts
-
-        Examples
-        --------
-        Consider BigFrame *my_frame*, which accesses a frame that contains a single column named *obs*::
-
-            my_frame.inspect()
-
-             obs int32
-            |---------|
-               0
-               1
-               2
-               0
-               1
-               2
-
-        The cumulative percent count for column *obs* is obtained by::
-
-            cpc_frame = my_frame.cumulative_percent_count('obs', '1')
-
-        The BigFrame *cpc_frame* accesses a new frame that contains two columns, *obs* that contains the original column values, and
-        *obsCumulativePercentCount* that contains the cumulative percent count::
-
-            cpc_frame.inspect()
-
-             obs int32   obsCumulativePercentCount float64
-            |---------------------------------------------|
-               0                          0.0
-               1                          0.5
-               2                          0.5
-               0                          0.5
-               1                          1.0
-               2                          1.0
-
-        .. versionadded:: 0.8
-
-        """
-        try:
-            return self.tally_percent(sample_col, count_value)
-        except:
-            raise IaError(logger)
-
-    @deprecated("Use drop_rows().")
-    def drop(self, predicate):
-        self.drop_rows(predicate)
 
     @api
     @has_python_user_function_arg
@@ -1289,7 +1094,7 @@ class BigFrame(CommandLoadableBigFrame):
 
             0.55555555555555558
 
-            frame.f_measure('labels', 'predictions', pos_label='0')
+            frame.f_measure('labels', 'predictions', pos_label=0)
 
             0.80000000000000004
 
@@ -1297,8 +1102,8 @@ class BigFrame(CommandLoadableBigFrame):
 
         """
         try:
-            d = self.classification_metrics('f_measure', label_column, pred_column, pos_label, beta)
-            return d["metric_value"]
+            cm = self.classification_metrics(label_column, pred_column, pos_label, beta)
+            return cm.f_measure
         except:
             raise IaError(logger)
 
@@ -1317,10 +1122,6 @@ class BigFrame(CommandLoadableBigFrame):
             or None if no error frame exists
         """
         return self._backend.get_frame_by_id(self._error_frame_id)
-
-    @deprecated("use group_by() with an underscore.")
-    def groupby(self, group_by_columns, *aggregation_arguments):
-        return self.group_by(group_by_columns, *aggregation_arguments)
 
     @api
     def group_by(self, group_by_columns, *aggregation_arguments):
@@ -1395,7 +1196,7 @@ class BigFrame(CommandLoadableBigFrame):
         Create a new frame from this data, grouping the rows by unique combinations of column *a* and *b*;
         average the value in *c* for each group::
 
-            new_frame = my_frame.group_by(['a', 'b'], {'c' : avg})
+            new_frame = my_frame.group_by(['a', 'b'], {'c' : agg.avg})
             new_frame.inspect()
 
              a int   b str   c_avg float
@@ -1583,7 +1384,7 @@ class BigFrame(CommandLoadableBigFrame):
 
             1.0
 
-            frame.precision('labels', 'predictions', '0')
+            frame.precision('labels', 'predictions', 0)
 
             0.66666666666666663
 
@@ -1591,65 +1392,8 @@ class BigFrame(CommandLoadableBigFrame):
 
         """
         try:
-            d = self.classification_metrics('precision', label_column, pred_column, pos_label, 1)
-            return d["metric_value"]
-        except:
-            raise IaError(logger)
-
-    @deprecated("Use copy() instead.")
-    def project_columns(self, column_names, new_names=None):
-        """
-        Create frame from columns.
-
-        Copies specified columns into a new BigFrame object, optionally renaming them.
-
-        Parameters
-        ----------
-
-        column_names : str OR list of str
-            column name OR list of column names to be copied from the currently active frame
-        new_names : str OR list of str
-            The new name(s) for the column(s)
-
-        Notes
-        -----
-        If new column names are specified, the quantity of column names must match the quantity of new names,
-        though if you are only using a single column, it does not matter whether that column is declared in string
-        fashion, or as a single string in a list.
-
-        Returns
-        -------
-        BigFrame
-            A new frame object accessing a new frame containing copies of the specified columns
-
-        Examples
-        --------
-        Given a BigFrame *my_frame*, accessing a frame with columns named *a*, *b*, *c*, *d*.
-        Create a new frame with three columns *apple*, *boat*, and *frog*, where for each row of the original frame, the data from column *a* is copied
-        to the new column *apple*, the data from column *b* is copied to the column *boat*, and the data from column *c* is copied
-        to the column *frog*::
-
-            new_frame = my_frame.project_columns( ['a', 'b', 'c'], ['apple', 'boat', 'frog'])
-
-        And the result is a new BigFrame named 'new_name' accessing a new frame with columns *apple*, *boat*, *frog*, and the data from *my_frame*,
-        column *a* is now copied in column *apple*, the data from column *b* is now copied in column *boat* and the data from column *c* is now
-        copied in column *frog*.
-
-        Continuing::
-
-            frog_frame = new_frame.project_columns('frog')
-
-        And the new BigFrame *frog_frame* is accessing a frame with a single column *frog* which has a copy of all the data from the original
-        column *c* in *my_frame*.
-
-        .. versionadded:: 0.8
-
-        """
-        # TODO - need example in docstring
-        try:
-            projected_frame = BigFrame()
-            self._backend.project_columns(self, projected_frame, column_names, new_names)
-            return projected_frame
+            cm = self.classification_metrics(label_column, pred_column, pos_label, 1)
+            return cm.precision
         except:
             raise IaError(logger)
 
@@ -1700,7 +1444,7 @@ class BigFrame(CommandLoadableBigFrame):
 
             0.5
 
-            frame.recall('labels', 'predictions', '0')
+            frame.recall('labels', 'predictions', 0)
 
             1.0
 
@@ -1708,17 +1452,13 @@ class BigFrame(CommandLoadableBigFrame):
 
         """
         try:
-            d = self.classification_metrics('recall', label_column, pred_column, pos_label, 1)
-            return d["metric_value"]
+            cm = self.classification_metrics(label_column, pred_column, pos_label, 1)
+            return cm.recall
         except:
             raise IaError(logger)
 
-    @deprecated("Use drop_columns() instead.")
-    def remove_columns(self, column_names):
-        return self.drop_columns(column_names)
-
     @api
-    def rename_columns(self, column_names, new_names=None):
+    def rename_columns(self, column_names):
         """
         Rename column.
 
@@ -1743,7 +1483,7 @@ class BigFrame(CommandLoadableBigFrame):
         .. versionchanged:: 0.8.5
 
         """
-        self._backend.rename_columns(self, column_names, new_names)
+        self._backend.rename_columns(self, column_names)
 
     @api
     def take(self, n, offset=0, columns=None):
