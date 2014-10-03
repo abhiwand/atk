@@ -88,13 +88,21 @@ class GraphBackendRest(object):
         return BigGraph(graph_info)
 
     def delete_graph(self,graph):
-        if isinstance(graph,BigGraph):
-            return self._delete_graph(graph)
-        elif isinstance(graph, basestring):
-            #delete by name
-            return self._delete_graph(self.get_graph(graph))
+        if isinstance(graph, basestring):
+            # delete by name
+            self._delete_graph(self.get_graph(graph))
+        elif(isinstance(graph, BigGraph)):
+            self._delete_graph(graph)
+        elif(isinstance(graph, list)):
+            for gobject in graph:
+                if(isinstance(gobject, basestring)):
+                    self._delete_graph(self.get_graph(graph))
+                elif(isinstance(gobject, BigGraph)):
+                    self._delete_graph(graph)
+                else:
+                    raise TypeError("Expected argument of type BigGraph or the graph name")
         else:
-            raise TypeError('Expected argument of type BigGraph or the graph name')
+            raise TypeError("Expected argument of type BigGraph or the graph name")
 
     def _delete_graph(self, graph):
         logger.info("REST Backend: Delete graph {0}".format(repr(graph)))
