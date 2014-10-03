@@ -38,7 +38,7 @@ class QueryDecoratorTest extends FlatSpec with Matchers {
 
   "QueryDecorator" should "be able to decorate a query" in {
     val decoratedQuery = QueryDecorator.decorateEntity(null, relLinks, query)
-    decoratedQuery.id should be(1)
+    decoratedQuery.id should be(Some(1))
     decoratedQuery.name should be("name")
     decoratedQuery.links.head.uri should be("http://www.example.com/queries")
   }
