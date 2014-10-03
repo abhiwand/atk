@@ -82,18 +82,9 @@ class DropDuplicatesPlugin extends SparkCommandPlugin[DropDuplicates, DataFrame]
     val frameMeta: DataFrame = frames.expectFrame(frameId)
     val frameSchema = frameMeta.schema
     val rdd = frames.loadFrameRdd(ctx, frameId)
-    val uniqueNames = arguments.unique_columns
     val columnIndices = frameSchema.columnIndex(arguments.unique_columns)
 
     // run the operation
-    for {
-      i <- 0 until columnIndices.size
-    } {
-      val columnName = uniqueNames(i)
-      if (frameSchema.columns.indexWhere(columnTuple => columnTuple._1 == columnName) < 0)
-        throw new IllegalArgumentException(s"Cannot drop duplicates because there is no column with that name: $columnName")
-    }
-
     val pairRdd = rdd.map(row => MiscFrameFunctions.createKeyValuePairFromRow(row, columnIndices))
 
     val duplicatesRemoved: RDD[Array[Any]] = MiscFrameFunctions.removeDuplicatesByKey(pairRdd)
