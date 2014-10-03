@@ -58,3 +58,8 @@ def add_postprocessor(command_full_name, function):
 def return_graph(json_result):
     from intelanalytics.core.graph import get_graph
     return get_graph(json_result['name'])
+
+@postprocessor('dataframe/classification_metrics')
+def return_metrics(json_result):
+     from intelanalytics.core.classifymetrics import ClassificationMetricsResult
+     return ClassificationMetricsResult(json_result)

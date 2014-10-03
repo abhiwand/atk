@@ -28,7 +28,7 @@ import com.intel.intelanalytics.domain.FilterPredicate
 import com.intel.intelanalytics.domain.frame._
 import com.intel.intelanalytics.domain.frame.load.Load
 import com.intel.intelanalytics.domain.graph.{ Graph, GraphLoad, GraphTemplate, RenameGraph }
-import com.intel.intelanalytics.domain.query.{ Execution => QueryExecution, PagedQueryResult, QueryDataResult, RowQuery, Query }
+import com.intel.intelanalytics.domain.query.{ Execution => QueryExecution, _ }
 import com.intel.intelanalytics.engine.Rows._
 import com.intel.intelanalytics.security.UserPrincipal
 import spray.json.JsObject
@@ -79,7 +79,7 @@ trait Engine {
 
   def getFrame(id: Identifier)(implicit user: UserPrincipal): Future[Option[DataFrame]]
 
-  def getRows(arguments: RowQuery[Identifier])(implicit user: UserPrincipal): Future[QueryDataResult]
+  def getRows(arguments: RowQuery[Identifier])(implicit user: UserPrincipal): QueryResult
 
   def getRowsLarge(arguments: RowQuery[Identifier])(implicit user: UserPrincipal): PagedQueryResult
 

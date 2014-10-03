@@ -36,7 +36,7 @@ import org.apache.hadoop.fs.{ Path => HPath }
 import org.apache.hadoop.hbase.HBaseConfiguration
 import org.apache.hadoop.hbase.client.HBaseAdmin
 import com.intel.intelanalytics.security.UserPrincipal
-import com.intel.intelanalytics.engine.spark.util.DiskSpaceReporter
+import com.intel.intelanalytics.engine.spark.util.{ JvmVersionReporter, DiskSpaceReporter }
 import com.intel.intelanalytics.engine.spark.user.UserStorage
 import com.intel.event.EventLogging
 
@@ -94,6 +94,8 @@ class SparkComponent extends EngineComponent
   val queries = new SparkQueryStorage(metaStore.asInstanceOf[SlickMetaStore], fileStorage)
 
   lazy val queryExecutor: QueryExecutor = new QueryExecutor(engine, queries, sparkContextManager)
+
+  JvmVersionReporter.check()
 
   DiskSpaceReporter.checkDiskSpace()
 

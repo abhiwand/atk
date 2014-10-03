@@ -38,7 +38,7 @@ import com.intel.event.EventLogging
  * @param hdfs methods for interacting with underlying storage (e.g. HDFS)
  */
 class FrameFileStorage(fsRoot: String,
-                       hdfs: HdfsFileStorage) extends EventLogging {
+                       val hdfs: HdfsFileStorage) extends EventLogging {
 
   private val framesBaseDirectory = new Path(fsRoot + "/intelanalytics/dataframes")
 
