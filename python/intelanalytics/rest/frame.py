@@ -97,13 +97,21 @@ class FrameBackendRest(object):
             return frame
 
     def delete_frame(self, frame):
-        if isinstance(frame, BigFrame):
-            return self._delete_frame(frame)
-        elif isinstance(frame, basestring):
+        if isinstance(frame, basestring):
             # delete by name
-            return self._delete_frame(self.get_frame(frame))
+            self._delete_frame(self.get_frame(frame))
+        elif(isinstance(frame, BigFrame)):
+            self._delete_frame(frame)
+        elif(isinstance(frame, list)):
+            for fobject in frame:
+                if(isinstance(fobject, basestring)):
+                    self._delete_frame(self.get_frame(fobject))
+                elif(isinstance(fobject, BigFrame)):
+                    self._delete_frame(fobject)
+                else:
+                    raise TypeError("Expected argument of type BigFrame or the frame name")
         else:
-            raise TypeError("Excepted argument of type BigFrame or the frame name")
+            raise TypeError("Expected argument of type BigFrame or the frame name")
 
     def _delete_frame(self, frame):
         logger.info("REST Backend: Delete frame {0}".format(repr(frame)))
