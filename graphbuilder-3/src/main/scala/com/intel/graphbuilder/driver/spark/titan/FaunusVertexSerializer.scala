@@ -9,11 +9,19 @@ import com.thinkaurelius.titan.hadoop.FaunusVertex
 import org.apache.commons.io.FileUtils
 
 /**
- * Kryo serializer for Faunus vertices.
+ * Kryo serializer for Titan/Faunus vertices.
  */
 
 class FaunusVertexSerializer extends Serializer[FaunusVertex] {
 
+  /**
+   * Reads bytes and returns a new Faunus vertex
+   *
+   * @param kryo  Kryo serializer
+   * @param input Kryo input stream
+   * @param inputClass Class of object to return
+   * @return Faunux vertex
+   */
   def read(kryo: Kryo, input: Input, inputClass: Class[FaunusVertex]): FaunusVertex = {
     val bytes = kryo.readObject(input, classOf[Array[Byte]])
     val inputStream = new DataInputStream(new ByteArrayInputStream(bytes))
@@ -23,6 +31,13 @@ class FaunusVertexSerializer extends Serializer[FaunusVertex] {
     faunusVertex
   }
 
+  /**
+   * Writes Faunus vertex to byte stream
+   *
+   * @param kryo  Kryo serializer
+   * @param output Kryo output stream
+   * @param faunusVertex Faunus vertex to serialize
+   */
   def write(kryo: Kryo, output: Output, faunusVertex: FaunusVertex): Unit = {
     val outputStream = new ByteArrayOutputStream()
     faunusVertex.write(new DataOutputStream(outputStream))
@@ -30,28 +45,3 @@ class FaunusVertexSerializer extends Serializer[FaunusVertex] {
   }
 }
 
-object FaunusVertexSerializer {
-
-  def main(args: Array[String]) = {
-    println("Hello")
-    FileUtils.deleteQuietly(new File("/tmp/file.bin"))
-    Log.TRACE()
-    val kryo = new Kryo()
-    //val gbRegistrator = new GraphBuilderKryoRegistrator()
-    //gbRegistrator.registerClasses(kryo)
-
-    kryo.register(classOf[FaunusVertex], new FaunusVertexSerializer(), 1000)
-    val output = new Output(new FileOutputStream("/tmp/file.bin"))
-    val testVertex = new FaunusVertex()
-    testVertex.setId(256L)
-    kryo.writeObject(output, testVertex)
-    //testVertex.write(new DataOutputStream(output.getOutputStream))
-    output.close()
-
-    val input = new Input(new FileInputStream("/tmp/file.bin"))
-    //val readVertex = new FaunusVertex()
-    val readVertex = kryo.readObject(input, classOf[FaunusVertex])
-    //readVertex.readFields(new DataInputStream(input.getInputStream))
-    println(readVertex)
-  }
-}

@@ -63,7 +63,7 @@ object NetflixReaderExample {
     val titanConfig = new SerializableBaseConfiguration()
     titanConfig.setProperty("storage.backend", "hbase")
     titanConfig.setProperty("storage.hostname", hBaseZookeeperQuorum)
-    titanConfig.setProperty("storage.tablename", tableName)
+    titanConfig.setProperty("storage.hbase.table", tableName)
 
     val titanConnector = new TitanGraphConnector(titanConfig)
 

@@ -23,8 +23,10 @@
 
 package com.intel.spark.graphon.sampling
 
+import com.intel.graphbuilder.graph.titan.TitanGraphConnector
 import com.intel.graphbuilder.util.SerializableBaseConfiguration
 import com.intel.intelanalytics.component.Boot
+import com.intel.intelanalytics.engine.spark.SparkEngineConfig
 import com.intel.intelanalytics.engine.spark.graph.GraphName
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkInvocation, SparkCommandPlugin }
 import com.intel.intelanalytics.security.UserPrincipal
@@ -116,25 +118,22 @@ class VertexSample extends SparkCommandPlugin[VertexSampleArguments, VertexSampl
   override def execute(invocation: SparkInvocation, arguments: VertexSampleArguments)(implicit user: UserPrincipal, executionContext: ExecutionContext): VertexSampleResult = {
     // Titan Settings
     val config = configuration
-    val titanConfigInput = config.getConfig("titan.load")
-
-    // create titanConfig
-    val titanConfig = new SerializableBaseConfiguration()
-    titanConfig.setProperty("storage.backend", titanConfigInput.getString("storage.backend"))
-    titanConfig.setProperty("storage.hostname", titanConfigInput.getString("storage.hostname"))
-    titanConfig.setProperty("storage.port", titanConfigInput.getString("storage.port"))
 
     // get the input graph object
     import scala.concurrent.duration._
     val graph = Await.result(invocation.engine.getGraph(arguments.graph.id), config.getInt("default-timeout") seconds)
+
+    // create titanConfig
+    val titanConfig = SparkEngineConfig.createTitanConfiguration(config, "titan.load")
+    val iatGraphName = GraphName.convertGraphUserNameToBackendName(graph.name)
+    val titanTableNameKey = TitanGraphConnector.getTitanTableNameKey(titanConfig)
+    titanConfig.setProperty(titanTableNameKey, iatGraphName)
 
     // get SparkContext and add the graphon jar
     val sc = invocation.sparkContext
     sc.addJar(Boot.getJar("graphon").getPath)
 
     // convert graph name and get the graph vertex and edge RDDs
-    val iatGraphName = GraphName.convertGraphUserNameToBackendName(graph.name)
-    titanConfig.setProperty("storage.tablename", iatGraphName)
     val (vertexRDD, edgeRDD) = getGraphRdds(sc, titanConfig)
 
     val vertexSample = arguments.sampleType match {
@@ -156,7 +155,9 @@ class VertexSample extends SparkCommandPlugin[VertexSampleArguments, VertexSampl
     // create titan config copy for subgraph write-back
     val subgraphTitanConfig = new SerializableBaseConfiguration()
     subgraphTitanConfig.copy(titanConfig)
-    subgraphTitanConfig.setProperty("storage.tablename", iatSubgraphName)
+
+    val subgraphTableNameKey = TitanGraphConnector.getTitanTableNameKey(titanConfig)
+    subgraphTitanConfig.setProperty(subgraphTableNameKey, iatSubgraphName)
 
     writeToTitan(vertexSample, edgeSample, subgraphTitanConfig)
 

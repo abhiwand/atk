@@ -37,7 +37,7 @@ class TitanSchemaWriterTest extends WordSpec with Matchers with MockitoSugar wit
 
   before {
     setupTitan()
-    titanSchemaWriter = new TitanSchemaWriter(graph)
+    titanSchemaWriter = new TitanSchemaWriter(titanGraph)
   }
 
   after {
@@ -58,8 +58,8 @@ class TitanSchemaWriterTest extends WordSpec with Matchers with MockitoSugar wit
 
       // validate
 
-      graph.getManagementSystem.getEdgeLabel("myLabel").isEdgeLabel shouldBe true
-      println("test" + graph.getManagementSystem.getEdgeLabel("myLabel").isEdgeLabel)
+      titanGraph.getManagementSystem.getEdgeLabel("myLabel").isEdgeLabel shouldBe true
+      println("test" + titanGraph.getManagementSystem.getEdgeLabel("myLabel").isEdgeLabel)
     }
 
     "ignore duplicate edge label definitions" in {
@@ -72,7 +72,7 @@ class TitanSchemaWriterTest extends WordSpec with Matchers with MockitoSugar wit
       titanSchemaWriter.write(schema)
 
       // validate
-      graph.getManagementSystem.getEdgeLabel("myLabel").isEdgeLabel shouldBe true
+      titanGraph.getManagementSystem.getEdgeLabel("myLabel").isEdgeLabel shouldBe true
     }
 
     "write a property definition" in {
@@ -83,8 +83,8 @@ class TitanSchemaWriterTest extends WordSpec with Matchers with MockitoSugar wit
       titanSchemaWriter.write(schema)
 
       // validate
-      graph.getRelationType("propName").isPropertyKey shouldBe true
-      graph.getManagementSystem().getGraphIndex("propName") shouldBe null
+      titanGraph.getRelationType("propName").isPropertyKey shouldBe true
+      titanGraph.getManagementSystem().getGraphIndex("propName") shouldBe null
     }
 
     "write a property definition that is unique and indexed" in {
@@ -95,8 +95,8 @@ class TitanSchemaWriterTest extends WordSpec with Matchers with MockitoSugar wit
       titanSchemaWriter.write(schema)
 
       // validate
-      graph.getRelationType("propName").isPropertyKey shouldBe true
-      graph.getManagementSystem().getGraphIndex("propName").isUnique() shouldBe true
+      titanGraph.getRelationType("propName").isPropertyKey shouldBe true
+      titanGraph.getManagementSystem().getGraphIndex("propName").isUnique() shouldBe true
     }
 
     "ignore duplicate property definitions" in {
@@ -108,8 +108,8 @@ class TitanSchemaWriterTest extends WordSpec with Matchers with MockitoSugar wit
       titanSchemaWriter.write(schema)
 
       // validate
-      graph.getRelationType("propName").isPropertyKey shouldBe true
-      graph.getManagementSystem().getGraphIndex("propName") shouldBe null
+      titanGraph.getRelationType("propName").isPropertyKey shouldBe true
+      titanGraph.getManagementSystem().getGraphIndex("propName") shouldBe null
 
     }
 
@@ -120,7 +120,7 @@ class TitanSchemaWriterTest extends WordSpec with Matchers with MockitoSugar wit
       titanSchemaWriter.write(schema)
 
       // validate
-      graph.getRelationType("propName") should be(null)
+      titanGraph.getRelationType("propName") should be(null)
     }
 
     "require a graph" in {

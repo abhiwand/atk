@@ -43,7 +43,7 @@ object NetflixExampleDriver {
   // Titan Settings
   val titanConfig = new SerializableBaseConfiguration()
   titanConfig.setProperty("storage.backend", "hbase")
-  titanConfig.setProperty("storage.hbase.table", "netflix")
+  titanConfig.setProperty("storage.table", "netflix124")
   //titanConfig.setProperty("storage.backend", "cassandra")
   //titanConfig.setProperty("storage.keyspace", "netflix")
   titanConfig.setProperty("storage.hostname", ExamplesUtils.storageHostname)

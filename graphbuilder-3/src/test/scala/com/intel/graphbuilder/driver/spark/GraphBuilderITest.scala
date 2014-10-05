@@ -92,11 +92,11 @@ class GraphBuilderITest extends TestingSparkContextWordSpec with Matchers with T
       gb.build(inputRdd)
 
       // Validate
-      graph.getEdges.size shouldBe 5
-      graph.getVertices.size shouldBe 5
+      titanGraph.getEdges.size shouldBe 5
+      titanGraph.getVertices.size shouldBe 5
 
       // need to shutdown because only one connection can be open at a time
-      graph.shutdown()
+      titanGraph.shutdown()
 
       // Now we'll append to the existing graph
 
@@ -113,9 +113,9 @@ class GraphBuilderITest extends TestingSparkContextWordSpec with Matchers with T
       gb2.build(inputRdd2)
 
       // Validate
-      graph = titanConnector.connect()
-      graph.getEdges.size shouldBe 7
-      graph.getVertices.size shouldBe 7
+      titanGraph = titanConnector.connect()
+      titanGraph.getEdges.size shouldBe 7
+      titanGraph.getVertices.size shouldBe 7
 
     }
 
@@ -164,10 +164,10 @@ class GraphBuilderITest extends TestingSparkContextWordSpec with Matchers with T
       gb.build(inputRdd)
 
       // Validate
-      graph.getVertices.size shouldBe 6
-      graph.getEdges.size shouldBe 10
+      titanGraph.getVertices.size shouldBe 6
+      titanGraph.getEdges.size shouldBe 10
 
-      val obama = graph.getVertices("userId", 1001L).iterator().next()
+      val obama = titanGraph.getVertices("userId", 1001L).iterator().next()
       obama.getProperty("name").asInstanceOf[String] shouldBe "President Obama"
       obama.getEdges(Direction.OUT).size shouldBe 3
     }
@@ -215,11 +215,11 @@ class GraphBuilderITest extends TestingSparkContextWordSpec with Matchers with T
 
       // Validate
       val titanConnector = new TitanGraphConnector(titanConfig)
-      graph = titanConnector.connect()
-      graph.getEdges.size shouldBe 20
-      graph.getVertices.size shouldBe 8
+      titanGraph = titanConnector.connect()
+      titanGraph.getEdges.size shouldBe 20
+      titanGraph.getVertices.size shouldBe 8
 
-      val vertexOne = graph.getVertices("userId", "1").iterator().next()
+      val vertexOne = titanGraph.getVertices("userId", "1").iterator().next()
       vertexOne.getProperty("location").asInstanceOf[String] shouldBe "Oregon"
       vertexOne.getEdges(Direction.OUT).size shouldBe 3
       vertexOne.getEdges(Direction.OUT).iterator().next().getProperty("tweet").asInstanceOf[String] shouldBe "blah blah blah..."

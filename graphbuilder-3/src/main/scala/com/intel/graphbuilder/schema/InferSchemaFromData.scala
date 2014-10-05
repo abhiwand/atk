@@ -87,7 +87,7 @@ class InferSchemaFromData extends Serializable {
    */
   private def addProperty(propertyType: PropertyType.Value, property: Property, isGbId: Boolean): Unit = {
     if (propertyDefsMap.get(property.key).isEmpty) {
-      propertyDefsMap += (property.key -> new PropertyDef(propertyType, property.key, PrimitiveConverter.primitivesToObjects(property.value.getClass), isGbId, isGbId))
+      propertyDefsMap += (property.key -> new PropertyDef(propertyType, property.key, property.value.getClass, isGbId, isGbId))
     }
   }
 

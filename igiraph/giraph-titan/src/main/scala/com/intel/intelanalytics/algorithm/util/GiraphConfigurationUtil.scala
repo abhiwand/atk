@@ -1,6 +1,8 @@
 package com.intel.intelanalytics.algorithm.util
 
+import com.intel.graphbuilder.graph.titan.TitanGraphConnector
 import com.intel.intelanalytics.domain.graph.Graph
+import com.intel.intelanalytics.engine.spark.graph.GraphName
 import com.typesafe.config.{ ConfigValue, ConfigObject, Config }
 import org.apache.hadoop.conf.Configuration
 import scala.collection.JavaConverters._
@@ -58,10 +60,12 @@ object GiraphConfigurationUtil {
   }
 
   def initializeTitanConfig(hConf: Configuration, titanConf: Map[String, String], graph: Graph) = {
+    val iatGraphName = GraphName.convertGraphUserNameToBackendName(graph.name)
+    val titanStorageBackend = titanConf.get("titan.load.storage.backend").getOrElse("")
+    val titanTableNameKey = TitanGraphConnector.getTitanTableNameKey(titanStorageBackend)
     set(hConf, "giraph.titan.input.storage.backend", titanConf.get("titan.load.storage.backend"))
-    set(hConf, "giraph.titan.input.storage.hostname", titanConf.get("titan.load.storage.hostname"))
-    // TODO - graph should provide backend to retrieve the stored table name in hbase. Keeping iat_graph_ for now
-    set(hConf, "giraph.titan.input.storage.tablename", Option[Any]("iat_graph_" + graph.name))
+    set(hConf, "giraph.titan.input." + titanTableNameKey, titanConf.get("titan.load.storage.hostname"))
+    set(hConf, "giraph.titan.input.storage.tablename", Option[Any](iatGraphName))
     set(hConf, "giraph.titan.input.storage.port", titanConf.get("titan.load.storage.port"))
   }
 

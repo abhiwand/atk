@@ -7,6 +7,8 @@ import com.intel.graphbuilder.graph.titan.TitanGraphConnector
 import com.intel.graphbuilder.util.SerializableBaseConfiguration
 import com.intel.intelanalytics.domain.DomainJsonProtocol
 import com.intel.intelanalytics.domain.graph.GraphReference
+import com.intel.intelanalytics.engine.spark.SparkEngineConfig
+import com.intel.intelanalytics.engine.spark.graph.GraphName
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
 import com.intel.intelanalytics.security.UserPrincipal
 import org.apache.spark.storage.StorageLevel
@@ -185,12 +187,10 @@ class HistogramQuery extends SparkCommandPlugin[HistogramParams, HistogramResult
     }
 
     // Create graph connection
-    val titanConfiguration = new SerializableBaseConfiguration()
-    val titanLoadConfig = config.getConfig("titan.load")
-    for (entry <- titanLoadConfig.entrySet().asScala) {
-      titanConfiguration.addProperty(entry.getKey, titanLoadConfig.getString(entry.getKey))
-    }
-    titanConfiguration.setProperty("storage.tablename", "iat_graph_" + graph.name) // "iat_graph_mygraph") graph.name)
+    val titanConfiguration = SparkEngineConfig.createTitanConfiguration(config, "titan.load")
+    val titanTableNameKey = TitanGraphConnector.getTitanTableNameKey(titanConfiguration)
+    val iatGraphName = GraphName.convertGraphUserNameToBackendName(graph.name)
+    titanConfiguration.setProperty(titanTableNameKey, iatGraphName)
     val titanConnector = new TitanGraphConnector(titanConfiguration)
 
     val sc = invocation.sparkContext

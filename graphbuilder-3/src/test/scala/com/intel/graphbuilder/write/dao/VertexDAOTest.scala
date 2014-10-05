@@ -34,7 +34,7 @@ class VertexDAOTest extends WordSpec with Matchers with TestingTitan with Before
 
   before {
     setupTitan()
-    vertexDAO = new VertexDAO(graph)
+    vertexDAO = new VertexDAO(titanGraph)
   }
 
   after {
@@ -81,7 +81,7 @@ class VertexDAOTest extends WordSpec with Matchers with TestingTitan with Before
       val gbVertexOriginal = new Vertex(new Property("gbId", 10004), List(new Property("name", "Original Name")))
       val gbVertexUpdated = new Vertex(new Property("gbId", 10004), List(new Property("name", "Updated Name")))
       vertexDAO.create(gbVertexOriginal)
-      graph.commit()
+      titanGraph.commit()
 
       // invoke method under test
       val bpVertexUpdated = vertexDAO.updateOrCreate(gbVertexUpdated)
@@ -108,7 +108,7 @@ class VertexDAOTest extends WordSpec with Matchers with TestingTitan with Before
       val gbVertex = new Vertex(new Property("gbId", 10006), Nil)
       val createdBpVertex = vertexDAO.create(gbVertex)
       val id = TitanIdUtils.titanId(createdBpVertex)
-      graph.commit()
+      titanGraph.commit()
 
       // invoke method under test
       val foundBpVertex = vertexDAO.findByPhysicalId(id.asInstanceOf[AnyRef]).get

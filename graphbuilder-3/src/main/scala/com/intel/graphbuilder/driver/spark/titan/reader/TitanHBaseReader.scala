@@ -20,10 +20,10 @@ import org.apache.spark.rdd.RDD
  * TitanHBaseReader constants.
  */
 object TitanHBaseReader {
-  val TITAN_STORAGE_NS = GraphDatabaseConfiguration.STORAGE_NS.getName
-  val TITAN_STORAGE_HOSTNAME = TITAN_STORAGE_NS + "." + GraphDatabaseConfiguration.STORAGE_HOSTS.getName
-  val TITAN_STORAGE_TABLENAME = TITAN_STORAGE_NS + "." + HBaseStoreManager.HBASE_NS.getName + "." + HBaseStoreManager.HBASE_TABLE.getName
-  val TITAN_STORAGE_PORT = TITAN_STORAGE_NS + "." + GraphDatabaseConfiguration.STORAGE_PORT.getName
+  val TITAN_STORAGE_NAMESPACE = GraphDatabaseConfiguration.STORAGE_NS.getName
+  val TITAN_STORAGE_HOSTNAME = TITAN_STORAGE_NAMESPACE + "." + GraphDatabaseConfiguration.STORAGE_HOSTS.getName
+  val TITAN_STORAGE_TABLENAME = TITAN_STORAGE_NAMESPACE + "." + HBaseStoreManager.HBASE_NS.getName + "." + HBaseStoreManager.HBASE_TABLE.getName
+  val TITAN_STORAGE_PORT = TITAN_STORAGE_NAMESPACE + "." + GraphDatabaseConfiguration.STORAGE_PORT.getName
 }
 
 /**
