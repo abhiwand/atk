@@ -5,7 +5,7 @@ import com.intel.testutils.MatcherUtils._
 import com.tinkerpop.blueprints.util.io.graphson.GraphSONMode
 import com.tinkerpop.blueprints.{ Edge, Element, Vertex }
 import com.tinkerpop.pipes.util.structures.Row
-import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
+import org.scalatest.{ BeforeAndAfter, FlatSpec, Matchers }
 import spray.json._
 
 import scala.collection.JavaConversions._
@@ -21,24 +21,24 @@ class GremlinUtilsTest extends FlatSpec with Matchers with TestingTitan with Bef
   after {
     cleanupTitan()
   }
-  implicit val graphSONFormat = new GraphSONFormat(idGraph)
+  implicit val graphSONFormat = new GraphSONFormat(titanIdGraph)
 
   "serializeGremlinToJson" should "serialize a Blueprint's vertex into GraphSON" in {
-    val vertex = idGraph.addVertex(1)
+    val vertex = titanIdGraph.addVertex(1)
     vertex.setProperty("name", "marko")
     vertex.setProperty("age", 29)
 
-    val json = GremlinUtils.serializeGremlinToJson[Element](idGraph, vertex).asJsObject
+    val json = GremlinUtils.serializeGremlinToJson[Element](titanIdGraph, vertex).asJsObject
     vertex should equalsGraphSONVertex(json)
   }
 
   "serializeGremlinToJson" should "serialize a Blueprint's edge into GraphSON" in {
-    val vertex1 = idGraph.addVertex(1)
-    val vertex2 = idGraph.addVertex(2)
-    val edge = idGraph.addEdge(3, vertex1, vertex2, "test")
+    val vertex1 = titanIdGraph.addVertex(1)
+    val vertex2 = titanIdGraph.addVertex(2)
+    val edge = titanIdGraph.addEdge(3, vertex1, vertex2, "test")
     edge.setProperty("weight", 0.5f)
 
-    val json = GremlinUtils.serializeGremlinToJson[Element](idGraph, edge)
+    val json = GremlinUtils.serializeGremlinToJson[Element](titanIdGraph, edge)
     edge should equalsGraphSONEdge(json)
   }
 
@@ -46,7 +46,7 @@ class GremlinUtilsTest extends FlatSpec with Matchers with TestingTitan with Bef
     val rowMap = Map("col1" -> "val1", "col2" -> "val2")
     val row = new Row(rowMap.values.toList, rowMap.keys.toList)
 
-    val json = GremlinUtils.serializeGremlinToJson(idGraph, row).asJsObject
+    val json = GremlinUtils.serializeGremlinToJson(titanIdGraph, row).asJsObject
     val jsonFields = json.fields
     jsonFields.keySet should contain theSameElementsAs (rowMap.keySet)
     jsonFields.values.toList should contain theSameElementsAs (List(JsString("val1"), JsString("val2")))
@@ -54,17 +54,17 @@ class GremlinUtilsTest extends FlatSpec with Matchers with TestingTitan with Bef
 
   "deserializeJsonToGremlin" should "deserialize GraphSON into a Blueprint's vertex" in {
     val json = JsonParser("""{"name":"marko", "age":29, "_id":10, "_type":"vertex" }""")
-    val vertex = GremlinUtils.deserializeJsonToGremlin[Element](idGraph, json)
+    val vertex = GremlinUtils.deserializeJsonToGremlin[Element](titanIdGraph, json)
 
     vertex.asInstanceOf[Vertex] should equalsGraphSONVertex(json)
   }
 
   "deserializeJsonToGremlin" should "deserialize GraphSON into a Blueprint's edge" in {
-    val vertex1 = graph.addVertex(null)
-    val vertex2 = graph.addVertex(null)
+    val vertex1 = titanGraph.addVertex(null)
+    val vertex2 = titanGraph.addVertex(null)
 
     val json = JsonParser(s"""{"weight": 10, "_label":"test", "_outV":${vertex1.getId}, "_inV":${vertex2.getId}, "_type":"edge"}""")
-    val edge = GremlinUtils.deserializeJsonToGremlin[Element](graph, json)
+    val edge = GremlinUtils.deserializeJsonToGremlin[Element](titanGraph, json)
 
     edge.asInstanceOf[Edge] should equalsGraphSONEdge(json)
   }
@@ -73,7 +73,7 @@ class GremlinUtilsTest extends FlatSpec with Matchers with TestingTitan with Bef
     val json = Map("col1" -> 1, "col2" -> 2).toJson
     val jsonFields = json.asJsObject.fields
 
-    val row = GremlinUtils.deserializeJsonToGremlin[Row[Int]](idGraph, json)
+    val row = GremlinUtils.deserializeJsonToGremlin[Row[Int]](titanIdGraph, json)
 
     row.getColumnNames should contain theSameElementsAs (jsonFields.keySet)
     row.getColumnNames.map(row.getColumn(_)) should contain theSameElementsAs (List(1, 2))

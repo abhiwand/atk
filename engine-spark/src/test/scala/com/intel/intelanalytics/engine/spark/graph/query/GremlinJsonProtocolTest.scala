@@ -2,9 +2,9 @@ package com.intel.intelanalytics.engine.spark.graph.query
 
 import com.intel.testutils.MatcherUtils._
 import com.intel.testutils.TestingTitan
-import com.tinkerpop.blueprints.{Edge, Element, Vertex}
+import com.tinkerpop.blueprints.{ Edge, Element, Vertex }
 import com.tinkerpop.pipes.util.structures.Row
-import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
+import org.scalatest.{ BeforeAndAfter, FlatSpec, Matchers }
 import spray.json._
 
 import scala.collection.JavaConversions._
@@ -22,8 +22,8 @@ class GremlinJsonProtocolTest extends FlatSpec with Matchers with TestingTitan w
   }
 
   "GraphSONFormat" should "serialize a Blueprint's vertex into GraphSON" in {
-    implicit val graphSONFormat = new GraphSONFormat(idGraph)
-    val vertex = idGraph.addVertex(1)
+    implicit val graphSONFormat = new GraphSONFormat(titanIdGraph)
+    val vertex = titanIdGraph.addVertex(1)
     vertex.setProperty("name", "marko")
     vertex.setProperty("age", 29)
 
@@ -32,10 +32,10 @@ class GremlinJsonProtocolTest extends FlatSpec with Matchers with TestingTitan w
   }
 
   "GraphSONFormat" should "serialize a Blueprint's edge into GraphSON" in {
-    implicit val graphSONFormat = new GraphSONFormat(idGraph)
-    val vertex1 = idGraph.addVertex(1)
-    val vertex2 = idGraph.addVertex(2)
-    val edge = idGraph.addEdge(3, vertex1, vertex2, "test")
+    implicit val graphSONFormat = new GraphSONFormat(titanIdGraph)
+    val vertex1 = titanIdGraph.addVertex(1)
+    val vertex2 = titanIdGraph.addVertex(2)
+    val edge = titanIdGraph.addEdge(3, vertex1, vertex2, "test")
     edge.setProperty("weight", 0.5f)
 
     val json = edge.asInstanceOf[Element].toJson
@@ -44,20 +44,20 @@ class GremlinJsonProtocolTest extends FlatSpec with Matchers with TestingTitan w
   }
 
   "GraphSONFormat" should "deserialize GraphSON into a Blueprint's vertex" in {
-    implicit val graphSONFormat = new GraphSONFormat(idGraph)
+    implicit val graphSONFormat = new GraphSONFormat(titanIdGraph)
 
-    val json = JsonParser( """{"name":"marko", "age":29, "_id":10, "_type":"vertex" }""")
+    val json = JsonParser("""{"name":"marko", "age":29, "_id":10, "_type":"vertex" }""")
     val vertex = json.convertTo[Element]
 
     vertex.asInstanceOf[Vertex] should equalsGraphSONVertex(json)
   }
 
   "GraphSONFormat" should "deserialize GraphSON into a Blueprint's edge" in {
-    implicit val graphSONFormat = new GraphSONFormat(graph)
-    val vertex1 = graph.addVertex(null)
-    val vertex2 = graph.addVertex(null)
+    implicit val graphSONFormat = new GraphSONFormat(titanGraph)
+    val vertex1 = titanGraph.addVertex(null)
+    val vertex2 = titanGraph.addVertex(null)
 
-    val json = JsonParser( s"""{"weight": 10, "_label":"test", "_outV":${vertex1.getId}, "_inV":${vertex2.getId}, "_type":"edge"}""")
+    val json = JsonParser(s"""{"weight": 10, "_label":"test", "_outV":${vertex1.getId}, "_inV":${vertex2.getId}, "_type":"edge"}""")
     val edge = json.convertTo[Element]
 
     edge.asInstanceOf[Edge] should equalsGraphSONEdge(json)
@@ -65,7 +65,7 @@ class GremlinJsonProtocolTest extends FlatSpec with Matchers with TestingTitan w
 
   "GraphSONFormat" should "throw an exception when deserializing invalid GraphSON" in {
     intercept[spray.json.DeserializationException] {
-      implicit val graphSONFormat = new GraphSONFormat(idGraph)
+      implicit val graphSONFormat = new GraphSONFormat(titanIdGraph)
       val json = "[1, 2, 3]"
       JsonParser(json).convertTo[Element]
     }
@@ -101,9 +101,9 @@ class GremlinJsonProtocolTest extends FlatSpec with Matchers with TestingTitan w
   }
 
   "isGraphElement" should "return true if GraphSON represents a vertex or edge" in {
-    val vertexJson = JsonParser( """{"name":"saturn",  "_id":10, "_type":"vertex" }""")
-    val edgeJson = JsonParser( """{"_label":"brother", "_inV":1, "_outV":2, "_type":"edge" }""")
-    val invalidGraphSON = JsonParser( """{"test1" : 2}""")
+    val vertexJson = JsonParser("""{"name":"saturn",  "_id":10, "_type":"vertex" }""")
+    val edgeJson = JsonParser("""{"_label":"brother", "_inV":1, "_outV":2, "_type":"edge" }""")
+    val invalidGraphSON = JsonParser("""{"test1" : 2}""")
     GremlinJsonProtocol.isGraphElement(vertexJson) should be(true)
     GremlinJsonProtocol.isGraphElement(edgeJson) should be(true)
     GremlinJsonProtocol.isGraphElement(invalidGraphSON) should be(false)

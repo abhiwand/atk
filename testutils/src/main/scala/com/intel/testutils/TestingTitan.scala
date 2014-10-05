@@ -23,8 +23,8 @@ trait TestingTitan {
 
   var tmpDir: File = null
   var titanBaseConfig: BaseConfiguration = null
-  var graph: TitanGraph = null
-  var idGraph: Graph = null
+  var titanGraph: TitanGraph = null
+  var titanIdGraph: Graph = null //ID graph is used for setting user-specified vertex Ids
 
   def setupTitan(): Unit = {
     tmpDir = DirectoryUtils.createTempDirectory("titan-graph-for-unit-testing-")
@@ -33,17 +33,17 @@ trait TestingTitan {
     titanBaseConfig.setProperty("storage.backend", "berkeleyje")
     titanBaseConfig.setProperty("storage.directory", tmpDir.getAbsolutePath)
 
-    graph = TitanFactory.open(titanBaseConfig)
-    idGraph = setupIdGraph()
-    println(idGraph)
+    titanGraph = TitanFactory.open(titanBaseConfig)
+    titanIdGraph = setupIdGraph()
+    println(titanIdGraph)
   }
 
   def setupIdGraph(): IdGraph[TitanGraph] = {
-    val graphManager = graph.getManagementSystem()
+    val graphManager = titanGraph.getManagementSystem()
     val idKey = graphManager.makePropertyKey(IdGraph.ID).dataType(classOf[java.lang.Long]).make()
     graphManager.buildIndex(IdGraph.ID, classOf[Vertex]).addKey(idKey).buildCompositeIndex()
     graphManager.commit()
-    new IdGraph(graph, true, false)
+    new IdGraph(titanGraph, true, false)
   }
 
   /**
@@ -51,8 +51,8 @@ trait TestingTitan {
    */
   def cleanupTitan(): Unit = {
     try {
-      if (graph != null) {
-        graph.commit()
+      if (titanGraph != null) {
+        titanGraph.commit()
 
         //graph.shutdown()
       }
@@ -63,9 +63,9 @@ trait TestingTitan {
 
     // make sure this class is unusable when we're done
     titanBaseConfig = null
-    graph = null
+    titanGraph = null
     tmpDir = null
-    idGraph = null
+    titanIdGraph = null
   }
 
 }

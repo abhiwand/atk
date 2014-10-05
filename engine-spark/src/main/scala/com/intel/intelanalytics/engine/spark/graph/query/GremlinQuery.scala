@@ -7,6 +7,7 @@ import com.intel.graphbuilder.util.SerializableBaseConfiguration
 import com.intel.intelanalytics.domain.graph.GraphReference
 import com.intel.intelanalytics.engine.plugin.{ CommandPlugin, Invocation }
 import com.intel.intelanalytics.engine.spark.SparkEngineConfig
+import com.intel.intelanalytics.engine.spark.graph.GraphName
 import com.intel.intelanalytics.security.UserPrincipal
 import com.thinkaurelius.titan.core.TitanGraph
 import com.tinkerpop.blueprints.util.io.graphson.GraphSONMode
@@ -144,14 +145,13 @@ class GremlinQuery extends CommandPlugin[QueryArgs, QueryResult] {
     val graphFuture = invocation.engine.getGraph(arguments.graph.id)
     val graph = Await.result(graphFuture, config.getInt("default-timeout") seconds)
 
-    // TODO - graph should provide backend to retrieve the stored table name in hbase
-    val graphName = "iat_graph_" + graph.name
-
     // Create graph connection
     val titanConfiguration = SparkEngineConfig.createTitanConfiguration(config, "titan.query")
+    val titanTableNameKey = TitanGraphConnector.getTitanTableNameKey(titanConfiguration)
+    val iatGraphName = GraphName.convertGraphUserNameToBackendName(graph.name)
+    titanConfiguration.setProperty(titanTableNameKey, iatGraphName)
 
-    titanConfiguration.setProperty("storage.tablename", "iat_graph_" + graph.name)
-    val titanGraph = getTitanGraph(graphName, titanConfiguration)
+    val titanGraph = getTitanGraph(iatGraphName, titanConfiguration)
     val bindings = gremlinExecutor.createBindings()
     bindings.put("g", titanGraph)
 

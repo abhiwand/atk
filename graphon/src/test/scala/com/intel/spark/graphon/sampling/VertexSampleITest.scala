@@ -207,10 +207,10 @@ class VertexSampleITest extends TestingSparkContextWordSpec with Matchers {
 
       VertexSampleSparkOps.writeToTitan(vertexRdd, edgeRdd, titanConfig)
 
-      graph = titanConnector.connect()
+      titanGraph = titanConnector.connect()
 
-      graph.getEdges.size shouldEqual 20
-      graph.getVertices.size shouldEqual 8
+      titanGraph.getEdges.size shouldEqual 20
+      titanGraph.getVertices.size shouldEqual 8
       cleanupTitan()
     }
 

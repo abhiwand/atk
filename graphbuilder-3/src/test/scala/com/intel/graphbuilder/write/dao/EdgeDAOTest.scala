@@ -36,8 +36,8 @@ class EdgeDAOTest extends WordSpec with Matchers with TestingTitan with BeforeAn
 
   before {
     setupTitan()
-    vertexDAO = new VertexDAO(graph)
-    edgeDAO = new EdgeDAO(graph, vertexDAO)
+    vertexDAO = new VertexDAO(titanGraph)
+    edgeDAO = new EdgeDAO(titanGraph, vertexDAO)
   }
 
   after {
@@ -98,14 +98,14 @@ class EdgeDAOTest extends WordSpec with Matchers with TestingTitan with BeforeAn
       // create an edge
       val gbEdge = new Edge(gbId1, gbId2, "myLabel", Nil)
       val bpEdgeOriginal = edgeDAO.create(gbEdge)
-      graph.commit()
+      titanGraph.commit()
 
       // define an updated version of the same edge
       val updatedEdge = new Edge(gbId1, gbId2, "myLabel", List(new Property("newKey", "newValue")))
 
       // invoke method under test
       val bpEdgeUpdated = edgeDAO.updateOrCreate(updatedEdge)
-      graph.commit()
+      titanGraph.commit()
 
       titanId(edgeDAO.find(gbEdge).get) shouldBe titanId(edgeDAO.find(updatedEdge).get)
 
@@ -174,7 +174,7 @@ class EdgeDAOTest extends WordSpec with Matchers with TestingTitan with BeforeAn
     val bpEdge2 = edgeDAO.create(new Edge(gbId2, gbId3, label, Nil))
     val bpEdge3 = edgeDAO.create(new Edge(gbId2, gbId4, label, Nil))
 
-    graph.commit()
+    titanGraph.commit()
   }
 
   "EdgeDAO find methods" should {

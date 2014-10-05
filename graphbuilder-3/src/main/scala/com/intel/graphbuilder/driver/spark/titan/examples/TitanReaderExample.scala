@@ -52,13 +52,13 @@ object TitanReaderExample {
     val sc = new SparkContext(conf)
 
     // Create graph connection
-    val tableName = "g2"
-    val hBaseZookeeperQuorum = "gao-ws5"
+    val tableName = "graphofgods"
+    val hBaseZookeeperQuorum = "localhost"
 
     val titanConfig = new SerializableBaseConfiguration()
     titanConfig.setProperty("storage.backend", "hbase")
     titanConfig.setProperty("storage.hostname", hBaseZookeeperQuorum)
-    titanConfig.setProperty("storage.tablename", tableName)
+    titanConfig.setProperty("storage.hbase.table", tableName)
 
     val titanConnector = new TitanGraphConnector(titanConfig)
 
