@@ -55,33 +55,40 @@ class ColumnMedianPlugin extends SparkCommandPlugin[ColumnMedian, ColumnMedianRe
    */
   override def doc: Option[CommandDoc] = Some(CommandDoc(oneLineSummary = "Calculate (weighted) median of a column.",
     extendedSummary = Some("""
-   |Calculate the (weighted) median of a column. The median is the least value X in the range of the distribution so
-   |         that the cumulative weight of values strictly below X is strictly less than half of the total weight and
-   |          the cumulative weight of values up to and including X is >= 1/2 the total weight.
-   |
-   |        All data elements of weight <= 0 are excluded from the calculation, as are all data elements whose weight
-   |         is NaN or infinite. If a weight column is provided and no weights are finite numbers > 0, None is returned.
-   |
-   |        Parameters
-   |        ----------
-   |        data_column : str
-   |            The column whose median is to be calculated.
-   |
-   |        weights_column : str
-   |            Optional. The column that provides weights (frequencies) for the median calculation.
-   |            Must contain numerical data. Uniform weights of 1 for all items will be used for the calculation if this
-   |                parameter is not provided.
-   |
-   |        Returns
-   |        -------
-   |        median :  The median of the values.  If a weight column is provided and no weights are finite numbers > 0,
-   |             None is returned. Type of the median returned is that of the contents of the data column, so a column of
-   |             Longs will result in a Long median and a column of Floats will result in a Float median.
-   |
-   |        Example
-   |        -------
-   |        >>> median = frame.column_median('middling column')
-   |""".stripMargin)))
+                           |    Calculate the (weighted) median of a column.
+                           |    The median is the least value X in the range of the distribution so that the cumulative
+                           |    weight of values strictly below X is strictly less than half of the total weight and the
+                           |    cumulative weight of values up to and including X is >= 1/2 the total weight.
+                           |
+                           |    All data elements of weight <= 0 are excluded from the calculation, as are all data
+                           |    elements whose weight is NaN or infinite.
+                           |    If a weight column is provided and no weights are finite numbers > 0, None is returned.
+                           |
+                           |    Parameters
+                           |    ----------
+                           |    data_column : str
+                           |        The column whose median is to be calculated.
+                           |
+                           |    weights_column : str (optional)
+                           |        The column that provides weights (frequencies) for the median calculation.
+                           |        Must contain numerical data.
+                           |        Uniform weights of 1 for all items will be used for the calculation if this parameter
+                           |        is not provided.
+                           |
+                           |    Returns
+                           |    -------
+                           |    median : The median of the values.
+                           |        If a weight column is provided and no weights are finite numbers > 0, None is returned.
+                           |        Type of the median returned is that of the contents of the data column, so a column of
+                           |        Longs will result in a Long median and a column of Floats will result in a Float median.
+                           |
+                           |    Example
+                           |    -------
+                           |    ::
+                           |
+                           |        median = frame.column_median('middling column')
+                           |
+                            """.stripMargin)))
 
   /**
    * Calculate the median of the specified column.
