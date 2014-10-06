@@ -17,21 +17,21 @@ GROUP="Intel Analytics Client"
 LICENSE="Confidential"
 #SUMMARY="$packageName-$version Build number: $BUILD_NUMBER. TimeStamp $TIMESTAMP"
 DESCRIPTION=$SUMMARY 
-REQUIRES="python, python-ordereddict, numpy >= 1.8.1, python-bottle >= 0.12, python-requests >= 2.2.1, python-decorator >= 3.4.0"
+REQUIRES="python27, python27-ordereddict, python27-numpy >= 1.8.1, python27-bottle >= 0.12, python27-requests >= 2.2.1, python27-decorator >= 3.4.0"
 
 POST="
  #sim link to python sites packages
- if [ -d /usr/lib/python2.6/site-packages/intelanalytics ]; then
-   rm /usr/lib/python2.6/site-packages/intelanalytics
+ if [ -d /usr/lib/python2.7/site-packages/intelanalytics ]; then
+   rm /usr/lib/python2.7/site-packages/intelanalytics
  fi
 
- ln -s /usr/lib/intelanalytics/rest-client/python  /usr/lib/python2.6/site-packages/intelanalytics
+ ln -s /usr/lib/intelanalytics/rest-client/python  /usr/lib/python2.7/site-packages/intelanalytics
 "
 
 #delete the sym link only if we are uninstalling not updating
 POSTUN="
  if  [ \$1 -eq 0 ]; then
-    rm /usr/lib/python2.6/site-packages/intelanalytics
+    rm /usr/lib/python2.7/site-packages/intelanalytics
  fi
 "
 
