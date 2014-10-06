@@ -23,6 +23,8 @@
 
 package org.apache.spark.engine.spark
 
+import com.intel.intelanalytics.domain.command.Command
+import org.joda.time.DateTime
 import org.scalatest.{ Matchers, WordSpec }
 
 import org.apache.spark.scheduler._
@@ -52,7 +54,8 @@ class ProgressListenerTest extends WordSpec with Matchers with MockitoSugar {
   }
 
   def createListener_one_job(commandId: Long): SparkProgressListener = {
-    val listener = new SparkProgressListener(new TestProgressUpdater(), commandId.toLong, 1)
+    val command = new Command(commandId, "mock", createdOn = new DateTime, modifiedOn = new DateTime)
+    val listener = new SparkProgressListener(new TestProgressUpdater(), command, 1)
 
     val stageIds = Array(1, 2, 3)
 
@@ -77,7 +80,8 @@ class ProgressListenerTest extends WordSpec with Matchers with MockitoSugar {
   }
 
   def createListener_two_jobs(commandId: Long, expectedJobs: Int = 2): SparkProgressListener = {
-    val listener = new SparkProgressListener(new TestProgressUpdater(), commandId, expectedJobs)
+    val command = new Command(commandId, "mock", createdOn = new DateTime, modifiedOn = new DateTime)
+    val listener = new SparkProgressListener(new TestProgressUpdater(), command, expectedJobs)
     val stageIds = Array(1, 2, 3)
 
     val job1 = mock[ActiveJob]
@@ -112,7 +116,8 @@ class ProgressListenerTest extends WordSpec with Matchers with MockitoSugar {
   }
 
   "get all stages" in {
-    val listener = new SparkProgressListener(new TestProgressUpdater(), 1, 1)
+    val command = new Command(1, "mock", createdOn = new DateTime, modifiedOn = new DateTime)
+    val listener = new SparkProgressListener(new TestProgressUpdater(), command, 1)
     val job = mock[ActiveJob]
     when(job.jobId).thenReturn(1)
 

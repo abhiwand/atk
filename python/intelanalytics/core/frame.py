@@ -58,7 +58,7 @@ def get_frame_names():
     """
     BigFrame names.
 
-    Gets the names of BigFrame objects available for retrieval
+    Gets the names of all frames available for retrieval.
 
     Returns
     -------
@@ -191,23 +191,29 @@ class BigFrame(CommandLoadableBigFrame):
 
     Examples
     --------
-    Create a BigFrame object; name it "my_frame"::
+    Create a new frame based upon the data described in the CsvFile object *my_csv_schema*.
+    Name the frame "my_frame".
+    Create a BigFrame *g* to access the data::
 
         g = ia.BigFrame(my_csv_schema, "my_frame")
 
-    A BigFrame object has been created and *g* is its proxy. It brought in the data described by *my_csv_schema*. It is named *my_frame*.
+    A BigFrame object has been created and *g* is its proxy.
+    It brought in the data described by *my_csv_schema*.
+    It is named *my_frame*.
 
     Create an empty frame; name it "your_frame"::
 
         h = ia.BigFrame(name='your_frame')
 
-    A BigFrame object has been created and *h* is its proxy. It has no data yet, but it does have the name *your_frame*.
+    A frame has been created and BigFrame *h* is its proxy.
+    It has no data yet, but it does have the name *your_frame*.
 
     For other examples, see :ref:`example_frame.bigframe`.
 
     .. versionadded:: 0.8
 
     """
+
     # TODO - Review Parameters, Examples
 
     # command load filters:
@@ -415,11 +421,11 @@ class BigFrame(CommandLoadableBigFrame):
             my_frame.row_count
 
         The result given is::
-        
+
             81734
-            
+
         .. versionadded:: 0.8
-        
+
         """
         return self._backend.get_row_count(self)
 
@@ -432,23 +438,22 @@ class BigFrame(CommandLoadableBigFrame):
     @api
     def schema(self):
         """
-        BigFrame schema.
+        Frame schema.
 
-        The schema of the current BigFrame object.
+        The schema of the current frame is a list of column names and associated data types.
+        It is retrieved as a list of tuples.
+        Each tuple has the name and data type of one of the frame's columns.
 
         Returns
         -------
-        schema
-            The schema of the BigFrame, which is a list of tuples which
-            represents and the name and data type of frame's columns
+        list of tuples
 
         Examples
         --------
-        Given that we have an existing data frame *my_data*, get the BigFrame proxy then the frame schema::
+        Given that we have an existing data frame *my_data*, create a BigFrame, then show the frame schema::
 
             BF = ia.get_frame('my_data')
-            my_schema = BF.schema
-            print my_schema
+            print BF.schema
 
         The result is::
 
@@ -464,7 +469,7 @@ class BigFrame(CommandLoadableBigFrame):
         """
         Model accuracy.
 
-        Computes the accuracy measure for a classification model
+        Computes the accuracy measure for a classification model.
         A column containing the correct labels for each instance and a column containing the predictions made by the classifier are specified.
         The accuracy of a classification model is the proportion of predictions that are correct.
         If we let :math:`T_{P}` denote the number of true positives, :math:`T_{N}` denote the number of true negatives, and :math:`K`
@@ -492,7 +497,7 @@ class BigFrame(CommandLoadableBigFrame):
             frame.inspect()
 
               a:unicode   b:int32   labels:int32  predictions:int32
-            |-------------------------------------------------------|
+            /-------------------------------------------------------/
               red               1              0                  0
               blue              3              1                  0
               blue              1              0                  0
@@ -559,7 +564,8 @@ class BigFrame(CommandLoadableBigFrame):
         At the same time, add a column *a_plus_b* and fill it with the contents of column *a* plus
         the contents of column *b*::
 
-            my_frame.add_columns(lambda row: [row.a * row.b, row.a + row.b], [("a_times_b", float32), ("a_plus_b", float32))
+            my_frame.add_columns(lambda row: [row.a * row.b, row.a + row.b], [("a_times_b",
+                float32), ("a_plus_b", float32))
 
         Two new columns are created, "a_times_b" and "a_plus_b", with the appropriate contents.
 
@@ -597,27 +603,27 @@ class BigFrame(CommandLoadableBigFrame):
         """
         Add data.
 
-        Adds more data (rows and/or columns) to the BigFrame object.
+        Adds more data (rows and/or columns) to the frame.
 
         Parameters
         ----------
-            data : a BigFrame describing the data being added
+            data : a BigFrame accessing the data being added
 
         Examples
         --------
         Given a frame with a single column *col_1* and a frame with two columns *col_1* and *col_2*.
         Column *col_1* means the same thing in both frames.
         BigFrame *my_frame* points to the first frame and *your_frame* points to the second.
-        Add the contents of the *your_frame* to *my_frame*::
+        Add the contents of *your_frame* to *my_frame*::
 
             my_frame.append(your_frame)
 
         Now the first frame has two columns, *col_1* and *col_2*.
-        Column *col_1* has the data from *col_1* in both frames.
+        Column *col_1* has the data from *col_1* in both original frames.
         Column *col_2* has None (undefined) in all of the rows in the original first frame, and has the value of the second frame column *col_2* in
         the rows matching the new data in *col_1*.
 
-        Breaking it down differently, the original rows refered to by *my_frame* have a new column *col_2* and this new column is
+        Breaking it down differently, the original rows referred to by *my_frame* have a new column *col_2* and this new column is
         filled with non-defined data.
         The frame referred to by *your_frame* is then added to the bottom.
 
@@ -631,7 +637,7 @@ class BigFrame(CommandLoadableBigFrame):
     @api
     def bin_column(self, column_name, num_bins, bin_type='equalwidth', bin_column_name='binned'):
         """
-        Column values into bins.
+        Group by value.
 
         Two types of binning are provided: `equalwidth` and `equaldepth`.
 
@@ -646,7 +652,7 @@ class BigFrame(CommandLoadableBigFrame):
             ceiling \\left( n * \\frac {f(C)}{m} \\right)
 
         where :math:`f` is a tie-adjusted ranking function over values of :math:`C`.
-        If there are multiple of the same value in :math:`C`, then their tie-adjusted rank is the average of their ordered rank values.
+        If there are multiples of the same value in :math:`C`, then their tie-adjusted rank is the average of their ordered rank values.
 
         The num_bins parameter is upper-bound on the number of bins since the data may justify fewer bins.
         With :term:`equal depth binning`, for example, if the column to be binned has 10 elements with
@@ -669,7 +675,7 @@ class BigFrame(CommandLoadableBigFrame):
         Returns
         -------
         BigFrame
-            A BigFrame accessing a new frame with binned column appended to original frame
+            A BigFrame accessing a new frame, with a bin column appended to the original frame structure
 
         Examples
         --------
@@ -677,8 +683,8 @@ class BigFrame(CommandLoadableBigFrame):
 
             my_frame.inspect( n=11 )
 
-              a int32
-            |--------|
+              a:int32
+            /---------/
               1
               1
               2
@@ -697,8 +703,8 @@ class BigFrame(CommandLoadableBigFrame):
             binnedEW = my_frame.bin_column('a', 5, 'equalwidth', 'aEWBinned')
             binnedEW.inspect( n=11 )
 
-              a int32     aEWBinned int32
-            |----------------------------|
+              a:int32     aEWBinned:int32
+            /-----------------------------/
               1                   1
               1                   1
               2                   1
@@ -718,8 +724,8 @@ class BigFrame(CommandLoadableBigFrame):
             binnedED = my_frame.bin_column('a', 5, 'equaldepth', 'aEDBinned')
             binnedED.inspect( n=11 )
 
-              a int32     aEDBinned int32
-            |----------------------------|
+              a:int32     aEDBinned:int32
+            /-----------------------------/
               1                   1
               1                   1
               2                   1
@@ -765,7 +771,7 @@ class BigFrame(CommandLoadableBigFrame):
             frame.inspect()
 
               a:unicode   b:int32   labels:int32  predictions:int32
-            |-------------------------------------------------------|
+            /-------------------------------------------------------/
               red               1              0                  0
               blue              3              1                  0
               blue              1              0                  0
@@ -872,7 +878,8 @@ class BigFrame(CommandLoadableBigFrame):
         For this example, my_frame is a BigFrame object accessing a frame with lots of data for the attributes of *lions*, *tigers*, and *ligers*.
         Get rid of the *lions* and *tigers*::
 
-            my_frame.drop_rows(lambda row: row.animal_type == "lion" or row.animal_type == "tiger")
+            my_frame.drop_rows(lambda row: row.animal_type == "lion" or
+                row.animal_type == "tiger")
 
         Now the frame only has information about *ligers*.
 
@@ -950,7 +957,7 @@ class BigFrame(CommandLoadableBigFrame):
             frame.inspect()
 
               a:unicode   b:int32
-            |---------------------|
+            /---------------------/
               red               1
               blue              3
               blue              1
@@ -960,7 +967,7 @@ class BigFrame(CommandLoadableBigFrame):
             result.inspect()
 
               b:int32   b_ECDF:float64
-            |--------------------------|
+            /--------------------------/
               1                    0.2
               2                    0.5
               3                    0.8
@@ -1080,7 +1087,7 @@ class BigFrame(CommandLoadableBigFrame):
             frame.inspect()
 
               a:unicode   b:int32   labels:int32  predictions:int32
-            |-------------------------------------------------------|
+            /-------------------------------------------------------/
               red               1              0                  0
               blue              3              1                  0
               blue              1              0                  0
@@ -1160,8 +1167,8 @@ class BigFrame(CommandLoadableBigFrame):
 
             my_frame.inspect()
 
-             a str
-            |-----|
+             a:str
+           /-------/
              cat
              apple
              bat
@@ -1175,8 +1182,8 @@ class BigFrame(CommandLoadableBigFrame):
             new_frame = my_frame.group_by('a', agg.count)
             new_frame.inspect()
 
-             a str       count int
-            |---------------------|
+             a:str       count:int
+           /-----------------------/
              cat             3
              apple           1
              bat             2
@@ -1185,8 +1192,8 @@ class BigFrame(CommandLoadableBigFrame):
 
             my_frame.inspect()
 
-             a int   b str       c float
-            |---------------------------|
+             a:int   b:str       c:float
+           /-----------------------------/
              1       alpha     3.0
              1       bravo     5.0
              1       alpha     5.0
@@ -1199,8 +1206,8 @@ class BigFrame(CommandLoadableBigFrame):
             new_frame = my_frame.group_by(['a', 'b'], {'c' : agg.avg})
             new_frame.inspect()
 
-             a int   b str   c_avg float
-            |---------------------------|
+             a:int   b:str   c_avg:float
+           /-----------------------------/
              1       alpha     4.0
              1       bravo     5.0
              2       bravo    10.0
@@ -1209,8 +1216,8 @@ class BigFrame(CommandLoadableBigFrame):
 
             my_frame.inspect()
 
-             a str   c int   d float e int
-            |-----------------------------|
+             a:str   c:int   d:float e:int
+           /-------------------------------/
              ape     1     4.0       9
              ape     1     8.0       8
              big     1     5.0       7
@@ -1221,10 +1228,11 @@ class BigFrame(CommandLoadableBigFrame):
         count each group; for column *d* calculate the average, sum and minimum value; for column *e*,
         save the maximum value::
 
-            new_frame = my_frame.group_by(['a', 'c'], agg.count, {'d': [agg.avg, agg.sum, agg.min], 'e': agg.max})
+            new_frame = my_frame.group_by(['a', 'c'], agg.count, {'d':
+                [agg.avg, agg.sum, agg.min], 'e': agg.max})
 
-             a str   c int   count int  d_avg float  d_sum float     d_min float e_max int
-            |-----------------------------------------------------------------------------|
+             a:str   c:int   count:int  d_avg:float  d_sum:float   d_min:float   e_max:int
+           /-------------------------------------------------------------------------------/
              ape     1           2        6.0         12.0             4.0           9
              big     1           3        6.333333    19.0             5.0           7
 
@@ -1261,7 +1269,19 @@ class BigFrame(CommandLoadableBigFrame):
 
         Examples
         --------
-        For an example, see :ref:`example_frame.inspect`
+        For this example, let's say we have a frame of data and a BigFrame to access it. Let's look at the first 10 rows of data::
+
+            print my_frame.inspect()
+
+            column defs ->  animal:str  name:str    age:int     weight:float
+                          /--------------------------------------------------/
+            frame data ->   lion        George        8            542.5
+                            lion        Ursula        6            495.0
+                            ape         Ape          41            400.0
+                            elephant    Shep          5           8630.0
+
+
+        For another example, see :ref:`example_frame.inspect`
 
         .. versionadded:: 0.8
 
@@ -1325,7 +1345,8 @@ class BigFrame(CommandLoadableBigFrame):
         Now, using a single BigFrame *my_frame* accessing a frame with the columns *b* and *book*.
         Build a new frame, but remove any rows where the values in *b* and *book* do not match::
 
-            joined_frame = your_frame.join(your_frame, left_on='b', right_on='book', how='inner')
+            joined_frame = your_frame.join(your_frame, left_on='b', right_on='book',
+                how='inner')
 
         We end up with a new BigFrame *joined_frame* accessing a new frame with all the original columns, but only those rows where the data in the
         original frame in column *b* matched the data in column *book*.
@@ -1342,14 +1363,14 @@ class BigFrame(CommandLoadableBigFrame):
         """
         Model precision.
 
-        Computes the precision measure for a classification model
+        Computes the precision measure for a classification model.
         A column containing the correct labels for each instance and a column containing the predictions made by the
         model are specified.  The precision of a binary classification model is the proportion of predicted positive
         instances that are correct.  If we let :math:`T_{P}` denote the number of true positives and :math:`F_{P}` denote the number of false
         positives, then the model precision is given by: :math:`\\frac {T_{P}} {T_{P} + F_{P}}`.
 
         For multi-class classification, the precision measure is computed as the weighted average of the precision
-        for each label, where the weight is the number of instances with each label in the labeled column.  The
+        for each label, where the weight is the number of instances with each label in the labelled column.  The
         determination of binary vs. multi-class is automatically inferred from the data.
 
         Parameters
@@ -1374,7 +1395,7 @@ class BigFrame(CommandLoadableBigFrame):
             frame.inspect()
 
               a:unicode   b:int32   labels:int32  predictions:int32
-            |-------------------------------------------------------|
+            /-------------------------------------------------------/
               red               1              0                  0
               blue              3              1                  0
               blue              1              0                  0
@@ -1434,7 +1455,7 @@ class BigFrame(CommandLoadableBigFrame):
             frame.inspect()
 
               a:unicode   b:int32   labels:int32  predictions:int32
-            |-------------------------------------------------------|
+            /-------------------------------------------------------/
               red               1              0                  0
               blue              3              1                  0
               blue              1              0                  0
@@ -1499,13 +1520,13 @@ class BigFrame(CommandLoadableBigFrame):
         offset : int
             The number of rows to skip before copying
         columns : String or iterable of string
-            Specify the columns to be included in the result. By default all the columns
-            are to be included
+            Specify the columns to be included in the result.
+            By default all the columns are to be included.
 
         Notes
         -----
-        The data is considered 'unstructured', therefore taking a certain number of rows, the rows obtained may be different every time the
-        command is executed, even if the parameters do not change.
+        The data is considered 'unstructured', therefore taking a certain number of rows, the rows obtained may be
+        different every time the command is executed, even if the parameters do not change.
 
         Returns
         -------
@@ -1525,7 +1546,8 @@ class BigFrame(CommandLoadableBigFrame):
 
             your_frame = my_frame.take( 5000, 1000 )
 
-        We end up with a new frame accessed by the BigFrame *your_frame* again, but this time it has a copy of rows 1001 to 5000 of the original frame.
+        We end up with a new frame accessed by the BigFrame *your_frame* again, but this time it has a copy of
+        rows 1001 to 5000 of the original frame.
 
         .. versionadded:: 0.8
 

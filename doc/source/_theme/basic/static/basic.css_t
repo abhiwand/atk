@@ -44,7 +44,7 @@ div.related li.right {
 /* -- sidebar --------------------------------------------------------------- */
 
 div.sphinxsidebarwrapper {
-    padding: 10px 5px 0 10px;
+    padding: 10px 20px 0 10px;
 }
 
 div.sphinxsidebar {
