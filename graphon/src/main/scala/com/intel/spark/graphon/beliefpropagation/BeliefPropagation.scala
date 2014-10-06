@@ -169,13 +169,17 @@ class BeliefPropagation extends SparkCommandPlugin[BeliefPropagationArgs, Belief
 
       val (outVertices, outEdges, log) = BeliefPropagationRunner.run(gbVertices, gbEdges, arguments)
 
+      // edges do not change during this computation so we avoid the very expensive step of appending them into Titan
+
+      val dummyOutEdges: RDD[GBEdge] = sc.parallelize(List.empty[GBEdge])
+
       // write out the graph
 
       // Create the GraphBuilder object
       // Setting true to append for updating existing graph
       val gb = new GraphBuilder(new GraphBuilderConfig(new InputSchema(Seq.empty), List.empty, List.empty, titanConfig, append = true))
       // Build the graph using spark
-      gb.buildGraphWithSpark(outVertices, outEdges)
+      gb.buildGraphWithSpark(outVertices, dummyOutEdges)
 
       // Get the execution time and print it
       val time = (System.currentTimeMillis() - start).toDouble / 1000.0
