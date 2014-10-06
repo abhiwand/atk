@@ -705,13 +705,15 @@ def restart_IA():
     :return:
     """
     #Truncate the IA log so we can detect a new 'Bound to' message which would let us know the server is up
-    output_log = open(IA_LOG_PATH, "w+")
-    output_log.write("")
-    output_log.close()
+    try:
+        output_log = open(IA_LOG_PATH, "w+")
+        output_log.write("")
+        output_log.close()
+    except IOError:
+        print "Starting Intel Analytics"
 
     #restart IA
     print system("service intelanalytics restart ")
-
     print "Waiting for Intel Analytics server to restart"
 
     output_log_text = get_IA_log()
