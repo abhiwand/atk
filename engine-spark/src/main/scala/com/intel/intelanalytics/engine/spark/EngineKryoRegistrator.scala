@@ -23,12 +23,20 @@
 
 package com.intel.intelanalytics.engine.spark
 
-import com.intel.intelanalytics.engine.spark.frame.plugins.load.RowParseResult
+import com.esotericsoftware.kryo.serializers.JavaSerializer
+import com.intel.intelanalytics.engine.spark.frame.plugins.topk.TopKRDDFunctions
+import com.intel.intelanalytics.engine.spark.frame.plugins.{ EntropyRDDFunctions, FlattenColumnFunctions }
+import com.intel.intelanalytics.engine.spark.frame.plugins.classificationmetrics.ClassificationMetrics
+import com.intel.intelanalytics.engine.spark.frame.plugins.cumulativedist.CumulativeDistFunctions
+import com.intel.intelanalytics.engine.spark.frame.plugins.load.{ RowParser, LoadRDDFunctions, RowParseResult }
+import com.intel.intelanalytics.engine.spark.frame.plugins.statistics.descriptives.ColumnStatistics
+import com.intel.intelanalytics.engine.spark.frame.plugins.statistics.numericalstatistics.StatisticsRDDFunctions
+import com.intel.intelanalytics.engine.spark.frame.plugins.statistics.quantiles.QuantilesFunctions
 import org.apache.spark.serializer.KryoRegistrator
 import com.esotericsoftware.kryo.Kryo
 import com.intel.graphbuilder.driver.spark.titan.GraphBuilderKryoRegistrator
 import com.intel.intelanalytics.engine.Rows.Row
-import com.intel.intelanalytics.engine.spark.frame.FrameRDD
+import com.intel.intelanalytics.engine.spark.frame.{ MiscFrameFunctions, FrameRDD }
 
 /**
  * Register classes that are going to be serialized by Kryo.
@@ -50,8 +58,19 @@ class EngineKryoRegistrator extends KryoRegistrator {
 
     // frame related classes
     kryo.register(classOf[Row])
+    kryo.register(classOf[RowParser])
     kryo.register(classOf[RowParseResult])
     kryo.register(classOf[FrameRDD])
+    kryo.register(ClassificationMetrics.getClass)
+    kryo.register(CumulativeDistFunctions.getClass)
+    kryo.register(MiscFrameFunctions.getClass)
+    kryo.register(LoadRDDFunctions.getClass)
+    kryo.register(FlattenColumnFunctions.getClass)
+    kryo.register(ColumnStatistics.getClass)
+    kryo.register(StatisticsRDDFunctions.getClass)
+    kryo.register(QuantilesFunctions.getClass)
+    kryo.register(TopKRDDFunctions.getClass)
+    kryo.register(EntropyRDDFunctions.getClass)
 
     // register GraphBuilder classes
     val gbRegistrator = new GraphBuilderKryoRegistrator()

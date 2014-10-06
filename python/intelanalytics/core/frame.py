@@ -1203,7 +1203,7 @@ class BigFrame(CommandLoadableBigFrame):
         Create a new frame from this data, grouping the rows by unique combinations of column *a* and *b*;
         average the value in *c* for each group::
 
-            new_frame = my_frame.group_by(['a', 'b'], {'c' : avg})
+            new_frame = my_frame.group_by(['a', 'b'], {'c' : agg.avg})
             new_frame.inspect()
 
              a:int   b:str   c_avg:float
