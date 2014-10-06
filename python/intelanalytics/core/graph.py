@@ -329,8 +329,8 @@ class EdgeRule(Rule):
         property_name is a string, and property_value is a literal value
         or a BigColumn source, which must be from same BigFrame as head,
         tail and label
-    bidirectional : bool
-        indicates the edge is bidirectional
+    is_directed : bool
+        indicates the edge is directed
 
     Examples
     --------
@@ -341,19 +341,12 @@ class EdgeRule(Rule):
     .. versionadded:: 0.8
 
     """
-
-    def __init__(self, label, tail, head, properties=None, bidirectional=False, is_directed=None):
-        self.bidirectional = bool(bidirectional)
-        if is_directed is not None:
-            raise_deprecation_warning("EdgeRule", "bool parameter 'is_directed' is now called"
-                                                  "'bidirectional' and has opposite polarity.")
-            self.bidirectional = not is_directed
-
+    def __init__(self, label, tail, head, properties=None, is_directed=False):
         self.label = label
         self.tail = tail
         self.head = head
         self.properties = properties or {}
-
+        self.is_directed = bool(is_directed)
         super(EdgeRule, self).__init__()  # invokes validation
 
     def _as_json_obj(self):

@@ -28,7 +28,7 @@ import org.apache.spark.rdd.RDD
 import com.intel.intelanalytics.engine.Rows.Row
 import org.apache.spark.rdd.RDD
 
-import scala.math.pow
+import scala.math
 
 //implicit conversion for PairRDD
 import org.apache.spark.SparkContext._
@@ -182,9 +182,9 @@ object ClassificationMetrics extends Serializable {
         case _ => labelCount * (correctPredict / labelCount.toDouble)
       }
 
-      ((pow(beta, 2) * precision) + recall) match {
+      ((math.pow(beta, 2) * precision) + recall) match {
         case 0 => 0
-        case _ => (1 + pow(beta, 2)) * ((precision * recall) / ((pow(beta, 2) * precision) + recall))
+        case _ => (1 + math.pow(beta, 2)) * ((precision * recall) / ((math.pow(beta, 2) * precision) + recall))
       }
     }
     weightedFMeasureRdd.sum() / pairedRdd.count().toDouble
@@ -261,9 +261,9 @@ object ClassificationMetrics extends Serializable {
       case _ => tp.value / (tp.value + fn.value).toDouble
     }
 
-    val fmeasure = ((pow(beta, 2) * precision + recall)) match {
+    val fmeasure = ((math.pow(beta, 2) * precision + recall)) match {
       case 0 => 0
-      case _ => (1 + pow(beta, 2)) * ((precision * recall) / ((pow(beta, 2) * precision) + recall))
+      case _ => (1 + math.pow(beta, 2)) * ((precision * recall) / ((math.pow(beta, 2) * precision) + recall))
     }
 
     val accuracy = k match {
