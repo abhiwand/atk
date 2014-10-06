@@ -106,7 +106,17 @@ if [ $? == 0 ]; then
         cd python
         python cmdgen.py
         if [ $? == 1 ]; then
-            exit 1
+            echo \n\nTrying the longer path.\n\n
+            cd ..
+            mvn install clean
+            if [ $? != 0 ]; then
+                exit 1
+            fi
+            cd python
+            python cmdgen.py
+            if [ $? != 0 ]; then
+                exit 1
+            fi
         fi
 
         # return to original directory to continue
