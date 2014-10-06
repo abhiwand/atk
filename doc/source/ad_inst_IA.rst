@@ -42,12 +42,12 @@ If you do have access to 'sudo' and 'yum' you will see a list of repositories::
 
     $ sudo yum repolist
     Loaded plugins: amazon-id, rhui-lb, s3
-    repo id                                   repo name                                                     status
-    epel                                      Extra Packages for Enterprise Linux 6 - x86_64                11,099
-    rhui-REGION-client-config-server-6        Red Hat Update Infrastructure 2.0 Client Configuration Server      3
-    rhui-REGION-rhel-server-releases          Red Hat Enterprise Linux Server 6 (RPMs)                      12,888
-    rhui-REGION-rhel-server-releases-optional Red Hat Enterprise Linux Server 6 Optional (RPMs)              7,269
-    rhui-REGION-rhel-server-rh-common         Red Hat Enterprise Linux Server 6 RH Common (RPMs)                27
+    repo id                                   repo name                                     ...
+    epel                                      Extra Packages for Enterprise Linux 6 - x86_64...
+    rhui-REGION-client-config-server-6        Red Hat Update Infrastructure 2.0 Client Confi...
+    rhui-REGION-rhel-server-releases          Red Hat Enterprise Linux Server 6 (RPMs)      ...
+    rhui-REGION-rhel-server-releases-optional Red Hat Enterprise Linux Server 6 Optional (RP...
+    rhui-REGION-rhel-server-rh-common         Red Hat Enterprise Linux Server 6 RH Common (R...
     repolist: 31,335
 
 Cluster Requirements
@@ -70,15 +70,15 @@ Yum Repository Requirements
 All the nodes on the cluster must have the EPEL yum repository as well as two Intel Analytics repositories.
 You will need repository access to Intel Analytics Private Repository which you will get when you sign up.
 
-------------------------
-Intel Analytics packages
-------------------------
+------------------------------------
+Intel Analytics Packages Information
+------------------------------------
 
 The dependency list is merely informational.
 When yum installs a package, it will pull dependencies automatically.
 All the Cloudera dependencies are implied for all packages.
 
-Intel Analytics Rest Server
+Intel Analytics REST Server
 ===========================
 Only needs to be installed on a single node.
 
@@ -159,6 +159,8 @@ The first step in the installation is adding EPEL and two Intel Analytics reposi
 the `YUM <http://en.wikipedia.org/wiki/Yellowdog_Updater,_Modified>`_ installation possible.
 The EPEL and Intel Analytics repositories must be installed on all spark master and worker nodes as well as
 the node that will be running the Intel Analytics rest server.
+The Intel Analytics Dependency repository and the yum-s3 package must be installed before
+trying to `Add Intel Analytics Private Repository`_.
 
 Add EPEL Repository
 -------------------
@@ -169,13 +171,13 @@ Before trying to install the EPEL repo run the following command to see if it's 
 
 
     #sample output
-    repo id                                    repo name
-    cloudera-cdh5                              Cloudera CDH, Version 5                                              141
-    cloudera-manager                           Cloudera Manager, Version 5.1.0                                        7
-    epel                                       Extra Packages for Enterprise Linux 6 - x86_64                    11,022
-    rhui-REGION-client-config-server-6         Red Hat Update Infrastructure 2.0 Client Configuration Server 6        2
-    rhui-REGION-rhel-server-releases           Red Hat Enterprise Linux Server 6 (RPMs)                          12,690
-    rhui-REGION-rhel-server-releases-optional  Red Hat Enterprise Linux Server 6 Optional (RPMs)                  7,168
+    repo id                              repo name
+    cloudera-cdh5                        Cloudera CDH, Version 5                         ...
+    cloudera-manager                     Cloudera Manager, Version 5.1.0                 ...
+    epel                                 Extra Packages for Enterprise Linux 6 - x86_64  ...
+    rhui-REGION-client-config-server...  Red Hat Update Infrastructure 2.0 Client Configu...
+    rhui-REGION-rhel-server-releases...  Red Hat Enterprise Linux Server 6 (RPMs)        ...
+    rhui-REGION-rhel-server-releases...  Red Hat Enterprise Linux Server 6 Optional (RPMs...
 
 You want to look for "epel" repo id.
 
@@ -191,11 +193,11 @@ To verify the installation run
     sudo yum repolist
 
     #sample output
-    repo id                                     repo name
-    epel                                        Extra Packages for Enterprise Linux 6 - x86_64                  11,018
-    rhui-REGION-client-config-server-6          Red Hat Update Infrastructure 2.0 Client Configuration Server 6      2
-    rhui-REGION-rhel-server-releases            Red Hat Enterprise Linux Server 6 (RPMs)                        12,663
-    rhui-REGION-rhel-server-releases-optional    
+    repo id                              repo name
+    epel                                 Extra Packages for Enterprise Linux 6 - x86_64  ...
+    rhui-REGION-client-config-server...  Red Hat Update Infrastructure 2.0 Client Configu...
+    rhui-REGION-rhel-server-releases...  Red Hat Enterprise Linux Server 6 (RPMs)        ...
+    rhui-REGION-rhel-server-releases...  Red Hat Enterprise Linux Server 6 Optional (RPMs...
                                            
 Make sure the "epel" repo id is present.
 
@@ -209,12 +211,11 @@ In some cases we pre-packaged newer versions from what is available in RHEL, EPE
 
 To add the dependency repository run the following command::
 
-    wget https://intel-analytics-dependencies.s3-us-west-2.amazonaws.com/ia-deps.rep
+    wget https://intel-analytics-dependencies.s3-us-west-2.amazonaws.com/ia-deps.repo
     sudo cp ia-deps.repo /etc/yum.repos.d/
 
 If you have issues running the above command, try entering the following, being careful about the placement of the ``"`` characters::
 
-    sudo touch /etc/yum.repos.d/ia-deps.repo
     echo "[intel-analytics-deps]
     name=intel-analytics-deps
     baseurl=https://intel-analytics-dependencies.s3-us-west-2.amazonaws.com/yum
@@ -253,13 +254,17 @@ Run the following command to create ``/etc/yum.repos.d/ia.repo`` file.
 
     echo "[intel-analytics]
     name=intel analytics
-    baseurl=https://intel-analytics-repo.s3-us-west-2.amazonaws.com/release/latest/yum/dists/rhel/6
+    baseurl=https://intel-analytics-repo.s3-us-west-2.amazonaws.com
+        /release/latest/yum/dists/rhel/6
     gpgcheck=0
     priority=1
     s3_enabled=1
     #yum-get iam only has get
     key_id=YOUR_KEY
     secret_key=YOUR_SECRET" | sudo tee -a /etc/yum.repos.d/ia.repo
+
+The ``baseurl`` line above has been broken across two lines for displaying in various media.
+The lines should be combined into a single line with no gaps (spaces).
 
 .. Note::
 
@@ -294,10 +299,12 @@ To keep your system time in sync with the world run::
 
     sudo service ntpd start
 
+The Intel Analytics Dependency repository and the yum-s3 package must be installed before trying to `Add Intel Analytics Private Repository`_.
+
 Installing Intel Analytics Packages
 ===================================
 
-Installing Intel Analytics Rest Server
+Installing Intel Analytics REST Server
 --------------------------------------
 This next step is going to install IA rest server and all it's dependencies.
 Only one instance of the rest server needs to be installed.
@@ -306,6 +313,15 @@ Although it doesn't matter where it's installed it's usually installed along sid
 
     sudo yum -y install intelanalytics-rest-server
 
+Worker Node Preinstallation
+---------------------------
+These are some required steps prior to the installation on “worker nodes”:
+
+*   copy ``ia-deps.repo`` and ``ia.repo`` files from ``/etc/yum.repos.d/`` on master node to ``/etc/yum.repos.d/`` on each worker node
+*   install Intel Analytics Dependencies Repository on each worker node::
+  
+        sudo yum -y install yum-s3
+
 Installing Intel Analytics Spark Dependencies
 ---------------------------------------------
 The Intel Analytics spark dependencies package needs to be installed on every node running the spark worker role.
@@ -313,14 +329,14 @@ The Intel Analytics spark dependencies package needs to be installed on every no
 
     sudo yum -y install intelanalytics-spark-deps
 
-Installing Intel Analytics Python Rest Client
+Installing Intel Analytics Python REST Client
 ---------------------------------------------
 The Intel Analytics python rest client package needs to be installed on every node running the spark worker role.
 ::
 
     sudo yum -y install intelanalytics-python-rest-client
 
-Installing Intel Analytics Python 2.7 Rest Client 
+Installing Intel Analytics Python 2.7 REST Client 
 -------------------------------------------------
 
 Like the regular python 2.6 client above this also needs to be installed on every spark worker node.
@@ -330,11 +346,13 @@ Like the regular python 2.6 client above this also needs to be installed on ever
 
 You can combine both the spark dependencies and python rest client installation into one command::
 
-    $ sudo yum -y install intelanalytics-spark-deps intelanalytics-python-rest-client intelanalytics-python-rest-client-python27
+    $ sudo yum -y install intelanalytics-spark-deps intelanalytics-python-rest-client
+        intelanalytics-python-rest-client-python27
 
+The above line should be a single line. It was split across multiple lines to enhance the display in various media.
 
 -------------------------
-Rest Server Configuration
+REST Server Configuration
 -------------------------
 
 There are two config files you may need to edit on the node that has the Intel Analytics rest server package.
@@ -369,7 +387,8 @@ Usually non-parcel installations of Cloudera will install Spark to /usr/lib/spar
     export HOSTNAME=`hostname`
 
     IFS=$'\n\r'
-    #get class paths from separate file to make the upstart skip neat and making editing easier
+    #get class paths from separate files to make the upstart skip neat and
+    #making editing easier
     if [ -f /etc/intelanalytics/rest-server/classpath ]; then
         for path in `cat /etc/intelanalytics/rest-server/classpath`
         do
@@ -424,10 +443,12 @@ Sample output with notes::
     Deploying config   .   .   .   .   .   .   .   .   .   .   .   .  
 
     You need to restart Spark service for the config changes to take affect.
-    would you like to restart now? Type 'yes' to restart. defaults to 'no' if nothing is entered: yes
+    would you like to restart now? Type 'yes' to restart. defaults to 'no' if nothing is
+    entered: yes
     Restarting Spark  .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   
 
-    What python executable would you like to use? It must be in the path.  defaults to 'python' if nothing is entered:
+    What python executable would you like to use? It must be in the path.  defaults to
+    'python' if nothing is entered:
 
     Creating application.conf file from application.conf.tpl
     Reading application.conf.tpl
@@ -439,7 +460,7 @@ It will use a fresh application.conf.tpl and query Cloudera Manager again to rec
 
 Manual Configuration
 --------------------
-**This section is optional and only if additional changes to the configuration file are needed**
+**This section is optional and only if additional changes to the configuration file are needed. `(Skip section) skip_manual`_**
  
 The rest-server package only provides a configuration template called application.conf.tpl.
 We need to copy and rename this file to application.conf and update host names and memory configurations.
@@ -465,8 +486,8 @@ This is the section you want to look at::
 
         # The host name for the Postgresql database in which the metadata will be stored
         //metastore.connection-postgresql.host = "invalid-postgresql-host"
-        # This allows the use of an in memory data store. Restarting the rest server will create a fresh database and any 
-        # data in the h2 DB will be lost 
+        # This allows the use of an in memory data store. Restarting the rest server will
+        # create a fresh database and any data in the h2 DB will be lost 
         metastore.connection = ${intel.analytics.metastore.connection-h2} 
 
         engine {
@@ -493,6 +514,7 @@ This is the section you want to look at::
 
     # END REQUIRED SETTINGS
 
+.. _ad_inst_IA_configure_file_system_root:
 
 Configure File System Root
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -581,15 +603,19 @@ If it isn't already set, add::
 .. image:: ad_inst_IA_2.*
     :align: center
 
+.. _skip_manual:
+
+**End of manual configuration**
+
 Now, restart the Spark service.
 
 .. image:: ad_inst_IA_3.*
     :align: center
 
-Starting Intel Analytics Rest Server
+Starting Intel Analytics REST Server
 ====================================
 
-Starting the Rest server is very easy.
+Starting the REST server is very easy.
 It can be started like any other Linux service.
 ::
 
@@ -597,7 +623,7 @@ It can be started like any other Linux service.
 
 After starting the rest server, you can browse to the host on port 9099 to see if the server started successfully.
 
-Troubleshooting Intel Analytics Rest Server
+Troubleshooting Intel Analytics REST Server
 ===========================================
 
 The log files get written to /var/log/intelanalytics/rest-server/output.log or
