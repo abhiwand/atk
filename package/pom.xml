@@ -22,7 +22,12 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 -->
+<!--
+The following packages need to be installed to create rpms and debian packages
+RUN apt-get install -y build-essential fakeroot dpkg-dev librpm-dev
+RUN apt-get install -y dh-make gnupg pbuilder ubuntu-dev-tools bzr-builddeb apt-file autoconf automake autotools-dev dh-make debhelper devscripts fakeroot xutils lintian javahelper
 
+-->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>

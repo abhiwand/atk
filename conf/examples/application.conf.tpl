@@ -94,9 +94,6 @@ intel.analytics {
       # ("/usr/lib/spark","/opt/cloudera/parcels/CDH/lib/spark/", etc)
       //home = ""
 
-      # path to python worker execution, usually to toggle 2.6 and 2.7
-      //python-worker-exec = "python" #Other valid values: "python2.7"
-
       conf {
         properties {
           # These key/value pairs will be parsed dynamically and provided to SparkConf()
