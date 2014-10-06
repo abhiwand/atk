@@ -48,14 +48,27 @@ import com.intel.intelanalytics.engine.ProgressInfo
  */
 case class Command(id: Long,
                    name: String,
-                   arguments: Option[JsObject],
+                   arguments: Option[JsObject] = None,
                    error: Option[Error] = None,
                    progress: List[ProgressInfo] = List(),
                    complete: Boolean = false,
                    result: Option[JsObject] = None,
                    createdOn: DateTime,
                    modifiedOn: DateTime,
-                   createdById: Option[Long] = None) extends HasId
+                   createdById: Option[Long] = None) extends HasId {
+
+  /**
+   * Convenience method for getting the args as a String for logging/debugging
+   */
+  def compactArgs: String = {
+    if (arguments.nonEmpty) {
+      arguments.get.compactPrint
+    }
+    else {
+      ""
+    }
+  }
+}
 //
 //case class CommandTemplate(name: String, arguments: Option[JsObject])
 //case class Definition(language: String, serialization: String, data: String)

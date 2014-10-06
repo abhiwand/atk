@@ -69,11 +69,13 @@ class ParquetReaderTests extends WordSpec with Matchers with MockitoSugar with B
     when(col2.getInteger).thenReturn(9 + valMod, 8 + valMod, 7 + valMod, 6 + valMod, 5 + valMod, 4 + valMod, 3 + valMod, 2 + valMod, 1 + valMod, 0 + valMod)
     val store = mock[ColumnReadStore]
     // The following two when calls will allow us to properly mock the ColumnReader.skip method which skips a row without reading it.
+    when(col1.getCurrentDefinitionLevel).thenReturn(1)
     when(col1.skip()).thenAnswer(new Answer[Int] {
       override def answer(invocation: InvocationOnMock): Int = {
         invocation.getMock.asInstanceOf[ColumnReader].getInteger
       }
     });
+    when(col2.getCurrentDefinitionLevel).thenReturn(1)
     when(col2.skip()).thenAnswer(new Answer[Int] {
       override def answer(invocation: InvocationOnMock): Int = {
         invocation.getMock.asInstanceOf[ColumnReader].getInteger
