@@ -6,4 +6,4 @@
 repack
 *.rpm
 tarballs
-*.*~
+*~
