@@ -40,12 +40,12 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol._
 class LoadGraphPlugin extends SparkCommandPlugin[GraphLoad, Graph] {
 
   /**
-   * The name of the command, e.g. graphs/ml/loopy_belief_propagation
+   * The name of the command, e.g. graph/sampling/vertex_sample
    *
    * The format of the name determines how the plugin gets "installed" in the client layer
    * e.g Python client via code generation.
    */
-  override def name: String = "graph/load"
+  override def name: String = "graph:titan/load"
 
   /**
    * User documentation exposed in Python.

@@ -236,7 +236,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
 
   TODO: delete me, code moved to separate plugin files
 
-  val loadCommand = commandPluginRegistry.registerCommand("dataframe/load", loadSimple _, numberOfJobs = 8)
+  val loadCommand = commandPluginRegistry.registerCommand("frame:/load", loadSimple _, numberOfJobs = 8)
 
 
 
@@ -315,7 +315,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
   /*
   TODO: delete me, code moved to separate plugin files
 
-  val renameFrameCommand = commandPluginRegistry.registerCommand("dataframe/rename_frame", renameFrameSimple _)
+  val renameFrameCommand = commandPluginRegistry.registerCommand("frame:/rename_frame", renameFrameSimple _)
   private def renameFrameSimple(arguments: RenameFrame, user: UserPrincipal, invocation: SparkInvocation): DataFrame = {
     val frame = frames.expectFrame(arguments.frame)
     val newName = arguments.newName
@@ -509,7 +509,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
 
   TODO: delete me, code moved to separate plugin files
 
-  val groupByCommand = commandPluginRegistry.registerCommand("dataframe/group_by", groupBySimple _)
+  val groupByCommand = commandPluginRegistry.registerCommand("frame:/group_by", groupBySimple _)
   def groupBySimple(arguments: FrameGroupByColumn[JsObject, Long], user: UserPrincipal, invocation: SparkInvocation) = {
     implicit val u = user
     val originalFrameID = arguments.frame
@@ -631,7 +631,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
   /*
   TODO: delete me, code moved to separate plugin files
 
-  val flattenColumnCommand = commandPluginRegistry.registerCommand("dataframe/flatten_column", flattenColumnSimple _)
+  val flattenColumnCommand = commandPluginRegistry.registerCommand("frame:/flatten_column", flattenColumnSimple _)
 
   def flattenColumnSimple(arguments: FlattenColumn, user: UserPrincipal, invocation: SparkInvocation): DataFrame = {
     implicit val u = user
@@ -658,7 +658,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
   TODO: delete me, code moved to separate plugin files
 
 
-  val binColumnCommand = commandPluginRegistry.registerCommand("dataframe/bin_column", binColumnSimple _, numberOfJobs = 7)
+  val binColumnCommand = commandPluginRegistry.registerCommand("frame:/bin_column", binColumnSimple _, numberOfJobs = 7)
   /**
    * Bin the specified column in RDD
    * @param arguments input specification for column binning
@@ -760,7 +760,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
                             """.stripMargin))
 
   val columnModeCommand: CommandPlugin[ColumnMode, ColumnModeReturn] =
-    commandPluginRegistry.registerCommand("dataframe/column_mode", columnModeSimple _, doc = Some(columnModeDoc))
+    commandPluginRegistry.registerCommand("frame:/column_mode", columnModeSimple _, doc = Some(columnModeDoc))
 
   /**
    * Calculate the mode of the specified column.
@@ -798,6 +798,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
 
   */
 
+  commandPluginRegistry.registerCommand(new ColumnModePlugin)
   /*
 
 TODO: delete me, code moved to separate plugin files
@@ -853,7 +854,7 @@ TODO: delete me, code moved to separate plugin files
   TODO: delete me, code moved to separate plugin files
 
   val columnMedianCommand: CommandPlugin[ColumnMedian, ColumnMedianReturn] =
-    commandPluginRegistry.registerCommand("dataframe/column_median", columnMedianSimple, doc = Some(columnMedianDoc))
+    commandPluginRegistry.registerCommand("frame:/column_median", columnMedianSimple, doc = Some(columnMedianDoc))
 
   /**
    * Calculate the median of the specified column.
@@ -1034,7 +1035,7 @@ TODO: delete me, code moved to separate plugin files
   TODO: delete me, code moved to separate plugin files
 
   val columnStatisticCommand: CommandPlugin[ColumnSummaryStatistics, ColumnSummaryStatisticsReturn] =
-    commandPluginRegistry.registerCommand("dataframe/column_summary_statistics", columnStatisticSimple _, doc = Some(columnSummaryStatisticsDoc))
+    commandPluginRegistry.registerCommand("frame:/column_summary_statistics", columnStatisticSimple _, doc = Some(columnSummaryStatisticsDoc))
 
   /**
    * Calculate summary statistics of the specified column.
@@ -1082,7 +1083,7 @@ TODO: delete me, code moved to separate plugin files
     commands.execute(columnFullStatisticsCommand, arguments, user, implicitly[ExecutionContext])
 
   val columnFullStatisticsCommand: CommandPlugin[ColumnFullStatistics, ColumnFullStatisticsReturn] =
-    pluginRegistry.registerCommand("dataframe/column_full_statistics", columnFullStatisticSimple)
+    pluginRegistry.registerCommand("frame:/column_full_statistics", columnFullStatisticSimple)
 
   def columnFullStatisticSimple(arguments: ColumnFullStatistics, user: UserPrincipal): ColumnFullStatisticsReturn = {
 
@@ -1111,7 +1112,7 @@ TODO: delete me, code moved to separate plugin files
 
   TODO: delete me, code moved to separate plugin files
 
-  val filterCommand = commandPluginRegistry.registerCommand("dataframe/filter", filterSimple _, numberOfJobs = 2)
+  val filterCommand = commandPluginRegistry.registerCommand("frame:/filter", filterSimple _, numberOfJobs = 2)
   def filterSimple(arguments: FilterPredicate, user: UserPrincipal, invocation: SparkInvocation): DataFrame = {
     val pythonRDDStorage = new PythonRDDStorage(frames)
     implicit val u = user
@@ -1131,7 +1132,7 @@ TODO: delete me, code moved to separate plugin files
   /*
   TODO: delete me, code moved to separate plugin files
 
-  val joinCommand = commandPluginRegistry.registerCommand("dataframe/join", joinSimple _)
+  val joinCommand = commandPluginRegistry.registerCommand("frame:/join", joinSimple _)
 
   /**
    * join two data frames
@@ -1177,7 +1178,7 @@ TODO: delete me, code moved to separate plugin files
     val rightColumns: List[(String, DataType)] = originalColumns(1)
     val allColumns = SchemaUtil.resolveSchemaNamingConflicts(leftColumns, rightColumns)
 
-    /* create a dataframe should take very little time, much less than 10 minutes */
+    /* create a frame should take very little time, much less than 10 minutes */
     val newJoinFrame = Await.result(create(DataFrameTemplate(arguments.name, None)), SparkEngineConfig.defaultTimeout)
 
     //first validate join columns are valid
@@ -1231,7 +1232,7 @@ TODO: delete me, code moved to separate plugin files
                             |   For further examples, see :ref:`example_frame.drop_columns`.
                             |
                             """.stripMargin))
-  val dropColumnsCommand = commandPluginRegistry.registerCommand("dataframe/drop_columns", dropColumnsSimple _, doc = Some(dropColumnsDoc))
+  val dropColumnsCommand = commandPluginRegistry.registerCommand("frame:/drop_columns", dropColumnsSimple _, doc = Some(dropColumnsDoc))
 
   TODO: delete me, code moved to separate plugin files
 
@@ -1277,7 +1278,7 @@ TODO: delete me, code moved to separate plugin files
 
   TODO: delete me, code moved to separate plugin files
 
-  val addColumnsCommand = commandPluginRegistry.registerCommand("dataframe/add_columns", addColumnsSimple _)
+  val addColumnsCommand = commandPluginRegistry.registerCommand("frame:/add_columns", addColumnsSimple _)
   def addColumnsSimple(arguments: FrameAddColumns, user: UserPrincipal, invocation: SparkInvocation) = {
     val pythonRDDStorage = new PythonRDDStorage(frames)
     implicit val u = user
@@ -1328,7 +1329,7 @@ TODO: delete me, code moved to separate plugin files
     val schema = frame.schema
     PagedQueryResult(queryExecution, Some(schema))
   }
-  val getRowsQuery = queries.registerQuery("dataframes/data", getRowsSimple)
+  val getRowsQuery = queries.registerQuery("frames/data", getRowsSimple)
 
   /**
    * Create an intermediate RDD containing the results of a getRows call.
@@ -1483,7 +1484,7 @@ TODO: delete me, code moved to separate plugin files
 
   TODO: delete me, code moved to separate plugin files
 
-  val dropDuplicateCommand = commandPluginRegistry.registerCommand("dataframe/drop_duplicates", dropDuplicateSimple _, numberOfJobs = 2)
+  val dropDuplicateCommand = commandPluginRegistry.registerCommand("frame:/drop_duplicates", dropDuplicateSimple _, numberOfJobs = 2)
 
   /**
    * Remove duplicate rows, keeping only one row per uniqueness criteria match
@@ -1568,8 +1569,7 @@ TODO: delete me, code moved to separate plugin files
   /*
   TODO: delete me, code moved to separate plugin files
 
-
-  val quantilesCommand = commandPluginRegistry.registerCommand("dataframe/quantiles", quantilesSimple _, numberOfJobs = 7, doc = Some(quantileDoc))
+  val quantilesCommand = commandPluginRegistry.registerCommand("frame:/quantiles", quantilesSimple _, numberOfJobs = 7, doc = Some(quantileDoc))
 
   def quantilesSimple(arguments: Quantiles, user: UserPrincipal, invocation: SparkInvocation): QuantileValues = {
     implicit val u = user
@@ -1712,7 +1712,8 @@ TODO: delete me, code moved to separate plugin files
   /*
   TODO: delete me, code moved to separate plugin files
 
-  val classificationMetricsCommand: CommandPlugin[ClassificationMetric, ClassificationMetricValue] = commandPluginRegistry.registerCommand("dataframe/classification_metrics", classificationMetricsSimple _, doc = Some(classificationMetricsDoc))
+  val classificationMetricsCommand: CommandPlugin[ClassificationMetric, ClassificationMetricValue] = commandPluginRegistry.registerCommand("frame:/classification_metrics", classificationMetricsSimple _, doc = Some(classificationMetricsDoc))
+
   def classificationMetricsSimple(arguments: ClassificationMetric, user: UserPrincipal, invocation: SparkInvocation): ClassificationMetricValue = {
     implicit val u = user
     val frameId = arguments.frame.id
@@ -1747,7 +1748,7 @@ TODO: delete me, code moved to separate plugin files
   /*
   TODO: delete me, code moved to separate plugin files
 
-  val ecdfCommand = commandPluginRegistry.registerCommand("dataframe/ecdf", ecdfSimple _)
+  val ecdfCommand = commandPluginRegistry.registerCommand("frame:/ecdf", ecdfSimple _)
 
   def ecdfSimple(arguments: ECDF[Long], user: UserPrincipal, invocation: SparkInvocation) = {
     implicit val u = user
@@ -2296,7 +2297,7 @@ TODO: delete me, code moved to separate plugin files
   TODO: delete me, code moved to separate plugin files
 
   val topKCommand =
-    commandPluginRegistry.registerCommand("dataframe/top_k", topKCommandSimple _, numberOfJobs = 3, doc = Some(topKDoc))
+    commandPluginRegistry.registerCommand("frame:/top_k", topKCommandSimple _, numberOfJobs = 3, doc = Some(topKDoc))
 
   /**
    * Calculate the top (or bottom) K distinct values by count for specified data column.

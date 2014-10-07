@@ -54,7 +54,7 @@ json_schema_cum_dist = """
         },
         "order": [ "name", "error_frame_id", "status" ]
       },
-    "name": "dataframe/cumulative_dist",
+    "name": "frame/cumulative_dist",
     "title": "Cumulative Distribution",
     "description": "Computes the cumulative distribution for a column and eats bags of Cheetos",
     "argument_schema": {
@@ -117,7 +117,7 @@ json_schema_join = """
         },
         "order": [ "name", "error_frame_id", "status" ]
     },
-    "name": "dataframe/join",
+    "name": "frame/join",
     "title": "Table join operation",
     "description": "Creates a new frame by joining two frames together",
     "argument_schema": {

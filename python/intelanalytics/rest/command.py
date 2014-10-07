@@ -37,20 +37,10 @@ logger = logging.getLogger(__name__)
 import intelanalytics.rest.config as config
 from intelanalytics.rest.connection import http
 from intelanalytics.core.errorhandle import IaError
-from intelanalytics.rest.jsonschema import get_command_def
 from collections import namedtuple
 
 
-_commands_from_backend = []
 
-
-def get_commands():
-    if not _commands_from_backend:
-        logger.info("Requesting available commands from server")
-        response = http.get("commands/definitions")
-        commands_json_schema = response.json()
-        _commands_from_backend.extend([get_command_def(c) for c in commands_json_schema])
-    return _commands_from_backend
 
 
 def execute_command(command_name, **arguments):
@@ -65,9 +55,8 @@ def execute_command(command_name, **arguments):
         result = command_info.result.get('value')
     elif command_info.result.has_key('name') and command_info.result.has_key('schema'):
         # TODO: remove this hack for plugins that return data frame
-        from intelanalytics.core.config import get_frame_backend
-        frame_backend = get_frame_backend()
-        result = frame_backend.get_frame(command_info.result['name'])
+        from intelanalytics.core.frame import get_frame
+        result = get_frame(command_info.result['name'])
     else:
         result = command_info.result
     return result

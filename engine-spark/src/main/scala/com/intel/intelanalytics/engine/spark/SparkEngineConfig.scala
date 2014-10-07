@@ -95,11 +95,11 @@ trait SparkEngineConfig extends EventLogging {
 
   /* number of rows taken for sample test during frame loading */
   val frameLoadTestSampleSize: Int =
-    config.getInt("intel.analytics.engine-spark.command.dataframes.load.config.schema-validation-sample-rows")
+    config.getInt("intel.analytics.engine-spark.command.frames.load.config.schema-validation-sample-rows")
 
   /* percentage of maximum rows fail in parsing in sampling test. 50 means up 50% is allowed */
   val frameLoadTestFailThresholdPercentage: Int =
-    config.getInt("intel.analytics.engine-spark.command.dataframes.load.config.schema-validation-fail-threshold-percentage")
+    config.getInt("intel.analytics.engine-spark.command.frames.load.config.schema-validation-fail-threshold-percentage")
 
   /**
    * A list of archives that will be searched for command plugins
