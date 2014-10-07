@@ -27,7 +27,7 @@ index
             ds_apir: Python User Functions
         ds_ml: Machine Learning
             ds_mlal_0: Machine Learning Algorithms
-                ds_mlal_cf: 
+                ds_mlal_cf: Collaborative Filtering
                 ds_mlal_als
                 ds_mlal_cgd
                 ds_mlal_pr
