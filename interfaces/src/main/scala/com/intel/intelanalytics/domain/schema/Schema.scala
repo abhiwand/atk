@@ -58,7 +58,7 @@ case class Schema(columns: List[(String, DataType)] = List[(String, DataType)]()
       columnNames.map(col => {
         val index = columns.indexWhere(columnTuple => columnTuple._1 == col)
         if (index == -1)
-          throw new IllegalArgumentException(s"Invalid column name/s provided. Check schema : $columnNames")
+          throw new IllegalArgumentException(s"Invalid column name(s) provided. Check schema : $columnNames")
         else
           index
       })
