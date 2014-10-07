@@ -1,3 +1,4 @@
+#!/usr/bin/python2.7
 from intelanalytics import *
 
 #the default home directory is  hdfs://user/iauser all the sample data sets are saved to hdfs://user/iauser/datasets
