@@ -74,32 +74,31 @@ class PageRank
    *
    * [[http://docutils.sourceforge.net/rst.html ReStructuredText]]
    */
-  override def doc = Some(CommandDoc(oneLineSummary = "The `PageRank algorithm <http://en.wikipedia.org/wiki/PageRank>`_.",
+  override def doc = Some(CommandDoc(oneLineSummary = "PageRank",
     extendedSummary = Some("""
-<<<<<<< HEAD
+                            |   Extended Summary
+                            |   ----------------
+                            |   The `PageRank algorithm <http://en.wikipedia.org/wiki/PageRank>`_.
+                            |
                             |   Parameters
                             |   ----------
                             |   input_edge_label : list of string
                             |       The name of edge label.
-                            |
                             |   output_vertex_property_list : list of string
                             |       The list of vertex properties to store output vertex values.
-                            |
                             |   max_supersteps : integer (optional)
                             |       The maximum number of super steps that the algorithm will execute.
                             |       The valid value range is all positive integer.
                             |       The default value is 20.
-                            |
                             |   convergence_threshold : float (optional)
-                            |       The amount of change in cost function that will be tolerated at convergence.
+                            |       The amount of change in cost function that will be tolerated at
+                            |       convergence.
                             |       If the change is less than this threshold, the algorithm exists earlier
                             |       before it reaches the maximum number of super steps.
                             |       The valid value range is all Float and zero.
                             |       The default value is 0.001.
-                            |
                             |   reset_probability : float (optional)
                             |       The probability that the random walk of a page is reset.
-                            |
                             |   convergence_output_interval : integer (optional)
                             |       The convergence progress output interval
                             |       The valid value range is [1, max_supersteps]

@@ -208,7 +208,6 @@ class BigFrame(CommandLoadableBigFrame):
     A frame has been created and BigFrame *h* is its proxy.
     It has no data yet, but it does have the name *your_frame*.
 
-    For other examples, see :ref:`example_frame.bigframe`.
 
     .. versionadded:: 0.8
 
@@ -538,7 +537,6 @@ class BigFrame(CommandLoadableBigFrame):
         Notes
         -----
         The row function ('func') must return a value in the same format as specified by the schema.
-        See :doc:`ds_apir`.
 
         Examples
         --------
@@ -589,9 +587,7 @@ class BigFrame(CommandLoadableBigFrame):
 
             my_frame.add_columns(function_b, [("calculated_b", float32)])
 
-        More information on row functions can be found at :doc:`ds_apir`.
 
-        For further examples, see :ref:`example_frame.add_columns`.
 
         .. versionadded:: 0.8
 
@@ -627,7 +623,6 @@ class BigFrame(CommandLoadableBigFrame):
         filled with non-defined data.
         The frame referred to by *your_frame* is then added to the bottom.
 
-        For further example, see :ref:`Data flow <example_frame.append>`.
 
         .. versionadded:: 0.8
 
@@ -655,7 +650,7 @@ class BigFrame(CommandLoadableBigFrame):
         If there are multiples of the same value in :math:`C`, then their tie-adjusted rank is the average of their ordered rank values.
 
         The num_bins parameter is upper-bound on the number of bins since the data may justify fewer bins.
-        With :term:`equal depth binning`, for example, if the column to be binned has 10 elements with
+        With equal depth binning, for example, if the column to be binned has 10 elements with
         only 2 distinct values and num_bins > 2, then the number of actual bins will only be 2.
         This is due to a restriction that elements with an identical value must belong to the same bin.
         The type of the new column will be int32 and the bin numbers start at 1.
@@ -668,7 +663,7 @@ class BigFrame(CommandLoadableBigFrame):
             The requested number of bins
         bin_type : str (optional)
             The binning algorithm to use
-            [':term:`equalwidth`' | ':term:`equaldepth`']
+            ['equalwidth' | 'equaldepth']
         bin_column_name : str (optional)
             The name for the new binned column
 
@@ -748,7 +743,7 @@ class BigFrame(CommandLoadableBigFrame):
         """
         Builds matrix.
 
-        Outputs a :term:`confusion matrix` for a binary classifier
+        Outputs a confusion matrix for a binary classifier
 
         Parameters
         ----------
@@ -871,7 +866,7 @@ class BigFrame(CommandLoadableBigFrame):
         Parameters
         ----------
         predicate : function
-            function or :term:`lambda` which takes a row argument and evaluates to a boolean value
+            function or lambda which takes a row argument and evaluates to a boolean value
 
         Examples
         --------
@@ -883,9 +878,7 @@ class BigFrame(CommandLoadableBigFrame):
 
         Now the frame only has information about *ligers*.
 
-        More information on row functions can be found at :doc:`ds_apir`.
 
-        For further examples, see :ref:`example_frame.drop_rows`
 
         .. versionchanged:: 0.8.5
 
@@ -925,7 +918,6 @@ class BigFrame(CommandLoadableBigFrame):
         The result is a frame where something is different in every row from every other row.
         Each row is unique.
 
-        For further examples, see :ref:`example_frame.drop_duplicates`
 
         .. versionadded:: 0.8
 
@@ -937,7 +929,7 @@ class BigFrame(CommandLoadableBigFrame):
         """
         Empirical Cumulative Distribution.
 
-        Generates the :term:`empirical cumulative distribution` for the input column.
+        Generates the empirical cumulative distribution for the input column.
 
         Parameters
         ----------
@@ -1001,9 +993,7 @@ class BigFrame(CommandLoadableBigFrame):
 
         The frame now only has data about lizards and frogs
 
-        More information on row functions can be found at :doc:`ds_apir`.
 
-        For further examples, see :ref:`example_frame.filter`
 
         .. versionadded:: 0.8
 
@@ -1031,7 +1021,44 @@ class BigFrame(CommandLoadableBigFrame):
 
         Examples
         --------
-        See :ref:`example_frame.flatten_column`.
+        Given that I have a frame accessed by BigFrame *my_frame* and the frame has two columns *a* and *b*.
+        The "original_data"::
+
+            1-"solo,mono,single"
+            2-"duo,double"
+
+        I run my commands to bring the data in where I can work on it::
+
+            my_csv = CsvFile("original_data.csv", schema=[('a', int32), ('b', string)],
+                delimiter='-')
+            # The above command has been split for enhanced readability in some medias.
+            my_frame = BigFrame(source=my_csv)
+
+        I look at it and see::
+
+            my_frame.inspect()
+
+              a:int32   b:string
+            /------------------------------/
+                1       solo, mono, single
+                2       duo, double
+
+        Now, I want to spread out those sub-strings in column *b*::
+
+            your_frame = my_frame.flatten_column('b')
+
+        Now I check again and my result is::
+
+            your_frame.inspect()
+
+              a:int32   b:str
+            /------------------/
+                1       solo
+                1       mono
+                1       single
+                2       duo
+                2       double
+
 
         .. versionadded:: 0.8
 
@@ -1236,7 +1263,6 @@ class BigFrame(CommandLoadableBigFrame):
              ape     1           2        6.0         12.0             4.0           9
              big     1           3        6.333333    19.0             5.0           7
 
-        For further examples, see :ref:`example_frame.group_by`.
 
         .. versionchanged:: 0.8.5
 
@@ -1281,7 +1307,6 @@ class BigFrame(CommandLoadableBigFrame):
                             elephant    Shep          5           8630.0
 
 
-        For another example, see :ref:`example_frame.inspect`
 
         .. versionadded:: 0.8
 
@@ -1351,7 +1376,6 @@ class BigFrame(CommandLoadableBigFrame):
         We end up with a new BigFrame *joined_frame* accessing a new frame with all the original columns, but only those rows where the data in the
         original frame in column *b* matched the data in column *book*.
 
-        For further examples, see :ref:`example_frame.join`.
 
         .. versionadded:: 0.8
 
@@ -1499,7 +1523,6 @@ class BigFrame(CommandLoadableBigFrame):
 
         Now, what was *Wrong* is now *Right* and what was *Wong* is now *Wite*.
 
-        For further examples, see :ref:`example_frame.rename_columns`
 
         .. versionchanged:: 0.8.5
 
