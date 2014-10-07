@@ -41,12 +41,12 @@ import scala.concurrent.ExecutionContext
 class LoadFramePlugin extends SparkCommandPlugin[Load, DataFrame] {
 
   /**
-   * The name of the command, e.g. graphs/ml/loopy_belief_propagation
+   * The name of the command, e.g. graph/ml/loopy_belief_propagation
    *
    * The format of the name determines how the plugin gets "installed" in the client layer
    * e.g Python client via code generation.
    */
-  override def name: String = "dataframe/load"
+  override def name: String = "frame:/load"
 
   /**
    * User documentation exposed in Python.

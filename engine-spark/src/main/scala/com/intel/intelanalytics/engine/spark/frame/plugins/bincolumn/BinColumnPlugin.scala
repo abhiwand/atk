@@ -56,7 +56,7 @@ class BinColumnPlugin extends SparkCommandPlugin[BinColumn, DataFrame] {
    * The format of the name determines how the plugin gets "installed" in the client layer
    * e.g Python client via code generation.
    */
-  override def name: String = "dataframe/bin_column"
+  override def name: String = "frame:/bin_column"
 
   /**
    * User documentation exposed in Python.

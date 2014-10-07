@@ -67,9 +67,9 @@ class GremlinQuery extends CommandPlugin[QueryArgs, QueryResult] {
   var titanGraphs = Map[String, TitanGraph]()
 
   /**
-   * The name of the command, e.g. graphs/ml/loopy_belief_propagation
+   * The name of the command, e.g. graph/sampling/vertex_sample
    */
-  override def name: String = "graphs/query/gremlin"
+  override def name: String = "graph:titan/query/gremlin"
 
   /**
    * User documentation exposed in Python.

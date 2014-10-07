@@ -57,7 +57,7 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
   import Rows.Row
 
   override def expectFrame(frameId: Long): DataFrame = {
-    lookup(frameId).getOrElse(throw new NotFoundException("dataframe", frameId.toString))
+    lookup(frameId).getOrElse(throw new NotFoundException("frame", frameId.toString))
   }
 
   override def expectFrame(frameRef: FrameReference): DataFrame = expectFrame(frameRef.id)

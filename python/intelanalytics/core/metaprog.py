@@ -21,7 +21,7 @@
 # must be express and approved by Intel in writing.
 ##############################################################################
 """
-Meta-programming - dynamically adding commands to api objects or building auto*.py
+Meta-programming - dynamically adding commands to api objects or building doc stub *.py
 """
 
 __all__ = ['CommandLoadable', 'load_loadable']
@@ -33,28 +33,29 @@ logger = logging.getLogger(__name__)
 import sys
 import datetime
 from collections import deque
+from decorator import decorator
 
 from intelanalytics.core.api import get_api_decorator
+from intelanalytics.core.mute import muted_commands
 
 _created_classes = {}
 """All the dynamically created loadable classes, added as they are created"""
-
 
 
 # Constants
 IA_URI = '_id'
 
 COMMAND_DEF = '_command_def'
-COMMAND_PREFIXES = '_command_prefixes'
+COMMAND_PREFIX = '_command_prefix'
 INTERMEDIATE_NAME = '_intermediate_name'
 LOADED_COMMANDS = '_loaded_commands'
 LOADED_INTERMEDIATE_CLASSES = '_loaded_intermediate_classes'
-MUTED_COMMAND_NAMES = '_muted_command_names'
 
 EXECUTE_COMMAND_FUNCTION_NAME = 'execute_command'
 ALIASED_EXECUTE_COMMAND_FUNCTION_NAME = 'aliased_execute_command'
 
 DOC_STUB = 'doc_stub'
+DOC_STUB_LOADABLE_CLASS_PREFIX = 'DocStubs'
 
 
 class CommandNotLoadedError(NotImplementedError):
@@ -70,17 +71,12 @@ class CommandLoadable(object):
     Inheritors must...
 
     1.  Implement the following:
-        instance attribute '_ia_uri' : str or int  (See IA_URI constant)
+        instance attribute '_id' : str or int  (See IA_URI constant)
             identifies the instance to the server
 
-        class attribute 'command_prefixes' : list of str (See COMMAND_PREFIXES constant)
-            The prefixes of those commands which will be loaded into this class
-            e.g. ['graph'] to accept commands like 'graph/ml/page_rank'
-
-        (And optionally)
-        class attribute 'muted_commands_names' : list of str (See MUTED_COMMAND_NAMES constant)
-            The names of the commands which should not be exposed publicly in this class
-            e.g. ['load'] to mute 'load' publicly, i.e. it's only used internally
+        class attribute '_command_prefix' : list of str (See COMMAND_PREFIX constant)
+            This is the prefix which identifies the class for commands loaded from the server
+            e.g. 'frame:' to accept commands like 'frame:/assign_sample'
 
     2.  Call CommandLoadable.__init__(self) in its own __init__, AFTER the class
         has been loaded.  For example, in the __init__ function, make a call to
@@ -95,6 +91,9 @@ class CommandLoadable(object):
         if not hasattr(self._get_root_object(), IA_URI):
             raise TypeError("CommandLoadable inheritor %s instance lacks implementation for '%s'"
                             % (self.__class__, IA_URI))
+        if not hasattr(self, COMMAND_PREFIX):
+            raise TypeError("CommandLoadable inheritor %s instance lacks implementation for '%s'"
+                            % (self.__class__, COMMAND_PREFIX))
 
         # instantiate the loaded intermediate classes
         if hasattr(self.__class__, LOADED_INTERMEDIATE_CLASSES):
@@ -121,10 +120,60 @@ class CommandLoadable(object):
     def _get_root_ia_uri(self):
         return getattr(self._get_root_object(), IA_URI)
 
-    @classmethod
-    def _should_load(cls, command):
-        return command.prefix in getattr(cls, COMMAND_PREFIXES)\
-               and command.name not in getattr(cls, MUTED_COMMAND_NAMES)
+
+def upper_first(s):
+    return '' if not s else s[0].upper() + s[1:]
+
+
+def underscores_to_pascal(s):
+    return '' if not s else ''.join([upper_first(s) for s in s.split('_')])
+
+
+def get_loadable_class_name_from_command_prefix(command_prefix):
+    parts = command_prefix.split(':')
+    term = underscores_to_pascal(parts[0])
+    if len(parts) == 1:
+        return "Base" + term
+    else:
+        return underscores_to_pascal(parts[1]) + term
+
+
+def get_base_class_name_from_prefix(command_prefix):
+    parts = command_prefix.split(':')
+    term = underscores_to_pascal(parts[0])
+    if len(parts) == 1:
+        return CommandLoadable.__name__
+    return "Base" + term
+
+
+def get_loadable_class_from_name(class_name, command_prefix):
+    from intelanalytics import api_globals
+    import inspect
+    for item in api_globals:
+        if inspect.isclass(item) and item.__name__ == class_name:
+            return item
+    base_class_name = get_base_class_name_from_prefix(command_prefix)
+    base_class = CommandLoadable if base_class_name == CommandLoadable.__name__\
+        else get_loadable_class_from_name(base_class_name, command_prefix)
+    loadable_class = create_loadable_class(class_name, base_class, api_globals, "", command_prefix)
+    if not loadable_class.__name__.startswith("Base"):
+        api_globals.add(loadable_class)
+    return loadable_class
+
+
+def get_loadable_class_from_command_def(command_def):
+    class_name = get_loadable_class_name_from_command_prefix(command_def.prefix)
+    loadable_class = get_loadable_class_from_name(class_name, command_def.prefix)
+    return loadable_class
+
+
+def install_command_defs(command_defs):
+    from intelanalytics.rest.command import execute_command
+    for command_def in command_defs:
+        # get class
+        loadable_class = get_loadable_class_from_command_def(command_def)
+        # add command def to class  (variant on load_loadable)
+        load_loadable(loadable_class, command_def, execute_command)
 
 
 def get_private_name(name):
@@ -158,22 +207,23 @@ def get_intermediate_class(parent_class, intermediate_name):
 def create_intermediate_class(parent_class, intermediate_name):
     class_name = get_intermediate_class_name(parent_class, intermediate_name)
     doc = "Contains %s functionality for %s" % (intermediate_name, parent_class.__name__)
-    intermediate_class = create_loadable_class(class_name, parent_class, doc)
+    intermediate_class = create_loadable_class(class_name, CommandLoadable, parent_class, doc, intermediate_name)
     setattr(intermediate_class, INTERMEDIATE_NAME, intermediate_name)
     setattr(intermediate_class, LOADED_COMMANDS, [])
     return intermediate_class
 
 
-def create_loadable_class(new_class_name, namespace_obj, doc):
+def create_loadable_class(new_class_name, base_class, namespace_obj, doc, command_prefix):
     """Dynamically create a class type with the given name and namespace_obj"""
     new_class = type(str(new_class_name),
-                     (CommandLoadable,),
+                     (base_class,),
                      {'__doc__': doc, '__module__': namespace_obj.__module__})
     # assign to its module, and to globals
     # http://stackoverflow.com/questions/13624603/python-how-to-register-dynamic-class-in-module
     setattr(sys.modules[new_class.__module__], new_class.__name__, new_class)
     globals()[new_class.__name__] = new_class
     _created_classes[new_class.__name__] = new_class
+    setattr(new_class, COMMAND_PREFIX, command_prefix)
     return new_class
 
 
@@ -196,24 +246,28 @@ def add_intermediate_class(parent_class, intermediate_name):
     return intermediate_class
 
 
-def check_loadable_class(cls):
-    if not hasattr(cls, COMMAND_PREFIXES):
-        raise TypeError("CommandLoadable inheritor %s lacks implementation for '%s'" % (cls, COMMAND_PREFIXES))
-    if not hasattr(cls, MUTED_COMMAND_NAMES):
-        setattr(cls, MUTED_COMMAND_NAMES, [])
+def check_loadable_class(cls, command_def):
+    error = None
+    if not hasattr(cls, COMMAND_PREFIX):
+        error = "CommandLoadable inheritor %s lacks implementation for '%s'" % (cls, COMMAND_PREFIX)
+    elif command_def.prefix != getattr(cls, COMMAND_PREFIX):
+        error = "%s is not the class's accepted command prefix: %s"\
+                % (command_def.prefix, getattr(cls, COMMAND_PREFIX))
+    if error:
+        raise ValueError("API load error: Class %s cannot load command_def '%s'.\n%s"
+                         % (cls.__name__, command_def.full_name, error))
 
 
-def load_loadable(loadable_class, command_defs, execute_command_function):
-    """Adds attributes dynamically to the loadable_class"""
-    check_loadable_class(loadable_class)
-    for command in command_defs:
-        if loadable_class._should_load(command):
-            function = create_function(loadable_class, command, execute_command_function)
-            # First add any intermediate member classes to provide intended scoping
-            current_class = loadable_class
-            for intermediate_name in command.intermediates:
-                current_class = add_intermediate_class(current_class, intermediate_name)
-            add_command(current_class, command, function)
+def load_loadable(loadable_class, command_def, execute_command_function):
+    """Adds command dynamically to the loadable_class"""
+    check_loadable_class(loadable_class, command_def)
+    if command_def.full_name not in muted_commands:
+        function = create_function(loadable_class, command_def, execute_command_function)
+        # First add any intermediate member classes to provide intended scoping
+        current_class = loadable_class
+        for intermediate_name in command_def.intermediates:
+            current_class = add_intermediate_class(current_class, intermediate_name)
+        add_command(current_class, command_def, function)
 
 
 def add_command(loadable_class, command_def, function):
@@ -223,19 +277,8 @@ def add_command(loadable_class, command_def, function):
         if not hasattr(loadable_class, LOADED_COMMANDS):
             setattr(loadable_class, LOADED_COMMANDS, [])
         getattr(loadable_class, LOADED_COMMANDS).append(command_def)
+        #print "%s <-- %s" % (loadable_class.__name__, command_def.full_name)
         logger.debug("Added function %s to class %s", command_def.name, loadable_class)
-
-
-def get_execute_command_function_text():
-    return '''
-def {execute_command}(_name, **kwargs):
-    """Validates arguments, calls execute_command, and returns formatted result"""
-    from intelanalytics.rest.command import {execute_command} as {alias}
-    signature = get_signature(_name)
-    arguments = validate_arguments(kwargs, signature['parameters'])
-    result = {alias}(_name, **arguments)
-    return format_result(result, signature['return_type'])
-'''.format(execute_command=EXECUTE_COMMAND_FUNCTION_NAME, alias=ALIASED_EXECUTE_COMMAND_FUNCTION_NAME)
 
 
 def validate_arguments(arguments, parameters):
@@ -316,7 +359,12 @@ def create_function(loadable_class, command_def, execute_command_function=None):
     """Creates the function which will appropriately call execute_command for this command"""
     execute_command = create_execute_command_function(command_def, execute_command_function)
     func_text = get_function_text(command_def, body_text='return ' + get_call_execute_command_text(command_def), decorator_text='@api')
-    func_code = compile(func_text, '<string>', "exec")
+    try:
+        func_code = compile(func_text, '<string>', "exec")
+    except:
+        sys.stderr.write("Metaprogramming problem compiling %s for class %s" %
+                         (command_def.full_name, loadable_class.__name__))
+        raise
     func_globals = {}
     api_decorator = get_api_decorator(logging.getLogger(loadable_class.__module__))
     eval(func_code, {'api': api_decorator, EXECUTE_COMMAND_FUNCTION_NAME: execute_command}, func_globals)
@@ -362,28 +410,74 @@ def create_intermediate_property(intermediate_name):
 def _get_property_doc(intermediate_name):
     return "Access to object's %s functionality" % intermediate_name  # vanilla doc string
 
+#
+# doc stubs
+#
 
-# def intermediate_class_getter(function):
-#     """Decorator for intermediate class getter properties"""
-#     mark_with_intermediate_name(function, function.__name__)
-#     return function
+
+class DocStubsImport(object):
+    """Methods for handling import of docstubs.py"""
+
+    @staticmethod
+    def success(module_logger, class_names_str):
+        module_logger.info("Doc stubs inherited from docstubs.py for %s" % class_names_str)
+        import os
+        if os.getenv('INTELANALYTICS_BUILD_API_DOCS', False):
+            raise RuntimeError("Doc stubs were inherited during build.  This probably means"
+                               "the previous docstubs .py and/or .pyc files were not deleted")
+
+    @staticmethod
+    def failure(module_logger, class_names_str, e):
+        msg = "Unable to inherit doc stubs from docstubs.py for %s: %s" % (class_names_str, e)
+        module_logger.warn(msg)
+        #import warnings
+        #warnings.warn(msg, RuntimeWarning)
+        return CommandLoadable
+
+doc_stubs_import = DocStubsImport
+
+
+class DocStubCalledError(RuntimeError):
+    def __init__(self, func_name=''):
+        RuntimeError.__init__(self, "Call made to a documentation stub function '%s' "
+                                    "which is just a placeholder for the real function."
+                                    "This usually indicates a problem with a API loaded from server." % func_name)
+
+
+def _doc_stub(function, *args, **kwargs):
+    raise DocStubCalledError(function.__name__)
 
 
 def doc_stub(function):
-    setattr(function, DOC_STUB, function.__name__)
-    return function
-
-#
-# auto*.py generation
-#
-
-def get_auto_module_text(loaded_class):
-    return "\n".join([get_file_header_text(loaded_class),
-                      get_loaded_base_class_text(loaded_class),
-                      get_intermediate_classes_text(loaded_class)])
+    """Doc stub decorator"""
+    decorated_function = decorator(_doc_stub, function)
+    setattr(decorated_function, DOC_STUB, function.__name__)
+    return decorated_function
 
 
-def get_file_header_text(loaded_class):
+def get_doc_stub_class_text(loaded_class):
+    base_text = get_loaded_base_class_text(loaded_class)
+    intermediate_text = get_intermediate_classes_text(loaded_class)
+    return "\n".join([base_text, intermediate_text]) if base_text or intermediate_text else ''
+
+
+def get_doc_stubs_module_text(command_defs, existing_loadables):
+    for command_def in command_defs:
+        class_name = get_loadable_class_name_from_command_prefix(command_def.prefix)
+        if class_name not in existing_loadables:
+            cls = get_loadable_class_from_command_def(command_def)
+            existing_loadables[class_name] = cls
+        loadable_class = existing_loadables[class_name]
+        load_loadable(loadable_class, command_def, None)  # None for execute_command, since this is a doc stub
+    lines = [get_doc_stub_class_text(loaded_class) for loaded_class in existing_loadables.values()]
+    for line in lines:
+        if line:
+            lines.insert(0, get_file_header_text())
+            return '\n'.join(lines)
+    return ''
+
+
+def get_file_header_text():
     return """##############################################################################
 # INTEL CONFIDENTIAL
 #
@@ -407,14 +501,13 @@ def get_file_header_text(loaded_class):
 # must be express and approved by Intel in writing.
 ##############################################################################
 
-# Auto-generated file for {loadable_class} commands ({timestamp})
+# Auto-generated file for API static documentation stubs ({timestamp})
 #
 # **DO NOT EDIT**
 
 from {module} import {objects}
 
-""".format(loadable_class=loaded_class.__name__,
-           timestamp=datetime.datetime.now().isoformat(),
+""".format(timestamp=datetime.datetime.now().isoformat(),
            module=__name__,
            objects=", ".join([CommandLoadable.__name__, doc_stub.__name__]))
 
@@ -436,18 +529,19 @@ class {name}({base_class}):
 '''.format(name=class_name, base_class=CommandLoadable.__name__, doc=indent(doc), members=members_text)
 
 
-def get_loaded_base_class_name(loaded_class):
-    return CommandLoadable.__name__ + loaded_class.__name__
+def get_loaded_base_class_doc_stubs_name(loaded_class):
+    return DOC_STUB_LOADABLE_CLASS_PREFIX + loaded_class.__name__
 
 
 def get_loaded_base_class_text(loaded_class):
     """
     Produces code text for the base class from which the main loadable class
-    will inherit the commands --i.e. the main class of the auto*.py file
+    will inherit the commands --i.e. the main class of the doc stub *.py file
     """
-    return get_loadable_class_text(get_loaded_base_class_name(loaded_class),
+    members_text = get_members_text(loaded_class)
+    return get_loadable_class_text(get_loaded_base_class_doc_stubs_name(loaded_class),
                                    "Contains commands for %s provided by the server" % loaded_class.__name__,
-                                   get_members_text(loaded_class))
+                                   members_text) if members_text else ''
 
 
 def get_intermediate_classes_text(loaded_class):
@@ -485,3 +579,4 @@ def get_members_text(loaded_class):
 def indent(text, spaces=4):
     indentation = ' ' * spaces
     return "\n".join([indentation + line for line in text.split('\n')])
+

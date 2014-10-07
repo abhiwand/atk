@@ -111,7 +111,7 @@ object DomainJsonProtocol extends IADefaultJsonProtocol {
     }
   }
 
-  implicit val frameReferenceFormat = new ReferenceFormat[FrameReference]("dataframes", "frame", n => FrameReference(n))
+  implicit val frameReferenceFormat = new ReferenceFormat[FrameReference]("frames", "frame", n => FrameReference(n))
   implicit val userFormat = jsonFormat5(User)
   implicit val statusFormat = jsonFormat5(Status)
   implicit val dataFrameTemplateFormat = jsonFormat2(DataFrameTemplate)

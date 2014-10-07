@@ -37,16 +37,16 @@ class DataFrameServiceTest extends ServiceTest {
 
   implicit val userPrincipal = mock[UserPrincipal]
   val commonDirectives = mock[CommonDirectives]
-  when(commonDirectives.apply("dataframes")).thenReturn(provide(userPrincipal))
+  when(commonDirectives.apply("frames")).thenReturn(provide(userPrincipal))
 
-  "DataFrameService" should "give an empty set when there are no dataframes" in {
+  "DataFrameService" should "give an empty set when there are no frames" in {
 
     val engine = mock[Engine]
     val dataFrameService = new DataFrameService(commonDirectives, engine)
 
     when(engine.getFrames()).thenReturn(Future.successful(Seq()))
 
-    Get("/dataframes") ~> dataFrameService.frameRoutes() ~> check {
+    Get("/frames") ~> dataFrameService.frameRoutes() ~> check {
       assert(responseAs[String] == "[]")
     }
   }
@@ -57,11 +57,11 @@ class DataFrameServiceTest extends ServiceTest {
 
     when(engine.getFrames()).thenReturn(Future.successful(Seq(DataFrame(1, "name", None, Schema(), 0, 1, new DateTime(), new DateTime()))))
 
-    Get("/dataframes") ~> dataFrameService.frameRoutes() ~> check {
+    Get("/frames") ~> dataFrameService.frameRoutes() ~> check {
       assert(responseAs[String] == """[{
                                      |  "id": 1,
                                      |  "name": "name",
-                                     |  "url": "http://example.com/dataframes/1"
+                                     |  "url": "http://example.com/frames/1"
                                      |}]""".stripMargin)
     }
   }
