@@ -29,25 +29,9 @@ import uuid
 
 logger = logging.getLogger(__name__)
 
-from intelanalytics.core.graph import VertexRule, EdgeRule, BigGraph, Rule
+from intelanalytics.core.graph import VertexRule, EdgeRule, Rule
 from intelanalytics.core.column import BigColumn
-from intelanalytics.core.metaprog import load_loadable
 from intelanalytics.rest.connection import http
-from intelanalytics.rest.command import CommandRequest, executor, get_commands, execute_command
-
-
-def execute_update_graph_command(command_name, arguments, graph):
-    #support for non-plugin methods that may not supply the full name
-    if not command_name.startswith('graph'):
-        command_name = 'graph/' + command_name
-    command = CommandRequest(command_name, arguments=arguments)
-    command_info = executor.issue(command)
-    if (command_info.result.has_key('value') and len(command_info.result) == 1):
-        return command_info.result.get('value')
-    else:
-        return command_info.result
-
-execute_new_graph_command = execute_update_graph_command
 
 
 def initialize_graph(graph, graph_info):
@@ -58,51 +42,16 @@ def initialize_graph(graph, graph_info):
     graph._uri= http.create_full_uri("graphs/"+ str(graph._id))
     return graph
 
-class GraphBackendRest(object):
 
-    commands_loaded = {}
+class GraphBackendRest(object):
 
     def __init__(self, http_methods = None):
         self.rest_http = http_methods or http
 
-        if not self.__class__.commands_loaded:
-            logger.info("Loading Graph commands")
-            commands = get_commands()
-            load_loadable(BigGraph, commands, execute_command)
-            #self.__class__.commands_loaded.update(executor.get_command_functions(('graph', 'graphs'),
-            #                                                                     execute_update_graph_command,
-            #                                                                    execute_new_graph_command))
-            #executor.install_static_methods(self.__class__, self.__class__.commands_loaded)
-            #BigGraph._commands = self.__class__.commands_loaded
-
-    def get_graph_names(self):
-        logger.info("REST Backend: get_graph_names")
-        r = self.rest_http.get('graphs')
-        payload = r.json()
-        return [f['name'] for f in payload]
-
-    def get_graph(self,name):
-        logger.info("REST Backend: get_graph")
-        r = self.rest_http.get('graphs?name='+name)
-        graph_info = GraphInfo(r.json())
-        return BigGraph(graph_info)
-
-    def delete_graph(self,graph):
-        if isinstance(graph,BigGraph):
-            return self._delete_graph(graph)
-        elif isinstance(graph, basestring):
-            #delete by name
-            return self._delete_graph(self.get_graph(graph))
-        else:
-            raise TypeError('Expected argument of type BigGraph or the graph name')
-
-    def _delete_graph(self, graph):
-        logger.info("REST Backend: Delete graph {0}".format(repr(graph)))
-        r=self.rest_http.delete("graphs/"+str(graph._id))
-        return None
-
     def create(self, graph,rules,name):
         logger.info("REST Backend: create graph with name %s: " % name)
+        if isinstance(rules, dict):
+            rules = GraphInfo(rules)
         if isinstance(rules, GraphInfo):
             initialize_graph(graph,rules)
             return  # Early exit here
@@ -134,18 +83,6 @@ class GraphBackendRest(object):
             annotation= ''
         return "graph_" + uuid.uuid4().hex + annotation
 
-    def _load(self, graph, rules, append):
-        arguments = {'graph': graph._id, "rules": rules, "append": append}
-        execute_update_graph_command('load', arguments)
-
-
-    def rename_graph(self, graph, name):
-        arguments = {'graph': graph._id, "new_name": name}
-        execute_update_graph_command('rename_graph', arguments,graph)
-
-    def get_name(self, graph):
-        return self._get_graph_info(graph).name
-
     def get_ia_uri(self, graph):
         return self._get_graph_info(graph).ia_uri
 
@@ -164,31 +101,6 @@ class GraphBackendRest(object):
         logger.info("REST Backend: append_frame graph: " + graph.name)
         frame_rules = JsonRules(rules)
         graph.load(frame_rules, append=True)
-
-
-class JsonAlsPayload(object):
-    def __new__(cls,
-                graph,
-                input_edge_property_list,
-                input_edge_label,
-                output_vertex_property_list,
-                vertex_type,
-                edge_type):
-        return {
-            "name": "graph/ml/als",
-            "arguments" : {
-                "graph": graph.uri,
-                "lambda": 0.1,
-                "max_supersteps": 20,
-                "converge_threshold": 0,
-                "feature_dimension": 1,
-                "input_edge_property_list": input_edge_property_list,
-                "input_edge_label": input_edge_label,
-                "output_vertex_property_list": output_vertex_property_list,
-                "vertex_type": vertex_type,
-                "edge_type": edge_type,
-            }
-        }
 
 
 # GB JSON Payload objects:
@@ -266,6 +178,7 @@ class JsonRules(object):
             frames_dict[uri] = frame
         return frame
 
+
 class GraphInfo(object):
     """
     JSON based Server description of a BigGraph
@@ -293,7 +206,7 @@ class GraphInfo(object):
 
     @property
     def links(self):
-        return self._links['links']
+        return self._payload['links']
 
     def update(self,payload):
         if self._payload and self.id_number != payload['id']:

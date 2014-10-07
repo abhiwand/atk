@@ -47,7 +47,7 @@ class TallyPlugin extends SparkCommandPlugin[CumulativeCount, DataFrame] {
    * The format of the name determines how the plugin gets "installed" in the client layer
    * e.g Python client via code generation.
    */
-  override def name: String = "dataframe/tally"
+  override def name: String = "frame:/tally"
 
   /**
    * User documentation exposed in Python.
