@@ -46,6 +46,7 @@ import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.engine.spark.plugin.SparkInvocation
 import org.apache.spark.sql.{ SQLContext, SchemaRDD }
 import com.intel.event.EventLogging
+import scala.util.parsing.combinator.RegexParsers
 
 class SparkFrameStorage(frameFileStorage: FrameFileStorage,
                         maxRows: Int,
@@ -194,6 +195,11 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
   }
 
   override def drop(frame: DataFrame): Unit = {
+
+    //validate the args
+
+    //parse for wild card characters
+
     frameFileStorage.delete(frame)
     metaStore.withSession("frame.drop") {
       implicit session =>
