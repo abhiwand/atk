@@ -23,13 +23,13 @@ if test ! -e $d; then
     f=$(tail -n 1 $d)
 
     # Create a new listing file with the date of any scala file with python docstrings.
-    for g in $(grep -ril --include=*.scala $s ../ > /dev/null); do echo $(date -r $g) $g; done > $d
+    for g in $(grep -ril --include=*.scala $s ../); do echo $(date -r $g) $g; done > $d
 
     # Make sure there is a file to compare to
     if test "$f" != ""; then
 
         # If the current listing is different than the previous listing, we need to deal with it
-        diff $d $f > /dev/null
+        diff $d $f
         if test "$?" = "1"; then
 
             # Show the differences between the current listing and the previous one.

@@ -19,6 +19,7 @@ if [ $? == 0 ]; then
     echo
     echo "-h, --help: Print this and exit"
     echo "-e:         Do not erase previous compilation"
+    echo "+e:         Erase doctrees"
     if [ "$UBUNTU_OS" == "" ]; then
         echo "-f, --force:Attempt compile without virtual environment"
     fi
@@ -91,6 +92,12 @@ fi
 echo "/$1/$2/$3/$4/$5/$6/$7/$8/$9/" | grep -i -e "/latex/" -e "/pdf/" -e "/txt/" -e "/html/" > /dev/null
 if [ $? == 0 ]; then
      
+    echo "/$1/$2/$3/$4/$5/$6/$7/$8/$9/" | grep -i "/+e/" > /dev/null
+    if [ $? == 0 ]; then
+        if [ -d build/doctrees ]; then
+            rm -r build/doctrees
+        fi
+    fi
     echo "/$1/$2/$3/$4/$5/$6/$7/$8/$9/" | grep -i "/-s/" > /dev/null
     if [ $? == 1 ]; then
         pushd
