@@ -798,6 +798,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
 
   */
 
+  commandPluginRegistry.registerCommand(new ColumnModePlugin)
   /*
 
 TODO: delete me, code moved to separate plugin files
