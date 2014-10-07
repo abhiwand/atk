@@ -54,8 +54,15 @@ case class Schema(columns: List[(String, DataType)] = List[(String, DataType)]()
   def columnIndex(columnNames: Seq[String]): Seq[Int] = {
     if (columnNames.isEmpty)
       (0 to (columns.length - 1)).toList
-    else
-      columnNames.map(col => columns.indexWhere(columnTuple => columnTuple._1 == col))
+    else {
+      columnNames.map(col => {
+        val index = columns.indexWhere(columnTuple => columnTuple._1 == col)
+        if (index == -1)
+          throw new IllegalArgumentException(s"Invalid column name/s provided. Check schema : $columnNames")
+        else
+          index
+      })
+    }
   }
 
   /**
