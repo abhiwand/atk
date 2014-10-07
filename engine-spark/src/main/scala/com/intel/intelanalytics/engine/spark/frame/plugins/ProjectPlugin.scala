@@ -47,7 +47,7 @@ class ProjectPlugin extends SparkCommandPlugin[FrameProject, DataFrame] {
    * The format of the name determines how the plugin gets "installed" in the client layer
    * e.g Python client via code generation.
    */
-  override def name: String = "dataframe/project"
+  override def name: String = "frame:/project"
 
   /**
    * User documentation exposed in Python.

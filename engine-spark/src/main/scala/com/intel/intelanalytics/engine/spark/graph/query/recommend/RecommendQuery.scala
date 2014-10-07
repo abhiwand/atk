@@ -82,9 +82,9 @@ import RecommendJsonFormat._
 class RecommendQuery extends SparkCommandPlugin[RecommendParams, RecommendResult] {
 
   /**
-   * The name of the command, e.g. graphs/query/recommend
+   * The name of the command, e.g. graph/sampling/vertex_sample
    */
-  override def name: String = "graphs/query/recommend"
+  override def name: String = "graph:titan/query/recommend"
 
   /**
    * User documentation exposed in Python.
