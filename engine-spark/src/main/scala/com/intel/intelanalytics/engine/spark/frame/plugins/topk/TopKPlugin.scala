@@ -49,7 +49,7 @@ class TopKPlugin extends SparkCommandPlugin[TopK, DataFrame] {
    * The format of the name determines how the plugin gets "installed" in the client layer
    * e.g Python client via code generation.
    */
-  override def name: String = "dataframe/top_k"
+  override def name: String = "frame:/top_k"
 
   /**
    * User documentation exposed in Python.

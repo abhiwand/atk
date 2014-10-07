@@ -78,7 +78,7 @@ class LatentDirichletAllocation
    * The format of the name determines how the plugin gets "installed" in the client layer
    * e.g Python client via code generation.
    */
-  override def name: String = "graphs/ml/latent_dirichlet_allocation"
+  override def name: String = "graph:titan/ml/latent_dirichlet_allocation"
 
   /**
    * User documentation exposed in Python.

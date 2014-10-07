@@ -46,7 +46,7 @@ class ColumnMedianPlugin extends SparkCommandPlugin[ColumnMedian, ColumnMedianRe
    * The format of the name determines how the plugin gets "installed" in the client layer
    * e.g Python client via code generation.
    */
-  override def name: String = "dataframe/column_median"
+  override def name: String = "frame:/column_median"
 
   /**
    * User documentation exposed in Python.
