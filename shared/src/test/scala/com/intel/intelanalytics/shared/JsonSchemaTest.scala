@@ -37,7 +37,7 @@ class JsonSchemaTest extends FlatSpec with Matchers {
     "string" -> new StringSchema(),
     "array" -> ArraySchema(),
     "option" -> JsonSchema.int,
-    "frame" -> StringSchema(format = Some("ia/dataframe"), self = Some(true)),
+    "frame" -> StringSchema(format = Some("ia/frame"), self = Some(true)),
     "other_frame" -> StringSchema(format = Some("ia/graph"))
   )),
     required = Some(Array("int", "long", "string", "array", "frame", "other_frame")))

@@ -56,7 +56,7 @@ class QuantilesPlugin extends SparkCommandPlugin[Quantiles, QuantileValues] {
    * The format of the name determines how the plugin gets "installed" in the client layer
    * e.g Python client via code generation.
    */
-  override def name: String = "dataframe/quantiles"
+  override def name: String = "frame:/quantiles"
 
   /**
    * User documentation exposed in Python.

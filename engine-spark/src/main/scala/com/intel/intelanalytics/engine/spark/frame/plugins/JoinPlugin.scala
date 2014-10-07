@@ -52,7 +52,7 @@ class JoinPlugin(frames: SparkFrameStorage) extends SparkCommandPlugin[FrameJoin
    * The format of the name determines how the plugin gets "installed" in the client layer
    * e.g Python client via code generation.
    */
-  override def name: String = "dataframe/join"
+  override def name: String = "frame:/join"
 
   /**
    * User documentation exposed in Python.

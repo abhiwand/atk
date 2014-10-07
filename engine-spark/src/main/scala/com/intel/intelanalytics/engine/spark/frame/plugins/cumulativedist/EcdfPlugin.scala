@@ -47,7 +47,7 @@ class EcdfPlugin extends SparkCommandPlugin[ECDF[Long], DataFrame] {
    * The format of the name determines how the plugin gets "installed" in the client layer
    * e.g Python client via code generation.
    */
-  override def name: String = "dataframe/ecdf"
+  override def name: String = "frame:/ecdf"
 
   /**
    * User documentation exposed in Python.

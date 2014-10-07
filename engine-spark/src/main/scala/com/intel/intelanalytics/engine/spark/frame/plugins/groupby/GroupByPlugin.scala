@@ -25,7 +25,7 @@ class GroupByPlugin extends SparkCommandPlugin[FrameGroupByColumn, DataFrame] {
    * The format of the name determines how the plugin gets "installed" in the client layer
    * e.g Python client via code generation.
    */
-  override def name: String = "dataframe/group_by"
+  override def name: String = "frame:/group_by"
 
   /**
    * User documentation exposed in Python.

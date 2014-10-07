@@ -68,14 +68,14 @@ class LoadLinesTest extends FlatSpec with Matchers {
     parser.arguments should be(LineParserArguments('`', Schema(List(("json", DataTypes.string))), Some(0)))
   }
 
-  "Load" should "parse a Load object with for a dataframe source" in {
+  "Load" should "parse a Load object with for a frame source" in {
     val string =
       """
         |{
         |    "destination": "ia://frame/5",
         |    "source": {
-        |      "source_type": "dataframe",
-        |      "uri": "http://localhost:9099/v1/dataframes/5"
+        |      "source_type": "frame",
+        |      "uri": "http://localhost:9099/v1/frames/5"
         |    }
         |}
         |
@@ -83,8 +83,8 @@ class LoadLinesTest extends FlatSpec with Matchers {
     val myJson = JsonParser(string).asJsObject
     val myLoadLines = myJson.convertTo[Load]
 
-    myLoadLines.source.uri should be("http://localhost:9099/v1/dataframes/5")
-    myLoadLines.source.source_type should be("dataframe")
+    myLoadLines.source.uri should be("http://localhost:9099/v1/frames/5")
+    myLoadLines.source.source_type should be("frame")
     myLoadLines.source.parser should be(None)
   }
 

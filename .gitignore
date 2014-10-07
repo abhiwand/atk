@@ -30,6 +30,7 @@ git
 /python/nosetests.xml
 /python/intelanalytics/core/autoframe.py
 /python/intelanalytics/core/autograph.py
+/python/intelanalytics/core/docstubs.py*
 largegit.sh
 make.sh
 .metadata*

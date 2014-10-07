@@ -40,7 +40,7 @@ def get_sorted_json_str(json_obj):
 def get_sorted_json_str_from_str(json_str):
     return get_sorted_json_str(json.loads(json_str))
 
-#http://localhost:8090/v1/dataframes/17",
+#http://localhost:8090/v1/frames/17",
 
 
 class TestGraphBackendRest(unittest.TestCase):
@@ -51,7 +51,7 @@ class TestGraphBackendRest(unittest.TestCase):
   "frames":
   [
     {
-      "frame_uri" : "hardcoded.com:9999/v1/dataframes/0",
+      "frame_uri" : "hardcoded.com:9999/v1/frames/0",
       "vertex_rules" :
       [
         {
@@ -125,7 +125,7 @@ class TestGraphBackendRest(unittest.TestCase):
                                         ('rating', str),
                                         ('popcorn', str),
                                         ('released', str)],
-                                       "hardcoded.com:9999/v1/dataframes/0")
+                                       "hardcoded.com:9999/v1/frames/0")
         movie_vertex = VertexRule("movie", frame.movie, {"year": frame.released})
         user_vertex = VertexRule("user", frame.user)
         rules = [movie_vertex,
