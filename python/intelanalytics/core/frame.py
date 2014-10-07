@@ -21,7 +21,7 @@
 # must be express and approved by Intel in writing.
 ##############################################################################
 """
-BigFrame
+Frame
 """
 
 import logging
@@ -34,128 +34,46 @@ from intelanalytics.core.userfunction import has_python_user_function_arg
 
 from intelanalytics.core.column import BigColumn
 from intelanalytics.core.errorhandle import IaError
+from intelanalytics.core.namedobj import name_support
+from intelanalytics.core.metaprog import CommandLoadable, doc_stubs_import
 
-from intelanalytics.core.metaprog import CommandLoadable
-try:
-    from intelanalytics.core.autoframe import CommandLoadableBigFrame
-    logger.info("BigFrame is inheriting commands from autoframe.py")
-except:
-    msg = "autoframe.py not found, BigFrame is NOT inheriting commands from it"
-    logger.warn(msg)
-    import warnings
-    warnings.warn(msg, RuntimeWarning)
-    CommandLoadableBigFrame = CommandLoadable
-
-from intelanalytics.core.deprecate import deprecated
+from intelanalytics.core.deprecate import deprecated, raise_deprecation_warning
 
 
 def _get_backend():
     from intelanalytics.core.config import get_frame_backend
     return get_frame_backend()
 
-@api
-def get_frame_names():
-    """
-    BigFrame names.
 
-    Gets the names of all frames available for retrieval.
+# BaseFrame
+try:
+    # boilerplate required here for static analysis to pick up the inheritance (the whole point of docstubs)
+    from intelanalytics.core.docstubs import DocStubsBaseFrame as CommandLoadableBaseFrame
+    doc_stubs_import.success(logger, "DocStubsBaseFrame")
+except Exception as e:
+    doc_stubs_import.failure(logger, "DocStubsBaseFrame", e)
+    CommandLoadableBaseFrame = CommandLoadable
 
-    Returns
-    -------
-    list of strings
-        Names of the all BigFrame objects
 
-    Examples
-    --------
-    Create two BigFrame objects and get their names::
+class BaseFrame(CommandLoadableBaseFrame):
+    _command_prefix = 'frame'
 
-        my_frame = ia.BigFrame(csv_schema_1, "BigFrame1")
-        your_frame = ia.BigFrame(csv_schema_2, "BigFrame2")
-        frame_names = ia.get_frame_names()
-        print frame_names
+    def __init__(self):
+        CommandLoadableBaseFrame.__init__(self)
 
-    Result would be::
 
-        ["BigFrame1", "BigFrame2"]
-
-    .. versionadded:: 0.8
-
-    """
-    return _get_backend().get_frame_names()
-
+# Frame
+try:
+    # boilerplate required here for static analysis to pick up the inheritance (the whole point of docstubs)
+    from intelanalytics.core.docstubs import DocStubsFrame as CommandLoadableFrame
+    doc_stubs_import.success(logger, "DocStubsFrame")
+except Exception as e:
+    doc_stubs_import.failure(logger, "DocStubsFrame", e)
+    CommandLoadableFrame = BaseFrame
 
 @api
-def get_frame(name):
-    """
-    Get BigFrame.
-
-    Retrieves a BigFrame class object to allow access to the data frame
-
-    Parameters
-    ----------
-    name : string
-        String containing the name of the BigFrame object
-
-    Returns
-    -------
-    class
-        BigFrame class object
-
-    Examples
-    --------
-    Create a frame *my_frame*; create a BigFrame proxy for it; check that the new BigFrame is
-    equivalent to the original::
-
-        my_frame = ia.BigFrame(my_csv, "my_frame")
-        your_frame = ia.get_frame("my_frame")
-        print my_frame == your_frame
-
-    Result would be::
-
-        True
-
-    .. versionadded:: 0.8
-
-    """
-    return _get_backend().get_frame(name)
-
-
-@api
-def drop_frames(frame):
-    """
-    Erases data.
-
-    Deletes the frame from backing store
-
-    Parameters
-    ----------
-    frame : string or BigFrame
-        Either the name of the BigFrame object to delete or the BigFrame object itself
-
-    Returns
-    -------
-    string
-        The name of the deleted frame
-
-    Examples
-    --------
-    Create a new frame; delete it; print what gets returned from the function::
-
-        my_frame = ia.BigFrame(my_csv, 'my_frame')
-        deleted_frame = ia.drop_frames('my_frame')
-        print deleted_frame
-
-    The result would be::
-
-        "my_frame"
-
-    .. versionchanged:: 0.8.5
-
-    """
-    return _get_backend().delete_frame(frame)
-
-
-class BigFrame(CommandLoadableBigFrame):
+@name_support('frame')
+class Frame(CommandLoadableFrame):
     """
     Data handle.
 
@@ -216,9 +134,7 @@ class BigFrame(CommandLoadableBigFrame):
 
     # TODO - Review Parameters, Examples
 
-    # command load filters:
-    _command_prefixes = ['dataframe', 'dataframes']
-    _muted_command_names = ['load', 'project', 'rename_frame']  # these commands are not exposed
+    _command_prefix = 'frame:'
 
     def __init__(self, source=None, name=None):
         try:
@@ -227,7 +143,7 @@ class BigFrame(CommandLoadableBigFrame):
             self._ia_uri = None
             if not hasattr(self, '_backend'):  # if a subclass has not already set the _backend
                 self._backend = _get_backend()
-            CommandLoadableBigFrame.__init__(self)
+            CommandLoadableFrame.__init__(self)
             new_frame_name = self._backend.create(self, source, name)
             logger.info('Created new frame "%s"', new_frame_name)
         except:
@@ -244,7 +160,7 @@ class BigFrame(CommandLoadableBigFrame):
         if name == '_backend':
             raise AttributeError('_backend')
         try:
-            return super(BigFrame, self).__getattribute__(name)
+            return super(Frame, self).__getattribute__(name)
         except AttributeError:
             return self._get_column(name, AttributeError, "Attribute '%s' not found")
 
@@ -272,7 +188,7 @@ class BigFrame(CommandLoadableBigFrame):
         try:
             return self._backend.get_repr(self)
         except:
-            return super(BigFrame, self).__repr__() + " (Unable to collect metadata from server)"
+            return super(Frame, self).__repr__() + " (Unable to collect metadata from server)"
 
     def __len__(self):
         try:
@@ -314,10 +230,10 @@ class BigFrame(CommandLoadableBigFrame):
             raise StopIteration
 
     def __iter__(self):
-            return BigFrame._FrameIter(self)
+            return Frame._FrameIter(self)
 
     def __eq__(self, other):
-            if not isinstance(other, BigFrame):
+            if not isinstance(other, Frame):
                 return False
             return self._id == other._id
 
@@ -856,7 +772,7 @@ class BigFrame(CommandLoadableBigFrame):
             new_names = None
         else:
             raise ValueError("bad argument type %s passed to copy().  Must be string or dict" % type(columns))
-        copied_frame = BigFrame()
+        copied_frame = Frame()
         self._backend.project_columns(self, copied_frame, column_names, new_names)
         return copied_frame
 
@@ -1554,3 +1470,9 @@ class BigFrame(CommandLoadableBigFrame):
         """
         result = self._backend.take(self, n, offset, columns)
         return result.data
+
+
+class BigFrame(Frame):
+    def __init__(self, *args, **kwargs):
+        raise_deprecation_warning('BigFrame', 'Use Frame()')
+        super(BigFrame, self).__init__(*args, **kwargs)

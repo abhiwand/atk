@@ -46,7 +46,7 @@ class DropColumnsPlugin extends SparkCommandPlugin[FrameDropColumns, DataFrame] 
    * The format of the name determines how the plugin gets "installed" in the client layer
    * e.g Python client via code generation.
    */
-  override def name: String = "dataframe/drop_columns"
+  override def name: String = "frame:/drop_columns"
 
   /**
    * User documentation exposed in Python.
