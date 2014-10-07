@@ -31,6 +31,7 @@ import parquet.column.{ ColumnReadStore, ColumnReader, ColumnDescriptor }
 import parquet.column.page.PageReadStore
 import parquet.hadoop.{ Footer, ParquetFileReader }
 import parquet.hadoop.metadata.ParquetMetadata
+import parquet.io.ParquetDecodingException
 import parquet.schema.PrimitiveType.PrimitiveTypeName
 import parquet.schema.MessageType
 import scala.collection.JavaConverters._
@@ -105,11 +106,13 @@ class ParquetReader(val path: Path, fileStorage: HdfsFileStorage, parquetApiFact
 
     columns.zipWithIndex.foreach {
       case (col: ColumnDescriptor, columnIndex: Int) => {
+        val dMax = col.getMaxDefinitionLevel
         val creader = store.getColumnReader(col)
 
         if (offset > 0) {
           0.to(offset - 1).foreach(_ => {
-            creader.skip()
+            if (creader.getCurrentDefinitionLevel == dMax)
+              creader.skip()
             creader.consume()
           })
         }
@@ -120,7 +123,13 @@ class ParquetReader(val path: Path, fileStorage: HdfsFileStorage, parquetApiFact
           if (result.size <= expectedSize) {
             result += new Array[Any](columnslength)
           }
-          val value = getValue(creader, col.getType)
+          val dlvl = creader.getCurrentDefinitionLevel
+          val value = if (dlvl == dMax) {
+            getValue(creader, col.getType)
+          }
+          else {
+            null
+          }
           result(expectedSize)(columnIndex) = value
           creader.consume()
         })
