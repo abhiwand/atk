@@ -24,13 +24,14 @@ import iatest
 iatest.init()
 
 import unittest
+import mock
 import intelanalytics.core.iatypes as iatypes
 from intelanalytics.core.metaprog import CommandLoadable, load_loadable
 from intelanalytics.core.command import CommandDefinition, Parameter, Return
 from intelanalytics.core.loggers import loggers
 
 class Numbers(CommandLoadable):
-    _command_prefixes = ['numbers']
+    _command_prefix = 'numbers'
     def __init__(self, name):
         self._id = name
         CommandLoadable.__init__(self)
@@ -74,9 +75,11 @@ def get_numbers(cmd_name, **args):
 
 class TestCommandsLoadable(unittest.TestCase):
 
+    @mock.patch("intelanalytics.core.api.check_api_is_loaded", mock.Mock())
     def test_loadable_with_intermediates(self):
         #loggers.set(10, 'intelanalytics.core.metaprog')
-        load_loadable(Numbers, cmd_defs, get_numbers)
+        for cmd_def in cmd_defs:
+            load_loadable(Numbers, cmd_def, get_numbers)
         n = Numbers('A')
         help(n.lang.spanish)
         self.assertEqual("uno, dos", n.lang.spanish(1, 2))

@@ -46,7 +46,7 @@ class ClassificationMetricsPlugin extends SparkCommandPlugin[ClassificationMetri
    * The format of the name determines how the plugin gets "installed" in the client layer
    * e.g Python client via code generation.
    */
-  override def name: String = "dataframe/classification_metrics"
+  override def name: String = "frame:/classification_metrics"
 
   /**
    * User documentation exposed in Python.

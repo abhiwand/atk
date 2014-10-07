@@ -90,7 +90,7 @@ intel.analytics.engine {
     igiraph-titan: "com.intel.intelanalytics.algorithm.graph.IGiraphArchive"
   }
   commands {
-    dataframes.create = {}
+    frames.create = {}
     graphs.ml {
 //      als {
 //        giraph = ${intel.analytics.engine.giraph}

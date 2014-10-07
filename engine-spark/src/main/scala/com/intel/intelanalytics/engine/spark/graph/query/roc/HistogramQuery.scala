@@ -84,9 +84,9 @@ import HistogramJsonFormat._
 class HistogramQuery extends SparkCommandPlugin[HistogramParams, HistogramResult] {
 
   /**
-   * The name of the command, e.g. graphs/ml/loopy_belief_propagation
+   * The name of the command, e.g. graph/sampling/vertex_sample
    */
-  override def name: String = "graphs/query/histogram"
+  override def name: String = "graph:titan/query/histogram"
 
   /**
    * User documentation exposed in Python.

@@ -30,7 +30,7 @@ import spray.json.JsValue
 import spray.json._
 import DefaultJsonProtocol._
 /**
- * Datatypes supported for dataframes, graphs, etc.
+ * Datatypes supported for frames, graphs, etc.
  */
 object DataTypes {
 

@@ -48,7 +48,7 @@ class FilterPlugin extends SparkCommandPlugin[FilterPredicate, DataFrame] {
    * The format of the name determines how the plugin gets "installed" in the client layer
    * e.g Python client via code generation.
    */
-  override def name: String = "dataframe/filter"
+  override def name: String = "frame:/filter"
 
   /**
    * User documentation exposed in Python.

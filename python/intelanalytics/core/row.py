@@ -47,13 +47,27 @@ class Row(object):
         return zip(self.keys(), self.values())
 
     def get_cell_type(self, key):
-        return self.schema_dict[key]
+        try:
+            return self.schema_dict[key]
+        except KeyError:
+            raise ValueError("'%s' is not in the schema" % key)
 
     def _get_cell_value(self, key):
-        index = self.schema_dict.keys().index(key)  # could improve speed here...
+        try:
+            index = self.schema_dict.keys().index(key)  # could improve speed here...
+        except ValueError:
+            raise KeyError(key)
         return self._get_cell_value_by_index(index)
 
     def _get_cell_value_by_index(self, index):
         # converts the value into the proper data type
-        dtype = self.schema_dict.values()[index]
-        return valid_data_types.cast(self.data[index], dtype)
+        try:
+            dtype = self.schema_dict.values()[index]
+        except IndexError:
+            raise IndexError("Internal Error: improper index %d used in schema with %d columns"
+                             % (index, len(self.schema_dict)))
+        try:
+            return valid_data_types.cast(self.data[index], dtype)
+        except IndexError:
+            raise IndexError("Internal Error: improper index %d used in row data with %d columns"
+                             % (index, len(self.data)))

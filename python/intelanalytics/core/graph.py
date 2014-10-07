@@ -29,21 +29,14 @@ logger = logging.getLogger(__name__)
 from intelanalytics.core.api import get_api_decorator
 api = get_api_decorator(logger)
 
+from intelanalytics.core.metaprog import CommandLoadable, doc_stubs_import
+from intelanalytics.core.namedobj import name_support
 import uuid
 
 from intelanalytics.core.serialize import to_json
 from intelanalytics.core.column import BigColumn
-from intelanalytics.core.metaprog import CommandLoadable
 
-try:
-    from intelanalytics.core.autograph import CommandLoadableBigGraph
-    logger.info("BigGraph is inheriting commands from autograph.py")
-except Exception as e:
-    msg = "autograph.py not found, BigGraph is NOT inheriting commands from it\n%s" % e
-    logger.warn(msg)
-    import warnings
-    warnings.warn(msg, RuntimeWarning)
-    CommandLoadableBigGraph = CommandLoadable
+from intelanalytics.core.deprecate import raise_deprecation_warning
 
 
 def _get_backend():
@@ -85,7 +78,7 @@ def get_graph(name):
     """
     Get graph access.
 
-    Creates a BigGraph access point to the named graph.
+    Creates a Graph access point to the named graph.
 
     Parameters
     ----------
@@ -95,7 +88,7 @@ def get_graph(name):
     Returns
     -------
     graph
-        A BigGraph object
+        A Graph object
 
     Examples
     --------
@@ -104,7 +97,7 @@ def get_graph(name):
 
         my_graph = ia.get_graph("virus")
 
-    my_graph is now a BigGraph object with access to the graph *virus*.
+    my_graph is now a Graph object with access to the graph *virus*.
 
     .. versionadded:: 0.8
 
@@ -120,8 +113,8 @@ def drop_graphs(graphs):
 
     Parameters
     ----------
-    graphs : string or BigGraph
-        Either the name of the BigGraph object to delete or the BigGraph object itself
+    graphs : string or Graph
+        Either the name of the Graph object to delete or the Graph object itself
 
     Returns
     -------
@@ -298,7 +291,7 @@ class VertexRule(Rule):
         --------
         ::
 
-            my_graph = BigGraph(my_rule_a, my_rule_b, my_rule_1)
+            my_graph = Graph(my_rule_a, my_rule_b, my_rule_1)
             validation = my_graph.validate()
 
         .. versionadded:: 0.8
@@ -408,7 +401,39 @@ class EdgeRule(Rule):
         return self._validate_same_frame(label_frame, tail_frame, head_frame, properties_frame)
 
 
-class BigGraph(CommandLoadableBigGraph):
+#
+# class Graph(DocStubsGraph):
+#     pass
+#
+
+
+# BaseGraph
+try:
+    # boilerplate required here for static analysis to pick up the inheritance (the whole point of docstubs)
+    from intelanalytics.core.docstubs import DocStubsBaseGraph as CommandLoadableBaseGraph
+    doc_stubs_import.success(logger, "DocStubsBaseGraph")
+except Exception as e:
+    doc_stubs_import.failure(logger, "DocStubsBaseGraph", e)
+    CommandLoadableBaseGraph = CommandLoadable
+
+
+class BaseGraph(CommandLoadableBaseGraph):
+    def __init__(self):
+        CommandLoadableBaseGraph.__init__(self)
+
+
+# TitanGraph
+try:
+    # boilerplate required here for static analysis to pick up the inheritance (the whole point of docstubs)
+    from intelanalytics.core.docstubs import DocStubsTitanGraph as CommandLoadableTitanGraph
+    doc_stubs_import.success(logger, "DocStubsTitanGraph")
+except Exception as e:
+    doc_stubs_import.failure(logger, "DocStubsTitanGraph", e)
+    CommandLoadableTitanGraph = BaseGraph
+
+@api
+@name_support('graph')  # TODO - move name_support for BaseGraph when time is right
+class TitanGraph(CommandLoadableTitanGraph):
     """
     Creates a big graph.
 
@@ -439,15 +464,13 @@ class BigGraph(CommandLoadableBigGraph):
             is_directed = True)
 
         # create graph
-        graph = ia.BigGraph([user, movie, rates])
+        graph = ia.TitanGraph([user, movie, rates])
 
     .. versionadded:: 0.8
 
     """
 
-    # command load filters:
-    _command_prefixes = ['graph', 'graphs']
-    _muted_command_names = ['rename_graph']  # these commands are not exposed
+    _command_prefix = 'graph:titan'
 
     def __init__(self, rules=None, name=""):
         try:
@@ -455,7 +478,7 @@ class BigGraph(CommandLoadableBigGraph):
             self._ia_uri = None
             if not hasattr(self, '_backend'):
                 self._backend = _get_backend()
-            CommandLoadableBigGraph.__init__(self)
+            CommandLoadableTitanGraph.__init__(self)
             new_graph_name= self._backend.create(self, rules, name)
             logger.info('Created new graph "%s"', new_graph_name)
         except:
@@ -465,61 +488,7 @@ class BigGraph(CommandLoadableBigGraph):
         try:
             return self._backend.get_repr(self)
         except:
-            return super(BigGraph,self).__repr__() + "(Unable to collect metadeta from server)"
-
-    @property
-    @api
-    def name(self):
-        """
-        Get the name of the current object.
-
-        Returns
-        -------
-        string
-            The name of the current object.
-
-        Examples
-        --------
-        ::
-
-            my_graph = ia.BigGraph( , "my_data")
-            my_name = my_graph.name
-
-        my_name is now a string with the value "my_data"
-
-        .. versionadded:: 0.8
-
-        """
-        return self._backend.get_name(self)
-
-    @name.setter
-    @api
-    def name(self, value):
-        """
-        Set the name of the current object.
-
-        Parameters
-        ----------
-        value : string
-            The name for the current object.
-
-        Examples
-        --------
-        ::
-
-            my_graph = ia.BigGraph()
-            my_graph.name("my_data")
-
-        my_graph is now a BigGraph object with the name "my_data"
-
-        .. versionadded:: 0.8
-
-        """
-        # TODO - Review Docstring
-        try:
-            self._backend.rename_graph(self, value)
-        except:
-            raise IaError(logger)
+            return super(TitanGraph,self).__repr__() + "(Unable to collect metadeta from server)"
 
     @property
     @api
@@ -575,7 +544,7 @@ class BigGraph(CommandLoadableBigGraph):
                 is_directed = True)
 
             # create graph
-            graph = ia.BigGraph([user, movie, rates])
+            graph = ia.Graph([user, movie, rates])
 
             # load additional properties onto the user vertices
             usersFrame = ia.BigFrame(ia.CsvFile("/users.csv", schema= [('userId', int32),
@@ -605,3 +574,9 @@ class BigGraph(CommandLoadableBigGraph):
     #def add_props(self, rules)
     #def remove_props(self, rules)
 
+
+# Deprecation of 'BigGraph'
+class BigGraph(TitanGraph):
+    def __init__(self, *args, **kwargs):
+        raise_deprecation_warning('BigGraph', 'Use TitanGraph()')
+        super(BigGraph, self).__init__(*args, **kwargs)

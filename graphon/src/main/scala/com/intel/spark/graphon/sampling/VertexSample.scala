@@ -75,7 +75,7 @@ class VertexSample extends SparkCommandPlugin[VertexSampleArguments, VertexSampl
   /**
    * The name of the command
    */
-  override def name: String = "graphs/sampling/vertex_sample"
+  override def name: String = "graph:titan/sampling/vertex_sample"
 
   /**
    * User documentation exposed in Python.
