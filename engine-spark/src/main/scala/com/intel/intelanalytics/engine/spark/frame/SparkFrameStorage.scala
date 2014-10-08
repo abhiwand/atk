@@ -333,7 +333,7 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
       metaStore.withSession("frame.lookupOrCreateErrorFrame") {
         implicit session =>
           {
-            val errorTemplate = new DataFrameTemplate(frame.name + "-parse-errors", Some("This frame was automatically created to capture parse errors for " + frame.name))
+            val errorTemplate = new DataFrameTemplate(frame.name + "_parse_errors", Some("This frame was automatically created to capture parse errors for " + frame.name))
             val newlyCreateErrorFrame = metaStore.frameRepo.insert(errorTemplate).get
             metaStore.frameRepo.updateErrorFrameId(frame, Some(newlyCreateErrorFrame.id))
 
