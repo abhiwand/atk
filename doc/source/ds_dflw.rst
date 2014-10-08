@@ -74,8 +74,10 @@ Each column has a unique name and holds a specific data type.
 Each row holds a set of data.
 
 To import CSV data you need a :term:`schema` defining the structure of your data.
-Schemas are constructed as a list of tuples, each defining a column in the database, each tuple being composed of a string and a data type.
-The string is the name of the column (see :ref:`Valid Data Types <valid_data_types>`).
+Schemas are constructed as a list of tuples, each defining a column in the database, each tuple being
+composed of a string and a data type.
+The string is the name of the column, and the data type must be valid (see :ref:`Valid Data Types <valid_data_types>`).
+Unicode characters should not be used in column names.
 The order of the columns in the schema must match the order of columns in the data.
 
 Let's start with a file *Data.csv* whose contents look like this::
@@ -100,9 +102,10 @@ and the name should be an empty string ``''``::
     schema_2 = [('column_a', str), ('', ignore), ('more_data', str)]
 
 The delimiter can be declared using the key word ``delimiter``.
-This would be a benefit if the delimiter is something other than a comma, for example, ``\t`` for tab-delimited records.
-If there are lines at the beginning of the file that should be skipped, the number of lines to skip can be passed in with
-the ``skip_header_lines`` parameter.
+This would be a benefit if the delimiter is something other than a comma, for example, ``\t`` for
+tab-delimited records.
+If there are lines at the beginning of the file that should be skipped, the number of lines to skip can be
+passed in with the ``skip_header_lines`` parameter.
 
 Now we use the schema and the file name to create objects used to define the data layouts::
 
@@ -119,89 +122,14 @@ Now we use the schema and the file name to create objects used to define the dat
                    skip_header_lines=2)
 
 
-.. TODO:: Other import data formats
-
-    JSON File
-
-
-    Example:
-
-    >>> {
-           "firstName": "John",
-           "lastName": "Smith",
-           "age": 25,
-           "address": {
-               "streetAddress": "21 2nd Street",
-               "city": "New York",
-               "state": "NY",
-               "postalCode": "10021"
-           },
-           "phoneNumber": [
-               {
-                   "type": "home",
-                   "number": "212 555-1239"
-               },
-               {
-                   "type": "fax",
-                   "number": "646 555-4567"
-               }
-           ],
-           "gender":{
-                "type":"male"
-           }
-        }
-
-    Since the raw data has the data descriptors built in, the only things we have to do is define an object to hold the data.
-
-    >>> from intelanalytics.core.files import JsonFile
-        my_json = JsonFile(my_data_file.json)
-
-    XML File
-
-    Example:
-
-    >>> <person>
-          <firstName>John</firstName>
-          <lastName>Smith</lastName>
-          <age>25</age>
-          <address>
-            <streetAddress>21 2nd Street</streetAddress>
-            <city>New York</city>
-            <state>NY</state>
-            <postalCode>10021</postalCode>
-          </address>
-          <phoneNumbers>
-            <phoneNumber type="home">212 555-1234</phoneNumber>
-            <phoneNumber type="fax">646 555-4567</phoneNumber>
-          </phoneNumbers>
-          <gender>
-            <type>male</type>
-          </gender>
-        </person>
-
-    The primitive values can also get encoded using attributes instead of tags:
-
-    >>> <person firstName="John" lastName="Smith" age="25">
-          <address streetAddress="21 2nd Street" city="New York" state="NY" postalCode="10021" />
-          <phoneNumbers>
-             <phoneNumber type="home" number="212 555-1234"/>
-             <phoneNumber type="fax"  number="646 555-4567"/>
-          </phoneNumbers>
-          <gender type="male"/>
-        </person>
-
-    Since the raw data has the data descriptors built in, the only things we have to do is define an object to hold the data.
-
-    >>> from intelanalytics.core.files import XmlFile
-        my_xml = XmlFile(my_data_file.xml)
-
 .. _example_frame.bigframe:
 
 --------
 BigFrame
 --------
 
-A :term:`BigFrame` is a class of objects capable of accessing and controlling a :term:`frame` containing "big data".
+A :term:`BigFrame` is a class of objects capable of accessing and controlling a :term:`frame` containing
+"big data".
 The frame is visualized as a table structure of rows and columns.
 It can handle large volumes of data, because it is designed to work with data spread over multiple clusters.
 
@@ -219,16 +147,18 @@ To create an empty frame and a BigFrame object, *f*, to access it::
 
     f = BigFrame()
 
-To create a frame defined by the schema *my_csv*, import the data, name the frame "bf", and create a BigFrame object, *my_frame*, to access it::
+To create a frame defined by the schema *my_csv*, import the data, name the frame "bf", and create a
+BigFrame object, *my_frame*, to access it::
 
     my_frame = BigFrame(my_csv, 'bf')
 
-To create a new frame, identical to the frame named *bf* (except for the name, because the name must always be unique),
-and create a BigFrame object *f2* to access it::
+To create a new frame, identical to the frame named *bf* (except for the name, because the name must always
+be unique), and create a BigFrame object *f2* to access it::
 
     f2 = BigFrame(my_frame)
 
-To create a new frame with only columns *a* and *c* from the original frame *bf*, and save the BigFrame object as *f3*::
+To create a new frame with only columns *a* and *c* from the original frame *bf*, and save the BigFrame
+object as *f3*::
 
     f3 = BigFrame(my_frame[['a', 'c']])
 
@@ -290,7 +220,8 @@ See also the *join* method in the :doc:`API <ds_apic>` section.
 
 Inspect The Data
 ================
-IAT provides several functions that allow you to inspect your data, including attributes, .inspect(), and .take().
+IAT provides several functions that allow you to inspect your data, including attributes, .inspect(), and
+.take().
 
 Examples
 --------
@@ -395,7 +326,7 @@ Drop any rows where the data matches some previously-implemented evaluation row 
 .. _example_frame.drop_columns:
 
 Drop Columns:
----------------
+-------------
 
 Columns can be dropped either with a string matching the column name or a list of strings::
 
@@ -408,6 +339,7 @@ Rename Columns:
 ---------------
 
 Columns can be renamed by giving the existing column name and the new name, in the form of a dictionary.
+Unicode characters should not be used for column names.
 
 Rename column *a* to *id*::
 
@@ -734,15 +666,16 @@ Vertex Rule:
 
 To create a rule for :term:`vertices`, one needs to define:
 
-1. The label for the vertices, for example, the string "empID".
-#. The identification value of each vertex, for example, the column "emp_id" of our frame.
-#. The properties of the vertex.
+1.  The label for the vertices, for example, the string "empID".
+#.  The identification value of each vertex, for example, the column "emp_id" of our frame.
+#.  The properties of the vertex.
 
 Note:
     The properties of a vertex:
 
-    1. Consist of a label and its value. For example, the property *name* with its value taken from column *name* of our frame.
-    #. Are optional, which means a vertex might have zero or more properties.
+    1.  Consist of a label and its value. For example, the property *name* with its value taken from
+            column *name* of our frame.
+    #.  Are optional, which means a vertex might have zero or more properties.
 
 Vertex Rule Example:
 ~~~~~~~~~~~~~~~~~~~~
