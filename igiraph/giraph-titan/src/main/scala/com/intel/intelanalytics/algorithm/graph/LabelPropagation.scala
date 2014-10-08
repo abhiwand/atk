@@ -79,8 +79,6 @@ class LabelPropagation
    */
   override def doc = Some(CommandDoc(oneLineSummary = "Label Propagation on Gaussian Random Fields.",
     extendedSummary = Some("""
-                           |    Extended Summary
-                           |    ----------------
                            |    This algorithm is presented in X. Zhu and Z. Ghahramani.
                            |    Learning from labeled and unlabeled data with label propagation.
                            |    Technical Report CMU-CALD-02-107, CMU, 2002.
