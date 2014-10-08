@@ -902,10 +902,14 @@ class Frame(CommandLoadableFrame):
 
         Examples
         --------
-        For this example, my_frame is a BigFrame object with lots of data for the attributes of *lizards*, *frogs*, and *snakes*.
+        For this example, my_frame is a BigFrame object with lots of data for the attributes of *lizards*,
+        *frogs*, and *snakes*.
         Get rid of everything, except information about *lizards* and *frogs*::
 
-            my_frame.filter(animal_type == "lizard" or animal_type == "frog")
+            def my_filter(row):
+                return row['animal_type'] == 'lizard' or row['animal_type'] == "frog"
+
+            my_frame.filter(my_filter)
 
         The frame now only has data about lizards and frogs
 
