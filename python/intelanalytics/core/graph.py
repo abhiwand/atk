@@ -48,7 +48,7 @@ def get_graph_names():
     """
     Get graph names.
 
-    Gets the names of graphs available for retrieval.
+    Gets the names of BigGraph objects available for retrieval.
 
     Returns
     -------
@@ -61,9 +61,6 @@ def get_graph_names():
     Get the graph names::
 
         my_names = ia.get_graph_names()
-        print my_names
-        
-        ['incomes', 'movies', 'virus']
 
     my_names is now ["incomes", "movies", "virus"]
 
@@ -257,10 +254,8 @@ class VertexRule(Rule):
     --------
     ::
 
-        movie_vertex = ia.VertexRule('movie', my_frame['movie'], {'genre':
-            my_frame['genre']})
-        user_vertex = ia.VertexRule('user', my_frame['user'], {'age':
-            my_frame['age_1']})
+        movie_vertex = ia.VertexRule('movie', my_frame['movie'], {'genre': my_frame['genre']})
+        user_vertex = ia.VertexRule('user', my_frame['user'], {'age': my_frame['age_1']})
 
     .. versionadded:: 0.8
 
@@ -327,26 +322,32 @@ class EdgeRule(Rule):
         property_name is a string, and property_value is a literal value
         or a BigColumn source, which must be from same BigFrame as head,
         tail and label
-    is_directed : bool
-        indicates the edge is directed
+    bidirectional : bool
+        indicates the edge is bidirectional
 
     Examples
     --------
     ::
 
-        rating_edge = ia.EdgeRule('rating', movie_vertex, user_vertex, {'weight':
-            my_frame['score']})
+        rating_edge = ia.EdgeRule('rating', movie_vertex, user_vertex, {'weight': my_frame['score']})
 
     .. versionadded:: 0.8
 
     """
-    def __init__(self, label, tail, head, properties=None, is_directed=False):
+    def __init__(self, label, tail, head, properties=None, bidirectional=False, is_directed=None):
+        self.bidirectional = bool(bidirectional)
+        if is_directed is not None:
+            raise_deprecation_warning("EdgeRule", "bool parameter 'is_directed' is now called"
+                                                  "'bidirectional' and has opposite polarity.")
+            self.bidirectional = not is_directed
+
         self.label = label
         self.tail = tail
         self.head = head
         self.properties = properties or {}
-        self.is_directed = bool(is_directed)
+
         super(EdgeRule, self).__init__()  # invokes validation
+
 
     def _as_json_obj(self):
         """JSON from point of view of Python API, NOT the REST API"""
@@ -460,8 +461,7 @@ class TitanGraph(CommandLoadableTitanGraph):
         # define graph parsing rules
         user = ia.VertexRule("user", frame.user, {"vertexType": frame.vertexType})
         movie = ia.VertexRule("movie", frame.movie)
-        rates = ia.EdgeRule("rating", user, movie, { "rating": frame.rating },
-            is_directed = True)
+        rates = ia.EdgeRule("rating", user, movie, { "rating": frame.rating }, bidirectional = True)
 
         # create graph
         graph = ia.TitanGraph([user, movie, rates])
@@ -524,8 +524,7 @@ class TitanGraph(CommandLoadableTitanGraph):
             # define graph parsing rules
             user = ia.VertexRule("user", frame.user, {"vertexType": frame.vertexType})
             movie = ia.VertexRule("movie", frame.movie)
-            rates = ia.EdgeRule("rating", user, movie, { "rating": frame.rating },
-                is_directed = True)
+            rates = ia.EdgeRule("rating", user, movie, { "rating": frame.rating }, bidirectional = True)
 
             # append data from the frame to an existing graph
             graph.append([user, movie, rates])
@@ -540,24 +539,19 @@ class TitanGraph(CommandLoadableTitanGraph):
             # define graph parsing rules
             user = ia.VertexRule("user", ratingsFrame.userId)
             movie = ia.VertexRule("movie", ratingsFrame.movieId)
-            rates = ia.EdgeRule("rating", user, movie, { "rating": ratingsFrame.rating },
-                is_directed = True)
+            rates = ia.EdgeRule("rating", user, movie, { "rating": ratingsFrame.rating }, bidirectional = True)
 
             # create graph
             graph = ia.Graph([user, movie, rates])
 
             # load additional properties onto the user vertices
-            usersFrame = ia.BigFrame(ia.CsvFile("/users.csv", schema= [('userId', int32),
-                ('name', str), ('age', int32)]))
-            userAdditional = ia.VertexRule("user", usersFrame.userId, {"userName":
-                usersFrame.name, "age": usersFrame.age })
+            usersFrame = ia.BigFrame(ia.CsvFile("/users.csv", schema= [('userId', int32), ('name', str), ('age', int32)]))
+            userAdditional = ia.VertexRule("user", usersFrame.userId, {"userName": usersFrame.name, "age": usersFrame.age })
             graph.append([userAdditional])
 
             # load additional properties onto the movie vertices
-            movieFrame = ia.BigFrame(ia.CsvFile("/movies.csv", schema= [('movieId', int32),
-                ('title', str), ('year', int32)]))
-            movieAdditional = ia.VertexRule("movie", movieFrame.movieId, {"title":
-                movieFrame.title, "year": movieFrame.year })
+            movieFrame = ia.BigFrame(ia.CsvFile("/movies.csv", schema= [('movieId', int32), ('title', str), ('year', int32)]))
+            movieAdditional = ia.VertexRule("movie", movieFrame.movieId, {"title": movieFrame.title, "year": movieFrame.year })
             graph.append([movieAdditional])
 
         .. versionadded:: 0.8
