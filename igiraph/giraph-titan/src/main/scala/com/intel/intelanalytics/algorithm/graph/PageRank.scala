@@ -76,7 +76,6 @@ class PageRank
    */
   override def doc = Some(CommandDoc(oneLineSummary = "The `PageRank algorithm <http://en.wikipedia.org/wiki/PageRank>`_.",
     extendedSummary = Some("""
-<<<<<<< HEAD
                             |   Parameters
                             |   ----------
                             |   input_edge_label : list of string
