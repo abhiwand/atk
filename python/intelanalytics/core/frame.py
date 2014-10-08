@@ -1269,6 +1269,7 @@ class Frame(CommandLoadableFrame):
         The same thing will happen with the column from the *right* frame, except its name has the string "_R" appended.
 
         It is recommended that you rename the columns to meaningful terms prior to using the ``join`` method.
+        Keep in mind that unicode characters should not be used in column names.
 
         Examples
         --------
@@ -1429,6 +1430,10 @@ class Frame(CommandLoadableFrame):
         ----------
         column_names : dictionary of str pairs
             The name pair (existing name, new name)
+
+        Notes
+        -----
+        Unicode characters should not be used in column names.
 
         Examples
         --------
