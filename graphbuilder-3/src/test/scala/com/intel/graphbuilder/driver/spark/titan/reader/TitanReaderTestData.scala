@@ -96,12 +96,12 @@ object TitanReaderTestData extends Suite with BeforeAndAfterAll {
   }
 
   val seaGbEdge = {
-    val gbSeaEdgeProperties = List(Property("reason", "loves waves"))
+    val gbSeaEdgeProperties = Set(Property("reason", "loves waves"))
     new Edge(neptuneTitanVertex.getID, seaTitanVertex.getID, Property(gbID, neptuneTitanVertex.getID()), Property(gbID, seaTitanVertex.getID()), seaTitanEdge.getLabel(), gbSeaEdgeProperties)
   }
 
   val plutoGbEdge = {
-    new Edge(neptuneTitanVertex.getID, plutoTitanVertex.getID, Property(gbID, neptuneTitanVertex.getID()), Property(gbID, plutoTitanVertex.getID()), plutoTitanEdge.getLabel(), List[Property]())
+    new Edge(neptuneTitanVertex.getID, plutoTitanVertex.getID, Property(gbID, neptuneTitanVertex.getID()), Property(gbID, plutoTitanVertex.getID()), plutoTitanEdge.getLabel(), Set[Property]())
   }
 
   // Serialized Titan rows created using the Titan graph elements defined above.

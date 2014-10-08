@@ -56,11 +56,11 @@ class EdgeDAOTest extends WordSpec with Matchers with TestingTitan with BeforeAn
 
     "create a blueprints edge from a graphbuilder edge" in {
       // setup data dependency - vertices are needed before edges
-      vertexDAO.create(new Vertex(new Property("gbId", 10001), Nil))
-      vertexDAO.create(new Vertex(new Property("gbId", 10002), Nil))
+      vertexDAO.create(new Vertex(new Property("gbId", 10001), Set.empty[Property]))
+      vertexDAO.create(new Vertex(new Property("gbId", 10002), Set.empty[Property]))
 
       // create input data
-      val gbEdge = new Edge(new Property("gbId", 10001), new Property("gbId", 10002), "myLabel", Nil)
+      val gbEdge = new Edge(new Property("gbId", 10001), new Property("gbId", 10002), "myLabel", Set.empty[Property])
 
       // invoke method under test
       val bpEdge = edgeDAO.create(gbEdge)
@@ -73,11 +73,11 @@ class EdgeDAOTest extends WordSpec with Matchers with TestingTitan with BeforeAn
 
     "updateOrCreate when create is needed" in {
       // setup data dependency - vertices are needed before edges
-      vertexDAO.create(new Vertex(new Property("gbId", 20001), Nil))
-      vertexDAO.create(new Vertex(new Property("gbId", 20002), Nil))
+      vertexDAO.create(new Vertex(new Property("gbId", 20001), Set.empty[Property]))
+      vertexDAO.create(new Vertex(new Property("gbId", 20002), Set.empty[Property]))
 
       // create input data
-      val gbEdge = new Edge(new Property("gbId", 20001), new Property("gbId", 20002), "myLabel", Nil)
+      val gbEdge = new Edge(new Property("gbId", 20001), new Property("gbId", 20002), "myLabel", Set.empty[Property])
 
       // invoke method under test
       val bpEdge = edgeDAO.updateOrCreate(gbEdge)
@@ -92,16 +92,16 @@ class EdgeDAOTest extends WordSpec with Matchers with TestingTitan with BeforeAn
       // setup data dependency - vertices are needed before edges
       val gbId1 = new Property("gbId", 30001)
       val gbId2 = new Property("gbId", 30002)
-      vertexDAO.create(new Vertex(gbId1, Nil))
-      vertexDAO.create(new Vertex(gbId2, Nil))
+      vertexDAO.create(new Vertex(gbId1, Set.empty[Property]))
+      vertexDAO.create(new Vertex(gbId2, Set.empty[Property]))
 
       // create an edge
-      val gbEdge = new Edge(gbId1, gbId2, "myLabel", Nil)
+      val gbEdge = new Edge(gbId1, gbId2, "myLabel", Set.empty[Property])
       val bpEdgeOriginal = edgeDAO.create(gbEdge)
       graph.commit()
 
       // define an updated version of the same edge
-      val updatedEdge = new Edge(gbId1, gbId2, "myLabel", List(new Property("newKey", "newValue")))
+      val updatedEdge = new Edge(gbId1, gbId2, "myLabel", Set(new Property("newKey", "newValue")))
 
       // invoke method under test
       val bpEdgeUpdated = edgeDAO.updateOrCreate(updatedEdge)
@@ -116,10 +116,10 @@ class EdgeDAOTest extends WordSpec with Matchers with TestingTitan with BeforeAn
 
     "create should fail when tail vertex does not exist" in {
       // setup data dependency - vertices are needed before edges
-      vertexDAO.create(new Vertex(new Property("gbId", 40002), Nil))
+      vertexDAO.create(new Vertex(new Property("gbId", 40002), Set.empty[Property]))
 
       // create input data
-      val gbEdge = new Edge(new Property("gbId", 40001), new Property("gbId", 40002), "myLabel", Nil)
+      val gbEdge = new Edge(new Property("gbId", 40001), new Property("gbId", 40002), "myLabel", Set.empty[Property])
 
       // invoke method under test
       an[IllegalArgumentException] should be thrownBy edgeDAO.create(gbEdge)
@@ -127,10 +127,10 @@ class EdgeDAOTest extends WordSpec with Matchers with TestingTitan with BeforeAn
 
     "create should fail when head vertex does not exist" in {
       // setup data dependency - vertices are needed before edges
-      vertexDAO.create(new Vertex(new Property("gbId", 50001), Nil))
+      vertexDAO.create(new Vertex(new Property("gbId", 50001), Set.empty[Property]))
 
       // create input data
-      val gbEdge = new Edge(new Property("gbId", 50001), new Property("gbId", 50002), "myLabel", Nil)
+      val gbEdge = new Edge(new Property("gbId", 50001), new Property("gbId", 50002), "myLabel", Set.empty[Property])
 
       // invoke method under test
       an[IllegalArgumentException] should be thrownBy edgeDAO.create(gbEdge)
@@ -141,13 +141,13 @@ class EdgeDAOTest extends WordSpec with Matchers with TestingTitan with BeforeAn
       val gbId1 = new Property("gbId", 60001)
       val gbId2 = new Property("gbId", 60002)
 
-      vertexDAO.create(new Vertex(gbId1, Nil))
-      vertexDAO.create(new Vertex(gbId2, Nil))
+      vertexDAO.create(new Vertex(gbId1, Set.empty[Property]))
+      vertexDAO.create(new Vertex(gbId2, Set.empty[Property]))
 
-      val bpEdge1 = edgeDAO.create(new Edge(gbId1, gbId2, "myLabel", List(new Property("key1", "original"))))
+      val bpEdge1 = edgeDAO.create(new Edge(gbId1, gbId2, "myLabel", Set(new Property("key1", "original"))))
 
       // invoke method under test
-      edgeDAO.update(new Edge(gbId1, gbId2, "myLabel", List(new Property("key2", "added"))), bpEdge1)
+      edgeDAO.update(new Edge(gbId1, gbId2, "myLabel", Set(new Property("key2", "added"))), bpEdge1)
 
       // validate
       bpEdge1.getProperty("key1").asInstanceOf[String] shouldBe "original"
@@ -164,16 +164,16 @@ class EdgeDAOTest extends WordSpec with Matchers with TestingTitan with BeforeAn
     val gbId4 = new Property("gbId", 10004)
     val gbIdNotInGraph = new Property("gbId", 99999)
 
-    val v1 = vertexDAO.create(new Vertex(gbId1, Nil))
-    val v2 = vertexDAO.create(new Vertex(gbId2, Nil))
-    val v3 = vertexDAO.create(new Vertex(gbId3, Nil))
-    val v4 = vertexDAO.create(new Vertex(gbId4, Nil))
+    val v1 = vertexDAO.create(new Vertex(gbId1, Set.empty[Property]))
+    val v2 = vertexDAO.create(new Vertex(gbId2, Set.empty[Property]))
+    val v3 = vertexDAO.create(new Vertex(gbId3, Set.empty[Property]))
+    val v4 = vertexDAO.create(new Vertex(gbId4, Set.empty[Property]))
 
     val label = "myLabel"
 
-    val bpEdge1 = edgeDAO.create(new Edge(gbId1, gbId2, label, Nil))
-    val bpEdge2 = edgeDAO.create(new Edge(gbId2, gbId3, label, Nil))
-    val bpEdge3 = edgeDAO.create(new Edge(gbId2, gbId4, label, Nil))
+    val bpEdge1 = edgeDAO.create(new Edge(gbId1, gbId2, label, Set.empty[Property]))
+    val bpEdge2 = edgeDAO.create(new Edge(gbId2, gbId3, label, Set.empty[Property]))
+    val bpEdge3 = edgeDAO.create(new Edge(gbId2, gbId4, label, Set.empty[Property]))
 
     graph.commit()
   }
@@ -181,7 +181,7 @@ class EdgeDAOTest extends WordSpec with Matchers with TestingTitan with BeforeAn
   "EdgeDAO find methods" should {
 
     "find blueprints Edges using graphbuilder Edge definitions" in new FindSetup {
-      val bpEdge = edgeDAO.find(new Edge(gbId1, gbId2, label, Nil))
+      val bpEdge = edgeDAO.find(new Edge(gbId1, gbId2, label, Set.empty[Property]))
       bpEdge.get shouldBe bpEdge1
     }
 
@@ -216,7 +216,7 @@ class EdgeDAOTest extends WordSpec with Matchers with TestingTitan with BeforeAn
     }
 
     "not find blueprints Edge when the tail Vertex does not exist" in new FindSetup {
-      val bpEdge = edgeDAO.find(new Edge(gbIdNotInGraph, gbId2, label, Nil))
+      val bpEdge = edgeDAO.find(new Edge(gbIdNotInGraph, gbId2, label, Set.empty[Property]))
       bpEdge.isEmpty shouldBe true
     }
 
