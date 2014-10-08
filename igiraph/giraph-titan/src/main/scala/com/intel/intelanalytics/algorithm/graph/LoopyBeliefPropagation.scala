@@ -84,6 +84,7 @@ class LoopyBeliefPropagation
    */
   override def doc = Some(CommandDoc(oneLineSummary = "Loopy belief propagation on Markov Random Fields(MRF).",
     extendedSummary = Some("""
+
                             |   Extended Summary
                             |   ----------------
                             |   This algorithm was originally designed for acyclic graphical models,
