@@ -23,6 +23,10 @@
 """
 intelanalytics package init, public API
 """
+import sys
+if not sys.version_info[:2] == (2, 7):
+    raise EnvironmentError("Python 2.7 is required for intelanalytics.  Detected version: %s.%s.%s" % tuple(sys.version_info[:3]))
+
 from intelanalytics.core.loggers import loggers
 from intelanalytics.core.iatypes import *
 from intelanalytics.core.aggregation import agg
