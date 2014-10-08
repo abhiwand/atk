@@ -28,6 +28,7 @@ import json
 import subprocess
 import glob
 import os
+import sys
 import warnings
 import inspect
 
@@ -70,16 +71,20 @@ loadables = dict([(item.__name__, item)
                   and item.__name__ not in ignore_loadables])
 
 
-cmd = os.path.join(here, r'../bin/engine-spark.sh')
-print "Calling engine-spark to dump the command json file: %s" % cmd
-subprocess.call(cmd)
+skip_engine_launch = len(sys.argv) > 1 and sys.argv[1].strip() == '-x'
+if skip_engine_launch:
+    print "SKIPPING the call to engine-spark!"
+else:
+    cmd = os.path.join(here, r'../bin/engine-spark.sh')
+    print "Calling engine-spark to dump the command json file: %s" % cmd
+    subprocess.call(cmd)
 
 # Get the command definitions, which should have been dumped by the engine-spark's CommandDumper
 print "Opening dump file and pulling in the command defintions"
 with open("../target/command_dump.json", 'r') as json_file:
     command_defs = [get_command_def(json_schema) for json_schema in json.load(json_file)['commands']]
 
-text = get_doc_stubs_module_text(command_defs, loadables)
+text = get_doc_stubs_module_text(command_defs, loadables, ia)
 if not text:
     print "No doc stub text found, so no file content to write"
     print "Early exit"
@@ -88,6 +93,4 @@ else:
         print "Writing file %s" % file_name
         doc_stubs_file.write(text)
         print "Complete"
-
-
 

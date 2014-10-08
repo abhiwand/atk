@@ -32,6 +32,7 @@ logger = logging.getLogger(__name__)
 
 import sys
 import datetime
+import inspect
 from collections import deque
 from decorator import decorator
 
@@ -56,6 +57,7 @@ ALIASED_EXECUTE_COMMAND_FUNCTION_NAME = 'aliased_execute_command'
 
 DOC_STUB = 'doc_stub'
 DOC_STUB_LOADABLE_CLASS_PREFIX = 'DocStubs'
+DOC_STUB_TEXT = '_doc_stub_text'  # attribute for a function to hold on to its own doc stub text
 
 
 class CommandNotLoadedError(NotImplementedError):
@@ -147,7 +149,7 @@ def get_base_class_name_from_prefix(command_prefix):
 
 
 def get_loadable_class_from_name(class_name, command_prefix):
-    from intelanalytics import api_globals
+    from intelanalytics.core.api import api_globals
     import inspect
     for item in api_globals:
         if inspect.isclass(item) and item.__name__ == class_name:
@@ -455,13 +457,67 @@ def doc_stub(function):
     return decorated_function
 
 
+def api_class_alias(cls):
+    """Decorates aliases (which use inheritance) to NOT have DOC STUB TEXT"""
+    set_doc_stub_text(cls, None)
+    return cls
+
+
+def set_function_doc_stub_text(function, params_text):
+    doc_stub_text = '''@{doc_stub}
+def {name}({params}):
+    """
+    {doc}
+    """
+    pass'''.format(doc_stub=doc_stub.__name__,
+                   name=function.__name__,
+                   params=params_text,
+                   doc=function.__doc__)
+    set_doc_stub_text(function, doc_stub_text)
+
+
+def get_base_class_via_inspect(cls):
+    return inspect.getmro(cls)[1]
+
+
+def set_class_doc_stub_text(cls):
+    doc_stub_text = '''@{doc_stub}
+class {name}({base}):
+    """
+    {doc}
+    """
+    pass'''.format(doc_stub=doc_stub.__name__,
+                   name=cls.__name__,
+                   base=DOC_STUB_LOADABLE_CLASS_PREFIX + cls.__name__, #get_base_class_via_inspect(cls).__name__,
+                   doc=cls.__doc__)
+    set_doc_stub_text(cls, doc_stub_text)
+
+
+def set_doc_stub_text(item, text):
+    setattr(item, DOC_STUB_TEXT, text)
+
+
 def get_doc_stub_class_text(loaded_class):
     base_text = get_loaded_base_class_text(loaded_class)
     intermediate_text = get_intermediate_classes_text(loaded_class)
     return "\n".join([base_text, intermediate_text]) if base_text or intermediate_text else ''
 
 
-def get_doc_stubs_module_text(command_defs, existing_loadables):
+def get_doc_stub_globals_text(module):
+    doc_stub_all = []
+    lines = []
+    for key, value in sorted(module.__dict__.items()):
+        if hasattr(value, DOC_STUB_TEXT):
+            doc_stub_text = getattr(value, DOC_STUB_TEXT)
+            if doc_stub_text:
+                doc_stub_all.append(key)
+                lines.append(doc_stub_text)
+    if doc_stub_all:
+        lines.insert(0, '__all__ = ["%s"]' % '", "'.join(doc_stub_all))
+    return '\n\n\n'.join(lines) if lines else ''
+
+
+def get_doc_stubs_module_text(command_defs, existing_loadables, global_module):
     for command_def in command_defs:
         class_name = get_loadable_class_name_from_command_prefix(command_def.prefix)
         if class_name not in existing_loadables:
@@ -470,6 +526,7 @@ def get_doc_stubs_module_text(command_defs, existing_loadables):
         loadable_class = existing_loadables[class_name]
         load_loadable(loadable_class, command_def, None)  # None for execute_command, since this is a doc stub
     lines = [get_doc_stub_class_text(loaded_class) for loaded_class in existing_loadables.values()]
+    lines.append(get_doc_stub_globals_text(global_module))
     for line in lines:
         if line:
             lines.insert(0, get_file_header_text())
@@ -579,4 +636,3 @@ def get_members_text(loaded_class):
 def indent(text, spaces=4):
     indentation = ' ' * spaces
     return "\n".join([indentation + line for line in text.split('\n')])
-
