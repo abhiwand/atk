@@ -28,7 +28,7 @@ import org.scalatest.{ WordSpec, Matchers }
 class VertexTest extends WordSpec with Matchers {
 
   val gbId = new Property("gbId", 10001)
-  val vertex = new Vertex(gbId, List(new Property("key", "value")))
+  val vertex = new Vertex(gbId, Set(new Property("key", "value")))
 
   "Vertex" should {
     "have a unique id that is the gbId" in {
@@ -36,30 +36,24 @@ class VertexTest extends WordSpec with Matchers {
     }
 
     "be mergeable with another vertex" in {
-      val vertex2 = new Vertex(gbId, List(new Property("anotherKey", "anotherValue")))
+      val vertex2 = new Vertex(gbId, Set(new Property("anotherKey", "anotherValue")))
 
       // invoke method under test
       val merged = vertex.merge(vertex2)
 
       merged.gbId shouldBe gbId
-      merged.properties.size shouldBe 2
-
-      merged.properties(0).key shouldBe "key"
-      merged.properties(0).value shouldBe "value"
-
-      merged.properties(1).key shouldBe "anotherKey"
-      merged.properties(1).value shouldBe "anotherValue"
+      merged.properties shouldEqual Set(Property("key", "value"), Property("anotherKey", "anotherValue"))
     }
 
     "not allow null gbIds" in {
       intercept[IllegalArgumentException] {
-        new Vertex(null, Nil)
+        new Vertex(null, Set.empty[Property])
       }
     }
 
     "not allow merging of vertices with different ids" in {
       val diffId = new Property("gbId", 10002)
-      val vertex2 = new Vertex(diffId, List(new Property("anotherKey", "anotherValue")))
+      val vertex2 = new Vertex(diffId, Set(new Property("anotherKey", "anotherValue")))
 
       intercept[IllegalArgumentException] {
         // invoke method under test

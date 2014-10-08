@@ -70,9 +70,9 @@ class QuantilesPlugin extends SparkCommandPlugin[Quantiles, QuantileValues] {
         |
         |Parameters
         |----------
-        |quantiles : float OR list of float
         |column_name : str
-        |    The column to calculate quantile
+        |    The column to calculate quantiles
+        |quantiles : float OR list of float
         |
         |
         |Returns
