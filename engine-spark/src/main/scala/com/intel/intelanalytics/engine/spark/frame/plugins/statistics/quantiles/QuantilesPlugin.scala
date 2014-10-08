@@ -63,52 +63,54 @@ class QuantilesPlugin extends SparkCommandPlugin[Quantiles, QuantileValues] {
    *
    * [[http://docutils.sourceforge.net/rst.html ReStructuredText]]
    */
-  override def doc: Option[CommandDoc] = Some(CommandDoc(oneLineSummary = "Calculate quantiles on given column.",
-    extendedSummary = Some(
-      """
-        |Calculate quantiles on the given column.
-        |
-        |Parameters
-        |----------
-        |column_name : str
-        |    The column to calculate quantiles
-        |quantiles : float OR list of float
-        |
-        |
-        |Returns
-        |-------
-        |dictionary
-        |
-        |Examples
-        |--------
-        |
-        |Consider BigFrame *my_frame*, which accesses a frame that contains a single column named *final_sale_price*::
-        |
-        |my_frame.inspect()
-        |
-        |final_sale_price int32
-        ||---------|
-        |   100
-        |   250
-        |   95
-        |   179
-        |   315
-        |   660
-        |   540
-        |   420
-        |   250
-        |   335
-        |
-        |To calculate 10th, 50th, and 100th quantile
-        |my_frame.quantiles('final_sale_price', [10, 50, 100])
-        |
-        |The dictionary will be returned. key is the quantile and value is the quantile value.
-        |{10: 95, 50: 315, 100: 660}
-        |
-        |
-        |.. versionchanged:: 0.8
-      """.stripMargin)
-  ))
+  override def doc: Option[CommandDoc] = Some(CommandDoc(oneLineSummary = "Column quantiles.",
+    extendedSummary = Some("""
+                           |    Calculate quantiles on the given column.
+                           |
+                           |    Parameters
+                           |    ----------
+                           |    column_name : str
+                           |        The column to calculate quantiles
+                           |    quantiles : float OR list of float
+                           |
+                           |    Returns
+                           |    -------
+                           |    dictionary
+                           |
+                           |    Examples
+                           |    --------
+                           |    Consider BigFrame *my_frame*, which accesses a frame that contains a single
+                           |    column *final_sale_price*::
+                           |
+                           |        my_frame.inspect()
+                           |
+                           |          final_sale_price:int32
+                           |        /------------------------/
+                           |                    100
+                           |                    250
+                           |                     95
+                           |                    179
+                           |                    315
+                           |                    660
+                           |                    540
+                           |                    420
+                           |                    250
+                           |                    335
+                           |                    
+                           |    To calculate 10th, 50th, and 100th quantile::
+                           |
+                           |        my_frame.quantiles('final_sale_price', [10, 50, 100])
+                           |  
+                           |    The dictionary will be returned.
+                           |    key is the quantile and value is the quantile value.
+                           |    ::
+                           |
+                           |        {10: 95, 50: 315, 100: 660}
+                           |   
+                           |   
+                           |    .. versionchanged:: 0.8
+                           |
+                            """.stripMargin)))
 
   /**
    * Number of Spark jobs that get created by running this command

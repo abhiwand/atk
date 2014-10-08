@@ -82,8 +82,9 @@ class VertexSample extends SparkCommandPlugin[VertexSampleArguments, VertexSampl
    *
    * [[http://docutils.sourceforge.net/rst.html ReStructuredText]]
    */
-  override def doc = Some(CommandDoc(oneLineSummary = "Create a vertex induced subgraph obtained by vertex sampling.",
+  override def doc = Some(CommandDoc(oneLineSummary = "Subgraph from vertex sampling.",
     extendedSummary = Some("""
+                           |    Create a vertex induced subgraph obtained by vertex sampling.
                            |    Three types of vertex sampling are provided: 'uniform', 'degree', and
                            |    'degreedist'.
                            |    A 'uniform' vertex sample is obtained by sampling vertices uniformly at
