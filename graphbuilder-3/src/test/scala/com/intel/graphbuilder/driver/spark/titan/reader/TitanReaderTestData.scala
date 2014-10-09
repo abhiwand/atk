@@ -100,12 +100,12 @@ object TitanReaderTestData extends Suite with BeforeAndAfterAll {
   }
 
   val seaGbEdge = {
-    val gbSeaEdgeProperties = List(Property("reason", "loves waves"))
+    val gbSeaEdgeProperties = Set(Property("reason", "loves waves"))
     new Edge(neptuneTitanVertex.getId, seaTitanVertex.getId, Property(gbID, neptuneTitanVertex.getId), Property(gbID, seaTitanVertex.getId), seaTitanEdge.getLabel(), gbSeaEdgeProperties)
   }
 
   val plutoGbEdge = {
-    new Edge(neptuneTitanVertex.getId, plutoTitanVertex.getId, Property(gbID, neptuneTitanVertex.getId), Property(gbID, plutoTitanVertex.getId), plutoTitanEdge.getLabel(), List[Property]())
+    new Edge(neptuneTitanVertex.getId, plutoTitanVertex.getId, Property(gbID, neptuneTitanVertex.getId), Property(gbID, plutoTitanVertex.getId), plutoTitanEdge.getLabel(), Set[Property]())
   }
 
   // Faunus graph elements

@@ -21,13 +21,13 @@ using `Apache Spark <http://spark.apache.org/docs/0.9.0/index.html>`_.
 
 Functionality provided includes:
 
-*   Parsing for CSV data types (see :ref:`Importing Data`)
+*   Parsing for :abbr:`CSV (Comma-Separated Variables)` data types (see :ref:`Importing Data`)
 *   Duplicate removal, dropping rows, data filtering, copying data into new columns,
     and concatenating columns (see :ref:`Clean the Data`)
 *   Summary calculations for data inspection, such as counts, measures of central tendency,
     distribution and percentile of data, dispersions, and binning (see :ref:`ds_dflw_frame_examine`)
 *   Joining of multiple data sources based on record relationships, such as intersection (inner join),
-    union (outer join), and lookup inclusion or exclusion (left and right joins) (see :ref:`Transform The Data`)
+    and lookup inclusion or exclusion (left and right joins) (see :ref:`Transform The Data`)
 *   Overall-level and "Group By"-level aggregation, and evaluation through functions like averaging,
     counting total or unique values, summing, finding the min and max, :term:`variance <Bias-variance tradeoff>`,
     and standard deviation, plus advanced transforms like exponentially weighted average (see :ref:`Transform The Data`)
@@ -102,37 +102,38 @@ The Intel Analytics Toolkit provides a suite of graph algorithms that make it ea
 and :term:`topic modeling`, in addition to common graph statistical calculations.
 Each is easy to invoke using the Python environment and parameters for the desired algorithm configuration.
 Each algorithm also provides necessary metrics, facilitating assessment of model performance, accuracy,
-and configuration of the model for its intended usage (including :term:`confusion matrices`, ROC, :term:`K-S tests`,
-and accuracy metrics, including :term:`precision, recall, <precision/recall>` and :term:`F-measure`).
+and configuration of the model for its intended usage (including :term:`Confusion Matrices`, :term:`ROC`, :term:`K-S Tests`,
+and accuracy metrics, including :term:`precision, recall, <precision/recall>` and :term:`F-Measure`).
 
 Graph mining and machine learning algorithms included in this release are:
 
+Graphical Models
+----------------
 *   :term:`Loopy Belief Propagation` (LBP): For classification on sparse data and image denoising.
     It has a wide range of applications in structured prediction, such as influence spread in social networks,
     where there are prior noisy predictions for a large set of random entities and similarity relationships
     exists between them.
-*   :term:`Gaussian Belief Propagation` (GaBP): Similar to LBP, GaBP provides better modeling for systems where
-    the underlying distributions are Gaussian, instead of discrete variables.
 *   :term:`Label Propagation` (LP): Used for many classification problems where a ‘similarity measure’ between
     instances can be exploited for inference.
     It propagates labels from labeled data to unlabeled data in a graph that encodes similarity relationships
     across all data points.
     As an example, in social network analysis, label propagation is used to probabilistically infer data fields
     that are blank by analyzing data about a user’s friends, family, likes and online behavior.  
+
+Colaborative Filtering
+----------------------
 *   :term:`Alternating Least Squares` (ALS): Used in collaborative filtering applications, such as recommender systems.
 *   :term:`Conjugate Gradient Descent` (CGD): An optimization method used in recommender systems,
     particularly those requiring rich item and user preferences because it consumes less memory than ALS.
+
+Topic Modeling
+--------------
 *   :term:`Topic Modeling` using :term:`Latent Dirichlet Allocation` (LDA): A topic modeling algorithm used for
     topic and key word extraction.
 
 For graph statistics, algorithms provided include:
 
-*   :term:`Average path length`
 *   :term:`Connected component`
-*   :term:`Vertex degree`
-*   :term:`Vertex degree distribution`
-*   Shortest path from a vertex to all other vertices
-*   :term:`Centrality` (:term:`PageRank`)
 
 The graph engine utilized in this release is Apache Giraph, which has been integrated with the complete
 graph processing pipeline to provide out-of-the-box usability and substantially-enhanced features over
@@ -154,21 +155,20 @@ Toolkit Deployment
 The toolkit relies on analytics "engines" and storage capabilities provided by the Hadoop data platform.
 Major platform elements utilized by the toolkit include:
 
-*   Storage: HBase and HDFS
+*   Storage: HBase and :abbr:`HDFS (Hadoop Distributed File System)`
 *   Distributed processing
     *   Apache Spark and Mlib: Open source engine and algorithms for machine learning and real-time scoring
     *   Apache Giraph: Open source engine for graph analytics algorithm processing
 
 Consequently, the toolkit has version dependencies on the Hadoop cluster for Spark, HBase, and
 additional data platform components.
-Hadoop clusters running CDH 5.0.3 are necessary in order to support the minimum versions of the platform components;
+Hadoop clusters running CDH 5.1.0 are necessary in order to support the minimum versions of the platform components;
 this, and other dependencies, must be checked by the administrator when the toolkit is installed.
 Most of the toolkit is installed as a "head unit" that can be installed on an edge node to the cluster
 if it is not desired to install on a cluster node itself.
 Note that in the 0.8 beta release there are some libraries (particularly Python libraries) that need to
 be present on the server nodes.
 
-.. rubric:: Footnotes
 
 .. [#f1] Aurelius (thinkaurelius.com) is the creator of the Titan open source graph database
 

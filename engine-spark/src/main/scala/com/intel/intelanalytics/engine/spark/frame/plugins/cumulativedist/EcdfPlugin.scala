@@ -26,7 +26,7 @@ package com.intel.intelanalytics.engine.spark.frame.plugins.cumulativedist
 import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.frame.{ DataFrame, DataFrameTemplate, ECDF }
 import com.intel.intelanalytics.domain.schema.{ DataTypes, Schema }
-import com.intel.intelanalytics.engine.spark.frame.FrameRDD
+import com.intel.intelanalytics.engine.spark.frame.LegacyFrameRDD
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
 import com.intel.intelanalytics.security.UserPrincipal
 
@@ -47,7 +47,7 @@ class EcdfPlugin extends SparkCommandPlugin[ECDF[Long], DataFrame] {
    * The format of the name determines how the plugin gets "installed" in the client layer
    * e.g Python client via code generation.
    */
-  override def name: String = "dataframe/ecdf"
+  override def name: String = "frame:/ecdf"
 
   /**
    * User documentation exposed in Python.
@@ -77,7 +77,7 @@ class EcdfPlugin extends SparkCommandPlugin[ECDF[Long], DataFrame] {
     val sampleIndex = frameMeta.schema.columnIndex(arguments.sampleCol)
 
     // run the operation
-    val rdd = frames.loadFrameRdd(ctx, frameMeta)
+    val rdd = frames.loadLegacyFrameRdd(ctx, frameMeta)
     val newFrame = frames.create(DataFrameTemplate(arguments.name, None))
     val ecdfRdd = CumulativeDistFunctions.ecdf(rdd, sampleIndex, arguments.dataType)
 
@@ -93,6 +93,6 @@ class EcdfPlugin extends SparkCommandPlugin[ECDF[Long], DataFrame] {
     }
 
     // save results
-    frames.saveFrame(newFrame, new FrameRDD(new Schema(allColumns), ecdfRdd), Some(rowCount))
+    frames.saveLegacyFrame(newFrame, new LegacyFrameRDD(new Schema(allColumns), ecdfRdd), Some(rowCount))
   }
 }
