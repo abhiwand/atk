@@ -59,7 +59,8 @@ You should see somethings like this::
         <appender name="FILE" class="ch.qos.logback.core.FileAppender">
             <file>/var/log/intelanalytics/rest-server/application.log</file>
             <encoder>
-                <pattern>%date - [%level] - from %logger in %thread %message %n%ex{full}%n</pattern>
+                <pattern>%date - [%level] - from %logger in %thread %message
+                    %n%ex{full}%n</pattern>
             </encoder>
         </appender>
         <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">

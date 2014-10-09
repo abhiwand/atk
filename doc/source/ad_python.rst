@@ -19,17 +19,16 @@ Windows Python Setup
 
 #. Run the command: ``conda create -n intelanalytics-python python=2.6 numpy=1.8 requests=2.3 ordereddict=1.1``. This creates a virtual python environment that mimics the cluster's configuration.
 
-------------------------------------------
-Install The Intel Analytics Toolkit Client
-------------------------------------------
+----------------------------------------
+Integrated Development Environment (IDE)
+----------------------------------------
 
 .. todo::
     - What is the right way to do this today?
     - What will we support in the future?
 
--------
 Eclipse
--------
+=======
 
 To configure Eclipse to use the right python environment:
 

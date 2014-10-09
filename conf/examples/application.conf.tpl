@@ -94,9 +94,6 @@ intel.analytics {
       # ("/usr/lib/spark","/opt/cloudera/parcels/CDH/lib/spark/", etc)
       //home = ""
 
-      # path to python worker execution, usually to toggle 2.6 and 2.7
-      //python-worker-exec = "python" #Other valid values: "python2.7"
-
       conf {
         properties {
           # These key/value pairs will be parsed dynamically and provided to SparkConf()
@@ -187,7 +184,75 @@ intel.analytics {
           #only when the transaction commits. Must be disabled for graph partitioning to work.
           flush = true
 
+          authority {                  titan {
+      load {
+        # documentation for these settings is available on Titan website
+        storage {
+          backend = "hbase"
+          # with clusters the hostname should be a comma separated list of host names with zookeeper role assigned
+          hostname = "invalid-titan-host"
+          port = "2181"
+
+          # Whether to enable batch loading into the storage backend. Set to true for bulk loads.
+          batch-loading = true
+
+          # Size of the batch in which mutations are persisted
+          buffer-size = 2048
+
+          lock {
+            #Number of milliseconds the system waits for a lock application to be acknowledged by the storage backend
+            wait-time = 400
+
+            #Number of times the system attempts to acquire a lock before giving up and throwing an exception
+            retries = 15
+          }
+
+          hbase {
+            # Pre-split settngs for large datasets
+            // region-count = 100
+            short-cf-names = true
+            compression-algorithm = "SNAPPY"
+          }
+
+          cassandra {
+
+          }
+
+        }
+
+        autotype = "none"
+
+        ids {
+          #Globally reserve graph element IDs in chunks of this size. Setting this too low will make commits
+          #frequently block on slow reservation requests. Setting it too high will result in IDs wasted when a
+          #graph instance shuts down with reserved but mostly-unused blocks.
+          block-size = 300000
+
+          #Number of partition block to allocate for placement of vertices
+          num-partitions = 30
+
+          #The number of milliseconds that the Titan id pool manager will wait before giving up on allocating a new block of ids
+          renew-timeout = 150000
+
+          #When true, vertices and edges are assigned IDs immediately upon creation. When false, IDs are assigned
+          #only when the transaction commits. Must be disabled for graph partitioning to work.
+          flush = true
+
           authority {
+            #This setting helps separate Titan instances sharing a single graph storage
+            #backend avoid contention when reserving ID blocks, increasing overall throughput.
+            #GLOBAL_AUTO = Titan randomly selects a tag from the space of all possible tags when performing allocations.
+            conflict-avoidance-mode = "GLOBAL_AUTO"
+
+            #The number of milliseconds the system waits for an ID block reservation to be acknowledged by the storage backend
+            wait-time = 300
+
+            # Number of times the system attempts ID block reservations with random conflict avoidance tags
+            # before giving up and throwing an exception
+            randomized-conflict-avoidance-retries = 10
+          }
+        }
+      }
             #This setting helps separate Titan instances sharing a single graph storage
             #backend avoid contention when reserving ID blocks, increasing overall throughput.
             #GLOBAL_AUTO = Titan randomly selects a tag from the space of all possible tags when performing allocations.

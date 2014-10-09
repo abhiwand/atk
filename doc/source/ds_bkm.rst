@@ -27,13 +27,6 @@ Rules of thumb:
     |       If you choose a number way too high then more time will be spent scheduling than executing
             10,000 would be way too big for a 4 node cluster
 
-.. ifconfig:: internal_docs
-
-    Notes:
-        |   Graph builder could not complete 1GB Netflix graph with less than 60 partitions - about 90 was optimal
-            (larger needed for large data)
-        |   Graph builder ran into issues with partition size larger than 2000 on 4 node cluster with larger data sizes
-
 ------
 Python
 ------

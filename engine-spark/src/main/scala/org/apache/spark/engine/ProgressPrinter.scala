@@ -23,27 +23,48 @@
 
 package org.apache.spark.engine
 
-import org.apache.spark.scheduler.{ SparkListenerJobEnd, SparkListenerTaskEnd, SparkListenerStageCompleted, SparkListener }
+import com.intel.event.EventLogging
+import org.apache.spark.Success
+import org.apache.spark.scheduler._
 
 /**
- * Create for demo purpose. It is used to get progress from SparkProgressListener and print it out
- * TODO: remove it when progress report is exposed through rest api
+ * Logs progress from SparkProgressListener
  */
-class ProgressPrinter(progressListener: SparkProgressListener) extends SparkListener {
-  override def onStageCompleted(stageCompleted: SparkListenerStageCompleted) {
-    //    printJobProgress()
+class ProgressPrinter(progressListener: SparkProgressListener) extends SparkListener with EventLogging {
+
+  override def onStageCompleted(stageCompleted: SparkListenerStageCompleted): Unit = withContext("stageCompleted") {
+    stageCompleted.stageInfo.failureReason match {
+      case Some(failureReason) => error(buildStageInfoMessage(stageCompleted.stageInfo))
+      case _ => //ignore
+    }
   }
 
-  override def onTaskEnd(taskEnd: SparkListenerTaskEnd) {
-    printJobProgress()
+  override def onTaskEnd(taskEnd: SparkListenerTaskEnd): Unit = withContext("taskEnd") {
+    taskEnd.reason match {
+      case Success => //ignore
+      case _ => warn(taskEnd.reason.toString + " " + buildMessage())
+    }
   }
 
-  override def onJobEnd(jobEnd: SparkListenerJobEnd) {
-    //    printJobProgress()
+  override def onJobEnd(jobEnd: SparkListenerJobEnd): Unit = withContext("jobEnd") {
+    jobEnd.jobResult match {
+      case JobSucceeded => //ignore
+      case _ => warn(jobEnd.jobResult.toString + buildMessage())
+    }
   }
 
-  def printJobProgress() {
-    val commandId = progressListener.commandId
-    println("command:" + commandId + ", progress: " + progressListener.getCommandProgress() + "%")
+  private def buildMessage(): String = {
+    val cmd = progressListener.command
+    "command id:" + cmd.id + " name:" + cmd.name + " args:" + cmd.compactArgs + ", progress: " + progressListener.getCommandProgress() + "%"
   }
+
+  private def buildStageInfoMessage(stageInfo: StageInfo): String = {
+    buildMessage() +
+      " stageId:" + stageInfo.stageId +
+      " stageInfoName:" + stageInfo.name +
+      " numTasks:" + stageInfo.numTasks +
+      " emittedTaskSizeWarning:" + stageInfo.emittedTaskSizeWarning +
+      " failureReason:" + stageInfo.failureReason.getOrElse("")
+  }
+
 }
