@@ -102,7 +102,7 @@ object LoadRDDFunctions extends Serializable {
         .map(rowParseResult => rowParseResult.row)
 
       val schema = parser.arguments.schema
-      new ParseResultRddWrapper(new FrameRDD(schema, successesRdd), new FrameRDD(SchemaUtil.ErrorFrameSchema, failuresRdd))
+      new ParseResultRddWrapper(new LegacyFrameRDD(schema, successesRdd), new LegacyFrameRDD(SchemaUtil.ErrorFrameSchema, failuresRdd))
     }
     finally {
       parseResultRdd.unpersist(blocking = false)
