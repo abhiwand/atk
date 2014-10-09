@@ -26,7 +26,7 @@ package com.intel.intelanalytics.engine.spark.frame.plugins.load
 import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.frame.DataFrame
 import com.intel.intelanalytics.domain.frame.load.Load
-import com.intel.intelanalytics.engine.spark.frame.FrameRDD
+import com.intel.intelanalytics.engine.spark.frame.LegacyFrameRDD
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkInvocation, SparkCommandPlugin }
 import com.intel.intelanalytics.security.UserPrincipal
 
@@ -84,7 +84,7 @@ class LoadFramePlugin extends SparkCommandPlugin[Load, DataFrame] {
     // run the operation
     if (arguments.source.isFrame) {
       // load data from an existing frame and add its data onto the target frame
-      val additionalData = frames.loadFrameRdd(ctx, frames.expectFrame(arguments.source.uri.toInt))
+      val additionalData = frames.loadLegacyFrameRdd(ctx, frames.expectFrame(arguments.source.uri.toInt))
       unionAndSave(invocation, destinationFrame, additionalData)
     }
     else if (arguments.source.isFile) {
@@ -112,15 +112,15 @@ class LoadFramePlugin extends SparkCommandPlugin[Load, DataFrame] {
    * @param additionalData the data to add to the existingFrame
    * @return the frame with updated schema
    */
-  private def unionAndSave(invocation: SparkInvocation, existingFrame: DataFrame, additionalData: FrameRDD): DataFrame = {
+  private def unionAndSave(invocation: SparkInvocation, existingFrame: DataFrame, additionalData: LegacyFrameRDD): DataFrame = {
     // dependencies (later to be replaced with dependency injection)
     val frames = invocation.engine.frames
     val ctx = invocation.sparkContext
 
-    val existingRdd = frames.loadFrameRdd(ctx, existingFrame)
+    val existingRdd = frames.loadLegacyFrameRdd(ctx, existingFrame)
     val unionedRdd = existingRdd.union(additionalData)
     val rowCount = unionedRdd.count()
-    frames.saveFrame(existingFrame, unionedRdd, Some(rowCount))
+    frames.saveLegacyFrame(existingFrame, unionedRdd, Some(rowCount))
   }
 
 }
