@@ -26,10 +26,10 @@ f, f2 = {}, {}
 
 import logging
 logger = logging.getLogger(__name__)
-from intelanalytics.core.api import get_api_decorator
+from intelanalytics.core.api import get_api_decorator, check_api_is_loaded
 api = get_api_decorator(logger)
 
-from intelanalytics.core.metaprog import CommandLoadable, doc_stubs_import
+from intelanalytics.core.metaprog import CommandLoadable, doc_stubs_import, api_class_alias
 from intelanalytics.core.namedobj import name_support
 import uuid
 
@@ -474,6 +474,7 @@ class TitanGraph(CommandLoadableTitanGraph):
 
     def __init__(self, rules=None, name=""):
         try:
+            check_api_is_loaded()
             self._id = 0
             self._ia_uri = None
             if not hasattr(self, '_backend'):
@@ -570,6 +571,7 @@ class TitanGraph(CommandLoadableTitanGraph):
 
 
 # Deprecation of 'BigGraph'
+@api_class_alias
 class BigGraph(TitanGraph):
     def __init__(self, *args, **kwargs):
         raise_deprecation_warning('BigGraph', 'Use TitanGraph()')
