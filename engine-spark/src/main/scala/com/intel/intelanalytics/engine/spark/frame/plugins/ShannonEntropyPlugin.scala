@@ -114,7 +114,7 @@ class ShannonEntropyPlugin extends SparkCommandPlugin[Entropy, EntropyReturn] {
     val columnIndex = frame.schema.columnIndex(arguments.dataColumn)
 
     // run the operation and return results
-    val frameRdd = frames.loadFrameRdd(ctx, frameRef.id)
+    val frameRdd = frames.loadLegacyFrameRdd(ctx, frameRef.id)
     val weightsColumnOption = frame.schema.column(arguments.weightsColumn)
     val entropy = EntropyRDDFunctions.shannonEntropy(frameRdd, columnIndex, weightsColumnOption)
     EntropyReturn(entropy)
