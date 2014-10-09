@@ -207,7 +207,7 @@ class ColumnSummaryStatisticsPlugin extends SparkCommandPlugin[ColumnSummaryStat
     }
 
     // run the operation and return the results
-    val rdd = frames.loadFrameRdd(ctx, frameId)
+    val rdd = frames.loadLegacyFrameRdd(ctx, frameId)
     ColumnStatistics.columnSummaryStatistics(columnIndex,
       valueDataType,
       weightsColumnIndexOption,
