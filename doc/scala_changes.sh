@@ -24,7 +24,7 @@ if test ! -e $d; then
 
     # Create a new listing file with the date of any scala file with python docstrings.
     echo "Current Listing;" > $d
-    for g in $(grep -ril --include=*.scala $s ../)
+    for g in $(grep -ril --include=*.scala --exclude=CommandDoc.scala $s ../)
         do
             echo $(date -r $g) $g >> $d
         done
