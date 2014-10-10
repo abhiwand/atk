@@ -57,9 +57,9 @@ class TitanSchemaWriterTest extends WordSpec with Matchers with MockitoSugar wit
       titanSchemaWriter.write(schema)
 
       // validate
-
-      titanGraph.getManagementSystem.getEdgeLabel("myLabel").isEdgeLabel shouldBe true
-      println("test" + titanGraph.getManagementSystem.getEdgeLabel("myLabel").isEdgeLabel)
+      val titanManager = titanGraph.getManagementSystem
+      titanManager.getEdgeLabel("myLabel").isEdgeLabel shouldBe true
+      titanManager.commit()
     }
 
     "ignore duplicate edge label definitions" in {
@@ -72,7 +72,9 @@ class TitanSchemaWriterTest extends WordSpec with Matchers with MockitoSugar wit
       titanSchemaWriter.write(schema)
 
       // validate
-      titanGraph.getManagementSystem.getEdgeLabel("myLabel").isEdgeLabel shouldBe true
+      val titanManager = titanGraph.getManagementSystem
+      titanManager.getEdgeLabel("myLabel").isEdgeLabel shouldBe true
+      titanManager.commit()
     }
 
     "write a property definition" in {
@@ -83,8 +85,10 @@ class TitanSchemaWriterTest extends WordSpec with Matchers with MockitoSugar wit
       titanSchemaWriter.write(schema)
 
       // validate
+      val titanManager = titanGraph.getManagementSystem
       titanGraph.getRelationType("propName").isPropertyKey shouldBe true
-      titanGraph.getManagementSystem().getGraphIndex("propName") shouldBe null
+      titanManager.getGraphIndex("propName") shouldBe null
+      titanManager.commit()
     }
 
     "write a property definition that is unique and indexed" in {
@@ -95,8 +99,10 @@ class TitanSchemaWriterTest extends WordSpec with Matchers with MockitoSugar wit
       titanSchemaWriter.write(schema)
 
       // validate
+      val titanManager = titanGraph.getManagementSystem
       titanGraph.getRelationType("propName").isPropertyKey shouldBe true
-      titanGraph.getManagementSystem().getGraphIndex("propName").isUnique() shouldBe true
+      titanManager.getGraphIndex("propName").isUnique() shouldBe true
+      titanManager.commit()
     }
 
     "ignore duplicate property definitions" in {
@@ -108,9 +114,10 @@ class TitanSchemaWriterTest extends WordSpec with Matchers with MockitoSugar wit
       titanSchemaWriter.write(schema)
 
       // validate
+      val titanManager = titanGraph.getManagementSystem
       titanGraph.getRelationType("propName").isPropertyKey shouldBe true
-      titanGraph.getManagementSystem().getGraphIndex("propName") shouldBe null
-
+      titanManager.getGraphIndex("propName") shouldBe null
+      titanManager.commit()
     }
 
     "handle empty lists" in {
