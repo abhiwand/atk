@@ -71,6 +71,7 @@ class QuantilesPlugin extends SparkCommandPlugin[Quantiles, QuantileValues] {
                            |    ----------
                            |    column_name : str
                            |        The column to calculate quantiles
+                           |
                            |    quantiles : float OR list of float
                            |
                            |    Returns
