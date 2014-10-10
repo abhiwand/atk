@@ -46,6 +46,7 @@ SCRIPT=$(readlink -f "$0")
 SCRIPTPATH=$(dirname "$SCRIPT")
 pushd $SCRIPTPATH > /dev/null
 
+
 echo "/$1/$2/$3/$4/$5/$6/$7/$8/$9/" | grep -i -e "/-f/" -e "/--force/"> /dev/null
 if [ $? == 1 ]; then
     if [ "$UBUNTU_OS" == "" ]; then
@@ -100,28 +101,38 @@ if [ $? == 0 ]; then
     fi
     echo "/$1/$2/$3/$4/$5/$6/$7/$8/$9/" | grep -i "/-s/" > /dev/null
     if [ $? == 1 ]; then
-        pushd
+        pushd > /dev/null
 
         # Update scala server
         cd ..
-        mvn compile
+        echo "Maven compile"
+        mvn compile > /dev/null
         if [ $? == 1 ]; then
+            echo "Maven compile failure"
+            popd > /dev/null
             exit 1
         fi
 
         # Update the additional python documentation files
         cd python
-        python cmdgen.py
+        echo "Python cmdgen.py"
+        python cmdgen.py > /dev/null
         if [ $? == 1 ]; then
-            echo \n\nTrying the longer path.\n\n
+            echo "Failure: python cmdgen.py"
+            echo Trying the longer path.\n\n
             cd ..
-            mvn install clean
+            echo "Maven install clean"
+            mvn install clean > /dev/null
             if [ $? != 0 ]; then
+                echo "Failure: mvn install clean"
+                popd > /dev/null
                 exit 1
             fi
             cd python
-            python cmdgen.py
+            python cmdgen.py > /dev/null
             if [ $? != 0 ]; then
+                echo "Failure: python cmdgen.py"
+                popd > /dev/null
                 exit 1
             fi
         fi
@@ -136,7 +147,7 @@ if [ $? == 0 ]; then
         echo "/$1/$2/$3/$4/$5/$6/$7/$8/$9/" | grep -i "/-e/" > /dev/null
         if [ $? == 1 ]; then
             if [[ -d build/latex ]]; then
-                rm -r build/latex/*
+                rm -r build/latex
             fi
         fi
         # Yes for "latex"
@@ -149,7 +160,7 @@ if [ $? == 0 ]; then
         echo "/$1/$2/$3/$4/$5/$6/$7/$8/$9/" | grep -i "/-e/" > /dev/null
         if [ $? == 1 ]; then
             if [[ -d build/text ]]; then
-                rm -r build/text/*
+                rm -r build/text
             fi
         fi
         # Yes for "text"
@@ -162,7 +173,7 @@ if [ $? == 0 ]; then
         echo "/$1/$2/$3/$4/$5/$6/$7/$8/$9/" | grep -i "/-e/" > /dev/null
         if [ $? == 1 ]; then
             if [[ -d build/html ]]; then
-                rm -r build/html/*
+                rm -r build/html
             fi
         fi
         # Ignore all toctree warnings.
