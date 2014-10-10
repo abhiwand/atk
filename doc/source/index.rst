@@ -21,7 +21,7 @@ References
 * :doc:`ia_legal`
 * :ref:`genindex`
 * :ref:`search`
-* :ref:`errata`
+* :doc:`errata`
 * :download:`PDF <_downloads/IntelAnalytics.pdf>`
 
 .. toctree::
