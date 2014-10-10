@@ -52,9 +52,7 @@ trait TestingTitan {
   def cleanupTitan(): Unit = {
     try {
       if (titanGraph != null) {
-        titanGraph.commit()
-
-        //graph.shutdown()
+        titanGraph.shutdown()
       }
     }
     finally {

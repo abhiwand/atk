@@ -22,7 +22,6 @@ import scala.collection.JavaConversions._
  * 3. Serialized Titan rows, where each row represents a vertex and its adjacency list
  * 4. Serialized HBase rows, where each row represents a vertex and its adjacency list
  *
- * @todo Use Stephen's TestingTitan class for scalatest
  */
 object TitanReaderTestData extends Suite with BeforeAndAfterAll {
 
