@@ -64,7 +64,7 @@ import GremlinQueryFormat._
  */
 class GremlinQuery extends CommandPlugin[QueryArgs, QueryResult] {
 
-  val gremlinExecutor = new GremlinGroovyScriptEngine(100)
+  val gremlinExecutor = new GremlinGroovyScriptEngine()
   var titanGraphs = Map[String, TitanGraph]()
 
   /**
