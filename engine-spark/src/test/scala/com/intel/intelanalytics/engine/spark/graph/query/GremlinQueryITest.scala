@@ -25,6 +25,8 @@ class GremlinQueryITest extends FlatSpec with Matchers with TestingTitan with Mo
     vertex2.setProperty("name", "bob")
     vertex2.setProperty("age", 27)
 
+    titanGraph.commit()
+
     val gremlinQuery = new GremlinQuery()
     val gremlinScript = """g.V("name", "alice").out("knows")"""
 
