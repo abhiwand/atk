@@ -38,6 +38,7 @@ class CsvFile(DataFile):
         File must be in the hadoop file system.
         Relative paths are interpreted relative to the intel.analytics.engine.fs.root configuration.
         Absolute paths (beginning with hdfs://..., for example) are also supported.
+        See :ref:`Configure File System Root <ad_inst_IA_configure_file_system_root>`.
     schema : list of tuples of the form (string, type)
         schema description of the fields for a given line.
         It is a list of tuples which describe each field, (field name, field type),
@@ -53,7 +54,7 @@ class CsvFile(DataFile):
     Returns
     -------
     class
-        An object which holds both the name and schema of a CSV file.
+        An object which holds both the name and schema of a :term:`CSV` file.
 
     Examples
     --------
@@ -91,7 +92,7 @@ class CsvFile(DataFile):
 
         csv_data = ia.CsvFile("data/raw_data.csv", csv_schema, skip_header_lines=2)
 
-    For other examples see "Importing a CSV File".
+    For other examples see :ref:`Importing a CSV File <example_files.csvfile>`.
 
     .. versionadded:: 0.8
 

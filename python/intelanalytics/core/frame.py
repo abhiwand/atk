@@ -130,6 +130,7 @@ class Frame(CommandLoadableFrame):
     .. versionadded:: 0.8
 
     """
+    # For other examples, see :ref:`example_frame.bigframe`.
 
     # TODO - Review Parameters, Examples
 
@@ -453,6 +454,7 @@ class Frame(CommandLoadableFrame):
         Notes
         -----
         The row function ('func') must return a value in the same format as specified by the schema.
+        See :doc:`ds_apir`.
 
         Examples
         --------
@@ -503,11 +505,14 @@ class Frame(CommandLoadableFrame):
 
             my_frame.add_columns(function_b, [("calculated_b", float32)])
 
+        More information on row functions can be found at :doc:`ds_apir`
+
 
 
         .. versionadded:: 0.8
 
         """
+        # For further examples, see :ref:`example_frame.add_columns`.
         self._backend.add_columns(self, func, schema)
 
     @api
@@ -659,7 +664,7 @@ class Frame(CommandLoadableFrame):
         """
         Builds matrix.
 
-        Outputs a confusion matrix for a binary classifier
+        Outputs a :term:`confusion matrix` for a binary classifier
 
         Parameters
         ----------
@@ -782,7 +787,7 @@ class Frame(CommandLoadableFrame):
         Parameters
         ----------
         predicate : function
-            function or lambda which takes a row argument and evaluates to a boolean value
+            function or :term:`lambda` which takes a row argument and evaluates to a boolean value
 
         Examples
         --------
@@ -794,11 +799,13 @@ class Frame(CommandLoadableFrame):
 
         Now the frame only has information about *ligers*.
 
+        More information on row functions can be found at :doc:`ds_apir`
 
 
         .. versionchanged:: 0.8.5
 
         """
+        # For further examples, see :ref:`example_frame.drop_rows`
         self._backend.drop(self, predicate)
 
     @api
@@ -838,6 +845,7 @@ class Frame(CommandLoadableFrame):
         .. versionadded:: 0.8
 
         """
+        # For further examples, see :ref:`example_frame.drop_duplicates`
         self._backend.drop_duplicates(self, columns)
 
     @api
@@ -845,7 +853,7 @@ class Frame(CommandLoadableFrame):
         """
         Empirical Cumulative Distribution.
 
-        Generates the empirical cumulative distribution for the input column.
+        Generates the :term:`empirical cumulative distribution` for the input column.
 
         Parameters
         ----------
@@ -913,11 +921,14 @@ class Frame(CommandLoadableFrame):
 
         The frame now only has data about lizards and frogs
 
+        More information on row functions can be found at :doc:`ds_apir`
+
 
 
         .. versionadded:: 0.8
 
         """
+        # For further examples, see :ref:`example_frame.filter`
         self._backend.filter(self, predicate)
 
     @api
@@ -1187,6 +1198,7 @@ class Frame(CommandLoadableFrame):
         .. versionchanged:: 0.8.5
 
         """
+        # For further examples, see :ref:`example_frame.group_by`.
         return self._backend.group_by(self, group_by_columns, aggregation_arguments)
 
 
@@ -1231,6 +1243,7 @@ class Frame(CommandLoadableFrame):
         .. versionadded:: 0.8
 
         """
+        # For another example, see :ref:`example_frame.inspect`.
         return self._backend.inspect(self, n, offset, columns)
 
     @api
@@ -1301,6 +1314,7 @@ class Frame(CommandLoadableFrame):
         .. versionadded:: 0.8
 
         """
+        # For further examples, see :ref:`example_frame.join`.
         return self._backend.join(self, right, left_on, right_on, how)
 
     @deprecated("Use classification_metrics().")
@@ -1452,6 +1466,7 @@ class Frame(CommandLoadableFrame):
         .. versionchanged:: 0.8.5
 
         """
+        # For further examples, see :ref:`example_frame.rename_columns`.
         self._backend.rename_columns(self, column_names)
 
     @api
