@@ -28,7 +28,7 @@ import com.intel.intelanalytics.domain.frame.{ DataFrameTemplate, TopK, DataFram
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 import com.intel.intelanalytics.domain.schema.{ DataTypes, Schema }
 import com.intel.intelanalytics.engine.spark.SparkEngineConfig
-import com.intel.intelanalytics.engine.spark.frame.FrameRDD
+import com.intel.intelanalytics.engine.spark.frame.LegacyFrameRDD
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
 import com.intel.intelanalytics.security.UserPrincipal
 
@@ -148,7 +148,7 @@ class TopKPlugin extends SparkCommandPlugin[TopK, DataFrame] {
     val columnIndex = frame.schema.columnIndex(arguments.columnName)
 
     // run the operation
-    val frameRdd = frames.loadFrameRdd(ctx, frameId.id)
+    val frameRdd = frames.loadLegacyFrameRdd(ctx, frameId.id)
     val valueDataType = frame.schema.columns(columnIndex)._2
     val (weightsColumnIndexOption, weightsDataTypeOption) = getColumnIndexAndType(frame, arguments.weightsColumn)
     val newFrameName = frames.generateFrameName()
@@ -165,7 +165,7 @@ class TopKPlugin extends SparkCommandPlugin[TopK, DataFrame] {
     val rowCount = topRdd.count()
 
     // save results
-    frames.saveFrame(newFrame, new FrameRDD(newSchema, topRdd), Some(rowCount))
+    frames.saveLegacyFrame(newFrame, new LegacyFrameRDD(newSchema, topRdd), Some(rowCount))
   }
 
   // TODO: replace getColumnIndexAndType() with methods on Schema

@@ -117,7 +117,7 @@ class ColumnMedianPlugin extends SparkCommandPlugin[ColumnMedian, ColumnMedianRe
     val valueDataType: DataType = frame.schema.columns(columnIndex)._2
 
     // run the operation and return results
-    val rdd = frames.loadFrameRdd(ctx, frameId)
+    val rdd = frames.loadLegacyFrameRdd(ctx, frameId)
     val (weightsColumnIndexOption, weightsDataTypeOption) = if (arguments.weightsColumn.isEmpty) {
       (None, None)
     }

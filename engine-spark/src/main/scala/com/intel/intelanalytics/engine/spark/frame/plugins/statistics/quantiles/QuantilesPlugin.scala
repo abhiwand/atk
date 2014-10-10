@@ -142,7 +142,7 @@ class QuantilesPlugin extends SparkCommandPlugin[Quantiles, QuantileValues] {
     val columnDataType = frameSchema.columnDataType(arguments.columnName)
 
     // run the operation and give the results
-    val rdd = frames.loadFrameRdd(ctx, frameMeta)
+    val rdd = frames.loadLegacyFrameRdd(ctx, frameMeta)
     val quantileValues = QuantilesFunctions.quantiles(rdd, arguments.quantiles, columnIndex, columnDataType).toList
     QuantileValues(quantileValues)
   }

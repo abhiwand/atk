@@ -137,7 +137,7 @@ class ColumnModePlugin extends SparkCommandPlugin[ColumnMode, ColumnModeReturn] 
     val frame = frames.expectFrame(frameId)
 
     // run the operation and return results
-    val rdd = frames.loadFrameRdd(ctx, frameId)
+    val rdd = frames.loadLegacyFrameRdd(ctx, frameId)
     val columnIndex = frame.schema.columnIndex(arguments.dataColumn)
     val valueDataType: DataType = frame.schema.columns(columnIndex)._2
     val (weightsColumnIndexOption, weightsDataTypeOption) = if (arguments.weightsColumn.isEmpty) {

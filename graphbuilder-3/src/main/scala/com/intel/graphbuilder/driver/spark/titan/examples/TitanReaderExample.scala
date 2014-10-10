@@ -41,7 +41,7 @@ object TitanReaderExample {
 
   def main(args: Array[String]): Unit = {
     val conf = new SparkConf()
-      .setMaster("local")
+      .setMaster(ExamplesUtils.sparkMaster)
       .setAppName(this.getClass.getSimpleName + " " + new Date())
       .setSparkHome(ExamplesUtils.sparkHome)
       .setJars(List(ExamplesUtils.gbJar))
@@ -52,12 +52,11 @@ object TitanReaderExample {
     val sc = new SparkContext(conf)
 
     // Create graph connection
-    val tableName = "g2"
-    val hBaseZookeeperQuorum = "gao-ws5"
+    val tableName = System.getProperty("TABLE_NAME", "titan")
 
     val titanConfig = new SerializableBaseConfiguration()
     titanConfig.setProperty("storage.backend", "hbase")
-    titanConfig.setProperty("storage.hostname", hBaseZookeeperQuorum)
+    titanConfig.setProperty("storage.hostname", ExamplesUtils.storageHostname)
     titanConfig.setProperty("storage.tablename", tableName)
 
     val titanConnector = new TitanGraphConnector(titanConfig)
@@ -74,13 +73,13 @@ object TitanReaderExample {
     // your results are too large, try:
     // a) Increasing the size of the kryoserializer buffer, e.g., conf.set("spark.kryoserializer.buffer.mb", "32")
     // b) Saving results to file instead of collect(), e.g.titanReaderRDD.saveToTextFile()
-    val graphElements = titanReaderRDD.collect()
-    val vertices = vertexRDD.collect()
-    val edges = edgeRDD.collect()
+    //val graphElementsCount = titanReaderRDD.count()
+    val vertexCount = vertexRDD.count()
+    val edgeCount = edgeRDD.count()
 
-    println("Graph element count:" + graphElements.length)
-    println("Vertex count:" + vertices.length)
-    println("Edge count:" + edges.length)
+    //println("Graph element count:" + graphElementsCount)
+    println("Vertex count:" + vertexCount)
+    println("Edge count:" + edgeCount)
     sc.stop()
   }
 }
