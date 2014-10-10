@@ -104,7 +104,7 @@ object ExamplesUtils {
    * Check for SPARK_HOME in the expected locations
    */
   private def guessSparkHome: String = {
-    val possibleSparkHomes = List("/opt/cloudera/parcels/CDH/lib/spark/", "/usr/lib/spark", "/home/kdatta1/spark-0.9.1-bin-hadoop2")
+    val possibleSparkHomes = List("/opt/cloudera/parcels/CDH/lib/spark/", "/usr/lib/spark")
     possibleSparkHomes.foreach(dir => {
       val path = new File(dir)
       if (path.exists()) {
