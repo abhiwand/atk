@@ -2,11 +2,10 @@ package com.intel.intelanalytics.engine.spark.graph.query
 
 import com.intel.testutils.MatcherUtils._
 import com.intel.testutils.TestingTitan
-import org.scalatest.mock.MockitoSugar
 import org.scalatest.{ BeforeAndAfter, FlatSpec, Matchers }
 import spray.json.JsNumber
 
-class GremlinQueryITest extends FlatSpec with Matchers with TestingTitan with MockitoSugar with BeforeAndAfter {
+class GremlinQueryITest extends FlatSpec with Matchers with TestingTitan with BeforeAndAfter {
   before {
     setupTitan()
   }
