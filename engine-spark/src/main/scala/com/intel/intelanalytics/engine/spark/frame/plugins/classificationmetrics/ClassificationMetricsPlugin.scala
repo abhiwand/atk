@@ -57,7 +57,7 @@ class ClassificationMetricsPlugin extends SparkCommandPlugin[ClassificationMetri
     extendedSummary = Some("""
                            |    It returns an object that contains the computed accuracy, precision,
                            |    confusion_matrix, recall or :math:`F_{\\beta}` measure for a classification
-                           |    model
+                           |    model.
                            |
                            |    *   'f_measure': Computes the :math:`F_{\\beta}` measure for a
                            |        classification model.
@@ -70,15 +70,15 @@ class ClassificationMetricsPlugin extends SparkCommandPlugin[ClassificationMetri
                            |        * beta :math:`\\equiv \\beta`,
                            |        * :math:`T_{P}` denote the number of true positives,
                            |        * :math:`F_{P}` denote the number of false positives, and
-                           |        * :math:`F_{N}` denote the number of false negatives,
+                           |        * :math:`F_{N}` denote the number of false negatives, and
+                           |        * :math:`N = \\frac{T_{P}}{T_{P} + F_{P}} * \\frac{T_{P}}{T_{P} + F_{N}}`
+                           |        * :math:`D = \\frac{T_{P}}{T_{P} + F_{P}} + \\frac{T_{P}}{T_{P} + F_{N}}`
                            |
                            |        then:
+                           |
                            |        .. math::
                            |
-                           |        F_{\\beta} = \\left(1 + \\beta ^ 2 \\right) * \\
-                           |        \\frac{\\frac{T_{P}}{T_{P} + F_{P}} * \\frac{T_{P}}{T_{P} + \\
-                           |        F_{N}}}{\\beta ^ 2 * \\left(\\frac{T_{P}}{T_{P} + F_{P}} + \\
-                           |        \\frac{T_{P}}{T_{P} + F_{N}}\\right)}
+                           |            F_{\\beta} = (1 + \\beta ^ 2) * \\frac{N}{\\beta ^ 2 * D }
                            |
                            |        For multi-class classification, the :math:`F_{\\beta}` measure is
                            |        computed as the weighted average of the :math:`F_{\\beta}` measure

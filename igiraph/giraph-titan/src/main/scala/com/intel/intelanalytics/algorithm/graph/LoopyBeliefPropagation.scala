@@ -95,25 +95,32 @@ class LoopyBeliefPropagation
                            |    ----------
                            |    vertex_value_property_list : list of string
                            |        The vertex properties which contain prior vertex values if you
-                           |      use more than one vertex property.
+                           |        use more than one vertex property.
+                           |
                            |    edge_value_property_list : list of string
                            |        The edge properties which contain the input edge values.
                            |        We expect comma-separated list of property names  if you use
                            |        more than one edge property.
+                           |
                            |    input_edge_label_list : list of string
                            |        The name of edge label.
+                           |
                            |    output_vertex_property_list : list of string
                            |        The list of vertex properties to store output vertex values.
+                           |
                            |    vertex_type : string
                            |        The name of vertex property which contains vertex type.
                            |        The default value is "vertex_type"
+                           |
                            |    vector_value : boolean
                            |        True means a vector as vertex value is supported
                            |        False means a vector as vertex value is not supported
+                           |
                            |    max_supersteps : integer (optional)
                            |        The maximum number of super steps that the algorithm will execute.
                            |        The valid value range is all positive integer.
                            |        The default value is 20.
+                           |
                            |    convergence_threshold : float (optional)
                            |        The amount of change in cost function that will be tolerated at
                            |        convergence.
@@ -121,6 +128,7 @@ class LoopyBeliefPropagation
                            |        before it reaches the maximum number of super steps.
                            |        The valid value range is all float and zero.
                            |        The default value is 0.001.
+                           |
                            |    anchor_threshold : float (optional)
                            |        The parameter that determines if a node's posterior will be updated or
                            |        not.
@@ -131,6 +139,7 @@ class LoopyBeliefPropagation
                            |        nodes and don't want the algorithm updates these nodes.
                            |        The valid value range is in [0, 1].
                            |        The default value is 1.0.
+                           |
                            |    smoothing : float (optional)
                            |        The Ising smoothing parameter.
                            |        This parameter adjusts the relative strength of closeness encoded edge
@@ -138,6 +147,7 @@ class LoopyBeliefPropagation
                            |        Larger value implies smoother decay and the edge weight beomes less
                            |        important.
                            |        The default value is 2.0.
+                           |
                            |    bidirectional_check : boolean (optional)
                            |        If it is true, Giraph will firstly check whether each edge is
                            |        bidirectional before running algorithm.
@@ -147,12 +157,15 @@ class LoopyBeliefPropagation
                            |        "VA"/"TE" nodes will be treated internally as single directional even
                            |        though they are defined as bi-directional input graph.
                            |        The default value is false.
+                           |
                            |    ignore_vertex_type : boolean (optional)
                            |        If true, all vertex will be treated as training data.
                            |        The default value is False.
+                           |
                            |    max_product : boolean (optional)
                            |        Should LBP use max_product or not.
                            |        The default value is False.
+                           |
                            |    power: float (optional)
                            |        Power coefficient for power edge potential.
                            |        The default value is 0.
