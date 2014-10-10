@@ -35,10 +35,10 @@ object TitanConverter {
    * @param titanProperties Iterable of titan properties
    * @return Sequence of Graph builder properties
    */
-  def createGraphBuilderProperties(titanProperties: Iterable[TitanProperty]): Seq[Property] = {
+  def createGraphBuilderProperties(titanProperties: Iterable[TitanProperty]): Set[Property] = {
     val gbProperties = titanProperties.map(titanProperty =>
       Property(titanProperty.getPropertyKey.getName, titanProperty.getValue))
-    gbProperties.toSeq
+    gbProperties.toSet
   }
 
   /**
@@ -66,7 +66,7 @@ object TitanConverter {
     val fromGbId = getGbId(titanFromVertex, gbIdPropertyName)
     val toGbId = getGbId(titanToVertex, gbIdPropertyName)
 
-    val edgeProperties = titanEdge.getPropertyKeys.map(key => Property(key, titanEdge.getProperty(key))).toSeq
+    val edgeProperties = titanEdge.getPropertyKeys.map(key => Property(key, titanEdge.getProperty(key))).toSet
 
     Edge(titanFromVertex.getId, titanToVertex.getId, fromGbId, toGbId, titanEdge.getLabel, edgeProperties)
   }

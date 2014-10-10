@@ -56,7 +56,7 @@ class QuantilesPlugin extends SparkCommandPlugin[Quantiles, QuantileValues] {
    * The format of the name determines how the plugin gets "installed" in the client layer
    * e.g Python client via code generation.
    */
-  override def name: String = "dataframe/quantiles"
+  override def name: String = "frame:/quantiles"
 
   /**
    * User documentation exposed in Python.
@@ -70,9 +70,9 @@ class QuantilesPlugin extends SparkCommandPlugin[Quantiles, QuantileValues] {
         |
         |Parameters
         |----------
-        |quantiles : float OR list of float
         |column_name : str
-        |    The column to calculate quantile
+        |    The column to calculate quantiles
+        |quantiles : float OR list of float
         |
         |
         |Returns
@@ -139,7 +139,7 @@ class QuantilesPlugin extends SparkCommandPlugin[Quantiles, QuantileValues] {
     val columnDataType = frameSchema.columnDataType(arguments.columnName)
 
     // run the operation and give the results
-    val rdd = frames.loadFrameRdd(ctx, frameMeta)
+    val rdd = frames.loadLegacyFrameRdd(ctx, frameMeta)
     val quantileValues = QuantilesFunctions.quantiles(rdd, arguments.quantiles, columnIndex, columnDataType).toList
     QuantileValues(quantileValues)
   }

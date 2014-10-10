@@ -5,8 +5,7 @@ Python User Functions
 .. contents:: Table of Contents
     :local:
 
-A :term:`Python User Function (PUF)` is a python function written by the user on the client-side which can execute in a distributed fashion
-on the cluster.
+A :abbr:`PUF (Python User Function)` is a python function written by the user on the client-side which can execute in a distributed fashion on the cluster.
 The function is serialized and copies are distributed throughout the cluster as part of command execution.
 Various API command methods accept PUFs as parameters.
 All PUFs run under the constraints of the particular command.
@@ -15,15 +14,14 @@ All PUFs run under the constraints of the particular command.
 Frame Row PUF
 -------------
 
-A Frame Row PUF is a PUF which operates on a single row of a frame.
+A Frame Row :term:`PUF` is a PUF which operates on a single row of a frame.
 The function has one parameter, a *row* object.
 Here is an example of a Row PUF that returns True for a row where the column named “score” has a value greater than zero::
 
     def my_custom_row_func(row):
         return row['score'] > 0
 
-This function would be useful in a Frame filter command, which filters a data frame keeping only those rows which meet certain criteria,
--- in this case, only rows with scores greater than zero::
+This function would be useful in a Frame filter command, which filters a data frame keeping only those rows which meet certain criteria, -- in this case, only rows with scores greater than zero::
 
     csv = CsvFile(“tresults.txt”, [(‘test’, str), (‘score’, int32)])
 

@@ -21,8 +21,8 @@ object TitanReaderUtils {
    * @param properties Titan properties
    * @return Iterable of GraphBuilder properties
    */
-  def createGbProperties(properties: Iterable[TitanProperty]): Seq[Property] = {
-    properties.map(p => Property(p.getPropertyKey().getName(), p.getValue())).toList
+  def createGbProperties(properties: Iterable[TitanProperty]): Set[Property] = {
+    properties.map(p => Property(p.getPropertyKey().getName(), p.getValue())).toSet
   }
 
   /**
@@ -38,10 +38,10 @@ object TitanReaderUtils {
     graphElements.map(element => {
       element match {
         case v: Vertex => {
-          new Vertex(v.physicalId, v.gbId, v.properties.sortBy(p => p.key)).asInstanceOf[GraphElement]
+          new Vertex(v.physicalId, v.gbId, v.properties).asInstanceOf[GraphElement]
         }
         case e: Edge => {
-          new Edge(e.tailPhysicalId, e.headPhysicalId, e.tailVertexGbId, e.headVertexGbId, e.label, e.properties.sortBy(p => p.key)).asInstanceOf[GraphElement]
+          new Edge(e.tailPhysicalId, e.headPhysicalId, e.tailVertexGbId, e.headVertexGbId, e.label, e.properties).asInstanceOf[GraphElement]
         }
       }
     })
