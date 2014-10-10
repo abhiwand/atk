@@ -222,7 +222,7 @@ class ClassificationMetricsPlugin extends SparkCommandPlugin[ClassificationMetri
     val frameMeta = frames.expectFrame(arguments.frame)
     implicit val u = user
     val frameSchema = frameMeta.schema
-    val frameRdd = frames.loadFrameRdd(ctx, frameId)
+    val frameRdd = frames.loadLegacyFrameRdd(ctx, frameId)
     val betaValue = arguments.beta.getOrElse(1.0)
     val labelColumnIndex = frameSchema.columnIndex(arguments.labelColumn)
     val predColumnIndex = frameSchema.columnIndex(arguments.predColumn)

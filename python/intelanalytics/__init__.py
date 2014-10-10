@@ -31,20 +31,27 @@ from intelanalytics.core.loggers import loggers
 from intelanalytics.core.iatypes import *
 from intelanalytics.core.aggregation import agg
 from intelanalytics.core.errorhandle import errors
+
+try:
+    from intelanalytics.core.docstubs import *
+except Exception as e:
+    errors._init_doc_stubs_import_star_error = e
+    del e
+
 from intelanalytics.core.files import CsvFile
 from intelanalytics.core.frame import BigFrame, Frame
-from intelanalytics.core.graph import BigGraph, get_graph, get_graph_names, drop_graphs, VertexRule, EdgeRule
+from intelanalytics.core.graph import BigGraph, TitanGraph, VertexRule, EdgeRule
 from intelanalytics.rest.connection import server
 connect = server.connect
 
 
 # do api_globals last because other imports may have added to the api_globals
-from intelanalytics.core.api import api_globals
-
 
 def _refresh_api_namespace():
+    from intelanalytics.core.api import api_globals
     for item in api_globals:
         globals()[item.__name__] = item
+    del api_globals
 
 _refresh_api_namespace()
 

@@ -26,7 +26,7 @@ Named objects - object that have 'names' and are stored server side
 import sys
 import logging
 from intelanalytics.core.api import get_api_decorator, api_globals
-from intelanalytics.core.metaprog import COMMAND_PREFIX
+from intelanalytics.core.metaprog import COMMAND_PREFIX, set_function_doc_stub_text
 
 
 def name_support(term):
@@ -112,7 +112,7 @@ class _NamedObjectsFunctionFactory(object):
             >>> my_{term}.name = "cleaned_data"
             >>> my_{term}.name
             "cleaned_data"
-        """
+        """.format(term=self._term)
         return property(fget=get_name, fset=set_name, fdel=None, doc=doc)
 
     def create_get_object_names(self):
@@ -137,6 +137,7 @@ class _NamedObjectsFunctionFactory(object):
     list of strings
         Names of the all {obj_term} objects
     """.format(obj_term=self._term)
+        set_function_doc_stub_text(get_object_names, '')
         return get_object_names
 
     def create_get_object(self):
@@ -165,6 +166,7 @@ class _NamedObjectsFunctionFactory(object):
     -------
     {obj_term}
         {obj_term} object""".format(obj_term=self._term)
+        set_function_doc_stub_text(get_object, 'name')
         return get_object
 
     def create_drop_objects(self, get_item_function):
@@ -201,4 +203,5 @@ class _NamedObjectsFunctionFactory(object):
     ----------
     items : string, {obj_term} object, or a list of strings or objects
         Either the name of the {obj_term} object to delete or the {obj_term} object itself""".format(obj_term=obj_term)
+        set_function_doc_stub_text(drop_objects, 'items')
         return drop_objects
