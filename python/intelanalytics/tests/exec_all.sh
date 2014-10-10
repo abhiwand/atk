@@ -45,17 +45,17 @@ export PYTHONPATH=$PYTHONPATH:$PYTHON_DIR
 
 # check if the python libraries are correctly installed by importing
 # them through python. If there is no output then the module exists.
-if [[ -e $(python -c "import intelanalytics") ]]; then
+if [[ -e $(python2.7 -c "import intelanalytics") ]]; then
     echo "intelanalytics cannot be found"
     exit 1
 fi
 
-if [[ -e $(python -c "import nose") ]]; then
+if [[ -e $(python2.7 -c "import nose") ]]; then
     echo "Nosetests is not installed into your python virtual environment please install nose."
     exit 1
 fi
 
-if [[ -e $(python -c "import coverage") ]]; then
+if [[ -e $(python2.7 -c "import coverage") ]]; then
     echo "Coverage.py is not installed into your python virtual environment please install coverage."
     exit 1
 fi

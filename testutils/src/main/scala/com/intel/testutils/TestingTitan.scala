@@ -35,7 +35,7 @@ trait TestingTitan {
 
     titanGraph = TitanFactory.open(titanBaseConfig)
     titanIdGraph = setupIdGraph()
-    println(titanIdGraph)
+    titanGraph.commit()
   }
 
   def setupIdGraph(): IdGraph[TitanGraph] = {
@@ -44,6 +44,7 @@ trait TestingTitan {
     graphManager.buildIndex(IdGraph.ID, classOf[Vertex]).addKey(idKey).buildCompositeIndex()
     graphManager.commit()
     new IdGraph(titanGraph, true, false)
+
   }
 
   /**
@@ -52,9 +53,8 @@ trait TestingTitan {
   def cleanupTitan(): Unit = {
     try {
       if (titanGraph != null) {
-        titanGraph.commit()
 
-        //graph.shutdown()
+        titanGraph.shutdown()
       }
     }
     finally {

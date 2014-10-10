@@ -36,7 +36,7 @@ class Errors(object):
     def __repr__(self):
         return "show_details = %s\nlast = %s" % (self._show_details, self.last)
 
-    help_msg = """(For full stack trace of this error, use: errors.last
+    _help_msg = """(For full stack trace of this error, use: errors.last
  To always show full details, set errors.show_details = True)
 """
 
@@ -93,7 +93,7 @@ class IaError(Exception):
             raise
         else:
             # to hide the stack, we return the exception info w/o trace
-            #sys.stderr.write(Errors.help_msg)
+            #sys.stderr.write(errors._help_msg)
             #sys.stderr.flush()
             return exc_info[1], None, None
 

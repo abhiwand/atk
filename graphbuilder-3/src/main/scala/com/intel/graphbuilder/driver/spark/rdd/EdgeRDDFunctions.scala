@@ -89,7 +89,7 @@ class EdgeRDDFunctions(self: RDD[Edge], val maxEdgesPerCommit: Long = 50000L) ex
    * </p>
    */
   def verticesFromEdges(): RDD[Vertex] = {
-    self.flatMap(edge => List(new Vertex(edge.tailVertexGbId, Nil), new Vertex(edge.headVertexGbId, Nil)))
+    self.flatMap(edge => List(new Vertex(edge.tailVertexGbId, Set.empty[Property]), new Vertex(edge.headVertexGbId, Set.empty[Property])))
   }
 
   /**

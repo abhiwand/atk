@@ -13,7 +13,7 @@ consistent, and unified programming environment across the workflow :math:`-` fr
 and :term:`machine learning`.
 Instead of switching between various low-level languages and data formatting environments of the Hadoop platform, the
 analytics developer uses a convenient and easy to learn Python based environment.
-Data is represented with a familiar “data frame”, and API environment that mirrors the broadly-used and easy to learn Python
+Data is represented with a familiar “data frame”, and :abbr:`API (Application Programming Interface)` environment that mirrors the broadly-used and easy to learn Python
 desktop analytics programming environment.
 However, the Intel Analytics Toolkit can run all analytics functionality at full cluster scale,
 overcoming the memory limitations of desktop Python analytic tools.
@@ -56,7 +56,7 @@ Scalable Distributed Algorithms
 The Intel Analytics Toolkit includes an extensive set of scalable graph-based and entity-based algorithms for creating big data solutions,
 incorporating maching learning methods such as :term:`clustering`, :term:`classification`, :term:`recommendation systems`,
 :term:`topic modeling`, :term:`community structure detection`.
-Invocation using simple Python API calls into the programming framework reduces the need for data scientists to be algorithm
+Invocation using simple Python :abbr:`API (Application Programming Interface)` calls into the programming framework reduces the need for data scientists to be algorithm
 experts in order to overcome variability in data formatting, configuration parameters, capabilities, and scalability sometimes
 encountered when using open source algorithms.
 

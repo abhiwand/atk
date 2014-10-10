@@ -113,6 +113,7 @@ public class EventMapRedTest {
         Thread thread = new Thread(new Runnable() {
             @Override
             public void run() {
+
                 try {
                     driv.runTest();
                 } catch (IOException e) {

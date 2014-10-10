@@ -26,7 +26,7 @@ package com.intel.intelanalytics.engine.spark.frame.plugins.bincolumn
 import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.frame.{ DataFrameTemplate, BinColumn, DataFrame }
 import com.intel.intelanalytics.domain.schema.{ Schema, DataTypes }
-import com.intel.intelanalytics.engine.spark.frame.FrameRDD
+import com.intel.intelanalytics.engine.spark.frame.LegacyFrameRDD
 import com.intel.intelanalytics.engine.spark.SparkEngineConfig
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
 import com.intel.intelanalytics.security.UserPrincipal
@@ -56,7 +56,7 @@ class BinColumnPlugin extends SparkCommandPlugin[BinColumn, DataFrame] {
    * The format of the name determines how the plugin gets "installed" in the client layer
    * e.g Python client via code generation.
    */
-  override def name: String = "dataframe/bin_column"
+  override def name: String = "frame:/bin_column"
 
   /**
    * User documentation exposed in Python.
@@ -94,18 +94,18 @@ class BinColumnPlugin extends SparkCommandPlugin[BinColumn, DataFrame] {
       throw new IllegalArgumentException(s"Duplicate column name: ${arguments.binColumnName}")
 
     // run the operation and save results
-    val rdd = frames.loadFrameRdd(ctx, frameId)
+    val rdd = frames.loadLegacyFrameRdd(ctx, frameId)
     val newFrame = frames.create(DataFrameTemplate(arguments.name, None))
     val allColumns = frameMeta.schema.columns :+ (arguments.binColumnName, DataTypes.int32)
     arguments.binType match {
       case "equalwidth" =>
         val binnedRdd = DiscretizationFunctions.binEqualWidth(columnIndex, arguments.numBins, rdd)
         val rowCount = binnedRdd.count()
-        frames.saveFrame(newFrame, new FrameRDD(new Schema(allColumns), binnedRdd), Some(rowCount))
+        frames.saveLegacyFrame(newFrame, new LegacyFrameRDD(new Schema(allColumns), binnedRdd), Some(rowCount))
       case "equaldepth" =>
         val binnedRdd = DiscretizationFunctions.binEqualDepth(columnIndex, arguments.numBins, rdd)
         val rowCount = binnedRdd.count()
-        frames.saveFrame(newFrame, new FrameRDD(new Schema(allColumns), binnedRdd), Some(rowCount))
+        frames.saveLegacyFrame(newFrame, new LegacyFrameRDD(new Schema(allColumns), binnedRdd), Some(rowCount))
       case _ => throw new IllegalArgumentException(s"Invalid binning type: ${arguments.binType.toString}")
     }
     frames.updateSchema(newFrame, allColumns)

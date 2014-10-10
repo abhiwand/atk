@@ -22,7 +22,6 @@ import scala.collection.JavaConversions._
  * 3. Serialized Titan rows, where each row represents a vertex and its adjacency list
  * 4. Serialized HBase rows, where each row represents a vertex and its adjacency list
  *
- * @todo Use Stephen's TestingTitan class for scalatest
  */
 object TitanReaderTestData extends Suite with BeforeAndAfterAll {
 
@@ -100,12 +99,12 @@ object TitanReaderTestData extends Suite with BeforeAndAfterAll {
   }
 
   val seaGbEdge = {
-    val gbSeaEdgeProperties = List(Property("reason", "loves waves"))
+    val gbSeaEdgeProperties = Set(Property("reason", "loves waves"))
     new Edge(neptuneTitanVertex.getId, seaTitanVertex.getId, Property(gbID, neptuneTitanVertex.getId), Property(gbID, seaTitanVertex.getId), seaTitanEdge.getLabel(), gbSeaEdgeProperties)
   }
 
   val plutoGbEdge = {
-    new Edge(neptuneTitanVertex.getId, plutoTitanVertex.getId, Property(gbID, neptuneTitanVertex.getId), Property(gbID, plutoTitanVertex.getId), plutoTitanEdge.getLabel(), List[Property]())
+    new Edge(neptuneTitanVertex.getId, plutoTitanVertex.getId, Property(gbID, neptuneTitanVertex.getId), Property(gbID, plutoTitanVertex.getId), plutoTitanEdge.getLabel(), Set[Property]())
   }
 
   // Faunus graph elements

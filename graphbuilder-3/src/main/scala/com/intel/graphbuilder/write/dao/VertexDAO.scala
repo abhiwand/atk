@@ -101,7 +101,8 @@ class VertexDAO(graph: Graph) extends Serializable {
    * @return the newly created Vertex
    */
   def updateOrCreate(vertex: Vertex): blueprints.Vertex = {
-    val blueprintsVertex = findByGbId(vertex.gbId)
+    // val blueprintsVertex = findByGbId(vertex.gbId)
+    val blueprintsVertex = findById(vertex.physicalId, vertex.gbId)
     if (blueprintsVertex.isEmpty) {
       create(vertex)
     }
