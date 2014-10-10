@@ -342,11 +342,11 @@ Rename Columns:
 Columns can be renamed by giving the existing column name and the new name, in the form of a dictionary.
 Unicode characters should not be used for column names.
 
-Rename column *a* to *id*::
+Rename column *a* to "id"::
 
     my_frame.rename_columns(('a': 'id'))
 
-Rename column *b* to *author* and *c* to *publisher*::
+Rename column *b* to "author" and *c* to "publisher"::
 
     my_frame.rename_columns(('b': 'author', 'c': 'publisher'))
 
