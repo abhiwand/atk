@@ -33,6 +33,10 @@ trait TestingTitan {
     titanBaseConfig.setProperty("storage.backend", "berkeleyje")
     titanBaseConfig.setProperty("storage.directory", tmpDir.getAbsolutePath)
 
+    //Trying to fix OutOfMemory errors during builds
+    titanBaseConfig.setProperty("cache.tx-cache-size", 100)
+    titanBaseConfig.setProperty("cache.db-cache", false)
+
     titanGraph = TitanFactory.open(titanBaseConfig)
     titanIdGraph = setupIdGraph()
     titanGraph.commit()
@@ -53,7 +57,6 @@ trait TestingTitan {
   def cleanupTitan(): Unit = {
     try {
       if (titanGraph != null) {
-
         titanGraph.shutdown()
       }
     }
