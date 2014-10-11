@@ -129,9 +129,9 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
         <dep.giraph-hbase.version>1.1.0-SNAPSHOT-20140317</dep.giraph-hbase.version>
         <!--END GAO MAVEN -->
 
-        <scala.long.version>2.10.3</scala.long.version>
+        <scala.long.version>2.10.4</scala.long.version>
         <scala.short.version>2.10</scala.short.version>
-        <scalatest.version>2.2.1</scalatest.version>
+        <scalatest.version>2.2.2</scalatest.version>
 
         <akka.version>2.3.2</akka.version>
 
