@@ -26,7 +26,7 @@ package com.intel.intelanalytics.engine.spark.frame.plugins
 import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.frame.{ DataFrame, DataFrameTemplate, FlattenColumn }
 import com.intel.intelanalytics.engine.Rows._
-import com.intel.intelanalytics.engine.spark.frame.FrameRDD
+import com.intel.intelanalytics.engine.spark.frame.LegacyFrameRDD
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
 import com.intel.intelanalytics.security.UserPrincipal
 import org.apache.spark.rdd.RDD
@@ -46,7 +46,7 @@ class FlattenColumnPlugin extends SparkCommandPlugin[FlattenColumn, DataFrame] {
    * The format of the name determines how the plugin gets "installed" in the client layer
    * e.g Python client via code generation.
    */
-  override def name: String = "dataframe/flatten_column"
+  override def name: String = "frame:/flatten_column"
 
   /**
    * User documentation exposed in Python.
@@ -75,13 +75,13 @@ class FlattenColumnPlugin extends SparkCommandPlugin[FlattenColumn, DataFrame] {
     val columnIndex = frameMeta.schema.columnIndex(arguments.column)
 
     // run the operation
-    val rdd = frames.loadFrameData(invocation.sparkContext, frameMeta)
+    val rdd = frames.loadLegacyFrameRdd(invocation.sparkContext, frameMeta)
     val flattenedRDD = FlattenColumnFunctions.flattenRddByColumnIndex(columnIndex, arguments.separator, rdd)
     val rowCount = flattenedRDD.count()
 
     // save results
     val newFrame = frames.create(DataFrameTemplate(arguments.name, None))
-    frames.saveFrameData(newFrame, new FrameRDD(frameMeta.schema, flattenedRDD))
+    frames.saveLegacyFrame(newFrame, new LegacyFrameRDD(frameMeta.schema, flattenedRDD))
     frames.updateRowCount(newFrame, rowCount)
   }
 

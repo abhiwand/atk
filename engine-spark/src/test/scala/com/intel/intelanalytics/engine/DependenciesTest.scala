@@ -24,11 +24,11 @@
 package com.intel.intelanalytics.engine
 
 import com.intel.intelanalytics.domain.frame.FrameReference
-import com.intel.intelanalytics.engine.spark.command.{Typeful, Dependencies}
-import org.scalatest.{FlatSpec, Matchers}
+import com.intel.intelanalytics.engine.spark.command.{ Typeful, Dependencies }
+import org.scalatest.{ FlatSpec, Matchers }
 import spray.json._
 
-class DependenciesTest extends FlatSpec with Matchers{
+class DependenciesTest extends FlatSpec with Matchers {
   "getUriReferences" should "find UriReferences in case classes" in {
     case class Foo(frameId: Int, frame: FrameReference)
     import com.intel.intelanalytics.domain.DomainJsonProtocol._

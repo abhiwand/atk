@@ -23,7 +23,6 @@
 
 package com.intel.intelanalytics.service.v1
 
-
 import scala.util.Try
 import com.intel.intelanalytics.domain._
 import com.intel.intelanalytics.engine.Engine

@@ -55,10 +55,10 @@ class TypefulTest extends FlatSpec with Matchers {
   }
 
   //Doesn't work yet, but would be nice.
-//  "deepFind" should "find JsObjects in JsObjects" in {
-//    Bar(2.3, "hello", List(Foo(3, "assiduous"), Foo(8, "world"))).toJson
-//      .deepFind((o: JsObject) => o.getFields("bar").exists { case JsString(s) => s.endsWith("ous")}) should be(Seq(Foo(3, "assiduous")))
-//  }
+  //  "deepFind" should "find JsObjects in JsObjects" in {
+  //    Bar(2.3, "hello", List(Foo(3, "assiduous"), Foo(8, "world"))).toJson
+  //      .deepFind((o: JsObject) => o.getFields("bar").exists { case JsString(s) => s.endsWith("ous")}) should be(Seq(Foo(3, "assiduous")))
+  //  }
 
   "deepFind" should "find JsStrings in JsObjects" in {
     Foo(3, "assiduous").toJson.asJsObject.deepFind((s: JsString) => s.value.endsWith("ous")) should be(Seq(JsString("assiduous")))

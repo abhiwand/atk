@@ -28,10 +28,10 @@ package com.intel.intelanalytics.service
  */
 object UrlParser {
 
-  private val frameIdRegex = "/dataframes/(\\d+)".r
+  private val frameIdRegex = "/frames/(\\d+)".r
 
   /**
-   * Get the frameId out of a URL in the format "../dataframes/id"
+   * Get the frameId out of a URL in the format "../frames/id"
    * @return unique id
    */
   def getFrameId(url: String): Option[Long] = {

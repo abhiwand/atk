@@ -23,6 +23,7 @@
 
 package org.apache.spark.engine
 
+import com.intel.intelanalytics.domain.command.Command
 import org.apache.spark.SparkConf
 import org.apache.spark.scheduler._
 import org.apache.spark.ui.jobs.JobProgressListener
@@ -44,7 +45,7 @@ object SparkProgressListener {
   var progressUpdater: CommandProgressUpdater = null
 }
 
-class SparkProgressListener(val progressUpdater: CommandProgressUpdater, val commandId: Long, val jobCount: Int) extends JobProgressListener(new SparkConf(true)) {
+class SparkProgressListener(val progressUpdater: CommandProgressUpdater, val command: Command, val jobCount: Int) extends JobProgressListener(new SparkConf(true)) {
 
   val jobIdToStagesIds = new HashMap[Int, Array[Int]]
 
@@ -128,7 +129,7 @@ class SparkProgressListener(val progressUpdater: CommandProgressUpdater, val com
    */
   private def updateProgress() {
     val progressInfo = getCommandProgress()
-    progressUpdater.updateProgress(commandId, progressInfo)
+    progressUpdater.updateProgress(command.id, progressInfo)
   }
 }
 

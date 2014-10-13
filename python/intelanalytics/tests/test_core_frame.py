@@ -60,6 +60,7 @@ class FrameConstruction(unittest.TestCase):
             self.assertNotEqual(None,frame[i])
 
 
+    @patch("intelanalytics.core.frame.check_api_is_loaded", Mock())
     def test_create(self, get_frame_backend):
         f = BigFrame()
         self.assertEqual(0, f._id)

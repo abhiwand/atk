@@ -31,6 +31,9 @@ import com.intel.intelanalytics.engine._
 import com.intel.intelanalytics.domain.schema.DataTypes
 import DataTypes.DataType
 import java.nio.file.Paths
+import com.intel.intelanalytics.engine.spark.frame.parquet.ParquetReader
+import org.apache.hadoop.fs.Path
+import org.apache.spark.sql.execution.ExistingRdd
 
 import scala.io.Codec
 import org.apache.spark.rdd.RDD
@@ -40,7 +43,6 @@ import scala.util.matching.Regex
 import java.util.concurrent.atomic.AtomicLong
 import com.intel.intelanalytics.domain.frame.{ FrameReference, Column, DataFrameTemplate, DataFrame }
 import com.intel.intelanalytics.engine.FrameStorage
-import com.intel.intelanalytics.engine.spark._
 import com.intel.intelanalytics.repository.SlickMetaStoreComponent
 import com.intel.intelanalytics.repository.{ SlickMetaStoreComponent, MetaStoreComponent }
 import com.intel.intelanalytics.engine.plugin.Invocation
@@ -52,6 +54,7 @@ import org.apache.spark.sql.SQLContext
 import com.intel.intelanalytics.engine.spark.plugin.SparkInvocation
 import org.apache.spark.sql.{ SQLContext, SchemaRDD }
 import com.intel.event.EventLogging
+import scala.util.parsing.combinator.RegexParsers
 
 import scala.util.control.NonFatal
 
@@ -65,16 +68,16 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
   import com.intel.intelanalytics.engine.Rows.Row
 
   override def expectFrame(frameId: Long): DataFrame = {
-    lookup(frameId).getOrElse(throw new NotFoundException("dataframe", frameId.toString))
+    lookup(frameId).getOrElse(throw new NotFoundException("frame", frameId.toString))
   }
 
   override def expectFrame(frameRef: FrameReference): DataFrame = expectFrame(frameRef.id)
 
   /**
-   * Create a FrameRDD or throw an exception if bad frameId is given
+   * Create an FrameRDD from a frame data file
    * @param ctx spark context
-   * @param frameId primary key of the frame record
-   * @return the newly created RDD
+   * @param frameId the id for the frame
+   * @return the newly created FrameRDD
    */
   def loadFrameData(ctx: SparkContext, frameId: Long): FrameRDD = {
     val frame = expectFrame(frameId)
@@ -87,23 +90,56 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
    * @param frame the model for the frame
    * @return the newly created FrameRDD
    */
-  def loadFrameData(ctx: SparkContext, frame: DataFrame): FrameRDD = frame.storageFormat match {
-    case None =>
-      new FrameRDD(frame.schema, ctx.parallelize[Row](Nil))
-    case Some(format) =>
-      //TODO delegate to format
-      val absPath = frameFileStorage.frameBaseDirectory(frame.id)
-      val f: FrameRDD = if (frameFileStorage.isParquet(frame)) {
+  def loadFrameRDD(ctx: SparkContext, frame: DataFrame): FrameRDD = {
+    val sqlContext = new SQLContext(ctx);
+    frame.storageLocation match {
+      case None =>
+        //  nothing has been saved to disk yet)
+        new FrameRDD(frame.schema, ctx.parallelize[Row](Nil))
+      case Some(absPath) =>
+        if (!isParquet(frame))
+          throw new IllegalStateException(s"Frame: ${frame.id} is not stored in the parquet format")
         val sqlContext = new SQLContext(ctx)
         val rows = sqlContext.parquetFile(absPath.toString)
         new FrameRDD(frame.schema, rows)
-      }
-      else {
-        val rows = ctx.objectFile[Row](absPath.toString, sparkAutoPartitioner.partitionsForFile(absPath.toString))
-        new FrameRDD(frame.schema, rows)
-      }
+    }
+  }
+
+  /**
+   * Create a LegacyFrameRDD or throw an exception if bad frameId is given
+   * @param ctx spark context
+   * @param frameId primary key of the frame record
+   * @return the newly created RDD
+   */
+  def loadLegacyFrameRdd(ctx: SparkContext, frameId: Long): LegacyFrameRDD = {
+    val frame = lookup(frameId).getOrElse(
+      throw new IllegalArgumentException(s"No such data frame: $frameId"))
+    loadLegacyFrameRdd(ctx, frame)
+  }
+
+  /**
+   * Create an LegacyFrameRDD from a frame data file
+   * @param ctx spark context
+   * @param frame the model for the frame
+   * @return the newly created FrameRDD
+   */
+  def loadLegacyFrameRdd(ctx: SparkContext, frame: DataFrame): LegacyFrameRDD = frame.storageLocation match {
+    case None =>
+      // nothing has been saved to disk yet
+      new LegacyFrameRDD(frame.schema, ctx.parallelize[Row](Nil))
+    case Some(absPath) =>
+      val f: LegacyFrameRDD =
+        if (isParquet(frame)) {
+          loadFrameRDD(ctx, frame).toLegacyFrameRDD
+        }
+        else {
+          val rows = ctx.objectFile[Row](absPath.toString, sparkAutoPartitioner.partitionsForFile(absPath.toString))
+          new LegacyFrameRDD(frame.schema, rows)
+        }
       f
   }
+
+  def loadFrameData(ctx: SparkContext, frame: DataFrame) = loadLegacyFrameRdd(ctx, frame).toFrameRDD() //TODO: Better way?
 
   private def copyParentNameToChildAndRenameParent(frame: DataFrame)(implicit session: metaStore.Session) = {
     require(frame.parent.isDefined, "Cannot copy name from frame parent if no parent provided")
@@ -116,60 +152,90 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
   }
 
   /**
+   * Determine if a dataFrame is saved as parquet
+   * @param frame the data frame to verify
+   * @return true if the data frame is saved in the parquet format
+   */
+  //TODO: Remove this function.
+  @deprecated
+  def isParquet(frame: DataFrame): Boolean = {
+    frameFileStorage.isParquet(frame)
+  }
+
+  /**
+   * Save a LegacyFrameRDD to HDFS - this is the only save path that should be used for legacy Frames
+   * @param frameEntity DataFrame representation
+   * @param legacyFrameRdd the RDD
+   * @param rowCount optionally provide the row count if you need to update it
+   */
+  def saveLegacyFrame(frameEntity: DataFrame, legacyFrameRdd: LegacyFrameRDD, rowCount: Option[Long] = None): DataFrame = {
+    saveFrameData(frameEntity, legacyFrameRdd.toFrameRDD(), rowCount)
+  }
+
+  /**
    * Save a FrameRDD to HDFS - this is the only save path that should be used
    *
    * Will cache the RDD and count it if the rowCount parameter is not provided.
    *
-   * @param frameMeta DataFrame representation
-   * @param data the RDD
+   * @param frameEntity DataFrame representation
+   * @param frameRDD the RDD
    * @param rowCount the number of rows in the RDD
    */
-  def saveFrameData(frameMeta: DataFrame, data: FrameRDD, rowCount: Option[Long] = None): DataFrame =
+  def saveFrameData(frameEntity: DataFrame, frameRDD: FrameRDD, rowCount: Option[Long] = None): DataFrame =
     withContext("SFS.saveFrame") {
 
-      val path = frameFileStorage.createFrame(frameMeta)
-      val count = rowCount.getOrElse { data.cache(); data.count() }
+      val path = frameFileStorage.createFrame(frameEntity)
+      val count = rowCount.getOrElse { frameRDD.cache(); frameRDD.count() }
       try {
 
         //TODO: make storage aware
         //frameRdd.saveAsObjectFile(path.toString)
+        frameRDD.saveAsParquetFile(path.toString)
 
-        val schemaRDD = data.toSchemaRDD()
+        val schemaRDD = frameRDD.toSchemaRDD
         schemaRDD.saveAsParquetFile(path.toString)
 
         metaStore.withSession("frame.saveFrame") {
           implicit session =>
             {
-              if (data.schema != null) {
-                metaStore.frameRepo.updateSchema(frameMeta, data.schema.columns)
+              if (frameRDD.schema != null) {
+                metaStore.frameRepo.updateSchema(frameEntity, frameRDD.schema.columns)
               }
-              metaStore.frameRepo.updateRowCount(frameMeta, Some(count))
+              metaStore.frameRepo.updateRowCount(frameEntity, Some(count))
             }
         }
       }
       catch {
         case NonFatal(e) =>
           error("Error occurred, rolling back creation of file for frame data")
-          frameFileStorage.delete(frameMeta)
+          frameFileStorage.delete(frameEntity)
           throw e
       }
 
-      expectFrame(frameMeta.id)
+      expectFrame(frameEntity.id)
     }
 
   def getPagedRowsRDD(frame: DataFrame, offset: Long, count: Int, ctx: SparkContext)(implicit user: UserPrincipal): RDD[Row] =
-    withContext("frame.getRows") {
+    withContext("frame.getPagedRowsRDD") {
       require(frame != null, "frame is required")
       require(offset >= 0, "offset must be zero or greater")
       require(count > 0, "count must be zero or greater")
       withMyClassLoader {
-        val rdd: RDD[Row] = loadFrameData(ctx, frame.id)
+        val rdd: RDD[Row] = loadLegacyFrameRdd(ctx, frame.id)
         val rows = MiscFrameFunctions.getPagedRdd[Row](rdd, offset, count, -1)
 
         rows
       }
     }
 
+  /**
+   * Retrieve records from the given dataframe
+   * @param frame Frame to retrieve records from
+   * @param offset offset in frame before retrieval
+   * @param count number of records to retrieve
+   * @param user logged in user
+   * @return records in the dataframe starting from offset with a length of count
+   */
   override def getRows(frame: DataFrame, offset: Long, count: Int)(implicit user: UserPrincipal): Iterable[Row] =
     withContext("frame.getRows") {
       require(frame != null, "frame is required")
@@ -178,13 +244,17 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
       withMyClassLoader {
         val ctx = getContext(user)
         try {
-          val rdd: RDD[Row] = loadFrameData(ctx, frame)
+          val rdd: RDD[Row] = loadLegacyFrameRdd(ctx, frame)
           val rows = MiscFrameFunctions.getRows(rdd, offset, count, maxRows)
           rows
         }
         finally {
           ctx.stop()
         }
+        val absPath: Path = new Path(frame.storageLocation.get)
+        val reader = new ParquetReader(absPath, frameFileStorage.hdfs)
+        val rows = reader.take(count, offset, Some(maxRows))
+        rows
       }
     }
 
@@ -207,6 +277,11 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
   }
 
   override def drop(frame: DataFrame): Unit = {
+
+    //validate the args
+
+    //parse for wild card characters
+
     frameFileStorage.delete(frame)
     metaStore.withSession("frame.drop") {
       implicit session =>
@@ -283,14 +358,14 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
   }
 
   /**
-   * Get the pair of FrameRDD's that were the result of a parse
+   * Get the pair of LegacyFrameRDD's that were the result of a parse
    * @param ctx spark context
    * @param frame the model of the frame that was the successfully parsed lines
    * @param errorFrame the model for the frame that was the parse errors
    */
   def getParseResult(ctx: SparkContext, frame: DataFrame, errorFrame: DataFrame): ParseResultRddWrapper = {
-    val frameRdd = loadFrameData(ctx, frame)
-    val errorFrameRdd = loadFrameData(ctx, errorFrame)
+    val frameRdd = loadLegacyFrameRdd(ctx, frame)
+    val errorFrameRdd = loadLegacyFrameRdd(ctx, errorFrame)
     new ParseResultRddWrapper(frameRdd, errorFrameRdd)
   }
 

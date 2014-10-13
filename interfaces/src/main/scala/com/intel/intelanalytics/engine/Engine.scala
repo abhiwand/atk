@@ -27,6 +27,10 @@ import com.intel.intelanalytics.domain.command.{ Command, CommandDefinition, Com
 import com.intel.intelanalytics.domain.frame._
 import com.intel.intelanalytics.domain.graph.{ Graph, GraphTemplate }
 import com.intel.intelanalytics.domain.query.{ PagedQueryResult, Query, QueryDataResult, RowQuery, Execution => QueryExecution }
+import com.intel.intelanalytics.domain.frame.load.Load
+import com.intel.intelanalytics.domain.graph.{ Graph, GraphLoad, GraphTemplate, RenameGraph }
+import com.intel.intelanalytics.domain.query.{ Execution => QueryExecution, _ }
+import com.intel.intelanalytics.engine.Rows._
 import com.intel.intelanalytics.security.UserPrincipal
 
 import scala.concurrent.Future
@@ -87,7 +91,7 @@ trait Engine {
 
   def getFrame(id: Identifier)(implicit user: UserPrincipal): Future[Option[DataFrame]]
 
-  def getRows(arguments: RowQuery[Identifier])(implicit user: UserPrincipal): Future[QueryDataResult]
+  def getRows(arguments: RowQuery[Identifier])(implicit user: UserPrincipal): QueryResult
 
   def getRowsLarge(arguments: RowQuery[Identifier])(implicit user: UserPrincipal): PagedQueryResult
 

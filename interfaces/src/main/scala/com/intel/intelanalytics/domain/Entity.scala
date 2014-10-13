@@ -23,10 +23,30 @@
 
 package com.intel.intelanalytics.domain
 
+/**
+ * Describes the structure of a name, including both singular and plural,
+ * for use in constructing URIs and other identifiers for entities in the system.
+ * @param name the singular name for the entity
+ * @param plural the plural name for the entity
+ */
 case class EntityName(name: String, plural: String)
 
+/**
+ * Entities in the system, things which can be named in URIs and other identifiers.
+ *
+ * Examples include [[com.intel.intelanalytics.domain.graph.Graph]] and
+ * [[com.intel.intelanalytics.domain.frame.DataFrame]].
+ */
 trait Entity {
+  /**
+   * The standard name for this entity
+   */
   def name: EntityName
+
+  /**
+   * Other names that are also recognized / accepted in incoming requests,
+   * but not generally used for constructing outgoing responses.
+   */
   def alternatives: Seq[EntityName] = Seq()
 }
 
