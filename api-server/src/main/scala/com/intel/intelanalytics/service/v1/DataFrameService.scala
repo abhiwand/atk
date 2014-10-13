@@ -57,7 +57,7 @@ import ExecutionContext.Implicits.global
 class DataFrameService(commonDirectives: CommonDirectives, engine: Engine) extends Directives with EventLogging {
 
   def frameRoutes() = {
-    val prefix = "dataframes"
+    val prefix = "frames"
 
     commonDirectives(prefix) { implicit p: UserPrincipal =>
       (path(prefix) & pathEnd) {
@@ -70,7 +70,7 @@ class DataFrameService(commonDirectives: CommonDirectives, engine: Engine) exten
                 case Some(name) => {
                   onComplete(engine.getFrameByName(name)) {
                     case Success(Some(frame)) => {
-                      // uri comes in looking like /dataframes?name=abc
+                      // uri comes in looking like /frames?name=abc
                       val baseUri = StringUtils.substringBeforeLast(uri.toString(), "/")
                       complete(FrameDecorator.decorateEntity(baseUri + "/" + frame.id, Nil, frame))
                     }

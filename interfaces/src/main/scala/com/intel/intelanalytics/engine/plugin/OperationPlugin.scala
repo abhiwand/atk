@@ -48,6 +48,15 @@ sealed abstract class OperationPlugin[Arguments <: Product: JsonFormat: ClassMan
    *
    * The format of the name determines how the plugin gets "installed" in the client layer
    * e.g Python client via code generation.
+   *
+   * The colon ":" is used to to indicate command destination base classes, default classes or classes of a
+   * specific storage type:
+   *
+   * - graph:titan means command is loaded into class TitanGraph
+   * - graph: means command is loaded into class Graph, our default type which will be the Parquet-backed graph
+   * - graph would mean command is loaded into class BaseGraph, which applies to all graph classes
+   * - frame: and means command is loaded in class Frame.  Example: "frame:/assign_sample"
+   * - model:logistic_regression  means command is loaded into class LogisticRegressionModel
    */
   def name: String
 

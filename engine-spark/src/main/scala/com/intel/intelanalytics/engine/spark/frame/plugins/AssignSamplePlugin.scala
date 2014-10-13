@@ -26,7 +26,7 @@ package com.intel.intelanalytics.engine.spark.frame.plugins
 import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.frame.{ AssignSample, DataFrame }
 import com.intel.intelanalytics.domain.schema.{ Schema, DataTypes }
-import com.intel.intelanalytics.engine.spark.frame.FrameRDD
+import com.intel.intelanalytics.engine.spark.frame.LegacyFrameRDD
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
 import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.spark.mllib.util.MLDataSplitter
@@ -48,7 +48,7 @@ class AssignSamplePlugin extends SparkCommandPlugin[AssignSample, DataFrame] {
    * The format of the name determines how the plugin gets "installed" in the client layer
    * e.g Python client via code generation.
    */
-  override def name: String = "dataframe/assign_sample"
+  override def name: String = "frame:/assign_sample"
 
   /**
    * User documentation exposed in Python.
@@ -129,11 +129,11 @@ class AssignSamplePlugin extends SparkCommandPlugin[AssignSample, DataFrame] {
 
     // run the operation
     val splitter = new MLDataSplitter(splitPercentages, splitLabels, seed)
-    val labeledRDD = splitter.randomlyLabelRDD(frames.loadFrameRdd(ctx, frameID))
+    val labeledRDD = splitter.randomlyLabelRDD(frames.loadLegacyFrameRdd(ctx, frameID))
     val splitRDD = labeledRDD.map(labeledRow => labeledRow.entry :+ labeledRow.label.asInstanceOf[Any])
     val allColumns = frame.schema.columns :+ (outputColumn, DataTypes.string)
 
     // save results
-    frames.saveFrame(frame, new FrameRDD(new Schema(allColumns), splitRDD))
+    frames.saveLegacyFrame(frame, new LegacyFrameRDD(new Schema(allColumns), splitRDD))
   }
 }

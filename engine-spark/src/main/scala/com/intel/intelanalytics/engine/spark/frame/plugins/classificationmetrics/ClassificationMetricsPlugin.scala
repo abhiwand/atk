@@ -46,7 +46,7 @@ class ClassificationMetricsPlugin extends SparkCommandPlugin[ClassificationMetri
    * The format of the name determines how the plugin gets "installed" in the client layer
    * e.g Python client via code generation.
    */
-  override def name: String = "dataframe/classification_metrics"
+  override def name: String = "frame:/classification_metrics"
 
   /**
    * User documentation exposed in Python.
@@ -190,7 +190,7 @@ class ClassificationMetricsPlugin extends SparkCommandPlugin[ClassificationMetri
     val frameMeta = frames.expectFrame(arguments.frame)
     implicit val u = user
     val frameSchema = frameMeta.schema
-    val frameRdd = frames.loadFrameRdd(ctx, frameId)
+    val frameRdd = frames.loadLegacyFrameRdd(ctx, frameId)
     val betaValue = arguments.beta.getOrElse(1.0)
     val labelColumnIndex = frameSchema.columnIndex(arguments.labelColumn)
     val predColumnIndex = frameSchema.columnIndex(arguments.predColumn)

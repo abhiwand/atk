@@ -14,7 +14,7 @@ import org.apache.spark.AccumulatorParam
  * and Task Serialization
  * [[http://stackoverflow.com/questions/22592811/scala-spark-task-not-serializable-java-io-notserializableexceptionon-when]]
  */
-private[numericalstatistics] object StatisticsRDDFunctions {
+object StatisticsRDDFunctions extends Serializable {
 
   /*
    * TODO: TRIB-3134  Investigate one-pass algorithms for weighted skewness and kurtosis. (Currently these parameters

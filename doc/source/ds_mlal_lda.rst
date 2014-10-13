@@ -351,7 +351,6 @@ Data scientists will often set some threshold value to make a categorical judgme
            superstep = 4    maxDelta = 0.053260
            superstep = 5    maxDelta = 0.038495
 
-.. rubric:: footnotes
 
 .. [#LDA1] http://www.cs.princeton.edu/~blei/papers/Blei2011.pdf
 .. [#LDA2] http://www.sciencedirect.com/science/article/pii/S1532046401910299
