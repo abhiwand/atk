@@ -276,5 +276,15 @@
             <groupId>com.chuusai</groupId>
             <artifactId>shapeless_${scala.long.version}</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.twitter</groupId>
+            <artifactId>parquet-hadoop</artifactId>
+            <version>1.4.3</version>
+        </dependency>
+        <dependency>
+            <groupId>com.twitter</groupId>
+            <artifactId>parquet-column</artifactId>
+            <version>1.4.3</version>
+        </dependency>
     </dependencies>
 </project>

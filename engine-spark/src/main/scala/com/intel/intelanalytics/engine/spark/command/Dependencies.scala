@@ -25,12 +25,10 @@ package com.intel.intelanalytics.engine.spark.command
 
 import com.intel.intelanalytics.domain.{ ReferenceResolver, OnDemand, UriReference }
 import com.intel.intelanalytics.engine.spark.command.Typeful.Searchable
-import spray.json.{JsNumber, JsValue, JsString, JsObject}
+import spray.json.{ JsNumber, JsValue, JsString, JsObject }
 
 import scalax.collection.Graph
 import scalax.collection.GraphEdge.DiEdge
-
-
 
 object Dependencies {
 

@@ -25,7 +25,7 @@ package com.intel.intelanalytics.engine.spark.frame.plugins
 
 import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.frame.{ FrameDropColumns, DataFrame }
-import com.intel.intelanalytics.engine.spark.frame.FrameRDD
+import com.intel.intelanalytics.engine.spark.frame.LegacyFrameRDD
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
 import com.intel.intelanalytics.security.UserPrincipal
 
@@ -46,7 +46,7 @@ class DropColumnsPlugin extends SparkCommandPlugin[FrameDropColumns, DataFrame] 
    * The format of the name determines how the plugin gets "installed" in the client layer
    * e.g Python client via code generation.
    */
-  override def name: String = "dataframe/drop_columns"
+  override def name: String = "frame:/drop_columns"
 
   /**
    * User documentation exposed in Python.
@@ -108,17 +108,20 @@ class DropColumnsPlugin extends SparkCommandPlugin[FrameDropColumns, DataFrame] 
         throw new IllegalArgumentException(s"Invalid list of columns: [${arguments.columns.mkString(", ")}]")
       case allColumns if allColumns.length == schema.columns.length =>
         frames.loadFrameData(ctx, frameId).filter(_ => false)
+        frames.loadLegacyFrameRdd(ctx, frameId).filter(_ => false)
       case singleColumn if singleColumn.length == 1 =>
         frames.loadFrameData(ctx, frameMeta)
+        frames.loadLegacyFrameRdd(ctx, frameMeta)
           .map(row => row.take(singleColumn(0)) ++ row.drop(singleColumn(0) + 1))
       case multiColumn =>
         frames.loadFrameData(ctx, frameId)
+        frames.loadLegacyFrameRdd(ctx, frameId)
           .map(row => row.zipWithIndex.filter(elem => multiColumn.contains(elem._2) == false).map(_._1))
     }
 
     val dataFrame = frames.dropColumns(frameMeta, columnIndices)
 
     // save results
-    frames.saveFrameData(dataFrame, new FrameRDD(dataFrame.schema, resultRDD))
+    frames.saveLegacyFrame(dataFrame, new LegacyFrameRDD(dataFrame.schema, resultRDD))
   }
 }

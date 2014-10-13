@@ -65,7 +65,7 @@ class HdfsFileStorage(fsRoot: String) extends EventLogging {
    * @param path a path relative to the root or that includes the root
    */
   private[spark] def absolutePath(path: String): Path = {
-    // TODO: this seems to work but this could be revisted and perhaps done nicer
+    // TODO: this seems to work but this could be revisited and perhaps done nicer
     if (path.startsWith(fsRoot)) {
       new Path(path)
     }
@@ -143,5 +143,15 @@ class HdfsFileStorage(fsRoot: String) extends EventLogging {
     }
     fileStatuses.map(fileStatus => fileStatus.getLen).reduce(_ + _)
   }
+
+  /**
+   * Determine if the file path is a directory
+   * @param path path to examine
+   * @return true if the path is a directory false if it is not
+   */
+  def isDirectory(path: Path): Boolean = withContext("file.isDirectory") {
+    fs.isDirectory(path)
+  }
+
 }
 

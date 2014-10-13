@@ -59,8 +59,8 @@ object Typeful {
     }
 
     implicit def hlistSearchable[H, T <: HList, Element](
-                                                          implicit hs: Searchable[H, Element] = null,
-                                                          ts: Searchable[T, Element]) =
+      implicit hs: Searchable[H, Element] = null,
+      ts: Searchable[T, Element]) =
       new Searchable[H :: T, Element] {
         def findAll(predicate: Element => Boolean)(a: H :: T) = {
           val seq = hs match {
@@ -83,7 +83,7 @@ object Typeful {
         }
       }
 
-    def jsNumber[Element](implicit convert: BigDecimal => Element)  =
+    def jsNumber[Element](implicit convert: BigDecimal => Element) =
       new Searchable[JsNumber, Element] {
         override def findAll(predicate: (Element) => Boolean)(t: JsNumber): Seq[Element] = t match {
           case JsNumber(n) if predicate(convert(n)) => Seq(convert(n))
@@ -112,12 +112,12 @@ object Typeful {
       }
     }
 
-    def findIfAvailable[T,E](searchable: Searchable[T,E], predicate: E => Boolean, value: T) : Seq[E] =
+    def findIfAvailable[T, E](searchable: Searchable[T, E], predicate: E => Boolean, value: T): Seq[E] =
       Option(searchable).map(_.findAll(predicate)(value)).getOrElse(List.empty)
 
     implicit def jsValueSearchable[Element](implicit b: Searchable[JsBoolean, Element] = null,
-                                             jss: Searchable[JsString, Element] = null,
-                                             jsn: Searchable[JsNumber, Element] = null) = new Searchable[JsValue, Element] {
+                                            jss: Searchable[JsString, Element] = null,
+                                            jsn: Searchable[JsNumber, Element] = null) = new Searchable[JsValue, Element] {
       override def findAll(predicate: (Element) => Boolean)(t: JsValue): Seq[Element] = t match {
         case x: JsObject => jsObjectSearchable(this).findAll(predicate)(x)
         case x: JsArray => x.elements.flatMap(a => findAll(predicate)(a))

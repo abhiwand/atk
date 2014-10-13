@@ -25,7 +25,7 @@ class GroupByPlugin extends SparkCommandPlugin[FrameGroupByColumn, DataFrame] {
    * The format of the name determines how the plugin gets "installed" in the client layer
    * e.g Python client via code generation.
    */
-  override def name: String = "dataframe/group_by"
+  override def name: String = "frame:/group_by"
 
   /**
    * User documentation exposed in Python.
@@ -71,16 +71,16 @@ class GroupByPlugin extends SparkCommandPlugin[FrameGroupByColumn, DataFrame] {
         columnDataType = schema.columns(columnIndex)._2
       } yield (columnIndex, columnDataType)
 
-      val groupedRDD = frames.loadFrameData(ctx, originalFrameID).groupBy((data: Rows.Row) => {
+      val groupedRDD = frames.loadLegacyFrameRdd(ctx, originalFrameID).groupBy((data: Rows.Row) => {
         for { index <- columnIndices.map(_._1) } yield data(index)
       }.mkString("\0"))
       val resultRdd = GroupByAggregationFunctions.aggregation(groupedRDD, args_pair, originalFrame.schema.columns, columnIndices.map(_._2).toArray, arguments)
-      frames.saveFrameData(newFrame, resultRdd)
+      frames.saveLegacyFrame(newFrame, resultRdd)
     }
     else {
-      val groupedRDD = frames.loadFrameData(ctx, originalFrameID).groupBy((data: Rows.Row) => "")
+      val groupedRDD = frames.loadLegacyFrameRdd(ctx, originalFrameID).groupBy((data: Rows.Row) => "")
       val resultRdd = GroupByAggregationFunctions.aggregation(groupedRDD, args_pair, originalFrame.schema.columns, Array[DataType](), arguments)
-      frames.saveFrameData(newFrame, resultRdd)
+      frames.saveLegacyFrame(newFrame, resultRdd)
     }
   }
 }

@@ -110,8 +110,8 @@ object DomainJsonProtocol extends IADefaultJsonProtocol {
     override def write(obj: T): JsValue = JsString(obj.uri)
 
     override def read(json: JsValue): T = json match {
-      case JsString(name) => ReferenceResolver.resolve(name).asInstanceOf[T]
-      case JsNumber(n) => ReferenceResolver.resolve(s"ia://${entity.name.plural}/$n").asInstanceOf[T]
+      case JsString(name) => ReferenceResolver.resolve(name).get.asInstanceOf[T]
+      case JsNumber(n) => ReferenceResolver.resolve(s"ia://${entity.name.plural}/$n").get.asInstanceOf[T]
       case _ => deserializationError(s"Expected valid ${entity.name.plural} URI, but received " + json)
     }
   }
@@ -135,8 +135,7 @@ object DomainJsonProtocol extends IADefaultJsonProtocol {
   implicit val addColumnFormat = jsonFormat4(FrameAddColumns)
   implicit val projectColumnFormat = jsonFormat4(FrameProject)
   implicit val renameFrameFormat = jsonFormat2(RenameFrame)
-  implicit val renameColumnsFormat = jsonFormat3(FrameRenameColumns[JsObject, String])
-  implicit val renameColumnsLongFormat = jsonFormat3(FrameRenameColumns[JsObject, Long])
+  implicit val renameColumnsFormat = jsonFormat3(FrameRenameColumns)
   implicit val joinFrameLongFormat = jsonFormat3(FrameJoin)
   implicit val groupByColumnFormat = jsonFormat4(FrameGroupByColumn)
 
@@ -176,8 +175,8 @@ object DomainJsonProtocol extends IADefaultJsonProtocol {
 
   // model performance formats
 
-  implicit val classificationMetricLongFormat = jsonFormat6(ClassificationMetric)
-  implicit val classificationMetricValueLongFormat = jsonFormat2(ClassificationMetricValue)
+  implicit val classificationMetricLongFormat = jsonFormat5(ClassificationMetric)
+  implicit val classificationMetricValueLongFormat = jsonFormat5(ClassificationMetricValue)
   implicit val ecdfLongFormat = jsonFormat4(ECDF[Long])
   implicit val commandActionFormat = jsonFormat1(CommandPost)
 

@@ -33,24 +33,19 @@ class PropertyTest extends WordSpec with Matchers {
       val p1 = new Property("keyA", "valueA")
       val p2 = new Property("keyA", "valueA")
 
-      val result = Property.merge(List(p1), List(p2))
+      val result = Property.merge(Set(p1), Set(p2))
 
-      result.size shouldBe 1
-      result(0).key shouldBe "keyA"
-      result(0).value shouldBe "valueA"
+      result shouldEqual Set(p1)
     }
 
     "merge 2 properties with different keys to 2" in {
       val p1 = new Property("keyA", "valueA")
       val p2 = new Property("keyB", "valueB")
 
-      val result = Property.merge(List(p1), List(p2))
+      val result = Property.merge(Set(p1), Set(p2))
 
-      result.size shouldBe 2
-      result(0).key shouldBe "keyA"
-      result(0).value shouldBe "valueA"
-      result(1).key shouldBe "keyB"
-      result(1).value shouldBe "valueB"
+      result shouldEqual Set(p1, p2)
+
     }
 
     "merge 7 properties with mixture of same/different keys to 5" in {
@@ -62,9 +57,9 @@ class PropertyTest extends WordSpec with Matchers {
       val p6 = new Property("keyA", "valueA2")
       val p7 = new Property("keyE", "valueE")
 
-      val result = Property.merge(List(p1, p2, p3, p4), List(p5, p6, p7))
+      val result = Property.merge(Set(p1, p2, p3, p4), Set(p5, p6, p7))
 
-      result.size shouldBe 5
+      result.map({ case Property(key, value) => key }) shouldEqual Set("keyA", "keyB", "keyC", "keyD", "keyE")
     }
 
     "provide convenience constructor" in {

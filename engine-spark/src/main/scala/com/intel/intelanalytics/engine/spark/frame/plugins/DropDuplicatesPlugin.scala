@@ -25,7 +25,7 @@ package com.intel.intelanalytics.engine.spark.frame.plugins
 
 import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.frame.{ DropDuplicates, DataFrame }
-import com.intel.intelanalytics.engine.spark.frame.{ FrameRDD, MiscFrameFunctions }
+import com.intel.intelanalytics.engine.spark.frame.{ LegacyFrameRDD, MiscFrameFunctions }
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
 import com.intel.intelanalytics.security.UserPrincipal
 import org.apache.spark.rdd.RDD
@@ -47,7 +47,7 @@ class DropDuplicatesPlugin extends SparkCommandPlugin[DropDuplicates, DataFrame]
    * The format of the name determines how the plugin gets "installed" in the client layer
    * e.g Python client via code generation.
    */
-  override def name: String = "dataframe/drop_duplicates"
+  override def name: String = "frame:/drop_duplicates"
 
   /**
    * User documentation exposed in Python.
@@ -81,17 +81,16 @@ class DropDuplicatesPlugin extends SparkCommandPlugin[DropDuplicates, DataFrame]
     val frameId: Long = arguments.frameId
     val frameMeta: DataFrame = frames.expectFrame(frameId)
     val frameSchema = frameMeta.schema
-
-    // run the operation
-    val rdd = frames.loadFrameData(ctx, frameId)
-
+    val rdd = frames.loadLegacyFrameRdd(ctx, frameId)
     val columnIndices = frameSchema.columnIndex(arguments.unique_columns)
+
     val pairRdd = rdd.map(row => MiscFrameFunctions.createKeyValuePairFromRow(row, columnIndices))
 
     val duplicatesRemoved: RDD[Array[Any]] = MiscFrameFunctions.removeDuplicatesByKey(pairRdd)
     val rowCount = duplicatesRemoved.count()
 
     // save results
-    frames.saveFrameData(frameMeta, new FrameRDD(frameSchema, duplicatesRemoved), Some(rowCount))
+    frames.saveLegacyFrame(frameMeta, new LegacyFrameRDD(frameSchema, duplicatesRemoved), Some(rowCount))
   }
 }
+

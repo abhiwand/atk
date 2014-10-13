@@ -26,7 +26,7 @@ package com.intel.intelanalytics.engine.spark.frame.plugins
 import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.frame.{ FrameProject, DataFrame }
 import com.intel.intelanalytics.domain.schema.Schema
-import com.intel.intelanalytics.engine.spark.frame.FrameRDD
+import com.intel.intelanalytics.engine.spark.frame.LegacyFrameRDD
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
 import com.intel.intelanalytics.security.UserPrincipal
 
@@ -47,7 +47,7 @@ class ProjectPlugin extends SparkCommandPlugin[FrameProject, DataFrame] {
    * The format of the name determines how the plugin gets "installed" in the client layer
    * e.g Python client via code generation.
    */
-  override def name: String = "dataframe/project"
+  override def name: String = "frame:/project"
 
   /**
    * User documentation exposed in Python.
@@ -89,7 +89,7 @@ class ProjectPlugin extends SparkCommandPlugin[FrameProject, DataFrame] {
     }
 
     // run the operation
-    val resultRdd = frames.loadFrameData(ctx, sourceFrameID)
+    val resultRdd = frames.loadLegacyFrameRdd(ctx, sourceFrameID)
       .map(row => {
         for { i <- columnIndices } yield row(i)
       }.toArray)
@@ -102,6 +102,6 @@ class ProjectPlugin extends SparkCommandPlugin[FrameProject, DataFrame] {
     }
 
     // save results
-    frames.saveFrameData(projectedFrame, new FrameRDD(new Schema(projectedColumns.toList), resultRdd), sourceFrame.rowCount)
+    frames.saveLegacyFrame(projectedFrame, new LegacyFrameRDD(new Schema(projectedColumns.toList), resultRdd), sourceFrame.rowCount)
   }
 }

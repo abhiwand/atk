@@ -30,7 +30,7 @@ class PythonRDDStorage(frames: SparkFrameStorage) extends ClassLoaderAware {
     withMyClassLoader {
       val predicateInBytes = decodePythonBase64EncodedStrToBytes(py_expression)
 
-      val baseRdd: RDD[String] = frames.loadFrameData(ctx, frameId)
+      val baseRdd: RDD[String] = frames.loadLegacyFrameRdd(ctx, frameId)
         .map(x => x.map(t => t match {
           case null => JsNull
           case a => a.toJson
@@ -75,7 +75,7 @@ class PythonRDDStorage(frames: SparkFrameStorage) extends ClassLoaderAware {
 
       val rowCount = if (skipRowCount) 0 else resultRdd.count()
       //      frames.saveFrameWithoutSchema(ctx, dataFrame, resultRdd)
-      frames.saveFrameData(dataFrame, new FrameRDD(dataFrame.schema, resultRdd))
+      frames.saveLegacyFrame(dataFrame, new LegacyFrameRDD(dataFrame.schema, resultRdd))
       rowCount
     }
   }

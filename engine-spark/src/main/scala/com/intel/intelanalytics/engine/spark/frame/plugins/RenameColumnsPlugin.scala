@@ -39,7 +39,7 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol._
 /**
  * Rename columns of a frame
  */
-class RenameColumnsPlugin extends SparkCommandPlugin[FrameRenameColumns[JsObject, Long], DataFrame] {
+class RenameColumnsPlugin extends SparkCommandPlugin[FrameRenameColumns, DataFrame] {
 
   /**
    * The name of the command, e.g. graphs/ml/loopy_belief_propagation
@@ -47,7 +47,7 @@ class RenameColumnsPlugin extends SparkCommandPlugin[FrameRenameColumns[JsObject
    * The format of the name determines how the plugin gets "installed" in the client layer
    * e.g Python client via code generation.
    */
-  override def name: String = "dataframe/rename_columns"
+  override def name: String = "frame:/rename_columns"
 
   /**
    * User documentation exposed in Python.
@@ -66,7 +66,7 @@ class RenameColumnsPlugin extends SparkCommandPlugin[FrameRenameColumns[JsObject
    * @param user current user
    * @return a value of type declared as the Return type.
    */
-  override def execute(invocation: SparkInvocation, arguments: FrameRenameColumns[JsObject, Long])(implicit user: UserPrincipal, executionContext: ExecutionContext): DataFrame = {
+  override def execute(invocation: SparkInvocation, arguments: FrameRenameColumns)(implicit user: UserPrincipal, executionContext: ExecutionContext): DataFrame = {
     // dependencies (later to be replaced with dependency injection)
     val frames = invocation.engine.frames
 
