@@ -48,9 +48,9 @@ class FrameFileStorage(fsRoot: String,
 
     val path = frameBaseDirectory(dataFrame.id)
     if (hdfs.exists(path)) {
-      throw new IllegalArgumentException("Next frame already exists " + path
-        + ". You may be attempting to modify a data frame that is already in the process of being modified")
+      throw new IllegalArgumentException(s"Frame already exists at $path")
     }
+    //TODO: actually create the file?
     path
   }
 

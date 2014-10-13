@@ -23,6 +23,8 @@
 
 package com.intel.intelanalytics.engine.spark.frame
 
+import java.util.UUID
+
 import com.intel.intelanalytics.NotFoundException
 import com.intel.intelanalytics.component.ClassLoaderAware
 import com.intel.intelanalytics.domain.frame.{ DataFrame, DataFrameTemplate }
@@ -65,6 +67,18 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
                         getContext: (UserPrincipal) => SparkContext)
     extends FrameStorage[FrameRDD, SparkContext] with EventLogging with ClassLoaderAware {
 
+  def exchangeNames(frame1: DataFrame, frame2: DataFrame): Unit = {
+    metaStore.withTransaction("SFS.exchangeNames") { implicit txn =>
+      val f1Name = frame1.name
+      val f2Name = frame2.name
+      metaStore.frameRepo.update(frame1.copy(name = UUID.randomUUID().toString))
+      metaStore.frameRepo.update(frame2.copy(name = UUID.randomUUID().toString))
+      metaStore.frameRepo.update(frame1.copy(name = f2Name))
+      metaStore.frameRepo.update(frame2.copy(name = f1Name))
+    }
+    ()
+  }
+
   import com.intel.intelanalytics.engine.Rows.Row
 
   override def expectFrame(frameId: Long): DataFrame = {
@@ -90,18 +104,20 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
    * @param frame the model for the frame
    * @return the newly created FrameRDD
    */
-  def loadFrameRDD(ctx: SparkContext, frame: DataFrame): FrameRDD = {
-    val sqlContext = new SQLContext(ctx);
-    frame.storageLocation match {
-      case None =>
+  def loadFrameData(ctx: SparkContext, frame: DataFrame): FrameRDD = {
+    val sqlContext = new SQLContext(ctx)
+    (frame.storageFormat, frame.storageLocation) match {
+      case (_, None) | (None, _) =>
         //  nothing has been saved to disk yet)
         new FrameRDD(frame.schema, ctx.parallelize[Row](Nil))
-      case Some(absPath) =>
-        if (!isParquet(frame))
-          throw new IllegalStateException(s"Frame: ${frame.id} is not stored in the parquet format")
+      case (Some("file/parquet"), Some(absPath)) =>
         val sqlContext = new SQLContext(ctx)
         val rows = sqlContext.parquetFile(absPath.toString)
         new FrameRDD(frame.schema, rows)
+      case (Some("file/sequence"), Some(absPath)) =>
+        val rows = ctx.objectFile[Row](absPath.toString, sparkAutoPartitioner.partitionsForFile(absPath.toString))
+        new FrameRDD(frame.schema, rows)
+      case (Some(storage), _) => illegalArg(s"Cannot load frame with storage")
     }
   }
 
@@ -123,23 +139,8 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
    * @param frame the model for the frame
    * @return the newly created FrameRDD
    */
-  def loadLegacyFrameRdd(ctx: SparkContext, frame: DataFrame): LegacyFrameRDD = frame.storageLocation match {
-    case None =>
-      // nothing has been saved to disk yet
-      new LegacyFrameRDD(frame.schema, ctx.parallelize[Row](Nil))
-    case Some(absPath) =>
-      val f: LegacyFrameRDD =
-        if (isParquet(frame)) {
-          loadFrameRDD(ctx, frame).toLegacyFrameRDD
-        }
-        else {
-          val rows = ctx.objectFile[Row](absPath.toString, sparkAutoPartitioner.partitionsForFile(absPath.toString))
-          new LegacyFrameRDD(frame.schema, rows)
-        }
-      f
-  }
-
-  def loadFrameData(ctx: SparkContext, frame: DataFrame) = loadLegacyFrameRdd(ctx, frame).toFrameRDD() //TODO: Better way?
+  def loadLegacyFrameRdd(ctx: SparkContext, frame: DataFrame): LegacyFrameRDD =
+    loadFrameData(ctx, frame).toLegacyFrameRDD
 
   private def copyParentNameToChildAndRenameParent(frame: DataFrame)(implicit session: metaStore.Session) = {
     require(frame.parent.isDefined, "Cannot copy name from frame parent if no parent provided")
@@ -156,8 +157,6 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
    * @param frame the data frame to verify
    * @return true if the data frame is saved in the parquet format
    */
-  //TODO: Remove this function.
-  @deprecated
   def isParquet(frame: DataFrame): Boolean = {
     frameFileStorage.isParquet(frame)
   }
@@ -184,24 +183,33 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
   def saveFrameData(frameEntity: DataFrame, frameRDD: FrameRDD, rowCount: Option[Long] = None): DataFrame =
     withContext("SFS.saveFrame") {
 
-      val path = frameFileStorage.createFrame(frameEntity)
-      val count = rowCount.getOrElse { frameRDD.cache(); frameRDD.count() }
+      val path = frameFileStorage.createFrame(frameEntity).toString
+      val count = rowCount.getOrElse {
+        frameRDD.cache()
+        frameRDD.count()
+      }
       try {
 
-        //TODO: make storage aware
-        //frameRdd.saveAsObjectFile(path.toString)
-        frameRDD.saveAsParquetFile(path.toString)
-
-        val schemaRDD = frameRDD.toSchemaRDD
-        schemaRDD.saveAsParquetFile(path.toString)
+        val storage = frameEntity.storageFormat.getOrElse("file/parquet")
+        storage match {
+          case "file/sequence" =>
+            val schemaRDD = frameRDD.toSchemaRDD
+            schemaRDD.saveAsObjectFile(path)
+          case "file/parquet" =>
+            val schemaRDD = frameRDD.toSchemaRDD
+            schemaRDD.saveAsParquetFile(path.toString)
+          case format => illegalArg(s"Unrecognized storage format: $format")
+        }
 
         metaStore.withSession("frame.saveFrame") {
           implicit session =>
             {
-              if (frameRDD.schema != null) {
-                metaStore.frameRepo.updateSchema(frameEntity, frameRDD.schema.columns)
-              }
-              metaStore.frameRepo.updateRowCount(frameEntity, Some(count))
+              val newFrame = metaStore.frameRepo.update(frameEntity.copy(
+                rowCount = Some(count),
+                schema = frameRDD.schema,
+                storageFormat = Some(storage),
+                storageLocation = Some(path)))
+              newFrame.get
             }
         }
       }
@@ -211,8 +219,6 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
           frameFileStorage.delete(frameEntity)
           throw e
       }
-
-      expectFrame(frameEntity.id)
     }
 
   def getPagedRowsRDD(frame: DataFrame, offset: Long, count: Int, ctx: SparkContext)(implicit user: UserPrincipal): RDD[Row] =
@@ -258,29 +264,11 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
       }
     }
 
-  def updateSchema(frame: DataFrame, columns: List[(String, DataType)]): DataFrame = {
-    metaStore.withSession("frame.updateSchema") {
-      implicit session =>
-        {
-          metaStore.frameRepo.updateSchema(frame, columns)
-        }
-    }
-  }
-
-  def updateRowCount(frame: DataFrame, rowCount: Long): DataFrame = {
-    metaStore.withSession("frame.updateCount") {
-      implicit session =>
-        {
-          metaStore.frameRepo.updateRowCount(frame, Some(rowCount))
-        }
-    }
-  }
-
   override def drop(frame: DataFrame): Unit = {
 
-    //validate the args
+    //TODO: validate the args
 
-    //parse for wild card characters
+    //TODO: parse for wild card characters
 
     frameFileStorage.delete(frame)
     metaStore.withSession("frame.drop") {
@@ -288,7 +276,6 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
         {
           metaStore.frameRepo.delete(frame.id)
           Unit
-
         }
     }
   }
@@ -387,7 +374,7 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
     }
   }
 
-  override def create(frameTemplate: DataFrameTemplate)(implicit user: UserPrincipal): DataFrame = {
+  override def create(frameTemplate: DataFrameTemplate = DataFrameTemplate(UUID.randomUUID().toString))(implicit user: UserPrincipal): DataFrame = {
     metaStore.withSession("frame.createFrame") {
       implicit session =>
         {

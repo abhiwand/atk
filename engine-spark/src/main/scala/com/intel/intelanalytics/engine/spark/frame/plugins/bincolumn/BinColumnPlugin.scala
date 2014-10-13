@@ -108,6 +108,5 @@ class BinColumnPlugin extends SparkCommandPlugin[BinColumn, DataFrame] {
         frames.saveLegacyFrame(newFrame, new LegacyFrameRDD(new Schema(allColumns), binnedRdd), Some(rowCount))
       case _ => throw new IllegalArgumentException(s"Invalid binning type: ${arguments.binType.toString}")
     }
-    frames.updateSchema(newFrame, allColumns)
   }
 }

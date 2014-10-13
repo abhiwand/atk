@@ -87,6 +87,6 @@ class FilterPlugin extends SparkCommandPlugin[FilterPredicate, DataFrame] {
     val schema = frameMeta.schema
     val converter = DataTypes.parseMany(schema.columns.map(_._2).toArray)(_)
     val rowCount = pythonRDDStorage.persistPythonRDD(frameMeta, pyRdd, converter, skipRowCount = false)
-    frames.updateRowCount(frameMeta, rowCount)
+    frames.expectFrame(arguments.frame)
   }
 }

@@ -24,7 +24,7 @@
 package com.intel.intelanalytics.engine.spark.frame.plugins
 
 import com.intel.intelanalytics.domain.command.CommandDoc
-import com.intel.intelanalytics.domain.frame.{ FrameAddColumns, DataFrame }
+import com.intel.intelanalytics.domain.frame.{ DataFrameTemplate, FrameAddColumns, DataFrame }
 import com.intel.intelanalytics.domain.schema.DataTypes
 import com.intel.intelanalytics.engine.spark.frame.PythonRDDStorage
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
@@ -33,6 +33,7 @@ import com.intel.intelanalytics.security.UserPrincipal
 import scala.concurrent.ExecutionContext
 
 // Implicits needed for JSON conversion
+
 import spray.json._
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
 
@@ -99,17 +100,9 @@ class AddColumnsPlugin extends SparkCommandPlugin[FrameAddColumns, DataFrame] {
     // Update the data
     val pyRdd = pythonRDDStorage.createPythonRDD(frameId, expression, invocation.sparkContext)
     val converter = DataTypes.parseMany(newColumns.map(_._2).toArray)(_)
-    var newFrame = frames.updateSchema(frameMeta, newColumns)
-    try {
-      pythonRDDStorage.persistPythonRDD(newFrame, pyRdd, converter, skipRowCount = true)
-    }
-    catch {
-      case ex: Exception => {
-        //reverting back to old schema
-        newFrame = frames.updateSchema(frameMeta, oldColumns)
-        throw ex
-      }
-    }
-    newFrame
+    val newFrame = frames.create().copy(schema = frameMeta.schema)
+    pythonRDDStorage.persistPythonRDD(newFrame, pyRdd, converter, skipRowCount = true)
+    frames.exchangeNames(frameMeta, newFrame)
+    frames.expectFrame(newFrame.id)
   }
 }
