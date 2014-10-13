@@ -75,15 +75,15 @@ The algorithm updates the input graph vertex with updated property named in “c
 
     Example::
     
-        from intelanalytics import *
+        import intelanalytics as ia
         dataset = r"datasets/kclique_edges.csv"
         schema= [("source", int64), ("target", int64)]
-        csvfile = CsvFile(dataset, schema)
-        f = BigFrame(csvfile)
-        source = VertexRule("source", f.source)
-        target = VertexRule("target", f.target)
-        edge = EdgeRule("edge", target, source)
-        g = BigGraph([target, source, edge], "mygraph")
+        csvfile = ia.CsvFile(dataset, schema)
+        f = ia.BigFrame(csvfile)
+        source = ia.VertexRule("source", f.source)
+        target = ia.VertexRule("target", f.target)
+        edge = ia.EdgeRule("edge", target, source)
+        g = ia.BigGraph([target, source, edge], "mygraph")
         g.ml.kclique_percolation(cliqueSize = 3, communityPropertyDefaultLabel = "Community")
 
 .. rubric:: Footnotes

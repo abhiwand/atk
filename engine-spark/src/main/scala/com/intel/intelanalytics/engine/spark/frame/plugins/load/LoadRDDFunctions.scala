@@ -62,9 +62,14 @@ object LoadRDDFunctions extends Serializable {
     //don't need it anymore
     sampleRdd.unpersist()
 
-    if (failedRatio >= threshold)
+    if (failedRatio >= threshold) {
+      val errorExampleRecord = preEvaluateResults.errorLines.first().clone()
+      val errorRow = errorExampleRecord { 0 }
+      val errorMessage = errorExampleRecord { 1 }
       throw new Exception(s"Parse failed on $failedCount rows out of the first $sampleRowsCount, " +
-        " please ensure your schema is correct")
+        s" please ensure your schema is correct.\nExample record that parser failed on : $errorRow    " +
+        s" \n$errorMessage")
+    }
   }
 
   /**
@@ -97,7 +102,7 @@ object LoadRDDFunctions extends Serializable {
         .map(rowParseResult => rowParseResult.row)
 
       val schema = parser.arguments.schema
-      new ParseResultRddWrapper(new FrameRDD(schema, successesRdd), new FrameRDD(SchemaUtil.ErrorFrameSchema, failuresRdd))
+      new ParseResultRddWrapper(new LegacyFrameRDD(schema, successesRdd), new LegacyFrameRDD(SchemaUtil.ErrorFrameSchema, failuresRdd))
     }
     finally {
       parseResultRdd.unpersist(blocking = false)

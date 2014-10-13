@@ -47,7 +47,7 @@ class AddColumnsPlugin extends SparkCommandPlugin[FrameAddColumns, DataFrame] {
    * The format of the name determines how the plugin gets "installed" in the client layer
    * e.g Python client via code generation.
    */
-  override def name: String = "dataframe/add_columns"
+  override def name: String = "frame:/add_columns"
 
   /**
    * User documentation exposed in Python.
@@ -79,6 +79,7 @@ class AddColumnsPlugin extends SparkCommandPlugin[FrameAddColumns, DataFrame] {
     val expression = arguments.expression // Python Wrapper containing lambda expression
     val frameMeta = frames.expectFrame(arguments.frame)
     val schema = frameMeta.schema
+    val oldColumns = schema.columns
 
     // run the operation and save results
     var newColumns = schema.columns
@@ -98,8 +99,17 @@ class AddColumnsPlugin extends SparkCommandPlugin[FrameAddColumns, DataFrame] {
     // Update the data
     val pyRdd = pythonRDDStorage.createPythonRDD(frameId, expression, invocation.sparkContext)
     val converter = DataTypes.parseMany(newColumns.map(_._2).toArray)(_)
-    val newFrame = frames.updateSchema(frameMeta, newColumns)
-    pythonRDDStorage.persistPythonRDD(newFrame, pyRdd, converter, skipRowCount = true)
+    var newFrame = frames.updateSchema(frameMeta, newColumns)
+    try {
+      pythonRDDStorage.persistPythonRDD(newFrame, pyRdd, converter, skipRowCount = true)
+    }
+    catch {
+      case ex: Exception => {
+        //reverting back to old schema
+        newFrame = frames.updateSchema(frameMeta, oldColumns)
+        throw ex
+      }
+    }
     newFrame
   }
 }

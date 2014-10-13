@@ -33,7 +33,7 @@ class UrlParserTest extends FlatSpec with Matchers {
   }
 
   it should "be able to parse frameIds from frame URI's" in {
-    val uri = "http://example.com/v1/dataframes/55"
+    val uri = "http://example.com/v1/frames/55"
     UrlParser.getFrameId(uri) should be(Some(55))
   }
 

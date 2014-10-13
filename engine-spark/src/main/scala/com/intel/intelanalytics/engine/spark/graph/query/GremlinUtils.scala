@@ -48,6 +48,7 @@ object GremlinUtils {
     val json = obj match {
       case null => JsNull
       case e: Element => e.toJson // Needed to identify correct implicit for Blueprint's vertices and edges
+      case s: java.util.Set[Integer] => s.toString.toJson // WORK AROUND .. long term fix needs to support all Java collections
       case x => x.toJson
     }
     json
