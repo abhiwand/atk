@@ -21,43 +21,20 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.engine.spark.command
+package com.intel.intelanalytics.engine
 
-import com.intel.intelanalytics.domain.{ ReferenceResolver, OnDemand, UriReference }
-import com.intel.intelanalytics.engine.spark.command.Typeful.Searchable
-import spray.json.{JsNumber, JsValue, JsString, JsObject}
+import com.intel.intelanalytics.domain.frame.FrameReference
+import com.intel.intelanalytics.engine.spark.command.{Typeful, Dependencies}
+import org.scalatest.{FlatSpec, Matchers}
+import spray.json._
 
-import scalax.collection.Graph
-import scalax.collection.GraphEdge.DiEdge
+class DependenciesTest extends FlatSpec with Matchers{
+  "getUriReferences" should "find UriReferences in case classes" in {
+    case class Foo(frameId: Int, frame: FrameReference)
+    import com.intel.intelanalytics.domain.DomainJsonProtocol._
+    implicit val fmt = jsonFormat2(Foo)
 
-
-
-object Dependencies {
-
-  import Typeful.Searchable._
-
-  type Computable = UriReference with OnDemand
-
-  type DependencyGraph = Graph[Computable, DiEdge]
-
-  def getUriReferences(source: JsObject): Seq[UriReference] = {
-
-    val results = source.deepFind((s: String) => ReferenceResolver.isReferenceUriFormat(s))
-    results.flatMap(js => ReferenceResolver.resolve(js).toOption.toList)
-
-  }
-
-  def getDirectDependencies(source: Computable): Seq[UriReference] = {
-    val command = source.command()
-    val results = command.arguments.toList.flatMap(getUriReferences)
-    results
-  }
-
-  def build(startWith: Seq[Computable]): DependencyGraph = {
-    ??? //var graph = Graph.from(startWith, )
-  }
-
-  def force(ref: Seq[Computable], graph: DependencyGraph): ReferenceResolver = {
-    ???
+    val reference = List(FrameReference(3, None))
+    Dependencies.getUriReferences(Foo(1, reference.head).toJson.asJsObject) should be(reference)
   }
 }

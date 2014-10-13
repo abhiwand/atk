@@ -23,8 +23,6 @@
 
 package com.intel.intelanalytics.service.v1
 
-import com.intel.intelanalytics.domain.frame.FrameReference
-import com.intel.intelanalytics.domain.frame.load.Load
 
 import scala.util.Try
 import com.intel.intelanalytics.domain._
