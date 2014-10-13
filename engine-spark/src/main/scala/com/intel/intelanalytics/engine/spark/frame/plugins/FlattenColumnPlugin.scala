@@ -82,7 +82,6 @@ class FlattenColumnPlugin extends SparkCommandPlugin[FlattenColumn, DataFrame] {
     // save results
     val newFrame = frames.create(DataFrameTemplate(arguments.name, None))
     frames.saveLegacyFrame(newFrame, new LegacyFrameRDD(frameMeta.schema, flattenedRDD))
-    frames.updateRowCount(newFrame, rowCount)
   }
 
 }
