@@ -4,7 +4,7 @@ import com.intel.intelanalytics.domain.frame.FrameReference
 import com.intel.intelanalytics.domain.graph.GraphReference
 import org.scalatest.{ FlatSpec, Matchers }
 
-class IAUriTest extends FlatSpec with Matchers {
+class UriReferenceTest extends FlatSpec with Matchers {
   "A frame uri" should "fail to resolve when no resolvers are registered" in {
     val uri: String = "ia://frame/1"
     val expected = new FrameReference(1)
@@ -14,7 +14,7 @@ class IAUriTest extends FlatSpec with Matchers {
     }
   }
 
-  "A frame uri" should "fail to resolve when no resolver is registered for frames" in {
+  it should "fail to resolve when no resolver is registered for frames" in {
     val uri: String = "ia://frame/1"
     val expected = new FrameReference(1)
     val resolver = new ReferenceResolver()
@@ -24,13 +24,27 @@ class IAUriTest extends FlatSpec with Matchers {
     }
   }
 
-  "A frame uri" should "resolve to a frame when the URI is correct and a resolver is registered" in {
+  it should "resolve to a frame when the URI is correct and a resolver is registered" in {
     val uri: String = "ia://frame/1"
     val expected = new FrameReference(1)
     val resolver = new ReferenceResolver()
     resolver.register(GraphReference, n => new GraphReference(n))
     resolver.register(FrameReference, n => new FrameReference(n))
     resolver.resolve(uri) should be(expected)
+  }
+
+  it should "be recognized as a valid URI format when the URI is correct and a resolver is registered" in {
+    val uri: String = "ia://frame/1"
+    val resolver = new ReferenceResolver()
+    resolver.register(FrameReference, n => new FrameReference(n))
+    resolver.isReferenceUriFormat(uri) should be(true)
+  }
+
+  it should "not be recognized as a valid URI format when the URI is incorrect" in {
+    val uri: String = "not an URI at all"
+    val resolver = new ReferenceResolver()
+    resolver.register(FrameReference, n => new FrameReference(n))
+    resolver.isReferenceUriFormat(uri) should be(false)
   }
 
   "A frame's ia_uri" should "create FrameReference" in {

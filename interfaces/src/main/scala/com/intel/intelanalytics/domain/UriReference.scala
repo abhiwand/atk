@@ -44,7 +44,7 @@ trait UriReference extends HasId {
  *
  * The methods in this class are thread safe.
  *
- * Note that this class is generally used through the companion singleton.
+ * Note that this class is generally used through the companion object.
  */
 class ReferenceResolver {
   var resolvers: Map[String, Long => UriReference] = Map()
@@ -66,11 +66,17 @@ class ReferenceResolver {
   }
 
   /**
+   * Checks to see if this string might be a valid reference, without actually trying to resolve it.
+   */
+  def isReferenceUriFormat(s: String) = regex.findFirstIn(s).isDefined
+
+  /**
    * Returns a reference for the given URI if possible.
    *
-   * @throws IllegalArgumentException if no suitable resolver can be found for the entity type in the URI
+   * @throws IllegalArgumentException if no suitable resolver can be found for the entity type in the URI.
+   *                                  Note this exception will be in the Try, not actually thrown immediately.
    */
-  def resolve(uri: String): UriReference = {
+  def resolve(uri: String): Try[UriReference] = Try {
     new URI(uri) //validate this is actually a URI at all
     val regexMatch = regex.findFirstMatchIn(uri)
       .getOrElse(throw new IllegalArgumentException("Could not find entity name in " + uri))
