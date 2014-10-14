@@ -36,7 +36,7 @@ import org.apache.spark.serializer.KryoRegistrator
 import com.esotericsoftware.kryo.Kryo
 import com.intel.graphbuilder.driver.spark.titan.GraphBuilderKryoRegistrator
 import com.intel.intelanalytics.engine.Rows.Row
-import com.intel.intelanalytics.engine.spark.frame.{ MiscFrameFunctions, FrameRDD }
+import com.intel.intelanalytics.engine.spark.frame.{ MiscFrameFunctions, LegacyFrameRDD }
 
 /**
  * Register classes that are going to be serialized by Kryo.
@@ -60,7 +60,7 @@ class EngineKryoRegistrator extends KryoRegistrator {
     kryo.register(classOf[Row])
     kryo.register(classOf[RowParser])
     kryo.register(classOf[RowParseResult])
-    kryo.register(classOf[FrameRDD])
+    kryo.register(classOf[LegacyFrameRDD])
     kryo.register(ClassificationMetrics.getClass)
     kryo.register(CumulativeDistFunctions.getClass)
     kryo.register(MiscFrameFunctions.getClass)
