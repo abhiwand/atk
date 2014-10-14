@@ -7,6 +7,21 @@ import com.intel.intelanalytics._
 import com.intel.spark.graphon.VectorMath
 
 /**
+ * Arguments for the BeliefPropagationRunner
+ * @param posteriorProperty Name of the property to which the posteriors will be written.
+ * @param priorProperty Name of the property containing the priors.
+ * @param maxIterations Maximum number of iteratiosn to execute BP message passing.
+ * @param stringOutput When true, the output is a comma-delimited string, when false (default) the output is a vector.
+ * @param stateSpaceSize Number of states each veretx can potentially take on.
+ * @param edgeWeightProperty Optional. Property containing edge weights.
+ */
+case class BeliefPropagationRunnerArgs(posteriorProperty: String,
+                                       priorProperty: String,
+                                       maxIterations: Option[Int],
+                                       stringOutput: Option[Boolean],
+                                       stateSpaceSize: Int,
+                                       edgeWeightProperty: Option[String])
+/**
  * Provides a method for running belief propagation on a graph. The result is a new graph with the belief-propagation
  * posterior beliefs placed in a new vertex property on each vertex.
  */
@@ -21,7 +36,7 @@ object BeliefPropagationRunner extends Serializable {
    *         propagation run.
    */
 
-  def run(inVertices: RDD[GBVertex], inEdges: RDD[GBEdge], args: BeliefPropagationArgs): (RDD[GBVertex], RDD[GBEdge], String) = {
+  def run(inVertices: RDD[GBVertex], inEdges: RDD[GBEdge], args: BeliefPropagationRunnerArgs): (RDD[GBVertex], RDD[GBEdge], String) = {
 
     val outputPropertyLabel = args.posteriorProperty
     val inputPropertyName: String = args.priorProperty
