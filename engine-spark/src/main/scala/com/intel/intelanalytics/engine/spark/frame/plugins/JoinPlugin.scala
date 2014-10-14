@@ -29,7 +29,7 @@ import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 import com.intel.intelanalytics.domain.schema.{ Schema, SchemaUtil }
 import com.intel.intelanalytics.engine.Rows
 import com.intel.intelanalytics.engine.spark.SparkEngineConfig
-import com.intel.intelanalytics.engine.spark.frame.{ SparkFrameStorage, FrameRDD, RDDJoinParam, MiscFrameFunctions }
+import com.intel.intelanalytics.engine.spark.frame.{ SparkFrameStorage, LegacyFrameRDD, RDDJoinParam, MiscFrameFunctions }
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
 import com.intel.intelanalytics.security.UserPrincipal
 import org.apache.spark.SparkContext
@@ -106,7 +106,7 @@ class JoinPlugin(frames: SparkFrameStorage) extends SparkCommandPlugin[FrameJoin
       arguments.how)
 
     val joinRowCount = joinResultRDD.count()
-    frames.saveFrame(newJoinFrame, new FrameRDD(new Schema(allColumns), joinResultRDD), Some(joinRowCount))
+    frames.saveLegacyFrame(newJoinFrame, new LegacyFrameRDD(new Schema(allColumns), joinResultRDD), Some(joinRowCount))
   }
 
   def createPairRddForJoin(arguments: FrameJoin, ctx: SparkContext): List[RDD[(Any, Array[Any])]] = {
@@ -117,7 +117,7 @@ class JoinPlugin(frames: SparkFrameStorage) extends SparkCommandPlugin[FrameJoin
             throw new IllegalArgumentException(s"No such data frame"))
 
           val frameSchema = frameMeta.schema
-          val rdd = frames.loadFrameRdd(ctx, frame._1)
+          val rdd = frames.loadLegacyFrameRdd(ctx, frame._1)
           val columnIndex = frameSchema.columnIndex(frame._2)
           (rdd, columnIndex)
         }

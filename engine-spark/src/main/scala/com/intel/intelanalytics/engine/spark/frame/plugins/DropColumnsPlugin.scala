@@ -25,7 +25,7 @@ package com.intel.intelanalytics.engine.spark.frame.plugins
 
 import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.frame.{ FrameDropColumns, DataFrame }
-import com.intel.intelanalytics.engine.spark.frame.FrameRDD
+import com.intel.intelanalytics.engine.spark.frame.LegacyFrameRDD
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
 import com.intel.intelanalytics.security.UserPrincipal
 
@@ -107,18 +107,18 @@ class DropColumnsPlugin extends SparkCommandPlugin[FrameDropColumns, DataFrame] 
       case invalidColumns if invalidColumns.contains(-1) =>
         throw new IllegalArgumentException(s"Invalid list of columns: [${arguments.columns.mkString(", ")}]")
       case allColumns if allColumns.length == schema.columns.length =>
-        frames.loadFrameRdd(ctx, frameId).filter(_ => false)
+        frames.loadLegacyFrameRdd(ctx, frameId).filter(_ => false)
       case singleColumn if singleColumn.length == 1 =>
-        frames.loadFrameRdd(ctx, frameMeta)
+        frames.loadLegacyFrameRdd(ctx, frameMeta)
           .map(row => row.take(singleColumn(0)) ++ row.drop(singleColumn(0) + 1))
       case multiColumn =>
-        frames.loadFrameRdd(ctx, frameId)
+        frames.loadLegacyFrameRdd(ctx, frameId)
           .map(row => row.zipWithIndex.filter(elem => multiColumn.contains(elem._2) == false).map(_._1))
     }
 
     val dataFrame = frames.dropColumns(frameMeta, columnIndices)
 
     // save results
-    frames.saveFrame(dataFrame, new FrameRDD(dataFrame.schema, resultRDD))
+    frames.saveLegacyFrame(dataFrame, new LegacyFrameRDD(dataFrame.schema, resultRDD))
   }
 }

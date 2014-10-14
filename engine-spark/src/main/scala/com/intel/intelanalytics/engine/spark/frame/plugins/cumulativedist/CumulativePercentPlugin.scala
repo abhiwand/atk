@@ -26,7 +26,7 @@ package com.intel.intelanalytics.engine.spark.frame.plugins.cumulativedist
 import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.frame.{ CumulativePercentSum, DataFrame }
 import com.intel.intelanalytics.domain.schema.{ Schema, DataTypes }
-import com.intel.intelanalytics.engine.spark.frame.FrameRDD
+import com.intel.intelanalytics.engine.spark.frame.LegacyFrameRDD
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
 import com.intel.intelanalytics.security.UserPrincipal
 
@@ -132,12 +132,12 @@ class CumulativePercentPlugin extends SparkCommandPlugin[CumulativePercentSum, D
     val sampleIndex = frameMeta.schema.columnIndex(arguments.sampleCol)
 
     // run the operation
-    val frameRdd = frames.loadFrameRdd(ctx, frameId)
+    val frameRdd = frames.loadLegacyFrameRdd(ctx, frameId)
     val (cumulativeDistRdd, columnName) = (CumulativeDistFunctions.cumulativePercentSum(frameRdd, sampleIndex), "_cumulative_percent")
     val frameSchema = frameMeta.schema
     val allColumns = frameSchema.columns :+ (arguments.sampleCol + columnName, DataTypes.float64)
 
     // save results
-    frames.saveFrame(frameMeta, new FrameRDD(new Schema(allColumns), cumulativeDistRdd))
+    frames.saveLegacyFrame(frameMeta, new LegacyFrameRDD(new Schema(allColumns), cumulativeDistRdd))
   }
 }
