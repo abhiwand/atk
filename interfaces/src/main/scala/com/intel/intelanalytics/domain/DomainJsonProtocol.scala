@@ -194,10 +194,11 @@ object DomainJsonProtocol extends IADefaultJsonProtocol {
   implicit object DataTypeJsonFormat extends JsonFormat[Any] {
     override def write(obj: Any): JsValue = {
       obj match {
+        case Double.PositiveInfinity | Double.NegativeInfinity | Float.NegativeInfinity | Float.PositiveInfinity => JsNull
         case n: Int => new JsNumber(n)
         case n: Long => new JsNumber(n)
-        case n: Float => new JsNumber(n)
-        case n: Double => new JsNumber(n)
+        case n: Float => if (n.asInstanceOf[Float].isNaN()) JsNull else new JsNumber(n)
+        case n: Double => if (n.asInstanceOf[Double].isNaN()) JsNull else new JsNumber(n)
         case s: String => new JsString(s)
         case unk => serializationError("Cannot serialize " + unk.getClass.getName)
       }

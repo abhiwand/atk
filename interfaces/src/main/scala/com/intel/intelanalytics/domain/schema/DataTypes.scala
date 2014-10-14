@@ -100,7 +100,12 @@ object DataTypes {
     override type ScalaType = Float
 
     override def parse(s: String): Try[float32.ScalaType] = Try {
-      s.trim().toFloat
+      s match {
+        case "-inf" | "-Infinity" => Float.NegativeInfinity
+        case "inf" | "Infinity" => Float.PositiveInfinity
+        case "nan" | "NaN" => Float.NaN
+        case _ => s.trim().toFloat
+      }
     }
 
     override def scalaType = classOf[Float]
@@ -122,7 +127,12 @@ object DataTypes {
     override type ScalaType = Double
 
     override def parse(s: String): Try[float64.ScalaType] = Try {
-      s.trim().toDouble
+      s match {
+        case "-inf" | "-Infinity" => Double.NegativeInfinity
+        case "inf" | "Infinity" => Double.PositiveInfinity
+        case "nan" | "NaN" => Double.NaN
+        case _ => s.trim().toDouble
+      }
     }
 
     override def scalaType = classOf[Double]
