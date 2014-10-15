@@ -3,16 +3,20 @@ Errata
 ======
 
 2014-10-08:
+
+
 *   Frame column name can accept unicode characters, but it should be avoided because some functions such
     as delete_column will fail.
 
-*   Renaming a graph to a name containing one or more of the special characters *\@\#\$\%\^\&\** will
+*   Renaming a graph to a name containing one or more of the special characters \@\#\$\%\^\&\* will
     cause the application to hang for a long time and then raise an error.
 
-*   Attempting to create a frame with a parenthesis in the same will raise error:
-    intelanalytics.rest.command.CommandServerError: Job aborted due to stage failure: Task 7.0:5 failed 4
-    times, most recent failure: Exception failure in TID 426 on host node03.zonda.cluster:
-    java.lang.IllegalArgumentException: No enum constant parquet.schema.OriginalType.
+*   Attempting to create a frame with a parenthesis in the name will raise the error::
 
-*   Creating a table with an invalid file name causes the server to return an error message and abort,
-    but also creates the empty (named) frame.
+        intelanalytics.rest.command.CommandServerError: Job aborted due to stage failure:
+        Task 7.0:5 failed 4 times, most recent failure: Exception failure in TID 426 on host
+        node03.zonda.cluster: java.lang.IllegalArgumentException: No enum constant parquet
+        .schema.OriginalType.
+
+*   Creating a table with an invalid source data file name causes the server to return an error message
+    and abort, but also creates the empty (named) frame.
