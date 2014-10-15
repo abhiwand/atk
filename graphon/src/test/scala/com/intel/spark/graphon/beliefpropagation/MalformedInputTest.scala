@@ -23,7 +23,7 @@ class MalformedInputTest extends FlatSpec with Matchers with TestingSparkContext
 
     val floatingPointEqualityThreshold: Double = 0.000000001d
 
-    val args = BeliefPropagationArgs(graph = null, // we don't use this one in LbpRunner since we already have the RDDs for the graph
+    val args = BeliefPropagationRunnerArgs(
       priorProperty = inputPropertyName,
       stateSpaceSize = 2,
       edgeWeightProperty = None,
