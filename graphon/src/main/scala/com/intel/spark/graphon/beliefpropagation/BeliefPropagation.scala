@@ -27,7 +27,6 @@ import com.intel.graphbuilder.util.SerializableBaseConfiguration
  * @param posteriorProperty Name of the property to which posterior beliefs will be stored.
  * @param edgeWeightProperty Optional String. Name of the property on edges that stores the edge weight.
  *                           If none is supplied, edge weights default to 1.0
- * @param stringOutput Optional Boolean, defaults to false.
  * @param maxIterations Optional integer. The maximum number of iterations of message passing that will be invoked.
  *                      Defaults to 20.
  */
@@ -36,7 +35,6 @@ case class BeliefPropagationArgs(graph: GraphReference,
                                  posteriorProperty: String,
                                  stateSpaceSize: Int,
                                  edgeWeightProperty: Option[String] = None,
-                                 stringOutput: Option[Boolean] = None,
                                  maxIterations: Option[Int] = None)
 
 /**
@@ -61,7 +59,7 @@ case class BeliefPropagationResult(log: String, time: Double)
 /** Json conversion for arguments and return value case classes */
 object BeliefPropagationJsonFormat {
   import DomainJsonProtocol._
-  implicit val BPFormat = jsonFormat7(BeliefPropagationArgs)
+  implicit val BPFormat = jsonFormat6(BeliefPropagationArgs)
   implicit val BPResultFormat = jsonFormat2(BeliefPropagationResult)
 }
 
@@ -106,10 +104,6 @@ class BeliefPropagation extends SparkCommandPlugin[BeliefPropagationArgs, Belief
     edge_weight_property :  String (optional)
         The edge property that contains the edge weight for each edge. The default edge weight is 1 if this
         option is not specified.
-
-    string_output :  Boolean (optional, default is False)
-        If this is true, the posterior beliefs will be written as a string containing comma-separated doubles.
-        Otherwise, the posterior beliefs are written as lists of doubles.
 
 
     max_iterations : Integer (optional)
@@ -172,7 +166,14 @@ class BeliefPropagation extends SparkCommandPlugin[BeliefPropagationArgs, Belief
       val gbVertices: RDD[GBVertex] = titanReaderRDD.filterVertices()
       val gbEdges: RDD[GBEdge] = titanReaderRDD.filterEdges()
 
-      val (outVertices, outEdges, log) = BeliefPropagationRunner.run(gbVertices, gbEdges, arguments)
+      val bpRunnerArgs = BeliefPropagationRunnerArgs(arguments.posteriorProperty,
+        arguments.priorProperty,
+        arguments.maxIterations,
+        stringOutput = Some(true), // string output is default until the ATK supports Vectors as a datatype in tables
+        arguments.stateSpaceSize,
+        arguments.edgeWeightProperty)
+
+      val (outVertices, outEdges, log) = BeliefPropagationRunner.run(gbVertices, gbEdges, bpRunnerArgs)
 
       // edges do not change during this computation so we avoid the very expensive step of appending them into Titan
 
@@ -189,6 +190,7 @@ class BeliefPropagation extends SparkCommandPlugin[BeliefPropagationArgs, Belief
       // Get the execution time and print it
       val time = (System.currentTimeMillis() - start).toDouble / 1000.0
       BeliefPropagationResult(log, time)
+
     }
 
     finally {
