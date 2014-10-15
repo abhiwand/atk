@@ -387,10 +387,12 @@ class Frame(CommandLoadableFrame):
         Model accuracy.
 
         Computes the accuracy measure for a classification model.
-        A column containing the correct labels for each instance and a column containing the predictions made by the classifier are specified.
+        A column containing the correct labels for each instance and a column containing the predictions
+        made by the classifier are specified.
         The accuracy of a classification model is the proportion of predictions that are correct.
-        If we let :math:`T_{P}` denote the number of true positives, :math:`T_{N}` denote the number of true negatives, and :math:`K`
-        denote the total number of classified instances, then the model accuracy is given by: :math:`\\frac{T_{P} + T_{N}}{K}`.
+        If we let :math:`T_{P}` denote the number of true positives, :math:`T_{N}` denote the number of true
+        negatives, and :math:`K` denote the total number of classified instances, then the model accuracy is
+        given by: :math:`\\frac{T_{P} + T_{N}}{K}`.
 
         This measure applies to binary and multi-class classifiers.
 
@@ -408,8 +410,8 @@ class Frame(CommandLoadableFrame):
 
         Examples
         --------
-        Consider the following sample data set in *frame* with actual data labels specified in the *labels* column and
-        the predicted labels in the *predictions* column::
+        Consider the following sample data set in *frame* with actual data labels specified in the *labels*
+        column and the predicted labels in the *predictions* column::
 
             frame.inspect()
 
@@ -456,11 +458,14 @@ class Frame(CommandLoadableFrame):
         -----
         The row function ('func') must return a value in the same format as specified by the schema.
         See :doc:`ds_apir`.
+        Unicode in column names will likely cause the drop_frames() function (and others) to fail!
 
         Examples
         --------
-        Given a BigFrame proxy *my_frame* identifying a data frame with two int32 columns *column1* and *column2*.
-        Add a third column named "column3" as an int32 and fill it with the contents of *column1* and *column2*
+        Given a BigFrame proxy *my_frame* identifying a data frame with two int32 columns *column1* and
+        *column2*.
+        Add a third column named "column3" as an int32 and fill it with the contents of *column1* and
+        *column2*
         multiplied together::
 
             my_frame.add_columns(lambda row: row.column1*row.column2, ('column3', int32))
@@ -477,7 +482,8 @@ class Frame(CommandLoadableFrame):
         empty string ('') in every row.
 
         Multiple columns can be added at the same time.
-        Add a column *a_times_b* and fill it with the contents of column *a* multiplied by the contents of column *b*.
+        Add a column *a_times_b* and fill it with the contents of column *a* multiplied by the contents of
+        column *b*.
         At the same time, add a column *a_plus_b* and fill it with the contents of column *a* plus
         the contents of column *b*::
 
@@ -492,16 +498,18 @@ class Frame(CommandLoadableFrame):
 
             my_frame.add_columns( func, ("calculated_a", int))
 
-        Now the frame has a column *calculated_a* which has been filled with the results of the function *func*.
+        Now the frame has a column *calculated_a* which has been filled with the results of the function
+        *func*.
 
         Functions must return their value in the same format as the column is defined.
         In most cases this is automatically the case, but sometimes it is less obvious.
-        Given a function *function_b* which returns a value in a list, store the result in a new column *calculated_b*::
+        Given a function *function_b* which returns a value in a list, store the result in a new column
+        *calculated_b*::
 
             my_frame.add_columns(function_b, ("calculated_b", float32))
 
-        This would result in an error because function_b is returning a value as a single element list like [2.4], but our column is defined as
-        a tuple.
+        This would result in an error because function_b is returning a value as a single element list like
+        [2.4], but our column is defined as a tuple.
         The column must be defined as a list::
 
             my_frame.add_columns(function_b, [("calculated_b", float32)])
@@ -538,13 +546,12 @@ class Frame(CommandLoadableFrame):
 
         Now the first frame has two columns, *col_1* and *col_2*.
         Column *col_1* has the data from *col_1* in both original frames.
-        Column *col_2* has None (undefined) in all of the rows in the original first frame, and has the value of the second frame column *col_2* in
-        the rows matching the new data in *col_1*.
+        Column *col_2* has None (undefined) in all of the rows in the original first frame, and has the
+        value of the second frame column *col_2* in the rows matching the new data in *col_1*.
 
-        Breaking it down differently, the original rows referred to by *my_frame* have a new column *col_2* and this new column is
-        filled with non-defined data.
+        Breaking it down differently, the original rows referred to by *my_frame* have a new column *col_2*
+        and this new column is filled with non-defined data.
         The frame referred to by *your_frame* is then added to the bottom.
-
 
         .. versionadded:: 0.8
 
@@ -558,18 +565,20 @@ class Frame(CommandLoadableFrame):
 
         Two types of binning are provided: `equalwidth` and `equaldepth`.
 
-        Equal width binning places column values into bins such that the values in each bin fall within the same
-        interval and the interval width for each bin is equal.
+        Equal width binning places column values into bins such that the values in each bin fall within the
+        same interval and the interval width for each bin is equal.
 
-        Equal depth binning attempts to place column values into bins such that each bin contains the same number of
-        elements.  For :math:`n` bins of a column :math:`C` of length :math:`m`, the bin number is determined by:
+        Equal depth binning attempts to place column values into bins such that each bin contains the same
+        number of elements.
+        For :math:`n` bins of a column :math:`C` of length :math:`m`, the bin number is determined by:
 
         .. math::
 
             ceiling \\left( n * \\frac {f(C)}{m} \\right)
 
         where :math:`f` is a tie-adjusted ranking function over values of :math:`C`.
-        If there are multiples of the same value in :math:`C`, then their tie-adjusted rank is the average of their ordered rank values.
+        If there are multiples of the same value in :math:`C`, then their tie-adjusted rank is the average
+        of their ordered rank values.
 
         The num_bins parameter is upper-bound on the number of bins since the data may justify fewer bins.
         With equal depth binning, for example, if the column to be binned has 10 elements with
@@ -593,6 +602,10 @@ class Frame(CommandLoadableFrame):
         -------
         BigFrame
             A BigFrame accessing a new frame, with a bin column appended to the original frame structure
+
+        Notes
+        -----
+        Unicode in column names will likely cause the drop_frames() function (and others) to fail!
 
         Examples
         --------
@@ -682,8 +695,8 @@ class Frame(CommandLoadableFrame):
 
         Examples
         --------
-        Consider the following sample data set in *frame* with actual data labels specified in the *labels* column and
-        the predicted labels in the *predictions* column::
+        Consider the following sample data set in *frame* with actual data labels specified in the *labels*
+        column and the predicted labels in the *predictions* column::
 
             frame.inspect()
 
@@ -719,8 +732,8 @@ class Frame(CommandLoadableFrame):
         Parameters
         ----------
         columns : str, list, or dict (optional)
-            If not None, the copy will only include the columns specified.  If a dictionary is used, the string pairs
-            represent a column renaming, {source_column_name: destination_column_name}
+            If not None, the copy will only include the columns specified.  If a dictionary is used, the
+            string pairs represent a column renaming, {source_column_name: destination_column_name}
 
         Returns
         -------
@@ -792,7 +805,8 @@ class Frame(CommandLoadableFrame):
 
         Examples
         --------
-        For this example, my_frame is a BigFrame object accessing a frame with lots of data for the attributes of *lions*, *tigers*, and *ligers*.
+        For this example, my_frame is a BigFrame object accessing a frame with lots of data for the
+        attributes of *lions*, *tigers*, and *ligers*.
         Get rid of the *lions* and *tigers*::
 
             my_frame.drop_rows(lambda row: row.animal_type == "lion" or
@@ -819,7 +833,8 @@ class Frame(CommandLoadableFrame):
         Parameters
         ----------
         columns : str OR list of str
-            column name(s) to identify duplicates. If empty, will remove duplicates that have whole row data identical.
+            column name(s) to identify duplicates. If empty, will remove duplicates that have whole row data
+            identical.
 
         Examples
         --------
@@ -868,8 +883,8 @@ class Frame(CommandLoadableFrame):
 
         Examples
         --------
-        Consider the following sample data set in *frame* with actual data labels specified in the *labels* column and
-        the predicted labels in the *predictions* column::
+        Consider the following sample data set in *frame* with actual data labels specified in the *labels*
+        column and the predicted labels in the *predictions* column::
 
             frame.inspect()
 
@@ -938,7 +953,8 @@ class Frame(CommandLoadableFrame):
         Spread out data.
 
         Search through the currently active BigFrame for multiple items in a single specified column.
-        When it finds multiple values in the column, it replicates the row and separates the multiple items across the existing and new rows.
+        When it finds multiple values in the column, it replicates the row and separates the multiple items
+        across the existing and new rows.
         Multiple items is defined in this case as being things separated by commas.
 
         Parameters
@@ -1003,8 +1019,10 @@ class Frame(CommandLoadableFrame):
         Model :math:`F_{\\beta}` measure.
 
         Computes the :math:`F_{\\beta}` measure for a classification model.
-        A column containing the correct labels for each instance and a column containing the predictions made by the model are specified.
-        The :math:`F_{\\beta}` measure of a binary classification model is the harmonic mean of precision and recall.
+        A column containing the correct labels for each instance and a column containing the predictions
+        made by the model are specified.
+        The :math:`F_{\\beta}` measure of a binary classification model is the harmonic mean of precision
+        and recall.
         If we let:
 
         * beta :math:`\\equiv \\beta`,
@@ -1018,9 +1036,10 @@ class Frame(CommandLoadableFrame):
             F_{\\beta} = \\left(1 + \\beta ^ 2\\right) * \\frac{\\frac{T_{P}}{T_{P} + F_{P}} * \\frac{T_{P}}{T_{P} + F_{N}}}{\\beta ^ 2 * \\
             \\left(\\frac{T_{P}}{T_{P} + F_{P}} + \\frac{T_{P}}{T_{P} + F_{N}}\\right)}
 
-        For multi-class classification, the :math:`F_{\\beta}` measure is computed as the weighted average of the :math:`F_{\\beta}` measure
-        for each label, where the weight is the number of instance with each label in the labeled column.  The
-        determination of binary vs. multi-class is automatically inferred from the data.
+        For multi-class classification, the :math:`F_{\\beta}` measure is computed as the weighted average
+        of the :math:`F_{\\beta}` measure for each label, where the weight is the number of instance with
+        each label in the labeled column.
+        The determination of binary vs. multi-class is automatically inferred from the data.
 
         Parameters
         ----------
@@ -1031,7 +1050,8 @@ class Frame(CommandLoadableFrame):
         pos_label : int or str, (optional)
             the value to be interpreted as a positive instance (only for binary, ignored for multi-class)
         beta : float, (optional)
-            beta value to use for :math:`F_{\\beta}` measure (default F1 measure is computed); must be greater than zero
+            beta value to use for :math:`F_{\\beta}` measure (default F1 measure is computed); must be
+            greater than zero
 
         Returns
         -------
@@ -1040,8 +1060,8 @@ class Frame(CommandLoadableFrame):
 
         Examples
         --------
-        Consider the following sample data set in *frame* with actual data labels specified in the *labels* column and
-        the predicted labels in the *predictions* column::
+        Consider the following sample data set in *frame* with actual data labels specified in the *labels*
+        column and the predicted labels in the *predictions* column::
 
             frame.inspect()
 
@@ -1228,7 +1248,8 @@ class Frame(CommandLoadableFrame):
 
         Examples
         --------
-        For this example, let's say we have a frame of data and a BigFrame to access it. Let's look at the first 10 rows of data::
+        For this example, let's say we have a frame of data and a BigFrame to access it.
+        Let's look at the first 10 rows of data::
 
             print my_frame.inspect()
 
@@ -1255,13 +1276,16 @@ class Frame(CommandLoadableFrame):
         Create a new frame from a SQL JOIN operation with another frame.
         The frame on the 'left' is the currently active frame.
         The frame on the 'right' is another frame.
-        This function takes a column in the left frame and matches it's values with a column in the right frame.
-        Using the default 'how' option ['inner'] will only allow data in the resultant frame if both the left and right
+        This function takes a column in the left frame and matches it's values with a column in the right
+        frame.
+        Using the default 'how' option ['inner'] will only allow data in the resultant frame if both the
+        left and right
         frames have the same value in the matching column.
-        Using the 'left' 'how' option will allow any data in the resultant frame if it exists in the left frame, but
-        will allow any data from the right frame if it has a value in it's column which matches the value in the left frame column.
-        Using the 'right' option works similarly, except it keeps all the data from the right frame and only the
-        data from the left frame when it matches.
+        Using the 'left' 'how' option will allow any data in the resultant frame if it exists in the left
+        frame, but will allow any data from the right frame if it has a value in it's column which matches
+        the value in the left frame column.
+        Using the 'right' option works similarly, except it keeps all the data from the right frame and only
+        the data from the left frame when it matches.
 
         Parameters
         ----------
@@ -1283,23 +1307,27 @@ class Frame(CommandLoadableFrame):
         Notes
         -----
         When a column is named the same in both frames, it will result in two columns in the new frame.
-        The column from the *left* frame will be copied and the column name will have the string "_L" added to it.
-        The same thing will happen with the column from the *right* frame, except its name has the string "_R" appended.
+        The column from the *left* frame will be copied and the column name will have the string "_L" added
+        to it.
+        The same thing will happen with the column from the *right* frame, except its name has the string
+        "_R" appended.
 
         It is recommended that you rename the columns to meaningful terms prior to using the ``join`` method.
-        Keep in mind that unicode characters should not be used in column names.
+        Keep in mind that unicode in column names will likely cause the drop_frames() function (and others)
+        to fail!
 
         Examples
         --------
-        For this example, we will use a BigFrame *my_frame* accessing a frame with columns *a*, *b*, *c*, and a BigFrame *your_frame* accessing
-        a frame with columns *a*, *d*, *e*.
+        For this example, we will use a BigFrame *my_frame* accessing a frame with columns *a*, *b*, *c*,
+        and a BigFrame *your_frame* accessing a frame with columns *a*, *d*, *e*.
         Join the two frames keeping only those rows having the same value in column *a*::
 
             my_frame = BigFrame(schema1)
             your_frame = BigFrame(schema2)
             joined_frame = my_frame.join(your_frame, 'a')
 
-        Now, joined_frame is a BigFrame accessing a frame with the columns *a_L*, *a_R*, *b*, *c*, *d*, and *e*.
+        Now, joined_frame is a BigFrame accessing a frame with the columns *a_L*, *a_R*, *b*, *c*, *d*, and
+        *e*.
         The data in the new frame will be from the rows where column 'a' was the same in both frames.
 
         Now, using a single BigFrame *my_frame* accessing a frame with the columns *b* and *book*.
@@ -1308,8 +1336,9 @@ class Frame(CommandLoadableFrame):
             joined_frame = your_frame.join(your_frame, left_on='b', right_on='book',
                 how='inner')
 
-        We end up with a new BigFrame *joined_frame* accessing a new frame with all the original columns, but only those rows where the data in the
-        original frame in column *b* matched the data in column *book*.
+        We end up with a new BigFrame *joined_frame* accessing a new frame with all the original columns,
+        but only those rows where the data in the original frame in column *b* matched the data in column
+        *book*.
 
 
         .. versionadded:: 0.8
@@ -1324,14 +1353,17 @@ class Frame(CommandLoadableFrame):
         Model precision.
 
         Computes the precision measure for a classification model.
-        A column containing the correct labels for each instance and a column containing the predictions made by the
-        model are specified.  The precision of a binary classification model is the proportion of predicted positive
-        instances that are correct.  If we let :math:`T_{P}` denote the number of true positives and :math:`F_{P}` denote the number of false
-        positives, then the model precision is given by: :math:`\\frac {T_{P}} {T_{P} + F_{P}}`.
+        A column containing the correct labels for each instance and a column containing the predictions
+        made by the model are specified.
+        The precision of a binary classification model is the proportion of predicted positive
+        instances that are correct.
+        If we let :math:`T_{P}` denote the number of true positives and :math:`F_{P}` denote the number of
+        false positives, then the model precision is given by: :math:`\\frac {T_{P}} {T_{P} + F_{P}}`.
 
-        For multi-class classification, the precision measure is computed as the weighted average of the precision
-        for each label, where the weight is the number of instances with each label in the labelled column.  The
-        determination of binary vs. multi-class is automatically inferred from the data.
+        For multi-class classification, the precision measure is computed as the weighted average of the
+        precision for each label, where the weight is the number of instances with each label in the
+        labelled column.
+        The determination of binary vs. multi-class is automatically inferred from the data.
 
         Parameters
         ----------
@@ -1349,8 +1381,8 @@ class Frame(CommandLoadableFrame):
 
         Examples
         --------
-        Consider the following sample data set in *frame* with actual data labels specified in the *labels* column and
-        the predicted labels in the *predictions* column::
+        Consider the following sample data set in *frame* with actual data labels specified in the *labels*
+        column and the predicted labels in the *predictions* column::
 
             frame.inspect()
 
@@ -1384,14 +1416,16 @@ class Frame(CommandLoadableFrame):
         Model measure.
 
         Computes the recall measure for a classification model.
-        A column containing the correct labels for each instance and a column containing the predictions made by the model are specified.
-        The recall of a binary classification model is the proportion of positive instances that are correctly identified.
-        If we let :math:`T_{P}` denote the number of true positives and :math:`F_{N}` denote the number of false
-        negatives, then the model recall is given by: :math:`\\frac {T_{P}} {T_{P} + F_{N}}`.
+        A column containing the correct labels for each instance and a column containing the predictions
+        made by the model are specified.
+        The recall of a binary classification model is the proportion of positive instances that are
+        correctly identified.
+        If we let :math:`T_{P}` denote the number of true positives and :math:`F_{N}` denote the number of
+        false negatives, then the model recall is given by: :math:`\\frac {T_{P}} {T_{P} + F_{N}}`.
 
         For multi-class classification, the recall measure is computed as the weighted average of the recall
-        for each label, where the weight is the number of instance with each label in the labeled column.  The
-        determination of binary vs. multi-class is automatically inferred from the data.
+        for each label, where the weight is the number of instance with each label in the labeled column.
+        The determination of binary vs. multi-class is automatically inferred from the data.
 
         Parameters
         ----------
@@ -1409,8 +1443,8 @@ class Frame(CommandLoadableFrame):
 
         Examples
         --------
-        Consider the following sample data set in *frame* with actual data labels specified in the *labels* column and
-        the predicted labels in the *predictions* column::
+        Consider the following sample data set in *frame* with actual data labels specified in the *labels*
+        column and the predicted labels in the *predictions* column::
 
             frame.inspect()
 
@@ -1452,7 +1486,7 @@ class Frame(CommandLoadableFrame):
 
         Notes
         -----
-        Unicode characters should not be used in column names.
+        Unicode in column names will likely cause the drop_frames() function (and others) to fail!
 
         Examples
         --------
@@ -1489,8 +1523,8 @@ class Frame(CommandLoadableFrame):
 
         Notes
         -----
-        The data is considered 'unstructured', therefore taking a certain number of rows, the rows obtained may be
-        different every time the command is executed, even if the parameters do not change.
+        The data is considered 'unstructured', therefore taking a certain number of rows, the rows obtained
+        may be different every time the command is executed, even if the parameters do not change.
 
         Returns
         -------
@@ -1504,14 +1538,15 @@ class Frame(CommandLoadableFrame):
 
             your_frame = my_frame.take( 5000 )
 
-        We now have a separate frame accessed by a BigFrame *your_frame* with a copy of the first 5000 rows of the original frame.
+        We now have a separate frame accessed by a BigFrame *your_frame* with a copy of the first 5000 rows
+        of the original frame.
 
         If we use the function with an offset like::
 
             your_frame = my_frame.take( 5000, 1000 )
 
-        We end up with a new frame accessed by the BigFrame *your_frame* again, but this time it has a copy of
-        rows 1001 to 5000 of the original frame.
+        We end up with a new frame accessed by the BigFrame *your_frame* again, but this time it has a copy
+        of rows 1001 to 5000 of the original frame.
 
         .. versionadded:: 0.8
 

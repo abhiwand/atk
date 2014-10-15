@@ -77,7 +77,7 @@ To import CSV data you need a :term:`schema` defining the structure of your data
 Schemas are constructed as a list of tuples, each defining a column in the database, each tuple being
 composed of a string and a data type.
 The string is the name of the column, and the data type must be valid (see :ref:`Valid Data Types <valid_data_types>`).
-Unicode characters should not be used in column names.
+Unicode in column names will likely cause the drop_frames() function (and others) to fail!
 The order of the columns in the schema must match the order of columns in the data.
 
 Let's start with a file *Data.csv* whose contents look like this::
