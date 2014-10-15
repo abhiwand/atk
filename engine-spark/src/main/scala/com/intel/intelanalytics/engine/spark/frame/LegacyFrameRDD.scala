@@ -36,6 +36,10 @@ import org.apache.spark.{ SparkContext, Partition, TaskContext }
  * A LegacyFrame RDD is an RDD of type Row with an associated schema
  * This was our primary representation of our RDDs and could be phased out.
  *
+ * Please don't write new code against this legacy format:
+ * - This format requires extra maps to read/write Parquet files.
+ * - We'd rather use FrameRDD which extends SchemaRDD and can go direct to/from Parquet.
+ *
  * @param schema the schema describing the columns of this frame
  */
 class LegacyFrameRDD(val schema: Schema, val rows: RDD[Row]) extends RDD[Row](rows) {

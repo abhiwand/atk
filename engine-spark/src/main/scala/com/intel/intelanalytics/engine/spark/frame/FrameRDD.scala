@@ -34,8 +34,9 @@ import org.apache.spark.sql.execution.{ ExistingRdd, SparkLogicalPlan }
 import org.apache.spark.sql.{ SQLContext, SchemaRDD }
 
 /**
- * A Frame RDD is a SchemaRDD with our version of the associated schema
- * This is the primary representation of our RDDs due
+ * A Frame RDD is a SchemaRDD with our version of the associated schema.
+ *
+ * This is our preferred format for loading frames as RDDs.
  *
  * @param schema  the schema describing the columns of this frame
  * @param sqlContext a spark SQLContext
