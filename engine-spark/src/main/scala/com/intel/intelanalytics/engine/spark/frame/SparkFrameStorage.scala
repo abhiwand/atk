@@ -196,7 +196,7 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
    * Save a FrameRDD to HDFS.
    *
    * This is our preferred path for saving RDDs as data frames.
-   * 
+   *
    * @param frameEntity DataFrame representation
    * @param frameRDD the RDD
    * @param rowCount the number of rows in the RDD
