@@ -68,8 +68,8 @@ class CumulativePercentPlugin extends SparkCommandPlugin[CumulativePercentSum, D
 
     Returns
     -------
-    BigFrame
-      A new object accessing a new frame containing the original columns appended with a column containing the cumulative percent sums
+    Frame
+      The original frame containing the original columns appended with a column containing the cumulative percent sums
 
     Notes
     -----
@@ -78,12 +78,12 @@ class CumulativePercentPlugin extends SparkCommandPlugin[CumulativePercentSum, D
 
     Examples
     --------
-    Consider BigFrame * my_frame * accessing a frame that contains a single column named * obs *::
+    Consider Frame *my_frame* accessing a frame that contains a single column named * obs *::
 
         my_frame.inspect()
 
         obs int32
-                             |---------|
+        |---------|
           0
           1
           2
@@ -93,15 +93,15 @@ class CumulativePercentPlugin extends SparkCommandPlugin[CumulativePercentSum, D
 
     The cumulative percent sum for column * obs * is obtained by ::
 
-    cps_frame = my_frame.cumulative_percent('obs')
+    my_frame.cumulative_percent('obs')
 
-    The new frame accessed by BigFrame * cps_frame * contains two columns * obs * and * obsCumulativePercentSum *.
+    The Frame *my_frame* now contains two columns * obs * and * obsCumulativePercentSum *.
     They contain the original data and the cumulative percent sum, respectively ::
 
-        cps_frame.inspect()
+        my_frame.inspect()
 
         obs   int32   obs_cumulative_percent float64
-                             |-------------------------------------------|
+        |-------------------------------------------|
           0                   0.0
           1                   0.16666666
           2                   0.5
