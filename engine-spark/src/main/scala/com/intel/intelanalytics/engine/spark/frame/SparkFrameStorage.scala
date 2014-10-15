@@ -89,6 +89,9 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
 
   /**
    * Create an FrameRDD from a frame data file
+   *
+   * This is our preferred format for loading frames as RDDs.
+   *
    * @param ctx spark context
    * @param frameId the id for the frame
    * @return the newly created FrameRDD
@@ -99,7 +102,10 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
   }
 
   /**
-   * Create an FrameRDD from a frame data file
+   * Create an FrameRDD from a frame data file.
+   *
+   * This is our preferred format for loading frames as RDDs.
+   *
    * @param ctx spark context
    * @param frame the model for the frame
    * @return the newly created FrameRDD
@@ -122,7 +128,12 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
   }
 
   /**
-   * Create a LegacyFrameRDD or throw an exception if bad frameId is given
+   * Create a LegacyFrameRDD or throw an exception if bad frameId is given.
+   *
+   * Please don't write new code against this legacy format:
+   * - This format requires extra maps to read/write Parquet files.
+   * - We'd rather use FrameRDD which extends SchemaRDD and can go direct to/from Parquet.
+   *
    * @param ctx spark context
    * @param frameId primary key of the frame record
    * @return the newly created RDD
@@ -135,6 +146,11 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
 
   /**
    * Create an LegacyFrameRDD from a frame data file
+   *
+   * Please don't write new code against this legacy format:
+   * - This format requires extra maps to read/write Parquet files.
+   * - We'd rather use FrameRDD which extends SchemaRDD and can go direct to/from Parquet.
+   *
    * @param ctx spark context
    * @param frame the model for the frame
    * @return the newly created FrameRDD
@@ -162,7 +178,12 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
   }
 
   /**
-   * Save a LegacyFrameRDD to HDFS - this is the only save path that should be used for legacy Frames
+   * Save a LegacyFrameRDD to HDFS - this is the only save path that should be used for legacy Frames.
+   *
+   * Please don't write new code against this legacy format:
+   * - This format requires extra maps to read/write Parquet files.
+   * - We'd rather use FrameRDD which extends SchemaRDD and can go direct to/from Parquet.
+   *
    * @param frameEntity DataFrame representation
    * @param legacyFrameRdd the RDD
    * @param rowCount optionally provide the row count if you need to update it
@@ -172,10 +193,10 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
   }
 
   /**
-   * Save a FrameRDD to HDFS - this is the only save path that should be used
+   * Save a FrameRDD to HDFS.
    *
-   * Will cache the RDD and count it if the rowCount parameter is not provided.
-   *
+   * This is our preferred path for saving RDDs as data frames.
+   * 
    * @param frameEntity DataFrame representation
    * @param frameRDD the RDD
    * @param rowCount the number of rows in the RDD
