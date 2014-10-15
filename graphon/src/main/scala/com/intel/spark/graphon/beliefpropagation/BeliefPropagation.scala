@@ -190,6 +190,7 @@ class BeliefPropagation extends SparkCommandPlugin[BeliefPropagationArgs, Belief
       // Get the execution time and print it
       val time = (System.currentTimeMillis() - start).toDouble / 1000.0
       BeliefPropagationResult(log, time)
+
     }
 
     finally {
