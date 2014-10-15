@@ -32,50 +32,50 @@ case class Mixed(frameId: Int, frame: FrameReference, graphId: Int, graph: Graph
 class ReflectionTest extends FlatSpec with Matchers {
 
   //TODO: Re-enable before merge
-//  "getReferenceTypes" should "find frame references and graph references" in {
-//
-//    val members = Reflection.getUriReferenceTypes[Mixed]().toArray
-//
-//    members.length shouldBe 2
-//    members.map(_._1).toArray shouldBe Array("frame", "graph")
-//  }
-//
-//  "getConstructor" should "get case class constructors" in {
-//
-//    val ctor = Reflection.getConstructor[Mixed]()
-//
-//    val foo = ctor(Seq(3, "hello"))
-//
-//    foo shouldBe Foo(3, "hello")
-//
-//  }
-//
-//  it should " not work with inner classes" in {
-//
-//    intercept[ScalaReflectionException] {
-//      val ctor = Reflection.getConstructor[Baz]()
-//    }
-//
-//  }
-//
-//  "getConstructorMap" should "work with case class constructors" in {
-//
-//    val ctor = Reflection.getConstructorMap[Foo]()
-//
-//    val foo = ctor(Map("bar" -> 3, "quux" -> "hello"))
-//
-//    foo shouldBe Foo(3, "hello")
-//
-//  }
-//
-//  it should "throw IllegalArgumentException when parameters are not specified" in {
-//
-//    val ctor = Reflection.getConstructorMap[Foo]()
-//
-//    intercept[IllegalArgumentException] {
-//      val foo = ctor(Map("foo" -> 3, "quux" -> "hello"))
-//    }
-//  }
+  //  "getReferenceTypes" should "find frame references and graph references" in {
+  //
+  //    val members = Reflection.getUriReferenceTypes[Mixed]().toArray
+  //
+  //    members.length shouldBe 2
+  //    members.map(_._1).toArray shouldBe Array("frame", "graph")
+  //  }
+  //
+  //  "getConstructor" should "get case class constructors" in {
+  //
+  //    val ctor = Reflection.getConstructor[Mixed]()
+  //
+  //    val foo = ctor(Seq(3, "hello"))
+  //
+  //    foo shouldBe Foo(3, "hello")
+  //
+  //  }
+  //
+  //  it should " not work with inner classes" in {
+  //
+  //    intercept[ScalaReflectionException] {
+  //      val ctor = Reflection.getConstructor[Baz]()
+  //    }
+  //
+  //  }
+  //
+  //  "getConstructorMap" should "work with case class constructors" in {
+  //
+  //    val ctor = Reflection.getConstructorMap[Foo]()
+  //
+  //    val foo = ctor(Map("bar" -> 3, "quux" -> "hello"))
+  //
+  //    foo shouldBe Foo(3, "hello")
+  //
+  //  }
+  //
+  //  it should "throw IllegalArgumentException when parameters are not specified" in {
+  //
+  //    val ctor = Reflection.getConstructorMap[Foo]()
+  //
+  //    intercept[IllegalArgumentException] {
+  //      val foo = ctor(Map("foo" -> 3, "quux" -> "hello"))
+  //    }
+  //  }
 
   case class Baz(foo: Int, quux: String)
 

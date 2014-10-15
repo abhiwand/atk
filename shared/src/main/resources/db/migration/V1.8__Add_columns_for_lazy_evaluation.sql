@@ -9,9 +9,9 @@
 
 -- Add columns to frames:
 
-ALTER TABLE frame ADD COLUMN command_id LONG NULL;
+ALTER TABLE frame ADD COLUMN command_id bigint NULL;
 
-ALTER TABLE frame ADD COLUMN parent LONG NULL;
+ALTER TABLE frame ADD COLUMN parent bigint NULL;
 
 ALTER TABLE frame ADD COLUMN materialized TIMESTAMP WITHOUT TIME ZONE NULL;
 
@@ -21,7 +21,7 @@ ALTER TABLE frame ADD COLUMN storage_format TEXT NULL;
 
 ALTER TABLE frame ADD COLUMN storage_uri TEXT NULL;
 
-UPDATE TABLE frame SET storage_format = 'file/sequence', storage_uri = frame.Id + '/rev' + frame.revision;
+UPDATE TABLE frame SET storage_format = 'file/parquet', storage_uri = frame.Id + '/rev' + frame.revision;
 
 ALTER TABLE frame DROP COLUMN revision;
 

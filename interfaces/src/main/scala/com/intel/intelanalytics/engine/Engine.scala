@@ -23,6 +23,7 @@
 
 package com.intel.intelanalytics.engine
 
+import com.intel.intelanalytics.domain.{ Entity, UriReference }
 import com.intel.intelanalytics.domain.command.{ Command, CommandDefinition, CommandTemplate, Execution }
 import com.intel.intelanalytics.domain.frame._
 import com.intel.intelanalytics.domain.graph.{ Graph, GraphTemplate }
@@ -35,10 +36,6 @@ import com.intel.intelanalytics.security.UserPrincipal
 
 import scala.concurrent.Future
 
-//TODO: make these all use Try instead?
-//TODO: make as many of these as possible use id instead of dataframe as the first argument?
-//TODO: distinguish between DataFrame and DataFrameSpec,
-// where the latter has no ID, and is the argument passed to create?
 trait Engine {
   /**
    * What data type is used to represent data for frames, etc.?
@@ -60,6 +57,13 @@ trait Engine {
   val frames: FrameStorage[Data, Context]
 
   val graphs: GraphStorage
+
+//  /**
+//   * The supported entity types in the system
+//   */
+//  def entities: Seq[Entity]
+//
+//  def create[E <: Entity](): E#Reference
 
   /**
    * Executes the given command template, managing all necessary auditing, contexts, class loaders, etc.

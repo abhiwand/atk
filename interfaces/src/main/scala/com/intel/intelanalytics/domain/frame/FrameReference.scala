@@ -43,6 +43,8 @@ class FrameReference(frameId: Long, frameExists: Option[Boolean] = None) extends
 
 object FrameReference extends Entity {
 
+  override type Reference = FrameReference
+
   //Default resolver that simply creates a reference, with no guarantee that it is valid.
   ReferenceResolver.register(this, id => FrameReference(id, None))
 
