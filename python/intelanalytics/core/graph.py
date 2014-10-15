@@ -246,9 +246,9 @@ class VertexRule(Rule):
     id_value: BigColumn source
         vertex value; the unique value to identify this vertex
     properties: dictionary {'vertex_type': ['L|R'] [, property_name:property_value]}
-        vertex properties of the form property_name:property_value
-        property_name is a string, and property_value is a literal value
-        or a BigColumn source, which must be from same BigFrame as value arg
+        vertex properties of the form property_name:property_value.
+        The property_name (the key) is a string, and property_value is a literal value
+        or a BigColumn source, which must be from the same BigFrame as the id_key and id_value arguments.
 
     Notes
     -----
