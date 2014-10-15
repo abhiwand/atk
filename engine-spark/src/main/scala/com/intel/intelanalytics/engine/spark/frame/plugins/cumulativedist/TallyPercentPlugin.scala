@@ -71,12 +71,12 @@ class TallyPercentPlugin extends SparkCommandPlugin[CumulativePercentCount, Data
    |
    |        Returns
    |        -------
-   |        BigFrame
-   |            A new object accessing a new frame containing the original columns appended with a column containing the cumulative percent counts
+   |        Frame
+   |            The original frame containing the original columns appended with a column containing the cumulative percent counts
    |
    |        Examples
    |        --------
-   |        Consider BigFrame *my_frame*, which accesses a frame that contains a single column named *obs*::
+   |        Consider Frame *my_frame*, which accesses a frame that contains a single column named *obs*::
    |
    |            my_frame.inspect()
    |
@@ -91,12 +91,12 @@ class TallyPercentPlugin extends SparkCommandPlugin[CumulativePercentCount, Data
    |
    |        The cumulative percent count for column *obs* is obtained by::
    |
-   |            cpc_frame = my_frame.tally_percent('obs', 1)
+   |            my_frame.tally_percent('obs', 1)
    |
-   |        The BigFrame *cpc_frame* accesses a new frame that contains two columns, *obs* that contains the original column values, and
+   |        The Frame *my_frame* accesses the original frame that now contains two columns, *obs* that contains the original column values, and
    |        *obsCumulativePercentCount* that contains the cumulative percent count::
    |
-   |            cpc_frame.inspect()
+   |            my_frame.inspect()
    |
    |             obs int32    obs_tally_percent float64
    |            |---------------------------------------------|

@@ -70,8 +70,8 @@ class TallyPlugin extends SparkCommandPlugin[CumulativeCount, DataFrame] {
 
       Returns
       -------
-      BigFrame
-          A new object accessing a new frame containing the original columns appended with a column containing the cumulative counts
+      Frame
+          The original frame containing the original columns appended with a column containing the cumulative counts
 
       Examples
       --------
@@ -80,7 +80,7 @@ class TallyPlugin extends SparkCommandPlugin[CumulativeCount, DataFrame] {
           my_frame.inspect()
 
            obs int32
-                           |---------|
+           |---------|
              0
              1
              2
@@ -90,15 +90,15 @@ class TallyPlugin extends SparkCommandPlugin[CumulativeCount, DataFrame] {
 
       The cumulative count for column *obs* using *count_value = 1* is obtained by::
 
-          cc_frame = my_frame.tally('obs', '1')
+          my_frame.tally('obs', '1')
 
-      The BigFrame *cc_frame* accesses a frame which contains two columns *obs* and *obsCumulativeCount*.
+      The Frame *my_frame* accesses the original frame which now contains two columns *obs* and *obsCumulativeCount*.
       Column *obs* still has the same data and *obsCumulativeCount* contains the cumulative counts::
 
           cc_frame.inspect()
 
            obs int32        obs_tally int32
-                           |------------------------------------|
+           |------------------------------------|
              0                          0
              1                          1
              2                          1
