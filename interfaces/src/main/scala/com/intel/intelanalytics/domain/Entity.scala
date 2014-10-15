@@ -38,6 +38,9 @@ case class EntityName(name: String, plural: String)
  * [[com.intel.intelanalytics.domain.frame.DataFrame]].
  */
 trait Entity {
+
+  type Reference <: UriReference
+
   /**
    * The standard name for this entity
    */

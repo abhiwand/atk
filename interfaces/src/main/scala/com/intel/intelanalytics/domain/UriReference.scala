@@ -103,3 +103,4 @@ class ReferenceResolver {
  * The default system registry of URI reference resolvers
  */
 object ReferenceResolver extends ReferenceResolver {}
+

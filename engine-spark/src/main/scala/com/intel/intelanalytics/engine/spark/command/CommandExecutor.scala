@@ -109,13 +109,18 @@ class CommandExecutor(engine: => SparkEngine, commands: SparkCommandStorage, con
   }
 
   /**
-   * Create all the necessary empty metadata objects needed to generate a valid Return object
-   * @param command
-   * @param plugin
-   * @param arguments
-   * @tparam Arguments
-   * @tparam Return
-   * @return
+   * Create all the necessary empty metadata objects needed to generate a valid Return object without actually
+   * running a Command.
+   *
+   * Note that this will fail if called on a return type that has members other than UriReference subtypes, since
+   * those cannot be lazily suspended.
+   *
+   * @param command the command we're simulating
+   * @param plugin the actual command plugin implementation
+   * @param arguments an instance of Arguments that was passed with the actual argument values
+   * @tparam Arguments the type of arguments to the command
+   * @tparam Return the type of the return value of the command
+   * @return an instance of the Return type with all the generated references.
    */
   def createSuspendedReferences[Arguments <: Product: TypeTag, Return <: Product: TypeTag](command: Command, plugin: CommandPlugin[Arguments, Return], arguments: Arguments): Return = {
     val types = Reflection.getUriReferenceTypes[Return]()
