@@ -179,6 +179,11 @@ class ConjugateGradientDescent
                            |        is mainly for graph integrity check.
                            |        Valid value range is all Float.
                            |        The default value is "-Infinity".
+                           |
+                           |    Notes
+                           |    -----
+                           |    Vertices must be identified as left-side ("L") or right-side ("R").
+                           |    See vertex rules.
                            | 
                            |    Returns
                            |    -------

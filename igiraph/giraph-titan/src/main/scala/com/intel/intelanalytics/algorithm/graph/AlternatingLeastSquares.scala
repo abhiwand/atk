@@ -84,11 +84,13 @@ class AlternatingLeastSquares
    *
    * [[http://docutils.sourceforge.net/rst.html ReStructuredText]]
    */
-  override def doc = Some(CommandDoc(oneLineSummary = "The Alternating Least Squares with Bias for collaborative filtering algorithms.",
+  override def doc = Some(CommandDoc(oneLineSummary = "ALS",
     extendedSummary = Some("""
                            | 
                            |    Extended Summary
                            |    ----------------
+                           |    The Alternating Least Squares with Bias for collaborative filtering
+                           |    algorithms.
                            |    The algorithms presented in:
                            | 
                            |    1.  Y. Zhou, D. Wilkinson, R. Schreiber and R. Pan.
@@ -193,6 +195,11 @@ class AlternatingLeastSquares
                            |    -------
                            |    Multiple line string
                            |  	    The configuration and learning curve report for ALS
+                           |
+                           |    Notes
+                           |    -----
+                           |    Vertices must be identified as left-side ("L") or right-side ("R").
+                           |    See vertex rules.
                            | 
                            |    Examples
                            |    --------
