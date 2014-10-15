@@ -438,7 +438,6 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     }
   }
 
-
   override def cancelCommand(id: Long)(implicit user: UserPrincipal): Future[Unit] = withContext("se.cancelCommand") {
     future {
       commands.stopCommand(id)
