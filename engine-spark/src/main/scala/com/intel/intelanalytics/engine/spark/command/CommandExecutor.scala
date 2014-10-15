@@ -25,10 +25,10 @@ package com.intel.intelanalytics.engine.spark.command
 
 import com.intel.intelanalytics.component.ClassLoaderAware
 import com.intel.intelanalytics.domain.UriReference
-import com.intel.intelanalytics.domain.frame.{DataFrame, DataFrameTemplate, FrameReference}
-import com.intel.intelanalytics.domain.graph.{GraphReference, Graph}
-import com.intel.intelanalytics.engine.{Reflection, Engine, CommandStorage}
-import com.intel.intelanalytics.engine.plugin.{Action, Invocation, CommandPlugin}
+import com.intel.intelanalytics.domain.frame.{ DataFrame, DataFrameTemplate, FrameReference }
+import com.intel.intelanalytics.domain.graph.{ GraphReference, Graph }
+import com.intel.intelanalytics.engine.{ Reflection, Engine, CommandStorage }
+import com.intel.intelanalytics.engine.plugin.{ Action, Invocation, CommandPlugin }
 import com.intel.intelanalytics.engine.spark.context.SparkContextManager
 import com.intel.intelanalytics.engine.spark.SparkEngine
 import com.intel.intelanalytics.NotFoundException
@@ -39,15 +39,15 @@ import spray.json._
 import scala.concurrent._
 import scala.reflect.api.JavaUniverse
 import scala.reflect.api._
-import scala.reflect.{ClassTag, classTag}
-import scala.reflect.runtime.{universe => ru}
+import scala.reflect.{ ClassTag, classTag }
+import scala.reflect.runtime.{ universe => ru }
 import ru._
 import scala.util.Try
-import org.apache.spark.engine.{ProgressPrinter, SparkProgressListener}
+import org.apache.spark.engine.{ ProgressPrinter, SparkProgressListener }
 import com.intel.intelanalytics.domain.command.CommandTemplate
 import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.domain.command.Execution
-import com.intel.intelanalytics.engine.spark.plugin.{SparkCommandPlugin, SparkInvocation}
+import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
 import com.intel.intelanalytics.domain.command.Command
 import scala.collection.mutable
 import com.intel.event.EventLogging
@@ -75,8 +75,8 @@ import com.intel.event.EventLogging
  * @param contextManager a SparkContext factory that can be passed to SparkCommandPlugins during execution
  */
 class CommandExecutor(engine: => SparkEngine, commands: SparkCommandStorage, contextManager: SparkContextManager)
-  extends EventLogging
-  with ClassLoaderAware {
+    extends EventLogging
+    with ClassLoaderAware {
 
   case class SimpleInvocation(engine: Engine,
                               commandStorage: CommandStorage,
@@ -91,16 +91,16 @@ class CommandExecutor(engine: => SparkEngine, commands: SparkCommandStorage, con
 
   def resolvePendingGraph() = ???
 
-  def resolveSuspendedReferences[A <: Product : TypeTag, R <: Product : TypeTag](command: Command, plugin: CommandPlugin[A, R], arguments: A): A = {
+  def resolveSuspendedReferences[A <: Product: TypeTag, R <: Product: TypeTag](command: Command, plugin: CommandPlugin[A, R], arguments: A): A = {
     val types = Reflection.getUriReferenceTypes[A]()
     val references = types.map {
       case (name, signature) =>
         //TODO: something more flexible than case analysis
         signature match {
           case x if x <:< typeTag[FrameReference].tpe =>
-            (name, resolvePendingFrame(x))
+            (name, resolvePendingFrame())
           case x if x <:< typeTag[GraphReference].tpe =>
-            (name, resolvePendingGraph(x))
+            (name, resolvePendingGraph())
           case _ => ???
         }
     }.toMap
@@ -117,17 +117,16 @@ class CommandExecutor(engine: => SparkEngine, commands: SparkCommandStorage, con
    * @tparam Return
    * @return
    */
-  def createSuspendedReferences[Arguments <: Product : TypeTag, Return <: Product : TypeTag]
-  (command: Command, plugin: CommandPlugin[Arguments, Return], arguments: Arguments): Return = {
+  def createSuspendedReferences[Arguments <: Product: TypeTag, Return <: Product: TypeTag](command: Command, plugin: CommandPlugin[Arguments, Return], arguments: Arguments): Return = {
     val types = Reflection.getUriReferenceTypes[Return]()
     val references = types.map {
       case (name, signature) =>
         //TODO: something more flexible than case analysis
         signature match {
           case x if x <:< typeTag[FrameReference].tpe =>
-            (name, createPendingFrame(x))
+            (name, createPendingFrame())
           case x if x <:< typeTag[GraphReference].tpe =>
-            (name, createPendingGraph(x))
+            (name, createPendingGraph())
           case _ => ???
         }
     }.toMap
@@ -154,10 +153,10 @@ class CommandExecutor(engine: => SparkEngine, commands: SparkCommandStorage, con
    * @param user the user running the command
    * @return an Execution object that can be used to track the command's execution
    */
-  def execute[A <: Product : TypeTag, R <: Product : TypeTag](plugin: CommandPlugin[A, R],
-                                                              arguments: A,
-                                                              user: UserPrincipal,
-                                                              executionContext: ExecutionContext): Execution = {
+  def execute[A <: Product: TypeTag, R <: Product: TypeTag](plugin: CommandPlugin[A, R],
+                                                            arguments: A,
+                                                            user: UserPrincipal,
+                                                            executionContext: ExecutionContext): Execution = {
     implicit val ec = executionContext
     val cmd = commands.create(CommandTemplate(plugin.name, Some(plugin.serializeArguments(arguments))))
     withMyClassLoader {
@@ -179,11 +178,11 @@ class CommandExecutor(engine: => SparkEngine, commands: SparkCommandStorage, con
     }
   }
 
-  def executeCommand[R <: Product : TypeTag, A <: Product : TypeTag](
-                                                                      command: CommandPlugin[A, R],
-                                                                      arguments: A,
-                                                                      user: UserPrincipal,
-                                                                      cmd: Command)(implicit ec: ExecutionContext) {
+  def executeCommand[R <: Product: TypeTag, A <: Product: TypeTag](
+    command: CommandPlugin[A, R],
+    arguments: A,
+    user: UserPrincipal,
+    cmd: Command)(implicit ec: ExecutionContext) {
     withCommand(cmd) {
       try {
         val invocation = command match {
@@ -225,7 +224,7 @@ class CommandExecutor(engine: => SparkEngine, commands: SparkCommandStorage, con
    * @tparam R the return type of the plugin
    * @return true if the plugin is an action, false otherwise.
    */
-  def isAction[R <: Product : TypeTag](plugin: CommandPlugin[_, R]) = {
+  def isAction[R <: Product: TypeTag](plugin: CommandPlugin[_, R]) = {
 
     plugin.isInstanceOf[Action] || {
       val dataMembers: Seq[(String, Type)] = Reflection.getVals[R]()
@@ -278,11 +277,11 @@ class CommandExecutor(engine: => SparkEngine, commands: SparkCommandStorage, con
    * @param user the user running the command
    * @return an Execution object that can be used to track the command's execution
    */
-  def execute[A <: Product : TypeTag, R <: Product : TypeTag](name: String,
-                                                              arguments: A,
-                                                              user: UserPrincipal,
-                                                              executionContext: ExecutionContext,
-                                                              commandPluginRegistry: CommandPluginRegistry): Execution = {
+  def execute[A <: Product: TypeTag, R <: Product: TypeTag](name: String,
+                                                            arguments: A,
+                                                            user: UserPrincipal,
+                                                            executionContext: ExecutionContext,
+                                                            commandPluginRegistry: CommandPluginRegistry): Execution = {
     val function = commandPluginRegistry.getCommandDefinition(name)
       .getOrElse(throw new NotFoundException("command definition", name))
       .asInstanceOf[CommandPlugin[A, R]]
@@ -300,10 +299,10 @@ class CommandExecutor(engine: => SparkEngine, commands: SparkCommandStorage, con
    * @param user the user running the command
    * @return an Execution object that can be used to track the command's execution
    */
-  def execute[A <: Product : TypeTag, R <: Product : TypeTag](command: CommandTemplate,
-                                                              user: UserPrincipal,
-                                                              executionContext: ExecutionContext,
-                                                              commandPluginRegistry: CommandPluginRegistry): Execution = {
+  def execute[A <: Product: TypeTag, R <: Product: TypeTag](command: CommandTemplate,
+                                                            user: UserPrincipal,
+                                                            executionContext: ExecutionContext,
+                                                            commandPluginRegistry: CommandPluginRegistry): Execution = {
     val function = commandPluginRegistry.getCommandDefinition(command.name)
       .getOrElse(throw new NotFoundException("command definition", command.name))
       .asInstanceOf[CommandPlugin[A, R]]
@@ -322,7 +321,7 @@ class CommandExecutor(engine: => SparkEngine, commands: SparkCommandStorage, con
    * @param commandId command id
    */
   def stopCommand(commandId: Long): Unit = {
-    commandIdContextMapping.get(commandId).foreach { case (context) => context.stop()}
+    commandIdContextMapping.get(commandId).foreach { case (context) => context.stop() }
     commandIdContextMapping -= commandId
   }
 }
