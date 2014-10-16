@@ -89,8 +89,8 @@ class ShannonEntropyPlugin extends SparkCommandPlugin[Entropy, EntropyReturn] {
                            |    float64
                            |        entropy
                            |
-                           |    Example
-                           |    -------
+                           |    Examples
+                           |    --------
                            |    ::
                            |
                            |        entropy = frame.entropy('data column')

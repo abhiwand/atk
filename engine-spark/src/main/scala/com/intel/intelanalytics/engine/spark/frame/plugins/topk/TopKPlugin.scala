@@ -80,8 +80,8 @@ class TopKPlugin extends SparkCommandPlugin[TopK, DataFrame] {
                            |    -------
                            |    BigFrame : An object with access to the frame
                            | 
-                           |    Example
-                           |    -------
+                           |    Examples
+                           |    --------
                            |    For this example, we calculate the top 5 movie genres in a data frame::
                            | 
                            |        top5 = frame.top_k('genre', 5)
