@@ -5,23 +5,45 @@
 # version 2.6 to run properly, so we create a virtual environment with
 # python 2.7 in the PYTHONPATH when we create the documents.
 
-# Running on Ubuntu, we don't need virtpy because Ubuntu is awesome!
-UBUNTU_OS=$(cat /etc/*-release | grep -i ubuntu)
+# Subroutines:
+function Err {
+    cat $TempFile >> $LogFile
+    rm $TempFile
+    if [ "$DisplayStatus" == "1" ]; then
+        echo "Failure: $1"
+    fi
+    if [ "$AskThem" == "1" ]; then
+        read -p "View .log file? [Y/n] " UserResponse
+        if [ ! $UserResponse ]; then UserResponse='y'; fi
+        if [ "$UserResponse" == "" ]; then UserResponse='y'; fi
+        if [ "$userResponse" == "Y" ]; then UserResponse='y';fi
+        if [ "$UserResponse" == 'y' ]; then
+            less $LogFile
+        fi
+        read -p "Abort? [Y/n] " UserResponse
+        if [ ! $UserResponse ]; then UserResponse='y'; fi
+        if [ "$UserResponse" == "" ]; then UserResponse='y'; fi
+        if [ "$userResponse" == "Y" ]; then UserResponse='y';fi
+        if [ "$UserResponse" == 'y' ]; then
+            return 1
+        fi
+    else
+        return 1
+    fi
+    return 0
+}
 
-# Give the filename of the list of people with ability to load python packages
-TECHWRITERS=techwriters
-
-# Look for help
-echo "/$1/$2/$3/$4/$5/$6/$7/$8/$9/" | grep -i -e "/-h/" -e "/--help/" -e "//////////" > /dev/null
-if [ $? == 0 ]; then
+function doc_help {
     echo
     echo $0
     echo
-    echo "-h, --help: Print this and exit"
+    echo "-h, --help: Print this and return"
     echo "-e:         Do not erase previous compilation"
+    echo "+e:         Erase doctrees"
     if [ "$UBUNTU_OS" == "" ]; then
         echo "-f, --force:Attempt compile without virtual environment"
     fi
+    echo "-q, -qq:    Quiet mode, use default values for prompts"
     echo "-s:         Do not compile Scala code"
     echo
     echo "html:       Compile to html"
@@ -33,165 +55,332 @@ if [ $? == 0 ]; then
     echo
     echo "By default, file builds will erase previous files first. For example,"
     echo "if html is called for, this will delete the existing html files first."
+    echo "Flags and options listed above have ':' symbol for clarification purposes only,"
+    echo "they are not part of the flag/option and should not be used on the command line."
     echo
-fi
+}
 
-# This is stupid, but sometimes numpy chokes on these files.
-if [[ -f ../core/*.pyc ]]; then
-    rm ../core/*.pyc
-fi
+function log_step {
+    if [ "$DisplayStatus" == "1" ]; then
+        echo "$1 $2 $3 $4 $5 $6 $7 $8 $9"
+    fi
+    echo >> $LogFile
+    echo >> $LogFile
+    echo "$1 $2 $3 $4 $5 $6 $7 $8 $9" >> $LogFile
+}
 
-SCRIPT=$(readlink -f "$0")
-SCRIPTPATH=$(dirname "$SCRIPT")
-pushd $SCRIPTPATH > /dev/null
 
-echo "/$1/$2/$3/$4/$5/$6/$7/$8/$9/" | grep -i -e "/-f/" -e "/--force/"> /dev/null
-if [ $? == 1 ]; then
-    if [ "$UBUNTU_OS" == "" ]; then
-        # This is not Ubuntu, so look for a virtual environment
-        if [[ -f /usr/lib/IntelAnalytics/virtpy/bin/activate ]]; then
-            ACTIVATE_FILE=/usr/lib/IntelAnalytics/virtpy/bin/activate
-        else
-            ACTIVATE_FILE=/usr/local/virtpy/bin/activate
-        fi
+function main {
+    # Running on Ubuntu, we don't need virtpy because Ubuntu is awesome!
+    UBUNTU_OS=$(cat /etc/*-release | grep -i ubuntu)
 
-        if [[ -f $ACTIVATE_FILE ]]; then
-            source $ACTIVATE_FILE > /dev/null
-        else
-            echo "Virtual Environment is not installed."
-            echo "Please execute install_pyenv.sh to install."
-            popd > /dev/null
-            exit 1
-        fi
+    # Give the filename of the list of people with ability to load python packages
+    TECHWRITERS=techwriters
+
+    SCRIPT=$(readlink -f "$0")
+    SCRIPTPATH=$(dirname "$SCRIPT")
+    LogFile=$SCRIPTPATH/doc.log
+    if [ -e $LogFile ]; then rm $LogFile; fi
+    TempFile=$SCRIPTPATH/temp.txt
+    if [ -e $TempFile ]; then rm $TempFile; fi
+
+    # This is stupid, but sometimes numpy chokes on these files.
+    if [[ -f ../core/*.pyc ]]; then
+        rm ../core/*.pyc
+    fi
+
+
+    # check on quiet mode
+    echo "/$1/$2/$3/$4/$5/$6/$7/$8/$9/" | grep -i -e "/-q/" -e "/-qq/"> /dev/null
+    if [ $? == 0 ]; then
+        AskThem=0
     else
+        AskThem=1
+    fi
+
+    # check on super quiet mode
+    echo "/$1/$2/$3/$4/$5/$6/$7/$8/$9/" | grep -i -e "/-qq/"> /dev/null
+    if [ $? == 0 ]; then
+         DisplayStatus=0
+    else
+         DisplayStatus=1
+    fi
+
+    # Look for help
+    echo "/$1/$2/$3/$4/$5/$6/$7/$8/$9/" | grep -i -e "/-h/" -e "/--help/" -e "//////////" > /dev/null
+    if [ $? == 0 ]; then
+        doc_help
+        return 0
+    fi
+
+    # Look for a virtual environment if needed
+    echo "/$1/$2/$3/$4/$5/$6/$7/$8/$9/" | grep -i -e "/-f/" -e "/--force/"> /dev/null
+    if [ $? == 1 ]; then
+        if [ "$UBUNTU_OS" == "" ]; then
+            # This is not Ubuntu, so look for a virtual environment
+            if [[ -f /usr/lib/IntelAnalytics/virtpy/bin/activate ]]; then
+                ACTIVATE_FILE=/usr/lib/IntelAnalytics/virtpy/bin/activate
+            else
+                ACTIVATE_FILE=/usr/local/virtpy/bin/activate
+            fi
+
+            if [[ -f $ACTIVATE_FILE ]]; then
+                source $ACTIVATE_FILE > /dev/null
+            else
+                echo "Virtual Environment is not installed."
+                echo "Please execute install_pyenv.sh to install."
+                echo "or use the -f/--force flag."
+                return 1
+            fi
+        fi
         USERNAME=$LOGNAME
     fi
-    USERNAME=$LOGNAME
-fi
 
-# Look for packages if the individual is a techwriter
-echo "/$1/$2/$3/$4/$5/$6/$7/$8/$9/" | grep -i "/packages/" > /dev/null
-if [ $? == 0 ]; then
-    # Yes for "packages", check for permissions
-    if [ -f $SCRIPTPATH/$TECHWRITERS ]; then
-        echo $USERNAME | grep -f $SCRIPTPATH/$TECHWRITERS > /dev/null
-        if [ $? == 0 ]; then
-            clear
-            echo Checking the installed packages and insure they are complete.
-            # The packages need superuser rights to install properly.
-            sudo -E $SCRIPTPATH/install_packages.sh
+    # Look for packages if the individual is a techwriter
+    echo "/$1/$2/$3/$4/$5/$6/$7/$8/$9/" | grep -i "/packages/" > /dev/null
+    if [ $? == 0 ]; then
+        # Yes for "packages", check for permissions
+        if [ -f $SCRIPTPATH/$TECHWRITERS ]; then
+            echo $USERNAME | grep -f $SCRIPTPATH/$TECHWRITERS > /dev/null
             if [ $? == 0 ]; then
-                exit 1
+                clear
+                echo Checking the installed packages.
+                # The packages need superuser rights to install properly.
+                sudo -E $SCRIPTPATH/install_packages.sh
+                if [ $? == 1 ]; then
+                    return 1
+                fi
             fi
         fi
     fi
-fi
 
-# Look for buildable
-echo "/$1/$2/$3/$4/$5/$6/$7/$8/$9/" | grep -i -e "/latex/" -e "/pdf/" -e "/txt/" -e "/html/" > /dev/null
-if [ $? == 0 ]; then
-     
-    echo "/$1/$2/$3/$4/$5/$6/$7/$8/$9/" | grep -i "/-s/" > /dev/null
-    if [ $? == 1 ]; then
-        pushd
+    # Look for buildable
+    echo "/$1/$2/$3/$4/$5/$6/$7/$8/$9/" | grep -i -e "/latex/" -e "/pdf/" -e "/txt/" -e "/html/" > /dev/null
+    if [ $? == 0 ]; then
 
-        # Update scala server
-        cd ..
-        mvn compile
-        if [ $? == 1 ]; then
-            exit 1
+        # Start the log file
+        echo "doc run", $(date +%Y%m%d.%H%M), $0 $1 $2 $3 $4 $5 $6 $7 $8 $9 > $LogFile
+
+        # Remove previous doctrees
+        echo "/$1/$2/$3/$4/$5/$6/$7/$8/$9/" | grep -i "/+e/" > /dev/null
+        if [ $? == 0 ]; then
+            if [ -d build/doctrees ]; then
+                log_step "rm -r build/doctrees"
+                rm -r build/doctrees > $TempFile
+                if [ "$?" == "1" ]; then
+                    Err "rm -r build/doctrees"
+                    if [ "$?" == "1" ]; then
+                        return 1
+                    fi
+                else
+                    rm $TempFile
+                fi
+            fi
         fi
-
-        # Update the additional python documentation files
-        cd python
-        python cmdgen.py
+        echo "/$1/$2/$3/$4/$5/$6/$7/$8/$9/" | grep -i "/-s/" > /dev/null
         if [ $? == 1 ]; then
-            echo \n\nTrying the longer path.\n\n
+
+            # Update scala server
             cd ..
-            mvn install clean
-            if [ $? != 0 ]; then
-                exit 1
+            RunCommand="mvn compile"
+            log_step $RunCommand
+            $RunCommand > $TempFile
+            if [ "$?" == "1" ]; then
+                Err $RunCommand
+                if [ "$?" == "1" ]; then
+                    return 1
+                fi
+                read -p "Try 'mvn install clean'? [y|N]" UserResponse
+                if [ "$userResponse" == "Y" ]; then UserResponse="y";fi
+                if [ "$UserResponse" == 'y' ]; then
+                    RunCommand="mvn install clean"
+                    log_step $RunCommand
+                    $RunCommand > $TempFile
+                    if [ "$?" == "1" ]; then
+                        Err $RunCommand
+                        if [ "$?" == "1" ]; then
+                            return 1
+                        fi
+                    else
+                        rm $TempFile
+                    fi
+                fi
+            else
+                rm $TempFile
             fi
+            # Update the additional python documentation files
             cd python
-            python cmdgen.py
-            if [ $? != 0 ]; then
-                exit 1
+            RunCommand="python cmdgen.py"
+            log_step $RunCommand
+            $RunCommand > $TempFile 2>&1
+            if [ "$?" == "1" ]; then
+                Err $RunCommand
+                if [ "$?" == "1" ]; then
+                    return 1
+                fi
+            else
+                rm $TempFile
+            fi
+            # return to original directory to continue
+            cd $SCRIPTPATH
+        fi
+
+        # Look for latex
+        echo "/$1/$2/$3/$4/$5/$6/$7/$8/$9/" | grep -i -e "/latex/" -e "/pdf/" > /dev/null
+        if [ $? == 0 ]; then
+            Format="latex"
+            BuildDirectory="build/$Format"
+            echo "/$1/$2/$3/$4/$5/$6/$7/$8/$9/" | grep -i "/-e/" > /dev/null
+            if [ $? == 1 ]; then
+                if [[ -d $BuildDirectory ]]; then
+                    RunCommand="rm -r $BuildDirectory"
+                    log_step $RunCommand
+                    $RunCommand > $TempFile
+                    if [ "$?" == "1" ]; then
+                        Err $RunCommand
+                        if [ "$?" == "1" ]; then
+                            return 1
+                        fi
+                    else
+                        rm $TempFile
+                    fi
+                fi
+            fi
+            RunCommand="sphinx-build -b $Format source $BuildDirectory"
+            log_step $RunCommand
+            $RunCommand > $TempFile 2>&1
+            if [ "$?" == "1" ]; then
+                Err $RunCommand
+                if [ "$?" == "1" ]; then
+                    return 1
+                fi
+            else
+                rm $TempFile
             fi
         fi
 
-        # return to original directory to continue
-        popd
-    fi
-
-    # Look for latex
-    echo "/$1/$2/$3/$4/$5/$6/$7/$8/$9/" | grep -i -e "/latex/" -e "/pdf/" > /dev/null
-    if [ $? == 0 ]; then
-        echo "/$1/$2/$3/$4/$5/$6/$7/$8/$9/" | grep -i "/-e/" > /dev/null
-        if [ $? == 1 ]; then
-            if [[ -d build/latex ]]; then
-                rm -r build/latex/*
+        # Look for text
+        echo "/$1/$2/$3/$4/$5/$6/$7/$8/$9/" | grep -i "/text/" > /dev/null
+        if [ $? == 0 ]; then
+            Format="text"
+            BuildDirectory="build/$Format"
+            echo "/$1/$2/$3/$4/$5/$6/$7/$8/$9/" | grep -i "/-e/" > /dev/null
+            if [ $? == 1 ]; then
+                if [[ -d $BuildDirectory ]]; then
+                    RunCommand="rm -r $BuildDirectory"
+                    log_step $RunCommand
+                    $RunCommand > $TempFile
+                    if [ "$?" == "1" ]; then
+                        Err $RunCommand
+                        if [ "$?" == "1" ]; then
+                            return 1
+                        fi
+                    else
+                        rm $TempFile
+                    fi
+                fi
+            fi
+            RunCommand="sphinx-build -b $Format source $BuildDirectory"
+            log_step $RunCommand
+            $RunCommand > $TempFile 2>&1
+            if [ "$?" == "1" ]; then
+                Err $RunCommand
+                if [ "$?" == "1" ]; then
+                    return 1
+                fi
+            else
+                rm $TempFile
             fi
         fi
-        # Yes for "latex"
-        make -B latex 2>&1 | grep -v -f toctreeWarnings
-    fi
 
-    # Look for text
-    echo "/$1/$2/$3/$4/$5/$6/$7/$8/$9/" | grep -i "/text/" > /dev/null
-    if [ $? == 0 ]; then
-        echo "/$1/$2/$3/$4/$5/$6/$7/$8/$9/" | grep -i "/-e/" > /dev/null
-        if [ $? == 1 ]; then
-            if [[ -d build/text ]]; then
-                rm -r build/text/*
+        # Look for html
+        echo "/$1/$2/$3/$4/$5/$6/$7/$8/$9/" | grep -i "/html/" > /dev/null
+        if [ $? == 0 ]; then
+            Format="html"
+            BuildDirectory="build/$Format"
+            echo "/$1/$2/$3/$4/$5/$6/$7/$8/$9/" | grep -i "/-e/" > /dev/null
+            if [ $? == 1 ]; then
+                if [[ -d $BuildDirectory ]]; then
+                    RunCommand="rm -r $BuildDirectory"
+                    log_step $RunCommand
+                    $RunCommand > $TempFile
+                    if [ "$?" == "1" ]; then
+                        Err $RunCommand
+                        if [ "$?" == "1" ]; then
+                            return 1
+                        fi
+                    else
+                        rm $TempFile
+                    fi
+                fi
+            fi
+            RunCommand="sphinx-build -b $Format source $BuildDirectory"
+            log_step $RunCommand
+            $RunCommand > $TempFile 2>&1
+            if [ "$?" == "1" ]; then
+                Err $RunCommand
+                if [ "$?" == "1" ]; then
+                    return 1
+                fi
+            else
+                rm $TempFile
             fi
         fi
-        # Yes for "text"
-        make -B text 2>&1 | grep -v -f toctreeWarnings
-    fi
 
-    # Look for html
-    echo "/$1/$2/$3/$4/$5/$6/$7/$8/$9/" | grep -i "/html/" > /dev/null
-    if [ $? == 0 ]; then
-        echo "/$1/$2/$3/$4/$5/$6/$7/$8/$9/" | grep -i "/-e/" > /dev/null
-        if [ $? == 1 ]; then
-            if [[ -d build/html ]]; then
-                rm -r build/html/*
-            fi
-        fi
-        # Ignore all toctree warnings.
-        make -B html 2>&1 | grep -v -f toctreeWarnings
-        if [[ ! -d build/html/_downloads ]]; then
-            mkdir build/html/_downloads
-        fi
-        if [[ -f build/latex/IntelAnalytics.pdf ]]; then
-            cp build/latex/IntelAnalytics.pdf build/html/_downloads/
-        fi
-    fi
-
-    # Look for pdf
-    echo "/$1/$2/$3/$4/$5/$6/$7/$8/$9/" | grep -i -e "/pdf/" > /dev/null
-    if [ $? == 0 ]; then
-        # Yes for "latexpdf"
-        if [[ -f build/latex/IntelAnalytics.tex ]]; then
-            # python fix_latex.py
-            # if [ "$?" == "0" ] ; then
+        # Look for pdf
+        echo "/$1/$2/$3/$4/$5/$6/$7/$8/$9/" | grep -i -e "/pdf/" > /dev/null
+         if [ $? == 0 ]; then
+            if [[ -f build/latex/IntelAnalytics.tex ]]; then
                 cd build/latex
-                make
-                cd ../..
+                for f in $(ls -1 *.tex)
+                do
+                    RunCommand="pdflatex -interaction=scrollmode \"$f\""
+                    $RunCommand > /dev/null # Ignore errors, hope they go away
+                    $RunCommand > /dev/null # Ignore errors, hope they go away
+                    $RunCommand > /dev/null # Ignore errors, hope they go away
+                    RunCommand="makeindex -s python.ist $(basename $f .tex).idx"
+                    log_step $RunCommand
+                    $RunCommand > $TempFile 2>&1
+                    if [ "$?" == "1" ]; then
+                        Err $RunCommand
+                        if [ "$?" == "1" ]; then
+                            return 1
+                        fi
+                    else
+                        rm $TempFile
+                    fi
+                    RunCommand="pdflatex -interaction=scrollmode \"$f\""
+                    $RunCommand > /dev/null # Ignore errors, hope they go away
+                    log_step $RunCommand
+                    $RunCommand > $TempFile 2>&1
+                    if [ "$?" == "1" ]; then
+                        Err $RunCommand
+                        if [ "$?" == "1" ]; then
+                            return 1
+                        fi
+                    else
+                        rm $TempFile
+                    fi
+                    
+                done
+                cd $SCRIPTPATH
                 if [[ -f build/latex/IntelAnalytics.pdf ]]; then
                     if [[ -d build/html/_downloads ]]; then
                         cp build/latex/IntelAnalytics.pdf build/html/_downloads/
                     fi
                 fi
-            # fi
+                # fi
+            fi
         fi
     fi
-fi
 
-echo "/$1/$2/$3/$4/$5/$6/$7/$8/$9/" | grep -i -e "/zip/" > /dev/null
-if [ $? == 0 ]; then
-    echo Zipping Results...
-    zip -q -9 -r intel_analytics_docs build/*
-fi
+    echo "/$1/$2/$3/$4/$5/$6/$7/$8/$9/" | grep -i -e "/zip/" > /dev/null
+    if [ $? == 0 ]; then
+        echo Zipping Results...
+        zip -q -9 -r intel_analytics_docs build/*
+    fi
 
-exit 0
+    return 0
+}
+
+main $1 $2 $3 $4 $5 $6 $7 $8 $9

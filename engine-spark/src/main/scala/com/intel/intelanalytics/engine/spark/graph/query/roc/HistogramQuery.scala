@@ -110,8 +110,8 @@ class HistogramQuery extends SparkCommandPlugin[HistogramParams, HistogramResult
                            |
                            |    posterior_property_list: string (optional)
                            |        Name of the property containing the vector of posterior probabilities.
-                           |        The posterior probabilities are represented in the graph as a delimited list
-                           |        of real values between [0,1], one for each feature dimension.
+                           |        The posterior probabilities are represented in the graph as a delimited
+                           |        list of real values between [0,1], one for each feature dimension.
                            |
                            |    property_type : string (optional)
                            |        The type of property for the prior and posterior values.

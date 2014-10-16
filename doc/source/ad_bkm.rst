@@ -25,20 +25,20 @@ Partitioning
 ============
 
 Rules of thumb
-    Choose a reasonable number of partitions: no smaller than 100, no larger than 10,000 (large cluster)
-        Lower bound: at least 2x number of cores in your cluster
-            Too few partitions results in
-                Less concurrency
-                More susceptible to data skew
-                Increased memory pressure
+*   Choose a reasonable number of partitions: no smaller than 100, no larger than 10,000 (large cluster)
+    *   Lower bound: at least 2x number of cores in your cluster
+        *   Too few partitions results in
+            *   Less concurrency
+            *   More susceptible to data skew
+            *   Increased memory pressure
 
-        Upper bound: ensure your tasks take at least 100ms (if they are going faster, then you are probably spending more time scheduling tasks than
-executing them)
-            Too many partitions results in
-                Time wasted spent scheduling
-                If you choose a number way too high then more time will be spent scheduling than executing
+    *   Upper bound: ensure your tasks take at least 100ms (if they are going faster, then you are probably
+        spending more time scheduling tasks than executing them)
+           *   Too many partitions results in
+               *   Time wasted spent scheduling
+               *   If you choose a number way too high then more time will be spent scheduling than executing
 
-            10,000 would be way too big for a 4 node cluster
+           *   10,000 would be way too big for a 4 node cluster
 
 .. _ad_bkm_ide:
     
@@ -92,6 +92,16 @@ In order to resolve this, follow these instructions:
     #)  Reboot the machine
 
 #)  After all the nodes are rebooted, from CDH Web UI: first stop "Cloudera Management Service", and then stop the CDH.
+
+/var/run/spark/work
+===================
+/var/run/spark/work folders being filled with gigabytes of junk files?
+Create a cron job to delete these files on a periodic basis.
+An example that can be added is::
+
+    00 02 * * * sudo rm -rf /var/run/spark/work/app*
+
+Where the files are deleted eveyday at 2 am.
 
 Spark space concerns
 ====================
