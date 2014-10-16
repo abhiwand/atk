@@ -28,7 +28,8 @@ case class VertexState(gbVertex: GBVertex,
  */
 class PregelBeliefPropagation(val maxIterations: Int,
                               val power: Double = 0.0d,
-                              val smoothing: Double = 2.0d) extends Serializable {
+                              val smoothing: Double = 2.0d,
+                              val convergenceThreshold: Double = 0.0d) extends Serializable {
 
   /**
    * Run belief propagation on a graph.
@@ -43,7 +44,7 @@ class PregelBeliefPropagation(val maxIterations: Int,
     // choose loggers
 
     val initialReporter = new BasicCountsInitialReport[VertexState, Double]
-    val superStepReporter = new AverageDeltaSuperStepReport[VertexState]
+    val superStepReporter = new AverageDeltaSuperStepStatusGenerator[VertexState](convergenceThreshold)
 
     // call  Pregel
 
