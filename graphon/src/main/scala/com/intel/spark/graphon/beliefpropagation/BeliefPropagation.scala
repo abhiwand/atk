@@ -178,6 +178,7 @@ class BeliefPropagation extends SparkCommandPlugin[BeliefPropagationArgs, Belief
         arguments.maxIterations,
         stringOutput = Some(true), // string output is default until the ATK supports Vectors as a datatype in tables
         arguments.stateSpaceSize,
+        arguments.convergenceThreshold,
         arguments.edgeWeightProperty)
 
       val (outVertices, outEdges, log) = BeliefPropagationRunner.run(gbVertices, gbEdges, bpRunnerArgs)

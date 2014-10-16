@@ -29,6 +29,7 @@ class MalformedInputTest extends FlatSpec with Matchers with TestingSparkContext
       edgeWeightProperty = None,
       maxIterations = Some(10),
       stringOutput = None,
+      convergenceThreshold = None,
       posteriorProperty = propertyForLBPOutput)
 
   }

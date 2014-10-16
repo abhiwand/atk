@@ -20,6 +20,7 @@ case class BeliefPropagationRunnerArgs(posteriorProperty: String,
                                        maxIterations: Option[Int],
                                        stringOutput: Option[Boolean],
                                        stateSpaceSize: Int,
+                                       convergenceThreshold: Option[Double],
                                        edgeWeightProperty: Option[String])
 /**
  * Provides a method for running belief propagation on a graph. The result is a new graph with the belief-propagation
@@ -42,6 +43,7 @@ object BeliefPropagationRunner extends Serializable {
     val inputPropertyName: String = args.priorProperty
     val maxIterations: Int = args.maxIterations.getOrElse(BeliefPropagationDefaults.maxIterationsDefault)
     val beliefsAsStrings = args.stringOutput.getOrElse(BeliefPropagationDefaults.stringOutputDefault)
+    val convergenceThreshold = args.convergenceThreshold.getOrElse(BeliefPropagationDefaults.convergenceThreshold)
     val stateSpaceSize = args.stateSpaceSize
 
     val defaultEdgeWeight = BeliefPropagationDefaults.edgeWeightDefault
@@ -59,7 +61,7 @@ object BeliefPropagationRunner extends Serializable {
 
     val graph = Graph[VertexState, Double](graphXVertices, graphXEdges)
 
-    val graphXLBPRunner = new PregelBeliefPropagation(maxIterations, power, smoothing)
+    val graphXLBPRunner = new PregelBeliefPropagation(maxIterations, power, smoothing, convergenceThreshold)
     val (newGraph, log) = graphXLBPRunner.run(graph)
 
     val outVertices = newGraph.vertices.map({
@@ -120,7 +122,7 @@ object BeliefPropagationRunner extends Serializable {
     }
     val posterior = VectorMath.l1Normalize(prior)
 
-    VertexState(gbVertex, messages = Map(), prior, posterior, delta = 0.0d)
+    VertexState(gbVertex, messages = Map(), prior, posterior, delta = Double.PositiveInfinity)
 
   }
 
