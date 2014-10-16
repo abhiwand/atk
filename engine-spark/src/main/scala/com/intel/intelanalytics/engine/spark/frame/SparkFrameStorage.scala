@@ -65,7 +65,10 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
                         val metaStore: SlickMetaStoreComponent#SlickMetaStore,
                         sparkAutoPartitioner: SparkAutoPartitioner,
                         getContext: (UserPrincipal) => SparkContext)
-    extends FrameStorage[FrameRDD, SparkContext] with EventLogging with ClassLoaderAware {
+    extends FrameStorage with EventLogging with ClassLoaderAware {
+
+  override type Context = SparkContext
+  override type Data = FrameRDD
 
   def exchangeNames(frame1: DataFrame, frame2: DataFrame): Unit = {
     metaStore.withTransaction("SFS.exchangeNames") { implicit txn =>

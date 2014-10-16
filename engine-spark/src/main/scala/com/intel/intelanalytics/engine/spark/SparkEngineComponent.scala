@@ -48,7 +48,7 @@ import com.intel.event.EventLogging
  * Main class for initializing the Spark Engine
  */
 class SparkComponent extends EngineComponent
-    with FrameComponent[FrameRDD, SparkContext]
+    with FrameComponent
     with GraphComponent
     with CommandComponent
     with DbProfileComponent

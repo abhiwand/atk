@@ -37,33 +37,14 @@ import com.intel.intelanalytics.security.UserPrincipal
 import scala.concurrent.Future
 
 trait Engine {
-  /**
-   * What data type is used to represent data for frames, etc.?
-   *
-   * e.g. for Spark this would be FrameRDD
-   */
-  type Data
-
-  /**
-   * What data type is used to represent any ambient context that operations need to have available?
-   *
-   * e.g. for Spark this would be SparkContext.
-   */
-  type Context
 
   type Identifier = Long //TODO: make more generic?
+
   val pageSize: Int
 
-  val frames: FrameStorage[Data, Context]
+  val frames: FrameStorage
 
   val graphs: GraphStorage
-
-//  /**
-//   * The supported entity types in the system
-//   */
-//  def entities: Seq[Entity]
-//
-//  def create[E <: Entity](): E#Reference
 
   /**
    * Executes the given command template, managing all necessary auditing, contexts, class loaders, etc.

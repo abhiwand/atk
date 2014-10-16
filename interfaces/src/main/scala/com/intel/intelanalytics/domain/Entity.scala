@@ -31,6 +31,26 @@ package com.intel.intelanalytics.domain
  */
 case class EntityName(name: String, plural: String)
 
+trait HasMetaData {
+  type MetaData
+  def meta: MetaData
+}
+
+class NoMetaData extends HasMetaData {
+  override type MetaData = Unit
+  val meta = ()
+}
+
+trait HasData extends HasMetaData {
+  type Data
+  def data: Data
+}
+
+class NoData extends NoMetaData with HasData {
+  override type Data = Unit
+  val data = ()
+}
+
 /**
  * Entities in the system, things which can be named in URIs and other identifiers.
  *
@@ -51,5 +71,25 @@ trait Entity {
    * but not generally used for constructing outgoing responses.
    */
   def alternatives: Seq[EntityName] = Seq()
+
 }
 
+/**
+ * Additional functionality for Entities to allow creation (of placeholders) and retrieval of entities'
+ * metadata and data.
+ */
+trait EntityManagement extends Entity { self =>
+
+  type MetaData <: Reference with HasMetaData
+
+  type Data <: MetaData with HasData
+
+  def create(): Reference
+
+  def getReference(id: Long): Reference
+
+  def getMetaData(reference: Reference): MetaData
+
+  def getData(reference: Reference): Data
+
+}
