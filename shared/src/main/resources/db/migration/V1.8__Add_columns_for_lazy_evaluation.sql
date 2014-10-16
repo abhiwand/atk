@@ -21,7 +21,7 @@ ALTER TABLE frame ADD COLUMN storage_format TEXT NULL;
 
 ALTER TABLE frame ADD COLUMN storage_uri TEXT NULL;
 
-UPDATE TABLE frame SET storage_format = 'file/parquet', storage_uri = frame.Id + '/rev' + frame.revision;
+UPDATE frame SET storage_format = 'file/parquet', storage_uri = frame.frame_id || '/rev' || frame.revision;
 
 ALTER TABLE frame DROP COLUMN revision;
 

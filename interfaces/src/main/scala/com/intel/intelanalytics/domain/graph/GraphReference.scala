@@ -23,7 +23,7 @@
 
 package com.intel.intelanalytics.domain.graph
 
-import com.intel.intelanalytics.domain.{ ReferenceResolver, UriReference, Entity, EntityName }
+import com.intel.intelanalytics.domain._
 
 class GraphReference(graphId: Long, graphExists: Option[Boolean] = None) extends UriReference {
   /** The entity type */
@@ -41,12 +41,27 @@ class GraphReference(graphId: Long, graphExists: Option[Boolean] = None) extends
 
 }
 
-object GraphReference extends Entity {
+object GraphReference extends EntityManagement { self =>
+
 
   //Default resolver that simply creates a reference, with no guarantee that it is valid.
-  ReferenceResolver.register(this, id => GraphReference(id, None))
+  EntityRegistry.register[self.type](this)
 
   def name = EntityName("graph", "graphs")
 
   def apply(graphId: Long, graphExists: Option[Boolean] = None) = new GraphReference(graphId, graphExists)
+
+  override type MetaData = Reference with NoMetaData
+
+  override def getData(reference: Reference): Data = ???
+
+  override def getMetaData(reference: Reference): GraphReference.MetaData = ???
+
+  override def create(): Reference = ???
+
+  override def getReference(id: Long): Reference = ???
+
+  override type Data = Reference with NoData
+
+  override type Reference = GraphReference
 }

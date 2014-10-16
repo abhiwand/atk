@@ -28,7 +28,10 @@ import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 import com.intel.intelanalytics.engine.Rows._
 import com.intel.intelanalytics.security.UserPrincipal
 
-trait FrameStorage[Data, Context] {
+trait FrameStorage {
+
+  type Context
+  type Data
 
   def expectFrame(frameId: Long): DataFrame
   def expectFrame(frameRef: FrameReference): DataFrame
