@@ -9,9 +9,9 @@ Virtual Machines
 Introduction
 ------------
 
-Thank you for your interest in the Intel Analytics Toolkit 0.8 beta.
-This guide will walk you through the download and import of the Intel Analytics beta.
-Currently the Intel Analytics toolkit VM only supports `Virtual Box <https://www.virtualbox.org/>`_.
+Thank you for your interest in the |IA| Toolkit 0.8 beta.
+This guide will walk you through the download and import of the |IA| beta.
+Currently the |IA| toolkit VM only supports `Virtual Box <https://www.virtualbox.org/>`_.
 We will not cover the installation of Virtual Box.
 Virtual Box supports many platforms and can be `downloaded for free <https://www.virtualbox.org/wiki/Downloads>`_.
 The installation documentation is also
@@ -112,7 +112,7 @@ Select your .ovf file extracted from the vm image earlier
 
 .. figure:: ad_inst_vm_02.*
  
-Import Intel Analytics VM
+Import |IA| VM
 
 .. figure:: ad_inst_vm_03.*
  
@@ -124,9 +124,9 @@ Once the VM is imported go ahead and boot the VM by selecting the VM and clickin
 
 .. figure:: ad_inst_vm_05.*
  
---------------------------------
-Running Intel Analytics VM image
---------------------------------
+---------------------
+Running |IA| VM image
+---------------------
 
 Before you start
 ================
@@ -145,7 +145,7 @@ All it means is that the service wasn't running before it was told to stop.
 Using Sample Scripts
 ====================
 
-The VM is pre-configured and installed with |IA| toolkit.
+The VM is pre-configured and installed with the |IA| toolkit.
 It has several examples and datasets to get you started as soon as the VM is booted.
 
 The examples are located in '/home/cloudera/examples'.

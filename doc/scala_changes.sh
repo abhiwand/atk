@@ -19,12 +19,6 @@ chmod +x $w/set_path.sh
 if [ ! -e $d ]; then
 
     # Get the name of the most recent listing file.
-#    if [ -f "$w/*.lst" ]; then
-#        ls -1 $w/*.lst 2>/dev/null > $d
-#        f=$(tail -n 1 $d)
-#    else
-#        f=""
-#    fi
     f=""
     for g in $w/*.lst
     do

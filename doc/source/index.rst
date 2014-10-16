@@ -1,6 +1,6 @@
-=======================
-Intel Analytics Toolkit
-=======================
+============
+|IA| Toolkit
+============
 
 .. toctree::
     :maxdepth: 2
@@ -32,3 +32,5 @@ References
     ia_legal
 
 .. TODOLIST::
+
+.. |IA| replace:: Intel Analytics
