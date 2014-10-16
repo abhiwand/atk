@@ -14,7 +14,7 @@ csv_file = CsvFile(dataset, schema, skip_header_lines=1)
 
 print "Building data frame"
 
-frame = BigFrame(csv_file)
+frame = Frame(csv_file)
 
 print "Done building data frame"
 
@@ -26,11 +26,11 @@ user = VertexRule("user_id", frame.user_id, {"vertex_type": "L"})
 
 movie = VertexRule("movie_id", frame.movie_id, {"vertex_type": "R"})
 
-rates = EdgeRule("edge", user, movie, {"splits": frame.splits, "rating": frame.rating})
+rates = EdgeRule("edge", user, movie, {"splits": frame.splits, "rating": frame.rating}, bidirectional=True)
 
 print "Creating Graph als"
 
-g = BigGraph([user, movie, rates], "als")
+g = TitanGraph([user, movie, rates], "als")
 
 print "Running Alternating Least Squares on Graph als"
 
