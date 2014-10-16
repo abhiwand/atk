@@ -11,7 +11,8 @@ object IATPregel {
    * Implements Pregel-like BSP message passing. It is the GraphX implementation of Pregel extended with richer logging.
    *
    * @param graph The graph on which to run the Pregel program. A GraphX graph.
-   * @param initialMsg The initial message to be sent to every vertex at the start of the computation.
+   * @param initialMsg  Option. The initial message to be sent to every vertex at the start of the computation.
+   *                    If it is none, no initial broadcast will be made.
    * @param initialReportGenerator Function that creates the initial summary of vertex and edge data for the log.
    * @param superStepStatusGenerator Function that creates the per-superstep report for the log. It consumes only vertex
    *                                 data because Pregel programs do not modify edge data.
@@ -41,13 +42,15 @@ object IATPregel {
    * @return Pair of GraphX graph (with updated values) and log string.
    */
   def apply[VertexData: ClassTag, EdgeData: ClassTag, Message: ClassTag](graph: Graph[VertexData, EdgeData],
-                                                                         initialMsg: Message,
+                                                                         initialMsg: Option[Message],
                                                                          initialReportGenerator: InitialReport[VertexData, EdgeData],
                                                                          superStepStatusGenerator: SuperStepStatusGenerator[VertexData],
                                                                          maxIterations: Int = Int.MaxValue,
                                                                          activeDirection: EdgeDirection = EdgeDirection.Either)(vprog: (VertexId, VertexData, Message) => VertexData,
                                                                                                                                 sendMsg: EdgeTriplet[VertexData, EdgeData] => Iterator[(VertexId, Message)],
+
                                                                                                                                 mergeMsg: (Message, Message) => Message): (Graph[VertexData, EdgeData], String) = {
+
     val vdataRDD: RDD[VertexData] = graph.vertices.map({ case (vid, vdata) => vdata })
     val edataRDD: RDD[EdgeData] = graph.edges.map({ case e: Edge[EdgeData] => e.attr })
 
@@ -55,53 +58,72 @@ object IATPregel {
 
     var log = new StringBuilder(initialReport)
 
-    var g = graph.mapVertices((vid, vdata) => vprog(vid, vdata, initialMsg)).cache()
+    if (maxIterations <= 0) {
+      log.++=("IATPregel executed no iterations. Requested max iterations == " + maxIterations)
+      (graph, log.toString)
+    }
+    else {
 
-    // compute the messages
-    var messages = g.mapReduceTriplets(sendMsg, mergeMsg)
-    var activeMessages = messages.count()
+      var g = if (initialMsg.nonEmpty) {
+        graph.mapVertices((vid, vdata) => vprog(vid, vdata, initialMsg.get)).cache()
+      }
+      else {
+        graph.cache()
+      }
 
-    // Loop
-    var prevG: Graph[VertexData, EdgeData] = null
-    var i = 1
+      // loop
+      var i = 1
 
-    val status = superStepStatusGenerator.generateSuperStepStatus(i, g.vertices.map({ case (vid, vdata) => vdata }))
-    var earlyTermination = status.earlyTermination
+      // compute the messages
+      var messages = g.mapReduceTriplets(sendMsg, mergeMsg)
+      var activeMessages = messages.count()
 
-    while (activeMessages > 0 && i < maxIterations && !earlyTermination) {
-      // Receive the messages. Vertices that didn't get any messages do not appear in newVerts.
-      val newVerts = g.vertices.innerJoin(messages)(vprog).cache()
-      // Update the graph with the new vertices.
-      prevG = g
-      g = g.outerJoinVertices(newVerts) { (vid, old, newOpt) => newOpt.getOrElse(old) }
-      g.cache()
-
-      val oldMessages = messages
-      // Send new messages. Vertices that didn't get any messages don't appear in newVerts, so don't
-      // get to send messages. We must cache messages so it can be materialized on the next line,
-      // allowing us to uncache the previous iteration.
-      messages = g.mapReduceTriplets(sendMsg, mergeMsg, Some((newVerts, activeDirection))).cache()
-      // The call to count() materializes `messages`, `newVerts`, and the vertices of `g`. This
-      // hides oldMessages (depended on by newVerts), newVerts (depended on by messages), and the
-      // vertices of prevG (depended on by newVerts, oldMessages, and the vertices of g).
-      activeMessages = messages.count()
+      var prevG: Graph[VertexData, EdgeData] = null
 
       val status = superStepStatusGenerator.generateSuperStepStatus(i, g.vertices.map({ case (vid, vdata) => vdata }))
       log.++=(status.log)
-      earlyTermination = status.earlyTermination
+      var earlyTermination = status.earlyTermination
 
-      // Unpersist the RDDs hidden by newly-materialized RDDs
-      oldMessages.unpersist(blocking = false)
-      newVerts.unpersist(blocking = false)
-      prevG.unpersistVertices(blocking = false)
-      prevG.edges.unpersist(blocking = false)
-      // count the iteration
-      i += 1
-    }
+      while (activeMessages > 0 && i < maxIterations && !earlyTermination) {
 
-    (g, log.toString())
-  } // end of apply
+        // Receive the messages. Vertices that didn't get any messages do not appear in newVerts.
+        val newVerts = g.vertices.innerJoin(messages)(vprog).cache()
+        // Update the graph with the new vertices.
+        prevG = g
+        g = g.outerJoinVertices(newVerts) { (vid, old, newOpt) => newOpt.getOrElse(old) }
+        g.cache()
 
+        val oldMessages = messages
+        // Send new messages. Vertices that didn't get any messages don't appear in newVerts, so don't
+        // get to send messages. We must cache messages so it can be materialized on the next line,
+        // allowing us to uncache the previous iteration.
+        messages = g.mapReduceTriplets(sendMsg, mergeMsg, Some((newVerts, activeDirection))).cache()
+        // The call to count() materializes `messages`, `newVerts`, and the vertices of `g`. This
+        // hides oldMessages (depended on by newVerts), newVerts (depended on by messages), and the
+        // vertices of prevG (depended on by newVerts, oldMessages, and the vertices of g).
+        activeMessages = messages.count()
+
+        // Unpersist the RDDs hidden by newly-materialized RDDs
+
+        oldMessages.unpersist(blocking = false)
+        newVerts.unpersist(blocking = false)
+        prevG.unpersistVertices(blocking = false)
+        prevG.edges.unpersist(blocking = false)
+        // count the iteration
+        i += 1
+
+        // update the status
+
+        val status = superStepStatusGenerator.generateSuperStepStatus(i, g.vertices.map({ case (vid, vdata) => vdata }))
+        log.++=(status.log)
+        earlyTermination = status.earlyTermination
+      }
+
+      log.++=("\nTotal number of iterations: " + i)
+
+      (g, log.toString())
+    } // end of apply
+  }
 }
 
 // end of class IATPregel

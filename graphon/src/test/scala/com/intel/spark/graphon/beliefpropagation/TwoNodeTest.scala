@@ -31,6 +31,7 @@ class TwoNodeTest extends FlatSpec with Matchers with TestingSparkContextFlatSpe
       edgeWeightProperty = None,
       maxIterations = Some(10),
       stringOutput = None,
+      convergenceThreshold = None,
       posteriorProperty = propertyForLBPOutput)
 
   }

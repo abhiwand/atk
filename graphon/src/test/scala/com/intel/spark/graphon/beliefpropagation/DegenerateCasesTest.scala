@@ -30,6 +30,7 @@ class DegenerateCasesTest extends FlatSpec with Matchers with TestingSparkContex
       edgeWeightProperty = None,
       maxIterations = Some(10),
       stringOutput = None,
+      convergenceThreshold = None,
       posteriorProperty = propertyForLBPOutput)
 
   }

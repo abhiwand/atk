@@ -32,6 +32,7 @@ class TreesTest extends FlatSpec with Matchers with TestingSparkContextFlatSpec 
       edgeWeightProperty = None,
       maxIterations = Some(10),
       stringOutput = None,
+      convergenceThreshold = None,
       posteriorProperty = propertyForLBPOutput)
 
   }

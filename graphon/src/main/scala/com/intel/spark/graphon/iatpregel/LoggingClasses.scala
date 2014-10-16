@@ -70,10 +70,15 @@ class AverageDeltaSuperStepStatusGenerator[V <: DeltaProvider](val convergenceTh
 
     val status = vertices.map(v => convertVertexDataToStatus(v)).fold(emptyStatus)(accumulateSuperStepStatus)
 
-    val earlyTermination = (status.sumOfDeltas / status.vertexCount) < convergenceThreshold
+    val earlyTermination = (status.sumOfDeltas / status.vertexCount) <= convergenceThreshold
 
-    val log = "IATPregel engine has completed iteration " + iteration + "  " +
-      "The average delta is " + (status.sumOfDeltas / status.vertexCount + "\n")
+    val log = if (status.sumOfDeltas.isInfinite) {
+      "IATPregel engine has completed iteration " + iteration + "\n"
+    }
+    else {
+      "IATPregel engine has completed iteration " + iteration + "  " +
+        "The average delta is " + (status.sumOfDeltas / status.vertexCount) + "\n"
+    }
 
     SupertepStatus(log, earlyTermination)
   }

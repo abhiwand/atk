@@ -27,9 +27,9 @@ case class VertexState(gbVertex: GBVertex,
  * @param smoothing Smoothing parameter used in the potential function
  */
 class PregelBeliefPropagation(val maxIterations: Int,
-                              val power: Double = 0.0d,
-                              val smoothing: Double = 2.0d,
-                              val convergenceThreshold: Double = 0.0d) extends Serializable {
+                              val power: Double,
+                              val smoothing: Double,
+                              val convergenceThreshold: Double) extends Serializable {
 
   /**
    * Run belief propagation on a graph.
@@ -49,7 +49,7 @@ class PregelBeliefPropagation(val maxIterations: Int,
     // call  Pregel
 
     IATPregel(graph,
-      Map().asInstanceOf[Map[Long, Vector[Double]]],
+      None.asInstanceOf[Option[Map[Long, Vector[Double]]]],
       initialReporter,
       superStepReporter,
       maxIterations = maxIterations,
