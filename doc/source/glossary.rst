@@ -36,7 +36,7 @@ Glossary
     Alternating Least Squares
 
         The "Alternating Least Squares with Bias for collaborative filtering algorithms" is an algorithm used by the
-        Intel Analytics Toolkit.
+        |IA| Toolkit.
 
         For more information see:
 
@@ -204,7 +204,7 @@ Glossary
     Conjugate Gradient Descent
 
         The Congugate Gradient Descent with Bias for Collaborative Filtering algorithm is an algorithm
-        used by the Intel Analytics Toolkit.
+        used by the |IA| Toolkit.
 
         For more information: `Factorization Meets the Neighborhood (pdf)`_ (see equation 5).
 
@@ -865,3 +865,5 @@ Glossary
 .. [#f11] Weiss, Yair; Freeman, William T. (October 2001). "Correctness of Belief Propagation in Gaussian
     Graphical Models of Arbitrary Topology". Neural Computation 13 (10): 2173–2200.
     doi:10.1162/089976601750541769. PMID 11570995.
+
+.. |IA| replace:: Intel Analytics

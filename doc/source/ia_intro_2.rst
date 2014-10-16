@@ -5,7 +5,7 @@
 .. contents:: Table of Contents
     :local:
 
-This section describes the capabilities of the 0.8 version of the Intel Analytics Toolkit,
+This section describes the capabilities of the 0.8 version of the |IA| Toolkit,
 :math:`-` in particular the graph analytics capabilities.
 Other functionality referenced in the :doc:`ia_intro_1` section
 (like :ref:`Unified_Graph_and_Entity_Analytics`) will be added in a future release.
@@ -13,7 +13,7 @@ Other functionality referenced in the :doc:`ia_intro_1` section
 Data Import, Data Cleaning, and Feature Engineering
 ===================================================
 
-The Intel Analytics Toolkit provides a baseline set of capabilities for importing data into the framework.
+The |IA| Toolkit provides a baseline set of capabilities for importing data into the framework.
 This enables data scientists to operate on the data using the friendlier “Big Data Frame” concept,
 referenced through Python API documentation laid out in a familiar fashion.
 All functionality is performed on the cluster, at scale,
@@ -40,7 +40,7 @@ Graph Construction
 
 To use graph tools, such as graph databases, graph analytics and :term:`machine learning`,
 or graph visualization, data must first be structured into a network of vertices and edges.
-The Intel Analytics Toolkit makes this process simple, through pre-built routines for assembling data sets
+The |IA| Toolkit makes this process simple, through pre-built routines for assembling data sets
 of all sizes into graphs, using cluster computing for high-throughput.
 
 The toolkit supports flexibility of graph data structures, including fully flexible graphs with arbitrary edges and
@@ -56,13 +56,13 @@ the properly-formed graph using the computing cluster for fast throughput.
 For further details about building graphs, see :ref:`ds_dflw_building_a_graph`.
 In this process, duplicate edges are removed if data is incorrectly replicated, and the graph is checked for
 correct form, to eliminate presence of mal-connected edges that can prevent analytic algorithms from operating.
-The final graph is bulk-loaded into the Intel Analytics Toolkit’s graph database.
+The final graph is bulk-loaded into the |IA| Toolkit’s graph database.
 Additionally, existing graphs can be updated using the graph construction routines.   
 
 Modeling Set Preparation
 ========================
 
-The Intel Analytics Toolkit provides capabilities to subset the data into modeling sets
+The |IA| Toolkit provides capabilities to subset the data into modeling sets
 using built-in methods to sample graph data while preserving key structural properties of the graph,
 or generating a graph data set with weighted edges.
 Additionally, data-splitting capabilities allow for designating test, training, and validation sets.  
@@ -70,7 +70,7 @@ Additionally, data-splitting capabilities allow for designating test, training, 
 Graph Query and Traversal Using (Graph Database)
 ================================================
 
-The Intel Analytics Toolkit includes fully-scalable graph capabilities that support full flexibility including
+The |IA| Toolkit includes fully-scalable graph capabilities that support full flexibility including
 user-defined edge and vertex types.
 Developers can take advantage of this powerful, scalable graph to develop applications using
 :term:`transactional functionality`, which includes adding new vertices and edges, sorting, searching,
@@ -97,7 +97,7 @@ simplifying the development of applications by reducing the need to query multip
 Graph Analytics and Machine Learning
 ====================================
 
-The Intel Analytics Toolkit provides a suite of graph algorithms that make it easy to apply collaborative
+The |IA| Toolkit provides a suite of graph algorithms that make it easy to apply collaborative
 :term:`clustering`, :term:`classification`, :term:`collaborative filtering`, :term:`belief propagation`,
 and :term:`topic modeling`, in addition to common graph statistical calculations.
 Each is easy to invoke using the Python environment and parameters for the desired algorithm configuration.
@@ -224,3 +224,5 @@ be present on the server nodes.
     Vertex degree distribution: ---------  (Not yet exposed in Python ... used internally)
     Shortest path from a vertex to all other vertices: Not yet supported
     Centrality / PageRank: ---------  graph.ml.page_rank
+
+.. |IA| replace:: Intel Analytics
