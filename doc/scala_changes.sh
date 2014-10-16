@@ -7,20 +7,29 @@
 s=CommandDoc\(oneLineSummary
 
 # First make sure the comparison directory exists. The data files will go here.
-w=~/commanddoc
+w=.CommandDoc
 if [ ! -d $w ]; then mkdir $w; fi
 
 # Now create a (hopefully) new file name and make it accessable as a variable
 d=$w/$(date +%Y%m%d-%H%M).lst
-echo "echo $d" > scala_changes
-chmod +x scala_changes
+echo "echo $d" > $w/set_path.sh
+chmod +x $w/set_path.sh
 
 # If the file already exists, then it is too soon to check again.
 if [ ! -e $d ]; then
 
     # Get the name of the most recent listing file.
-    ls -1 $w/*.lst 2>/dev/null > $d
-    f=$(tail -n 1 $d)
+#    if [ -f "$w/*.lst" ]; then
+#        ls -1 $w/*.lst 2>/dev/null > $d
+#        f=$(tail -n 1 $d)
+#    else
+#        f=""
+#    fi
+    f=""
+    for g in $w/*.lst
+    do
+        f=$g
+    done
 
     # Create a new listing file with the date of any scala file with python docstrings.
     echo "Current Listing;" > $d
