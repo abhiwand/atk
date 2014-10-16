@@ -87,8 +87,8 @@ class ColumnMedianPlugin extends SparkCommandPlugin[ColumnMedian, ColumnMedianRe
                            |        so a column of Longs will result in a Long median and a column of
                            |        Floats will result in a Float median.
                            |
-                           |    Example
-                           |    -------
+                           |    Examples
+                           |    --------
                            |    ::
                            |
                            |        median = frame.column_median('middling column')

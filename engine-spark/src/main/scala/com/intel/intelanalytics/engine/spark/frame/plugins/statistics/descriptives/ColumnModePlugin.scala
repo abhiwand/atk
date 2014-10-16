@@ -111,8 +111,8 @@ class ColumnModePlugin extends SparkCommandPlugin[ColumnMode, ColumnModeReturn] 
                            |                In the case that the data is very multimodal, this number may
                            |                well exceed max_number_of_modes_returned.
                            |
-                           |    Example
-                           |    -------
+                           |    Examples
+                           |    --------
                            |    >>> mode = frame.column_mode('modum columpne')
                            |
                             """)))
