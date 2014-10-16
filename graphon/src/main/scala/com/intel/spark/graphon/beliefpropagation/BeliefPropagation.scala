@@ -27,6 +27,8 @@ import com.intel.graphbuilder.util.SerializableBaseConfiguration
  * @param posteriorProperty Name of the property to which posterior beliefs will be stored.
  * @param edgeWeightProperty Optional String. Name of the property on edges that stores the edge weight.
  *                           If none is supplied, edge weights default to 1.0
+ * @param convergenceThreshold Optional Double. BP will terminate when average change in posterior beliefs between
+ *                             supersteps drop below this threshold. Defaults to 0.
  * @param maxIterations Optional integer. The maximum number of iterations of message passing that will be invoked.
  *                      Defaults to 20.
  */
@@ -35,6 +37,7 @@ case class BeliefPropagationArgs(graph: GraphReference,
                                  posteriorProperty: String,
                                  stateSpaceSize: Int,
                                  edgeWeightProperty: Option[String] = None,
+                                 convergenceThreshold: Option[Double] = None,
                                  maxIterations: Option[Int] = None)
 
 /**
@@ -46,6 +49,7 @@ object BeliefPropagationDefaults {
   val edgeWeightDefault = 1.0d
   val powerDefault = 0d
   val smoothingDefault = 2.0d
+  val convergenceThreshold = 0d
 }
 
 /**
@@ -59,7 +63,7 @@ case class BeliefPropagationResult(log: String, time: Double)
 /** Json conversion for arguments and return value case classes */
 object BeliefPropagationJsonFormat {
   import DomainJsonProtocol._
-  implicit val BPFormat = jsonFormat6(BeliefPropagationArgs)
+  implicit val BPFormat = jsonFormat7(BeliefPropagationArgs)
   implicit val BPResultFormat = jsonFormat2(BeliefPropagationResult)
 }
 
@@ -105,6 +109,9 @@ class BeliefPropagation extends SparkCommandPlugin[BeliefPropagationArgs, Belief
         The edge property that contains the edge weight for each edge. The default edge weight is 1 if this
         option is not specified.
 
+    convergence_threshold :  Double (optional)
+        BP will terminate when average change in posterior beliefs between supersteps drop below this threshold.
+        Defaults to 0.
 
     max_iterations : Integer (optional)
         The maximum number of super steps that the algorithm will execute.

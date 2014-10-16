@@ -13,7 +13,7 @@ object IATPregel {
    * @param graph The graph on which to run the Pregel program. A GraphX graph.
    * @param initialMsg The initial message to be sent to every vertex at the start of the computation.
    * @param initialReportGenerator Function that creates the initial summary of vertex and edge data for the log.
-   * @param superStepReportGenerator Function that creates the per-superstep report for the log. It consumes only vertex
+   * @param superStepStatusGenerator Function that creates the per-superstep report for the log. It consumes only vertex
    *                                 data because Pregel programs do not modify edge data.
    * @param maxIterations The maximum number of supersteps that can be executed in this run.
    * @param activeDirection The direction of edges incident to a vertex that received a message in
@@ -43,7 +43,7 @@ object IATPregel {
   def apply[VertexData: ClassTag, EdgeData: ClassTag, Message: ClassTag](graph: Graph[VertexData, EdgeData],
                                                                          initialMsg: Message,
                                                                          initialReportGenerator: InitialReport[VertexData, EdgeData],
-                                                                         superStepReportGenerator: SuperStepReport[VertexData],
+                                                                         superStepStatusGenerator: SuperStepStatusGenerator[VertexData],
                                                                          maxIterations: Int = Int.MaxValue,
                                                                          activeDirection: EdgeDirection = EdgeDirection.Either)(vprog: (VertexId, VertexData, Message) => VertexData,
                                                                                                                                 sendMsg: EdgeTriplet[VertexData, EdgeData] => Iterator[(VertexId, Message)],
@@ -65,7 +65,10 @@ object IATPregel {
     var prevG: Graph[VertexData, EdgeData] = null
     var i = 1
 
-    while (activeMessages > 0 && i < maxIterations) {
+    val status = superStepStatusGenerator.generateSuperStepStatus(i, g.vertices.map({ case (vid, vdata) => vdata }))
+    var earlyTermination = status.earlyTermination
+
+    while (activeMessages > 0 && i < maxIterations && !earlyTermination) {
       // Receive the messages. Vertices that didn't get any messages do not appear in newVerts.
       val newVerts = g.vertices.innerJoin(messages)(vprog).cache()
       // Update the graph with the new vertices.
@@ -83,7 +86,9 @@ object IATPregel {
       // vertices of prevG (depended on by newVerts, oldMessages, and the vertices of g).
       activeMessages = messages.count()
 
-      log.++=(superStepReportGenerator.generateSuperStepReport(i, g.vertices.map({ case (vid, vdata) => vdata })))
+      val status = superStepStatusGenerator.generateSuperStepStatus(i, g.vertices.map({ case (vid, vdata) => vdata }))
+      log.++=(status.log)
+      earlyTermination = status.earlyTermination
 
       // Unpersist the RDDs hidden by newly-materialized RDDs
       oldMessages.unpersist(blocking = false)

@@ -1,6 +1,7 @@
 package com.intel.spark.graphon.iatpregel
 
 import org.apache.spark.rdd.RDD
+import akka.dispatch.sysmsg.Failed
 
 /**
  * Provides a method for creating an initial report that summarizes vertex and edge counts.
@@ -48,7 +49,8 @@ case class SuperStepCountNetDelta(vertexCount: Long, sumOfDeltas: Double) extend
  * @tparam V Class of the vertex data.
  */
 
-class AverageDeltaSuperStepReport[V <: DeltaProvider] extends SuperStepReport[V] with Serializable {
+class AverageDeltaSuperStepStatusGenerator[V <: DeltaProvider](val convergenceThreshold: Double)
+    extends SuperStepStatusGenerator[V] with Serializable {
 
   private def accumulateSuperStepStatus(status1: SuperStepCountNetDelta, status2: SuperStepCountNetDelta) = {
     new SuperStepCountNetDelta(status1.vertexCount + status2.vertexCount, status1.sumOfDeltas + status2.sumOfDeltas)
@@ -62,12 +64,18 @@ class AverageDeltaSuperStepReport[V <: DeltaProvider] extends SuperStepReport[V]
    * @param vertices RDD of the per-vertex data.
    * @return Summary of the vertex count and average change per vertex since the last superstep.
    */
-  def generateSuperStepReport(iteration: Int, vertices: RDD[V]) = {
+  def generateSuperStepStatus(iteration: Int, vertices: RDD[V]) = {
 
-    val status = vertices.map(v => convertVertexDataToStatus(v)).reduce(accumulateSuperStepStatus)
+    val emptyStatus = SuperStepCountNetDelta(0, 0)
 
-    "IATPregel engine has completed iteration " + iteration + "  " +
+    val status = vertices.map(v => convertVertexDataToStatus(v)).fold(emptyStatus)(accumulateSuperStepStatus)
+
+    val earlyTermination = (status.sumOfDeltas / status.vertexCount) < convergenceThreshold
+
+    val log = "IATPregel engine has completed iteration " + iteration + "  " +
       "The average delta is " + (status.sumOfDeltas / status.vertexCount + "\n")
+
+    SupertepStatus(log, earlyTermination)
   }
 
 }
