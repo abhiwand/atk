@@ -117,8 +117,8 @@ class LatentDirichletAllocation
                            |        The hyper-parameter for document-specific distribution over topics.
                            |        It's mainly used as a smoothing parameter in Bayesian inference.
                            |        Larger value implies that documents are assumed to cover all topics
-                           |        more uniformly; smaller value implies that documents are more concentrated
-                           |        on a small subset of topics.
+                           |        more uniformly; smaller value implies that documents are more
+                           |        concentrated on a small subset of topics.
                            |        Valid value range is all positive float.
                            |        The default value is 0.1.
                            | 
@@ -140,7 +140,8 @@ class LatentDirichletAllocation
                            | 
                            |    evaluate_cost : string (optional)
                            |        "True" means turn on cost evaluation and "False" means turn off
-                           |        cost evaluation. It's relatively expensive for LDA to evaluate cost function.
+                           |        cost evaluation.
+                           |        It's relatively expensive for LDA to evaluate cost function.
                            |        For time-critical applications, this option allows user to turn off cost
                            |        function evaluation.
                            |        The default value is False.
@@ -176,7 +177,8 @@ class LatentDirichletAllocation
                            |    Returns
                            |    -------
                            |    Multiple line string
-                           |        The configuration and learning curve report for Latent Dirichlet Allocation.
+                           |        The configuration and learning curve report for Latent Dirichlet
+                           |        Allocation.
                            | 
                            |    Examples
                            |    --------
