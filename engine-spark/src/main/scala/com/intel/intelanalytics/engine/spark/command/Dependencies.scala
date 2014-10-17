@@ -65,11 +65,11 @@ object Dependencies {
     val unfulfilled = startWith.filter(obj => obj.computeStatus != Complete)
     val commands = unfulfilled.map(obj => obj.command()).toSet
     val args = commands.map(c => c.arguments.get)
-                        .flatMap(getUriReferencesFromJsObject)
-                        .toSet
-                        .map((ref: UriReference) => ref.entity.asInstanceOf[EntityManagement])
-//    if (unfulfilled.isEmpty)
-//      Graph.from()
+      .flatMap(getUriReferencesFromJsObject)
+      .toSet
+      .map((ref: UriReference) => ref.entity.asInstanceOf[EntityManagement])
+    //    if (unfulfilled.isEmpty)
+    //      Graph.from()
     ???
   }
 
