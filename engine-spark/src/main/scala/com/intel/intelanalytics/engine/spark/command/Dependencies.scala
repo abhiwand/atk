@@ -50,7 +50,7 @@ object Dependencies {
 
   }
 
-  def getUriReferences[A <: Product](arguments: A)(implicit ev: Searchable[A, UriReference]) = {
+  def getUriReferences[A <: Product](arguments: A)(implicit s: Searchable[A, UriReference]) = {
     val refs = arguments.deepFind((_: UriReference) => true)
     refs
   }
@@ -70,7 +70,6 @@ object Dependencies {
                         .map((ref: UriReference) => ref.entity.asInstanceOf[EntityManagement])
 //    if (unfulfilled.isEmpty)
 //      Graph.from()
-
     ???
   }
 
