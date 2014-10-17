@@ -395,7 +395,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
 
       def storageFormat = column[Option[String]]("storage_format")
 
-      def storageLocation = column[Option[String]]("storage_location")
+      def storageLocation = column[Option[String]]("storage_uri")
 
       def parentId = column[Option[Long]]("parent_frame_id")
 

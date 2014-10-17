@@ -96,6 +96,8 @@ class CommandExecutor(engine: => SparkEngine, commands: SparkCommandStorage, con
         (name, management.getMetaData(ref.asInstanceOf[management.Reference]))
     }.toMap
 
+    var graph = Dependencies.build(references.values.map(x => x.asInstanceOf[Dependencies.Computable]).toSeq)
+    //var sorted = graph.
     ???
   }
 
