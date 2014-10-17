@@ -56,7 +56,7 @@ object FrameReference extends EntityManagement { self =>
 
   override def create(): Reference = ???
 
-  override def getReference(id: Long): Reference = ???
+  override def getReference(id: Long): Reference = new FrameReference(id, None)
 
   override type Data = FrameReference with NoData
 

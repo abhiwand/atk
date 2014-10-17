@@ -43,7 +43,6 @@ class GraphReference(graphId: Long, graphExists: Option[Boolean] = None) extends
 
 object GraphReference extends EntityManagement { self =>
 
-
   //Default resolver that simply creates a reference, with no guarantee that it is valid.
   EntityRegistry.register[self.type](this)
 
@@ -59,7 +58,7 @@ object GraphReference extends EntityManagement { self =>
 
   override def create(): Reference = ???
 
-  override def getReference(id: Long): Reference = ???
+  override def getReference(id: Long): Reference = new GraphReference(id, None)
 
   override type Data = Reference with NoData
 

@@ -4,7 +4,7 @@ import java.net.URI
 
 import scala.util.Try
 
-import scala.reflect.runtime.{universe => ru}
+import scala.reflect.runtime.{ universe => ru }
 import ru._
 
 //TODO - refactor to separate files
@@ -48,7 +48,7 @@ trait ReferenceResolver {
   /**
    * Checks to see if this string might be a valid reference, without actually trying to resolve it.
    */
-  def isReferenceUriFormat(s: String) : Boolean
+  def isReferenceUriFormat(s: String): Boolean
 
   /**
    * Returns a reference for the given URI if possible.
@@ -59,23 +59,24 @@ trait ReferenceResolver {
   def resolve(uri: String): Try[UriReference]
 }
 
-
 /**
  * Storage for entities that can process different kinds of references
  */
 class EntityRegistry {
 
-  var entities: Map[TypeSymbol, EntityManagement] = Map.empty
+  private var _entities: Map[TypeSymbol, EntityManagement] = Map.empty
+
+  def entities: Set[EntityManagement] = _entities.values.toSet
 
   /**
    * Registers an URI resolver that can provide objects of a certain type
    * @param entity the name of the entity type, e.g. "graph"
    */
-  def register[E <: EntityManagement : TypeTag](entity: E): Unit = {
+  def register[E <: EntityManagement: TypeTag](entity: E): Unit = {
     synchronized {
-      entities += typeTag[E].tpe.members.find(m => m.isType && m.name.decoded == "Reference").get.asType -> entity
+      _entities += typeTag[E].tpe.members.find(m => m.isType && m.name.decoded == "Reference").get.asType -> entity
       _resolver = null //resolver becomes invalid when new entities added, will generate a new one
-                       //next time someone asks for one.
+      //next time someone asks for one.
     }
   }
 
@@ -84,14 +85,14 @@ class EntityRegistry {
    * @tparam R the reference type
    * @return an Entity that can work with that reference type
    */
-  def entity[R <: UriReference : TypeTag](): Option[EntityManagement] = entityFor(typeTag[R].tpe.typeSymbol.asType)
+  def entity[R <: UriReference: TypeTag](): Option[EntityManagement] = entityForType(typeTag[R].tpe.typeSymbol.asType)
 
   /**
    * Retrieves a registered entity that works with the given reference type
    * @param referenceType the type of the reference
    * @return an Entity that can work with that reference type
    */
-  def entityFor(referenceType: TypeSymbol): Option[EntityManagement] = entities.get(referenceType)
+  def entityForType(referenceType: TypeSymbol): Option[EntityManagement] = _entities.get(referenceType)
 
   /**
    * A cached resolver that works with the entities registered so far.
@@ -117,7 +118,6 @@ class EntityRegistry {
  */
 object EntityRegistry extends EntityRegistry {}
 
-
 /**
  * Provides a way to get access to arbitrary objects in the system by using an URI.
  *
@@ -127,16 +127,18 @@ object EntityRegistry extends EntityRegistry {}
  */
 class RegistryReferenceResolver(registry: EntityRegistry) extends ReferenceResolver {
 
-  var resolvers: Map[String, Long => UriReference] = registry.entities.values.flatMap { entity =>
-    val resolver : Long => UriReference = entity.getReference
+  var resolvers: Map[String, Long => UriReference] = registry.entities.flatMap { entity =>
+    val resolver: Long => UriReference = entity.getReference
     (Seq(entity.name) ++ entity.alternatives).flatMap { name =>
       Seq(name.name -> resolver,
         name.plural -> resolver)
     }
   }.toMap[String, Long => UriReference]
 
-  val regex = resolvers.keys.map(k => s"""($k/[0-9]+)""").mkString( """.+/""", "|", "").r
-
+  val regex = resolvers.keys match {
+    case keys if keys.isEmpty => "<invalid>".r
+    case keys => keys.map(k => s"""($k/[0-9]+)""").mkString(""".+/(""", "|", ")").r
+  }
 
   /**
    * Checks to see if this string might be a valid reference, without actually trying to resolve it.
@@ -152,7 +154,7 @@ class RegistryReferenceResolver(registry: EntityRegistry) extends ReferenceResol
   def resolve(uri: String): Try[UriReference] = Try {
     new URI(uri) //validate this is actually a URI at all
     val regexMatch = regex.findFirstMatchIn(uri)
-        .getOrElse(throw new IllegalArgumentException("Could not find entity name in " + uri))
+      .getOrElse(throw new IllegalArgumentException("Could not find entity name in " + uri))
 
     //Error should never happen on next line, since our regex includes subgroups -
     //a match means there is at least one subgroup match as well.
@@ -166,7 +168,7 @@ class RegistryReferenceResolver(registry: EntityRegistry) extends ReferenceResol
     val id = Try {
       parts(1).toLong
     }.getOrElse(
-        throw new IllegalArgumentException(s"Could not parse entity ID in '${regexMatch.toString()}' of '$uri'"))
+      throw new IllegalArgumentException(s"Could not parse entity ID in '${regexMatch.toString()}' of '$uri'"))
     val resolver = resolvers.getOrElse(entity,
       throw new IllegalArgumentException(s"No resolver found for entity: $entity"))
     val resolved = resolver(id)

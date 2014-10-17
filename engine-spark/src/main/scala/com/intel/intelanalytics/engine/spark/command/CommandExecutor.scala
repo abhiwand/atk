@@ -24,7 +24,7 @@
 package com.intel.intelanalytics.engine.spark.command
 
 import com.intel.intelanalytics.component.ClassLoaderAware
-import com.intel.intelanalytics.domain.UriReference
+import com.intel.intelanalytics.domain.{ EntityManagement, EntityRegistry, UriReference }
 import com.intel.intelanalytics.domain.frame.{ DataFrame, DataFrameTemplate, FrameReference }
 import com.intel.intelanalytics.domain.graph.{ GraphReference, Graph }
 import com.intel.intelanalytics.engine.{ Reflection, Engine, CommandStorage }
@@ -87,25 +87,16 @@ class CommandExecutor(engine: => SparkEngine, commands: SparkCommandStorage, con
 
   val commandIdContextMapping = new mutable.HashMap[Long, SparkContext]()
 
-  def resolvePendingFrame() = ???
-
-  def resolvePendingGraph() = ???
-
   def resolveSuspendedReferences[A <: Product: TypeTag, R <: Product: TypeTag](command: Command, plugin: CommandPlugin[A, R], arguments: A): A = {
     val types = Reflection.getUriReferenceTypes[A]()
     val references = types.map {
       case (name, signature) =>
-        //TODO: something more flexible than case analysis
-        signature match {
-          case x if x <:< typeTag[FrameReference].tpe =>
-            (name, resolvePendingFrame())
-          case x if x <:< typeTag[GraphReference].tpe =>
-            (name, resolvePendingGraph())
-          case _ => ???
-        }
+        val ref = arguments.getClass.getField(name).get(arguments).asInstanceOf[UriReference]
+        val management: EntityManagement = EntityRegistry.entityForType(signature.typeSymbol.asType).get
+        (name, management.getMetaData(ref.asInstanceOf[management.Reference]))
     }.toMap
-    val ctorMap = Reflection.getConstructorMap[A]()
-    ctorMap(references)
+
+    ???
   }
 
   /**
@@ -126,27 +117,11 @@ class CommandExecutor(engine: => SparkEngine, commands: SparkCommandStorage, con
     val types = Reflection.getUriReferenceTypes[Return]()
     val references = types.map {
       case (name, signature) =>
-        //TODO: something more flexible than case analysis
-        signature match {
-          case x if x <:< typeTag[FrameReference].tpe =>
-            (name, createPendingFrame())
-          case x if x <:< typeTag[GraphReference].tpe =>
-            (name, createPendingGraph())
-          case _ => ???
-        }
+        val management: EntityManagement = EntityRegistry.entityForType(signature.typeSymbol.asType).get
+        (name, management.create())
     }.toMap
     val ctorMap = Reflection.getConstructorMap[Return]()
     ctorMap(references)
-  }
-
-  //TODO: move to frame storage
-  def createPendingFrame(): DataFrame = {
-    ???
-  }
-
-  //TODO: move to graph storage
-  def createPendingGraph(): Graph = {
-    ???
   }
 
   /**
