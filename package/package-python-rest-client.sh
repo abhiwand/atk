@@ -22,7 +22,11 @@ rm $package-source.tar.gz
 
 mkdir -p  tarballs/$package/usr/lib/intelanalytics/rest-client/python/doc
 
-
+releaseNumber=$(echo $BRANCH | awk '/release_[0-9.]*$/{print substr($0, match($0,"[0-9.]*$"))}')
+if [ "$releaseNumber" != "" ]; then
+    find ../python/intelanalytics -name *.py -type f -delete
+    echo "remove py files"
+fi
 cp -v config/intelanalytics-python-rest-client/requirements.txt tarballs/$package/usr/lib/intelanalytics/rest-client/python/
 		  
 cp -Rv  ../python/intelanalytics/* tarballs/$package/usr/lib/intelanalytics/rest-client/python/
