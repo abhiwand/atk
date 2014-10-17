@@ -29,12 +29,12 @@ import org.scalatest.{ FlatSpec, Matchers }
 import spray.json._
 
 class DependenciesTest extends FlatSpec with Matchers {
-  "getUriReferences" should "find UriReferences in case classes" in {
+  "getUriReferencesForJson" should "find UriReferences in case classes" in {
     case class Foo(frameId: Int, frame: FrameReference)
     import com.intel.intelanalytics.domain.DomainJsonProtocol._
     implicit val fmt = jsonFormat2(Foo)
 
     val reference = List(FrameReference(3, None))
-    Dependencies.getUriReferences(Foo(1, reference.head).toJson.asJsObject) should be(reference)
+    Dependencies.getUriReferencesFromJsObject(Foo(1, reference.head).toJson.asJsObject) should be(reference)
   }
 }
