@@ -23,10 +23,15 @@
 
 package com.intel.intelanalytics.engine.spark.command
 
-import com.intel.intelanalytics.domain.{ ReferenceResolver, OnDemand, UriReference }
+import com.intel.intelanalytics.domain.command.Command
+import com.intel.intelanalytics.domain._
+import com.intel.intelanalytics.engine.Reflection
+import com.intel.intelanalytics.engine.plugin.CommandPlugin
 import com.intel.intelanalytics.engine.spark.command.Typeful.Searchable
 import spray.json.{ JsNumber, JsValue, JsString, JsObject }
 
+import scala.reflect.runtime.{ universe => ru }
+import ru._
 import scalax.collection.Graph
 import scalax.collection.GraphEdge.DiEdge
 
@@ -38,21 +43,35 @@ object Dependencies {
 
   type DependencyGraph = Graph[Computable, DiEdge]
 
-  def getUriReferences(source: JsObject): Seq[UriReference] = {
+  def getUriReferencesFromJsObject(source: JsObject): Seq[UriReference] = {
 
     val results = source.deepFind((s: String) => ReferenceResolver.isReferenceUriFormat(s))
     results.flatMap(js => ReferenceResolver.resolve(js).toOption.toList)
 
   }
 
+  def getUriReferences[A <: Product](arguments: A)(implicit ev: Searchable[A, UriReference]) = {
+    val refs = arguments.deepFind((_: UriReference) => true)
+    refs
+  }
+
   def getDirectDependencies(source: Computable): Seq[UriReference] = {
     val command = source.command()
-    val results = command.arguments.toList.flatMap(getUriReferences)
+    val results = command.arguments.toList.flatMap(getUriReferencesFromJsObject)
     results
   }
 
-  def build(startWith: Seq[Computable]): DependencyGraph = {
-    ??? //var graph = Graph.from(startWith, )
+  def build(startWith: Seq[Computable], resolver: ReferenceResolver = ReferenceResolver): DependencyGraph = {
+    val unfulfilled = startWith.filter(obj => obj.computeStatus != Complete)
+    val commands = unfulfilled.map(obj => obj.command()).toSet
+    val args = commands.map(c => c.arguments.get)
+                        .flatMap(getUriReferencesFromJsObject)
+                        .toSet
+                        .map((ref: UriReference) => ref.entity.asInstanceOf[EntityManagement])
+//    if (unfulfilled.isEmpty)
+//      Graph.from()
+
+    ???
   }
 
   def force(ref: Seq[Computable], graph: DependencyGraph): ReferenceResolver = {
