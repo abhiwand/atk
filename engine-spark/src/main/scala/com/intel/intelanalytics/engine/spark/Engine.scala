@@ -23,32 +23,32 @@
 
 package com.intel.intelanalytics.engine.spark
 
-import java.util.{ArrayList => JArrayList, List => JList}
+import java.util.{ ArrayList => JArrayList, List => JList }
 
 import com.intel.intelanalytics.component.ClassLoaderAware
 import com.intel.intelanalytics.domain._
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
-import com.intel.intelanalytics.domain.schema.{DataTypes, SchemaUtil}
+import com.intel.intelanalytics.domain.schema.{ DataTypes, SchemaUtil }
 import com.intel.intelanalytics.engine.Rows._
 import com.intel.intelanalytics.engine._
 import com.intel.intelanalytics.engine.plugin.CommandPlugin
-import com.intel.intelanalytics.engine.spark.command.{CommandPluginRegistry, CommandExecutor}
+import com.intel.intelanalytics.engine.spark.command.{ CommandPluginRegistry, CommandExecutor }
 import com.intel.intelanalytics.engine.spark.frame.plugins.bincolumn.BinColumnPlugin
 import com.intel.intelanalytics.engine.spark.frame.plugins.classificationmetrics.ClassificationMetricsPlugin
 import com.intel.intelanalytics.engine.spark.frame.plugins.cumulativedist._
-import com.intel.intelanalytics.engine.spark.frame.plugins.groupby.{GroupByPlugin, GroupByAggregationFunctions}
-import com.intel.intelanalytics.engine.spark.frame.plugins.load.{LoadFramePlugin, LoadRDDFunctions}
+import com.intel.intelanalytics.engine.spark.frame.plugins.groupby.{ GroupByPlugin, GroupByAggregationFunctions }
+import com.intel.intelanalytics.engine.spark.frame.plugins.load.{ LoadFramePlugin, LoadRDDFunctions }
 import com.intel.intelanalytics.engine.spark.frame.plugins._
-import com.intel.intelanalytics.engine.spark.frame.plugins.statistics.descriptives.{ColumnMedianPlugin, ColumnModePlugin, ColumnSummaryStatisticsPlugin}
+import com.intel.intelanalytics.engine.spark.frame.plugins.statistics.descriptives.{ ColumnMedianPlugin, ColumnModePlugin, ColumnSummaryStatisticsPlugin }
 import com.intel.intelanalytics.engine.spark.frame.plugins.statistics.quantiles.QuantilesPlugin
-import com.intel.intelanalytics.engine.spark.frame.plugins.topk.{TopKPlugin, TopKRDDFunctions}
+import com.intel.intelanalytics.engine.spark.frame.plugins.topk.{ TopKPlugin, TopKRDDFunctions }
 import com.intel.intelanalytics.engine.spark.graph.SparkGraphStorage
-import com.intel.intelanalytics.engine.spark.graph.plugins.{RenameGraphPlugin, LoadGraphPlugin}
-import com.intel.intelanalytics.engine.spark.queries.{SparkQueryStorage, QueryExecutor}
+import com.intel.intelanalytics.engine.spark.graph.plugins.{ RenameGraphPlugin, LoadGraphPlugin }
+import com.intel.intelanalytics.engine.spark.queries.{ SparkQueryStorage, QueryExecutor }
 import com.intel.intelanalytics.engine.spark.frame._
 import com.intel.intelanalytics.NotFoundException
 import org.apache.spark.SparkContext
-import org.apache.spark.api.python.{EnginePythonAccumulatorParam, EnginePythonRDD}
+import org.apache.spark.api.python.{ EnginePythonAccumulatorParam, EnginePythonRDD }
 import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.rdd.RDD
 import spray.json._
@@ -108,7 +108,7 @@ import com.intel.intelanalytics.domain.frame.ColumnSummaryStatisticsReturn
 import com.intel.intelanalytics.domain.frame.ColumnMedianReturn
 import com.intel.intelanalytics.domain.frame.ColumnModeReturn
 import com.intel.intelanalytics.domain.frame.FrameJoin
-import com.intel.intelanalytics.engine.spark.plugin.{SparkCommandPlugin, SparkInvocation}
+import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
 import org.apache.commons.lang.StringUtils
 import com.intel.intelanalytics.engine.spark.user.UserStorage
 import com.intel.event.EventLogging
@@ -127,8 +127,8 @@ class SparkEngine(sparkContextManager: SparkContextManager,
                   queries: QueryExecutor,
                   val sparkAutoPartitioner: SparkAutoPartitioner,
                   commandPluginRegistry: CommandPluginRegistry) extends Engine
-with EventLogging
-with ClassLoaderAware {
+    with EventLogging
+    with ClassLoaderAware {
 
   type Data = FrameRDD
   type Context = SparkContext
@@ -165,8 +165,8 @@ with ClassLoaderAware {
     new TopKPlugin,
     new LoadGraphPlugin,
     new RenameGraphPlugin).foreach {
-      (c: SparkCommandPlugin[_ <: Product,_ <: Product]) => commandPluginRegistry.registerCommand(c)
-  }
+      (c: SparkCommandPlugin[_ <: Product, _ <: Product]) => commandPluginRegistry.registerCommand(c)
+    }
 
   /* This progress listener saves progress update to command table */
   SparkProgressListener.progressUpdater = new CommandProgressUpdater {

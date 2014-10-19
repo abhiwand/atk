@@ -20,8 +20,6 @@ object Typeful {
     implicit def hlistishSearchable[T, L <: HList, Element](implicit gen: Generic.Aux[T, L],
                                                             s: Searchable[L, Element]) = new Searchable[T, Element] {
       def findAll(predicate: Element => Boolean)(t: T) = {
-        println(s"Low priority hlistish found for $t")
-        println(s"gen is $gen")
         s.findAll(predicate)(gen to t)
       }
     }
@@ -30,7 +28,6 @@ object Typeful {
   object Searchable extends LowPrioritySearchable {
     implicit def elemSearchable[Element] = new Searchable[Element, Element] {
       def findAll(predicate: Element => Boolean)(element: Element) = {
-        println(s"thing $this found")
         if (predicate(element)) Seq(element) else Seq.empty
       }
     }
@@ -38,7 +35,6 @@ object Typeful {
     implicit def listSearchable[T, Element](implicit s: Searchable[T, Element]) =
       new Searchable[List[T], Element] {
         def findAll(predicate: Element => Boolean)(list: List[T]) = {
-          println("list found")
           list.flatMap(s.findAll(predicate))
         }
       }
@@ -46,14 +42,12 @@ object Typeful {
     implicit def mapValueSearchable[K, T, Element](implicit s: Searchable[T, Element]) =
       new Searchable[Map[K, T], Element] {
         def findAll(predicate: Element => Boolean)(map: Map[K, T]) = {
-          println("map found")
           map.values.toSeq.flatMap(s.findAll(predicate))
         }
       }
 
     implicit def hnilSearchable[Element] = new Searchable[HNil, Element] {
       def findAll(predicate: Element => Boolean)(a: HNil) = {
-        println("hnil found")
         Seq.empty
       }
     }
@@ -65,10 +59,8 @@ object Typeful {
         def findAll(predicate: Element => Boolean)(a: H :: T) = {
           val seq = hs match {
             case null =>
-              println("empty hlist found")
               Seq()
             case _ =>
-              println("nonempty hlist found")
               Seq(hs)
           }
           seq.flatMap(_.findAll(predicate)(a.head)) ++ ts.findAll(predicate)(a.tail)
