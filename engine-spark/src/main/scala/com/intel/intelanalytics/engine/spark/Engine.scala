@@ -23,32 +23,32 @@
 
 package com.intel.intelanalytics.engine.spark
 
-import java.util.{ ArrayList => JArrayList, List => JList }
+import java.util.{ArrayList => JArrayList, List => JList}
 
 import com.intel.intelanalytics.component.ClassLoaderAware
 import com.intel.intelanalytics.domain._
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
-import com.intel.intelanalytics.domain.schema.{ DataTypes, SchemaUtil }
+import com.intel.intelanalytics.domain.schema.{DataTypes, SchemaUtil}
 import com.intel.intelanalytics.engine.Rows._
 import com.intel.intelanalytics.engine._
 import com.intel.intelanalytics.engine.plugin.CommandPlugin
-import com.intel.intelanalytics.engine.spark.command.{ CommandPluginRegistry, CommandExecutor }
+import com.intel.intelanalytics.engine.spark.command.{CommandPluginRegistry, CommandExecutor}
 import com.intel.intelanalytics.engine.spark.frame.plugins.bincolumn.BinColumnPlugin
 import com.intel.intelanalytics.engine.spark.frame.plugins.classificationmetrics.ClassificationMetricsPlugin
 import com.intel.intelanalytics.engine.spark.frame.plugins.cumulativedist._
-import com.intel.intelanalytics.engine.spark.frame.plugins.groupby.{ GroupByPlugin, GroupByAggregationFunctions }
-import com.intel.intelanalytics.engine.spark.frame.plugins.load.{ LoadFramePlugin, LoadRDDFunctions }
+import com.intel.intelanalytics.engine.spark.frame.plugins.groupby.{GroupByPlugin, GroupByAggregationFunctions}
+import com.intel.intelanalytics.engine.spark.frame.plugins.load.{LoadFramePlugin, LoadRDDFunctions}
 import com.intel.intelanalytics.engine.spark.frame.plugins._
-import com.intel.intelanalytics.engine.spark.frame.plugins.statistics.descriptives.{ ColumnMedianPlugin, ColumnModePlugin, ColumnSummaryStatisticsPlugin }
+import com.intel.intelanalytics.engine.spark.frame.plugins.statistics.descriptives.{ColumnMedianPlugin, ColumnModePlugin, ColumnSummaryStatisticsPlugin}
 import com.intel.intelanalytics.engine.spark.frame.plugins.statistics.quantiles.QuantilesPlugin
-import com.intel.intelanalytics.engine.spark.frame.plugins.topk.{ TopKPlugin, TopKRDDFunctions }
+import com.intel.intelanalytics.engine.spark.frame.plugins.topk.{TopKPlugin, TopKRDDFunctions}
 import com.intel.intelanalytics.engine.spark.graph.SparkGraphStorage
-import com.intel.intelanalytics.engine.spark.graph.plugins.{ RenameGraphPlugin, LoadGraphPlugin }
-import com.intel.intelanalytics.engine.spark.queries.{ SparkQueryStorage, QueryExecutor }
+import com.intel.intelanalytics.engine.spark.graph.plugins.{RenameGraphPlugin, LoadGraphPlugin}
+import com.intel.intelanalytics.engine.spark.queries.{SparkQueryStorage, QueryExecutor}
 import com.intel.intelanalytics.engine.spark.frame._
 import com.intel.intelanalytics.NotFoundException
 import org.apache.spark.SparkContext
-import org.apache.spark.api.python.{ EnginePythonAccumulatorParam, EnginePythonRDD }
+import org.apache.spark.api.python.{EnginePythonAccumulatorParam, EnginePythonRDD}
 import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.rdd.RDD
 import spray.json._
@@ -108,7 +108,7 @@ import com.intel.intelanalytics.domain.frame.ColumnSummaryStatisticsReturn
 import com.intel.intelanalytics.domain.frame.ColumnMedianReturn
 import com.intel.intelanalytics.domain.frame.ColumnModeReturn
 import com.intel.intelanalytics.domain.frame.FrameJoin
-import com.intel.intelanalytics.engine.spark.plugin.SparkInvocation
+import com.intel.intelanalytics.engine.spark.plugin.{SparkCommandPlugin, SparkInvocation}
 import org.apache.commons.lang.StringUtils
 import com.intel.intelanalytics.engine.spark.user.UserStorage
 import com.intel.event.EventLogging
@@ -127,8 +127,8 @@ class SparkEngine(sparkContextManager: SparkContextManager,
                   queries: QueryExecutor,
                   val sparkAutoPartitioner: SparkAutoPartitioner,
                   commandPluginRegistry: CommandPluginRegistry) extends Engine
-    with EventLogging
-    with ClassLoaderAware {
+with EventLogging
+with ClassLoaderAware {
 
   type Data = FrameRDD
   type Context = SparkContext
@@ -136,39 +136,43 @@ class SparkEngine(sparkContextManager: SparkContextManager,
   val fsRoot = SparkEngineConfig.fsRoot
   override val pageSize: Int = SparkEngineConfig.pageSize
 
-  // Registering plugins
   commandPluginRegistry.registerCommand(new LoadFramePlugin)
-  commandPluginRegistry.registerCommand(new RenameFramePlugin)
-  commandPluginRegistry.registerCommand(new RenameColumnsPlugin)
-  commandPluginRegistry.registerCommand(new ProjectPlugin)
-  commandPluginRegistry.registerCommand(new AssignSamplePlugin)
-  commandPluginRegistry.registerCommand(new GroupByPlugin)
-  commandPluginRegistry.registerCommand(new FlattenColumnPlugin())
-  commandPluginRegistry.registerCommand(new BinColumnPlugin)
-  commandPluginRegistry.registerCommand(new ColumnModePlugin)
-  commandPluginRegistry.registerCommand(new ColumnMedianPlugin)
-  commandPluginRegistry.registerCommand(new ColumnSummaryStatisticsPlugin)
-  commandPluginRegistry.registerCommand(new FilterPlugin)
-  commandPluginRegistry.registerCommand(new JoinPlugin(frames))
-  commandPluginRegistry.registerCommand(new DropColumnsPlugin)
-  commandPluginRegistry.registerCommand(new AddColumnsPlugin)
-  commandPluginRegistry.registerCommand(new DropDuplicatesPlugin)
-  commandPluginRegistry.registerCommand(new QuantilesPlugin)
-  commandPluginRegistry.registerCommand(new ClassificationMetricsPlugin)
-  commandPluginRegistry.registerCommand(new EcdfPlugin)
-  commandPluginRegistry.registerCommand(new TallyPercentPlugin)
-  commandPluginRegistry.registerCommand(new TallyPlugin)
-  commandPluginRegistry.registerCommand(new CumulativePercentPlugin)
-  commandPluginRegistry.registerCommand(new CumulativeSumPlugin)
-  commandPluginRegistry.registerCommand(new ShannonEntropyPlugin)
-  commandPluginRegistry.registerCommand(new TopKPlugin)
-  commandPluginRegistry.registerCommand(new LoadGraphPlugin)
-  commandPluginRegistry.registerCommand(new RenameGraphPlugin)
+  // Registering plugins
+  Seq(new LoadFramePlugin,
+    new RenameFramePlugin,
+    new RenameColumnsPlugin,
+    new ProjectPlugin,
+    new AssignSamplePlugin,
+    new GroupByPlugin,
+    new FlattenColumnPlugin,
+    new BinColumnPlugin,
+    new ColumnModePlugin,
+    new ColumnMedianPlugin,
+    new ColumnSummaryStatisticsPlugin,
+    new FilterPlugin,
+    new JoinPlugin(frames),
+    new DropColumnsPlugin,
+    new AddColumnsPlugin,
+    new DropDuplicatesPlugin,
+    new QuantilesPlugin,
+    new ClassificationMetricsPlugin,
+    new EcdfPlugin,
+    new TallyPercentPlugin,
+    new TallyPlugin,
+    new CumulativePercentPlugin,
+    new CumulativeSumPlugin,
+    new ShannonEntropyPlugin,
+    new TopKPlugin,
+    new LoadGraphPlugin,
+    new RenameGraphPlugin).foreach {
+      (c: SparkCommandPlugin[_ <: Product,_ <: Product]) => commandPluginRegistry.registerCommand(c)
+  }
 
   /* This progress listener saves progress update to command table */
   SparkProgressListener.progressUpdater = new CommandProgressUpdater {
 
     var lastUpdateTime = System.currentTimeMillis()
+
     /**
      * save the progress update
      * @param commandId id of the command
@@ -208,7 +212,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
   }
 
   /**
-   *  return a query object
+   * return a query object
    * @param id query id
    * @return Query
    */
@@ -333,6 +337,7 @@ class SparkEngine(sparkContextManager: SparkContextManager,
     val schema = frame.schema
     PagedQueryResult(queryExecution, Some(schema))
   }
+
   val getRowsQuery = queries.registerQuery("frames/data", getRowsSimple)
 
   /**

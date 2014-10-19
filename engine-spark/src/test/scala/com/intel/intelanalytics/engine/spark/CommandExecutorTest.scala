@@ -15,7 +15,7 @@ import org.mockito.Matchers._
 import org.mockito.Mockito._
 import org.scalatest.mock.MockitoSugar
 import org.scalatest.{ FlatSpec, Matchers }
-import spray.json.{ JsonFormat, JsObject }
+import spray.json._
 
 import scala.collection.immutable.HashMap
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -72,7 +72,7 @@ class CommandExecutorTest extends FlatSpec with Matchers with MockitoSugar {
   }
 
   "running a command" should "add an entry in command id and context mapping for SparkCommands" in {
-    val args = QuantileValues(List())
+    val args = QuantileValues(List()).toJson.asJsObject
     var contextCountDuringExecution = 0
     var containsKey1DuringExecution = false
     val executor = createCommandExecutor()
@@ -85,7 +85,7 @@ class CommandExecutorTest extends FlatSpec with Matchers with MockitoSugar {
 
     val plugin = commandPluginRegistry.registerCommand("dummy", dummyFunc)
     val user = mock[UserPrincipal]
-    val execution = executor.execute(plugin, args, user, implicitly[ExecutionContext])
+    val execution = executor.execute(CommandTemplate("dummy", Some(args)), user, implicitly[ExecutionContext], commandPluginRegistry)
     Await.ready(execution.end, 10 seconds)
     contextCountDuringExecution shouldBe 1
     containsKey1DuringExecution shouldBe true
@@ -95,7 +95,7 @@ class CommandExecutorTest extends FlatSpec with Matchers with MockitoSugar {
   }
 
   it should "not add an entry in command id and context mapping for regular commands" in {
-    val args = QuantileValues(List())
+    val args = QuantileValues(List()).toJson.asJsObject
     var contextCountDuringExecution = 0
     var containsKey1DuringExecution = false
     val executor = createCommandExecutor()
@@ -119,7 +119,7 @@ class CommandExecutorTest extends FlatSpec with Matchers with MockitoSugar {
     }
 
     val user = mock[UserPrincipal]
-    val execution = executor.execute(plugin, args, user, implicitly[ExecutionContext])
+    val execution = executor.execute(CommandTemplate("foo", Some(args)), user, implicitly[ExecutionContext], commandPluginRegistry)
     Await.ready(execution.end, 10 seconds)
     contextCountDuringExecution shouldBe 0
     containsKey1DuringExecution shouldBe false
@@ -129,7 +129,7 @@ class CommandExecutorTest extends FlatSpec with Matchers with MockitoSugar {
   }
 
   "cancel command during execution" should "remove the entry from command id and context mapping" in {
-    val args = QuantileValues(List())
+    val args = QuantileValues(List()).toJson.asJsObject
     val executor = createCommandExecutor()
 
     var contextCountAfterCancel = 0
@@ -141,7 +141,7 @@ class CommandExecutorTest extends FlatSpec with Matchers with MockitoSugar {
 
     val plugin = commandPluginRegistry.registerCommand("dummy", dummyFunc)
     val user = mock[UserPrincipal]
-    val execution = executor.execute(plugin, args, user, implicitly[ExecutionContext])
+    val execution = executor.execute(CommandTemplate("dummy", Some(args)), user, implicitly[ExecutionContext], commandPluginRegistry)
     Await.ready(execution.end, 10 seconds)
     contextCountAfterCancel shouldBe 0
   }
