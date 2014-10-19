@@ -256,8 +256,9 @@ class SparkEngine(sparkContextManager: SparkContextManager,
    * @param user the user running the command
    * @return an Execution that can be used to track the completion of the command
    */
-  def execute(command: CommandTemplate)(implicit user: UserPrincipal): Execution =
-    commands.execute(command, user, implicitly[ExecutionContext], commandPluginRegistry)
+  def execute(command: CommandTemplate)(implicit user: UserPrincipal): Execution = {
+    ??? //commands.execute(command, user, implicitly[ExecutionContext], commandPluginRegistry)
+  }
 
   /**
    * All the command definitions available
