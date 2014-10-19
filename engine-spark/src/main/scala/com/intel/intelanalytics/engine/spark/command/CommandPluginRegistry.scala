@@ -26,8 +26,6 @@ class CommandPluginRegistry(loader: CommandLoader) {
   /**
    * Adds the given command to the registry.
    * @param command the command to add
-   * @tparam A the argument type for the command
-   * @tparam R the return type for the command
    * @return the same command that was passed, for convenience
    */
   def registerCommand[A <: Product, R <: Product](command: SparkCommandPlugin[A, R]): SparkCommandPlugin[A, R] = {
