@@ -3,6 +3,9 @@ package com.intel.intelanalytics.engine.spark.command
 import shapeless._
 import spray.json._
 
+import scala.reflect.runtime.{universe => ru}
+import ru._
+
 object Typeful {
 
   //Inspired by deepsearch examples from the shapeless project.
@@ -17,8 +20,9 @@ object Typeful {
   }
 
   trait LowPrioritySearchable {
-    implicit def hlistishSearchable[T, L <: HList, Element](implicit gen: Generic.Aux[T, L],
+    implicit def hlistishSearchable[T : TypeTag, L <: HList : TypeTag, Element : TypeTag](implicit gen: Generic.Aux[T, L],
                                                             s: Searchable[L, Element]) = new Searchable[T, Element] {
+      //println(s"hlistish: T = $typeTag[T], L = $typeTag[L], Element = $typeTag[Element]")
       def findAll(predicate: Element => Boolean)(t: T) = {
         s.findAll(predicate)(gen to t)
       }

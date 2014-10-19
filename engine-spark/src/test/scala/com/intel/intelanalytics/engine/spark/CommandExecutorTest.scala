@@ -85,8 +85,8 @@ class CommandExecutorTest extends FlatSpec with Matchers with MockitoSugar {
 
     val plugin = commandPluginRegistry.registerCommand("dummy", dummyFunc)
     val user = mock[UserPrincipal]
-    val execution = executor.execute(CommandTemplate("dummy", Some(args)), user, implicitly[ExecutionContext], commandPluginRegistry)
-    Await.ready(execution.end, 10 seconds)
+    val execution = ??? //executor.execute(CommandTemplate("dummy", Some(args)), user, implicitly[ExecutionContext], commandPluginRegistry)
+    //Await.ready(execution.end, 10 seconds)
     contextCountDuringExecution shouldBe 1
     containsKey1DuringExecution shouldBe true
 
@@ -119,8 +119,8 @@ class CommandExecutorTest extends FlatSpec with Matchers with MockitoSugar {
     }
 
     val user = mock[UserPrincipal]
-    val execution = executor.execute(CommandTemplate("foo", Some(args)), user, implicitly[ExecutionContext], commandPluginRegistry)
-    Await.ready(execution.end, 10 seconds)
+    val execution = ??? //executor.execute(CommandTemplate("foo", Some(args)), user, implicitly[ExecutionContext], commandPluginRegistry)
+    //Await.ready(execution.end, 10 seconds)
     contextCountDuringExecution shouldBe 0
     containsKey1DuringExecution shouldBe false
 
