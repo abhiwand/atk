@@ -25,7 +25,7 @@ package com.intel.intelanalytics.engine.spark.frame
 
 import java.util.UUID
 
-import com.intel.intelanalytics.NotFoundException
+import com.intel.intelanalytics.{DuplicateNameException, NotFoundException}
 import com.intel.intelanalytics.component.ClassLoaderAware
 import com.intel.intelanalytics.domain.frame.{ DataFrame, DataFrameTemplate }
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
@@ -403,8 +403,8 @@ class SparkFrameStorage(frameFileStorage: FrameFileStorage,
       implicit session =>
         {
 
-          metaStore.frameRepo.lookupByName(frameTemplate.name).foreach {
-            throw new RuntimeException("Frame with same name exists. Create aborted.")
+          metaStore.frameRepo.lookupByName(frameTemplate.name).foreach { existingFrame =>
+            throw new DuplicateNameException("frame", frameTemplate.name, "Frame with same name exists. Create aborted.")
           }
 
           val frame = metaStore.frameRepo.insert(frameTemplate).get
