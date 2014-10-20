@@ -61,8 +61,9 @@ object Dependencies {
   /**
    * Returns all the [[Computable]] objects from a case class
    */
-  def getComputables[A <: Product](arguments: A)(implicit s: Searchable[A, UriReference]): Seq[Computable] = {
-    val refs = arguments.deepFind((_: UriReference) => true)
+  def getComputables[A <: Product](arguments: A): Seq[Computable] = {
+    //val refs = arguments.deepFind((_: UriReference) => true)
+    val refs = Reflection.getUriReferenceTypes()
     refs.flatMap {
       case ref: OnDemand => List(ref.asInstanceOf[Computable])
       case _ => List.empty
