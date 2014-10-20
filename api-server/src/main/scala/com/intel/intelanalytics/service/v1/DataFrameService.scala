@@ -23,6 +23,7 @@
 
 package com.intel.intelanalytics.service.v1
 
+import com.intel.intelanalytics.DuplicateNameException
 import com.intel.intelanalytics.domain._
 import com.intel.intelanalytics.domain.query.{ PagedQueryResult, QueryDataResult, Query, RowQuery }
 import org.joda.time.DateTime
@@ -95,7 +96,11 @@ class DataFrameService(commonDirectives: CommonDirectives, engine: Engine) exten
               entity(as[DataFrameTemplate]) {
                 frame =>
                   onComplete(engine.create(frame)) {
-                    case Success(createdFrame) => complete(FrameDecorator.decorateEntity(uri + "/" + createdFrame.id, Nil, createdFrame))
+                    case Success(createdFrame) =>
+                      complete(FrameDecorator.decorateEntity(uri + "/" + createdFrame.id, Nil, createdFrame))
+                    case Failure(ex : DuplicateNameException) => ctx => {
+                      ctx.complete(202, ex.getMessage)
+                    }
                     case Failure(ex) => ctx => {
                       ctx.complete(500, ex.getMessage)
                     }

@@ -205,6 +205,11 @@ class HttpMethods(object):
 
         try:
             response.raise_for_status()
+            #Semantic errors (such as server validation errors) come back as 202,
+            #which the requests module doesn't consider an error. Indeed it is not
+            #an HTTP protocol error, but it is an error as far as the user is concerned.
+            if response.status_code == 202:
+                raise Exception(response.text)
         except Exception as e:
             if not ignore or response.status_code not in ignore:
                 raise requests.exceptions.HTTPError(str(e) + " "+ response.text)

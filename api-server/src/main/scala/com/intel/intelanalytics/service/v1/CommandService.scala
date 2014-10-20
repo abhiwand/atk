@@ -75,8 +75,10 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
               uri =>
                 get {
                   onComplete(engine.getCommand(id)) {
-                    case Success(Some(command)) => complete(decorate(uri, command))
-                    case _ => reject()
+                    case Success(Some(command)) =>
+                      complete(decorate(uri, command))
+                    case _ =>
+                      reject()
                   }
                 } ~
                   post {
