@@ -23,8 +23,9 @@
 
 package com.intel.intelanalytics.engine.spark.frame.plugins
 
+import com.intel.intelanalytics.domain.SingleReference
 import com.intel.intelanalytics.domain.command.CommandDoc
-import com.intel.intelanalytics.domain.frame.{ DataFrameTemplate, FrameAddColumns, DataFrame }
+import com.intel.intelanalytics.domain.frame.{FrameReference, DataFrameTemplate, FrameAddColumns, DataFrame}
 import com.intel.intelanalytics.domain.schema.DataTypes
 import com.intel.intelanalytics.engine.spark.frame.PythonRDDStorage
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
@@ -67,7 +68,9 @@ class AddColumnsPlugin extends SparkCommandPlugin[FrameAddColumns, DataFrame] {
    * @param user current user
    * @return a value of type declared as the Return type.
    */
-  override def execute(invocation: SparkInvocation, arguments: FrameAddColumns)(implicit user: UserPrincipal, executionContext: ExecutionContext): DataFrame = {
+  override def execute(invocation: SparkInvocation, arguments: FrameAddColumns)
+                      (implicit user: UserPrincipal, executionContext: ExecutionContext):
+  DataFrame = {
     // dependencies (later to be replaced with dependency injection)
     val frames = invocation.engine.frames
     val pythonRDDStorage = new PythonRDDStorage(frames)

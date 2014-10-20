@@ -9,6 +9,8 @@ import ru._
 
 //TODO - refactor to separate files
 
+case class SingleReference[T <: UriReference](reference: T)
+
 /**
  * Things that can be referenced with a simple URI of the form scheme://entity/id.
  */

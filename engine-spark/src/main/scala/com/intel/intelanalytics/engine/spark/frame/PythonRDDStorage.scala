@@ -26,7 +26,8 @@ class PythonRDDStorage(frames: SparkFrameStorage) extends ClassLoaderAware {
    * @param user current user
    * @return the RDD
    */
-  def createPythonRDD(frameId: Long, py_expression: String, ctx: SparkContext)(implicit user: UserPrincipal): EnginePythonRDD[String] = {
+  def createPythonRDD(frameId: Long, py_expression: String, ctx: SparkContext)
+                     (implicit user: UserPrincipal): EnginePythonRDD[String] = {
     withMyClassLoader {
       val predicateInBytes = decodePythonBase64EncodedStrToBytes(py_expression)
 
