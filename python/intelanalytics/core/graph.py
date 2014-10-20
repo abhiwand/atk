@@ -327,8 +327,8 @@ class EdgeRule(Rule):
         property_name is a string, and property_value is a literal value
         or a BigColumn source, which must be from same BigFrame as head,
         tail and label
-    bidirectional : bool
-        indicates the edge is bidirectional
+    bidirectional : bool (Optional)
+        indicates the edge is bidirectional. The default value is false.
 
     Examples
     --------
