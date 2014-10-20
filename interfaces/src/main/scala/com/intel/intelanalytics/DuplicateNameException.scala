@@ -27,7 +27,7 @@ package com.intel.intelanalytics
  * Thrown when a unique name has already been taken.
  */
 class DuplicateNameException(resourceType: String, name: String, message: String = "")
-  extends RuntimeException(s"Requested name '$name' duplicates an existing '$resourceType' of the same name.\n $message\n") {
+    extends RuntimeException(s"Requested name '$name' duplicates an existing '$resourceType' of the same name.\n $message\n") {
 
 }
 

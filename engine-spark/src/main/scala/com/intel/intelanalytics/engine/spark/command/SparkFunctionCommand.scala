@@ -30,11 +30,12 @@ import com.intel.intelanalytics.security.UserPrincipal
 import spray.json.JsonFormat
 
 import scala.concurrent.ExecutionContext
-
+import scala.reflect.runtime.{ universe => ru }
+import ru._
 /**
  * Function commands that work with Spark
  */
-class SparkFunctionCommand[Arguments <: Product: JsonFormat: ClassManifest, Return <: Product: JsonFormat: ClassManifest](
+class SparkFunctionCommand[Arguments <: Product: JsonFormat: ClassManifest: TypeTag, Return <: Product: JsonFormat: ClassManifest: TypeTag](
   name: String,
   function: (Arguments, UserPrincipal, SparkInvocation) => Return,
   numberOfJobsFunc: Arguments => Int,

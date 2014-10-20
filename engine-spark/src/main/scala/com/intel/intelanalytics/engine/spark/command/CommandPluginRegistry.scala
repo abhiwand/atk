@@ -6,7 +6,8 @@ import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkI
 import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.shared.JsonSchemaExtractor
 import spray.json.JsonFormat
-
+import scala.reflect.runtime.{ universe => ru }
+import ru._
 /**
  * Register and store command plugin
  */
@@ -49,10 +50,10 @@ class CommandPluginRegistry(loader: CommandLoader) {
    * @tparam R the return type of the command
    * @return the CommandPlugin instance created during the registration process.
    */
-  def registerCommand[A <: Product: JsonFormat: ClassManifest, R <: Product: JsonFormat: ClassManifest](name: String,
-                                                                                                        function: (A, UserPrincipal, SparkInvocation) => R,
-                                                                                                        numberOfJobs: Int = 1,
-                                                                                                        doc: Option[CommandDoc] = None): SparkCommandPlugin[A, R] = {
+  def registerCommand[A <: Product: JsonFormat: ClassManifest: TypeTag, R <: Product: JsonFormat: ClassManifest: TypeTag](name: String,
+                                                                                                                          function: (A, UserPrincipal, SparkInvocation) => R,
+                                                                                                                          numberOfJobs: Int = 1,
+                                                                                                                          doc: Option[CommandDoc] = None): SparkCommandPlugin[A, R] = {
     registerCommand(name, function, (A) => numberOfJobs, doc)
   }
 
@@ -70,10 +71,10 @@ class CommandPluginRegistry(loader: CommandLoader) {
    * @tparam R the return type of the command
    * @return the CommandPlugin instance created during the registration process.
    */
-  def registerCommand[A <: Product: JsonFormat: ClassManifest, R <: Product: JsonFormat: ClassManifest](name: String,
-                                                                                                        function: (A, UserPrincipal, SparkInvocation) => R,
-                                                                                                        numberOfJobsFunc: (A) => Int,
-                                                                                                        doc: Option[CommandDoc]): SparkCommandPlugin[A, R] = {
+  def registerCommand[A <: Product: JsonFormat: ClassManifest: TypeTag, R <: Product: JsonFormat: ClassManifest: TypeTag](name: String,
+                                                                                                                          function: (A, UserPrincipal, SparkInvocation) => R,
+                                                                                                                          numberOfJobsFunc: (A) => Int,
+                                                                                                                          doc: Option[CommandDoc]): SparkCommandPlugin[A, R] = {
     // Note: providing a default =None to the doc parameter causes a strange compiler error where it can't
     // distinguish this method from the one which takes a plain Int for the numberOfJobs. Since the
     // numberOfJobsFunc variation is much less frequently used, we'll make doc a required parameter

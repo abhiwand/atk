@@ -106,15 +106,18 @@ sealed abstract class OperationPlugin[Arguments <: Product: JsonFormat: ClassMan
   }
 }
 
+import scala.reflect.runtime.{ universe => ru }
+import ru._
 /**
  * Base trait for command plugins
  */
-abstract class CommandPlugin[Arguments <: Product: JsonFormat: ClassManifest, Return <: Product: JsonFormat: ClassManifest]
+abstract class CommandPlugin[Arguments <: Product: JsonFormat: ClassManifest: TypeTag, Return <: Product: JsonFormat: ClassManifest: TypeTag]
     extends OperationPlugin[Arguments, Return] {
 
   val argumentManifest = implicitly[ClassManifest[Arguments]]
   val returnManifest = implicitly[ClassManifest[Return]]
-
+  val argumentTag = implicitly[TypeTag[Arguments]]
+  val returnTag = implicitly[TypeTag[Return]]
   /**
    * Convert the given object to a JsObject
    */

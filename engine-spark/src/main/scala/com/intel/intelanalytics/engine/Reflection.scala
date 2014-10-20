@@ -28,6 +28,7 @@ import com.intel.intelanalytics.domain.UriReference
 import scala.reflect.runtime.{ universe => ru }
 import ru._
 import scala.reflect.{ ClassTag, classTag }
+import scala.util.control.NonFatal
 
 /**
  * Utilities for working with Scala reflection.
@@ -41,19 +42,25 @@ object Reflection {
    * Returns all the members of the type that are vals, and not something
    * esoteric created by the compiler. Just the regular vals.
    */
-  def getVals[T: TypeTag](): Seq[(String, ru.Type)] = synchronized {
-    val tag = classTag[T]
-    val mirror = ru.runtimeMirror(tag.runtimeClass.getClassLoader)
-    val typ: ru.Type = mirror.classSymbol(tag.runtimeClass).toType
-    //IntelliJ will report an error on this line, it's safe to ignore - the real compiler does fine with it.
-    val members: Array[ru.Symbol] = typ.members.filter(m => !m.isMethod
-      && m.asTerm.isVal
-      && !m.isImplementationArtifact
-      && !m.isSynthetic)
-      .toArray
-      .reverse
-    val namedTypes = members.map(sym => (sym.name.decoded, sym.typeSignatureIn(typ)))
-    namedTypes
+  def getVals[T: TypeTag](): Seq[(String, ru.Type)] = {
+    try {
+      synchronized {
+        val tag = classTag[T]
+        val mirror = ru.runtimeMirror(tag.runtimeClass.getClassLoader)
+        val typ: ru.Type = mirror.classSymbol(tag.runtimeClass).toType
+        val members = typ.members.filter(m => !m.isMethod
+          && m.asTerm.isVal
+          && !m.isImplementationArtifact
+          && !m.isSynthetic)
+          .toArray
+          .reverse
+        val namedTypes = members.map(sym => (sym.name.decoded, sym.typeSignatureIn(typ)))
+        namedTypes
+      }
+    }
+    catch {
+      case NonFatal(e) => throw new Exception(s"Could not get vals for type ${typeTag[T]} due to:", e)
+    }
   }
 
   /**
@@ -64,9 +71,13 @@ object Reflection {
   def getMembersWithTypeLike[ObjectType: TypeTag, MemberType: TypeTag]() = synchronized {
     val namedTypes = getVals[ObjectType]()
     val references = namedTypes.filter { case (name, sig) => sig <:< typeTag[MemberType].tpe }
-    references
-
+    references.map { case (name, sig) => (name.trim, sig) }
   }
+
+  /**
+   * Returns information about the vals in the type that are subclasses of UriReference.
+   */
+  def getUriReferenceTypes[T: TypeTag](instance: T): Seq[(String, ru.Type)] = getMembersWithTypeLike[T, UriReference]()
 
   /**
    * Returns information about the vals in the type that are subclasses of UriReference.
@@ -85,7 +96,7 @@ object Reflection {
     val cm = m.reflectClass(classT)
     val ctor = tag.tpe.declaration(ru.nme.CONSTRUCTOR).asMethod
     val ctorMirror = cm.reflectConstructor(ctor)
-    args => ctorMirror(args: _*).asInstanceOf[T]
+    (args: Seq[Any]) => (ctorMirror(args: _*).asInstanceOf[T])
   }
 
   /**

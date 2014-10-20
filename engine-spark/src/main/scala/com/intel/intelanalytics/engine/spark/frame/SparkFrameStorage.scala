@@ -25,7 +25,7 @@ package com.intel.intelanalytics.engine.spark.frame
 
 import java.util.UUID
 
-import com.intel.intelanalytics.{DuplicateNameException, NotFoundException}
+import com.intel.intelanalytics.{ DuplicateNameException, NotFoundException }
 import com.intel.intelanalytics.component.ClassLoaderAware
 import com.intel.intelanalytics.domain.frame.{ DataFrame, DataFrameTemplate }
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType

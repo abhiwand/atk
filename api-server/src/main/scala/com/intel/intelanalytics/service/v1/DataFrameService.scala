@@ -96,9 +96,13 @@ class DataFrameService(commonDirectives: CommonDirectives, engine: Engine) exten
               entity(as[DataFrameTemplate]) {
                 frame =>
                   onComplete(engine.create(frame)) {
-                    case Success(createdFrame) =>
-                      complete(FrameDecorator.decorateEntity(uri + "/" + createdFrame.id, Nil, createdFrame))
-                    case Failure(ex : DuplicateNameException) => ctx => {
+                    case Success(createdFrame) => ctx => {
+                      println("Completing frame creation")
+                      val entity: GetDataFrame = FrameDecorator.decorateEntity(uri + "/" + createdFrame.id, Nil, createdFrame)
+                      ctx.complete(entity)
+                      println("Completed with " + entity)
+                    }
+                    case Failure(ex: DuplicateNameException) => ctx => {
                       ctx.complete(202, ex.getMessage)
                     }
                     case Failure(ex) => ctx => {

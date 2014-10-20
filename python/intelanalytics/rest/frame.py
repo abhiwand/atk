@@ -111,6 +111,7 @@ class FrameBackendRest(object):
     def _create_new_frame(self, frame, name):
         """create helper method to call http and initialize frame with results"""
         payload = {'name': name }
+        logger.info("REST Backend: posting create frame request")
         r = self.rest_http.post('frames', payload)
         logger.info("REST Backend: create frame response: " + r.text)
         frame_info = FrameInfo(r.json())
