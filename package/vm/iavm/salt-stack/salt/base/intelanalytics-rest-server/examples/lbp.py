@@ -15,7 +15,7 @@ csv = CsvFile(dataset, schema, skip_header_lines=1)
 
 print "Building data frame 'myframe'"
 
-frame = BigFrame(csv, "myframe")
+frame = Frame(csv, "myframe")
 
 print "Done building data frame 'myframe'"
 
@@ -27,11 +27,11 @@ source = VertexRule("source", frame.source, {"vertex_type": frame.vertex_type, "
 
 target = VertexRule("target", frame.target, {"vertex_type": frame.vertex_type, "value": frame.value})
 
-edge = EdgeRule("edge", target, source, {'weight': frame.weight})
+edge = EdgeRule("edge", target, source, {'weight': frame.weight}, bidirectional=True)
 
 print "Creating Graph 'mygraph'"
 
-graph = BigGraph([target, source, edge], "mygraph")
+graph = TitanGraph([target, source, edge], "mygraph")
 
 print "Running Loopy Belief Propagation on Graph mygraph"
 
