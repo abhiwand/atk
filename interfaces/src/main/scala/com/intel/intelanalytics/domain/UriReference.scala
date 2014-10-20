@@ -194,3 +194,23 @@ object ReferenceResolver extends ReferenceResolver {
   override def isReferenceUriFormat(s: String): Boolean = EntityRegistry.resolver.isReferenceUriFormat(s)
 }
 
+case class AugmentedResolver(base: ReferenceResolver, data: Seq[UriReference with HasData]) extends ReferenceResolver {
+  /**
+   * Returns a reference for the given URI if possible.
+   *
+   * @throws IllegalArgumentException if no suitable resolver can be found for the entity type in the URI.
+   *         Note this exception will be in the Try, not actually thrown immediately.
+   */
+  override def resolve(uri: String): Try[UriReference] = {
+    base.resolve(uri).map { ref =>
+      data.find(d => d.uri == ref.uri).getOrElse(ref)
+    }
+  }
+
+  /**
+   * Checks to see if this string might be a valid reference, without actually trying to resolve it.
+   */
+  override def isReferenceUriFormat(s: String): Boolean = base.isReferenceUriFormat(s)
+
+  def ++(moreData: Seq[UriReference with HasData]) = this.copy(data = this.data ++ moreData)
+}
