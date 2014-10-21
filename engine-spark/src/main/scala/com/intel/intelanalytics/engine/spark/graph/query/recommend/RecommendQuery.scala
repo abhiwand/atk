@@ -48,7 +48,7 @@ import com.intel.intelanalytics.domain.command.CommandDoc
  * @param right_vertex_id_property_key The property name for right side vertex id. The default value is "movie_id".
  */
 case class RecommendParams(graph: GraphReference,
-                           vertex_id: Long,
+                           vertex_id: String,
                            vertex_type: Option[String],
                            output_vertex_property_list: Option[String],
                            vertex_type_property_key: Option[String],
@@ -87,6 +87,11 @@ class RecommendQuery extends SparkCommandPlugin[RecommendParams, RecommendResult
   override def name: String = "graph:titan/query/recommend"
 
   /**
+   * Number of Spark jobs that get created by running this command
+   * (this configuration is used to prevent multiple progress bars in Python client)
+   */
+  override def numberOfJobs(arguments: RecommendParams) = 2
+  /**
    * User documentation exposed in Python.
    *
    * [[http://docutils.sourceforge.net/rst.html ReStructuredText]]
@@ -101,7 +106,7 @@ class RecommendQuery extends SparkCommandPlugin[RecommendParams, RecommendResult
                            |    
                            |    Parameters
                            |    ----------
-                           |    vertex_id : int32
+                           |    vertex_id : string
                            |        The vertex id to get recommendation for
                            |    
                            |    vertex_type : string (optional)
@@ -175,7 +180,7 @@ class RecommendQuery extends SparkCommandPlugin[RecommendParams, RecommendResult
                            |    and you want to get movie recommendations for user 1,
                            |    the command to use is::
                            |    
-                           |        g.query.recommend(vertex_id = 1)
+                           |        g.query.recommend(vertex_id = "1")
                            |    
                            |    The expected output is like this::
                            |    
@@ -204,7 +209,7 @@ class RecommendQuery extends SparkCommandPlugin[RecommendParams, RecommendResult
       "Please input one property name for bias and one property name for results when both vector_value " +
         "and bias_on are enabled")
 
-    val vertexId = arguments.vertex_id.toString
+    val vertexId = arguments.vertex_id
     val vertexType = arguments.vertex_type.getOrElse(config.getString("vertex_type")).toLowerCase
     val leftVertexIdPropertyKey = arguments.left_vertex_id_property_key.getOrElse(
       config.getString("left_vertex_id_property_key"))
@@ -249,7 +254,7 @@ class RecommendQuery extends SparkCommandPlugin[RecommendParams, RecommendResult
     )
     sourceVertexRDD.persist(StorageLevel.MEMORY_AND_DISK)
 
-    val sourceVertexArray = sourceVertexRDD.toArray()
+    val sourceVertexArray = sourceVertexRDD.collect()
 
     if (sourceVertexArray.length != 1) {
       for (i <- 0 until sourceVertexArray.length) {
