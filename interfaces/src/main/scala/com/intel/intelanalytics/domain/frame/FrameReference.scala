@@ -25,10 +25,10 @@ package com.intel.intelanalytics.domain.frame
 
 import com.intel.intelanalytics.domain._
 
-class FrameReference(frameId: Long, frameExists: Option[Boolean] = None) extends UriReference {
+case class FrameReference(frameId: Long, frameExists: Option[Boolean] = None) extends UriReference {
 
   /** The entity type */
-  override def entity: Entity = FrameReference
+  override def entity: Entity = FrameReferenceManagement
 
   /** The entity id */
   override def id: Long = frameId
@@ -41,7 +41,7 @@ class FrameReference(frameId: Long, frameExists: Option[Boolean] = None) extends
   override def exists: Option[Boolean] = frameExists
 }
 
-object FrameReference extends EntityManagement { self =>
+object FrameReferenceManagement extends EntityManagement { self =>
 
   override type Reference = FrameReference
 
@@ -52,7 +52,7 @@ object FrameReference extends EntityManagement { self =>
 
   override def getData(reference: Reference): Data = ???
 
-  override def getMetaData(reference: Reference): FrameReference.MetaData = ???
+  override def getMetaData(reference: Reference): MetaData = ???
 
   override def create(): Reference = ???
 

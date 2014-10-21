@@ -61,7 +61,7 @@ object Dependencies {
   /**
    * Returns all the [[Computable]] objects from a case class
    */
-  def getComputables[A <: Product : TypeTag](arguments: A): Seq[Computable] = {
+  def getComputables[A <: Product: TypeTag](arguments: A): Seq[Computable] = {
     //val refs = arguments.deepFind((_: UriReference) => true)
     val refs = Reflection.getUriReferenceTypes[A]()
     refs.flatMap {

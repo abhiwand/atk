@@ -23,11 +23,11 @@
 
 package com.intel.intelanalytics.engine.spark.frame.plugins
 
-import com.intel.intelanalytics.domain.SingleReference
+import com.intel.intelanalytics.domain._
 import com.intel.intelanalytics.domain.command.CommandDoc
-import com.intel.intelanalytics.domain.frame.{FrameReference, DataFrameTemplate, FrameAddColumns, DataFrame}
-import com.intel.intelanalytics.domain.schema.DataTypes
-import com.intel.intelanalytics.engine.spark.frame.PythonRDDStorage
+import com.intel.intelanalytics.domain.frame._
+import com.intel.intelanalytics.domain.schema.{Schema, DataTypes}
+import com.intel.intelanalytics.engine.spark.frame.{SparkFrameData, FrameRDD, PythonRDDStorage}
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
 import com.intel.intelanalytics.security.UserPrincipal
 
@@ -41,7 +41,7 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol._
 /**
  * Adds one or more new columns to the frame by evaluating the given func on each row.
  */
-class AddColumnsPlugin extends SparkCommandPlugin[FrameAddColumns, DataFrame] {
+class AddColumnsPlugin extends SparkCommandPlugin[FrameAddColumns, FrameReference] {
 
   /**
    * The name of the command, e.g. graphs/ml/loopy_belief_propagation
@@ -68,22 +68,18 @@ class AddColumnsPlugin extends SparkCommandPlugin[FrameAddColumns, DataFrame] {
    * @param user current user
    * @return a value of type declared as the Return type.
    */
-  override def execute(invocation: SparkInvocation, arguments: FrameAddColumns)
-                      (implicit user: UserPrincipal, executionContext: ExecutionContext):
-  DataFrame = {
-    // dependencies (later to be replaced with dependency injection)
-    val frames = invocation.engine.frames
-    val pythonRDDStorage = new PythonRDDStorage(frames)
-    val ctx = invocation.sparkContext
+  override def execute(invocation: SparkInvocation,
+                       arguments: FrameAddColumns,
+                       returnValue: Option[FrameReference])
+                      (implicit user: UserPrincipal,
+                       executionContext: ExecutionContext): FrameReference = {
 
-    // validate arguments
-    val frameId = arguments.frame.id
     val columnNames = arguments.columnNames
     val columnTypes = arguments.columnTypes
     val expression = arguments.expression // Python Wrapper containing lambda expression
-    val frameMeta = frames.expectFrame(arguments.frame)
+    val frame = invocation.resolver.resolve(arguments.frame).get.asInstanceOf[SparkFrameData]
+    val frameMeta = frame.meta
     val schema = frameMeta.schema
-    val oldColumns = schema.columns
 
     // run the operation and save results
     var newColumns = schema.columns
@@ -101,11 +97,11 @@ class AddColumnsPlugin extends SparkCommandPlugin[FrameAddColumns, DataFrame] {
     }
 
     // Update the data
-    val pyRdd = pythonRDDStorage.createPythonRDD(frameId, expression, invocation.sparkContext)
+    val pyRdd = PythonRDDStorage.createPythonRDD(frame.data, expression)
     val converter = DataTypes.parseMany(newColumns.map(_._2).toArray)(_)
-    val newFrame = frames.create().copy(schema = frameMeta.schema)
-    pythonRDDStorage.persistPythonRDD(newFrame, pyRdd, converter, skipRowCount = true)
-    frames.exchangeNames(frameMeta, newFrame)
-    frames.expectFrame(newFrame.id)
+    val newSchema: Schema = schema.copy(columns = newColumns)
+    val rdd = PythonRDDStorage.pyRDDToFrameRDD(newSchema, pyRdd, converter)
+    val ret = returnValue.get.asInstanceOf[FrameMeta]
+    new SparkFrameData(ret.meta.copy(schema = newSchema), rdd)
   }
 }

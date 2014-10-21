@@ -21,52 +21,20 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.engine.plugin
+package com.intel.intelanalytics.engine.spark.frame
 
-import com.intel.intelanalytics.domain.ReferenceResolver
-import com.intel.intelanalytics.engine.{ CommandStorage, Engine }
-import com.intel.intelanalytics.security.UserPrincipal
-import spray.json.JsObject
-
-import scala.concurrent.ExecutionContext
+import com.intel.intelanalytics.domain.HasData
+import com.intel.intelanalytics.domain.frame.{FrameMeta, DataFrame, FrameReference}
 
 /**
- * Provides context for an invocation of a command or query.
- *
+ * A FrameReference with metadata and a Spark RDD representing the data in the frame
  */
-trait Invocation {
-  /**
-   * An instance of the engine that the plugin can use to execute its work
-   */
-  def engine: Engine
+class SparkFrameData(frame: DataFrame, rdd: FrameRDD)
+  extends FrameMeta(frame)
+  with HasData {
 
-  /**
-   * The identifier of this execution
-   */
-  def commandId: Long
+  type Data = FrameRDD
 
-  /**
-   * The original arguments as supplied by the user
-   */
-  def arguments: Option[JsObject]
+  val data = rdd
 
-  /**
-   * The user that invoked the operation
-   */
-  def user: UserPrincipal
-
-  /**
-   * A Scala execution context for use with methods that require one
-   */
-  def executionContext: ExecutionContext
-
-  /**
-   * Command Storage to read/update command progress
-   */
-  def commandStorage: CommandStorage
-
-  /**
-   * Reference resolver to enable dereferencing of UriReference objects
-   */
-  def resolver: ReferenceResolver
 }

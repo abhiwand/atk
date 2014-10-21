@@ -1,7 +1,7 @@
 package com.intel.intelanalytics.domain
 
-import com.intel.intelanalytics.domain.frame.FrameReference
-import com.intel.intelanalytics.domain.graph.GraphReference
+import com.intel.intelanalytics.domain.frame.{FrameReferenceManagement, FrameReference}
+import com.intel.intelanalytics.domain.graph.{GraphReferenceManagement, GraphReference}
 import org.scalatest.{ FlatSpec, Matchers }
 
 import scala.util.{ Success, Try }
@@ -21,7 +21,7 @@ class UriReferenceTest extends FlatSpec with Matchers {
     val uri: String = "ia://frame/1"
     val expected = new FrameReference(1)
     val registry: EntityRegistry = new EntityRegistry()
-    registry.register(GraphReference)
+    registry.register(GraphReferenceManagement)
     val resolver = registry.resolver
     intercept[IllegalArgumentException] {
       resolver.resolve(uri).get
@@ -32,8 +32,8 @@ class UriReferenceTest extends FlatSpec with Matchers {
     val uri: String = "ia://frame/1"
     val expected = Success(new FrameReference(1))
     val registry: EntityRegistry = new EntityRegistry()
-    registry.register(GraphReference)
-    registry.register(FrameReference)
+    registry.register(GraphReferenceManagement)
+    registry.register(FrameReferenceManagement)
     val resolver = registry.resolver
     resolver.resolve(uri) should be(expected)
   }
@@ -41,7 +41,7 @@ class UriReferenceTest extends FlatSpec with Matchers {
   it should "be recognized as a valid URI format when the URI is correct and a resolver is registered" in {
     val uri: String = "ia://frame/1"
     val registry: EntityRegistry = new EntityRegistry()
-    registry.register(FrameReference)
+    registry.register(FrameReferenceManagement)
     val resolver = registry.resolver
     resolver.isReferenceUriFormat(uri) should be(true)
   }
@@ -49,7 +49,7 @@ class UriReferenceTest extends FlatSpec with Matchers {
   it should "not be recognized as a valid URI format when the URI is incorrect" in {
     val uri: String = "not an URI at all"
     val registry: EntityRegistry = new EntityRegistry()
-    registry.register(FrameReference)
+    registry.register(FrameReferenceManagement)
     val resolver = registry.resolver
     resolver.isReferenceUriFormat(uri) should be(false)
   }

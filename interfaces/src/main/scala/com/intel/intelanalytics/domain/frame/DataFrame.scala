@@ -23,6 +23,7 @@
 
 package com.intel.intelanalytics.domain.frame
 
+import com.intel.intelanalytics.domain.HasId
 import com.intel.intelanalytics.domain.schema.Schema
 import org.joda.time.DateTime
 
@@ -39,7 +40,7 @@ import org.joda.time.DateTime
  * @param rowCount number of rows in the frame
  * @param errorFrameId foreign key for the error data frame associated with this frame (parse errors go into this frame)
  */
-case class DataFrame(override val id: Long,
+case class DataFrame(id: Long,
                      name: String,
                      schema: Schema = Schema(),
                      status: Long,
@@ -55,9 +56,11 @@ case class DataFrame(override val id: Long,
                      materializedOn: Option[DateTime] = None,
                      materializationComplete: Option[DateTime] = None,
                      errorFrameId: Option[Long] = None,
-                     parent: Option[Long] = None) extends FrameReference(id, Some(true)) {
+                     parent: Option[Long] = None)  extends HasId {
   require(id >= 0, "id must be zero or greater")
   require(name != null, "name must not be null")
   require(name.trim.length > 0, "name must not be empty or whitespace")
   require(parent.isEmpty || parent.get > 0, "parent must be one or greater if provided")
+
+  def uri: String = FrameReference(id, None).uri
 }
