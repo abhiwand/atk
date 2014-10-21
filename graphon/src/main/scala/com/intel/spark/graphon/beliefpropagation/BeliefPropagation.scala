@@ -28,14 +28,13 @@ import com.intel.graphbuilder.util.SerializableBaseConfiguration
  * @param edgeWeightProperty Optional String. Name of the property on edges that stores the edge weight.
  *                           If none is supplied, edge weights default to 1.0
  * @param convergenceThreshold Optional Double. BP will terminate when average change in posterior beliefs between
- *                             supersteps drop below this threshold. Defaults to 0.
+ *                             supersteps is less than or equal to this threshold. Defaults to 0.
  * @param maxIterations Optional integer. The maximum number of iterations of message passing that will be invoked.
  *                      Defaults to 20.
  */
 case class BeliefPropagationArgs(graph: GraphReference,
                                  priorProperty: String,
                                  posteriorProperty: String,
-                                 stateSpaceSize: Int,
                                  edgeWeightProperty: Option[String] = None,
                                  convergenceThreshold: Option[Double] = None,
                                  maxIterations: Option[Int] = None)
@@ -63,7 +62,7 @@ case class BeliefPropagationResult(log: String, time: Double)
 /** Json conversion for arguments and return value case classes */
 object BeliefPropagationJsonFormat {
   import DomainJsonProtocol._
-  implicit val BPFormat = jsonFormat7(BeliefPropagationArgs)
+  implicit val BPFormat = jsonFormat6(BeliefPropagationArgs)
   implicit val BPResultFormat = jsonFormat2(BeliefPropagationResult)
 }
 
@@ -101,17 +100,14 @@ class BeliefPropagation extends SparkCommandPlugin[BeliefPropagationArgs, Belief
     posterior_property : String
         Name of the vertex property which will contain the posterior belief for each vertex.
 
-    state_space_size : Int
-        The number of states in the MRF. Used for validation: Belief propagation will not run if
-        an input vertex provides a prior belief whose length does not match the state space size.
 
     edge_weight_property :  String (optional)
         The edge property that contains the edge weight for each edge. The default edge weight is 1 if this
         option is not specified.
 
     convergence_threshold :  Double (optional)
-        BP will terminate when average change in posterior beliefs between supersteps drop below this threshold.
-        Defaults to 0.
+        BP will terminate when average change in posterior beliefs between supersteps is less than or equal to
+         this threshold. Defaults to 0.
 
     max_iterations : Integer (optional)
         The maximum number of super steps that the algorithm will execute.
@@ -177,7 +173,6 @@ class BeliefPropagation extends SparkCommandPlugin[BeliefPropagationArgs, Belief
         arguments.priorProperty,
         arguments.maxIterations,
         stringOutput = Some(true), // string output is default until the ATK supports Vectors as a datatype in tables
-        arguments.stateSpaceSize,
         arguments.convergenceThreshold,
         arguments.edgeWeightProperty)
 

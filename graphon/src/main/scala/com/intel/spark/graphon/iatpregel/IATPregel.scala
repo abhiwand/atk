@@ -42,7 +42,7 @@ object IATPregel {
    * @return Pair of GraphX graph (with updated values) and log string.
    */
   def apply[VertexData: ClassTag, EdgeData: ClassTag, Message: ClassTag](graph: Graph[VertexData, EdgeData],
-                                                                         initialMsg: Option[Message],
+                                                                         initialMsg: Message,
                                                                          initialReportGenerator: InitialReport[VertexData, EdgeData],
                                                                          superStepStatusGenerator: SuperStepStatusGenerator[VertexData],
                                                                          maxIterations: Int = Int.MaxValue,
@@ -54,6 +54,8 @@ object IATPregel {
     val vdataRDD: RDD[VertexData] = graph.vertices.map({ case (vid, vdata) => vdata })
     val edataRDD: RDD[EdgeData] = graph.edges.map({ case e: Edge[EdgeData] => e.attr })
 
+    val numberOfVertices = vdataRDD.count()
+
     val initialReport = initialReportGenerator.generateInitialReport(vdataRDD, edataRDD)
 
     var log = new StringBuilder(initialReport)
@@ -64,12 +66,7 @@ object IATPregel {
     }
     else {
 
-      var g = if (initialMsg.nonEmpty) {
-        graph.mapVertices((vid, vdata) => vprog(vid, vdata, initialMsg.get)).cache()
-      }
-      else {
-        graph.cache()
-      }
+      var g = graph.mapVertices((vid, vdata) => vprog(vid, vdata, initialMsg)).cache()
 
       // loop
       var i = 1
@@ -80,18 +77,24 @@ object IATPregel {
 
       var prevG: Graph[VertexData, EdgeData] = null
 
-      val status = superStepStatusGenerator.generateSuperStepStatus(i, g.vertices.map({ case (vid, vdata) => vdata }))
-      log.++=(status.log)
-      var earlyTermination = status.earlyTermination
+      var earlyTermination = false
 
-      while (activeMessages > 0 && i < maxIterations && !earlyTermination) {
+      while (activeMessages > 0 && i <= maxIterations && !earlyTermination) {
 
         // Receive the messages. Vertices that didn't get any messages do not appear in newVerts.
         val newVerts = g.vertices.innerJoin(messages)(vprog).cache()
+
         // Update the graph with the new vertices.
         prevG = g
         g = g.outerJoinVertices(newVerts) { (vid, old, newOpt) => newOpt.getOrElse(old) }
         g.cache()
+
+        // update the status
+        // we use the new verts to avoid contributions from vertices that did not change
+        val status = superStepStatusGenerator.generateSuperStepStatus(i, numberOfVertices, newVerts.map({ case (vid, vdata) => vdata }))
+
+        log.++=(status.log)
+        earlyTermination = status.earlyTermination
 
         val oldMessages = messages
         // Send new messages. Vertices that didn't get any messages don't appear in newVerts, so don't
@@ -112,14 +115,9 @@ object IATPregel {
         // count the iteration
         i += 1
 
-        // update the status
-
-        val status = superStepStatusGenerator.generateSuperStepStatus(i, g.vertices.map({ case (vid, vdata) => vdata }))
-        log.++=(status.log)
-        earlyTermination = status.earlyTermination
       }
 
-      log.++=("\nTotal number of iterations: " + i)
+      log.++=("\nTotal number of iterations: " + (i - 1))
 
       (g, log.toString())
     } // end of apply

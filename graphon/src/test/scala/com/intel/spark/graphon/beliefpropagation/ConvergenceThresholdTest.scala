@@ -51,13 +51,10 @@ class ConvergenceThresholdTest extends FlatSpec with Matchers with TestingSparkC
 
   }
 
-
-
-  "BP Runner" should "run for two iterations when convergence threshold is 1.0" in new CTTest {
+  "BP Runner" should "run for one iteration when convergence threshold is 1.0" in new CTTest {
 
     val args = BeliefPropagationRunnerArgs(
       priorProperty = inputPropertyName,
-      stateSpaceSize = 2,
       edgeWeightProperty = None,
       maxIterations = Some(10),
       stringOutput = None,
@@ -66,14 +63,13 @@ class ConvergenceThresholdTest extends FlatSpec with Matchers with TestingSparkC
 
     val (verticesOut, edgesOut, log) = BeliefPropagationRunner.run(verticesIn, edgesIn, args)
 
-    log should include("Total number of iterations: 2")
+    log should include("Total number of iterations: 1")
   }
 
-  "BP Runner" should "run for three iterations when convergence threshold is 0.2" in new CTTest {
+  "BP Runner" should "run for two iterations when convergence threshold is 0.2" in new CTTest {
 
     val args = BeliefPropagationRunnerArgs(
       priorProperty = inputPropertyName,
-      stateSpaceSize = 2,
       edgeWeightProperty = None,
       maxIterations = Some(10),
       stringOutput = None,
@@ -82,14 +78,13 @@ class ConvergenceThresholdTest extends FlatSpec with Matchers with TestingSparkC
 
     val (verticesOut, edgesOut, log) = BeliefPropagationRunner.run(verticesIn, edgesIn, args)
 
-    log should include("Total number of iterations: 3")
+    log should include("Total number of iterations: 2")
   }
 
-  "BP Runner" should "run for three iterations when  convergence threshold is 0" in new CTTest {
+  "BP Runner" should "run for two iterations when  convergence threshold is 0" in new CTTest {
 
     val args = BeliefPropagationRunnerArgs(
       priorProperty = inputPropertyName,
-      stateSpaceSize = 2,
       edgeWeightProperty = None,
       maxIterations = Some(10),
       stringOutput = None,
@@ -98,16 +93,15 @@ class ConvergenceThresholdTest extends FlatSpec with Matchers with TestingSparkC
 
     val (verticesOut, edgesOut, log) = BeliefPropagationRunner.run(verticesIn, edgesIn, args)
 
-    log should include("Total number of iterations: 3")
+    log should include("Total number of iterations: 2")
   }
 
   // an example that slowly converges to an asymptote would make a better test when no threshold is given
 
-  "BP Runner" should "run for three iterations when no convergence threshold given" in new CTTest {
+  "BP Runner" should "run for two iterations when no convergence threshold given" in new CTTest {
 
     val args = BeliefPropagationRunnerArgs(
       priorProperty = inputPropertyName,
-      stateSpaceSize = 2,
       edgeWeightProperty = None,
       maxIterations = Some(10),
       stringOutput = None,
@@ -116,6 +110,6 @@ class ConvergenceThresholdTest extends FlatSpec with Matchers with TestingSparkC
 
     val (verticesOut, edgesOut, log) = BeliefPropagationRunner.run(verticesIn, edgesIn, args)
 
-    log should include("Total number of iterations: 3")
+    log should include("Total number of iterations: 2")
   }
 }
